@@ -578,3 +578,92 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 TileSetEditorPlugin::~TileSetEditorPlugin() {
 	tile_set_plugin_singleton = nullptr;
 }
+
+bool TileTerrainEditorPlugin::can_handle(Object *p_object) {
+	return Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object);
+}
+
+bool TileTerrainEditorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (p_path == "terrain_set" || p_path == "terrain") {
+		TileSetAtlasSourceEditor::AtlasTileProxyObject *p_tile_data = Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object);
+		if (!p_tile_data || p_tile_data->get_edited_tiles().is_empty()) {
+			return false;
+		}
+
+		Ref<TileSetAtlasSource> tile_set_atlas = p_tile_data->get_edited_tile_set_atlas_source();
+		Ref<TileSet> tile_set(p_tile_data->get_edited_tile_set_atlas_source()->get_tile_set());
+		TileSetAtlasSourceEditor::TileSelection tile_selected = p_tile_data->get_edited_tiles().front()->get();
+		TileData *p_tile = tile_set_atlas->get_tile_data(tile_selected.tile, tile_selected.alternative);
+
+		if (p_path == "terrain_set") {
+			auto terrain_set_property_editor = memnew(EditorPropertyEnum);
+			terrain_set_property_editor->set_object_and_property(p_tile, "terrain_set");
+			terrain_set_property_editor->set_label("Terrain Set");
+			add_custom_control(terrain_set_property_editor);
+
+			update_terrain_set_property_editor(terrain_set_property_editor, tile_set);
+		}
+
+		if (p_path == "terrain") {
+			auto terrain_property_editor = memnew(EditorPropertyEnum);
+			terrain_property_editor->set_object_and_property(p_tile, "terrain");
+			terrain_property_editor->set_label("Terrain");
+			add_custom_control(terrain_property_editor);
+
+			int terrain_set = int(p_tile->get("terrain_set"));
+			if (terrain_set == -1) {
+				terrain_property_editor->hide();
+			}
+			if (terrain_set != -1) {
+				update_terrain_property_editor(terrain_property_editor, tile_set, terrain_set);
+				terrain_property_editor->show();
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
+void TileTerrainEditorPlugin::update_terrain_set_property_editor(EditorPropertyEnum *p_editor, Ref<TileSet> &tile_set) {
+	ERR_FAIL_COND(p_editor == nullptr);
+	ERR_FAIL_COND(tile_set.is_null());
+
+	Vector<String> options;
+	options.push_back(String(TTR("No terrains")) + String(":-1"));
+	for (int i = 0; i < tile_set->get_terrain_sets_count(); i++) {
+		options.push_back(vformat("Terrain Set %d", i));
+	}
+	p_editor->setup(options);
+	p_editor->update_property();
+}
+
+void TileTerrainEditorPlugin::update_terrain_property_editor(EditorPropertyEnum *p_editor, Ref<TileSet> &tile_set, int terrain_set) {
+	ERR_FAIL_COND(p_editor == nullptr);
+	ERR_FAIL_COND(tile_set.is_null());
+
+	Vector<String> options;
+	options.push_back(String(TTR("No terrain")) + String(":-1"));
+	for (int i = 0; i < tile_set->get_terrains_count(terrain_set); i++) {
+		String name = tile_set->get_terrain_name(terrain_set, i);
+		if (name.is_empty()) {
+			options.push_back(vformat("Terrain %d", i));
+		} else {
+			options.push_back(name);
+		}
+	}
+	p_editor->setup(options);
+	p_editor->update_property();
+
+	// Colors
+	const Size2i terrain_icon_size = Size2(16, 16) * EDSCALE;
+	// Kind of a hack to set icons.
+	// We could provide a way to modify that in the EditorProperty.
+	OptionButton *option_button = p_editor->get_option_button();
+	for (int terrain = 0; terrain < tile_set->get_terrains_count(terrain_set); terrain++) {
+		Ref<Image> img = Image::create_empty(1, 1, false, Image::FORMAT_RGBA8);
+		img->set_pixel(0, 0, tile_set->get_terrain_color(terrain_set, terrain));
+		Ref<ImageTexture> icon = ImageTexture::create_from_image(img);
+		icon->set_size_override(terrain_icon_size);
+		option_button->set_item_icon(terrain + 1, icon);
+	}
+}
