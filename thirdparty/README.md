@@ -120,7 +120,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.5.4 (ef88ee97c0e759792e43a2b2d8072def6c9244e8, 2025)
+- Version: 2.0.1 (21ebba05db8894f0c7217ad35ea518080f324946, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
