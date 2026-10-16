@@ -185,6 +185,19 @@ if env["builtin_libjxl"]:
             "SKCMS_DISABLE_SKX",
         ]
     )
+    # SSSE3 is never used, since Godot requires SSE4.2.
+    hwy_disabled_targets = ["HWY_SSSE3"]
+    if not env["jxl_all_simd_targets"]:
+        hwy_disabled_targets += [
+            "HWY_AVX3",
+            "HWY_AVX3_DL",
+            "HWY_AVX3_ZEN4",
+            "HWY_AVX3_SPR",
+            "HWY_NEON_BF16",
+            "HWY_ALL_SVE",
+        ]
+    # Target bits don't overlap, so + works like | and avoids shell-special characters.
+    env_thirdparty.Append(CPPDEFINES=[("HWY_DISABLED_TARGETS", "+".join(hwy_disabled_targets))])
     env_thirdparty.add_source_files(thirdparty_obj, highway_sources)
     env_thirdparty.add_source_files(thirdparty_obj, skcms_sources)
     env_thirdparty.add_source_files(thirdparty_obj, jxl_sources)
