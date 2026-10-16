@@ -90,7 +90,7 @@ String ScriptEditorBase::get_document_name() const {
 	return name;
 }
 
-Ref<Texture2D> ScriptEditorBase::get_theme_icon() {
+Ref<Texture2D> ScriptEditorBase::get_document_icon() {
 	return EditorNode::get_singleton()->get_object_icon(edited_res.ptr());
 }
 
@@ -294,6 +294,11 @@ TextEditorBase::EditMenus::EditMenus(DocumentEditorContainer *p_document_editor_
 }
 
 void TextEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const Vector2 &p_position, bool p_show) {
+	if (context_menu == nullptr) {
+		context_menu = memnew(PopupMenu);
+		context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
+		add_child(context_menu);
+	}
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
@@ -520,6 +525,10 @@ bool TextEditorBase::_edit_option(int p_op) {
 			FindInFiles::get_singleton()->open_dock(selected_text, p_op == REPLACE_IN_FILES);
 		} break;
 		case SEARCH_GOTO_LINE: {
+			if (goto_line_popup == nullptr) {
+				goto_line_popup = memnew(GotoLinePopup);
+				add_child(goto_line_popup);
+			}
 			goto_line_popup->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
@@ -677,9 +686,7 @@ void TextEditorBase::reload_text() {
 	_saved_update();
 
 	code_editor->update_line_and_column();
-	if (editor_enabled) {
-		_validate_script();
-	}
+	_validate_script();
 }
 
 void TextEditorBase::enable_editor() {
@@ -732,13 +739,6 @@ TextEditorBase::TextEditorBase() {
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditorBase::_load_theme_settings));
 	code_editor->connect("show_goto_popup", callable_mp(this, &TextEditorBase::_edit_option).bind(SEARCH_GOTO_LINE));
 	code_editor->connect("_request_save_new_history", callable_mp(this, &TextEditorBase::_emit_request_save_new_history));
-
-	context_menu = memnew(PopupMenu);
-	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextEditorBase::_edit_option));
-	add_child(context_menu);
-
-	goto_line_popup = memnew(GotoLinePopup);
-	add_child(goto_line_popup);
 
 	Ref<EditorPlainTextSyntaxHighlighter> plain_highlighter;
 	plain_highlighter.instantiate();
