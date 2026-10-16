@@ -72,13 +72,13 @@ namespace GodotTools.Build
             }
         }
 
-        public void BuildProject()
+        public bool BuildProject()
         {
             if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
-                return; // No project to build.
+                return true; // No project to build.
 
             if (!BuildManager.BuildProjectBlocking("Debug"))
-                return; // Build failed.
+                return false; // Build failed.
 
             // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
@@ -91,6 +91,8 @@ namespace GodotTools.Build
                 BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies();
             }
+
+            return true;
         }
 
         private void RebuildProject()
