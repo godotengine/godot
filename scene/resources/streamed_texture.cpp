@@ -121,7 +121,7 @@ void StreamedTexture2D::texture_reload(uint8_t p_mip_level) {
 
 	if (verbose_logging) {
 		const uint64_t end_time = OS::get_singleton()->get_ticks_msec();
-		print_verbose(vformat("Streamed texture %s reloaded (%dx%d) in %d ms (start=%d, end=%d)", path_to_file, w, h, end_time - start_time, start_time, end_time));
+		PRINT_VERBOSE(vformat("Streamed texture %s reloaded (%dx%d) in %d ms (start=%d, end=%d)", path_to_file, w, h, end_time - start_time, start_time, end_time));
 	}
 }
 

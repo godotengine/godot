@@ -86,7 +86,7 @@ void FreeDesktopScreenSaver::inhibit() {
 	DBusMessageIter reply_iter;
 	dbus_message_iter_init(reply, &reply_iter);
 	dbus_message_iter_get_basic(&reply_iter, &cookie);
-	print_verbose("FreeDesktopScreenSaver: Acquired screensaver inhibition cookie: " + uitos(cookie));
+	PRINT_VERBOSE("FreeDesktopScreenSaver: Acquired screensaver inhibition cookie: " + uitos(cookie));
 
 	dbus_message_unref(reply);
 	dbus_connection_unref(bus);
@@ -124,7 +124,7 @@ void FreeDesktopScreenSaver::uninhibit() {
 		return;
 	}
 
-	print_verbose("FreeDesktopScreenSaver: Released screensaver inhibition cookie: " + uitos(cookie));
+	PRINT_VERBOSE("FreeDesktopScreenSaver: Released screensaver inhibition cookie: " + uitos(cookie));
 
 	dbus_message_unref(reply);
 	dbus_connection_unref(bus);
