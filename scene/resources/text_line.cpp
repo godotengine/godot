@@ -108,8 +108,8 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_position"), &TextLine::get_line_underline_position);
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness"), &TextLine::get_line_underline_thickness);
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "oversampling"), &TextLine::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "oversampling"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw", "canvas", "position", "color", "oversampling"), &TextLine::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "position", "outline_size", "color", "oversampling"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
 }
