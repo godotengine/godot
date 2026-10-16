@@ -10,12 +10,12 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
 exclude = ["thirdparty/"]
-python_version = "3.9"
+python_version = "3.10"
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]
 extend-include = ["*SConstruct", "*SCsub"]
-target-version = "py39"
+target-version = "py310"
 line-length = 120
 preview = true
 fix = true
