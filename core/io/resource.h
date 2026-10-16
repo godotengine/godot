@@ -118,6 +118,7 @@ protected:
 
 	GDVIRTUAL0RC(RID, _get_rid);
 
+	GDVIRTUAL2C(_set_path, String, bool);
 	GDVIRTUAL1C(_set_path_cache, String);
 	GDVIRTUAL0(_reset_state);
 
