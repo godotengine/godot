@@ -197,6 +197,12 @@ namespace GodotTools.Build
             {
                 arguments.Add("-p:" + (string)customProperty);
             }
+
+            // Custom arguments (override previous)
+            foreach (var customArgument in buildInfo.CustomArguments)
+            {
+                arguments.Add((string)customArgument);
+            }
         }
 
         private static void BuildPublishArguments(BuildInfo buildInfo, Collection<string> arguments,
@@ -252,6 +258,12 @@ namespace GodotTools.Build
             foreach (var customProperty in buildInfo.CustomProperties)
             {
                 arguments.Add("-p:" + (string)customProperty);
+            }
+
+            // Custom arguments (override previous)
+            foreach (var customArgument in buildInfo.CustomArguments)
+            {
+                arguments.Add((string)customArgument);
             }
 
             // Publish output directory
