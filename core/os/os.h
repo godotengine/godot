@@ -96,6 +96,7 @@ private:
 	bool _writing_movie = false;
 	bool _in_editor = false;
 	bool _embedded_in_editor = false;
+	bool _launch_in_background = false;
 
 	CompositeLogger *_logger = nullptr;
 
@@ -246,6 +247,7 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	bool is_launch_in_background() const { return _launch_in_background; }
 
 	void ensure_user_data_dir();
 

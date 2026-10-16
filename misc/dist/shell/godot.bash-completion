@@ -55,8 +55,10 @@ _complete_godot_options() {
 --write-movie
 --fullscreen
 --maximized
+--minimized
 --windowed
 --always-on-top
+--background
 --resolution
 --position
 --single-window

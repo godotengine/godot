@@ -54,8 +54,10 @@ _arguments \
   '--write-movie[write a video to the specified path (usually with .avi or .png extension)]:path to output video file' \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
+  '--minimized[request a minimized window (implies --background)]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \
   '(-t --always-on-top)'{-t,--always-on-top}'[request an always-on-top window]' \
+  '--background[do not bring the application to the foreground or take focus from the active application on startup (macOS only)]' \
   '--resolution[request window resolution]:resolution in WxH format' \
   '--position[request window position]:position in X,Y format' \
   '--single-window[use a single window (no separate subwindows)]' \

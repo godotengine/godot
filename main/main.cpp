@@ -243,6 +243,7 @@ static Size2i window_size = Size2i(1152, 648);
 static int init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
+static bool init_minimized = false;
 static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
@@ -578,8 +579,10 @@ void Main::print_help(const char *p_binary) {
 	print_help_title("Display options");
 	print_help_option("-f, --fullscreen", "Request fullscreen mode.\n");
 	print_help_option("-m, --maximized", "Request a maximized window.\n");
+	print_help_option("--minimized", "Request a minimized window. Implies --background.\n");
 	print_help_option("-w, --windowed", "Request windowed mode.\n");
 	print_help_option("-t, --always-on-top", "Request an always-on-top window.\n");
+	print_help_option("--background", "Don't bring the application to the foreground or take focus from the active application on startup (macOS only).\n");
 	print_help_option("--resolution <W>x<H>", "Request window resolution.\n");
 	print_help_option("--position <X>,<Y>", "Request window position.\n");
 	print_help_option("--screen <N>", "Request window screen.\n");
@@ -1300,6 +1303,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "-m" || arg == "--maximized") { // force maximized window
 			init_maximized = true;
 			window_mode = DisplayServerEnums::WINDOW_MODE_MAXIMIZED;
+		} else if (arg == "--minimized") { // force minimized window
+			init_minimized = true;
+			OS::get_singleton()->_launch_in_background = true;
+		} else if (arg == "--background") { // do not take focus on startup
+			OS::get_singleton()->_launch_in_background = true;
 		} else if (arg == "-w" || arg == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -3364,6 +3372,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 			context = DisplayServerEnums::CONTEXT_ENGINE;
 		}
 
+		if (init_minimized) {
+			window_mode = DisplayServerEnums::WINDOW_MODE_MINIMIZED;
+		}
+
 		if (init_embed_parent_window_id) {
 			// Reset flags and other settings to be sure it's borderless and windowed. The position and size should have been initialized correctly
 			// from --position and --resolution parameters.
@@ -3651,7 +3663,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 		MAIN_PRINT("Main: Setup Logo");
 
 		if (!init_embed_parent_window_id) {
-			if (init_windowed) {
+			if (init_minimized) {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_MINIMIZED);
+			} else if (init_windowed) {
 				//do none..
 			} else if (init_maximized) {
 				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_MAXIMIZED);

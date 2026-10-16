@@ -72,8 +72,10 @@ complete -c godot -l write-movie -d "Write a video to the specified path (usuall
 # Display options:
 complete -c godot -s f -l fullscreen -d "Request fullscreen mode"
 complete -c godot -s m -l maximized -d "Request a maximized window"
+complete -c godot -l minimized -d "Request a minimized window. Implies --background"
 complete -c godot -s w -l windowed -d "Request windowed mode"
 complete -c godot -s t -l always-on-top -d "Request an always-on-top window"
+complete -c godot -l background -d "Don't bring the application to the foreground or take focus from the active application on startup (macOS only)"
 complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
 complete -c godot -l single-window -d "Use a single window (no separate subwindows)"
