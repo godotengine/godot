@@ -595,7 +595,7 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-	if (tex_info->rasterization_rate_map) {
+	if (tex_info->rasterization_rate_map || tex_info->imported || tex_info->texture.get()->parentTexture() != nullptr) {
 		return 0;
 	}
 	return tex_info->texture.get()->allocatedSize();
