@@ -513,6 +513,7 @@ env.modules_detected = modules_detected
 # Update the environment again after all the module options are added.
 opts.Update(env, {**ARGUMENTS, **env.Dictionary()})
 Help(opts.GenerateHelpText(env))
+methods.print_unrecognized_options(opts)
 
 
 # FIXME: Tool assignment happening at this stage is a direct consequence of getting the platform logic AFTER the SCons
