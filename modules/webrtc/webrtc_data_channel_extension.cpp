@@ -41,6 +41,7 @@ void WebRTCDataChannelExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_max_packet_size);
 
 	GDVIRTUAL_BIND(_poll);
+	GDVIRTUAL_BIND(_clear_buffer);
 	GDVIRTUAL_BIND(_close);
 
 	GDVIRTUAL_BIND(_set_write_mode, "write_mode");

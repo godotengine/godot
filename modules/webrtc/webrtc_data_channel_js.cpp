@@ -83,6 +83,12 @@ void WebRTCDataChannelJS::_on_message(void *p_obj, const uint8_t *p_data, int p_
 	peer->queue_count++;
 }
 
+void WebRTCDataChannelJS::clear_buffer() {
+	in_buffer.clear();
+	queue_count = 0;
+	_was_string = false;
+}
+
 void WebRTCDataChannelJS::close() {
 	in_buffer.resize(0);
 	queue_count = 0;
