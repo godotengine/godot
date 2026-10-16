@@ -99,6 +99,10 @@ void EditorBottomPanel::_repaint() {
 		set_popup(nullptr);
 	} else if (!panel_collapsed && !get_popup()) {
 		set_popup(dock_context_popup);
+		Button *btn = get_popup_button();
+		if (btn) {
+			btn->set_accessibility_name(TTRC("Bottom Panel Position"));
+		}
 	}
 	if (!panel_collapsed && (previous_tab != -1)) {
 		return;
