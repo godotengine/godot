@@ -2940,6 +2940,9 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	}
 
 	ci_manipulator->set_tool((CanvasItemManipulator::Tool)p_index);
+	if (ci_manipulator->get_tool() == CanvasItemManipulator::TOOL_EDIT_PIVOT && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+		ci_manipulator->center_temp_pivot_on_selection();
+	}
 
 	viewport->queue_redraw();
 	emit_signal("canvas_item_tool_changed", ci_manipulator->get_tool());

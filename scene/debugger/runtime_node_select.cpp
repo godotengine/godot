@@ -340,8 +340,12 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	}
 }
 
-void RuntimeNodeSelect::_set_ci_tool(CanvasItemManipulator::Tool p_tool) {
+void RuntimeNodeSelect::_set_ci_tool(CanvasItemManipulator::Tool p_tool, bool p_shift_pressed) {
 	ci_manipulator->set_tool(p_tool);
+	if (p_shift_pressed && ci_manipulator->get_tool() == CanvasItemManipulator::TOOL_EDIT_PIVOT) {
+		ci_manipulator->center_temp_pivot_on_selection();
+	}
+
 	panner->set_force_drag(p_tool == CanvasItemManipulator::TOOL_PAN);
 	_queue_selection_update();
 }
