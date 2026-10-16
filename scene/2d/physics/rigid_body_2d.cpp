@@ -502,6 +502,8 @@ bool RigidBody2D::is_able_to_sleep() const {
 }
 
 bool RigidBody2D::is_sleeping() const {
+	// TODO: Check this is intentional and not a broken optimization.
+	// This scene node does not own or solely control the sleep state.
 	return sleeping;
 }
 

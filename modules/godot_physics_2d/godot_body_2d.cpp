@@ -130,7 +130,7 @@ void GodotBody2D::reset_mass_properties() {
 	_mass_properties_changed();
 }
 
-void GodotBody2D::set_active(bool p_active) {
+void GodotBody2D::set_active(bool p_active, bool reset_timer) {
 	if (active == p_active) {
 		return;
 	}
@@ -143,6 +143,22 @@ void GodotBody2D::set_active(bool p_active) {
 			active = false;
 		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
+
+			// `reset_timer` is intended for use upon removal of a constraint, or the change of some fundamental forces that the
+			// engine itself applies every frame. User actions can be woken by the user, and positive energy events from
+			// the engine (like a new collision constraint) should be handled by sleep_test()
+			if (reset_timer) {
+				// TODO: Consider optimizing this pathway to reduce unnecessary wake time.
+				// Testing whether a previously stable system has lost balance is different to
+				// testing whether a previously unstable system has reached stability.
+				// For now we are using the same timer and thresholds which may be sub-optimal
+				still_time = 0.0;
+			}
+
+			// Ensure at least one frame to allow a sleeping body to move again before being put back to sleep
+			if (still_time > get_space()->get_body_time_to_sleep()) {
+				still_time = get_space()->get_body_time_to_sleep();
+			}
 		}
 	} else if (get_space()) {
 		get_space()->body_remove_from_active_list(&active_list);
@@ -187,7 +203,7 @@ void GodotBody2D::set_param(PS2DE::BodyParameter p_param, const Variant &p_value
 		} break;
 		case PS2DE::BODY_PARAM_GRAVITY_SCALE: {
 			if (Math::is_zero_approx(gravity_scale)) {
-				wakeup();
+				set_active(true, true);
 			}
 			gravity_scale = p_value;
 		} break;
@@ -261,6 +277,7 @@ void GodotBody2D::set_mode(PS2DE::BodyMode p_mode) {
 			_inv_mass = 0;
 			_inv_inertia = 0;
 			_set_static(p_mode == PS2DE::BODY_MODE_STATIC);
+
 			set_active(p_mode == PS2DE::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector2();
 			angular_velocity = 0;
@@ -275,6 +292,9 @@ void GodotBody2D::set_mode(PS2DE::BodyMode p_mode) {
 			}
 			_mass_properties_changed();
 			_set_static(false);
+
+			// FIXME: There is no way to initialize a body in the sleeping state thanks to lines like this.
+			// However, these lines are doing something important so a fix needs a wider view.
 			set_active(true);
 
 		} break;
@@ -653,6 +673,9 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	_update_transform_dependent();
 }
 
+// TODO: Consider getting rid of this and solving waking on the edges of the graph, not the nodes
+// All logic that concerns multiple constrained bodies should be handled by the constraints, as they
+// have knowledge of both bodies and how they should interact.
 void GodotBody2D::wakeup_neighbours() {
 	for (const Pair<GodotConstraint2D *, int> &E : constraint_list) {
 		const GodotConstraint2D *c = E.first;
@@ -702,6 +725,16 @@ void GodotBody2D::call_queries() {
 
 bool GodotBody2D::sleep_test(real_t p_step) {
 	if (mode == PS2DE::BODY_MODE_STATIC || mode == PS2DE::BODY_MODE_KINEMATIC) {
+		// TODO: Check this. More nuance is probably required somewhere.
+		// Island building with kinematic bodies is asymmetric due to Godot asymmetric collision flags
+		// If a kinematic body or static body has moved this frame, and rigid bodies on an island can mask with it,
+		// then we should be returning false to wake this island. However if the island is only connected because the
+		// kinematic body can mask with a rigid body, but not the other way, then return true.
+		// One exception is if the move is part of initialization.
+		//
+		// Without checking all the other code paths thoroughly, it's hard to say yet if this is right or wrong.
+		// However, given that we are going to the effort of setting active elsewhere on kinematic and static objects,
+		// it seems wrong to be then ignoring it when it actually matters.
 		return true;
 	} else if (!can_sleep) {
 		return false;
@@ -710,11 +743,11 @@ bool GodotBody2D::sleep_test(real_t p_step) {
 	ERR_FAIL_NULL_V(get_space(), true);
 
 	if (Math::abs(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
-		still_time = 0; //maybe this should be set to 0 on set_active?
+		still_time = 0;
 		return false;
 	}
 }

@@ -299,7 +299,10 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	collided = GodotCollisionSolver2D::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
 		oneway_disabled = false;
-
+		if (prev_collided) {
+			A->set_active(true, true);
+			B->set_active(true, true);
+		}
 		if (A->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_RAY && collide_A) {
 			check_ccd = true;
 			return true;
@@ -608,6 +611,11 @@ GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p
 }
 
 GodotBodyPair2D::~GodotBodyPair2D() {
+	if (collided) {
+		A->set_active(true, true);
+		B->set_active(true, true);
+	}
+
 	A->remove_constraint(this, 0);
 	B->remove_constraint(this, 1);
 }

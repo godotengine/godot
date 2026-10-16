@@ -548,6 +548,8 @@ void GodotPhysicsServer2D::body_set_space(RID p_body, RID p_space) {
 		return; //pointless
 	}
 
+	// FIXME: This is why wake_neighbours() isn't working
+	// we clear the constraint list before it can be called in set_space()
 	body->clear_constraint_list();
 	body->set_space(space);
 }
@@ -837,7 +839,7 @@ void GodotPhysicsServer2D::body_add_constant_central_force(RID p_body, const Vec
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_central_force(p_force);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer2D::body_add_constant_force(RID p_body, const Vector2 &p_force, const Vector2 &p_position) {
@@ -845,7 +847,7 @@ void GodotPhysicsServer2D::body_add_constant_force(RID p_body, const Vector2 &p_
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_force(p_force, p_position);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer2D::body_add_constant_torque(RID p_body, real_t p_torque) {
@@ -853,7 +855,7 @@ void GodotPhysicsServer2D::body_add_constant_torque(RID p_body, real_t p_torque)
 	ERR_FAIL_NULL(body);
 
 	body->add_constant_torque(p_torque);
-	body->wakeup();
+	body->set_active(true, true);
 }
 
 void GodotPhysicsServer2D::body_set_constant_force(RID p_body, const Vector2 &p_force) {
@@ -862,7 +864,7 @@ void GodotPhysicsServer2D::body_set_constant_force(RID p_body, const Vector2 &p_
 
 	body->set_constant_force(p_force);
 	if (!p_force.is_zero_approx()) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 }
 
@@ -878,7 +880,7 @@ void GodotPhysicsServer2D::body_set_constant_torque(RID p_body, real_t p_torque)
 
 	body->set_constant_torque(p_torque);
 	if (!Math::is_zero_approx(p_torque)) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 }
 
