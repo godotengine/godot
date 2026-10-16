@@ -11,6 +11,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_child_viewport_transform" qualifiers="virtual const" experimental="">
+			<return type="Transform2D" />
+			<description>
+				Virtual method to be implemented by the user. Returns the transform from a child [SubViewport]'s coordinates to this container's local coordinates. The engine uses it to map mouse input into the [SubViewport], to track which [Control] the mouse is over, and to compute [method CanvasItem.get_screen_transform] for nodes inside the [SubViewport].
+				Implement it when drawing the [SubViewport] somewhere other than the top-left corner at its native size, for example letterboxed or integer-scaled, so that input and screen transforms match the drawn image.
+				If the function is not implemented, the transform is a uniform scale by [member stretch_shrink] when [member stretch] is [code]true[/code], and identity otherwise.
+			</description>
+		</method>
 		<method name="_propagate_input_event" qualifiers="virtual const" experimental="">
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
