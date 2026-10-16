@@ -6,9 +6,16 @@ Import("env")
 import os
 from pathlib import Path
 
+import cursor_builders
 import platform_windows_builders
 
 from methods import redirect_emitter
+
+env.CommandNoCache(
+    "#platform/windows/cursors.gen.h",
+    Glob("resources/*.svg"),
+    env.Run(cursor_builders.make_cursors_action),
+)
 
 sources = []
 
