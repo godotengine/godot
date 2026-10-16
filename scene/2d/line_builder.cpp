@@ -32,13 +32,6 @@
 
 #include "core/math/geometry_2d.h"
 
-// Utility method.
-static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
-	return Vector2(
-			Math::lerp(r.position.x, r.position.x + r.get_size().x, v.x),
-			Math::lerp(r.position.y, r.position.y + r.get_size().y, v.y));
-}
-
 LineBuilder::LineBuilder() {
 }
 
@@ -51,7 +44,6 @@ void LineBuilder::build() {
 		uvs.clear();
 		return;
 	}
-
 	ERR_FAIL_COND(tile_aspect <= 0.f);
 
 	const float hw = width / 2.f;
@@ -144,11 +136,16 @@ void LineBuilder::build() {
 			} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
 				uvx0 = width * width_factor / total_distance;
 			}
-			new_arc(pos0, pos_up0 - pos0, -Math::PI, color0, Rect2(0.f, 0.f, uvx0 * 2, 1.f));
+			int vi = vertices.size();
+			strip_begin(pos_up0, pos_down0, color0, uvx0);
+			strip_add_arc(pos0, -Math::PI, DOWN);
+			_last_index[UP] = vi;
 			current_distance0 += modified_hw;
 			current_distance1 = current_distance0;
 		}
-		strip_begin(pos_up0, pos_down0, color0, uvx0);
+		if (begin_cap_mode != Line2D::LINE_CAP_ROUND) {
+			strip_begin(pos_up0, pos_down0, color0, uvx0);
+		}
 	}
 
 	/*
@@ -416,17 +413,8 @@ void LineBuilder::build() {
 
 		strip_add_quad(pos_up1, pos_down1, color1, uvx1);
 
-		// Custom drawing for a round end cap.
 		if (end_cap_mode == Line2D::LINE_CAP_ROUND) {
-			// Note: color is not used in case we don't interpolate.
-			Color color = _interpolate_color ? gradient->get_color(gradient->get_point_count() - 1) : Color(0, 0, 0);
-			float dist = 0;
-			if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
-				dist = width_factor / tile_aspect;
-			} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-				dist = width * width_factor / total_distance;
-			}
-			new_arc(pos1, pos_up1 - pos1, Math::PI, color, Rect2(uvx1 - 0.5f * dist, 0.f, dist, 1.f));
+			strip_add_arc(pos1, Math::PI, DOWN);
 		}
 	}
 }
@@ -529,70 +517,4 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 	// Last arc vertex
 	rpos = center + Vector2(Math::cos(end_angle), Math::sin(end_angle)) * radius;
 	strip_add_tri(rpos, orientation);
-}
-
-void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect) {
-	// Make a standalone arc that doesn't use existing vertices,
-	// with undistorted UVs from within a square section
-
-	float radius = vbegin.length();
-	float angle_step = Math::PI / static_cast<float>(round_precision);
-	float steps = Math::abs(angle_delta) / angle_step;
-
-	if (angle_delta < 0.f) {
-		angle_step = -angle_step;
-	}
-
-	float t = Vector2(1, 0).angle_to(vbegin);
-	float end_angle = t + angle_delta;
-	Vector2 rpos(0, 0);
-	float tt_begin = -Math::PI / 2.0f;
-	float tt = tt_begin;
-
-	// Center vertice
-	int vi = vertices.size();
-	vertices.push_back(center);
-	if (_interpolate_color) {
-		colors.push_back(color);
-	}
-	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
-		uvs.push_back(interpolate(uv_rect, Vector2(0.5f, 0.5f)));
-	}
-
-	// Arc vertices
-	for (int ti = 0; ti < steps; ++ti, t += angle_step) {
-		Vector2 sc = Vector2(Math::cos(t), Math::sin(t));
-		rpos = center + sc * radius;
-
-		vertices.push_back(rpos);
-		if (_interpolate_color) {
-			colors.push_back(color);
-		}
-		if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
-			Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));
-			uvs.push_back(interpolate(uv_rect, 0.5f * (tsc + Vector2(1.f, 1.f))));
-			tt += angle_step;
-		}
-	}
-
-	// Last arc vertex
-	Vector2 sc = Vector2(Math::cos(end_angle), Math::sin(end_angle));
-	rpos = center + sc * radius;
-	vertices.push_back(rpos);
-	if (_interpolate_color) {
-		colors.push_back(color);
-	}
-	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
-		tt = tt_begin + angle_delta;
-		Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));
-		uvs.push_back(interpolate(uv_rect, 0.5f * (tsc + Vector2(1.f, 1.f))));
-	}
-
-	// Make up triangles
-	int vi0 = vi;
-	for (int ti = 0; ti < steps; ++ti) {
-		indices.push_back(vi0);
-		indices.push_back(++vi);
-		indices.push_back(vi + 1);
-	}
 }
