@@ -45,6 +45,7 @@ class GDScriptDocGen {
 	static void _doctype_from_datatype(const DataType &p_datatype, String &r_type, String &r_enum, bool p_is_return = false);
 	static String _docvalue_from_variant(const Variant &p_variant, int p_recursion_level = 1);
 
+	static String _get_description_with_fixed_admonitions(const String &p_description);
 	static void _generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
 
 public:
