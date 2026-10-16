@@ -365,7 +365,7 @@ private:
 	bool empty_selection_clipboard_enabled = true;
 
 	// Overridable actions.
-	String cut_copy_line = "";
+	static inline String cut_copy_line = "";
 
 	// Context menu.
 	PopupMenu *menu = nullptr;
