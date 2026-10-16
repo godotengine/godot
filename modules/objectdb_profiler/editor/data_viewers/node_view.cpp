@@ -90,7 +90,8 @@ NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name) {
 	elements.root = memnew(VBoxContainer);
 	elements.root->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 	elements.tree = memnew(Tree);
-	elements.filter_bar = memnew(TreeSortAndFilterBar(elements.tree, TTRC("Filter Nodes")));
+	String filter_tooltip = TTRC("Filter nodes by entering a part of their name.\nFiltering is case-insensitive.");
+	elements.filter_bar = memnew(TreeSortAndFilterBar(elements.tree, TTRC("Filter Nodes"), filter_tooltip));
 	elements.root->add_child(elements.filter_bar);
 	elements.tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
 	elements.tree->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
