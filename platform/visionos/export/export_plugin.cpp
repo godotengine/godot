@@ -196,7 +196,9 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 	// Supported Destinations
 	if (p_line.contains("$targeted_device_family")) {
 		strnew += p_line.replace("$targeted_device_family", "7") + "\n";
-
+	} else if (p_line.contains("$linker_flags")) {
+		String value = p_config.has_accesskit ? p_config.linker_flags + " -Wl,-no_compact_unwind" : p_config.linker_flags;
+		strnew += p_line.replace("$linker_flags", value) + "\n";
 		// MoltenVK Framework not used on visionOS
 	} else if (p_line.contains("$moltenvk_buildfile")) {
 		strnew += p_line.replace("$moltenvk_buildfile", "") + "\n";
