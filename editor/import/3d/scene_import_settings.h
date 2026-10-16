@@ -40,6 +40,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
@@ -107,9 +108,12 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	HSlider *animation_slider = nullptr;
 	Button *animation_play_button = nullptr;
 	Button *animation_stop_button = nullptr;
+	SpinBox *animation_frame_spin_box = nullptr;
+
 	Button *animation_toggle_skeleton_visibility = nullptr;
 	Animation::LoopMode animation_loop_mode = Animation::LOOP_NONE;
 	bool animation_pingpong = false;
+	float animation_fps = 30.0f;
 	bool previous_import_as_skeleton = false;
 	bool previous_rest_as_reset = false;
 	MeshInstance3D *bones_mesh_preview = nullptr;
@@ -187,6 +191,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _play_animation();
 	void _stop_current_animation();
 	void _reset_animation(const String &p_animation_name = "");
+	void _animation_frame_spin_box_value_changed(double p_value);
 	void _animation_slider_value_changed(double p_value);
 	void _animation_finished(const StringName &p_name);
 	void _animation_update_skeleton_visibility();
