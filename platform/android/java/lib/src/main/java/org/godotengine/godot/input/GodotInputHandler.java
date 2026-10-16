@@ -42,6 +42,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
 import android.os.Build;
 import android.util.Log;
@@ -89,6 +90,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private final Godot godot;
 	private final InputManager mInputManager;
+	private final DisplayManager mDisplayManager;
 	private final WindowManager windowManager;
 	final GestureDetector gestureDetector;
 	final ScaleGestureDetector scaleGestureDetector;
@@ -105,11 +107,25 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private boolean overrideVolumeButtons = false;
 	private boolean hasHardwareKeyboardConfig = false;
 
+	private final DisplayManager.DisplayListener mDisplayListener = new DisplayManager.DisplayListener() {
+		@Override
+		public void onDisplayAdded(int displayId) {}
+
+		@Override
+		public void onDisplayRemoved(int displayId) {}
+
+		@Override
+		public void onDisplayChanged(int displayId) {
+			updateCachedRotation();
+		}
+	};
+
 	public GodotInputHandler(Context context, Godot godot) {
 		this.godot = godot;
 		mInputManager = (InputManager)context.getSystemService(Context.INPUT_SERVICE);
 		mInputManager.registerInputDeviceListener(this, null);
 
+		mDisplayManager = (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
 		windowManager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
 
 		this.godotGestureHandler = new GodotGestureHandler(this);
@@ -910,13 +926,24 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {
-		updateCachedRotation();
-
 		boolean newHardwareKeyboardConfig = newConfig.keyboard != Configuration.KEYBOARD_NOKEYS &&
 				newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
 		if (hasHardwareKeyboardConfig != newHardwareKeyboardConfig) {
 			hasHardwareKeyboardConfig = newHardwareKeyboardConfig;
 			GodotLib.hardwareKeyboardConnected(hasHardwareKeyboard());
+		}
+	}
+
+	public void onActivityResumed() {
+		if (mDisplayManager != null) {
+			mDisplayManager.registerDisplayListener(mDisplayListener, null);
+		}
+		updateCachedRotation();
+	}
+
+	public void onActivityPaused() {
+		if (mDisplayManager != null) {
+			mDisplayManager.unregisterDisplayListener(mDisplayListener);
 		}
 	}
 }
