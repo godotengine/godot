@@ -48,6 +48,12 @@ public:
 		POLL_TYPE_IN_OUT
 	};
 
+	enum ShutdownType : int32_t {
+		SHUTDOWN_TYPE_READ,
+		SHUTDOWN_TYPE_WRITE,
+		SHUTDOWN_TYPE_READ_WRITE,
+	};
+
 	enum Type : int32_t {
 		TYPE_NONE,
 		TYPE_TCP,
@@ -95,6 +101,7 @@ public:
 	};
 
 	virtual Error open(Family p_family, Type p_type, IP::Type &r_ip_type) = 0;
+	virtual void shutdown(ShutdownType p_flag = ShutdownType::SHUTDOWN_TYPE_READ_WRITE) = 0;
 	virtual void close() = 0;
 	virtual Error bind(Address p_addr) = 0;
 	virtual Error listen(int p_max_pending) = 0;
