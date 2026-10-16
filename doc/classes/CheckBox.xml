@@ -24,6 +24,9 @@
 		<theme_item name="check_v_offset" data_type="constant" type="int" default="0">
 			The vertical offset used when rendering the check icons (in pixels).
 		</theme_item>
+		<theme_item name="icon_size" data_type="constant" type="int" default="0">
+			The size of the check icon (in pixels). If set to 0, the icon's default size is used.
+		</theme_item>
 		<theme_item name="checked" data_type="icon" type="Texture2D">
 			The check icon to display when the [CheckBox] is checked.
 		</theme_item>
