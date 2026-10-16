@@ -64,7 +64,9 @@ import org.godotengine.editor.utils.verifyApk
 import org.godotengine.godot.BuildProvider
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
+import org.godotengine.godot.GodotFragment
 import org.godotengine.godot.GodotLib
+import org.godotengine.godot.editor.GodotEditorHost
 import org.godotengine.godot.editor.utils.EditorUtils
 import org.godotengine.godot.editor.utils.GameMenuUtils
 import org.godotengine.godot.editor.utils.GameMenuUtils.GameEmbedMode
@@ -85,7 +87,7 @@ import kotlin.text.indexOf
  * Each derived activity runs in its own process, which enable up to have several instances of
  * the Godot engine up and running at the same time.
  */
-abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListener {
+abstract class BaseGodotEditor : GodotActivity(), GodotEditorHost, GameMenuFragment.GameMenuListener {
 
 	companion object {
 		private val TAG = BaseGodotEditor::class.java.simpleName
@@ -264,6 +266,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
+
+	override fun initGodotInstance(): GodotFragment = GodotEditorFragment()
 
 	internal open fun getEditorWindowInfo() = EDITOR_MAIN_INFO
 
@@ -558,7 +562,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onGodotSetupCompleted() {
-		super.onGodotSetupCompleted()
+		super<GodotActivity>.onGodotSetupCompleted()
 		val rightClickEmulationEnabled = enableRightClickEmulation()
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
@@ -587,7 +591,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onGodotMainLoopStarted() {
-		super.onGodotMainLoopStarted()
+		super<GodotActivity>.onGodotMainLoopStarted()
 		runOnUiThread {
 			// Hide the loading indicator
 			editorLoadingIndicator?.visibility = View.GONE
@@ -623,7 +627,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun getCommandLine(): MutableList<String> {
-		val params = super.getCommandLine()
+		val params = super<GodotActivity>.getCommandLine()
 		if (updatedCommandLineParams.isNotEmpty()) {
 			params.addAll(updatedCommandLineParams)
 		}
@@ -789,12 +793,12 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		if (!isRunningInInstrumentationOrUserTestHarness()) {
 			// For instrumented tests, we disable force-quitting to allow the tests to complete successfully, otherwise
 			// they fail when the process crashes.
-			super.onGodotForceQuit(instance)
+			super<GodotActivity>.onGodotForceQuit(instance)
 		}
 	}
 
 	final override fun onGodotForceQuit(godotInstanceId: Int): Boolean {
-		val editorWindowInfo = getEditorWindowInfoForInstanceId(godotInstanceId) ?: return super.onGodotForceQuit(godotInstanceId)
+		val editorWindowInfo = getEditorWindowInfoForInstanceId(godotInstanceId) ?: return super<GodotActivity>.onGodotForceQuit(godotInstanceId)
 
 		if (editorWindowInfo.windowClassName == javaClass.name) {
 			Log.d(TAG, "Force quitting ${editorWindowInfo.windowClassName}")
@@ -820,7 +824,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 		}
 
-		return super.onGodotForceQuit(godotInstanceId)
+		return super<GodotActivity>.onGodotForceQuit(godotInstanceId)
 	}
 
 	// Get the screen's density scale
@@ -1006,7 +1010,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			return true
 		}
 
-        return super.supportsFeature(featureTag)
+        return super<GodotActivity>.supportsFeature(featureTag)
     }
 
 	@CallSuper
@@ -1057,7 +1061,17 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onEditorWorkspaceSelected(workspace: String) {
 		activeWorkspace = workspace
 
-		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
+		if (workspace == GAME_WORKSPACE) {
+			showEditorGameDock()
+		}
+
+		if (!isLargeScreen) {
+			toggleEditorOrientation()
+		}
+	}
+
+	final override fun showEditorGameDock() {
+		if (shouldShowGameMenuBar()) {
 			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) ||
 				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_0) ||
 				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_1)) {
@@ -1074,10 +1088,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				updateEmbeddedGameView(gameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
-		}
-
-		if (!isLargeScreen) {
-			toggleEditorOrientation()
 		}
 	}
 

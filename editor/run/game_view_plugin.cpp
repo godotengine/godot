@@ -1931,6 +1931,12 @@ void GameViewPluginBase::_notification(int p_what) {
 	}
 }
 
+void GameViewPluginBase::_bind_methods() {
+#ifdef ANDROID_ENABLED
+	ADD_SIGNAL(MethodInfo("show_android_game_dock"));
+#endif
+}
+
 void GameViewPluginBase::_window_visibility_changed(bool p_visible) {
 	empty_dock_info->set_visible(p_visible);
 	_focus_another_editor();
@@ -2017,6 +2023,14 @@ void GameViewPluginBase::setup_android() {
 	EditorDockManager::get_singleton()->add_dock(game_dock);
 	game_dock->connect(SceneStringName(visibility_changed), callable_mp(this, &GameViewPluginBase::_dock_visibility_changed).bind(game_dock));
 
-	_create_empty_info_label(TTRC("Game dock is not available on Android."));
+	// Add a button to invoke the Android Game dock.
+	Button *show_game_dock = memnew(Button(TTRC("Tap to show Game dock")));
+	show_game_dock->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+	show_game_dock->connect(SceneStringName(pressed), callable_mp(this, &GameViewPluginBase::_on_show_game_dock));
+	GameView::get_dock()->add_child(show_game_dock);
+}
+
+void GameViewPluginBase::_on_show_game_dock() {
+	emit_signal(SNAME("show_android_game_dock"));
 }
 #endif
