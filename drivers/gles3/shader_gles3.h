@@ -40,8 +40,6 @@
 
 #include <platform_gl.h>
 
-class StringBuilder;
-
 class ShaderGLES3 {
 public:
 	struct TextureUniformData {
@@ -85,6 +83,7 @@ private:
 		CharString vertex_globals;
 		CharString fragment_globals;
 		HashMap<StringName, CharString> code_sections;
+		CharString code_section_defines;
 		Vector<CharString> custom_defines;
 
 		struct Specialization {
@@ -151,7 +150,9 @@ private:
 
 	StageTemplate stage_templates[STAGE_TYPE_MAX];
 
-	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
+	LocalVector<CharString> specialization_defines;
+
+	void _build_variant_code(LocalVector<const char *> &r_strings, LocalVector<GLint> &r_lengths, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
 
 	void _add_stage(const char *p_code, StageType p_stage_type);
 
