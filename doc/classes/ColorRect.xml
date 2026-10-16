@@ -7,7 +7,7 @@
 		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using a [Panel] instead.
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Dodge The Creeps Demo">https://store.godotengine.org/asset/godot-foundation/dodge-the-creeps-demo/</link>
 	</tutorials>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
