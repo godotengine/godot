@@ -66,6 +66,240 @@ void ResourceImporterStreamedTexture::_texture_reimport_normal(const Ref<Streame
 	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
 }
 
+void ResourceImporterStreamedTexture::_remap_channels(Ref<Image> &r_image, ChannelRemap p_options[4]) {
+	ERR_FAIL_COND(r_image->is_compressed());
+
+	// Currently HDR inverted remapping is not allowed.
+	bool attempted_hdr_inverted = false;
+	if (r_image->get_format() >= Image::FORMAT_RF && r_image->get_format() <= Image::FORMAT_RGBE9995) {
+		// Formats which can hold HDR data cannot be inverted the same way as unsigned normalized ones (1.0 - channel).
+		for (int i = 0; i < 4; i++) {
+			switch (p_options[i]) {
+				case REMAP_INV_R:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_R;
+					break;
+				case REMAP_INV_G:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_G;
+					break;
+				case REMAP_INV_B:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_B;
+					break;
+				case REMAP_INV_A:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_A;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	if (attempted_hdr_inverted) {
+		WARN_PRINT("Attempted to use an inverted channel remap on an HDR image. The remap has been changed to its uninverted equivalent.");
+	}
+
+	// Optimization: Set the remap from 'unused' to either 0 or 1 to avoid repeated checks in the conversion loop.
+	for (int i = 0; i < 4; i++) {
+		if (p_options[i] == REMAP_UNUSED) {
+			p_options[i] = i == 3 ? REMAP_1 : REMAP_0;
+		}
+	}
+
+	// Expand the image's channel count in the event that the current set of channels doesn't allow for the desired remap.
+	const Image::Format original_format = r_image->get_format();
+	const uint32_t channel_mask = Image::get_format_component_mask(original_format);
+
+	// Whether a channel is supported by the format itself.
+	const bool has_channel_r = channel_mask & 0x1;
+	const bool has_channel_g = channel_mask & 0x2;
+	const bool has_channel_b = channel_mask & 0x4;
+	const bool has_channel_a = channel_mask & 0x8;
+
+	// Whether a certain channel needs to be remapped.
+	const bool remap_r = p_options[0] != REMAP_R ? !(!has_channel_r && p_options[0] == REMAP_0) : false;
+	const bool remap_g = p_options[1] != REMAP_G ? !(!has_channel_g && p_options[1] == REMAP_0) : false;
+	const bool remap_b = p_options[2] != REMAP_B ? !(!has_channel_b && p_options[2] == REMAP_0) : false;
+	const bool remap_a = p_options[3] != REMAP_A ? !(!has_channel_a && p_options[3] == REMAP_1) : false;
+
+	if (!(remap_r || remap_g || remap_b || remap_a)) {
+		// Default color map, do nothing.
+		return;
+	}
+
+	// Whether a certain channel set is needed, either from the source or the remap.
+	const bool needs_rg = remap_g || has_channel_g;
+	const bool needs_rgb = remap_b || has_channel_b;
+	const bool needs_rgba = remap_a || has_channel_a;
+
+	bool could_not_expand = false;
+	switch (original_format) {
+		case Image::FORMAT_R8:
+		case Image::FORMAT_RG8:
+		case Image::FORMAT_RGB8: {
+			// Convert to either RGBA8, RGB8 or RG8.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBA8);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGB8);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RG8);
+			}
+		} break;
+		case Image::FORMAT_RH:
+		case Image::FORMAT_RGH:
+		case Image::FORMAT_RGBH: {
+			// Convert to either RGBAH, RGBH or RGH.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAH);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBH);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGH);
+			}
+		} break;
+		case Image::FORMAT_RF:
+		case Image::FORMAT_RGF:
+		case Image::FORMAT_RGBF: {
+			// Convert to either RGBAF, RGBF or RGF.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAF);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBF);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGF);
+			}
+		} break;
+		case Image::FORMAT_L8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (uniform_rgb) {
+				// Uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_LA8);
+				}
+			} else {
+				// Non-uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_RGBA8);
+				} else {
+					r_image->convert(Image::FORMAT_RGB8);
+				}
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_LA8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (!uniform_rgb) {
+				// Non-uniform RGB.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGB565: {
+			if (needs_rgba) {
+				// RGB565 doesn't have an alpha expansion, convert to RGBA8.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGBE9995: {
+			if (needs_rgba) {
+				// RGB9995 doesn't have an alpha expansion, convert to RGBAH.
+				r_image->convert(Image::FORMAT_RGBAH);
+				could_not_expand = true;
+			}
+		} break;
+
+		default: {
+		} break;
+	}
+
+	if (could_not_expand) {
+		WARN_PRINT(vformat("Unable to expand image format %s's channels (the target format does not exist), converting to %s as a fallback.",
+				Image::get_format_name(original_format), Image::get_format_name(r_image->get_format())));
+	}
+
+	// Remap the channels.
+	for (int x = 0; x < r_image->get_width(); x++) {
+		for (int y = 0; y < r_image->get_height(); y++) {
+			Color src = r_image->get_pixel(x, y);
+			Color dst;
+
+			for (int i = 0; i < 4; i++) {
+				switch (p_options[i]) {
+					case REMAP_R:
+						dst[i] = src.r;
+						break;
+					case REMAP_G:
+						dst[i] = src.g;
+						break;
+					case REMAP_B:
+						dst[i] = src.b;
+						break;
+					case REMAP_A:
+						dst[i] = src.a;
+						break;
+
+					case REMAP_INV_R:
+						dst[i] = 1.0f - src.r;
+						break;
+					case REMAP_INV_G:
+						dst[i] = 1.0f - src.g;
+						break;
+					case REMAP_INV_B:
+						dst[i] = 1.0f - src.b;
+						break;
+					case REMAP_INV_A:
+						dst[i] = 1.0f - src.a;
+						break;
+
+					case REMAP_0:
+						dst[i] = 0.0f;
+						break;
+					case REMAP_1:
+						dst[i] = 1.0f;
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			r_image->set_pixel(x, y, dst);
+		}
+	}
+}
+
+void ResourceImporterStreamedTexture::_clamp_hdr_exposure(Ref<Image> &r_image) {
+	// Clamp HDR exposure following Filament's tonemapping formula.
+	// This can be used to reduce fireflies in environment maps or reduce the influence
+	// of the sun from an HDRI panorama on environment lighting (when a DirectionalLight3D is used instead).
+	const int height = r_image->get_height();
+	const int width = r_image->get_width();
+
+	// These values are chosen arbitrarily and seem to produce good results with 4,096 samples.
+	const float linear = 4096.0;
+	const float compressed = 16384.0;
+
+	for (int i = 0; i < width; i++) {
+		for (int j = 0; j < height; j++) {
+			const Color color = r_image->get_pixel(i, j);
+			const float luma = color.get_luminance();
+
+			Color clamped_color;
+			if (luma <= linear) {
+				clamped_color = color;
+			} else {
+				clamped_color = (color / luma) * ((linear * linear - compressed * luma) / (2 * linear - compressed - luma));
+			}
+
+			r_image->set_pixel(i, j, clamped_color);
+		}
+	}
+}
+
 String ResourceImporterStreamedTexture::get_importer_name() const {
 	return "streamed_texture_2d";
 }
@@ -89,14 +323,28 @@ void ResourceImporterStreamedTexture::get_import_options(const String &p_path, L
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/preserve_alpha_test_coverage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mipmaps/alpha_test_threshold", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"), 0.5));
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
+
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/red", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/green", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/blue", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/alpha", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 3));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_as_srgb"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/hdr_clamp_exposure"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,32768,1"), 0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "streaming/min_lod_override", PROPERTY_HINT_ENUM, "Settings,0,1,2,3,4,5,6,7,8,9,10,11,12,13"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "streaming/max_lod_override", PROPERTY_HINT_ENUM, "Settings,0,1,2,3,4,5,6,7,8,9,10,11,12,13"), 0));
 }
 
 bool ResourceImporterStreamedTexture::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option == "mipmaps/alpha_test_threshold") {
+		return p_options["mipmaps/preserve_alpha_test_coverage"];
+	}
 	return true;
 }
 
@@ -116,7 +364,9 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 
 	Image::CompressSource comp_source = srgb_friendly_pack ? Image::COMPRESS_SOURCE_SRGB : Image::COMPRESS_SOURCE_GENERIC;
 
-	err = ImageLoader::load_image(p_source_file, image);
+	// Mipmaps
+	const bool mipmaps_preserve_alpha_test_coverage = p_options["mipmaps/preserve_alpha_test_coverage"];
+	const float mipmaps_alpha_test_threshold = p_options["mipmaps/alpha_test_threshold"];
 
 	// Roughness.
 	const int roughness = p_options["roughness/mode"];
@@ -128,6 +378,30 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 	const bool detect_normal = normal == 0; // Normal is set to Detect
 	const bool force_normal = normal == 1; // Normal is set to Enable
 
+	// Processing.
+	const int remap_r = p_options["process/channel_remap/red"];
+	const int remap_g = p_options["process/channel_remap/green"];
+	const int remap_b = p_options["process/channel_remap/blue"];
+	const int remap_a = p_options["process/channel_remap/alpha"];
+
+	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
+	int size_limit = p_options["process/size_limit"];
+
+	bool using_fallback_size_limit = false;
+	if (size_limit == 0) {
+		using_fallback_size_limit = true;
+		// If no size limit is defined, use a fallback size limit to prevent textures from looking incorrect or failing to import.
+		// As of June 2024, no GPU can correctly display a texture larger than 32768 pixels on either axis.
+		size_limit = 32768;
+	}
+
+	// Parse import options.
+	int32_t loader_flags = ImageFormatLoader::FLAG_NONE;
+	if (hdr_as_srgb) {
+		loader_flags |= ImageFormatLoader::FLAG_FORCE_LINEAR;
+	}
+
 	if (detect_normal || force_normal) {
 		save_flags |= StreamedTexture2D::FORMAT_BIT_DETECT_NORMAL;
 	}
@@ -138,6 +412,51 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 
 	if (force_normal) {
 		comp_source = Image::COMPRESS_SOURCE_NORMAL;
+	}
+
+	err = ImageLoader::load_image(p_source_file, image, nullptr, loader_flags);
+
+	{
+		ChannelRemap remaps[4] = {
+			(ChannelRemap)remap_r,
+			(ChannelRemap)remap_g,
+			(ChannelRemap)remap_b,
+			(ChannelRemap)remap_a,
+		};
+
+		_remap_channels(image, remaps);
+	}
+
+	// Clamp HDR exposure.
+	if (hdr_clamp_exposure) {
+		_clamp_hdr_exposure(image);
+	}
+
+	// Apply the size limit.
+	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
+		if (image->get_width() >= image->get_height()) {
+			int new_width = size_limit;
+			int new_height = image->get_height() * new_width / image->get_width();
+
+			if (using_fallback_size_limit) {
+				// Only warn if downsizing occurred when the user did not explicitly request it.
+				WARN_PRINT(vformat("%s: Texture was downsized on import as its width (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, image->get_width(), size_limit));
+			}
+			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+		} else {
+			int new_height = size_limit;
+			int new_width = image->get_width() * new_height / image->get_height();
+
+			if (using_fallback_size_limit) {
+				// Only warn if downsizing occurred when the user did not explicitly request it.
+				WARN_PRINT(vformat("%s: Texture was downsized on import as its height (%d pixels) exceeded the importable size limit (%d pixels).", p_source_file, image->get_height(), size_limit));
+			}
+			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+		}
+
+		if (normal == 1) {
+			image->normalize();
+		}
 	}
 
 	// Load the normal image.
@@ -152,7 +471,7 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 	}
 
 	if (!image->has_mipmaps() || force_normal) {
-		image->generate_mipmaps(force_normal);
+		image->generate_mipmaps(force_normal, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 	}
 
 	// Generate roughness mipmaps from normal texture.
