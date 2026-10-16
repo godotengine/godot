@@ -30,11 +30,14 @@
 
 #include "image_loader_jxl.h"
 
+#include "jxl_parallel_runner.h"
+
 #include <jxl/cms.h>
 #include <jxl/decode.h>
 
 static Error _jxl_decode(Image *p_image, JxlDecoder *p_dec, const uint8_t *p_buffer, size_t p_buffer_len, bool p_force_linear) {
 	ERR_FAIL_COND_V(JxlDecoderSetCms(p_dec, *JxlGetDefaultCms()) != JXL_DEC_SUCCESS, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V(JxlDecoderSetParallelRunner(p_dec, jxl_parallel_runner, nullptr) != JXL_DEC_SUCCESS, ERR_CANT_OPEN);
 	ERR_FAIL_COND_V(JxlDecoderSubscribeEvents(p_dec, JXL_DEC_BASIC_INFO | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS, ERR_CANT_OPEN);
 	ERR_FAIL_COND_V(JxlDecoderSetInput(p_dec, p_buffer, p_buffer_len) != JXL_DEC_SUCCESS, ERR_FILE_CORRUPT);
 	JxlDecoderCloseInput(p_dec);
