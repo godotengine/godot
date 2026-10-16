@@ -1,14 +1,18 @@
 #!/usr/bin/env python
+
+import os
+import sys
+
+# Avoid generating __pycache__ in-tree.
+sys.pycache_prefix = os.path.abspath("bin/__scons_pycache__")
+
 from misc.utility.scons_hints import *
 
 EnsureSConsVersion(4, 4)
 EnsurePythonVersion(3, 9)
 
-# System
 import glob
-import os
 import pickle
-import sys
 from collections import OrderedDict
 from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
