@@ -261,6 +261,10 @@ StringName ConnectDialog::generate_method_callback_name(Object *p_source, const 
 	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
 		char32_t c = node_name[i];
 		if ((i == 0 && !is_unicode_identifier_start(c)) || (i > 0 && !is_unicode_identifier_continue(c))) {
+			if (i == 0 && is_digit(c)) {
+				// Don't replace digits at the beginning.
+				continue;
+			}
 			if (c == ' ') {
 				// Replace spaces with underlines.
 				c = '_';
@@ -292,7 +296,12 @@ StringName ConnectDialog::generate_method_callback_name(Object *p_source, const 
 		dst_method = String(GLOBAL_GET("editor/naming/default_signal_callback_name")).format(subst);
 	}
 
-	return dst_method;
+	int counter = 0;
+	while (is_unicode_identifier_start(dst_method[counter])) {
+		counter++;
+	}
+
+	return dst_method.substr(counter);
 }
 
 void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
