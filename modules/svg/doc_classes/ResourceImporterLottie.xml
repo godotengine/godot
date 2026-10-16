@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterLottie" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Import a Lottie animation as a SpriteFrames.
+	</brief_description>
+	<description>
+		This imports a Lottie animation to a [SpriteFrames], supports Lottie JSON format.
+		[b]Note:[/b] This importer only recognizes files with [code].lot[/code] extension. You have to rename Lottie JSON files extension to [code].lot[/code] to import them.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="lottie/columns" type="int" setter="" getter="" default="0">
+			The number of columns of the sprite sheet. If it is [code]0[/code], the number of columns will be automatically calculated to be close to the number of rows.
+		</member>
+		<member name="lottie/frame_begin" type="float" setter="" getter="" default="0">
+			The start of the Lottie animation in the range [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="lottie/frame_end" type="float" setter="" getter="" default="1">
+			The end of the Lottie animation in the range [code]0.0[/code] to [code]1.0[/code]. This value will be clamped to be at least [member lottie/frame_begin].
+		</member>
+		<member name="lottie/frame_rate" type="float" setter="" getter="" default="30">
+			The frame rate Lottie animation should be rendered at. Higher values result in more sprites in the sprite sheet.
+		</member>
+		<member name="lottie/image_handling" type="int" setter="" getter="" default="0">
+			- Embed as Lossless: keeps the textures embedded in the imported scene with Lossless compression.
+			- Embed as Basis Universal: keeps the textures embedded in the imported scene with Basis Universal compression.
+			- Extract: extracts the texture to external images, resulting in smaller file sizes and more control over import options.
+		</member>
+		<member name="lottie/size_limit" type="int" setter="" getter="" default="4096">
+			If greater than [code]0[/code], the size of the rendered texture will be limited to less than or equal to this value. Otherwise, the size of the texture is unlimited and follows the original size and frame count.
+		</member>
+		<member name="lottie/size_scale" type="float" setter="" getter="" default="1.0">
+			The resolution scale the Lottie should be rendered at, with [code]1.0[/code] being the original size. Higher values result in a larger texture, but it won't exceed the [member lottie/size_limit].
+		</member>
+	</members>
+</class>
