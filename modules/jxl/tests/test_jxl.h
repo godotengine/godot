@@ -278,6 +278,13 @@ TEST_CASE("[JXL] Lossy save") {
 	CHECK_FALSE(image->save_jxl_to_buffer(true, 1.0f).is_empty());
 	CHECK_FALSE(hdr->save_jxl_to_buffer(true, 1.0f).is_empty());
 
+	// Bright HDR values can overflow to infinity in half float.
+	Ref<Image> overflow = make_gradient(32, 32, Image::FORMAT_RGBH);
+	overflow->set_pixel(5, 5, Color(INFINITY, 1.0f, 0.5f));
+	Ref<Image> overflow_decoded;
+	overflow_decoded.instantiate();
+	CHECK(overflow_decoded->load_jxl_from_buffer(overflow->save_jxl_to_buffer(true, 0.9f)) == OK);
+
 	ERR_PRINT_OFF;
 	CHECK(image->save_jxl_to_buffer(true, 1.5f).is_empty());
 	ERR_PRINT_ON;

@@ -38,6 +38,25 @@
 
 #include <jxl/encode.h>
 
+// Replaces infinity with the largest finite value and NaN with 0.
+static void _replace_non_finite(Vector<uint8_t> &r_data, JxlDataType p_type) {
+	if (p_type == JXL_TYPE_FLOAT) {
+		uint32_t *samples = reinterpret_cast<uint32_t *>(r_data.ptrw());
+		for (int64_t i = 0; i < r_data.size() / 4; i++) {
+			if ((samples[i] & 0x7f800000) == 0x7f800000) {
+				samples[i] = (samples[i] & 0x007fffff) ? 0 : (samples[i] & 0x80000000) | 0x7f7fffff;
+			}
+		}
+	} else if (p_type == JXL_TYPE_FLOAT16) {
+		uint16_t *samples = reinterpret_cast<uint16_t *>(r_data.ptrw());
+		for (int64_t i = 0; i < r_data.size() / 2; i++) {
+			if ((samples[i] & 0x7c00) == 0x7c00) {
+				samples[i] = (samples[i] & 0x03ff) ? 0 : (samples[i] & 0x8000) | 0x7bff;
+			}
+		}
+	}
+}
+
 static bool _has_mixed_sign_channel(const Vector<uint8_t> &p_data, uint32_t p_channels) {
 	const uint32_t *samples = reinterpret_cast<const uint32_t *>(p_data.ptr());
 	const int64_t count = p_data.size() / sizeof(uint32_t);
@@ -143,8 +162,11 @@ static Vector<uint8_t> _jxl_encode(JxlEncoder *p_enc, const Ref<Image> &p_image,
 		ERR_FAIL_COND_V(JxlEncoderSetFrameDistance(settings, distance) != JXL_ENC_SUCCESS, Vector<uint8_t>());
 	}
 
-	const Vector<uint8_t> data = img->get_data();
-	if (!p_lossy) {
+	Vector<uint8_t> data = img->get_data();
+	if (p_lossy) {
+		// libjxl fails on infinite or NaN values when encoding lossy.
+		_replace_non_finite(data, format.data_type);
+	} else {
 		ERR_FAIL_COND_V(JxlEncoderSetFrameLossless(settings, JXL_TRUE) != JXL_ENC_SUCCESS, Vector<uint8_t>());
 		// libjxl fails on float channels with both negative and positive values unless prediction is off.
 		if (format.data_type == JXL_TYPE_FLOAT && _has_mixed_sign_channel(data, format.num_channels)) {
