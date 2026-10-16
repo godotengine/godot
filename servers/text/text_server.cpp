@@ -480,7 +480,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_has_visible_chars", "shaped"), &TextServer::shaped_text_has_visible_chars);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs", "shaped"), &TextServer::_shaped_text_get_glyphs_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_glyphs_ptr", "shaped"), &TextServer::_shaped_text_get_glyphs_gde_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_sort_logical", "shaped"), &TextServer::_shaped_text_sort_logical_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_sort_logical_ptr", "shaped"), &TextServer::_shaped_text_sort_logical_gde_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_glyph_count", "shaped"), &TextServer::shaped_text_get_glyph_count);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_get_range", "shaped"), &TextServer::shaped_text_get_range);
@@ -491,6 +493,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_text_get_trim_pos", "shaped"), &TextServer::shaped_text_get_trim_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_pos", "shaped"), &TextServer::shaped_text_get_ellipsis_pos);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyphs", "shaped"), &TextServer::_shaped_text_get_ellipsis_glyphs_wrapper);
+	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyphs_ptr", "shaped"), &TextServer::_shaped_text_get_ellipsis_glyphs_gde_wrapper);
 	ClassDB::bind_method(D_METHOD("shaped_text_get_ellipsis_glyph_count", "shaped"), &TextServer::shaped_text_get_ellipsis_glyph_count);
 
 	ClassDB::bind_method(D_METHOD("shaped_text_overrun_trim_to_width", "shaped", "width", "overrun_trim_flags"), &TextServer::shaped_text_overrun_trim_to_width, DEFVAL(0), DEFVAL(OVERRUN_NO_TRIM));
@@ -2379,6 +2382,18 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 	}
 
 	return ret;
+}
+
+GDExtensionPtr<const Glyph> TextServer::_shaped_text_get_glyphs_gde_wrapper(const RID &p_shaped) const {
+	return GDExtensionPtr(shaped_text_get_glyphs(p_shaped));
+}
+
+GDExtensionPtr<const Glyph> TextServer::_shaped_text_sort_logical_gde_wrapper(const RID &p_shaped) {
+	return GDExtensionPtr(shaped_text_sort_logical(p_shaped));
+}
+
+GDExtensionPtr<const Glyph> TextServer::_shaped_text_get_ellipsis_glyphs_gde_wrapper(const RID &p_shaped) const {
+	return GDExtensionPtr(shaped_text_get_ellipsis_glyphs(p_shaped));
 }
 
 bool TextServer::is_valid_identifier(const String &p_string) const {
