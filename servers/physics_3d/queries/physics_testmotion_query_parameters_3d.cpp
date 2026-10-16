@@ -107,3 +107,7 @@ void PhysicsTestMotionParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude_objects"), "set_exclude_objects", "get_exclude_objects");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recovery_as_collision"), "set_recovery_as_collision_enabled", "is_recovery_as_collision_enabled");
 }
+
+PhysicsTestMotionParameters3D::PhysicsTestMotionParameters3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsTestMotionParameters3D);
+}
