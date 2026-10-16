@@ -527,6 +527,10 @@ void RigidBody2D::apply_impulse(const Vector2 &p_impulse, const Vector2 &p_posit
 	PhysicsServer2D::get_singleton()->body_apply_impulse(get_rid(), p_impulse, p_position);
 }
 
+void RigidBody2D::apply_impulse_at_position(const Vector2 &p_impulse, const Vector2 &p_global_position) {
+	PhysicsServer2D::get_singleton()->body_apply_impulse_at_position(get_rid(), p_impulse, p_global_position);
+}
+
 void RigidBody2D::apply_torque_impulse(real_t p_torque) {
 	PhysicsServer2D::get_singleton()->body_apply_torque_impulse(get_rid(), p_torque);
 }
@@ -537,6 +541,10 @@ void RigidBody2D::apply_central_force(const Vector2 &p_force) {
 
 void RigidBody2D::apply_force(const Vector2 &p_force, const Vector2 &p_position) {
 	PhysicsServer2D::get_singleton()->body_apply_force(get_rid(), p_force, p_position);
+}
+
+void RigidBody2D::apply_force_at_position(const Vector2 &p_force, const Vector2 &p_global_position) {
+	PhysicsServer2D::get_singleton()->body_apply_force_at_position(get_rid(), p_force, p_global_position);
 }
 
 void RigidBody2D::apply_torque(real_t p_torque) {
@@ -715,10 +723,12 @@ void RigidBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody2D::set_axis_velocity);
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody2D::apply_central_impulse, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_impulse", "impulse", "position"), &RigidBody2D::apply_impulse, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_impulse_at_position", "impulse", "global_position"), &RigidBody2D::apply_impulse_at_position, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_torque_impulse", "torque"), &RigidBody2D::apply_torque_impulse);
 
 	ClassDB::bind_method(D_METHOD("apply_central_force", "force"), &RigidBody2D::apply_central_force);
 	ClassDB::bind_method(D_METHOD("apply_force", "force", "position"), &RigidBody2D::apply_force, Vector2());
+	ClassDB::bind_method(D_METHOD("apply_force_at_position", "force", "global_position"), &RigidBody2D::apply_force_at_position, Vector2());
 	ClassDB::bind_method(D_METHOD("apply_torque", "torque"), &RigidBody2D::apply_torque);
 
 	ClassDB::bind_method(D_METHOD("add_constant_central_force", "force"), &RigidBody2D::add_constant_central_force);
