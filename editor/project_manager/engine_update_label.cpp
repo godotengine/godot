@@ -52,7 +52,7 @@ void EngineUpdateLabel::_check_update() {
 void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	if (p_result != OK) {
 		_set_status(UpdateStatus::ERROR);
-		_set_message(TTRC("Failed to check for updates. Error: %d."), theme_cache.error_color, p_result);
+		_set_message(TTRC("Failed to check for updates. Error: %s."), theme_cache.error_color, _http_result_enum_string(p_result));
 		return;
 	}
 
@@ -256,6 +256,23 @@ EngineUpdateLabel::VersionType EngineUpdateLabel::_get_version_type(const String
 String EngineUpdateLabel::_extract_sub_string(const String &p_line) const {
 	int j = p_line.find_char('"') + 1;
 	return p_line.substr(j, p_line.find_char('"', j) - j);
+}
+
+String EngineUpdateLabel::_http_result_enum_string(int p_constant) const {
+	String fallback = itos(p_constant);
+
+	const GDType::Member *member = HTTPRequest::get_gdtype_static().members(true).getptr(SNAME("Result"));
+
+	ERR_FAIL_NULL_V(member, fallback);
+	ERR_FAIL_COND_V(member->type != GDType::Member::Type::ENUM, fallback);
+
+	for (const KeyValue<StringName, int64_t> &E : member->payload.enum_info->values) {
+		if (E.value == p_constant) {
+			return E.key.string().trim_prefix("RESULT_");
+		}
+	}
+
+	return fallback;
 }
 
 void EngineUpdateLabel::_notification(int p_what) {
