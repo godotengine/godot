@@ -183,6 +183,7 @@ public:
 	void remove_shape(GodotShape2D *p_shape) override;
 	void remove_shape(int p_index);
 
+	virtual void refresh_pair(GodotCollisionObject2D *p_source) = 0;
 	virtual void set_space(GodotSpace2D *p_space) = 0;
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
