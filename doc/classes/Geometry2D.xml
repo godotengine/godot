@@ -245,6 +245,16 @@
 				Given the 2D segment ([param segment_from], [param segment_to]), returns the position on the segment (as a number between 0 and 1) at which the segment hits the circle that is located at position [param circle_position] and has radius [param circle_radius]. If the segment does not intersect the circle, -1 is returned (this is also the case if the line extending the segment would intersect the circle, but the segment does not).
 			</description>
 		</method>
+		<method name="segment_intersects_rect">
+			<return type="bool" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
+			<param index="2" name="rect" type="Rect2" />
+			<description>
+				Returns [code]true[/code] if the 2D segment ([param from], [param to]) intersects the given [param rect], otherwise returns [code]false[/code].
+				This method checks if either endpoint of the segment is inside the rectangle, or if the segment crosses any of the rectangle's four edges.
+			</description>
+		</method>
 		<method name="segment_intersects_segment">
 			<return type="Variant" />
 			<param index="0" name="from_a" type="Vector2" />
