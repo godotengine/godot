@@ -30,8 +30,11 @@
 
 #include "refcounted_view.h"
 
+#include "shared_controls.h"
+
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
+#include "editor/gui/tree_sort_and_filter_line_edit.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
