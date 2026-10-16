@@ -30,7 +30,6 @@
 
 #include "tts_driver_sapi.h"
 
-#include "core/object/callable_mp.h"
 #include "servers/display/display_server.h"
 
 TTSDriverSAPI *TTSDriverSAPI::singleton = nullptr;
