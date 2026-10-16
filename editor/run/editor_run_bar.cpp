@@ -434,17 +434,11 @@ void EditorRunBar::play_current_scene(bool p_reload, const Vector<String> &p_pla
 		return;
 	}
 
-	String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
-
 	EditorNode::get_singleton()->save_default_environment();
 	stop_playing();
 
 	current_mode = RunMode::RUN_CURRENT;
-	if (p_reload) {
-		_run_scene(last_current_scene, p_play_args);
-	} else {
-		_run_scene("", p_play_args);
-	}
+	_run_scene("", p_play_args);
 }
 
 void EditorRunBar::play_custom_scene(const String &p_custom, const Vector<String> &p_play_args) {
