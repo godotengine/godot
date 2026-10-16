@@ -3591,6 +3591,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (focused_node_id.is_valid() && get_selected_count() > 0 && times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0) {
 				Node *focused_node = ObjectDB::get_instance<Node>(focused_node_id);
 				if (focused_node) {
+					if (previewing_camera && focused_node->is_class("Camera3D")) {
+						times_focused_consecutively = 0;
+						return;
+					}
 					follow_mode->set_text(vformat(TTR("Following %s"), focused_node->get_name()));
 					follow_mode->set_button_icon(get_editor_theme_icon(focused_node->get_class()));
 					follow_mode->show();
@@ -5395,6 +5399,11 @@ void Node3DEditorViewport::focus_selection() {
 	focused_node_id = ObjectID();
 	if (!selection.is_empty()) {
 		focused_node_id = selection.front()->get()->get_instance_id();
+		Node *focused_node = ObjectDB::get_instance<Node>(focused_node_id);
+		if (previewing_camera && focused_node && focused_node->is_class("Camera3D")) {
+			times_focused_consecutively = 0;
+			return;
+		}
 	}
 
 	for (Node *node : selection) {
@@ -5443,6 +5452,11 @@ void Node3DEditorViewport::focus_aabb() {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	if (!selection.is_empty()) {
 		focused_node_id = selection.front()->get()->get_instance_id();
+		Node *focused_node = ObjectDB::get_instance<Node>(focused_node_id);
+		if (previewing_camera && focused_node && focused_node->is_class("Camera3D")) {
+			times_focused_consecutively = 0;
+			return;
+		}
 	}
 
 	LocalVector<Node *> stack;
