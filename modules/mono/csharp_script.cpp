@@ -2349,6 +2349,14 @@ void CSharpScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 	p_properties->push_back(PropertyInfo(Variant::STRING, SNAME("script/source"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
+#ifdef TOOLS_ENABLED
+void CSharpScript::_resource_path_changed() {
+	// If the script changed its path, update the exports.
+	exports_invalidated = true;
+	_update_exports();
+}
+#endif
+
 void CSharpScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
 }
