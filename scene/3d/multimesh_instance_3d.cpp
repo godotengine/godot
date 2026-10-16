@@ -74,6 +74,7 @@ void MultiMeshInstance3D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	} else {
 		set_base(RID());
 	}
+	update_configuration_warnings();
 }
 
 Ref<MultiMesh> MultiMeshInstance3D::get_multimesh() const {
@@ -145,8 +146,13 @@ void MultiMeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh
 }
 #endif // NAVIGATION_3D_DISABLED
 
-MultiMeshInstance3D::MultiMeshInstance3D() {
+PackedStringArray MultiMeshInstance3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
+	if (multimesh.is_null()) {
+		warnings.push_back(RTR("MultiMeshInstance3D requires a MultiMesh to render anything. Please add a MultiMesh resource for it!"));
+	}
+	return warnings;
 }
 
-MultiMeshInstance3D::~MultiMeshInstance3D() {
+MultiMeshInstance3D::MultiMeshInstance3D() {
 }
