@@ -230,6 +230,10 @@ AccessibilityServer *AccessibilityServer::create(int p_index, Error &r_error) {
 	return server_create_functions[p_index].create_function(r_error);
 }
 
+void AccessibilityServer::reset() {
+	server_create_count = 1;
+}
+
 void AccessibilityServer::register_create_function(const char *p_name, CreateFunction p_function) {
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
 	// Dummy server is always last
@@ -253,5 +257,6 @@ AccessibilityServer::AccessibilityServer() {
 }
 
 AccessibilityServer::~AccessibilityServer() {
+	reset();
 	singleton = nullptr;
 }
