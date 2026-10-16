@@ -1983,6 +1983,12 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 					old_anim->copy_track(i, anim);
 				}
 			}
+			for (const StringName marker_name : old_anim->get_marker_names()) {
+				if (!anim->has_marker(marker_name)) {
+					anim->add_marker(marker_name, old_anim->get_marker_time(marker_name));
+					anim->set_marker_color(marker_name, old_anim->get_marker_color(marker_name));
+				}
+			}
 			anim->set_loop_mode(old_anim->get_loop_mode());
 		}
 	}
