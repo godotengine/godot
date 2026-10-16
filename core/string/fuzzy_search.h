@@ -112,7 +112,8 @@ class FuzzySearch : public RefCounted {
 	bool case_sensitive = false;
 	bool filter_low_scores = true;
 	float filter_factor = 0.1f;
-	float filter_cutoff = 30.0f;
+	float filter_cutoff_max = 30.0f;
+	float filter_cutoff_min = -3.0f;
 
 	Vector<FuzzySearchToken> _get_tokens(const String &p_query) const;
 	void _sort_and_filter(Vector<Ref<FuzzySearchMatch>> &p_results) const;
@@ -156,8 +157,11 @@ public:
 	}
 	float get_filter_factor() const { return filter_factor; }
 
-	void set_filter_cutoff(float p_filter_cutoff) { filter_cutoff = p_filter_cutoff; }
-	float get_filter_cutoff() const { return filter_cutoff; }
+	void set_filter_cutoff_max(float p_filter_cutoff_max) { filter_cutoff_max = p_filter_cutoff_max; }
+	float get_filter_cutoff_max() const { return filter_cutoff_max; }
+
+	void set_filter_cutoff_min(float p_filter_cutoff_min) { filter_cutoff_min = p_filter_cutoff_min; }
+	float get_filter_cutoff_min() const { return filter_cutoff_min; }
 
 	Ref<FuzzySearchMatch> search(const String &p_query, const String &p_target) const;
 	Vector<Ref<FuzzySearchMatch>> search_all(const String &p_query, const PackedStringArray &p_targets) const;
