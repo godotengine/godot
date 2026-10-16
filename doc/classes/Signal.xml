@@ -193,6 +193,12 @@
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 			</description>
 		</method>
+		<method name="disconnect_all">
+			<return type="void" />
+			<description>
+				Disconnects all emitters from this signal. If no connection exists, generates an error. Use [method is_connected] to make sure that any connection exists.
+			</description>
+		</method>
 		<method name="disconnect">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
