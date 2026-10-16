@@ -47,6 +47,7 @@ protected:
 	GDVIRTUAL2RC_REQUIRED(TypedArray<Dictionary>, _get_import_options, String, int)
 	GDVIRTUAL0RC_REQUIRED(String, _get_save_extension)
 	GDVIRTUAL0RC_REQUIRED(String, _get_resource_type)
+	GDVIRTUAL0RC(bool, _get_preserves_source_file)
 	GDVIRTUAL0RC(float, _get_priority)
 	GDVIRTUAL0RC(int, _get_import_order)
 	GDVIRTUAL0RC(int, _get_format_version)
@@ -64,6 +65,7 @@ public:
 	virtual int get_preset_count() const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
+	virtual bool get_preserves_source_file() const override;
 	virtual float get_priority() const override;
 	virtual int get_import_order() const override;
 	virtual int get_format_version() const override;
