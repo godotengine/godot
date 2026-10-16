@@ -133,16 +133,16 @@ public:
 	RegEx keyword_csharp_mastersync = RegEx("\\[MasterSync(Attribute)?(\\(\\))?\\]");
 
 	// Colors.
-	LocalVector<Ref<RegEx>> color_regexes;
+	LocalVector<RegEx> color_regexes;
 	LocalVector<String> color_renamed;
 
 	RegEx color_hexadecimal_short_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{1})([a-fA-F0-9]{3})\\b");
 	RegEx color_hexadecimal_full_constructor = RegEx("Color\\(\"#?([a-fA-F0-9]{2})([a-fA-F0-9]{6})\\b");
 
 	// Classes.
-	LocalVector<Ref<RegEx>> class_tscn_regexes;
-	LocalVector<Ref<RegEx>> class_gd_regexes;
-	LocalVector<Ref<RegEx>> class_shader_regexes;
+	LocalVector<RegEx> class_tscn_regexes;
+	LocalVector<RegEx> class_gd_regexes;
+	LocalVector<RegEx> class_shader_regexes;
 
 	// Keycode.
 	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
@@ -159,7 +159,7 @@ public:
 	// Animation suffixes.
 	RegEx animation_suffix = RegEx("([\"'])([a-zA-Z0-9_-]+)(-(?:loop|cycle))([\"'])");
 
-	LocalVector<Ref<RegEx>> class_regexes;
+	LocalVector<RegEx> class_regexes;
 
 	RegEx class_temp_tscn = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
 	RegEx class_temp_gd = RegEx("\\bTEMP_RENAMED_CLASS.gd\\b");
@@ -170,81 +170,81 @@ public:
 	LocalVector<String> class_temp_shader_renames;
 
 	// Common.
-	LocalVector<Ref<RegEx>> enum_regexes;
-	LocalVector<Ref<RegEx>> gdscript_function_regexes;
-	LocalVector<Ref<RegEx>> project_settings_regexes;
-	LocalVector<Ref<RegEx>> project_godot_regexes;
-	LocalVector<Ref<RegEx>> input_map_regexes;
-	LocalVector<Ref<RegEx>> gdscript_properties_regexes;
-	LocalVector<Ref<RegEx>> gdscript_signals_regexes;
-	LocalVector<Ref<RegEx>> shaders_regexes;
-	LocalVector<Ref<RegEx>> builtin_types_regexes;
-	LocalVector<Ref<RegEx>> theme_override_regexes;
-	LocalVector<Ref<RegEx>> csharp_function_regexes;
-	LocalVector<Ref<RegEx>> csharp_properties_regexes;
-	LocalVector<Ref<RegEx>> csharp_signal_regexes;
+	LocalVector<RegEx> enum_regexes;
+	LocalVector<RegEx> gdscript_function_regexes;
+	LocalVector<RegEx> project_settings_regexes;
+	LocalVector<RegEx> project_godot_regexes;
+	LocalVector<RegEx> input_map_regexes;
+	LocalVector<RegEx> gdscript_properties_regexes;
+	LocalVector<RegEx> gdscript_signals_regexes;
+	LocalVector<RegEx> shaders_regexes;
+	LocalVector<RegEx> builtin_types_regexes;
+	LocalVector<RegEx> theme_override_regexes;
+	LocalVector<RegEx> csharp_function_regexes;
+	LocalVector<RegEx> csharp_properties_regexes;
+	LocalVector<RegEx> csharp_signal_regexes;
 
 	RegExContainer() {
 		// Common.
 		{
 			// Enum.
 			for (unsigned int current_index = 0; RenamesMap3To4::enum_renames[current_index][0]; current_index++) {
-				enum_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::enum_renames[current_index][0] + "\\b")));
+				enum_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::enum_renames[current_index][0] + "\\b"));
 			}
 			// GDScript functions.
 			for (unsigned int current_index = 0; RenamesMap3To4::gdscript_function_renames[current_index][0]; current_index++) {
-				gdscript_function_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::gdscript_function_renames[current_index][0] + "\\b")));
+				gdscript_function_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::gdscript_function_renames[current_index][0] + "\\b"));
 			}
 			// Project Settings in scripts.
 			for (unsigned int current_index = 0; RenamesMap3To4::project_settings_renames[current_index][0]; current_index++) {
-				project_settings_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_settings_renames[current_index][0] + "\\b")));
+				project_settings_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::project_settings_renames[current_index][0] + "\\b"));
 			}
 			// Project Settings in project.godot.
 			for (unsigned int current_index = 0; RenamesMap3To4::project_godot_renames[current_index][0]; current_index++) {
-				project_godot_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_godot_renames[current_index][0] + "\\b")));
+				project_godot_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::project_godot_renames[current_index][0] + "\\b"));
 			}
 			// Input Map.
 			for (unsigned int current_index = 0; RenamesMap3To4::input_map_renames[current_index][0]; current_index++) {
-				input_map_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::input_map_renames[current_index][0] + "\\b")));
+				input_map_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::input_map_renames[current_index][0] + "\\b"));
 			}
 			// GDScript properties.
 			for (unsigned int current_index = 0; RenamesMap3To4::gdscript_properties_renames[current_index][0]; current_index++) {
-				gdscript_properties_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::gdscript_properties_renames[current_index][0] + "\\b")));
+				gdscript_properties_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::gdscript_properties_renames[current_index][0] + "\\b"));
 			}
 			// GDScript Signals.
 			for (unsigned int current_index = 0; RenamesMap3To4::gdscript_signals_renames[current_index][0]; current_index++) {
-				gdscript_signals_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::gdscript_signals_renames[current_index][0] + "\\b")));
+				gdscript_signals_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::gdscript_signals_renames[current_index][0] + "\\b"));
 			}
 			// Shaders.
 			for (unsigned int current_index = 0; RenamesMap3To4::shaders_renames[current_index][0]; current_index++) {
-				shaders_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::shaders_renames[current_index][0] + "\\b")));
+				shaders_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::shaders_renames[current_index][0] + "\\b"));
 			}
 			// Builtin types.
 			for (unsigned int current_index = 0; RenamesMap3To4::builtin_types_renames[current_index][0]; current_index++) {
-				builtin_types_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::builtin_types_renames[current_index][0] + "\\b")));
+				builtin_types_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::builtin_types_renames[current_index][0] + "\\b"));
 			}
 			// Theme overrides.
 			for (unsigned int current_index = 0; RenamesMap3To4::theme_override_renames[current_index][0]; current_index++) {
-				theme_override_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::theme_override_renames[current_index][0] + "\\b")));
+				theme_override_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::theme_override_renames[current_index][0] + "\\b"));
 			}
 			// CSharp function renames.
 			for (unsigned int current_index = 0; RenamesMap3To4::csharp_function_renames[current_index][0]; current_index++) {
-				csharp_function_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::csharp_function_renames[current_index][0] + "\\b")));
+				csharp_function_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::csharp_function_renames[current_index][0] + "\\b"));
 			}
 			// CSharp properties renames.
 			for (unsigned int current_index = 0; RenamesMap3To4::csharp_properties_renames[current_index][0]; current_index++) {
-				csharp_properties_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::csharp_properties_renames[current_index][0] + "\\b")));
+				csharp_properties_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::csharp_properties_renames[current_index][0] + "\\b"));
 			}
 			// CSharp signals renames.
 			for (unsigned int current_index = 0; RenamesMap3To4::csharp_signals_renames[current_index][0]; current_index++) {
-				csharp_signal_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::csharp_signals_renames[current_index][0] + "\\b")));
+				csharp_signal_regexes.push_back(RegEx(String("\\b") + RenamesMap3To4::csharp_signals_renames[current_index][0] + "\\b"));
 			}
 		}
 
 		// Colors.
 		{
 			for (unsigned int current_index = 0; RenamesMap3To4::color_renames[current_index][0]; current_index++) {
-				color_regexes.push_back(memnew(RegEx(String("\\bColor.") + RenamesMap3To4::color_renames[current_index][0] + "\\b")));
+				color_regexes.push_back(RegEx(String("\\bColor.") + RenamesMap3To4::color_renames[current_index][0] + "\\b"));
 				color_renamed.push_back(String("Color.") + RenamesMap3To4::color_renames[current_index][1]);
 			}
 		}
@@ -252,11 +252,11 @@ public:
 		{
 			for (unsigned int current_index = 0; RenamesMap3To4::class_renames[current_index][0]; current_index++) {
 				const String class_name = RenamesMap3To4::class_renames[current_index][0];
-				class_tscn_regexes.push_back(memnew(RegEx(String("\\b") + class_name + ".tscn\\b")));
-				class_gd_regexes.push_back(memnew(RegEx(String("\\b") + class_name + ".gd\\b")));
-				class_shader_regexes.push_back(memnew(RegEx(String("\\b") + class_name + ".shader\\b")));
+				class_tscn_regexes.push_back(RegEx(String("\\b") + class_name + ".tscn\\b"));
+				class_gd_regexes.push_back(RegEx(String("\\b") + class_name + ".gd\\b"));
+				class_shader_regexes.push_back(RegEx(String("\\b") + class_name + ".shader\\b"));
 
-				class_regexes.push_back(memnew(RegEx(String("\\b") + class_name + "\\b")));
+				class_regexes.push_back(RegEx(String("\\b") + class_name + "\\b"));
 
 				class_temp_tscn_renames.push_back(class_name + ".tscn");
 				class_temp_gd_renames.push_back(class_name + ".gd");
@@ -721,7 +721,7 @@ bool ProjectConverter3To4::test_conversion_with_regex(const String &name, const 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<Ref<RegEx>> &regex_cache, const String &what) {
+bool ProjectConverter3To4::test_conversion_basic(const String &name, const String &expected, const char *array[][2], LocalVector<RegEx> &regex_cache, const String &what) {
 	Vector<SourceLine> got = split_lines(name);
 
 	rename_common(array, regex_cache, got);
@@ -1419,7 +1419,7 @@ void ProjectConverter3To4::rename_colors(Vector<SourceLine> &source_lines, const
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			if (line.contains("Color.")) {
 				for (unsigned int current_index = 0; RenamesMap3To4::color_renames[current_index][0]; current_index++) {
-					line = reg_container.color_regexes[current_index]->sub(line, reg_container.color_renamed[current_index], true);
+					line = reg_container.color_regexes[current_index].sub(line, reg_container.color_renamed[current_index], true);
 				}
 			}
 		}
@@ -1451,7 +1451,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lin
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			if (line.contains("Color.")) {
 				for (unsigned int current_index = 0; RenamesMap3To4::color_renames[current_index][0]; current_index++) {
-					TypedArray<RegExMatch> reg_match = reg_container.color_regexes[current_index]->search_all(line);
+					Vector<RegExMatch> reg_match = reg_container.color_regexes[current_index].search_all(line);
 					if (reg_match.size() > 0) {
 						found_renames.append(line_formatter(current_line, RenamesMap3To4::color_renames[current_index][0], RenamesMap3To4::color_renames[current_index][1], line));
 					}
@@ -1503,13 +1503,13 @@ void ProjectConverter3To4::rename_classes(Vector<SourceLine> &source_lines, cons
 					// Renaming Spatial.tscn to TEMP_RENAMED_CLASS.tscn.
 					if (line.contains(String(RenamesMap3To4::class_renames[current_index][0]) + ".")) {
 						found_ignored_items = true;
-						line = reg_container.class_tscn_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.tscn", true);
-						line = reg_container.class_gd_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.gd", true);
-						line = reg_container.class_shader_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.shader", true);
+						line = reg_container.class_tscn_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.tscn", true);
+						line = reg_container.class_gd_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.gd", true);
+						line = reg_container.class_shader_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.shader", true);
 					}
 
 					// Causal renaming Spatial -> Node3D.
-					line = reg_container.class_regexes[current_index]->sub(line, RenamesMap3To4::class_renames[current_index][1], true);
+					line = reg_container.class_regexes[current_index].sub(line, RenamesMap3To4::class_renames[current_index][1], true);
 
 					// Restore Spatial.tscn from TEMP_RENAMED_CLASS.tscn.
 					if (found_ignored_items) {
@@ -1537,13 +1537,13 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &li
 					// Renaming Spatial.tscn to TEMP_RENAMED_CLASS.tscn.
 					if (line.contains(String(RenamesMap3To4::class_renames[current_index][0]) + ".")) {
 						found_ignored_items = true;
-						line = reg_container.class_tscn_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.tscn", true);
-						line = reg_container.class_gd_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.gd", true);
-						line = reg_container.class_shader_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.shader", true);
+						line = reg_container.class_tscn_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.tscn", true);
+						line = reg_container.class_gd_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.gd", true);
+						line = reg_container.class_shader_regexes[current_index].sub(line, "TEMP_RENAMED_CLASS.shader", true);
 					}
 
 					// Causal renaming Spatial -> Node3D.
-					TypedArray<RegExMatch> reg_match = reg_container.class_regexes[current_index]->search_all(line);
+					Vector<RegExMatch> reg_match = reg_container.class_regexes[current_index].search_all(line);
 					if (reg_match.size() > 0) {
 						found_renames.append(line_formatter(current_line, RenamesMap3To4::class_renames[current_index][0], RenamesMap3To4::class_renames[current_index][1], old_line));
 					}
@@ -2659,11 +2659,11 @@ void ProjectConverter3To4::rename_input_map_scancode(Vector<SourceLine> &source_
 
 		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
 
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				int key = strings[3].to_int();
 
 				if (key & old_spkey) {
@@ -2685,10 +2685,10 @@ void ProjectConverter3To4::rename_joypad_buttons_and_axes(Vector<SourceLine> &so
 		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			// Remap button indexes.
-			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				const String &button_index_entry = strings[0];
 				int button_index_value = strings[1].to_int();
 				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
@@ -2705,8 +2705,8 @@ void ProjectConverter3To4::rename_joypad_buttons_and_axes(Vector<SourceLine> &so
 			// Remap axes. Only L2 and R2 need remapping.
 			reg_match = reg_container.joypad_axis.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				const String &axis_entry = strings[0];
 				int axis_value = strings[1].to_int();
 				if (axis_value == 6) {
@@ -2725,10 +2725,10 @@ Vector<String> ProjectConverter3To4::check_for_rename_joypad_buttons_and_axes(Ve
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			// Remap button indexes.
-			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				const String &button_index_entry = strings[0];
 				int button_index_value = strings[1].to_int();
 				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
@@ -2744,8 +2744,8 @@ Vector<String> ProjectConverter3To4::check_for_rename_joypad_buttons_and_axes(Ve
 			// Remap axes. Only L2 and R2 need remapping.
 			reg_match = reg_container.joypad_axis.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				const String &axis_entry = strings[0];
 				int axis_value = strings[1].to_int();
 				if (axis_value == 6) {
@@ -2769,11 +2769,11 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	int current_line = 1;
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
 
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				int key = strings[3].to_int();
 
 				if (key & old_spkey) {
@@ -2796,10 +2796,10 @@ void ProjectConverter3To4::rename_animation_suffixes(Vector<SourceLine> &source_
 		}
 		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				String replacement = strings[1] + strings[2] + strings[4];
 				line = line.replace(strings[0], replacement);
 			}
@@ -2813,10 +2813,10 @@ Vector<String> ProjectConverter3To4::check_for_rename_animation_suffixes(Vector<
 
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
+			Vector<RegExMatch> reg_match = reg_container.animation_suffix.search_all(line);
 			for (int i = 0; i < reg_match.size(); ++i) {
-				Ref<RegExMatch> match = reg_match[i];
-				PackedStringArray strings = match->get_strings();
+				RegExMatch match = reg_match[i];
+				PackedStringArray strings = match.get_strings();
 				String replacement = strings[1] + strings[2] + strings[4];
 				found_renames.append(line_formatter(current_line, strings[0], replacement, line));
 			}
@@ -2850,7 +2850,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lin
 	int current_line = 1;
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg.search_all(line);
+			Vector<RegExMatch> reg_match = reg.search_all(line);
 			if (reg_match.size() > 0) {
 				found_renames.append(line_formatter(current_line, from.replace("\\.", "."), to, line)); // Without replacing it will print "\.shader" instead ".shader".
 			}
@@ -2860,7 +2860,7 @@ Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lin
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<SourceLine> &source_lines) {
+void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx> &cached_regexes, Vector<SourceLine> &source_lines) {
 	for (SourceLine &source_line : source_lines) {
 		if (source_line.is_comment) {
 			continue;
@@ -2870,14 +2870,14 @@ void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Ref
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
 				if (line.contains(array[current_index][0])) {
-					line = cached_regexes[current_index]->sub(line, array[current_index][1], true);
+					line = cached_regexes[current_index].sub(line, array[current_index][1], true);
 				}
 			}
 		}
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<Ref<RegEx>> &cached_regexes, Vector<String> &lines) {
+Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<RegEx> &cached_regexes, Vector<String> &lines) {
 	Vector<String> found_renames;
 
 	int current_line = 1;
@@ -2886,7 +2886,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[]
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
 				if (line.contains(array[current_index][0])) {
-					TypedArray<RegExMatch> reg_match = cached_regexes[current_index]->search_all(line);
+					Vector<RegExMatch> reg_match = cached_regexes[current_index].search_all(line);
 					if (reg_match.size() > 0) {
 						found_renames.append(line_formatter(current_line, array[current_index][0], array[current_index][1], line));
 					}

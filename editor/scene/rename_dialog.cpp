@@ -520,7 +520,7 @@ String RenameDialog::_postprocess(const String &subject) {
 		// snake_case to PascalCase
 
 		RegEx pattern("_+(.?)");
-		Array matches = pattern.search_all(result);
+		Vector<RegExMatch> matches = pattern.search_all(result);
 
 		// The name `_` would become empty; ignore it.
 		if (matches.size() && result != "_") {
@@ -528,7 +528,7 @@ String RenameDialog::_postprocess(const String &subject) {
 			int start = 0;
 			int end = 0;
 			for (int i = 0; i < matches.size(); ++i) {
-				start = ((Ref<RegExMatch>)matches[i])->get_start(1);
+				start = matches[i].get_start(1);
 				buffer += result.substr(end, start - end - 1);
 				buffer += result.substr(start, 1).to_upper();
 				end = start + 1;

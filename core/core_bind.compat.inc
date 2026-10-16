@@ -63,6 +63,21 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }
 
+// RegEx
+
+Ref<RegEx> RegEx::_create_from_string_bind_compat_95212(const String &p_pattern) {
+	return create_from_string(p_pattern, true);
+}
+
+Error RegEx::_compile_bind_compat_95212(const String &p_pattern) {
+	return compile(p_pattern, true);
+}
+
+void RegEx::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_static_method("RegEx", D_METHOD("create_from_string", "pattern"), &RegEx::_create_from_string_bind_compat_95212);
+	ClassDB::bind_compatibility_method(D_METHOD("compile", "pattern"), &RegEx::_compile_bind_compat_95212);
+}
+
 } // namespace CoreBind
 
 #endif // DISABLE_DEPRECATED
