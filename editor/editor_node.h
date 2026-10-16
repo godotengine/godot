@@ -1056,6 +1056,7 @@ public:
 
 	bool has_scenes_in_session();
 
+	bool is_focus_in_global_settings_context() const;
 	void undo();
 	void redo();
 
