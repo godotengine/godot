@@ -14,5 +14,8 @@
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
 		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material used to render the CSG shape.
+		</member>
 	</members>
 </class>

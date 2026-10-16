@@ -209,6 +209,8 @@ public:
 class CSGPrimitive3D : public CSGShape3D {
 	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
+	Ref<Material> material;
+
 protected:
 	bool flip_faces;
 	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
@@ -217,6 +219,9 @@ protected:
 public:
 	void set_flip_faces(bool p_invert);
 	bool get_flip_faces();
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 
 	CSGPrimitive3D();
 };
@@ -227,7 +232,6 @@ class CSGMesh3D : public CSGPrimitive3D {
 	virtual CSGBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
-	Ref<Material> material;
 
 	void _mesh_changed();
 
@@ -237,16 +241,12 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh();
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
 };
 
 class CSGSphere3D : public CSGPrimitive3D {
 	GDCLASS(CSGSphere3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
 	bool smooth_faces;
 	float radius;
 	int radial_segments;
@@ -265,9 +265,6 @@ public:
 	void set_rings(const int p_rings);
 	int get_rings() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
@@ -278,7 +275,6 @@ class CSGBox3D : public CSGPrimitive3D {
 	GDCLASS(CSGBox3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
 	Vector3 size = Vector3(1, 1, 1);
 
 protected:
@@ -292,9 +288,6 @@ public:
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
 	CSGBox3D() {}
 };
 
@@ -302,7 +295,6 @@ class CSGCylinder3D : public CSGPrimitive3D {
 	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
 	float radius;
 	float height;
 	int sides;
@@ -328,9 +320,6 @@ public:
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
-
 	CSGCylinder3D();
 };
 
@@ -338,7 +327,6 @@ class CSGTorus3D : public CSGPrimitive3D {
 	GDCLASS(CSGTorus3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush() override;
 
-	Ref<Material> material;
 	float inner_radius;
 	float outer_radius;
 	int sides;
@@ -363,9 +351,6 @@ public:
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
 
 	CSGTorus3D();
 };
@@ -395,7 +380,6 @@ private:
 	virtual CSGBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
-	Ref<Material> material;
 
 	Mode mode;
 
@@ -478,9 +462,6 @@ public:
 
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
-
-	void set_material(const Ref<Material> &p_material);
-	Ref<Material> get_material() const;
 
 	CSGPolygon3D();
 };
