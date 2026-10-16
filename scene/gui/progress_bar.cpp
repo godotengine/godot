@@ -178,8 +178,24 @@ void ProgressBar::_notification(int p_what) {
 				}
 
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
-				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
+				Vector2 text_bounds = Point2(get_size().width - (theme_cache.percentage_margin_right + theme_cache.percentage_margin_left), get_size().height - (theme_cache.percentage_margin_bottom + theme_cache.percentage_margin_top));
+				Vector2 text_pos = Point2(theme_cache.percentage_margin_left, theme_cache.percentage_margin_top);
 
+				tl.set_width(text_bounds.width);
+				tl.set_horizontal_alignment(percentage_horizontal_alignment);
+
+				switch (percentage_vertical_alignment) {
+					case VERTICAL_ALIGNMENT_FILL:
+					case VERTICAL_ALIGNMENT_TOP: {
+						//Nothing
+					} break;
+					case VERTICAL_ALIGNMENT_CENTER: {
+						text_pos.y = Math::round((text_bounds.height - tl.get_size().height) / 2);
+					} break;
+					case VERTICAL_ALIGNMENT_BOTTOM: {
+						text_pos.y = text_bounds.height - tl.get_size().height;
+					} break;
+				}
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					tl.draw_outline(get_canvas_item(), text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
@@ -220,6 +236,32 @@ void ProgressBar::set_show_percentage(bool p_visible) {
 
 bool ProgressBar::is_percentage_shown() const {
 	return show_percentage;
+}
+
+void ProgressBar::set_percentage_horizontal_alignment(HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 3);
+	if (percentage_horizontal_alignment == p_alignment) {
+		return;
+	}
+	percentage_horizontal_alignment = p_alignment;
+	queue_redraw();
+}
+
+HorizontalAlignment ProgressBar::get_percentage_horizontal_alignment() const {
+	return percentage_horizontal_alignment;
+}
+
+void ProgressBar::set_percentage_vertical_alignment(VerticalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 3);
+	if (percentage_vertical_alignment == p_alignment) {
+		return;
+	}
+	percentage_vertical_alignment = p_alignment;
+	queue_redraw();
+}
+
+VerticalAlignment ProgressBar::get_percentage_vertical_alignment() const {
+	return percentage_vertical_alignment;
 }
 
 void ProgressBar::set_indeterminate(bool p_indeterminate) {
@@ -263,6 +305,10 @@ void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
 	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
 	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
+	ClassDB::bind_method(D_METHOD("set_percentage_horizontal_alignment", "percentage_horizontal_alignment"), &ProgressBar::set_percentage_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("get_percentage_horizontal_alignment"), &ProgressBar::get_percentage_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_percentage_vertical_alignment", "percentage_vertical_alignment"), &ProgressBar::set_percentage_vertical_alignment);
+	ClassDB::bind_method(D_METHOD("get_percentage_vertical_alignment"), &ProgressBar::get_percentage_vertical_alignment);
 	ClassDB::bind_method(D_METHOD("set_indeterminate", "indeterminate"), &ProgressBar::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
@@ -273,6 +319,9 @@ void ProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
+	ADD_GROUP("Percentage Behavior", "percentage_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "percentage_horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_percentage_horizontal_alignment", "get_percentage_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "percentage_vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_percentage_vertical_alignment", "get_percentage_vertical_alignment");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
@@ -287,6 +336,10 @@ void ProgressBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ProgressBar, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_bottom);
 }
 
 ProgressBar::ProgressBar() {
