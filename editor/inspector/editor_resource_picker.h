@@ -44,6 +44,13 @@ class TreeItem;
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
+public:
+	enum ScenePreviewMode {
+		MODE_THUMBNAIL,
+		MODE_NAME,
+	};
+
+private:
 	String base_type;
 	Ref<Resource> edited_resource;
 
