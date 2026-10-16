@@ -40,4 +40,12 @@ public:
 	virtual Ref<ShaderInclude> create_new_shader_include() override;
 	virtual PackedStringArray get_language_variations() const override { return { "Shader", "ShaderInclude" }; }
 	virtual String get_file_extension(int p_variation_index) const override;
+	virtual int get_template_count(Shader::Mode p_shader_mode) const override;
+	virtual bool get_template_option(Shader::Mode p_shader_mode, int p_template_index, StringName &r_icon_name, String &r_label) const override;
+
+private:
+	enum {
+		TEMPLATE_SPATIAL_SPRITE_3D = DEFAULT_TEMPLATE_MAX,
+		TEMPLATE_SPATIAL_MAX,
+	};
 };
