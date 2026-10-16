@@ -247,7 +247,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int64_t loop_begin = base->loop_begin;
 	int64_t loop_end = base->loop_end;
 	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
+	int64_t end_limit = ((base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len) - 1;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
@@ -310,7 +310,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
 					/* bounce ping pong */
-					offset = loop_end - (offset - loop_end);
+					offset = loop_end - (offset - loop_end) - 2; // Last sample shouldn't play twice in a row.
 					increment = -increment;
 					sign *= -1;
 				} else {
@@ -618,7 +618,7 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 		uint32_t ffp = qoa_decode_header(data.ptr(), data.size(), &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
-		uint32_t samples_len = MIN(sample->qoa.desc.samples + 1, (uint32_t)QOA_FRAME_LEN);
+		uint32_t samples_len = MIN(sample->qoa.desc.samples, (uint32_t)QOA_FRAME_LEN);
 		uint32_t dec_len = sample->qoa.desc.channels * samples_len;
 		sample->qoa.dec.resize(dec_len);
 	}
@@ -1061,11 +1061,14 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		loop_end = p_options.get("edit/loop_end", 0);
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.
 		if (loop_begin < 0) {
-			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
+			loop_begin = CLAMP(loop_begin + frames + 1, 0, frames);
 		}
 		if (loop_end < 0) {
-			loop_end = CLAMP(loop_end + frames, 0, frames - 1);
+			loop_end = CLAMP(loop_end + frames + 1, 0, frames);
 		}
+		// Don't allow them to go beyond maximum frames.
+		loop_begin = MIN(loop_begin, frames);
+		loop_end = MIN(loop_end, frames);
 	}
 
 	int compression = p_options.get("compress/mode", 0);
