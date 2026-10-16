@@ -127,7 +127,7 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="TextServer.Direction" default="0">
 			Base text writing direction.
 		</member>
-		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="-1">
 			Filter flags for the texture.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
