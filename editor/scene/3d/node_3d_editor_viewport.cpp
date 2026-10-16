@@ -3887,6 +3887,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHlDarkBackground")));
 			preview_camera->set_button_icon(get_editor_theme_icon(SNAME("Camera3DDarkBackground")));
 			pilot_camera->set_button_icon(get_editor_theme_icon(SNAME("3D")));
+			// Overblown white to offset dark tint in light themes.
+			preview_camera->add_theme_color_override("checkbox_unchecked_color", Color(3, 3, 3));
+			pilot_camera->add_theme_color_override("checkbox_unchecked_color", Color(3, 3, 3));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
