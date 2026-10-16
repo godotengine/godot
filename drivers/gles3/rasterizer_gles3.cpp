@@ -94,9 +94,7 @@
 #endif
 #endif // GLAD_ENABLED || EGL_ENABLED || ANDROID_ENABLED
 
-#ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
-#endif
 
 void RasterizerGLES3::begin_frame(double frame_step) {
 	frame++;
@@ -416,11 +414,9 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 		linear_to_srgb = true;
 	}
 
-#ifdef WINDOWS_ENABLED
 	if (screen_flipped_y) {
 		flip_y = !flip_y;
 	}
-#endif
 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
@@ -495,10 +491,7 @@ void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, con
 
 	Rect2 screenrect = RenderingServerTypes::get_splash_stretched_screen_rect(p_image->get_size(), win_size, p_stretch_mode);
 
-#ifdef WINDOWS_ENABLED
-	if (!screen_flipped_y)
-#endif
-	{
+	if (!screen_flipped_y) {
 		// Flip Y.
 		screenrect.position.y = win_size.y - screenrect.position.y;
 		screenrect.size.y = -screenrect.size.y;
