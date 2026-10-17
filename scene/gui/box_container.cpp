@@ -65,6 +65,14 @@ void BoxContainer::_resort() {
 			continue;
 		}
 
+		Rect2 child_rect = c->get_rect();
+		if (vertical) {
+			child_rect.size.width = new_size.width;
+		} else {
+			child_rect.size.height = new_size.height;
+		}
+		fit_child_in_rect(c, child_rect);
+
 		Size2i min_size = c->get_bound_minimum_size().ceil();
 		Size2i desired_size = c->get_bound_desired_size().ceil();
 		Size2i max_size = c->get_combined_maximum_size().floor();
