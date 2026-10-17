@@ -51,6 +51,17 @@ int readCoordS(const char **input, Point2 &coord) {
     return 2;
 }
 
+bool matchStringS(const char **input, const char *str) {
+    const char *cur = *input;
+    while (*cur && *str && *cur == *str)
+        ++cur, ++str;
+    if (!*str) {
+        *input = cur;
+        return true;
+    }
+    return false;
+}
+
 static bool writeCoord(FILE *output, Point2 coord) {
     fprintf(output, "%.12g, %.12g", coord.x, coord.y);
     return true;
@@ -176,7 +187,7 @@ static bool readContour(T *input, Contour &output, const Point2 *first, int term
 bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
     bool locColorsSpec = false;
     output.contours.clear();
-    output.inverseYAxis = false;
+    output.setYAxisOrientation(MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION);
     Point2 p;
     int result = readCoordF(input, p);
     if (result == 2) {
@@ -187,9 +198,21 @@ bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
         int c = readCharF(input);
         if (c == '@') {
             char after = '\0';
-            if (fscanf(input, "invert-y%c", &after) != 1)
+            if (fscanf(input, "y-%c", &after) == 1 && (after == 'u' || after == 'd')) {
+                switch (after) {
+                    case 'u':
+                        output.setYAxisOrientation(Y_UPWARD);
+                        break;
+                    case 'd':
+                        output.setYAxisOrientation(Y_DOWNWARD);
+                        break;
+                }
+                if (fscanf(input, after == 'u' ? "p%c" : "own%c", &after) != 1)
+                    return feof(input) != 0;
+            } else if (fscanf(input, "invert-y%c", &after) == 1)
+                output.inverseYAxis = true;
+            else
                 return feof(input) != 0;
-            output.inverseYAxis = true;
             c = after;
             if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
                 c = readCharF(input);
@@ -206,7 +229,7 @@ bool readShapeDescription(FILE *input, Shape &output, bool *colorsSpecified) {
 bool readShapeDescription(const char *input, Shape &output, bool *colorsSpecified) {
     bool locColorsSpec = false;
     output.contours.clear();
-    output.inverseYAxis = false;
+    output.setYAxisOrientation(MSDFGEN_Y_AXIS_DEFAULT_ORIENTATION);
     Point2 p;
     int result = readCoordS(&input, p);
     if (result == 2) {
@@ -216,11 +239,14 @@ bool readShapeDescription(const char *input, Shape &output, bool *colorsSpecifie
     else {
         int c = readCharS(&input);
         if (c == '@') {
-            for (int i = 0; i < (int) sizeof("invert-y")-1; ++i)
-                if (input[i] != "invert-y"[i])
-                    return false;
-            output.inverseYAxis = true;
-            input += sizeof("invert-y")-1;
+            if (matchStringS(&input, "y-down"))
+                output.setYAxisOrientation(Y_DOWNWARD);
+            else if (matchStringS(&input, "y-up"))
+                output.setYAxisOrientation(Y_UPWARD);
+            else if (matchStringS(&input, "invert-y"))
+                output.inverseYAxis = true;
+            else
+                return false;
             c = readCharS(&input);
         }
         for (; c == '{'; c = readCharS(&input))
@@ -244,8 +270,14 @@ bool writeShapeDescription(FILE *output, const Shape &shape) {
     if (!shape.validate())
         return false;
     bool writeColors = isColored(shape);
-    if (shape.inverseYAxis)
-        fprintf(output, "@invert-y\n");
+    switch (shape.getYAxisOrientation()) {
+        case Y_UPWARD:
+            fprintf(output, "@y-up\n");
+            break;
+        case Y_DOWNWARD:
+            fprintf(output, "@y-down\n");
+            break;
+    }
     for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour) {
         fprintf(output, "{\n");
         if (!contour->edges.empty()) {

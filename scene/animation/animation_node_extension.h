@@ -36,7 +36,7 @@ class AnimationNodeExtension : public AnimationNode {
 	GDCLASS(AnimationNodeExtension, AnimationNode);
 
 public:
-	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
+	virtual NodeTimeInfo _process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only = false) override;
 
 	static bool is_looping(const PackedFloat32Array &p_node_info);
 	static double get_remaining_time(const PackedFloat32Array &p_node_info, bool p_break_loop = false);

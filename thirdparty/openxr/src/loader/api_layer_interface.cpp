@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -71,6 +71,8 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     // "Independent of elementCapacityInput or elements parameters, elementCountOutput must be a valid pointer,
     // and the function sets elementCountOutput." - 2.11
     if (nullptr == outgoing_count) {
+        LoaderLogger::LogErrorMessage(openxr_command,
+                                      "VUID-xrEnumerateApiLayerProperties-propertyCountOutput-parameter: null propertyCountOutput");
         return XR_ERROR_VALIDATION_FAILURE;
     }
 
@@ -93,11 +95,6 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     }
 
     manifest_count = static_cast<uint32_t>(manifest_files.size());
-    if (nullptr == outgoing_count) {
-        LoaderLogger::LogErrorMessage("xrEnumerateInstanceExtensionProperties",
-                                      "VUID-xrEnumerateApiLayerProperties-propertyCountOutput-parameter: null propertyCountOutput");
-        return XR_ERROR_VALIDATION_FAILURE;
-    }
 
     *outgoing_count = manifest_count;
     if (0 == incoming_count) {
@@ -106,14 +103,13 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     }
     if (nullptr == api_layer_properties) {
         // incoming_count is not 0 BUT the api_layer_properties is NULL
-        LoaderLogger::LogErrorMessage("xrEnumerateInstanceExtensionProperties",
+        LoaderLogger::LogErrorMessage(openxr_command,
                                       "VUID-xrEnumerateApiLayerProperties-properties-parameter: non-zero capacity but null array");
         return XR_ERROR_VALIDATION_FAILURE;
     }
     if (incoming_count < manifest_count) {
         LoaderLogger::LogErrorMessage(
-            "xrEnumerateInstanceExtensionProperties",
-            "VUID-xrEnumerateApiLayerProperties-propertyCapacityInput-parameter: insufficient space in array");
+            openxr_command, "VUID-xrEnumerateApiLayerProperties-propertyCapacityInput-parameter: insufficient space in array");
         return XR_ERROR_SIZE_INSUFFICIENT;
     }
 
@@ -424,9 +420,9 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
         }
 
         // Add this API layer to the vector
-        api_layer_interfaces.emplace_back(new ApiLayerInterface(manifest_file->LayerName(), layer_library, supported_extensions,
-                                                                api_layer_info.getInstanceProcAddr,
-                                                                api_layer_info.createApiLayerInstance));
+        auto iface = std::make_unique<ApiLayerInterface>(manifest_file->LayerName(), layer_library, supported_extensions,
+                                                         api_layer_info.getInstanceProcAddr, api_layer_info.createApiLayerInstance);
+        api_layer_interfaces.emplace_back(std::move(iface));
 
         // If we load one, clear all errors.
         any_loaded = true;

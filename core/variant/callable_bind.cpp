@@ -167,9 +167,6 @@ CallableCustomBind::CallableCustomBind(const Callable &p_callable, const Vector<
 	binds = p_binds;
 }
 
-CallableCustomBind::~CallableCustomBind() {
-}
-
 //////////////////////////////////
 
 uint32_t CallableCustomUnbind::hash() const {
@@ -272,7 +269,4 @@ Error CallableCustomUnbind::rpc(int p_peer_id, const Variant **p_arguments, int 
 CallableCustomUnbind::CallableCustomUnbind(const Callable &p_callable, int p_argcount) {
 	callable = p_callable;
 	argcount = p_argcount;
-}
-
-CallableCustomUnbind::~CallableCustomUnbind() {
 }

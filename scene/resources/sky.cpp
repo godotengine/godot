@@ -30,6 +30,9 @@
 
 #include "sky.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);
 
@@ -46,7 +49,7 @@ Sky::RadianceSize Sky::get_radiance_size() const {
 
 void Sky::set_process_mode(ProcessMode p_mode) {
 	mode = p_mode;
-	RS::get_singleton()->sky_set_mode(sky, RS::SkyMode(mode));
+	RS::get_singleton()->sky_set_mode(sky, RSE::SkyMode(mode));
 }
 
 Sky::ProcessMode Sky::get_process_mode() const {
@@ -80,7 +83,7 @@ void Sky::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &Sky::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &Sky::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_material", PROPERTY_HINT_RESOURCE_TYPE, "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_material", PROPERTY_HINT_RESOURCE_TYPE, "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Automatic,High-Quality,High-Quality Incremental,Real-Time"), "set_process_mode", "get_process_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radiance_size", PROPERTY_HINT_ENUM, "32,64,128,256,512,1024,2048"), "set_radiance_size", "get_radiance_size");
 

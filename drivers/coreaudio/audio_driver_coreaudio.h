@@ -32,7 +32,8 @@
 
 #ifdef COREAUDIO_ENABLED
 
-#include "servers/audio/audio_server.h"
+#include "core/os/mutex.h"
+#include "servers/audio/audio_driver.h"
 
 #import <AudioUnit/AudioUnit.h>
 #ifdef MACOS_ENABLED
@@ -88,6 +89,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	Error init_input_device();
 	void finish_input_device();
+	void _release_output_unit();
 
 public:
 	virtual const char *get_name() const override {
@@ -96,6 +98,8 @@ public:
 
 	virtual Error init() override;
 	virtual void start() override;
+	virtual bool can_output_device_sleep() const override { return true; }
+	virtual bool set_output_device_sleep(bool p_enable) override;
 	virtual int get_mix_rate() const override;
 	virtual int get_input_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;

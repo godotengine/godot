@@ -104,7 +104,7 @@ struct SinglePosFormat2 : ValueBase
     if (unlikely (index >= valueCount)) return false;
 
     /* This is ugly... */
-    hb_buffer_t buffer;
+    hb_buffer_t buffer {};
     buffer.props.direction = direction;
     OT::hb_ot_apply_context_t c (1, font, &buffer, table_blob);
 

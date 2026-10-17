@@ -33,9 +33,18 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant/container_type_validate.h"
+#include "core/variant/container_type_validate.h" // IWYU pragma: keep.
 #include "scene/main/node.h" //only so casting works
+
+void Resource::register_custom_data_to_otdb() {
+	ClassDB::add_resource_base_extension("res", get_class_static());
+}
+
+void Resource::_add_resource_base_extension_to_classdb(const String &p_extension, const String &p_class) {
+	ClassDB::add_resource_base_extension(p_extension, p_class);
+}
 
 void Resource::emit_changed() {
 	if (emit_changed_state != EMIT_CHANGED_UNBLOCKED) {
@@ -336,7 +345,7 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 			const Dictionary &src = p_variant;
 			Dictionary dst;
 			if (src.is_typed()) {
-				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
+				dst.set_typed(src.get_key_type(), src.get_value_type());
 			}
 			for (const Variant &k : src.get_key_list()) {
 				const Variant &v = src[k];
@@ -368,11 +377,14 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 	ERR_FAIL_COND_V_MSG(p_params.local_scene && p_params.subres_mode != RESOURCE_DEEP_DUPLICATE_MAX, Ref<Resource>(), "Duplication for local-to-scene can't specify a deep duplicate mode.");
 
 	DuplicateRemapCacheT *remap_cache_backup = thread_duplicate_remap_cache;
+	bool remap_cache_needs_deallocation_backup = thread_duplicate_remap_cache_needs_deallocation;
 
 // These are for avoiding potential duplicates that can happen in custom code
 // from participating in the same duplication session (remap cache).
 #define BEFORE_USER_CODE thread_duplicate_remap_cache = nullptr;
-#define AFTER_USER_CODE thread_duplicate_remap_cache = remap_cache_backup;
+#define AFTER_USER_CODE \
+	thread_duplicate_remap_cache = remap_cache_backup; \
+	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -434,7 +446,9 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 #endif
 
 	DuplicateRemapCacheT *remap_cache_backup = thread_duplicate_remap_cache;
+	bool remap_cache_needs_deallocation_backup = thread_duplicate_remap_cache_needs_deallocation;
 	thread_duplicate_remap_cache = &p_remap_cache;
+	thread_duplicate_remap_cache_needs_deallocation = false;
 
 	DuplicateParams params;
 	params.deep = true;
@@ -442,6 +456,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 	const Ref<Resource> &dupe = _duplicate(params);
 
 	thread_duplicate_remap_cache = remap_cache_backup;
+	thread_duplicate_remap_cache_needs_deallocation = remap_cache_needs_deallocation_backup;
 
 	return dupe;
 }
@@ -504,6 +519,7 @@ Ref<Resource> Resource::duplicate(bool p_deep) const {
 	bool started_session = false;
 	if (!thread_duplicate_remap_cache) {
 		thread_duplicate_remap_cache = &remap_cache;
+		thread_duplicate_remap_cache_needs_deallocation = false;
 		started_session = true;
 	}
 
@@ -526,6 +542,7 @@ Ref<Resource> Resource::duplicate_deep(ResourceDeepDuplicateMode p_deep_subresou
 	bool started_session = false;
 	if (!thread_duplicate_remap_cache) {
 		thread_duplicate_remap_cache = &remap_cache;
+		thread_duplicate_remap_cache_needs_deallocation = false;
 		started_session = true;
 	}
 
@@ -571,6 +588,7 @@ Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplica
 		}
 	} else {
 		thread_duplicate_remap_cache = memnew(DuplicateRemapCacheT);
+		thread_duplicate_remap_cache_needs_deallocation = true;
 	}
 
 	DuplicateParams params;
@@ -583,7 +601,7 @@ Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplica
 }
 
 void Resource::_teardown_duplicate_from_variant() {
-	if (thread_duplicate_remap_cache) {
+	if (thread_duplicate_remap_cache && thread_duplicate_remap_cache_needs_deallocation) {
 		memdelete(thread_duplicate_remap_cache);
 		thread_duplicate_remap_cache = nullptr;
 	}
@@ -658,6 +676,10 @@ void Resource::setup_local_to_scene() {
 
 void Resource::reset_local_to_scene() {
 	// Restores the state as if setup_local_to_scene() hadn't been called.
+}
+
+String Resource::_to_string() {
+	return (name.is_empty() ? "" : String(name) + " ") + "(" + path_cache + "):" + Object::_to_string();
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
@@ -736,11 +758,14 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::_duplicate_deep_bind, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 
+	// TODO: Once we can break compatibility, change the binding to "copy_from". For now, we have to avoid clashing with the method from `Image`.
+	ClassDB::bind_method(D_METHOD("copy_from_resource", "resource"), &Resource::copy_from);
+
 	// For the bindings, it's much more natural to expose this enum from the Variant realm via Resource.
 	// Therefore, we can't use BIND_ENUM_CONSTANT here because we need some customization.
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));

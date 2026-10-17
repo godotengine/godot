@@ -30,8 +30,6 @@
 
 #include "nav_region_builder_3d.h"
 
-#include "../nav_map_3d.h"
-#include "../nav_region_3d.h"
 #include "nav_region_iteration_3d.h"
 
 #include "core/config/project_settings.h"

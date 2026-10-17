@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, 2018-2024, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018-2025, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2018, Matthias Räncker.
  * Copyright (C) 2020, Arm Limited.
@@ -55,7 +55,8 @@ typedef size_t bit_buf_type;
  * retain the old Huffman encoder behavior when using the GAS implementation.
  */
 #if defined(WITH_SIMD) && !(defined(__arm__) || defined(__aarch64__) || \
-                            defined(_M_ARM) || defined(_M_ARM64))
+                            defined(_M_ARM) || defined(_M_ARM64) || \
+                            defined(_M_ARM64EC))
 typedef unsigned long long simd_bit_buf_type;
 #else
 typedef bit_buf_type simd_bit_buf_type;

@@ -3,17 +3,45 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+
+def _escape_define(env, config):
+    return f"<{config}>" if env["ninja"] and env.msvc else f'\\"{config}\\"'
+
+
 env_crypto = env.Clone()
+env_crypto.AddMethod(_escape_define, "EscapeDefine")
 
 is_builtin = env["builtin_mbedtls"]
 has_module = env["module_mbedtls_enabled"]
 thirdparty_obj = []
+configs = []
 
 if is_builtin or not has_module:
     # Use our headers for builtin or if the module is not going to be compiled.
-    # We decided not to depend on system mbedtls just for these few files that can
-    # be easily extracted.
-    env_crypto.Prepend(CPPPATH=["#thirdparty/mbedtls/include"])
+    # We decided not to depend on system mbedtls and bundle a minimal version
+    # when building without the module.
+    env_crypto.Prepend(
+        CPPPATH=[
+            "#thirdparty/mbedtls/godot/",
+            "#thirdparty/mbedtls/include/",
+            "#thirdparty/mbedtls/tf-psa-crypto/include/",
+            "#thirdparty/mbedtls/tf-psa-crypto/drivers/builtin/include/",
+        ]
+    )
+    env_crypto.Append(
+        CPPDEFINES=[
+            ("TF_PSA_CRYPTO_CONFIG_FILE", env_crypto.EscapeDefine("godot_psa_config.h")),
+            ("MBEDTLS_CONFIG_FILE", env_crypto.EscapeDefine("godot_mbedtls_config.h")),
+        ]
+    )
+    configs = ["#thirdparty/mbedtls/godot/godot_psa_config.h", "#thirdparty/mbedtls/godot/godot_mbedtls_config.h"]
+    if not has_module:
+        env_crypto.Append(CPPDEFINES=["GODOT_MBEDTLS_LIGHT"])
+    # Our custom mbedTLS platform functions
+    platform_obj = []
+    env_crypto.add_source_files(platform_obj, ["#thirdparty/mbedtls/godot/godot_mbedtls_platform.cpp"])
+    env.core_sources += platform_obj
+    env.Depends(platform_obj, configs)
 
 # MbedTLS core functions (for CryptoCore).
 # If the mbedtls module is compiled we don't need to add the .c files with our
@@ -21,45 +49,54 @@ if is_builtin or not has_module:
 # Only if the module is not enabled, we must compile here the required sources
 # to make a "light" build with only the necessary mbedtls files.
 if not has_module:
-    # Minimal mbedTLS config file
-    config_path = "thirdparty/mbedtls/include/godot_core_mbedtls_config.h"
-    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto.msvc else f'\\"{config_path}\\"'
-    env_crypto.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", config_path)])
     # Build minimal mbedTLS library (MD5/SHA/Base64/AES).
     env_thirdparty = env_crypto.Clone()
     env_thirdparty.disable_warnings()
-    thirdparty_mbedtls_dir = "#thirdparty/mbedtls/library/"
+    psa_dir = "#thirdparty/mbedtls/tf-psa-crypto/"
+    env_thirdparty.Prepend(
+        CPPPATH=[
+            psa_dir + d
+            for d in ["include/", "core/", "dispatch/", "extras", "platform/", "utilities/", "drivers/builtin/src/"]
+        ]
+    )
+    env_thirdparty.Prepend(CPPPATH=["#thirdparty/mbedtls/tf-psa-crypto/drivers/builtin/include/"])
+
+    thirdparty_mbedtls_dir = "#thirdparty/mbedtls/"
     thirdparty_mbedtls_sources = [
-        "aes.c",
-        "base64.c",
-        "constant_time.c",
-        "ctr_drbg.c",
-        "entropy.c",
-        "md.c",
-        "md5.c",
-        "sha1.c",
-        "sha256.c",
-        "godot_core_mbedtls_platform.c",
+        "tf-psa-crypto/core/psa_crypto.c",
+        "tf-psa-crypto/core/psa_crypto_client.c",
+        "tf-psa-crypto/core/psa_crypto_driver_wrappers_no_static.c",
+        "tf-psa-crypto/core/psa_crypto_random.c",
+        "tf-psa-crypto/core/psa_crypto_slot_management.c",
+        "tf-psa-crypto/utilities/base64.c",
+        "tf-psa-crypto/utilities/constant_time.c",
+        "tf-psa-crypto/platform/threading.c",
+        "tf-psa-crypto/extras/md.c",
+        "tf-psa-crypto/drivers/builtin/src/aes.c",
+        "tf-psa-crypto/drivers/builtin/src/ctr_drbg.c",
+        "tf-psa-crypto/drivers/builtin/src/cipher.c",
+        "tf-psa-crypto/drivers/builtin/src/cipher_wrap.c",
+        "tf-psa-crypto/drivers/builtin/src/entropy.c",
+        "tf-psa-crypto/drivers/builtin/src/entropy_poll.c",
+        "tf-psa-crypto/drivers/builtin/src/md5.c",
+        "tf-psa-crypto/drivers/builtin/src/psa_crypto_cipher.c",
+        "tf-psa-crypto/drivers/builtin/src/psa_crypto_hash.c",
+        "tf-psa-crypto/drivers/builtin/src/psa_crypto_rsa.c",
+        "tf-psa-crypto/drivers/builtin/src/psa_util_internal.c",
+        "tf-psa-crypto/drivers/builtin/src/sha1.c",
+        "tf-psa-crypto/drivers/builtin/src/sha256.c",
     ]
     thirdparty_mbedtls_sources = [thirdparty_mbedtls_dir + file for file in thirdparty_mbedtls_sources]
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_mbedtls_sources)
     # Needed to force rebuilding the library when the configuration file is updated.
-    env_thirdparty.Depends(thirdparty_obj, "#thirdparty/mbedtls/include/godot_core_mbedtls_config.h")
+    env_thirdparty.Depends(thirdparty_obj, configs)
     env.core_sources += thirdparty_obj
-elif is_builtin:
-    # Module mbedTLS config file
-    config_path = "thirdparty/mbedtls/include/godot_module_mbedtls_config.h"
-    config_path = f"<{config_path}>" if env_crypto["ninja"] and env_crypto.msvc else f'\\"{config_path}\\"'
-    env_crypto.Append(CPPDEFINES=[("MBEDTLS_CONFIG_FILE", config_path)])
-    # Needed to force rebuilding the core files when the configuration file is updated.
-    thirdparty_obj = ["#thirdparty/mbedtls/include/godot_module_mbedtls_config.h"]
 
 # Godot source files
-
 core_obj = []
 
 env_crypto.add_source_files(core_obj, "*.cpp")
 env.core_sources += core_obj
 
 # Needed to force rebuilding the core files when the thirdparty library is updated.
-env.Depends(core_obj, thirdparty_obj)
+env.Depends(core_obj, thirdparty_obj + configs)

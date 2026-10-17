@@ -1,8 +1,8 @@
 diff --git a/thirdparty/libwebp/src/enc/quant_enc.c b/thirdparty/libwebp/src/enc/quant_enc.c
-index 6d8202d277..302e8047f2 100644
+index 4b8cb5e9be..440991f86d 100644
 --- a/thirdparty/libwebp/src/enc/quant_enc.c
 +++ b/thirdparty/libwebp/src/enc/quant_enc.c
-@@ -556,6 +556,9 @@ static void AddScore(VP8ModeScore* WEBP_RESTRICT const dst,
+@@ -562,6 +562,9 @@ static void AddScore(VP8ModeScore* WEBP_RESTRICT const dst,
  //------------------------------------------------------------------------------
  // Performs trellis-optimized quantization.
  

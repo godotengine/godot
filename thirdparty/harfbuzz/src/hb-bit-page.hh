@@ -135,13 +135,16 @@ struct hb_bit_page_t
   }
 
   void add (hb_codepoint_t g) { elt (g) |= mask (g); dirty (); }
+  void add_bits (hb_codepoint_t g, uint64_t bits) { elt (g) |= bits; dirty (); }
   void del (hb_codepoint_t g) { elt (g) &= ~mask (g); dirty (); }
+  void del_bits (hb_codepoint_t g, uint64_t bits) { elt (g) &= ~bits; dirty (); }
   void set (hb_codepoint_t g, bool value) { if (value) add (g); else del (g); }
   bool get (hb_codepoint_t g) const { return elt (g) & mask (g); }
   bool may_have (hb_codepoint_t g) const { return get (g); }
 
   bool operator [] (hb_codepoint_t g) const { return get (g); }
   bool operator () (hb_codepoint_t g) const { return get (g); }
+  bool has (hb_codepoint_t g) const { return get (g); }
 
   void add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
@@ -149,7 +152,7 @@ struct hb_bit_page_t
     elt_t *lb = &elt (b);
     if (la == lb)
       *la |= (mask (b) << 1) - mask(a);
-    else
+    else if (likely (la < lb))
     {
       *la |= ~(mask (a) - 1llu);
       la++;
@@ -158,6 +161,8 @@ struct hb_bit_page_t
 
       *lb |= ((mask (b) << 1) - 1llu);
     }
+    else
+      return;
     dirty ();
   }
   void del_range (hb_codepoint_t a, hb_codepoint_t b)
@@ -166,7 +171,7 @@ struct hb_bit_page_t
     elt_t *lb = &elt (b);
     if (la == lb)
       *la &= ~((mask (b) << 1llu) - mask(a));
-    else
+    else if (likely (la < lb))
     {
       *la &= mask (a) - 1;
       la++;
@@ -175,6 +180,8 @@ struct hb_bit_page_t
 
       *lb &= ~((mask (b) << 1) - 1llu);
     }
+    else
+      return;
     dirty ();
   }
   void set_range (hb_codepoint_t a, hb_codepoint_t b, bool v)
@@ -290,7 +297,7 @@ struct hb_bit_page_t
     unsigned int j = m & ELT_MASK;
 
     const elt_t vv = v[i] & ~((elt_t (1) << j) - 1);
-    for (const elt_t *p = &vv; i < len (); p = &v[++i])
+    for (const elt_t *p = &vv; i < len (); p = ((const elt_t *) &v[0]) + (++i))
       if (*p)
       {
 	*codepoint = i * ELT_BITS + elt_get_min (*p);
@@ -345,6 +352,36 @@ struct hb_bit_page_t
 	return i * ELT_BITS + elt_get_max (v[i]);
     return 0;
   }
+
+  /*
+   * Iterator implementation.
+   */
+  struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
+  {
+    static constexpr bool is_sorted_iterator = true;
+    iter_t (const hb_bit_page_t &s_ = Null (hb_bit_page_t), bool init = true) : s (&s_), v (INVALID)
+    {
+      if (init)
+	v = s->get_min ();
+    }
+
+    typedef hb_codepoint_t __item_t__;
+    hb_codepoint_t __item__ () const { return v; }
+    bool __more__ () const { return v != INVALID; }
+    void __next__ () {
+       s->next (&v);
+    }
+    void __prev__ () { s->previous (&v); }
+    iter_t end () const { return iter_t (*s, false); }
+    bool operator != (const iter_t& o) const
+    { return v != o.v; }
+
+    protected:
+    const hb_bit_page_t *s;
+    hb_codepoint_t v;
+  };
+  iter_t iter () const { return iter_t (*this); }
+  operator iter_t () const { return iter (); }
 
   static constexpr hb_codepoint_t INVALID = HB_SET_VALUE_INVALID;
 

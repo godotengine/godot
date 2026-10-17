@@ -159,7 +159,8 @@ static inline unsigned int
 _hb_next_syllable (hb_buffer_t *buffer, unsigned int start)
 {
   hb_glyph_info_t *info = buffer->info;
-  unsigned int count = buffer->len;
+  unsigned int count = start + hb_min (buffer->len - start,
+				       (unsigned) HB_MAX_SYLLABLE_LENGTH);
 
   unsigned int syllable = info[start].syllable();
   while (++start < count && syllable == info[start].syllable())
@@ -217,8 +218,6 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 
   if (u >= 0x80u)
   {
-    buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII;
-
     if (unlikely (unicode->is_default_ignorable (u)))
     {
       buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES;
@@ -247,6 +246,7 @@ _hb_glyph_info_set_unicode_props (hb_glyph_info_t *info, hb_buffer_t *buffer)
 
     if (unlikely (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (gen_cat)))
     {
+      buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS;
       props |= UPROPS_MASK_CONTINUATION;
       props |= unicode->modified_combining_class (u)<<8;
     }
@@ -361,8 +361,9 @@ _hb_glyph_info_unhide (hb_glyph_info_t *info)
 }
 
 static inline void
-_hb_glyph_info_set_continuation (hb_glyph_info_t *info)
+_hb_glyph_info_set_continuation (hb_glyph_info_t *info, hb_buffer_t *buffer)
 {
+  buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS;
   info->unicode_props() |= UPROPS_MASK_CONTINUATION;
 }
 static inline void
@@ -408,18 +409,6 @@ static inline bool
 _hb_glyph_info_is_zwj (const hb_glyph_info_t *info)
 {
   return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & UPROPS_MASK_Cf_ZWJ);
-}
-static inline bool
-_hb_glyph_info_is_joiner (const hb_glyph_info_t *info)
-{
-  return _hb_glyph_info_is_unicode_format (info) && (info->unicode_props() & (UPROPS_MASK_Cf_ZWNJ|UPROPS_MASK_Cf_ZWJ));
-}
-static inline void
-_hb_glyph_info_flip_joiners (hb_glyph_info_t *info)
-{
-  if (!_hb_glyph_info_is_unicode_format (info))
-    return;
-  info->unicode_props() ^= UPROPS_MASK_Cf_ZWNJ | UPROPS_MASK_Cf_ZWJ;
 }
 static inline bool
 _hb_glyph_info_is_aat_deleted (const hb_glyph_info_t *info)
@@ -579,6 +568,20 @@ _hb_glyph_info_multiplied (const hb_glyph_info_t *info)
   return info->glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MULTIPLIED;
 }
 
+static inline unsigned int
+_hb_glyph_info_get_lig_num_comps_in_ligation (const hb_glyph_info_t *info)
+{
+  /* When a glyph is decomposed by a MultipleSubst and its pieces later become
+   * components of a ligature, the pieces belong to the same ligature component
+   * as the first piece, matching how MarkBasePos attaches marks only to the
+   * first piece.  So the non-first pieces contribute no extra component.
+   * https://github.com/harfbuzz/harfbuzz/issues/4969 */
+  if (_hb_glyph_info_multiplied (info) &&
+      _hb_glyph_info_get_lig_comp (info))
+    return 0;
+  return _hb_glyph_info_get_lig_num_comps (info);
+}
+
 static inline bool
 _hb_glyph_info_ligated_and_didnt_multiply (const hb_glyph_info_t *info)
 {
@@ -656,5 +659,19 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 #undef unicode_props
 #undef lig_props
 #undef glyph_props
+
+static inline void
+_hb_collect_glyph_alternates_add (hb_codepoint_t from,
+				  hb_codepoint_t to,
+				  hb_map_t *alternate_count,
+				  hb_map_t *alternate_glyphs)
+{
+  hb_codepoint_t zero = 0;
+  hb_codepoint_t *i = &zero;
+  alternate_count->has (from, &i);
+  alternate_glyphs->set (from | (*i << 24), to);
+  alternate_count->set (from, *i + 1);
+}
+
 
 #endif /* HB_OT_LAYOUT_HH */

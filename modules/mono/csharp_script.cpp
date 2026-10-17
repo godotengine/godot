@@ -30,14 +30,18 @@
 
 #include "csharp_script.h"
 
+#include "godotsharp_defs.h"
 #include "godotsharp_dirs.h"
-#include "managed_callable.h"
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
 #include "utils/naming_utils.h"
-#include "utils/path_utils.h"
 #include "utils/string_utils.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "managed_callable.h"
+#include "utils/path_utils.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "class_db_api_json.h"
@@ -48,10 +52,12 @@
 #include "editor/script_templates/templates.gen.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/file_access.h"
+#include "core/object/class_db.h"
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
@@ -59,23 +65,19 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/docks/inspector_dock.h"
-#include "editor/docks/node_dock.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/signals_dock.h"
+#endif
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
-
-#ifdef TOOLS_ENABLED
-static bool _create_project_solution_if_needed() {
-	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
-	return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolutionIfNeeded");
-}
-#endif
 
 CSharpLanguage *CSharpLanguage::singleton = nullptr;
 
@@ -400,10 +402,6 @@ String CSharpLanguage::validate_path(const String &p_path) const {
 	return "";
 }
 
-Script *CSharpLanguage::create_script() const {
-	return memnew(CSharpScript);
-}
-
 bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
 }
@@ -565,20 +563,20 @@ struct CSharpScriptDepSort {
 void CSharpLanguage::reload_all_scripts() {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(false);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+void CSharpLanguage::reload_scripts(const Array &p_scripts) {
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
 
-void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script) {
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
 
 #ifdef TOOLS_ENABLED
@@ -587,7 +585,7 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 #ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
-		reload_assemblies(p_soft_reload);
+		reload_assemblies();
 	}
 #endif
 }
@@ -624,7 +622,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 	return true;
 }
 
-void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
+void CSharpLanguage::reload_assemblies() {
 	ERR_FAIL_NULL(gdmono);
 	if (!gdmono->is_runtime_initialized()) {
 		return;
@@ -645,10 +643,10 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	{
 		MutexLock lock(script_instances_mutex);
 
-		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
+		for (CSharpScript &script : script_list) {
 			// Do not reload scripts with only non-collectible instances to avoid disrupting event subscriptions and such.
-			bool is_reloadable = elem->self()->instances.is_empty();
-			for (Object *obj : elem->self()->instances) {
+			bool is_reloadable = script.instances.is_empty();
+			for (Object *obj : script.instances) {
 				ERR_CONTINUE(!obj->get_script_instance());
 				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
 				if (GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(csi->get_gchandle_intptr())) {
@@ -658,7 +656,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			}
 			if (is_reloadable) {
 				// Cast to CSharpScript to avoid being erased by accident.
-				scripts.push_back(Ref<CSharpScript>(elem->self()));
+				scripts.push_back(Ref<CSharpScript>(&script));
 			}
 		}
 	}
@@ -669,22 +667,20 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	{
 		MutexLock lock(ManagedCallable::instances_mutex);
 
-		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
-			ManagedCallable *managed_callable = elem->self();
+		for (ManagedCallable &managed_callable : ManagedCallable::instances) {
+			ERR_CONTINUE(managed_callable.delegate_handle.value == nullptr);
 
-			ERR_CONTINUE(managed_callable->delegate_handle.value == nullptr);
-
-			if (!GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(managed_callable->delegate_handle)) {
+			if (!GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(managed_callable.delegate_handle)) {
 				continue;
 			}
 
 			Array serialized_data;
 
 			bool success = GDMonoCache::managed_callbacks.DelegateUtils_TrySerializeDelegateWithGCHandle(
-					managed_callable->delegate_handle, &serialized_data);
+					managed_callable.delegate_handle, &serialized_data);
 
 			if (success) {
-				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
+				ManagedCallable::instances_pending_reload.insert(&managed_callable, serialized_data);
 			} else {
 				if (OS::get_singleton()->is_stdout_verbose()) {
 					OS::get_singleton()->print("Failed to serialize delegate.\n");
@@ -692,7 +688,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				// We failed to serialize the delegate but we still have to release it;
 				// otherwise, we won't be able to unload the assembly.
-				managed_callable->release_delegate_handle();
+				managed_callable.release_delegate_handle();
 			}
 		}
 	}
@@ -867,7 +863,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #endif
 
 		if (!scr->get_path().is_empty() && !scr->get_path().begins_with("csharp://")) {
-			scr->reload(p_soft_reload);
+			scr->reload();
 
 			if (!scr->valid) {
 				scr->pending_reload_instances.clear();
@@ -896,7 +892,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 					continue;
 				}
 
-				if (!ClassDB::is_parent_class(obj->get_class_name(), native_name)) {
+				if (!obj->is_class(native_name)) {
 					// No longer inherits the same compatible type, can't reload
 					scr->pending_reload_state.erase(obj_id);
 					continue;
@@ -1026,15 +1022,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		InspectorDock::get_inspector_singleton()->update_tree();
-		NodeDock::get_singleton()->update_lists();
+		SignalsDock::get_singleton()->update_lists();
 	}
 #endif
 }
 #endif
-
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
 
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
@@ -1153,14 +1145,14 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
 	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
 	// classes is added to C#. See #75955 for more details.
-	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->gdtype->get_name()))) {
 		classinfo = classinfo->inherits_ptr;
 	}
 
 	ERR_FAIL_NULL_V(classinfo, false);
-	type_name = classinfo->name;
+	type_name = classinfo->gdtype->get_name();
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), type_name);
+	bool parent_is_object_class = p_object->is_class(type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, false,
 			"Type inherits from native type '" + type_name + "', so it can't be instantiated in object of type: '" + p_object->get_class() + "'.");
 
@@ -1432,7 +1424,7 @@ void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_int
 
 	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(p_unmanaged, script.ptr(), gchandle);
 
-	p_unmanaged->set_script_and_instance(script, csharp_instance);
+	p_unmanaged->set_script_instance(csharp_instance);
 
 	csharp_instance->connect_event_signals();
 }
@@ -1495,27 +1487,101 @@ Object *CSharpInstance::get_owner() {
 bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_V(script.is_null(), false);
 
-	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
-			gchandle.get_intptr(), &p_name, &p_value);
-}
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->setter.function_pointer == nullptr) {
+			return false;
+		}
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_SetViaTrampoline(
+				trampolines->setter, gchandle.get_intptr(), &p_value);
+	}
 
-bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
-	ERR_FAIL_COND_V(script.is_null(), false);
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Set already calls "_set" as a last resort,
+		// so don't continue after this branch.
+		return GDMonoCache::managed_callbacks.CSharpInstanceBridge_Set(
+				gchandle.get_intptr(), &p_name, &p_value);
+	}
 
-	Variant ret_value;
+	if (has_method(SNAME("_set"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[2]{ &name_arg, &p_value };
+		const Variant ret = _callp(SNAME("_set"), args, 2, call_error);
 
-	bool ret = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(
-			gchandle.get_intptr(), &p_name, &ret_value);
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			return false;
+		}
 
-	if (ret) {
-		r_ret = ret_value;
 		return true;
 	}
 
 	return false;
 }
 
-void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+bool CSharpInstance::get(const StringName &p_name, Variant &r_ret) const {
+	ERR_FAIL_COND_V(script.is_null(), false);
+
+	const CSharpScript::PropertyTrampolines *trampolines = script->property_trampolines.getptr(p_name);
+	if (trampolines) {
+		if (trampolines->getter.function_pointer == nullptr) {
+			return false;
+		}
+
+		Variant ret_value;
+		if (likely(GDMonoCache::managed_callbacks.CSharpInstanceBridge_GetViaTrampoline(
+					trampolines->getter, gchandle.get_intptr(), &ret_value))) {
+			r_ret = ret_value;
+			return true;
+		}
+
+		return false;
+	}
+
+	if (unlikely(script->should_fallback_to_legacy_trampolines)) {
+		// The legacy CSharpInstanceBridge.Get already handles signal and method objects,
+		// and calls "_get" as a last resort, so don't continue after this branch.
+
+		Variant ret_value;
+		if (GDMonoCache::managed_callbacks.CSharpInstanceBridge_Get(gchandle.get_intptr(), &p_name, &ret_value)) {
+			r_ret = ret_value;
+			return true;
+		}
+
+		return false;
+	}
+
+	for (const KeyValue<CSharpScript::SignalKey, godotsharp::RaiseSignalTrampoline> &kvp : script->raise_signal_trampolines) {
+		if (kvp.key.name == p_name) {
+			r_ret = Signal(owner->get_instance_id(), p_name);
+			return true;
+		}
+	}
+
+	if (script->_has_method_mapping_to_proxy_include_base(p_name)) {
+		r_ret = Callable(owner->get_instance_id(), p_name);
+		return true;
+	}
+
+	if (has_method(SNAME("_get"))) {
+		Callable::CallError call_error;
+		const Variant name_arg = p_name;
+		const Variant *args[1]{ &name_arg };
+		const Variant ret = _callp(SNAME("_get"), args, 1, call_error);
+
+		if (ret.get_type() == Variant::NIL || call_error.error != Callable::CallError::CALL_OK) {
+			r_ret = Variant();
+			return false;
+		}
+
+		r_ret = ret;
+		return true;
+	}
+
+	return false;
+}
+
+void CSharpInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	List<PropertyInfo> props;
 	ERR_FAIL_COND(script.is_null());
 #ifdef TOOLS_ENABLED
@@ -1530,28 +1596,24 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 	for (PropertyInfo &prop : props) {
 		validate_property(prop);
-		p_properties->push_back(prop);
+		r_properties->push_back(prop);
 	}
 
 	// Call _get_property_list
 
 	StringName method = SNAME("_get_property_list");
 
-	Variant ret;
 	Callable::CallError call_error;
-	bool ok = GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &method, nullptr, 0, &call_error, &ret);
+	Variant ret = _callp(method, nullptr, 0, call_error);
 
 	// CALL_ERROR_INVALID_METHOD would simply mean it was not overridden
 	if (call_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		if (call_error.error != Callable::CallError::CALL_OK) {
 			ERR_PRINT("Error calling '_get_property_list': " + Variant::get_call_error_text(method, nullptr, 0, call_error));
-		} else if (!ok) {
-			ERR_PRINT("Unexpected error calling '_get_property_list'");
 		} else {
 			Array array = ret;
 			for (int i = 0, size = array.size(); i < size; i++) {
-				p_properties->push_back(PropertyInfo::from_dict(array.get(i)));
+				r_properties->push_back(PropertyInfo::from_dict(array.get(i)));
 			}
 		}
 	}
@@ -1571,7 +1633,7 @@ void CSharpInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 		for (PropertyInfo &prop : props) {
 			validate_property(prop);
-			p_properties->push_back(prop);
+			r_properties->push_back(prop);
 		}
 
 		top = top->base_script.ptr();
@@ -1599,16 +1661,14 @@ bool CSharpInstance::property_can_revert(const StringName &p_name) const {
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_can_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_can_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
 	}
 
-	return (bool)ret;
+	return ret;
 }
 
 void CSharpInstance::validate_property(PropertyInfo &p_property) const {
@@ -1617,10 +1677,8 @@ void CSharpInstance::validate_property(PropertyInfo &p_property) const {
 	Variant property_arg = (Dictionary)p_property;
 	const Variant *args[1] = { &property_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_validate_property"), args, 1, &call_error, &ret);
+	_callp(SNAME("_validate_property"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return;
@@ -1635,10 +1693,8 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	Variant name_arg = p_name;
 	const Variant *args[1] = { &name_arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_property_get_revert"), args, 1, &call_error, &ret);
+	Variant ret = _callp(SNAME("_property_get_revert"), args, 1, call_error);
 
 	if (call_error.error != Callable::CallError::CALL_OK) {
 		return false;
@@ -1648,12 +1704,12 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 	return true;
 }
 
-void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->valid) {
+void CSharpInstance::get_method_list(List<MethodInfo> *r_list) const {
+	if (!script->is_script_valid() || !script->valid) {
 		return;
 	}
 
-	script->get_script_method_list(p_list);
+	script->get_script_method_list(r_list);
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
@@ -1665,12 +1721,20 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 		return false;
 	}
 
+	if (script->_has_method_mapping_to_proxy_include_base(p_method)) {
+		return true;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
 	return GDMonoCache::managed_callbacks.CSharpInstanceBridge_HasMethodUnknownParams(
 			gchandle.get_intptr(), &p_method);
 }
 
 int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		if (r_is_valid) {
 			*r_is_valid = false;
 		}
@@ -1697,14 +1761,76 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
-Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
 	ERR_FAIL_COND_V(script.is_null(), Variant());
+
+	const CSharpScript::MethodKey method_key{ p_method, p_argcount };
+
+	const godotsharp::MethodTrampoline *trampoline = script->method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		Variant ret;
+		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &r_error, &ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return ret;
+		}
+		return Variant();
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
 
 	Variant ret;
 	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
 			gchandle.get_intptr(), &p_method, p_args, p_argcount, &r_error, &ret);
 
 	return ret;
+}
+
+Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	return _callp(p_method, p_args, p_argcount, r_error);
+}
+
+void CSharpInstance::raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
+	bool owner_is_null = false;
+
+	const godotsharp::RaiseSignalTrampoline *trampoline = script->raise_signal_trampolines.getptr(
+			CSharpScript::SignalKey{ p_event_signal_name, p_argcount });
+	if (trampoline) {
+		Callable::CallError call_error;
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignalViaTrampoline(
+				*trampoline, gchandle.get_intptr(), p_args, p_argcount, &call_error, &owner_is_null);
+
+		if (call_error.error != Callable::CallError::CALL_OK) {
+			// TODO: This is ignored for now, just in case. It's unlikely to cause regressions, so consider returning it.
+			(void)call_error;
+		}
+
+		if (unlikely(owner_is_null)) {
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+		} else {
+			r_error.error = Callable::CallError::CALL_OK;
+		}
+
+		return;
+	}
+
+	if (likely(!script->should_fallback_to_legacy_trampolines)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return;
+	}
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_RaiseEventSignal(
+			gchandle.get_intptr(), &p_event_signal_name,
+			p_args, p_argcount, &owner_is_null);
+
+	if (unlikely(owner_is_null)) {
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+	} else {
+		r_error.error = Callable::CallError::CALL_OK;
+	}
 }
 
 bool CSharpInstance::_reference_owner_unsafe() {
@@ -1955,14 +2081,12 @@ void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	_call_notification(p_notification, p_reversed);
 }
 
-void CSharpInstance::_call_notification(int p_notification, bool p_reversed) {
+void CSharpInstance::_call_notification(int p_notification, bool p_reversed) const {
 	Variant arg = p_notification;
 	const Variant *args[1] = { &arg };
 
-	Variant ret;
 	Callable::CallError call_error;
-	GDMonoCache::managed_callbacks.CSharpInstanceBridge_Call(
-			gchandle.get_intptr(), &SNAME("_notification"), args, 1, &call_error, &ret);
+	_callp(SNAME("_notification"), args, 1, call_error);
 }
 
 String CSharpInstance::to_string(bool *r_valid) {
@@ -1979,8 +2103,8 @@ String CSharpInstance::to_string(bool *r_valid) {
 	return res;
 }
 
-Ref<Script> CSharpInstance::get_script() const {
-	return script;
+Script *CSharpInstance::get_script() const {
+	return *script;
 }
 
 ScriptLanguage *CSharpInstance::get_language() {
@@ -2091,7 +2215,13 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 		StringName name = *reinterpret_cast<const StringName *>(&prop.name);
 		String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
 
-		PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
+		StringName class_name;
+		const StringName *class_name_ptr = reinterpret_cast<const StringName *>(prop.class_name);
+		if (class_name_ptr != nullptr) {
+			class_name = *class_name_ptr;
+		}
+
+		PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage, class_name);
 
 		p_script->member_info[name] = pinfo;
 
@@ -2252,8 +2382,69 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 #endif
 }
 
+void GD_CLR_STDCALL CSharpScript::_try_add_method_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
+	MethodKey method_key{ *p_name, p_argc };
+	if (!p_scr->method_trampolines.has(method_key)) {
+		p_scr->method_trampolines.insert_new(method_key, p_trampoline);
+	}
+	// We add static methods to both `static_method_trampolines` and `method_trampolines`.
+	// This allows static methods to be called on instances (e.g., `object.SomeStaticMethod()`).
+	// While we could look up both maps at runtime, keeping them in a single map maintains
+	// compatibility with how methods were resolved before trampolines were introduced.
+	// For example, invoking `Foo` and `Bar` on an instance of `DerivedScript` should always
+	// resolve to the declaration from the `DerivedScript` class:
+	//     class BaseScript : Node {
+	//         void Foo() {}
+	//         static void Bar() {}
+	//     }
+	//     class DerivedScript : BaseScript {
+	//         static void Foo() {}
+	//         void Bar() {}
+	//     }
+	if (p_is_static) {
+		p_scr->static_method_trampolines.insert_new(method_key, p_trampoline);
+	}
+}
+
+void GD_CLR_STDCALL CSharpScript::_try_add_property_tramp(CSharpScript *p_scr, const StringName *p_name, godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline) {
+	DEV_ASSERT(p_getter_trampoline.function_pointer != nullptr || p_setter_trampoline.function_pointer != nullptr);
+
+	PropertyTrampolines *found = p_scr->property_trampolines.getptr(*p_name);
+	if (found) {
+		// Could not have added an entry where both are null.
+		DEV_ASSERT(found->getter.function_pointer != nullptr || found->setter.function_pointer != nullptr);
+
+		// If an entry already exists, we still replace one of the trampolines if it's null.
+		// This matches the behavior of Get/SetGodotClassPropertyValue, which will continue
+		// looking in base classes if the property in the current class is readonly/writeonly.
+		if (p_getter_trampoline.function_pointer && !found->getter.function_pointer) {
+			found->getter = p_getter_trampoline;
+		} else if (p_setter_trampoline.function_pointer && !found->setter.function_pointer) {
+			found->setter = p_setter_trampoline;
+		}
+	} else {
+		p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
+	}
+}
+
+void GD_CLR_STDCALL CSharpScript::_try_add_raise_signal_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline) {
+	SignalKey signal_key{ *p_name, p_argc };
+	if (!p_scr->raise_signal_trampolines.has(signal_key)) {
+		p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
+	}
+}
+
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
+	p_script->static_method_trampolines.clear();
+	p_script->method_trampolines.clear();
+	p_script->property_trampolines.clear();
+	p_script->raise_signal_trampolines.clear();
+
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
+			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines,
+			&_try_add_method_tramp, &_try_add_property_tramp, &_try_add_raise_signal_tramp);
+
 	TypeInfo type_info;
 
 	// TODO: Use GDExtension godot_dictionary
@@ -2466,7 +2657,7 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 
 	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
 
-	if (!ClassDB::is_parent_class(p_this->get_class_name(), native_name)) {
+	if (!p_this->is_class(native_name)) {
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
@@ -2488,11 +2679,6 @@ PlaceHolderScriptInstance *CSharpScript::placeholder_instance_create(Object *p_t
 #else
 	return nullptr;
 #endif
-}
-
-bool CSharpScript::instance_has(const Object *p_this) const {
-	MutexLock lock(CSharpLanguage::get_singleton()->script_instances_mutex);
-	return instances.has((Object *)p_this);
 }
 
 bool CSharpScript::has_source_code() const {
@@ -2526,6 +2712,16 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 		top = top->base_script.ptr();
 	}
+}
+
+bool CSharpScript::_has_method_mapping_to_proxy_include_base(const StringName &p_name) const {
+	for (const KeyValue<MethodKey, godotsharp::MethodTrampoline> &kvp : method_trampolines) {
+		if (kvp.key.name == p_name) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CSharpScript::has_method(const StringName &p_method) const {
@@ -2586,13 +2782,37 @@ MethodInfo CSharpScript::get_method_info(const StringName &p_method) const {
 	return mi;
 }
 
-Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (valid) {
-		Variant ret;
-		bool ok = GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(this, &p_method, p_args, p_argcount, &r_error, &ret);
-		if (ok) {
-			return ret;
+bool CSharpScript::_callp_static(const CSharpScript *p_script, const StringName &p_method,
+		const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret) {
+	if (!p_script->valid) {
+		return false;
+	}
+
+	const MethodKey method_key{ p_method, p_argcount };
+
+	const godotsharp::MethodTrampoline *trampoline = p_script->static_method_trampolines.getptr(method_key);
+	if (trampoline != nullptr) {
+		GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStaticWithTrampoline(
+				*trampoline, p_args, p_argcount, &r_error, &r_ret);
+		if (likely(r_error.error == Callable::CallError::CALL_OK)) {
+			return true;
 		}
+		return false;
+	}
+
+	if (likely(!p_script->should_fallback_to_legacy_trampolines)) {
+		return false;
+	}
+
+	Variant ret;
+	return GDMonoCache::managed_callbacks.ScriptManagerBridge_CallStatic(
+			p_script, &p_method, p_args, p_argcount, &r_error, &ret);
+}
+
+Variant CSharpScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	Variant ret;
+	if (_callp_static(this, p_method, p_args, p_argcount, r_error, ret)) {
+		return ret;
 	}
 
 	return Script::callp(p_method, p_args, p_argcount, r_error);
@@ -2701,7 +2921,7 @@ void CSharpScript::_get_script_signal_list(List<MethodInfo> *r_signals, bool p_i
 }
 
 void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
+	_get_script_signal_list(r_signals, /* include_base */ true);
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
@@ -2812,132 +3032,12 @@ CSharpScript::~CSharpScript() {
 	}
 }
 
-void CSharpScript::get_members(HashSet<StringName> *p_members) {
+void CSharpScript::get_members(HashSet<StringName> *r_members) {
 #ifdef DEBUG_ENABLED
-	if (p_members) {
+	if (r_members) {
 		for (const StringName &member_name : exported_members_names) {
-			p_members->insert(member_name);
+			r_members->insert(member_name);
 		}
 	}
 #endif // DEBUG_ENABLED
-}
-
-/*************** RESOURCE ***************/
-
-Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_FILE_CANT_OPEN;
-	}
-
-	// TODO ignore anything inside bin/ and obj/ in tools builds?
-
-	String real_path = p_path;
-	if (p_path.begins_with("csharp://")) {
-		// This is a virtual path used by generic types, extract the real path.
-		real_path = "res://" + p_path.trim_prefix("csharp://");
-		real_path = real_path.substr(0, real_path.rfind_char(':'));
-	}
-
-	Ref<CSharpScript> scr;
-
-	if (GDMonoCache::godot_api_cache_updated) {
-		GDMonoCache::managed_callbacks.ScriptManagerBridge_GetOrCreateScriptBridgeForPath(&p_path, &scr);
-		ERR_FAIL_COND_V_MSG(scr.is_null(), Ref<Resource>(), "Could not create C# script '" + real_path + "'.");
-	} else {
-		scr.instantiate();
-	}
-
-#ifdef DEBUG_ENABLED
-	Error err = scr->load_source_code(real_path);
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot load C# script file '" + real_path + "'.");
-#endif // DEBUG_ENABLED
-
-	// Only one instance of a C# script is allowed to exist.
-	ERR_FAIL_COND_V_MSG(!scr->get_path().is_empty() && scr->get_path() != p_original_path, Ref<Resource>(),
-			"The C# script path is different from the path it was registered in the C# dictionary.");
-
-	Ref<Resource> existing = ResourceCache::get_ref(p_path);
-	switch (p_cache_mode) {
-		case ResourceFormatLoader::CACHE_MODE_IGNORE:
-		case ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP:
-			break;
-		case ResourceFormatLoader::CACHE_MODE_REUSE:
-			if (existing.is_null()) {
-				scr->set_path(p_original_path);
-			} else {
-				scr = existing;
-			}
-			break;
-		case ResourceFormatLoader::CACHE_MODE_REPLACE:
-		case ResourceFormatLoader::CACHE_MODE_REPLACE_DEEP:
-			scr->set_path(p_original_path, true);
-			break;
-	}
-
-	scr->reload();
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return scr;
-}
-
-void ResourceFormatLoaderCSharpScript::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
-
-bool ResourceFormatLoaderCSharpScript::handles_type(const String &p_type) const {
-	return p_type == "Script" || p_type == CSharpLanguage::get_singleton()->get_type();
-}
-
-String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "cs" ? CSharpLanguage::get_singleton()->get_type() : "";
-}
-
-Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Ref<CSharpScript> sqscr = p_resource;
-	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
-
-	String source = sqscr->get_source_code();
-
-#ifdef TOOLS_ENABLED
-	if (!FileAccess::exists(p_path)) {
-		// The file does not yet exist, let's assume the user just created this script. In such
-		// cases we need to check whether the solution and csproj were already created or not.
-		if (!_create_project_solution_if_needed()) {
-			ERR_PRINT("C# project could not be created; cannot add file: '" + p_path + "'.");
-		}
-	}
-#endif
-
-	{
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save C# script file '" + p_path + "'.");
-
-		file->store_string(source);
-
-		if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-			return ERR_CANT_CREATE;
-		}
-	}
-
-#ifdef TOOLS_ENABLED
-	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
-		CSharpLanguage::get_singleton()->reload_tool_script(p_resource, false);
-	}
-#endif
-
-	return OK;
-}
-
-void ResourceFormatSaverCSharpScript::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	if (Object::cast_to<CSharpScript>(p_resource.ptr())) {
-		p_extensions->push_back("cs");
-	}
-}
-
-bool ResourceFormatSaverCSharpScript::recognize(const Ref<Resource> &p_resource) const {
-	return Object::cast_to<CSharpScript>(p_resource.ptr()) != nullptr;
 }

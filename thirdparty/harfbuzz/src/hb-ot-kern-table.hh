@@ -90,11 +90,11 @@ struct KernSubTableFormat3
   template <typename set_t>
   void collect_glyphs (set_t &left_set, set_t &right_set, unsigned num_glyphs) const
   {
-    set_t set;
     if (likely (glyphCount))
-      set.add_range (0, glyphCount - 1);
-    left_set.union_ (set);
-    right_set.union_ (set);
+    {
+      left_set.add_range (0, num_glyphs - 1);
+      right_set.add_range (0, num_glyphs - 1);
+    }
   }
 
   protected:
@@ -126,7 +126,7 @@ struct KernSubTableFormat3
 template <typename KernSubTableHeader>
 struct KernSubTable
 {
-  unsigned int get_size () const { return u.header.length; }
+  size_t get_size () const { return u.header.length; }
   unsigned int get_type () const { return u.header.format; }
 
   int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
@@ -144,13 +144,13 @@ struct KernSubTable
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.format0));
+    case 0:	hb_barrier (); return_trace (c->dispatch (u.format0));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 1:	hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
 #endif
-    case 2:	return_trace (c->dispatch (u.format2));
+    case 2:	hb_barrier (); return_trace (c->dispatch (u.format2));
 #ifndef HB_NO_AAT_SHAPE
-    case 3:	return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 3:	hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }
@@ -161,10 +161,14 @@ struct KernSubTable
   {
     unsigned int subtable_type = get_type ();
     switch (subtable_type) {
-    case 0:	u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 1:	u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 2:	u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 3:	u.format3.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 0:	hb_barrier (); u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
+#ifndef HB_NO_AAT_SHAPE
+    case 1:	hb_barrier (); u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
+#endif
+    case 2:	hb_barrier (); u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
+#ifndef HB_NO_AAT_SHAPE
+    case 3:	hb_barrier (); u.format3.collect_glyphs (left_set, right_set, num_glyphs); return;
+#endif
     default:	return;
     }
   }
@@ -184,9 +188,13 @@ struct KernSubTable
   union {
   KernSubTableHeader				header;
   AAT::KerxSubTableFormat0<KernSubTableHeader>	format0;
+#ifndef HB_NO_AAT_SHAPE
   AAT::KerxSubTableFormat1<KernSubTableHeader>	format1;
+#endif
   AAT::KerxSubTableFormat2<KernSubTableHeader>	format2;
+#ifndef HB_NO_AAT_SHAPE
   KernSubTableFormat3<KernSubTableHeader>	format3;
+#endif
   } u;
   public:
   DEFINE_SIZE_MIN (KernSubTableHeader::static_size);
@@ -306,8 +314,8 @@ struct kern
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_kern;
 
-  bool     has_data () const { return u.version32; }
-  unsigned get_type () const { return u.major; }
+  bool     has_data () const { return u.version32.v; }
+  unsigned get_type () const { return u.major.v; }
 
   bool has_state_machine () const
   {
@@ -352,9 +360,9 @@ struct kern
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
+    case 0:	hb_barrier (); return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
+    case 1:	hb_barrier (); return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }
@@ -363,7 +371,7 @@ struct kern
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.version32.sanitize (c)) return_trace (false);
+    if (!u.version32.v.sanitize (c)) return_trace (false);
     hb_barrier ();
     return_trace (dispatch (c));
   }
@@ -406,15 +414,15 @@ struct kern
 
   protected:
   union {
-  HBUINT32		version32;
-  HBUINT16		major;
+  struct { HBUINT32 v; }	version32;
+  struct { HBUINT16 v; }	major;
   KernOT		ot;
 #ifndef HB_NO_AAT_SHAPE
   KernAAT		aat;
 #endif
   } u;
   public:
-  DEFINE_SIZE_UNION (4, version32);
+  DEFINE_SIZE_UNION (4, version32.v);
 };
 
 struct kern_accelerator_t : kern::accelerator_t {

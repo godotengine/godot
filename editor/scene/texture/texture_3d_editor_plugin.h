@@ -33,9 +33,11 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/material.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 
+class Button;
 class ColorChannelSelector;
 
 class Texture3DEditor : public Control {
@@ -47,6 +49,7 @@ class Texture3DEditor : public Control {
 
 	SpinBox *layer = nullptr;
 	Label *info = nullptr;
+	Button *info_toggle = nullptr;
 	Ref<Texture3D> texture;
 
 	static inline Ref<Shader> texture_shader;
@@ -73,6 +76,7 @@ class Texture3DEditor : public Control {
 
 	void _update_material(bool p_texture_changed);
 	void _update_gui();
+	void _toggle_info();
 
 	void on_selected_channels_changed();
 

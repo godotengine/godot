@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/templates/rb_map.h"
 #include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
@@ -74,6 +75,7 @@ private:
 
 	int resources_total = 0;
 	int resource_current = 0;
+
 	String resource_type;
 	String script_class;
 
@@ -96,6 +98,7 @@ private:
 
 	Error _parse_sub_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	Error _parse_ext_resource(VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	void _count_resources();
 
 	struct DummyReadData {
 		bool no_placeholders = false;
@@ -110,7 +113,7 @@ private:
 
 	static Error _parse_sub_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
 	static Error _parse_ext_resource_dummy(DummyReadData *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
-	void _printerr();
+	String _get_error_string();
 
 	VariantParser::ResourceParser rp;
 
@@ -120,8 +123,9 @@ private:
 	Error error = OK;
 
 	Ref<Resource> resource;
+	Ref<PackedScene> packed_scene;
 
-	Ref<PackedScene> _parse_node_tag(VariantParser::ResourceParser &parser);
+	Ref<PackedScene> _parse_node_tag(const Ref<PackedScene> &p_current_scene, VariantParser::ResourceParser &p_parser);
 
 public:
 	Ref<Resource> get_resource();
@@ -196,6 +200,7 @@ class ResourceFormatSaverTextInstance {
 	};
 
 	void _find_resources(const Variant &p_variant, bool p_main = false);
+	void _parse_nodes(const Ref<PackedScene> &curr_scene, const Ref<FileAccess> &p_file);
 
 	static String _write_resources(void *ud, const Ref<Resource> &p_resource);
 	String _write_resource(const Ref<Resource> &res);

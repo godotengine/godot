@@ -53,7 +53,6 @@ private:
 
 		Monitor() {}
 		Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item);
-		void update_value(float p_value);
 		void reset();
 	};
 
@@ -69,7 +68,8 @@ private:
 	const int POINT_SEPARATION = 5;
 	const int MARKER_MARGIN = 2;
 
-	static String _create_label(float p_value, Performance::MonitorType p_type);
+	String _format_label(float p_value, Performance::MonitorType p_type) const;
+	void _update_monitor_value(Monitor *p_monitor, float p_value);
 	void _monitor_select();
 	void _monitor_draw();
 	void _build_monitor_tree();
@@ -82,7 +82,7 @@ protected:
 
 public:
 	void reset();
-	void update_monitors(const Vector<StringName> &p_names);
+	void update_monitors(const Vector<StringName> &p_names, const PackedInt32Array &p_types);
 	void add_profile_frame(const Vector<float> &p_values);
 	List<float> *get_monitor_data(const StringName &p_name);
 	EditorPerformanceProfiler();

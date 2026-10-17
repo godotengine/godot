@@ -12,9 +12,8 @@
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/CollidePointResult.h>
-#include <Jolt/Core/StreamIn.h>
-#include <Jolt/Core/StreamOut.h>
-#include <Jolt/Core/Factory.h>
+#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/UnorderedSet.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
 
 JPH_NAMESPACE_BEGIN

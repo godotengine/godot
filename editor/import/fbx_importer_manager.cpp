@@ -31,6 +31,8 @@
 #include "fbx_importer_manager.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"

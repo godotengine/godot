@@ -33,10 +33,10 @@
 #include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Core/FixedSizeFreeList.h"
-#include "Jolt/Core/JobSystemWithBarrier.h"
+#include <Jolt/Core/FixedSizeFreeList.h>
+#include <Jolt/Core/JobSystemWithBarrier.h>
 
 #include <atomic>
 

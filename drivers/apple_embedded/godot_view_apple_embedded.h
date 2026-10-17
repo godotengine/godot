@@ -35,8 +35,8 @@
 class String;
 
 @class GDTView;
+@class GDTViewRenderer;
 @protocol GDTDisplayLayer;
-@protocol GDTViewRendererProtocol;
 
 @protocol GDTViewDelegate
 
@@ -46,8 +46,8 @@ class String;
 
 @interface GDTView : UIView
 
-@property(assign, nonatomic) id<GDTViewRendererProtocol> renderer;
-@property(assign, nonatomic) id<GDTViewDelegate> delegate;
+@property(weak, nonatomic) GDTViewRenderer *renderer;
+@property(weak, nonatomic) id<GDTViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
 

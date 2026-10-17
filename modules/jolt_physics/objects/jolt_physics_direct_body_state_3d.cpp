@@ -39,7 +39,7 @@ JoltPhysicsDirectBodyState3D::JoltPhysicsDirectBodyState3D(JoltBody3D *p_body) :
 }
 
 Vector3 JoltPhysicsDirectBodyState3D::get_total_gravity() const {
-	return body->get_gravity();
+	return body->get_total_gravity();
 }
 
 real_t JoltPhysicsDirectBodyState3D::get_total_angular_damp() const {
@@ -256,6 +256,6 @@ void JoltPhysicsDirectBodyState3D::integrate_forces() {
 	set_angular_velocity(angular_velocity);
 }
 
-PhysicsDirectSpaceState3D *JoltPhysicsDirectBodyState3D::get_space_state() {
+RequiredResult<PhysicsDirectSpaceState3D> JoltPhysicsDirectBodyState3D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }

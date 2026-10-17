@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,7 +61,7 @@ typedef struct WindowsGamingInputControllerState
     int steam_virtual_gamepad_slot;
 } WindowsGamingInputControllerState;
 
-typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(CO_MTA_USAGE_COOKIE *pCookie);
+typedef HRESULT(WINAPI *CoIncrementMTAUsage_t)(HANDLE* pCookie); // CO_MTA_USAGE_COOKIE*
 typedef HRESULT(WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void **factory);
 typedef HRESULT(WINAPI *WindowsCreateStringReference_t)(PCWSTR sourceString, UINT32 length, HSTRING_HEADER *hstringHeader, HSTRING *string);
 typedef HRESULT(WINAPI *WindowsDeleteString_t)(HSTRING string);
@@ -69,6 +69,7 @@ typedef PCWSTR(WINAPI *WindowsGetStringRawBuffer_t)(HSTRING string, UINT32 *leng
 
 static struct
 {
+    bool ro_initialized;
     CoIncrementMTAUsage_t CoIncrementMTAUsage;
     RoGetActivationFactory_t RoGetActivationFactory;
     WindowsCreateStringReference_t WindowsCreateStringReference;
@@ -585,13 +586,14 @@ static bool WGI_JoystickInit(void)
 {
     HRESULT hr;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, true)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, false)) {
         return true;
     }
 
     if (FAILED(WIN_RoInitialize())) {
         return SDL_SetError("RoInitialize() failed");
     }
+    wgi.ro_initialized = true;
 
 #define RESOLVE(x) wgi.x = (x##_t)WIN_LoadComBaseFunction(#x); if (!wgi.x) return WIN_SetError("GetProcAddress failed for " #x);
     RESOLVE(CoIncrementMTAUsage);
@@ -607,7 +609,7 @@ static bool WGI_JoystickInit(void)
          * As a workaround, we will keep a reference to the MTA to prevent COM from unloading DLLs later.
          * See https://github.com/libsdl-org/SDL/issues/5552 for more details.
          */
-        static CO_MTA_USAGE_COOKIE cookie = NULL;
+        static HANDLE cookie = NULL; // CO_MTA_USAGE_COOKIE
         if (!cookie) {
             hr = wgi.CoIncrementMTAUsage(&cookie);
             if (FAILED(hr)) {
@@ -971,9 +973,7 @@ static void WGI_JoystickQuit(void)
         while (wgi.controller_count > 0) {
             IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
-        if (wgi.controllers) {
-            SDL_free(wgi.controllers);
-        }
+        SDL_free(wgi.controllers);
 
         if (wgi.arcade_stick_statics) {
             __x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics_Release(wgi.arcade_stick_statics);
@@ -1002,7 +1002,9 @@ static void WGI_JoystickQuit(void)
         __x_ABI_CWindows_CGaming_CInput_CIRawGameControllerStatics_Release(wgi.controller_statics);
     }
 
-    WIN_RoUninitialize();
+    if (wgi.ro_initialized) {
+        WIN_RoUninitialize();
+    }
 
     SDL_zero(wgi);
 }

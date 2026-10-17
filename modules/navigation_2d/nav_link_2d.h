@@ -34,6 +34,8 @@
 #include "nav_base_2d.h"
 #include "nav_utils_2d.h"
 
+#include "core/os/rw_lock.h"
+
 class NavLinkIteration2D : public NavBaseIteration2D {
 	GDCLASS(NavLinkIteration2D, NavBaseIteration2D);
 

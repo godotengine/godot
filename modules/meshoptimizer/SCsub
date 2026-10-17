@@ -24,6 +24,7 @@ thirdparty_sources = [
     "simplifier.cpp",
     "spatialorder.cpp",
     "stripifier.cpp",
+    "tangentspace.cpp",
     "vcacheoptimizer.cpp",
     "vertexcodec.cpp",
     "vertexfilter.cpp",

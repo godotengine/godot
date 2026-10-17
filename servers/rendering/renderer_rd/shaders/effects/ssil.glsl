@@ -71,7 +71,7 @@ layout(set = 0, binding = 2) uniform Constants { //get into a lower set
 constants;
 
 #ifdef ADAPTIVE
-layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
+layout(rgba16f, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
 layout(set = 1, binding = 1) uniform sampler2D source_importance;
 layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
@@ -79,7 +79,7 @@ layout(set = 1, binding = 2, std430) buffer Counter {
 counter;
 #endif
 
-layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
 
 layout(set = 3, binding = 0) uniform sampler2D last_frame;

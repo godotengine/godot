@@ -100,7 +100,7 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
         method_flags += " | METHOD_FLAG_VIRTUAL_REQUIRED"
         s = s.replace(
             "$REQCHECK",
-            'ERR_PRINT_ONCE("Required virtual method " + get_class() + "::" + #m_name + " must be overridden before calling.");',
+            "static bool _gdvirtual_required_error_shown = false;\\\n\t\t_gdvirtual_print_required_error(this, _gdvirtual_##m_name##_sn, _gdvirtual_required_error_shown);",
         )
     else:
         s = s.replace("\t\t$REQCHECK\\\n", "")
@@ -147,11 +147,9 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
             callptrargsptr += ", "
         argtext += f"m_type{i + 1}"
         callargtext += f"m_type{i + 1} arg{i + 1}"
-        callsiargs += f"arg{i + 1}"
+        callsiargs += f"VariantInternal::make(arg{i + 1})"
         callsiargptrs += f"&vargs[{i}]"
-        callptrargs += (
-            f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1} = (PtrToArg<m_type{i + 1}>::EncodeT)arg{i + 1};\\\n"
-        )
+        callptrargs += f"PtrToArg<m_type{i + 1}>::EncodeT argval{i + 1}; PtrToArg<m_type{i + 1}>::encode(arg{i + 1}, &argval{i + 1});\\\n"
         callptrargsptr += f"&argval{i + 1}"
 
     if argcount:
@@ -198,14 +196,27 @@ def run(target, source, env):
     txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
 #pragma once
 
+// IWYU pragma: begin_keep
 #include "core/object/script_instance.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/variant_caster.h"
+#include "core/variant/variant_internal.h"
+// IWYU pragma: end_keep
 
 inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
 
 template <typename... Args>
-void _gdvirtual_set_method_info_args(MethodInfo &p_method_info) {
+_NO_INLINE_ void _gdvirtual_set_method_info_args(MethodInfo &p_method_info) {
 	p_method_info.arguments = { GetTypeInfo<Args>::get_class_info()... };
 	p_method_info.arguments_metadata = { GetTypeInfo<Args>::METADATA... };
+}
+
+_NO_INLINE_ inline void _gdvirtual_print_required_error(const Object *p_object, const StringName &p_method_name, bool &r_error_shown) {
+	// Like ERR_PRINT_ONCE but outlined, to save on binary space.
+	if (!r_error_shown) {
+		r_error_shown = true;
+		ERR_PRINT(vformat("Required virtual method %s::%s must be overridden before calling.", p_object->get_class_name(), p_method_name));
+	}
 }
 
 """

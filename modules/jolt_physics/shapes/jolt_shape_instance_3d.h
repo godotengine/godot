@@ -32,9 +32,9 @@
 
 #include "core/math/transform_3d.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/Shape/Shape.h"
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 class JoltShapedObject3D;
 class JoltShape3D;
@@ -95,5 +95,5 @@ public:
 	void enable() { disabled = false; }
 	void disable() { disabled = true; }
 
-	bool try_build();
+	bool try_build(bool p_object_has_back_face_collision);
 };

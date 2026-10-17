@@ -31,8 +31,9 @@
 #pragma once
 
 #include "core/os/shared_object.h"
-#include "editor_export_platform.h"
-#include "editor_export_preset.h"
+#include "core/variant/typed_array.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_preset.h"
 #include "scene/main/node.h"
 
 class EditorExportPlugin : public RefCounted {
@@ -42,6 +43,15 @@ class EditorExportPlugin : public RefCounted {
 	friend class EditorExportPlatform;
 	friend class EditorExportPreset;
 
+public:
+	// Data for an SPM dependency, collected via add_apple_embedded_platform_spm_package() during export
+	struct AppleEmbeddedSPMPackage {
+		String url;
+		String version;
+		Vector<String> products;
+	};
+
+private:
 	String export_base_path;
 	Ref<EditorExportPreset> export_preset;
 
@@ -61,6 +71,7 @@ class EditorExportPlugin : public RefCounted {
 	String apple_embedded_platform_linker_flags;
 	Vector<String> apple_embedded_platform_bundle_files;
 	String apple_embedded_platform_cpp_code;
+	Vector<AppleEmbeddedSPMPackage> apple_embedded_platform_spm_packages;
 
 	Vector<String> macos_plugin_files;
 
@@ -77,6 +88,7 @@ class EditorExportPlugin : public RefCounted {
 		apple_embedded_platform_plist_content = "";
 		apple_embedded_platform_linker_flags = "";
 		apple_embedded_platform_cpp_code = "";
+		apple_embedded_platform_spm_packages.clear();
 		macos_plugin_files.clear();
 	}
 
@@ -105,6 +117,7 @@ protected:
 	void add_apple_embedded_platform_linker_flags(const String &p_flags);
 	void add_apple_embedded_platform_bundle_file(const String &p_path);
 	void add_apple_embedded_platform_cpp_code(const String &p_code);
+	void add_apple_embedded_platform_spm_package(const String &p_url, const String &p_version, const PackedStringArray &p_products);
 	void add_macos_plugin_file(const String &p_path);
 
 	void skip();
@@ -112,12 +125,14 @@ protected:
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 	virtual void _export_end();
+	virtual void _end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive);
 
 	static void _bind_methods();
 
 	GDVIRTUAL3(_export_file, String, String, Vector<String>)
 	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, uint32_t)
 	GDVIRTUAL0(_export_end)
+	GDVIRTUAL2(_end_generate_apple_embedded_project, const String &, bool)
 
 	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
 	GDVIRTUAL2R_REQUIRED(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
@@ -172,6 +187,8 @@ public:
 	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const;
 	PackedStringArray get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 
+	void end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive);
+
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_libraries(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
@@ -187,6 +204,7 @@ public:
 	String get_apple_embedded_platform_linker_flags() const;
 	Vector<String> get_apple_embedded_platform_bundle_files() const;
 	String get_apple_embedded_platform_cpp_code() const;
+	Vector<AppleEmbeddedSPMPackage> get_apple_embedded_platform_spm_packages() const;
 	const Vector<String> &get_macos_plugin_files() const;
 	Variant get_option(const StringName &p_name) const;
 };

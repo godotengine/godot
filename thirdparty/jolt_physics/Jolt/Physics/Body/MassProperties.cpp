@@ -97,7 +97,7 @@ Vec3 MassProperties::sGetEquivalentSolidBoxSize(float inMass, Vec3Arg inInertiaD
 	// mass / 12 * [size_y^2 + size_z^2, size_x^2 + size_z^2, size_x^2 + size_y^2]
 	// Solving for size_x, size_y and size_y (diagonal and mass are known):
 	Vec3 diagonal = inInertiaDiagonal * (12.0f / inMass);
-	return Vec3(sqrt(0.5f * (-diagonal[0] + diagonal[1] + diagonal[2])), sqrt(0.5f * (diagonal[0] - diagonal[1] + diagonal[2])), sqrt(0.5f * (diagonal[0] + diagonal[1] - diagonal[2])));
+	return Vec3(Sqrt(0.5f * (-diagonal[0] + diagonal[1] + diagonal[2])), Sqrt(0.5f * (diagonal[0] - diagonal[1] + diagonal[2])), Sqrt(0.5f * (diagonal[0] + diagonal[1] - diagonal[2])));
 }
 
 void MassProperties::Scale(Vec3Arg inScale)

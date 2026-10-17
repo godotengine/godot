@@ -59,9 +59,8 @@ class EditorVariantTypePopupMenu : public PopupMenu {
 
 protected:
 	void _notification(int p_what);
+	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
 
 public:
-	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
-
 	EditorVariantTypePopupMenu(bool p_remove_item);
 };

@@ -36,9 +36,9 @@ namespace graph {
 
 struct AnchorMatrix : public OT::Layout::GPOS_impl::AnchorMatrix
 {
-  bool sanitize (graph_t::vertex_t& vertex, unsigned class_count) const
+  bool sanitize (const graph_t::vertex_t& vertex, unsigned class_count) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < AnchorMatrix::min_size) return false;
     hb_barrier ();
 
@@ -124,9 +124,9 @@ struct AnchorMatrix : public OT::Layout::GPOS_impl::AnchorMatrix
 
 struct MarkArray : public OT::Layout::GPOS_impl::MarkArray
 {
-  bool sanitize (graph_t::vertex_t& vertex) const
+  bool sanitize (const graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     unsigned min_size = MarkArray::min_size;
     if (vertex_len < min_size) return false;
     hb_barrier ();
@@ -205,14 +205,13 @@ struct MarkArray : public OT::Layout::GPOS_impl::MarkArray
 
 struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<SmallTypes>
 {
-  bool sanitize (graph_t::vertex_t& vertex) const
+  bool sanitize (const graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     return vertex_len >= MarkBasePosFormat1::static_size;
   }
 
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
     hb_set_t visited;
@@ -265,7 +264,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     split_context_t split_context {
       c,
       this,
-      c.graph.duplicate_if_shared (parent_index, this_index),
+      this_index,
       std::move (class_to_info),
       c.graph.vertices_[mark_array_id].position_to_index_map (),
     };
@@ -431,7 +430,6 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     unsigned base_coverage_id =
         graph.index_for_offset (sc.this_index, &baseCoverage);
     graph.add_link (&(prime->baseCoverage), prime_id, base_coverage_id);
-    graph.duplicate (prime_id, base_coverage_id);
 
     auto mark_coverage = sc.c.graph.as_table<Coverage> (this_index,
                                                         &markCoverage);
@@ -450,7 +448,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
       return -1;
 
     auto mark_array =
-        graph.as_table <MarkArray> (sc.this_index, &markArray);
+        graph.as_mutable_table <MarkArray> (sc.this_index, &markArray);
     if (!mark_array) return -1;
     unsigned new_mark_array =
         mark_array.table->clone (sc.c,
@@ -462,7 +460,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
 
     unsigned class_count = classCount;
     auto base_array =
-        graph.as_table<AnchorMatrix> (sc.this_index, &baseArray, class_count);
+        graph.as_mutable_table<AnchorMatrix> (sc.this_index, &baseArray, class_count);
     if (!base_array) return -1;
     unsigned new_base_array =
         base_array.table->clone (sc.c,
@@ -478,12 +476,12 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
 struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
 {
   hb_vector_t<unsigned> split_subtables (gsubgpos_graph_context_t& c,
-                                         unsigned parent_index,
                                          unsigned this_index)
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
-      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
+      hb_barrier ();
+      return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, this_index);
 #ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;
       // Don't split 24bit MarkBasePos's.
@@ -493,14 +491,15 @@ struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
     }
   }
 
-  bool sanitize (graph_t::vertex_t& vertex) const
+  bool sanitize (const graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
-    if (vertex_len < u.format.get_size ()) return false;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    if (vertex_len < u.format.v.get_size ()) return false;
     hb_barrier ();
 
-    switch (u.format) {
+    switch (u.format.v) {
     case 1:
+      hb_barrier ();
       return ((MarkBasePosFormat1*)(&u.format1))->sanitize (vertex);
 #ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;

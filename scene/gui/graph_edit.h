@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "core/variant/typed_dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
+#include "scene/resources/shader.h"
 
 class Button;
 class GraphEdit;
@@ -196,6 +196,7 @@ private:
 
 	bool snapping_enabled = true;
 	int snapping_distance = 20;
+	float snapping_distance_scale = 1;
 	bool show_grid = true;
 	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
@@ -404,8 +405,6 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	PackedStringArray get_configuration_warnings() const override;
-
 	void key_input(const Ref<InputEvent> &p_ev);
 
 	// This method has to be public (for undo redo).
@@ -511,6 +510,9 @@ public:
 
 	void set_snapping_distance(int p_snapping_distance);
 	int get_snapping_distance() const;
+
+	void set_snapping_distance_scale(float p_snapping_distance_scale);
+	float get_snapping_distance_scale() const;
 
 	void set_show_grid(bool p_enable);
 	bool is_showing_grid() const;

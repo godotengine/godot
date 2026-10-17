@@ -50,8 +50,6 @@ layout(push_constant, std430) uniform Params {
 params;
 
 vec3 linear_to_srgb(vec3 color) {
-	//if going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -181,5 +179,5 @@ void main() {
 
 #endif
 
-	imageStore(screen_buffer, screen_pos, vec4(linear_to_srgb(light), 1.0));
+	imageStore(screen_buffer, screen_pos, vec4(clamp(linear_to_srgb(light), vec3(0.0), vec3(1.0)), 1.0));
 }

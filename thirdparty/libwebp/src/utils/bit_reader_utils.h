@@ -16,6 +16,8 @@
 #define WEBP_UTILS_BIT_READER_UTILS_H_
 
 #include <assert.h>
+#include <stddef.h>
+
 #ifdef _MSC_VER
 #include <stdlib.h>  // _byteswap_ulong
 #endif
@@ -47,14 +49,14 @@ extern void BitTrace(const struct VP8BitReader* const br, const char label[]);
 extern "C" {
 #endif
 
-// The Boolean decoder needs to maintain infinite precision on the value_ field.
-// However, since range_ is only 8bit, we only need an active window of 8 bits
-// for value_. Left bits (MSB) gets zeroed and shifted away when value_ falls
-// below 128, range_ is updated, and fresh bits read from the bitstream are
-// brought in as LSB. To avoid reading the fresh bits one by one (slow), we
-// cache BITS of them ahead. The total of (BITS + 8) bits must fit into a
-// natural register (with type bit_t). To fetch BITS bits from bitstream we
-// use a type lbit_t.
+// The Boolean decoder needs to maintain infinite precision on the 'value'
+// field. However, since 'range' is only 8bit, we only need an active window of
+// 8 bits for 'value". Left bits (MSB) gets zeroed and shifted away when
+// 'value' falls below 128, 'range' is updated, and fresh bits read from the
+// bitstream are brought in as LSB. To avoid reading the fresh bits one by one
+// (slow), we cache BITS of them ahead. The total of (BITS + 8) bits must fit
+// into a natural register (with type bit_t). To fetch BITS bits from bitstream
+// we use a type lbit_t.
 //
 // BITS can be any multiple of 8 from 8 to 56 (inclusive).
 // Pick values that fit natural register size.
@@ -77,8 +79,8 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 // Derived types and constants:
-//   bit_t = natural register type for storing 'value_' (which is BITS+8 bits)
-//   range_t = register for 'range_' (which is 8bits only)
+//   bit_t = natural register type for storing 'value' (which is BITS+8 bits)
+//   range_t = register for 'range' (which is 8bits only)
 
 #if (BITS > 24)
 typedef uint64_t bit_t;
@@ -94,14 +96,14 @@ typedef uint32_t range_t;
 typedef struct VP8BitReader VP8BitReader;
 struct VP8BitReader {
   // boolean decoder  (keep the field ordering as is!)
-  bit_t value_;               // current value
-  range_t range_;             // current range minus 1. In [127, 254] interval.
-  int bits_;                  // number of valid bits left
+  bit_t value;               // current value
+  range_t range;             // current range minus 1. In [127, 254] interval.
+  int bits;                  // number of valid bits left
   // read buffer
-  const uint8_t* buf_;        // next byte to be read
-  const uint8_t* buf_end_;    // end of read buffer
-  const uint8_t* buf_max_;    // max packed-read position on buffer
-  int eof_;                   // true if input is exhausted
+  const uint8_t* buf;        // next byte to be read
+  const uint8_t* buf_end;    // end of read buffer
+  const uint8_t* buf_max;    // max packed-read position on buffer
+  int eof;                   // true if input is exhausted
 };
 
 // Initialize the bit reader and the boolean decoder.
@@ -141,12 +143,12 @@ int32_t VP8GetSignedValue(VP8BitReader* const br, int num_bits,
 typedef uint64_t vp8l_val_t;  // right now, this bit-reader can only use 64bit.
 
 typedef struct {
-  vp8l_val_t     val_;        // pre-fetched bits
-  const uint8_t* buf_;        // input byte buffer
-  size_t         len_;        // buffer length
-  size_t         pos_;        // byte position in buf_
-  int            bit_pos_;    // current bit-reading position in val_
-  int            eos_;        // true if a bit was read past the end of buffer
+  vp8l_val_t     val;        // pre-fetched bits
+  const uint8_t* buf;        // input byte buffer
+  size_t         len;        // buffer length
+  size_t         pos;        // byte position in buf
+  int            bit_pos;    // current bit-reading position in val
+  int            eos;        // true if a bit was read past the end of buffer
 } VP8LBitReader;
 
 void VP8LInitBitReader(VP8LBitReader* const br,
@@ -160,34 +162,34 @@ void VP8LBitReaderSetBuffer(VP8LBitReader* const br,
 // Reads the specified number of bits from read buffer.
 // Flags an error in case end_of_stream or n_bits is more than the allowed limit
 // of VP8L_MAX_NUM_BIT_READ (inclusive).
-// Flags eos_ if this read attempt is going to cross the read buffer.
+// Flags 'eos' if this read attempt is going to cross the read buffer.
 uint32_t VP8LReadBits(VP8LBitReader* const br, int n_bits);
 
 // Return the prefetched bits, so they can be looked up.
 static WEBP_INLINE uint32_t VP8LPrefetchBits(VP8LBitReader* const br) {
-  return (uint32_t)(br->val_ >> (br->bit_pos_ & (VP8L_LBITS - 1)));
+  return (uint32_t)(br->val >> (br->bit_pos & (VP8L_LBITS - 1)));
 }
 
 // Returns true if there was an attempt at reading bit past the end of
-// the buffer. Doesn't set br->eos_ flag.
+// the buffer. Doesn't set br->eos flag.
 static WEBP_INLINE int VP8LIsEndOfStream(const VP8LBitReader* const br) {
-  assert(br->pos_ <= br->len_);
-  return br->eos_ || ((br->pos_ == br->len_) && (br->bit_pos_ > VP8L_LBITS));
+  assert(br->pos <= br->len);
+  return br->eos || ((br->pos == br->len) && (br->bit_pos > VP8L_LBITS));
 }
 
 // For jumping over a number of bits in the bit stream when accessed with
 // VP8LPrefetchBits and VP8LFillBitWindow.
-// This function does *not* set br->eos_, since it's speed-critical.
+// This function does *not* set br->eos, since it's speed-critical.
 // Use with extreme care!
 static WEBP_INLINE void VP8LSetBitPos(VP8LBitReader* const br, int val) {
-  br->bit_pos_ = val;
+  br->bit_pos = val;
 }
 
 // Advances the read buffer by 4 bytes to make room for reading next 32 bits.
 // Speed critical, but infrequent part of the code can be non-inlined.
 extern void VP8LDoFillBitWindow(VP8LBitReader* const br);
 static WEBP_INLINE void VP8LFillBitWindow(VP8LBitReader* const br) {
-  if (br->bit_pos_ >= VP8L_WBITS) VP8LDoFillBitWindow(br);
+  if (br->bit_pos >= VP8L_WBITS) VP8LDoFillBitWindow(br);
 }
 
 #ifdef __cplusplus

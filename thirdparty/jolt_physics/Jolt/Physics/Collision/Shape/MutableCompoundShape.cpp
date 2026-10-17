@@ -23,7 +23,6 @@ ShapeSettings::ShapeResult MutableCompoundShapeSettings::Create() const
 	// Build a mutable compound shape
 	if (mCachedResult.IsEmpty())
 		Ref<Shape> shape = new MutableCompoundShape(*this, mCachedResult);
-
 	return mCachedResult;
 }
 

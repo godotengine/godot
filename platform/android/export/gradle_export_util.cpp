@@ -30,43 +30,50 @@
 
 #include "gradle_export_util.h"
 
-#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+#include "core/string/regex.h"
+#include "core/string/translation_server.h"
+#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_plugin.h"
+#include "editor/export/export_template_manager.h"
 
-int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
+int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return 1;
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return 8;
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return 9;
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return 11;
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return 12;
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return 13;
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return 0;
 	}
 }
 
-String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation) {
+String _get_android_orientation_label(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return "portrait";
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return "reverseLandscape";
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return "reversePortrait";
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return "userLandscape";
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return "userPortrait";
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return "fullUser";
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return "landscape";
 	}
@@ -137,10 +144,7 @@ Error create_directory(const String &p_dir) {
 // Note: this will overwrite the file at p_path if it already exists.
 Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	String dir = p_path.get_base_dir();
-	Error err = create_directory(dir);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(create_directory(dir));
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_buffer(p_data.ptr(), p_data.size());
@@ -164,30 +168,28 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 	return OK;
 }
 
-// Implementation of EditorExportSaveFunction.
+// Implementation of EditorExportPlatform::SaveFileFunction.
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const EditorExportPlatform::SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
-	String simplified_path = p_path.simplify_path();
-	if (simplified_path.begins_with("uid://")) {
-		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
-		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
-	}
+	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, p_data, enc_data, sd));
 
-	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (export_data->pd.salt.length() == 32) {
+		dst_path = export_data->assets_directory + String("/") + (simplified_path + export_data->pd.salt).sha256_text();
+	} else {
+		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
-	err = store_file_at_path(dst_path, enc_data);
+	Error err = store_file_at_path(dst_path, enc_data);
 
 	export_data->pd.file_ofs.push_back(sd);
 	return err;
@@ -209,20 +211,27 @@ String _android_xml_escape(const String &p_string) {
 }
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames) {
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_export_src_dir, const Dictionary &p_appnames) {
 	print_verbose("Creating strings resources for supported locales for project " + p_project_name);
 	// Stores the string into the default values directory.
 	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(p_project_name));
-	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
+	store_string_at_path(p_export_src_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
-	Ref<DirAccess> da = DirAccess::open(p_gradle_build_dir.path_join("res"));
+	const String reference_values_parent_dir = ExportTemplateManager::get_android_build_directory(p_preset).path_join("dataLib/src/main/res");
+	Ref<DirAccess> da = DirAccess::open(reference_values_parent_dir);
 	if (da.is_null()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
 		}
 		return ERR_CANT_OPEN;
 	}
+
+	// Setup a temporary translation domain to translate the project name.
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+
 	da->list_dir_begin();
 	while (true) {
 		String file = da->get_next();
@@ -234,9 +243,16 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 			continue;
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
-		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
-		if (p_appnames.has(locale)) {
-			String locale_project_name = p_appnames[locale];
+		String locale_directory = p_export_src_dir.path_join("res/" + file + "/godot_project_name_string.xml");
+
+		String locale_project_name;
+		if (p_appnames.is_empty()) {
+			domain->set_locale_override(locale);
+			locale_project_name = domain->translate(p_project_name, String());
+		} else {
+			locale_project_name = p_appnames.get(locale, p_project_name);
+		}
+		if (locale_project_name != p_project_name) {
 			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
@@ -246,6 +262,9 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 	da->list_dir_end();
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
+
 	return OK;
 }
 
@@ -272,17 +291,53 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug) {
-	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
+	String export_plugins_activity_element_contents;
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(p_export_platform)) {
+			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
+			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				export_plugins_activity_element_contents += "<!-- Start of manifest activity element contents from " + export_plugin_name + " -->\n";
+				export_plugins_activity_element_contents += contents;
+				export_plugins_activity_element_contents += "\n";
+				export_plugins_activity_element_contents += "<!-- End of manifest activity element contents from " + export_plugin_name + " -->\n";
+			}
+		}
+	}
+
+	// Update the GodotApp activity tag.
+	String orientation = _get_android_orientation_label(DisplayServerEnums::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
-			"        <activity android:name=\".GodotApp\" "
+			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"tools:node=\"mergeOnlyAttributes\" "
+			"android:configChanges=\"layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode|fontScale|fontWeightAdjustment\" "
 			"android:excludeFromRecents=\"%s\" "
+			"android:exported=\"false\" "
+			"android:launchMode=\"singleInstancePerTask\" "
 			"android:screenOrientation=\"%s\" "
-			"android:resizeableActivity=\"%s\">\n",
+			"android:resizeableActivity=\"%s\" "
+			"android:supportsPictureInPicture=\"true\" "
+			"android:theme=\"@style/GodotAppSplashTheme\" "
+			"android:windowSoftInputMode=\"adjustResize\" >\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(p_export_platform->get_project_setting(p_preset, "display/window/size/resizable"))));
+
+	// *LAUNCHER and *HOME categories should only go to the activity-alias.
+	Ref<RegEx> activity_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"\S+(LAUNCHER|HOME)"\s*\/>)delim");
+	String updated_export_plugins_activity_element_contents = activity_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_element_contents;
+
+	manifest_activity_text += "        </activity>\n";
+
+	// Update the GodotAppLauncher activity tag.
+	manifest_activity_text += "        <activity-alias\n"
+							  "            tools:node=\"mergeOnlyAttributes\"\n"
+							  "            android:name=\"com.godot.game.GodotAppLauncher\"\n"
+							  "            android:targetActivity=\"com.godot.game.GodotApp\"\n"
+							  "            android:exported=\"true\">\n";
 
 	manifest_activity_text += "            <intent-filter>\n"
 							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
@@ -305,44 +360,41 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 
 	manifest_activity_text += "            </intent-filter>\n";
 
-	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
-	for (int i = 0; i < export_plugins.size(); i++) {
-		if (export_plugins[i]->supports_platform(p_export_platform)) {
-			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
-			if (!contents.is_empty()) {
-				manifest_activity_text += contents;
-				manifest_activity_text += "\n";
-			}
-		}
-	}
+	// Hybrid categories should only go to the actual 'GodotApp' activity.
+	Ref<RegEx> activity_alias_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"org.godotengine.xr.hybrid.(IMMERSIVE|PANEL)"\s*\/>)delim");
+	String updated_export_plugins_activity_alias_element_contents = activity_alias_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
+	manifest_activity_text += updated_export_plugins_activity_alias_element_contents;
 
-	manifest_activity_text += "        </activity>\n";
+	manifest_activity_text += "        </activity-alias>\n";
 	return manifest_activity_text;
 }
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata) {
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, int p_export_format, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata) {
 	int app_category_index = (int)(p_preset->get("package/app_category"));
 	bool is_game = app_category_index == APP_CATEGORY_GAME;
 
-	String manifest_application_text = vformat(
-			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"%s\"\n"
-			"        android:icon=\"@mipmap/icon\"\n"
-			"        android:isGame=\"%s\"\n"
-			"        android:hasFragileUserData=\"%s\"\n"
-			"        android:requestLegacyExternalStorage=\"%s\"\n",
-			bool_to_string(p_preset->get("user_data_backup/allow")),
-			bool_to_string(is_game),
-			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
-			bool_to_string(p_has_read_write_storage_permission));
-	if (app_category_index != APP_CATEGORY_UNDEFINED) {
-		manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
-		manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
-	} else {
-		manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
-		manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	String manifest_application_text = "    <application";
+	if (p_export_format != EXPORT_FORMAT_AAR) {
+		manifest_application_text += vformat(
+				"\n"
+				"        android:allowBackup=\"%s\"\n"
+				"        android:isGame=\"%s\"\n"
+				"        android:hasFragileUserData=\"%s\"\n"
+				"        android:requestLegacyExternalStorage=\"%s\"\n",
+				bool_to_string(p_preset->get("user_data_backup/allow")),
+				bool_to_string(is_game),
+				bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
+				bool_to_string(p_has_read_write_storage_permission));
+		if (app_category_index != APP_CATEGORY_UNDEFINED) {
+			manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
+			manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+		} else {
+			manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
+			manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+		}
+		manifest_application_text += "        tools:ignore=\"UnusedAttribute\"";
 	}
-	manifest_application_text += "        tools:ignore=\"GoogleAppIndexingWarning\">\n\n";
+	manifest_application_text += ">\n\n";
 
 	for (int i = 0; i < p_metadata.size(); i++) {
 		manifest_application_text += vformat("        <meta-data tools:node=\"replace\" android:name=\"%s\" android:value=\"%s\" />\n", p_metadata[i].name, p_metadata[i].value);
@@ -353,8 +405,11 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_application_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_application_text += "<!-- Start of manifest application element contents from " + export_plugin_name + " -->\n";
 				manifest_application_text += contents;
 				manifest_application_text += "\n";
+				manifest_application_text += "<!-- End of manifest application element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -364,7 +419,7 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	return manifest_application_text;
 }
 
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
 	Error err = OK;
 	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
 	if (err != OK) {
@@ -373,7 +428,7 @@ Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p
 	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
 	r_sd.ofs = 0;
 	r_sd.size = p_data.size();
-	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
+	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_preset, p_simplified_path, p_data, r_sd.encrypted);
 	if (err != OK) {
 		return err;
 	}

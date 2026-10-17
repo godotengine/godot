@@ -52,7 +52,7 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WIT
 
 #include "core/variant/variant.h"
 
-#include "Jolt/Core/Memory.h"
+#include <Jolt/Core/Memory.h>
 
 namespace {
 

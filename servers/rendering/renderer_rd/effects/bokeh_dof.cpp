@@ -29,9 +29,11 @@
 /**************************************************************************/
 
 #include "bokeh_dof.h"
-#include "copy_effects.h"
+
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 
 using namespace RendererRD;
@@ -66,7 +68,7 @@ BokehDOF::BokehDOF(bool p_prefer_raster_effects) {
 
 		for (int i = 0; i < BOKEH_MAX; i++) {
 			if (bokeh.compute_shader.is_variant_enabled(i)) {
-				bokeh.compute_pipelines[i] = RD::get_singleton()->compute_pipeline_create(bokeh.compute_shader.version_get_shader(bokeh.shader_version, i));
+				bokeh.compute_pipelines[i].create_compute_pipeline(bokeh.compute_shader.version_get_shader(bokeh.shader_version, i));
 			}
 		}
 
@@ -77,6 +79,10 @@ BokehDOF::BokehDOF(bool p_prefer_raster_effects) {
 }
 
 BokehDOF::~BokehDOF() {
+	for (int i = 0; i < BOKEH_MAX; i++) {
+		bokeh.compute_pipelines[i].free();
+	}
+
 	if (prefer_raster_effects) {
 		bokeh.raster_shader.version_free(bokeh.shader_version);
 	} else {
@@ -101,8 +107,8 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 	float bokeh_size = RSG::camera_attributes->camera_attributes_get_dof_blur_amount(p_camera_attributes) * 64; // Base 64 pixel radius.
 
 	bool use_jitter = RSG::camera_attributes->camera_attributes_get_dof_blur_use_jitter();
-	RS::DOFBokehShape bokeh_shape = RSG::camera_attributes->camera_attributes_get_dof_blur_bokeh_shape();
-	RS::DOFBlurQuality blur_quality = RSG::camera_attributes->camera_attributes_get_dof_blur_quality();
+	RSE::DOFBokehShape bokeh_shape = RSG::camera_attributes->camera_attributes_get_dof_blur_bokeh_shape();
+	RSE::DOFBlurQuality blur_quality = RSG::camera_attributes->camera_attributes_get_dof_blur_quality();
 
 	// setup our push constant
 	memset(&bokeh.push_constant, 0, sizeof(BokehPushConstant));
@@ -132,7 +138,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 	bokeh.push_constant.blur_scale = 0.5;
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::Uniform u_base_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_buffers.base_texture }));
 	RD::Uniform u_depth_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_buffers.depth_texture }));
@@ -154,7 +160,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 	RID shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_GEN_BLUR_SIZE);
 	ERR_FAIL_COND(shader.is_null());
 
-	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BLUR_SIZE]);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BLUR_SIZE].get_rid());
 
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_depth_texture), 1);
@@ -167,19 +173,19 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_buffers.base_texture_size.x, p_buffers.base_texture_size.y, 1);
 	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-	if (bokeh_shape == RS::DOF_BOKEH_BOX || bokeh_shape == RS::DOF_BOKEH_HEXAGON) {
+	if (bokeh_shape == RSE::DOF_BOKEH_BOX || bokeh_shape == RSE::DOF_BOKEH_HEXAGON) {
 		//second pass
-		BokehMode mode = bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
+		BokehMode mode = bokeh_shape == RSE::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
 		shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, mode);
 		ERR_FAIL_COND(shader.is_null());
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[mode]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[mode].get_rid());
 
 		static const int quality_samples[4] = { 6, 12, 12, 24 };
 
 		bokeh.push_constant.steps = quality_samples[blur_quality];
 
-		if (blur_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RS::DOF_BLUR_QUALITY_LOW) {
+		if (blur_quality == RSE::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RSE::DOF_BLUR_QUALITY_LOW) {
 			//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_half_image0), 0);
@@ -204,7 +210,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		//third pass
 		bokeh.push_constant.second_pass = true;
 
-		if (blur_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RS::DOF_BLUR_QUALITY_LOW) {
+		if (blur_quality == RSE::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RSE::DOF_BLUR_QUALITY_LOW) {
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_half_image1), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_half_texture0), 1);
 		} else {
@@ -217,13 +223,13 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, bokeh.push_constant.size[0], bokeh.push_constant.size[1], 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-		if (blur_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RS::DOF_BLUR_QUALITY_LOW) {
+		if (blur_quality == RSE::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RSE::DOF_BLUR_QUALITY_LOW) {
 			//forth pass, upscale for low quality
 
 			shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_COMPOSITE);
 			ERR_FAIL_COND(shader.is_null());
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE].get_rid());
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_half_texture1), 1);
@@ -244,7 +250,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		ERR_FAIL_COND(shader.is_null());
 
 		//second pass
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BOKEH_CIRCULAR]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_GEN_BOKEH_CIRCULAR].get_rid());
 
 		static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };
 
@@ -272,7 +278,7 @@ void BokehDOF::bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_att
 		shader = bokeh.compute_shader.version_get_shader(bokeh.shader_version, BOKEH_COMPOSITE);
 		ERR_FAIL_COND(shader.is_null());
 
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE]);
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.compute_pipelines[BOKEH_COMPOSITE].get_rid());
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_base_image), 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_half_texture0), 1);
@@ -306,8 +312,8 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 	float dof_near_size = RSG::camera_attributes->camera_attributes_get_dof_near_transition(p_camera_attributes);
 	float bokeh_size = RSG::camera_attributes->camera_attributes_get_dof_blur_amount(p_camera_attributes) * 64; // Base 64 pixel radius.
 
-	RS::DOFBokehShape bokeh_shape = RSG::camera_attributes->camera_attributes_get_dof_blur_bokeh_shape();
-	RS::DOFBlurQuality blur_quality = RSG::camera_attributes->camera_attributes_get_dof_blur_quality();
+	RSE::DOFBokehShape bokeh_shape = RSG::camera_attributes->camera_attributes_get_dof_blur_bokeh_shape();
+	RSE::DOFBlurQuality blur_quality = RSG::camera_attributes->camera_attributes_get_dof_blur_quality();
 
 	// setup our base push constant
 	memset(&bokeh.push_constant, 0, sizeof(BokehPushConstant));
@@ -323,7 +329,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 	bokeh.push_constant.blur_size = bokeh_size;
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	RD::Uniform u_base_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_buffers.base_texture }));
 	RD::Uniform u_depth_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_buffers.depth_texture }));
@@ -364,14 +370,14 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 			RD::get_singleton()->draw_list_end();
 		}
 
-		if (bokeh_shape == RS::DOF_BOKEH_BOX || bokeh_shape == RS::DOF_BOKEH_HEXAGON) {
+		if (bokeh_shape == RSE::DOF_BOKEH_BOX || bokeh_shape == RSE::DOF_BOKEH_HEXAGON) {
 			// double pass approach
-			BokehMode mode = bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
+			BokehMode mode = bokeh_shape == RSE::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL;
 
 			RID shader = bokeh.raster_shader.version_get_shader(bokeh.shader_version, mode);
 			ERR_FAIL_COND(shader.is_null());
 
-			if (blur_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RS::DOF_BLUR_QUALITY_LOW) {
+			if (blur_quality == RSE::DOF_BLUR_QUALITY_VERY_LOW || blur_quality == RSE::DOF_BLUR_QUALITY_LOW) {
 				//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
 				bokeh.push_constant.size[0] = p_buffers.base_texture_size.x >> 1;
 				bokeh.push_constant.size[1] = p_buffers.base_texture_size.y >> 1;
@@ -399,7 +405,7 @@ void BokehDOF::bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attr
 			// Pass 2
 			if (!bokeh.push_constant.half_size) {
 				// do not output weight, we're writing back into our base buffer
-				mode = bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX_NOWEIGHT : BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT;
+				mode = bokeh_shape == RSE::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX_NOWEIGHT : BOKEH_GEN_BOKEH_HEXAGONAL_NOWEIGHT;
 
 				shader = bokeh.raster_shader.version_get_shader(bokeh.shader_version, mode);
 				ERR_FAIL_COND(shader.is_null());

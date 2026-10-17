@@ -23,8 +23,7 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(EmptyShapeSettings)
 ShapeSettings::ShapeResult EmptyShapeSettings::Create() const
 {
 	if (mCachedResult.IsEmpty())
-		new EmptyShape(*this, mCachedResult);
-
+		Ref<Shape> shape = new EmptyShape(*this, mCachedResult);
 	return mCachedResult;
 }
 

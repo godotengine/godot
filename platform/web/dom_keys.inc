@@ -32,9 +32,9 @@
 
 // See https://w3c.github.io/uievents-code/#code-value-tables
 Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], bool p_physical) {
-#define DOM2GODOT(p_str, p_godot_code)                                                                \
+#define DOM2GODOT(p_str, p_godot_code) \
 	if (memcmp((const void *)p_str, (void *)(p_physical ? p_code : p_key), strlen(p_str) + 1) == 0) { \
-		return Key::p_godot_code;                                                                     \
+		return Key::p_godot_code; \
 	}
 
 	// Numpad section.
@@ -225,9 +225,9 @@ Key dom_code2godot_scancode(EM_UTF8 const p_code[32], EM_UTF8 const p_key[32], b
 }
 
 KeyLocation dom_code2godot_key_location(EM_UTF8 const p_code[32]) {
-#define DOM2GODOT(m_str, m_godot_code)                                         \
+#define DOM2GODOT(m_str, m_godot_code) \
 	if (memcmp((const void *)m_str, (void *)p_code, strlen(m_str) + 1) == 0) { \
-		return KeyLocation::m_godot_code;                                      \
+		return KeyLocation::m_godot_code; \
 	}
 
 	DOM2GODOT("AltLeft", LEFT);

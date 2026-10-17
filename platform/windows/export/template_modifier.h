@@ -31,7 +31,8 @@
 #pragma once
 
 #include "core/io/file_access.h"
-#include "editor/export/editor_export_platform_pc.h"
+
+class EditorExportPreset;
 
 class TemplateModifier {
 	const uint32_t PE_PAGE_SIZE = 4096;

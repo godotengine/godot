@@ -30,7 +30,12 @@
 
 #include "openxr_select_action_dialog.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/scroll_container.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));

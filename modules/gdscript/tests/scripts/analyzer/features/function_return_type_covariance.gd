@@ -24,9 +24,9 @@ class B extends A:
 	func untyped_to_node() -> Node: return null
 
 	func void_to_untyped(): pass
-	func variant_to_untyped(): pass
-	func int_to_untyped(): pass
-	func node_to_untyped(): pass
+	func variant_to_untyped(): return null
+	func int_to_untyped(): return 0
+	func node_to_untyped(): return null
 
 func test():
 	pass

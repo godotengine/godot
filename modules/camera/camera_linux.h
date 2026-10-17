@@ -32,6 +32,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/camera/camera_server.h"
 
 class CameraLinux : public CameraServer {

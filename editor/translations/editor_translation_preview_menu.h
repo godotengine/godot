@@ -35,6 +35,8 @@
 class EditorTranslationPreviewMenu : public PopupMenu {
 	GDCLASS(EditorTranslationPreviewMenu, PopupMenu);
 
+	static constexpr int MENU_ID_PSEUDOLOCALIZATION = 1;
+
 	void _prepare();
 	void _pressed(int p_index);
 

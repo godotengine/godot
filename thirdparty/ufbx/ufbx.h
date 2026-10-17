@@ -267,7 +267,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 20, 0)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 23, 0)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -967,7 +967,11 @@ struct ufbx_node {
 	// True if the node has a non-identity `geometry_transform`.
 	bool has_geometry_transform;
 
-	// If `true` the transform is adjusted by ufbx, not enabled by default.
+	// If `true`, you should apply `RotationOrder`, `PreRotation` and `PostRotation` properties.
+	// See `UFBX_RotationOrder`, `UFBX_PreRotation`, `UFBX_PostRotation`.
+	bool use_rotation_space;
+
+	// If `true`, the transform is adjusted by ufbx, not enabled by default.
 	// See `adjust_pre_rotation`, `adjust_pre_scale`, `adjust_post_rotation`,
 	// and `adjust_post_scale`.
 	bool has_adjust_transform;
@@ -1584,7 +1588,7 @@ struct ufbx_camera {
 	ufbx_vec2 field_of_view_deg;
 
 	// Component-wise `tan(field_of_view_deg)`, also represents the size of the
-	// proection frustum slice at distance of 1.
+	// frustum slice at distance of 1.
 	// Valid if `projection_mode == UFBX_PROJECTION_MODE_PERSPECTIVE`.
 	ufbx_vec2 field_of_view_tan;
 
@@ -1627,6 +1631,7 @@ struct ufbx_camera {
 
 // Bone attached to a `ufbx_node`, provides the logical length of the bone
 // but most interesting information is directly in `ufbx_node`.
+// NOTE: The FBX format calls these Skeleton node attributes.
 struct ufbx_bone {
 	union { ufbx_element element; struct {
 		ufbx_string name;
@@ -1647,6 +1652,7 @@ struct ufbx_bone {
 };
 
 // Empty/NULL/locator connected to a node, actual details in `ufbx_node`
+// NOTE: The FBX format calls these Null node attributes.
 struct ufbx_empty {
 	union { ufbx_element element; struct {
 		ufbx_string name;
@@ -3500,11 +3506,12 @@ typedef enum ufbx_exporter UFBX_ENUM_REPR {
 	UFBX_EXPORTER_BLENDER_BINARY,
 	UFBX_EXPORTER_BLENDER_ASCII,
 	UFBX_EXPORTER_MOTION_BUILDER,
+	UFBX_EXPORTER_UFBX_WRITE,
 
 	UFBX_ENUM_FORCE_WIDTH(UFBX_EXPORTER)
 } ufbx_exporter;
 
-UFBX_ENUM_TYPE(ufbx_exporter, UFBX_EXPORTER, UFBX_EXPORTER_MOTION_BUILDER);
+UFBX_ENUM_TYPE(ufbx_exporter, UFBX_EXPORTER, UFBX_EXPORTER_UFBX_WRITE);
 
 typedef struct ufbx_application {
 	ufbx_string vendor;
@@ -3916,9 +3923,13 @@ typedef struct ufbx_scene_settings {
 	ufbx_time_protocol time_protocol;
 	ufbx_snap_mode snap_mode;
 
-	// Original settings (?)
+	// Original `axes.up` value for the scene.
+	// NOTE: This may be `UFBX_COORDINATE_AXIS_UNKNOWN` if not specified in the file.
 	ufbx_coordinate_axis original_axis_up;
+
+	// Original `unit_meters` value for the scene.
 	ufbx_real original_unit_meters;
+
 } ufbx_scene_settings;
 
 struct ufbx_scene {
@@ -5427,7 +5438,7 @@ ufbx_abi ufbx_vec3 ufbx_evaluate_anim_value_vec3_flags(const ufbx_anim_value *an
 // NOTE: If the property is not found it will have the flag `UFBX_PROP_FLAG_NOT_FOUND`.
 ufbx_abi ufbx_prop ufbx_evaluate_prop_len(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time);
 ufbx_abi ufbx_prop ufbx_evaluate_prop(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time);
-ufbx_abi ufbx_prop ufbx_evaluate_prop_len_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time, uint32_t flags);
+ufbx_abi ufbx_prop ufbx_evaluate_prop_flags_len(const ufbx_anim *anim, const ufbx_element *element, const char *name, size_t name_len, double time, uint32_t flags);
 ufbx_abi ufbx_prop ufbx_evaluate_prop_flags(const ufbx_anim *anim, const ufbx_element *element, const char *name, double time, uint32_t flags);
 
 // Evaluate all _animated_ properties of `element`.

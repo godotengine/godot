@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_lookat.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 
 bool SkeletonModification2DLookAt::_set(const StringName &p_path, const Variant &p_value) {
@@ -180,7 +183,7 @@ void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack
 }
 
 void SkeletonModification2DLookAt::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || bone_idx < 0) {
 		return;
 	}
 

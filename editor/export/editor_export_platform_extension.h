@@ -30,8 +30,12 @@
 
 #pragma once
 
-#include "editor_export_platform.h"
-#include "editor_export_preset.h"
+#include "core/object/gdvirtual.gen.h"
+#include "core/variant/typed_array.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_preset.h"
+
+class ImageTexture;
 
 class EditorExportPlatformExtension : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformExtension, EditorExportPlatform);
@@ -130,7 +134,7 @@ public:
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	GDVIRTUAL1RC_REQUIRED(Vector<String>, _get_binary_extensions, Ref<EditorExportPreset>);
 
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
 	GDVIRTUAL4R_REQUIRED(Error, _export_project, Ref<EditorExportPreset>, bool, const String &, BitField<EditorExportPlatform::DebugFlags>);
 
 	virtual Error export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;

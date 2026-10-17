@@ -32,6 +32,7 @@
 
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/3d/physics/soft_body_3d.h"
+#include "scene/main/scene_tree.h"
 
 SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
 	Color gizmo_color = SceneTree::get_singleton()->get_debug_collisions_color();

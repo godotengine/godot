@@ -183,7 +183,7 @@ public:
 	uint						GetNumStepsBetweenCollisionTestInactive() const { return mNumStepsBetweenCollisionTestInactive; }
 
 	// Generic interface of a constraint
-	virtual bool				IsActive() const override					{ return mIsActive && Constraint::IsActive(); }
+	virtual bool				IsActive() const override					{ return mIsActive && mBody->IsInBroadPhase() && Constraint::IsActive(); }
 	virtual void				NotifyShapeChanged(const BodyID &inBodyID, Vec3Arg inDeltaCOM) override { /* Do nothing */ }
 	virtual void				SetupVelocityConstraint(float inDeltaTime) override;
 	virtual void				ResetWarmStart() override;
@@ -239,8 +239,8 @@ private:
 	{
 		float body_friction = inBody2.GetFriction();
 
-		ioLongitudinalFriction = sqrt(ioLongitudinalFriction * body_friction);
-		ioLateralFriction = sqrt(ioLateralFriction * body_friction);
+		ioLongitudinalFriction = Sqrt(ioLongitudinalFriction * body_friction);
+		ioLateralFriction = Sqrt(ioLateralFriction * body_friction);
 	};
 
 	// Callbacks

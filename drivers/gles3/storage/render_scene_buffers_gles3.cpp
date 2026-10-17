@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "render_scene_buffers_gles3.h"
+
 #ifdef GLES3_ENABLED
 
-#include "render_scene_buffers_gles3.h"
-#include "config.h"
-#include "texture_storage.h"
-#include "utilities.h"
+#include "drivers/gles3/storage/config.h"
+#include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 
 // Will only be defined if GLES 3.2 headers are included
 #ifndef GL_TEXTURE_2D_MULTISAMPLE_ARRAY
@@ -83,7 +84,7 @@ void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth
 	}
 }
 
-GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count) {
+GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count, bool p_depth_has_stencil) {
 	FBDEF new_fbo;
 
 #if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
@@ -100,7 +101,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 	glGenFramebuffers(1, &new_fbo.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, new_fbo.fbo);
 
-	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count, true);
+	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count, p_depth_has_stencil);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -136,7 +137,8 @@ void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p
 	msaa3d.mode = p_config->get_msaa_3d();
 	//screen_space_aa = p_config->get_screen_space_aa();
 	//use_debanding = p_config->get_use_debanding();
-	view_count = config->multiview_supported ? p_config->get_view_count() : 1;
+	view_count = p_config->get_view_count();
+	emulate_multiview = view_count > 1 && !config->multiview_supported;
 
 	bool use_multiview = view_count > 1;
 
@@ -155,28 +157,31 @@ void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p
 	}
 
 	// Check our scaling mode
-	if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && internal_size.x == 0 && internal_size.y == 0) {
+	if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && internal_size.x == 0 && internal_size.y == 0) {
 		// Disable, no size set.
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
-	} else if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && internal_size == target_size) {
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	} else if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && internal_size == target_size) {
 		// If size matches, we won't use scaling.
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
-	} else if (scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_BILINEAR) {
-		// We only support bilinear scaling atm.
-		WARN_PRINT_ONCE("GLES only supports bilinear scaling.");
-		scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
+	} else if (scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && !(scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR || scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_NEAREST)) {
+		WARN_PRINT_ONCE("The Compatibility rendering method only supports bilinear and nearest-neighbor scaling. Falling back to bilinear scaling.");
+		scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 	}
+	// Nearest/bilinear scaling decision is handled in `RasterizerSceneGLES3::_render_post_processing()`.
 
 	// Check if we support MSAA.
-	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && internal_size.x == 0 && internal_size.y == 0) {
+	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && internal_size.x == 0 && internal_size.y == 0) {
 		// Disable, no size set.
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-	} else if (!use_multiview && msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && !config->msaa_supported && !config->rt_msaa_supported) {
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
+	} else if (!use_multiview && msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && !config->msaa_supported && !config->rt_msaa_supported) {
 		WARN_PRINT_ONCE("MSAA is not supported on this device.");
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
-	} else if (use_multiview && msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && !config->msaa_multiview_supported && !config->rt_msaa_multiview_supported) {
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
+	} else if (use_multiview && msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && !config->msaa_multiview_supported && !config->rt_msaa_multiview_supported) {
 		WARN_PRINT_ONCE("Multiview MSAA is not supported on this device.");
-		msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
+	} else if (emulate_multiview && msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED) {
+		WARN_PRINT_ONCE("MSAA is not supported when emulating multiview.");
+		msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 	}
 
 	// We don't create our buffers right away because post effects can be made active at any time and change our buffer configuration.
@@ -188,7 +193,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 
 	ERR_FAIL_COND(view_count == 0);
 
-	bool use_internal_buffer = scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_OFF || apply_color_adjustments_in_post;
+	bool use_internal_buffer = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF || apply_environment_effects_in_post || apply_canvas_bg_exposure;
 	GLenum depth_format = GL_DEPTH24_STENCIL8;
 	uint32_t depth_format_size = 4;
 	bool use_multiview = view_count > 1;
@@ -197,7 +202,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		_clear_intermediate_buffers();
 	}
 
-	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RS::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
+	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
 		// already setup!
 		return;
 	}
@@ -246,7 +251,12 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glBindFramebuffer(GL_FRAMEBUFFER, internal3d.fbo);
 
 #ifndef IOS_ENABLED
-		if (use_multiview) {
+		if (emulate_multiview) {
+			// Attach the first layer now so the FBO is complete.
+			// Layer per eye is attached in RasterizerSceneGLES3::render_scene().
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, internal3d.color, 0, 0);
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, internal3d.depth, 0, 0);
+		} else if (use_multiview) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, internal3d.color, 0, 0, view_count);
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, internal3d.depth, 0, 0, view_count);
 		} else {
@@ -267,7 +277,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
-	if (msaa3d.mode != RS::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
+	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
 		// Setup MSAA.
 		const GLsizei samples[] = { 1, 2, 4, 8 };
 		msaa3d.samples = samples[msaa3d.mode];
@@ -310,7 +320,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -356,7 +366,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA buffers, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -385,7 +395,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
 				_clear_msaa3d_buffers();
-				msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+				msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 				WARN_PRINT("Could not create 3D MSAA framebuffer, status: " + texture_storage->get_framebuffer_error(status));
 			}
 
@@ -394,7 +404,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		} else {
 			// HUH? how did we get here?
 			WARN_PRINT_ONCE("MSAA is not supported on this device.");
-			msaa3d.mode = RS::VIEWPORT_MSAA_DISABLED;
+			msaa3d.mode = RSE::VIEWPORT_MSAA_DISABLED;
 			msaa3d.samples = 1;
 			msaa3d.check_fbo_cache = false;
 		}
@@ -407,7 +417,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 void RenderSceneBuffersGLES3::configure_for_probe(Size2i p_size) {
 	internal_size = p_size;
 	target_size = p_size;
-	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+	scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_OFF;
 	view_count = 1;
 }
 
@@ -440,6 +450,10 @@ void RenderSceneBuffersGLES3::_clear_msaa3d_buffers() {
 		}
 		msaa3d.depth = 0;
 	}
+
+	msaa3d.samples = 1;
+	msaa3d.needs_resolve = false;
+	msaa3d.check_fbo_cache = false;
 }
 
 void RenderSceneBuffersGLES3::_clear_intermediate_buffers() {
@@ -463,15 +477,17 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 
 	// Setup our back buffer
+	bool needs_init_check = false;
 
 	if (backbuffer3d.fbo == 0) {
 		glGenFramebuffers(1, &backbuffer3d.fbo);
+		needs_init_check = true;
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, backbuffer3d.fbo);
 
-	bool use_multiview = view_count > 1 && GLES3::Config::get_singleton()->multiview_supported;
-	GLenum texture_target = use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
+	bool use_array = view_count > 1 && (GLES3::Config::get_singleton()->multiview_supported || emulate_multiview);
+	GLenum texture_target = use_array ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D;
 	GLenum depth_format = GL_DEPTH24_STENCIL8;
 	uint32_t depth_format_size = 4;
 
@@ -479,7 +495,7 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 		glGenTextures(1, &backbuffer3d.color);
 		glBindTexture(texture_target, backbuffer3d.color);
 
-		if (use_multiview) {
+		if (use_array) {
 			glTexImage3D(texture_target, 0, color_internal_format, internal_size.x, internal_size.y, view_count, 0, color_format, color_type, nullptr);
 		} else {
 			glTexImage2D(texture_target, 0, color_internal_format, internal_size.x, internal_size.y, 0, color_format, color_type, nullptr);
@@ -493,7 +509,9 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.color, internal_size.x * internal_size.y * view_count * color_format_size, "3D Back buffer color texture");
 
 #ifndef IOS_ENABLED
-		if (use_multiview) {
+		if (emulate_multiview) {
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, backbuffer3d.color, 0, 0);
+		} else if (use_array) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, backbuffer3d.color, 0, 0, view_count);
 		} else {
 #else
@@ -501,13 +519,14 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 #endif
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, backbuffer3d.color, 0);
 		}
+		needs_init_check = true;
 	}
 
 	if (backbuffer3d.depth == 0 && p_need_depth) {
 		glGenTextures(1, &backbuffer3d.depth);
 		glBindTexture(texture_target, backbuffer3d.depth);
 
-		if (use_multiview) {
+		if (use_array) {
 			glTexImage3D(texture_target, 0, depth_format, internal_size.x, internal_size.y, view_count, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 		} else {
 			glTexImage2D(texture_target, 0, depth_format, internal_size.x, internal_size.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
@@ -521,7 +540,9 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 		GLES3::Utilities::get_singleton()->texture_allocated_data(backbuffer3d.depth, internal_size.x * internal_size.y * view_count * depth_format_size, "3D back buffer depth texture");
 
 #ifndef IOS_ENABLED
-		if (use_multiview) {
+		if (emulate_multiview) {
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, backbuffer3d.depth, 0, 0);
+		} else if (use_array) {
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, backbuffer3d.depth, 0, 0, view_count);
 		} else {
 #else
@@ -529,12 +550,15 @@ void RenderSceneBuffersGLES3::check_backbuffer(bool p_need_color, bool p_need_de
 #endif
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, texture_target, backbuffer3d.depth, 0);
 		}
+		needs_init_check = true;
 	}
 
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		_clear_back_buffers();
-		WARN_PRINT("Could not create 3D back buffers, status: " + texture_storage->get_framebuffer_error(status));
+	if (needs_init_check) {
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			_clear_back_buffers();
+			WARN_PRINT("Could not create 3D back buffers, status: " + texture_storage->get_framebuffer_error(status));
+		}
 	}
 
 	glBindTexture(texture_target, 0);
@@ -558,8 +582,12 @@ void RenderSceneBuffersGLES3::_clear_back_buffers() {
 	}
 }
 
-void RenderSceneBuffersGLES3::set_apply_color_adjustments_in_post(bool p_apply_in_post) {
-	apply_color_adjustments_in_post = p_apply_in_post;
+void RenderSceneBuffersGLES3::set_apply_environment_effects_in_post(bool p_apply_in_post) {
+	apply_environment_effects_in_post = p_apply_in_post;
+}
+
+void RenderSceneBuffersGLES3::set_apply_canvas_bg_exposure(bool p_apply_canvas_bg_exposure) {
+	apply_canvas_bg_exposure = p_apply_canvas_bg_exposure;
 }
 
 void RenderSceneBuffersGLES3::check_glow_buffers() {
@@ -631,17 +659,50 @@ void RenderSceneBuffersGLES3::free_render_buffer_data() {
 	_clear_glow_buffers();
 }
 
-GLuint RenderSceneBuffersGLES3::get_render_fbo() {
+void RenderSceneBuffersGLES3::attach_backbuffer_layer(uint32_t p_view) {
+	glBindFramebuffer(GL_FRAMEBUFFER, backbuffer3d.fbo);
+	if (backbuffer3d.color != 0) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, backbuffer3d.color, 0, p_view);
+	}
+	if (backbuffer3d.depth != 0) {
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, backbuffer3d.depth, 0, p_view);
+	}
+}
+
+GLuint RenderSceneBuffersGLES3::get_render_fbo(int p_view) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLuint rt_fbo = 0;
 
 	_check_render_buffers();
 
+	if (emulate_multiview && p_view >= 0) {
+		GLuint color = 0;
+		GLuint depth = 0;
+		bool depth_has_stencil = true;
+		if (internal3d.fbo != 0) {
+			rt_fbo = internal3d.fbo;
+			color = internal3d.color;
+			depth = internal3d.depth;
+		} else {
+			rt_fbo = texture_storage->render_target_get_fbo(render_target);
+			color = texture_storage->render_target_get_color(render_target);
+			depth = texture_storage->render_target_get_depth(render_target);
+			depth_has_stencil = texture_storage->render_target_get_depth_has_stencil(render_target);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, rt_fbo);
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0, p_view);
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, depth, 0, p_view);
+
+		return rt_fbo;
+	}
+
 	if (msaa3d.check_fbo_cache) {
 		GLuint color = texture_storage->render_target_get_color(render_target);
 		GLuint depth = texture_storage->render_target_get_depth(render_target);
+		bool depth_has_stencil = texture_storage->render_target_get_depth_has_stencil(render_target);
 
-		rt_fbo = _rt_get_cached_fbo(color, depth, msaa3d.samples, view_count);
+		rt_fbo = _rt_get_cached_fbo(color, depth, msaa3d.samples, view_count, depth_has_stencil);
 		if (rt_fbo == 0) {
 			// Somehow couldn't obtain this? Just render without MSAA.
 			rt_fbo = texture_storage->render_target_get_fbo(render_target);

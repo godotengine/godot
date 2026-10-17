@@ -32,6 +32,8 @@
 
 #include "../gltf_template_convert.h"
 
+#include "core/object/class_db.h"
+
 void GLTFObjectModelProperty::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLTF_OBJECT_MODEL_TYPE_UNKNOWN);
 	BIND_ENUM_CONSTANT(GLTF_OBJECT_MODEL_TYPE_BOOL);
@@ -65,8 +67,8 @@ void GLTFObjectModelProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_variant_type", "variant_type"), &GLTFObjectModelProperty::set_variant_type);
 	ClassDB::bind_method(D_METHOD("set_types", "variant_type", "obj_model_type"), &GLTFObjectModelProperty::set_types);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gltf_to_godot_expression", PROPERTY_HINT_RESOURCE_TYPE, "Expression"), "set_gltf_to_godot_expression", "get_gltf_to_godot_expression"); // Ref<Expression>
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_to_gltf_expression", PROPERTY_HINT_RESOURCE_TYPE, "Expression"), "set_godot_to_gltf_expression", "get_godot_to_gltf_expression"); // Ref<Expression>
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gltf_to_godot_expression", PROPERTY_HINT_RESOURCE_TYPE, Expression::get_class_static()), "set_gltf_to_godot_expression", "get_gltf_to_godot_expression"); // Ref<Expression>
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_to_gltf_expression", PROPERTY_HINT_RESOURCE_TYPE, Expression::get_class_static()), "set_godot_to_gltf_expression", "get_godot_to_gltf_expression"); // Ref<Expression>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "node_paths", PROPERTY_HINT_TYPE_STRING, "NodePath"), "set_node_paths", "get_node_paths"); // TypedArray<NodePath>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "object_model_type"), "set_object_model_type", "get_object_model_type"); // GLTFObjectModelType
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "json_pointers"), "set_json_pointers", "get_json_pointers"); // TypedArray<PackedStringArray>
@@ -103,11 +105,30 @@ GLTFAccessor::GLTFAccessorType GLTFObjectModelProperty::get_accessor_type() cons
 	}
 }
 
+GLTFAccessor::GLTFComponentType GLTFObjectModelProperty::get_component_type(const Vector<Variant> &p_values) const {
+	switch (object_model_type) {
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_BOOL: {
+			return GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE;
+		} break;
+		case GLTFObjectModelProperty::GLTF_OBJECT_MODEL_TYPE_INT: {
+			PackedInt64Array int_values;
+			for (int i = 0; i < p_values.size(); i++) {
+				int_values.append(p_values[i]);
+			}
+			return GLTFAccessor::get_minimal_integer_component_type_from_ints(int_values);
+		} break;
+		default: {
+			// The base glTF specification only supports 32-bit float accessors for floating point data.
+			return GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT;
+		} break;
+	}
+}
+
 Ref<Expression> GLTFObjectModelProperty::get_gltf_to_godot_expression() const {
 	return gltf_to_godot_expr;
 }
 
-void GLTFObjectModelProperty::set_gltf_to_godot_expression(Ref<Expression> p_gltf_to_godot_expr) {
+void GLTFObjectModelProperty::set_gltf_to_godot_expression(const Ref<Expression> &p_gltf_to_godot_expr) {
 	gltf_to_godot_expr = p_gltf_to_godot_expr;
 }
 
@@ -115,20 +136,20 @@ Ref<Expression> GLTFObjectModelProperty::get_godot_to_gltf_expression() const {
 	return godot_to_gltf_expr;
 }
 
-void GLTFObjectModelProperty::set_godot_to_gltf_expression(Ref<Expression> p_godot_to_gltf_expr) {
+void GLTFObjectModelProperty::set_godot_to_gltf_expression(const Ref<Expression> &p_godot_to_gltf_expr) {
 	godot_to_gltf_expr = p_godot_to_gltf_expr;
 }
 
 TypedArray<NodePath> GLTFObjectModelProperty::get_node_paths() const {
-	return node_paths;
+	return TypedArray<NodePath>(node_paths);
 }
 
 bool GLTFObjectModelProperty::has_node_paths() const {
 	return !node_paths.is_empty();
 }
 
-void GLTFObjectModelProperty::set_node_paths(TypedArray<NodePath> p_node_paths) {
-	node_paths = p_node_paths;
+void GLTFObjectModelProperty::set_node_paths(const TypedArray<NodePath> &p_node_paths) {
+	node_paths = TypedArray<NodePath>(p_node_paths);
 }
 
 GLTFObjectModelProperty::GLTFObjectModelType GLTFObjectModelProperty::get_object_model_type() const {

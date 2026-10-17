@@ -36,10 +36,10 @@
 #include <openxr/openxr_reflection.h>
 
 #define XR_ENUM_CASE_STR(name, val) \
-	case name:                      \
+	case name: \
 		return #name;
-#define XR_ENUM_SWITCH(enumType, var)                                                                                           \
-	switch (var) {                                                                                                              \
+#define XR_ENUM_SWITCH(enumType, var) \
+	switch (var) { \
 		XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown " #enumType ": " + String::num_int64(int64_t(var)); \
 	}
 
@@ -66,6 +66,6 @@ public:
 	} XrMatrix4x4f;
 
 	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-			const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ);
+			const float tanAngleUp, const float tanAngleDown, const float nearZ, const float farZ);
 	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ);
 };

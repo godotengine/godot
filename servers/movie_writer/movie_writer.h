@@ -32,7 +32,8 @@
 
 #include "core/io/image.h"
 #include "core/templates/local_vector.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server.h" // IWYU pragma: keep. Bind GDVIRTUAL0RC_REQUIRED.
+#include "servers/audio/audio_server_enums.h"
 
 class MovieWriter : public Object {
 	GDCLASS(MovieWriter, Object);
@@ -40,6 +41,10 @@ class MovieWriter : public Object {
 	uint64_t fps = 0;
 	uint64_t mix_rate = 0;
 	uint32_t audio_channels = 0;
+
+	// The output resolution, which can differ from the window size.
+	// Used as a base for resizing all subsequent frames if their resolution differs.
+	Vector2i movie_size;
 
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
@@ -57,20 +62,20 @@ class MovieWriter : public Object {
 
 protected:
 	virtual uint32_t get_audio_mix_rate() const;
-	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
+	virtual AuSE::SpeakerMode get_audio_speaker_mode() const;
 
 	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
 	virtual Error write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data);
 	virtual void write_end();
 
 	GDVIRTUAL0RC_REQUIRED(uint32_t, _get_audio_mix_rate)
-	GDVIRTUAL0RC_REQUIRED(AudioServer::SpeakerMode, _get_audio_speaker_mode)
+	GDVIRTUAL0RC_REQUIRED(AuSE::SpeakerMode, _get_audio_speaker_mode)
 
 	GDVIRTUAL1RC_REQUIRED(bool, _handles_file, const String &)
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_supported_extensions)
 
 	GDVIRTUAL3R_REQUIRED(Error, _write_begin, const Size2i &, uint32_t, const String &)
-	GDVIRTUAL2R_REQUIRED(Error, _write_frame, const Ref<Image> &, GDExtensionConstPtr<int32_t>)
+	GDVIRTUAL2R_REQUIRED(Error, _write_frame, const Ref<Image> &, GDExtensionPtr<const int32_t>)
 	GDVIRTUAL0_REQUIRED(_write_end)
 
 	static void _bind_methods();

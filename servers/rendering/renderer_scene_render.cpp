@@ -30,13 +30,14 @@
 
 #include "renderer_scene_render.h"
 
+#include "core/variant/typed_array.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
-	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -49,142 +50,20 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
-	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
+void RendererSceneRender::CameraData::set_multiview_camera(const Transform3D &p_transform, const LocalVector<Transform3D> &p_offsets, const LocalVector<Projection> &p_projections, bool p_is_orthogonal, bool p_vaspect, uint32_t p_visible_layers) {
+	ERR_FAIL_COND_MSG(p_projections.size() != 2, "Incorrect view count for stereoscopic view");
+	ERR_FAIL_COND(p_projections.size() != p_offsets.size());
 
-	visible_layers = 0xFFFFFFFF;
-	view_count = p_view_count;
+	visible_layers = p_visible_layers;
+	view_count = p_projections.size();
 	is_orthogonal = p_is_orthogonal;
-	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
-	Vector<Plane> planes[2];
 
-	/////////////////////////////////////////////////////////////////////////////
-	// Figure out our center transform
+	main_transform = p_transform;
+	main_projection = Projection::create_combined_projection(p_transform, p_projections[0], p_offsets[0], p_projections[1], p_offsets[1]);
 
-	// 1. obtain our planes
 	for (uint32_t v = 0; v < view_count; v++) {
-		planes[v] = p_projections[v].get_projection_planes(p_transforms[v]);
-	}
-
-	// 2. average and normalize plane normals to obtain z vector, cross them to obtain y vector, and from there the x vector for combined camera basis.
-	Vector3 n0 = planes[0][Projection::PLANE_LEFT].normal;
-	Vector3 n1 = planes[1][Projection::PLANE_RIGHT].normal;
-	Vector3 z = (n0 + n1).normalized();
-	Vector3 y = n0.cross(n1).normalized();
-	Vector3 x = y.cross(z).normalized();
-	y = z.cross(x).normalized();
-	main_transform.basis.set_columns(x, y, z);
-
-	// 3. create a horizon plane with one of the eyes and the up vector as normal.
-	Plane horizon(y, p_transforms[0].origin);
-
-	// 4. Intersect horizon, left and right to obtain the combined camera origin.
-	ERR_FAIL_COND_MSG(
-			!horizon.intersect_3(planes[0][Projection::PLANE_LEFT], planes[1][Projection::PLANE_RIGHT], &main_transform.origin), "Can't determine camera origin");
-
-	// handy to have the inverse of the transform we just build
-	Transform3D main_transform_inv = main_transform.inverse();
-
-	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
-	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
-	Plane far_plane = Plane(-z, far_center);
-
-	/////////////////////////////////////////////////////////////////////////////
-	// Figure out our top/bottom planes
-
-	// 6. Intersect far and left planes with top planes from both eyes, save the point with highest y as top_left.
-	Vector3 top_left, other;
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_TOP], &top_left), "Can't determine left camera far/left/top vector");
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/left/top vector");
-	if (y.dot(top_left) < y.dot(other)) {
-		top_left = other;
-	}
-
-	// 7. Intersect far and left planes with bottom planes from both eyes, save the point with lowest y as bottom_left.
-	Vector3 bottom_left;
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[0][Projection::PLANE_LEFT], planes[0][Projection::PLANE_BOTTOM], &bottom_left), "Can't determine left camera far/left/bottom vector");
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[1][Projection::PLANE_LEFT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/left/bottom vector");
-	if (y.dot(other) < y.dot(bottom_left)) {
-		bottom_left = other;
-	}
-
-	// 8. Intersect far and right planes with top planes from both eyes, save the point with highest y as top_right.
-	Vector3 top_right;
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_TOP], &top_right), "Can't determine left camera far/right/top vector");
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_TOP], &other), "Can't determine right camera far/right/top vector");
-	if (y.dot(top_right) < y.dot(other)) {
-		top_right = other;
-	}
-
-	//  9. Intersect far and right planes with bottom planes from both eyes, save the point with lowest y as bottom_right.
-	Vector3 bottom_right;
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[0][Projection::PLANE_RIGHT], planes[0][Projection::PLANE_BOTTOM], &bottom_right), "Can't determine left camera far/right/bottom vector");
-	ERR_FAIL_COND_MSG(
-			!far_plane.intersect_3(planes[1][Projection::PLANE_RIGHT], planes[1][Projection::PLANE_BOTTOM], &other), "Can't determine right camera far/right/bottom vector");
-	if (y.dot(other) < y.dot(bottom_right)) {
-		bottom_right = other;
-	}
-
-	// 10. Create top plane with these points: camera origin, top_left, top_right
-	Plane top(main_transform.origin, top_left, top_right);
-
-	// 11. Create bottom plane with these points: camera origin, bottom_left, bottom_right
-	Plane bottom(main_transform.origin, bottom_left, bottom_right);
-
-	/////////////////////////////////////////////////////////////////////////////
-	// Figure out our near plane points
-
-	// 12. Create a near plane using -camera z and the eye further along in that axis.
-	Plane near_plane;
-	Vector3 neg_z = -z;
-	if (neg_z.dot(p_transforms[1].origin) < neg_z.dot(p_transforms[0].origin)) {
-		near_plane = Plane(neg_z, p_transforms[0].origin);
-	} else {
-		near_plane = Plane(neg_z, p_transforms[1].origin);
-	}
-
-	// 13. Intersect near plane with bottm/left planes, to obtain min_vec then top/right to obtain max_vec
-	Vector3 min_vec;
-	ERR_FAIL_COND_MSG(
-			!near_plane.intersect_3(bottom, planes[0][Projection::PLANE_LEFT], &min_vec), "Can't determine left camera near/left/bottom vector");
-	ERR_FAIL_COND_MSG(
-			!near_plane.intersect_3(bottom, planes[1][Projection::PLANE_LEFT], &other), "Can't determine right camera near/left/bottom vector");
-	if (x.dot(other) < x.dot(min_vec)) {
-		min_vec = other;
-	}
-
-	Vector3 max_vec;
-	ERR_FAIL_COND_MSG(
-			!near_plane.intersect_3(top, planes[0][Projection::PLANE_RIGHT], &max_vec), "Can't determine left camera near/right/top vector");
-	ERR_FAIL_COND_MSG(
-			!near_plane.intersect_3(top, planes[1][Projection::PLANE_RIGHT], &other), "Can't determine right camera near/right/top vector");
-	if (x.dot(max_vec) < x.dot(other)) {
-		max_vec = other;
-	}
-
-	// 14. transform these points by the inverse camera to obtain local_min_vec and local_max_vec
-	Vector3 local_min_vec = main_transform_inv.xform(min_vec);
-	Vector3 local_max_vec = main_transform_inv.xform(max_vec);
-
-	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camera origin to obtain far.
-	float z_near = -near_plane.distance_to(main_transform.origin);
-	float z_far = -far_plane.distance_to(main_transform.origin);
-
-	// 16. Use this to build the combined camera matrix.
-	main_projection.set_frustum(local_min_vec.x, local_max_vec.x, local_min_vec.y, local_max_vec.y, z_near, z_far);
-
-	/////////////////////////////////////////////////////////////////////////////
-	// 3. Copy our view data
-	for (uint32_t v = 0; v < view_count; v++) {
-		view_offset[v] = main_transform_inv * p_transforms[v];
+		view_offset[v] = p_offsets[v];
 		view_projection[v] = p_projections[v] * Projection(view_offset[v].inverse());
 	}
 }
@@ -211,11 +90,11 @@ void RendererSceneRender::compositor_effect_set_enabled(RID p_effect, bool p_ena
 	compositor_storage.compositor_effect_set_enabled(p_effect, p_enabled);
 }
 
-void RendererSceneRender::compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
+void RendererSceneRender::compositor_effect_set_callback(RID p_effect, RSE::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
 	compositor_storage.compositor_effect_set_callback(p_effect, p_callback_type, p_callback);
 }
 
-void RendererSceneRender::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
+void RendererSceneRender::compositor_effect_set_flag(RID p_effect, RSE::CompositorEffectFlags p_flag, bool p_set) {
 	compositor_storage.compositor_effect_set_flag(p_effect, p_flag, p_set);
 }
 
@@ -267,7 +146,7 @@ bool RendererSceneRender::is_environment(RID p_rid) const {
 
 // background
 
-void RendererSceneRender::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
+void RendererSceneRender::environment_set_background(RID p_env, RSE::EnvironmentBG p_bg) {
 	environment_storage.environment_set_background(p_env, p_bg);
 }
 
@@ -295,11 +174,11 @@ void RendererSceneRender::environment_set_canvas_max_layer(RID p_env, int p_max_
 	environment_storage.environment_set_canvas_max_layer(p_env, p_max_layer);
 }
 
-void RendererSceneRender::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
+void RendererSceneRender::environment_set_ambient_light(RID p_env, const Color &p_color, RSE::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RSE::EnvironmentReflectionSource p_reflection_source) {
 	environment_storage.environment_set_ambient_light(p_env, p_color, p_ambient, p_energy, p_sky_contribution, p_reflection_source);
 }
 
-RS::EnvironmentBG RendererSceneRender::environment_get_background(RID p_env) const {
+RSE::EnvironmentBG RendererSceneRender::environment_get_background(RID p_env) const {
 	return environment_storage.environment_get_background(p_env);
 }
 
@@ -331,7 +210,7 @@ int RendererSceneRender::environment_get_canvas_max_layer(RID p_env) const {
 	return environment_storage.environment_get_canvas_max_layer(p_env);
 }
 
-RS::EnvironmentAmbientSource RendererSceneRender::environment_get_ambient_source(RID p_env) const {
+RSE::EnvironmentAmbientSource RendererSceneRender::environment_get_ambient_source(RID p_env) const {
 	return environment_storage.environment_get_ambient_source(p_env);
 }
 
@@ -347,7 +226,7 @@ float RendererSceneRender::environment_get_ambient_sky_contribution(RID p_env) c
 	return environment_storage.environment_get_ambient_sky_contribution(p_env);
 }
 
-RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_source(RID p_env) const {
+RSE::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_source(RID p_env) const {
 	return environment_storage.environment_get_reflection_source(p_env);
 }
 
@@ -361,11 +240,11 @@ int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
 
 // Tonemap
 
-void RendererSceneRender::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
+void RendererSceneRender::environment_set_tonemap(RID p_env, RSE::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
 	environment_storage.environment_set_tonemap(p_env, p_tone_mapper, p_exposure, p_white);
 }
 
-RS::EnvironmentToneMapper RendererSceneRender::environment_get_tone_mapper(RID p_env) const {
+RSE::EnvironmentToneMapper RendererSceneRender::environment_get_tone_mapper(RID p_env) const {
 	return environment_storage.environment_get_tone_mapper(p_env);
 }
 
@@ -373,13 +252,25 @@ float RendererSceneRender::environment_get_exposure(RID p_env) const {
 	return environment_storage.environment_get_exposure(p_env);
 }
 
-float RendererSceneRender::environment_get_white(RID p_env) const {
-	return environment_storage.environment_get_white(p_env);
+float RendererSceneRender::environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
+	return environment_storage.environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
+}
+
+void RendererSceneRender::environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) {
+	environment_storage.environment_set_tonemap_agx_contrast(p_env, p_agx_contrast);
+}
+
+float RendererSceneRender::environment_get_tonemap_agx_contrast(RID p_env) const {
+	return environment_storage.environment_get_tonemap_agx_contrast(p_env);
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererSceneRender::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
+	return environment_storage.environment_get_tonemap_parameters(p_env, p_limit_agx_white, p_output_max_value);
 }
 
 // Fog
 
-void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
+void RendererSceneRender::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect, RSE::EnvironmentFogMode p_mode) {
 	environment_storage.environment_set_fog(p_env, p_enable, p_light_color, p_light_energy, p_sun_scatter, p_density, p_height, p_height_density, p_aerial_perspective, p_sky_affect, p_mode);
 }
 
@@ -387,7 +278,7 @@ bool RendererSceneRender::environment_get_fog_enabled(RID p_env) const {
 	return environment_storage.environment_get_fog_enabled(p_env);
 }
 
-RS::EnvironmentFogMode RendererSceneRender::environment_get_fog_mode(RID p_env) const {
+RSE::EnvironmentFogMode RendererSceneRender::environment_get_fog_mode(RID p_env) const {
 	return environment_storage.environment_get_fog_mode(p_env);
 }
 
@@ -501,7 +392,7 @@ float RendererSceneRender::environment_get_volumetric_fog_ambient_inject(RID p_e
 
 // GLOW
 
-void RendererSceneRender::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
+void RendererSceneRender::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RSE::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
 	environment_storage.environment_set_glow(p_env, p_enable, p_levels, p_intensity, p_strength, p_mix, p_bloom_threshold, p_blend_mode, p_hdr_bleed_threshold, p_hdr_bleed_scale, p_hdr_luminance_cap, p_glow_map_strength, p_glow_map);
 }
 
@@ -529,7 +420,7 @@ float RendererSceneRender::environment_get_glow_mix(RID p_env) const {
 	return environment_storage.environment_get_glow_mix(p_env);
 }
 
-RS::EnvironmentGlowBlendMode RendererSceneRender::environment_get_glow_blend_mode(RID p_env) const {
+RSE::EnvironmentGlowBlendMode RendererSceneRender::environment_get_glow_blend_mode(RID p_env) const {
 	return environment_storage.environment_get_glow_blend_mode(p_env);
 }
 
@@ -649,7 +540,7 @@ float RendererSceneRender::environment_get_ssil_normal_rejection(RID p_env) cons
 
 // SDFGI
 
-void RendererSceneRender::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererSceneRender::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	environment_storage.environment_set_sdfgi(p_env, p_enable, p_cascades, p_min_cell_size, p_y_scale, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias);
 }
 
@@ -689,7 +580,7 @@ float RendererSceneRender::environment_get_sdfgi_probe_bias(RID p_env) const {
 	return environment_storage.environment_get_sdfgi_probe_bias(p_env);
 }
 
-RS::EnvironmentSDFGIYScale RendererSceneRender::environment_get_sdfgi_y_scale(RID p_env) const {
+RSE::EnvironmentSDFGIYScale RendererSceneRender::environment_get_sdfgi_y_scale(RID p_env) const {
 	return environment_storage.environment_get_sdfgi_y_scale(p_env);
 }
 

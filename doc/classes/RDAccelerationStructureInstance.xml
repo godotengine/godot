@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDAccelerationStructureInstance" inherits="RefCounted" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Acceleration structure instance (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		[RDAccelerationStructureInstance] describes an instance of a Bottom-Level Acceleration Structure (BLAS) used in the [method RenderingDevice.tlas_build] method.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="blas" type="RID" setter="set_blas" getter="get_blas" default="RID()">
+			The BLAS referenced by this instance. If [code]null[/code], the instance is treated as a placeholder but still contributes to [code]gl_InstanceIndex[/code] in GLSL.
+		</member>
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="RenderingDevice.AccelerationStructureInstanceFlagBits" is_bitfield="true" default="0">
+			Flags for the instance.
+		</member>
+		<member name="hit_sbt_range" type="int" setter="set_hit_sbt_range" getter="get_hit_sbt_range" default="0">
+			Hit shader binding table range used for this instance, allocated using the [method RenderingDevice.hit_sbt_range_alloc] method.
+		</member>
+		<member name="id" type="int" setter="set_id" getter="get_id" default="0">
+			Custom instance ID that can be accessed in GLSL using [code]gl_InstanceCustomIndexEXT[/code].
+		</member>
+		<member name="mask" type="int" setter="set_mask" getter="get_mask" default="255">
+			Visibility mask used to control which rays can intersect this instance.
+		</member>
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			Transform applied to the referenced BLAS for this instance.
+		</member>
+	</members>
+</class>

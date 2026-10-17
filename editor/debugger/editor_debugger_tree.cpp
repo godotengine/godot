@@ -30,14 +30,19 @@
 
 #include "editor_debugger_tree.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
-#include "scene/debugger/scene_debugger.h"
+#include "scene/debugger/scene_debugger_object.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
@@ -58,6 +63,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 	add_child(file_dialog);
 
 	accept = memnew(AcceptDialog);
+	accept->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(accept);
 }
 
@@ -73,7 +79,7 @@ void EditorDebuggerTree::_notification(int p_what) {
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			update_icon_max_width();
 		} break;
 	}
@@ -208,10 +214,10 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	set_hide_root(false);
 
 	updating_scene_tree = true;
-	const String last_path = get_selected_path();
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
 	LocalVector<TreeItem *> select_items;
 	bool hide_filtered_out_parents = EDITOR_GET("docks/scene_tree/hide_filtered_out_parents");
+	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
 
 	bool should_scroll = scrolling_to_item || filter != last_filter;
 	scrolling_to_item = false;
@@ -253,12 +259,13 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Add this node.
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
+		item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 		if (node.scene_file_path.is_empty()) {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Type:") + " " + node.type_name);
 		} else {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Instance:") + " " + node.scene_file_path + "\n" + TTR("Type:") + " " + node.type_name);
 		}
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name);
 		if (icon.is_valid()) {
 			item->set_icon(0, icon);
 		}
@@ -276,36 +283,24 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		item->set_meta("node_path", current_path + "/" + item->get_text(0));
 
 		// Select previously selected nodes.
-		if (debugger_id == p_debugger) { // Can use remote id.
-			if (inspected_object_ids.has(uint64_t(node.id))) {
-				ids_present.append(node.id);
-
-				if (selection_uncollapse_all) {
-					selection_uncollapse_all = false;
-
-					// Temporarily set to `false`, to allow caching the unfolds.
-					updating_scene_tree = false;
-					item->uncollapse_tree();
-					updating_scene_tree = true;
-				}
-
-				select_items.push_back(item);
-				if (should_scroll) {
-					scroll_item = item;
-				}
-			}
-		} else if (last_path == (String)item->get_meta("node_path")) { // Must use path.
-			updating_scene_tree = false; // Force emission of new selections.
+		if (inspected_object_ids.has(uint64_t(node.id))) {
+			ids_present.append(node.id);
 			select_items.push_back(item);
 			if (should_scroll) {
+				// Temporarily set to `false`, to allow caching the unfolds.
+				updating_scene_tree = false;
+				// Expand ancestors to make the item visible.
+				if (TreeItem *parent_item = item->get_parent()) {
+					parent_item->uncollapse_tree();
+				}
+				updating_scene_tree = true;
 				scroll_item = item;
 			}
-			updating_scene_tree = true;
 		}
 
 		// Add buttons.
 		const Color remote_button_color = Color(1, 1, 1, 0.8);
-		if (!node.scene_file_path.is_empty()) {
+		if (!node.scene_file_path.is_empty() && ResourceLoader::exists(node.scene_file_path, "PackedScene")) {
 			String node_scene_file_path = node.scene_file_path;
 			Ref<Texture2D> button_icon = get_editor_theme_icon(SNAME("InstanceOptions"));
 			String tooltip = vformat(TTR("This node has been instantiated from a PackedScene file:\n%s\nClick to open the original file in the Editor."), node_scene_file_path);
@@ -387,8 +382,6 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	inspected_object_ids = ids_present;
 
-	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
-
 	for (TreeItem *item : select_items) {
 		item->select(0);
 	}
@@ -412,9 +405,18 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
-	selection_uncollapse_all = true;
+	// IDs that weren't found will be excluded in the next update (either removed or not nodes).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
+
+	// If we have not previously selected any of these items, expand the inspector's properties for this item.
+	for (ObjectID id : p_ids) {
+		if (!selection_cache.has(id)) {
+			selection_cache.insert(id);
+
+			InspectorDock::get_inspector_singleton()->expand_all_folding();
+		}
+	}
 
 	if (!updating_scene_tree) {
 		// Request a tree refresh.
@@ -425,6 +427,10 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 }
 
 void EditorDebuggerTree::clear_selection() {
+	if (inspected_object_ids.is_empty()) {
+		return;
+	}
+
 	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {
@@ -471,6 +477,11 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	return vformat("\"%s\"", path);
 }
 
+void EditorDebuggerTree::set_new_session() {
+	new_session = true;
+	selection_cache.clear();
+}
+
 void EditorDebuggerTree::update_icon_max_width() {
 	add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
 }
@@ -504,16 +515,12 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			String text = get_selected_path();
 			if (text.is_empty()) {
 				return;
-			} else if (text == "/root") {
+			}
+			// Keep full remote path but strip the "/root" prefix for user-facing copy.
+			if (text == "/root") {
 				text = ".";
-			} else {
-				text = text.replace("/root/", "");
-				int slash = text.find_char('/');
-				if (slash < 0) {
-					text = ".";
-				} else {
-					text = text.substr(slash + 1);
-				}
+			} else if (text.begins_with("/root/")) {
+				text = text.substr(String("/root/").length());
 			}
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;

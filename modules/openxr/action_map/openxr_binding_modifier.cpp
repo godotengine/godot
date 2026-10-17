@@ -30,6 +30,8 @@
 
 #include "openxr_binding_modifier.h"
 
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
+
 void OpenXRBindingModifier::_bind_methods() {
 	GDVIRTUAL_BIND(_get_description);
 	GDVIRTUAL_BIND(_get_ip_modification);

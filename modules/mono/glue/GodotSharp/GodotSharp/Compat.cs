@@ -76,6 +76,15 @@ partial class CodeEdit
     }
 }
 
+partial class DisplayServer
+{
+    /// <inheritdoc cref="TtsSpeak(string, string, int, float, float, long, bool)"/>
+    public static void TtsSpeak(string text, string voice, int volume, float pitch, float rate, int utteranceId, bool interrupt)
+    {
+        TtsSpeak(text, voice, volume, pitch, rate, (long)utteranceId, interrupt);
+    }
+}
+
 partial class Geometry3D
 {
     /// <inheritdoc cref="SegmentIntersectsConvex(Vector3, Vector3, Godot.Collections.Array{Plane})"/>

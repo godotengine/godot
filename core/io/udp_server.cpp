@@ -30,6 +30,8 @@
 
 #include "udp_server.h"
 
+#include "core/object/class_db.h"
+
 void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
@@ -78,10 +80,20 @@ Error UDPServer::poll() {
 			Peer peer;
 			peer.ip = ip;
 			peer.port = port;
-			peer.peer = memnew(PacketPeerUDP);
+			Ref<PacketPeerUDP> peer_ref = memnew(PacketPeerUDP);
+			peer.peer = peer_ref.ptr();
 			peer.peer->connect_shared_socket(_sock, ip, port, this);
 			peer.peer->store_packet(ip, port, recv_buffer, read);
 			pending.push_back(peer);
+
+			// FIXME: peer.peer is intentionally leaked such that it can destruct
+			//        when the client no longer needs it.
+			//        The current system 'abuses' the refcount_init semantics, such
+			//        that the first take_connection call takes ownership. A refactor
+			//        with a better "transfer ownership" semantics is warranted to avoid
+			//        accidental leaks.
+			peer_ref->reference();
+			peer_ref->deinit_ref();
 		}
 	}
 	return OK;
@@ -185,6 +197,7 @@ void UDPServer::stop() {
 	List<Peer>::Element *E = peers.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();
+		// Don't delete peer; it's intentionally weakly owned.
 		E = E->next();
 	}
 	E = pending.front();

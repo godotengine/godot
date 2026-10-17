@@ -30,14 +30,26 @@
 
 #include "line_2d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
 
 Node2D *Line2DEditor::_get_node() const {
 	return node;
 }
 
 void Line2DEditor::_set_node(Node *p_line) {
+	CanvasItem *ci_editor_control = CanvasItemEditor::get_singleton()->get_viewport_control();
+
+	if (node) {
+		node->disconnect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
+	}
+
 	node = Object::cast_to<Line2D>(p_line);
+	if (node) {
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
+	}
 }
 
 bool Line2DEditor::_is_line() const {

@@ -33,17 +33,23 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/io/image_loader.h"
+#include "core/config/project_settings.h"
+#include "core/io/marshalls.h"
 #include "core/io/plist.h"
-#include "core/string/translation.h"
+#include "core/io/zip_io.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/codesign.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
@@ -63,7 +69,8 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		ERR_PRINT("Invalid architecture");
 	}
 
-	if (p_preset->get("shader_baker/enabled")) {
+	if (!p_preset->is_dedicated_server() && p_preset->get("shader_baker/enabled")) {
+		// Don't use the shader baker if exporting as a dedicated server, as no rendering is performed.
 		r_features->push_back("shader_baker");
 	}
 
@@ -436,7 +443,7 @@ static const DataCollectionInfo data_collect_type_info[] = {
 	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
 	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
 	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
-	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "search_history", "NSPrivacyCollectedDataTypeSearchHistory" },
 	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
 	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
 	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
@@ -468,11 +475,12 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "export/distribution_type", PROPERTY_HINT_ENUM, "Testing,Distribution"), 1, true));
 #endif
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "universal,x86_64,arm64", PROPERTY_USAGE_STORAGE), "universal"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "universal,arm64,x86_64"), "universal"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_debug_symbols", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
@@ -483,14 +491,14 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_x86_64"), "10.12"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_x86_64"), "11.00"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "13.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
 	// TODO(sgc): Need to set appropriate version when using Metal
@@ -539,7 +547,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_movies", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/entitlements/app_sandbox/files_user_selected", PROPERTY_HINT_ENUM, "No,Read-only,Read-write"), 0));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::ARRAY, "codesign/entitlements/app_sandbox/helper_executables", PROPERTY_HINT_ARRAY_TYPE, itos(Variant::STRING) + "/" + itos(PROPERTY_HINT_GLOBAL_FILE) + ":"), Array()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 
 #ifdef MACOS_ENABLED
@@ -602,17 +610,17 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 						"open \"{temp_dir}/{exe_name}.app\" --args {cmd_args}";
 
 	String cleanup_script = "#!/usr/bin/env bash\n"
-							"kill $(pgrep -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\")\n"
+							"pkill -x -f \"{temp_dir}/{exe_name}.app/Contents/MacOS/{exe_name} {cmd_args}\"\n"
 							"rm -rf \"{temp_dir}\"";
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "ssh_remote_deploy/enabled"), false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
@@ -837,13 +845,14 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 
 void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon) {
 	String str = String::utf8((const char *)plist.ptr(), plist.size());
+	String arch = p_preset->get("binary_format/architecture");
 	String strnew;
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].contains("$binary")) {
 			strnew += lines[i].replace("$binary", p_binary) + "\n";
 		} else if (lines[i].contains("$name")) {
-			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name")) + "\n";
+			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name").operator String().xml_escape(true)) + "\n";
 		} else if (lines[i].contains("$bundle_identifier")) {
 			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 		} else if (lines[i].contains("$short_version")) {
@@ -856,11 +865,41 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			String cat = p_preset->get("application/app_category");
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
 		} else if (lines[i].contains("$copyright")) {
-			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
+			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright").operator String().xml_escape(true)) + "\n";
+		} else if (lines[i].contains("$arch_priority")) {
+			String arch_pr;
+			if (arch == "universal" || arch == "arm64") {
+				arch_pr += "\t\t<string>arm64</string>\n";
+			}
+			if (arch == "universal" || arch == "x86_64") {
+				arch_pr += "\t\t<string>x86_64</string>\n";
+			}
+			strnew += lines[i].replace("$arch_priority", arch_pr);
+		} else if (lines[i].contains("$min_version_common")) {
+			double v_min = 0.0;
+			if (arch == "universal") {
+				double v_arm64 = p_preset->get("application/min_macos_version_arm64");
+				double v_x86_64 = p_preset->get("application/min_macos_version_x86_64");
+				v_min = MIN(v_arm64, v_x86_64);
+			} else if (arch == "arm64") {
+				v_min = p_preset->get("application/min_macos_version_arm64");
+			} else if (arch == "x86_64") {
+				v_min = p_preset->get("application/min_macos_version_x86_64");
+			}
+			strnew += lines[i].replace("$min_version_common", rtos(v_min)) + "\n";
+		} else if (lines[i].contains("$min_version_info")) {
+			String min_version_info;
+			if (arch == "universal" || arch == "arm64") {
+				min_version_info += "\t\t<key>arm64</key>\n\t\t<string>" + p_preset->get("application/min_macos_version_arm64").operator String() + "</string>\n";
+			}
+			if (arch == "universal" || arch == "x86_64") {
+				min_version_info += "\t\t<key>x86_64</key>\n\t\t<string>" + p_preset->get("application/min_macos_version_x86_64").operator String() + "</string>\n";
+			}
+			strnew += lines[i].replace("$min_version_info", min_version_info);
 		} else if (lines[i].contains("$min_version_arm64")) {
-			strnew += lines[i].replace("$min_version_arm64", p_preset->get("application/min_macos_version_arm64")) + "\n";
+			strnew += lines[i].replace("$min_version_arm64", p_preset->get("application/min_macos_version_arm64")) + "\n"; // Old template.
 		} else if (lines[i].contains("$min_version_x86_64")) {
-			strnew += lines[i].replace("$min_version_x86_64", p_preset->get("application/min_macos_version_x86_64")) + "\n";
+			strnew += lines[i].replace("$min_version_x86_64", p_preset->get("application/min_macos_version_x86_64")) + "\n"; // Old template.
 		} else if (lines[i].contains("$min_version")) {
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version_x86_64")) + "\n"; // Old template, use x86-64 version for both.
 		} else if (lines[i].contains("$highres")) {
@@ -889,47 +928,47 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSMicrophoneUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/microphone_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCameraUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/camera_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSLocationUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/location_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/location_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSContactsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/address_book_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/address_book_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSCalendarsUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/calendar_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/calendar_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSPhotoLibraryUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/photos_library_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/photos_library_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDesktopFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/desktop_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/desktop_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDocumentsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/documents_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/documents_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSDownloadsFolderUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/downloads_folder_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/downloads_folder_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSNetworkVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/network_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/network_volumes_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
 				descriptions += "\t<key>NSRemovableVolumesUsageDescription</key>\n";
-				descriptions += "\t<string>" + (String)p_preset->get("privacy/removable_volumes_usage_description") + "</string>\n";
+				descriptions += "\t<string>" + p_preset->get("privacy/removable_volumes_usage_description").operator String().xml_escape(true) + "</string>\n";
 			}
 			if (!descriptions.is_empty()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
@@ -1373,6 +1412,142 @@ void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPrese
 	}
 }
 
+// Changes dir for the current scope, returning back to the original dir
+// when scope exits
+class DirChanger {
+	Ref<DirAccess> da;
+	String original_dir;
+
+public:
+	DirChanger(const Ref<DirAccess> &p_da, const String &p_dir) :
+			da(p_da),
+			original_dir(p_da->get_current_dir()) {
+		p_da->change_dir(p_dir);
+	}
+
+	~DirChanger() {
+		da->change_dir(original_dir);
+	}
+};
+
+Error EditorExportPlatformMacOS::_copy_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, const String &p_to, int p_chmod_flags) {
+	String architecture = p_preset->get("binary_format/architecture");
+
+	if (architecture != "universal" && LipO::is_lipo(p_from)) {
+		LipO lip;
+		lip.open_file(p_from);
+		int arch_idx = -1;
+		for (int i = 0; i < lip.get_arch_count(); i++) {
+			if (architecture == "arm64" && lip.get_arch_cputype(i) == (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_ARM)) {
+				arch_idx = i;
+				break;
+			}
+			if (architecture == "x86_64" && lip.get_arch_cputype(i) == (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_X86)) {
+				arch_idx = i;
+				break;
+			}
+		}
+		if (arch_idx == -1) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not find binary for architecture \"%s\" in universal binary \"%s\"."), architecture, p_from));
+			return ERR_CANT_CREATE;
+		}
+		if (lip.extract_arch(arch_idx, p_to)) {
+			print_verbose(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, p_from, p_to));
+			if (p_chmod_flags != -1) {
+				FileAccess::set_unix_permissions(p_to, p_chmod_flags);
+			}
+			return OK;
+		} else {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), p_from));
+			return ERR_CANT_CREATE;
+		}
+	} else {
+		if (architecture != "universal" && MachO::is_macho(p_from)) {
+			if ((architecture == "arm64" && MachO::get_cputype(p_from) != (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_ARM)) || (architecture == "x86_64" && MachO::get_cputype(p_from) != (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_X86))) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Mismatching binary \"%s\" architecture: found \"%s\", expected \"%s\""), p_from, MachO::arch_name(MachO::get_cputype(p_from)), architecture));
+			}
+		}
+		return p_dir_access->copy(p_from, p_to, p_chmod_flags);
+	}
+}
+
+Error EditorExportPlatformMacOS::_copy_dir_and_validate_arch_impl(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links) {
+	List<String> dirs;
+
+	p_dir_access->list_dir_begin();
+	String n = p_dir_access->get_next();
+	while (!n.is_empty()) {
+		if (n != "." && n != "..") {
+			if (p_copy_links && p_dir_access->is_link(p_dir_access->get_current_dir().path_join(n))) {
+				Error err = p_target_da->create_link(p_dir_access->read_link(p_dir_access->get_current_dir().path_join(n)), p_to + n);
+				if (err) {
+					ERR_PRINT(vformat("Failed to copy symlink \"%s\".", n));
+				}
+			} else if (p_dir_access->current_is_dir()) {
+				dirs.push_back(n);
+			} else {
+				const String &rel_path = n;
+				if (!n.is_relative_path()) {
+					p_dir_access->list_dir_end();
+					ERR_FAIL_V_MSG(ERR_BUG, vformat("BUG: \"%s\" is not a relative path.", n));
+				}
+
+				Error err = _copy_and_validate_arch(p_preset, p_dir_access, p_dir_access->get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
+				if (err) {
+					p_dir_access->list_dir_end();
+					ERR_FAIL_V_MSG(err, vformat("Failed to copy file \"%s\".", n));
+				}
+			}
+		}
+
+		n = p_dir_access->get_next();
+	}
+
+	p_dir_access->list_dir_end();
+
+	for (const String &rel_path : dirs) {
+		String target_dir = p_to + rel_path;
+		if (!p_target_da->dir_exists(target_dir)) {
+			Error err = p_target_da->make_dir(target_dir);
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", target_dir));
+		}
+
+		Error err = p_dir_access->change_dir(rel_path);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot change current directory to '%s'.", rel_path));
+
+		err = _copy_dir_and_validate_arch_impl(p_preset, p_dir_access, p_target_da, p_to + rel_path + "/", p_chmod_flags, p_copy_links);
+		if (err) {
+			p_dir_access->change_dir("..");
+			ERR_FAIL_V_MSG(err, "Failed to copy recursively.");
+		}
+		err = p_dir_access->change_dir("..");
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to go back.");
+	}
+
+	return OK;
+}
+
+Error EditorExportPlatformMacOS::_copy_dir_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, String p_to, int p_chmod_flags, bool p_copy_links) {
+	ERR_FAIL_COND_V_MSG(!p_dir_access->dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
+
+	Ref<DirAccess> target_da = DirAccess::create_for_path(p_to);
+	ERR_FAIL_COND_V_MSG(target_da.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", p_to));
+
+	if (!target_da->dir_exists(p_to)) {
+		Error err = target_da->make_dir_recursive(p_to);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", p_to));
+	}
+
+	if (!p_to.ends_with("/")) {
+		p_to = p_to + "/";
+	}
+
+	DirChanger dir_changer(p_dir_access, p_from);
+	Error err = _copy_dir_and_validate_arch_impl(p_preset, p_dir_access, target_da, p_to, p_chmod_flags, p_copy_links);
+
+	return err;
+}
+
 Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path,
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
@@ -1410,7 +1585,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 
 		err = dir_access->make_dir_recursive(p_in_app_path);
 		if (err == OK) {
-			err = dir_access->copy_dir(p_src_path, p_in_app_path, -1, true);
+			err = _copy_dir_and_validate_arch(p_preset, dir_access, p_src_path, p_in_app_path, -1, true);
 		}
 		if (err == OK && plist_missing) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
@@ -1424,32 +1599,44 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 				}
 			}
 
-			String info_plist_format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-									   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
-									   "<plist version=\"1.0\">\n"
-									   "  <dict>\n"
-									   "    <key>CFBundleExecutable</key>\n"
-									   "    <string>$name</string>\n"
-									   "    <key>CFBundleIdentifier</key>\n"
-									   "    <string>$id.framework.$cl_name</string>\n"
-									   "    <key>CFBundleInfoDictionaryVersion</key>\n"
-									   "    <string>6.0</string>\n"
-									   "    <key>CFBundleName</key>\n"
-									   "    <string>$name</string>\n"
-									   "    <key>CFBundlePackageType</key>\n"
-									   "    <string>FMWK</string>\n"
-									   "    <key>CFBundleShortVersionString</key>\n"
-									   "    <string>1.0.0</string>\n"
-									   "    <key>CFBundleSupportedPlatforms</key>\n"
-									   "    <array>\n"
-									   "      <string>MacOSX</string>\n"
-									   "    </array>\n"
-									   "    <key>CFBundleVersion</key>\n"
-									   "    <string>1.0.0</string>\n"
-									   "    <key>LSMinimumSystemVersion</key>\n"
-									   "    <string>10.12</string>\n"
-									   "  </dict>\n"
-									   "</plist>";
+			String arch = p_preset->get("binary_format/architecture");
+			String min_version_info;
+			if (arch == "universal" || arch == "arm64") {
+				min_version_info += "      <key>arm64</key>\n      <string>" + p_preset->get("application/min_macos_version_arm64").operator String() + "</string>\n";
+			}
+			if (arch == "universal" || arch == "x86_64") {
+				min_version_info += "     <key>x86_64</key>\n      <string>" + p_preset->get("application/min_macos_version_x86_64").operator String() + "</string>\n";
+			}
+
+			String info_plist_format = vformat("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+											   "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+											   "<plist version=\"1.0\">\n"
+											   "  <dict>\n"
+											   "    <key>CFBundleExecutable</key>\n"
+											   "    <string>$name</string>\n"
+											   "    <key>CFBundleIdentifier</key>\n"
+											   "    <string>$id.framework.$cl_name</string>\n"
+											   "    <key>CFBundleInfoDictionaryVersion</key>\n"
+											   "    <string>6.0</string>\n"
+											   "    <key>CFBundleName</key>\n"
+											   "    <string>$name</string>\n"
+											   "    <key>CFBundlePackageType</key>\n"
+											   "    <string>FMWK</string>\n"
+											   "    <key>CFBundleShortVersionString</key>\n"
+											   "    <string>1.0.0</string>\n"
+											   "    <key>CFBundleSupportedPlatforms</key>\n"
+											   "    <array>\n"
+											   "      <string>MacOSX</string>\n"
+											   "    </array>\n"
+											   "    <key>CFBundleVersion</key>\n"
+											   "    <string>1.0.0</string>\n"
+											   "    <key>LSMinimumSystemVersionByArchitecture</key>\n"
+											   "    <dict>\n"
+											   "%s"
+											   "    </dict>\n"
+											   "  </dict>\n"
+											   "</plist>",
+					min_version_info);
 
 			String info_plist = info_plist_format.replace("$id", lib_id).replace("$name", lib_name).replace("$cl_name", lib_clean_name);
 
@@ -1461,7 +1648,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		}
 	} else {
 		print_verbose("export dylib: " + p_src_path + " -> " + p_in_app_path);
-		err = dir_access->copy(p_src_path, p_in_app_path);
+		err = _copy_and_validate_arch(p_preset, dir_access, p_src_path, p_in_app_path);
 	}
 	if (err == OK && p_sign_enabled) {
 		if (dir_access->dir_exists(p_src_path) && p_src_path.get_extension().is_empty()) {
@@ -1616,8 +1803,145 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 	return OK;
 }
 
-Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_zip_path, const String &p_app_name, bool p_debug) {
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile src_pkg_zip = unzOpen2(p_zip_path.utf8().get_data(), &io);
+	if (!src_pkg_zip) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Prepare Templates"), vformat(TTR("Could not find debug symbols to export: \"%s\"."), p_zip_path));
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	String template_name = p_debug ? "template_debug" : "template_release";
+	int ret = unzGoToFirstFile(src_pkg_zip);
+	while (ret == UNZ_OK) {
+		// Get filename.
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+		String file = String::utf8(fname);
+		file = file.trim_prefix("out/macos/templates/");
+		if (file.begins_with(vformat("godot.macos.%s.universal.dSYM/", template_name))) {
+			file = file.trim_prefix(vformat("godot.macos.%s.universal.dSYM/", template_name));
+			file = file.replace(vformat("godot.macos.%s.universal", template_name), p_app_name);
+
+			Vector<uint8_t> data;
+			data.resize(info.uncompressed_size);
+
+			// Read.
+			unzOpenCurrentFile(src_pkg_zip);
+			unzReadCurrentFile(src_pkg_zip, data.ptrw(), data.size());
+			unzCloseCurrentFile(src_pkg_zip);
+
+			if (data.size() > 0) {
+				print_verbose("ADDING: " + file + " size: " + itos(data.size()));
+
+				file = p_path.path_join(file);
+				Error err = p_da->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
+				if (err == OK) {
+					Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+					if (f.is_valid()) {
+						f->store_buffer(data.ptr(), data.size());
+						f.unref();
+					} else {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
+						err = ERR_CANT_CREATE;
+					}
+				}
+			}
+		}
+
+		ret = unzGoToNextFile(src_pkg_zip);
+	}
+
+	// We're done with our source zip.
+	unzClose(src_pkg_zip);
+
+	return OK;
+}
+
+Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &p_da, const String &p_path, const String &p_src_path, const String &p_app_name, bool p_debug) {
+	List<String> dirs;
+
+	Ref<DirAccess> src_da = DirAccess::create_for_path(p_src_path);
+	if (!p_da->dir_exists(p_path)) {
+		Error err = p_da->make_dir(p_path);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Cannot create directory \"%s\"."), p_path));
+			return err;
+		}
+	}
+
+	Error err = src_da->change_dir(p_src_path);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Cannot change current directory to \"%s\"."), p_src_path));
+		return err;
+	}
+
+	String template_name = p_debug ? "template_debug" : "template_release";
+	src_da->list_dir_begin();
+	String n = src_da->get_next();
+	while (!n.is_empty()) {
+		if (n != "." && n != "..") {
+			if (src_da->current_is_dir()) {
+				dirs.push_back(n);
+			} else {
+				const String &rel_path = n.replace(vformat("godot.macos.%s.universal", template_name), p_app_name);
+				if (!n.is_relative_path()) {
+					src_da->list_dir_end();
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\" is not a relative path."), n));
+						return err;
+					}
+				}
+				print_verbose("ADDING: " + rel_path);
+
+				err = p_da->copy(src_da->get_current_dir().path_join(n), p_path.path_join(rel_path));
+				if (err) {
+					src_da->list_dir_end();
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Failed to copy file \"%s\"."), n));
+						return err;
+					}
+				}
+			}
+		}
+
+		n = src_da->get_next();
+	}
+
+	src_da->list_dir_end();
+
+	for (const String &rel_path : dirs) {
+		err = _copy_debugsymbols_recursively(p_da, p_path.path_join(rel_path), p_src_path.path_join(rel_path), p_app_name, p_debug);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	return OK;
+}
+
+bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, bool p_debug, Error &r_err) {
+	if (DirAccess::exists(p_symbols_path.get_basename() + ".dSYM")) {
+		r_err = _copy_debugsymbols_recursively(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM", p_app_name, p_debug);
+	} else if (FileAccess::exists(p_symbols_path.get_basename() + ".dSYM.zip")) {
+		r_err = _unzip_debugsymbols(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM.zip", p_app_name, p_debug);
+	} else {
+		return false;
+	}
+	return r_err == OK;
+}
+
+Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String base_dir = p_path.get_base_dir();
 
@@ -1661,6 +1985,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	String architecture = p_preset->get("binary_format/architecture");
 	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + "." + architecture;
+	String binary_to_use_uni = "godot_macos_" + String(p_debug ? "debug" : "release") + ".universal";
+	String binary_to_use_base = "godot_macos_" + String(p_debug ? "debug" : "release") + ".";
 
 	String pkg_name;
 	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
@@ -1691,14 +2017,17 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	String tmp_base_path_name;
 	String tmp_app_path_name;
 	String scr_path;
+	String dbg_name;
 	if (export_format == "app") {
 		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
 		scr_path = p_path.get_basename() + ".command";
+		dbg_name = p_path.get_file().get_basename();
 	} else {
 		tmp_base_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name);
 		tmp_app_path_name = tmp_base_path_name.path_join(tmp_app_dir_name);
 		scr_path = tmp_base_path_name.path_join(pkg_name + ".command");
+		dbg_name = pkg_name;
 	}
 
 	print_verbose("Exporting to " + tmp_app_path_name);
@@ -1720,6 +2049,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			tmp_app_dir->erase_contents_recursive();
 			tmp_app_dir->change_dir(old_dir);
 		}
+	}
+
+	int debug_symbols_mode = p_preset->get("debug/export_debug_symbols");
+	bool copy_debug_symbols = (debug_symbols_mode == 1 && p_debug) || (debug_symbols_mode == 2);
+
+	if (copy_debug_symbols) {
+		print_verbose("Exporting debug symbols to " + tmp_app_path_name + ".dSYM");
+		_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name, dbg_name, p_debug, err);
 	}
 
 	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
@@ -1757,7 +2094,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
 	Dictionary microphone_usage_descriptions = p_preset->get("privacy/microphone_usage_description_localized");
 	Dictionary camera_usage_descriptions = p_preset->get("privacy/camera_usage_description_localized");
 	Dictionary location_usage_descriptions = p_preset->get("privacy/location_usage_description_localized");
@@ -1771,106 +2107,118 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	Dictionary removable_volumes_usage_descriptions = p_preset->get("privacy/removable_volumes_usage_description_localized");
 	Dictionary copyrights = p_preset->get("application/copyright_localized");
 
-	Vector<String> translations = get_project_setting(p_preset, "internationalization/locale/translations");
-	if (translations.size() > 0) {
+	const String project_name = get_project_setting(p_preset, "application/config/name");
+	const Dictionary appnames = get_project_setting(p_preset, "application/config/name_localized");
+	const StringName domain_name = "godot.project_name_localization";
+	Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain(domain_name);
+	TranslationServer::get_singleton()->load_project_translations(domain);
+	const Vector<String> locales = domain->get_loaded_locales();
+
+	if (!locales.is_empty()) {
 		{
 			String fname = tmp_app_path_name + "/Contents/Resources/en.lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			f->store_line("CFBundleDisplayName = \"" + get_project_setting(p_preset, "application/config/name").operator String() + "\";");
+			f->store_line("CFBundleDisplayName = \"" + project_name.xml_escape(true) + "\";");
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + p_preset->get("privacy/microphone_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/camera_usage_description")).is_empty()) {
-				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + p_preset->get("privacy/camera_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/location_usage_description")).is_empty()) {
-				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String() + "\";");
+				f->store_line("NSLocationUsageDescription = \"" + p_preset->get("privacy/location_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/address_book_usage_description")).is_empty()) {
-				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String() + "\";");
+				f->store_line("NSContactsUsageDescription = \"" + p_preset->get("privacy/address_book_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/calendar_usage_description")).is_empty()) {
-				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String() + "\";");
+				f->store_line("NSCalendarsUsageDescription = \"" + p_preset->get("privacy/calendar_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/photos_library_usage_description")).is_empty()) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + p_preset->get("privacy/photos_library_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/desktop_folder_usage_description")).is_empty()) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDesktopFolderUsageDescription = \"" + p_preset->get("privacy/desktop_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/documents_folder_usage_description")).is_empty()) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + p_preset->get("privacy/documents_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/downloads_folder_usage_description")).is_empty()) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String() + "\";");
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + p_preset->get("privacy/downloads_folder_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/network_volumes_usage_description")).is_empty()) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String() + "\";");
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + p_preset->get("privacy/network_volumes_usage_description").operator String().xml_escape(true) + "\";");
 			}
 			if (!((String)p_preset->get("privacy/removable_volumes_usage_description")).is_empty()) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String() + "\";");
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + p_preset->get("privacy/removable_volumes_usage_description").operator String().xml_escape(true) + "\";");
 			}
-			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String() + "\";");
+			f->store_line("NSHumanReadableCopyright = \"" + p_preset->get("application/copyright").operator String().xml_escape(true) + "\";");
 		}
 
-		HashSet<String> languages;
-		for (const String &E : translations) {
-			Ref<Translation> tr = ResourceLoader::load(E);
-			if (tr.is_valid() && tr->get_locale() != "en") {
-				languages.insert(tr->get_locale());
+		for (const String &lang : locales) {
+			if (lang == "en") {
+				continue;
 			}
-		}
 
-		for (const String &lang : languages) {
 			String fname = tmp_app_path_name + "/Contents/Resources/" + lang + ".lproj";
 			tmp_app_dir->make_dir_recursive(fname);
 			Ref<FileAccess> f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
 			f->store_line("/* Localized versions of Info.plist keys */");
 			f->store_line("");
-			if (appnames.has(lang)) {
-				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String() + "\";");
+
+			if (appnames.is_empty()) {
+				domain->set_locale_override(lang);
+				String name = domain->translate(project_name, String());
+				if (name != project_name) {
+					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
+				}
+			} else if (appnames.has(lang)) {
+				f->store_line("CFBundleDisplayName = \"" + appnames[lang].operator String().xml_escape(true) + "\";");
 			}
+
 			if (microphone_usage_descriptions.has(lang)) {
-				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSMicrophoneUsageDescription = \"" + microphone_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (camera_usage_descriptions.has(lang)) {
-				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCameraUsageDescription = \"" + camera_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (location_usage_descriptions.has(lang)) {
-				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSLocationUsageDescription = \"" + location_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (address_book_usage_descriptions.has(lang)) {
-				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSContactsUsageDescription = \"" + address_book_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (calendar_usage_descriptions.has(lang)) {
-				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSCalendarsUsageDescription = \"" + calendar_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (photos_library_usage_descriptions.has(lang)) {
-				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSPhotoLibraryUsageDescription = \"" + photos_library_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (desktop_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDesktopFolderUsageDescription = \"" + desktop_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (documents_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDocumentsFolderUsageDescription = \"" + documents_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (downloads_folder_usage_descriptions.has(lang)) {
-				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSDownloadsFolderUsageDescription = \"" + downloads_folder_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (network_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSNetworkVolumesUsageDescription = \"" + network_volumes_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (removable_volumes_usage_descriptions.has(lang)) {
-				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String() + "\";");
+				f->store_line("NSRemovableVolumesUsageDescription = \"" + removable_volumes_usage_descriptions[lang].operator String().xml_escape(true) + "\";");
 			}
 			if (copyrights.has(lang)) {
-				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String() + "\";");
+				f->store_line("NSHumanReadableCopyright = \"" + copyrights[lang].operator String().xml_escape(true) + "\";");
 			}
 		}
 	}
+
+	TranslationServer::get_singleton()->remove_domain(domain_name);
 
 	// Now process our template.
 	bool found_binary = false;
@@ -1883,6 +2231,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		include_angle_libs = true;
 	}
 
+	HashMap<String, Vector<PackedByteArray>> universal_binaries;
 	while (ret == UNZ_OK && err == OK) {
 		// Get filename.
 		unz_file_info info;
@@ -1893,6 +2242,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		String file = String::utf8(fname);
+		String ofile = file;
 
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
@@ -1962,9 +2312,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (file.begins_with("Contents/MacOS/godot_")) {
-			if (file != "Contents/MacOS/" + binary_to_use) {
-				ret = unzGoToNextFile(src_pkg_zip);
-				continue; // skip
+			if (architecture == "universal") {
+				if (file.begins_with("Contents/MacOS/" + binary_to_use_base)) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; // skip
+				}
+			} else {
+				if (file != "Contents/MacOS/" + binary_to_use && file != "Contents/MacOS/" + binary_to_use_uni) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; // skip
+				}
 			}
 			found_binary = true;
 			file = "Contents/MacOS/" + pkg_name;
@@ -2009,11 +2366,28 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				}
 			}
 			if (err == OK) {
-				Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
-				if (f.is_valid()) {
-					f->store_buffer(data.ptr(), data.size());
-					f.unref();
-					if (is_executable(file)) {
+				if (architecture == "universal" && MachO::is_macho(data)) {
+					universal_binaries[file].push_back(data);
+				} else if (architecture != "universal" && LipO::is_lipo(data)) {
+					LipO lip;
+					lip.open_buffer(data);
+					int arch_idx = -1;
+					for (int i = 0; i < lip.get_arch_count(); i++) {
+						if (architecture == "arm64" && lip.get_arch_cputype(i) == (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_ARM)) {
+							arch_idx = i;
+							break;
+						}
+						if (architecture == "x86_64" && lip.get_arch_cputype(i) == (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_X86)) {
+							arch_idx = i;
+							break;
+						}
+					}
+					if (arch_idx == -1) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not find binary for architecture \"%s\" in universal binary \"%s\"."), architecture, ofile));
+						err = ERR_CANT_CREATE;
+					}
+					if (lip.extract_arch(arch_idx, file)) {
+						print_verbose(vformat("Extracted binary for architecture \"%s\" from universal binary \"%s\" to \"%s\".", architecture, ofile, file));
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
 #ifndef UNIX_ENABLED
@@ -2021,10 +2395,33 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 							add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + file.get_file()));
 						}
 #endif
+					} else {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
+						err = ERR_CANT_CREATE;
 					}
 				} else {
-					add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
-					err = ERR_CANT_CREATE;
+					if (architecture != "universal" && MachO::is_macho(data)) {
+						if ((architecture == "arm64" && MachO::get_cputype(data) != (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_ARM)) || (architecture == "x86_64" && MachO::get_cputype(data) != (MachO::CPU_TYPE_64BIT | MachO::CPU_TYPE_X86))) {
+							add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Mismatching binary \"%s\" architecture: found \"%s\", expected \"%s\""), ofile, MachO::arch_name(MachO::get_cputype(data)), architecture));
+						}
+					}
+					Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+					if (f.is_valid()) {
+						f->store_buffer(data.ptr(), data.size());
+						f.unref();
+						if (is_executable(file)) {
+							// chmod with 0755 if the file is executable.
+							FileAccess::set_unix_permissions(file, 0755);
+#ifndef UNIX_ENABLED
+							if (export_format == "app") {
+								add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + file.get_file()));
+							}
+#endif
+						}
+					} else {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
+						err = ERR_CANT_CREATE;
+					}
 				}
 			}
 		}
@@ -2034,6 +2431,21 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	// We're done with our source zip.
 	unzClose(src_pkg_zip);
+
+	for (const KeyValue<String, Vector<PackedByteArray>> &E : universal_binaries) {
+		if (!LipO::create_file(E.key, E.value)) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to create universal bninary \"%s\""), E.key));
+			err = ERR_CANT_CREATE;
+		}
+		// chmod with 0755 if the file is executable.
+		FileAccess::set_unix_permissions(E.key, 0755);
+#ifndef UNIX_ENABLED
+		if (export_format == "app") {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + E.key.get_file()));
+		}
+#endif
+	}
+	universal_binaries.clear();
 
 	if (!found_binary) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template binary \"%s\" not found. It might be missing from your template archive."), binary_to_use));
@@ -2469,13 +2881,16 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
 		if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
-			err += TTR("Cannot export for universal or x86_64 if S3TC BPTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import S3TC BPTC).") + "\n";
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("Cannot export for universal or x86_64 if S3TC BPTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import S3TC BPTC).") + "\n";
+			}
 			valid = false;
 		}
-	}
-	if (architecture == "universal" || architecture == "arm64") {
+	} else if (architecture == "arm64") {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
-			err += TTR("Cannot export for universal or arm64 if ETC2 ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("Cannot export for universal or arm64 if ETC2 ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";
+			}
 			valid = false;
 		}
 	}
@@ -2598,15 +3013,7 @@ Ref<Texture2D> EditorExportPlatformMacOS::get_run_icon() const {
 }
 
 bool EditorExportPlatformMacOS::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	int prev = menu_options;
 	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
@@ -2697,19 +3104,19 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 
 	const String basepath = dest.path_join("tmp_macos_export");
 
-#define CLEANUP_AND_RETURN(m_err)                      \
-	{                                                  \
-		if (da->file_exists(basepath + ".zip")) {      \
-			da->remove(basepath + ".zip");             \
-		}                                              \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.sh")) { \
-			da->remove(basepath + "_start.sh");        \
-		}                                              \
+			da->remove(basepath + "_start.sh"); \
+		} \
 		if (da->file_exists(basepath + "_clean.sh")) { \
-			da->remove(basepath + "_clean.sh");        \
-		}                                              \
-		return m_err;                                  \
-	}                                                  \
+			da->remove(basepath + "_clean.sh"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {
@@ -2820,10 +3227,10 @@ void EditorExportPlatformMacOS::initialize() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, _macos_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _macos_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, _macos_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _macos_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		run_icon = ImageTexture::create_from_image(img);
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();

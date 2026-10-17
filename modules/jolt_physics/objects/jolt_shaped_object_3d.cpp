@@ -32,13 +32,12 @@
 
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
-#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-#include "Jolt/Physics/Collision/Shape/EmptyShape.h"
-#include "Jolt/Physics/Collision/Shape/MutableCompoundShape.h"
-#include "Jolt/Physics/Collision/Shape/StaticCompoundShape.h"
+#include <Jolt/Physics/Collision/Shape/EmptyShape.h>
+#include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 
 bool JoltShapedObject3D::_is_big() const {
 	// This number is completely arbitrary, and mostly just needs to capture `WorldBoundaryShape3D`, which needs to be kept out of the normal broadphase layers.
@@ -46,10 +45,11 @@ bool JoltShapedObject3D::_is_big() const {
 }
 
 JPH::ShapeRefC JoltShapedObject3D::_try_build_shape(bool p_optimize_compound) {
+	bool has_back_face_collision = is_area();
 	int built_shapes = 0;
 
 	for (JoltShapeInstance3D &shape : shapes) {
-		if (shape.is_enabled() && shape.try_build()) {
+		if (shape.is_enabled() && shape.try_build(has_back_face_collision)) {
 			built_shapes += 1;
 		}
 	}
@@ -71,10 +71,6 @@ JPH::ShapeRefC JoltShapedObject3D::_try_build_shape(bool p_optimize_compound) {
 		Vector3 actual_scale = scale;
 		JOLT_ENSURE_SCALE_VALID(result, actual_scale, vformat("Failed to correctly scale body '%s'.", to_string()));
 		result = JoltShape3D::with_scale(result, actual_scale);
-	}
-
-	if (is_area()) {
-		result = JoltShape3D::with_double_sided(result, true);
 	}
 
 	return result;
@@ -195,7 +191,6 @@ JoltShapedObject3D::JoltShapedObject3D(ObjectType p_object_type) :
 	jolt_settings->mRestitution = 0.0f;
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
-	jolt_settings->mGravityFactor = 0.0f;
 }
 
 JoltShapedObject3D::~JoltShapedObject3D() {
@@ -287,7 +282,7 @@ JPH::ShapeRefC JoltShapedObject3D::build_shapes(bool p_optimize_compound) {
 
 	if (new_shape == nullptr) {
 		if (has_custom_center_of_mass()) {
-			new_shape = JPH::EmptyShapeSettings(to_jolt(get_center_of_mass_custom())).Create().Get();
+			new_shape = new JPH::EmptyShape(to_jolt(get_center_of_mass_custom()));
 		} else {
 			new_shape = new JPH::EmptyShape();
 		}

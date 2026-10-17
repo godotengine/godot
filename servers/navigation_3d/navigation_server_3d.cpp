@@ -31,9 +31,15 @@
 #include "navigation_server_3d.h"
 #include "navigation_server_3d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "scene/main/node.h"
-#include "servers/navigation_3d/navigation_server_3d_dummy.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/node.h" // IWYU pragma: keep. Needed to bind `Node *` arg.
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h" // IWYU pragma: keep. Bind `NavigationMeshSourceGeometryData3D`.
+#include "scene/resources/navigation_mesh.h" // IWYU pragma: keep. Bind `NavigationMesh`.
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h" // IWYU pragma: keep. Bind `NavigationPathQueryParameters3D`.
+#include "servers/navigation_3d/navigation_path_query_result_3d.h" // IWYU pragma: keep. Bind `NavigationPathQueryResult3D`.
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
@@ -253,23 +259,23 @@ NavigationServer3D::NavigationServer3D() {
 
 #ifdef DEBUG_ENABLED
 #ifndef DISABLE_DEPRECATED
-#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting)                                                                             \
+#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting) \
 	if (!ProjectSettings::get_singleton()->has_setting(m_new_setting) && ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
-		Variant value = GLOBAL_GET(m_old_setting);                                                                                       \
-		ProjectSettings::get_singleton()->set_setting(m_new_setting, value);                                                             \
-		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                          \
+		Variant value = GLOBAL_GET(m_old_setting); \
+		ProjectSettings::get_singleton()->set_setting(m_new_setting, value); \
+		ProjectSettings::get_singleton()->clear(m_old_setting); \
 	}
-#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2)                                                                 \
+#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2) \
 	if ((!ProjectSettings::get_singleton()->has_setting(m_new_setting_1) || !ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) && \
-			ProjectSettings::get_singleton()->has_setting(m_old_setting)) {                                                                     \
-		Variant value = GLOBAL_GET(m_old_setting);                                                                                              \
-		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) {                                                                  \
-			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value);                                                              \
-		}                                                                                                                                       \
-		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) {                                                                  \
-			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value);                                                              \
-		}                                                                                                                                       \
-		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                                 \
+			ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
+		Variant value = GLOBAL_GET(m_old_setting); \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) { \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value); \
+		} \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) { \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value); \
+		} \
+		ProjectSettings::get_singleton()->clear(m_old_setting); \
 	}
 	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/edge_connection_color", "debug/shapes/navigation/2d/edge_connection_color", "debug/shapes/navigation/3d/edge_connection_color");
 	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_color", "debug/shapes/navigation/2d/geometry_edge_color", "debug/shapes/navigation/3d/geometry_edge_color");
@@ -1028,45 +1034,3 @@ bool NavigationServer3D::get_debug_avoidance_enabled() const {
 }
 
 #endif // DEBUG_ENABLED
-
-///////////////////////////////////////////////////////
-
-static NavigationServer3D *navigation_server_3d = nullptr;
-
-NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
-
-void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
-	create_callback = p_callback;
-}
-
-NavigationServer3D *NavigationServer3DManager::new_default_server() {
-	if (create_callback == nullptr) {
-		return nullptr;
-	}
-
-	return create_callback();
-}
-
-void NavigationServer3DManager::initialize_server() {
-	ERR_FAIL_COND(navigation_server_3d != nullptr);
-
-	// Init 3D Navigation Server
-	navigation_server_3d = NavigationServer3DManager::new_default_server();
-
-	// Fall back to dummy if no default server has been registered.
-	if (!navigation_server_3d) {
-		WARN_VERBOSE("Failed to initialize NavigationServer3D. Fall back to dummy server.");
-		navigation_server_3d = memnew(NavigationServer3DDummy);
-	}
-
-	// Should be impossible, but make sure it's not null.
-	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
-	navigation_server_3d->init();
-}
-
-void NavigationServer3DManager::finalize_server() {
-	ERR_FAIL_NULL(navigation_server_3d);
-	navigation_server_3d->finish();
-	memdelete(navigation_server_3d);
-	navigation_server_3d = nullptr;
-}

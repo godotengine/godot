@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "shader.h"
+
+#include "core/object/class_db.h"
+
 void Shader::_set_default_texture_parameter_bind_compat_95126(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index) {
 	set_default_texture_parameter(p_name, p_texture, p_index);
 }

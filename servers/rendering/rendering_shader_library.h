@@ -30,6 +30,10 @@
 
 #pragma once
 
+class String;
+template <typename T>
+class BitField;
+
 class RenderingShaderLibrary {
 public:
 	enum FeatureBits {

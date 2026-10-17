@@ -31,8 +31,13 @@
 #import "foundation_helpers.h"
 
 #import "core/string/ustring.h"
+#import "core/templates/span.h"
 
 #import <CoreFoundation/CFString.h>
+
+namespace NS {
+class String;
+}
 
 namespace conv {
 
@@ -40,6 +45,12 @@ NSString *to_nsstring(const String &p_str) {
 	return [[NSString alloc] initWithBytes:(const void *)p_str.ptr()
 									length:p_str.length() * sizeof(char32_t)
 								  encoding:NSUTF32LittleEndianStringEncoding];
+}
+
+NSString *to_nsstring(Span<char> p_str) {
+	return [[NSString alloc] initWithBytes:(const void *)p_str.ptr()
+									length:p_str.size()
+								  encoding:NSASCIIStringEncoding];
 }
 
 NSString *to_nsstring(const CharString &p_str) {
@@ -80,6 +91,11 @@ String to_string(NSString *p_str) {
 	}
 
 	return String::utf8(p_str.UTF8String);
+}
+
+String to_string(NS::String *p_str) {
+	NSString *str = (__bridge NSString *)p_str;
+	return to_string(str);
 }
 
 } //namespace conv

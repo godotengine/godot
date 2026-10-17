@@ -25,5 +25,6 @@ if env.editor_build:
 
 
 if env["tests"]:
+    # TODO: Handle test creation magic without needing to pass macro.
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
     env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")

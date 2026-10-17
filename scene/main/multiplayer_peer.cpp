@@ -30,6 +30,7 @@
 
 #include "multiplayer_peer.h"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 
 uint32_t MultiplayerPeer::generate_unique_id() const {
@@ -151,6 +152,7 @@ Error MultiplayerPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error MultiplayerPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	ERR_FAIL_COND_V(p_buffer_size < 0, ERR_INVALID_PARAMETER);
 	Error err;
 	if (GDVIRTUAL_CALL(_put_packet, p_buffer, p_buffer_size, err)) {
 		return err;
@@ -194,31 +196,31 @@ bool MultiplayerPeerExtension::is_server_relay_supported() const {
 
 void MultiplayerPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
-	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_put_packet, "buffer", "buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
 
 	GDVIRTUAL_BIND(_get_packet_script)
-	GDVIRTUAL_BIND(_put_packet_script, "p_buffer");
+	GDVIRTUAL_BIND(_put_packet_script, "buffer");
 
 	GDVIRTUAL_BIND(_get_packet_channel);
 	GDVIRTUAL_BIND(_get_packet_mode);
 
-	GDVIRTUAL_BIND(_set_transfer_channel, "p_channel");
+	GDVIRTUAL_BIND(_set_transfer_channel, "channel");
 	GDVIRTUAL_BIND(_get_transfer_channel);
 
-	GDVIRTUAL_BIND(_set_transfer_mode, "p_mode");
+	GDVIRTUAL_BIND(_set_transfer_mode, "mode");
 	GDVIRTUAL_BIND(_get_transfer_mode);
 
-	GDVIRTUAL_BIND(_set_target_peer, "p_peer");
+	GDVIRTUAL_BIND(_set_target_peer, "peer");
 
 	GDVIRTUAL_BIND(_get_packet_peer);
 	GDVIRTUAL_BIND(_is_server);
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_close);
-	GDVIRTUAL_BIND(_disconnect_peer, "p_peer", "p_force");
+	GDVIRTUAL_BIND(_disconnect_peer, "peer", "force");
 	GDVIRTUAL_BIND(_get_unique_id);
-	GDVIRTUAL_BIND(_set_refuse_new_connections, "p_enable");
+	GDVIRTUAL_BIND(_set_refuse_new_connections, "enable");
 	GDVIRTUAL_BIND(_is_refusing_new_connections);
 	GDVIRTUAL_BIND(_is_server_relay_supported);
 	GDVIRTUAL_BIND(_get_connection_status);

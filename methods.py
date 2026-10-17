@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import contextlib
 import glob
@@ -6,12 +8,12 @@ import os
 import re
 import subprocess
 import sys
-import textwrap
 import zlib
 from collections import OrderedDict
-from io import StringIO, TextIOBase
+from collections.abc import Generator
+from io import StringIO
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
+from typing import TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -45,7 +47,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for file in files:
         obj = self.Object(file)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            print_warning(f'Object "{obj}" already included in environment sources.')
             continue
         sources.append(obj)
 
@@ -343,7 +345,7 @@ def module_check_dependencies(self, module):
     missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
-        opt = "module_{}_enabled".format(dep)
+        opt = f"module_{dep}_enabled"
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
@@ -525,12 +527,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
-
-    # Syntax changed in SCons 4.4.0.
-    if env.scons_version >= (4, 4, 0):
-        (host_platform, target_platform, _) = get_host_target(env, msvc_version)
-    else:
-        (host_platform, target_platform, _) = get_host_target(env)
+    host_platform, target_platform, _ = get_host_target(env, msvc_version)
 
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
@@ -658,7 +655,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
+            print_error(f"Failed to find SDK path while running 'xcrun --sdk {sdk_name} --show-sdk-path'.")
             raise
 
 
@@ -671,7 +668,8 @@ def is_apple_clang(env):
         return False
     try:
         version = (
-            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            subprocess
+            .check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
             .strip()
             .decode("utf-8")
         )
@@ -722,18 +720,19 @@ def get_compiler_version(env):
                 "-prerelease",
                 "-products",
                 "*",
-                "-requires",
-                "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
             version = subprocess.check_output(args, encoding="utf-8").strip()
             for line in version.splitlines():
                 split = line.split(":", 1)
-                if split[0] == "catalog_productDisplayVersion":
-                    sem_ver = split[1].split(".")
-                    ret["major"] = int(sem_ver[0])
-                    ret["minor"] = int(sem_ver[1])
-                    ret["patch"] = int(sem_ver[2].split()[0])
+                if split[0] == "catalog_productSemanticVersion":
+                    match = re.match(r" ([0-9]*).([0-9]*).([0-9]*)-?([a-z0-9.+]*)", split[1])
+                    if match is not None:
+                        ret["major"] = int(match.group(1))
+                        ret["minor"] = int(match.group(2))
+                        ret["patch"] = int(match.group(3))
+                        # Semantic suffix (i.e. insiders+11116.177)
+                        ret["metadata2"] = match.group(4)
                 # Could potentially add section for determining preview version, but
                 # that can wait until metadata is actually used for something.
                 if split[0] == "catalog_buildVersion":
@@ -1146,7 +1145,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.modules.pop("msvs")
 
     extensions = {}
-    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc"]
+    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc", ".inl"]
     extensions["sources"] = [".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".java"]
     extensions["others"] = [".natvis", ".glsl", ".rc"]
 
@@ -1293,9 +1292,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 itemlist[key] += [item]
 
         for x in itemlist.keys():
-            properties.append(
-                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
-            )
+            properties.append(f"<ActiveProjectItemList_{x}>;{';'.join(itemlist[x])};</ActiveProjectItemList_{x}>")
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
@@ -1550,8 +1547,8 @@ def generate_copyright_header(filename: str) -> str:
 @contextlib.contextmanager
 def generated_wrapper(
     path: str,
-    guard: Optional[bool] = None,
-) -> Generator[TextIOBase, None, None]:
+    guard: bool | None = None,
+) -> Generator[TextIO, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1584,19 +1581,40 @@ def get_buffer(path: str) -> bytes:
         return file.read()
 
 
+def compress_buffer_zstd(buffer: bytes, env):
+    # Levels selected for a good tradeoff between compression speed and size reduction,
+    # being more aggressive on production builds.
+    # Long-distance matching helps a lot with the editor translations on lower levels,
+    # but costs some extra decompression time (+30%). It's not helping at high levels.
+    level = 20 if env["production"] else 7
+    ldm = False if env["production"] or env.dev_build else True
+    if sys.version_info >= (3, 14):
+        import compression.zstd
+
+        CP = compression.zstd.CompressionParameter
+        options = {CP.compression_level: level, CP.enable_long_distance_matching: ldm}
+        return compression.zstd.compress(buffer, options=options)
+    else:
+        try:
+            import zstandard
+        except ImportError:
+            print_error("Python versions earlier than 3.14 require the `zstandard` module")
+            sys.exit(255)
+        params = zstandard.ZstdCompressionParameters.from_level(level, enable_ldm=ldm)
+        return zstandard.ZstdCompressor(compression_params=params).compress(buffer)
+
+
 def compress_buffer(buffer: bytes) -> bytes:
     # Use maximum zlib compression level to further reduce file size
     # (at the cost of initial build times).
     return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
 
 
-def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
-    return textwrap.fill(
-        ", ".join(str(byte) for byte in buffer),
-        width=width,
-        initial_indent="\t" * indent if initial_indent else "",
-        subsequent_indent="\t" * indent,
-        tabsize=4,
+def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
+    return re.sub(
+        f"(.{{{width - (indent * 4) - 6}}},) (?:, )?",
+        r"\g<1>\n" + ("\t" * indent),
+        ", ".join(map(str, buffer)),
     )
 
 
@@ -1623,13 +1641,13 @@ def to_escaped_cstring(value: str) -> str:
     return value.translate(C_ESCAPE_TABLE)
 
 
-def to_raw_cstring(value: Union[str, List[str]]) -> str:
+def to_raw_cstring(value: str | list[str]) -> str:
     MAX_LITERAL = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
 
-    split: List[bytes] = []
+    split: list[bytes] = []
     offset = 0
     encoded = value.encode()
 

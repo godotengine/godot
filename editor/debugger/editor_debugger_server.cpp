@@ -58,12 +58,12 @@ public:
 
 class EditorDebuggerServerTCP : public EditorDebuggerServerSocket<TCPServer> {
 public:
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
 	virtual Error start(const String &p_uri) override;
 };
 
-EditorDebuggerServer *EditorDebuggerServerTCP::create(const String &p_protocol) {
+Ref<EditorDebuggerServer> EditorDebuggerServerTCP::create(const String &p_protocol) {
 	ERR_FAIL_COND_V(p_protocol != "tcp://", nullptr);
 	return memnew(EditorDebuggerServerTCP);
 }
@@ -138,12 +138,12 @@ Ref<RemoteDebuggerPeer> EditorDebuggerServerSocket<T>::take_connection() {
 
 class EditorDebuggerServerUDS : public EditorDebuggerServerSocket<UDSServer> {
 public:
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
 	virtual Error start(const String &p_uri) override;
 };
 
-EditorDebuggerServer *EditorDebuggerServerUDS::create(const String &p_protocol) {
+Ref<EditorDebuggerServer> EditorDebuggerServerUDS::create(const String &p_protocol) {
 	ERR_FAIL_COND_V(p_protocol != "unix://", nullptr);
 	return memnew(EditorDebuggerServerUDS);
 }
@@ -163,7 +163,7 @@ Error EditorDebuggerServerUDS::start(const String &p_uri) {
 /// EditorDebuggerServer
 HashMap<StringName, EditorDebuggerServer::CreateServerFunc> EditorDebuggerServer::protocols;
 
-EditorDebuggerServer *EditorDebuggerServer::create(const String &p_protocol) {
+Ref<EditorDebuggerServer> EditorDebuggerServer::create(const String &p_protocol) {
 	CreateServerFunc *create_fn = protocols.getptr(p_protocol);
 	ERR_FAIL_NULL_V(create_fn, nullptr);
 	return (*create_fn)(p_protocol);

@@ -31,9 +31,15 @@
 #include "navigation_server_2d.h"
 #include "navigation_server_2d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "scene/main/node.h"
-#include "servers/navigation_2d/navigation_server_2d_dummy.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/node.h" // IWYU pragma: keep. Needed to bind `Node *` arg.
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h" // IWYU pragma: keep. Bind `NavigationMeshSourceGeometryData2D`.
+#include "scene/resources/2d/navigation_polygon.h" // IWYU pragma: keep. Bind `NavigationPolygon`.
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h" // IWYU pragma: keep. Bind `NavigationPathQueryParameters2D`.
+#include "servers/navigation_2d/navigation_path_query_result_2d.h" // IWYU pragma: keep. Bind `NavigationPathQueryResult2D`.
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
@@ -256,8 +262,8 @@ NavigationServer2D::NavigationServer2D() {
 	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/2d/enable_obstacles_static", true);
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		// enable NavigationServer3D when in Editor or else navigation mesh edge connections are invisible
-		// on runtime tests SceneTree has "Visible Navigation" set and main iteration takes care of this.
+		// Enable NavigationServer2D when in Editor or navigation mesh edge connections are invisible.
+		// On runtime tests SceneTree has "Visible Navigation" set and main iteration takes care of this.
 		set_debug_enabled(true);
 		set_debug_navigation_enabled(true);
 		set_debug_avoidance_enabled(true);
@@ -545,42 +551,3 @@ bool NavigationServer2D::get_debug_navigation_avoidance_enable_obstacles_static(
 	return debug_navigation_avoidance_enable_obstacles_static;
 }
 #endif // DEBUG_ENABLED
-
-///////////////////////////////////////////////////////
-
-static NavigationServer2D *navigation_server_2d = nullptr;
-
-NavigationServer2DCallback NavigationServer2DManager::create_callback = nullptr;
-
-void NavigationServer2DManager::set_default_server(NavigationServer2DCallback p_callback) {
-	create_callback = p_callback;
-}
-
-NavigationServer2D *NavigationServer2DManager::new_default_server() {
-	if (create_callback == nullptr) {
-		return nullptr;
-	}
-
-	return create_callback();
-}
-
-void NavigationServer2DManager::initialize_server() {
-	ERR_FAIL_COND(navigation_server_2d != nullptr);
-
-	// Init 2D Navigation Server
-	navigation_server_2d = NavigationServer2DManager::new_default_server();
-	if (!navigation_server_2d) {
-		WARN_VERBOSE("Failed to initialize NavigationServer2D. Fall back to dummy server.");
-		navigation_server_2d = memnew(NavigationServer2DDummy);
-	}
-
-	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
-	navigation_server_2d->init();
-}
-
-void NavigationServer2DManager::finalize_server() {
-	ERR_FAIL_NULL(navigation_server_2d);
-	navigation_server_2d->finish();
-	memdelete(navigation_server_2d);
-	navigation_server_2d = nullptr;
-}

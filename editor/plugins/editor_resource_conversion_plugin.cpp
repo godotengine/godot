@@ -30,6 +30,8 @@
 
 #include "editor_resource_conversion_plugin.h"
 
+#include "core/object/class_db.h" // IWYU pragma: keep. `GDVIRTUAL_BIND` macro.
+
 void EditorResourceConversionPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_converts_to);
 	GDVIRTUAL_BIND(_handles, "resource");

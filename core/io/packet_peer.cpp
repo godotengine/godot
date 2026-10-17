@@ -32,13 +32,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 /* helpers / binders */
 
 void PacketPeer::set_encode_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 1024, "Max encode buffer must be at least 1024 bytes");
 	ERR_FAIL_COND_MSG(p_max_size > 256 * 1024 * 1024, "Max encode buffer cannot exceed 256 MiB");
-	encode_buffer_max_size = next_power_of_2((uint32_t)p_max_size);
+	encode_buffer_max_size = Math::next_power_of_2((uint32_t)p_max_size);
 	encode_buffer.clear();
 }
 
@@ -49,10 +50,7 @@ int PacketPeer::get_encode_buffer_max_size() const {
 Error PacketPeer::get_packet_buffer(Vector<uint8_t> &r_buffer) {
 	const uint8_t *buffer;
 	int buffer_size;
-	Error err = get_packet(&buffer, buffer_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(get_packet(&buffer, buffer_size));
 
 	r_buffer.resize(buffer_size);
 	if (buffer_size == 0) {
@@ -80,10 +78,7 @@ Error PacketPeer::put_packet_buffer(const Vector<uint8_t> &p_buffer) {
 Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 	const uint8_t *buffer;
 	int buffer_size;
-	Error err = get_packet(&buffer, buffer_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(get_packet(&buffer, buffer_size));
 
 	return decode_variant(r_variant, buffer, buffer_size, nullptr, p_allow_objects);
 }
@@ -103,7 +98,7 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	if (unlikely(encode_buffer.size() < len)) {
 		encode_buffer.resize(0); // Avoid realloc
-		encode_buffer.resize(next_power_of_2((uint32_t)len));
+		encode_buffer.resize(Math::next_power_of_2((uint32_t)len));
 	}
 
 	uint8_t *w = encode_buffer.ptrw();
@@ -172,7 +167,7 @@ Error PacketPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 void PacketPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_packet, "r_buffer", "r_buffer_size");
-	GDVIRTUAL_BIND(_put_packet, "p_buffer", "p_buffer_size");
+	GDVIRTUAL_BIND(_put_packet, "buffer", "buffer_size");
 	GDVIRTUAL_BIND(_get_available_packet_count);
 	GDVIRTUAL_BIND(_get_max_packet_size);
 }
@@ -189,7 +184,7 @@ void PacketPeerStream::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_buffer_max_size"), "set_input_buffer_max_size", "get_input_buffer_max_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_buffer_max_size"), "set_output_buffer_max_size", "get_output_buffer_max_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream_peer", PROPERTY_HINT_RESOURCE_TYPE, StreamPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_stream_peer", "get_stream_peer");
 }
 
 Error PacketPeerStream::_poll_buffer() const {
@@ -197,10 +192,7 @@ Error PacketPeerStream::_poll_buffer() const {
 
 	int read = 0;
 	ERR_FAIL_COND_V(input_buffer.size() < ring_buffer.space_left(), ERR_UNAVAILABLE);
-	Error err = peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read));
 	if (read == 0) {
 		return OK;
 	}
@@ -301,8 +293,8 @@ void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 	ERR_FAIL_COND_MSG(p_max_size < 0, "Max size of input buffer size cannot be smaller than 0.");
 	// WARNING: May lose packets.
 	ERR_FAIL_COND_MSG(ring_buffer.data_left(), "Buffer in use, resizing would cause loss of data.");
-	ring_buffer.resize(nearest_shift(next_power_of_2((uint32_t)p_max_size + (uint32_t)4)) - 1);
-	input_buffer.resize(next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
+	ring_buffer.resize(Math::nearest_shift(Math::next_power_of_2((uint32_t)p_max_size + (uint32_t)4)) - 1);
+	input_buffer.resize(Math::next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
 }
 
 int PacketPeerStream::get_input_buffer_max_size() const {
@@ -310,7 +302,7 @@ int PacketPeerStream::get_input_buffer_max_size() const {
 }
 
 void PacketPeerStream::set_output_buffer_max_size(int p_max_size) {
-	output_buffer.resize(next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
+	output_buffer.resize(Math::next_power_of_2((uint32_t)p_max_size + (uint32_t)4));
 }
 
 int PacketPeerStream::get_output_buffer_max_size() const {

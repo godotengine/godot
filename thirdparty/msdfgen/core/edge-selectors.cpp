@@ -11,6 +11,7 @@ TrueDistanceSelector::EdgeCache::EdgeCache() : absDistance(0) { }
 
 void TrueDistanceSelector::reset(const Point2 &p) {
     double delta = DISTANCE_DELTA_FACTOR*(p-this->p).length();
+    // Since minDistance.distance is initialized to -DBL_MAX, at first glance this seems like it could make it underflow to -infinity, but in practice delta would have to be extremely high for this to happen (above 9e291)
     minDistance.distance += nonZeroSign(minDistance.distance)*delta;
     this->p = p;
 }
@@ -60,7 +61,7 @@ void PerpendicularDistanceSelectorBase::reset(double delta) {
     nearEdgeParam = 0;
 }
 
-bool PerpendicularDistanceSelectorBase::isEdgeRelevant(const EdgeCache &cache, const EdgeSegment *edge, const Point2 &p) const {
+bool PerpendicularDistanceSelectorBase::isEdgeRelevant(const EdgeCache &cache, const EdgeSegment *, const Point2 &p) const {
     double delta = DISTANCE_DELTA_FACTOR*(p-cache.point).length();
     return (
         cache.absDistance-delta <= fabs(minTrueDistance.distance) ||

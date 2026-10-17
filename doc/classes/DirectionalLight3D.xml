@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="DirectionalLight3D" inherits="Light3D" keywords="sun" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="DirectionalLight3D" inherits="Light3D" api_type="core" keywords="sun" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Directional light from a distance, as from the Sun.
 	</brief_description>
@@ -8,7 +8,7 @@
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]). The position of the node is ignored; only the basis is used to determine light direction.
 	</description>
 	<tutorials>
-		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html#directional-light</link>
 		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 	</tutorials>
 	<members>

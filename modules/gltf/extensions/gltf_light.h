@@ -77,7 +77,7 @@ public:
 	static Ref<GLTFLight> from_node(const Light3D *p_light);
 	Light3D *to_node() const;
 
-	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFLight> from_dictionary(const Dictionary &p_dictionary);
 	Dictionary to_dictionary() const;
 
 	Variant get_additional_data(const StringName &p_extension_name);

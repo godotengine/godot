@@ -14,12 +14,16 @@
 JPH_NAMESPACE_BEGIN
 
 class PhysicsSystem;
+class BodyManager;
 class IslandBuilder;
 class Constraint;
 class TempAllocator;
 class SoftBodyUpdateContext;
 
-/// Information used during the Update call
+/// @cond INTERNAL
+/// Internal information used during the PhysicsSystem::Update call
+///
+/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
 class PhysicsUpdateContext : public NonCopyable
 {
 public:
@@ -160,6 +164,7 @@ public:
 
 	BodyPair *				mBodyPairs = nullptr;									///< A list of body pairs found by the broadphase
 
+	BodyManager *			mBodyManager;											///< Keeps track of all bodies in the simulation
 	IslandBuilder *			mIslandBuilder;											///< Keeps track of connected bodies and builds islands for multithreaded velocity/position update
 
 	Steps					mSteps;
@@ -168,5 +173,6 @@ public:
 	SoftBodyUpdateContext *	mSoftBodyUpdateContexts = nullptr;						///< Contexts for updating soft bodies
 	atomic<uint>			mSoftBodyToCollide { 0 };								///< Next soft body to take when running SoftBodyCollide jobs
 };
+/// @endcond
 
 JPH_NAMESPACE_END

@@ -92,6 +92,17 @@ struct MarkLigPosFormat1_2
 
   const Coverage &get_coverage () const { return this+markCoverage; }
 
+  static inline bool accept (hb_buffer_t *buffer, unsigned idx)
+  {
+    /* We only want to attach to the first of a MultipleSubst sequence,
+     * which might have been ligated into a preceding ligature, and in that
+     * case the mark should attach to that ligature.
+     * https://github.com/harfbuzz/harfbuzz/issues/4969
+     * Reject others... */
+    return !_hb_glyph_info_multiplied (&buffer->info[idx]) ||
+	   0 == _hb_glyph_info_get_lig_comp (&buffer->info[idx]);
+  }
+
   bool apply (hb_ot_apply_context_t *c) const
   {
     TRACE_APPLY (this);
@@ -113,6 +124,13 @@ struct MarkLigPosFormat1_2
     for (j = buffer->idx; j > c->last_base_until; j--)
     {
       auto match = skippy_iter.match (buffer->info[j - 1]);
+      if (match == skippy_iter.MATCH)
+      {
+        // https://github.com/harfbuzz/harfbuzz/issues/4124
+	if (!accept (buffer, j - 1) &&
+	    NOT_COVERED == (this+ligatureCoverage).get_coverage  (buffer->info[j - 1].codepoint))
+	  match = skippy_iter.SKIP;
+      }
       if (match == skippy_iter.MATCH)
       {
 	c->last_base = (signed) j - 1;
@@ -200,19 +218,13 @@ struct MarkLigPosFormat1_2
 						    &klass_mapping)))
       return_trace (false);
 
-    auto new_ligature_coverage =
-    + hb_iter (this + ligatureCoverage)
-    | hb_take ((this + ligatureArray).len)
-    | hb_map_retains_sorting (glyph_map)
-    | hb_filter ([] (hb_codepoint_t glyph) { return glyph != HB_MAP_VALUE_INVALID; })
-    ;
-
-    if (!out->ligatureCoverage.serialize_serialize (c->serializer, new_ligature_coverage))
+    hb_sorted_vector_t<hb_codepoint_t> new_lig_coverage;
+    if (!out->ligatureArray.serialize_subset (c, ligatureArray, this,
+					      hb_iter (this+ligatureCoverage),
+					      classCount, &klass_mapping, new_lig_coverage))
       return_trace (false);
 
-    return_trace (out->ligatureArray.serialize_subset (c, ligatureArray, this,
-						       hb_iter (this+ligatureCoverage),
-						       classCount, &klass_mapping));
+    return_trace (out->ligatureCoverage.serialize_serialize (c->serializer, new_lig_coverage.iter ()));
   }
 
 };

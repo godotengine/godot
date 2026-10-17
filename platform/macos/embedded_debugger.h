@@ -33,23 +33,23 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/array.h"
 
-class DisplayServerEmbedded;
+class DisplayServerMacOSEmbedded;
 
 /// @brief Singleton class to process embedded debugging message in the child process.
 class EmbeddedDebugger {
 	inline static EmbeddedDebugger *singleton = nullptr;
 
-	EmbeddedDebugger(DisplayServerEmbedded *p_ds);
+	EmbeddedDebugger(DisplayServerMacOSEmbedded *p_ds);
 
 public:
-	static void initialize(DisplayServerEmbedded *p_ds);
+	static void initialize(DisplayServerMacOSEmbedded *p_ds);
 	static void deinitialize();
 
 	~EmbeddedDebugger();
 
 #ifdef DEBUG_ENABLED
 private:
-	DisplayServerEmbedded *ds;
+	DisplayServerMacOSEmbedded *ds;
 
 	/// Message handler function for parse_message.
 	typedef Error (EmbeddedDebugger::*ParseMessageFunc)(const Array &p_args);

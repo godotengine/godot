@@ -32,7 +32,6 @@
 
 #include "../nav_utils_2d.h"
 #include "nav_base_iteration_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
 
 #include "core/math/rect2.h"
 

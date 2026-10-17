@@ -1000,8 +1000,6 @@ JPH_INLINE void QuadTree::WalkTree(const ObjectLayerFilter &inObjectLayerFilter,
 			ObjectLayer object_layer = inTracking[body_id.GetIndex()].mObjectLayer; // We're not taking a lock on the body, so it may be in the process of being removed so check if the object layer is invalid
 			if (object_layer != cObjectLayerInvalid && inObjectLayerFilter.ShouldCollide(object_layer))
 			{
-				JPH_PROFILE("VisitBody");
-
 				// Track amount of hits
 				JPH_IF_TRACK_BROADPHASE_STATS(++hits_collected;)
 
@@ -1452,6 +1450,10 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 		const Body &body1 = *inBodies[b1_id.GetIndex()];
 		JPH_ASSERT(!body1.IsStatic());
 
+	#ifdef JPH_TRACK_SIMULATION_STATS
+		uint64 start_tick = GetProcessorTickCount();
+	#endif
+
 		// Expand the bounding box by the speculative contact distance
 		AABox bounds1 = body1.GetWorldSpaceBounds();
 		bounds1.ExpandBy(Vec3::sReplicate(inSpeculativeContactDistance));
@@ -1521,6 +1523,11 @@ void QuadTree::FindCollidingPairs(const BodyVector &inBodies, const BodyID *inAc
 			--top;
 		}
 		while (top >= 0);
+
+	#ifdef JPH_TRACK_SIMULATION_STATS
+		uint64 num_ticks = GetProcessorTickCount() - start_tick;
+		const_cast<MotionProperties::SimulationStats &>(body1.GetMotionPropertiesUnchecked()->GetSimulationStats()).mBroadPhaseTicks += num_ticks;
+	#endif
 	}
 
 	// Test that the root node was not swapped while finding collision pairs.

@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "hash_map.h"
-#include "list.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/list.h"
 
 template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>, void (*BeforeEvict)(TKey &, TData &) = nullptr>
-class LRUCache {
+class _WARN_UNUSED_ LRUCache {
 public:
 	struct Pair {
 		TKey key;

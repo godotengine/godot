@@ -38,12 +38,13 @@
 #ifndef HB_EXPERIMENTAL_API
 #define HB_NO_BEYOND_64K
 #define HB_NO_CUBIC_GLYF
-#define HB_NO_VAR_COMPOSITES
+#define HB_NO_SUBSET_DEPEND
 #endif
 
 #ifdef HB_TINY
 #define HB_LEAN
 #define HB_MINI
+#define HB_NO_SVG
 #define HB_OPTIMIZE_SIZE
 #define HB_OPTIMIZE_SIZE_MORE
 #define HB_MINIMIZE_MEMORY_USAGE
@@ -61,9 +62,6 @@
 #define HB_NO_BUFFER_SERIALIZE
 #define HB_NO_BUFFER_VERIFY
 #define HB_NO_BITMAP
-#define HB_NO_CFF
-#define HB_NO_COLOR
-#define HB_NO_DRAW
 #define HB_NO_ERRNO
 #define HB_NO_FACE_COLLECT_UNICODES
 #define HB_NO_GETENV
@@ -78,20 +76,27 @@
 #define HB_NO_MMAP
 #define HB_NO_NAME
 #define HB_NO_OPEN
+#define HB_NO_OT_FETCH
 #define HB_NO_OT_FONT_GLYPH_NAMES
-#define HB_NO_OT_SHAPE_FRACTIONS
-#define HB_NO_PAINT
 #define HB_NO_SETLOCALE
 #define HB_NO_STYLE
-#define HB_NO_SUBSET_LAYOUT
+#define HB_NO_SUBSET_DEPEND
 #define HB_NO_VERTICAL
 #define HB_NO_VAR
+
+#if !(defined(HB_HAS_CAIRO) || defined(HB_HAS_RASTER) || defined(HB_HAS_VECTOR) || defined(HB_HAS_GPU))
+#define HB_NO_COLOR
+#define HB_NO_DRAW
+#define HB_NO_PAINT
+#endif
+
 #endif
 
 #ifdef HB_MINI
 #define HB_NO_AAT
 #define HB_NO_LEGACY
-#define HB_NO_BORING_EXPANSION
+#define HB_NO_BEYOND_64K
+#define HB_NO_CUBIC_GLYF
 #endif
 
 #ifdef __OPTIMIZE_SIZE__
@@ -108,12 +113,6 @@
 #endif
 
 /* Closure of options. */
-
-#ifdef HB_NO_BORING_EXPANSION
-#define HB_NO_BEYOND_64K
-#define HB_NO_CUBIC_GLYF
-#define HB_NO_VAR_COMPOSITES
-#endif
 
 #ifdef HB_NO_VAR
 #define HB_NO_VAR_COMPOSITES
@@ -139,18 +138,15 @@
 #define HB_NO_OT_FONT_BITMAP
 #endif
 
-#ifdef HB_NO_CFF
-#define HB_NO_OT_FONT_CFF
-#define HB_NO_SUBSET_CFF
-#endif
-
 #ifdef HB_NO_DRAW
+#define HB_NO_OT_FONT_CFF
 #define HB_NO_OUTLINE
 #define HB_NO_PAINT
 #endif
 
-#ifdef HB_NO_GETENV
-#define HB_NO_UNISCRIBE_BUG_COMPATIBLE
+#ifdef HB_NO_CFF
+#define HB_NO_OT_FONT_CFF
+#define HB_NO_SUBSET_CFF
 #endif
 
 #ifdef HB_NO_LEGACY
@@ -193,6 +189,13 @@
 #define HB_NO_GDEF_CACHE
 #define HB_NO_OT_LAYOUT_LOOKUP_CACHE
 #define HB_NO_OT_FONT_CMAP_CACHE
+#endif
+
+#if defined(HAVE_CONFIG_OVERRIDE_LAST_H) || defined(HB_CONFIG_OVERRIDE_LAST_H)
+#ifndef HB_CONFIG_OVERRIDE_LAST_H
+#define HB_CONFIG_OVERRIDE_LAST_H "config-override-last.h"
+#endif
+#include HB_CONFIG_OVERRIDE_LAST_H
 #endif
 
 #ifdef HB_OPTIMIZE_SIZE

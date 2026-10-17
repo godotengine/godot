@@ -30,10 +30,6 @@
 
 #pragma once
 
-#include "gdscript_test_runner.h"
-
-#include "tests/test_macros.h"
-
 namespace GDScriptTests {
 
 enum TestType {
@@ -45,5 +41,6 @@ enum TestType {
 };
 
 void test(TestType p_type);
+int generate_tests();
 
 } // namespace GDScriptTests

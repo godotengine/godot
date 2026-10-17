@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="drm">
+
+  <copyright>
+    Copyright © 2008-2011 Kristian Høgsberg
+    Copyright © 2010-2011 Intel Corporation
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that\n the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+  </copyright>
+
+  <!-- drm support. This object is created by the server and published
+       using the display's global event. -->
+  <interface name="wl_drm" version="2">
+    <enum name="error">
+      <entry name="authenticate_fail" value="0"/>
+      <entry name="invalid_format" value="1"/>
+      <entry name="invalid_name" value="2"/>
+    </enum>
+
+    <enum name="format">
+      <!-- The drm format codes match the #defines in drm_fourcc.h.
+           The formats actually supported by the compositor will be
+           reported by the format event. New codes must not be added,
+           unless directly taken from drm_fourcc.h. -->
+      <entry name="c8" value="0x20203843"/>
+      <entry name="rgb332" value="0x38424752"/>
+      <entry name="bgr233" value="0x38524742"/>
+      <entry name="xrgb4444" value="0x32315258"/>
+      <entry name="xbgr4444" value="0x32314258"/>
+      <entry name="rgbx4444" value="0x32315852"/>
+      <entry name="bgrx4444" value="0x32315842"/>
+      <entry name="argb4444" value="0x32315241"/>
+      <entry name="abgr4444" value="0x32314241"/>
+      <entry name="rgba4444" value="0x32314152"/>
+      <entry name="bgra4444" value="0x32314142"/>
+      <entry name="xrgb1555" value="0x35315258"/>
+      <entry name="xbgr1555" value="0x35314258"/>
+      <entry name="rgbx5551" value="0x35315852"/>
+      <entry name="bgrx5551" value="0x35315842"/>
+      <entry name="argb1555" value="0x35315241"/>
+      <entry name="abgr1555" value="0x35314241"/>
+      <entry name="rgba5551" value="0x35314152"/>
+      <entry name="bgra5551" value="0x35314142"/>
+      <entry name="rgb565" value="0x36314752"/>
+      <entry name="bgr565" value="0x36314742"/>
+      <entry name="rgb888" value="0x34324752"/>
+      <entry name="bgr888" value="0x34324742"/>
+      <entry name="xrgb8888" value="0x34325258"/>
+      <entry name="xbgr8888" value="0x34324258"/>
+      <entry name="rgbx8888" value="0x34325852"/>
+      <entry name="bgrx8888" value="0x34325842"/>
+      <entry name="argb8888" value="0x34325241"/>
+      <entry name="abgr8888" value="0x34324241"/>
+      <entry name="rgba8888" value="0x34324152"/>
+      <entry name="bgra8888" value="0x34324142"/>
+      <entry name="xrgb2101010" value="0x30335258"/>
+      <entry name="xbgr2101010" value="0x30334258"/>
+      <entry name="rgbx1010102" value="0x30335852"/>
+      <entry name="bgrx1010102" value="0x30335842"/>
+      <entry name="argb2101010" value="0x30335241"/>
+      <entry name="abgr2101010" value="0x30334241"/>
+      <entry name="rgba1010102" value="0x30334152"/>
+      <entry name="bgra1010102" value="0x30334142"/>
+      <entry name="yuyv" value="0x56595559"/>
+      <entry name="yvyu" value="0x55595659"/>
+      <entry name="uyvy" value="0x59565955"/>
+      <entry name="vyuy" value="0x59555956"/>
+      <entry name="ayuv" value="0x56555941"/>
+      <entry name="xyuv8888" value="0x56555958"/>
+      <entry name="nv12" value="0x3231564e"/>
+      <entry name="nv21" value="0x3132564e"/>
+      <entry name="nv16" value="0x3631564e"/>
+      <entry name="nv61" value="0x3136564e"/>
+      <entry name="yuv410" value="0x39565559"/>
+      <entry name="yvu410" value="0x39555659"/>
+      <entry name="yuv411" value="0x31315559"/>
+      <entry name="yvu411" value="0x31315659"/>
+      <entry name="yuv420" value="0x32315559"/>
+      <entry name="yvu420" value="0x32315659"/>
+      <entry name="yuv422" value="0x36315559"/>
+      <entry name="yvu422" value="0x36315659"/>
+      <entry name="yuv444" value="0x34325559"/>
+      <entry name="yvu444" value="0x34325659"/>
+      <entry name="abgr16f" value="0x48344241"/>
+      <entry name="xbgr16f" value="0x48344258"/>
+    </enum>
+
+    <!-- Call this request with the magic received from drmGetMagic().
+         It will be passed on to the drmAuthMagic() or
+         DRIAuthConnection() call.  This authentication must be
+         completed before create_buffer could be used. -->
+    <request name="authenticate">
+      <arg name="id" type="uint"/>
+    </request>
+
+    <!-- Create a wayland buffer for the named DRM buffer.  The DRM
+         surface must have a name using the flink ioctl -->
+    <request name="create_buffer">
+      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="name" type="uint"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="stride" type="uint"/>
+      <arg name="format" type="uint"/>
+    </request>
+
+    <!-- Create a wayland buffer for the named DRM buffer.  The DRM
+         surface must have a name using the flink ioctl -->
+    <request name="create_planar_buffer">
+      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="name" type="uint"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="format" type="uint"/>
+      <arg name="offset0" type="int"/>
+      <arg name="stride0" type="int"/>
+      <arg name="offset1" type="int"/>
+      <arg name="stride1" type="int"/>
+      <arg name="offset2" type="int"/>
+      <arg name="stride2" type="int"/>
+    </request>
+
+    <!-- Notification of the path of the drm device which is used by
+         the server.  The client should use this device for creating
+         local buffers.  Only buffers created from this device should
+         be be passed to the server using this drm object's
+         create_buffer request. -->
+    <event name="device">
+      <arg name="name" type="string"/>
+    </event>
+
+    <event name="format">
+      <arg name="format" type="uint"/>
+    </event>
+
+    <!-- Raised if the authenticate request succeeded -->
+    <event name="authenticated"/>
+
+    <enum name="capability" since="2">
+      <description summary="wl_drm capability bitmask">
+        Bitmask of capabilities.
+      </description>
+      <entry name="prime" value="1" summary="wl_drm prime available"/>
+    </enum>
+
+    <event name="capabilities">
+      <arg name="value" type="uint"/>
+    </event>
+
+    <!-- Version 2 additions -->
+
+    <!-- Create a wayland buffer for the prime fd.  Use for regular and planar
+         buffers.  Pass 0 for offset and stride for unused planes. -->
+    <request name="create_prime_buffer" since="2">
+      <arg name="id" type="new_id" interface="wl_buffer"/>
+      <arg name="name" type="fd"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="format" type="uint"/>
+      <arg name="offset0" type="int"/>
+      <arg name="stride0" type="int"/>
+      <arg name="offset1" type="int"/>
+      <arg name="stride1" type="int"/>
+      <arg name="offset2" type="int"/>
+      <arg name="stride2" type="int"/>
+    </request>
+
+  </interface>
+
+</protocol>

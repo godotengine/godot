@@ -1,5 +1,5 @@
 diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
-index 1fa63b8185..72f99e236a 100644
+index 6fecc5cb80..21d26536c1 100644
 --- a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
 +++ b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
 @@ -286,271 +286,6 @@ bailout:
@@ -275,10 +275,10 @@ index 1fa63b8185..72f99e236a 100644
  #undef _JSAMPROW
  #undef _buffer
 diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg.c b/thirdparty/libjpeg-turbo/src/turbojpeg.c
-index eec8e2a616..8ce446148a 100644
+index d514da43d2..969174f72e 100644
 --- a/thirdparty/libjpeg-turbo/src/turbojpeg.c
 +++ b/thirdparty/libjpeg-turbo/src/turbojpeg.c
-@@ -3095,48 +3095,3 @@ bailout:
+@@ -3091,48 +3091,3 @@ bailout:
    free(sizes);
    return retval;
  }

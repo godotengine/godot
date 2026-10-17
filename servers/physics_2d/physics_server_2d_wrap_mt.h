@@ -35,7 +35,7 @@
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
-#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
@@ -52,6 +52,13 @@
 #define MAIN_THREAD_SYNC_WARN
 #endif
 #endif
+
+#define ServerName PhysicsServer2D
+#define ServerNameWrapMT PhysicsServer2DWrapMT
+#define server_name physics_server_2d
+#define WRITE_ACTION
+
+#include "servers/server_wrap_mt_common.h"
 
 class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	GDSOFTCLASS(PhysicsServer2DWrapMT, PhysicsServer2D);
@@ -72,13 +79,6 @@ class PhysicsServer2DWrapMT : public PhysicsServer2D {
 	void _thread_sync();
 
 public:
-#define ServerName PhysicsServer2D
-#define ServerNameWrapMT PhysicsServer2DWrapMT
-#define server_name physics_server_2d
-#define WRITE_ACTION
-
-#include "servers/server_wrap_mt_common.h"
-
 	//FUNC1RID(shape,ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
@@ -92,7 +92,7 @@ public:
 	FUNC2(shape_set_data, RID, const Variant &);
 	FUNC2(shape_set_custom_solver_bias, RID, real_t);
 
-	FUNC1RC(ShapeType, shape_get_type, RID);
+	FUNC1RC(PS2DE::ShapeType, shape_get_type, RID);
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
 
@@ -108,8 +108,8 @@ public:
 	FUNC2(space_set_active, RID, bool);
 	FUNC1RC(bool, space_is_active, RID);
 
-	FUNC3(space_set_param, RID, SpaceParameter, real_t);
-	FUNC2RC(real_t, space_get_param, RID, SpaceParameter);
+	FUNC3(space_set_param, RID, PS2DE::SpaceParameter, real_t);
+	FUNC2RC(real_t, space_get_param, RID, PS2DE::SpaceParameter);
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) override {
@@ -153,10 +153,10 @@ public:
 	FUNC2(area_attach_canvas_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, area_get_canvas_instance_id, RID);
 
-	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
+	FUNC3(area_set_param, RID, PS2DE::AreaParameter, const Variant &);
 	FUNC2(area_set_transform, RID, const Transform2D &);
 
-	FUNC2RC(Variant, area_get_param, RID, AreaParameter);
+	FUNC2RC(Variant, area_get_param, RID, PS2DE::AreaParameter);
 	FUNC1RC(Transform2D, area_get_transform, RID);
 
 	FUNC2(area_set_collision_layer, RID, uint32_t);
@@ -179,8 +179,8 @@ public:
 	FUNC2(body_set_space, RID, RID);
 	FUNC1RC(RID, body_get_space, RID);
 
-	FUNC2(body_set_mode, RID, BodyMode);
-	FUNC1RC(BodyMode, body_get_mode, RID);
+	FUNC2(body_set_mode, RID, PS2DE::BodyMode);
+	FUNC1RC(PS2DE::BodyMode, body_get_mode, RID);
 
 	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
@@ -191,7 +191,7 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, real_t);
+	FUNC5(body_set_shape_as_one_way_collision, RID, int, bool, real_t, const Vector2 &);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
@@ -202,8 +202,8 @@ public:
 	FUNC2(body_attach_canvas_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, body_get_canvas_instance_id, RID);
 
-	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
-	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);
+	FUNC2(body_set_continuous_collision_detection_mode, RID, PS2DE::CCDMode);
+	FUNC1RC(PS2DE::CCDMode, body_get_continuous_collision_detection_mode, RID);
 
 	FUNC2(body_set_collision_layer, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_collision_layer, RID);
@@ -214,13 +214,13 @@ public:
 	FUNC2(body_set_collision_priority, RID, real_t);
 	FUNC1RC(real_t, body_get_collision_priority, RID);
 
-	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
-	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
+	FUNC3(body_set_param, RID, PS2DE::BodyParameter, const Variant &);
+	FUNC2RC(Variant, body_get_param, RID, PS2DE::BodyParameter);
 
 	FUNC1(body_reset_mass_properties, RID);
 
-	FUNC3(body_set_state, RID, BodyState, const Variant &);
-	FUNC2RC(Variant, body_get_state, RID, BodyState);
+	FUNC3(body_set_state, RID, PS2DE::BodyState, const Variant &);
+	FUNC2RC(Variant, body_get_state, RID, PS2DE::BodyState);
 
 	FUNC2(body_apply_central_impulse, RID, const Vector2 &);
 	FUNC2(body_apply_torque_impulse, RID, real_t);
@@ -264,7 +264,7 @@ public:
 
 	FUNC2(body_set_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
+	bool body_test_motion(RID p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_2d->body_test_motion(p_body, p_parameters, r_result);
 	}
@@ -281,8 +281,8 @@ public:
 
 	FUNC1(joint_clear, RID)
 
-	FUNC3(joint_set_param, RID, JointParam, real_t);
-	FUNC2RC(real_t, joint_get_param, RID, JointParam);
+	FUNC3(joint_set_param, RID, PS2DE::JointParam, real_t);
+	FUNC2RC(real_t, joint_get_param, RID, PS2DE::JointParam);
 
 	FUNC2(joint_disable_collisions_between_bodies, RID, const bool);
 	FUNC1RC(bool, joint_is_disabled_collisions_between_bodies, RID);
@@ -297,16 +297,16 @@ public:
 	FUNC6(joint_make_groove, RID, const Vector2 &, const Vector2 &, const Vector2 &, RID, RID);
 	FUNC5(joint_make_damped_spring, RID, const Vector2 &, const Vector2 &, RID, RID);
 
-	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t);
-	FUNC2RC(real_t, pin_joint_get_param, RID, PinJointParam);
+	FUNC3(pin_joint_set_param, RID, PS2DE::PinJointParam, real_t);
+	FUNC2RC(real_t, pin_joint_get_param, RID, PS2DE::PinJointParam);
 
-	FUNC3(pin_joint_set_flag, RID, PinJointFlag, bool);
-	FUNC2RC(bool, pin_joint_get_flag, RID, PinJointFlag);
+	FUNC3(pin_joint_set_flag, RID, PS2DE::PinJointFlag, bool);
+	FUNC2RC(bool, pin_joint_get_flag, RID, PS2DE::PinJointFlag);
 
-	FUNC3(damped_spring_joint_set_param, RID, DampedSpringParam, real_t);
-	FUNC2RC(real_t, damped_spring_joint_get_param, RID, DampedSpringParam);
+	FUNC3(damped_spring_joint_set_param, RID, PS2DE::DampedSpringParam, real_t);
+	FUNC2RC(real_t, damped_spring_joint_get_param, RID, PS2DE::DampedSpringParam);
 
-	FUNC1RC(JointType, joint_get_type, RID);
+	FUNC1RC(PS2DE::JointType, joint_get_type, RID);
 
 	/* MISC */
 
@@ -324,7 +324,7 @@ public:
 		return physics_server_2d->is_flushing_queries();
 	}
 
-	int get_process_info(ProcessInfo p_info) override {
+	int get_process_info(PS2DE::ProcessInfo p_info) override {
 		return physics_server_2d->get_process_info(p_info);
 	}
 

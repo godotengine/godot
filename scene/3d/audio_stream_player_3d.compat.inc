@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "audio_stream_player_3d.h"
+
+#include "core/object/class_db.h"
+
 bool AudioStreamPlayer3D::_is_autoplay_enabled_bind_compat_86907() {
 	return is_autoplay_enabled();
 }

@@ -36,6 +36,10 @@ struct hb_varc_context_t
   mutable hb_decycler_t decycler;
   mutable signed edges_left;
   mutable signed depth_left;
+  /* Work budget shared by all leaf glyphs loaded from glyf/CFF/CFF2,
+   * so their per-glyph work limits cannot multiply with our own
+   * composite-graph limits. */
+  mutable int64_t budget_left;
   hb_varc_scratch_t &scratch;
 };
 
@@ -120,6 +124,7 @@ struct VARC
 			 hb_decycler_t {},
 			 HB_MAX_GRAPH_EDGE_COUNT,
 			 HB_MAX_NESTING_LEVEL,
+			 HB_VARC_MAX_WORK,
 			 scratch};
 
     return get_path_at (c, gid,
@@ -138,6 +143,7 @@ struct VARC
 			 hb_decycler_t {},
 			 HB_MAX_GRAPH_EDGE_COUNT,
 			 HB_MAX_NESTING_LEVEL,
+			 HB_VARC_MAX_WORK,
 			 scratch};
 
     return get_path_at (c, gid,
@@ -194,6 +200,7 @@ struct VARC
 		 hb_codepoint_t gid,
 		 hb_glyph_extents_t *extents) const
     {
+#ifndef HB_NO_DRAW
       if (!table->has_data ()) return false;
 
       hb_extents_t<> f_extents;
@@ -207,6 +214,9 @@ struct VARC
 	*extents = f_extents.to_glyph_extents (font->x_scale < 0, font->y_scale < 0);
 
       return ret;
+#else
+      return false;
+#endif
     }
 
     private:

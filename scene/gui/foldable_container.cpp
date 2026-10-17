@@ -30,6 +30,7 @@
 
 #include "foldable_container.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
@@ -39,18 +40,40 @@ Size2 FoldableContainer::get_minimum_size() const {
 	if (folded) {
 		return title_minimum_size;
 	}
-	Size2 ms;
+	Size2 ms = Container::_get_minimum_size();
+	ms += theme_cache.panel_style->get_minimum_size();
+
+	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
+}
+
+Size2 FoldableContainer::get_desired_size() const {
+	_update_title_min_size();
+
+	if (folded) {
+		return title_minimum_size;
+	}
+	Size2 ds;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
 			continue;
 		}
-		ms = ms.max(c->get_combined_minimum_size());
+		ds = ds.max(c->get_bound_desired_size());
 	}
-	ms += theme_cache.panel_style->get_minimum_size();
+	ds += theme_cache.panel_style->get_minimum_size();
 
-	return Size2(MAX(ms.width, title_minimum_size.width), ms.height + title_minimum_size.height);
+	return Size2(MAX(ds.width, title_minimum_size.width), ds.height + title_minimum_size.height);
+}
+
+Size2 FoldableContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	return ms;
 }
 
 void FoldableContainer::fold() {
@@ -214,13 +237,21 @@ void FoldableContainer::remove_title_bar_control(Control *p_control) {
 	remove_child(p_control);
 }
 
+Control *FoldableContainer::get_title_bar_control(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, title_controls.size(), nullptr);
+	return title_controls[p_index];
+}
+
+int FoldableContainer::get_title_bar_control_count() const {
+	return title_controls.size();
+}
+
 void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
-		Rect2 title_rect = Rect2(0, (title_position == POSITION_TOP) ? 0 : get_size().height - title_minimum_size.height, get_size().width, title_minimum_size.height);
-		if (title_rect.has_point(m->get_position())) {
+		if (_get_title_rect().has_point(m->get_position())) {
 			if (!is_hovering) {
 				is_hovering = true;
 				queue_redraw();
@@ -233,7 +264,11 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		const bool previously_folded = folded;
 		set_folded(!folded);
+		if (previously_folded != folded) {
+			play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+		}
 		emit_signal(SNAME("folding_changed"), folded);
 		accept_event();
 		return;
@@ -241,9 +276,12 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid()) {
-		Rect2 title_rect = Rect2(0, (title_position == POSITION_TOP) ? 0 : get_size().height - title_minimum_size.height, get_size().width, title_minimum_size.height);
-		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && title_rect.has_point(b->get_position())) {
+		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && _get_title_rect().has_point(b->get_position())) {
+			const bool previously_folded = folded;
 			set_folded(!folded);
+			if (previously_folded != folded) {
+				play_theme_sound(folded ? theme_cache.folded_sound : theme_cache.expanded_sound);
+			}
 			emit_signal(SNAME("folding_changed"), folded);
 			accept_event();
 		}
@@ -257,6 +295,13 @@ String FoldableContainer::get_tooltip(const Point2 &p_pos) const {
 	return String();
 }
 
+bool FoldableContainer::has_point(const Point2 &p_point) const {
+	if (folded) {
+		return _get_title_rect().has_point(p_point);
+	}
+	return Control::has_point(p_point);
+}
+
 void FoldableContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
@@ -266,15 +311,14 @@ void FoldableContainer::_notification(int p_what) {
 
 			Ref<StyleBox> title_style = _get_title_style();
 			Ref<Texture2D> icon = _get_title_icon();
+			Size2 icon_size = _fit_icon_size(icon->get_size()).round();
 
 			real_t title_controls_width = _get_title_controls_width();
 			if (title_controls_width > 0) {
 				title_controls_width += h_separation;
 			}
 
-			Rect2 title_rect(
-					Point2(0, (title_position == POSITION_TOP) ? 0 : size.height - title_minimum_size.height),
-					Size2(size.width, title_minimum_size.height));
+			const Rect2 title_rect = _get_title_rect();
 			_draw_flippable_stylebox(title_style, title_rect);
 
 			Size2 title_ms = title_style->get_minimum_size();
@@ -284,18 +328,18 @@ void FoldableContainer::_notification(int p_what) {
 			Point2 title_text_pos(title_style->get_margin(SIDE_LEFT), title_style_ofs);
 			title_text_pos.y += MAX((title_minimum_size.height - title_ms.height - text_buf->get_size().height) * 0.5, 0);
 
-			title_text_width -= icon->get_width() + h_separation + title_controls_width;
-			Point2 icon_pos(0, MAX((title_minimum_size.height - title_ms.height - icon->get_height()) * 0.5, 0) + title_style_ofs);
+			title_text_width -= icon_size.width + h_separation + title_controls_width;
+			Point2 icon_pos(0, MAX((title_minimum_size.height - title_ms.height - icon_size.height) * 0.5, 0) + title_style_ofs);
 
 			bool rtl = is_layout_rtl();
 			if (rtl) {
-				icon_pos.x = size.width - title_style->get_margin(SIDE_RIGHT) - icon->get_width();
+				icon_pos.x = size.width - title_style->get_margin(SIDE_RIGHT) - icon_size.width;
 				title_text_pos.x += title_controls_width;
 			} else {
 				icon_pos.x = title_style->get_margin(SIDE_LEFT);
-				title_text_pos.x += icon->get_width() + h_separation;
+				title_text_pos.x += icon_size.width + h_separation;
 			}
-			icon->draw(ci, title_rect.position + icon_pos);
+			icon->draw_rect(ci, Rect2(title_rect.position + icon_pos, icon_size));
 
 			Color font_color = folded ? theme_cache.title_collapsed_font_color : theme_cache.title_font_color;
 			if (is_hovering) {
@@ -351,7 +395,7 @@ void FoldableContainer::_notification(int p_what) {
 					if (!control->is_visible()) {
 						continue;
 					}
-					Rect2 rect(Vector2(), control->get_combined_minimum_size());
+					Rect2 rect(Vector2(), control->get_bound_minimum_size());
 					rect.position.x = offset;
 					rect.position.y = v_center - rect.size.y * 0.5;
 					fit_child_in_rect(control, rect);
@@ -400,12 +444,24 @@ void FoldableContainer::_notification(int p_what) {
 	}
 }
 
+Size2 FoldableContainer::_fit_icon_size(const Size2 &p_size) const {
+	int max_width = theme_cache.icon_max_width;
+	Size2 icon_size = p_size;
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
+}
+
 real_t FoldableContainer::_get_title_controls_width() const {
 	real_t width = 0.0;
 	int visible_controls = 0;
 	for (const Control *control : title_controls) {
 		if (control->is_visible()) {
-			width += control->get_combined_minimum_size().x;
+			width += control->get_bound_minimum_size().x;
 			visible_controls++;
 		}
 	}
@@ -431,24 +487,29 @@ Ref<Texture2D> FoldableContainer::_get_title_icon() const {
 	return theme_cache.folded_arrow;
 }
 
+Rect2 FoldableContainer::_get_title_rect() const {
+	return Rect2(0, (title_position == POSITION_TOP) ? 0 : (get_size().height - title_minimum_size.height), get_size().width, title_minimum_size.height);
+}
+
 void FoldableContainer::_update_title_min_size() const {
 	Ref<StyleBox> title_style = folded ? theme_cache.title_collapsed_style : theme_cache.title_style;
 	Ref<Texture2D> icon = _get_title_icon();
+	Size2 icon_size = _fit_icon_size(icon->get_size()).round();
 	Size2 title_ms = title_style->get_minimum_size();
 	int h_separation = _get_h_separation();
 
 	title_minimum_size = title_ms;
-	title_minimum_size.width += icon->get_width();
+	title_minimum_size.width += icon_size.width;
 
 	if (!title.is_empty()) {
 		title_minimum_size.width += h_separation;
 		Size2 text_size = text_buf->get_size();
-		title_minimum_size.height += MAX(text_size.height, icon->get_height());
+		title_minimum_size.height += MAX(text_size.height, icon_size.height);
 		if (overrun_behavior == TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING) {
 			title_minimum_size.width += text_size.width;
 		}
 	} else {
-		title_minimum_size.height += icon->get_height();
+		title_minimum_size.height += icon_size.height;
 	}
 
 	if (!title_controls.is_empty()) {
@@ -459,7 +520,7 @@ void FoldableContainer::_update_title_min_size() const {
 			if (!control->is_visible()) {
 				continue;
 			}
-			Vector2 size = control->get_combined_minimum_size();
+			Vector2 size = control->get_bound_minimum_size();
 			title_minimum_size.width += size.width;
 			controls_height = MAX(controls_height, size.height);
 			visible_controls++;
@@ -488,7 +549,8 @@ void FoldableContainer::_shape() {
 	}
 	text_buf->set_horizontal_alignment(_get_actual_alignment());
 	text_buf->set_text_overrun_behavior(overrun_behavior);
-	text_buf->add_string(atr(title), font, font_size, language);
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	text_buf->add_string(atr(title), font, font_size, lang);
 }
 
 HorizontalAlignment FoldableContainer::_get_actual_alignment() const {
@@ -543,6 +605,8 @@ void FoldableContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title_position", "title_position"), &FoldableContainer::set_title_position);
 	ClassDB::bind_method(D_METHOD("get_title_position"), &FoldableContainer::get_title_position);
 	ClassDB::bind_method(D_METHOD("add_title_bar_control", "control"), &FoldableContainer::add_title_bar_control);
+	ClassDB::bind_method(D_METHOD("get_title_bar_control", "index"), &FoldableContainer::get_title_bar_control);
+	ClassDB::bind_method(D_METHOD("get_title_bar_control_count"), &FoldableContainer::get_title_bar_control_count);
 	ClassDB::bind_method(D_METHOD("remove_title_bar_control", "control"), &FoldableContainer::remove_title_bar_control);
 
 	ADD_SIGNAL(MethodInfo("folding_changed", PropertyInfo(Variant::BOOL, "is_folded")));
@@ -552,7 +616,7 @@ void FoldableContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_title_alignment", "get_title_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_title_position", "get_title_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_title_text_overrun_behavior", "get_title_text_overrun_behavior");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, "FoldableGroup"), "set_foldable_group", "get_foldable_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "foldable_group", PROPERTY_HINT_RESOURCE_TYPE, FoldableGroup::get_class_static()), "set_foldable_group", "get_foldable_group");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "title_text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_title_text_direction", "get_title_text_direction");
@@ -582,7 +646,12 @@ void FoldableContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FoldableContainer, folded_arrow);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FoldableContainer, folded_arrow_mirrored);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FoldableContainer, icon_max_width);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FoldableContainer, h_separation);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, FoldableContainer, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, FoldableContainer, expanded_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, FoldableContainer, folded_sound);
 }
 
 FoldableContainer::FoldableContainer(const String &p_text) {
@@ -644,7 +713,7 @@ void FoldableGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_folding_all"), "set_allow_folding_all", "is_allow_folding_all");
 
-	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(Variant::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, "FoldableContainer")));
+	ADD_SIGNAL(MethodInfo("expanded", PropertyInfo(Variant::OBJECT, "container", PROPERTY_HINT_RESOURCE_TYPE, FoldableContainer::get_class_static())));
 }
 
 FoldableGroup::FoldableGroup() {

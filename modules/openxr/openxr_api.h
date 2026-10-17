@@ -41,13 +41,19 @@
 #include "core/string/ustring.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
-#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_pose.h"
 
 #include <openxr/openxr.h>
 
+// Name we add to our extensions if OpenXR 1.1 context is available.
+#define XR_OPENXR_1_1_NAME "OPENXR_1_1"
+
+#define XR_API_VERSION_1_1_0 XR_MAKE_VERSION(1, 1, 0)
+
 // forward declarations, we don't want to include these fully
 class OpenXRInterface;
+class OpenXRSpatialContainerExtension;
+class OpenXRSpatialContainerSelfRenderingExtension;
 
 class OpenXRAPI {
 public:
@@ -65,12 +71,12 @@ public:
 		_FORCE_INLINE_ XrSwapchain get_swapchain() const { return swapchain; }
 		_FORCE_INLINE_ bool is_image_acquired() const { return image_acquired; }
 
-		bool create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size);
+		bool create(XrSwapchainCreateFlags p_create_flags, XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, bool p_next_extensions = false);
 		void queue_free();
 		static void free_queued();
 		void free();
 
-		bool acquire(bool &p_should_render);
+		bool acquire(bool &r_should_render);
 		bool release();
 		RID get_image();
 		RID get_density_map();
@@ -91,7 +97,7 @@ private:
 
 	// extensions
 	LocalVector<XrExtensionProperties> supported_extensions;
-	Vector<CharString> enabled_extensions;
+	LocalVector<CharString> enabled_extensions;
 
 	// composition layer providers
 	Vector<OpenXRExtensionWrapper *> composition_layer_providers;
@@ -101,6 +107,9 @@ private:
 
 	// frame info extensions
 	Vector<OpenXRExtensionWrapper *> frame_info_extensions;
+
+	// projection layer extensions
+	Vector<OpenXRExtensionWrapper *> projection_layer_extensions;
 
 	// view configuration
 	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
@@ -112,6 +121,7 @@ private:
 	PackedInt64Array supported_swapchain_formats;
 
 	// system info
+	XrVersion openxr_version;
 	String runtime_name;
 	String runtime_version;
 
@@ -140,6 +150,7 @@ private:
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
+	Size2i main_swapchain_size;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -159,7 +170,18 @@ private:
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace custom_play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
+
+	// Head info
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
+	XrPosef head_pose = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 1.6, 0.0 } }; // While we haven't received tracking data, place the camera 1.6 meters above the origin by default.
+	Transform3D head_transform;
+	Vector3 head_linear_velocity;
+	Vector3 head_angular_velocity;
+
+	// View (eye) info
+	bool view_pose_valid = false;
+	LocalVector<Transform3D> view_offsets;
+	LocalVector<XrFovf> view_fovs;
 
 	RID velocity_texture;
 	RID velocity_depth_texture;
@@ -180,7 +202,13 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
-	bool is_extension_enabled(const String &p_extension) const;
+	bool is_any_extension_enabled(const String &p_extensions) const;
+
+	struct RequestExtension {
+		String name;
+		bool *enabled;
+	};
+	XrResult attempt_create_instance(XrVersion p_version);
 
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
@@ -257,6 +285,8 @@ private:
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
 	bool setup_play_space();
 	bool setup_view_space();
+	void update_head_transform(XrTime p_display_time);
+	void update_head_tracking();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
 	bool obtain_swapchain_formats();
@@ -299,6 +329,7 @@ private:
 
 	struct InteractionProfile { // Interaction profiles define suggested bindings between the physical inputs on controller types and our actions
 		String name; // Name of the interaction profile (i.e. "/interaction_profiles/valve/index_controller")
+		CharString internal_name; // Internal name of the interaction profile (translated if required)
 		XrPath path; // OpenXR path for this profile
 		Vector<XrActionSuggestedBinding> bindings; // OpenXR action bindings
 		Vector<PackedByteArray> modifiers; // Array of modifiers we'll add into XrBindingModificationsKHR
@@ -306,6 +337,9 @@ private:
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
+
+	CharString get_interaction_profile_internal_name(const String &p_interaction_profile_name) const;
+	const char *check_profile_path(const CharString &p_interaction_profile_name, const char *p_path) const;
 
 	struct OrderedCompositionLayer {
 		const XrCompositionLayerBaseHeader *composition_layer;
@@ -315,6 +349,9 @@ private:
 			return a.sort_order < b.sort_order || (a.sort_order == b.sort_order && uint64_t(a.composition_layer) < uint64_t(b.composition_layer));
 		}
 	};
+
+	friend class OpenXRSpatialContainerExtension;
+	friend class OpenXRSpatialContainerSelfRenderingExtension;
 
 	// state changes
 	bool poll_events();
@@ -341,12 +378,19 @@ private:
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
+		Size2i render_region_maximum;
 
-		LocalVector<XrView> views;
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
+		bool use_vrs_xr = true; // Defaults to true so the warning is shown if the VRS mode is wrong at startup.
+
+		uint32_t view_count = 0;
+		uint32_t primary_view_count = 0;
 		bool view_pose_valid = false;
+		LocalVector<XrPosef> view_poses;
+		LocalVector<XrFovf> view_fovs;
 
 		double z_near = 0.0;
 		double z_far = 0.0;
@@ -364,70 +408,31 @@ private:
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
 	} render_state;
 
-	static void _allocate_view_buffers_rt(uint32_t p_view_count, bool p_submit_depth_buffer);
+	static void _allocate_view_buffers_rt(uint32_t p_view_count, uint32_t p_primary_view_count, bool p_submit_depth_buffer);
 	static void _set_render_session_running_rt(bool p_is_running);
 	static void _set_render_display_info_rt(XrTime p_predicted_display_time, bool p_should_render);
 	static void _set_render_play_space_rt(uint64_t p_play_space);
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
+	static void _set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	static void _set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
+	static void _update_main_swapchain_size_rt();
 
-	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_allocate_view_buffers_rt).bind(p_view_count, p_submit_depth_buffer));
-	}
-
-	_FORCE_INLINE_ void set_render_session_running(bool p_is_running) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_session_running_rt).bind(p_is_running));
-	}
-
-	_FORCE_INLINE_ void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_display_info_rt).bind(p_predicted_display_time, p_should_render));
-	}
-
-	_FORCE_INLINE_ void set_render_play_space(XrSpace p_play_space) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space_rt).bind(uint64_t(p_play_space)));
-	}
-
-	_FORCE_INLINE_ void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode_rt).bind((int32_t)p_mode));
-	}
-
-	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier_rt).bind(p_render_target_size_multiplier));
-	}
-
-	_FORCE_INLINE_ void set_render_state_render_region(const Rect2i &p_render_region) {
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region_rt).bind(p_render_region));
-	}
+	void allocate_view_buffers(uint32_t p_view_count, uint32_t p_primary_view_count, bool p_submit_depth_buffer);
+	void set_render_session_running(bool p_is_running);
+	void set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
+	void set_render_play_space(XrSpace p_play_space);
+	void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode);
+	void set_render_state_multiplier(double p_render_target_size_multiplier);
+	void set_render_state_render_region(const Rect2i &p_render_region);
+	void set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	void set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 
 public:
+	void update_main_swapchain_size();
+
+	XrVersion get_openxr_version() const { return openxr_version; }
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
@@ -470,14 +475,15 @@ public:
 	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
-	static void register_extension_metadata();
+	static void register_extension_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata);
 	static void cleanup_extension_wrappers();
-	static PackedStringArray get_all_requested_extensions();
+	static PackedStringArray get_all_requested_extensions(XrVersion p_xr_version);
 
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
 
-	uint32_t get_view_count();
+	uint32_t get_view_count() const;
+	uint32_t get_primary_view_count() const;
 	void set_view_configuration(XrViewConfigurationType p_view_configuration);
 	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
 
@@ -496,6 +502,7 @@ public:
 	void finish();
 
 	_FORCE_INLINE_ XrSpace get_play_space() const { return play_space; }
+	_FORCE_INLINE_ XrSpace get_view_space() const { return view_space; }
 	_FORCE_INLINE_ XrTime get_predicted_display_time() { return frame_state.predictedDisplayTime; }
 	_FORCE_INLINE_ XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
 	_FORCE_INLINE_ bool can_render() {
@@ -505,8 +512,15 @@ public:
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
 	Size2 get_recommended_target_size();
+	Size2i get_recommended_view_size(uint32_t p_view);
+	Size2 get_render_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
+	TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
+	TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
+	bool get_view_offset(uint32_t p_view, Transform3D &r_transform);
+#ifndef DISABLE_DEPRECATED
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
+#endif
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
 	Vector2 get_eye_focus(uint32_t p_view, float p_aspect);
 	bool process();
@@ -527,6 +541,9 @@ public:
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
 
+	// Rendering
+	void set_projection_view_swapchain_rt(uint32_t p_view, XrSwapchain p_swapchain, uint32_t image_array_index, Size2i p_size);
+
 	// Display refresh rate
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
@@ -538,6 +555,10 @@ public:
 
 	Rect2i get_render_region() const;
 	void set_render_region(const Rect2i &p_render_region);
+	Rect2i get_combined_render_region();
+
+	// Spatial container settings.
+	static bool is_spatial_container_enabled();
 
 	// Foveation settings
 	bool is_foveation_supported() const;
@@ -547,6 +568,9 @@ public:
 
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
+
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
 
 	// Play space.
 	Size2 get_play_space_bounds() const;
@@ -606,7 +630,11 @@ public:
 	void register_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 	void unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension);
 
+	void register_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_layer_extension(OpenXRExtensionWrapper *p_extension);
+
 	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
+
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }

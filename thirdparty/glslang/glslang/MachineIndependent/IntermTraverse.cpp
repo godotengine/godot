@@ -306,4 +306,35 @@ void TIntermSwitch::traverse(TIntermTraverser* it)
         it->visitSwitch(EvPostVisit, this);
 }
 
+//
+// Traverse a variable declaration.
+//
+void TIntermVariableDecl::traverse(TIntermTraverser *it)
+{
+    bool visit = true;
+
+    if (it->preVisit)
+        visit = it->visitVariableDecl(EvPreVisit, this);
+
+    if (visit) {
+        it->incrementDepth(this);
+        if (it->rightToLeft) {
+            if (it->includeDeclSymbol)
+                declSymbol->traverse(it);
+            if (initNode)
+                initNode->traverse(it);
+        }
+        else {
+            if (initNode)
+                initNode->traverse(it);
+            if (it->includeDeclSymbol)
+                declSymbol->traverse(it);
+        }
+        it->decrementDepth();
+    }
+
+    if (visit && it->postVisit)
+        it->visitVariableDecl(EvPostVisit, this);
+}
+
 } // end namespace glslang

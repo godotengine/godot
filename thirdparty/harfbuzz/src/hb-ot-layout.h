@@ -384,6 +384,12 @@ hb_ot_layout_lookup_get_glyph_alternates (hb_face_t      *face,
 					  hb_codepoint_t *alternate_glyphs /* OUT */);
 
 HB_EXTERN hb_bool_t
+hb_ot_layout_lookup_collect_glyph_alternates (hb_face_t *face,
+					      unsigned   lookup_index,
+					      hb_map_t  *alternate_count /* IN/OUT */,
+					      hb_map_t  *alternate_glyphs /* IN/OUT */);
+
+HB_EXTERN hb_bool_t
 hb_ot_layout_lookup_would_substitute (hb_face_t            *face,
 				      unsigned int          lookup_index,
 				      const hb_codepoint_t *glyphs,

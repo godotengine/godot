@@ -30,6 +30,8 @@
 
 #include "packet_peer_mbed_dtls.h"
 
+#include "core/object/class_db.h"
+
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
 		return 0;
@@ -232,7 +234,7 @@ void PacketPeerMbedDTLS::poll() {
 int PacketPeerMbedDTLS::get_available_packet_count() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
-	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls)) > 0 ? 1 : 0;
+	return mbedtls_ssl_get_bytes_avail(tls_ctx->get_context()) > 0 ? 1 : 0;
 }
 
 int PacketPeerMbedDTLS::get_max_packet_size() const {

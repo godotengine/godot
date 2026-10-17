@@ -32,6 +32,8 @@
 
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
+#include "scene/resources/font.h"
+#include "servers/text/text_server.h"
 
 String ResourceImporterBMFont::get_importer_name() const {
 	return "font_data_bmfont";

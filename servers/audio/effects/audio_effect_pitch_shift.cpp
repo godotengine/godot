@@ -31,6 +31,7 @@
 #include "audio_effect_pitch_shift.h"
 
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
 /* Thirdparty code, so disable clang-format with Godot style */
@@ -161,7 +162,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 			/* ***************** PROCESSING ******************* */
 			/* this does the actual pitch shifting */
 			size_t fftBufferSize = static_cast<size_t>(fftFrameSize) * sizeof(float);
-			if (unlikely(fftBufferSize > MAX_FRAME_LENGTH)) {
+			if (unlikely(static_cast<size_t>(fftFrameSize) > static_cast<size_t>(MAX_FRAME_LENGTH) * sizeof(float))) {
 				ERR_PRINT_ONCE("Invalid FFT frame size for PitchShift. This is a bug, please report.");
 				return;
 			}

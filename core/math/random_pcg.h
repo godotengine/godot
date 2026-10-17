@@ -32,18 +32,20 @@
 
 #include "core/math/math_funcs.h"
 
-#include "thirdparty/misc/pcg.h"
+#include <thirdparty/misc/pcg.h>
+
+#include <cmath> // ldexp
 
 #if defined(__GNUC__)
-#define CLZ32(x) __builtin_clz(x)
+#define CLZ32(m_x) __builtin_clz(m_x)
 #elif defined(_MSC_VER)
 #include <intrin.h>
-static int __bsr_clz32(uint32_t x) {
+static int __bsr_clz32(uint32_t p_x) {
 	unsigned long index;
-	_BitScanReverse(&index, x);
+	_BitScanReverse(&index, p_x);
 	return 31 - index;
 }
-#define CLZ32(x) __bsr_clz32(x)
+#define CLZ32(m_x) __bsr_clz32(m_x)
 #endif
 
 template <typename T>
@@ -73,8 +75,8 @@ public:
 	_FORCE_INLINE_ uint32_t rand() {
 		return pcg32_random_r(&pcg);
 	}
-	_FORCE_INLINE_ uint32_t rand(uint32_t bounds) {
-		return pcg32_boundedrand_r(&pcg, bounds);
+	_FORCE_INLINE_ uint32_t rand(uint32_t p_bounds) {
+		return pcg32_boundedrand_r(&pcg, p_bounds);
 	}
 
 	int64_t rand_weighted(const Vector<float> &p_weights);
@@ -122,14 +124,14 @@ public:
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (std::cos(Math::TAU * randd()) * std::sqrt(-2.0 * std::log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (Math::cos(Math::TAU * randd()) * Math::sqrt(-2.0 * Math::log(temp))); // Box-Muller transform.
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
 		float temp = randf();
 		if (temp < CMP_EPSILON) {
 			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
 		}
-		return p_mean + p_deviation * (std::cos((float)Math::TAU * randf()) * std::sqrt(-2.0 * std::log(temp))); // Box-Muller transform.
+		return p_mean + p_deviation * (Math::cos((float)Math::TAU * randf()) * Math::sqrt(-2.0 * Math::log(temp))); // Box-Muller transform.
 	}
 
 	double random(double p_from, double p_to);

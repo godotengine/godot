@@ -31,7 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/templates/fixed_vector.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
 
 #define ANIM_MIN_LENGTH 0.001
 
@@ -40,7 +42,7 @@ class Animation : public Resource {
 	RES_BASE_EXTENSION("anim");
 
 public:
-	typedef uint32_t TypeHash;
+	typedef uint64_t TrackCacheID;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
@@ -57,12 +59,15 @@ public:
 		TYPE_ANIMATION,
 	};
 
+	// TODO: Reorder the MAKIMA next to the CUBIC in Godot 5, since the enum values are serialized and cannot be changed without breaking compat.
 	enum InterpolationType : uint8_t {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
 		INTERPOLATION_CUBIC,
 		INTERPOLATION_LINEAR_ANGLE,
 		INTERPOLATION_CUBIC_ANGLE,
+		INTERPOLATION_MAKIMA,
+		INTERPOLATION_MAKIMA_ANGLE,
 	};
 
 	enum UpdateMode : uint8_t {
@@ -109,9 +114,16 @@ public:
 		InterpolationType interpolation = INTERPOLATION_LINEAR;
 		bool loop_wrap = true;
 		NodePath path; // Path to something.
-		TypeHash thash = 0; // Hash by Path + SubPath + TrackType.
+		StringName concatenated_path;
 		bool imported = false;
 		bool enabled = true;
+		TrackCacheID get_unique_id() const {
+			// HACK. StringName pointer allocates 40 bytes (sizeof(StringName::_Data)), so any StringName pointer we allocate
+			// is guaranteed to not have another StringName pointer within 40 bytes address range. get_cache_type() returns
+			// a value in range (0, 8) so this can be used as an offset while keeping the uniqueness property.
+			// This will break if sizeof(StringName::_Data) is less than max(CACHE_TYPE).
+			return (TrackCacheID)(concatenated_path.data_unique_pointer()) + get_cache_type(type);
+		}
 		virtual ~Track() {}
 	};
 
@@ -168,7 +180,6 @@ private:
 
 	struct ValueTrack : public Track {
 		UpdateMode update_mode = UPDATE_CONTINUOUS;
-		bool update_on_seek = false;
 		LocalVector<TKey<Variant>> values;
 
 		ValueTrack() {
@@ -251,6 +262,10 @@ private:
 	HashMap<StringName, Color> marker_colors; // name -> color
 
 	LocalVector<Track *> tracks;
+#ifdef TOOLS_ENABLED
+	HashSet<StringName> folded_groups;
+	bool folded_groups_dirty = false; // Set when changing folding state to access .cfg to store the state.
+#endif // TOOLS_ENABLED
 
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
@@ -273,19 +288,52 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
+	_FORCE_INLINE_ Vector3 _makima_interpolate_in_time(const Vector3 &p_pre_pre_a, const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, const Vector3 &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Quaternion _makima_interpolate_in_time(const Quaternion &p_pre_pre_a, const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, const Quaternion &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Variant _makima_interpolate_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ real_t _makima_interpolate_in_time(const real_t &p_pre_pre_a, const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, const real_t &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Variant _makima_interpolate_angle_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+
+	typedef Pair<int, double> FetchedKey; // Int is the key index, double is the key time adjusted for the loop mode.
+	static constexpr uint32_t MAX_FETCHED_KEYS = 6; // 4 for cubic, 6 for makima.
+	typedef FixedVector<FetchedKey, MAX_FETCHED_KEYS> FetchedKeys;
+
+	// Fetch looped key with wrapping or clamping.
+	template <typename T>
+	_FORCE_INLINE_ FetchedKey _fetch_key(const LocalVector<TKey<T>> &p_keys, int p_len, int p_index, bool p_loop_wrap) const;
+
+	// Fetch keys based on current time. If p_margin = 0, returns [from, to]. If p_margin = 1, returns [pre_from, from, to, post_to].
+	// If p_margin = 2, returns [pre_pre_from, pre_from, from, to, post_to, post_post_to].
+	// The p_backward only effect with Discrete track in AnimationMixer's API.
+	template <typename T>
+	_FORCE_INLINE_ FetchedKeys _fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const;
+
+	template <typename T>
+	_FORCE_INLINE_ double _get_interpolation_weighted_time(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_linear(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_linear_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_cubic(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_cubic_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_makima(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_makima_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const;
+
 	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <typename T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const LocalVector<T> &p_array, double from_time, double to_time, LocalVector<int> *r_indices, bool p_is_backward) const;
 
 	double length = 1.0;
 	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
-
-	void _track_update_hash(int p_track);
 
 	/* Animation compression page format (version 1):
 	 *
@@ -365,7 +413,7 @@ private:
 	bool _fetch_compressed_by_index(uint32_t p_compressed_track, int p_index, Vector3i &r_value, double &r_time) const;
 	int _get_compressed_key_count(uint32_t p_compressed_track) const;
 	template <uint32_t COMPONENTS>
-	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, List<int> *r_indices) const;
+	void _get_compressed_key_indices_in_range(uint32_t p_compressed_track, double p_time, double p_delta, LocalVector<int> *r_indices) const;
 	_FORCE_INLINE_ Quaternion _uncompress_quaternion(const Vector3i &p_value) const;
 	_FORCE_INLINE_ Vector3 _uncompress_pos_scale(uint32_t p_compressed_track, const Vector3i &p_value) const;
 	_FORCE_INLINE_ float _uncompress_blend_shape(const Vector3i &p_value) const;
@@ -421,7 +469,7 @@ public:
 	NodePath track_get_path(int p_track) const;
 	int find_track(const NodePath &p_path, const TrackType p_type) const;
 
-	TypeHash track_get_type_hash(int p_track) const;
+	TrackCacheID track_get_unique_id(int p_track) const;
 
 	void track_move_up(int p_track);
 	void track_move_down(int p_track);
@@ -513,7 +561,7 @@ public:
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
+	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, double p_start, double p_end, LocalVector<int> *r_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
 	void add_marker(const StringName &p_name, double p_time);
 	void remove_marker(const StringName &p_name);
@@ -526,11 +574,11 @@ public:
 	Color get_marker_color(const StringName &p_name) const;
 	void set_marker_color(const StringName &p_name, const Color &p_color);
 
-	void set_length(real_t p_length);
-	real_t get_length() const;
+	void set_length(double p_length);
+	_FORCE_INLINE_ double get_length() const { return length; }
 
 	void set_loop_mode(LoopMode p_loop_mode);
-	LoopMode get_loop_mode() const;
+	_FORCE_INLINE_ LoopMode get_loop_mode() const { return loop_mode; }
 
 	void set_step(real_t p_step);
 	real_t get_step() const;
@@ -540,8 +588,34 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests.
 
+#ifdef TOOLS_ENABLED
+	const HashSet<StringName> &editor_get_folded_groups() const { return folded_groups; }
+	void editor_clear_folded_groups() { folded_groups.clear(); }
+	void editor_add_folded_group(const StringName &p_group_name) { folded_groups.insert(p_group_name); }
+	void editor_remove_folded_group(const StringName &p_group_name) { folded_groups.erase(p_group_name); }
+	bool editor_is_group_folded(const StringName &p_group_name) const { return folded_groups.has(p_group_name); }
+	void editor_set_group_folded(const StringName &p_group_name, bool p_folded) {
+		if (editor_is_group_folded(p_group_name) == p_folded) {
+			return; // Do nothing.
+		}
+		if (p_folded) {
+			editor_add_folded_group(p_group_name);
+		} else {
+			editor_remove_folded_group(p_group_name);
+		}
+		folded_groups_dirty = true;
+	}
+	bool editor_is_folding_dirty() const { return folded_groups_dirty; }
+	void editor_set_folding_dirty(bool p_dirty) { folded_groups_dirty = p_dirty; }
+#endif // TOOLS_ENABLED
+
+	// Helper functions for Rotation.
+	static double interpolate_via_rest(double p_from, double p_to, double p_weight, double p_rest = 0.0); // Deterministic slerp to prevent to cross the inverted rest axis.
+	static Quaternion interpolate_via_rest(const Quaternion &p_from, const Quaternion &p_to, real_t p_weight, const Quaternion &p_rest = Quaternion()); // Deterministic slerp to prevent to cross the inverted rest axis.
+
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool needs_type_cast(const Variant &p_from, const Variant &p_to);
 	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
@@ -555,6 +629,22 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+	static Variant makima_interpolate_in_time_variant(const Variant &pre_pre_a, const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, const Variant &post_post_b, float c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t, bool p_snap_array_element = false);
+
+	static double akima_extrapolate(double p_edge, double p_edge_next);
+	static double makima_tangent(double p_p0, double p_p1, double p_p2, double p_p3);
+	static double makima_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t);
+	static double makima_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t);
+	static Vector2 makima_interpolate_in_time(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_pre, const Vector2 &p_post, const Vector2 &p_pre_pre, const Vector2 &p_post_post, real_t p_weight,
+			real_t p_to_t, real_t p_pre_t, real_t p_post_t, real_t p_pre_pre_t, real_t p_post_post_t);
+	static Vector3 makima_interpolate_in_time(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_pre, const Vector3 &p_post, const Vector3 &p_pre_pre, const Vector3 &p_post_post, real_t p_weight,
+			real_t p_to_t, real_t p_pre_t, real_t p_post_t, real_t p_pre_pre_t, real_t p_post_post_t);
+	static Vector4 makima_interpolate_in_time(const Vector4 &p_from, const Vector4 &p_to, const Vector4 &p_pre, const Vector4 &p_post, const Vector4 &p_pre_pre, const Vector4 &p_post_post, real_t p_weight,
+			real_t p_to_t, real_t p_pre_t, real_t p_post_t, real_t p_pre_pre_t, real_t p_post_post_t);
+	static Quaternion spherical_makima_interpolate_in_time(const Quaternion &p_from, const Quaternion &p_to, const Quaternion &p_pre, const Quaternion &p_post, const Quaternion &p_pre_pre, const Quaternion &p_post_post, real_t p_weight,
+			real_t p_to_t, real_t p_pre_t, real_t p_post_t, real_t p_pre_pre_t, real_t p_post_post_t);
 
 	static bool is_less_or_equal_approx(double a, double b) {
 		return a < b || Math::is_equal_approx(a, b);

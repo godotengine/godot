@@ -34,12 +34,10 @@
 #ifdef EGL_ENABLED
 
 #ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#include "thirdparty/glad/glad/gl.h"
+#include <platform_egl.h>
 #else
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <GL/glcorearb.h>
 
 #define GLAD_EGL_VERSION_1_5 1
 

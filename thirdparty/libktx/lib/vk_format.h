@@ -71,7 +71,7 @@ static inline void vkGetFormatSize( const VkFormat format, VkFormatSize * pForma
 MODIFICATIONS for use in libktx
 ===============================
 
-2019.5.30 Use common ktxFormatSize to return results. Mark Callow, Edgewise Consulting.
+2019.5.30 Use common ktxFormatSize to return results. Mark Callow, github.com/MarkCallow.
 2019.6.12 Add mapping of PVRTC formats.                             "
 
 ================================================================================================

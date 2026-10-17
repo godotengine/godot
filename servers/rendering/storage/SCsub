@@ -3,4 +3,12 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+import make_ltc_lut
+
 env.add_source_files(env.servers_sources, "*.cpp")
+
+env.CommandNoCache(
+    "ltc_lut.gen.h",
+    ["make_ltc_lut.py", "#servers/rendering/storage/ltc/ltc_lut1.dds", "#servers/rendering/storage/ltc/ltc_lut2.dds"],
+    env.Run(make_ltc_lut.run),
+)

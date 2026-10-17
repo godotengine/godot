@@ -30,14 +30,13 @@
 
 #include "jolt_job_system.h"
 
-#include "../jolt_project_settings.h"
-
 #include "core/debugger/engine_debugger.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
-#include "Jolt/Physics/PhysicsSettings.h"
+#include <Jolt/Physics/PhysicsSettings.h>
 
 void JoltJobSystem::Job::_execute(void *p_user_data) {
 	Job *job = static_cast<Job *>(p_user_data);
@@ -102,7 +101,7 @@ void JoltJobSystem::Job::queue() {
 
 	// Ideally we would use Jolt's actual job name here, but I'd rather not incur the overhead of a memory allocation or
 	// thread-safe lookup every time we create/queue a task. So instead we use the same cached description for all of them.
-	static const String task_name("Jolt Physics");
+	static const String task_name(PhysicsServer3DManager::JOLT_PHYSICS_NAME);
 
 	task_id = WorkerThreadPool::get_singleton()->add_native_task(&_execute, this, true, task_name);
 }

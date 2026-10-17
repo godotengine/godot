@@ -1,6 +1,6 @@
 /* pngtrans.c - transforms the data in a row (used by both readers and writers)
  *
- * Copyright (c) 2018-2024 Cosmin Truta
+ * Copyright (c) 2018-2026 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -84,8 +84,37 @@ png_set_shift(png_structrp png_ptr, png_const_color_8p true_bits)
 {
    png_debug(1, "in png_set_shift");
 
-   if (png_ptr == NULL)
+   if (png_ptr == NULL || true_bits == NULL)
       return;
+
+   /* Check the shift values before passing them on to png_do_shift. */
+   {
+      png_byte bit_depth = png_ptr->bit_depth;
+      int invalid = 0;
+
+      if ((png_ptr->color_type & PNG_COLOR_MASK_COLOR) != 0)
+      {
+         if (true_bits->red == 0 || true_bits->red > bit_depth ||
+             true_bits->green == 0 || true_bits->green > bit_depth ||
+             true_bits->blue == 0 || true_bits->blue > bit_depth)
+            invalid = 1;
+      }
+      else
+      {
+         if (true_bits->gray == 0 || true_bits->gray > bit_depth)
+            invalid = 1;
+      }
+
+      if ((png_ptr->color_type & PNG_COLOR_MASK_ALPHA) != 0 &&
+          (true_bits->alpha == 0 || true_bits->alpha > bit_depth))
+         invalid = 1;
+
+      if (invalid)
+      {
+         png_app_error(png_ptr, "png_set_shift: invalid shift values");
+         return;
+      }
+   }
 
    png_ptr->transformations |= PNG_SHIFT;
    png_ptr->shift = *true_bits;
@@ -457,10 +486,9 @@ png_do_packswap(png_row_infop row_info, png_bytep row)
 
    if (row_info->bit_depth < 8)
    {
+      png_const_bytep table;
       png_bytep rp;
-      png_const_bytep end, table;
-
-      end = row + row_info->rowbytes;
+      png_bytep row_end = row + row_info->rowbytes;
 
       if (row_info->bit_depth == 1)
          table = onebppswaptable;
@@ -474,7 +502,7 @@ png_do_packswap(png_row_infop row_info, png_bytep row)
       else
          return;
 
-      for (rp = row; rp < end; rp++)
+      for (rp = row; rp < row_end; rp++)
          *rp = table[*rp];
    }
 }
@@ -802,8 +830,8 @@ png_do_check_palette_indexes(png_structrp png_ptr, png_row_infop row_info)
     defined(PNG_WRITE_USER_TRANSFORM_SUPPORTED)
 #ifdef PNG_USER_TRANSFORM_PTR_SUPPORTED
 void PNGAPI
-png_set_user_transform_info(png_structrp png_ptr, png_voidp
-   user_transform_ptr, int user_transform_depth, int user_transform_channels)
+png_set_user_transform_info(png_structrp png_ptr, png_voidp user_transform_ptr,
+    int user_transform_depth, int user_transform_channels)
 {
    png_debug(1, "in png_set_user_transform_info");
 

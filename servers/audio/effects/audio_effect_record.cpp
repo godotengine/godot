@@ -31,6 +31,9 @@
 #include "audio_effect_record.h"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	if (!is_recording) {

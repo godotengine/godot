@@ -30,17 +30,18 @@
 
 #pragma once
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
+#include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog_process.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
 #include "servers/rendering/storage/utilities.h"
 
 #define RB_SCOPE_FOG SNAME("Fog")
+
+class ClusterBuilderRD;
 
 namespace RendererRD {
 
@@ -58,7 +59,7 @@ private:
 		RID material;
 		Vector3 size = Vector3(2, 2, 2);
 
-		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+		RSE::FogVolumeShape shape = RSE::FOG_VOLUME_SHAPE_BOX;
 
 		Dependency dependency;
 	};
@@ -181,6 +182,9 @@ private:
 			uint32_t temporal_frame;
 			float temporal_blend;
 
+			float sky_border_size[2];
+			float pad[2];
+
 			float cam_rotation[12];
 			float to_prev_view[16];
 			float radiance_inverse_xform[12];
@@ -189,7 +193,7 @@ private:
 		VolumetricFogProcessShaderRD process_shader;
 
 		RID process_shader_version;
-		RID process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
+		PipelineDeferredRD process_pipelines[VOLUMETRIC_FOG_PROCESS_SHADER_MAX];
 
 	} volumetric_fog;
 
@@ -199,7 +203,7 @@ private:
 		bool valid = false;
 		RID version;
 
-		RID pipeline;
+		PipelineDeferredRD pipeline;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
@@ -212,7 +216,7 @@ private:
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}
@@ -251,10 +255,10 @@ public:
 	virtual void fog_volume_free(RID p_rid) override;
 	Dependency *fog_volume_get_dependency(RID p_fog_volume) const;
 
-	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
+	virtual void fog_volume_set_shape(RID p_fog_volume, RSE::FogVolumeShape p_shape) override;
 	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) override;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override;
-	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
+	virtual RSE::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
 	RID fog_volume_get_material(RID p_fog_volume) const;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override;
 	Vector3 fog_volume_get_size(RID p_fog_volume) const;
@@ -339,13 +343,13 @@ public:
 		~VolumetricFog();
 	};
 
-	void init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_layers, bool p_is_using_radiance_cubemap_array);
+	void init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_layers, bool p_is_using_radiance_octmap_array);
 	void free_fog_shader();
 
 	struct VolumetricFogSettings {
 		Vector2i rb_size;
 		double time;
-		bool is_using_radiance_cubemap_array;
+		bool is_using_radiance_octmap_array;
 		uint32_t max_cluster_elements;
 		bool volumetric_fog_filter_active;
 		RID shadow_sampler;
@@ -353,6 +357,8 @@ public:
 		RID shadow_atlas_depth;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
+		RID area_light_buffer;
+		RID area_light_atlas;
 		RID directional_shadow_depth;
 		RID directional_light_buffer;
 

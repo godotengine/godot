@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/lru.h"
 #include "scene/resources/texture.h"
 
 class BitMap;
@@ -44,6 +43,8 @@ class DPITexture : public Texture2D {
 	float saturation = 1.0;
 	Dictionary color_map;
 	Size2 size_override;
+	bool fix_alpha_border = false;
+	bool premult_alpha = false;
 
 	struct ScalingLevel {
 		HashSet<DPITexture *> textures;
@@ -73,6 +74,12 @@ public:
 
 	void set_source(const String &p_source);
 	String get_source() const;
+
+	void set_fix_alpha_border(bool p_enabled);
+	bool get_fix_alpha_border() const;
+
+	void set_premult_alpha(bool p_enabled);
+	bool get_premult_alpha() const;
 
 	void set_base_scale(float p_scale);
 	float get_base_scale() const;

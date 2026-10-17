@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshDataTool" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MeshDataTool" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper tool to access and edit [Mesh] data.
 	</brief_description>
@@ -318,6 +318,7 @@
 			<param index="1" name="tangent" type="Plane" />
 			<description>
 				Sets the tangent of the given vertex.
+				[b]Note:[/b] Even though [param tangent] is a [Plane], it does not directly represent the tangent plane. Its [member Plane.x], [member Plane.y], and [member Plane.z] represent the tangent vector and [member Plane.d] should be either [code]-1[/code] or [code]1[/code]. See also [constant Mesh.ARRAY_TANGENT].
 			</description>
 		</method>
 		<method name="set_vertex_uv">

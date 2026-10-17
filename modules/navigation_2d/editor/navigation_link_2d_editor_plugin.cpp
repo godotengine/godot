@@ -30,10 +30,12 @@
 
 #include "navigation_link_2d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 
 void NavigationLink2DEditor::_notification(int p_what) {
@@ -121,7 +123,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
+		Vector2 point = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		point = node->get_screen_transform().affine_inverse().xform(point);
 
 		if (start_grabbed) {

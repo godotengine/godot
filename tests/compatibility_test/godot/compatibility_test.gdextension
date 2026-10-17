@@ -1,0 +1,6 @@
+[configuration]
+entry_symbol = "compatibility_test_init"
+compatibility_minimum = 4.1
+
+[libraries]
+linux.debug.x86_64 = "res://libcompatibility_test.so"

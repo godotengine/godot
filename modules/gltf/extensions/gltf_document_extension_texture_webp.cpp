@@ -31,7 +31,7 @@
 #include "gltf_document_extension_texture_webp.h"
 
 // Import process.
-Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, const Vector<String> &p_extensions) {
 	if (!p_extensions.has("EXT_texture_webp")) {
 		return ERR_SKIP;
 	}
@@ -76,12 +76,12 @@ Vector<String> GLTFDocumentExtensionTextureWebP::get_saveable_image_formats() {
 	return ret;
 }
 
-PackedByteArray GLTFDocumentExtensionTextureWebP::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary p_image_dict, const String &p_image_format, float p_lossy_quality) {
+PackedByteArray GLTFDocumentExtensionTextureWebP::serialize_image_to_bytes(Ref<GLTFState> p_state, Ref<Image> p_image, Dictionary &r_image_dict, const String &p_image_format, float p_lossy_quality) {
 	if (p_image_format == "Lossless WebP") {
-		p_image_dict["mimeType"] = "image/webp";
+		r_image_dict["mimeType"] = "image/webp";
 		return p_image->save_webp_to_buffer(false);
 	} else if (p_image_format == "Lossy WebP") {
-		p_image_dict["mimeType"] = "image/webp";
+		r_image_dict["mimeType"] = "image/webp";
 		return p_image->save_webp_to_buffer(true, p_lossy_quality);
 	}
 	ERR_FAIL_V(PackedByteArray());
@@ -98,12 +98,12 @@ Error GLTFDocumentExtensionTextureWebP::save_image_at_path(Ref<GLTFState> p_stat
 	return ERR_INVALID_PARAMETER;
 }
 
-Error GLTFDocumentExtensionTextureWebP::serialize_texture_json(Ref<GLTFState> p_state, Dictionary p_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
+Error GLTFDocumentExtensionTextureWebP::serialize_texture_json(Ref<GLTFState> p_state, Dictionary &r_texture_json, Ref<GLTFTexture> p_gltf_texture, const String &p_image_format) {
 	Dictionary ext_texture_webp;
 	ext_texture_webp["source"] = p_gltf_texture->get_src_image();
 	Dictionary texture_extensions;
 	texture_extensions["EXT_texture_webp"] = ext_texture_webp;
-	p_texture_json["extensions"] = texture_extensions;
+	r_texture_json["extensions"] = texture_extensions;
 	p_state->add_used_extension("EXT_texture_webp", true);
 	return OK;
 }

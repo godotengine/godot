@@ -32,7 +32,6 @@
 
 #include "java_class_wrapper.h"
 
-#include "core/config/engine.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
@@ -48,50 +47,11 @@ class JNISingleton : public Object {
 	Ref<JavaObject> wrapped_object;
 
 protected:
-	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("has_java_method", "method"), &JNISingleton::has_java_method);
-	}
+	static void _bind_methods();
+	bool _get(const StringName &p_name, Variant &r_property) const;
 
 public:
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
-		// Godot methods take precedence.
-		Variant ret = Object::callp(p_method, p_args, p_argcount, r_error);
-		if (r_error.error == Callable::CallError::CALL_OK) {
-			return ret;
-		}
-
-		// Check the method we're looking for is in the JNISingleton map.
-		RBMap<StringName, MethodData>::Element *E = method_map.find(p_method);
-		if (E) {
-			if (wrapped_object.is_valid()) {
-				// Check that the arguments match.
-				int method_arg_count = E->get().argtypes.size();
-				if (p_argcount < method_arg_count) {
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-				} else if (p_argcount > method_arg_count) {
-					r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-				} else {
-					// Check the arguments are valid.
-					bool arguments_valid = true;
-					for (int i = 0; i < p_argcount; i++) {
-						if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
-							arguments_valid = false;
-							break;
-						}
-					}
-
-					if (arguments_valid) {
-						return wrapped_object->callp(p_method, p_args, p_argcount, r_error);
-					} else {
-						r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					}
-				}
-			} else {
-				r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
-			}
-		}
-		return Variant();
-	}
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	Ref<JavaObject> get_wrapped_object() const {
 		return wrapped_object;
@@ -101,21 +61,9 @@ public:
 		return method_map.has(p_method);
 	}
 
-	void add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
-		MethodData md;
-		md.argtypes = p_args;
-		md.ret_type = p_ret_type;
-		method_map[p_name] = md;
-	}
+	void add_method(const StringName &p_name, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type);
 
-	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args) {
-		MethodInfo mi;
-		mi.name = p_name;
-		for (int i = 0; i < p_args.size(); i++) {
-			mi.arguments.push_back(PropertyInfo(p_args[i], "arg" + itos(i + 1)));
-		}
-		ADD_SIGNAL(mi);
-	}
+	void add_signal(const StringName &p_name, const Vector<Variant::Type> &p_args);
 
 	JNISingleton() {}
 

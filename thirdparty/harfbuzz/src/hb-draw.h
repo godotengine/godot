@@ -335,6 +335,58 @@ hb_draw_close_path (hb_draw_funcs_t *dfuncs, void *draw_data,
 		    hb_draw_state_t *st);
 
 
+/* Shape helpers.
+ *
+ * Emit common primitives (tapered line, rectangle, circle) into
+ * any pen.  The helpers are thin wrappers over the individual
+ * move_to / line_to / cubic_to / close_path calls: callers can
+ * always hand-roll the same shapes if they need a variation.
+ *
+ * For rect / circle the @stroke_width parameter selects between
+ * filled and stroked: a positive finite value is the stroke
+ * width of the outline; NaN means "filled" (no stroke).
+ */
+
+/**
+ * hb_draw_line_cap_t:
+ * @HB_DRAW_LINE_CAP_BUTT:   No cap; the line ends exactly at
+ *   its endpoint.
+ * @HB_DRAW_LINE_CAP_SQUARE: Square cap; the line is extended
+ *   past its endpoint by half the local stroke width.  Useful
+ *   for composing closed shapes from line segments (e.g. a
+ *   rectangle made from four lines).
+ *
+ * End-cap shape for hb_draw_line().
+ *
+ * Since: 14.2.0
+ **/
+typedef enum {
+  HB_DRAW_LINE_CAP_BUTT   = 0,
+  HB_DRAW_LINE_CAP_SQUARE = 1,
+} hb_draw_line_cap_t;
+
+HB_EXTERN void
+hb_draw_line (hb_draw_funcs_t *dfuncs, void *draw_data,
+	      hb_draw_state_t *st,
+	      float x0, float y0, float w0,
+	      float x1, float y1, float w1,
+	      hb_draw_line_cap_t cap);
+
+HB_EXTERN void
+hb_draw_rectangle (hb_draw_funcs_t *dfuncs, void *draw_data,
+		   hb_draw_state_t *st,
+		   float x, float y,
+		   float w, float h,
+	      float stroke_width);
+
+HB_EXTERN void
+hb_draw_circle (hb_draw_funcs_t *dfuncs, void *draw_data,
+		hb_draw_state_t *st,
+		float cx, float cy,
+		float r,
+		float stroke_width);
+
+
 HB_END_DECLS
 
 #endif /* HB_DRAW_H */

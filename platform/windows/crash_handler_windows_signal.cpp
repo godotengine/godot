@@ -37,50 +37,110 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
-#include "main/main.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
+#include <thirdparty/libbacktrace/backtrace.h>
+
 #include <cxxabi.h>
+#include <psapi.h>
+
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>
-#include <string>
+#include <iterator>
 #include <vector>
 
-#include <psapi.h>
-
-#include "thirdparty/libbacktrace/backtrace.h"
+// Some versions of imagehlp.dll lack the proper packing directives themselves
+// so we need to do it.
+#pragma pack(push, before_imagehlp, 8)
+#include <imagehlp.h>
+#pragma pack(pop, before_imagehlp)
 
 struct CrashHandlerData {
 	int64_t index = 0;
 	backtrace_state *state = nullptr;
 	int64_t offset = 0;
+	int64_t base = 0;
+	uint64_t pc = 0;
+	HANDLE process = nullptr;
+	bool sym_ok = false;
+};
+
+struct module_data {
+	std::string image_name;
+	std::string module_name;
+	void *base_address = nullptr;
+	DWORD load_size;
+};
+
+class get_mod_info {
+	HANDLE process;
+
+public:
+	get_mod_info(HANDLE h) :
+			process(h) {}
+
+	module_data operator()(HMODULE module) {
+		module_data ret;
+		char temp[4096];
+		MODULEINFO mi;
+
+		GetModuleInformation(process, module, &mi, sizeof(mi));
+		ret.base_address = mi.lpBaseOfDll;
+		ret.load_size = mi.SizeOfImage;
+
+		GetModuleFileNameEx(process, module, temp, sizeof(temp));
+		ret.image_name = temp;
+		GetModuleBaseName(process, module, temp, sizeof(temp));
+		ret.module_name = temp;
+		SymLoadModule64(process, nullptr, ret.image_name.c_str(), ret.module_name.c_str(), (DWORD64)ret.base_address, ret.load_size);
+		return ret;
+	}
 };
 
 int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, const char *function) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
-	if (!function) {
-		return 0;
+	uint64_t offset = (uint64_t)ch_data->base;
+	String mod_name = "main";
+	if (ch_data->sym_ok) {
+		IMAGEHLP_MODULE64 mod_info;
+		memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+		mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+		if (SymGetModuleInfo64(ch_data->process, ch_data->pc, &mod_info)) {
+			offset = mod_info.BaseOfImage;
+			if (offset != (uint64_t)ch_data->base) {
+				if (mod_info.ImageName[0] != 0) {
+					mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
+				} else if (mod_info.ModuleName[0] != 0) {
+					mod_name = String((const char *)mod_info.ModuleName).to_lower();
+				} else {
+					mod_name = "<unknown module>";
+				}
+			}
+		}
 	}
 
-	char fname[1024];
-	snprintf(fname, 1024, "%s", function);
+	if (function) {
+		char fname[1024];
+		snprintf(fname, 1024, "%s", function);
 
-	if (function[0] == '_') {
-		int status;
-		char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
+		if (function[0] == '_') {
+			int status;
+			char *demangled = abi::__cxa_demangle(function, nullptr, nullptr, &status);
 
-		if (status == 0 && demangled) {
-			snprintf(fname, 1024, "%s", demangled);
+			if (status == 0 && demangled) {
+				snprintf(fname, 1024, "%s", demangled);
+			}
+
+			if (demangled) {
+				free(demangled);
+			}
 		}
-
-		if (demangled) {
-			free(demangled);
-		}
+		print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(fname), String::utf8(filename), lineno));
+	} else if ((int64_t)ch_data->pc > 0) {
+		print_error(vformat("[%d] %x (%s+%x) - ???", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset));
 	}
-
-	print_error(vformat("[%d] %s (%s:%d)", ch_data->index++, String::utf8(fname), String::utf8(filename), lineno));
 	return 0;
 }
 
@@ -89,12 +149,32 @@ void error_callback(void *data, const char *msg, int errnum) {
 	if (ch_data->index == 0) {
 		print_error(vformat("Error(%d): %s", errnum, String::utf8(msg)));
 	} else {
-		print_error(vformat("[%d] error(%d): %s", ch_data->index++, errnum, String::utf8(msg)));
+		uint64_t offset = (uint64_t)ch_data->base;
+		String mod_name = "main";
+		if (ch_data->sym_ok) {
+			IMAGEHLP_MODULE64 mod_info;
+			memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+			mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+			if (SymGetModuleInfo64(ch_data->process, ch_data->pc, &mod_info)) {
+				offset = mod_info.BaseOfImage;
+				if (offset != (uint64_t)ch_data->base) {
+					if (mod_info.ImageName[0] != 0) {
+						mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
+					} else if (mod_info.ModuleName[0] != 0) {
+						mod_name = String((const char *)mod_info.ModuleName).to_lower();
+					} else {
+						mod_name = "<unknown module>";
+					}
+				}
+			}
+		}
+		print_error(vformat("[%d] %x (%s+%x) - %s", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(msg)));
 	}
 }
 
 int trace_callback(void *data, uintptr_t pc) {
 	CrashHandlerData *ch_data = reinterpret_cast<CrashHandlerData *>(data);
+	ch_data->pc = (uint64_t)pc;
 	backtrace_pcinfo(ch_data->state, pc - ch_data->offset, &symbol_callback, &error_callback, data);
 	return 0;
 }
@@ -129,6 +209,133 @@ int64_t get_image_base(const String &p_path) {
 	}
 }
 
+static String get_gnu_debuglink(const String &p_exec_path) {
+	Ref<FileAccess> f = FileAccess::open(p_exec_path, FileAccess::READ);
+	if (f.is_null()) {
+		return String();
+	}
+
+	// Jump to the PE header and check the magic number.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			return String();
+		}
+	}
+
+	// Process header.
+	int num_sections;
+	uint64_t string_table_pos = 0;
+
+	int64_t section_table_pos = 0;
+	{
+		int64_t header_pos = f->get_position();
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 8);
+		string_table_pos += f->get_32();
+		f->seek(header_pos + 12);
+		string_table_pos += f->get_32() * 18;
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+		int64_t opt_header_pos = f->get_position() + 2;
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(opt_header_pos + opt_header_size);
+		section_table_pos = f->get_position();
+	}
+
+	if (string_table_pos == 0) {
+		return String();
+	}
+
+	// Load the strings table.
+	uint8_t *strings = nullptr;
+	{
+		f->seek(string_table_pos);
+		uint32_t string_data_size = f->get_32();
+
+		// Read strings data.
+		f->seek(string_table_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return String();
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the ".gnu_debuglink" section.
+	String ret;
+
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (section_name[0] == '/') {
+			uint32_t string_table_off = String::utf8((const char *)&section_name[1], 7).to_int();
+			if (strcmp((char *)strings + string_table_off, ".gnu_debuglink") == 0) {
+				// ".gnu_debuglink" section found.
+
+				f->seek(section_table_pos + i * 40 + 8);
+				uint32_t section_size = f->get_32();
+				f->seek(section_table_pos + i * 40 + 20);
+				uint32_t section_start = f->get_32();
+
+				f->seek(section_start);
+
+				// Extract the value as a UTF-8 string.
+				uint8_t *str = (uint8_t *)memalloc(section_size);
+
+				f->get_buffer(str, section_size);
+
+				ret = String::utf8((const char *)str, section_size);
+
+				memfree(str);
+
+				break;
+			}
+		}
+	}
+
+	memfree(strings);
+
+	return ret;
+}
+
+static String find_debugsymbols(const String &p_exec_path) {
+	const String base_dir = p_exec_path.get_base_dir() + "/";
+	const String exec_file = p_exec_path.get_file() + ".debugsymbols";
+
+	// First try the current executable name plus `.debugsymbols`, possibly in a `.debug` folder.
+	if (FileAccess::exists(p_exec_path + ".debugsymbols")) {
+		return p_exec_path + ".debugsymbols";
+	} else if (FileAccess::exists(base_dir + ".debug/" + exec_file)) {
+		return base_dir + ".debug/" + exec_file;
+	}
+
+	// Otherwise try using the `.gnu_debuglink` section, and try it in the same places if non-empty.
+	const String debuglink_value = get_gnu_debuglink(p_exec_path);
+	if (debuglink_value.is_empty()) {
+		return p_exec_path;
+	}
+
+	if (FileAccess::exists(base_dir + debuglink_value)) {
+		return base_dir + debuglink_value;
+	} else if (FileAccess::exists(base_dir + ".debug/" + debuglink_value)) {
+		return base_dir + ".debug/" + debuglink_value;
+	}
+
+	return p_exec_path;
+}
+
 extern void CrashHandlerException(int signal) {
 	CrashHandlerData data;
 
@@ -161,21 +368,36 @@ extern void CrashHandlerException(int signal) {
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
-	String _execpath = OS::get_singleton()->get_executable_path();
+	String exec_path = OS::get_singleton()->get_executable_path();
 
 	// Load process and image info to determine ASLR addresses offset.
 	MODULEINFO mi;
 	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(mi));
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
-	int64_t image_file_base = get_image_base(_execpath);
+	int64_t image_file_base = get_image_base(exec_path);
 	data.offset = image_mem_base - image_file_base;
 
-	if (FileAccess::exists(_execpath + ".debugsymbols")) {
-		_execpath = _execpath + ".debugsymbols";
-	}
-	_execpath = _execpath.replace_char('/', '\\');
+	std::vector<module_data> modules;
+	DWORD cbNeeded;
+	std::vector<HMODULE> module_handles(1);
 
-	CharString cs = _execpath.utf8(); // Note: should remain in scope during backtrace_simple call.
+	data.process = GetCurrentProcess();
+	data.sym_ok = SymInitialize(data.process, nullptr, false);
+
+	if (data.sym_ok) {
+		SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_EXACT_SYMBOLS);
+		EnumProcessModules(data.process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
+		module_handles.resize(cbNeeded / sizeof(HMODULE));
+		EnumProcessModules(data.process, &module_handles[0], module_handles.size() * sizeof(HMODULE), &cbNeeded);
+		std::transform(module_handles.begin(), module_handles.end(), std::back_inserter(modules), get_mod_info(data.process));
+		data.base = (uint64_t)modules[0].base_address;
+	}
+
+	print_error(vformat("Load address: %x\n", (uint64_t)data.offset));
+
+	exec_path = find_debugsymbols(exec_path).replace_char('/', '\\');
+
+	CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
 	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
 	if (data.state != nullptr) {
 		data.index = 1;
@@ -184,6 +406,10 @@ extern void CrashHandlerException(int signal) {
 
 	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
+
+	if (data.sym_ok) {
+		SymCleanup(data.process);
+	}
 
 	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
 		if (!backtrace->is_empty()) {

@@ -58,7 +58,7 @@ public:
 
 	void copy_settings_from(GodotJoint2D *p_joint);
 
-	virtual PhysicsServer2D::JointType get_type() const { return PhysicsServer2D::JOINT_TYPE_MAX; }
+	virtual PS2DE::JointType get_type() const { return PS2DE::JOINT_TYPE_MAX; }
 	GodotJoint2D(GodotBody2D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint2D(p_body_ptr, p_body_count) {}
 
@@ -102,17 +102,17 @@ class GodotPinJoint2D : public GodotJoint2D {
 	bool angular_limit_enabled = false;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_PIN; }
+	virtual PS2DE::JointType get_type() const override { return PS2DE::JOINT_TYPE_PIN; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	void set_param(PhysicsServer2D::PinJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer2D::PinJointParam p_param) const;
+	void set_param(PS2DE::PinJointParam p_param, real_t p_value);
+	real_t get_param(PS2DE::PinJointParam p_param) const;
 
-	void set_flag(PhysicsServer2D::PinJointFlag p_flag, bool p_enabled);
-	bool get_flag(PhysicsServer2D::PinJointFlag p_flag) const;
+	void set_flag(PS2DE::PinJointFlag p_flag, bool p_enabled);
+	bool get_flag(PS2DE::PinJointFlag p_flag) const;
 
 	GodotPinJoint2D(const Vector2 &p_pos, GodotBody2D *p_body_a, GodotBody2D *p_body_b = nullptr);
 };
@@ -142,7 +142,7 @@ class GodotGrooveJoint2D : public GodotJoint2D {
 	bool correct = false;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_GROOVE; }
+	virtual PS2DE::JointType get_type() const override { return PS2DE::JOINT_TYPE_GROOVE; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
@@ -176,14 +176,14 @@ class GodotDampedSpringJoint2D : public GodotJoint2D {
 	real_t v_coef = 0.0;
 
 public:
-	virtual PhysicsServer2D::JointType get_type() const override { return PhysicsServer2D::JOINT_TYPE_DAMPED_SPRING; }
+	virtual PS2DE::JointType get_type() const override { return PS2DE::JOINT_TYPE_DAMPED_SPRING; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	void set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer2D::DampedSpringParam p_param) const;
+	void set_param(PS2DE::DampedSpringParam p_param, real_t p_value);
+	real_t get_param(PS2DE::DampedSpringParam p_param) const;
 
 	GodotDampedSpringJoint2D(const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, GodotBody2D *p_body_a, GodotBody2D *p_body_b);
 };

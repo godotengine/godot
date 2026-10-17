@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,9 @@
 #include "SDL_iokitjoystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h" // For haptic hot plugging
+#include "../usb_ids.h"
+#include "../../SDL_hints_c.h"
+#include <IOKit/IOKitLib.h>
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
 
@@ -211,6 +214,29 @@ static bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pElement
         }
     }
     return result;
+}
+
+static bool GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(recDevice *pDevice, recElement *pElement, SInt32 min, SInt32 max, SInt32 *pValue)
+{
+    if (pElement->minReport == 0 && pElement->maxReport == 255) {
+        return GetHIDScaledCalibratedState(pDevice, pElement, min, max, pValue);
+    }
+
+    // This device thumbstick axes have an unusual axis range that
+    // doesn't work with GetHIDScaledCalibratedState() above.
+    //
+    // See https://github.com/libsdl-org/SDL/issues/13143 for details
+    if (GetHIDElementState(pDevice, pElement, pValue)) {
+        if (*pValue >= 0) {
+            // Negative axis values range from 32767 (at rest) to 0 (minimum)
+            *pValue = -32767 + *pValue;
+        } else if (*pValue < 0) {
+            // Positive axis values range from -32768 (at rest) to 0 (maximum)
+            *pValue = 32768 + *pValue;
+        }
+        return true;
+    }
+    return false;
 }
 
 static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
@@ -418,6 +444,16 @@ static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const
     return slot;
 }
 
+static bool IsControlledBy360ControllerDriver(IOHIDDeviceRef hidDevice)
+{
+    bool controlled_by_360controller = false;
+    io_service_t service = IOHIDDeviceGetService(hidDevice);
+    if (service != MACH_PORT_NULL) {
+        controlled_by_360controller = IOObjectConformsTo(service, "Xbox360ControllerClass");
+    }
+    return controlled_by_360controller;
+}
+
 static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
     Sint32 vendor = 0;
@@ -475,9 +511,16 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
     }
 
-    if (SDL_IsJoystickXboxOne(vendor, product)) {
-        // We can't actually use this API for Xbox controllers
+    if (!IsControlledBy360ControllerDriver(hidDevice) && SDL_IsJoystickXboxOne(vendor, product)) {
+        // We can't actually use this API for Xbox controllers without the 360Controller driver
         return false;
+    }
+
+    if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
+        if (IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVirtualHIDevice)) != kCFBooleanTrue) {
+            // This is a real Xbox 360 controller, adjust the version so it's not detected as a Steam virtual gamepad
+            version = 1;
+        }
     }
 
     // get device name
@@ -506,6 +549,11 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
 
+    if (vendor == USB_VENDOR_NACON_ALT &&
+        product == USB_PRODUCT_NACON_REVOLUTION_X_UNLIMITED_BT) {
+        pDevice->nacon_revolution_x_unlimited = true;
+    }
+
     array = IOHIDDeviceCopyMatchingElements(hidDevice, NULL, kIOHIDOptionsTypeNone);
     if (array) {
         AddHIDElements(array, pDevice);
@@ -521,7 +569,7 @@ static bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 
 #ifdef SDL_JOYSTICK_MFI
     extern bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
-    if (IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
+    if (!IsControlledBy360ControllerDriver(ioHIDDeviceObject) && IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return true;
     }
 #endif
@@ -957,7 +1005,11 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     i = 0;
 
     while (element) {
-        goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
+        if (device->nacon_revolution_x_unlimited) {
+            goodRead = GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(device, element, -32768, 32767, &value);
+        } else {
+            goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
+        }
         if (goodRead) {
             SDL_SendJoystickAxis(timestamp, joystick, i, value);
         }

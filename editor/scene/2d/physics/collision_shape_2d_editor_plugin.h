@@ -66,6 +66,7 @@ class CollisionShape2DEditor : public Control {
 	Vector<Point2> handles;
 
 	int shape_type = -1;
+	int hover_handle = -1;
 	int edit_handle = -1;
 	bool pressed = false;
 	real_t grab_threshold = 8;
@@ -81,6 +82,7 @@ class CollisionShape2DEditor : public Control {
 	void set_handle(int idx, Point2 &p_point);
 	void commit_handle(int idx, Variant &p_org);
 
+	void _update_hover(const Vector2 &p_mouse_pos);
 	void _shape_changed();
 
 protected:
@@ -105,7 +107,6 @@ public:
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { collision_shape_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	virtual String get_plugin_name() const override { return "CollisionShape2D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_obj) override;
 	virtual bool handles(Object *p_obj) const override;
 	virtual void make_visible(bool visible) override;

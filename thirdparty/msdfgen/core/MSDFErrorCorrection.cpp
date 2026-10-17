@@ -87,17 +87,15 @@ public:
     Point2 shapeCoord, sdfCoord;
     const float *msd;
     bool protectedFlag;
-    inline ShapeDistanceChecker(const BitmapConstRef<float, N> &sdf, const Shape &shape, const Projection &projection, DistanceMapping distanceMapping, double minImproveRatio) : distanceFinder(shape), sdf(sdf), distanceMapping(distanceMapping), minImproveRatio(minImproveRatio) {
+    inline ShapeDistanceChecker(const BitmapConstSection<float, N> &sdf, const Shape &shape, const Projection &projection, DistanceMapping distanceMapping, double minImproveRatio) : distanceFinder(shape), sdf(sdf), distanceMapping(distanceMapping), minImproveRatio(minImproveRatio) {
         texelSize = projection.unprojectVector(Vector2(1));
-        if (shape.inverseYAxis)
-            texelSize.y = -texelSize.y;
     }
     inline ArtifactClassifier classifier(const Vector2 &direction, double span) {
         return ArtifactClassifier(this, direction, span);
     }
 private:
     ShapeDistanceFinder<ContourCombiner<PerpendicularDistanceSelector> > distanceFinder;
-    BitmapConstRef<float, N> sdf;
+    BitmapConstSection<float, N> sdf;
     DistanceMapping distanceMapping;
     Vector2 texelSize;
     double minImproveRatio;
@@ -105,10 +103,11 @@ private:
 
 MSDFErrorCorrection::MSDFErrorCorrection() { }
 
-MSDFErrorCorrection::MSDFErrorCorrection(const BitmapRef<byte, 1> &stencil, const SDFTransformation &transformation) : stencil(stencil), transformation(transformation) {
+MSDFErrorCorrection::MSDFErrorCorrection(const BitmapSection<byte, 1> &stencil, const SDFTransformation &transformation) : stencil(stencil), transformation(transformation) {
     minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio;
     minImproveRatio = ErrorCorrectionConfig::defaultMinImproveRatio;
-    memset(stencil.pixels, 0, sizeof(byte)*stencil.width*stencil.height);
+    for (int y = 0; y < stencil.height; ++y)
+        memset(stencil(0, y), 0, sizeof(byte)*stencil.width);
 }
 
 void MSDFErrorCorrection::setMinDeviationRatio(double minDeviationRatio) {
@@ -120,6 +119,7 @@ void MSDFErrorCorrection::setMinImproveRatio(double minImproveRatio) {
 }
 
 void MSDFErrorCorrection::protectCorners(const Shape &shape) {
+    stencil.reorient(shape.getYAxisOrientation());
     for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour)
         if (!contour->edges.empty()) {
             const EdgeSegment *prevEdge = contour->edges.back();
@@ -131,8 +131,6 @@ void MSDFErrorCorrection::protectCorners(const Shape &shape) {
                     Point2 p = transformation.project((*edge)->point(0));
                     int l = (int) floor(p.x-.5);
                     int b = (int) floor(p.y-.5);
-                    if (shape.inverseYAxis)
-                        b = stencil.height-b-2;
                     int r = l+1;
                     int t = b+1;
                     // Check that the positions are within bounds.
@@ -189,8 +187,9 @@ static void protectExtremeChannels(byte *stencil, const float *msd, float m, int
 }
 
 template <int N>
-void MSDFErrorCorrection::protectEdges(const BitmapConstRef<float, N> &sdf) {
+void MSDFErrorCorrection::protectEdges(const BitmapConstSection<float, N> &sdf) {
     float radius;
+    stencil.reorient(sdf.yOrientation);
     // Horizontal texel pairs
     radius = float(PROTECTION_RADIUS_TOLERANCE*transformation.unprojectVector(Vector2(transformation.distanceMapping(DistanceMapping::Delta(1)), 0)).length());
     for (int y = 0; y < sdf.height; ++y) {
@@ -251,9 +250,11 @@ void MSDFErrorCorrection::protectEdges(const BitmapConstRef<float, N> &sdf) {
 }
 
 void MSDFErrorCorrection::protectAll() {
-    byte *end = stencil.pixels+stencil.width*stencil.height;
-    for (byte *mask = stencil.pixels; mask < end; ++mask)
-        *mask |= (byte) PROTECTED;
+    for (int y = 0; y < stencil.height; ++y) {
+        byte *mask = stencil(0, y);
+        for (int x = 0; x < stencil.width; ++x)
+            *mask++ |= (byte) PROTECTED;
+    }
 }
 
 /// Returns the median of the linear interpolation of texels a, b at t.
@@ -271,16 +272,6 @@ static float interpolatedMedian(const float *a, const float *l, const float *q, 
         t*(t*q[1]+l[1])+a[1],
         t*(t*q[2]+l[2])+a[2]
     ));
-}
-
-/// Determines if the interpolated median xm is an artifact.
-static bool isArtifact(bool isProtected, double axSpan, double bxSpan, float am, float bm, float xm) {
-    return (
-        // For protected texels, only report an artifact if it would cause fill inversion (change between positive and negative distance).
-        (!isProtected || (am > .5f && bm > .5f && xm <= .5f) || (am < .5f && bm < .5f && xm >= .5f)) &&
-        // This is an artifact if the interpolated median is outside the range of possible values based on its distance from a, b.
-        !(xm >= am-axSpan && xm <= am+axSpan && xm >= bm-bxSpan && xm <= bm+bxSpan)
-    );
 }
 
 /// Checks if a linear interpolation artifact will occur at a point where two specific color channels are equal - such points have extreme median values.
@@ -390,7 +381,8 @@ static bool hasDiagonalArtifact(const ArtifactClassifier &artifactClassifier, fl
 }
 
 template <int N>
-void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, N> &sdf) {
+void MSDFErrorCorrection::findErrors(const BitmapConstSection<float, N> &sdf) {
+    stencil.reorient(sdf.yOrientation);
     // Compute the expected deltas between values of horizontally, vertically, and diagonally adjacent texels.
     double hSpan = minDeviationRatio*transformation.unprojectVector(Vector2(transformation.distanceMapping(DistanceMapping::Delta(1)), 0)).length();
     double vSpan = minDeviationRatio*transformation.unprojectVector(Vector2(0, transformation.distanceMapping(DistanceMapping::Delta(1)))).length();
@@ -418,7 +410,9 @@ void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, N> &sdf) {
 }
 
 template <template <typename> class ContourCombiner, int N>
-void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, N> &sdf, const Shape &shape) {
+void MSDFErrorCorrection::findErrors(BitmapConstSection<float, N> sdf, const Shape &shape) {
+    sdf.reorient(shape.getYAxisOrientation());
+    stencil.reorient(sdf.yOrientation);
     // Compute the expected deltas between values of horizontally, vertically, and diagonally adjacent texels.
     double hSpan = minDeviationRatio*transformation.unprojectVector(Vector2(transformation.distanceMapping(DistanceMapping::Delta(1)), 0)).length();
     double vSpan = minDeviationRatio*transformation.unprojectVector(Vector2(0, transformation.distanceMapping(DistanceMapping::Delta(1)))).length();
@@ -428,69 +422,75 @@ void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, N> &sdf, const 
 #endif
     {
         ShapeDistanceChecker<ContourCombiner, N> shapeDistanceChecker(sdf, shape, transformation, transformation.distanceMapping, minImproveRatio);
-        bool rightToLeft = false;
+        int xDirection = 1;
         // Inspect all texels.
 #ifdef MSDFGEN_USE_OPENMP
         #pragma omp for
 #endif
         for (int y = 0; y < sdf.height; ++y) {
-            int row = shape.inverseYAxis ? sdf.height-y-1 : y;
-            for (int col = 0; col < sdf.width; ++col) {
-                int x = rightToLeft ? sdf.width-col-1 : col;
-                if ((*stencil(x, row)&ERROR))
+            int x = xDirection < 0 ? sdf.width-1 : 0;
+            for (int col = 0; col < sdf.width; ++col, x += xDirection) {
+                if ((*stencil(x, y)&ERROR))
                     continue;
-                const float *c = sdf(x, row);
+                const float *c = sdf(x, y);
                 shapeDistanceChecker.shapeCoord = transformation.unproject(Point2(x+.5, y+.5));
-                shapeDistanceChecker.sdfCoord = Point2(x+.5, row+.5);
+                shapeDistanceChecker.sdfCoord = Point2(x+.5, y+.5);
                 shapeDistanceChecker.msd = c;
-                shapeDistanceChecker.protectedFlag = (*stencil(x, row)&PROTECTED) != 0;
+                shapeDistanceChecker.protectedFlag = (*stencil(x, y)&PROTECTED) != 0;
                 float cm = median(c[0], c[1], c[2]);
                 const float *l = NULL, *b = NULL, *r = NULL, *t = NULL;
                 // Mark current texel c with the error flag if an artifact occurs when it's interpolated with any of its 8 neighbors.
-                *stencil(x, row) |= (byte) (ERROR*(
-                    (x > 0 && ((l = sdf(x-1, row)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(-1, 0), hSpan), cm, c, l))) ||
-                    (row > 0 && ((b = sdf(x, row-1)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(0, -1), vSpan), cm, c, b))) ||
-                    (x < sdf.width-1 && ((r = sdf(x+1, row)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(+1, 0), hSpan), cm, c, r))) ||
-                    (row < sdf.height-1 && ((t = sdf(x, row+1)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(0, +1), vSpan), cm, c, t))) ||
-                    (x > 0 && row > 0 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(-1, -1), dSpan), cm, c, l, b, sdf(x-1, row-1))) ||
-                    (x < sdf.width-1 && row > 0 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(+1, -1), dSpan), cm, c, r, b, sdf(x+1, row-1))) ||
-                    (x > 0 && row < sdf.height-1 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(-1, +1), dSpan), cm, c, l, t, sdf(x-1, row+1))) ||
-                    (x < sdf.width-1 && row < sdf.height-1 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(+1, +1), dSpan), cm, c, r, t, sdf(x+1, row+1)))
+                *stencil(x, y) |= (byte) (ERROR*(
+                    (x > 0 && ((l = sdf(x-1, y)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(-1, 0), hSpan), cm, c, l))) ||
+                    (y > 0 && ((b = sdf(x, y-1)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(0, -1), vSpan), cm, c, b))) ||
+                    (x < sdf.width-1 && ((r = sdf(x+1, y)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(+1, 0), hSpan), cm, c, r))) ||
+                    (y < sdf.height-1 && ((t = sdf(x, y+1)), hasLinearArtifact(shapeDistanceChecker.classifier(Vector2(0, +1), vSpan), cm, c, t))) ||
+                    (x > 0 && y > 0 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(-1, -1), dSpan), cm, c, l, b, sdf(x-1, y-1))) ||
+                    (x < sdf.width-1 && y > 0 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(+1, -1), dSpan), cm, c, r, b, sdf(x+1, y-1))) ||
+                    (x > 0 && y < sdf.height-1 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(-1, +1), dSpan), cm, c, l, t, sdf(x-1, y+1))) ||
+                    (x < sdf.width-1 && y < sdf.height-1 && hasDiagonalArtifact(shapeDistanceChecker.classifier(Vector2(+1, +1), dSpan), cm, c, r, t, sdf(x+1, y+1)))
                 ));
             }
+            xDirection = -xDirection;
         }
     }
 }
 
 template <int N>
-void MSDFErrorCorrection::apply(const BitmapRef<float, N> &sdf) const {
-    int texelCount = sdf.width*sdf.height;
-    const byte *mask = stencil.pixels;
-    float *texel = sdf.pixels;
-    for (int i = 0; i < texelCount; ++i) {
-        if (*mask&ERROR) {
-            // Set all color channels to the median.
-            float m = median(texel[0], texel[1], texel[2]);
-            texel[0] = m, texel[1] = m, texel[2] = m;
+void MSDFErrorCorrection::apply(BitmapSection<float, N> sdf) const {
+    sdf.reorient(stencil.yOrientation);
+    const byte *stencilRow = stencil.pixels;
+    float *rowStart = sdf.pixels;
+    for (int y = 0; y < sdf.height; ++y) {
+        const byte *mask = stencilRow;
+        float *pixel = rowStart;
+        for (int x = 0; x < sdf.width; ++x) {
+            if (*mask&ERROR) {
+                // Set all color channels to the median.
+                float m = median(pixel[0], pixel[1], pixel[2]);
+                pixel[0] = m, pixel[1] = m, pixel[2] = m;
+            }
+            ++mask;
+            pixel += N;
         }
-        ++mask;
-        texel += N;
+        stencilRow += stencil.rowStride;
+        rowStart += sdf.rowStride;
     }
 }
 
-BitmapConstRef<byte, 1> MSDFErrorCorrection::getStencil() const {
+BitmapConstSection<byte, 1> MSDFErrorCorrection::getStencil() const {
     return stencil;
 }
 
-template void MSDFErrorCorrection::protectEdges(const BitmapConstRef<float, 3> &sdf);
-template void MSDFErrorCorrection::protectEdges(const BitmapConstRef<float, 4> &sdf);
-template void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, 3> &sdf);
-template void MSDFErrorCorrection::findErrors(const BitmapConstRef<float, 4> &sdf);
-template void MSDFErrorCorrection::findErrors<SimpleContourCombiner>(const BitmapConstRef<float, 3> &sdf, const Shape &shape);
-template void MSDFErrorCorrection::findErrors<SimpleContourCombiner>(const BitmapConstRef<float, 4> &sdf, const Shape &shape);
-template void MSDFErrorCorrection::findErrors<OverlappingContourCombiner>(const BitmapConstRef<float, 3> &sdf, const Shape &shape);
-template void MSDFErrorCorrection::findErrors<OverlappingContourCombiner>(const BitmapConstRef<float, 4> &sdf, const Shape &shape);
-template void MSDFErrorCorrection::apply(const BitmapRef<float, 3> &sdf) const;
-template void MSDFErrorCorrection::apply(const BitmapRef<float, 4> &sdf) const;
+template void MSDFErrorCorrection::protectEdges(const BitmapConstSection<float, 3> &sdf);
+template void MSDFErrorCorrection::protectEdges(const BitmapConstSection<float, 4> &sdf);
+template void MSDFErrorCorrection::findErrors(const BitmapConstSection<float, 3> &sdf);
+template void MSDFErrorCorrection::findErrors(const BitmapConstSection<float, 4> &sdf);
+template void MSDFErrorCorrection::findErrors<SimpleContourCombiner>(BitmapConstSection<float, 3> sdf, const Shape &shape);
+template void MSDFErrorCorrection::findErrors<SimpleContourCombiner>(BitmapConstSection<float, 4> sdf, const Shape &shape);
+template void MSDFErrorCorrection::findErrors<OverlappingContourCombiner>(BitmapConstSection<float, 3> sdf, const Shape &shape);
+template void MSDFErrorCorrection::findErrors<OverlappingContourCombiner>(BitmapConstSection<float, 4> sdf, const Shape &shape);
+template void MSDFErrorCorrection::apply(BitmapSection<float, 3> sdf) const;
+template void MSDFErrorCorrection::apply(BitmapSection<float, 4> sdf) const;
 
 }

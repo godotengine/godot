@@ -30,6 +30,10 @@
 
 #include "environment_storage.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
+
 // Storage
 
 RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
@@ -58,7 +62,7 @@ void RendererEnvironmentStorage::environment_free(RID p_rid) {
 
 // Background
 
-void RendererEnvironmentStorage::environment_set_background(RID p_env, RS::EnvironmentBG p_bg) {
+void RendererEnvironmentStorage::environment_set_background(RID p_env, RSE::EnvironmentBG p_bg) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->background = p_bg;
@@ -101,7 +105,7 @@ void RendererEnvironmentStorage::environment_set_canvas_max_layer(RID p_env, int
 	env->canvas_max_layer = p_max_layer;
 }
 
-void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source) {
+void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const Color &p_color, RSE::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RSE::EnvironmentReflectionSource p_reflection_source) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->ambient_light = p_color;
@@ -111,9 +115,9 @@ void RendererEnvironmentStorage::environment_set_ambient_light(RID p_env, const 
 	env->reflection_source = p_reflection_source;
 }
 
-RS::EnvironmentBG RendererEnvironmentStorage::environment_get_background(RID p_env) const {
+RSE::EnvironmentBG RendererEnvironmentStorage::environment_get_background(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_BG_CLEAR_COLOR);
+	ERR_FAIL_NULL_V(env, RSE::ENV_BG_CLEAR_COLOR);
 	return env->background;
 }
 
@@ -159,9 +163,9 @@ int RendererEnvironmentStorage::environment_get_canvas_max_layer(RID p_env) cons
 	return env->canvas_max_layer;
 }
 
-RS::EnvironmentAmbientSource RendererEnvironmentStorage::environment_get_ambient_source(RID p_env) const {
+RSE::EnvironmentAmbientSource RendererEnvironmentStorage::environment_get_ambient_source(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_AMBIENT_SOURCE_BG);
+	ERR_FAIL_NULL_V(env, RSE::ENV_AMBIENT_SOURCE_BG);
 	return env->ambient_source;
 }
 
@@ -183,9 +187,9 @@ float RendererEnvironmentStorage::environment_get_ambient_sky_contribution(RID p
 	return env->ambient_sky_contribution;
 }
 
-RS::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_reflection_source(RID p_env) const {
+RSE::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_reflection_source(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_REFLECTION_SOURCE_BG);
+	ERR_FAIL_NULL_V(env, RSE::ENV_REFLECTION_SOURCE_BG);
 	return env->reflection_source;
 }
 
@@ -203,7 +207,7 @@ int RendererEnvironmentStorage::environment_get_camera_feed_id(RID p_env) const 
 
 // Tonemap
 
-void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
+void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RSE::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->exposure = p_exposure;
@@ -211,9 +215,9 @@ void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::Environm
 	env->white = p_white;
 }
 
-RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
+RSE::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_TONE_MAPPER_LINEAR);
+	ERR_FAIL_NULL_V(env, RSE::ENV_TONE_MAPPER_LINEAR);
 	return env->tone_mapper;
 }
 
@@ -223,15 +227,125 @@ float RendererEnvironmentStorage::environment_get_exposure(RID p_env) const {
 	return env->exposure;
 }
 
-float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_white(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 1.0);
-	return env->white;
+
+	// Glow with screen blend mode does not work when white < 1.0, so make sure
+	// it is at least 1.0 for all tonemappers:
+	if (env->tone_mapper == RSE::ENV_TONE_MAPPER_LINEAR) {
+		return p_output_max_value;
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_FILMIC || env->tone_mapper == RSE::ENV_TONE_MAPPER_ACES) {
+		// Filmic and ACES only support SDR; their white is stable regardless
+		// of output_max_value.
+		return MAX(1.0, env->white);
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_AGX) {
+		// AgX works best with a high white. 2.0 is the minimum required for
+		// good behavior with Mobile rendering method.
+		if (p_limit_agx_white) {
+			return 2.0;
+		} else {
+			float agx_white = MAX(2.0, env->white);
+			// Instead of constraining by matching the output_max_value, constrain
+			// by multiplying to ensure the desired non-uniform scaling behavior
+			// is maintained in the shoulder.
+			return agx_white * p_output_max_value;
+		}
+	} else { // Reinhard
+		// The Reinhard tonemapper is not designed to have a white parameter
+		// that is less than the output max value. This is especially important
+		// in the variable Extended Dynamic Range (EDR) paradigm where the
+		// output max value may change to be greater or less than the white
+		// parameter, depending on the available dynamic range.
+		return MAX(p_output_max_value, env->white);
+	}
+}
+
+void RendererEnvironmentStorage::environment_set_tonemap_agx_contrast(RID p_env, float p_agx_contrast) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->tonemap_agx_contrast = p_agx_contrast;
+}
+
+float RendererEnvironmentStorage::environment_get_tonemap_agx_contrast(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 1.0);
+	return env->tonemap_agx_contrast;
+}
+
+RendererEnvironmentStorage::TonemapParameters RendererEnvironmentStorage::environment_get_tonemap_parameters(RID p_env, bool p_limit_agx_white, float p_output_max_value) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, TonemapParameters());
+
+	float white = environment_get_white(p_env, p_limit_agx_white, p_output_max_value);
+	TonemapParameters tonemap_parameters = TonemapParameters();
+
+	if (env->tone_mapper == RSE::ENV_TONE_MAPPER_LINEAR) {
+		// Linear has no tonemapping parameters
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_REINHARD) {
+		tonemap_parameters.white_squared = (white * white) / p_output_max_value;
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_FILMIC) {
+		// These constants must match those in the shader code.
+		// exposure_bias: Input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
+		// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values).
+		// Has no effect on the curve's general shape or visual properties.
+		const float exposure_bias = 2.0f;
+		const float A = 0.22f * exposure_bias * exposure_bias; // bias baked into constants for performance
+		const float B = 0.30f * exposure_bias;
+		const float C = 0.10f;
+		const float D = 0.20f;
+		const float E = 0.01f;
+		const float F = 0.30f;
+
+		tonemap_parameters.white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_ACES) {
+		// These constants must match those in the shader code.
+		const float exposure_bias = 1.8f;
+		const float A = 0.0245786f;
+		const float B = 0.000090537f;
+		const float C = 0.983729f;
+		const float D = 0.432951f;
+		const float E = 0.238081f;
+
+		white *= exposure_bias;
+		float white_tonemapped = (white * (white + A) - B) / (white * (C * white + D) + E);
+		tonemap_parameters.white_tonemapped = white_tonemapped;
+	} else if (env->tone_mapper == RSE::ENV_TONE_MAPPER_AGX) {
+		// Calculate allenwp tonemapping curve parameters on the CPU to improve shader performance.
+		// Source and details: https://allenwp.com/blog/2025/05/29/allenwp-tonemapping-curve/
+
+		// These constants must match the those in the shader code.
+		// 18% "middle gray" is perceptually 50% of the brightness of reference white.
+		const float awp_crossover_point = 0.18;
+		// When output_max_value and/or awp_crossover_point are no longer constant, awp_shoulder_max can
+		// be calculated on the CPU and passed in as tonemap_parameters.tonemap_e.
+		const float awp_shoulder_max = p_output_max_value - awp_crossover_point;
+
+		float awp_high_clip = white;
+
+		// awp_toe_a is a solution generated by Mathematica that ensures intersection at awp_crossover_point.
+		float awp_toe_a = ((1.0 / awp_crossover_point) - 1.0) * pow(awp_crossover_point, env->tonemap_agx_contrast);
+		// Slope formula is simply the derivative of the toe function with an input of awp_crossover_point.
+		float awp_slope_denom = pow(awp_crossover_point, env->tonemap_agx_contrast) + awp_toe_a;
+		float awp_slope = (env->tonemap_agx_contrast * pow(awp_crossover_point, env->tonemap_agx_contrast - 1.0) * awp_toe_a) / (awp_slope_denom * awp_slope_denom);
+
+		float awp_w = awp_high_clip - awp_crossover_point;
+		awp_w = awp_w * awp_w;
+		awp_w = awp_w / awp_shoulder_max;
+		awp_w = awp_w * awp_slope;
+
+		tonemap_parameters.awp_contrast = env->tonemap_agx_contrast;
+		tonemap_parameters.awp_toe_a = awp_toe_a;
+		tonemap_parameters.awp_slope = awp_slope;
+		tonemap_parameters.awp_w = awp_w;
+	}
+
+	return tonemap_parameters;
 }
 
 // Fog
 
-void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
+void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect, RSE::EnvironmentFogMode p_mode) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->fog_enabled = p_enable;
@@ -252,9 +366,9 @@ bool RendererEnvironmentStorage::environment_get_fog_enabled(RID p_env) const {
 	return env->fog_enabled;
 }
 
-RS::EnvironmentFogMode RendererEnvironmentStorage::environment_get_fog_mode(RID p_env) const {
+RSE::EnvironmentFogMode RendererEnvironmentStorage::environment_get_fog_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_FOG_MODE_EXPONENTIAL);
+	ERR_FAIL_NULL_V(env, RSE::ENV_FOG_MODE_EXPONENTIAL);
 	return env->fog_mode;
 }
 
@@ -341,7 +455,7 @@ void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Volumetric fog can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Volumetric fog is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->volumetric_fog_enabled = p_enable;
@@ -439,7 +553,7 @@ float RendererEnvironmentStorage::environment_get_volumetric_fog_ambient_inject(
 
 // GLOW
 
-void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
+void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, Vector<float> p_levels, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RSE::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, float p_glow_map_strength, RID p_glow_map) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
@@ -471,7 +585,7 @@ Vector<float> RendererEnvironmentStorage::environment_get_glow_levels(RID p_env)
 
 float RendererEnvironmentStorage::environment_get_glow_intensity(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.8);
+	ERR_FAIL_NULL_V(env, 0.3);
 	return env->glow_intensity;
 }
 
@@ -493,9 +607,9 @@ float RendererEnvironmentStorage::environment_get_glow_mix(RID p_env) const {
 	return env->glow_mix;
 }
 
-RS::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
+RSE::EnvironmentGlowBlendMode RendererEnvironmentStorage::environment_get_glow_blend_mode(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT);
+	ERR_FAIL_NULL_V(env, RSE::ENV_GLOW_BLEND_MODE_SCREEN);
 	return env->glow_blend_mode;
 }
 
@@ -536,7 +650,7 @@ void RendererEnvironmentStorage::environment_set_ssr(RID p_env, bool p_enable, i
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) are only available when using the Forward+ renderer.");
 	}
 #endif
 	env->ssr_enabled = p_enable;
@@ -572,7 +686,7 @@ float RendererEnvironmentStorage::environment_get_ssr_fade_out(RID p_env) const 
 
 float RendererEnvironmentStorage::environment_get_ssr_depth_tolerance(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.2);
+	ERR_FAIL_NULL_V(env, 0.5);
 	return env->ssr_depth_tolerance;
 }
 
@@ -582,8 +696,8 @@ void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, 
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ renderer.");
+	if (OS::get_singleton()->get_current_rendering_method() == "mobile" && p_enable) {
+		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) is only available when using the Forward+ or Compatibility renderers.");
 	}
 #endif
 	env->ssao_enabled = p_enable;
@@ -658,7 +772,7 @@ void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->ssil_enabled = p_enable;
@@ -700,12 +814,12 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 
 // SDFGI
 
-void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RS::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
+void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("SDFGI can only be enabled when using the Forward+ renderer.");
+		WARN_PRINT_ONCE_ED("SDFGI is only available when using the Forward+ renderer.");
 	}
 #endif
 	env->sdfgi_enabled = p_enable;
@@ -774,9 +888,9 @@ float RendererEnvironmentStorage::environment_get_sdfgi_probe_bias(RID p_env) co
 	return env->sdfgi_probe_bias;
 }
 
-RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_scale(RID p_env) const {
+RSE::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_scale(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RS::ENV_SDFGI_Y_SCALE_75_PERCENT);
+	ERR_FAIL_NULL_V(env, RSE::ENV_SDFGI_Y_SCALE_75_PERCENT);
 	return env->sdfgi_y_scale;
 }
 
@@ -787,7 +901,9 @@ void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_en
 	ERR_FAIL_NULL(env);
 
 	env->adjustments_enabled = p_enable;
-	env->adjustments_brightness = p_brightness;
+	// Scale brightness via the nonlinear sRGB transfer function to provide a
+	// somewhat perceptually uniform brightness adjustment.
+	env->adjustments_brightness = p_brightness < 0.04045f ? p_brightness * (1.0f / 12.92f) : Math::pow(float((p_brightness + 0.055f) * (1.0f / (1.055f))), 2.4f);
 	env->adjustments_contrast = p_contrast;
 	env->adjustments_saturation = p_saturation;
 	env->use_1d_color_correction = p_use_1d_color_correction;

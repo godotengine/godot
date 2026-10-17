@@ -841,11 +841,11 @@ static int SSE4x4_NEON(const uint8_t* WEBP_RESTRICT a,
 static int16x8_t Quantize_NEON(int16_t* WEBP_RESTRICT const in,
                                const VP8Matrix* WEBP_RESTRICT const mtx,
                                int offset) {
-  const uint16x8_t sharp = vld1q_u16(&mtx->sharpen_[offset]);
-  const uint16x8_t q = vld1q_u16(&mtx->q_[offset]);
-  const uint16x8_t iq = vld1q_u16(&mtx->iq_[offset]);
-  const uint32x4_t bias0 = vld1q_u32(&mtx->bias_[offset + 0]);
-  const uint32x4_t bias1 = vld1q_u32(&mtx->bias_[offset + 4]);
+  const uint16x8_t sharp = vld1q_u16(&mtx->sharpen[offset]);
+  const uint16x8_t q = vld1q_u16(&mtx->q[offset]);
+  const uint16x8_t iq = vld1q_u16(&mtx->iq[offset]);
+  const uint32x4_t bias0 = vld1q_u32(&mtx->bias[offset + 0]);
+  const uint32x4_t bias1 = vld1q_u32(&mtx->bias[offset + 4]);
 
   const int16x8_t a = vld1q_s16(in + offset);                // in
   const uint16x8_t b = vreinterpretq_u16_s16(vabsq_s16(a));  // coeff = abs(in)
@@ -945,6 +945,28 @@ static int Quantize2Blocks_NEON(int16_t in[32], int16_t out[32],
     vst1q_u8(dst, r);                                                          \
   } while (0)
 
+static WEBP_INLINE uint8x8x2_t Vld1U8x2(const uint8_t* ptr) {
+#if LOCAL_CLANG_PREREQ(3, 4) || LOCAL_GCC_PREREQ(8, 5) || defined(_MSC_VER)
+  return vld1_u8_x2(ptr);
+#else
+  uint8x8x2_t res;
+  INIT_VECTOR2(res, vld1_u8(ptr + 0 * 8), vld1_u8(ptr + 1 * 8));
+  return res;
+#endif
+}
+
+static WEBP_INLINE uint8x16x4_t Vld1qU8x4(const uint8_t* ptr) {
+#if LOCAL_CLANG_PREREQ(3, 4) || LOCAL_GCC_PREREQ(9, 4) || defined(_MSC_VER)
+  return vld1q_u8_x4(ptr);
+#else
+  uint8x16x4_t res;
+  INIT_VECTOR4(res,
+               vld1q_u8(ptr + 0 * 16), vld1q_u8(ptr + 1 * 16),
+               vld1q_u8(ptr + 2 * 16), vld1q_u8(ptr + 3 * 16));
+  return res;
+#endif
+}
+
 static void Intra4Preds_NEON(uint8_t* WEBP_RESTRICT dst,
                              const uint8_t* WEBP_RESTRICT top) {
   // 0   1   2   3   4   5   6   7   8   9  10  11  12  13
@@ -971,9 +993,9 @@ static void Intra4Preds_NEON(uint8_t* WEBP_RESTRICT dst,
     30, 30, 30, 30,  0,  0,  0,  0, 21, 22, 23, 24, 16, 16, 16, 16
   };
 
-  const uint8x16x4_t lookup_avgs1 = vld1q_u8_x4(kLookupTbl1);
-  const uint8x16x4_t lookup_avgs2 = vld1q_u8_x4(kLookupTbl2);
-  const uint8x16x4_t lookup_avgs3 = vld1q_u8_x4(kLookupTbl3);
+  const uint8x16x4_t lookup_avgs1 = Vld1qU8x4(kLookupTbl1);
+  const uint8x16x4_t lookup_avgs2 = Vld1qU8x4(kLookupTbl2);
+  const uint8x16x4_t lookup_avgs3 = Vld1qU8x4(kLookupTbl3);
 
   const uint8x16_t preload = vld1q_u8(top - 5);
   uint8x16x2_t qcombined;
@@ -1167,7 +1189,7 @@ static WEBP_INLINE void TrueMotion_NEON(uint8_t* dst, const uint8_t* left,
 
   // Neither left nor top are NULL.
   a = vdupq_n_u16(left[-1]);
-  inner = vld1_u8_x2(top);
+  inner = Vld1U8x2(top);
 
   for (i = 0; i < 4; i++) {
     const uint8x8x4_t outer = vld4_dup_u8(&left[i * 4]);

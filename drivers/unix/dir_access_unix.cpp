@@ -32,7 +32,6 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/templates/list.h"
@@ -44,6 +43,7 @@
 #include <sys/statfs.h>
 #endif
 #include <sys/statvfs.h>
+
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
@@ -51,6 +51,10 @@
 #if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
+
+String DirAccessUnix::fix_path(const String &p_path) const {
+	return DirAccess::fix_path(p_path).simplify_path();
+}
 
 Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!

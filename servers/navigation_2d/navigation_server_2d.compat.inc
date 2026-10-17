@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "navigation_server_2d.h"
+
+#include "core/object/class_db.h"
+
 Vector<Vector2> NavigationServer2D::_map_get_path_bind_compat_100129(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	return const_cast<NavigationServer2D *>(this)->map_get_path(p_map, p_origin, p_destination, p_optimize, p_navigation_layers);
 }

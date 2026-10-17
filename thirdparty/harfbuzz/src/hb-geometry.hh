@@ -28,16 +28,25 @@
 
 #include "hb-algs.hh"
 
+#include <cmath>
+
 
 template <typename Float = float>
 struct hb_extents_t
 {
   hb_extents_t () {}
-  hb_extents_t (const hb_glyph_extents_t &extents) :
-		xmin (hb_min (extents.x_bearing, extents.x_bearing + extents.width)),
-		ymin (hb_min (extents.y_bearing, extents.y_bearing + extents.height)),
-		xmax (hb_max (extents.x_bearing, extents.x_bearing + extents.width)),
-		ymax (hb_max (extents.y_bearing, extents.y_bearing + extents.height)) {}
+  hb_extents_t (const hb_glyph_extents_t &extents)
+  {
+    double x0 = (double) extents.x_bearing;
+    double y0 = (double) extents.y_bearing;
+    double x1 = x0 + (double) extents.width;
+    double y1 = y0 + (double) extents.height;
+
+    xmin = (Float) hb_min (x0, x1);
+    ymin = (Float) hb_min (y0, y1);
+    xmax = (Float) hb_max (x0, x1);
+    ymax = (Float) hb_max (y0, y1);
+  }
   hb_extents_t (Float xmin, Float ymin, Float xmax, Float ymax) :
     xmin (xmin), ymin (ymin), xmax (xmax), ymax (ymax) {}
 
@@ -90,20 +99,37 @@ struct hb_extents_t
 
   hb_glyph_extents_t to_glyph_extents (bool xneg = false, bool yneg = false) const
   {
-    hb_position_t x0 = (hb_position_t) roundf (xmin);
-    hb_position_t y0 = (hb_position_t) roundf (ymin);
-    hb_position_t x1 = (hb_position_t) roundf (xmax);
-    hb_position_t y1 = (hb_position_t) roundf (ymax);
-    return hb_glyph_extents_t {xneg ? x1 : x0,
-			       yneg ? y0 : y1,
-			       xneg ? x0 - x1 : x1 - x0,
-			       yneg ? y1 - y0 : y0 - y1};
+    double x0 = round ((double) xmin);
+    double y0 = round ((double) ymin);
+    double x1 = round ((double) xmax);
+    double y1 = round ((double) ymax);
+
+    if (unlikely (!std::isfinite (x0) ||
+		  !std::isfinite (y0) ||
+		  !std::isfinite (x1) ||
+		  !std::isfinite (y1)))
+      return hb_glyph_extents_t {0, 0, 0, 0};
+
+    return hb_glyph_extents_t {
+      clamp_to_hb_position (xneg ? x1 : x0),
+      clamp_to_hb_position (yneg ? y0 : y1),
+      clamp_to_hb_position (xneg ? x0 - x1 : x1 - x0),
+      clamp_to_hb_position (yneg ? y1 - y0 : y0 - y1)
+    };
   }
 
   Float xmin = 0;
   Float ymin = 0;
   Float xmax = -1;
   Float ymax = -1;
+
+  static hb_position_t
+  clamp_to_hb_position (double v)
+  {
+    return (hb_position_t) hb_clamp (v,
+				     (double) hb_int_min (hb_position_t),
+				     (double) hb_int_max (hb_position_t));
+  }
 };
 
 template <typename Float = float>

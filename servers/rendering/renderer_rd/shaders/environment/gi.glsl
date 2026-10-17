@@ -162,7 +162,7 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 	if (sc_use_full_projection_matrix) {
 		vec4 pos;
 		pos.xy = (2.0 * vec2(screen_pos) / vec2(scene_data.screen_size)) - 1.0;
-		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r * 2.0 - 1.0;
+		pos.z = texelFetch(sampler2D(depth_buffer, linear_sampler), screen_pos, 0).r;
 		pos.w = 1.0;
 
 		pos = scene_data.inv_projection[params.view_index] * pos;
@@ -184,6 +184,8 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 		if (!params.orthogonal) {
 			pos.xy *= pos.z;
 		}
+
+		pos.y = -pos.y;
 
 		return pos;
 	}
@@ -486,7 +488,7 @@ vec4 voxel_cone_trace(texture3D probe, vec3 cell_size, vec3 pos, vec3 direction,
 	float dist = p_bias;
 	vec4 color = vec4(0.0);
 
-	while (dist < max_distance && color.a < 0.95) {
+	while (dist < max_distance && color.a < 1.0) {
 		float diameter = max(1.0, 2.0 * tan_half_angle * dist);
 		vec3 uvw_pos = (pos + dist * direction) * cell_size;
 		float half_diameter = diameter * 0.5;
@@ -509,7 +511,7 @@ vec4 voxel_cone_trace_45_degrees(texture3D probe, vec3 cell_size, vec3 pos, vec3
 	float radius = max(0.5, dist);
 	float lod_level = log2(radius * 2.0);
 
-	while (dist < max_distance && color.a < 0.95) {
+	while (dist < max_distance && color.a < 1.0) {
 		vec3 uvw_pos = (pos + dist * direction) * cell_size;
 
 		//check if outside, then break
@@ -714,7 +716,6 @@ void main() {
 	vec4 reflection_light = vec4(0.0);
 
 	vec3 vertex = reconstruct_position(pos);
-	vertex.y = -vertex.y;
 
 	process_gi(pos, vertex, ambient_light, reflection_light);
 

@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, 2022, 2024, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2022, 2024-2025, D. R. Commander.
  * Copyright (C) 2014, MIPS Technologies, Inc., California.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2019-2020, Arm Limited.
@@ -501,7 +501,8 @@ _jinit_upsampler(j_decompress_ptr cinfo)
                v_in_group * 2 == v_out_group && do_fancy) {
       /* Non-fancy upsampling is handled by the generic method */
 #if defined(WITH_SIMD) && (defined(__arm__) || defined(__aarch64__) || \
-                           defined(_M_ARM) || defined(_M_ARM64))
+                           defined(_M_ARM) || defined(_M_ARM64) || \
+                           defined(_M_ARM64EC))
       if (jsimd_can_h1v2_fancy_upsample())
         upsample->methods[ci] = jsimd_h1v2_fancy_upsample;
       else

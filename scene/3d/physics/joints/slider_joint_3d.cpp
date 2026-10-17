@@ -30,6 +30,8 @@
 
 #include "slider_joint_3d.h"
 
+#include "core/object/class_db.h"
+
 void SliderJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &SliderJoint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &SliderJoint3D::get_param);
@@ -89,7 +91,7 @@ void SliderJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (is_configured()) {
-		PhysicsServer3D::get_singleton()->slider_joint_set_param(get_rid(), PhysicsServer3D::SliderJointParam(p_param), p_value);
+		PhysicsServer3D::get_singleton()->slider_joint_set_param(get_rid(), PS3DE::SliderJointParam(p_param), p_value);
 	}
 	update_gizmos();
 }
@@ -116,7 +118,7 @@ void SliderJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, Physics
 
 	PhysicsServer3D::get_singleton()->joint_make_slider(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
-		PhysicsServer3D::get_singleton()->slider_joint_set_param(p_joint, PhysicsServer3D::SliderJointParam(i), params[i]);
+		PhysicsServer3D::get_singleton()->slider_joint_set_param(p_joint, PS3DE::SliderJointParam(i), params[i]);
 	}
 }
 

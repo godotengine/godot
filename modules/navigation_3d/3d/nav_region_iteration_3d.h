@@ -32,7 +32,6 @@
 
 #include "../nav_utils_3d.h"
 #include "nav_base_iteration_3d.h"
-#include "scene/resources/navigation_mesh.h"
 
 #include "core/math/aabb.h"
 

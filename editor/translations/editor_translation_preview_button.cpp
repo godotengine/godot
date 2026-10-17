@@ -30,24 +30,30 @@
 
 #include "editor_translation_preview_button.h"
 
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"
 
 void EditorTranslationPreviewButton::_update() {
 	const String &locale = EditorNode::get_singleton()->get_preview_locale();
+	bool pseudo = EditorNode::get_singleton()->is_pseudolocalization_enabled();
 
-	if (locale.is_empty()) {
+	if (!pseudo && locale.is_empty()) {
 		hide();
 		return;
 	}
 
-	const String name = TranslationServer::get_singleton()->get_locale_name(locale);
-	set_text(vformat(TTR("Previewing: %s"), name == locale ? locale : name + " [" + locale + "]"));
+	if (!locale.is_empty() && locale != TranslationServer::get_singleton()->get_fallback_locale()) {
+		const String name = TranslationServer::get_singleton()->get_locale_name(locale);
+		set_text(vformat(TTR("Previewing: %s"), name == locale ? locale : name + " [" + locale + "]") + (pseudo ? " (" + TTR("pseudolocalized") + ")" : ""));
+	} else {
+		set_text(TTR("Previewing pseudolocalization"));
+	}
 	show();
 }
 
 void EditorTranslationPreviewButton::pressed() {
-	EditorNode::get_singleton()->set_preview_locale(String());
+	EditorNode::get_singleton()->set_preview_locale(String(), false);
 }
 
 void EditorTranslationPreviewButton::_notification(int p_what) {

@@ -34,18 +34,23 @@
 #import "godot_window.h"
 #import "key_mapping_macos.h"
 
+#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
 
 - (id)init {
 	self = [super init];
-	window_id = DisplayServer::INVALID_WINDOW_ID;
+	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	need_redraw = false;
 	return self;
 }
 
-- (void)setWindowID:(DisplayServerMacOS::WindowID)wid {
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid {
 	window_id = wid;
 }
 
@@ -56,6 +61,9 @@
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
+		GodotProfileFrameMark;
+		GodotProfileZone("[GodotContentLayerDelegate displayLayer]");
+
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -133,7 +141,7 @@
 - (id)init {
 	self = [super init];
 	layer_delegate = [[GodotContentLayerDelegate alloc] init];
-	window_id = DisplayServer::INVALID_WINDOW_ID;
+	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	tracking_area = nil;
 	ime_input_event_in_progress = false;
 	mouse_down_control = false;
@@ -150,7 +158,7 @@
 	return self;
 }
 
-- (void)setWindowID:(DisplayServerMacOS::WindowID)wid {
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid {
 	window_id = wid;
 	[layer_delegate setWindowID:window_id];
 }
@@ -254,6 +262,10 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+	if (!wd.im_active) {
+		return NSMakeRect(0, 0, 0, 0);
+	}
+
 	const NSRect content_rect = [wd.window_view frame];
 	const float scale = ds->screen_get_max_scale();
 	NSRect point_in_window_rect = NSMakeRect(wd.im_position.x / scale, content_rect.size.height - (wd.im_position.y / scale) - 1, 0, 0);
@@ -311,7 +323,8 @@
 		ke.macos_state = 0;
 		ke.pressed = true;
 		ke.echo = false;
-		ke.raw = false; // IME input event.
+		ke.raw = false; // Can have composite characters.
+		ke.ime = true; // IME event, do not remove.
 		ke.keycode = Key::NONE;
 		ke.physical_keycode = Key::NONE;
 		ke.key_label = Key::NONE;
@@ -423,7 +436,7 @@
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (ds && ds->has_window(window_id)) {
 		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-		wd.edge = DisplayServer::WINDOW_EDGE_MAX;
+		wd.edge = DisplayServerEnums::WINDOW_EDGE_MAX;
 	}
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
@@ -438,43 +451,43 @@
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (ds && ds->has_window(window_id)) {
 		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-		if (wd.edge != DisplayServer::WINDOW_EDGE_MAX) {
+		if (wd.edge != DisplayServerEnums::WINDOW_EDGE_MAX) {
 			Size2i max_size = wd.max_size / ds->screen_get_max_scale();
 			Size2i min_size = wd.min_size / ds->screen_get_max_scale();
 			NSRect frame = [wd.window_object frame];
 			switch (wd.edge) {
-				case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+				case DisplayServerEnums::WINDOW_EDGE_TOP_LEFT: {
 					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_TOP: {
+				case DisplayServerEnums::WINDOW_EDGE_TOP: {
 					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height + clamped_dy) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+				case DisplayServerEnums::WINDOW_EDGE_TOP_RIGHT: {
 					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_LEFT: {
+				case DisplayServerEnums::WINDOW_EDGE_LEFT: {
 					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y, frame.size.width + clamped_dx, frame.size.height) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_RIGHT: {
+				case DisplayServerEnums::WINDOW_EDGE_RIGHT: {
 					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + clamped_dx, frame.size.height) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+				case DisplayServerEnums::WINDOW_EDGE_BOTTOM_LEFT: {
 					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y - clamped_dy, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_BOTTOM: {
+				case DisplayServerEnums::WINDOW_EDGE_BOTTOM: {
 					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y - clamped_dy, frame.size.width, frame.size.height + clamped_dy) display:YES];
 				} break;
-				case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+				case DisplayServerEnums::WINDOW_EDGE_BOTTOM_RIGHT: {
 					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
 					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
 					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y - clamped_dy, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
@@ -492,7 +505,7 @@
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (ds && ds->has_window(window_id)) {
 		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-		wd.edge = DisplayServer::WINDOW_EDGE_MAX;
+		wd.edge = DisplayServerEnums::WINDOW_EDGE_MAX;
 	}
 	if (mouse_down_control) {
 		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
@@ -543,7 +556,7 @@
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	const NSRect contentRect = [wd.window_view frame];
-	if (NSPointInRect([event locationInWindow], contentRect)) {
+	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
 		ds->mouse_enter_window(window_id);
 	}
 
@@ -611,7 +624,7 @@
 		return;
 	}
 
-	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
+	if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 		ds->mouse_exit_window(window_id);
 	}
 }
@@ -622,7 +635,7 @@
 		return;
 	}
 
-	if (ds->mouse_get_mode() != DisplayServer::MOUSE_MODE_CAPTURED) {
+	if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 		ds->mouse_enter_window(window_id);
 	}
 
@@ -716,7 +729,7 @@
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
 			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
-			ke.raw = false;
+			ke.raw = false; // Can have composite characters.
 
 			ds->push_to_key_event_buffer(ke);
 		}
@@ -884,12 +897,12 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	ds->update_mouse_pos(wd, [event locationInWindow]);
 
-	double delta_x = [event scrollingDeltaX];
-	double delta_y = [event scrollingDeltaY];
+	double delta_x = [event deltaX];
+	double delta_y = [event deltaY];
 
 	if ([event hasPreciseScrollingDeltas]) {
-		delta_x *= 0.03;
-		delta_y *= 0.03;
+		delta_x = [event scrollingDeltaX];
+		delta_y = [event scrollingDeltaY];
 	}
 
 	if ([event momentumPhase] != NSEventPhaseNone) {
@@ -903,11 +916,14 @@
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
-		if (std::abs(delta_x)) {
-			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:std::abs(delta_x * 0.3)];
+		double delta_x_abs = Math::abs(delta_x);
+		double delta_y_abs = Math::abs(delta_y);
+
+		if (!Math::is_zero_approx(delta_x_abs)) {
+			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:delta_x_abs];
 		}
-		if (std::abs(delta_y)) {
-			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:std::abs(delta_y * 0.3)];
+		if (!Math::is_zero_approx(delta_y_abs)) {
+			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:delta_y_abs];
 		}
 	}
 }

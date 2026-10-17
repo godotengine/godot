@@ -30,8 +30,11 @@
 
 #include "fog_volume.h"
 
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
+#include "servers/rendering/rendering_server.h"
 
 ///////////////////////////
 
@@ -45,13 +48,12 @@ void FogVolume::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0.01,1024,0.01,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape", PROPERTY_HINT_ENUM, "Ellipsoid (Local),Cone (Local),Cylinder (Local),Box (Local),World (Global)"), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "FogMaterial,ShaderMaterial"), "set_material", "get_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "FogMaterial,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_material", "get_material");
 }
 
 void FogVolume::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "size" && shape == RS::FOG_VOLUME_SHAPE_WORLD) {
+	if (p_property.name == "size" && shape == RSE::FOG_VOLUME_SHAPE_WORLD) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-		return;
 	}
 }
 
@@ -84,15 +86,15 @@ Vector3 FogVolume::get_size() const {
 	return size;
 }
 
-void FogVolume::set_shape(RS::FogVolumeShape p_type) {
+void FogVolume::set_shape(RSE::FogVolumeShape p_type) {
 	shape = p_type;
 	RS::get_singleton()->fog_volume_set_shape(_get_volume(), shape);
-	RS::get_singleton()->instance_set_ignore_culling(get_instance(), shape == RS::FOG_VOLUME_SHAPE_WORLD);
+	RS::get_singleton()->instance_set_ignore_culling(get_instance(), shape == RSE::FOG_VOLUME_SHAPE_WORLD);
 	update_gizmos();
 	notify_property_list_changed();
 }
 
-RS::FogVolumeShape FogVolume::get_shape() const {
+RSE::FogVolumeShape FogVolume::get_shape() const {
 	return shape;
 }
 
@@ -111,7 +113,7 @@ Ref<Material> FogVolume::get_material() const {
 }
 
 AABB FogVolume::get_aabb() const {
-	if (shape != RS::FOG_VOLUME_SHAPE_WORLD) {
+	if (shape != RSE::FOG_VOLUME_SHAPE_WORLD) {
 		return AABB(-size / 2, size);
 	}
 	return AABB();
@@ -136,7 +138,7 @@ PackedStringArray FogVolume::get_configuration_warnings() const {
 
 FogVolume::FogVolume() {
 	volume = RS::get_singleton()->fog_volume_create();
-	RS::get_singleton()->fog_volume_set_shape(volume, RS::FOG_VOLUME_SHAPE_BOX);
+	RS::get_singleton()->fog_volume_set_shape(volume, RSE::FOG_VOLUME_SHAPE_BOX);
 	set_base(volume);
 }
 

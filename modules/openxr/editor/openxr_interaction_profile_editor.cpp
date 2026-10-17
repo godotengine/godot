@@ -29,8 +29,13 @@
 /**************************************************************************/
 
 #include "openxr_interaction_profile_editor.h"
+
 #include "../openxr_api.h"
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Interaction profile editor base
@@ -59,6 +64,10 @@ void OpenXRInteractionProfileEditorBase::_do_update_interaction_profile() {
 		is_dirty = true;
 		callable_mp(this, &OpenXRInteractionProfileEditorBase::_update_interaction_profile).call_deferred();
 	}
+}
+
+void OpenXRInteractionProfileEditorBase::_set_dirty() {
+	is_dirty = true;
 }
 
 void OpenXRInteractionProfileEditorBase::_add_binding(const String &p_action, const String &p_path) {
@@ -167,6 +176,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	interaction_profile_sc = memnew(ScrollContainer);
+	interaction_profile_sc->set_theme_type_variation("ScrollContainerSecondary");
 	interaction_profile_sc->set_h_size_flags(SIZE_EXPAND_FILL);
 	interaction_profile_sc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(interaction_profile_sc);
@@ -198,10 +208,10 @@ void OpenXRInteractionProfileEditorBase::setup(const Ref<OpenXRActionMap> &p_act
 	if (profile_def != nullptr) {
 		profile_name = profile_def->display_name;
 
-		if (!profile_def->openxr_extension_name.is_empty()) {
+		if (!profile_def->openxr_extension_names.is_empty()) {
 			profile_name += "*";
 
-			tooltip = vformat(TTR("Note: This interaction profile requires extension %s support."), profile_def->openxr_extension_name);
+			tooltip = vformat(TTR("Note: This interaction profile requires extension %s support."), profile_def->openxr_extension_names);
 		}
 	}
 
@@ -242,11 +252,13 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 
 	Label *path_label = memnew(Label);
 	path_label->set_focus_mode(FOCUS_ACCESSIBILITY);
-	if (p_io_path->openxr_extension_name.is_empty()) {
+	if (p_io_path->openxr_extension_names.is_empty()) {
 		path_label->set_text(p_io_path->display_name);
 	} else {
 		path_label->set_text(p_io_path->display_name + "*");
-		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
+
+		String extension_names = p_io_path->openxr_extension_names.replace(",", " or ").replace(XR_OPENXR_1_1_NAME, "OpenXR 1.1");
+		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), extension_names));
 	}
 	path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	path_hb->add_child(path_label);
@@ -334,7 +346,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		return;
 	}
 
-	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions();
+	PackedStringArray requested_extensions = OpenXRAPI::get_all_requested_extensions(0);
 
 	// out with the old...
 	while (interaction_profile_hb->get_child_count() > 0) {
@@ -369,7 +381,14 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 
 		for (int j = 0; j < profile_def->io_paths.size(); j++) {
 			const OpenXRInteractionProfileMetadata::IOPath *io_path = &profile_def->io_paths[j];
-			if (io_path->top_level_path == top_level_paths[i] && (io_path->openxr_extension_name.is_empty() || requested_extensions.has(io_path->openxr_extension_name))) {
+
+			const Vector<String> extensions = io_path->openxr_extension_names.split(",", false);
+			bool extension_is_requested = extensions.is_empty(); // If none, then yes we can use this.
+			for (const String &extension : extensions) {
+				extension_is_requested |= requested_extensions.has(extension);
+			}
+
+			if (io_path->top_level_path == top_level_paths[i] && extension_is_requested) {
 				_add_io_path(container, io_path);
 			}
 		}
@@ -381,7 +400,10 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 void OpenXRInteractionProfileEditor::_theme_changed() {
 	OpenXRInteractionProfileEditorBase::_theme_changed();
 
-	interaction_profile_sc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+	const bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+	if (is_theme_classic) {
+		interaction_profile_sc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+	}
 
 	for (int i = 0; i < interaction_profile_hb->get_child_count(); i++) {
 		Control *panel = Object::cast_to<Control>(interaction_profile_hb->get_child(i));

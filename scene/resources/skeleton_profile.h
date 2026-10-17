@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "texture.h"
+#include "scene/resources/texture.h"
 
 class SkeletonProfile : public Resource {
 	GDCLASS(SkeletonProfile, Resource);

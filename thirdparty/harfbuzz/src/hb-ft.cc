@@ -508,23 +508,24 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
 
   for (unsigned int i = 0; i < count; i++)
   {
-    FT_Fixed v = 0;
+    hb_position_t advance;
     hb_codepoint_t glyph = *first_glyph;
 
     unsigned int cv;
     if (ft_font->advance_cache.get (glyph, &cv))
-      v = cv;
+      advance = (hb_position_t) cv;
     else
     {
+      FT_Fixed v = 0;
       FT_Get_Advance (ft_face, glyph, load_flags, &v);
       /* Work around bug that FreeType seems to return negative advance
        * for variable-set fonts if x_scale is negative! */
-      v = abs (v);
-      v = (int) (v * x_mult + (1<<9)) >> 10;
-      ft_font->advance_cache.set (glyph, v);
+      double scaled = trunc (fabs ((double) v) * (double) x_mult + (1<<9)) / (1<<10);
+      advance = hb_clamp_to<hb_position_t> (floor (scaled));
+      ft_font->advance_cache.set (glyph, advance);
     }
 
-    *first_advance = v;
+    *first_advance = advance;
     first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
     first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
   }
@@ -562,9 +563,9 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
 
   /* Note: FreeType's vertical metrics grows downward while other FreeType coordinates
    * have a Y growing upward.  Hence the extra negation. */
-  v = ((-v + (1<<9)) >> 10);
+  double advance = floor ((-(double) v + (1<<9)) / (1<<10));
 
-  return (hb_position_t) (y_mult * v);
+  return hb_clamp_to<hb_position_t> ((double) y_mult * advance);
 }
 #endif
 
@@ -605,11 +606,12 @@ hb_ft_get_glyph_v_origin (hb_font_t *font,
 
   /* Note: FreeType's vertical metrics grows downward while other FreeType coordinates
    * have a Y growing upward.  Hence the extra negation. */
-  *x = ft_face->glyph->metrics.horiBearingX -   ft_face->glyph->metrics.vertBearingX;
-  *y = ft_face->glyph->metrics.horiBearingY - (-ft_face->glyph->metrics.vertBearingY);
-
-  *x = (hb_position_t) (x_mult * *x);
-  *y = (hb_position_t) (y_mult * *y);
+  *x = hb_clamp_to<hb_position_t> ((double) x_mult *
+				   ((double) ft_face->glyph->metrics.horiBearingX -
+				    ft_face->glyph->metrics.vertBearingX));
+  *y = hb_clamp_to<hb_position_t> ((double) y_mult *
+				   ((double) ft_face->glyph->metrics.horiBearingY +
+				    ft_face->glyph->metrics.vertBearingY));
 
   return true;
 }
@@ -633,7 +635,7 @@ hb_ft_get_glyph_h_kerning (hb_font_t *font,
   if (FT_Get_Kerning (ft_font->ft_face, left_glyph, right_glyph, mode, &kerningv))
     return 0;
 
-  return kerningv.x;
+  return hb_clamp_to<hb_position_t> ((int64_t) kerningv.x);
 }
 #endif
 
@@ -717,10 +719,15 @@ hb_ft_get_glyph_extents (hb_font_t *font,
   float x2 = x1 + x_mult *  ft_face->glyph->metrics.width;
   float y2 = y1 + y_mult * -ft_face->glyph->metrics.height;
 
-  extents->x_bearing = roundf (x1);
-  extents->y_bearing = roundf (y1);
-  extents->width = roundf (x2) - extents->x_bearing;
-  extents->height = roundf (y2) - extents->y_bearing;
+  double rx1 = (double) roundf (x1);
+  double ry1 = (double) roundf (y1);
+  double rx2 = (double) roundf (x2);
+  double ry2 = (double) roundf (y2);
+
+  extents->x_bearing = hb_clamp_to<hb_position_t> (rx1);
+  extents->y_bearing = hb_clamp_to<hb_position_t> (ry1);
+  extents->width = hb_clamp_to<hb_position_t> (rx2 - rx1);
+  extents->height = hb_clamp_to<hb_position_t> (ry2 - ry1);
 
   return true;
 }
@@ -765,6 +772,12 @@ hb_ft_get_glyph_name (hb_font_t *font HB_UNUSED,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
+
+  if (!size)
+  {
+    char buf[128];
+    return !FT_Get_Glyph_Name (ft_face, glyph, buf, sizeof (buf)) && *buf;
+  }
 
   hb_bool_t ret = !FT_Get_Glyph_Name (ft_face, glyph, name, size);
   if (ret && (size && !*name))
@@ -835,21 +848,23 @@ hb_ft_get_font_h_extents (hb_font_t *font HB_UNUSED,
 
   if (ft_face->units_per_EM != 0)
   {
-    metrics->ascender = FT_MulFix(ft_face->ascender, ft_face->size->metrics.y_scale);
-    metrics->descender = FT_MulFix(ft_face->descender, ft_face->size->metrics.y_scale);
-    metrics->line_gap = FT_MulFix( ft_face->height, ft_face->size->metrics.y_scale ) - (metrics->ascender - metrics->descender);
+    double ascender = FT_MulFix(ft_face->ascender, ft_face->size->metrics.y_scale);
+    double descender = FT_MulFix(ft_face->descender, ft_face->size->metrics.y_scale);
+    double height = FT_MulFix( ft_face->height, ft_face->size->metrics.y_scale );
+    metrics->ascender = hb_clamp_to<hb_position_t> ((double) y_mult * ascender);
+    metrics->descender = hb_clamp_to<hb_position_t> ((double) y_mult * descender);
+    metrics->line_gap = hb_clamp_to<hb_position_t> ((double) y_mult * (height - (ascender - descender)));
   }
   else
   {
     /* Bitmap-only font, eg. color bitmap font. */
-    metrics->ascender = ft_face->size->metrics.ascender;
-    metrics->descender = ft_face->size->metrics.descender;
-    metrics->line_gap = ft_face->size->metrics.height - (metrics->ascender - metrics->descender);
+    double ascender = ft_face->size->metrics.ascender;
+    double descender = ft_face->size->metrics.descender;
+    double height = ft_face->size->metrics.height;
+    metrics->ascender = hb_clamp_to<hb_position_t> ((double) y_mult * ascender);
+    metrics->descender = hb_clamp_to<hb_position_t> ((double) y_mult * descender);
+    metrics->line_gap = hb_clamp_to<hb_position_t> ((double) y_mult * (height - (ascender - descender)));
   }
-
-  metrics->ascender  = (hb_position_t) (y_mult * metrics->ascender);
-  metrics->descender = (hb_position_t) (y_mult * metrics->descender);
-  metrics->line_gap  = (hb_position_t) (y_mult * metrics->line_gap);
 
   return true;
 }
@@ -1117,14 +1132,13 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
   buffer = (FT_Byte *) hb_malloc (length);
   if (!buffer)
     return nullptr;
+  auto buffer_guard = hb_make_scope_guard ([&]() { hb_free (buffer); });
 
   error = FT_Load_Sfnt_Table (ft_face, tag, 0, buffer, &length);
   if (error)
-  {
-    hb_free (buffer);
     return nullptr;
-  }
 
+  buffer_guard.release ();
   return hb_blob_create ((const char *) buffer, length,
 			 HB_MEMORY_MODE_WRITABLE,
 			 buffer, hb_free);
@@ -1147,23 +1161,29 @@ _hb_ft_get_table_tags (const hb_face_t *face HB_UNUSED,
 
   if (!table_count)
     return population;
-  else
-    *table_count = 0;
 
   if (unlikely (start_offset >= population))
+  {
+    *table_count = 0;
     return population;
+  }
 
-  unsigned end_offset = hb_min (start_offset + *table_count, (unsigned) population);
-  if (unlikely (end_offset < start_offset))
+  unsigned end_offset = start_offset + *table_count;
+  if (unlikely (end_offset < start_offset)) /* Overflow. */
+  {
+    *table_count = 0;
     return population;
+  }
+  end_offset = hb_min (end_offset, (unsigned) population);
 
   *table_count = end_offset - start_offset;
-  for (unsigned i = start_offset; i < end_offset; i++)
-  {
-    FT_ULong tag = 0, length;
-    FT_Sfnt_Table_Info (ft_face, i, &tag, &length);
-    table_tags[i - start_offset] = tag;
-  }
+  if (table_tags)
+    for (unsigned i = start_offset; i < end_offset; i++)
+    {
+      FT_ULong tag = 0, length;
+      FT_Sfnt_Table_Info (ft_face, i, &tag, &length);
+      table_tags[i - start_offset] = tag;
+    }
 
   return population;
 }
@@ -1171,8 +1191,8 @@ _hb_ft_get_table_tags (const hb_face_t *face HB_UNUSED,
 
 /**
  * hb_ft_face_create:
- * @ft_face: (destroy destroy) (scope notified): FT_Face to work upon
- * @destroy: (nullable): A callback to call when the face object is not needed anymore
+ * @ft_face: FT_Face to work upon
+ * @destroy: (nullable) (scope async): A callback to call when the face object is not needed anymore
  *
  * Creates an #hb_face_t face object from the specified FT_Face.
  *
@@ -1295,8 +1315,8 @@ hb_ft_face_create_cached (FT_Face ft_face)
 
 /**
  * hb_ft_font_create:
- * @ft_face: (destroy destroy) (scope notified): FT_Face to work upon
- * @destroy: (nullable): A callback to call when the font object is not needed anymore
+ * @ft_face: FT_Face to work upon
+ * @destroy: (nullable) (scope async): A callback to call when the font object is not needed anymore
  *
  * Creates an #hb_font_t font object from the specified FT_Face.
  *
@@ -1604,7 +1624,7 @@ _destroy_blob (void *p)
  * Creates an #hb_face_t face object from the specified
  * font blob and face index.
  *
- * This is similar in functionality to hb_face_create_from_blob_or_fail(),
+ * This is similar in functionality to hb_face_create_or_fail(),
  * but uses the FreeType library for loading the font blob. This can
  * be useful, for example, to load WOFF and WOFF2 font data.
  *
@@ -1693,6 +1713,13 @@ _release_blob (void *arg)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  int load_flags = FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING;
+  if (font->destroy == (hb_destroy_func_t) _hb_ft_font_destroy && font->user_data)
+  {
+    const hb_ft_font_t *existing_ft_font = (const hb_ft_font_t *) font->user_data;
+    load_flags = existing_ft_font->load_flags;
+  }
+
   // In case of failure...
   hb_font_set_funcs (font,
 		     hb_font_funcs_get_empty (),
@@ -1740,7 +1767,7 @@ hb_ft_font_set_funcs (hb_font_t *font)
   }
 
   _hb_ft_font_set_funcs (font, ft_face, true);
-  hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+  hb_ft_font_set_load_flags (font, load_flags);
 
   _hb_ft_hb_font_changed (font, ft_face);
 }

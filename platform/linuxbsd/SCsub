@@ -43,7 +43,6 @@ if env["dbus"]:
 if env["library_type"] == "static_library":
     prog = env.add_library("#bin/godot", common_linuxbsd)
 elif env["library_type"] == "shared_library":
-    env.Append(CCFLAGS=["-fPIC"])
     prog = env.add_shared_library("#bin/godot", common_linuxbsd)
 else:
     prog = env.add_program("#bin/godot", common_linuxbsd)

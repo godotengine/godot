@@ -32,7 +32,7 @@
 
 #include "jolt_shape_3d.h"
 
-#include "Jolt/Physics/Collision/Shape/DecoratedShape.h"
+#include <Jolt/Physics/Collision/Shape/DecoratedShape.h>
 
 JoltShapeInstance3D::ShapeReference::ShapeReference(JoltShapedObject3D *p_parent, JoltShape3D *p_shape) :
 		parent(p_parent),
@@ -75,7 +75,7 @@ AABB JoltShapeInstance3D::get_aabb() const {
 	return get_transform_scaled().xform(shape->get_aabb());
 }
 
-bool JoltShapeInstance3D::try_build() {
+bool JoltShapeInstance3D::try_build(bool p_object_has_back_face_collision) {
 	ERR_FAIL_COND_V(is_disabled(), false);
 
 	const JPH::ShapeRefC maybe_new_shape = shape->try_build();
@@ -93,7 +93,7 @@ bool JoltShapeInstance3D::try_build() {
 		}
 	}
 
-	jolt_ref = JoltShape3D::with_user_data(maybe_new_shape, (uint64_t)id);
+	jolt_ref = JoltShape3D::with_instance_overrides(maybe_new_shape, (uint64_t)id, p_object_has_back_face_collision, shape->has_back_face_collision());
 
 	return true;
 }

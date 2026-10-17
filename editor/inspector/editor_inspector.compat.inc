@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "editor_inspector.h"
+
+#include "core/object/class_db.h"
+
 void EditorInspectorPlugin::_add_property_editor_bind_compat_92322(const String &p_for_property, Control *p_prop, bool p_add_to_end) {
 	add_property_editor(p_for_property, p_prop, p_add_to_end, "");
 }

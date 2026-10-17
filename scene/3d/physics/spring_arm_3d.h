@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 
 class SpringArm3D : public Node3D {
 	GDCLASS(SpringArm3D, Node3D);
@@ -39,7 +40,6 @@ class SpringArm3D : public Node3D {
 	HashSet<RID> excluded_objects;
 	real_t spring_length = 1.0;
 	real_t current_spring_length = 0.0;
-	bool keep_child_basis = false;
 	uint32_t mask = 1;
 	real_t margin = 0.01;
 

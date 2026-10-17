@@ -12,19 +12,21 @@ generous deed immortalized in the next stable release of Godot Engine.
 
 ## Patrons
 
-    Khronos® Group <https://www.khronos.org/>
     Scorewarrior <https://scwr.gg/godot>
 
 ## Platinum sponsors
 
+    Battlefield Studios <https://portal.battlefield.com/>
     JetBrains <https://www.jetbrains.com/lp/rider-godot/>
+    Mega Crit <https://www.megacrit.com/>
+    Mike Klubnika <https://mikeklubnika.com/>
     V-Sekai <https://github.com/V-Sekai>
     W4 Games <https://w4games.com/>
 
 ## Gold sponsors
 
-    Mega Crit <https://www.megacrit.com/>
-    Player2 <https://player2.game/>
+    Arm <https://www.arm.com/>
+    DeNA Co., Ltd. <https://dena.com/intl/>
     Prehensile Tales <https://prehensile-tales.com>
     Robot Gentleman <http://robotgentleman.com/>
 
@@ -35,20 +37,23 @@ generous deed immortalized in the next stable release of Godot Engine.
     Broken Rules <https://brokenrul.es>
     Chasing Carrots <https://www.chasing-carrots.com>
     Copia Wealth Studios <https://copiawealthstudios.com/>
+    Evil Trout Inc. <https://eviltrout.com/>
     Games by Malcs <https://gamesbymalcs.com/>
-    LoadComplete <https://loadcomplete.com/>
     Null <https://null.com/>
     Playful Studios <https://playfulstudios.com/>
     Re-Logic <https://re-logic.com/>
+    Sentry <https://sentry.io/welcome/?utm_source=godotengine&utm_medium=paid-community&utm_campaign=gaming-fy26q3-evergreen&utm_content=static-ad-godot-eng-sponsor-trysentry>
+    Wavedash <https://wavedash.com>
 
 ## Diamond members
 
-    ASIFA-Hollywood <https://www.asifa-hollywood.org/>
-    Christina Coffin <https://bsky.app/profile/christinacoffin.bsky.social>
+    Acerola <https://www.youtube.com/@Acerola_t>
+    Charlie "Flayra" Cleveland <https://www.charliecleveland.com>
+    DesDesNeverDie <https://x.com/DesDesNeverDie>
     Kanda <https://www.kanda.dk>
     Petr Kharitonov <https://petrkharitonov.com/>
     Sylv <https://rankith.itch.io/unnamed-space-idle-prototype>
-    And 2 anonymous donors
+    And 1 anonymous donor
 
 ## Titanium members
 
@@ -56,270 +61,307 @@ generous deed immortalized in the next stable release of Godot Engine.
     Basically Games
     Deloryan <https://www.deloryan.com/>
     Draknek & Friends <https://www.draknek.org/>
+    Eugene Denisenko <https://craft.sc/>
     Garry Newman
-    Gigabrain AI Reddit Search Engine <https://thegigabrain.com?utm_source=godot>
+    Gerhard Gubler <https://www.gubler-it.ch>
     Justo Delgado Baudí <https://portfolio.mrcdk.com/>
     Kenney <https://kenney.nl/>
-    Lucid Silence Games
-    Matthew Hall <https://crossyroad.com>
-    Megafauna Games <https://www.megafauna.games/>
+    MathArtBang <https://mathartbang.itch.io/>
+    Matt Hall <https://littlethingsgame.com>
     Midjiwan AB <https://www.midjiwan.com>
-    Patrick Curry <https://patrickcurry.com/>
-    PolyMars <https://polymars.dev/>
+    Miguel Piedrafita <https://miguel.build>
+    NekTek Games <https://nektek.games/>
+    PolyMars <https://youtube.com/@PolyMarsLIVE>
+    PoseMy.Art <https://PoseMy.Art>
     Purple Moss Collectors <https://purplemosscollectors.com>
     RPG in a Box <https://www.rpginabox.com>
-    Starkandco <https://github.com/Starkandco>
+    Space Kraken Studios <https://www.spacekraken.studio/>
     Tiago Magalhães <https://azerkail.github.io/>
     TrampolineTales <https://TrampolineTales.com/>
-    And 3 anonymous donors
+    Ziva.sh - Godot AI Agent <https://ziva.sh>
+    And 1 anonymous donor
 
 ## Platinum members
 
     @reilaos
     Andy Touch
-    Austin Hackett
     BlockImperiumGames (BIG)
     Bytten Studio
     Christopher Shifflett
     Cody Bentley
+    Cody Tidwell
+    Cristian P.
+    Daniel Cooper
     Darrin Massena
+    DrDeadlock
     Emergo Entertainment
+    Eric Burns
+    Estee Studio, LLC
     Fabio Alessandrelli
+    Francis Nguyen
+    Gerard Laan
     GrammAcc
-    HP van Braam
+    Huge Workshop
     iCommitGames
     Jason Hamilton
     Jeremy Blouir
+    Jon Bieber
     Jonah Stich
-    Josh Anthony
+    Justin McGettigan
+    k1r4n8
+    Liam M
     Ludvig Temperli Risan
+    Manerai Inc.
     Matthew Ekenstedt
     Memories in 8Bit
-    Michael Martin
+    Michael Alexsander
     Mike King
+    Nassor Frazier-Silva
     Neal Gompa (Conan Kudo)
-    Nico Ulriksen
     Nikita Blizniuk
     Raptor85
     Rémi Verschelde
     Ryan Heath
     Sacha & Solène Waked
-    ShikadiGum
     Silver Creek Entertainment
     Stephan Kessler
     Stephen Rice
+    Studio Respite
+    TigerJ
     Walaber Entertainment
-    Wu Atnium
-    And 8 anonymous donors
+    And 7 anonymous donors
 
 ## Gold members
 
     2 Nerdy Nerds
     73unny
     80px
+    @Murbenchik
     A. Friedman
     Abigail F.
+    Addison H
     Admiral Potato
     Ajat BlackSun
-    Alex177Alex
+    Alan Fernandez
+    Alberto Cardona López
+    Alex McKinney
     alMoo Games
     Alnis Smidchens
     Alva Majo
     Ammerfest
-    Amritpal Gill
+    Amora B.
     Andrea Monzini
+    Andreas Kilian (Sunnyslope Games)
+    AndreasOM
     Andrew Eiche
-    Ariya Studio
+    Anfinor Games
+    AnyPage.ai
+    Artur Klemens
     Asher Glick
     Axthelm
-    Bäckdahl
-    BangTheWall
-    Bart Mistrot
-    beebanoo
     Ben Rog-Wilhelm
     Ben Sarsgard [Final Screw]
-    Benito
     Benjamin Bridges
-    Brut
+    Big Oaks Studios
     Bryce Dixon
+    Bäckdahl
     c64cosmin
     Carl van der Geest
-    Carlo Cabanilla
     Carlo del Mundo
+    Carlos Ramírez
+    Casual Garage Coder
+    Chaff Games
     Chamber of Light, Flower and Essence Incorporated*
+    Chet Faliszek
     Chocolate Software
     Chris Backas
+    Christian Sueiras
     Christine Elisabeth Koppel
     Cindy Trieu
-    ClarkThyLord
     Codex404
+    Cody Peterson
     Conquintor
-    cora
     Corey Robinson
+    Craig Noe
     Daniel Eichler
     Daniel Krafft
-    David Coles
+    Daniel Marsh
     David Gehrig
+    David Jones-Gilardi
     David Snopek
     Deakcor
-    Dejan Pejcic
-    Delton Ding
     DIGITAL ILIAD
-    Disco Cat
     Distorted Realities
     DitherDream
     Dominic Harris
     Dominik Frizel
-    Don't You Know Who I Am? Inc.
-    Drew Gilbert
-    DRK PHNX
+    DullyDev
     Dustuu
     Dylan Dromard
-    Ed Morley
+    Eamonn Irvine
     Edelweiss
     eelSkillz
     Ends
-    Eren Ogrul
+    EntroPi Games
+    equoosh
     Eric Brand
-    Eric Phy
     Faisal Al-Kubaisi (QatariGameDev)
     Felix Adam
     FeralBytes
-    Francis Jasmin
     Frozen Fractal
-    Gael Roussel
-    Gaudipern
+    Game Foundry
+    Geoffroy Warin
+    GeoStage
     GlassBrick
+    Going Loud Studios
+    Goose Wiens
     Grau
     Grzegorz Wereszko
-    Guangzhou Lingchan
-    hiulit
     Holly Stubbs
     Huedeane
-    I.M.I.Self
     Illyan
     Immaculate Lift Studio
-    insomniacKoala
     Intrepid Marmot LLC
+    Ione 15
     Isaac Clerencia
     Isaac Marovitz
     Isaac W
     Ivan Tabashki
     jakemiki
-    Jam
     Jason Cawood
-    jeff compas
     Jeff Hungerford
+    Jesse Douglas
     Jesús Chicharro
+    JezerM
     Johannes Wuensch
     John Anders Stav
-    John Gabriel
     Jonas Yamazaki
     Jonathan
     Jonathan Bass
     Jordan Chap
+    Josh Jones
+    Joshua OddBloom
     José Canepa
     Julian Todd
-    Justin Laster
-    Justin Sasso
+    K
+    Kagia Benjamin
     Kalydi Balázs
     KAR Games
-    Kiryonn
+    Karl Bittner
+    Kevin Morrell
+    kevin@guonaudio
     KOGA Mitsuhiro (@shiena)
-    korinVR
+    Korin
+    Kostya Stankevych
     Kristian Kriehl
-    KyletheDab
     Lars Thießen
+    LavishBehemoth
     Lee Ingram
+    Leo Fruehstueck
+    LePlacard
     Lisandro Lorea (Red Mage Games)
     Logan Apple
+    LokiShell Games
     Los Lecheros Maincreros
+    Louis Capps (Skweeker LLC)
+    LoveCraftStudio.AI
     Luca Junge
+    Luca Vazzano
+    Lui
     Luke_Username
-    LyaaaaaGames
+    Lyaaaaa Games
     m1n1ster
     Madison Nicole Videogames
     Mara Huldra
+    Mara Huldra
+    Marcos Vinícius Marcon (Krakaton Games)
     Marek Belski
-    Martin Šenkeřík
     Maskerade Games
+    Matt Mazzatenta
     Matthias B.
-    MCCCC
-    Michael Alexsander
+    Meanwhile SRL
     Michael Gooch
-    Michael Harrington
+    Michel Trottier-McDonald
     Mike Matthews
-    Milton Monroe
     Modus Ponens
     Moshe Harris
     Moth Soup
     Mr. Byte
-    Muscarian Softworks
-    Nassor Paulino da Silva
-    Neuroticfly Games
+    MRSG
+    NEKERAFA
     nezticle
-    Niklas Wahrman
-    Nitzan Bueno
+    Nicolas Everhart
     NotNet
+    Oasin Wolf
     Officine Pixel
     ohanaya3
     Okatima AB
-    ole-luk-oje
-    Oliver Oszko
     Oscar Robin
+    osje44
     ovym
     Parade of Rain
-    Patrick Forringer
     Patrick Traynor
     Paul Bettner
-    Péter Horváth-Lázár
+    Paul Lawitzki
+    Pete Goodwin
     Peter Langmayr
     Petr Maláč
     Phobos001
     pirey
+    Polytoria
+    Péter Horváth-Lázár
     Rafa Laguna
     re:thinc
+    RedEye Games
     Reid Hannaford
     Request
     Richard Ivánek
-    rmfandyplayz
     Robin Six
-    Robin Ward
     Rodz Labs
+    Roelof Pieters
     Ronny Mühle
     Rubén Rüger
     Samuel Judd
-    Santi_FC
     shazzner
+    Sheeta Games
     Shifty The Dev
     Shiny Shinken
-    Silverclad Studios
-    Skie Radscale
-    Snow Diamond
     Sofox
-    Space Kraken Studios
     Spoony Panda
+    Sten Seifert - Aron_dc
     Stormbrew
-    telling howitis
+    Studio Reverii
+    Studio Vii
+    Sunaba
+    Tanner Storment
     tenuki
     Terry Cavanagh
+    terry kasey
     ThatGamer
+    Theory Studios
+    Thomas Kurz
     Thomas Lobig
-    Timur Turatbekov
     Tobias Bocanegra
+    Tobias Holewa
+    Tom Francis
     Tom Langwaldt
+    Trent Lee
     Trevor Slocum
     tukon
-    Urban Protagonist
-    Vincent Foulon
-    Vojtech Lacina
-    Voxel Floof
+    Tweek
+    Twirlin' Curtis
+    Uriel Campos
+    Uxeron
     Watchinofoye
-    yopox
+    Xelarender
+    Yannik2K
+    YoYo
+    Yukihiro Sayama
     zikes
     Zoey Smith
+    ૮ ˶ᵔ ᵕ ᵔ˶ ა
     嗯大爷
-    And 118 anonymous donors
+    And 110 anonymous donors
 
 ## Silver and bronze donors
 

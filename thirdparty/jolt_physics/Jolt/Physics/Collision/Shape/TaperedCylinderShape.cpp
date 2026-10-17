@@ -55,12 +55,12 @@ ShapeSettings::ShapeResult TaperedCylinderShapeSettings::Create() const
 			settings.mRadius = mTopRadius;
 			settings.mMaterial = mMaterial;
 			settings.mConvexRadius = mConvexRadius;
-			new CylinderShape(settings, mCachedResult);
+			shape = new CylinderShape(settings, mCachedResult);
 		}
 		else
 		{
 			// Normal tapered cylinder shape
-			new TaperedCylinderShape(*this, mCachedResult);
+			shape = new TaperedCylinderShape(*this, mCachedResult);
 		}
 	}
 	return mCachedResult;
@@ -79,7 +79,7 @@ TaperedCylinderShape::TaperedCylinderShape(const TaperedCylinderShapeSettings &i
 	ConvexShape(EShapeSubType::TaperedCylinder, inSettings, outResult),
 	mTopRadius(inSettings.mTopRadius),
 	mBottomRadius(inSettings.mBottomRadius),
-	mConvexRadius(inSettings.mConvexRadius)
+	mConvexRadius(min(inSettings.mConvexRadius, min(inSettings.mTopRadius, inSettings.mBottomRadius)))
 {
 	if (mTopRadius < 0.0f)
 	{
@@ -93,27 +93,15 @@ TaperedCylinderShape::TaperedCylinderShape(const TaperedCylinderShapeSettings &i
 		return;
 	}
 
-	if (inSettings.mHalfHeight <= 0.0f)
-	{
-		outResult.SetError("Invalid height");
-		return;
-	}
-
-	if (inSettings.mConvexRadius < 0.0f)
+	if (mConvexRadius < 0.0f)
 	{
 		outResult.SetError("Invalid convex radius");
 		return;
 	}
 
-	if (inSettings.mTopRadius < inSettings.mConvexRadius)
+	if (inSettings.mHalfHeight <= 0.0f)
 	{
-		outResult.SetError("Convex radius must be smaller than convex radius");
-		return;
-	}
-
-	if (inSettings.mBottomRadius < inSettings.mConvexRadius)
-	{
-		outResult.SetError("Convex radius must be smaller than bottom radius");
+		outResult.SetError("Invalid height");
 		return;
 	}
 
@@ -161,7 +149,7 @@ public:
 	virtual Vec3	GetSupport(Vec3Arg inDirection) const override
 	{
 		float x = inDirection.GetX(), y = inDirection.GetY(), z = inDirection.GetZ();
-		float o = sqrt(Square(x) + Square(z));
+		float o = Sqrt(Square(x) + Square(z));
 		if (o > 0.0f)
 		{
 			Vec3 top_support((mTopRadius * x) / o, mTop, (mTopRadius * z) / o);
@@ -275,7 +263,7 @@ void TaperedCylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec
 		float y_sq = Square(inDirection.GetY());
 		if (xz_sq > 0.00765427f * y_sq)
 		{
-			base_x /= sqrt(xz_sq);
+			base_x /= Sqrt(xz_sq);
 			Vec4 base_z = base_x.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W>() * Vec4(-1, 0, 1, 0);
 			transform = transform * Mat44(base_x, Vec4(0, 1, 0, 0), base_z, Vec4(0, 0, 0, 1));
 		}

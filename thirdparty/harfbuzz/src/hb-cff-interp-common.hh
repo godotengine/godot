@@ -220,16 +220,32 @@ inline unsigned int OpCode_Size (op_code_t op) { return Is_OpCode_ESC (op) ? 2: 
 struct number_t
 {
   void set_int (int v)       { value = v; }
-  int to_int () const        { return value; }
+  bool to_int (int *v) const
+  {
+    if (unlikely (!(value >= INT_MIN && value <= INT_MAX)))
+    {
+      *v = 0;
+      return false;
+    }
+    *v = (int) value;
+    return true;
+  }
+  int to_int () const
+  {
+    int v;
+    if (likely (to_int (&v))) return v;
+    return value < 0 ? INT_MIN : value > 0 ? INT_MAX : 0;
+  }
 
   void set_fixed (int32_t v) { value = v / 65536.0; }
-  int32_t to_fixed () const  { return value * 65536.0; }
+  int32_t to_fixed () const
+  { return (int32_t) hb_clamp (value * 65536.0, (double) INT32_MIN, (double) INT32_MAX); }
 
   void set_real (double v)   { value = v; }
   double to_real () const    { return value; }
 
   bool in_int_range () const
-  { return ((double) (int16_t) to_int () == value); }
+  { return value >= INT16_MIN && value <= INT16_MAX && (double) (int16_t) value == value; }
 
   bool operator >  (const number_t &n) const { return value > n.to_real (); }
   bool operator <  (const number_t &n) const { return n > *this; }
@@ -344,25 +360,25 @@ struct cff_stack_t
 {
   ELEM& operator [] (unsigned int i)
   {
-    if (unlikely (i >= count))
+    if (unlikely (i >= length))
     {
       set_error ();
       return Crap (ELEM);
     }
-    return elements[i];
+    return arrayZ[i];
   }
 
   void push (const ELEM &v)
   {
-    if (likely (count < LIMIT))
-      elements[count++] = v;
+    if (likely (length < LIMIT))
+      arrayZ[length++] = v;
     else
       set_error ();
   }
   ELEM &push ()
   {
-    if (likely (count < LIMIT))
-      return elements[count++];
+    if (likely (length < LIMIT))
+      return arrayZ[length++];
     else
     {
       set_error ();
@@ -372,8 +388,8 @@ struct cff_stack_t
 
   ELEM& pop ()
   {
-    if (likely (count > 0))
-      return elements[--count];
+    if (likely (length > 0))
+      return arrayZ[--length];
     else
     {
       set_error ();
@@ -382,45 +398,44 @@ struct cff_stack_t
   }
   void pop (unsigned int n)
   {
-    if (likely (count >= n))
-      count -= n;
+    if (likely (length >= n))
+      length -= n;
     else
       set_error ();
   }
 
   const ELEM& peek ()
   {
-    if (unlikely (count == 0))
+    if (unlikely (length == 0))
     {
       set_error ();
       return Null (ELEM);
     }
-    return elements[count - 1];
+    return arrayZ[length - 1];
   }
 
   void unpop ()
   {
-    if (likely (count < LIMIT))
-      count++;
+    if (likely (length < LIMIT))
+      length++;
     else
       set_error ();
   }
 
-  void clear () { count = 0; }
+  void clear () { length = 0; }
 
   bool in_error () const { return (error); }
   void set_error ()      { error = true; }
 
-  unsigned int get_count () const { return count; }
-  bool is_empty () const          { return !count; }
+  unsigned int get_count () const { return length; }
+  bool is_empty () const          { return !length; }
 
   hb_array_t<const ELEM> sub_array (unsigned start, unsigned length) const
-  { return hb_array_t<const ELEM> (elements).sub_array (start, length); }
+  { return hb_array_t<const ELEM> (arrayZ).sub_array (start, length); }
 
-  private:
   bool error = false;
-  unsigned int count = 0;
-  ELEM elements[LIMIT];
+  unsigned int length = 0;
+  ELEM arrayZ[LIMIT];
 };
 
 /* argument stack */
@@ -447,7 +462,13 @@ struct arg_stack_t : cff_stack_t<ARG, 513>
 
   ARG& pop_num () { return this->pop (); }
 
-  int pop_int ()  { return this->pop ().to_int (); }
+  int pop_int ()
+  {
+    int v;
+    if (unlikely (!this->pop ().to_int (&v)))
+      S::set_error ();
+    return v;
+  }
 
   unsigned int pop_uint ()
   {

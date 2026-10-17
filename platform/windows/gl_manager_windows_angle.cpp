@@ -32,9 +32,6 @@
 
 #if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
-#include <cstdio>
-#include <cstdlib>
-
 #include <EGL/eglext_angle.h>
 
 const char *GLManagerANGLE_Windows::_get_platform_extension_name() const {
@@ -67,7 +64,7 @@ Vector<EGLint> GLManagerANGLE_Windows::_get_platform_context_attribs() const {
 	return ret;
 }
 
-void GLManagerANGLE_Windows::window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
+void GLManagerANGLE_Windows::window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) {
 	window_make_current(p_window_id);
 	eglWaitNative(EGL_CORE_NATIVE_ENGINE);
 }

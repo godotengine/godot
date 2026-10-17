@@ -30,6 +30,8 @@
 
 #include "enet_multiplayer_peer.h"
 
+#include "core/object/class_db.h"
+
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
@@ -62,10 +64,7 @@ Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_ma
 	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
-	Error err = host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth));
 
 	active_mode = MODE_SERVER;
 	unique_id = 1;
@@ -477,7 +476,7 @@ void ENetMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_host"), &ENetMultiplayerPeer::get_host);
 	ClassDB::bind_method(D_METHOD("get_peer", "id"), &ENetMultiplayerPeer::get_peer);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, "ENetConnection", PROPERTY_USAGE_NONE), "", "get_host");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "host", PROPERTY_HINT_RESOURCE_TYPE, ENetConnection::get_class_static(), PROPERTY_USAGE_NONE), "", "get_host");
 }
 
 ENetMultiplayerPeer::ENetMultiplayerPeer() {

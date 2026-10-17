@@ -30,8 +30,10 @@
 
 #pragma once
 
-#include "core/input/input.h"
+#include "core/object/object.h"
+#include "core/os/keyboard.h"
 #include "core/variant/callable.h"
+#include "core/variant/type_info.h"
 
 class Texture2D;
 
@@ -71,6 +73,9 @@ public:
 	virtual RID get_system_menu(SystemMenus p_menu_id) const;
 	virtual String get_system_menu_name(SystemMenus p_menu_id) const;
 
+	virtual String get_system_menu_text(SystemMenus p_menu_id) const;
+	virtual void set_system_menu_text(SystemMenus p_menu_id, const String &p_name);
+
 	virtual RID create_menu();
 	virtual bool has_menu(const RID &p_rid) const;
 	virtual void free_menu(const RID &p_rid);
@@ -104,6 +109,7 @@ public:
 	virtual int find_item_index_with_submenu(const RID &p_rid, const RID &p_submenu_rid) const;
 
 	virtual bool is_item_checked(const RID &p_rid, int p_idx) const;
+	virtual bool is_item_indeterminate(const RID &p_rid, int p_idx) const;
 	virtual bool is_item_checkable(const RID &p_rid, int p_idx) const;
 	virtual bool is_item_radio_checkable(const RID &p_rid, int p_idx) const;
 	virtual Callable get_item_callback(const RID &p_rid, int p_idx) const;
@@ -121,6 +127,7 @@ public:
 	virtual int get_item_indentation_level(const RID &p_rid, int p_idx) const;
 
 	virtual void set_item_checked(const RID &p_rid, int p_idx, bool p_checked);
+	virtual void set_item_indeterminate(const RID &p_rid, int p_idx, bool p_indeterminate);
 	virtual void set_item_checkable(const RID &p_rid, int p_idx, bool p_checkable);
 	virtual void set_item_radio_checkable(const RID &p_rid, int p_idx, bool p_checkable);
 	virtual void set_item_callback(const RID &p_rid, int p_idx, const Callable &p_callback);
@@ -137,6 +144,7 @@ public:
 	virtual void set_item_max_states(const RID &p_rid, int p_idx, int p_max_states);
 	virtual void set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon);
 	virtual void set_item_indentation_level(const RID &p_rid, int p_idx, int p_level);
+	virtual int set_item_index(const RID &p_rid, int p_idx, int p_target_idx);
 
 	virtual int get_item_count(const RID &p_rid) const;
 	virtual bool is_system_menu(const RID &p_rid) const;

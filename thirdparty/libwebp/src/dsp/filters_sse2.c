@@ -20,6 +20,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "src/dsp/cpu.h"
+#include "src/webp/types.h"
+
 //------------------------------------------------------------------------------
 // Helpful macro.
 

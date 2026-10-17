@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2010, 2015-2016, 2019-2020, 2022-2023, D. R. Commander.
+ * Copyright (C) 2010, 2015-2016, 2019-2020, 2022-2024, D. R. Commander.
  * Copyright (C) 2015, 2020, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -824,6 +824,7 @@ _jinit_d_coef_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
   coef = (my_coef_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_coef_controller));
+  memset(coef, 0, sizeof(my_coef_controller));
   cinfo->coef = (struct jpeg_d_coef_controller *)coef;
   coef->pub.start_input_pass = start_input_pass;
   coef->pub.start_output_pass = start_output_pass;

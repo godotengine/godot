@@ -32,8 +32,13 @@
 
 #include "embedded_process_macos.h"
 
+#include "core/config/engine.h"
+#include "core/input/input.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/gui/window_wrapper.h"
+#include "scene/main/window.h"
+#include "servers/display/display_server.h"
 
 HashMap<String, GameViewDebuggerMacOS::ParseMessageFunc> GameViewDebuggerMacOS::parse_message_handlers;
 
@@ -62,7 +67,7 @@ bool GameViewDebuggerMacOS::_msg_cursor_set_custom_image(const Array &p_args) {
 	if (!cursor_data.is_empty()) {
 		image->load_png_from_buffer(cursor_data);
 	}
-	DisplayServer::CursorShape shape = DisplayServer::CursorShape(p_args[1]);
+	DisplayServerEnums::CursorShape shape = DisplayServerEnums::CursorShape(p_args[1]);
 	Vector2 hotspot = p_args[2];
 
 	embedded_process->get_layer_host()->cursor_set_custom_image(image, shape, hotspot);
@@ -73,7 +78,7 @@ bool GameViewDebuggerMacOS::_msg_cursor_set_custom_image(const Array &p_args) {
 bool GameViewDebuggerMacOS::_msg_mouse_set_mode(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, false, "mouse_set_mode: invalid number of arguments.");
 
-	DisplayServer::MouseMode mode = DisplayServer::MouseMode(p_args[0]);
+	DisplayServerEnums::MouseMode mode = DisplayServerEnums::MouseMode(p_args[0]);
 	embedded_process->mouse_set_mode(mode);
 
 	return true;
@@ -83,7 +88,7 @@ bool GameViewDebuggerMacOS::_msg_window_set_ime_active(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, false, "window_set_ime_active: invalid number of arguments.");
 
 	bool active = p_args[0];
-	DisplayServer::WindowID wid = embedded_process->get_window()->get_window_id();
+	DisplayServerEnums::WindowID wid = embedded_process->get_window()->get_window_id();
 	DisplayServer::get_singleton()->window_set_ime_active(active, wid);
 	return true;
 }
@@ -93,7 +98,7 @@ bool GameViewDebuggerMacOS::_msg_window_set_ime_position(const Array &p_args) {
 
 	Point2i pos = p_args[0];
 	Point2i xpos = embedded_process->get_layer_host()->get_global_transform_with_canvas().xform(pos);
-	DisplayServer::WindowID wid = embedded_process->get_window()->get_window_id();
+	DisplayServerEnums::WindowID wid = embedded_process->get_window()->get_window_id();
 	DisplayServer::get_singleton()->window_set_ime_position(xpos, wid);
 	return true;
 }
@@ -119,8 +124,17 @@ bool GameViewDebuggerMacOS::_msg_joy_stop(const Array &p_args) {
 bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
 	ERR_FAIL_COND_V_MSG(p_args.size() != 1, false, "warp_mouse: invalid number of arguments.");
 
+	// Position arrives in points; convert to editor pixels.
 	Vector2i pos = p_args[0];
-	embedded_process->get_layer_host()->warp_mouse(pos);
+	float scale = DisplayServer::get_singleton()->screen_get_max_scale();
+	embedded_process->get_layer_host()->warp_mouse(Vector2i(Vector2(pos) * scale));
+	return true;
+}
+
+bool GameViewDebuggerMacOS::_msg_alert(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 2, false, "alert: invalid number of arguments.");
+
+	OS::get_singleton()->alert(p_args[0], p_args[1]);
 	return true;
 }
 
@@ -132,6 +146,7 @@ void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:window_set_ime_active"] = &GameViewDebuggerMacOS::_msg_window_set_ime_active;
 	parse_message_handlers["game_view:window_set_ime_position"] = &GameViewDebuggerMacOS::_msg_window_set_ime_position;
 	parse_message_handlers["game_view:warp_mouse"] = &GameViewDebuggerMacOS::_msg_warp_mouse;
+	parse_message_handlers["game_view:alert"] = &GameViewDebuggerMacOS::_msg_alert;
 }
 
 bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data, int p_session) {

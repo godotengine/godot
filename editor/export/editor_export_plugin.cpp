@@ -31,6 +31,7 @@
 #include "editor_export_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "editor/export/editor_export_platform.h"
 
 void EditorExportPlugin::set_export_base_path(const String &p_export_base_path) {
@@ -124,6 +125,20 @@ void EditorExportPlugin::add_apple_embedded_platform_cpp_code(const String &p_co
 
 String EditorExportPlugin::get_apple_embedded_platform_cpp_code() const {
 	return apple_embedded_platform_cpp_code;
+}
+
+void EditorExportPlugin::add_apple_embedded_platform_spm_package(const String &p_url, const String &p_version, const PackedStringArray &p_products) {
+	AppleEmbeddedSPMPackage package;
+	package.url = p_url;
+	package.version = p_version;
+	for (const String &product : p_products) {
+		package.products.push_back(product);
+	}
+	apple_embedded_platform_spm_packages.push_back(package);
+}
+
+Vector<EditorExportPlugin::AppleEmbeddedSPMPackage> EditorExportPlugin::get_apple_embedded_platform_spm_packages() const {
+	return apple_embedded_platform_spm_packages;
 }
 
 void EditorExportPlugin::add_macos_plugin_file(const String &p_path) {
@@ -330,6 +345,16 @@ void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p
 
 void EditorExportPlugin::_export_end() {}
 
+void EditorExportPlugin::_end_generate_apple_embedded_project(const String &p_path, bool p_p_will_build_archive) {}
+
+void EditorExportPlugin::end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive) {
+	if (GDVIRTUAL_IS_OVERRIDDEN(_end_generate_apple_embedded_project)) {
+		GDVIRTUAL_CALL(_end_generate_apple_embedded_project, p_path, p_will_build_archive);
+	} else {
+		_end_generate_apple_embedded_project(p_path, p_will_build_archive);
+	}
+}
+
 void EditorExportPlugin::skip() {
 	skipped = true;
 }
@@ -345,6 +370,7 @@ void EditorExportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_linker_flags", "flags"), &EditorExportPlugin::add_apple_embedded_platform_linker_flags);
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_bundle_file", "path"), &EditorExportPlugin::add_apple_embedded_platform_bundle_file);
 	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_cpp_code", "code"), &EditorExportPlugin::add_apple_embedded_platform_cpp_code);
+	ClassDB::bind_method(D_METHOD("add_apple_embedded_platform_spm_package", "url", "version", "products"), &EditorExportPlugin::add_apple_embedded_platform_spm_package);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("add_ios_project_static_lib", "path"), &EditorExportPlugin::add_apple_embedded_platform_project_static_lib);
@@ -366,6 +392,7 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_end);
+	GDVIRTUAL_BIND(_end_generate_apple_embedded_project, "path", "will_build_archive");
 
 	GDVIRTUAL_BIND(_begin_customize_resources, "platform", "features");
 	GDVIRTUAL_BIND(_customize_resource, "resource", "path");

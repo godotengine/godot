@@ -30,10 +30,14 @@
 
 #pragma once
 
+#include "core/doc_data.h"
+#include "core/templates/rb_set.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
+
+class FilterLineEdit;
 
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);
@@ -53,7 +57,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 		SEARCH_SHOW_HIERARCHY = 1 << 30
 	};
 
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	Button *case_sensitive_button = nullptr;
 	Button *hierarchy_button = nullptr;
 	OptionButton *filter_combo = nullptr;
@@ -77,7 +81,6 @@ class EditorHelpSearch : public ConfirmationDialog {
 
 	void _update_results();
 
-	void _search_box_gui_input(const Ref<InputEvent> &p_event);
 	void _search_box_text_changed(const String &p_text);
 	void _filter_combo_item_selected(int p_option);
 	void _confirmed();
@@ -207,7 +210,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const StringName &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword);
 
 public:
-	bool work(uint64_t slot = 100000);
+	bool work(uint64_t slot = 16000);
 
 	Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_search_flags);
 };

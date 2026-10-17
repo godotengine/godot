@@ -11,7 +11,7 @@
 #define wl_egl_window_destroy wl_egl_window_destroy_dylibloader_orig_wayland_egl
 #define wl_egl_window_resize wl_egl_window_resize_dylibloader_orig_wayland_egl
 #define wl_egl_window_get_attached_size wl_egl_window_get_attached_size_dylibloader_orig_wayland_egl
-#include "./thirdparty/linuxbsd_headers/wayland/wayland-egl-core.h"
+#include "./thirdparty/linuxbsd_headers/wayland/wayland-egl-core.h" // IWYU pragma: export.
 #undef wl_egl_window_create
 #undef wl_egl_window_destroy
 #undef wl_egl_window_resize
