@@ -505,11 +505,11 @@ void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
 #endif
 }
 
-void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
-	if (p_extents == emission_rect_extents) {
+void CPUParticles2D::set_emission_rect_size(const Vector2 &p_size) {
+	if (p_size == emission_rect_size) {
 		return;
 	}
-	emission_rect_extents = p_extents;
+	emission_rect_size = p_size;
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		queue_redraw();
@@ -539,10 +539,6 @@ void CPUParticles2D::set_emission_ring_radius(real_t p_ring_radius) {
 
 real_t CPUParticles2D::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
-}
-
-Vector2 CPUParticles2D::get_emission_rect_extents() const {
-	return emission_rect_extents;
 }
 
 Vector<Vector2> CPUParticles2D::get_emission_points() const {
@@ -645,7 +641,7 @@ void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "emission_rect_extents") {
+	} else if (p_property.name == "emission_rect_size") {
 		if (emission_shape != EMISSION_SHAPE_RECTANGLE) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -963,7 +959,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_RECTANGLE: {
-					p.transform[2] = Vector2(rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0) * emission_rect_extents;
+					p.transform[2] = Vector2(rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0) * emission_rect_size * 0.5;
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
@@ -1385,7 +1381,7 @@ void CPUParticles2D::_draw_emission_gizmo() {
 
 	switch (emission_shape) {
 		case CPUParticles2D::EMISSION_SHAPE_RECTANGLE:
-			draw_rect(Rect2(-emission_rect_extents, emission_rect_extents * 2.0), emission_ring_color, false);
+			draw_rect(Rect2(-emission_rect_size * 0.5, emission_rect_size), emission_ring_color, false);
 			break;
 		case CPUParticles2D::EMISSION_SHAPE_SPHERE:
 		case CPUParticles2D::EMISSION_SHAPE_SPHERE_SURFACE:
@@ -1445,8 +1441,8 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 
 	set_emission_shape(EmissionShape(proc_mat->get_emission_shape()));
 	set_emission_sphere_radius(proc_mat->get_emission_sphere_radius());
-	Vector2 rect_extents = Vector2(proc_mat->get_emission_box_extents().x, proc_mat->get_emission_box_extents().y);
-	set_emission_rect_extents(rect_extents);
+	const Vector2 rect_size = Vector2(proc_mat->get_emission_box_size().x, proc_mat->get_emission_box_size().y);
+	set_emission_rect_size(rect_size);
 
 	set_emission_ring_radius(proc_mat->get_emission_ring_radius());
 	set_emission_ring_inner_radius(proc_mat->get_emission_ring_inner_radius());
@@ -1587,8 +1583,13 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &CPUParticles2D::set_emission_sphere_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &CPUParticles2D::get_emission_sphere_radius);
 
+	ClassDB::bind_method(D_METHOD("set_emission_rect_size", "extents"), &CPUParticles2D::set_emission_rect_size);
+	ClassDB::bind_method(D_METHOD("get_emission_rect_size"), &CPUParticles2D::get_emission_rect_size);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_emission_rect_extents", "extents"), &CPUParticles2D::set_emission_rect_extents);
 	ClassDB::bind_method(D_METHOD("get_emission_rect_extents"), &CPUParticles2D::get_emission_rect_extents);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_emission_points", "array"), &CPUParticles2D::set_emission_points);
 	ClassDB::bind_method(D_METHOD("get_emission_points"), &CPUParticles2D::get_emission_points);
@@ -1624,7 +1625,10 @@ void CPUParticles2D::_bind_methods() {
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Rectangle,Points,Directed Points,Ring", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,suffix:px"), "set_emission_sphere_radius", "get_emission_sphere_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents", PROPERTY_HINT_NONE, "suffix:px"), "set_emission_rect_extents", "get_emission_rect_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_size", PROPERTY_HINT_NONE, "suffix:px"), "set_emission_rect_size", "get_emission_rect_size");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "emission_rect_extents", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_emission_rect_extents", "get_emission_rect_extents");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
