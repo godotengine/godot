@@ -142,6 +142,87 @@ void Gizmo3DHelper::box_commit_handle(const String &p_action_name, bool p_cancel
 	ur->commit_action();
 }
 
+Vector<Vector3> Gizmo3DHelper::sphere_get_handles(real_t p_radius, real_t p_height, bool is_hemisphere) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(p_radius, 0, 0));
+	handles.push_back(Vector3(0, p_height * (is_hemisphere ? 1.0 : 0.5), 0));
+	return handles;
+}
+
+String Gizmo3DHelper::sphere_get_handle_name(int p_id) const {
+	if (p_id == 1) {
+		return "Height";
+	} else {
+		return "Radius";
+	}
+}
+
+void Gizmo3DHelper::sphere_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_radius, real_t &r_height, bool is_hemisphere) {
+	real_t initial_radius, initial_height;
+	initial_radius = initial_value.operator Vector2().x;
+	initial_height = initial_value.operator Vector2().y;
+
+	int axis = p_id;
+
+	Vector3 axis_vector;
+	axis_vector[axis] = 1.0;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(-4096 * axis_vector, 4096 * axis_vector, p_segment[0], p_segment[1], ra, rb);
+	float d = axis_vector.dot(ra);
+
+	if (p_id == 1) {
+		// Height.
+		r_height = d * (is_hemisphere ? 1.0 : 2.0);
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			r_height = Math::snapped(r_height, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		if (r_height < 0.001) {
+			r_height = 0.001;
+		}
+
+		// Preserve the sphere proportions.
+		real_t ratio = r_height / MAX(initial_height, 0.001);
+		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+			r_radius = initial_radius * ratio;
+		} else {
+			r_radius = initial_radius;
+		}
+	} else {
+		// Radius.
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		if (d < 0.001) {
+			d = 0.001;
+		}
+		r_radius = d;
+
+		// Preserve the sphere proportions.
+		real_t ratio = r_radius / MAX(initial_radius, 0.001);
+		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+			r_height = initial_height * ratio;
+		} else {
+			r_height = initial_height;
+		}
+	}
+}
+
+void Gizmo3DHelper::sphere_commit_handle(int p_id, const String &p_radius_action_name, const String &p_height_action_name, bool p_cancel, Object *p_height_object, Object *p_radius_object, const StringName &p_height_property, const StringName &p_radius_property) {
+	if (p_cancel) {
+		p_radius_object->set(p_radius_property, initial_value.operator Vector2().x);
+		p_height_object->set(p_height_property, initial_value.operator Vector2().y);
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_id == 0 ? p_radius_action_name : p_height_action_name);
+	ur->add_do_property(p_radius_object, p_radius_property, p_radius_object->get(p_radius_property));
+	ur->add_undo_property(p_radius_object, p_radius_property, initial_value.operator Vector2().x);
+	ur->add_do_property(p_height_object, p_height_property, p_height_object->get(p_height_property));
+	ur->add_undo_property(p_height_object, p_height_property, initial_value.operator Vector2().y);
+	ur->commit_action();
+}
+
 Vector<Vector3> Gizmo3DHelper::cylinder_get_handles(real_t p_height, real_t p_radius) {
 	Vector<Vector3> handles;
 	handles.push_back(Vector3(0, p_height * 0.5, 0));
@@ -303,4 +384,270 @@ void Gizmo3DHelper::cone_frustum_commit_handle(int p_id, const String &p_radius_
 	ur->add_do_property(p_position_object, p_position_property, p_position_object->get(p_position_property));
 	ur->add_undo_property(p_position_object, p_position_property, initial_transform.get_origin());
 	ur->commit_action();
+}
+
+Vector<Vector3> Gizmo3DHelper::torus_get_handles(real_t p_radius_in, real_t p_radius_out) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(p_radius_in, 0, 0));
+	handles.push_back(Vector3(p_radius_out, 0, 0));
+	return handles;
+}
+
+String Gizmo3DHelper::torus_get_handle_name(int p_id) const {
+	if (p_id == 0) {
+		return "Inner Radius";
+	} else {
+		return "Outer Radius";
+	}
+}
+
+void Gizmo3DHelper::torus_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_radius_in, real_t &r_radius_out) {
+	real_t initial_radius_in, initial_radius_out;
+	initial_radius_in = initial_value.operator Vector2().x;
+	initial_radius_out = initial_value.operator Vector2().y;
+
+	int axis = 0;
+
+	Vector3 axis_vector;
+	axis_vector[axis] = 1.0;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(-4096 * axis_vector, 4096 * axis_vector, p_segment[0], p_segment[1], ra, rb);
+	float d = axis_vector.dot(ra);
+
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+	}
+	if (d < 0.001) {
+		d = 0.001;
+	}
+
+	if (p_id == 0) {
+		// Adjust inner radius.
+		r_radius_in = d;
+		r_radius_out = initial_radius_out;
+	} else {
+		// Adjust outer radius.
+		r_radius_out = d;
+		r_radius_in = initial_radius_in;
+	}
+}
+
+void Gizmo3DHelper::torus_commit_handle(int p_id, const String &p_radius_action_name, bool p_cancel, Object *p_radius_object, const StringName &p_radius_in_property, const StringName &p_radius_out_property) {
+	if (p_cancel) {
+		p_radius_object->set(p_radius_in_property, initial_value.operator Vector2().x);
+		p_radius_object->set(p_radius_out_property, initial_value.operator Vector2().y);
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_radius_action_name);
+	ur->add_do_property(p_radius_object, p_radius_in_property, p_radius_object->get(p_radius_in_property));
+	ur->add_undo_property(p_radius_object, p_radius_in_property, initial_value.operator Vector2().x);
+	ur->add_do_property(p_radius_object, p_radius_out_property, p_radius_object->get(p_radius_out_property));
+	ur->add_undo_property(p_radius_object, p_radius_out_property, initial_value.operator Vector2().y);
+	ur->commit_action();
+}
+
+void Gizmo3DHelper::_plane_or_quad_set_handle(const Vector3 p_segment[2], int p_id, Vector2 &r_size, Vector3 &r_position, bool p_is_plane) {
+	int axis = p_id / 2; // XY
+	if (p_is_plane) {
+		axis = p_id < 2 ? 0 : 2; // XZ
+	}
+	int axis_2d = p_id / 2;
+	int sign = p_id % 2 * -2 + 1;
+
+	Vector2 initial_size = initial_value;
+	float neg_end = initial_size[axis_2d] * -0.5;
+	float pos_end = initial_size[axis_2d] * 0.5;
+
+	Vector3 axis_segment[2] = { Vector3(), Vector3() };
+	axis_segment[0][axis] = 4096.0;
+	axis_segment[1][axis] = -4096.0;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(axis_segment[0], axis_segment[1], p_segment[0], p_segment[1], ra, rb);
+
+	// Calculate new size.
+	r_size = initial_size;
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		r_size[axis_2d] = ra[axis] * sign * 2;
+	} else {
+		r_size[axis_2d] = sign > 0 ? ra[axis] - neg_end : pos_end - ra[axis];
+	}
+
+	// Snap to grid.
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		r_size[axis_2d] = Math::snapped(r_size[axis_2d], Node3DEditor::get_singleton()->get_translate_snap());
+	}
+	r_size[axis_2d] = MAX(r_size[axis_2d], 0.001);
+
+	// Adjust position.
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		r_position = initial_transform.get_origin();
+	} else {
+		if (sign > 0) {
+			pos_end = neg_end + r_size[axis_2d];
+		} else {
+			neg_end = pos_end - r_size[axis_2d];
+		}
+
+		Vector3 offset;
+		offset[axis] = (pos_end + neg_end) * 0.5;
+		r_position = initial_transform.xform(offset);
+	}
+}
+
+Vector<Vector3> Gizmo3DHelper::plane_get_handles(const Vector2 &p_size) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(p_size.x / 2.0, 0, 0));
+	handles.push_back(Vector3(-p_size.x / 2.0, 0, 0));
+	handles.push_back(Vector3(0, 0, p_size.y / 2.0));
+	handles.push_back(Vector3(0, 0, -p_size.y / 2.0));
+	return handles;
+}
+
+String Gizmo3DHelper::plane_get_handle_name(int p_id) const {
+	switch (p_id) {
+		case 0:
+		case 1:
+			return "Size X";
+		case 2:
+		case 3:
+			return "Size Z";
+	}
+	return "";
+}
+
+void Gizmo3DHelper::plane_commit_handle(const String &p_action_name, bool p_cancel, Object *p_position_object, Object *p_size_object, const StringName &p_position_property, const StringName &p_size_property) {
+	if (!p_size_object) {
+		p_size_object = p_position_object;
+	}
+
+	if (p_cancel) {
+		p_size_object->set(p_size_property, initial_value);
+		p_position_object->set(p_position_property, initial_transform.get_origin());
+		return;
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_action_name);
+	ur->add_do_property(p_size_object, p_size_property, p_size_object->get(p_size_property));
+	ur->add_do_property(p_position_object, p_position_property, p_position_object->get(p_position_property));
+	ur->add_undo_property(p_size_object, p_size_property, initial_value);
+	ur->add_undo_property(p_position_object, p_position_property, initial_transform.get_origin());
+	ur->commit_action();
+}
+
+Vector<Vector3> Gizmo3DHelper::quad_get_handles(const Vector2 &p_size) {
+	Vector<Vector3> handles;
+	handles.push_back(Vector3(p_size.x / 2.0, 0, 0));
+	handles.push_back(Vector3(-p_size.x / 2.0, 0, 0));
+	handles.push_back(Vector3(0, p_size.y / 2.0, 0));
+	handles.push_back(Vector3(0, -p_size.y / 2.0, 0));
+	return handles;
+}
+
+String Gizmo3DHelper::quad_get_handle_name(int p_id) const {
+	switch (p_id) {
+		case 0:
+		case 1:
+			return "Size X";
+		case 2:
+		case 3:
+			return "Size Y";
+	}
+	return "";
+}
+
+void Gizmo3DHelper::_trail_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_height, real_t &r_radius, Vector3 &r_position, bool p_is_tube) {
+	real_t initial_radius, initial_section_length;
+	int initial_sections;
+	initial_radius = initial_value.operator Vector3().x;
+	initial_sections = initial_value.operator Vector3().y;
+	initial_section_length = initial_value.operator Vector3().z;
+	real_t initial_height = initial_sections * initial_section_length;
+	float neg_end = initial_height * -0.5;
+	float pos_end = initial_height * 0.5;
+
+	int sign = p_id == 1 ? -1 : 1;
+	int axis = p_id >= 2 ? 0 : 1;
+
+	Vector3 axis_vector;
+	axis_vector[axis] = sign;
+	Vector3 ra, rb;
+	Geometry3D::get_closest_points_between_segments(axis_vector * -4096, axis_vector * 4096, p_segment[0], p_segment[1], ra, rb);
+	float d = axis_vector.dot(ra);
+
+	if (p_id < 2) {
+		// Snap to grid.
+		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+		}
+		// Adjust height.
+		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+			r_height = d * 2.0;
+		} else {
+			r_height = (initial_height * 0.5) + d;
+		}
+		r_height = Math::snapped(r_height, initial_section_length);
+		if (r_height < 2 * initial_section_length) {
+			r_height = 2 * initial_section_length;
+		}
+
+		// Adjust position.
+		if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+			r_position = initial_transform.get_origin();
+		} else {
+			if (sign > 0) {
+				pos_end = neg_end + r_height;
+			} else {
+				neg_end = pos_end - r_height;
+			}
+
+			Vector3 offset;
+			offset[axis] = (pos_end + neg_end) * 0.5;
+			r_position = initial_transform.xform(offset);
+		}
+
+		r_radius = initial_radius;
+	} else {
+		// Adjust radius.
+		if (p_is_tube) {
+			// Snap to grid.
+			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+				d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
+			}
+			if (d < 0.001) {
+				d = 0.001;
+			}
+			r_radius = d;
+		} else {
+			r_radius = d * 2.0;
+			// Snap to grid.
+			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+				r_radius = Math::snapped(r_radius, Node3DEditor::get_singleton()->get_translate_snap());
+			}
+			if (r_radius < 0.001) {
+				r_radius = 0.001;
+			}
+		}
+
+		r_position = initial_transform.get_origin();
+		r_height = initial_height;
+	}
+}
+
+String Gizmo3DHelper::ribbon_get_handle_name(int p_id) const {
+	if (p_id < 2) {
+		return "Sections";
+	} else {
+		return "Size";
+	}
+}
+
+String Gizmo3DHelper::tube_get_handle_name(int p_id) const {
+	if (p_id < 2) {
+		return "Sections";
+	} else {
+		return "Radius";
+	}
 }
