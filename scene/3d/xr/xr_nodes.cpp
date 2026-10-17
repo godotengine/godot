@@ -249,7 +249,9 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	Projection cm = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far()).front();
+	TypedArray<Projection> cms = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far());
+	ERR_FAIL_COND_V(cms.is_empty(), Point2());
+	Projection cm = cms.front();
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
