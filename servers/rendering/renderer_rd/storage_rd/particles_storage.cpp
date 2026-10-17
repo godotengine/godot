@@ -1365,11 +1365,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	bool uses_motion_vectors = RSG::viewport->get_num_viewports_with_motion_vectors() > 0 || (RendererCompositorStorage::get_singleton()->get_num_compositor_effects_with_motion_vectors() > 0);
 	bool index_draw_order = particles->draw_order == RSE::ParticlesDrawOrder::PARTICLES_DRAW_ORDER_INDEX;
 	bool enable_motion_vectors = uses_motion_vectors && index_draw_order && !particles->instance_motion_vectors_enabled;
+	bool particles_changed = false;
 	bool only_instances_changed = false;
 
 	if (userdata_count != particles->userdata_count) {
 		// Mismatch userdata, re-create all buffers.
 		_particles_free_data(particles);
+		particles_changed = true;
 	} else if (enable_motion_vectors) {
 		// Only motion vectors are required, release the transforms buffer and uniform set.
 		if (particles->particle_instance_buffer.is_valid()) {
@@ -1433,7 +1435,9 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->instance_motion_vectors_previous_offset = 0;
 		particles->instance_motion_vectors_last_change = -1;
 
-		if (only_instances_changed) {
+		if (particles_changed) {
+			particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES);
+		} else if (only_instances_changed) {
 			// Notify the renderer the instances uniform must be retrieved again, as it's the only element that has been changed because motion vectors were enabled.
 			particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES_INSTANCES);
 		}
