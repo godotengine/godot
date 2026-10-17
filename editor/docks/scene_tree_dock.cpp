@@ -112,7 +112,8 @@ void SceneTreeDock::_inspect_hovered_node() {
 		return;
 	}
 
-	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
+	const NodePath np = edited_scene->get_path_to(node_hovered_now);
+	TreeItem *item = tree->get_item_with_metadata(np);
 
 	_restore_treeitem_custom_color(tree_item_inspected);
 	tree_item_inspected = item;
