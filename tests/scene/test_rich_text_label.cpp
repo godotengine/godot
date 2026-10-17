@@ -34,11 +34,92 @@ TEST_FORCE_LINK(test_rich_text_label)
 
 #ifndef ADVANCED_GUI_DISABLED
 
+#include "core/io/image.h"
+#include "core/object/callable_mp.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 
 namespace TestRichTextLabel {
+
+class LayoutMonitor : public Object {
+public:
+	RichTextLabel *label = nullptr;
+	int resize_count = 0;
+
+	void on_resized() {
+		resize_count++;
+		if (resize_count == 100) {
+			label->set_fit_content(false);
+		}
+	}
+};
+
+TEST_CASE("[SceneTree][RichTextLabel] Fit content with a fit-width texture converges") {
+	for (bool use_margin_container : { false, true }) {
+		for (int sibling_width : { 30, 32 }) {
+			for (TextureRect::ExpandMode expand_mode : { TextureRect::EXPAND_FIT_WIDTH, TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL }) {
+				CAPTURE(use_margin_container);
+				CAPTURE(sibling_width);
+				CAPTURE(expand_mode);
+
+				Container *container = use_margin_container ? static_cast<Container *>(memnew(MarginContainer)) : memnew(PanelContainer);
+				container->set_custom_minimum_size(Size2(300, 0));
+				container->set_size(Size2(300, 253));
+				VBoxContainer *vbox = memnew(VBoxContainer);
+				container->add_child(vbox);
+				HBoxContainer *hbox = memnew(HBoxContainer);
+				vbox->add_child(hbox);
+
+				TextureRect *texture_rect = memnew(TextureRect);
+				Ref<Image> image = memnew(Image(8, 8, false, Image::FORMAT_RGB8));
+				texture_rect->set_texture(ImageTexture::create_from_image(image));
+				texture_rect->set_expand_mode(expand_mode);
+				hbox->add_child(texture_rect);
+
+				RichTextLabel *label = memnew(RichTextLabel);
+				label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+				label->set_text("QWERTYUIOP");
+				label->set_fit_content(true);
+				hbox->add_child(label);
+
+				Control *sibling = memnew(Control);
+				sibling->set_custom_minimum_size(Size2(sibling_width, 0));
+				hbox->add_child(sibling);
+
+				LayoutMonitor *monitor = memnew(LayoutMonitor);
+				monitor->label = label;
+				label->connect(SceneStringName(resized), callable_mp(monitor, &LayoutMonitor::on_resized));
+				SceneTree::get_singleton()->get_root()->add_child(container);
+				SceneTree::get_singleton()->process(0);
+
+				CHECK(monitor->resize_count < 100);
+				CHECK(label->is_fit_content_enabled());
+				CHECK(label->get_size().height >= label->get_content_height());
+				CHECK(texture_rect->get_size().width == texture_rect->get_size().height);
+
+				label->set_text("qwertyuiop");
+				SceneTree::get_singleton()->process(0);
+				CHECK(monitor->resize_count < 100);
+				CHECK(label->is_fit_content_enabled());
+
+				int resize_count = monitor->resize_count;
+				for (int frame = 0; frame < 3; frame++) {
+					SceneTree::get_singleton()->process(0);
+				}
+				CHECK(monitor->resize_count == resize_count);
+
+				memdelete(container);
+				memdelete(monitor);
+			}
+		}
+	}
+}
 
 TEST_CASE("[SceneTree][RichTextLabel] Custom minimum size with fit content") {
 	// This is an anti-regression test case introduced in GH-116640. When the old minimum size behavior is removed, this test case should be removed too.
