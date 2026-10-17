@@ -528,6 +528,7 @@ private:
 	int sticky_stack_end = 0;
 	LocalVector<TreeItem *> sticky_candidates;
 	LocalVector<TreeItem *> sticky_list;
+	bool ensure_cursor_is_visible_pending = false;
 
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
@@ -748,6 +749,7 @@ private:
 
 	int _get_title_button_height() const;
 	Size2 _get_cell_icon_size(const TreeItem::Cell &p_cell) const;
+	bool _ensure_cursor_is_visible(bool p_defer_vertical_scroll = true);
 
 	void _scroll_moved(float p_value);
 	HScrollBar *h_scroll = nullptr;
