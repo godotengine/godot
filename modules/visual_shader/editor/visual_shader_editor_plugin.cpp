@@ -6166,6 +6166,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				theme_dirty = true;
 			}
 			_update_options_menu();
+			_update_preview_parameter_tree();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
