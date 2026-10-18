@@ -225,6 +225,7 @@
 /modules/enet/**/*.py                         @godotengine/network @godotengine/buildsystem
 /modules/enet/**/SCsub                        @godotengine/network @godotengine/buildsystem
 /modules/enet/doc_classes/                    @godotengine/network @godotengine/documentation
+/modules/enet/tests/                          @godotengine/network @godotengine/tests
 /modules/mbedtls/                             @godotengine/network
 /modules/mbedtls/**/*.py                      @godotengine/network @godotengine/buildsystem
 /modules/mbedtls/**/SCsub                     @godotengine/network @godotengine/buildsystem
