@@ -1,0 +1,12 @@
+config_version=5
+
+[application]
+
+config/name="Nexo-3D Mobile Forward+ Smoke Test"
+run/main_scene="res://main.tscn"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="forward_plus"
+textures/default_filters/use_nearest_mipmap_filter=false
