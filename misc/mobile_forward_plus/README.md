@@ -7,7 +7,7 @@ This project is a runtime/editor smoke-test harness for the Forward+ renderer on
 1. Open this folder with a build of Nexo-3D.
 2. Confirm the renderer in Project Settings is **Forward+**.
 3. Export to an Android device whose Vulkan driver supports the engine's required Forward+ features.
-4. Capture startup logs and test PBR lighting, directional shadows, and sustained rendering. The HUD prints renderer name, average FPS, approximate frame time, and elapsed time; the same samples are written to the engine log.
+4. Capture startup logs and test PBR lighting, directional shadows, and clustered local-light rendering (eight colored OmniLight3D sources), then sustained rendering. The HUD prints renderer name, average FPS, approximate frame time, and elapsed time; the same samples are written to the engine log.
 
 ## Important
 
