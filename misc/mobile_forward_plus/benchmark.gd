@@ -11,7 +11,6 @@ var last_fps := 0.0
 func _ready() -> void:
 	status_label.text = "Nexo-3D Forward+\nCollecting frame-time samples..."
 	print("[MobileForwardPlusTest] Rendering method: ", RenderingServer.get_current_rendering_method())
-	print("[MobileForwardPlusTest] Renderer: ", RenderingServer.get_rendering_device() != null)
 
 func _process(delta: float) -> void:
 	elapsed += delta
