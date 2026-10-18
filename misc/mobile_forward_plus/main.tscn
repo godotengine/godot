@@ -1,0 +1,41 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sphere"]
+albedo_color = Color(0.16, 0.58, 0.92, 1)
+metallic = 0.28
+roughness = 0.24
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.22, 0.25, 0.3, 1)
+roughness = 0.82
+
+[sub_resource type="SphereMesh" id="SphereMesh_main"]
+material = SubResource("StandardMaterial3D_sphere")
+radius = 1.0
+height = 2.0
+radial_segments = 48
+rings = 24
+
+[node name="MobileForwardPlusSmokeTest" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -32, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 40.0
+
+[node name="Sphere" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1, 0)
+mesh = SubResource("SphereMesh_main")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.1, 0)
+scale = Vector3(8, 0.1, 8)
+mesh = PlaneMesh.new()
+surface_material_override/0 = SubResource("StandardMaterial3D_floor")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 2.4, 6.5)
+rotation_degrees = Vector3(-14, 0, 0)
+current = true
