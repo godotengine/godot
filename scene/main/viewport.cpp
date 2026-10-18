@@ -83,6 +83,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
+#include "scene/3d/xr/xr_nodes.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_server.h"
@@ -4810,6 +4811,12 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 
 	_update_audio_listener_3d();
 	_camera_3d_transform_changed_notify();
+
+#ifndef XR_DISABLED
+	if (use_xr && dynamic_cast<XRCamera3D *>(camera_3d) == nullptr) {
+		WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+	}
+#endif
 }
 
 bool Viewport::_camera_3d_add(Camera3D *p_camera) {
@@ -5064,7 +5071,6 @@ void Viewport::set_use_xr(bool p_use_xr) {
 		use_xr = p_use_xr;
 		RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
 
-#ifndef XR_DISABLED
 		if (use_xr) {
 			// Note: use_xr is ONLY used for the primary XR viewport.
 			// Any additional (sub)viewports for composition layers and
@@ -5074,9 +5080,11 @@ void Viewport::set_use_xr(bool p_use_xr) {
 			// Enable internal process as we need to check for recommended size changes each frame
 			// (though size changes should only happen sporadically).
 			set_process_internal(true);
-		} else
-#endif // XR_DISABLED
-		{
+
+			if (dynamic_cast<XRCamera3D *>(camera_3d) == nullptr) {
+				WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+			}
+		} else {
 			// No longer check for recommended size changes in internal process.
 			set_process_internal(false);
 
