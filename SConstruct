@@ -390,6 +390,11 @@ opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+if not methods.get_cmdline_bool("debug_symbols", False) and methods.get_cmdline_bool("separate_debug_symbols", False):
+    print_error('The option "separate_debug_symbols" requires the options "debug_symbols".')
+    print_error('Either remove "separate_debug_symbols" or add "debug_symbols."')
+    exit(255)
+
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
 
