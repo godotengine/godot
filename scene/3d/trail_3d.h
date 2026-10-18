@@ -169,6 +169,8 @@ private:
 	real_t _last_pinned_u = 0.0;
 	Vector3 _previous_position;
 	bool _transform_changed = false;
+	bool _has_one_shot_connection = false;
+	void _ensure_frame_pre_draw_connection(bool p_is_one_shot);
 
 	//Ribbon
 	void _do_rebuild();
