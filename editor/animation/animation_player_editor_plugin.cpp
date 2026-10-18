@@ -222,6 +222,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_find_player();
 			_ensure_dummy_player();
+			if (player) {
+				_update_animation();
+			}
+			_update_animation_menu();
 		} break;
 	}
 }
@@ -447,18 +451,10 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		return;
 	}
 
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), true)
-	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
-
-	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
-	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
-#undef ITEM_CHECK_DISABLED
-
 	// when selecting an animation, the idea is that the only interesting behavior
 	// ui-wise is that it should play/blend the next one if currently playing
 	String current = _get_current();
+	_update_animation_menu();
 
 	if (!current.is_empty()) {
 		player->set_assigned_animation(current);
@@ -497,6 +493,53 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 	_animation_key_editor_seek(timeline_position);
 
 	emit_signal("animation_selected", current);
+}
+
+void AnimationPlayerEditor::_update_animation_menu() {
+	const String current = _get_current();
+	const bool has_animation = player && !current.is_empty() && player->has_animation(current);
+	bool current_animation_library_is_readonly = true;
+	bool all_animation_libraries_are_readonly = true;
+
+	if (player) {
+		LocalVector<StringName> libraries;
+		player->get_animation_library_list(&libraries);
+
+		bool animation_found = false;
+		for (const StringName &library_name : libraries) {
+			Ref<AnimationLibrary> anim_library = player->get_animation_library(library_name);
+			const bool animation_library_is_readonly = anim_library.is_null() || EditorNode::get_singleton()->is_resource_read_only(anim_library);
+			if (!animation_library_is_readonly) {
+				all_animation_libraries_are_readonly = false;
+			}
+
+			if (has_animation && !animation_found && anim_library.is_valid()) {
+				LocalVector<StringName> animations;
+				anim_library->get_animation_list(&animations);
+				for (const StringName &animation_name : animations) {
+					String path = library_name;
+					if (path != "") {
+						path += "/";
+					}
+					path += animation_name;
+					if (current == path) {
+						current_animation_library_is_readonly = animation_library_is_readonly;
+						animation_found = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	PopupMenu *popup = tool_anim->get_popup();
+#define ITEM_CHECK_DISABLED(m_item, p_disabled) popup->set_item_disabled(popup->get_item_index(m_item), p_disabled)
+	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM, !has_animation || all_animation_libraries_are_readonly);
+	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM, !has_animation || current_animation_library_is_readonly);
+	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM, !has_animation || current_animation_library_is_readonly);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS, !has_animation);
+	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE, !has_animation);
+#undef ITEM_CHECK_DISABLED
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -1032,6 +1075,7 @@ void AnimationPlayerEditor::_update_player() {
 	_set_controls_disabled(player == nullptr);
 
 	if (!player) {
+		_update_animation_menu();
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 		return;
 	}
@@ -1501,6 +1545,7 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 			frame->set_value(0);
 			track_editor->set_anim_pos(0);
 			_update_animation();
+			_update_animation_menu();
 			return;
 		}
 		Ref<Animation> anim = player->get_animation(p_name);
@@ -1508,56 +1553,11 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 			return;
 		}
 
-		// Determine the read-only status of the animation's library and the libraries as a whole.
-		LocalVector<StringName> libraries;
-		player->get_animation_library_list(&libraries);
-
-		bool current_animation_library_is_readonly = false;
-		bool all_animation_libraries_are_readonly = true;
-		for (const StringName &K : libraries) {
-			Ref<AnimationLibrary> anim_library = player->get_animation_library(K);
-			bool animation_library_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim_library);
-			if (!animation_library_is_readonly) {
-				all_animation_libraries_are_readonly = false;
-			}
-
-			LocalVector<StringName> animlist;
-			anim_library->get_animation_list(&animlist);
-			bool animation_found = false;
-			for (const StringName &E : animlist) {
-				String path = K;
-				if (path != "") {
-					path += "/";
-				}
-				path += E;
-				if (p_name == path) {
-					current_animation_library_is_readonly = animation_library_is_readonly;
-					break;
-				}
-			}
-			if (animation_found) {
-				break;
-			}
-		}
-
 		bool animation_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 		track_editor->set_animation(anim, animation_is_readonly);
 		_update_animation();
-
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), false)
-		ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
-		ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
-#undef ITEM_CHECK_DISABLED
-
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), current_animation_library_is_readonly)
-		ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
-		ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
-#undef ITEM_CHECK_DISABLED
-
-#define ITEM_CHECK_DISABLED(m_item) tool_anim->get_popup()->set_item_disabled(tool_anim->get_popup()->get_item_index(m_item), all_animation_libraries_are_readonly)
-		ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
-#undef ITEM_CHECK_DISABLED
+		_update_animation_menu();
 	}
 }
 

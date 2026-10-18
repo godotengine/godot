@@ -186,6 +186,7 @@ class AnimationPlayerEditor : public EditorDock {
 	void _autoplay_pressed();
 	void _stop_pressed();
 	void _animation_selected(int p_which);
+	void _update_animation_menu();
 	void _animation_new();
 	void _animation_rename();
 	void _animation_name_edited();
