@@ -1,0 +1,70 @@
+name: Mobile Forward+ Android Validation
+
+on:
+  push:
+    branches:
+      - feature/mobile-forward-plus
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-forward-plus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-arm64-template:
+    name: Build Android ARM64 Vulkan template
+    runs-on: ubuntu-26.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout source and submodules
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Restore Android build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: mobile-forward-plus-android-arm64
+        continue-on-error: true
+
+      - name: Set up Python and native build dependencies
+        uses: ./.github/actions/godot-deps
+
+      - name: Build Android ARM64 template
+        shell: bash
+        run: |
+          set -euxo pipefail
+          scons platform=android target=template_debug arch=arm64 dev_mode=no
+          test -s bin/libgodot.android.template_debug.arm64.so
+          file bin/libgodot.android.template_debug.arm64.so
+
+      - name: Generate Android template package
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd platform/android/java
+          ./gradlew generateGodotTemplates
+          cd ../../..
+          find bin -maxdepth 2 -type f -name '*android*arm64*' -print
+
+      - name: Upload ARM64 build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: mobile-forward-plus-android-arm64
+          path: |
+            bin/libgodot.android.template_debug.arm64.so
+            bin/android*
+          if-no-files-found: error
+          retention-days: 7
