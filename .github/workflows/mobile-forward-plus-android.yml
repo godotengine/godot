@@ -68,3 +68,30 @@ jobs:
             bin/android*
           if-no-files-found: error
           retention-days: 7
+
+  host-project-smoke-test:
+    name: Import Forward+ smoke project
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout source and submodules
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up Python and native build dependencies
+        uses: ./.github/actions/godot-deps
+
+      - name: Build host editor for project validation
+        shell: bash
+        run: |
+          set -euxo pipefail
+          scons platform=linuxbsd target=editor dev_mode=no
+          test -x bin/godot.linuxbsd.editor.x86_64
+
+      - name: Import and validate Forward+ test project
+        shell: bash
+        run: |
+          set -euxo pipefail
+          bin/godot.linuxbsd.editor.x86_64 --headless --path misc/mobile_forward_plus --editor --quit
+          bin/godot.linuxbsd.editor.x86_64 --headless --path misc/mobile_forward_plus --quit-after 3
