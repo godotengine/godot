@@ -106,6 +106,15 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	bool dvalid = exists_export_template(get_template_file_name("debug", arch), &err);
 	bool rvalid = exists_export_template(get_template_file_name("release", arch), &err);
 
+	// adds a warning in case the debug symbols files are not found
+	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
+	if (debug_symbol_mode > 0) {
+		check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
+		if (debug_symbol_mode == 2) {
+			check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
+		}
+	}
+
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
 		if (!dvalid) {

@@ -609,6 +609,20 @@ String EditorExportPlatform::find_export_template(const String &template_file_na
 	return String();
 }
 
+void EditorExportPlatform::check_export_template_debug_symbols(const String &template_debug_symbols_file_name, String *err) const {
+	String current_version = GODOT_VERSION_FULL_CONFIG;
+	String template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(template_debug_symbols_file_name);
+
+	if (FileAccess::exists(template_debug_symbols_path)) {
+		return;
+	}
+
+	// Not found
+	if (err) {
+		*err += TTR("Export Debug Symbols set, but no export template debug symbols found at the expected path:") + "\n" + template_debug_symbols_path + "\n";
+	}
+}
+
 bool EditorExportPlatform::exists_export_template(const String &template_file_name, String *err) const {
 	return find_export_template(template_file_name, err) != "";
 }
