@@ -2483,7 +2483,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		renderer_hints += ",";
 	}
 	renderer_hints += "mobile";
+	// Prefer Forward+ for Android builds when the renderer is compiled in.
+	// Keep the Mobile renderer as the default on other platforms and when
+	// Forward+ is not available in this build. Projects can still override
+	// rendering/renderer/rendering_method.mobile explicitly.
+#if defined(ANDROID_ENABLED) && defined(FORWARD_RD_ENABLED)
+	default_renderer_mobile = "forward_plus";
+#else
 	default_renderer_mobile = "mobile";
+#endif
 #endif // MOBILE_RD_ENABLED
 #endif
 
