@@ -1,4 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://benchmark.gd" id="1_benchmark"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sphere"]
 albedo_color = Color(0.16, 0.58, 0.92, 1)
@@ -21,7 +23,19 @@ size = Vector2(2, 2)
 subdivide_width = 4
 subdivide_depth = 4
 
+[sub_resource type="Environment" id="Environment_world"]
+background_mode = 1
+background_color = Color(0.08, 0.12, 0.19, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.55, 0.62, 0.75, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
+
 [node name="MobileForwardPlusSmokeTest" type="Node3D"]
+script = ExtResource("1_benchmark")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_world")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-48, -32, 0)
@@ -42,3 +56,14 @@ surface_material_override/0 = SubResource("StandardMaterial3D_floor")
 position = Vector3(0, 2.4, 6.5)
 rotation_degrees = Vector3(-14, 0, 0)
 current = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Status" type="Label" parent="CanvasLayer"]
+offset_left = 18.0
+offset_top = 18.0
+offset_right = 430.0
+offset_bottom = 142.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Nexo-3D Forward+ benchmark"
