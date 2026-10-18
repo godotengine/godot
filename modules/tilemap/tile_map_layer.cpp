@@ -158,6 +158,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
 	for (const Vector2i &quadrant_coords : quadrants_to_updates) {
 		Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[quadrant_coords];
+		debug_quadrant->drawn_to = false;
 
 		// Update the quadrant's canvas item.
 		RID &ci = debug_quadrant->canvas_item;
@@ -197,6 +198,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			// Free the quadrant.
 			if (ci.is_valid()) {
 				rs->free_rid(ci);
+			}
+			if (debug_quadrant->physics_mesh.is_valid()) {
+				rs->free_rid(debug_quadrant->physics_mesh);
 			}
 			debug_quadrant_map.erase(quadrant_coords);
 		}
