@@ -42,6 +42,52 @@ rotation_degrees = Vector3(-48, -32, 0)
 shadow_enabled = true
 directional_shadow_max_distance = 40.0
 
+[node name="OmniLightRed" type="OmniLight3D" parent="."]
+position = Vector3(-2.2, 1.6, 0)
+light_color = Color(1, 0.22, 0.18, 1)
+light_energy = 2.0
+omni_range = 5.0
+
+[node name="OmniLightGreen" type="OmniLight3D" parent="."]
+position = Vector3(2.2, 1.6, 0)
+light_color = Color(0.2, 1, 0.38, 1)
+light_energy = 2.0
+omni_range = 5.0
+
+[node name="OmniLightBlue" type="OmniLight3D" parent="."]
+position = Vector3(0, 2.0, 2.0)
+light_color = Color(0.24, 0.42, 1, 1)
+light_energy = 2.0
+omni_range = 5.0
+
+[node name="OmniLightAmber" type="OmniLight3D" parent="."]
+position = Vector3(0, 1.2, -2.0)
+light_color = Color(1, 0.65, 0.18, 1)
+light_energy = 1.7
+omni_range = 5.0
+
+[node name="OmniLightMagenta" type="OmniLight3D" parent="."]
+position = Vector3(-3.2, 1.0, -1.2)
+light_color = Color(1, 0.2, 0.8, 1)
+light_energy = 1.3
+omni_range = 4.0
+
+[node name="OmniLightCyan" type="OmniLight3D" parent="."]
+position = Vector3(3.2, 1.0, 1.2)
+light_color = Color(0.2, 0.9, 1, 1)
+light_energy = 1.3
+omni_range = 4.0
+
+[node name="OmniLightWhiteA" type="OmniLight3D" parent="."]
+position = Vector3(-1.0, 3.2, -2.0)
+light_energy = 0.8
+omni_range = 4.0
+
+[node name="OmniLightWhiteB" type="OmniLight3D" parent="."]
+position = Vector3(1.0, 3.2, 2.0)
+light_energy = 0.8
+omni_range = 4.0
+
 [node name="Sphere" type="MeshInstance3D" parent="."]
 position = Vector3(0, 1, 0)
 mesh = SubResource("SphereMesh_main")
