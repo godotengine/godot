@@ -138,7 +138,11 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 			return;
 		}
 
-		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
+		double scale = 1.0;
+#ifdef IOS_ENABLED
+		scale = [UIScreen mainScreen].scale;
+#endif
+		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * scale;
 		rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, size.width, size.height);
 		rendering_context->window_set_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID, p_vsync_mode);
 
