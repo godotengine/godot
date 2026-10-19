@@ -1272,6 +1272,18 @@ bool CanvasItemEditor::cyclical_dependency_exists(const String &p_target_scene_p
 	return false;
 }
 
+static Transform2D get_parent_screen_transform(Node *p_node) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci) {
+		return ci->get_screen_transform();
+	}
+	SubViewport *vp = Object::cast_to<SubViewport>(p_node);
+	if (vp) {
+		return vp->get_popup_base_transform();
+	}
+	return Transform2D();
+}
+
 void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_parent) {
@@ -1298,9 +1310,8 @@ void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Ve
 	if (Object::cast_to<CanvasItem>(p_child)) {
 		// There's nothing to be used as source position, so snapping will work as absolute if enabled.
 		Vector2 target_position = ci_manipulator->snap_point(p_target_position);
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
 		// Set position via undo_redo for proper live editing support.
-		undo_redo->add_do_method(p_child, "set_position", parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position);
+		undo_redo->add_do_method(p_child, "set_position", get_parent_screen_transform(p_parent).affine_inverse().xform(target_position));
 	}
 
 	undo_redo->add_do_method(editor_selection, "add_node", p_child);
@@ -4742,11 +4753,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	if (instance_ci) {
 		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
 		target_pos = canvas_item_editor->get_canvas_item_manipulator()->snap_point(target_pos);
-
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
-		if (parent_ci) {
-			target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
-		}
+		target_pos = get_parent_screen_transform(p_parent).affine_inverse().xform(target_pos);
 		// Preserve instance position of the original scene.
 		target_pos += instance_ci->_edit_get_position();
 
