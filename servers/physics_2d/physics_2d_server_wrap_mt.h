@@ -58,12 +58,13 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	SafeFlag step_thread_up;
 	bool create_thread;
 
-	Semaphore step_sem;
 	void thread_step(real_t p_delta);
 
-	void thread_exit();
+	Semaphore thread_halted_semaphore;
+	Semaphore thread_resume_semaphore;
+	void thread_flush_and_halt();
 
-	bool first_frame;
+	void thread_exit();
 
 	Mutex alloc_mutex;
 	int pool_max_size;

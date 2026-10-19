@@ -2424,6 +2424,7 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
+			Physics2DServer::get_singleton()->end_sync();
 			exit = true;
 			Engine::get_singleton()->_in_physics = false;
 			break;
