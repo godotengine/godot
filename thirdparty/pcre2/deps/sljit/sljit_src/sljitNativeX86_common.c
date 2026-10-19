@@ -681,6 +681,9 @@ static sljit_u8* detect_near_jump_type(struct sljit_jump *jump, sljit_u8 *code_p
 	sljit_s32 short_jump;
 	sljit_uw label_addr;
 	sljit_uw jump_addr;
+#if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
+	sljit_uw rel_size;
+#endif /* SLJIT_CONFIG_X86_64 */
 
 	jump_addr = (sljit_uw)code_ptr;
 	if (!(jump->flags & JUMP_ADDR)) {
@@ -692,7 +695,8 @@ static sljit_u8* detect_near_jump_type(struct sljit_jump *jump, sljit_u8 *code_p
 		label_addr = jump->u.target - (sljit_uw)executable_offset;
 
 #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
-	if ((sljit_sw)(label_addr - (jump_addr + 6)) > HALFWORD_MAX || (sljit_sw)(label_addr - (jump_addr + 5)) < HALFWORD_MIN)
+	rel_size = (type < SLJIT_JUMP) ? 6 : 5;
+	if ((sljit_sw)(label_addr - (jump_addr + rel_size)) > HALFWORD_MAX || (sljit_sw)(label_addr - (jump_addr + rel_size)) < HALFWORD_MIN)
 		return detect_far_jump_type(jump, code_ptr);
 #endif /* SLJIT_CONFIG_X86_64 */
 
@@ -1067,7 +1071,14 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_has_cpu_feature(sljit_s32 feature_type)
 	case SLJIT_HAS_COPY_F32:
 	case SLJIT_HAS_COPY_F64:
 	case SLJIT_HAS_ATOMIC:
+		return 1;
+
 	case SLJIT_HAS_MEMORY_BARRIER:
+#if (defined SLJIT_DETECT_SSE2 && SLJIT_DETECT_SSE2)
+		if (cpu_feature_list == 0)
+			get_cpu_features();
+		return (cpu_feature_list & CPU_FEATURE_SSE2) != 0;
+#endif
 		return 1;
 
 #if !(defined SLJIT_IS_FPU_AVAILABLE) || SLJIT_IS_FPU_AVAILABLE
@@ -3036,7 +3047,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *c
 	shift_arg &= (sljit_sw)((sizeof(sljit_sw) * 8) - 1);
 
 	if (src2 == SLJIT_IMM) {
-		src2w = src2w << shift_arg;
+		src2w = (sljit_sw)((sljit_uw)src2w << shift_arg);
 		shift_arg = 0;
 	}
 

@@ -115,6 +115,7 @@ for (; ptr < ptrend; ptr++)
     int erc;
     int errorcode;
     uint32_t ch;
+    PCRE2_SPTR esc_end_ptr;
 
     if (ptr < ptrend - 1) switch (ptr[1])
       {
@@ -136,6 +137,9 @@ for (; ptr < ptrend; ptr++)
       rc = PCRE2_ERROR_BADREPESCAPE;
       goto EXIT;
       }
+
+    esc_end_ptr = ptr;
+    ptr -= 1;  /* Rewind by one, because the for-loop will increment it */
 
     switch(erc)
       {
@@ -160,7 +164,8 @@ for (; ptr < ptrend; ptr++)
 
       default:
       if (erc < 0)
-          break;  /* capture group reference */
+        break;  /* capture group reference */
+      ptr = esc_end_ptr;
       rc = PCRE2_ERROR_BADREPESCAPE;
       goto EXIT;
       }
@@ -751,6 +756,7 @@ BOOL overflowed = FALSE;
 BOOL use_existing_match;
 BOOL replacement_only;
 BOOL utf = (code->overall_options & PCRE2_UTF) != 0;
+BOOL partial = (options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0;
 PCRE2_UCHAR temp[6];
 PCRE2_UCHAR null_str[1] = { 0xcd };
 PCRE2_SPTR original_subject = subject;
@@ -778,10 +784,16 @@ if (mcontext != NULL)
   substitute_case_callout_data = mcontext->substitute_case_callout_data;
   }
 
-/* Partial matching is not valid. This must come after setting *blength to
-PCRE2_UNSET, so as not to imply an offset in the replacement. */
+/* Partial matching is supported, with limitations. We allow matching in partial
+mode, however, if a partial match is found, the substitution will fail with a
+PCRE2_ERROR_PARTIAL error. Additionally, outputting the after-match text is not
+allowed (PCRE2_ERROR_BADOPTION), and certain replacement items such as $' and $_
+are not supported (PCRE2_ERROR_PARTIALSUBS).
 
-if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0)
+This must come after setting *blength to PCRE2_UNSET, so as not to imply an
+offset in the replacement. */
+
+if (partial && (options & PCRE2_SUBSTITUTE_REPLACEMENT_ONLY) == 0)
   return PCRE2_ERROR_BADOPTION;
 
 /* Validate length and find the end of the replacement. A NULL replacement of
@@ -854,7 +866,8 @@ if (use_existing_match)
   if (start_offset != match_data->start_offset)
     return PCRE2_ERROR_DIFFSUBSOFFSET;
 
-  if ((options & ~SUBSTITUTE_OPTIONS) != match_data->options)
+  if ((options & ~(SUBSTITUTE_OPTIONS|PCRE2_NO_UTF_CHECK)) !=
+      (match_data->options & ~PCRE2_NO_UTF_CHECK))
     return PCRE2_ERROR_DIFFSUBSOPTIONS;
   }
 
@@ -1119,8 +1132,16 @@ for (;;)
       if (next == CHAR_GRAVE_ACCENT || next == CHAR_APOSTROPHE)
         {
         ++ptr;
+
+        /* (Sanity-check ovector before reading from it.) */
         rc = pcre2_substring_length_bynumber(match_data, 0, &sublength);
-        if (rc < 0) goto PTREXIT; /* (Sanity-check ovector before reading from it.) */
+        /* LCOV_EXCL_START */
+        if (rc < 0)
+          {
+          PCRE2_DEBUG_UNREACHABLE();
+          goto PTREXIT;
+          }
+        /* LCOV_EXCL_STOP */
 
         if (next == CHAR_GRAVE_ACCENT)
           {
@@ -1129,6 +1150,12 @@ for (;;)
           }
         else
           {
+          if (partial)
+            {
+            rc = PCRE2_ERROR_PARTIALSUBS;
+            goto PTREXIT;
+            }
+
           subptr = subject + ovector[1];
           subptrend = subject + length;
           }
@@ -1139,12 +1166,19 @@ for (;;)
         {
         /* Java, .NET support $_ for "entire input string". */
         ++ptr;
+
+        if (partial)
+          {
+          rc = PCRE2_ERROR_PARTIALSUBS;
+          goto PTREXIT;
+          }
+
         subptr = subject;
         subptrend = subject + length;
         goto SUBPTR_SUBSTITUTE;
         }
-      else if (next == CHAR_PLUS &&
-               !(ptr+1 < repend && ptr[1] == CHAR_LEFT_CURLY_BRACKET))
+      if (next == CHAR_PLUS &&
+          !(ptr+1 < repend && ptr[1] == CHAR_LEFT_CURLY_BRACKET))
         {
         /* Perl supports $+ for "highest captured group" (not the same as $^N
         which is mainly only useful inside Perl's match callbacks). We also

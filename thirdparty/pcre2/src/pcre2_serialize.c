@@ -166,9 +166,10 @@ const pcre2_memctl *memctl = (gcontext != NULL) ?
   &gcontext->memctl : &PRIV(default_compile_context).memctl;
 
 const uint8_t *src_bytes;
-pcre2_real_code *dst_re;
+pcre2_real_code *dst_re = NULL;
 uint8_t *tables;
 int32_t i, j;
+int32_t error;
 
 /* Sanity checks. */
 
@@ -206,7 +207,10 @@ for (i = 0; i < number_of_codes; i++)
   memcpy(&blocksize, src_bytes + offsetof(pcre2_real_code, blocksize),
     sizeof(CODE_BLOCKSIZE_TYPE));
   if (blocksize <= sizeof(pcre2_real_code))
-    return PCRE2_ERROR_BADSERIALIZEDDATA;
+    {
+    error = PCRE2_ERROR_BADSERIALIZEDDATA;
+    goto cleanup;
+    }
 
   /* The allocator provided by gcontext replaces the original one. */
 
@@ -214,13 +218,8 @@ for (i = 0; i < number_of_codes; i++)
     (pcre2_memctl *)gcontext);
   if (dst_re == NULL)
     {
-    memctl->free(tables, memctl->memory_data);
-    for (j = 0; j < i; j++)
-      {
-      memctl->free(codes[j], memctl->memory_data);
-      codes[j] = NULL;
-      }
-    return PCRE2_ERROR_NOMEMORY;
+    error = PCRE2_ERROR_NOMEMORY;
+    goto cleanup;
     }
 
   /* The new allocator must be preserved. */
@@ -230,10 +229,10 @@ for (i = 0; i < number_of_codes; i++)
   if (dst_re->magic_number != MAGIC_NUMBER ||
       dst_re->name_entry_size > MAX_NAME_SIZE + IMM2_SIZE + 1 ||
       dst_re->name_count > MAX_NAME_COUNT)
-    {
-    memctl->free(dst_re, memctl->memory_data);
-    return PCRE2_ERROR_BADSERIALIZEDDATA;
-    }
+      {
+        error = PCRE2_ERROR_BADSERIALIZEDDATA;
+        goto cleanup;
+      }
 
   /* At the moment only one table is supported. */
 
@@ -242,10 +241,22 @@ for (i = 0; i < number_of_codes; i++)
   dst_re->flags |= PCRE2_DEREF_TABLES;
 
   codes[i] = dst_re;
+  dst_re = NULL;
   src_bytes += blocksize;
   }
 
 return number_of_codes;
+
+cleanup:
+if (dst_re != NULL)
+  memctl->free(dst_re, memctl->memory_data);
+memctl->free(tables, memctl->memory_data);
+for (j = 0; j < i; j++)
+  {
+  memctl->free(codes[j], memctl->memory_data);
+  codes[j] = NULL;
+  }
+return error;
 }
 
 

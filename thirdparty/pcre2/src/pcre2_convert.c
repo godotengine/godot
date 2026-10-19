@@ -1215,9 +1215,11 @@ for (int i = 0; i < 2; i++)
   /* Allocate memory for the buffer, with hidden space for an allocator at
   the start. The next time round the loop runs the conversion for real. */
 
-  allocated = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
-    (*bufflenptr + 1)*PCRE2_CODE_UNIT_WIDTH, (pcre2_memctl *)ccontext);
-  if (allocated == NULL)
+  if (*bufflenptr > ((PCRE2_SIZE_MAX - sizeof(pcre2_memctl)) /
+        CU2BYTES(1)) - 1 ||
+      (allocated = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
+        CU2BYTES(*bufflenptr + 1),
+        (pcre2_memctl *)ccontext)) == NULL)
     {
     *bufflenptr = 0;  /* Error offset */
     return PCRE2_ERROR_NOMEMORY;
