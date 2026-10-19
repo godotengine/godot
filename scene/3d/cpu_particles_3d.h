@@ -115,6 +115,8 @@ private:
 	Vector<Particle> particles;
 	Vector<float> particle_data;
 	Vector<int> particle_order;
+	// Whether particle_data was last written in particle_order (a sorted draw order).
+	bool particle_data_sorted = false;
 
 	struct SortLifetime {
 		const Particle *particles = nullptr;

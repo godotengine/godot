@@ -90,6 +90,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
+	particle_data_sorted = false;
 }
 
 void CPUParticles3D::set_lifetime(double p_lifetime) {
@@ -1279,7 +1280,8 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	const Particle *r = particles.ptr();
 	float *ptr = w;
 
-	if (draw_order != DRAW_ORDER_INDEX) {
+	particle_data_sorted = draw_order != DRAW_ORDER_INDEX;
+	if (particle_data_sorted) {
 		ow = particle_order.ptrw();
 		order = ow;
 
@@ -1427,11 +1429,14 @@ void CPUParticles3D::_notification(int p_what) {
 				float *w = particle_data.ptrw();
 				const Particle *r = particles.ptr();
 				float *ptr = w;
+				// Rows are in the order of the last data update, which also wrote their colors.
+				const int *order = particle_data_sorted ? particle_order.ptr() : nullptr;
 
 				for (int i = 0; i < pc; i++) {
-					Transform3D t = inv_emission_transform * r[i].transform;
+					int idx = order ? order[i] : i;
+					Transform3D t = inv_emission_transform * r[idx].transform;
 
-					if (r[i].active) {
+					if (r[idx].active) {
 						ptr[0] = t.basis.rows[0][0];
 						ptr[1] = t.basis.rows[0][1];
 						ptr[2] = t.basis.rows[0][2];
