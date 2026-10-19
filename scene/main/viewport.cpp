@@ -4793,8 +4793,8 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 	}
 
 #ifndef XR_DISABLED
-	if (use_xr && dynamic_cast<XRCamera3D *>(p_camera) == nullptr) {
-		WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+	if (use_xr && Object::cast_to<XRCamera3D>(p_camera) == nullptr) {
+		WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D.");
 	}
 #endif
 #endif // DEBUG_ENABLED
@@ -5082,8 +5082,8 @@ void Viewport::set_use_xr(bool p_use_xr) {
 			set_process_internal(true);
 
 #if DEBUG_ENABLED
-			if (dynamic_cast<XRCamera3D *>(camera_3d) == nullptr) {
-				WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+			if (Object::cast_to<XRCamera3D>(camera_3d) == nullptr) {
+				WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D.");
 			}
 #endif
 		} else {
