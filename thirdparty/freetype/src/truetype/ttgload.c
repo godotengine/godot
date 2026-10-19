@@ -1948,7 +1948,7 @@
         short        i, limit;
         FT_SubGlyph  subglyph;
 
-        FT_Outline  outline;
+        FT_Outline  outline = { 0, 0, NULL, NULL, NULL, 0 };
         FT_Vector*  points    = NULL;
         char*       tags      = NULL;
         short*      contours  = NULL;
@@ -1956,6 +1956,13 @@
 
 
         limit = (short)gloader->current.num_subglyphs;
+
+        /* make sure this isn't negative as we're going to add 4 later */
+        if ( limit < 0 )
+        {
+          error = FT_THROW( Invalid_Argument );
+          goto Exit;
+        }
 
         /* construct an outline structure for              */
         /* communication with `TT_Vary_Apply_Glyph_Deltas' */
