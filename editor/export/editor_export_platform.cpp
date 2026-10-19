@@ -596,15 +596,15 @@ Ref<Texture2D> EditorExportPlatform::get_option_icon(int p_index) const {
 
 String EditorExportPlatform::find_export_template(const String &p_template_file_name, String *r_err) const {
 	String current_version = GODOT_VERSION_FULL_CONFIG;
-	String p_template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_file_name);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_file_name);
 
-	if (FileAccess::exists(p_template_path)) {
-		return p_template_path;
+	if (FileAccess::exists(template_path)) {
+		return template_path;
 	}
 
 	// Not found
 	if (r_err) {
-		*r_err += TTR("No export template found at the expected path:") + "\n" + p_template_path + "\n";
+		*r_err += TTR("No export template found at the expected path:") + "\n" + template_path + "\n";
 	}
 	return String();
 }
