@@ -1443,10 +1443,9 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 				continue;
 			}
 
-			int child_count = sp->get_child_count();
-			for (int i = 0; i < child_count; i++) {
-				Node3D *child = Object::cast_to<Node3D>(sp->get_child(i));
-				if (child) {
+			for (Node *node_child : sp->iterate_children()) {
+				Node3D *child = Object::cast_to<Node3D>(node_child);
+				if (child) { // can_preserve_owned_children_transform() check is unnecessary here.
 					_edit.children_original_globals[child] = child->get_global_transform();
 				}
 			}
@@ -1778,15 +1777,15 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 	}
 
 	bool preserve_children = spatial_editor->is_preserve_children_transform_enabled();
+	bool can_preserve_instance = spatial_editor->can_preserve_owned_children_transform(p_node);
 
 	Vector<Transform3D> children_global_transforms;
 	Vector<Node3D *> node3d_children;
 
 	if (preserve_children) {
-		int child_count = p_node->get_child_count();
-		for (int i = 0; i < child_count; i++) {
-			Node3D *child = Object::cast_to<Node3D>(p_node->get_child(i));
-			if (child) {
+		for (Node *node_child : p_node->iterate_children()) {
+			Node3D *child = Object::cast_to<Node3D>(node_child);
+			if (child && (can_preserve_instance || child->get_owner() != p_node)) {
 				children_global_transforms.push_back(child->get_global_transform());
 				node3d_children.push_back(child);
 			}
