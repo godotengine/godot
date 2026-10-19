@@ -8832,8 +8832,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	raytracing_list = RaytracingList();
 
 	bool project_pipeline_cache_enable = GLOBAL_GET("rendering/rendering_device/pipeline_cache/enable");
-	if (is_main_instance && project_pipeline_cache_enable) {
-		// Only the instance that is not a local device and is also the singleton is allowed to manage a pipeline cache.
+	if (singleton == this && project_pipeline_cache_enable) {
+		// The singleton manages the pipeline cache, with or without a main window. Local devices don't.
 		pipeline_cache_file_path = vformat("user://vulkan/pipelines.%s.%s",
 				OS::get_singleton()->get_current_rendering_method(),
 				device.name.validate_filename().replace_char(' ', '_').to_lower());
