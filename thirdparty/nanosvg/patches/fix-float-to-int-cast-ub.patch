@@ -1,0 +1,80 @@
+diff --git a/thirdparty/nanosvg/nanosvg.h b/thirdparty/nanosvg/nanosvg.h
+index 60a323820c..51337446c9 100644
+--- a/thirdparty/nanosvg/nanosvg.h
++++ b/thirdparty/nanosvg/nanosvg.h
+@@ -2223,6 +2223,14 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args,
+ 
+ 	// Split arc into max 90 degree segments.
+ 	// The loop assumes an iteration per end point (including start and end), this +1.
++	// A non-finite delta angle (NaN/+inf) makes this cast undefined behavior.
++	// Degenerate to a straight line instead of computing ndivs.
++	if (da != da || da > 1e30f || da < -1e30f) {
++		nsvg__lineTo(p, x2, y2);
++		*cpx = x2;
++		*cpy = y2;
++		return;
++	}
+ 	ndivs = (int)(fabsf(da) / (NSVG_PI*0.5f) + 1.0f);
+ 	hda = (da / (float)ndivs) / 2.0f;
+ 	// Fix for ticket #179: division by 0: avoid cotangens around 0 (infinite)
+diff --git a/thirdparty/nanosvg/nanosvgrast.h b/thirdparty/nanosvg/nanosvgrast.h
+index 90d42e9286..d81d0ed157 100644
+--- a/thirdparty/nanosvg/nanosvgrast.h
++++ b/thirdparty/nanosvg/nanosvgrast.h
+@@ -332,6 +332,22 @@ static float nsvg__normalize(float *x, float* y)
+ 
+ static float nsvg__absf(float x) { return x < 0 ? -x : x; }
+ static float nsvg__roundf(float x) { return (x >= 0) ? floorf(x + 0.5) : ceilf(x - 0.5); }
++static int nsvg__roundf_clamp(float x)
++{
++	float r = nsvg__roundf(x);
++	if (r >= 2147483647.0f) return 2147483647;
++	if (r <= -2147483648.0f) return (-2147483647 - 1);
++	return (int)r;
++}
++
++static int nsvg__iadd_sat(int a, int b)
++{
++	long long s = (long long)a + (long long)b;
++	if (s > 2147483647LL) return 2147483647;
++	if (s < -2147483648LL) return (-2147483647 - 1);
++	return (int)s;
++}
++
+ 
+ static void nsvg__flattenCubicBez(NSVGrasterizer* r,
+ 								  float x1, float y1, float x2, float y2,
+@@ -602,6 +618,10 @@ static void nsvg__straightJoin(NSVGrasterizer* r, NSVGpoint* left, NSVGpoint* ri
+ static int nsvg__curveDivs(float r, float arc, float tol)
+ {
+ 	float da = acosf(r / (r + tol)) * 2.0f;
++	/* For a huge stroke width r/(r+tol) rounds to 1.0f, so acosf() returns 0
++	 * and arc/da becomes +inf; casting that to int is undefined behavior.
++	 * Fall back to the minimum subdivision in that case. */
++	if (!(da > 0.0f)) return 2;
+ 	int divs = (int)ceilf(arc / da);
+ 	if (divs < 2) divs = 2;
+ 	return divs;
+@@ -873,10 +893,10 @@ static NSVGactiveEdge* nsvg__addActive(NSVGrasterizer* r, NSVGedge* e, float sta
+ //	STBTT_assert(e->y0 <= start_point);
+ 	// round dx down to avoid going too far
+ 	if (dxdy < 0)
+-		z->dx = (int)(-nsvg__roundf(NSVG__FIX * -dxdy));
++		z->dx = -nsvg__roundf_clamp(NSVG__FIX * -dxdy);
+ 	else
+-		z->dx = (int)nsvg__roundf(NSVG__FIX * dxdy);
+-	z->x = (int)nsvg__roundf(NSVG__FIX * (e->x0 + dxdy * (startPoint - e->y0)));
++		z->dx = nsvg__roundf_clamp(NSVG__FIX * dxdy);
++	z->x = nsvg__roundf_clamp(NSVG__FIX * (e->x0 + dxdy * (startPoint - e->y0)));
+ //	z->x -= off_x * FIX;
+ 	z->ey = e->y1;
+ 	z->next = 0;
+@@ -1141,7 +1161,7 @@ static void nsvg__rasterizeSortedEdges(NSVGrasterizer *r, float tx, float ty, fl
+ //					NSVG__assert(z->valid);
+ 					nsvg__freeActive(r, z);
+ 				} else {
+-					z->x += z->dx; // advance to position for current scanline
++					z->x = nsvg__iadd_sat(z->x, z->dx); // advance to position for current scanline
+ 					step = &((*step)->next); // advance through list
+ 				}
+ 			}

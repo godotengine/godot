@@ -2223,6 +2223,14 @@ static void nsvg__pathArcTo(NSVGparser* p, float* cpx, float* cpy, float* args, 
 
 	// Split arc into max 90 degree segments.
 	// The loop assumes an iteration per end point (including start and end), this +1.
+	// A non-finite delta angle (NaN/+inf) makes this cast undefined behavior.
+	// Degenerate to a straight line instead of computing ndivs.
+	if (da != da || da > 1e30f || da < -1e30f) {
+		nsvg__lineTo(p, x2, y2);
+		*cpx = x2;
+		*cpy = y2;
+		return;
+	}
 	ndivs = (int)(fabsf(da) / (NSVG_PI*0.5f) + 1.0f);
 	hda = (da / (float)ndivs) / 2.0f;
 	// Fix for ticket #179: division by 0: avoid cotangens around 0 (infinite)
