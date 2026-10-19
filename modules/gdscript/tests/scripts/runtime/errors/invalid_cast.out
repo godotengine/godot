@@ -2,7 +2,23 @@ GDTEST_RUNTIME_ERROR
 ~~ WARNING at line 3: (UNSAFE_CAST) Casting "Variant" to "Array" is unsafe.
 ~~ WARNING at line 7: (UNSAFE_CAST) Casting "Variant" to "Node" is unsafe.
 ~~ WARNING at line 11: (UNSAFE_CAST) Casting "Variant" to "int" is unsafe.
->> SCRIPT ERROR at runtime/errors/invalid_cast.gd:3 on subtest_wrong_builtin(): Invalid cast: could not convert value to 'Array'.
->> SCRIPT ERROR at runtime/errors/invalid_cast.gd:7 on subtest_builtin_as_object(): Invalid cast: can't convert a non-object value to an object type.
->> SCRIPT ERROR at runtime/errors/invalid_cast.gd:11 on subtest_object_as_builtin(): Invalid cast: could not convert value to 'int'.
+~~ WARNING at line 21: (UNSAFE_CAST) Casting "Array" to "Array[RID]" is unsafe.
+~~ WARNING at line 26: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[RID, RID]" is unsafe.
+~~ WARNING at line 27: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[String, Variant]" is unsafe.
+~~ WARNING at line 28: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[Variant, String]" is unsafe.
+~~ WARNING at line 31: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[Variant, String]" is unsafe.
+~~ WARNING at line 32: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[String, String]" is unsafe.
+~~ WARNING at line 35: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[String, Variant]" is unsafe.
+~~ WARNING at line 36: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[String, String]" is unsafe.
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:3 on subtest_wrong_builtin(): Invalid cast. Could not convert value to "Array".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:7 on subtest_builtin_as_object(): Invalid cast. Can't convert a non-object value to an object type.
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:11 on subtest_object_as_builtin(): Invalid cast. Could not convert value to "int".
 >> SCRIPT ERROR at runtime/errors/invalid_cast.gd:16 on subtest_freed_object(): Trying to cast a freed object.
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:21 on subtest_wrong_typed_array(): Invalid cast. Could not convert "Array[String]" to "Array[RID]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:26 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[String, String]" to "Dictionary[RID, RID]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:27 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[String, String]" to "Dictionary[String, Nil]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:28 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[String, String]" to "Dictionary[Nil, String]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:31 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[String, Nil]" to "Dictionary[Nil, String]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:32 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[String, Nil]" to "Dictionary[String, String]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:35 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[Nil, String]" to "Dictionary[String, Nil]".
+>> SCRIPT ERROR at runtime/errors/invalid_cast.gd:36 on subtest_wrong_typed_dict(): Invalid cast. Could not convert "Dictionary[Nil, String]" to "Dictionary[String, String]".

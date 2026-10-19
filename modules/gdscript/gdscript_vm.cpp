@@ -251,6 +251,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ASSIGN_TYPED_NATIVE, \
 		&&OPCODE_ASSIGN_TYPED_SCRIPT, \
 		&&OPCODE_CAST_TO_BUILTIN, \
+		&&OPCODE_CAST_TO_TYPED_ARRAY, \
+		&&OPCODE_CAST_TO_TYPED_DICTIONARY, \
 		&&OPCODE_CAST_TO_NATIVE, \
 		&&OPCODE_CAST_TO_SCRIPT, \
 		&&OPCODE_CONSTRUCT, \
@@ -1439,6 +1441,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CAST_TO_TYPED_ARRAY)
 			OPCODE(OPCODE_ASSIGN_TYPED_ARRAY) {
 				CHECK_SPACE(6);
 				GET_VARIANT_PTR(dst, 0);
@@ -1450,20 +1453,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName &native_type = _global_names_ptr[native_type_idx];
 
-				if (src->get_type() != Variant::ARRAY) {
-#ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Array[%s]".)",
-							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
-#endif // DEBUG_ENABLED
-					OPCODE_BREAK;
-				}
-
 				Array *array = VariantInternal::get_array(src);
-
-				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
+				if (src->get_type() != Variant::ARRAY || array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
-							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+					const char *msg = _code_ptr[ip] == OPCODE_ASSIGN_TYPED_ARRAY ? R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)" : R"(Invalid cast. Could not convert "%s" to "Array[%s]".)";
+					err_text = vformat(msg, _get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -1474,6 +1468,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CAST_TO_TYPED_DICTIONARY)
 			OPCODE(OPCODE_ASSIGN_TYPED_DICTIONARY) {
 				CHECK_SPACE(9);
 				GET_VARIANT_PTR(dst, 0);
@@ -1491,22 +1486,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(value_native_type_idx < 0 || value_native_type_idx >= _global_names_count);
 				const StringName &value_native_type = _global_names_ptr[value_native_type_idx];
 
-				if (src->get_type() != Variant::DICTIONARY) {
-#ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Dictionary[%s, %s]".)",
-							_get_var_type(src), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
-							_get_element_type(value_builtin_type, value_native_type, *value_script_type));
-#endif // DEBUG_ENABLED
-					OPCODE_BREAK;
-				}
-
 				Dictionary *dictionary = VariantInternal::get_dictionary(src);
-
-				if (dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
+				if (src->get_type() != Variant::DICTIONARY || dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
 						dictionary->get_typed_value_builtin() != ((uint32_t)value_builtin_type) || dictionary->get_typed_value_class_name() != value_native_type || dictionary->get_typed_value_script() != *value_script_type) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to assign a dictionary of type "%s" to a variable of type "Dictionary[%s, %s]".)",
-							_get_var_type(src), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
+					const char *msg = _code_ptr[ip] == OPCODE_ASSIGN_TYPED_DICTIONARY ? R"(Trying to assign a dictionary of type "%s" to a variable of type "Dictionary[%s, %s]".)" : R"(Invalid cast. Could not convert "%s" to "Dictionary[%s, %s]".)";
+					err_text = vformat(msg, _get_var_type(src), _get_element_type(key_builtin_type, key_native_type, *key_script_type),
 							_get_element_type(value_builtin_type, value_native_type, *value_script_type));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
@@ -1632,7 +1617,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
-					err_text = "Invalid cast: could not convert value to '" + Variant::get_type_name(to_type) + "'.";
+					err_text = vformat(R"(Invalid cast. Could not convert value to "%s".)", Variant::get_type_name(to_type));
 					OPCODE_BREAK;
 				}
 #endif
@@ -1656,7 +1641,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
-					err_text = "Invalid cast: can't convert a non-object value to an object type.";
+					err_text = "Invalid cast. Can't convert a non-object value to an object type.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -1688,7 +1673,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
-					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
+					err_text = vformat(R"(Trying to assign a non-object value to a variable of type "%s")", base_type->get_path().get_file());
 					OPCODE_BREAK;
 				}
 #endif
