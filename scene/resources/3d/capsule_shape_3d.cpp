@@ -173,15 +173,40 @@ void CapsuleShape3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "radius") {
 		p_property.usage = is_tapered() ? PROPERTY_USAGE_NONE : PROPERTY_USAGE_DEFAULT;
 	}
+	if (p_property.name == "height") {
+		p_property.usage = is_using_height() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_EDITOR;
+	}
+	if (p_property.name == "mid_height") {
+		p_property.usage = is_using_height() ? PROPERTY_USAGE_EDITOR : PROPERTY_USAGE_DEFAULT;
+	}
+}
+
+void CapsuleShape3D::update_height() {
+	//If spherical
+	if (MAX(top_radius, bottom_radius) > mid_height + MIN(top_radius, bottom_radius)) {
+		height = MAX(top_radius, bottom_radius) * 2;
+	} else {
+		height = mid_height + top_radius + bottom_radius;
+	}
+}
+
+void CapsuleShape3D::update_height_postradius() {
+	if (use_height) {
+		//allow height to grow if the radius is bigger than height
+		height = MAX(MAX(top_radius, bottom_radius) * 2, height);
+		mid_height = MAX(height - top_radius - bottom_radius, CMP_EPSILON);
+	} else {
+		update_height();
+	}
 }
 
 void CapsuleShape3D::set_top_radius(real_t p_top_radius) {
 	if (!tapered) {
 		return set_radius(p_top_radius);
 	}
-
 	ERR_FAIL_COND_MSG(p_top_radius <= 0.0f, "CapsuleShape3D top_radius must be positive.");
 	top_radius = MAX(p_top_radius, CMP_EPSILON);
+	update_height_postradius();
 	_update_shape();
 	emit_changed();
 }
@@ -194,9 +219,9 @@ void CapsuleShape3D::set_bottom_radius(real_t p_bottom_radius) {
 	if (!tapered) {
 		return set_radius(p_bottom_radius);
 	}
-
 	ERR_FAIL_COND_MSG(p_bottom_radius <= 0.0f, "CapsuleShape3D bottom_radius must be positive.");
 	bottom_radius = MAX(p_bottom_radius, CMP_EPSILON);
+	update_height_postradius();
 	_update_shape();
 	emit_changed();
 }
@@ -209,6 +234,7 @@ void CapsuleShape3D::set_radius(const real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius <= 0.0f, "CapsuleShape3D radius must be positive.");
 	top_radius = MAX(p_radius, CMP_EPSILON);
 	bottom_radius = top_radius;
+	update_height_postradius();
 	_update_shape();
 	emit_changed();
 }
@@ -219,7 +245,9 @@ real_t CapsuleShape3D::get_radius() const {
 
 void CapsuleShape3D::set_mid_height(real_t p_mid_height) {
 	ERR_FAIL_COND_MSG(p_mid_height <= 0.0f, "CapsuleShape3D mid_height must be positive.");
+
 	mid_height = MAX(p_mid_height, CMP_EPSILON);
+	update_height();
 	_update_shape();
 	emit_changed();
 }
@@ -229,17 +257,23 @@ real_t CapsuleShape3D::get_mid_height() const {
 }
 
 void CapsuleShape3D::set_height(real_t p_height) {
-	ERR_FAIL_COND_MSG(p_height <= top_radius + bottom_radius, "CapsuleShape3D height cannot be smaller than both radii combined.");
-	mid_height = MAX(p_height - top_radius - bottom_radius, CMP_EPSILON);
+	ERR_FAIL_COND_MSG(p_height <= 0.0f, "CapsuleShape3D height cannot be smaller than zero.");
+	height = MAX(p_height, CMP_EPSILON);
+	top_radius = MIN(top_radius, height / 2);
+	bottom_radius = MIN(bottom_radius, height / 2);
+	mid_height = MAX(height - top_radius - bottom_radius, CMP_EPSILON);
 	_update_shape();
 	emit_changed();
 }
 
 real_t CapsuleShape3D::get_height() const {
-	return mid_height + top_radius + bottom_radius;
+	return height;
 }
 
 void CapsuleShape3D::set_tapered(bool value) {
+	if (value == tapered) {
+		return;
+	}
 	tapered = value;
 	if (!tapered) {
 		float rad = get_radius();
@@ -253,6 +287,14 @@ void CapsuleShape3D::set_tapered(bool value) {
 
 bool CapsuleShape3D::is_tapered() const {
 	return tapered;
+}
+
+void CapsuleShape3D::set_is_using_height(bool new_value) {
+	if (new_value == use_height) {
+		return;
+	}
+	use_height = new_value;
+	notify_property_list_changed();
 }
 
 void CapsuleShape3D::_bind_methods() {
@@ -269,6 +311,8 @@ void CapsuleShape3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CapsuleShape3D::is_tapered);
 	ClassDB::bind_method(D_METHOD("set_tapered", "taper"), &CapsuleShape3D::set_tapered);
+	ClassDB::bind_method(D_METHOD("set_is_using_height", "use_height"), &CapsuleShape3D::set_is_using_height);
+	ClassDB::bind_method(D_METHOD("is_using_height"), &CapsuleShape3D::is_using_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, ""), "set_tapered", "is_tapered");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
@@ -276,18 +320,40 @@ void CapsuleShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_height", PROPERTY_HINT_NONE, ""), "set_is_using_height", "is_using_height");
 
+	//radius sets top and bottom radius
+	ADD_LINKED_PROPERTY("radius", "top_radius");
+	ADD_LINKED_PROPERTY("radius", "bottom_radius");
+
+	//top_radius changes the mean, thus changing radius. Same for bottom radius
+	ADD_LINKED_PROPERTY("top_radius", "radius");
+	ADD_LINKED_PROPERTY("bottom_radius", "radius");
+	//In use height mode, changing the radius changes the mid_height to keep the same height
+	ADD_LINKED_PROPERTY("top_radius", "mid_height");
+	ADD_LINKED_PROPERTY("radius", "mid_height");
+	ADD_LINKED_PROPERTY("bottom_radius", "mid_height");
+
+	//In non-use height mode, changing any radius and mid_height changes the height
 	ADD_LINKED_PROPERTY("top_radius", "height");
 	ADD_LINKED_PROPERTY("mid_height", "height");
 	ADD_LINKED_PROPERTY("bottom_radius", "height");
 
-	ADD_LINKED_PROPERTY("radius", "top_radius");
-	ADD_LINKED_PROPERTY("radius", "bottom_radius");
-
-	ADD_LINKED_PROPERTY("top_radius", "radius");
-	ADD_LINKED_PROPERTY("bottom_radius", "radius");
-
+	//Changing the height changes the mid_height
 	ADD_LINKED_PROPERTY("height", "mid_height");
+
+	//Changing the height can clamp down the radii
+	ADD_LINKED_PROPERTY("height", "top_radius");
+	ADD_LINKED_PROPERTY("height", "radius");
+	ADD_LINKED_PROPERTY("height", "mid_height");
+
+	//Use height turns on and off automatically when setting a either
+	ADD_LINKED_PROPERTY("mid_height", "use_height");
+	ADD_LINKED_PROPERTY("height", "use_height");
+
+	//Disabling tapering forces the values of top and bottom radius to the mean
+	ADD_LINKED_PROPERTY("tapered", "top_radius");
+	ADD_LINKED_PROPERTY("tapered", "bottom_radius");
 }
 
 CapsuleShape3D::CapsuleShape3D() :

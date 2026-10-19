@@ -39,8 +39,10 @@ class CapsuleShape3D : public Shape3D {
 	real_t top_radius = 0.5;
 	real_t bottom_radius = 0.5;
 	real_t mid_height = 1.0; // Height of the cylindrical part
+	real_t height = 2.0;
 
 	bool tapered = false;
+	bool use_height = true;
 
 protected:
 	static void _bind_methods();
@@ -48,6 +50,10 @@ protected:
 	virtual void _update_shape() override;
 
 	void _validate_property(PropertyInfo &p_property) const;
+
+private:
+	void update_height();
+	void update_height_postradius();
 
 public:
 	void set_top_radius(real_t p_top_radius);
@@ -67,6 +73,9 @@ public:
 
 	void set_tapered(bool value);
 	bool is_tapered() const;
+
+	void set_is_using_height(bool new_value);
+	bool is_using_height() const { return use_height; }
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;

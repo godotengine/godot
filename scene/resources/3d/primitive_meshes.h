@@ -130,17 +130,25 @@ class CapsuleMesh : public PrimitiveMesh {
 private:
 	real_t top_radius = 0.5;
 	real_t bottom_radius = 0.5;
+	real_t height = 2.0;
 	real_t mid_height = 1.0;
 	// number of points in the X-Z plane
 	int radial_segments = 64;
 	// number of rings in the Y axis
 	int rings = 16;
+	bool use_height = true;
 
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 	virtual void _update_lightmap_size() override;
+
+	void _validate_property(PropertyInfo &p_property) const;
+
+private:
+	void update_height();
+	void update_height_postradius();
 
 public:
 	static bool is_sphere(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height);
@@ -169,6 +177,9 @@ public:
 	real_t get_height() const;
 
 	bool is_tapered() const { return top_radius != bottom_radius; }
+
+	void set_is_using_height(bool new_value);
+	bool is_using_height() const { return use_height; }
 
 	void set_radial_segments(const int p_segments);
 	int get_radial_segments() const;

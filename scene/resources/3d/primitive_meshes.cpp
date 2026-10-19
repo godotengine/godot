@@ -415,6 +415,15 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	create_mesh_array(p_arr, top_radius, bottom_radius, mid_height, radial_segments, rings, _add_uv2, _uv2_padding);
 }
 
+void CapsuleMesh::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "height") {
+		p_property.usage = is_using_height() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_EDITOR;
+	}
+	if (p_property.name == "mid_height") {
+		p_property.usage = is_using_height() ? PROPERTY_USAGE_EDITOR : PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 bool CapsuleMesh::is_sphere(real_t p_top_radius, real_t p_bottom_radius, real_t p_mid_height) {
 	return Math::abs(p_top_radius - p_bottom_radius) > p_mid_height;
 }
@@ -581,7 +590,10 @@ void CapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mid_height"), &CapsuleMesh::get_mid_height);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleMesh::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleMesh::get_height);
+
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CapsuleMesh::is_tapered);
+	ClassDB::bind_method(D_METHOD("set_is_using_height", "use_height"), &CapsuleMesh::set_is_using_height);
+	ClassDB::bind_method(D_METHOD("is_using_height"), &CapsuleMesh::is_using_height);
 
 	ClassDB::bind_method(D_METHOD("set_radial_segments", "segments"), &CapsuleMesh::set_radial_segments);
 	ClassDB::bind_method(D_METHOD("get_radial_segments"), &CapsuleMesh::get_radial_segments);
@@ -596,31 +608,66 @@ void CapsuleMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_height", PROPERTY_HINT_NONE, ""), "set_is_using_height", "is_using_height");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "4,128,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "4,64,1,or_greater"), "set_rings", "get_rings");
 
+	//radius sets top and bottom radius
 	ADD_LINKED_PROPERTY("radius", "top_radius");
 	ADD_LINKED_PROPERTY("radius", "bottom_radius");
 
+	//top_radius changes the mean, thus changing radius. Same for bottom radius
 	ADD_LINKED_PROPERTY("top_radius", "radius");
 	ADD_LINKED_PROPERTY("bottom_radius", "radius");
+	//In use height mode, changing the radius changes the mid_height to keep the same height
+	ADD_LINKED_PROPERTY("top_radius", "mid_height");
+	ADD_LINKED_PROPERTY("radius", "mid_height");
+	ADD_LINKED_PROPERTY("bottom_radius", "mid_height");
 
+	//In non-use height mode, changing any radius and mid_height changes the height
 	ADD_LINKED_PROPERTY("top_radius", "height");
 	ADD_LINKED_PROPERTY("mid_height", "height");
 	ADD_LINKED_PROPERTY("bottom_radius", "height");
 
-	ADD_LINKED_PROPERTY("height", "top_radius");
+	//Changing the height changes the mid_height
 	ADD_LINKED_PROPERTY("height", "mid_height");
-	ADD_LINKED_PROPERTY("height", "bottom_radius");
+
+	//Changing the height can clamp down the radii
+	ADD_LINKED_PROPERTY("height", "top_radius");
+	ADD_LINKED_PROPERTY("height", "radius");
+	ADD_LINKED_PROPERTY("height", "mid_height");
+
+	//Use height turns on and off automatically when setting a either
+	ADD_LINKED_PROPERTY("mid_height", "use_height");
+	ADD_LINKED_PROPERTY("height", "use_height");
+}
+
+void CapsuleMesh::update_height() {
+	//If spherical
+	if (MAX(top_radius, bottom_radius) > mid_height + MIN(top_radius, bottom_radius)) {
+		height = MAX(top_radius, bottom_radius) * 2;
+	} else {
+		height = mid_height + top_radius + bottom_radius;
+	}
+}
+
+void CapsuleMesh::update_height_postradius() {
+	if (use_height) {
+		//allow height to grow if the radius is bigger than height
+		height = MAX(MAX(top_radius, bottom_radius) * 2, height);
+		mid_height = height - top_radius - bottom_radius;
+	} else {
+		update_height();
+	}
 }
 
 void CapsuleMesh::set_top_radius(const real_t p_top_radius) {
 	if (Math::is_equal_approx(top_radius, p_top_radius)) {
 		return;
 	}
-
-	top_radius = p_top_radius < 0 ? 0 : p_top_radius;
+	top_radius = MAX(p_top_radius, 0);
+	update_height_postradius();
 	_update_lightmap_size();
 	request_update();
 }
@@ -633,8 +680,9 @@ void CapsuleMesh::set_bottom_radius(const real_t p_bottom_radius) {
 	if (Math::is_equal_approx(bottom_radius, p_bottom_radius)) {
 		return;
 	}
+	bottom_radius = MAX(p_bottom_radius, 0);
+	update_height_postradius();
 
-	bottom_radius = p_bottom_radius < 0 ? 0 : p_bottom_radius;
 	_update_lightmap_size();
 	request_update();
 }
@@ -644,8 +692,15 @@ real_t CapsuleMesh::get_bottom_radius() const {
 }
 
 void CapsuleMesh::set_radius(const real_t p_radius) {
-	top_radius = (p_radius < 0 ? 0 : p_radius);
+	if (top_radius == bottom_radius && Math::is_equal_approx(top_radius, p_radius)) {
+		return;
+	}
+	top_radius = MAX(p_radius, 0);
 	bottom_radius = top_radius;
+	update_height_postradius();
+
+	_update_lightmap_size();
+	request_update();
 }
 
 real_t CapsuleMesh::get_radius() const {
@@ -657,7 +712,8 @@ void CapsuleMesh::set_mid_height(const real_t p_mid_height) {
 		return;
 	}
 
-	mid_height = p_mid_height < 0 ? 0 : p_mid_height;
+	mid_height = MAX(0, p_mid_height);
+	update_height();
 	_update_lightmap_size();
 	request_update();
 }
@@ -667,15 +723,27 @@ real_t CapsuleMesh::get_mid_height() const {
 }
 
 void CapsuleMesh::set_height(const real_t p_height) {
-	real_t new_mid_height = p_height - top_radius - bottom_radius;
-	if (new_mid_height <= 0) {
-		new_mid_height = 0.f; // Minimum to avoid invalid mesh
+	if (Math::is_equal_approx(height, p_height)) {
+		return;
 	}
-	set_mid_height(new_mid_height);
+	height = MAX(p_height, 0);
+	top_radius = MIN(top_radius, height / 2);
+	bottom_radius = MIN(bottom_radius, height / 2);
+	mid_height = p_height - top_radius - bottom_radius;
+	_update_lightmap_size();
+	request_update();
 }
 
 real_t CapsuleMesh::get_height() const {
-	return mid_height + top_radius + bottom_radius;
+	return height;
+}
+
+void CapsuleMesh::set_is_using_height(bool new_value) {
+	if (new_value == use_height) {
+		return;
+	}
+	use_height = new_value;
+	notify_property_list_changed();
 }
 
 void CapsuleMesh::set_radial_segments(const int p_segments) {
