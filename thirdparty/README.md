@@ -442,7 +442,7 @@ Patches:
 ## graphite
 
 - Upstream: https://github.com/silnrsi/graphite
-- Version: 1.3.14 (27572742003b93dc53dc02c01c237b72c6c25f54, 2022)
+- Version: 1.3.15 (ca8d821e60a15b6c24e404c9086992c975d8e1cf, 2026)
 - License: MIT
 
 Files extracted from upstream source:
