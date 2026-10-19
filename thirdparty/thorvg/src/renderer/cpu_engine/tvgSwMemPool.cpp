@@ -29,7 +29,7 @@
 static thread_local SwMpool* _pool = nullptr;
 static Array<SwMpool*> _pools;
 static uint32_t _threads = 0;
-static Key _key;
+static StrictKey _key;
 
 /************************************************************************/
 /* External Class Implementation                                        */

@@ -21,18 +21,19 @@
  */
 
 #include "tvgCommon.h"
+#include "tvgLock.h"
 #include "tvgTaskScheduler.h"
-#include "tvgLoader.h"
+#include "tvgLoaderMgr.h"
 
-#ifdef THORVG_SW_RASTER_SUPPORT
+#ifdef THORVG_CPU_ENGINE_SUPPORT
     #include "tvgSwRenderer.h"
 #endif
 
-#ifdef THORVG_GL_RASTER_SUPPORT
+#ifdef THORVG_GL_ENGINE_SUPPORT
     #include "tvgGlRenderer.h"
 #endif
 
-#ifdef THORVG_WG_RASTER_SUPPORT
+#ifdef THORVG_WG_ENGINE_SUPPORT
     #include "tvgWgRenderer.h"
 #endif
 
@@ -46,7 +47,7 @@ namespace tvg {
 }
 
 static uint16_t _version = 0;
-
+static StrictKey _key;
 
 static bool _buildVersionInfo(uint32_t* major, uint32_t* minor, uint32_t* micro)
 {
@@ -82,12 +83,14 @@ static bool _buildVersionInfo(uint32_t* major, uint32_t* minor, uint32_t* micro)
 
 Result Initializer::init(uint32_t threads) noexcept
 {
+    ScopedLock lock(_key);
     if (engineInit++ > 0) return Result::Success;
 
     if (!_buildVersionInfo(nullptr, nullptr, nullptr)) return Result::Unknown;
 
     if (!LoaderMgr::init()) return Result::Unknown;
 
+    // TODO: TaskScheduler would hinder multithreaded use of ThorVG.
     TaskScheduler::init(threads);
 
     return Result::Success;
@@ -96,21 +99,23 @@ Result Initializer::init(uint32_t threads) noexcept
 
 Result Initializer::term() noexcept
 {
+    ScopedLock lock(_key);
+
     if (engineInit == 0) return Result::InsufficientCondition;
 
     if (--engineInit > 0) return Result::Success;
 
-    #ifdef THORVG_SW_RASTER_SUPPORT
-        if (!SwRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_CPU_ENGINE_SUPPORT
+    if (!SwRenderer::term()) return Result::InsufficientCondition;
+#endif
 
-    #ifdef THORVG_GL_RASTER_SUPPORT
-        if (!GlRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_GL_ENGINE_SUPPORT
+    if (!GlRenderer::term()) return Result::InsufficientCondition;
+#endif
 
-    #ifdef THORVG_WG_RASTER_SUPPORT
-        if (!WgRenderer::term()) return Result::InsufficientCondition;
-    #endif
+#ifdef THORVG_WG_ENGINE_SUPPORT
+    if (!WgRenderer::term()) return Result::InsufficientCondition;
+#endif
 
     TaskScheduler::term();
 
