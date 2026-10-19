@@ -1123,6 +1123,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			if (tabs->has_theme_stylebox_override(SceneStringName(panel))) {
+				add_style();
+			}
+
 			skip_breakpoints->set_button_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			ignore_error_breaks->set_button_icon(get_editor_theme_icon(ignore_error_breaks_value ? SNAME("NotificationDisabled") : SNAME("Notification")));
 			ignore_error_breaks->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
