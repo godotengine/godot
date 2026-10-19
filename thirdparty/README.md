@@ -1137,6 +1137,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-external-zlib.patch` ([GH-55115](https://github.com/godotengine/godot/pull/55115))
+- `0002-fix-multipart-header-stale-size.patch` ([GH-124638](https://github.com/godotengine/godot/pull/124638))
 
 
 ## ufbx
