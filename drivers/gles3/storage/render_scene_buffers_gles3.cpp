@@ -202,7 +202,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		_clear_intermediate_buffers();
 	}
 
-	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.color != 0)) {
+	if ((!use_internal_buffer || internal3d.color != 0) && (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED || msaa3d.fbo != 0)) {
 		// already setup!
 		return;
 	}
@@ -277,7 +277,10 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
-	if (msaa3d.mode != RSE::VIEWPORT_MSAA_DISABLED && msaa3d.color == 0) {
+	if (msaa3d.mode == RSE::VIEWPORT_MSAA_DISABLED) {
+		msaa3d.samples = 1;
+		msaa3d.check_fbo_cache = false;
+	} else if (msaa3d.fbo == 0) {
 		// Setup MSAA.
 		const GLsizei samples[] = { 1, 2, 4, 8 };
 		msaa3d.samples = samples[msaa3d.mode];
@@ -378,6 +381,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			// We are going to render directly into our render target textures,
 			// these can change from frame to frame as we cycle through swapchains,
 			// hence we'll use our FBO cache here.
+			// Note: when applicable, the code in this branch will run every time _check_render_buffers is called, which is currently harmless.
 			msaa3d.needs_resolve = false;
 			msaa3d.check_fbo_cache = true;
 		} else if (use_internal_buffer) {
@@ -408,9 +412,6 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			msaa3d.samples = 1;
 			msaa3d.check_fbo_cache = false;
 		}
-	} else {
-		msaa3d.samples = 1;
-		msaa3d.check_fbo_cache = false;
 	}
 }
 
