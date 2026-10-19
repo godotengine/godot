@@ -99,7 +99,7 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformPC::p_check_export_template_debug_symbols(const String &p_template_debug_symbols_file_name, String *r_err) const {
+void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_debug_symbols_file_name, String *r_err) const {
 	String current_version = GODOT_VERSION_FULL_CONFIG;
 	String p_template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_debug_symbols_file_name);
 	if (FileAccess::exists(p_template_debug_symbols_path)) {
@@ -130,9 +130,9 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	// Warn if the debug symbols files are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
-		p_check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
+		check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
 		if (debug_symbol_mode == 2) {
-			p_check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
+			check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
 		}
 	}
 
