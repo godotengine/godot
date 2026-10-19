@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  4 May 2025                                                      *
+* Date      :  11 October 2025                                                 *
 * Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  Path Offset (Inflate/Shrink)                                    *
@@ -239,7 +239,7 @@ void ClipperOffset::DoSquare(const Path64& path, size_t j, size_t k)
 	{
 		PointD pt4 = PointD(pt3.x + vec.x * group_delta_, pt3.y + vec.y * group_delta_);
 		PointD pt = ptQ;
-		GetSegmentIntersectPt(pt1, pt2, pt3, pt4, pt);
+		GetLineIntersectPt(pt1, pt2, pt3, pt4, pt);
 		//get the second intersect point through reflecion
         path_out.emplace_back(ReflectPoint(pt, ptQ));
         path_out.emplace_back(pt);
@@ -248,7 +248,7 @@ void ClipperOffset::DoSquare(const Path64& path, size_t j, size_t k)
 	{
 		PointD pt4 = GetPerpendicD(path[j], norms[k], group_delta_);
 		PointD pt = ptQ;
-		GetSegmentIntersectPt(pt1, pt2, pt3, pt4, pt);
+		GetLineIntersectPt(pt1, pt2, pt3, pt4, pt);
         path_out.emplace_back(pt);
 		//get the second intersect point through reflecion
         path_out.emplace_back(ReflectPoint(pt, ptQ));

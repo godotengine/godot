@@ -1,6 +1,6 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  24 March 2025                                                   *
+* Date      :  12 October 2025                                                 *
 * Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  Core Clipper Library structures and functions                   *
@@ -711,9 +711,10 @@ namespace Clipper2Lib
     {
       return lo == other.lo && hi == other.hi;
     };
+
   };
 
-  inline UInt128Struct Multiply(uint64_t a, uint64_t b) // #834, #835
+  inline UInt128Struct MultiplyUInt64(uint64_t a, uint64_t b) // #834, #835
   {
     // note to self - lamba expressions follow
     const auto lo = [](uint64_t x) { return x & 0xFFFFFFFF; };
@@ -722,10 +723,7 @@ namespace Clipper2Lib
     const uint64_t x1 = lo(a) * lo(b);
     const uint64_t x2 = hi(a) * lo(b) + hi(x1);
     const uint64_t x3 = lo(a) * hi(b) + lo(x2);
-    const uint64_t lobits = lo(x3) << 32 | lo(x1);
-    const uint64_t hibits = hi(a) * hi(b) + hi(x2) + hi(x3);
-
-    return { lobits, hibits };
+    return { uint64_t(lo(x3) << 32 | lo(x1)), uint64_t(hi(a) * hi(b) + hi(x2) + hi(x3)) };
   }
 
   // returns true if (and only if) a * b == c * d
@@ -742,8 +740,8 @@ namespace Clipper2Lib
     const auto abs_c = static_cast<uint64_t>(std::abs(c));
     const auto abs_d = static_cast<uint64_t>(std::abs(d));
 
-    const auto ab = Multiply(abs_a, abs_b);
-    const auto cd = Multiply(abs_c, abs_d);
+    const auto ab = MultiplyUInt64(abs_a, abs_b);
+    const auto cd = MultiplyUInt64(abs_c, abs_d);
 
     // nb: it's important to differentiate 0 values here from other values
     const auto sign_ab = TriSign(a) * TriSign(b);
@@ -768,14 +766,8 @@ namespace Clipper2Lib
     else if (ab < cd) return -1;
     else return 0;
 #else
-    // nb: unsigned values needed for calculating carry into 'hi'
-    const auto abs_a = static_cast<uint64_t>(std::abs(a));
-    const auto abs_b = static_cast<uint64_t>(std::abs(b));
-    const auto abs_c = static_cast<uint64_t>(std::abs(c));
-    const auto abs_d = static_cast<uint64_t>(std::abs(d));
-
-    const auto ab = Multiply(abs_a, abs_b);
-    const auto cd = Multiply(abs_c, abs_d);
+    const auto ab = MultiplyUInt64(std::abs(a), std::abs(b));
+    const auto cd = MultiplyUInt64(std::abs(c), std::abs(d));
 
     const auto sign_ab = TriSign(a) * TriSign(b);
     const auto sign_cd = TriSign(c) * TriSign(d);
@@ -895,6 +887,10 @@ namespace Clipper2Lib
     return Area<T>(poly) >= 0;
   }
 
+  // GetLineIntersectPt - a 'true' result is non-parallel. The 'ip' will also
+  // be constrained to seg1. However, it's possible that 'ip' won't be inside
+  // seg2, even when 'ip' hasn't been constrained (ie 'ip' is inside seg1).
+
 #if CLIPPER2_HI_PRECISION
   // caution: this will compromise performance
   // https://github.com/AngusJohnson/Clipper2/issues/317#issuecomment-1314023253
@@ -902,7 +898,7 @@ namespace Clipper2Lib
   #define CC_MIN(x,y) ((x)>(y)?(y):(x))
   #define CC_MAX(x,y) ((x)<(y)?(y):(x))
   template<typename T>
-  inline bool GetSegmentIntersectPt(const Point<T>& ln1a, const Point<T>& ln1b,
+  inline bool GetLineIntersectPt(const Point<T>& ln1a, const Point<T>& ln1b,
     const Point<T>& ln2a, const Point<T>& ln2b, Point<T>& ip)
   {
     double ln1dy = static_cast<double>(ln1b.y - ln1a.y);
@@ -948,11 +944,14 @@ namespace Clipper2Lib
       ip.x = originx + static_cast<T>(hitx);
       ip.y = originy + static_cast<T>(hity);
     }
+#ifdef USINGZ
+    ip.z = 0;
+#endif
     return true;
 }
 #else
   template<typename T>
-  inline bool GetSegmentIntersectPt(const Point<T>& ln1a, const Point<T>& ln1b,
+  inline bool GetLineIntersectPt(const Point<T>& ln1a, const Point<T>& ln1b,
     const Point<T>& ln2a, const Point<T>& ln2b, Point<T>& ip)
   {
     // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
@@ -970,7 +969,10 @@ namespace Clipper2Lib
     {
       ip.x = static_cast<T>(ln1a.x + t * dx1);
       ip.y = static_cast<T>(ln1a.y + t * dy1);
-  }
+#ifdef USINGZ
+      ip.z = 0;
+#endif
+    }
     return true;
   }
 #endif
@@ -1006,21 +1008,44 @@ namespace Clipper2Lib
   inline bool SegmentsIntersect(const Point64& seg1a, const Point64& seg1b,
     const Point64& seg2a, const Point64& seg2b, bool inclusive = false)
   {
+    double dy1 = static_cast<double>(seg1b.y - seg1a.y);
+    double dx1 = static_cast<double>(seg1b.x - seg1a.x);
+    double dy2 = static_cast<double>(seg2b.y - seg2a.y);
+    double dx2 = static_cast<double>(seg2b.x - seg2a.x);
+    double cp = dy1 * dx2 - dy2 * dx1;
+    if (cp == 0) return false; // ie parallel segments
+
     if (inclusive)
     {
-      double res1 = CrossProduct(seg1a, seg2a, seg2b);
-      double res2 = CrossProduct(seg1b, seg2a, seg2b);
-      if (res1 * res2 > 0) return false;
-      double res3 = CrossProduct(seg2a, seg1a, seg1b);
-      double res4 = CrossProduct(seg2b, seg1a, seg1b);
-      if (res3 * res4 > 0) return false;
-      return (res1 || res2 || res3 || res4); // ensures not collinear
+      //result **includes** segments that touch at an end point
+      double t = ((seg1a.x - seg2a.x) * dy2 - (seg1a.y - seg2a.y) * dx2);
+      if (t == 0) return true;
+      if (t > 0)
+      {
+        if (cp < 0 || t > cp) return false;
+      }
+      else if (cp > 0 || t < cp) return false; // false when t more neg. than cp
+
+      t = ((seg1a.x - seg2a.x) * dy1 - (seg1a.y - seg2a.y) * dx1);
+      if (t == 0) return true;
+      if (t > 0)  return (cp > 0 && t <= cp);
+      else return (cp < 0 && t >= cp);        // true when t less neg. than cp
     }
-    else {
-      return (GetSign(CrossProduct(seg1a, seg2a, seg2b)) *
-        GetSign(CrossProduct(seg1b, seg2a, seg2b)) < 0) &&
-        (GetSign(CrossProduct(seg2a, seg1a, seg1b)) *
-          GetSign(CrossProduct(seg2b, seg1a, seg1b)) < 0);
+    else 
+    {
+      //result **excludes** segments that touch at an end point
+      double t = ((seg1a.x - seg2a.x) * dy2 - (seg1a.y - seg2a.y) * dx2);
+      if (t == 0) return false;
+      if (t > 0)
+      {
+        if (cp < 0 || t >= cp) return false;
+      }
+      else if (cp > 0 || t <= cp ) return false; // false when t more neg. than cp
+
+      t = ((seg1a.x - seg2a.x) * dy1 - (seg1a.y - seg2a.y) * dx1);
+      if (t == 0) return false;
+      if (t > 0)  return (cp > 0 && t < cp);
+      else return (cp < 0 && t > cp); // true when t less neg. than cp
     }
   }
 
@@ -1108,7 +1133,7 @@ namespace Clipper2Lib
         val = 1 - val; // toggle val
       else
       {
-        double d = CrossProduct(*prev, *curr, pt);
+        int d = CrossProductSign(*prev, *curr, pt);
         if (d == 0) return PointInPolygonResult::IsOn;
         if ((d < 0) == is_above) val = 1 - val;
       }
@@ -1122,7 +1147,7 @@ namespace Clipper2Lib
       if (curr == cend) curr = cbegin;
       if (curr == cbegin) prev = cend - 1;
       else prev = curr - 1;
-      double d = CrossProduct(*prev, *curr, pt);
+      int d = CrossProductSign(*prev, *curr, pt);
       if (d == 0) return PointInPolygonResult::IsOn;
       if ((d < 0) == is_above) val = 1 - val;
     }
