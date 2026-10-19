@@ -341,6 +341,7 @@ WindowWrapper::WindowWrapper() {
 
 	window->connect("close_requested", callable_mp(this, &WindowWrapper::_window_close_request));
 	window->connect("size_changed", callable_mp(this, &WindowWrapper::_window_size_changed));
+	window->connect("files_dropped", callable_mp(EditorNode::get_singleton(), &EditorNode::_dropped_files));
 
 	window_background = memnew(Panel);
 	window_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
