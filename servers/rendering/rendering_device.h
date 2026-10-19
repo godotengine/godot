@@ -827,6 +827,8 @@ private:
 		uint32_t max_instances_allowed = 0;
 
 		Vector<RDD::BufferID> buffers; // Not owned, just referenced.
+		// Whether any of the buffers is dynamic persistent: only those move their offset every frame.
+		bool has_dynamic_buffers = false;
 		Vector<RDG::ResourceTracker *> draw_trackers; // Not owned, just referenced.
 		Vector<uint64_t> offsets;
 		Vector<int32_t> transfer_worker_indices;

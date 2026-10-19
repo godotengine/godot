@@ -4074,6 +4074,9 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 		}
 
 		vertex_array.buffers.write[atf.binding] = buffer->driver_id;
+		if (buffer->usage.has_flag(RDD::BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+			vertex_array.has_dynamic_buffers = true;
+		}
 
 		if (unique_buffers.has(buf)) {
 			// No need to add dependencies multiple times.
@@ -5958,7 +5961,7 @@ void RenderingDevice::draw_list_bind_vertex_array(DrawListID p_list, RID p_verte
 #endif
 	draw_list.validation.vertex_array_size = vertex_array->vertex_count;
 
-	draw_graph.add_draw_list_bind_vertex_buffers(vertex_array->buffers, vertex_array->offsets);
+	draw_graph.add_draw_list_bind_vertex_buffers(vertex_array->buffers, vertex_array->offsets, vertex_array->has_dynamic_buffers);
 
 	for (int i = 0; i < vertex_array->draw_trackers.size(); i++) {
 		draw_graph.add_draw_list_usage(vertex_array->draw_trackers[i], RDG::RESOURCE_USAGE_VERTEX_BUFFER_READ);

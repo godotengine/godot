@@ -346,6 +346,16 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 	bool should_request_redraw = false;
 
+	// The vertex arrays found for the previous element. The list is sorted, so consecutive elements
+	// often draw the same surface with the same inputs, and finding them again takes the surface's
+	// version lock and a walk over its versions.
+	void *prev_surface_for_vertex_arrays = nullptr;
+	uint64_t prev_surface_input_mask = 0;
+	bool prev_surface_motion_vectors = false;
+	bool prev_surface_point_size_emulated = false;
+	RID prev_surface_vertex_array_rd;
+	RD::VertexFormatID prev_surface_vertex_format = -1;
+
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
 		const RenderElementInfo &element_info = p_params->element_info[i];
@@ -512,8 +522,17 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			uint64_t input_mask = shader->get_vertex_input_mask(pipeline_key.version, pipeline_key.color_pass_flags, pipeline_key.ubershader);
 			if (surf->owner->mesh_instance.is_valid()) {
 				mesh_storage->mesh_instance_surface_get_vertex_arrays_and_format(surf->owner->mesh_instance, surf->surface_index, input_mask, pipeline_motion_vectors, emulate_point_size, vertex_array_rd, vertex_format);
+			} else if (mesh_surface == prev_surface_for_vertex_arrays && input_mask == prev_surface_input_mask && pipeline_motion_vectors == prev_surface_motion_vectors && emulate_point_size == prev_surface_point_size_emulated) {
+				vertex_array_rd = prev_surface_vertex_array_rd;
+				vertex_format = prev_surface_vertex_format;
 			} else {
 				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, pipeline_motion_vectors, emulate_point_size, vertex_array_rd, vertex_format);
+				prev_surface_for_vertex_arrays = mesh_surface;
+				prev_surface_input_mask = input_mask;
+				prev_surface_motion_vectors = pipeline_motion_vectors;
+				prev_surface_point_size_emulated = emulate_point_size;
+				prev_surface_vertex_array_rd = vertex_array_rd;
+				prev_surface_vertex_format = vertex_format;
 			}
 
 			pipeline_key.vertex_format_id = vertex_format;
