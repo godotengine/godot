@@ -34,7 +34,7 @@
     </PackageReference>
 
     <!-- Explicit reference needed to fix vulnerability: https://github.com/dotnet/roslyn-sdk/issues/1191 -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.10" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
   </ItemGroup>
 
   <ItemGroup>
