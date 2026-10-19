@@ -783,22 +783,6 @@ THE SOFTWARE.
 
       if ( error )
         break;
-
-      /* sanity checks -- those values are used in `PCF_Glyph_Load' to     */
-      /* compute a glyph's bitmap dimensions, thus setting them to zero in */
-      /* case of an error disables this particular glyph only              */
-      if ( metrics->rightSideBearing < metrics->leftSideBearing ||
-           metrics->ascent < -metrics->descent                  )
-      {
-        metrics->characterWidth   = 0;
-        metrics->leftSideBearing  = 0;
-        metrics->rightSideBearing = 0;
-        metrics->ascent           = 0;
-        metrics->descent          = 0;
-
-        FT_TRACE0(( "pcf_get_metrics:"
-                    " invalid metrics for glyph %lu\n", i ));
-      }
     }
 
     if ( error )

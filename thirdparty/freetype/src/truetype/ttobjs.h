@@ -325,6 +325,22 @@ FT_BEGIN_HEADER
   tt_slot_init( FT_GlyphSlot  slot );
 
 
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+
+  /*
+   * Return the DirectWrite-style ClearType policy for a face and PPEM.
+   *
+   * Either output pointer may be NULL.
+   */
+  FT_LOCAL( void )
+  tt_face_get_cleartype_policy( TT_Face   face,
+                                FT_UInt   ppem,
+                                FT_Bool*  symmetric_smoothing,
+                                FT_Bool*  grid_fit );
+
+#endif
+
+
   /* auxiliary */
 #define IS_HINTED( flags )  ( ( flags & FT_LOAD_NO_HINTING ) == 0 )
 

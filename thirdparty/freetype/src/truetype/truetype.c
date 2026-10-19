@@ -24,6 +24,7 @@
 #include "ttinterp.c"
 #include "ttobjs.c"     /* object manager      */
 #include "ttpload.c"    /* tables loader       */
+#include "ttvarc.c"     /* variable composites */
 
 
 /* END */

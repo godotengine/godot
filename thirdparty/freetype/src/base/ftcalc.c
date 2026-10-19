@@ -714,9 +714,8 @@
   FT_Matrix_Check( const FT_Matrix*  matrix )
   {
     FT_Fixed  xx, xy, yx, yy;
-    FT_Fixed  val;
+    FT_ULong  val, abs_det, frob_sq;
     FT_Int    shift;
-    FT_ULong  temp1, temp2;
 
 
     if ( !matrix )
@@ -726,16 +725,14 @@
     xy  = matrix->xy;
     yx  = matrix->yx;
     yy  = matrix->yy;
-    val = FT_ABS( xx ) | FT_ABS( xy ) | FT_ABS( yx ) | FT_ABS( yy );
+    val = ULABS( xx ) | ULABS( xy ) | ULABS( yx ) | ULABS( yy );
 
     /* we only handle non-zero 32-bit values */
-    if ( !val || val > 0x7FFFFFFFL )
+    if ( !val || val > 0x7FFFFFFFUL )
       return 0;
 
-    /* Scale matrix to avoid the temp1 overflow, which is */
-    /* more stringent than avoiding the temp2 overflow.   */
-
-    shift = FT_MSB( val ) - 12;
+    /* Scale matrix to avoid overflows */
+    shift = FT_MSB( val ) - 4 * sizeof ( FT_ULong ) + 2;
 
     if ( shift > 0 )
     {
@@ -745,11 +742,11 @@
       yy >>= shift;
     }
 
-    temp1 = 32U * (FT_ULong)FT_ABS( xx * yy - xy * yx );
-    temp2 = (FT_ULong)( xx * xx ) + (FT_ULong)( xy * xy ) +
-            (FT_ULong)( yx * yx ) + (FT_ULong)( yy * yy );
+    abs_det = ULABS( xx * yy - xy * yx );
+    frob_sq = (FT_ULong)( xx * xx ) + (FT_ULong)( xy * xy ) +
+              (FT_ULong)( yx * yx ) + (FT_ULong)( yy * yy );
 
-    if ( temp1 <= temp2 )
+    if ( abs_det <= frob_sq / 32 )
       return 0;
 
     return 1;
@@ -966,7 +963,7 @@
     FT_Int    result;
 
 
-    if ( (FT_ULong)FT_ABS( in_x ) + (FT_ULong)FT_ABS( out_y ) <= 92681UL )
+    if ( ULABS( in_x ) + ULABS( out_y ) <= 92681UL )
     {
       z1.lo = (FT_UInt32)in_x * (FT_UInt32)out_y;
       z1.hi = (FT_UInt32)( (FT_Int32)z1.lo >> 31 );  /* sign-expansion */
@@ -974,7 +971,7 @@
     else
       ft_multo64( (FT_UInt32)in_x, (FT_UInt32)out_y, &z1 );
 
-    if ( (FT_ULong)FT_ABS( in_y ) + (FT_ULong)FT_ABS( out_x ) <= 92681UL )
+    if ( ULABS( in_y ) + ULABS( out_x ) <= 92681UL )
     {
       z2.lo = (FT_UInt32)in_y * (FT_UInt32)out_x;
       z2.hi = (FT_UInt32)( (FT_Int32)z2.lo >> 31 );  /* sign-expansion */

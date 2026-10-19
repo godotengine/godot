@@ -143,6 +143,11 @@ hb_ot_layout_lookup_would_substitute,(hb_face_t            *face,
 				      hb_bool_t             zero_context))
 
 HB_EXTERN(void,
+hb_ot_layout_lookups_substitute_closure,(hb_face_t      *face,
+					 const hb_set_t *lookups,
+					 hb_set_t       *glyphs /* OUT */))
+
+HB_EXTERN(void,
 hb_ot_tags_from_script_and_language,(hb_script_t   script,
 				     hb_language_t language,
 				     unsigned int *script_count /* IN/OUT */,

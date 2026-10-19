@@ -32,12 +32,20 @@
 #include <freetype/internal/services/svprop.h>
 #include <freetype/ftdriver.h>
 
+#ifdef TT_CONFIG_OPTION_VARC
+#include <freetype/internal/services/svvarc.h>
+#endif
+
 #include "ttdriver.h"
 #include "ttgload.h"
 #include "ttpload.h"
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
 #include "ttgxvar.h"
+#endif
+
+#ifdef TT_CONFIG_OPTION_VARC
+#include "ttvarc.h"
 #endif
 
 #include "tterrors.h"
@@ -456,15 +464,6 @@
     FT_Error      error;
 
 
-    if ( !slot )
-      return FT_THROW( Invalid_Slot_Handle );
-
-    if ( !size )
-      return FT_THROW( Invalid_Size_Handle );
-
-    if ( !face )
-      return FT_THROW( Invalid_Face_Handle );
-
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
     if ( glyph_index >= (FT_UInt)face->num_glyphs &&
          !face->internal->incremental_interface   )
@@ -492,6 +491,39 @@
       if ( !FT_IS_TRICKY( face ) )
         load_flags |= FT_LOAD_NO_HINTING;
     }
+
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+    /*
+     * DirectWrite treats ClearType symmetric grid fitting independently
+     * from symmetric smoothing.  Resolve the grid-fitting decision from the
+     * same policy source that GETINFO uses for symmetric smoothing.
+     *
+     * Only native v40 horizontal-LCD hinting participates.  Caller-disabled
+     * native hinting and the other interpreter/rendering modes are left
+     * alone.
+     */
+    if ( FT_LOAD_TARGET_MODE( load_flags ) == FT_RENDER_MODE_LCD &&
+         !( load_flags & FT_LOAD_NO_HINTING )                    &&
+         !FT_IS_TRICKY( face )                                   )
+    {
+      TT_Driver  driver = (TT_Driver)FT_FACE_DRIVER( face );
+
+
+      if ( driver->interpreter_version == TT_INTERPRETER_VERSION_40 )
+      {
+        FT_Bool  grid_fit;
+
+
+        tt_face_get_cleartype_policy( (TT_Face)face,
+                                      size->metrics.y_ppem,
+                                      NULL,
+                                      &grid_fit );
+
+        if ( !grid_fit )
+          load_flags |= FT_LOAD_NO_HINTING;
+      }
+    }
+#endif
 
     /* use hinted metrics only if we load a glyph with hinting */
     ttsize->metrics = ( load_flags & FT_LOAD_NO_HINTING )
@@ -571,6 +603,21 @@
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
 
 
+#ifdef TT_CONFIG_OPTION_VARC
+
+  FT_DEFINE_SERVICE_VARCREC(
+    tt_service_varc,
+
+    tt_face_init_varc_axes,
+    tt_face_load_varc,
+    tt_face_free_varc,
+    tt_face_has_varc_glyph,
+    tt_face_load_varc_glyph
+  )
+
+#endif /* TT_CONFIG_OPTION_VARC */
+
+
   static const FT_Service_TrueTypeEngineRec  tt_service_truetype_engine =
   {
 #ifdef TT_USE_BYTECODE_INTERPRETER
@@ -592,7 +639,19 @@
   )
 
 
-#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#if defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT ) && \
+    defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC7(
+    tt_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,        FT_FONT_FORMAT_TRUETYPE,
+    FT_SERVICE_ID_MULTI_MASTERS,      &tt_service_gx_multi_masters,
+    FT_SERVICE_ID_METRICS_VARIATIONS, &tt_service_metrics_variations,
+    FT_SERVICE_ID_VARC,               &tt_service_varc,
+    FT_SERVICE_ID_TRUETYPE_ENGINE,    &tt_service_truetype_engine,
+    FT_SERVICE_ID_TT_GLYF,            &tt_service_truetype_glyf,
+    FT_SERVICE_ID_PROPERTIES,         &tt_service_properties )
+#elif defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT )
   FT_DEFINE_SERVICEDESCREC6(
     tt_services,
 
@@ -602,6 +661,15 @@
     FT_SERVICE_ID_TRUETYPE_ENGINE,    &tt_service_truetype_engine,
     FT_SERVICE_ID_TT_GLYF,            &tt_service_truetype_glyf,
     FT_SERVICE_ID_PROPERTIES,         &tt_service_properties )
+#elif defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC5(
+    tt_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,     FT_FONT_FORMAT_TRUETYPE,
+    FT_SERVICE_ID_VARC,            &tt_service_varc,
+    FT_SERVICE_ID_TRUETYPE_ENGINE, &tt_service_truetype_engine,
+    FT_SERVICE_ID_TT_GLYF,         &tt_service_truetype_glyf,
+    FT_SERVICE_ID_PROPERTIES,      &tt_service_properties )
 #else
   FT_DEFINE_SERVICEDESCREC4(
     tt_services,

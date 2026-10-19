@@ -24,6 +24,10 @@
 #include <freetype/ftoutln.h>
 #include <freetype/ftdriver.h>
 
+#ifdef TT_CONFIG_OPTION_VARC
+#include <freetype/internal/services/svvarc.h>
+#endif
+
 #include "cffload.h"
 #include "cffgload.h"
 
@@ -235,7 +239,7 @@
           return FT_THROW( Invalid_Argument );
       }
     }
-    else if ( glyph_index >= cff->num_glyphs )
+    else if ( glyph_index >= (FT_ULong)face->root.num_glyphs )
       return FT_THROW( Invalid_Argument );
 
 #ifdef TT_CONFIG_OPTION_EMBEDDED_BITMAPS
@@ -407,6 +411,76 @@
     }
 
 #endif /* FT_CONFIG_OPTION_SVG */
+
+#ifdef TT_CONFIG_OPTION_VARC
+
+    /* check for VARC glyphs */
+    {
+      FT_Service_VARC  varc = (FT_Service_VARC)face->face_varc;
+
+
+      if ( face->varc                                    &&
+           varc                                          &&
+           varc->has_glyph( (FT_Face)face, glyph_index ) )
+      {
+        FT_TRACE3(( "Loading VARC glyph\n" ));
+
+        error = varc->load_glyph( (FT_Face)face,
+                                  (FT_GlyphSlot)glyph,
+                                  glyph_index,
+                                  load_flags );
+        if ( !error )
+        {
+          SFNT_Service  sfnt = (SFNT_Service)face->sfnt;
+
+          FT_Short   sb;
+          FT_UShort  advanceX = 0;
+          FT_UShort  advanceY = 0;
+          FT_BBox    bbox;
+
+
+          FT_TRACE3(( "Successfully loaded VARC glyph\n" ));
+
+          /* The outline comes from the VARC table, so the advance and  */
+          /* metrics must be supplied here (`get_metrics` applies       */
+          /* HVAR/VVAR).                                                */
+          sfnt->get_metrics( face, FALSE, glyph_index, &sb, &advanceX );
+          sfnt->get_metrics( face, TRUE,  glyph_index, &sb, &advanceY );
+
+          glyph->root.linearHoriAdvance = advanceX;
+          glyph->root.linearVertAdvance = advanceY;
+
+          FT_Outline_Get_CBox( &glyph->root.outline, &bbox );
+          glyph->root.metrics.horiBearingX = bbox.xMin;
+          glyph->root.metrics.horiBearingY = bbox.yMax;
+          glyph->root.metrics.width        = SUB_LONG( bbox.xMax, bbox.xMin );
+          glyph->root.metrics.height       = SUB_LONG( bbox.yMax, bbox.yMin );
+
+          if ( ( load_flags & FT_LOAD_NO_SCALE ) || !size )
+          {
+            glyph->root.metrics.horiAdvance = advanceX;
+            glyph->root.metrics.vertAdvance = advanceY;
+          }
+          else
+          {
+            glyph->root.metrics.horiAdvance =
+              FT_MulFix( advanceX, size->root.metrics.x_scale );
+            glyph->root.metrics.vertAdvance =
+              FT_MulFix( advanceY, size->root.metrics.y_scale );
+          }
+
+          return FT_Err_Ok;
+        }
+
+        FT_TRACE3(( "Failed to load VARC glyph, falling back to CFF\n" ));
+      }
+    }
+
+#endif /* TT_CONFIG_OPTION_VARC */
+
+    /* A VARC-only glyph has no CFF2 fallback CharString. */
+    if ( glyph_index >= cff->num_glyphs )
+      return FT_THROW( Invalid_Argument );
 
     /* top-level code ensures that FT_LOAD_NO_HINTING is set */
     /* if FT_LOAD_NO_SCALE is active                         */
