@@ -101,20 +101,19 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 
 void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_debug_symbols_file_name, String *r_err) const {
 	String current_version = GODOT_VERSION_FULL_CONFIG;
-	String p_template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_debug_symbols_file_name);
-	if (FileAccess::exists(p_template_debug_symbols_path)) {
+	String template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_debug_symbols_file_name);
+	if (FileAccess::exists(template_debug_symbols_path)) {
 		return;
 	}
 
-	String p_template_debug_symbols_path_zip = p_template_debug_symbols_path + ".zip";
-	print_line(p_template_debug_symbols_path_zip);
-	if (FileAccess::exists(p_template_debug_symbols_path_zip)) {
+	String template_debug_symbols_path_zip = template_debug_symbols_path + ".zip";
+	if (FileAccess::exists(template_debug_symbols_path_zip)) {
 		return;
 	}
 
 	// Not found
 	if (r_err) {
-		*r_err += TTR("Export Debug Symbols is set, but no export template .debug_symbols nor .debug_symbols.zip found:") + "\n" + p_template_debug_symbols_path + "\n";
+		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + template_debug_symbols_path + "\n";
 	}
 }
 
