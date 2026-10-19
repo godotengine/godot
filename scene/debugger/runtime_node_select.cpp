@@ -599,19 +599,21 @@ void RuntimeNodeSelect::_scene_double_clicked(const String &p_path) {
 
 void RuntimeNodeSelect::_process_frame() {
 #ifndef _3D_DISABLED
-	// Calculate the process time manually, as the time scale can be frozen.
-	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second());
+	if (SceneTree::get_singleton()->get_root()->is_camera_3d_override_enabled()) {
+		// Calculate the process time manually, as the time scale can be frozen.
+		const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second());
 
-	if (view_3d_controller->is_freelook_enabled()) {
-		bool was_input_disabled = Input::get_singleton()->is_input_disabled();
-		Input::get_singleton()->set_disable_input(false);
+		if (view_3d_controller->is_freelook_enabled()) {
+			bool was_input_disabled = Input::get_singleton()->is_input_disabled();
+			Input::get_singleton()->set_disable_input(false);
 
-		view_3d_controller->update_freelook(process_time);
+			view_3d_controller->update_freelook(process_time);
 
-		Input::get_singleton()->set_disable_input(was_input_disabled);
+			Input::get_singleton()->set_disable_input(was_input_disabled);
+		}
+
+		view_3d_controller->update_camera(process_time);
 	}
-
-	view_3d_controller->update_camera(process_time);
 #endif // _3D_DISABLED
 
 	if (selection_update_queued || !SceneTree::get_singleton()->is_suspended()) {

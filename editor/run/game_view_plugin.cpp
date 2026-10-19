@@ -68,10 +68,6 @@
 #include "servers/display/display_server.h"
 
 void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
-	if (!is_feature_enabled) {
-		return;
-	}
-
 	bool is_native = EditorRunBar::get_singleton()->is_running_natively();
 
 	Dictionary settings;
@@ -175,9 +171,11 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 }
 
 void GameViewDebugger::_session_stopped() {
-	if (!is_feature_enabled) {
+	if (!is_feature_enabled && !was_feature_disabled_mid_play) {
 		return;
 	}
+
+	was_feature_disabled_mid_play = false;
 
 	emit_signal(SNAME("session_stopped"));
 }
@@ -396,6 +394,7 @@ void GameViewDebugger::setup_session(int p_session_id) {
 void GameViewDebugger::_feature_profile_changed() {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	is_feature_enabled = profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
+	was_feature_disabled_mid_play = !is_feature_enabled && EditorRunBar::get_singleton()->is_playing();
 }
 
 void GameViewDebugger::_bind_methods() {
@@ -643,7 +642,7 @@ void GameView::_play_pressed() {
 }
 
 void GameView::_stop_pressed() {
-	if (!is_feature_enabled) {
+	if (!is_feature_enabled && !was_feature_disabled_mid_play) {
 		return;
 	}
 
@@ -664,6 +663,8 @@ void GameView::_stop_pressed() {
 	}
 
 	screen_index_before_start = -1;
+
+	was_feature_disabled_mid_play = false;
 
 	if (InspectorDock::get_inspector_singleton()->is_connected(SNAME("edited_object_changed"), callable_mp(this, &GameView::_inspector_object_changed))) {
 		InspectorDock::get_inspector_singleton()->disconnect(SNAME("edited_object_changed"), callable_mp(this, &GameView::_inspector_object_changed));
@@ -719,7 +720,7 @@ void GameView::_inspector_object_changed() {
 void GameView::_update_debugger_buttons() {
 	bool empty = active_sessions == 0;
 
-	suspend_button->set_disabled(empty);
+	suspend_button->set_disabled(empty || !is_feature_enabled);
 	camera_override_button->set_disabled(empty);
 	speed_state_button->set_disabled(empty);
 	game_size_label->set_visible(!empty);
@@ -1502,8 +1503,30 @@ void GameView::_debugger_breaked(bool p_breaked, bool p_can_debug) {
 void GameView::_feature_profile_changed() {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	bool is_profile_null = profile.is_null();
-
 	is_feature_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
+	was_feature_disabled_mid_play = !is_feature_enabled && EditorRunBar::get_singleton()->is_playing();
+
+	if (!is_feature_enabled) {
+		if (!node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->is_pressed()) {
+			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_pressed(true);
+			_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
+		}
+
+		suspend_button->set_pressed(false);
+		camera_override_button->set_pressed(false);
+
+		_reset_time_scales();
+
+		if (debug_mute_audio) {
+			_debug_mute_audio_button_pressed();
+		}
+
+		// If the game is currently being played and embedded, stop the game.
+		// Otherwise it would just get stuck in the now inaccessible Game view.
+		_window_close_request();
+	}
+
+	suspend_button->set_disabled(active_sessions == 0 || !is_feature_enabled);
 
 	bool is_3d_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D);
 	if (!is_3d_enabled && node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->is_pressed()) {
