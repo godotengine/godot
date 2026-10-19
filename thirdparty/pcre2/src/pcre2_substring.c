@@ -210,9 +210,10 @@ PCRE2_SIZE size;
 PCRE2_UCHAR *yield;
 rc = pcre2_substring_length_bynumber(match_data, stringnumber, &size);
 if (rc < 0) return rc;
-yield = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
-  (size + 1)*PCRE2_CODE_UNIT_WIDTH, (pcre2_memctl *)match_data);
-if (yield == NULL) return PCRE2_ERROR_NOMEMORY;
+if (size > ((PCRE2_SIZE_MAX - sizeof(pcre2_memctl)) / CU2BYTES(1)) - 1 ||
+    (yield = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
+      CU2BYTES(size + 1), (pcre2_memctl *)match_data)) == NULL)
+  return PCRE2_ERROR_NOMEMORY;
 yield = (PCRE2_UCHAR *)(((char *)yield) + sizeof(pcre2_memctl));
 if (size != 0) memcpy(yield, match_data->subject + match_data->ovector[stringnumber*2],
   CU2BYTES(size));

@@ -944,7 +944,7 @@ Patches:
 ## pcre2
 
 - Upstream: https://pcre2project.github.io/pcre2/
-- Version: 10.47 (f454e231fe5006dd7ff8f4693fd2b8eb94333429, 2025)
+- Version: 10.49 (6f9d7c1373262c541324a16a358785b33ef116cf, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

@@ -70,7 +70,7 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 #define VM(vm) ((sljit_ins)freg_map[vm] << 16)
 
 /* --------------------------------------------------------------------- */
-/*  Instruction forms                                                     */
+/*  Instruction forms                                                    */
 /* --------------------------------------------------------------------- */
 
 #define ADC		0x9a000000
@@ -157,7 +157,7 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 #define SDIV		0x9ac00c00
 #define SMADDL		0x9b200000
 #define SMOV		0x0e002c00
-#define SMULH		0x9b403c00
+#define SMULH		0x9b407c00
 #define SSHLL		0x0f00a400
 #define ST1		0x0c007000
 #define ST1_s		0x0d000000
@@ -173,7 +173,7 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 #define STUR_FI		0x3c000000
 #define STURBI		0x38000000
 #define STXR		0xc8007c00
-#define STXRB		0x8007c00
+#define STXRB		0x08007c00
 #define STXRH		0x48007c00
 #define SUB		0xcb000000
 #define SUBI		0xd1000000
@@ -184,7 +184,7 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 #define UCVTF		0x9e630000
 #define UDIV		0x9ac00800
 #define UMOV		0x0e003c00
-#define UMULH		0x9bc03c00
+#define UMULH		0x9bc07c00
 #define USHLL		0x2f00a400
 #define USHR		0x2f000400
 #define USRA		0x2f001400
@@ -1893,7 +1893,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *c
 	shift_arg &= 0x3f;
 
 	if (src2 == SLJIT_IMM) {
-		src2w = src2w << shift_arg;
+		src2w = (sljit_sw)((sljit_uw)src2w << shift_arg);
 		shift_arg = 0;
 	}
 
