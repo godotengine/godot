@@ -213,7 +213,7 @@ struct RleWorker
     int32_t cellXCnt;
     int32_t cellYCnt;
 
-    Area area;
+    long area;
     int32_t cover;
 
     SwCell* cells;
@@ -222,11 +222,14 @@ struct RleWorker
 
     SwPoint pos;
 
-    SwPoint bezStack[32 * 3 + 1];
-    SwPoint lineStack[32 + 1];
+#define BEZ_STACK_SIZE (32 * 3 + 1)
+    SwPoint bezStack[BEZ_STACK_SIZE];
+
+#define LINE_STACK_SIZE (32 + 1)
+    SwPoint lineStack[LINE_STACK_SIZE];
     int levStack[32];
 
-    SwOutline* outline;
+    const SwOutline* outline;
 
     int bandSize;
     int bandShoot;
@@ -277,16 +280,36 @@ static inline int32_t HYPOT(SwPoint pt)
     return ((pt.x > pt.y) ? (pt.x + (3 * pt.y >> 3)) : (pt.y + (3 * pt.x >> 3)));
 }
 
-
-// Used to prevent integer overflow when calculating the distance between points.
-// This function uses 64-bit arithmetic to safely compute the difference between coordinates.
-static inline uint32_t SAFE_HYPOT(SwPoint& pt1, SwPoint& pt2)
+static void _splitCubic(SwPoint* base)
 {
-    auto x = uint32_t(abs(int64_t(pt1.x) - int64_t(pt2.x)));
-    auto y = uint32_t(abs(int64_t(pt1.y) - int64_t(pt2.y)));
-    return (x > y) ? (x + (3 * y >> 3)) : (y + (3 * x >> 3));
+    int32_t a, b, c, d;
+
+    base[6].x = base[3].x;
+    c = base[1].x;
+    d = base[2].x;
+    base[1].x = a = (base[0].x + c) >> 1;
+    base[5].x = b = (base[3].x + d) >> 1;
+    c = (c + d) >> 1;
+    base[2].x = a = (a + c) >> 1;
+    base[4].x = b = (b + c) >> 1;
+    base[3].x = (a + b) >> 1;
+
+    base[6].y = base[3].y;
+    c = base[1].y;
+    d = base[2].y;
+    base[1].y = a = (base[0].y + c) >> 1;
+    base[5].y = b = (base[3].y + d) >> 1;
+    c = (c + d) >> 1;
+    base[2].y = a = (a + c) >> 1;
+    base[4].y = b = (b + c) >> 1;
+    base[3].y = (a + b) >> 1;
 }
 
+static void _splitLine(SwPoint* base)
+{
+    base[2] = base[1];
+    base[1] = {(base[0].x >> 1) + (base[1].x >> 1), (base[0].y >> 1) + (base[1].y >> 1)};
+}
 
 static void _horizLine(RleWorker& rw, int32_t x, int32_t y, int32_t area, int32_t aCount)
 {
@@ -310,12 +333,6 @@ static void _horizLine(RleWorker& rw, int32_t x, int32_t y, int32_t area, int32_
     }
 
     if (coverage == 0) return;
-
-    //span has ushort coordinates. check limit overflow
-    if (x >= SHRT_MAX || y >= SHRT_MAX) {
-        TVGERR("SW_ENGINE", "XY-coordinate overflow!");
-        return;
-    }
 
     auto rle = rw.rle;
 
@@ -346,7 +363,7 @@ static void _horizLine(RleWorker& rw, int32_t x, int32_t y, int32_t area, int32_
     if (aCount + xOver <= 0) return;
 
     //add a span to the current list
-    rle->spans.next() = {(uint16_t)x, (uint16_t)y, uint16_t(aCount + xOver), (uint8_t)coverage};
+    rle->spans.next() = {x, y,  aCount + xOver, (uint8_t)coverage};
 }
 
 
@@ -486,16 +503,20 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
     }
 
     auto line = rw.lineStack;
+    auto end = line + LINE_STACK_SIZE;
     line[0] = to;
     line[1] = rw.pos;
 
-    while (true) {
-        if (SAFE_HYPOT(line[0], line[1]) > SHRT_MAX) {
-            mathSplitLine(line);
+    while (line < end) {
+        auto diff = line[0] - line[1];
+
+        // avoid possible arithmetic overflow below by splitting
+        if (HYPOT(diff) > SHRT_MAX) {
+            _splitLine(line);
             ++line;
             continue;
         }
-        auto diff = line[0] - line[1];
+
         e1 = TRUNC(line[1]);
         e2 = TRUNC(line[0]);
 
@@ -535,7 +556,7 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
         } else {
             #define SW_UDIV(a, b) (int32_t)((uint64_t(a) * uint64_t(b)) >> 32)
 
-            Area prod = diff.x * f1.y - diff.y * f1.x;
+            long prod = diff.x * f1.y - diff.y * f1.x;
 
             /* These macros speed up repetitive divisions by replacing them
                with multiplications and right shifts. */
@@ -595,12 +616,14 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
 
         if (line-- == rw.lineStack) return true;
     }
+    return false;
 }
 
 
 static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
 {
     auto arc = rw.bezStack;
+    auto end = rw.bezStack + BEZ_STACK_SIZE;
     arc[0] = to;
     arc[1] = ctrl2;
     arc[2] = ctrl1;
@@ -623,7 +646,7 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
     /* Evaluation for Recursive Subdivision of Bezier Curves' by Thomas */
     /* F. Hain, at                                                      */
     /* http://www.cis.southalabama.edu/~hain/general/Publications/Bezier/Camera-ready%20CISST02%202.pdf */
-    while (true) {
+    while (arc < end) {
         {
             //diff is the P0 - P3 chord vector
             auto diff = arc[3] - arc[0];
@@ -636,15 +659,11 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
             auto sLimit = L * (ONE_PIXEL / 6);
 
             auto diff1 = arc[1] - arc[0];
-            auto s = diff.y * diff1.x - diff.x * diff1.y;
-            if (s < 0) s = -s;
-            if (s > sLimit) goto split;
+            if (abs(diff.y * diff1.x - diff.x * diff1.y) > sLimit) goto split;
 
             //s is L * the perpendicular distance from P2 to the line P0 - P3
             auto diff2 = arc[2] - arc[0];
-            s = diff.y * diff2.x - diff.x * diff2.y;
-            if (s < 0) s = -s;
-            if (s > sLimit) goto split;
+            if (abs(diff.y * diff2.x - diff.x * diff2.y) > sLimit) goto split;
 
             /* Split super curvy segments where the off points are so far
             from the chord that the angles P0-P1-P3 or P0-P2-P3 become
@@ -657,7 +676,7 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
             goto draw;
         }
     split:
-        mathSplitCubic(arc);
+        _splitCubic(arc);
         arc += 3;
         continue;
 
@@ -666,48 +685,47 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
         if (arc == rw.bezStack) return true;
         arc -= 3;
     }
+    return false;
 }
 
 
 static bool _decomposeOutline(RleWorker& rw)
 {
     auto outline = rw.outline;
-    auto first = 0;  //index of first point in contour
+    auto pts = outline->out.data;
+    auto start = UPSCALE(*pts);
+    auto open = false;
 
-    ARRAY_FOREACH(p, outline->cntrs) {
-        auto last = *p;
-        auto limit = outline->pts.data + last;
-        auto start = UPSCALE(outline->pts[first]);
-        auto pt = outline->pts.data + first;
-        auto types = outline->types.data + first;
-        ++types;
-
-        if (!_moveTo(rw, UPSCALE(outline->pts[first]))) return false;
-
-        while (pt < limit) {
-            //emit a single line_to
-            if (types[0] == SW_CURVE_TYPE_POINT) {
-                ++pt;
-                ++types;
-                if (!_lineTo(rw, UPSCALE(*pt))) return false;
-            //types cubic
-            } else {
-                pt += 3;
-                types += 3;
-                if (pt <= limit) {
-                    if (!_cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), UPSCALE(pt[0]))) return false;
-                } else if (pt - 1 == limit) {
-                    if (!_cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), start)) return false;
-                }
-                else goto close;
+    for (auto cmd : outline->path->cmds) {
+        switch (cmd) {
+            case PathCommand::MoveTo: {
+                if (open && !_lineTo(rw, start)) return false;
+                start = UPSCALE(*pts++);
+                if (!_moveTo(rw, start)) return false;
+                open = true;
+                break;
+            }
+            case PathCommand::LineTo: {
+                if (!open && !_moveTo(rw, start)) return false;
+                if (!_lineTo(rw, UPSCALE(*pts++))) return false;
+                open = true;
+                break;
+            }
+            case PathCommand::CubicTo: {
+                if (!open && !_moveTo(rw, start)) return false;
+                if (!_cubicTo(rw, UPSCALE(pts[0]), UPSCALE(pts[1]), UPSCALE(pts[2]))) return false;
+                pts += 3;
+                open = true;
+                break;
+            }
+            case PathCommand::Close: {
+                if (open && !_lineTo(rw, start)) return false;
+                open = false;
+                break;
             }
         }
-    close:
-        if (!_lineTo(rw, start)) return false;
-        first = last + 1;
     }
-
-    return true;
+    return !open || _lineTo(rw, start);
 }
 
 
@@ -748,11 +766,11 @@ SwRle* rleRender(SwRle* rle, const SwOutline* outline, const RenderRegion& bbox,
     rw.area = 0;
     rw.cover = 0;
     rw.invalid = true;
-    rw.cellMin = {bbox.min.x, bbox.min.y};
-    rw.cellMax = {bbox.max.x, bbox.max.y};
+    rw.cellMin = {bbox.xMin, bbox.yMin};
+    rw.cellMax = {bbox.xMax, bbox.yMax};
     rw.cellXCnt = rw.cellMax.x - rw.cellMin.x;
     rw.cellYCnt = rw.cellMax.y - rw.cellMin.y;
-    rw.outline = const_cast<SwOutline*>(outline);
+    rw.outline = outline;
     rw.bandSize = rw.bufferSize / (sizeof(SwCell) * 2);
     rw.bandShoot = 0;
     rw.antiAlias = antiAlias;
@@ -852,9 +870,9 @@ SwRle* rleRender(const RenderRegion* bbox)
     rle->spans.count = bbox->h();
 
     //cheaper without push()
-    auto x = uint16_t(bbox->min.x);
-    auto y = uint16_t(bbox->min.y);
-    auto len = uint16_t(bbox->w());
+    auto x = bbox->xMin;
+    auto y = bbox->yMin;
+    auto len = (int32_t)bbox->w();
 
     ARRAY_FOREACH(p, rle->spans) {
         *p = {x, y++, len, 255};
@@ -904,24 +922,38 @@ bool rleClip(SwRle* rle, const SwRle *clip)
             ++cspans;
             continue;
         }
-        //try clipping with all clip spans which have a same y-coordinate.
-        auto temp = cspans;
-        while(temp < cend && temp->y == cspans->y) {
-            //span must be left(x1) to right(x2) direction. Not intersected.
-            if ((spans->x + spans->len) < spans->x || (temp->x + temp->len) < temp->x) {
-                ++temp;
-                continue;
-            }
-            //clip span region
-            auto x = std::max(spans->x, temp->x);
-            auto len = std::min((spans->x + spans->len), (temp->x + temp->len)) - x;
-            if (len > 0) out.next() = {uint16_t(x), temp->y, uint16_t(len), (uint8_t)(((spans->coverage * temp->coverage) + 0xff) >> 8)};
-            ++temp;
+
+        // Both span lists are ordered and non-overlapping within a scanline.
+        if (spans->len <= 0) {
+            ++spans;
+            continue;
         }
-        ++spans;
+        if (cspans->len <= 0) {
+            ++cspans;
+            continue;
+        }
+
+        auto spanEnd = spans->x + spans->len;
+        auto clipEnd = cspans->x + cspans->len;
+
+        if (spanEnd <= cspans->x) {
+            ++spans;
+            continue;
+        }
+        if (clipEnd <= spans->x) {
+            ++cspans;
+            continue;
+        }
+
+        auto x = std::max(spans->x, cspans->x);
+        auto len = std::min(spanEnd, clipEnd) - x;
+        out.next() = {x, spans->y, len, (uint8_t)(((spans->coverage * cspans->coverage) + 0xff) >> 8)};
+
+        if (spanEnd <= clipEnd) ++spans;
+        if (clipEnd <= spanEnd) ++cspans;
     }
     out.move(rle->spans);
-    return true;
+    return !rle->spans.empty();
 }
 
 
@@ -930,24 +962,21 @@ bool rleClip(SwRle *rle, const RenderRegion* clip)
 {
     if (rle->spans.empty() || clip->invalid()) return false;
 
-    auto& min = clip->min;
-    auto& max = clip->max;
-
     Array<SwSpan> out;
     out.reserve(rle->spans.count);
     auto data = out.data;
     const SwSpan* end;
-    uint16_t x, len;
+    int32_t x, len;
 
     for (auto p = rle->fetch(*clip, &end); p < end; ++p) {
-        if (p->y >= max.y) break;
-        if (p->y < min.y || p->x >= max.x || (p->x + p->len) <= min.x) continue;
-        if (p->x < min.x) {
-            x = min.x;
-            len = std::min(uint16_t(p->len - (x - p->x)), uint16_t(max.x - x));
+        if (p->y >= clip->yMax) break;
+        if (p->y < clip->yMin || p->x >= clip->xMax || (p->x + p->len) <= clip->xMin) continue;
+        if (p->x < clip->xMin) {
+            x = clip->xMin;
+            len = std::min(p->len - (x - p->x), (clip->xMax - x));
         } else {
             x = p->x;
-            len = std::min(p->len, uint16_t(max.x - x));
+            len = std::min(p->len, clip->xMax - x);
         }
         if (len > 0) {
             *data = {x, p->y, len, p->coverage};
@@ -956,7 +985,7 @@ bool rleClip(SwRle *rle, const RenderRegion* clip)
         }
     }
     out.move(rle->spans);
-    return true;
+    return !rle->spans.empty();
 }
 
 
@@ -964,13 +993,10 @@ bool rleIntersect(const SwRle* rle, const RenderRegion& region)
 {
     if (!rle || rle->spans.empty()) return false;
 
-    auto& min = region.min;
-    auto& max = region.max;
-
     const SwSpan* end;
     for (auto p = rle->fetch(region, &end); p < end; ++p) {
-        if (p->y >= max.y) break;
-        if (p->y < min.y || p->x >= max.x || (p->x + p->len) <= min.x) continue;
+        if (p->y >= region.yMax) break;
+        if (p->y < region.yMin || p->x >= region.xMax || (p->x + p->len) <= region.xMin) continue;
         return true;
     }
     return false;

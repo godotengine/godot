@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,11 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_ITERATOR_ACCESSOR_H_
-#define _TVG_ITERATOR_ACCESSOR_H_
+#ifndef _TVG_SVG_SCENE_BUILDER_H_
+#define _TVG_SVG_SCENE_BUILDER_H_
 
-#include "tvgPaint.h"
+#include "tvgCommon.h"
 
-namespace tvg
-{
+Scene* svgSceneBuild(SvgParserContext& ctx, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag);
 
-class IteratorAccessor
-{
-public:
-    //Utility Method: Iterator Accessor
-    static Iterator* iterator(const Paint* paint)
-    {
-        return PAINT(paint)->iterator();
-    }
-};
-
-}
-
-#endif //_TVG_ITERATOR_ACCESSOR_H_
+#endif //_TVG_SVG_SCENE_BUILDER_H_

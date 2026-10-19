@@ -42,8 +42,6 @@ namespace tvg
     {
         float h, s, l;
     };
-
-    void hsl2rgb(float h, float s, float l, uint8_t& r, uint8_t& g, uint8_t& b);
 }
 
 #endif //_TVG_COLOR_H_

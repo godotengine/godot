@@ -159,6 +159,11 @@ struct Array
         return data[0];
     }
 
+    T& pick()
+    {
+        return data[--count];
+    }
+
     void pop()
     {
         if (count > 0) --count;
