@@ -32,5 +32,9 @@
 			Radius of the top hemisphere. Only usable when [member tapered] is [code]true[/code].
 			If greater than [member bottom_radius] + [member mid_height], the capsule becomes a sphere.
 		</member>
+		<member name="use_height" type="bool" setter="set_is_using_height" getter="is_using_height" default="true">
+			When true, keeps [member height] constant when changing radii.
+			When false, keeps [member mid_height] constant when changing radii.
+		</member>
 	</members>
 </class>
