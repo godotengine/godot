@@ -199,7 +199,6 @@ protected:
 
 	bool exists_export_template(const String &p_template_file_name, String *r_err) const;
 	String find_export_template(const String &p_template_file_name, String *r_err = nullptr) const;
-	void check_export_template_debug_symbols(const String &template_debug_symbols_file_name, String *err) const;
 	Vector<String> gen_export_flags(BitField<EditorExportPlatform::DebugFlags> p_flags);
 
 	virtual void zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name);

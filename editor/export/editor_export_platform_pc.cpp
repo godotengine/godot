@@ -36,6 +36,8 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/os/shared_object.h"
+#include "core/version.h"
+#include "editor/file_system/editor_paths.h"
 #include "scene/resources/image_texture.h" // IWYU pragma: keep. Misdetection of `logo`.
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -97,6 +99,25 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
+void EditorExportPlatformPC::p_check_export_template_debug_symbols(const String &p_template_debug_symbols_file_name, String *r_err) const {
+	String current_version = GODOT_VERSION_FULL_CONFIG;
+	String p_template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_debug_symbols_file_name);
+	if (FileAccess::exists(p_template_debug_symbols_path)) {
+		return;
+	}
+
+	String p_template_debug_symbols_path_zip = p_template_debug_symbols_path + ".zip";
+	print_line(p_template_debug_symbols_path_zip);
+	if (FileAccess::exists(p_template_debug_symbols_path_zip)) {
+		return;
+	}
+
+	// Not found
+	if (r_err) {
+		*r_err += TTR("Export Debug Symbols is set, but no export template .debug_symbols nor .debug_symbols.zip found:") + "\n" + p_template_debug_symbols_path + "\n";
+	}
+}
+
 bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
@@ -106,12 +127,12 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	bool dvalid = exists_export_template(get_template_file_name("debug", arch), &err);
 	bool rvalid = exists_export_template(get_template_file_name("release", arch), &err);
 
-	// adds a warning in case the debug symbols files are not found
+	// Warn if the debug symbols files are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
-		check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
+		p_check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
 		if (debug_symbol_mode == 2) {
-			check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
+			p_check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
 		}
 	}
 
