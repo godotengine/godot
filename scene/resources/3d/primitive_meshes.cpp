@@ -645,11 +645,12 @@ void CapsuleMesh::_bind_methods() {
 
 void CapsuleMesh::update_height() {
 	//If spherical
-	if (MAX(top_radius, bottom_radius) > mid_height + MIN(top_radius, bottom_radius)) {
-		height = MAX(top_radius, bottom_radius) * 2;
-	} else {
-		height = mid_height + top_radius + bottom_radius;
-	}
+	//Disabled, as this looses information (offset of the sphere, notably)
+	//if (MAX(top_radius, bottom_radius) > mid_height + MIN(top_radius, bottom_radius)) {
+	//	height = MAX(top_radius, bottom_radius) * 2;
+	//} else {
+	height = mid_height + top_radius + bottom_radius;
+	//}
 }
 
 void CapsuleMesh::update_height_postradius() {
