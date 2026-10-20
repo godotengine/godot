@@ -295,11 +295,15 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 	}
 
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			get_multiplayer()->send_request_path(this);
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			_start();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			get_multiplayer()->send_release_path(this);
 			_stop();
 		} break;
 

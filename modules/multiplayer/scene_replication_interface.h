@@ -126,6 +126,7 @@ public:
 
 	void on_reset();
 	void on_peer_change(int p_id, bool p_connected);
+	void full_replicate_to(int p_id);
 
 	Error on_spawn(Object *p_obj, Variant p_config);
 	Error on_despawn(Object *p_obj, Variant p_config);

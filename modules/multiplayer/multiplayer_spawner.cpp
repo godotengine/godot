@@ -206,7 +206,14 @@ void MultiplayerSpawner::_update_spawn_node() {
 }
 
 void MultiplayerSpawner::_notification(int p_what) {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			get_multiplayer()->send_request_path(this);
+		} break;
+		
 		case NOTIFICATION_POST_ENTER_TREE: {
 			_update_spawn_node();
 		} break;
@@ -220,6 +227,7 @@ void MultiplayerSpawner::_notification(int p_what) {
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &MultiplayerSpawner::_node_exit));
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
+			get_multiplayer()->send_release_path(this);
 			tracked_nodes.clear();
 		} break;
 	}

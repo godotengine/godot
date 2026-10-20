@@ -95,12 +95,34 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 	}
 }
 
+void SceneCacheInterface::process_path_handshake(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
+	uint8_t handshake_step = p_packet[1];
+	switch (handshake_step) {
+		case SceneMultiplayer::SIMPLIFY_PATH: {
+			process_simplify_path(p_from, p_packet, p_packet_len);
+		} break;
+		case SceneMultiplayer::CONFIRM_PATH: {
+			process_confirm_path(p_from, p_packet, p_packet_len);
+		} break;
+		case SceneMultiplayer::REQUEST_PATH: {
+			process_request_path(p_from, p_packet, p_packet_len);
+		} break;
+		case SceneMultiplayer::RELEASE_PATH: {
+			process_release_path(p_from, p_packet, p_packet_len);
+		} break;
+		default: {
+			ERR_FAIL_MSG("Invalid Path Handshake from " + itos(p_from));
+		} break;
+	}
+}
+
 void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 	ERR_FAIL_COND(!peers_info.has(p_from)); // Bug.
-	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len < 39, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
-	int ofs = 1;
+	int ofs = 2;
 
 	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
@@ -108,7 +130,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	int id = decode_uint32(&p_packet[ofs]);
 	ofs += 4;
 
-	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
+	//ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
 
 	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
@@ -127,10 +149,11 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	// Send ack.
 	Vector<uint8_t> packet;
-	packet.resize(1 + 1 + 4);
-	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_CONFIRM_PATH;
-	packet.write[1] = valid_rpc_checksum;
-	encode_uint32(id, &packet.write[2]);
+	packet.resize(1 + 1 + 1 + 4);
+	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_PATH_HANDSHAKE;
+	packet.write[1] = SceneMultiplayer::CONFIRM_PATH;
+	packet.write[2] = valid_rpc_checksum;
+	encode_uint32(id, &packet.write[3]);
 
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND(multiplayer_peer.is_null());
@@ -141,12 +164,12 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 }
 
 void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(p_packet_len != 6, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len != 7, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
 
-	const bool valid_rpc_checksum = p_packet[1];
-	int id = decode_uint32(&p_packet[2]);
+	const bool valid_rpc_checksum = p_packet[2];
+	int id = decode_uint32(&p_packet[3]);
 
 	const ObjectID *oid = assigned_ids.getptr(id);
 	if (oid == nullptr) {
@@ -165,6 +188,49 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	bool *confirmed = cache->confirmed_peers.getptr(p_from);
 	ERR_FAIL_NULL_MSG(confirmed, "Invalid packet received. Tries to confirm a node which was not requested.");
 	*confirmed = true;
+
+	multiplayer->force_replicate_to(p_from);
+}
+
+void SceneCacheInterface::process_request_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ERR_FAIL_COND(!peers_info.has(p_from)); // Bug.
+	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
+	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+	ERR_FAIL_NULL(root_node);
+
+	int ofs = 2;
+
+	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
+	const NodePath path = paths;
+	Node *node = root_node->get_node(path);
+	ERR_FAIL_NULL(node);
+
+	NodeCache &cache = _track(node);
+	if (cache.cache_id == 0) {
+		cache.cache_id = last_send_cache_id++;
+		assigned_ids[cache.cache_id] = node->get_instance_id();
+	}
+	cache.confirmed_peers.insert(p_from, false);
+	
+	// Needs to check if I have authority over this node?
+	List<int> peers_to_add;
+	peers_to_add.push_back(p_from);
+	_send_confirm_path(node, cache, peers_to_add);	
+}
+
+void SceneCacheInterface::process_release_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ERR_FAIL_COND(!peers_info.has(p_from)); // Bug.
+	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
+	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+	ERR_FAIL_NULL(root_node);
+
+	String paths = String::utf8((const char *)(p_packet + 2), p_packet_len - 2);
+	const NodePath path = paths;
+	Node *node = root_node->get_node(path);
+	ERR_FAIL_NULL(node);
+
+	NodeCache &cache = _track(node);
+	cache.confirmed_peers.insert(p_from, false);
 }
 
 Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers) {
@@ -177,11 +243,12 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, 
 	const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
 
 	Vector<uint8_t> packet;
-	packet.resize(1 + 4 + path_len + methods_md5_len);
+	packet.resize(1 + 1 + 4 + path_len + methods_md5_len);
 	int ofs = 0;
 
-	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_SIMPLIFY_PATH;
-	ofs += 1;
+	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_PATH_HANDSHAKE;
+	packet.write[ofs + 1] = SceneMultiplayer::SIMPLIFY_PATH;
+	ofs += 2;
 
 	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 

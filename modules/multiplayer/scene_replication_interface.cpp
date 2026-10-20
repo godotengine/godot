@@ -107,6 +107,18 @@ void SceneReplicationInterface::on_peer_change(int p_id, bool p_connected) {
 	}
 }
 
+void SceneReplicationInterface::full_replicate_to(int p_id) {
+	for (const ObjectID &oid : spawned_nodes) {
+		Node *node = get_id_as<Node>(oid);
+		const TrackedNode *tnode = tracked_nodes.getptr(oid);
+		MultiplayerSpawner *spawner = get_id_as<MultiplayerSpawner>(tnode->spawner);
+		int len = 0;
+		_make_spawn_packet(node, spawner, len);
+		_send_raw(packet_cache.ptr(), len, p_id, true);
+		peers_info[p_id].spawn_nodes.insert(oid);
+	}
+}
+
 void SceneReplicationInterface::on_reset() {
 	for (const KeyValue<int, PeerInfo> &E : peers_info) {
 		_free_remotes(E.value);
