@@ -181,7 +181,7 @@ AnimationNode::NodeTimeInfo AnimationNodeAnimation::_process(ProcessState &p_pro
 			cur_delta += cur_time;
 			cur_time = 0;
 		} else if (Animation::is_greater_approx(cur_time, cur_len)) {
-			cur_delta += cur_time - cur_len;
+			cur_delta -= cur_time - cur_len;
 			cur_time = cur_len;
 		}
 		cur_backward = false;
