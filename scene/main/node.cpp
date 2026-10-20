@@ -3527,6 +3527,14 @@ void Node::queue_free() {
 	}
 }
 
+void Node::queue_free_children() {
+	ERR_THREAD_GUARD
+
+	for (const KeyValue<StringName, Node *> &K : data.children) {
+		K.value->queue_free();
+	}
+}
+
 #ifdef TOOLS_ENABLED
 static void _add_nodes_to_options(const Node *p_base, const Node *p_node, List<String> *r_options) {
 	if (p_node != p_base && !p_node->get_owner()) {
@@ -3927,6 +3935,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport"), &Node::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("queue_free"), &Node::queue_free);
+	ClassDB::bind_method(D_METHOD("queue_free_children"), &Node::queue_free_children);
 
 	ClassDB::bind_method(D_METHOD("request_ready"), &Node::request_ready);
 	ClassDB::bind_method(D_METHOD("is_node_ready"), &Node::is_ready);
