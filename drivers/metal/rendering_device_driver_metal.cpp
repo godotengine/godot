@@ -273,30 +273,23 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// desc->setCompressionType(MTL::TextureCompressionTypeLossy);
 
 	if (p_format.samples > TEXTURE_SAMPLES_1) {
-		SampleCount supported = (*device_properties).find_nearest_supported_sample_count(p_format.samples);
+		ERR_FAIL_COND_V_MSG(texture_get_nearest_supported_samples(p_format) != p_format.samples, TextureID(), "Unsupported sample count.");
 
-		if (supported > SampleCount1) {
-			bool ok = p_format.texture_type == TEXTURE_TYPE_2D || p_format.texture_type == TEXTURE_TYPE_2D_ARRAY;
-			if (ok) {
-				switch (p_format.texture_type) {
-					case TEXTURE_TYPE_2D:
-						desc->setTextureType(MTL::TextureType2DMultisample);
-						break;
-					case TEXTURE_TYPE_2D_ARRAY:
-						desc->setTextureType(MTL::TextureType2DMultisampleArray);
-						break;
-					default:
-						break;
-				}
-				desc->setSampleCount((NS::UInteger)supported);
-				if (p_format.mipmaps > 1) {
-					// For a buffer-backed or multi-sample texture, the value must be 1.
-					WARN_PRINT("mipmaps == 1 for multi-sample textures");
-					desc->setMipmapLevelCount(1);
-				}
-			} else {
-				WARN_PRINT("Unsupported multi-sample texture type; disabling multi-sample");
-			}
+		switch (p_format.texture_type) {
+			case TEXTURE_TYPE_2D:
+				desc->setTextureType(MTL::TextureType2DMultisample);
+				break;
+			case TEXTURE_TYPE_2D_ARRAY:
+				desc->setTextureType(MTL::TextureType2DMultisampleArray);
+				break;
+			default:
+				ERR_FAIL_V_MSG(TextureID(), "Multisample textures must be 2D or 2D array.");
+		}
+		desc->setSampleCount(TEXTURE_SAMPLES_COUNT[p_format.samples]);
+		if (p_format.mipmaps > 1) {
+			// For a buffer-backed or multi-sample texture, the value must be 1.
+			WARN_PRINT("mipmaps == 1 for multi-sample textures");
+			desc->setMipmapLevelCount(1);
 		}
 	}
 
@@ -428,6 +421,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	}
 
 	return TextureID(tex_info);
+}
+
+RDD::TextureSamples RenderingDeviceDriverMetal::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	SampleCount supported = (*device_properties).find_nearest_supported_sample_count(p_format.samples);
+	return TextureSamples(Math::get_shift_from_power_of_2((uint32_t)supported));
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) {

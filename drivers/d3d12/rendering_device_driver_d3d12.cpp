@@ -1130,7 +1130,8 @@ static const D3D12_UAV_DIMENSION RD_TEXTURE_TYPE_TO_D3D12_VIEW_DIMENSION_FOR_UAV
 	D3D12_UAV_DIMENSION_TEXTURE2DARRAY,
 };
 
-uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(VectorView<DXGI_FORMAT> p_formats) {
+// Bit n set means (1 << n) samples are supported, matching TextureSamples.
+uint32_t RenderingDeviceDriverD3D12::_find_common_supported_sample_counts_mask(VectorView<DXGI_FORMAT> p_formats) {
 	uint32_t common = UINT32_MAX;
 
 	MutexLock lock(format_sample_counts_mask_cache_mutex);
@@ -1154,11 +1155,14 @@ uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(Vec
 			common &= mask;
 		}
 	}
-	if (common == UINT32_MAX) {
-		return 1;
-	} else {
-		return ((uint32_t)1 << Math::nearest_shift(common));
-	}
+	// No formats: 1x only.
+	return common == UINT32_MAX ? 1 : common;
+}
+
+uint32_t RenderingDeviceDriverD3D12::_find_max_common_supported_sample_count(VectorView<DXGI_FORMAT> p_formats) {
+	uint32_t mask = _find_common_supported_sample_counts_mask(p_formats);
+	// nearest_shift() returns the highest set bit index plus 1.
+	return mask ? ((uint32_t)1 << (Math::nearest_shift(mask) - 1)) : 1;
 }
 
 UINT RenderingDeviceDriverD3D12::_compute_component_mapping(const RDD::TextureView &p_view) {
@@ -1399,6 +1403,23 @@ bool RenderingDeviceDriverD3D12::_unordered_access_supported_by_format(DataForma
 	}
 }
 
+RDD::TextureSamples RenderingDeviceDriverD3D12::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	bool depth_stencil = p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	bool unordered_access = (p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT) || (!(p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT) && _unordered_access_supported_by_format(p_format.format));
+	if (unordered_access) {
+		// No MSAA in D3D12 if storage. May have become possible recently where supported, though.
+		return TEXTURE_SAMPLES_1;
+	}
+	DXGI_FORMAT format_to_test = depth_stencil ? RD_TO_D3D12_FORMAT[p_format.format].dsv_format : RD_TO_D3D12_FORMAT[p_format.format].general_format;
+	uint32_t mask = _find_common_supported_sample_counts_mask(format_to_test);
+	for (int samples = p_format.samples; samples > TEXTURE_SAMPLES_1; samples--) {
+		if (mask & (1u << samples)) {
+			return TextureSamples(samples);
+		}
+	}
+	return TEXTURE_SAMPLES_1;
+}
+
 RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
 	// Using D3D12_RESOURCE_DESC1. Thanks to the layout, it's sliceable down to D3D12_RESOURCE_DESC if needed.
 	CD3DX12_RESOURCE_DESC1 resource_desc = {};
@@ -1483,16 +1504,9 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 		resource_desc.Format = DXGI_FORMAT_R8_UINT;
 	}
 
+	ERR_FAIL_COND_V_MSG(texture_get_nearest_supported_samples(p_format) != p_format.samples, TextureID(), "Unsupported sample count.");
 	resource_desc.SampleDesc = {};
-	DXGI_FORMAT format_to_test = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) ? RD_TO_D3D12_FORMAT[p_format.format].dsv_format : RD_TO_D3D12_FORMAT[p_format.format].general_format;
-	if (!(resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)) {
-		resource_desc.SampleDesc.Count = MIN(
-				_find_max_common_supported_sample_count(format_to_test),
-				TEXTURE_SAMPLES_COUNT[p_format.samples]);
-	} else {
-		// No MSAA in D3D12 if storage. May have become possible recently where supported, though.
-		resource_desc.SampleDesc.Count = 1;
-	}
+	resource_desc.SampleDesc.Count = TEXTURE_SAMPLES_COUNT[p_format.samples];
 	resource_desc.SampleDesc.Quality = resource_desc.SampleDesc.Count == 1 ? 0 : DXGI_STANDARD_MULTISAMPLE_QUALITY_PATTERN;
 
 	// Create.
