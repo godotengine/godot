@@ -1955,6 +1955,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
 			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
 			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
+
+			p_theme->set_type_variation("CheckBoxNoIconTintNoDim", "CheckBoxNoIconTint");
+			if (!p_config.dark_icon_and_font) {
+				// Overblown white to offset icon dimming.
+				p_theme->set_color("checkbox_unchecked_color", "CheckBoxNoIconTintNoDim", Color(3, 3, 3));
+			}
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).

@@ -730,6 +730,13 @@ void Window::set_ime_position(const Point2i &p_pos) {
 	}
 }
 
+void Window::set_ime_rect(const Rect2i &p_rect) {
+	ERR_MAIN_THREAD_GUARD;
+	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_ime_rect(p_rect, window_id);
+	}
+}
+
 bool Window::is_embedded() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return get_embedder() != nullptr;
@@ -3563,6 +3570,7 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_ime_active", "active"), &Window::set_ime_active);
 	ClassDB::bind_method(D_METHOD("set_ime_position", "position"), &Window::set_ime_position);
+	ClassDB::bind_method(D_METHOD("set_ime_rect", "rect"), &Window::set_ime_rect);
 
 	ClassDB::bind_method(D_METHOD("is_embedded"), &Window::is_embedded);
 

@@ -1368,7 +1368,7 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 		menu_option(MENU_COPY_PROPERTY_PATH);
 		accept_event();
-	} else {
+	} else if (EditorContextMenuPluginManager::get_singleton()) {
 		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_event);
 		if (custom_callback.is_valid()) {
 #ifndef DISABLE_DEPRECATED

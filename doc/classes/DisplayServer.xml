@@ -2493,6 +2493,15 @@
 				Sets the position of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
 			</description>
 		</method>
+		<method name="window_set_ime_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets a rectangle which should not be obstructed by the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
 		<method name="window_set_input_event_callback">
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />

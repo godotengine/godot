@@ -24,7 +24,7 @@ uniform highp sampler2D global_shader_parameters_texture; //texunit:-2
 
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:2
+layout(std140) uniform MaterialUniforms{ //ubo:1
 
 #MATERIAL_UNIFORMS
 

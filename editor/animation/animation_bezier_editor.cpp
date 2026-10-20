@@ -2054,7 +2054,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 				real_t newpos = animation->track_get_key_time(E->get().first, E->get().second);
 				newpos += -scaling_selection_offset.x + (newpos - scaling_selection_pivot.x) * (scaling_selection_scale.x - 1);
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->get().first, newpos);
+				undo_redo->add_undo_method(this, "_track_remove_key_at_time_if_exists", animation, E->get().first, newpos);
 			}
 
 			// 5 - (undo) Reinsert keys.
@@ -2718,6 +2718,13 @@ void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animat
 	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode, p_handle_set_mode);
 }
 
+void AnimationBezierTrackEdit::_track_remove_key_at_time_if_exists(const Ref<Animation> &p_anim, int p_track, double p_time) {
+	int idx = p_anim->track_find_key(p_track, p_time, Animation::FIND_MODE_APPROX);
+	if (idx != -1) {
+		p_anim->track_remove_key(p_track, idx);
+	}
+}
+
 void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_selection"), &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"), &AnimationBezierTrackEdit::_clear_selection_for_anim);
@@ -2727,6 +2734,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_lock_track"), &AnimationBezierTrackEdit::_lock_track);
 	ClassDB::bind_method(D_METHOD("_hide_track"), &AnimationBezierTrackEdit::_hide_track);
 	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key_at_anim"), &AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
+	ClassDB::bind_method(D_METHOD("_track_remove_key_at_time_if_exists"), &AnimationBezierTrackEdit::_track_remove_key_at_time_if_exists);
 
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));

@@ -49,6 +49,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/filter_line_edit.h"
 #include "editor/inspector/editor_properties_vector.h"
@@ -2664,9 +2665,9 @@ bool VisualShaderEditor::_update_preview_parameter_tree() {
 		}
 
 		if (prop.value.type == Variant::OBJECT) {
-			item->set_icon(0, get_editor_theme_icon(SNAME("ImageTexture")));
+			item->set_icon(0, EditorIconManager::get_icon(SNAME("ImageTexture")));
 		} else {
-			item->set_icon(0, get_editor_theme_icon(Variant::get_type_name(prop.value.type)));
+			item->set_icon(0, EditorIconManager::get_icon(Variant::get_type_name(prop.value.type)));
 		}
 	}
 

@@ -2058,6 +2058,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
+#if defined(MACOS_ENABLED) && defined(TOOLS_ENABLED)
+	if (display_driver == EMBEDDED_DISPLAY_DRIVER && (debug_uri.is_empty() || editor_pid == 0 || init_embed_parent_window_id == 0)) {
+		OS::get_singleton()->print("Error: \"--embedded\" requires \"--remote-debug <uri>\", \"--wid <window_id>\", and \"--editor-pid <pid>\" arguments. Aborting.\n");
+		goto error;
+	}
+#endif
+
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
@@ -2287,6 +2294,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 #endif
 	});
+#if MACOS_ENABLED
+	if (display_driver == EMBEDDED_DISPLAY_DRIVER && !EngineDebugger::get_singleton()) {
+		OS::get_singleton()->print("Error: Connection to debug server failed. Aborting.\n");
+		goto error;
+	}
+#endif
 #endif
 
 #ifdef TOOLS_ENABLED

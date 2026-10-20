@@ -472,6 +472,7 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
+	virtual void window_set_ime_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
 
 	virtual bool window_maximize_on_title_dbl_click() const { return false; }
 	virtual bool window_minimize_on_title_dbl_click() const { return false; }

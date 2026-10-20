@@ -139,6 +139,44 @@ static void _copyStyle(SvgStyleProperty* to, const SvgStyleProperty* from, bool 
         to->flags |= SvgStyleFlags::Opacity;
         if (from->flagsImportance & SvgStyleFlags::Opacity) to->flagsImportance |= SvgStyleFlags::Opacity;
     }
+    if (((from->flags & SvgStyleFlags::BlendMode) && (overwrite || !(to->flags & SvgStyleFlags::BlendMode))) ||
+        _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::BlendMode)) {
+        to->blendMode = from->blendMode;
+        to->flags |= SvgStyleFlags::BlendMode;
+        if (from->flagsImportance & SvgStyleFlags::BlendMode) to->flagsImportance |= SvgStyleFlags::BlendMode;
+    }
+    if (((from->flags & SvgStyleFlags::TextAnchor) && (overwrite || !(to->flags & SvgStyleFlags::TextAnchor))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::TextAnchor)) {
+        to->textAnchor = from->textAnchor;
+        to->flags |= SvgStyleFlags::TextAnchor;
+        if (from->flagsImportance & SvgStyleFlags::TextAnchor) to->flagsImportance |= SvgStyleFlags::TextAnchor;
+    }
+    if (((from->flags & SvgStyleFlags::AlignmentBaseline) && (overwrite || !(to->flags & SvgStyleFlags::AlignmentBaseline))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::AlignmentBaseline)) {
+        to->alignmentBaseline = from->alignmentBaseline;
+        to->flags |= SvgStyleFlags::AlignmentBaseline;
+        if (from->flagsImportance & SvgStyleFlags::AlignmentBaseline) to->flagsImportance |= SvgStyleFlags::AlignmentBaseline;
+    }
+    if (((from->flags & SvgStyleFlags::DominantBaseline) && (overwrite || !(to->flags & SvgStyleFlags::DominantBaseline))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::DominantBaseline)) {
+        to->dominantBaseline = from->dominantBaseline;
+        to->flags |= SvgStyleFlags::DominantBaseline;
+        if (from->flagsImportance & SvgStyleFlags::DominantBaseline) to->flagsImportance |= SvgStyleFlags::DominantBaseline;
+    }
+    if (((from->flags & SvgStyleFlags::FontWeight) && (overwrite || !(to->flags & SvgStyleFlags::FontWeight))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::FontWeight)) {
+        to->fontWeight = from->fontWeight;
+        to->flags |= SvgStyleFlags::FontWeight;
+        if (from->flagsImportance & SvgStyleFlags::FontWeight) to->flagsImportance |= SvgStyleFlags::FontWeight;
+    }
+    if (((from->flags & SvgStyleFlags::LetterSpacing) && (overwrite || !(to->flags & SvgStyleFlags::LetterSpacing))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::LetterSpacing)) {
+        to->letterSpacing = from->letterSpacing;
+        to->letterSpacingRelative = from->letterSpacingRelative;
+        to->flags |= SvgStyleFlags::LetterSpacing;
+        if (from->flagsImportance & SvgStyleFlags::LetterSpacing) to->flagsImportance |= SvgStyleFlags::LetterSpacing;
+    }
+    if (((from->flags & SvgStyleFlags::WordSpacing) && (overwrite || !(to->flags & SvgStyleFlags::WordSpacing))) || _isImportanceApplicable(to->flagsImportance, from->flagsImportance, SvgStyleFlags::WordSpacing)) {
+        to->wordSpacing = from->wordSpacing;
+        to->wordSpacingRelative = from->wordSpacingRelative;
+        to->flags |= SvgStyleFlags::WordSpacing;
+        if (from->flagsImportance & SvgStyleFlags::WordSpacing) to->flagsImportance |= SvgStyleFlags::WordSpacing;
+    }
 }
 
 

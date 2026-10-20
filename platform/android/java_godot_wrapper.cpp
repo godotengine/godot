@@ -90,6 +90,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge)
 	_set_window_color = p_env->GetMethodID(godot_native_bridge_class, "setWindowColor", "(Ljava/lang/String;)V");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_native_bridge_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
 	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_native_bridge_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
+	_show_editor_game_dock = p_env->GetMethodID(godot_native_bridge_class, "nativeShowEditorGameDock", "()V");
 	_get_activity = p_env->GetMethodID(godot_native_bridge_class, "getActivity", "()Landroid/app/Activity;");
 	_build_env_connect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
 	_build_env_disconnect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvDisconnect", "()V");
@@ -662,6 +663,15 @@ void GodotJavaWrapper::on_distraction_free_mode_changed(bool p_enabled) {
 		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(godot_native_bridge, _on_distraction_free_mode_changed, p_enabled);
+	}
+}
+
+void GodotJavaWrapper::show_editor_game_dock() {
+	if (_show_editor_game_dock) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_native_bridge, _show_editor_game_dock);
 	}
 }
 

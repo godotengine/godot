@@ -6,6 +6,7 @@
 	<description>
 		This class contains the intersection information produced by [method PhysicsDirectSpaceState2D.intersect_shape_into].
 		It can store multiple intersections, up to a user-defined maximum.
+		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
 	</tutorials>

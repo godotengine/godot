@@ -74,8 +74,30 @@ void ScalableContainer::_notification(int p_what) {
 	}
 }
 
+static void _get_ocuppied_area(Node *p_node, Rect2 *r_rect) {
+	if (Control *c = Object::cast_to<Control>(p_node)) {
+		r_rect->expand_to(c->get_global_rect().position + c->get_bound_minimum_size());
+	}
+	for (Node *child : p_node->iterate_children<false>()) {
+		_get_ocuppied_area(child, r_rect);
+	}
+}
+
 Size2 ScalableContainer::get_minimum_size() const {
-	return MarginContainer::get_minimum_size() * EDSCALE;
+	// Custom content could have a non Container root.
+	// This custom iteration intends to more reliably calculate the space occupied by the scene.
+	Rect2 rect;
+	rect.position = get_global_rect().position;
+	for (Node *child : iterate_children()) {
+		_get_ocuppied_area(child, &rect);
+	}
+
+	Size2 size = rect.size;
+	// Left and Top margin are already considered, add Bottom and Right margins.
+	size.width += get_margin_size(SIDE_RIGHT);
+	size.height += get_margin_size(SIDE_BOTTOM);
+
+	return size * EDSCALE;
 }
 
 ScalableContainer::ScalableContainer() {

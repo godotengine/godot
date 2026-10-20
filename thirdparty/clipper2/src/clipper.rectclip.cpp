@@ -1,8 +1,8 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  5 July 2024                                                     *
+* Date      :  11 October 2025                                                 *
 * Website   :  https://www.angusj.com                                          *
-* Copyright :  Angus Johnson 2010-2024                                         *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  FAST rectangular clipping                                       *
 * License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
@@ -73,8 +73,8 @@ namespace Clipper2Lib {
   bool GetSegmentIntersection(const Point64& p1,
     const Point64& p2, const Point64& p3, const Point64& p4, Point64& ip)
   {
-    double res1 = CrossProduct(p1, p3, p4);
-    double res2 = CrossProduct(p2, p3, p4);
+    int res1 = CrossProductSign(p1, p3, p4);
+    int res2 = CrossProductSign(p2, p3, p4);
     if (res1 == 0)
     {
       ip = p1;
@@ -93,8 +93,8 @@ namespace Clipper2Lib {
     }
     if ((res1 > 0) == (res2 > 0)) return false;
 
-    double res3 = CrossProduct(p3, p1, p2);
-    double res4 = CrossProduct(p4, p1, p2);
+    int res3 = CrossProductSign(p3, p1, p2);
+    int res4 = CrossProductSign(p4, p1, p2);
     if (res3 == 0)
     {
       ip = p3;
@@ -112,7 +112,7 @@ namespace Clipper2Lib {
     if ((res3 > 0) == (res4 > 0)) return false;
 
     // segments must intersect to get here
-    return GetSegmentIntersectPt(p1, p2, p3, p4, ip);
+    return GetLineIntersectPt(p1, p2, p3, p4, ip);
   }
 
   inline bool GetIntersection(const Path64& rectPath,
@@ -223,7 +223,7 @@ namespace Clipper2Lib {
     const Point64& prev_pt, const Point64& curr_pt, const Point64& rect_mp)
   {
     if (AreOpposites(prev, curr))
-      return CrossProduct(prev_pt, rect_mp, curr_pt) < 0;
+      return CrossProductSign(prev_pt, rect_mp, curr_pt) < 0;
     else
       return HeadingClockwise(prev, curr);
   }
