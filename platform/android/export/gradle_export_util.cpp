@@ -361,7 +361,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	manifest_activity_text += "            </intent-filter>\n";
 
 	// Hybrid categories should only go to the actual 'GodotApp' activity.
-	Ref<RegEx> activity_alias_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"org.godotengine.xr.hybrid.(IMMERSIVE|PANEL)"\s*\/>)delim");
+	Ref<RegEx> activity_alias_content_to_remove_regex = RegEx::create_from_string(R"delim(<category\s+android:name\s*=\s*"org.godotengine.xr.hybrid.(SPATIAL|IMMERSIVE|PANEL)"\s*\/>)delim");
 	String updated_export_plugins_activity_alias_element_contents = activity_alias_content_to_remove_regex->sub(export_plugins_activity_element_contents, "", true);
 	manifest_activity_text += updated_export_plugins_activity_alias_element_contents;
 
