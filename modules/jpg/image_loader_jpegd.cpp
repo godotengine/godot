@@ -52,6 +52,11 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		return ERR_FILE_CORRUPT;
 	}
 
+	ERR_FAIL_COND_V_MSG(image_width > Image::MAX_WIDTH, ERR_UNAVAILABLE,
+			"The Image width specified (" + itos(image_width) + " pixels) cannot be greater than " + itos(Image::MAX_WIDTH) + "pixels.");
+	ERR_FAIL_COND_V_MSG(image_height > Image::MAX_HEIGHT, ERR_UNAVAILABLE,
+			"The Image height specified (" + itos(image_height) + " pixels) cannot be greater than " + itos(Image::MAX_HEIGHT) + "pixels.");
+
 	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS) {
 		return ERR_FILE_CORRUPT;
 	}
