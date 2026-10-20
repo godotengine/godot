@@ -1168,6 +1168,10 @@
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the vertical axis in which the control should grow or shrink if its vertical size is changed.
 		</member>
+		<member name="hidden_layout_mode" type="int" setter="set_hidden_layout_mode" getter="get_hidden_layout_mode" enum="Control.HiddenLayoutMode" default="0">
+			Determines whether this control reserves its layout space in the parent [Container] while it is hidden (i.e. [member CanvasItem.visible] is [code]false[/code]). Since the default behavior is [constant HIDDEN_LAYOUT_INHERITED], this can be used on a parent control to make all its children keep their layout space when hidden. If there is no parent control, this is the same as [constant HIDDEN_LAYOUT_DISABLED].
+			[b]Note:[/b] This only affects layout inside [Container] nodes; the control will still not be rendered or receive input while hidden.
+		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew). See also [method is_layout_rtl].
 		</member>
@@ -1634,6 +1638,15 @@
 		</constant>
 		<constant name="ANCHOR_END" value="1" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
+		</constant>
+		<constant name="HIDDEN_LAYOUT_INHERITED" value="0" enum="HiddenLayoutMode">
+			Inherits the [member hidden_layout_mode] from the parent control. If there is no parent control, this is the same as [constant HIDDEN_LAYOUT_DISABLED].
+		</constant>
+		<constant name="HIDDEN_LAYOUT_DISABLED" value="1" enum="HiddenLayoutMode">
+			The control does not reserve layout space while hidden. This is the default engine behavior: a hidden control is skipped by parent [Container] sorting and its minimum size is not taken into account.
+		</constant>
+		<constant name="HIDDEN_LAYOUT_ENABLED" value="2" enum="HiddenLayoutMode">
+			The control keeps its layout space in the parent [Container] even while hidden. This can be used to ignore the parent's [member hidden_layout_mode].
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent control layout direction.
