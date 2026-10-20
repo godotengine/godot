@@ -132,11 +132,22 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
 	ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
 
-	const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
-	ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
+	const PackedInt32Array current_indices = mesh_data[RSE::ARRAY_INDEX];
+	ERR_FAIL_COND_V(current_indices.is_empty(), nullptr);
 
-	const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
-	ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
+	const PackedVector3Array current_vertices = mesh_data[RSE::ARRAY_VERTEX];
+	ERR_FAIL_COND_V(current_vertices.is_empty(), nullptr);
+
+	if (rest_mesh != mesh || rest_vertices.size() != current_vertices.size() || rest_indices.size() != current_indices.size()) {
+		rest_mesh = mesh;
+		rest_indices = current_indices;
+		rest_vertices = current_vertices;
+	}
+
+	const PackedInt32Array &mesh_indices = rest_indices;
+	const PackedVector3Array &mesh_vertices = rest_vertices;
+
+	const JPH::RVec3 body_position = jolt_settings->mPosition;
 
 	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
 	JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
@@ -155,8 +166,6 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	vertex_to_physics.reserve(mesh_vertex_count);
 
 	int physics_index_count = 0;
-
-	const JPH::RVec3 body_position = jolt_settings->mPosition;
 
 	for (int i = 0; i < mesh_index_count; i += 3) {
 		int physics_face[3];
@@ -226,6 +235,15 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 		e.mRestLength *= multiplier;
 	}
 	settings->Optimize();
+
+	for (int i = 0; i < mesh_vertex_count; ++i) {
+		const int p = mesh_to_physics[i];
+		if (p < 0) {
+			continue;
+		}
+		const Vector3 v = current_vertices[i];
+		physics_vertices[p].mPosition = JPH::Float3((float)(v.x - body_position.GetX()), (float)(v.y - body_position.GetY()), (float)(v.z - body_position.GetZ()));
+	}
 
 	return settings;
 }

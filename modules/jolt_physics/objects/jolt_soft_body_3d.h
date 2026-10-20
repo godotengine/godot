@@ -53,6 +53,10 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	RID mesh;
 
+	RID rest_mesh;
+	PackedInt32Array rest_indices;
+	PackedVector3Array rest_vertices;
+
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
 	float mass = 1.0f;
