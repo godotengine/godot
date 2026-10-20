@@ -149,7 +149,7 @@ real_t CylinderShape3D::get_bottom_radius() const {
 }
 
 void CylinderShape3D::set_radius(const real_t p_radius) {
-	ERR_FAIL_COND_MSG(p_radius <= 0.0f, "CylinderShape3D radius cannot be negative.");
+	ERR_FAIL_COND_MSG(p_radius <= 0.0f, "CylinderShape3D radius must be positive.");
 	top_radius = MAX(p_radius, 0);
 	bottom_radius = top_radius;
 	_update_shape();
