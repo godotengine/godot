@@ -193,10 +193,22 @@ open class GodotEditor : BaseGodotEditor() {
 		}
 	}
 
+	override fun getExcludedPermissions(): MutableSet<String> {
+		val excludedPermissions = super.getExcludedPermissions()
+		if (!packageManager.hasSystemFeature("android.hardware.xr.input.eye_tracking")) {
+			// No need to ask for this permission if the device doesn't support eye tracking.
+			excludedPermissions.add("android.permission.EYE_TRACKING_FINE")
+		}
+		return excludedPermissions
+	}
+
 	override fun getXRRuntimePermissions(): MutableSet<String> {
 		val xrRuntimePermissions = super.getXRRuntimePermissions()
 
-		xrRuntimePermissions.add("android.permission.EYE_TRACKING_FINE")
+		if (packageManager.hasSystemFeature("android.hardware.xr.input.eye_tracking")) {
+			// Only ask for this permission at runtime if the device supports eye tracking.
+			xrRuntimePermissions.add("android.permission.EYE_TRACKING_FINE")
+		}
 		xrRuntimePermissions.add("android.permission.HAND_TRACKING")
 
 		return xrRuntimePermissions
