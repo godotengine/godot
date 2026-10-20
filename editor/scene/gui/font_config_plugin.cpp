@@ -967,6 +967,10 @@ void FontPreview::_preview_changed() {
 	queue_redraw();
 }
 
+FontPreview::FontPreview() {
+	set_clip_contents(true);
+}
+
 /*************************************************************************/
 /* EditorInspectorPluginFontPreview                                      */
 /*************************************************************************/
