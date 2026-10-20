@@ -12,7 +12,7 @@
 		Godot is very dynamic. An object's script, and therefore its properties, methods and signals, can be changed at run-time. Because of this, there can be occasions where, for example, a property required by a method may not exist. To prevent run-time errors, see methods such as [method set], [method get], [method call], [method has_method], [method has_signal], etc. Note that these methods are [b]much[/b] slower than direct references.
 		In GDScript, you can also check if a given property, method, or signal name exists in an object with the [code]in[/code] operator:
 		[codeblock]
-		var node = Node.new()
+		var node := Node.new()
 		print("name" in node)         # Prints true
 		print("get_parent" in node)   # Prints true
 		print("tree_entered" in node) # Prints true
@@ -39,13 +39,13 @@
 				[b]Note:[/b] This method is not called when getting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
-				func _get(property):
+				func _get(property: StringName) -> Variant:
 					if property == "fake_property":
 						print("Getting my property!")
 						return 4
 					return null
 
-				func _get_property_list():
+				func _get_property_list() -> Array[Dictionary]:
 					return [
 						{ "name": "fake_property", "type": TYPE_INT }
 					]
@@ -90,15 +90,15 @@
 				@tool
 				extends Node
 
-				@export var number_count = 3:
+				@export var number_count: int = 3:
 					set(nc):
 						number_count = nc
 						numbers.resize(number_count)
 						notify_property_list_changed()
 
-				var numbers = PackedInt32Array([0, 0, 0])
+				var numbers := PackedInt32Array([0, 0, 0])
 
-				func _get_property_list():
+				func _get_property_list() -> Array[Dictionary]:
 					var properties: Array[Dictionary] = []
 
 					for i in range(number_count):
@@ -111,13 +111,13 @@
 
 					return properties
 
-				func _get(property):
+				func _get(property: StringName) -> Variant:
 					if property.begins_with("number_"):
 						var index = property.get_slice("_", 1).to_int()
 						return numbers[index]
 					return null
 
-				func _set(property, value):
+				func _set(property: StringName, value: Variant) -> bool:
 					if property.begins_with("number_"):
 						var index = property.get_slice("_", 1).to_int()
 						numbers[index] = value
@@ -215,26 +215,26 @@
 				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. This array should not be resized. Returns [code]true[/code] so long as the iterator has not reached the end.
 				[codeblock]
 				class MyRange:
-					var _from
-					var _to
+					var _from: int
+					var _to: int
 
-					func _init(from, to):
+					func _init(from: int, to: int) -> void:
 						assert(from &lt;= to)
 						_from = from
 						_to = to
 
-					func _iter_init(iter):
+					func _iter_init(iter: Array) -> bool:
 						iter[0] = _from
 						return iter[0] &lt; _to
 
-					func _iter_next(iter):
+					func _iter_next(iter: Array) -> bool:
 						iter[0] += 1
 						return iter[0] &lt; _to
 
-					func _iter_get(iter):
+					func _iter_get(iter: Variant) -> Variant:
 						return iter
 
-				func _ready():
+				func _ready() -> void:
 					var my_range = MyRange.new(2, 5)
 					for x in my_range:
 						print(x) # Prints 2, 3, 4.
@@ -257,7 +257,7 @@
 				Called when the object receives a notification, which can be identified in [param what] by comparing it with a constant. See also [method notification].
 				[codeblocks]
 				[gdscript]
-				func _notification(what):
+				func _notification(what: int) -> void:
 					if what == NOTIFICATION_PREDELETE:
 						print("Goodbye!")
 				[/gdscript]
@@ -303,16 +303,16 @@
 				[b]Note:[/b] This method is not called when setting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
-				var internal_data = {}
+				var internal_data := {}
 
-				func _set(property, value):
+				func _set(property: StringName, value: Variant) -> bool:
 					if property == "fake_property":
 						# Storing the value in the fake property.
 						internal_data["fake_property"] = value
 						return true
 					return false
 
-				func _get_property_list():
+				func _get_property_list() -> Array[Dictionary]:
 					return [
 						{ "name": "fake_property", "type": TYPE_INT }
 					]
@@ -353,12 +353,12 @@
 			<description>
 				Override this method to customize the return value of [method to_string], and therefore the object's representation as a [String].
 				[codeblock]
-				func _to_string():
+				func _to_string() -> String:
 					return "Welcome to Godot 4!"
 
-				func _init():
+				func _init() -> void:
 					print(self)       # Prints "Welcome to Godot 4!"
-					var a = str(self) # a is "Welcome to Godot 4!"
+					var a := str(self) # a is "Welcome to Godot 4!"
 				[/codeblock]
 			</description>
 		</method>
@@ -378,7 +378,7 @@
 						notify_property_list_changed()
 				@export var number: int
 
-				func _validate_property(property: Dictionary):
+				func _validate_property(property: Dictionary) -> void:
 					if property.name == "number" and not is_number_editable:
 						property.usage |= PROPERTY_USAGE_READ_ONLY
 				[/gdscript]
@@ -453,7 +453,7 @@
 				Calls the [param method] on the object and returns the result. This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
-				var node = Node3D.new()
+				var node := Node3D.new()
 				node.call("rotate", Vector3(1.0, 0.0, 0.0), 1.571)
 				[/gdscript]
 				[csharp]
@@ -473,7 +473,7 @@
 				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
-				var node = Node3D.new()
+				var node := Node3D.new()
 				node.call_deferred("rotate", Vector3(1.0, 0.0, 0.0), 1.571)
 				[/gdscript]
 				[csharp]
@@ -486,9 +486,9 @@
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
 				[codeblock]
-				var node = Node3D.new()
+				var node := Node3D.new()
 				# Make a Callable and bind the arguments to the node's rotate() call.
-				var callable = node.rotate.bind(Vector3(1.0, 0.0, 0.0), 1.571)
+				var callable := node.rotate.bind(Vector3(1.0, 0.0, 0.0), 1.571)
 				# Connect the callable to the process_frame signal, so it gets called in the next process frame.
 				# CONNECT_ONE_SHOT makes sure it only gets called once instead of every frame.
 				get_tree().process_frame.connect(callable, CONNECT_ONE_SHOT)
@@ -503,7 +503,7 @@
 				Calls the [param method] on the object and returns the result. Unlike [method call], this method expects all parameters to be contained inside [param arg_array].
 				[codeblocks]
 				[gdscript]
-				var node = Node3D.new()
+				var node := Node3D.new()
 				node.callv("rotate", [Vector3(1.0, 0.0, 0.0), 1.571])
 				[/gdscript]
 				[csharp]
@@ -579,9 +579,9 @@
 				Returns the [Variant] value of the given [param property]. If the [param property] does not exist, this method returns [code]null[/code].
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
+				var node := Node2D.new()
 				node.rotation = 1.5
-				var a = node.get("rotation") # a is 1.5
+				var a: float = node.get("rotation") # a is 1.5
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
@@ -616,10 +616,10 @@
 				[b]Examples:[/b] [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
+				var node := Node2D.new()
 				node.position = Vector2(5, -10)
-				var a = node.get_indexed("position")   # a is Vector2(5, -10)
-				var b = node.get_indexed("position:y") # b is -10
+				var a: Vector2 = node.get_indexed("position")   # a is Vector2(5, -10)
+				var b: float = node.get_indexed("position:y") # b is -10
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
@@ -771,7 +771,7 @@
 				Returns [code]true[/code] if the object inherits from the given [param class]. See also [method get_class].
 				[codeblocks]
 				[gdscript]
-				var sprite2d = Sprite2D.new()
+				var sprite2d := Sprite2D.new()
 				sprite2d.is_class("Sprite2D") # Returns true
 				sprite2d.is_class("Node")     # Returns true
 				sprite2d.is_class("Node3D")   # Returns false
@@ -811,7 +811,7 @@
 				If [param reversed] is [code]true[/code], the call order is reversed.
 				[codeblocks]
 				[gdscript]
-				var player = Node2D.new()
+				var player := Node2D.new()
 				player.set_script(load("res://player.gd"))
 
 				player.notification(NOTIFICATION_ENTER_TREE)
@@ -879,7 +879,7 @@
 				Assigns [param value] to the given [param property]. If the property does not exist or the given [param value]'s type doesn't match, nothing happens.
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
+				var node := Node2D.new()
 				node.set("global_scale", Vector2(8, 2.5))
 				print(node.global_scale) # Prints (8.0, 2.5)
 				[/gdscript]
@@ -907,7 +907,7 @@
 				Assigns [param value] to the given [param property], at the end of the current frame. This is equivalent to calling [method set] through [method call_deferred].
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
+				var node := Node2D.new()
 				add_child(node)
 
 				node.rotation = 1.5
@@ -938,7 +938,7 @@
 				Assigns a new [param value] to the property identified by the [param property_path]. The path should be a [NodePath] relative to this object, and can use the colon character ([code]:[/code]) to access nested properties.
 				[codeblocks]
 				[gdscript]
-				var node = Node2D.new()
+				var node := Node2D.new()
 				node.set_indexed("position", Vector2(42, 0))
 				node.set_indexed("position:y", -10)
 				print(node.position) # Prints (42.0, -10.0)
