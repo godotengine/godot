@@ -258,6 +258,7 @@ void EngineUpdateLabel::_notification(int p_what) {
 			if (_can_check_updates()) {
 				_check_update();
 			} else {
+				http->cancel_request();
 				_set_status(UpdateStatus::OFFLINE);
 			}
 		} break;

@@ -201,6 +201,11 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 
 			if (next_tag.fields.has("name")) {
 				name = packed_scene->get_state()->add_name(next_tag.fields["name"]);
+			} else {
+				error = ERR_FILE_CORRUPT;
+				error_text = "Missing 'name' field from node tag";
+				_printerr();
+				return Ref<PackedScene>();
 			}
 
 			if (next_tag.fields.has("parent")) {
