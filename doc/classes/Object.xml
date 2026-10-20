@@ -532,8 +532,8 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
-				Connects a [param signal] by name to a [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum ConnectFlags] constants).
-				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
+				Connects a [param signal] by name to a [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum ConnectFlags] constants). Returns [constant OK] if the signal was successfully connected, or [constant ERR_INVALID_PARAMETER] if the [Callable] is null, invalid, or if the signal doesn't exist on the object.
+				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and prints an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[b]Note:[/b] If the [param callable]'s object is freed, the connection will be lost.
 				[b]Note:[/b] In GDScript, it is generally recommended to connect signals with [method Signal.connect] instead.
 				[b]Note:[/b] This method, and all other signal-related methods, are thread-safe.
@@ -544,7 +544,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Disconnects a [param signal] by name from a given [param callable]. If the connection does not exist, generates an error. Use [method is_connected] to make sure that the connection exists.
+				Disconnects a [param signal] by name from a given [param callable]. If the connection does not exist, prints an error. Use [method is_connected] to make sure that the connection exists.
 			</description>
 		</method>
 		<method name="emit_signal" qualifiers="vararg">
