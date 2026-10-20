@@ -72,6 +72,10 @@ class PHashTranslation : public Translation {
 		return d;
 	}
 
+	// Helpers to guard against corrupted resources.
+	const Bucket *_get_bucket(const PoolVector<int>::Read &p_bucket_table, uint32_t p_offset) const;
+	String _get_string(const PoolVector<uint8_t>::Read &p_strings, const Bucket::Elem &p_elem) const;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
