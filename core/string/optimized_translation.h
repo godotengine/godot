@@ -83,6 +83,10 @@ class OptimizedTranslation : public Translation {
 		return p_d;
 	}
 
+	// Helpers to guard against corrupted resources.
+	const Bucket *_get_bucket(uint32_t p_offset) const;
+	String _get_string(const Bucket::Elem &p_elem) const;
+
 	virtual Vector<String> _get_message_list() const override;
 
 protected:
