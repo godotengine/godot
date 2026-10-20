@@ -2103,7 +2103,7 @@ vec4 fog_process(vec3 vertex) {
 #define REFLECTION_AMBIENT_COLOR 2
 
 void reflection_process(samplerCube reflection_map,
-		vec3 normal, vec3 vertex,
+		vec3 normal, vec3 bent_normal, vec3 vertex,
 		mat4 local_matrix,
 		bool use_box_project, vec3 box_extents, vec3 box_offset,
 		bool exterior, float intensity, float blend_distance, int ref_ambient_mode, vec4 ref_ambient_color,
@@ -2156,7 +2156,7 @@ void reflection_process(samplerCube reflection_map,
 #ifndef USE_LIGHTMAP
 	if (ref_ambient_mode == REFLECTION_AMBIENT_ENVIRONMENT) {
 		vec4 ambient_out;
-		vec3 amb_normal = (local_matrix * vec4(normal, 0.0)).xyz;
+		vec3 amb_normal = (local_matrix * vec4(bent_normal, 0.0)).xyz;
 
 		ambient_out.rgb = srgb_to_linear(textureLod(reflection_map, amb_normal, MAX_ROUGHNESS_LOD).rgb);
 		if (exterior) {
@@ -2560,9 +2560,6 @@ void main() {
 #else
 	vec3 indirect_normal = normal;
 #endif // BENT_NORMAL_MAP_USED
-	// IBL precalculations
-	float ndotv = clamp(dot(indirect_normal, view), 0.0, 1.0);
-	vec3 F = f0 + (max(vec3(1.0 - roughness), f0) - f0) * pow(1.0 - ndotv, 5.0);
 
 #ifdef USE_RADIANCE_MAP
 	if (scene_data_block.data.use_reflection_cubemap) {
@@ -2571,13 +2568,13 @@ void main() {
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		vec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
 #else
-		vec3 ref_vec = reflect(-view, indirect_normal);
+		vec3 ref_vec = reflect(-view, normal);
 #endif
 		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
-		float horizon = min(1.0 + dot(ref_vec, indirect_normal), 1.0);
+		float horizon = min(1.0 + dot(ref_vec, normalize(normal_interp)), 1.0);
 		ref_vec = mat3(scene_data_block.data.radiance_inverse_xform) * ref_vec;
 		specular_light = textureLod(radiance_map, ref_vec, sqrt(roughness) * RADIANCE_MAX_LOD).rgb;
 		specular_light = srgb_to_linear(specular_light);
@@ -2595,14 +2592,14 @@ void main() {
 	{
 		vec4 reflection_accum = vec4(0.0);
 
-		reflection_process(refprobe1_texture, indirect_normal, vertex_interp, refprobe1_local_matrix,
+		reflection_process(refprobe1_texture, normal, indirect_normal, vertex_interp, refprobe1_local_matrix,
 				refprobe1_use_box_project, refprobe1_box_extents, refprobe1_box_offset,
 				refprobe1_exterior, refprobe1_intensity, refprobe1_blend_distance, refprobe1_ambient_mode, refprobe1_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
 
 #ifdef SECOND_REFLECTION_PROBE
 
-		reflection_process(refprobe2_texture, indirect_normal, vertex_interp, refprobe2_local_matrix,
+		reflection_process(refprobe2_texture, normal, indirect_normal, vertex_interp, refprobe2_local_matrix,
 				refprobe2_use_box_project, refprobe2_box_extents, refprobe2_box_offset,
 				refprobe2_exterior, refprobe2_intensity, refprobe2_blend_distance, refprobe2_ambient_mode, refprobe2_ambient_color,
 				roughness, ambient_light, specular_light, reflection_accum, ambient_accum);
@@ -2801,7 +2798,7 @@ void main() {
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(indirect_normal, view), 0.0, 1.0);
+		float ndotv = clamp(dot(normal, view), 0.0, 1.0);
 
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
