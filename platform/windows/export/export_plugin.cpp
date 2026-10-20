@@ -399,16 +399,6 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 					return TTR("Invalid file version.");
 				}
 			}
-		} else if (p_name == "application/product_version") {
-			String product_version = p_preset->get("application/product_version");
-			if (!product_version.is_empty()) {
-				PackedStringArray version_array = product_version.split(".", false);
-				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
-						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || product_version.contains_char('-')) {
-					return TTR("Invalid product version.");
-				}
-			}
 		}
 	}
 	return EditorExportPlatformPC::get_export_option_warning(p_preset, p_name);
