@@ -67,13 +67,20 @@ class SceneMultiplayer : public MultiplayerAPI {
 public:
 	enum NetworkCommands {
 		NETWORK_COMMAND_REMOTE_CALL = 0,
-		NETWORK_COMMAND_SIMPLIFY_PATH,
-		NETWORK_COMMAND_CONFIRM_PATH,
+		NETWORK_COMMAND_PATH_HANDSHAKE,
 		NETWORK_COMMAND_RAW,
 		NETWORK_COMMAND_SPAWN,
 		NETWORK_COMMAND_DESPAWN,
 		NETWORK_COMMAND_SYNC,
 		NETWORK_COMMAND_SYS,
+	};
+
+	enum PathHandshake {
+		SIMPLIFY_PATH = 0,
+		SIMPLIFY_RPC,
+		CONFIRM_PATH,
+		REQUEST_PATH,
+		RELEASE_PATH,
 	};
 
 	enum SysCommands {
@@ -159,6 +166,7 @@ public:
 
 	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
 
+	virtual Error send_request_path(Node *p_node) override;
 	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
 
@@ -171,6 +179,7 @@ public:
 	void disconnect_peer(int p_id);
 
 	Error send_auth(int p_to, Vector<uint8_t> p_bytes);
+	void force_replicate_to(ObjectID p_oid, int p_to);
 	Error complete_auth(int p_peer);
 	void set_auth_callback(Callable p_callback);
 	Callable get_auth_callback() const;
