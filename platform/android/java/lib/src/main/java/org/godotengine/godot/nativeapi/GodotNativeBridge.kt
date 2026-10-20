@@ -33,7 +33,6 @@ package org.godotengine.godot.nativeapi
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -140,7 +139,7 @@ internal class GodotNativeBridge(private val godot: Godot) {
 	@Keep
 	private fun isHighContrastActive(): Boolean {
 		val am = godot.context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
-		if (am != null && am.isEnabled()) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && am != null && am.isEnabled()) {
 			return am.isHighContrastTextEnabled()
 		}
 		return false
@@ -347,6 +346,10 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		godot.primaryHost?.onEditorWorkspaceSelected(workspace)
+	}
+
+	private fun nativeShowEditorGameDock() {
+		godot.primaryHost?.showEditorGameDock()
 	}
 
 	private fun nativeOnDistractionFreeModeChanged(enabled: Boolean) {

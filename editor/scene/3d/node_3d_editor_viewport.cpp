@@ -1443,10 +1443,9 @@ void Node3DEditorViewport::_compute_edit(const Point2 &p_point) {
 				continue;
 			}
 
-			int child_count = sp->get_child_count();
-			for (int i = 0; i < child_count; i++) {
-				Node3D *child = Object::cast_to<Node3D>(sp->get_child(i));
-				if (child) {
+			for (Node *node_child : sp->iterate_children()) {
+				Node3D *child = Object::cast_to<Node3D>(node_child);
+				if (child) { // can_preserve_owned_children_transform() check is unnecessary here.
 					_edit.children_original_globals[child] = child->get_global_transform();
 				}
 			}
@@ -1778,15 +1777,15 @@ void Node3DEditorViewport::_transform_gizmo_apply(Node3D *p_node, const Transfor
 	}
 
 	bool preserve_children = spatial_editor->is_preserve_children_transform_enabled();
+	bool can_preserve_instance = spatial_editor->can_preserve_owned_children_transform(p_node);
 
 	Vector<Transform3D> children_global_transforms;
 	Vector<Node3D *> node3d_children;
 
 	if (preserve_children) {
-		int child_count = p_node->get_child_count();
-		for (int i = 0; i < child_count; i++) {
-			Node3D *child = Object::cast_to<Node3D>(p_node->get_child(i));
-			if (child) {
+		for (Node *node_child : p_node->iterate_children()) {
+			Node3D *child = Object::cast_to<Node3D>(node_child);
+			if (child && (can_preserve_instance || child->get_owner() != p_node)) {
 				children_global_transforms.push_back(child->get_global_transform());
 				node3d_children.push_back(child);
 			}
@@ -7135,7 +7134,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
-	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
+	preview_camera->set_theme_type_variation("CheckBoxNoIconTintNoDim");
 	preview_camera->hide();
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
 
@@ -7145,7 +7144,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
 	vbox->add_child(pilot_camera);
 	pilot_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
-	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
+	pilot_camera->set_theme_type_variation("CheckBoxNoIconTintNoDim");
 	pilot_camera->hide();
 	pilot_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_pilot_preview));
 	previewing = nullptr;

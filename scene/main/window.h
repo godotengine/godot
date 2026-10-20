@@ -396,6 +396,7 @@ public:
 
 	void set_ime_active(bool p_active);
 	void set_ime_position(const Point2i &p_pos);
+	void set_ime_rect(const Rect2i &p_rect);
 
 	bool is_embedded() const;
 	Viewport *get_embedder() const;

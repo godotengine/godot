@@ -37,7 +37,7 @@ void PngLoader::clear()
 /* External Class Implementation                                        */
 /************************************************************************/
 
-PngLoader::PngLoader() : ImageLoader(FileType::Png)
+PngLoader::PngLoader() : BitmapLoader(FileType::Png)
 {
     image = tvg::calloc<png_image>(1, sizeof(png_image));
     image->version = PNG_IMAGE_VERSION;
@@ -50,49 +50,50 @@ PngLoader::~PngLoader()
     tvg::free(surface.buf32);
 }
 
-
-bool PngLoader::open(const char* path)
-{
-    image->opaque = nullptr;
-
-    if (!png_image_begin_read_from_file(image, path)) return false;
-
-    w = (float)image->width;
-    h = (float)image->height;
-
-    return true;
-}
-
-
-bool PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
+Result PngLoader::open(const char* path, TVG_UNUSED const LoaderOps& ops)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
     image->opaque = nullptr;
 
-    if (!png_image_begin_read_from_memory(image, data, size)) return false;
+    if (!png_image_begin_read_from_file(image, path)) return Result::InvalidArguments;
 
     w = (float)image->width;
     h = (float)image->height;
 
-    return true;
+    return Result::Success;
 #else
-    return false;
+    return Result::NonSupport;
 #endif
+}
+
+Result PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const LoaderOps& ops)
+{
+    image->opaque = nullptr;
+
+    if (!png_image_begin_read_from_memory(image, data, size)) return Result::InvalidArguments;
+
+    w = (float)image->width;
+    h = (float)image->height;
+
+    return Result::Success;
 }
 
 
 bool PngLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (w == 0 || h == 0) return false;
 
-    if (ImageLoader::cs == ColorSpace::ARGB8888 || ImageLoader::cs == ColorSpace::ARGB8888S) {
+    ColorSpace cs;
+
+    // TODO: we can acquire a pre-multiplied image. See "png_structrp"
+    if (BitmapLoader::cs == ColorSpace::ARGB8888 || BitmapLoader::cs == ColorSpace::ARGB8888S) {
         image->format = PNG_FORMAT_BGRA;
-        surface.cs = ColorSpace::ARGB8888S;
+        cs = ColorSpace::ARGB8888S;
     } else {
         image->format = PNG_FORMAT_RGBA;
-        surface.cs = ColorSpace::ABGR8888S;
+        cs = ColorSpace::ABGR8888S;
     }
 
     auto buffer = tvg::malloc<png_byte>(PNG_IMAGE_SIZE((*image)));
@@ -101,14 +102,7 @@ bool PngLoader::read()
         return false;
     }
 
-    //setup the surface
-    surface.buf32 = reinterpret_cast<uint32_t*>(buffer);
-    surface.stride = (uint32_t)w;
-    surface.w = (uint32_t)w;
-    surface.h = (uint32_t)h;
-    surface.channelSize = sizeof(uint32_t);
-    //TODO: we can acquire a pre-multiplied image. See "png_structrp"
-    surface.premultiplied = false;
+    surface.setup(reinterpret_cast<pixel_t*>(buffer), (uint32_t)w, (uint32_t)w, (uint32_t)h, sizeof(uint32_t), cs);
 
     clear();
 

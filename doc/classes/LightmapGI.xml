@@ -64,6 +64,7 @@
 		</member>
 		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
 			The maximum texture size for the generated texture atlas. Higher values will result in fewer slices being generated, but may not work on all hardware as a result of hardware limitations on texture sizes. Leave [member max_texture_size] at its default value of [code]16384[/code] if unsure.
+			[b]Note:[/b] If [member supersampling] is enabled, the texture atlas used while baking may be up to [member supersampling_factor] times larger than [member max_texture_size], since it's downsampled before saving.
 		</member>
 		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="LightmapGI.BakeQuality" default="1">
 			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
@@ -163,6 +164,9 @@
 		</constant>
 		<constant name="BAKE_ERROR_ATLAS_TOO_SMALL" value="11" enum="BakeError">
 			Lightmap baking failed as the lightmap was unable to fit into an atlas.
+		</constant>
+		<constant name="BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT" value="12" enum="BakeError">
+			Lightmap baking failed as the baking process requires a texture larger than the maximum texture size supported by the rendering device. This can happen when [member supersampling] is enabled with a high [member supersampling_factor].
 		</constant>
 		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
 			Ignore environment lighting when baking lightmaps.

@@ -47,7 +47,7 @@ class MaterialStorage;
 
 class TextureStorage : public RendererTextureStorage {
 public:
-	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
+	const int BLIT_TEXTURE_SAMPLERS_BINDING_FIRST_INDEX = 5;
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,

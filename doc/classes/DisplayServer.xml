@@ -1650,7 +1650,7 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_label_from_physical" qualifiers="const">
@@ -1658,14 +1658,14 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to localized label printed on the key in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
@@ -1673,7 +1673,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
@@ -1681,7 +1681,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
@@ -1689,7 +1689,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Sets the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
@@ -2493,6 +2493,15 @@
 				Sets the position of the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
 			</description>
 		</method>
+		<method name="window_set_ime_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets a rectangle which should not be obstructed by the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup for the specified [param window_id]. Only effective if [method window_set_ime_active] was set to [code]true[/code] for the specified [param window_id].
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
 		<method name="window_set_input_event_callback">
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />
@@ -2572,7 +2581,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="window_set_popup_safe_rect">
@@ -3376,7 +3385,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
 			Window style is overridden, forcing sharp corners.
@@ -3475,6 +3484,7 @@
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
+			[note]Since the framerate may reach very high values, this can lead to audible coil whine depending on the hardware. To avoid this, cap the framerate with [member Engine.max_fps] (lower values result in less coil whine).[/note]
 		</constant>
 		<constant name="VSYNC_ENABLED" value="1" enum="VSyncMode">
 			Default vertical synchronization mode, the image is displayed only on vertical blanking intervals (no tearing is visible). Framerate is limited by the monitor refresh rate (regardless of [member Engine.max_fps]).
@@ -3485,6 +3495,7 @@
 		<constant name="VSYNC_MAILBOX" value="3" enum="VSyncMode">
 			Displays the most recent image in the queue on vertical blanking intervals, while rendering to the other images (no tearing is visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
 			Although not guaranteed, the images can be rendered as fast as possible, which may reduce input lag (also called "Fast" V-Sync mode). [constant VSYNC_MAILBOX] works best when at least twice as many frames as the display refresh rate are rendered. Behaves like [constant VSYNC_ENABLED] when using the Compatibility rendering method.
+			[note]Since the framerate may reach very high values, this can lead to audible coil whine depending on the hardware. To avoid this, cap the framerate with [member Engine.max_fps] (lower values result in less coil whine).[/note]
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:

@@ -696,6 +696,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.text_buf->set_justification_flags(_find_jst_flags(l.from));
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
+	l.last_line = false;
 
 	// List.
 	_add_list_prefixes(p_frame, p_line, l, p_base_font_size);
@@ -914,6 +915,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		}
 		String lang = _find_language(it_prev);
 		l.text_buf->add_string(String::chr(0x200B), font, font_size, lang, it_prev->rid);
+		l.last_line = true;
 		txt += "\n";
 	}
 
@@ -1678,7 +1680,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (!skip) {
 							if (txt_visible) {
 								has_visible_chars = true;
-								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
+								if (glyphs[i].advance < 0) {
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(glyphs[i].advance, l_ascent), Point2i(-glyphs[i].advance, l_size.y)));
+								} else {
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
+								}
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
 										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
@@ -7043,6 +7049,9 @@ Vector2i RichTextLabel::get_line_range(int p_line) {
 		if (p_line < line_count + lc) {
 			Vector2i char_offset = Vector2i(main->lines[i].char_offset, main->lines[i].char_offset);
 			Vector2i line_range = main->lines[i].text_buf->get_line_range(p_line - line_count);
+			if (main->lines[i].last_line) {
+				line_range.y--; // Do not count added zero-width space.
+			}
 			return char_offset + line_range;
 		}
 

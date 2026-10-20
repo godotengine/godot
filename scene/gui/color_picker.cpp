@@ -1561,9 +1561,7 @@ void ColorPicker::_pick_button_pressed_native() {
 void ColorPicker::_native_cb(bool p_status, const Color &p_color) {
 	if (p_status) {
 		set_pick_color(p_color);
-		if (!deferred_mode_enabled) {
-			emit_signal(SNAME("color_changed"), color);
-		}
+		emit_signal(SNAME("color_changed"), color);
 	}
 }
 

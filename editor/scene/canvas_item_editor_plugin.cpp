@@ -1272,6 +1272,18 @@ bool CanvasItemEditor::cyclical_dependency_exists(const String &p_target_scene_p
 	return false;
 }
 
+static Transform2D get_parent_screen_transform(Node *p_node) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci) {
+		return ci->get_screen_transform();
+	}
+	SubViewport *vp = Object::cast_to<SubViewport>(p_node);
+	if (vp) {
+		return vp->get_popup_base_transform();
+	}
+	return Transform2D();
+}
+
 void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_parent) {
@@ -1298,9 +1310,8 @@ void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Ve
 	if (Object::cast_to<CanvasItem>(p_child)) {
 		// There's nothing to be used as source position, so snapping will work as absolute if enabled.
 		Vector2 target_position = ci_manipulator->snap_point(p_target_position);
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
 		// Set position via undo_redo for proper live editing support.
-		undo_redo->add_do_method(p_child, "set_position", parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position);
+		undo_redo->add_do_method(p_child, "set_position", get_parent_screen_transform(p_parent).affine_inverse().xform(target_position));
 	}
 
 	undo_redo->add_do_method(editor_selection, "add_node", p_child);
@@ -3097,47 +3108,56 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SNAP_USE_NODE_ANCHORS: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_NODE_ANCHORS;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_ANCHORS);
 			smartsnap_config_popup->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_NODE_ANCHORS);
 		} break;
 		case SNAP_USE_NODE_SIDES: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_NODE_SIDES;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_SIDES);
 			smartsnap_config_popup->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_NODE_SIDES);
 		} break;
 		case SNAP_USE_NODE_CENTER: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_NODE_CENTER;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_CENTER);
 			smartsnap_config_popup->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_NODE_CENTER);
 		} break;
 		case SNAP_USE_OTHER_NODES: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_OTHER_NODES;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_OTHER_NODES);
 			smartsnap_config_popup->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_OTHER_NODES);
 		} break;
 		case SNAP_USE_GUIDES: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_GUIDES;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = smartsnap_config_popup->get_item_index(SNAP_USE_GUIDES);
 			smartsnap_config_popup->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_GUIDES);
 		} break;
 		case SNAP_USE_ROTATION: {
 			bool snap_rotation = !ci_manipulator->is_snap_rotation_enabled();
+			ci_manipulator->set_snap_rotation_enabled(snap_rotation);
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_rotation);
 		} break;
 		case SNAP_USE_SCALE: {
 			bool snap_scale = !ci_manipulator->is_snap_scale_enabled();
+			ci_manipulator->set_snap_scale_enabled(snap_scale);
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_SCALE);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_scale);
 		} break;
 		case SNAP_RELATIVE: {
 			bool snap_relative = !ci_manipulator->is_snap_relative_enabled();
+			ci_manipulator->set_snap_relative_enabled(snap_relative);
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_relative);
 			viewport->queue_redraw();
 		} break;
 		case SNAP_USE_PIXEL: {
 			int snap_mode = ci_manipulator->get_snap_mode() ^ CanvasItemManipulator::SNAP_PIXEL;
+			ci_manipulator->set_snap_mode(snap_mode);
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_mode & CanvasItemManipulator::SNAP_PIXEL);
 		} break;
@@ -3523,16 +3543,16 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["primary_grid_step"] = primary_grid_step;
 	state["snap_rotation_offset"] = ci_manipulator->get_snap_rotation_offset();
 	state["snap_rotation_step"] = ci_manipulator->get_snap_rotation_step();
-	state["snap_scale_step"] = ci_manipulator->get_snap_rotation_step();
+	state["snap_scale_step"] = ci_manipulator->get_snap_scale_step();
 	state["smart_snap_active"] = ci_manipulator->is_smart_snap_enabled();
 	state["grid_snap_active"] = ci_manipulator->is_grid_snap_enabled();
 	int snap_mode = ci_manipulator->get_snap_mode();
-	state["snap_node_parent"] = snap_mode & CanvasItemManipulator::SNAP_NODE_PARENT;
-	state["snap_node_anchors"] = snap_mode & CanvasItemManipulator::SNAP_NODE_ANCHORS;
-	state["snap_node_sides"] = snap_mode & CanvasItemManipulator::SNAP_NODE_SIDES;
-	state["snap_node_center"] = snap_mode & CanvasItemManipulator::SNAP_NODE_CENTER;
-	state["snap_other_nodes"] = snap_mode & CanvasItemManipulator::SNAP_OTHER_NODES;
-	state["snap_guides"] = snap_mode & CanvasItemManipulator::SNAP_GUIDES;
+	state["snap_node_parent"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_NODE_PARENT);
+	state["snap_node_anchors"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_NODE_ANCHORS);
+	state["snap_node_sides"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_NODE_SIDES);
+	state["snap_node_center"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_NODE_CENTER);
+	state["snap_other_nodes"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_OTHER_NODES);
+	state["snap_guides"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_GUIDES);
 	state["grid_visibility"] = grid_visibility;
 	state["show_origin"] = show_origin;
 	state["show_viewport"] = show_viewport;
@@ -3549,7 +3569,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_rotation"] = ci_manipulator->is_snap_rotation_enabled();
 	state["snap_scale"] = ci_manipulator->is_snap_scale_enabled();
 	state["snap_relative"] = ci_manipulator->is_snap_relative_enabled();
-	state["snap_pixel"] = snap_mode & CanvasItemManipulator::SNAP_PIXEL;
+	state["snap_pixel"] = static_cast<bool>(snap_mode & CanvasItemManipulator::SNAP_PIXEL);
 	return state;
 }
 
@@ -3616,45 +3636,51 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (state.has("snap_node_parent")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_node_parent"];
+		int val = static_cast<int>(state["snap_node_parent"]) * CanvasItemManipulator::SNAP_NODE_PARENT;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_NODE_PARENT) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_PARENT);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_node_parent"]);
 	}
 
 	if (state.has("snap_node_anchors")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_node_anchors"];
+		int val = static_cast<int>(state["snap_node_anchors"]) * CanvasItemManipulator::SNAP_NODE_ANCHORS;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_NODE_ANCHORS) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_ANCHORS);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_node_anchors"]);
 	}
 
 	if (state.has("snap_node_sides")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_node_sides"];
+		int val = static_cast<int>(state["snap_node_sides"]) * CanvasItemManipulator::SNAP_NODE_SIDES;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_NODE_SIDES) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_SIDES);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_node_sides"]);
 	}
 
 	if (state.has("snap_node_center")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_node_center"];
+		int val = static_cast<int>(state["snap_node_center"]) * CanvasItemManipulator::SNAP_NODE_CENTER;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_NODE_CENTER) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_NODE_CENTER);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_node_center"]);
 	}
 
 	if (state.has("snap_other_nodes")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_other_nodes"];
+		int val = static_cast<int>(state["snap_other_nodes"]) * CanvasItemManipulator::SNAP_OTHER_NODES;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_OTHER_NODES) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_OTHER_NODES);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_other_nodes"]);
 	}
 
 	if (state.has("snap_guides")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_guides"];
+		int val = static_cast<int>(state["snap_guides"]) * CanvasItemManipulator::SNAP_GUIDES;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_GUIDES) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = smartsnap_config_popup->get_item_index(SNAP_USE_GUIDES);
-		smartsnap_config_popup->set_item_checked(idx, snap_mode);
+		smartsnap_config_popup->set_item_checked(idx, state["snap_guides"]);
 	}
 
 	if (state.has("grid_visibility")) {
@@ -3755,10 +3781,11 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	}
 
 	if (state.has("snap_pixel")) {
-		bool snap_mode = ci_manipulator->get_snap_mode() | (int)state["snap_pixel"];
+		int val = static_cast<int>(state["snap_pixel"]) * CanvasItemManipulator::SNAP_PIXEL;
+		int snap_mode = (ci_manipulator->get_snap_mode() & ~CanvasItemManipulator::SNAP_PIXEL) | val;
 		ci_manipulator->set_snap_mode(snap_mode);
 		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
-		snap_config_menu->get_popup()->set_item_checked(idx, snap_mode);
+		snap_config_menu->get_popup()->set_item_checked(idx, state["snap_pixel"]);
 	}
 
 	if (update_scrollbars) {
@@ -4726,11 +4753,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	if (instance_ci) {
 		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
 		target_pos = canvas_item_editor->get_canvas_item_manipulator()->snap_point(target_pos);
-
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
-		if (parent_ci) {
-			target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
-		}
+		target_pos = get_parent_screen_transform(p_parent).affine_inverse().xform(target_pos);
 		// Preserve instance position of the original scene.
 		target_pos += instance_ci->_edit_get_position();
 

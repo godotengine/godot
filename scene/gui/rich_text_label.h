@@ -198,6 +198,7 @@ private:
 		float indent = 0.0;
 		int char_offset = 0;
 		int char_count = 0;
+		bool last_line = false;
 
 		Line() {
 			text_buf.instantiate();

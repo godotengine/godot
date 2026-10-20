@@ -52,9 +52,10 @@ uniform sampler2D half_res; //texunit:-2
 uniform sampler2D quarter_res; //texunit:-3
 #endif
 
-layout(std140) uniform GlobalShaderUniformData { //ubo:1
-	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-4
+
+#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
+#define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
 
 struct DirectionalLightData {
 	vec4 direction_energy;

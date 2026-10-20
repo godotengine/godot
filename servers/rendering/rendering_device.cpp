@@ -2106,11 +2106,7 @@ static _ALWAYS_INLINE_ void _copy_region(const uint8_t *__restrict p_src, uint8_
 	for (uint32_t y = p_src_h; y > 0; y--) {
 		const uint8_t *__restrict src = p_src + src_offset;
 		uint8_t *__restrict dst = p_dst + dst_offset;
-		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
-			*dst = *src;
-			src++;
-			dst++;
-		}
+		memcpy(dst, src, size_t(p_src_w) * p_unit_size);
 		src_offset += p_src_full_w * p_unit_size;
 		dst_offset += p_dst_pitch;
 	}

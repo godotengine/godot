@@ -59,6 +59,7 @@ struct godotsharp_property_info {
 	Variant::Type type;
 	PropertyHint hint;
 	PropertyUsageFlags usage;
+	godot_string_name *class_name; // Not owned
 	bool exported;
 };
 

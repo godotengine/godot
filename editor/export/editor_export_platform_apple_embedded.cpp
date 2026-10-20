@@ -219,6 +219,14 @@ void EditorExportPlatformAppleEmbedded::get_usage_descriptions(List<EditorExport
 	r_descriptions->push_back({ "privacy/photolibrary_usage_description", "NSPhotoLibraryUsageDescription", "Provide a message if you need access to the photo library" });
 }
 
+void EditorExportPlatformAppleEmbedded::get_required_device_capabilities(const Ref<EditorExportPreset> &p_preset, Vector<String> &r_capabilities) const {
+	// Note that required device capabilities are requirements for the app to be installed.
+	// They don't enable anything.
+	if ((bool)p_preset->get("capabilities/access_wifi") && !r_capabilities.has("wifi")) {
+		r_capabilities.push_back("wifi");
+	}
+}
+
 void EditorExportPlatformAppleEmbedded::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
@@ -249,10 +257,6 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 			p_option == "application/icon_interpolation" ||
 			p_option == "application/signature") {
 		return advanced_options_enabled;
-	}
-	if (p_option == "capabilities/performance_a12") {
-		String rendering_method = get_project_setting(Ref<EditorExportPreset>(p_preset), "rendering/renderer/rendering_method.mobile");
-		return !(rendering_method == "forward_plus" || rendering_method == "mobile");
 	}
 
 	return true;
@@ -327,8 +331,6 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_a12"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "capabilities/additional"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
@@ -522,22 +524,8 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$entitlements_full", entitlements);
 	} else if (p_line.contains("$required_device_capabilities")) {
 		String capabilities;
-
-		// I've removed armv7 as we can run on 64bit only devices
-		// Note that capabilities listed here are requirements for the app to be installed.
-		// They don't enable anything.
 		Vector<String> capabilities_list = p_config.capabilities;
-		String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
-
-		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
-			capabilities_list.push_back("wifi");
-		}
-		if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
-			capabilities_list.push_back("iphone-performance-gaming-tier");
-		}
-		if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
-			capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
-		}
+		get_required_device_capabilities(p_preset, capabilities_list);
 		for (const String &capability : capabilities_list) {
 			capabilities += "<string>" + capability + "</string>\n";
 		}
@@ -750,6 +738,21 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 			}
 		}
 		strnew += "\t</array>\n";
+
+		// AccessKit Framework
+	} else if (p_line.contains("$accesskit_buildfile")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */; };" : "";
+		strnew += p_line.replace("$accesskit_buildfile", value) + "\n";
+	} else if (p_line.contains("$accesskit_fileref")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AccessKit; path = AccessKit.xcframework; sourceTree = \"<group>\"; };" : "";
+		strnew += p_line.replace("$accesskit_fileref", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildphase")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */," : "";
+		strnew += p_line.replace("$accesskit_buildphase", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildgrp")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */," : "";
+		strnew += p_line.replace("$accesskit_buildgrp", value) + "\n";
+
 	} else if (p_line.contains("$sdkroot")) {
 		strnew += p_line.replace("$sdkroot", get_sdk_name()) + "\n";
 
@@ -987,11 +990,6 @@ void EditorExportPlatformAppleEmbedded::_check_xcframework_content(const String 
 Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const {
 	print_line("Converting to .framework", p_source, " -> ", p_destination);
 
-	Ref<DirAccess> da = DirAccess::create_for_path(p_source);
-	if (da.is_null()) {
-		return ERR_CANT_OPEN;
-	}
-
 	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (filesystem_da.is_null()) {
 		return ERR_CANT_OPEN;
@@ -1046,6 +1044,10 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 						Ref<PListNode> dpath_node = lib["DebugSymbolsPath"];
 						if (dpath_node.is_valid()) {
 							String dpath = dpath_node->get_value();
+							Ref<DirAccess> da = DirAccess::create_for_path(p_source);
+							if (da.is_null()) {
+								return ERR_CANT_OPEN;
+							}
 							if (da->dir_exists(p_source.path_join(library_identifier).path_join(dpath))) {
 								da->copy_dir(p_source.path_join(library_identifier).path_join(dpath), p_destination.path_join(library_identifier).path_join("dSYMs"));
 							}
@@ -1064,6 +1066,10 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 		String file_name = p_destination.get_basename().get_file();
 		String framework_name = file_name + ".framework";
 
+		Ref<DirAccess> da = DirAccess::create_for_path(p_source);
+		if (da.is_null()) {
+			return ERR_CANT_OPEN;
+		}
 		da->copy(p_source, p_destination.path_join(file_name));
 
 		// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib

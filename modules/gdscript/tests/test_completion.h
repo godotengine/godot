@@ -133,6 +133,8 @@ static void test_directory(const String &p_dir) {
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", conf.get_value("input", "use_single_quotes", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_node_path_literals", conf.get_value("input", "add_node_path_literals", false));
 			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_string_name_literals", conf.get_value("input", "add_string_name_literals", false));
+			EditorSettings::get_singleton()->set_setting("text_editor/completion/add_type_hints", conf.get_value("input", "add_type_hints", true));
+			EditorSettings::get_singleton()->set_setting("text_editor/behavior/indent/size", conf.get_value("input", "indent_size", 4));
 
 			List<Dictionary> include;
 			to_dict_list(conf.get_value("output", "include", Array()), include);
@@ -260,8 +262,6 @@ static void setup_global_classes(const String &p_dir) {
 
 TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
-		// Set all editor settings that code completion relies on.
-		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
 		init_language("modules/gdscript/tests/scripts");
 
 		setup_global_classes("modules/gdscript/tests/scripts/completion");

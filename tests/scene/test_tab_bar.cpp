@@ -1089,6 +1089,63 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 	memdelete(tab_bar);
 }
 
+TEST_CASE("[SceneTree][TabBar] Sizing") {
+	const String tab_title = "A tab title that should fit.";
+	const real_t minimum_width = 25;
+	const real_t maximum_width = 1000;
+
+	TabBar *single_tab_bar = memnew(TabBar);
+	TabBar *all_tabs_bar = memnew(TabBar);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(single_tab_bar);
+	root->add_child(all_tabs_bar);
+
+	single_tab_bar->set_clip_tabs(true);
+	single_tab_bar->set_custom_maximum_size(Size2(maximum_width, -1));
+	single_tab_bar->set_custom_minimum_size(Size2(minimum_width, 0));
+	single_tab_bar->add_tab(tab_title);
+
+	all_tabs_bar->set_clip_tabs(true);
+	all_tabs_bar->set_custom_maximum_size(Size2(maximum_width, -1));
+	all_tabs_bar->set_custom_minimum_size(Size2(minimum_width, 0));
+	all_tabs_bar->add_tab(tab_title);
+	all_tabs_bar->add_tab(tab_title);
+	all_tabs_bar->add_tab(tab_title);
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width > single_tab_bar->get_size().width,
+			"TabBar expands beyond the one-tab minimum size when all tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width <= maximum_width,
+			"TabBar width will increase up to the custom maximum width when all tabs fit.");
+	CHECK_FALSE(all_tabs_bar->get_offset_buttons_visible());
+
+	// Limit the bar so the first two tabs fit after reserving space for the offset buttons, but not all three.
+	const real_t tab_separation = all_tabs_bar->get_theme_constant("tab_separation");
+	const real_t offset_buttons_width = all_tabs_bar->get_theme_icon("decrement_icon")->get_width() + all_tabs_bar->get_theme_icon("increment_icon")->get_width();
+	const real_t partial_fit_maximum_width = all_tabs_bar->get_tab_rect(0).size.width + all_tabs_bar->get_tab_rect(1).size.width + tab_separation + offset_buttons_width + 1;
+	single_tab_bar->set_custom_maximum_size(Size2(partial_fit_maximum_width, -1));
+	all_tabs_bar->set_custom_maximum_size(Size2(partial_fit_maximum_width, -1));
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width > single_tab_bar->get_size().width,
+			"TabBar expands beyond the one-tab minimum size when some tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width <= partial_fit_maximum_width,
+			"TabBar width will increase up to the custom maximum width when some tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_offset_buttons_visible(),
+			"TabBar shows offset buttons when not all tabs fit.");
+	CHECK_MESSAGE(
+			((all_tabs_bar->get_tab_rect(1).position.x > 0) && (all_tabs_bar->get_tab_rect(2).position.x == 0)),
+			"TabBar displays some tabs while clipping the remaining tabs.");
+
+	memdelete(all_tabs_bar);
+	memdelete(single_tab_bar);
+}
+
 TEST_CASE("[SceneTree][TabBar] Mouse interaction") {
 	TabBar *tab_bar = memnew(TabBar);
 	SceneTree::get_singleton()->get_root()->add_child(tab_bar);

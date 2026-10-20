@@ -104,7 +104,7 @@ flat out uvec4 varying_G;
 
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:3
 
 #MATERIAL_UNIFORMS
 
@@ -348,7 +348,7 @@ layout(location = 0) out vec4 frag_color;
 /* clang-format off */
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:4
+layout(std140) uniform MaterialUniforms{ //ubo:3
 
 #MATERIAL_UNIFORMS
 

@@ -1873,7 +1873,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size, int64_t p_uncompressed_size) {
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	const int64_t ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_DEFLATE);
+	const int64_t ret = Compression::decompress(data.ptrw(), p_uncompressed_size, p_data, p_compressed_size, Compression::MODE_ZSTD);
 	ERR_FAIL_COND_V_MSG(ret == -1, ERR_FILE_CORRUPT, "Compressed file is corrupt.");
 	class_list.clear();
 

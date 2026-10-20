@@ -302,6 +302,177 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 	}
 }
 
+static inline size_t _padding(size_t p_s, size_t p_a) {
+	return (p_s % p_a == 0) ? 0 : (p_a - p_s % p_a);
+}
+
+Error EditorExportPlatformLinuxBSD::fixup_debug_symbol_link(const String &p_path, const String &p_symbol_file) {
+	// Patch the ".gnu_debuglink" section in the ELF file so that it corresponds to external debug symbols file.
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		return ERR_CANT_OPEN;
+	}
+
+	// New debug symbols link data.
+	CharString cs_link = p_symbol_file.utf8();
+	uint32_t new_link_size = cs_link.size() + _padding(cs_link.size(), 4) + 4;
+
+	// Read and check ELF magic number.
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), TTR("Executable file header corrupted."));
+			return ERR_FILE_CORRUPT;
+		}
+	}
+
+	// Read program architecture bits from class field.
+
+	int bits = f->get_8() * 32;
+
+	// Get info about the section header table.
+
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		f->seek(0x20);
+		section_table_pos = f->get_32();
+		f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		f->seek(0x28);
+		section_table_pos = f->get_64();
+		f->seek(0x3c);
+	}
+	int num_sections = f->get_16();
+	int string_section_idx = f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		// Jump to the strings section header.
+		f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			f->seek(f->get_position() + 0x10);
+			string_data_pos = f->get_32();
+			string_data_size = f->get_32();
+		} else { // 64
+			f->seek(f->get_position() + 0x18);
+			string_data_pos = f->get_64();
+			string_data_size = f->get_64();
+		}
+
+		// Read strings data.
+		f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return ERR_OUT_OF_MEMORY;
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the ".gnu_debuglink" section.
+
+	uint32_t link_crc32 = 0;
+	bool found = false;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		f->seek(section_header_pos);
+
+		uint32_t name_offset = f->get_32();
+		if (strcmp((char *)strings + name_offset, ".gnu_debuglink") == 0) {
+			// ".gnu_debuglink" section found.
+
+			int64_t link_start = 0;
+			int64_t link_size = 0;
+			if (bits == 32) {
+				f->seek(section_header_pos + 0x10);
+				link_start = f->get_32();
+				link_size = f->get_32();
+			} else { // 64
+				f->seek(section_header_pos + 0x18);
+				link_start = f->get_64();
+				link_size = f->get_64();
+			}
+
+			f->seek(link_start);
+
+			// Read CRC.
+			uint32_t link_off = 0;
+			while (link_off < link_size) {
+				uint8_t c = f->get_8();
+				link_off++;
+				if (c == 0x00) {
+					uint32_t pad = _padding(link_off, 4);
+					f->seek(f->get_position() + pad);
+					link_crc32 = f->get_32();
+					break;
+				}
+			}
+
+			if (link_size >= new_link_size) {
+				// Update existing section in place.
+				f->seek(link_start);
+				f->store_buffer((const uint8_t *)cs_link.get_data(), cs_link.size());
+				for (uint32_t j = 0; j < _padding(cs_link.size(), 4); j++) {
+					f->store_8(0x00);
+				}
+				f->store_32(link_crc32);
+
+				// Update section data.
+				if (bits == 32) {
+					f->seek(section_header_pos + 0x14);
+					f->store_32(new_link_size);
+				} else { // 64
+					f->seek(section_header_pos + 0x20);
+					f->store_64(new_link_size);
+				}
+			} else {
+				// Zero old section data.
+				f->seek(link_start);
+				for (uint32_t j = 0; j < link_size; j++) {
+					f->store_8(0x00);
+				}
+				// Append new data.
+				f->seek_end();
+				uint64_t link_pos = f->get_position();
+				f->store_buffer((const uint8_t *)cs_link.get_data(), cs_link.size());
+				for (uint32_t j = 0; j < _padding(cs_link.size(), 4); j++) {
+					f->store_8(0x00);
+				}
+				f->store_32(link_crc32);
+				// Update section data.
+				if (bits == 32) {
+					f->seek(section_header_pos + 0x10);
+					f->store_32(link_pos);
+					f->store_32(new_link_size);
+				} else { // 64
+					f->seek(section_header_pos + 0x18);
+					f->store_64(link_pos);
+					f->store_64(new_link_size);
+				}
+			}
+
+			found = true;
+			break;
+		}
+	}
+
+	memfree(strings);
+
+	if (!found) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Debug Symbols Link"), TTR("Executable \".gnu_debuglink\" section not found."));
+		return ERR_FILE_CORRUPT;
+	}
+	return OK;
+}
+
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data.
 

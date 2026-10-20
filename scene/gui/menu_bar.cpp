@@ -111,10 +111,21 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	int event_device_id = p_event->get_device();
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
 			int index = _get_index_at_point(mb->get_position());
+			if (index >= 0) {
+				_open_popup(index);
+			}
+		}
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (touch->is_released()) {
+			int index = _get_index_at_point(touch->get_position());
 			if (index >= 0) {
 				_open_popup(index);
 			}

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		By changing various properties of this object, such as the point position, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_point].
+		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
 	</tutorials>

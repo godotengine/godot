@@ -72,6 +72,15 @@ GodotApplication *GodotApp = nil;
 			[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 		}
 	}
+	// Force reset main menu on macOS 27.
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	if (ver.majorVersion >= 27) {
+		NSMenu *main_menu = NSApp.mainMenu;
+		if (main_menu != nil) {
+			NSApp.mainMenu = nil;
+			NSApp.mainMenu = main_menu;
+		}
+	}
 }
 
 - (void)mediaKeyEvent:(int)key state:(BOOL)state repeat:(BOOL)repeat {

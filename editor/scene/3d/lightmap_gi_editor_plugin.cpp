@@ -127,6 +127,9 @@ void LightmapGIEditorPlugin::_bake_select_file(const String &p_file) {
 			case LightmapGI::BAKE_ERROR_ATLAS_TOO_SMALL: {
 				EditorNode::get_singleton()->show_warning(TTR("Failed fitting a lightmap image into an atlas. This should never happen and should be reported."));
 			} break;
+			case LightmapGI::BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT: {
+				EditorNode::get_singleton()->show_warning(TTR("The lightmap images exceed the maximum texture size supported by the rendering device used for baking.\nDecrease the supersampling factor or the texel scale, or split the scene into more objects."));
+			} break;
 			default: {
 			} break;
 		}

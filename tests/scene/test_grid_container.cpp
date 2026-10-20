@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_grid_container)
 #include "scene/gui/grid_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "tests/scene/mock_control.h"
 
 namespace TestGridContainer {
 
@@ -227,6 +228,130 @@ TEST_CASE("[SceneTree][GridContainer] Expanding rows and columns") {
 	memdelete(child_control_3);
 	memdelete(child_control_2);
 	memdelete(child_control_1);
+	memdelete(grid_container);
+}
+
+TEST_CASE("[SceneTree][GridContainer] Desired size children") {
+	GridContainer *grid_container = memnew(GridContainer);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(grid_container);
+
+	MockControl *top_left = memnew(MockControl);
+	Control *top_right = memnew(Control);
+	Control *bottom_left = memnew(Control);
+	MockControl *bottom_right = memnew(MockControl);
+	grid_container->set_columns(2);
+	grid_container->add_theme_constant_override("h_separation", 0);
+	grid_container->add_theme_constant_override("v_separation", 0);
+	grid_container->set_custom_maximum_size(Size2(100, 100));
+	grid_container->set_propagate_maximum_size(false);
+	grid_container->add_child(top_left);
+	grid_container->add_child(top_right);
+	grid_container->add_child(bottom_left);
+	grid_container->add_child(bottom_right);
+
+	top_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	top_right->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	bottom_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	bottom_left->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	top_left->set_desired_size(Size2(50, 50));
+	bottom_right->set_desired_size(Size2(50, 50));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(100, 100)),
+			"GridContainer expands to accommodate desired sizes up to its maximum size. Case: a + b = c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(50, 50)) &&
+					top_right->get_size().is_equal_approx(Size2(50, 50)) &&
+					bottom_left->get_size().is_equal_approx(Size2(50, 50)) &&
+					bottom_right->get_size().is_equal_approx(Size2(50, 50))),
+			"GridContainer splits desired sizes equally across rows and columns. Case: a + b = c");
+
+	top_right->set_h_size_flags(Control::SIZE_FILL);
+	top_right->set_v_size_flags(Control::SIZE_FILL);
+	bottom_left->set_h_size_flags(Control::SIZE_FILL);
+	bottom_left->set_v_size_flags(Control::SIZE_FILL);
+	top_left->set_desired_size(Size2(200, 200));
+	bottom_right->set_desired_size(Size2(200, 200));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(100, 100)),
+			"GridContainer expands to accommodate desired sizes up to its maximum size. Case: a + b > c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(50, 50)) &&
+					top_right->get_size().is_equal_approx(Size2(50, 50)) &&
+					bottom_left->get_size().is_equal_approx(Size2(50, 50)) &&
+					bottom_right->get_size().is_equal_approx(Size2(50, 50))),
+			"GridContainer splits space equally across rows and columns. Case: a + b > c");
+
+	top_left->set_desired_size(Size2(10, 10));
+	bottom_right->set_desired_size(Size2(10, 10));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(20, 20)),
+			"GridContainer only expands as much as needed to accommodate desired sizes. Case: a + b < c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(10, 10)) &&
+					top_right->get_size().is_equal_approx(Size2(10, 10)) &&
+					bottom_left->get_size().is_equal_approx(Size2(10, 10)) &&
+					bottom_right->get_size().is_equal_approx(Size2(10, 10))),
+			"GridContainer splits desired sizes equally across rows and columns. Case: a + b < c");
+
+	top_left->set_desired_size(Size2(75, 75));
+	bottom_right->set_desired_size(Size2(25, 25));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(100, 100)),
+			"GridContainer expands to accommodate desired sizes up to its maximum size. Case: a + b = c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(75, 75)) &&
+					top_right->get_size().is_equal_approx(Size2(25, 75)) &&
+					bottom_left->get_size().is_equal_approx(Size2(75, 25)) &&
+					bottom_right->get_size().is_equal_approx(Size2(25, 25))),
+			"GridContainer splits different desired sizes across rows and columns. Case: a + b = c");
+
+	top_left->set_desired_size(Size2(300, 300));
+	bottom_right->set_desired_size(Size2(100, 100));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(100, 100)),
+			"GridContainer expands to accommodate desired sizes up to its maximum size. Case: a + b > c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(75, 75)) &&
+					top_right->get_size().is_equal_approx(Size2(25, 75)) &&
+					bottom_left->get_size().is_equal_approx(Size2(75, 25)) &&
+					bottom_right->get_size().is_equal_approx(Size2(25, 25))),
+			"GridContainer splits different desired sizes across rows and columns. Case: a + b > c");
+
+	top_left->set_desired_size(Size2(40, 40));
+	bottom_right->set_desired_size(Size2(20, 20));
+	grid_container->set_size(Size2());
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			grid_container->get_size().is_equal_approx(Size2(60, 60)),
+			"GridContainer only expands as much as needed to accommodate desired sizes. Case: a + b < c");
+	CHECK_MESSAGE(
+			(top_left->get_size().is_equal_approx(Size2(40, 40)) &&
+					top_right->get_size().is_equal_approx(Size2(20, 40)) &&
+					bottom_left->get_size().is_equal_approx(Size2(40, 20)) &&
+					bottom_right->get_size().is_equal_approx(Size2(20, 20))),
+			"GridContainer splits different desired sizes across rows and columns. Case: a + b < c");
+
+	memdelete(bottom_right);
+	memdelete(bottom_left);
+	memdelete(top_right);
+	memdelete(top_left);
 	memdelete(grid_container);
 }
 

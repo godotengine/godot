@@ -24,7 +24,7 @@ const Engine = (function () {
 	 *
 	 * @global
 	 * @constructor
-	 * @param {EngineConfig} initConfig The initial config for this instance.
+	 * @param {?EngineConfig} initConfig The initial config for this instance.
 	 */
 	function Engine(initConfig) { // eslint-disable-line no-shadow
 		this.config = new InternalConfig(initConfig);
@@ -34,9 +34,10 @@ const Engine = (function () {
 	/**
 	 * Load the engine from the specified base path.
 	 *
+	 * @export
 	 * @param {string} basePath Base path of the engine to load.
 	 * @param {number=} [size=0] The file size if known.
-	 * @returns {Promise} A Promise that resolves once the engine is loaded.
+	 * @return {!Promise} A Promise that resolves once the engine is loaded.
 	 *
 	 * @function Engine.load
 	 */
@@ -54,6 +55,7 @@ const Engine = (function () {
 	 *
 	 * This method will be called automatically depending on the configuration. See :js:attr:`unloadAfterInit`.
 	 *
+	 * @export
 	 * @function Engine.unload
 	 */
 	Engine.unload = function () {
@@ -71,8 +73,9 @@ const Engine = (function () {
 			 * Initialize the engine instance. Optionally, pass the base path to the engine to load it,
 			 * if it hasn't been loaded yet. See :js:meth:`Engine.load`.
 			 *
+			 * @export
 			 * @param {string=} basePath Base path of the engine to load.
-			 * @return {Promise} A ``Promise`` that resolves once the engine is loaded and initialized.
+			 * @return {!Promise} A Promise that resolves once the engine is loaded and initialized.
 			 */
 			init: function (basePath) {
 				if (initPromise) {
@@ -117,18 +120,19 @@ const Engine = (function () {
 			 *
 			 * If not provided, the ``path`` is derived from the URL of the loaded file.
 			 *
-			 * @param {string|ArrayBuffer} file The file to preload.
+			 * @param {string|!ArrayBuffer} file The file to preload.
 			 *
 			 * If a ``string`` the file will be loaded from that path.
 			 *
 			 * If an ``ArrayBuffer`` or a view on one, the buffer will used as the content of the file.
 			 *
+			 * @export
 			 * @param {string=} path Path by which the file will be accessible. Required, if ``file`` is not a string.
-			 *
-			 * @returns {Promise} A Promise that resolves once the file is loaded.
+			 * @return {!Promise} A Promise that resolves once the file is loaded.
 			 */
 			preloadFile: function (file, path) {
-				return preloader.preload(file, path, this.config.fileSizes[file]);
+				const size = typeof (file) == 'string' ? this.config.fileSizes[file] : 0;
+				return preloader.preload(file, path, size);
 			},
 
 			/**
@@ -140,8 +144,9 @@ const Engine = (function () {
 			 *
 			 * Fails if a canvas cannot be found on the page, or not specified in the configuration.
 			 *
-			 * @param {EngineConfig} override An optional configuration override.
-			 * @return {Promise} Promise that resolves once the engine started.
+			 * @export
+			 * @param {?EngineConfig} override An optional configuration override.
+			 * @return {!Promise} A Promise that resolves once the engine started.
 			 */
 			start: function (override) {
 				this.config.update(override);
@@ -190,8 +195,9 @@ const Engine = (function () {
 			 * This method expects the initial config (or the override) to have both the :js:attr:`executable` and :js:attr:`mainPack`
 			 * properties set (normally done by the editor during export).
 			 *
-			 * @param {EngineConfig} override An optional configuration override.
-			 * @return {Promise} Promise that resolves once the game started.
+			 * @export
+			 * @param {?EngineConfig} override An optional configuration override.
+			 * @return {!Promise} A Promise that resolves once the game started.
 			 */
 			startGame: function (override) {
 				this.config.update(override);
@@ -212,8 +218,9 @@ const Engine = (function () {
 			/**
 			 * Create a file at the specified ``path`` with the passed as ``buffer`` in the instance's file system.
 			 *
+			 * @export
 			 * @param {string} path The location where the file will be created.
-			 * @param {ArrayBuffer} buffer The content of the file.
+			 * @param {!ArrayBuffer} buffer The content of the file.
 			 */
 			copyToFS: function (path, buffer) {
 				if (this.rtenv == null) {
@@ -228,6 +235,7 @@ const Engine = (function () {
 			 * This is akin the user pressing the close button in the window manager, and will
 			 * have no effect if the engine has crashed, or is stuck in a loop.
 			 *
+			 * @export
 			 */
 			requestQuit: function () {
 				if (this.rtenv) {
@@ -241,6 +249,7 @@ const Engine = (function () {
 			 * This is akin to terminating the process on a regular OS, and *may* be able to terminate
 			 * the engine and free resources even if the engine has crashed, or is stuck in a loop.
 			 *
+			 * @export
 			 */
 			forceQuit: function () {
 				if (this.rtenv) {
@@ -253,7 +262,8 @@ const Engine = (function () {
 			 *
 			 * Adds a new EditorDebuggerSession connected via the given port.
 			 *
-			 * @param {MessagePort} port The port used for the debugger session.
+			 * @export
+			 * @param {!MessagePort} port The port used for the debugger session.
 			 */
 			addDebuggerSession: function (port) {
 				if (this.rtenv) {
@@ -263,7 +273,9 @@ const Engine = (function () {
 
 			/**
 			 * Install the progressive-web app service worker.
-			 * @returns {Promise} The service worker registration promise.
+			 *
+			 * @export
+			 * @return {!Promise} The service worker registration promise.
 			 */
 			installServiceWorker: function () {
 				if (this.config.serviceWorker && 'serviceWorker' in navigator) {
@@ -278,19 +290,6 @@ const Engine = (function () {
 		};
 
 		Engine.prototype = proto;
-		// Closure compiler exported instance methods.
-		Engine.prototype['init'] = Engine.prototype.init;
-		Engine.prototype['preloadFile'] = Engine.prototype.preloadFile;
-		Engine.prototype['start'] = Engine.prototype.start;
-		Engine.prototype['startGame'] = Engine.prototype.startGame;
-		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
-		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
-		Engine.prototype['forceQuit'] = Engine.prototype.forceQuit;
-		Engine.prototype['addDebuggerSession'] = Engine.prototype.addDebuggerSession;
-		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
-		// Also expose static methods as instance methods
-		Engine.prototype['load'] = Engine.load;
-		Engine.prototype['unload'] = Engine.unload;
 		return new Engine(initConfig);
 	}
 

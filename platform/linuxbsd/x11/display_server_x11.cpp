@@ -3399,7 +3399,7 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 			xev.data.l[3] = 1;
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 
-			if (!p_enabled && !wd.fullscreen) {
+			if (!p_enabled && !wd.fullscreen && !wd.maximized) {
 				_set_wm_maximized(p_window, false);
 			}
 			wd.on_top = p_enabled;
@@ -7414,7 +7414,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 					fallback = "bd_double_arrow";
 					break;
 				case DisplayServerEnums::CURSOR_MOVE:
-					cursor_img[i] = cursor_img[DisplayServerEnums::CURSOR_DRAG];
+					// Fallback to DRAG, but reload instead of aliasing to avoid double-free on cleanup.
+					cursor_img[i] = XcursorLibraryLoadImage("fleur", cursor_theme, cursor_size);
+					if (!cursor_img[i]) {
+						fallback = "grabbing";
+					}
 					break;
 				case DisplayServerEnums::CURSOR_VSPLIT:
 					fallback = "sb_v_double_arrow";
@@ -7518,8 +7522,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 DisplayServerX11::~DisplayServerX11() {
 	// Send owned clipboard data to clipboard manager before exit.
 	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
-	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
-	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
+	if (x11_main_window) {
+		_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
+		_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
+	}
 
 	events_thread_done.set();
 	events_thread.wait_to_finish();
@@ -7556,7 +7562,9 @@ DisplayServerX11::~DisplayServerX11() {
 			XDestroyIC(wd.xic);
 			wd.xic = nullptr;
 		}
-		XDestroyWindow(x11_display, wd.x11_xim_window);
+		if (x11_display) {
+			XDestroyWindow(x11_display, wd.x11_xim_window);
+		}
 #ifdef XKB_ENABLED
 		if (xkb_loaded_v05p) {
 			if (wd.xkb_state) {
@@ -7565,8 +7573,10 @@ DisplayServerX11::~DisplayServerX11() {
 			}
 		}
 #endif
-		XUnmapWindow(x11_display, wd.x11_window);
-		XDestroyWindow(x11_display, wd.x11_window);
+		if (x11_display) {
+			XUnmapWindow(x11_display, wd.x11_window);
+			XDestroyWindow(x11_display, wd.x11_window);
+		}
 	}
 
 #ifdef XKB_ENABLED
@@ -7621,7 +7631,10 @@ DisplayServerX11::~DisplayServerX11() {
 		XCloseIM(xim);
 	}
 
-	XCloseDisplay(x11_display);
+	if (x11_display) {
+		XCloseDisplay(x11_display);
+	}
+
 	if (xmbstring) {
 		memfree(xmbstring);
 	}

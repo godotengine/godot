@@ -365,7 +365,8 @@ class DisplayServerWindows : public DisplayServer {
 
 		// IME
 		HIMC im_himc;
-		Vector2 im_position;
+		Vector2i im_position;
+		Rect2i im_rect;
 		bool ime_active = false;
 		bool ime_in_progress = false;
 		bool ime_suppress_next_keyup = false;
@@ -714,6 +715,7 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual int accessibility_should_increase_contrast() const override;
 	virtual int accessibility_should_reduce_animation() const override;

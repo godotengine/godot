@@ -308,7 +308,7 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 	}
 }
 
-CodeTextEditor *get_code_edit(const String &p_fpath) {
+TextEditorBase *get_text_editor_base(const String &p_fpath) {
 	Ref<Resource> res = ResourceCache::get_ref(p_fpath);
 	if (res.is_null()) {
 		return nullptr;
@@ -324,10 +324,7 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 		document_editor_container = ScriptEditor::get_singleton()->get_script_container();
 	}
 	if (document_editor_container) {
-		TextEditorBase *teb = Object::cast_to<TextEditorBase>(document_editor_container->get_resource_editor(res));
-		if (teb) {
-			return teb->get_code_editor();
-		}
+		return Object::cast_to<TextEditorBase>(document_editor_container->get_resource_editor(res));
 	}
 
 	return nullptr;
@@ -336,9 +333,11 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 void FindInFilesSearch::_scan_file(const String &p_fpath) {
 	Vector<String> lines;
 
-	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
-	if (code_text_editor) {
-		lines = code_text_editor->get_text_editor()->get_text().split("\n");
+	TextEditorBase *text_editor_base = get_text_editor_base(p_fpath);
+	if (text_editor_base) {
+		// Update resource to ensure code lookup in _on_result_found uses the latest version.
+		text_editor_base->apply_code();
+		lines = text_editor_base->get_code_editor()->get_text_editor()->get_text().split("\n");
 	} else {
 		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
 		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
@@ -581,6 +580,30 @@ void FindInFilesSearchPanel::_on_replace_all_clicked(bool p_dialog) {
 	}
 }
 
+void FindInFilesSearchPanel::_on_rename_apply(bool p_confirm) {
+	if (rename_line_edit->get_text().is_empty() || rename_line_edit->get_text() == renamed_symbol_name->get_text()) {
+		return;
+	}
+	if (!p_confirm) {
+		if (!rename_confirm) {
+			rename_confirm = memnew(ConfirmationDialog);
+			rename_confirm->set_autowrap(true);
+			rename_confirm->set_text(TTRC("Symbol renaming is an experimental feature. It can be unreliable, and in worst case, cause data loss. Don't use without version control and/or backup."));
+			rename_confirm->set_ok_button_text(TTRC("I understand the risk"));
+			add_child(rename_confirm);
+			rename_confirm->connect(SceneStringName(confirmed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_apply).bind(true));
+		}
+		rename_confirm->popup_centered(Vector2i(EDSCALE_RND(400), 0));
+		return;
+	}
+	emit_signal("replace_all_requested");
+	emit_signal("close_tab_requested");
+}
+
+void FindInFilesSearchPanel::_on_rename_discard() {
+	emit_signal("close_tab_requested");
+}
+
 void FindInFilesSearchPanel::_on_folder_selected(String p_path) {
 	int i = p_path.find("://");
 	if (i != -1) {
@@ -792,9 +815,9 @@ FindInFilesSearchPanel::FindInFilesSearchPanel() {
 		applydiscard_hb->add_child(apply_rename);
 		apply_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_apply).bind(false));
 
-		apply_rename = memnew(Button(TTRC("Cancel")));
-		applydiscard_hb->add_child(apply_rename);
-		apply_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_discard));
+		Button *discard_rename = memnew(Button(TTRC("Cancel")));
+		applydiscard_hb->add_child(discard_rename);
+		discard_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_discard));
 	}
 
 	debounce_timer = memnew(Timer);
@@ -930,17 +953,15 @@ void FindInFilesContainer::create_rename_control(const String &p_symbol, const E
 	finder->set_filter(exts);
 	finder->set_symbol_rename(p_lookup);
 
+	search_control->set_block_signals(true); // Prevent premature search.
 	search_control->set_finder(finder, false);
 	search_control->set_search_text(p_symbol);
 	search_control->set_replace(true);
 	search_control->set_replace_text(p_symbol);
+	search_control->set_block_signals(false);
 
 	new_panel->set_symbol_rename(p_lookup);
 	new_panel->start_search();
-
-	if (tabs->get_tab_count() == 1) {
-		_update_bar_visibility();
-	}
 }
 
 void FindInFilesResultsPanel::_notification(int p_what) {
@@ -1040,27 +1061,27 @@ void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line
 
 		bool check_item = false;
 		if (!symbol_rename.script_path.is_empty()) {
-			if (ResourceLoader::exists(p_fpath, "Script")) {
-				Ref<Script> source_script = ResourceLoader::load(p_fpath);
-				if (source_script.is_valid()) {
-					PackedStringArray lines = source_script->get_source_code().split("\n");
-					const String current_line = lines[p_line_number - 1];
-					lines.write[p_line_number - 1] = current_line.insert(p_begin, String::chr(0xFFFF));
+			const Ref<Script> source_script = ResourceLoader::load(p_fpath);
+			if (source_script.is_valid()) {
+				PackedStringArray lines = source_script->get_source_code().split("\n");
+				const String current_line = lines[p_line_number - 1];
+				lines.write[p_line_number - 1] = current_line.insert(p_begin, String::chr(0xFFFF));
 
-					EditorLanguage::LookupResult result;
-					Error err = source_script->get_language()->get_editor_language()->lookup_code_for_rename(String("\n").join(lines), current_line.substr(p_begin, p_end - p_begin), source_script->get_path(), result);
-					if (err == OK) {
-						check_item = result.type == symbol_rename.type &&
-								result.class_name == symbol_rename.class_name &&
-								result.class_member == symbol_rename.class_member &&
-								result.doc_type == symbol_rename.doc_type &&
-								result.enumeration == symbol_rename.enumeration &&
-								result.is_bitfield == symbol_rename.is_bitfield &&
-								result.value == symbol_rename.value &&
-								result.script_path == symbol_rename.script_path &&
-								result.location == symbol_rename.location;
-					}
+				EditorLanguage::LookupResult result;
+				Error err = source_script->get_language()->get_editor_language()->lookup_code_for_rename(String("\n").join(lines), current_line.substr(p_begin, p_end - p_begin), source_script->get_path(), result);
+				if (err == OK) {
+					check_item = result.type == symbol_rename.type &&
+							result.class_name == symbol_rename.class_name &&
+							result.class_member == symbol_rename.class_member &&
+							result.doc_type == symbol_rename.doc_type &&
+							result.enumeration == symbol_rename.enumeration &&
+							result.is_bitfield == symbol_rename.is_bitfield &&
+							result.value == symbol_rename.value &&
+							result.script_path == symbol_rename.script_path &&
+							result.location == symbol_rename.location;
 				}
+			} else {
+				ERR_PRINT(vformat("Failed to load Script at \"%s\".", p_fpath));
 			}
 		} else {
 			check_item = true;
@@ -1274,10 +1295,10 @@ void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column,
 }
 
 void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
-	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	TextEditorBase *text_editor_base = get_text_editor_base(p_fpath);
 	CodeEdit *code_edit = nullptr;
-	if (code_text_editor) {
-		code_edit = code_text_editor->get_text_editor();
+	if (text_editor_base) {
+		code_edit = text_editor_base->get_code_editor()->get_text_editor();
 	}
 	Ref<FileAccess> f;
 	Vector<String> lines;
@@ -1313,10 +1334,10 @@ void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, con
 
 	if (code_edit) {
 		code_edit->begin_complex_operation();
-		Variant nav_state = code_text_editor->get_navigation_state();
+		Variant nav_state = text_editor_base->get_navigation_state();
 		code_edit->set_text(final_text);
 		code_edit->emit_signal(SceneStringName(text_changed));
-		code_text_editor->set_edit_state(nav_state);
+		text_editor_base->set_edit_state(nav_state);
 		code_edit->end_complex_operation();
 	} else {
 		// Now the modified contents are in the buffer, rewrite the file with our changes.
@@ -1750,28 +1771,4 @@ FindInFiles::FindInFiles() {
 	container = memnew(FindInFilesContainer);
 	EditorDockManager::get_singleton()->add_dock(container);
 	container->close();
-}
-
-void FindInFilesSearchPanel::_on_rename_apply(bool p_confirm) {
-	if (rename_line_edit->get_text().is_empty() || rename_line_edit->get_text() == renamed_symbol_name->get_text()) {
-		return;
-	}
-	if (!p_confirm) {
-		if (!rename_confirm) {
-			rename_confirm = memnew(ConfirmationDialog);
-			rename_confirm->set_autowrap(true);
-			rename_confirm->set_text(TTRC("Symbol renaming is an experimental feature. It can be unreliable, and in worst case, cause data loss. Don't use without version control and/or backup."));
-			rename_confirm->set_ok_button_text(TTRC("I understand the risk"));
-			add_child(rename_confirm);
-			rename_confirm->connect(SceneStringName(confirmed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_apply).bind(true));
-		}
-		rename_confirm->popup_centered(Vector2i(EDSCALE_RND(400), 0));
-		return;
-	}
-	emit_signal("replace_all_requested");
-	emit_signal("close_tab_requested");
-}
-
-void FindInFilesSearchPanel::_on_rename_discard() {
-	emit_signal("close_tab_requested");
 }

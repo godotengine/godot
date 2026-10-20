@@ -120,7 +120,7 @@ private:
 	Ref<Gradient> color_gradient;
 	MaterialMode material_mode = MATERIAL_MODE_MIX;
 	MeshAlignment alignment = MESH_ALIGNMENT_BILLBOARD;
-	TilingMode tiling_mode = TILING_MODE_LENGTH;
+	TilingMode tiling_mode = TILING_MODE_TILE;
 	float tiling_multiplier = 1.0;
 	float tiling_offset = 0.0;
 	PackedVector3Array points;

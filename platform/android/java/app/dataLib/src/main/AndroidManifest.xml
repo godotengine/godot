@@ -5,7 +5,7 @@
     <application>
         <activity
             android:name="com.godot.game.GodotApp"
-            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode|fontScale|fontWeightAdjustment"
             android:excludeFromRecents="false"
             android:exported="false"
             android:launchMode="singleInstancePerTask"

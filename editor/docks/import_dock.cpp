@@ -316,6 +316,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			for (const KeyValue<Variant, Variant> &kv : d) {
 				int f = kv.value;
 				if (f > freq) {
+					freq = f;
 					value = kv.key;
 				}
 			}

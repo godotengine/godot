@@ -486,7 +486,7 @@ namespace Godot.SourceGenerators
             string? className = null;
             if (memberVariantType == VariantType.Object && typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
-                className = namedTypeSymbol.GetGodotScriptNativeClassName();
+                className = namedTypeSymbol.GetPropertyInfoClassName();
             }
 
             return new PropertyInfo(memberVariantType, name,

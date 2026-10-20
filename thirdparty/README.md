@@ -120,7 +120,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.5.4 (ef88ee97c0e759792e43a2b2d8072def6c9244e8, 2025)
+- Version: 2.0.1 (21ebba05db8894f0c7217ad35ea518080f324946, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -442,7 +442,7 @@ Patches:
 ## graphite
 
 - Upstream: https://github.com/silnrsi/graphite
-- Version: 1.3.14 (27572742003b93dc53dc02c01c237b72c6c25f54, 2022)
+- Version: 1.3.15 (ca8d821e60a15b6c24e404c9086992c975d8e1cf, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -604,7 +604,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.58 (3061454d980de7d53608f594194cfac722721d2a, 2026)
+- Version: 1.6.59 (cd952f49f95bb27154ae77dbb103032d95f6e580, 2026)
 - License: libpng/zlib
 
 Files extracted from upstream source:
@@ -864,6 +864,7 @@ Collection of single-file libraries used in Godot components.
   * Modifications: License included in header.
   * Patches:
     - `smaz-0001-write-string-warning.patch` ([GH-8572](https://github.com/godotengine/godot/pull/8572))
+    - `smaz-0002-decompress-input-bounds.patch` ([GH-124701](https://github.com/godotengine/godot/pull/124701))
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
   * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
@@ -944,7 +945,7 @@ Patches:
 ## pcre2
 
 - Upstream: https://pcre2project.github.io/pcre2/
-- Version: 10.47 (f454e231fe5006dd7ff8f4693fd2b8eb94333429, 2025)
+- Version: 10.49 (6f9d7c1373262c541324a16a358785b33ef116cf, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -1108,7 +1109,7 @@ Files extracted from upstream source:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 1.0.3 (d114cd9e3c32d7f77bc9b324ae5c71d7775cb7ae, 2026)
+- Version: 1.1.3 (589bc4120f2097fb1b135e552c2ef39f6581612b, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1137,12 +1138,13 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-external-zlib.patch` ([GH-55115](https://github.com/godotengine/godot/pull/55115))
+- `0002-fix-multipart-header-stale-size.patch` ([GH-124638](https://github.com/godotengine/godot/pull/124638))
 
 
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.23.0 (fcc5d6ba444cfd3eb80677dba5e37e493941abe5, 2026)
+- Version: 0.23.1 (26a482ae66871d7de36eb722aa060bce95bce274, 2026)
 - License: MIT
 
 Files extracted from upstream source:

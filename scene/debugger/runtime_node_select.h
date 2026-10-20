@@ -68,7 +68,7 @@ public:
 private:
 	friend class SceneDebugger;
 
-	NodeType node_select_type = NODE_TYPE_2D;
+	NodeType node_select_type = NODE_TYPE_NONE;
 	SelectMode node_select_mode = SELECT_MODE_SINGLE;
 
 	const int SELECTION_MIN_AREA = 8 * 8;

@@ -15,6 +15,13 @@ def run_closure_compiler(target, source, env, for_signature):
     )
     cmd = [WhereIs("node"), closure_bin]
     cmd.extend(["--compilation_level", "ADVANCED_OPTIMIZATIONS"])
+    for allow in ["header", "callback"]:
+        cmd.extend(["--extra_annotation_name", allow])
+    if env["warnings"] != "none":
+        if env["werror"]:
+            cmd.append("--jscomp_error='*'")
+        else:
+            cmd.append("--jscomp_warning='*'")
     for f in env["JSEXTERNS"]:
         cmd.extend(["--externs", f.get_abspath()])
     for f in source:

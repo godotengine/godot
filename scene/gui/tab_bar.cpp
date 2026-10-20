@@ -526,20 +526,23 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						play_theme_sound(theme_cache.pressed_sound);
 						emit_signal(SNAME("tab_close_pressed"), cb_hover);
 					}
-				} else if (tab_pressing != -1 && !tabs[tab_pressing].disabled) {
+				} else if (tab_pressing != -1) {
 					// Selecting a tab.
 					int found = get_tab_idx_at_point(pos);
-					// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
-					if (true) {
-						play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
-					}
 					if (found == tab_pressing) {
-						if (deselect_enabled && get_current_tab() == found) {
-							set_current_tab(-1);
-						} else {
-							set_current_tab(found);
+						// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
+						if (current != found) {
+							play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 						}
-						emit_signal(SNAME("tab_clicked"), found);
+
+						if (!tabs[tab_pressing].disabled) {
+							if (deselect_enabled && current == found) {
+								set_current_tab(-1);
+							} else {
+								set_current_tab(found);
+							}
+							emit_signal(SNAME("tab_clicked"), found);
+						}
 					}
 				}
 			}
@@ -1680,13 +1683,13 @@ Size2 TabBar::get_desired_size() const {
 	bool overflowed = false;
 
 	// First pass: check if all tabs fit without buttons.
-	for (int i = offset; i < tabs.size(); i++) {
+	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
 			continue;
 		}
 
 		int next_w = w + tabs[i].size_cache;
-		if (i > offset) {
+		if (i > 0) {
 			next_w += theme_cache.tab_separation;
 		}
 
@@ -1699,14 +1702,15 @@ Size2 TabBar::get_desired_size() const {
 	}
 
 	// If buttons are needed, recompute against the reduced limit.
-	if (offset > 0 || overflowed) {
+	if (overflowed) {
 		w = 0;
+		int next_w = 0;
 		for (int i = offset; i < tabs.size(); i++) {
 			if (tabs[i].hidden) {
 				continue;
 			}
 
-			int next_w = w + tabs[i].size_cache;
+			next_w = w + tabs[i].size_cache;
 			if (i > offset) {
 				next_w += theme_cache.tab_separation;
 			}
@@ -1717,9 +1721,24 @@ Size2 TabBar::get_desired_size() const {
 
 			w = next_w;
 		}
+
+		// If all tab after offset fit, try to add tabs before the offset as well to prevent keeping a desired size low because of offset.
+		if (next_w == w) {
+			for (int i = offset - 1; i >= 0; i--) {
+				if (tabs[i].hidden) {
+					continue;
+				}
+				next_w = w + tabs[i].size_cache + theme_cache.tab_separation;
+				if (next_w > limit_minus_buttons) {
+					break;
+				}
+
+				w = next_w;
+			}
+		}
 	}
 
-	int desired = (offset > 0 || overflowed) ? w + buttons_size : w;
+	int desired = (overflowed) ? w + buttons_size : w;
 	desired = MIN(desired, limit);
 
 	return Size2(desired, 0);

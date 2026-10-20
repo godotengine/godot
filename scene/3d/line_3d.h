@@ -46,8 +46,8 @@ public:
 	};
 
 	enum TilingMode {
-		TILING_MODE_UNIT,
-		TILING_MODE_LENGTH,
+		TILING_MODE_STRETCH,
+		TILING_MODE_TILE,
 		TILING_MAX,
 	};
 

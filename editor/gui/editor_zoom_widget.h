@@ -44,6 +44,7 @@ class EditorZoomWidget : public HBoxContainer {
 	float min_zoom = 1.0 / 128;
 	float max_zoom = 128.0;
 	void _update_zoom_label();
+	void _button_zoom_by(int p_direction);
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();

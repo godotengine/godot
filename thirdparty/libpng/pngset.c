@@ -811,6 +811,7 @@ png_set_PLTE(png_structrp png_ptr, png_inforp info_ptr,
     * regardless of num_palette.
     */
    png_free(png_ptr, png_ptr->palette);
+   png_ptr->palette = NULL;
    png_ptr->palette = png_voidcast(png_colorp, png_calloc(png_ptr,
        PNG_MAX_PALETTE_LENGTH * (sizeof (png_color))));
    info_ptr->palette = png_voidcast(png_colorp, png_calloc(png_ptr,
@@ -1223,6 +1224,7 @@ png_set_tRNS(png_structrp png_ptr, png_inforp info_ptr,
            * functions (e.g. png_do_expand_palette).
            */
           png_free(png_ptr, png_ptr->trans_alpha);
+          png_ptr->trans_alpha = NULL;
           png_ptr->trans_alpha = png_voidcast(png_bytep,
               png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH));
           memset(png_ptr->trans_alpha, 0xff, PNG_MAX_PALETTE_LENGTH);

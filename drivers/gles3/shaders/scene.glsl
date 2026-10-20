@@ -180,9 +180,10 @@ layout(location = 21) in highp uvec4 prev_instance_color_custom_data;
 
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
-layout(std140) uniform GlobalShaderUniformData { //ubo:1
-	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-13
+
+#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
+#define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
 
 struct SceneData {
 	highp mat4 projection_matrix;
@@ -1197,9 +1198,10 @@ decal_data_block;
 
 #endif // USE_DECALS
 
-layout(std140) uniform GlobalShaderUniformData { //ubo:1
-	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-13
+
+#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
+#define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
 
 /* Material Uniforms */
 #ifdef MATERIAL_UNIFORMS_USED
@@ -2335,6 +2337,11 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy * scene_data_block.data.screen_pixel_size;
 
 	float sss_strength = 0.0;
+
+#ifdef STREAMING_LOD_USED
+	// Not used, but needed so shaders that write STREAMING_LOD still compile.
+	float streaming_lod = 0.0;
+#endif
 
 #ifdef ALPHA_SCISSOR_USED
 	float alpha_scissor_threshold = 1.0;

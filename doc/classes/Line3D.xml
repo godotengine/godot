@@ -19,10 +19,10 @@
 		<constant name="MESH_ALIGNMENT_MAX" value="2" enum="MeshAlignment">
 			Represents the size of the [enum MeshAlignment] enum.
 		</constant>
-		<constant name="TILING_MODE_UNIT" value="0" enum="TilingMode">
+		<constant name="TILING_MODE_STRETCH" value="0" enum="TilingMode">
 			Assign UVs from [code]0[/code] to [code]1[/code] across the length of the line.
 		</constant>
-		<constant name="TILING_MODE_LENGTH" value="1" enum="TilingMode">
+		<constant name="TILING_MODE_TILE" value="1" enum="TilingMode">
 			Assign UVs from [code]0[/code] to current length, across the length of the line.
 		</constant>
 		<constant name="TILING_MAX" value="2" enum="TilingMode">

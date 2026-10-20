@@ -60,6 +60,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 #endif
 
 static const int MAX_DECIMALS = 32;
+const String String::EMPTY;
 
 static _FORCE_INLINE_ char32_t lower_case(char32_t p_char) {
 	return (is_ascii_upper_case(p_char) ? (p_char + ('a' - 'A')) : p_char);

@@ -126,7 +126,8 @@ void LineEdit::_close_ime_window() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_position(Point2i(), wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(Rect2i(), wid);
 	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 }
 
@@ -135,15 +136,19 @@ void LineEdit::_update_ime_window_position() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+	Rect2i rect = Rect2i(get_global_position(), get_size());
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
+		rect.position += get_viewport()->get_popup_base_transform().get_origin();
 	}
 	// Take into account the window's transform.
 	pos = get_window()->get_screen_transform().xform(pos);
+	rect = get_window()->get_screen_transform().xform(rect);
 	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(rect, wid);
 }
 
 bool LineEdit::has_ime_text() const {
@@ -1215,8 +1220,8 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture2D> icon = theme_cache.clear_icon;
-	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon->get_width() : p_pos.x > get_size().width - icon->get_width() - theme_cache.normal->get_margin(SIDE_RIGHT);
+	Point2 icon_size = _get_right_icon_size(theme_cache.clear_icon);
+	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon_size.x : p_pos.x > get_size().width - icon_size.y - theme_cache.normal->get_margin(SIDE_RIGHT);
 }
 
 void LineEdit::_update_theme_item_cache() {
