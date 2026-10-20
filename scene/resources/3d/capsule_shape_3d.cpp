@@ -258,7 +258,7 @@ real_t CapsuleShape3D::get_mid_height() const {
 }
 
 void CapsuleShape3D::set_height(real_t p_height) {
-	ERR_FAIL_COND_MSG(p_height <= 0.0f, "CapsuleShape3D height cannot be smaller than zero.");
+	ERR_FAIL_COND_MSG(p_height <= 0.0f, "CapsuleShape3D height must be positive.");
 	height = MAX(p_height, CMP_EPSILON);
 	top_radius = MIN(top_radius, height / 2);
 	bottom_radius = MIN(bottom_radius, height / 2);

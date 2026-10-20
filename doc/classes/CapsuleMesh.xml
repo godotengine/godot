@@ -15,7 +15,7 @@
 			<param index="1" name="bottom_radius" type="float" />
 			<param index="2" name="mid_height" type="float" />
 			<description>
-				Return the angle of the tangent between the top and bottom hemispheres.
+				Returns the angle of the tangent between the top and bottom hemispheres.
 				It is positive when [param bottom_radius] is bigger than [param top_radius], and is in the range from [code]-PI / 2[code] to [code]PI / 2[/code].
 			</description>
 		</method>
@@ -50,8 +50,8 @@
 			If greater than [member bottom_radius] + [member mid_height], the capsule becomes a sphere.
 		</member>
 		<member name="use_height" type="bool" setter="set_is_using_height" getter="is_using_height" default="true">
-			When true, keeps [member height] constant when changing radii.
-			When false, keeps [member mid_height] constant when changing radii.
+			When [code]true[/code], keeps [member height] constant when changing radii.
+			When [code]false[/code], keeps [member mid_height] constant when changing radii.
 		</member>
 	</members>
 </class>
