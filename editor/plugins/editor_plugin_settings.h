@@ -51,6 +51,7 @@ class EditorPluginSettings : public VBoxContainer {
 		COLUMN_MAX,
 	};
 
+	Button *open_plugin_folder_button;
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	TextureRect *recovery_mode_icon = nullptr;
 	Label *installed_plugins_label = nullptr;
@@ -62,6 +63,7 @@ class EditorPluginSettings : public VBoxContainer {
 	void _plugin_activity_changed();
 	void _update_plugin_enabled(Object *p_item);
 	void _create_clicked();
+	void _open_plugin_folder_clicked();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
 	static Vector<String> _get_plugins(const String &p_dir);

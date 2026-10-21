@@ -31,10 +31,12 @@
 #include "editor_plugin_settings.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -51,6 +53,7 @@ void EditorPluginSettings::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			plugin_config_dialog->connect("plugin_ready", callable_mp(EditorNode::get_singleton(), &EditorNode::_on_plugin_ready));
 			plugin_list->connect("button_clicked", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+			open_plugin_folder_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -213,6 +216,16 @@ void EditorPluginSettings::_create_clicked() {
 	plugin_config_dialog->popup_centered();
 }
 
+void EditorPluginSettings::_open_plugin_folder_clicked() {
+	String dir;
+	if (is_global_plugins) {
+		dir = ProjectSettings::get_singleton()->get_editor_resource_path() + "/addons";
+	} else {
+		dir = ProjectSettings::get_singleton()->get_resource_path() + "/addons";
+	}
+	OS::get_singleton()->shell_show_in_file_manager(dir, true);
+}
+
 void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -294,6 +307,14 @@ EditorPluginSettings::EditorPluginSettings(bool p_is_global_plugins) {
 	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin_button);
+	open_plugin_folder_button = memnew(Button);
+	if (is_global_plugins) {
+		open_plugin_folder_button->set_tooltip_text("Open Global Plugin Folder");
+	} else {
+		open_plugin_folder_button->set_tooltip_text("Open Local Plugin Folder");
+	}
+	open_plugin_folder_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_open_plugin_folder_clicked));
+	title_hb->add_child(open_plugin_folder_button);
 	add_child(title_hb);
 
 	plugin_list = memnew(Tree);
