@@ -93,6 +93,8 @@ private:
 	FillMode mode = FILL_BEGIN_TO_END;
 
 	String label_format = "%d%%";
+
+	String _get_formatted_text(double current, double min, double max) const;
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);

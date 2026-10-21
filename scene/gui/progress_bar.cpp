@@ -42,26 +42,7 @@ Size2 ProgressBar::get_minimum_size() const {
 	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
 	if (!label_format.is_empty()) {
 		bool error = false;
-		String txt;
-
-		const int s_count = label_format.count("%s");
-
-		if (s_count == 0) {
-			const Variant percentage = 100.0;
-			txt = label_format.sprintf(Span(&percentage, 1), &error);
-		} else if (s_count == 2) {
-			const Variant fraction_args[] = { String("1"), String("1") };
-			txt = label_format.sprintf(Span(fraction_args, 2), &error);
-		} else if (s_count == 1) {
-			const Variant value = String("1");
-			txt = label_format.sprintf(Span(&value, 1), &error);
-		} else {
-			error = true;
-		}
-
-		if (error) {
-			txt = RTR("<Invalid>");
-		}
+		String txt = _get_formatted_text(get_value(), get_max(), get_max());
 
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
@@ -129,8 +110,6 @@ void ProgressBar::_notification(int p_what) {
 					case FILL_MODE_MAX:
 						break;
 				}
-
-				return;
 			}
 
 			float r = get_as_ratio();
@@ -171,55 +150,7 @@ void ProgressBar::_notification(int p_what) {
 			}
 
 			if (!label_format.is_empty()) {
-				double ratio = 0;
-
-				// Avoid division by zero.
-				if (Math::is_equal_approx(get_max(), get_min())) {
-					ratio = 1;
-				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
-					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-					double exp_max = Math::log(get_max()) / Math::log((double)2);
-					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
-					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
-
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-				} else {
-					double percentage = (get_value() - get_min()) / (get_max() - get_min());
-
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-				}
-
-				bool error = false;
-				String txt;
-
-				const int s_count = label_format.count("%s");
-
-				if (s_count == 0) {
-					// Check this first as this is the most likely case
-					const Variant percentage = ratio * 100;
-					txt = label_format.sprintf(Span(&percentage, 1), &error);
-				} else if (s_count == 2) {
-					const String value = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");
-					const String max = String::num(Math::snapped(get_max(), get_step()), -1).trim_suffix(".0");
-					const Variant fraction_args[] = {
-						value,
-						max
-					};
-
-					txt = label_format.sprintf(Span(fraction_args, 2), &error);
-				} else if (s_count == 1) {
-					const Variant value_arg = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");;
-					txt = label_format.sprintf(Span(&value_arg, 1), &error);
-				} else {
-					error = true;
-				}
-
-				if (error) {
-					txt = RTR("<Invalid>");
-				} else if (is_localizing_numeral_system()) {
-					const String &lang = _get_locale();
-					txt = TranslationServer::get_singleton()->format_number(txt, lang);
-				}
+				String txt = _get_formatted_text(get_value(), get_min(), get_max());
 
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
@@ -234,10 +165,66 @@ void ProgressBar::_notification(int p_what) {
 	}
 }
 
+String ProgressBar::_get_formatted_text(double current, double min, double max) const {
+	double ratio = 0;
+
+	// Avoid division by zero.
+	if (Math::is_equal_approx(max, min)) {
+		ratio = 1;
+	} else if (is_ratio_exp() && min >= 0 && current >= 0) {
+		double exp_min = min == 0 ? 0.0 : Math::log(min) / Math::log((double)2);
+		double exp_max = Math::log(max) / Math::log((double)2);
+		double exp_value = current == 0 ? 0.0 : Math::log(current) / Math::log((double)2);
+		double percentage = (exp_value - exp_min) / (exp_max - exp_min);
+
+		ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+	} else {
+		double percentage = (current - min) / (max - min);
+
+		ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+	}
+
+	bool error = false;
+	String txt;
+
+	const int s_count = label_format.count("%s");
+
+	if (s_count == 0) {
+		// Check this first as this is the most likely case
+		const Variant percentage = ratio * 100;
+		txt = label_format.sprintf(Span(&percentage, 1), &error);
+	} else if (s_count == 2) {
+		const String value_s = String::num(Math::snapped(current, get_step()), -1).trim_suffix(".0");
+		const String max_s = String::num(Math::snapped(max, get_step()), -1).trim_suffix(".0");
+		const Variant fraction_args[] = {
+			value_s,
+			max_s
+		};
+
+		txt = label_format.sprintf(Span(fraction_args, 2), &error);
+	} else if (s_count == 1) {
+		const Variant value_arg = String::num(Math::snapped(current, get_step()), -1).trim_suffix(".0");;
+		txt = label_format.sprintf(Span(&value_arg, 1), &error);
+	} else {
+		error = true;
+	}
+
+	if (error) {
+		if (is_indeterminate()) {
+			txt = label_format;
+		} else {
+			txt = RTR("<Invalid>");
+		}
+	} else if (is_localizing_numeral_system()) {
+		const String &lang = _get_locale();
+		txt = TranslationServer::get_singleton()->format_number(txt, lang);
+	}
+
+	return txt;
+}
+
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
-	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "format") {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	} else if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
+	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
