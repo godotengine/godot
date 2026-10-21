@@ -1576,6 +1576,9 @@ void LightStorage::_reflection_atlas_clear(ReflectionAtlas *p_reflection_atlas) 
 	RD::get_singleton()->free_rid(p_reflection_atlas->reflection);
 	p_reflection_atlas->reflection = RID();
 
+	RD::get_singleton()->free_rid(p_reflection_atlas->color_buffer);
+	p_reflection_atlas->color_buffer = RID();
+
 	RD::get_singleton()->free_rid(p_reflection_atlas->depth_fb);
 	p_reflection_atlas->depth_fb = RID();
 
