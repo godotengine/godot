@@ -1885,8 +1885,9 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				p_function->return_type_constraint = array_type;
 			} else {
 				p_function->return_type_constraint = parent_return_type;
-		}
+			}
 #endif // DISABLE_DEPRECATED
+		}
 
 #ifdef TOOLS_ENABLED
 		if (can_match_parent_signature) {
