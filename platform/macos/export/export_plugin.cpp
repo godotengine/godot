@@ -1805,9 +1805,9 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 
 Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_zip_path, const String &p_app_name, bool p_debug) {
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-	unzFile src_pkg_zip = unzOpen2(p_zip_path.utf8().get_data(), &io);
+	unzFile src_pkg_zip = unzOpen2_64(p_zip_path.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Prepare Templates"), vformat(TTR("Could not find debug symbols to export: \"%s\"."), p_zip_path));
 		return ERR_FILE_NOT_FOUND;
@@ -1817,9 +1817,9 @@ Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	while (ret == UNZ_OK) {
 		// Get filename.
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -1969,13 +1969,13 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	}
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating app bundle"), 0)) {
 		return ERR_SKIP;
 	}
 
-	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
+	unzFile src_pkg_zip = unzOpen2_64(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not find template app to export: \"%s\"."), src_pkg_name));
 		return ERR_FILE_NOT_FOUND;
@@ -2234,9 +2234,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	HashMap<String, Vector<PackedByteArray>> universal_binaries;
 	while (ret == UNZ_OK && err == OK) {
 		// Get filename.
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -2782,8 +2782,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				}
 
 				Ref<FileAccess> io_fa_dst;
-				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
-				zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+				zlib_filefunc64_def io_dst = zipio_create_io(&io_fa_dst);
+				zipFile zip = zipOpen2_64(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
 				zip_folder_recursive(zip, tmp_base_path_name, "", pkg_name);
 
@@ -2802,8 +2802,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				}
 
 				Ref<FileAccess> io_fa_dst;
-				zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
-				zipFile zip = zipOpen2(noto_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+				zlib_filefunc64_def io_dst = zipio_create_io(&io_fa_dst);
+				zipFile zip = zipOpen2_64(noto_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
 				zip_folder_recursive(zip, tmp_base_path_name, tmp_app_dir_name, pkg_name);
 

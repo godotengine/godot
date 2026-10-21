@@ -789,7 +789,7 @@ Error EditorExportPlatformAndroid::store_in_apk(APKExportData *ed, const String 
 			compression_method,
 			Z_DEFAULT_COMPRESSION);
 
-	zipWriteInFileInZip(ed->apk, p_data.ptr(), p_data.size());
+	godot_zip_write_file(ed->apk, p_data.ptr(), p_data.size());
 	zipCloseFileInZip(ed->apk);
 
 	return OK;
@@ -3963,13 +3963,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
 	if (ep.step(TTR("Creating APK..."), 0)) {
 		return ERR_SKIP;
 	}
 
-	unzFile pkg = unzOpen2(src_apk.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(src_apk.utf8().get_data(), &io);
 	if (!pkg) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not find template APK to export: \"%s\"."), src_apk));
 		return ERR_FILE_NOT_FOUND;
@@ -3978,7 +3978,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	int ret = unzGoToFirstFile(pkg);
 
 	Ref<FileAccess> io2_fa;
-	zlib_filefunc_def io2 = zipio_create_io(&io2_fa);
+	zlib_filefunc64_def io2 = zipio_create_io(&io2_fa);
 
 	String tmp_unaligned_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
@@ -3989,7 +3989,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	} \
 	((void)0)
 
-	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
+	zipFile unaligned_apk = zipOpen2_64(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 	Vector<ABI> invalid_abis(enabled_abis);
 
@@ -3999,9 +3999,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	while (ret == UNZ_OK) {
 		//get filename
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -4129,7 +4129,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					uncompressed ? 0 : Z_DEFLATED,
 					Z_DEFAULT_COMPRESSION);
 
-			zipWriteInFileInZip(unaligned_apk, data.ptr(), data.size());
+			godot_zip_write_file(unaligned_apk, data.ptr(), data.size());
 			zipCloseFileInZip(unaligned_apk);
 		}
 
@@ -4154,7 +4154,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				uncompressed ? 0 : Z_DEFLATED,
 				Z_DEFAULT_COMPRESSION);
 
-		zipWriteInFileInZip(unaligned_apk, themed_icon_xml_data.ptr(), themed_icon_xml_data.size());
+		godot_zip_write_file(unaligned_apk, themed_icon_xml_data.ptr(), themed_icon_xml_data.size());
 		zipCloseFileInZip(unaligned_apk);
 	}
 
@@ -4214,7 +4214,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			nullptr,
 			0, // No compress (little size gain and potentially slower startup)
 			Z_DEFAULT_COMPRESSION);
-	zipWriteInFileInZip(unaligned_apk, command_line_flags.ptr(), command_line_flags.size());
+	godot_zip_write_file(unaligned_apk, command_line_flags.ptr(), command_line_flags.size());
 	zipCloseFileInZip(unaligned_apk);
 	zipClose(unaligned_apk, nullptr);
 	unzClose(pkg);
@@ -4230,7 +4230,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		CLEANUP_AND_RETURN(ERR_SKIP);
 	}
 
-	unzFile tmp_unaligned = unzOpen2(tmp_unaligned_path.utf8().get_data(), &io);
+	unzFile tmp_unaligned = unzOpen2_64(tmp_unaligned_path.utf8().get_data(), &io);
 	if (!tmp_unaligned) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not unzip temporary unaligned APK.")));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
@@ -4239,19 +4239,19 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	ret = unzGoToFirstFile(tmp_unaligned);
 
 	io2 = zipio_create_io(&io2_fa);
-	zipFile final_apk = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
+	zipFile final_apk = zipOpen2_64(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 
 	// Take files from the unaligned APK and write them out to the aligned one
 	// in raw mode, i.e. not uncompressing and recompressing, aligning them as needed,
 	// following what is done in https://github.com/android/platform_build/blob/master/tools/zipalign/ZipAlign.cpp
 	int bias = 0;
 	while (ret == UNZ_OK) {
-		unz_file_info info;
+		unz_file_info64 info;
 		memset(&info, 0, sizeof(info));
 
 		char fname[16384];
 		char extra[16384];
-		ret = unzGetCurrentFileInfo(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(tmp_unaligned, &info, fname, 16384, extra, 16384 - ZIP_ALIGNMENT, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -4295,7 +4295,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				method,
 				level,
 				1); // raw write
-		zipWriteInFileInZip(final_apk, data.ptr(), data.size());
+		godot_zip_write_file(final_apk, data.ptr(), data.size());
 		zipCloseFileInZipRaw(final_apk, info.uncompressed_size, info.crc);
 
 		bias += padding;
