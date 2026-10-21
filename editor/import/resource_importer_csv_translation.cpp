@@ -68,7 +68,7 @@ String ResourceImporterCSVTranslation::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterCSVTranslation::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress", PROPERTY_HINT_ENUM, "Disabled,Auto"), 1)); // Enum for compatibility with previous versions.
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress", PROPERTY_HINT_ENUM, "Disabled,Enabled"), 1)); // Enum for compatibility with previous versions.
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "delimiter", PROPERTY_HINT_ENUM, "Comma,Semicolon,Tab"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "unescape_keys"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "unescape_translations"), true));
@@ -128,8 +128,6 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 	}
 
 	// Parse content rows.
-	bool context_used = false;
-	bool plural_used = false;
 	{
 		const bool unescape_keys = p_options.has("unescape_keys") ? bool(p_options["unescape_keys"]) : false;
 		const bool unescape_translations = p_options.has("unescape_translations") ? bool(p_options["unescape_translations"]) : true;
@@ -166,13 +164,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 
 			// It's okay if you define context or plural columns but don't use them.
 			const String msgctxt = (context_column != -1 && context_column < line.size()) ? line[context_column] : String();
-			if (!msgctxt.is_empty()) {
-				context_used = true;
-			}
 			const String msgid_plural = (plural_column != -1 && plural_column < line.size()) ? line[plural_column] : String();
-			if (!msgid_plural.is_empty()) {
-				plural_used = true;
-			}
 
 			// End of plural rows.
 			if (reading_plural_rows && (!msgid.is_empty() || !msgctxt.is_empty() || !msgid_plural.is_empty())) {
@@ -228,7 +220,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 			compress = false;
 		} break;
 		default: { // Auto.
-			compress = !context_used && !plural_used;
+			compress = true;
 		} break;
 	}
 
@@ -258,7 +250,7 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 			save_path = ResourceUID::get_singleton()->get_id_path(save_id);
 		}
 
-		ResourceSaver::save(xlt, save_path);
+		ResourceSaver::save(xlt, save_path, compress ? ResourceSaver::FLAG_COMPRESS : ResourceSaver::FLAG_NONE);
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}
