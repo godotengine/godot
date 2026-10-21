@@ -292,9 +292,9 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		if (has_audio && !audio_buffer_full && audio_frame->isValid()) {
 			bool get_pcmf_succeeded;
 			if (audio_opus) {
-				get_pcmf_succeeded = audio_opus->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples);
+				get_pcmf_succeeded = audio_opus->getPCMF(*audio_frame, pcm.ptr(), pcm.size(), num_decoded_samples);
 			} else {
-				get_pcmf_succeeded = audio_vorbis->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples);
+				get_pcmf_succeeded = audio_vorbis->getPCMF(*audio_frame, pcm.ptr(), pcm.size(), num_decoded_samples);
 			}
 			if (get_pcmf_succeeded && num_decoded_samples > 0) {
 				const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);

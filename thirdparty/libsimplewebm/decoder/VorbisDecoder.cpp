@@ -57,16 +57,19 @@ bool VorbisDecoder::isOpen() const
 	return m_decoder != NULL;
 }
 
-bool VorbisDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSamples)
+bool VorbisDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int bufferCapacity, int &numOutSamples)
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0)
+	if (!m_decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0 || bufferCapacity < m_channels)
 		return false;
 
 	const int maxSamples = getBufferSamples();
 	if (maxSamples <= 0)
 		return false;
+
+	const int capacitySamples = bufferCapacity / m_channels;
+	const int maxFrames = capacitySamples < maxSamples ? capacitySamples : maxSamples;
 
 	m_decoder->packet.packet = frame.buffer;
 	m_decoder->packet.bytes = frame.bufferSize;
@@ -83,8 +86,7 @@ bool VorbisDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOut
 
 	while ((samplesCount = vorbis_synthesis_pcmout(&m_decoder->dspState, &pcm)) > 0)
 	{
-		// Never write more than maxSamples per channel per call
-		const int remaining = maxSamples - count;
+		const int remaining = maxFrames - count;
 		if (remaining <= 0)
 			break;
 
@@ -117,16 +119,19 @@ bool VorbisDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOut
 	return true;
 }
 
-bool VorbisDecoder::getPCMF(const WebMFrame &frame, float *buffer, int &numOutSamples)
+bool VorbisDecoder::getPCMF(const WebMFrame &frame, float *buffer, int bufferCapacity, int &numOutSamples)
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0)
+	if (!m_decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0 || bufferCapacity < m_channels)
 		return false;
 
 	const int maxSamples = getBufferSamples();
 	if (maxSamples <= 0)
 		return false;
+
+	const int capacitySamples = bufferCapacity / m_channels;
+	const int maxFrames = capacitySamples < maxSamples ? capacitySamples : maxSamples;
 
 	m_decoder->packet.packet = frame.buffer;
 	m_decoder->packet.bytes = frame.bufferSize;
@@ -143,8 +148,7 @@ bool VorbisDecoder::getPCMF(const WebMFrame &frame, float *buffer, int &numOutSa
 
 	while ((samplesCount = vorbis_synthesis_pcmout(&m_decoder->dspState, &pcm)) > 0)
 	{
-		// Never write more than maxSamples per channel per call
-		const int remaining = maxSamples - count;
+		const int remaining = maxFrames - count;
 		if (remaining <= 0)
 			break;
 

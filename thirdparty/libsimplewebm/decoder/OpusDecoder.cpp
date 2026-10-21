@@ -49,14 +49,17 @@ bool OpusDecoder::isOpen() const
 	return m_decoder != NULL;
 }
 
-bool OpusDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSamples)
+bool OpusDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int bufferCapacity, int &numOutSamples)
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_numSamples <= 0)
+	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0 || m_numSamples <= 0 || bufferCapacity < m_channels)
 		return false;
 
-	const int samples = opus_decode(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, m_numSamples, 0);
+	const int capacitySamples = bufferCapacity / m_channels;
+	const int frameSize = capacitySamples < m_numSamples ? capacitySamples : m_numSamples;
+
+	const int samples = opus_decode(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, frameSize, 0);
 
 	if (samples < 0)
 		return false;
@@ -65,14 +68,17 @@ bool OpusDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSa
 	return true;
 }
 
-bool OpusDecoder::getPCMF(const WebMFrame &frame, float *buffer, int &numOutSamples)
+bool OpusDecoder::getPCMF(const WebMFrame &frame, float *buffer, int bufferCapacity, int &numOutSamples)
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_numSamples <= 0)
+	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_channels <= 0 || m_numSamples <= 0 || bufferCapacity < m_channels)
 		return false;
 
-	const int samples = opus_decode_float(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, m_numSamples, 0);
+	const int capacitySamples = bufferCapacity / m_channels;
+	const int frameSize = capacitySamples < m_numSamples ? capacitySamples : m_numSamples;
+
+	const int samples = opus_decode_float(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, frameSize, 0);
 
 	if (samples < 0)
 		return false;

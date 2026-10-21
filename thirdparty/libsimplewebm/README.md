@@ -85,7 +85,7 @@ cmake --build build
 
 ## Example
 
-The example application takes a WebM file and decodes its video & audio streams:
+The example application takes a WebM file & decodes its video & audio streams:
 
 ```sh
 ./build/libsimplewebm_example video.webm

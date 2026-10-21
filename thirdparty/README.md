@@ -644,12 +644,12 @@ Files extracted from upstream source:
 ## libsimplewebm
 
 - Upstream: https://github.com/The-Simplicity-Group/libsimplewebm
-- Version: git (5ab0355c73eb282d8792a428a7f49feae5888efa, 2026)
+- Version: git (7e8701bba07b8423d2e77cca71ef9504ade0ac18, 2026)
 - License: MIT
 
 Files extracted from upstream source:
 
-- `*`
+- `*`, except `example/`
 
 
 ## libtheora
