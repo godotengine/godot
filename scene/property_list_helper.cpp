@@ -207,7 +207,7 @@ Variant PropertyListHelper::documentation_get_default_value(const String &p_prop
 
 bool PropertyListHelper::property_get_value(const String &p_property, Variant &r_ret) const {
 	int index;
-	const Property *property = _get_property(p_property, &index);
+	const Property *property = _get_property(p_property, &index, allow_oob_assign);
 
 	if (property) {
 		r_ret = _call_getter(property, index);
