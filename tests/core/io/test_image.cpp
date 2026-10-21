@@ -474,6 +474,50 @@ TEST_CASE("[Image] Custom mipmaps") {
 	}
 }
 
+TEST_CASE("[Image] Linear and sRGB conversion of half-float formats") {
+	const Color linear = Color(0.5, 0.5, 0.5);
+	const Color srgb = linear.linear_to_srgb();
+
+	auto all_pixels_are = [](const Ref<Image> &p_image, const Color &p_color) {
+		for (int mip = 0; mip <= p_image->get_mipmap_count(); mip++) {
+			Ref<Image> level = p_image->get_image_from_mipmap(mip);
+			for (int y = 0; y < level->get_height(); y++) {
+				for (int x = 0; x < level->get_width(); x++) {
+					const Color pixel = level->get_pixel(x, y);
+					if (!Math::is_equal_approx(pixel.r, p_color.r, 0.001f) || !Math::is_equal_approx(pixel.g, p_color.g, 0.001f) || !Math::is_equal_approx(pixel.b, p_color.b, 0.001f)) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	};
+
+	for (Image::Format format : { Image::FORMAT_RGBH, Image::FORMAT_RGBAH }) {
+		Ref<Image> image = memnew(Image(8, 8, true, format));
+		image->fill(linear);
+
+		image->linear_to_srgb();
+		CHECK_MESSAGE(all_pixels_are(image, srgb), "linear_to_srgb() should convert every pixel of every mipmap.");
+
+		image->srgb_to_linear();
+		CHECK_MESSAGE(all_pixels_are(image, linear), "srgb_to_linear() should convert every pixel of every mipmap.");
+
+		// Holding the data makes the conversion copy it on write.
+		Ref<Image> shared = memnew(Image(512, 512, false, format));
+		shared->fill(linear);
+		const Vector<uint8_t> held_linear = shared->get_data();
+		shared->linear_to_srgb();
+		CHECK_MESSAGE(all_pixels_are(shared, srgb), "linear_to_srgb() should convert every pixel when the data is shared.");
+		CHECK_MESSAGE(all_pixels_are(Image::create_from_data(512, 512, false, format, held_linear), linear), "linear_to_srgb() should not change other copies of the data.");
+
+		const Vector<uint8_t> held_srgb = shared->get_data();
+		shared->srgb_to_linear();
+		CHECK_MESSAGE(all_pixels_are(shared, linear), "srgb_to_linear() should convert every pixel when the data is shared.");
+		CHECK_MESSAGE(all_pixels_are(Image::create_from_data(512, 512, false, format, held_srgb), srgb), "srgb_to_linear() should not change other copies of the data.");
+	}
+}
+
 TEST_CASE("[Image] Convert image") {
 	for (int format = Image::FORMAT_RF; format < Image::FORMAT_RGBE9995; format++) {
 		for (int new_format = Image::FORMAT_RF; new_format < Image::FORMAT_RGBE9995; new_format++) {
