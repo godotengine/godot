@@ -595,7 +595,7 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-	if (tex_info->rasterization_rate_map) {
+	if (tex_info->rasterization_rate_map || tex_info->imported || tex_info->texture.get()->parentTexture() != nullptr) {
 		return 0;
 	}
 	return tex_info->texture.get()->allocatedSize();
@@ -1297,6 +1297,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 			++iter;
 			update_uniform_info(bind, ui);
 			ui.binding = uniform.binding;
+			set.active_stages.set_flag(ui.active_stages);
 
 			if (ui.arg_buffer.texture == UINT32_MAX && ui.arg_buffer.buffer == UINT32_MAX && ui.arg_buffer.sampler == UINT32_MAX) {
 				// No bindings.
@@ -1336,9 +1337,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		shader = rs;
 	}
 
-	shader->push_constants.stages = refl.push_constant_stages;
+	shader->push_constants.stage_binding = mtl_reflection_data.push_constant_binding;
 	shader->push_constants.size = refl.push_constant_size;
-	shader->push_constants.binding = mtl_reflection_data.push_constant_binding;
 	shader->dynamic_offset_layout = dynamic_offset_layout;
 
 	return RDD::ShaderID(shader);
@@ -2171,6 +2171,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 		// TODO(sgc): FB13671991 raised as Apple docs state calling setDepthStencilState:nil is valid, but currently generates an exception
 		pipeline->depth_stencil = NS::RetainPtr(get_resource_cache().get_depth_stencil_state(false, false));
 	}
+	pipeline->raster_state.depth_stencil = pipeline->depth_stencil.get();
 
 	// Blend state.
 	{

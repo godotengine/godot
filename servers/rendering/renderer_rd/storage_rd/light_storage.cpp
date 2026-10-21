@@ -163,7 +163,6 @@ void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
 	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
-	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY] = 1.0;
 	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR] = 1.0;
 
 	light_owner.initialize_rid(p_light, light);
@@ -798,7 +797,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
 						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
-				light_data.sscs_index = light->allow_contact_shadows ? directional_contact_shadows_count++ : 0xffffffff;
+				light_data.sscs_index = (light->shadow && light->allow_contact_shadows)
+						? directional_contact_shadows_count++
+						: 0xffffffff;
 
 				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
 				if (angular_diameter > 0.0) {
@@ -845,7 +846,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 						Projection shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
-						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
+						const float bias_scale = light_instance->shadow_transform[j].bias_scale * MAX(light_data.soft_shadow_scale, 1.0f);
 						light_data.shadow_bias[j] = light->param[RSE::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_normal_bias[j] = light->param[RSE::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
@@ -1247,7 +1248,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					light_data.soft_shadow_size = 0.0;
 					light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->shadows_quality_radius_get(); // Only use quality radius for PCF
 				}
-				light_data.shadow_bias *= light_data.soft_shadow_scale;
+				light_data.shadow_bias *= MAX(light_data.soft_shadow_scale, 1.0f);
 			}
 		} else {
 			light_data.shadow_opacity = 0.0;

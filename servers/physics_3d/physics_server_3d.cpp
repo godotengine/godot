@@ -40,6 +40,24 @@ PhysicsServer3D *PhysicsServer3D::get_singleton() {
 	return singleton;
 }
 
+void PhysicsServer3D::debug_set_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+	debug_enabled = p_enabled;
+	emit_signal("_debug_changed");
+#endif
+}
+
+bool PhysicsServer3D::debug_is_enabled() const {
+#ifdef DEBUG_ENABLED
+	return debug_enabled;
+#else
+	return false;
+#endif
+}
+
 bool PhysicsServer3D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
 	EXTRACT_PARAM_OR_FAIL_V(parameters, p_parameters, false);
 
@@ -522,7 +540,10 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PS3DE::BODY_AXIS_ANGULAR_X);
 	BIND_ENUM_CONSTANT(PS3DE::BODY_AXIS_ANGULAR_Y);
 	BIND_ENUM_CONSTANT(PS3DE::BODY_AXIS_ANGULAR_Z);
+#endif
 
+#ifdef DEBUG_ENABLED
+	ADD_SIGNAL(MethodInfo("_debug_changed"));
 #endif
 }
 
@@ -536,13 +557,13 @@ PhysicsServer3D::PhysicsServer3D() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1);
 
 	// PhysicsServer3D
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), 0.1);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_angular", PROPERTY_HINT_RANGE, "0,90,0.1,radians_as_degrees"), Math::deg_to_rad(8.0));
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m/s"), 0.1);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/sleep_threshold_angular", PROPERTY_HINT_RANGE, U"0,90,0.1,radians_as_degrees,suffix:°/s"), Math::deg_to_rad(8.0));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater,suffix:s"), 0.5);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/3d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.01);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater"), 0.05);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.001,0.1,0.001,or_greater"), 0.01);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater,suffix:m"), 0.01);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,0.1,0.001,or_greater,suffix:m"), 0.05);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.001,0.1,0.001,or_greater,suffix:m"), 0.01);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
 }
 

@@ -83,7 +83,7 @@ public:
 	virtual void refcount_incremented() {}
 	virtual bool refcount_decremented() { return true; } //return true if it can die
 
-	virtual Ref<Script> get_script() const = 0;
+	virtual Script *get_script() const = 0;
 
 	virtual bool is_placeholder() const { return false; }
 

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import atexit
 import contextlib
 import glob
@@ -10,9 +8,10 @@ import subprocess
 import sys
 import zlib
 from collections import OrderedDict
+from collections.abc import Generator
 from io import StringIO
 from pathlib import Path
-from typing import Generator, TextIO, cast
+from typing import TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -24,7 +23,7 @@ compiler_version_cache = None
 
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
-_scu_folders = set()
+_scu_folders = set[str]()
 
 
 def set_scu_folders(scu_folders):
@@ -46,7 +45,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for file in files:
         obj = self.Object(file)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            print_warning(f'Object "{obj}" already included in environment sources.')
             continue
         sources.append(obj)
 
@@ -344,7 +343,7 @@ def module_check_dependencies(self, module):
     missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
-        opt = "module_{}_enabled".format(dep)
+        opt = f"module_{dep}_enabled"
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
@@ -654,7 +653,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
+            print_error(f"Failed to find SDK path while running 'xcrun --sdk {sdk_name} --show-sdk-path'.")
             raise
 
 
@@ -1291,9 +1290,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 itemlist[key] += [item]
 
         for x in itemlist.keys():
-            properties.append(
-                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
-            )
+            properties.append(f"<ActiveProjectItemList_{x}>;{';'.join(itemlist[x])};</ActiveProjectItemList_{x}>")
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
@@ -1582,6 +1579,29 @@ def get_buffer(path: str) -> bytes:
         return file.read()
 
 
+def compress_buffer_zstd(buffer: bytes, env):
+    # Levels selected for a good tradeoff between compression speed and size reduction,
+    # being more aggressive on production builds.
+    # Long-distance matching helps a lot with the editor translations on lower levels,
+    # but costs some extra decompression time (+30%). It's not helping at high levels.
+    level = 20 if env["production"] else 7
+    ldm = False if env["production"] or env.dev_build else True
+    if sys.version_info >= (3, 14):
+        import compression.zstd
+
+        CP = compression.zstd.CompressionParameter
+        options = {CP.compression_level: level, CP.enable_long_distance_matching: ldm}
+        return compression.zstd.compress(buffer, options=options)
+    else:
+        try:
+            import zstandard
+        except ImportError:
+            print_error("Python versions earlier than 3.14 require the `zstandard` module")
+            sys.exit(255)
+        params = zstandard.ZstdCompressionParameters.from_level(level, enable_ldm=ldm)
+        return zstandard.ZstdCompressor(compression_params=params).compress(buffer)
+
+
 def compress_buffer(buffer: bytes) -> bytes:
     # Use maximum zlib compression level to further reduce file size
     # (at the cost of initial build times).
@@ -1589,7 +1609,11 @@ def compress_buffer(buffer: bytes) -> bytes:
 
 
 def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
-    return re.sub(f"(.{{0,{width - indent - 1}}},) ", ("\t" * indent) + "\\g<1>\n", ", ".join(map(str, buffer)))
+    return re.sub(
+        f"(.{{{width - (indent * 4) - 6}}},) (?:, )?",
+        r"\g<1>\n" + ("\t" * indent),
+        ", ".join(map(str, buffer)),
+    )
 
 
 ############################################################

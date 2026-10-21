@@ -37,12 +37,16 @@ import android.os.Handler
 import android.util.Log
 import androidx.xr.runtime.Session
 import androidx.xr.runtime.SessionCreateSuccess
+import androidx.xr.runtime.math.FloatSize3d
 import androidx.xr.runtime.math.IntSize2d
 import androidx.xr.runtime.math.Pose
 import androidx.xr.runtime.math.Quaternion
 import androidx.xr.runtime.math.Vector3
 import androidx.xr.scenecore.ActivityPanelEntity
 import androidx.xr.scenecore.MovableComponent
+import androidx.xr.scenecore.PanelEntity
+import androidx.xr.scenecore.ResizableComponent
+import androidx.xr.scenecore.ResizeEvent
 import androidx.xr.scenecore.SpatialCapability
 import androidx.xr.scenecore.scene
 import java.util.LinkedList
@@ -57,12 +61,15 @@ open class GodotEditor : BaseGodotEditor() {
 
 	companion object {
 		private val TAG = GodotEditor::class.java.simpleName
+
+		private val DEFAULT_ACTIVITY_PANEL_PIXEL_DIMENSIONS = IntSize2d(250, 250)
+		private val MAIN_WINDOW_PANEL_MIN_SIZE = FloatSize3d(0.45f, 0.25f, 0.0f)
 	}
 
 	private val handler = Handler()
 
 	private var pendingFullSpaceRequest = false
-	private val pendingSpatialContainerLaunches = LinkedList<Intent>()
+	private val pendingSpatialContainerLaunches = LinkedList<Pair<EditorWindowInfo, Intent>>()
 
 	private val spatialCapabilitiesChangedListener = Consumer<Set<SpatialCapability>> {
 		if (canEmbedActivity()) {
@@ -70,8 +77,8 @@ open class GodotEditor : BaseGodotEditor() {
 
 			// Launch any queued spatial containers.
 			Log.v(TAG, "Launching pending spatial container launches..")
-			for (pendingLaunch in pendingSpatialContainerLaunches) {
-				startSpatialContainerActivity(pendingLaunch)
+			for ((first, second) in pendingSpatialContainerLaunches) {
+				startSpatialContainerActivity(first, second)
 			}
 			pendingSpatialContainerLaunches.clear()
 		} else {
@@ -86,6 +93,7 @@ open class GodotEditor : BaseGodotEditor() {
 			result.session.scene.apply{
 				addSpatialCapabilitiesChangedListener(spatialCapabilitiesChangedListener)
 				mainPanelEntity.addComponent(MovableComponent.createSystemMovable(result.session))
+				mainPanelEntity.addComponent(ResizableComponent.create(result.session, MAIN_WINDOW_PANEL_MIN_SIZE) { resizePanelEntity(it) })
 			}
 			return@lazy result.session
 		} else {
@@ -107,7 +115,7 @@ open class GodotEditor : BaseGodotEditor() {
 		return scene.spatialCapabilities.contains(SpatialCapability.EMBED_ACTIVITY)
 	}
 
-	private fun launchSpatialContainerUsingSceneCore(newInstance: Intent, activityOptions: ActivityOptions?): Boolean {
+	private fun launchSpatialContainerUsingSceneCore(editorWindowInfo: EditorWindowInfo, newInstance: Intent, activityOptions: ActivityOptions?): Boolean {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			try {
 				if (session != null) {
@@ -116,9 +124,9 @@ open class GodotEditor : BaseGodotEditor() {
 					handler.removeCallbacks(requestHomeSpaceRunnable)
 					if (canEmbedActivity()) {
 						Log.v(TAG, "Launching spatial container in FSM")
-						startSpatialContainerActivity(newInstance)
+						startSpatialContainerActivity(editorWindowInfo, newInstance)
 					} else {
-						pendingSpatialContainerLaunches.push(newInstance)
+						pendingSpatialContainerLaunches.push(Pair(editorWindowInfo, newInstance))
 						if (!pendingFullSpaceRequest) {
 							Log.v(TAG, "Requesting full space")
 							scene.requestFullSpace()
@@ -134,18 +142,37 @@ open class GodotEditor : BaseGodotEditor() {
 		return false
 	}
 
-	private fun startSpatialContainerActivity(newInstance: Intent) {
+	private fun resizePanelEntity(resizeEvent: ResizeEvent) {
+		if (resizeEvent.entity is PanelEntity && resizeEvent.resizeState == ResizeEvent.ResizeState.END) {
+			Log.v(TAG, "Resizing panel entity ${resizeEvent.entity} to ${resizeEvent.newSize}")
+			(resizeEvent.entity as PanelEntity).size = resizeEvent.newSize.to2d()
+		}
+	}
+
+	private fun startSpatialContainerActivity(editorWindowInfo: EditorWindowInfo, newInstance: Intent) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val scene = session!!.scene
 
+			val mainPanelWidth = scene.mainPanelEntity.size.width
+			val mainPanelHeight = scene.mainPanelEntity.size.height
+			val spatialContainerBounds = BaseGodotSpatialContainerGame.getSpatialContainerBounds()
+
+			val translationX = if (editorWindowInfo == SPATIAL_CONTAINER_RUN_GAME_INFO_0) {
+				// The first spatial container is positioned to the right of the main panel.
+				mainPanelWidth + spatialContainerBounds.first / 2
+			} else {
+				// The second spatial container is positioned to the left of the main panel.
+				-(mainPanelWidth + spatialContainerBounds.first / 2)
+			}
+			val translationY = -(mainPanelHeight / 2)
+
 			val activityPanel = ActivityPanelEntity.create(
 				session!!,
-				IntSize2d(500, 500),
+				DEFAULT_ACTIVITY_PANEL_PIXEL_DIMENSIONS,
 				"Godot Spatial Container Panel for $newInstance",
-				Pose(Vector3(0.0f, -scene.mainPanelEntity.size.height, 0.05f), Quaternion.Identity),
+				Pose(Vector3(translationX, translationY, 0.25f), Quaternion.Identity),
 				scene.activitySpace
 			)
-			activityPanel.addComponent(MovableComponent.createSystemMovable(session!!))
 
 			// We remove the 'NEW_TASK' flag as launching in a new task prevents embedding.
 			newInstance.removeFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -180,7 +207,7 @@ open class GodotEditor : BaseGodotEditor() {
 		newInstance: Intent,
 		activityOptions: ActivityOptions?
 	) {
-		if (isSpatialContainerRunGameInfo(editorWindowInfo) && launchSpatialContainerUsingSceneCore(newInstance, activityOptions)) {
+		if (isSpatialContainerRunGameInfo(editorWindowInfo) && launchSpatialContainerUsingSceneCore(editorWindowInfo, newInstance, activityOptions)) {
 			return
 		}
 		super.dispatchNewInstance(editorWindowInfo, newInstance, activityOptions)
@@ -198,5 +225,17 @@ open class GodotEditor : BaseGodotEditor() {
 			}
 		}
 		super.onEditorDisconnected(editorId)
+	}
+
+	override fun getCommandLine(): MutableList<String> {
+		val updatedArgs = super.getCommandLine()
+		if (getEditorWindowInfo() == EDITOR_MAIN_INFO && packageManager.hasSystemFeature("android.hardware.xr.input.eye_tracking")) {
+			if (!updatedArgs.contains("--accessibility ")) {
+				Log.v(TAG, "Enabling accessibility for Android XR to add support for eye aiming.")
+				updatedArgs.add("--accessibility ")
+				updatedArgs.add("always")
+			}
+		}
+		return updatedArgs
 	}
 }

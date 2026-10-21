@@ -105,6 +105,13 @@ private:
 		Color icon_unselected_color;
 		Color icon_disabled_color;
 
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
@@ -125,7 +132,7 @@ private:
 	HashMap<Node *, RID> tab_panels;
 
 	bool _is_tab_bar_owned() const;
-	int _get_tab_height() const;
+	int _get_internal_container_height() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();

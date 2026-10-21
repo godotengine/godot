@@ -63,7 +63,7 @@ enum PassMode {
 // These should share as much as possible with SkyUniform Location
 enum SceneUniformLocation {
 	SCENE_TONEMAP_UNIFORM_LOCATION,
-	SCENE_GLOBALS_UNIFORM_LOCATION,
+	SCENE_EMPTY3, // Unused, but free to be used by a new one. Left here to avoid renumbering everything in the shader
 	SCENE_DATA_UNIFORM_LOCATION,
 	SCENE_MATERIAL_UNIFORM_LOCATION,
 	SCENE_EMPTY1, // Unused, put here to avoid conflicts with SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
@@ -82,7 +82,7 @@ enum SceneUniformLocation {
 
 enum SkyUniformLocation {
 	SKY_TONEMAP_UNIFORM_LOCATION,
-	SKY_GLOBALS_UNIFORM_LOCATION,
+	SKY_EMPTY12, // Unused, but free to be used by a new one. Left here to avoid renumbering everything in the shader
 	SKY_EMPTY1, // Unused, put here to avoid conflicts with SCENE_DATA_UNIFORM_LOCATION.
 	SKY_MATERIAL_UNIFORM_LOCATION,
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
@@ -422,6 +422,9 @@ private:
 
 			float ambient_light_color_energy[4];
 
+			float reflection_color[3];
+			uint32_t use_reflection_color = 0;
+
 			float ambient_color_sky_mix;
 			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;
@@ -464,6 +467,10 @@ private:
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+			// Current view being rendered. Used when emulating multiview by
+			// rendering once per view (when the GPU doesn't support multiview).
+			uint32_t view_index = 0;
+			uint32_t pad[3];
 		};
 		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
 		static_assert(sizeof(MultiviewUBO) < 16384, "MultiviewUBO size must be 16384 bytes or smaller");
@@ -749,6 +756,7 @@ private:
 	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
 
 	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_area_light_count, uint32_t &r_directional_shadow_count);
+	void _bind_global_shader_parameters();
 	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias = 0.0);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _render_shadows(const RenderDataGLES3 *p_render_data, const Size2i &p_viewport_size = Size2i(1, 1));

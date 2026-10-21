@@ -85,6 +85,7 @@ private:
 	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _on_distraction_free_mode_changed = nullptr;
+	jmethodID _show_editor_game_dock = nullptr;
 	jmethodID _get_activity = nullptr;
 	jmethodID _build_env_connect = nullptr;
 	jmethodID _build_env_disconnect = nullptr;
@@ -96,6 +97,9 @@ private:
 	jmethodID _enter_pip_mode = nullptr;
 	jmethodID _set_pip_mode_aspect_ratio = nullptr;
 	jmethodID _set_auto_enter_pip_mode_on_background = nullptr;
+	jmethodID _is_screen_reader_active = nullptr;
+	jmethodID _is_high_contrast_active = nullptr;
+	jmethodID _is_animation_disabled = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge);
@@ -136,6 +140,9 @@ public:
 	void begin_benchmark_measure(const String &p_context, const String &p_label);
 	void end_benchmark_measure(const String &p_context, const String &p_label);
 	void dump_benchmark(const String &benchmark_file);
+	bool is_screen_reader_active();
+	bool is_high_contrast_active();
+	bool is_animation_disabled();
 
 	// Return the list of gdextensions config file.
 	Vector<String> get_gdextension_list_config_file() const;
@@ -154,6 +161,7 @@ public:
 
 	void on_editor_workspace_selected(const String &p_workspace);
 	void on_distraction_free_mode_changed(bool p_enabled);
+	void show_editor_game_dock();
 
 	bool build_env_connect(const Callable &p_callback);
 	void build_env_disconnect();

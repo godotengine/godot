@@ -381,7 +381,7 @@ public:
 	virtual void notification(int p_notification, bool p_reversed = false) override;
 	virtual String to_string(bool *r_valid) override;
 
-	virtual Ref<Script> get_script() const override;
+	virtual Script *get_script() const override;
 
 	virtual ScriptLanguage *get_language() override;
 
@@ -452,6 +452,7 @@ class GDScriptLanguage : public ScriptLanguage {
 	bool profiling;
 	bool profile_native_calls;
 	uint64_t script_frame_time;
+	void _prepare_script_for_reload(const Ref<GDScript> &p_script, HashMap<ObjectID, List<Pair<StringName, Variant>>> &p_map);
 #endif
 
 	HashMap<String, ObjectID> orphan_subclasses;
@@ -490,7 +491,17 @@ public:
 		}
 
 		call_level->prev = _call_stack;
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
+		GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdangling-pointer") // The VM code ensures call_level is not freed while it is in use, so this warning is a false positive for GCC 12+.
+#endif
+
 		_call_stack = call_level;
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 12
+		GODOT_GCC_WARNING_POP
+#endif
+
 		call_level->stack = p_stack;
 		call_level->instance = p_instance;
 		call_level->function = p_function;

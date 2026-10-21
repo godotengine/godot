@@ -10,7 +10,7 @@ enum:thirdparty/glslang/SPIRV/spirv.hpp
 float-divide-by-zero:thirdparty/amd-fsr2/ffx_fsr2.cpp
 float-divide-by-zero:thirdparty/misc/ok_color.h
 float-divide-by-zero:thirdparty/rvo2/rvo2_2d/Agent2d.cpp
-float-divide-by-zero:thirdparty/thorvg/src/renderer/sw_engine/tvgSwFill.cpp
+float-divide-by-zero:thirdparty/thorvg/src/renderer/cpu_engine/tvgSwFill.cpp
 float-divide-by-zero:thirdparty/thorvg/src/renderer/tvgText.h
 function:thirdparty/embree/common/sys/thread.cpp
 function:thirdparty/embree/kernels/common/accel.h
@@ -65,7 +65,7 @@ implicit-integer-sign-change:thirdparty/recastnavigation/Recast/Source/RecastMes
 implicit-integer-sign-change:thirdparty/sdl/SDL_guid.c
 implicit-integer-sign-change:thirdparty/spirv-reflect/spirv_reflect.c
 implicit-integer-sign-change:thirdparty/thorvg/src/common/tvgCompressor.cpp
-implicit-integer-sign-change:thirdparty/thorvg/src/renderer/sw_engine/tvgSwRaster.cpp
+implicit-integer-sign-change:thirdparty/thorvg/src/renderer/cpu_engine/tvgSwRaster.cpp
 implicit-integer-sign-change:thirdparty/tinyexr/tinyexr.h
 implicit-integer-sign-change:thirdparty/vulkan/vk_mem_alloc.h
 implicit-integer-sign-change:thirdparty/xatlas/xatlas.cpp

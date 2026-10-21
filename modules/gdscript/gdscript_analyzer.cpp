@@ -42,6 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/main/node.h"
 
 #include "modules/gdscript/gdscript_parser.h"
@@ -1556,7 +1557,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						} else if (!implemented_funcs.has(member.function->identifier->name)) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
 							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
-							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as "@abstract".)*", class_name, base_class_name, member.function->identifier->name), p_class);
+							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as "@abstract".)*", class_name, base_class_name, member.function->identifier->name), p_class, p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column);
 							break;
 						}
 					} else {
@@ -2052,7 +2053,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		p_function->return_type_constraint = p_function->body->suite_type;
 	} else if (p_function->return_type_constraint.is_hard_type() && (p_function->return_type_constraint.kind != GDScriptParser::DataType::BUILTIN || p_function->return_type_constraint.builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
-			push_error(R"(Not all code paths return a value.)", p_function);
+			push_error(R"(Not all code paths return a value.)", p_function->return_type ? static_cast<GDScriptParser::Node *>(p_function->return_type) : static_cast<GDScriptParser::Node *>(p_function));
 		}
 	}
 
@@ -5733,6 +5734,17 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 	return result;
 }
 
+GDScriptParser::DataType GDScriptAnalyzer::meta_type_from_container_type(const ContainerType &p_type, const GDScriptParser::Node *p_source) {
+	if (p_type.script.is_valid()) {
+		return type_from_script(p_type.script, p_source, true);
+	} else if (p_type.class_name) {
+		return make_native_meta_type(p_type.class_name);
+	} else if (p_type.variant_type != Variant::Type::NIL) {
+		return make_builtin_meta_type(p_type.variant_type);
+	}
+	ERR_FAIL_V_MSG(GDScriptParser::DataType(), "Internal error, please report: attempted to convert an untyped ContainerType to a DataType.");
+}
+
 GDScriptParser::DataType GDScriptAnalyzer::type_from_script(const Ref<Script> &p_script, const GDScriptParser::Node *p_source, bool p_is_meta_type) {
 	ERR_FAIL_COND_V(!p_script.is_valid(), GDScriptParser::DataType());
 
@@ -5793,28 +5805,16 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 
 	if (p_value.get_type() == Variant::ARRAY) {
 		const Array &array = p_value;
-		if (array.get_typed_script()) {
-			result.set_container_element_type(0, type_from_metatype(type_from_script(array.get_typed_script(), p_source, true)));
-		} else if (array.get_typed_class_name()) {
-			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
-		} else if (array.get_typed_builtin() != Variant::NIL) {
-			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)array.get_typed_builtin())));
+		if (array.is_typed()) {
+			result.set_container_element_type(0, type_from_metatype(meta_type_from_container_type(array.get_element_type(), p_source)));
 		}
 	} else if (p_value.get_type() == Variant::DICTIONARY) {
 		const Dictionary &dict = p_value;
-		if (dict.get_typed_key_script()) {
-			result.set_container_element_type(0, type_from_metatype(type_from_script(dict.get_typed_key_script(), p_source, true)));
-		} else if (dict.get_typed_key_class_name()) {
-			result.set_container_element_type(0, type_from_metatype(make_native_meta_type(dict.get_typed_key_class_name())));
-		} else if (dict.get_typed_key_builtin() != Variant::NIL) {
-			result.set_container_element_type(0, type_from_metatype(make_builtin_meta_type((Variant::Type)dict.get_typed_key_builtin())));
+		if (dict.is_typed_key()) {
+			result.set_container_element_type(0, type_from_metatype(meta_type_from_container_type(dict.get_key_type(), p_source)));
 		}
-		if (dict.get_typed_value_script()) {
-			result.set_container_element_type(1, type_from_metatype(type_from_script(dict.get_typed_value_script(), p_source, true)));
-		} else if (dict.get_typed_value_class_name()) {
-			result.set_container_element_type(1, type_from_metatype(make_native_meta_type(dict.get_typed_value_class_name())));
-		} else if (dict.get_typed_value_builtin() != Variant::NIL) {
-			result.set_container_element_type(1, type_from_metatype(make_builtin_meta_type((Variant::Type)dict.get_typed_value_builtin())));
+		if (dict.is_typed_value()) {
+			result.set_container_element_type(1, type_from_metatype(meta_type_from_container_type(dict.get_value_type(), p_source)));
 		}
 	} else if (p_value.get_type() == Variant::OBJECT) {
 		// Object is treated as a native type, not a builtin type.
@@ -5903,8 +5903,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	if (p_property.type == Variant::OBJECT) {
 		const StringName &class_name = p_property.class_name.is_empty() ? Object::get_class_static() : p_property.class_name;
 		if (ScriptServer::is_global_class(class_name)) {
-			result = make_global_class_meta_type(class_name, p_source);
-			result.is_meta_type = false;
+			result = type_from_metatype(make_global_class_meta_type(class_name, p_source));
 		} else if (class_exists(class_name)) {
 			result.kind = GDScriptParser::DataType::NATIVE;
 			result.native_type = class_name;
@@ -6558,6 +6557,11 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin) const {
 	mark_node_unsafe(p_origin);
 	parser->push_error(p_message, p_origin);
+}
+
+void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin, int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
+	mark_node_unsafe(p_origin);
+	parser->push_error(p_message, p_start_line, p_start_column, p_end_line, p_end_column);
 }
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) const {

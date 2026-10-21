@@ -256,6 +256,17 @@ String ResourceUID::ensure_path(const String &p_uid_or_path) {
 	return p_uid_or_path;
 }
 
+String ResourceUID::ensure_path_nocheck(const String &p_uid_or_path) {
+	if (p_uid_or_path.begins_with("uid://")) {
+		ResourceUID::ID id = singleton->text_to_id(p_uid_or_path);
+		if (id == INVALID_ID || !singleton->has_id(id)) {
+			return String();
+		}
+		return singleton->get_id_path(id);
+	}
+	return p_uid_or_path;
+}
+
 Vector<uint8_t> ResourceUID::encode_binary_cache(const Vector<Pair<ID, String>> &p_entries) {
 	Ref<StreamPeerBuffer> buffer;
 	buffer.instantiate();

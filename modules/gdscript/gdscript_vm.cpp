@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 #include "gdscript_function.h"
+#include "gdscript_helper.h"
 #include "gdscript_lambda_callable.h"
 
 #include "core/object/class_db.h"
@@ -116,41 +117,6 @@ void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_
 }
 
 #endif // DEBUG_ENABLED
-
-Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataType &p_data_type) {
-	if (p_data_type.kind == GDScriptDataType::BUILTIN) {
-		if (p_data_type.builtin_type == Variant::ARRAY) {
-			Array array;
-			// Typed array.
-			if (p_data_type.has_container_element_type(0)) {
-				const GDScriptDataType &element_type = p_data_type.get_container_element_type(0);
-				array.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
-			}
-
-			return array;
-		} else if (p_data_type.builtin_type == Variant::DICTIONARY) {
-			Dictionary dict;
-			// Typed dictionary.
-			if (p_data_type.has_container_element_types()) {
-				const GDScriptDataType &key_type = p_data_type.get_container_element_type_or_variant(0);
-				const GDScriptDataType &value_type = p_data_type.get_container_element_type_or_variant(1);
-				dict.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
-			}
-
-			return dict;
-		} else {
-			Callable::CallError ce;
-			Variant variant;
-			Variant::construct(p_data_type.builtin_type, variant, nullptr, 0, ce);
-
-			ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, Variant());
-
-			return variant;
-		}
-	}
-
-	return Variant();
-}
 
 #ifdef DEBUG_ENABLED
 String GDScriptFunction::_get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const {
@@ -502,7 +468,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	OPCODES_TABLE;
 
 	if (!_code_ptr) {
-		return _get_default_variant_for_data_type(return_type);
+		return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 	}
 
 	r_err.error = Callable::CallError::CALL_OK;
@@ -524,7 +490,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
 		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 #endif
-		return _get_default_variant_for_data_type(return_type);
+		return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 	}
 
 	Variant retvalue;
@@ -560,13 +526,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 					r_err.expected = _argument_count;
 					call_depth--;
-					return _get_default_variant_for_data_type(return_type);
+					return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 				}
 			} else if (p_argcount < _argument_count - _default_arg_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 				r_err.expected = _argument_count - _default_arg_count;
 				call_depth--;
-				return _get_default_variant_for_data_type(return_type);
+				return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 			} else {
 				defarg = _argument_count - p_argcount;
 			}
@@ -594,7 +560,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				r_err.argument = i;
 				r_err.expected = argument_types[i].builtin_type;
 				call_depth--;
-				return _get_default_variant_for_data_type(return_type);
+				return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 			}
 			if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
 				if (argument_types[i].builtin_type == Variant::DICTIONARY && argument_types[i].has_container_element_types()) {
@@ -614,7 +580,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						r_err.argument = i;
 						r_err.expected = argument_types[i].builtin_type;
 						call_depth--;
-						return _get_default_variant_for_data_type(return_type);
+						return GDScriptHelper::construct_empty_value_for_data_type(return_type);
 					}
 					memnew_placement(&stack[i + FIXED_ADDRESSES_MAX], Variant(variant));
 				}
@@ -971,7 +937,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool result = false;
 				if (object && object->get_script_instance()) {
-					Script *script_ptr = object->get_script_instance()->get_script().ptr();
+					Script *script_ptr = object->get_script_instance()->get_script();
 					while (script_ptr) {
 						if (script_ptr == script_type) {
 							result = true;
@@ -1356,7 +1322,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!gdscript);
 
 				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+				if (unlikely(index < 0 || index >= gdscript->static_variables.size())) {
+#ifdef DEBUG_ENABLED
+					if (GDScriptLanguage::get_singleton()->finishing) {
+						// Just assume it's SIOF. There is a tiny possibility that something else is causing this (e.g. bug, reload).
+						err_text = vformat("Static variable does not exist anymore. Since the order in which static variables are destructed is arbitrary, consider emptying objects from them in a well-defined order manually before shutdown.");
+					} else {
+						_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition 'index < 0 || index >= gdscript->static_variables.size()' is true. Breaking..:");
+					}
+#endif
+					OPCODE_BREAK;
+				}
 
 				gdscript->static_variables.write[index] = *value;
 
@@ -1374,7 +1350,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!gdscript);
 
 				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				if (unlikely(index < 0 || index >= gdscript->static_variables.size())) {
+#ifdef DEBUG_ENABLED
+					if (GDScriptLanguage::get_singleton()->finishing) {
+						// Just assume it's SIOF. There is a tiny possibility that something else is causing this (e.g. bug, reload).
+						err_text = vformat("Static variable does not exist anymore. Since the order in which static variables are destructed is arbitrary, consider emptying objects from them in a well-defined order manually before shutdown.");
+					} else {
+						_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition 'index < 0 || index >= gdscript->static_variables.size()' is true. Breaking..:");
+					}
+#endif
+					OPCODE_BREAK;
+				}
 
 				*target = gdscript->static_variables[index];
 
@@ -1599,7 +1586,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							OPCODE_BREAK;
 						}
 
-						Script *src_type = scr_inst->get_script().ptr();
+						Script *src_type = scr_inst->get_script();
 						bool valid = false;
 
 						while (src_type) {
@@ -1712,7 +1699,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 
 					if (scr_inst) {
-						Script *src_type = src->operator Object *()->get_script_instance()->get_script().ptr();
+						Script *src_type = src->operator Object *()->get_script_instance()->get_script();
 
 						while (src_type) {
 							if (src_type == base_type) {
@@ -3015,7 +3002,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					Script *ret_type = ret_obj->get_script_instance()->get_script().ptr();
+					Script *ret_type = ret_obj->get_script_instance()->get_script();
 					bool valid = false;
 
 					while (ret_type) {
@@ -3989,7 +3976,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
-		retvalue = _get_default_variant_for_data_type(return_type);
+		retvalue = GDScriptHelper::construct_empty_value_for_data_type(return_type);
 #endif
 
 		OPCODE_OUT;

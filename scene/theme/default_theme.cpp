@@ -668,6 +668,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("scroll_hint_horizontal", "ScrollContainer", icons["scroll_hint_horizontal"]);
 	theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0));
 	theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0));
+	theme->set_constant("scrollbar_margin_left", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_top", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_right", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_bottom", "ScrollContainer", -1);
 
 	// Virtual Joystick
 
@@ -970,7 +974,11 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("v_separation", "ItemList", Math::round(4 * scale));
 	theme->set_constant("icon_margin", "ItemList", Math::round(4 * scale));
 	theme->set_constant(SceneStringName(line_separation), "ItemList", Math::round(2 * scale));
-	theme->set_constant("scroll_bar_h_separation", "ItemList", Math::round(4 * scale));
+	theme->set_constant("scrollbar_margin_left", "ItemList", -1);
+	theme->set_constant("scrollbar_margin_top", "ItemList", -1);
+	theme->set_constant("scrollbar_margin_right", "ItemList", -1);
+	theme->set_constant("scrollbar_margin_bottom", "ItemList", -1);
+	theme->set_constant("scrollbar_h_separation", "ItemList", Math::round(4 * scale));
 
 	theme->set_font(SceneStringName(font), "ItemList", Ref<Font>());
 	theme->set_font_size(SceneStringName(font_size), "ItemList", -1);
@@ -1377,6 +1385,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("resizer", "GraphEditMinimap", icons["resizer_nw"]);
 	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));
+
+	// Debug
+
+#ifdef DEBUG_ENABLED
+	theme->set_icon("pivot", "Debug", icons["debug_pivot"]);
+	theme->set_icon("resize", "Debug", icons["debug_resize"]);
+	theme->set_icon("anchor", "Debug", icons["debug_anchor"]);
+#endif
 
 	// Theme
 

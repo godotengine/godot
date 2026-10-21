@@ -47,6 +47,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/display/accessibility_server.h"
@@ -89,8 +90,7 @@ public:
 
 // Editor plugin interoperability.
 
-// TODO: Decouple controls from their editor plugin and get rid of this.
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Control::_edit_get_state() const {
 	Dictionary s;
 	s["rotation"] = get_rotation();
@@ -153,8 +153,14 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
+	} else
+#endif
+	{
+		set_position(p_position);
+	}
 }
 
 Point2 Control::_edit_get_position() const {
@@ -170,13 +176,20 @@ Size2 Control::_edit_get_scale() const {
 }
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	// Changing the size might change the internal transform (in case of non-zero `pivot_offset_ratio`),
 	// hence `position` (which is in the parent space, and is not always equivalent to the Control's rect top-left corner)
 	// needs to be changed after `size` (which is local) and needs to account for the possibly changed internal transform.
 	Vector2 rect_new_pos_in_parent_space = get_transform().xform(p_edit_rect.position);
-	set_size(p_edit_rect.size, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
-	set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin(), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		set_size(p_edit_rect.size, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+		set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin(), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+	} else
+#endif
+	{
+		set_size(p_edit_rect.size);
+		set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin());
+	}
 }
 
 void Control::_edit_set_rotation(real_t p_rotation) {
@@ -210,9 +223,7 @@ bool Control::_edit_use_pivot() const {
 Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 Rect2 Control::_edit_get_rect() const {
 	return Rect2(Point2(), get_size());
 }
@@ -260,6 +271,8 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 			type = Theme::DATA_TYPE_ICON;
 		} else if (pf == "add_theme_stylebox_override" || pf == "has_theme_stylebox" || pf == "has_theme_stylebox_override" || pf == "get_theme_stylebox" || pf == "remove_theme_stylebox_override") {
 			type = Theme::DATA_TYPE_STYLEBOX;
+		} else if (pf == "add_theme_sound_override" || pf == "has_theme_sound" || pf == "has_theme_sound_override" || pf == "get_theme_sound" || pf == "remove_theme_sound_override") {
+			type = Theme::DATA_TYPE_SOUND;
 		}
 
 		if (type != Theme::DATA_TYPE_MAX) {
@@ -390,6 +403,13 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			String dname = name.get_slicec('/', 1);
 			data.theme_constant_override.erase(dname);
 			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			if (data.theme_sound_override.has(dname)) {
+				data.theme_sound_override[dname]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
+			}
+			data.theme_sound_override.erase(dname);
+			_notify_theme_override_changed();
 		} else {
 			return false;
 		}
@@ -412,6 +432,9 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_sound_override(dname, p_value);
 		} else {
 			return false;
 		}
@@ -446,6 +469,9 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.theme_constant_override.has(name) ? Variant(data.theme_constant_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_sounds/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = data.theme_sound_override.has(name) ? Variant(data.theme_sound_override[name]) : Variant();
 	} else {
 		return false;
 	}
@@ -508,6 +534,13 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
 				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
+			} break;
+
+			case Theme::DATA_TYPE_SOUND: {
+				if (data.theme_sound_override.has(E.item_name)) {
+					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				}
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_sounds") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), usage));
 			} break;
 
 			default: {
@@ -1320,7 +1353,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 	ERR_FAIL_INDEX((int)p_resize_mode, 4);
 
 	// Calculate the size if the node is not resized
-	Size2 min_size = get_minimum_size();
+	Size2 min_size = get_bound_minimum_size();
 	Size2 new_size = get_size();
 	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
 		new_size.x = min_size.x;
@@ -1345,21 +1378,21 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
+			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.offset[0] = x * (0.5 - data.anchor[0]) - new_size.x / 2 + parent_rect.position.x;
+			data.offset[0] = x * (0.5 - data.anchor[0]) - new_size.x / 2;
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			data.offset[0] = x * (1.0 - data.anchor[0]) - new_size.x - p_margin + parent_rect.position.x;
+			data.offset[0] = x * (1.0 - data.anchor[0]) - new_size.x - p_margin;
 			break;
 	}
 
@@ -1373,21 +1406,21 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.offset[1] = parent_rect.size.y * (0.5 - data.anchor[1]) - new_size.y / 2 + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (0.5 - data.anchor[1]) - new_size.y / 2;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_BOTTOM_WIDE:
-			data.offset[1] = parent_rect.size.y * (1.0 - data.anchor[1]) - new_size.y - p_margin + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (1.0 - data.anchor[1]) - new_size.y - p_margin;
 			break;
 	}
 
@@ -1397,14 +1430,14 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
 		case PRESET_LEFT_WIDE:
-			data.offset[2] = x * (0.0 - data.anchor[2]) + new_size.x + p_margin + parent_rect.position.x;
+			data.offset[2] = x * (0.0 - data.anchor[2]) + new_size.x + p_margin;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.offset[2] = x * (0.5 - data.anchor[2]) + new_size.x / 2 + parent_rect.position.x;
+			data.offset[2] = x * (0.5 - data.anchor[2]) + new_size.x / 2;
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1415,7 +1448,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
+			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin;
 			break;
 	}
 
@@ -1425,14 +1458,14 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
 		case PRESET_TOP_WIDE:
-			data.offset[3] = parent_rect.size.y * (0.0 - data.anchor[3]) + new_size.y + p_margin + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (0.0 - data.anchor[3]) + new_size.y + p_margin;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.offset[3] = parent_rect.size.y * (0.5 - data.anchor[3]) + new_size.y / 2 + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (0.5 - data.anchor[3]) + new_size.y / 2;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -1443,7 +1476,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin;
 			break;
 	}
 
@@ -2132,7 +2165,7 @@ void Control::remove_child_notify(Node *p_child) {
 
 bool Control::is_layout_pending() const {
 	ERR_MAIN_THREAD_GUARD_V(false);
-	return data.layout_pending;
+	return data.layout_pending || !is_inside_tree() || !is_visible_in_tree();
 }
 
 bool Control::is_layout_pending_in_tree() const {
@@ -2170,6 +2203,18 @@ Control *Control::get_layout_pending_control_in_tree() const {
 }
 
 void Control::call_on_all_layout_pending_finished(const Callable &p_callable) {
+	if (!is_inside_tree()) {
+		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
+		connect(SceneStringName(tree_entered), recheck, CONNECT_ONE_SHOT);
+		return;
+	}
+
+	if (!is_visible_in_tree()) {
+		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
+		connect(SceneStringName(visibility_changed), recheck, CONNECT_ONE_SHOT);
+		return;
+	}
+
 	Control *pending_control = get_layout_pending_control_in_tree();
 	if (pending_control != nullptr) {
 		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
@@ -3089,6 +3134,27 @@ void Control::release_focus() {
 	get_viewport()->gui_release_focus();
 }
 
+void Control::play_theme_sound(const Ref<AudioStream> &p_stream) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_stream.is_null() || !get_tree()) {
+		return;
+	}
+
+	// Ignore playback attempt if the sound has no length, so that empty AudioStream resources
+	// can be used to disable sounds on specific controls using theme overrides.
+	// Without this check, no sound would be played, but a
+	// "Failed to instantiate playback." error would also be printed.
+	bool sound_no_length = false;
+	if (!Object::cast_to<AudioStreamRandomizer>(p_stream.ptr())) {
+		// AudioStreamRandomizer has no length defined.
+		sound_no_length = p_stream->get_length() == 0;
+	}
+
+	if (!sound_no_length) {
+		get_tree()->play_theme_sound(p_stream);
+	}
+}
+
 static Control *_next_control(Control *p_from) {
 	if (p_from->is_set_as_top_level()) {
 		return nullptr; // Can't go above.
@@ -3607,6 +3673,13 @@ real_t Control::_focus_strategy_balloon_candidate_score(const Vector2 &p_start, 
 	}
 
 	Vector2 hit = touch - p_start;
+
+	// If the hit vector is zero, then the next control's border coincides with ours. In this case
+	// return maximum score instead, to prevent NaN from division by zero
+	if (hit.is_zero_approx()) {
+		return 1.0;
+	}
+
 	return p_dir.dot(hit) / hit.length_squared();
 }
 
@@ -3740,6 +3813,7 @@ void Control::_invalidate_theme_cache() {
 	data.theme_font_size_cache.clear();
 	data.theme_color_cache.clear();
 	data.theme_constant_cache.clear();
+	data.theme_audio_cache.clear();
 }
 
 void Control::_update_theme_item_cache() {
@@ -3965,6 +4039,30 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	return constant;
 }
 
+Ref<AudioStream> Control::get_theme_sound(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(Ref<AudioStream>());
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		const Ref<AudioStream> *audio = data.theme_sound_override.getptr(p_name);
+		if (audio) {
+			return *audio;
+		}
+	}
+
+	if (data.theme_audio_cache.has(p_theme_type) && data.theme_audio_cache[p_theme_type].has(p_name)) {
+		return data.theme_audio_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<AudioStream> audio = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+	data.theme_audio_cache[p_theme_type][p_name] = audio;
+	return audio;
+}
+
 Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -3979,6 +4077,8 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 			return get_theme_icon(p_name, p_theme_type);
 		case Theme::DATA_TYPE_STYLEBOX:
 			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_SOUND:
+			return get_theme_sound(p_name, p_theme_type);
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -4016,6 +4116,11 @@ Variant Control::get_used_theme_item(const String &p_full_name, const StringName
 		String name = p_full_name.substr(strlen("theme_override_constants/"));
 		if (has_theme_constant(name)) {
 			return get_theme_constant(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_sounds/")) {
+		String name = p_full_name.substr(strlen("theme_override_sounds/"));
+		if (has_theme_sound(name)) {
+			return get_theme_sound(name);
 		}
 	} else {
 		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
@@ -4132,6 +4237,23 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
+bool Control::has_theme_sound(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (has_theme_sound_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+}
+
 /// Local property overrides.
 
 void Control::add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> p_icon) {
@@ -4191,6 +4313,19 @@ void Control::add_theme_constant_override(const StringName &p_name, int p_consta
 	_notify_theme_override_changed();
 }
 
+void Control::add_theme_sound_override(const StringName &p_name, const Ref<AudioStream> &p_sound) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!p_sound.is_valid());
+
+	if (data.theme_sound_override.has(p_name)) {
+		data.theme_sound_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+
+	data.theme_sound_override[p_name] = p_sound;
+	data.theme_sound_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
 void Control::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme_icon_override.has(p_name)) {
@@ -4239,6 +4374,12 @@ void Control::remove_theme_constant_override(const StringName &p_name) {
 	_notify_theme_override_changed();
 }
 
+void Control::remove_theme_sound_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_sound_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
 bool Control::has_theme_icon_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const Ref<Texture2D> *tex = data.theme_icon_override.getptr(p_name);
@@ -4273,6 +4414,12 @@ bool Control::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const int *constant = data.theme_constant_override.getptr(p_name);
 	return constant != nullptr;
+}
+
+bool Control::has_theme_sound_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const Ref<AudioStream> *audio = data.theme_sound_override.getptr(p_name);
+	return audio != nullptr;
 }
 
 /// Default theme properties.
@@ -4886,6 +5033,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_valid_focus_neighbor", "side"), &Control::find_valid_focus_neighbor);
 
+	ClassDB::bind_method(D_METHOD("play_theme_sound", "stream"), &Control::play_theme_sound);
+
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);
 
@@ -4927,6 +5076,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("add_theme_sound_override", "name", "audio"), &Control::add_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Control::remove_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Control::remove_theme_style_override);
@@ -4934,6 +5084,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Control::remove_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_sound_override", "name"), &Control::remove_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(StringName()));
@@ -4941,6 +5092,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_sound", "name", "theme_type"), &Control::get_theme_sound, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
@@ -4948,6 +5100,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Control::has_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("has_theme_sound_override", "name"), &Control::has_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(StringName()));
@@ -4955,6 +5108,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_sound", "name", "theme_type"), &Control::has_theme_sound, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Control::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);
@@ -5334,6 +5488,9 @@ Control::~Control() {
 	for (KeyValue<StringName, Ref<Font>> &E : data.theme_font_override) {
 		E.value->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
+	for (KeyValue<StringName, Ref<AudioStream>> &E : data.theme_sound_override) {
+		E.value->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
+	}
 
 	// Then override maps can be simply cleared.
 	data.theme_icon_override.clear();
@@ -5342,4 +5499,5 @@ Control::~Control() {
 	data.theme_font_size_override.clear();
 	data.theme_color_override.clear();
 	data.theme_constant_override.clear();
+	data.theme_sound_override.clear();
 }

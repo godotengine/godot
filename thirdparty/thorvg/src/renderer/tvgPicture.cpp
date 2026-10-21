@@ -40,25 +40,20 @@ Type Picture::type() const noexcept
 
 Result Picture::load(const char* filename) noexcept
 {
-#ifdef THORVG_FILE_IO_SUPPORT
     if (!filename) return Result::InvalidArguments;
     return to<PictureImpl>(this)->load(filename);
-#else
-    TVGLOG("RENDERER", "FILE IO is disabled!");
-    return Result::NonSupport;
-#endif
 }
 
 
 Result Picture::load(const char* data, uint32_t size, const char* mimeType, const char* rpath, bool copy) noexcept
 {
-    return to<PictureImpl>(this)->load(data, size, mimeType, rpath, copy);
+    return to<PictureImpl>(this)->load(data, size, mimeType, rpath, copy ? Ownership::Copy : Ownership::Borrow);
 }
 
 
 Result Picture::load(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy) noexcept
 {
-    return to<PictureImpl>(this)->load(data, w, h, cs, copy);
+    return to<PictureImpl>(this)->load(data, w, h, cs, copy ? Ownership::Copy : Ownership::Borrow);
 }
 
 
@@ -99,6 +94,12 @@ Result Picture::origin(float* x, float* y) const noexcept
 
 const Paint* Picture::paint(uint32_t id) noexcept
 {
+    if (accessible) {
+        auto entity = to<PictureImpl>(this)->access(id);
+        return entity ? entity->paint : nullptr;
+    }
+
+    // TODO: remove at thorvg v2 release (for backward compat)
     struct Value
     {
         uint32_t id;

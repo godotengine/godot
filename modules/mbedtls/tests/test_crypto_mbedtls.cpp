@@ -32,6 +32,7 @@
 
 #include "../crypto_mbedtls.h"
 
+#include "core/crypto/crypto_resource_format.h"
 #include "core/io/file_access.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
@@ -179,6 +180,32 @@ void crypto_decrypt_test(const String &p_in_priv_path, const Vector<uint8_t> &p_
 	REQUIRE(c.is_valid());
 	Vector<uint8_t> plaintext = c->decrypt(priv, p_ciphertext);
 	CHECK_EQ(equals(plaintext, p_message), p_valid);
+}
+
+void crypto_resource_format_loader_test(const String &p_path, Error p_expected) {
+	Ref<ResourceFormatLoaderCrypto> loader;
+	const String el = p_path.get_extension().to_lower();
+	loader.instantiate();
+	Error err = ERR_BUG;
+	Ref<Resource> res = loader->load(p_path, "", &err);
+	CHECK_EQ(err, p_expected);
+	CHECK_EQ(p_expected == OK, res.is_valid());
+	if (res.is_null()) {
+		return;
+	}
+	if (el == "pub" || el == "key") {
+		CHECK_EQ(res->get_class(), "CryptoKey");
+		CryptoKey *key = Object::cast_to<CryptoKey>(res.ptr());
+		CHECK(key != nullptr);
+		if (!key) {
+			return;
+		}
+		CHECK_EQ(key->is_public_only(), el == "pub");
+	} else if (el == "crt") {
+		CHECK_EQ(res->get_class(), "X509Certificate");
+	} else {
+		CHECK(false);
+	}
 }
 
 } // namespace TestCryptoMbedTLS

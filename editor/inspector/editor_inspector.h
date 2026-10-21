@@ -805,7 +805,7 @@ private:
 	HashSet<StringName> pending;
 
 	void _clear(bool p_hide_plugins = true);
-	Object *object = nullptr;
+	ObjectID edited_object_id;
 	Object *next_object = nullptr;
 
 	//

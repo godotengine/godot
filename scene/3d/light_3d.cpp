@@ -353,7 +353,7 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (get_light_type() == RSE::LIGHT_AREA && p_property.name == "light_projector") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_opacity" || p_property.name == "shadow_contact_shadows_blur")) {
+	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_blur")) {
 		// Contact shadows are currently only supported on DirectionalLight3D.
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -437,7 +437,6 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_caster_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_shadow_caster_mask", "get_shadow_caster_mask");
 	ADD_SUBGROUP("Contact Shadows", "shadow_contact_shadows_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_contact_shadows_allow", PROPERTY_HINT_GROUP_ENABLE), "set_allow_contact_shadows", "get_allow_contact_shadows");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_opacity", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_BLUR);
 	ADD_SUBGROUP("", "");
 
@@ -473,7 +472,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_INTENSITY);
-	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
@@ -529,7 +527,6 @@ Light3D::Light3D(RSE::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
-	set_param(PARAM_CONTACT_SHADOW_OPACITY, 1.0);
 	set_param(PARAM_CONTACT_SHADOW_BLUR, 1.0);
 	// For OmniLight3D and SpotLight3D, specified in Lumens.
 	set_param(PARAM_INTENSITY, 1000.0);
@@ -612,6 +609,8 @@ void DirectionalLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sky_mode", "mode"), &DirectionalLight3D::set_sky_mode);
 	ClassDB::bind_method(D_METHOD("get_sky_mode"), &DirectionalLight3D::get_sky_mode);
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sky_mode", PROPERTY_HINT_ENUM, "Light and Sky,Light Only,Sky Only"), "set_sky_mode", "get_sky_mode");
+
 	ADD_GROUP("Directional Shadow", "directional_shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_mode", PROPERTY_HINT_ENUM, "Orthogonal (Fast),PSSM 2 Splits (Average),PSSM 4 Splits (Slow)"), "set_shadow_mode", "get_shadow_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_1", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_1_OFFSET);
@@ -621,8 +620,6 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_RANGE, "0,1024,0.1,or_greater,exp"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "sky_mode", PROPERTY_HINT_ENUM, "Light and Sky,Light Only,Sky Only"), "set_sky_mode", "get_sky_mode");
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);

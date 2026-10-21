@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -300,20 +300,24 @@ static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPU
         state = SDL_POWERSTATE_ON_BATTERY;
         break;
     }
-    switch (pBatteryInformation->BatteryLevel) {
-    case BATTERY_LEVEL_EMPTY:
-        percent = 10;
-        break;
-    case BATTERY_LEVEL_LOW:
-        percent = 40;
-        break;
-    case BATTERY_LEVEL_MEDIUM:
-        percent = 70;
-        break;
-    default:
-    case BATTERY_LEVEL_FULL:
-        percent = 100;
-        break;
+    if (state == SDL_POWERSTATE_ON_BATTERY || state == SDL_POWERSTATE_CHARGING) {
+        switch (pBatteryInformation->BatteryLevel) {
+        case BATTERY_LEVEL_EMPTY:
+            percent = 10;
+            break;
+        case BATTERY_LEVEL_LOW:
+            percent = 40;
+            break;
+        case BATTERY_LEVEL_MEDIUM:
+            percent = 70;
+            break;
+        default:
+        case BATTERY_LEVEL_FULL:
+            percent = 100;
+            break;
+        }
+    } else {
+        percent = -1;
     }
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
@@ -391,6 +395,7 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
         return;
     }
 
+    // FIXME: This does end up making a device ioctl() to query data, we shouldn't do this every update.
     SDL_zero(XBatteryInformation);
     if (XINPUTGETBATTERYINFORMATION) {
         result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);

@@ -425,6 +425,9 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 	int d = p_depth;
 
 	int arr_ofs = 0;
+	// We use the format block size to ensure block-compressed images can be used as mipmaps.
+	// This is a hacky solution that should be handled better in the future.
+	int block = get_format_block_size(p_format);
 
 	while (true) {
 		for (int i = 0; i < d; i++) {
@@ -438,7 +441,7 @@ Image::Image3DValidateError Image::validate_3d_image(Image::Format p_format, int
 			if (p_images[idx]->get_format() != p_format) {
 				return VALIDATE_3D_ERR_IMAGE_FORMAT_MISMATCH;
 			}
-			if (p_images[idx]->get_width() != w || p_images[idx]->get_height() != h) {
+			if (MAX(p_images[idx]->get_width(), block) != MAX(w, block) || MAX(p_images[idx]->get_height(), block) != MAX(h, block)) {
 				return VALIDATE_3D_ERR_IMAGE_SIZE_MISMATCH;
 			}
 			if (p_images[idx]->has_mipmaps()) {

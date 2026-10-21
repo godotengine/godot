@@ -37,6 +37,7 @@
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
 #include "../objects/jolt_object_3d.h"
+#include "../shapes/jolt_custom_instance_overrides_shape.h"
 #include "../shapes/jolt_custom_motion_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_motion_filter_3d.h"
@@ -815,21 +816,25 @@ Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_
 
 	for (int i = 0; i < collector.get_hit_count(); ++i) {
 		const JPH::TransformedShape &shape_transformed = collector.get_hit(i);
-		const JPH::Shape &shape = *shape_transformed.mShape;
-
-		if (shape.GetType() != JPH::EShapeType::Convex) {
+		const JPH::Shape *shape = shape_transformed.mShape;
+		if (unlikely(shape->GetSubType() != JoltCustomShapeSubType::INSTANCE_OVERRIDES)) {
 			continue;
 		}
 
-		const JPH::ConvexShape &shape_convex = static_cast<const JPH::ConvexShape &>(shape);
+		shape = static_cast<const JoltCustomInstanceOverridesShape *>(shape)->GetInnerShape();
+		if (shape->GetType() != JPH::EShapeType::Convex) {
+			continue;
+		}
+
+		const JPH::ConvexShape *shape_convex = static_cast<const JPH::ConvexShape *>(shape);
 
 		JPH::GJKClosestPoint gjk;
 
 		JPH::ConvexShape::SupportBuffer shape_support_buffer;
-		const JPH::ConvexShape::Support *shape_support = shape_convex.GetSupportFunction(JPH::ConvexShape::ESupportMode::IncludeConvexRadius, shape_support_buffer, shape_transformed.GetShapeScale());
+		const JPH::ConvexShape::Support *shape_support = shape_convex->GetSupportFunction(JPH::ConvexShape::ESupportMode::IncludeConvexRadius, shape_support_buffer, shape_transformed.GetShapeScale());
 
 		const JPH::RMat44 shape_rotation = JPH::RMat44::sRotation(shape_transformed.mShapeRotation);
-		const JPH::Vec3 shape_com = shape_rotation.Multiply3x3(shape.GetCenterOfMass());
+		const JPH::Vec3 shape_com = shape_rotation.Multiply3x3(shape->GetCenterOfMass());
 		const JPH::RVec3 shape_pos = shape_transformed.mShapePositionCOM - JPH::RVec3(shape_com);
 		const JPH::RMat44 shape_xform = shape_rotation.PostTranslated(shape_pos);
 		const JPH::RMat44 shape_xform_inv = shape_xform.InversedRotationTranslation();

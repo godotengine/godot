@@ -10617,7 +10617,7 @@ int ParseEXRMultipartHeaderFromMemory(EXRHeader ***exr_headers,
 
     // move to next header.
     marker += info.header_len;
-    size -= info.header_len;
+    marker_size -= info.header_len;
   }
 
   // allocate memory for EXRHeader and create array of EXRHeader pointers.

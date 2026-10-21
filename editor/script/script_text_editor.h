@@ -110,6 +110,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		RENAME_SYMBOL,
 	};
 
 	class EditMenusScTE : public EditMenusCEB {
@@ -121,7 +122,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ScriptTextEditor>(p_seb); }
 
-		EditMenusScTE(ScriptEditor *p_se);
+		EditMenusScTE(DocumentEditorContainer *p_document_editor_container);
 	};
 
 	void _script_res_changed();
@@ -196,7 +197,7 @@ protected:
 
 	void _goto_line(int p_line);
 
-	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_pos);
+	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_allow_rename, const Vector2 &p_pos);
 	Dictionary _get_context_data() const;
 
 	virtual void _text_edit_gui_input(const Ref<InputEvent> &p_ev) override;
@@ -215,7 +216,7 @@ public:
 	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusScTE(p_se)); }
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) override { return memnew(EditMenusScTE(p_document_editor_container)); }
 
 	virtual Ref<Texture2D> get_theme_icon() override;
 

@@ -4,6 +4,16 @@ set -euo pipefail
 IFS=$'\n\t'
 new_ver_full=''
 
+case "$(uname -s)" in
+	Darwin)
+		;;
+	*)
+		printf "\e[1;31mERROR:\e[22;23;24;29m This script is intended to run on macOS only, aborting. For cross-compilation, install the Vulkan SDK manually:\n\n"
+		printf "    https://github.com/KhronosGroup/MoltenVK/releases/latest\e[0m\n"
+		exit 1
+		;;
+esac
+
 # Check currently installed and latest available Vulkan SDK versions.
 if command -v jq 2>&1 >/dev/null; then
 	curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/config.json" -o /tmp/vulkan-sdk.json

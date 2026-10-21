@@ -327,7 +327,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate_angle] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">

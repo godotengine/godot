@@ -1565,10 +1565,9 @@ void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_bu
 		Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 		Vector3 light_direction = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 0, 1))).normalized();
 
-		float opacity = light_storage->light_get_param(base, RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY);
 		float blur = light_storage->light_get_param(base, RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR);
 
-		ss_effects->screen_space_contact_shadows(p_render_buffers, rb_data->ss_effects_data.sscs, settings, p_projections, light_direction, i, opacity, blur, p_taa_frame_count);
+		ss_effects->screen_space_contact_shadows(p_render_buffers, rb_data->ss_effects_data.sscs, settings, p_projections, light_direction, i, blur, p_taa_frame_count);
 	}
 }
 
@@ -1912,6 +1911,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	uint32_t color_pass_flags = 0;
 	Vector<Color> depth_pass_clear;
 	bool using_separate_specular = false;
+	bool using_ssao = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssao_enabled(p_render_data->environment);
 	bool using_ssr = false;
 	bool using_sscs = false;
 	bool using_sdfgi = false;
@@ -2065,7 +2065,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		rb_data->ensure_normal_roughness_texture();
 	}
 
-	if (using_sss || using_separate_specular || scene_state.used_lightmap || using_voxelgi || global_surface_data.sss_used) {
+	if (using_sss || using_separate_specular || scene_state.used_lightmap || scene_state.lightmaps_used > 0 || using_voxelgi || global_surface_data.sss_used) {
 		scene_shader.enable_advanced_shader_group(p_render_data->scene_data->view_count > 1);
 	}
 
@@ -2195,13 +2195,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	bool debug_voxelgis = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION;
 	bool debug_sdfgi_probes = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES;
-	bool force_depth_pre_pass = scene_state.used_opaque_stencil;
+	bool force_depth_pre_pass = scene_state.used_opaque_stencil || using_ssao || using_ssr || using_sscs || using_ssil;
 	bool depth_pre_pass = (force_depth_pre_pass || scene_shader.depth_prepass_enabled) && depth_framebuffer.is_valid();
 
 	SceneShaderForwardClustered::ShaderSpecialization base_specialization = scene_shader.default_specialization;
 	base_specialization.use_depth_fog = p_render_data->environment.is_valid() && environment_get_fog_mode(p_render_data->environment) == RSE::EnvironmentFogMode::ENV_FOG_MODE_DEPTH;
-
-	bool using_ssao = depth_pre_pass && !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssao_enabled(p_render_data->environment);
 
 	if (depth_pre_pass) { //depth pre pass
 		bool needs_pre_resolve = _needs_post_prepass_render(p_render_data, using_sdfgi || using_voxelgi);
@@ -2513,23 +2511,35 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
-	RENDER_TIMESTAMP("Resolve");
-
-	RD::get_singleton()->draw_command_begin_label("Resolve");
-
 	if (rb_data.is_valid() && use_msaa) {
+		RENDER_TIMESTAMP("> Resolve MSAA (Post-Transparent)");
+		RD::get_singleton()->draw_command_begin_label("Resolve MSAA (Post-Transparent)");
+
+		bool compositor_needs_resolved_depth = _compositor_effects_has_flag(p_render_data, RSE::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RSE::CompositorEffectCallbackType::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+		bool using_dof = RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes);
+		bool resolve_transparent_depth = (using_taa || using_upscaling || using_dof || compositor_needs_resolved_depth);
 		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
+
+		RENDER_TIMESTAMP("Resolve Color");
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
-			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
-
-			if (resolve_velocity_buffer) {
+		}
+		if (resolve_transparent_depth) {
+			RENDER_TIMESTAMP("Resolve Depth");
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
+			}
+		}
+		if (resolve_velocity_buffer) {
+			RENDER_TIMESTAMP("Resolve Velocity Buffer");
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 				RD::get_singleton()->texture_resolve_multisample(rb->get_velocity_buffer(true, v), rb->get_velocity_buffer(false, v));
 			}
 		}
-	}
 
-	RD::get_singleton()->draw_command_end_label();
+		RENDER_TIMESTAMP("< Resolve MSAA (Post-Transparent)");
+		RD::get_singleton()->draw_command_end_label();
+	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL/SSR");
 	if (using_ssil || using_ssr) {
@@ -4081,7 +4091,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 	}
 	{
 		RD::Uniform u;
-		u.binding = 37;
+		u.binding = 38;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 		RID instance_buffer = scene_shader.default_material_feedback_buffer;
 		u.append_id(instance_buffer);
@@ -4964,17 +4974,13 @@ void RenderForwardClustered::_update_dirty_geometry_instances() {
 void RenderForwardClustered::_update_dirty_geometry_pipelines() {
 	if (global_pipeline_data_required.key != global_pipeline_data_compiled.key) {
 		// Go through the entire list of surfaces and compile pipelines for everything again.
-		SelfList<GeometryInstanceSurfaceDataCache> *list = geometry_surface_compilation_all_list.first();
-		while (list != nullptr) {
-			GeometryInstanceSurfaceDataCache *surface_cache = list->self();
-			_mesh_generate_all_pipelines_for_surface_cache(surface_cache, global_pipeline_data_required);
+		for (GeometryInstanceSurfaceDataCache &surface_cache : geometry_surface_compilation_all_list) {
+			_mesh_generate_all_pipelines_for_surface_cache(&surface_cache, global_pipeline_data_required);
 
-			if (surface_cache->compilation_dirty_element.in_list()) {
+			if (surface_cache.compilation_dirty_element.in_list()) {
 				// Remove any elements from the dirty list as they don't need to be processed again.
-				geometry_surface_compilation_dirty_list.remove(&surface_cache->compilation_dirty_element);
+				geometry_surface_compilation_dirty_list.remove(&surface_cache.compilation_dirty_element);
 			}
-
-			list = list->next();
 		}
 
 		global_pipeline_data_compiled.key = global_pipeline_data_required.key;

@@ -466,6 +466,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Asset Store */
 
 	_initial_set("asset_store/use_threads", true);
+	_initial_set("asset_store/show_incompatible_assets", false);
 
 	Dictionary default_urls;
 	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
@@ -914,6 +915,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_title_font_size", 23, "8,64,1")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/help/class_reference_examples", 0, "GDScript,C#,GDScript and C#")
 	_initial_set("text_editor/help/sort_functions_alphabetically", true);
+	_initial_set("text_editor/help/show_property_setters_and_getters", false);
 
 	/* Editors */
 

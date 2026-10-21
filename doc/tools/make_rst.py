@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 # This script makes RST files from the XML class reference for use with the online docs.
-from __future__ import annotations
-
 import argparse
 import os
 import re
@@ -68,16 +66,16 @@ BASE_STRINGS = [
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
     "No return value.",
-    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
     "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
     "Deprecated:",
     "Experimental:",
@@ -393,7 +391,7 @@ class State:
 
                 theme_item_name = theme_item.attrib["name"]
                 theme_item_data_name = theme_item.attrib["data_type"]
-                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                theme_item_id = f"{theme_item_data_name}_{theme_item_name}"
                 if theme_item_id in class_def.theme_items:
                     print_error(
                         f'{class_name}.xml: Duplicate theme property "{theme_item_name}" of type "{theme_item_data_name}".',
@@ -424,7 +422,7 @@ class State:
 
         self.current_class = ""
 
-    def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
+    def parse_params(self, root: ET.Element, context: str) -> list["ParameterDef"]:
         param_elements = root.findall("param")
         params: Any = [None] * len(param_elements)
 
@@ -474,7 +472,7 @@ class TypeName:
             return make_type(self.type_name, state)
 
     @classmethod
-    def from_element(cls, element: ET.Element) -> TypeName:
+    def from_element(cls, element: ET.Element) -> "TypeName":
         return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
@@ -749,9 +747,7 @@ def main() -> None:
     if not args.dry_run and args.lang != "en":
         global writing_translation
         writing_translation = True
-        lang_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
-        )
+        lang_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "translations", f"{args.lang}.po")
         if os.path.exists(lang_file):
             try:
                 import polib  # type: ignore
@@ -1024,7 +1020,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(".. container:: contribute\n\n\t")
             f.write(
                 translate(
-                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                 )
                 + "\n\n"
             )
@@ -1150,7 +1146,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1199,7 +1195,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1234,7 +1230,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1275,7 +1271,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1338,7 +1334,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1387,7 +1383,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1434,7 +1430,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1478,7 +1474,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1523,7 +1519,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -2189,7 +2185,7 @@ def format_text_block(
 
                         # Default to the tag command name. This works by default for most tags,
                         # but method, member, and theme_item have special cases.
-                        ref_type = "_{}".format(tag_state.name)
+                        ref_type = f"_{tag_state.name}"
 
                         if target_class_name in state.classes:
                             class_def = state.classes[target_class_name]

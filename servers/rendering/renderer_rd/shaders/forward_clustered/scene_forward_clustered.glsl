@@ -880,7 +880,7 @@ void main() {
 
 /* Varyings */
 
-#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_UV_USED))
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
 // Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
 // driver so unless we want really bad performance, we need to force enable it again.
 //
@@ -913,8 +913,10 @@ layout(location = 2) in vec4 color_interp;
 layout(location = 3) in vec2 uv_interp;
 #endif
 
-#if defined(TEXTURE_STREAMING)
-vec2 streaming_uv;
+#include "../scene_forward_streaming_inc.glsl"
+
+#ifdef STREAMING_LOD_USED
+float streaming_lod = 32.0; // Defaults to value past the coursest quality.
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -1357,34 +1359,28 @@ void fragment_shader(in SceneData scene_data) {
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
-#if defined(UV_USED) || defined(STREAMING_UV_USED)
+#if defined(UV_USED) || defined(STREAMING_LOD_USED)
 #if defined(TEXTURE_STREAMING)
 #if !defined(MODE_RENDER_DEPTH)
 	if (sc_material_feedback()) {
-// When STREAMING_UV_USED is not used just use normal UVs.
-#if !defined(STREAMING_UV_USED)
-		streaming_uv = uv_interp;
-#endif
 		// Instance has materials which require feedback.
-		vec2 uv_dx = dFdx(streaming_uv);
-		vec2 uv_dy = dFdy(streaming_uv);
+#if !defined(STREAMING_LOD_USED)
+		vec2 uv_ddx = dFdx(uv_interp);
+		vec2 uv_ddy = dFdy(uv_interp);
+#endif
 
 		if (!gl_HelperInvocation) {
+#if defined(STREAMING_LOD_USED)
+			// The shader supplied the level itself.
+			float footprint_sq = streaming_footprint_sq_from_lod(streaming_lod);
+#else
 			// Calculate the mip level needed for the current fragment based on UV derivatives.
-			float px_sq = dot(uv_dx, uv_dx);
-			float py_sq = dot(uv_dy, uv_dy);
-			float min_sq = min(px_sq, py_sq);
-			float max_sq = max(px_sq, py_sq);
+			float footprint_sq = streaming_footprint_sq(uv_ddx, uv_ddy);
+#endif
 
-			// Anisotropic filtering allows using the mip level of the minor axis (min_sq),
-			// but limited by the max anisotropy (usually 16x).
-			// If the anisotropy ratio exceeds 16, we are forced to use a lower res mip.
-			const float MAX_ANISOTROPY = 16.0;
-			float lod_sq = max(min_sq, max_sq / (MAX_ANISOTROPY * MAX_ANISOTROPY));
-
-			// Bitwise NOT inverts the ordering so that smaller lod_sq (higher quality)
+			// Bitwise NOT inverts the ordering so that smaller footprint_sq (higher quality)
 			// maps to larger uint values, allowing atomicMax with a 0-cleared buffer.
-			uint required_mip = ~floatBitsToUint(lod_sq);
+			uint required_mip = ~floatBitsToUint(footprint_sq);
 
 			// Reduce atomic contention using subgroup operations.
 			// Find maximum inverted mip level across all invocations in the subgroup, then only
@@ -1400,7 +1396,7 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #endif // MODE_RENDER_DEPTH
 #endif // TEXTURE_STREAMING
-#endif // UV_USED || STREAMING_UV_USED
+#endif // UV_USED || STREAMING_LOD_USED
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
@@ -1738,6 +1734,8 @@ void fragment_shader(in SceneData scene_data) {
 		indirect_specular_light *= scene_data.IBL_exposure_normalization;
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= scene_data.ambient_light_color_energy.a;
+	} else if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_COLOR)) {
+		indirect_specular_light = scene_data.reflection_color.rgb;
 	}
 
 #if defined(CUSTOM_RADIANCE_USED)
@@ -1796,6 +1794,8 @@ void fragment_shader(in SceneData scene_data) {
 
 #endif //USE_RADIANCE_OCTMAP_ARRAY
 		cc_specular_light += clearcoat_light * scene_data.IBL_exposure_normalization * scene_data.ambient_light_color_energy.a;
+	} else if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_COLOR)) {
+		cc_specular_light = scene_data.reflection_color.rgb;
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED
@@ -1912,7 +1912,7 @@ void fragment_shader(in SceneData scene_data) {
 								transmittance_color,
 								transmittance_depth,
 								transmittance_boost,
-								transmittance_z,
+								0.0,
 #endif
 #ifdef LIGHT_RIM_USED
 								rim, rim_tint,

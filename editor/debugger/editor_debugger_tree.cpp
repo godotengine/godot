@@ -30,6 +30,7 @@
 
 #include "editor_debugger_tree.h"
 
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -299,7 +300,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 		// Add buttons.
 		const Color remote_button_color = Color(1, 1, 1, 0.8);
-		if (!node.scene_file_path.is_empty()) {
+		if (!node.scene_file_path.is_empty() && ResourceLoader::exists(node.scene_file_path, "PackedScene")) {
 			String node_scene_file_path = node.scene_file_path;
 			Ref<Texture2D> button_icon = get_editor_theme_icon(SNAME("InstanceOptions"));
 			String tooltip = vformat(TTR("This node has been instantiated from a PackedScene file:\n%s\nClick to open the original file in the Editor."), node_scene_file_path);
@@ -404,6 +405,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	// IDs that weren't found will be excluded in the next update (either removed or not nodes).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
@@ -425,6 +427,10 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 }
 
 void EditorDebuggerTree::clear_selection() {
+	if (inspected_object_ids.is_empty()) {
+		return;
+	}
+
 	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {

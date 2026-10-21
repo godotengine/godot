@@ -47,8 +47,8 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 
 	if (ScriptInstance *si = p_obj->get_script_instance()) {
 		// Read script instance constants and variables.
-		if (!si->get_script().is_null()) {
-			Script *s = si->get_script().ptr();
+		if (si->get_script() != nullptr) {
+			Script *s = si->get_script();
 			_parse_script_properties(s, si);
 		}
 	}

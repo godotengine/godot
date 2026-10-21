@@ -540,7 +540,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the timestamp in GPU time for the rendering step specified by [param index] (in microseconds since the engine started). See also [method get_captured_timestamp_cpu_time] and [method capture_timestamp].
+				Returns the timestamp in GPU time for the rendering step specified by [param index] (in nanoseconds since the engine started). See also [method get_captured_timestamp_cpu_time] and [method capture_timestamp].
 			</description>
 		</method>
 		<method name="get_captured_timestamp_name" qualifiers="const">

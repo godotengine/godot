@@ -161,6 +161,14 @@ String WebXRInterfaceJS::get_enabled_features() const {
 	return enabled_features;
 }
 
+void WebXRInterfaceJS::set_disable_webxr_layers(bool p_disable_webxr_layers) {
+	disable_webxr_layers = p_disable_webxr_layers;
+}
+
+bool WebXRInterfaceJS::get_disable_webxr_layers() const {
+	return disable_webxr_layers;
+}
+
 bool WebXRInterfaceJS::is_input_source_active(int p_input_source_id) const {
 	ERR_FAIL_INDEX_V(p_input_source_id, input_source_count, false);
 	return input_sources[p_input_source_id].active;
@@ -295,11 +303,6 @@ bool WebXRInterfaceJS::initialize() {
 			return false;
 		}
 
-		if (session_mode == "immersive-vr" && !GLES3::Config::get_singleton()->multiview_supported) {
-			emit_signal("session_failed", "Stereo rendering in Godot requires multiview, but this web browser doesn't support it.");
-			return false;
-		}
-
 		if (requested_reference_space_types.is_empty()) {
 			emit_signal("session_failed", "No reference spaces were requested.");
 			return false;
@@ -332,6 +335,8 @@ bool WebXRInterfaceJS::initialize() {
 				required_features.utf8().get_data(),
 				optional_features.utf8().get_data(),
 				requested_reference_space_types.utf8().get_data(),
+				// Disable WebXR Layers if multiview isn't supported.
+				disable_webxr_layers || !GLES3::Config::get_singleton()->multiview_supported,
 				&_emwebxr_on_session_started,
 				&_emwebxr_on_session_ended,
 				&_emwebxr_on_session_failed,
@@ -614,6 +619,12 @@ Vector<RenderingServerTypes::BlitToScreen> WebXRInterfaceJS::post_draw_viewport(
 	}
 
 	texture_storage->render_target_set_reattach_textures(p_render_target, false);
+
+	GLES3::Texture *texture = texture_storage->get_texture(texture_storage->render_target_get_texture(p_render_target));
+	if (texture != nullptr) {
+		int layer_count = texture->target == GL_TEXTURE_2D_ARRAY ? texture->layers : 1;
+		godot_webxr_commit_render_target(texture->tex_id, layer_count);
+	}
 
 	return blit_to_screen;
 }

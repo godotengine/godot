@@ -95,5 +95,5 @@ public:
 	void enable() { disabled = false; }
 	void disable() { disabled = true; }
 
-	bool try_build();
+	bool try_build(bool p_object_has_back_face_collision);
 };

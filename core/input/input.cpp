@@ -754,6 +754,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 			delete motion->gamepad_motion;
 		}
 		joy_motion.erase(p_idx);
+		joy_touch.erase(p_idx);
 	}
 	joy_names[p_idx] = js;
 

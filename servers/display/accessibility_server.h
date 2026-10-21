@@ -69,6 +69,7 @@ public:
 
 	virtual bool window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) = 0;
 	virtual void window_destroy(DisplayServerEnums::WindowID p_window_id) = 0;
+	virtual bool has_window(DisplayServerEnums::WindowID p_window_id) = 0;
 
 	virtual RID create_element(DisplayServerEnums::WindowID p_window_id, AccessibilityServerEnums::AccessibilityRole p_role) = 0;
 	virtual RID create_sub_element(const RID &p_parent_rid, AccessibilityServerEnums::AccessibilityRole p_role, int p_insert_pos = -1) = 0;
@@ -153,6 +154,11 @@ public:
 	virtual void update_set_color_value(const RID &p_id, const Color &p_color) = 0;
 	virtual void update_set_background_color(const RID &p_id, const Color &p_color) = 0;
 	virtual void update_set_foreground_color(const RID &p_id, const Color &p_color) = 0;
+
+	virtual void *native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) = 0;
+	virtual void *native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) = 0;
+	virtual bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) = 0;
+	virtual bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) = 0;
 
 	static void register_create_function(const char *p_name, CreateFunction p_function);
 	static int get_create_function_count();

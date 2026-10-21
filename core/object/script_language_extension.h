@@ -825,8 +825,8 @@ public:
 						r_list->push_back(PropertyInfo(gdext_class_category));
 					}
 				} else {
-					Ref<Script> script = get_script();
-					if (script.is_valid()) {
+					Script *script = get_script();
+					if (script != nullptr) {
 						r_list->push_back(script->get_class_category());
 					}
 				}
@@ -993,12 +993,12 @@ public:
 		return false;
 	}
 
-	virtual Ref<Script> get_script() const override {
+	virtual Script *get_script() const override {
 		if (native_info->get_script_func) {
 			GDExtensionObjectPtr script = native_info->get_script_func(instance);
-			return Ref<Script>(reinterpret_cast<Script *>(script));
+			return reinterpret_cast<Script *>(script);
 		}
-		return Ref<Script>();
+		return nullptr;
 	}
 
 	virtual bool is_placeholder() const override {

@@ -36,7 +36,7 @@
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
-class ScriptEditor;
+class DocumentEditorContainer;
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -51,7 +51,7 @@ public:
 		GDCLASS(EditMenusBase, HBoxContainer);
 
 	protected:
-		ScriptEditor *se = nullptr;
+		DocumentEditorContainer *document_editor_container = nullptr;
 
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) = 0;
@@ -65,9 +65,6 @@ public:
 	String get_document_name() const;
 	virtual String get_doc_url_path() { return "/"; }
 	virtual Ref<Texture2D> get_theme_icon();
-
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) = 0;
-	virtual void update_toggle_files_button() = 0;
 
 	virtual bool show_members_overview() { return false; }
 
@@ -160,7 +157,7 @@ protected:
 		void _bookmark_item_pressed(int p_idx);
 
 	public:
-		EditMenus(ScriptEditor *p_se);
+		EditMenus(DocumentEditorContainer *p_document_editor_container);
 	};
 
 	static void _popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after = true, int p_idx = -1) {
@@ -210,7 +207,7 @@ public:
 	virtual void reload_text();
 	virtual void enable_editor();
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) = 0;
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) = 0;
 
 	virtual Control *get_base_editor() const override { return code_editor->get_text_editor(); }
 	virtual CodeTextEditor *get_code_editor() const { return code_editor; }
@@ -242,11 +239,6 @@ public:
 
 	virtual void validate_script() override { code_editor->validate_script(); }
 	bool get_validation_success() { return validation_success; }
-
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override {
-		code_editor->set_toggle_list_control(p_toggle_list_control);
-	}
-	virtual void update_toggle_files_button() override { code_editor->update_toggle_files_button(); }
 
 	TextEditorBase();
 	~TextEditorBase();
@@ -280,7 +272,7 @@ protected:
 		void _notification(int p_what);
 
 	public:
-		EditMenusCEB(ScriptEditor *p_se, String p_breakpoint_menu_name);
+		EditMenusCEB(DocumentEditorContainer *p_document_editor_container, String p_breakpoint_menu_name);
 	};
 
 	VSplitContainer *editor_box = nullptr;

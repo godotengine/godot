@@ -182,7 +182,9 @@ void Trail3D::_notification(int p_what) {
 
 void Trail3D::set_width(float p_width) {
 	width = p_width;
-	_needs_rebuilding = true;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 float Trail3D::get_width() const {
@@ -219,8 +221,10 @@ Ref<Curve> Trail3D::get_width_curve() const {
 }
 
 void Trail3D::set_color(const Color &p_color) {
-	if (p_color != color) {
-		_needs_rebuilding = true;
+	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		if (!RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+		}
 	}
 	color = p_color;
 }
@@ -560,14 +564,14 @@ void Trail3D::_do_rebuild() {
 		real_t length_uv = 0;
 
 		switch (tiling_mode) {
-			case TILING_MODE_LENGTH: {
+			case TILING_MODE_TILE: {
 				if (pin_uv) {
 					length_uv = (dist + tiling_offset) * tiling_multiplier;
 				} else {
 					length_uv = dist * tiling_multiplier;
 				}
 			} break;
-			case TILING_MODE_UNIT: {
+			case TILING_MODE_STRETCH: {
 				length_uv = ratio * tiling_multiplier;
 			} break;
 			default: {
@@ -612,11 +616,11 @@ void Trail3D::_do_rebuild() {
 			custom.y = tangent.y;
 			custom.z = tangent.z;
 
-			custom.w = half_width;
+			custom.w = -half_width;
 			_write_custom(custom, j2, write_attrib);
 			custom.w = 0.;
 			_write_custom(custom, j1, write_attrib);
-			custom.w = -half_width;
+			custom.w = half_width;
 			_write_custom(custom, j0, write_attrib);
 		}
 
@@ -662,6 +666,7 @@ void Trail3D::_process_trail() {
 	}
 
 	Vector3 up = tf.basis.get_column(1);
+	Vector3 fw = tf.basis.get_column(2);
 	real_t delta = get_process_delta_time();
 	_time += delta;
 	real_t head_velocity = (get_global_position() - _previous_position).length() / MAX(delta, CMP_EPSILON);
@@ -682,7 +687,12 @@ void Trail3D::_process_trail() {
 			normals.write[0] = up;
 			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
 				real_t len = (pos - points[1]).length();
-				Vector3 t = (pos - points[1]) / len;
+				Vector3 t;
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					t = (pos - points[1]) / len;
+				} else {
+					t = fw;
+				}
 				tangents.write[0] = t;
 				if (points.size() == 2) {
 					tangents.write[1] = t;
@@ -719,24 +729,32 @@ void Trail3D::_process_trail() {
 	switch (limit_mode) {
 		case LIMIT_MODE_MAX_LENGTH:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
 			break;
 		case LIMIT_MODE_LIFETIME:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
 				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
@@ -832,7 +850,7 @@ void Trail3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "max_length" && limit_mode == LIMIT_MODE_LIFETIME) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_UNIT) {
+	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_STRETCH) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -929,7 +947,7 @@ void Trail3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_alignment", PROPERTY_HINT_ENUM, "Local,Billboard"), "set_mesh_alignment", "get_mesh_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "material_mode", PROPERTY_HINT_ENUM, "Default,Default Additive,Custom"), "set_material_mode", "get_material_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, ShaderMaterial::get_class_static()), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tiling_mode", PROPERTY_HINT_ENUM, "Unit,Length"), "set_tiling_mode", "get_tiling_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tiling_mode", PROPERTY_HINT_ENUM, "Stretch,Tile"), "set_tiling_mode", "get_tiling_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tiling_multiplier"), "set_tiling_multiplier", "get_tiling_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pin_uv"), "set_pin_uv", "get_pin_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_section_length", PROPERTY_HINT_RANGE, "0.05,1.0,0.01"), "set_min_section_length", "get_min_section_length");

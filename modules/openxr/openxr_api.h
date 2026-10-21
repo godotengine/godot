@@ -76,7 +76,7 @@ public:
 		static void free_queued();
 		void free();
 
-		bool acquire(bool &p_should_render);
+		bool acquire(bool &r_should_render);
 		bool release();
 		RID get_image();
 		RID get_density_map();
@@ -150,6 +150,7 @@ private:
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
+	Size2i main_swapchain_size;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -284,6 +285,7 @@ private:
 	bool is_reference_space_supported(XrReferenceSpaceType p_reference_space);
 	bool setup_play_space();
 	bool setup_view_space();
+	void update_head_transform(XrTime p_display_time);
 	void update_head_tracking();
 	bool load_supported_swapchain_formats();
 	bool is_swapchain_format_supported(int64_t p_swapchain_format);
@@ -368,7 +370,6 @@ private:
 	// Render state, Only accessible in rendering thread
 	struct RenderState {
 		bool running = false;
-		bool should_submit_spatial_container_layers = false;
 		bool should_render = false;
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
@@ -377,11 +378,13 @@ private:
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
+		Size2i render_region_maximum;
 
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
+		bool use_vrs_xr = true; // Defaults to true so the warning is shown if the VRS mode is wrong at startup.
 
 		uint32_t view_count = 0;
 		uint32_t primary_view_count = 0;
@@ -412,7 +415,7 @@ private:
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
-	static void _set_render_state_view_poses(bool p_is_valid, bool p_should_submit_spatial_container_layers, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	static void _set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
 	static void _set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 	static void _update_main_swapchain_size_rt();
 
@@ -423,7 +426,7 @@ private:
 	void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode);
 	void set_render_state_multiplier(double p_render_target_size_multiplier);
 	void set_render_state_render_region(const Rect2i &p_render_region);
-	void set_render_state_view_poses(bool p_is_valid, bool p_should_submit_spatial_container_layers, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	void set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
 	void set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 
 public:
@@ -509,7 +512,8 @@ public:
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
 	Size2 get_recommended_target_size();
-	Size2i get_recommended_target_size(uint32_t p_view);
+	Size2i get_recommended_view_size(uint32_t p_view);
+	Size2 get_render_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
 	TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
@@ -551,9 +555,10 @@ public:
 
 	Rect2i get_render_region() const;
 	void set_render_region(const Rect2i &p_render_region);
+	Rect2i get_combined_render_region();
 
 	// Spatial container settings.
-	bool is_spatial_container_enabled() const;
+	static bool is_spatial_container_enabled();
 
 	// Foveation settings
 	bool is_foveation_supported() const;

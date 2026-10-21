@@ -2323,7 +2323,8 @@ Variant::operator Vector<StringName>() const {
 	return to;
 }
 
-Variant::operator IPAddress() const {
+template <>
+IPAddress Variant::to<IPAddress>() const {
 	if (type == PACKED_FLOAT32_ARRAY || type == PACKED_INT32_ARRAY || type == PACKED_FLOAT64_ARRAY || type == PACKED_INT64_ARRAY || type == PACKED_BYTE_ARRAY) {
 		Vector<int> addr = operator Vector<int>();
 		if (addr.size() == 4) {

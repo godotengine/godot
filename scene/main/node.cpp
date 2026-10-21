@@ -2850,12 +2850,13 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	List<const Node *> hidden_roots;
-	List<const Node *> node_tree;
-	node_tree.push_front(this);
 
 	if (instantiated) {
 		// Since nodes in the instantiated hierarchy won't be duplicated explicitly, we need to make an inventory
 		// of all the nodes in the tree of the instantiated scene in order to transfer the values of the properties
+
+		List<const Node *> node_tree;
+		node_tree.push_front(this);
 
 		Vector<const Node *> instance_roots;
 		instance_roots.push_back(this);
@@ -2966,7 +2967,7 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	if (p_flags & DUPLICATE_SCRIPTS) {
-		_duplicate_scripts(this, dupe);
+		_duplicate_scripts(this, dupe, p_flags);
 	}
 
 	_duplicate_properties(this, this, dupe, p_flags);
@@ -2991,7 +2992,7 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Nod
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	if (flags & DUPLICATE_SCRIPTS) {
-		_duplicate_scripts(this, dupe);
+		_duplicate_scripts(this, dupe, flags);
 	}
 
 	_duplicate_properties(this, this, dupe, flags);
@@ -3084,17 +3085,21 @@ void Node::_emit_editor_state_changed() {
 }
 #endif
 
-void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
+void Node::_duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags) const {
 	bool is_valid = false;
 	Variant scr = p_original->get(CoreStringName(script), &is_valid);
 	if (is_valid) {
 		p_copy->set(CoreStringName(script), scr);
 	}
 
+	bool instantiated = (p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance();
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
-		Node *copy_child = p_copy->get_child(i, false);
-		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_scripts(p_original->get_child(i, false), copy_child);
+		Node *original = p_original->get_child(i, false);
+		// If using instantiation and the child structure changed, getting it by index will result in
+		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
+		_duplicate_scripts(original, copy, p_flags);
 	}
 }
 
@@ -3151,10 +3156,14 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		}
 	}
 
+	bool instantiated = (p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance();
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
-		Node *copy_child = p_copy->get_child(i, false);
-		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
+		Node *original = p_original->get_child(i, false);
+		// If using instantiation and the child structure changed, getting it by index will result in
+		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
+		_duplicate_properties(p_root, original, copy, p_flags);
 	}
 }
 
@@ -3233,7 +3242,7 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
+void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups, bool p_keep_owned_children) {
 	ERR_THREAD_GUARD
 	EXTRACT_PARAM_OR_FAIL(node, p_node);
 	ERR_FAIL_COND(node->data.parent);
@@ -3273,8 +3282,14 @@ void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
 	emit_signal(SNAME("replacing_by"), node);
 
 	// Move non-internal children to `p_node`.
-	while (get_child_count(false)) {
-		Node *child = get_child(0, false);
+	int idx = 0;
+	while (idx < get_child_count(false)) {
+		Node *child = get_child(idx);
+		if (!p_keep_owned_children && child->get_owner() == this) {
+			idx++;
+			continue;
+		}
+
 		remove_child(child);
 		Node *child_owner = child->get_owner() == this ? node : child->get_owner();
 		child->set_owner(nullptr);
@@ -3283,14 +3298,23 @@ void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
 	}
 
 	node->set_owner(owner);
-	for (Node *E : owned) {
-		if (E->data.owner != node) {
-			E->set_owner(node);
+
+	if (p_keep_owned_children) {
+		for (Node *E : owned) {
+			if (E->data.owner != node) {
+				E->set_owner(node);
+			}
 		}
 	}
 
 	for (Node *E : owned_by_owner) {
 		if (E->data.owner != owner) {
+			if (!p_keep_owned_children && E->data.parent->data.owner == this) {
+				// Move external nodes that were added as grandchildren.
+				E->data.parent->remove_child(E);
+				node->add_child(E);
+			}
+
 			E->set_owner(owner);
 		}
 	}
@@ -3767,7 +3791,7 @@ Transform2D Node::get_accessibility_transform() const {
 }
 
 void Node::queue_accessibility_update() {
-	if (is_inside_tree() && !is_part_of_edited_scene()) {
+	if (is_inside_tree() && data.tree->is_accessibility_supported() && !is_part_of_edited_scene()) {
 		data.tree->_accessibility_notify_change(this);
 	}
 }
@@ -3893,7 +3917,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_DEFAULT));
-	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups", "keep_owned_children"), &Node::replace_by, DEFVAL(false), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);

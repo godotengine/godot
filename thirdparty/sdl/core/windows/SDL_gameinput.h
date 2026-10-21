@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,19 @@
 
 #ifdef HAVE_GAMEINPUT_H
 
-#define COBJMACROS
 #include <gameinput.h>
+
+#ifndef GAMEINPUT_API_VERSION
+#define GAMEINPUT_API_VERSION 0
+#endif
+
+#if GAMEINPUT_API_VERSION == 3
+using namespace GameInput::v3;
+#elif GAMEINPUT_API_VERSION == 2
+using namespace GameInput::v2;
+#elif GAMEINPUT_API_VERSION == 1
+using namespace GameInput::v1;
+#endif
 
 extern bool SDL_InitGameInput(IGameInput **ppGameInput);
 extern void SDL_QuitGameInput(void);

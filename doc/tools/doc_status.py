@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import fnmatch
 import math
 import os
@@ -138,7 +136,7 @@ class ClassStatusProgress:
         self.described: int = described
         self.total: int = total
 
-    def __add__(self, other: ClassStatusProgress):
+    def __add__(self, other: "ClassStatusProgress"):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
     def increment(self, described: bool):
@@ -189,7 +187,7 @@ class ClassStatus:
             "constructors": ClassStatusProgress(),
         }
 
-    def __add__(self, other: ClassStatus):
+    def __add__(self, other: "ClassStatus"):
         new_status = ClassStatus()
         new_status.name = self.name
         new_status.has_brief_description = self.has_brief_description and other.has_brief_description
@@ -246,7 +244,7 @@ class ClassStatus:
                 output["comment"] = color("part_good", "ALL OK")
         else:
             output["url"] = color(
-                "url", "https://docs.godotengine.org/en/latest/classes/class_{name}.html".format(name=self.name.lower())
+                "url", f"https://docs.godotengine.org/en/latest/classes/class_{self.name.lower()}.html"
             )
 
             if flags["s"] and not flags["g"] and self.is_ok():
@@ -442,7 +440,7 @@ if len(table) == 1 and flags["a"]:
     sys.exit(0)
 
 if len(table) > 2 or not flags["a"]:
-    total_status.name = "Total = {0}".format(len(table) - 1)
+    total_status.name = f"Total = {len(table) - 1}"
     out = total_status.make_output()
     row = []
     for column in table_columns:

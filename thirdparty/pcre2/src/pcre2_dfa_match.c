@@ -405,8 +405,8 @@ return (mb->callout)(cb, mb->callout_data);
 
 /* This function is called when internal_dfa_match() is about to be called
 recursively and there is insufficient working space left in the current
-workspace block. If there's an existing next block, use it; otherwise get a new
-block unless the heap limit is reached.
+workspace block. If there's a sufficiently large next block, use it; get a new
+block unless the heap limit is (or has been) reached.
 
 Arguments:
   rwsptr     pointer to block pointer (updated)
@@ -422,9 +422,18 @@ more_workspace(RWS_anchor **rwsptr, unsigned int ovecsize, dfa_match_block *mb)
 {
 RWS_anchor *rws = *rwsptr;
 RWS_anchor *new;
+uint32_t requested;
+
+PCRE2_ASSERT(ovecsize <= UINT32_MAX - RWS_RSIZE - RWS_ANCHOR_SIZE);
+requested = RWS_RSIZE + ovecsize + RWS_ANCHOR_SIZE;
 
 if (rws->next != NULL)
   {
+  /* Although the initial block is large, and subsequent ones try to double, the
+  heap limit may cause the last one to be smaller; in this case, we have already
+  hit the heap limit and allocating a larger block will not be possible. */
+  if (rws->next->size < requested)
+    return PCRE2_ERROR_HEAPLIMIT;
   new = rws->next;
   }
 
@@ -434,14 +443,30 @@ overflow. */
 
 else
   {
-  uint32_t newsize = (rws->size >= UINT32_MAX/(sizeof(int)*2))? UINT32_MAX/sizeof(int) : rws->size * 2;
+  uint32_t newsize = (rws->size >= (UINT32_MAX/sizeof(int))/2)?
+    UINT32_MAX/sizeof(int) : rws->size * 2;
   uint32_t newsizeK = newsize/(1024/sizeof(int));
 
-  if (newsizeK + mb->heap_used > mb->heap_limit)
-    newsizeK = (uint32_t)(mb->heap_limit - mb->heap_used);
-  newsize = newsizeK*(1024/sizeof(int));
+  /* Clamp the allocation to the remaining heap allowance with care for overflows */
 
-  if (newsize < RWS_RSIZE + ovecsize + RWS_ANCHOR_SIZE)
+  if (mb->heap_used >= mb->heap_limit)
+    {
+    newsize = 0;
+    newsizeK = 0;
+    }
+  else
+    {
+    PCRE2_SIZE availableK = mb->heap_limit - mb->heap_used;
+    /* newsize always capped at UINT32_MAX/sizeof(int), so newsizeK also capped;
+    and - if availableK is smaller - then multiplication to form newsize is safe */
+    if (newsizeK > availableK)
+      {
+      newsize = (uint32_t)(availableK*(1024/sizeof(int)));
+      newsizeK = availableK;
+      }
+    }
+
+  if (newsize < requested)
     return PCRE2_ERROR_HEAPLIMIT;
   new = mb->memctl.malloc(newsize*sizeof(int), mb->memctl.memory_data);
   if (new == NULL) return PCRE2_ERROR_NOMEMORY;
@@ -1601,7 +1626,7 @@ for (;;)
           goto ANYNL01;
 
           case CHAR_CR:
-          if (ptr + 1 < end_subject && UCHAR21TEST(ptr + 1) == CHAR_LF) ncount = 1;
+          if (ptr + 1 < end_subject && ptr[1] == CHAR_LF) ncount = 1;
           /* Fall through */
 
           ANYNL01:
@@ -1879,7 +1904,7 @@ for (;;)
           goto ANYNL02;
 
           case CHAR_CR:
-          if (ptr + 1 < end_subject && UCHAR21TEST(ptr + 1) == CHAR_LF) ncount = 1;
+          if (ptr + 1 < end_subject && ptr[1] == CHAR_LF) ncount = 1;
           /* Fall through */
 
           ANYNL02:
@@ -2160,7 +2185,7 @@ for (;;)
           goto ANYNL03;
 
           case CHAR_CR:
-          if (ptr + 1 < end_subject && UCHAR21TEST(ptr + 1) == CHAR_LF) ncount = 1;
+          if (ptr + 1 < end_subject && ptr[1] == CHAR_LF) ncount = 1;
           /* Fall through */
 
           ANYNL03:
@@ -2341,7 +2366,7 @@ for (;;)
           if ((mb->moptions & PCRE2_PARTIAL_HARD) != 0)
             reset_could_continue = TRUE;
           }
-        else if (UCHAR21TEST(ptr + 1) == CHAR_LF)
+        else if (ptr[1] == CHAR_LF)
           {
           ADD_NEW_DATA(-(state_offset + 1), 0, 1);
           }
@@ -2801,6 +2826,7 @@ for (;;)
 
         local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
         local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        PCRE2_ASSERT(rws->free >= RWS_RSIZE + RWS_OVEC_OSIZE);
         rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
         while (*endasscode == OP_ALT) endasscode += GET(endasscode, 1);
@@ -2900,6 +2926,7 @@ for (;;)
 
           local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
           local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+          PCRE2_ASSERT(rws->free >= RWS_RSIZE + RWS_OVEC_OSIZE);
           rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
           while (*endasscode == OP_ALT) endasscode += GET(endasscode, 1);
@@ -2951,6 +2978,7 @@ for (;;)
 
         local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
         local_workspace = ((int *)local_offsets) + RWS_OVEC_RSIZE;
+        PCRE2_ASSERT(rws->free >= RWS_RSIZE + RWS_OVEC_RSIZE);
         rws->free -= RWS_RSIZE + RWS_OVEC_RSIZE;
 
         /* Check for repeating a recursion without advancing the subject
@@ -3050,6 +3078,7 @@ for (;;)
 
         local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
         local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        PCRE2_ASSERT(rws->free >= RWS_RSIZE + RWS_OVEC_OSIZE);
         rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
         if (codevalue == OP_BRAPOSZERO)
@@ -3149,6 +3178,7 @@ for (;;)
 
         local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
         local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        PCRE2_ASSERT(rws->free >= RWS_RSIZE + RWS_OVEC_OSIZE);
         rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
         rc = internal_dfa_match(
@@ -3745,7 +3775,7 @@ for (;;)
         BOOL ok = start_match < end_subject;
         if (ok)
           {
-          PCRE2_UCHAR c = UCHAR21TEST(start_match);
+          PCRE2_UCHAR c = *start_match;
           ok = has_first_cu && (c == first_cu || c == first_cu2);
           if (!ok && start_bits != NULL)
             {
@@ -3773,7 +3803,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
           PCRE2_UCHAR smc;
           while (start_match < end_subject &&
-                (smc = UCHAR21TEST(start_match)) != first_cu &&
+                (smc = *start_match) != first_cu &&
                  smc != first_cu2)
             start_match++;
 #else
@@ -3833,7 +3863,7 @@ for (;;)
         else
           {
 #if PCRE2_CODE_UNIT_WIDTH != 8
-          while (start_match < end_subject && UCHAR21TEST(start_match) !=
+          while (start_match < end_subject && *start_match !=
                  first_cu)
             start_match++;
 #else  /* 8-bit code units */
@@ -3885,7 +3915,7 @@ for (;;)
           if (start_match[-1] == CHAR_CR &&
                (mb->nltype == NLTYPE_ANY || mb->nltype == NLTYPE_ANYCRLF) &&
                start_match < end_subject &&
-               UCHAR21TEST(start_match) == CHAR_NL)
+               *start_match == CHAR_NL)
             start_match++;
           }
         }
@@ -3899,7 +3929,7 @@ for (;;)
         {
         while (start_match < end_subject)
           {
-          uint32_t c = UCHAR21TEST(start_match);
+          uint32_t c = *start_match;
 #if PCRE2_CODE_UNIT_WIDTH != 8
           if (c > 255) c = 255;
 #endif
@@ -3967,7 +3997,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
             while (p < end_subject)
               {
-              uint32_t pp = UCHAR21INCTEST(p);
+              uint32_t pp = *p++;
               if (pp == req_cu || pp == req_cu2) { p--; break; }
               }
 #else  /* 8-bit code units */
@@ -3988,7 +4018,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
             while (p < end_subject)
               {
-              if (UCHAR21INCTEST(p) == req_cu) { p--; break; }
+              if (*p++ == req_cu) { p--; break; }
               }
 
 #else  /* 8-bit code units */
@@ -4096,9 +4126,9 @@ for (;;)
   not contain any explicit matches for \r or \n, and the newline option is CRLF
   or ANY or ANYCRLF, advance the match position by one more character. */
 
-  if (UCHAR21TEST(start_match - 1) == CHAR_CR &&
+  if (start_match[-1] == CHAR_CR &&
       start_match < end_subject &&
-      UCHAR21TEST(start_match) == CHAR_NL &&
+      *start_match == CHAR_NL &&
       (re->flags & PCRE2_HASCRORLF) == 0 &&
         (mb->nltype == NLTYPE_ANY ||
          mb->nltype == NLTYPE_ANYCRLF ||

@@ -12,9 +12,9 @@ afterEvaluate {
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
-                groupId ossrhGroupId
-                artifactId DEBUG_PUBLISH_ARTIFACT_ID
-                version PUBLISH_VERSION
+                groupId = ossrhGroupId
+                artifactId = DEBUG_PUBLISH_ARTIFACT_ID
+                version = PUBLISH_VERSION
 
                 // Mostly self-explanatory metadata
                 pom {
@@ -64,9 +64,9 @@ afterEvaluate {
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
-                groupId ossrhGroupId
-                artifactId PUBLISH_ARTIFACT_ID
-                version PUBLISH_VERSION
+                groupId = ossrhGroupId
+                artifactId = PUBLISH_ARTIFACT_ID
+                version = PUBLISH_VERSION
 
                 // Mostly self-explanatory metadata
                 pom {
@@ -116,9 +116,9 @@ afterEvaluate {
 
                 // The coordinates of the library, being set from variables that
                 // we'll set up later
-                groupId ossrhGroupId
-                artifactId TOOLS_PUBLISH_ARTIFACT_ID
-                version PUBLISH_VERSION
+                groupId = ossrhGroupId
+                artifactId = TOOLS_PUBLISH_ARTIFACT_ID
+                version = PUBLISH_VERSION
 
                 // Mostly self-explanatory metadata
                 pom {

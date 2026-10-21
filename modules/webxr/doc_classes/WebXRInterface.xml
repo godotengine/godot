@@ -157,6 +157,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="disable_webxr_layers" type="bool" setter="set_disable_webxr_layers" getter="get_disable_webxr_layers">
+			If [code]true[/code], the WebXR Layers API won't be used even when the browser supports it.
+			Godot falls back to this mode automatically when the browser doesn't support WebXR Layers and the polyfill isn't in use.
+			This doesn't have any effect on the interface when already initialized.
+		</member>
 		<member name="enabled_features" type="String" setter="" getter="get_enabled_features">
 			A comma-separated list of features that were successfully enabled by [method XRInterface.initialize] when setting up the WebXR session.
 			This may include features requested by setting [member required_features] and [member optional_features], and will only be available after [signal session_started] has been emitted.

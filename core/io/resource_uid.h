@@ -86,6 +86,8 @@ public:
 	static String uid_to_path(const String &p_uid);
 	static String path_to_uid(const String &p_path);
 	static String ensure_path(const String &p_uid_or_path);
+	// Doesn't print errors, returns empty path on invalid UID.
+	static String ensure_path_nocheck(const String &p_uid_or_path);
 
 	Error load_from_cache(bool p_reset);
 	Error save_to_cache();

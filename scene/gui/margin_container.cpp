@@ -50,7 +50,7 @@ Size2 MarginContainer::get_desired_size() const {
 			continue;
 		}
 
-		Size2 s = c->get_desired_size();
+		Size2 s = c->get_bound_desired_size();
 		ds = ds.max(s);
 	}
 

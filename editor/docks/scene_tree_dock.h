@@ -48,6 +48,7 @@ class ShaderMaterial;
 class StyleBoxFlat;
 class TextureRect;
 class VBoxContainer;
+class MultiNodeEdit;
 
 class SceneTreeDock : public EditorDock {
 	GDCLASS(SceneTreeDock, EditorDock);
@@ -182,7 +183,9 @@ class SceneTreeDock : public EditorDock {
 
 	void _create();
 	Node *_do_create(Node *p_parent);
+	Node *_do_create_multi(Ref<MultiNodeEdit> p_parent);
 	void _post_do_create(Node *p_child);
+	void _post_do_create_multi(Ref<MultiNodeEdit> p_child);
 	Node *scene_root = nullptr;
 	Node *edited_scene = nullptr;
 	Node *pending_click_select = nullptr;
@@ -208,6 +211,12 @@ class SceneTreeDock : public EditorDock {
 		MODE_UNDO
 	};
 
+	enum ItemCheckState {
+		STATE_INDETERMINATE = -1,
+		STATE_UNCHECKED = 0,
+		STATE_CHECKED = 1,
+	};
+
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _node_strip_signal_inheritance(Node *p_node);
 	void _load_request(const String &p_path);
@@ -230,9 +239,16 @@ class SceneTreeDock : public EditorDock {
 
 	void _toggle_editable_children_from_selection();
 
-	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
-	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
-	void _toggle_editable_children(Node *p_node);
+	void _restore_nodes_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_names, const Array &p_transforms);
+	void _reparent_nodes_to_paths_with_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_names);
+	void _toggle_editable_children(List<Node *> &p_nodes, ItemCheckState p_current_state = STATE_INDETERMINATE);
+
+	bool _is_external(Node *p_node) const;
+	bool _is_top_level(Node *p_node) const;
+
+	ItemCheckState _is_editable_children(List<Node *> &p_nodes);
+	ItemCheckState _is_placeholder(List<Node *> &p_nodes);
+	ItemCheckState _is_unique_name(List<Node *> &p_nodes);
 
 	void _toggle_placeholder_from_selection();
 
@@ -320,7 +336,7 @@ class SceneTreeDock : public EditorDock {
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
-	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true);
+	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_keep_owned_children = true);
 
 private:
 	static SceneTreeDock *singleton;

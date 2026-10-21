@@ -1,5 +1,5 @@
 ext.versions = [
-    androidGradlePlugin: '8.9.1',
+    androidGradlePlugin: '8.13.2',
     compileSdk         : 36,
     // Also update:
     // - 'editor/export/android_sdk_manager.h#DEFAULT_MIN_SDK_VERSION'
@@ -412,4 +412,12 @@ ext.shouldUseLegacyPackaging = { ->
 ext.getAddonsDirectory = { ->
     String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
     return addonsDirectory
+}
+
+ext.shouldMinify = { ->
+    String minifyFlag = project.hasProperty("enable_minification") ? project.property("enable_minification") : ""
+    if (minifyFlag == null || minifyFlag.isEmpty()) {
+        minifyFlag = "false"
+    }
+    return Boolean.parseBoolean(minifyFlag)
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,10 +56,10 @@ typedef struct CONDITION_VARIABLE
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
-typedef VOID(WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
-typedef VOID(WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
-typedef BOOL(WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
-typedef BOOL(WINAPI *pfnSleepConditionVariableCS)(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
+typedef VOID (WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
+typedef VOID (WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
+typedef BOOL (WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
+typedef BOOL (WINAPI *pfnSleepConditionVariableCS)(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
 
 static pfnWakeConditionVariable pWakeConditionVariable = NULL;
 static pfnWakeAllConditionVariable pWakeAllConditionVariable = NULL;
