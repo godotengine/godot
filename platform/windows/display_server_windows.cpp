@@ -298,7 +298,6 @@ void DisplayServerWindows::_set_mouse_mode_impl(DisplayServerEnums::MouseMode p_
 			_register_raw_input_devices(window_id);
 
 			Input::get_singleton()->set_mouse_position(center);
-			
 			old_x = center.x;
 			old_y = center.y;
 		}
