@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include "scene/3d/line_3d.h"
+#include "scene/3d/line_base_3d.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/mesh.h"
 
-class Trail3D : public Line3D {
-	GDCLASS(Trail3D, Line3D);
+class Trail3D : public LineBase3D {
+	GDCLASS(Trail3D, LineBase3D);
 
 	// Lots of code for this node is inspired/ported from
 	// https://codeberg.org/MajorMcDoom/cozy-cube-godot-addons/src/branch/main
