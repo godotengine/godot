@@ -389,6 +389,14 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;
 
+#ifndef XR_DISABLED
+#if DEBUG_ENABLED
+	if (p_viewport->use_xr && !RSG::scene->is_xr_camera(p_viewport->camera)) {
+		WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+	}
+#endif
+#endif
+
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene->render_buffers_create();

@@ -127,7 +127,7 @@ void RendererSceneCull::camera_set_xr_projections(RID p_camera, TypedArray<Proje
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_NULL(camera);
-	camera->type = Camera::MULTIVIEW_PROJECTION;
+	camera->type = Camera::XR;
 	camera->offsets.resize(p_projections.size());
 	camera->projections.resize(p_projections.size());
 	for (int i = 0; i < p_projections.size(); i++) {
@@ -181,6 +181,14 @@ void RendererSceneCull::camera_set_use_vertical_aspect(RID p_camera, bool p_enab
 bool RendererSceneCull::is_camera(RID p_camera) const {
 	return camera_owner.owns(p_camera);
 }
+
+#ifndef XR_DISABLED
+bool RendererSceneCull::is_xr_camera(RID p_camera) const {
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL_V(camera, false);
+	return camera->type == Camera::XR;
+}
+#endif
 
 /* OCCLUDER API */
 
@@ -2775,7 +2783,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			camera->projections.resize(1);
 			camera->projections[0] = projection;
 		} break;
-		case Camera::MULTIVIEW_PROJECTION:
+		case Camera::XR:
 			break;
 	}
 
