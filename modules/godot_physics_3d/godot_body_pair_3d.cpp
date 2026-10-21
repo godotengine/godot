@@ -261,6 +261,9 @@ real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
 }
 
 bool GodotBodyPair3D::setup(real_t p_step) {
+	prev_collided = collided;
+	prev_collide_A = collide_A;
+	prev_collide_B = collide_B;
 	check_ccd = false;
 
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
@@ -335,6 +338,14 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			}
 		}
 
+		if (prev_collided) {
+			if (prev_collide_A) {
+				A->set_active(true, true);
+			}
+			if (prev_collide_B) {
+				B->set_active(true, true);
+			}
+		}
 		return false;
 	}
 
@@ -450,6 +461,14 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		}
 	}
 
+	if (prev_collided && !collided) {
+		if (prev_collide_A) {
+			A->set_active(true, true);
+		}
+		if (prev_collide_B) {
+			B->set_active(true, true);
+		}
+	}
 	return do_process;
 }
 
@@ -609,6 +628,15 @@ GodotBodyPair3D::GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p
 }
 
 GodotBodyPair3D::~GodotBodyPair3D() {
+	if (collided) {
+		if (collide_A) {
+			A->set_active(true, true);
+		}
+		if (collide_B) {
+			B->set_active(true, true);
+		}
+	}
+
 	A->remove_constraint(this);
 	B->remove_constraint(this);
 }
@@ -696,6 +724,9 @@ void GodotBodySoftBodyPair3D::validate_contacts() {
 }
 
 bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
+	prev_collided = collided;
+	prev_body_collides = body_collides;
+
 	if (!body->interacts_with(soft_body) || body->has_exception(soft_body->get_self()) || soft_body->has_exception(body->get_self())) {
 		collided = false;
 		return false;
@@ -731,6 +762,9 @@ bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
 
 bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 	if (!collided) {
+		if (prev_collided && prev_body_collides) {
+			body->set_active(true, true);
+		}
 		return false;
 	}
 
@@ -832,6 +866,9 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		}
 	}
 
+	if (prev_collided && prev_body_collides && !collided) {
+		body->set_active(true, true);
+	}
 	return do_process;
 }
 
@@ -985,6 +1022,10 @@ GodotBodySoftBodyPair3D::GodotBodySoftBodyPair3D(GodotBody3D *p_A, int p_shape_A
 }
 
 GodotBodySoftBodyPair3D::~GodotBodySoftBodyPair3D() {
+	if (collided && body_collides) {
+		body->set_active(true, true);
+	}
+
 	body->remove_constraint(this);
 	soft_body->remove_constraint(this);
 }
