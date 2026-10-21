@@ -5607,6 +5607,12 @@ static bool DecodePixelData(/* out */ unsigned char **out_images,
                   (size_t(height) - 1 - (size_t(y) + v)) * size_t(x_stride);
             }
 
+            if (reinterpret_cast<const unsigned char *>(line_ptr + width) >
+                (data_ptr + data_len)) {
+              // Insufficient data size (match the HALF->FLOAT / FLOAT->FLOAT / UINT->UINT branches)
+              return false;
+            }
+
             for (int u = 0; u < width; u++) {
               tinyexr::FP16 hf;
 
