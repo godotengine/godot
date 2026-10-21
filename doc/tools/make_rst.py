@@ -7,6 +7,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from io import StringIO
 from typing import Any, TextIO
 
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
@@ -818,6 +819,7 @@ def main() -> None:
 
     # Create the output folder recursively if it doesn't already exist.
     os.makedirs(args.output, exist_ok=True)
+    old_files = set(entry.path for entry in os.scandir(str(args.output)) if entry.name.endswith(".rst"))
 
     print("Generating the RST class reference...")
 
@@ -829,7 +831,7 @@ def main() -> None:
         state.current_class = class_name
 
         class_def.update_class_group(state)
-        make_rst_class(class_def, state, args.dry_run, args.output)
+        make_rst_class(class_def, state, args.dry_run, args.output, old_files)
 
         if class_def.class_group not in grouped_classes:
             grouped_classes[class_def.class_group] = []
@@ -843,9 +845,15 @@ def main() -> None:
     print("")
     print("Generating the index file...")
 
-    make_rst_index(grouped_classes, args.dry_run, args.output)
+    make_rst_index(grouped_classes, args.dry_run, args.output, old_files)
 
     print("")
+
+    # Clean existing `.rst` files we didn't generate this pass.
+    if not args.dry_run:
+        for old_file in old_files:
+            if os.path.exists(old_file):
+                os.remove(old_file)
 
     # Print out checks.
 
@@ -924,14 +932,9 @@ def get_git_branch() -> str:
 # Generator methods.
 
 
-def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
+def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str, old_files: set[str]) -> None:
     class_name = class_def.name
-    with open(
-        os.devnull if dry_run else os.path.join(output_dir, f"class_{sanitize_class_name(class_name, True)}.rst"),
-        "w",
-        encoding="utf-8",
-        newline="\n",
-    ) as f:
+    with StringIO() as f:
         # Remove the "Edit on Github" button from the online docs page.
         f.write(":github_url: hide\n\n")
 
@@ -1528,6 +1531,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
         f.write(make_footer())
 
+        if not dry_run:
+            class_path = os.path.join(output_dir, f"class_{sanitize_class_name(class_name, True)}.rst")
+            old_files.discard(class_path)
+            dirty = True
+            if os.path.exists(class_path):
+                with open(class_path, "r", encoding="utf-8", newline="\n") as class_old:
+                    dirty = class_old.read() != f.getvalue()
+            if dirty:
+                with open(class_path, "wt", encoding="utf-8", newline="\n") as class_new:
+                    class_new.write(f.getvalue())
+
 
 def make_type(klass: str, state: State) -> str:
     if klass.find("*") != -1:  # Pointer, ignore
@@ -1764,10 +1778,8 @@ def make_link(url: str, title: str) -> str:
     return f"`{url} <{url}>`__"
 
 
-def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_dir: str) -> None:
-    with open(
-        os.devnull if dry_run else os.path.join(output_dir, "index.rst"), "w", encoding="utf-8", newline="\n"
-    ) as f:
+def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_dir: str, old_files: set[str]) -> None:
+    with StringIO() as f:
         # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
         # on the index page. User-contributed notes are allowed on individual class pages.
         f.write(":github_url: hide\n:allow_comments: False\n\n")
@@ -1807,6 +1819,17 @@ def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_
                     f.write(f"    class_{sanitize_class_name(class_name, True)}\n")
 
                 f.write("\n")
+
+        if not dry_run:
+            index_path = os.path.join(output_dir, "index.rst")
+            old_files.remove(index_path)
+            dirty = True
+            if os.path.exists(index_path):
+                with open(index_path, "r", encoding="utf-8", newline="\n") as index_old:
+                    dirty = index_old.read() != f.getvalue()
+            if dirty:
+                with open(index_path, "wt", encoding="utf-8", newline="\n") as index_new:
+                    index_new.write(f.getvalue())
 
 
 # Formatting helpers.
