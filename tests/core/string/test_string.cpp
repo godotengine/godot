@@ -880,6 +880,15 @@ TEST_CASE("[String] Splitting") {
 	}
 }
 
+TEST_CASE("[String] Splitting numeric values from empty strings") {
+	for (bool allow_empty : { false, true }) {
+		CHECK(String().split_floats(",", allow_empty).is_empty());
+		CHECK(String().split_floats_mk({ "," }, allow_empty).is_empty());
+		CHECK(String().split_ints(",", allow_empty).is_empty());
+		CHECK(String().split_ints_mk({ "," }, allow_empty).is_empty());
+	}
+}
+
 TEST_CASE("[String] format") {
 	const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
 
