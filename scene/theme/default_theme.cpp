@@ -799,6 +799,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "PopupMenu", Color(0, 0, 0));
 	theme->set_color("font_separator_outline_color", "PopupMenu", Color(0, 0, 0));
 
+	theme->set_color("search_highlight_color", "PopupMenu", Color(1, 1, 1, 0.07));
+	theme->set_color("search_highlight_border_color", "PopupMenu", Color(0.5, 0.7, 1.0, 0.4));
+
 	theme->set_constant("indent", "PopupMenu", Math::round(10 * scale));
 	theme->set_constant("h_separation", "PopupMenu", Math::round(4 * scale));
 	theme->set_constant("v_separation", "PopupMenu", Math::round(4 * scale));
