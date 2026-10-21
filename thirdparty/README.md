@@ -853,9 +853,9 @@ Collection of single-file libraries used in Godot components.
   * Version: git (1bf9bc04673df55dc554021b768006836f69d53a, 2026)
   * License: MIT
   * Modifications: Added implementation through `qoa.c`.
-- `r128.{c,h}`
+- `r128.h`
   * Upstream: https://github.com/fahickman/r128
-  * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
+  * Version: 1.6.2 (69ba68f1ea666c9136cf56e0105b0cbbe9cd1534, 2026)
   * License: Public Domain or Unlicense
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
