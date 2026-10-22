@@ -1965,8 +1965,6 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
-			const CharString target_utf8 = da->read_link(f).utf8();
-
 			zipOpenNewFileInZip4_64(p_zip,
 					p_folder.path_join(f).utf8().get_data(),
 					&zipfi,
@@ -1985,8 +1983,9 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					0,
 					0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
 					1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
-					static_cast<int64_t>(target_utf8.size()) > UINT_MAX); // zip64: only pass if size exceeds 0xFFFFFFFF
+					0); // zip64: don't pass because symlink target path (target_utf8) size will never be close to UINT_MAX
 
+			const CharString target_utf8 = da->read_link(f).utf8();
 			godot_zip_write_file(p_zip, reinterpret_cast<const uint8_t *>(target_utf8.get_data()), target_utf8.size());
 			zipCloseFileInZip(p_zip);
 		} else if (da->current_is_dir()) {
