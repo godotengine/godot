@@ -106,7 +106,6 @@ void ProjectDialog::_validate_path() {
 		return;
 	}
 
-	// Safe, zero-allocation lookup table. No HashMap initialization quirks.
 	struct EasterEgg {
 		const char* name;
 		const char* message;
