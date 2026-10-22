@@ -1067,11 +1067,12 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 		m_isStatic = true;
 		if (PhysicsServer::BODY_MODE_STATIC == mode) {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
+			btBody->forceActivationState(DISABLE_SIMULATION);
 		} else {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
 			set_transform__bullet(btBody->getWorldTransform()); // Set current Transform using kinematic method
+			btBody->forceActivationState(DISABLE_DEACTIVATION);
 		}
-		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
 	}
 
 	btBody->setMassProps(p_mass, localInertia);
