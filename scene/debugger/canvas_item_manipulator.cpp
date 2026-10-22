@@ -2213,6 +2213,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
+	xform *= ci->get_transform();
 
 	Rect2 rect = p_rect;
 	// Cameras don't affect `CanvasLayer`s.
@@ -2221,18 +2222,17 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		Window *root = SceneTree::get_singleton()->get_root();
 		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
 	}
-	rect = (xform * ci->get_transform()).affine_inverse().xform(rect);
 
 	bool selected = false;
 	if (ci->_edit_use_rect()) {
-		Rect2 ci_rect = ci->_edit_get_rect();
+		Rect2 ci_rect = xform.xform(ci->_edit_get_rect());
 		if (rect.has_point(ci_rect.position) &&
 				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
 				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
 				rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
 			selected = true;
 		}
-	} else if (rect.has_point(Point2())) {
+	} else if (rect.has_point(xform.xform(Point2()))) {
 		selected = true;
 	}
 
