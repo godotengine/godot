@@ -104,6 +104,21 @@ void ProjectDialog::_validate_path() {
 		return;
 	}
 
+	String pname = project_name->get_text().strip_edges();
+
+static HashMap<String, StringName> easter_eggs = {
+    {"MyProject", TTRC("How original... I like it!!!")},
+    {"Project", TTRC("How original... I like it!!!")},
+    {"Test", TTRC("Ooh, testing things? So intriguing.")},
+    {"TestProject", TTRC("Ooh, testing things? So intriguing.")},
+    {"Game", TTRC("Game? Why not a movie? Okay, okay you wanna game, you do game.")},
+    {"MyGame", TTRC("Game? Why not a movie? Okay, okay you wanna game, you do game.")}
+};
+
+if (easter_eggs.has(pname)) {
+    _set_message(easter_eggs[pname], MESSAGE_SUCCESS);
+}
+
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = project_path->get_text().simplify_path();
 
