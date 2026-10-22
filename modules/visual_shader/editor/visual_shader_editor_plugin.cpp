@@ -2626,20 +2626,30 @@ bool VisualShaderEditor::_is_node_available_in_context(const Ref<VisualShaderNod
 
 bool VisualShaderEditor::_is_add_option_available_in_context(const AddOption &p_option) const {
 	const Shader::Mode shader_mode = _get_validation_shader_mode();
-	if (shader_mode == Shader::MODE_MAX) {
-		return true;
-	}
 
 	// AddOption::func is the shader mode the option should be available in.
-	if (p_option.func != -1 && p_option.func != shader_mode) {
+	if (shader_mode != Shader::MODE_MAX && p_option.func != -1 && p_option.func != shader_mode) {
 		return false;
 	}
 
 	if (_is_editing_group()) {
+		if (p_option.type == VisualShaderNodeInput::get_class_static() && !p_option.ops.is_empty()) {
+			Ref<VisualShaderNodeInput> input;
+			input.instantiate();
+			input->set_shader_mode(Shader::Mode(p_option.func));
+			input->set_shader_type(VisualShader::TYPE_MAX);
+			const String input_name = p_option.ops[0];
+			for (int i = 0; i < input->get_input_index_count(); i++) {
+				if (input->get_input_index_name(i) == input_name) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return true;
 	}
 
-	return _is_available(p_option.mode);
+	return shader_mode == Shader::MODE_MAX || _is_available(p_option.mode);
 }
 
 bool VisualShaderEditor::_update_preview_parameter_tree() {
