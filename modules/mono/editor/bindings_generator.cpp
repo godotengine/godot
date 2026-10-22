@@ -80,6 +80,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
 
+#define CS_LOCAL_RET "ret"
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
@@ -165,12 +166,12 @@ void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::Ty
 
 	r_enum_itype.cs_type = r_enum_itype.proxy_name;
 	r_enum_itype.cs_in_expr = "(int)%0";
-	r_enum_itype.cs_out = "%5return (%2)%0(%1);";
+	r_enum_itype.cs_out = "%5%4 (%2)%0(%1);";
 
 	{
 		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
 		r_enum_itype.c_in = "%5%0 %1_in = %1;\n";
-		r_enum_itype.c_out = "%5return (%0)(%1);\n";
+		r_enum_itype.c_out = "%5%4 (%0)(%1);\n";
 		r_enum_itype.c_type = "long";
 		r_enum_itype.c_arg_in = "&%s_in";
 	}
@@ -3144,11 +3145,19 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (return_type->cname == name_cache.type_void) {
 			p_output << INDENT2 << im_call << "(" << icall_params << ");\n";
 		} else if (return_type->cs_out.is_empty()) {
-			p_output << INDENT2 "return " << im_call << "(" << icall_params << ");\n";
+			p_output << INDENT2 << return_cs_type << " " CS_LOCAL_RET " = " << im_call << "(" << icall_params << ");\n";
 		} else {
 			p_output.append(sformat(return_type->cs_out, im_call, icall_params,
-					return_cs_type, return_type->c_type_out, String(), INDENT2));
+					return_cs_type, return_type->c_type_out, return_cs_type + " " CS_LOCAL_RET " =", INDENT2));
 			p_output.append("\n");
+		}
+
+		if (!p_itype.is_singleton && !p_imethod.is_static) {
+			p_output << INDENT2 "global::System.GC.KeepAlive(this);\n";
+		}
+
+		if (return_type->cname != name_cache.type_void) {
+			p_output << INDENT2 "return " CS_LOCAL_RET ";\n";
 		}
 
 		p_output.append(CLOSE_BLOCK_L1);
@@ -3541,7 +3550,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 				r_output << base_indent << "return " C_LOCAL_RET ";\n";
 			} else {
 				r_output << sformat(return_type->c_out, return_type->c_type_out, C_LOCAL_RET,
-						return_type->name, String(), String(), base_indent);
+						return_type->name, String(), "return", base_indent);
 			}
 		}
 	};
@@ -3904,7 +3913,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			itype.is_compat_singleton = true;
 		}
 
-		itype.c_out = "%5return ";
+		itype.c_out = "%5%4 ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
 		itype.c_out += itype.is_ref_counted ? "(%1.Reference);\n" : "(%1);\n";
 
@@ -3912,7 +3921,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 
-		itype.cs_out = "%5return (%2)%0(%1);";
+		itype.cs_out = "%5%4 (%2)%0(%1);";
 
 		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
@@ -4749,7 +4758,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
 	itype.cs_in_expr = "%0.ToGodotBool()";
-	itype.cs_out = "%5return %0(%1).ToBool();";
+	itype.cs_out = "%5%4 %0(%1).ToBool();";
 	itype.c_type = "godot_bool";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.c_type;
@@ -4766,7 +4775,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype = TypeInterface::create_value_type(String(m_name)); \
 		if (itype.name != "long" && itype.name != "ulong") { \
 			itype.c_in = "%5%0 %1_in = %1;\n"; \
-			itype.c_out = "%5return (%0)(%1);\n"; \
+			itype.c_out = "%5%4 (%0)(%1);\n"; \
 			itype.c_type = "long"; \
 			itype.c_arg_in = "&%s_in"; \
 		} else { \
@@ -4803,7 +4812,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		{
 			// The expected type for 'float' in ptrcall is 'double'
 			itype.c_in = "%5%0 %1_in = %1;\n";
-			itype.c_out = "%5return (%0)%1;\n";
+			itype.c_out = "%5%4 (%0)%1;\n";
 			itype.c_type = "double";
 			itype.c_arg_in = "&%s_in";
 		}
@@ -4833,7 +4842,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "string";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOSTR_TO_GODOT "(%1);\n";
-	itype.c_out = "%5return " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_string";
 	itype.c_type_in = itype.cs_type;
@@ -4850,7 +4859,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null StringName to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_string_name";
 	itype.c_type_in = itype.c_type;
@@ -4868,7 +4877,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null NodePath to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_node_path";
 	itype.c_type_in = itype.c_type;
@@ -4896,7 +4905,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "Variant";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5%0 %1_in = (%0)%1.NativeVar;\n";
-	itype.c_out = "%5return Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_variant";
 	itype.c_type_in = itype.cs_type;
@@ -4909,7 +4918,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface::create_value_type(String("Callable"));
 	itype.cs_in_expr = "%0";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_CALLABLE "(in %1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_callable";
 	itype.c_type_in = "in " + itype.cs_type;
@@ -4925,7 +4934,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "%0";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(in %1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_signal";
 	itype.c_type_in = "in " + itype.cs_type;
@@ -4955,7 +4964,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.proxy_name = #m_proxy_t "[]"; \
 		itype.cs_type = itype.proxy_name; \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
-		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
+		itype.c_out = "%5%4 " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
 		itype.c_arg_in = "&%s_in"; \
 		itype.c_type = #m_managed_type; \
 		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">"; \
@@ -4991,7 +5000,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_array";
 	itype.c_type_in = itype.c_type;
@@ -5004,7 +5013,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5%4 new %2(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToArray(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromArray(%0)";
@@ -5018,7 +5027,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_dictionary";
 	itype.c_type_in = itype.c_type;
@@ -5031,7 +5040,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5%4 new %2(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToDictionary(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromDictionary(%0)";

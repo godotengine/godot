@@ -356,7 +356,8 @@ class BindingsGenerator {
 		 * %0: [c_type_out] of the return type
 		 * %1: name of the variable to be returned
 		 * %2: [name] of the return type
-		 * %3-4: reserved
+		 * %3: reserved
+		 * %4: parameter declaration (e.g.: "Type ret =") or return statement (e.g.: "return")
 		 * %5: indentation text
 		 */
 		String c_out;
@@ -419,7 +420,7 @@ class BindingsGenerator {
 		 * %1: internal method call arguments without surrounding parenthesis
 		 * %2: [cs_type] of the return type
 		 * %3: [c_type_out] of the return type
-		 * %4: reserved
+		 * %4: parameter declaration (e.g.: "Type ret =") or return statement (e.g.: "return")
 		 * %5: indentation text
 		 */
 		String cs_out;
