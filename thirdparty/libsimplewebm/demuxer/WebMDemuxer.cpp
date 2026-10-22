@@ -26,6 +26,7 @@
 
 #include "include/demuxer/WebMDemuxer.h"
 
+#include <cmath>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,6 +100,7 @@ public:
 	// Index of the most recently decoded frame belonging to the current
 	// BlockGroup. Used to attach BlockAdditional alpha data.
 	size_t currentFrameIndex;
+	size_t currentBlockFrameStart;
 	bool currentFrameIsVideo;
 	bool inBlockGroup;
 
@@ -124,6 +126,7 @@ public:
 		currentTrackNumber(0),
 		currentKey(false),
 		currentFrameIndex(SIZE_MAX),
+		currentBlockFrameStart(0),
 		currentFrameIsVideo(false),
 		inBlockGroup(false)
 	{
@@ -207,9 +210,9 @@ public:
 		currentTrackNumber = block.track_number;
 		blockTimecode = block.timecode;
 
-		// BlockGroup does not expose the SimpleBlock keyframe flag here.
-		// Keyframe detection can be refined later using ReferenceBlock.
+		// BlockGroup keyframe status is determined when the group ends
 		currentKey = false;
+		currentBlockFrameStart = frames ? frames->size() : 0;
 
 		currentFrameIndex = SIZE_MAX;
 		currentFrameIsVideo = false;
@@ -287,7 +290,22 @@ public:
 	{
 		(void)metadata;
 
-		inBlockGroup = false;
+    	inBlockGroup = false;
+
+    	// A BlockGroup without ReferenceBlock contains a keyframe.
+    	// Update the video frames even when there are no alpha additions.
+    	if (frames && currentBlockFrameStart < frames->size())
+    	{
+        	const bool isKeyFrame = blockGroup.references.empty();
+
+        	for (size_t i = currentBlockFrameStart; i < frames->size(); ++i)
+        	{
+            	if (frames->at(i).video)
+            	{
+            	    frames->at(i).key = isKeyFrame;
+            	}
+        	}
+    	}
 
 		if (!frames || currentFrameIndex == SIZE_MAX || currentFrameIndex >= frames->size() || !currentFrameIsVideo || !blockGroup.additions.is_present())
 		{
@@ -470,11 +488,6 @@ WebMDemuxer::WebMDemuxer(webm::Reader *reader, int videoTrack, int audioTrack) :
 	}
 
 	m_isOpen = m_vCodec != NO_VIDEO || m_aCodec != NO_AUDIO;
-
-	if (status.completed_ok())
-	{
-		m_eos = true;
-	}
 }
 
 WebMDemuxer::~WebMDemuxer()
@@ -485,6 +498,83 @@ WebMDemuxer::~WebMDemuxer()
 double WebMDemuxer::getLength() const
 {
 	return m_length;
+}
+
+double WebMDemuxer::seek(double time)
+{
+    if (!m_isOpen || !std::isfinite(time) || time < 0.0 || m_frames.empty())
+    {
+        return -1.0;
+    }
+
+    size_t targetIndex = SIZE_MAX;
+
+    if (m_vCodec != NO_VIDEO)
+    {
+        // Find the video keyframe with the greatest timestamp that does not exceed the requested time.
+        double targetTime = -1.0;
+
+        for (size_t i = 0; i < m_frames.size(); ++i)
+        {
+            const ParsedFrame &frame = m_frames[i];
+
+            if (!frame.video || !frame.key || frame.time > time)
+            {
+                continue;
+            }
+
+            if (targetIndex == SIZE_MAX || frame.time >= targetTime)
+            {
+                targetIndex = i;
+                targetTime = frame.time;
+            }
+        }
+
+        // If no keyframe exists at or before the requested time, use the first available video keyframe.
+        if (targetIndex == SIZE_MAX)
+        {
+            for (size_t i = 0; i < m_frames.size(); ++i)
+            {
+                if (m_frames[i].video && m_frames[i].key)
+                {
+                    targetIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        // For audio only files, we find the packet closest to the requested
+        // time without selecting a packet earlier than the request.
+        double targetTime = 0.0;
+
+        for (size_t i = 0; i < m_frames.size(); ++i)
+        {
+            const ParsedFrame &frame = m_frames[i];
+
+            if (frame.video || frame.time < time)
+            {
+                continue;
+            }
+
+            if (targetIndex == SIZE_MAX || frame.time < targetTime)
+            {
+                targetIndex = i;
+                targetTime = frame.time;
+            }
+        }
+    }
+
+    if (targetIndex == SIZE_MAX)
+    {
+        return -1.0;
+    }
+
+    m_frameIndex = targetIndex;
+    m_eos = false;
+
+    return m_frames[targetIndex].time;
 }
 
 WebMDemuxer::VIDEO_CODEC WebMDemuxer::getVideoCodec() const
@@ -547,6 +637,12 @@ bool WebMDemuxer::readFrame(WebMFrame *videoFrame, WebMFrame *audioFrame)
 	{
 		audioFrame->bufferSize = 0;
 		audioFrame->alphaBufferSize = 0;
+	}
+
+	if (m_frameIndex >= m_frames.size())
+	{
+    	m_eos = true;
+    	return false;
 	}
 
 	while (m_frameIndex < m_frames.size())
@@ -620,5 +716,6 @@ bool WebMDemuxer::readFrame(WebMFrame *videoFrame, WebMFrame *audioFrame)
 		return true;
 	}
 
+	m_eos = true;
 	return false;
 }

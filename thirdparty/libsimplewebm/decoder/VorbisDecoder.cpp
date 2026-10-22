@@ -172,6 +172,14 @@ bool VorbisDecoder::getPCMF(const WebMFrame &frame, float *buffer, int bufferCap
 	return true;
 }
 
+bool VorbisDecoder::reset()
+{
+    if (!m_decoder || !m_decoder->hasDSPState)
+        return false;
+
+    return vorbis_synthesis_restart(&m_decoder->dspState) == 0;
+}
+
 bool VorbisDecoder::open(const WebMDemuxer &demuxer)
 {
 	size_t extradataSize = 0;

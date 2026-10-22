@@ -244,3 +244,41 @@ int VPXDecoder::Image::getHeight(int plane) const
 
 	return ceilRshift(h, chromaShiftH);
 }
+
+bool VPXDecoder::reset()
+{
+    if (!m_ctx || !m_codecIface)
+        return false;
+
+    if (m_alphaCtx)
+    {
+        vpx_codec_destroy(m_alphaCtx);
+        delete m_alphaCtx;
+        m_alphaCtx = NULL;
+    }
+
+    vpx_codec_destroy(m_ctx);
+    delete m_ctx;
+    m_ctx = NULL;
+
+    const vpx_codec_dec_cfg_t codecCfg = {
+        m_threads,
+        0,
+        0
+    };
+
+    m_ctx = new vpx_codec_ctx_t;
+
+    if (vpx_codec_dec_init(m_ctx, m_codecIface, &codecCfg, 0))
+    {
+        delete m_ctx;
+        m_ctx = NULL;
+        return false;
+    }
+
+    m_iter = NULL;
+    m_alphaIter = NULL;
+    m_last_space = VPX_CS_UNKNOWN;
+
+    return true;
+}

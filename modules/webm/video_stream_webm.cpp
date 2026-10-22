@@ -250,7 +250,32 @@ double VideoStreamPlaybackWebm::get_playback_position() const {
 	return video_pos;
 }
 void VideoStreamPlaybackWebm::seek(double p_time) {
-	WARN_PRINT_ONCE("Seeking WebM videos is not implemented yet.");
+	if (!webm) {
+		return;
+	}
+	if (p_time >= webm->getLength()) {
+		return;
+	}
+
+	double keyframe_time = webm->seek(p_time);
+	if (keyframe_time < 0) {
+		return;
+	}
+
+	if (video) {
+		video->reset();
+	}
+	if (audio_opus) {
+		audio_opus->reset();
+	}
+	if (audio_vorbis) {
+		audio_vorbis->reset();
+	}
+
+	time = keyframe_time;
+	video_pos = keyframe_time;
+
+	WARN_PRINT("Warning: Currently, the seek method seeks to the nearest preceding keyframe rather than to the specified time.");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {

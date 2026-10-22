@@ -81,6 +81,8 @@ public:
 	// The image data is not copied. Only 8-bit planar images are supported.
 	IMAGE_ERROR getImage(Image &image);
 
+	bool reset();
+
 private:
 	vpx_codec_ctx *m_ctx;
 	vpx_codec_ctx *m_alphaCtx;

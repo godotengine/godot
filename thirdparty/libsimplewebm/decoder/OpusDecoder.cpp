@@ -87,6 +87,14 @@ bool OpusDecoder::getPCMF(const WebMFrame &frame, float *buffer, int bufferCapac
 	return true;
 }
 
+bool OpusDecoder::reset()
+{
+    if (!m_decoder || !m_decoder->decoder)
+        return false;
+
+    return opus_decoder_ctl(m_decoder->decoder, OPUS_RESET_STATE) == OPUS_OK;
+}
+
 bool OpusDecoder::open(const WebMDemuxer &demuxer)
 {
 	int opusError = OPUS_OK;

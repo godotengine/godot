@@ -114,8 +114,12 @@ public:
 	}
 
 	double getLength() const;
+    // Seeks to the nearest video keyframe at or before the requested time.
+    // For audio-only files, seeks to the first packet at or after the time.
+    // Returns the selected packet's timestamp or -1.0 on failure.
+    double seek(double time);
 
-	VIDEO_CODEC getVideoCodec() const;
+    VIDEO_CODEC getVideoCodec() const;
 	int getWidth() const;
 	int getHeight() const;
 
