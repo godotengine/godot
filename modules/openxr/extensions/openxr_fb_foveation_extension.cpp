@@ -163,7 +163,7 @@ void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer
 			if (meta_foveation_eye_tracked_ext && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
 				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
 			}
-			if (foveation_with_subsampled_images_enabled && foveation_with_subsampled_images_active) {
+			if (is_foveation_with_subsampled_images_enabled() && foveation_with_subsampled_images_active) {
 				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
 			}
 

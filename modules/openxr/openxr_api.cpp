@@ -2835,9 +2835,11 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 	// region of it, so we only need to recreate it when it needs to grow.
 	bool should_recreate_swapchain = recommended_size.width > render_state.main_swapchain_size.width || recommended_size.height > render_state.main_swapchain_size.height;
 
+	bool use_vrs_xr = (RSG::texture_storage->render_target_get_vrs_mode(p_render_target) == RSE::VIEWPORT_VRS_XR);
+
 	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
 	if (fov_ext) {
-		bool subsampled_images_enabled = fov_ext->is_foveation_with_subsampled_images_enabled();
+		bool subsampled_images_enabled = fov_ext->is_foveation_with_subsampled_images_enabled() && use_vrs_xr;
 
 		// Mark subsampled images as enabled on the render target (so we try to use them).
 		RSG::texture_storage->render_target_set_subsampled_enabled(p_render_target, subsampled_images_enabled);
@@ -2845,7 +2847,7 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		// But check if they are "allowed", because they may not work if we are using
 		// any incompatible rendering features.
 		bool subsampled_images_allowed = RSG::texture_storage->render_target_is_subsampled_allowed(p_render_target);
-		fov_ext->set_foveation_with_subsampled_images_active(subsampled_images_allowed);
+		fov_ext->set_foveation_with_subsampled_images_active(subsampled_images_allowed && use_vrs_xr);
 
 		bool use_subsampled_images = subsampled_images_enabled && subsampled_images_allowed;
 		if (render_state.use_subsampled_images != use_subsampled_images) {
@@ -2881,7 +2883,6 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 	}
 
 	if (fov_ext && fov_ext->is_enabled() && fov_ext->get_foveation_level() > 0 && render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_density_map().is_valid()) {
-		bool use_vrs_xr = (RSG::texture_storage->render_target_get_vrs_mode(p_render_target) == RSE::VIEWPORT_VRS_XR);
 		if (render_state.use_vrs_xr != use_vrs_xr) {
 			render_state.use_vrs_xr = use_vrs_xr;
 			if (!use_vrs_xr) {
