@@ -45,8 +45,8 @@ static void *godot_open(voidpf p_opaque, const void *p_fname, int p_mode) {
 		return nullptr;
 	}
 
-	const char *p_fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
-	Ref<FileAccess> f = FileAccess::open(String::utf8(p_fname_chars), FileAccess::READ);
+	const char *fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
+	Ref<FileAccess> f = FileAccess::open(String::utf8(fname_chars), FileAccess::READ);
 	ERR_FAIL_COND_V(f.is_null(), nullptr);
 
 	ZipData *zd = memnew(ZipData);

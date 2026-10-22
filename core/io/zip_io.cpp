@@ -89,8 +89,8 @@ void *zipio_open(voidpf p_opaque, const void *p_fname, int p_mode) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, nullptr);
 
-	const char *p_fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
-	String fname = String::utf8(p_fname_chars);
+	const char *fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
+	String fname = String::utf8(fname_chars);
 
 	int file_access_mode = 0;
 	if (p_mode & ZLIB_FILEFUNC_MODE_READ) {
