@@ -45,6 +45,21 @@
  */
 class EditorLanguage {
 public:
+	/**
+	 * Zero based range in source code.
+	 */
+	struct Range final {
+		uint32_t start_line;
+		uint32_t start_column;
+		uint32_t end_line;
+		uint32_t end_column;
+
+		Range(uint32_t p_start_line, uint32_t p_start_column, uint32_t p_end_line, uint32_t p_end_column) :
+				start_line(p_start_line), start_column(p_start_column), end_line(p_end_line), end_column(p_end_column) {}
+		// Don't use, only for compat with core collections.
+		Range() = default;
+	};
+
 	// Keep enums in sync with:
 	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
 	enum class CompletionKind {
@@ -194,27 +209,44 @@ public:
 	 */
 	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
 
-	struct Warning {
-		/// One-based.
-		int start_line = 0;
-		int start_column = -1;
-
-		/// One-based.
-		int end_line = 0;
-		int end_column = -1;
-
-		String string_code;
-		String message;
+	enum class DiagnosticSeverity {
+		ERROR = 1,
+		WARNING = 2,
 	};
 
-	struct ScriptError {
+	struct DiagnosticRelatedInformation final {
 		String path;
-		/// All one-based.
-		int start_line = -1;
-		int start_column = -1;
-		int end_line = -1;
-		int end_column = -1;
+		Range range;
 		String message;
+
+		DiagnosticRelatedInformation(const String &p_message, Range p_range, const String &p_path) : path(p_path), range(p_range), message(p_message) {}
+		// Don't use, only for compat with core collections.
+		DiagnosticRelatedInformation() = default;
+	};
+
+	struct Diagnostic final {
+		Range range;
+		DiagnosticSeverity severity = DiagnosticSeverity::ERROR;
+		String code;
+		String message;
+
+		struct Tags {
+			/**
+			 * This diagnostic groups errors from another file. (Used to emulates the old look of related errors. Do not expose.)
+			 *
+			 * Must only be used if:
+			 * - the diagnostic is an error
+			 * - the diagnostic has related information
+			 * - all related information points to the same file
+			 */
+			bool group = false;
+		} tags;
+
+		LocalVector<DiagnosticRelatedInformation> related_information;
+
+		Diagnostic(DiagnosticSeverity p_severity, const String &p_message, Range p_range) : range(p_range), severity(p_severity), message(p_message) {}
+		// Don't use, only for compat with core collections.
+		Diagnostic() = default;
 	};
 
 	/**
@@ -224,13 +256,12 @@ public:
 	 *
 	 * @param p_code The current content of the source fragment.
 	 * @param p_path The path which identifies the source fragment. Implementations MAY support paths to builtin resources, or return an error for those.
-	 * @param r_errors The returned errors of the script. Might be `nullptr` if the caller does not care.
-	 * @param r_warnings The returned warnings of the script. Might be `nullptr` if the caller does not care.
+	 * @param r_diagnostics The returned diagnostics of the script. Might be `nullptr` if the caller does not care.
 	 * @param r_functions The returned functions for the outline. Might be `nullptr` if the caller does not care.
 	 * @param r_safe_lines The returned safe-lines, this is a GDScript specific concept. Might be `nullptr` if the caller does not care.
 	 * @return `true` if the script has no errors, otherwise `false`.
 	 */
-	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
+	virtual bool validate(const String &p_code, const String &p_path, LocalVector<Diagnostic> *r_diagnostics, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
 
 	virtual ~EditorLanguage() = default;
 };
