@@ -390,7 +390,8 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/antirez/smaz
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
   * License: BSD-3-Clause
-  * Modifications: use `const char*` instead of `char*` for input string
+  * Modifications: use `const char*` instead of `char*` for input string,
+    bounds checks on input in `smaz_decompress`.
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
   * Version: 1.01 (1ee679ca2ef753a528db5ba6801e1067b40481b8, 2021)

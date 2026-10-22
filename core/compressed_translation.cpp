@@ -208,6 +208,35 @@ bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+const PHashTranslation::Bucket *PHashTranslation::_get_bucket(const PoolVector<int>::Read &p_bucket_table, uint32_t p_offset) const {
+	const uint64_t bucket_table_size = bucket_table.size();
+	ERR_FAIL_COND_V_MSG((uint64_t)p_offset + 2 > bucket_table_size, nullptr, "Invalid bucket offset, corrupt translation.");
+
+	const Bucket *bucket = (const Bucket *)&p_bucket_table.ptr()[p_offset];
+	ERR_FAIL_COND_V_MSG(bucket->size < 0 || (uint64_t)p_offset + 2 + (uint64_t)bucket->size * 4 > bucket_table_size, nullptr, "Invalid bucket size, corrupt translation.");
+	return bucket;
+}
+
+String PHashTranslation::_get_string(const PoolVector<uint8_t>::Read &p_strings, const Bucket::Elem &p_elem) const {
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.str_offset + p_elem.comp_size > (uint64_t)strings.size(), String(), "Invalid string offset, corrupt translation.");
+	const char *sptr = (const char *)p_strings.ptr();
+
+	String rstr;
+	if (p_elem.comp_size == p_elem.uncomp_size) {
+		rstr.parse_utf8(&sptr[p_elem.str_offset], p_elem.uncomp_size);
+		return rstr;
+	}
+
+	ERR_FAIL_COND_V_MSG(p_elem.uncomp_size > INT32_MAX, String(), "Invalid string size, corrupt translation.");
+	CharString uncomp;
+	Error err = uncomp.resize(p_elem.uncomp_size);
+	ERR_FAIL_COND_V(err != OK, String());
+	int len = smaz_decompress(&sptr[p_elem.str_offset], p_elem.comp_size, uncomp.ptrw(), p_elem.uncomp_size);
+	ERR_FAIL_COND_V_MSG(len > (int)p_elem.uncomp_size, String(), "Invalid compressed string, corrupt translation.");
+	rstr.parse_utf8(uncomp.get_data(), len);
+	return rstr;
+}
+
 StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	int htsize = hash_table.size();
 
@@ -221,9 +250,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	PoolVector<int>::Read htr = hash_table.read();
 	const uint32_t *htptr = (const uint32_t *)&htr[0];
 	PoolVector<int>::Read btr = bucket_table.read();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
 	PoolVector<uint8_t>::Read sr = strings.read();
-	const char *sptr = (const char *)&sr[0];
 
 	uint32_t p = htptr[h % htsize];
 
@@ -231,14 +258,17 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 		return StringName(); //nothing
 	}
 
-	const Bucket &bucket = *(const Bucket *)&btptr[p];
+	const Bucket *bucket = _get_bucket(btr, p);
+	if (unlikely(!bucket)) {
+		return StringName(); // Helper already prints an error.
+	}
 
-	h = hash(bucket.func, str.get_data());
+	h = hash(bucket->func, str.get_data());
 
 	int idx = -1;
 
-	for (int i = 0; i < bucket.size; i++) {
-		if (bucket.elem[i].key == h) {
+	for (int i = 0; i < bucket->size; i++) {
+		if (bucket->elem[i].key == h) {
 			idx = i;
 			break;
 		}
@@ -248,19 +278,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 		return StringName();
 	}
 
-	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-		String rstr;
-		rstr.parse_utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
-
-		return rstr;
-	} else {
-		CharString uncomp;
-		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
-		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
-		String rstr;
-		rstr.parse_utf8(uncomp.get_data());
-		return rstr;
-	}
+	return _get_string(sr, bucket->elem[idx]);
 }
 
 void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
