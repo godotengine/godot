@@ -502,6 +502,7 @@ class VisualShaderNodeInput : public VisualShaderNode {
 	static const Port preview_ports[];
 
 	static bool _is_global_built_in(Shader::Mode p_mode, const char *p_glsl_string);
+	static bool _is_port_available(const Port &p_port, Shader::Mode p_mode, VisualShader::Type p_type);
 
 	LocalVector<int> _get_filtered_port_indices() const;
 	int _find_port_by_name(const String &p_name, const Port *p_port_array) const;
@@ -529,6 +530,9 @@ public:
 	virtual String get_caption() const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+
+	static bool is_input_available(Shader::Mode p_mode, VisualShader::Type p_type, const String &p_name);
+	virtual bool is_available(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	void set_input_name(String p_name);
 	String get_input_name() const;

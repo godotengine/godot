@@ -2634,17 +2634,7 @@ bool VisualShaderEditor::_is_add_option_available_in_context(const AddOption &p_
 
 	if (_is_editing_group()) {
 		if (p_option.type == VisualShaderNodeInput::get_class_static() && !p_option.ops.is_empty()) {
-			Ref<VisualShaderNodeInput> input;
-			input.instantiate();
-			input->set_shader_mode(Shader::Mode(p_option.func));
-			input->set_shader_type(VisualShader::TYPE_MAX);
-			const String input_name = p_option.ops[0];
-			for (int i = 0; i < input->get_input_index_count(); i++) {
-				if (input->get_input_index_name(i) == input_name) {
-					return true;
-				}
-			}
-			return false;
+			return VisualShaderNodeInput::is_input_available(Shader::Mode(p_option.func), VisualShader::TYPE_MAX, p_option.ops[0]);
 		}
 		return true;
 	}
@@ -2871,8 +2861,12 @@ void VisualShaderEditor::_update_available_nodes() {
 			}
 
 			Ref<VisualShaderNodeCustom> custom = Object::cast_to<VisualShaderNodeCustom>(item.node.ptr());
+			Ref<VisualShaderNodeInput> input = item.node;
 
-			if (custom.is_valid()) {
+			if (input.is_valid()) {
+				// Its selected input was checked above, independently of menu presets.
+				item.disabled = false;
+			} else if (custom.is_valid()) {
 				item.disabled = !_is_node_available_in_context(custom);
 			} else {
 				for (int i = 0; i < add_options.size(); i++) {
@@ -6303,6 +6297,11 @@ bool VisualShaderEditor::_is_node_disallowed_in_context(const Ref<VisualShaderNo
 
 	if (_is_type_disallowed_in_group_context(p_node->get_class_name(), is_inside_group)) {
 		return true;
+	}
+
+	Ref<VisualShaderNodeInput> input = p_node;
+	if (input.is_valid()) {
+		return !input->is_available(_get_validation_shader_mode(), _get_validation_shader_type());
 	}
 
 	// Check for cyclic group references (only relevant inside groups).

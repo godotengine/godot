@@ -2839,59 +2839,66 @@ bool VisualShaderNodeInput::_is_global_built_in(Shader::Mode p_mode, const char 
 	ERR_FAIL_INDEX_V(p_mode, Shader::MODE_MAX, false);
 	const HashMap<StringName, ShaderLanguage::FunctionInfo> &functions = ShaderTypes::get_singleton()->get_functions(RSE::ShaderMode(p_mode));
 	HashMap<StringName, ShaderLanguage::FunctionInfo>::ConstIterator it = functions.find("global");
+	if (it != functions.end() && it->value.built_ins.has(p_glsl_string)) {
+		return true;
+	}
+	it = functions.find("constants");
 	return it != functions.end() && it->value.built_ins.has(p_glsl_string);
+}
+
+bool VisualShaderNodeInput::_is_port_available(const Port &p_port, Shader::Mode p_mode, VisualShader::Type p_type) {
+	// Standalone groups can use inputs from any shader mode.
+	if (p_mode != Shader::MODE_MAX && p_port.mode != p_mode) {
+		return false;
+	}
+	if (p_type == VisualShader::TYPE_MAX) {
+		return _is_global_built_in(p_port.mode, p_port.string);
+	}
+	return p_port.shader_type == p_type;
+}
+
+bool VisualShaderNodeInput::is_input_available(Shader::Mode p_mode, VisualShader::Type p_type, const String &p_name) {
+	if (p_name == "[None]") {
+		return true;
+	}
+	for (int i = 0; ports[i].mode != Shader::MODE_MAX; i++) {
+		if (p_name == ports[i].name && _is_port_available(ports[i], p_mode, p_type)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool VisualShaderNodeInput::is_available(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	return is_input_available(p_mode, p_type, input_name);
 }
 
 LocalVector<int> VisualShaderNodeInput::_get_filtered_port_indices() const {
 	LocalVector<int> filtered_indices;
-	int idx = 0;
-
-	// In groups show only global built-ins.
-	if (shader_mode != Shader::MODE_MAX && shader_type == VisualShader::TYPE_MAX) {
-		HashSet<String> seen_names; // ports[] can contain duplicate entries for the same builtin, e.g. TIME (fragment and vertex).
-		while (ports[idx].mode != Shader::MODE_MAX) {
-			if (ports[idx].mode == shader_mode && _is_global_built_in(shader_mode, ports[idx].string)) {
-				const String port_name = ports[idx].name;
-				if (!seen_names.has(port_name)) {
-					seen_names.insert(port_name);
-					filtered_indices.push_back(idx);
-				}
+	HashSet<String> seen_names;
+	for (int i = 0; ports[i].mode != Shader::MODE_MAX; i++) {
+		if (!_is_port_available(ports[i], shader_mode, shader_type)) {
+			continue;
+		}
+		if (shader_type == VisualShader::TYPE_MAX) {
+			// Global inputs can appear in several stages or shader modes.
+			const String port_name = ports[i].name;
+			if (seen_names.has(port_name)) {
+				continue;
 			}
-			idx++;
+			seen_names.insert(port_name);
 		}
-		return filtered_indices;
-	}
-
-	while (ports[idx].mode != Shader::MODE_MAX) {
-		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type) {
-			filtered_indices.push_back(idx);
-		}
-		idx++;
+		filtered_indices.push_back(i);
 	}
 	return filtered_indices;
 }
 
 int VisualShaderNodeInput::_find_port_by_name(const String &p_name, const Port *p_port_array) const {
-	int idx = 0;
-
-	while (p_port_array[idx].mode != Shader::MODE_MAX) {
-		if (p_port_array[idx].mode == shader_mode && p_port_array[idx].shader_type == shader_type && p_port_array[idx].name == p_name) {
-			return idx;
-		}
-		idx++;
-	}
-
-	// Fallback for global builtins.
-	if (shader_mode != Shader::MODE_MAX && shader_type == VisualShader::TYPE_MAX) {
-		idx = 0;
-		while (p_port_array[idx].mode != Shader::MODE_MAX) {
-			if (p_port_array[idx].mode == shader_mode && p_port_array[idx].name == p_name) {
-				return idx;
-			}
-			idx++;
+	for (int i = 0; p_port_array[i].mode != Shader::MODE_MAX; i++) {
+		if (p_name == p_port_array[i].name && _is_port_available(p_port_array[i], shader_mode, shader_type)) {
+			return i;
 		}
 	}
-
 	return -1;
 }
 

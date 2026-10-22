@@ -842,7 +842,9 @@ bool VisualShaderNodeGroup::_has_incompatible_nodes(Shader::Mode p_mode, VisualS
 			continue;
 		}
 
-		if (!node->is_available(p_mode, p_type)) {
+		// Input nodes inside a group can only access global built-ins.
+		const VisualShader::Type node_type = Object::cast_to<VisualShaderNodeInput>(node.ptr()) ? VisualShader::TYPE_MAX : p_type;
+		if (!node->is_available(p_mode, node_type)) {
 			return true;
 		}
 	}
