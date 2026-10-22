@@ -72,7 +72,7 @@ public:
 	int get_compression_level() const;
 
 	Error start_file(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0644, uint64_t p_modified_time = 0);
-	Error start_file_64(const String &p_path, int64_t total_size, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0644, uint64_t p_modified_time = 0);
+	Error start_file_64(const String &p_path, int64_t p_total_size, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0644, uint64_t p_modified_time = 0);
 	Error write_file(const Vector<uint8_t> &p_data);
 	Error close_file();
 
