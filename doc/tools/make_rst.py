@@ -1822,7 +1822,7 @@ def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_
 
         if not dry_run:
             index_path = os.path.join(output_dir, "index.rst")
-            old_files.remove(index_path)
+            old_files.discard(index_path)
             dirty = True
             if os.path.exists(index_path):
                 with open(index_path, "r", encoding="utf-8", newline="\n") as index_old:
