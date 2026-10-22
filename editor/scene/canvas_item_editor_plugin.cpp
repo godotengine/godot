@@ -4057,7 +4057,6 @@ CanvasItemEditor::CanvasItemEditor() {
 	ci_manipulator.instantiate();
 	ci_manipulator->set_editor_mode_enabled(true);
 	ci_manipulator->set_scale(EDSCALE);
-	ci_manipulator->set_drag_threshold(8);
 	// Enable pixel snapping even if pixel snap rendering is disabled in the Project Settings.
 	// This results in crisper visuals by preventing 2D nodes from being placed at subpixel coordinates.
 	ci_manipulator->set_snap_mode(SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_OTHER_NODES | SNAP_GUIDES | SNAP_PIXEL);

@@ -213,7 +213,9 @@ class GameView : public VBoxContainer {
 	Ref<ButtonGroup> n3d_group;
 
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
-	Button *ci_button[CanvasItemManipulator::TOOL_MAX];
+	// Not all CI tools have buttons, so make sure the gaps are at least initialized with null.
+	Button *ci_button[CanvasItemManipulator::TOOL_MAX] = {};
+	Button *ci_local_space = nullptr;
 	Button *n3d_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
 	MenuButton *n3d_options_menu = nullptr;
