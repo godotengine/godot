@@ -117,9 +117,14 @@ void ProjectDialog::_validate_path() {
 		{"Test", "Ooh, testing things? So intriguing."},
 		{"TestProject", "Ooh, testing things? So intriguing."},
 		{"Game", "Game? Why not a movie? Okay, okay you wanna game, you do game."},
-		{"MyGame", "Game? Why not a movie? Okay, okay you wanna game, you do game."},
-		{".", "Dot"},
+		{"MyGame", "Your Game? Why not a Your Movie? Okay, okay you wanna your game, you do your game."},
+		{".", "dot"},
 		{"Go.", "Godot :D"},
+		{"3DGame", "Going on 3!"},
+		{"2DGame", "Going on 2!"},
+		{"4DGame", "Going on 4?"},
+		{"PuzzleGame", "OH! OH! I LOVE THESE!!!"},
+		{"Template", "Helping newbies? Cool!"}
 	};
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
