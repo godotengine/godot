@@ -81,6 +81,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
             </intent-filter>
+
+            <!-- Intent filter used to intercept hybrid SPATIAL launch for the current editor project, and route it
+            properly through the editor 'run' logic (e.g: debugger setup) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.SPATIAL" />
+            </intent-filter>
         </activity>
         <activity-alias
             android:name=".ProjectManager"
