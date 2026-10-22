@@ -67,11 +67,13 @@ int ZIPPacker::get_compression_level() const {
 	return compression_level;
 }
 
+#ifndef DISABLE_DEPRECATED
 Error ZIPPacker::start_file(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
-	return start_file_64(p_path, -1, p_permissions, p_modified_time);
+	return open_file(p_path, false, p_permissions, p_modified_time);
 }
+#endif // DISABLE_DEPRECATED
 
-Error ZIPPacker::start_file_64(const String &p_path, int64_t p_total_size, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
+Error ZIPPacker::open_file(const String &p_path, bool p_zip64, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	if (!p_path.get_base_dir().is_empty() && !directories.has(p_path.get_base_dir() + "/")) {
@@ -124,7 +126,7 @@ Error ZIPPacker::start_file_64(const String &p_path, int64_t p_total_size, BitFi
 			0,
 			0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
 			1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
-			p_total_size > UINT_MAX); // zip64: only pass if size exceeds 0xFFFFFFFF
+			p_zip64); // zip64: only pass if p_zip64 is true
 	return err == ZIP_OK ? OK : FAILED;
 }
 
@@ -210,8 +212,10 @@ void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_compression_level"), &ZIPPacker::get_compression_level);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_level"), "set_compression_level", "get_compression_level");
 	ClassDB::bind_method(D_METHOD("add_directory", "path", "permissions", "modified_time"), &ZIPPacker::add_directory, DEFVAL(0755), DEFVAL(0));
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("start_file", "path", "permissions", "modified_time"), &ZIPPacker::start_file, DEFVAL(0644), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("start_file_64", "path", "total_size", "permissions", "modified_time"), &ZIPPacker::start_file_64, DEFVAL(0644), DEFVAL(0));
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("open_file", "path", "zip64", "permissions", "modified_time"), &ZIPPacker::open_file, DEFVAL(false), DEFVAL(0644), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
 	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
 	ClassDB::bind_method(D_METHOD("close"), &ZIPPacker::close);

@@ -12,7 +12,7 @@
 			var err = writer.open("user://archive.zip")
 			if err != OK:
 				return err
-			writer.start_file("hello.txt")
+			writer.open_file("hello.txt")
 			writer.write_file("Hello World".to_utf8_buffer())
 			writer.close_file()
 
@@ -55,7 +55,19 @@
 				This must be called before everything else.
 			</description>
 		</method>
-		<method name="start_file">
+		<method name="open_file">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="zip64" type="bool" />
+			<param index="2" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
+			<param index="3" name="modified_time" type="int" default="0" />
+			<description>
+				Starts writing to a file within the archive. Only one file can be written at the same time. If [param modified_time] is set to [code]0[/code], current system time is used.
+				Must be called after [method open].
+				If [param zip64] is set to [code]true[/code], the file will be written in ZIP64 format, otherwise, in ZIP32 format. The file must be written in ZIP64 format if the total number of bytes written by [method write_file] will be greater than [constant UINT32_MAX] ([code]0xFFFFFFFF[/code]). Otherwise, the file should be written in ZIP32 format for compatibility reasons.
+			</description>
+		</method>
+		<method name="start_file" deprecated="This method does not support ZIP64. Use [method open_file] instead.">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
@@ -63,20 +75,7 @@
 			<description>
 				Starts writing to a file within the archive. Only one file can be written at the same time. If [param modified_time] is set to [code]0[/code], current system time is used.
 				Must be called after [method open].
-				The file will always be written in ZIP32 format. As such, if the file exceeds 4,294,967,295 bytes (4 GiB), [method write_file] will fail. To write files in either ZIP32 or ZIP64 format, use [method start_file_64] instead.
-			</description>
-		</method>
-		<method name="start_file_64">
-			<return type="int" enum="Error" />
-			<param index="0" name="path" type="String" />
-			<param index="1" name="total_size" type="int" />
-			<param index="2" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
-			<param index="3" name="modified_time" type="int" default="0" />
-			<description>
-				Starts writing to a file within the archive. Only one file can be written at the same time. If [param modified_time] is set to [code]0[/code], current system time is used.
-				Must be called after [method open].
-				The [param total_size] parameter should be set to the total number of bytes you will write with [method write_file]. If the total size is greater than 4,294,967,295 bytes (4 GiB), the file will be written in ZIP64 format. Otherwise, the file will be written in ZIP32 format.
-				[b]Note:[/b] To guarantee ZIP32 format, set [param total_size] to [code]-1[/code]. To guarantee ZIP64 format, set [param total_size] to [code]0x7FFFFFFFFFFFFFFF[/code].
+				The file will always be written in ZIP32 format. As such, if the file exceeds [constant UINT32_MAX] ([code]0xFFFFFFFF[/code]), then [method write_file] will fail. To write files in either ZIP32 or ZIP64 format, use [method open_file] instead.
 			</description>
 		</method>
 		<method name="write_file">
