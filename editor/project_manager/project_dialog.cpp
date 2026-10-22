@@ -99,25 +99,29 @@ void ProjectDialog::_validate_path() {
 	_set_message("", MESSAGE_SUCCESS, PROJECT_PATH);
 	_set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
 
-	if (project_name->get_text().strip_edges().is_empty()) {
+	String pname = project_name->get_text().strip_edges();
+
+	if (pname.is_empty()) {
 		_set_message(TTRC("It would be a good idea to name your project."), MESSAGE_ERROR);
 		return;
 	}
 
-	String pname = project_name->get_text().strip_edges();
+	// Safe, zero-allocation lookup table. No HashMap initialization quirks.
+	struct EasterEgg {
+		const char* name;
+		const char* message;
+	};
 
-static HashMap<String, StringName> easter_eggs = {
-    {"MyProject", TTRC("How original... I like it!!!")},
-    {"Project", TTRC("How original... I like it!!!")},
-    {"Test", TTRC("Ooh, testing things? So intriguing.")},
-    {"TestProject", TTRC("Ooh, testing things? So intriguing.")},
-    {"Game", TTRC("Game? Why not a movie? Okay, okay you wanna game, you do game.")},
-    {"MyGame", TTRC("Game? Why not a movie? Okay, okay you wanna game, you do game.")}
-};
-
-if (easter_eggs.has(pname)) {
-    _set_message(easter_eggs[pname], MESSAGE_SUCCESS);
-}
+	static const EasterEgg easter_eggs[] = {
+		{"MyProject", "How original... I like it!!!"},
+		{"Project", "How original... I like it!!!"},
+		{"Test", "Ooh, testing things? So intriguing."},
+		{"TestProject", "Ooh, testing things? So intriguing."},
+		{"Game", "Game? Why not a movie? Okay, okay you wanna game, you do game."},
+		{"MyGame", "Game? Why not a movie? Okay, okay you wanna game, you do game."},
+		{".", "Dot"},
+		{"Go.", "Godot :D"},
+	};
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = project_path->get_text().simplify_path();
@@ -303,6 +307,13 @@ if (easter_eggs.has(pname)) {
 
 		if (is_subdirectory_or_equal) {
 			_set_message(TTRC("Cannot duplicate a project into itself."), MESSAGE_ERROR, target_path_input_type);
+		}
+	}
+
+	for (const auto& egg : easter_eggs) {
+		if (pname == egg.name) {
+			_set_message(TTRC(egg.message), MESSAGE_SUCCESS);
+			break;
 		}
 	}
 }
