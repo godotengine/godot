@@ -561,6 +561,10 @@ Files extracted from upstream source:
 The `tinyexr.cc` file was modified to include `zlib.h` which we provide,
 instead of `miniz.h` as an external dependency.
 
+Patches:
+
+- `fix-multipart-header-stale-size.patch` (CVE-2026-110597)
+
 
 ## vhacd
 
