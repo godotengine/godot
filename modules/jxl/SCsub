@@ -1,0 +1,217 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_jxl = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_libjxl"]:
+    thirdparty_dir = "#thirdparty/libjxl/"
+
+    # Highway, the SIMD library libjxl uses.
+    highway_dir = thirdparty_dir + "third_party/highway/"
+    highway_sources = [
+        "hwy/abort.cc",
+        "hwy/aligned_allocator.cc",
+        "hwy/nanobenchmark.cc",
+        "hwy/per_target.cc",
+        "hwy/print.cc",
+        "hwy/targets.cc",
+        "hwy/timer.cc",
+    ]
+    highway_sources = [highway_dir + file for file in highway_sources]
+
+    # skcms, the color management library libjxl uses.
+    skcms_dir = thirdparty_dir + "third_party/skcms/"
+    skcms_sources = [
+        "skcms.cc",
+        "src/skcms_TransformBaseline.cc",
+    ]
+    skcms_sources = [skcms_dir + file for file in skcms_sources]
+
+    jxl_sources = [
+        "lib/jxl/cms/jxl_cms.cc",
+        "lib/jxl/ac_strategy.cc",
+        "lib/jxl/alpha.cc",
+        "lib/jxl/ans_common.cc",
+        "lib/jxl/blending.cc",
+        "lib/jxl/butteraugli/butteraugli.cc",
+        "lib/jxl/chroma_from_luma.cc",
+        "lib/jxl/coeff_order.cc",
+        "lib/jxl/color_encoding_internal.cc",
+        "lib/jxl/compressed_dc.cc",
+        "lib/jxl/convolve_slow.cc",
+        "lib/jxl/convolve_symmetric5.cc",
+        "lib/jxl/dct_scales.cc",
+        "lib/jxl/dec_ans.cc",
+        "lib/jxl/dec_bit_reader.cc",
+        "lib/jxl/dec_cache.cc",
+        "lib/jxl/dec_context_map.cc",
+        "lib/jxl/dec_external_image.cc",
+        "lib/jxl/dec_frame.cc",
+        "lib/jxl/dec_group.cc",
+        "lib/jxl/dec_group_border.cc",
+        "lib/jxl/dec_huffman.cc",
+        "lib/jxl/dec_modular.cc",
+        "lib/jxl/dec_noise.cc",
+        "lib/jxl/dec_patch_dictionary.cc",
+        "lib/jxl/dec_xyb.cc",
+        "lib/jxl/decode.cc",
+        "lib/jxl/enc_ac_strategy.cc",
+        "lib/jxl/enc_adaptive_quantization.cc",
+        "lib/jxl/enc_ans.cc",
+        "lib/jxl/enc_ans_simd.cc",
+        "lib/jxl/enc_aux_out.cc",
+        "lib/jxl/enc_bit_writer.cc",
+        "lib/jxl/enc_butteraugli_comparator.cc",
+        "lib/jxl/enc_cache.cc",
+        "lib/jxl/enc_chroma_from_luma.cc",
+        "lib/jxl/enc_cluster.cc",
+        "lib/jxl/enc_coeff_order.cc",
+        "lib/jxl/enc_comparator.cc",
+        "lib/jxl/enc_context_map.cc",
+        "lib/jxl/enc_convolve_separable5.cc",
+        "lib/jxl/enc_debug_image.cc",
+        "lib/jxl/enc_detect_dots.cc",
+        "lib/jxl/enc_dot_dictionary.cc",
+        "lib/jxl/enc_entropy_coder.cc",
+        "lib/jxl/enc_external_image.cc",
+        "lib/jxl/enc_fast_lossless.cc",
+        "lib/jxl/enc_fields.cc",
+        "lib/jxl/enc_frame.cc",
+        "lib/jxl/enc_gaborish.cc",
+        "lib/jxl/enc_group.cc",
+        "lib/jxl/enc_heuristics.cc",
+        "lib/jxl/enc_huffman.cc",
+        "lib/jxl/enc_huffman_tree.cc",
+        "lib/jxl/enc_icc_codec.cc",
+        "lib/jxl/enc_image_bundle.cc",
+        "lib/jxl/enc_linalg.cc",
+        "lib/jxl/enc_lz77.cc",
+        "lib/jxl/enc_modular.cc",
+        "lib/jxl/enc_modular_simd.cc",
+        "lib/jxl/enc_noise.cc",
+        "lib/jxl/enc_patch_dictionary.cc",
+        "lib/jxl/enc_photon_noise.cc",
+        "lib/jxl/enc_progressive_split.cc",
+        "lib/jxl/enc_quant_weights.cc",
+        "lib/jxl/enc_splines.cc",
+        "lib/jxl/enc_toc.cc",
+        "lib/jxl/enc_transforms.cc",
+        "lib/jxl/enc_xyb.cc",
+        "lib/jxl/encode.cc",
+        "lib/jxl/entropy_coder.cc",
+        "lib/jxl/epf.cc",
+        "lib/jxl/fields.cc",
+        "lib/jxl/frame_header.cc",
+        "lib/jxl/headers.cc",
+        "lib/jxl/huffman_table.cc",
+        "lib/jxl/icc_codec.cc",
+        "lib/jxl/icc_codec_common.cc",
+        "lib/jxl/image.cc",
+        "lib/jxl/image_bundle.cc",
+        "lib/jxl/image_metadata.cc",
+        "lib/jxl/image_ops.cc",
+        "lib/jxl/jpeg/enc_jpeg_data.cc",
+        "lib/jxl/jpeg/enc_jpeg_data_reader.cc",
+        "lib/jxl/jpeg/enc_jpeg_huffman_decode.cc",
+        "lib/jxl/loop_filter.cc",
+        "lib/jxl/luminance.cc",
+        "lib/jxl/memory_manager_internal.cc",
+        "lib/jxl/modular/encoding/dec_ma.cc",
+        "lib/jxl/modular/encoding/enc_debug_tree.cc",
+        "lib/jxl/modular/encoding/enc_encoding.cc",
+        "lib/jxl/modular/encoding/enc_ma.cc",
+        "lib/jxl/modular/encoding/encoding.cc",
+        "lib/jxl/modular/modular_image.cc",
+        "lib/jxl/modular/transform/enc_palette.cc",
+        "lib/jxl/modular/transform/enc_rct.cc",
+        "lib/jxl/modular/transform/enc_squeeze.cc",
+        "lib/jxl/modular/transform/enc_transform.cc",
+        "lib/jxl/modular/transform/palette.cc",
+        "lib/jxl/modular/transform/rct.cc",
+        "lib/jxl/modular/transform/squeeze.cc",
+        "lib/jxl/modular/transform/squeeze_params.cc",
+        "lib/jxl/modular/transform/transform.cc",
+        "lib/jxl/opsin_params.cc",
+        "lib/jxl/passes_state.cc",
+        "lib/jxl/quant_weights.cc",
+        "lib/jxl/quantizer.cc",
+        "lib/jxl/render_pipeline/low_memory_render_pipeline.cc",
+        "lib/jxl/render_pipeline/render_pipeline.cc",
+        "lib/jxl/render_pipeline/render_pipeline_stage.cc",
+        "lib/jxl/render_pipeline/simple_render_pipeline.cc",
+        "lib/jxl/render_pipeline/stage_blending.cc",
+        "lib/jxl/render_pipeline/stage_chroma_upsampling.cc",
+        "lib/jxl/render_pipeline/stage_cms.cc",
+        "lib/jxl/render_pipeline/stage_epf.cc",
+        "lib/jxl/render_pipeline/stage_from_linear.cc",
+        "lib/jxl/render_pipeline/stage_gaborish.cc",
+        "lib/jxl/render_pipeline/stage_noise.cc",
+        "lib/jxl/render_pipeline/stage_patches.cc",
+        "lib/jxl/render_pipeline/stage_splines.cc",
+        "lib/jxl/render_pipeline/stage_spot.cc",
+        "lib/jxl/render_pipeline/stage_to_linear.cc",
+        "lib/jxl/render_pipeline/stage_tone_mapping.cc",
+        "lib/jxl/render_pipeline/stage_upsampling.cc",
+        "lib/jxl/render_pipeline/stage_write.cc",
+        "lib/jxl/render_pipeline/stage_xyb.cc",
+        "lib/jxl/render_pipeline/stage_ycbcr.cc",
+        "lib/jxl/simd_util.cc",
+        "lib/jxl/splines.cc",
+        "lib/jxl/toc.cc",
+    ]
+    jxl_sources = [thirdparty_dir + file for file in jxl_sources]
+
+    env_jxl.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "lib/include", highway_dir, skcms_dir])
+    # Link libjxl statically.
+    env_jxl.Append(CPPDEFINES=["JXL_STATIC_DEFINE", "JXL_CMS_STATIC_DEFINE"])
+
+    env_thirdparty = env_jxl.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.Append(
+        CPPDEFINES=[
+            "JXL_INTERNAL_LIBRARY_BUILD",
+            ("JPEGXL_ENABLE_SKCMS", 1),
+            # Leave out JPEG transcoding and metadata boxes.
+            ("JPEGXL_ENABLE_TRANSCODE_JPEG", 0),
+            ("JPEGXL_ENABLE_BOXES", 0),
+            "SKCMS_DISABLE_HSW",
+            "SKCMS_DISABLE_SKX",
+        ]
+    )
+    if env["platform"] == "windows":
+        env_thirdparty.Append(CPPDEFINES=[("SKCMS_HAS_MUSTTAIL", 0)])
+    # SSSE3 is never used, since Godot requires SSE4.2.
+    hwy_disabled_targets = ["HWY_SSSE3"]
+    if not env["jxl_all_simd_targets"]:
+        hwy_disabled_targets += [
+            "HWY_AVX3",
+            "HWY_AVX3_DL",
+            "HWY_AVX3_ZEN4",
+            "HWY_AVX3_SPR",
+            "HWY_NEON_BF16",
+            "HWY_ALL_SVE",
+        ]
+    # Target bits don't overlap, so + works like | and avoids shell-special characters.
+    env_thirdparty.Append(CPPDEFINES=[("HWY_DISABLED_TARGETS", "+".join(hwy_disabled_targets))])
+    env_thirdparty.add_source_files(thirdparty_obj, highway_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, skcms_sources)
+    env_thirdparty.add_source_files(thirdparty_obj, jxl_sources)
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_jxl.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

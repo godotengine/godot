@@ -280,7 +280,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/preserve_alpha_test_coverage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mipmaps/alpha_test_threshold", PROPERTY_HINT_RANGE, "0.01,0.99,0.01"), 0.5));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.jxl,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/red", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/green", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/blue", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 2));
@@ -306,9 +306,61 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
+static bool _is_jxl_hdr_format(Image::Format p_format) {
+	// RGBE9995 would get bigger as JXL.
+	return p_format >= Image::FORMAT_RF && p_format < Image::FORMAT_RGBE9995;
+}
+
+static bool _can_compress_lossless_or_lossy(Image::Format p_format, bool p_allow_jxl) {
+	if (_is_jxl_hdr_format(p_format)) {
+		return p_allow_jxl && Image::save_jxl_buffer_func != nullptr;
+	}
+	return p_format < Image::FORMAT_RF;
+}
+
+static void _save_jxl_mipmaps(Ref<FileAccess> f, const Ref<Image> &p_image, bool p_lossy, float p_lossy_quality) {
+	Vector<Vector<uint8_t>> mipmaps;
+	for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
+		Vector<uint8_t> data = Image::save_jxl_buffer_func(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy, p_lossy_quality);
+		if (data.is_empty()) {
+			WARN_PRINT("JXL compression failed, storing the texture uncompressed instead.");
+			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
+			f->store_16(p_image->get_width());
+			f->store_16(p_image->get_height());
+			f->store_32(p_image->get_mipmap_count());
+			f->store_32(p_image->get_format());
+			f->store_buffer(p_image->get_data());
+			return;
+		}
+		mipmaps.push_back(data);
+	}
+
+	// Lossy RGB float textures are loaded as RGBE9995 to halve VRAM usage.
+	Image::Format format = p_image->get_format();
+	if (p_lossy && (format == Image::FORMAT_RGBH || format == Image::FORMAT_RGBF)) {
+		format = Image::FORMAT_RGBE9995;
+	}
+
+	f->store_32(CompressedTexture2D::DATA_FORMAT_JXL);
+	f->store_16(p_image->get_width());
+	f->store_16(p_image->get_height());
+	f->store_32(p_image->get_mipmap_count());
+	f->store_32(format);
+
+	for (const Vector<uint8_t> &data : mipmaps) {
+		f->store_32(data.size());
+		f->store_buffer(data);
+	}
+}
+
 void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, Image::CompressProfile p_compress_profile, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::BPTCFormat p_bptc_format) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
+			if (_is_jxl_hdr_format(p_image->get_format())) {
+				_save_jxl_mipmaps(f, p_image, false, p_lossy_quality);
+				break;
+			}
+
 			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") || !Image::_webp_mem_loader_func; // WebP module disabled or png is forced.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit.
 
@@ -334,6 +386,11 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 		} break;
 		case COMPRESS_LOSSY: {
+			if (_is_jxl_hdr_format(p_image->get_format())) {
+				_save_jxl_mipmaps(f, p_image, true, p_lossy_quality);
+				break;
+			}
+
 			f->store_32(CompressedTexture2D::DATA_FORMAT_WEBP);
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
@@ -386,7 +443,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage, bool p_allow_jxl) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -425,7 +482,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	f->store_32(0);
 	f->store_32(0);
 
-	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() >= Image::FORMAT_RF) {
+	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && !_can_compress_lossless_or_lossy(p_image->get_format(), p_allow_jxl)) {
 		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
 	}
 
@@ -905,6 +962,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	}
 
 	bool detect_3d = int(p_options["detect_3d/compress_to"]) > 0;
+	const bool allow_jxl = p_source_file.get_extension().to_lower() == "jxl";
 	bool detect_roughness = roughness == 0;
 	bool detect_normal = normal == 0;
 	bool force_normal = normal == 1;
@@ -993,12 +1051,12 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	} else {
 		// Import normally.
 		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_AUTOMATIC /* This is ignored. */,
-				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, allow_jxl);
 	}
 
 	if (editor_image.is_valid()) {
 		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_AUTOMATIC /* This is ignored. */,
-				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, allow_jxl);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;
