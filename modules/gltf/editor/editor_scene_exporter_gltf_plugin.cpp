@@ -66,7 +66,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	_config_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneExporterGLTFPlugin::_export_scene_as_gltf));
 
 	_export_settings.instantiate();
-	_export_settings->generate_property_list(_gltf_document);
+	_export_settings->generate_property_list(_gltf_document, "");
 	_settings_inspector = memnew(EditorInspector);
 	_settings_inspector->set_custom_minimum_size(Size2(350, 300) * EDSCALE);
 	_config_dialog->add_child(_settings_inspector);
@@ -83,7 +83,7 @@ void SceneExporterGLTFPlugin::_popup_gltf_settings_dialog(const String &p_select
 	Node *root = EditorNode::get_singleton()->get_tree()->get_edited_scene_root();
 	ERR_FAIL_NULL(root);
 	// Generate and refresh the export settings.
-	_export_settings->generate_property_list(_gltf_document, root);
+	_export_settings->generate_property_list(_gltf_document, p_selected_path, root);
 	_settings_inspector->edit(nullptr);
 	_settings_inspector->edit(_export_settings.ptr());
 	// Show the config dialog.
