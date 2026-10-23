@@ -36,6 +36,13 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="bbcode_escape" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string with BBCode tags escaped, which makes them ineffective when used in [RichTextLabel] with [member RichTextLabel.bbcode_enabled] set to [code]true[/code]. This is useful for handling user input to prevent BBCode injection. See also [method strip_bbcode].
+				[b]Note:[/b] [method bbcode_escape] is designed to work with Godot's BBCode implementation. Other implementations may not support the [code][lb][/code] and [code][rb][/code] tags used for escaping.
+			</description>
+		</method>
 		<method name="begins_with" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
@@ -889,6 +896,13 @@
 				var c = "1| ||4.5".split_floats("|")        # c is [1.0, 0.0, 0.0, 4.5]
 				var b = "1| ||4.5".split_floats("|", false) # b is [1.0, 4.5]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="strip_bbcode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string with all BBCode tags removed (regardless of whether these tags are valid or not). Extraneous brackets are also removed to avoid issues when several strings are concatenated together. See also [method bbcode_escape].
+				[b]Note:[/b] Removing BBCode tags entirely isn't advised for user input, as it can modify the displayed text without users understanding why part of their message was removed. Escaping user input with [method bbcode_escape] should be preferred instead.
 			</description>
 		</method>
 		<method name="strip_edges" qualifiers="const">
