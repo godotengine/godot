@@ -36,8 +36,10 @@ class Button;
 class CheckBox;
 class CheckButton;
 class EditorFileDialog;
+class HSeparator;
 class LineEdit;
 class OptionButton;
+class SettingPresetEditor;
 class TextureRect;
 
 class ProjectDialog : public ConfirmationDialog {
@@ -83,7 +85,6 @@ private:
 
 	VBoxContainer *renderer_container = nullptr;
 	Label *renderer_info = nullptr;
-	HBoxContainer *default_files_container = nullptr;
 	Ref<ButtonGroup> renderer_button_group;
 	bool rendering_device_supported = false;
 	bool rendering_device_checked = false;
@@ -96,7 +97,10 @@ private:
 	TextureRect *project_status_rect = nullptr;
 	TextureRect *install_status_rect = nullptr;
 
-	OptionButton *vcs_metadata_selection = nullptr;
+	SettingPresetEditor *setting_preset_editor = nullptr;
+
+	HSeparator *change_later_separator = nullptr;
+	Label *change_later_label = nullptr;
 
 	CheckBox *edit_check_box = nullptr;
 
