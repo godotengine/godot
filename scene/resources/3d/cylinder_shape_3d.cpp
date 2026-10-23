@@ -62,7 +62,11 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("CylinderShape3D Cache Miss");
 	Array cylinder_array;
 	cylinder_array.resize(RSE::ARRAY_MAX);
 	CylinderMesh::create_mesh_array(cylinder_array, radius, radius, height, 32);
@@ -77,6 +81,8 @@ Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces(const Color &p_modulat
 	Ref<ArrayMesh> cylinder_mesh = memnew(ArrayMesh);
 	cylinder_array[RSE::ARRAY_COLOR] = colors;
 	cylinder_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
+
+	debug_mesh_faces_cache = cylinder_mesh;
 	return cylinder_mesh;
 }
 
