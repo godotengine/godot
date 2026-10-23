@@ -35,6 +35,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
 
 // Original VRM Spring Bone movement logic was distributed by (c) VRM Consortium. Licensed under the MIT license.
 
@@ -1087,6 +1089,7 @@ int SpringBoneSimulator3D::get_joint_count(int p_index) const {
 void SpringBoneSimulator3D::set_enable_all_child_collisions(int p_index, bool p_enabled) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index]->enable_all_child_collisions = p_enabled;
+	_make_collisions_dirty();
 	notify_property_list_changed();
 }
 
@@ -1449,8 +1452,11 @@ void SpringBoneSimulator3D::_find_collisions() {
 			collisions.push_back(c->get_instance_id());
 		}
 	}
-
 	bool setting_updated = false;
+
+#ifdef TOOLS_ENABLED
+	_make_gizmo_dirty(); // In case of change to return value of has_chain_collision().
+#endif
 
 	for (uint32_t i = 0; i < settings.size(); i++) {
 		LocalVector<ObjectID> &cache = settings[i]->cached_collisions;
@@ -1705,6 +1711,25 @@ void SpringBoneSimulator3D::_redraw_gizmo() {
 	update_gizmos();
 	gizmo_dirty = false;
 }
+
+bool SpringBoneSimulator3D::has_chain_collision() {
+	bool has_chain_collision = false;
+
+	for (SpringBone3DSetting *setting : settings) {
+		for (const ObjectID &collision_id : setting->cached_collisions) {
+			Object *obj = ObjectDB::get_instance(collision_id);
+			if (obj) {
+				SpringBoneCollisionSphere3D *ns = Object::cast_to<SpringBoneCollisionSphere3D>(obj);
+				SpringBoneCollisionCapsule3D *nc = Object::cast_to<SpringBoneCollisionCapsule3D>(obj);
+				if ((ns && ns->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN) || (nc && nc->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN)) {
+					has_chain_collision = true;
+					break;
+				}
+			}
+		}
+	}
+	return has_chain_collision;
+}
 #endif
 
 void SpringBoneSimulator3D::_set_active(bool p_active) {
@@ -1849,7 +1874,8 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 			SpringBoneCollision3D *col = Object::cast_to<SpringBoneCollision3D>(obj);
 			if (col) {
 				// Collider movement should separate from the effect of the center.
-				next_tail = col->collide(p_center_transform, p_joints[i]->radius, verlet->length, next_tail);
+				float origin_radius = p_joints[(i > 0 ? i - 1 : i)]->radius;
+				next_tail = col->collide(p_center_transform, p_joints[i]->radius, verlet->length, current_origin, origin_radius, next_tail);
 				// Snap to plane if axis locked.
 				if (p_joints[i]->rotation_axis != ROTATION_AXIS_ALL) {
 					next_tail = current_world_pose.origin + current_world_pose.basis.get_rotation_quaternion().xform(snap_vector_to_plane(p_joints[i]->get_rotation_axis_vector(), current_world_pose.basis.get_rotation_quaternion().xform_inv(next_tail - current_world_pose.origin)));
