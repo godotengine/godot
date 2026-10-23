@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2020 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,14 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 /* This module contains functions for serializing and deserializing
 a sequence of compiled codes. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-
 #include "pcre2_internal.h"
+
+
 
 /* Magic number to provide a small check against being handed junk. */
 
@@ -127,25 +125,25 @@ dst_bytes += TABLES_LENGTH;
 for (i = 0; i < number_of_codes; i++)
   {
   re = (const pcre2_real_code *)(codes[i]);
-  (void)memcpy(dst_bytes, (char *)re, re->blocksize);
-  
-  /* Certain fields in the compiled code block are re-set during 
-  deserialization. In order to ensure that the serialized data stream is always 
-  the same for the same pattern, set them to zero here. We can't assume the 
-  copy of the pattern is correctly aligned for accessing the fields as part of 
+  (void)memcpy(dst_bytes, (const char *)re, re->blocksize);
+
+  /* Certain fields in the compiled code block are re-set during
+  deserialization. In order to ensure that the serialized data stream is always
+  the same for the same pattern, set them to zero here. We can't assume the
+  copy of the pattern is correctly aligned for accessing the fields as part of
   a structure. Note the use of sizeof(void *) in the second of these, to
-  specify the size of a pointer. If sizeof(uint8_t *) is used (tables is a 
-  pointer to uint8_t), gcc gives a warning because the first argument is also a 
-  pointer to uint8_t. Casting the first argument to (void *) can stop this, but 
+  specify the size of a pointer. If sizeof(uint8_t *) is used (tables is a
+  pointer to uint8_t), gcc gives a warning because the first argument is also a
+  pointer to uint8_t. Casting the first argument to (void *) can stop this, but
   it didn't stop Coverity giving the same complaint. */
-  
-  (void)memset(dst_bytes + offsetof(pcre2_real_code, memctl), 0, 
+
+  (void)memset(dst_bytes + offsetof(pcre2_real_code, memctl), 0,
     sizeof(pcre2_memctl));
-  (void)memset(dst_bytes + offsetof(pcre2_real_code, tables), 0, 
+  (void)memset(dst_bytes + offsetof(pcre2_real_code, tables), 0,
     sizeof(void *));
   (void)memset(dst_bytes + offsetof(pcre2_real_code, executable_jit), 0,
-    sizeof(void *));        
- 
+    sizeof(void *));
+
   dst_bytes += re->blocksize;
   }
 
@@ -168,9 +166,10 @@ const pcre2_memctl *memctl = (gcontext != NULL) ?
   &gcontext->memctl : &PRIV(default_compile_context).memctl;
 
 const uint8_t *src_bytes;
-pcre2_real_code *dst_re;
+pcre2_real_code *dst_re = NULL;
 uint8_t *tables;
 int32_t i, j;
+int32_t error;
 
 /* Sanity checks. */
 
@@ -208,7 +207,10 @@ for (i = 0; i < number_of_codes; i++)
   memcpy(&blocksize, src_bytes + offsetof(pcre2_real_code, blocksize),
     sizeof(CODE_BLOCKSIZE_TYPE));
   if (blocksize <= sizeof(pcre2_real_code))
-    return PCRE2_ERROR_BADSERIALIZEDDATA;
+    {
+    error = PCRE2_ERROR_BADSERIALIZEDDATA;
+    goto cleanup;
+    }
 
   /* The allocator provided by gcontext replaces the original one. */
 
@@ -216,13 +218,8 @@ for (i = 0; i < number_of_codes; i++)
     (pcre2_memctl *)gcontext);
   if (dst_re == NULL)
     {
-    memctl->free(tables, memctl->memory_data);
-    for (j = 0; j < i; j++)
-      {
-      memctl->free(codes[j], memctl->memory_data);
-      codes[j] = NULL;
-      }
-    return PCRE2_ERROR_NOMEMORY;
+    error = PCRE2_ERROR_NOMEMORY;
+    goto cleanup;
     }
 
   /* The new allocator must be preserved. */
@@ -232,10 +229,10 @@ for (i = 0; i < number_of_codes; i++)
   if (dst_re->magic_number != MAGIC_NUMBER ||
       dst_re->name_entry_size > MAX_NAME_SIZE + IMM2_SIZE + 1 ||
       dst_re->name_count > MAX_NAME_COUNT)
-    {   
-    memctl->free(dst_re, memctl->memory_data); 
-    return PCRE2_ERROR_BADSERIALIZEDDATA;
-    } 
+      {
+        error = PCRE2_ERROR_BADSERIALIZEDDATA;
+        goto cleanup;
+      }
 
   /* At the moment only one table is supported. */
 
@@ -244,10 +241,22 @@ for (i = 0; i < number_of_codes; i++)
   dst_re->flags |= PCRE2_DEREF_TABLES;
 
   codes[i] = dst_re;
+  dst_re = NULL;
   src_bytes += blocksize;
   }
 
 return number_of_codes;
+
+cleanup:
+if (dst_re != NULL)
+  memctl->free(dst_re, memctl->memory_data);
+memctl->free(tables, memctl->memory_data);
+for (j = 0; j < i; j++)
+  {
+  memctl->free(codes[j], memctl->memory_data);
+  codes[j] = NULL;
+  }
+return error;
 }
 
 
