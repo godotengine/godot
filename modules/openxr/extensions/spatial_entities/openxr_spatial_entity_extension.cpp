@@ -50,6 +50,7 @@ OpenXRSpatialEntityExtension *OpenXRSpatialEntityExtension::get_singleton() {
 void OpenXRSpatialEntityExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_capability", "capability"), &OpenXRSpatialEntityExtension::_supports_capability);
 	ClassDB::bind_method(D_METHOD("supports_component_type", "capability", "component_type"), &OpenXRSpatialEntityExtension::_supports_component_type);
+	ClassDB::bind_method(D_METHOD("supports_capability_feature", "capability", "feature"), &OpenXRSpatialEntityExtension::_supports_capability_feature);
 
 	ClassDB::bind_method(D_METHOD("create_spatial_context", "capability_configurations", "next", "user_callback", "failed_callback"), &OpenXRSpatialEntityExtension::create_spatial_context, DEFVAL(Variant()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("get_spatial_context_ready", "spatial_context"), &OpenXRSpatialEntityExtension::get_spatial_context_ready);
@@ -89,6 +90,18 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(CAPABILITY_MARKER_TRACKING_ARUCO_MARKER);
 	BIND_ENUM_CONSTANT(CAPABILITY_MARKER_TRACKING_APRIL_TAG);
 	BIND_ENUM_CONSTANT(CAPABILITY_ANCHOR);
+	BIND_ENUM_CONSTANT(CAPABILITY_IMAGE_TRACKING);
+	BIND_ENUM_CONSTANT(CAPABILITY_OBJECT_TRACKING_ANDROID);
+	BIND_ENUM_CONSTANT(CAPABILITY_DEPTH_RAYCAST_ANDROID);
+
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES);
+	BIND_ENUM_CONSTANT(CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES);
 
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_BOUNDED_2D);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_BOUNDED_3D);
@@ -101,6 +114,10 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_MARKER);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_ANCHOR);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_PERSISTENCE);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_IMAGE_2D);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_RAYCAST_RESULT_ANDROID);
+	BIND_ENUM_CONSTANT(COMPONENT_TYPE_SUBSUMED_BY_ANDROID);
 
 	BIND_ENUM_CONSTANT(TRACKING_UNSUPPORTED_CAPABILITY);
 	BIND_ENUM_CONSTANT(TRACKING_NO_PERMISSION);
@@ -343,6 +360,21 @@ bool OpenXRSpatialEntityExtension::supports_component_type(XrSpatialCapabilityEX
 
 bool OpenXRSpatialEntityExtension::_supports_component_type(Capability p_capability, ComponentType p_component_type) {
 	return supports_component_type((XrSpatialCapabilityEXT)p_capability, (XrSpatialComponentTypeEXT)p_component_type);
+}
+
+bool OpenXRSpatialEntityExtension::supports_capability_feature(XrSpatialCapabilityEXT p_capability, XrSpatialCapabilityFeatureEXT p_component_feature) {
+	if (!_load_capabilities()) {
+		return false;
+	}
+
+	if (supported_capabilities.has(p_capability)) {
+		return supported_capabilities[p_capability].features.has(p_component_feature);
+	}
+	return false;
+}
+
+bool OpenXRSpatialEntityExtension::_supports_capability_feature(Capability p_capability, CapabilityFeature p_component_feature) {
+	return supports_capability_feature((XrSpatialCapabilityEXT)p_capability, (XrSpatialCapabilityFeatureEXT)p_component_feature);
 }
 
 bool OpenXRSpatialEntityExtension::on_event_polled(const XrEventDataBuffer &event) {
