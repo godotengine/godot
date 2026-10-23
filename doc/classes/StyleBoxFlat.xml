@@ -159,6 +159,15 @@
 			Expands the stylebox outside of the control rect on the top edge. Useful in combination with [member border_width_top] to draw a border outside the control rect.
 			[b]Note:[/b] Unlike [member StyleBox.content_margin_top], [member expand_margin_top] does [i]not[/i] affect the size of the clickable area for [Control]s. This can negatively impact usability if used wrong, as the user may try to click an area of the StyleBox that cannot actually receive clicks.
 		</member>
+		<member name="gaussian_approximate_gaussian" type="bool" setter="set_approximate_gaussian" getter="is_using_approximate_gaussian" default="false">
+			Toggle to switch to a shadow that approximates a softer Gaussian falloff by combining multiple linear shadows. Tends to take more processing power.
+		</member>
+		<member name="gaussian_quality" type="int" setter="set_gaussian_rings" getter="get_gaussian_rings" default="6">
+			The amount of concentric shadows used to approximate a Gaussian falloff. More shadows tend to look better but take more processing power.
+		</member>
+		<member name="gaussian_spread" type="float" setter="set_gaussian_spread" getter="get_gaussian_spread" default="0.0">
+			Grows or shrinks the whole shadow (in pixels) while keeping the falloff the same.
+		</member>
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color" default="Color(0, 0, 0, 0.6)">
 			The color of the shadow. This has no effect if [member shadow_size] is lower than 1.
 		</member>
