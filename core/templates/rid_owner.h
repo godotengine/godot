@@ -154,7 +154,7 @@ class RID_Alloc : public RID_AllocBase {
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFF);
+		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFE);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
@@ -317,8 +317,9 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
+		uint32_t validator_stored = chunks[idx_chunk][idx_element].validator;
 
-		bool owned = (chunks[idx_chunk][idx_element].validator & 0x7FFFFFFF) == validator;
+		bool owned = (validator_stored != 0xFFFFFFFF) && ((validator_stored & 0x7FFFFFFF) == validator);
 
 		if constexpr (THREAD_SAFE) {
 			mutex.unlock();
