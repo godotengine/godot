@@ -69,17 +69,19 @@ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_seed) {
 uint32_t hash_murmur3_buffer(const void *p_key, int p_length, const uint32_t p_seed) {
 	// Although not required, this is a random prime number.
 	const uint8_t *data = (const uint8_t *)p_key;
-	const int nblocks = p_length / 4;
+	const int nblocks = p_length / sizeof(uint32_t);
 
 	uint32_t h1 = p_seed;
 
 	const uint32_t c1 = 0xcc9e2d51;
 	const uint32_t c2 = 0x1b873593;
 
-	const uint32_t *blocks = (const uint32_t *)(data + nblocks * 4);
+	const uint8_t *blocks = data + nblocks * sizeof(uint32_t);
 
 	for (int i = -nblocks; i; i++) {
-		uint32_t k1 = blocks[i];
+		uint32_t k1;
+		// Use memcpy to avoid UB with strict-aliasing.
+		memcpy(&k1, &blocks[i * sizeof(uint32_t)], sizeof(uint32_t));
 
 		k1 *= c1;
 		k1 = hash_rotl32(k1, 15);
@@ -90,7 +92,7 @@ uint32_t hash_murmur3_buffer(const void *p_key, int p_length, const uint32_t p_s
 		h1 = h1 * 5 + 0xe6546b64;
 	}
 
-	const uint8_t *tail = (const uint8_t *)(data + nblocks * 4);
+	const uint8_t *tail = data + nblocks * 4;
 
 	uint32_t k1 = 0;
 
