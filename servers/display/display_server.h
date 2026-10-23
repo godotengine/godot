@@ -377,6 +377,7 @@ public:
 	virtual void show_window(DisplayServerEnums::WindowID p_id);
 	virtual void delete_sub_window(DisplayServerEnums::WindowID p_id);
 
+	virtual void window_set_visible(bool p_visible, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
 	virtual DisplayServerEnums::WindowID window_get_active_popup() const { return DisplayServerEnums::INVALID_WINDOW_ID; }
 	virtual void window_set_popup_safe_rect(DisplayServerEnums::WindowID p_window, const Rect2i &p_rect) {}
 	virtual Rect2i window_get_popup_safe_rect(DisplayServerEnums::WindowID p_window) const { return Rect2i(); }
