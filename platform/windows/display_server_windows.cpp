@@ -297,34 +297,7 @@ void DisplayServerWindows::_set_mouse_mode_impl(DisplayServerEnums::MouseMode p_
 
 			_register_raw_input_devices(window_id);
 
-			const BitField<WinKeyModifierMask> &mods = _get_mods();
-
-			Ref<InputEventMouseMotion> mm;
-			mm.instantiate();
-
-			mm->set_window_id(window_id);
-			mm->set_pressure(windows[window_id].last_pressure);
-			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
-			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
-			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
-			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
-			mm->set_button_mask(mouse_get_button_state());
-
-			mm->set_position(center);
-			mm->set_global_position(center);
-			mm->set_relative(Vector2(0, 0));
-			mm->set_relative_screen_position(Vector2(0, 0));
-			mm->set_velocity(Vector2(0, 0));
-			mm->set_screen_velocity(Vector2(0, 0));
-
-			mm->set_global_position(center);
-			mm->set_velocity(Vector2(0, 0));
-			mm->set_screen_velocity(Vector2(0, 0));
-
-			if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
-				Input::get_singleton()->parse_input_event(mm);
-			}
-
+			Input::get_singleton()->set_mouse_position(center);
 			old_x = center.x;
 			old_y = center.y;
 		}
