@@ -95,6 +95,8 @@ uniform mediump vec2 skeleton_transform_offset;
 uniform mediump vec2 inverse_transform_x;
 uniform mediump vec2 inverse_transform_y;
 uniform mediump vec2 inverse_transform_offset;
+
+uniform uint skinning_method;
 #endif
 
 vec2 signNotZero(vec2 v) {
@@ -128,6 +130,70 @@ vec2 tang_to_oct(vec4 base) {
 	oct.y = oct.y * 0.5f + 0.5f;
 	oct.y = base.w >= 0.0f ? oct.y : 1.0 - oct.y;
 	return oct;
+}
+
+struct DualQuat {
+	vec4 real;
+	vec4 dual;
+	mat3 S;
+};
+
+DualQuat bone_to_dual_quat(mat4 M) {
+	mat3 B = mat3(M);
+
+	// column-major GLSL version of orthonormalize() in basis.cpp (Gram-Schmidt)
+	vec3 x = vec3(B[0][0], B[1][0], B[2][0]);
+	vec3 y = vec3(B[0][1], B[1][1], B[2][1]);
+	vec3 z = vec3(B[0][2], B[1][2], B[2][2]);
+	x = normalize(x);
+	y = normalize(y - x * dot(x, y));
+	z = normalize(z - x * dot(x, z) - y * dot(y, z));
+	mat3 R = mat3(x, y, z);
+	if (dot(R[0], cross(R[1], R[2])) < 0.0) {
+		R = -R;
+	}
+
+	// Scale component of B using polar decomposition
+	mat3 S = mat3(1.0);
+	if (skinning_method == 2) {
+		S = B * R;
+	}
+
+	// column-major GLSL version of get_quaternion() in basis.cpp
+	float trace = R[0][0] + R[1][1] + R[2][2];
+	vec4 real = vec4(0.0);
+
+	if (trace > 0.0) {
+        float s = sqrt(trace + 1.0);
+        real.w = 0.5 * s;
+		s = 0.5 / s;
+        real.x = (R[1][2] - R[2][1]) * s;
+        real.y = (R[2][0] - R[0][2]) * s;
+        real.z = (R[0][1] - R[1][0]) * s;
+    } else {
+		uint i = R[0][0] < R[1][1] ?
+			(R[1][1] < R[2][2] ? 2 : 1) :
+			(R[0][0] < R[2][2] ? 2 : 0);
+		uint j = (i + 1) % 3;
+		uint k = (i + 2) % 3;
+
+		float s = sqrt(R[i][i] - R[j][j] - R[k][k] + 1.0);
+		real[i] = 0.5 * s;
+		s = 0.5 / s;
+
+		real.w = (R[j][k] - R[k][j]) * s;
+		real[j] = (R[i][j] + R[j][i]) * s;
+		real[k] = (R[i][k] + R[k][i]) * s;
+	}
+
+	// Credit goes to original version at https://users.cs.utah.edu/~ladislav/dq/dqconv.c
+	vec3 t = vec3(M[0][3], M[1][3], M[2][3]); // M is still transposed
+	vec4 dual = vec4(
+		0.5 * (t.x * real.w + t.y * real.z - t.z * real.y),
+		0.5 * (-t.x * real.z + t.y * real.w + t.z * real.x),
+		0.5 * (t.x * real.y - t.y * real.x + t.z * real.w),
+		-0.5 * (t.x * real.x + t.y * real.y + t.z * real.z));
+	return DualQuat(real, dual, S);
 }
 
 // Our original input for normals and tangents is 2 16-bit floats.
@@ -236,28 +302,152 @@ void main() {
 #ifdef USE_SKELETON
 
 #define TEX(m) texelFetch(skeleton_texture, ivec2(m % 256u, m / 256u), 0)
-#define GET_BONE_MATRIX(a, b, c, w) mat4(TEX(a), TEX(b), TEX(c), vec4(0.0, 0.0, 0.0, 1.0)) * w
+#define GET_BONE_MATRIX(a, b, c, w) mat4(TEX(a), TEX(b), TEX(c), vec4(0.0, 0.0, 0.0, 1.0))
 
 	uvec4 bones = in_bone_attrib * uvec4(3);
 	uvec4 bones_a = bones + uvec4(1);
 	uvec4 bones_b = bones + uvec4(2);
 
 	highp mat4 m;
-	m = GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x, in_weight_attrib.x);
-	m += GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y, in_weight_attrib.y);
-	m += GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z, in_weight_attrib.z);
-	m += GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w, in_weight_attrib.w);
+	if (skinning_method == 0) {
+		m = GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x) * in_weight_attrib.x;
+		m += GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y) * in_weight_attrib.y;
+		m += GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z) * in_weight_attrib.z;
+		m += GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w) * in_weight_attrib.w;
 
-#ifdef USE_EIGHT_WEIGHTS
-	bones = in_bone_attrib2 * uvec4(3);
-	bones_a = bones + uvec4(1);
-	bones_b = bones + uvec4(2);
+	#ifdef USE_EIGHT_WEIGHTS
+		bones = in_bone_attrib2 * uvec4(3);
+		bones_a = bones + uvec4(1);
+		bones_b = bones + uvec4(2);
 
-	m += GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x, in_weight_attrib2.x);
-	m += GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y, in_weight_attrib2.y);
-	m += GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z, in_weight_attrib2.z);
-	m += GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w, in_weight_attrib2.w);
-#endif
+		m += GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x) * in_weight_attrib2.x;
+		m += GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y) * in_weight_attrib2.y;
+		m += GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z) * in_weight_attrib2.z;
+		m += GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w) * in_weight_attrib2.w;
+	#endif
+
+	} else if (skinning_method == 1 || skinning_method == 2) {
+		DualQuat dq0 = bone_to_dual_quat(GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x));
+		DualQuat dq1 = bone_to_dual_quat(GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y));
+		DualQuat dq2 = bone_to_dual_quat(GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z));
+		DualQuat dq3 = bone_to_dual_quat(GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w));
+
+		if (dot(dq0.real, dq1.real) < 0.0) {
+			dq1.real = -dq1.real;
+			dq1.dual = -dq1.dual;
+		}
+		if (dot(dq0.real, dq2.real) < 0.0) {
+			dq2.real = -dq2.real;
+			dq2.dual = -dq2.dual;
+		}
+		if (dot(dq0.real, dq3.real) < 0.0) {
+			dq3.real = -dq3.real;
+			dq3.dual = -dq3.dual;
+		}
+
+		vec4 real = dq0.real * in_weight_attrib.x;
+		real += dq1.real * in_weight_attrib.y;
+		real += dq2.real * in_weight_attrib.z;
+		real += dq3.real * in_weight_attrib.w;
+
+		vec4 dual = dq0.dual * in_weight_attrib.x;
+		dual += dq1.dual * in_weight_attrib.y;
+		dual += dq2.dual * in_weight_attrib.z;
+		dual += dq3.dual * in_weight_attrib.w;
+
+		mat3 S = mat3(1.0);
+		if (skinning_method == 2) {
+			S = dq0.S * in_weight_attrib.x;
+			S += dq1.S * in_weight_attrib.y;
+			S += dq2.S * in_weight_attrib.z;
+			S += dq3.S * in_weight_attrib.w;
+		}
+
+	#ifdef USE_EIGHT_WEIGHTS
+		bones = in_bone_attrib2 * uvec4(3);
+		bones_a = bones + uvec4(1);
+		bones_b = bones + uvec4(2);
+
+		DualQuat dq4 = bone_to_dual_quat(GET_BONE_MATRIX(bones.x, bones_a.x, bones_b.x));
+		DualQuat dq5 = bone_to_dual_quat(GET_BONE_MATRIX(bones.y, bones_a.y, bones_b.y));
+		DualQuat dq6 = bone_to_dual_quat(GET_BONE_MATRIX(bones.z, bones_a.z, bones_b.z));
+		DualQuat dq7 = bone_to_dual_quat(GET_BONE_MATRIX(bones.w, bones_a.w, bones_b.w));
+
+		if (dot(dq0.real, dq4.real) < 0.0) {
+			dq4.real = -dq4.real;
+			dq4.dual = -dq4.dual;
+		}
+		if (dot(dq0.real, dq5.real) < 0.0) {
+			dq5.real = -dq5.real;
+			dq5.dual = -dq5.dual;
+		}
+		if (dot(dq0.real, dq6.real) < 0.0) {
+			dq6.real = -dq6.real;
+			dq6.dual = -dq6.dual;
+		}
+		if (dot(dq0.real, dq7.real) < 0.0) {
+			dq7.real = -dq7.real;
+			dq7.dual = -dq7.dual;
+		}
+
+		real += dq4.real * in_weight_attrib2.x;
+		real += dq5.real * in_weight_attrib2.y;
+		real += dq6.real * in_weight_attrib2.z;
+		real += dq7.real * in_weight_attrib2.w;
+
+		dual += dq4.dual * in_weight_attrib2.x;
+		dual += dq5.dual * in_weight_attrib2.y;
+		dual += dq6.dual * in_weight_attrib2.z;
+		dual += dq7.dual * in_weight_attrib2.w;
+
+		if (skinning_method == 2) {
+			S += dq4.S * in_weight_attrib2.x;
+			S += dq5.S * in_weight_attrib2.y;
+			S += dq6.S * in_weight_attrib2.z;
+			S += dq7.S * in_weight_attrib2.w;
+		}
+	#endif
+
+		float len = length(real);
+		if (len >= 1e-8) {
+			real /= len;
+			dual /= len;
+
+			// Credit goes to original version at https://users.cs.utah.edu/~ladislav/dq/dqs.cg
+			// Transposed here since the LBS version is transposed
+			m[0][0] = real.w * real.w + real.x * real.x - real.y * real.y - real.z * real.z;
+			m[0][1] = 2.0 * real.x * real.y - 2.0 * real.w * real.z;
+			m[0][2] = 2.0 * real.x * real.z + 2.0 * real.w * real.y;
+
+			m[1][0] = (2.0 * real.x * real.y + 2.0 * real.w * real.z);
+			m[1][1] = (real.w * real.w + real.y * real.y - real.x * real.x - real.z * real.z);
+			m[1][2] = (2.0 * real.y * real.z - 2.0 * real.w * real.x);
+
+			m[2][0] = 2.0 * real.x * real.z - 2.0 * real.w * real.y;
+			m[2][1] = 2.0 * real.y * real.z + 2.0 * real.w * real.x;
+			m[2][2] = real.w * real.w + real.z * real.z - real.x * real.x - real.y * real.y;
+
+			m[0][3] = -2.0 * dual.w * real.x + 2.0 * real.w * dual.x - 2.0 * dual.y * real.z + 2.0 * real.y * dual.z;
+			m[1][3] = -2.0 * dual.w * real.y + 2.0 * dual.x * real.z - 2.0 * real.x * dual.z + 2.0 * real.w * dual.y;
+			m[2][3] = -2.0 * dual.w * real.z + 2.0 * real.x * dual.y + 2.0 * real.w * dual.z - 2.0 * dual.x * real.y;
+
+			m[3][0] = 0.0;
+			m[3][1] = 0.0;
+			m[3][2] = 0.0;
+			m[3][3] = 1.0;
+
+			if (skinning_method == 2) {
+				// reintroduce scale
+				mat3 B = mat3(m);
+				B = S * B;
+				m[0].xyz = B[0].xyz;
+				m[1].xyz = B[1].xyz;
+				m[2].xyz = B[2].xyz;
+			}
+		} else {
+			m = mat4(1.0);
+		}
+	}
 
 	// Reverse order because its transposed.
 	out_vertex = (vec4(out_vertex, 1.0) * m).xyz;
