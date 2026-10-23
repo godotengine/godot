@@ -1427,8 +1427,15 @@ void AudioServer::update() {
 		ci->callback(ci->userdata);
 	}
 
+	int playing_mix_callbacks = 0;
+	for (CallbackItem *ci : mix_callback_list) {
+		if (ci->is_playing) {
+			playing_mix_callbacks++;
+		}
+	}
+
 	if (AudioDriver::get_singleton()->can_output_device_sleep()) {
-		if (playback_stream_count.get() == 0) {
+		if (playback_stream_count.get() == 0 && playing_mix_callbacks == 0) {
 			uint64_t now_msec = OS::get_singleton()->get_ticks_msec();
 			if (playback_stream_idle_since_msec == 0) {
 				playback_stream_idle_since_msec = now_msec;
@@ -1547,6 +1554,14 @@ void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
 	ci->callback = p_callback;
 	ci->userdata = p_userdata;
 	mix_callback_list.insert(ci);
+}
+
+void AudioServer::set_mix_callback_state(AudioCallback p_callback, void *p_userdata, bool p_is_playing) {
+	for (CallbackItem *ci : mix_callback_list) {
+		if (ci->callback == p_callback && ci->userdata == p_userdata) {
+			ci->is_playing = p_is_playing;
+		}
+	}
 }
 
 void AudioServer::remove_mix_callback(AudioCallback p_callback, void *p_userdata) {
