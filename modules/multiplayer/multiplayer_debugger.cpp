@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "multiplayer_debugger.h"
 
 #include "multiplayer_synchronizer.h"
@@ -328,3 +330,5 @@ void MultiplayerDebugger::ReplicationProfiler::tick(double p_frame_time, double 
 		EngineDebugger::get_singleton()->send_message("multiplayer:syncs", frame.serialize());
 	}
 }
+
+#endif // DEBUG_ENABLED

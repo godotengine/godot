@@ -340,4 +340,4 @@ public:
 	int get_zoom_failed_attempts_count() const { return zoom_failed_attempts_count; }
 };
 
-#endif // DEBUG_ENABLED && _3D_DISABLED
+#endif // DEBUG_ENABLED && !_3D_DISABLED
