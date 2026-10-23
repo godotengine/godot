@@ -40,7 +40,7 @@ class ZipArchive : public PackSource {
 public:
 	struct File {
 		int package = -1;
-		unz_file_pos file_pos;
+		unz64_file_pos file_pos;
 	};
 
 private:
