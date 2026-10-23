@@ -245,6 +245,10 @@ BufferDecoder *CameraFeedLinux::_create_buffer_decoder() {
 		case V4L2_PIX_FMT_MJPEG:
 		case V4L2_PIX_FMT_JPEG:
 			return memnew(JpegBufferDecoder(this));
+		case V4L2_PIX_FMT_YUV420:
+			return memnew(Yuv420ToRgbBufferDecoder(this, true));
+		case V4L2_PIX_FMT_YVU420:
+			return memnew(Yuv420ToRgbBufferDecoder(this, false));
 		case V4L2_PIX_FMT_YUYV:
 		case V4L2_PIX_FMT_YYUV:
 		case V4L2_PIX_FMT_YVYU:
