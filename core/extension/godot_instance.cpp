@@ -37,6 +37,11 @@
 #include "main/main.h"
 #include "servers/display/display_server.h"
 
+static bool default_iteration() {
+	DisplayServer::get_singleton()->process_events();
+	return Main::iteration();
+}
+
 void GodotInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start"), &GodotInstance::start);
 	ClassDB::bind_method(D_METHOD("is_started"), &GodotInstance::is_started);
@@ -47,7 +52,7 @@ void GodotInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resume"), &GodotInstance::resume);
 }
 
-GodotInstance::GodotInstance() {
+GodotInstance::GodotInstance() : iteration_func(&default_iteration) {
 }
 
 GodotInstance::~GodotInstance() {
@@ -79,8 +84,15 @@ bool GodotInstance::is_started() {
 }
 
 bool GodotInstance::iteration() {
-	DisplayServer::get_singleton()->process_events();
-	return Main::iteration();
+	return iteration_func();
+}
+
+void GodotInstance::set_iteration(IterationFunction p_iteration_func) {
+	if (p_iteration_func) {
+		iteration_func = p_iteration_func;
+	} else {
+		iteration_func = &default_iteration;
+	}
 }
 
 void GodotInstance::stop() {
