@@ -77,8 +77,11 @@ protected:
 public:
 	void clear();
 	void on_peer_change(int p_id, bool p_connected);
+	void process_path_handshake(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_request_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_release_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	// Returns true if all peers have cached path.
 	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
