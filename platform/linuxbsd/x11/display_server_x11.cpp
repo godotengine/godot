@@ -2032,6 +2032,11 @@ void DisplayServerX11::show_window(DisplayServerEnums::WindowID p_id) {
 
 	_update_motif_wm_hints(p_id);
 
+	// Reapply the requested position on the first ConfigureNotify.
+	if (!wd.fullscreen && !wd.exclusive_fullscreen && !wd.maximized && !wd.embed_parent) {
+		wd.pending_position = true;
+	}
+
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 
@@ -2506,10 +2511,7 @@ void DisplayServerX11::_update_size_hints(DisplayServerEnums::WindowID p_window)
 	DisplayServerEnums::WindowMode window_mode = window_get_mode(p_window);
 	XSizeHints *xsh = XAllocSizeHints();
 
-	// Always set the position and size hints - they should be synchronized with the actual values after the window is mapped anyway
-	xsh->flags |= PPosition | PSize | PWinGravity;
-	xsh->x = wd.position.x;
-	xsh->y = wd.position.y;
+	xsh->flags |= PSize | PWinGravity;
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
 	xsh->win_gravity = StaticGravity;
@@ -2676,7 +2678,13 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, DisplaySer
 	}
 
 	wd.position = p_position;
-	XMoveWindow(x11_display, wd.x11_window, p_position.x, p_position.y);
+
+	XWindowChanges changes;
+	changes.x = p_position.x;
+	changes.y = p_position.y;
+	XConfigureWindow(x11_display, wd.x11_window, CWX | CWY, &changes);
+	XFlush(x11_display);
+
 	_update_real_mouse_position(wd);
 }
 
@@ -4600,6 +4608,21 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 		new_rect.size.width = event->xconfigure.width;
 		new_rect.size.height = event->xconfigure.height;
+	}
+
+	// WM may ignore the position hint on map; restore it once.
+	if (wd.pending_position) {
+		wd.pending_position = false;
+		if (new_rect.position != wd.position) {
+			// Keep the requested position, accept the size reported by the WM.
+			new_rect.position = wd.position;
+
+			XWindowChanges changes;
+			changes.x = wd.position.x;
+			changes.y = wd.position.y;
+			XConfigureWindow(x11_display, wd.x11_window, CWX | CWY, &changes);
+			XFlush(x11_display);
+		}
 	}
 
 	if (new_rect == Rect2i(wd.position, wd.size)) {
