@@ -328,7 +328,7 @@ void AudioServer::_mix_step() {
 	}
 
 	// Now that all of the buses have their audio sources mixed into them, we can process the effects and bus sends.
-	for (int i = buses.size() - 1; i >= 0; i--) {
+	for (int i = 0; i < buses.size(); i++) {
 		Bus *bus = buses[i];
 
 		for (int k = 0; k < bus->channels.size(); k++) {
@@ -374,8 +374,34 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		// Process send.
+		// Process additional sends.
+		for (int k = 0; k < bus->channels.size(); k++) {
+			if (!bus->channels[k].active) {
+				continue;
+			}
 
+			AudioFrame *buf = bus->channels.write[k].buffer.ptrw();
+
+			for (KeyValue<const StringName, Bus::Send> &pair : bus->sends) {
+				Bus *a_send = bus_map[pair.value.target];
+
+				if (pair.value.mute || a_send->index_cache <= bus->index_cache) { // Do not send to the left.
+					continue;
+				}
+
+				AudioFrame *target_buf = thread_get_channel_mix_buffer(a_send->index_cache, k);
+				float send_volume = Math::db_to_linear(pair.value.volume_db);
+
+				for (uint32_t j = 0; j < buffer_size; j++) {
+					target_buf[j] += buf[j] * send_volume;
+				}
+			}
+		}
+	}
+
+	// Process sends.
+	for (int i = buses.size() - 1; i >= 0; i--) {
+		Bus *bus = buses[i];
 		Bus *send = nullptr;
 
 		if (i > 0) {
@@ -859,6 +885,84 @@ void AudioServer::set_bus_send(int p_bus, const StringName &p_send) {
 StringName AudioServer::get_bus_send(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), StringName());
 	return buses[p_bus]->send;
+}
+
+void AudioServer::add_bus_sends(int p_bus, const StringName &p_send) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+
+	if (buses[p_bus]->sends.has(p_send)) {
+		return;
+	}
+
+	if (!bus_map.has(p_send)) {
+		return;
+	}
+
+	MARK_EDITED
+
+	Bus::Send send;
+	send.target = p_send;
+	buses[p_bus]->sends[p_send] = send;
+}
+
+TypedArray<StringName> AudioServer::get_bus_sends(int p_bus) {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), Array());
+
+	TypedArray<StringName> keys;
+
+	for (KeyValue<const StringName, Bus::Send> &pair : buses[p_bus]->sends) {
+		keys.push_back(pair.key);
+	}
+
+	return keys;
+}
+
+void AudioServer::remove_bus_sends(int p_bus, const StringName &p_send) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+
+	MARK_EDITED
+
+	buses[p_bus]->sends.erase(p_send);
+}
+
+void AudioServer::set_bus_sends_mute(int p_bus, const StringName &p_send, bool p_enable) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+
+	if (!buses[p_bus]->sends.has(p_send)) {
+		return;
+	}
+
+	buses[p_bus]->sends[p_send].mute = p_enable;
+}
+
+bool AudioServer::is_bus_sends_mute(int p_bus, const StringName &p_send) {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
+
+	if (!buses[p_bus]->sends.has(p_send)) {
+		return false;
+	}
+
+	return buses[p_bus]->sends[p_send].mute;
+}
+
+void AudioServer::set_bus_sends_volume_db(int p_bus, const StringName &p_send, float p_volume_db) {
+	ERR_FAIL_INDEX(p_bus, buses.size());
+
+	if (!buses[p_bus]->sends.has(p_send)) {
+		return;
+	}
+
+	buses[p_bus]->sends[p_send].volume_db = p_volume_db;
+}
+
+float AudioServer::get_bus_sends_volume_db(int p_bus, const StringName &p_send) {
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0.0f);
+
+	if (!buses[p_bus]->sends.has(p_send)) {
+		return 0.0f;
+	}
+
+	return buses[p_bus]->sends[p_send].volume_db;
 }
 
 void AudioServer::set_bus_solo(int p_bus, bool p_enable) {
@@ -1874,6 +1978,16 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
+
+	ClassDB::bind_method(D_METHOD("add_bus_sends", "bus_idx", "send"), &AudioServer::add_bus_sends);
+	ClassDB::bind_method(D_METHOD("get_bus_sends", "bus_idx"), &AudioServer::get_bus_sends);
+	ClassDB::bind_method(D_METHOD("remove_bus_sends", "bus_idx", "send"), &AudioServer::remove_bus_sends);
+
+	ClassDB::bind_method(D_METHOD("set_bus_sends_mute", "bus_idx", "send", "enable"), &AudioServer::set_bus_sends_mute);
+	ClassDB::bind_method(D_METHOD("is_bus_sends_mute", "bus_idx", "send"), &AudioServer::is_bus_sends_mute);
+
+	ClassDB::bind_method(D_METHOD("set_bus_sends_volume_db", "bus_idx", "send", "volume_db"), &AudioServer::set_bus_sends_volume_db);
+	ClassDB::bind_method(D_METHOD("get_bus_sends_volume_db", "bus_idx", "send"), &AudioServer::get_bus_sends_volume_db);
 
 	ClassDB::bind_method(D_METHOD("set_bus_solo", "bus_idx", "enable"), &AudioServer::set_bus_solo);
 	ClassDB::bind_method(D_METHOD("is_bus_solo", "bus_idx"), &AudioServer::is_bus_solo);
