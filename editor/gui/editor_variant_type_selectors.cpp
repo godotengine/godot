@@ -123,6 +123,14 @@ void EditorVariantTypePopupMenu::_populate() {
 		if (type == Variant::RID || type == Variant::CALLABLE || type == Variant::SIGNAL) {
 			continue;
 		}
+		if (meta_property) {
+			if (type == Variant::NIL) {
+				continue;
+			} else if (type == Variant::OBJECT) {
+				names.push_back("Resource");
+				continue;
+			}
+		}
 
 		names.push_back(Variant::get_type_name(type));
 	}
@@ -130,7 +138,8 @@ void EditorVariantTypePopupMenu::_populate() {
 	names.sort_custom<CompareVariantTypeNames>();
 
 	for (const String &name : names) {
-		add_item(name, Variant::get_type_by_name(name));
+		int id = Variant::get_type_by_name(name);
+		add_item(name, id == Variant::VARIANT_MAX ? Variant::OBJECT : id); // Condition to handle Resource.
 	}
 }
 
@@ -174,8 +183,9 @@ void EditorVariantTypePopupMenu::_popup_base(const Rect2i &p_bounds) {
 	PopupMenu::_popup_base(p_bounds);
 }
 
-EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item) {
+EditorVariantTypePopupMenu::EditorVariantTypePopupMenu(bool p_remove_item, bool p_meta_property) {
 	remove_item = p_remove_item;
+	meta_property = p_meta_property;
 	set_search_bar_enabled(true);
 	set_search_bar_min_item_count(10);
 }
