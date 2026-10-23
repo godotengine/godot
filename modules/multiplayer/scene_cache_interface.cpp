@@ -97,10 +97,10 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 
 void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 	ERR_FAIL_COND(!peers_info.has(p_from)); // Bug.
-	ERR_FAIL_COND_MSG(p_packet_len < 38, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len < 39, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
-	int ofs = 1;
+	int ofs = 2;
 
 	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
@@ -127,10 +127,11 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	// Send ack.
 	Vector<uint8_t> packet;
-	packet.resize(1 + 1 + 4);
-	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_CONFIRM_PATH;
-	packet.write[1] = valid_rpc_checksum;
-	encode_uint32(id, &packet.write[2]);
+	packet.resize(1 + 1 + 1 + 4);
+	packet.write[0] = SceneMultiplayer::NETWORK_COMMAND_PATH_HANDSHAKE;
+	packet.write[1] = SceneMultiplayer::CONFIRM_PATH;
+	packet.write[2] = valid_rpc_checksum;
+	encode_uint32(id, &packet.write[3]);
 
 	Ref<MultiplayerPeer> multiplayer_peer = multiplayer->get_multiplayer_peer();
 	ERR_FAIL_COND(multiplayer_peer.is_null());
@@ -141,12 +142,12 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 }
 
 void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(p_packet_len != 6, "Invalid packet received. Size too small.");
+	ERR_FAIL_COND_MSG(p_packet_len != 7, "Invalid packet received. Size too small.");
 	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
 	ERR_FAIL_NULL(root_node);
 
-	const bool valid_rpc_checksum = p_packet[1];
-	int id = decode_uint32(&p_packet[2]);
+	const bool valid_rpc_checksum = p_packet[2];
+	int id = decode_uint32(&p_packet[3]);
 
 	const ObjectID *oid = assigned_ids.getptr(id);
 	if (oid == nullptr) {
@@ -177,11 +178,12 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodeCache &p_cache, 
 	const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
 
 	Vector<uint8_t> packet;
-	packet.resize(1 + 4 + path_len + methods_md5_len);
+	packet.resize(1 + 1 + 4 + path_len + methods_md5_len);
 	int ofs = 0;
 
-	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_SIMPLIFY_PATH;
-	ofs += 1;
+	packet.write[ofs] = SceneMultiplayer::NETWORK_COMMAND_PATH_HANDSHAKE;
+	packet.write[ofs + 1] = SceneMultiplayer::SIMPLIFY_PATH;
+	ofs += 2;
 
 	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 
