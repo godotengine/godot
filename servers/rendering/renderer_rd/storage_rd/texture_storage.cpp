@@ -4486,6 +4486,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	rt->color_format = render_target_get_color_format(rt->use_hdr, false);
 	rt->color_format_srgb = render_target_get_color_format(rt->use_hdr, true);
+	rt->msaa = render_target_get_nearest_supported_msaa(rt->msaa, rt->use_hdr);
 
 	if (rt->use_hdr) {
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBAH : Image::FORMAT_RGBH;
@@ -5501,6 +5502,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 		// FIXME: Storage bit should only be requested when FSR is required.
 		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
+}
+
+RSE::ViewportMSAA TextureStorage::render_target_get_nearest_supported_msaa(RSE::ViewportMSAA p_msaa, bool p_use_hdr) {
+	return RenderSceneBuffersRD::get_nearest_supported_msaa(p_msaa, render_target_get_color_format(p_use_hdr, false), render_target_get_color_usage_bits(true));
 }
 
 void TextureStorage::texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) {
