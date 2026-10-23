@@ -1,0 +1,5 @@
+GH-116914
+---------
+Validate extension JSON: API was removed: classes/SceneMultiplayer/methods/disconnect_peer
+
+Method has been moved to parent class, error is a false-positive.
