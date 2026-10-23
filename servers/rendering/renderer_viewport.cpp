@@ -332,7 +332,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, p_viewport->window_output_max_value, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, p_viewport->window_output_max_value, p_viewport->culling_volumes, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("< Render 3D Scene");
 #endif // _3D_DISABLED
@@ -1671,6 +1671,24 @@ void RendererViewport::viewport_set_vrs_texture(RID p_viewport, RID p_texture) {
 
 	RSG::texture_storage->render_target_set_vrs_texture(viewport->render_target, p_texture);
 	_configure_3d_render_buffers(viewport);
+}
+
+void RendererViewport::viewport_add_culling_volume(RID p_viewport, RID p_culling_volume) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (!viewport->culling_volumes.has(p_culling_volume)) {
+		viewport->culling_volumes.push_back(p_culling_volume);
+	}
+}
+
+void RendererViewport::viewport_remove_culling_volume(RID p_viewport, RID p_culling_volume) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL(viewport);
+
+	if (viewport->culling_volumes.has(p_culling_volume)) {
+		viewport->culling_volumes.erase(p_culling_volume);
+	}
 }
 
 bool RendererViewport::free(RID p_rid) {
