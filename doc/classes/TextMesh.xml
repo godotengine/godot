@@ -12,6 +12,9 @@
 		<link title="3D text">$DOCS_URL/tutorials/3d/3d_text.html</link>
 	</tutorials>
 	<members>
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
+			If [code]true[/code], the displayed text is auto translated according to the current locale.
+		</member>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="0">
 			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
 		</member>
@@ -57,7 +60,7 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text to generate mesh from.
-			[b]Note:[/b] Due to being a [Resource], it doesn't follow the rules of [member Node.auto_translate_mode]. If disabling translation is desired, it should be done manually with [method Object.set_message_translation].
+			[b]Note:[/b] Due to being a [Resource], it doesn't follow the rules of [member Node.auto_translate_mode]. See [member auto_translate].
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="TextServer.Direction" default="0">
 			Base text writing direction.
