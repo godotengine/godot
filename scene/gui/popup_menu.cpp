@@ -48,6 +48,7 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 HashMap<NativeMenu::SystemMenus, PopupMenu *> PopupMenu::system_menus;
 
@@ -1138,13 +1139,13 @@ void PopupMenu::_draw_items() {
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color), search_bar_highlights_enabled, theme_cache.search_highlight_color, theme_cache.search_highlight_border_color);
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (((active_submenu_index == -1 && i == mouse_over) || i == active_submenu_index) ? theme_cache.font_hover_color : theme_cache.font_color), search_bar_highlights_enabled, theme_cache.search_highlight_color, theme_cache.search_highlight_border_color);
 			}
 		}
 
@@ -1227,6 +1228,8 @@ void PopupMenu::_search_bar_focus_entered() {
 
 void PopupMenu::_filter_items(const String &p_query) {
 	for (PopupMenu::Item &item : items) {
+		item.text_buf->reset_highlights();
+
 		if (item.submenu) {
 			item.submenu->_filter_items(p_query);
 		}
@@ -1273,6 +1276,13 @@ void PopupMenu::_filter_items(const String &p_query) {
 	for (const Ref<FuzzySearchMatch> &result : fuzzy.search_all(p_query, search_candidates)) {
 		PopupMenu::Item &item = items.write[search_candidate_to_item[result->get_original_index()]];
 		item.visible = true;
+
+		for (const FuzzyTokenMatch &match : result->get_token_matches()) {
+			for (const Vector2i &substr : match.substrings) {
+				item.text_buf->add_highlight(substr);
+			}
+		}
+
 		if (item.submenu) {
 			for (PopupMenu::Item &submenu_item : item.submenu->items) {
 				submenu_item.visible = true;
@@ -3422,6 +3432,14 @@ int PopupMenu::get_search_bar_min_item_count() const {
 	return search_bar_min_item_count;
 }
 
+void PopupMenu::set_search_bar_highlights_enabled(bool p_enabled) {
+	search_bar_highlights_enabled = p_enabled;
+}
+
+bool PopupMenu::is_search_bar_highlights_enabled() const {
+	return search_bar_highlights_enabled;
+}
+
 void PopupMenu::set_search_bar_fuzzy_search_enabled(bool p_enabled) {
 	search_bar_fuzzy_search_enabled = p_enabled;
 }
@@ -3629,6 +3647,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_search_bar_enabled"), &PopupMenu::is_search_bar_enabled);
 	ClassDB::bind_method(D_METHOD("set_search_bar_min_item_count", "count"), &PopupMenu::set_search_bar_min_item_count);
 	ClassDB::bind_method(D_METHOD("get_search_bar_min_item_count"), &PopupMenu::get_search_bar_min_item_count);
+	ClassDB::bind_method(D_METHOD("set_search_bar_highlights_enabled", "enabled"), &PopupMenu::set_search_bar_highlights_enabled);
+	ClassDB::bind_method(D_METHOD("is_search_bar_highlights_enabled"), &PopupMenu::is_search_bar_highlights_enabled);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_enabled", "enabled"), &PopupMenu::set_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("is_search_bar_fuzzy_search_enabled"), &PopupMenu::is_search_bar_fuzzy_search_enabled);
 	ClassDB::bind_method(D_METHOD("set_search_bar_fuzzy_search_max_misses", "max_misses"), &PopupMenu::set_search_bar_fuzzy_search_max_misses);
@@ -3653,6 +3673,7 @@ void PopupMenu::_bind_methods() {
 	ADD_GROUP("Search Bar", "search_bar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_search_bar_enabled", "is_search_bar_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_min_item_count", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), "set_search_bar_min_item_count", "get_search_bar_min_item_count");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_highlights_enabled"), "set_search_bar_highlights_enabled", "is_search_bar_highlights_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "search_bar_fuzzy_search_enabled"), "set_search_bar_fuzzy_search_enabled", "is_search_bar_fuzzy_search_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "search_bar_fuzzy_search_max_misses", PROPERTY_HINT_RANGE, "0,2,1,or_greater"), "set_search_bar_fuzzy_search_max_misses", "get_search_bar_fuzzy_search_max_misses");
 
@@ -3709,6 +3730,9 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, search_highlight_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, search_highlight_border_color);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, PopupMenu, focus_sound, "focus", "Control");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, PopupMenu, item_hovered_sound);
@@ -3976,4 +4000,48 @@ String PopupMenuItems::get_tooltip(const Point2 &p_pos) const {
 		return "";
 	}
 	return popup->items[over].tooltip;
+}
+
+void HighlightedTextLine::_draw_highlights(RID p_canvas, const Vector2i &p_substr, const Vector2 &p_pos, const Color &p_fill_color, const Color &p_outline_color) const {
+	Rect2 line_rect = Rect2(p_pos, get_size());
+
+	for (const Vector2 &range : TS->shaped_text_get_selection(get_rid(), p_substr.x, p_substr.x + p_substr.y)) {
+		real_t substr_width = range.y - range.x;
+		real_t usable_width = line_rect.size.x - range.x;
+		real_t actual_width = MIN(substr_width, usable_width);
+		if (actual_width <= 0) {
+			continue;
+		}
+
+		Rect2 rect(line_rect.position + Point2(range.x, 0), Size2(actual_width, line_rect.size.y));
+		Vector<Vector2> points = {
+			rect.position,
+			rect.position + Vector2(rect.size.x, 0),
+			rect.position + rect.size,
+			rect.position + Vector2(0, rect.size.y),
+			rect.position
+		};
+		Vector<Color> colors = { p_outline_color };
+
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_canvas, rect, p_fill_color, false);
+		RenderingServer::get_singleton()->canvas_item_add_polyline(p_canvas, points, colors, 1.0f, false);
+	}
+}
+
+void HighlightedTextLine::add_highlight(const Vector2i &p_substr) {
+	highlights.push_back(p_substr);
+}
+
+void HighlightedTextLine::reset_highlights() {
+	highlights.clear();
+}
+
+void HighlightedTextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_text_color, bool p_highlights_enabled, const Color &p_highlight_fill_color, const Color &p_highlight_outline_color) const {
+	if (p_highlights_enabled) {
+		for (const Vector2i &substr : highlights) {
+			_draw_highlights(p_canvas, substr, p_pos, p_highlight_fill_color, p_highlight_outline_color);
+		}
+	}
+
+	TextLine::draw(p_canvas, p_pos, p_text_color, 0.0f);
 }
