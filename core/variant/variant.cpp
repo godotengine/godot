@@ -3439,28 +3439,28 @@ bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p
 		return true;
 	}
 	if (p_lhs.get_type() == Variant::STRING && p_rhs.get_type() == Variant::STRING_NAME) {
-		return *VariantInternal::get_string(&p_lhs) == *VariantInternal::get_string_name(&p_rhs);
+		return VariantInternalAccessor<String>::get(&p_lhs) == VariantInternalAccessor<StringName>::get(&p_rhs);
 	}
 	if (p_lhs.get_type() == Variant::STRING_NAME && p_rhs.get_type() == Variant::STRING) {
-		return *VariantInternal::get_string_name(&p_lhs) == *VariantInternal::get_string(&p_rhs);
+		return VariantInternalAccessor<StringName>::get(&p_lhs) == VariantInternalAccessor<String>::get(&p_rhs);
 	}
 	return false;
 }
 
 bool StringLikeVariantOrder::compare(const Variant &p_lhs, const Variant &p_rhs) {
 	if (p_lhs.get_type() == Variant::STRING) {
-		const String &lhs = *VariantInternal::get_string(&p_lhs);
+		const String &lhs = VariantInternalAccessor<String>::get(&p_lhs);
 		if (p_rhs.get_type() == Variant::STRING) {
-			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+			return StringName::AlphCompare::compare(lhs, VariantInternalAccessor<String>::get(&p_rhs));
 		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
-			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+			return StringName::AlphCompare::compare(lhs, VariantInternalAccessor<StringName>::get(&p_rhs));
 		}
 	} else if (p_lhs.get_type() == Variant::STRING_NAME) {
-		const StringName &lhs = *VariantInternal::get_string_name(&p_lhs);
+		const StringName &lhs = VariantInternalAccessor<StringName>::get(&p_lhs);
 		if (p_rhs.get_type() == Variant::STRING) {
-			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+			return StringName::AlphCompare::compare(lhs, VariantInternalAccessor<String>::get(&p_rhs));
 		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
-			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+			return StringName::AlphCompare::compare(lhs, VariantInternalAccessor<StringName>::get(&p_rhs));
 		}
 	}
 
