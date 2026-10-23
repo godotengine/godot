@@ -185,6 +185,7 @@ public:
 
 	virtual void set_blocking_mode(bool p_enable) = 0; // Useful mostly if running in a thread
 	virtual bool is_blocking_mode_enabled() const = 0;
+	virtual void shutdown() = 0;
 
 	virtual void set_read_chunk_size(int p_size) = 0;
 	virtual int get_read_chunk_size() const = 0;
