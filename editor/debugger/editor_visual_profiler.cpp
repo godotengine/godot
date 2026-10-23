@@ -81,6 +81,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 
 	updating_frame = true;
 	clear_button->set_disabled(false);
+	cursor_metric_edit->set_editable(true);
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
 	cursor_metric_edit->set_min(MAX(int64_t(frame_metrics[last_metric].frame_number) - frame_metrics.size(), 0));
 
@@ -122,6 +123,7 @@ void EditorVisualProfiler::clear() {
 	cursor_metric_edit->set_min(0);
 	cursor_metric_edit->set_max(0);
 	cursor_metric_edit->set_value(0);
+	cursor_metric_edit->set_editable(false);
 	updating_frame = false;
 	hover_metric = -1;
 	seeking = false;
@@ -848,6 +850,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	cursor_metric_edit = memnew(SpinBox);
 	cursor_metric_edit->set_accessibility_name(TTRC("Frame #:"));
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
+	cursor_metric_edit->set_editable(false);
 	hb_frame->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));
 
