@@ -287,6 +287,7 @@ public:
 		// State to track when radiance octmap needs updating.
 		SkyMaterialData *prev_material_data = nullptr;
 		Vector3 prev_position;
+		Basis prev_orientation;
 		float prev_time;
 		float prev_fog_aerial_perspective = 0.0;
 		Color prev_fog_light_color;
