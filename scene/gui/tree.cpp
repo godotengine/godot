@@ -5691,8 +5691,8 @@ void Tree::_notification(int p_what) {
 			}
 
 			sticky_stack_end = 0;
+			sticky_list.clear();
 			if (root && !drop_mode_flags) {
-				sticky_list.clear();
 				Vector2 stick_ofs;
 				Vector2 last_ofs = stick_ofs;
 				real_t height_limit = get_size().y * .4; // Prevent sticky items from ever exceeding 40% of the space
