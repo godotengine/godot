@@ -299,13 +299,22 @@ public:
 	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor);
 };
 
+enum TypeDialogMode {
+	ADD_THEME_TYPE,
+	ADD_VARIATION_BASE,
+};
+
 class ThemeTypeDialog : public ConfirmationDialog {
 	GDCLASS(ThemeTypeDialog, ConfirmationDialog);
 
 	Ref<Theme> edited_theme;
+	String edited_type;
+	TypeDialogMode add_type_mode = ADD_THEME_TYPE;
+
 	bool include_own_types = false;
 
 	String pre_submitted_value;
+	bool is_submitted_value_custom = false;
 
 	FilterLineEdit *add_type_filter = nullptr;
 	ItemList *add_type_options = nullptr;
@@ -330,6 +339,8 @@ protected:
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
+	void set_edited_type(const String &p_type);
+	void set_add_type_mode(const TypeDialogMode &p_add_type_mode);
 	void set_include_own_types(bool p_enable);
 
 	ThemeTypeDialog();
@@ -377,11 +388,6 @@ class ThemeTypeEditor : public MarginContainer {
 	LineEdit *type_variation_edit = nullptr;
 	Button *type_variation_button = nullptr;
 	Label *type_variation_locked = nullptr;
-
-	enum TypeDialogMode {
-		ADD_THEME_TYPE,
-		ADD_VARIATION_BASE,
-	};
 
 	TypeDialogMode add_type_mode = ADD_THEME_TYPE;
 	ThemeTypeDialog *add_type_dialog = nullptr;
@@ -432,7 +438,7 @@ class ThemeTypeEditor : public MarginContainer {
 	void _type_variation_changed(const String p_value);
 	void _add_type_variation_cbk();
 
-	void _add_type_dialog_selected(const String p_type_name);
+	void _add_type_dialog_selected(const String p_type_name, bool p_is_custom_type);
 
 protected:
 	void _notification(int p_what);
@@ -440,7 +446,7 @@ protected:
 
 public:
 	void set_edited_theme(const Ref<Theme> &p_theme);
-	void select_type(String p_type_name);
+	void select_type(String p_type_name, bool p_is_custom_type);
 	bool is_stylebox_pinned(Ref<StyleBox> p_stylebox);
 
 	ThemeTypeEditor();
