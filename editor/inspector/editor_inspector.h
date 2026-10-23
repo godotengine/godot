@@ -946,6 +946,7 @@ public:
 	void edit(Object *p_object);
 	Object *get_edited_object();
 	Object *get_next_edited_object();
+	List<EditorProperty *> get_property_editors(const StringName &p_prop);
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);
