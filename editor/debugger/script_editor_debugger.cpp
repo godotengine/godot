@@ -1219,7 +1219,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 			}
 
-			const uint64_t until = OS::get_singleton()->get_ticks_msec() + 20;
+			const uint64_t until = OS::get_singleton()->get_ticks_msec_raw() + 20;
 
 			while (peer.is_valid() && peer->has_message()) {
 				Array arr = peer->get_message();
@@ -1230,7 +1230,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 				_parse_message(arr[0], arr[1], arr[2]);
 
-				if (OS::get_singleton()->get_ticks_msec() > until) {
+				if (OS::get_singleton()->get_ticks_msec_raw() > until) {
 					break;
 				}
 			}

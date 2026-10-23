@@ -1315,7 +1315,7 @@ void GodotPhysicsServer2D::flush_queries() {
 
 	flushing_queries = true;
 
-	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
+	uint64_t time_beg = OS::get_singleton()->get_ticks_usec_raw();
 
 	for (GodotSpace2D *E : active_spaces) {
 		E->call_queries();
@@ -1350,7 +1350,7 @@ void GodotPhysicsServer2D::flush_queries() {
 			values[i * 2 + 1] = USEC_TO_SEC(total_time[i]);
 		}
 		values.push_back("flush_queries");
-		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
+		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec_raw() - time_beg));
 
 		values.push_front("physics_2d");
 		EngineDebugger::profiler_add_frame_data("servers", values);

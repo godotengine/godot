@@ -198,7 +198,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 
 	/* INTEGRATE FORCES */
 
-	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec();
+	uint64_t profile_begtime = OS::get_singleton()->get_ticks_usec_raw();
 	uint64_t profile_endtime = 0;
 
 	int active_count = 0;
@@ -225,7 +225,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	p_space->update();
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = OS::get_singleton()->get_ticks_usec_raw();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -336,7 +336,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	p_space->set_island_count((int)island_count);
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = OS::get_singleton()->get_ticks_usec_raw();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_GENERATE_ISLANDS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -348,7 +348,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = OS::get_singleton()->get_ticks_usec_raw();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_SETUP_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -368,7 +368,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = OS::get_singleton()->get_ticks_usec_raw();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
@@ -397,7 +397,7 @@ void GodotStep3D::step(GodotSpace3D *p_space, real_t p_delta) {
 	}
 
 	{ //profile
-		profile_endtime = OS::get_singleton()->get_ticks_usec();
+		profile_endtime = OS::get_singleton()->get_ticks_usec_raw();
 		p_space->set_elapsed_time(GodotSpace3D::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
 	}
