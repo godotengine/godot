@@ -162,7 +162,7 @@ void Trail3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			clear();
-			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+			_ensure_frame_pre_draw_connection(false);
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -182,8 +182,8 @@ void Trail3D::_notification(int p_what) {
 
 void Trail3D::set_width(float p_width) {
 	width = p_width;
-	if (limit_mode == LIMIT_MODE_MAX_LENGTH && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
-		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		_ensure_frame_pre_draw_connection(true);
 	}
 }
 
@@ -210,6 +210,7 @@ void Trail3D::set_width_curve(Ref<Curve> p_width_curve) {
 		width_curve->disconnect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	width_curve = p_width_curve;
+	_ensure_frame_pre_draw_connection(true);
 	if (width_curve.is_valid()) {
 		width_curve->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
@@ -222,9 +223,7 @@ Ref<Curve> Trail3D::get_width_curve() const {
 
 void Trail3D::set_color(const Color &p_color) {
 	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
-		if (!RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
-			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
-		}
+		_ensure_frame_pre_draw_connection(true);
 	}
 	color = p_color;
 }
@@ -241,6 +240,7 @@ void Trail3D::set_color_gradient(Ref<Gradient> p_color_gradient) {
 		color_gradient->disconnect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	color_gradient = p_color_gradient;
+	_ensure_frame_pre_draw_connection(true);
 	if (color_gradient.is_valid()) {
 		color_gradient->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
@@ -309,6 +309,7 @@ void Trail3D::set_tiling_mode(TilingMode p_tiling_mode) {
 		_needs_rebuilding = true;
 	}
 	tiling_mode = p_tiling_mode;
+	_ensure_frame_pre_draw_connection(true);
 	notify_property_list_changed();
 }
 
@@ -321,6 +322,7 @@ void Trail3D::set_tiling_multiplier(float p_tiling_multiplier) {
 		_needs_rebuilding = true;
 	}
 	tiling_multiplier = p_tiling_multiplier;
+	_ensure_frame_pre_draw_connection(true);
 }
 
 float Trail3D::get_tiling_multiplier() const {
@@ -353,7 +355,7 @@ void Trail3D::set_limit_mode(LimitMode p_limit_mode) {
 	}
 	limit_mode = p_limit_mode;
 	if (p_limit_mode == LIMIT_MODE_LIFETIME) {
-		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+		_ensure_frame_pre_draw_connection(false);
 	} else {
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
@@ -399,6 +401,7 @@ void Trail3D::set_pin_uv(bool p_pin_uv) {
 		_needs_rebuilding = true;
 	}
 	pin_uv = p_pin_uv;
+	_ensure_frame_pre_draw_connection(true);
 }
 
 bool Trail3D::get_pin_uv() const {
@@ -841,6 +844,23 @@ void Trail3D::_process_trail() {
 	_previous_position = get_global_transform().get_origin();
 	_transform_changed = false;
 	rebuild();
+}
+
+void Trail3D::_ensure_frame_pre_draw_connection(bool p_is_one_shot) {
+	if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		if (_has_one_shot_connection && !p_is_one_shot) {
+			// Disconnect the one shot connect for use the normal one
+			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+		} else {
+			return;
+		}
+	}
+	if (p_is_one_shot) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), ConnectFlags::CONNECT_ONE_SHOT);
+	} else {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+	}
+	_has_one_shot_connection = p_is_one_shot;
 }
 
 void Trail3D::_validate_property(PropertyInfo &p_property) const {
