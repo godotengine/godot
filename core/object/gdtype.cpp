@@ -74,20 +74,26 @@ void GDType::initialize() {
 
 	if (super_type) {
 		if (super_type->init_state != InitState::FINALIZED) {
-			if (super_type->owning_thread_id != Thread::get_caller_id()) {
-				WARN_PRINT("Finalizing a GDType from a subtype from another thread.");
-			}
 			// Now that a subtype is registered, the supertype cannot change anymore.
 			// Otherwise, our caches would become invalid.
 			// This shouldn't be a problem, since classes should register all their
 			// parts in _bind_methods, which is called on registration.
-			super_type->init_state = InitState::FINALIZED;
+			super_type->finalize();
 		}
 
 		_members = super_type->_members;
 	}
 
 	init_state = InitState::MUTABLE;
+}
+
+void GDType::finalize() const {
+	if (owning_thread_id != Thread::get_caller_id()) {
+		WARN_PRINT("Finalizing a GDType from another thread.");
+	}
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+
+	init_state = InitState::FINALIZED;
 }
 
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
