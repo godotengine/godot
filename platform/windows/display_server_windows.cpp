@@ -2080,9 +2080,7 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 		if (windows.has(wid)) {
 			WindowData &wd_window = windows[wid];
 			wd_window.transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
-			if (wd_window.exclusive) {
-				SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
-			}
+			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 		}
 		wd.transient_children.erase(wid);
 	}
@@ -2472,18 +2470,6 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Displa
 void DisplayServerWindows::window_set_exclusive(DisplayServerEnums::WindowID p_window, bool p_exclusive) {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
-	if (wd.exclusive != p_exclusive) {
-		wd.exclusive = p_exclusive;
-		if (wd.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
-			if (wd.exclusive) {
-				WindowData &wd_parent = windows[wd.transient_parent];
-				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
-			} else {
-				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
-			}
-		}
-	}
 }
 
 void DisplayServerWindows::window_set_transient(DisplayServerEnums::WindowID p_window, DisplayServerEnums::WindowID p_parent) {
@@ -2508,9 +2494,7 @@ void DisplayServerWindows::window_set_transient(DisplayServerEnums::WindowID p_w
 		wd_window.transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
 
-		if (wd_window.exclusive) {
-			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
-		}
+		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != DisplayServerEnums::INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2518,10 +2502,7 @@ void DisplayServerWindows::window_set_transient(DisplayServerEnums::WindowID p_w
 
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
-
-		if (wd_window.exclusive) {
-			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
-		}
+		SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
 	}
 }
 
@@ -7367,9 +7348,7 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 				p_transient_parent = DisplayServerEnums::INVALID_WINDOW_ID;
 			} else {
 				wd_transient_parent = &windows[p_transient_parent];
-				if (p_exclusive) {
-					owner_hwnd = wd_transient_parent->hWnd;
-				}
+				owner_hwnd = wd_transient_parent->hWnd;
 			}
 		}
 
@@ -7434,7 +7413,6 @@ Error DisplayServerWindows::_create_window(DisplayServerEnums::WindowID p_window
 			wd.pre_fs_valid = true;
 		}
 
-		wd.exclusive = p_exclusive;
 		bool on_top = (p_flags & DisplayServerEnums::WINDOW_FLAG_ALWAYS_ON_TOP_BIT && p_mode != DisplayServerEnums::WINDOW_MODE_FULLSCREEN && p_mode != DisplayServerEnums::WINDOW_MODE_EXCLUSIVE_FULLSCREEN);
 		if (wd_transient_parent) {
 			if (on_top) {
