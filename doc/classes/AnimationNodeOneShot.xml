@@ -64,7 +64,7 @@
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
 	</tutorials>
 	<members>
 		<member name="abort_on_reset" type="bool" setter="set_abort_on_reset" getter="is_aborted_on_reset" default="false">

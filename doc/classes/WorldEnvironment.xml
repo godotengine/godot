@@ -10,8 +10,8 @@
 	</description>
 	<tutorials>
 		<link title="Environment and post-processing">$DOCS_URL/tutorials/3d/environment_and_post_processing.html</link>
-		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/2742</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="3D Material Testers Demo">https://store.godotengine.org/asset/godot-foundation/material-testers-demo/</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
 	</tutorials>
 	<members>
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">

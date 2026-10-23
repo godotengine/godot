@@ -9,7 +9,7 @@
 		[b]Note:[/b] [VisibleOnScreenNotifier2D] uses the render culling code to determine whether it's visible on screen, so it won't function unless [member CanvasItem.visible] is set to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Dodge The Creeps Demo">https://store.godotengine.org/asset/godot-foundation/dodge-the-creeps-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="is_on_screen" qualifiers="const">
