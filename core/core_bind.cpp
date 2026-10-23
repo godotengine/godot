@@ -1274,7 +1274,7 @@ Vector<Vector3> Geometry3D::segment_intersects_cylinder(const Vector3 &p_from, c
 Vector<Vector3> Geometry3D::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	Vector<Plane> planes = Variant(p_planes);
+	Vector<Plane> planes = Variant(p_planes).to<Vector<Plane>>();
 	if (!::Geometry3D::segment_intersects_convex(p_from, p_to, planes.ptr(), planes.size(), &res, &norm)) {
 		return r;
 	}
