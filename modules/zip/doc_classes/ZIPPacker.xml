@@ -12,8 +12,10 @@
 			var err = writer.open("user://archive.zip")
 			if err != OK:
 				return err
-			writer.open_file("hello.txt")
-			writer.write_file("Hello World".to_utf8_buffer())
+
+			var data = "Hello World".to_utf8_buffer()
+			writer.open_file("hello.txt", data.size() &gt; UINT32_MAX)
+			writer.write_file(data)
 			writer.close_file()
 
 			writer.close()
@@ -58,7 +60,7 @@
 		<method name="open_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
-			<param index="1" name="zip64" type="bool" />
+			<param index="1" name="zip64" type="bool" default="false" />
 			<param index="2" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" default="420" />
 			<param index="3" name="modified_time" type="int" default="0" />
 			<description>
