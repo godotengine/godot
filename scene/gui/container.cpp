@@ -196,10 +196,10 @@ Control *Container::as_sortable_control(Node *p_node, SortableVisibilityMode p_v
 	if (!c || c->is_set_as_top_level()) {
 		return nullptr;
 	}
-	if (p_visibility_mode == SortableVisibilityMode::VISIBLE && !c->is_visible()) {
+	if (p_visibility_mode == SortableVisibilityMode::VISIBLE && !c->is_visible() && !c->is_hidden_layout_enabled()) {
 		return nullptr;
 	}
-	if (p_visibility_mode == SortableVisibilityMode::VISIBLE_IN_TREE && !c->is_visible_in_tree()) {
+	if (p_visibility_mode == SortableVisibilityMode::VISIBLE_IN_TREE && !c->is_visible_in_tree() && !c->is_hidden_layout_enabled()) {
 		return nullptr;
 	}
 	return c;
