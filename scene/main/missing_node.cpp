@@ -61,7 +61,7 @@ void MissingNode::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 #ifdef DEBUG_ENABLED
-Error MissingNode::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+Error MissingNode::connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags) {
 	if (is_recording_signals()) {
 		if (!has_signal(p_signal)) {
 			add_user_signal(MethodInfo(p_signal));
