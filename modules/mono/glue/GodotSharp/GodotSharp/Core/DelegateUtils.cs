@@ -69,6 +69,28 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe void GetMethodName(IntPtr delegateGCHandle, godot_string_name* outMethodName)
+        {
+            try
+            {
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                string? methodName = @delegate?.Method?.Name;
+                if (methodName is null)
+                {
+                    *outMethodName = default;
+                    return;
+                }
+
+                *outMethodName = NativeFuncs.godotsharp_string_name_new_from_string(methodName);
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outMethodName = default;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {
