@@ -63,7 +63,6 @@ public:
 
 	/** Inherited from PacketPeer: **/
 	EXBIND0RC(int, get_available_packet_count);
-	EXBIND0RC(int, get_max_packet_size);
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
