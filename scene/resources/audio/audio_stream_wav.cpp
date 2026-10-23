@@ -39,6 +39,7 @@ const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
 
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
+#ifndef DISABLE_DEPRECATED
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
@@ -52,7 +53,9 @@ void AudioStreamPlaybackWAV::start(double p_from_pos) {
 		}
 
 		offset = 0;
-	} else {
+	} else
+#endif
+	{
 		seek(p_from_pos);
 	}
 
@@ -78,9 +81,11 @@ double AudioStreamPlaybackWAV::get_playback_position() const {
 }
 
 void AudioStreamPlaybackWAV::seek(double p_time) {
+#ifndef DISABLE_DEPRECATED
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		return; //no seeking in ima-adpcm
 	}
+#endif
 
 	double max = base->get_length();
 	if (p_time < 0) {
@@ -100,7 +105,7 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 	while (p_amount) {
 		p_amount--;
 		int64_t pos = p_offset << (is_stereo && !is_ima_adpcm && !is_qoa ? 1 : 0);
-
+#ifndef DISABLE_DEPRECATED
 		if (is_ima_adpcm) {
 			int64_t sample_pos = pos + p_ima_adpcm[0].window_ofs;
 
@@ -175,7 +180,9 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 				final_r = p_ima_adpcm[1].predictor;
 			}
 
-		} else if (is_qoa) {
+		} else
+#endif
+				if (is_qoa) {
 			uint64_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
 
 			if (p_qoa->data_ofs != new_data_ofs) {
@@ -315,7 +322,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 					sign *= -1;
 				} else {
 					/* go to loop-begin */
-
+#ifndef DISABLE_DEPRECATED
 					if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 						for (int i = 0; i < 2; i++) {
 							ima_adpcm[i].step_index = ima_adpcm[i].loop_step_index;
@@ -323,7 +330,9 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 							ima_adpcm[i].last_nibble = loop_begin;
 						}
 						offset = loop_begin;
-					} else {
+					} else
+#endif
+					{
 						offset = loop_begin + (offset - loop_end);
 					}
 				}
@@ -353,7 +362,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 		todo -= target;
 
-		switch (base->format) {
+		switch (format) {
 			case AudioStreamWAV::FORMAT_8_BITS: {
 				if (is_stereo) {
 					decode_samples<int8_t, true, false, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
@@ -370,12 +379,13 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 			} break;
 			case AudioStreamWAV::FORMAT_IMA_ADPCM: {
+#ifndef DISABLE_DEPRECATED
 				if (is_stereo) {
 					decode_samples<int8_t, true, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				} else {
 					decode_samples<int8_t, false, true, false>((int8_t *)data, dst_buff, offset, increment, target, ima_adpcm, &qoa);
 				}
-
+#endif
 			} break;
 			case AudioStreamWAV::FORMAT_QOA: {
 				if (is_stereo) {
@@ -1095,6 +1105,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	AudioStreamWAV::Format dst_format;
 
 	if (compression == 1) {
+#ifndef DISABLE_DEPRECATED
+		WARN_DEPRECATED_MSG("IMA ADPCM compression is deprecated. Consider using Quite OK Audio instead.");
 		dst_format = AudioStreamWAV::FORMAT_IMA_ADPCM;
 		if (format_channels == 1) {
 			_compress_ima_adpcm(data, dst_data);
@@ -1134,7 +1146,9 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				w[i * 2 + 1] = rr[i];
 			}
 		}
-
+#else
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "IMA ADPCM is unavailable as the engine was compiled without deprecated features.");
+#endif
 	} else if (compression == 2) {
 		dst_format = AudioStreamWAV::FORMAT_QOA;
 
