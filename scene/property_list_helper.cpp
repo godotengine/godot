@@ -30,6 +30,8 @@
 
 #include "property_list_helper.h"
 
+#include "core/object/property_info.h"
+
 HashMap<StringName, Vector<PropertyListHelper *>> PropertyListHelper::base_helpers; // static
 
 void PropertyListHelper::clear_base_helpers() { // static
@@ -161,10 +163,10 @@ void PropertyListHelper::add_properties_for_index(int p_index, List<PropertyInfo
 		}
 
 		PropertyInfo info = property.info;
-		if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, p_index) == property.default_value) {
+		if (!(info.usage & PROPERTY_USAGE_STORE_DEFAULT) && _call_getter(&property, p_index).hash_compare(property.default_value)) {
+			// HACK: `PropertyUtils::get_property_default_value` does not account for `PropertyListHelper` so when the default matches we need to disable storage here.
 			info.usage &= (~PROPERTY_USAGE_STORAGE);
 		}
-
 		info.name = vformat("%s%d/%s", prefix, p_index, info.name);
 		p_list->push_back(info);
 	}
