@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "audio_driver_pulseaudio.h"
-
 #ifdef PULSEAUDIO_ENABLED
+
+#include "audio_driver_pulseaudio.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"

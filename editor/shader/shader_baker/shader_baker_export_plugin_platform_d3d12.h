@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "editor/export/shader_baker/shader_baker_export_plugin.h"
 
 class ShaderBakerExportPluginPlatformD3D12 : public ShaderBakerExportPluginPlatform {
@@ -43,3 +45,5 @@ public:
 	virtual bool matches_driver(const String &p_driver) override;
 	virtual ~ShaderBakerExportPluginPlatformD3D12() override;
 };
+
+#endif // D3D12_ENABLED

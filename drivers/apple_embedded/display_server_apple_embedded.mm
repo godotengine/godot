@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "display_server_apple_embedded.h"
 
 #include "core/config/project_settings.h"
@@ -1009,3 +1011,5 @@ void DisplayServerAppleEmbedded::set_native_icon(const String &p_filename) {
 void DisplayServerAppleEmbedded::set_icon(const Ref<Image> &p_icon) {
 	// Not supported on Apple embedded platforms.
 }
+
+#endif // APPLE_EMBEDDED_ENABLED

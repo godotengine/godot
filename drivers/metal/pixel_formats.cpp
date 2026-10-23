@@ -48,6 +48,8 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "pixel_formats.h"
 
 #include "drivers/metal/metal_utils.h"
@@ -1051,3 +1053,5 @@ void PixelFormats::buildDFFormatMaps() {
 		}
 	}
 }
+
+#endif // METAL_ENABLED

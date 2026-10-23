@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "audio_driver_alsa.h"
-
 #ifdef ALSA_ENABLED
+
+#include "audio_driver_alsa.h"
 
 #include "core/config/engine.h"
 #include "core/math/math_funcs_binary.h"

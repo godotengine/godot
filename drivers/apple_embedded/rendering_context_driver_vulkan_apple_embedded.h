@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifdef VULKAN_ENABLED
+#if defined(APPLE_EMBEDDED_ENABLED) && defined(VULKAN_ENABLED)
 
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
@@ -52,4 +52,4 @@ public:
 	~RenderingContextDriverVulkanAppleEmbedded();
 };
 
-#endif // VULKAN_ENABLED
+#endif // defined(APPLE_EMBEDDED_ENABLED) && defined(VULKAN_ENABLED)

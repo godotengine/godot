@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "metal_device_profile.h"
 
 #include "drivers/metal/metal_utils.h"
@@ -127,3 +129,5 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(Platform p_platform, G
 
 	return &profiles.insert(key, res)->value;
 }
+
+#endif // METAL_ENABLED

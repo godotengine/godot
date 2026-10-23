@@ -48,6 +48,8 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "metal3_objects.h"
 
 #include "drivers/metal/metal_utils.h"
@@ -2099,3 +2101,5 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_se
 }
 
 GODOT_CLANG_WARNING_POP
+
+#endif // METAL_ENABLED

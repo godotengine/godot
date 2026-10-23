@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #import "openxr_metal_extension.h"
 
 #include "../../openxr_api.h"
@@ -319,3 +321,5 @@ RID OpenXRMetalExtension::get_texture(void *p_swapchain_graphics_data, int p_ima
 	ERR_FAIL_INDEX_V(p_image_index, data->texture_rids.size(), RID());
 	return data->texture_rids[p_image_index];
 }
+
+#endif // METAL_ENABLED

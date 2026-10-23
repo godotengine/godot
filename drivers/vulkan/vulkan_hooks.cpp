@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "vulkan_hooks.h"
 
 VulkanHooks *VulkanHooks::singleton = nullptr;
@@ -43,3 +45,5 @@ VulkanHooks::~VulkanHooks() {
 		singleton = nullptr;
 	}
 }
+
+#endif // VULKAN_ENABLED

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "apple_embedded.h"
 
 #include "core/object/class_db.h"
@@ -209,3 +211,5 @@ String AppleEmbedded::get_rate_url(int p_app_id) const {
 }
 
 AppleEmbedded::AppleEmbedded() {}
+
+#endif // APPLE_EMBEDDED_ENABLED

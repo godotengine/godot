@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -668,3 +670,5 @@ _FORCE_INLINE_ static MTL::Size mipmapLevelSizeFromTexture(MTL::Texture *p_tex, 
 	lvlSize.depth = MAX(p_tex->depth() >> p_level, 1UL);
 	return lvlSize;
 }
+
+#endif // METAL_ENABLED

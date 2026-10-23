@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef D3D12_ENABLED
+
 #include "d3d12_hooks.h"
 
 D3D12Hooks *D3D12Hooks::singleton = nullptr;
@@ -43,3 +45,5 @@ D3D12Hooks::~D3D12Hooks() {
 		singleton = nullptr;
 	}
 }
+
+#endif // D3D12_ENABLED

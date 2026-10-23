@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
 
@@ -81,3 +83,5 @@ struct HashMapComparatorDefault<SHA256Digest> {
 		return memcmp(p_lhs.data, p_rhs.data, CC_SHA256_DIGEST_LENGTH) == 0;
 	}
 };
+
+#endif // METAL_ENABLED

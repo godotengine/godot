@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "webrtc_data_channel_js.h"
-
 #ifdef WEB_ENABLED
+
+#include "webrtc_data_channel_js.h"
 
 #include <emscripten.h>
 

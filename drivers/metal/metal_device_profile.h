@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
@@ -168,3 +170,5 @@ private:
 
 	static HashMap<ProfileKey, MetalDeviceProfile> profiles;
 };
+
+#endif // METAL_ENABLED

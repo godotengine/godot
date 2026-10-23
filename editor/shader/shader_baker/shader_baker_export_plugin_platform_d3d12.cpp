@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef D3D12_ENABLED
+
 #include "shader_baker_export_plugin_platform_d3d12.h"
 
 #include "drivers/d3d12/rendering_shader_container_d3d12.h"
@@ -50,8 +52,10 @@ bool ShaderBakerExportPluginPlatformD3D12::matches_driver(const String &p_driver
 	return p_driver == "d3d12";
 }
 
-ShaderBakerExportPluginPlatformD3D12 ::~ShaderBakerExportPluginPlatformD3D12() {
+ShaderBakerExportPluginPlatformD3D12::~ShaderBakerExportPluginPlatformD3D12() {
 	if (lib_d3d12 != nullptr) {
 		FreeLibrary((HMODULE)(lib_d3d12));
 	}
 }
+
+#endif // D3D12_ENABLED
