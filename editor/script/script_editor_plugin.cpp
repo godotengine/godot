@@ -2264,6 +2264,10 @@ void DocumentEditorContainer::_toggle_files_pressed(bool p_pressed) {
 	EditorSettings::get_singleton()->set_project_metadata("show_files_panel", config_section, list_split->is_visible());
 }
 
+void DocumentEditorContainer::_on_document_edits_requested(const Array &p_doc_edits) {
+	emit_signal("document_edits_requested", p_doc_edits);
+}
+
 void DocumentEditorContainer::edited_scene_changed() {
 	_update_modified_scripts_for_external_editor();
 }
@@ -2669,6 +2673,7 @@ bool DocumentEditorContainer::edit(const Ref<Resource> &p_resource, int p_line, 
 			cte->set_zoom_factor(zoom_factor);
 			cte->connect("zoomed", callable_mp(this, &DocumentEditorContainer::_set_script_zoom_factor));
 			cte->connect(SceneStringName(visibility_changed), callable_mp(this, &DocumentEditorContainer::_update_code_editor_zoom_factor).bind(cte));
+			cte->connect("document_edits_requested", callable_mp(this, &DocumentEditorContainer::_on_document_edits_requested));
 		}
 	}
 
@@ -3973,6 +3978,122 @@ void DocumentEditorContainer::_update_code_editor_zoom_factor(CodeTextEditor *p_
 	}
 }
 
+EditorLanguage::DocumentEditOperation ScriptEditor::_get_doc_edit_operation_from_dict(const Dictionary &p_dict) {
+	EditorLanguage::DocumentEditOperation out;
+	out.file_path = p_dict["file_path"];
+
+	for (const Variant &v : Array(p_dict["edits"])) {
+		EditorLanguage::TextEdit te;
+		const Dictionary d = v;
+		te.start_line = d["start_line"];
+		te.start_column = d["start_column"];
+		te.end_line = d["end_line"];
+		te.end_column = d["end_column"];
+		te.new_text = d["new_text"];
+		out.edits.push_back(te);
+	}
+	return out;
+}
+
+void ScriptEditor::_on_document_edits_requested(const Array &p_doc_edits) {
+	// Get all of the files that need to be opened.
+	// If a file isn't currently opened, then open it and add it to a list.
+	HashMap<String, TextEditorBase *> files_and_editors;
+	for (const Variant &d : p_doc_edits) {
+		EditorLanguage::DocumentEditOperation doc_edit = _get_doc_edit_operation_from_dict(d);
+		String file_path = doc_edit.file_path;
+
+		// Look to see if this file already has an editor open.
+		bool editor_found = false;
+		for (Variant editor : ScriptEditor::get_singleton()->_get_open_script_editors()) {
+			TextEditorBase *te = Object::cast_to<TextEditorBase>(editor);
+			if (te && file_path == te->edited_file_data.path) {
+				files_and_editors.insert(file_path, te);
+				editor_found = true;
+				break;
+			}
+		}
+
+		// This file doesn't currently have an editor; thus, we need to open the
+		// file and then get its editor.
+		if (!editor_found) {
+			open_file(file_path);
+
+			// Now that the file has been opened (or at least we tried to open it),
+			// try finding its editor again!
+			// (This could probably be simplified if we kept a HashMap of files and
+			// their corresponding editors, for all open files.)
+			for (Variant editor : _get_open_script_editors()) {
+				TextEditorBase *te = Object::cast_to<TextEditorBase>(editor);
+				if (te && file_path == te->edited_file_data.path) {
+					files_and_editors.insert(file_path, te);
+					editor_found = true;
+					break;
+				}
+			}
+
+			// If other files have editors open, the document edits can still be
+			// performed on them.
+			if (!editor_found) {
+				ERR_PRINT(vformat("Even after attempting to open \"%s\", an editor for it could not be found. The requested document edits may still be performed but will not include edits to this file.", file_path));
+			}
+		}
+	}
+
+	for (const Variant &d : p_doc_edits) {
+		EditorLanguage::DocumentEditOperation doc_edit = _get_doc_edit_operation_from_dict(d);
+		if (!files_and_editors.has(doc_edit.file_path)) {
+			continue;
+		}
+		CodeEdit *ce = files_and_editors[doc_edit.file_path]->get_code_editor()->get_text_editor();
+		ce->begin_complex_operation();
+		for (const EditorLanguage::TextEdit &text_edit : doc_edit.edits) {
+			int start_line = text_edit.start_line;
+			int start_col = text_edit.start_column;
+			int end_line = text_edit.end_line;
+			int end_col = text_edit.end_column;
+
+			// Bound the start/end positions to currently-existing locations
+			// in the document, so we don't try to delete an OOB portion.
+			if (start_line >= ce->get_line_count()) {
+				start_line = ce->get_line_count() - 1;
+				start_col = ce->get_line(start_line).length();
+			}
+			if (end_line >= ce->get_line_count()) {
+				end_line = ce->get_line_count() - 1;
+				end_col = ce->get_line(end_line).length();
+			}
+			ce->remove_text(start_line, start_col, end_line, end_col);
+
+			// Reset these values for the insertion operation, since we may
+			// be inserting farther in the document.
+			start_line = text_edit.start_line;
+			start_col = text_edit.start_column;
+
+			// If the start line of this new snippet is past the current EOF,
+			// then we need to insert enough lines that the desired line exists.
+			int empty_lines_to_append = 0;
+			if (start_line >= ce->get_line_count() - 1) {
+				empty_lines_to_append = start_line - (ce->get_line_count() - 1);
+				start_col = 0;
+			}
+
+			// Insert necessary empty lines so that we can insert text at the
+			// designated start line.
+			for (int i = 0; i < empty_lines_to_append; i++) {
+				ce->insert_text("\n", ce->get_line_count() - 1, ce->get_line(ce->get_line_count() - 1).length());
+			}
+
+			ce->insert_text(text_edit.new_text, start_line, start_col);
+		}
+		ce->end_complex_operation();
+	}
+}
+
+void DocumentEditorContainer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("document_edits_requested", PropertyInfo(Variant::ARRAY, "edits")));
+}
+
 DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const String &p_config_section, const String &p_cache_path) {
 	is_main_editor = p_is_main_editor;
 	config_section = p_config_section;
@@ -4548,6 +4669,7 @@ ScriptEditor::ScriptEditor() {
 
 	script_container = memnew(DocumentEditorContainer(true, "ScriptEditor", "script_editor_cache.cfg"));
 	script_container->set_handled_resource_types({ "GDScript", "Script", "JSON" });
+	script_container->connect("document_edits_requested", callable_mp(this, &ScriptEditor::_on_document_edits_requested));
 	add_child(script_container);
 	connect("_focused", callable_mp(script_container, &DocumentEditorContainer::focus_active_editor));
 
