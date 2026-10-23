@@ -597,6 +597,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_NV_RAY_TRACING_VALIDATION_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_RAY_QUERY_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SPIRV_1_4_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
