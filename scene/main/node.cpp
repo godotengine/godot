@@ -2849,7 +2849,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		node->data.editable_instance = data.editable_instance;
 	}
 
-	List<const Node *> hidden_roots;
+	List<const Node *> hidden_nodes;
 
 	if (instantiated) {
 		// Since nodes in the instantiated hierarchy won't be duplicated explicitly, we need to make an inventory
@@ -2866,11 +2866,14 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 				Node *descendant = N->get()->get_child(i, false);
 
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
-				// but remember non-instantiated nodes that are hidden below instantiated ones
+				// but remember non-instantiated nodes that are hidden below instantiated ones, or weren't part of the instantiation.
 				if (!instance_roots.has(descendant->get_owner())) {
 					if (descendant->get_parent() && descendant->get_parent() != this && descendant->data.owner != descendant->get_parent()) {
-						hidden_roots.push_back(descendant);
+						hidden_nodes.push_back(descendant);
 					}
+					continue;
+				} else if (!node->has_node(get_path_to(descendant))) {
+					hidden_nodes.push_back(descendant);
 					continue;
 				}
 
@@ -2937,7 +2940,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (const Node *&E : hidden_roots) {
+	for (const Node *&E : hidden_nodes) {
 		Node *parent = node->get_node(get_path_to(E->data.parent));
 		if (!parent) {
 			memdelete(node);
