@@ -2035,7 +2035,7 @@ void AnimationMixer::_blend_apply() {
 						PlayingAudioStreamInfo pasi = M.value;
 
 						bool stop = false;
-						if (!t->audio_stream_playback->is_stream_playing(pasi.index)) {
+						if (!t->audio_stream_playback->is_id_valid(pasi.index)) {
 							stop = true;
 						}
 						if (!track_info.loop) {

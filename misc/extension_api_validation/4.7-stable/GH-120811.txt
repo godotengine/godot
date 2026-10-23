@@ -1,0 +1,6 @@
+GH-120811
+---------
+Validate extension JSON: API was removed: classes/AudioStreamPlaybackPolyphonic/methods/is_stream_playing
+
+Renamed this method to "is_id_valid", keeping the same functionality. New relevant method is "is_stream_paused".
+Compatibility methods registered.
