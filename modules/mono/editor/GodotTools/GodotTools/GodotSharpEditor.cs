@@ -154,6 +154,11 @@ namespace GodotTools
             Instance.MSBuildPanel.BuildProject();
         }
 
+        private void UpdateToolBarBuildButton()
+        {
+            _toolBarBuildButton.Icon = _toolBarBuildButton.GetThemeIcon("BuildCSharp", "EditorIcons");
+        }
+
         private enum MenuOptions
         {
             CreateSln,
@@ -526,6 +531,7 @@ namespace GodotTools
                 ShortcutInTooltip = true,
                 ThemeTypeVariation = "RunBarButton",
             };
+            _toolBarBuildButton.ThemeChanged += UpdateToolBarBuildButton;
             EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
 
             _toolBarBuildButton.Pressed += BuildProjectPressed;
