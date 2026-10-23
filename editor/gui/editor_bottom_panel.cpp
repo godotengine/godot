@@ -51,11 +51,16 @@ void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			set_accessibility_region(true);
+			_update_tab_alignment();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			expand_button->set_button_icon(get_editor_theme_icon(SNAME("ExpandBottomDock")));
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_tab_alignment();
 		} break;
 	}
 }
@@ -77,6 +82,12 @@ void EditorBottomPanel::_theme_changed() {
 	}
 }
 
+void EditorBottomPanel::_update_tab_alignment() {
+	set_tab_alignment(EDITOR_GET("interface/editor/docks/bottom_dock_tab_alignment").operator int() == 1
+					? TabBar::ALIGNMENT_CENTER
+					: TabBar::ALIGNMENT_LEFT);
+}
+
 void EditorBottomPanel::set_bottom_panel_offset(int p_offset) {
 	EditorDock *current_tab = Object::cast_to<EditorDock>(get_current_tab_control());
 	if (current_tab) {
@@ -95,11 +106,6 @@ int EditorBottomPanel::get_bottom_panel_offset() {
 void EditorBottomPanel::_repaint() {
 	bool panel_collapsed = get_current_tab() == -1;
 
-	if (panel_collapsed && get_popup()) {
-		set_popup(nullptr);
-	} else if (!panel_collapsed && !get_popup()) {
-		set_popup(dock_context_popup);
-	}
 	if (!panel_collapsed && (previous_tab != -1)) {
 		return;
 	}
@@ -111,7 +117,7 @@ void EditorBottomPanel::_repaint() {
 	center_split->set_dragger_visibility(panel_collapsed ? SplitContainer::DRAGGER_HIDDEN : SplitContainer::DRAGGER_VISIBLE);
 	center_split->set_collapsed(panel_collapsed);
 
-	expand_button->set_visible(!panel_collapsed);
+	expand_button->set_disabled(panel_collapsed);
 	if (expand_button->is_pressed()) {
 		_expand_button_toggled(!panel_collapsed);
 	} else {
@@ -324,7 +330,7 @@ EditorBottomPanel::EditorBottomPanel() :
 
 	expand_button = memnew(Button);
 	bottom_hbox->add_child(expand_button);
-	expand_button->hide();
+	expand_button->set_disabled(true);
 	expand_button->set_theme_type_variation("BottomPanelButton");
 	expand_button->set_toggle_mode(true);
 	expand_button->set_accessibility_name(TTRC("Expand Bottom Panel"));
