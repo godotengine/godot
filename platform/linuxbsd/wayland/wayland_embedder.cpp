@@ -1746,6 +1746,12 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		}
 	}
 
+	if (object->interface == &wl_fixes_interface) {
+		if (p_opcode == WL_FIXES_DESTROY || p_opcode == WL_FIXES_DESTROY_REGISTRY) {
+			return MessageStatus::HANDLED;
+		}
+	}
+
 	if (object->interface == &xdg_wm_base_interface) {
 		if (p_opcode == XDG_WM_BASE_CREATE_POSITIONER) {
 			uint32_t new_local_id = body[0];
