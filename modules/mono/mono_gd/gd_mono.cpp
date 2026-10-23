@@ -807,10 +807,31 @@ Error GDMono::reload_project_assemblies() {
 
 	finalizing_scripts_domain = true;
 
-	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
-		ERR_PRINT_ED(".NET: Failed to unload assemblies. Please check https://github.com/godotengine/godot/issues/78513 for more information.");
-		reload_failure();
-		return FAILED;
+	print_verbose(".NET: Unloading assembly load context...");
+
+	gdmono::PluginReloadError unload_error = get_plugin_callbacks().UnloadProjectPluginCallback();
+
+	switch (unload_error) {
+		case gdmono::PluginReloadError::OK:
+			print_verbose(".NET: Assembly load context unloaded successfully.");
+			break;
+		case gdmono::PluginReloadError::ALC_UNLOAD_FAILED: {
+			// The warning will be reported in HotReloadAssemblyWatcher.cs after some time if they are still not unloaded.
+			print_verbose(".NET: Failed to unload assemblies right now. The assemblies will continue to be unloaded in the background.");
+			break;
+		}
+		case gdmono::PluginReloadError::ALC_NOT_COLLECTIBLE:
+			ERR_PRINT_ED(".NET: Failed to unload assemblies. Cannot unload a non-collectible AssemblyLoadContext.");
+			reload_failure();
+			return FAILED;
+		case gdmono::PluginReloadError::EXCEPTION:
+			ERR_PRINT_ED(".NET: Failed to unload assemblies. Exception was thrown during unloading.");
+			reload_failure();
+			return FAILED;
+		default:
+			ERR_PRINT_ED(vformat(".NET: Failed to unload assemblies. Unknown error code %d.", unload_error));
+			reload_failure();
+			return FAILED;
 	}
 
 	finalizing_scripts_domain = false;
@@ -825,7 +846,7 @@ Error GDMono::reload_project_assemblies() {
 
 	if (project_load_failure_count > 0) {
 		project_load_failure_count = 0;
-		ERR_PRINT_ED(".NET: Assembly reloading succeeded after failures.");
+		WARN_PRINT_ED(".NET: Assembly reloading succeeded after failures.");
 	}
 
 	return OK;
