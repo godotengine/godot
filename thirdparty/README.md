@@ -152,6 +152,14 @@ They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments. Apply the patches in the `patches/` folder when syncing on newer upstream
 commits.
 
+Patches:
+
+- `fix_gcc_lto_build.diff`
+- `CVE-2026-95512-cid-subrs-overlaps.patch` (backport of upstream commit
+  f3ca71c99, CVE-2026-95512)
+- `CVE-2025-27363-subglyph-oob-write.patch` (Ubuntu/Debian backport for
+  2.11.1/2.12.1, CVE-2025-27363)
+
 
 ## glad
 
