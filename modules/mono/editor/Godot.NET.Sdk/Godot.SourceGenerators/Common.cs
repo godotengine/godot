@@ -119,12 +119,12 @@ namespace Godot.SourceGenerators
 
         public static readonly DiagnosticDescriptor ExportToolButtonShouldNotBeUsedWithExportRule =
             new DiagnosticDescriptor(id: "GD0109",
-                title: "The '[ExportToolButton]' attribute cannot be used with another '[Export]' attribute",
-                messageFormat: "The '[ExportToolButton]' attribute cannot be used with another '[Export]' attribute on '{0}'",
+                title: "The '[ExportToolButton]' attribute cannot be used with another '[Export]' or '[ExportStorage]' attribute",
+                messageFormat: "The '[ExportToolButton]' attribute cannot be used with another '[Export]' or '[ExportStorage]' attribute on '{0}'",
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                "The '[ExportToolButton]' attribute cannot be used with the '[Export]' attribute. Remove one of the attributes.",
+                "The '[ExportToolButton]' attribute cannot be used with the '[Export]' or '[ExportStorage]' attribute. Remove one of the attributes.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0109"));
 
         public static readonly DiagnosticDescriptor ExportToolButtonIsNotCallableRule =
@@ -146,6 +146,16 @@ namespace Godot.SourceGenerators
                 isEnabledByDefault: true,
                 "The exported tool button must be an expression-bodied property. The '[ExportToolButton]' attribute is only supported on expression-bodied properties with a 'new Callable(...)' or 'Callable.From(...)' expression.",
                 helpLinkUri: string.Format(_helpLinkFormat, "GD0111"));
+
+        public static readonly DiagnosticDescriptor ExportStorageShouldNotBeUsedWithExportRule =
+            new DiagnosticDescriptor(id: "GD0112",
+                title: "The '[ExportStorage]' attribute cannot be used with another '[Export]' attribute",
+                messageFormat: "The '[ExportStorage]' attribute cannot be used with another '[Export]' attribute on '{0}'",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The '[ExportStorage]' attribute cannot be used with the '[Export]' attribute. Remove one of the attributes.",
+                helpLinkUri: string.Format(_helpLinkFormat, "GD0112"));
 
         public static readonly DiagnosticDescriptor SignalDelegateMissingSuffixRule =
             new DiagnosticDescriptor(id: "GD0201",
