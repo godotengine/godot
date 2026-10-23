@@ -4020,11 +4020,17 @@ void Animation::set_length(double p_length) {
 	if (p_length < ANIM_MIN_LENGTH) {
 		p_length = ANIM_MIN_LENGTH;
 	}
+	if (length == p_length) {
+		return;
+	}
 	length = p_length;
 	emit_changed();
 }
 
 void Animation::set_loop_mode(Animation::LoopMode p_loop_mode) {
+	if (loop_mode == p_loop_mode) {
+		return;
+	}
 	loop_mode = p_loop_mode;
 	emit_changed();
 }
@@ -4093,6 +4099,9 @@ void Animation::track_swap(int p_track, int p_with_track) {
 }
 
 void Animation::set_step(real_t p_step) {
+	if (step == p_step) {
+		return;
+	}
 	step = p_step;
 	emit_changed();
 }
