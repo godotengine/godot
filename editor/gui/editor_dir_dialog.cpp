@@ -44,11 +44,9 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 
 	const String path = p_dir->get_path();
 
-	p_item->set_metadata(0, path);
-	p_item->set_icon(0, tree->get_editor_theme_icon(SNAME("Folder")));
-
 	if (!p_item->get_parent()) {
-		p_item->set_text(0, "res://");
+		p_item = tree->create_item(p_item);
+		p_item->set_text(0, p_dir->get_root_path());
 		p_item->set_icon_modulate(0, p_default_folder_color);
 	} else {
 		if (!opened_paths.has(path) && (p_select_path.is_empty() || !p_select_path.begins_with(path))) {
@@ -73,6 +71,9 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 		}
 	}
 
+	p_item->set_metadata(0, path);
+	p_item->set_icon(0, tree->get_editor_theme_icon(SNAME("Folder")));
+
 	if (path == new_dir_path || !p_item->get_parent()) {
 		p_item->select(0);
 	}
@@ -84,8 +85,10 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 	}
 }
 
-void EditorDirDialog::config(const Vector<String> &p_paths) {
+void EditorDirDialog::config(const Vector<String> &p_paths, bool p_show_editor_dir) {
 	ERR_FAIL_COND(p_paths.is_empty());
+
+	show_editor_dir = p_show_editor_dir;
 
 	if (p_paths.size() == 1) {
 		String path = p_paths[0];
@@ -110,6 +113,9 @@ void EditorDirDialog::reload(const String &p_path) {
 	tree->clear();
 	TreeItem *root = tree->create_item();
 	_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_icon_and_font(), root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
+	if (show_editor_dir) {
+		_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_icon_and_font(), root, EditorFileSystem::get_singleton()->get_editor_filesystem(), p_path);
+	}
 	_item_collapsed(root);
 	new_dir_path.clear();
 	must_reload = false;
@@ -119,12 +125,14 @@ void EditorDirDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			FileSystemDock::get_singleton()->connect("folder_color_changed", callable_mp(this, &EditorDirDialog::reload).bind(""));
+			FileSystemDock::get_singleton()->connect("_show_editor_directory_changed", callable_mp(this, &EditorDirDialog::reload).bind(""));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload).bind(""));
 			reload();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			EditorFileSystem::get_singleton()->disconnect("filesystem_changed", callable_mp(this, &EditorDirDialog::reload));
+			FileSystemDock::get_singleton()->disconnect("_show_editor_directory_changed", callable_mp(this, &EditorDirDialog::reload));
 			FileSystemDock::get_singleton()->disconnect("folder_color_changed", callable_mp(this, &EditorDirDialog::reload));
 		} break;
 
@@ -137,7 +145,7 @@ void EditorDirDialog::_notification(int p_what) {
 				tree->deselect_all();
 
 				TreeItem *item = tree->get_root();
-				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/", false);
+				const PackedStringArray parts = base_directory_path.trim_prefix("res://").trim_prefix("editor://").split("/", false);
 				if (parts.is_empty()) {
 					item->select(0);
 					tree->ensure_cursor_is_visible();
@@ -145,6 +153,12 @@ void EditorDirDialog::_notification(int p_what) {
 				}
 
 				int i = 0;
+				if (base_directory_path.begins_with("editor://")) {
+					item = item->get_child(1);
+				} else if (base_directory_path.begins_with("res://")) {
+					item = item->get_child(0);
+				}
+
 				while (i < parts.size()) {
 					const String &folder = parts[i];
 					for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {
@@ -223,7 +237,7 @@ void EditorDirDialog::_make_dir_confirm(const String &p_path, const String &p_ba
 	String base_dir = p_path.get_base_dir();
 	while (true) {
 		opened_paths.insert(base_dir + "/");
-		if (base_dir == "res://") {
+		if (base_dir == "res://" || base_dir == "editor://") {
 			break;
 		}
 		base_dir = base_dir.get_base_dir();
@@ -256,6 +270,7 @@ EditorDirDialog::EditorDirDialog() {
 	tree = memnew(Tree);
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->set_hide_root(true);
 	vb->add_child(tree);
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 	tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), CONNECT_DEFERRED);
