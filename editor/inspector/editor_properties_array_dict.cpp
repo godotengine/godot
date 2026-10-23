@@ -676,7 +676,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 
 		StringName script_class;
-		if (res->get_script()) {
+		if (res->get_script() != nullptr) {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
 		}
 

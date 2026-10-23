@@ -243,9 +243,9 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 		bool any_type_matches = false;
 
 		String res_type = loaded_resource->get_class();
-		Ref<Script> res_script = loaded_resource->get_script();
+		Script *res_script = loaded_resource->get_script();
 		bool is_global_class = false;
-		if (res_script.is_valid()) {
+		if (res_script != nullptr) {
 			String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
 			if (!script_type.is_empty()) {
 				is_global_class = true;
@@ -794,8 +794,8 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	}
 	String res_type = p_resource->get_class();
 
-	Ref<Script> res_script = p_resource->get_script();
-	if (res_script.is_null()) {
+	Script *res_script = p_resource->get_script();
+	if (res_script == nullptr) {
 		return res_type;
 	}
 
@@ -1576,8 +1576,8 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	if (script_owner) {
-		Ref<Script> scr = script_owner->get_script();
-		if (scr.is_valid()) {
+		Script *scr = script_owner->get_script();
+		if (scr != nullptr) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}
