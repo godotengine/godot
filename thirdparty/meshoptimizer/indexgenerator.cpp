@@ -11,7 +11,7 @@
 namespace meshopt
 {
 
-static unsigned int hashUpdate4(unsigned int h, const unsigned char* key, size_t len)
+static unsigned int hashUpdate(unsigned int h, const unsigned char* key, size_t len)
 {
 	// MurmurHash2
 	const unsigned int m = 0x5bd1e995;
@@ -19,7 +19,8 @@ static unsigned int hashUpdate4(unsigned int h, const unsigned char* key, size_t
 
 	while (len >= 4)
 	{
-		unsigned int k = *reinterpret_cast<const unsigned int*>(key);
+		unsigned int k;
+		memcpy(&k, key, sizeof(k));
 
 		k *= m;
 		k ^= k >> r;
@@ -30,6 +31,13 @@ static unsigned int hashUpdate4(unsigned int h, const unsigned char* key, size_t
 
 		key += 4;
 		len -= 4;
+	}
+
+	if (len > 0)
+	{
+		h ^= key[0] | (key[len / 2] << 8) | (key[len - 1] << 16);
+		h *= m;
+		h ^= h >> r;
 	}
 
 	return h;
@@ -43,7 +51,7 @@ struct VertexHasher
 
 	size_t hash(unsigned int index) const
 	{
-		return hashUpdate4(0, vertices + index * vertex_stride, vertex_size);
+		return hashUpdate(0, vertices + index * vertex_stride, vertex_size);
 	}
 
 	bool equal(unsigned int lhs, unsigned int rhs) const
@@ -66,7 +74,7 @@ struct VertexStreamHasher
 			const meshopt_Stream& s = streams[i];
 			const unsigned char* data = static_cast<const unsigned char*>(s.data);
 
-			h = hashUpdate4(h, data + index * s.stride, s.size);
+			h = hashUpdate(h, data + index * s.stride, s.size);
 		}
 
 		return h;
