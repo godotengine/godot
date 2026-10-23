@@ -192,6 +192,26 @@ bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
 
+bool OS::is_stdout_color() const {
+	if (_color_override != 0) {
+		return _color_override > 0;
+	} else if (has_environment("NO_COLOR")) {
+		return false;
+	} else {
+		return has_environment("FORCE_COLOR") || has_environment("CI") || get_stdout_type() == OS::STD_HANDLE_CONSOLE;
+	}
+}
+
+bool OS::is_stderr_color() const {
+	if (_color_override != 0) {
+		return _color_override > 0;
+	} else if (has_environment("NO_COLOR")) {
+		return false;
+	} else {
+		return has_environment("FORCE_COLOR") || has_environment("CI") || get_stderr_type() == OS::STD_HANDLE_CONSOLE;
+	}
+}
+
 bool OS::is_stdout_enabled() const {
 	return _stdout_enabled;
 }
