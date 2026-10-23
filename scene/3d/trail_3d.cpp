@@ -661,7 +661,7 @@ void Trail3D::_process_trail() {
 	Transform3D tf = get_global_transform_interpolated();
 	Vector3 pos = tf.origin;
 
-	if (!_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) < CMP_EPSILON) {
+	if (!_transform_changed && points.size() == 2 && pos.is_same(points[1])) {
 		return;
 	}
 
@@ -685,7 +685,7 @@ void Trail3D::_process_trail() {
 		if (emitting) {
 			points.write[0] = pos;
 			normals.write[0] = up;
-			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
+			if (pos.distance_squared_to(points[1]) > 0.) {
 				real_t len = (pos - points[1]).length();
 				Vector3 t;
 				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
@@ -696,7 +696,7 @@ void Trail3D::_process_trail() {
 				tangents.write[0] = t;
 				if (points.size() == 2) {
 					tangents.write[1] = t;
-					if (_previous_position.distance_squared_to(points[1]) <= CMP_EPSILON && limit_mode == LIMIT_MODE_LIFETIME) {
+					if (_previous_position.distance_squared_to(points[1]) <= 0. && limit_mode == LIMIT_MODE_LIFETIME) {
 						_times.write[1] = _time - delta;
 						_velocities.write[1] = head_velocity;
 					}
@@ -829,7 +829,7 @@ void Trail3D::_process_trail() {
 			Vector3 dir = points[0] - points[1];
 			real_t distance = dir.length();
 			if (points.size() == 2 && _times[0] - _times[1] > lifetime) {
-				if (distance > CMP_EPSILON) {
+				if (distance > 0.) {
 					real_t speed_distance = _velocities[1] * delta;
 					points.write[1] += dir / distance * MIN(distance, speed_distance);
 				} else {
