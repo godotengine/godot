@@ -70,6 +70,9 @@ public:
 class EditorPropertyVariant : public EditorProperty {
 	GDCLASS(EditorPropertyVariant, EditorProperty);
 
+	LocalVector<Variant::Type> disabled_types;
+	HashMap<Variant::Type, String> renames;
+
 	HBoxContainer *content = nullptr;
 	EditorProperty *sub_property = nullptr;
 	Button *edit_button = nullptr;
@@ -87,6 +90,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_disabled_types(const LocalVector<Variant::Type> &p_disabled_types);
+	void set_renames(const HashMap<Variant::Type, String> &p_renames);
 	virtual void update_property() override;
 	EditorPropertyVariant();
 };
