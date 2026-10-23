@@ -33,15 +33,14 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/3d/mesh_uv_viewer.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
-#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
@@ -557,153 +556,29 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				ur->commit_action();
 			}
 		} break;
-		case MENU_OPTION_DEBUG_UV1: {
+		case MENU_OPTION_DEBUG_UV: {
 			Ref<Mesh> mesh2 = node->get_mesh();
 			if (mesh2.is_null()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered();
 				return;
 			}
-			_create_uv_lines(0);
-		} break;
-		case MENU_OPTION_DEBUG_UV2: {
-			Ref<Mesh> mesh2 = node->get_mesh();
-			if (mesh2.is_null()) {
-				err_dialog->set_text(TTR("No mesh to debug."));
-				err_dialog->popup_centered();
-				return;
-			}
-			_create_uv_lines(1);
+			_show_uvs_popup();
 		} break;
 	}
 }
 
-struct MeshInstance3DEditorEdgeSort {
-	Vector2 a;
-	Vector2 b;
-
-	static uint32_t hash(const MeshInstance3DEditorEdgeSort &p_edge) {
-		uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.a));
-		return hash_fmix32(hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.b), h));
-	}
-
-	bool operator==(const MeshInstance3DEditorEdgeSort &p_b) const {
-		return a == p_b.a && b == p_b.b;
-	}
-
-	MeshInstance3DEditorEdgeSort() {}
-	MeshInstance3DEditorEdgeSort(const Vector2 &p_a, const Vector2 &p_b) {
-		if (p_a < p_b) {
-			a = p_a;
-			b = p_b;
-		} else {
-			b = p_a;
-			a = p_b;
-		}
-	}
-};
-
-void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
+void MeshInstance3DEditor::_show_uvs_popup() {
 	Ref<Mesh> mesh = node->get_mesh();
 	ERR_FAIL_COND(mesh.is_null());
 
-	HashSet<MeshInstance3DEditorEdgeSort, MeshInstance3DEditorEdgeSort> edges;
-	uv_lines.clear();
-	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
-			continue;
-		}
-		Array a = mesh->surface_get_arrays(i);
-
-		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.is_empty()) {
-			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
-			err_dialog->popup_centered();
-			return;
-		}
-
-		const Vector2 *r = uv.ptr();
-
-		Vector<int> indices = a[Mesh::ARRAY_INDEX];
-		const int *ri = nullptr;
-
-		int ic;
-
-		if (indices.size()) {
-			ic = indices.size();
-			ri = indices.ptr();
-		} else {
-			ic = uv.size();
-		}
-
-		for (int j = 0; j < ic; j += 3) {
-			for (int k = 0; k < 3; k++) {
-				MeshInstance3DEditorEdgeSort edge;
-				if (ri) {
-					edge.a = r[ri[j + k]];
-					edge.b = r[ri[j + ((k + 1) % 3)]];
-				} else {
-					edge.a = r[j + k];
-					edge.b = r[j + ((k + 1) % 3)];
-				}
-
-				if (edges.has(edge)) {
-					continue;
-				}
-
-				uv_lines.push_back(edge.a);
-				uv_lines.push_back(edge.b);
-				edges.insert(edge);
-			}
-		}
-	}
-
-	debug_uv_dialog->popup_centered();
-}
-
-void MeshInstance3DEditor::_debug_uv_draw() {
-	if (uv_lines.is_empty()) {
+	if (!debug_uv->setup_mesh(mesh)) {
+		err_dialog->set_text(TTRC("Mesh has no UVs."));
+		err_dialog->popup_centered();
 		return;
 	}
 
-	debug_uv->set_clip_contents(true);
-	debug_uv->draw_rect(
-			Rect2(Vector2(), debug_uv->get_size()),
-			get_theme_color(SNAME("dark_color_3"), EditorStringName(Editor)));
-
-	// Draw an outline to represent the UV2's beginning and end area (useful on Black OLED theme).
-	// Top-left coordinate needs to be `(1, 1)` to prevent `clip_contents` from clipping the top and left lines.
-	debug_uv->draw_rect(
-			Rect2(Vector2(1, 1), debug_uv->get_size() - Vector2(1, 1)),
-			get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
-			false,
-			Math::round(EDSCALE));
-
-	for (int x = 1; x <= 7; x++) {
-		debug_uv->draw_line(
-				Vector2(debug_uv->get_size().x * 0.125 * x, 0),
-				Vector2(debug_uv->get_size().x * 0.125 * x, debug_uv->get_size().y),
-				get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
-				Math::round(EDSCALE));
-	}
-
-	for (int y = 1; y <= 7; y++) {
-		debug_uv->draw_line(
-				Vector2(0, debug_uv->get_size().y * 0.125 * y),
-				Vector2(debug_uv->get_size().x, debug_uv->get_size().y * 0.125 * y),
-				get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.125),
-				Math::round(EDSCALE));
-	}
-
-	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
-
-	// Use a translucent color to allow overlapping triangles to be visible.
-	// Divide line width by the drawing scale set above, so that line width is consistent regardless of dialog size.
-	// Aspect ratio is preserved by the parent AspectRatioContainer, so we only need to check the X size which is always equal to Y.
-	debug_uv->draw_multiline(
-			uv_lines,
-			get_theme_color(SNAME("mono_color"), EditorStringName(Editor)) * Color(1, 1, 1, 0.5),
-			Math::round(EDSCALE) / debug_uv->get_size().x);
+	debug_uv_dialog->popup_centered();
 }
 
 void MeshInstance3DEditor::_create_navigation_mesh() {
@@ -809,8 +684,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
 	options->get_popup()->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
-	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
+	options->get_popup()->add_item(TTR("View UV(s)"), MENU_OPTION_DEBUG_UV);
 	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshInstance3DEditor::_menu_option));
@@ -910,13 +784,9 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	debug_uv_dialog->set_title(TTR("UV Channel Debug"));
 	add_child(debug_uv_dialog);
 
-	debug_uv_arc = memnew(AspectRatioContainer);
-	debug_uv_dialog->add_child(debug_uv_arc);
-
-	debug_uv = memnew(Control);
-	debug_uv->set_custom_minimum_size(Size2(600, 600) * EDSCALE);
-	debug_uv->connect(SceneStringName(draw), callable_mp(this, &MeshInstance3DEditor::_debug_uv_draw));
-	debug_uv_arc->add_child(debug_uv);
+	debug_uv = memnew(MeshUvViewer);
+	debug_uv->set_view_min_size(600);
+	debug_uv_dialog->add_child(debug_uv);
 
 	navigation_mesh_dialog = memnew(ConfirmationDialog);
 	navigation_mesh_dialog->set_title(TTR("Create NavigationMesh"));
