@@ -3670,6 +3670,41 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "GDExtensionEditorGetClassSourcePathCallback",
+            "kind": "function",
+            "arguments": [
+                {
+                    "name": "p_class_name",
+                    "type": "GDExtensionConstStringNamePtr"
+                },
+                {
+                    "name": "r_source_path",
+                    "type": "GDExtensionStringPtr*"
+                }
+            ],
+            "description": [
+                "Called to get the source code path for the given class."
+            ]
+        },
+        {
+            "name": "GDExtensionEditorSourceCodeInfo",
+            "kind": "struct",
+            "members": [
+                {
+                    "name": "binding_name",
+                    "type": "GDExtensionConstStringPtr"
+                },
+                {
+                    "name": "source_base_path",
+                    "type": "GDExtensionConstStringPtr"
+                },
+                {
+                    "name": "get_class_source_path_func",
+                    "type": "GDExtensionEditorGetClassSourcePathCallback"
+                }
+            ]
         }
     ],
     "interface": [
@@ -9322,6 +9357,29 @@
                 "Registers callbacks to be called at different phases of the main loop."
             ],
             "since": "4.5"
+        },
+        {
+            "name": "editor_register_source_code_info",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_info",
+                    "type": "const GDExtensionEditorSourceCodeInfo*",
+                    "description": [
+                        "A pointer to the structure that contains the info."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers information about the extensions source code for use in the editor."
+            ],
+            "since": "4.7"
         }
     ]
 }
