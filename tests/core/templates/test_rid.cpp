@@ -105,6 +105,20 @@ TEST_CASE("[RID] 'get_local_index'") {
 	CHECK(RID::from_uint64(4'294'967'297).get_local_index() == 1);
 }
 
+TEST_CASE("[RID_Owner] A freed slot is not owned by a reserved-validator RID") {
+	RID_Owner<int> owner;
+	const RID rid = owner.make_rid(42);
+	const uint32_t local_index = rid.get_local_index();
+
+	owner.free(rid);
+
+	// A freed slot stores 0xFFFFFFFF. owns() used to mask only the low 31
+	// bits, so this forged RID (validator 0x7FFFFFFF) aliased the freed slot.
+	const RID forged = RID::from_uint64((uint64_t(0x7FFFFFFF) << 32) | local_index);
+	CHECK_FALSE(owner.owns(forged));
+	CHECK(owner.get_or_null(forged) == nullptr);
+}
+
 #ifdef THREADS_ENABLED
 // This case would let sanitizers realize data races.
 // Additionally, on purely weakly ordered architectures, it would detect synchronization issues
