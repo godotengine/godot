@@ -1,0 +1,17 @@
+diff --git a/thirdparty/icu4c/common/ubidi.cpp b/thirdparty/icu4c/common/ubidi.cpp
+index 66a6f6bc67..69dc18b950 100644
+--- a/thirdparty/icu4c/common/ubidi.cpp
++++ b/thirdparty/icu4c/common/ubidi.cpp
+@@ -3103,10 +3103,10 @@ ubidi_isolate(UMFBidiIsolationStrategy bidiIsolationStrategy,
+ 
+     // 2iii. Let the boolean value isolate be True if the u:dir option of the resolved value of exp has a value other than 'inherit', or False otherwise.
+     bool isolate = uDirOption != U_MF_BIDI_OPTION_INHERIT;
+ 
+-    UnicodeString bdiOpen("<bdi>");
+-    UnicodeString bdiClose("</bdi>");
++    UnicodeString bdiOpen(u"<bdi>");
++    UnicodeString bdiClose(u"</bdi>");
+ 
+     // 2iv. If dir is 'LTR'
+     switch (dir) {
+         case U_MF_DIRECTIONALITY_LTR:

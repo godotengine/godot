@@ -484,7 +484,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 78.3 (21d1eb0f306e1141c10931e914dfc038c06121da, 2026)
+- Version: 79.1 (ddc6b66926bfac6036144ca9902992a0d6d50af9, 2026)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -507,6 +507,11 @@ Files generated from upstream source:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
+
+Patches:
+
+- `0001-ustr-literals.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
+- `0002-tuple-include.patch` ([GH-124792](https://github.com/godotengine/godot/pull/124792))
 
 
 ## jolt_physics
