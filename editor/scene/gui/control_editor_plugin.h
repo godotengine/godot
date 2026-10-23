@@ -130,6 +130,7 @@ class EditorInspectorPluginControl : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginControl, EditorInspectorPlugin);
 
 	bool inside_control_category = false;
+	bool making_default = false;
 
 public:
 	virtual bool can_handle(Object *p_object) override;
