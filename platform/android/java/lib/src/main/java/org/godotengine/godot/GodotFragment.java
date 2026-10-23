@@ -30,7 +30,6 @@
 
 package org.godotengine.godot;
 
-import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
 
@@ -63,7 +62,7 @@ public class GodotFragment extends Fragment implements GodotHost {
 	private FrameLayout godotContainerLayout;
 
 	@Nullable
-	private GodotHost parentHost;
+	protected GodotHost parentHost;
 	private Godot godot;
 
 	@Override
@@ -255,55 +254,10 @@ public class GodotFragment extends Fragment implements GodotHost {
 	}
 
 	@Override
-	public Error signApk(@NonNull String inputPath, @NonNull String outputPath, @NonNull String keystorePath, @NonNull String keystoreUser, @NonNull String keystorePassword) {
-		if (parentHost != null) {
-			return parentHost.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword);
-		}
-		return Error.ERR_UNAVAILABLE;
-	}
-
-	@Override
-	public Error verifyApk(@NonNull String apkPath) {
-		if (parentHost != null) {
-			return parentHost.verifyApk(apkPath);
-		}
-		return Error.ERR_UNAVAILABLE;
-	}
-
-	@Override
 	public boolean supportsFeature(String featureTag) {
 		if (parentHost != null) {
 			return parentHost.supportsFeature(featureTag);
 		}
 		return false;
-	}
-
-	@Override
-	public void onEditorWorkspaceSelected(String workspace) {
-		if (parentHost != null) {
-			parentHost.onEditorWorkspaceSelected(workspace);
-		}
-	}
-
-	@Override
-	public void showEditorGameDock() {
-		if (parentHost != null) {
-			parentHost.showEditorGameDock();
-		}
-	}
-
-	@Override
-	public void onDistractionFreeModeChanged(Boolean enabled) {
-		if (parentHost != null) {
-			parentHost.onDistractionFreeModeChanged(enabled);
-		}
-	}
-
-	@Override
-	public BuildProvider getBuildProvider() {
-		if (parentHost != null) {
-			return parentHost.getBuildProvider();
-		}
-		return null;
 	}
 }

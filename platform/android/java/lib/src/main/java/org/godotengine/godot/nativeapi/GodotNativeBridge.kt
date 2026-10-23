@@ -50,6 +50,7 @@ import androidx.core.net.toUri
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.R
+import org.godotengine.godot.editor.GodotEditorHost
 import org.godotengine.godot.error.Error
 import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.io.FilePicker
@@ -334,31 +335,37 @@ internal class GodotNativeBridge(private val godot: Godot) {
 		keystoreUser: String,
 		keystorePassword: String
 	): Int {
-		val signResult = godot.primaryHost?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword)
-			?: org.godotengine.godot.error.Error.ERR_UNAVAILABLE
+		val host = godot.primaryHost as? GodotEditorHost
+		val signResult = host?.signApk(inputPath, outputPath, keystorePath, keystoreUser, keystorePassword)
+			?: Error.ERR_UNAVAILABLE
 		return signResult.toNativeValue()
 	}
 
 	private fun nativeVerifyApk(apkPath: String): Int {
-		val verifyResult = godot.primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
+		val host = godot.primaryHost as? GodotEditorHost
+		val verifyResult = host?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
 		return verifyResult.toNativeValue()
 	}
 
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
-		godot.primaryHost?.onEditorWorkspaceSelected(workspace)
+		val host = godot.primaryHost as? GodotEditorHost
+		host?.onEditorWorkspaceSelected(workspace)
 	}
 
 	private fun nativeShowEditorGameDock() {
-		godot.primaryHost?.showEditorGameDock()
+		val host = godot.primaryHost as? GodotEditorHost
+		host?.showEditorGameDock()
 	}
 
 	private fun nativeOnDistractionFreeModeChanged(enabled: Boolean) {
-		godot.primaryHost?.onDistractionFreeModeChanged(enabled)
+		val host = godot.primaryHost as? GodotEditorHost
+		host?.onDistractionFreeModeChanged(enabled)
 	}
 
 	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
 		try {
-			val buildProvider = godot.primaryHost?.buildProvider
+			val host = godot.primaryHost as? GodotEditorHost
+			val buildProvider = host?.getBuildProvider()
 			val success = buildProvider?.buildEnvConnect(callback) ?: false
 			if (!success) {
 				val activity = godot.getActivity() ?: return false
@@ -389,7 +396,8 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvDisconnect() {
 		try {
-			val buildProvider = godot.primaryHost?.buildProvider
+			val host = godot.primaryHost as? GodotEditorHost
+			val buildProvider = host?.getBuildProvider()
 			buildProvider?.buildEnvDisconnect()
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to disconnect from build environment", e)
@@ -405,7 +413,8 @@ internal class GodotNativeBridge(private val godot: Godot) {
 		resultCallback: GodotCallable
 	): Int {
 		try {
-			val buildProvider = godot.primaryHost?.buildProvider
+			val host = godot.primaryHost as? GodotEditorHost
+			val buildProvider = host?.getBuildProvider()
 			return buildProvider?.buildEnvExecute(
 				buildTool,
 				arguments,
@@ -422,7 +431,8 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvCancel(jobId: Int) {
 		try {
-			val buildProvider = godot.primaryHost?.buildProvider
+			val host = godot.primaryHost as? GodotEditorHost
+			val buildProvider = host?.getBuildProvider()
 			buildProvider?.buildEnvCancel(jobId)
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to cancel command in build environment", e)
@@ -431,7 +441,8 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeBuildEnvCleanProject(projectPath: String, buildDir: String, callback: GodotCallable) {
 		try {
-			val buildProvider = godot.primaryHost?.buildProvider
+			val host = godot.primaryHost as? GodotEditorHost
+			val buildProvider = host?.getBuildProvider()
 			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
 		} catch (e: Exception) {
 			Log.e(TAG, "Unable to clean project in build environment", e)
