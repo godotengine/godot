@@ -42,6 +42,7 @@
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
+#include "servers/text/text_server.h"
 
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
@@ -1706,6 +1707,21 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #endif
 }
 
+static GDExtensionConstTypePtr gdextension_text_server_shaped_text_get_glyphs(GDExtensionObjectPtr p_instance, uint64_t p_shaped_rid) {
+	TextServer *instance = (TextServer *)p_instance;
+	return instance->shaped_text_get_glyphs(RID::from_uint64(p_shaped_rid));
+}
+
+static GDExtensionConstTypePtr gdextension_text_server_shaped_text_sort_logical(GDExtensionObjectPtr p_instance, uint64_t p_shaped_rid) {
+	TextServer *instance = (TextServer *)p_instance;
+	return instance->shaped_text_sort_logical(RID::from_uint64(p_shaped_rid));
+}
+
+static GDExtensionConstTypePtr gdextension_text_server_shaped_text_get_ellipsis_glyphs(GDExtensionObjectPtr p_instance, uint64_t p_shaped_rid) {
+	TextServer *instance = (TextServer *)p_instance;
+	return instance->shaped_text_get_ellipsis_glyphs(RID::from_uint64(p_shaped_rid));
+}
+
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
@@ -1886,6 +1902,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(image_ptrw);
 	REGISTER_INTERFACE_FUNC(image_ptr);
+	REGISTER_INTERFACE_FUNC(text_server_shaped_text_get_glyphs);
+	REGISTER_INTERFACE_FUNC(text_server_shaped_text_sort_logical);
+	REGISTER_INTERFACE_FUNC(text_server_shaped_text_get_ellipsis_glyphs);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION
