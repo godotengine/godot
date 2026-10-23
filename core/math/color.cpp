@@ -322,6 +322,54 @@ static int _parse_col8(const String &p_str, int p_ofs) {
 	return _parse_col4(p_str, p_ofs) * 16 + _parse_col4(p_str, p_ofs + 1);
 }
 
+Color Color::with_red8(int64_t p_r8) const {
+	Color c = *this;
+	c.r = p_r8 / 255.0f;
+	return c;
+}
+
+Color Color::with_green8(int64_t p_g8) const {
+	Color c = *this;
+	c.g = p_g8 / 255.0f;
+	return c;
+}
+
+Color Color::with_blue8(int64_t p_b8) const {
+	Color c = *this;
+	c.b = p_b8 / 255.0f;
+	return c;
+}
+
+Color Color::with_alpha8(int64_t p_a8) const {
+	Color c = *this;
+	c.a = p_a8 / 255.0f;
+	return c;
+}
+
+Color Color::with_red(float p_r) const {
+	Color c = *this;
+	c.r = p_r;
+	return c;
+}
+
+Color Color::with_green(float p_g) const {
+	Color c = *this;
+	c.g = p_g;
+	return c;
+}
+
+Color Color::with_blue(float p_b) const {
+	Color c = *this;
+	c.b = p_b;
+	return c;
+}
+
+Color Color::with_alpha(float p_a) const {
+	Color c = *this;
+	c.a = p_a;
+	return c;
+}
+
 Color Color::inverted() const {
 	Color c = *this;
 	c.invert();
