@@ -431,7 +431,7 @@
 		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The texture to use for multiplying the intensity of the subsurface scattering transmittance intensity. See also [member subsurf_scatter_texture]. Ignored if [member subsurf_scatter_skin_mode] is [code]true[/code].
 		</member>
-		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="-1">
 			Filter flags for the texture.
 			[b]Note:[/b] [member heightmap_texture] is always sampled with linear filtering, even if nearest-neighbor filtering is selected here. This is to ensure the heightmap effect looks as intended. If you need sharper height transitions between pixels, resize the heightmap texture in an image editor with nearest-neighbor filtering.
 		</member>
@@ -557,6 +557,9 @@
 		</constant>
 		<constant name="TEXTURE_MAX" value="19" enum="TextureParam">
 			Represents the size of the [enum TextureParam] enum.
+		</constant>
+		<constant name="TEXTURE_FILTER_DEFAULT" value="-1" enum="TextureFilter">
+			The texture filter is determined from [member ProjectSettings.rendering/textures/default_filters/base_material_3d_filter].
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
 			The texture filter reads from the nearest pixel only. This makes the texture look pixelated from up close, and grainy from a distance (due to mipmaps not being sampled).

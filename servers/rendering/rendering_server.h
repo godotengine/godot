@@ -194,6 +194,12 @@ public:
 
 	virtual void material_set_use_debanding(bool p_enable) = 0;
 
+	RSE::MaterialFilter base_material_3d_default_filter = RSE::MATERIAL_FILTER_LINEAR_MIPMAPS;
+
+	virtual void base_material_3d_set_default_filter(RSE::MaterialFilter p_filter) = 0;
+
+	_FORCE_INLINE_ RSE::MaterialFilter base_material_3d_get_default_filter() const { return base_material_3d_default_filter; }
+
 	/* MESH API */
 
 	virtual RID mesh_create_from_surfaces(const Vector<RenderingServerTypes::SurfaceData> &p_surfaces, int p_blend_shape_count = 0) = 0;
@@ -1185,6 +1191,7 @@ VARIANT_ENUM_CAST_EXT(RSE::RenderingInfo, RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST_EXT(RSE::SplashStretchMode, RenderingServer::SplashStretchMode);
 VARIANT_ENUM_CAST_EXT(RSE::CanvasTextureChannel, RenderingServer::CanvasTextureChannel);
 VARIANT_ENUM_CAST_EXT(RSE::BakeChannels, RenderingServer::BakeChannels);
+VARIANT_ENUM_CAST_EXT(RSE::MaterialFilter, RenderingServer::MaterialFilter);
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST_EXT(RSE::Features, RenderingServer::Features);
