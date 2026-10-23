@@ -52,20 +52,18 @@
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
-#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/rendering/rendering_server.h"
-
-void ConnectionInfoDialog::ok_pressed() {
-}
 
 void ConnectionInfoDialog::popup_connections(const String &p_method, const Vector<Node *> &p_nodes) {
 	method->set_text(p_method);
@@ -221,21 +219,6 @@ void ScriptTextEditor::set_edited_resource(const Ref<Resource> &p_res) {
 
 void ScriptTextEditor::_script_res_changed() {
 	emit_signal(SNAME("name_changed"));
-}
-
-void ScriptTextEditor::enable_editor() {
-	if (editor_enabled) {
-		return;
-	}
-
-	_enable_code_editor();
-
-	if (pending_state != Variant()) {
-		code_editor->set_edit_state(pending_state);
-		pending_state = Variant();
-	}
-
-	TextEditorBase::enable_editor();
 }
 
 void ScriptTextEditor::_load_theme_settings() {
@@ -666,7 +649,7 @@ void ScriptTextEditor::_inline_object_draw(const Dictionary &p_info, const Rect2
 	if (_is_valid_color_info(p_info)) {
 		Rect2 col_rect = p_rect.grow(-4);
 		if (color_alpha_texture.is_null()) {
-			color_alpha_texture = inline_color_picker->get_theme_icon("sample_bg", "ColorPicker");
+			color_alpha_texture = get_theme_icon("sample_bg", "ColorPicker");
 		}
 		RID text_ci = code_editor->get_text_editor()->get_text_canvas_item();
 		RS::get_singleton()->canvas_item_add_rect(text_ci, p_rect.grow(-3), Color(1, 1, 1));
@@ -679,6 +662,7 @@ void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, con
 	if (!_is_valid_color_info(p_info)) {
 		return;
 	}
+	_setup_color_picker();
 	inline_color_picker->set_pick_color(p_info["color"]);
 	inline_color_line = p_info["line"];
 	inline_color_start = p_info["column"];
@@ -708,10 +692,46 @@ void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, con
 	_open_picker();
 }
 
+void ScriptTextEditor::_setup_color_picker() {
+	if (inline_color_popup != nullptr) {
+		return;
+	}
+	inline_color_popup = memnew(PopupPanel);
+
+	inline_color_picker = memnew(ColorPicker);
+	inline_color_picker->set_mouse_filter(MOUSE_FILTER_STOP);
+	inline_color_picker->set_deferred_mode(true);
+	inline_color_picker->set_hex_visible(false);
+	inline_color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_picker_color_changed));
+	inline_color_popup->add_child(inline_color_picker);
+
+	inline_color_options = memnew(OptionButton);
+	inline_color_options->set_h_size_flags(SIZE_FILL);
+	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	inline_color_options->set_fit_to_longest_item(false);
+	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
+	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
+
+	_update_color_picker_theme();
+
+	add_child(inline_color_popup);
+}
+
+void ScriptTextEditor::_update_color_picker_theme() {
+	if (inline_color_popup == nullptr) {
+		return;
+	}
+	Ref<Font> code_font = get_theme_font("font", "CodeEdit");
+	inline_color_options->add_theme_font_override("font", code_font);
+	inline_color_options->get_popup()->add_theme_font_override("font", code_font);
+}
+
 void ScriptTextEditor::_open_picker() {
 	// Reset tooltip hover timer.
 	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(false);
 	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
+
+	_setup_color_picker();
 
 	EditorNode::get_singleton()->setup_color_picker(inline_color_picker);
 
@@ -724,6 +744,7 @@ void ScriptTextEditor::_picker_color_changed(const Color &p_color) {
 }
 
 void ScriptTextEditor::_update_color_constructor_options() {
+	ERR_FAIL_NULL(inline_color_options);
 	Ref<Script> script = edited_res;
 	int item_count = inline_color_options->get_item_count();
 	// Update or add each constructor as an option.
@@ -813,6 +834,7 @@ void ScriptTextEditor::_update_color_text() {
 	if (inline_color_line < 0) {
 		return;
 	}
+	ERR_FAIL_NULL(inline_color_options);
 	String result = inline_color_options->get_item_text(inline_color_options->get_selected_id());
 	code_editor->get_text_editor()->begin_complex_operation();
 	code_editor->get_text_editor()->remove_text(inline_color_line, inline_color_start, inline_color_line, inline_color_end + 1);
@@ -834,41 +856,6 @@ void ScriptTextEditor::update_settings() {
 	TextEditorBase::update_settings();
 }
 
-Variant ScriptTextEditor::get_edit_state() {
-	if (pending_state != Variant()) {
-		return pending_state;
-	}
-	return TextEditorBase::get_edit_state();
-}
-
-void ScriptTextEditor::set_edit_state(const Variant &p_state, bool p_grab_focus) {
-	if (editor_enabled) {
-		code_editor->set_edit_state(p_state);
-	} else {
-		// The editor is not fully initialized, so the state can't be loaded properly.
-		pending_state = p_state;
-	}
-
-	Dictionary state = p_state;
-	if (state.has("row")) {
-		previous_history_line = state["row"];
-	}
-	if (state.has("syntax_highlighter")) {
-		for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
-			if (highlighter->_get_name() == String(state["syntax_highlighter"])) {
-				set_syntax_highlighter(highlighter);
-				break;
-			}
-		}
-	}
-
-	if (editor_enabled && p_grab_focus) {
-#ifndef ANDROID_ENABLED
-		ensure_focus();
-#endif
-	}
-}
-
 Variant ScriptTextEditor::get_previous_state() {
 	return code_editor->get_previous_state();
 }
@@ -877,7 +864,7 @@ void ScriptTextEditor::store_previous_state() {
 	return code_editor->store_previous_state();
 }
 
-Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
+Ref<Texture2D> ScriptTextEditor::get_document_icon() {
 	Ref<Script> script = edited_res;
 	if (get_parent_control()) {
 		String icon_name = script->get_class();
@@ -1745,6 +1732,11 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 
 		Ref<Script> script = edited_res;
 		Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
+
+		if (connection_info_dialog == nullptr) {
+			connection_info_dialog = memnew(ConnectionInfoDialog);
+			add_child(connection_info_dialog);
+		}
 		connection_info_dialog->popup_connections(method, nodes);
 	} else if (type == "inherits") {
 		String base_class_raw = meta["base_class"];
@@ -1854,6 +1846,12 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 			tx->end_complex_operation();
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
+			if (quick_open == nullptr) {
+				quick_open = memnew(ScriptEditorQuickOpen);
+				quick_open->set_title(TTRC("Go to Function"));
+				quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
+				add_child(quick_open);
+			}
 			quick_open->popup_dialog(get_functions());
 		} break;
 		case SHOW_TOOLTIP_AT_CARET: {
@@ -1948,9 +1946,6 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
-			if (!editor_enabled) {
-				break;
-			}
 			if (is_visible_in_tree()) {
 				_update_warnings();
 				_update_errors();
@@ -1959,9 +1954,7 @@ void ScriptTextEditor::_notification(int p_what) {
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {
 			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
-			Ref<Font> code_font = get_theme_font("font", "CodeEdit");
-			inline_color_options->add_theme_font_override("font", code_font);
-			inline_color_options->get_popup()->add_theme_font_override("font", code_font);
+			_update_color_picker_theme();
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
@@ -2558,6 +2551,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			const int end_col = parsed_color.get("color_end", -1);
 			if (mouse_column >= start_col && mouse_column <= end_col) {
 				has_color = true;
+				_setup_color_picker();
 				inline_color_picker->set_pick_color(parsed_color["color"]);
 				inline_color_line = mouse_line;
 				inline_color_start = start_col;
@@ -2687,27 +2681,6 @@ void ScriptTextEditor::register_editor() {
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }
 
-void ScriptTextEditor::_enable_code_editor() {
-	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
-	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
-	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
-	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
-	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
-	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
-	code_editor->get_text_editor()->connect("_fold_line_updated", callable_mp(this, &ScriptTextEditor::_update_background_color));
-	_update_gutter_indexes();
-
-	editor_box->add_child(errors_panel);
-	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
-
-	quick_open = memnew(ScriptEditorQuickOpen);
-	quick_open->set_title(TTRC("Go to Function"));
-	quick_open->connect("goto_line", callable_mp(this, &ScriptTextEditor::_goto_line));
-	add_child(quick_open);
-
-	add_child(connection_info_dialog);
-}
-
 void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
 	CodeEdit *ce = code_editor->get_text_editor();
 	const String word = ce->get_lookup_word(hover_tooltip_pos.y, hover_tooltip_pos.x);
@@ -2726,17 +2699,27 @@ ScriptTextEditor::ScriptTextEditor() {
 	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
 
-	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
-	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
-	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
-	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	CodeEdit *code_edit = code_editor->get_text_editor();
+	code_edit->set_draw_breakpoints_gutter(true);
+	code_edit->set_draw_executing_lines_gutter(true);
 
-	connection_gutter = 1;
-	code_editor->get_text_editor()->add_gutter(connection_gutter);
-	code_editor->get_text_editor()->set_gutter_name(connection_gutter, "connection_gutter");
-	code_editor->get_text_editor()->set_gutter_draw(connection_gutter, false);
-	code_editor->get_text_editor()->set_gutter_overwritable(connection_gutter, true);
-	code_editor->get_text_editor()->set_gutter_type(connection_gutter, TextEdit::GUTTER_TYPE_ICON);
+	code_edit->add_gutter(connection_gutter);
+	code_edit->set_gutter_name(connection_gutter, "connection_gutter");
+	code_edit->set_gutter_draw(connection_gutter, false);
+	code_edit->set_gutter_overwritable(connection_gutter, true);
+	code_edit->set_gutter_type(connection_gutter, TextEdit::GUTTER_TYPE_ICON);
+	_update_gutter_indexes();
+
+	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
+	code_edit->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+	code_edit->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
+	code_edit->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
+	code_edit->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
+	code_edit->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
+	code_edit->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
+	code_edit->connect("_fold_line_updated", callable_mp(this, &ScriptTextEditor::_update_background_color));
+	code_edit->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptTextEditor::_on_mouse_exited));
 
 	errors_panel = memnew(RichTextLabel);
 	errors_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
@@ -2746,6 +2729,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
+	errors_panel->connect("meta_clicked", callable_mp(this, &ScriptTextEditor::_error_clicked));
+	editor_box->add_child(errors_panel);
 
 	drag_info_label = memnew(Label);
 	drag_info_label->set_anchors_preset(Control::PRESET_BOTTOM_RIGHT);
@@ -2760,28 +2745,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	drag_info_sb->set_expand_margin_all(5);
 	drag_info_label->add_theme_style_override(CoreStringName(normal), drag_info_sb);
 
-	code_editor->get_text_editor()->connect(SceneStringName(mouse_exited), callable_mp(this, &ScriptTextEditor::_on_mouse_exited));
-	code_editor->get_text_editor()->add_child(drag_info_label);
+	code_edit->add_child(drag_info_label);
 	drag_info_label->hide();
-
-	inline_color_popup = memnew(PopupPanel);
-	add_child(inline_color_popup);
-
-	inline_color_picker = memnew(ColorPicker);
-	inline_color_picker->set_mouse_filter(MOUSE_FILTER_STOP);
-	inline_color_picker->set_deferred_mode(true);
-	inline_color_picker->set_hex_visible(false);
-	inline_color_picker->connect("color_changed", callable_mp(this, &ScriptTextEditor::_picker_color_changed));
-	inline_color_popup->add_child(inline_color_picker);
-
-	inline_color_options = memnew(OptionButton);
-	inline_color_options->set_h_size_flags(SIZE_FILL);
-	inline_color_options->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	inline_color_options->set_fit_to_longest_item(false);
-	inline_color_options->connect("item_selected", callable_mp(this, &ScriptTextEditor::_update_color_text).unbind(1));
-	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
-
-	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	// ScriptTextEditor uses its own timer instead of the CodeEdit symbol_hovered signal
 	// so that it can detect hovering over non-symbols for the purposes of warning/error tooltips.
@@ -2794,14 +2759,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	update_settings();
 	set_process_shortcut_input(true);
 
-	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
-}
-
-ScriptTextEditor::~ScriptTextEditor() {
-	if (!editor_enabled) {
-		memdelete(errors_panel);
-		memdelete(connection_info_dialog);
-	}
+	SET_DRAG_FORWARDING_GCD(code_edit, ScriptTextEditor);
 }
 
 ScriptEditorBase *ScriptTextEditor::create_editor(const Ref<Resource> &p_resource) {
