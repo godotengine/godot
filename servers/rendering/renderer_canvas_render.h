@@ -190,6 +190,7 @@ public:
 				TYPE_TRANSFORM,
 				TYPE_CLIP_IGNORE,
 				TYPE_ANIMATION_SLICE,
+				TYPE_CALLBACK
 			};
 
 			Command *next = nullptr;
@@ -304,6 +305,14 @@ public:
 
 			CommandAnimationSlice() {
 				type = TYPE_ANIMATION_SLICE;
+			}
+		};
+
+		struct CommandCallback : public Command {
+			Callable callback;
+			CommandCallback() {
+				type = TYPE_CALLBACK;
+				callback = Callable();
 			}
 		};
 
