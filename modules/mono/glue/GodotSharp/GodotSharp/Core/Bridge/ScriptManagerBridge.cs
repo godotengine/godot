@@ -190,6 +190,7 @@ namespace Godot.Bridge
                 }
 
                 *outRes = NativeFuncs.godotsharp_string_name_new_copy((godot_string_name)nativeName.NativeValue);
+                GC.KeepAlive(nativeName);
             }
             catch (Exception e)
             {
@@ -756,6 +757,7 @@ namespace Godot.Bridge
             godot_string_name nativeBaseName = nativeBase != null
                 ? NativeFuncs.godotsharp_string_name_new_copy((godot_string_name)nativeBase.NativeValue)
                 : default;
+            GC.KeepAlive(nativeBase);
 
             bool isTool = scriptType.IsDefined(typeof(ToolAttribute), inherit: false);
 
@@ -941,6 +943,7 @@ namespace Godot.Bridge
 
                 *outMethodsDest = NativeFuncs.godotsharp_array_new_copy(
                     (godot_array)methods.NativeValue);
+                GC.KeepAlive(methods);
 
                 // RPC functions
 
@@ -982,6 +985,7 @@ namespace Godot.Bridge
 
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new_copy(
                     (godot_dictionary)rpcFunctions.NativeValue);
+                GC.KeepAlive(rpcFunctions);
 
                 // Event signals
 
@@ -1029,6 +1033,7 @@ namespace Godot.Bridge
 
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new_copy(
                     (godot_dictionary)signals.NativeValue);
+                GC.KeepAlive(signals);
 
                 // Base script
 
