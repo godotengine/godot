@@ -2300,6 +2300,17 @@ VkSampleCountFlagBits RenderingDeviceDriverVulkan::_ensure_supported_sample_coun
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
+VkResult RenderingDeviceDriverVulkan::_texture_create_image_view(VkImageViewCreateInfo p_create_info, VkImageView *r_view) {
+	VkImageViewASTCDecodeModeEXT decode_mode = {};
+	if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME) && p_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && p_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK) {
+		decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
+		decode_mode.pNext = p_create_info.pNext;
+		decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
+		p_create_info.pNext = &decode_mode;
+	}
+	return vkCreateImageView(vk_device, &p_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), r_view);
+}
+
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
 	VkImageCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -2462,18 +2473,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	VkImageViewASTCDecodeModeEXT decode_mode;
-	if (enabled_device_extension_names.has(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME)) {
-		if (image_view_create_info.format >= VK_FORMAT_ASTC_4x4_UNORM_BLOCK && image_view_create_info.format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK) {
-			decode_mode.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_ASTC_DECODE_MODE_EXT;
-			decode_mode.pNext = nullptr;
-			decode_mode.decodeMode = VK_FORMAT_R8G8B8A8_UNORM;
-			image_view_create_info.pNext = &decode_mode;
-		}
-	}
-
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
+	VkResult err = _texture_create_image_view(image_view_create_info, &vk_image_view);
 	if (err) {
 		if (!Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
 			vmaDestroyImage(allocator, vk_image, allocation);
@@ -2527,7 +2528,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	image_view_create_info.subresourceRange.aspectMask = p_depth_stencil ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 	VkImageView vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &vk_image_view);
+	VkResult err = _texture_create_image_view(image_view_create_info, &vk_image_view);
 	if (err) {
 		ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for extension texture (VkResult error %d).", err));
 	}
@@ -2583,7 +2584,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_or
 	}
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
+	VkResult err = _texture_create_image_view(image_view_create_info, &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for shared texture (VkResult error %d).", err));
 
 	// Bookkeep.
@@ -2636,7 +2637,7 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared_from_slice(Tex
 	image_view_create_info.subresourceRange.layerCount = p_layers;
 
 	VkImageView new_vk_image_view = VK_NULL_HANDLE;
-	VkResult err = vkCreateImageView(vk_device, &image_view_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &new_vk_image_view);
+	VkResult err = _texture_create_image_view(image_view_create_info, &new_vk_image_view);
 	ERR_FAIL_COND_V_MSG(err, TextureID(), vformat("Couldn't create Vulkan image view for shared texture from slice (VkResult error %d).", err));
 
 	// Bookkeep.
