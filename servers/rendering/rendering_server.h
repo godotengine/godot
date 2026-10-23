@@ -85,6 +85,10 @@ protected:
 	RID white_texture;
 	RID test_material;
 
+	static HashMap<String, String> module_vertex_code;
+	static HashMap<String, String> module_fragment_code;
+	static HashMap<String, String> module_compute_code;
+
 	Error _surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale);
 
 	static RenderingServer *(*create_func)();
@@ -120,6 +124,7 @@ public:
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
+	virtual void texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer = 0) = 0;
 	virtual void texture_proxy_update(RID p_texture, RID p_proxy_to) = 0;
 
@@ -177,6 +182,33 @@ public:
 	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
 
 	virtual RenderingServerTypes::ShaderNativeSourceCode shader_get_native_source_code(RID p_shader) const = 0;
+
+	static void shader_register_vertex_module_code(const String &p_name, const String &p_code) { module_vertex_code[p_name] = p_code; }
+	static String include_vertex_module_code(const String &p_code) {
+		String code = p_code;
+		for (const KeyValue<String, String> &E : module_vertex_code) {
+			code = code.replace(E.key, E.value);
+		}
+		return code;
+	}
+
+	static void shader_register_fragment_module_code(const String &p_name, const String &p_code) { module_fragment_code[p_name] = p_code; }
+	static String include_fragment_module_code(const String &p_code) {
+		String code = p_code;
+		for (const KeyValue<String, String> &E : module_fragment_code) {
+			code = code.replace(E.key, E.value);
+		}
+		return code;
+	}
+
+	static void shader_register_compute_module_code(const String &p_name, const String &p_code) { module_compute_code[p_name] = p_code; }
+	static String include_compute_module_code(const String &p_code) {
+		String code = p_code;
+		for (const KeyValue<String, String> &E : module_compute_code) {
+			code = code.replace(E.key, E.value);
+		}
+		return code;
+	}
 
 	/* COMMON MATERIAL API */
 
@@ -842,6 +874,7 @@ public:
 	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) = 0;
 	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false) = 0;
 	virtual void canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0) = 0;
+	virtual void canvas_item_add_slug_texture(RID p_item, const Rect2 &p_rect, RID p_texture, uint32_t p_offset, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), float p_scale = 1.0, bool p_color = false) = 0;
 	virtual void canvas_item_add_lcd_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1)) = 0;
 	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RSE::NinePatchAxisMode p_x_axis_mode = RSE::NINE_PATCH_STRETCH, RSE::NinePatchAxisMode p_y_axis_mode = RSE::NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1)) = 0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) = 0;

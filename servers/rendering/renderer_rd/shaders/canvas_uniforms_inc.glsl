@@ -30,7 +30,7 @@ struct InstanceData {
 	vec4 ninepatch_margins;
 	vec4 dst_rect; //for built-in rect and UV
 	vec4 src_rect;
-	vec2 pad;
+	uvec2 offset;
 
 #endif
 	uint flags;
@@ -54,7 +54,7 @@ layout(push_constant, std430) uniform Params {
 	uint batch_flags;
 	uint pad0;
 
-	vec2 msdf;
+	vec2 text_data;
 	vec2 color_texture_pixel_size;
 #ifdef USE_ATTRIBUTES
 	// Particles and meshes
@@ -96,11 +96,19 @@ bool sc_use_lighting() {
 }
 
 bool sc_use_msdf() {
-	return ((sc_packed_0() >> 1) & 1U) != 0;
+	return ((sc_packed_0() >> 1) & 7U) == 1;
 }
 
 bool sc_use_lcd() {
-	return ((sc_packed_0() >> 2) & 1U) != 0;
+	return ((sc_packed_0() >> 1) & 7U) == 2;
+}
+
+bool sc_use_slug() {
+	return ((sc_packed_0() >> 1) & 7U) == 3;
+}
+
+bool sc_use_slug_color() {
+	return ((sc_packed_0() >> 1) & 7U) == 4;
 }
 
 // In vulkan, sets should always be ordered using the following logic:
@@ -201,3 +209,4 @@ layout(set = 3, binding = 0) uniform texture2D color_texture;
 layout(set = 3, binding = 1) uniform texture2D normal_texture;
 layout(set = 3, binding = 2) uniform texture2D specular_texture;
 layout(set = 3, binding = 3) uniform sampler texture_sampler;
+layout(set = 3, binding = 4) uniform isampler2D slug_texture;

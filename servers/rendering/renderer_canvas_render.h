@@ -47,8 +47,11 @@ public:
 		CANVAS_RECT_TRANSPOSE = 16,
 		CANVAS_RECT_CLIP_UV = 32,
 		CANVAS_RECT_IS_GROUP = 64,
+		CANVAS_RECT_SPECIAL_RENDER_MODE_MASK = 128 | 256 | 512,
 		CANVAS_RECT_MSDF = 128,
 		CANVAS_RECT_LCD = 256,
+		CANVAS_RECT_SLUG = 512,
+		CANVAS_RECT_SLUG_COLOR = 512 | 256,
 	};
 
 	struct Light {
@@ -202,8 +205,12 @@ public:
 			Color modulate;
 			Rect2 source;
 			uint16_t flags;
-			float outline;
+			union {
+				float outline;
+				float scale;
+			};
 			float px_range;
+			uint32_t offset;
 
 			RID texture;
 
@@ -212,6 +219,7 @@ public:
 				outline = 0;
 				px_range = 1;
 				type = TYPE_RECT;
+				offset = 0;
 			}
 		};
 
