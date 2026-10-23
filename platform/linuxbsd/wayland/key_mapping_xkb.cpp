@@ -357,6 +357,9 @@ void KeyMappingXKB::initialize() {
 
 	// Godot to scancode map.
 	for (const KeyValue<unsigned int, Key> &E : scancode_map) {
+		if (scancode_map_inv.has(E.value)) {
+			continue;
+		}
 		scancode_map_inv[E.value] = E.key;
 	}
 
