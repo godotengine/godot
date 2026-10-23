@@ -306,7 +306,7 @@ void GodotPhysicsServer3D::area_remove_shape(RID p_area, int p_shape_idx) {
 	GodotArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_NULL(area);
 
-	area->remove_shape(p_shape_idx);
+	area->remove_shape_by_index(p_shape_idx);
 }
 
 void GodotPhysicsServer3D::area_clear_shapes(RID p_area) {
@@ -314,7 +314,7 @@ void GodotPhysicsServer3D::area_clear_shapes(RID p_area) {
 	ERR_FAIL_NULL(area);
 
 	while (area->get_shape_count()) {
-		area->remove_shape(0);
+		area->remove_shape_by_index(0);
 	}
 }
 
@@ -553,7 +553,7 @@ void GodotPhysicsServer3D::body_remove_shape(RID p_body, int p_shape_idx) {
 	GodotBody3D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
 
-	body->remove_shape(p_shape_idx);
+	body->remove_shape_by_index(p_shape_idx);
 }
 
 void GodotPhysicsServer3D::body_clear_shapes(RID p_body) {
@@ -561,7 +561,7 @@ void GodotPhysicsServer3D::body_clear_shapes(RID p_body) {
 	ERR_FAIL_NULL(body);
 
 	while (body->get_shape_count()) {
-		body->remove_shape(0);
+		body->remove_shape_by_index(0);
 	}
 }
 
@@ -1634,7 +1634,7 @@ void GodotPhysicsServer3D::free_rid(RID p_rid) {
 		body->set_space(nullptr);
 
 		while (body->get_shape_count()) {
-			body->remove_shape(0);
+			body->remove_shape_by_index(0);
 		}
 
 		body_owner.free(p_rid);
@@ -1652,7 +1652,7 @@ void GodotPhysicsServer3D::free_rid(RID p_rid) {
 		area->set_space(nullptr);
 
 		while (area->get_shape_count()) {
-			area->remove_shape(0);
+			area->remove_shape_by_index(0);
 		}
 
 		area_owner.free(p_rid);
