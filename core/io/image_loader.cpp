@@ -116,6 +116,17 @@ void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
 	}
 }
 
+// Some texture formats should be imported as is, and are thus ignored by the various editor importers
+void ImageLoader::get_editor_importer_recognized_extensions(List<String> *p_extensions) {
+	List<String> loader_extensions;
+	ImageLoader::get_recognized_extensions(&loader_extensions);
+	for (const String &extension : loader_extensions) {
+		if (extension.nocasecmp_to("dds") != 0) {
+			p_extensions->push_back(extension);
+		}
+	}
+}
+
 Ref<ImageFormatLoader> ImageLoader::recognize(const String &p_extension) {
 	for (int i = 0; i < loader.size(); i++) {
 		if (loader[i]->recognize(p_extension)) {
