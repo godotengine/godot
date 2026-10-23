@@ -369,9 +369,9 @@ void SpringBoneCollision3DGizmoPlugin::draw_capsule(Ref<SurfaceTool> &p_surface_
 	}
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
-		p_surface_tool->add_vertex((i - 1 < HALF_STEP ? top : bottom) + (Vector3::RIGHT * p_radius).rotated(Vector3::FORWARD, SPPI * ((i - 1) % STEP)));
+		p_surface_tool->add_vertex((i - 1 < HALF_STEP ? top : bottom) + (Vector3::RIGHT * p_radius).rotated(Vector3::BACK, SPPI * ((i - 1) % STEP)));
 		p_surface_tool->set_color(p_color);
-		p_surface_tool->add_vertex((i - 1 < HALF_STEP ? top : bottom) + (Vector3::RIGHT * p_radius).rotated(Vector3::FORWARD, SPPI * (i % STEP)));
+		p_surface_tool->add_vertex((i - 1 < HALF_STEP ? top : bottom) + (Vector3::RIGHT * p_radius).rotated(Vector3::BACK, SPPI * (i % STEP)));
 	}
 	for (int i = 1; i <= STEP; i++) {
 		p_surface_tool->set_color(p_color);
