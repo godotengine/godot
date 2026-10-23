@@ -110,6 +110,9 @@ Error HTTPClientWeb::request(Method p_method, const String &p_url, const Vector<
 	return OK;
 }
 
+void HTTPClientWeb::disconnect_from_host() {
+}
+
 void HTTPClientWeb::close() {
 	host = "";
 	port = -1;
