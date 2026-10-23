@@ -1837,7 +1837,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		if (dragged_anchor >= 0) {
-			// Draw the 4 lines when dragged
+			// Draw the 4 lines when dragged.
 			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 
 			Vector2 corners_pos[4];
@@ -1855,7 +1855,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}
 
-			// Display the percentages next to the lines
+			// Display the percentages next to the lines.
 			real_t percent_val;
 			percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
 			percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
@@ -1874,17 +1874,24 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Side)((dragged_anchor + 1) % 4));
 		}
 
-		// Draw the margin values and the node width/height when dragging control side
+		// Draw the margin values and the node width/height when dragging control side.
 		const real_t ratio = 0.33;
 		Transform2D parent_transform = xform * control->get_transform().affine_inverse();
 		real_t node_pos_in_parent[4];
 
 		Rect2 parent_rect = control->get_parent_anchorable_rect();
 
-		node_pos_in_parent[0] = control->get_anchor(SIDE_LEFT) * parent_rect.size.width + control->get_offset(SIDE_LEFT) + parent_rect.position.x;
 		node_pos_in_parent[1] = control->get_anchor(SIDE_TOP) * parent_rect.size.height + control->get_offset(SIDE_TOP) + parent_rect.position.y;
-		node_pos_in_parent[2] = control->get_anchor(SIDE_RIGHT) * parent_rect.size.width + control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
 		node_pos_in_parent[3] = control->get_anchor(SIDE_BOTTOM) * parent_rect.size.height + control->get_offset(SIDE_BOTTOM) + parent_rect.position.y;
+
+		bool rtl = control->is_layout_rtl();
+		if (rtl) {
+			node_pos_in_parent[0] = (parent_rect.size.width - control->get_anchor(SIDE_LEFT) * parent_rect.size.width) - control->get_offset(SIDE_LEFT) + parent_rect.position.x;
+			node_pos_in_parent[2] = (parent_rect.size.width - control->get_anchor(SIDE_RIGHT) * parent_rect.size.width) - control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
+		} else {
+			node_pos_in_parent[0] = control->get_anchor(SIDE_LEFT) * parent_rect.size.width + control->get_offset(SIDE_LEFT) + parent_rect.position.x;
+			node_pos_in_parent[2] = control->get_anchor(SIDE_RIGHT) * parent_rect.size.width + control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
+		}
 
 		Point2 start, end;
 		switch (drag_type) {
@@ -1894,9 +1901,15 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), SIDE_BOTTOM);
 				[[fallthrough]];
 			case CanvasItemManipulator::DRAG_MOVE:
-				start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
-				end = start - Vector2(control->get_offset(SIDE_LEFT), 0);
-				_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				if (rtl) {
+					start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+					end = start + Vector2(control->get_offset(SIDE_RIGHT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				} else {
+					start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+					end = start - Vector2(control->get_offset(SIDE_LEFT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				}
 				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, Math::round(EDSCALE));
 				break;
 			default:
@@ -1909,9 +1922,15 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), SIDE_BOTTOM);
 				[[fallthrough]];
 			case CanvasItemManipulator::DRAG_MOVE:
-				start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
-				end = start - Vector2(control->get_offset(SIDE_RIGHT), 0);
-				_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				if (rtl) {
+					start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+					end = start + Vector2(control->get_offset(SIDE_LEFT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				} else {
+					start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+					end = start - Vector2(control->get_offset(SIDE_RIGHT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				}
 				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, Math::round(EDSCALE));
 				break;
 			default:
@@ -1949,7 +1968,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		switch (drag_type) {
-			//Draw the ghost rect if the node if rotated/scaled
+			// Draw the ghost rect if the node if rotated/scaled.
 			case CanvasItemManipulator::DRAG_LEFT:
 			case CanvasItemManipulator::DRAG_TOP_LEFT:
 			case CanvasItemManipulator::DRAG_TOP:
