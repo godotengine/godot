@@ -412,7 +412,8 @@ vec4 light_compute(
 		inout vec4 shadow_modulate,
 		vec2 screen_uv,
 		vec2 uv,
-		vec4 color, bool is_directional) {
+		vec4 color, bool is_directional,
+		vec4 accumulated_color) {
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
@@ -733,7 +734,8 @@ void main() {
 #ifdef LIGHT_CODE_USED
 
 			vec4 shadow_modulate = vec4(1.0);
-			light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, true);
+			vec4 accumulated_color = color;
+			light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, true, accumulated_color);
 #else
 
 			if (normal_used) {
@@ -786,9 +788,10 @@ void main() {
 
 			vec4 shadow_modulate = vec4(1.0);
 			vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
+			vec4 accumulated_color = color;
 
 			light_color.rgb *= light_base_color.rgb;
-			light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
+			light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false, accumulated_color);
 #else
 
 			light_color.rgb *= light_base_color.rgb * light_base_color.a;
