@@ -244,5 +244,19 @@ struct is_zero_constructible<Ref<T>> : std::true_type {};
 
 template <typename T>
 Ref<T> ObjectDB::get_ref(ObjectID p_instance_id) {
-	return Ref<T>(get_instance(p_instance_id));
+	SlotIndex index{ p_instance_id };
+	ERR_FAIL_COND_V(index.block() >= SafeNumericInternal::relaxed_get(&block_max), nullptr); // This should never happen unless RID is corrupted.
+
+	ObjectSlot &slot = object_blocks[index.block()][index.slot()];
+	SlotData slot_data = slot.lock();
+	T *object;
+	// Ref can only be created outside of _predelete.
+	if (likely(slot_data.compare_validator(p_instance_id) && slot.object && !slot.object->_is_in_predelete())) {
+		object = Object::cast_to<T>(slot.object);
+	} else {
+		object = nullptr;
+	}
+	Ref<T> ref(object);
+	slot.unlock(slot_data);
+	return ref;
 }

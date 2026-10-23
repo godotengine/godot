@@ -61,6 +61,8 @@
 
 template <typename T>
 class SafeNumeric {
+	friend class SafeNumericInternal;
+
 	std::atomic<T> value;
 
 	static_assert(std::atomic<T>::is_always_lock_free);
@@ -226,5 +228,30 @@ public:
 
 	_ALWAYS_INLINE_ void init(uint32_t p_value = 1) {
 		count.set(p_value);
+	}
+};
+
+// For use when you want to perform relaxed operations with `SafeNumeric`.
+// Use with caution. You need to be sure that relaxed memory order is
+// appropriate for your use case.
+
+class SafeNumericInternal {
+public:
+	template <typename T>
+	_ALWAYS_INLINE_ static void relaxed_set(SafeNumeric<T> *p_numeric, T p_value) {
+		p_numeric->value.store(p_value, std::memory_order_relaxed);
+	}
+	template <typename T>
+	_ALWAYS_INLINE_ static T relaxed_get(const SafeNumeric<T> *p_numeric) {
+		return p_numeric->value.load(std::memory_order_relaxed);
+	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ static T relaxed_postadd(SafeNumeric<T> *p_numeric, T p_value) {
+		return p_numeric->value.fetch_add(p_value, std::memory_order_relaxed);
+	}
+	template <typename T>
+	_ALWAYS_INLINE_ static T relaxed_postsub(SafeNumeric<T> *p_numeric, T p_value) {
+		return p_numeric->value.fetch_sub(p_value, std::memory_order_relaxed);
 	}
 };
