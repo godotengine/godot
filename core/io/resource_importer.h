@@ -123,6 +123,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
 	virtual String get_save_extension() const = 0;
 	virtual String get_resource_type() const = 0;
+	virtual bool get_preserves_source_file() const { return false; }
 	virtual float get_priority() const { return 1.0; }
 	virtual int get_import_order() const { return IMPORT_ORDER_DEFAULT; }
 	virtual int get_format_version() const { return 0; }
