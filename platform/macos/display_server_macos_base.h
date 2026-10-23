@@ -134,6 +134,8 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
+	virtual bool shift_swaps_scroll_axis() const override { return true; }
+
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
