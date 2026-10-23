@@ -203,6 +203,8 @@ namespace Godot.Collections
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
+            GC.KeepAlive(this); // Don't collect during manual dispose call.
+
             if (_weakReferenceToSelf != null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
@@ -227,6 +229,7 @@ namespace Godot.Collections
             godot_array newArray;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_duplicate(ref self, deep.ToGodotBool(), out newArray);
+            GC.KeepAlive(this);
             return CreateTakingOwnershipOfDisposableValue(newArray);
         }
 
@@ -257,6 +260,8 @@ namespace Godot.Collections
             godot_variant variantValue = (godot_variant)value.NativeVar;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_fill(ref self, variantValue);
+            GC.KeepAlive(this);
+            GC.KeepAlive(value.Disposer);
         }
 
         /// <summary>
@@ -270,6 +275,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_max(ref self, out resVariant);
+            GC.KeepAlive(this);
             return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
         }
 
@@ -284,6 +290,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_min(ref self, out resVariant);
+            GC.KeepAlive(this);
             return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
         }
 
@@ -302,6 +309,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
+            GC.KeepAlive(this);
             return Variant.CreateTakingOwnershipOfDisposableValue(resVariant);
         }
 
@@ -320,7 +328,10 @@ namespace Godot.Collections
         {
             var self = (godot_array)NativeValue;
             var otherVariant = (godot_array)other.NativeValue;
-            return NativeFuncs.godotsharp_array_recursive_equal(ref self, otherVariant).ToBool();
+            var ret = NativeFuncs.godotsharp_array_recursive_equal(ref self, otherVariant).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(other);
+            return ret;
         }
 
         /// <summary>
@@ -338,7 +349,9 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_resize(ref self, newSize);
+            var ret = NativeFuncs.godotsharp_array_resize(ref self, newSize);
+            GC.KeepAlive(this);
+            return ret;
         }
 
         /// <summary>
@@ -353,6 +366,7 @@ namespace Godot.Collections
 
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_reverse(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -371,6 +385,7 @@ namespace Godot.Collections
 
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_shuffle(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -437,6 +452,7 @@ namespace Godot.Collections
             godot_array newArray;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_slice(ref self, start, end, step, deep.ToGodotBool(), out newArray);
+            GC.KeepAlive(this);
             return CreateTakingOwnershipOfDisposableValue(newArray);
         }
 
@@ -466,6 +482,7 @@ namespace Godot.Collections
 
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_sort(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -516,7 +533,9 @@ namespace Godot.Collections
             get
             {
                 GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return Variant.CreateCopyingBorrowed(borrowElem);
+                var ret = Variant.CreateCopyingBorrowed(borrowElem);
+                GC.KeepAlive(this);
+                return ret;
             }
             set
             {
@@ -530,6 +549,7 @@ namespace Godot.Collections
                 godot_variant* itemPtr = &ptrw[index];
                 (*itemPtr).Dispose();
                 *itemPtr = value.CopyNativeVariant();
+                GC.KeepAlive(this);
             }
         }
 
@@ -548,6 +568,8 @@ namespace Godot.Collections
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
         }
 
         /// <summary>
@@ -574,6 +596,8 @@ namespace Godot.Collections
                 var self = (godot_array)NativeValue;
                 var collectionNative = (godot_array)array.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
+                GC.KeepAlive(this);
+                GC.KeepAlive(array);
                 return;
             }
             if (collection is Array<T> typedArray)
@@ -581,6 +605,8 @@ namespace Godot.Collections
                 var self = (godot_array)NativeValue;
                 var collectionNative = (godot_array)typedArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
+                GC.KeepAlive(this);
+                GC.KeepAlive(typedArray);
                 return;
             }
 
@@ -686,7 +712,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
+            var ret = NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -748,7 +777,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
+            var ret = NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -773,7 +805,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
+            var ret = NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -792,7 +827,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
+            var ret = NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -818,7 +856,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
+            var ret = NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -844,6 +885,8 @@ namespace Godot.Collections
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Disposer);
         }
 
         /// <summary>
@@ -889,6 +932,7 @@ namespace Godot.Collections
 
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_remove_at(ref self, index);
+            GC.KeepAlive(this);
         }
 
         // ICollection
@@ -925,6 +969,7 @@ namespace Godot.Collections
 
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_make_read_only(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -1027,6 +1072,7 @@ namespace Godot.Collections
         {
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_to_string(ref self, out godot_string str);
+            GC.KeepAlive(this);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
         }
@@ -1110,6 +1156,7 @@ namespace Godot.Collections
                     (uint)elemVariantType,
                     elemClassName,
                     elemScriptRef);
+                GC.KeepAlive(this);
             }
         }
 
@@ -1244,6 +1291,7 @@ namespace Godot.Collections
             godot_variant variantValue = VariantUtils.CreateFrom(value);
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_fill(ref self, variantValue);
+            GC.KeepAlive(_underlyingArray);
         }
 
         /// <summary>
@@ -1257,6 +1305,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_max(ref self, out resVariant);
+            GC.KeepAlive(_underlyingArray);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1271,6 +1320,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_min(ref self, out resVariant);
+            GC.KeepAlive(_underlyingArray);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1289,6 +1339,7 @@ namespace Godot.Collections
             godot_variant resVariant;
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_pick_random(ref self, out resVariant);
+            GC.KeepAlive(_underlyingArray);
             return VariantUtils.ConvertTo<T>(resVariant);
         }
 
@@ -1468,7 +1519,9 @@ namespace Godot.Collections
             get
             {
                 _underlyingArray.GetVariantBorrowElementAt(index, out godot_variant borrowElem);
-                return VariantUtils.ConvertTo<T>(borrowElem);
+                var ret = VariantUtils.ConvertTo<T>(borrowElem);
+                GC.KeepAlive(_underlyingArray);
+                return ret;
             }
             set
             {
@@ -1482,6 +1535,7 @@ namespace Godot.Collections
                 godot_variant* itemPtr = &ptrw[index];
                 (*itemPtr).Dispose();
                 *itemPtr = VariantUtils.CreateFrom(value);
+                GC.KeepAlive(_underlyingArray);
             }
         }
 
@@ -1500,7 +1554,9 @@ namespace Godot.Collections
 
             using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
+            var ret = NativeFuncs.godotsharp_array_index_of(ref self, variantValue);
+            GC.KeepAlive(_underlyingArray);
+            return ret;
         }
 
         /// <summary>
@@ -1525,7 +1581,9 @@ namespace Godot.Collections
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
-            return NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
+            var ret = NativeFuncs.godotsharp_array_index_of(ref self, variantValue, index);
+            GC.KeepAlive(_underlyingArray);
+            return ret;
         }
 
         /// <summary>
@@ -1544,7 +1602,9 @@ namespace Godot.Collections
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
+            var ret = NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, Count - 1);
+            GC.KeepAlive(_underlyingArray);
+            return ret;
         }
 
         /// <summary>
@@ -1570,7 +1630,9 @@ namespace Godot.Collections
 
             godot_variant variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
-            return NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
+            var ret = NativeFuncs.godotsharp_array_last_index_of(ref self, variantValue, index);
+            GC.KeepAlive(_underlyingArray);
+            return ret;
         }
 
         /// <summary>
@@ -1596,6 +1658,7 @@ namespace Godot.Collections
             using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             NativeFuncs.godotsharp_array_insert(ref self, index, variantValue);
+            GC.KeepAlive(_underlyingArray);
         }
 
         /// <summary>
@@ -1655,6 +1718,7 @@ namespace Godot.Collections
             using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
+            GC.KeepAlive(_underlyingArray);
         }
 
         /// <summary>
@@ -1681,6 +1745,8 @@ namespace Godot.Collections
                 var self = (godot_array)_underlyingArray.NativeValue;
                 var collectionNative = (godot_array)array.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
+                GC.KeepAlive(_underlyingArray);
+                GC.KeepAlive(array);
                 return;
             }
             if (collection is Array<T> typedArray)
@@ -1688,6 +1754,8 @@ namespace Godot.Collections
                 var self = (godot_array)_underlyingArray.NativeValue;
                 var collectionNative = (godot_array)typedArray._underlyingArray.NativeValue;
                 _ = NativeFuncs.godotsharp_array_add_range(ref self, collectionNative);
+                GC.KeepAlive(_underlyingArray);
+                GC.KeepAlive(typedArray);
                 return;
             }
 
@@ -1798,7 +1866,9 @@ namespace Godot.Collections
 
             using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
-            return NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
+            var ret = NativeFuncs.godotsharp_array_binary_search(ref self, index, count, variantValue);
+            GC.KeepAlive(_underlyingArray);
+            return ret;
         }
 
         /// <summary>

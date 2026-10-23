@@ -66,6 +66,8 @@ namespace Godot.Collections
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
+            GC.KeepAlive(this); // Don't collect during manual dispose call.
+
             if (_weakReferenceToSelf != null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
@@ -90,6 +92,7 @@ namespace Godot.Collections
             godot_dictionary newDictionary;
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_duplicate(ref self, deep.ToGodotBool(), out newDictionary);
+            GC.KeepAlive(this);
             return CreateTakingOwnershipOfDisposableValue(newDictionary);
         }
 
@@ -110,6 +113,8 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             var other = (godot_dictionary)dictionary.NativeValue;
             NativeFuncs.godotsharp_dictionary_merge(ref self, in other, overwrite.ToGodotBool());
+            GC.KeepAlive(this);
+            GC.KeepAlive(dictionary);
         }
 
         /// <summary>
@@ -128,7 +133,10 @@ namespace Godot.Collections
         {
             var self = (godot_dictionary)NativeValue;
             var otherVariant = (godot_dictionary)other.NativeValue;
-            return NativeFuncs.godotsharp_dictionary_recursive_equal(ref self, otherVariant).ToBool();
+            var ret = NativeFuncs.godotsharp_dictionary_recursive_equal(ref self, otherVariant).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(other);
+            return ret;
         }
 
         // IDictionary
@@ -143,6 +151,7 @@ namespace Godot.Collections
                 godot_array keysArray;
                 var self = (godot_dictionary)NativeValue;
                 NativeFuncs.godotsharp_dictionary_keys(ref self, out keysArray);
+                GC.KeepAlive(this);
                 return Array.CreateTakingOwnershipOfDisposableValue(keysArray);
             }
         }
@@ -157,6 +166,7 @@ namespace Godot.Collections
                 godot_array valuesArray;
                 var self = (godot_dictionary)NativeValue;
                 NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
+                GC.KeepAlive(this);
                 return Array.CreateTakingOwnershipOfDisposableValue(valuesArray);
             }
         }
@@ -179,6 +189,7 @@ namespace Godot.Collections
 
             int count = NativeFuncs.godotsharp_dictionary_count(ref self);
 
+            GC.KeepAlive(this);
             return (keys, values, count);
         }
 
@@ -202,6 +213,8 @@ namespace Godot.Collections
                 if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                         (godot_variant)key.NativeVar, out godot_variant value).ToBool())
                 {
+                    GC.KeepAlive(this);
+                    GC.KeepAlive(key.Disposer);
                     return Variant.CreateTakingOwnershipOfDisposableValue(value);
                 }
                 else
@@ -216,6 +229,8 @@ namespace Godot.Collections
                 var self = (godot_dictionary)NativeValue;
                 NativeFuncs.godotsharp_dictionary_set_value(ref self,
                     (godot_variant)key.NativeVar, (godot_variant)value.NativeVar);
+                GC.KeepAlive(this);
+                GC.KeepAlive(value.Disposer);
             }
         }
 
@@ -243,6 +258,10 @@ namespace Godot.Collections
 
             godot_variant variantValue = (godot_variant)value.NativeVar;
             NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
+
+            GC.KeepAlive(this);
+            GC.KeepAlive(key.Disposer);
+            GC.KeepAlive(value.Disposer);
         }
 
         void ICollection<KeyValuePair<Variant, Variant>>.Add(KeyValuePair<Variant, Variant> item)
@@ -260,6 +279,7 @@ namespace Godot.Collections
 
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_clear(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -270,7 +290,10 @@ namespace Godot.Collections
         public bool ContainsKey(Variant key)
         {
             var self = (godot_dictionary)NativeValue;
-            return NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
+            var ret = NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(key.Disposer);
+            return ret;
         }
 
         bool ICollection<KeyValuePair<Variant, Variant>>.Contains(KeyValuePair<Variant, Variant> item)
@@ -279,6 +302,8 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Key.Disposer);
 
             using (retValue)
             {
@@ -286,7 +311,10 @@ namespace Godot.Collections
                     return false;
 
                 godot_variant variantValue = (godot_variant)item.Value.NativeVar;
-                return NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
+                var ret = NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool();
+                GC.KeepAlive(item.Key.Disposer);
+                GC.KeepAlive(item.Value.Disposer);
+                return ret;
             }
         }
 
@@ -302,7 +330,10 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             var self = (godot_dictionary)NativeValue;
-            return NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
+            var ret = NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(key.Disposer);
+            return ret;
         }
 
         bool ICollection<KeyValuePair<Variant, Variant>>.Remove(KeyValuePair<Variant, Variant> item)
@@ -313,6 +344,8 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(item.Key.Disposer);
 
             using (retValue)
             {
@@ -322,8 +355,12 @@ namespace Godot.Collections
                 godot_variant variantValue = (godot_variant)item.Value.NativeVar;
                 if (NativeFuncs.godotsharp_variant_equals(variantValue, retValue).ToBool())
                 {
-                    return NativeFuncs.godotsharp_dictionary_remove_key(
+                    var ret = NativeFuncs.godotsharp_dictionary_remove_key(
                         ref self, variantKey).ToBool();
+                    GC.KeepAlive(this);
+                    GC.KeepAlive(item.Key.Disposer);
+                    GC.KeepAlive(item.Value.Disposer);
+                    return ret;
                 }
 
                 return false;
@@ -340,7 +377,9 @@ namespace Godot.Collections
             get
             {
                 var self = (godot_dictionary)NativeValue;
-                return NativeFuncs.godotsharp_dictionary_count(ref self);
+                var ret = NativeFuncs.godotsharp_dictionary_count(ref self);
+                GC.KeepAlive(this);
+                return ret;
             }
         }
 
@@ -365,6 +404,7 @@ namespace Godot.Collections
 
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_make_read_only(ref self);
+            GC.KeepAlive(this);
         }
 
         /// <summary>
@@ -380,6 +420,8 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 (godot_variant)key.NativeVar, out godot_variant retValue).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(key.Disposer);
 
             value = found ? Variant.CreateTakingOwnershipOfDisposableValue(retValue) : default;
 
@@ -445,6 +487,7 @@ namespace Godot.Collections
             NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
                 out godot_variant key,
                 out godot_variant value);
+            GC.KeepAlive(this);
             return new KeyValuePair<Variant, Variant>(Variant.CreateTakingOwnershipOfDisposableValue(key),
                 Variant.CreateTakingOwnershipOfDisposableValue(value));
         }
@@ -457,6 +500,7 @@ namespace Godot.Collections
         {
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_to_string(ref self, out godot_string str);
+            GC.KeepAlive(this);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
         }
@@ -521,6 +565,7 @@ namespace Godot.Collections
                     (uint)valueVariantType,
                     valueClassName,
                     valueScriptRef);
+                GC.KeepAlive(this);
             }
         }
 
@@ -672,6 +717,7 @@ namespace Godot.Collections
                 if (NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                         variantKey, out godot_variant value).ToBool())
                 {
+                    GC.KeepAlive(_underlyingDict);
                     using (value)
                         return VariantUtils.ConvertTo<TValue>(value);
                 }
@@ -689,6 +735,7 @@ namespace Godot.Collections
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
                 NativeFuncs.godotsharp_dictionary_set_value(ref self,
                     variantKey, variantValue);
+                GC.KeepAlive(_underlyingDict);
             }
         }
 
@@ -702,6 +749,7 @@ namespace Godot.Collections
                 godot_array keyArray;
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
                 NativeFuncs.godotsharp_dictionary_keys(ref self, out keyArray);
+                GC.KeepAlive(_underlyingDict);
                 return Array<TKey>.CreateTakingOwnershipOfDisposableValue(keyArray);
             }
         }
@@ -716,6 +764,7 @@ namespace Godot.Collections
                 godot_array valuesArray;
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
                 NativeFuncs.godotsharp_dictionary_values(ref self, out valuesArray);
+                GC.KeepAlive(_underlyingDict);
                 return Array<TValue>.CreateTakingOwnershipOfDisposableValue(valuesArray);
             }
         }
@@ -730,6 +779,8 @@ namespace Godot.Collections
             NativeFuncs.godotsharp_dictionary_key_value_pair_at(ref self, index,
                 out godot_variant key,
                 out godot_variant value);
+            GC.KeepAlive(_underlyingDict);
+
             using (key)
             using (value)
             {
@@ -763,6 +814,7 @@ namespace Godot.Collections
 
             using var variantValue = VariantUtils.CreateFrom(value);
             NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
+            GC.KeepAlive(_underlyingDict);
         }
 
         /// <summary>
@@ -774,7 +826,9 @@ namespace Godot.Collections
         {
             using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
-            return NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool();
+            var ret = NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool();
+            GC.KeepAlive(_underlyingDict);
+            return ret;
         }
 
         /// <summary>
@@ -790,7 +844,9 @@ namespace Godot.Collections
 
             using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
-            return NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
+            var ret = NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
+            GC.KeepAlive(_underlyingDict);
+            return ret;
         }
 
         /// <summary>
@@ -807,6 +863,7 @@ namespace Godot.Collections
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
+            GC.KeepAlive(_underlyingDict);
 
             using (retValue)
                 value = found ? VariantUtils.ConvertTo<TValue>(retValue) : default;
@@ -856,6 +913,7 @@ namespace Godot.Collections
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
+            GC.KeepAlive(_underlyingDict);
 
             using (retValue)
             {
@@ -912,6 +970,7 @@ namespace Godot.Collections
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
                 variantKey, out godot_variant retValue).ToBool();
+            GC.KeepAlive(_underlyingDict);
 
             using (retValue)
             {
