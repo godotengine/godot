@@ -130,41 +130,62 @@ bool AbstractPolygon2DEditor::_has_resource() const {
 void AbstractPolygon2DEditor::_create_resource() {
 }
 
-Vector2 AbstractPolygon2DEditor::_get_geometric_center() const {
-	int n_polygons = _get_polygon_count();
+AbstractPolygon2DEditor::PolygonCentroid AbstractPolygon2DEditor::_calculate_polygon_centroid(const Vector<Vector2> &p_points) {
+	PolygonCentroid result;
 
-	double cx = 0.0;
-	double cy = 0.0;
-	int n_subs = 0;
-	for (int i = 0; i < n_polygons; i++) {
-		const Vector<Vector2> &vertices = _get_polygon(i);
-		Vector<Vector<Point2>> decomp = ::Geometry2D::decompose_polygon_in_convex(vertices);
-		if (decomp.is_empty()) {
-			continue;
-		}
-		for (const Vector<Vector2> &sub : decomp) {
-			int sub_n_points = sub.size();
-			double sub_area2x = 0.0;
-			double sub_cx = 0.0;
-			double sub_cy = 0.0;
-			for (int n = 0; n < sub_n_points; n++) {
-				int next = (n + 1 < sub_n_points) ? n + 1 : 0;
-				sub_area2x += (sub[n].x * sub[next].y) - (sub[next].x * sub[n].y);
-				sub_cx += (sub[n].x + sub[next].x) * (sub[n].x * sub[next].y - sub[next].x * sub[n].y);
-				sub_cy += (sub[n].y + sub[next].y) * (sub[n].x * sub[next].y - sub[next].x * sub[n].y);
-			}
-			sub_cx /= (sub_area2x * 3);
-			sub_cy /= (sub_area2x * 3);
-
-			cx += sub_cx;
-			cy += sub_cy;
-		}
-		n_subs += decomp.size();
+	const int count = p_points.size();
+	if (count < 3) {
+		return result;
 	}
-	cx /= n_subs;
-	cy /= n_subs;
 
-	return Vector2(cx, cy);
+	real_t weighted_x_sum = 0.0;
+	real_t weighted_y_sum = 0.0;
+	real_t signed_area2x_sum = 0.0;
+	for (int i = 0; i < count; i++) {
+		const int next = (i + 1) % count;
+
+		const Vector2 &a = p_points[i];
+		const Vector2 &b = p_points[next];
+		const real_t cross = a.x * b.y - b.x * a.y;
+		weighted_x_sum += (a.x + b.x) * cross;
+		weighted_y_sum += (a.y + b.y) * cross;
+		signed_area2x_sum += cross;
+	}
+
+	if (Math::is_zero_approx(signed_area2x_sum)) {
+		return result;
+	}
+
+	result.centroid = Vector2(
+			weighted_x_sum / (3.0 * signed_area2x_sum),
+			weighted_y_sum / (3.0 * signed_area2x_sum));
+	result.signed_area2x = signed_area2x_sum;
+	return result;
+}
+
+Vector2 AbstractPolygon2DEditor::_get_geometric_center() const {
+	Vector2 weighted_centroid_sum;
+	double area2x_sum = 0.0;
+
+	const int polygon_count = _get_polygon_count();
+	for (int i = 0; i < polygon_count; i++) {
+		const Vector<Vector2> &vertices = _get_polygon(i);
+		const Vector<Vector<Point2>> decomposed_polygons = Geometry2D::decompose_polygon_in_convex(vertices);
+		for (const Vector<Point2> &sub_polygon : decomposed_polygons) {
+			const PolygonCentroid centroid = _calculate_polygon_centroid(sub_polygon);
+			const real_t abs_sub_area2x = Math::abs(centroid.signed_area2x);
+			if (Math::is_zero_approx(abs_sub_area2x)) {
+				continue;
+			}
+			weighted_centroid_sum += centroid.centroid * abs_sub_area2x;
+			area2x_sum += abs_sub_area2x;
+		}
+	}
+
+	if (Math::is_zero_approx(area2x_sum)) {
+		return Vector2();
+	}
+	return weighted_centroid_sum / area2x_sum;
 }
 
 void AbstractPolygon2DEditor::_menu_option(int p_option) {
