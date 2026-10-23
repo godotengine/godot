@@ -61,17 +61,30 @@ protected:
 	RID canvas;
 	Vector2 offset;
 	Vector2 zoom = Vector2(1, 1);
-	Vector2 zoom_scale = Vector2(1, 1);
+	Vector2 smoothed_zoom = Vector2(1, 1);
+	bool zoom_smoothing_enabled = false;
+	real_t zoom_smoothing_speed = 5.0;
+	bool zoom_smoothing_delta_independent = false;
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
 	bool enabled = true;
+
+	bool position_smoothing_delta_independent = false;
+	real_t smoothing_delta_limit = 0.1;
+
 	real_t position_smoothing_speed = 5.0;
 	bool position_smoothing_enabled = false;
+
+	bool zoom_limit_enabled = false;
+	Vector2 zoom_min = Vector2(0.1, 0.1);
+	Vector2 zoom_max = Vector2(10.0, 10.0);
 
 	real_t camera_angle = 0.0;
 	real_t rotation_smoothing_speed = 5.0;
 	bool rotation_smoothing_enabled = false;
 
+	int previous_limit_sides = 0;
+	uint64_t last_smoothing_frame = UINT64_MAX;
 	bool limit_enabled = true;
 	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;
@@ -85,7 +98,6 @@ protected:
 	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
-	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
 
@@ -95,8 +107,6 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _reset_just_exited() { just_exited_tree = false; }
-
-	void _update_process_internal_for_smoothing();
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -161,9 +171,30 @@ public:
 	void set_drag_vertical_offset(real_t p_offset);
 	real_t get_drag_vertical_offset() const;
 
+	void set_zoom_limit_enabled(bool p_enabled);
+	bool is_zoom_limit_enabled() const;
+
+	void set_zoom_min(const Vector2 &p_zoom_min);
+	Vector2 get_zoom_min() const;
+
+	void set_zoom_max(const Vector2 &p_zoom_max);
+	Vector2 get_zoom_max() const;
+
 	void set_position_smoothing_enabled(bool p_enabled);
 	bool is_position_smoothing_enabled() const;
 
+	void set_zoom_smoothing_enabled(bool p_enabled);
+	bool is_zoom_smoothing_enabled() const;
+	void set_zoom_smoothing_speed(real_t p_speed);
+	real_t get_zoom_smoothing_speed() const;
+	void set_zoom_smoothing_delta_independent(bool p_enabled);
+	bool is_zoom_smoothing_delta_independent() const;
+
+	void set_position_smoothing_delta_independent(bool p_enabled);
+	bool is_position_smoothing_delta_independent() const;
+
+	void set_smoothing_delta_limit(real_t p_limit);
+	real_t get_smoothing_delta_limit() const;
 	void set_position_smoothing_speed(real_t p_speed);
 	real_t get_position_smoothing_speed() const;
 
