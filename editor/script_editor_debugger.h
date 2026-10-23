@@ -184,6 +184,7 @@ private:
 	bool live_debug;
 
 	CameraOverride camera_override;
+	float _game_speed = 1;
 
 	void _performance_draw();
 	void _performance_select();
@@ -276,6 +277,7 @@ public:
 	void set_camera_override(CameraOverride p_override);
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
+	void set_game_speed(float p_speed);
 
 	void update_live_edit_root();
 
