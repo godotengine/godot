@@ -4134,7 +4134,7 @@ FT_BEGIN_HEADER
    *   This function returns an error if the charmap is not part of the face
    *   (i.e., if it is not listed in the `face->charmaps` table).
    *
-   *   It also fails if an OpenType type~14 charmap is selected (which
+   *   It also fails if an OpenType type 14 or~15 charmap is selected (which
    *   doesn't map character codes to glyph indices at all).
    */
   FT_EXPORT( FT_Error )
@@ -4700,7 +4700,7 @@ FT_BEGIN_HEADER
    *
    * @abstract:
    *   The FreeType~2 interface to Unicode Variation Sequences (UVS), using
-   *   the SFNT cmap format~14.
+   *   the SFNT cmap formats 14 and~15.
    *
    * @description:
    *   Many characters, especially for CJK scripts, have variant forms.  They
@@ -4730,9 +4730,10 @@ FT_BEGIN_HEADER
    *   U+9089, you have to write the character sequence `U+9089 U+E0100`.
    *
    *   Adobe and MS decided to support both standardized and ideographic VS
-   *   with a new cmap subtable (format~14).  It is an odd subtable because
-   *   it is not a mapping of input code points to glyphs, but contains lists
-   *   of all variations supported by the font.
+   *   with a new cmap subtable (format~14, or format~15 for glyph indices
+   *   above 65535).  It is an odd subtable because it is not a mapping of
+   *   input code points to glyphs, but contains lists of all variations
+   *   supported by the font.
    *
    *   A variation may be either 'default' or 'non-default' for a given font.
    *   A default variation is the one you will get for that code point if you
@@ -5168,8 +5169,8 @@ FT_BEGIN_HEADER
    *
    */
 #define FREETYPE_MAJOR  2
-#define FREETYPE_MINOR  14
-#define FREETYPE_PATCH  3
+#define FREETYPE_MINOR  15
+#define FREETYPE_PATCH  0
 
 
   /**************************************************************************

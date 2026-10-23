@@ -71,6 +71,13 @@ FT_BEGIN_HEADER
     FT_UInt       regionCount;          /* total number of regions defined */
     GX_VarRegion  varRegionList;
 
+    /* Cache of per-region scalars for the current normalized coordinates. */
+    /* `regionScalars` holds `regionCount` values, `cachedCoords` the      */
+    /* `axisCount` coordinates they were computed for; both are NULL until */
+    /* first use and recomputed whenever the coordinates change.           */
+    FT_Fixed*  regionScalars;
+    FT_Fixed*  cachedCoords;
+
   } GX_ItemVarStoreRec, *GX_ItemVarStore;
 
 

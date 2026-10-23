@@ -1602,9 +1602,10 @@
       metrics->horiBearingY = (FT_Short)( originOffsetY + metrics->height );
       metrics->vertBearingY = (FT_Short)originOffsetY;
 
-      metrics->horiAdvance  = (FT_UShort)( aadvance *
-                                           face->root.size->metrics.x_ppem /
-                                           face->header.Units_Per_EM );
+      metrics->horiAdvance =
+        (FT_UShort)FT_MulDiv( aadvance,
+                              face->root.size->metrics.x_ppem,
+                              face->header.Units_Per_EM );
 
       if ( face->vertical_info )
         tt_face_get_metrics( face, TRUE, glyph_index, &abearing, &aadvance );
@@ -1615,9 +1616,10 @@
         aadvance = (FT_UShort)FT_ABS( face->horizontal.Ascender -
                                       face->horizontal.Descender );
 
-      metrics->vertAdvance  = (FT_UShort)( aadvance *
-                                           face->root.size->metrics.x_ppem /
-                                           face->header.Units_Per_EM );
+      metrics->vertAdvance =
+        (FT_UShort)FT_MulDiv( aadvance,
+                              face->root.size->metrics.x_ppem,
+                              face->header.Units_Per_EM );
     }
 
     return error;

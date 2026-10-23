@@ -479,6 +479,13 @@
              FT_STREAM_READ_FIELDS( winpe_rsrc_dir_fields, &root_dir ) )
           goto Exit;
 
+        if ( root_dir.number_of_id_entries >
+               0xFFFF - root_dir.number_of_named_entries )
+        {
+          error = FT_THROW( Invalid_File_Format );
+          goto Exit;
+        }
+
         root_dir_offset = pe32_section.pointer_to_raw_data;
 
         for ( i = 0; i < root_dir.number_of_named_entries +
@@ -505,6 +512,13 @@
                FT_STREAM_READ_FIELDS( winpe_rsrc_dir_fields, &name_dir ) )
             goto Exit;
 
+          if ( name_dir.number_of_id_entries >
+                 0xFFFF - name_dir.number_of_named_entries )
+          {
+            error = FT_THROW( Invalid_File_Format );
+            goto Exit;
+          }
+
           for ( j = 0; j < name_dir.number_of_named_entries +
                              name_dir.number_of_id_entries; j++ )
           {
@@ -528,6 +542,13 @@
                                    dir_entry2.offset )                     ||
                  FT_STREAM_READ_FIELDS( winpe_rsrc_dir_fields, &lang_dir ) )
               goto Exit;
+
+            if ( lang_dir.number_of_id_entries >
+                   0xFFFF - lang_dir.number_of_named_entries )
+            {
+              error = FT_THROW( Invalid_File_Format );
+              goto Exit;
+            }
 
             for ( k = 0; k < lang_dir.number_of_named_entries +
                                lang_dir.number_of_id_entries; k++ )

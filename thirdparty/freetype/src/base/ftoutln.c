@@ -102,15 +102,14 @@
       tags  = outline->tags   + first;
       tag   = FT_CURVE_TAG( tags[0] );
 
-      /* A contour cannot start with a cubic control point! */
-      if ( tag == FT_CURVE_TAG_CUBIC )
-        goto Invalid_Outline;
-
       /* check first point to determine origin */
-      if ( tag == FT_CURVE_TAG_CONIC )
+      if ( tag != FT_CURVE_TAG_ON )
       {
-        /* first point is conic control.  Yes, this happens. */
-        if ( FT_CURVE_TAG( outline->tags[last] ) == FT_CURVE_TAG_ON )
+        FT_Int  last_tag = FT_CURVE_TAG( outline->tags[last] );
+
+
+        /* first point is a control point.  Yes, this happens. */
+        if ( last_tag == FT_CURVE_TAG_ON )
         {
           /* start at last point if it is on the curve */
           v_start = v_last;
@@ -118,13 +117,16 @@
         }
         else
         {
-          /* if both first and last points are conic,         */
-          /* start at their middle and record its position    */
-          /* for closure                                      */
+          if ( last_tag != tag )
+            goto Invalid_Outline;
+
+          /* if both first and last points are controls,   */
+          /* start at their middle and record its position */
+          /* for closure                                   */
           v_start.x = ( v_start.x + v_last.x ) / 2;
           v_start.y = ( v_start.y + v_last.y ) / 2;
 
-       /* v_last = v_start; */
+          /* v_last = v_start; */
         }
         point--;
         tags--;
@@ -242,10 +244,23 @@
             if ( point <= limit )
             {
               FT_Vector  vec;
+              FT_Vector  v_middle;
 
+
+              tag = FT_CURVE_TAG( tags[0] );
 
               vec.x = SCALED( point->x );
               vec.y = SCALED( point->y );
+
+              if ( tag == FT_CURVE_TAG_CUBIC )
+              {
+                v_middle.x = ( vec2.x + vec.x ) / 2;
+                v_middle.y = ( vec2.y + vec.y ) / 2;
+
+                vec = v_middle;
+              }
+              else if ( tag != FT_CURVE_TAG_ON )
+                goto Invalid_Outline;
 
               FT_TRACE5(( "  cubic to (%.2f, %.2f)"
                           " with controls (%.2f, %.2f) and (%.2f, %.2f)\n",
@@ -258,6 +273,12 @@
               error = func_interface->cubic_to( &vec1, &vec2, &vec, user );
               if ( error )
                 goto Exit;
+
+              if ( tag == FT_CURVE_TAG_CUBIC )
+              {
+                point--;
+                tags--;
+              }
               continue;
             }
 
@@ -554,10 +575,14 @@
     last = -1;
     for ( n = 0; n < outline->n_contours; n++ )
     {
-      /* keep the first contour point as is and swap points around it */
-      /* to guarantee that the cubic arches stay valid after reverse  */
-      first = last + 2;
+      first = last + 1;
       last  = outline->contours[n];
+
+      /* Keep the first point unless it is a cubic control.  In that */
+      /* case, reverse the entire contour to preserve control pairs, */
+      /* including contours with no explicit on-curve points.        */
+      if ( FT_CURVE_TAG( outline->tags[first] ) != FT_CURVE_TAG_CUBIC )
+        first++;
 
       /* reverse point table */
       {
@@ -1050,12 +1075,17 @@
   FT_EXPORT_DEF( FT_Orientation )
   FT_Outline_Get_Orientation( FT_Outline*  outline )
   {
+    FT_Vector*  points;
+    FT_Int      c, n, first, last;
+
+#ifdef FT_INT64
+    FT_Int64    area = 0;
+#else
     FT_BBox     cbox = { 0, 0, 0, 0 };
     FT_Int      xshift, yshift;
-    FT_Vector*  points;
     FT_Vector   v_prev, v_cur;
-    FT_Int      c, n, first, last;
     FT_Pos      area = 0;
+#endif
 
 
     if ( !outline || outline->n_points <= 0 )
@@ -1065,6 +1095,42 @@
     /* Since glyph outlines behave much more `regular' than arbitrary */
     /* cubic or quadratic curves, this test deals with the polygon    */
     /* only that is spanned up by the control points.                 */
+
+    points = outline->points;
+
+#ifdef FT_INT64
+
+    /* Single-pass shoelace.  The 64-bit accumulator removes the need   */
+    /* for the coordinate shift pre-pass (and its `FT_Outline_Get_CBox` */
+    /* traversal) that the 32-bit variant below uses.                   */
+    last = -1;
+    for ( c = 0; c < outline->n_contours; c++ )
+    {
+      FT_Pos  prev_x, prev_y;
+
+
+      first = last + 1;
+      last  = outline->contours[c];
+
+      prev_x = points[last].x;
+      prev_y = points[last].y;
+
+      for ( n = first; n <= last; n++ )
+      {
+        FT_Pos  cur_x = points[n].x;
+        FT_Pos  cur_y = points[n].y;
+
+
+        area = ADD_INT64( area,
+                          MUL_INT64( SUB_INT64( cur_y, prev_y ),
+                                     ADD_INT64( cur_x, prev_x ) ) );
+
+        prev_x = cur_x;
+        prev_y = cur_y;
+      }
+    }
+
+#else /* !FT_INT64 */
 
     FT_Outline_Get_CBox( outline, &cbox );
 
@@ -1083,8 +1149,6 @@
 
     yshift = FT_MSB( (FT_UInt32)( cbox.yMax - cbox.yMin ) ) - 14;
     yshift = FT_MAX( yshift, 0 );
-
-    points = outline->points;
 
     last = -1;
     for ( c = 0; c < outline->n_contours; c++ )
@@ -1107,6 +1171,8 @@
         v_prev = v_cur;
       }
     }
+
+#endif /* FT_INT64 */
 
     if ( area > 0 )
       return FT_ORIENTATION_POSTSCRIPT;
