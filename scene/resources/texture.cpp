@@ -2422,6 +2422,20 @@ AnimatedTexture::~AnimatedTexture() {
 }
 ///////////////////////////////
 
+void TextureLayered::before_save() const {
+	layer_images = memnew(Vector<Ref<Image>>);
+
+	layer_images->resize(depth);
+}
+
+void TextureLayered::after_save() const {
+	layer_images->clear();
+
+	memdelete(layer_images);
+
+	layer_images = nullptr;
+}
+
 void TextureLayered::set_flags(uint32_t p_flags) {
 	flags = p_flags;
 
@@ -2659,7 +2673,17 @@ void TextureLayered::set_layer_data(const Ref<Image> &p_image, int p_layer) {
 
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 	ERR_FAIL_COND_V(!texture.is_valid(), Ref<Image>());
-	return VS::get_singleton()->texture_get_data(texture, p_layer);
+
+	if (layer_images && (*layer_images)[p_layer].is_null() == false) {
+		return (*layer_images)[p_layer];
+	}
+
+	Ref<Image> image = VS::get_singleton()->texture_get_data(texture, p_layer);
+
+	if (layer_images)
+		layer_images->write[p_layer] = image;
+
+	return image;
 }
 
 void TextureLayered::set_data_partial(const Ref<Image> &p_image, int p_x_ofs, int p_y_ofs, int p_z, int p_mipmap) {
@@ -2709,6 +2733,8 @@ void TextureLayered::_bind_methods() {
 }
 
 TextureLayered::TextureLayered(bool p_3d) {
+	layer_images = nullptr;
+
 	is_3d = p_3d;
 	flags = p_3d ? FLAGS_DEFAULT_TEXTURE_3D : FLAGS_DEFAULT_TEXTURE_ARRAY;
 	format = Image::FORMAT_MAX;
