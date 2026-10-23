@@ -54,6 +54,8 @@ class Particles3DEditorPlugin : public ParticlesEditorPlugin {
 protected:
 	Vector<Face3> geometry;
 
+	Ref<Mesh> get_mesh_for_node_created_in_editor() const;
+
 	virtual void _menu_callback(int p_idx) override;
 	virtual void _add_menu_options(PopupMenu *p_menu) override;
 
@@ -68,7 +70,11 @@ public:
 class GPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
 	GDCLASS(GPUParticles3DEditorPlugin, Particles3DEditorPlugin);
 
+	void _object_created_in_editor(Object *p_object);
+
 protected:
+	void _notification(int p_what);
+
 	Node *_convert_particles() override;
 
 	bool _can_generate_points() const override;
@@ -81,7 +87,11 @@ public:
 class CPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
 	GDCLASS(CPUParticles3DEditorPlugin, Particles3DEditorPlugin);
 
+	void _object_created_in_editor(Object *p_object);
+
 protected:
+	void _notification(int p_what);
+
 	Node *_convert_particles() override;
 
 	bool _can_generate_points() const override { return true; }
