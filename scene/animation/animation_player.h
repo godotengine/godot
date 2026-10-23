@@ -219,6 +219,7 @@ public:
 	StringName get_current_animation() const;
 	void set_current_animation(const StringName &p_animation);
 	StringName get_assigned_animation() const;
+	void update_animation_length();
 	void set_assigned_animation(const StringName &p_animation);
 	bool is_valid() const;
 
