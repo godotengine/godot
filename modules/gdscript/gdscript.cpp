@@ -36,7 +36,6 @@
 #include "gdscript_helper.h"
 #include "gdscript_linter.h"
 #include "gdscript_parser.h"
-#include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
 
 #include "core/io/resource_loader.h"
@@ -1189,15 +1188,6 @@ void GDScript::set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens) 
 
 const Vector<uint8_t> &GDScript::get_binary_tokens_source() const {
 	return binary_tokens;
-}
-
-Vector<uint8_t> GDScript::get_as_binary_tokens() const {
-	GDScriptTokenizerBuffer tokenizer;
-	return tokenizer.parse_code_string(source, GDScriptTokenizerBuffer::COMPRESS_NONE);
-}
-
-const HashMap<StringName, GDScriptFunction *> &GDScript::debug_get_member_functions() const {
-	return member_functions;
 }
 
 StringName GDScript::debug_get_member_by_index(int p_idx) const {
