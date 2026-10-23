@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "editor/debugger/script_editor_debugger.h"
 
-void EditorDebuggerSession::_breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump) {
+void EditorDebuggerSession::_breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_thread_id) {
 	if (p_really_did) {
 		emit_signal(SNAME("breaked"), p_can_debug);
 	} else {
