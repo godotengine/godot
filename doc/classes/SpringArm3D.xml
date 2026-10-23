@@ -41,6 +41,9 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The layers against which the collision check will be done. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
+		<member name="editor_preview" type="bool" setter="set_editor_preview" getter="is_editor_previewing" default="false">
+			Enables real-time spring arm updates in the editor for preview purposes.
+		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.01">
 			When the collision check is made, a candidate length for the SpringArm3D is given.
 			The margin is then subtracted to this length and the translation is applied to the child objects of the SpringArm3D.
