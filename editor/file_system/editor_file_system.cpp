@@ -618,7 +618,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_
 	Variant meta;
 
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
@@ -703,7 +702,6 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, const String &p_
 	md5_stream.f = md5s;
 
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
@@ -770,7 +768,6 @@ Vector<String> EditorFileSystem::_get_import_dest_paths(const String &p_path) {
 	String importer_name;
 
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
