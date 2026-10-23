@@ -32,7 +32,30 @@
 #define OBJECT_ID_H
 
 #include "core/int_types.h"
+#include "core/typedefs.h"
 
-typedef uint64_t ObjectID;
+class ObjectID {
+	uint64_t id = 0;
+
+public:
+	_ALWAYS_INLINE_ bool is_valid() const { return id != 0; }
+
+	_ALWAYS_INLINE_ operator uint64_t() const { return id; }
+	_ALWAYS_INLINE_ operator int64_t() const { return (int64_t)id; }
+
+	_ALWAYS_INLINE_ bool operator==(ObjectID p_o) const { return id == p_o.id; }
+	_ALWAYS_INLINE_ bool operator!=(ObjectID p_o) const { return id != p_o.id; }
+	_ALWAYS_INLINE_ bool operator<(ObjectID p_o) const { return id < p_o.id; }
+	_ALWAYS_INLINE_ bool operator>(ObjectID p_o) const { return id > p_o.id; }
+
+	_ALWAYS_INLINE_ explicit ObjectID(int64_t p_id) { id = p_id; }
+	_ALWAYS_INLINE_ explicit ObjectID(uint64_t p_id) { id = p_id; }
+
+	// Comment out an explicit above and delete the version here in order to find call sites in the codebase.
+	//ObjectID(uint64_t p_id) = delete;
+	//ObjectID(int64_t p_id) = delete;
+
+	_ALWAYS_INLINE_ ObjectID() {}
+};
 
 #endif // OBJECT_ID_H
