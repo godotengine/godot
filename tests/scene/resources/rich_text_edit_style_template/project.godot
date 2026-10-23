@@ -1,0 +1,4 @@
+config_version=5
+
+[application]
+config/name="Rich Text Style Probe"
