@@ -18,7 +18,7 @@ def main():
 
     # TODO: Convert to non-hardcoded path
     if os.path.exists("redundant.txt"):
-        with open("redundant.txt") as redundant:
+        with open("redundant.txt", encoding="utf-8") as redundant:
             for item in map(str.strip, redundant):
                 if os.path.isfile(item):
                     try:
