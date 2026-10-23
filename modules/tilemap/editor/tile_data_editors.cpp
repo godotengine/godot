@@ -31,6 +31,7 @@
 #include "tile_data_editors.h"
 
 #include "tile_set_editor.h"
+#include "tiles_editor_plugin.h"
 
 #include "core/math/geometry_2d.h"
 #include "core/math/random_pcg.h"
@@ -1883,43 +1884,14 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 	ERR_FAIL_COND(tile_set.is_null());
 
 	// Update the terrain set selector.
-	Vector<String> options;
-	options.push_back(String(TTR("No terrains")) + String(":-1"));
-	for (int i = 0; i < tile_set->get_terrain_sets_count(); i++) {
-		options.push_back(vformat("Terrain Set %d", i));
-	}
-	terrain_set_property_editor->setup(options);
-	terrain_set_property_editor->update_property();
+	TileTerrainEditorPlugin::update_terrain_set_property_editor(terrain_set_property_editor, tile_set);
 
 	// Update the terrain selector.
 	int terrain_set = int(dummy_object->get("terrain_set"));
 	if (terrain_set == -1) {
 		terrain_property_editor->hide();
 	} else {
-		options.clear();
-		options.push_back(String(TTR("No terrain")) + String(":-1"));
-		for (int i = 0; i < tile_set->get_terrains_count(terrain_set); i++) {
-			String name = tile_set->get_terrain_name(terrain_set, i);
-			if (name.is_empty()) {
-				options.push_back(vformat("Terrain %d", i));
-			} else {
-				options.push_back(name);
-			}
-		}
-		terrain_property_editor->setup(options);
-		terrain_property_editor->update_property();
-
-		const Size2i terrain_icon_size = Size2(16, 16) * EDSCALE;
-		// Kind of a hack to set icons.
-		// We could provide a way to modify that in the EditorProperty.
-		OptionButton *option_button = terrain_property_editor->get_option_button();
-		for (int terrain = 0; terrain < tile_set->get_terrains_count(terrain_set); terrain++) {
-			Ref<Image> img = Image::create_empty(1, 1, false, Image::FORMAT_RGBA8);
-			img->set_pixel(0, 0, tile_set->get_terrain_color(terrain_set, terrain));
-			Ref<ImageTexture> icon = ImageTexture::create_from_image(img);
-			icon->set_size_override(terrain_icon_size);
-			option_button->set_item_icon(terrain + 1, icon);
-		}
+		TileTerrainEditorPlugin::update_terrain_property_editor(terrain_property_editor, tile_set, terrain_set);
 		terrain_property_editor->show();
 	}
 }
