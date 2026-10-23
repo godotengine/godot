@@ -23,6 +23,20 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable
 
+    # Dependencies folder. Mirrors the layout used by macOS / Windows.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:
+            deps_folder = ""
+
     return [
         (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
@@ -31,6 +45,12 @@ def get_opts():
         ("apple_target_triple", "Triple for corresponding target Apple platform toolchain", ""),
         BoolVariable("simulator", "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building visionOS/macOS binaries", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
     ]
 
 
@@ -146,6 +166,22 @@ def configure(env: "SConsEnvironment"):
             "COREAUDIO_ENABLED",
         ]
     )
+
+    # AccessKit (screen reader support).
+    if env["accesskit"]:
+        ak_xcf = os.path.join(env["accesskit_sdk_path"], "lib", "visionos", "AccessKit.xcframework")
+        if os.path.isdir(ak_xcf):
+            env.Prepend(CPPPATH=[os.path.join(env["accesskit_sdk_path"], "include")])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        else:
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_ios.html\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
 
     if env["vulkan"]:
         print_warning("The visionOS platform does not support the Vulkan rendering driver")
