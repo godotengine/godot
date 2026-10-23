@@ -1,0 +1,13 @@
+GDTEST_OK
+=== One binary operator ===
+a and b: SUCCESS
+a or b: SUCCESS
+=== Three binary operators ===
+(a and b) and (c and d): SUCCESS
+(a and b) and (c or d): SUCCESS
+(a and b) or (c and d): SUCCESS
+(a and b) or (c or d): SUCCESS
+(a or b) and (c and d): SUCCESS
+(a or b) and (c or d): SUCCESS
+(a or b) or (c and d): SUCCESS
+(a or b) or (c or d): SUCCESS
