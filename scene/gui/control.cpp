@@ -1848,8 +1848,7 @@ void Control::update_maximum_size() {
 	}
 	// Same with desired size.
 	if (!data.updating_last_desired_size) {
-		data.updating_last_desired_size = true;
-		callable_mp(this, &Control::_update_desired_size).call_deferred();
+		update_desired_size();
 	}
 
 	callable_mp(this, &Control::_update_maximum_size).call_deferred();
