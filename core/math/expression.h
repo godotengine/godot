@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class Expression : public RefCounted {
 	GDCLASS(Expression, RefCounted);
@@ -241,14 +242,20 @@ protected:
 
 	Vector<String> input_names;
 
+	bool pure_only = false;
 	bool execution_error = false;
 	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str);
 
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	Error _parse_bind_compat_123130(const String &p_expression, const Vector<String> &p_input_names);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
-	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
+	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>(), bool p_pure_only = false);
 	Variant execute(const Array &p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true, bool p_const_calls_only = false);
 	bool has_execute_failed() const;
 	String get_error_text() const;
