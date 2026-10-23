@@ -49,6 +49,10 @@ String TestUtils::get_temp_path(const String &p_suffix) {
 	return temp_base.path_join(p_suffix);
 }
 
+ResourceUID::ID TestUtils::get_test_id_for_path(const String &p_path, bool p_generate) {
+	return ResourceUID::get_singleton()->create_id_for_path(p_path);
+}
+
 String &TestProjectSettingsInternalsAccessor::resource_path() {
 	return ProjectSettings::get_singleton()->resource_path;
 }

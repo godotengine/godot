@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/io/resource_uid.h"
+
 class String;
 
 namespace TestUtils {
@@ -37,6 +39,7 @@ namespace TestUtils {
 String get_data_path(const String &p_file);
 String get_executable_dir();
 String get_temp_path(const String &p_suffix);
+ResourceUID::ID get_test_id_for_path(const String &p_path, bool p_generate);
 } // namespace TestUtils
 
 // FIXME: This was originally constrained to `tests/core/config/test_project_settings.h`, but that
