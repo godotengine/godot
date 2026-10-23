@@ -47,5 +47,12 @@
 				Called to determine whether a particular [Resource] can be converted to the target resource type by this plugin.
 			</description>
 		</method>
+		<method name="_replaces_source" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [Resource] returned by [method _convert] should replace the source [Resource]. This is the default.
+				If [code]false[/code], the source [Resource] is kept and the converted [Resource] is saved as a new file instead. Such conversions are only available in the [b]Create New[/b] submenu of the FileSystem dock; for example, creating a [ShaderMaterial] from a [Shader].
+			</description>
+		</method>
 	</methods>
 </class>
