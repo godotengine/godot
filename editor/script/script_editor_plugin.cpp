@@ -355,7 +355,7 @@ void DocumentList::_document_clicked(int p_index, Vector2 p_local_mouse_pos, Mou
 }
 
 void DocumentList::_show_context_menu() {
-	context_menu->clear();
+	context_menu->clear(false);
 
 	int selected = document_editor_container->tab_container->get_current_tab();
 	if (selected < 0) {
@@ -389,7 +389,12 @@ void DocumentList::_show_context_menu() {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), DocumentEditorContainer::FILE_MENU_COPY_PATH);
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), DocumentEditorContainer::FILE_MENU_COPY_UID);
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), DocumentEditorContainer::FILE_MENU_SHOW_IN_FILE_SYSTEM);
-			if (!document_editor_container->is_main_editor) {
+			if (document_editor_container->is_main_editor) {
+				if (script.is_valid()) {
+					context_menu->add_submenu_node_item(TTRC("Open Generated Documentation"), context_docs_submenu, DocumentEditorContainer::FILE_MENU_OPEN_GENERATED_DOCUMENTATION);
+					_add_docs_to_menu(context_docs_submenu, script);
+				}
+			} else {
 				context_menu->add_shortcut(ED_SHORTCUT("script_editor/open_in_inspector", TTRC("Open File in Inspector")), DocumentEditorContainer::FILE_MENU_INSPECT);
 				context_menu->add_shortcut(ED_SHORTCUT("script_editor/inspect_native_code", TTRC("Inspect Native Shader Code...")), DocumentEditorContainer::FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
 			}
@@ -442,6 +447,48 @@ void DocumentList::_show_context_menu() {
 	context_menu->set_position(get_screen_position() + get_local_mouse_position());
 	context_menu->reset_size();
 	context_menu->popup();
+}
+
+PackedStringArray DocumentList::_get_script_docs(const Ref<Script> &p_script) const {
+	PackedStringArray ret;
+	if (p_script.is_null()) {
+		return ret;
+	}
+
+	const Vector<DocData::ClassDoc> docs = p_script->get_documentation();
+	if (docs.is_empty()) {
+		return ret;
+	}
+
+	const DocTools *doc_data = EditorHelp::get_doc_data();
+	for (const DocData::ClassDoc &doc : docs) {
+		if (!doc.name.is_empty() && doc_data->class_list.has(doc.name)) {
+			ret.append(doc.name);
+		}
+	}
+
+	if (ret.size() > 1) {
+		// Inner classes are listed before the main class, so shift it to the beginning.
+		const String main_script = ret[ret.size() - 1];
+		ret.resize(ret.size() - 1);
+		ret.insert(0, main_script);
+	}
+	return ret;
+}
+
+void DocumentList::_add_docs_to_menu(PopupMenu *p_menu, const Ref<Script> &p_from_script) const {
+	const PackedStringArray doc_list = _get_script_docs(p_from_script);
+
+	p_menu->clear();
+	if (doc_list.is_empty()) {
+		p_menu->add_item(TTRC("No generated docs"));
+		p_menu->set_item_disabled(-1, true);
+	} else {
+		for (const String &doc_name : doc_list) {
+			p_menu->add_item(doc_name);
+			p_menu->set_item_auto_translate_mode(-1, AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
+		}
+	}
 }
 
 static void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_used_scripts) {
@@ -649,6 +696,10 @@ DocumentList::DocumentList(DocumentEditorContainer *p_document_editor_container)
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(document_editor_container, &DocumentEditorContainer::_menu_option));
+
+	context_docs_submenu = memnew(PopupMenu);
+	context_menu->add_child(context_docs_submenu);
+	context_docs_submenu->connect("index_pressed", callable_mp(document_editor_container, &DocumentEditorContainer::_open_generated_doc).bind(context_docs_submenu));
 }
 
 /////////////////////////////////
@@ -1363,6 +1414,10 @@ void DocumentEditorContainer::_copy_script_uid() {
 		ResourceUID::ID uid = ResourceLoader::get_resource_uid(scr->get_path());
 		DisplayServer::get_singleton()->clipboard_set(ResourceUID::get_singleton()->id_to_text(uid));
 	}
+}
+
+void DocumentEditorContainer::_open_generated_doc(int p_idx, PopupMenu *p_from_menu) {
+	_help_class_open(p_from_menu->get_item_text(p_idx));
 }
 
 void DocumentEditorContainer::_close_other_tabs() {
