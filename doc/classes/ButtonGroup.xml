@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A group of [BaseButton]-derived buttons. The buttons in a [ButtonGroup] are treated like radio buttons: No more than one button can be pressed at a time. Some types of buttons (such as [CheckBox]) may have a special appearance in this state.
-		Every member of a [ButtonGroup] should have [member BaseButton.toggle_mode] set to [code]true[/code].
+		Every member of a [ButtonGroup] must have [member BaseButton.toggle_mode] set to [code]true[/code] for a ButtonGroup to function correctly.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,7 +19,7 @@
 		<method name="get_pressed_button">
 			<return type="BaseButton" />
 			<description>
-				Returns the current pressed button.
+				Returns the current pressed button, or [code]null[/code] if no button is pressed. This may occur when [member allow_unpress] is [code]true[/code], or when no button has been pressed yet.
 			</description>
 		</method>
 	</methods>
@@ -33,7 +33,18 @@
 		<signal name="pressed">
 			<param index="0" name="button" type="BaseButton" />
 			<description>
-				Emitted when one of the buttons of the group is pressed.
+				Emitted when one of the buttons of the group is pressed. This is also emitted when reselecting the currently active button, or when the currently active button is unpressed (if [member allow_unpress] is [code]true[/code]).
+				Since this signal is part of a [Resource], it can't be connected through the editor. Instead, it must be connected from a script as follows:
+				[codeblocks]
+				[gdscript]
+				func _ready():
+					$Button.button_group.pressed.connect(_on_button_group_pressed)
+
+				func _on_button_group_pressed(button):
+					print("Button pressed: " + button.name)
+				[/gdscript]
+				[/codeblocks]
+				[b]Note:[/b] This signal is not emitted if the pressed button has [member BaseButton.toggle_mode] set to [code]false[/code].
 			</description>
 		</signal>
 	</signals>
