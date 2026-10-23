@@ -967,8 +967,8 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 		if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
-				View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-				if ((nav_scheme == View3DController::NAV_SCHEME_MAYA || nav_scheme == View3DController::NAV_SCHEME_MODO) && mb->is_alt_pressed()) {
+				View3DController::NavigationMode nav_mode = Node3DEditor::get_singleton()->get_last_used_viewport()->get_controller()->get_nav_mode_from_input(mb);
+				if (nav_mode != View3DController::NAV_MODE_NONE) {
 					return EditorPlugin::AFTER_GUI_INPUT_PASS;
 				}
 
