@@ -1780,9 +1780,10 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 	ERR_FAIL_COND_V(res.is_null(), ERR_CANT_OPEN);
 
 	if (!p_ignore_broken_deps && !dependency_errors.is_empty()) {
-		dependency_error->show(p_resource, dependency_errors);
+		if (!project_upgrade_tool->is_upgrade_running()) {
+			dependency_error->show(p_resource, dependency_errors);
+		}
 		dependency_errors.clear();
-
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
@@ -5019,8 +5020,29 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
 
 	if (!p_ignore_broken_deps && !dependency_errors.is_empty()) {
-		current_menu_option = -1;
-		dependency_error->show(lpath, dependency_errors);
+		// Individual errors are logged when dependencies fail to load
+		// But this additional log will also make clear what scene is the one that produced those errors
+		String msg = vformat(TTR("%s has broken dependencies:"), p_scene);
+		if (dependency_errors.has(p_scene)) {
+			for (const String &dep : dependency_errors.get(p_scene)) {
+				msg += "\n> " + dep;
+			}
+		}
+		for (const KeyValue<String, HashSet<String>> &subresource : dependency_errors) {
+			if (subresource.key == p_scene) {
+				continue;
+			}
+			msg += vformat(TTR("\n> %s subresource has broken dependencies:"), subresource.key);
+			for (const String &dep : subresource.value) {
+				msg += "\n\t> " + dep;
+			}
+		}
+		WARN_PRINT(msg);
+
+		if (!project_upgrade_tool->is_upgrade_running()) {
+			current_menu_option = -1;
+			dependency_error->show(lpath, dependency_errors);
+		}
 		dependency_errors.clear();
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
