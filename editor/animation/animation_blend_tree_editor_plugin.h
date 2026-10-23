@@ -171,6 +171,7 @@ public:
 
 	void pan_to_node(const StringName &p_node_name, int p_input_index = -1);
 	AnimationNodeBlendTreeEditor();
+	~AnimationNodeBlendTreeEditor();
 };
 
 // EditorPluginAnimationNodeAnimation

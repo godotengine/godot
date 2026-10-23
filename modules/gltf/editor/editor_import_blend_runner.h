@@ -62,4 +62,5 @@ public:
 	HTTPClient::Status connect_blender_rpc(const Ref<HTTPClient> &p_client, int p_timeout_usecs);
 
 	EditorImportBlendRunner();
+	~EditorImportBlendRunner();
 };
