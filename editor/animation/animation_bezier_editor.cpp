@@ -385,6 +385,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			}
 
 			RBMap<String, Vector<int>> track_indices;
+			LocalVector<String> track_order;
+
 			int track_count = animation->get_track_count();
 			for (int i = 0; i < track_count; ++i) {
 				if (!_is_track_displayed(i)) {
@@ -396,9 +398,18 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				if (end != -1) {
 					base_path = base_path.substr(0, end + 1);
 				}
+
+				if (!track_indices.has(base_path)) {
+					track_order.push_back(base_path);
+				}
+
 				Vector<int> indices = track_indices.has(base_path) ? track_indices[base_path] : Vector<int>();
 				indices.push_back(i);
 				track_indices[base_path] = indices;
+			}
+
+			if (editor->is_sorting_alphabetically()) {
+				track_order.sort();
 			}
 
 			const Color dc = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -410,10 +421,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 			Ref<Texture2D> unlock = get_editor_theme_icon(SNAME("Unlock"));
 			Ref<Texture2D> solo = get_editor_theme_icon(SNAME("AudioBusSolo"));
 
-			for (const KeyValue<String, Vector<int>> &E : track_indices) {
-				String base_path = E.key;
-
-				Vector<int> tracks = E.value;
+			for (const String &base_path : track_order) {
+				Vector<int> tracks = track_indices[base_path];
 
 				// Names and icon.
 				{
