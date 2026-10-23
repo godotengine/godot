@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
+#include "core/os/crash_handler.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -65,6 +66,9 @@ struct CrashHandlerData {
 	uint64_t pc = 0;
 	HANDLE process = nullptr;
 	bool sym_ok = false;
+
+	LocalVector<CrashHandlerBase::ModData> mod_info;
+	LocalVector<CrashHandlerBase::SymInfo> sym_info;
 };
 
 struct module_data {
@@ -120,6 +124,22 @@ int symbol_callback(void *data, uintptr_t pc, const char *filename, int lineno, 
 			}
 		}
 	}
+	{
+		bool mod_found = false;
+		int8_t mod_idx = 0;
+		for (unsigned int j = 0; j < ch_data->mod_info.size(); j++) {
+			if (ch_data->mod_info[j].mod_name == mod_name) {
+				mod_found = true;
+				mod_idx = j;
+				break;
+			}
+		}
+		if (!mod_found) {
+			ch_data->mod_info.push_back({ mod_name, offset });
+			mod_idx = ch_data->mod_info.size() - 1;
+		}
+		ch_data->sym_info.push_back({ (uint64_t)ch_data->pc, mod_idx });
+	}
 
 	if (function) {
 		char fname[1024];
@@ -167,6 +187,22 @@ void error_callback(void *data, const char *msg, int errnum) {
 					}
 				}
 			}
+		}
+		{
+			bool mod_found = false;
+			int8_t mod_idx = 0;
+			for (unsigned int j = 0; j < ch_data->mod_info.size(); j++) {
+				if (ch_data->mod_info[j].mod_name == mod_name) {
+					mod_found = true;
+					mod_idx = j;
+					break;
+				}
+			}
+			if (!mod_found) {
+				ch_data->mod_info.push_back({ mod_name, offset });
+				mod_idx = ch_data->mod_info.size() - 1;
+			}
+			ch_data->sym_info.push_back({ (uint64_t)ch_data->pc, mod_idx });
 		}
 		print_error(vformat("[%d] %x (%s+%x) - %s", ch_data->index++, ch_data->pc, mod_name, ch_data->pc - offset, String::utf8(msg)));
 	}
@@ -397,8 +433,10 @@ extern void CrashHandlerException(int signal) {
 
 	exec_path = find_debugsymbols(exec_path).replace_char('/', '\\');
 
-	CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
-	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
+	{
+		CharString cs = exec_path.utf8(); // Note: should remain in scope during backtrace_simple call.
+		data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
+	}
 	if (data.state != nullptr) {
 		data.index = 1;
 		backtrace_simple(data.state, 1, &trace_callback, &error_callback, reinterpret_cast<void *>(&data));
@@ -418,6 +456,10 @@ extern void CrashHandlerException(int signal) {
 			print_error("================================================================");
 		}
 	}
+
+	// Prints base64-encoded stack trace.
+	CrashHandlerBase::print_encoded_trace(data.mod_info, data.sym_info, "windows");
+	print_error("================================================================");
 }
 #endif
 
