@@ -1,0 +1,4 @@
+GDTEST_OK
+~~ WARNING at line 3: (RPC_NOT_ON_NODE) Annotation "@rpc" must be used on "Node" derived classes. Attempting to use an RPC call on this function may generate a runtime error.
+~~ WARNING at line 8: (RPC_NOT_ON_NODE) Annotation "@rpc" must be used on "Node" derived classes. Attempting to use an RPC call on this function may generate a runtime error.
+~~ WARNING at line 13: (RPC_NOT_ON_NODE) Annotation "@rpc" must be used on "Node" derived classes. Attempting to use an RPC call on this function may generate a runtime error.
