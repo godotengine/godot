@@ -164,7 +164,7 @@ private:
 	void _set_node_type(NodeType p_type);
 	void _set_camera_override_enabled(bool p_enabled);
 
-	void _set_ci_tool(CanvasItemManipulator::Tool p_tool);
+	void _set_ci_tool(CanvasItemManipulator::Tool p_tool, bool p_shift_pressed);
 #ifdef TOOLS_ENABLED
 	void _set_ci_local_space(bool p_enabled);
 #endif
