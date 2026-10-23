@@ -356,12 +356,11 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
 	if (p_dir.is_relative_path()) {
-		String next_dir = current_dir.path_join(p_dir);
-		next_dir = next_dir.simplify_path();
-		try_dir = next_dir;
+		try_dir = current_dir.path_join(p_dir);
 	} else {
 		try_dir = p_dir;
 	}
+	try_dir = try_dir.simplify_path();
 
 	bool worked = (chdir(try_dir.utf8().get_data()) == 0); // we can only give this utf8
 	if (!worked) {
