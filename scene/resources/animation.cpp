@@ -4279,6 +4279,9 @@ void Animation::_bind_methods() {
 }
 
 void Animation::clear() {
+	marker_names.clear();
+	marker_times.clear();
+	marker_colors.clear();
 	for (uint32_t i = 0; i < tracks.size(); i++) {
 		memdelete(tracks[i]);
 	}
