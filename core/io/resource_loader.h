@@ -164,6 +164,7 @@ private:
 	static bool abort_on_missing_resource;
 	static bool create_missing_resources_if_class_unavailable;
 	static HashMap<String, Vector<String>> translation_remaps;
+	static std::atomic<int64_t> tasks_waiting_on_main_flush;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
@@ -205,6 +206,7 @@ private:
 		bool started_load : 1;
 		bool finished_load : 1;
 		bool connections_propagated : 1;
+		bool blocked_by_main_flush : 1;
 
 		struct ResourceChangedConnection {
 			Resource *source = nullptr;
@@ -244,6 +246,8 @@ private:
 	static bool _ensure_load_progress();
 
 	static String _validate_local_path(const String &p_path);
+
+	static bool _task_is_blocked_by_main_flush(ThreadLoadTask *p_load_task_ptr, HashSet<String> *p_visited_tasks = nullptr);
 
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, CacheMode p_cache_mode = CACHE_MODE_REUSE);
