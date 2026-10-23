@@ -884,7 +884,7 @@ void Trail3D::_ensure_material() {
 }
 
 PackedStringArray Trail3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Line3D::get_configuration_warnings();
+	PackedStringArray warnings = LineBase3D::get_configuration_warnings();
 	return warnings;
 }
 
