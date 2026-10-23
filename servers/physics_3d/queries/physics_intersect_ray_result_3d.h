@@ -51,4 +51,6 @@ public:
 	Object *get_collider() const;
 	int get_collider_shape() const;
 	int get_collider_face_index() const;
+
+	PhysicsIntersectRayResult3D();
 };

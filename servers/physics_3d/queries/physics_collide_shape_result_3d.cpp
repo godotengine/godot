@@ -35,6 +35,7 @@
 PhysicsCollideShapeResult3D::PhysicsCollideShapeResult3D(int p_max_collisions) {
 	ERR_FAIL_COND(p_max_collisions < 0);
 	result.resize(2 * p_max_collisions);
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsCollideShapeResult3D);
 }
 
 int PhysicsCollideShapeResult3D::get_max_collisions() const {

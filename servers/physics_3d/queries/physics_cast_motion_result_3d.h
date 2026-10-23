@@ -46,4 +46,6 @@ protected:
 public:
 	real_t get_safe_fraction() const;
 	real_t get_unsafe_fraction() const;
+
+	PhysicsCastMotionResult3D();
 };

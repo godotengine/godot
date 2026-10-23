@@ -113,3 +113,7 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision_index"), &PhysicsTestMotionResult3D::get_collision_local_shape, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collision_depth", "collision_index"), &PhysicsTestMotionResult3D::get_collision_depth, DEFVAL(0));
 }
+
+PhysicsTestMotionResult3D::PhysicsTestMotionResult3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsTestMotionResult3D);
+}
