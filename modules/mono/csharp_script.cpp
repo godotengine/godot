@@ -189,168 +189,6 @@ void CSharpLanguage::finalize() {
 	finalized = true;
 }
 
-Vector<String> CSharpLanguage::get_reserved_words() const {
-	static const Vector<String> ret = {
-		// Reserved keywords
-		"abstract",
-		"as",
-		"base",
-		"bool",
-		"break",
-		"byte",
-		"case",
-		"catch",
-		"char",
-		"checked",
-		"class",
-		"const",
-		"continue",
-		"decimal",
-		"default",
-		"delegate",
-		"do",
-		"double",
-		"else",
-		"enum",
-		"event",
-		"explicit",
-		"extern",
-		"false",
-		"finally",
-		"fixed",
-		"float",
-		"for",
-		"foreach",
-		"goto",
-		"if",
-		"implicit",
-		"in",
-		"int",
-		"interface",
-		"internal",
-		"is",
-		"lock",
-		"long",
-		"namespace",
-		"new",
-		"null",
-		"object",
-		"operator",
-		"out",
-		"override",
-		"params",
-		"private",
-		"protected",
-		"public",
-		"readonly",
-		"ref",
-		"return",
-		"sbyte",
-		"sealed",
-		"short",
-		"sizeof",
-		"stackalloc",
-		"static",
-		"string",
-		"struct",
-		"switch",
-		"this",
-		"throw",
-		"true",
-		"try",
-		"typeof",
-		"uint",
-		"ulong",
-		"unchecked",
-		"unsafe",
-		"ushort",
-		"using",
-		"virtual",
-		"void",
-		"volatile",
-		"while",
-
-		// Contextual keywords. Not reserved words, but I guess we should include
-		// them because this seems to be used only for syntax highlighting.
-		"add",
-		"alias",
-		"ascending",
-		"async",
-		"await",
-		"by",
-		"descending",
-		"dynamic",
-		"equals",
-		"from",
-		"get",
-		"global",
-		"group",
-		"into",
-		"join",
-		"let",
-		"nameof",
-		"on",
-		"orderby",
-		"partial",
-		"remove",
-		"select",
-		"set",
-		"value",
-		"var",
-		"when",
-		"where",
-		"yield",
-	};
-
-	return ret;
-}
-
-bool CSharpLanguage::is_control_flow_keyword(const String &p_keyword) const {
-	return p_keyword == "break" ||
-			p_keyword == "case" ||
-			p_keyword == "catch" ||
-			p_keyword == "continue" ||
-			p_keyword == "default" ||
-			p_keyword == "do" ||
-			p_keyword == "else" ||
-			p_keyword == "finally" ||
-			p_keyword == "for" ||
-			p_keyword == "foreach" ||
-			p_keyword == "goto" ||
-			p_keyword == "if" ||
-			p_keyword == "return" ||
-			p_keyword == "switch" ||
-			p_keyword == "throw" ||
-			p_keyword == "try" ||
-			p_keyword == "while";
-}
-
-Vector<String> CSharpLanguage::get_comment_delimiters() const {
-	static const Vector<String> delimiters = {
-		"//", // single-line comment
-		"/* */" // delimited comment
-	};
-	return delimiters;
-}
-
-Vector<String> CSharpLanguage::get_doc_comment_delimiters() const {
-	static const Vector<String> delimiters = {
-		"///", // single-line doc comment
-		"/** */" // delimited doc comment
-	};
-	return delimiters;
-}
-
-Vector<String> CSharpLanguage::get_string_delimiters() const {
-	static const Vector<String> delimiters = {
-		"' '", // character literal
-		"\" \"", // regular string literal
-		"@\" \"" // verbatim string literal
-	};
-	// Generic string highlighting suffices as a workaround for now.
-	return delimiters;
-}
-
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
 	String base_class = pascal_to_pascal_case(p_base_class_name);
 	if (p_class_name == base_class) {
@@ -391,23 +229,21 @@ Vector<ScriptLanguage::ScriptTemplate> CSharpLanguage::get_built_in_templates(co
 }
 
 String CSharpLanguage::validate_path(const String &p_path) const {
+	// TODO: validate_path is only called by the editor, but hasn't been moved to `EditorLanguage` yet.
+#ifdef TOOLS_ENABLED
 	String class_name = p_path.get_file().get_basename();
-	if (get_reserved_words().has(class_name)) {
+	if (CSharpEditorLanguage::get_singleton()->get_reserved_words().has(class_name)) {
 		return RTR("Class name can't be a reserved keyword");
 	}
 	if (!TS->is_valid_identifier(class_name)) {
 		return RTR("Class name must be a valid identifier");
 	}
-
+#endif // TOOLS_ENABLED
 	return "";
 }
 
 bool CSharpLanguage::supports_builtin_mode() const {
 	return false;
-}
-
-ScriptLanguage::ScriptNameCasing CSharpLanguage::preferred_file_name_casing() const {
-	return SCRIPT_NAME_CASING_PASCAL_CASE;
 }
 
 #ifdef TOOLS_ENABLED
