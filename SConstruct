@@ -176,7 +176,13 @@ opts.Add(
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
-opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
+opts.Add(
+    BoolVariable(
+        "separate_debug_symbols",
+        "Extract debugging symbols to a separate file. Requires to also use the debug_symbols option.",
+        False,
+    )
+)
 opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", False))
 opts.Add(
     EnumVariable(
@@ -383,6 +389,11 @@ opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 # Update the environment to have all above options defined
 # in following code (especially platform and custom_modules).
 opts.Update(env)
+
+if not methods.get_cmdline_bool("debug_symbols", False) and methods.get_cmdline_bool("separate_debug_symbols", False):
+    print_error('The option "separate_debug_symbols" requires the options "debug_symbols".')
+    print_error('Either remove "separate_debug_symbols" or add "debug_symbols."')
+    exit(255)
 
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
