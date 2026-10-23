@@ -143,7 +143,9 @@ class ResourceLoader {
 
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
+	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint, bool p_no_cache, bool p_no_subresources_cache, Error *r_error = nullptr);
 	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
+	static RES load(const String &p_path, const String &p_type_hint, bool p_no_cache, bool p_no_subresources_cache, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
