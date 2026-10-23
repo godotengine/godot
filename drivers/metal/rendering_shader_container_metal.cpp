@@ -78,7 +78,7 @@ void RenderingShaderContainerMetal::_initialize_toolchain_properties() {
 		}
 	}
 
-	parts.append_array({ "-", "|", "grep", "-E", R"(\"__METAL_VERSION__|__ENVIRONMENT_OS\")" });
+	parts.append_array({ "-", "|", "grep", "-E", "'__METAL_VERSION__|__ENVIRONMENT_OS'" });
 
 	List<String> args = { "-c", String(" ").join(parts) };
 
