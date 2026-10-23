@@ -391,6 +391,11 @@ Copyright: 2013-2020, Mark Callow
  2010-2020 The Khronos Group, Inc.
 License: Apache-2.0
 
+Files: thirdparty/libnut/*
+Comment: libnut
+Copyright: 2005-2008, Oded Shimon
+License: Expat
+
 Files: thirdparty/libogg/*
 Comment: OggVorbis
 Copyright: 2002, Xiph.org Foundation

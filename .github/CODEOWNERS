@@ -141,6 +141,9 @@
 /modules/interactive_music/**/SCsub           @godotengine/audio @godotengine/buildsystem
 /modules/interactive_music/doc_classes/       @godotengine/audio @godotengine/documentation
 /modules/interactive_music/editor/            @godotengine/audio @godotengine/editor
+/modules/movie_writer_ffmpeg/                 @godotengine/audio @godotengine/editor
+/modules/movie_writer_ffmpeg/**/*.py          @godotengine/audio @godotengine/buildsystem
+/modules/movie_writer_ffmpeg/**/SCsub         @godotengine/audio @godotengine/buildsystem
 /modules/mp3/                                 @godotengine/audio
 /modules/mp3/**/*.py                          @godotengine/audio @godotengine/buildsystem
 /modules/mp3/**/SCsub                         @godotengine/audio @godotengine/buildsystem
