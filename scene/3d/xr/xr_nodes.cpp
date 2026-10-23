@@ -116,6 +116,10 @@ void XRCamera3D::_update_projections() {
 	Viewport *vp = get_viewport();
 	ERR_FAIL_NULL(vp);
 
+	if (xr_server->is_camera_locked_to_origin() && is_current()) {
+		set_transform(Transform3D());
+	}
+
 	Size2 viewport_size = vp->get_visible_rect().size;
 
 	rendering_server->camera_set_xr_projections(
@@ -172,6 +176,11 @@ void XRCamera3D::_removed_tracker(const StringName &p_tracker_name, int p_tracke
 }
 
 void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
+	XRServer *xr_server = XRServer::get_singleton();
+	if (unlikely(xr_server && xr_server->is_camera_locked_to_origin() && is_current())) {
+		return;
+	}
+
 	if (p_pose->get_name() == pose_name) {
 		set_transform(p_pose->get_adjusted_transform());
 	}
