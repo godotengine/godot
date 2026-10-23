@@ -1742,6 +1742,11 @@ void EditorNode::_update_undo_redo_allowed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(SCENE_REDO), !undo_redo->has_redo());
 }
 
+void EditorNode::_update_inherit_active_allowed() {
+	bool allowed = (editor_data.get_edited_scene_count() > 0 && editor_data.get_edited_scene_root() != nullptr && !editor_data.get_edited_scene_root()->get_scene_file_path().is_empty());
+	file_menu->set_item_disabled(file_menu->get_item_index(SCENE_NEW_INHERITED_FROM_ACTIVE), !allowed);
+}
+
 void EditorNode::_node_renamed() {
 	if (InspectorDock::get_inspector_singleton()) {
 		InspectorDock::get_inspector_singleton()->update_tree();
@@ -2631,6 +2636,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
+	_update_inherit_active_allowed();
 }
 
 void EditorNode::save_all_scenes() {
@@ -3493,7 +3499,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			new_scene();
 
 		} break;
-		case SCENE_NEW_INHERITED_SCENE:
+		case SCENE_NEW_INHERITED_SCENE: {
+			quick_open_dialog->popup_dialog({ "PackedScene" }, callable_mp(this, &EditorNode::_dialog_action), false);
+		} break;
 		case SCENE_OPEN_SCENE: {
 			file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			List<String> extensions;
@@ -3510,6 +3518,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			file->set_title(p_option == SCENE_OPEN_SCENE ? TTR("Open Scene") : TTR("Open Base Scene"));
 			file->popup_file_dialog();
 
+		} break;
+		case SCENE_NEW_INHERITED_FROM_ACTIVE: {
+			Node *scene = editor_data.get_edited_scene_root();
+			ERR_FAIL_COND(scene == nullptr);
+			String path = scene->get_scene_file_path();
+			if (path.is_empty()) {
+				show_warning(TTRC("Cannot inherit active scene since it has not been saved."));
+				return;
+			}
+			_inherit_request(scene->get_scene_file_path());
 		} break;
 		case SCENE_QUICK_OPEN: {
 			quick_open_dialog->popup_dialog({ "Resource" }, callable_mp(this, &EditorNode::_quick_opened), true);
@@ -4819,6 +4837,7 @@ void EditorNode::_set_main_scene_state(const Dictionary &p_state) {
 	ScriptEditor::get_singleton()->set_scene_root_script(editor_data.get_scene_root_script(editor_data.get_edited_scene()));
 	editor_data.notify_edited_scene_changed();
 	emit_signal(SNAME("scene_changed"));
+	_update_inherit_active_allowed();
 
 	// Reset SDFGI after everything else so that any last-second scene modifications will be processed.
 	RenderingServer::get_singleton()->sdfgi_reset();
@@ -8159,6 +8178,8 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/new_scene"), SCENE_NEW_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_inherited_scene"), SCENE_NEW_INHERITED_SCENE);
+	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/inherit_current_scene"), SCENE_NEW_INHERITED_FROM_ACTIVE);
+	_update_inherit_active_allowed();
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("PackedScene"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/open_scene"), SCENE_OPEN_SCENE);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), SCENE_OPEN_PREV);
 	if (!recent_scenes) {
@@ -9158,6 +9179,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/new_scene", TTRC("New Scene"), KeyModifierMask::CMD_OR_CTRL + Key::N);
 	ED_SHORTCUT_AND_COMMAND("editor/new_inherited_scene", TTRC("New Inherited Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::N);
+	ED_SHORTCUT_AND_COMMAND("editor/inherit_current_scene", TTRC("New Inherited Scene from Current"), KeyModifierMask::ALT + KeyModifierMask::SHIFT + Key::N);
 	ED_SHORTCUT_AND_COMMAND("editor/open_scene", TTRC("Open Scene..."), KeyModifierMask::CMD_OR_CTRL + Key::O);
 	ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T);
 
