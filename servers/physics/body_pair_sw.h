@@ -82,6 +82,7 @@ class BodyPairSW : public ConstraintSW {
 
 	void validate_contacts();
 	bool _test_ccd(real_t p_step, BodySW *p_A, int p_shape_A, const Transform &p_xform_A, BodySW *p_B, int p_shape_B, const Transform &p_xform_B);
+	bool setup_internal(real_t p_step);
 
 	SpaceSW *space;
 
