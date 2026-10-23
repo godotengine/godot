@@ -336,7 +336,9 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_performAccessibil
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_onAccessibilityHoverEvent(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_action, jfloat p_x, jfloat p_y) {
 	AccessibilityServer *ac = AccessibilityServer::get_singleton();
 	if (ac) {
-		return ac->native_on_hover((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_action, p_x, p_y);
+		bool has_events = false;
+		ac->native_hit_test((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_action, p_x, p_y, &has_events);
+		return has_events;
 	}
 	return false;
 }
