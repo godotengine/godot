@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 
 #include <webp/decode.h>
+#include <webp/demux.h>
 #include <webp/encode.h>
 
 namespace WebPCommon {
@@ -158,21 +159,51 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
-	Vector<uint8_t> dst_image;
-	int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
-	dst_image.resize(datasize);
-	uint8_t *dst_w = dst_image.ptrw();
+	if (features.has_animation) {
+		WebPAnimDecoderOptions options;
+		ERR_FAIL_COND_V_MSG(!WebPAnimDecoderOptionsInit(&options), ERR_FILE_CORRUPT, "Failed decoding WebP image.");
 
-	bool errdec = false;
-	if (features.has_alpha) {
-		errdec = WebPDecodeRGBAInto(p_buffer, p_buffer_len, dst_w, datasize, 4 * features.width) == nullptr;
+		WebPData webp_data;
+		webp_data.size = p_buffer_len;
+		webp_data.bytes = p_buffer;
+
+		options.color_mode = MODE_RGBA;
+
+		WebPAnimDecoder *decoder = WebPAnimDecoderNew(&webp_data, &options);
+		ERR_FAIL_NULL_V_MSG(decoder, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
+
+		WebPAnimInfo anim_info;
+		ERR_FAIL_COND_V_MSG(!WebPAnimDecoderGetInfo(decoder, &anim_info), ERR_FILE_CORRUPT, "Failed decoding WebP image.");
+
+		uint8_t *buf_w = nullptr;
+		int timestamp = 0;
+		if (WebPAnimDecoderGetNext(decoder, &buf_w, &timestamp)) {
+			Vector<uint8_t> dst_image;
+			int datasize = anim_info.canvas_width * anim_info.canvas_height * 4;
+			dst_image.resize(datasize);
+			uint8_t *dst_w = dst_image.ptrw();
+			memcpy(dst_w, buf_w, datasize);
+			p_image->set_data(anim_info.canvas_width, anim_info.canvas_height, false, Image::FORMAT_RGBA8, dst_image);
+		}
+
+		WebPAnimDecoderDelete(decoder);
 	} else {
-		errdec = WebPDecodeRGBInto(p_buffer, p_buffer_len, dst_w, datasize, 3 * features.width) == nullptr;
+		Vector<uint8_t> dst_image;
+		int datasize = features.width * features.height * (features.has_alpha ? 4 : 3);
+		dst_image.resize(datasize);
+		uint8_t *dst_w = dst_image.ptrw();
+
+		bool errdec = false;
+		if (features.has_alpha) {
+			errdec = WebPDecodeRGBAInto(p_buffer, p_buffer_len, dst_w, datasize, 4 * features.width) == nullptr;
+		} else {
+			errdec = WebPDecodeRGBInto(p_buffer, p_buffer_len, dst_w, datasize, 3 * features.width) == nullptr;
+		}
+
+		ERR_FAIL_COND_V_MSG(errdec, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
+
+		p_image->set_data(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
 	}
-
-	ERR_FAIL_COND_V_MSG(errdec, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
-
-	p_image->set_data(features.width, features.height, false, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
 
 	return OK;
 }
