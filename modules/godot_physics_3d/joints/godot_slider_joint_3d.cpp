@@ -476,3 +476,13 @@ real_t GodotSliderJoint3D::get_param(PS3DE::SliderJointParam p_param) const {
 
 	return 0;
 }
+
+float GodotSliderJoint3D::get_applied_force() const {
+	WARN_PRINT_ONCE("Applied force for SliderJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}
+
+float GodotSliderJoint3D::get_applied_torque() const {
+	WARN_PRINT_ONCE("Applied torque for SliderJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}

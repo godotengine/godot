@@ -439,3 +439,13 @@ bool GodotHingeJoint3D::get_flag(PS3DE::HingeJointFlag p_flag) const {
 
 	return false;
 }
+
+float GodotHingeJoint3D::get_applied_force() const {
+	WARN_PRINT_ONCE("Applied force for HingeJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}
+
+float GodotHingeJoint3D::get_applied_torque() const {
+	WARN_PRINT_ONCE("Applied torque for HingeJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}
