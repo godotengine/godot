@@ -61,7 +61,11 @@ void SnapshotRefCountedView::show_snapshot(GameStateSnapshot *p_data, GameStateS
 	// Tree of Refs.
 	refs_list = memnew(Tree);
 
-	filter_bar = memnew(TreeSortAndFilterBar(refs_list, TTRC("Filter RefCounteds")));
+	String filter_tooltip = TTRC("Filter classes or objects by entering a part of their name.\nSearch within a single column by specifying its name as a prefix\n(\"class:\", \"name:\", \"native_refs:\", \"objectdb_refs:\", \"total_refs:\", \"objectdb_cycles:\").\nFiltering is case-insensitive.");
+	if (p_diff_data) {
+		filter_tooltip = TTRC("Filter classes or objects by entering a part of their name.\nSearch within a single column by specifying its name as a prefix\n(\"snapshot:\", \"class:\", \"name:\", \"native_refs:\", \"objectdb_refs:\", \"total_refs:\", \"objectdb_cycles:\").\nFiltering is case-insensitive.");
+	}
+	filter_bar = memnew(TreeSortAndFilterBar(refs_list, TTRC("Filter RefCounteds"), filter_tooltip));
 	refs_column->add_child(filter_bar);
 	int offset = diff_data ? 1 : 0;
 	if (diff_data) {
