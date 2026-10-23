@@ -72,6 +72,21 @@ namespace GodotTools.Internals
                 _projectAssemblyName = CSharpProjectName;
                 ProjectSettings.SetSetting("dotnet/project/assembly_name", _projectAssemblyName);
             }
+            string[] invalidChars = {
+                // Windows reserved filename chars.
+				":", "*", "?", "\"", "<", ">", "|",
+				// Directory separators.
+				"/", "\\",
+				// iOS reserved chars.
+				"(", ")", "[", "]", "{", "}", "+",
+				// Other chars that have been found to break assembly loading.
+				";", "'", "=", ","
+            };
+            _projectAssemblyName = _projectAssemblyName.Trim();
+            foreach (string c in invalidChars)
+            {
+                _projectAssemblyName = _projectAssemblyName.Replace(c, "-");
+            }
 
             string? slnParentDir = (string?)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
