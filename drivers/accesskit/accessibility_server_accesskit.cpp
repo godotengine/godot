@@ -77,7 +77,7 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 #ifdef APPLE_EMBEDDED_ENABLED
 	wd.adapter = accesskit_ios_subclassing_adapter_new(p_handle, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
-	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
 		memdelete(ae);
@@ -182,7 +182,7 @@ void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
-	print_verbose(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
 
 #ifdef ANDROID_ENABLED
 	JNIEnv *env = get_jni_env();
@@ -218,7 +218,7 @@ void AccessibilityServerAccessKit::_accessibility_deactivation_callback(void *p_
 	WindowData *wd = static_cast<AccessibilityServerAccessKit *>(get_singleton())->windows.getptr(window_id);
 	ERR_FAIL_NULL(wd);
 
-	print_verbose(vformat("Accessibility: window %d adapter deactivated.", window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter deactivated.", window_id));
 
 	if (static_cast<AccessibilityServerAccessKit *>(get_singleton())->focus.is_valid()) {
 		AccessibilityElement *ae = static_cast<AccessibilityServerAccessKit *>(get_singleton())->rid_owner.get_or_null(static_cast<AccessibilityServerAccessKit *>(get_singleton())->focus);
@@ -343,7 +343,7 @@ accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_initial_tree
 	accesskit_tree_update_set_tree_info(tree_update, tree_info);
 	accesskit_tree_update_push_node(tree_update, win_id, win_node);
 
-	print_verbose(vformat("Accessibility: window %d adapter activated.", window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter activated.", window_id));
 
 	if (wd->activate.is_valid()) {
 		wd->activate.call_deferred(); // Should be called on main thread only.
@@ -367,7 +367,7 @@ void AccessibilityServerAccessKit::window_activation_completed(DisplayServerEnum
 		return;
 	}
 
-	print_verbose(vformat("Accessibility: window %d adapter initial update completed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter initial update completed.", p_window_id));
 
 	wd->initial_update_completed = true;
 }
@@ -378,7 +378,7 @@ void AccessibilityServerAccessKit::window_deactivation_completed(DisplayServerEn
 		return;
 	}
 
-	print_verbose(vformat("Accessibility: window %d adapter deactivation completed.", p_window_id));
+	PRINT_VERBOSE(vformat("Accessibility: window %d adapter deactivation completed.", p_window_id));
 
 #ifdef DEV_ENABLED
 	LocalVector<RID> to_delete;
@@ -1833,7 +1833,7 @@ void AccessibilityServerAccessKit::update_set_foreground_color(const RID &p_id, 
 }
 
 AccessibilityServer *AccessibilityServerAccessKit::create_func(Error &r_error) {
-	print_verbose("Accessibility: AccessKit driver loaded.");
+	PRINT_VERBOSE("Accessibility: AccessKit driver loaded.");
 	r_error = OK;
 	return memnew(AccessibilityServerAccessKit);
 }
