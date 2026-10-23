@@ -206,6 +206,8 @@ public:
 	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
+	virtual void body_wake_neighbors(RID p_body);
+
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
 

@@ -563,6 +563,8 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_enable_continuous_collision_detection", "body", "enable"), &PhysicsServer::body_set_enable_continuous_collision_detection);
 	ClassDB::bind_method(D_METHOD("body_is_continuous_collision_detection_enabled", "body"), &PhysicsServer::body_is_continuous_collision_detection_enabled);
 
+	ClassDB::bind_method(D_METHOD("body_wake_neighbors", "body"), &PhysicsServer::body_wake_neighbors);
+
 	ClassDB::bind_method(D_METHOD("body_set_param", "body", "param", "value"), &PhysicsServer::body_set_param);
 	ClassDB::bind_method(D_METHOD("body_get_param", "body", "param"), &PhysicsServer::body_get_param);
 
@@ -806,6 +808,12 @@ PhysicsServer::PhysicsServer() {
 
 PhysicsServer::~PhysicsServer() {
 	singleton = nullptr;
+}
+
+void PhysicsServer::body_wake_neighbors(RID p_body) {
+#ifdef DEBUG_ENABLED
+	WARN_PRINT_ONCE("body_wake_neighbors() is not supported in this physics engine, ignoring.");
+#endif
 }
 
 Vector<PhysicsServerManager::ClassInfo> PhysicsServerManager::physics_servers;

@@ -607,6 +607,13 @@
 				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. [PhysicsTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
+		<method name="body_wake_neighbors">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<description>
+				Allows a body to manually wake paired neighboring physics bodies. This is particularly useful for [StaticBody] and [KinematicBody], where removing or disabling / enabling does not automatically wake neighboring bodies. The classic example is removing a platform which is supporting a box.
+			</description>
+		</method>
 		<method name="cone_twist_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<argument index="0" name="joint" type="RID" />

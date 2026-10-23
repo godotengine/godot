@@ -299,6 +299,8 @@ public:
 
 	virtual void notify_transform_changed();
 
+	void wake_neighbors();
+
 private:
 	void _internal_set_mass(real_t p_mass);
 };

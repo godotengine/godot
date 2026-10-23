@@ -36,6 +36,7 @@
 #include "bullet_utilities.h"
 #include "godot_motion_state.h"
 #include "joint_bullet.h"
+#include <core/engine.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
@@ -345,6 +346,12 @@ void RigidBodyBullet::reload_body() {
 		if (get_main_shape()) {
 			space->add_rigid_body(this);
 		}
+	}
+}
+
+void RigidBodyBullet::wake_neighbors() {
+	if (space) {
+		space->rigid_body_wake_neighbors(this);
 	}
 }
 
