@@ -30,17 +30,68 @@
 
 #pragma once
 
-#include "core/io/config_file.h"
+#include "core/object/worker_thread_pool.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/inspector/editor_inspector.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup_menu.h"
 
-class ImportDockParameters;
+class ConfirmationDialog;
+class MenuButton;
+class OptionButton;
+class ProgressBar;
+class ResourceImporter;
+class Timer;
 class VBoxContainer;
+
+class ImportDockParameters : public Object {
+	GDCLASS(ImportDockParameters, Object);
+
+public:
+	HashMap<StringName, Variant> values;
+	List<PropertyInfo> properties;
+	Ref<ResourceImporter> importer;
+	Vector<String> paths;
+	HashSet<StringName> checked;
+	bool checking = false;
+	bool skip = false;
+	String base_options_path;
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void update();
+};
+
+class ImportDockLoader : public Object {
+	GDCLASS(ImportDockLoader, Object);
+
+private:
+	WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
+	SafeFlag exit_requested;
+
+	void _process();
+
+public:
+	Vector<String> file_paths;
+
+	HashMap<String, Dictionary> value_frequency;
+	bool success = false;
+	String importer_name;
+	String options_base_path;
+	Ref<ConfigFile> first_loaded_file;
+
+	SafeNumeric<int> files_loaded;
+
+	void run_blocking();
+
+	void start();
+	void stop();
+
+	bool is_running();
+	void tick();
+	void wait();
+
+	void reset();
+};
 
 class ImportDock : public EditorDock {
 	GDCLASS(ImportDock, EditorDock);
@@ -65,6 +116,14 @@ class ImportDock : public EditorDock {
 	VBoxContainer *content = nullptr;
 	Label *select_a_resource = nullptr;
 
+	VBoxContainer *loader_vbox = nullptr;
+	ProgressBar *loader_bar = nullptr;
+	Label *loader_file_count_label = nullptr;
+	Timer *loader_min_display_timer = nullptr;
+	uint64_t loader_start_frame = 0;
+	ImportDockLoader *loader = nullptr;
+
+	bool _finish_set_edit(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 	void _preset_selected(int p_idx);
 	void _importer_selected(int i_idx);
 	void _update_options(const String &p_path, const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
