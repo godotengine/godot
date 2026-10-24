@@ -12,15 +12,15 @@ struct SingleSubstFormat2_4
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::HBGlyphID>
+  typename Types::template ArrayOf<typename Types::HBGlyphID>
                 substitute;             /* Array of substitute
                                          * GlyphIDs--ordered by Coverage Index */
 
   public:
-  DEFINE_SIZE_ARRAY (4 + Types::size, substitute);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, substitute);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

@@ -103,14 +103,14 @@ struct TupleVariationHeader
         start = hb_min (peak, 0.f);
         end = hb_max (peak, 0.f);
       }
-      axis_tuples.set (*axis_tag, Triple ((double) start, (double) peak, (double) end));
+      axis_tuples.set (*axis_tag, Triple (start, peak, end));
     }
 
     return true;
   }
 
   HB_ALWAYS_INLINE
-  double calculate_scalar (hb_array_t<const int> coords, unsigned int coord_count,
+  float calculate_scalar (hb_array_t<const int> coords, unsigned int coord_count,
 			   const hb_array_t<const F2DOT14> shared_tuples,
 			   hb_scalar_cache_t *shared_tuple_scalar_cache = (hb_scalar_cache_t *) &Null(hb_scalar_cache_t)) const
   {
@@ -126,7 +126,7 @@ struct TupleVariationHeader
     {
       float scalar;
       if (likely (shared_tuple_scalar_cache->get (index, &scalar)))
-	return (double) scalar;
+	return scalar;
     }
 
     const F2DOT14 *peak_tuple;
@@ -148,11 +148,11 @@ struct TupleVariationHeader
         if (has_interm && (scalar != 0 && scalar != 1.f))
 	  shared_tuple_scalar_cache = nullptr;
 	else
-	  return (double) scalar;
+	  return scalar;
       }
 
       if (unlikely ((index + 1) * coord_count > shared_tuples.length))
-        return 0.0;
+        return 0.f;
       peak_tuple = shared_tuples.arrayZ + (coord_count * index);
 
     }
@@ -166,7 +166,7 @@ struct TupleVariationHeader
       end_tuple = get_end_tuple (coord_count);
     }
 
-    double scalar = 1.0;
+    float scalar = 1.f;
 #ifndef HB_OPTIMIZE_SIZE
 #if HB_FAST_NUM_ACCESS
     bool skip = coord_count >= 16;
@@ -192,7 +192,7 @@ struct TupleVariationHeader
       if (!peak) continue;
 
       int v = coords[i];
-      if (!v) { scalar = 0.0; break; }
+      if (!v) { scalar = 0.f; break; }
       if (v == peak) continue;
 
       if (has_interm)
@@ -202,15 +202,15 @@ struct TupleVariationHeader
         int end = end_tuple[i].to_int ();
         if (unlikely (start > peak || peak > end ||
                       (start < 0 && end > 0 && peak))) continue;
-        if (v < start || v > end) { scalar = 0.0; break; }
+        if (v < start || v > end) { scalar = 0.f; break; }
         if (v < peak)
-        { if (peak != start) scalar *= (double) (v - start) / (peak - start); }
+        { if (peak != start) scalar *= (float) (v - start) / (peak - start); }
         else
-        { if (peak != end) scalar *= (double) (end - v) / (end - peak); }
+        { if (peak != end) scalar *= (float) (end - v) / (end - peak); }
       }
-      else if (v < hb_min (0, peak) || v > hb_max (0, peak)) { scalar = 0.0; break; }
+      else if (v < hb_min (0, peak) || v > hb_max (0, peak)) { scalar = 0.f; break; }
       else
-        scalar *= (double) v / peak;
+        scalar *= (float) v / peak;
     }
     if (shared_tuple_scalar_cache)
       shared_tuple_scalar_cache->set (index, scalar);
@@ -412,21 +412,21 @@ struct tuple_delta_t
       return;
     }
 
-    if ((tent->minimum < 0.0 && tent->maximum > 0.0) ||
+    if ((tent->minimum < 0.f && tent->maximum > 0.f) ||
         !(tent->minimum <= tent->middle && tent->middle <= tent->maximum))
       return;
 
-    if (tent->middle == 0.0)
+    if (tent->middle == 0.f)
     {
       out.push (std::move (*this));
       return;
     }
 
     if (!axis_limit.is_point () &&
-        !(-1.0 <= axis_limit.minimum &&
+        !(-1.f <= axis_limit.minimum &&
           axis_limit.minimum <= axis_limit.middle &&
           axis_limit.middle <= axis_limit.maximum &&
-          axis_limit.maximum <= +1.0))
+          axis_limit.maximum <= +1.f))
       return;
 
     rebase_tent_result_t &solutions = scratch.first;
@@ -723,14 +723,14 @@ struct tuple_delta_t
         {
           i = next_index (i, start_point, end_point);
           if (i == next) break;
-          deltas_x.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].x,
-                                            (double) orig_points.arrayZ[prev].x,
-                                            (double) orig_points.arrayZ[next].x,
-                                            (double) deltas_x.arrayZ[prev], (double) deltas_x.arrayZ[next]);
-          deltas_y.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].y,
-                                            (double) orig_points.arrayZ[prev].y,
-                                            (double) orig_points.arrayZ[next].y,
-                                            (double) deltas_y.arrayZ[prev], (double) deltas_y.arrayZ[next]);
+          deltas_x.arrayZ[i] = infer_delta (orig_points.arrayZ[i].x,
+                                            orig_points.arrayZ[prev].x,
+                                            orig_points.arrayZ[next].x,
+                                            deltas_x.arrayZ[prev], deltas_x.arrayZ[next]);
+          deltas_y.arrayZ[i] = infer_delta (orig_points.arrayZ[i].y,
+                                            orig_points.arrayZ[prev].y,
+                                            orig_points.arrayZ[next].y,
+                                            deltas_y.arrayZ[prev], deltas_y.arrayZ[next]);
           inferred_idxes.add (i);
           if (--unref_count == 0) goto no_more_gaps;
         }
@@ -747,8 +747,8 @@ struct tuple_delta_t
       {
         if (!inferred_idxes.has (i))
         {
-          deltas_x.arrayZ[i] = 0.0;
-          deltas_y.arrayZ[i] = 0.0;
+          deltas_x.arrayZ[i] = 0.f;
+          deltas_y.arrayZ[i] = 0.f;
         }
         indices[i] = true;
       }
@@ -919,16 +919,16 @@ struct tuple_delta_t
     return compiled_points.resize_dirty  (pos);
   }
 
-  static double infer_delta (double target_val, double prev_val, double next_val, double prev_delta, double next_delta)
+  static float infer_delta (float target_val, float prev_val, float next_val, float prev_delta, float next_delta)
   {
     if (prev_val == next_val)
-      return (prev_delta == next_delta) ? prev_delta : 0.0;
+      return (prev_delta == next_delta) ? prev_delta : 0.f;
     else if (target_val <= hb_min (prev_val, next_val))
       return (prev_val < next_val) ? prev_delta : next_delta;
     else if (target_val >= hb_max (prev_val, next_val))
       return (prev_val > next_val) ? prev_delta : next_delta;
 
-    double r = (target_val - prev_val) / (next_val - prev_val);
+    float r = (target_val - prev_val) / (next_val - prev_val);
     return prev_delta + r * (next_delta - prev_delta);
   }
 
@@ -1159,7 +1159,7 @@ struct TupleVariationData
         Triple *axis_limit;
         if (!normalized_axes_location.has (axis_tag, &axis_limit))
           return false;
-        TripleDistances axis_triple_distances{1.0, 1.0};
+        TripleDistances axis_triple_distances{1.f, 1.f};
         if (axes_triple_distances.has (axis_tag))
           axis_triple_distances = axes_triple_distances.get (axis_tag);
 
@@ -1851,7 +1851,8 @@ struct item_variations_t
                     const hb_subset_plan_t *plan,
                     bool optimize=true,
                     bool use_no_variation_idx=true,
-                    const hb_array_t <const hb_inc_bimap_t> inner_maps = hb_array_t<const hb_inc_bimap_t> ())
+                    const hb_array_t <const hb_inc_bimap_t> inner_maps = hb_array_t<const hb_inc_bimap_t> (),
+                    bool layout_conditions = false)
   {
     if (!create_from_item_varstore (varStore, plan->axes_old_index_tag_map, inner_maps))
       return false;
@@ -1859,9 +1860,134 @@ struct item_variations_t
     if (plan->has_avar2 && plan->avar2_reachable_ranges.get_population ())
       for (tuple_variations_t& tuple_vars : vars)
 	tuple_vars.cull_unreachable (plan->avar2_reachable_ranges);
-    if (!instantiate_tuple_vars (plan->axes_location, plan->axes_triple_distances))
+    if (!instantiate_tuple_vars (plan->axes_location, plan->axes_triple_distances,
+                                 !layout_conditions))
+      return false;
+    if (layout_conditions &&
+        (!instantiate_condition_values (plan, varStore) || !build_region_list ()))
       return false;
     return as_item_varstore (optimize, use_no_variation_idx);
+  }
+
+  bool instantiate_condition_values (const hb_subset_plan_t *plan,
+                                      const ItemVariationStore &varStore)
+  {
+    // GDEF serialization can be retried; always start from the source values.
+    auto &condition_map = plan->layout_condition_idx_value_map;
+    condition_map.clear ();
+    if (!plan->layout_condition_values) return true;
+    using condition_value_t = hb_pair_t<uintptr_t, hb_pair_t<unsigned, int>>;
+    hb_vector_t<condition_value_t> conditions;
+    for (auto condition : plan->layout_condition_values.iter ())
+      conditions.push (condition);
+    if (unlikely (conditions.in_error ())) return false;
+    // Row order must not depend on the addresses of the source conditions.
+    conditions.qsort ([] (const condition_value_t &a, const condition_value_t &b) {
+      if (a.second.first != b.second.first)
+        return a.second.first < b.second.first ? -1 : 1;
+      return a.second.second < b.second.second ? -1 :
+             a.second.second > b.second.second ? 1 : 0;
+    });
+    hb_map_t outer_map;
+    unsigned new_outer = 0;
+    for (unsigned i = 0; i < plan->gdef_varstore_inner_maps.length; i++)
+      if (plan->gdef_varstore_inner_maps[i].get_population ())
+        if (!outer_map.set (i, new_outer++)) return false;
+    for (auto condition : conditions)
+    {
+      unsigned old_idx = condition.second.first;
+      double value = condition.second.second +
+                     varStore.get_delta<double> (old_idx, plan->normalized_coords.as_array ());
+      unsigned old_outer = old_idx >> 16;
+      if (!outer_map.has (old_outer))
+        continue;
+      unsigned outer = outer_map.get (old_outer);
+      unsigned inner = plan->gdef_varstore_inner_maps[old_outer].get (old_idx & 0xFFFF);
+      unsigned idx = (outer << 16) | inner;
+      if (outer >= vars.length || inner >= var_data_num_rows[outer])
+        continue;
+
+      double maximum = fabs ((double) value);
+      bool variable = false;
+      for (const tuple_delta_t &tuple : vars[outer].tuple_vars)
+      {
+        if (unlikely (inner >= tuple.deltas_x.length)) return false;
+        float delta = tuple.deltas_x[inner];
+        variable |= delta != 0.f;
+        maximum = hb_max (maximum, fabs ((double) delta));
+      }
+      if (!variable)
+      {
+        if (!condition_map.set (condition.first,
+                                hb_pair (unsigned (VarIdx::NO_VARIATION), int (value > 0))))
+          return false;
+        continue;
+      }
+
+      double scale = 1.;
+      while (maximum * scale > INT_MAX)
+        scale *= .5;
+      // Positive rescaling preserves the Boolean boundary. Prefer exact
+      // integers, otherwise use the available 32-bit precision.
+      while (maximum * scale * 2 <= INT_MAX)
+      {
+        bool integral = (double) value * scale == round ((double) value * scale);
+        for (const tuple_delta_t &tuple : vars[outer].tuple_vars)
+          integral &= (double) tuple.deltas_x[inner] * scale ==
+                      round ((double) tuple.deltas_x[inner] * scale);
+        if (integral) break;
+        scale *= 2;
+      }
+      int default_value = (int) round ((double) value * scale);
+      if (scale != 1. || default_value < -32768 || default_value > 32767)
+      {
+        // A condition may share its row with a positioning value. Give it a
+        // private copy before integer rounding discards fractional deltas.
+        tuple_variations_t private_row;
+        for (const tuple_delta_t &tuple : vars[outer].tuple_vars)
+        {
+          if (!tuple.deltas_x[inner]) continue;
+          tuple_delta_t copy;
+          copy.axis_tuples = tuple.axis_tuples;
+          copy.indices.push (true);
+          copy.deltas_x.push ((float) round ((double) tuple.deltas_x[inner] * scale));
+          if (unlikely (copy.axis_tuples.in_error () || copy.indices.in_error () ||
+                        copy.deltas_x.in_error ())) return false;
+          private_row.tuple_vars.push (std::move (copy));
+        }
+        if (unlikely (vars.length >= 0xFFFFu)) return false;
+        if (unlikely (private_row.tuple_vars.in_error ())) return false;
+        idx = vars.length << 16;
+        vars.push (std::move (private_row));
+        var_data_num_rows.push (1);
+        if (unlikely (vars.in_error () || var_data_num_rows.in_error ())) return false;
+        if (default_value < -32768 || default_value > 32767)
+        {
+          // Keep the Boolean result in the int16 default: no deltas apply
+          // at the default instance. A neutral region carries the excess.
+          // Each part is exact in float; integer row assembly adds them
+          // before serialization, preserving all 32 bits of the bias.
+          int bias = default_value - hb_clamp (default_value, -32768, 32767);
+          default_value -= bias;
+          int high = bias / 65536 * 65536;
+          int parts[] = {high, bias - high};
+          for (int part : parts)
+          {
+            if (!part) continue;
+            unsigned count = vars[idx >> 16].tuple_vars.length;
+            add_tuple (idx >> 16, hb_hashmap_t<hb_tag_t, Triple> (),
+                       0, part, 1);
+            const auto &tuples = vars[idx >> 16].tuple_vars;
+            if (unlikely (tuples.in_error () || tuples.length != count + 1 ||
+                          tuples.tail ().indices.in_error () ||
+                          tuples.tail ().deltas_x.in_error ())) return false;
+          }
+        }
+      }
+      if (!condition_map.set (condition.first, hb_pair (idx, default_value)))
+        return false;
+    }
+    return !condition_map.in_error ();
   }
 
   /* keep below APIs public only for unit test: test-item-varstore */
@@ -2116,8 +2242,11 @@ struct item_variations_t
         for (unsigned i = 0; i < num_rows; i++)
         {
           int rounded_delta = hb_clamp_to<int> (roundf ((double) tuple.deltas_x[i]));
-          delta_rows[start_row + i][*col_idx] += rounded_delta;
-          has_long |= rounded_delta < -65536 || rounded_delta > 65535;
+          int &delta = delta_rows[start_row + i][*col_idx];
+          int64_t sum = (int64_t) delta + rounded_delta;
+          if (unlikely (sum < INT_MIN || sum > INT_MAX)) return false;
+          delta = (int) sum;
+          has_long |= delta < -32768 || delta > 32767;
         }
       }
 
@@ -2157,8 +2286,14 @@ struct item_variations_t
 	major_rows.push (&row);
       }
 
+      if (unlikely (major_rows.in_error () || delta_rows_map.in_error ()))
+        return false;
       if (major_rows)
-	encoding_objs.push (delta_row_encoding_t (std::move (major_rows), num_cols));
+      {
+	auto *encoding = encoding_objs.push (std::move (major_rows), num_cols);
+	if (unlikely (encoding_objs.in_error () || encoding->in_error ()))
+	  return false;
+      }
 
       start_row += num_rows;
     }
@@ -2211,8 +2346,10 @@ struct item_variations_t
 
       removed_todo_idxes.add (i);
       removed_todo_idxes.add (j);
+      if (unlikely (removed_todo_idxes.in_error ())) return false;
 
       encoding.merge (other_encoding);
+      if (unlikely (encoding.in_error ())) return false;
 
       for (unsigned idx = 0; idx < encoding_objs.length; idx++)
       {
@@ -2230,8 +2367,10 @@ struct item_variations_t
 
           for (const auto& row : obj.items)
             encoding.add_row (row);
+          if (unlikely (encoding.in_error ())) return false;
 
           removed_todo_idxes.add (idx);
+          if (unlikely (removed_todo_idxes.in_error ())) return false;
           continue;
         }
 
@@ -2241,7 +2380,8 @@ struct item_variations_t
       }
 
       auto moved_encoding = std::move (encoding);
-      encoding_objs.push (moved_encoding);
+      encoding_objs.push (std::move (moved_encoding));
+      if (unlikely (encoding_objs.in_error ())) return false;
     }
 
     int num_final_encodings = (int) encoding_objs.length - (int) removed_todo_idxes.get_population ();
@@ -2269,7 +2409,7 @@ struct item_variations_t
     {
       delta_row_encoding_t& encoding = encodings[i];
       /* just sanity check, this shouldn't happen */
-      if (encoding.is_empty ())
+      if (encoding.is_empty () || encoding.in_error ())
         return false;
 
       unsigned num_rows = encoding.items.length;
@@ -2295,7 +2435,9 @@ struct item_variations_t
             return false;
         }
 
-        split_encodings.push (delta_row_encoding_t (std::move (rows), num_cols));
+        auto *split = split_encodings.push (std::move (rows), num_cols);
+        if (unlikely (split_encodings.in_error () || split->in_error ()))
+          return false;
       }
     }
 

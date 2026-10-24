@@ -470,7 +470,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 14.4.0 (36cb489cb02ce4b92099669ba9f9bea348eff93f, 2026)
+- Version: 15.0.0 (35f656a1a2bab548ea7f54a6dd3fba2b09680d14, 2026)
 - License: MIT
 
 Files extracted from upstream source:

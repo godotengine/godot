@@ -28,6 +28,7 @@
 #define HB_VECTOR_BUF_HH
 
 #include "hb.hh"
+#include "hb-limits.hh"
 #include "hb-vector.hh"
 #include <math.h>
 #include <stdio.h>
@@ -43,11 +44,47 @@ struct hb_vector_buf_t : hb_vector_t<char>
 {
   unsigned precision = 2;
 
+  /* Sticky flag set once the serialized document would exceed
+   * HB_VECTOR_MAX_DOCUMENT_SIZE.  Folded into in_error() so every emission
+   * site that already checks it -- path commands, gradient meshes -- stops
+   * cleanly.  Bounds output that the outline work budget cannot see, most
+   * importantly sweep-gradient meshes and embedded bitmaps. */
+  bool overflowed = false;
+
+  /* Hides (does not override -- the base method is not virtual) the base
+   * in_error(); every emission site uses hb_vector_buf_t directly, so the
+   * cap is seen everywhere.  clear() resets the sticky flag so a context
+   * reused across renders recovers after one over-cap glyph. */
+  bool in_error () const
+  { return hb_vector_t<char>::in_error () || overflowed; }
+
+  void clear ()
+  {
+    overflowed = false;
+    hb_vector_t<char>::clear ();
+  }
+
   unsigned scale_precision () const
   { return precision < 7 ? 7 : precision; }
 
+  bool would_overflow (unsigned add)
+  {
+    if (unlikely (in_error ()))
+      return true;
+    unsigned new_len;
+    if (unlikely (hb_unsigned_add_overflows (length, add, &new_len) ||
+		  new_len > HB_VECTOR_MAX_DOCUMENT_SIZE))
+    {
+      overflowed = true;
+      return true;
+    }
+    return false;
+  }
+
   bool append_len (const char *s, unsigned l)
   {
+    if (unlikely (would_overflow (l)))
+      return false;
     unsigned old_len = length;
     unsigned new_len;
     if (unlikely (hb_unsigned_add_overflows (old_len, l, &new_len) ||
@@ -58,7 +95,11 @@ struct hb_vector_buf_t : hb_vector_t<char>
   }
 
   bool append_c (char ch)
-  { return push_or_fail (ch); }
+  {
+    if (unlikely (would_overflow (1)))
+      return false;
+    return push_or_fail (ch);
+  }
 
   bool append_str (const char *s)
   { return append_len (s, (unsigned) strlen (s)); }
@@ -206,6 +247,7 @@ struct hb_vector_buf_t : hb_vector_t<char>
     unsigned old_len = length;
     unsigned new_len;
     if (unlikely (hb_unsigned_mul_overflows (ngroups, 4, &out_len) ||
+		  would_overflow (out_len) ||
 		  hb_unsigned_add_overflows (old_len, out_len, &new_len) ||
 		  !resize_dirty ((int) new_len)))
       return false;

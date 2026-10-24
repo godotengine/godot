@@ -128,7 +128,9 @@ _hb_graphite2_shaper_face_data_create (hb_face_t *face)
   data->grface = gr_make_face_with_ops (data, &ops, gr_face_preloadAll);
 
   if (unlikely (!data->grface)) {
-    hb_free (data);
+    /* data->tlist has already been populated by the callback,
+     * so everything needs to be destroyed */
+    _hb_graphite2_shaper_face_data_destroy (data);
     return nullptr;
   }
 

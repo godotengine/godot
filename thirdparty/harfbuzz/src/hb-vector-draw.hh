@@ -54,25 +54,30 @@ struct hb_vector_draw_t
   hb_vector_buf_t pdf_extgstate_dict;
   unsigned pdf_extgstate_count = 0;
 
-  /* Cumulative output budget for the current draw session; reset by
-   * hb_vector_draw_clear().  Charge complete path commands so budget
-   * exhaustion cannot leave a syntactically partial command. */
-  int64_t work_left = HB_VECTOR_MAX_DRAW_WORK;
+  /* Cumulative work budget for the current draw session; reset by
+   * hb_vector_draw_clear().  Outline traversal and complete path commands
+   * charge the same live counter. */
+  int64_t budget = HB_BUDGET_DEFAULT;
+  int64_t budget_remaining = HB_BUDGET_GLYPH;
 
-  bool begin_path_command (unsigned *before)
+  void recharge_budget ()
   {
-    if (unlikely (work_left <= 0 || path.in_error ()))
-      return false;
-    *before = path.length;
-    return true;
+    budget_remaining = budget == HB_BUDGET_DEFAULT ?
+		       HB_BUDGET_GLYPH : budget;
   }
 
-  void end_path_command (unsigned before)
+  bool begin_path_command ()
   {
+    return likely (budget_remaining >= 0 && !path.in_error ());
+  }
+
+  void end_path_command ()
+  {
+    /* The serialized bytes are bounded by the output buffer's document-size
+     * cap (in_error), not the outline work budget; stop outline traversal
+     * once that cap or an allocation error trips. */
     if (unlikely (path.in_error ()))
-      work_left = 0;
-    else
-      work_left -= path.length - before;
+      budget_remaining = 0;
   }
 
   void set_precision (unsigned p)

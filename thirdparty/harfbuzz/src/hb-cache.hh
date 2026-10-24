@@ -94,8 +94,11 @@ struct hb_cache_t
   {
     unsigned int k = key & ((1u<<cache_bits)-1);
     unsigned int v = values[k];
-    if ((key_bits + value_bits - cache_bits == 8 * sizeof (item_t) && (item_t) v == (item_t) -1) ||
-	(v >> value_bits) != (key >> cache_bits))
+    constexpr unsigned int empty = (1ULL << (8 * sizeof (item_t))) - 1;
+    /* Combine overflow, tag mismatch, and empty checks into one branch. */
+    if ((key >> key_bits) |
+	((v >> value_bits) ^ (key >> cache_bits)) |
+	((key_bits + value_bits - cache_bits == 8 * sizeof (item_t)) && (v == empty)))
       return false;
     *value = v & ((1u<<value_bits)-1);
     return true;
@@ -106,12 +109,6 @@ struct hb_cache_t
   {
     if (unlikely ((key >> key_bits) || (value >> value_bits)))
       return; /* Overflows */
-    set_unchecked (key, value);
-  }
-
-  HB_HOT
-  void set_unchecked (unsigned int key, unsigned int value)
-  {
     unsigned int k = key & ((1u<<cache_bits)-1);
     unsigned int v = ((key>>cache_bits)<<value_bits) | value;
     values[k] = v;

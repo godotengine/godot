@@ -63,6 +63,109 @@ HB_BEGIN_DECLS
  **/
 typedef struct hb_paint_funcs_t hb_paint_funcs_t;
 
+/**
+ * hb_paint_set_budget_func_t:
+ * @funcs: paint functions object
+ * @paint_data: The data accompanying the paint functions
+ * @budget: the new work-budget policy
+ * @user_data: User data pointer passed to hb_paint_funcs_set_set_budget_func()
+ *
+ * Sets the work-budget policy and recharges the live work budget. @budget is
+ * #HB_BUDGET_DEFAULT, #HB_BUDGET_UNLIMITED, or a non-negative concrete value.
+ *
+ * Return value: `true` if the budget was set, `false` if unsupported
+ *
+ * Since: 14.5.0
+ **/
+typedef hb_bool_t (*hb_paint_set_budget_func_t) (hb_paint_funcs_t *funcs,
+						  void *paint_data,
+						  int64_t budget,
+						  void *user_data);
+
+/**
+ * hb_paint_get_budget_func_t:
+ * @funcs: paint functions object
+ * @paint_data: The data accompanying the paint functions
+ * @user_data: User data pointer passed to hb_paint_funcs_set_get_budget_func()
+ *
+ * Fetches the configured work-budget policy.
+ *
+ * Return value: the configured work-budget policy
+ *
+ * Since: 14.5.0
+ **/
+typedef int64_t (*hb_paint_get_budget_func_t) (hb_paint_funcs_t *funcs,
+					       void *paint_data,
+					       void *user_data);
+
+/**
+ * hb_paint_get_budget_remaining_func_t:
+ * @funcs: paint functions object
+ * @paint_data: The data accompanying the paint functions
+ * @user_data: User data pointer passed to
+ *   hb_paint_funcs_set_get_budget_remaining_func()
+ *
+ * Fetches the address of the live work budget. The returned address must stay
+ * valid while @paint_data is used with @funcs. The live value must be concrete;
+ * it must not contain #HB_BUDGET_DEFAULT.
+ *
+ * Return value: (nullable) (transfer none): the live work budget, or `NULL` if
+ *   live budget accounting is unsupported
+ *
+ * Since: 14.5.0
+ **/
+typedef int64_t *(*hb_paint_get_budget_remaining_func_t) (hb_paint_funcs_t *funcs,
+							  void *paint_data,
+							  void *user_data);
+
+/**
+ * hb_paint_funcs_set_set_budget_func:
+ * @funcs: paint functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): budget setter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the budget setter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_paint_funcs_set_set_budget_func (hb_paint_funcs_t         *funcs,
+				    hb_paint_set_budget_func_t  func,
+				    void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_paint_funcs_set_get_budget_func:
+ * @funcs: paint functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): budget getter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the budget-policy getter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_paint_funcs_set_get_budget_func (hb_paint_funcs_t         *funcs,
+				    hb_paint_get_budget_func_t  func,
+				    void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_paint_funcs_set_get_budget_remaining_func:
+ * @funcs: paint functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): live-budget getter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the live-budget getter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_paint_funcs_set_get_budget_remaining_func (hb_paint_funcs_t                   *funcs,
+					      hb_paint_get_budget_remaining_func_t  func,
+					      void *user_data, hb_destroy_func_t destroy);
+
 HB_EXTERN hb_paint_funcs_t *
 hb_paint_funcs_create (void);
 
@@ -92,6 +195,16 @@ hb_paint_funcs_make_immutable (hb_paint_funcs_t *funcs);
 
 HB_EXTERN hb_bool_t
 hb_paint_funcs_is_immutable (hb_paint_funcs_t *funcs);
+
+HB_EXTERN hb_bool_t
+hb_paint_set_budget (hb_paint_funcs_t *funcs, void *paint_data,
+		     int64_t budget);
+
+HB_EXTERN int64_t
+hb_paint_get_budget (hb_paint_funcs_t *funcs, void *paint_data);
+
+HB_EXTERN int64_t
+hb_paint_get_budget_remaining (hb_paint_funcs_t *funcs, void *paint_data);
 
 /**
  * hb_paint_push_transform_func_t:

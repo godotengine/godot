@@ -120,6 +120,12 @@
 #define HB_GPU_DRAW_MAX_CURVES 65536
 #endif
 
+/* Total bytes of sub-blobs (gradient color stops, clip outlines) in one
+ * hb_gpu_paint_t walk; exceeding it makes the paint unsupported. */
+#ifndef HB_GPU_PAINT_MAX_SUB_BYTES
+#define HB_GPU_PAINT_MAX_SUB_BYTES ((unsigned) 64 << 20)
+#endif
+
 /* Tiles emitted by one hb_paint_sweep_gradient_tiles() call.  Also
  * sets the angular resolution (2π over this) below which a repeating
  * color line is filled with its average color instead of tiled;
@@ -131,6 +137,16 @@
 
 #ifndef HB_SVG_MAX_DOCUMENT_SIZE
 #define HB_SVG_MAX_DOCUMENT_SIZE ((size_t) 16 << 20)
+#endif
+
+/* Maximum size of one serialized vector document (SVG or PDF) produced by
+ * the vector backends.  Bounds output that is not outline-derived -- most
+ * of a path, but especially sweep-gradient meshes and embedded bitmaps --
+ * which the outline work budget cannot see.  vector is one glyph per
+ * context, so a flat cap suffices.  Unsigned (not size_t like the SVG-table
+ * limit above) to match hb_vector_buf_t's unsigned length arithmetic. */
+#ifndef HB_VECTOR_MAX_DOCUMENT_SIZE
+#define HB_VECTOR_MAX_DOCUMENT_SIZE ((unsigned) 16 << 20)
 #endif
 
 #ifndef HB_RASTER_MAX_BUFFER_SIZE
@@ -159,55 +175,45 @@
  * is skipped best-effort.
  */
 
-/* One VARC glyph (draw or extents), shared by all leaf glyphs loaded
- * from glyf/CFF/CFF2, in units of glyf points / CFF charstring ops. */
-#ifndef HB_VARC_MAX_WORK
-#define HB_VARC_MAX_WORK ((int64_t) 1 << 20)
+/* Fixed relative weights.  Keep the value in the name so charge sites are
+ * easy to audit; tune the common session cap, not these values. */
+#define HB_BUDGET_1	1u
+#define HB_BUDGET_2	2u
+#define HB_BUDGET_4	4u
+#define HB_BUDGET_8	8u
+#define HB_BUDGET_16	16u
+#define HB_BUDGET_32	32u
+#define HB_BUDGET_64	64u
+#define HB_BUDGET_128	128u
+#define HB_BUDGET_256	256u
+#define HB_BUDGET_512	512u
+#define HB_BUDGET_1024	1024u
+
+/* The common finite default for one top-level glyph rendering session.
+ * Nested outline and paint work shares the same live counter. */
+#ifndef HB_BUDGET_GLYPH
+#define HB_BUDGET_GLYPH ((int64_t) 1 << 24)
 #endif
 
-/* One paint-extents session, in outline points consumed by
- * clip-glyph draws. */
-#ifndef HB_PAINT_EXTENTS_MAX_WORK
-#define HB_PAINT_EXTENTS_MAX_WORK ((int64_t) 1 << 20)
+/* Precharge COST * MULT.  Callers bound COST and MULT structurally, and live
+ * budgets are concrete non-negative values when a session starts. */
+static HB_ALWAYS_INLINE bool
+hb_budget_spend (int64_t &budget, unsigned int cost, unsigned int mult = 1)
+{
+  budget -= (int64_t) cost * mult;
+  return budget >= 0;
+}
+
+/* The flat pixel-work floor for one raster paint session.  Pixel and
+ * outline work use separate live counters, so keep this independent of
+ * the common outline budget above. */
+#ifndef HB_BUDGET_RASTER_PIXELS
+#define HB_BUDGET_RASTER_PIXELS ((int64_t) 1 << 26)
 #endif
 
-/* One GPU paint walk, in curves consumed by clip encodes. */
-#ifndef HB_GPU_PAINT_MAX_WORK
-#define HB_GPU_PAINT_MAX_WORK ((int64_t) 1 << 20)
-#endif
-
-/* One vector (SVG/PDF) draw session, in bytes of generated outline
- * path data. */
-#ifndef HB_VECTOR_MAX_DRAW_WORK
-#define HB_VECTOR_MAX_DRAW_WORK ((int64_t) 16 << 20)
-#endif
-
-/* One vector (SVG/PDF) paint session, in bytes of generated outline
- * path and sweep-gradient patch data. */
-#ifndef HB_VECTOR_MAX_PAINT_WORK
-#define HB_VECTOR_MAX_PAINT_WORK ((int64_t) 16 << 20)
-#endif
-
-/* One raster paint session (everything painted between two
- * render/clear calls), in pixel-op units; pixel loops charge their
- * area, consumed outline segments are charged with a fixed weight.
- * The session budget is the larger of this flat value and
- * HB_RASTER_MAX_PAINT_WORK_PASSES full-surface passes, so very large
- * surfaces still get a few full-surface operations. */
-#ifndef HB_RASTER_MAX_PAINT_WORK
-#define HB_RASTER_MAX_PAINT_WORK ((int64_t) 1 << 26)
-#endif
-
-#ifndef HB_RASTER_MAX_PAINT_WORK_PASSES
-#define HB_RASTER_MAX_PAINT_WORK_PASSES 4
-#endif
-
-/* One raster draw session (everything drawn between two render/clear
- * calls) through the standalone hb-raster-draw API, in Bézier
- * subdivision steps.  When driven by raster-paint, the paint session
- * budget above is charged instead. */
-#ifndef HB_RASTER_MAX_DRAW_WORK
-#define HB_RASTER_MAX_DRAW_WORK ((int64_t) 1 << 24)
+/* Very large raster surfaces still get a few full-surface operations. */
+#ifndef HB_BUDGET_RASTER_PAINT_PASSES
+#define HB_BUDGET_RASTER_PAINT_PASSES 4
 #endif
 
 /* One raster draw session, in accumulated non-horizontal edges. */

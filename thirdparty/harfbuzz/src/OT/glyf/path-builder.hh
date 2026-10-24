@@ -166,6 +166,15 @@ struct path_builder_t
     }
     else if (first_oncurve)
       draw_session->line_to (first_oncurve.x, first_oncurve.y);
+    else if (first_offcurve2)
+    {
+      /* A contour with just two cubic controls closes at their midpoint. */
+      optional_point_t mid = first_offcurve2.mid (first_offcurve);
+      draw_session->move_to (mid.x, mid.y);
+      draw_session->cubic_to (first_offcurve2.x, first_offcurve2.y,
+			      first_offcurve.x, first_offcurve.y,
+			      mid.x, mid.y);
+    }
     else if (first_offcurve)
     {
       float x = first_offcurve.x, y = first_offcurve.y;
@@ -174,7 +183,7 @@ struct path_builder_t
     }
 
     /* Getting ready for the next contour */
-    first_oncurve = first_offcurve = last_offcurve = last_offcurve2 = optional_point_t ();
+    first_oncurve = first_offcurve = first_offcurve2 = last_offcurve = last_offcurve2 = optional_point_t ();
     draw_session->close_path ();
   }
 
