@@ -3281,8 +3281,11 @@ void main() {
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
-	frag_color.rgb *= scene_data_block.data.luminance_multiplier;
 
+#ifndef BLEND_MUL
+	// Multiply blending reads a destination that is already scaled by luminance_multiplier
+	frag_color.rgb *= scene_data_block.data.luminance_multiplier;
+#endif // !BLEND_MUL
 #endif // !RENDER_MATERIAL
 #endif // !MODE_RENDER_DEPTH
 
