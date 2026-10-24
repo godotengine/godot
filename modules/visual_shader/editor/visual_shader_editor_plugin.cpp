@@ -3952,54 +3952,6 @@ void VisualShaderEditor::_frame_title_change(const String &p_old, const String &
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p_node_id) {
-	Ref<VisualShaderNodeFrame> node = edited_shader_graph->get_node(p_node_id);
-	if (node.is_null()) {
-		return;
-	}
-	frame_title_change_edit->set_text(node->get_title());
-	frame_title_change_popup->set_meta("id", p_node_id);
-	frame_title_change_popup->set_position(p_position);
-	frame_title_change_popup->popup();
-
-	// Select current text.
-	frame_title_change_edit->grab_focus();
-}
-
-void VisualShaderEditor::_frame_title_text_changed(const String &p_new_text) {
-	frame_title_change_edit->reset_size();
-	frame_title_change_popup->reset_size();
-}
-
-void VisualShaderEditor::_frame_title_text_submitted(const String &p_new_text) {
-	frame_title_change_popup->hide();
-}
-
-void VisualShaderEditor::_frame_title_popup_focus_out() {
-	frame_title_change_popup->hide();
-}
-
-void VisualShaderEditor::_frame_title_popup_hide() {
-	int node_id = (int)frame_title_change_popup->get_meta("id", -1);
-	ERR_FAIL_COND(node_id == -1);
-
-	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeFrame> node = edited_shader_graph->get_node(node_id);
-
-	ERR_FAIL_COND(node.is_null());
-
-	if (node->get_title() == frame_title_change_edit->get_text()) {
-		return; // nothing changed - ignored
-	}
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	_vs_create_action(TTR("Set Frame Title"));
-	undo_redo->add_do_method(node.ptr(), "set_title", frame_title_change_edit->get_text());
-	undo_redo->add_undo_method(node.ptr(), "set_title", node->get_title());
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
-	undo_redo->commit_action();
-}
-
 void VisualShaderEditor::_frame_color_enabled_changed(int p_node_id) {
 	int item_index = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 
@@ -5855,10 +5807,6 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(int(NodeMenuOptions::SET_FRAME_TITLE));
-			if (temp != -1) {
-				popup_menu->remove_item(temp);
-			}
 			temp = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
@@ -5911,7 +5859,6 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (selected_frame != -1) {
 				popup_menu->add_separator("", int(NodeMenuOptions::SEPARATOR3));
-				popup_menu->add_item(TTR("Set Frame Title"), int(NodeMenuOptions::SET_FRAME_TITLE));
 				popup_menu->add_check_item(TTR("Enable Auto Shrink"), int(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK));
 				popup_menu->add_check_item(TTR("Enable Tint Color"), int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 
@@ -7457,9 +7404,6 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::UNLINK_FROM_PARENT_FRAME:
 			_detach_nodes_from_frame_request();
 			break;
-		case NodeMenuOptions::SET_FRAME_TITLE:
-			_frame_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
-			break;
 		case NodeMenuOptions::ENABLE_FRAME_COLOR:
 			_frame_color_enabled_changed(selected_frame);
 			break;
@@ -8360,19 +8304,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_custom_minimum_size(Size2(400, 60) * EDSCALE);
 	add_child(alert);
-
-	frame_title_change_popup = memnew(PopupPanel);
-	frame_title_change_edit = memnew(LineEdit);
-	frame_title_change_edit->set_expand_to_text_length_enabled(true);
-	frame_title_change_edit->set_select_all_on_focus(true);
-	frame_title_change_edit->connect(SceneStringName(text_changed), callable_mp(this, &VisualShaderEditor::_frame_title_text_changed));
-	frame_title_change_edit->connect(SceneStringName(text_submitted), callable_mp(this, &VisualShaderEditor::_frame_title_text_submitted));
-	frame_title_change_popup->add_child(frame_title_change_edit);
-	frame_title_change_edit->reset_size();
-	frame_title_change_popup->reset_size();
-	frame_title_change_popup->connect(SceneStringName(focus_exited), callable_mp(this, &VisualShaderEditor::_frame_title_popup_focus_out));
-	frame_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_title_popup_hide));
-	add_child(frame_title_change_popup);
 
 	frame_tint_color_pick_popup = memnew(PopupPanel);
 	VBoxContainer *frame_popup_item_tint_color_editor = memnew(VBoxContainer);

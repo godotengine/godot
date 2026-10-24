@@ -338,9 +338,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 	ConfirmationDialog *remove_varying_dialog = nullptr;
 	Tree *varyings = nullptr;
 
-	PopupPanel *frame_title_change_popup = nullptr;
-	LineEdit *frame_title_change_edit = nullptr;
-
 	PopupPanel *frame_tint_color_pick_popup = nullptr;
 	ColorPicker *frame_tint_color_picker = nullptr;
 
@@ -424,7 +421,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 		CONVERT_PARAMETERS_TO_CONSTANTS,
 		UNLINK_FROM_PARENT_FRAME,
 		SEPARATOR3, // ignore
-		SET_FRAME_TITLE,
 		ENABLE_FRAME_COLOR,
 		SET_FRAME_COLOR,
 		ENABLE_FRAME_AUTOSHRINK,
@@ -613,11 +609,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _handle_node_drop_on_connection();
 
 	void _frame_title_change(const String &p_old, const String &p_new, int p_node_id);
-	void _frame_title_popup_show(const Point2 &p_position, int p_node_id);
-	void _frame_title_popup_hide();
-	void _frame_title_popup_focus_out();
-	void _frame_title_text_changed(const String &p_new_text);
-	void _frame_title_text_submitted(const String &p_new_text);
 
 	void _frame_color_enabled_changed(int p_node_id);
 	void _frame_color_popup_show(const Point2 &p_position, int p_node_id);
