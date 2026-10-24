@@ -225,7 +225,7 @@ public:
 		biased_angular_velocity += _inv_inertia * p_pos.cross(p_j);
 	}
 
-	void set_active(bool p_active);
+	void set_active(bool p_active, bool reset_timer = false);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
@@ -295,7 +295,6 @@ public:
 	}
 
 	void call_queries();
-	void wakeup_neighbours();
 
 	bool sleep_test(real_t p_step);
 

@@ -82,6 +82,7 @@ class BodyPair2DSW : public Constraint2DSW {
 	void _validate_contacts();
 	static void _add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self);
 	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);
+	bool setup_internal(real_t p_step);
 
 public:
 	bool setup(real_t p_step);

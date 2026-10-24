@@ -41,6 +41,7 @@ bool AreaPairSW::setup(real_t p_step) {
 		if (result) {
 			if (area->get_space_override_mode() != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED) {
 				body->add_area(area);
+				body->set_active(true, true);
 			}
 			if (area->has_monitor_callback()) {
 				area->add_body_to_query(body, body_shape, area_shape);
@@ -49,6 +50,7 @@ bool AreaPairSW::setup(real_t p_step) {
 		} else {
 			if (area->get_space_override_mode() != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED) {
 				body->remove_area(area);
+				body->set_active(true, true);
 			}
 			if (area->has_monitor_callback()) {
 				area->remove_body_from_query(body, body_shape, area_shape);
@@ -81,6 +83,7 @@ AreaPairSW::~AreaPairSW() {
 	if (colliding) {
 		if (area->get_space_override_mode() != PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED) {
 			body->remove_area(area);
+			body->set_active(true, true);
 		}
 		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);
