@@ -46,7 +46,11 @@ public:
 		BoneJoint end_bone;
 	};
 
-	typedef Pair<int, Quaternion> BoneRot;
+	struct BoneRot {
+		int index = -1;
+		Quaternion rotation;
+		double rotation_diff = 0.0;
+	};
 
 private:
 	bool exclude = false;
@@ -108,6 +112,8 @@ public:
 	bool is_exclude() const;
 
 	void reset();
+
+	double get_rotation_diff(int p_bone_index) const;
 
 	~LimitAngularVelocityModifier3D();
 };
