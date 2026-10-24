@@ -165,7 +165,7 @@ protected:
 			release_signing_identity = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "Apple Distribution" : p_preset->get("application/code_sign_identity_release");
 
 			debug_provisioning_profile_uuid = p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG).operator String();
-			release_provisioning_profile_uuid = p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_DEBUG).operator String();
+			release_provisioning_profile_uuid = p_preset->get_or_env("application/provisioning_profile_uuid_release", ENV_APPLE_PLATFORM_PROFILE_UUID_RELEASE).operator String();
 
 			debug_manual_signing = !debug_provisioning_profile_uuid.is_empty() || (debug_signing_identity != "Apple Development" && debug_signing_identity != "Apple Distribution");
 			release_manual_signing = !release_provisioning_profile_uuid.is_empty() || (release_signing_identity != "Apple Development" && release_signing_identity != "Apple Distribution");
