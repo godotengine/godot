@@ -967,7 +967,10 @@ TreeItem *TreeItem::create_child(int p_index) {
 		}
 	} else {
 		first_child = ti;
-		children_cache.insert(0, ti);
+		// If the cache is empty but there are other children, it has not been built, so we cannot update it.
+		if (!children_cache.is_empty() || !ti->next) {
+			children_cache.insert(0, ti);
+		}
 	}
 
 	if (item_prev == last_child) {
