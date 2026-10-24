@@ -1454,6 +1454,10 @@
 			Default [InputEventAction] to paste from the clipboard.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_paste_unformatted" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to paste from the clipboard, but ignore certain formatting.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
 		<member name="input/ui_redo" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to redo an undone action.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.

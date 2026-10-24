@@ -31,9 +31,11 @@
 #include "graph_frame.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
@@ -140,6 +142,12 @@ void GraphFrame::_notification(int p_what) {
 				}
 			}
 
+			if (selected && title_editable) {
+				title_line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
+			} else {
+				title_line_edit->set_mouse_filter(MOUSE_FILTER_IGNORE);
+			}
+
 		} break;
 	}
 }
@@ -174,6 +182,9 @@ void GraphFrame::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphFrame::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphFrame::get_title);
 
+	ClassDB::bind_method(D_METHOD("set_title_editable", "editable"), &GraphFrame::set_title_editable);
+	ClassDB::bind_method(D_METHOD("get_title_editable"), &GraphFrame::get_title_editable);
+
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphFrame::get_titlebar_hbox);
 
 	ClassDB::bind_method(D_METHOD("set_autoshrink_enabled", "shrink"), &GraphFrame::set_autoshrink_enabled);
@@ -200,6 +211,7 @@ void GraphFrame::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 
 	ADD_SIGNAL(MethodInfo("autoshrink_changed"));
+	ADD_SIGNAL(MethodInfo("title_changed", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "to")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphFrame, panel_selected);
@@ -219,19 +231,41 @@ void GraphFrame::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+void GraphFrame::_sync_title(bool p_editing) {
+	if (title_line_edit && !p_editing) {
+		const String &new_title = title_line_edit->get_text();
+		if (title == new_title) {
+			return;
+		}
+		emit_signal("title_changed", title, new_title);
+		title = new_title;
+		update_minimum_size();
+	}
+}
+
 void GraphFrame::set_title(const String &p_title) {
 	if (title == p_title) {
 		return;
 	}
+	emit_signal("title_changed", title, p_title);
 	title = p_title;
-	if (title_label) {
-		title_label->set_text(title);
+	if (title_line_edit) {
+		title_line_edit->set_text(title);
 	}
 	update_minimum_size();
 }
 
 String GraphFrame::get_title() const {
 	return title;
+}
+
+void GraphFrame::set_title_editable(bool p_editable) {
+	title_editable = p_editable;
+	title_line_edit->set_editable(p_editable);
+}
+
+bool GraphFrame::get_title_editable() const {
+	return title_editable;
 }
 
 void GraphFrame::set_autoshrink_enabled(bool p_shrink) {
@@ -363,15 +397,21 @@ Size2 GraphFrame::get_desired_size() const {
 GraphFrame::GraphFrame() {
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	titlebar_hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	titlebar_hbox->set_use_parent_material(true);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
 
-	title_label = memnew(Label);
-	title_label->set_theme_type_variation("GraphFrameTitleLabel");
-	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	title_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	title_label->set_use_parent_material(true);
-	titlebar_hbox->add_child(title_label);
+	title_line_edit = memnew(LineEdit);
+	title_line_edit->set_theme_type_variation("GraphFrameTitleLineEdit");
+	title_line_edit->set_h_size_flags(SIZE_SHRINK_CENTER);
+	title_line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	title_line_edit->set_use_parent_material(true);
+	title_line_edit->set_editable(false);
+	title_line_edit->set_expand_to_text_length_enabled(true);
+	title_line_edit->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	titlebar_hbox->add_child(title_line_edit);
+
+	title_line_edit->connect("editing_toggled", callable_mp(this, &GraphFrame::_sync_title));
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 }
