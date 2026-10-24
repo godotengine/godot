@@ -143,11 +143,12 @@ struct SubstLookup : Lookup
     return_trace (false);
   }
 
+  template <typename GlyphID>
   bool serialize_alternate (hb_serialize_context_t *c,
                             uint32_t lookup_props,
-                            hb_sorted_array_t<const HBGlyphID16> glyphs,
+                            hb_sorted_array_t<GlyphID> glyphs,
                             hb_array_t<const unsigned int> alternate_len_list,
-                            hb_array_t<const HBGlyphID16> alternate_glyphs_list)
+                            hb_array_t<GlyphID> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Alternate, lookup_props, 1))) return_trace (false);
@@ -165,13 +166,14 @@ struct SubstLookup : Lookup
     return_trace (false);
   }
 
+  template <typename GlyphID>
   bool serialize_ligature (hb_serialize_context_t *c,
                            uint32_t lookup_props,
-                           hb_sorted_array_t<const HBGlyphID16> first_glyphs,
+                           hb_sorted_array_t<GlyphID> first_glyphs,
                            hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-                           hb_array_t<const HBGlyphID16> ligatures_list,
+                           hb_array_t<GlyphID> ligatures_list,
                            hb_array_t<const unsigned int> component_count_list,
-                           hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
+                           hb_array_t<GlyphID> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Ligature, lookup_props, 1))) return_trace (false);

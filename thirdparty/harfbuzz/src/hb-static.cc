@@ -69,25 +69,6 @@ const unsigned char *endchar_str = static_endchar_str;
 
 /* hb_face_t */
 
-#ifndef HB_NO_BEYOND_64K
-static inline unsigned
-load_num_glyphs_from_loca (const hb_face_t *face)
-{
-  unsigned ret = 0;
-
-  unsigned indexToLocFormat = face->table.head->indexToLocFormat;
-
-  if (indexToLocFormat <= 1)
-  {
-    bool short_offset = 0 == indexToLocFormat;
-    hb_blob_t *loca_blob = face->table.loca.get_blob ();
-    ret = hb_max (1u, loca_blob->length / (short_offset ? 2 : 4)) - 1;
-  }
-
-  return ret;
-}
-#endif
-
 static inline unsigned
 load_num_glyphs_from_maxp (const hb_face_t *face)
 {
@@ -97,16 +78,8 @@ load_num_glyphs_from_maxp (const hb_face_t *face)
 unsigned int
 hb_face_t::load_num_glyphs () const
 {
-  unsigned ret = 0;
-
-#ifndef HB_NO_BEYOND_64K
-  ret = hb_max (ret, load_num_glyphs_from_loca (this));
-#endif
-
-  ret = hb_max (ret, load_num_glyphs_from_maxp (this));
-
-  num_glyphs = ret;
-  return ret;
+  num_glyphs = load_num_glyphs_from_maxp (this);
+  return num_glyphs;
 }
 
 unsigned int

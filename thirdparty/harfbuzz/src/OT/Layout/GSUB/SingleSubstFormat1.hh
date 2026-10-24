@@ -7,12 +7,101 @@ namespace OT {
 namespace Layout {
 namespace GSUB_impl {
 
+static inline bool
+subset_single_subst (hb_subset_context_t *c,
+                     const Coverage &coverage,
+                     hb_codepoint_t d,
+                     hb_codepoint_t mask)
+{
+  const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
+  const hb_map_t &glyph_map = *c->plan->glyph_map;
+
+  hb_set_t intersection;
+  coverage.intersect_set (glyphset, intersection);
+
+  auto it =
+  + hb_iter (intersection)
+  | hb_map_retains_sorting ([d, mask] (hb_codepoint_t g) {
+                              return hb_codepoint_pair_t (g,
+                                                          (g + d) & mask); })
+  | hb_filter (glyphset, hb_second)
+  | hb_map_retains_sorting ([&] (hb_codepoint_pair_t p) -> hb_codepoint_pair_t
+                            { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
+  ;
+
+  bool ret = bool (it);
+  SingleSubst_serialize (c->serializer, it);
+  return ret;
+}
+
+HB_INTERNAL inline
+void single_subst_depend (hb_depend_context_t *c,
+                          const Coverage &coverage,
+                          hb_codepoint_t d, hb_codepoint_t mask)
+{
+  unsigned num_glyphs = c->face->get_num_glyphs ();
+
+  // Filter coverage by active glyphs (like closure does)
+  hb_set_t intersection;
+  coverage.intersect_set (c->parent_active_glyphs (), intersection);
+
+  + hb_iter (intersection)
+  | hb_map ([&] (hb_codepoint_t _) { return hb_codepoint_pair_t (_, (_ + d) & mask); })
+  | hb_filter ([num_glyphs] (const hb_codepoint_pair_t &_) { return _.second < num_glyphs; })
+  | hb_apply ([&] (const hb_codepoint_pair_t &_) { c->depend_data->add_gsub_lookup(_.first, c->lookup_index, _.second); })
+  ;
+}
+
+HB_INTERNAL inline
+void single_subst_closure (hb_closure_context_t *c,
+                           const Coverage &coverage,
+                           hb_codepoint_t d, hb_codepoint_t mask)
+{
+  /* Help fuzzer avoid this function as much. */
+  unsigned pop = coverage.get_population ();
+  if (pop >= mask)
+    return;
+
+  hb_set_t intersection;
+  coverage.intersect_set (c->parent_active_glyphs (), intersection);
+
+  /* In degenerate fuzzer-found fonts, but not real fonts,
+   * this table can keep adding new glyphs in each round of closure.
+   * Refuse to close-over, if it maps glyph range to overlapping range. */
+  hb_codepoint_t min_before = intersection.get_min ();
+  hb_codepoint_t max_before = intersection.get_max ();
+  hb_codepoint_t min_after = (min_before + d) & mask;
+  hb_codepoint_t max_after = (max_before + d) & mask;
+  if (intersection.get_population () == max_before - min_before + 1 &&
+	((min_before <= min_after && min_after <= max_before) ||
+	 (min_before <= max_after && max_after <= max_before)))
+    return;
+
+  + hb_iter (intersection)
+  | hb_map ([d, mask] (hb_codepoint_t g) { return (g + d) & mask; })
+  | hb_sink (c->output)
+  ;
+}
+
+HB_INTERNAL inline
+void single_subst_collect_glyphs (hb_collect_glyphs_context_t *c,
+                                  const Coverage &coverage,
+                                  hb_codepoint_t d, hb_codepoint_t mask)
+{
+  if (unlikely (!coverage.collect_coverage (c->input))) return;
+
+  + hb_iter (coverage)
+  | hb_map ([d, mask] (hb_codepoint_t g) { return (g + d) & mask; })
+  | hb_sink (c->output)
+  ;
+}
+
 template <typename Types>
 struct SingleSubstFormat1_3
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
   typename Types::HBUINT
@@ -20,7 +109,7 @@ struct SingleSubstFormat1_3
                                          * substitute GlyphID, modulo 0x10000 */
 
   public:
-  DEFINE_SIZE_STATIC (2 + 2 * Types::size);
+  DEFINE_SIZE_STATIC (2 + Types::LOffset::static_size + Types::HBUINT::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -47,64 +136,19 @@ struct SingleSubstFormat1_3
 
   void depend (hb_depend_context_t *c) const
   {
-    hb_codepoint_t d = deltaGlyphID;
-    hb_codepoint_t mask = get_mask ();
-    unsigned num_glyphs = c->face->get_num_glyphs ();
-
-    // Filter coverage by active glyphs (like closure does)
-    hb_set_t intersection;
-    (this+coverage).intersect_set (c->parent_active_glyphs (), intersection);
-
-    + hb_iter (intersection)
-    | hb_map ([&] (hb_codepoint_t _) { return hb_codepoint_pair_t (_, (_ + d) & mask); })
-    | hb_filter ([num_glyphs] (const hb_codepoint_pair_t &_) { return _.second < num_glyphs; })
-    | hb_apply ([&] (const hb_codepoint_pair_t &_) { c->depend_data->add_gsub_lookup(_.first, c->lookup_index, _.second); })
-    ;
+    single_subst_depend (c, this+coverage, deltaGlyphID, get_mask ());
   }
 
   void closure (hb_closure_context_t *c) const
   {
-    hb_codepoint_t d = deltaGlyphID;
-    hb_codepoint_t mask = get_mask ();
-
-    /* Help fuzzer avoid this function as much. */
-    unsigned pop = (this+coverage).get_population ();
-    if (pop >= mask)
-      return;
-
-    hb_set_t intersection;
-    (this+coverage).intersect_set (c->parent_active_glyphs (), intersection);
-
-    /* In degenerate fuzzer-found fonts, but not real fonts,
-     * this table can keep adding new glyphs in each round of closure.
-     * Refuse to close-over, if it maps glyph range to overlapping range. */
-    hb_codepoint_t min_before = intersection.get_min ();
-    hb_codepoint_t max_before = intersection.get_max ();
-    hb_codepoint_t min_after = (min_before + d) & mask;
-    hb_codepoint_t max_after = (max_before + d) & mask;
-    if (intersection.get_population () == max_before - min_before + 1 &&
-	((min_before <= min_after && min_after <= max_before) ||
-	 (min_before <= max_after && max_after <= max_before)))
-      return;
-
-    + hb_iter (intersection)
-    | hb_map ([d, mask] (hb_codepoint_t g) { return (g + d) & mask; })
-    | hb_sink (c->output)
-    ;
+    single_subst_closure (c, this+coverage, deltaGlyphID, get_mask ());
   }
 
   void closure_lookups (hb_closure_lookups_context_t *c) const {}
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
-    if (unlikely (!(this+coverage).collect_coverage (c->input))) return;
-    hb_codepoint_t d = deltaGlyphID;
-    hb_codepoint_t mask = get_mask ();
-
-    + hb_iter (this+coverage)
-    | hb_map ([d, mask] (hb_codepoint_t g) { return (g + d) & mask; })
-    | hb_sink (c->output)
-    ;
+    single_subst_collect_glyphs (c, this+coverage, deltaGlyphID, get_mask ());
   }
 
   const Coverage &get_coverage () const { return this+coverage; }
@@ -203,28 +247,7 @@ struct SingleSubstFormat1_3
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    hb_codepoint_t d = deltaGlyphID;
-    hb_codepoint_t mask = get_mask ();
-
-    hb_set_t intersection;
-    (this+coverage).intersect_set (glyphset, intersection);
-
-    auto it =
-    + hb_iter (intersection)
-    | hb_map_retains_sorting ([d, mask] (hb_codepoint_t g) {
-                                return hb_codepoint_pair_t (g,
-                                                            (g + d) & mask); })
-    | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_codepoint_pair_t p) -> hb_codepoint_pair_t
-                              { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
-    ;
-
-    bool ret = bool (it);
-    SingleSubst_serialize (c->serializer, it);
-    return_trace (ret);
+    return_trace (subset_single_subst (c, this+coverage, deltaGlyphID, get_mask ()));
   }
 };
 

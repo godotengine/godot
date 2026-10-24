@@ -70,6 +70,7 @@ HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_gsub)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_mathed)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_colred)
+HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_varced)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_cmaped)
 
 //active lookups we'd like to retain
@@ -100,12 +101,16 @@ HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gpo
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, const OT::Feature*>), gsub_feature_substitutes_map)
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, const OT::Feature*>), gpos_feature_substitutes_map)
 
+//feature index->resolved lookup set mapping for fully-instanced lookup variations
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gsub_lookup_variations)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gpos_lookup_variations)
+
 // old feature_indexes set, used to reinstate the old features
 HB_SUBSET_PLAN_MEMBER (hb_set_t, gsub_old_features)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, gpos_old_features)
 
-//feature_index->pair of (address of old feature, feature tag), used for inserting a catch all record
-//if necessary
+//feature_index->pair of (address of old feature, feature tag), used for alternate feature
+//parameter formats and inserting a catch all record if necessary
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<const void*, const void*>)>), gsub_old_feature_idx_tag_map)
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<const void*, const void*>)>), gpos_old_feature_idx_tag_map)
 
@@ -121,6 +126,11 @@ HB_SUBSET_PLAN_MEMBER (hb_map_t, colrv1_new_deltaset_idx_varidx_map)
 
 //Old layout item variation index -> (New varidx, delta) mapping
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), layout_variation_idx_delta_map)
+
+//Layout condition -> (source variation index, default value)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<uintptr_t, hb_pair_t E(<unsigned, int>)>), layout_condition_values)
+//Layout condition -> (private variation index, rescaled default value)
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<uintptr_t, hb_pair_t E(<unsigned, int>)>), layout_condition_idx_value_map)
 
 //gdef varstore retained varidx mapping
 HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, gdef_varstore_inner_maps)

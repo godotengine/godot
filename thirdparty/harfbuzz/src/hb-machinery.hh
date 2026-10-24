@@ -206,15 +206,25 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   static void do_destroy (Stored *p)
   {
-    if (p && p != const_cast<Stored *> (Funcs::get_null ()))
-      Funcs::destroy (p);
+    if (Funcs::tag_null ? !p || is_tagged_null (p) :
+			  !p || p == const_cast<Stored *> (Funcs::get_null ()))
+      return;
+    Funcs::destroy (p);
   }
 
   const Returned * operator -> () const { return get (); }
   template <typename U = Returned, hb_enable_if (!hb_is_same (U, void))>
   const U & operator * () const  { return *get (); }
   explicit operator bool () const
-  { return get_stored () != Funcs::get_null (); }
+  {
+    Stored *p = get_stored ();
+    if (Funcs::tag_null)
+    {
+      Stored *raw = this->instance.get_relaxed ();
+      return raw && !is_tagged_null (raw);
+    }
+    return p != Funcs::get_null ();
+  }
   template <typename C> operator const C * () const { return get (); }
 
   Stored * get_stored () const
@@ -228,7 +238,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
       p = this->template call_create<Stored, Funcs> ();
       if (unlikely (!p))
-	p = const_cast<Stored *> (Funcs::get_null ());
+	p = tagged_null (const_cast<Stored *> (Funcs::get_null ()));
 
       if (unlikely (!cmpexch (nullptr, p)))
       {
@@ -236,11 +246,11 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 	goto retry;
       }
     }
-    return p;
+    return untagged (p);
   }
   Stored * get_stored_relaxed () const
   {
-    return this->instance.get_relaxed ();
+    return untagged (this->instance.get_relaxed ());
   }
 
   bool cmpexch (Stored *current, Stored *value) const
@@ -259,6 +269,18 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   /* By default null/init/fini the object. */
   static const Stored* get_null () { return &Null (Stored); }
+
+  /* When tag_null is set, a failed create () is cached as get_null () with
+   * its low bit set, and destroy recognizes it by that bit rather than by
+   * address.  Needed when get_null () is a per-library Null object: another
+   * library sharing the object would not recognize its address. */
+  static constexpr bool tag_null = false;
+  static bool is_tagged_null (Stored *p)
+  { return Funcs::tag_null && ((uintptr_t) (void *) p & 1); }
+  static Stored *tagged_null (Stored *p)
+  { return Funcs::tag_null ? (Stored *) (void *) ((uintptr_t) (void *) p | 1) : p; }
+  static Stored *untagged (Stored *p)
+  { return Funcs::tag_null ? (Stored *) (void *) ((uintptr_t) (void *) p & ~(uintptr_t) 1) : p; }
   static Stored *create (Data *data)
   {
     Stored *p = (Stored *) hb_calloc (1, sizeof (Stored));
@@ -291,21 +313,22 @@ struct hb_face_lazy_loader_t : hb_lazy_loader_t<T,
 						hb_face_lazy_loader_t<T, WheresFace>,
 						hb_face_t, WheresFace>
 {
+  /* get_null () is this library's Null object; see tag_null. */
+  static constexpr bool tag_null = true;
+
   // Hack; have them here for API parity with hb_table_lazy_loader_t
   hb_blob_t *get_blob () { return this->get ()->get_blob (); }
 };
 
-template <typename T, unsigned int WheresFace, bool core=false>
+template <typename T, unsigned int WheresFace>
 struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
-						 hb_table_lazy_loader_t<T, WheresFace, core>,
+						 hb_table_lazy_loader_t<T, WheresFace>,
 						 hb_face_t, WheresFace,
 						 hb_blob_t>
 {
   static hb_blob_t *create (hb_face_t *face)
   {
     hb_sanitize_context_t c;
-    if (core)
-      c.set_num_glyphs (0); // So we don't recurse ad infinitum, or doesn't need num_glyphs
     return c.reference_table<T> (face);
   }
   static void destroy (hb_blob_t *p) { hb_blob_destroy (p); }

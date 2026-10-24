@@ -27,6 +27,8 @@
 #ifndef GRAPH_SERIALIZE_HH
 #define GRAPH_SERIALIZE_HH
 
+#include "graph-result.hh"
+
 namespace graph {
 
 struct overflow_record_t
@@ -104,38 +106,41 @@ bool is_valid_offset (int64_t offset,
 /*
  * Will any offsets overflow on graph when it's serialized?
  */
-inline bool
+inline graph_result_t<bool>
 will_overflow (graph_t& graph,
                hb_vector_t<overflow_record_t>* overflows = nullptr)
 {
   if (overflows) overflows->clear ();
   graph.update_positions ();
 
-  hb_hashmap_t<overflow_record_t*, bool> record_set;
+  hb_hashmap_t<overflow_record_t, bool> record_set;
   const auto& vertices = graph.vertices_;
   for (unsigned parent_idx : graph.ordering_)
   {
     // Don't need to check virtual links for overflow
-    for (const auto& link : vertices.arrayZ[parent_idx].obj.real_links)
+    for (const auto& link : vertices.arrayZ[parent_idx].obj ().real_links)
     {
       int64_t offset = compute_offset (graph, parent_idx, link);
       if (likely (is_valid_offset (offset, link)))
         continue;
 
-      if (!overflows) return true;
+      if (!overflows) return Ok(true);
 
       overflow_record_t r;
       r.parent = parent_idx;
       r.child = link.objidx;
-      if (record_set.has(&r)) continue; // don't keep duplicate overflows.
+      if (record_set.has(r)) continue; // don't keep duplicate overflows.
 
       overflows->push (r);
-      record_set.set(&r, true);
+      record_set.set (r, true);
     }
   }
 
-  if (!overflows) return false;
-  return overflows->length;
+  TRY (graph_result_t<void>::from (record_set, ALLOCATION_FAILURE));
+  if (overflows)
+    TRY (graph_result_t<void>::from (*overflows, ALLOCATION_FAILURE));
+
+  return Ok((bool) (overflows && overflows->length));
 }
 
 inline
@@ -144,7 +149,13 @@ void print_overflows (graph_t& graph,
 {
   if (!DEBUG_ENABLED(SUBSET_REPACK)) return;
 
-  graph.update_parents ();
+  auto r = graph.update_parents ();
+  if (r.is_err()) {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to print overflows due to error updating parent links: %s",
+      to_string(r.error()));
+    return;
+  }
+
   int limit = 10;
   for (const auto& o : overflows)
   {
@@ -157,11 +168,11 @@ void print_overflows (graph_t& graph,
                "%4u (%4u in, %4u out, space %2u)",
                o.parent,
                parent.incoming_edges (),
-               parent.obj.real_links.length + parent.obj.virtual_links.length,
+               parent.obj ().real_links.length + parent.obj ().virtual_links.length,
                graph.space_for (o.parent),
                o.child,
                child.incoming_edges (),
-               child.obj.real_links.length + child.obj.virtual_links.length,
+               child.obj ().real_links.length + child.obj ().virtual_links.length,
                graph.space_for (o.child));
   }
   if (overflows.length > 10) {
@@ -231,16 +242,16 @@ void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
 /*
  * serialize graph into the provided serialization buffer.
  */
-inline hb_blob_t* serialize (const graph_t& graph)
+inline graph_result_t<hb_blob_t*> serialize (const graph_t& graph)
 {
   hb_vector_t<char> buffer;
   size_t size = graph.total_size_in_bytes ();
 
-  if (!size) return hb_blob_get_empty ();
+  if (!size) return Ok(hb_blob_get_empty ());
 
-  if (!buffer.alloc (size)) {
+  if (unlikely (!buffer.alloc (size))) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate output buffer.");
-    return nullptr;
+    return Err(ALLOCATION_FAILURE);
   }
   hb_serialize_context_t c((void *) buffer, size);
 
@@ -252,25 +263,29 @@ inline hb_blob_t* serialize (const graph_t& graph)
 
   // Maps from our obj id's to the id's used during this serialization.
   hb_vector_t<unsigned> id_map;
-  id_map.resize(graph.ordering_.length);
+  if (unlikely (!id_map.resize(graph.ordering_.length))) {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate id_map buffer.");
+    return Err(ALLOCATION_FAILURE);
+  }
+
   for (int pos = graph.ordering_.length - 1; pos >= 0; pos--) {
     unsigned i = graph.ordering_[pos];
     c.push ();
 
     auto& v = vertices[i];
 
-    size_t size = v.obj.tail - v.obj.head;
+    size_t size = v.table_size ();
 
     char* start = c.allocate_size <char> (size);
-    if (!start) {
+    if (unlikely (!start)) {
       DEBUG_MSG (SUBSET_REPACK, nullptr, "Buffer out of space.");
-      return nullptr;
+      return Err(ALLOCATION_FAILURE);
     }
 
-    hb_memcpy (start, v.obj.head, size);
+    hb_memcpy (start, v.obj ().head, size);
 
     // Only real links needs to be serialized.
-    for (const auto& link : v.obj.real_links)
+    for (const auto& link : v.obj ().real_links)
       serialize_link (link, start, size, id_map, &c);
 
     // All duplications are already encoded in the graph, so don't
@@ -279,13 +294,17 @@ inline hb_blob_t* serialize (const graph_t& graph)
   }
   c.end_serialize ();
 
-  if (c.in_error ()) {
+  if (unlikely (c.in_error ())) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Error during serialization. Err flag: %d",
                c.errors);
-    return nullptr;
+    if (c.errors & HB_SERIALIZE_ERROR_OFFSET_OVERFLOW)
+      return Err(OVERFLOW_RESOLUTION_FAILED);
+    return Err(ALLOCATION_FAILURE);
   }
 
-  return c.copy_blob ();
+  auto* blob = c.copy_blob ();
+  if (unlikely (!blob)) return Err(ALLOCATION_FAILURE);
+  return Ok(blob);
 }
 
 } // namespace graph

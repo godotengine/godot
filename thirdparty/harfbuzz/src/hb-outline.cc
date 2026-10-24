@@ -298,6 +298,16 @@ hb_outline_recording_pen_close_path (hb_draw_funcs_t *dfuncs HB_UNUSED,
   c->contours.push (c->points.length);
 }
 
+static int64_t *
+hb_outline_recording_pen_get_budget_remaining (hb_draw_funcs_t *dfuncs HB_UNUSED,
+					       void *data,
+					       void *user_data HB_UNUSED)
+{
+  hb_outline_t *c = (hb_outline_t *) data;
+
+  return c->budget_remaining;
+}
+
 static inline void free_static_outline_recording_pen_funcs ();
 
 static struct hb_outline_recording_pen_funcs_lazy_loader_t : hb_draw_funcs_lazy_loader_t<hb_outline_recording_pen_funcs_lazy_loader_t>
@@ -311,6 +321,7 @@ static struct hb_outline_recording_pen_funcs_lazy_loader_t : hb_draw_funcs_lazy_
     hb_draw_funcs_set_quadratic_to_func (funcs, hb_outline_recording_pen_quadratic_to, nullptr, nullptr);
     hb_draw_funcs_set_cubic_to_func (funcs, hb_outline_recording_pen_cubic_to, nullptr, nullptr);
     hb_draw_funcs_set_close_path_func (funcs, hb_outline_recording_pen_close_path, nullptr, nullptr);
+    hb_draw_funcs_set_get_budget_remaining_func (funcs, hb_outline_recording_pen_get_budget_remaining, nullptr, nullptr);
 
     hb_draw_funcs_make_immutable (funcs);
 

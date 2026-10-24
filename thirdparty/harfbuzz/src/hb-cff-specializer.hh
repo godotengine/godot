@@ -18,11 +18,11 @@ namespace CFF {
 
 /* CharString command representation - forward declared in hb-subset-cff-common.hh */
 
-/* Check if a value is effectively zero */
+/* Specialization must preserve nonzero fractional displacements. */
 static inline bool
 is_zero (const number_t &n)
 {
-  return n.to_int () == 0;
+  return n.to_real () == 0.;
 }
 
 /* Generalize CharString commands to canonical form
@@ -195,9 +195,11 @@ specialize_commands (hb_vector_t<cs_command_t> &commands,
     auto &cmd = commands[i];
     auto &prev = commands[i-1];
 
-    /* Combine adjacent hlineto + vlineto or vlineto + hlineto */
-    if ((prev.op == OpCode_hlineto && cmd.op == OpCode_vlineto) ||
-        (prev.op == OpCode_vlineto && cmd.op == OpCode_hlineto))
+    /* Different starting directions can combine only after an odd number
+     * of alternating arguments in the preceding command. */
+    if (((prev.op == OpCode_hlineto && cmd.op == OpCode_vlineto) ||
+         (prev.op == OpCode_vlineto && cmd.op == OpCode_hlineto)) &&
+        (prev.args.length & 1))
     {
       /* Check stack depth */
       unsigned combined_args = prev.args.length + cmd.args.length;
@@ -218,10 +220,12 @@ specialize_commands (hb_vector_t<cs_command_t> &commands,
     auto &cmd = commands[i];
     auto &prev = commands[i-1];
 
-    /* Combine same operators (e.g., rlineto + rlineto) */
+    /* Same-direction h/v commands can combine only after an even number
+     * of alternating arguments. Other repeatable operators concatenate. */
     if (prev.op == cmd.op &&
-        (cmd.op == OpCode_rlineto || cmd.op == OpCode_hlineto ||
-         cmd.op == OpCode_vlineto || cmd.op == OpCode_rrcurveto))
+        (cmd.op == OpCode_rlineto || cmd.op == OpCode_rrcurveto ||
+         ((cmd.op == OpCode_hlineto || cmd.op == OpCode_vlineto) &&
+          !(prev.args.length & 1))))
     {
       /* Check stack depth */
       unsigned combined_args = prev.args.length + cmd.args.length;

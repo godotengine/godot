@@ -13,22 +13,22 @@ struct MarkLigPosFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 markCoverage;           /* Offset to Mark Coverage table--from
                                          * beginning of MarkLigPos subtable */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 ligatureCoverage;       /* Offset to Ligature Coverage
                                          * table--from beginning of MarkLigPos
                                          * subtable */
   HBUINT16      classCount;             /* Number of defined mark classes */
-  typename Types::template OffsetTo<MarkArray>
+  typename Types::template LOffsetTo<MarkArray<Types>>
                 markArray;              /* Offset to MarkArray table--from
                                          * beginning of MarkLigPos subtable */
-  typename Types::template OffsetTo<LigatureArray>
+  typename Types::template LOffsetTo<LigatureArray<Types>>
                 ligatureArray;          /* Offset to LigatureArray table--from
                                          * beginning of MarkLigPos subtable */
   public:
-  DEFINE_SIZE_STATIC (4 + 4 * Types::size);
+  DEFINE_SIZE_STATIC (4 + 4 * Types::LOffset::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -50,38 +50,13 @@ struct MarkLigPosFormat1_2
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
-    + hb_zip (this+markCoverage, this+markArray)
-    | hb_filter (c->glyph_set, hb_first)
-    | hb_map (hb_second)
-    | hb_apply ([&] (const MarkRecord& record) { record.collect_variation_indices (c, &(this+markArray)); })
-    ;
+    (this+markArray).collect_variation_indices (c, this+markCoverage);
 
     hb_map_t klass_mapping;
     Markclass_closure_and_remap_indexes (this+markCoverage, this+markArray, *c->glyph_set, &klass_mapping);
 
-    unsigned ligcount = (this+ligatureArray).len;
-    auto lig_iter =
-    + hb_zip (this+ligatureCoverage, hb_range (ligcount))
-    | hb_filter (c->glyph_set, hb_first)
-    | hb_map (hb_second)
-    ;
-
-    const LigatureArray& lig_array = this+ligatureArray;
-    for (const unsigned i : lig_iter)
-    {
-      hb_sorted_vector_t<unsigned> lig_indexes;
-      unsigned row_count = lig_array[i].rows;
-      for (unsigned row : + hb_range (row_count))
-      {
-        + hb_range ((unsigned) classCount)
-        | hb_filter (klass_mapping)
-        | hb_map ([&] (const unsigned col) { return row * (unsigned) classCount + col; })
-        | hb_sink (lig_indexes)
-        ;
-      }
-
-      lig_array[i].collect_variation_indices (c, lig_indexes.iter ());
-    }
+    (this+ligatureArray).collect_variation_indices (c, this+ligatureCoverage,
+                                                   classCount, klass_mapping);
   }
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
@@ -89,6 +64,9 @@ struct MarkLigPosFormat1_2
     if (unlikely (!(this+markCoverage).collect_coverage (c->input))) return;
     if (unlikely (!(this+ligatureCoverage).collect_coverage (c->input))) return;
   }
+
+  void collect_second_glyphs (hb_set_digest_t *digest) const
+  { (this+ligatureCoverage).collect_coverage (digest); }
 
   const Coverage &get_coverage () const { return this+markCoverage; }
 
@@ -156,8 +134,8 @@ struct MarkLigPosFormat1_2
       return_trace (false);
     }
 
-    const LigatureArray& lig_array = this+ligatureArray;
-    const LigatureAttach& lig_attach = lig_array[lig_index];
+    const LigatureArray<Types>& lig_array = this+ligatureArray;
+    const AnchorMatrix<Types, HBUINT16>& lig_attach = lig_array[lig_index];
 
     /* Find component to attach to */
     unsigned int comp_count = lig_attach.rows;
@@ -200,7 +178,7 @@ struct MarkLigPosFormat1_2
     out->classCount = klass_mapping.get_population ();
 
     auto mark_iter =
-    + hb_zip (this+markCoverage, this+markArray)
+    + hb_zip (this+markCoverage, hb_range ((unsigned) (this+markArray).len))
     | hb_filter (glyphset, hb_first)
     ;
 

@@ -265,6 +265,7 @@ OT::GDEF::is_blocklisted (hb_blob_t *blob,
   return false;
 }
 
+template <bool SetDigest>
 static void
 _hb_ot_layout_set_glyph_props (hb_font_t *font,
 			       hb_buffer_t *buffer)
@@ -276,6 +277,8 @@ _hb_ot_layout_set_glyph_props (hb_font_t *font,
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
+    if (SetDigest)
+      buffer->digest.add (info[i].codepoint);
     _hb_glyph_info_set_glyph_props (&info[i], gdef.get_glyph_props (info[i].codepoint));
     _hb_glyph_info_clear_lig_props (&info[i]);
   }
@@ -1432,6 +1435,39 @@ hb_ot_layout_lookup_collect_glyphs (hb_face_t    *face,
 
 /* Variations support */
 
+bool
+_hb_ot_layout_table_get_feature_variations_state (hb_face_t             *face,
+						   hb_tag_t               table_tag,
+						   const int             *coords,
+						   unsigned int           num_coords,
+						   unsigned int          *variations_index,
+						   hb_vector_t<unsigned> *lookup_conditions)
+{
+  const OT::GSUBGPOS &g = get_gsubgpos_table (face, table_tag);
+  const OT::GDEF &gdef = *face->table.GDEF->table;
+
+  auto instancer = OT::ItemVarStoreInstancer (&gdef.get_var_store (), nullptr,
+					      hb_array (coords, num_coords));
+
+  return g.get_feature_variations_state (coords,
+					 num_coords,
+					 variations_index,
+					 &instancer,
+					 lookup_conditions);
+}
+
+bool
+_hb_ot_layout_feature_get_lookup_variations (hb_face_t *face,
+                                             hb_tag_t table_tag,
+                                             unsigned feature_index,
+                                             unsigned variations_index,
+                                             hb_sorted_array_t<const unsigned> conditions,
+                                             hb_set_t *lookup_indexes)
+{
+  return get_gsubgpos_table (face, table_tag).get_lookup_variations (
+      feature_index, variations_index, conditions, lookup_indexes);
+}
+
 
 /**
  * hb_ot_layout_table_find_feature_variations:
@@ -1573,7 +1609,15 @@ void
 hb_ot_layout_substitute_start (hb_font_t    *font,
 			       hb_buffer_t  *buffer)
 {
-  _hb_ot_layout_set_glyph_props (font, buffer);
+  _hb_ot_layout_set_glyph_props<false> (font, buffer);
+}
+
+void
+hb_ot_layout_substitute_start_with_digest (hb_font_t    *font,
+					   hb_buffer_t  *buffer)
+{
+  buffer->digest = hb_set_digest_t ();
+  _hb_ot_layout_set_glyph_props<true> (font, buffer);
 }
 
 /**
@@ -2037,7 +2081,9 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
 	  !buffer->message (font, "start lookup %u feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag))) continue;
 
       /* Only try applying the lookup if there is any overlap. */
-      if (accel->digest.may_intersect (buffer->digest))
+      if (accel->digest.may_intersect (buffer->digest) &&
+	  ((buffer->flags & HB_BUFFER_FLAG_PRODUCE_UNSAFE_TO_CONCAT) ||
+	   accel->digest_second.may_intersect (buffer->digest)))
       {
 	c.set_lookup_index (lookup_index);
 	c.set_lookup_mask (lookup.mask, false);
@@ -2272,6 +2318,9 @@ hb_ot_layout_get_horizontal_baseline_tag_for_script (hb_script_t script)
     case HB_SCRIPT_NUSHU:
     /* Unicode-13.0 additions */
     case HB_SCRIPT_KHITAN_SMALL_SCRIPT:
+    /* Unicode-18.0 additions */
+    case HB_SCRIPT_JURCHEN:
+    case HB_SCRIPT_SEAL:
       return HB_OT_LAYOUT_BASELINE_TAG_IDEO_FACE_BOTTOM_OR_LEFT;
 
     default:

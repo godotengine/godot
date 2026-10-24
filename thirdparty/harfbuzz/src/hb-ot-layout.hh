@@ -102,6 +102,10 @@ HB_INTERNAL void
 hb_ot_layout_substitute_start (hb_font_t    *font,
 			       hb_buffer_t  *buffer);
 
+HB_INTERNAL void
+hb_ot_layout_substitute_start_with_digest (hb_font_t    *font,
+					   hb_buffer_t  *buffer);
+
 namespace OT {
   struct hb_ot_apply_context_t;
   struct hb_ot_layout_lookup_accelerator_t;

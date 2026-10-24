@@ -437,6 +437,9 @@ struct HVARVVAR
 				    const int *coords, unsigned int coord_count,
 				    hb_scalar_cache_t *store_cache = nullptr) const
   {
+    /* Implicit mapping uses outer index zero and the glyph id as the
+     * inner index. An oversized glyph id must not select another table. */
+    if (!advMap && glyph > 0xFFFFu) return 0.f;
     uint32_t varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx,
 				      coords, coord_count,

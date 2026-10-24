@@ -36,6 +36,9 @@ struct Lookup;
 
 struct gsubgpos_graph_context_t
 {
+  HB_INTERNAL static graph_result_t<gsubgpos_graph_context_t> create (hb_tag_t table_tag_,
+                                                                      graph_t& graph_);
+
   hb_tag_t table_tag;
   graph_t& graph;
   unsigned lookup_list_index;
@@ -43,17 +46,18 @@ struct gsubgpos_graph_context_t
   hb_hashmap_t<unsigned, unsigned> subtable_to_extension;
   hb_hashmap_t<unsigned, hb_vector_t<unsigned>> split_subtables;
 
-  HB_INTERNAL gsubgpos_graph_context_t (hb_tag_t table_tag_,
-                                        graph_t& graph_);
 
-  HB_INTERNAL unsigned create_node (unsigned size);
+  HB_INTERNAL graph_result_t<unsigned> create_node (unsigned size);
 
-  bool add_buffer (char* buffer)
+  graph_result_t<void> add_buffer (char* buffer)
   {
     return graph.add_buffer (buffer);
   }
 
  private:
+  HB_INTERNAL gsubgpos_graph_context_t (hb_tag_t table_tag_,
+                                        graph_t& graph_);
+
   HB_INTERNAL unsigned num_non_ext_subtables ();
 };
 

@@ -128,20 +128,60 @@ struct hb_raster_paint_t
   /* Internal rasterizer for clip-to-glyph */
   hb_raster_draw_t *clip_rdr = nullptr;
 
-  /* Cumulative work budget for the current paint session; reset by
-   * hb_raster_paint_clear().  Bounds total pixel and outline work so
-   * that per-node costs cannot multiply with the paint-graph traversal
-   * limits of the font tables driving us (e.g. COLR). */
-  int64_t work_left = HB_RASTER_MAX_PAINT_WORK;
+  /* Two work budgets for the current paint session, both reset by
+   * hb_raster_paint_clear(), so per-node costs cannot multiply with the
+   * paint-graph traversal limits of the font tables driving us (e.g.
+   * COLR).  They bound different resources and must not share a counter:
+   *
+   *  - The outline budget (policy + live) bounds glyph outline traversal
+   *    and curve flattening.  It is the public draw/paint budget, seeded
+   *    into the clip rasterizer through the public draw-budget API and
+   *    read back after each glyph.  Default HB_BUDGET_GLYPH.
+   *
+   *  - The pixel budget bounds scanline/fill work, which scales with
+   *    surface area rather than outline complexity.  It is sized from the
+   *    surface once known and is internal (not exposed through the API);
+   *    an unlimited outline policy disables it too. */
+  int64_t budget = HB_BUDGET_DEFAULT;
+  int64_t budget_remaining = HB_BUDGET_GLYPH;
+  int64_t pixel_remaining = HB_BUDGET_RASTER_PIXELS;
 
   /* Helpers */
 
-  /* Returns whether the operation should proceed.  Allows a single
+  int64_t get_default_pixel_budget () const
+  {
+    return hb_max ((int64_t) HB_BUDGET_RASTER_PIXELS,
+		   (int64_t) HB_BUDGET_RASTER_PAINT_PASSES *
+		   fixed_extents.width * fixed_extents.height);
+  }
+
+  void recharge_budget ()
+  {
+    budget_remaining = budget == HB_BUDGET_DEFAULT ?
+		       (int64_t) HB_BUDGET_GLYPH : budget;
+    pixel_remaining = budget == HB_BUDGET_UNLIMITED ? budget :
+		      (surface_stack.length ? get_default_pixel_budget () :
+					      (int64_t) HB_BUDGET_RASTER_PIXELS);
+  }
+
+  /* Returns whether the pixel operation should proceed.  Allows a single
    * overshoot past zero; callers skip work once the budget is spent. */
   bool charge_work (int64_t work)
   {
-    if (unlikely (work_left <= 0)) return false;
-    work_left -= work;
+    if (unlikely (pixel_remaining < 0)) return false;
+    pixel_remaining -= work;
+    return true;
+  }
+
+  /* Reject work that would exceed the remaining budget before it starts. */
+  bool precharge_work (int64_t work)
+  {
+    if (unlikely (pixel_remaining < work))
+    {
+      pixel_remaining = -1;
+      return false;
+    }
+    pixel_remaining -= work;
     return true;
   }
 

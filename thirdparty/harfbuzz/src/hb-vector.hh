@@ -139,18 +139,23 @@ struct hb_vector_t
   }
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
   void extend (array_t o, bool exact=false)
-  {
-    alloc (length + o.length, exact);
-    if (unlikely (in_error ())) return;
-    copy_array (o);
-  }
+  { extend (c_array_t (o), exact); }
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
   void extend (c_array_t o, bool exact=false)
   {
+    /* o may point into our own storage, eg. v.extend (v.as_array ()).
+     * alloc() may move that storage, so find o again afterwards. */
+    bool aliased = o.length && in_storage (*o.arrayZ);
+    unsigned offset = aliased ? o.arrayZ - arrayZ : 0;
     alloc (length + o.length, exact);
     if (unlikely (in_error ())) return;
+    if (unlikely (aliased))
+      o = {arrayZ + offset, o.length};
     copy_array (o);
   }
+  HB_ALWAYS_INLINE_VECTOR_ALLOCS
+  void extend (const hb_vector_t &o, bool exact=false)
+  { extend (o.as_array (), exact); }
 
   public:
   int allocated = 0; /* < 0 means allocation failed. */
@@ -231,6 +236,8 @@ struct hb_vector_t
 
   hb_vector_t& operator = (const hb_vector_t &o)
   {
+    if (this == &o) return *this;
+
     reset ();
     alloc_exact (o.length);
     if (unlikely (in_error ())) return *this;
@@ -316,11 +323,26 @@ struct hb_vector_t
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
   Type *push (Args&&... args)
   {
-    if (unlikely ((int) length >= allocated && !alloc (length + 1)))
-      // If push failed to allocate then don't copy v, since this may cause
-      // the created copy to leak memory since we won't have stored a
-      // reference to it.
-      return std::addressof (Crap (Type));
+    if (unlikely ((int) length >= allocated))
+    {
+      if (unlikely (in_error ()))
+	return std::addressof (Crap (Type));
+
+      /* An argument may live in our own storage, eg. v.push (v[i]).
+       * alloc() frees that storage, so copy it out first. */
+      if (unlikely (in_storage (args...)))
+      {
+	Type copy (std::forward<Args> (args)...);
+	if (unlikely (!alloc (length + 1)))
+	  return std::addressof (Crap (Type));
+	return push_has_room (std::move (copy));
+      }
+      if (unlikely (!alloc (length + 1)))
+	// If push failed to allocate then don't copy v, since this may cause
+	// the created copy to leak memory since we won't have stored a
+	// reference to it.
+	return std::addressof (Crap (Type));
+    }
 
     return push_has_room (std::forward<Args> (args)...);
   }
@@ -337,6 +359,16 @@ struct hb_vector_t
     /* Emplace. */
     Type *p = std::addressof (arrayZ[length++]);
     return new (p) Type (std::forward<Args> (args)...);
+  }
+
+  bool in_storage () const { return false; }
+  template <typename T, typename... Ts>
+  bool in_storage (const T &v, const Ts &...vs) const
+  {
+    uintptr_t p = (uintptr_t) std::addressof (v);
+    return (arrayZ &&
+	    (uintptr_t) arrayZ <= p && p < (uintptr_t) (arrayZ + length)) ||
+	   in_storage (vs...);
   }
 
   bool is_owned () const

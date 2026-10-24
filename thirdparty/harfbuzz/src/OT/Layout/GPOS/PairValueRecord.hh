@@ -8,6 +8,24 @@ namespace Layout {
 namespace GPOS_impl {
 
 
+struct pair_value_record_context_t
+{
+  const ValueBase     *base;
+  const ValueFormat   *valueFormats;
+  const ValueFormat   *newFormats;
+  unsigned            len1; /* valueFormats[0].get_len() */
+  const hb_map_t      *glyph_map;
+  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map;
+
+  void copy_values (hb_serialize_context_t *s, const Value *values) const
+  {
+    valueFormats[0].copy_values (s, newFormats[0], base, values,
+                                layout_variation_idx_delta_map);
+    valueFormats[1].copy_values (s, newFormats[1], base, values + len1,
+                                layout_variation_idx_delta_map);
+  }
+};
+
 template <typename Types>
 struct PairValueRecord
 {
@@ -27,18 +45,8 @@ struct PairValueRecord
   int cmp (hb_codepoint_t k) const
   { return secondGlyph.cmp (k); }
 
-  struct context_t
-  {
-    const ValueBase     *base;
-    const ValueFormat   *valueFormats;
-    const ValueFormat   *newFormats;
-    unsigned            len1; /* valueFormats[0].get_len() */
-    const hb_map_t      *glyph_map;
-    const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map;
-  };
-
   bool subset (hb_subset_context_t *c,
-               context_t *closure) const
+               pair_value_record_context_t *closure) const
   {
     TRACE_SERIALIZE (this);
     auto *s = c->serializer;
@@ -47,15 +55,7 @@ struct PairValueRecord
 
     out->secondGlyph = (*closure->glyph_map)[secondGlyph];
 
-    closure->valueFormats[0].copy_values (s,
-                                          closure->newFormats[0],
-                                          closure->base, &values[0],
-                                          closure->layout_variation_idx_delta_map);
-    closure->valueFormats[1].copy_values (s,
-                                          closure->newFormats[1],
-                                          closure->base,
-                                          &values[closure->len1],
-                                          closure->layout_variation_idx_delta_map);
+    closure->copy_values (s, values);
 
     return_trace (true);
   }

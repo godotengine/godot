@@ -49,6 +49,9 @@
   HB_PAINT_FUNC_IMPLEMENT (pop_group) \
   HB_PAINT_FUNC_IMPLEMENT (custom_palette_color) \
   HB_PAINT_FUNC_IMPLEMENT (fill_glyph) \
+  HB_PAINT_FUNC_IMPLEMENT (set_budget) \
+  HB_PAINT_FUNC_IMPLEMENT (get_budget) \
+  HB_PAINT_FUNC_IMPLEMENT (get_budget_remaining) \
   /* ^--- Add new callbacks here */
 
 struct hb_paint_funcs_t
@@ -183,6 +186,19 @@ struct hb_paint_funcs_t
                                       color_index,
                                       color,
                                       !user_data ? nullptr : user_data->custom_palette_color); }
+  bool set_budget (void *paint_data, int64_t budget)
+  {
+    if (budget < 0 && budget != HB_BUDGET_DEFAULT)
+      budget = 0;
+    return func.set_budget (this, paint_data, budget,
+			    !user_data ? nullptr : user_data->set_budget);
+  }
+  int64_t get_budget (void *paint_data)
+  { return func.get_budget (this, paint_data,
+			    !user_data ? nullptr : user_data->get_budget); }
+  int64_t *get_budget_remaining_ptr (void *paint_data)
+  { return func.get_budget_remaining (this, paint_data,
+				      !user_data ? nullptr : user_data->get_budget_remaining); }
 
 
   /* Internal specializations. */
@@ -278,7 +294,12 @@ hb_color_lerp (hb_color_t c0, hb_color_t c1, float t)
   auto lerp = [&] (unsigned shift) -> unsigned {
     unsigned v0 = (c0 >> shift) & 0xFF;
     unsigned v1 = (c1 >> shift) & 0xFF;
-    return (unsigned) (v0 + t * ((float) v1 - (float) v0) + 0.5f);
+    float v = v0 + t * ((float) v1 - (float) v0) + 0.5f;
+    /* t may be outside [0,1] (or NaN) for malformed gradients;
+     * keep the float-to-unsigned conversion defined. */
+    if (!(v > 0.f)) return 0;
+    if (v > 255.f) return 255;
+    return (unsigned) v;
   };
   return HB_COLOR (lerp (0), lerp (8), lerp (16), lerp (24));
 }

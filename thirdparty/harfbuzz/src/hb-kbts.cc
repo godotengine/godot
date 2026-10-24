@@ -40,10 +40,17 @@
 #pragma GCC diagnostic ignored "-Wcast-align"
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wextra-semi-stmt"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 #include "kb_text_shape.h"
 #pragma GCC diagnostic pop
 
 static hb_user_data_key_t hb_kbts_shape_plan_data_key = {0};
+
+struct hb_kbts_font_data_t
+{
+  hb_vector_t<float> design_coords;
+  hb_vector_t<kbts_s16> coords;
+};
 
 struct hb_kbts_shape_plan_data_t
 {
@@ -98,7 +105,8 @@ hb_kbts_plan_props_to_script_language (const hb_segment_properties_t &props,
 
 static hb_kbts_shape_plan_data_t *
 hb_kbts_get_shape_plan_data (hb_shape_plan_t *shape_plan,
-			     kbts_font *kb_font)
+			     kbts_font *kb_font,
+			     const hb_kbts_font_data_t *font_data)
 {
 retry:
   auto *plan_data = (hb_kbts_shape_plan_data_t *)
@@ -110,7 +118,9 @@ retry:
   kbts_language kb_language;
   hb_kbts_plan_props_to_script_language (shape_plan->key.props, &kb_script, &kb_language);
 
-  kbts_shape_config *config = kbts_CreateShapeConfig (kb_font, kb_script, kb_language, nullptr, nullptr);
+  kbts_shape_config *config = kbts_CreateShapeConfig2 (kb_font, kb_script, kb_language,
+						       font_data->design_coords.arrayZ,
+						       nullptr, nullptr, nullptr);
   if (unlikely (!config))
     return nullptr;
 
@@ -209,12 +219,42 @@ _hb_kbts_shaper_face_data_destroy (hb_kbts_face_data_t *data)
 hb_kbts_font_data_t *
 _hb_kbts_shaper_font_data_create (hb_font_t *font)
 {
-  return (hb_kbts_font_data_t *) HB_SHAPER_DATA_SUCCEEDED;
+  kbts_font *kb_font = (kbts_font *) (const void *) font->face->data.kbts;
+
+  hb_kbts_font_data_t *data = (hb_kbts_font_data_t *) hb_calloc (1, sizeof (hb_kbts_font_data_t));
+  if (unlikely (!data))
+    return nullptr;
+
+  int axis_count = 0;
+  kbts_GetVariationInfo (kb_font, &axis_count, nullptr);
+  if (unlikely ((font->num_coords && !data->coords.resize_exact (axis_count)) ||
+		(axis_count < KBTS__MAX_VARIATION_AXIS_COUNT &&
+		 !data->design_coords.resize_exact (axis_count))))
+  {
+    _hb_kbts_shaper_font_data_destroy (data);
+    return nullptr;
+  }
+
+  for (unsigned int i = 0; i < data->coords.length && i < font->num_coords; i++)
+    data->coords[i] = (kbts_s16) font->coords[i];
+
+  for (unsigned int i = 0; i < data->design_coords.length; i++)
+  {
+    kbts_variation_axis_info info;
+    if (i < font->num_coords)
+      data->design_coords[i] = font->design_coords[i];
+    else if (kbts_GetVariationAxisInfo (kb_font, i, &info))
+      data->design_coords[i] = info.DefaultValue;
+  }
+
+  return data;
 }
 
 void
 _hb_kbts_shaper_font_data_destroy (hb_kbts_font_data_t *data)
 {
+  data->~hb_kbts_font_data_t ();
+  hb_free (data);
 }
 
 hb_bool_t
@@ -226,6 +266,7 @@ _hb_kbts_shape (hb_shape_plan_t    *shape_plan,
 {
   hb_face_t *face = font->face;
   kbts_font *kb_font = (kbts_font *) (const void *) face->data.kbts;
+  const hb_kbts_font_data_t *font_data = font->data.kbts;
 
   kbts_direction kb_direction;
   switch (buffer->props.direction)
@@ -246,7 +287,7 @@ _hb_kbts_shape (hb_shape_plan_t    *shape_plan,
   if (unlikely (!kbts_InitializeGlyphStorage (&kb_glyph_storage, nullptr, nullptr)))
     return false;
 
-  hb_kbts_shape_plan_data_t *plan_data = hb_kbts_get_shape_plan_data (shape_plan, kb_font);
+  hb_kbts_shape_plan_data_t *plan_data = hb_kbts_get_shape_plan_data (shape_plan, kb_font, font_data);
   if (unlikely (!plan_data))
   {
     kbts_FreeAllGlyphs (&kb_glyph_storage);
@@ -284,7 +325,8 @@ _hb_kbts_shape (hb_shape_plan_t    *shape_plan,
     kbts_PushGlyph (&kb_glyph_storage, kb_font, buffer->info[i].codepoint, kb_config, buffer->info[i].cluster);
   }
 
-  res = kbts_ShapeDirect (kb_shape_scratchpad, &kb_glyph_storage, kb_direction, &kb_output) == KBTS_SHAPE_ERROR_NONE;
+  res = kbts_ShapeDirect2 (kb_shape_scratchpad, &kb_glyph_storage, kb_direction,
+			   font_data->coords.arrayZ, &kb_output) == KBTS_SHAPE_ERROR_NONE;
   if (unlikely (!res))
     goto done;
 
