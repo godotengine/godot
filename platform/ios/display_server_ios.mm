@@ -35,6 +35,10 @@
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
+// Must come after UIKit.h so include chain up to TypeDefs.h appropriately undefines MAX/MIN
+#include "core/input/input.h"
+#include "servers/display/display_server.h"
+
 DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServerAppleEmbedded::get_singleton();
 }
