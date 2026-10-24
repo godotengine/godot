@@ -281,7 +281,7 @@ public:
 	void set_constant_torque(const Vector3 &p_torque) { constant_torque = p_torque; }
 	Vector3 get_constant_torque() const { return constant_torque; }
 
-	void set_active(bool p_active);
+	void set_active(bool p_active, bool reset_timer = false);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
@@ -340,7 +340,6 @@ public:
 
 	//void simulate_motion(const Transform3D& p_xform,real_t p_step);
 	void call_queries();
-	void wakeup_neighbours();
 
 	bool sleep_test(real_t p_step);
 

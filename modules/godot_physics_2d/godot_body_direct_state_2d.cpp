@@ -122,23 +122,23 @@ void GodotPhysicsDirectBodyState2D::apply_torque(real_t p_torque) {
 }
 
 void GodotPhysicsDirectBodyState2D::add_constant_central_force(const Vector2 &p_force) {
-	body->wakeup();
+	body->set_active(true, true);
 	body->add_constant_central_force(p_force);
 }
 
 void GodotPhysicsDirectBodyState2D::add_constant_force(const Vector2 &p_force, const Vector2 &p_position) {
-	body->wakeup();
+	body->set_active(true, true);
 	body->add_constant_force(p_force, p_position);
 }
 
 void GodotPhysicsDirectBodyState2D::add_constant_torque(real_t p_torque) {
-	body->wakeup();
+	body->set_active(true, true);
 	body->add_constant_torque(p_torque);
 }
 
 void GodotPhysicsDirectBodyState2D::set_constant_force(const Vector2 &p_force) {
 	if (!p_force.is_zero_approx()) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 	body->set_constant_force(p_force);
 }
@@ -149,7 +149,7 @@ Vector2 GodotPhysicsDirectBodyState2D::get_constant_force() const {
 
 void GodotPhysicsDirectBodyState2D::set_constant_torque(real_t p_torque) {
 	if (!Math::is_zero_approx(p_torque)) {
-		body->wakeup();
+		body->set_active(true, true);
 	}
 	body->set_constant_torque(p_torque);
 }
