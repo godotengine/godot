@@ -247,7 +247,11 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int64_t loop_begin = base->loop_begin;
 	int64_t loop_end = base->loop_end;
 	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
+	// The loop end is exclusive, but `limit` is used as an inclusive upper bound below
+	// (`aux = (limit - offset) / increment + 1`), so the last frame that may be read in the
+	// loop is `loop_end - 1`. Using `loop_end` decodes one frame past the end of the data on
+	// every forward loop iteration, which is an out-of-bounds read.
+	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? MAX(loop_end - 1, 0) : len - 1;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;

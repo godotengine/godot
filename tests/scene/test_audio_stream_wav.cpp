@@ -37,6 +37,7 @@ TEST_FORCE_LINK(test_audio_stream_wav)
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "scene/resources/audio/audio_stream_wav.h"
+#include "servers/audio/audio_server.h"
 #include "tests/test_utils.h"
 
 namespace TestAudioStreamWAV {
@@ -106,6 +107,21 @@ Vector<uint8_t> gen_pcm16_test(float wav_rate, int wav_count, bool stereo) {
 		// The .wav format expects wavs larger than 8 bits to be signed.
 		uint16_t wav_16bit_signed = wav_16bit - (INT16_MAX + 1);
 		encode_uint16(wav_16bit_signed, write_ptr + (i * 2));
+	}
+
+	return buffer;
+}
+
+/* Generates `p_frame_count` mono 16-bit frames with a deterministic ramp, so that the mixed
+ * output can be compared against the expected values frame by frame. */
+Vector<uint8_t> gen_ramp_pcm16(int p_frame_count) {
+	Vector<uint8_t> buffer;
+	buffer.resize(p_frame_count * 2);
+
+	uint8_t *write_ptr = buffer.ptrw();
+	for (int i = 0; i < p_frame_count; i++) {
+		const int16_t sample = int16_t(((i * 37) % 30000) - 15000);
+		encode_uint16(uint16_t(sample), write_ptr + (i * 2));
 	}
 
 	return buffer;
@@ -216,6 +232,46 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving IMA ADPCM is not supported") {
 	ERR_PRINT_OFF;
 	CHECK(stream->save_to_wav(save_path) == ERR_UNAVAILABLE);
 	ERR_PRINT_ON;
+}
+
+TEST_CASE("[Audio][AudioStreamWAV] Forward loop does not read past loop_end") {
+	const int frame_count = 1000;
+	const float mix_rate = AudioServer::get_singleton()->get_mix_rate();
+	REQUIRE(mix_rate > 0.0f);
+
+	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
+	stream->set_format(AudioStreamWAV::FORMAT_16_BITS);
+	stream->set_stereo(false);
+	stream->set_mix_rate(int(mix_rate));
+	stream->set_data(gen_ramp_pcm16(frame_count));
+	stream->set_loop_mode(AudioStreamWAV::LOOP_FORWARD);
+	stream->set_loop_begin(0);
+	// The loop end is exclusive, so looping the whole buffer must never read frame
+	// `frame_count`: that frame is past the end of the data.
+	stream->set_loop_end(frame_count);
+
+	Ref<AudioStreamPlayback> playback = stream->instantiate_playback();
+	REQUIRE(playback.is_valid());
+	playback->start();
+
+	// Mix three full loops so the wrap-around at loop_end is exercised repeatedly.
+	const int total_frames = frame_count * 3;
+	Vector<AudioFrame> buffer;
+	buffer.resize(total_frames);
+	const int mixed = playback->mix(buffer.ptrw(), 1.0f, total_frames);
+	CHECK(mixed == total_frames);
+
+	// Playback starts with two silent cubic-interpolation history frames. After that the
+	// stream is mixed at exactly its own sampling rate, so buffer[i] must be source frame
+	// (i - 2) modulo frame_count. With the looping branch ending at `loop_end` instead of
+	// `loop_end - 1`, a frame of out-of-bounds memory is mixed into the output on every
+	// loop iteration, which is what this test catches.
+	for (int i = 2; i < total_frames; i++) {
+		const int source_index = (i - 2) % frame_count;
+		const float expected = float(double(int16_t(((source_index * 37) % 30000) - 15000)) / 32767.0);
+		CHECK_MESSAGE(Math::is_equal_approx(buffer[i].left, expected),
+				vformat("Mixed frame %d must be source frame %d.", i, source_index));
+	}
 }
 
 } // namespace TestAudioStreamWAV
