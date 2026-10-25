@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/object/object.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/world_2d.h"
@@ -408,7 +407,12 @@ Array ShapeCast2D::get_collision_result() const {
 
 
 void ShapeCast2D::set_debug_shape_colliding_custom_color(const Color &p_color) {
+	if (debug_shape_colliding_custom_color == p_color) {
+		return;
+	}
+	
 	debug_shape_colliding_custom_color = p_color;
+	queue_redraw();
 }
 
 const Color &ShapeCast2D::get_debug_shape_colliding_custom_color() const {
