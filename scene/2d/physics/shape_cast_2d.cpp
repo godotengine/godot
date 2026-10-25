@@ -405,12 +405,11 @@ Array ShapeCast2D::get_collision_result() const {
 	return ret;
 }
 
-
 void ShapeCast2D::set_debug_shape_colliding_custom_color(const Color &p_color) {
 	if (debug_shape_colliding_custom_color == p_color) {
 		return;
 	}
-	
+
 	debug_shape_colliding_custom_color = p_color;
 	queue_redraw();
 }
