@@ -3264,18 +3264,33 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 				}
 			}
 
-			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
-				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
-					if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j, k)) { // pass the cascade index
-						continue;
-					}
-					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
-						uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
-
-						const bool is_inactive_particle = (base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(idata.base_rid);
-						if (((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) && idata.flags & InstanceData::FLAG_CAST_SHADOWS && (LAYER_CHECK & cull_data.cull->shadows[j].caster_mask) && !is_inactive_particle) {
-							cull_result.directional_shadows[j].cascade_geometry_instances[k].push_back(idata.instance_geometry);
-							mesh_visible = true;
+			if (cull_data.cull->shadow_count > 0) {
+				// Preserve lazy visibility-range updates when the current camera pass has not checked them.
+				const bool is_shadow_casting_geometry =
+						((1 << (idata.flags & InstanceData::FLAG_BASE_TYPE_MASK)) & RSE::INSTANCE_GEOMETRY_MASK) &&
+						(idata.flags & InstanceData::FLAG_CAST_SHADOWS);
+				const bool visibility_range_check_pending =
+						visibility_check < 0 &&
+						visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK &&
+						idata.visibility_index != -1;
+				if (is_shadow_casting_geometry || visibility_range_check_pending) {
+					for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
+						const bool caster_mask_matches = LAYER_CHECK & cull_data.cull->shadows[j].caster_mask;
+						if (!visibility_range_check_pending && !caster_mask_matches) {
+							continue;
+						}
+						for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
+							if (!light_culler->cull_directional_light(cull_data.scenario->instance_aabbs[i], j, k)) { // pass the cascade index
+								continue;
+							}
+							if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
+								uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
+								const bool is_inactive_particle = (base_type == RSE::INSTANCE_PARTICLES) && RSG::particles_storage->particles_is_inactive(idata.base_rid);
+								if (is_shadow_casting_geometry && caster_mask_matches && !is_inactive_particle) {
+									cull_result.directional_shadows[j].cascade_geometry_instances[k].push_back(idata.instance_geometry);
+									mesh_visible = true;
+								}
+							}
 						}
 					}
 				}
