@@ -255,7 +255,7 @@ private:
 	MetalDeviceProfile::MinimumRequirements inspect_spirv(const ReflectShader &p_shader);
 
 public:
-	static constexpr uint32_t FORMAT_VERSION = 3;
+	static constexpr uint32_t FORMAT_VERSION = 4;
 
 	void set_export_mode(bool p_export_mode) { export_mode = p_export_mode; }
 	void set_device_profile(const MetalDeviceProfile *p_device_profile) { device_profile = p_device_profile; }

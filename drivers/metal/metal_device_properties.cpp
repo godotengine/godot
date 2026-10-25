@@ -144,7 +144,7 @@ void MetalDeviceProperties::init_features(MTL::Device *p_device) {
 	features.layeredRendering = p_device->supportsFamily(MTL::GPUFamilyApple5);
 	features.multisampleLayeredRendering = p_device->supportsFamily(MTL::GPUFamilyApple7);
 	features.tessellationShader = p_device->supportsFamily(MTL::GPUFamilyApple3);
-	features.imageCubeArray = p_device->supportsFamily(MTL::GPUFamilyApple3);
+	features.imageCubeArray = p_device->supportsFamily(MTL::GPUFamilyApple4) || p_device->supportsFamily(MTL::GPUFamilyMac2);
 	features.quadPermute = p_device->supportsFamily(MTL::GPUFamilyApple4);
 	features.simdPermute = p_device->supportsFamily(MTL::GPUFamilyApple6);
 	features.simdReduction = p_device->supportsFamily(MTL::GPUFamilyApple7);

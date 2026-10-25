@@ -250,7 +250,9 @@ bool RenderingDeviceDriverMetal::is_valid_linear(const TextureFormat &p_format) 
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
 	NS::SharedPtr<MTL::TextureDescriptor> desc = NS::TransferPtr(MTL::TextureDescriptor::alloc()->init());
-	desc->setTextureType(TEXTURE_TYPE[p_format.texture_type]);
+	// Apple3 GPUs do not support cube arrays, so they are created as 2D arrays and emulated in shaders.
+	const bool cube_array_as_2d_array = p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY && !device_properties->features.imageCubeArray;
+	desc->setTextureType(cube_array_as_2d_array ? MTL::TextureType2DArray : TEXTURE_TYPE[p_format.texture_type]);
 
 	PixelFormats &formats = *pixel_formats;
 	desc->setPixelFormat((MTL::PixelFormat)formats.getMTLPixelFormat(p_format.format));
@@ -262,7 +264,8 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	desc->setMipmapLevelCount(p_format.mipmaps);
 
 	if (p_format.texture_type == TEXTURE_TYPE_1D_ARRAY ||
-			p_format.texture_type == TEXTURE_TYPE_2D_ARRAY) {
+			p_format.texture_type == TEXTURE_TYPE_2D_ARRAY ||
+			cube_array_as_2d_array) {
 		desc->setArrayLength(p_format.array_layers);
 	} else if (p_format.texture_type == TEXTURE_TYPE_CUBE_ARRAY) {
 		desc->setArrayLength(p_format.array_layers / 6);
@@ -3055,12 +3058,10 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 		print_verbose("- Metal multiview not supported");
 	}
 
-	// The Metal renderer requires Apple4 family. This is 2017 era A11 chips and newer.
-	if (device_properties->features.highestFamily < MTL::GPUFamilyApple4) {
+	// The Metal renderer requires Apple3 family. This is 2015 era A9 chips and newer.
+	if (device_properties->features.highestFamily < MTL::GPUFamilyApple3) {
 		String error_string = vformat("Your Apple GPU does not support the following features, which are required to use Metal-based renderers in Godot:\n\n");
-		if (!device_properties->features.imageCubeArray) {
-			error_string += "- No support for image cube arrays.\n";
-		}
+		error_string += "- An Apple A9 GPU (Apple3 family) or newer.\n";
 
 #if defined(APPLE_EMBEDDED_ENABLED)
 		// Apple Embedded platforms exports currently don't exit themselves when this method returns `ERR_CANT_CREATE`.
