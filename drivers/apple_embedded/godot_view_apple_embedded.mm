@@ -411,7 +411,7 @@ static const float earth_gravity = 9.80665;
 // MARK: Motion
 
 - (void)handleMotion {
-	if (!self.motionManager) {
+	if (!self.motionManager || !DisplayServerAppleEmbedded::get_singleton()) {
 		return;
 	}
 

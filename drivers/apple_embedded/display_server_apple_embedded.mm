@@ -356,19 +356,27 @@ void DisplayServerAppleEmbedded::key(Key p_key, char32_t p_char, Key p_unshifted
 // MARK: Motion
 
 void DisplayServerAppleEmbedded::update_gravity(const Vector3 &p_gravity) {
-	Input::get_singleton()->set_gravity(p_gravity);
+	if (Input::get_singleton()) {
+		Input::get_singleton()->set_gravity(p_gravity);
+	}
 }
 
 void DisplayServerAppleEmbedded::update_accelerometer(const Vector3 &p_accelerometer) {
-	Input::get_singleton()->set_accelerometer(p_accelerometer / kDisplayServerIOSAcceleration);
+	if (Input::get_singleton()) {
+		Input::get_singleton()->set_accelerometer(p_accelerometer / kDisplayServerIOSAcceleration);
+	}
 }
 
 void DisplayServerAppleEmbedded::update_magnetometer(const Vector3 &p_magnetometer) {
-	Input::get_singleton()->set_magnetometer(p_magnetometer);
+	if (Input::get_singleton()) {
+		Input::get_singleton()->set_magnetometer(p_magnetometer);
+	}
 }
 
 void DisplayServerAppleEmbedded::update_gyroscope(const Vector3 &p_gyroscope) {
-	Input::get_singleton()->set_gyroscope(p_gyroscope);
+	if (Input::get_singleton()) {
+		Input::get_singleton()->set_gyroscope(p_gyroscope);
+	}
 }
 
 void DisplayServerAppleEmbedded::update_device_orientation(const Quaternion &p_orientation) {
