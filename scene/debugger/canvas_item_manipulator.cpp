@@ -542,65 +542,16 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	// Drag resize handles.
-	if (drag_type == DRAG_NONE && b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
-		Array selection;
-		get_selection_callback.call(selection);
+	if (drag_type == DRAG_NONE && tool == TOOL_SELECT && m.is_valid()) {
+		_update_hover(m->get_position());
+		return true;
+	}
 
-		if (selection.size() == 1) {
-			CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
-			if (ci->_edit_use_rect() && is_node_movable(ci)) {
-				Rect2 rect = ci->_edit_get_rect();
-				Transform2D xform = (Transform2D)global_transform_callback.call() * ci->get_screen_transform();
-
-				const Point2 endpoints[4] = {
-					xform.xform(rect.position),
-					xform.xform(rect.position + Point2(rect.size.x, 0)),
-					xform.xform(rect.position + rect.size),
-					xform.xform(rect.position + Point2(0, rect.size.y))
-				};
-
-				const DragType dragger[] = {
-					DRAG_TOP_LEFT,
-					DRAG_TOP,
-					DRAG_TOP_RIGHT,
-					DRAG_RIGHT,
-					DRAG_BOTTOM_RIGHT,
-					DRAG_BOTTOM,
-					DRAG_BOTTOM_LEFT,
-					DRAG_LEFT,
-				};
-
-				DragType resize_drag = DRAG_NONE;
-				real_t radius = RESIZE_HANDLE_DIAMETER * (1.5f / 2.0f);
-
-				for (int i = 0; i < 4; i++) {
-					int prev = (i + 3) % 4;
-					int next = (i + 1) % 4;
-
-					Point2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
-					ofs *= RESIZE_HANDLE_DIAMETER / 2;
-					ofs += endpoints[i];
-					if (ofs.distance_to(b->get_position()) < radius) {
-						resize_drag = dragger[i * 2];
-					}
-
-					ofs = (endpoints[i] + endpoints[next]) / 2;
-					ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (RESIZE_HANDLE_DIAMETER / 2);
-					if (ofs.distance_to(b->get_position()) < radius) {
-						resize_drag = dragger[i * 2 + 1];
-					}
-				}
-
-				if (resize_drag != DRAG_NONE) {
-					drag_type = resize_drag;
-					drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position());
-					drag_selection.clear();
-					drag_selection.push_back(ci);
-					emit_signal("save_canvas_state_requested", drag_selection, false);
-					return true;
-				}
-			}
-		}
+	if (hover_type != DRAG_NONE && b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
+		drag_type = hover_type;
+		drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position());
+		emit_signal("save_canvas_state_requested", drag_selection, false);
+		return true;
 	}
 
 	if (drag_type == DRAG_LEFT || drag_type == DRAG_RIGHT || drag_type == DRAG_TOP || drag_type == DRAG_BOTTOM ||
@@ -709,10 +660,12 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 		// Confirm resize.
 		if (drag_selection.size() >= 1 && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			commit_drag();
+			_update_hover(b->get_position());
 			return true;
 		}
 
 		if (_gui_input_cancel_drag(p_event, true)) {
+			_update_hover(last_mouse_pos);
 			return true;
 		}
 	}
@@ -1922,6 +1875,64 @@ bool CanvasItemManipulator::is_node_locked(const Node *p_node) {
 	return p_node->get_meta("_edit_lock_", false);
 }
 
+void CanvasItemManipulator::_update_hover(const Vector2 &p_pos) {
+	Array selection;
+	get_selection_callback.call(selection);
+
+	hover_type = DRAG_NONE;
+	if (selection.size() == 1) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
+		if (ci->_edit_use_rect() && is_node_movable(ci)) {
+			Rect2 rect = ci->_edit_get_rect();
+			Transform2D xform = (Transform2D)global_transform_callback.call() * ci->get_screen_transform();
+
+			const Point2 endpoints[4] = {
+				xform.xform(rect.position),
+				xform.xform(rect.position + Point2(rect.size.x, 0)),
+				xform.xform(rect.position + rect.size),
+				xform.xform(rect.position + Point2(0, rect.size.y))
+			};
+
+			const DragType dragger[] = {
+				DRAG_TOP_LEFT,
+				DRAG_TOP,
+				DRAG_TOP_RIGHT,
+				DRAG_RIGHT,
+				DRAG_BOTTOM_RIGHT,
+				DRAG_BOTTOM,
+				DRAG_BOTTOM_LEFT,
+				DRAG_LEFT,
+			};
+
+			DragType resize_drag = DRAG_NONE;
+			real_t radius = RESIZE_HANDLE_DIAMETER * (1.5f / 2.0f);
+
+			for (int i = 0; i < 4; i++) {
+				int prev = (i + 3) % 4;
+				int next = (i + 1) % 4;
+
+				Point2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
+				ofs *= RESIZE_HANDLE_DIAMETER / 2;
+				ofs += endpoints[i];
+				if (ofs.distance_to(p_pos) < radius) {
+					resize_drag = dragger[i * 2];
+				}
+
+				ofs = (endpoints[i] + endpoints[next]) / 2;
+				ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (RESIZE_HANDLE_DIAMETER / 2);
+				if (ofs.distance_to(p_pos) < radius) {
+					resize_drag = dragger[i * 2 + 1];
+				}
+			}
+
+			if (resize_drag != DRAG_NONE) {
+				hover_type = resize_drag;
+				drag_selection = selection;
+			}
+		}
+	}
+}
+
 void CanvasItemManipulator::_update_cursor_shape() {
 	Input::CursorShape new_cursor = Input::CursorShape::CURSOR_ARROW;
 	switch (tool) {
@@ -1948,7 +1959,7 @@ void CanvasItemManipulator::_update_cursor_shape() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (drag_type == DRAG_NONE) {
+	if (drag_type == DRAG_NONE && hover_type == DRAG_NONE) {
 		if (is_hovering_h_guide) {
 			new_cursor = Input::CursorShape::CURSOR_VSIZE;
 		} else if (is_hovering_v_guide) {
@@ -1980,7 +1991,8 @@ void CanvasItemManipulator::_update_cursor_shape() {
 			}
 		}
 
-		switch (drag_type) {
+		int hover_drag_type = (drag_type != DRAG_NONE ? drag_type : hover_type);
+		switch (hover_drag_type) {
 			case DRAG_LEFT:
 			case DRAG_RIGHT: {
 				new_cursor = rotation_array[rotation_array_index];
@@ -2025,7 +2037,7 @@ void CanvasItemManipulator::_update_cursor_shape() {
 
 	if (cursor_shape != new_cursor) {
 		cursor_shape = new_cursor;
-		emit_signal("cursor_shape_changed");
+		emit_signal(SNAME("cursor_shape_changed"));
 	}
 }
 
@@ -2261,6 +2273,11 @@ bool CanvasItemManipulator::gui_input(const Ref<InputEvent> &p_event) {
 	bool accepted = _gui_input_open_scene_on_double_click(p_event) || _gui_input_select(p_event);
 #endif
 
+	Ref<InputEventMouse> m = p_event;
+	if (m.is_valid()) {
+		last_mouse_pos = m->get_position();
+	}
+
 	_update_cursor_shape();
 
 	return accepted;
@@ -2278,6 +2295,12 @@ void CanvasItemManipulator::set_tool(Tool p_tool) {
 	}
 
 	tool = p_tool;
+
+	if (p_tool == TOOL_SELECT) {
+		_update_hover(last_mouse_pos);
+	} else {
+		hover_type = DRAG_NONE;
+	}
 
 	if (p_tool == TOOL_EDIT_PIVOT && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Special action that places temporary rotation pivot in the middle of the selection.
