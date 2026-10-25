@@ -136,7 +136,9 @@ private:
 
 	Tool tool = TOOL_SELECT;
 	DragType drag_type = DRAG_NONE;
+	DragType hover_type = DRAG_NONE;
 	Input::CursorShape cursor_shape = Input::CursorShape::CURSOR_ARROW;
+	Vector2 last_mouse_pos;
 	bool editor_mode = false; // Set it manually instead of using the hint, to allow debugging the editor itself.
 
 	real_t grab_distance = 1;
@@ -164,6 +166,7 @@ private:
 
 	Rect2 _encompass_selection_rect(const Array &p_selected);
 
+	void _update_hover(const Vector2 &p_pos);
 	void _update_cursor_shape();
 
 #ifdef TOOLS_ENABLED
