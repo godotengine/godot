@@ -846,6 +846,12 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_a
 }
 
 void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
+	if (ci_manipulator.is_null()) {
+		// Node selection was never set up, which happens when the Game view is
+		// unavailable (e.g. disabled in the editor's feature profile).
+		return;
+	}
+
 	if (p_nodes.is_empty()) {
 		_clear_selection();
 		return;
