@@ -441,6 +441,8 @@ void ImportDock::_importer_selected(int i_idx) {
 		}
 		_update_options(params->base_options_path, config);
 	}
+
+	_set_dirty(true);
 }
 
 void ImportDock::_preset_selected(int p_idx) {
@@ -504,6 +506,8 @@ void ImportDock::_preset_selected(int p_idx) {
 			params->update();
 		} break;
 	}
+
+	_set_dirty(true);
 }
 
 void ImportDock::clear() {
@@ -712,6 +716,7 @@ void ImportDock::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				imported->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+				_set_dirty(dirty);
 			}
 		} break;
 
@@ -727,6 +732,7 @@ void ImportDock::_property_edited(const StringName &p_prop) {
 }
 
 void ImportDock::_set_dirty(bool p_dirty) {
+	dirty = p_dirty;
 	if (p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
