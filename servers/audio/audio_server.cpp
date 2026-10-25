@@ -346,7 +346,6 @@ void AudioServer::_mix_step() {
 		const uint32_t crossfade_frames = MAX(static_cast<uint32_t>(1), static_cast<uint32_t>(get_mix_rate() * Bus::Effect::CROSSFADE_DURATION_SECONDS));
 		const float crossfade_delta = 1.0f / crossfade_frames;
 		for (int j = 0; j < bus->effects.size(); j++) {
-
 			const bool target_enabled = !bus->bypass && bus->effects[j].enabled;
 			const float target_mix = target_enabled ? 1.0f : 0.0f;
 			const float start_mix = bus->effects[j].wet_mix;
