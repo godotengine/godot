@@ -58,11 +58,18 @@ void BoxContainer::_resort() {
 	float stretch_ratio_total = 0.0;
 	int desired_extra_space = 0;
 	HashMap<Control *, _MinSizeCache> min_size_cache;
+	const int cross_axis = vertical ? 0 : 1;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
 			continue;
+		}
+
+		Rect2 child_rect = c->get_rect();
+		if (child_rect.size[cross_axis] > new_size[cross_axis]) {
+			child_rect.size[cross_axis] = new_size[cross_axis];
+			fit_child_in_rect(c, child_rect);
 		}
 
 		Size2i min_size = c->get_bound_minimum_size().ceil();
