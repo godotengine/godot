@@ -2316,6 +2316,9 @@ GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	ForNode *n_for = alloc_node<ForNode>();
 
+	// Will be overridden with the loop body suite at a later point.
+	make_completion_context(COMPLETION_DECLARATION, n_for);
+
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected loop variable name after "for".)")) {
 		n_for->variable = parse_identifier();
 	}
@@ -2360,6 +2363,15 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
 	suite->is_in_loop = true;
+
+#ifdef TOOLS_ENABLED
+	// Temporarily change the `current_suite` context and recreate the completion context, so that lookup on the loop variable uses the loop body suite.
+	SuiteNode *previous_suite = current_suite;
+	current_suite = suite;
+	override_completion_context(n_for, COMPLETION_DECLARATION, n_for);
+	current_suite = previous_suite;
+#endif
+
 	n_for->loop = parse_suite(R"("for" block)", suite);
 	complete_extents(n_for);
 
