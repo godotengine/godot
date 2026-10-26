@@ -296,16 +296,38 @@ void Array::append_array(const Array &p_array) {
 	// Pin the source against reentrant mutation during conversion
 	const Vector<Variant> source = p_array._p->array;
 	const Variant *read = source.ptr();
+	const int count = source.size();
 
-	Vector<Variant> validated_array;
-	validated_array.resize(source.size());
-	Variant *write = validated_array.ptrw();
-
-	for (int i = 0; i < validated_array.size(); ++i) {
-		const Variant *value = _p->typed.validate(read[i], write[i], "append_array");
+	// Find the first element that needs converting.
+	int i = 0;
+	Variant tmp;
+	for (; i < count; ++i) {
+		const Variant *value = _p->typed.validate(read[i], tmp, "append_array");
 		ERR_FAIL_NULL(value);
-		if (value != &write[i]) {
-			write[i] = *value;
+		if (value == &tmp) {
+			break;
+		}
+	}
+
+	// If nothing needs converting, append the shared source directly.
+	if (i == count) {
+		_p->array.append_array(source);
+		return;
+	}
+
+	// Copy the compatible values validated so far, then convert the rest.
+	Vector<Variant> validated_array;
+	validated_array.resize(count);
+	Variant *write = validated_array.ptrw();
+	for (int j = 0; j < i; ++j) {
+		write[j] = read[j];
+	}
+	write[i] = std::move(tmp);
+	for (int j = i + 1; j < count; ++j) {
+		const Variant *value = _p->typed.validate(read[j], write[j], "append_array");
+		ERR_FAIL_NULL(value);
+		if (value != &write[j]) {
+			write[j] = *value;
 		}
 	}
 
