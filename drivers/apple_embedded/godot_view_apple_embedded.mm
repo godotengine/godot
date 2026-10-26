@@ -251,7 +251,9 @@ static const float earth_gravity = 9.80665;
 		}
 	}
 
-	[self handleMotion];
+	if (DisplayServerAppleEmbedded::get_singleton()) {
+		[self handleMotion];
+	}
 
 #if !defined(VISIONOS_ENABLED)
 	if (@available(iOS 16.0, *)) {
