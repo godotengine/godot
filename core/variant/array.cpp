@@ -293,10 +293,12 @@ void Array::append_array(const Array &p_array) {
 		return;
 	}
 
-	Vector<Variant> validated_array;
-	validated_array.resize(p_array.size());
+	// Pin the source against reentrant mutation during conversion
+	const Vector<Variant> source = p_array._p->array;
+	const Variant *read = source.ptr();
 
-	const Variant *read = p_array._p->array.ptr();
+	Vector<Variant> validated_array;
+	validated_array.resize(source.size());
 	Variant *write = validated_array.ptrw();
 
 	for (int i = 0; i < validated_array.size(); ++i) {
