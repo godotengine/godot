@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/callable_mp.h"
 #include "core/object/script_language.h"
 #include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
@@ -120,6 +121,39 @@ struct EditorProgress {
 
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false, bool p_force_background = false);
 	~EditorProgress();
+};
+
+struct EditorCommandQueue {
+	friend class EditorNode;
+	struct Command {
+		String state;
+		int step_index;
+		Callable command;
+	};
+
+	String task;
+	String label;
+	int step_count = 0;
+	bool can_cancel = false;
+	bool run_in_background = false;
+	int next_step = 0;
+	LocalVector<Command, int> steps;
+	Thread *bg_process = nullptr;
+	Mutex mutex;
+	EditorProgress *progress = nullptr;
+
+protected:
+	static void _run_in_thread(void *p_command_queue);
+	static void _thread_done(uint64_t p_command_queue_ptr);
+	EditorCommandQueue(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background);
+
+public:
+	void add_step(const String &p_state, int p_step_index, const Callable &p_command);
+	void advance_step();
+	bool is_running_in_background() const;
+	bool is_done() const;
+
+	~EditorCommandQueue();
 };
 
 class EditorNode : public Node {
@@ -297,6 +331,8 @@ private:
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
+
+	LocalVector<EditorCommandQueue *, int> process_command_queue;
 
 #ifdef ANDROID_ENABLED
 	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar, main_box, and vk_spacer.
@@ -819,6 +855,8 @@ public:
 	static HashMap<String, Variant> get_initial_settings();
 
 	static void cleanup();
+
+	EditorCommandQueue *start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel = false, bool p_force_background = false);
 
 	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 

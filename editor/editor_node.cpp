@@ -267,6 +267,78 @@ EditorProgress::~EditorProgress() {
 	}
 }
 
+void EditorCommandQueue::_run_in_thread(void *p_command_queue) {
+	EditorCommandQueue *command_queue = static_cast<EditorCommandQueue *>(p_command_queue);
+	Mutex &mutex = command_queue->mutex;
+	mutex.lock();
+	Callable c = command_queue->steps[command_queue->next_step].command;
+	mutex.unlock();
+	c.call();
+	mutex.lock();
+	callable_mp_static(&EditorCommandQueue::_thread_done).call_deferred(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(command_queue)));
+	mutex.unlock();
+}
+
+void EditorCommandQueue::_thread_done(uint64_t p_command_queue_ptr) {
+	EditorCommandQueue *command_queue = reinterpret_cast<EditorCommandQueue *>(static_cast<uintptr_t>(p_command_queue_ptr));
+	ERR_FAIL_COND(command_queue->bg_process == nullptr);
+	MutexLock lock(command_queue->mutex);
+	command_queue->bg_process->wait_to_finish();
+	memdelete(command_queue->bg_process);
+	command_queue->bg_process = nullptr;
+	command_queue->next_step++;
+}
+
+void EditorCommandQueue::add_step(const String &p_state, int p_step_index, const Callable &p_command) {
+	ERR_FAIL_COND(p_command.is_null());
+	MutexLock lock(mutex);
+	steps.push_back(Command{ p_state, p_step_index, p_command });
+}
+
+bool EditorCommandQueue::is_running_in_background() const {
+	MutexLock lock(mutex);
+	return (bg_process != nullptr && bg_process->is_started());
+}
+
+void EditorCommandQueue::advance_step() {
+	ERR_FAIL_COND(is_running_in_background());
+	if (is_done()) {
+		return; // This can happen when running in background and last step just finished
+	}
+	MutexLock lock(mutex);
+	if (progress == nullptr) {
+		progress = memnew(EditorProgress(task, label, step_count, can_cancel, false));
+	}
+	progress->step(steps[next_step].state, steps[next_step].step_index, true);
+	if (run_in_background) {
+		bg_process = memnew(Thread);
+		bg_process->start(EditorCommandQueue::_run_in_thread, this);
+		return;
+	} else {
+		steps[next_step].command.call();
+	}
+	next_step++;
+}
+
+bool EditorCommandQueue::is_done() const {
+	MutexLock lock(mutex);
+	return next_step >= steps.size() && !is_running_in_background();
+}
+
+EditorCommandQueue::EditorCommandQueue(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background) {
+	task = p_task;
+	label = p_label;
+	step_count = p_step_count;
+	can_cancel = p_can_cancel;
+	run_in_background = p_force_background;
+}
+
+EditorCommandQueue::~EditorCommandQueue() {
+	if (progress) {
+		memdelete(progress);
+	}
+}
+
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
 	ERR_FAIL_COND_MSG(p_full_paths.size() != r_filenames.size(), vformat("disambiguate_filenames requires two string vectors of same length (%d != %d).", p_full_paths.size(), r_filenames.size()));
 
@@ -948,6 +1020,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			float start_time = Time::get_singleton()->get_unix_time_from_system();
+
 			if (editor_data.is_scene_changed(-1)) {
 				scene_tabs->update_scene_tabs();
 			}
@@ -998,6 +1072,41 @@ void EditorNode::_notification(int p_what) {
 				}
 			}
 #endif
+
+			if (!process_command_queue.is_empty()) {
+				// Disable input
+				get_viewport()->set_disable_input(true);
+
+				const float time_per_frame = 1.0 / 60.0;
+				float elapsed = 0.0;
+				do {
+					int skip_count = 0;
+					for (int i = 0; i < process_command_queue.size(); i++) {
+						if (process_command_queue[i]->is_running_in_background()) {
+							skip_count++;
+							continue;
+						}
+						if (process_command_queue[i]->is_done()) {
+							EditorCommandQueue *command = process_command_queue[i];
+							process_command_queue.remove_at(i);
+							memdelete(command);
+						} else {
+							process_command_queue[i]->advance_step();
+						}
+						break;
+					}
+					if (skip_count == process_command_queue.size()) {
+						// All tasks running in background, dont retry this frame
+						break;
+					}
+					elapsed = Time::get_singleton()->get_unix_time_from_system() - start_time;
+				} while (!process_command_queue.is_empty() && elapsed < time_per_frame);
+
+				if (process_command_queue.is_empty()) {
+					// Done processing, re-enable input.
+					get_viewport()->set_disable_input(false);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -6777,6 +6886,12 @@ bool EditorNode::is_cmdline_mode() {
 
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
+}
+
+EditorCommandQueue *EditorNode::start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background) {
+	EditorCommandQueue *cq = memnew(EditorCommandQueue(p_task, p_label, p_step_count, p_can_cancel, p_force_background));
+	process_command_queue.push_back(cq);
+	return cq;
 }
 
 void EditorNode::_update_layouts_menu() {
