@@ -102,50 +102,12 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 
 	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
 	if (capsule_mesh.is_valid()) {
-		real_t top_radius = capsule_mesh->get_top_radius();
-		real_t bottom_radius = capsule_mesh->get_bottom_radius();
-		real_t mid_height = capsule_mesh->get_mid_height();
-		helper->tapered_capsule_set_handle(segment, p_id, top_radius, bottom_radius, mid_height);
-		switch (p_id) {
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_TOP:
-				capsule_mesh->set_top_radius(top_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_BOTTOM:
-				capsule_mesh->set_bottom_radius(bottom_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS:
-				capsule_mesh->set_radius((top_radius + bottom_radius) / 2);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::HEIGHT:
-				capsule_mesh->set_mid_height(mid_height);
-				break;
-			default:
-				break;
-		}
+		helper->tapered_set_handle<false>(capsule_mesh, segment, p_id);
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
 	if (cylinder_mesh.is_valid()) {
-		real_t top_radius = cylinder_mesh->get_top_radius();
-		real_t bottom_radius = cylinder_mesh->get_bottom_radius();
-		real_t height = cylinder_mesh->get_height();
-		helper->tapered_cylinder_set_handle(segment, p_id, top_radius, bottom_radius, height);
-		switch (p_id) {
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_TOP:
-				cylinder_mesh->set_top_radius(top_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_BOTTOM:
-				cylinder_mesh->set_bottom_radius(bottom_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS:
-				cylinder_mesh->set_radius((top_radius + bottom_radius) / 2);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::HEIGHT:
-				cylinder_mesh->set_height(height);
-				break;
-			default:
-				break;
-		}
+		helper->tapered_set_handle<true>(cylinder_mesh, segment, p_id);
 	}
 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();

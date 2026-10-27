@@ -229,50 +229,12 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-		real_t top_radius = cs2->get_top_radius();
-		real_t bottom_radius = cs2->get_bottom_radius();
-		real_t mid_height = cs2->get_mid_height();
-		helper->tapered_capsule_set_handle(sg, p_id, top_radius, bottom_radius, mid_height);
-		switch (p_id) {
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_TOP:
-				cs2->set_top_radius(top_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_BOTTOM:
-				cs2->set_bottom_radius(bottom_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS:
-				cs2->set_radius((top_radius + bottom_radius) / 2);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::HEIGHT:
-				cs2->set_mid_height(mid_height);
-				break;
-			default:
-				break;
-		}
+		helper->tapered_set_handle<false>(cs2, sg, p_id);
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
-		real_t top_radius = cs2->get_top_radius();
-		real_t bottom_radius = cs2->get_bottom_radius();
-		real_t height = cs2->get_height();
-		helper->tapered_cylinder_set_handle(sg, p_id, top_radius, bottom_radius, height);
-		switch (p_id) {
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_TOP:
-				cs2->set_top_radius(top_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_BOTTOM:
-				cs2->set_bottom_radius(bottom_radius);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::RADIUS:
-				cs2->set_radius((top_radius + bottom_radius) / 2);
-				break;
-			case Gizmo3DHelper::tapered_revolution_handle::HEIGHT:
-				cs2->set_height(height);
-				break;
-			default:
-				break;
-		}
+		helper->tapered_set_handle<true>(cs2, sg, p_id);
 	}
 }
 
