@@ -464,6 +464,7 @@ private:
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
+	bool resource_counter_queued = false;
 
 	HashSet<Ref<Translation>> tracked_translations;
 	bool pending_translation_notification = false;
@@ -637,7 +638,6 @@ private:
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
 
-	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
 	void _update_vsync_mode();
@@ -647,6 +647,8 @@ private:
 	void _translation_resources_changed();
 	void _queue_translation_notification();
 	void _propagate_translation_notification();
+	void _queue_resource_counter_changed();
+	void _emit_resource_counter_changed();
 
 	void _renderer_selected(int p_index);
 	void _update_renderer_color();
@@ -759,6 +761,7 @@ protected:
 public:
 	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+	void _dropped_files(const Vector<String> &p_files);
 
 	void init_plugins();
 

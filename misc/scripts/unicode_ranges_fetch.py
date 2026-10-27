@@ -4,8 +4,6 @@
 # the Unicode Character Database to the `unicode_ranges.inc` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
-from __future__ import annotations
-
 import os
 import sys
 from typing import Final
@@ -16,7 +14,7 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/Blocks.txt"
+URL: Final[str] = "https://www.unicode.org/Public/18.0.0/ucd/Blocks.txt"
 
 
 ranges: list[tuple[str, str, str]] = []

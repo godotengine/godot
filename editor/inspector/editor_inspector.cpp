@@ -1368,7 +1368,7 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else if (!internal && ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 		menu_option(MENU_COPY_PROPERTY_PATH);
 		accept_event();
-	} else {
+	} else if (EditorContextMenuPluginManager::get_singleton()) {
 		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, p_event);
 		if (custom_callback.is_valid()) {
 #ifndef DISABLE_DEPRECATED
@@ -5776,6 +5776,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		Variant::Type type = new_value.get_type();
+		Variant::Type prev_type = value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
@@ -5784,7 +5785,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			}
 			Node *N = Object::cast_to<Node>(object);
 			bool double_counting = Object::cast_to<Node>(new_value) == N || Object::cast_to<Node>(value) == N;
-			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
+			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY || prev_type == Variant::OBJECT || prev_type == Variant::ARRAY || prev_type == Variant::DICTIONARY) && value != new_value) {
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 				// Perhaps an inefficient way of updating the resource count.
@@ -5843,7 +5844,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
 			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
 			for (Node *N : shared_nodes) {
-				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
+				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY || prev_type == Variant::OBJECT || prev_type == Variant::ARRAY || prev_type == Variant::DICTIONARY) && value != new_value) {
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 					// Perhaps an inefficient way of updating the resource count.

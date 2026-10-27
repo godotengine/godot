@@ -2333,10 +2333,12 @@ void TextServerAdvanced::_font_set_face_index(const RID &p_font_rid, int64_t p_f
 	if (fd->face_index != p_face_index) {
 		fd->face_index = p_face_index;
 		_font_clear_cache(fd);
+#ifdef MODULE_FREETYPE_ENABLED
 		if (fd->face) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
 		}
+#endif
 	}
 }
 

@@ -33,11 +33,13 @@
 
 #include "core/config/engine.h"
 #include "core/input/shortcut.h"
-#include "scene/2d/node_2d.h"
 #include "scene/gui/container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+
+#ifdef TOOLS_ENABLED
+#include "scene/2d/node_2d.h"
 
 bool CanvasItemManipulator::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
@@ -204,25 +206,6 @@ bool CanvasItemManipulator::_gui_input_rulers_and_guides(const Ref<InputEvent> &
 		reset_drag();
 		emit_signal(update_canvas_signal);
 		return true;
-	}
-
-	return false;
-}
-
-bool CanvasItemManipulator::_gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event) {
-	Ref<InputEventMouseButton> b = p_event;
-
-	// Open a sub-scene on double-click.
-	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && b->is_double_click() && tool == TOOL_SELECT) {
-		Array selection;
-		get_selection_callback.call(selection);
-		if (selection.size() == 1) {
-			CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
-			if (ci->is_instance() && ci != find_items_start_callback.call()) {
-				emit_signal("scene_double_clicked", ci->get_scene_file_path());
-				return true;
-			}
-		}
 	}
 
 	return false;
@@ -588,7 +571,7 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 				};
 
 				DragType resize_drag = DRAG_NONE;
-				real_t radius = RESIZE_HANDLE_DIAMETER * (1.5f / 2.0f);
+				real_t radius = (RESIZE_HANDLE_DIAMETER / 2) * 1.5 * scale;
 
 				for (int i = 0; i < 4; i++) {
 					int prev = (i + 3) % 4;
@@ -1249,6 +1232,44 @@ bool CanvasItemManipulator::_gui_input_ruler_tool(const Ref<InputEvent> &p_event
 	return false;
 }
 
+bool CanvasItemManipulator::_gui_input_cancel_drag(const Ref<InputEvent> &p_event, bool p_reset_snap_targets, bool p_restore_bones) {
+	Ref<InputEventMouseButton> b = p_event;
+	if ((b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) || DebuggerHelpers::is_shortcut_pressed(SHORTCUT_CANCEL_TRANSFORM, inputs)) {
+		if (p_reset_snap_targets) {
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
+		}
+
+		emit_signal("restore_canvas_state_requested", drag_selection, p_restore_bones);
+		reset_drag();
+		emit_signal(update_canvas_signal);
+
+		return true;
+	}
+
+	return false;
+}
+#endif // TOOLS_ENABLED
+
+bool CanvasItemManipulator::_gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> b = p_event;
+
+	// Open a sub-scene on double-click.
+	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && b->is_double_click() && tool == TOOL_SELECT) {
+		Array selection;
+		get_selection_callback.call(selection);
+		if (selection.size() == 1) {
+			CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
+			if (ci->is_instance() && ci != find_items_start_callback.call()) {
+				emit_signal("scene_double_clicked", ci->get_scene_file_path());
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1290,7 +1311,7 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
 			Point2 pos = Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position());
 			// Allow selecting on release when performed very small box selection (necessary when Shift is pressed, see below).
-			if (b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && pos.distance_to(drag_from) <= drag_threshold * scale)) {
+			if (b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && pos.distance_to(drag_from) <= DRAG_THRESHOLD * scale)) {
 				Vector<DebuggerHelpers::SelectResult> items;
 				get_canvas_items_at_pos(pos, items);
 
@@ -1321,8 +1342,10 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 					// Start dragging.
 					if (selected && (tool == TOOL_SELECT || tool == TOOL_MOVE) && b->is_pressed()) {
 						// Drag the node(s) if requested.
-						drag_start_origin = pos;
 						drag_type = DRAG_QUEUED;
+#ifdef TOOLS_ENABLED
+						drag_start_origin = pos;
+#endif
 					} else if (!b->is_pressed()) {
 						reset_drag();
 					}
@@ -1339,6 +1362,7 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
+#ifdef TOOLS_ENABLED
 		if (m.is_valid()) {
 			Point2 pos = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
 			bool movement_threshold_passed = drag_start_origin.distance_to(pos) > (8 * MAX(1, scale)) / zoom;
@@ -1363,6 +1387,7 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 				return true;
 			}
 		}
+#endif
 	}
 
 	if (drag_type == DRAG_BOX_SELECTION) {
@@ -1421,36 +1446,6 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-bool CanvasItemManipulator::_gui_input_cancel_drag(const Ref<InputEvent> &p_event, bool p_reset_snap_targets, bool p_restore_bones) {
-	Ref<InputEventMouseButton> b = p_event;
-	if ((b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) || DebuggerHelpers::is_shortcut_pressed(SHORTCUT_CANCEL_TRANSFORM, inputs)) {
-		if (p_reset_snap_targets) {
-			snap_target[0] = SNAP_TARGET_NONE;
-			snap_target[1] = SNAP_TARGET_NONE;
-		}
-
-		emit_signal("restore_canvas_state_requested", drag_selection, p_restore_bones);
-		reset_drag();
-		emit_signal(update_canvas_signal);
-
-		return true;
-	}
-
-	return false;
-}
-
-bool CanvasItemManipulator::_validate_drag_selection() {
-	// Check if all nodes are still available.
-	for (int i = 0; i < drag_selection.size(); i++) {
-		if (!drag_selection[i]) {
-			drag_selection.remove_at(i);
-			i--;
-		}
-	}
-
-	return !drag_selection.is_empty();
-}
-
 Rect2 CanvasItemManipulator::_encompass_selection_rect(const Array &p_selected) {
 	ERR_FAIL_COND_V(p_selected.is_empty(), Rect2());
 
@@ -1471,6 +1466,19 @@ Rect2 CanvasItemManipulator::_encompass_selection_rect(const Array &p_selected) 
 	}
 
 	return rect;
+}
+
+#ifdef TOOLS_ENABLED
+bool CanvasItemManipulator::_validate_drag_selection() {
+	// Check if all nodes are still available.
+	for (int i = 0; i < drag_selection.size(); i++) {
+		if (!drag_selection[i]) {
+			drag_selection.remove_at(i);
+			i--;
+		}
+	}
+
+	return !drag_selection.is_empty();
 }
 
 Point2 CanvasItemManipulator::anchor_to_position(const Control *p_control, const Vector2 p_anchor) {
@@ -1876,8 +1884,18 @@ void CanvasItemManipulator::commit_drag() {
 	emit_signal(update_canvas_signal);
 }
 
-bool CanvasItemManipulator::is_node_locked(const Node *p_node) {
-	return p_node->get_meta("_edit_lock_", false);
+bool CanvasItemManipulator::reset_temp_pivot() {
+	if (temp_pivot != Vector2(Math::INF, Math::INF)) {
+		temp_pivot = Vector2(Math::INF, Math::INF);
+		return true;
+	}
+
+	return false;
+}
+
+void CanvasItemManipulator::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_INDEX(0, SHORTCUT_MAX);
+	inputs[p_name] = p_shortcut;
 }
 
 bool CanvasItemManipulator::is_node_movable(const Node *p_node, bool p_popup_warning) {
@@ -1895,9 +1913,19 @@ bool CanvasItemManipulator::is_node_movable(const Node *p_node, bool p_popup_war
 	return true;
 }
 
+void CanvasItemManipulator::_emit_locked_warn_signal() {
+	emit_signal("warning_emitted", TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed."));
+}
+#endif // TOOLS_ENABLED
+
+bool CanvasItemManipulator::is_node_locked(const Node *p_node) {
+	return p_node->get_meta("_edit_lock_", false);
+}
+
 void CanvasItemManipulator::_update_cursor_shape() {
 	Input::CursorShape new_cursor = Input::CursorShape::CURSOR_ARROW;
 	switch (tool) {
+#ifdef TOOLS_ENABLED
 		case TOOL_MOVE: {
 			new_cursor = Input::CursorShape::CURSOR_MOVE;
 		} break;
@@ -1906,18 +1934,20 @@ void CanvasItemManipulator::_update_cursor_shape() {
 			new_cursor = Input::CursorShape::CURSOR_CROSS;
 		} break;
 
-		case TOOL_PAN: {
-			new_cursor = Input::CursorShape::CURSOR_DRAG;
-		} break;
-
 		case TOOL_RULER: {
 			new_cursor = Input::CursorShape::CURSOR_CROSS;
+		} break;
+#endif
+
+		case TOOL_PAN: {
+			new_cursor = Input::CursorShape::CURSOR_DRAG;
 		} break;
 
 		default:
 			break;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (drag_type == DRAG_NONE) {
 		if (is_hovering_h_guide) {
 			new_cursor = Input::CursorShape::CURSOR_VSIZE;
@@ -1991,15 +2021,12 @@ void CanvasItemManipulator::_update_cursor_shape() {
 				break;
 		}
 	}
+#endif // TOOLS_ENABLED
 
 	if (cursor_shape != new_cursor) {
 		cursor_shape = new_cursor;
 		emit_signal("cursor_shape_changed");
 	}
-}
-
-void CanvasItemManipulator::_emit_locked_warn_signal() {
-	emit_signal("warning_emitted", TTRC("All selected CanvasItems are either invisible or locked in some way and can't be transformed."));
 }
 
 void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<DebuggerHelpers::SelectResult> &r_items, bool p_allow_locked) {
@@ -2186,6 +2213,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
+	xform *= ci->get_transform();
 
 	Rect2 rect = p_rect;
 	// Cameras don't affect `CanvasLayer`s.
@@ -2194,18 +2222,17 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		Window *root = SceneTree::get_singleton()->get_root();
 		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
 	}
-	rect = (xform * ci->get_transform()).affine_inverse().xform(rect);
 
 	bool selected = false;
 	if (ci->_edit_use_rect()) {
-		Rect2 ci_rect = ci->_edit_get_rect();
+		Rect2 ci_rect = xform.xform(ci->_edit_get_rect());
 		if (rect.has_point(ci_rect.position) &&
 				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
 				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
 				rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
 			selected = true;
 		}
-	} else if (rect.has_point(Point2())) {
+	} else if (rect.has_point(xform.xform(Point2()))) {
 		selected = true;
 	}
 
@@ -2218,6 +2245,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 }
 
 bool CanvasItemManipulator::gui_input(const Ref<InputEvent> &p_event) {
+#ifdef TOOLS_ENABLED
 	bool accepted = _gui_input_rulers_and_guides(p_event) ||
 			plugin_input_callback.call(p_event) ||
 			_gui_input_open_scene_on_double_click(p_event) ||
@@ -2229,6 +2257,9 @@ bool CanvasItemManipulator::gui_input(const Ref<InputEvent> &p_event) {
 			_gui_input_anchors(p_event) ||
 			_gui_input_ruler_tool(p_event) ||
 			_gui_input_select(p_event);
+#else
+	bool accepted = _gui_input_open_scene_on_double_click(p_event) || _gui_input_select(p_event);
+#endif
 
 	_update_cursor_shape();
 
@@ -2240,16 +2271,8 @@ void CanvasItemManipulator::reset_drag() {
 	drag_selection.clear();
 }
 
-bool CanvasItemManipulator::reset_temp_pivot() {
-	if (temp_pivot != Vector2(Math::INF, Math::INF)) {
-		temp_pivot = Vector2(Math::INF, Math::INF);
-		return true;
-	}
-
-	return false;
-}
-
 void CanvasItemManipulator::set_tool(Tool p_tool) {
+#ifdef TOOLS_ENABLED
 	if (drag_type != DRAG_NONE) {
 		commit_drag();
 	}
@@ -2270,21 +2293,21 @@ void CanvasItemManipulator::set_tool(Tool p_tool) {
 			temp_pivot = center / selection.size();
 		}
 	}
-}
-
-void CanvasItemManipulator::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
-	ERR_FAIL_INDEX(0, SHORTCUT_MAX);
-	inputs[p_name] = p_shortcut;
+#else
+	tool = p_tool;
+#endif
 }
 
 void CanvasItemManipulator::set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input) {
 	find_items_start_callback = p_find_items_start;
 	point_selected_callback = p_point_selected;
 	get_selection_callback = p_get_selection;
-	local_transform_callback = p_local_xform;
 	global_transform_callback = p_global_xform;
+#ifdef TOOLS_ENABLED
+	local_transform_callback = p_local_xform;
 	local_mouse_pos_callback = p_local_mouse_pos;
 	plugin_input_callback = p_plugin_input;
+#endif
 }
 
 void CanvasItemManipulator::_bind_methods() {
@@ -2298,14 +2321,16 @@ void CanvasItemManipulator::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tool_menu_requested", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("scene_double_clicked", PropertyInfo(Variant::STRING, "path")));
 
+	ADD_SIGNAL(MethodInfo("cursor_shape_changed"));
+
+#ifdef TOOLS_ENABLED
 	ADD_SIGNAL(MethodInfo("save_canvas_state_requested", PropertyInfo(Variant::ARRAY, "selection"), PropertyInfo(Variant::BOOL, "save_bones")));
 	ADD_SIGNAL(MethodInfo("restore_canvas_state_requested", PropertyInfo(Variant::ARRAY, "selection"), PropertyInfo(Variant::BOOL, "restore_bones")));
 	ADD_SIGNAL(MethodInfo("commit_canvas_state_requested", PropertyInfo(Variant::ARRAY, "selection"), PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::BOOL, "commit_bones")));
 
 	ADD_SIGNAL(MethodInfo("commit_guide_meta_requested", PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::DICTIONARY, "meta")));
 
-	ADD_SIGNAL(MethodInfo("cursor_shape_changed"));
-
 	ADD_SIGNAL(MethodInfo("warning_emitted", PropertyInfo(Variant::STRING, "message")));
+#endif
 }
 #endif // DEBUG_ENABLED

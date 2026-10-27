@@ -1339,6 +1339,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 static inline Vector<uint8_t> _convert_index_data_to_16_bit(const Vector<uint8_t> &p_array_index_data, int p_index_count) {
 	Vector<uint8_t> index_data_16;
 	index_data_16.resize(p_index_count * sizeof(uint16_t));
@@ -1349,6 +1350,7 @@ static inline Vector<uint8_t> _convert_index_data_to_16_bit(const Vector<uint8_t
 	}
 	return index_data_16;
 }
+#endif
 
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;

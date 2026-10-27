@@ -221,21 +221,8 @@ RID RendererSceneRenderImplementation::RenderForwardMobile::RenderBufferDataForw
 	return RID();
 }
 
-RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_vrs_texture() {
 	ERR_FAIL_NULL_V(render_buffers, RID());
-
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	ERR_FAIL_NULL_V(texture_storage, RID());
-
-	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
-	// This approach ensures we only build the framebuffers we actually need for this viewport.
-	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
-	// this.
-
-	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
-	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
-
-	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
 #ifndef XR_DISABLED
@@ -254,6 +241,27 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	if (vrs_texture.is_null() && render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
+
+	return vrs_texture;
+}
+
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+	ERR_FAIL_NULL_V(render_buffers, RID());
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, RID());
+
+	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
+	// This approach ensures we only build the framebuffers we actually need for this viewport.
+	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
+	// this.
+
+	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
+	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
+
+	uint32_t view_count = render_buffers->get_view_count();
+
+	RID vrs_texture = get_vrs_texture();
 
 	Vector<RID> textures;
 	int color_buffer_id = 0;
@@ -1050,7 +1058,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	if (render_target.is_valid()) {
 		// Set subsampled images as not allowed on this render target, if we are using incompatible rendering features.
-		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process);
+		bool has_vrs_texture = rb_data.is_valid() && rb_data->get_vrs_texture().is_valid();
+		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process && has_vrs_texture);
 	}
 
 	if (p_render_data->scene_data->view_count > 1) {

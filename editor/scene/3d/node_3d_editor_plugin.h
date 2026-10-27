@@ -458,6 +458,7 @@ public:
 	bool are_local_coords_enabled() const;
 	void set_local_coords_enabled(bool on) const;
 	bool is_preserve_children_transform_enabled() const;
+	bool can_preserve_owned_children_transform(Node *p_node) const;
 	bool is_snap_enabled() const;
 	bool is_vertex_snap_origin_mode() const { return vertex_snap_origin_mode; }
 	bool is_vertex_snap_use_collision() const;

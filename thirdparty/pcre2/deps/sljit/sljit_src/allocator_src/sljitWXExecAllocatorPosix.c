@@ -90,6 +90,9 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 #ifdef PROT_MAX
 	prot |= PROT_MAX(PROT_READ | PROT_WRITE | PROT_EXEC);
 #endif
+#ifdef PROT_MPROTECT
+	prot |= PROT_MPROTECT(PROT_EXEC);
+#endif
 
 	size += sizeof(sljit_uw);
 	ptr = (sljit_uw*)mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);

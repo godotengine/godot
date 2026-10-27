@@ -732,7 +732,10 @@ def configure_mingw(env: "SConsEnvironment"):
     else:
         env["CC"] = get_detected(env, "gcc")
         env["CXX"] = get_detected(env, "g++")
-        env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
+        env["AR"] = get_detected(env, "gcc-ar")
+        if not env["AR"]:
+            print_warning("Couldn't find `gcc-ar`; falling back to `ar`. LTO builds might fail.")
+            env["AR"] = get_detected(env, "ar")
         env["RANLIB"] = get_detected(env, "gcc-ranlib")
         env["AS"] = get_detected(env, "gcc")
         env.Append(ASFLAGS=["-c"])

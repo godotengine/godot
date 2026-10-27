@@ -46,6 +46,7 @@
 /* #define SLJIT_CONFIG_RISCV_64 1 */
 /* #define SLJIT_CONFIG_S390X 1 */
 /* #define SLJIT_CONFIG_LOONGARCH_64 */
+/* #define SLJIT_CONFIG_ALPHA_64 1 */
 
 /* #define SLJIT_CONFIG_AUTO 1 */
 /* #define SLJIT_CONFIG_UNSUPPORTED 1 */
@@ -68,6 +69,7 @@
 	+ (defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64) \
 	+ (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X) \
 	+ (defined SLJIT_CONFIG_LOONGARCH_64 && SLJIT_CONFIG_LOONGARCH_64) \
+	+ (defined SLJIT_CONFIG_ALPHA_64 && SLJIT_CONFIG_ALPHA_64) \
 	+ (defined SLJIT_CONFIG_AUTO && SLJIT_CONFIG_AUTO) \
 	+ (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED) >= 2
 #error "Multiple architectures are selected"
@@ -87,6 +89,7 @@
 	&& !(defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64) \
 	&& !(defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X) \
 	&& !(defined SLJIT_CONFIG_LOONGARCH_64 && SLJIT_CONFIG_LOONGARCH_64) \
+	&& !(defined SLJIT_CONFIG_ALPHA_64 && SLJIT_CONFIG_ALPHA_64) \
 	&& !(defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED) \
 	&& !(defined SLJIT_CONFIG_AUTO && SLJIT_CONFIG_AUTO)
 #if defined SLJIT_CONFIG_AUTO && !SLJIT_CONFIG_AUTO
@@ -134,6 +137,8 @@
 #define SLJIT_CONFIG_LOONGARCH_64 1
 #elif defined(__s390x__)
 #define SLJIT_CONFIG_S390X 1
+#elif defined(__alpha__)
+#define SLJIT_CONFIG_ALPHA_64 1
 #else
 /* Unsupported architecture */
 #define SLJIT_CONFIG_UNSUPPORTED 1
@@ -183,6 +188,78 @@
 #define SLJIT_CONFIG_RISCV 1
 #elif (defined SLJIT_CONFIG_LOONGARCH_64 && SLJIT_CONFIG_LOONGARCH_64)
 #define SLJIT_CONFIG_LOONGARCH 1
+#elif (defined SLJIT_CONFIG_ALPHA_64 && SLJIT_CONFIG_ALPHA_64)
+#define SLJIT_CONFIG_ALPHA 1
+#endif
+
+/*************************/
+/* Endianness detection. */
+/*************************/
+
+#if !defined(SLJIT_BIG_ENDIAN) && !defined(SLJIT_LITTLE_ENDIAN)
+
+#if defined(SLJIT_CONFIG_ARM) && SLJIT_CONFIG_ARM
+
+#ifdef __ARM_BIG_ENDIAN
+#define SLJIT_BIG_ENDIAN 1
+#else
+#define SLJIT_LITTLE_ENDIAN 1
+#endif
+
+#elif (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)
+
+#ifdef __LITTLE_ENDIAN__
+#define SLJIT_LITTLE_ENDIAN 1
+#else
+#define SLJIT_BIG_ENDIAN 1
+#endif
+
+#elif (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS)
+
+#ifdef __MIPSEL__
+#define SLJIT_LITTLE_ENDIAN 1
+#else
+#define SLJIT_BIG_ENDIAN 1
+#endif
+
+#ifndef SLJIT_MIPS_REV
+
+/* Auto detecting mips revision. */
+#if (defined __mips_isa_rev) && (__mips_isa_rev >= 6)
+#define SLJIT_MIPS_REV 6
+#elif defined(__mips_isa_rev) && __mips_isa_rev >= 1
+#define SLJIT_MIPS_REV __mips_isa_rev
+#elif defined(__clang__) \
+	&& (defined(_MIPS_ARCH_OCTEON) || defined(_MIPS_ARCH_P5600))
+/* clang either forgets to define (clang-7) __mips_isa_rev at all
+ * or sets it to zero (clang-8,-9) for -march=octeon (MIPS64 R2+)
+ * and -march=p5600 (MIPS32 R5).
+ * It also sets the __mips macro to 64 or 32 for -mipsN when N <= 5
+ * (should be set to N exactly) so we cannot rely on this too.
+ */
+#define SLJIT_MIPS_REV 1
+#endif
+
+#endif /* !SLJIT_MIPS_REV */
+
+#elif (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
+
+#define SLJIT_BIG_ENDIAN 1
+
+#else
+
+#define SLJIT_LITTLE_ENDIAN 1
+
+#endif
+
+#endif /* !defined(SLJIT_BIG_ENDIAN) && !defined(SLJIT_LITTLE_ENDIAN) */
+
+#if (defined(SLJIT_CONFIG_ARM_64) && SLJIT_CONFIG_ARM_64) \
+	&& (defined(SLJIT_BIG_ENDIAN) && SLJIT_BIG_ENDIAN)
+
+#undef SLJIT_CONFIG_ARM_64
+#define SLJIT_CONFIG_UNSUPPORTED 1
+
 #endif
 
 #endif /* SLJIT_CONFIG_CPU_H_ */

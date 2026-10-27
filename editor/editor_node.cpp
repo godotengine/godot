@@ -702,6 +702,19 @@ void EditorNode::_propagate_translation_notification() {
 	scene_root->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 }
 
+void EditorNode::_queue_resource_counter_changed() {
+	if (resource_counter_queued) {
+		return;
+	}
+	callable_mp(this, &EditorNode::_emit_resource_counter_changed).call_deferred();
+	resource_counter_queued = true;
+}
+
+void EditorNode::_emit_resource_counter_changed() {
+	resource_counter_queued = false;
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
 void EditorNode::_update_system_menu_icons(bool p_dark_mode) {
 	file_menu->set_item_icon(file_menu->get_item_index(SCENE_NEW_SCENE), get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 	file_menu->set_item_icon(file_menu->get_item_index(SCENE_OPEN_SCENE), get_editor_theme_native_menu_icon(SNAME("PackedScene"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
@@ -2076,8 +2089,7 @@ void EditorNode::update_resource_count(Node *p_node, bool p_remove) {
 			resource_count[R].push_back(p_node);
 		}
 	}
-
-	emit_signal(SNAME("resource_counter_changed"));
+	_queue_resource_counter_changed();
 }
 
 int EditorNode::get_resource_count(Ref<Resource> p_res) {
@@ -2111,7 +2123,7 @@ void EditorNode::update_node_reference(const Variant &p_value, Node *p_node, boo
 			}
 		}
 	}
-	emit_signal(SNAME("resource_counter_changed"));
+	_queue_resource_counter_changed();
 }
 
 void EditorNode::clear_node_reference(Ref<Resource> p_res) {
@@ -3012,8 +3024,8 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner, bool p_set
 	for (EditorPlugin *plugin : available_plugins) {
 		if (active_plugins[owner_id].has(plugin)) {
 			// Plugin was already active, just change the object and ensure it's visible.
-			plugin->make_visible(true);
 			plugin->edit(p_object);
+			plugin->make_visible(true);
 			if (p_set_current) {
 				plugin->set_current();
 			}
@@ -3022,8 +3034,8 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner, bool p_set
 
 		if (active_plugins.has(plugin->get_instance_id())) {
 			// Plugin is already active, but as self-owning, so it needs a separate check.
-			plugin->make_visible(true);
 			plugin->edit(p_object);
+			plugin->make_visible(true);
 			if (p_set_current) {
 				plugin->set_current();
 			}
@@ -3050,8 +3062,8 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner, bool p_set
 		}
 
 		if (!need_to_add && to_fold.is_empty()) {
-			plugin->make_visible(true);
 			plugin->edit(p_object);
+			plugin->make_visible(true);
 		} else {
 			for (EditorPropertyResource *epres : to_fold) {
 				epres->fold_resource();

@@ -1272,6 +1272,18 @@ bool CanvasItemEditor::cyclical_dependency_exists(const String &p_target_scene_p
 	return false;
 }
 
+static Transform2D get_parent_screen_transform(Node *p_node) {
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+	if (ci) {
+		return ci->get_screen_transform();
+	}
+	SubViewport *vp = Object::cast_to<SubViewport>(p_node);
+	if (vp) {
+		return vp->get_popup_base_transform();
+	}
+	return Transform2D();
+}
+
 void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_parent) {
@@ -1298,9 +1310,8 @@ void CanvasItemEditor::add_node_to_scene(Node *p_parent, Node *p_child, const Ve
 	if (Object::cast_to<CanvasItem>(p_child)) {
 		// There's nothing to be used as source position, so snapping will work as absolute if enabled.
 		Vector2 target_position = ci_manipulator->snap_point(p_target_position);
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
 		// Set position via undo_redo for proper live editing support.
-		undo_redo->add_do_method(p_child, "set_position", parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position);
+		undo_redo->add_do_method(p_child, "set_position", get_parent_screen_transform(p_parent).affine_inverse().xform(target_position));
 	}
 
 	undo_redo->add_do_method(editor_selection, "add_node", p_child);
@@ -1826,7 +1837,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		if (dragged_anchor >= 0) {
-			// Draw the 4 lines when dragged
+			// Draw the 4 lines when dragged.
 			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 
 			Vector2 corners_pos[4];
@@ -1844,7 +1855,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}
 
-			// Display the percentages next to the lines
+			// Display the percentages next to the lines.
 			real_t percent_val;
 			percent_val = anchors_values[(dragged_anchor + 2) % 4] - anchors_values[dragged_anchor];
 			percent_val = (dragged_anchor >= 2) ? -percent_val : percent_val;
@@ -1863,17 +1874,24 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Side)((dragged_anchor + 1) % 4));
 		}
 
-		// Draw the margin values and the node width/height when dragging control side
+		// Draw the margin values and the node width/height when dragging control side.
 		const real_t ratio = 0.33;
 		Transform2D parent_transform = xform * control->get_transform().affine_inverse();
 		real_t node_pos_in_parent[4];
 
 		Rect2 parent_rect = control->get_parent_anchorable_rect();
 
-		node_pos_in_parent[0] = control->get_anchor(SIDE_LEFT) * parent_rect.size.width + control->get_offset(SIDE_LEFT) + parent_rect.position.x;
 		node_pos_in_parent[1] = control->get_anchor(SIDE_TOP) * parent_rect.size.height + control->get_offset(SIDE_TOP) + parent_rect.position.y;
-		node_pos_in_parent[2] = control->get_anchor(SIDE_RIGHT) * parent_rect.size.width + control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
 		node_pos_in_parent[3] = control->get_anchor(SIDE_BOTTOM) * parent_rect.size.height + control->get_offset(SIDE_BOTTOM) + parent_rect.position.y;
+
+		bool rtl = control->is_layout_rtl();
+		if (rtl) {
+			node_pos_in_parent[0] = (parent_rect.size.width - control->get_anchor(SIDE_LEFT) * parent_rect.size.width) - control->get_offset(SIDE_LEFT) + parent_rect.position.x;
+			node_pos_in_parent[2] = (parent_rect.size.width - control->get_anchor(SIDE_RIGHT) * parent_rect.size.width) - control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
+		} else {
+			node_pos_in_parent[0] = control->get_anchor(SIDE_LEFT) * parent_rect.size.width + control->get_offset(SIDE_LEFT) + parent_rect.position.x;
+			node_pos_in_parent[2] = control->get_anchor(SIDE_RIGHT) * parent_rect.size.width + control->get_offset(SIDE_RIGHT) + parent_rect.position.x;
+		}
 
 		Point2 start, end;
 		switch (drag_type) {
@@ -1883,9 +1901,15 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), SIDE_BOTTOM);
 				[[fallthrough]];
 			case CanvasItemManipulator::DRAG_MOVE:
-				start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
-				end = start - Vector2(control->get_offset(SIDE_LEFT), 0);
-				_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				if (rtl) {
+					start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+					end = start + Vector2(control->get_offset(SIDE_RIGHT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				} else {
+					start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+					end = start - Vector2(control->get_offset(SIDE_LEFT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				}
 				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, Math::round(EDSCALE));
 				break;
 			default:
@@ -1898,9 +1922,15 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), SIDE_BOTTOM);
 				[[fallthrough]];
 			case CanvasItemManipulator::DRAG_MOVE:
-				start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
-				end = start - Vector2(control->get_offset(SIDE_RIGHT), 0);
-				_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				if (rtl) {
+					start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
+					end = start + Vector2(control->get_offset(SIDE_LEFT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_LEFT), parent_transform.xform((start + end) / 2), SIDE_TOP);
+				} else {
+					start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
+					end = start - Vector2(control->get_offset(SIDE_RIGHT), 0);
+					_draw_margin_at_position(control->get_offset(SIDE_RIGHT), parent_transform.xform((start + end) / 2), SIDE_BOTTOM);
+				}
 				viewport->draw_line(parent_transform.xform(start), parent_transform.xform(end), color_base, Math::round(EDSCALE));
 				break;
 			default:
@@ -1938,7 +1968,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 		}
 
 		switch (drag_type) {
-			//Draw the ghost rect if the node if rotated/scaled
+			// Draw the ghost rect if the node if rotated/scaled.
 			case CanvasItemManipulator::DRAG_LEFT:
 			case CanvasItemManipulator::DRAG_TOP_LEFT:
 			case CanvasItemManipulator::DRAG_TOP:
@@ -4046,7 +4076,6 @@ CanvasItemEditor::CanvasItemEditor() {
 	ci_manipulator.instantiate();
 	ci_manipulator->set_editor_mode_enabled(true);
 	ci_manipulator->set_scale(EDSCALE);
-	ci_manipulator->set_drag_threshold(8);
 	// Enable pixel snapping even if pixel snap rendering is disabled in the Project Settings.
 	// This results in crisper visuals by preventing 2D nodes from being placed at subpixel coordinates.
 	ci_manipulator->set_snap_mode(SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_OTHER_NODES | SNAP_GUIDES | SNAP_PIXEL);
@@ -4742,11 +4771,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	if (instance_ci) {
 		Vector2 target_pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(p_point);
 		target_pos = canvas_item_editor->get_canvas_item_manipulator()->snap_point(target_pos);
-
-		CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
-		if (parent_ci) {
-			target_pos = parent_ci->get_global_transform_with_canvas().affine_inverse().xform(target_pos);
-		}
+		target_pos = get_parent_screen_transform(p_parent).affine_inverse().xform(target_pos);
 		// Preserve instance position of the original scene.
 		target_pos += instance_ci->_edit_get_position();
 

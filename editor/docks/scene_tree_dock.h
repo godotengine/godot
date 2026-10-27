@@ -239,8 +239,8 @@ class SceneTreeDock : public EditorDock {
 
 	void _toggle_editable_children_from_selection();
 
-	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
-	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
+	void _restore_nodes_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_names, const Array &p_transforms);
+	void _reparent_nodes_to_paths_with_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_names);
 	void _toggle_editable_children(List<Node *> &p_nodes, ItemCheckState p_current_state = STATE_INDETERMINATE);
 
 	bool _is_external(Node *p_node) const;
@@ -336,7 +336,7 @@ class SceneTreeDock : public EditorDock {
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
-	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true);
+	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_keep_owned_children = true);
 
 private:
 	static SceneTreeDock *singleton;

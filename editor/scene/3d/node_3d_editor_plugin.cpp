@@ -769,10 +769,10 @@ void Node3DEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_
 	EditorUndoRedoManager *undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo);
 
-	int child_count = node->get_child_count();
-	for (int i = 0; i < child_count; i++) {
-		Node3D *child = Object::cast_to<Node3D>(node->get_child(i));
-		if (child) {
+	bool can_preserve_instance = can_preserve_owned_children_transform(node);
+	for (Node *node_child : node->iterate_children()) {
+		Node3D *child = Object::cast_to<Node3D>(node_child);
+		if (child && (can_preserve_instance || child->get_owner() != node)) {
 			Transform3D child_global = child->get_global_transform();
 			undo_redo->add_do_method(child, "set_global_transform", child_global);
 			undo_redo->add_undo_method(child, "set_global_transform", child_global);
@@ -4345,6 +4345,10 @@ void Node3DEditor::set_local_coords_enabled(bool on) const {
 
 bool Node3DEditor::is_preserve_children_transform_enabled() const {
 	return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
+}
+
+bool Node3DEditor::can_preserve_owned_children_transform(Node *p_node) const {
+	return !p_node->is_instance() || !p_node->get_owner() || p_node->get_owner()->is_editable_instance(p_node);
 }
 
 bool Node3DEditor::is_snap_enabled() const {

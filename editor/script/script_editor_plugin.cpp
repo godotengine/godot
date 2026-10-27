@@ -4176,6 +4176,7 @@ DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const St
 
 	script_name_button = memnew(Button);
 	script_name_button->set_flat(true);
+	script_name_button->set_theme_type_variation(SceneStringName(FlatButton));
 	script_name_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button->set_tooltip_text(TTRC("Navigate to document list."));

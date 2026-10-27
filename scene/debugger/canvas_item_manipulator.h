@@ -46,14 +46,6 @@ class CanvasItemManipulator : public RefCounted {
 	GDCLASS(CanvasItemManipulator, RefCounted);
 
 public:
-	constexpr static real_t GIZMO_HANDLE_DISTANCE = 25;
-	constexpr static Rect2 GIZMO_HANDLE_X_RECT = Rect2(GIZMO_HANDLE_DISTANCE, -5, 10, 10);
-	constexpr static Rect2 GIZMO_HANDLE_Y_RECT = Rect2(-5, GIZMO_HANDLE_DISTANCE, 10, 10);
-
-	constexpr static real_t RESIZE_HANDLE_DIAMETER = 10;
-
-	constexpr static Size2 ANCHOR_HANDLE_SIZE = Size2(16, 16);
-
 	enum Tool {
 		TOOL_SELECT,
 		TOOL_SCENE_PAINT,
@@ -99,6 +91,16 @@ public:
 		DRAG_KEY_MOVE,
 	};
 
+	constexpr static real_t DRAG_THRESHOLD = 8;
+#ifdef TOOLS_ENABLED
+	constexpr static real_t GIZMO_HANDLE_DISTANCE = 25;
+	constexpr static Rect2 GIZMO_HANDLE_X_RECT = Rect2(GIZMO_HANDLE_DISTANCE, -5, 10, 10);
+	constexpr static Rect2 GIZMO_HANDLE_Y_RECT = Rect2(-5, GIZMO_HANDLE_DISTANCE, 10, 10);
+
+	constexpr static real_t RESIZE_HANDLE_DIAMETER = 10;
+
+	constexpr static Size2 ANCHOR_HANDLE_SIZE = Size2(16, 16);
+
 	enum ShortcutName {
 		SHORTCUT_CANCEL_TRANSFORM,
 		SHORTCUT_MAX,
@@ -127,6 +129,7 @@ public:
 
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
+#endif
 
 private:
 	StringName update_canvas_signal = "update_canvas_requested";
@@ -136,14 +139,10 @@ private:
 	Input::CursorShape cursor_shape = Input::CursorShape::CURSOR_ARROW;
 	bool editor_mode = false; // Set it manually instead of using the hint, to allow debugging the editor itself.
 
-	bool local_space = false;
-	bool show_transformation_gizmos = false;
 	real_t grab_distance = 1;
-	real_t drag_threshold = 0;
 	real_t scale = 1;
 	real_t zoom = 1;
 	Point2 view_offset;
-	bool anchors_mode = false;
 	Viewport *viewport = nullptr;
 
 	Point2 box_selecting_to;
@@ -154,6 +153,23 @@ private:
 	Point2 drag_rotation_center;
 	Point2 temp_pivot = Point2(Math::INF, Math::INF);
 	Array drag_selection;
+
+	Callable find_items_start_callback;
+	Callable point_selected_callback;
+	Callable get_selection_callback;
+	Callable global_transform_callback;
+
+	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
+	bool _gui_input_select(const Ref<InputEvent> &p_event);
+
+	Rect2 _encompass_selection_rect(const Array &p_selected);
+
+	void _update_cursor_shape();
+
+#ifdef TOOLS_ENABLED
+	bool local_space = false;
+	bool show_transformation_gizmos = false;
+	bool anchors_mode = false;
 
 	int snap_mode = SNAP_DEFAULT;
 	bool smart_snap = false;
@@ -184,16 +200,11 @@ private:
 
 	HashMap<int, Ref<Shortcut>> inputs;
 
-	Callable find_items_start_callback;
-	Callable point_selected_callback;
-	Callable get_selection_callback;
 	Callable local_transform_callback;
-	Callable global_transform_callback;
 	Callable local_mouse_pos_callback;
 	Callable plugin_input_callback;
 
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
-	bool _gui_input_open_scene_on_double_click(const Ref<InputEvent> &p_event);
 	bool _gui_input_scale(const Ref<InputEvent> &p_event);
 	bool _gui_input_pivot(const Ref<InputEvent> &p_event);
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
@@ -201,12 +212,9 @@ private:
 	bool _gui_input_move(const Ref<InputEvent> &p_event);
 	bool _gui_input_anchors(const Ref<InputEvent> &p_event);
 	bool _gui_input_ruler_tool(const Ref<InputEvent> &p_event);
-	bool _gui_input_select(const Ref<InputEvent> &p_event);
 	bool _gui_input_cancel_drag(const Ref<InputEvent> &p_event, bool p_reset_snap_targets = false, bool p_restore_bones = false);
 
 	bool _validate_drag_selection();
-
-	Rect2 _encompass_selection_rect(const Array &p_selected);
 
 	void _snap_if_closer_float(
 			const real_t p_value,
@@ -226,9 +234,8 @@ private:
 			const SnapTarget p_snap_target, const Array &p_exceptions,
 			const Node *p_current);
 
-	void _update_cursor_shape();
-
 	void _emit_locked_warn_signal();
+#endif
 
 protected:
 	static void _bind_methods();
@@ -236,33 +243,44 @@ protected:
 public:
 	bool gui_input(const Ref<InputEvent> &p_event);
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const Array &p_other_nodes_exceptions = Array());
-	static Point2 anchor_to_position(const Control *p_control, const Point2 p_anchor);
-	static Point2 position_to_anchor(const Control *p_control, const Point2 &p_position);
-
 	void get_canvas_items_at_pos(const Point2 &p_pos, Vector<DebuggerHelpers::SelectResult> &r_items, bool p_allow_locked = false);
 	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
 	Input::CursorShape get_cursor_shape() const { return cursor_shape; }
 
-	void commit_drag();
 	void reset_drag();
-
-	bool reset_temp_pivot();
 
 	void set_editor_mode_enabled(bool p_enabled) { editor_mode = p_enabled; }
 
 	void set_tool(Tool p_tool);
 	void set_drag_type(DragType p_type) { drag_type = p_type; }
-	void set_local_space_enabled(bool p_enabled) { local_space = p_enabled; }
 	void set_grab_distance(const real_t p_distance) { grab_distance = p_distance; }
-	void set_drag_threshold(const real_t p_threshold) { drag_threshold = p_threshold; }
 	void set_scale(const real_t p_scale) { scale = p_scale; }
 	void set_zoom(const real_t p_zoom) { zoom = p_zoom; }
 	void set_view_offset(const Point2 p_offset) { view_offset = p_offset; }
-	void set_anchors_mode_enabled(bool p_enabled) { anchors_mode = p_enabled; }
 	void set_viewport(Viewport *p_viewport) { viewport = p_viewport; }
+
+	void set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input);
+
+	static bool is_node_locked(const Node *p_node);
+
+	Tool get_tool() const { return tool; }
+	DragType get_drag_type() const { return drag_type; }
+
+	Point2 get_drag_from() const { return drag_from; }
+
+#ifdef TOOLS_ENABLED
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, const Array &p_other_nodes_exceptions = Array());
+	static Point2 anchor_to_position(const Control *p_control, const Point2 p_anchor);
+	static Point2 position_to_anchor(const Control *p_control, const Point2 &p_position);
+
+	void commit_drag();
+
+	bool reset_temp_pivot();
+
+	void set_local_space_enabled(bool p_enabled) { local_space = p_enabled; }
+	void set_anchors_mode_enabled(bool p_enabled) { anchors_mode = p_enabled; }
 
 	void set_grid_snap_enabled(bool p_enabled) { grid_snap = p_enabled; }
 	void set_grid_step(const Point2 &p_step) { grid_step = p_step; }
@@ -284,19 +302,14 @@ public:
 	void set_ruler_width(const real_t p_width) { ruler_width = p_width; }
 
 	void set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut);
-	void set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input);
 
-	static bool is_node_locked(const Node *p_node);
 	bool is_node_movable(const Node *p_node, bool p_popup_warning = false);
 
-	Tool get_tool() const { return tool; }
-	DragType get_drag_type() const { return drag_type; }
-	bool is_local_space_enabled() { return local_space; }
-
 	Point2 get_drag_to() const { return drag_to; }
-	Point2 get_drag_from() const { return drag_from; }
 	Point2 get_drag_rotation_center() const { return drag_rotation_center; }
 	Array get_drag_selection() const { return drag_selection.duplicate(); }
+
+	bool is_local_space_enabled() { return local_space; }
 
 	Point2 get_temp_pivot() const { return temp_pivot; }
 
@@ -326,5 +339,6 @@ public:
 
 	bool is_ruler_tool_active() { return ruler_tool_active; }
 	Point2 get_ruler_tool_origin() const { return ruler_tool_origin; }
+#endif
 };
 #endif // DEBUG_ENABLED

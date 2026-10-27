@@ -180,7 +180,7 @@ layout(location = 21) in highp uvec4 prev_instance_color_custom_data;
 
 #define FLAGS_NON_UNIFORM_SCALE (1 << 4)
 
-uniform highp sampler2D global_shader_parameters_texture; //texunit:-13
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-1
 
 #define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
 #define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
@@ -1198,7 +1198,7 @@ decal_data_block;
 
 #endif // USE_DECALS
 
-uniform highp sampler2D global_shader_parameters_texture; //texunit:-13
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-1
 
 #define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
 #define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
@@ -3281,8 +3281,11 @@ void main() {
 
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
-	frag_color.rgb *= scene_data_block.data.luminance_multiplier;
 
+#ifndef BLEND_MUL
+	// Multiply blending reads a destination that is already scaled by luminance_multiplier
+	frag_color.rgb *= scene_data_block.data.luminance_multiplier;
+#endif // !BLEND_MUL
 #endif // !RENDER_MATERIAL
 #endif // !MODE_RENDER_DEPTH
 

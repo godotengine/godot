@@ -42,9 +42,9 @@ POSSIBILITY OF SUCH DAMAGE.
 /* The current PCRE version information. */
 
 #define PCRE2_MAJOR           10
-#define PCRE2_MINOR           47
+#define PCRE2_MINOR           49
 #define PCRE2_PRERELEASE      
-#define PCRE2_DATE            2025-10-21
+#define PCRE2_DATE            2026-09-28
 
 /* When an application links to a PCRE2 DLL in Windows, the symbols that are
 imported have to be identified as such. When building PCRE2, the appropriate
@@ -438,6 +438,7 @@ released, the numbers must not be changed. */
 #define PCRE2_ERROR_DIFFSUBSOFFSET    (-73)
 #define PCRE2_ERROR_DIFFSUBSOPTIONS   (-74)
 #define PCRE2_ERROR_BAD_BACKSLASH_K   (-75)
+#define PCRE2_ERROR_PARTIALSUBS       (-76)
 
 
 /* Request types for pcre2_pattern_info() */

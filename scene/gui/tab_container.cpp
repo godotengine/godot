@@ -51,10 +51,10 @@ TabContainer::CachedTab *TabContainer::get_pending_tab(int p_idx) const {
 	return pending_tabs.ptrw() + p_idx;
 }
 
-int TabContainer::_get_tab_height() const {
+int TabContainer::_get_internal_container_height() const {
 	int height = 0;
-	if (tabs_visible && get_tab_count() > 0) {
-		height = tab_bar->get_minimum_size().height + theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+	if (tabs_visible && (get_tab_count() > 0 || internal_container->get_child_count() != 1)) {
+		height = internal_container->get_bound_minimum_size().height + theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 	}
 
 	return height;
@@ -167,7 +167,7 @@ void TabContainer::_notification(int p_what) {
 				theme_cache.panel_style->draw(canvas, Rect2(0, 0, size.width, size.height));
 				return;
 			}
-			int header_height = _get_tab_height();
+			int header_height = _get_internal_container_height();
 			int header_voffset = int(tabs_position == POSITION_BOTTOM) * (size.height - header_height);
 
 			// Draw background for the tabbar.
@@ -309,10 +309,10 @@ void TabContainer::_repaint_internal() {
 	if (_is_tab_bar_owned()) {
 		if (tabs_position == POSITION_BOTTOM) {
 			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 1.0, -bottom_margin);
-			internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_tab_height());
+			internal_container->set_anchor_and_offset(SIDE_TOP, 1.0, top_margin - _get_internal_container_height());
 		} else {
 			internal_container->set_anchor_and_offset(SIDE_TOP, 0.0, top_margin);
-			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_tab_height() - bottom_margin);
+			internal_container->set_anchor_and_offset(SIDE_BOTTOM, 0.0, _get_internal_container_height() - bottom_margin);
 		}
 	}
 
@@ -331,9 +331,9 @@ void TabContainer::_repaint_internal() {
 
 		if (tabs_visible && _is_tab_bar_owned()) {
 			if (tabs_position == POSITION_BOTTOM) {
-				current_control->set_offset(SIDE_BOTTOM, -_get_tab_height());
+				current_control->set_offset(SIDE_BOTTOM, -_get_internal_container_height());
 			} else {
-				current_control->set_offset(SIDE_TOP, _get_tab_height());
+				current_control->set_offset(SIDE_TOP, _get_internal_container_height());
 			}
 		}
 
@@ -636,6 +636,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 
 	_update_margins();
 	if (get_tab_count() == 1) {
+		_repaint_call_deferred();
 		queue_redraw();
 	}
 	queue_accessibility_update();
@@ -696,6 +697,7 @@ void TabContainer::remove_child_notify(Node *p_child) {
 
 	_update_margins();
 	if (get_tab_count() == 0) {
+		_repaint_call_deferred();
 		queue_redraw();
 	}
 	queue_accessibility_update();
@@ -1046,7 +1048,7 @@ Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	Size2 ms;
 
 	if (tabs_visible && _is_tab_bar_owned()) {
-		ms = p_use_desired_sizes ? tab_bar->get_bound_desired_size() : tab_bar->get_minimum_size();
+		ms = p_use_desired_sizes ? internal_container->get_bound_desired_size() : internal_container->get_minimum_size();
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 

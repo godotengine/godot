@@ -1414,18 +1414,18 @@ void EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPrese
 
 // Changes dir for the current scope, returning back to the original dir
 // when scope exits
-class DirChanger {
+class DirChangerExport {
 	Ref<DirAccess> da;
 	String original_dir;
 
 public:
-	DirChanger(const Ref<DirAccess> &p_da, const String &p_dir) :
+	DirChangerExport(const Ref<DirAccess> &p_da, const String &p_dir) :
 			da(p_da),
 			original_dir(p_da->get_current_dir()) {
 		p_da->change_dir(p_dir);
 	}
 
-	~DirChanger() {
+	~DirChangerExport() {
 		da->change_dir(original_dir);
 	}
 };
@@ -1542,7 +1542,7 @@ Error EditorExportPlatformMacOS::_copy_dir_and_validate_arch(const Ref<EditorExp
 		p_to = p_to + "/";
 	}
 
-	DirChanger dir_changer(p_dir_access, p_from);
+	DirChangerExport dir_changer(p_dir_access, p_from);
 	Error err = _copy_dir_and_validate_arch_impl(p_preset, p_dir_access, target_da, p_to, p_chmod_flags, p_copy_links);
 
 	return err;
@@ -2313,7 +2313,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		if (file.begins_with("Contents/MacOS/godot_")) {
 			if (architecture == "universal") {
-				if (file.begins_with("Contents/MacOS/" + binary_to_use_base)) {
+				if (!file.begins_with("Contents/MacOS/" + binary_to_use_base)) {
 					ret = unzGoToNextFile(src_pkg_zip);
 					continue; // skip
 				}

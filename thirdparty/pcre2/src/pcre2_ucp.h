@@ -42,6 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------
 */
 
+
 #ifndef PCRE2_UCP_H_IDEMPOTENT_GUARD
 #define PCRE2_UCP_H_IDEMPOTENT_GUARD
 
@@ -301,6 +302,7 @@ enum {
   ucp_Multani,
   ucp_Old_Hungarian,
   ucp_Adlam,
+  ucp_Newa,
   ucp_Osage,
   ucp_Tangut,
   ucp_Masaram_Gondi,
@@ -376,7 +378,6 @@ enum {
   ucp_SignWriting,
   ucp_Bhaiksuki,
   ucp_Marchen,
-  ucp_Newa,
   ucp_Nushu,
   ucp_Soyombo,
   ucp_Zanabazar_Square,
@@ -394,6 +395,10 @@ enum {
   ucp_Kawi,
   ucp_Nag_Mundari,
   ucp_Kirat_Rai,
+  ucp_Sidetic,
+  ucp_Tai_Yo,
+  ucp_Tolong_Siki,
+  ucp_Beria_Erfe,
 
   /* This must be last */
   ucp_Script_Count

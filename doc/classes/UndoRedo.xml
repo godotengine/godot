@@ -217,7 +217,7 @@
 			<return type="int" />
 			<description>
 				Gets the version. Every time a new action is committed, the [UndoRedo]'s version number is increased automatically.
-				This is useful mostly to check if something changed from a saved version.
+				This is useful mostly to check if something changed from a saved version. The initial version is [code]1[/code].
 			</description>
 		</method>
 		<method name="has_redo" qualifiers="const">

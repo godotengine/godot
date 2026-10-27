@@ -357,7 +357,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onNewIntent(newIntent: Intent) {
-		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY)) {
+		if (newIntent.hasCategory(HYBRID_APP_PANEL_CATEGORY) || newIntent.hasCategory(HYBRID_APP_IMMERSIVE_CATEGORY) || newIntent.hasCategory(HYBRID_APP_SPATIAL_CATEGORY)) {
 			val params = retrieveCommandLineParamsFromLaunchIntent(newIntent)
 			Log.d(TAG, "Received hybrid transition intent $newIntent with parameters ${params.contentToString()}")
 			// Override EXTRA_NEW_LAUNCH so the editor is not restarted
@@ -369,6 +369,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				var xrMode = XR_MODE_DEFAULT
 				var path = ""
 				var base64HybridData = ""
+				var explicitHybridSwitchFlag = false
 				if (params.isNotEmpty()) {
 					val sceneIndex = params.indexOf(SCENE_ARG)
 					if (sceneIndex != -1 && sceneIndex + 1 < params.size) {
@@ -389,12 +390,18 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					if (hybridDataIndex != -1 && hybridDataIndex + 1 < params.size) {
 						base64HybridData = params[hybridDataIndex + 1]
 					}
+
+					explicitHybridSwitchFlag = params.contains(EXPLICIT_HYBRID_SWITCH_ARG)
 				}
 
 				val sceneArgs = mutableSetOf(XR_MODE_ARG, xrMode, HYBRID_DATA_ARG, base64HybridData).apply {
 					if (path.isNotEmpty() && scene.isEmpty()) {
 						add(PATH_ARG)
 						add(path)
+					}
+
+					if (explicitHybridSwitchFlag) {
+						add(EXPLICIT_HYBRID_SWITCH_ARG)
 					}
 				}
 
@@ -665,7 +672,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			val gameInfo = if (xrMode == XR_MODE_ON) {
 				XR_RUN_GAME_INFO
 			} else if ((xrMode == XR_MODE_DEFAULT && GodotLib.getGlobal("xr/openxr/enabled").toBoolean())) {
-				if (getHybridAppLaunchMode() == HybridMode.PANEL) {
+				if (getHybridAppLaunchMode() == HybridLaunchMode.PANEL) {
 					getRunGameInfoForInstance(runInstance)
 				} else {
 					XR_RUN_GAME_INFO
@@ -1057,7 +1064,17 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onEditorWorkspaceSelected(workspace: String) {
 		activeWorkspace = workspace
 
-		if (workspace == GAME_WORKSPACE && shouldShowGameMenuBar()) {
+		if (workspace == GAME_WORKSPACE) {
+			showEditorGameDock()
+		}
+
+		if (!isLargeScreen) {
+			toggleEditorOrientation()
+		}
+	}
+
+	final override fun showEditorGameDock() {
+		if (shouldShowGameMenuBar()) {
 			if (editorMessageDispatcher.bringEditorWindowToFront(EMBEDDED_RUN_GAME_INFO) ||
 				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_0) ||
 				editorMessageDispatcher.bringEditorWindowToFront(RUN_GAME_INFO_1)) {
@@ -1074,10 +1091,6 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				updateEmbeddedGameView(gameRunning, gameEmbedMode != GameEmbedMode.DISABLED)
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
-		}
-
-		if (!isLargeScreen) {
-			toggleEditorOrientation()
 		}
 	}
 

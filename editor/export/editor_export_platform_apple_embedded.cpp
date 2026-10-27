@@ -990,11 +990,6 @@ void EditorExportPlatformAppleEmbedded::_check_xcframework_content(const String 
 Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_source, const String &p_destination, const String &p_id) const {
 	print_line("Converting to .framework", p_source, " -> ", p_destination);
 
-	Ref<DirAccess> da = DirAccess::create_for_path(p_source);
-	if (da.is_null()) {
-		return ERR_CANT_OPEN;
-	}
-
 	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (filesystem_da.is_null()) {
 		return ERR_CANT_OPEN;
@@ -1049,6 +1044,10 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 						Ref<PListNode> dpath_node = lib["DebugSymbolsPath"];
 						if (dpath_node.is_valid()) {
 							String dpath = dpath_node->get_value();
+							Ref<DirAccess> da = DirAccess::create_for_path(p_source);
+							if (da.is_null()) {
+								return ERR_CANT_OPEN;
+							}
 							if (da->dir_exists(p_source.path_join(library_identifier).path_join(dpath))) {
 								da->copy_dir(p_source.path_join(library_identifier).path_join(dpath), p_destination.path_join(library_identifier).path_join("dSYMs"));
 							}
@@ -1067,6 +1066,10 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 		String file_name = p_destination.get_basename().get_file();
 		String framework_name = file_name + ".framework";
 
+		Ref<DirAccess> da = DirAccess::create_for_path(p_source);
+		if (da.is_null()) {
+			return ERR_CANT_OPEN;
+		}
 		da->copy(p_source, p_destination.path_join(file_name));
 
 		// Performing `install_name_tool -id @rpath/{name}.framework/{name} ./{name}` on dylib

@@ -1567,7 +1567,7 @@ void RasterizerSceneGLES3::_update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_inde
 }
 
 void RasterizerSceneGLES3::_bind_global_shader_parameters() {
-	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 13);
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 1);
 	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
 }
 
@@ -3494,7 +3494,11 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_ADD: {
 							glBlendEquation(GL_FUNC_ADD);
-							glBlendFunc(p_pass_mode == PASS_MODE_COLOR_TRANSPARENT ? GL_SRC_ALPHA : GL_ONE, GL_ONE);
+							if (p_render_data->transparent_bg) {
+								glBlendFunc(p_pass_mode == PASS_MODE_COLOR_TRANSPARENT ? GL_SRC_ALPHA : GL_ONE, GL_ONE);
+							} else {
+								glBlendFuncSeparate(p_pass_mode == PASS_MODE_COLOR_TRANSPARENT ? GL_SRC_ALPHA : GL_ONE, GL_ONE, GL_ZERO, GL_ONE);
+							}
 
 						} break;
 						case GLES3::SceneShaderData::BLEND_MODE_SUB: {

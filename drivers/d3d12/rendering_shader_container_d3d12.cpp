@@ -1015,7 +1015,7 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatD3D1
 	return SHADER_LANGUAGE_VULKAN_VERSION_1_1;
 }
 
-RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatD3D12::get_shader_spirv_version() const {
+RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatD3D12::get_shader_spirv_version(ShaderStage p_stage) const {
 	// The SPIR-V part of Mesa supports 1.6, but:
 	// - SPIRV-Reflect won't be able to parse the compute workgroup size.
 	// - We want to play it safe with NIR-DXIL.

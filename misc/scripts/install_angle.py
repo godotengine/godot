@@ -20,7 +20,7 @@ else:
 
 # ANGLE
 # Check for latest version: https://github.com/godotengine/godot-angle-static/releases/latest
-angle_version = "chromium/7219"
+angle_version = "chromium/8118"
 angle_folder = os.path.join(deps_folder, "angle")
 
 # Create dependencies folder

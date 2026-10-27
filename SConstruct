@@ -2,7 +2,7 @@
 from misc.utility.scons_hints import *
 
 EnsureSConsVersion(4, 4)
-EnsurePythonVersion(3, 9)
+EnsurePythonVersion(3, 10)
 
 # System
 import glob
@@ -879,6 +879,7 @@ else:
             # Remap absolute paths to relative paths for debug symbols.
             project_path = Dir("#").abspath
             env.AppendUnique(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+            env.AppendUnique(LINKFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.

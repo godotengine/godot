@@ -477,8 +477,8 @@ start/end of string field names are. */
        &(NLBLOCK->nllen), utf)) \
     : \
     ((p) <= NLBLOCK->PSEND - NLBLOCK->nllen && \
-     UCHAR21TEST(p) == NLBLOCK->nl[0] && \
-     (NLBLOCK->nllen == 1 || UCHAR21TEST(p+1) == NLBLOCK->nl[1])       \
+     *p == NLBLOCK->nl[0] && \
+     (NLBLOCK->nllen == 1 || p[1] == NLBLOCK->nl[1])       \
     ) \
   )
 
@@ -491,8 +491,8 @@ start/end of string field names are. */
        &(NLBLOCK->nllen), utf)) \
     : \
     ((p) >= NLBLOCK->PSSTART + NLBLOCK->nllen && \
-     UCHAR21TEST(p - NLBLOCK->nllen) == NLBLOCK->nl[0] &&              \
-     (NLBLOCK->nllen == 1 || UCHAR21TEST(p - NLBLOCK->nllen + 1) == NLBLOCK->nl[1]) \
+     *(p - NLBLOCK->nllen) == NLBLOCK->nl[0] &&              \
+     (NLBLOCK->nllen == 1 || *(p - NLBLOCK->nllen + 1) == NLBLOCK->nl[1]) \
     ) \
   )
 
@@ -1518,7 +1518,7 @@ High16 and High32: the highest bit is always one
 The items are ordered in increasing order, so binary search can be
 used to find the lower bound of an input character. The lower bound
 is the highest item, which value is less or equal than the input
-character. If the lower bit of the item is cleard, or the character
+character. If the lower bit of the item is cleared, or the character
 stored in the item equals to the input character, the input
 character is in the character list. */
 
@@ -1539,14 +1539,19 @@ character is in the character list. */
 #define XCL_CHAR_LIST_HIGH_32_END 0xffffffff
 #define XCL_CHAR_LIST_HIGH_32_ADD 0x80000000
 
-/* Mask for getting the descriptors of character list ranges.
-Each descriptor has XCL_TYPE_BIT_LEN bits, and can be processed
-by XCL_BEGIN_WITH_RANGE and XCL_ITEM_COUNT_MASK macros. */
+/* Mask and length values for getting the descriptors of
+all character list ranges. The bit length of each descriptor
+is XCL_TYPE_BIT_LEN so the total size is 4*XCL_TYPE_BIT_LEN
+(currently 12 bit). This data is stored for all four character
+lists, even if no characters are present in a list. */
 #define XCL_TYPE_MASK 0xfff
 #define XCL_TYPE_BIT_LEN 3
-/* If this bit is set, the first item of the character list is the
-end of a range, which started before the starting character of the
-character list. */
+/* If this bit is set for a character class, the first item of the
+character list is the end of a range, which started before the
+starting character of the character list. If this bit is set, and
+no characters are present in the list, the whole character class
+is part of a range. E.g: [\x{500}-\x{12000}] covers the entire
+0x8000-0xffff range. */
 #define XCL_BEGIN_WITH_RANGE 0x4
 /* Number of items in the character list: 0, 1, or 2. The value 3
 represents that the item count is stored at the begining of the
@@ -2296,6 +2301,7 @@ is available. */
 #define _pcre2_is_newline            PCRE2_SUFFIX(_pcre2_is_newline_)
 #define _pcre2_jit_free_rodata       PCRE2_SUFFIX(_pcre2_jit_free_rodata_)
 #define _pcre2_jit_free              PCRE2_SUFFIX(_pcre2_jit_free_)
+#define _pcre2_jit_check_exec        PCRE2_SUFFIX(_pcre2_jit_check_exec_)
 #define _pcre2_jit_get_size          PCRE2_SUFFIX(_pcre2_jit_get_size_)
 #define _pcre2_jit_get_target        PCRE2_SUFFIX(_pcre2_jit_get_target_)
 #define _pcre2_memctl_malloc         PCRE2_SUFFIX(_pcre2_memctl_malloc_)
@@ -2325,6 +2331,7 @@ extern BOOL         _pcre2_is_newline(PCRE2_SPTR, uint32_t, PCRE2_SPTR,
                       uint32_t *, BOOL);
 extern void         _pcre2_jit_free_rodata(void *, void *);
 extern void         _pcre2_jit_free(void *, pcre2_memctl *);
+extern BOOL         _pcre2_jit_check_exec(void *, uint32_t);
 extern size_t       _pcre2_jit_get_size(void *);
 const char *        _pcre2_jit_get_target(void);
 extern void *       _pcre2_memctl_malloc(size_t, pcre2_memctl *);

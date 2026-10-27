@@ -42,9 +42,14 @@ Variant Node::_get_rpc_config_bind_compat_106848() const {
 	return _get_node_rpc_config_bind();
 }
 
+void Node::_replace_by_bind_compat_124447(RequiredParam<Node> p_node, bool p_keep_groups) {
+	replace_by(p_node, p_keep_groups, true);
+}
+
 void Node::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_name", "name"), &Node::_set_name_bind_compat_76560);
 	ClassDB::bind_compatibility_method(D_METHOD("get_rpc_config"), &Node::_get_rpc_config_bind_compat_106848);
+	ClassDB::bind_compatibility_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::_replace_by_bind_compat_124447, DEFVAL(false));
 }
 
 #endif // DISABLE_DEPRECATED

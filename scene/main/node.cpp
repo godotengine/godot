@@ -3097,7 +3097,7 @@ void Node::_duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags)
 		Node *original = p_original->get_child(i, false);
 		// If using instantiation and the child structure changed, getting it by index will result in
 		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
-		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		Node *copy = instantiated ? p_copy->get_node(NodePath({ original->get_name() }, false)) : p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
 		_duplicate_scripts(original, copy, p_flags);
 	}
@@ -3161,7 +3161,7 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		Node *original = p_original->get_child(i, false);
 		// If using instantiation and the child structure changed, getting it by index will result in
 		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
-		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		Node *copy = instantiated ? p_copy->get_node(NodePath({ original->get_name() }, false)) : p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
 		_duplicate_properties(p_root, original, copy, p_flags);
 	}
@@ -3242,7 +3242,7 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 	}
 }
 
-void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
+void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups, bool p_keep_owned_children) {
 	ERR_THREAD_GUARD
 	EXTRACT_PARAM_OR_FAIL(node, p_node);
 	ERR_FAIL_COND(node->data.parent);
@@ -3282,8 +3282,14 @@ void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
 	emit_signal(SNAME("replacing_by"), node);
 
 	// Move non-internal children to `p_node`.
-	while (get_child_count(false)) {
-		Node *child = get_child(0, false);
+	int idx = 0;
+	while (idx < get_child_count(false)) {
+		Node *child = get_child(idx);
+		if (!p_keep_owned_children && child->get_owner() == this) {
+			idx++;
+			continue;
+		}
+
 		remove_child(child);
 		Node *child_owner = child->get_owner() == this ? node : child->get_owner();
 		child->set_owner(nullptr);
@@ -3292,14 +3298,23 @@ void Node::replace_by(RequiredParam<Node> p_node, bool p_keep_groups) {
 	}
 
 	node->set_owner(owner);
-	for (Node *E : owned) {
-		if (E->data.owner != node) {
-			E->set_owner(node);
+
+	if (p_keep_owned_children) {
+		for (Node *E : owned) {
+			if (E->data.owner != node) {
+				E->set_owner(node);
+			}
 		}
 	}
 
 	for (Node *E : owned_by_owner) {
 		if (E->data.owner != owner) {
+			if (!p_keep_owned_children && E->data.parent->data.owner == this) {
+				// Move external nodes that were added as grandchildren.
+				E->data.parent->remove_child(E);
+				node->add_child(E);
+			}
+
 			E->set_owner(owner);
 		}
 	}
@@ -3902,7 +3917,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_DEFAULT));
-	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups", "keep_owned_children"), &Node::replace_by, DEFVAL(false), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);

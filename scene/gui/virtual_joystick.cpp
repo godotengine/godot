@@ -92,6 +92,13 @@ void VirtualJoystick::_notification(int p_what) {
 			tip_pos = joystick_pos;
 		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			if (!input_vector.is_zero_approx()) {
+				input_vector = Vector2();
+				_handle_input_actions();
+			}
+		} break;
+
 		case NOTIFICATION_RESIZED: {
 			_reset();
 		} break;

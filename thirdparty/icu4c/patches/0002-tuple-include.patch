@@ -1,0 +1,14 @@
+diff --git a/thirdparty/icu4c/common/cmemory.h b/thirdparty/icu4c/common/cmemory.h
+index fc0276fec5..0d66b5e291 100644
+--- a/thirdparty/icu4c/common/cmemory.h
++++ b/thirdparty/icu4c/common/cmemory.h
+@@ -30,8 +30,9 @@
+ 
+ #include <limits.h>
+ #include <stddef.h>
+ #include <string.h>
++#include <tuple>
+ #include "unicode/localpointer.h"
+ #include "uassert.h"
+ 
+ #if U_DEBUG && defined(UPRV_MALLOC_COUNT)
