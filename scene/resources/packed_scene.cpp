@@ -506,7 +506,7 @@ Node *SceneState::_instantiate(GenEditState p_edit_state, LocalVector<DeferredNo
 					} else {
 						Variant value = props[nprops[j].value];
 
-						if (value.get_type() == Variant::OBJECT && p_edit_state == GEN_EDIT_STATE_DISABLED) {
+						if (value.get_type() == Variant::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
@@ -514,7 +514,8 @@ Node *SceneState::_instantiate(GenEditState p_edit_state, LocalVector<DeferredNo
 							}
 						} else {
 							// Making sure that instances of inherited scenes don't share the same
-							// reference between them.
+							// container references. Resources must retain their identity; unlike
+							// nested resources, a Resource passed directly to duplicate() is copied.
 							if (is_inherited_scene) {
 								value = value.duplicate(true);
 							}
