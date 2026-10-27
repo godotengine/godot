@@ -906,7 +906,21 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					_viewport_set_force_motion_vectors(vp, false);
 				}
 
-				RSG::texture_storage->render_target_set_render_region(vp->render_target, xr_interface->get_render_region());
+				Rect2i region = xr_interface->get_render_region();
+
+				if (vp->size != vp->internal_size) {
+					region.size.width = region.size.width / double(vp->size.width) * double(vp->internal_size.width);
+					region.size.height = region.size.height / double(vp->size.height) * double(vp->internal_size.height);
+					region.position.x = region.position.x / double(vp->size.width) * double(vp->internal_size.width);
+					region.position.y = region.position.y / double(vp->size.height) * double(vp->internal_size.height);
+				}
+
+				// Sometimes the openxr swapchain has been recreated but the viewport has not been
+				// reconfigured yet, though they should be by the next frame.
+				ERR_CONTINUE(region.position.x + region.size.width > vp->internal_size.width ||
+						region.position.y + region.size.height > vp->internal_size.height);
+
+				RSG::texture_storage->render_target_set_render_region(vp->render_target, region);
 
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
