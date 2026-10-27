@@ -515,7 +515,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 	bool changed = p_base_exports_changed;
 
-	if (source_changed_cache) {
+	// A failed export analysis may depend on a base script which has since recovered.
+	if (source_changed_cache || (placeholder_fallback_enabled && p_base_exports_changed)) {
 		source_changed_cache = false;
 		changed = true;
 
@@ -905,6 +906,11 @@ Error GDScript::reload(bool p_keep_state) {
 	if (can_run && p_keep_state) {
 		_restore_old_static_data();
 	}
+
+	// Export analysis can fail and consume source_changed_cache while a dependency
+	// is invalid. Successful compilation must invalidate that failed result even
+	// when this script's source did not change while the dependency was repaired.
+	source_changed_cache = true;
 
 	if (p_keep_state) {
 		// Update the properties in the inspector.
