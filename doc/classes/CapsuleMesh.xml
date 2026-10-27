@@ -21,7 +21,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" default="0.5">
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius">
 			Radius of the bottom hemisphere. If different from [member top_radius], the capsule becomes tapered.
 			If greater than [member top_radius] + [member mid_height], the capsule becomes a sphere.
 		</member>
@@ -42,10 +42,10 @@
 		<member name="rings" type="int" setter="set_rings" getter="get_rings" default="16">
 			Number of rings along the height of the capsule.
 		</member>
-		<member name="tapered" type="bool" setter="" getter="is_tapered">
-			[code]true[/code] if the capsule is tapered, that is [member top_radius] is different from [member bottom_radius].
+		<member name="tapered" type="bool" setter="set_tapered" getter="is_tapered" default="false">
+			When [code]true[/code], enables tapering of the shape via [member top_radius] and [member bottom_radius].
 		</member>
-		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="0.5">
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius">
 			Radius of the top hemisphere. If different from [member bottom_radius], the capsule becomes tapered.
 			If greater than [member bottom_radius] + [member mid_height], the capsule becomes a sphere.
 		</member>

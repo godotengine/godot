@@ -53,7 +53,7 @@ JPH::ShapeRefC JoltCylinderShape3D::_build() const {
 		return shape_result.Get();
 	} else {
 		const float half_height = height / 2.0f;
-		const float radius = (radius_top + radius_bottom) / 2.f;
+		const float &radius = radius_top;
 		const float min_half_extent = MIN(half_height, radius);
 		const float actual_margin = MIN(margin, min_half_extent * JoltProjectSettings::collision_margin_fraction);
 

@@ -182,13 +182,8 @@ void CapsuleShape3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void CapsuleShape3D::update_height() {
-	//If spherical
-	//Disabled, as this looses information (offset of the sphere, notably)
-	//if (MAX(top_radius, bottom_radius) > mid_height + MIN(top_radius, bottom_radius)) {
-	//	height = MAX(top_radius, bottom_radius) * 2;
-	//} else {
+	//This is not the exact height, to avoid losing information. Exact height might be  2*radii in the case it becomes a sphere
 	height = mid_height + top_radius + bottom_radius;
-	//}
 }
 
 void CapsuleShape3D::update_height_postradius() {
@@ -311,7 +306,7 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape3D::get_height);
 
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CapsuleShape3D::is_tapered);
-	ClassDB::bind_method(D_METHOD("set_tapered", "taper"), &CapsuleShape3D::set_tapered);
+	ClassDB::bind_method(D_METHOD("set_tapered", "tapered"), &CapsuleShape3D::set_tapered);
 	ClassDB::bind_method(D_METHOD("set_is_using_height", "use_height"), &CapsuleShape3D::set_is_using_height);
 	ClassDB::bind_method(D_METHOD("is_using_height"), &CapsuleShape3D::is_using_height);
 

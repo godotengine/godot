@@ -399,7 +399,7 @@ void CapsuleMesh::_update_lightmap_size() {
 		real_t max_radius = MAX(top_radius, bottom_radius);
 
 		real_t radial_length = max_radius * Math::PI * 0.5; // circumference of 90 degree bend
-		real_t vertical_length = radial_length * 2 + mid_height + padding; // total vertical length
+		real_t vertical_length = radial_length * 2 + mid_height; // total vertical length
 
 		_lightmap_size_hint.x = MAX(1.0, 4.0 * radial_length / texel_size) + padding;
 		_lightmap_size_hint.y = MAX(1.0, vertical_length / texel_size) + padding;
@@ -416,6 +416,12 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 }
 
 void CapsuleMesh::_validate_property(PropertyInfo &p_property) const {
+	if ((p_property.name == "top_radius") || (p_property.name == "bottom_radius")) {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "radius") {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_NONE : PROPERTY_USAGE_DEFAULT;
+	}
 	if (p_property.name == "height") {
 		p_property.usage = is_using_height() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_EDITOR;
 	}
@@ -592,6 +598,7 @@ void CapsuleMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleMesh::get_height);
 
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CapsuleMesh::is_tapered);
+	ClassDB::bind_method(D_METHOD("set_tapered", "tapered"), &CapsuleMesh::set_tapered);
 	ClassDB::bind_method(D_METHOD("set_is_using_height", "use_height"), &CapsuleMesh::set_is_using_height);
 	ClassDB::bind_method(D_METHOD("is_using_height"), &CapsuleMesh::is_using_height);
 
@@ -602,12 +609,12 @@ void CapsuleMesh::_bind_methods() {
 
 	ClassDB::bind_static_method("CapsuleMesh", D_METHOD("get_tangent_angle", "top_radius", "bottom_radius", "mid_height"), &CapsuleMesh::get_tangent_angle);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, ""), "set_tapered", "is_tapered");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100.0,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_height", PROPERTY_HINT_NONE, ""), "set_is_using_height", "is_using_height");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "4,128,1,or_greater"), "set_radial_segments", "get_radial_segments");
@@ -641,6 +648,10 @@ void CapsuleMesh::_bind_methods() {
 	//Use height turns on and off automatically when setting a either
 	ADD_LINKED_PROPERTY("mid_height", "use_height");
 	ADD_LINKED_PROPERTY("height", "use_height");
+
+	//Disabling tapering forces the values of top and bottom radius to the mean
+	ADD_LINKED_PROPERTY("tapered", "top_radius");
+	ADD_LINKED_PROPERTY("tapered", "bottom_radius");
 }
 
 void CapsuleMesh::update_height() {
@@ -664,6 +675,9 @@ void CapsuleMesh::update_height_postradius() {
 }
 
 void CapsuleMesh::set_top_radius(const real_t p_top_radius) {
+	if (!tapered) {
+		return set_radius(p_top_radius);
+	}
 	if (Math::is_equal_approx(top_radius, p_top_radius)) {
 		return;
 	}
@@ -678,6 +692,9 @@ real_t CapsuleMesh::get_top_radius() const {
 }
 
 void CapsuleMesh::set_bottom_radius(const real_t p_bottom_radius) {
+	if (!tapered) {
+		return set_radius(p_bottom_radius);
+	}
 	if (Math::is_equal_approx(bottom_radius, p_bottom_radius)) {
 		return;
 	}
@@ -737,6 +754,25 @@ void CapsuleMesh::set_height(const real_t p_height) {
 
 real_t CapsuleMesh::get_height() const {
 	return height;
+}
+
+void CapsuleMesh::set_tapered(bool value) {
+	if (value == tapered) {
+		return;
+	}
+	tapered = value;
+	if (!tapered) {
+		float rad = get_radius();
+		top_radius = rad;
+		bottom_radius = rad;
+	}
+	notify_property_list_changed();
+	_update_lightmap_size();
+	request_update();
+}
+
+bool CapsuleMesh::is_tapered() const {
+	return tapered;
 }
 
 void CapsuleMesh::set_is_using_height(bool new_value) {

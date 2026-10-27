@@ -128,6 +128,7 @@ class CapsuleMesh : public PrimitiveMesh {
 	GDCLASS(CapsuleMesh, PrimitiveMesh);
 
 private:
+	bool tapered = false;
 	real_t top_radius = 0.5;
 	real_t bottom_radius = 0.5;
 	real_t height = 2.0;
@@ -176,7 +177,8 @@ public:
 	void set_height(const real_t p_height);
 	real_t get_height() const;
 
-	bool is_tapered() const { return top_radius != bottom_radius; }
+	void set_tapered(bool value);
+	bool is_tapered() const;
 
 	void set_is_using_height(bool new_value);
 	bool is_using_height() const { return use_height; }
