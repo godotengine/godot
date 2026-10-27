@@ -43,27 +43,38 @@
 #include "scene/gui/spin_box.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 
 void Particles3DEditorPlugin::_generate_aabb() {
-	double time = generate_seconds->get_value();
+	Node *impostor = edited_node->duplicate(DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR);
+	impostor->set_script(Variant()); // Prevent side effects with tool scripts.
+	for (int i = impostor->get_child_count() - 1; i >= 0; i--) {
+		// We dont need the children.
+		impostor->get_child(i)->queue_free();
+	}
+
+	add_child(impostor);
+	impostor->set("visible", true);
+	impostor->set("amount", 500);
+	impostor->set("amount_ratio", 1.0);
+	impostor->set("explosiveness", 1.0);
+
+	// This generates particles buffer.
+	RendererRD::ParticlesStorage::get_singleton()->update_particles();
+
+	double time = impostor->get("lifetime").operator double();
 
 	double running = 0.0;
 
-	EditorProgress ep("gen_aabb", TTR("Generating Visibility AABB (Waiting for Particle Simulation)"), int(time));
-
-	bool was_emitting = edited_node->get("emitting");
-	if (!was_emitting) {
-		edited_node->set("emitting", true);
-		OS::get_singleton()->delay_usec(1000);
-	}
-
 	AABB rect;
-	Callable capture_aabb = Callable(edited_node, "capture_aabb");
+	Callable capture_aabb = Callable(impostor, "capture_aabb");
+	Callable request_particles_process = Callable(impostor, "request_particles_process").bind(0.01, 0.0);
 
 	while (running < time) {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step(TTR("Generating..."), int(running), true);
-		OS::get_singleton()->delay_usec(1000);
+		// Update.
+		request_particles_process.call();
+		impostor->notification(Node3D::NOTIFICATION_VISIBILITY_CHANGED);
+		RendererRD::ParticlesStorage::get_singleton()->update_particles();
 
 		AABB capture = capture_aabb.call();
 		if (rect == AABB()) {
@@ -72,12 +83,10 @@ void Particles3DEditorPlugin::_generate_aabb() {
 			rect.merge_with(capture);
 		}
 
-		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+		running += 0.01;
 	}
 
-	if (!was_emitting) {
-		edited_node->set("emitting", false);
-	}
+	impostor->queue_free();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Generate Visibility AABB"));
@@ -125,11 +134,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 void Particles3DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_OPTION_GENERATE_AABB: {
-			if (need_show_lifetime_dialog(generate_seconds)) {
-				generate_aabb->popup_centered();
-			} else {
-				_generate_aabb();
-			}
+			_generate_aabb();
 		} break;
 
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
@@ -267,23 +272,6 @@ bool Particles3DEditorPlugin::_generate(Vector<Vector3> &r_points, Vector<Vector
 }
 
 Particles3DEditorPlugin::Particles3DEditorPlugin() {
-	generate_aabb = memnew(ConfirmationDialog);
-	generate_aabb->set_title(TTR("Generate Visibility AABB"));
-
-	VBoxContainer *genvb = memnew(VBoxContainer);
-	generate_aabb->add_child(genvb);
-
-	generate_seconds = memnew(SpinBox);
-	generate_seconds->set_accessibility_name(TTRC("Generation Time (sec)"));
-	generate_seconds->set_min(0.1);
-	generate_seconds->set_max(25);
-	generate_seconds->set_value(2);
-	genvb->add_margin_child(TTR("Generation Time (sec):"), generate_seconds);
-
-	EditorNode::get_singleton()->get_gui_base()->add_child(generate_aabb);
-
-	generate_aabb->connect(SceneStringName(confirmed), callable_mp(this, &Particles3DEditorPlugin::_generate_aabb));
-
 	emission_tree_dialog = memnew(SceneTreeDialog);
 	Vector<StringName> valid_types;
 	valid_types.push_back("MeshInstance3D");

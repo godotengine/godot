@@ -44,16 +44,14 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	if (p_idx == MENU_GENERATE_VISIBILITY_RECT) {
-		if (need_show_lifetime_dialog(generate_seconds)) {
-			generate_visibility_rect->popup_centered();
-		} else {
-			_generate_visibility_rect();
-		}
+		_generate_visibility_rect();
 	} else {
 		Particles2DEditorPlugin::_menu_callback(p_idx);
 	}
@@ -383,44 +381,58 @@ void Particles2DEditorPlugin::_node_removed(Node *p_node) {
 }
 
 void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
-	GPUParticles2D *particles = Object::cast_to<GPUParticles2D>(edited_node);
+	GPUParticles2D *impostor = Object::cast_to<GPUParticles2D>(edited_node->duplicate(DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR));
+	impostor->set_script(Variant()); // Prevent side effects with tool scripts.
+	for (int i = impostor->get_child_count() - 1; i >= 0; i--) {
+		// We dont need the children.
+		impostor->get_child(i)->queue_free();
+	}
 
-	double time = generate_seconds->get_value();
+	add_child(impostor);
+	impostor->set_visible(true);
+	impostor->set_amount(100);
+	impostor->set_amount_ratio(1.0);
+	impostor->set_explosiveness_ratio(1.0);
+
+	// This generates particles buffer.
+	RendererRD::ParticlesStorage::get_singleton()->update_particles();
+
+	double time = impostor->get_lifetime();
 
 	float running = 0.0;
 
-	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect (Waiting for Particle Simulation)"), int(time));
-
-	bool was_emitting = particles->is_emitting();
-	if (!was_emitting) {
-		particles->set_emitting(true);
-		OS::get_singleton()->delay_usec(1000);
-	}
-
 	Rect2 rect;
 	while (running < time) {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		ep.step(TTR("Generating..."), int(running), true);
-		OS::get_singleton()->delay_usec(1000);
+		// Update.
+		impostor->request_particles_process(0.01, 0.0);
+		impostor->notification(CanvasItem::NOTIFICATION_VISIBILITY_CHANGED);
+		RendererRD::ParticlesStorage::get_singleton()->update_particles();
 
-		Rect2 capture = particles->capture_rect();
+		Rect2 capture = impostor->capture_rect();
 		if (rect == Rect2()) {
 			rect = capture;
 		} else {
 			rect = rect.merge(capture);
 		}
 
-		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+		running += 0.01;
 	}
 
-	if (!was_emitting) {
-		particles->set_emitting(false);
+	if (Texture2D *texture = impostor->get_texture().ptr()) {
+		Vector2 size(texture->get_height(), texture->get_width());
+		Ref<CanvasItemMaterial> mat = impostor->get_material();
+		if (mat.is_valid() && mat->get_particles_animation()) {
+			size /= Vector2(mat->get_particles_anim_h_frames(), mat->get_particles_anim_v_frames());
+		}
+		rect.grow_by(MAX(size.x, size.y) / 2.0);
 	}
+
+	impostor->queue_free();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
-	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
-	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
+	undo_redo->add_do_method(edited_node, "set_visibility_rect", rect);
+	undo_redo->add_undo_method(edited_node, "set_visibility_rect", impostor->get_visibility_rect());
 	undo_redo->commit_action();
 }
 
@@ -656,22 +668,6 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	handled_type = TTRC("GPUParticles2D");
 	conversion_option_name = TTR("Convert to CPUParticles2D");
-
-	generate_visibility_rect = memnew(ConfirmationDialog);
-	generate_visibility_rect->set_title(TTR("Generate Visibility Rect"));
-
-	VBoxContainer *genvb = memnew(VBoxContainer);
-	generate_visibility_rect->add_child(genvb);
-
-	generate_seconds = memnew(SpinBox);
-	generate_seconds->set_min(0.1);
-	generate_seconds->set_max(25);
-	generate_seconds->set_value(2);
-	genvb->add_margin_child(TTR("Generation Time (sec):"), generate_seconds);
-
-	EditorNode::get_singleton()->get_gui_base()->add_child(generate_visibility_rect);
-
-	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
 }
 
 Node *CPUParticles2DEditorPlugin::_convert_particles() {
