@@ -31,28 +31,12 @@
 #pragma once
 
 #include "gdscript_function.h"
+#include "runtime/native_class.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
 #include "core/object/script_language.h"
-
-class GDScriptNativeClass : public RefCounted {
-	GDCLASS(GDScriptNativeClass, RefCounted);
-
-	StringName name;
-
-protected:
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	static void _bind_methods();
-
-public:
-	_FORCE_INLINE_ const StringName &get_name() const { return name; }
-	Variant _new();
-	Object *instantiate();
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
-	GDScriptNativeClass(const StringName &p_name);
-};
 
 class GDScript : public Script {
 	GDCLASS(GDScript, Script);
