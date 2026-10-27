@@ -155,7 +155,7 @@ void SnapshotRefCountedView::_insert_data(GameStateSnapshot *p_snapshot, const S
 		TreeItem *item = refs_list->create_item(refs_list->get_root());
 		item_data_map[item] = pair.value;
 		data_item_map[pair.value] = item;
-		int total_refs = pair.value->extra_debug_data.has("ref_count") ? (uint64_t)pair.value->extra_debug_data["ref_count"] : 0;
+		int total_refs = pair.value->extra_debug_data.has("ref_count") ? (int)pair.value->extra_debug_data["ref_count"] : 0;
 		int objectdb_refs = pair.value->get_unique_inbound_references().size();
 		int native_refs = total_refs - objectdb_refs;
 
