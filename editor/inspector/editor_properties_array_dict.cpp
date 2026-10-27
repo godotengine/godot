@@ -576,7 +576,7 @@ void EditorPropertyArray::update_property() {
 				slot.prop = new_prop;
 				slot.set_index(idx);
 			}
-			if (slot.index == changing_type_index) {
+			if (slot.index == changing_type_index && (!change_type || !change_type->is_visible())) {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
