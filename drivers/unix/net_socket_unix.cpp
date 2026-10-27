@@ -466,8 +466,17 @@ Error NetSocketUnix::_inet_connect_to_host(IPAddress p_host, uint16_t p_port) {
 
 		switch (err) {
 			// We are already connected.
-			case ERR_NET_IS_CONNECTED:
+			case ERR_NET_IS_CONNECTED: {
+#if defined(APPLE_EMBEDDED_ENABLED) || defined(MACOS_ENABLED)
+				// macOS 27 can return EISCONN when ::connect retry has failed, check SO_ERROR in addition.
+				int so_error = 0;
+				socklen_t so_error_len = sizeof(so_error);
+				int ret = ::getsockopt(_sock, SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
+				return (ret == 0 && so_error == 0) ? OK : FAILED;
+#else
 				return OK;
+#endif
+			} break;
 			// Still waiting to connect, try again in a while.
 			case ERR_NET_WOULD_BLOCK:
 			case ERR_NET_IN_PROGRESS:
