@@ -101,6 +101,7 @@ TEST_CASE("[HTTPClient] connect_to_host") {
 	CHECK_MESSAGE(err == OK, "Expected OK for successful connection");
 }
 
+#if defined(TEST_NETWORK_ENABLED)
 bool poll_client(Ref<HTTPClient> &client) {
 	switch (client->get_status()) {
 		case HTTPClient::Status::STATUS_CANT_RESOLVE:
@@ -150,6 +151,7 @@ TEST_CASE("[HTTPClient] https://dv-g3b-emudhra.we-have-a-problem.com") {
 
 	CHECK_MESSAGE(client->get_status() == HTTPClient::Status::STATUS_TLS_HANDSHAKE_ERROR, "Expected STATUS_TLS_HANDSHAKE_ERROR for a SSL connection");
 }
+#endif // defined(TEST_NETWORK_ENABLED)
 #endif // defined(MODULE_MBEDTLS_ENABLED) || defined(WEB_ENABLED)
 
 } // namespace TestHTTPClient

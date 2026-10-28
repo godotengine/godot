@@ -106,33 +106,31 @@ Error TLSContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	return OK;
 }
 
-Vector<PackedByteArray> &TLSContextMbedTLS::encode_mbedtls_x509_to_vector(mbedtls_x509_crt *p_crt, Vector<PackedByteArray> &crts) {
+void TLSContextMbedTLS::encode_mbedtls_x509_to_vector(mbedtls_x509_crt *p_crt, Vector<PackedByteArray> &r_crts) {
 	int num_crt = 0;
-	mbedtls_x509_crt *p_wlkr = p_crt;
+	mbedtls_x509_crt *wlkr = p_crt;
 
 	// Count the number of certificates to size crts correctly.
-	while (p_wlkr) {
+	while (wlkr) {
 		num_crt++;
-		p_wlkr = p_wlkr->next;
+		wlkr = wlkr->next;
 	}
 
-	crts.resize(num_crt);
+	r_crts.resize(num_crt);
 
 	// Copy the DER data in the mbedtls_x509_crt into the PackedByteArray
-	p_wlkr = p_crt;
+	wlkr = p_crt;
 	num_crt = 0;
 
-	while (p_wlkr) {
-		PackedByteArray *p_der_data = crts.ptrw() + num_crt;
-		p_der_data->resize_uninitialized(p_wlkr->raw.len);
+	while (wlkr) {
+		PackedByteArray *der_data = r_crts.ptrw() + num_crt;
+		der_data->resize_uninitialized(wlkr->raw.len);
 
-		memcpy(p_der_data->ptrw(), p_wlkr->raw.p, p_wlkr->raw.len);
+		memcpy(der_data->ptrw(), wlkr->raw.p, wlkr->raw.len);
 
-		p_wlkr = p_wlkr->next;
+		wlkr = wlkr->next;
 		num_crt++;
 	}
-
-	return crts;
 }
 
 // In a single pass, collect all of the certificates provided by the server during the SSL handshake
@@ -141,9 +139,9 @@ Vector<PackedByteArray> &TLSContextMbedTLS::encode_mbedtls_x509_to_vector(mbedtl
 // Any non-zero return value is treated as validation failure and the connection aborted.
 //
 // Only perform this validation once per handshake on the peer certificate (depth is 0).
-int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int depth, uint32_t *p_flags) {
-	if (depth > 0) {
-		// Previously validations passed.
+int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int p_depth, uint32_t *p_flags) {
+	if (p_depth > 0) {
+		// Only validate on the leaf certificate once.
 		return 0;
 	}
 
@@ -159,40 +157,21 @@ int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int depth, ui
 	// Validate entire chain in a single pass.
 	Error result = OS::get_singleton()->verify_ssl_certificate_chain(mbedtls_ssl_get_hostname(&tls), ssl_crts, ca_crts);
 
-	if (result == OK) {
-		return 0;
-	} else {
-		return MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+	if (result != OK) {
+		// While the OS could supply additional options, x509_crt_verify_chain would have already failed
+		// if the certificate chain did not validate correctly before this method is invoked, leaving
+		// explicit revocation as the most likely cause.
+		*p_flags = MBEDTLS_X509_BADCERT_REVOKED;
 	}
+
+	return 0;
 }
 
-Error TLSContextMbedTLS::_use_os_validation(Ref<TLSOptions> p_options) {
-	if (p_options->get_trusted_ca_chain().is_valid()) {
-		// Locking CA certificates explicitly set via configuration
-		certs = p_options->get_trusted_ca_chain();
-		certs->lock();
-	}
-
-	// Use the OS supplied validation code for this connection.
-	mbedtls_ssl_set_verify(&tls, TLSContextMbedTLS::_os_cert_validation, this);
-
-	// mbedtls requires valid CA to be set, even if they're unused, otherwise
-	// MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED is generated during the handshake.
-	Ref<X509CertificateMbedTLS> cas = CryptoMbedTLS::get_default_certificates();
-	if (cas.is_null()) {
-		clear();
-		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
-	}
-	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
-
-	return OK;
-}
-
-Error TLSContextMbedTLS::_use_ca_only_validation(Ref<TLSOptions> p_options) {
+Error TLSContextMbedTLS::_apply_ca_bundle(Ref<TLSOptions> p_options) {
 	Ref<X509CertificateMbedTLS> cas;
 
 	if (p_options->get_trusted_ca_chain().is_valid()) {
-		// Locking CA certificates
+		// Locking CA certificates.
 		certs = p_options->get_trusted_ca_chain();
 		certs->lock();
 		cas = certs;
@@ -205,9 +184,26 @@ Error TLSContextMbedTLS::_use_ca_only_validation(Ref<TLSOptions> p_options) {
 		}
 	}
 
-	// Set valid CAs
+	// Set valid CAs.
 	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
 	return OK;
+}
+
+Error TLSContextMbedTLS::_use_os_validation(Ref<TLSOptions> p_options) {
+	// Applies the correct CA bundle to mbedTLS which does CA chain validation
+	// regardless of any custom verification steps.  This also locks `certs`
+	// for use during the OS validation.
+	Error err = _apply_ca_bundle(p_options);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	// Use the OS supplied validation code for this connection.
+	mbedtls_ssl_set_verify(&tls, TLSContextMbedTLS::_os_cert_validation, this);
+
+	return OK;
+}
+
+Error TLSContextMbedTLS::_use_ca_only_validation(Ref<TLSOptions> p_options) {
+	return _apply_ca_bundle(p_options);
 }
 
 Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies) {

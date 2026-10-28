@@ -306,10 +306,6 @@ String OS::get_system_ca_certificates() {
 	return ::OS::get_singleton()->get_system_ca_certificates();
 }
 
-Error OS::verify_ssl_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
-	return ::OS::get_singleton()->verify_ssl_certificate_chain(p_hostname, p_ssl_data, p_ca_data);
-}
-
 PackedStringArray OS::get_connected_midi_inputs() {
 	return ::OS::get_singleton()->get_connected_midi_inputs();
 }

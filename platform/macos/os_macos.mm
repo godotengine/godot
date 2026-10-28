@@ -1033,12 +1033,12 @@ String OS_MacOS::get_system_ca_certificates() {
 	return certs;
 }
 
-Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &p_result) {
+Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r_result) {
 	Error status = OK;
 
 	const int num_certs = p_data.size();
-	p_result = CFArrayCreateMutable(nullptr, num_certs, &kCFTypeArrayCallBacks);
-	ERR_FAIL_NULL_V(p_result, ERR_OUT_OF_MEMORY);
+	r_result = CFArrayCreateMutable(nullptr, num_certs, &kCFTypeArrayCallBacks);
+	ERR_FAIL_NULL_V(r_result, ERR_OUT_OF_MEMORY);
 
 	for (int i = 0; i < num_certs; i++) {
 		SecCertificateRef cert;
@@ -1060,18 +1060,19 @@ Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &p
 			break;
 		}
 
-		CFArrayAppendValue(p_result, cert);
+		CFArrayAppendValue(r_result, cert);
 		CFRelease(cert);
 	}
 
 	if (status != OK) {
-		CFRelease(p_result);
+		CFRelease(r_result);
+		r_result = nullptr;
 	}
 
 	return status;
 }
 
-Error OS_MacOS::verify_ssl_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data = Vector<PackedByteArray>()) {
+Error OS_MacOS::verify_ssl_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
 	CFStringRef host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
 	CFMutableArrayRef policies = nullptr;
 	SecTrustRef trust = nullptr;
