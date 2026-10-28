@@ -31,6 +31,7 @@
 #include "tls_context_mbedtls.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 
 #include <mbedtls/error.h>
 
