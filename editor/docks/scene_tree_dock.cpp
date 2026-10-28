@@ -3877,8 +3877,12 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 
 		to_node = to_node->get_parent();
 	} else if (p_type == 2) {
-		// Drop as first child, among others.
+		// Drop as first visible child, among others.
 		to_pos = 0;
+		int sibling_count = to_node->get_child_count();
+		while (to_pos < sibling_count && !_is_node_visible(to_node->get_child(to_pos, false))) {
+			to_pos++;
+		}
 	}
 }
 
