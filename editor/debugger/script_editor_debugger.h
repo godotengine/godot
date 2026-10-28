@@ -370,6 +370,7 @@ public:
 
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
+	void set_viewport_debug_draw_mode(int p_mode);
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 

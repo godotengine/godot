@@ -81,6 +81,7 @@ SceneDebugger::SceneDebugger() {
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
+	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
 #endif
 }
 
@@ -366,6 +367,13 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
 	RuntimeNodeSelect::get_singleton()->_set_camera_override_enabled(enable && !from_editor);
+	return OK;
+}
+
+Error SceneDebugger::_msg_override_viewport_draw_mode(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	Viewport::DebugDraw mode = Viewport::DebugDraw(int(p_args[0]));
+	SceneTree::get_singleton()->get_root()->set_debug_draw(mode);
 	return OK;
 }
 
@@ -729,6 +737,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
 	message_handlers["set_debug_collisions"] = _msg_set_debug_collisions;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+	message_handlers["override_viewport_draw_mode"] = _msg_override_viewport_draw_mode;
 #ifndef _2D_DISABLED
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #endif // _2D_DISABLED
