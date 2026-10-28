@@ -749,7 +749,7 @@ void CanvasItemEditor::_commit_canvas_state_requested(const Array &p_selection, 
 	undo_redo->add_undo_method(viewport, "queue_redraw");
 	undo_redo->commit_action();
 
-	if (!key_auto_insert_button->is_pressed()) {
+	if (!key_auto_insert_button->is_pressed() || !key_auto_insert_button->is_visible_in_tree()) {
 		return;
 	}
 
