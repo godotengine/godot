@@ -767,44 +767,81 @@ bool EditorData::check_and_update_scene(int p_idx) {
 	return false;
 }
 
-bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
-	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
-	if (!edited_scene[p_idx].root) {
-		return false;
-	}
+class ReloadSceneFromMemoryEditorCommandQueue : public EditorCommandQueue {
+	friend class EditorNode;
 
 	Ref<PackedScene> pscene;
-	pscene.instantiate();
+	static ReloadSceneFromMemoryEditorCommandQueue *command;
 
-	EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
-	ep.step(TTR("Storing local changes..."), 0);
-	// Pack first, so it stores diffs to previous version of saved scene.
-	Error err = pscene->pack(edited_scene[p_idx].root);
-	ERR_FAIL_COND_V(err != OK, false);
-	ep.step(TTR("Updating scene..."), 1);
-	Node *new_scene = pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
-	ERR_FAIL_NULL_V(new_scene, false);
+	static void _reload_scene_from_memory_update_scene_step() {
+		Node *new_scene = command->pscene->instantiate(PackedScene::GEN_EDIT_STATE_MAIN);
+		ERR_FAIL_NULL(new_scene);
 
-	// Transfer selection.
-	List<Node *> new_selection;
-	for (const Node *E : edited_scene.write[p_idx].selection) {
-		NodePath p = edited_scene[p_idx].root->get_path_to(E);
-		Node *new_node = new_scene->get_node(p);
-		if (new_node) {
-			new_selection.push_back(new_node);
+		// Transfer selection.
+		List<Node *> new_selection;
+		int idx = command->idx;
+		for (const Node *E : command->editor_data->edited_scene.write[idx].selection) {
+			NodePath p = command->editor_data->edited_scene[idx].root->get_path_to(E);
+			Node *new_node = new_scene->get_node(p);
+			if (new_node) {
+				new_selection.push_back(new_node);
+			}
+		}
+
+		new_scene->set_scene_file_path(command->editor_data->edited_scene[idx].root->get_scene_file_path());
+		Node *old_root = command->editor_data->get_edited_scene_root(idx);
+		EditorNode::get_singleton()->set_edited_scene(new_scene);
+		memdelete(old_root);
+		command->editor_data->edited_scene.write[idx].selection = new_selection;
+
+		if (command->mark_unsaved) {
+			EditorUndoRedoManager::get_singleton()->clear_history(command->editor_data->get_scene_history_id(idx));
 		}
 	}
 
-	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
-	Node *old_root = edited_scene[p_idx].root;
-	EditorNode::get_singleton()->set_edited_scene(new_scene);
-	memdelete(old_root);
-	edited_scene.write[p_idx].selection = new_selection;
-
-	if (p_mark_unsaved) {
-		EditorUndoRedoManager::get_singleton()->clear_history(get_scene_history_id(p_idx));
+	static void _reload_scene_from_memory_pack_scene_step() {
+		// Pack first, so it stores diffs to previous version of saved scene.
+		command->pscene.instantiate();
+		int idx = command->idx;
+		Error err = command->pscene->pack(command->editor_data->edited_scene[idx].root);
+		if (err == OK) {
+			command->add_step(TTR("Updating scene..."), 1, callable_mp_static(&ReloadSceneFromMemoryEditorCommandQueue::_reload_scene_from_memory_update_scene_step));
+			return;
+		} else {
+			// Abort.
+			ERR_FAIL_COND(err != OK);
+		}
 	}
-	return true;
+
+protected:
+	ReloadSceneFromMemoryEditorCommandQueue(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background) : EditorCommandQueue(p_task, p_label, p_step_count, p_can_cancel, p_force_background) {
+		command = this;
+		add_step(TTR("Storing local changes..."), 0, callable_mp_static(&ReloadSceneFromMemoryEditorCommandQueue::_reload_scene_from_memory_pack_scene_step));
+	}
+
+public:
+	EditorData *editor_data = nullptr;
+	int idx = -1;
+	bool mark_unsaved = false;
+
+	~ReloadSceneFromMemoryEditorCommandQueue() {
+		if (command == this) {
+			command = nullptr;
+		}
+	}
+};
+ReloadSceneFromMemoryEditorCommandQueue *ReloadSceneFromMemoryEditorCommandQueue::command = nullptr;
+
+void EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	if (!edited_scene[p_idx].root) {
+		return;
+	}
+
+	ReloadSceneFromMemoryEditorCommandQueue *command = EditorNode::get_singleton()->start_editor_process<ReloadSceneFromMemoryEditorCommandQueue>("update_scene", TTR("Updating Scene"), 2);
+	command->editor_data = this;
+	command->idx = p_idx;
+	command->mark_unsaved = p_mark_unsaved;
 }
 
 void EditorData::move_scene_to_index(int p_idx, int p_to_idx) {

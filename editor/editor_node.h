@@ -856,7 +856,12 @@ public:
 
 	static void cleanup();
 
-	EditorCommandQueue *start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel = false, bool p_force_background = false);
+	template <typename T = EditorCommandQueue>
+	T *start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel = false, bool p_force_background = false) {
+		T *cq = memnew(T(p_task, p_label, p_step_count, p_can_cancel, p_force_background));
+		process_command_queue.push_back(static_cast<EditorCommandQueue *>(cq));
+		return cq;
+	}
 
 	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
