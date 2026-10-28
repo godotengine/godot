@@ -182,8 +182,6 @@ Error TLSContextMbedTLS::_use_os_validation(Ref<TLSOptions> p_options) {
 		clear();
 		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 	}
-
-	// Set valid CAs even if they're unused during OS validation.
 	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
 
 	return OK;
