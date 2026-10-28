@@ -201,7 +201,7 @@ class GameView : public VBoxContainer {
 	bool debug_hide_selection = false;
 	bool debug_mute_audio = false;
 
-	EditorToolbarGroup *ci_bar = nullptr;
+	HBoxContainer *ci_bar = nullptr;
 	EditorToolbarGroup *n3d_bar = nullptr;
 
 	bool selection_avoid_locked = false;
@@ -217,7 +217,7 @@ class GameView : public VBoxContainer {
 	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
 	// Not all CI tools have buttons, so make sure the gaps are at least initialized with null.
 	Button *ci_button[CanvasItemManipulator::TOOL_MAX] = {};
-	Button *ci_local_space = nullptr;
+	Button *ci_local_space_button = nullptr;
 	Button *n3d_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
 	MenuButton *n3d_options_menu = nullptr;
