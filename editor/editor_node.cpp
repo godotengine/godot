@@ -6888,12 +6888,6 @@ void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
 
-EditorCommandQueue *EditorNode::start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background) {
-	EditorCommandQueue *cq = memnew(EditorCommandQueue(p_task, p_label, p_step_count, p_can_cancel, p_force_background));
-	process_command_queue.push_back(cq);
-	return cq;
-}
-
 void EditorNode::_update_layouts_menu() {
 	editor_layouts->clear();
 	overridden_default_layout = false;
