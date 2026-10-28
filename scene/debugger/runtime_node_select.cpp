@@ -347,12 +347,18 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 		Camera3D *override_camera = root->get_override_camera_3d();
 		override_camera->set_transform(view_3d_controller->to_camera_transform());
 		override_camera->set_perspective(camera_fov * view_3d_controller->cursor.fov_scale, camera_znear, camera_zfar);
-#endif // _3D_DISABLED
+#endif
 	}
 }
 
-void RuntimeNodeSelect::_set_ci_tool(CanvasItemManipulator::Tool p_tool) {
+void RuntimeNodeSelect::_set_ci_tool(CanvasItemManipulator::Tool p_tool, bool p_shift_pressed) {
 	ci_manipulator->set_tool(p_tool);
+#ifdef TOOLS_ENABLED
+	if (p_shift_pressed && ci_manipulator->get_tool() == CanvasItemManipulator::TOOL_EDIT_PIVOT) {
+		ci_manipulator->center_temp_pivot_on_selection();
+	}
+#endif
+
 	panner->set_force_drag(p_tool == CanvasItemManipulator::TOOL_PAN);
 	_queue_selection_update();
 }

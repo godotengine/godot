@@ -278,6 +278,7 @@ public:
 	void commit_drag();
 
 	bool reset_temp_pivot();
+	void center_temp_pivot_on_selection();
 
 	void set_local_space_enabled(bool p_enabled) { local_space = p_enabled; }
 	void set_anchors_mode_enabled(bool p_enabled) { anchors_mode = p_enabled; }
