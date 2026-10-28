@@ -185,6 +185,8 @@ public:
 	PackedByteArray get_entropy(int p_bytes);
 	String get_system_ca_certificates();
 
+	Error verify_ssl_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data);
+
 	enum StdHandleType {
 		STD_HANDLE_INVALID,
 		STD_HANDLE_CONSOLE,

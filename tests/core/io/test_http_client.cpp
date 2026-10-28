@@ -32,7 +32,9 @@
 
 TEST_FORCE_LINK(test_http_client)
 
+#include "core/crypto/crypto.h"
 #include "core/io/http_client.h"
+#include "core/os/os.h"
 
 #include "modules/modules_enabled.gen.h" // For mbedtls.
 
@@ -98,6 +100,40 @@ TEST_CASE("[HTTPClient] connect_to_host") {
 	// Connect to host.
 	Error err = client->connect_to_host(host, port, tls_options);
 	CHECK_MESSAGE(err == OK, "Expected OK for successful connection");
+}
+
+bool poll_client(Ref<HTTPClient> &client) {
+	switch (client->get_status()) {
+		case HTTPClient::Status::STATUS_CANT_RESOLVE:
+		case HTTPClient::Status::STATUS_CANT_CONNECT:
+		case HTTPClient::Status::STATUS_CONNECTION_ERROR:
+		case HTTPClient::Status::STATUS_TLS_HANDSHAKE_ERROR:
+		case HTTPClient::Status::STATUS_CONNECTED:
+			return false;
+		default:
+			break;
+	}
+
+	client->poll();
+	return true;
+}
+
+TEST_CASE("[HTTPClient] full tls handshake") {
+	Crypto::load_default_certificates(String());
+	Ref<HTTPClient> client = HTTPClient::create();
+	String host = "https://www.example.com";
+	int port = 443;
+	Ref<TLSOptions> tls_options;
+
+	// Connect to host.
+	Error err = client->connect_to_host(host, port, tls_options);
+	CHECK_MESSAGE(err == OK, "Expected OK for successful connection");
+
+	while (poll_client(client)) {
+		::OS::get_singleton()->delay_usec(100);
+	}
+
+	CHECK_MESSAGE(client->get_status() == HTTPClient::Status::STATUS_CONNECTED, "Expected STATUS_CONNECTED for a SSL connection");
 }
 #endif // defined(MODULE_MBEDTLS_ENABLED) || defined(WEB_ENABLED)
 

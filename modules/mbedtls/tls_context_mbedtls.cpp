@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 
+#include <mbedtls/error.h>
+
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
@@ -44,7 +46,10 @@ static void my_debug(void *ctx, int level,
 }
 
 void TLSContextMbedTLS::print_mbedtls_error(int p_ret) {
-	printf("mbedtls error: returned -0x%x\n\n", -p_ret);
+	const int error_buflen = 245;
+	char error_buf[error_buflen];
+	mbedtls_strerror(p_ret, error_buf, error_buflen);
+	printf("mbedtls error: returned -0x%x: %s\n\n", -p_ret, error_buf);
 	fflush(stdout);
 }
 
@@ -97,6 +102,112 @@ Error TLSContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_ssl_conf_authmode(&conf, p_authmode);
 	GODOT_MBEDTLS_COMPAT_SSL_CONF;
 	mbedtls_ssl_conf_dbg(&conf, my_debug, stdout);
+	return OK;
+}
+
+Vector<PackedByteArray> &TLSContextMbedTLS::encode_mbedtls_x509_to_vector(mbedtls_x509_crt *p_crt, Vector<PackedByteArray> &crts) {
+	int num_crt = 0;
+	mbedtls_x509_crt *p_wlkr = p_crt;
+
+	// Count the number of certificates to size crts correctly.
+	while (p_wlkr) {
+		num_crt++;
+		p_wlkr = p_wlkr->next;
+	}
+
+	crts.resize(num_crt);
+
+	// Copy the DER data in the mbedtls_x509_crt into the PackedByteArray
+	p_wlkr = p_crt;
+	num_crt = 0;
+
+	while (p_wlkr) {
+		PackedByteArray *p_der_data = crts.ptrw() + num_crt;
+		p_der_data->resize_uninitialized(p_wlkr->raw.len);
+
+		memcpy(p_der_data->ptrw(), p_wlkr->raw.p, p_wlkr->raw.len);
+
+		p_wlkr = p_wlkr->next;
+		num_crt++;
+	}
+
+	return crts;
+}
+
+// In a single pass, collect all of the certificates provided by the server during the SSL handshake
+// and pass them to the OS implementation for verification.
+//
+// Any non-zero return value is treated as validation failure and the connection aborted.
+//
+// Only perform this validation once per handshake on the peer certificate (depth is 0).
+int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int depth, uint32_t *p_flags) {
+	if (depth > 0) {
+		// Previously validations passed.
+		return 0;
+	}
+
+	Vector<PackedByteArray> ssl_crts, ca_crts;
+
+	encode_mbedtls_x509_to_vector(p_crt, ssl_crts);
+
+	// Use any CA certificate overrides configured via get_trusted_ca_chain() in the options.
+	if (!certs.is_null()) {
+		encode_mbedtls_x509_to_vector(certs->get_context(), ca_crts);
+	}
+
+	// Validate entire chain in a single pass.
+	Error result = OS::get_singleton()->verify_ssl_certificate_chain(mbedtls_ssl_get_hostname(&tls), ssl_crts, ca_crts);
+
+	if (result == OK) {
+		return 0;
+	} else {
+		return MBEDTLS_ERR_X509_CERT_VERIFY_FAILED;
+	}
+}
+
+Error TLSContextMbedTLS::_use_os_validation(Ref<TLSOptions> p_options) {
+	if (p_options->get_trusted_ca_chain().is_valid()) {
+		// Locking CA certificates explicitly set via configuration
+		certs = p_options->get_trusted_ca_chain();
+		certs->lock();
+	}
+
+	// Use the OS supplied validation code for this connection.
+	mbedtls_ssl_set_verify(&tls, TLSContextMbedTLS::_os_cert_validation, this);
+
+	// mbedtls requires valid CA to be set, even if they're unused, otherwise
+	// MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED is generated during the handshake.
+	Ref<X509CertificateMbedTLS> cas = CryptoMbedTLS::get_default_certificates();
+	if (cas.is_null()) {
+		clear();
+		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
+	}
+
+	// Set valid CAs even if they're unused during OS validation.
+	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
+
+	return OK;
+}
+
+Error TLSContextMbedTLS::_use_ca_only_validation(Ref<TLSOptions> p_options) {
+	Ref<X509CertificateMbedTLS> cas;
+
+	if (p_options->get_trusted_ca_chain().is_valid()) {
+		// Locking CA certificates
+		certs = p_options->get_trusted_ca_chain();
+		certs->lock();
+		cas = certs;
+	} else {
+		// Fall back to default certificates (no need to lock those).
+		cas = CryptoMbedTLS::get_default_certificates();
+		if (cas.is_null()) {
+			clear();
+			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
+		}
+	}
+
+	// Set valid CAs
+	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
 	return OK;
 }
 
@@ -179,22 +290,6 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 		mbedtls_ssl_set_hostname(&tls, cn.utf8().get_data());
 	}
 
-	Ref<X509CertificateMbedTLS> cas;
-
-	if (p_options->get_trusted_ca_chain().is_valid()) {
-		// Locking CA certificates
-		certs = p_options->get_trusted_ca_chain();
-		certs->lock();
-		cas = certs;
-	} else {
-		// Fall back to default certificates (no need to lock those).
-		cas = CryptoMbedTLS::get_default_certificates();
-		if (cas.is_null()) {
-			clear();
-			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
-		}
-	}
-
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
 		if (!EditorSettings::get_singleton()->get_setting("network/tls/enable_tls_v1.3").operator bool()) {
@@ -208,8 +303,13 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 		}
 	}
 
-	// Set valid CAs
-	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
+	if (OS::get_singleton()->has_feature("ssl_cert_validation")) {
+		err = _use_os_validation(p_options);
+	} else {
+		err = _use_ca_only_validation(p_options);
+	}
+	ERR_FAIL_COND_V(err != OK, err);
+
 	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }

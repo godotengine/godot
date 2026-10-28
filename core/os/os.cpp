@@ -628,6 +628,14 @@ bool OS::has_feature(const String &p_feature) {
 #endif
 	}
 
+	if (p_feature == "ssl_cert_validation") {
+#if defined(MACOS_ENABLED)
+		return true;
+#else
+		return false;
+#endif
+	}
+
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
 	}
