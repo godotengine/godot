@@ -1072,7 +1072,7 @@ Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r
 	return status;
 }
 
-Error OS_MacOS::verify_ssl_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
+Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
 	CFStringRef host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
 	CFMutableArrayRef policies = nullptr;
 	SecTrustRef trust = nullptr;

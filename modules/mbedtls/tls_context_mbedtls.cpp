@@ -155,7 +155,7 @@ int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int p_depth, 
 	}
 
 	// Validate entire chain in a single pass.
-	Error result = OS::get_singleton()->verify_ssl_certificate_chain(mbedtls_ssl_get_hostname(&tls), ssl_crts, ca_crts);
+	Error result = OS::get_singleton()->verify_tls_certificate_chain(mbedtls_ssl_get_hostname(&tls), ssl_crts, ca_crts);
 
 	if (result != OK) {
 		// While the OS could supply additional options, x509_crt_verify_chain would have already failed
