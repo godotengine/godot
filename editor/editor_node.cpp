@@ -2508,7 +2508,7 @@ void EditorNode::_save_scene_silently() {
 	// errors about parent node being busy setting up children
 	// when Save on Focus Loss kicks in.
 	Node *scene = editor_data.get_edited_scene_root();
-	if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
+	if (scene && !scene->get_scene_file_path().is_empty() && FileAccess::exists(scene->get_scene_file_path())) {
 		_save_scene(scene->get_scene_file_path());
 		save_editor_layout_delayed();
 	}
