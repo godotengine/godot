@@ -8,13 +8,12 @@ readability.
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: 1.1.0 (ed738e842d2fbdf2d6459e39267a633c4a9b2f5d, 2023)
+- Version: 1.2.1 (db24a98aed38a16de78cc05ca15cdd8dc2a0d92d, 2026)
 - License: MIT
 
 Files extracted from upstream source:
 
-- `common/`, `dec/` and `include/` folders from `c/`,
-  minus the `dictionary.bin*` files
+- `common/`, `dec/` and `include/` folders from `c/`
 - `LICENSE`
 
 
