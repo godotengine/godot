@@ -240,6 +240,8 @@ static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set
 
 constexpr int LARGE_RESOURCE_WARNING_SIZE_THRESHOLD = 512'000; // 500 KB
 
+int EditorCommandLock::lock_count = 0;
+
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
 	if (!force_background && Thread::is_main_thread()) {
 		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
@@ -1073,7 +1075,7 @@ void EditorNode::_notification(int p_what) {
 			}
 #endif
 
-			if (!process_command_queue.is_empty()) {
+			if (EditorCommandLock::lock_count <= 0 && !process_command_queue.is_empty()) {
 				// Disable input
 				get_viewport()->set_disable_input(true);
 

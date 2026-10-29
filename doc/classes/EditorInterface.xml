@@ -318,6 +318,15 @@
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
+		<method name="make_mesh_previews_async">
+			<return type="void" />
+			<param index="0" name="meshes" type="Mesh[]" />
+			<param index="1" name="preview_size" type="int" />
+			<param index="2" name="on_done" type="Callable" />
+			<description>
+				Similar to [method make_mesh_previews] but will not stall the editor until finished. Instead will run in the background and when finished call [param on_done] passing an [Array] of [Texture2D]s as argument.
+			</description>
+		</method>
 		<method name="mark_scene_as_unsaved">
 			<return type="void" />
 			<description>
