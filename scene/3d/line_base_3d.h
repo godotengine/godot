@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  line_3d.cpp                                                           */
+/*  line_base_3d.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "line_3d.h"
+#pragma once
 
-#include "core/object/class_db.h"
+#include "scene/3d/visual_instance_3d.h"
 
-PackedStringArray Line3D::get_configuration_warnings() const {
-	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
-	EXPERIMENTAL_NODE_WARNING;
-	return warnings;
-}
+class LineBase3D : public GeometryInstance3D {
+	GDCLASS(LineBase3D, GeometryInstance3D);
 
-void Line3D::_bind_methods() {
-	BIND_ENUM_CONSTANT(MESH_ALIGNMENT_LOCAL);
-	BIND_ENUM_CONSTANT(MESH_ALIGNMENT_BILLBOARD);
-	BIND_ENUM_CONSTANT(MESH_ALIGNMENT_MAX);
+protected:
+	static void _bind_methods();
 
-	BIND_ENUM_CONSTANT(TILING_MODE_STRETCH);
-	BIND_ENUM_CONSTANT(TILING_MODE_TILE);
-	BIND_ENUM_CONSTANT(TILING_MAX);
+public:
+	enum MeshAlignment {
+		MESH_ALIGNMENT_LOCAL,
+		MESH_ALIGNMENT_BILLBOARD,
+		MESH_ALIGNMENT_MAX,
+	};
 
-	BIND_ENUM_CONSTANT(MATERIAL_MODE_MIX);
-	BIND_ENUM_CONSTANT(MATERIAL_MODE_ADD);
-	BIND_ENUM_CONSTANT(MATERIAL_MODE_CUSTOM);
-	BIND_ENUM_CONSTANT(MATERIAL_MODE_MAX);
-}
+	enum TilingMode {
+		TILING_MODE_STRETCH,
+		TILING_MODE_TILE,
+		TILING_MAX,
+	};
+
+	enum MaterialMode {
+		MATERIAL_MODE_MIX,
+		MATERIAL_MODE_ADD,
+		MATERIAL_MODE_CUSTOM,
+		MATERIAL_MODE_MAX,
+	};
+
+	PackedStringArray get_configuration_warnings() const override;
+};
+
+VARIANT_ENUM_CAST(LineBase3D::TilingMode)
+VARIANT_ENUM_CAST(LineBase3D::MeshAlignment)
+VARIANT_ENUM_CAST(LineBase3D::MaterialMode)

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line3D" inherits="GeometryInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="LineBase3D" inherits="GeometryInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A node to draw 3D lines in space.
-		[b]Note:[/b] This class currently has no functionality and only serves as a base class for [Trail3D].
+		A base class to draw a 3D line in space.
 	</brief_description>
 	<description>
 	</description>
@@ -13,7 +12,7 @@
 			Align the line normal to the local Y axis of the line node.
 		</constant>
 		<constant name="MESH_ALIGNMENT_BILLBOARD" value="1" enum="MeshAlignment">
-			Align the normal of each section of the Line3D to face the camera.
+			Align the normal of each section of the LineBase3D to face the camera.
 			See also [member SpriteBase3D.billboard] and [enum BaseMaterial3D.BillboardMode]
 		</constant>
 		<constant name="MESH_ALIGNMENT_MAX" value="2" enum="MeshAlignment">

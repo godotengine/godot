@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Trail3D" inherits="Line3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Trail3D" inherits="LineBase3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node to draw lines behind moving objects.
 	</brief_description>
@@ -45,7 +45,7 @@
 			Whether to limit the trail by lifetime or length.
 		</member>
 		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material">
-			The material to assign to the trail mesh when [member material_mode] is [constant Line3D.MATERIAL_MODE_CUSTOM].
+			The material to assign to the trail mesh when [member material_mode] is [constant LineBase3D.MATERIAL_MODE_CUSTOM].
 			[b]Tip:[/b] To preserve billboarding, use the following shader as a base:
 			[codeblock]
 			shader_type spatial;
@@ -74,14 +74,14 @@
 			}
 			[/codeblock]
 		</member>
-		<member name="material_mode" type="int" setter="set_material_mode" getter="get_material_mode" enum="Line3D.MaterialMode" default="0">
+		<member name="material_mode" type="int" setter="set_material_mode" getter="get_material_mode" enum="LineBase3D.MaterialMode" default="0">
 			The material mode for the trail.
 		</member>
 		<member name="max_length" type="float" setter="set_max_length" getter="get_max_length">
 			The maximum length of the trail when [member limit_mode] is [constant LIMIT_MODE_MAX_LENGTH].
 		</member>
-		<member name="mesh_alignment" type="int" setter="set_mesh_alignment" getter="get_mesh_alignment" enum="Line3D.MeshAlignment" default="1">
-			Alignment of the trail. Possible options are [constant Line3D.MESH_ALIGNMENT_LOCAL] for a 3D line, and [constant Line3D.MESH_ALIGNMENT_BILLBOARD] for a billboarded line.
+		<member name="mesh_alignment" type="int" setter="set_mesh_alignment" getter="get_mesh_alignment" enum="LineBase3D.MeshAlignment" default="1">
+			Alignment of the trail. Possible options are [constant LineBase3D.MESH_ALIGNMENT_LOCAL] for a 3D line, and [constant LineBase3D.MESH_ALIGNMENT_BILLBOARD] for a billboarded line.
 		</member>
 		<member name="min_section_length" type="float" setter="set_min_section_length" getter="get_min_section_length" default="0.2">
 			Minimum required distance before adding a new section.
@@ -89,7 +89,7 @@
 		<member name="pin_uv" type="bool" setter="set_pin_uv" getter="get_pin_uv" default="false">
 			If [code]true[/code], pins the UVs to their positions in space.
 		</member>
-		<member name="tiling_mode" type="int" setter="set_tiling_mode" getter="get_tiling_mode" enum="Line3D.TilingMode" default="1">
+		<member name="tiling_mode" type="int" setter="set_tiling_mode" getter="get_tiling_mode" enum="LineBase3D.TilingMode" default="1">
 			How to tile the UVs across the length of the trail.
 		</member>
 		<member name="tiling_multiplier" type="float" setter="set_tiling_multiplier" getter="get_tiling_multiplier" default="1.0">

@@ -155,9 +155,9 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 // and the need for the 'new' keyword. It can also be used to avoid breaking compat
 // later if a new member is added with the same name as the enum.
 const Vector<String> enums_with_forced_suffix = {
-	"Line3D.MaterialMode",
-	"Line3D.MeshAlignment",
-	"Line3D.TilingMode",
+	"LineBase3D.MaterialMode",
+	"LineBase3D.MeshAlignment",
+	"LineBase3D.TilingMode",
 };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
