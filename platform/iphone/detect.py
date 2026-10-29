@@ -41,6 +41,7 @@ def get_opts():
 def get_flags():
     return [
         ("tools", False),
+        ("builtin_pcre2_with_jit", False),
     ]
 
 

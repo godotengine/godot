@@ -487,21 +487,16 @@ Files extracted from upstream source:
 
 ## pcre2
 
-- Upstream: http://www.pcre.org
-- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
+- Upstream: https://pcre2project.github.io/pcre2/
+- Version: 10.49 (6f9d7c1373262c541324a16a358785b33ef116cf, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- Files listed in the file NON-AUTOTOOLS-BUILD steps 1-4
-- All .h files in src/ apart from pcre2posix.h
-- src/pcre2_jit_match.c
-- src/pcre2_jit_misc.c
-- src/sljit/
-- AUTHORS and LICENCE
-
-A sljit patch from upstream was backported to fix macOS < 11.0 compilation
-in 10.40, it can be found in the `patches` folder.
+- Files listed in the file `NON-AUTOTOOLS-BUILD` steps 1-4
+- All `.h` files in `src/` apart from `pcre2posix.h`, `pcre2_printint_inc.h`, `pcre2test_inc.h`
+- `deps/sljit/sljit_src`
+- `AUTHORS.md` and `LICENCE.md`
 
 
 ## pvrtccompressor
