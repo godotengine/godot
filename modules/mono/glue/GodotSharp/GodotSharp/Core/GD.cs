@@ -626,7 +626,7 @@ namespace Godot
         /// <summary>
         /// Encodes a <see cref="Variant"/> value to a byte array, without encoding objects.
         /// Deserialization can be done with <see cref="BytesToVar"/>.
-        /// Note: If you need object serialization, see <see cref="VarToBytesWithObjects"/>.
+        /// Note: If you need object serialization, see <see cref="VarToBytesWithObjects(Variant)"/>.
         /// </summary>
         /// <param name="var"><see cref="Variant"/> that will be encoded.</param>
         /// <returns>The <see cref="Variant"/> encoded as an array of bytes.</returns>
@@ -635,6 +635,24 @@ namespace Godot
             NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.False, out var varBytes);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
+        }
+
+        /// <summary>
+        /// Encodes a <see cref="Variant"/> value to the given bytes span, without encoding objects.
+        /// Deserialization can be done with <see cref="BytesToVar"/>.
+        /// Note: If you need object serialization, see <see cref="VarToBytesWithObjects(Variant, Span{byte})"/>.
+        /// </summary>
+        /// <param name="var"><see cref="Variant"/> that will be encoded.</param>
+        /// <param name="bytes">Span of bytes that will be filled with the encoded <see cref="Variant"/>.</param>
+        /// <returns>The number of bytes written to the span.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The span is too small to hold the encoded <see cref="Variant"/>.
+        /// </exception>
+        public static int VarToBytes(Variant var, Span<byte> bytes)
+        {
+            NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.False, out var varBytes);
+            using (varBytes)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes, bytes);
         }
 
         /// <summary>
@@ -648,6 +666,23 @@ namespace Godot
             NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.True, out var varBytes);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
+        }
+
+        /// <summary>
+        /// Encodes a <see cref="Variant"/>. Encoding objects is allowed (and can potentially
+        /// include executable code). Deserialization can be done with <see cref="BytesToVarWithObjects"/>.
+        /// </summary>
+        /// <param name="var"><see cref="Variant"/> that will be encoded.</param>
+        /// <param name="bytes">Span of bytes that will be filled with the encoded <see cref="Variant"/>.</param>
+        /// <returns>The number of bytes written to the span.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The span is too small to hold the encoded <see cref="Variant"/>.
+        /// </exception>
+        public static int VarToBytesWithObjects(Variant var, Span<byte> bytes)
+        {
+            NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.True, out var varBytes);
+            using (varBytes)
+                return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes, bytes);
         }
 
         /// <summary>
