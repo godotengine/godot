@@ -1,0 +1,13 @@
+diff --git a/thirdparty/miniupnpc/src/minixml.c b/thirdparty/miniupnpc/src/minixml.c
+index 3b3d0fa8df..eba7557d7b 100644
+--- a/thirdparty/miniupnpc/src/minixml.c
++++ b/thirdparty/miniupnpc/src/minixml.c
+@@ -197,7 +197,7 @@ static void parseelt(struct xmlparser * p)
+ 							if ((p->xml + 1) >= p->xmlend)
+ 								return;
+ 						}
+-						if(i>0 && p->datafunc && *(p->xml + 1) == '/')
++						if(i>0 && p->datafunc && (p->xml + 1) < p->xmlend && *(p->xml + 1) == '/')
+ 							p->datafunc(p->data, data, i);
+ 					}
+ 				}
