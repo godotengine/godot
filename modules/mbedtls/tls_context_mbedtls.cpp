@@ -298,7 +298,7 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 		}
 	}
 
-	if (OS::get_singleton()->has_feature("ssl_cert_validation")) {
+	if (OS::get_singleton()->has_feature("tls_cert_validation")) {
 		err = _use_os_validation(p_options);
 	} else {
 		err = _use_ca_only_validation(p_options);

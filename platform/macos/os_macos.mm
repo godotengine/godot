@@ -979,6 +979,9 @@ bool OS_MacOS::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "pc") {
 		return true;
 	}
+	if (p_feature == "tls_cert_validation") {
+		return true;
+	}
 
 	return false;
 }
