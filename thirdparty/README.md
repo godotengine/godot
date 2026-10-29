@@ -424,6 +424,10 @@ Files extracted from the upstream source:
 `nanosvg.cc` is a custom file added to configure the build of the header only
 library.
 
+Patches:
+
+- `fix-float-to-int-cast-ub.patch` (memononen/nanosvg#298)
+
 
 ## oidn
 
