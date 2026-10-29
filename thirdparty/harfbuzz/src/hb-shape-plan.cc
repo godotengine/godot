@@ -103,7 +103,8 @@ hb_shape_plan_key_t::init (bool                           copy,
   this->shaper_func = nullptr;
   this->shaper_name = nullptr;
 #ifndef HB_NO_OT_SHAPE
-  this->ot.init (face, coords, num_coords);
+  if (unlikely (!this->ot.init (face, coords, num_coords)))
+    goto bail;
 #endif
 
   /*
@@ -147,6 +148,9 @@ hb_shape_plan_key_t::init (bool                           copy,
 #undef HB_SHAPER_PLAN
 
 bail:
+#ifndef HB_NO_OT_SHAPE
+  this->ot.fini ();
+#endif
   ::hb_free (features);
   return false;
 }

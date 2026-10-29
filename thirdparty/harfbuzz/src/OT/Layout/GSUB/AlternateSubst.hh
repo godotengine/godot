@@ -34,12 +34,13 @@ struct AlternateSubst
     }
   }
 
-  /* TODO This function is unused and not updated to 24bit GIDs. Should be done by using
-   * iterators. While at it perhaps using iterator of arrays of hb_codepoint_t instead. */
+  /* TODO This function is unused and should be done using iterators. While
+   * at it perhaps using iterator of arrays of hb_codepoint_t instead. */
+  template <typename GlyphID>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> glyphs,
+                  hb_sorted_array_t<GlyphID> glyphs,
                   hb_array_t<const unsigned int> alternate_len_list,
-                  hb_array_t<const HBGlyphID16> alternate_glyphs_list)
+                  hb_array_t<GlyphID> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format.v))) return_trace (false);

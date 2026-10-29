@@ -50,4 +50,113 @@ HB_INTERNAL CTFontRef
 create_ct_font (CGFontRef cg_font, CGFloat font_size);
 
 
+template <typename T>
+struct hb_cf_releaser_t
+{
+  static void release (T obj)
+  {
+    if (obj)
+      CFRelease ((CFTypeRef) obj);
+  }
+};
+
+template <>
+struct hb_cf_releaser_t<CGFontRef>
+{
+  static void release (CGFontRef obj)
+  {
+    if (obj)
+      CGFontRelease (obj);
+  }
+};
+
+template <>
+struct hb_cf_releaser_t<CGDataProviderRef>
+{
+  static void release (CGDataProviderRef obj)
+  {
+    if (obj)
+      CGDataProviderRelease (obj);
+  }
+};
+
+template <>
+struct hb_cf_releaser_t<CGPathRef>
+{
+  static void release (CGPathRef obj)
+  {
+    if (obj)
+      CGPathRelease (obj);
+  }
+};
+
+template <typename T, typename Releaser = hb_cf_releaser_t<T>>
+struct hb_cf_ptr_t
+{
+  using element_type = T;
+
+  constexpr hb_cf_ptr_t () noexcept : p (nullptr) {}
+  constexpr hb_cf_ptr_t (std::nullptr_t) noexcept : p (nullptr) {}
+  explicit hb_cf_ptr_t (T p) noexcept : p (p) {}
+
+  hb_cf_ptr_t (const hb_cf_ptr_t &) = delete;
+  hb_cf_ptr_t &operator = (const hb_cf_ptr_t &) = delete;
+
+  hb_cf_ptr_t (hb_cf_ptr_t &&o) noexcept : p (o.release ()) {}
+  hb_cf_ptr_t &operator = (hb_cf_ptr_t &&o) noexcept
+  {
+    reset (o.release ());
+    return *this;
+  }
+
+  hb_cf_ptr_t &operator = (std::nullptr_t) noexcept
+  {
+    reset ();
+    return *this;
+  }
+
+  ~hb_cf_ptr_t ()
+  {
+    Releaser::release (p);
+    p = nullptr;
+  }
+
+  void reset (T new_p = nullptr)
+  {
+    if (p != new_p)
+    {
+      T old_p = p;
+      p = new_p;
+      Releaser::release (old_p);
+    }
+  }
+
+  T release () noexcept
+  {
+    T old_p = p;
+    p = nullptr;
+    return old_p;
+  }
+
+  T get () const noexcept { return p; }
+
+  operator T () const noexcept { return p; }
+  explicit operator bool () const noexcept { return p != nullptr; }
+  bool operator ! () const noexcept { return !p; }
+
+  void swap (hb_cf_ptr_t &o) noexcept
+  {
+    T tmp = p;
+    p = o.p;
+    o.p = tmp;
+  }
+  friend void swap (hb_cf_ptr_t &a, hb_cf_ptr_t &b) noexcept
+  {
+    a.swap (b);
+  }
+
+  private:
+  T p;
+};
+
 #endif /* HB_CORETEXT_HH */

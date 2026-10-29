@@ -181,8 +181,8 @@ struct hb_subset_plan_t
 
   os2_info_t os2_info;
 
-  const hb_subset_accelerator_t* accelerator;
-  hb_subset_accelerator_t* inprogress_accelerator;
+  const hb_subset_accelerator_t* accelerator = nullptr;
+  hb_subset_accelerator_t* inprogress_accelerator = nullptr;
 
  public:
 
@@ -214,6 +214,8 @@ struct hb_subset_plan_t
   auto source_table() HB_AUTO_RETURN (source_table_loader<T> {} (this))
 
   bool in_error () const { return !successful; }
+
+  HB_INTERNAL double layout_variation_delta (unsigned var_idx);
 
   bool check_success(bool success)
   {

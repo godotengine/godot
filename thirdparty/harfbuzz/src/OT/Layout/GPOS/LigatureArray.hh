@@ -5,15 +5,69 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
+HB_INTERNAL inline
+void collect_ligature_variation_indices (hb_collect_variation_indices_context_t *c,
+                                        const Coverage &coverage,
+                                        const void *base,
+                                        glyph_data_t offsets,
+                                        unsigned count,
+                                        unsigned class_count,
+                                        const hb_map_t &klass_mapping)
+{
+  for (const auto _ : hb_zip (coverage, hb_range (count)))
+  {
+    if (!c->glyph_set->has (_.first)) continue;
+    hb_barrier ();
+    unsigned offset = offsets[_.second];
+    if (!offset) continue;
 
-typedef AnchorMatrix LigatureAttach;    /* component-major--
-                                         * in order of writing direction--,
-                                         * mark-minor--
-                                         * ordered by class--zero-based. */
+    const void *matrix = &StructAtOffset<const HBUINT16> (base, offset);
+    /* LigatureAttach always has a 16-bit component count; its anchor
+     * offsets have the same width as the LigatureArray offsets. */
+    unsigned rows = *static_cast<const HBUINT16 *> (matrix);
+    glyph_data_t anchors = offsets;
+    anchors.data = (const char *) matrix + HBUINT16::static_size;
+
+    hb_sorted_vector_t<unsigned> indexes;
+    collect_ligature_anchor_indexes (rows, class_count, klass_mapping, indexes);
+    collect_anchor_variation_indices (c, matrix, anchors, indexes.iter ());
+  }
+}
+
 
 /* Array of LigatureAttach tables ordered by LigatureCoverage Index */
-struct LigatureArray : List16OfOffset16To<LigatureAttach>
+template <typename Types>
+struct LigatureArray :
+  Types::template ArrayOf<typename Types::template OffsetTo<AnchorMatrix<Types, HBUINT16>>>
 {
+  typedef AnchorMatrix<Types, HBUINT16> LigatureAttach;
+  typedef typename Types::template OffsetTo<LigatureAttach> LigatureAttachOffset;
+  typedef typename Types::template ArrayOf<LigatureAttachOffset> Super;
+
+  const LigatureAttach& operator [] (int i_) const
+  {
+    unsigned int i = (unsigned int) i_;
+    if (unlikely (i >= this->len)) return Null (LigatureAttach);
+    hb_barrier ();
+    return this+this->arrayZ[i];
+  }
+
+  template <typename ...Ts>
+  bool sanitize (hb_sanitize_context_t *c, Ts&&... ds) const
+  {
+    TRACE_SANITIZE (this);
+    return_trace (Super::sanitize (c, this, std::forward<Ts> (ds)...));
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c,
+                                  const Coverage &coverage,
+                                  unsigned class_count,
+                                  const hb_map_t &klass_mapping) const
+  {
+    collect_ligature_variation_indices (c, coverage, this, this->arrayZ,
+                                        this->len, class_count, klass_mapping);
+  }
+
   template <typename Iterator,
             hb_requires (hb_is_iterator (Iterator))>
   bool subset (hb_subset_context_t *c,

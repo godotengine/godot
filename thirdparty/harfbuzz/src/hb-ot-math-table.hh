@@ -29,6 +29,7 @@
 
 #include "hb-open-type.hh"
 #include "hb-ot-layout-common.hh"
+#include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-math.h"
 #include "hb-depend-data.hh"
 
@@ -38,19 +39,37 @@ namespace OT {
 struct MathValueRecord
 {
   hb_position_t get_x_value (hb_font_t *font, const void *base) const
-  { return hb_saturate_add (font->em_scale_x (value), (base+deviceTable).get_x_delta (font)); }
+  { return hb_saturate_add (font->em_scale_x (value), (base+deviceTable).get_x_delta (font, get_var_store (font, base))); }
   hb_position_t get_y_value (hb_font_t *font, const void *base) const
-  { return hb_saturate_add (font->em_scale_y (value), (base+deviceTable).get_y_delta (font)); }
+  { return hb_saturate_add (font->em_scale_y (value), (base+deviceTable).get_y_delta (font, get_var_store (font, base))); }
 
-  MathValueRecord* copy (hb_serialize_context_t *c, const void *base) const
+  const ItemVariationStore &get_var_store (hb_font_t *font, const void *base) const
+  {
+#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_LAYOUT)
+    if ((base+deviceTable).is_variation_device ())
+      return font->face->table.GDEF->table->get_var_store ();
+#endif
+    return Null (ItemVariationStore);
+  }
+
+  MathValueRecord* copy (hb_serialize_context_t *c, const void *base,
+                         const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *variation_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->embed (this);
     if (unlikely (!out)) return_trace (nullptr);
-    out->deviceTable.serialize_copy (c, deviceTable, base, 0, hb_serialize_context_t::Head);
+    hb_pair_t<unsigned, int> *varidx_delta;
+    if (variation_map->has ((base+deviceTable).get_variation_index (), &varidx_delta) &&
+        !c->check_assign (out->value, (int64_t) value + hb_second (*varidx_delta),
+                          HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return_trace (nullptr);
+    out->deviceTable.serialize_copy (c, deviceTable, base, 0, hb_serialize_context_t::Head, variation_map);
 
     return_trace (out);
   }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c, const void *base) const
+  { (base+deviceTable).collect_variation_indices (c); }
 
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
   {
@@ -72,7 +91,8 @@ struct MathConstants
 {
   friend struct MATH;
 
-  MathConstants* copy (hb_serialize_context_t *c) const
+  MathConstants* copy (hb_serialize_context_t *c,
+                      const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *variation_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
@@ -87,11 +107,17 @@ struct MathConstants
 
     unsigned count = ARRAY_LENGTH (mathValueRecords);
     for (unsigned i = 0; i < count; i++)
-      if (!c->copy (mathValueRecords[i], this))
+      if (!c->copy (mathValueRecords[i], this, variation_map))
         return_trace (nullptr);
 
     if (!c->embed (radicalDegreeBottomRaisePercent)) return_trace (nullptr);
     return_trace (out);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &record : mathValueRecords)
+      record.collect_variation_indices (c, this);
   }
 
   bool sanitize_math_value_records (hb_sanitize_context_t *c) const
@@ -212,7 +238,7 @@ struct MathItalicsCorrectionInfo
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
     + hb_zip (this+coverage, italicsCorrection)
     | hb_filter (glyphset, hb_first)
-    | hb_filter (serialize_math_record_array (c->serializer, out->italicsCorrection, this), hb_second)
+    | hb_filter (serialize_math_record_array (c->serializer, out->italicsCorrection, this, &c->plan->layout_variation_idx_delta_map), hb_second)
     | hb_map (hb_first)
     | hb_map (glyph_map)
     | hb_sink (new_coverage)
@@ -220,6 +246,13 @@ struct MathItalicsCorrectionInfo
 
     out->coverage.serialize_serialize (c->serializer, new_coverage.iter ());
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &entry : hb_zip (this+coverage, italicsCorrection))
+      if (c->glyph_set->has (hb_first (entry)))
+        hb_second (entry).collect_variation_indices (c, this);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -265,7 +298,7 @@ struct MathTopAccentAttachment
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
     + hb_zip (this+topAccentCoverage, topAccentAttachment)
     | hb_filter (glyphset, hb_first)
-    | hb_filter (serialize_math_record_array (c->serializer, out->topAccentAttachment, this), hb_second)
+    | hb_filter (serialize_math_record_array (c->serializer, out->topAccentAttachment, this, &c->plan->layout_variation_idx_delta_map), hb_second)
     | hb_map (hb_first)
     | hb_map (glyph_map)
     | hb_sink (new_coverage)
@@ -273,6 +306,13 @@ struct MathTopAccentAttachment
 
     out->topAccentCoverage.serialize_serialize (c->serializer, new_coverage.iter ());
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &entry : hb_zip (this+topAccentCoverage, topAccentAttachment))
+      if (c->glyph_set->has (hb_first (entry)))
+        hb_second (entry).collect_variation_indices (c, this);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -308,7 +348,8 @@ struct MathTopAccentAttachment
 
 struct MathKern
 {
-  MathKern* copy (hb_serialize_context_t *c) const
+  MathKern* copy (hb_serialize_context_t *c,
+                      const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *variation_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->start_embed (this);
@@ -317,10 +358,16 @@ struct MathKern
 
     unsigned count = 2 * heightCount + 1;
     for (unsigned i = 0; i < count; i++)
-      if (!c->copy (mathValueRecordsZ.arrayZ[i], this))
+      if (!c->copy (mathValueRecordsZ.arrayZ[i], this, variation_map))
         return_trace (nullptr);
 
     return_trace (out);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &record : mathValueRecordsZ.as_array (2 * heightCount + 1))
+      record.collect_variation_indices (c, this);
   }
 
   bool sanitize_math_value_records (hb_sanitize_context_t *c) const
@@ -417,7 +464,8 @@ struct MathKern
 
 struct MathKernInfoRecord
 {
-  MathKernInfoRecord* copy (hb_serialize_context_t *c, const void *base) const
+  MathKernInfoRecord* copy (hb_serialize_context_t *c, const void *base,
+                            const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *variation_map) const
   {
     TRACE_SERIALIZE (this);
     auto *out = c->embed (this);
@@ -425,9 +473,15 @@ struct MathKernInfoRecord
 
     unsigned count = ARRAY_LENGTH (mathKern);
     for (unsigned i = 0; i < count; i++)
-      out->mathKern[i].serialize_copy (c, mathKern[i], base, 0, hb_serialize_context_t::Head);
+      out->mathKern[i].serialize_copy (c, mathKern[i], base, 0, hb_serialize_context_t::Head, variation_map);
 
     return_trace (out);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c, const void *base) const
+  {
+    for (const auto &offset : mathKern)
+      (base+offset).collect_variation_indices (c);
   }
 
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
@@ -493,7 +547,7 @@ struct MathKernInfo
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
     + hb_zip (this+mathKernCoverage, mathKernInfoRecords)
     | hb_filter (glyphset, hb_first)
-    | hb_filter (serialize_math_record_array (c->serializer, out->mathKernInfoRecords, this), hb_second)
+    | hb_filter (serialize_math_record_array (c->serializer, out->mathKernInfoRecords, this, &c->plan->layout_variation_idx_delta_map), hb_second)
     | hb_map (hb_first)
     | hb_map (glyph_map)
     | hb_sink (new_coverage)
@@ -501,6 +555,13 @@ struct MathKernInfo
 
     out->mathKernCoverage.serialize_serialize (c->serializer, new_coverage.iter ());
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &entry : hb_zip (this+mathKernCoverage, mathKernInfoRecords))
+      if (c->glyph_set->has (hb_first (entry)))
+        hb_second (entry).collect_variation_indices (c, this);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -580,6 +641,13 @@ struct MathGlyphInfo
 
     out->mathKernInfo.serialize_subset (c, mathKernInfo, this);
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    (this+mathItalicsCorrectionInfo).collect_variation_indices (c);
+    (this+mathTopAccentAttachment).collect_variation_indices (c);
+    (this+mathKernInfo).collect_variation_indices (c);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -763,12 +831,17 @@ struct MathGlyphAssembly
   {
     TRACE_SUBSET (this);
 
-    if (!c->serializer->copy (italicsCorrection, this)) return_trace (false);
+    if (!c->serializer->copy (italicsCorrection, this, &c->plan->layout_variation_idx_delta_map)) return_trace (false);
     if (!c->serializer->copy<HBUINT16> (partRecords.len)) return_trace (false);
 
     for (const auto& record : partRecords.iter ())
       if (!record.subset (c)) return_trace (false);
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    italicsCorrection.collect_variation_indices (c, this);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -843,6 +916,11 @@ struct MathGlyphConstruction
       if (!record.subset (c)) return_trace (false);
 
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    (this+glyphAssembly).collect_variation_indices (c);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -1017,6 +1095,16 @@ struct MathVariants
     return_trace (true);
   }
 
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
+  {
+    for (const auto &entry : hb_zip (this+vertGlyphCoverage, glyphConstruction.as_array (vertGlyphCount)))
+      if (c->glyph_set->has (hb_first (entry)))
+        (this+hb_second (entry)).collect_variation_indices (c);
+    for (const auto &entry : hb_zip (this+horizGlyphCoverage, glyphConstruction.as_array (vertGlyphCount + horizGlyphCount).sub_array (vertGlyphCount)))
+      if (c->glyph_set->has (hb_first (entry)))
+        (this+hb_second (entry)).collect_variation_indices (c);
+  }
+
   bool sanitize_offsets (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
@@ -1147,10 +1235,20 @@ struct MATH
     auto *out = c->serializer->embed (*this);
     if (unlikely (!out)) return_trace (false);
 
-    out->mathConstants.serialize_copy (c->serializer, mathConstants, this, 0, hb_serialize_context_t::Head);
+    out->mathConstants.serialize_copy (c->serializer, mathConstants, this, 0, hb_serialize_context_t::Head, &c->plan->layout_variation_idx_delta_map);
     out->mathGlyphInfo.serialize_subset (c, mathGlyphInfo, this);
     out->mathVariants.serialize_subset (c, mathVariants, this);
     return_trace (true);
+  }
+
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c, const hb_set_t *variant_glyph_set) const
+  {
+    (this+mathConstants).collect_variation_indices (c);
+    (this+mathGlyphInfo).collect_variation_indices (c);
+    auto *glyph_set = c->glyph_set;
+    c->glyph_set = variant_glyph_set;
+    (this+mathVariants).collect_variation_indices (c);
+    c->glyph_set = glyph_set;
   }
 
   bool sanitize (hb_sanitize_context_t *c) const

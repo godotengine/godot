@@ -385,15 +385,13 @@ hb_coretext_draw_glyph_or_fail (hb_font_t *font,
   CGAffineTransform transform = CGAffineTransformIdentity;
   transform = CGAffineTransformScale (transform, x_mult, y_mult);
 
-  CGPathRef path = CTFontCreatePathForGlyph (ct_font, glyph, &transform);
+  hb_cf_ptr_t<CGPathRef> path (CTFontCreatePathForGlyph (ct_font, glyph, &transform));
   if (!path)
     return false;
 
   hb_draw_session_t drawing {draw_funcs, draw_data};
 
   CGPathApply (path, &drawing, ct_apply_func);
-
-  CFRelease (path);
 
   return true;
 }
@@ -409,15 +407,12 @@ hb_coretext_get_glyph_name (hb_font_t *font,
   CGFontRef cg_font = (CGFontRef) (const void *) font->face->data.coretext;
 
   CGGlyph cg_glyph = glyph;
-  CFStringRef cf_name = CGFontCopyGlyphNameForGlyph (cg_font, cg_glyph);
+  hb_cf_ptr_t<CFStringRef> cf_name (CGFontCopyGlyphNameForGlyph (cg_font, cg_glyph));
   if (!cf_name)
     return false;
 
   if (!size)
-  {
-    CFRelease (cf_name);
     return true;
-  }
 
   CFIndex len = CFStringGetLength (cf_name);
   if (len > (CFIndex)size - 1)
@@ -428,8 +423,6 @@ hb_coretext_get_glyph_name (hb_font_t *font,
 		    (UInt8 *) name, size, &len);
 
   name[len] = '\0';
-
-  CFRelease (cf_name);
 
   return true;
 }
@@ -446,13 +439,11 @@ hb_coretext_get_glyph_from_name (hb_font_t *font,
   if (len == -1)
     len = strlen (name);
 
-  CFStringRef cf_name = CFStringCreateWithBytes (kCFAllocatorDefault,
-						 (const UInt8 *) name, len,
-						 kCFStringEncodingUTF8, false);
+  hb_cf_ptr_t<CFStringRef> cf_name (CFStringCreateWithBytes (kCFAllocatorDefault,
+							     (const UInt8 *) name, len,
+							     kCFStringEncodingUTF8, false));
   CGGlyph cg_glyph = CTFontGetGlyphWithName (ct_font, cf_name);
   *glyph = cg_glyph;
-
-  CFRelease (cf_name);
 
   // TODO Return true for .notdef; hb-ft does that.
 

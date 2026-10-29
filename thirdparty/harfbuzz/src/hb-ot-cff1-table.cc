@@ -379,8 +379,8 @@ struct cff1_cs_opset_extents_t : cff1_cs_opset_t<cff1_cs_opset_extents_t, cff1_e
 
     bounds_t  base_bounds, accent_bounds;
     if (likely (!env.in_seac && base && accent
-	       && _get_bounds (param.cff, base, base_bounds, true)
-	       && _get_bounds (param.cff, accent, accent_bounds, true)))
+	       && _get_bounds (param.cff, base, base_bounds, true, env.get_budget ())
+	       && _get_bounds (param.cff, accent, accent_bounds, true, env.get_budget ())))
     {
       param.bounds.merge (base_bounds);
       accent_bounds.offset (delta);
@@ -415,6 +415,9 @@ bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph
 #endif
 
   bounds_t bounds;
+
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
 
   if (!_get_bounds (this, glyph, bounds, false, budget))
     return false;
@@ -535,8 +538,8 @@ struct cff1_cs_opset_path_t : cff1_cs_opset_t<cff1_cs_opset_path_t, cff1_path_pa
     hb_codepoint_t accent = param.cff->std_code_to_glyph (env.argStack[n-1].to_int ());
 
     if (unlikely (!(!env.in_seac && base && accent
-		    && _get_path (param.cff, param.font, base, *param.draw_session, true)
-		    && _get_path (param.cff, param.font, accent, *param.draw_session, true, &delta))))
+		    && _get_path (param.cff, param.font, base, *param.draw_session, true, nullptr, env.get_budget ())
+		    && _get_path (param.cff, param.font, accent, *param.draw_session, true, &delta, env.get_budget ()))))
       env.set_error ();
   }
 };
@@ -567,6 +570,9 @@ bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, h
   /* XXX Remove check when this code moves to .hh file. */
   return true;
 #endif
+
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
 
   return _get_path (this, font, glyph, draw_session, false, nullptr, budget);
 }

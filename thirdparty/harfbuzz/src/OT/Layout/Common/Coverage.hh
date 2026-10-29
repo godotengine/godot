@@ -29,7 +29,7 @@
 #ifndef OT_LAYOUT_COMMON_COVERAGE_HH
 #define OT_LAYOUT_COMMON_COVERAGE_HH
 
-#include "../types.hh"
+#include "../../../hb-ot-dual.hh"
 #include "CoverageFormat1.hh"
 #include "CoverageFormat2.hh"
 
@@ -104,9 +104,9 @@ struct Coverage
     coverage = get_coverage (glyph_id);
     if (cache) {
       if (coverage == NOT_COVERED)
-	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
+	cache->set (glyph_id, cache->MAX_VALUE);
       else if (likely (coverage < cache->MAX_VALUE))
-	cache->set_unchecked (glyph_id, coverage);
+	cache->set (glyph_id, coverage);
     }
     return coverage;
   }
@@ -119,9 +119,9 @@ struct Coverage
     coverage = get_coverage (glyph_id);
     if (cache) {
       if (coverage == NOT_COVERED)
-	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
+	cache->set (glyph_id, cache->MAX_VALUE);
       else
-	cache->set_unchecked (glyph_id, 0);
+	cache->set (glyph_id, 0);
     }
     return coverage;
   }
@@ -146,12 +146,12 @@ struct Coverage
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
 
-    unsigned count = hb_len (glyphs);
+    unsigned count = hb_len (+ glyphs);
     unsigned num_ranges = 0;
     hb_codepoint_t last = (hb_codepoint_t) -2;
     hb_codepoint_t max = 0;
     bool unsorted = false;
-    for (auto g: glyphs)
+    for (auto g: + glyphs)
     {
       if (last != (hb_codepoint_t) -2 && g < last)
 	unsorted = true;

@@ -28,6 +28,7 @@
 #define HB_OT_VORG_TABLE_HH
 
 #include "hb-open-type.hh"
+#include "hb-ot-dual.hh"
 
 /*
  * VORG -- Vertical Origin Table
@@ -37,6 +38,7 @@
 
 namespace OT {
 
+template <typename Types>
 struct VertOriginMetric
 {
   int cmp (hb_codepoint_t g) const { return glyph.cmp (g); }
@@ -48,14 +50,16 @@ struct VertOriginMetric
   }
 
   public:
-  HBGlyphID16	glyph;
+  typename Types::HBGlyphID
+		glyph;
   FWORD		vertOriginY;
 
   public:
-  DEFINE_SIZE_STATIC (4);
+  DEFINE_SIZE_STATIC (Types::HBGlyphID::static_size + FWORD::static_size);
 };
 
-struct VORG
+template <typename Types>
+struct VORGFormat1_2
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_VORG;
 
@@ -79,7 +83,7 @@ struct VORG
 
     if (unlikely (!c->extend_min ((*this))))  return;
 
-    this->version.major = 1;
+    this->version.major = Types::size == 2 ? 1 : 2;
     this->version.minor = 0;
 
     this->defaultVertOriginY = defaultVertOriginY;
@@ -91,18 +95,18 @@ struct VORG
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    auto *vorg_prime = c->serializer->start_embed<VORG> ();
+    auto *vorg_prime = c->serializer->start_embed<VORGFormat1_2> ();
     if (unlikely (!c->serializer->check_success (vorg_prime))) return_trace (false);
 
     auto it =
     + vertYOrigins.as_array ()
-    | hb_filter (c->plan->glyphset (), &VertOriginMetric::glyph)
-    | hb_map ([&] (const VertOriginMetric& _)
+    | hb_filter (c->plan->glyphset (), &VertOriginMetric<Types>::glyph)
+    | hb_map ([&] (const VertOriginMetric<Types>& _)
 	      {
 		hb_codepoint_t new_glyph = HB_SET_VALUE_INVALID;
 		c->plan->new_gid_for_old_gid (_.glyph, &new_glyph);
 
-		VertOriginMetric metric;
+		VertOriginMetric<Types> metric;
 		metric.glyph = new_glyph;
 		metric.vertOriginY = _.vertOriginY;
 		return metric;
@@ -119,19 +123,78 @@ struct VORG
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
 		  hb_barrier () &&
-		  version.major == 1 &&
+		  version.major == (Types::size == 2 ? 1 : 2) &&
 		  vertYOrigins.sanitize (c));
   }
 
   protected:
-  FixedVersion<>version;	/* Version of VORG table. Set to 0x00010000u. */
+  FixedVersion<>version;	/* Version of VORG table. */
   FWORD		defaultVertOriginY;
 				/* The default vertical origin. */
-  SortedArray16Of<VertOriginMetric>
+  typename Types::template SortedArrayOf<VertOriginMetric<Types>>
 		vertYOrigins;	/* The array of vertical origins. */
 
   public:
-  DEFINE_SIZE_ARRAY(8, vertYOrigins);
+  DEFINE_SIZE_ARRAY(6 + Types::HBUINT::static_size, vertYOrigins);
+};
+
+struct VORG
+{
+  static constexpr hb_tag_t tableTag = HB_OT_TAG_VORG;
+
+  bool has_data () const { return u.version.v.to_int (); }
+
+  HB_ALWAYS_INLINE
+  int get_y_origin (hb_codepoint_t glyph) const
+  {
+    switch (u.version.v.major) {
+    case 1: return u.version1.get_y_origin (glyph);
+#ifndef HB_NO_BEYOND_64K
+    case 2: return u.version2.get_y_origin (glyph);
+#endif
+    default: return 0;
+    }
+  }
+
+  bool subset (hb_subset_context_t *c) const
+  {
+    TRACE_SUBSET (this);
+    switch (u.version.v.major) {
+    case 1: return_trace (u.version1.subset (c));
+#ifndef HB_NO_BEYOND_64K
+    case 2: return_trace (u.version2.subset (c));
+#endif
+    default: return_trace (false);
+    }
+  }
+
+  bool sanitize (hb_sanitize_context_t *c) const
+  {
+    TRACE_SANITIZE (this);
+    if (unlikely (!u.version.v.sanitize (c))) return_trace (false);
+    hb_barrier ();
+    switch (u.version.v.major) {
+    case 1: hb_barrier (); return_trace (u.version1.sanitize (c));
+#ifndef HB_NO_BEYOND_64K
+    case 2: hb_barrier (); return_trace (u.version2.sanitize (c));
+#endif
+    default: return_trace (false);
+    }
+  }
+
+  protected:
+  union {
+  struct {
+  FixedVersion<>v;		/* Version of VORG table. */
+  }				version;
+  VORGFormat1_2<Layout::SmallTypes>version1;
+#ifndef HB_NO_BEYOND_64K
+  VORGFormat1_2<Layout::MediumTypes>version2;
+#endif
+  } u;
+
+  public:
+  DEFINE_SIZE_UNION (4, version.v);
 };
 } /* namespace OT */
 

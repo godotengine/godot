@@ -246,7 +246,6 @@ hb_vector_svg_add_sweep_patch (hb_vector_buf_t *body,
 /* Callback context + trampoline for hb_paint_sweep_gradient_tiles. */
 struct hb_vector_svg_sweep_ctx_t
 {
-  hb_vector_paint_t *paint;
   hb_vector_buf_t *body;
   unsigned precision;
   float cx, cy, radius;
@@ -258,18 +257,16 @@ hb_vector_svg_sweep_emit_patch (float a0, hb_color_t c0,
 				void *user_data)
 {
   auto *ctx = (hb_vector_svg_sweep_ctx_t *) user_data;
-  auto *paint = ctx->paint;
-  /* Skip patch generation when the session work budget is spent, so
-   * per-gradient patch counts cannot multiply with the paint-graph
-   * traversal limits of the font tables driving us. */
-  if (unlikely (paint->work_left <= 0))
+  /* Sweep-gradient meshes are not outline-derived, so they are bounded by
+   * the output document-size cap, not the outline work budget: stop once
+   * the buffer trips its cap so per-gradient patch counts cannot multiply
+   * with the paint-graph traversal limits of the font tables driving us. */
+  if (unlikely (ctx->body->in_error ()))
     return;
-  unsigned before = ctx->body->length;
   hb_vector_svg_add_sweep_patch (ctx->body, ctx->precision,
 				 ctx->cx, ctx->cy, ctx->radius,
 				 a0, hb_vector_svg_rgba_from_hb_color (c0),
 				 a1, hb_vector_svg_rgba_from_hb_color (c1));
-  paint->work_left -= ctx->body->length - before;
 }
 
 
@@ -333,6 +330,9 @@ static struct hb_vector_paint_funcs_lazy_loader_t
     hb_paint_funcs_set_pop_group_func (funcs, (hb_paint_pop_group_func_t) hb_vector_paint_pop_group, nullptr, nullptr);
     hb_paint_funcs_set_color_glyph_func (funcs, (hb_paint_color_glyph_func_t) hb_vector_paint_color_glyph, nullptr, nullptr);
     hb_paint_funcs_set_custom_palette_color_func (funcs, (hb_paint_custom_palette_color_func_t) hb_vector_paint_custom_palette_color, nullptr, nullptr);
+    hb_paint_funcs_set_set_budget_func (funcs, hb_vector_paint_set_budget_callback, nullptr, nullptr);
+    hb_paint_funcs_set_get_budget_func (funcs, hb_vector_paint_get_budget_callback, nullptr, nullptr);
+    hb_paint_funcs_set_get_budget_remaining_func (funcs, hb_vector_paint_get_budget_remaining_callback, nullptr, nullptr);
     hb_paint_funcs_make_immutable (funcs);
     hb_atexit (free_static_vector_paint_funcs);
     return funcs;
@@ -440,11 +440,11 @@ hb_vector_paint_fill_glyph (hb_paint_funcs_t *,
   paint->path.clear ();
   /* Skip the outline extraction when the session work budget is
    * spent; an empty path keeps the document structure intact. */
-  if (likely (paint->work_left > 0))
+  if (likely (paint->budget_remaining >= 0))
   {
     hb_vector_path_sink_t sink = {&paint->path, paint->get_precision (),
 				 paint->x_scale_factor, paint->y_scale_factor,
-				 &paint->work_left};
+				 &paint->budget_remaining};
     hb_font_draw_glyph (font, glyph, hb_vector_svg_path_draw_funcs_get (), &sink);
   }
 
@@ -473,11 +473,11 @@ hb_vector_paint_push_clip_glyph (hb_paint_funcs_t *,
   paint->path.clear ();
   /* Skip the outline extraction when the session work budget is
    * spent; an empty clip path clips everything out. */
-  if (likely (paint->work_left > 0))
+  if (likely (paint->budget_remaining >= 0))
   {
     hb_vector_path_sink_t sink = {&paint->path, paint->get_precision (),
 				 paint->x_scale_factor, paint->y_scale_factor,
-				 &paint->work_left};
+				 &paint->budget_remaining};
     hb_font_draw_glyph (font, glyph, hb_vector_svg_path_draw_funcs_get (), &sink);
   }
 
@@ -558,7 +558,7 @@ hb_vector_paint_push_clip_path_start (hb_paint_funcs_t *,
   paint->clip_path_sink = {&paint->path, paint->get_precision (),
 			   paint->x_scale_factor,
 			   paint->y_scale_factor,
-			   &paint->work_left};
+			   &paint->budget_remaining};
   *draw_data = &paint->clip_path_sink;
   return hb_vector_svg_path_draw_funcs_get ();
 }
@@ -829,7 +829,7 @@ hb_vector_paint_sweep_gradient (hb_paint_funcs_t *,
   float ga1 = start_angle + mx * (end_angle - start_angle);
 
   hb_vector_svg_sweep_ctx_t ctx {
-    paint, &paint->current_body (), paint->get_precision (), paint->sx (cx), paint->sy (cy), 32767.f
+    &paint->current_body (), paint->get_precision (), paint->sx (cx), paint->sy (cy), 32767.f
   };
   hb_paint_sweep_gradient_tiles (stops.arrayZ, stops.length,
 				 hb_color_line_get_extend (color_line),
@@ -982,8 +982,6 @@ hb_vector_paint_render_svg (hb_vector_paint_t *paint)
   out.append_str ("</svg>\n");
 
   hb_blob_t *blob = hb_buf_blob_from (&paint->recycled_blob, &out);
-
-  hb_vector_paint_clear (paint);
 
   return blob;
 }
