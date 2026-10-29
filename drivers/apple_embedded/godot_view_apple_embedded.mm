@@ -124,10 +124,20 @@ static const float earth_gravity = 9.80665;
 - (void)godot_commonInit {
 	self.preferredFrameRate = 60;
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
+	self.hingeClosed = YES;
 	last_edr_headroom = 0.0;
 
 #if !defined(VISIONOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
+	if (@available(iOS 27.1, *)) {
+		[self addInteraction:[[UIHingeInteraction alloc] initWithUpdateHandler:^(UIHingeInteraction *interaction, UIHingeInteractionUpdate *update) {
+			if (update.hinge) {
+				self.hingeClosed = update.hinge.status == UIHingeStatusClosed;
+			}
+		}]];
+	}
+#endif
 #endif
 
 	if (@available(iOS 17.0, *)) {

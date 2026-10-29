@@ -517,12 +517,13 @@ static const _ModelInfo _models[] = {
 	{ { "iPad14,3", "iPad14,4", "iPad14,5", "iPad14,6", "iPad14,8", "iPad14,9", "iPad14,10", "iPad14,11", "RealityDevice14,1" }, "Apple M2" },
 	{ { "iPhone16,1", "iPhone16,2", "iPad16,1", "iPad16,2" }, "Apple A17 Pro" },
 	{ { "iPad15,3", "iPad15,4", "iPad15,5", "iPad15,6" }, "Apple M3" },
-	{ { "iPad16,3", "iPad16,4", "iPad16,5", "iPad16,6" }, "Apple M4" },
+	{ { "iPad16,3", "iPad16,4", "iPad16,5", "iPad16,6", "iPad16,8", "iPad16,9", "iPad16,10", "iPad16,11" }, "Apple M4" },
 	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
 	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
 	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
 	{ { "iPhone18,3", "iPhone18,5" }, "Apple A19" },
 	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
+	{ { "iPhone19,2", "iPhone19,3", "iPhone19,4", "iPhone19,7", "iPad19,1", "iPad19,2" }, "Apple A20 Pro" },
 };
 
 String OS_AppleEmbedded::get_processor_name() const {
