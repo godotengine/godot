@@ -30,15 +30,15 @@
 
 #include "register_types.h"
 
-#include "image_loader_jpegd.h"
+#include "image_loader_libjpeg_turbo.h"
 
-static ImageLoaderJPG *image_loader_jpg = nullptr;
+static ImageLoaderLibJPEGTurbo *image_loader_libjpeg_turbo = nullptr;
 
 void register_jpg_types() {
-	image_loader_jpg = memnew(ImageLoaderJPG);
-	ImageLoader::add_image_format_loader(image_loader_jpg);
+	image_loader_libjpeg_turbo = memnew(ImageLoaderLibJPEGTurbo);
+	ImageLoader::add_image_format_loader(image_loader_libjpeg_turbo);
 }
 
 void unregister_jpg_types() {
-	memdelete(image_loader_jpg);
+	memdelete(image_loader_libjpeg_turbo);
 }
