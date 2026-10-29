@@ -63,6 +63,10 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	int width = f->get_line().to_int();
 
+	ERR_FAIL_COND_V_MSG(width <= 0 || height <= 0, ERR_FILE_CORRUPT, "Invalid image size, corrupt HDR.");
+	ERR_FAIL_COND_V_MSG(width > Image::MAX_WIDTH || height > Image::MAX_HEIGHT, ERR_UNAVAILABLE,
+			vformat("The HDR image size (%dx%d) exceeds the maximum image size.", width, height));
+
 	PoolVector<uint8_t> imgdata;
 
 	imgdata.resize(height * width * sizeof(uint32_t));
@@ -108,11 +112,13 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 							// Run
 							int value = f->get_8();
 							count -= 128;
+							ERR_FAIL_COND_V_MSG(count > width - i, ERR_FILE_CORRUPT, "Invalid run length, corrupt HDR.");
 							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = uint8_t(value);
 							}
 						} else {
 							// Dump
+							ERR_FAIL_COND_V_MSG(count == 0 || count > width - i, ERR_FILE_CORRUPT, "Invalid dump length, corrupt HDR.");
 							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = f->get_8();
 							}
