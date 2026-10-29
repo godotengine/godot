@@ -113,9 +113,15 @@ void EditorZoomWidget::setup_zoom_limits(float p_min, float p_max) {
 
 void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_integer_only) {
 	// Remove editor scale from the index computation.
-	const float zoom_noscale = zoom / MAX(1, EDSCALE);
+	float zoom_noscale = zoom / MAX(1, EDSCALE);
 
 	if (p_integer_only) {
+		// At certain editor scales, the unscaled value can be very close to an integer value, but not exactly an integer value.
+		// Since this would break the logic below, we need to snap the value to an integer.
+		if (Math::is_equal_approx(zoom_noscale, Math::round(zoom_noscale))) {
+			zoom_noscale = Math::round(zoom_noscale);
+		}
+
 		// Only visit integer scaling factors above 100%, and fractions with an integer denominator below 100%
 		// (1/2 = 50%, 1/3 = 33.33%, 1/4 = 25%, …).
 		// This is useful when working on pixel art projects to avoid distortion.
