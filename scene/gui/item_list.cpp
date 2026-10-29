@@ -962,20 +962,20 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
+					const String search_lower = search_string.to_lower();
 					for (int i = current - 1; i >= 0; i--) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.to_lower().begins_with(search_lower)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
 								emit_signal(SceneStringName(item_selected), current);
 							}
-
-							break;
+							accept_event();
+							return;
 						}
 					}
-					accept_event();
-					return;
 				}
+				search_string = ""; // No more matches, navigate normally.
 			}
 
 			if (current >= current_columns) {
@@ -1010,19 +1010,20 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
+					const String search_lower = search_string.to_lower();
 					for (int i = current + 1; i < items.size(); i++) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.to_lower().begins_with(search_lower)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
 								emit_signal(SceneStringName(item_selected), current);
 							}
-							break;
+							accept_event();
+							return;
 						}
 					}
-					accept_event();
-					return;
 				}
+				search_string = ""; // No more matches, navigate normally.
 			}
 
 			if (current < items.size() - current_columns) {
