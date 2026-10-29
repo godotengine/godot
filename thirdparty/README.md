@@ -13,8 +13,7 @@ readability.
 
 Files extracted from upstream source:
 
-- `common/`, `dec/` and `include/` folders from `c/`,
-  minus the `dictionary.bin*` files
+- `common/`, `dec/` and `include/` folders from `c/`
 - `LICENSE`
 
 
