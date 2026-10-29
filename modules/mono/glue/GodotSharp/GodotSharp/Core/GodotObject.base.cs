@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Godot.Bridge;
 using Godot.NativeInterop;
 
@@ -192,6 +193,41 @@ namespace Godot
         public SignalAwaiter ToSignal(GodotObject source, StringName signal)
         {
             return new SignalAwaiter(source, signal, this);
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="SignalAwaiter"/> awaiter configured to complete when the instance
+        /// <paramref name="source"/> emits the signal specified by the <paramref name="signal"/> parameter.
+        /// </summary>
+        /// <param name="source">
+        /// The instance the awaiter will be listening to.
+        /// </param>
+        /// <param name="signal">
+        /// The signal the awaiter will be waiting for.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A <see cref="CancellationToken"/> that can be used to cancel the awaiter.
+        /// </param>
+        /// <example>
+        /// This sample prints a message once every frame up to 100 times.
+        /// <code>
+        /// public override void _Ready()
+        /// {
+        ///     for (int i = 0; i &lt; 100; i++)
+        ///     {
+        ///         await ToSignal(GetTree(), "process_frame");
+        ///         GD.Print($"Frame {i}");
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <returns>
+        /// A <see cref="SignalAwaiter"/> that completes when
+        /// <paramref name="source"/> emits the <paramref name="signal"/>.
+        /// </returns>
+        public SignalAwaiter ToSignal(GodotObject source, StringName signal, CancellationToken cancellationToken)
+        {
+            return new SignalAwaiter(source, signal, this, cancellationToken);
         }
 
         internal static bool IsNativeClass(Type t)
