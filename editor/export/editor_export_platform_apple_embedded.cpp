@@ -1938,6 +1938,11 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 			}
 			if (String::utf8(scan_fname).begins_with("AccessKit.xcframework/")) {
 				config_data.has_accesskit = true;
+			}
+			if (String::utf8(scan_fname).begins_with("MoltenVK.xcframework/")) {
+				config_data.has_moltenvk = true;
+			}
+			if (config_data.has_accesskit && config_data.has_moltenvk) {
 				break;
 			}
 			scan_ret = unzGoToNextFile(src_pkg_zip);
