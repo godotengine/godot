@@ -79,6 +79,7 @@ FT_TRACE_DEF( ttgxvar )   /* TrueType GX var handler (ttgxvar.c)  */
 FT_TRACE_DEF( ttinterp )  /* bytecode interpreter    (ttinterp.c) */
 FT_TRACE_DEF( ttobjs )    /* TT objects manager      (ttobjs.c)   */
 FT_TRACE_DEF( ttpload )   /* TT data/program loader  (ttpload.c)  */
+FT_TRACE_DEF( ttvarc )    /* TT VARC handler         (ttvarc.c)   */
 
   /* Type 1 driver components */
 FT_TRACE_DEF( t1afm )
@@ -119,6 +120,11 @@ FT_TRACE_DEF( cidgload )
 FT_TRACE_DEF( cidload )
 FT_TRACE_DEF( cidobjs )
 FT_TRACE_DEF( cidparse )
+
+  /* HVF driver component */
+FT_TRACE_DEF( hvfdrv )
+FT_TRACE_DEF( hvfobjs )
+FT_TRACE_DEF( hvfload )
 
   /* Windows font component */
 FT_TRACE_DEF( winfnt )

@@ -634,6 +634,12 @@
     if ( error )
       goto Exit;
 
+    if ( !bytes )
+    {
+      error = FT_THROW( Invalid_Table );
+      goto Exit;
+    }
+
     if ( !FT_QALLOC( name, byte_len + 1 ) )
     {
       FT_MEM_COPY( name, bytes, byte_len );

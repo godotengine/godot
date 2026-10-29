@@ -262,6 +262,10 @@ FT_BEGIN_HEADER
    *   gv_glyphcnt ::
    *     The number of glyphs handled in the `gvar' table.
    *
+   *   gvar_is_extended ::
+   *     A boolean which is set when glyph variation data comes from the
+   *     'GVAR' table (instead of 'gvar').
+   *
    *   glyphoffsets ::
    *     Offsets into the glyph variation data array.
    *
@@ -300,9 +304,15 @@ FT_BEGIN_HEADER
     FT_Fixed*       tuplescalars;     /* tuplescalars[tuplecount]          */
 
     FT_UInt         gv_glyphcnt;
+    FT_Bool         gvar_is_extended;
     FT_ULong*       glyphoffsets;         /* glyphoffsets[gv_glyphcnt + 1] */
 
     FT_ULong        gvar_size;
+
+    /* Scratch pool reused across glyphs by `TT_Vary_Apply_Glyph_Deltas`, */
+    /* grown on demand, to avoid per-glyph/per-tuple heap allocations.    */
+    FT_Byte*        glyph_delta_pool;
+    FT_ULong        glyph_delta_pool_size;
 
   } GX_BlendRec;
 
@@ -442,6 +452,13 @@ FT_BEGIN_HEADER
                     FT_Fixed*   *coords,
                     FT_Fixed*   *normalizedcoords,
                     FT_MM_Var*  *mm_var );
+
+  FT_LOCAL( FT_Error )
+  tt_var_init_gvar( FT_Face  face );
+
+  FT_LOCAL( FT_Error )
+  tt_var_init_blend( FT_Face  face,
+                     FT_UInt  axis_count );
 
   FT_LOCAL( void )
   tt_done_blend( FT_Face  face );

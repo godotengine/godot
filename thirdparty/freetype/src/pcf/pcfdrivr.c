@@ -458,6 +458,7 @@ THE SOFTWARE.
     PCF_Face    face   = (PCF_Face)size->face;
     FT_Stream   stream;
     FT_Error    error  = FT_Err_Ok;
+    FT_Int      width, height;
     FT_Bitmap*  bitmap = &slot->bitmap;
     PCF_Metric  metric;
     FT_ULong    bytes;
@@ -481,29 +482,36 @@ THE SOFTWARE.
 
     metric = face->metrics + glyph_index;
 
-    bitmap->rows       = (unsigned int)( metric->ascent +
-                                         metric->descent );
-    bitmap->width      = (unsigned int)( metric->rightSideBearing -
-                                         metric->leftSideBearing );
+    height = metric->ascent + metric->descent;
+    width  = metric->rightSideBearing - metric->leftSideBearing;
+
+    /* sanity checks against reasonable size */
+    if ( height < 0 || height > 4 * size->metrics.y_ppem )
+      height = 0;
+    if ( width  < 0 || width  > 4 * size->metrics.x_ppem )
+      width  = 0;
+
+    bitmap->rows       = (unsigned int)height;
+    bitmap->width      = (unsigned int)width;
     bitmap->num_grays  = 1;
     bitmap->pixel_mode = FT_PIXEL_MODE_MONO;
 
     switch ( PCF_GLYPH_PAD( face->bitmapsFormat ) )
     {
     case 1:
-      bitmap->pitch = (int)( ( bitmap->width + 7 ) >> 3 );
+      bitmap->pitch = ( width + 7 ) >> 3;
       break;
 
     case 2:
-      bitmap->pitch = (int)( ( ( bitmap->width + 15 ) >> 4 ) << 1 );
+      bitmap->pitch = ( ( width + 15 ) >> 4 ) << 1;
       break;
 
     case 4:
-      bitmap->pitch = (int)( ( ( bitmap->width + 31 ) >> 5 ) << 2 );
+      bitmap->pitch = ( ( width + 31 ) >> 5 ) << 2;
       break;
 
     case 8:
-      bitmap->pitch = (int)( ( ( bitmap->width + 63 ) >> 6 ) << 3 );
+      bitmap->pitch = ( ( width + 63 ) >> 6 ) << 3;
       break;
 
     default:
@@ -517,9 +525,8 @@ THE SOFTWARE.
     slot->metrics.horiAdvance  = (FT_Pos)( metric->characterWidth * 64 );
     slot->metrics.horiBearingX = (FT_Pos)( metric->leftSideBearing * 64 );
     slot->metrics.horiBearingY = (FT_Pos)( metric->ascent * 64 );
-    slot->metrics.width        = (FT_Pos)( ( metric->rightSideBearing -
-                                             metric->leftSideBearing ) * 64 );
-    slot->metrics.height       = (FT_Pos)( bitmap->rows * 64 );
+    slot->metrics.width        = (FT_Pos)( width * 64 );
+    slot->metrics.height       = (FT_Pos)( height * 64 );
 
     ft_synthesize_vertical_metrics( &slot->metrics,
                                     ( face->accel.fontAscent +
@@ -529,11 +536,11 @@ THE SOFTWARE.
       goto Exit;
 
     /* XXX: to do: are there cases that need repadding the bitmap? */
-    bytes = (FT_ULong)bitmap->pitch * bitmap->rows;
-
     error = ft_glyphslot_alloc_bitmap( slot );
     if ( error )
       goto Exit;
+
+    bytes = (FT_ULong)bitmap->pitch * bitmap->rows;
 
     if ( FT_STREAM_SEEK( metric->bits )          ||
          FT_STREAM_READ( bitmap->buffer, bytes ) )

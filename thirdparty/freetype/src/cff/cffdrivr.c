@@ -40,6 +40,10 @@
 #include <freetype/internal/services/svmetric.h>
 #endif
 
+#ifdef TT_CONFIG_OPTION_VARC
+#include <freetype/internal/services/svvarc.h>
+#endif
+
 #include "cfferrs.h"
 
 #include <freetype/internal/services/svfntfmt.h>
@@ -1085,6 +1089,111 @@
 #endif
 
 
+#ifdef TT_CONFIG_OPTION_VARC
+
+  /*
+   * VARC SERVICE
+   *
+   * The implementation belongs to the `truetype' module.  The CFF
+   * driver only forwards calls for OpenType/CFF faces, in the same way
+   * that it forwards variation-font operations.
+   */
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_init_axes( FT_Face  face,
+                      FT_UInt  axis_count )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return varc && varc->init_axes
+             ? varc->init_axes( face, axis_count )
+             : FT_THROW( Missing_Module );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_load( FT_Face    face,
+                 FT_Stream  stream )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return varc ? varc->load( face, stream )
+                : FT_THROW( Missing_Module );
+  }
+
+
+  FT_CALLBACK_DEF( void )
+  cff_varc_done( FT_Face  face )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    if ( varc )
+      varc->done( face );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Bool )
+  cff_varc_has_glyph( FT_Face  face,
+                      FT_UInt  glyph_index )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+
+
+    return FT_BOOL( varc && varc->has_glyph( face, glyph_index ) );
+  }
+
+
+  FT_CALLBACK_DEF( FT_Error )
+  cff_varc_load_glyph( FT_Face       face,
+                       FT_GlyphSlot  glyph_slot,
+                       FT_UInt       glyph_index,
+                       FT_Int32      load_flags )
+  {
+    CFF_Face         cffface = (CFF_Face)face;
+    FT_Service_VARC  varc    = (FT_Service_VARC)cffface->tt_varc;
+    CFF_Font         cff     = (CFF_Font)cffface->extra.data;
+
+    FT_Error  error;
+
+
+    if ( !varc )
+      return FT_THROW( Missing_Module );
+
+    if ( !FT_HAS_MULTIPLE_MASTERS( face ) &&
+         cff                              &&
+         cff->cff2                        &&
+         cff->vstore.axisCount            )
+    {
+      error = varc->init_axes( face, cff->vstore.axisCount );
+      if ( error )
+        return error;
+    }
+
+    return varc->load_glyph( face, glyph_slot,
+                             glyph_index, load_flags );
+  }
+
+
+  FT_DEFINE_SERVICE_VARCREC(
+    cff_service_varc,
+
+    cff_varc_init_axes,
+    cff_varc_load,
+    cff_varc_done,
+    cff_varc_has_glyph,
+    cff_varc_load_glyph
+  )
+
+#endif /* TT_CONFIG_OPTION_VARC */
+
+
   /*
    * CFFLOAD SERVICE
    *
@@ -1113,13 +1222,44 @@
   /*************************************************************************/
   /*************************************************************************/
 
-#if defined TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#if defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT ) && \
+    defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC11(
+    cff_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
+    FT_SERVICE_ID_MULTI_MASTERS,        &cff_service_multi_masters,
+    FT_SERVICE_ID_METRICS_VARIATIONS,   &cff_service_metrics_variations,
+    FT_SERVICE_ID_VARC,                 &cff_service_varc,
+    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
+    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
+    FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,
+    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
+    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
+    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
+    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
+  )
+#elif defined( TT_CONFIG_OPTION_GX_VAR_SUPPORT )
   FT_DEFINE_SERVICEDESCREC10(
     cff_services,
 
     FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
     FT_SERVICE_ID_MULTI_MASTERS,        &cff_service_multi_masters,
     FT_SERVICE_ID_METRICS_VARIATIONS,   &cff_service_metrics_variations,
+    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
+    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
+    FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,
+    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
+    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
+    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
+    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
+  )
+#elif defined( TT_CONFIG_OPTION_VARC )
+  FT_DEFINE_SERVICEDESCREC9(
+    cff_services,
+
+    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
+    FT_SERVICE_ID_VARC,                 &cff_service_varc,
     FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
     FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
     FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,

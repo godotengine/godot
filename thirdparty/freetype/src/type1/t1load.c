@@ -677,7 +677,7 @@
     PS_Blend  blend  = t1face->blend;
 
     FT_Fixed  axiscoords[4];
-    FT_UInt   i, nc;
+    FT_UInt   i;
 
 
     if ( !blend )
@@ -687,19 +687,18 @@
                       axiscoords,
                       blend->num_axis );
 
-    nc = num_coords;
     if ( num_coords > blend->num_axis )
     {
       FT_TRACE2(( "T1_Get_Var_Design:"
                   " only using first %u of %u coordinates\n",
                   blend->num_axis, num_coords ));
-      nc = blend->num_axis;
+
+      FT_ARRAY_ZERO( coords + blend->num_axis, num_coords - blend->num_axis );
+      num_coords = blend->num_axis;
     }
 
-    for ( i = 0; i < nc; i++ )
+    for ( i = 0; i < num_coords; i++ )
       coords[i] = mm_axis_unmap( &blend->design_map[i], axiscoords[i] );
-    for ( ; i < num_coords; i++ )
-      coords[i] = 0;
 
     return FT_Err_Ok;
   }
