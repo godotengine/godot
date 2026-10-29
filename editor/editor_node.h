@@ -156,6 +156,20 @@ public:
 	~EditorCommandQueue();
 };
 
+class EditorCommandLock {
+	friend class EditorNode;
+
+	static int lock_count;
+	EditorCommandLock() {
+		lock_count++;
+	}
+
+public:
+	~EditorCommandLock() {
+		lock_count--;
+	}
+};
+
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
 
@@ -861,6 +875,10 @@ public:
 		T *cq = memnew(T(p_task, p_label, p_step_count, p_can_cancel, p_force_background));
 		process_command_queue.push_back(static_cast<EditorCommandQueue *>(cq));
 		return cq;
+	}
+	EditorCommandLock pause_editor_processes() {
+		// While the returned object is in scope, calls to Main::iterate() will skip running EditorCommandQueue.
+		return EditorCommandLock();
 	}
 
 	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
