@@ -145,12 +145,13 @@ int TLSContextMbedTLS::do_cert_validation(mbedtls_x509_crt *p_crt, int p_depth, 
 		return 0;
 	}
 
-	Vector<PackedByteArray> ssl_crts, ca_crts;
+	Vector<PackedByteArray> ssl_crts;
+	Vector<PackedByteArray> ca_crts;
 
 	encode_mbedtls_x509_to_vector(p_crt, ssl_crts);
 
 	// Use any CA certificate overrides configured via get_trusted_ca_chain() in the options.
-	if (!certs.is_null()) {
+	if (certs.is_valid()) {
 		encode_mbedtls_x509_to_vector(certs->get_context(), ca_crts);
 	}
 

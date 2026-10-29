@@ -61,6 +61,34 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
+void print_cferror(CFErrorRef p_error) {
+	if (p_error == nullptr) {
+		printf("Error object is null");
+		return;
+	}
+
+	CFStringRef domain = CFErrorGetDomain(p_error);
+	CFIndex code = CFErrorGetCode(p_error);
+	CFStringRef description = CFErrorCopyDescription(p_error);
+	CFDictionaryRef user_info = CFErrorCopyUserInfo(p_error);
+
+	NSLog(@"Domain: %@", (__bridge NSString *)domain);
+	NSLog(@"Code: %ld", (long)code);
+	NSLog(@"Description: %@", (__bridge NSString *)description);
+
+	// Print all keys in the user info dictionary
+	if (user_info != NULL) {
+		NSLog(@"User Info: %@", (__bridge NSDictionary *)user_info);
+		CFRelease(user_info);
+	} else {
+		NSLog(@"User Info: (none)");
+	}
+
+	if (description != NULL) {
+		CFRelease(description);
+	}
+}
+
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	bool wake_for_events = p_wake_for_events;
 	if (!wake_for_events) {
@@ -1085,6 +1113,7 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 	CFMutableArrayRef ca_certs = nullptr;
 	Error status = OK;
 	OSStatus ret;
+	CFErrorRef error = NULL;
 
 	host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
 	if (!host_str) {
@@ -1152,7 +1181,7 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 		}
 	}
 
-	status = SecTrustEvaluateWithError(trust, nullptr) ? OK : ERR_UNAUTHORIZED;
+	status = SecTrustEvaluateWithError(trust, &error) ? OK : ERR_UNAUTHORIZED;
 
 out:
 	if (host_str) {
@@ -1172,6 +1201,9 @@ out:
 	}
 	if (trust) {
 		CFRelease(trust);
+	}
+	if (error) {
+		CFRelease(error);
 	}
 
 	return status;
