@@ -2294,10 +2294,6 @@ void CanvasItemManipulator::set_tool(Tool p_tool) {
 #endif
 
 	tool = p_tool;
-
-#ifdef TOOLS_ENABLED
-	center_temp_pivot_on_selection();
-#endif
 }
 
 void CanvasItemManipulator::set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input) {
