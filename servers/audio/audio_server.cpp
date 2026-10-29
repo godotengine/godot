@@ -720,6 +720,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	bus_map[attempt] = bus;
 
 	if (p_at_pos == -1) {
+		p_at_pos = buses.size();
 		buses.push_back(bus);
 	} else {
 		buses.insert(p_at_pos, bus);

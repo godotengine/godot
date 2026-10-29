@@ -32,33 +32,30 @@ class GodotPositionReportingProcessor extends AudioWorkletProcessor {
 	static get parameterDescriptors() {
 		return [
 			{
-				name: 'reset',
+				name: 'id',
 				defaultValue: 0,
 				minValue: 0,
-				maxValue: 1,
+				maxValue: 16777215,
+				automationRate: 'k-rate',
+			},
+			{
+				name: 'scale',
+				defaultValue: 1,
+				minValue: 0,
+				maxValue: 4,
 				automationRate: 'k-rate',
 			},
 		];
 	}
 
-	constructor(...args) {
-		super(...args);
-		this.position = 0;
-	}
-
 	process(inputs, _outputs, parameters) {
-		if (parameters['reset'][0] > 0) {
-			this.position = 0;
-		}
-
 		if (inputs.length > 0) {
 			const input = inputs[0];
 			if (input.length > 0) {
-				this.position += input[0].length;
-				this.port.postMessage({ type: 'position', data: this.position });
+				const size = input[0].length * parameters['scale'][0];
+				this.port.postMessage([parameters['id'][0], size]);
 			}
 		}
-
 		return true;
 	}
 }
