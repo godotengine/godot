@@ -106,7 +106,7 @@ class CommandQueueMT {
 
 	static const uint32_t DEFAULT_COMMAND_MEM_SIZE_KB = 64;
 
-	inline static thread_local bool flushing = false;
+	Thread::ID flushing_thread_id = 0;
 
 	BinaryMutex mutex;
 	LocalVector<uint8_t> command_mem;
@@ -157,12 +157,14 @@ class CommandQueueMT {
 	}
 
 	void _flush() {
-		// Safeguard against trying to re-lock the binary mutex.
-		if (flushing) {
-			return;
-		}
+		// 1. Get the current execution thread ID
+		Thread::ID current_thread = Thread::get_caller_id();
 
-		flushing = true;
+		// 2. Safeguard: If the thread calling flush is the same one processing this queue loop,
+		// exist to prevent sync() deadlock.
+		if (flushing_thread_id == current_thread) return;
+
+		flushing_thread_id = current_thread;
 
 		MutexLock lock(mutex);
 
@@ -170,7 +172,7 @@ class CommandQueueMT {
 			// Another thread is flushing.
 			lock.temp_unlock(); // Not really temp.
 			sync();
-			flushing = false;
+			flushing_thread_id = 0;
 			return;
 		}
 
@@ -209,7 +211,7 @@ class CommandQueueMT {
 
 		_prevent_sync_wraparound();
 
-		flushing = false;
+		flushing_thread_id = 0;
 	}
 
 	_FORCE_INLINE_ void _wait_for_sync(MutexLock<BinaryMutex> &p_lock) {
