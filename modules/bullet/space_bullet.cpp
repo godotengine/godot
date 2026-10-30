@@ -917,8 +917,7 @@ void SpaceBullet::check_body_collision() {
 void SpaceBullet::update_gravity() {
 	btVector3 btGravity;
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
-	//dynamicsWorld->setGravity(btGravity);
-	dynamicsWorld->setGravity(btVector3(0, 0, 0));
+	dynamicsWorld->setGravity(btGravity);
 	if (soft_body_world_info) {
 		soft_body_world_info->m_gravity = btGravity;
 	}
