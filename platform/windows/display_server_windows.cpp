@@ -2967,6 +2967,10 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 				return;
 			}
 			wd.always_on_top = p_enabled;
+			if (wd.fullscreen) {
+				SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSENDCHANGING | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_SHARP_CORNERS: {
