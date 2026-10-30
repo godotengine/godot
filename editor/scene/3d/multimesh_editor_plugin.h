@@ -46,7 +46,6 @@ class MultiMeshEditor : public Control {
 
 	friend class MultiMeshEditorPlugin;
 
-	AcceptDialog *err_dialog = nullptr;
 	MenuButton *options = nullptr;
 	MultiMeshInstance3D *_last_pp_node = nullptr;
 	bool browsing_source = false;
