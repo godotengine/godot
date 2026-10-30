@@ -841,10 +841,10 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> &
 			ofs += encode_uint32(size, &ptr[ofs]);
 			MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), &ptr[ofs], size);
 			ofs += size;
-		}
 #ifdef DEBUG_ENABLED
-		_profile_node_data("sync_out", oid, size);
+			_profile_node_data("sync_out", oid, size);
 #endif
+		}
 	}
 	if (ofs > 3) {
 		// Got some left over to send.
