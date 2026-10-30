@@ -560,7 +560,6 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
-		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
@@ -573,7 +572,6 @@ private:
 
 	struct DrawListBindVertexBuffersInstruction : DrawListInstruction {
 		uint32_t vertex_buffers_count = 0;
-		uint64_t dynamic_offsets_mask = 0;
 
 		_FORCE_INLINE_ RDD::BufferID *vertex_buffers() {
 			return reinterpret_cast<RDD::BufferID *>(&this[1]);
@@ -736,7 +734,6 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
-		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
