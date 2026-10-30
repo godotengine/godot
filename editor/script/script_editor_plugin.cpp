@@ -1319,7 +1319,7 @@ void DocumentEditorContainer::_close_tab(int p_idx, bool p_save) {
 			_update_history_arrows();
 		}
 
-		document_list->update_list();
+		_update_filenames();
 		_save_layout();
 		_update_find_replace_bar();
 	}
