@@ -113,6 +113,9 @@ StringName AudioStreamInteractive::get_clip_name(int p_clip) const {
 void AudioStreamInteractive::set_clip_stream(int p_clip, const Ref<AudioStream> &p_stream) {
 	ERR_FAIL_INDEX(p_clip, MAX_CLIPS);
 	AudioServer::get_singleton()->lock();
+	if (p_clip >= clip_count) {
+		clip_count = p_clip + 1;
+	}
 	if (clips[p_clip].stream.is_valid()) {
 		version++;
 	}
