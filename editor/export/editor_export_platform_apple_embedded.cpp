@@ -289,6 +289,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
@@ -418,6 +419,26 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$application_supports_multiple_scenes", "<false/>") + "\n";
 	} else if (p_line.contains("$binary")) {
 		strnew += p_line.replace("$binary", p_config.binary_name) + "\n";
+	} else if (p_line.contains("$icon_asset_buildfile")) {
+		String lg_icon = p_preset->get("application/liquid_glass_icon");
+		if (!lg_icon.is_empty()) {
+			strnew += p_line.replace("$icon_asset_buildfile", "BDAC6893D2F24615A90E36CE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = BDAC6893E2F24615A90E36CE /* AppIcon.icon */; };") + "\n";
+		}
+	} else if (p_line.contains("$icon_asset_fileref")) {
+		String lg_icon = p_preset->get("application/liquid_glass_icon");
+		if (!lg_icon.is_empty()) {
+			strnew += p_line.replace("$icon_asset_fileref", "BDAC6893E2F24615A90E36CE /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcompositor.icon; path = AppIcon.icon; sourceTree = \"<group>\"; };") + "\n";
+		}
+	} else if (p_line.contains("$icon_asset_copy_files")) {
+		String lg_icon = p_preset->get("application/liquid_glass_icon");
+		if (!lg_icon.is_empty()) {
+			strnew += p_line.replace("$icon_asset_copy_files", "BDAC6893E2F24615A90E36CE /* AppIcon.icon */,") + "\n";
+		}
+	} else if (p_line.contains("$icon_asset_build_phase")) {
+		String lg_icon = p_preset->get("application/liquid_glass_icon");
+		if (!lg_icon.is_empty()) {
+			strnew += p_line.replace("$icon_asset_build_phase", "BDAC6893D2F24615A90E36CE /* AppIcon.icon in Resources */,") + "\n";
+		}
 	} else if (p_line.contains("$modules_buildfile")) {
 		strnew += p_line.replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
 	} else if (p_line.contains("$modules_fileref")) {
@@ -2158,20 +2179,30 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		}
 	}
 
-	String iconset_dir = binary_dir + "/Images.xcassets/" + _get_iconset_dir_name() + "/";
-	err = OK;
-	if (!tmp_app_path->dir_exists(iconset_dir)) {
-		err = tmp_app_path->make_dir_recursive(iconset_dir);
-	}
-	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create a directory at path \"%s\"."), iconset_dir));
-		return err;
-	}
+	String lg_icon = p_preset->get("application/liquid_glass_icon");
+	if (lg_icon.is_empty()) {
+		String iconset_dir = binary_dir + "/Images.xcassets/" + _get_iconset_dir_name() + "/";
+		err = OK;
+		if (!tmp_app_path->dir_exists(iconset_dir)) {
+			err = tmp_app_path->make_dir_recursive(iconset_dir);
+		}
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create a directory at path \"%s\"."), iconset_dir));
+			return err;
+		}
 
-	err = _export_icons(p_preset, iconset_dir);
-	if (err != OK) {
-		// Message is supplied by the subroutine method.
-		return err;
+		err = _export_icons(p_preset, iconset_dir);
+		if (err != OK) {
+			// Message is supplied by the subroutine method.
+			return err;
+		}
+	} else {
+		lg_icon = ProjectSettings::get_singleton()->globalize_path(lg_icon);
+		if (!tmp_app_path->dir_exists(lg_icon)) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not copy a liquid glass icon \"%s\"."), lg_icon));
+			return ERR_FILE_NOT_FOUND;
+		}
+		tmp_app_path->copy_dir(lg_icon, binary_dir + "/AppIcon.icon");
 	}
 
 	{
