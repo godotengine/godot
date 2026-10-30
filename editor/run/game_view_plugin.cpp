@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/os/process_id.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -340,6 +341,11 @@ void GameViewDebugger::set_camera_manipulate_mode(EditorDebuggerNode::CameraOver
 	if (EditorDebuggerNode::get_singleton()->get_camera_override() != EditorDebuggerNode::OVERRIDE_NONE) {
 		set_camera_override(true);
 	}
+}
+
+void GameViewDebugger::set_viewport_debug_draw_mode(int p_mode) {
+	viewport_debug_draw_mode = p_mode;
+	EditorDebuggerNode::get_singleton()->set_viewport_debug_draw_mode(p_mode);
 }
 
 void GameViewDebugger::set_ci_local_space(bool p_enabled) {
@@ -1213,6 +1219,47 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 	}
 }
 
+void GameView::_update_viewport_debug_menu_popup() {
+	PopupMenu *menu = viewport_debug_menu->get_popup();
+	for (int i = 0; i < menu->get_item_count(); i++) {
+		if (menu->is_item_separator(i)) {
+			continue;
+		}
+		bool disabled = false;
+		String disabled_tooltip;
+		SupportedRenderingMethods rendering_methods = (SupportedRenderingMethods)menu->get_item_metadata(i);
+		print_line(menu->get_item_text(i), " ", rendering_methods);
+		switch (rendering_methods) {
+			case SupportedRenderingMethods::ALL:
+				break;
+			case SupportedRenderingMethods::FORWARD_PLUS_MOBILE:
+				disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
+				disabled_tooltip = TTR("This debug draw mode is only supported when using the Forward+ or Mobile renderer.");
+				break;
+			case SupportedRenderingMethods::FORWARD_PLUS:
+				disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile";
+				disabled_tooltip = TTR("This debug draw mode is only supported when using the Forward+ renderer.");
+				break;
+		}
+		menu->set_item_disabled(i, disabled);
+		if (!disabled_tooltip.is_empty()) {
+			menu->set_item_tooltip(i, disabled_tooltip);
+		}
+	}
+}
+
+void GameView::_viewport_debug_menu_id_pressed(int p_id) {
+	// Update menu.
+	PopupMenu *menu = viewport_debug_menu->get_popup();
+	for (int i = 0; i < menu->get_item_count(); i++) {
+		if (menu->is_item_separator(i)) {
+			continue;
+		}
+		menu->set_item_checked(i, menu->get_item_id(i) == p_id);
+	}
+	debugger->set_viewport_debug_draw_mode((Viewport::DebugDraw)p_id);
+}
+
 void GameView::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1674,6 +1721,80 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu->add_radio_check_item(TTRC("Manipulate In-Game"), CAMERA_MODE_INGAME);
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);
 	menu->add_radio_check_item(TTRC("Manipulate From Editors"), CAMERA_MODE_EDITORS);
+
+	viewport_debug_menu = memnew(MenuButton);
+	camera_hb->add_child(viewport_debug_menu);
+	viewport_debug_menu->set_button_icon(EditorIconManager::get_icon(SNAME("Viewport")));
+	viewport_debug_menu->set_flat(false);
+	viewport_debug_menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	viewport_debug_menu->set_h_size_flags(SIZE_SHRINK_END);
+	viewport_debug_menu->set_tooltip_text(TTRC("Viewport debug mode override options."));
+
+	menu = viewport_debug_menu->get_popup();
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_viewport_debug_menu_id_pressed));
+	menu->add_radio_check_item(TTRC("Display Normal"), Viewport::DEBUG_DRAW_DISABLED);
+	menu->set_item_checked(menu->get_item_index(Viewport::DEBUG_DRAW_DISABLED), true);
+	menu->add_radio_check_item(TTRC("Display Wireframe"), Viewport::DEBUG_DRAW_WIREFRAME);
+	menu->add_radio_check_item(TTRC("Display Overdraw"), Viewport::DEBUG_DRAW_OVERDRAW);
+	menu->add_radio_check_item(TTRC("Display Lighting"), Viewport::DEBUG_DRAW_LIGHTING);
+	menu->add_radio_check_item(TTRC("Display Unshaded"), Viewport::DEBUG_DRAW_UNSHADED);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Directional Shadow Splits"), Viewport::DEBUG_DRAW_PSSM_SPLITS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Normal Buffer"), Viewport::DEBUG_DRAW_NORMAL_BUFFER);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Shadow Atlas"), Viewport::DEBUG_DRAW_SHADOW_ATLAS);
+	menu->add_radio_check_item(TTRC("Directional Shadow Map"), Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Decal Atlas"), Viewport::DEBUG_DRAW_DECAL_ATLAS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	menu->add_radio_check_item(TTRC("AreaLight3D Atlas"), Viewport::DEBUG_DRAW_AREA_LIGHT_ATLAS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("VoxelGI Lighting"), Viewport::DEBUG_DRAW_VOXEL_GI_LIGHTING);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("VoxelGI Albedo"), Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("VoxelGI Emission"), Viewport::DEBUG_DRAW_VOXEL_GI_EMISSION);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("SDFGI Cascades"), Viewport::DEBUG_DRAW_SDFGI);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("SDFGI Probes"), Viewport::DEBUG_DRAW_SDFGI_PROBES);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Scene Luminance"), Viewport::DEBUG_DRAW_SCENE_LUMINANCE);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("SSAO"), Viewport::DEBUG_DRAW_SSAO);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("SSIL"), Viewport::DEBUG_DRAW_SSIL);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("VoxelGI/SDFGI Buffer"), Viewport::DEBUG_DRAW_GI_BUFFER);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("Disable Mesh Lod"), Viewport::DEBUG_DRAW_DISABLE_LOD);
+	menu->add_separator();
+	menu->add_radio_check_item(TTRC("OmniLight3D Cluster"), Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("SpotLight3D Cluster"), Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("AreaLight3D Cluster"), Viewport::DEBUG_DRAW_CLUSTER_AREA_LIGHTS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("Decal Cluster"), Viewport::DEBUG_DRAW_CLUSTER_DECALS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("ReflectionProbe Cluster"), Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("Occlusion Culling Buffer"), Viewport::DEBUG_DRAW_OCCLUDERS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	menu->add_radio_check_item(TTRC("Motion Vectors"), Viewport::DEBUG_DRAW_MOTION_VECTORS);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS);
+	menu->add_radio_check_item(TTRC("Internal Buffer"), Viewport::DEBUG_DRAW_INTERNAL_BUFFER);
+	menu->set_item_metadata(-1, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	_update_viewport_debug_menu_popup();
 
 	main_menu_fc->add_child(memnew(VSeparator));
 
