@@ -777,11 +777,18 @@ void OS_JavaScript::ime_callback(int p_type, const char *p_text) {
 }
 
 void OS_JavaScript::set_ime_active(const bool p_active) {
+	// IME does not work with experimental VK support.
+	if (godot_js_display_vk_available() != 0) {
+		return;
+	}
 	ime_active = p_active;
 	godot_js_set_ime_active(p_active);
 }
 
 void OS_JavaScript::set_ime_position(const Point2 &p_pos) {
+	if (godot_js_display_vk_available() != 0) {
+		return;
+	}
 	godot_js_set_ime_position(p_pos.x, p_pos.y);
 }
 
