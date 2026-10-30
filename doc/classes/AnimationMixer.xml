@@ -148,6 +148,7 @@
 					move_and_slide()
 				[/gdscript]
 				[/codeblocks]
+				[b]Note:[/b] The value is reset at the beginning of every processed frame, and also by a deferred call after the caches are cleared.
 			</description>
 		</method>
 		<method name="get_root_motion_position_accumulator" qualifiers="const">
