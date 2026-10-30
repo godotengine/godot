@@ -94,7 +94,11 @@ layout(location = 1) out vec4 normal;
 layout(location = 2) out vec4 unocclude;
 
 void main() {
-	vec3 vertex_pos = vertex_interp;
+	vec3 pos0 = vertices.data[vertex_indices.x].position;
+	vec3 pos1 = vertices.data[vertex_indices.y].position;
+	vec3 pos2 = vertices.data[vertex_indices.z].position;
+	vec3 weights = inset_barycentric(barycentric, pos0, pos1, pos2, params.bias);
+	vec3 vertex_pos = pos0 * weights.x + pos1 * weights.y + pos2 * weights.z;
 
 	if (fragment_action == FA_SMOOTHEN_POSITION) {
 		// smooth out vertex position by interpolating its projection in the 3 normal planes (normal plane is created by vertex pos and normal)
@@ -140,7 +144,7 @@ void main() {
 		vec3 proj_b = vertex_pos - norm_b * (dot(norm_b, vertex_pos) - d_b);
 		vec3 proj_c = vertex_pos - norm_c * (dot(norm_c, vertex_pos) - d_c);
 
-		vec3 smooth_position = proj_a * barycentric.x + proj_b * barycentric.y + proj_c * barycentric.z;
+		vec3 smooth_position = proj_a * weights.x + proj_b * weights.y + proj_c * weights.z;
 
 		if (dot(face_normal, smooth_position) > dot(face_normal, vertex_pos)) { //only project outwards
 			vertex_pos = smooth_position;
