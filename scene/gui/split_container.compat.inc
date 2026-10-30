@@ -38,8 +38,18 @@ void SplitContainer::_clamp_split_offset_bind_compat_90411() {
 	clamp_split_offset(0);
 }
 
+void SplitContainer::_set_split_offset_bind_compat_123560(int p_offset) {
+	set_split_offset(p_offset);
+}
+
+int SplitContainer::_get_split_offset_bind_compat_123560() const {
+	return get_split_offset();
+}
+
 void SplitContainer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("clamp_split_offset"), &SplitContainer::_clamp_split_offset_bind_compat_90411);
+	ClassDB::bind_compatibility_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::_set_split_offset_bind_compat_123560);
+	ClassDB::bind_compatibility_method(D_METHOD("get_split_offset"), &SplitContainer::_get_split_offset_bind_compat_123560);
 }
 
 #endif // DISABLE_DEPRECATED
