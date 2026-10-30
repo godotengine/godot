@@ -629,6 +629,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="_cone_twist_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_cone_twist_joint_get_applied_torque" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_cone_twist_joint_get_param" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -686,6 +698,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="_generic_6dof_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_get_applied_torque" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_generic_6dof_joint_get_flag" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
@@ -735,6 +759,18 @@
 		</method>
 		<method name="_heightmap_shape_create" qualifiers="virtual required">
 			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_get_applied_torque" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -883,6 +919,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_pin_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_pin_joint_get_local_a" qualifiers="virtual required const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="RID" />
@@ -977,6 +1019,18 @@
 			<return type="void" />
 			<param index="0" name="shape" type="RID" />
 			<param index="1" name="margin" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_slider_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_slider_joint_get_applied_torque" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
 			<description>
 			</description>
 		</method>
