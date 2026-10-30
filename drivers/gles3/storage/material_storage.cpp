@@ -1621,6 +1621,8 @@ MaterialStorage::~MaterialStorage() {
 	GLES3::Utilities::get_singleton()->texture_free_data(global_shader_uniforms.texture);
 	global_shader_uniforms.texture = 0;
 
+	material_update_list.clear();
+
 	singleton = nullptr;
 }
 
