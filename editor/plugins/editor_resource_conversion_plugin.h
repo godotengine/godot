@@ -42,9 +42,11 @@ protected:
 	GDVIRTUAL0RC(String, _converts_to)
 	GDVIRTUAL1RC(bool, _handles, Ref<Resource>)
 	GDVIRTUAL1RC(Ref<Resource>, _convert, Ref<Resource>)
+	GDVIRTUAL0RC(bool, _replaces_source)
 
 public:
 	virtual String converts_to() const;
 	virtual bool handles(const Ref<Resource> &p_resource) const;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+	virtual bool replaces_source() const;
 };
