@@ -30,8 +30,9 @@
 
 #include "gdscript_highlighter.h"
 
-#include "../gdscript.h"
 #include "../gdscript_tokenizer.h"
+#include "../gdscript_utility_functions.h"
+#include "gdscript_editor_language.h"
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
@@ -805,7 +806,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	const GDScriptLanguage *gdscript = GDScriptLanguage::get_singleton();
+	const GDScriptEditorLanguage *gdscript = GDScriptEditorLanguage::get_singleton();
 
 	/* Variant types. */
 	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
