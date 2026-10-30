@@ -52,10 +52,19 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/resources/packed_scene.h"
 #endif // TOOLS_ENABLED
 
 bool AnimationMixer::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
+
+#ifdef TOOLS_ENABLED
+	if (name == "fallback_path_map") {
+		// Combine previously known paths, full lines will only be cleared after closing and reloading a scene in editor
+		fallback_path_map.merge(p_value);
+		return true;
+	}
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	if (name.begins_with("anims/")) {
@@ -117,6 +126,31 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 		} else {
 			return false;
 		}
+#ifdef TOOLS_ENABLED
+	} else if (name == "fallback_path_map") {
+		Dictionary map;
+		Node *root = get_node_or_null(get_root_node());
+		if (Engine::get_singleton()->is_editor_hint() && root != nullptr) {
+			for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+				if (!E.value.animation.is_valid()) {
+					continue;
+				}
+				Ref<Animation> animation = E.value.animation;
+				for (int i = 0; i < animation->get_track_count(); i++) {
+					NodePath path = animation->track_get_path(i);
+					path = NodePath(path.get_names(), false); // Remove properties.
+					if (map.has(path)) {
+						continue;
+					}
+					Node *node = root->get_node_or_null(path);
+					if (node != nullptr) {
+						map.set(path, node->get_unique_scene_id());
+					}
+				}
+			}
+		}
+		r_ret = map;
+#endif // TOOLS_ENABLED
 	} else {
 		return false;
 	}
@@ -133,6 +167,11 @@ void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
 		const String path = vformat("libraries/%s", animation_libraries[i].name);
 		p_list->push_back(PropertyInfo(Variant::OBJECT, path, PROPERTY_HINT_RESOURCE_TYPE, AnimationLibrary::get_class_static(), _get_libraries_property_usage()));
 	}
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, "fallback_path_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+	}
+#endif
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
@@ -731,6 +770,28 @@ bool AnimationMixer::_update_caches() {
 				Vector<StringName> leftover_path;
 
 				Node *child = parent->get_node_and_resource(path, resource, leftover_path);
+#ifdef TOOLS_ENABLED
+				if (!child && check_path) {
+					Node *scene_root = parent->get_scene_file_path().is_empty() ? parent->get_owner() : parent;
+					NodePath node_only_path = NodePath(path.get_names(), false); // Remove properties.
+					int32_t target_unique_id = fallback_path_map.get(node_only_path, UNIQUE_SCENE_ID_UNASSIGNED);
+					child = PackedScene::find_node_by_id(scene_root, scene_root, target_unique_id);
+					if (child) {
+						NodePath new_path = NodePath(parent->get_path_to(child).get_names(), path.get_subnames(), false);
+						leftover_path.clear();
+						Node *n = parent->get_node_and_resource(new_path, resource, leftover_path);
+						if (child != n) {
+							ERR_PRINT("Failed to resolve fallback path of track " + String(path));
+						} else {
+							WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. Did fallback to scene unique node id. New path is '" + String(new_path) + "'.");
+							anim->track_set_path(i, new_path);
+							fallback_path_map.set(parent->get_path_to(child), target_unique_id);
+							path = new_path;
+							(void)path.hash(); // Make sure the cache is valid for faster comparison.
+						}
+					}
+				}
+#endif // TOOLS_ENABLED
 				if (!child) {
 					if (check_path) {
 						WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', couldn't resolve track:  '" + String(path) + "'. This warning can be disabled in Project Settings.");
