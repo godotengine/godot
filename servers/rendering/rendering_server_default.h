@@ -264,7 +264,7 @@ public:
 	FUNC1(texture_debug_usage, List<RenderingServerTypes::TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
-	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
+	FUNCRIDTEX3(texture_rd, const RID &, const RSE::TextureLayeredType, Image::Format)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
 
