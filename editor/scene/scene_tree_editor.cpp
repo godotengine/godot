@@ -1102,6 +1102,19 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		// selected here is enough to frame all selected items as well as possible.
 		callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(last_selected->get_instance_id(), false);
 	}
+	if (hide_filtered_out_parents && filter.is_empty()) {
+		// Ensure selected Nodes are visible after making its parent available.
+		TreeItem *item = tree->get_next_selected(nullptr);
+		while (item != nullptr) {
+			TreeItem *parent = item->get_parent();
+			while (parent != nullptr) {
+				parent->set_collapsed(false);
+				parent = parent->get_parent();
+			}
+			item = tree->get_next_selected(item);
+		}
+		tree->ensure_cursor_is_visible();
+	}
 	return result;
 }
 
