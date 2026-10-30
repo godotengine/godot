@@ -42,6 +42,7 @@ class VBoxContainer;
 class LineEdit;
 class Timer;
 class PopupMenuItems;
+class HighlightedTextLine;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
@@ -59,7 +60,7 @@ class PopupMenu : public Popup {
 		Color icon_modulate = Color(1, 1, 1, 1);
 		String text;
 		String xl_text;
-		Ref<TextLine> text_buf;
+		Ref<HighlightedTextLine> text_buf;
 		Ref<TextLine> accel_text_buf;
 
 		String language;
@@ -190,6 +191,7 @@ class PopupMenu : public Popup {
 
 	bool search_bar_enabled = false;
 	int search_bar_min_item_count = 0;
+	bool search_bar_highlights_enabled = true;
 	bool search_bar_fuzzy_search_enabled = true;
 	int search_bar_fuzzy_search_max_misses = 2;
 	PanelContainer *panel = nullptr;
@@ -250,6 +252,9 @@ class PopupMenu : public Popup {
 		Color font_separator_color;
 		int font_separator_outline_size = 0;
 		Color font_separator_outline_color;
+
+		Color search_highlight_color;
+		Color search_highlight_border_color;
 
 		Ref<AudioStream> focus_sound;
 		Ref<AudioStream> item_hovered_sound;
@@ -416,6 +421,9 @@ public:
 	void set_search_bar_min_item_count(int p_count);
 	int get_search_bar_min_item_count() const;
 
+	void set_search_bar_highlights_enabled(bool p_enabled);
+	bool is_search_bar_highlights_enabled() const;
+
 	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
 	bool is_search_bar_fuzzy_search_enabled() const;
 
@@ -473,7 +481,7 @@ public:
 };
 
 class PopupMenuItems : public Control {
-	GDCLASS(PopupMenuItems, Control);
+	GDSOFTCLASS(PopupMenuItems, Control);
 
 	PopupMenu *popup = nullptr;
 
@@ -483,4 +491,18 @@ public:
 	virtual RID get_focused_accessibility_element() const override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+};
+
+class HighlightedTextLine : public TextLine {
+	GDSOFTCLASS(HighlightedTextLine, TextLine)
+
+	LocalVector<Vector2i> highlights;
+
+	void _draw_highlights(RID p_canvas, const Vector2i &p_substr, const Vector2 &p_pos, const Color &p_fill_color, const Color &p_outline_color) const;
+
+public:
+	void add_highlight(const Vector2i &p_substr);
+	void reset_highlights();
+
+	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_text_color, bool p_highlights_enabled = false, const Color &p_highlight_fill_color = Color(), const Color &p_highlight_outline_color = Color()) const;
 };

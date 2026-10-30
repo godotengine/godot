@@ -732,6 +732,9 @@
 		<member name="search_bar_fuzzy_search_max_misses" type="int" setter="set_search_bar_fuzzy_search_max_misses" getter="get_search_bar_fuzzy_search_max_misses" default="2">
 			Sets the maximum number of mismatches allowed in each search result when fuzzy searching is enabled for the [PopupMenu] search bar. Any item with more mismatches will be hidden from the search results.
 		</member>
+		<member name="search_bar_highlights_enabled" type="bool" setter="set_search_bar_highlights_enabled" getter="is_search_bar_highlights_enabled" default="true">
+			If [code]true[/code], enables highlighting of all of the substrings that together match the search query.
+		</member>
 		<member name="search_bar_min_item_count" type="int" setter="set_search_bar_min_item_count" getter="get_search_bar_min_item_count" default="0">
 			Sets the minimum number of items required for the search bar to be visible. [member search_bar_enabled] must be [code]true[/code] for this to have any effect. Separator items are not counted.
 		</member>
@@ -798,6 +801,12 @@
 		</theme_item>
 		<theme_item name="font_separator_outline_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
 			The tint of text outline of the labeled separator.
+		</theme_item>
+		<theme_item name="search_highlight_border_color" data_type="color" type="Color" default="Color(0.5, 0.7, 1, 0.4)">
+			[Color] used for the outline of the search bar's match highlights. See [member search_bar_highlights_enabled].
+		</theme_item>
+		<theme_item name="search_highlight_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.07)">
+			[Color] used for the fill of the search bar's match highlights. See [member search_bar_highlights_enabled].
 		</theme_item>
 		<theme_item name="gutter_compact" data_type="constant" type="int" default="1">
 			If not [code]0[/code], the icon gutter will be merged with the checkbox gutter when possible. This acts as a boolean.
