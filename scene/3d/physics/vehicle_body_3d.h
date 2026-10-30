@@ -89,12 +89,12 @@ class VehicleWheel3D : public Node3D {
 
 	real_t m_suspensionRestLength = 0.15;
 	real_t m_maxSuspensionTravel = 0.2;
-	real_t m_wheelRadius = 0.5;
+	real_t m_wheelRadius = 0.3;
 
-	real_t m_suspensionStiffness = 5.88;
-	real_t m_wheelsDampingCompression = 0.83;
-	real_t m_wheelsDampingRelaxation = 0.88;
-	real_t m_frictionSlip = 10.5;
+	real_t m_suspensionStiffness = 50;
+	real_t m_wheelsDampingCompression = 0.3;
+	real_t m_wheelsDampingRelaxation = 0.5;
+	real_t m_frictionSlip = 1;
 	real_t m_maxSuspensionForce = 6000.0;
 	bool m_bIsFrontWheel = false;
 
