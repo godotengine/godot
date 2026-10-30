@@ -2716,6 +2716,8 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
 	if (wd.icon_set) {
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, 0);
 		if (wd.icon_big && !wd.icon_small) {
 			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
 			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
