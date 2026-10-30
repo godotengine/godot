@@ -60,10 +60,42 @@ if env["builtin_embree"]:
         "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
     ]
 
+    if env["arch"] == "x86_64" and (
+        env["extension"] == "avx" or env["extension"] == "avx2" or env["extension"] == "avx512"
+    ):
+        embree_src += [
+            "kernels/geometry/primitive8.cpp",
+            "kernels/bvh/bvh_intersector1_bvh8.cpp",
+            "kernels/bvh/bvh_intersector_hybrid4_bvh8.cpp",
+            "kernels/bvh/bvh_intersector_hybrid8_bvh4.cpp",
+            "kernels/bvh/bvh_intersector_hybrid8_bvh8.cpp",
+        ]
+
+    if env["arch"] == "x86_64" and env["extension"] == "avx512":
+        embree_src += [
+            "kernels/bvh/bvh_intersector_hybrid16_bvh4.cpp",
+            "kernels/bvh/bvh_intersector_hybrid16_bvh8.cpp",
+        ]
+
     thirdparty_sources = [thirdparty_dir + file for file in embree_src]
 
     env_raycast.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "include"])
-    env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
+    if env["arch"] == "x86_64":
+        if env["extension"] == "sse42":
+            env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE42"])
+        elif env["extension"] == "avx":
+            env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_AVX"])
+        elif env["extension"] == "avx2":
+            env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_AVX2"])
+        elif env["extension"] == "avx512":
+            env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_AVX512"])
+        else:
+            env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2"])
+    else:
+        env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2"])
+
+    env_raycast.Append(CPPDEFINES=["EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
+
     env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
     if env["platform"] == "windows":
@@ -88,8 +120,44 @@ if env["builtin_embree"]:
         # Embree needs those; it will automatically use SSE2NEON in ARM.
         env_thirdparty.Append(CPPDEFINES=["__SSE__", "__SSE2__"])
 
-    if env["arch"] == "x86_64" and env.msvc:
+    if env["arch"] == "x86_64" and env["extension"] == "sse42" and env.msvc:
         env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__"])
+
+    if env["arch"] == "x86_64" and env["extension"] == "avx" and env.msvc:
+        env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__", "__AVX__"])
+
+    if env["arch"] == "x86_64" and env["extension"] == "avx2" and env.msvc:
+        env_thirdparty.Append(
+            CPPDEFINES=[
+                "__SSE3__",
+                "__SSSE3__",
+                "__SSE4_1__",
+                "__SSE4_2__",
+                "__AVX__",
+                "__AVX2__",
+                "__F16C__",
+                "__FMA__",
+                "__BMI2__",
+            ]
+        )
+
+    if env["arch"] == "x86_64" and env["extension"] == "avx512" and env.msvc:
+        env_thirdparty.Append(
+            CPPDEFINES=[
+                "__SSE3__",
+                "__SSSE3__",
+                "__SSE4_1__",
+                "__SSE4_2__",
+                "__AVX__",
+                "__AVX2__",
+                "__F16C__",
+                "__FMA__",
+                "__BMI2__",
+                "__AVX512F__",
+                "__AVX512DQ__",
+                "__AVX512VL__",
+            ]
+        )
 
     if env["platform"] == "web":
         env_thirdparty.Append(CXXFLAGS=["-msimd128"])
