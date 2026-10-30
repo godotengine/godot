@@ -124,7 +124,8 @@ static const float earth_gravity = 9.80665;
 - (void)godot_commonInit {
 	self.preferredFrameRate = 60;
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
-	self.hingeClosed = YES;
+	self.hingeStatus = DisplayServerEnums::SCREEN_HINGE_STATUS_UNKNOWN;
+	self.hingeAngle = 0.0;
 	last_edr_headroom = 0.0;
 
 #if !defined(VISIONOS_ENABLED)
@@ -133,7 +134,17 @@ static const float earth_gravity = 9.80665;
 	if (@available(iOS 27.1, *)) {
 		[self addInteraction:[[UIHingeInteraction alloc] initWithUpdateHandler:^(UIHingeInteraction *interaction, UIHingeInteractionUpdate *update) {
 			if (update.hinge) {
-				self.hingeClosed = update.hinge.status == UIHingeStatusClosed;
+				if (update.hinge.status == UIHingeStatusClosed) {
+					self.hingeStatus = DisplayServerEnums::SCREEN_HINGE_STATUS_CLOSED;
+				} else if (update.hinge.status == UIHingeStatusFullyOpen) {
+					self.hingeStatus = DisplayServerEnums::SCREEN_HINGE_STATUS_FULLY_OPEN;
+				} else if (update.hinge.status == UIHingeStatusPartiallyOpen) {
+					self.hingeStatus = DisplayServerEnums::SCREEN_HINGE_STATUS_PARTIALLY_OPEN;
+				}
+				self.hingeAngle = update.hinge.angle;
+				if (DisplayServerAppleEmbedded::get_singleton()) {
+					DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_HINGE_STATUS_CHANGED);
+				}
 			}
 		}]];
 	}
