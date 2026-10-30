@@ -1039,8 +1039,36 @@ void GDScriptByteCodeGenerator::write_store_named_global(const Address &p_dst, c
 }
 
 void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {
-	int index = 0;
+	if (p_type.kind == GDScriptDataType::BUILTIN && p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
+		const GDScriptDataType &element_type = p_type.get_container_element_type(0);
 
+		append_opcode(GDScriptFunction::OPCODE_CAST_TO_TYPED_ARRAY);
+		append(p_target);
+		append(p_source);
+		append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+		append(element_type.builtin_type);
+		append(element_type.native_type);
+
+		ERR_FAIL_COND_MSG(element_type.kind == GDScriptDataType::VARIANT, "GDScript compiler bug (please report): Array[Variant] was not erased.");
+		return;
+	} else if (p_type.kind == GDScriptDataType::BUILTIN && p_type.builtin_type == Variant::DICTIONARY && p_type.has_container_element_types()) {
+		const GDScriptDataType &key_type = p_target.type.get_container_element_type_or_variant(0);
+		const GDScriptDataType &value_type = p_target.type.get_container_element_type_or_variant(1);
+		append_opcode(GDScriptFunction::OPCODE_CAST_TO_TYPED_DICTIONARY);
+		append(p_target);
+		append(p_source);
+		append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+		append(get_constant_pos(value_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+		append(key_type.builtin_type);
+		append(key_type.native_type);
+		append(value_type.builtin_type);
+		append(value_type.native_type);
+
+		ERR_FAIL_COND_MSG(key_type.kind == GDScriptDataType::VARIANT && value_type.kind == GDScriptDataType::VARIANT, "GDScript compiler bug (please report): Dictionary[Variant, Variant] was not erased.");
+		return;
+	}
+
+	int index = 0;
 	switch (p_type.kind) {
 		case GDScriptDataType::BUILTIN: {
 			append_opcode(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
