@@ -392,21 +392,14 @@ String EditorExportPlatformWindows::get_export_option_warning(const EditorExport
 		} else if (p_name == "application/file_version") {
 			String file_version = p_preset->get("application/file_version");
 			if (!file_version.is_empty()) {
-				PackedStringArray version_array = file_version.split(".", false);
-				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
-						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || file_version.contains_char('-')) {
-					return TTR("Invalid file version.");
-				}
-			}
-		} else if (p_name == "application/product_version") {
-			String product_version = p_preset->get("application/product_version");
-			if (!product_version.is_empty()) {
-				PackedStringArray version_array = product_version.split(".", false);
-				if (version_array.size() != 4 || !version_array[0].is_valid_int() ||
-						!version_array[1].is_valid_int() || !version_array[2].is_valid_int() ||
-						!version_array[3].is_valid_int() || product_version.contains_char('-')) {
-					return TTR("Invalid product version.");
+				PackedStringArray version_array = file_version.split(".", true, 5);
+				if (version_array.size() != 4 ||
+						!version_array[0].is_valid_int() ||
+						!version_array[1].is_valid_int() ||
+						!version_array[2].is_valid_int() ||
+						!version_array[3].is_valid_int() ||
+						file_version.contains_char('-')) {
+					return TTR("Invalid file version: Must contain 4 period-separated non-negative numbers, such as: \"0.1.2.3\".");
 				}
 			}
 		}
