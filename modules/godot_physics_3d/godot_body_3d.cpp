@@ -171,7 +171,7 @@ void GodotBody3D::reset_mass_properties() {
 	_mass_properties_changed();
 }
 
-void GodotBody3D::set_active(bool p_active) {
+void GodotBody3D::set_active(bool p_active, bool reset_timer) {
 	if (active == p_active) {
 		return;
 	}
@@ -184,6 +184,18 @@ void GodotBody3D::set_active(bool p_active) {
 			active = false;
 		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
+
+			if (reset_timer) {
+				// `reset_timer` should be set upon removal of a constraint, or the change of some fundamental forces
+				// that the engine itself takes responsibility for and applies every frame (like gravity or constant force).
+				// `still_time = 0.0` will provide some time to test whether gravity or constant force might destabilize the system.
+				still_time = 0.0;
+			}
+
+			// Ensure at least one frame to allow a sleeping body to potentially move again before being put back to sleep.
+			if (still_time > get_space()->get_body_time_to_sleep()) {
+				still_time = get_space()->get_body_time_to_sleep();
+			}
 		}
 	} else if (get_space()) {
 		get_space()->body_remove_from_active_list(&active_list);
@@ -229,7 +241,7 @@ void GodotBody3D::set_param(PS3DE::BodyParameter p_param, const Variant &p_value
 		} break;
 		case PS3DE::BODY_PARAM_GRAVITY_SCALE: {
 			if (Math::is_zero_approx(gravity_scale)) {
-				wakeup();
+				set_active(true, true);
 			}
 			gravity_scale = p_value;
 		} break;
@@ -346,7 +358,6 @@ PS3DE::BodyMode GodotBody3D::get_mode() const {
 void GodotBody3D::_shapes_changed() {
 	_mass_properties_changed();
 	wakeup();
-	wakeup_neighbours();
 }
 
 void GodotBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_variant) {
@@ -354,7 +365,6 @@ void GodotBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_variant) 
 		case PS3DE::BODY_STATE_TRANSFORM: {
 			if (mode == PS3DE::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
-				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -365,7 +375,6 @@ void GodotBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_variant) 
 			} else if (mode == PS3DE::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
-				wakeup_neighbours();
 			} else {
 				Transform3D t = p_variant;
 				t.orthonormalize();
@@ -737,28 +746,6 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	_update_transform_dependent();
 }
 
-void GodotBody3D::wakeup_neighbours() {
-	for (const KeyValue<GodotConstraint3D *, int> &E : constraint_map) {
-		const GodotConstraint3D *c = E.key;
-		GodotBody3D **n = c->get_body_ptr();
-		int bc = c->get_body_count();
-
-		for (int i = 0; i < bc; i++) {
-			if (i == E.value) {
-				continue;
-			}
-			GodotBody3D *b = n[i];
-			if (b->mode < PS3DE::BODY_MODE_RIGID) {
-				continue;
-			}
-
-			if (!b->is_active()) {
-				b->set_active(true);
-			}
-		}
-	}
-}
-
 void GodotBody3D::call_queries() {
 	Variant direct_state_variant = get_direct_state();
 
@@ -790,11 +777,11 @@ bool GodotBody3D::sleep_test(real_t p_step) {
 	ERR_FAIL_NULL_V(get_space(), true);
 
 	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
-		still_time = 0; //maybe this should be set to 0 on set_active?
+		still_time = 0;
 		return false;
 	}
 }
