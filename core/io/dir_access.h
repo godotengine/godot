@@ -112,6 +112,7 @@ public:
 	virtual Error copy(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
+	Error remove_recursive(const String &p_path);
 
 	virtual bool is_link(String p_file) = 0;
 	virtual String read_link(String p_file) = 0;
@@ -156,6 +157,7 @@ public:
 	static Error copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	static Error rename_absolute(const String &p_from, const String &p_to);
 	static Error remove_absolute(const String &p_path);
+	static Error remove_recursive_absolute(const String &p_path);
 
 	PackedStringArray get_files();
 	static PackedStringArray get_files_at(const String &p_path);
