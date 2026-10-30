@@ -821,7 +821,7 @@
 		<annotation name="@tool">
 			<return type="void" />
 			<description>
-				Mark the current script as a tool script, allowing it to be loaded and executed by the editor. See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url].
+				Mark the current script and its inner classes as a tool script, allowing it to be loaded and executed by the editor. See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url].
 				[codeblock]
 				@tool
 				extends Node
