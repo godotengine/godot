@@ -274,6 +274,13 @@
 				Causes the window to grab focus, allowing it to receive user input.
 			</description>
 		</method>
+		<method name="handle_input">
+			<return type="void" />
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Handles the input event for the window by sending it to child controls. This method can emit [signal window_input] and [signal nonclient_window_input]. This method already gets called to handle regular input events because it is the default implementation for [method DisplayServer.window_set_input_event_callback].
+			</description>
+		</method>
 		<method name="has_focus" qualifiers="const">
 			<return type="bool" />
 			<description>
