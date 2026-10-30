@@ -35,5 +35,7 @@ extern void godot_apple_embedded_plugins_initialize();
 extern void godot_apple_embedded_plugins_deinitialize();
 #endif
 
+void register_core_ios_api();
+void unregister_core_ios_api();
 void register_ios_api();
 void unregister_ios_api();
