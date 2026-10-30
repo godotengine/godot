@@ -273,7 +273,7 @@ public:
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
 	uint64_t buffer_get_device_address(RID p_buffer);
-	uint8_t *buffer_persistent_map_advance(RID p_buffer);
+	uint8_t *buffer_persistent_map(RID p_buffer);
 	void buffer_flush(RID p_buffer);
 
 private:
