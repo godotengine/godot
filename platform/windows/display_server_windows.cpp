@@ -5759,6 +5759,13 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	switch (uMsg) {
 		case WM_GETOBJECT: {
 			get_object_received = true;
+			AccessibilityServer *ac = AccessibilityServer::get_singleton();
+			if (ac) {
+				int64_t ret = 0;
+				if (ac->native_process_message(window_id, wParam, lParam, &ret)) {
+					return ret;
+				}
+			}
 		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);

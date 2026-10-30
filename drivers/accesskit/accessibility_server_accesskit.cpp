@@ -62,38 +62,58 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 	ae->window_id = p_window_id;
 	wd.root_id = rid_owner.make_rid(ae);
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 	wd.adapter = accesskit_android_adapter_new();
-#endif
-#ifdef WINDOWS_ENABLED
-	wd.adapter = accesskit_windows_subclassing_adapter_new(static_cast<HWND>(p_handle), &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id);
-#endif
-#ifdef MACOS_ENABLED
-	wd.adapter = accesskit_macos_subclassing_adapter_for_window(p_handle, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id);
-#endif
-#ifdef LINUXBSD_ENABLED
+#elif defined(WINDOWS_ENABLED)
+	wd.adapter = accesskit_windows_adapter_new(static_cast<HWND>(p_handle), false, &_accessibility_action_callback, (void *)(size_t)p_window_id);
+#elif defined(MACOS_ENABLED)
+	wd.adapter = accesskit_macos_adapter_new(p_handle, false, &_accessibility_action_callback, (void *)(size_t)p_window_id);
+#elif defined(LINUXBSD_ENABLED)
 	wd.adapter = accesskit_unix_adapter_new(&_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
+#elif defined(APPLE_EMBEDDED_ENABLED)
+	wd.adapter = accesskit_ios_adapter_new(p_handle, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
-#ifdef APPLE_EMBEDDED_ENABLED
-	wd.adapter = accesskit_ios_subclassing_adapter_new(p_handle, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
-#endif
-	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
+		print_verbose(vformat("Accessibility: window %d adapter creation failed.", p_window_id));
+
 		memdelete(ae);
 		rid_owner.free(wd.root_id);
 		windows.erase(p_window_id);
 
 		return false;
 	} else {
+		print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
+
 		return true;
 	}
+}
+
+bool AccessibilityServerAccessKit::native_is_accessibility_element(DisplayServerEnums::WindowID p_window_id) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, true);
+#if defined(APPLE_EMBEDDED_ENABLED)
+	return accesskit_ios_adapter_is_accessibility_element(wd->adapter);
+#else
+	return true;
+#endif
+}
+
+void AccessibilityServerAccessKit::native_did_view_appear(DisplayServerEnums::WindowID p_window_id) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL(wd);
+#if defined(APPLE_EMBEDDED_ENABLED)
+	accesskit_ios_queued_events *events = accesskit_ios_adapter_view_did_appear(wd->adapter);
+	if (events) {
+		accesskit_ios_queued_events_raise(events);
+	}
+#endif
 }
 
 void *AccessibilityServerAccessKit::native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL_V(wd, nullptr);
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, nullptr);
 
@@ -102,6 +122,10 @@ void *AccessibilityServerAccessKit::native_create_node_info(DisplayServerEnums::
 	}
 
 	return accesskit_android_adapter_create_accessibility_node_info(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, env, (jobject)wd->host, p_view_id);
+#elif defined(MACOS_ENABLED)
+	return accesskit_macos_adapter_view_children(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id);
+#elif defined(APPLE_EMBEDDED_ENABLED)
+	return accesskit_ios_adapter_accessibility_elements(wd->adapter);
 #else
 	return nullptr;
 #endif
@@ -110,7 +134,7 @@ void *AccessibilityServerAccessKit::native_create_node_info(DisplayServerEnums::
 void *AccessibilityServerAccessKit::native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL_V(wd, nullptr);
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, nullptr);
 
@@ -119,6 +143,8 @@ void *AccessibilityServerAccessKit::native_find_focus(DisplayServerEnums::Window
 	}
 
 	return accesskit_android_adapter_find_focus(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, env, (jobject)wd->host, p_focus_type);
+#elif defined(MACOS_ENABLED)
+	return accesskit_macos_adapter_focus(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id);
 #else
 	return nullptr;
 #endif
@@ -127,7 +153,7 @@ void *AccessibilityServerAccessKit::native_find_focus(DisplayServerEnums::Window
 bool AccessibilityServerAccessKit::native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL_V(wd, false);
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL_V(env, false);
 
@@ -154,21 +180,13 @@ bool AccessibilityServerAccessKit::native_perform_action(DisplayServerEnums::Win
 #endif
 }
 
-bool AccessibilityServerAccessKit::native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) {
+bool AccessibilityServerAccessKit::native_process_message(DisplayServerEnums::WindowID p_window_id, int64_t p_wparam, int64_t p_lparam, int64_t *r_ret) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL_V(wd, false);
-#ifdef ANDROID_ENABLED
-	JNIEnv *env = get_jni_env();
-	ERR_FAIL_NULL_V(env, false);
-
-	if (wd->host == nullptr && p_host != nullptr) {
-		wd->host = env->NewGlobalRef((jobject)p_host);
-	}
-
-	accesskit_android_queued_events *events = accesskit_android_adapter_on_hover_event(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, p_action, p_x, p_y);
-
-	if (events) {
-		accesskit_android_queued_events_raise(events, env, (jobject)wd->host);
+#if defined(WINDOWS_ENABLED)
+	accesskit_opt_lresult ret = accesskit_windows_adapter_handle_wm_getobject(wd->adapter, p_wparam, p_lparam, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id);
+	if (ret.value && r_ret) {
+		*r_ret = ret.value;
 		return true;
 	} else {
 		return false;
@@ -178,31 +196,56 @@ bool AccessibilityServerAccessKit::native_on_hover(DisplayServerEnums::WindowID 
 #endif
 }
 
+void *AccessibilityServerAccessKit::native_hit_test(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y, bool *r_has_events) {
+	WindowData *wd = windows.getptr(p_window_id);
+	ERR_FAIL_NULL_V(wd, nullptr);
+#if defined(ANDROID_ENABLED)
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL_V(env, nullptr);
+
+	if (wd->host == nullptr && p_host != nullptr) {
+		wd->host = env->NewGlobalRef((jobject)p_host);
+	}
+
+	accesskit_android_queued_events *events = accesskit_android_adapter_on_hover_event(wd->adapter, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, p_action, p_x, p_y);
+
+	if (events) {
+		accesskit_android_queued_events_raise(events, env, (jobject)wd->host);
+		if (r_has_events) {
+			*r_has_events = true;
+		}
+	}
+	return nullptr;
+#elif defined(MACOS_ENABLED)
+	return accesskit_macos_adapter_hit_test(wd->adapter, p_x, p_y, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id);
+#elif defined(APPLE_EMBEDDED_ENABLED)
+	return accesskit_ios_adapter_hit_test(wd->adapter, p_x, p_y);
+#else
+	return nullptr;
+#endif
+}
+
 void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
 	print_verbose(vformat("Accessibility: window %d adapter destroyed.", p_window_id));
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 	JNIEnv *env = get_jni_env();
 	if (env && wd->host) {
 		env->DeleteGlobalRef(wd->host);
 		wd->host = nullptr;
 	}
 	accesskit_android_adapter_free(wd->adapter);
-#endif
-#ifdef WINDOWS_ENABLED
-	accesskit_windows_subclassing_adapter_free(wd->adapter);
-#endif
-#ifdef MACOS_ENABLED
-	accesskit_macos_subclassing_adapter_free(wd->adapter);
-#endif
-#ifdef LINUXBSD_ENABLED
+#elif defined(WINDOWS_ENABLED)
+	accesskit_windows_adapter_free(wd->adapter);
+#elif defined(MACOS_ENABLED)
+	accesskit_macos_adapter_free(wd->adapter);
+#elif defined(LINUXBSD_ENABLED)
 	accesskit_unix_adapter_free(wd->adapter);
-#endif
-#ifdef APPLE_EMBEDDED_ENABLED
-	accesskit_ios_subclassing_adapter_free(wd->adapter);
+#elif defined(APPLE_EMBEDDED_ENABLED)
+	accesskit_ios_adapter_free(wd->adapter);
 #endif
 	free_element(wd->root_id);
 
@@ -793,7 +836,7 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 	ERR_FAIL_COND(!p_callable.is_valid());
 	update_cb = p_callable;
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &window : windows) {
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED)
 		if (window.value.host == nullptr) {
 			continue;
 		}
@@ -804,24 +847,20 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 		if (events) {
 			accesskit_android_queued_events_raise(events, env, window.value.host);
 		}
-#endif
-#ifdef WINDOWS_ENABLED
-		accesskit_windows_queued_events *events = accesskit_windows_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+#elif defined(WINDOWS_ENABLED)
+		accesskit_windows_queued_events *events = accesskit_windows_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
 			accesskit_windows_queued_events_raise(events);
 		}
-#endif
-#ifdef MACOS_ENABLED
-		accesskit_macos_queued_events *events = accesskit_macos_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+#elif defined(MACOS_ENABLED)
+		accesskit_macos_queued_events *events = accesskit_macos_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
 			accesskit_macos_queued_events_raise(events);
 		}
-#endif
-#ifdef LINUXBSD_ENABLED
+#elif defined(LINUXBSD_ENABLED)
 		accesskit_unix_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
-#endif
-#ifdef APPLE_EMBEDDED_ENABLED
-		accesskit_ios_queued_events *events = accesskit_ios_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+#elif defined(APPLE_EMBEDDED_ENABLED)
+		accesskit_ios_queued_events *events = accesskit_ios_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 		if (events) {
 			accesskit_ios_queued_events_raise(events);
 		}
@@ -862,16 +901,19 @@ void AccessibilityServerAccessKit::set_window_focused(DisplayServerEnums::Window
 	const WindowData *wd = windows.getptr(p_window_id);
 	ERR_FAIL_NULL(wd);
 
-#ifdef LINUXBSD_ENABLED
+#if defined(LINUXBSD_ENABLED)
 	accesskit_unix_adapter_update_window_focus_state(wd->adapter, p_focused);
-#endif
-#ifdef MACOS_ENABLED
-	accesskit_macos_queued_events *events = accesskit_macos_subclassing_adapter_update_view_focus_state(wd->adapter, p_focused);
-	if (events != nullptr) {
+#elif defined(MACOS_ENABLED)
+	accesskit_macos_queued_events *events = accesskit_macos_adapter_update_view_focus_state(wd->adapter, p_focused);
+	if (events) {
 		accesskit_macos_queued_events_raise(events);
 	}
+#elif defined(WINDOWS_ENABLED)
+	accesskit_windows_queued_events *events = accesskit_windows_adapter_update_window_focus_state(wd->adapter, p_focused);
+	if (events) {
+		accesskit_windows_queued_events_raise(events);
+	}
 #endif
-	// Note: On Windows, the subclassing adapter takes care of this.
 }
 
 void AccessibilityServerAccessKit::update_set_role(const RID &p_id, AccessibilityServerEnums::AccessibilityRole p_role) {
