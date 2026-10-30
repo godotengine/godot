@@ -863,7 +863,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	for (KeyValue<String, TileDataEditor *> &E : tile_data_editors) {
 		// Tile Data Editor.
 		TileDataEditor *tile_data_editor = E.value;
-		if (!tile_data_editor->is_inside_tree()) {
+		if (!tile_data_editor->get_parent()) {
 			tile_data_painting_editor_container->add_child(tile_data_editor);
 		}
 		tile_data_editor->set_tile_set(tile_set);
