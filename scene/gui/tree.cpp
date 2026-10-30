@@ -5747,6 +5747,14 @@ void Tree::_notification(int p_what) {
 				}
 			}
 
+			if (ensure_cursor_is_visible_pending) {
+				ensure_cursor_is_visible_pending = false;
+				if (_ensure_cursor_is_visible(false)) {
+					ensure_cursor_is_visible_pending = true;
+					callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw).call_deferred();
+				}
+			}
+
 			if (scroll_hint_mode != SCROLL_HINT_MODE_DISABLED) {
 				Size2 size = get_size();
 				float v_scroll_value = v_scroll->get_value();
@@ -6371,11 +6379,24 @@ void Tree::ensure_cursor_is_visible() {
 	if (!selected_item || (selected_col == -1)) {
 		return; // Nothing under cursor.
 	}
+	_ensure_cursor_is_visible();
+	if (!ensure_cursor_is_visible_pending) {
+		ensure_cursor_is_visible_pending = true;
+		queue_redraw();
+	}
+}
+
+bool Tree::_ensure_cursor_is_visible(bool p_defer_vertical_scroll) {
+	if (!is_inside_tree() || !selected_item || (selected_col == -1)) {
+		return false;
+	}
 
 	// Note: Code below similar to `Tree::scroll_to_item()`, in case of bug fix both.
 	const Size2 area_size = _get_content_rect().size;
 
+	const double previous_v_scroll = v_scroll->get_value();
 	double delta_v = 0;
+	bool vertical_scroll_deferred = false;
 	int y_offset = get_item_offset(selected_item);
 	if (y_offset != -1) {
 		const int tbh = _get_title_button_height();
@@ -6398,17 +6419,27 @@ void Tree::ensure_cursor_is_visible() {
 		int screen_h = area_size.height - tbh - sticky_stack_end;
 
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
-			delta_v = y_offset - v_scroll->get_value();
 			v_scroll->set_value(y_offset);
 		} else if (y_offset + cell_h > v_scroll->get_value() + screen_h) {
-			delta_v = y_offset - screen_h + cell_h - v_scroll->get_value();
-			scroll_pending++;
-			callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(y_offset - screen_h + cell_h);
+			const double scroll_target = y_offset - screen_h + cell_h;
+			if (p_defer_vertical_scroll) {
+				delta_v = scroll_target - v_scroll->get_value();
+				scroll_pending++;
+				callable_mp((Range *)v_scroll, &Range::set_value).call_deferred(scroll_target);
+				vertical_scroll_deferred = true;
+			} else {
+				const int old_scroll_pending = scroll_pending;
+				scroll_pending++;
+				v_scroll->set_value(scroll_target);
+				if (Math::is_equal_approx(previous_v_scroll, v_scroll->get_value())) {
+					scroll_pending = old_scroll_pending;
+				}
+			}
 		} else if (y_offset < v_scroll->get_value()) {
-			delta_v = y_offset - v_scroll->get_value();
 			v_scroll->set_value(y_offset);
 		}
 	}
+	delta_v = vertical_scroll_deferred ? delta_v : v_scroll->get_value() - previous_v_scroll;
 
 	double delta_h = 0;
 	if (select_mode != SELECT_ROW) { // Cursor always at column 0 in this mode.
@@ -6446,6 +6477,7 @@ void Tree::ensure_cursor_is_visible() {
 	}
 
 	queue_accessibility_update();
+	return vertical_scroll_deferred || !Math::is_zero_approx(delta_v);
 }
 
 int Tree::get_pressed_button() const {
@@ -6647,8 +6679,21 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 		const int title_button_height = _get_title_button_height();
 		y_offset -= title_button_height;
 
+		bool item_is_sticky = false;
+		for (TreeItem *item : sticky_list) {
+			if (p_item == item) {
+				y_offset -= item->sticky_offset.y;
+				item_is_sticky = true;
+				break;
+			}
+		}
+
+		if (!item_is_sticky) {
+			y_offset -= sticky_stack_end;
+		}
+
 		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
-		int screen_h = area_size.height - title_button_height;
+		int screen_h = area_size.height - title_button_height - sticky_stack_end;
 
 		if (p_center_on_item) {
 			// This makes sure that centering the offset doesn't overflow.
