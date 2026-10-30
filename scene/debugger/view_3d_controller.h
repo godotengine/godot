@@ -166,6 +166,10 @@ public:
 		Point2 region_end;
 
 		Cursor() {
+			pos_x = 0.0;
+			pos_y = 0.0;
+			pos_z = 0.0;
+
 			// These rotations place the camera in +X +Y +Z, aka south east, facing north west.
 			x_rot = 0.5;
 			y_rot = -0.5;
@@ -173,6 +177,11 @@ public:
 			unsnapped_y_rot = y_rot;
 			distance = 4;
 			fov_scale = 1.0;
+
+			eye_pos_x = 0.0;
+			eye_pos_y = 0.0;
+			eye_pos_z = 0.0;
+
 			region_select = false;
 		}
 	};
