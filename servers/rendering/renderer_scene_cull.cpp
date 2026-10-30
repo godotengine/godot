@@ -77,6 +77,68 @@ void RendererSceneCull::pre_draw(bool p_will_draw) {
 	}
 }
 
+/* CULLING VOLUME API */
+
+RID RendererSceneCull::culling_volume_allocate() {
+	return culling_volume_owner.allocate_rid();
+}
+void RendererSceneCull::culling_volume_initialize(RID p_rid) {
+	culling_volume_owner.initialize_rid(p_rid);
+}
+
+void RendererSceneCull::culling_volume_set_mask(RID p_culling_volume, int p_mask) {
+	CullingVolume *volume = culling_volume_owner.get_or_null(p_culling_volume);
+	ERR_FAIL_NULL(volume);
+
+	volume->mask = p_mask;
+}
+
+void RendererSceneCull::culling_volume_set_plane(RID p_culling_volume, const Plane &p_plane) {
+	CullingVolume *volume = culling_volume_owner.get_or_null(p_culling_volume);
+	ERR_FAIL_NULL(volume);
+
+	volume->type = RSE::CULLING_VOLUME_TYPE_PLANE;
+	volume->plane = p_plane;
+
+	if (p_plane.normal.x > 0) {
+		volume->plane_signs[0] = 0;
+	} else {
+		volume->plane_signs[0] = 3;
+	}
+	if (p_plane.normal.y > 0) {
+		volume->plane_signs[1] = 1;
+	} else {
+		volume->plane_signs[1] = 4;
+	}
+	if (p_plane.normal.z > 0) {
+		volume->plane_signs[2] = 2;
+	} else {
+		volume->plane_signs[2] = 5;
+	}
+}
+
+void RendererSceneCull::culling_volume_set_sphere(RID p_culling_volume, const Vector3 &p_origin, real_t p_radius) {
+	CullingVolume *volume = culling_volume_owner.get_or_null(p_culling_volume);
+	ERR_FAIL_NULL(volume);
+
+	volume->type = RSE::CULLING_VOLUME_TYPE_SPHERE;
+	volume->origin = p_origin;
+	volume->radius_sqr = p_radius * p_radius;
+}
+
+void RendererSceneCull::culling_volume_set_cylinder(RID p_culling_volume, const Vector3 &p_origin, const Vector3 &p_axis, real_t p_radius) {
+	CullingVolume *volume = culling_volume_owner.get_or_null(p_culling_volume);
+	ERR_FAIL_NULL(volume);
+
+	if ((p_axis.x != 0.0 ? 1 : 0) + (p_axis.y != 0.0 ? 1 : 0) + (p_axis.z != 0.0 ? 1 : 0) > 1) {
+		WARN_PRINT_ONCE("Using a non-axis aligned culling cylinder can lead to false negatives and visible geometry being hidden if the geometry has an AABB larger than the culling volume!");
+	}
+
+	volume->type = RSE::CULLING_VOLUME_TYPE_CYLINDER;
+	volume->origin = p_origin;
+	volume->axis = p_axis.normalized() / p_radius; // By dividing our normalized axis with our radius, our distance to cylinder check returns 1.0 when a point is on the surface of our cylinder.
+}
+
 /* CAMERA API */
 
 RID RendererSceneCull::camera_allocate() {
@@ -2706,7 +2768,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, RenderingServerTypes::RenderInfo *r_render_info) {
+void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, const LocalVector<RID> &p_extra_culling_volumes, RenderingServerTypes::RenderInfo *r_render_info) {
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
@@ -2807,7 +2869,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	// For now just cull on the first camera
 	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal);
 
-	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, p_window_output_max_value, true, r_render_info);
+	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, p_window_output_max_value, true, p_extra_culling_volumes, r_render_info);
 #endif
 }
 
@@ -2948,13 +3010,14 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #define HIDDEN_BY_VISIBILITY_CHECKS (visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE || visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN)
 #define LAYER_CHECK (cull_data.visible_layers & idata.layer_mask)
 #define IN_FRUSTUM(f) (cull_data.scenario->instance_aabbs[i].in_frustum(f))
+#define IN_CULLING_VOLUMES(cv) (cull_data.scenario->instance_aabbs[i].in_culling_volumes(idata.layer_mask, cv))
 #define VIS_RANGE_CHECK ((idata.visibility_index == -1) || _visibility_range_check<false>(cull_data.scenario->instance_visibility[idata.visibility_index], cull_data.cam_transform.origin, cull_data.visibility_viewport_mask) == 0)
 #define VIS_PARENT_CHECK (_visibility_parent_check(cull_data, idata))
 #define VIS_CHECK (visibility_check < 0 ? (visibility_check = (visibility_flags != InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK || (VIS_RANGE_CHECK && VIS_PARENT_CHECK))) : visibility_check)
 #define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near, is_orthogonal, cull_data.scenario->instance_data[i].occlusion_timeout))
 
 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
-			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
+			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && IN_CULLING_VOLUMES(cull_data.cull->extra_culling_volumes) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
 				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
 				if (base_type == RSE::INSTANCE_LIGHT) {
 					cull_result.lights.push_back(idata.instance);
@@ -3322,7 +3385,7 @@ void RendererSceneCull::_scene_particles_set_view_axis(RID p_particles, const Ve
 	RSG::particles_storage->particles_set_view_axis(p_particles, p_axis, p_up_axis);
 }
 
-void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows, RenderingServerTypes::RenderInfo *r_render_info) {
+void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows, const LocalVector<RID> &p_extra_culling_volumes, RenderingServerTypes::RenderInfo *r_render_info) {
 	Instance *render_reflection_probe = instance_owner.get_or_null(p_reflection_probe); //if null, not rendering to it
 
 	// Prepare the light - camera volume culling system.
@@ -3379,6 +3442,27 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	Vector<Plane> planes = p_camera_data->main_projection.get_projection_planes(p_camera_data->main_transform);
 	cull.frustum = Frustum(planes);
+
+	// Instead of using Frustum and our extra culling volumes, we could convert our planes to culling planes.
+	// This would effectively be the same but simplify our system.
+
+	if (p_extra_culling_volumes.is_empty()) {
+		cull.extra_culling_volumes.clear();
+	} else {
+		cull.extra_culling_volumes.resize(p_extra_culling_volumes.size());
+
+		uint32_t i = 0;
+		for (const RID &rid : p_extra_culling_volumes) {
+			CullingVolume *volume = culling_volume_owner.get_or_null(rid);
+			if (volume) {
+				cull.extra_culling_volumes[i] = *volume;
+			} else {
+				// No mask, culling volume will be ignored.
+				cull.extra_culling_volumes[i].mask = 0x00;
+			}
+			i++;
+		}
+	}
 
 	Vector<RID> directional_lights;
 	// directional lights
@@ -4416,7 +4500,11 @@ bool RendererSceneCull::free(RID p_rid) {
 		return true;
 	}
 
-	if (camera_owner.owns(p_rid)) {
+	if (culling_volume_owner.owns(p_rid)) {
+		// TODO check viewports to remove culling volume (dependency?).
+		culling_volume_owner.free(p_rid);
+
+	} else if (camera_owner.owns(p_rid)) {
 		camera_owner.free(p_rid);
 
 	} else if (scenario_owner.owns(p_rid)) {
