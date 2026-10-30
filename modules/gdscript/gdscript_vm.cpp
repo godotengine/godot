@@ -732,15 +732,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(a, 0);
 				GET_VARIANT_PTR(b, 1);
 				GET_VARIANT_PTR(dst, 2);
+
+				std::atomic_ref<uint32_t> signature_ref(*reinterpret_cast<uint32_t *>(&_code_ptr[ip + 5]));
+				std::atomic_ref<int32_t> type_ref(_code_ptr[ip + 6]);
+				std::atomic_ref<Variant::ValidatedOperatorEvaluator> evaluator_ref(*reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[ip + 7]));
+				static_assert(signature_ref.is_always_lock_free);
+				static_assert(type_ref.is_always_lock_free);
+				static_assert(evaluator_ref.is_always_lock_free);
+				static_assert(signature_ref.required_alignment <= sizeof(int));
+				static_assert(type_ref.required_alignment <= sizeof(int));
+				// TODO: We didn't use proper alignment previously, let's hope it doesn't become an issue now.
+				// static_assert(evaluator_ref.required_alignment <= sizeof(int));
+
 				// Compute signatures (types of operands) so it can be optimized when matching.
-				uint32_t op_signature = _code_ptr[ip + 5];
+				uint32_t op_signature = signature_ref.load(std::memory_order_acquire);
 				uint32_t actual_signature = (a->get_type() << 8) | (b->get_type());
 
 #ifdef DEBUG_ENABLED
 				if (op == Variant::OP_DIVIDE || op == Variant::OP_MODULE) {
 					// Don't optimize division and modulo since there's not check for division by zero with validated calls.
 					op_signature = 0xFFFF;
-					_code_ptr[ip + 5] = op_signature;
+					signature_ref.store(op_signature, std::memory_order_release);
 				}
 #endif
 
@@ -765,18 +777,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						op_func(a, b, dst);
 
 						// Check again in case another thread already set it.
-						if (_code_ptr[ip + 5] == 0) {
-							_code_ptr[ip + 5] = actual_signature;
-							_code_ptr[ip + 6] = static_cast<int>(ret_type);
-							Variant::ValidatedOperatorEvaluator *tmp = reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[ip + 7]);
-							*tmp = op_func;
+						if (signature_ref.load(std::memory_order_acquire) == 0) {
+							type_ref.store(ret_type, std::memory_order_release);
+							evaluator_ref.store(op_func, std::memory_order_release);
+							// Store the signature last, so that other threads either use the
+							// fast path with everything stored, or block till we are done.
+							signature_ref.store(actual_signature, std::memory_order_release);
 						}
 					}
 					initializer_mutex.unlock();
 				} else if (likely(op_signature == actual_signature)) {
 					// If the signature matches, we can use the optimized path.
-					Variant::Type ret_type = static_cast<Variant::Type>(_code_ptr[ip + 6]);
-					Variant::ValidatedOperatorEvaluator op_func = *reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[ip + 7]);
+					Variant::Type ret_type = static_cast<Variant::Type>(type_ref.load(std::memory_order_acquire));
+					Variant::ValidatedOperatorEvaluator op_func = evaluator_ref.load(std::memory_order_acquire);
 
 					// Make sure the return value has the correct type.
 					VariantInternal::initialize(dst, ret_type);
