@@ -1646,6 +1646,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	}
 
 	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
+	ERR_FAIL_COND_V_MSG(format.samples > TEXTURE_SAMPLES_1 && format.texture_type != TEXTURE_TYPE_2D && format.texture_type != TEXTURE_TYPE_2D_ARRAY, RID(),
+			"Multisample textures must be 2D or 2D array.");
 
 	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
 
@@ -1763,6 +1765,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 
 	Texture texture;
 	format.usage_bits |= forced_usage_bits;
+	format.samples = driver->texture_get_nearest_supported_samples(format);
 	texture.driver_id = driver->texture_create(format, tv);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 	texture.type = format.texture_type;
@@ -2974,6 +2977,12 @@ bool RenderingDevice::texture_is_valid(RID p_texture) {
 	ERR_RENDER_THREAD_GUARD_V(false);
 
 	return texture_owner.owns(p_texture);
+}
+
+RD::TextureSamples RenderingDevice::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	ERR_RENDER_THREAD_GUARD_V(TEXTURE_SAMPLES_1);
+
+	return driver->texture_get_nearest_supported_samples(p_format);
 }
 
 RD::TextureFormat RenderingDevice::texture_get_format(RID p_texture) {
@@ -9330,6 +9339,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture"), &RenderingDevice::texture_resolve_multisample);
 
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingDevice::_texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_nearest_supported_samples", "format"), &RenderingDevice::_texture_get_nearest_supported_samples);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture"), &RenderingDevice::texture_get_native_handle);
 #endif
@@ -10167,6 +10177,11 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type, p_layers);
+}
+
+RD::TextureSamples RenderingDevice::_texture_get_nearest_supported_samples(const Ref<RDTextureFormat> &p_format) {
+	ERR_FAIL_COND_V(p_format.is_null(), TEXTURE_SAMPLES_1);
+	return texture_get_nearest_supported_samples(p_format->base);
 }
 
 Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {
