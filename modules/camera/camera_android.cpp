@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef ANDROID_ENABLED
+
 #include "camera_android.h"
 
 #include "core/os/os.h"
@@ -928,3 +930,5 @@ int CameraFeedAndroid::get_app_orientation() {
 			return get_display_rotation();
 	}
 }
+
+#endif // ANDROID_ENABLED

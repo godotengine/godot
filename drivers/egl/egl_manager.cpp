@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "egl_manager.h"
-
 #ifdef EGL_ENABLED
+
+#include "egl_manager.h"
 
 #include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"

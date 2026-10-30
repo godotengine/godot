@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #import "foundation_helpers.h"
 
 #import "core/string/ustring.h"
@@ -98,4 +100,6 @@ String to_string(NS::String *p_str) {
 	return to_string(str);
 }
 
-} //namespace conv
+} // namespace conv
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#if defined(UNIX_ENABLED)
+#ifdef UNIX_ENABLED
 
 #include "core/io/file_access.h"
 

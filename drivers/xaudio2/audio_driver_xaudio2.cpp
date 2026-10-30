@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef XAUDIO2_ENABLED
+
 #include "audio_driver_xaudio2.h"
 
 #include "core/config/engine.h"
@@ -178,3 +180,5 @@ AudioDriverXAudio2::AudioDriverXAudio2() {
 		samples_out[i] = nullptr;
 	}
 }
+
+#endif // XAUDIO2_ENABLED

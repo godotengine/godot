@@ -862,4 +862,4 @@ Error NetSocketUnix::leave_multicast_group(const IPAddress &p_multi_address, con
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
 
-#endif // UNIX_ENABLED && !UNIX_SOCKET_UNAVAILABLE
+#endif // defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)

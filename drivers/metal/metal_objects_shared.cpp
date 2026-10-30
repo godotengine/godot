@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "metal_objects_shared.h"
 
 #include "drivers/metal/rendering_device_driver_metal.h"
@@ -996,3 +998,5 @@ std::shared_ptr<MDLibrary> MDLibrary::create(ShaderCacheEntry *p_entry,
 	p_entry->library = lib;
 	return lib;
 }
+
+#endif // METAL_ENABLED

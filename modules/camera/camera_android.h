@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef ANDROID_ENABLED
+
 #include "core/os/semaphore.h"
 #include "core/templates/safe_refcount.h"
 #include "servers/camera/camera_feed.h"
@@ -139,3 +141,5 @@ public:
 
 	~CameraAndroid();
 };
+
+#endif // ANDROID_ENABLED

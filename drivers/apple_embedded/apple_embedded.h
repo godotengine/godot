@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include "core/object/object.h"
 
 #import <CoreHaptics/CoreHaptics.h>
@@ -57,3 +59,5 @@ public:
 
 	AppleEmbedded();
 };
+
+#endif // APPLE_EMBEDDED_ENABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/templates/paged_allocator.h"
 #include "drivers/metal/metal_allocator.h"
 #include "drivers/metal/metal_device_profile.h"
@@ -607,3 +609,5 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalBufferDynamicInfo 
 	uint64_t last_frame_mapped = 0;
 #endif
 };
+
+#endif // METAL_ENABLED

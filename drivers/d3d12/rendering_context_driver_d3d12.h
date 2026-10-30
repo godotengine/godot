@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "drivers/d3d12/rendering_device_driver_d3d12.h"
 #include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_context_driver.h"
@@ -125,3 +127,5 @@ public:
 	RenderingContextDriverD3D12();
 	virtual ~RenderingContextDriverD3D12() override;
 };
+
+#endif // D3D12_ENABLED
