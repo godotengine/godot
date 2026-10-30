@@ -187,17 +187,13 @@ Patches:
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.12 (1da23a3e8119ec5cce4f9388e91b065e20bf06f5, 2025)
+- Version: 2.5.3 (2d0a9359a60c51affe2a9bebb1be1dca47868151, 2026)
 - License: MIT
 
 Files extracted from upstream source:
 
 - `doctest/doctest.h` as `doctest.h`
 - `LICENSE.txt`
-
-Patches:
-
-- `0001-ciso646-version.patch` ([GH-105913](https://github.com/godotengine/godot/pull/105913))
 
 
 ## dr_libs
