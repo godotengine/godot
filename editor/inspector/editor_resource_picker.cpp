@@ -125,6 +125,12 @@ void EditorResourcePicker::_update_resource() {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 	}
 
+	_update_make_unique_button();
+	assign_button->set_disabled(!editable && edited_resource.is_null());
+	quick_load_button->set_visible(editable && edited_resource.is_null());
+}
+
+void EditorResourcePicker::_update_make_unique_button() {
 	if (edited_resource.is_null()) {
 		make_unique_button->set_visible(false);
 	} else {
@@ -178,9 +184,6 @@ void EditorResourcePicker::_update_resource() {
 
 		make_unique_button->set_tooltip_text(tooltip);
 	}
-
-	assign_button->set_disabled(!editable && edited_resource.is_null());
-	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
@@ -1096,7 +1099,7 @@ void EditorResourcePicker::_bind_methods() {
 void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			EditorNode::get_singleton()->connect("resource_counter_changed", callable_mp(this, &EditorResourcePicker::_update_resource));
+			EditorNode::get_singleton()->connect("resource_counter_changed", callable_mp(this, &EditorResourcePicker::_update_make_unique_button));
 			_update_resource();
 			[[fallthrough]];
 		}
@@ -1136,7 +1139,7 @@ void EditorResourcePicker::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
-			Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_resource);
+			const Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_make_unique_button);
 			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
 				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
