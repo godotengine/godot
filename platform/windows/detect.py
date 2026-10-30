@@ -771,9 +771,9 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
         if not env["use_llvm"]:
-            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
-            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
-            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            # HACK: MinGW-GCC is notably flaky with LTO. A deeper dive is warranted, but for now we
+            # can significantly mitigate the issue by expanding partitions to the GCC 16 baseline.
+            env.Append(CCFLAGS=["--param=lto-partitions=512"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
