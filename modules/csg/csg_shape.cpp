@@ -645,12 +645,14 @@ void CSGShape3D::update_shape() {
 }
 
 void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::ShapeUpdateSurface> &r_surfaces, Vector<int> &r_face_count) {
-	Vector<Vector3> smooth_faces;
+	Vector<Vector3> flat_vertex;
 	LocalVector<Vector3> smooth_vertex;
-	smooth_faces.resize(p_brush->faces.size());
+	flat_vertex.resize(p_brush->faces.size() * 3);
 	smooth_vertex.resize(p_brush->faces.size() * 3);
 
-	Vector3 *smooth_faces_ptrw = smooth_faces.ptrw();
+	AHashMap<Vector3, Vector<int>> vec_map;
+
+	Vector3 *flat_vert_ptrw = flat_vertex.ptrw();
 	int *face_count_ptrw = r_face_count.ptrw();
 
 	for (int i = 0; i < p_brush->faces.size(); i++) {
@@ -660,42 +662,41 @@ void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::
 
 		Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
 
-		smooth_faces_ptrw[i] = p.normal;
-		// Not sure if resize populates the LocalVector.
-		smooth_vertex[i * 3 + 0] = Vector3(p.normal);
-		smooth_vertex[i * 3 + 1] = Vector3(p.normal);
-		smooth_vertex[i * 3 + 2] = Vector3(p.normal);
-		// We could use a AHashMap Vector3, int to store the number of connections of each vertex position and end the loop earlier. But I'm not sure if the performance gains outweigh the cost.
+		for (int j = 0; j < 3; j++) {
+			int c_pos = i * 3 + j;
+			flat_vert_ptrw[c_pos] = p.normal;
+			smooth_vertex[c_pos] = p.normal;
+			Vector3 v = p_brush->faces[i].vertices[j];
+			Vector<int> *vec = vec_map.getptr(v);
+			if (vec) {
+				vec->push_back(c_pos);
+			} else {
+				Vector<int> nvec;
+				nvec.push_back(c_pos);
+				vec_map.insert(v, nvec);
+			}
+		}
+
 		face_count_ptrw[idx]++;
 	}
 
-	const Vector3 *smooth_faces_ptr = smooth_faces.ptr();
-	const int smooth_faces_size = smooth_faces.size();
+	const Vector3 *flat_vert_ptr = flat_vertex.ptr();
 
-	// We could add a `use_groups` property later to only apply autosmooth on smooth faces or respect smoothing groups in some way.
 	if (smoothing_angle > 0.1) {
 		float smooth_angle_rad = Math::cos(Math::deg_to_rad(smoothing_angle));
-		for (int i = 0; i < smooth_faces_size; i++) {
-			for (int k = 0; k < 3; k++) {
-				int curr_vert = i * 3 + k;
-				// Skip the other vertices of the face as they will never occupy the same position.
-				Vector3 vert_a = p_brush->faces[i].vertices[k];
-				for (int j = i + 1; j < smooth_faces_size; j++) {
-					// Compare the angles of faces instead of vertices.
-					if (smooth_faces_ptr[i].dot(smooth_faces_ptr[j]) > smooth_angle_rad) {
-						for (int h = 0; h < 3; h++) {
-							Vector3 vert_b = p_brush->faces[j].vertices[h];
-							if (vert_a == vert_b) {
-								int curr_j = j * 3 + h;
-								smooth_vertex[curr_vert] += smooth_faces_ptr[j];
-								smooth_vertex[curr_j] += smooth_faces_ptr[i];
-								// Skip the other 2 vertices as only one vertex of each face can connect with one vertex of other face.
-								break;
-							}
-						}
+		for (const KeyValue<Vector3, Vector<int>> &K : vec_map) {
+			const Vector<int> &E = K.value;
+			for (int i = 0; i < E.size(); i++) {
+				Vector3 orig_vec = flat_vert_ptr[E[i]];
+				for (int j = i + 1; j < E.size(); j++) {
+					Vector3 comp_vec = flat_vert_ptr[E[j]];
+					// Compare the angles using the vector from flat_vertex, then combine them in smooth_vertex.
+					if (orig_vec.dot(comp_vec) > smooth_angle_rad) {
+						smooth_vertex[E[i]] += comp_vec;
+						smooth_vertex[E[j]] += orig_vec;
 					}
 				}
-				smooth_vertex[curr_vert].normalize();
+				smooth_vertex[E[i]].normalize();
 			}
 		}
 	}
