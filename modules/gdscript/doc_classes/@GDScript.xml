@@ -81,6 +81,30 @@
 				Converts a [param dictionary] (created with [method inst_to_dict]) back to an Object instance. Can be useful for deserializing.
 			</description>
 		</method>
+		<method name="enumerate">
+			<return type="Dictionary" />
+			<param index="0" name="var" type="Variant" />
+			<param index="1" name="start" type="int" default="0" />
+			<description>
+				Returns a dictionary with keys being indexes and values being what a normal for loop over the array would return. An optional parameter [param start] can be provided to start the keys at a different number, though the values will remain unchanged.
+				[codeblock]
+				var my_array = [7, 4, 9]
+				for pos, value in enumerate(my_array):
+					prints(pos, value)
+				# Result:
+				# 0 7
+				# 1 4
+				# 2 9
+
+				for pos, value in enumerate(my_array, 15):
+					prints(pos, value)
+				# Result:
+				# 15 7
+				# 16 4
+				# 17 9
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_stack">
 			<return type="Array" />
 			<description>
