@@ -36,6 +36,9 @@
 		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to an import script, which can run code after the import process has completed for custom processing. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html#using-import-scripts-for-automation]Using import scripts for automation[/url] for more information.
 		</member>
+		<member name="materials/default_filter" type="int" setter="" getter="" default="0">
+			Sets the default texture filter for materials on import.
+		</member>
 		<member name="materials/extract" type="int" setter="" getter="" default="0">
 			Material extraction mode.
 			- [code]0 (Keep Internal)[/code], materials are not extracted.
