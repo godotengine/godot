@@ -2421,37 +2421,52 @@ void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, b
 	}
 }
 
-void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
-	if (p_node->is_class("Viewport") || (p_node != editor_data.get_edited_scene_root() && p_node->get_owner() != editor_data.get_edited_scene_root())) {
-		return;
+class SaveSceneWithPreviewEditorCommandQueue : public EditorCommandQueue {
+	friend class EditorNode;
+
+	Node *scene_root = nullptr;
+	String file_path;
+	int index = -1;
+	Callable save_mp;
+
+	SubViewport *editor_viewport = nullptr;
+
+	int c2d = 0;
+	int c3d = 0;
+
+	Ref<Image> img;
+
+protected:
+	SaveSceneWithPreviewEditorCommandQueue(const String &p_task, const String &p_label, int p_mesh_count, bool p_can_cancel, bool p_force_background) : EditorCommandQueue(p_task, p_label, p_mesh_count + 1, p_can_cancel, p_force_background) {
 	}
 
-	if (p_node->is_class("CanvasItem")) {
-		count_2d++;
-	} else if (p_node->is_class("Node3D")) {
-		count_3d++;
+	static void _analyze_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_find_node_types(command->scene_root);
 	}
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_find_node_types(p_node->get_child(i), count_2d, count_3d);
+	void _find_node_types(Node *p_node) {
+		if (p_node->is_class("Viewport") || (p_node != scene_root && p_node->get_owner() != scene_root)) {
+			return;
+		}
+
+		if (p_node->is_class("CanvasItem")) {
+			c2d++;
+		} else if (p_node->is_class("Node3D")) {
+			c3d++;
+		}
+
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			_find_node_types(p_node->get_child(i));
+		}
 	}
-}
 
-void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
-	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
+	static void _create_thumbnail_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_create_thumbnail_step();
+	}
 
-	if (editor_data.get_edited_scene_root() != nullptr) {
-		save_scene_progress->step(TTR("Analyzing"), 0);
-
-		int c2d = 0;
-		int c3d = 0;
-
-		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
-
-		save_scene_progress->step(TTR("Creating Thumbnail"), 1);
-		// Current view?
-
-		Ref<Image> img;
+	void _create_thumbnail_step() {
 		// If neither 3D or 2D nodes are present, make a 1x1 black texture.
 		// We cannot fallback on the 2D editor, because it may not have been used yet,
 		// which would result in an invalid texture.
@@ -2459,7 +2474,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img.instantiate();
 			img->initialize_data(1, 1, false, Image::FORMAT_RGB8);
 		} else if (c3d < c2d) {
-			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
+			Ref<ViewportTexture> viewport_texture = editor_viewport->get_texture();
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
 				img = viewport_texture->get_image();
 			}
@@ -2467,16 +2482,20 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
-			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+			if (feature_profile.is_null() || !feature_profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
 		}
+	}
 
+	static void _save_thumbnail_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_save_thumbnail_step();
+	}
+
+	void _save_thumbnail_step() {
 		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
 			img = img->duplicate();
-
-			save_scene_progress->step(TTR("Creating Thumbnail"), 3);
 
 			int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			preview_size *= EDSCALE;
@@ -2503,7 +2522,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 			// Save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5.
 			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
-			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
+			String cache_base = ProjectSettings::get_singleton()->globalize_path(file_path).md5_text();
 			cache_base = temp_path.path_join("resthumb-" + cache_base);
 
 			// Does not have it, try to load a cached thumbnail.
@@ -2512,19 +2531,47 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		}
 	}
 
-	save_scene_progress->step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
-
-	if (!singleton->cmdline_mode) {
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+	static void _save_scene_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_save_scene_step();
 	}
 
-	_close_save_scene_progress();
-}
+	void _save_scene_step() {
+		save_mp.call(file_path, index);
 
-void EditorNode::_close_save_scene_progress() {
-	memdelete(save_scene_progress);
-	save_scene_progress = nullptr;
+		if (!EditorNode::get_singleton()->is_cmdline_mode()) {
+			EditorResourcePreview::get_singleton()->check_for_invalidation(file_path);
+		}
+	}
+
+public:
+	Ref<EditorFeatureProfile> feature_profile;
+
+	void set_scene(Node *p_root, const String &p_file, int p_idx, const Callable p_save_mp) {
+		scene_root = p_root;
+		file_path = p_file;
+		index = p_idx;
+		save_mp = p_save_mp;
+		uint64_t command_ptr = reinterpret_cast<uint64_t>(this);
+		if (scene_root != nullptr) {
+			add_step(TTR("Analyzing"), 0, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_analyze_step_static).bind(command_ptr));
+			add_step(TTR("Creating Thumbnail"), 1, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_create_thumbnail_step_static).bind(command_ptr));
+			add_step(TTR("Creating Thumbnail"), 2, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_save_thumbnail_step_static).bind(command_ptr));
+		}
+		add_step(TTR("Saving Scene"), 3, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_save_scene_step_static).bind(command_ptr));
+	}
+
+	void set_editor_viewport(SubViewport *p_viewport) {
+		ERR_FAIL_NULL(p_viewport);
+		editor_viewport = p_viewport;
+	}
+};
+
+void EditorNode::_save_scene_with_preview(const String &p_file, int p_idx) {
+	SaveSceneWithPreviewEditorCommandQueue *command = start_editor_process<SaveSceneWithPreviewEditorCommandQueue>("save", TTR("Saving Scene"), 3);
+	command->feature_profile = feature_profile_manager->get_current_profile();
+	command->set_editor_viewport(scene_root);
+	command->set_scene(editor_data.get_edited_scene_root(), p_file, p_idx, callable_mp(this, &EditorNode::_save_scene));
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -6525,7 +6572,6 @@ bool EditorNode::is_project_exporting() const {
 void EditorNode::show_save_accept(const String &p_text, const String &p_ok_text) {
 	current_menu_option = -1;
 	if (save_accept) {
-		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_ok_text);
 		save_accept->set_text(p_text);
 		save_accept->reset_size();
@@ -6535,7 +6581,6 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_ok_text)
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	if (warning) {
-		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
 		warning->reset_size();
