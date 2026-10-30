@@ -599,7 +599,39 @@ void Curve::ensure_default_setup(real_t p_min, real_t p_max) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+
+void Curve::_inspector_array_swap_point(uint32_t p_index_a, uint32_t p_index_b) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index_a, _points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index_b, _points.size());
+
+	// Swap everything besides the offset, as the points are kept sorted by the offset.
+	Point &a = _points[p_index_a];
+	Point &b = _points[p_index_b];
+	Point a_copy = _points[p_index_a];
+
+	a.position.y = b.position.y;
+	a.left_tangent = b.left_tangent;
+	a.right_tangent = b.right_tangent;
+	a.left_mode = b.left_mode;
+	a.right_mode = b.right_mode;
+
+	b.position.y = a_copy.position.y;
+	b.left_tangent = a_copy.left_tangent;
+	b.right_tangent = a_copy.right_tangent;
+	b.left_mode = a_copy.left_mode;
+	b.right_mode = a_copy.right_mode;
+
+	notify_property_list_changed();
+}
+
+#endif
+
 void Curve::_bind_methods() {
+#ifdef TOOLS_ENABLED
+	ClassDB::bind_method(D_METHOD("_inspector_array_swap_point", "index_a", "index_b"), &Curve::_inspector_array_swap_point);
+#endif
+
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve::get_point_count);
 	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve::set_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
@@ -644,7 +676,7 @@ void Curve::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
-	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
+	ADD_ARRAY_COUNT_WITH_CUSTOM_OPTIONS("Points", "point_count", "set_point_count", "get_point_count", "point_", ",swap_method=_inspector_array_swap_point");
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
 	ADD_SIGNAL(MethodInfo(SIGNAL_DOMAIN_CHANGED));
