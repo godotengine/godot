@@ -37,6 +37,7 @@ TEST_FORCE_LINK(test_navigation_server_2d)
 #ifdef MODULE_NAVIGATION_2D_ENABLED
 
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -765,6 +766,58 @@ TEST_SUITE("[Navigation2D]") {
 		Vector<Vector2> simplified_path = NavigationServer2D::get_singleton()->simplify_path(source_path, simplify_epsilon);
 		CHECK_EQ(simplified_path.size(), 4);
 	}
+
+#ifdef THREADS_ENABLED
+	TEST_CASE("[NavigationServer2D] Region updates during async builds reach the map") {
+		NavigationServer2D *server = NavigationServer2D::get_singleton();
+		RID map = server->map_create();
+		server->map_set_active(map, true);
+		server->map_set_use_async_iterations(map, false);
+		RID region = server->region_create();
+		server->region_set_use_async_iterations(region, true);
+		Ref<NavigationPolygon> mesh;
+		mesh.instantiate();
+		mesh->set_vertices(Vector<Vector2>{ Vector2(100, 0), Vector2(110, 0), Vector2(110, 10), Vector2(100, 10) });
+		mesh->add_polygon(Vector<int>{ 0, 1, 2, 3 });
+		server->region_set_navigation_polygon(region, mesh);
+		server->region_set_map(region, map);
+		server->physics_process(0.0);
+
+		SUBCASE("The pending update is also asynchronous") {
+			server->region_set_use_async_iterations(region, true);
+		}
+		SUBCASE("Async is disabled while the first build is in flight") {
+			server->region_set_use_async_iterations(region, false);
+		}
+
+		// The first build has captured its input, but has not been synchronized yet.
+		mesh->set_vertices(Vector<Vector2>{ Vector2(200, 0), Vector2(210, 0), Vector2(210, 10), Vector2(200, 10) });
+		server->region_set_navigation_polygon(region, mesh);
+		const Vector2 target = Vector2(205, 5);
+		const uint64_t deadline = OS::get_singleton()->get_ticks_msec() + 2000;
+		while (server->region_get_iteration_id(region) == 0 && OS::get_singleton()->get_ticks_msec() < deadline) {
+			// Keep a sync request queued without changing input, avoiding unrelated map lock ordering.
+			server->region_set_use_edge_connections(region, true);
+			server->physics_process(0.0);
+			OS::get_singleton()->delay_usec(1000);
+		}
+		CHECK_EQ(server->region_get_iteration_id(region), server->region_get_use_async_iterations(region) ? 1 : 2);
+
+		// A later synchronous change must not replace B before B has started building.
+		server->region_set_use_async_iterations(region, false);
+		server->region_set_enter_cost(region, 1.0);
+		while (server->region_get_iteration_id(region) < 3 && OS::get_singleton()->get_ticks_msec() < deadline) {
+			server->region_set_use_edge_connections(region, true);
+			server->physics_process(0.0);
+			OS::get_singleton()->delay_usec(1000);
+		}
+		CHECK_EQ(server->region_get_iteration_id(region), 3);
+		CHECK(server->map_get_closest_point(map, target).is_equal_approx(target));
+		server->free_rid(region);
+		server->free_rid(map);
+		server->physics_process(0.0);
+	}
+#endif // THREADS_ENABLED
 }
 
 } // namespace TestNavigationServer2D
