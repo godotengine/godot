@@ -1501,9 +1501,7 @@ void EditorNode::_resources_reimporting(const Vector<String> &p_resources) {
 	// because if a mesh is present in an inherited scene, the resource will be modified in
 	// the inherited scene. Then, get_modified_properties_for_node will return the mesh property,
 	// which will trigger a recopy of the previous mesh, preventing the reload.
-	scenes_modification_table.clear();
-	scenes_reimported.clear();
-	resources_reimported.clear();
+	reimport_state_stack.push_back(ReimportState());
 	EditorFileSystem *editor_file_system = EditorFileSystem::get_singleton();
 	for (const String &res_path : p_resources) {
 		// It's faster to use EditorFileSystem::get_file_type than fetching the resource type from disk.
@@ -1513,21 +1511,21 @@ void EditorNode::_resources_reimporting(const Vector<String> &p_resources) {
 			file_type = ResourceLoader::get_resource_type(res_path);
 		}
 		if (file_type == "PackedScene") {
-			scenes_reimported.push_back(res_path);
+			reimport_state_stack[reimport_state_stack.size() - 1].scenes_reimported.push_back(res_path);
 		} else {
-			resources_reimported.push_back(res_path);
+			reimport_state_stack[reimport_state_stack.size() - 1].resources_reimported.push_back(res_path);
 		}
 	}
 
-	if (scenes_reimported.size() > 0) {
-		preload_reimporting_with_path_in_edited_scenes(scenes_reimported);
+	if (reimport_state_stack[reimport_state_stack.size() - 1].scenes_reimported.size() > 0) {
+		preload_reimporting_with_path_in_edited_scenes(reimport_state_stack[reimport_state_stack.size() - 1].scenes_reimported);
 	}
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	int current_tab = scene_tabs->get_current_tab();
 
-	for (const String &res_path : resources_reimported) {
+	for (const String &res_path : reimport_state_stack[reimport_state_stack.size() - 1].resources_reimported) {
 		if (!ResourceCache::has(res_path)) {
 			// Not loaded, no need to reload.
 			continue;
@@ -1541,7 +1539,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	// Editor may crash when related animation is playing while re-importing GLTF scene, stop it in advance.
 	AnimationPlayer *ap = AnimationPlayerEditor::get_singleton()->get_player();
-	if (ap && scenes_reimported.size() > 0) {
+	if (ap && reimport_state_stack[reimport_state_stack.size() - 1].scenes_reimported.size() > 0) {
 		ap->stop(true);
 	}
 
@@ -1549,7 +1547,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 	// Otherwise the scene tab will try to grab focus unnecessarily.
 	bool should_refresh_current_scene_tab = false;
 	const String current_scene_tab = editor_data.get_scene_path(current_tab);
-	for (const String &E : scenes_reimported) {
+	for (const String &E : reimport_state_stack[reimport_state_stack.size() - 1].scenes_reimported) {
 		if (!should_refresh_current_scene_tab && E == current_scene_tab) {
 			should_refresh_current_scene_tab = true;
 		}
@@ -1560,9 +1558,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
 	reload_instances_with_path_in_edited_scenes();
 
-	scenes_modification_table.clear();
-	scenes_reimported.clear();
-	resources_reimported.clear();
+	reimport_state_stack.resize(reimport_state_stack.size() - 1);
 
 	if (should_refresh_current_scene_tab) {
 		_set_current_scene_nocheck(current_tab);
@@ -7354,7 +7350,7 @@ void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *
 	}
 }
 
-void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<String> &p_scenes) {
+void EditorNode::preload_reimporting_with_path_in_edited_scenes(const LocalVector<String> &p_scenes) {
 	EditorProgress progress("preload_reimporting_scene", TTR("Preparing scenes for reload"), editor_data.get_edited_scene_count());
 
 	int original_edited_scene_idx = editor_data.get_edited_scene();
@@ -7400,7 +7396,7 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 			}
 
 			if (scene_modifications.instance_list.size() > 0) {
-				scenes_modification_table[current_scene_idx] = scene_modifications;
+				reimport_state_stack[reimport_state_stack.size() - 1].scenes_modification_table[current_scene_idx] = scene_modifications;
 			}
 		}
 	}
@@ -7411,7 +7407,7 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 }
 
 void EditorNode::reload_instances_with_path_in_edited_scenes() {
-	if (scenes_modification_table.is_empty()) {
+	if (reimport_state_stack[reimport_state_stack.size() - 1].scenes_modification_table.is_empty()) {
 		return;
 	}
 	EditorProgress progress("reloading_scene", TTR("Scenes reloading"), editor_data.get_edited_scene_count());
@@ -7422,7 +7418,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 	HashMap<String, Ref<PackedScene>> local_scene_cache;
 
 	// Reload the new instances.
-	for (KeyValue<int, SceneModificationsEntry> &scene_modifications_elem : scenes_modification_table) {
+	for (KeyValue<int, SceneModificationsEntry> &scene_modifications_elem : reimport_state_stack[reimport_state_stack.size() - 1].scenes_modification_table) {
 		for (InstanceModificationsEntry instance_modifications : scene_modifications_elem.value.instance_list) {
 			if (!local_scene_cache.has(instance_modifications.instance_path)) {
 				Ref<PackedScene> instance_scene_packed_scene = ResourceLoader::load(instance_modifications.instance_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE, &err);
@@ -7442,7 +7438,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 	int original_edited_scene_idx = editor_data.get_edited_scene();
 
-	for (KeyValue<int, SceneModificationsEntry> &scene_modifications_elem : scenes_modification_table) {
+	for (KeyValue<int, SceneModificationsEntry> &scene_modifications_elem : reimport_state_stack[reimport_state_stack.size() - 1].scenes_modification_table) {
 		// Set the current scene.
 		int current_scene_idx = scene_modifications_elem.key;
 		SceneModificationsEntry *scene_modifications = &scene_modifications_elem.value;
