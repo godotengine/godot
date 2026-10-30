@@ -3429,8 +3429,8 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 			r_base_type.builtin_type = Variant::OBJECT;
 			r_base_type.native_type = node->get_class_name();
 
-			Ref<Script> scr = node->get_script();
-			if (scr.is_null()) {
+			Script *scr = node->get_script();
+			if (scr == nullptr) {
 				r_base_type.kind = GDScriptParser::DataType::NATIVE;
 			} else {
 				r_base_type.kind = GDScriptParser::DataType::SCRIPT;
