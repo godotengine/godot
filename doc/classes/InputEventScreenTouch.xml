@@ -4,7 +4,8 @@
 		Represents a screen touch event.
 	</brief_description>
 	<description>
-		Stores information about multi-touch press/release input events. Supports touch press, touch release and [member index] for multi-touch count and order.
+		Stores information about multi-touch press/release input events. Supports touch press, touch release and [member index] for multi-touch count and order. See also [InputEventScreenDrag], [InputEventPanGesture], and [InputEventMagnifyGesture].
+		[b]Note:[/b] [InputEventScreenTouch] is only supported on Windows, Android, and Linux (X11 and Wayland). On other platforms, it is never emitted from touch events.
 	</description>
 	<tutorials>
 		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
