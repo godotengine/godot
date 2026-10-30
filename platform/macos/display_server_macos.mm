@@ -1534,7 +1534,7 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
-TypedArray<Rect2> DisplayServerMacOS::get_display_cutouts(int p_screen) const {
+TypedArray<Rect2> DisplayServerMacOS::get_display_cutouts(int p_screen, bool p_inactive) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
