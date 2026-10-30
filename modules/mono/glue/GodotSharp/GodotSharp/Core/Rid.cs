@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -20,6 +21,7 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct Rid : IEquatable<Rid>
     {
+        [JsonIgnore]
         private readonly ulong _id; // Default is 0
 
         internal Rid(ulong id)
@@ -37,12 +39,14 @@ namespace Godot
         /// Returns the ID of the referenced low-level resource.
         /// </summary>
         /// <returns>The ID of the referenced resource.</returns>
+        [JsonInclude]
         public ulong Id => _id;
 
         /// <summary>
         /// Returns <see langword="true"/> if the <see cref="Rid"/> is not <c>0</c>.
         /// </summary>
         /// <returns>Whether or not the ID is valid.</returns>
+        [JsonIgnore]
         public bool IsValid => _id != 0;
 
         /// <summary>
