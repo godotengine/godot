@@ -96,7 +96,10 @@ protected:
 
 	int last_order = NO_BUILTIN_ORDER_BASE;
 	int last_builtin_order = 0;
+#ifdef TOOLS_ENABLED
 	uint64_t last_save_time = 0;
+	String last_save_md5;
+#endif
 
 	RBMap<StringName, VariantContainer> props; // NOTE: Key order is used e.g. in the save_custom method.
 	String resource_path;
@@ -206,7 +209,10 @@ public:
 	Error save();
 	void set_custom_property_info(const PropertyInfo &p_info);
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
+#ifdef TOOLS_ENABLED
 	uint64_t get_last_saved_time() { return last_save_time; }
+	String get_last_saved_md5() { return last_save_md5; }
+#endif
 
 	List<String> get_input_presets() const { return List<String>(input_presets); }
 
