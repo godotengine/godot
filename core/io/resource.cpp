@@ -112,6 +112,8 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		}
 	}
 
+	GDVIRTUAL_CALL(_set_path, p_path, p_take_over);
+
 	_resource_path_changed();
 }
 
@@ -779,6 +781,7 @@ void Resource::_bind_methods() {
 	GDVIRTUAL_BIND(_setup_local_to_scene);
 	GDVIRTUAL_BIND(_get_rid);
 	GDVIRTUAL_BIND(_reset_state);
+	GDVIRTUAL_BIND(_set_path, "path", "take_over");
 	GDVIRTUAL_BIND(_set_path_cache, "path");
 }
 
