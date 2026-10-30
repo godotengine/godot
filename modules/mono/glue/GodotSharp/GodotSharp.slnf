@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "..\\..\\Godot.sln",
+    "projects": [
+      "glue\\GodotSharp\\Godot.SourceGenerators.Internal\\Godot.SourceGenerators.Internal.csproj",
+      "glue\\GodotSharp\\GodotPlugins\\GodotPlugins.csproj",
+      "glue\\GodotSharp\\GodotSharpEditor\\GodotSharpEditor.csproj",
+      "glue\\GodotSharp\\GodotSharp\\GodotSharp.csproj"
+    ]
+  }
+}
