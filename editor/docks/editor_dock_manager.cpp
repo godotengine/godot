@@ -869,6 +869,12 @@ EditorDockManager::EditorDockManager() {
 	EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorDockManager::update_docks_menu));
 }
 
+EditorDockManager::~EditorDockManager() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 

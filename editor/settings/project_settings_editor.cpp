@@ -892,3 +892,9 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
 }
+
+ProjectSettingsEditor::~ProjectSettingsEditor() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

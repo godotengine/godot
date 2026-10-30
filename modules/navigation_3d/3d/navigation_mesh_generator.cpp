@@ -46,6 +46,9 @@ NavigationMeshGenerator::NavigationMeshGenerator() {
 }
 
 NavigationMeshGenerator::~NavigationMeshGenerator() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void NavigationMeshGenerator::bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node) {

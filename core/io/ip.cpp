@@ -346,6 +346,9 @@ IP::IP() {
 }
 
 IP::~IP() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 	resolver->thread_abort.set();
 	resolver->sem.post();
 	resolver->thread.wait_to_finish();

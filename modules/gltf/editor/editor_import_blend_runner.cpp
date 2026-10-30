@@ -397,3 +397,9 @@ EditorImportBlendRunner::EditorImportBlendRunner() {
 
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorImportBlendRunner::_resources_reimported));
 }
+
+EditorImportBlendRunner::~EditorImportBlendRunner() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

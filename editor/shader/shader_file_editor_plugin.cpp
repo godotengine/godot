@@ -304,6 +304,12 @@ ShaderFileEditor::ShaderFileEditor() {
 	main_vb->add_child(error_text);
 }
 
+ShaderFileEditor::~ShaderFileEditor() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 void ShaderFileEditorPlugin::edit(Object *p_object) {
 	RDShaderFile *s = Object::cast_to<RDShaderFile>(p_object);
 	shader_editor->edit(s);
