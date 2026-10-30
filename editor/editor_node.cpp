@@ -6632,8 +6632,6 @@ void EditorNode::save_editor_layout_delayed() {
 }
 
 void EditorNode::_load_editor_layout() {
-	EditorProgress ep("loading_editor_layout", TTR("Loading editor"), 5);
-	ep.step(TTR("Loading editor layout..."), 0, true);
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -6652,25 +6650,21 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout) {
 			_layout_menu_option(LAYOUT_DEFAULT);
 		} else {
-			ep.step(TTR("Loading docks..."), 1, true);
 			// Initialize some default values.
 			bottom_panel->load_layout_from_config(default_layout, EDITOR_NODE_CONFIG_SECTION);
 		}
+		load_editor_layout_done = true;
 	} else {
-		ep.step(TTR("Loading docks..."), 1, true);
-		editor_dock_manager->load_docks_from_config(config, "docks", true);
-
-		ep.step(TTR("Reopening scenes..."), 2, true);
-		_load_open_scenes_from_config(config);
-
-		ep.step(TTR("Loading central editor layout..."), 3, true);
-		_load_central_editor_layout_from_config(config);
-
-		ep.step(TTR("Loading plugin window layout..."), 4, true);
-		editor_data.set_plugin_window_layout(config);
-
-		ep.step(TTR("Editor layout ready."), 5, true);
+		EditorCommandQueue *command = start_editor_process("loading_editor_layout", TTR("Loading editor"), 3);
+		command->add_step(TTR("Loading docks..."), 0, callable_mp(editor_dock_manager, &EditorDockManager::load_docks_from_config).bind(config, "docks", true));
+		command->add_step(TTR("Reopening scenes..."), 1, callable_mp(this, &EditorNode::_load_open_scenes_from_config).bind(config));
+		command->add_step(TTR("Loading central editor layout..."), 2, callable_mp(this, &EditorNode::_load_central_editor_layout_from_config).bind(config));
+		command->add_step(TTR("Loading plugin window layout..."), 3, callable_mp(this, &EditorNode::_load_editor_layout_finalize_step).bind(config));
 	}
+}
+
+void EditorNode::_load_editor_layout_finalize_step(const Ref<ConfigFile> &config) {
+	editor_data.set_plugin_window_layout(config);
 	load_editor_layout_done = true;
 }
 
