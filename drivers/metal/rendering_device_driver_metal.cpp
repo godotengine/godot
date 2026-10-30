@@ -937,7 +937,7 @@ bool RenderingDeviceDriverMetal::command_buffer_begin(CommandBufferID p_cmd_buff
 	return true;
 }
 
-bool RenderingDeviceDriverMetal::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
+bool RenderingDeviceDriverMetal::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass) {
 	ERR_FAIL_V_MSG(false, "not implemented");
 }
 

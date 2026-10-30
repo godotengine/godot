@@ -1927,6 +1927,8 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
 #endif
 
+	_check_secondary_command_buffer_support();
+
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	swappy_frame_pacer_enable = GLOBAL_GET("display/window/frame_pacing/android/enable_frame_pacing");
 	swappy_mode = GLOBAL_GET("display/window/frame_pacing/android/swappy_mode");
@@ -3498,6 +3500,13 @@ void RenderingDeviceDriverVulkan::command_pool_free(CommandPoolID p_cmd_pool) {
 
 // ----- BUFFER -----
 
+void RenderingDeviceDriverVulkan::_check_secondary_command_buffer_support() {
+	// Secondary command buffer support is only considered for vendors where it's known the feature works as expected.
+	const bool is_amd = physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_AMD;
+	const bool is_nvidia = physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_NVIDIA;
+	secondary_command_buffers_enabled = is_amd || is_nvidia;
+}
+
 RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
@@ -3536,8 +3545,7 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin(CommandBufferID p_cmd_buf
 	return true;
 }
 
-bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
-	Framebuffer *framebuffer = (Framebuffer *)(p_framebuffer.id);
+bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass) {
 	RenderPassInfo *render_pass = (RenderPassInfo *)(p_render_pass.id);
 	CommandBufferInfo *command_buffer = (CommandBufferInfo *)(p_cmd_buffer.id);
 
@@ -3545,7 +3553,6 @@ bool RenderingDeviceDriverVulkan::command_buffer_begin_secondary(CommandBufferID
 	inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 	inheritance_info.renderPass = render_pass->vk_render_pass;
 	inheritance_info.subpass = p_subpass;
-	inheritance_info.framebuffer = framebuffer->vk_framebuffer;
 
 	VkCommandBufferBeginInfo cmd_buf_begin_info = {};
 	cmd_buf_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -7463,6 +7470,10 @@ uint64_t RenderingDeviceDriverVulkan::api_trait_get(ApiTrait p_trait) {
 			return raytracing_capabilities.shader_group_handle_alignment;
 		case API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT:
 			return raytracing_capabilities.shader_group_base_alignment;
+		case API_TRAIT_CAN_USE_SECONDARY_COMMAND_BUFFERS:
+			return secondary_command_buffers_enabled;
+		case API_TRAIT_SCISSOR_AND_VIEWPORT_IN_SECONDARY_COMMAND_BUFFERS:
+			return secondary_command_buffers_enabled;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
