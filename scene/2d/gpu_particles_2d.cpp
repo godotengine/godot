@@ -573,8 +573,8 @@ void GPUParticles2D::convert_from_particles(Node *p_particles) {
 	proc_mat->set_emission_ring_radius(cpu_particles->get_emission_ring_radius());
 	proc_mat->set_emission_ring_inner_radius(cpu_particles->get_emission_ring_inner_radius());
 
-	Vector2 rect_extents = cpu_particles->get_emission_rect_extents();
-	proc_mat->set_emission_box_extents(Vector3(rect_extents.x, rect_extents.y, 0));
+	const Vector2 rect_size = cpu_particles->get_emission_rect_size();
+	proc_mat->set_emission_box_extents(Vector3(rect_size.x, rect_size.y, 0));
 
 	if (cpu_particles->get_split_scale()) {
 		Ref<CurveXYZTexture> scale3D = memnew(CurveXYZTexture);
@@ -833,8 +833,8 @@ void GPUParticles2D::_draw_emission_gizmo() {
 
 	switch (pm->get_emission_shape()) {
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_BOX: {
-			Vector2 extents2d = Vector2(pm->get_emission_box_extents().x, pm->get_emission_box_extents().y);
-			draw_rect(Rect2(-extents2d, extents2d * 2.0), emission_ring_color, false);
+			Vector2 size2d = Vector2(pm->get_emission_box_size().x, pm->get_emission_box_size().y);
+			draw_rect(Rect2(-size2d * 0.5, size2d), emission_ring_color, false);
 			break;
 		}
 		case ParticleProcessMaterial::EmissionShape::EMISSION_SHAPE_SPHERE:
