@@ -1345,6 +1345,8 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 }
 
 void ClassDB::set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
 	if (!default_values.has(p_class)) {
 		default_values[p_class] = HashMap<StringName, Variant>();
 	}
@@ -1951,7 +1953,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 }
 
 void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
-	GLOBAL_LOCK_FUNCTION;
+	Locker::Lock lock(Locker::STATE_WRITE);
 
 	ERR_FAIL_COND_MSG(classes.has(p_extension->class_name), vformat("Class already registered: '%s'.", String(p_extension->class_name)));
 	ERR_FAIL_COND_MSG(!classes.has(p_extension->parent_class_name), vformat("Parent class name for extension class not found: '%s'.", String(p_extension->parent_class_name)));
@@ -2003,6 +2005,8 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 static LocalVector<GDType *> gdtype_leaked_autorelease_pool;
 
 void ClassDB::unregister_extension_class(const StringName &p_class) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
 	ClassInfo *c = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(c, vformat("Class '%s' does not exist.", String(p_class)));
 	// Leak the GDType until exit so potential consumers don't have dangling pointers.
