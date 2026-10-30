@@ -220,7 +220,7 @@ void RemoteDebugger::flush_output() {
 			} else if (output_string.type == MESSAGE_TYPE_LOG_RICH) {
 				if (!joined_log_strings.is_empty()) {
 					strings.push_back(String("\n").join(joined_log_strings));
-					types.push_back(MESSAGE_TYPE_LOG_RICH);
+					types.push_back(MESSAGE_TYPE_LOG);
 					joined_log_strings.clear();
 				}
 				strings.push_back(output_string.message);
