@@ -246,8 +246,7 @@ def configure(env):
         env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
 
     if not env["builtin_opus"]:
-        env["builtin_libogg"] = False  # Needed to link against system opus
-        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
+        env.ParseConfig("pkg-config opus --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")

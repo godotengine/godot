@@ -45,10 +45,10 @@ void silk_apply_sine_window_FLP(
     opus_int   k;
     silk_float freq, c, S0, S1;
 
-    silk_assert( win_type == 1 || win_type == 2 );
+    celt_assert( win_type == 1 || win_type == 2 );
 
     /* Length must be multiple of 4 */
-    silk_assert( ( length & 3 ) == 0 );
+    celt_assert( ( length & 3 ) == 0 );
 
     freq = PI / ( length + 1 );
 

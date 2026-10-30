@@ -48,8 +48,8 @@ void silk_NLSF_VQ_weights_laroia(
     opus_int   k;
     opus_int32 tmp1_int, tmp2_int;
 
-    silk_assert( D > 0 );
-    silk_assert( ( D & 1 ) == 0 );
+    celt_assert( D > 0 );
+    celt_assert( ( D & 1 ) == 0 );
 
     /* First value */
     tmp1_int = silk_max_int( pNLSF_Q15[ 0 ], 1 );

@@ -30,10 +30,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "typedef.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 /* Decoder API flags */
 #define FLAG_DECODE_NORMAL                      0
@@ -77,6 +73,12 @@ typedef struct {
     /* I:   Flag to enable in-band Forward Error Correction (FEC); 0/1                      */
     opus_int useInBandFEC;
 
+    /* I:   Flag to enable in-band Deep REDundancy (DRED); 0/1                              */
+    opus_int useDRED;
+
+    /* I:   Flag to actually code in-band Forward Error Correction (FEC) in the current packet; 0/1 */
+    opus_int LBRR_coded;
+
     /* I:   Flag to enable discontinuous transmission (DTX); 0/1                            */
     opus_int useDTX;
 
@@ -110,6 +112,11 @@ typedef struct {
     /* O:   Tells the Opus encoder we're ready to switch                                    */
     opus_int switchReady;
 
+    /* O: SILK Signal type */
+    opus_int signalType;
+
+    /* O: SILK offset (dithering) */
+    opus_int offset;
 } silk_EncControlStruct;
 
 /**************************************************************************/
@@ -133,10 +140,25 @@ typedef struct {
 
     /* O:   Pitch lag of previous frame (0 if unvoiced), measured in samples at 48 kHz      */
     opus_int prevPitchLag;
-} silk_DecControlStruct;
 
-#ifdef __cplusplus
-}
+    /* I:   Enable Deep PLC                                                                 */
+    opus_int enable_deep_plc;
+
+#ifdef ENABLE_OSCE
+    /* I: OSCE method */
+    opus_int osce_method;
+
+#ifdef ENABLE_OSCE_BWE
+    /* I: OSCE bandwidth extension method */
+    opus_int enable_osce_bwe;
+
+    /* I: extended mode */
+    opus_int osce_extended_mode;
+
+    /* O: previous extended mode */
+    opus_int prev_osce_extended_mode;
 #endif
+#endif
+} silk_DecControlStruct;
 
 #endif

@@ -71,7 +71,7 @@ static const unsigned char band_allocation[] = {
 #endif /* CUSTOM_MODES_ONLY */
 
 #ifndef M_PI
-#define M_PI 3.141592653
+#define M_PI 3.1415926535897931
 #endif
 
 #ifdef CUSTOM_MODES
@@ -173,7 +173,10 @@ static void compute_allocation_table(CELTMode *mode)
    mode->nbAllocVectors = BITALLOC_SIZE;
    allocVectors = opus_alloc(sizeof(unsigned char)*(BITALLOC_SIZE*mode->nbEBands));
    if (allocVectors==NULL)
+   {
+      mode->allocVectors = NULL;
       return;
+   }
 
    /* Check for standard mode */
    if (mode->Fs == 400*(opus_int32)mode->shortMdctSize)
@@ -227,7 +230,7 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
 #ifdef CUSTOM_MODES
    CELTMode *mode=NULL;
    int res;
-   opus_val16 *window;
+   celt_coef *window;
    opus_int16 *logN;
    int LM;
    int arch = opus_select_arch();
@@ -269,7 +272,11 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
          *error = OPUS_BAD_ARG;
       return NULL;
    }
+#ifdef ENABLE_QEXT
+   if (frame_size < 40 || frame_size > 2048 || frame_size%2!=0)
+#else
    if (frame_size < 40 || frame_size > 1024 || frame_size%2!=0)
+#endif
    {
       if (error)
          *error = OPUS_BAD_ARG;
@@ -313,6 +320,15 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
    /* Pre/de-emphasis depends on sampling rate. The "standard" pre-emphasis
       is defined as A(z) = 1 - 0.85*z^-1 at 48 kHz. Other rates should
       approximate that. */
+#ifdef ENABLE_QEXT
+   if(Fs == 96000) /* 96 kHz */
+   {
+      mode->preemph[0] =  QCONST16(0.9230041504f, 15);
+      mode->preemph[1] =  QCONST16(0.2200012207f, 15);
+      mode->preemph[2] =  QCONST16(1.5128347184f, SIG_SHIFT); /* exact 1/preemph[3] */
+      mode->preemph[3] =  QCONST16(0.6610107422f, 13);
+   } else
+#endif
    if(Fs < 12000) /* 8 kHz */
    {
       mode->preemph[0] =  QCONST16(0.3500061035f, 15);
@@ -367,7 +383,7 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
    if (mode->allocVectors==NULL)
       goto failure;
 
-   window = (opus_val16*)opus_alloc(mode->overlap*sizeof(opus_val16));
+   window = (celt_coef*)opus_alloc(mode->overlap*sizeof(*window));
    if (window==NULL)
       goto failure;
 
@@ -375,8 +391,13 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
    for (i=0;i<mode->overlap;i++)
       window[i] = Q15ONE*sin(.5*M_PI* sin(.5*M_PI*(i+.5)/mode->overlap) * sin(.5*M_PI*(i+.5)/mode->overlap));
 #else
+# ifdef ENABLE_QEXT
+   for (i=0;i<mode->overlap;i++)
+      window[i] = MIN32(2147483647, 2147483648*sin(.5*M_PI* sin(.5*M_PI*(i+.5)/mode->overlap) * sin(.5*M_PI*(i+.5)/mode->overlap)));
+# else
    for (i=0;i<mode->overlap;i++)
       window[i] = MIN32(32767,floor(.5+32768.*sin(.5*M_PI* sin(.5*M_PI*(i+.5)/mode->overlap) * sin(.5*M_PI*(i+.5)/mode->overlap))));
+# endif
 #endif
    mode->window = window;
 
@@ -389,6 +410,15 @@ CELTMode *opus_custom_mode_create(opus_int32 Fs, int frame_size, int *error)
    mode->logN = logN;
 
    compute_pulse_cache(mode, mode->maxLM);
+#ifdef ENABLE_QEXT
+   OPUS_CLEAR(&mode->qext_cache, 1);
+   if ( (mode->Fs == 48000 && (mode->shortMdctSize==120 || mode->shortMdctSize==90)) || (mode->Fs == 96000 && (mode->shortMdctSize==240 || mode->shortMdctSize==180)) ) {
+      CELTMode dummy;
+      compute_qext_mode(&dummy, mode);
+      compute_pulse_cache(&dummy, dummy.maxLM);
+      OPUS_COPY(&mode->qext_cache, &dummy.cache, 1);
+   }
+#endif
 
    if (clt_mdct_init(&mode->mdct, 2*mode->shortMdctSize*mode->nbShortMdcts,
            mode->maxLM, arch) == 0)
@@ -407,7 +437,7 @@ failure:
 #endif /* !CUSTOM_MODES */
 }
 
-#ifdef CUSTOM_MODES
+#if defined(CUSTOM_MODES) || defined(ENABLE_OPUS_CUSTOM_API)
 void opus_custom_mode_destroy(CELTMode *mode)
 {
    int arch = opus_select_arch();
@@ -426,8 +456,14 @@ void opus_custom_mode_destroy(CELTMode *mode)
      }
    }
 #endif /* CUSTOM_MODES_ONLY */
+#ifdef CUSTOM_MODES
+#ifdef ENABLE_QEXT
+   if (mode->qext_cache.index) opus_free((opus_int16*)mode->qext_cache.index);
+   if (mode->qext_cache.bits) opus_free((unsigned char*)mode->qext_cache.bits);
+   if (mode->qext_cache.caps) opus_free((unsigned char*)mode->qext_cache.caps);
+#endif
    opus_free((opus_int16*)mode->eBands);
-   opus_free((opus_int16*)mode->allocVectors);
+   opus_free((unsigned char*)mode->allocVectors);
 
    opus_free((opus_val16*)mode->window);
    opus_free((opus_int16*)mode->logN);
@@ -438,5 +474,47 @@ void opus_custom_mode_destroy(CELTMode *mode)
    clt_mdct_clear(&mode->mdct, arch);
 
    opus_free((CELTMode *)mode);
+#else
+   (void)arch;
+   celt_assert(0);
+#endif
+}
+#endif
+
+#ifdef ENABLE_QEXT
+
+static const opus_int16 qext_eBands_180[] = {
+/* 20k  22k  24k  26k  28k  30k  32k  34k  36k  38k  40k  42k  44k  47k  48k */
+    74,  82,  90,  98, 106, 114, 122, 130, 138, 146, 154, 162, 168, 174, 180
+};
+
+static const opus_int16 qext_logN_180[] = {24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 21, 21, 21};
+
+/* Extra bands. */
+static const opus_int16 qext_eBands_240[] = {
+/* 20k  22k  24k  26k  28k  30k  32k  34k  36k  38k  40k  42k  44k  47k  48k */
+   100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240
+};
+
+static const opus_int16 qext_logN_240[] = {27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27};
+
+void compute_qext_mode(CELTMode *qext, const CELTMode *m)
+{
+   OPUS_COPY(qext, m, 1);
+   if (m->shortMdctSize*48000 == 120*m->Fs) {
+      qext->eBands = qext_eBands_240;
+      qext->logN = qext_logN_240;
+   } else if (m->shortMdctSize*48000 == 90*m->Fs) {
+      qext->eBands = qext_eBands_180;
+      qext->logN = qext_logN_180;
+   } else {
+      celt_assert(0);
+   }
+   qext->nbEBands = qext->effEBands = NB_QEXT_BANDS;
+   while (qext->eBands[qext->effEBands] > qext->shortMdctSize)
+      qext->effEBands--;
+   qext->nbAllocVectors = 0;
+   qext->allocVectors = NULL;
+   OPUS_COPY(&qext->cache, &m->qext_cache, 1);
 }
 #endif

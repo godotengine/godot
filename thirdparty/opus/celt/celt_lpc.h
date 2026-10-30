@@ -25,8 +25,8 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef PLC_H
-#define PLC_H
+#ifndef CELT_LPC_H
+#define CELT_LPC_H
 
 #include "arch.h"
 #include "cpu_support.h"
@@ -35,7 +35,7 @@
 #include "x86/celt_lpc_sse.h"
 #endif
 
-#define LPC_ORDER 24
+#define CELT_LPC_ORDER 24
 
 void _celt_lpc(opus_val16 *_lpc, const opus_val32 *ac, int p);
 
@@ -45,12 +45,11 @@ void celt_fir_c(
          opus_val16 *y,
          int N,
          int ord,
-         opus_val16 *mem,
          int arch);
 
 #if !defined(OVERRIDE_CELT_FIR)
-#define celt_fir(x, num, y, N, ord, mem, arch) \
-    (celt_fir_c(x, num, y, N, ord, mem, arch))
+#define celt_fir(x, num, y, N, ord, arch) \
+    (celt_fir_c(x, num, y, N, ord, arch))
 #endif
 
 void celt_iir(const opus_val32 *x,
@@ -62,6 +61,6 @@ void celt_iir(const opus_val32 *x,
          int arch);
 
 int _celt_autocorr(const opus_val16 *x, opus_val32 *ac,
-         const opus_val16 *window, int overlap, int lag, int n, int arch);
+         const celt_coef *window, int overlap, int lag, int n, int arch);
 
-#endif /* PLC_H */
+#endif /* CELT_LPC_H */

@@ -52,4 +52,3 @@ void silk_NLSF_unpack(
         pred_Q8[ i + 1 ] = psNLSF_CB->pred_Q8[ i + ( silk_RSHIFT( entry, 4 ) & 1 ) * ( psNLSF_CB->order - 1 ) + 1 ];
     }
 }
-

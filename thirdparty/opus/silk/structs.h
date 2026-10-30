@@ -34,10 +34,21 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "entenc.h"
 #include "entdec.h"
 
-#ifdef __cplusplus
-extern "C"
-{
+#ifdef ENABLE_DEEP_PLC
+#include "lpcnet.h"
+#include "lpcnet_private.h"
 #endif
+
+#ifdef ENABLE_DRED
+#include "dred_encoder.h"
+#include "dred_decoder.h"
+#endif
+
+#ifdef ENABLE_OSCE
+#include "osce_config.h"
+#include "osce_structs.h"
+#endif
+
 
 /************************************/
 /* Noise shaping quantization state */
@@ -48,6 +59,7 @@ typedef struct {
     opus_int32                  sLPC_Q14[ MAX_SUB_FRAME_LENGTH + NSQ_LPC_BUF_LENGTH ];
     opus_int32                  sAR2_Q14[ MAX_SHAPE_LPC_ORDER ];
     opus_int32                  sLF_AR_shp_Q14;
+    opus_int32                  sDiff_shp_Q14;
     opus_int                    lagPrev;
     opus_int                    sLTP_buf_idx;
     opus_int                    sLTP_shp_buf_idx;
@@ -77,6 +89,7 @@ typedef struct {
     opus_int32                   In_LP_State[ 2 ];           /* Low pass filter state */
     opus_int32                   transition_frame_no;        /* Counter which is mapped to a cut-off frequency */
     opus_int                     mode;                       /* Operating mode, <0: switch down, >0: switch up; 0: do nothing           */
+    opus_int32                   saved_fs_kHz;               /* If non-zero, holds the last sampling rate before a bandwidth switching reset. */
 } silk_LP_state;
 
 /* Structure containing NLSF codebook */
@@ -86,6 +99,7 @@ typedef struct {
     const opus_int16             quantStepSize_Q16;
     const opus_int16             invQuantStepSize_Q6;
     const opus_uint8             *CB1_NLSF_Q8;
+    const opus_int16             *CB1_Wght_Q9;
     const opus_uint8             *CB1_iCDF;
     const opus_uint8             *pred_Q8;
     const opus_uint8             *ec_sel;
@@ -169,8 +183,6 @@ typedef struct {
     opus_int                     pitchEstimationComplexity;         /* Complexity level for pitch estimator                             */
     opus_int                     pitchEstimationLPCOrder;           /* Whitening filter order for pitch estimator                       */
     opus_int32                   pitchEstimationThreshold_Q16;      /* Threshold for pitch estimator                                    */
-    opus_int                     LTPQuantLowComplexity;             /* Flag for low complexity LTP quantization                         */
-    opus_int                     mu_LTP_Q9;                         /* Rate-distortion tradeoff in LTP quantization                     */
     opus_int32                   sum_log_gain_Q7;                   /* Cumulative max prediction gain                                   */
     opus_int                     NLSF_MSVQ_Survivors;               /* Number of survivors in NLSF MSVQ                                 */
     opus_int                     first_frame_after_reset;           /* Flag for deactivating NLSF interpolation, pitch prediction       */
@@ -227,10 +239,23 @@ typedef struct {
 } silk_encoder_state;
 
 
+#ifdef ENABLE_OSCE
+typedef struct {
+    OSCEFeatureState features;
+    OSCEState state;
+    int method;
+} silk_OSCE_struct;
+
+typedef struct {
+    OSCEBWEFeatureState features;
+    OSCEBWEState state;
+} silk_OSCE_BWE_struct;
+#endif
+
 /* Struct for Packet Loss Concealment */
 typedef struct {
     opus_int32                  pitchL_Q8;                          /* Pitch lag to use for voiced concealment                          */
-    opus_int16                  LTPCoef_Q14[ LTP_ORDER ];           /* LTP coeficients to use for voiced concealment                    */
+    opus_int16                  LTPCoef_Q14[ LTP_ORDER ];           /* LTP coefficients to use for voiced concealment                   */
     opus_int16                  prevLPC_Q12[ MAX_LPC_ORDER ];
     opus_int                    last_frame_lost;                    /* Was previous frame lost                                          */
     opus_int32                  rand_seed;                          /* Seed for unvoiced signal generation                              */
@@ -242,6 +267,7 @@ typedef struct {
     opus_int                    fs_kHz;
     opus_int                    nb_subfr;
     opus_int                    subfr_length;
+    opus_int                    enable_deep_plc;
 } silk_PLC_struct;
 
 /* Struct for CNG */
@@ -258,6 +284,13 @@ typedef struct {
 /* Decoder state                */
 /********************************/
 typedef struct {
+#ifdef ENABLE_OSCE
+    silk_OSCE_struct            osce;
+#ifdef ENABLE_OSCE_BWE
+    silk_OSCE_BWE_struct        osce_bwe;
+#endif
+#endif
+#define SILK_DECODER_STATE_RESET_START prev_gain_Q16
     opus_int32                  prev_gain_Q16;
     opus_int32                  exc_Q14[ MAX_FRAME_LENGTH ];
     opus_int32                  sLPC_Q14_buf[ MAX_LPC_ORDER ];
@@ -301,6 +334,7 @@ typedef struct {
     /* Stuff used for PLC */
     opus_int                    lossCnt;
     opus_int                    prevSignalType;
+    int                         arch;
 
     silk_PLC_struct sPLC;
 
@@ -319,9 +353,5 @@ typedef struct {
     opus_int                    LTP_scale_Q14;
 } silk_decoder_control;
 
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

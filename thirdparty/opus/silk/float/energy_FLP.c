@@ -37,13 +37,12 @@ double silk_energy_FLP(
     opus_int            dataSize
 )
 {
-    opus_int  i, dataSize4;
+    opus_int i;
     double   result;
 
     /* 4x unrolled loop */
     result = 0.0;
-    dataSize4 = dataSize & 0xFFFC;
-    for( i = 0; i < dataSize4; i += 4 ) {
+    for( i = 0; i < dataSize - 3; i += 4 ) {
         result += data[ i + 0 ] * (double)data[ i + 0 ] +
                   data[ i + 1 ] * (double)data[ i + 1 ] +
                   data[ i + 2 ] * (double)data[ i + 2 ] +

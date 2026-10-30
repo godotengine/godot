@@ -103,10 +103,13 @@
 	#define USE_ALLOCA 1
 #endif
 
-#ifndef OPUS_FIXED_POINT
+#ifndef FIXED_POINT
+/* Float approximations */
 #define FLOAT_APPROX 1
 #endif
 
+/* Hardening: run-time checks that are cheap and safe for use in production */
+#define ENABLE_HARDENING 1
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
