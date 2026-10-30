@@ -1735,11 +1735,12 @@ void GDScriptByteCodeGenerator::write_for(const Address &p_variable, bool p_use_
 	for_jmp_addrs.push_back(opcodes.size());
 	append(0); // End of loop address, will be patched.
 	append_opcode(GDScriptFunction::OPCODE_JUMP);
-	append(opcodes.size() + (p_is_range ? 7 : 6)); // Skip over 'continue' code.
+	append(opcodes.size() + (p_is_range ? 9 : 8)); // Skip over 'continue' code.
 
 	// Next iteration.
 	int continue_addr = opcodes.size();
 	continue_addrs.push_back(continue_addr);
+	write_newline(current_line);
 	append_opcode(iterate_opcode);
 	append(counter);
 	if (p_is_range) {
