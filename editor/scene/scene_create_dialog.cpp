@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/themes/editor_scale.h"
@@ -52,10 +53,12 @@ void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
+			inherit_scene_button->set_button_icon(get_editor_theme_icon(SNAME("FileBrowse")));
 			node_type_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			node_type_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			node_type_gui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
+			inherit_scene->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("PackedScene")));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -66,6 +69,7 @@ void SceneCreateDialog::_notification(int p_what) {
 
 void SceneCreateDialog::config(const String &p_dir, const String &p_scene_name) {
 	directory = p_dir;
+	inherit_scene_display->set_text("");
 	root_name_edit->set_text("");
 	scene_name_edit->set_text(p_scene_name.get_basename());
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred(false);
@@ -76,6 +80,10 @@ void SceneCreateDialog::config(const String &p_dir, const String &p_scene_name) 
 	if (!node_type_3d->is_visible() && node_type_3d->is_pressed()) {
 		node_type_2d->set_pressed(true);
 	}
+}
+
+bool SceneCreateDialog::is_inheriting_scene() {
+	return inherit_scene && inherit_scene->is_pressed();
 }
 
 void SceneCreateDialog::accept_create() {
@@ -89,6 +97,10 @@ void SceneCreateDialog::browse_types() {
 	select_node_dialog->popup_create(true);
 	select_node_dialog->set_title(TTR("Pick Root Node Type"));
 	select_node_dialog->set_ok_button_text(TTR("Pick"));
+}
+
+void SceneCreateDialog::browse_base_scene() {
+	EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneCreateDialog::_on_base_scene_selected), false);
 }
 
 void SceneCreateDialog::on_type_picked() {
@@ -152,7 +164,18 @@ void SceneCreateDialog::update_dialog() {
 		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name."), EditorValidationPanel::MSG_ERROR);
 	} else if (root_name != root_name.validate_node_name()) {
 		validation_panel->set_message(MSG_ID_ROOT, TTRC("Invalid root node name characters have been replaced."), EditorValidationPanel::MSG_WARNING);
+	} else if (validation_panel->is_valid() && is_inheriting_scene()) {
+		String base_scene = inherit_scene_display->get_text();
+		if (base_scene.is_empty()) {
+			validation_panel->set_message(MSG_ID_ROOT, TTRC("Base Scene not selected."), EditorValidationPanel::MSG_ERROR);
+		}
 	}
+}
+
+void SceneCreateDialog::_on_base_scene_selected(String p_file) {
+	inherit_scene_display->set_text(p_file);
+	inherit_scene_display->set_tooltip_text(p_file.is_empty() ? TTR("Scene Path") : p_file);
+	validation_panel->update();
 }
 
 String SceneCreateDialog::get_scene_path() const {
@@ -185,6 +208,11 @@ Node *SceneCreateDialog::create_scene_root() {
 		case ROOT_OTHER:
 			root = Object::cast_to<Node>(select_node_dialog->instantiate_selected());
 			break;
+		case ROOT_INHERIT_SCENE: {
+			Error err = EditorNode::get_singleton()->open_scene(inherit_scene_display->get_text(), false, true);
+			ERR_FAIL_COND_V(err != OK, nullptr);
+			root = EditorNode::get_singleton()->get_edited_scene();
+		} break;
 	}
 
 	ERR_FAIL_NULL_V(root, nullptr);
@@ -262,6 +290,33 @@ SceneCreateDialog::SceneCreateDialog() {
 		select_node_button->set_accessibility_name(TTRC("Select Node"));
 		hb->add_child(select_node_button);
 		select_node_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::browse_types));
+
+		hb = memnew(HBoxContainer);
+		vb->add_child(hb);
+
+		inherit_scene = memnew(CheckBox);
+		hb->add_child(inherit_scene);
+		inherit_scene->set_accessibility_name(TTRC("Inherit Scene"));
+		inherit_scene->set_theme_type_variation("CheckBoxNoIconTint");
+		inherit_scene->set_button_group(node_type_group);
+		inherit_scene->set_meta(type_meta, ROOT_INHERIT_SCENE);
+
+		spacing = memnew(Control);
+		hb->add_child(spacing);
+		spacing->set_custom_minimum_size(Size2(4 * EDSCALE, 0));
+
+		inherit_scene_display = memnew(LineEdit);
+		inherit_scene_display->set_accessibility_name(TTRC("Inherited Scene Path"));
+		hb->add_child(inherit_scene_display);
+		inherit_scene_display->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		inherit_scene_display->set_editable(false);
+		inherit_scene_display->set_placeholder(TTR("Inherited Scene"));
+		inherit_scene_display->set_tooltip_text(TTR("Scene Path"));
+
+		inherit_scene_button = memnew(Button);
+		inherit_scene_button->set_accessibility_name(TTRC("Inherit Scene"));
+		hb->add_child(inherit_scene_button);
+		inherit_scene_button->connect(SceneStringName(pressed), callable_mp(this, &SceneCreateDialog::browse_base_scene));
 	}
 
 	{
@@ -318,5 +373,5 @@ SceneCreateDialog::SceneCreateDialog() {
 	root_name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 
 	set_title(TTR("Create New Scene"));
-	set_min_size(Size2i(400 * EDSCALE, 0));
+	set_min_size(Size2i(500 * EDSCALE, 0));
 }
