@@ -36,7 +36,7 @@
 	<members>
 		<member name="compress" type="int" setter="" getter="" default="1">
 			- [b]Disabled[/b]: Creates a [Translation].
-			- [b]Auto[/b]: Creates an [OptimizedTranslation] when possible. This makes the resulting file smaller at the cost of a small CPU overhead. Falls back to [Translation] for translations with context or plural forms.
+			- [b]Enabled[/b]: Creates an [OptimizedTranslation]. This makes the resulting file smaller at the cost of a small CPU overhead.
 		</member>
 		<member name="delimiter" type="int" setter="" getter="" default="0">
 			The delimiter to use in the CSV file. The default value matches the common CSV convention. Tab-separated values are sometimes called TSV files.
