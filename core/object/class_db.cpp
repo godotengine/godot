@@ -1875,43 +1875,62 @@ HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
 HashSet<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
-	Locker::Lock lock(Locker::STATE_WRITE);
-
-	if (!default_values_cached.has(p_class)) {
-		if (!default_values.has(p_class)) {
-			default_values[p_class] = HashMap<StringName, Variant>();
+	{
+		Locker::Lock lock(Locker::STATE_READ);
+		if (default_values_cached.has(p_class)) {
+			return _class_get_default_property_value_uncached(p_class, p_property, r_valid);
 		}
+	}
+	// Do NOT hold the ClassDB lock while instantiating the class or calling get_property_list()/get():
+	// that is arbitrary code which can block on other threads (e.g. RenderingServer calls that sync
+	// with the main thread's command queue), while those threads may be waiting on this lock.
+	HashMap<StringName, Variant> new_values;
 
-		Object *c = nullptr;
-		bool cleanup_c = false;
+	Object *c = nullptr;
+	bool cleanup_c = false;
 
-		if (Engine::get_singleton()->has_singleton(p_class)) {
-			c = Engine::get_singleton()->get_singleton_object(p_class);
-			cleanup_c = false;
-		} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
-			c = ClassDB::instantiate_no_placeholders(p_class);
-			cleanup_c = true;
-		}
+	if (Engine::get_singleton()->has_singleton(p_class)) {
+		c = Engine::get_singleton()->get_singleton_object(p_class);
+		cleanup_c = false;
+	} else if (ClassDB::can_instantiate(p_class) && !ClassDB::is_virtual(p_class)) { // Keep this condition in sync with doc_tools.cpp get_documentation_default_value.
+		c = ClassDB::instantiate_no_placeholders(p_class);
+		cleanup_c = true;
+	}
 
-		if (c) {
-			List<PropertyInfo> plist;
-			c->get_property_list(&plist);
-			for (const PropertyInfo &E : plist) {
-				if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
-					if (!default_values[p_class].has(E.name)) {
-						Variant v = c->get(E.name);
-						default_values[p_class][E.name] = v;
-					}
+	if (c) {
+		List<PropertyInfo> plist;
+		c->get_property_list(&plist);
+		for (const PropertyInfo &E : plist) {
+			if (E.usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
+				if (!new_values.has(E.name)) {
+					Variant v = c->get(E.name);
+					new_values[E.name] = v;
 				}
 			}
-
-			if (cleanup_c) {
-				memdelete(c);
-			}
 		}
 
+		if (cleanup_c) {
+			memdelete(c);
+		}
+	}
+
+	Locker::Lock lock(Locker::STATE_WRITE);
+	// Another thread may have computed this concurrently; the first one wins.
+	if (!default_values_cached.has(p_class)) {
+		HashMap<StringName, Variant> &dst = default_values[p_class];
+		for (const KeyValue<StringName, Variant> &kv : new_values) {
+			if (!dst.has(kv.key)) {
+				dst[kv.key] = kv.value;
+			}
+		}
 		default_values_cached.insert(p_class);
 	}
+	// Safe to call while holding the write lock since it only read locks and doesn't call arbitrary code.
+	return _class_get_default_property_value_uncached(p_class, p_property, r_valid);
+}
+
+Variant ClassDB::_class_get_default_property_value_uncached(const StringName &p_class, const StringName &p_property, bool *r_valid) {
+	Locker::Lock lock(Locker::STATE_READ);
 
 	if (!default_values.has(p_class)) {
 		if (r_valid != nullptr) {
