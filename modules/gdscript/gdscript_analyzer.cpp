@@ -282,7 +282,17 @@ Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_me
 		return ERR_PARSE_ERROR;
 	}
 
-	if (GDScriptParser::get_builtin_type(p_member_name) < Variant::VARIANT_MAX) {
+	if (CoreConstants::is_global_enum(p_member_name)) {
+		push_error(vformat(R"(The member "%s" shadows a global enum.)", p_member_name), p_member_node);
+		return ERR_PARSE_ERROR;
+	}
+
+	if (CoreConstants::is_global_constant(p_member_name)) {
+		push_error(vformat(R"(The member "%s" shadows a global constant.)", p_member_name), p_member_node);
+		return ERR_PARSE_ERROR;
+	}
+
+	if (p_member_name == SNAME("Variant") || GDScriptParser::get_builtin_type(p_member_name) < Variant::VARIANT_MAX) {
 		push_error(vformat(R"(The member "%s" cannot have the same name as a builtin type.)", p_member_name), p_member_node);
 		return ERR_PARSE_ERROR;
 	}
@@ -397,8 +407,12 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 	if (p_class->identifier) {
 		StringName class_name = p_class->identifier->name;
-		if (GDScriptParser::get_builtin_type(class_name) < Variant::VARIANT_MAX) {
+		if (class_name == SNAME("Variant") || GDScriptParser::get_builtin_type(class_name) < Variant::VARIANT_MAX) {
 			push_error(vformat(R"(Class "%s" hides a built-in type.)", class_name), p_class->identifier);
+		} else if (CoreConstants::is_global_enum(class_name)) {
+			push_error(vformat(R"(Class "%s" hides a global enum.)", class_name), p_class->identifier);
+		} else if (CoreConstants::is_global_constant(class_name)) {
+			push_error(vformat(R"(Class "%s" hides a global constant.)", class_name), p_class->identifier);
 		} else if (class_exists(class_name)) {
 			push_error(vformat(R"(Class "%s" hides a native class.)", class_name), p_class->identifier);
 		} else if (ScriptServer::is_global_class(class_name) && (!GDScript::is_canonically_equal_paths(ScriptServer::get_global_class_path(class_name), parser->script_path) || p_class != parser->head)) {
