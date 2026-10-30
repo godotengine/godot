@@ -32,7 +32,7 @@
 
 #include "core/math/math_funcs_binary.h"
 
-void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
+void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint64_t p_block_size) {
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);
 
@@ -43,18 +43,21 @@ void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_
 Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	f = p_base;
 	cmode = (Compression::Mode)f->get_32();
+	// Compatibility: Godot's compressed file format uses a 32-bit block size.
 	block_size = f->get_32();
 	if (block_size == 0) {
 		f.unref();
 		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("Can't open compressed file '%s' with block size 0, it is corrupted.", p_base->get_path()));
 	}
 	read_total = f->get_32();
-	uint32_t bc = (read_total / block_size) + 1;
+	uint64_t bc = (read_total / block_size) + 1;
+	// Compatibility: Offset past the `bc` amount of 32-bit block sizes.
 	uint64_t acc_ofs = f->get_position() + bc * 4;
-	uint32_t max_bs = 0;
-	for (uint32_t i = 0; i < bc; i++) {
+	uint64_t max_bs = 0;
+	for (uint64_t i = 0; i < bc; i++) {
 		ReadBlock rb;
 		rb.offset = acc_ofs;
+		// Compatibility: Godot's compressed file format uses a 32-bit block size.
 		rb.csize = f->get_32();
 		acc_ofs += rb.csize;
 		max_bs = MAX(max_bs, rb.csize);
@@ -124,15 +127,16 @@ void FileAccessCompressed::_close() {
 		CharString mgc = magic.utf8();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
 		f->store_32(cmode); //write compression mode 4
-		f->store_32(block_size); //write block size 4
+		// Compatibility: Godot's compressed file format uses a 32-bit block size.
+		f->store_32(uint32_t(block_size)); //write block size 4
 		f->store_32(uint32_t(write_max)); //max amount of data written 4
-		uint32_t bc = (write_max / block_size) + 1;
+		uint64_t bc = (write_max / block_size) + 1;
 
-		for (uint32_t i = 0; i < bc; i++) {
+		for (uint64_t i = 0; i < bc; i++) {
 			f->store_32(0); //compressed sizes, will update later
 		}
 
-		uint32_t last_block_size = write_max % block_size;
+		uint64_t last_block_size = write_max % block_size;
 
 		// Temporary buffer for compressed data blocks.
 		LocalVector<uint8_t> temp_cblock;
@@ -140,9 +144,9 @@ void FileAccessCompressed::_close() {
 		uint8_t *temp_cblock_ptr = temp_cblock.ptr();
 
 		// Compress and store the blocks.
-		LocalVector<uint32_t> block_sizes;
-		for (uint32_t i = 0; i < bc; i++) {
-			uint32_t bl = i == (bc - 1) ? last_block_size : block_size;
+		LocalVector<uint64_t> block_sizes;
+		for (uint64_t i = 0; i < bc; i++) {
+			uint64_t bl = i == (bc - 1) ? last_block_size : block_size;
 			uint8_t *bp = &write_ptr[i * block_size];
 
 			const int64_t compressed_size = Compression::compress(temp_cblock_ptr, bp, bl, cmode);
@@ -152,9 +156,11 @@ void FileAccessCompressed::_close() {
 			block_sizes.push_back(compressed_size);
 		}
 
+		// 16 is 4 bytes magic number, 4 bytes compression mode, and two size fields.
 		f->seek(16); //ok write block sizes
-		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(block_sizes[i]);
+		for (uint64_t i = 0; i < bc; i++) {
+			// Compatibility: Godot's compressed file format uses a 32-bit block size.
+			f->store_32(uint32_t(block_sizes[i]));
 		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
@@ -201,7 +207,7 @@ void FileAccessCompressed::seek(uint64_t p_position) {
 		} else {
 			at_end = false;
 			read_eof = false;
-			uint32_t block_idx = p_position / block_size;
+			uint64_t block_idx = p_position / block_size;
 			if (block_idx != read_block) {
 				read_block = block_idx;
 				f->seek(read_blocks[read_block].offset);
@@ -269,8 +275,8 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 	uint64_t dst_idx = 0;
 	while (true) {
 		// Copy over as much of our current block as possible.
-		const uint32_t copied_bytes_count = MIN(p_length - dst_idx, read_block_size - read_pos);
-		memcpy(p_dst + dst_idx, read_ptr + read_pos, copied_bytes_count);
+		const uint64_t copied_bytes_count = MIN(p_length - dst_idx, read_block_size - read_pos);
+		memcpy(p_dst + dst_idx, read_ptr + read_pos, (size_t)copied_bytes_count);
 		dst_idx += copied_bytes_count;
 		read_pos += copied_bytes_count;
 

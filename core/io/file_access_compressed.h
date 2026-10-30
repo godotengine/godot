@@ -41,20 +41,20 @@ class FileAccessCompressed : public FileAccess {
 	uint8_t *write_ptr = nullptr;
 	uint64_t write_buffer_size = 0;
 	uint64_t write_max = 0;
-	uint32_t block_size = 0;
+	uint64_t block_size = 0;
 	mutable bool read_eof = false;
 	mutable bool at_end = false;
 
 	struct ReadBlock {
-		uint32_t csize;
+		uint64_t csize;
 		uint64_t offset;
 	};
 
 	mutable Vector<uint8_t> comp_buffer;
 	uint8_t *read_ptr = nullptr;
-	mutable uint32_t read_block = 0;
-	uint32_t read_block_count = 0;
-	mutable uint32_t read_block_size = 0;
+	mutable uint64_t read_block = 0;
+	uint64_t read_block_count = 0;
+	mutable uint64_t read_block_size = 0;
 	mutable uint64_t read_pos = 0;
 	Vector<ReadBlock> read_blocks;
 	uint64_t read_total = 0;
@@ -66,7 +66,7 @@ class FileAccessCompressed : public FileAccess {
 	void _close();
 
 public:
-	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
+	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint64_t p_block_size = 4096);
 
 	Error open_after_magic(Ref<FileAccess> p_base);
 
