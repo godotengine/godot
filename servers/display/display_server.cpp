@@ -142,7 +142,7 @@ void DisplayServer::global_menu_set_popup_callbacks(const String &p_menu_root, c
 	NativeMenu *nmenu = NativeMenu::get_singleton();
 	ERR_FAIL_NULL(nmenu);
 	nmenu->set_popup_open_callback(_get_rid_from_name(nmenu, p_menu_root), p_open_callback);
-	nmenu->set_popup_open_callback(_get_rid_from_name(nmenu, p_menu_root), p_close_callback);
+	nmenu->set_popup_close_callback(_get_rid_from_name(nmenu, p_menu_root), p_close_callback);
 }
 
 int DisplayServer::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index) {
