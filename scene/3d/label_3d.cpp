@@ -219,7 +219,7 @@ void Label3D::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			// Language update might change the appearance of some characters.
 			xl_text = atr(text);
-			dirty_text = true;
+			text_dirty = true;
 			_queue_update();
 		} break;
 	}
@@ -263,9 +263,11 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 
 	float total_h = 0.0;
 	float max_line_w = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
-		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		max_line_w = MAX(max_line_w, TS->shaped_text_get_width(lines_rid[i]));
+	for (Paragraph &para : paragraphs) {
+		for (int i = 0; i < para.lines_rid.size(); i++) {
+			total_h += TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing;
+			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(para.lines_rid[i]));
+		}
 	}
 
 	float vbegin = 0;
@@ -453,15 +455,43 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 
 void Label3D::_shape() {
 	// When a shaped text is invalidated by an external source, we want to reshape it.
-	if (!TS->shaped_text_is_ready(text_rid)) {
-		dirty_text = true;
+	for (Paragraph &para : paragraphs) {
+		if (!TS->shaped_text_is_ready(para.text_rid)) {
+			text_dirty = true;
+		}
+
+		for (const RID &line_rid : para.lines_rid) {
+			if (!TS->shaped_text_is_ready(line_rid)) {
+				para.lines_dirty = true;
+				break;
+			}
+		}
 	}
 
-	for (const RID &line_rid : lines_rid) {
-		if (!TS->shaped_text_is_ready(line_rid)) {
-			dirty_lines = true;
-			break;
+	const String &lang = language.is_empty() ? _get_locale() : language;
+	if (text_dirty) {
+		for (Paragraph &para : paragraphs) {
+			for (const RID &line_rid : para.lines_rid) {
+				TS->free_rid(line_rid);
+			}
+			para.lines_rid.clear();
+			TS->free_rid(para.text_rid);
 		}
+		paragraphs.clear();
+
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
+		String ps = paragraph_separator.c_unescape();
+		Vector<String> para_text = txt.split(ps);
+		int start = 0;
+		for (const String &str : para_text) {
+			Paragraph para;
+			para.text_rid = TS->create_shaped_text();
+			para.text = str + String::chr(0x200B);
+			para.start = start;
+			start += str.length() + ps.length();
+			paragraphs.push_back(para);
+		}
+		text_dirty = false;
 	}
 
 	// Clear mesh.
@@ -478,93 +508,67 @@ void Label3D::_shape() {
 	ERR_FAIL_COND(font.is_null());
 
 	// Update text buffer.
-	if (dirty_text) {
-		TS->shaped_text_clear(text_rid);
-		TS->shaped_text_set_direction(text_rid, text_direction);
-
-		const String &lang = language.is_empty() ? _get_locale() : language;
-		String txt = uppercase ? TS->string_to_upper(xl_text, lang) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
-
-		TypedArray<Vector3i> stt;
-		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
-			GDVIRTUAL_CALL(_structured_text_parser, st_args, txt, stt);
-		} else {
-			stt = TS->parse_structured_text(st_parser, st_args, txt);
-		}
-		TS->shaped_text_set_bidi_override(text_rid, stt);
-
-		dirty_text = false;
-		dirty_font = false;
-		dirty_lines = true;
-	} else if (dirty_font) {
-		int spans = TS->shaped_get_span_count(text_rid);
-		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-
-		dirty_font = false;
-		dirty_lines = true;
-	}
-
-	if (dirty_lines) {
-		for (int i = 0; i < lines_rid.size(); i++) {
-			TS->free_rid(lines_rid[i]);
-		}
-		lines_rid.clear();
-
-		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
-		switch (autowrap_mode) {
-			case TextServer::AUTOWRAP_WORD_SMART:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_WORD:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_ARBITRARY:
-				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_OFF:
-				break;
-		}
-		autowrap_flags = autowrap_flags | autowrap_flags_trim;
-
-		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
-		float max_line_w = 0.0;
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
-			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
-			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
-			lines_rid.push_back(line);
-		}
-
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			int jst_to_line = lines_rid.size();
-			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
-				jst_to_line = lines_rid.size();
-			} else {
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
-					jst_to_line = lines_rid.size() - 1;
-				}
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
-					for (int i = lines_rid.size() - 1; i >= 0; i--) {
-						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
-							jst_to_line = i;
-							break;
-						}
-					}
-				}
-			}
-			for (int i = 0; i < jst_to_line; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
-			}
-		}
-		dirty_lines = false;
-	}
-
-	// Generate surfaces and materials.
+	float max_line_w = 0.0;
 	float total_h = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
-		total_h += (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size;
+	for (Paragraph &para : paragraphs) {
+		if (para.dirty || font_dirty) {
+			if (para.dirty) {
+				TS->shaped_text_clear(para.text_rid);
+			}
+			TS->shaped_text_set_direction(para.text_rid, text_direction);
+
+			if (para.dirty) {
+				TS->shaped_text_add_string(para.text_rid, para.text, font->get_rids(), font_size, font->get_opentype_features(), lang);
+			} else {
+				int spans = TS->shaped_get_span_count(para.text_rid);
+				for (int i = 0; i < spans; i++) {
+					TS->shaped_set_span_update_font(para.text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
+				}
+			}
+
+			TypedArray<Vector3i> stt;
+			if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
+				GDVIRTUAL_CALL(_structured_text_parser, st_args, para.text, stt);
+			} else {
+				stt = TS->parse_structured_text(st_parser, st_args, para.text);
+			}
+			TS->shaped_text_set_bidi_override(para.text_rid, stt);
+
+			para.dirty = false;
+			para.lines_dirty = true;
+		}
+
+		if (para.lines_dirty) {
+			for (const RID &line_rid : para.lines_rid) {
+				TS->free_rid(line_rid);
+			}
+			para.lines_rid.clear();
+
+			BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+			switch (autowrap_mode) {
+				case TextServer::AUTOWRAP_WORD_SMART:
+					autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_WORD:
+					autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_ARBITRARY:
+					autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+					break;
+				case TextServer::AUTOWRAP_OFF:
+					break;
+			}
+			autowrap_flags = autowrap_flags | autowrap_flags_trim;
+
+			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(para.text_rid, width, 0, autowrap_flags);
+			for (int i = 0; i < line_breaks.size(); i = i + 2) {
+				RID line = TS->shaped_text_substr(para.text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
+
+				max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
+				total_h += (TS->shaped_text_get_size(line).y + line_spacing) * pixel_size;
+				para.lines_rid.push_back(line);
+			}
+		}
 	}
 
 	float vbegin = 0.0;
@@ -580,48 +584,77 @@ void Label3D::_shape() {
 			vbegin = (total_h - line_spacing * pixel_size);
 		} break;
 	}
-
 	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
-	for (int i = 0; i < lines_rid.size(); i++) {
-		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
-		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
-		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
-		switch (horizontal_alignment) {
-			case HORIZONTAL_ALIGNMENT_LEFT:
-				offset.x = 0.0;
-				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
-			case HORIZONTAL_ALIGNMENT_CENTER: {
-				offset.x = -line_width / 2.0;
-			} break;
-			case HORIZONTAL_ALIGNMENT_RIGHT: {
-				offset.x = -line_width;
-			} break;
-		}
-		offset.x += lbl_offset.x * pixel_size;
-		if (aabb == AABB()) {
-			aabb.position = Vector3(offset.x, offset.y, 0);
-			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
-		} else {
-			aabb.expand_to(Vector3(offset.x, offset.y, 0));
-			aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size, 0));
-		}
-		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
-
-		if (outline_modulate.a != 0.0 && outline_size > 0) {
-			// Outline surfaces.
-			Vector2 ol_offset = offset;
-			for (int j = 0; j < gl_size; j++) {
-				_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, outline_size);
+	for (Paragraph &para : paragraphs) {
+		if (para.lines_dirty) {
+			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+				int jst_to_line = para.lines_rid.size();
+				if (para.lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+					jst_to_line = para.lines_rid.size();
+				} else {
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+						jst_to_line = para.lines_rid.size() - 1;
+					}
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+						for (int i = para.lines_rid.size() - 1; i >= 0; i--) {
+							if (TS->shaped_text_has_visible_chars(para.lines_rid[i])) {
+								jst_to_line = i;
+								break;
+							}
+						}
+					}
+				}
+				for (int i = 0; i < jst_to_line; i++) {
+					TS->shaped_text_fit_to_width(para.lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
+				}
 			}
+			para.lines_dirty = false;
 		}
 
-		// Main text surfaces.
-		for (int j = 0; j < gl_size; j++) {
-			_generate_glyph_surfaces(glyphs[j], offset, modulate, render_priority);
+		// Generate surfaces and materials.
+
+		for (int i = 0; i < para.lines_rid.size(); i++) {
+			const Glyph *glyphs = TS->shaped_text_get_glyphs(para.lines_rid[i]);
+			int gl_size = TS->shaped_text_get_glyph_count(para.lines_rid[i]);
+			float line_width = TS->shaped_text_get_width(para.lines_rid[i]) * pixel_size;
+
+			switch (horizontal_alignment) {
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					offset.x = 0.0;
+					break;
+				case HORIZONTAL_ALIGNMENT_FILL:
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					offset.x = -line_width / 2.0;
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					offset.x = -line_width;
+				} break;
+			}
+			offset.x += lbl_offset.x * pixel_size;
+			if (aabb == AABB()) {
+				aabb.position = Vector3(offset.x, offset.y, 0);
+				aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing) * pixel_size, 0));
+			} else {
+				aabb.expand_to(Vector3(offset.x, offset.y, 0));
+				aabb.expand_to(Vector3(offset.x + line_width, offset.y - (TS->shaped_text_get_size(para.lines_rid[i]).y + line_spacing) * pixel_size, 0));
+			}
+			offset.y -= TS->shaped_text_get_ascent(para.lines_rid[i]) * pixel_size;
+
+			if (outline_modulate.a != 0.0 && outline_size > 0) {
+				// Outline surfaces.
+				Vector2 ol_offset = offset;
+				for (int j = 0; j < gl_size; j++) {
+					_generate_glyph_surfaces(glyphs[j], ol_offset, outline_modulate, outline_render_priority, outline_size);
+				}
+			}
+
+			// Main text surfaces.
+			for (int j = 0; j < gl_size; j++) {
+				_generate_glyph_surfaces(glyphs[j], offset, modulate, render_priority);
+			}
+			offset.y -= (TS->shaped_text_get_descent(para.lines_rid[i]) + line_spacing) * pixel_size;
 		}
-		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
 	}
 
 	switch (get_billboard_mode()) {
@@ -668,7 +701,7 @@ void Label3D::set_text(const String &p_string) {
 
 	text = p_string;
 	xl_text = atr(p_string);
-	dirty_text = true;
+	text_dirty = true;
 	_queue_update();
 }
 
@@ -680,7 +713,9 @@ void Label3D::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			dirty_lines = true; // Reshape lines.
+			for (Paragraph &para : paragraphs) {
+				para.lines_dirty = true; // Reshape lines.
+			}
 		}
 		horizontal_alignment = p_alignment;
 		_queue_update();
@@ -707,7 +742,7 @@ void Label3D::set_text_direction(TextServer::Direction p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
-		dirty_text = true;
+		text_dirty = true;
 		_queue_update();
 	}
 }
@@ -719,7 +754,7 @@ TextServer::Direction Label3D::get_text_direction() const {
 void Label3D::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
-		dirty_text = true;
+		text_dirty = true;
 		_queue_update();
 	}
 }
@@ -731,7 +766,7 @@ String Label3D::get_language() const {
 void Label3D::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		dirty_text = true;
+		text_dirty = true;
 		_queue_update();
 	}
 }
@@ -743,7 +778,7 @@ TextServer::StructuredTextParser Label3D::get_structured_text_bidi_override() co
 void Label3D::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
 		st_args = Array(p_args);
-		dirty_text = true;
+		text_dirty = true;
 		_queue_update();
 	}
 }
@@ -755,7 +790,7 @@ Array Label3D::get_structured_text_bidi_override_options() const {
 void Label3D::set_uppercase(bool p_uppercase) {
 	if (uppercase != p_uppercase) {
 		uppercase = p_uppercase;
-		dirty_text = true;
+		text_dirty = true;
 		_queue_update();
 	}
 }
@@ -789,7 +824,7 @@ int Label3D::get_outline_render_priority() const {
 }
 
 void Label3D::_font_changed() {
-	dirty_font = true;
+	font_dirty = true;
 	_queue_update();
 }
 
@@ -799,7 +834,7 @@ void Label3D::set_font(const Ref<Font> &p_font) {
 			font_override->disconnect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		font_override = p_font;
-		dirty_font = true;
+		font_dirty = true;
 		if (font_override.is_valid()) {
 			font_override->connect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
@@ -863,7 +898,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 void Label3D::set_font_size(int p_size) {
 	if (font_size != p_size) {
 		font_size = p_size;
-		dirty_font = true;
+		font_dirty = true;
 		_queue_update();
 	}
 }
@@ -908,7 +943,9 @@ Color Label3D::get_outline_modulate() const {
 void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
-		dirty_lines = true;
+		for (Paragraph &para : paragraphs) {
+			para.lines_dirty = true; // Reshape lines.
+		}
 		_queue_update();
 	}
 }
@@ -920,7 +957,9 @@ TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 void Label3D::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
 	if (autowrap_flags_trim != (p_flags & TextServer::BREAK_TRIM_MASK)) {
 		autowrap_flags_trim = (p_flags & TextServer::BREAK_TRIM_MASK);
-		dirty_lines = true;
+		for (Paragraph &para : paragraphs) {
+			para.lines_dirty = true; // Reshape lines.
+		}
 		_queue_update();
 	}
 }
@@ -932,7 +971,9 @@ BitField<TextServer::LineBreakFlag> Label3D::get_autowrap_trim_flags() const {
 void Label3D::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	if (jst_flags != p_flags) {
 		jst_flags = p_flags;
-		dirty_lines = true;
+		for (Paragraph &para : paragraphs) {
+			para.lines_dirty = true; // Reshape lines.
+		}
 		_queue_update();
 	}
 }
@@ -944,7 +985,9 @@ BitField<TextServer::JustificationFlag> Label3D::get_justification_flags() const
 void Label3D::set_width(float p_width) {
 	if (width != p_width) {
 		width = p_width;
-		dirty_lines = true;
+		for (Paragraph &para : paragraphs) {
+			para.lines_dirty = true; // Reshape lines.
+		}
 		_queue_update();
 	}
 }
@@ -1084,8 +1127,6 @@ Label3D::Label3D() {
 		flags[i] = (i == FLAG_DOUBLE_SIDED);
 	}
 
-	text_rid = TS->create_shaped_text();
-
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
 	// Disable shadow casting by default to improve performance and avoid unintended visual artifacts.
@@ -1098,12 +1139,13 @@ Label3D::Label3D() {
 }
 
 Label3D::~Label3D() {
-	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
+	for (Paragraph &para : paragraphs) {
+		for (int i = 0; i < para.lines_rid.size(); i++) {
+			TS->free_rid(para.lines_rid[i]);
+		}
+		para.lines_rid.clear();
+		TS->free_rid(para.text_rid);
 	}
-	lines_rid.clear();
-
-	TS->free_rid(text_rid);
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free_rid(mesh);
