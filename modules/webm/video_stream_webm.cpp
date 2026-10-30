@@ -217,6 +217,7 @@ void VideoStreamPlaybackWebm::stop() {
 		video_frame_delay = video_pos = 0.0;
 	}
 	time = 0.0;
+	seeking = false;
 	playing = false;
 }
 void VideoStreamPlaybackWebm::play() {
@@ -257,8 +258,7 @@ void VideoStreamPlaybackWebm::seek(double p_time) {
 		return;
 	}
 
-	double keyframe_time = webm->seek(p_time);
-	if (keyframe_time < 0) {
+	if (webm->seek(p_time) < 0.0) {
 		return;
 	}
 
@@ -272,10 +272,13 @@ void VideoStreamPlaybackWebm::seek(double p_time) {
 		audio_vorbis->reset();
 	}
 
-	time = keyframe_time;
-	video_pos = keyframe_time;
+	video_frames_pos = 0;
+	num_decoded_samples = 0;
+	samples_offset = -1;
 
-	WARN_PRINT("Warning: Currently, the seek method seeks to the nearest preceding keyframe rather than to the specified time.");
+	seeking = true;
+	time = p_time;
+	video_pos = p_time;
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
@@ -291,10 +294,12 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		return;
 	}
 
-	time += p_delta;
+	if (!seeking) {
+		time += p_delta;
 
-	if (time < video_pos) {
-		return;
+		if (time < video_pos) {
+			return;
+		}
 	}
 
 	bool audio_buffer_full = false;
@@ -322,11 +327,13 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 				get_pcmf_succeeded = audio_vorbis->getPCMF(*audio_frame, pcm.ptr(), pcm.size(), num_decoded_samples);
 			}
 			if (get_pcmf_succeeded && num_decoded_samples > 0) {
-				const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);
+				if (!seeking) {
+					const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);
 
-				if (mixed != num_decoded_samples) {
-					samples_offset = mixed;
-					audio_buffer_full = true;
+					if (mixed != num_decoded_samples) {
+						samples_offset = mixed;
+						audio_buffer_full = true;
+					}
 				}
 			}
 		}
@@ -417,13 +424,19 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 							Ref<Image> img = Image::create_from_data(image.w, image.h, false, Image::FORMAT_RGBA8, frame_data);
 							texture->set_image(img); // Zero copy send to visual server
 							video_frame_done = true;
+
+							if (seeking) {
+								seeking = false;
+							}
 						}
 					}
 				}
 			}
 		}
 
-		video_pos = video_frame->time;
+		if (!seeking) {
+			video_pos = video_frame->time;
+		}
 		memmove(video_frames, video_frames + 1, (--video_frames_pos) * sizeof(void *));
 		video_frames[video_frames_pos] = video_frame;
 	}
@@ -453,7 +466,7 @@ inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 		// code where the delay compensation likely never really worked.
 		//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 		const double video_time = video_frames[video_frames_pos - 1]->time;
-		return video_time >= time + /* audio_delay + */ delay_compensation;
+		return video_time >= time + /* audio_delay + */ (seeking ? 0.0 : delay_compensation);
 	}
 	return false;
 }
@@ -463,7 +476,7 @@ bool VideoStreamPlaybackWebm::should_process(const WebMFrame &video_frame) {
 	// systematically return 0. Now that it gives a proper latency, it broke this
 	// code where the delay compensation likely never really worked.
 	//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
-	return video_frame.time >= time + /* audio_delay + */ delay_compensation;
+	return video_frame.time >= time + /* audio_delay + */ (seeking ? 0.0 : delay_compensation);
 }
 
 void VideoStreamPlaybackWebm::delete_pointers() {

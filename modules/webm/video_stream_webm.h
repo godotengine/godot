@@ -63,6 +63,7 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 
 	bool playing = false;
 	bool paused = false;
+	bool seeking = false;
 	double delay_compensation = 0.0;
 	double time = 0.0;
 	double video_frame_delay = 0.0;
