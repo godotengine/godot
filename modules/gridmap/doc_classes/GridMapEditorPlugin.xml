@@ -63,4 +63,12 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="cells_modified">
+			<param index="0" name="cells" type="Vector3i[]" />
+			<param index="1" name="undo_redo_action_name" type="String" />
+			<description>
+			</description>
+		</signal>
+	</signals>
 </class>
