@@ -236,6 +236,11 @@ public:
 		angular_velocity += _inv_inertia * (p_position - center_of_mass).cross(p_impulse);
 	}
 
+	_FORCE_INLINE_ void apply_impulse_at_position(const Vector2 &p_impulse, const Vector2 &p_global_position = Vector2()) {
+		linear_velocity += p_impulse * _inv_mass;
+		angular_velocity += _inv_inertia * (p_global_position - center_of_mass - get_transform().get_origin()).cross(p_impulse);
+	}
+
 	_FORCE_INLINE_ void apply_torque_impulse(real_t p_torque) {
 		angular_velocity += _inv_inertia * p_torque;
 	}
@@ -258,6 +263,11 @@ public:
 	_FORCE_INLINE_ void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) {
 		applied_force += p_force;
 		applied_torque += (p_position - center_of_mass).cross(p_force);
+	}
+
+	_FORCE_INLINE_ void apply_force_at_position(const Vector2 &p_force, const Vector2 &p_global_position = Vector2()) {
+		applied_force += p_force;
+		applied_torque += (p_global_position - center_of_mass - get_transform().get_origin()).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void apply_torque(real_t p_torque) {
