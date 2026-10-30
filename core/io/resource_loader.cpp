@@ -336,6 +336,10 @@ void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, T
 }
 
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
+	return load(p_path, p_type_hint, p_no_cache, false, r_error);
+}
+
+RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, bool p_no_subresources_cache, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -386,7 +390,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 	}
 
 	print_verbose("Loading resource: " + path);
-	RES res = _load(path, local_path, p_type_hint, p_no_cache, r_error);
+	RES res = _load(path, local_path, p_type_hint, p_no_subresources_cache, r_error);
 
 	if (res.is_null()) {
 		if (!p_no_cache) {
@@ -453,6 +457,10 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 }
 
 Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
+	return load_interactive(p_path, p_type_hint, p_no_cache, p_no_cache, r_error);
+}
+
+Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path, const String &p_type_hint, bool p_no_cache, bool p_no_subresources_cache, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
@@ -497,7 +505,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 			continue;
 		}
 		found = true;
-		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(path, local_path, r_error, p_no_cache);
+		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(path, local_path, r_error, p_no_subresources_cache);
 		if (ril.is_null()) {
 			continue;
 		}
