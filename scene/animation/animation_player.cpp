@@ -322,7 +322,7 @@ bool AnimationPlayer::_blend_pre_process(double p_delta, int p_track_count, cons
 		playback.started = false;
 	}
 
-	String prev_animation_name = playback.current.animation_name;
+	StringName prev_animation_name = playback.current.animation_name;
 	_blend_playback_data(p_delta, started);
 
 	if (prev_animation_name != playback.current.animation_name) {
@@ -447,10 +447,10 @@ void AnimationPlayer::play_section_with_markers(const StringName &p_name, const 
 	ERR_FAIL_COND_MSG(p_start_marker && p_end_marker && Animation::is_greater_approx(start_time, end_time), vformat("End marker %s is placed earlier than start marker %s in animation: %s.", p_end_marker, p_start_marker, name));
 
 	if (p_start_marker && Animation::is_less_approx(start_time, 0)) {
-		WARN_PRINT_ED(vformat("Negative time start marker: %s is invalid in the section, so the start of the animation: %s is used instead.", p_start_marker, playback.current.animation_name));
+		WARN_PRINT_ED(vformat("Negative time start marker: %s is invalid in the section, so the start of the animation: %s is used instead.", p_start_marker, String(playback.current.animation_name)));
 	}
 	if (p_end_marker && Animation::is_less_approx(end_time, 0)) {
-		WARN_PRINT_ED(vformat("Negative time end marker: %s is invalid in the section, so the end of the animation: %s is used instead.", p_end_marker, playback.current.animation_name));
+		WARN_PRINT_ED(vformat("Negative time end marker: %s is invalid in the section, so the end of the animation: %s is used instead.", p_end_marker, String(playback.current.animation_name)));
 	}
 
 	play_section(name, start_time, end_time, p_custom_blend, p_custom_scale, p_from_end);
@@ -741,15 +741,15 @@ double AnimationPlayer::get_current_animation_length() const {
 void AnimationPlayer::set_section_with_markers(const StringName &p_start_marker, const StringName &p_end_marker) {
 	ERR_FAIL_COND_MSG(!playback.current.is_enabled, "AnimationPlayer has no current animation.");
 	ERR_FAIL_COND_MSG(p_start_marker == p_end_marker && p_start_marker, vformat("Start marker and end marker cannot be the same marker: %s.", p_start_marker));
-	ERR_FAIL_COND_MSG(p_start_marker && !animation_set[playback.current.animation_name].animation->has_marker(p_start_marker), vformat("Marker %s not found in animation: %s.", p_start_marker, playback.current.animation_name));
-	ERR_FAIL_COND_MSG(p_end_marker && !animation_set[playback.current.animation_name].animation->has_marker(p_end_marker), vformat("Marker %s not found in animation: %s.", p_end_marker, playback.current.animation_name));
+	ERR_FAIL_COND_MSG(p_start_marker && !animation_set[playback.current.animation_name].animation->has_marker(p_start_marker), vformat("Marker %s not found in animation: %s.", p_start_marker, String(playback.current.animation_name)));
+	ERR_FAIL_COND_MSG(p_end_marker && !animation_set[playback.current.animation_name].animation->has_marker(p_end_marker), vformat("Marker %s not found in animation: %s.", p_end_marker, String(playback.current.animation_name)));
 	double start_time = p_start_marker ? animation_set[playback.current.animation_name].animation->get_marker_time(p_start_marker) : -1;
 	double end_time = p_end_marker ? animation_set[playback.current.animation_name].animation->get_marker_time(p_end_marker) : -1;
 	if (p_start_marker && Animation::is_less_approx(start_time, 0)) {
-		WARN_PRINT_ONCE_ED(vformat("Marker %s time must be positive in animation: %s.", p_start_marker, playback.current.animation_name));
+		WARN_PRINT_ONCE_ED(vformat("Marker %s time must be positive in animation: %s.", p_start_marker, String(playback.current.animation_name)));
 	}
 	if (p_end_marker && Animation::is_less_approx(end_time, 0)) {
-		WARN_PRINT_ONCE_ED(vformat("Marker %s time must be positive in animation: %s.", p_end_marker, playback.current.animation_name));
+		WARN_PRINT_ONCE_ED(vformat("Marker %s time must be positive in animation: %s.", p_end_marker, String(playback.current.animation_name)));
 	}
 	set_section(start_time, end_time);
 }
@@ -828,7 +828,7 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 			seek_internal(start, true, true, true);
 		}
 		c.current.is_enabled = false;
-		c.current.animation_name = String();
+		c.current.animation_name = StringName();
 		c.current.speed_scale = 1;
 		emit_signal(SNAME("current_animation_changed"), "");
 	}

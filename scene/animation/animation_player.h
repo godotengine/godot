@@ -64,7 +64,7 @@ private:
 
 	struct PlaybackData {
 		bool is_enabled = false;
-		String animation_name;
+		StringName animation_name;
 		double animation_length = 0.0;
 		double pos = 0.0;
 		float speed_scale = 1.0;
