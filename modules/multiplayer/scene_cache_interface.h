@@ -72,16 +72,22 @@ private:
 	NodeCache &_track(Node *p_node);
 
 protected:
-	Error _send_confirm_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers);
+	Error _send_confirm_path(int p_to, int p_cache_id, bool p_checksum);
+	Error _send_simplify_path(Node *p_node, NodeCache &p_cache, const List<int> &p_peers, bool p_rpc = false);
+	void _send_release_path(ObjectID p_oid);
 
 public:
 	void clear();
 	void on_peer_change(int p_id, bool p_connected);
+	void process_path_handshake(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_simplify_rpc(int p_from, const uint8_t *p_packet, int p_packet_len);
 	void process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_request_path(int p_from, const uint8_t *p_packet, int p_packet_len);
+	void process_release_path(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	// Returns true if all peers have cached path.
-	bool send_object_cache(Object *p_obj, int p_target, int &p_id);
+	bool send_object_cache(Object *p_obj, int p_target, int &p_id, bool p_rpc = false);
 	int make_object_cache(Object *p_obj);
 	Object *get_cached_object(int p_from, uint32_t p_cache_id);
 	bool is_cache_confirmed(Node *p_path, int p_peer);
