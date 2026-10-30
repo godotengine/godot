@@ -92,10 +92,6 @@
 /**** GENERIC ****/
 /*****************/
 
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-static const uint32_t BREADCRUMB_BUFFER_ENTRIES = 512u;
-#endif
-
 static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
 
 static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
@@ -1923,9 +1919,7 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 	max_descriptor_sets_per_pool = GLOBAL_GET("rendering/rendering_device/vulkan/max_descriptors_per_pool");
 
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	breadcrumb_buffer = buffer_create(2u * sizeof(uint32_t) * BREADCRUMB_BUFFER_ENTRIES, BufferUsageBits::BUFFER_USAGE_TRANSFER_TO_BIT, MemoryAllocationType::MEMORY_ALLOCATION_TYPE_CPU, UINT64_MAX);
-#endif
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	swappy_frame_pacer_enable = GLOBAL_GET("display/window/frame_pacing/android/enable_frame_pacing");
@@ -6947,7 +6941,6 @@ void RenderingDeviceDriverVulkan::command_end_label(CommandBufferID p_cmd_buffer
 /**** DEBUG *****/
 /****************/
 void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	if (p_data == BreadcrumbMarker::NONE) {
 		return;
 	}
@@ -7006,7 +6999,6 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 	if (breadcrumb_offset >= BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u) {
 		breadcrumb_offset = 0u;
 	}
-#endif
 }
 
 void RenderingDeviceDriverVulkan::on_device_lost() const {
@@ -7087,128 +7079,29 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 }
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	{
-		String error_msg = "Printing last known breadcrumbs in reverse order (last executed first).";
-		if (!Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
-			error_msg += "\nSome of them might be inaccurate. Try running with --accurate-breadcrumbs for precise information.";
-		}
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, error_msg);
-	}
-
-	uint8_t *breadcrumb_ptr = nullptr;
+	uint32_t *breadcrumb_ptr = nullptr;
 	VkResult map_result = VK_SUCCESS;
 
 	vmaFlushAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u);
 	vmaInvalidateAllocation(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, 0, BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u);
+
 	{
 		void *ptr = nullptr;
 		map_result = vmaMapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle, &ptr);
-		breadcrumb_ptr = reinterpret_cast<uint8_t *>(ptr);
+		breadcrumb_ptr = reinterpret_cast<uint32_t *>(ptr);
 	}
 
-	if (breadcrumb_ptr && map_result == VK_SUCCESS) {
-		uint32_t last_breadcrumb_offset = 0;
-		{
-			_err_print_error_asap("Searching last breadcrumb. We've sent up to ID: " + itos(breadcrumb_id - 1u));
-
-			// Scan the whole buffer to find the offset with the highest ID.
-			// That means that was the last one to be written.
-			//
-			// We use "breadcrumb_id - id" to account for wraparound.
-			// e.g. breadcrumb_id = 2 and id = 4294967294; then 2 - 4294967294 = 4.
-			// The one with the smallest difference is the closest to breadcrumb_id, which means it's
-			// the last written command.
-			uint32_t biggest_id = 0u;
-			uint32_t smallest_id_diff = std::numeric_limits<uint32_t>::max();
-			const uint32_t *breadcrumb_ptr32 = reinterpret_cast<const uint32_t *>(breadcrumb_ptr);
-			for (size_t i = 0u; i < BREADCRUMB_BUFFER_ENTRIES; ++i) {
-				const uint32_t id = breadcrumb_ptr32[i * 2u];
-				const uint32_t id_diff = breadcrumb_id - id;
-				if (id_diff < smallest_id_diff) {
-					biggest_id = i;
-					smallest_id_diff = id_diff;
-				}
-			}
-
-			_err_print_error_asap("Last breadcrumb ID found: " + itos(breadcrumb_ptr32[biggest_id * 2u]));
-
-			last_breadcrumb_offset = biggest_id * sizeof(uint32_t) * 2u;
-		}
-
-		const size_t entries_to_print = 8u; // Note: The value is arbitrary.
-		for (size_t i = 0u; i < entries_to_print; ++i) {
-			const uint32_t last_breadcrumb = *reinterpret_cast<uint32_t *>(breadcrumb_ptr + last_breadcrumb_offset + sizeof(uint32_t));
-			const uint32_t phase = last_breadcrumb & uint32_t(~((1 << 16) - 1));
-			const uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
-			String error_msg = "Last known breadcrumb: ";
-
-			switch (phase) {
-				case BreadcrumbMarker::ALPHA_PASS:
-					error_msg += "ALPHA_PASS";
-					break;
-				case BreadcrumbMarker::BLIT_PASS:
-					error_msg += "BLIT_PASS";
-					break;
-				case BreadcrumbMarker::DEBUG_PASS:
-					error_msg += "DEBUG_PASS";
-					break;
-				case BreadcrumbMarker::LIGHTMAPPER_PASS:
-					error_msg += "LIGHTMAPPER_PASS";
-					break;
-				case BreadcrumbMarker::OPAQUE_PASS:
-					error_msg += "OPAQUE_PASS";
-					break;
-				case BreadcrumbMarker::POST_PROCESSING_PASS:
-					error_msg += "POST_PROCESSING_PASS";
-					break;
-				case BreadcrumbMarker::REFLECTION_PROBES:
-					error_msg += "REFLECTION_PROBES";
-					break;
-				case BreadcrumbMarker::SHADOW_PASS_CUBE:
-					error_msg += "SHADOW_PASS_CUBE";
-					break;
-				case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:
-					error_msg += "SHADOW_PASS_DIRECTIONAL";
-					break;
-				case BreadcrumbMarker::SKY_PASS:
-					error_msg += "SKY_PASS";
-					break;
-				case BreadcrumbMarker::TRANSPARENT_PASS:
-					error_msg += "TRANSPARENT_PASS";
-					break;
-				case BreadcrumbMarker::UI_PASS:
-					error_msg += "UI_PASS";
-					break;
-				default:
-					error_msg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')';
-					break;
-			}
-
-			if (user_data != 0) {
-				error_msg += " | User data: " + itos(user_data);
-			}
-
-			_err_print_error_asap(error_msg);
-
-			if (last_breadcrumb_offset == 0u) {
-				// Decrement last_breadcrumb_idx, wrapping underflow.
-				last_breadcrumb_offset = BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u;
-			}
-			last_breadcrumb_offset -= sizeof(uint32_t) * 2u;
-		}
-
+	if ((breadcrumb_ptr != nullptr) && (map_result == VK_SUCCESS)) {
+		print_breadcrumb_buffer_info(breadcrumb_id, breadcrumb_ptr, BREADCRUMB_BUFFER_ENTRIES);
 		vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
-		breadcrumb_ptr = nullptr;
 	} else {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. VkResult = " + itos(map_result));
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. Unable to print last known breadcrumbs. VkResult = " + itos(map_result));
 	}
-#endif
+
 	on_device_lost();
 }
 
 inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
 		return "VK_ERROR_OUT_OF_HOST_MEMORY";
 	} else if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
@@ -7220,7 +7113,7 @@ inline String RenderingDeviceDriverVulkan::get_vulkan_result(VkResult err) {
 	} else if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT) {
 		return "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT";
 	}
-#endif
+
 	return itos(err);
 }
 
@@ -7566,11 +7459,9 @@ RenderingDeviceDriverVulkan::RenderingDeviceDriverVulkan(RenderingContextDriverV
 }
 
 RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
-#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	if (breadcrumb_buffer != BufferID()) {
 		buffer_free(breadcrumb_buffer);
 	}
-#endif
 
 	memdelete(powervr_rogue_shader_crash_workaround_mutex);
 

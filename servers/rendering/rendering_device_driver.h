@@ -91,6 +91,8 @@ class RenderingDeviceDriver : public RenderingDeviceCommons {
 	GDSOFTCLASS(RenderingDeviceDriver, RenderingDeviceCommons);
 
 public:
+	static constexpr uint32_t BREADCRUMB_BUFFER_ENTRIES = 512;
+
 	struct ID {
 		uint64_t id = 0;
 		_ALWAYS_INLINE_ ID() = default;
