@@ -1230,6 +1230,39 @@ int Control::_get_anchors_layout_preset() const {
 	return -1;
 }
 
+void Control::_update_hidden_layout_recursive() {
+	if (data.hidden_layout_mode == HIDDEN_LAYOUT_INHERITED) {
+		if (data.parent_control) {
+			_propagate_hidden_layout_recursive_recursively(data.parent_control->is_hidden_layout_enabled(), false);
+		} else {
+			_propagate_hidden_layout_recursive_recursively(false, false);
+		}
+	} else {
+		_propagate_hidden_layout_recursive_recursively(data.hidden_layout_mode == HIDDEN_LAYOUT_ENABLED, false);
+	}
+}
+
+void Control::_propagate_hidden_layout_recursive_recursively(bool p_enabled, bool p_skip_non_inherited) {
+	if (p_skip_non_inherited && data.hidden_layout_mode != HIDDEN_LAYOUT_INHERITED) {
+		return;
+	}
+
+	if (data.parent_hidden_layout_mode_enabled != p_enabled) {
+		data.parent_hidden_layout_mode_enabled = p_enabled;
+		if (is_inside_tree()) {
+			data.last_minimum_size = Size2(-1, -1);
+			emit_signal(SceneStringName(visibility_changed));
+		}
+	}
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (control) {
+			control->_propagate_hidden_layout_recursive_recursively(p_enabled, true);
+		}
+	}
+}
+
 void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX((int)p_preset, 16);
@@ -1830,7 +1863,7 @@ void Control::update_maximum_size() {
 		}
 	}
 
-	if (!is_visible_in_tree()) {
+	if (!is_visible_in_tree() && !is_hidden_layout_enabled()) {
 		// Invalidate the last maximum size so it will update when made visible.
 		data.last_maximum_size = Size2(-1, -1);
 		return;
@@ -1991,7 +2024,7 @@ void Control::update_minimum_size() {
 		invalidate = invalidate->get_parent_control();
 	}
 
-	if (!is_visible_in_tree()) {
+	if (!is_visible_in_tree() && !is_hidden_layout_enabled()) {
 		// Invalidate the last minimum size so it will update when made visible.
 		data.last_minimum_size = Size2(-1, -1);
 		return;
@@ -2084,7 +2117,7 @@ void Control::update_desired_size() {
 		invalidate = invalidate->get_parent_control();
 	}
 
-	if (!is_visible_in_tree()) {
+	if (!is_visible_in_tree() && !is_hidden_layout_enabled()) {
 		// Invalidate the last desired size so it will update when made visible.
 		data.last_desired_size = Size2(-1, -1);
 		return;
@@ -4561,6 +4594,33 @@ bool Control::is_layout_rtl() const {
 	return data.is_rtl;
 }
 
+void Control::set_hidden_layout_mode(HiddenLayoutMode p_hidden_layout_mode) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX((int)p_hidden_layout_mode, 3);
+	if (data.hidden_layout_mode == p_hidden_layout_mode) {
+		return;
+	}
+	data.hidden_layout_mode = p_hidden_layout_mode;
+	_update_hidden_layout_recursive();
+	emit_signal(SceneStringName(visibility_changed));
+}
+
+Control::HiddenLayoutMode Control::get_hidden_layout_mode() const {
+	ERR_READ_THREAD_GUARD_V(HIDDEN_LAYOUT_INHERITED);
+	return data.hidden_layout_mode;
+}
+
+bool Control::is_hidden_layout_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false)
+	if (data.hidden_layout_mode == HIDDEN_LAYOUT_INHERITED) {
+		if (data.parent_control) {
+			return data.parent_hidden_layout_mode_enabled;
+		}
+		return false;
+	}
+	return data.hidden_layout_mode == HIDDEN_LAYOUT_ENABLED;
+}
+
 void Control::set_localize_numeral_system(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	if (p_enable == data.localize_numeral_system) {
@@ -4797,6 +4857,7 @@ void Control::_notification(int p_notification) {
 
 			_update_layout_mode();
 
+			_update_hidden_layout_recursive();
 			_update_focus_behavior_recursive();
 			_update_mouse_behavior_recursive();
 		} break;
@@ -4978,6 +5039,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchors_preset", "preset", "keep_offsets"), &Control::set_anchors_preset, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_offsets_preset", "preset", "resize_mode", "margin"), &Control::set_offsets_preset, DEFVAL(PRESET_MODE_MINSIZE), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_anchors_and_offsets_preset", "preset", "resize_mode", "margin"), &Control::set_anchors_and_offsets_preset, DEFVAL(PRESET_MODE_MINSIZE), DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("set_hidden_layout_mode", "hidden_layout_mode"), &Control::set_hidden_layout_mode);
+	ClassDB::bind_method(D_METHOD("get_hidden_layout_mode"), &Control::get_hidden_layout_mode);
 
 	ClassDB::bind_method(D_METHOD("_set_anchor", "side", "anchor"), &Control::_set_anchor);
 	ClassDB::bind_method(D_METHOD("set_anchor", "side", "anchor", "keep_offset", "push_opposite_anchor"), &Control::set_anchor, DEFVAL(false), DEFVAL(true));
@@ -5210,6 +5274,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "hidden_layout_mode", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_hidden_layout_mode", "get_hidden_layout_mode");
 
 	constexpr struct {
 		const char *name;
@@ -5415,6 +5480,10 @@ void Control::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ANCHOR_BEGIN);
 	BIND_ENUM_CONSTANT(ANCHOR_END);
+
+	BIND_ENUM_CONSTANT(HIDDEN_LAYOUT_INHERITED);
+	BIND_ENUM_CONSTANT(HIDDEN_LAYOUT_DISABLED);
+	BIND_ENUM_CONSTANT(HIDDEN_LAYOUT_ENABLED);
 
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_INHERITED);
 	BIND_ENUM_CONSTANT(LAYOUT_DIRECTION_APPLICATION_LOCALE);

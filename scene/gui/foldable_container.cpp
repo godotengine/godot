@@ -419,7 +419,9 @@ void FoldableContainer::_notification(int p_what) {
 				if (!c) {
 					continue;
 				}
-				c->set_visible(!folded);
+				if (!c->is_hidden_layout_enabled()) {
+					c->set_visible(!folded);
+				}
 
 				if (!folded) {
 					fit_child_in_rect(c, inner_rect);
