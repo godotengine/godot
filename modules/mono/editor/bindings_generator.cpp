@@ -91,6 +91,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
+#define CS_MANAGED_KEEP_ALIVE "global::System.GC.KeepAlive"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
@@ -2883,12 +2884,15 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	StringBuilder cs_in_statements;
 	bool cs_in_expr_is_unsafe = false;
 
+	StringBuilder icall_keepalive;
 	String icall_params = method_bind_field;
 
 	if (!p_imethod.is_static) {
 		String self_reference = "this";
 		if (p_itype.is_singleton) {
 			self_reference = CS_PROPERTY_SINGLETON;
+		} else {
+			icall_keepalive << INDENT2 CS_MANAGED_KEEP_ALIVE "(" + self_reference + ");\n";
 		}
 
 		if (p_itype.cs_in.size()) {
@@ -3019,6 +3023,31 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
+
+		if (arg_type->cs_keep_alive) {
+			if (arg_type->name == "VarArg") {
+				// TODO: Figure out a better way to keep Variant disposers alive after native calls.
+				icall_keepalive << INDENT2 "foreach (var " + iarg.name + "_elem in " + iarg.name + (!p_use_span ? " ?? System.Array.Empty<Variant>()" : "") + ")\n";
+				icall_keepalive << OPEN_BLOCK_L2 INDENT3 CS_MANAGED_KEEP_ALIVE "(" + iarg.name + "_elem.Disposer);\n" CLOSE_BLOCK_L2;
+			} else {
+				String keep_alive_expr = INDENT2 CS_MANAGED_KEEP_ALIVE "(" + iarg.name;
+				if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+					keep_alive_expr += "?";
+				}
+
+				if (arg_type->name == "Callable") {
+					icall_keepalive << keep_alive_expr + ".Target);\n";
+					icall_keepalive << keep_alive_expr + ".Method);\n";
+				} else if (arg_type->name == "Signal") {
+					icall_keepalive << keep_alive_expr + ".Owner);\n";
+					icall_keepalive << keep_alive_expr + ".Name);\n";
+				} else if (arg_type->name == "Variant") {
+					icall_keepalive << keep_alive_expr + ".Disposer);\n";
+				} else {
+					icall_keepalive << keep_alive_expr + ");\n";
+				}
+			}
+		}
 	}
 
 	if (p_use_span && !has_span_argument) {
@@ -3152,8 +3181,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("\n");
 		}
 
-		if (!p_itype.is_singleton && !p_imethod.is_static) {
-			p_output << INDENT2 "global::System.GC.KeepAlive(this);\n";
+		if (icall_keepalive.get_string_length() > 0) {
+			p_output << icall_keepalive.as_string();
 		}
 
 		if (return_type->cname != name_cache.type_void) {
@@ -3922,6 +3951,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 
 		itype.cs_out = "%5%4 (%2)%0(%1);";
+
+		itype.cs_keep_alive = !itype.is_singleton;
 
 		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
@@ -4858,6 +4889,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "StringName";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
+	itype.cs_keep_alive = true;
 	// Cannot pass null StringName to ptrcall
 	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
@@ -4876,6 +4908,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "NodePath";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
+	itype.cs_keep_alive = true;
 	// Cannot pass null NodePath to ptrcall
 	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
@@ -4904,6 +4937,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cname = itype.name;
 	itype.proxy_name = "Variant";
 	itype.cs_type = itype.proxy_name;
+	itype.cs_keep_alive = true; // Will need special handling.
 	itype.c_in = "%5%0 %1_in = (%0)%1.NativeVar;\n";
 	itype.c_out = "%5%4 Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s_in";
@@ -4917,6 +4951,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Callable
 	itype = TypeInterface::create_value_type(String("Callable"));
 	itype.cs_in_expr = "%0";
+	itype.cs_keep_alive = true; // Will need special handling.
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_CALLABLE "(in %1);\n";
 	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
@@ -4933,6 +4968,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "Signal";
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "%0";
+	itype.cs_keep_alive = true; // Will need special handling.
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(in %1);\n";
 	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
@@ -4949,6 +4985,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "ReadOnlySpan<Variant>";
 	itype.cs_type = "params Variant[]";
 	itype.cs_in_expr = "%0";
+	itype.cs_keep_alive = true; // Will need special handling.
 	// c_type, c_in and c_arg_in are hard-coded in the generator.
 	// c_out and c_type_out are not applicable to VarArg.
 	itype.c_arg_in = "&%s_in";
@@ -5000,6 +5037,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
+	itype.cs_keep_alive = true;
 	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_array";
@@ -5027,6 +5065,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
+	itype.cs_keep_alive = true;
 	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_dictionary";

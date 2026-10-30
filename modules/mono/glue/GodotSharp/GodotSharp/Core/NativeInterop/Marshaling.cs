@@ -261,6 +261,7 @@ namespace Godot.NativeInterop
             fixed (char* methodChars = p_mono_string)
             {
                 NativeFuncs.godotsharp_string_new_with_utf16_chars(out godot_string dest, methodChars);
+                GC.KeepAlive(p_mono_string);
                 return dest;
             }
         }
@@ -309,6 +310,7 @@ namespace Godot.NativeInterop
                 {
                     var src = (godot_string_name)p_managed_callable.Method.NativeValue;
                     method = NativeFuncs.godotsharp_string_name_new_copy(src);
+                    GC.KeepAlive(p_managed_callable.Method);
                 }
                 else
                 {
@@ -356,6 +358,7 @@ namespace Godot.NativeInterop
             {
                 var src = (godot_string_name)p_managed_signal.Name.NativeValue;
                 name = NativeFuncs.godotsharp_string_name_new_copy(src);
+                GC.KeepAlive(p_managed_signal.Name);
             }
             else
             {

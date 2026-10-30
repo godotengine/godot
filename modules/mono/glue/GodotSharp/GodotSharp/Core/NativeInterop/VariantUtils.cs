@@ -254,7 +254,8 @@ namespace Godot.NativeInterop
                 return default;
 #pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            var ret = CreateFromArray((godot_array)fromGodot.NativeValue);
+            return ret;
         }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(scoped Span<NodePath> from)
@@ -264,7 +265,8 @@ namespace Godot.NativeInterop
                 return default;
 #pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            var ret = CreateFromArray((godot_array)fromGodot.NativeValue);
+            return ret;
         }
 
         public static godot_variant CreateFromSystemArrayOfRid(scoped Span<Rid> from)
@@ -274,7 +276,8 @@ namespace Godot.NativeInterop
                 return default;
 #pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            var ret = CreateFromArray((godot_array)fromGodot.NativeValue);
+            return ret;
         }
 
         public static godot_variant CreateFromSystemArrayOfGodotObject(GodotObject[]? from)
@@ -282,7 +285,8 @@ namespace Godot.NativeInterop
             if (from == null)
                 return default; // Nil
             using var fromGodot = new Collections.Array(from);
-            return CreateFromArray((godot_array)fromGodot.NativeValue);
+            var ret = CreateFromArray((godot_array)fromGodot.NativeValue);
+            return ret;
         }
 
         public static godot_variant CreateFromArray(scoped in godot_array from)
@@ -293,11 +297,27 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromArray(Collections.Array? from)
-            => from != null ? CreateFromArray((godot_array)from.NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromArray((godot_array)from.NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromArray<[MustBeVariant] T>(Array<T>? from)
-            => from != null ? CreateFromArray((godot_array)((Collections.Array)from).NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromArray((godot_array)((Collections.Array)from).NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         public static godot_variant CreateFromDictionary(scoped in godot_dictionary from)
         {
@@ -307,11 +327,27 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromDictionary(Dictionary? from)
-            => from != null ? CreateFromDictionary((godot_dictionary)from.NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromDictionary((godot_dictionary)from.NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(Dictionary<TKey, TValue>? from)
-            => from != null ? CreateFromDictionary((godot_dictionary)((Dictionary)from).NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromDictionary((godot_dictionary)((Dictionary)from).NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         public static godot_variant CreateFromStringName(scoped in godot_string_name from)
         {
@@ -321,7 +357,15 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromStringName(StringName? from)
-            => from != null ? CreateFromStringName((godot_string_name)from.NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromStringName((godot_string_name)from.NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         public static godot_variant CreateFromNodePath(scoped in godot_node_path from)
         {
@@ -331,7 +375,15 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromNodePath(NodePath? from)
-            => from != null ? CreateFromNodePath((godot_node_path)from.NativeValue) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromNodePath((godot_node_path)from.NativeValue);
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         public static godot_variant CreateFromGodotObjectPtr(IntPtr from)
         {
@@ -343,7 +395,15 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromGodotObject(GodotObject? from)
-            => from != null ? CreateFromGodotObjectPtr(GodotObject.GetPtr(from)) : default;
+        {
+            if (from != null)
+            {
+                var ret = CreateFromGodotObjectPtr(GodotObject.GetPtr(from));
+                GC.KeepAlive(from);
+                return ret;
+            }
+            return default;
+        }
 
         // We avoid the internal call if the stored type is the same we want.
 
