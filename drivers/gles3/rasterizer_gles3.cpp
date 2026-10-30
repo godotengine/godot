@@ -38,6 +38,7 @@
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/utilities.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -257,7 +258,23 @@ RasterizerGLES3::RasterizerGLES3() {
 			glad_loaded = true;
 		}
 	} else {
-		if (has_egl && !glad_loaded && gladLoadGLES2((GLADloadfunc)&_egl_load_function_wrapper)) {
+		if (has_egl && !glad_loaded) {
+			int version = gladLoadGLES2((GLADloadfunc)&_egl_load_function_wrapper);
+			if (version <= 0) {
+				if (version == -1) {
+					CRASH_NOW_MSG("Could not load glGetString");
+				}
+				if (version == -2) {
+					CRASH_NOW_MSG("glGetString(GL_VERSION) returns NULL");
+				}
+				if (version == -3) {
+					CRASH_NOW_MSG("Could not load GLES extensions");
+				}
+				if (version == 0) {
+					CRASH_NOW_MSG("Could not parse GL_VERSION string");
+				}
+				CRASH_NOW_MSG(vformat("gladLoadGLES2: Unknown error: %d", version));
+			}
 			glad_loaded = true;
 		}
 	}
@@ -275,10 +292,9 @@ RasterizerGLES3::RasterizerGLES3() {
 #endif
 	}
 
-	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-	// or we need to actually test for this situation before constructing this.
-	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+	if (!glad_loaded) {
+		CRASH_NOW_MSG("Error initializing GLAD.");
+	}
 #endif // GLAD_ENABLED
 
 #ifdef GL_DEBUG_CALLBACK
