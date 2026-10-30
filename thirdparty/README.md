@@ -569,6 +569,47 @@ Patches:
 - `0003-remove-bmp-ppm-support.patch` ([GH-104347](https://github.com/godotengine/godot/pull/104347))
 
 
+## libjxl
+
+- Upstream: https://github.com/libjxl/libjxl
+- Version: 0.12.0 (2025)
+- License: BSD-3-Clause
+
+The decoder and encoder are built; JPEG transcoding and container box support
+are disabled.
+
+Files extracted from upstream source:
+
+- `lib/include/jxl/` (public headers)
+- The `.cc` files of the decoder, encoder and CMS in `lib/jxl/` (as listed in
+  `lib/jxl_lists.cmake`), and the `lib/jxl/` headers they include
+- `LICENSE`, `PATENTS`, `AUTHORS`
+
+libjxl depends on two of its own bundled libraries, taken at the commits
+pinned by the libjxl submodules, trimmed to the files needed to build and kept
+under `third_party/`:
+
+- `highway/` (Apache-2.0), the SIMD library libjxl is built on: the `hwy/`
+  headers included by libjxl, plus
+  `hwy/{abort,aligned_allocator,nanobenchmark,per_target,print,targets,timer}.cc`
+  and `LICENSE`, `LICENSE-BSD3`
+- `skcms/` (BSD-3-Clause), the color management backend: `skcms.{cc,h}`,
+  `src/` headers, `src/skcms_TransformBaseline.cc` and `LICENSE`
+
+The following headers are normally produced by upstream's build system. As the
+engine does not run libjxl's CMake, they are generated once and committed here:
+
+- `lib/include/jxl/version.h` (from `lib/jxl/version.h.in`)
+- `lib/include/jxl/jxl_export.h`
+- `lib/include/jxl/jxl_cms_export.h`
+
+Patches:
+
+- `0001-disable-brotli-encoder.patch` ([GH-120276](https://github.com/godotengine/godot/pull/120276)):
+  compile out Brotli compression of metadata boxes and JPEG reconstruction
+  data, as the engine only bundles the Brotli decoder
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software
