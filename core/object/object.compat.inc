@@ -43,8 +43,13 @@ bool Object::_is_class_bind_compat_118582(const String &p_name) const {
 	return false;
 }
 
+Error Object::_connect_bind_compat_124187(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+	return connect(p_signal, p_callable, (BitField<Object::ConnectFlags>)p_flags);
+}
+
 void Object::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_class", "class"), &Object::_is_class_bind_compat_118582);
+	ClassDB::bind_compatibility_method(D_METHOD("connect", "signal", "callable", "flags"), &Object::_connect_bind_compat_124187, DEFVAL(0));
 }
 
 #else
