@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_method_bind)
 
 #include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 
 namespace TestMethodBind {
 
@@ -122,6 +123,8 @@ public:
 	void test_method_object_cast(ObjectSubclass *p_object) {
 		test_valid[TEST_METHOD_OBJECT_CAST] = p_object->value == 1;
 	}
+
+	void test_method_variant(const Variant &p_arg) {}
 
 	static void _bind_methods();
 
@@ -218,6 +221,83 @@ TEST_CASE("[MethodBind] check all method binds") {
 	CHECK(mbt->test_valid[MethodBindTester::TEST_METHOD_OBJECT_CAST]);
 
 	memdelete(mbt);
+}
+
+TEST_CASE("[MethodBind] Extension method defaults are released when their class is unregistered") {
+	ObjectGDExtension extension = {};
+	extension.class_name = "MethodDefaultLifetimeExtension";
+	extension.parent_class_name = "Object";
+	ClassDB::register_extension_class(&extension);
+	GDType *type = const_cast<GDType *>(extension.gdtype);
+	REQUIRE(type != nullptr);
+
+	MethodBind *method = create_method_bind(&MethodBindTester::test_method_variant);
+	method->set_name("test_method_variant");
+	REQUIRE(type->bind_method(method));
+
+	MethodBind *compatibility_method = create_method_bind(&MethodBindTester::test_method_variant);
+	compatibility_method->set_name("test_method_variant");
+	REQUIRE(type->bind_compatibility_method(compatibility_method));
+
+	const MethodBind *parent_method = ClassDB::get_method("Object", "connect");
+	REQUIRE(parent_method != nullptr);
+	const int parent_default_count = parent_method->get_default_argument_count();
+	CHECK(parent_default_count > 0);
+
+	ObjectID instance_id;
+	{
+		Ref<RefCounted> instance;
+		instance.instantiate();
+		instance_id = instance->get_instance_id();
+		method->set_default_arguments({ instance });
+
+		Dictionary dictionary;
+		dictionary["instance"] = instance;
+		Array array;
+		array.push_back(dictionary);
+		compatibility_method->set_default_arguments({ array });
+	}
+	CHECK(ObjectDB::get_instance(instance_id) != nullptr);
+	CHECK(method->get_default_argument_count() == 1);
+	CHECK(compatibility_method->get_default_argument_count() == 1);
+
+	ClassDB::unregister_extension_class(extension.class_name);
+
+	CHECK(ObjectDB::get_instance(instance_id) == nullptr);
+	CHECK(method->get_default_argument_count() == 0);
+	CHECK(compatibility_method->get_default_argument_count() == 0);
+	CHECK(type->get_name() == extension.class_name);
+	const GDType::Member *member = type->members(true).getptr("test_method_variant");
+	REQUIRE(member != nullptr);
+	CHECK(member->payload.method == method);
+	CHECK(type->get_self_compatibility_method_map()["test_method_variant"][0] == compatibility_method);
+	CHECK(type->members().getptr("connect")->payload.method == parent_method);
+	CHECK(parent_method->get_default_argument_count() == parent_default_count);
+
+	// Hot reload reuses compatible method binds without transferring ownership.
+	ClassDB::register_extension_class(&extension);
+	GDType *reloaded_type = const_cast<GDType *>(extension.gdtype);
+	REQUIRE(reloaded_type != nullptr);
+	REQUIRE(reloaded_type->bind_method(method, false));
+	{
+		Ref<RefCounted> instance;
+		instance.instantiate();
+		instance_id = instance->get_instance_id();
+		method->set_default_arguments({ instance });
+	}
+	CHECK(ObjectDB::get_instance(instance_id) != nullptr);
+	CHECK(method->get_default_argument_count() == 1);
+
+	ClassDB::unregister_extension_class(extension.class_name);
+
+	CHECK(ObjectDB::get_instance(instance_id) == nullptr);
+	CHECK(method->get_default_argument_count() == 0);
+	CHECK(reloaded_type->members(true).getptr("test_method_variant")->payload.method == method);
+	CHECK(parent_method->get_default_argument_count() == parent_default_count);
+
+	// Keep shutdown safe even when the regression assertions fail.
+	method->set_default_arguments(Vector<Variant>());
+	compatibility_method->set_default_arguments(Vector<Variant>());
 }
 
 TEST_CASE("[MethodBind] check bound enums") {

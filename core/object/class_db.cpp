@@ -2005,6 +2005,8 @@ static LocalVector<GDType *> gdtype_leaked_autorelease_pool;
 void ClassDB::unregister_extension_class(const StringName &p_class) {
 	ClassInfo *c = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(c, vformat("Class '%s' does not exist.", String(p_class)));
+	// Release object references before extension instance bindings and ObjectDB are torn down.
+	c->gdtype->clear_method_default_arguments();
 	// Leak the GDType until exit so potential consumers don't have dangling pointers.
 	gdtype_leaked_autorelease_pool.push_back(c->gdtype);
 	classes.erase(p_class);
