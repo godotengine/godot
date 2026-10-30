@@ -45,7 +45,7 @@
 			The custom [Viewport] node assigned to the [CanvasLayer]. If [code]null[/code], uses the default viewport instead.
 		</member>
 		<member name="follow_viewport_enabled" type="bool" setter="set_follow_viewport" getter="is_following_viewport" default="false">
-			If enabled, the [CanvasLayer] maintains its position in world space. If disabled, the [CanvasLayer] stays in a fixed position on the screen.
+			If enabled, the [CanvasLayer] uses the canvas transformation of the viewport. If disabled, the [CanvasLayer] stays in a fixed position on the screen.
 			Together with [member follow_viewport_scale], this can be used for a pseudo-3D effect.
 		</member>
 		<member name="follow_viewport_scale" type="float" setter="set_follow_viewport_scale" getter="get_follow_viewport_scale" default="1.0">
