@@ -688,12 +688,16 @@
 			The multiplier color for the VU meter gradient where audio is not reaching.
 		</member>
 		<member name="editors/bone_mapper/handle_colors/error" type="Color" setter="" getter="">
+			The color to use for mapped bones in the bone map editor, when either the name doesn't resolve to a real skeleton bone, or a profile ancestor isn't an ancestor in the skeleton.
 		</member>
 		<member name="editors/bone_mapper/handle_colors/missing" type="Color" setter="" getter="">
+			The color to use for unmapped bones in the bone map editor, when bones are required by the profile.
 		</member>
 		<member name="editors/bone_mapper/handle_colors/set" type="Color" setter="" getter="">
+			The color to use for mapped bones in the bone map editor, when the parent chain is consistent with the profile's parent chain.
 		</member>
 		<member name="editors/bone_mapper/handle_colors/unset" type="Color" setter="" getter="">
+			The color to use for unmapped bones in the bone map editor, when bones are not required by the profile.
 		</member>
 		<member name="editors/grid_map/pick_distance" type="float" setter="" getter="">
 			The maximum distance at which tiles can be placed on a GridMap, relative to the camera position (in 3D units).
