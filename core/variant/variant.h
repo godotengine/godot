@@ -94,6 +94,7 @@ typedef Vector<Vector4> PackedVector4Array;
 class _WARN_UNUSED_ Variant {
 public:
 	// If this changes the table in variant_op must be updated
+	/* yuczlu: obj type scope enum can be contained in Variant */
 	enum Type {
 		NIL,
 
