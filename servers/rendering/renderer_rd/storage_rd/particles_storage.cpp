@@ -1368,8 +1368,12 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	bool only_instances_changed = false;
 
 	if (userdata_count != particles->userdata_count) {
-		// Mismatch userdata, re-create all buffers.
-		_particles_free_data(particles);
+		// Mismatch userdata, re-create particle buffer
+		if (particles->particle_buffer.is_valid()) {
+			RD::get_singleton()->free_rid(particles->particle_buffer);
+			particles->particle_buffer = RID();
+		}
+
 	} else if (enable_motion_vectors) {
 		// Only motion vectors are required, release the transforms buffer and uniform set.
 		if (particles->particle_instance_buffer.is_valid()) {
@@ -1397,16 +1401,18 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			particles->restart_request = true;
 		}
 
-		PackedByteArray data;
-		uint32_t particle_instance_buffer_size = total_amount * (xform_size + 1 + 1) * sizeof(float) * 4;
-		if (uses_motion_vectors) {
-			particle_instance_buffer_size *= 2;
-			particles->instance_motion_vectors_enabled = true;
+		if (particles->particle_instance_buffer.is_null()) {
+			PackedByteArray data;
+			uint32_t particle_instance_buffer_size = total_amount * (xform_size + 1 + 1) * sizeof(float) * 4;
+			if (uses_motion_vectors) {
+				particle_instance_buffer_size *= 2;
+				particles->instance_motion_vectors_enabled = true;
+			}
+
+			data.resize_initialized(particle_instance_buffer_size);
+
+			particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 		}
-
-		data.resize_initialized(particle_instance_buffer_size);
-
-		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
 		{
 			Vector<RD::Uniform> uniforms;
