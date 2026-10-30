@@ -11,45 +11,49 @@ void _split_inform_references(uint32_t p_node_id) {
 	}
 }
 
-void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVHABB_CLASS *temp_bounds, const BVHABB_CLASS full_bound) {
+void _split_leaf_sort_groups_simple(int &r_num_a, int &r_num_b, uint16_t *r_group_a, uint16_t *r_group_b, const BVHABB_CLASS *p_temp_bounds, const BVHABB_CLASS p_full_bound) {
 	// special case for low leaf sizes .. should static compile out
-	if (MAX_ITEMS < 4) {
-		uint32_t ind = group_a[0];
+	if constexpr (MAX_ITEMS < 4) {
+		uint32_t ind = r_group_a[0];
 
 		// add to b
-		group_b[num_b++] = ind;
+		r_group_b[r_num_b++] = ind;
 
 		// remove from a
-		group_a[0] = group_a[num_a - 1];
-		num_a--;
+		r_num_a--;
+		r_group_a[0] = r_group_a[r_num_a];
 		return;
 	}
 
-	POINT centre = full_bound.calculate_centre();
-	POINT size = full_bound.calculate_size();
+	POINT center = p_full_bound.calculate_center();
+	POINT size = p_full_bound.calculate_size();
 
 	int order[POINT::AXIS_COUNT];
-
+#if GODOT_VERSION_MAJOR >= 4
+	order[0] = size.max_axis_index(); // The longest axis.
+	order[POINT::AXIS_COUNT - 1] = size.min_axis_index(); // The shortest axis.
+#else
 	order[0] = size.max_axis();
 	order[POINT::AXIS_COUNT - 1] = size.min_axis();
+#endif
 
 	static_assert(POINT::AXIS_COUNT <= 3, "BVH POINT::AXIS_COUNT has unexpected size");
-	if (POINT::AXIS_COUNT == 3) {
+	if constexpr (POINT::AXIS_COUNT == 3) {
 		order[1] = 3 - (order[0] + order[2]);
 	}
 
-	// simplest case, split on the longest axis
+	// Simplest case, split on the longest axis.
 	int split_axis = order[0];
-	for (int a = 0; a < num_a; a++) {
-		uint32_t ind = group_a[a];
+	for (int a = 0; a < r_num_a; a++) {
+		uint32_t ind = r_group_a[a];
 
-		if (temp_bounds[ind].min.coord[split_axis] > centre.coord[split_axis]) {
+		if (p_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 			// add to b
-			group_b[num_b++] = ind;
+			r_group_b[r_num_b++] = ind;
 
 			// remove from a
-			group_a[a] = group_a[num_a - 1];
-			num_a--;
+			r_num_a--;
+			r_group_a[a] = r_group_a[r_num_a];
 
 			// do this one again, as it has been replaced
 			a--;
@@ -59,28 +63,28 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 	// detect when split on longest axis failed
 	int min_threshold = MAX_ITEMS / 4;
 	int min_group_size[POINT::AXIS_COUNT];
-	min_group_size[0] = MIN(num_a, num_b);
+	min_group_size[0] = MIN(r_num_a, r_num_b);
 	if (min_group_size[0] < min_threshold) {
 		// slow but sure .. first move everything back into a
-		for (int b = 0; b < num_b; b++) {
-			group_a[num_a++] = group_b[b];
+		for (int b = 0; b < r_num_b; b++) {
+			r_group_a[r_num_a++] = r_group_b[b];
 		}
-		num_b = 0;
+		r_num_b = 0;
 
-		// now calculate the best split
+		// Now calculate the best split.
 		for (int axis = 1; axis < POINT::AXIS_COUNT; axis++) {
 			split_axis = order[axis];
 			int count = 0;
 
-			for (int a = 0; a < num_a; a++) {
-				uint32_t ind = group_a[a];
+			for (int a = 0; a < r_num_a; a++) {
+				uint32_t ind = r_group_a[a];
 
-				if (temp_bounds[ind].min.coord[split_axis] > centre.coord[split_axis]) {
+				if (p_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 					count++;
 				}
 			}
 
-			min_group_size[axis] = MIN(count, num_a - count);
+			min_group_size[axis] = MIN(count, r_num_a - count);
 		} // for axis
 
 		// best axis
@@ -97,16 +101,16 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 		if (best_min > 0) {
 			split_axis = order[best_axis];
 
-			for (int a = 0; a < num_a; a++) {
-				uint32_t ind = group_a[a];
+			for (int a = 0; a < r_num_a; a++) {
+				uint32_t ind = r_group_a[a];
 
-				if (temp_bounds[ind].min.coord[split_axis] > centre.coord[split_axis]) {
+				if (p_temp_bounds[ind].min[split_axis] > center[split_axis]) {
 					// add to b
-					group_b[num_b++] = ind;
+					r_group_b[r_num_b++] = ind;
 
 					// remove from a
-					group_a[a] = group_a[num_a - 1];
-					num_a--;
+					r_num_a--;
+					r_group_a[a] = r_group_a[r_num_a];
 
 					// do this one again, as it has been replaced
 					a--;
@@ -116,62 +120,62 @@ void _split_leaf_sort_groups_simple(int &num_a, int &num_b, uint16_t *group_a, u
 	} // if the longest axis wasn't a good split
 
 	// special case, none crossed threshold
-	if (!num_b) {
-		uint32_t ind = group_a[0];
+	if (!r_num_b) {
+		uint32_t ind = r_group_a[0];
 
 		// add to b
-		group_b[num_b++] = ind;
+		r_group_b[r_num_b++] = ind;
 
 		// remove from a
-		group_a[0] = group_a[num_a - 1];
-		num_a--;
+		r_num_a--;
+		r_group_a[0] = r_group_a[r_num_a];
 	}
 	// opposite problem! :)
-	if (!num_a) {
-		uint32_t ind = group_b[0];
+	if (!r_num_a) {
+		uint32_t ind = r_group_b[0];
 
 		// add to a
-		group_a[num_a++] = ind;
+		r_group_a[r_num_a++] = ind;
 
 		// remove from b
-		group_b[0] = group_b[num_b - 1];
-		num_b--;
+		r_num_b--;
+		r_group_b[0] = r_group_b[r_num_b];
 	}
 }
 
-void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t *group_b, const BVHABB_CLASS *temp_bounds) {
+void _split_leaf_sort_groups(int &r_num_a, int &r_num_b, uint16_t *r_group_a, uint16_t *r_group_b, const BVHABB_CLASS *p_temp_bounds) {
 	BVHABB_CLASS groupb_aabb;
 	groupb_aabb.set_to_max_opposite_extents();
-	for (int n = 0; n < num_b; n++) {
-		int which = group_b[n];
-		groupb_aabb.merge(temp_bounds[which]);
+	for (int n = 0; n < r_num_b; n++) {
+		int which = r_group_b[n];
+		groupb_aabb.merge(p_temp_bounds[which]);
 	}
 	BVHABB_CLASS groupb_aabb_new;
 
 	BVHABB_CLASS rest_aabb;
 
-	float best_size = FLT_MAX;
+	real_t best_size = FLT_MAX;
 	int best_candidate = -1;
 
 	// find most likely from a to move into b
-	for (int check = 0; check < num_a; check++) {
+	for (int check = 0; check < r_num_a; check++) {
 		rest_aabb.set_to_max_opposite_extents();
 		groupb_aabb_new = groupb_aabb;
 
 		// find aabb of all the rest
-		for (int rest = 0; rest < num_a; rest++) {
+		for (int rest = 0; rest < r_num_a; rest++) {
 			if (rest == check) {
 				continue;
 			}
 
-			int which = group_a[rest];
-			rest_aabb.merge(temp_bounds[which]);
+			int which = r_group_a[rest];
+			rest_aabb.merge(p_temp_bounds[which]);
 		}
 
-		groupb_aabb_new.merge(temp_bounds[group_a[check]]);
+		groupb_aabb_new.merge(p_temp_bounds[r_group_a[check]]);
 
 		// now compare the sizes
-		float size = groupb_aabb_new.get_area() + rest_aabb.get_area();
+		real_t size = groupb_aabb_new.get_area() + rest_aabb.get_area();
 		if (size < best_size) {
 			best_size = size;
 			best_candidate = check;
@@ -179,11 +183,11 @@ void _split_leaf_sort_groups(int &num_a, int &num_b, uint16_t *group_a, uint16_t
 	}
 
 	// we should now have the best, move it from group a to group b
-	group_b[num_b++] = group_a[best_candidate];
+	r_group_b[r_num_b++] = r_group_a[best_candidate];
 
 	// remove best candidate from group a
-	num_a--;
-	group_a[best_candidate] = group_a[num_a];
+	r_num_a--;
+	r_group_a[best_candidate] = r_group_a[r_num_a];
 }
 
 uint32_t split_leaf(uint32_t p_node_id, const BVHABB_CLASS &p_added_item_aabb) {
