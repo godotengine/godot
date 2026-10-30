@@ -73,16 +73,18 @@
 			Enables multichannel signed distance field rendering shader. Use [member msdf_pixel_range] and [member msdf_outline_size] to configure MSDF parameters.
 		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge">
-			Threshold at which antialiasing will be applied on the alpha channel.
+			Threshold at which antialiasing will be applied on the alpha channel. This should be set to a value lower than [member alpha_scissor_threshold] to allow for the alpha antialiasing effect to be visible.
 		</member>
 		<member name="alpha_antialiasing_mode" type="int" setter="set_alpha_antialiasing" getter="get_alpha_antialiasing" enum="BaseMaterial3D.AlphaAntiAliasing">
 			The type of alpha antialiasing to apply.
+			[note]The quality of alpha antialiasing depends on the viewport's 3D multisample antialiasing level ([member Viewport.msaa_3d]). When MSAA is disabled, alpha antialiasing will appear to stipple rather than smoothly antialias the edges.[/note]
+			[note]Alpha antialiasing is only supported in the Forward+ and Mobile renderers. In Compatibility, all modes act like [constant ALPHA_ANTIALIASING_OFF].[/note]
 		</member>
 		<member name="alpha_hash_scale" type="float" setter="set_alpha_hash_scale" getter="get_alpha_hash_scale">
 			The hashing scale for Alpha Hash. Recommended values between [code]0[/code] and [code]2[/code].
 		</member>
 		<member name="alpha_scissor_threshold" type="float" setter="set_alpha_scissor_threshold" getter="get_alpha_scissor_threshold" keywords="alpha_test_threshold">
-			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold].
+			Threshold at which the alpha scissor will discard values. Higher values will result in more pixels being discarded. If the material becomes too opaque at a distance, try increasing [member alpha_scissor_threshold]. If the material disappears at a distance, try decreasing [member alpha_scissor_threshold]. See also [member alpha_antialiasing_edge].
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" default="0.0">
 			The strength of the anisotropy effect. This is multiplied by [member anisotropy_flowmap]'s alpha channel if a texture is defined there and the texture contains an alpha channel.
