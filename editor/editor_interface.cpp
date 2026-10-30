@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -182,9 +183,10 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
 	RID light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
-	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
-
 	Vector<Ref<Texture2D>> textures;
+
+	// Do not run editor process(es) while generating thumbnails
+	EditorCommandLock pause = EditorNode::get_singleton()->pause_editor_processes();
 
 	for (int i = 0; i < p_meshes.size(); i++) {
 		const Ref<Mesh> &mesh = p_meshes[i];
@@ -224,7 +226,6 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
 		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
-		ep.step(TTR("Thumbnail..."), i);
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		Main::iteration();
@@ -246,6 +247,170 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RS::get_singleton()->free_rid(scenario);
 
 	return textures;
+}
+
+class MakeMeshPreviewsEditorCommandQueue : public EditorCommandQueue {
+	friend class EditorNode;
+	RID scenario = RID();
+	RID viewport = RID();
+	RID viewport_texture = RID();
+	RID camera = RID();
+	RID light = RID();
+	RID light_instance = RID();
+	RID light2 = RID();
+	RID light_instance2 = RID();
+
+	Callable on_done;
+
+	Vector<Ref<Texture2D>> textures;
+
+protected:
+	MakeMeshPreviewsEditorCommandQueue(const String &p_task, const String &p_label, int p_mesh_count, bool p_can_cancel, bool p_force_background) : EditorCommandQueue(p_task, p_label, p_mesh_count + 1, p_can_cancel, p_force_background) {
+		ERR_FAIL_COND_MSG(viewport != RID(), "Meshes are already set");
+		// Initialize
+		scenario = RS::get_singleton()->scenario_create();
+		viewport = RS::get_singleton()->viewport_create();
+		RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
+		RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+		RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+		RS::get_singleton()->viewport_set_active(viewport, true);
+		viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
+
+		camera = RS::get_singleton()->camera_create();
+		RS::get_singleton()->viewport_attach_camera(viewport, camera);
+
+		light = RS::get_singleton()->directional_light_create();
+		light_instance = RS::get_singleton()->instance_create2(light, scenario);
+
+		light2 = RS::get_singleton()->directional_light_create();
+		RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+		light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
+	}
+
+	static void _bake_mesh_step_static(uint64_t p_command_ptr, const Ref<Mesh> &p_mesh, Transform3D p_mesh_xform) {
+		MakeMeshPreviewsEditorCommandQueue *command = reinterpret_cast<MakeMeshPreviewsEditorCommandQueue *>(p_command_ptr);
+		command->_bake_mesh_step(p_mesh, p_mesh_xform);
+	}
+
+	void _bake_mesh_step(const Ref<Mesh> &p_mesh, Transform3D p_mesh_xform) {
+		if (p_mesh.is_null()) {
+			textures.push_back(Ref<Texture2D>());
+			return;
+		}
+		RID inst = RS::get_singleton()->instance_create2(p_mesh->get_rid(), scenario);
+		RS::get_singleton()->instance_set_transform(inst, p_mesh_xform);
+
+		AABB aabb = p_mesh->get_aabb();
+		Vector3 ofs = aabb.get_center();
+		aabb.position -= ofs;
+		Transform3D xform;
+		xform.basis = Basis().rotated(Vector3(0, 1, 0), -Math::PI / 6);
+		xform.basis = Basis().rotated(Vector3(1, 0, 0), Math::PI / 6) * xform.basis;
+		AABB rot_aabb = xform.xform(aabb);
+		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
+		if (m == 0) {
+			RS::get_singleton()->free_rid(inst);
+			textures.push_back(Ref<Texture2D>());
+			return;
+		}
+		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
+		xform.origin.z -= rot_aabb.size.z * 2;
+		xform.invert();
+		xform = p_mesh_xform * xform;
+
+		RS::get_singleton()->camera_set_transform(camera, xform * Transform3D(Basis(), Vector3(0, 0, 3)));
+		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
+
+		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform3D().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform3D().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+
+		int wait_until_frame = Engine::get_singleton()->get_frames_drawn() + 1;
+		while (Engine::get_singleton()->get_frames_drawn() < wait_until_frame) {
+			// Wait until viewport is drawn.
+			OS::get_singleton()->delay_usec(10);
+		}
+
+		RS::get_singleton()->free_rid(inst);
+
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
+		if (img.is_null() || img->is_empty()) {
+			textures.push_back(Ref<Texture2D>());
+			return;
+		}
+		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
+
+		textures.push_back(it);
+	}
+
+	static void _on_make_mesh_previews_async_done_static(uint64_t p_command_ptr) {
+		MakeMeshPreviewsEditorCommandQueue *command = reinterpret_cast<MakeMeshPreviewsEditorCommandQueue *>(p_command_ptr);
+		command->_on_make_mesh_previews_async_done();
+	}
+
+	void _on_make_mesh_previews_async_done() {
+		TypedArray<Texture2D> ret;
+		for (int i = 0; i < textures.size(); i++) {
+			ret.push_back(textures[i]);
+		}
+		on_done.call_deferred(ret);
+	}
+
+public:
+	void set_thumbnail_size(int p_size) {
+		RS::get_singleton()->viewport_set_size(viewport, p_size, p_size);
+	}
+
+	void set_meshes(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms) {
+		ERR_FAIL_COND_MSG(on_done.is_valid(), "Meshes should be set before the done callback.");
+		uint64_t command_ptr = reinterpret_cast<uint64_t>(this);
+		for (int i = 0; i < p_meshes.size(); i++) {
+			Ref<Mesh> mesh = p_meshes[i];
+			Transform3D mesh_xform;
+			if (p_transforms != nullptr) {
+				mesh_xform = (*p_transforms)[i];
+			}
+			add_step(TTR("Thumbnail..."), i, callable_mp_static(&MakeMeshPreviewsEditorCommandQueue::_bake_mesh_step_static).bind(command_ptr, mesh, mesh_xform));
+		}
+	}
+
+	void set_callback(const Callable &p_on_done) {
+		ERR_FAIL_COND(p_on_done.is_null());
+		on_done = p_on_done;
+		uint64_t command_ptr = reinterpret_cast<uint64_t>(this);
+		add_step(TTR("Commit..."), step_count - 1, callable_mp_static(&MakeMeshPreviewsEditorCommandQueue::_on_make_mesh_previews_async_done_static).bind(command_ptr));
+	}
+
+	~MakeMeshPreviewsEditorCommandQueue() {
+		RS::get_singleton()->free_rid(viewport);
+		RS::get_singleton()->free_rid(light);
+		RS::get_singleton()->free_rid(light_instance);
+		RS::get_singleton()->free_rid(light2);
+		RS::get_singleton()->free_rid(light_instance2);
+		RS::get_singleton()->free_rid(camera);
+		RS::get_singleton()->free_rid(scenario);
+	}
+};
+
+void EditorInterface::_make_mesh_previews_async(const TypedArray<Mesh> &p_meshes, int p_preview_size, const Callable &p_on_done) {
+	// Note: p_on_done should receive a `TypedArray<Texture2D>` argument.
+	ERR_FAIL_COND(p_on_done.is_null());
+	Vector<Ref<Mesh>> meshes;
+
+	for (int i = 0; i < p_meshes.size(); i++) {
+		meshes.push_back(p_meshes[i]);
+	}
+
+	make_mesh_previews_async(meshes, nullptr, p_preview_size, p_on_done);
+}
+
+void EditorInterface::make_mesh_previews_async(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size, const Callable &p_on_done) {
+	// Note: p_on_done should receive a `Vector<Ref<Texture2D>>` argument.
+	ERR_FAIL_COND(p_on_done.is_null());
+
+	MakeMeshPreviewsEditorCommandQueue *command = EditorNode::get_singleton()->start_editor_process<MakeMeshPreviewsEditorCommandQueue>("mlib", TTR("Creating Mesh Previews"), p_meshes.size(), false, true);
+	command->set_thumbnail_size(p_preview_size);
+	command->set_meshes(p_meshes, p_transforms);
+	command->set_callback(p_on_done);
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
@@ -882,6 +1047,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scene_paint_2d"), &EditorInterface::get_scene_paint_2d);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
+	ClassDB::bind_method(D_METHOD("make_mesh_previews_async", "meshes", "preview_size", "on_done"), &EditorInterface::_make_mesh_previews_async);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);

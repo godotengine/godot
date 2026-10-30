@@ -240,6 +240,8 @@ static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set
 
 constexpr int LARGE_RESOURCE_WARNING_SIZE_THRESHOLD = 512'000; // 500 KB
 
+int EditorCommandLock::lock_count = 0;
+
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
 	if (!force_background && Thread::is_main_thread()) {
 		return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh);
@@ -264,6 +266,78 @@ EditorProgress::~EditorProgress() {
 		EditorNode::progress_end_task(task);
 	} else {
 		EditorNode::progress_end_task_bg(task);
+	}
+}
+
+void EditorCommandQueue::_run_in_thread(void *p_command_queue) {
+	EditorCommandQueue *command_queue = static_cast<EditorCommandQueue *>(p_command_queue);
+	Mutex &mutex = command_queue->mutex;
+	mutex.lock();
+	Callable c = command_queue->steps[command_queue->next_step].command;
+	mutex.unlock();
+	c.call();
+	mutex.lock();
+	callable_mp_static(&EditorCommandQueue::_thread_done).call_deferred(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(command_queue)));
+	mutex.unlock();
+}
+
+void EditorCommandQueue::_thread_done(uint64_t p_command_queue_ptr) {
+	EditorCommandQueue *command_queue = reinterpret_cast<EditorCommandQueue *>(static_cast<uintptr_t>(p_command_queue_ptr));
+	ERR_FAIL_COND(command_queue->bg_process == nullptr);
+	MutexLock lock(command_queue->mutex);
+	command_queue->bg_process->wait_to_finish();
+	memdelete(command_queue->bg_process);
+	command_queue->bg_process = nullptr;
+	command_queue->next_step++;
+}
+
+void EditorCommandQueue::add_step(const String &p_state, int p_step_index, const Callable &p_command) {
+	ERR_FAIL_COND(p_command.is_null());
+	MutexLock lock(mutex);
+	steps.push_back(Command{ p_state, p_step_index, p_command });
+}
+
+bool EditorCommandQueue::is_running_in_background() const {
+	MutexLock lock(mutex);
+	return (bg_process != nullptr && bg_process->is_started());
+}
+
+void EditorCommandQueue::advance_step() {
+	ERR_FAIL_COND(is_running_in_background());
+	if (is_done()) {
+		return; // This can happen when running in background and last step just finished
+	}
+	MutexLock lock(mutex);
+	if (progress == nullptr) {
+		progress = memnew(EditorProgress(task, label, step_count, can_cancel, false));
+	}
+	progress->step(steps[next_step].state, steps[next_step].step_index, true);
+	if (run_in_background) {
+		bg_process = memnew(Thread);
+		bg_process->start(EditorCommandQueue::_run_in_thread, this);
+		return;
+	} else {
+		steps[next_step].command.call();
+	}
+	next_step++;
+}
+
+bool EditorCommandQueue::is_done() const {
+	MutexLock lock(mutex);
+	return next_step >= steps.size() && !is_running_in_background();
+}
+
+EditorCommandQueue::EditorCommandQueue(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background) {
+	task = p_task;
+	label = p_label;
+	step_count = p_step_count;
+	can_cancel = p_can_cancel;
+	run_in_background = p_force_background;
+}
+
+EditorCommandQueue::~EditorCommandQueue() {
+	if (progress) {
+		memdelete(progress);
 	}
 }
 
@@ -948,6 +1022,8 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			float start_time = Time::get_singleton()->get_unix_time_from_system();
+
 			if (editor_data.is_scene_changed(-1)) {
 				scene_tabs->update_scene_tabs();
 			}
@@ -998,6 +1074,41 @@ void EditorNode::_notification(int p_what) {
 				}
 			}
 #endif
+
+			if (EditorCommandLock::lock_count <= 0 && !process_command_queue.is_empty()) {
+				// Disable input
+				get_viewport()->set_disable_input(true);
+
+				const float time_per_frame = 1.0 / 60.0;
+				float elapsed = 0.0;
+				do {
+					int skip_count = 0;
+					for (int i = 0; i < process_command_queue.size(); i++) {
+						if (process_command_queue[i]->is_running_in_background()) {
+							skip_count++;
+							continue;
+						}
+						if (process_command_queue[i]->is_done()) {
+							EditorCommandQueue *command = process_command_queue[i];
+							process_command_queue.remove_at(i);
+							memdelete(command);
+						} else {
+							process_command_queue[i]->advance_step();
+						}
+						break;
+					}
+					if (skip_count == process_command_queue.size()) {
+						// All tasks running in background, dont retry this frame
+						break;
+					}
+					elapsed = Time::get_singleton()->get_unix_time_from_system() - start_time;
+				} while (!process_command_queue.is_empty() && elapsed < time_per_frame);
+
+				if (process_command_queue.is_empty()) {
+					// Done processing, re-enable input.
+					get_viewport()->set_disable_input(false);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2310,37 +2421,52 @@ void EditorNode::_save_edited_subresources(Node *scene, HashMap<Ref<Resource>, b
 	}
 }
 
-void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
-	if (p_node->is_class("Viewport") || (p_node != editor_data.get_edited_scene_root() && p_node->get_owner() != editor_data.get_edited_scene_root())) {
-		return;
+class SaveSceneWithPreviewEditorCommandQueue : public EditorCommandQueue {
+	friend class EditorNode;
+
+	Node *scene_root = nullptr;
+	String file_path;
+	int index = -1;
+	Callable save_mp;
+
+	SubViewport *editor_viewport = nullptr;
+
+	int c2d = 0;
+	int c3d = 0;
+
+	Ref<Image> img;
+
+protected:
+	SaveSceneWithPreviewEditorCommandQueue(const String &p_task, const String &p_label, int p_mesh_count, bool p_can_cancel, bool p_force_background) : EditorCommandQueue(p_task, p_label, p_mesh_count + 1, p_can_cancel, p_force_background) {
 	}
 
-	if (p_node->is_class("CanvasItem")) {
-		count_2d++;
-	} else if (p_node->is_class("Node3D")) {
-		count_3d++;
+	static void _analyze_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_find_node_types(command->scene_root);
 	}
 
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_find_node_types(p_node->get_child(i), count_2d, count_3d);
+	void _find_node_types(Node *p_node) {
+		if (p_node->is_class("Viewport") || (p_node != scene_root && p_node->get_owner() != scene_root)) {
+			return;
+		}
+
+		if (p_node->is_class("CanvasItem")) {
+			c2d++;
+		} else if (p_node->is_class("Node3D")) {
+			c3d++;
+		}
+
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			_find_node_types(p_node->get_child(i));
+		}
 	}
-}
 
-void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
-	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
+	static void _create_thumbnail_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_create_thumbnail_step();
+	}
 
-	if (editor_data.get_edited_scene_root() != nullptr) {
-		save_scene_progress->step(TTR("Analyzing"), 0);
-
-		int c2d = 0;
-		int c3d = 0;
-
-		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
-
-		save_scene_progress->step(TTR("Creating Thumbnail"), 1);
-		// Current view?
-
-		Ref<Image> img;
+	void _create_thumbnail_step() {
 		// If neither 3D or 2D nodes are present, make a 1x1 black texture.
 		// We cannot fallback on the 2D editor, because it may not have been used yet,
 		// which would result in an invalid texture.
@@ -2348,7 +2474,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			img.instantiate();
 			img->initialize_data(1, 1, false, Image::FORMAT_RGB8);
 		} else if (c3d < c2d) {
-			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
+			Ref<ViewportTexture> viewport_texture = editor_viewport->get_texture();
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
 				img = viewport_texture->get_image();
 			}
@@ -2356,16 +2482,20 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
 			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
-			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+			if (feature_profile.is_null() || !feature_profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
 		}
+	}
 
+	static void _save_thumbnail_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_save_thumbnail_step();
+	}
+
+	void _save_thumbnail_step() {
 		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
 			img = img->duplicate();
-
-			save_scene_progress->step(TTR("Creating Thumbnail"), 3);
 
 			int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			preview_size *= EDSCALE;
@@ -2392,7 +2522,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 
 			// Save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5.
 			String temp_path = EditorPaths::get_singleton()->get_cache_dir();
-			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
+			String cache_base = ProjectSettings::get_singleton()->globalize_path(file_path).md5_text();
 			cache_base = temp_path.path_join("resthumb-" + cache_base);
 
 			// Does not have it, try to load a cached thumbnail.
@@ -2401,19 +2531,47 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		}
 	}
 
-	save_scene_progress->step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
-
-	if (!singleton->cmdline_mode) {
-		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+	static void _save_scene_step_static(uint64_t p_command_ptr) {
+		SaveSceneWithPreviewEditorCommandQueue *command = reinterpret_cast<SaveSceneWithPreviewEditorCommandQueue *>(p_command_ptr);
+		command->_save_scene_step();
 	}
 
-	_close_save_scene_progress();
-}
+	void _save_scene_step() {
+		save_mp.call(file_path, index);
 
-void EditorNode::_close_save_scene_progress() {
-	memdelete(save_scene_progress);
-	save_scene_progress = nullptr;
+		if (!EditorNode::get_singleton()->is_cmdline_mode()) {
+			EditorResourcePreview::get_singleton()->check_for_invalidation(file_path);
+		}
+	}
+
+public:
+	Ref<EditorFeatureProfile> feature_profile;
+
+	void set_scene(Node *p_root, const String &p_file, int p_idx, const Callable p_save_mp) {
+		scene_root = p_root;
+		file_path = p_file;
+		index = p_idx;
+		save_mp = p_save_mp;
+		uint64_t command_ptr = reinterpret_cast<uint64_t>(this);
+		if (scene_root != nullptr) {
+			add_step(TTR("Analyzing"), 0, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_analyze_step_static).bind(command_ptr));
+			add_step(TTR("Creating Thumbnail"), 1, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_create_thumbnail_step_static).bind(command_ptr));
+			add_step(TTR("Creating Thumbnail"), 2, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_save_thumbnail_step_static).bind(command_ptr));
+		}
+		add_step(TTR("Saving Scene"), 3, callable_mp_static(&SaveSceneWithPreviewEditorCommandQueue::_save_scene_step_static).bind(command_ptr));
+	}
+
+	void set_editor_viewport(SubViewport *p_viewport) {
+		ERR_FAIL_NULL(p_viewport);
+		editor_viewport = p_viewport;
+	}
+};
+
+void EditorNode::_save_scene_with_preview(const String &p_file, int p_idx) {
+	SaveSceneWithPreviewEditorCommandQueue *command = start_editor_process<SaveSceneWithPreviewEditorCommandQueue>("save", TTR("Saving Scene"), 3);
+	command->feature_profile = feature_profile_manager->get_current_profile();
+	command->set_editor_viewport(scene_root);
+	command->set_scene(editor_data.get_edited_scene_root(), p_file, p_idx, callable_mp(this, &EditorNode::_save_scene));
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
@@ -6414,7 +6572,6 @@ bool EditorNode::is_project_exporting() const {
 void EditorNode::show_save_accept(const String &p_text, const String &p_ok_text) {
 	current_menu_option = -1;
 	if (save_accept) {
-		_close_save_scene_progress();
 		save_accept->set_ok_button_text(p_ok_text);
 		save_accept->set_text(p_text);
 		save_accept->reset_size();
@@ -6424,7 +6581,6 @@ void EditorNode::show_save_accept(const String &p_text, const String &p_ok_text)
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	if (warning) {
-		_close_save_scene_progress();
 		warning->set_text(p_text);
 		warning->set_title(p_title);
 		warning->reset_size();
@@ -6476,8 +6632,6 @@ void EditorNode::save_editor_layout_delayed() {
 }
 
 void EditorNode::_load_editor_layout() {
-	EditorProgress ep("loading_editor_layout", TTR("Loading editor"), 5);
-	ep.step(TTR("Loading editor layout..."), 0, true);
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
@@ -6496,25 +6650,21 @@ void EditorNode::_load_editor_layout() {
 		if (overridden_default_layout) {
 			_layout_menu_option(LAYOUT_DEFAULT);
 		} else {
-			ep.step(TTR("Loading docks..."), 1, true);
 			// Initialize some default values.
 			bottom_panel->load_layout_from_config(default_layout, EDITOR_NODE_CONFIG_SECTION);
 		}
+		load_editor_layout_done = true;
 	} else {
-		ep.step(TTR("Loading docks..."), 1, true);
-		editor_dock_manager->load_docks_from_config(config, "docks", true);
-
-		ep.step(TTR("Reopening scenes..."), 2, true);
-		_load_open_scenes_from_config(config);
-
-		ep.step(TTR("Loading central editor layout..."), 3, true);
-		_load_central_editor_layout_from_config(config);
-
-		ep.step(TTR("Loading plugin window layout..."), 4, true);
-		editor_data.set_plugin_window_layout(config);
-
-		ep.step(TTR("Editor layout ready."), 5, true);
+		EditorCommandQueue *command = start_editor_process("loading_editor_layout", TTR("Loading editor"), 3);
+		command->add_step(TTR("Loading docks..."), 0, callable_mp(editor_dock_manager, &EditorDockManager::load_docks_from_config).bind(config, "docks", true));
+		command->add_step(TTR("Reopening scenes..."), 1, callable_mp(this, &EditorNode::_load_open_scenes_from_config).bind(config));
+		command->add_step(TTR("Loading central editor layout..."), 2, callable_mp(this, &EditorNode::_load_central_editor_layout_from_config).bind(config));
+		command->add_step(TTR("Loading plugin window layout..."), 3, callable_mp(this, &EditorNode::_load_editor_layout_finalize_step).bind(config));
 	}
+}
+
+void EditorNode::_load_editor_layout_finalize_step(const Ref<ConfigFile> &config) {
+	editor_data.set_plugin_window_layout(config);
 	load_editor_layout_done = true;
 }
 
