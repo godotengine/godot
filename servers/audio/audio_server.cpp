@@ -343,35 +343,57 @@ void AudioServer::_mix_step() {
 		}
 
 		// Process effects.
-		if (!bus->bypass) {
-			for (int j = 0; j < bus->effects.size(); j++) {
-				if (!bus->effects[j].enabled) {
+		const uint32_t crossfade_frames = MAX(static_cast<uint32_t>(1), static_cast<uint32_t>(get_mix_rate() * Bus::Effect::CROSSFADE_DURATION_SECONDS));
+		const float crossfade_delta = 1.0f / crossfade_frames;
+		for (int j = 0; j < bus->effects.size(); j++) {
+			const bool target_enabled = !bus->bypass && bus->effects[j].enabled;
+			const float target_mix = target_enabled ? 1.0f : 0.0f;
+			const float start_mix = bus->effects[j].wet_mix;
+
+#ifdef DEBUG_ENABLED
+			uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+#endif
+
+			// Only skip processing when crossfade finishes.
+			if (!target_enabled && bus->effects[j].wet_mix == 0.0f) {
+				continue;
+			}
+
+			for (int k = 0; k < bus->channels.size(); k++) {
+				if (!(bus->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
+					continue;
+				}
+				bus->channels.write[k].effect_instances.write[j]->process(bus->channels[k].buffer.ptr(), temp_buffer.write[k].ptrw(), buffer_size);
+			}
+
+			// Swap buffers, so internal buffer always has the right data.
+			// Crossfade dry and wet signals if effect enabled/disabled or bus bypassed/enabled.
+			for (int k = 0; k < bus->channels.size(); k++) {
+				if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
 					continue;
 				}
 
-#ifdef DEBUG_ENABLED
-				uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-#endif
+				if (start_mix != target_mix) {
+					const AudioFrame *const dry = bus->channels[k].buffer.ptr();
+					AudioFrame *wet = temp_buffer.write[k].ptrw();
 
-				for (int k = 0; k < bus->channels.size(); k++) {
-					if (!(bus->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
-						continue;
+					for (uint32_t n = 0; n < buffer_size; n++) {
+						const float mix = Math::move_toward(start_mix, target_mix, crossfade_delta * (n + 1));
+
+						wet[n].left = dry[n].left * (1.0f - mix) + wet[n].left * mix;
+						wet[n].right = dry[n].right * (1.0f - mix) + wet[n].right * mix;
 					}
-					bus->channels.write[k].effect_instances.write[j]->process(bus->channels[k].buffer.ptr(), temp_buffer.write[k].ptrw(), buffer_size);
 				}
 
-				// Swap buffers, so internal buffer always has the right data.
-				for (int k = 0; k < bus->channels.size(); k++) {
-					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence())) {
-						continue;
-					}
-					SWAP(bus->channels.write[k].buffer, temp_buffer.write[k]);
-				}
-
-#ifdef DEBUG_ENABLED
-				bus->effects.write[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
-#endif
+				SWAP(bus->channels.write[k].buffer, temp_buffer.write[k]);
 			}
+
+			// Advance the crossfade once per buffer to keep all channels synchronized.
+			bus->effects.write[j].wet_mix = Math::move_toward(start_mix, target_mix, crossfade_delta * buffer_size);
+
+#ifdef DEBUG_ENABLED
+			bus->effects.write[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
+#endif
 		}
 
 		// Process send.
@@ -933,6 +955,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 	fx.effect = p_effect;
 	//fx.instance=p_effect->instantiate();
 	fx.enabled = true;
+	fx.wet_mix = (!buses[p_bus]->bypass && fx.enabled) ? 1.0f : 0.0f;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;
 #endif
@@ -1626,6 +1649,7 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
 				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+				bfx.wet_mix = (!bus->bypass && bfx.enabled) ? 1.0f : 0.0f;
 #ifdef DEBUG_ENABLED
 				bfx.prof_time = 0;
 #endif
