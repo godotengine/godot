@@ -41,11 +41,13 @@ private:
 
 	String target_function;
 	HashMap<String, String> options;
+	bool quit_requested = false;
 
 	Pair<String, int> to_breakpoint(const String &p_line);
 	void print_variables(const List<String> &p_names, const List<Variant> &p_values, const String &p_variable_prefix);
 
 public:
+	void poll_events(bool p_is_idle);
 	void debug(bool p_can_continue, bool p_is_error_breakpoint);
 	void send_message(const String &p_message, const Array &p_args);
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type);

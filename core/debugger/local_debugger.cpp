@@ -116,6 +116,20 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 };
 
+void LocalDebugger::poll_events(bool p_is_idle) {
+	if (!quit_requested) {
+		return;
+	}
+	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	if (!main_loop) {
+		return;
+	}
+	quit_requested = false;
+	if (main_loop->get_class() == "SceneTree") {
+		main_loop->call("quit");
+	}
+}
+
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
 		return;
@@ -286,7 +300,11 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_lines_left(-1);
 
 			MainLoop *main_loop = OS::get_singleton()->get_main_loop();
-			if (main_loop->get_class() == "SceneTree") {
+			if (!main_loop) {
+				// The break happened before the main loop was set, e.g. in the
+				// `_init()` of a `--script`. Quit once the main loop runs.
+				quit_requested = true;
+			} else if (main_loop->get_class() == "SceneTree") {
 				main_loop->call("quit");
 			}
 			break;
