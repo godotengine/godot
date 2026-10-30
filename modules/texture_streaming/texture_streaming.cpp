@@ -139,7 +139,7 @@ RID TextureStreaming::texture_configure_streaming(RID p_texture, Image::Format p
 }
 
 void TextureStreaming::_texture_configure_streaming_impl(Completion<RID> *p_completion, RID p_texture, Image::Format p_format, int p_width, int p_height, int p_min_lod, int p_max_lod, const Callable &p_reload_callable) {
-	print_verbose(vformat("TextureStreaming: Configuring streaming for texture RID(%d) size(%dx%d) format(%d) min_lod(%d) max_lod(%d)",
+	PRINT_VERBOSE(vformat("TextureStreaming: Configuring streaming for texture RID(%d) size(%dx%d) format(%d) min_lod(%d) max_lod(%d)",
 			p_texture.get_id(), p_width, p_height, int(p_format), p_min_lod, p_max_lod));
 
 	RID rid = streaming_info_owner.allocate_rid();
@@ -251,7 +251,7 @@ TextureStreaming::TextureStreaming() {
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextureStreaming::_on_settings_changed));
 
-	print_verbose(vformat("TextureStreaming settings: enabled=%d, budget_mb=%d, min_lod=%d, max_lod=%d",
+	PRINT_VERBOSE(vformat("TextureStreaming settings: enabled=%d, budget_mb=%d, min_lod=%d, max_lod=%d",
 			(int)setting_streaming_is_enabled,
 			(int)setting_budget_mb,
 			setting_min_lod,
@@ -342,7 +342,7 @@ void TextureStreaming::_stop_streaming() {
 		buffer_pool.clear();
 	}
 
-	print_verbose("TextureStreaming: Streaming stopped.");
+	PRINT_VERBOSE("TextureStreaming: Streaming stopped.");
 }
 
 void TextureStreaming::_render_thread_specific_initialization() {
@@ -397,7 +397,7 @@ void TextureStreaming::_feedback_frame_done_callback_render_thread() {
 	// Try to get a new buffer for the next frame
 	RID next_buffer = _feedback_buffer_get_next();
 	if (next_buffer.is_null()) {
-		print_verbose("TextureStreaming _feedback_frame_done_callback called but no feedback buffers are available.");
+		PRINT_VERBOSE("TextureStreaming _feedback_frame_done_callback called but no feedback buffers are available.");
 		feedback_buffer_last_submit_ticks = current_ticks; //
 		return;
 	}
@@ -566,7 +566,7 @@ void TextureStreaming::_feedback_buffer_thread_func(void *p_udata) {
 
 	TextureStreaming *texture_streaming = static_cast<TextureStreaming *>(p_udata);
 
-	print_verbose("Texture Streaming process thread starting...");
+	PRINT_VERBOSE("Texture Streaming process thread starting...");
 
 	texture_streaming->_feedback_buffer_thread_main();
 }
@@ -770,7 +770,7 @@ void TextureStreaming::_texture_reload_thread_func(void *p_udata) {
 
 	TextureStreaming *tss = static_cast<TextureStreaming *>(p_udata);
 
-	print_verbose("Texture Streaming i/o thread starting...");
+	PRINT_VERBOSE("Texture Streaming i/o thread starting...");
 
 	tss->_texture_reload_thread_main();
 }
@@ -859,7 +859,7 @@ void TextureStreaming::_texture_remove_finalize(RID p_state_rid) {
 }
 
 void TextureStreaming::flush_texture_streaming() {
-	print_verbose("Texture Streaming flush requested.");
+	PRINT_VERBOSE("Texture Streaming flush requested.");
 	if (!feedback_buffer_thread.is_started()) {
 		// Not running — nothing to flush, signal immediately.
 		callable_mp(this, &TextureStreaming::_emit_flush_completed).call_deferred();
@@ -886,6 +886,6 @@ void TextureStreaming::_flush_fence() {
 }
 
 void TextureStreaming::_emit_flush_completed() {
-	print_verbose("Texture Streaming flush completed.");
+	PRINT_VERBOSE("Texture Streaming flush completed.");
 	emit_signal(SNAME("flush_completed"));
 }
