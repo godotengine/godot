@@ -38,6 +38,7 @@
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -45,6 +46,7 @@
 #include "scene/resources/3d/cylinder_shape_3d.h"
 #include "scene/resources/3d/height_map_shape_3d.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 
@@ -53,11 +55,11 @@ CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
 
 	show_only_when_selected = EDITOR_GET("editors/3d_gizmos/gizmo_settings/show_collision_shapes_only_when_selected");
 
-	create_collision_material("shape_material", 2.0);
-	create_collision_material("shape_material_arraymesh", 0.0625);
+	create_collision_material("shape_material", Shape3D::DEBUG_ALPHA_FACTOR);
+	create_collision_material("shape_material_arraymesh", 1.0);
 
-	create_collision_material("shape_material_disabled", 0.0625);
-	create_collision_material("shape_material_arraymesh_disabled", 0.015625);
+	create_collision_material("shape_material_disabled", 1.0 / Shape3D::DEBUG_ALPHA_FACTOR);
+	create_collision_material("shape_material_arraymesh_disabled", 1.0 / (Shape3D::DEBUG_ALPHA_FACTOR * 2.0));
 
 	create_handle_material("handles");
 }
@@ -323,7 +325,11 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			get_material(!cs->is_disabled() ? "shape_material_arraymesh" : "shape_material_arraymesh_disabled", p_gizmo);
 	const Ref<Material> handles_material = get_material("handles");
 
-	const Color collision_color = cs->is_disabled() ? Color(1.0, 1.0, 1.0, 0.75) : cs->get_debug_color();
+	real_t modulate_alpha = SceneTree::get_singleton()->get_debug_collisions_color_3d_modulate_alpha();
+	const Color collision_color =
+			cs->is_disabled()
+			? Color(1.0, 1.0, 1.0, modulate_alpha)
+			: cs->get_debug_color() * Color(1.0, 1.0, 1.0, modulate_alpha);
 
 	if (cs->get_debug_fill_enabled()) {
 		Ref<ArrayMesh> array_mesh = s->get_debug_arraymesh_faces(collision_color);
