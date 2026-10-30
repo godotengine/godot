@@ -56,7 +56,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 
 	PoolByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	uint64_t flen = f->get_len();
 	out.resize(flen + 1);
@@ -83,7 +83,7 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 
 Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
 	memset(w, 0, sizeof(w));
@@ -166,7 +166,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 
 	PoolByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
 	uint64_t flen = f->get_len();
 	out.resize(flen + 1);
@@ -193,7 +193,7 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 
 Error X509CertificateMbedTLS::save(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_CANT_OPEN, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
