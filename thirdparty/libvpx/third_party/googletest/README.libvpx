@@ -1,0 +1,36 @@
+Name: Google Test: Google's C++ Testing Framework
+Short Name: googletest
+URL: https://github.com/google/googletest
+Version: 1.17.0
+Update Mechanism: Manual
+Revision: 52eb8108c5bdec04579160ae17225d66034bd723
+License: BSD-3-Clause
+License File: src/LICENSE
+Shipped in Chromium: no
+Security Critical: no
+
+Description:
+Google's framework for writing C++ tests on a variety of platforms
+(Linux, macOS, Windows, Android NDK, etc).  Based on the xUnit
+testing framework.  Supports automatic test discovery, a rich set of
+assertions, user-defined assertions, death tests, fatal and non-fatal
+failures, value-parameterized tests, type-parameterized tests, and
+various options for running the tests.
+
+Local Modifications:
+- Remove everything but:
+  .clang-format
+  CONTRIBUTORS
+  googletest/
+   include
+   README.md
+   src
+  LICENSE
+- Move .clang-format, CONTRIBUTORS, and LICENSE into googletest/
+- Apply the patch googletest.patch. The patch defines the Notification
+  class for MinGW by using a Windows manual-reset event object to fix
+  the MinGW GCC (version < 13) compilation errors caused by the lack of
+  std::mutex and std::condition_variable in the <mutex> and
+  <condition_variable> headers if GCC is configured with the win32
+  thread model. See
+  https://stackoverflow.com/questions/17242516/mingw-w64-threads-posix-vs-win32
