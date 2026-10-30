@@ -31,6 +31,7 @@
 #include "test_main.h"
 
 #include "core/config/engine.h"
+#include "core/crypto/crypto.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -90,6 +91,7 @@ int test_main(int argc, char *argv[]) {
 	}
 	OS::get_singleton()->set_cmdline("", args, List<String>());
 	DisplayServerMock::register_mock_driver();
+	Crypto::load_default_certificates(String());
 
 	WorkerThreadPool::get_singleton()->init();
 

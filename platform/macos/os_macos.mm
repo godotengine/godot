@@ -61,6 +61,34 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
+void print_cferror(CFErrorRef p_error) {
+	if (p_error == nullptr) {
+		printf("Error object is null");
+		return;
+	}
+
+	CFStringRef domain = CFErrorGetDomain(p_error);
+	CFIndex code = CFErrorGetCode(p_error);
+	CFStringRef description = CFErrorCopyDescription(p_error);
+	CFDictionaryRef user_info = CFErrorCopyUserInfo(p_error);
+
+	NSLog(@"Domain: %@", (__bridge NSString *)domain);
+	NSLog(@"Code: %ld", (long)code);
+	NSLog(@"Description: %@", (__bridge NSString *)description);
+
+	// Print all keys in the user info dictionary
+	if (user_info != NULL) {
+		NSLog(@"User Info: %@", (__bridge NSDictionary *)user_info);
+		CFRelease(user_info);
+	} else {
+		NSLog(@"User Info: (none)");
+	}
+
+	if (description != NULL) {
+		CFRelease(description);
+	}
+}
+
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	bool wake_for_events = p_wake_for_events;
 	if (!wake_for_events) {
@@ -979,6 +1007,9 @@ bool OS_MacOS::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "pc") {
 		return true;
 	}
+	if (p_feature == "tls_cert_validation") {
+		return true;
+	}
 
 	return false;
 }
@@ -1031,6 +1062,151 @@ String OS_MacOS::get_system_ca_certificates() {
 	}
 	CFRelease(result);
 	return certs;
+}
+
+Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r_result) {
+	Error status = OK;
+
+	const int num_certs = p_data.size();
+	r_result = CFArrayCreateMutable(nullptr, num_certs, &kCFTypeArrayCallBacks);
+	ERR_FAIL_NULL_V(r_result, ERR_OUT_OF_MEMORY);
+
+	for (int i = 0; i < num_certs; i++) {
+		SecCertificateRef cert;
+		CFDataRef data;
+		const unsigned char *der = p_data[i].ptr();
+		size_t der_len = p_data[i].size();
+
+		data = CFDataCreate(nullptr, der, (CFIndex)der_len);
+		if (!data) {
+			status = ERR_OUT_OF_MEMORY;
+			break;
+		}
+
+		cert = SecCertificateCreateWithData(nullptr, data);
+		CFRelease(data);
+
+		if (!cert) {
+			status = ERR_OUT_OF_MEMORY;
+			break;
+		}
+
+		CFArrayAppendValue(r_result, cert);
+		CFRelease(cert);
+	}
+
+	if (status != OK) {
+		CFRelease(r_result);
+		r_result = nullptr;
+	}
+
+	return status;
+}
+
+Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
+	CFStringRef host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
+	CFMutableArrayRef policies = nullptr;
+	SecTrustRef trust = nullptr;
+	SecPolicyRef policy = nullptr;
+
+	CFMutableArrayRef ssl_certs = nullptr;
+	CFMutableArrayRef ca_certs = nullptr;
+	Error status = OK;
+	OSStatus ret;
+	CFErrorRef error = NULL;
+
+	host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
+	if (!host_str) {
+		status = ERR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	// Create the necessary certificate bundles
+	status = der_to_cfarray(p_ssl_data, ssl_certs);
+	if (status != OK) {
+		goto out;
+	}
+	if (p_ca_data.size() > 0) {
+		status = der_to_cfarray(p_ca_data, ca_certs);
+		if (status != OK) {
+			goto out;
+		}
+	}
+
+	// Add the SSL and Revocation policies to be checked
+	policies = CFArrayCreateMutable(nullptr, 2, &kCFTypeArrayCallBacks);
+	if (!policies) {
+		status = ERR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	policy = SecPolicyCreateSSL(true, host_str);
+	if (!policy) {
+		status = ERR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	CFArrayAppendValue(policies, policy);
+	CFRelease(policy);
+
+	policy = SecPolicyCreateRevocation(kSecRevocationUseAnyAvailableMethod);
+	if (!policy) {
+		status = ERR_OUT_OF_MEMORY;
+		goto out;
+	}
+
+	CFArrayAppendValue(policies, policy);
+	CFRelease(policy);
+	policy = nullptr;
+
+	ret = SecTrustCreateWithCertificates(ssl_certs, policies, &trust);
+	if (ret != noErr || !trust) {
+		status = ERR_UNAUTHORIZED;
+		goto out;
+	}
+
+	if (ca_certs) {
+		ret = SecTrustSetAnchorCertificates(trust, ca_certs);
+		if (ret != noErr) {
+			status = ERR_UNAUTHORIZED;
+			goto out;
+		}
+
+		// Disable using the system anchor certificates, trusting only
+		// the ones passed in via SecTrustSetAnchorCertificates.
+		ret = SecTrustSetAnchorCertificatesOnly(trust, true);
+		if (ret != noErr) {
+			status = ERR_UNAUTHORIZED;
+			goto out;
+		}
+	}
+
+	status = SecTrustEvaluateWithError(trust, &error) ? OK : ERR_UNAUTHORIZED;
+
+out:
+	if (host_str) {
+		CFRelease(host_str);
+	}
+	if (policies) {
+		CFRelease(policies);
+	}
+	if (policy) {
+		CFRelease(policy);
+	}
+	if (ssl_certs) {
+		CFRelease(ssl_certs);
+	}
+	if (ca_certs) {
+		CFRelease(ca_certs);
+	}
+	if (trust) {
+		CFRelease(trust);
+	}
+	if (error) {
+		CFRelease(error);
+	}
+
+	return status;
 }
 
 Error OS_MacOS::get_entropy(uint8_t *r_buffer, int p_bytes) {

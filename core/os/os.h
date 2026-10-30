@@ -180,6 +180,7 @@ public:
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
+	virtual Error verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) { return ERR_UNAVAILABLE; }
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();

@@ -166,6 +166,8 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+	virtual Error verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) override;
+
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	virtual void run() = 0;

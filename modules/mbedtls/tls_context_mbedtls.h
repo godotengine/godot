@@ -70,14 +70,25 @@ private:
 
 	Error _setup(int p_endpoint, int p_transport, int p_authmode);
 
+	static int _os_cert_validation(void *p_user_data, mbedtls_x509_crt *p_crt, int p_depth, uint32_t *p_flags) {
+		return ((TLSContextMbedTLS *)p_user_data)->do_cert_validation(p_crt, p_depth, p_flags);
+	}
+
+	Error _apply_ca_bundle(Ref<TLSOptions> p_options);
+	Error _use_os_validation(Ref<TLSOptions> p_options);
+	Error _use_ca_only_validation(Ref<TLSOptions> p_options);
+
 public:
 	static void print_mbedtls_error(int p_ret);
+	static void encode_mbedtls_x509_to_vector(mbedtls_x509_crt *p_crt, Vector<PackedByteArray> &r_crts);
 
 	Error init_server(int p_transport, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
 	Error init_client(int p_transport, const String &p_hostname, Ref<TLSOptions> p_options);
 	void clear();
 
 	mbedtls_ssl_context *get_context();
+
+	int do_cert_validation(mbedtls_x509_crt *p_crt, int p_depth, uint32_t *p_flags);
 
 	TLSContextMbedTLS();
 	~TLSContextMbedTLS() override;
