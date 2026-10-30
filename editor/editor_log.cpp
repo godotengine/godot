@@ -37,6 +37,10 @@
 #include "scene/gui/center_container.h"
 #include "scene/resources/dynamic_font.h"
 
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
 	if (self->current != Thread::get_caller_id()) {
@@ -74,6 +78,30 @@ void EditorLog::_notification(int p_what) {
 			theme_cache.warning_color = get_color("warning_color", "Editor");
 			theme_cache.warning_icon = get_icon("Warning", "EditorIcons");
 			theme_cache.message_color = get_color("font_color", "Editor") * Color(1, 1, 1, 0.6);
+
+			terminal_colors._default = EDITOR_GET("text_editor/highlighting/text_color");
+
+			terminal_colors.bright_white = EDITOR_GET("text_editor/highlighting/caret_color");
+			terminal_colors.bright_black = EDITOR_GET("text_editor/highlighting/text_selected_color");
+
+			terminal_colors.red = EDITOR_GET("text_editor/highlighting/keyword_color");
+			terminal_colors.green = EDITOR_GET("text_editor/highlighting/base_type_color");
+			terminal_colors.blue = EDITOR_GET("text_editor/highlighting/bookmark_color");
+			terminal_colors.yellow = EDITOR_GET("text_editor/highlighting/string_color");
+			terminal_colors.magenta = EDITOR_GET("text_editor/highlighting/control_flow_keyword_color");
+			terminal_colors.cyan = EDITOR_GET("text_editor/highlighting/symbol_color");
+
+			float M = 1.3f;
+
+			terminal_colors.white = EDITOR_GET("text_editor/highlighting/text_color");
+			terminal_colors.black = EDITOR_GET("text_editor/highlighting/caret_background_color");
+
+			terminal_colors.bright_red = terminal_colors.red * M;
+			terminal_colors.bright_green = terminal_colors.green * M;
+			terminal_colors.bright_blue = terminal_colors.blue * M;
+			terminal_colors.bright_yellow = terminal_colors.yellow * M;
+			terminal_colors.bright_magenta = terminal_colors.magenta * M;
+			terminal_colors.bright_cyan = terminal_colors.cyan * M;
 		} break;
 	}
 }
@@ -103,6 +131,78 @@ void EditorLog::copy() {
 	_copy_request();
 }
 
+bool EditorLog::_log_push_terminal_color(TerminalColor::Col p_color) {
+	Color c;
+
+	switch (p_color) {
+		default: {
+			return false;
+		} break;
+		case TerminalColor::DEFAULT: {
+			c = terminal_colors._default;
+		} break;
+		case TerminalColor::WHITE: {
+			c = terminal_colors.white;
+		} break;
+		case TerminalColor::BLACK: {
+			c = terminal_colors.black;
+		} break;
+		case TerminalColor::RED: {
+			c = terminal_colors.red;
+		} break;
+		case TerminalColor::GREEN: {
+			c = terminal_colors.green;
+		} break;
+		case TerminalColor::BLUE: {
+			c = terminal_colors.blue;
+		} break;
+		case TerminalColor::YELLOW: {
+			c = terminal_colors.yellow;
+		} break;
+		case TerminalColor::MAGENTA: {
+			c = terminal_colors.magenta;
+		} break;
+		case TerminalColor::CYAN: {
+			c = terminal_colors.cyan;
+		} break;
+		case TerminalColor::BRIGHT_WHITE: {
+			c = terminal_colors.bright_white;
+		} break;
+		case TerminalColor::BRIGHT_BLACK: {
+			c = terminal_colors.bright_black;
+		} break;
+		case TerminalColor::BRIGHT_RED: {
+			c = terminal_colors.bright_red;
+		} break;
+		case TerminalColor::BRIGHT_GREEN: {
+			c = terminal_colors.bright_green;
+		} break;
+		case TerminalColor::BRIGHT_BLUE: {
+			c = terminal_colors.bright_blue;
+		} break;
+		case TerminalColor::BRIGHT_YELLOW: {
+			c = terminal_colors.bright_yellow;
+		} break;
+		case TerminalColor::BRIGHT_MAGENTA: {
+			c = terminal_colors.bright_magenta;
+		} break;
+		case TerminalColor::BRIGHT_CYAN: {
+			c = terminal_colors.bright_cyan;
+		} break;
+	}
+
+	log->push_color(c);
+	return true;
+}
+
+void EditorLog::_log_add_text(const String &p_msg) {
+#ifdef MODULE_REGEX_ENABLED
+	log->add_text(strip_ansi_regex->sub(p_msg, "", true));
+#else
+	log->add_text(p_msg);
+#endif
+}
+
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	bool restore = p_type != MSG_TYPE_STD;
 	switch (p_type) {
@@ -128,7 +228,45 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 	}
 
-	log->add_text(p_msg);
+	// Terminal colors.
+	int start_text = 0;
+	int start_color = 0;
+	TerminalColor::Col prev_col = TerminalColor::DEFAULT;
+	TerminalColor::Col curr_col = TerminalColor::DEFAULT;
+
+	int found = 0;
+	bool any_colors_found = false;
+
+	while (found != -1) {
+		found = TerminalColor::find(p_msg, start_text, curr_col, start_color);
+
+		if (found != -1) {
+			if (start_color != start_text) {
+				String section = p_msg.substr(start_text, start_color - start_text);
+
+				if (_log_push_terminal_color(prev_col)) {
+					restore = true;
+				}
+				_log_add_text(section);
+			}
+			prev_col = curr_col;
+			start_text = found;
+			any_colors_found = true;
+		}
+	}
+
+	if (!any_colors_found) {
+		log->add_text(p_msg);
+	} else {
+		String section = p_msg.substr(start_text);
+		if (section.length()) {
+			if (_log_push_terminal_color(prev_col)) {
+				restore = true;
+			}
+			_log_add_text(section);
+		}
+	}
+
 	log->add_newline();
 
 	if (restore) {
@@ -153,6 +291,9 @@ void EditorLog::_bind_methods() {
 }
 
 EditorLog::EditorLog() {
+#ifdef MODULE_REGEX_ENABLED
+	strip_ansi_regex = memnew(RegEx("\u001b\\[((?:\\d|;)*)([a-zA-Z])"));
+#endif
 	VBoxContainer *vb = this;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -197,6 +338,10 @@ EditorLog::EditorLog() {
 }
 
 void EditorLog::deinit() {
+#ifdef MODULE_REGEX_ENABLED
+	memdelete(strip_ansi_regex);
+#endif
+
 	remove_error_handler(&eh);
 }
 
