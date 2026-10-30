@@ -773,10 +773,8 @@ void TabBar::_notification(int p_what) {
 			Vector2 size = get_size();
 
 			if (tabs.is_empty()) {
-				// Draw the drop indicator where the first tab would be if there are no tabs.
 				if (dragging_valid_tab) {
-					int x = rtl ? size.x : 0;
-					theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+					_draw_tab_drop(get_canvas_item());
 				}
 
 				return;
@@ -863,36 +861,41 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 	int x;
 	bool rtl = is_layout_rtl();
 
-	int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
-	if (closest_tab != -1) {
-		Rect2 tab_rect = get_tab_rect(closest_tab);
-		x = tab_rect.position.x;
-
-		// Only add the tab_separation if closest tab is not on the edge.
-		bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
-		bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
-
-		// Calculate midpoint between tabs.
-		if (get_local_mouse_position().x > tab_rect.get_center().x) {
-			x += tab_rect.size.x;
-			if (not_rightmost_tab) {
-				x += Math::ceil(0.5f * theme_cache.tab_separation);
-			}
-		} else if (not_leftmost_tab) {
-			x -= Math::floor(0.5f * theme_cache.tab_separation);
-		}
+	if (tabs.is_empty()) {
+		// Draw the drop indicator where the first tab would be if there are no tabs.
+		x = rtl ? size.x : 0;
 	} else {
-		if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
-			x = get_tab_rect(0).position.x;
-			if (rtl) {
-				x += get_tab_rect(0).size.width;
+		int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
+		if (closest_tab != -1) {
+			Rect2 tab_rect = get_tab_rect(closest_tab);
+			x = tab_rect.position.x;
+
+			// Only add the tab_separation if closest tab is not on the edge.
+			bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
+			bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
+
+			// Calculate midpoint between tabs.
+			if (get_local_mouse_position().x > tab_rect.get_center().x) {
+				x += tab_rect.size.x;
+				if (not_rightmost_tab) {
+					x += Math::ceil(0.5f * theme_cache.tab_separation);
+				}
+			} else if (not_leftmost_tab) {
+				x -= Math::floor(0.5f * theme_cache.tab_separation);
 			}
 		} else {
-			Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+			if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
+				x = get_tab_rect(0).position.x;
+				if (rtl) {
+					x += get_tab_rect(0).size.width;
+				}
+			} else {
+				Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
 
-			x = tab_rect.position.x;
-			if (!rtl) {
-				x += tab_rect.size.width;
+				x = tab_rect.position.x;
+				if (!rtl) {
+					x += tab_rect.size.width;
+				}
 			}
 		}
 	}
