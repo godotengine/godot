@@ -1,0 +1,30 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_math.h b/thirdparty/basis_universal/encoder/basisu_math.h
+index 3e56747bea..d4aa219a36 100644
+--- a/thirdparty/basis_universal/encoder/basisu_math.h
++++ b/thirdparty/basis_universal/encoder/basisu_math.h
+@@ -35,10 +35,7 @@ namespace bu_math
+ 	{
+ 	public:
+ 		typedef T scalar_type;
+-		enum
+-		{
+-			num_elements = N
+-		};
++		static constexpr int32_t num_elements = N;
+ 
+ 		inline vec()
+ 		{
+@@ -1186,11 +1183,8 @@ namespace bu_math
+ 	{
+ 	public:
+ 		typedef T scalar_type;
+-		enum
+-		{
+-			num_rows = R,
+-			num_cols = C
+-		};
++		static constexpr int32_t num_rows = R;
++		static constexpr int32_t num_cols = C;
+ 
+ 		typedef vec<R, T> col_vec;
+ 		typedef vec < (R > 1) ? (R - 1) : 0, T > subcol_vec;
