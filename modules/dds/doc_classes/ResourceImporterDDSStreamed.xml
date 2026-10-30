@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterDDSStreamed" inherits="ResourceImporter" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Imports a DDS image as a [StreamedTexture2D].
+	</brief_description>
+	<description>
+		Imports a DirectDraw Surface file as a [StreamedTexture2D] rather than a plain texture.
+		The DDS mipmap chain is written into the [code].stex[/code] file exactly as it was authored.
+		[b]Note:[/b] only plain 2D DDS files with a mipmap chain can be streamed. Cubemaps, texture arrays and 3D textures, as well as files with no mipmaps.
+		[b]Note:[/b] unlike [ResourceImporterDDS], this importer does not keep the original file in exported projects. Once a DDS is imported as a streamed texture, reading its original [code]res://[/code] path with [FileAccess] at run-time will fail, like other imported texture formats.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="streaming/max_lod_override" type="int" setter="" getter="" default="0">
+			The maximum LOD (mipmap level) that can be loaded for this texture. Lower values allow higher resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/max_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+		</member>
+		<member name="streaming/min_lod_override" type="int" setter="" getter="" default="0">
+			The minimum LOD (mipmap level) the texture starts at when loaded. Higher values result in lower initial resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/min_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+		</member>
+	</members>
+</class>
