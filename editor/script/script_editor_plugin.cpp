@@ -2748,7 +2748,7 @@ PackedStringArray DocumentEditorContainer::get_unsaved_files() const {
 
 void DocumentEditorContainer::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
-	if (!current || _test_script_times_on_disk()) {
+	if (!current || !current->is_unsaved() || _test_script_times_on_disk()) {
 		return;
 	}
 
