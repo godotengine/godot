@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Stores information about screen drag events. See [method Node._input].
+		[b]Note:[/b] This [InputEvent] is only emitted on platforms where Godot supports [i]native[/i] touch events, i.e. Android and iOS. On desktop platforms, this event type is never emitted unless done manually through a script with [method Input.parse_input_event].
 	</description>
 	<tutorials>
 		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
