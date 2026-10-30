@@ -163,14 +163,15 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	draw_canvas = RS::get_singleton()->canvas_create();
 	sel_drag_ci = RS::get_singleton()->canvas_item_create();
-
-	srect_color = p_settings.get("editors/2d/selection_rectangle_color", Color());
-	srect_locked_color = p_settings.get("editors/2d/locked_selection_rectangle_color", Color());
-
 	srect_ci = RS::get_singleton()->canvas_item_create();
+
 	RS::get_singleton()->viewport_attach_canvas(root->get_viewport_rid(), draw_canvas);
 	RS::get_singleton()->canvas_item_set_parent(sel_drag_ci, draw_canvas);
 	RS::get_singleton()->canvas_item_set_parent(srect_ci, draw_canvas);
+	RS::get_singleton()->viewport_set_canvas_stacking(root->get_viewport_rid(), draw_canvas, RSE::CANVAS_LAYER_MAX, 0);
+
+	srect_color = p_settings.get("editors/2d/selection_rectangle_color", Color());
+	srect_locked_color = p_settings.get("editors/2d/locked_selection_rectangle_color", Color());
 
 #ifndef _3D_DISABLED
 	camera_fov = p_settings.get("editors/3d/default_fov", 70);
