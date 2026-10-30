@@ -1059,7 +1059,7 @@ Size2 Label::get_minimum_size() const {
 	_ensure_shaped();
 
 	Size2 min_size = minsize;
-	if (resize_font_to_fit) {
+	if (resize_font_to_fit && get_rendered_font_size() != minimum_font_size) {
 		min_size = Size2(1, 1);
 	}
 
@@ -1078,7 +1078,7 @@ Size2 Label::get_minimum_size() const {
 		}
 		return Size2(1, min_size.height) + min_style;
 	} else {
-		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || resize_font_to_fit) {
+		if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING || (resize_font_to_fit && get_rendered_font_size() != minimum_font_size)) {
 			min_size.width = 1;
 		}
 		return min_size + min_style;
