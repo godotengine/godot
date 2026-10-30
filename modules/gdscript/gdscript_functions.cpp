@@ -1319,7 +1319,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				break;
 			}
 
-			uint32_t id = *p_args[0];
+			ObjectID id = *p_args[0];
 			r_ret = ObjectDB::get_instance(id);
 
 		} break;
