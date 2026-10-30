@@ -1,0 +1,6 @@
+GH-118717
+---------
+Validate extension JSON: Error: Field 'classes/Object/methods/get/arguments': size changed value in new API, from 1 to 2.
+
+Added optional "default" argument to get method in Object class.
+Compatibility methods registered.
