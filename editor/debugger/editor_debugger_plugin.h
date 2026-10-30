@@ -45,7 +45,7 @@ private:
 	ScriptEditorDebugger *debugger = nullptr;
 	ObjectID debugger_id;
 
-	void _breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump);
+	void _breaked(bool p_really_did, bool p_can_debug, const String &p_message, bool p_has_stackdump, int p_thread_id);
 	void _started();
 	void _stopped();
 
