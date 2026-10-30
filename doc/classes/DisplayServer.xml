@@ -858,11 +858,23 @@
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
 			<param index="0" name="screen" type="int" default="-1" />
+			<param index="1" name="inactive" type="bool" default="false" />
 			<description>
 				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
+				If [param inactive] is set to [code]true[/code], inactive cutouts are returned (e.g, inactive under display camera).
 				[b]Note:[/b] The returned rectangles are relative to the physical screen and not the virtual desktop.
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
-				[b]Note:[/b] Currently only implemented on Android and macOS. Other platforms will return an empty array even if they do have display cutouts or notches.
+				[b]Note:[/b] Currently only implemented on Android, iOS and macOS. Other platforms will return an empty array even if they do have display cutouts or notches.
+			</description>
+		</method>
+		<method name="get_display_divisions" qualifiers="const">
+			<return type="Rect2[]" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<param index="1" name="inactive" type="bool" default="false" />
+			<description>
+				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a fold of a hinge. Returns an empty array if the device does not have hinge.
+				If [param inactive] is set to [code]true[/code], inactive divisions are returned (e.g, fully opened hinge).
+				[b]Note:[/b] Currently only implemented on iOS. Other platforms will return an empty array even if they do have hinge.
 			</description>
 		</method>
 		<method name="get_display_safe_area" qualifiers="const">

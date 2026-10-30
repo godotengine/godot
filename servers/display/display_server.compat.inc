@@ -47,7 +47,11 @@ RID DisplayServer::_accessibility_create_sub_text_edit_elements_bind_compat_1134
 }
 
 TypedArray<Rect2> DisplayServer::_get_display_cutouts_bind_compat_119196() const {
-	return get_display_cutouts(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
+	return get_display_cutouts(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW, false);
+}
+
+TypedArray<Rect2> DisplayServer::_get_display_cutouts_bind_compat_XXXXXX(int p_screen) const {
+	return get_display_cutouts(p_screen, false);
 }
 
 Rect2i DisplayServer::_get_display_safe_area_bind_compat_119196() const {
@@ -59,6 +63,7 @@ void DisplayServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::_file_dialog_with_options_show_bind_compat_98194);
 	ClassDB::bind_compatibility_method(D_METHOD("accessibility_create_sub_text_edit_elements", "parent_rid", "shaped_text", "min_height", "insert_pos"), &DisplayServer::_accessibility_create_sub_text_edit_elements_bind_compat_113459, DEFVAL(-1));
 	ClassDB::bind_compatibility_method(D_METHOD("get_display_cutouts"), &DisplayServer::_get_display_cutouts_bind_compat_119196);
+	ClassDB::bind_compatibility_method(D_METHOD("get_display_cutouts", "screen"), &DisplayServer::_get_display_cutouts_bind_compat_XXXXXX);
 	ClassDB::bind_compatibility_method(D_METHOD("get_display_safe_area"), &DisplayServer::_get_display_safe_area_bind_compat_119196);
 }
 

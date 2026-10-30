@@ -276,7 +276,7 @@ Color DisplayServerAndroid::get_base_color() const {
 	return godot_java->get_base_color();
 }
 
-TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts(int p_screen) const {
+TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts(int p_screen, bool p_include_inactive) const {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
