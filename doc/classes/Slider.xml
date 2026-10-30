@@ -58,6 +58,9 @@
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
 		</theme_item>
+		<theme_item name="grabber_anchored" data_type="constant" type="int" default="0">
+			Boolean constant. If [code]1[/code], the grabber area texture is anchored to the grabber position.
+		</theme_item>
 		<theme_item name="grabber_max_size" data_type="constant" type="int" default="0">
 			The maximum allowed size of the [Slider]'s grabber icon. The grabber texture is scaled down so its widest axis is [theme_item grabber_max_size] and the other axis is scaled keeping the original ratio.
 		</theme_item>
