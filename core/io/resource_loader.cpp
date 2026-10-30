@@ -276,7 +276,14 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	const String &original_path = p_original_path.is_empty() ? p_path : p_original_path;
 	load_nesting++;
 
-	print_verbose(vformat("Loading resource: %s remapped: %s", p_path, _path_remap(p_path)));
+	if (is_print_verbose_enabled()) {
+		const String path_remap = _path_remap(p_path);
+		if (path_remap == p_path) {
+			print_line(vformat("Loading resource: %s", p_path));
+		} else {
+			print_line(vformat("Loading resource: %s remapped: %s", p_path, _path_remap(p_path)));
+		}
+	}
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -683,7 +690,13 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 
 	curr_load_task = curr_load_task_backup;
 
-	print_verbose(vformat("Completed load for: '%s' remapped '%s' at thread %d", load_task.local_path, remapped_path, thread_index));
+	if (is_print_verbose_enabled()) {
+		if (load_task.local_path == remapped_path) {
+			print_line(vformat("Completed load for: '%s' at thread %d", load_task.local_path, thread_index));
+		} else {
+			print_line(vformat("Completed load for: '%s' remapped '%s' at thread %d", load_task.local_path, remapped_path, thread_index));
+		}
+	}
 }
 
 String ResourceLoader::_validate_local_path(const String &p_path) {
