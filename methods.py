@@ -1696,3 +1696,9 @@ def get_default_include_paths(env):
         print_warning("Failed to find the include paths in the compiler output.")
         return []
     return [x.strip() for x in match[1].strip().splitlines()]
+
+
+def print_unrecognized_options(opts):
+    print(opts.UnknownVariables())
+    for opt_key, opt_value in opts.UnknownVariables().items():
+        print_warning(f'Unrecognized option. Ignoring "{opt_key}={opt_value}".')
