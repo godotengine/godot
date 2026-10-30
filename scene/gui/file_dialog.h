@@ -226,7 +226,6 @@ private:
 	HBoxContainer *make_dir_container = nullptr;
 	Button *make_dir_button = nullptr;
 
-	Button *show_hidden = nullptr;
 	VSeparator *show_hidden_separator = nullptr;
 	HBoxContainer *layout_container = nullptr;
 	VSeparator *layout_separator = nullptr;
@@ -379,6 +378,8 @@ protected:
 
 	bool favorites_changed = false;
 	bool recents_changed = false;
+
+	Button *show_hidden = nullptr;
 
 	bool _can_use_native_popup() const;
 	virtual void _item_menu_id_pressed(int p_option);
