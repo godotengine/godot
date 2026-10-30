@@ -1789,9 +1789,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
 	p_function->return_type_constraint = resolving_datatype;
 
-#ifdef TOOLS_ENABLED
 	int default_value_count = 0;
-#endif // TOOLS_ENABLED
 
 	for (GDScriptParser::ParameterNode *param : p_function->parameters) {
 		resolve_parameter(param);
@@ -1801,9 +1799,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #endif // DEBUG_ENABLED
 
 		if (param->initializer) {
-#ifdef TOOLS_ENABLED
 			default_value_count++;
-#endif // TOOLS_ENABLED
 
 			if (param->initializer->is_constant) {
 				p_function->default_arg_values.push_back(param->initializer->reduced_value);
@@ -1862,49 +1858,47 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 		}
 	} else {
+		GDScriptParser::DataType parent_return_type;
+		List<GDScriptParser::DataType> parent_args;
+		int parent_default_argc = 0;
+		BitField<MethodFlags> parent_flags = {};
+		StringName parent_native_type;
+		bool is_override = !p_is_lambda && get_function_signature(p_function, false, type_from_metatype(parser->current_class->base_type), function_name, parent_return_type, parent_args, parent_default_argc, parent_flags, &parent_native_type);
+
+		// Determine the return type.
 		if (p_function->return_type != nullptr) {
 			p_function->return_type_constraint = type_from_metatype(resolve_datatype(p_function->return_type));
+		} else if (is_override) {
+			// GH-118877. We decided to make an exception to maintain compatibility until 5.x, since the problem can only be detected at runtime.
+#ifdef DISABLE_DEPRECATED
+			p_function->return_type_constraint = parent_return_type;
+#else
+			if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && parent_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+				GDScriptParser::DataType array_type;
+				array_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+				array_type.kind = GDScriptParser::DataType::BUILTIN;
+				array_type.builtin_type = Variant::ARRAY;
+
+				p_function->return_type_constraint = array_type;
+			} else {
+				p_function->return_type_constraint = parent_return_type;
+			}
+#endif // DISABLE_DEPRECATED
 		} else {
-			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
-			// It's not "undetected" to not mix up with unknown functions.
 			GDScriptParser::DataType return_type;
+			// TODO: Use `ANNOTATED_INFERRED`.
 			return_type.type_source = GDScriptParser::DataType::INFERRED;
 			return_type.kind = GDScriptParser::DataType::VARIANT;
 			p_function->return_type_constraint = return_type;
 		}
 
-#ifdef TOOLS_ENABLED
-		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
-		// Not for the constructor which can vary in signature.
-		GDScriptParser::DataType base_type = parser->current_class->base_type;
-		base_type.is_meta_type = false;
-		GDScriptParser::DataType parent_return_type;
-		List<GDScriptParser::DataType> parameters_types;
-		int default_par_count = 0;
-		BitField<MethodFlags> method_flags = {};
-		StringName native_base;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
-			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
+		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism. This does not apply to constructors, which were handled before.
+		if (is_override) {
+			bool valid = p_function->is_static == parent_flags.has_flag(METHOD_FLAG_STATIC);
 
-			if (p_function->return_type == nullptr) {
-				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
-#ifdef DISABLE_DEPRECATED
-				p_function->return_type_constraint = parent_return_type;
-#else // !DISABLE_DEPRECATED
-				if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
-					GDScriptParser::DataType array_type;
-					array_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-					array_type.kind = GDScriptParser::DataType::BUILTIN;
-					array_type.builtin_type = Variant::ARRAY;
-
-					p_function->return_type_constraint = array_type;
-				} else {
-					p_function->return_type_constraint = parent_return_type;
-				}
-#endif // DISABLE_DEPRECATED
-			} else {
-				// Check return type covariance.
-				GDScriptParser::DataType return_type = p_function->return_type_constraint;
+			// Check return type covariance.
+			if (p_function->return_type != nullptr) {
+				const GDScriptParser::DataType &return_type = p_function->return_type_constraint;
 				if (return_type.is_variant()) {
 					// `is_type_compatible()` returns `true` if one of the types is `Variant`.
 					// Don't allow an explicitly specified `Variant` if the parent return type is narrower.
@@ -1920,17 +1914,17 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				}
 			}
 
-			int parent_min_argc = parameters_types.size() - default_par_count;
-			int parent_max_argc = (method_flags & METHOD_FLAG_VARARG) ? INT_MAX : parameters_types.size();
-			int current_min_argc = p_function->parameters.size() - default_value_count;
-			int current_max_argc = p_function->is_vararg() ? INT_MAX : p_function->parameters.size();
+			const int parent_min_argc = parent_args.size() - parent_default_argc;
+			const int parent_max_argc = (parent_flags & METHOD_FLAG_VARARG) ? INT_MAX : parent_args.size();
+			const int current_min_argc = p_function->parameters.size() - default_value_count;
+			const int current_max_argc = p_function->is_vararg() ? INT_MAX : p_function->parameters.size();
 
 			// `[current_min_argc..current_max_argc]` must include `[parent_min_argc..parent_max_argc]`.
 			valid = valid && current_min_argc <= parent_min_argc && parent_max_argc <= current_max_argc;
 
 			if (valid) {
 				uint32_t i = 0;
-				for (const GDScriptParser::DataType &parent_par_type : parameters_types) {
+				for (const GDScriptParser::DataType &parent_par_type : parent_args) {
 					if (i >= p_function->parameters.size()) {
 						break;
 					}
@@ -1951,7 +1945,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				// Compute parent signature as a string to show in the error message.
 				String parent_signature = String(function_name) + "(";
 				int j = 0;
-				for (const GDScriptParser::DataType &par_type : parameters_types) {
+				for (const GDScriptParser::DataType &par_type : parent_args) {
 					if (j > 0) {
 						parent_signature += ", ";
 					}
@@ -1960,14 +1954,14 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 						parameter = "Variant";
 					}
 					parent_signature += parameter;
-					if (j >= parameters_types.size() - default_par_count) {
+					if (j >= parent_args.size() - parent_default_argc) {
 						parent_signature += " = <default>";
 					}
 
 					j++;
 				}
-				if (method_flags & METHOD_FLAG_VARARG) {
-					if (!parameters_types.is_empty()) {
+				if (parent_flags & METHOD_FLAG_VARARG) {
+					if (!parent_args.is_empty()) {
 						parent_signature += ", ";
 					}
 					parent_signature += "...";
@@ -1984,12 +1978,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
 #ifdef DEBUG_ENABLED
-			if (native_base != StringName()) {
-				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
+			// TODO: Make this a hard error in Godot 5.x.
+			if (parent_native_type != StringName()) {
+				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, parent_native_type);
 			}
 #endif // DEBUG_ENABLED
 		}
-#endif // TOOLS_ENABLED
 	}
 
 #ifdef DEBUG_ENABLED
