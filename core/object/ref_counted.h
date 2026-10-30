@@ -127,6 +127,7 @@ public:
 	}
 
 	operator Variant() const {
+		static_assert(std::is_base_of_v<RefCounted, T>, "T is not a RefCounted type or is an incomplete type.");
 		return Variant(reference);
 	}
 
