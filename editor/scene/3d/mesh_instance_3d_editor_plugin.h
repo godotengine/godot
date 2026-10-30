@@ -107,6 +107,8 @@ class MeshInstance3DEditor : public Control {
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 	void _create_navigation_mesh();
+	void _create_debug_tangents();
+	void _create_uv2();
 
 	void _create_uv_lines(int p_layer);
 	friend class MeshInstance3DEditorPlugin;
