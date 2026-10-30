@@ -33,7 +33,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		In GDScript, it's possible to create lambda functions within a method. Lambda functions are custom callables that are not associated with an [Object] instance. Optionally, lambda functions can also be named. The name will be displayed in the debugger, or when calling [method get_method].
+		In GDScript, it's possible to create [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#lambda-functions]lambda functions[/url] within a method. Lambda functions are custom callables that are not associated with an [Object] instance. Optionally, lambda functions can also be named. The name will be displayed in the debugger, or when calling [method get_method].
 		[codeblock]
 		func _init():
 			var my_lambda = func (message):
@@ -64,6 +64,7 @@
 		[b]Note:[/b] In a boolean context, a callable will evaluate to [code]false[/code] if it's null (see [method is_null]). Otherwise, a callable will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
+		<link title="GDScript lambda functions">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#lambda-functions</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Callable">
