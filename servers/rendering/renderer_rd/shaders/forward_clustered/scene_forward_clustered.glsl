@@ -1991,7 +1991,8 @@ void fragment_shader(in SceneData scene_data) {
 				if (cascade == sdfgi.max_cascades - 1) {
 					diffuse = mix(diffuse, ambient_light, blend);
 					if (use_specular) {
-						indirect_specular_light = mix(specular, indirect_specular_light, blend);
+						// Fade into the sky's reflection, as the diffuse light fades into the ambient light.
+						specular = mix(specular, indirect_specular_light, blend);
 					}
 				} else {
 					vec3 diffuse2, specular2;
@@ -2007,7 +2008,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			ambient_light = diffuse;
 			if (use_specular) {
-				indirect_specular_light = specular;
+				// The probes can't hold a sharp reflection: smooth surfaces take the sky's, as the opaque
+				// path does where its traced ray reaches the sky (see sdfgi_process() in gi.glsl).
+				indirect_specular_light = mix(indirect_specular_light, specular, min(1.0, roughness * 5.0));
 			}
 		}
 	}
