@@ -75,6 +75,13 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="finished">
+			<description>
+				Emitted when the [Thread] finishes running. Serves as a way to notify the user that [method wait_to_finish] can be called safely without blocking the main thread.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="PRIORITY_LOW" value="0" enum="Priority">
 			A thread running with lower priority than normally.
