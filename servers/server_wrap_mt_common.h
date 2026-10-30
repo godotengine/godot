@@ -58,6 +58,9 @@
 		}                                                                                  \
 	}                                                                                      \
 	virtual RID m_type##_create() {                                                        \
+		if (command_queue.is_bypassing()) {                                                \
+			return server_name->m_type##_create();                                         \
+		}                                                                                  \
 		if (Thread::get_caller_id() != server_thread) {                                    \
 			RID rid;                                                                       \
 			alloc_mutex.lock();                                                            \
