@@ -74,24 +74,11 @@ private:
 	jmethodID _on_godot_terminating = nullptr;
 	jmethodID _create_new_godot_instance = nullptr;
 	jmethodID _get_render_view = nullptr;
-	jmethodID _begin_benchmark_measure = nullptr;
-	jmethodID _end_benchmark_measure = nullptr;
-	jmethodID _dump_benchmark = nullptr;
 	jmethodID _check_internal_feature_support = nullptr;
-	jmethodID _sign_apk = nullptr;
-	jmethodID _verify_apk = nullptr;
 	jmethodID _enable_immersive_mode = nullptr;
 	jmethodID _is_in_immersive_mode = nullptr;
 	jmethodID _set_window_color = nullptr;
-	jmethodID _on_editor_workspace_selected = nullptr;
-	jmethodID _on_distraction_free_mode_changed = nullptr;
-	jmethodID _show_editor_game_dock = nullptr;
 	jmethodID _get_activity = nullptr;
-	jmethodID _build_env_connect = nullptr;
-	jmethodID _build_env_disconnect = nullptr;
-	jmethodID _build_env_execute = nullptr;
-	jmethodID _build_env_cancel = nullptr;
-	jmethodID _build_env_clean_project = nullptr;
 	jmethodID _is_pip_mode_supported = nullptr;
 	jmethodID _is_in_pip_mode = nullptr;
 	jmethodID _enter_pip_mode = nullptr;
@@ -100,6 +87,25 @@ private:
 	jmethodID _is_screen_reader_active = nullptr;
 	jmethodID _is_high_contrast_active = nullptr;
 	jmethodID _is_animation_disabled = nullptr;
+
+#ifdef TOOLS_ENABLED
+	jmethodID _begin_benchmark_measure = nullptr;
+	jmethodID _end_benchmark_measure = nullptr;
+	jmethodID _dump_benchmark = nullptr;
+
+	jmethodID _sign_apk = nullptr;
+	jmethodID _verify_apk = nullptr;
+
+	jmethodID _on_editor_workspace_selected = nullptr;
+	jmethodID _on_distraction_free_mode_changed = nullptr;
+	jmethodID _show_editor_game_dock = nullptr;
+
+	jmethodID _build_env_connect = nullptr;
+	jmethodID _build_env_disconnect = nullptr;
+	jmethodID _build_env_execute = nullptr;
+	jmethodID _build_env_cancel = nullptr;
+	jmethodID _build_env_clean_project = nullptr;
+#endif
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge);
@@ -137,9 +143,6 @@ public:
 	void vibrate(int p_duration_ms, float p_amplitude = -1.0);
 	String get_input_fallback_mapping();
 	int create_new_godot_instance(const List<String> &args);
-	void begin_benchmark_measure(const String &p_context, const String &p_label);
-	void end_benchmark_measure(const String &p_context, const String &p_label);
-	void dump_benchmark(const String &benchmark_file);
 	bool is_screen_reader_active();
 	bool is_high_contrast_active();
 	bool is_animation_disabled();
@@ -150,14 +153,25 @@ public:
 	// Return true if the given feature is supported.
 	bool check_internal_feature_support(const String &p_feature) const;
 
-	// Sign and verify apks
-	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
-	Error verify_apk(const String &p_apk_path);
-
 	void enable_immersive_mode(bool p_enabled);
 	bool is_in_immersive_mode();
 
 	void set_window_color(const Color &p_color);
+
+	bool is_pip_mode_supported();
+	bool is_in_pip_mode();
+	void enter_pip_mode();
+	void set_pip_mode_aspect_ratio(int p_numerator, int p_denominator);
+	void set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background);
+
+#ifdef TOOLS_ENABLED
+	void begin_benchmark_measure(const String &p_context, const String &p_label);
+	void end_benchmark_measure(const String &p_context, const String &p_label);
+	void dump_benchmark(const String &benchmark_file);
+
+	// Sign and verify apks
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
 
 	void on_editor_workspace_selected(const String &p_workspace);
 	void on_distraction_free_mode_changed(bool p_enabled);
@@ -168,10 +182,5 @@ public:
 	int build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
 	void build_env_cancel(int p_job_id);
 	void build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
-
-	bool is_pip_mode_supported();
-	bool is_in_pip_mode();
-	void enter_pip_mode();
-	void set_pip_mode_aspect_ratio(int p_numerator, int p_denominator);
-	void set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background);
+#endif
 };
