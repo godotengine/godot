@@ -786,6 +786,7 @@ public:
 	static String adjust_name_casing(const String &p_name);
 
 	void queue_free();
+	void queue_free_children();
 
 	//hacks for speed
 	static void init_node_hrcr();
