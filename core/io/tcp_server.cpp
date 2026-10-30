@@ -34,6 +34,7 @@ void TCP_Server::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &TCP_Server::is_listening);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &TCP_Server::get_local_port);
 	ClassDB::bind_method(D_METHOD("take_connection"), &TCP_Server::take_connection);
 	ClassDB::bind_method(D_METHOD("stop"), &TCP_Server::stop);
 }
@@ -42,6 +43,7 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
@@ -72,6 +74,12 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 		return FAILED;
 	}
 	return OK;
+}
+
+int TCP_Server::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
 }
 
 bool TCP_Server::is_listening() const {

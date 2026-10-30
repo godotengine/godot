@@ -53,21 +53,18 @@ protected:
 	};
 	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
 
-	int bind_port = 0;
-	IP_Address bind_address;
-
 	List<Peer> peers;
 	List<Peer> pending;
 	int max_pending_connections = 16;
 
 	Ref<NetSocket> _sock;
-
 	static void _bind_methods();
 
 public:
 	void remove_peer(IP_Address p_ip, int p_port);
 	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
 	Error poll();
+	int get_local_port() const;
 	bool is_listening() const;
 	bool is_connection_available() const;
 	void set_max_pending_connections(int p_max);
