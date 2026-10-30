@@ -4711,6 +4711,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
 			}
+
+			if (ScriptServer::is_global_class(p_symbol)) {
+				const String scr_path = ScriptServer::get_global_class_path(p_symbol);
+				const Ref<Script> scr = ResourceLoader::load(scr_path);
+				if (scr.is_null()) {
+					return ERR_BUG;
+				}
+				r_result.type = LookupResult::Type::CLASS;
+				r_result.class_name = scr->get_doc_class_name();
+				r_result.script_path = scr_path;
+				r_result.location = 0;
+				return OK;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
 			const String annotation_symbol = "@" + p_symbol.trim_prefix("@");
