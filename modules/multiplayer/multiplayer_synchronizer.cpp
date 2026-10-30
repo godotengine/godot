@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "scene/main/multiplayer_api.h"
 
 Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {
@@ -100,6 +101,17 @@ void MultiplayerSynchronizer::_update_process() {
 	}
 }
 
+bool MultiplayerSynchronizer::_update_visibility_time(uint64_t p_usec) {
+	if (last_visibility_usec == p_usec) {
+		return true;
+	}
+	if (p_usec < last_visibility_usec + visibility_interval_usec) {
+		return false;
+	}
+	last_visibility_usec = p_usec;
+	return true;
+}
+
 Node *MultiplayerSynchronizer::get_root_node() {
 	return root_node_cache.is_valid() ? ObjectDB::get_instance<Node>(root_node_cache) : nullptr;
 }
@@ -108,6 +120,7 @@ void MultiplayerSynchronizer::reset() {
 	net_id = 0;
 	last_sync_usec = 0;
 	last_inbound_sync = 0;
+	last_visibility_usec = 0;
 	last_watch_usec = 0;
 	sync_started = false;
 	watchers.clear();
@@ -253,6 +266,9 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_delta_interval", "milliseconds"), &MultiplayerSynchronizer::set_delta_interval);
 	ClassDB::bind_method(D_METHOD("get_delta_interval"), &MultiplayerSynchronizer::get_delta_interval);
 
+	ClassDB::bind_method(D_METHOD("set_visibility_interval", "milliseconds"), &MultiplayerSynchronizer::set_visibility_interval);
+	ClassDB::bind_method(D_METHOD("get_visibility_interval"), &MultiplayerSynchronizer::get_visibility_interval);
+
 	ClassDB::bind_method(D_METHOD("set_replication_config", "config"), &MultiplayerSynchronizer::set_replication_config);
 	ClassDB::bind_method(D_METHOD("get_replication_config"), &MultiplayerSynchronizer::get_replication_config);
 
@@ -271,6 +287,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_visibility_interval", "get_visibility_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, SceneReplicationConfig::get_class_static(), PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
@@ -305,7 +322,9 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			update_visibility(0);
+			if (_update_visibility_time(OS::get_singleton()->get_ticks_usec())) {
+				update_visibility(0);
+			}
 		} break;
 	}
 }
@@ -326,6 +345,15 @@ void MultiplayerSynchronizer::set_delta_interval(double p_interval) {
 
 double MultiplayerSynchronizer::get_delta_interval() const {
 	return double(delta_interval_usec) / 1000.0 / 1000.0;
+}
+
+void MultiplayerSynchronizer::set_visibility_interval(double p_interval) {
+	ERR_FAIL_COND_MSG(p_interval < 0, "Interval must be greater or equal to 0 (where 0 means default)");
+	visibility_interval_usec = uint64_t(p_interval * 1000 * 1000);
+}
+
+double MultiplayerSynchronizer::get_visibility_interval() const {
+	return visibility_interval_usec / 1000.0 / 1000.0;
 }
 
 void MultiplayerSynchronizer::set_replication_config(Ref<SceneReplicationConfig> p_config) {
