@@ -47,3 +47,7 @@ void PhysicsCastMotionResult2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_fraction"), "", "get_safe_fraction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unsafe_fraction"), "", "get_unsafe_fraction");
 }
+
+PhysicsCastMotionResult2D::PhysicsCastMotionResult2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsCastMotionResult2D);
+}
