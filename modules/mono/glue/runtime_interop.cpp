@@ -1556,9 +1556,9 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 	// Cannot happen in C#; would get an ObjectDisposedException instead.
 	CRASH_COND(p_ptr == nullptr);
 #endif
-	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
-	memnew_placement(r_str,
-			String("<" + p_ptr->get_class() + "#" + itos(p_ptr->get_instance_id()) + ">"));
+	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again
+	// resulting in an endless circular loop.
+	memnew_placement(r_str, String(CSharpInstance::object_to_string(p_ptr)));
 }
 
 void godotsharp_initialize_marshaling_information(size_t *r_ref_count_offset, size_t *r_capacity_offset, size_t *r_size_offset, size_t *r_data_offset) {
