@@ -1024,6 +1024,10 @@ Ref<ShaderGraph> VisualShader::get_graph(int p_type) {
 void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id) {
 	ERR_FAIL_INDEX(p_type, TYPE_MAX);
 	Ref<ShaderGraph> g = graph[p_type];
+	Ref<VisualShaderNodeParameter> parameter = p_node;
+	if (parameter.is_valid()) {
+		parameter->set_parameter_name(validate_parameter_name(parameter->get_parameter_name(), parameter));
+	}
 	g->add_node(p_node, p_position, p_id);
 
 	Ref<VisualShaderNodeInput> input = g->get_node(p_id);
