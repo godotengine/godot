@@ -19,5 +19,9 @@ func test():
 	var base_variable_member
 	const base_function_member = 1
 	var base_const_member
+	var PI = 4
+	var OK = -1
+	var Side = -2
+	var UINT8_MAX = -3
 
 	print('warn')
