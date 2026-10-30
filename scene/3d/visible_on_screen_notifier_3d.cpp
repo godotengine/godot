@@ -75,9 +75,16 @@ bool VisibleOnScreenNotifier3D::is_on_screen() const {
 
 void VisibleOnScreenNotifier3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			on_screen = false;
+			if (get_base() == RID()) {
+				_create_visibility_notifier();
+			}
+			break;
+		}
 		case NOTIFICATION_EXIT_TREE: {
 			on_screen = false;
+			_free_visibility_notifier();
 		} break;
 	}
 }
@@ -92,18 +99,26 @@ void VisibleOnScreenNotifier3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("screen_exited"));
 }
 
-VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
+void VisibleOnScreenNotifier3D::_create_visibility_notifier() {
 	RID notifier = RS::get_singleton()->visibility_notifier_create();
 	RS::get_singleton()->visibility_notifier_set_aabb(notifier, aabb);
 	RS::get_singleton()->visibility_notifier_set_callbacks(notifier, callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_exit));
 	set_base(notifier);
 }
 
-VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
+void VisibleOnScreenNotifier3D::_free_visibility_notifier() {
 	RID base_old = get_base();
 	set_base(RID());
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free_rid(base_old);
+}
+
+VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
+	_create_visibility_notifier();
+}
+
+VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
+	_free_visibility_notifier();
 }
 
 //////////////////////////////////////
