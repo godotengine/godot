@@ -1919,8 +1919,8 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	print_line("Unzipping...");
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
-	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
+	unzFile src_pkg_zip = unzOpen2_64(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Could not open export template (not a zip file?): \"%s\".", src_pkg_name));
 		return ERR_CANT_OPEN;
@@ -1931,9 +1931,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	{
 		int scan_ret = unzGoToFirstFile(src_pkg_zip);
 		while (scan_ret == UNZ_OK) {
-			unz_file_info scan_info;
+			unz_file_info64 scan_info;
 			char scan_fname[ZIP_FNAME_MAX];
-			if (unzGetCurrentFileInfo(src_pkg_zip, &scan_info, scan_fname, ZIP_FNAME_MAX, nullptr, 0, nullptr, 0) != UNZ_OK) {
+			if (unzGetCurrentFileInfo64(src_pkg_zip, &scan_info, scan_fname, ZIP_FNAME_MAX, nullptr, 0, nullptr, 0) != UNZ_OK) {
 				break;
 			}
 			if (String::utf8(scan_fname).begins_with("AccessKit.xcframework/")) {
@@ -1982,9 +1982,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 #endif
 
 		//get filename
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}

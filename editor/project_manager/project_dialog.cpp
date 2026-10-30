@@ -132,9 +132,9 @@ void ProjectDialog::_validate_path() {
 			install_path_container->show();
 
 			Ref<FileAccess> io_fa;
-			zlib_filefunc_def io = zipio_create_io(&io_fa);
+			zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-			unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+			unzFile pkg = unzOpen2_64(zip_path.utf8().get_data(), &io);
 			if (!pkg) {
 				_set_message(TTRC("Invalid \".zip\" project file; it is not in ZIP format."), MESSAGE_ERROR);
 				unzClose(pkg);
@@ -143,9 +143,9 @@ void ProjectDialog::_validate_path() {
 
 			int ret = unzGoToFirstFile(pkg);
 			while (ret == UNZ_OK) {
-				unz_file_info info;
+				unz_file_info64 info;
 				char fname[16384];
-				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+				ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
@@ -650,9 +650,9 @@ void ProjectDialog::ok_pressed() {
 			ERR_FAIL_COND(zip_path.is_empty());
 
 			Ref<FileAccess> io_fa;
-			zlib_filefunc_def io = zipio_create_io(&io_fa);
+			zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-			unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
+			unzFile pkg = unzOpen2_64(zip_path.utf8().get_data(), &io);
 			if (!pkg) {
 				dialog_error->set_text(TTRC("Error opening package file, not in ZIP format."));
 				dialog_error->popup_centered();
@@ -663,9 +663,9 @@ void ProjectDialog::ok_pressed() {
 			String zip_root;
 			int ret = unzGoToFirstFile(pkg);
 			while (ret == UNZ_OK) {
-				unz_file_info info;
+				unz_file_info64 info;
 				char fname[16384];
-				unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+				unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
@@ -703,9 +703,9 @@ void ProjectDialog::ok_pressed() {
 			Vector<String> failed_files;
 			while (ret == UNZ_OK) {
 				//get filename
-				unz_file_info info;
+				unz_file_info64 info;
 				char fname[16384];
-				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+				ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
