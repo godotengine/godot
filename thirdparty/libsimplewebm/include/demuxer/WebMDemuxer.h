@@ -138,6 +138,7 @@ private:
 	ParserCallback *m_callback;
 
 	std::vector<ParsedFrame> m_frames;
+	std::vector<size_t> m_videoKeyframeIndices;
 	size_t m_frameIndex;
 
 	double m_length;

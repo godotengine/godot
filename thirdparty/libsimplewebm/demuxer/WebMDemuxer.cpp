@@ -64,6 +64,7 @@ class WebMDemuxer::ParserCallback : public webm::Callback
 {
 public:
 	std::vector<ParsedFrame> *frames;
+	std::vector<size_t> *videoKeyframeIndices;
 
 	// Zero-based indexes into the video/audio track lists.
 	int requestedVideoTrack;
@@ -106,6 +107,7 @@ public:
 
 	ParserCallback() :
 		frames(NULL),
+		videoKeyframeIndices(NULL),
 		requestedVideoTrack(0),
 		requestedAudioTrack(0),
 		videoTrack(0),
@@ -135,6 +137,11 @@ public:
 	void setFrames(std::vector<ParsedFrame> *p_frames)
 	{
 		frames = p_frames;
+	}
+
+	void setVideoKeyframeIndices(std::vector<size_t> *p_videoKeyframeIndices)
+	{
+		videoKeyframeIndices = p_videoKeyframeIndices;
 	}
 
 	virtual webm::Status OnInfo(const webm::ElementMetadata &metadata, const webm::Info &info) override
@@ -279,6 +286,10 @@ public:
 		frame.buffer.resize(static_cast<size_t>(totalBytesRead));
 
 		frames->push_back(std::move(frame));
+		if (frame.video && frame.key)
+		{
+			videoKeyframeIndices->push_back(frames->size() - 1);
+		}
 
 		currentFrameIndex = frames->size() - 1;
 		currentFrameIsVideo = isVideo;
@@ -457,6 +468,7 @@ WebMDemuxer::WebMDemuxer(webm::Reader *reader, int videoTrack, int audioTrack) :
 	m_parseError(false)
 {
 	m_callback->setFrames(&m_frames);
+	m_callback->setVideoKeyframeIndices(&m_videoKeyframeIndices);
 
 	m_callback->requestedVideoTrack = videoTrack;
 	m_callback->requestedAudioTrack = audioTrack;
@@ -507,69 +519,80 @@ double WebMDemuxer::seek(double time)
         return -1.0;
     }
 
-    size_t targetIndex = SIZE_MAX;
+	// Note: We can assume that the frames will be in order (https://www.webmproject.org/docs/container/#muxer-guidelines).
+	size_t targetIndex;
 
-    if (m_vCodec != NO_VIDEO)
-    {
-        // Find the video keyframe with the greatest timestamp that does not exceed the requested time.
-        double targetTime = -1.0;
+	if (m_vCodec != NO_VIDEO)
+	{
+		// For video files, find the first video keyframe which is > the requested time, then select the previous video keyframe.
+		size_t low = 0;
+		size_t highExclusive = m_videoKeyframeIndices.size();
 
-        for (size_t i = 0; i < m_frames.size(); ++i)
-        {
-            const ParsedFrame &frame = m_frames[i];
+		while (low < highExclusive)
+		{
+			size_t mid = low + ((highExclusive - low) / 2);
 
-            if (!frame.video || !frame.key || frame.time > time)
-            {
-                continue;
-            }
+			const ParsedFrame &frame = m_frames[m_videoKeyframeIndices[mid]];
 
-            if (targetIndex == SIZE_MAX || frame.time >= targetTime)
-            {
-                targetIndex = i;
-                targetTime = frame.time;
-            }
-        }
+			if (frame.time <= time)
+			{
+				low = mid + 1;
+			}
+			else
+			{
+				highExclusive = mid;
+			}
+		}
 
-        // If no keyframe exists at or before the requested time, use the first available video keyframe.
-        if (targetIndex == SIZE_MAX)
-        {
-            for (size_t i = 0; i < m_frames.size(); ++i)
-            {
-                if (m_frames[i].video && m_frames[i].key)
-                {
-                    targetIndex = i;
-                    break;
-                }
-            }
-        }
-    }
-    else
-    {
-        // For audio only files, we find the packet closest to the requested
-        // time without selecting a packet earlier than the request.
-        double targetTime = 0.0;
+		if (low >= 1)
+		{
+			targetIndex = m_videoKeyframeIndices[low - 1];
+		}
+		else
+		{
+			// No video keyframe is <= the seek time, so start at the first video keyframe.
+			if (!m_videoKeyframeIndices.empty())
+			{
+				targetIndex = m_videoKeyframeIndices[0];
+			}
+			else
+			{
+				targetIndex = 0;
+			}
+		}
+	}
+	else
+	{
+		// For audio files, find the first frame which is >= the requested time.
+		size_t low = 0;
+		size_t highExclusive = m_frames.size();
 
-        for (size_t i = 0; i < m_frames.size(); ++i)
-        {
-            const ParsedFrame &frame = m_frames[i];
+		while (low < highExclusive)
+		{
+			size_t mid = low + ((highExclusive - low) / 2);
 
-            if (frame.video || frame.time < time)
-            {
-                continue;
-            }
+			const ParsedFrame &frame = m_frames[mid];
 
-            if (targetIndex == SIZE_MAX || frame.time < targetTime)
-            {
-                targetIndex = i;
-                targetTime = frame.time;
-            }
-        }
-    }
+			if (frame.time < time)
+			{
+				low = mid + 1;
+			}
+			else
+			{
+				highExclusive = mid;
+			}
+		}
 
-    if (targetIndex == SIZE_MAX)
-    {
-        return -1.0;
-    }
+		if (low < m_frames.size())
+		{
+			targetIndex = low;
+		}
+		else
+		{
+			// Every frame is < the seek time, so start at the last frame.
+			targetIndex = m_frames.size() - 1;
+		}
+	}
 
     m_frameIndex = targetIndex;
     m_eos = false;
