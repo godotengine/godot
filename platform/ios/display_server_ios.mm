@@ -74,7 +74,7 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 	print_line(String::utf8([string UTF8String]));
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
 	if (@available(iOS 27.1, *)) {
-		if (!GDTAppDelegateService.viewController.godotView.hingeClosed) {
+		if (GDTAppDelegateService.viewController.godotView.hingeStatus == DisplayServerEnums::SCREEN_HINGE_STATUS_FULLY_OPEN || GDTAppDelegateService.viewController.godotView.hingeStatus == DisplayServerEnums::SCREEN_HINGE_STATUS_PARTIALLY_OPEN) {
 			NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiListInternal];
 			for (NSArray *keyArray in iOSModelToDPI) {
 				if ([keyArray containsObject:string]) {
@@ -115,6 +115,22 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 		default:
 			return 72;
 	}
+}
+
+DisplayServerEnums::ScreenHingeStatus DisplayServerIOS::screen_get_hinge_statue(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, DisplayServerEnums::SCREEN_HINGE_STATUS_UNKNOWN);
+
+	return GDTAppDelegateService.viewController.godotView.hingeStatus;
+}
+
+float DisplayServerIOS::screen_get_hinge_angle(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 0.0);
+
+	return GDTAppDelegateService.viewController.godotView.hingeAngle;
 }
 
 float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {

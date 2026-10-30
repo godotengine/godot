@@ -51,6 +51,8 @@ public:
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual DisplayServerEnums::ScreenHingeStatus screen_get_hinge_statue(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_hinge_angle(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 protected:
 	virtual bool _screen_hdr_is_supported() const override;

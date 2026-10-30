@@ -30,6 +30,8 @@
 
 #pragma once
 
+#import "servers/display/display_server_enums.h"
+
 #import <UIKit/UIKit.h>
 
 class String;
@@ -50,7 +52,8 @@ class String;
 @property(weak, nonatomic) id<GDTViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
-@property(assign, nonatomic) BOOL hingeClosed;
+@property(assign, nonatomic) DisplayServerEnums::ScreenHingeStatus hingeStatus;
+@property(assign, nonatomic) float hingeAngle;
 
 @property(assign, nonatomic) BOOL useCADisplayLink;
 @property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;

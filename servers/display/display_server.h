@@ -355,6 +355,8 @@ public:
 
 	virtual void screen_set_orientation(DisplayServerEnums::ScreenOrientation p_orientation, int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW);
 	virtual DisplayServerEnums::ScreenOrientation screen_get_orientation(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const;
+	virtual DisplayServerEnums::ScreenHingeStatus screen_get_hinge_statue(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return DisplayServerEnums::SCREEN_HINGE_STATUS_UNKNOWN; }
+	virtual float screen_get_hinge_angle(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return 0.0; }
 
 	virtual void screen_set_keep_on(bool p_enable); //disable screensaver
 	virtual bool screen_is_kept_on() const;
@@ -652,6 +654,7 @@ VARIANT_ENUM_CAST_EXT(DisplayServerEnums::MouseMode, DisplayServer::MouseMode)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::CursorShape, DisplayServer::CursorShape)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::VirtualKeyboardType, DisplayServer::VirtualKeyboardType)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::ScreenOrientation, DisplayServer::ScreenOrientation)
+VARIANT_ENUM_CAST_EXT(DisplayServerEnums::ScreenHingeStatus, DisplayServer::ScreenHingeStatus)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::SensorOrientation, DisplayServer::SensorOrientation)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::HandleType, DisplayServer::HandleType)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowMode, DisplayServer::WindowMode)
