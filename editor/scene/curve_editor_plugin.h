@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_set.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/editor_plugin.h"
@@ -53,6 +54,7 @@ public:
 	Ref<Curve> get_curve();
 
 	Size2 get_minimum_size() const override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	enum PresetID {
 		PRESET_CONSTANT = 0,
@@ -74,6 +76,22 @@ protected:
 	static void _bind_methods();
 
 private:
+	struct CurvePoint : public Curve::Point {
+		bool selected : 1;
+		bool hovered : 1;
+		CurvePoint(const Curve::Point &p_other) : Curve::Point(p_other),
+												  selected(false),
+												  hovered(false) {
+		}
+	};
+
+	// Comparator to order curve points .
+	struct CompareCurvePoints {
+		_FORCE_INLINE_ bool operator()(const CurvePoint &p_a, const CurvePoint &p_b) const {
+			return p_a.position.x < p_b.position.x;
+		}
+	};
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _curve_changed();
 
@@ -81,25 +99,35 @@ private:
 	TangentIndex get_tangent_at(const Vector2 &p_pos) const;
 
 	float get_offset_without_collision(int p_current_index, float p_offset, bool p_prioritize_right = true);
+	void resolve_point_collisions(LocalVector<CurvePoint> &p_points) const;
 
 	void add_point(const Vector2 &p_pos);
 	void remove_point(int p_index);
-	void set_point_position(int p_index, const Vector2 &p_pos);
+	void delete_selection();
+	void finish_grab_transform();
 
 	void set_point_tangents(int p_index, float p_left, float p_right);
 	void set_point_left_tangent(int p_index, float p_tangent);
 	void set_point_right_tangent(int p_index, float p_tangent);
 	void toggle_linear(int p_index, TangentIndex p_tangent = TANGENT_NONE);
 
+	void initialize_grab_state();
+	void update_scaling_initial_rect();
+	void set_grab_move_offset(const Vector2 &p_offset);
+	void set_grab_scale_factor(const Vector2 &p_factor);
+	void flush_grab_state(LocalVector<CurvePoint> &p_new_state);
+
 	void update_view_transform();
 
 	void plot_curve_accurate(float p_step, const Color &p_line_color, const Color &p_edge_line_color);
 
-	void set_selected_index(int p_index);
+	void set_selected_indexes(PackedInt32Array p_indexes);
+	PackedInt32Array get_selected_indexes() const;
 
 	Vector2 get_tangent_view_pos(int p_index, TangentIndex p_tangent) const;
 	Vector2 get_view_pos(const Vector2 &p_world_pos) const;
 	Vector2 get_world_pos(const Vector2 &p_view_pos) const;
+	Vector2 clamp_world_pos(const Vector2 &p_world_pos) const;
 
 	void _redraw();
 
@@ -112,10 +140,18 @@ private:
 
 	Ref<Curve> curve;
 
-	int selected_index = -1;
+	RBSet<int> selected_indexes;
+	LocalVector<CurvePoint> grab_initial_state;
 	int hovered_index = -1;
 	TangentIndex selected_tangent_index = TANGENT_NONE;
 	TangentIndex hovered_tangent_index = TANGENT_NONE;
+	Rect2 box_selection;
+	Rect2 scaling_initial_rect;
+	Vector2i scaling_handle;
+	Vector2i scaling_hovered_handle;
+	Vector2 scaling_factor;
+	Vector2 scaling_pivot_point;
+	Vector2 scaling_mouse_offset_from_handle;
 
 	// Make sure to use the scaled values below.
 	const int BASE_POINT_RADIUS = 4;
@@ -123,21 +159,26 @@ private:
 	const int BASE_TANGENT_RADIUS = 3;
 	const int BASE_TANGENT_HOVER_RADIUS = 8;
 	const int BASE_TANGENT_LENGTH = 36;
+	const int SCALE_GRAB_SIZE = 6;
 
 	int point_radius = BASE_POINT_RADIUS;
 	int hover_radius = BASE_HOVER_RADIUS;
 	int tangent_radius = BASE_TANGENT_RADIUS;
 	int tangent_hover_radius = BASE_TANGENT_HOVER_RADIUS;
 	int tangent_length = BASE_TANGENT_LENGTH;
+	Color accent_color;
+	Color box_selection_fill_color;
+	Color box_selection_stroke_color;
 
 	enum GrabMode {
 		GRAB_NONE,
 		GRAB_ADD,
-		GRAB_MOVE
+		GRAB_MOVE,
+		GRAB_SCALE,
+		GRAB_SELECT,
 	};
 	GrabMode grabbing = GRAB_NONE;
 	Vector2 initial_grab_pos;
-	int initial_grab_index = -1;
 	float initial_grab_left_tangent = 0;
 	float initial_grab_right_tangent = 0;
 
