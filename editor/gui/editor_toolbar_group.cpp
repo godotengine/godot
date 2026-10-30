@@ -30,6 +30,7 @@
 
 #include "editor/gui/editor_toolbar_group.h"
 
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 
@@ -53,11 +54,13 @@ void EditorToolbarGroup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			// 32 roughly matches the height of the toolbars prior to the toolbar redesign.
-			// The default font size of the editor is 14
-			// thus adding 18 will give us the minimum of 32
+			// The default font size of the editor is 14,
+			// and the default base spacing * 2 is 8,
+			// thus adding 10 will give us the minimum of 32.
 			// which allows increased font sizes to scale the toolbar.
 			const int font_size = get_theme_default_font_size();
-			const int max_size = MAX(32 * EDSCALE, font_size + 18 * EDSCALE);
+			int padding = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
+			const int max_size = MAX(32 * EDSCALE, font_size + (padding + 10) * EDSCALE);
 			set_custom_minimum_size(Size2(-1, max_size));
 			set_custom_maximum_size(Size2(-1, max_size));
 		} break;
