@@ -731,6 +731,7 @@ private:
 
 	void _save_editor_layout();
 	void _load_editor_layout();
+	void _load_editor_layout_finalize_step(const Ref<ConfigFile> &config);
 
 	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
 	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
