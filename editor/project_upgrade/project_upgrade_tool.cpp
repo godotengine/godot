@@ -101,6 +101,7 @@ void ProjectUpgradeTool::prepare_upgrade() {
 }
 
 void ProjectUpgradeTool::begin_upgrade() {
+	is_running = true;
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RUN_ON_RESTART, false);
 	DirAccess::remove_absolute("res://.godot/uid_cache.bin");
 }
@@ -116,6 +117,7 @@ void ProjectUpgradeTool::finish_upgrade() {
 	MeshInstance3D::upgrading_skeleton_compat = true;
 #endif
 
+	int skipped_scenes_count = 0;
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Vector<String>());
 		EditorProgress ep("uid_upgrade_resave", TTR("Updating Project Scenes"), paths.size());
@@ -123,9 +125,14 @@ void ProjectUpgradeTool::finish_upgrade() {
 		int step = 0;
 		for (const String &file_path : paths) {
 			ep.step(TTR("Re-saving scene:") + " " + file_path, step++);
-			EditorNode::get_singleton()->open_scene(file_path);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
+			Error err = EditorNode::get_singleton()->open_scene(file_path);
+			if (err == ERR_FILE_MISSING_DEPENDENCIES) {
+				ERR_PRINT(vformat(TTR("Upgrade of %s was skipped because of broken dependencies."), file_path));
+				skipped_scenes_count++;
+			} else {
+				EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
+				EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
+			}
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Variant());
 	}
@@ -147,6 +154,13 @@ void ProjectUpgradeTool::finish_upgrade() {
 			}
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_RESOURCES, Variant());
+	}
+
+	is_running = false;
+	if (skipped_scenes_count > 0) {
+		String msg = TTRN("A Scene failed to be upgraded because of broken dependencies.", "Some Scenes failed to be upgraded because of broken dependencies.", skipped_scenes_count);
+		msg += "\n" + TTR("Check Output logs for more details");
+		EditorNode::get_singleton()->show_warning(msg, TTRC("Project Upgrade Tool"));
 	}
 
 	emit_signal(UPGRADE_FINISHED);
