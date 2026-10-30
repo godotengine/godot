@@ -200,6 +200,7 @@ vec3 two_sum(vec3 a, vec3 b, out vec3 out_p) {
 	return s;
 }
 
+// a + b
 vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec3 out_precision) {
 	vec3 s, t, se, te;
 	s = two_sum(base_a, base_b, se);
@@ -209,6 +210,11 @@ vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec
 	se += te;
 	s = quick_two_sum(s, se, out_precision);
 	return s;
+}
+
+// a - b
+vec3 double_sub_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec3 out_precision) {
+	return double_add_vec3(base_a, prec_a, -base_b, -prec_b, out_precision);
 }
 #endif
 
@@ -248,7 +254,7 @@ void vertex_shader(vec3 vertex_input,
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USE_DOUBLE_PRECISION
-	vec3 view_precision = scene_data.inv_view_precision.xyz;
+	vec3 inv_view_precision = scene_data.inv_view_precision.xyz;
 #endif
 
 	mat3 model_normal_matrix;
@@ -433,7 +439,7 @@ void vertex_shader(vec3 vertex_input,
 
 	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
-	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = double_sub_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, inv_view_precision, temp_precision);
 	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
 #else
 	mat4 modelview = read_view_matrix * model_matrix;
