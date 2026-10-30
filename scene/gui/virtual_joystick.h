@@ -108,6 +108,9 @@ public:
 	void set_initial_offset_ratio(const Vector2 &p_ratio);
 	Vector2 get_initial_offset_ratio() const;
 
+	void set_raw_input(const Vector2 &p_input);
+	Vector2 get_raw_input() const;
+
 	void set_action_left(const StringName &p_action);
 	StringName get_action_left() const;
 	void set_action_right(const StringName &p_action);
