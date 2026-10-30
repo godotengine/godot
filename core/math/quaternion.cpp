@@ -113,7 +113,7 @@ Quaternion Quaternion::exp() const {
 // and loses the continuity with the neighboring keys beyond it. Makes the expmap from a wider range (the log() result shifted by multiples of 720 deg,
 // which keeps the sign of the quaternion) and picks the point closest to p_ln_neighbor.
 // The shift is a multiple of two phases of the singularity reparameterization of the expmap (section 3.2.1): https://www.cs.cmu.edu/~spiff/moedit99/expmap.pdf
-// Both p_q and p_ln_neighbor are relative to the same base key (almost from_q or to_q in interpolation).
+// Both the quaternion itself and p_ln_neighbor should be relative to the same base quaternion.
 Quaternion Quaternion::get_nearest_log(const Quaternion &p_ln_neighbor) const {
 	Quaternion p_q = *this;
 	constexpr real_t PHASE = 2 * (real_t)Math::TAU;
