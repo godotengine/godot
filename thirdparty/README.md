@@ -778,6 +778,12 @@ Files extracted from upstream source:
 - `src/miniupnpcstrings.h` was created manually for Godot (it is usually generated
   by CMake). Bump the version number for miniupnpc in that file when upgrading.
 
+Patches:
+
+- `0001-minixml-fix-buffer-read-overflow.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
+- `0002-minixml-fix-buffer-overrun-after-namespace-separator.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
+- `0003-minixml-fix-1-byte-out-of-bounds-read.patch` ([GH-124962](https://github.com/godotengine/godot/pull/124962))
+
 
 ## minizip
 
