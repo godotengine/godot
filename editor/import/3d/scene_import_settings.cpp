@@ -39,6 +39,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/scene/3d/mesh_uv_viewer.h"
 #include "editor/scene/3d/skeleton_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -859,6 +860,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 	const bool hide_node_gen_options = _resource_importer_scene->get_scene_import_type() != "PackedScene";
 
 	bones_mesh_preview->hide();
+	uv_view->hide();
 	if (p_type == "Node") {
 		node_selected->hide(); // Always hide just in case.
 		mesh_preview->hide();
@@ -944,6 +946,7 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		}
 
 		mesh_preview->set_mesh(md.mesh);
+		uv_view->set_visible(uv_view->setup_mesh(md.mesh));
 		mesh_preview->show();
 		_reset_animation();
 
@@ -1936,15 +1939,22 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 		base_viewport->add_child(bones_mesh_preview);
 	}
 
+	VBoxContainer *property_vb = memnew(VBoxContainer);
+	property_vb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	property_split->add_child(property_vb);
+
+	uv_view = memnew(MeshUvViewer);
+	property_vb->add_child(uv_view);
+
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
+	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettingsDialog::_inspector_property_edited));
 	// Display the same tooltips as in the Import dock.
 	inspector->set_object_class(ResourceImporterScene::get_class_static());
 	inspector->set_use_doc_hints(true);
 	inspector->set_theme_type_variation(SNAME("EditorInspectorForeground"));
-
-	property_split->add_child(inspector);
+	property_vb->add_child(inspector);
 
 	scene_import_settings_data = memnew(SceneImportSettingsData);
 
