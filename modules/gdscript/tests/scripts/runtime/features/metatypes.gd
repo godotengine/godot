@@ -37,6 +37,12 @@ func test():
 	print(test_enum.keys())
 
 	print("---")
+	print("stringify" in test_native)
+	print("TEST" in test_script)
+	print("TEST" in test_script)
+	print("A" in test_enum)
+
+	print("---")
 	# Some users add unnecessary type hints to `const`-`preload`, which removes metatypes.
 	# For **constant** `GDScript` we still check the class members, despite the wider type.
 	const ScriptNoMeta: GDScript = Other
