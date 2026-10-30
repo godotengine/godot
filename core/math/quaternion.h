@@ -74,9 +74,9 @@ struct [[nodiscard]] Quaternion {
 	Vector3 get_euler(EulerOrder p_order = EulerOrder::YXZ) const;
 	static Quaternion from_euler(const Vector3 &p_euler);
 
+	Quaternion get_nearest_log(const Quaternion &p_ln_neighbor) const;
 	Quaternion slerp(const Quaternion &p_to, real_t p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, real_t p_weight) const;
-	static Quaternion blend_log(const Quaternion &p_from_q, const Quaternion &p_from_ln, const Quaternion &p_to_ln, const Quaternion &p_to_in_from_ln, real_t p_weight);
 	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight) const;
 	Quaternion spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
 
