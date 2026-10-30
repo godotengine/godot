@@ -54,6 +54,21 @@ void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 	mixer = Object::cast_to<AnimationMixer>(p_mixer);
 }
 
+void AnimationLibraryEditor::_create_global_library() {
+	String lib_name = "";
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	Ref<AnimationLibrary> al;
+	al.instantiate();
+
+	undo_redo->create_action(vformat(TTR("Add Animation Library: %s"), lib_name));
+	undo_redo->add_do_method(mixer, "add_animation_library", lib_name, al);
+	undo_redo->add_undo_method(mixer, "remove_animation_library", lib_name);
+	undo_redo->add_do_method(this, "_update_editor", mixer);
+	undo_redo->add_undo_method(this, "_update_editor", mixer);
+	undo_redo->commit_action();
+}
+
 void AnimationLibraryEditor::_add_library() {
 	add_library_name->set_text("");
 	add_library_dialog->popup_centered();
@@ -77,7 +92,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 			error = TTR("Animation with the same name already exists.");
 		}
 	} else {
-		if (p_name == "" && mixer->has_animation_library("")) {
+		if (p_name == "") {
 			error = TTR("Enter a library name.");
 		} else if (!AnimationLibrary::is_valid_library_name(p_name)) {
 			error = TTR("Library name contains invalid characters: '/', ':', ',' or '['.");
@@ -94,11 +109,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 		if (adding_animation) {
 			add_library_validate->set_text(TTR("Animation name is valid."));
 		} else {
-			if (p_name == "") {
-				add_library_validate->set_text(TTR("Global library will be created."));
-			} else {
-				add_library_validate->set_text(TTR("Library name is valid."));
-			}
+			add_library_validate->set_text(TTR("Library name is valid."));
 		}
 		add_library_validate->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		add_library_dialog->get_ok_button()->set_disabled(false);
@@ -692,6 +703,9 @@ void AnimationLibraryEditor::update_tree() {
 
 	mixer->get_animation_library_list(&libs);
 
+	zero_libraries_error_label->set_visible(libs.size() == 0);
+	create_global_library_button->set_visible(!mixer->has_animation_library(""));
+
 	for (const StringName &K : libs) {
 		TreeItem *libitem = tree->create_item(root);
 		libitem->set_text(0, K);
@@ -918,6 +932,8 @@ void AnimationLibraryEditor::show_dialog() {
 void AnimationLibraryEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
+			zero_libraries_error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			create_global_library_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			new_library_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			load_library_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		} break;
@@ -986,6 +1002,13 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->add_spacer(true);
+	zero_libraries_error_label = memnew(Label);
+	zero_libraries_error_label->set_text(TTRC("Create or load a library to add animations."));
+	hb->add_child(zero_libraries_error_label);
+	create_global_library_button = memnew(Button(TTRC("Global Library")));
+	create_global_library_button->set_tooltip_text(TTRC("Create the global animation library for this node."));
+	create_global_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_create_global_library));
+	hb->add_child(create_global_library_button);
 	new_library_button = memnew(Button(TTRC("New Library")));
 	new_library_button->set_tooltip_text(TTRC("Create new empty animation library."));
 	new_library_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationLibraryEditor::_add_library));
