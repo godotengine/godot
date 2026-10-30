@@ -28,10 +28,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_FIX_RESAMPLER_ROM_H
 #define SILK_FIX_RESAMPLER_ROM_H
 
-#ifdef  __cplusplus
-extern "C"
-{
-#endif
 
 #include "typedef.h"
 #include "resampler_structs.h"
@@ -60,9 +56,5 @@ extern const opus_int16 silk_Resampler_2_3_COEFS_LQ[ 2 + 2 * 2 ];
 
 /* Table with interplation fractions of 1/24, 3/24, ..., 23/24 */
 extern const opus_int16 silk_resampler_frac_FIR_12[ 12 ][ RESAMPLER_ORDER_FIR_12 / 2 ];
-
-#ifdef  __cplusplus
-}
-#endif
 
 #endif /* SILK_FIX_RESAMPLER_ROM_H */

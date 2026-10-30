@@ -76,6 +76,7 @@ void silk_gains_quant(
             /* Accumulate deltas */
             if( ind[ k ] > double_step_size_threshold ) {
                 *prev_ind += silk_LSHIFT( ind[ k ], 1 ) - double_step_size_threshold;
+                *prev_ind = silk_min_int( *prev_ind, N_LEVELS_QGAIN - 1 );
             } else {
                 *prev_ind += ind[ k ];
             }

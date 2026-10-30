@@ -32,34 +32,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "main.h"
 #include "structs.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 /********************************/
 /* Noise shaping analysis state */
 /********************************/
 typedef struct {
     opus_int8                   LastGainIndex;
-    silk_float                  HarmBoost_smth;
     silk_float                  HarmShapeGain_smth;
     silk_float                  Tilt_smth;
 } silk_shape_state_FLP;
-
-/********************************/
-/* Prefilter state              */
-/********************************/
-typedef struct {
-    silk_float                  sLTP_shp[ LTP_BUF_LENGTH ];
-    silk_float                  sAR_shp[ MAX_SHAPE_LPC_ORDER + 1 ];
-    opus_int                    sLTP_shp_buf_idx;
-    silk_float                  sLF_AR_shp;
-    silk_float                  sLF_MA_shp;
-    silk_float                  sHarmHP;
-    opus_int32                  rand_seed;
-    opus_int                    lagPrev;
-} silk_prefilter_state_FLP;
 
 /********************************/
 /* Encoder state FLP            */
@@ -67,7 +48,6 @@ typedef struct {
 typedef struct {
     silk_encoder_state          sCmn;                               /* Common struct, shared with fixed-point code */
     silk_shape_state_FLP        sShape;                             /* Noise shaping state */
-    silk_prefilter_state_FLP    sPrefilt;                           /* Prefilter State */
 
     /* Buffer for find pitch and noise shape analysis */
     silk_float                  x_buf[ 2 * MAX_FRAME_LENGTH + LA_SHAPE_MAX ];/* Buffer for find pitch and noise shape analysis */
@@ -86,12 +66,9 @@ typedef struct {
     opus_int                    pitchL[ MAX_NB_SUBFR ];
 
     /* Noise shaping parameters */
-    silk_float                  AR1[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
-    silk_float                  AR2[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
+    silk_float                  AR[ MAX_NB_SUBFR * MAX_SHAPE_LPC_ORDER ];
     silk_float                  LF_MA_shp[     MAX_NB_SUBFR ];
     silk_float                  LF_AR_shp[     MAX_NB_SUBFR ];
-    silk_float                  GainsPre[      MAX_NB_SUBFR ];
-    silk_float                  HarmBoost[     MAX_NB_SUBFR ];
     silk_float                  Tilt[          MAX_NB_SUBFR ];
     silk_float                  HarmShapeGain[ MAX_NB_SUBFR ];
     silk_float                  Lambda;
@@ -99,7 +76,6 @@ typedef struct {
     silk_float                  coding_quality;
 
     /* Measures */
-    silk_float                  sparseness;
     silk_float                  predGain;
     silk_float                  LTPredCodGain;
     silk_float                  ResNrg[ MAX_NB_SUBFR ];             /* Residual energy per subframe */
@@ -113,7 +89,6 @@ typedef struct {
 /* Encoder Super Struct */
 /************************/
 typedef struct {
-    silk_encoder_state_FLP      state_Fxx[ ENCODER_NUM_CHANNELS ];
     stereo_enc_state            sStereo;
     opus_int32                  nBitsUsedLBRR;
     opus_int32                  nBitsExceeded;
@@ -123,10 +98,8 @@ typedef struct {
     opus_int                    timeSinceSwitchAllowed_ms;
     opus_int                    allowBandwidthSwitch;
     opus_int                    prev_decode_only_middle;
+    /* This needs to be last so we can skip the second state for mono. */
+    silk_encoder_state_FLP      state_Fxx[ ENCODER_NUM_CHANNELS ];
 } silk_encoder;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

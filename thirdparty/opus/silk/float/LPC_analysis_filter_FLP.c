@@ -215,7 +215,7 @@ void silk_LPC_analysis_filter_FLP(
     const opus_int                  Order                               /* I    LPC order                                   */
 )
 {
-    silk_assert( Order <= length );
+    celt_assert( Order <= length );
 
     switch( Order ) {
         case 6:
@@ -239,11 +239,10 @@ void silk_LPC_analysis_filter_FLP(
         break;
 
         default:
-            silk_assert( 0 );
+            celt_assert( 0 );
         break;
     }
 
     /* Set first Order output samples to zero */
     silk_memset( r_LPC, 0, Order * sizeof( silk_float ) );
 }
-

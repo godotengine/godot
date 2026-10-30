@@ -47,9 +47,9 @@ void silk_insertion_sort_decreasing_FLP(
     opus_int   i, j;
 
     /* Safety checks */
-    silk_assert( K >  0 );
-    silk_assert( L >  0 );
-    silk_assert( L >= K );
+    celt_assert( K >  0 );
+    celt_assert( L >  0 );
+    celt_assert( L >= K );
 
     /* Write start indices in index vector */
     for( i = 0; i < K; i++ ) {

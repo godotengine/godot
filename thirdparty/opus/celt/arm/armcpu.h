@@ -46,6 +46,12 @@
 #  define MAY_HAVE_NEON(name) MAY_HAVE_MEDIA(name)
 # endif
 
+# if defined(OPUS_ARM_MAY_HAVE_DOTPROD)
+#  define MAY_HAVE_DOTPROD(name) name ## _dotprod
+# else
+#  define MAY_HAVE_DOTPROD(name) MAY_HAVE_NEON(name)
+# endif
+
 # if defined(OPUS_ARM_PRESUME_EDSP)
 #  define PRESUME_EDSP(name) name ## _edsp
 # else
@@ -64,6 +70,12 @@
 #  define PRESUME_NEON(name) PRESUME_MEDIA(name)
 # endif
 
+# if defined(OPUS_ARM_PRESUME_DOTPROD)
+#  define PRESUME_DOTPROD(name) name ## _dotprod
+# else
+#  define PRESUME_DOTPROD(name) PRESUME_NEON(name)
+# endif
+
 # if defined(OPUS_HAVE_RTCD)
 int opus_select_arch(void);
 
@@ -71,6 +83,7 @@ int opus_select_arch(void);
 #define OPUS_ARCH_ARM_EDSP  (1)
 #define OPUS_ARCH_ARM_MEDIA (2)
 #define OPUS_ARCH_ARM_NEON  (3)
+#define OPUS_ARCH_ARM_DOTPROD  (4)
 
 # endif
 

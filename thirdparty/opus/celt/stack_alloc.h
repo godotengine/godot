@@ -40,7 +40,7 @@
 #endif
 
 #ifdef USE_ALLOCA
-# ifdef WIN32
+# ifdef _WIN32
 #  include <malloc.h>
 # else
 #  ifdef HAVE_ALLOCA_H
@@ -102,7 +102,7 @@
 
 #define VARDECL(type, var) type *var
 
-# ifdef WIN32
+# ifdef _WIN32
 #  define ALLOC(var, size, type) var = ((type*)_alloca(sizeof(type)*(size)))
 # else
 #  define ALLOC(var, size, type) var = ((type*)alloca(sizeof(type)*(size)))
@@ -123,6 +123,25 @@ extern char *global_stack;
 extern char *scratch_ptr;
 #endif /* CELT_C */
 
+#if __STDC_VERSION__ >= 201112L
+#  include <stdalign.h>
+#  define ALIGNOF(T) alignof(T)
+#elif defined(__GNUC__) || defined(__clang__)
+#  define ALIGNOF(T) __alignof__(T)
+#else
+# include <stddef.h>
+# ifdef __cplusplus
+template <typename T>
+struct alignment_helper {
+    char c;
+    T member;
+};
+# define ALIGNOF(T) (offsetof(alignment_helper<T>, member))
+# else
+# define ALIGNOF(T) (offsetof(struct { char c; T member; }, member))
+# endif
+#endif
+
 #ifdef ENABLE_VALGRIND
 
 #include <valgrind/memcheck.h>
@@ -134,20 +153,26 @@ extern char *global_stack_top;
 #endif /* CELT_C */
 
 #define ALIGN(stack, size) ((stack) += ((size) - (long)(stack)) & ((size) - 1))
-#define PUSH(stack, size, type) (VALGRIND_MAKE_MEM_NOACCESS(stack, global_stack_top-stack),ALIGN((stack),sizeof(type)/sizeof(char)),VALGRIND_MAKE_MEM_UNDEFINED(stack, ((size)*sizeof(type)/sizeof(char))),(stack)+=(2*(size)*sizeof(type)/sizeof(char)),(type*)((stack)-(2*(size)*sizeof(type)/sizeof(char))))
+#define PUSH(stack, size, type) (VALGRIND_MAKE_MEM_NOACCESS(stack, global_stack_top-stack),ALIGN((stack),ALIGNOF(type)),VALGRIND_MAKE_MEM_UNDEFINED(stack, ((size)*sizeof(type)/sizeof(char))),(stack)+=(2*(size)*sizeof(type)/sizeof(char)),(type*)((stack)-(2*(size)*sizeof(type)/sizeof(char))))
 #define RESTORE_STACK ((global_stack = _saved_stack),VALGRIND_MAKE_MEM_NOACCESS(global_stack, global_stack_top-global_stack))
-#define ALLOC_STACK char *_saved_stack; ((global_stack = (global_stack==0) ? ((global_stack_top=opus_alloc_scratch(GLOBAL_STACK_SIZE*2)+(GLOBAL_STACK_SIZE*2))-(GLOBAL_STACK_SIZE*2)) : global_stack),VALGRIND_MAKE_MEM_NOACCESS(global_stack, global_stack_top-global_stack)); _saved_stack = global_stack;
+#define ALLOC_STACK char *_saved_stack; ((global_stack = (global_stack==0) ? ((global_stack_top=(char*)opus_alloc_scratch(GLOBAL_STACK_SIZE*2)+(GLOBAL_STACK_SIZE*2))-(GLOBAL_STACK_SIZE*2)) : global_stack),VALGRIND_MAKE_MEM_NOACCESS(global_stack, global_stack_top-global_stack)); _saved_stack = global_stack;
 
 #else
 
 #define ALIGN(stack, size) ((stack) += ((size) - (long)(stack)) & ((size) - 1))
-#define PUSH(stack, size, type) (ALIGN((stack),sizeof(type)/sizeof(char)),(stack)+=(size)*(sizeof(type)/sizeof(char)),(type*)((stack)-(size)*(sizeof(type)/sizeof(char))))
+#ifdef ENABLE_HARDENING
+#include "arch.h"
+#define PUSH(stack, size, type) (ALIGN((stack),ALIGNOF(type)),(void)(((int)((size)*(sizeof(type)/(sizeof(char)))) <= (scratch_ptr)+GLOBAL_STACK_SIZE-(stack))?0:CELT_FATAL("pseudostack overflow")),(stack)+=(size)*(sizeof(type)/(sizeof(char))),(type*)(void*)((stack)-(size)*(sizeof(type)/(sizeof(char)))))
+#else
+#define PUSH(stack, size, type) (ALIGN((stack),ALIGNOF(type)),(stack)+=(size)*(sizeof(type)/(sizeof(char))),(type*)(void*)((stack)-(size)*(sizeof(type)/(sizeof(char)))))
+#endif
+
 #if 0 /* Set this to 1 to instrument pseudostack usage */
 #define RESTORE_STACK (printf("%ld %s:%d\n", global_stack-scratch_ptr, __FILE__, __LINE__),global_stack = _saved_stack)
 #else
 #define RESTORE_STACK (global_stack = _saved_stack)
 #endif
-#define ALLOC_STACK char *_saved_stack; (global_stack = (global_stack==0) ? (scratch_ptr=opus_alloc_scratch(GLOBAL_STACK_SIZE)) : global_stack); _saved_stack = global_stack;
+#define ALLOC_STACK char *_saved_stack; (global_stack = (global_stack==0) ? (scratch_ptr=(char*)opus_alloc_scratch(GLOBAL_STACK_SIZE)) : global_stack); _saved_stack = global_stack;
 
 #endif /* ENABLE_VALGRIND */
 

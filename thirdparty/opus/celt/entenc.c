@@ -172,6 +172,17 @@ void ec_enc_icdf(ec_enc *_this,int _s,const unsigned char *_icdf,unsigned _ftb){
   ec_enc_normalize(_this);
 }
 
+void ec_enc_icdf16(ec_enc *_this,int _s,const opus_uint16 *_icdf,unsigned _ftb){
+  opus_uint32 r;
+  r=_this->rng>>_ftb;
+  if(_s>0){
+    _this->val+=_this->rng-IMUL32(r,_icdf[_s-1]);
+    _this->rng=IMUL32(r,_icdf[_s-1]-_icdf[_s]);
+  }
+  else _this->rng-=IMUL32(r,_icdf[_s]);
+  ec_enc_normalize(_this);
+}
+
 void ec_enc_uint(ec_enc *_this,opus_uint32 _fl,opus_uint32 _ft){
   unsigned  ft;
   unsigned  fl;
@@ -274,7 +285,7 @@ void ec_enc_done(ec_enc *_this){
   }
   /*Clear any excess space and add any remaining extra bits to the last byte.*/
   if(!_this->error){
-    OPUS_CLEAR(_this->buf+_this->offs,
+    if (_this->buf) OPUS_CLEAR(_this->buf+_this->offs,
      _this->storage-_this->offs-_this->end_offs);
     if(used>0){
       /*If there's no range coder data at all, give up.*/
