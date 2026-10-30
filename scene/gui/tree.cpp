@@ -7237,8 +7237,9 @@ Variant Tree::get_drag_data(const Point2 &p_point) {
 		// Disable data drag & drop when touch dragging.
 		return Variant();
 	}
-	dragging_within_self = true;
-	return Control::get_drag_data(p_point);
+	Variant drag_data = Control::get_drag_data(p_point);
+	dragging_within_self = drag_data.get_type() != Variant::NIL;
+	return drag_data;
 }
 
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
