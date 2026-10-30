@@ -298,8 +298,13 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 #else
 		// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 		void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(LightUniform) * light_count, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(ubo, state.light_uniforms, sizeof(LightUniform) * light_count);
-		glUnmapBuffer(GL_UNIFORM_BUFFER);
+		if (likely(ubo)) {
+			memcpy(ubo, state.light_uniforms, sizeof(LightUniform) * light_count);
+			glUnmapBuffer(GL_UNIFORM_BUFFER);
+		} else {
+			// Some drivers (e.g. older Adreno) can fail to map the buffer, fall back to a regular upload.
+			glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightUniform) * light_count, state.light_uniforms);
+		}
 #endif
 
 		GLuint texture_atlas = texture_storage->texture_atlas_get_texture();
@@ -673,8 +678,13 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 #else
 	// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 	void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-	memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
-	glUnmapBuffer(GL_ARRAY_BUFFER);
+	if (likely(buffer)) {
+		memcpy(buffer, state.instance_data_array, index * sizeof(InstanceData));
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+	} else {
+		// Some drivers (e.g. older Adreno) can fail to map the buffer, fall back to a regular upload.
+		glBufferSubData(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), sizeof(InstanceData) * index, state.instance_data_array);
+	}
 #endif
 
 	glDisable(GL_SCISSOR_TEST);
@@ -1556,8 +1566,13 @@ void RasterizerCanvasGLES3::_add_to_batch(uint32_t &r_index, bool &r_batch_broke
 #else
 		// On Desktop and mobile we map the memory without synchronizing for maximum speed.
 		void *buffer = glMapBufferRange(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), r_index * sizeof(InstanceData), GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(buffer, state.instance_data_array, r_index * sizeof(InstanceData));
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		if (likely(buffer)) {
+			memcpy(buffer, state.instance_data_array, r_index * sizeof(InstanceData));
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+		} else {
+			// Some drivers (e.g. older Adreno) can fail to map the buffer, fall back to a regular upload.
+			glBufferSubData(GL_ARRAY_BUFFER, state.last_item_index * sizeof(InstanceData), sizeof(InstanceData) * r_index, state.instance_data_array);
+		}
 #endif
 		_allocate_instance_buffer();
 		r_index = 0;
