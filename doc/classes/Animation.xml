@@ -602,6 +602,7 @@
 			<param index="1" name="interpolation" type="bool" />
 			<description>
 				If [code]true[/code], the track at [param track_idx] wraps the interpolation loop.
+				[b]Note:[/b] If [param interpolation] is [code]true[/code], the animation interpolates between the last and first key of the track. If the last key is placed exactly at the end of the animation, it is ignored as being placed outside the looped animation range.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
@@ -734,6 +735,7 @@
 		</constant>
 		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
 			Cubic interpolation. This looks smoother than linear interpolation, but is more expensive to interpolate. Stick to [constant INTERPOLATION_LINEAR] for complex 3D animations imported from external software, even if it requires using a higher animation framerate in return.
+			[b]Note:[/b] If the last and first keys have different values and are close to the ends of the track, a huge overshoot in interpolation may occur if [method track_set_interpolation_loop_wrap] is set to [code]true[/code].
 		</constant>
 		<constant name="INTERPOLATION_LINEAR_ANGLE" value="3" enum="InterpolationType">
 			Linear interpolation with shortest path rotation.
