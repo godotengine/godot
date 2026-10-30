@@ -143,6 +143,7 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+	real_t get_last_cost() const;
 
 	bool is_neighbor_filter_enabled() const;
 	void set_neighbor_filter_enabled(bool p_enabled);
@@ -202,6 +203,7 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+	real_t get_last_cost() const;
 
 	bool is_neighbor_filter_enabled() const;
 	void set_neighbor_filter_enabled(bool p_enabled);
