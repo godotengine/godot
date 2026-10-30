@@ -1061,9 +1061,11 @@ int EditorNode3DGizmoPlugin::get_priority() const {
 }
 
 Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
+#ifndef DISABLE_DEPRECATED
 	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo")) {
 		return get_script_instance()->call("_get_gizmo", p_spatial);
 	}
+#endif
 
 	Ref<EditorNode3DGizmo> ref = create_gizmo(p_spatial);
 
