@@ -163,6 +163,7 @@ public:
 	void add_signal(MethodInfo p_signal);
 
 	bool bind_method(MethodBind *p_method, bool p_take_ownership = true);
+	void clear_method_default_arguments();
 
 	void set_method_flags(const StringName &p_method, int p_flags);
 

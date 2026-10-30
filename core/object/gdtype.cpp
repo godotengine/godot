@@ -174,6 +174,21 @@ bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	return true;
 }
 
+void GDType::clear_method_default_arguments() {
+	// Release defaults for this class, including non-owned binds reused during hot reload.
+	for (const KeyValue<StringName, Member> &kv : _self_members) {
+		if (kv.value.type == Member::Type::METHOD) {
+			const_cast<MethodBind *>(kv.value.payload.method)->set_default_arguments(Vector<Variant>());
+		}
+	}
+	// Compatibility binds are stored separately and can also hold object references.
+	for (const KeyValue<StringName, LocalVector<MethodBind *>> &kv : self_compatibility_method_map) {
+		for (MethodBind *bind : kv.value) {
+			bind->set_default_arguments(Vector<Variant>());
+		}
+	}
+}
+
 void GDType::set_method_flags(const StringName &p_method, int p_flags) {
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
