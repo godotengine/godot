@@ -46,7 +46,7 @@ class SnapshotCollector {
 
 public:
 	static void snapshot_objects(Array *p_arr, Dictionary &p_snapshot_context);
-	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+	static bool parse_message(void *p_user, const String &p_msg, const Array &p_args);
 	static void initialize();
 	static void deinitialize();
 	static String get_godot_version_string();
