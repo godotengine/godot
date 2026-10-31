@@ -593,6 +593,23 @@ Patches:
 - `0003-basisu-1.60.patch` ([GH-103968](https://github.com/godotengine/godot/pull/103968))
 
 
+# libnut
+
+- Upstream: https://github.com/lu-zero/nut
+- Version: git (e57e156eddd7779d36c3e9018cb27a6dc61bfa3c, 2012)
+- License: MIT
+
+Files extracted from upstream source:
+
+- From `src/`:
+  - COPYING
+  - `framecode.c`, `muxer.c` and all `.h` files from `libnut/`
+
+Patches:
+
+- `0001-no-vlas.patch` ([GH-124802](https://github.com/godotengine/godot/pull/124802))
+
+
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
