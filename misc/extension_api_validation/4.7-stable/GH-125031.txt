@@ -1,0 +1,3 @@
+Validate extension JSON: Error: Field 'classes/Shortcut/properties/events': type changed value in new API, from "typedarray::24/17:InputEvent" to "typedarray::24/17:InputEvent,-InputEventShortcut".
+
+Removed InputEventShortcut from the Shortcut.events dropdown. Only the editor is affected, so no adjustments should be necessary.
