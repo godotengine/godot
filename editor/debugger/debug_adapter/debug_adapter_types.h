@@ -143,13 +143,13 @@ struct BreakpointLocation {
 
 struct Capabilities {
 	bool supportsConfigurationDoneRequest = true;
-	bool supportsEvaluateForHovers = true;
-	bool supportsSetVariable = true;
+	bool supportsEvaluateForHovers = false;
+	bool supportsSetVariable = false;
 	String supportedChecksumAlgorithms[2] = { "MD5", "SHA256" };
 	bool supportsRestartRequest = true;
-	bool supportsValueFormattingOptions = true;
-	bool supportTerminateDebuggee = true;
-	bool supportSuspendDebuggee = true;
+	bool supportsValueFormattingOptions = false;
+	bool supportTerminateDebuggee = false;
+	bool supportSuspendDebuggee = false;
 	bool supportsTerminateRequest = true;
 	bool supportsBreakpointLocationsRequest = true;
 
