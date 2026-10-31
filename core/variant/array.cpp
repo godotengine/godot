@@ -41,6 +41,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 #include "core/variant/callable.h"
 #include "core/variant/container_type_validate.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/type_helpers.h"
+
+namespace TypeHelpers = VariantTypeHelpers;
 
 struct ArrayPrivate {
 	SafeRefCount refcount;
@@ -233,14 +236,14 @@ void Array::assign(const Array &p_array) {
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
 			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.variant_type)));
+				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, TypeHelpers::get_type_display_name(element), TypeHelpers::get_display_name(typed)));
 			}
 		}
 		_p->array = p_array._p->array;
 		return;
 	}
 	if (typed.variant_type == Variant::OBJECT || source_typed.variant_type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.variant_type), Variant::get_type_name(typed.variant_type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", TypeHelpers::get_display_name(source_typed), TypeHelpers::get_display_name(typed)));
 	}
 
 	Vector<Variant> array;
@@ -256,11 +259,11 @@ void Array::assign(const Array &p_array) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(value->get_type(), typed.variant_type)) {
-				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.variant_type)));
+				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed.variant_type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat("Unable to convert array index %d from '%s' to '%s'.", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat("Unable to convert array index %d from '%s' to '%s'.", i, TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed)));
 		}
 	} else if (Variant::can_convert_strict(source_typed.variant_type, typed.variant_type)) {
 		// from primitives to different convertible primitives
@@ -268,10 +271,10 @@ void Array::assign(const Array &p_array) {
 			const Variant *value = source + i;
 			Callable::CallError ce;
 			Variant::construct(typed.variant_type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat("Unable to convert array index %d from '%s' to '%s'.", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat("Unable to convert array index %d from '%s' to '%s'.", i, TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat("Cannot assign contents of 'Array[%s]' to 'Array[%s]'.", Variant::get_type_name(source_typed.variant_type), Variant::get_type_name(typed.variant_type)));
+		ERR_FAIL_MSG(vformat("Cannot assign contents of 'Array[%s]' to 'Array[%s]'.", TypeHelpers::get_display_name(source_typed), TypeHelpers::get_display_name(typed)));
 	}
 
 	_p->array = array;
