@@ -126,8 +126,7 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 	print_verbose("Snapshot size: " + String::num_uint64(p_arr->size()));
 }
 
-Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
-	r_captured = true;
+bool SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args) {
 	if (p_msg == "request_prepare_snapshot") {
 		int request_id = p_args[0];
 		Dictionary snapshot_context;
@@ -150,6 +149,7 @@ Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const 
 		Array resp = { request_id, pending_snapshots[request_id].size() };
 		EngineDebugger::get_singleton()->send_message("snapshot:snapshot_prepared", resp);
 
+		return true;
 	} else if (p_msg == "request_snapshot_chunk") {
 		int request_id = p_args[0];
 		int begin = p_args[1];
@@ -162,10 +162,11 @@ Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const 
 		if (end >= pending_snapshots[request_id].size()) {
 			pending_snapshots.erase(request_id);
 		}
-	} else {
-		r_captured = false;
+
+		return true;
 	}
-	return OK;
+
+	return false;
 }
 
 String SnapshotCollector::get_godot_version_string() {

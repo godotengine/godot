@@ -65,7 +65,7 @@ private:
 	static void _next_frame();
 
 	/// Message handler function for parse_message.
-	typedef Error (*ParseMessageFunc)(const Array &p_args);
+	typedef void (*ParseMessageFunc)(const Array &p_args);
 	static HashMap<String, ParseMessageFunc> message_handlers;
 	static void _init_message_handlers();
 
@@ -79,70 +79,70 @@ private:
 	// Using a `RingBuffer`, limits memory consumption when using a custom `MainLoop` that's not a `SceneTree`.
 	RingBuffer<DeferredMessage> _message_buffer = RingBuffer<DeferredMessage>(4);
 
-	static Error _msg_setup_scene(const Array &p_args);
-	static Error _msg_setup_game_view(const Array &p_args);
-	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
-	static Error _msg_request_scene_tree(const Array &p_args);
-	static Error _msg_save_node(const Array &p_args);
-	static Error _msg_inspect_objects(const Array &p_args);
-	static Error _msg_change_canvas_item_states(const Array &p_args);
+	static void _msg_setup_scene(const Array &p_args);
+	static void _msg_setup_game_view(const Array &p_args);
+	static void _msg_setup_embedded_shortcuts(const Array &p_args);
+	static void _msg_request_scene_tree(const Array &p_args);
+	static void _msg_save_node(const Array &p_args);
+	static void _msg_inspect_objects(const Array &p_args);
+	static void _msg_change_canvas_item_states(const Array &p_args);
 #ifndef DISABLE_DEPRECATED
-	static Error _msg_inspect_object(const Array &p_args);
+	static void _msg_inspect_object(const Array &p_args);
 #endif // DISABLE_DEPRECATED
-	static Error _msg_clear_selection(const Array &p_args);
-	static Error _msg_suspend_changed(const Array &p_args);
-	static Error _msg_next_frame(const Array &p_args);
-	static Error _msg_speed_changed(const Array &p_args);
-	static Error _msg_debug_mute_audio(const Array &p_args);
-	static Error _msg_window_request_size(const Array &p_args);
-	static Error _msg_hdr_output_request_state(const Array &p_args);
-	static Error _msg_hdr_output_toggle_requested(const Array &p_args);
-	static Error _msg_set_debug_collisions(const Array &p_args);
-	static Error _msg_override_cameras(const Array &p_args);
-	static Error _msg_set_object_property(const Array &p_args);
-	static Error _msg_set_object_property_field(const Array &p_args);
-	static Error _msg_reload_cached_files(const Array &p_args);
-	static Error _msg_live_set_root(const Array &p_args);
-	static Error _msg_live_node_path(const Array &p_args);
-	static Error _msg_live_res_path(const Array &p_args);
-	static Error _msg_live_node_prop_res(const Array &p_args);
-	static Error _msg_live_node_prop(const Array &p_args);
-	static Error _msg_live_res_prop_res(const Array &p_args);
-	static Error _msg_live_res_prop(const Array &p_args);
-	static Error _msg_live_node_call(const Array &p_args);
-	static Error _msg_live_res_call(const Array &p_args);
-	static Error _msg_live_create_node(const Array &p_args);
-	static Error _msg_live_instantiate_node(const Array &p_args);
-	static Error _msg_live_remove_node(const Array &p_args);
-	static Error _msg_live_remove_and_keep_node(const Array &p_args);
-	static Error _msg_live_restore_node(const Array &p_args);
-	static Error _msg_live_duplicate_node(const Array &p_args);
-	static Error _msg_live_reparent_node(const Array &p_args);
-	static Error _msg_runtime_node_select_setup(const Array &p_args);
-	static Error _msg_runtime_node_select_set_node_type(const Array &p_args);
-	static Error _msg_runtime_node_select_set_ci_tool(const Array &p_args);
+	static void _msg_clear_selection(const Array &p_args);
+	static void _msg_suspend_changed(const Array &p_args);
+	static void _msg_next_frame(const Array &p_args);
+	static void _msg_speed_changed(const Array &p_args);
+	static void _msg_debug_mute_audio(const Array &p_args);
+	static void _msg_window_request_size(const Array &p_args);
+	static void _msg_hdr_output_request_state(const Array &p_args);
+	static void _msg_hdr_output_toggle_requested(const Array &p_args);
+	static void _msg_set_debug_collisions(const Array &p_args);
+	static void _msg_override_cameras(const Array &p_args);
+	static void _msg_set_object_property(const Array &p_args);
+	static void _msg_set_object_property_field(const Array &p_args);
+	static void _msg_reload_cached_files(const Array &p_args);
+	static void _msg_live_set_root(const Array &p_args);
+	static void _msg_live_node_path(const Array &p_args);
+	static void _msg_live_res_path(const Array &p_args);
+	static void _msg_live_node_prop_res(const Array &p_args);
+	static void _msg_live_node_prop(const Array &p_args);
+	static void _msg_live_res_prop_res(const Array &p_args);
+	static void _msg_live_res_prop(const Array &p_args);
+	static void _msg_live_node_call(const Array &p_args);
+	static void _msg_live_res_call(const Array &p_args);
+	static void _msg_live_create_node(const Array &p_args);
+	static void _msg_live_instantiate_node(const Array &p_args);
+	static void _msg_live_remove_node(const Array &p_args);
+	static void _msg_live_remove_and_keep_node(const Array &p_args);
+	static void _msg_live_restore_node(const Array &p_args);
+	static void _msg_live_duplicate_node(const Array &p_args);
+	static void _msg_live_reparent_node(const Array &p_args);
+	static void _msg_runtime_node_select_setup(const Array &p_args);
+	static void _msg_runtime_node_select_set_node_type(const Array &p_args);
+	static void _msg_runtime_node_select_set_ci_tool(const Array &p_args);
 #ifdef TOOLS_ENABLED
-	static Error _msg_runtime_node_select_set_ci_local_space(const Array &p_args);
+	static void _msg_runtime_node_select_set_ci_local_space(const Array &p_args);
 #endif // TOOLS_ENABLED
-	static Error _msg_runtime_node_select_set_n3d_tool(const Array &p_args);
-	static Error _msg_runtime_node_select_set_selection_visible(const Array &p_args);
-	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
-	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
-	static Error _msg_rq_screenshot(const Array &p_args);
-	static Error _msg_report_window_focused(const Array &p_args);
+	static void _msg_runtime_node_select_set_n3d_tool(const Array &p_args);
+	static void _msg_runtime_node_select_set_selection_visible(const Array &p_args);
+	static void _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
+	static void _msg_runtime_node_select_set_prefer_group(const Array &p_args);
+	static void _msg_rq_screenshot(const Array &p_args);
+	static void _msg_report_window_focused(const Array &p_args);
 
 #ifndef _2D_DISABLED
-	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
-	static Error _msg_transform_camera_2d(const Array &p_args);
+	static void _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
+	static void _msg_transform_camera_2d(const Array &p_args);
 #endif // _2D_DISABLED
 #ifndef _3D_DISABLED
-	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
-	static Error _msg_transform_camera_3d(const Array &p_args);
+	static void _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
+	static void _msg_transform_camera_3d(const Array &p_args);
 #endif // _3D_DISABLED
 
 public:
 	static void activate();
-	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+	static bool parse_message(void *p_user, const String &p_msg, const Array &p_args);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 	static void reload_cached_files(const PackedStringArray &p_files);
