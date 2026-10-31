@@ -3,6 +3,8 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
+import os
+
 from platform_methods import combine_libs_ar, filter_file_libs
 
 import sdl3_sources
@@ -36,6 +38,11 @@ if env["library_type"] == "static_library":
 elif env["library_type"] == "shared_library":
     # SHLIBSUFFIX carries extra_suffix (".shared_library" for 2dog builds). Without it
     # SCons links the unsuffixed name and the staged artifact silently stays stale.
-    env.add_shared_library("#bin/godot", sources, SHLIBSUFFIX=env["SHLIBSUFFIX"])
+    shared_args = {"SHLIBSUFFIX": env["SHLIBSUFFIX"]}
+    if getattr(env, "msvc", False):
+        # mslink's emitter expects the import library's .exp at bin/godot.exp, but link.exe names it after the
+        # DLL (godot.<suffix>.exp). SCons never finds it and relinks on every run.
+        shared_args["WINDOWSEXPSUFFIX"] = os.path.splitext(env["SHLIBSUFFIX"])[0] + ".exp"
+    env.add_shared_library("#bin/godot", sources, **shared_args)
 else:
     env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
