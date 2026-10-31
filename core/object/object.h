@@ -250,19 +250,19 @@ private: \
 \
 	static GDType &get_gdtype_static_mutable() { \
 		static GDType *gdtype = nullptr; \
-		static bool initialized = false; \
-		if (likely(initialized)) { \
+		static SafeFlag initialized; \
+		if (likely(initialized.is_set())) { \
 			return *gdtype; \
 		} \
 \
 		static BinaryMutex __init_mutex; \
 		MutexLock lock(__init_mutex); \
-		if (initialized) { \
+		if (initialized.is_set()) { \
 			return *gdtype; \
 		} \
 		gdtype = memnew(GDType(&super_type::get_gdtype_static(), StringName(#m_class))); \
 		m_class::autorelease_gdtype(&gdtype); \
-		initialized = true; \
+		initialized.set(); \
 		return *gdtype; \
 	} \
 \
@@ -287,14 +287,14 @@ protected: \
 \
 public: \
 	static void initialize_class() { \
-		static bool initialized = false; \
-		if (likely(initialized)) { \
+		static SafeFlag initialized; \
+		if (likely(initialized.is_set())) { \
 			return; \
 		} \
 \
 		static BinaryMutex __init_mutex; \
 		MutexLock lock(__init_mutex); \
-		if (initialized) { \
+		if (initialized.is_set()) { \
 			return; \
 		} \
 		m_inherits::initialize_class(); \
@@ -306,7 +306,7 @@ public: \
 		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) { \
 			_bind_compatibility_methods(); \
 		} \
-		initialized = true; \
+		initialized.set(); \
 	} \
 \
 protected: \
@@ -455,19 +455,19 @@ private:
 
 	static GDType &get_gdtype_static_mutable() {
 		static GDType *gdtype = nullptr;
-		static bool initialized = false;
-		if (likely(initialized)) {
+		static SafeFlag initialized;
+		if (likely(initialized.is_set())) {
 			return *gdtype;
 		}
 
 		static BinaryMutex __init_mutex;
 		MutexLock lock(__init_mutex);
-		if (initialized) {
+		if (initialized.is_set()) {
 			return *gdtype;
 		}
 		gdtype = memnew(GDType(nullptr, StringName("Object")));
 		autorelease_gdtype(&gdtype);
-		initialized = true;
+		initialized.set();
 		return *gdtype;
 	}
 

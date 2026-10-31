@@ -1770,14 +1770,14 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
-	if (likely(initialized)) {
+	static SafeFlag initialized;
+	if (likely(initialized.is_set())) {
 		return;
 	}
 
 	static BinaryMutex __init_mutex;
 	MutexLock lock(__init_mutex);
-	if (initialized) {
+	if (initialized.is_set()) {
 		// Initialized on another thread while we were waiting.
 		return;
 	}
@@ -1785,7 +1785,7 @@ void Object::initialize_class() {
 	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
-	initialized = true;
+	initialized.set();
 }
 
 StringName Object::get_translation_domain() const {
