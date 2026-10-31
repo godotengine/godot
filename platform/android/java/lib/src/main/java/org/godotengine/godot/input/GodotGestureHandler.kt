@@ -30,10 +30,12 @@
 
 package org.godotengine.godot.input
 
+import android.os.Build
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.OnScaleGestureListener
+import org.godotengine.godot.Godot
 
 /**
  * Handles regular and scale gesture input related events for the [GodotView] view.
@@ -76,7 +78,13 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	private var lastDragX: Float = 0.0f
 	private var lastDragY: Float = 0.0f
 
+	inline fun isEditorTouchpadScroll(event: MotionEvent) = Godot.isEditorBuild() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && event.classification == MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
+
 	override fun onDown(event: MotionEvent): Boolean {
+		if (isEditorTouchpadScroll(event)) {
+			nextDownIsDoubleTap = false
+			return true
+		}
 		inputHandler.handleMotionEvent(event, MotionEvent.ACTION_DOWN, nextDownIsDoubleTap)
 		nextDownIsDoubleTap = false
 		return true
@@ -223,12 +231,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 		return true
 	}
 
-	override fun onScroll(
-		originEvent: MotionEvent?,
-		terminusEvent: MotionEvent,
-		distanceX: Float,
-		distanceY: Float
-	): Boolean {
+	override fun onScroll(originEvent: MotionEvent?, terminusEvent: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
 		if (scaleInProgress) {
 			if (dragInProgress || (scrollDeadzoneDisabled && (lastDragX != 0.0f || lastDragY != 0.0f))) {
 				if (originEvent != null) {
@@ -241,9 +244,10 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 			}
 		}
 
-		val x = terminusEvent.x
-		val y = terminusEvent.y
-		if (terminusEvent.pointerCount >= 2 && panningEnabled && !pointerCaptureInProgress && !dragInProgress) {
+		val editorTouchpadScroll = if (originEvent != null) isEditorTouchpadScroll(originEvent) else false
+		if ((terminusEvent.pointerCount >= 2 || editorTouchpadScroll) && panningEnabled && !pointerCaptureInProgress && !dragInProgress) {
+			val x = if (editorTouchpadScroll) originEvent!!.x else terminusEvent.x
+			val y = if (editorTouchpadScroll) originEvent!!.y else terminusEvent.y
 			inputHandler.handlePanEvent(x, y, distanceX / 5f, distanceY / 5f)
 		} else if (!scaleInProgress) {
 			dragInProgress = true
