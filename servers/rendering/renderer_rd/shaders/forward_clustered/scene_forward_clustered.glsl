@@ -549,7 +549,14 @@ void vertex_shader(vec3 vertex_input,
 	uvec2 screen_pixel = clamp(uvec2(clip_pos * vec2(screen_size)), uvec2(0), screen_size - uvec2(1));
 	uvec2 cluster_pos = screen_pixel >> implementation_data.cluster_shift;
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
-	uint cluster_z = uint(clamp((-vertex_interp.z / scene_data.z_far) * 32.0, 0.0, 31.0));
+
+	// Custom near and far planes are used for depth slice calculation to make the log
+	// distribution more predictable and less dependent on the camera settings
+	const float cluster_near = 2.0;
+	float cluster_far = min(scene_data.z_far, 2500.0);
+	float cluster_depth = clamp(-vertex_interp.z, cluster_near, cluster_far);
+
+	uint cluster_z = uint(clamp(floor(log(cluster_depth / cluster_near) * 32.0 / log(cluster_far / cluster_near)), 0.0, 31.0));
 
 	{ //omni lights
 
@@ -1547,7 +1554,12 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 
-	uint cluster_z = uint(clamp((-vertex.z / scene_data.z_far) * 32.0, 0.0, 31.0));
+	// Custom near and far planes are used for depth slice calculation to make the log
+	// distribution more predictable and less dependent on the camera settings
+	const float cluster_near = 2.0;
+	float cluster_far = min(scene_data.z_far, 2500.0);
+	float cluster_depth = clamp(-vertex.z, cluster_near, cluster_far);
+	uint cluster_z = uint(clamp(floor(log(cluster_depth / cluster_near) * 32.0 / log(cluster_far / cluster_near)), 0.0, 31.0));
 
 	//used for interpolating anything cluster related
 	vec3 vertex_ddx = dFdx(vertex);

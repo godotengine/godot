@@ -361,7 +361,11 @@ void main() {
 		}
 	}
 
-	uint cluster_z = uint(clamp((abs(view_pos.z) / params.z_far) * 32.0, 0.0, 31.0));
+	const float cluster_near = 2.0;
+	float cluster_far = min(params.z_far, 2500.0);
+	float cluster_depth = clamp(abs(view_pos.z), cluster_near, cluster_far);
+
+	uint cluster_z = uint(clamp(floor(log(cluster_depth / cluster_near) * 32.0 / log(cluster_far / cluster_near)), 0.0, 31.0));
 
 	vec3 total_light = vec3(0.0);
 

@@ -20,7 +20,7 @@ params;
 layout(set = 0, binding = 1, std140) uniform State {
 	mat4 projection;
 
-	float inv_z_far;
+	float z_far;
 	uint screen_to_clusters_shift; // shift to obtain coordinates in block indices
 	uint cluster_screen_width; //
 	uint cluster_data_size; // how much data for a single cluster takes
@@ -78,7 +78,7 @@ layout(location = 1) in flat uint element_index;
 
 layout(set = 0, binding = 1, std140) uniform State {
 	mat4 projection;
-	float inv_z_far;
+	float z_far;
 	uint screen_to_clusters_shift; // shift to obtain coordinates in block indices
 	uint cluster_screen_width; //
 	uint cluster_data_size; // how much data for a single cluster takes
@@ -118,9 +118,14 @@ void main() {
 	uint aux = 0;
 
 	//find the current element in the depth usage list and mark the current depth as used
-	float unit_depth = depth_interp * state.inv_z_far;
 
-	uint z_bit = clamp(uint(floor(unit_depth * 32.0)), 0, 31);
+	// Custom near and far planes are used for depth slice calculation to make the log
+	// distribution more predictable and less dependent on the camera settings
+	const float cluster_near = 2.0;
+	float cluster_far = min(state.z_far, 2500.0);
+	float cluster_depth = clamp(depth_interp, cluster_near, cluster_far);
+
+	uint z_bit = uint(clamp(floor(log(cluster_depth / cluster_near) * 32.0 / log(cluster_far / cluster_near)), 0.0, 31.0));
 
 	uint z_write_offset = cluster_offset + state.cluster_depth_offset + element_index;
 	uint z_write_bit = 1 << z_bit;
