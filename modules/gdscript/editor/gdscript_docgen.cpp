@@ -100,11 +100,12 @@ void GDScriptDocGen::_doctype_from_datatype(const DataType &p_datatype, String &
 				}
 			}
 			if (p_datatype.builtin_type == Variant::DICTIONARY && p_datatype.has_container_element_types()) {
-				String key, value;
-				_doctype_from_datatype(p_datatype.get_container_element_type_or_variant(0), key, r_enum);
-				_doctype_from_datatype(p_datatype.get_container_element_type_or_variant(1), value, r_enum);
+				String key, value, key_enum, value_enum;
+				_doctype_from_datatype(p_datatype.get_container_element_type_or_variant(0), key, key_enum);
+				_doctype_from_datatype(p_datatype.get_container_element_type_or_variant(1), value, value_enum);
 				if (key != "Variant" || value != "Variant") {
 					r_type = "Dictionary[" + key + ", " + value + "]";
+					r_enum = "Dictionary[" + (key_enum.is_empty() ? key : key_enum) + ", " + (value_enum.is_empty() ? value : value_enum) + "]";
 					return;
 				}
 			}
