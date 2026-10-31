@@ -80,6 +80,10 @@ namespace Godot.NativeInterop
             in godot_string_name signal,
             IntPtr target, IntPtr awaiterHandlePtr);
 
+        internal static partial void godotsharp_internal_signal_awaiter_disconnect(IntPtr source,
+            in godot_string_name signal,
+            IntPtr target, IntPtr awaiterHandlePtr);
+
         internal static partial void godotsharp_internal_tie_native_managed_to_unmanaged(IntPtr gcHandleIntPtr,
             IntPtr unmanaged, in godot_string_name nativeName, godot_bool refCounted);
 

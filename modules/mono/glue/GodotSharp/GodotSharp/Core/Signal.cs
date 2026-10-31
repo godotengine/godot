@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Godot
 {
     /// <summary>
@@ -33,6 +35,11 @@ namespace Godot
         public IAwaiter<Variant[]> GetAwaiter()
         {
             return new SignalAwaiter(_owner, _signalName, _owner);
+        }
+
+        public IAwaiter<Variant[]> WithCancellation(CancellationToken cancellationToken)
+        {
+            return new SignalAwaiter(_owner, _signalName, _owner, cancellationToken);
         }
     }
 }
