@@ -43,8 +43,18 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
     implementation "androidx.documentfile:documentfile:$versions.documentfileVersion"
 
-    implementation project(":dataLib")
-    implementation project(":fusedDepsLib")
+    // Check if we have an exported project AAR to be used as the app core.
+    // This is mostly used for development. See https://docs.godotengine.org/en/latest/engine_details/development/configuring_an_ide/android_studio.html#building-debugging-the-app-module
+    String exportedProjectAARDirPath = "libs/exportedProjectAAR"
+    File exportedProjectAARDir = file(exportedProjectAARDirPath)
+    String[] exportedProjectAARFiles = exportedProjectAARDir.exists() ? exportedProjectAARDir.list() : null
+    boolean hasExportedProjectAAR = exportedProjectAARFiles != null && exportedProjectAARFiles.length > 0
+    if (hasExportedProjectAAR) {
+        implementation fileTree(dir: exportedProjectAARDirPath, include: ["**/*.jar", "**/*.aar"])
+    } else {
+        implementation project(":dataLib")
+        implementation project(":fusedDepsLib")
+    }
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -53,8 +63,8 @@ dependencies {
     } else {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
-        debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '*.aar'])
-        releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '*.aar'])
+        debugImplementation fileTree(dir: 'libs/debug', include: ['**/*.jar', '**/*.aar'])
+        releaseImplementation fileTree(dir: 'libs/release', include: ['**/*.jar', '**/*.aar'])
     }
 
     // Godot user plugins remote dependencies
