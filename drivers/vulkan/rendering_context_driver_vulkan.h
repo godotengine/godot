@@ -125,6 +125,8 @@ protected:
 
 	// Can be overridden by platform-specific drivers.
 	virtual const char *_get_platform_surface_extension() const { return nullptr; }
+	// 2dog: console targets have no Vulkan loader; SDL/AGC hand back the entry points instead.
+	virtual Error _volk_initialize();
 	virtual bool _use_validation_layers() const;
 	virtual Error _create_vulkan_instance(const VkInstanceCreateInfo *p_create_info, VkInstance *r_instance);
 
