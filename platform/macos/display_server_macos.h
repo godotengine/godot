@@ -175,7 +175,6 @@ private:
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
-	CGEventSourceRef event_source;
 	void _mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) override;
 
 	HDROutput &_get_hdr_output(DisplayServerEnums::WindowID p_window) override;
