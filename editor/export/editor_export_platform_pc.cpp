@@ -106,8 +106,7 @@ void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p
 		return;
 	}
 
-	String template_debug_symbols_path_zip = template_debug_symbols_path + ".zip";
-	if (FileAccess::exists(template_debug_symbols_path_zip)) {
+	if (FileAccess::exists(template_debug_symbols_path + ".zip")) {
 		return;
 	}
 
