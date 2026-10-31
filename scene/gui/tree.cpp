@@ -5349,7 +5349,8 @@ void Tree::_notification(int p_what) {
 			}
 
 			Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
-			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
+			// Check if the viewport has a control being hovered, to prevent unwanted scrolling when dragging over a popup/dialog in Wayland.
+			if (scrolling && get_viewport()->gui_get_hovered_control() && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
 				Point2 point;
 
 				if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < theme_cache.scroll_border)) {
