@@ -117,7 +117,9 @@ void RenderingDeviceDriverMetal::remove_residency_set_to_main_queue(MTL::Residen
 #pragma mark - Fences
 
 RDD::FenceID RenderingDeviceDriverMetal::fence_create() {
-	Fence *fence = memnew(Fence(NS::TransferPtr(device->newSharedEvent())));
+	MTL::SharedEvent *event = device->newSharedEvent();
+	ERR_FAIL_NULL_V_MSG(event, FenceID(), "Couldn't create Metal shared event.");
+	Fence *fence = memnew(Fence(NS::TransferPtr(event)));
 	return FenceID(fence);
 }
 
