@@ -40,6 +40,9 @@
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "drivers/sdl/joypad_sdl.h"
+#ifdef GLES3_ENABLED
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 #include "os_sdl3.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 
@@ -197,6 +200,8 @@ DisplayServerSDL3::DisplayServerSDL3(const String &p_rendering_driver, DisplaySe
 			return;
 		}
 		SDL_GL_MakeCurrent(window, gl_context);
+		// Selects the compatibility renderer; without it the compositor's create function is null.
+		RasterizerGLES3::make_current(true);
 		_apply_vsync();
 	}
 #endif
@@ -1113,5 +1118,11 @@ void DisplayServerSDL3::swap_buffers() {
 void DisplayServerSDL3::release_rendering_thread() {
 	if (gl_context != nullptr) {
 		SDL_GL_MakeCurrent(window, nullptr);
+	}
+}
+
+void DisplayServerSDL3::gl_window_make_current(DisplayServerEnums::WindowID p_window_id) {
+	if (gl_context != nullptr) {
+		SDL_GL_MakeCurrent(window, gl_context);
 	}
 }

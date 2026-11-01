@@ -192,6 +192,8 @@ public:
 
 	void swap_buffers() override;
 	void release_rendering_thread() override;
+	// The render thread owns GL between make_current and release_rendering_thread.
+	void gl_window_make_current(DisplayServerEnums::WindowID p_window_id) override;
 
 	DisplayServerSDL3(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerSDL3();
