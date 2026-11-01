@@ -30,6 +30,8 @@
 
 #include "os_sdl3.h"
 
+#include "core/config/project_settings.h"
+
 #include "core/version_generated.gen.h"
 
 #include "core/object/object.h"
@@ -163,7 +165,16 @@ void OS_SDL3::finalize_core() {
 }
 
 bool OS_SDL3::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == get_identifier();
+	if (p_feature == "sdl3") {
+		return true;
+	}
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+	// Desktop hosts are PCs: projects and extensions key their feature overrides off this, and the
+	// OS name (windows, linux) is a tag in its own right.
+	return p_feature == "pc" || p_feature == get_name().to_lower();
+#else
+	return false;
+#endif
 }
 
 Vector<String> OS_SDL3::get_video_adapter_driver_info() const {
@@ -366,8 +377,76 @@ void OS_SDL3::unset_environment(const String &p_var) const {
 	SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name.get_data());
 }
 
+// On desktop the port presents as the host OS, like the stock platforms: GDExtension library tags
+// (windows.x86_64 = ...), feature overrides and OS.get_name() must not need to know SDL is underneath.
+// Console builds name themselves once their SDK fork is wired in.
+Error OS_SDL3::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
+	String path = p_path;
+	if (!FileAccess::exists(path)) {
+		// Lets GDExtension load libraries that sit beside the executable.
+		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
+		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	}
+	// shortcut: no "~"-prefixed temp copy (p_data->generate_temp_files); that only serves editor hot reload,
+	// which this port has no editor for. Revisit if an sdl3 editor build appears.
+#ifdef WINDOWS_ENABLED
+	String dll_path = path.replace_char('/', '\\');
+	DLL_DIRECTORY_COOKIE cookie = nullptr;
+	const bool search_library_dir = p_data != nullptr && p_data->also_set_library_path;
+	if (search_library_dir) {
+		// The library's own dependencies live next to it.
+		String dll_dir = ProjectSettings::get_singleton()->globalize_path(path.get_base_dir()).replace_char('/', '\\');
+		cookie = AddDllDirectory((LPCWSTR)(dll_dir.utf16().get_data()));
+	}
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, search_library_dir ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	const DWORD load_error = GetLastError();
+	if (cookie) {
+		RemoveDllDirectory(cookie);
+	}
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Win32 error %d.", p_path, (int)load_error));
+#else
+	p_library_handle = SDL_LoadObject(path.utf8().get_data());
+	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, SDL_GetError()));
+#endif
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = path;
+	}
+	return OK;
+}
+
+Error OS_SDL3::close_dynamic_library(void *p_library_handle) {
+	// SDL's shared-object handle is the platform handle (HMODULE / dlopen) itself.
+	SDL_UnloadObject((SDL_SharedObject *)p_library_handle);
+	return OK;
+}
+
+Error OS_SDL3::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
+	p_symbol_handle = (void *)SDL_LoadFunction((SDL_SharedObject *)p_library_handle, p_name.utf8().get_data());
+	if (p_symbol_handle == nullptr) {
+		if (p_optional) {
+			return ERR_CANT_RESOLVE;
+		}
+		ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, vformat("Can't resolve symbol %s. Error: %s.", p_name, SDL_GetError()));
+	}
+	return OK;
+}
+
 String OS_SDL3::get_name() const {
+#ifdef WINDOWS_ENABLED
+	return "Windows";
+#elif defined(LINUXBSD_ENABLED)
+	return "Linux";
+#else
 	return "SDL3";
+#endif
+}
+
+String OS_SDL3::get_identifier() const {
+#ifdef LINUXBSD_ENABLED
+	return "linuxbsd";
+#else
+	return OS::get_identifier();
+#endif
 }
 
 String OS_SDL3::get_distribution_name() const {

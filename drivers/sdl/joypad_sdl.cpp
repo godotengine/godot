@@ -132,7 +132,12 @@ void JoypadSDL::process_events() {
 	}
 
 	SDL_Event sdl_event;
+#ifdef SDL3_ENABLED
+	// 2dog: the display server owns the pump and every other event type; take only ours so polling here cannot swallow its input.
+	while (SDL_PeepEvents(&sdl_event, 1, SDL_GETEVENT, SDL_EVENT_JOYSTICK_AXIS_MOTION, SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED) > 0) {
+#else
 	while (SDL_PollEvent(&sdl_event)) {
+#endif
 		// A new joypad was attached
 		if (sdl_event.type == SDL_EVENT_JOYSTICK_ADDED) {
 			int joy_id = Input::get_singleton()->get_unused_joy_id();

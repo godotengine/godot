@@ -51,6 +51,14 @@
 
 static DisplayServerSDL3 *sdl3_server = nullptr;
 
+// SDL_Window units are logical; Godot (like its Windows and macOS ports) works in pixels everywhere,
+// matching the swapchain. 1.0 unless the display scales.
+static float _density(SDL_Window *p_window) {
+	const float density = p_window != nullptr ? SDL_GetWindowPixelDensity(p_window) : 1.0f;
+	return density > 0 ? density : 1.0f;
+}
+
+
 void DisplayServerSDL3::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 	static_cast<DisplayServerSDL3 *>(DisplayServer::get_singleton())->_dispatch_input_event(p_event);
 }
@@ -136,9 +144,14 @@ DisplayServerSDL3::DisplayServerSDL3(const String &p_rendering_driver, DisplaySe
 		SDL_SetWindowPosition(window, p_position->x, p_position->y);
 	}
 
+	// SDL_CreateWindow took the requested pixel size as logical units; correct it now the display scale is known.
+	const float creation_scale = _density(window);
+	if (creation_scale != 1.0f) {
+		SDL_SetWindowSize(window, Math::round(size.x / creation_scale), Math::round(size.y / creation_scale));
+	}
 	int window_w = 0;
 	int window_h = 0;
-	SDL_GetWindowSize(window, &window_w, &window_h);
+	SDL_GetWindowSizeInPixels(window, &window_w, &window_h);
 	Size2i position(0, 0);
 	SDL_GetWindowPosition(window, &position.x, &position.y);
 	window_size = Size2i(window_w, window_h);
@@ -250,48 +263,33 @@ bool DisplayServerSDL3::has_feature(DisplayServerEnums::Feature p_feature) const
 
 /* INPUT */
 
-void DisplayServerSDL3::_handle_key_event(const SDL_KeyboardEvent &p_event, bool p_down) {
-	if (!input_event_callback.is_valid()) {
-		return;
+// Godot's keycode is the layout-aware key: the character itself (letters upper-cased) for anything printable,
+// the physical-key table for the rest. SDL keycodes are Unicode for printable keys and scancode | 1 << 30 otherwise.
+static Key _keycode_from_event(const SDL_KeyboardEvent &p_event) {
+	const SDL_Keycode sdl_key = p_event.key;
+	if (sdl_key >= 0x20 && sdl_key != 0x7F && sdl_key <= 0x10FFFF) {
+		const char32_t character = (sdl_key >= 'a' && sdl_key <= 'z') ? sdl_key - 32 : sdl_key;
+		return (Key)character;
 	}
+	return KeyMappingSDL3::remap_key(p_event.scancode);
+}
 
+static Ref<InputEventKey> _make_key_event(const SDL_KeyboardEvent &p_event, bool p_down) {
 	Ref<InputEventKey> key;
 	key.instantiate();
 	key->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
 	key->set_pressed(p_down);
 	key->set_echo(p_event.repeat != 0);
-	key->set_keycode(KeyMappingSDL3::remap_key(p_event.key));
+	key->set_keycode(_keycode_from_event(p_event));
 	key->set_physical_keycode(KeyMappingSDL3::remap_key(p_event.scancode));
 	key->set_location(KeyMappingSDL3::key_location(p_event.scancode));
-	key->set_unicode((char32_t)p_event.key);
 
-	Key mods = Key::NONE;
-	if (p_event.mod & (SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT)) {
-		mods = mods | KeyModifierMask::SHIFT;
-	}
-	if (p_event.mod & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL)) {
-		mods = mods | KeyModifierMask::CTRL;
-	}
-	if (p_event.mod & (SDL_KMOD_LALT | SDL_KMOD_RALT)) {
-		mods = mods | KeyModifierMask::ALT;
-	}
-	if (p_event.mod & (SDL_KMOD_LGUI | SDL_KMOD_RGUI)) {
-		mods = mods | KeyModifierMask::META;
-	}
-	if (p_event.mod & SDL_KMOD_MODE) {
-		mods = mods | KeyModifierMask::GROUP_SWITCH;
-	}
-	key->set_keycode(key->get_keycode() | mods);
-	key->set_physical_keycode(key->get_physical_keycode() | mods);
-
-	Input::get_singleton()->parse_input_event(key);
-}
-
-void DisplayServerSDL3::_handle_text_input(const SDL_TextInputEvent &p_event) {
-	if (!input_text_callback.is_valid()) {
-		return;
-	}
-	input_text_callback.call(String::utf8(p_event.text));
+	// Modifiers are their own flags on the event; keycode stays the bare key (get_keycode_with_modifiers merges them).
+	key->set_shift_pressed(p_event.mod & (SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT));
+	key->set_ctrl_pressed(p_event.mod & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL));
+	key->set_alt_pressed(p_event.mod & (SDL_KMOD_LALT | SDL_KMOD_RALT));
+	key->set_meta_pressed(p_event.mod & (SDL_KMOD_LGUI | SDL_KMOD_RGUI));
+	return key;
 }
 
 void DisplayServerSDL3::_handle_mouse_motion(const SDL_MouseMotionEvent &p_event) {
@@ -301,9 +299,10 @@ void DisplayServerSDL3::_handle_mouse_motion(const SDL_MouseMotionEvent &p_event
 	Ref<InputEventMouseMotion> motion;
 	motion.instantiate();
 	motion->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
-	motion->set_position(Point2(p_event.x, p_event.y));
-	motion->set_global_position(Point2(p_event.x, p_event.y));
-	motion->set_relative(Point2(p_event.xrel, p_event.yrel));
+	const float scale = _density(window);
+	motion->set_position(Point2(p_event.x, p_event.y) * scale);
+	motion->set_global_position(Point2(p_event.x, p_event.y) * scale);
+	motion->set_relative(Point2(p_event.xrel, p_event.yrel) * scale);
 	Input::get_singleton()->parse_input_event(motion);
 }
 
@@ -314,8 +313,9 @@ void DisplayServerSDL3::_handle_mouse_button(const SDL_MouseButtonEvent &p_event
 	Ref<InputEventMouseButton> button;
 	button.instantiate();
 	button->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
-	button->set_position(Point2(p_event.x, p_event.y));
-	button->set_global_position(Point2(p_event.x, p_event.y));
+	const float scale = _density(window);
+	button->set_position(Point2(p_event.x, p_event.y) * scale);
+	button->set_global_position(Point2(p_event.x, p_event.y) * scale);
 	button->set_pressed(p_event.down);
 	switch (p_event.button) {
 		case SDL_BUTTON_LEFT:
@@ -363,12 +363,14 @@ void DisplayServerSDL3::_handle_mouse_wheel(const SDL_MouseWheelEvent &p_event) 
 		Ref<InputEventMouseButton> button;
 		button.instantiate();
 		button->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
-		button->set_position(Point2(p_event.mouse_x, p_event.mouse_y));
-		button->set_global_position(Point2(p_event.mouse_x, p_event.mouse_y));
+		button->set_position(Point2(p_event.mouse_x, p_event.mouse_y) * _density(window));
+		button->set_global_position(Point2(p_event.mouse_x, p_event.mouse_y) * _density(window));
 		button->set_button_index(axis.index);
 		button->set_factor(axis.amount);
 		button->set_pressed(true);
 		Input::get_singleton()->parse_input_event(button);
+		// Parsing the same object twice in a frame is unsafe: the release is its own event.
+		button = button->duplicate();
 		button->set_pressed(false);
 		Input::get_singleton()->parse_input_event(button);
 	}
@@ -394,13 +396,10 @@ void DisplayServerSDL3::_handle_window_event(SDL_WindowID p_id, uint32_t p_event
 		case SDL_EVENT_WINDOW_RESIZED: {
 			int resized_w = 0;
 			int resized_h = 0;
-			SDL_GetWindowSize(window, &resized_w, &resized_h);
+			SDL_GetWindowSizeInPixels(window, &resized_w, &resized_h);
 			window_size = Size2i(resized_w, resized_h);
 			if (rendering_context != nullptr) {
-				int resized_pw = 0;
-				int resized_ph = 0;
-				SDL_GetWindowSizeInPixels(window, &resized_pw, &resized_ph);
-				rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, resized_pw, resized_ph);
+				rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, resized_w, resized_h);
 			}
 			// The window may have been dragged to another monitor since the last event.
 			SDL_GetWindowPosition(window, &window_position.x, &window_position.y);
@@ -449,8 +448,21 @@ void DisplayServerSDL3::process_events() {
 		return;
 	}
 
+	// One pump, then two disjoint reads that leave the joystick/gamepad range (0x600-0x6FF) in the queue:
+	// JoypadSDL::process_events() below takes exactly those, and SDL_PollEvent here would throw them away.
+	SDL_PumpEvents();
+	// A key press waits one event for the text it may produce, so typed characters arrive as the
+	// key event's unicode (what LineEdit/TextEdit read), the way the Windows port merges WM_CHAR.
+	Ref<InputEventKey> pending_key;
+	auto flush_key = [&]() {
+		if (pending_key.is_valid()) {
+			Input::get_singleton()->parse_input_event(pending_key);
+			pending_key.unref();
+		}
+	};
 	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
+	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_JOYSTICK_AXIS_MOTION - 1) > 0 ||
+			SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED + 1, SDL_EVENT_LAST) > 0) {
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
 				if (window_event_callback.is_valid()) {
@@ -467,14 +479,33 @@ void DisplayServerSDL3::process_events() {
 				_handle_window_event(event.window.windowID, event.type);
 				break;
 			case SDL_EVENT_KEY_DOWN:
-				_handle_key_event(event.key, true);
+				flush_key();
+				pending_key = _make_key_event(event.key, true);
 				break;
 			case SDL_EVENT_KEY_UP:
-				_handle_key_event(event.key, false);
+				flush_key();
+				Input::get_singleton()->parse_input_event(_make_key_event(event.key, false));
 				break;
-			case SDL_EVENT_TEXT_INPUT:
-				_handle_text_input(event.text);
-				break;
+			case SDL_EVENT_TEXT_INPUT: {
+				// IME and composed text may carry several characters and no key press at all.
+				const String text = String::utf8(event.text.text);
+				for (int i = 0; i < text.length(); i++) {
+					if (pending_key.is_valid() && pending_key->get_unicode() == 0) {
+						pending_key->set_unicode(text[i]);
+						flush_key();
+						continue;
+					}
+					Ref<InputEventKey> typed;
+					typed.instantiate();
+					typed->set_window_id(DisplayServerEnums::MAIN_WINDOW_ID);
+					typed->set_unicode(text[i]);
+					typed->set_pressed(true);
+					Input::get_singleton()->parse_input_event(typed);
+					typed = typed->duplicate();
+					typed->set_pressed(false);
+					Input::get_singleton()->parse_input_event(typed);
+				}
+			} break;
 			case SDL_EVENT_MOUSE_MOTION:
 				_handle_mouse_motion(event.motion);
 				break;
@@ -496,11 +527,16 @@ void DisplayServerSDL3::process_events() {
 		}
 	}
 
+	flush_key();
+
 	// Gamepad input stays in the existing SDL driver, which owns its own event
 	// handling and only needs to be pumped.
 	if (JoypadSDL *joypads = static_cast<OS_SDL3 *>(OS::get_singleton())->get_joypad_driver()) {
 		joypads->process_events();
 	}
+
+	// Input buffers events until told otherwise; every stock display server ends its pump with this.
+	Input::get_singleton()->flush_buffered_events();
 }
 
 /* SCREEN */
@@ -516,8 +552,8 @@ int DisplayServerSDL3::get_screen_count() const {
 
 static SDL_DisplayID _display_for(int p_screen) {
 	if (p_screen == DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) {
-		const int64_t handle = sdl3_server != nullptr ? sdl3_server->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE) : 0;
-		return handle != 0 ? SDL_GetDisplayForWindow((SDL_Window *)handle) : SDL_GetPrimaryDisplay();
+		SDL_Window *main_window = sdl3_server != nullptr ? sdl3_server->get_sdl_window() : nullptr;
+		return main_window != nullptr ? SDL_GetDisplayForWindow(main_window) : SDL_GetPrimaryDisplay();
 	}
 	int count = 0;
 	SDL_DisplayID *displays = SDL_GetDisplays(&count);
@@ -693,7 +729,8 @@ Size2i DisplayServerSDL3::window_get_min_size(DisplayServerEnums::WindowID p_win
 
 void DisplayServerSDL3::window_set_size(const Size2i p_size, DisplayServerEnums::WindowID p_window) {
 	if (window != nullptr) {
-		SDL_SetWindowSize(window, p_size.x, p_size.y);
+		const float scale = _density(window);
+		SDL_SetWindowSize(window, Math::round(p_size.x / scale), Math::round(p_size.y / scale));
 		window_size = p_size;
 	}
 }
@@ -704,7 +741,7 @@ Size2i DisplayServerSDL3::window_get_size(DisplayServerEnums::WindowID p_window)
 	}
 	int w = 0;
 	int h = 0;
-	SDL_GetWindowSize(window, &w, &h);
+	SDL_GetWindowSizeInPixels(window, &w, &h);
 	return Size2i(w, h);
 }
 
@@ -810,8 +847,28 @@ bool DisplayServerSDL3::can_any_window_draw() const {
 
 int64_t DisplayServerSDL3::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
 	switch (p_handle_type) {
-		case DisplayServerEnums::WINDOW_HANDLE:
+		case DisplayServerEnums::WINDOW_HANDLE: {
+			// The platform's own window handle, like the stock ports (hosts embed or capture through it).
+			// Consoles have no such handle; there the SDL window itself is the handle.
+			if (window == nullptr) {
+				return 0;
+			}
+			const SDL_PropertiesID props = SDL_GetWindowProperties(window);
+#if defined(WINDOWS_ENABLED)
+			return (int64_t)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+#elif defined(LINUXBSD_ENABLED)
+			return (int64_t)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+#else
+			(void)props;
 			return (int64_t)window;
+#endif
+		}
+		case DisplayServerEnums::DISPLAY_HANDLE:
+#if defined(LINUXBSD_ENABLED)
+			return window != nullptr ? (int64_t)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr) : 0;
+#else
+			return 0;
+#endif
 		case DisplayServerEnums::OPENGL_CONTEXT:
 			return (int64_t)gl_context;
 		default:
@@ -853,6 +910,8 @@ void DisplayServerSDL3::mouse_set_mode(DisplayServerEnums::MouseMode p_mode) {
 		return;
 	}
 	mouse_mode = p_mode;
+	// Only the confined modes grab; leaving one must release it.
+	SDL_SetWindowMouseGrab(window, false);
 	switch (p_mode) {
 		case DisplayServerEnums::MOUSE_MODE_VISIBLE:
 			SDL_SetWindowRelativeMouseMode(window, false);
@@ -892,7 +951,8 @@ Point2i DisplayServerSDL3::mouse_get_position() const {
 
 void DisplayServerSDL3::warp_mouse(const Point2i &p_position) {
 	if (window != nullptr) {
-		SDL_WarpMouseInWindow(window, p_position.x, p_position.y);
+		const float scale = _density(window);
+		SDL_WarpMouseInWindow(window, p_position.x / scale, p_position.y / scale);
 	}
 }
 

@@ -89,11 +89,9 @@ class DisplayServerSDL3 : public DisplayServer {
 
 	void _handle_window_event(uint32_t p_id, uint32_t p_event_type);
 	void _handle_drop(const char *p_file);
-	void _handle_key_event(const SDL_KeyboardEvent &p_event, bool p_down);
 	void _handle_mouse_motion(const SDL_MouseMotionEvent &p_event);
 	void _handle_mouse_button(const SDL_MouseButtonEvent &p_event);
 	void _handle_mouse_wheel(const SDL_MouseWheelEvent &p_event);
-	void _handle_text_input(const SDL_TextInputEvent &p_event);
 
 	void _apply_vsync();
 
@@ -101,6 +99,9 @@ class DisplayServerSDL3 : public DisplayServer {
 
 public:
 	static void register_sdl3_driver();
+
+	// The SDL window itself (window_get_native_handle returns the platform handle instead).
+	SDL_Window *get_sdl_window() const { return window; }
 
 	bool has_feature(DisplayServerEnums::Feature p_feature) const override;
 	String get_name() const override { return "sdl3"; }

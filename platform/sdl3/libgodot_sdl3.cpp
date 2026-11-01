@@ -35,6 +35,37 @@
 #include "core/extension/libgodot.h"
 #include "main/main.h"
 
+#include <SDL3/SDL.h>
+#include <cstring>
+
+// sdl3-only extension of the libgodot ABI: the engine links SDL statically, so a host that wants to talk to
+// the SDL instance this engine runs (feed it input from remote play or a test, attach a virtual gamepad, set a
+// hint) has no other way to reach it. Returns the named SDL function, or null if it is not on the list below.
+// Cast the result to the function's SDL signature; SDL's calling convention is the platform default.
+extern "C" LIBGODOT_API void *libgodot_sdl3_get_function(const char *p_name) {
+	static const struct {
+		const char *name;
+		void *function;
+	} functions[] = {
+		{ "SDL_PushEvent", (void *)SDL_PushEvent },
+		{ "SDL_SetHint", (void *)SDL_SetHint },
+		{ "SDL_AttachVirtualJoystick", (void *)SDL_AttachVirtualJoystick },
+		{ "SDL_DetachVirtualJoystick", (void *)SDL_DetachVirtualJoystick },
+		{ "SDL_OpenJoystick", (void *)SDL_OpenJoystick },
+		{ "SDL_CloseJoystick", (void *)SDL_CloseJoystick },
+		{ "SDL_SetJoystickVirtualAxis", (void *)SDL_SetJoystickVirtualAxis },
+		{ "SDL_SetJoystickVirtualButton", (void *)SDL_SetJoystickVirtualButton },
+	};
+	if (p_name != nullptr) {
+		for (const auto &entry : functions) {
+			if (strcmp(entry.name, p_name) == 0) {
+				return entry.function;
+			}
+		}
+	}
+	return nullptr;
+}
+
 static OS_SDL3 *os = nullptr;
 
 static GodotInstance *instance = nullptr;
