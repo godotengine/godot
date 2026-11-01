@@ -221,7 +221,9 @@ void VideoStreamPlaybackWebm::stop() {
 	playing = false;
 }
 void VideoStreamPlaybackWebm::play() {
-	stop();
+	if (playing) {
+		return;
+	}
 
 	delay_compensation = ProjectSettings::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
