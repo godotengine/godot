@@ -327,35 +327,37 @@ void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_
 	ERR_FAIL_NULL(wayland_thread);
 
 	Key last_key = Key::NONE;
-	xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
-
-	if (p_pressed) {
-		xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
-		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+	xkb_compose_status compose_status = XKB_COMPOSE_NOTHING;
+	if (p_ss->xkb_compose_state) {
 		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+		if (p_pressed) {
+			xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
+			xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+			compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
 
-		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
-			// We need to generate multiple key events to report the composed result, One
-			// per character.
-			char str_xkb[256] = {};
-			int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
+			if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+				// We need to generate multiple key events to report the composed result, One
+				// per character.
+				char str_xkb[256] = {};
+				int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
 
-			String decoded_str = String::utf8(str_xkb, str_xkb_size);
-			for (int i = 0; i < decoded_str.length(); ++i) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
-				if (k.is_null()) {
-					continue;
+				String decoded_str = String::utf8(str_xkb, str_xkb_size);
+				for (int i = 0; i < decoded_str.length(); ++i) {
+					Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
+					if (k.is_null()) {
+						continue;
+					}
+
+					k->set_unicode(decoded_str[i]);
+					k->set_echo(p_echo);
+
+					Ref<InputEventMessage> msg;
+					msg.instantiate();
+					msg->event = k;
+					wayland_thread->push_message(msg);
+
+					last_key = k->get_keycode();
 				}
-
-				k->set_unicode(decoded_str[i]);
-				k->set_echo(p_echo);
-
-				Ref<InputEventMessage> msg;
-				msg.instantiate();
-				msg->event = k;
-				wayland_thread->push_message(msg);
-
-				last_key = k->get_keycode();
 			}
 		}
 	}
@@ -2405,7 +2407,11 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
 
 	xkb_compose_state_unref(ss->xkb_compose_state);
-	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	if (ss->xkb_compose_table) {
+		ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	} else {
+		ss->xkb_compose_state = nullptr;
+	}
 
 	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
