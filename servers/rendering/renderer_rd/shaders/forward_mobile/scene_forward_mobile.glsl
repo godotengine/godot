@@ -1603,7 +1603,7 @@ void main() {
 		hvec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		hvec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		hvec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		hvec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, anisotropy * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
+		hvec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, abs(anisotropy) * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
 		hvec3 ref_vec = reflect(-view, bent_normal);
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
