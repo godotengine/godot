@@ -421,8 +421,14 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 						}
 
 						if (converted) {
-							Ref<Image> img = Image::create_from_data(image.w, image.h, false, Image::FORMAT_RGBA8, frame_data);
-							texture->set_image(img); // Zero copy send to visual server
+							Ref<Image> img;
+							img.instantiate(image.w, image.h, false, Image::FORMAT_RGBA8, frame_data); // Zero-copy image creation.
+							if (image.w == webm->getWidth() && image.h == webm->getHeight()) {
+								texture->update(img); // Zero-copy send to rendering server.
+							} else {
+								texture->set_image(img); // Size of image changed, so create a new texture.
+							}
+
 							video_frame_done = true;
 
 							if (seeking) {
