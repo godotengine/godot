@@ -32,7 +32,7 @@
 
 #include "tests/test_macros.h"
 
-#include "modules/visual_shader/visual_shader.h"
+#include "../visual_shader.h"
 
 namespace TestVisualShader {
 
