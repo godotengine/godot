@@ -203,7 +203,7 @@ Patches:
 ## dr_libs
 
 - Upstream: https://github.com/mackron/dr_libs
-- Version: mp3-0.7.3 (5690d4671d7ad07ae6021756d7222eb159745f06, 2026)
+- Version: mp3-0.7.4 (aec2dd20667f54acfdb66031217df6d240f56c52, 2026)
 - License: Public Domain or Unlicense or MIT-0
 
 Files extracted from upstream source:
