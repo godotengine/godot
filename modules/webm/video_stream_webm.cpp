@@ -214,7 +214,8 @@ void VideoStreamPlaybackWebm::stop() {
 		video_frames_pos = 0;
 		num_decoded_samples = 0;
 		samples_offset = -1;
-		video_frame_delay = video_pos = 0.0;
+		video_frame_delay = 0.0;
+		video_pos = 0.0;
 	}
 	time = 0.0;
 	seeking = false;
@@ -363,75 +364,72 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 
 		// It seems VPXDecoder::decode has to be executed even though we might skip this frame
 		if (video->decode(*video_frame)) {
-			VPXDecoder::IMAGE_ERROR err;
-			VPXDecoder::Image image;
-
 			if (should_process(*video_frame)) {
-				if ((err = video->getImage(image)) != VPXDecoder::NO_FRAME) {
-					if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
-						bool converted = false;
+				VPXDecoder::Image image;
+				VPXDecoder::IMAGE_ERROR err = video->getImage(image);
+				if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
+					bool converted = false;
 
-						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) { // sRGB format.
+					if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) { // sRGB format.
+						uint8_t *wp = frame_data.ptrw();
+						const unsigned char *rRow = image.planes[2];
+						const unsigned char *gRow = image.planes[0];
+						const unsigned char *bRow = image.planes[1];
+						const unsigned char *aRow = image.alpha;
+						for (int y = 0; y < image.h; y++) {
+							for (int x = 0; x < image.w; x++) {
+								*wp++ = rRow[x];
+								*wp++ = gRow[x];
+								*wp++ = bRow[x];
+								*wp++ = aRow ? aRow[x] : 255;
+							}
+							rRow += image.linesize[2];
+							gRow += image.linesize[0];
+							bRow += image.linesize[1];
+							if (aRow) {
+								aRow += image.alphaLinesize;
+							}
+						}
+						converted = true;
+					} else { // YUV format.
+						if (image.chromaShiftW == 1 && image.chromaShiftH == 1) { // YUV 420 format.
 							uint8_t *wp = frame_data.ptrw();
-							const unsigned char *rRow = image.planes[2];
-							const unsigned char *gRow = image.planes[0];
-							const unsigned char *bRow = image.planes[1];
+							yuv420_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							converted = true;
+						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) { // YUV 422 format.
+							uint8_t *wp = frame_data.ptrw();
+							yuv422_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							converted = true;
+						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) { // YUV 444 format.
+							uint8_t *wp = frame_data.ptrw();
+							yuv444_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							converted = true;
+						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) { // YUV 411 format.
+							// This format is rare and thus unsupported by yuv2rgb.h, so discard the frame.
+						}
+
+						if (converted && image.alpha) {
+							uint8_t *wp = frame_data.ptrw();
 							const unsigned char *aRow = image.alpha;
 							for (int y = 0; y < image.h; y++) {
 								for (int x = 0; x < image.w; x++) {
-									*wp++ = rRow[x];
-									*wp++ = gRow[x];
-									*wp++ = bRow[x];
-									*wp++ = aRow ? aRow[x] : 255;
+									wp += 3;
+									*wp++ = aRow[x];
 								}
-								rRow += image.linesize[2];
-								gRow += image.linesize[0];
-								bRow += image.linesize[1];
-								if (aRow) {
-									aRow += image.alphaLinesize;
-								}
-							}
-							converted = true;
-						} else { // YUV format.
-							if (image.chromaShiftW == 1 && image.chromaShiftH == 1) { // YUV 420 format.
-								uint8_t *wp = frame_data.ptrw();
-								yuv420_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-								converted = true;
-							} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) { // YUV 422 format.
-								uint8_t *wp = frame_data.ptrw();
-								yuv422_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-								converted = true;
-							} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) { // YUV 444 format.
-								uint8_t *wp = frame_data.ptrw();
-								yuv444_2_rgb8888(wp, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-								converted = true;
-							} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) { // YUV 411 format.
-								// This format is rare and thus unsupported by yuv2rgb.h, so discard the frame.
-							}
-
-							if (converted && image.alpha) {
-								uint8_t *wp = frame_data.ptrw();
-								const unsigned char *aRow = image.alpha;
-								for (int y = 0; y < image.h; y++) {
-									for (int x = 0; x < image.w; x++) {
-										wp += 3;
-										*wp++ = aRow[x];
-									}
-									aRow += image.alphaLinesize;
-								}
+								aRow += image.alphaLinesize;
 							}
 						}
+					}
 
-						if (converted) {
-							Ref<Image> img;
-							img.instantiate(image.w, image.h, false, Image::FORMAT_RGBA8, frame_data); // Zero-copy image creation.
-							texture->update(img); // Zero-copy send to rendering server.
+					if (converted) {
+						Ref<Image> img;
+						img.instantiate(image.w, image.h, false, Image::FORMAT_RGBA8, frame_data); // Zero-copy image creation.
+						texture->update(img); // Zero-copy send to rendering server.
 
-							video_frame_done = true;
+						video_frame_done = true;
 
-							if (seeking) {
-								seeking = false;
-							}
+						if (seeking) {
+							seeking = false;
 						}
 					}
 				}
