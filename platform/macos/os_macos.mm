@@ -76,7 +76,7 @@ void print_cferror(CFErrorRef p_error) {
 	NSLog(@"Code: %ld", (long)code);
 	NSLog(@"Description: %@", (__bridge NSString *)description);
 
-	// Print all keys in the user info dictionary
+	// Print all keys in the user info dictionary.
 	if (user_info != NULL) {
 		NSLog(@"User Info: %@", (__bridge NSDictionary *)user_info);
 		CFRelease(user_info);
@@ -1103,13 +1103,13 @@ Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r
 	return status;
 }
 
-Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_ssl_data, const Vector<PackedByteArray> &p_ca_data) {
+Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_tls_data, const Vector<PackedByteArray> &p_ca_data) {
 	CFStringRef host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
 	CFMutableArrayRef policies = nullptr;
 	SecTrustRef trust = nullptr;
 	SecPolicyRef policy = nullptr;
 
-	CFMutableArrayRef ssl_certs = nullptr;
+	CFMutableArrayRef tls_certs = nullptr;
 	CFMutableArrayRef ca_certs = nullptr;
 	Error status = OK;
 	OSStatus ret;
@@ -1121,8 +1121,8 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 		goto out;
 	}
 
-	// Create the necessary certificate bundles
-	status = der_to_cfarray(p_ssl_data, ssl_certs);
+	// Create the necessary certificate bundles.
+	status = der_to_cfarray(p_tls_data, tls_certs);
 	if (status != OK) {
 		goto out;
 	}
@@ -1133,7 +1133,7 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 		}
 	}
 
-	// Add the SSL and Revocation policies to be checked
+	// Add the SSL and Revocation policies to be checked.
 	policies = CFArrayCreateMutable(nullptr, 2, &kCFTypeArrayCallBacks);
 	if (!policies) {
 		status = ERR_OUT_OF_MEMORY;
@@ -1145,7 +1145,6 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 		status = ERR_OUT_OF_MEMORY;
 		goto out;
 	}
-
 	CFArrayAppendValue(policies, policy);
 	CFRelease(policy);
 
@@ -1154,12 +1153,11 @@ Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vec
 		status = ERR_OUT_OF_MEMORY;
 		goto out;
 	}
-
 	CFArrayAppendValue(policies, policy);
 	CFRelease(policy);
 	policy = nullptr;
 
-	ret = SecTrustCreateWithCertificates(ssl_certs, policies, &trust);
+	ret = SecTrustCreateWithCertificates(tls_certs, policies, &trust);
 	if (ret != noErr || !trust) {
 		status = ERR_UNAUTHORIZED;
 		goto out;
@@ -1193,8 +1191,8 @@ out:
 	if (policy) {
 		CFRelease(policy);
 	}
-	if (ssl_certs) {
-		CFRelease(ssl_certs);
+	if (tls_certs) {
+		CFRelease(tls_certs);
 	}
 	if (ca_certs) {
 		CFRelease(ca_certs);
