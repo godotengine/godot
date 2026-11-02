@@ -1,8 +1,8 @@
 diff --git a/thirdparty/misc/ok_color.h b/thirdparty/misc/ok_color.h
-index 4d0f0049bd..2cc7f1ceef 100644
+index 1e4c713a1d..d690567d98 100644
 --- a/thirdparty/misc/ok_color.h
 +++ b/thirdparty/misc/ok_color.h
-@@ -541,6 +541,11 @@ static RGB okhsl_to_srgb(HSL hsl)
+@@ -539,6 +539,11 @@ static RGB okhsl_to_srgb(HSL hsl)
  
  static HSL srgb_to_okhsl(RGB rgb)
  {

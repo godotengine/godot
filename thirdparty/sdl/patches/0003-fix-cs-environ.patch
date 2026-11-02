@@ -1,8 +1,8 @@
 diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
-index 2626b62717b..d66751a2105 100644
+index 1517b5974b..e20962d65c 100644
 --- a/thirdparty/sdl/stdlib/SDL_getenv.c
 +++ b/thirdparty/sdl/stdlib/SDL_getenv.c
-@@ -153,6 +153,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
+@@ -154,6 +154,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
  
  const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
  {
@@ -12,7 +12,7 @@ index 2626b62717b..d66751a2105 100644
      const char *result = NULL;
  
      if (!env) {
-@@ -172,6 +175,7 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
+@@ -173,6 +176,7 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
      SDL_UnlockMutex(env->lock);
  
      return result;
@@ -20,7 +20,7 @@ index 2626b62717b..d66751a2105 100644
  }
  
  typedef struct CountEnvStringsData
-@@ -250,6 +254,9 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
+@@ -251,6 +255,9 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
  
  bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite)
  {
@@ -30,7 +30,7 @@ index 2626b62717b..d66751a2105 100644
      bool result = false;
  
      CHECK_PARAM(!env) {
-@@ -287,10 +294,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
+@@ -288,10 +295,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
      SDL_UnlockMutex(env->lock);
  
      return result;
@@ -45,7 +45,7 @@ index 2626b62717b..d66751a2105 100644
      bool result = false;
  
      CHECK_PARAM(!env) {
-@@ -312,6 +323,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+@@ -313,6 +324,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
      SDL_UnlockMutex(env->lock);
  
      return result;

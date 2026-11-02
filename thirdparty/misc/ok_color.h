@@ -1,12 +1,13 @@
+#pragma once
 // Copyright(c) 2021 Björn Ottosson
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
-// this software and associated documentation files(the "Software"), to deal in
+// this softwareand associated documentation files(the "Software"), to deal in
 // the Software without restriction, including without limitation the rights to
 // use, copy, modify, merge, publish, distribute, sublicense, and /or sell copies
 // of the Software, and to permit persons to whom the Software is furnished to do
 // so, subject to the following conditions :
-// The above copyright notice and this permission notice shall be included in all
+// The above copyright noticeand this permission notice shall be included in all
 // copies or substantial portions of the Software.
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -15,9 +16,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
-#ifndef OK_COLOR_H
-#define OK_COLOR_H
 
 #include <cmath>
 #include <cfloat>
@@ -33,7 +31,7 @@ struct HSL { float h; float s; float l; };
 struct LC { float L; float C; };
 
 // Alternative representation of (L_cusp, C_cusp)
-// Encoded so S = C_cusp/L_cusp and T = C_cusp/(1-L_cusp)
+// Encoded so S = C_cusp/L_cusp and T = C_cusp/(1-L_cusp) 
 // The maximum value for C in the triangle is then found as fmin(S*L, T*(1-L)), for a given L
 struct ST { float S; float T; };
 
@@ -132,7 +130,7 @@ static float compute_max_saturation(float a, float b)
 
 	// Do one step Halley's method to get closer
 	// this gives an error less than 10e6, except for some blue hues where the dS/dh is close to infinite
-	// this should be sufficient for most applications, otherwise do two/three steps
+	// this should be sufficient for most applications, otherwise do two/three steps 
 
 	float k_l = +0.3963377774f * a + 0.2158037573f * b;
 	float k_m = -0.1055613458f * a - 0.0638541728f * b;
@@ -180,7 +178,7 @@ static LC find_cusp(float a, float b)
 	return { L_cusp , C_cusp };
 }
 
-// Finds intersection of the line defined by
+// Finds intersection of the line defined by 
 // L = L0 * (1 - t) + t * L1;
 // C = t * C1;
 // a and b must be normalized so a^2 + b^2 == 1
@@ -454,7 +452,7 @@ static Cs get_Cs(float L, float a_, float b_)
 
 	float C_max = find_gamut_intersection(a_, b_, L, 1, L, cusp);
 	ST ST_max = to_ST(cusp);
-
+	
 	// Scale factor to compensate for the curved part of gamut shape:
 	float k = C_max / fmin((L * ST_max.S), (1 - L) * ST_max.T);
 
@@ -601,7 +599,7 @@ static RGB okhsv_to_srgb(HSV hsv)
 
 	float a_ = cosf(2.f * pi * h);
 	float b_ = sinf(2.f * pi * h);
-
+	
 	LC cusp = find_cusp(a_, b_);
 	ST ST_max = to_ST(cusp);
 	float S_max = ST_max.S;
@@ -690,4 +688,3 @@ static HSV srgb_to_okhsv(RGB rgb)
 }
 
 };
-#endif // OK_COLOR_H
