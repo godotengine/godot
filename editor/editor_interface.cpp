@@ -959,6 +959,8 @@ void EditorInterface::create() {
 void EditorInterface::free() {
 	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	// 2dog: let a reinitialized engine create and free its own interface instance.
+	singleton = nullptr;
 }
 
 EditorInterface::EditorInterface() {

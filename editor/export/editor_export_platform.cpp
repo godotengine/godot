@@ -2463,7 +2463,32 @@ Error EditorExportPlatform::save_zip_patch(const Ref<EditorExportPreset> &p_pres
 
 Error EditorExportPlatform::export_pack(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	return save_pack(p_preset, p_debug, p_path);
+	// 2dog: host pack exports (libgodot_export_pack) copy desktop GDExtensions beside the pack for host lookup;
+	// web presets embed their side modules in the pack.
+	if (!OS::get_singleton()->get_cmdline_user_args().find("--2dog-host-pack")) {
+		return save_pack(p_preset, p_debug, p_path);
+	}
+	Vector<SharedObject> so_files;
+	Error err = save_pack(p_preset, p_debug, p_path, &so_files);
+	if (err != OK || get_os_name() == "Web") {
+		return err;
+	}
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	for (const SharedObject &so : so_files) {
+		const String src = ProjectSettings::get_singleton()->globalize_path(so.path);
+		String dst_dir = p_path.get_base_dir();
+		if (!so.target.is_empty()) {
+			dst_dir = dst_dir.path_join(so.target);
+			da->make_dir_recursive(dst_dir);
+		}
+		const String dst = dst_dir.path_join(src.get_file());
+		err = da->dir_exists(src) ? da->copy_dir(src, dst) : da->copy(src, dst);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not copy shared object \"%s\" to \"%s\"."), so.path, dst));
+			return err;
+		}
+	}
+	return OK;
 }
 
 Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {

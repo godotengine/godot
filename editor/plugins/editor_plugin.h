@@ -308,4 +308,9 @@ public:
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}
+
+	// 2dog: clear process-static registrations before an engine restart.
+	static void remove_all_create_funcs() {
+		creation_func_count = 0;
+	}
 };

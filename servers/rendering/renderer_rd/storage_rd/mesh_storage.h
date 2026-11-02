@@ -294,7 +294,7 @@ private:
 			uint32_t blend_shape_count;
 			uint32_t normalized_blend_shapes;
 			uint32_t normal_tangent_stride;
-			uint32_t pad1;
+			uint32_t bone_offset; // vec4 offset into atlas buffer (replaces pad1)
 			float skeleton_transform_x[2];
 			float skeleton_transform_y[2];
 
@@ -328,7 +328,7 @@ private:
 		bool use_2d = false;
 		int size = 0;
 		LocalVector<float> data;
-		RID buffer;
+		RID buffer; // Per-skeleton buffer (used when atlas is disabled)
 
 		bool dirty = false;
 		Skeleton *dirty_list = nullptr;
@@ -336,6 +336,8 @@ private:
 
 		RID uniform_set_3d;
 		RID uniform_set_mi;
+
+		uint32_t atlas_offset = 0; // In vec4s, the slot holds data.size() floats.
 
 		uint64_t version = 1;
 
@@ -347,6 +349,20 @@ private:
 	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
 
 	Skeleton *skeleton_dirty_list = nullptr;
+
+	// One bone buffer for all skeletons, see RD::DriverWorkarounds::skeleton_atlas.
+	struct SkeletonAtlasRange {
+		uint32_t offset = 0; // In floats.
+		uint32_t size = 0;
+	};
+	bool use_skeleton_atlas = false;
+	RID skeleton_atlas_buffer;
+	RID skeleton_atlas_uniform_set; // For compute skinning shader.
+	mutable RID skeleton_atlas_uniform_set_3d; // For scene draw shader (lazily created).
+	LocalVector<float> skeleton_atlas_data; // CPU mirror, its size is the buffer capacity.
+	LocalVector<SkeletonAtlasRange> skeleton_atlas_free;
+	uint32_t skeleton_atlas_used = 0; // Floats used
+	uint32_t _skeleton_atlas_alloc(uint32_t p_floats);
 
 	enum AttributeLocation {
 		ATTRIBUTE_LOCATION_PREV_VERTEX = 12,
@@ -803,6 +819,19 @@ public:
 		}
 		if (skeleton->use_2d) {
 			return RID();
+		}
+		if (use_skeleton_atlas) {
+			// Atlas mode: all bone data lives in the shared atlas buffer.
+			if (!skeleton_atlas_uniform_set_3d.is_valid() && skeleton_atlas_buffer.is_valid()) {
+				Vector<RD::Uniform> uniforms;
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 0;
+				u.append_id(skeleton_atlas_buffer);
+				uniforms.push_back(u);
+				skeleton_atlas_uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+			}
+			return skeleton_atlas_uniform_set_3d;
 		}
 		if (!skeleton->uniform_set_3d.is_valid()) {
 			Vector<RD::Uniform> uniforms;

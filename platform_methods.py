@@ -60,7 +60,7 @@ def validate_arch(arch, platform_name, supported_arches):
 def get_build_version(short):
     import version
 
-    name = "custom_build"
+    name = "2dog"
     if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
     v = "%d.%d" % (version.major, version.minor)
@@ -159,6 +159,54 @@ def detect_mvk(env, osname):
             return mvk_path
 
     return ""
+
+
+def filter_file_libs(libs):
+    from SCons.Node.FS import File
+    from SCons.Script import Flatten
+
+    sources = []
+
+    for lib in Flatten(libs):
+        if isinstance(lib, File):
+            sources.append(lib)
+    return sources
+
+
+def combine_libs_ar(target, source, env):
+    import tempfile
+
+    from SCons.Script import Flatten
+
+    lib_path = target[0].srcnode().abspath
+    paths = [lib.srcnode().abspath for lib in Flatten(source)]
+    paths = [path for path in paths if path.endswith(".a") or path.endswith(".lib")]
+    for lib in Flatten(env["LIBS"]):
+        if isinstance(lib, str) and (lib.endswith(".a") or lib.endswith(".lib")):
+            paths.append(lib)
+
+    fd, mri_path = tempfile.mkstemp(suffix=".mri")
+    try:
+        with os.fdopen(fd, "w") as fp:
+            fp.write(f'create "{lib_path}"\n')
+            for path in paths:
+                fp.write(f'addlib "{path}"\n')
+            fp.write("save\n")
+            fp.write("end")
+
+        result = env.Execute(f'$AR -M < "{mri_path}"')
+        if result:
+            return result
+    finally:
+        os.remove(mri_path)
+
+    # 2dog: LLVM objcopy cannot rewrite wasm archives (llvm-project#50623).
+    if env["platform"] != "web" and env["module_mono_enabled"]:
+        result = env.Execute(f'$OBJCOPY --redefine-sym _ZTV6Object=_ZTV6_godot_Object "{lib_path}"')
+        if result:
+            return result
+
+    return env.Execute(f'$RANLIB "{lib_path}"')
 
 
 def combine_libs_apple_embedded(target, source, env):

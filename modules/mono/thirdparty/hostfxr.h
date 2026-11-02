@@ -28,6 +28,8 @@ enum hostfxr_delegate_type
     hdt_com_unregister,
     hdt_load_assembly_and_get_function_pointer,
     hdt_get_function_pointer,
+    hdt_load_assembly,
+    hdt_load_assembly_bytes,
 };
 
 typedef int32_t(HOSTFXR_CALLTYPE *hostfxr_main_fn)(const int argc, const char_t **argv);
@@ -319,5 +321,46 @@ struct hostfxr_dotnet_environment_info
     size_t framework_count;
     const struct hostfxr_dotnet_environment_framework_info* frameworks;
 };
+
+//
+// Returns available SDKs and frameworks.
+//
+// Resolves the existing SDKs and frameworks from a dotnet root directory (if
+// any), or the global default location. If multi-level lookup is enabled and
+// the dotnet root location is different than the global location, the SDKs and
+// frameworks will be enumerated from both locations.
+//
+// The SDKs are sorted in ascending order by version, multi-level lookup
+// locations are put before private ones.
+//
+// The frameworks are sorted in ascending order by name followed by version,
+// multi-level lookup locations are put before private ones.
+//
+// Parameters:
+//    dotnet_root
+//      The path to a directory containing a dotnet executable.
+//
+//    reserved
+//      Reserved for future parameters.
+//
+//    result
+//      Callback invoke to return the list of SDKs and frameworks.
+//      Structs and their elements are valid for the duration of the call.
+//
+//    result_context
+//      Additional context passed to the result callback.
+//
+// Return value:
+//   0 on success, otherwise failure.
+//
+// String encoding:
+//   Windows     - UTF-16 (pal::char_t is 2 byte wchar_t)
+//   Unix        - UTF-8  (pal::char_t is 1 byte char)
+//
+typedef int32_t(HOSTFXR_CALLTYPE* hostfxr_get_dotnet_environment_info_fn)(
+    const char_t* dotnet_root,
+    void* reserved,
+    hostfxr_get_dotnet_environment_info_result_fn result,
+    void* result_context);
 
 #endif //__HOSTFXR_H__

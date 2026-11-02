@@ -1151,6 +1151,7 @@ NavigationServer3DManager::NavigationServer3DManager() {
 }
 
 NavigationServer3DManager::~NavigationServer3DManager() {
+	singleton = nullptr;
 }
 
 void NavigationServer3DManager::initialize_server_manager() {

@@ -350,7 +350,12 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	bool needs_templates;
 	String error;
-	if (!current->get_platform()->can_export(current, error, needs_templates)) {
+	if (EditorExport::is_full_export_blocked()) {
+		// 2dog: pack exports need neither templates nor the configuration a playable export checks.
+		export_error->hide();
+		export_warning->hide();
+		export_templates_error->hide();
+	} else if (!current->get_platform()->can_export(current, error, needs_templates)) {
 		if (!error.is_empty()) {
 			Vector<String> items = error.split("\n", false);
 			error = "";
@@ -1990,6 +1995,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
+	if (EditorExport::is_full_export_blocked()) {
+		export_button->hide();
+		export_all_button->hide();
+	}
+
 	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip", TTRC("ZIP File"));
 	export_pck_zip->add_filter("*.pck", TTRC("Godot Project Pack"));
@@ -2003,6 +2013,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_texture_format_error = memnew(ProjectExportTextureFormatError(this));
 	main_vb->add_child(export_texture_format_error);
 	export_texture_format_error->hide();
+
+	if (EditorExport::is_full_export_blocked()) {
+		Label *full_export_blocked = memnew(Label(EditorExport::get_full_export_blocked_message()));
+		full_export_blocked->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+		full_export_blocked->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+		main_vb->add_child(full_export_blocked);
+	}
 
 	export_error = memnew(Label);
 	export_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);

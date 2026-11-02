@@ -2570,6 +2570,9 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
+		slot_count = 0;
+		slot_max = 0;
 	}
 
 	spin_lock.unlock();

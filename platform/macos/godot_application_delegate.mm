@@ -140,7 +140,10 @@
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
+#ifndef LIBGODOT_ENABLED
+	// 2dog: hosts bootstrap library instances; application launch must not create a second engine.
 	os_mac->start_main();
+#endif
 }
 
 static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
@@ -192,8 +195,11 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	}
 	if (!args.is_empty()) {
 		if (os_mac->get_main_loop()) {
+#ifndef LIBGODOT_ENABLED
 			// Application is already running, open a new instance with the URL/files as command line arguments.
+			// 2dog: hosts handle library-build open-file events; forwarding arguments can relaunch them forever.
 			os_mac->create_instance(args);
+#endif
 		} else if (os_mac->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
 			os_mac->set_cmdline_platform_args(args);
@@ -209,8 +215,11 @@ static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
 	}
 	if (!args.is_empty()) {
 		if (os_mac->get_main_loop()) {
+#ifndef LIBGODOT_ENABLED
 			// Application is already running, open a new instance with the URL/files as command line arguments.
+			// 2dog: see openURLs above.
 			os_mac->create_instance(args);
+#endif
 		} else if (os_mac->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
 			os_mac->set_cmdline_platform_args(args);

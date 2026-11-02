@@ -5,8 +5,20 @@
 #define MAX_VOXEL_GI_INSTANCES 8
 #define MAX_VIEWS 2
 
+#ifdef RENDER_DRIVER_WEBGPU
+// Compact scene bindings for browser limits (Safari exposes 44 sampled textures per stage): the renderer binds half
+// the lightmaps and two VoxelGIs. The counts stay out of the general defines so shader bakes from any host match.
+#define LIGHTMAP_TEXTURE_SLOTS (MAX_LIGHTMAP_TEXTURES / 2)
+#define VOXEL_GI_TEXTURE_SLOTS 2
+#else
+#define LIGHTMAP_TEXTURE_SLOTS MAX_LIGHTMAP_TEXTURES
+#define VOXEL_GI_TEXTURE_SLOTS MAX_VOXEL_GI_INSTANCES
+#endif
+
+#ifndef RENDER_DRIVER_WEBGPU
 #extension GL_KHR_shader_subgroup_ballot : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
+#endif
 
 #include "../cluster_data_inc.glsl"
 #include "../decal_data_inc.glsl"
@@ -234,10 +246,18 @@ struct Lightmap {
 	uint flags;
 };
 
+#ifdef RENDER_DRIVER_WEBGPU
+// A uniform buffer keeps the fragment stage within the 10 storage buffers Chrome exposes on Metal.
+layout(set = 0, binding = 8, std140) uniform Lightmaps {
+	Lightmap data[MAX_LIGHTMAPS];
+}
+lightmaps;
+#else
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
 lightmaps;
+#endif
 
 struct LightmapCapture {
 	vec4 sh[9];
@@ -387,9 +407,9 @@ layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
 layout(set = 1, binding = 6) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES * 2];
+layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[LIGHTMAP_TEXTURE_SLOTS * 2];
 
-layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
+layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[VOXEL_GI_TEXTURE_SLOTS];
 
 layout(set = 1, binding = 9, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
@@ -418,7 +438,14 @@ layout(set = 1, binding = 12 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_A
 layout(r16ui, set = 1, binding = 24) uniform restrict writeonly uimage3D albedo_volume_grid;
 layout(r32ui, set = 1, binding = 25) uniform restrict writeonly uimage3D emission_grid;
 layout(r32ui, set = 1, binding = 26) uniform restrict writeonly uimage3D emission_aniso_grid;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(set = 1, binding = 27, std430) buffer restrict GeomFacingGrid {
+	uint data[];
+}
+geom_facing_grid;
+#else
 layout(r32ui, set = 1, binding = 27) uniform restrict uimage3D geom_facing_grid;
+#endif
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas

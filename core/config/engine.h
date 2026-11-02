@@ -82,6 +82,7 @@ private:
 	bool accurate_breadcrumbs = false;
 #endif
 	int32_t gpu_idx = -1;
+	uint64_t gpu_luid = 0; // 2dog: preferred adapter LUID (--gpu-luid); 0 means unset.
 
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
@@ -216,6 +217,7 @@ public:
 	bool is_accurate_breadcrumbs_enabled() const;
 #endif
 	int32_t get_gpu_index() const;
+	uint64_t get_gpu_luid() const; // 2dog:
 
 	void increment_frames_drawn();
 	bool notify_frame_server_synced();

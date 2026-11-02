@@ -61,6 +61,7 @@
 #include "drivers/metal/rendering_context_driver_metal.h"
 #include "drivers/metal/rendering_shader_container_metal.h"
 
+#include <IOSurface/IOSurfaceRef.h> // 2dog: external texture sharing.
 #include <Metal/Metal.hpp>
 #include <os/log.h>
 #include <os/signpost.h>
@@ -528,6 +529,81 @@ void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 	MTL::Texture *obj = reinterpret_cast<MTL::Texture *>(p_texture.id);
 	_untrack_resource(obj);
 	obj->release();
+}
+
+// 2dog: shared textures retain their IOSurface for the RID's lifetime.
+// 2dog: hosts must CFRetain handles kept after the texture is freed.
+
+uint32_t RenderingDeviceDriverMetal::external_texture_supported_handle_types() {
+	return 1u << EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_IOSURFACE;
+}
+
+RDD::TextureID RenderingDeviceDriverMetal::external_texture_create(ExternalTextureShareHandleType p_handle_type, DataFormat p_format, uint32_t p_width, uint32_t p_height, uint64_t p_import_handle, uint64_t *r_export_handle) {
+	if (p_handle_type != EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_IOSURFACE) {
+		return TextureID();
+	}
+
+	uint32_t fourcc = 0;
+	switch (p_format) {
+		case DATA_FORMAT_R8G8B8A8_UNORM:
+		case DATA_FORMAT_R8G8B8A8_SRGB: {
+			fourcc = 0x52474241; // 2dog: 'RGBA'
+		} break;
+		case DATA_FORMAT_B8G8R8A8_UNORM:
+		case DATA_FORMAT_B8G8R8A8_SRGB: {
+			fourcc = 0x42475241; // 2dog: 'BGRA'
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(TextureID(), "External textures support 8-bit RGBA/BGRA formats only.");
+		}
+	}
+
+	const int32_t bytes_per_element = 4;
+	CFMutableDictionaryRef props = CFDictionaryCreateMutable(kCFAllocatorDefault, 4,
+			&kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+	int32_t width = (int32_t)p_width;
+	int32_t height = (int32_t)p_height;
+	CFNumberRef cf_width = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &width);
+	CFNumberRef cf_height = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &height);
+	CFNumberRef cf_bpe = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &bytes_per_element);
+	CFNumberRef cf_format = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &fourcc);
+	CFDictionarySetValue(props, kIOSurfaceWidth, cf_width);
+	CFDictionarySetValue(props, kIOSurfaceHeight, cf_height);
+	CFDictionarySetValue(props, kIOSurfaceBytesPerElement, cf_bpe);
+	CFDictionarySetValue(props, kIOSurfacePixelFormat, cf_format);
+	CFRelease(cf_width);
+	CFRelease(cf_height);
+	CFRelease(cf_bpe);
+	CFRelease(cf_format);
+
+	IOSurfaceRef surface = IOSurfaceCreate(props);
+	CFRelease(props);
+	ERR_FAIL_NULL_V_MSG(surface, TextureID(), "IOSurfaceCreate failed.");
+
+	NS::SharedPtr<MTL::TextureDescriptor> desc = NS::TransferPtr(MTL::TextureDescriptor::alloc()->init());
+	desc->setTextureType(MTL::TextureType2D);
+	desc->setPixelFormat((MTL::PixelFormat)pixel_formats->getMTLPixelFormat(p_format));
+	desc->setWidth(p_width);
+	desc->setHeight(p_height);
+	desc->setMipmapLevelCount(1);
+	desc->setStorageMode(MTL::StorageModeShared); // 2dog: IOSurface-backed textures must be shared.
+	desc->setResourceOptions(base_hazard_tracking | MTL::ResourceStorageModeShared);
+	desc->setUsage(MTL::TextureUsageShaderRead);
+
+	MTL::Texture *obj = device->newTexture(desc.get(), surface, 0);
+	if (obj == nullptr) {
+		CFRelease(surface);
+		ERR_FAIL_V_MSG(TextureID(), "Unable to create IOSurface-backed texture.");
+	}
+	// 2dog: the texture retains its IOSurface; release the creation reference.
+	CFRelease(surface);
+
+	_track_resource(obj);
+
+	if (r_export_handle != nullptr) {
+		*r_export_handle = (uint64_t)(uintptr_t)surface;
+	}
+	return TextureID(reinterpret_cast<uint64_t>(obj));
 }
 
 uint64_t RenderingDeviceDriverMetal::texture_get_allocation_size(TextureID p_texture) {

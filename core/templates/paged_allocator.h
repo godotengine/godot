@@ -166,7 +166,7 @@ public:
 		}
 		bool leaked = allocs_available < pages_allocated * page_size;
 		if (leaked) {
-			if (CoreGlobals::leak_reporting_enabled) {
+			if (CoreGlobals::leak_reporting_enabled && !CoreGlobals::engine_reinit_enabled) {
 				ERR_PRINT(String("Pages in use exist at exit in PagedAllocator: ") + String(typeid(T).name()));
 			}
 		} else {

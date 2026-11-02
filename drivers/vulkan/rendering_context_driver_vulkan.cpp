@@ -861,6 +861,25 @@ Error RenderingContextDriverVulkan::_initialize_devices() {
 		driver_device.vendor = props.vendorID;
 		driver_device.type = DeviceType(props.deviceType);
 
+		// 2dog: adapter LUID for --gpu-luid. VkPhysicalDeviceIDProperties needs 1.1 on both ends.
+		if (instance_api_version >= VK_API_VERSION_1_1 && props.apiVersion >= VK_API_VERSION_1_1) {
+			VkPhysicalDeviceIDProperties id_props = {};
+			id_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES;
+			VkPhysicalDeviceProperties2 props2 = {};
+			props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			props2.pNext = &id_props;
+			vkGetPhysicalDeviceProperties2(physical_devices[i], &props2);
+			if (id_props.deviceLUIDValid) {
+				// 2dog: decode adapter LUIDs as little-endian to match D3D host values.
+				uint64_t luid = 0;
+				for (int32_t b = VK_LUID_SIZE - 1; b >= 0; b--) {
+					luid = (luid << 8) | id_props.deviceLUID[b];
+				}
+				driver_device.luid = luid;
+				driver_device.luid_valid = true;
+			}
+		}
+
 		uint32_t queue_family_properties_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &queue_family_properties_count, nullptr);
 
@@ -899,14 +918,21 @@ Error RenderingContextDriverVulkan::_create_vulkan_instance(const VkInstanceCrea
 	return OK;
 }
 
-Error RenderingContextDriverVulkan::initialize() {
-	Error err;
-
+// 2dog: split out so platform drivers can source the entry points from SDL instead of a loader.
+Error RenderingContextDriverVulkan::_volk_initialize() {
 #ifdef USE_VOLK
 	if (volkInitialize() != VK_SUCCESS) {
 		return FAILED;
 	}
 #endif
+	return OK;
+}
+
+Error RenderingContextDriverVulkan::initialize() {
+	Error err;
+
+	err = _volk_initialize();
+	ERR_FAIL_COND_V(err != OK, err);
 
 	err = _initialize_vulkan_version();
 	ERR_FAIL_COND_V(err != OK, err);

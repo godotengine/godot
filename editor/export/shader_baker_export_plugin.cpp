@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
@@ -105,6 +106,14 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		return false;
 	}
 
+	// Only the editor's own renderer has shaders to bake.
+	// shortcut: a Forward+ export that downgrades to Mobile compiles Mobile shaders at runtime, bake both if that matters.
+	const String export_method = get_export_preset()->get_project_setting("rendering/renderer/rendering_method");
+	if (shader_container_driver == "webgpu" && export_method != OS::get_singleton()->get_current_rendering_method()) {
+		WARN_PRINT(vformat("Shader baker disabled: the export uses the \"%s\" renderer, but the editor runs \"%s\". Restart the editor with `--rendering-method %s` to bake shaders.", export_method, OS::get_singleton()->get_current_rendering_method(), export_method));
+		return false;
+	}
+
 	shader_cache_platform_name = p_platform->get_os_name();
 	shader_cache_renderer_name = RendererSceneRenderRD::get_singleton()->get_name();
 	tasks_processed = 0;
@@ -137,6 +146,10 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 	// Both FP16 and FP32 variants should be included.
 	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP16_BIT);
 	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP32_BIT);
+
+	if (shader_container_driver == "webgpu") {
+		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_NO_IMAGE_ATOMICS_BIT);
+	}
 
 	RendererSceneRenderRD::get_singleton()->enable_features(renderer_features);
 
@@ -409,6 +422,24 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 		work_item.cache_path = group_items[group].cache_path;
 		work_item.shader_name = p_shader->get_name();
 		work_item.stage_sources = p_shader->version_build_variant_stage_sources(p_version, i);
+		// The host editor can enable multiview and input-attachment variants WebGPU cannot run.
+		if (shader_container_driver == "webgpu") {
+			// Sources name the host driver, but RENDER_DRIVER_WEBGPU paths must be baked.
+			const String host_define = "\n#define RENDER_DRIVER_" + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n";
+			for (String &source : work_item.stage_sources) {
+				source = source.replace(host_define, "\n#define RENDER_DRIVER_WEBGPU\n");
+			}
+			bool supported = true;
+			for (const String &source : work_item.stage_sources) {
+				if (source.contains("\n#define USE_MULTIVIEW\n") || source.contains("\n#define SUBPASS\n")) {
+					supported = false;
+					break;
+				}
+			}
+			if (!supported) {
+				continue;
+			}
+		}
 		work_item.dynamic_buffers = p_shader->get_dynamic_buffers();
 		work_item.variant = i;
 
@@ -425,7 +456,7 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 	if (!tasks_cancelled) {
 		// Only process the item if the tasks haven't been cancelled by the user yet.
-		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers);
+		Vector<RD::ShaderStageSPIRVData> spirv_data = ShaderRD::compile_stages(p_work_item.stage_sources, p_work_item.dynamic_buffers, shader_container_format);
 		if (unlikely(spirv_data.is_empty())) {
 			ERR_PRINT("Unable to retrieve SPIR-V data for shader.");
 		} else {
@@ -434,7 +465,10 @@ void ShaderBakerExportPlugin::_process_work_item(WorkItem p_work_item) {
 			// Compile shader binary from SPIR-V.
 			bool code_compiled = shader_container->set_code_from_spirv(p_work_item.shader_name, spirv_data);
 			if (unlikely(!code_compiled)) {
-				ERR_PRINT("Failed to compile code to native for SPIR-V.");
+				// WebGPU skips variants for the host's device quietly and reports real failures itself.
+				if (shader_container_driver != "webgpu") {
+					ERR_PRINT("Failed to compile code to native for SPIR-V.");
+				}
 			} else {
 				PackedByteArray shader_bytes = shader_container->to_bytes();
 				{

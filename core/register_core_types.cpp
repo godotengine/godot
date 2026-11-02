@@ -389,12 +389,16 @@ void register_core_singletons() {
 	OS::get_singleton()->benchmark_end_measure("Core", "Register Singletons");
 }
 
+void gd_extension_load_extensions() {
+	gdextension_manager->load_extensions();
+}
+
 void register_core_extensions() {
 	OS::get_singleton()->benchmark_begin_measure("Core", "Register Extensions");
 
 	// Hardcoded for now.
 	GDExtension::initialize_gdextensions();
-	gdextension_manager->load_extensions();
+	gdextension_manager->load_embedded_extension();
 	gdextension_manager->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
 	_is_core_extensions_registered = true;
 
@@ -406,6 +410,7 @@ void unregister_core_extensions() {
 
 	if (_is_core_extensions_registered) {
 		gdextension_manager->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_CORE);
+		_is_core_extensions_registered = false;
 	}
 	GDExtension::finalize_gdextensions();
 

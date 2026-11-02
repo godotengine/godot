@@ -756,6 +756,22 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 
 	MutexLock task_lock(task_mutex); // This mutex is needed when Physics 2D and/or 3D is selected to run on a separate thread.
 	groups.erase(p_group);
+#else
+	// On nothreads builds, tasks were already processed synchronously in _post_tasks.
+	// Still need to clean up the Group and remove from the HashMap.
+	Group **groupp = groups.getptr(p_group);
+	if (!groupp) {
+		ERR_FAIL_MSG("Invalid Group ID.");
+	}
+	Group *group = *groupp;
+
+	uint32_t max_users = group->tasks_used + 1;
+	uint32_t finished_users = group->finished.increment();
+	if (finished_users == max_users) {
+		group_allocator.free(group);
+	}
+
+	groups.erase(p_group);
 #endif
 }
 

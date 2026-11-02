@@ -778,6 +778,9 @@ protected:
 	GDVIRTUAL1(_paste_primary_clipboard, int)
 
 public:
+	// 2dog: register project settings for each engine instance.
+	static void register_settings();
+
 	/* General overrides. */
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;

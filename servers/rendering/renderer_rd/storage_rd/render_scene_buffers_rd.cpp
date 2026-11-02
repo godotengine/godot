@@ -152,6 +152,25 @@ void RenderSceneBuffersRD::cleanup() {
 #endif
 }
 
+RSE::ViewportMSAA RenderSceneBuffersRD::get_supported_msaa(RSE::ViewportMSAA p_requested, VectorView<RD::DataFormat> p_formats) {
+	ERR_FAIL_INDEX_V(p_requested, RSE::VIEWPORT_MSAA_MAX, RSE::VIEWPORT_MSAA_DISABLED);
+	RSE::ViewportMSAA effective = p_requested;
+	while (effective != RSE::VIEWPORT_MSAA_DISABLED) {
+		bool supported = true;
+		for (uint32_t i = 0; i < p_formats.size(); i++) {
+			supported &= RD::get_singleton()->texture_is_format_supported_for_samples(p_formats[i], msaa_to_samples(effective));
+		}
+		if (supported) {
+			break;
+		}
+		effective = RSE::ViewportMSAA(int(effective) - 1);
+	}
+	if (effective != p_requested) {
+		WARN_PRINT_ONCE(vformat("Requested %dx MSAA is unsupported for the render target formats. Using %dx instead.", 1 << int(p_requested), 1 << int(effective)));
+	}
+	return effective;
+}
+
 void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -164,6 +183,14 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	scaling_3d_mode = p_config->get_scaling_3d_mode();
 	msaa_3d = p_config->get_msaa_3d();
+	Vector<RD::DataFormat> msaa_formats;
+	msaa_formats.push_back(get_base_data_format());
+	msaa_formats.push_back(get_depth_format(false, true, can_be_storage));
+	msaa_formats.push_back(get_velocity_format());
+	for (const KeyValue<StringName, Ref<RenderBufferCustomDataRD>> &E : data_buffers) {
+		E.value->get_msaa_texture_formats(msaa_formats);
+	}
+	msaa_3d = get_supported_msaa(msaa_3d, msaa_formats);
 	screen_space_aa = p_config->get_screen_space_aa();
 
 	fsr_sharpness = p_config->get_fsr_sharpness();
@@ -527,15 +554,16 @@ void RenderSceneBuffersRD::allocate_blur_textures() {
 	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	if (can_be_storage) {
 		usage_bits += RD::TEXTURE_USAGE_STORAGE_BIT;
-	} else {
-		usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
+	if (!can_be_storage || raster_dof) {
+		usage_bits += RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // The raster depth of field draws into the blur textures.
 	}
 
 	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, blur_size, view_count, mipmaps_required);
 	create_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, get_base_data_format(), usage_bits, RD::TEXTURE_SAMPLES_1, Size2i(blur_size.x >> 1, blur_size.y >> 1), view_count, mipmaps_required - 1);
 
 	// TODO redo this:
-	if (!can_be_storage) {
+	if (!can_be_storage || raster_dof) {
 		// create 4 weight textures, 2 full size, 2 half size
 
 		RD::TextureFormat tf;
@@ -843,6 +871,11 @@ uint32_t RenderSceneBuffersRD::get_depth_usage_bits(bool p_resolve, bool p_msaa,
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_velocity_format() {
+	if (RD::get_singleton()->get_device_api_name() == "WebGPU") {
+		// RGBA16F is both renderable and storage-capable in core WebGPU,
+		// and matches the copy kernels used for temporal history.
+		return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	}
 	return RD::DATA_FORMAT_R16G16_SFLOAT;
 }
 

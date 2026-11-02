@@ -1,0 +1,40 @@
+diff --git a/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.h b/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.h
+--- a/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.h
++++ b/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.h
+@@ -92,6 +92,9 @@
+     /// @param entry_point name of the entry point to get information about.
+     /// @returns vector of all of the resource bindings.
+     std::vector<ResourceBinding> GetResourceBindings(const std::string& entry_point);
++
++    /// Godot layouts also retain declarations not reached by the current entry point.
++    std::vector<ResourceBinding> GetModuleResourceBindings();
+ 
+     /// @param entry_point name of the entry point to get information about.
+     /// @returns vector of all of the sampler/texture sampling pairs that are used
+diff --git a/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.cc b/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.cc
+--- a/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.cc
++++ b/thirdparty/tint/src/tint/lang/wgsl/inspector/inspector.cc
+@@ -455,6 +455,23 @@
+     return result;
+ }
+ 
++std::vector<ResourceBinding> Inspector::GetModuleResourceBindings() {
++    std::vector<ResourceBinding> result;
++    for (auto* variable : program_.AST().GlobalVariables()) {
++        auto* global = program_.Sem().Get<sem::GlobalVariable>(variable);
++        if (!global || !global->Attributes().binding_point) {
++            continue;
++        }
++        if (global->AddressSpace() == core::AddressSpace::kUniform ||
++            global->AddressSpace() == core::AddressSpace::kStorage) {
++            result.push_back(ConvertBufferToResourceBinding(global));
++        } else if (global->AddressSpace() == core::AddressSpace::kHandle) {
++            result.push_back(ConvertHandleToResourceBinding(global));
++        }
++    }
++    return result;
++}
++
+ std::vector<ResourceBinding> Inspector::GetResourceBindings(const std::string& entry_point) {
+     auto* func = FindEntryPointByName(entry_point);
+     if (!func) {

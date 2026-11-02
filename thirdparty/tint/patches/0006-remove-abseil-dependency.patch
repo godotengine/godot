@@ -1,0 +1,22 @@
+diff --git a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
+--- a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc	2026-05-12 10:45:43
++++ b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc	2026-05-11 15:58:12
+@@ -29,7 +29,8 @@
+ 
+ #include <charconv>
+ 
+-#include "absl/strings/charconv.h"
++// abseil dependency removed for Godot vendoring — std::from_chars
++// handles float/double in C++17 (GCC 11+, Clang 12+, MSVC 19.29+).
+ 
+ namespace tint::strconv {
+ 
+@@ -42,7 +43,7 @@
+ Result<T, ParseNumberError> Parse(std::string_view number) {
+     T val = 0;
+     if constexpr (std::is_floating_point_v<T>) {
+-        auto result = absl::from_chars(number.data(), number.data() + number.size(), val);
++        auto result = std::from_chars(number.data(), number.data() + number.size(), val);
+         if (result.ec == std::errc::result_out_of_range) {
+             return ParseNumberError::kResultOutOfRange;
+         }

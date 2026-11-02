@@ -1,7 +1,6 @@
 partial class ExportedProperties2
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
-#if TOOLS
     /// <summary>
     /// Get the default values for all properties declared in this class.
     /// This method is used by Godot to determine the value that will be
@@ -20,6 +19,5 @@ partial class ExportedProperties2
         values.Add(PropertyName.@Strings, global::Godot.Variant.From<string[]>(__Strings_default_value));
         return values;
     }
-#endif // TOOLS
 #pragma warning restore CS0109
 }

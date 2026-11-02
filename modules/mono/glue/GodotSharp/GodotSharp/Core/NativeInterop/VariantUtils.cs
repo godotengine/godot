@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Godot.Collections;
 
 
@@ -247,9 +248,13 @@ namespace Godot.NativeInterop
             return CreateFromPackedColorArray(nativePackedArray);
         }
 
+        // 2dog: distinguish a default span converted from null from a genuinely empty array.
+        private static bool IsSpanFromNullArray<T>(scoped Span<T> span) =>
+            span.IsEmpty && Unsafe.IsNullRef(ref MemoryMarshal.GetReference(span));
+
         public static godot_variant CreateFromSystemArrayOfStringName(scoped Span<StringName> from)
         {
-            if (from == null)
+            if (IsSpanFromNullArray(from))
                 return default;
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);
@@ -257,7 +262,7 @@ namespace Godot.NativeInterop
 
         public static godot_variant CreateFromSystemArrayOfNodePath(scoped Span<NodePath> from)
         {
-            if (from == null)
+            if (IsSpanFromNullArray(from))
                 return default;
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);
@@ -265,7 +270,7 @@ namespace Godot.NativeInterop
 
         public static godot_variant CreateFromSystemArrayOfRid(scoped Span<Rid> from)
         {
-            if (from == null)
+            if (IsSpanFromNullArray(from))
                 return default;
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);

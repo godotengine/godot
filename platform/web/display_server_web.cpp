@@ -41,6 +41,7 @@
 #include "core/os/os.h"
 #include "servers/display/native_menu.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
+#include "servers/rendering/rendering_device.h"
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 #include "core/object/callable_mp.h"
@@ -48,6 +49,11 @@
 
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#ifdef WEBGPU_ENABLED
+#include "drivers/webgpu/rendering_context_driver_webgpu.h"
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
 #include <emscripten.h>
@@ -71,6 +77,12 @@ bool DisplayServerWeb::check_size_force_redraw() {
 		Variant size = Rect2i(Point2i(), window_size); // TODO use window_get_position if implemented.
 		rect_changed_callback.call(size);
 		emscripten_set_canvas_element_size(canvas_id, window_size.x, window_size.y);
+#ifdef WEBGPU_ENABLED
+		// Also update the rendering context surface so the swap chain resizes correctly.
+		if (rendering_context != nullptr) {
+			rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, window_size.x, window_size.y);
+		}
+#endif
 	}
 	return size_changed;
 }
@@ -1003,6 +1015,9 @@ void DisplayServerWeb::process_joypads() {
 
 Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
 	Vector<String> drivers;
+#ifdef WEBGPU_ENABLED
+	drivers.push_back("webgpu");
+#endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
 #endif
@@ -1131,35 +1146,79 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, DisplayServ
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(request_quit_callback);
 
-#ifdef GLES3_ENABLED
-	bool webgl2_inited = false;
-	if (godot_js_display_has_webgl(2)) {
-		EmscriptenWebGLContextAttributes attributes;
-		emscripten_webgl_init_context_attributes(&attributes);
-		attributes.alpha = OS::get_singleton()->is_layered_allowed();
-		attributes.antialias = false;
-		attributes.majorVersion = 2;
-		attributes.explicitSwapControl = true;
-
-		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-		webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
-	}
-	if (webgl2_inited) {
-		if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
-			print_verbose("Failed to enable WebXR extension.");
+#ifdef WEBGPU_ENABLED
+	if (p_rendering_driver == "webgpu") {
+		// The WebGPU device is pre-initialized by the JS shell (navigator.gpu.requestDevice)
+		// and imported via Module["preinitializedWebGPUDevice"]. We initialize the
+		// context driver, create the canvas surface, initialize RenderingDevice, and
+		// register the RD compositor so rendering_server->init() finds it.
+		rendering_context = memnew(RenderingContextDriverWebGPU);
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_CANT_CREATE;
+			ERR_FAIL_MSG("WebGPU: Failed to initialize rendering context. Ensure navigator.gpu is available and the device was pre-initialized in the HTML shell.");
 		}
-		RasterizerGLES3::make_current(false);
+		Error err = rendering_context->window_create(DisplayServerEnums::MAIN_WINDOW_ID, canvas_id);
+		if (err != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = err;
+			ERR_FAIL_MSG("WebGPU: Failed to create canvas surface.");
+		}
+		rendering_context->window_set_size(DisplayServerEnums::MAIN_WINDOW_ID, p_resolution.x, p_resolution.y);
+		rendering_context->window_set_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID, p_vsync_mode);
 
-	} else {
-		OS::get_singleton()->alert(
-				"Your browser seems not to support WebGL 2.\n\n"
-				"If possible, consider updating your browser version and video card drivers.",
-				"Unable to initialize WebGL 2 video driver");
-		RasterizerDummy::make_current();
-	}
+		rendering_device = memnew(RenderingDevice);
+		err = rendering_device->initialize(rendering_context, DisplayServerEnums::MAIN_WINDOW_ID);
+		if (err != OK) {
+			memdelete(rendering_device);
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = err;
+			ERR_FAIL_MSG("WebGPU: Failed to initialize rendering device.");
+		}
+		err = rendering_device->screen_create(DisplayServerEnums::MAIN_WINDOW_ID);
+		if (err != OK) {
+			// Non-fatal: the swapchain may be resized on first frame.
+			WARN_PRINT("WebGPU: screen_create() failed — swapchain will be set up on first frame.");
+		}
+
+		RendererCompositorRD::make_current();
+	} else
+#endif // WEBGPU_ENABLED
+	{
+#ifdef GLES3_ENABLED
+		bool webgl2_inited = false;
+		if (godot_js_display_has_webgl(2)) {
+			EmscriptenWebGLContextAttributes attributes;
+			emscripten_webgl_init_context_attributes(&attributes);
+			attributes.alpha = OS::get_singleton()->is_layered_allowed();
+			attributes.antialias = false;
+			attributes.majorVersion = 2;
+			attributes.explicitSwapControl = true;
+
+			webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
+			webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
+		}
+		if (webgl2_inited) {
+			if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
+				print_verbose("Failed to enable WebXR extension.");
+			}
+			RasterizerGLES3::make_current(false);
+
+		} else {
+			OS::get_singleton()->alert(
+					"Your browser seems not to support WebGL 2.\n\n"
+					"If possible, consider updating your browser version and video card drivers.",
+					"Unable to initialize WebGL 2 video driver");
+			RasterizerDummy::make_current();
+		}
 #else
-	RasterizerDummy::make_current();
+		RasterizerDummy::make_current();
 #endif
+	} // end of webgpu else block
 
 	// JS Input interface (js/libs/library_godot_input.js)
 	godot_js_input_mouse_button_cb(&DisplayServerWeb::mouse_button_callback);
@@ -1194,6 +1253,17 @@ DisplayServerWeb::~DisplayServerWeb() {
 	if (webgl_ctx) {
 		emscripten_webgl_commit_frame();
 		emscripten_webgl_destroy_context(webgl_ctx);
+	}
+#endif
+#ifdef WEBGPU_ENABLED
+	if (rendering_device) {
+		rendering_device->screen_free(DisplayServerEnums::MAIN_WINDOW_ID);
+		memdelete(rendering_device);
+		rendering_device = nullptr;
+	}
+	if (rendering_context) {
+		memdelete(rendering_context);
+		rendering_context = nullptr;
 	}
 #endif
 }

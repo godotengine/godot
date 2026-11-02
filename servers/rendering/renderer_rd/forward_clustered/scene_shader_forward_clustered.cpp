@@ -471,10 +471,14 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 				// Writes to normal and roughness in opaque way.
 				blend_state = RD::PipelineColorBlendState::create_disabled(5);
 				break;
+			case PIPELINE_VERSION_DEPTH_PASS_WITH_SDF:
+				if (!RD::get_singleton()->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
+					blend_state = RD::PipelineColorBlendState::create_disabled(1);
+				}
+				break;
 			case PIPELINE_VERSION_DEPTH_PASS:
 			case PIPELINE_VERSION_DEPTH_PASS_DP:
 			case PIPELINE_VERSION_DEPTH_PASS_MULTIVIEW:
-			case PIPELINE_VERSION_DEPTH_PASS_WITH_SDF:
 			default:
 				break;
 		}
@@ -503,7 +507,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 	ERR_FAIL_COND(shader_rid.is_null());
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, 0, specialization_constants);
-	ERR_FAIL_COND(pipeline.is_null());
+	ERR_FAIL_COND_MSG(pipeline.is_null(), vformat("Forward+ pipeline failed for shader '%s': shader_variant=%d, pipeline_version=%d, color_pass_flags=%d, framebuffer_format=%d, ubershader=%d.", path, _get_shader_version(p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.ubershader), p_pipeline_key.version, p_pipeline_key.color_pass_flags, p_pipeline_key.framebuffer_format_id, p_pipeline_key.ubershader));
 
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);
 }
@@ -634,6 +638,7 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
 	material_storage->material_free(debug_shadow_splits_material);
+	singleton = nullptr;
 }
 
 void SceneShaderForwardClustered::init(const String p_defines) {

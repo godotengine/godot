@@ -1,7 +1,6 @@
 partial class ExportedFields
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
-#if TOOLS
     /// <summary>
     /// Get the default values for all properties declared in this class.
     /// This method is used by Godot to determine the value that will be
@@ -138,6 +137,5 @@ partial class ExportedFields
         values.Add(PropertyName.@_fieldEmptyInt64Array, global::Godot.Variant.From<long[]>(___fieldEmptyInt64Array_default_value));
         return values;
     }
-#endif // TOOLS
 #pragma warning restore CS0109
 }

@@ -1,0 +1,24 @@
+diff --git a/thirdparty/tint/src/tint/lang/wgsl/writer/ir_to_program/ir_to_program.cc b/thirdparty/tint/src/tint/lang/wgsl/writer/ir_to_program/ir_to_program.cc
+--- a/thirdparty/tint/src/tint/lang/wgsl/writer/ir_to_program/ir_to_program.cc	2026-05-12 10:45:42
++++ b/thirdparty/tint/src/tint/lang/wgsl/writer/ir_to_program/ir_to_program.cc	2026-05-12 00:29:41
+@@ -107,6 +107,7 @@
+             core::ir::Capability::kAllowOverrides,
+             core::ir::Capability::kAllowPhonyInstructions,
+             core::ir::Capability::kAllowRefTypes,
++            core::ir::Capability::kAllowStructMemberSizeMismatch,
+         };
+         if (auto res = Validate(mod, caps, "before wgsl.to_program"); res != Success) {
+             // IR module failed validation.
+@@ -1149,7 +1150,11 @@
+                 if (m->Type()->Align() != m->Align()) {
+                     ast_attrs.Push(b.MemberAlign(u32(m->Align())));
+                 }
+-                if (m->Type()->Size() != size) {
++                // Emit @size only when the member needs a size larger than
++                // its type's natural size. Never clamp @size upward when
++                // size < type_size — that case is handled upstream by
++                // decompose_strided_array skipping the padding wrapper.
++                if (size > m->Type()->Size()) {
+                     ast_attrs.Push(b.MemberSize(u32(size)));
+                 }
+                 if (auto location = ir_attrs.location) {

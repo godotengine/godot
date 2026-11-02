@@ -2349,9 +2349,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output.append(MEMBER_BEGIN "private static " + instance_type_name + " singleton;\n");
 
+		// 2dog: refetch wrappers disposed by a prior engine instance.
 		output << MEMBER_BEGIN "public static " + instance_type_name + " " CS_PROPERTY_SINGLETON " =>\n"
-			   << INDENT2 "singleton \?\?= (" + instance_type_name + ")"
-			   << C_METHOD_ENGINE_GET_SINGLETON "(\"" << itype.name << "\");\n";
+			   << INDENT2 "singleton == null || singleton.NativeInstance == IntPtr.Zero\n"
+			   << INDENT3 "? singleton = (" + instance_type_name + ")" C_METHOD_ENGINE_GET_SINGLETON "(\"" << itype.name << "\")\n"
+			   << INDENT3 ": singleton;\n";
 	}
 
 	if (!itype.is_singleton) {

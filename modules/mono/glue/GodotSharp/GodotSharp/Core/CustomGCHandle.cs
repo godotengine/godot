@@ -82,6 +82,8 @@ public static class CustomGCHandle
         if (AlcReloadCfg.IsAlcReloadingEnabled)
         {
             var target = handle.Target;
+            if (target is Callable.ManagedTrampolineState state)
+                target = state.Delegate;
 
             if (target != null)
             {

@@ -1,12 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
 #nullable enable
 
 namespace Godot;
+
+// 2dog: rooted game assemblies and GodotSharp make publish reflection safe; desktop builds do not trim.
+internal static class TrimJustifications
+{
+    public const string ScriptTypesAreRooted =
+        "Script types live in assemblies rooted whole via TrimmerRootAssembly on every trimmed " +
+        "publish path (see TrimJustifications in ReflectionUtils.cs); their members cannot be trimmed.";
+
+    public const string NativeClassesAreRooted =
+        "Native Godot classes live in GodotSharp, which is rooted whole via TrimmerRootAssembly " +
+        "on every trimmed publish path (see TrimJustifications in ReflectionUtils.cs).";
+}
 
 internal class ReflectionUtils
 {
@@ -57,6 +70,8 @@ internal class ReflectionUtils
         };
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = TrimJustifications.ScriptTypesAreRooted)]
     public static Type? FindTypeInLoadedAssemblies(string assemblyName, string typeFullName)
     {
         return AppDomain.CurrentDomain.GetAssemblies()

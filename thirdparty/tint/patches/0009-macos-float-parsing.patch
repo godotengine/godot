@@ -1,0 +1,25 @@
+diff --git a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
+index 6ac855bd65..7eacb71f04 100644
+--- a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
++++ b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
+@@ -33,3 +33,4 @@
+ #include <emscripten/version.h>
+-#if __EMSCRIPTEN_major__ < 4
++#endif
++#if defined(__APPLE__) || (defined(__EMSCRIPTEN__) && __EMSCRIPTEN_major__ < 4)
+ #include <cerrno>
+@@ -38,2 +39,4 @@
+ #include <locale.h>
++#ifdef __APPLE__
++#include <xlocale.h>
+ #endif
+@@ -55,5 +58,6 @@ Result<T, ParseNumberError> Parse(std::string_view number) {
+     if constexpr (std::is_floating_point_v<T>) {
+-#if defined(__EMSCRIPTEN__) && __EMSCRIPTEN_major__ < 4
+-        // Emscripten 3.1.56's libc++ deletes the floating-point from_chars
+-        // overloads. Keep this fallback local to Tint and locale-independent.
++#if defined(__APPLE__) || (defined(__EMSCRIPTEN__) && __EMSCRIPTEN_major__ < 4)
++        // Floating-point from_chars requires macOS 26 or newer and is deleted
++        // by Emscripten 3.1.56's libc++. Preserve the engine's OS baseline with
++        // a locale-independent fallback local to Tint.
+         if (number.empty() || number.front() == '+' || number.front() == ' ' ||

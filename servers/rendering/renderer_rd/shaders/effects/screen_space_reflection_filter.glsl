@@ -7,7 +7,13 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform sampler2D source;
+#ifdef RENDER_DRIVER_WEBGPU
+// Forward+ reflection buffers use RGBA16F. WebGPU requires an explicit
+// storage texel format, unlike Vulkan's write-without-format path.
+layout(rgba16f, set = 0, binding = 1) uniform restrict writeonly image2D dest;
+#else
 layout(set = 0, binding = 1) uniform restrict writeonly image2D dest;
+#endif
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;

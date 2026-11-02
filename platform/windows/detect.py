@@ -292,7 +292,7 @@ def get_flags():
     return {
         "arch": arch,
         "d3d12": True,
-        "supported": ["d3d12", "dcomp", "library", "mono", "xaudio2"],
+        "supported": ["webgpu", "d3d12", "dcomp", "library", "mono", "xaudio2"],
     }
 
 
@@ -1043,6 +1043,10 @@ def configure(env: "SConsEnvironment"):
         configure_msvc(env)
     else:
         configure_mingw(env)
+
+    from drivers.webgpu.native_config import configure_native_webgpu
+
+    configure_native_webgpu(env)
 
 
 def check_d3d12_installed(env, suffix):

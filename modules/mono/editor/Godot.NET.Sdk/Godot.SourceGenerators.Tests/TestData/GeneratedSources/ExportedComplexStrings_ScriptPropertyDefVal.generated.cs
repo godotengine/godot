@@ -1,7 +1,6 @@
 partial class ExportedComplexStrings
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
-#if TOOLS
     /// <summary>
     /// Get the default values for all properties declared in this class.
     /// This method is used by Godot to determine the value that will be
@@ -24,6 +23,5 @@ partial class ExportedComplexStrings
         values.Add(PropertyName.@_fieldInterpolated4, global::Godot.Variant.From<string>(___fieldInterpolated4_default_value));
         return values;
     }
-#endif // TOOLS
 #pragma warning restore CS0109
 }

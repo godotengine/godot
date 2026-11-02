@@ -1,0 +1,49 @@
+diff --git a/thirdparty/tint/src/tint/utils/ice/ice.h b/thirdparty/tint/src/tint/utils/ice/ice.h
+--- a/thirdparty/tint/src/tint/utils/ice/ice.h
++++ b/thirdparty/tint/src/tint/utils/ice/ice.h
+@@ -62,7 +62,7 @@
+     /// Destructor.
+     /// Adds the internal compiler error message to the diagnostics list, calls the
+-    /// InternalCompilerErrorReporter if one is set, then terminates the process.
++    /// InternalCompilerErrorReporter if one is set, then throws for the host wrapper.
+-    [[noreturn]] ~InternalCompilerError();
++    [[noreturn]] ~InternalCompilerError() noexcept(false);
+ 
+     /// Appends `arg` to the ICE message.
+     /// @param arg the argument to append to the ICE message
+diff --git a/thirdparty/tint/src/tint/utils/ice/ice.cc b/thirdparty/tint/src/tint/utils/ice/ice.cc
+--- a/thirdparty/tint/src/tint/utils/ice/ice.cc
++++ b/thirdparty/tint/src/tint/utils/ice/ice.cc
+@@ -29,6 +29,7 @@
+ 
+ #include <iostream>
+ #include <sstream>
++#include <stdexcept>
+ #include <string>
+ 
+ #include "src/tint/utils/ice/debugger.h"
+@@ -42,7 +43,7 @@
+     : file_(file), line_(line), callback_info_(callback) {}
+ 
+ TINT_BEGIN_DISABLE_WARNING(DESTRUCTOR_NEVER_RETURNS);
+-InternalCompilerError::~InternalCompilerError() {
++InternalCompilerError::~InternalCompilerError() noexcept(false) {
+     std::ostringstream err;
+     err << Error();
+     err << R"(
+@@ -63,13 +64,8 @@
+         std::cerr << err.str();
+     }
+ 
+-    debugger::Break();
+-
+-#if defined(_MSC_VER) && !defined(__clang__)
+-    abort();
+-#else
+-    __builtin_trap();
+-#endif
++    // The Godot compiler wrapper catches this with all Tint frames built for unwinding.
++    throw std::runtime_error(err.str());
+ }
+ TINT_END_DISABLE_WARNING(DESTRUCTOR_NEVER_RETURNS);
+ 

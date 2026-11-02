@@ -165,6 +165,12 @@ public:
 	static AudioDriverWorklet *get_singleton() { return singleton; }
 
 	AudioDriverWorklet() { singleton = this; }
+	// 2dog: engine restarts construct a new driver; the JS callbacks must not reach the old one.
+	~AudioDriverWorklet() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };
 
 #endif // THREADS_ENABLED
@@ -188,4 +194,9 @@ public:
 	static AudioDriverScriptProcessor *get_singleton() { return singleton; }
 
 	AudioDriverScriptProcessor() { singleton = this; }
+	~AudioDriverScriptProcessor() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
 };

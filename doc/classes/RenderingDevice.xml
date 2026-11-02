@@ -436,6 +436,45 @@
 				This method does nothing and always returns an empty [PackedInt64Array].
 			</description>
 		</method>
+		<method name="external_texture_create">
+			<return type="RID" />
+			<param index="0" name="handle_type" type="int" enum="RenderingDevice.ExternalTextureShareHandleType" />
+			<param index="1" name="format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="width" type="int" />
+			<param index="3" name="height" type="int" />
+			<param index="4" name="import_handle" type="int" default="0" />
+			<description>
+				2dog: Creates a 2D texture whose memory is shared with a host compositor via [param handle_type]. For import-style handle types the host passes the native share handle as [param import_handle]; for export-style types the created handle is available through [method external_texture_get_handle]. Returns an invalid RID when the driver does not support the handle type (see [method external_texture_get_supported_handle_types]). Free it with [method free_rid].
+			</description>
+		</method>
+		<method name="external_texture_get_handle">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				2dog: The native share handle of a texture created by [method external_texture_create] (the imported handle for import-style types, the exported one otherwise).
+			</description>
+		</method>
+		<method name="external_texture_get_memory_size">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				2dog: The allocation size backing a texture created by [method external_texture_create] - importers of exported memory (e.g. Vulkan opaque fds) need it.
+			</description>
+		</method>
+		<method name="external_texture_get_supported_handle_types">
+			<return type="int" />
+			<description>
+				2dog: Bitmask of supported [enum ExternalTextureShareHandleType] values, as [code]1 &lt;&lt; type[/code]. Zero when the driver has no external texture support.
+			</description>
+		</method>
+		<method name="external_texture_present">
+			<return type="int" enum="Error" />
+			<param index="0" name="from_texture" type="RID" />
+			<param index="1" name="to_external_texture" type="RID" />
+			<description>
+				2dog: Copies [param from_texture] into an external texture and stalls until the copy has executed on the GPU, so the host can hand the shared texture to its compositor. Cross-API ordering (such as a D3D11 keyed mutex) is the host's responsibility around this call.
+			</description>
+		</method>
 		<method name="framebuffer_create">
 			<return type="RID" />
 			<param index="0" name="textures" type="RID[]" />
@@ -1468,6 +1507,21 @@
 		<constant name="DRIVER_RESOURCE_VULKAN_COMPUTE_PIPELINE" value="11" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_COMPUTE_PIPELINE] instead.">
 		</constant>
 		<constant name="DRIVER_RESOURCE_VULKAN_RENDER_PIPELINE" value="12" enum="DriverResource" deprecated="Use [constant DRIVER_RESOURCE_RENDER_PIPELINE] instead.">
+		</constant>
+		<constant name="EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_NONE" value="0" enum="ExternalTextureShareHandleType">
+			2dog: Not an external texture.
+		</constant>
+		<constant name="EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_D3D11_KMT_KEYED_MUTEX" value="1" enum="ExternalTextureShareHandleType">
+			2dog: Import a host-created D3D11 keyed-mutex shared texture from its KMT handle ([code]IDXGIResource::GetSharedHandle[/code]). The host owns the keyed mutex around [method external_texture_present].
+		</constant>
+		<constant name="EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_OPAQUE_FD" value="2" enum="ExternalTextureShareHandleType">
+			2dog: Export the texture memory as an opaque POSIX file descriptor ([code]vkGetMemoryFdKHR[/code]).
+		</constant>
+		<constant name="EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_IOSURFACE" value="3" enum="ExternalTextureShareHandleType">
+			2dog: Back the texture with an IOSurface and export its [code]IOSurfaceRef[/code].
+		</constant>
+		<constant name="EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_D3D11_NT_KEYED_MUTEX" value="4" enum="ExternalTextureShareHandleType">
+			2dog: Like [constant EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_D3D11_KMT_KEYED_MUTEX], but the handle is an NT handle ([code]IDXGIResource1::CreateSharedHandle[/code]). Some drivers import only NT handles.
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.

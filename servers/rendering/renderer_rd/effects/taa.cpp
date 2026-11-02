@@ -101,7 +101,7 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("history"), p_format, usage_bits);
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("temp"), p_format, usage_bits);
 
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity"), RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
+		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity"), RenderSceneBuffersRD::get_velocity_format(), usage_bits);
 
 		just_allocated = true;
 	}

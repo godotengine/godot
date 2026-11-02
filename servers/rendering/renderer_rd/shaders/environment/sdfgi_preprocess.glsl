@@ -5,7 +5,11 @@
 #VERSION_DEFINES
 
 #ifdef MODE_JUMPFLOOD_OPTIMIZED
+#ifdef SDFGI_SMALL_WORKGROUP
+#define GROUP_SIZE 4
+#else
 #define GROUP_SIZE 8
+#endif
 
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = GROUP_SIZE) in;
 
@@ -54,8 +58,19 @@ uvec4 group_load(ivec3 p_pos) {
 #ifdef MODE_OCCLUSION
 
 layout(r16ui, set = 0, binding = 1) uniform restrict readonly uimage3D src_color;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(r32f, set = 0, binding = 2) uniform restrict image3D dst_occlusion[8];
+#else
 layout(r8, set = 0, binding = 2) uniform restrict image3D dst_occlusion[8];
+#endif
+#ifdef RENDER_DRIVER_WEBGPU
+layout(set = 0, binding = 3, std430) buffer restrict readonly FacingGrid {
+	uint data[];
+}
+src_facing;
+#else
 layout(r32ui, set = 0, binding = 3) uniform restrict readonly uimage3D src_facing;
+#endif
 
 const uvec2 group_size_offset[11] = uvec2[](uvec2(1, 0), uvec2(3, 1), uvec2(6, 4), uvec2(10, 10), uvec2(15, 20), uvec2(21, 35), uvec2(28, 56), uvec2(36, 84), uvec2(42, 120), uvec2(46, 162), uvec2(48, 208));
 const uint group_pos[256] = uint[](0,
@@ -87,10 +102,21 @@ layout(r16ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_albed
 layout(r8, set = 0, binding = 3) uniform restrict readonly image3D src_occlusion[8];
 layout(r32ui, set = 0, binding = 4) uniform restrict readonly uimage3D src_light;
 layout(r32ui, set = 0, binding = 5) uniform restrict readonly uimage3D src_light_aniso;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(set = 0, binding = 6, std430) buffer restrict readonly FacingGrid {
+	uint data[];
+}
+src_facing;
+#else
 layout(r32ui, set = 0, binding = 6) uniform restrict readonly uimage3D src_facing;
+#endif
 
 layout(r8, set = 0, binding = 7) uniform restrict writeonly image3D dst_sdf;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba8, set = 0, binding = 8) uniform restrict writeonly image3D dst_occlusion;
+#else
 layout(r16ui, set = 0, binding = 8) uniform restrict writeonly uimage3D dst_occlusion;
+#endif
 
 layout(set = 0, binding = 10, std430) restrict buffer DispatchData {
 	uint x;
@@ -121,7 +147,14 @@ shared uint store_from_index;
 #ifdef MODE_SCROLL
 
 layout(r16ui, set = 0, binding = 1) uniform restrict writeonly uimage3D dst_albedo;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(set = 0, binding = 2, std430) buffer restrict writeonly FacingGrid {
+	uint data[];
+}
+dst_facing;
+#else
 layout(r32ui, set = 0, binding = 2) uniform restrict writeonly uimage3D dst_facing;
+#endif
 layout(r32ui, set = 0, binding = 3) uniform restrict writeonly uimage3D dst_light;
 layout(r32ui, set = 0, binding = 4) uniform restrict writeonly uimage3D dst_light_aniso;
 
@@ -150,8 +183,16 @@ src_process_voxels;
 
 #ifdef MODE_SCROLL_OCCLUSION
 
+#ifdef RENDER_DRIVER_WEBGPU
+layout(r32f, set = 0, binding = 1) uniform restrict image3D dst_occlusion[8];
+#else
 layout(r8, set = 0, binding = 1) uniform restrict image3D dst_occlusion[8];
+#endif
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba8, set = 0, binding = 2) uniform restrict readonly image3D src_occlusion;
+#else
 layout(r16ui, set = 0, binding = 2) uniform restrict readonly uimage3D src_occlusion;
+#endif
 
 #endif
 
@@ -190,7 +231,11 @@ void main() {
 	imageStore(dst_albedo, write_pos, uvec4(albedo));
 
 	uint facing = (src_process_voxels.data[index].albedo >> 15) & 0x3F; //6 anisotropic facing bits
+#ifdef RENDER_DRIVER_WEBGPU
+	dst_facing.data[(write_pos.z * params.grid_size + write_pos.y) * params.grid_size + write_pos.x] = facing;
+#else
 	imageStore(dst_facing, write_pos, uvec4(facing));
+#endif
 
 	uint light = src_process_voxels.data[index].light & 0x3fffffff; //30 bits of RGBE8985
 	imageStore(dst_light, write_pos, uvec4(light));
@@ -211,9 +256,19 @@ void main() {
 	ivec3 write_pos = pos + max(ivec3(0), params.scroll);
 
 	read_pos.z += params.cascade * params.grid_size;
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec4 first = uvec4(round(imageLoad(src_occlusion, read_pos) * 15.0));
+	uint occlusion = (first.r << 12) | (first.g << 8) | (first.b << 4) | first.a;
+#else
 	uint occlusion = imageLoad(src_occlusion, read_pos).r;
+#endif
 	read_pos.x += params.grid_size;
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec4 second = uvec4(round(imageLoad(src_occlusion, read_pos) * 15.0));
+	occlusion |= ((second.r << 12) | (second.g << 8) | (second.b << 4) | second.a) << 16;
+#else
 	occlusion |= imageLoad(src_occlusion, read_pos).r << 16;
+#endif
 
 	const uint occlusion_shift[8] = uint[](12, 8, 4, 0, 28, 24, 20, 16);
 
@@ -517,7 +572,11 @@ void main() {
 			for (int j = 0; j < 4; j++) {
 				ivec3 foffset = region_offset + offset + ivec3(j, 0, 0);
 				if (all(greaterThanEqual(foffset, ivec3(0))) && all(lessThan(foffset, ivec3(params.grid_size)))) {
+#ifdef RENDER_DRIVER_WEBGPU
+					uint f = src_facing.data[(foffset.z * params.grid_size + foffset.y) * params.grid_size + foffset.x];
+#else
 					uint f = imageLoad(src_facing, foffset).r;
+#endif
 					facing_pack |= f << (j * 8);
 				}
 			}
@@ -978,9 +1037,17 @@ void main() {
 	{
 		ivec3 occ_pos = pos;
 		occ_pos.z += params.cascade * params.grid_size;
+#ifdef RENDER_DRIVER_WEBGPU
+		imageStore(dst_occlusion, occ_pos, vec4((uvec4(occlusion) >> uvec4(12, 8, 4, 0)) & uvec4(15)) / 15.0);
+#else
 		imageStore(dst_occlusion, occ_pos, uvec4(occlusion & 0xFFFF));
+#endif
 		occ_pos.x += params.grid_size;
+#ifdef RENDER_DRIVER_WEBGPU
+		imageStore(dst_occlusion, occ_pos, vec4((uvec4(occlusion) >> uvec4(28, 24, 20, 16)) & uvec4(15)) / 15.0);
+#else
 		imageStore(dst_occlusion, occ_pos, uvec4(occlusion >> 16));
+#endif
 	}
 
 	// STORE POSITIONS
@@ -1019,7 +1086,11 @@ void main() {
 		}
 
 		uint rgb = imageLoad(src_albedo, pos).r;
+#ifdef RENDER_DRIVER_WEBGPU
+		uint facing = src_facing.data[(pos.z * params.grid_size + pos.y) * params.grid_size + pos.x];
+#else
 		uint facing = imageLoad(src_facing, pos).r;
+#endif
 
 		store_positions[index].albedo = rgb >> 1; //store as it comes (555) to avoid precision loss (and move away the alpha bit)
 		store_positions[index].albedo |= (facing & 0x3F) << 15; // store facing in bits 15-21

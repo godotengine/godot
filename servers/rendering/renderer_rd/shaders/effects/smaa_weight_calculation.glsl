@@ -31,7 +31,13 @@
 
 layout(location = 0) out vec2 tex_coord;
 layout(location = 1) out vec2 pix_coord;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(location = 2) out vec4 offset0;
+layout(location = 3) out vec4 offset1;
+layout(location = 4) out vec4 offset2;
+#else
 layout(location = 2) out vec4 offset[3];
+#endif
 
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
@@ -56,11 +62,21 @@ void main() {
 	tex_coord = clamp(vertex_base, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 	pix_coord = tex_coord * params.size.xy;
 
+#ifdef RENDER_DRIVER_WEBGPU
+	offset0 = fma(params.inv_size.xyxy, vec4(-0.25, -0.125, 1.25, -0.125), tex_coord.xyxy);
+	offset1 = fma(params.inv_size.xyxy, vec4(-0.125, -0.25, -0.125, 1.25), tex_coord.xyxy);
+	offset2 = fma(params.inv_size.xxyy,
+#else
 	offset[0] = fma(params.inv_size.xyxy, vec4(-0.25, -0.125, 1.25, -0.125), tex_coord.xyxy);
 	offset[1] = fma(params.inv_size.xyxy, vec4(-0.125, -0.25, -0.125, 1.25), tex_coord.xyxy);
 	offset[2] = fma(params.inv_size.xxyy,
+#endif
 			vec4(-2.0, 2.0, -2.0, 2.0) * SMAA_MAX_SEARCH_STEPS,
+#ifdef RENDER_DRIVER_WEBGPU
+			vec4(offset0.xz, offset1.yw));
+#else
 			vec4(offset[0].xz, offset[1].yw));
+#endif
 }
 
 #[fragment]
@@ -68,7 +84,13 @@ void main() {
 
 layout(location = 0) in vec2 tex_coord;
 layout(location = 1) in vec2 pix_coord;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(location = 2) in vec4 offset0;
+layout(location = 3) in vec4 offset1;
+layout(location = 4) in vec4 offset2;
+#else
 layout(location = 2) in vec4 offset[3];
+#endif
 layout(set = 0, binding = 0) uniform sampler2D edges_tex;
 layout(set = 1, binding = 0) uniform sampler2D area_tex;
 layout(set = 1, binding = 1) uniform sampler2D search_tex;
@@ -326,13 +348,22 @@ void main() {
 		if (weights.r == -weights.g) {
 			vec2 d;
 			vec3 coords;
+#ifdef RENDER_DRIVER_WEBGPU
+			coords.x = SMAASearchXLeft(offset0.xy, offset2.x);
+			coords.y = offset1.y;
+#else
 			coords.x = SMAASearchXLeft(offset[0].xy, offset[2].x);
 			coords.y = offset[1].y;
+#endif
 			d.x = coords.x;
 
 			float e1 = textureLod(edges_tex, coords.xy, 0.0).r;
 
+#ifdef RENDER_DRIVER_WEBGPU
+			coords.z = SMAASearchXRight(offset0.zw, offset2.y);
+#else
 			coords.z = SMAASearchXRight(offset[0].zw, offset[2].y);
+#endif
 			d.y = coords.z;
 
 			d = abs(round(fma(params.size.xx, d, -pix_coord.xx)));
@@ -353,13 +384,22 @@ void main() {
 	if (e.r > 0.0) { // Edge at west.
 		vec2 d;
 		vec3 coords;
+#ifdef RENDER_DRIVER_WEBGPU
+		coords.y = SMAASearchYUp(offset1.xy, offset2.z);
+		coords.x = offset0.x;
+#else
 		coords.y = SMAASearchYUp(offset[1].xy, offset[2].z);
 		coords.x = offset[0].x;
+#endif
 		d.x = coords.y;
 
 		float e1 = textureLod(edges_tex, coords.xy, 0.0).g;
 
+#ifdef RENDER_DRIVER_WEBGPU
+		coords.z = SMAASearchYDown(offset1.zw, offset2.w);
+#else
 		coords.z = SMAASearchYDown(offset[1].zw, offset[2].w);
+#endif
 		d.y = coords.z;
 
 		d = abs(round(fma(params.size.yy, d, -pix_coord.yy)));

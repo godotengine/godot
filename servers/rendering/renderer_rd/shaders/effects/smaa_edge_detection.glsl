@@ -30,7 +30,13 @@
 #version 450
 
 layout(location = 0) out vec2 tex_coord;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(location = 1) out vec4 offset0;
+layout(location = 2) out vec4 offset1;
+layout(location = 3) out vec4 offset2;
+#else
 layout(location = 1) out vec4 offset[3];
+#endif
 
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
@@ -51,16 +57,28 @@ void main() {
 	gl_Position = vec4(vertex_base, 0.0, 1.0);
 	tex_coord = clamp(vertex_base, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 
+#ifdef RENDER_DRIVER_WEBGPU
+	offset0 = fma(params.inv_size.xyxy, vec4(-1.0, 0.0, 0.0, -1.0), tex_coord.xyxy);
+	offset1 = fma(params.inv_size.xyxy, vec4(1.0, 0.0, 0.0, 1.0), tex_coord.xyxy);
+	offset2 = fma(params.inv_size.xyxy, vec4(-2.0, 0.0, 0.0, -2.0), tex_coord.xyxy);
+#else
 	offset[0] = fma(params.inv_size.xyxy, vec4(-1.0, 0.0, 0.0, -1.0), tex_coord.xyxy);
 	offset[1] = fma(params.inv_size.xyxy, vec4(1.0, 0.0, 0.0, 1.0), tex_coord.xyxy);
 	offset[2] = fma(params.inv_size.xyxy, vec4(-2.0, 0.0, 0.0, -2.0), tex_coord.xyxy);
+#endif
 }
 
 #[fragment]
 #version 450
 
 layout(location = 0) in vec2 tex_coord;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(location = 1) in vec4 offset0;
+layout(location = 2) in vec4 offset1;
+layout(location = 3) in vec4 offset2;
+#else
 layout(location = 1) in vec4 offset[3];
+#endif
 
 layout(set = 0, binding = 0) uniform sampler2D color_tex;
 
@@ -81,11 +99,19 @@ void main() {
 	vec4 delta;
 	vec3 C = texture(color_tex, tex_coord).rgb;
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Cleft = texture(color_tex, offset0.xy).rgb;
+#else
 	vec3 Cleft = texture(color_tex, offset[0].xy).rgb;
+#endif
 	vec3 t = abs(C - Cleft);
 	delta.x = max(max(t.r, t.g), t.b);
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Ctop = texture(color_tex, offset0.zw).rgb;
+#else
 	vec3 Ctop = texture(color_tex, offset[0].zw).rgb;
+#endif
 	t = abs(C - Ctop);
 	delta.y = max(max(t.r, t.g), t.b);
 
@@ -95,21 +121,37 @@ void main() {
 		discard;
 	}
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Cright = texture(color_tex, offset1.xy).rgb;
+#else
 	vec3 Cright = texture(color_tex, offset[1].xy).rgb;
+#endif
 	t = abs(C - Cright);
 	delta.z = max(max(t.r, t.g), t.b);
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Cbottom = texture(color_tex, offset1.zw).rgb;
+#else
 	vec3 Cbottom = texture(color_tex, offset[1].zw).rgb;
+#endif
 	t = abs(C - Cbottom);
 	delta.w = max(max(t.r, t.g), t.b);
 
 	vec2 max_delta = max(delta.xy, delta.zw);
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Cleftleft = texture(color_tex, offset2.xy).rgb;
+#else
 	vec3 Cleftleft = texture(color_tex, offset[2].xy).rgb;
+#endif
 	t = abs(Cleft - Cleftleft);
 	delta.z = max(max(t.r, t.g), t.b);
 
+#ifdef RENDER_DRIVER_WEBGPU
+	vec3 Ctoptop = texture(color_tex, offset2.zw).rgb;
+#else
 	vec3 Ctoptop = texture(color_tex, offset[2].zw).rgb;
+#endif
 	t = abs(Ctop - Ctoptop);
 	delta.w = max(max(t.r, t.g), t.b);
 

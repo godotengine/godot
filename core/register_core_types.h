@@ -32,6 +32,7 @@
 
 void register_core_types();
 void register_core_settings();
+void gd_extension_load_extensions();
 void register_core_extensions();
 void register_early_core_singletons();
 void register_core_singletons();

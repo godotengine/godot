@@ -37,6 +37,14 @@ params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_depth;
 
+#ifdef RENDER_DRIVER_WEBGPU
+// The depth view is unfilterable in WebGPU. These passes sample at texel
+// centers with a clamp sampler, so explicit loads preserve the same values.
+float fetch_depth(ivec2 coordinate) {
+	return texelFetch(source_depth, clamp(coordinate, ivec2(0), textureSize(source_depth, 0) - 1), 0).x;
+}
+#endif
+
 layout(r16f, set = 1, binding = 0) uniform restrict writeonly image2DArray dest_image0; //rename
 #ifdef GENERATE_MIPS
 layout(r16f, set = 2, binding = 0) uniform restrict writeonly image2DArray dest_image1;
@@ -204,16 +212,24 @@ void main() {
 
 	vec2 uv = (vec2(depth_buffer_coord) + 0.5f) * params.pixel_size;
 	vec4 samples;
+#ifdef RENDER_DRIVER_WEBGPU
+	samples = vec4(fetch_depth(depth_buffer_coord + ivec2(0, 2)), fetch_depth(depth_buffer_coord + ivec2(2, 2)), fetch_depth(depth_buffer_coord + ivec2(2, 0)), fetch_depth(depth_buffer_coord));
+#else
 	samples.x = textureLodOffset(source_depth, uv, 0, ivec2(0, 2)).x;
 	samples.y = textureLodOffset(source_depth, uv, 0, ivec2(2, 2)).x;
 	samples.z = textureLodOffset(source_depth, uv, 0, ivec2(2, 0)).x;
 	samples.w = textureLodOffset(source_depth, uv, 0, ivec2(0, 0)).x;
+#endif
 #else
 	ivec2 depth_buffer_coord = 2 * ivec2(gl_GlobalInvocationID.xy);
 	ivec2 output_coord = ivec2(gl_GlobalInvocationID);
 
 	vec2 uv = (vec2(depth_buffer_coord) + 0.5f) * params.pixel_size;
+#ifdef RENDER_DRIVER_WEBGPU
+	vec4 samples = vec4(fetch_depth(depth_buffer_coord + ivec2(0, 1)), fetch_depth(depth_buffer_coord + ivec2(1, 1)), fetch_depth(depth_buffer_coord + ivec2(1, 0)), fetch_depth(depth_buffer_coord));
+#else
 	vec4 samples = textureGather(source_depth, uv);
+#endif
 #endif //USE_HALF_SIZE
 #ifdef GENERATE_MIPS
 	prepare_depths_and_mips(samples, output_coord, gl_LocalInvocationID.xy);

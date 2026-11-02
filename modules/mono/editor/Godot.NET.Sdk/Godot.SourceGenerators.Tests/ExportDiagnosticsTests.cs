@@ -8,7 +8,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task StaticMembers()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             "ExportDiagnostics_GD0101.cs",
             "ExportDiagnostics_GD0101_ScriptPropertyDefVal.generated.cs"
         );
@@ -17,7 +17,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task TypeIsNotSupported()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             "ExportDiagnostics_GD0102.cs",
             "ExportDiagnostics_GD0102_ScriptPropertyDefVal.generated.cs"
         );
@@ -26,7 +26,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task ReadOnly()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             "ExportDiagnostics_GD0103.cs",
             "ExportDiagnostics_GD0103_ScriptPropertyDefVal.generated.cs"
         );
@@ -35,7 +35,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task WriteOnly()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             "ExportDiagnostics_GD0104.cs",
             "ExportDiagnostics_GD0104_ScriptPropertyDefVal.generated.cs"
         );
@@ -44,7 +44,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task Indexer()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             "ExportDiagnostics_GD0105.cs",
             "ExportDiagnostics_GD0105_ScriptPropertyDefVal.generated.cs"
         );
@@ -53,7 +53,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task ExplicitInterfaceImplementation()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             new string[] { "ExportDiagnostics_GD0106.cs" },
             new string[]
             {
@@ -66,7 +66,7 @@ public class ExportDiagnosticsTests
     [Fact]
     public async Task NodeExports()
     {
-        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.VerifyNoCompilerDiagnostics(
             new string[] { "ExportDiagnostics_GD0107.cs" },
             new string[]
             {

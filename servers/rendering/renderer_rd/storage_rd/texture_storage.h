@@ -406,6 +406,7 @@ private:
 		RID color_multisample; // Needed when 2D MSAA is enabled.
 
 		RSE::ViewportMSAA msaa = RSE::VIEWPORT_MSAA_DISABLED; // 2D MSAA mode
+		RSE::ViewportMSAA requested_msaa = RSE::VIEWPORT_MSAA_DISABLED;
 		bool msaa_needs_resolve = false; // 2D MSAA needs resolved
 
 		//used for retrieving from CPU

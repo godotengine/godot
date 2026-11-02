@@ -522,6 +522,10 @@ bool EditorExport::poll_export_platforms() {
 	return changed;
 }
 
+String EditorExport::get_full_export_blocked_message() {
+	return TTR("This editor runs inside a 2dog host, which builds the playable game with \"dotnet publish\". Only PCK/ZIP exports are available here.");
+}
+
 void EditorExport::connect_presets_runnable_updated(const Callable &p_target) {
 	connect(_export_presets_runnable_updated, p_target);
 }

@@ -117,8 +117,9 @@ public:
 	};
 
 private:
-	HashMap<StringName, HashMap<StringName, ThemeItemBind>> theme_item_binds;
-	HashMap<StringName, List<ThemeItemBind>> theme_item_binds_list; // Used for listing purposes.
+	// 2dog: _bind_methods() runs once, so theme binds must survive ThemeDB recreation on restart.
+	static inline HashMap<StringName, HashMap<StringName, ThemeItemBind>> theme_item_binds;
+	static inline HashMap<StringName, List<ThemeItemBind>> theme_item_binds_list; // Used for listing purposes.
 
 	void _sort_theme_items();
 

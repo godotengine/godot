@@ -156,6 +156,7 @@ public:
 		RID get_specular_only_fb();
 		RID get_velocity_only_fb();
 
+		virtual void get_msaa_texture_formats(Vector<RD::DataFormat> &r_formats) const override;
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 		virtual void free_data() override;
 
@@ -404,6 +405,7 @@ private:
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
+		bool lightmap_uniform_buffer = false;
 		RID lightmap_buffer;
 
 		MultiUmaBuffer<1u> instance_buffer[RENDER_LIST_MAX] = { MultiUmaBuffer<1u>("RENDER_LIST_OPAQUE"), MultiUmaBuffer<1u>("RENDER_LIST_MOTION"), MultiUmaBuffer<1u>("RENDER_LIST_ALPHA"), MultiUmaBuffer<1u>("RENDER_LIST_SECONDARY") };
@@ -415,6 +417,7 @@ private:
 
 		RID voxelgi_ids[MAX_VOXEL_GI_INSTANCESS];
 		uint32_t voxelgis_used = 0;
+		uint32_t max_voxel_gi_instances = MAX_VOXEL_GI_INSTANCESS;
 
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
@@ -478,6 +481,7 @@ private:
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_using_sdfgi = false, bool p_using_opaque_gi = false, bool p_using_motion_pass = false, bool p_append = false);
 
 	HashMap<Size2i, RID> sdfgi_framebuffer_size_cache;
+	PagedArray<RID> no_voxel_gi_instances; // Stands in for the culled instances where VoxelGI is unsupported.
 
 	struct GeometryInstanceData;
 	class GeometryInstanceForwardClustered;

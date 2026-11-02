@@ -452,6 +452,9 @@ protected:
 #endif
 
 public:
+	// 2dog: register project settings for each engine instance.
+	static void register_settings();
+
 	enum {
 		// You can make your own, but don't use the same numbers as other notifications in other nodes.
 		NOTIFICATION_ENTER_TREE = 10,

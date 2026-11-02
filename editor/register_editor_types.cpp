@@ -340,6 +340,9 @@ void unregister_editor_types() {
 
 	EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::EMPTY, Variant());
 	EditorNode::cleanup();
+	// 2dog: remove process-static registrations that would dangle or accumulate across restarts.
+	Engine::get_singleton()->remove_singleton("EditorInterface");
+	EditorPlugins::remove_all_create_funcs();
 	EditorInterface::free();
 
 	if (EditorPaths::get_singleton()) {

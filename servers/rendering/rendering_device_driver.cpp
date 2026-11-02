@@ -55,6 +55,11 @@ uint64_t RenderingDeviceDriver::api_trait_get(ApiTrait p_trait) {
 			return false;
 		case API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS:
 			return false;
+		case API_TRAIT_BUFFER_MAP_REQUIRES_FLUSH:
+		case API_TRAIT_TEXTURE_INITIALIZE_DIRECT_WRITE:
+		case API_TRAIT_BUFFER_CREATE_MAPPED_AT_CREATION:
+		case API_TRAIT_STAGING_BUFFER_MAX_SIZE_MB:
+			return 0;
 		default:
 			ERR_FAIL_V(0);
 	}

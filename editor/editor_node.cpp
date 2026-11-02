@@ -181,6 +181,10 @@
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifdef WEBGPU_SHADER_BAKER_ENABLED
+#include "editor/shader/shader_baker/shader_baker_export_plugin_platform_webgpu.h"
+#endif
+
 #ifdef VULKAN_ENABLED
 #include "editor/shader/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
 #endif
@@ -1391,6 +1395,9 @@ void EditorNode::_fs_changed() {
 						ERR_PRINT(vformat("Export path \"%s\" doesn't end with a supported extension.", export_path));
 						err = FAILED;
 					}
+				} else if (EditorExport::is_full_export_blocked()) {
+					ERR_PRINT(EditorExport::get_full_export_blocked_message());
+					err = ERR_UNAVAILABLE;
 				} else { // Normal project export.
 					String config_error;
 					bool missing_templates;
@@ -6621,6 +6628,9 @@ bool EditorNode::is_cmdline_mode() {
 
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
+	// 2dog: reset add-only plugin counters before an engine restart.
+	build_callback_count = 0;
+	plugin_init_callback_count = 0;
 }
 
 void EditorNode::_update_layouts_menu() {
@@ -9499,6 +9509,12 @@ EditorNode::EditorNode() {
 
 	Ref<ShaderBakerExportPlugin> shader_baker_export_plugin;
 	shader_baker_export_plugin.instantiate();
+
+#ifdef WEBGPU_SHADER_BAKER_ENABLED
+	Ref<ShaderBakerExportPluginPlatformWebGPU> shader_baker_export_plugin_platform_webgpu;
+	shader_baker_export_plugin_platform_webgpu.instantiate();
+	shader_baker_export_plugin->add_platform(shader_baker_export_plugin_platform_webgpu);
+#endif
 
 #ifdef VULKAN_ENABLED
 	Ref<ShaderBakerExportPluginPlatformVulkan> shader_baker_export_plugin_platform_vulkan;

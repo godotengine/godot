@@ -129,6 +129,31 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		gdextensionLibs: [],
 		/**
+		 * The rendering driver to use. Set by Godot export based on project settings.
+		 *
+		 * ``'webgpu'`` will automatically request a WebGPU device before engine init.
+		 * If the browser cannot provide a device, startup falls back to WebGL 2.0
+		 * with the Compatibility renderer. Builds without WebGPU support still reject it.
+		 *
+		 * ``'opengl3'`` (or empty) uses WebGL 2.0.
+		 *
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {string}
+		 */
+		renderingDriver: '',
+		/**
+		 * A pre-initialized WebGPU device to pass to the Emscripten module.
+		 * Required for WebGPU rendering. Must be set before engine init.
+		 * If not provided and ``renderingDriver`` is ``'webgpu'``, one will be
+		 * requested automatically.
+		 *
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {?GPUDevice}
+		 */
+		preinitializedWebGPUDevice: null,
+		/**
 		 * @ignore
 		 * @type {Array.<string>}
 		 */
@@ -143,6 +168,28 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @type {number}
 		 */
 		godotPoolSize: 4,
+		/**
+		 * Pass imports to dotnet.setModuleImports(key, value).
+		 *
+		 * @memberof EngineConfig
+		 * @type {?Object}
+		 * @default
+		 */
+		dotnetModuleImports: null,
+		// 2dog: try precompressed siblings such as .gz and inflate them in-page; fall back to plain files.
+		/**
+		 * @memberof EngineConfig
+		 * @type {string}
+		 * @default
+		 */
+		precompressedSuffix: '',
+		// 2dog: report cumulative .NET _framework download bytes separately from onProgress.
+		/**
+		 * @memberof EngineConfig
+		 * @type {?function(number)}
+		 * @default
+		 */
+		onDotnetProgress: null,
 		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
@@ -255,6 +302,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.onPrintError = parse('onPrintError', this.onPrintError);
 		this.onPrint = parse('onPrint', this.onPrint);
 		this.onProgress = parse('onProgress', this.onProgress);
+		this.dotnetModuleImports = parse('dotnetModuleImports', this.dotnetModuleImports);
+		this.precompressedSuffix = parse('precompressedSuffix', this.precompressedSuffix);
+		this.onDotnetProgress = parse('onDotnetProgress', this.onDotnetProgress);
 
 		// Godot config
 		this.canvas = parse('canvas', this.canvas);
@@ -268,6 +318,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
 		this.gdextensionLibs = parse('gdextensionLibs', this.gdextensionLibs);
+		this.renderingDriver = parse('renderingDriver', this.renderingDriver);
+		this.preinitializedWebGPUDevice = parse('preinitializedWebGPUDevice', this.preinitializedWebGPUDevice);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
@@ -282,6 +334,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 * @param {Response} response
 	 */
 	Config.prototype.getModuleConfig = function (loadPath, response) {
+		const dirPath = loadPath.split('/').slice(0, -1).join('/');
+
 		let r = response;
 		const gdext = this.gdextensionLibs;
 		return {
@@ -291,6 +345,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'noExitRuntime': false,
 			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
 			'emscriptenPoolSize': this.emscriptenPoolSize,
+			// WebGPU: pass pre-initialized device if provided (for emscripten_webgpu_get_device()).
+			...(this.preinitializedWebGPUDevice ? { 'preinitializedWebGPUDevice': this.preinitializedWebGPUDevice } : {}),
 			'instantiateWasm': function (imports, onSuccess) {
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
@@ -306,23 +362,37 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 				return {};
 			},
 			'locateFile': function (path) {
-				if (!path.startsWith('godot.')) {
-					return path;
-				} else if (path.endsWith('.audio.worklet.js')) {
-					return `${loadPath}.audio.worklet.js`;
-				} else if (path.endsWith('.audio.position.worklet.js')) {
-					return `${loadPath}.audio.position.worklet.js`;
-				} else if (path.endsWith('.js')) {
-					return `${loadPath}.js`;
-				} else if (path in gdext) {
-					return path;
-				} else if (path.endsWith('.side.wasm')) {
-					return `${loadPath}.side.wasm`;
-				} else if (path.endsWith('.wasm')) {
-					return `${loadPath}.wasm`;
+				if (path.startsWith('godot.')) {
+					if (path.endsWith('.audio.worklet.js')) {
+						return `${loadPath}.audio.worklet.js`;
+					} else if (path.endsWith('.audio.position.worklet.js')) {
+						return `${loadPath}.audio.position.worklet.js`;
+					} else if (path.endsWith('.js')) {
+						return `${loadPath}.js`;
+					} else if (path in gdext) {
+						return path;
+					} else if (path.endsWith('.side.wasm')) {
+						return `${loadPath}.side.wasm`;
+					} else if (path.endsWith('.wasm')) {
+						return `${loadPath}.wasm`;
+					}
+				}
+				if (path.startsWith('dotnet.')) {
+					if (path === 'dotnet.native.wasm') {
+						return `${loadPath}.wasm`;
+					}
+					return `${dirPath}/_framework/${path}`;
 				}
 				return path;
 			},
+			'getPreloadedWasm': function () {
+				const tempResponse = r;
+				r = null;
+				return tempResponse;
+			},
+			'godotSharpImports': this.dotnetModuleImports,
+			'godotPrecompressedSuffix': this.precompressedSuffix,
+			'godotOnDotnetProgress': this.onDotnetProgress,
 		};
 	};
 

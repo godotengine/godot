@@ -294,15 +294,22 @@ Joint3DGizmoPlugin::Joint3DGizmoPlugin() {
 
 void Joint3DGizmoPlugin::incremental_update_gizmos() {
 	if (!current_gizmos.is_empty()) {
-		HashSet<EditorNode3DGizmo *>::Iterator E = current_gizmos.find(last_drawn);
+		HashSet<ObjectID>::Iterator E = current_gizmos.find(last_drawn);
 		if (E) {
 			++E;
 		}
 		if (!E) {
 			E = current_gizmos.begin();
 		}
-		redraw(*E);
-		last_drawn = *E;
+		const ObjectID gizmo_id = *E;
+		EditorNode3DGizmo *gizmo = ObjectDB::get_instance<EditorNode3DGizmo>(gizmo_id);
+		if (gizmo && gizmo->get_node_3d()) {
+			redraw(gizmo);
+			last_drawn = gizmo_id;
+		} else {
+			current_gizmos.erase(gizmo_id);
+			last_drawn = ObjectID();
+		}
 	}
 }
 
@@ -319,9 +326,14 @@ int Joint3DGizmoPlugin::get_priority() const {
 }
 
 void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	ERR_FAIL_NULL(p_gizmo);
 	Joint3D *joint = Object::cast_to<Joint3D>(p_gizmo->get_node_3d());
 
 	p_gizmo->clear();
+
+	if (!joint) {
+		return;
+	}
 
 	Node3D *node_body_a = nullptr;
 	if (!joint->get_node_a().is_empty()) {

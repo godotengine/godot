@@ -3,7 +3,8 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-if env["platform"] in ["macos", "windows", "linuxbsd"]:
+# 2dog: sdl3 loads GL through glad too, even before it has an SDL GL context.
+if env["platform"] in ["macos", "windows", "linuxbsd", "sdl3"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = ["gl.c"]

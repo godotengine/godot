@@ -1,0 +1,47 @@
+#version 450
+
+layout(local_size_x = 64) in;
+
+struct Particle {
+    vec4 position;
+    vec4 velocity;
+    vec4 color;
+    float life;
+    float pad0;
+    float pad1;
+    float pad2;
+};
+
+layout(set = 0, binding = 0) buffer ParticleBuffer {
+    Particle particles[];
+} particle_buf;
+
+layout(set = 0, binding = 1) uniform SimParams {
+    float delta_time;
+    float gravity;
+    uint particle_count;
+    float pad;
+} params;
+
+layout(push_constant) uniform PushConstants {
+    uint offset;
+    float time;
+} pc;
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x + pc.offset;
+    if (idx >= params.particle_count) return;
+
+    Particle p = particle_buf.particles[idx];
+    p.velocity.y -= params.gravity * params.delta_time;
+    p.position += p.velocity * params.delta_time;
+    p.life -= params.delta_time;
+
+    if (p.life <= 0.0) {
+        p.position = vec4(0.0);
+        p.velocity = vec4(0.0, 5.0, 0.0, 0.0);
+        p.life = 2.0;
+    }
+
+    particle_buf.particles[idx] = p;
+}

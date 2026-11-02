@@ -1,0 +1,66 @@
+diff --git a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
+index 381371ff4a..6ac855bd65 100644
+--- a/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
++++ b/thirdparty/tint/src/tint/utils/strconv/parse_num.cc
+@@ -29,6 +29,16 @@
+ 
+ #include <charconv>
+ 
++#ifdef __EMSCRIPTEN__
++#include <emscripten/version.h>
++#if __EMSCRIPTEN_major__ < 4
++#include <cerrno>
++#include <cmath>
++#include <cstdlib>
++#include <locale.h>
++#endif
++#endif
++
+ // abseil dependency removed for Godot vendoring — std::from_chars
+ // handles float/double in C++17 (GCC 11+, Clang 12+, MSVC 19.29+).
+ 
+@@ -43,6 +53,36 @@ template <typename T>
+ Result<T, ParseNumberError> Parse(std::string_view number) {
+     T val = 0;
+     if constexpr (std::is_floating_point_v<T>) {
++#if defined(__EMSCRIPTEN__) && __EMSCRIPTEN_major__ < 4
++        // Emscripten 3.1.56's libc++ deletes the floating-point from_chars
++        // overloads. Keep this fallback local to Tint and locale-independent.
++        if (number.empty() || number.front() == '+' || number.front() == ' ' ||
++            (number.front() >= '\t' && number.front() <= '\r')) {
++            return ParseNumberError::kUnparsable;
++        }
++        auto digits = number.front() == '-' ? number.substr(1) : number;
++        if (digits.starts_with("0x") || digits.starts_with("0X")) {
++            return ParseNumberError::kUnparsable;
++        }
++        static locale_t c_locale = newlocale(LC_NUMERIC_MASK, "C", nullptr);
++        if (!c_locale) {
++            return ParseNumberError::kUnparsable;
++        }
++        std::string terminated(number);
++        char* end = nullptr;
++        errno = 0;
++        if constexpr (std::is_same_v<T, float>) {
++            val = strtof_l(terminated.c_str(), &end, c_locale);
++        } else {
++            val = strtod_l(terminated.c_str(), &end, c_locale);
++        }
++        if (errno == ERANGE && (val == 0 || !std::isfinite(val))) {
++            return ParseNumberError::kResultOutOfRange;
++        }
++        if (end == terminated.c_str() || end != terminated.c_str() + terminated.size()) {
++            return ParseNumberError::kUnparsable;
++        }
++#else
+         auto result = std::from_chars(number.data(), number.data() + number.size(), val);
+         if (result.ec == std::errc::result_out_of_range) {
+             return ParseNumberError::kResultOutOfRange;
+@@ -50,6 +90,7 @@ Result<T, ParseNumberError> Parse(std::string_view number) {
+         if (result.ec != std::errc() || result.ptr != number.data() + number.size()) {
+             return ParseNumberError::kUnparsable;
+         }
++#endif
+     } else {
+         auto result = std::from_chars(number.data(), number.data() + number.size(), val);
+         if (result.ec == std::errc::result_out_of_range) {

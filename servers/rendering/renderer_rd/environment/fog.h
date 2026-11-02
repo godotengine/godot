@@ -243,6 +243,9 @@ private:
 public:
 	static Fog *get_singleton() { return singleton; }
 
+	// Used by the shader baker for export targets without image atomics.
+	void enable_no_atomics_shader_groups();
+
 	Fog();
 	~Fog();
 

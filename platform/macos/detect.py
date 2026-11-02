@@ -88,7 +88,7 @@ def get_flags():
         "arch": detect_arch(),
         "use_volk": False,
         "metal": True,
-        "supported": ["library", "metal", "mono"],
+        "supported": ["webgpu", "library", "metal", "mono"],
     }
 
 
@@ -342,3 +342,8 @@ def configure(env: "SConsEnvironment"):
     if len(extra_frameworks) > 0:
         frameworks = [item for key in sorted(extra_frameworks) for item in ["-framework", key]]
         env.Append(LINKFLAGS=frameworks)
+
+    # Optional native Dawn WebGPU backend.
+    from drivers.webgpu.native_config import configure_native_webgpu
+
+    configure_native_webgpu(env)

@@ -947,7 +947,10 @@ void ScrollContainer::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_vertical_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_horizontal_color);
+}
 
+// 2dog: register settings per engine instance because _bind_methods() runs only once.
+void ScrollContainer::register_settings() {
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 }
 

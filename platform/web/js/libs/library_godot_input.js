@@ -34,7 +34,7 @@
 
 const GodotIME = {
 	$GodotIME__deps: ['$GodotRuntime', '$GodotEventListeners'],
-	$GodotIME__postset: 'GodotOS.atexit(function(resolve, reject) { GodotIME.clear(); resolve(); });',
+	$GodotIME__postset: 'GodotOS.atexit(function(resolve, reject) { GodotIME.clear(); resolve(); }, true);',
 	$GodotIME: {
 		ime: null,
 		active: false,

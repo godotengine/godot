@@ -179,6 +179,18 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
+            // 2dog: libgodot hosts publish the assemblies and runtime themselves, for host pack exports
+            // (libgodot_export_pack, or an editor given '++ --2dog-host-pack') and for editors inside a host alike.
+            // Pack-only web exports have nothing to publish into.
+            if (Internal.IsLibGodotHostInstance() || Godot.OS.GetCmdlineUserArgs().Contains("--2dog-host-pack")
+                || (platform == OS.Platforms.Web && !path.EndsWith(".html", StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            if (platform == OS.Platforms.Web)
+                throw new NotSupportedException("C# web exports from the Godot editor are not supported; publish a 2dog web host instead.");
+
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
                     .Contains(platform))
             {

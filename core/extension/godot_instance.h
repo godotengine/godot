@@ -37,6 +37,7 @@ class GodotInstance : public Object {
 	GDCLASS(GodotInstance, Object);
 
 	bool started = false;
+	bool start_attempted = false;
 
 protected:
 	static void _bind_methods();
@@ -45,7 +46,7 @@ public:
 	GodotInstance();
 	~GodotInstance();
 
-	bool initialize(GDExtensionInitializationFunction p_init_func);
+	bool initialize();
 
 	bool start();
 	bool is_started();

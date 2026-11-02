@@ -50,7 +50,11 @@ layout(push_constant, std430) uniform Params {
 	uint blend_shape_count;
 	bool normalized_blend_shapes;
 	uint normal_tangent_stride;
+#ifdef RENDER_DRIVER_WEBGPU
+	uint bone_offset; // vec4 offset into atlas buffer
+#else
 	uint pad1;
+#endif
 
 	vec2 skeleton_transform_x;
 	vec2 skeleton_transform_y;
@@ -159,8 +163,13 @@ void main() {
 		uint skin_offset = params.skin_stride * index;
 
 		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
+#ifdef RENDER_DRIVER_WEBGPU
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 2 + params.bone_offset; //pre-add xform offset + atlas offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 2 + params.bone_offset;
+#else
 		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 2; //pre-add xform offset
 		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 2;
+#endif
 
 		skin_offset += params.skin_weight_offset;
 
@@ -249,8 +258,13 @@ void main() {
 		uint skin_offset = params.skin_stride * index;
 
 		uvec2 bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
+#ifdef RENDER_DRIVER_WEBGPU
+		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3 + params.bone_offset; //pre-add xform offset + atlas offset
+		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3 + params.bone_offset;
+#else
 		uvec2 bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
 		uvec2 bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+#endif
 
 		skin_offset += params.skin_weight_offset;
 
@@ -269,8 +283,13 @@ void main() {
 			skin_offset = params.skin_stride * index + 2;
 
 			bones = uvec2(src_bone_weights.data[skin_offset + 0], src_bone_weights.data[skin_offset + 1]);
+#ifdef RENDER_DRIVER_WEBGPU
+			bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3 + params.bone_offset; //pre-add xform offset + atlas offset
+			bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3 + params.bone_offset;
+#else
 			bones_01 = uvec2(bones.x & 0xFFFF, bones.x >> 16) * 3; //pre-add xform offset
 			bones_23 = uvec2(bones.y & 0xFFFF, bones.y >> 16) * 3;
+#endif
 
 			skin_offset += params.skin_weight_offset;
 

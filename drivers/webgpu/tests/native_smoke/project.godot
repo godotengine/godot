@@ -1,0 +1,13 @@
+config_version=5
+
+[application]
+config/name="Native WebGPU smoke"
+run/main_scene="res://main.tscn"
+
+[display]
+window/size/viewport_width=96
+window/size/viewport_height=96
+
+[rendering]
+renderer/rendering_method="mobile"
+rendering_device/driver="webgpu"

@@ -192,6 +192,16 @@ public:
 	 * @return the buffer.
 	 */
 	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) = 0;
+
+	// Creates a GPU buffer and uploads initial data in one operation.
+	// Used when API_TRAIT_BUFFER_CREATE_MAPPED_AT_CREATION is non-zero.
+	// On WebGPU this uses mappedAtCreation to avoid staging buffer overhead.
+	// Default impl returns invalid BufferID (caller falls back to
+	// buffer_create + staging). p_data must not be empty.
+	virtual BufferID buffer_create_with_data(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, const uint8_t *p_data, uint64_t p_data_size) {
+		return BufferID();
+	}
+
 	// Only for a buffer with BUFFER_USAGE_TEXEL_BIT.
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) = 0;
 	virtual void buffer_free(BufferID p_buffer) = 0;
@@ -201,8 +211,42 @@ public:
 	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) = 0;
 	virtual uint64_t buffer_get_dynamic_offsets(Span<BufferID> p_buffers) = 0;
 	virtual void buffer_flush(BufferID p_buffer) {}
+	virtual void buffer_initiate_async_map(BufferID p_buffer) {} // WebGPU: start async map so it completes by next frame.
+	// Direct queue write to a buffer, bypassing staging buffers entirely.
+	// Used for skeleton/bone updates that are fully written before any draws.
+	virtual void buffer_write_direct(BufferID p_buffer, uint64_t p_offset, uint64_t p_size, const void *p_data) {}
+
+	// Returns the actual pixel size of texture data on the GPU, when it differs
+	// from the engine's format pixel size (e.g. WebGPU promotes R8→R32Float for
+	// storage textures). Returns 0 if no conversion is needed (default).
+	virtual uint32_t texture_get_gpu_pixel_size(TextureID p_texture) { return 0; }
+
+	// Converts readback data from GPU format to engine format. Only called when
+	// texture_get_gpu_pixel_size() returned non-zero. Converts `p_width` pixels
+	// per row for `p_height` rows, reading from p_src (gpu_pitch stride) and
+	// writing to p_dst (engine_pitch stride).
+	virtual void texture_readback_convert(TextureID p_texture,
+			const uint8_t *p_src, uint32_t p_src_pitch,
+			uint8_t *p_dst, uint32_t p_dst_pitch,
+			uint32_t p_width, uint32_t p_height) {}
+
+	// Converts upload data from engine format to GPU format. Only called when
+	// texture_get_gpu_pixel_size() returned non-zero. Converts `p_width` pixels
+	// per row for `p_height` rows, reading from p_src (engine_pitch stride) and
+	// writing to p_dst (gpu_pitch stride).
+	virtual void texture_upload_convert(TextureID p_texture,
+			const uint8_t *p_src, uint32_t p_src_pitch,
+			uint8_t *p_dst, uint32_t p_dst_pitch,
+			uint32_t p_width, uint32_t p_height) {}
+
 	// Only for a buffer with BUFFER_USAGE_DEVICE_ADDRESS_BIT.
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) = 0;
+
+	/// Optional override for buffer readback.  Backends with async readback
+	/// (WebGPU) implement this to manage their own persistent staging buffers.
+	/// Returns true if handled (data written to r_data), false to use the
+	/// default staging-buffer path in RenderingDevice::buffer_get_data().
+	virtual bool buffer_get_data_direct(BufferID p_buffer, uint64_t p_offset, uint64_t p_size, Vector<uint8_t> &r_data) { return false; }
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -284,12 +328,19 @@ public:
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
 	virtual void texture_free(TextureID p_texture) = 0;
 	virtual uint64_t texture_get_allocation_size(TextureID p_texture) = 0;
+
+	// 2dog: drivers opt into external texture sharing per handle-type bit; defaults report no support.
+	// 2dog: r_export_handle is exported for export types and echoed for import types.
+	virtual uint32_t external_texture_supported_handle_types() { return 0; }
+	virtual TextureID external_texture_create(ExternalTextureShareHandleType p_handle_type, DataFormat p_format, uint32_t p_width, uint32_t p_height, uint64_t p_import_handle, uint64_t *r_export_handle) { return TextureID(); }
 	// Returns a texture layout for buffer <-> texture copies. If you are copying multiple texture subresources to/from the same buffer,
 	// you are responsible for correctly aligning the start offset for every buffer region. See API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT.
 	virtual void texture_get_copyable_layout(TextureID p_texture, const TextureSubresource &p_subresource, TextureCopyableLayout *r_layout) = 0;
 	// Returns the data of a texture layer for a CPU texture that was created with TEXTURE_USAGE_CPU_READ_BIT.
 	virtual Vector<uint8_t> texture_get_data(TextureID p_texture, uint32_t p_layer) = 0;
 	virtual BitField<TextureUsageBits> texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) = 0;
+	// Backends with their own sample-count fallback can keep handling it internally.
+	virtual bool texture_is_format_supported_for_samples(DataFormat p_format, TextureSamples p_samples) { return true; }
 	virtual bool texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) = 0;
 
 	/*****************/
@@ -585,6 +636,22 @@ public:
 	virtual void command_copy_buffer_to_texture(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, TextureID p_dst_texture, TextureLayout p_dst_texture_layout, VectorView<BufferTextureCopyRegion> p_regions) = 0;
 	virtual void command_copy_texture_to_buffer(CommandBufferID p_cmd_buffer, TextureID p_src_texture, TextureLayout p_src_texture_layout, BufferID p_dst_buffer, VectorView<BufferTextureCopyRegion> p_regions) = 0;
 
+	// Direct CPU->GPU layered texture initialization. Writes `p_layer_count`
+	// consecutive array layers into `p_dst_texture` from a contiguous CPU
+	// buffer at `p_cpu_data`. Used by RenderingDevice::_texture_initialize_layered
+	// when API_TRAIT_TEXTURE_INITIALIZE_DIRECT_WRITE is non-zero, as an
+	// alternative to the transfer-worker path (which requires a GPU staging
+	// buffer + command encoder).
+	//
+	// Layout of `p_cpu_data`: `p_layer_count` contiguous layer images, each
+	// of size `p_aligned_bpr * p_rows_per_image`. Total = `p_total_size`.
+	//
+	// Default impl errors; only called when the trait opts in, so non-WebGPU
+	// drivers are unaffected.
+	virtual void texture_initialize_direct_layered(TextureID p_dst_texture, TextureLayout p_dst_layout, const uint8_t *p_cpu_data, uint64_t p_total_size, uint32_t p_aligned_bpr, uint32_t p_rows_per_image, uint32_t p_width, uint32_t p_height, uint32_t p_layer_count, uint32_t p_base_layer, uint32_t p_mip_level) {
+		ERR_FAIL_MSG("texture_initialize_direct_layered called but driver did not override it. API_TRAIT_TEXTURE_INITIALIZE_DIRECT_WRITE should be 0 for this driver.");
+	}
+
 	/******************/
 	/**** PIPELINE ****/
 	/******************/
@@ -628,6 +695,10 @@ public:
 		AttachmentStoreOp stencil_store_op = ATTACHMENT_STORE_OP_DONT_CARE;
 		TextureLayout initial_layout = TEXTURE_LAYOUT_UNDEFINED;
 		TextureLayout final_layout = TEXTURE_LAYOUT_UNDEFINED;
+		// Original TextureUsageBits from AttachmentFormat — needed by drivers (e.g. WebGPU)
+		// that must promote the texture format when STORAGE_BIT is set, to keep pipelines in
+		// sync with the actual texture format produced by texture_create().
+		uint32_t usage_flags = 0;
 	};
 
 	struct AttachmentReference {
@@ -908,6 +979,29 @@ public:
 		API_TRAIT_SHADER_GROUP_HANDLE_SIZE,
 		API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT,
 		API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT,
+		// If non-zero, buffer_map() returns CPU shadow memory that buffer_unmap() flushes to the GPU.
+		API_TRAIT_BUFFER_MAP_REQUIRES_FLUSH,
+		// If non-zero, RenderingDevice::_texture_initialize_layered uses a
+		// CPU-only staging path that bypasses transfer workers entirely (no
+		// GPU staging buffer, no command encoder, no barriers). The driver
+		// writes directly from a CPU pointer via
+		// `texture_initialize_direct_layered`. Useful on backends (e.g.
+		// WebGPU) where a synchronous CPU->GPU `writeTexture` API exists and
+		// the transfer worker's GPU staging buffer would be wasted (peak
+		// memory drops by ~N bytes per upload, where N is the staging size).
+		API_TRAIT_TEXTURE_INITIALIZE_DIRECT_WRITE,
+		// If non-zero, RenderingDevice uses buffer_create_with_data() instead
+		// of buffer_create() + _buffer_initialize() when initial data is
+		// provided. Useful on backends (e.g. WebGPU) where the staging buffer
+		// path incurs expensive WASM→JS→GPU bridge crossings that can be
+		// avoided by creating the buffer with mappedAtCreation.
+		API_TRAIT_BUFFER_CREATE_MAPPED_AT_CREATION,
+		// If non-zero, caps the staging buffer pool max_size to this value
+		// (in MB), overriding the project setting. On backends where staging
+		// blocks use CPU shadow memory (e.g. WebGPU), keeping the pool small
+		// avoids wasting memory after the loading spike subsides. The pool
+		// handles overflow correctly via stall-and-reuse.
+		API_TRAIT_STAGING_BUFFER_MAX_SIZE_MB,
 	};
 
 	enum ShaderChangeInvalidation {

@@ -43,6 +43,16 @@
 #undef CRASH_HANDLER_ENABLED
 #endif
 
+#ifdef DISABLE_CRASH_HANDLER
+#undef CRASH_HANDLER_ENABLED
+#endif
+
+// 2dog: hosts own process signal handlers for exceptions and dumps in library builds.
+// 2dog: do not replace them or reset them to SIG_DFL.
+#ifdef LIBGODOT_ENABLED
+#undef CRASH_HANDLER_ENABLED
+#endif
+
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>

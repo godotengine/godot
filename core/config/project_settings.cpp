@@ -48,6 +48,10 @@
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
 
+#ifdef UNIX_ENABLED
+#include <cstdlib>
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
 
@@ -675,6 +679,10 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If nothing was found, error out.
  */
 Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	if (CoreGlobals::run_global_project_settings_function()) {
+		return OK;
+	}
+
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
@@ -813,11 +821,26 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
 
-	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", p_path));
-	d->change_dir(p_path);
+	// 2dog: resolve absolute project paths without process CWD changes that race other engine instances.
+	Ref<DirAccess> d;
+	String current_dir;
+	const String simplified = p_path.simplify_path();
+	if (simplified.is_absolute_path()) {
+		current_dir = simplified;
+#ifdef UNIX_ENABLED
+		// 2dog: canonicalize like upstream's getcwd() so symlinked paths (e.g. macOS /tmp) still localize.
+		if (char *real_path = ::realpath(simplified.utf8().get_data(), nullptr)) {
+			current_dir = String::utf8(real_path);
+			::free(real_path);
+		}
+#endif
+	} else {
+		d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", p_path));
+		d->change_dir(p_path);
+		current_dir = d->get_current_dir();
+	}
 
-	String current_dir = d->get_current_dir();
 	bool found = false;
 	Error err;
 
@@ -843,11 +866,20 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #if defined(OVERRIDE_PATH_ENABLED)
 		if (p_upwards) {
 			// Try to load settings ascending through parent directories
-			d->change_dir("..");
-			if (d->get_current_dir() == current_dir) {
-				break; // not doing anything useful
+			if (d.is_null()) {
+				// 2dog: absolute-path walk, no DirAccess involved.
+				String parent = current_dir.get_base_dir();
+				if (parent == current_dir) {
+					break; // not doing anything useful
+				}
+				current_dir = parent;
+			} else {
+				d->change_dir("..");
+				if (d->get_current_dir() == current_dir) {
+					break; // not doing anything useful
+				}
+				current_dir = d->get_current_dir();
 			}
-			current_dir = d->get_current_dir();
 		} else {
 #else
 		{

@@ -90,6 +90,7 @@ public:
 
 	static GDExtensionManager *get_singleton();
 
+	void load_embedded_extension();
 	void load_extensions();
 	void reload_extensions();
 	bool ensure_extensions_loaded(const HashSet<String> &p_extensions);

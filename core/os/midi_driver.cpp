@@ -42,6 +42,13 @@ MIDIDriver::MIDIDriver() {
 	singleton = this;
 }
 
+// 2dog: engine restarts construct a new driver.
+MIDIDriver::~MIDIDriver() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 MIDIDriver::MessageCategory MIDIDriver::Parser::category(uint8_t p_midi_fragment) {
 	if (p_midi_fragment >= 0xf8) {
 		return MessageCategory::RealTime;

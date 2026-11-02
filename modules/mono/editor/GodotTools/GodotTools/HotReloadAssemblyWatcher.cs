@@ -13,7 +13,7 @@ namespace GodotTools
 
         public override void _Notification(int what)
         {
-            if (what == Node.NotificationWMWindowFocusIn)
+            if (what == Node.NotificationWMWindowFocusIn && CanWatchAssemblies())
             {
                 RestartTimer();
 
@@ -27,7 +27,7 @@ namespace GodotTools
 
         private void TimerTimeout()
         {
-            if (Internal.IsAssembliesReloadingNeeded())
+            if (CanWatchAssemblies() && Internal.IsAssembliesReloadingNeeded())
             {
                 BuildManager.UpdateLastValidBuildDateTime();
                 Internal.ReloadAssemblies(softReload: false);
@@ -37,9 +37,17 @@ namespace GodotTools
         [UsedImplicitly]
         public void RestartTimer()
         {
+            if (!CanWatchAssemblies())
+                return;
+
             _watchTimer.Stop();
             _watchTimer.Start();
         }
+
+        // Children leave the tree before their parent. Focus notifications can
+        // still arrive during editor teardown, after the timer has already left.
+        private bool CanWatchAssemblies() =>
+            IsInsideTree() && _watchTimer != null && _watchTimer.IsInsideTree();
 
         public override void _Ready()
         {

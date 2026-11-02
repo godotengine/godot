@@ -38,6 +38,7 @@
 /drivers/metal/                               @godotengine/rendering
 /drivers/spirv-reflect/                       @godotengine/rendering
 /drivers/vulkan/                              @godotengine/rendering
+/drivers/webgpu/                              @godotengine/rendering
 
 ## OS
 /drivers/apple/                               @godotengine/macos @godotengine/ios

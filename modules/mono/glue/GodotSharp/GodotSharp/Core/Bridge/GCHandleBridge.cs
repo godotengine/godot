@@ -27,6 +27,8 @@ namespace Godot.Bridge
             try
             {
                 var target = GCHandle.FromIntPtr(gcHandlePtr).Target;
+                if (target is Callable.ManagedTrampolineState state)
+                    target = state.Delegate;
 
                 if (target is Delegate @delegate)
                     return DelegateUtils.IsDelegateCollectible(@delegate).ToGodotBool();

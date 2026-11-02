@@ -9,6 +9,7 @@
  * @header Web export JavaScript reference
  */
 const Engine = (function () {
+	const webgpuUnavailableReason = ___GODOT_WEBGPU_UNAVAILABLE_REASON___;
 	const preloader = new Preloader();
 
 	let loadPromise = null;
@@ -40,10 +41,13 @@ const Engine = (function () {
 	 *
 	 * @function Engine.load
 	 */
-	Engine.load = function (basePath, size) {
+	Engine.load = function (basePath, size, compressedSuffix) {
 		if (loadPromise == null) {
 			loadPath = basePath;
-			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, size, true);
+			if (typeof performance !== 'undefined') {
+				performance.mark('2dog:wasm-fetch');
+			}
+			loadPromise = preloader.loadPromise(`${loadPath}.wasm`, size, true, compressedSuffix || '');
 			requestAnimationFrame(preloader.animateProgress);
 		}
 		return loadPromise;
@@ -66,6 +70,7 @@ const Engine = (function () {
 	 * @constructor
 	 */
 	function SafeEngine(initConfig) {
+		let webgpuFallback = false;
 		const proto = /** @lends Engine.prototype */ {
 			/**
 			 * Initialize the engine instance. Optionally, pass the base path to the engine to load it,
@@ -78,12 +83,24 @@ const Engine = (function () {
 				if (initPromise) {
 					return initPromise;
 				}
+				const args = this.config.args;
+				for (let i = 0; i + 1 < args.length; i++) {
+					if (args[i] === '--' || args[i] === '++') {
+						break;
+					}
+					if (args[i] === '--rendering-driver') {
+						this.config.renderingDriver = args[++i];
+					}
+				}
+				if (this.config.renderingDriver === 'webgpu' && webgpuUnavailableReason) {
+					return Promise.reject(new Error(webgpuUnavailableReason));
+				}
 				if (loadPromise == null) {
 					if (!basePath) {
 						initPromise = Promise.reject(new Error('A base path must be provided when calling `init` and the engine is not loaded.'));
 						return initPromise;
 					}
-					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`]);
+					Engine.load(basePath, this.config.fileSizes[`${basePath}.wasm`], this.config.precompressedSuffix);
 				}
 				const me = this;
 				function doInit(promise) {
@@ -94,8 +111,14 @@ const Engine = (function () {
 						promise.then(function (response) {
 							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
 							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
+								if (typeof performance !== 'undefined') {
+									performance.mark('2dog:runtime-created');
+								}
 								const paths = me.config.persistentPaths;
 								module['initFS'](paths).then(function (err) {
+									if (typeof performance !== 'undefined') {
+										performance.mark('2dog:fs-ready');
+									}
 									me.rtenv = module;
 									if (me.config.unloadAfterInit) {
 										Engine.unload();
@@ -107,7 +130,19 @@ const Engine = (function () {
 					});
 				}
 				preloader.setProgressFunc(this.config.onProgress);
-				initPromise = doInit(loadPromise);
+				if (me.config.renderingDriver === 'webgpu' && !me.config.preinitializedWebGPUDevice) {
+					initPromise = Engine.requestWebGPUDevice().then(function (device) {
+						me.config.preinitializedWebGPUDevice = device;
+						return doInit(loadPromise);
+					}, function (err) {
+						console.warn('WebGPU device unavailable; falling back to WebGL 2 Compatibility.', err); // eslint-disable-line no-console
+						webgpuFallback = true;
+						me.config.renderingDriver = 'opengl3';
+						return doInit(loadPromise);
+					});
+				} else {
+					initPromise = doInit(loadPromise);
+				}
 				return initPromise;
 			},
 
@@ -128,7 +163,7 @@ const Engine = (function () {
 			 * @returns {Promise} A Promise that resolves once the file is loaded.
 			 */
 			preloadFile: function (file, path) {
-				return preloader.preload(file, path, this.config.fileSizes[file]);
+				return preloader.preload(file, path, this.config.fileSizes[file], this.config.precompressedSuffix);
 			},
 
 			/**
@@ -149,6 +184,23 @@ const Engine = (function () {
 				return me.init().then(function () {
 					if (!me.rtenv) {
 						return Promise.reject(new Error('The engine must be initialized before it can be started'));
+					}
+					if (webgpuFallback) {
+						// Apply after start overrides too (e.g. the separate init/preload/start path).
+						const args = me.config.args;
+						const fallbackArgs = [];
+						for (let i = 0; i < args.length; i++) {
+							if (args[i] === '--' || args[i] === '++') {
+								fallbackArgs.push.apply(fallbackArgs, args.slice(i));
+								break;
+							}
+							if (args[i] === '--rendering-driver' || args[i] === '--rendering-method') {
+								i++;
+							} else {
+								fallbackArgs.push(args[i]);
+							}
+						}
+						me.config.args = ['--rendering-driver', 'opengl3', '--rendering-method', 'gl_compatibility'].concat(fallbackArgs);
 					}
 
 					let config = {};
@@ -172,10 +224,21 @@ const Engine = (function () {
 							me.rtenv['copyToFS'](file.path, file.buffer);
 						}
 						preloader.preloadedFiles.length = 0; // Clear memory
-						me.rtenv['callMain'](me.config.args);
-						initPromise = null;
-						me.installServiceWorker();
-						resolve();
+
+						// 2dog: support custom asynchronous callMain implementations.
+						if (typeof performance !== 'undefined') {
+							performance.mark('2dog:call-main');
+						}
+						Promise.resolve().then(function () {
+							return me.rtenv['callMain'](me.config.args);
+						}).then(function () {
+							initPromise = null;
+							me.installServiceWorker();
+							resolve();
+						}, function (err) {
+							initPromise = null;
+							reject(err);
+						});
 					});
 				});
 			},
@@ -201,9 +264,10 @@ const Engine = (function () {
 				this.config.args = ['--main-pack', pack].concat(this.config.args);
 				// Start and init with execName as loadPath if not inited.
 				const me = this;
+
 				return Promise.all([
-					this.init(exe),
-					this.preloadFile(pack, pack),
+					me.init(exe),
+					me.preloadFile(pack, pack),
 				]).then(function () {
 					return me.start.apply(me);
 				});
@@ -249,6 +313,18 @@ const Engine = (function () {
 				}
 				return Promise.resolve();
 			},
+
+			/**
+			 * Get [JsExport] methods.
+			 *
+			 * @returns {Promise} The exports promise.
+			 */
+			getDotnetExports: function () {
+				if (this.rtenv && this.rtenv['getGodotSharpExports']) {
+					return this.rtenv['getGodotSharpExports']();
+				}
+				return Promise.resolve();
+			},
 		};
 
 		Engine.prototype = proto;
@@ -260,15 +336,97 @@ const Engine = (function () {
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
 		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
+		Engine.prototype['getDotnetExports'] = Engine.prototype.getDotnetExports;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;
 		Engine.prototype['unload'] = Engine.unload;
 		return new Engine(initConfig);
 	}
 
+	/**
+	 * Request a WebGPU device from the browser. Returns a Promise that resolves
+	 * to a ``GPUDevice``, or rejects if WebGPU is not available.
+	 *
+	 * This is called automatically by :js:meth:`startGame <Engine.prototype.startGame>`
+	 * when ``renderingDriver`` is ``'webgpu'``.
+	 *
+	 * @param {Object=} adapterOptions Optional ``GPURequestAdapterOptions``.
+	 * @param {Object=} deviceDescriptor Optional ``GPUDeviceDescriptor``.
+	 * @returns {Promise<GPUDevice>} A promise resolving to the GPU device.
+	 *
+	 * @function Engine.requestWebGPUDevice
+	 */
+	Engine.requestWebGPUDevice = function (adapterOptions, deviceDescriptor) {
+		if (webgpuUnavailableReason) {
+			return Promise.reject(new Error(webgpuUnavailableReason));
+		}
+		if (typeof navigator === 'undefined' || !navigator.gpu) {
+			return Promise.reject(new Error(
+				'WebGPU is not supported in this browser.\n'
+				+ 'Try using a recent version of Chrome, Edge, or Firefox.'
+			));
+		}
+		return navigator.gpu.requestAdapter(adapterOptions || {
+			powerPreference: 'high-performance',
+		}).then(function (adapter) {
+			if (!adapter) {
+				return Promise.reject(new Error(
+					'WebGPU adapter not found. Your GPU may not support WebGPU.'
+				));
+			}
+			const desc = deviceDescriptor || {
+				requiredFeatures: [],
+			};
+			// Keep in sync with the native list in rendering_context_driver_webgpu_native.cpp.
+			// Without the compression features, compressed textures are decompressed to RGBA8 on the CPU.
+			const optionalFeatures = [
+				'depth32float-stencil8',
+				'float32-filterable',
+				'float32-blendable',
+				'texture-formats-tier1',
+				'texture-formats-tier2',
+				'rg11b10ufloat-renderable',
+				'clip-distances',
+				'dual-source-blending',
+				'indirect-first-instance',
+				'texture-compression-bc',
+				'texture-compression-etc2',
+				'texture-compression-astc',
+			];
+			desc.requiredFeatures = (desc.requiredFeatures || []).concat(optionalFeatures.filter((feature) => adapter.features.has(feature)));
+			// Like the native backend, request every limit the adapter supports.
+			desc.requiredLimits ||= {};
+			for (const key in adapter.limits) {
+				if (adapter.limits[key] !== undefined) {
+					desc.requiredLimits[key] = adapter.limits[key];
+				}
+			}
+			return adapter.requestDevice(desc).then(function (device) {
+				device['godotAdapterInfo'] = adapter.info || {};
+				// Monitor device loss (non-blocking — just log).
+				device.lost.then(function (info) {
+					const reason = info.reason || 'unknown';
+					const msg = info.message || '';
+					console.error(`[Godot] WebGPU device lost (reason: ${reason}): ${msg}`); // eslint-disable-line no-console
+				});
+				device.addEventListener('uncapturederror', function (event) {
+					// Include the full error message — `event.error` alone only
+					// serializes to the constructor name ("GPUValidationError"),
+					// hiding the detail. `.message` contains the Dawn error text.
+					const err = event.error;
+					const kind = (err && err.constructor && err.constructor.name) || 'UnknownError';
+					const msg = (err && err.message) ? err.message : String(err);
+					console.error(`[Godot] WebGPU uncaptured error: ${kind}: ${msg}`); // eslint-disable-line no-console
+				});
+				return device;
+			});
+		});
+	};
+
 	// Closure compiler exported static methods.
 	SafeEngine['load'] = Engine.load;
 	SafeEngine['unload'] = Engine.unload;
+	SafeEngine['requestWebGPUDevice'] = Engine.requestWebGPUDevice;
 
 	// Feature-detection utilities.
 	SafeEngine['isWebGLAvailable'] = Features.isWebGLAvailable;

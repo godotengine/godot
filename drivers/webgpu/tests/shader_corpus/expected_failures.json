@@ -1,0 +1,18 @@
+{
+  "description": "Expected SPIR-V validation failures: shader variants the WebGPU Mobile renderer does not use",
+  "updated": "2026-05-05T01:26:54.038Z",
+  "expected_failures": [
+    "FsrUpscaleShaderRD:0.comp.spv",
+    "TonemapShaderRD:1.frag.spv",
+    "TonemapShaderRD:3.frag.spv"
+  ],
+  "failure_categories": {
+    "InvalidTypeWidth (16-bit types)": [
+      "FsrUpscaleShaderRD:0.comp.spv"
+    ],
+    "InvalidId (spec constant cascade)": [
+      "TonemapShaderRD:1.frag.spv",
+      "TonemapShaderRD:3.frag.spv"
+    ]
+  }
+}

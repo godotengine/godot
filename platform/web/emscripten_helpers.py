@@ -24,31 +24,51 @@ def run_closure_compiler(target, source, env, for_signature):
 
 
 def create_engine_file(env, target, source, externs, threads_enabled):
+    reason = ""
+    if threads_enabled:
+        reason = "WebGPU is unavailable in multithreaded browser runtimes. Use a single-threaded runtime or OpenGL Compatibility."
+    elif env["precision"] == "double":
+        reason = "WebGPU is unavailable in double-precision runtimes. Use a single-precision runtime or another rendering driver."
+    elif not env["webgpu"]:
+        reason = "WebGPU is not included in this runtime. Use a WebGPU-enabled runtime or another rendering driver."
+    subst_dict = {
+        "___GODOT_THREADS_ENABLED": "true" if threads_enabled else "false",
+        "___GODOT_WEBGPU_UNAVAILABLE_REASON___": json.dumps(reason),
+    }
+    prepared = env.Substfile(
+        target=str(target) + ".pre.js" if env["use_closure_compiler"] else target,
+        source=[env.File(s) for s in source],
+        SUBST_DICT=subst_dict,
+    )
     if env["use_closure_compiler"]:
-        return env.BuildJS(target, source, JSEXTERNS=externs)
-    subst_dict = {"___GODOT_THREADS_ENABLED": "true" if threads_enabled else "false"}
-    return env.Substfile(target=target, source=[env.File(s) for s in source], SUBST_DICT=subst_dict)
+        return env.BuildJS(target, prepared, JSEXTERNS=externs)
+    return prepared
 
 
-def create_template_zip(env, js, wasm, side):
+def create_template_zip(env, js, wasm, side, libgodot):
     binary_name = "godot.editor" if env.editor_build else "godot"
     zip_dir = env.Dir(env.GetTemplateZipPath())
     in_files = [
         js,
-        wasm,
         "#platform/web/js/libs/audio.worklet.js",
         "#platform/web/js/libs/audio.position.worklet.js",
     ]
     out_files = [
         zip_dir.File(binary_name + ".js"),
-        zip_dir.File(binary_name + ".wasm"),
         zip_dir.File(binary_name + ".audio.worklet.js"),
         zip_dir.File(binary_name + ".audio.position.worklet.js"),
     ]
-    # Dynamic linking (extensions) specific.
-    if env["dlink_enabled"]:
+    if wasm is not None:
+        in_files.append(wasm)  # Wasm (contains the actual Godot code).
+        out_files.append(zip_dir.File(binary_name + ".wasm"))
+    # 2dog: include the optional dynamic side module.
+    if side is not None:
         in_files.append(side)  # Side wasm (contains the actual Godot code).
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
+    if env["webgpu"]:
+        # Web export enables WebGPU startup only for templates containing this marker.
+        in_files.append("#thirdparty/emdawnwebgpu/VERSION.txt")
+        out_files.append(zip_dir.File("webgpu.txt"))
 
     service_worker = "#misc/dist/html/service-worker.js"
     if env.editor_build:
@@ -107,6 +127,26 @@ def create_template_zip(env, js, wasm, side):
         out_files.append(zip_dir.File(binary_name + ".service.worker.js"))
         in_files.append("#misc/dist/html/offline-export.html")
         out_files.append(zip_dir.File("godot.offline.html"))
+
+    if libgodot is not None:
+        libgodot_dir = zip_dir.Dir("libgodot")
+
+        def add_libgodot_folder(dir_name, files):
+            files_dir = libgodot_dir.Dir(dir_name)
+            for file in files:
+                in_files.append(file)
+                out_files.append(files_dir.File(file.name))
+
+        if "libgodot" in libgodot:
+            in_files.append(libgodot["libgodot"])
+            out_files.append(libgodot_dir.File("libgodot.a"))
+        in_files.append(libgodot["config"])
+        out_files.append(libgodot_dir.File("config.json"))
+
+        add_libgodot_folder("js_library", libgodot["JS_LIBS"])
+        add_libgodot_folder("pre_js", libgodot["JS_PRE"])
+        add_libgodot_folder("post_js", libgodot["JS_POST"])
+        add_libgodot_folder("externs", libgodot["JS_EXTERNS"])
 
     zip_files = env.NoCache(env.InstallAs(out_files, in_files))
     env.NoCache(

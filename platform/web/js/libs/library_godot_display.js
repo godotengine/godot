@@ -31,7 +31,7 @@
 const GodotDisplayVK = {
 
 	$GodotDisplayVK__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInput'],
-	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); });',
+	$GodotDisplayVK__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayVK.clear(); resolve(); }, true);',
 	$GodotDisplayVK: {
 		textinput: null,
 		textarea: null,
@@ -183,7 +183,7 @@ mergeInto(LibraryManager.library, GodotDisplayVK);
  */
 const GodotDisplayCursor = {
 	$GodotDisplayCursor__deps: ['$GodotOS', '$GodotConfig'],
-	$GodotDisplayCursor__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayCursor.clear(); resolve(); });',
+	$GodotDisplayCursor__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayCursor.clear(); resolve(); }, true);',
 	$GodotDisplayCursor: {
 		shape: 'default',
 		visible: true,

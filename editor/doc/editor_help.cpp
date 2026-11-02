@@ -3081,6 +3081,11 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 }
 
 void EditorHelp::_gen_extensions_docs() {
+	// 2dog: deferred from _load_doc_thread; a GDExtension reload during fast --import can land it after cleanup_doc().
+	if (!doc) {
+		return;
+	}
+
 	doc->generate((DocTools::GENERATE_FLAG_SKIP_BASIC_TYPES | DocTools::GENERATE_FLAG_EXTENSION_CLASSES_ONLY));
 
 	// Append extra doc data, as it gets overridden by the generation step.
@@ -3098,7 +3103,8 @@ void EditorHelp::load_script_doc_cache() {
 		return;
 	}
 
-	if (EditorNode::is_cmdline_mode()) {
+	// 2dog: deferred calls may run after EditorNode is destroyed during fast --import shutdown.
+	if (!EditorNode::get_singleton() || EditorNode::is_cmdline_mode()) {
 		return;
 	}
 
@@ -3167,6 +3173,9 @@ static void _regenerate_script_doc_cache(bool p_changes) {
 }
 
 void EditorHelp::regenerate_script_doc_cache() {
+	if (!EditorFileSystem::get_singleton()) {
+		return;
+	}
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
 		// Wait until EditorFileSystem scanning is complete to use updated filesystem structure.
 		EditorFileSystem::get_singleton()->connect(SNAME("sources_changed"), callable_mp_static(_regenerate_script_doc_cache), CONNECT_ONE_SHOT);

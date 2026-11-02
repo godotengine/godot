@@ -44,6 +44,7 @@
 #endif
 
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -252,6 +253,11 @@ bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file
 #endif
 }
 
+// 2dog: see CoreGlobals::libgodot_host_instance.
+bool godot_icall_Internal_IsLibGodotHostInstance() {
+	return CoreGlobals::libgodot_host_instance;
+}
+
 #ifdef __cplusplus
 }
 #endif
@@ -292,6 +298,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_Globals_TTR,
 	(void *)godot_icall_Utils_OS_GetPlatformName,
 	(void *)godot_icall_Utils_OS_UnixFileHasExecutableAccess,
+	(void *)godot_icall_Internal_IsLibGodotHostInstance,
 };
 
 const void **godotsharp::get_editor_interop_funcs(int32_t &r_size) {

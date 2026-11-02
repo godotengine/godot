@@ -1,0 +1,22 @@
+name: 🧪 WebGPU Checks
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  webgpu-checks:
+    runs-on: ubuntu-24.04
+    name: WebGPU compiler and port checks
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Build host converter
+        run: ./drivers/webgpu/tint_cli/build.sh
+
+      - name: Run checks
+        run: ./drivers/webgpu/tests/local_ci.sh

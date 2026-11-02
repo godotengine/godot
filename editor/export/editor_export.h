@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/core_globals.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/export/editor_export_plugin.h"
 
@@ -72,6 +73,10 @@ public:
 	static int encode_platform_device_id(int p_platform_idx, int p_device_idx) { return p_platform_idx * 10000 + p_device_idx; }
 	static int decode_platform_from_id(int p_id) { return p_id / 10000; }
 	static int decode_device_from_id(int p_id) { return p_id % 10000; }
+
+	// 2dog: an editor inside a libgodot host exports packs only; the host's own publish builds the playable game.
+	static bool is_full_export_blocked() { return CoreGlobals::libgodot_host_instance; }
+	static String get_full_export_blocked_message();
 
 	void add_export_platform(const Ref<EditorExportPlatform> &p_platform);
 	int get_export_platform_count() const;

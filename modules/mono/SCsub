@@ -6,6 +6,11 @@ import build_scripts.mono_configure as mono_configure
 Import("env")
 Import("env_modules")
 
+if env["platform"] == "web":
+    env.AddJSLibraries(["web/setjmp_stub.js"])
+    env.AddJSPre(["web/callMain_stub.js"])
+    env["CUSTOM_GODOT_JS"] = env.File("web/mono_bridge.js")
+
 env_mono = env_modules.Clone()
 
 # Configure Mono
@@ -22,3 +27,7 @@ env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
     SConscript("editor/script_templates/SCsub")
+elif env.get("library_type", "") == "shared_library":
+    # 2dog: libgodot discovers the host application's .NET runtime through hostfxr.
+    env_mono.add_source_files(env.modules_sources, "editor/hostfxr_resolver.cpp")
+    env_mono.add_source_files(env.modules_sources, "editor/semver.cpp")

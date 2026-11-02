@@ -1,0 +1,21 @@
+--- a/thirdparty/emdawnwebgpu/emdawnwebgpu.port.py
++++ b/thirdparty/emdawnwebgpu/emdawnwebgpu.port.py
+@@ -36,7 +36,7 @@
+ from typing import Dict, Optional
+
+ # Imports from Emscripten
+-from tools import diagnostics
++from tools import diagnostics, shared
+
+ if __name__ == '__main__':
+     print('Please see README.md for details on how to use this port.')
+@@ -195,7 +195,8 @@
+         os.path.join(_src_dir, 'library_webgpu_enum_tables.js'),
+         os.path.join(_src_dir, 'library_webgpu_generated_struct_info.js'),
+         os.path.join(_src_dir, 'library_webgpu_generated_sig_info.js'),
+-        os.path.join(_src_dir, 'library_webgpu.js'),
++        # 2dog: Emscripten 3.x exposes stack helpers as Wasm dependencies.
++        os.path.join(_src_dir, 'library_webgpu_legacy.js' if shared.EMSCRIPTEN_VERSION_MAJOR < 4 else 'library_webgpu.js'),
+     ]
+
+     if 'CLOSURE_ARGS' in settings.keys():

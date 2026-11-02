@@ -1,0 +1,278 @@
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc b/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
+@@ -39,9 +39,204 @@
+ #include "src/tint/lang/spirv/reader/lower/transpose_row_major.h"
+ #include "src/tint/lang/spirv/reader/lower/vector_element_pointer.h"
+ 
++#include <unordered_map>
++#include <unordered_set>
++#include <vector>
++#include "src/tint/lang/core/ir/builder.h"
++#include "src/tint/lang/core/ir/core_builtin_call.h"
++#include "src/tint/lang/core/ir/exit_loop.h"
++#include "src/tint/lang/core/ir/if.h"
++#include "src/tint/lang/core/ir/loop.h"
++#include "src/tint/lang/core/ir/switch.h"
++#include "src/tint/lang/core/type/depth_texture.h"
++using namespace tint::core::number_suffixes;
++
+ namespace tint::spirv::reader {
++namespace {
++struct LoopExitGuardState {
++    core::ir::Module& ir;
++    core::ir::Builder b{ir};
++    core::type::Manager& ty{ir.Types()};
++
++    // Guard var per outermost switch, and the controls already followed by a guard check.
++    std::unordered_map<core::ir::ControlInstruction*, core::ir::Var*> guards;
++    std::unordered_set<core::ir::ControlInstruction*> checked;
++
++    core::ir::Instruction* ExitWithZeros(core::ir::ControlInstruction* ctrl) {
++        Vector<core::ir::Value*, 4> args;
++        for (auto* r : ctrl->Results()) {
++            args.Push(b.Zero(r->Type()));
++        }
++        return b.Exit(ctrl, std::move(args));
++    }
++
++    void GuardAfter(core::ir::ControlInstruction* after, core::ir::Var* guard,
++                    core::ir::ControlInstruction* exit_of) {
++        if (!checked.insert(after).second) {
++            return;
++        }
++        b.InsertAfter(after, [&] {
++            auto* cond = b.Load(guard);
++            auto* if_ = b.If(cond);
++            b.Append(if_->True(), [&] { ExitWithZeros(exit_of); });
++            b.Append(if_->False(), [&] { b.ExitIf(if_); });
++        });
++    }
++
++    void Fix(core::ir::ExitLoop* exit) {
++        auto* loop = exit->Loop();
++        // The controls between the exit and its loop, innermost first.
++        std::vector<core::ir::ControlInstruction*> chain;
++        for (auto* ctrl = exit->Block()->Parent(); ctrl && ctrl != loop; ctrl = ctrl->Block()->Parent()) {
++            chain.push_back(ctrl);
++        }
++        size_t outer = chain.size();
++        for (size_t i = 0; i < chain.size(); ++i) {
++            if (chain[i]->Is<core::ir::Switch>() || chain[i]->Is<core::ir::Loop>()) {
++                outer = i;
++            }
++        }
++        if (outer == chain.size() || !exit->Args().empty()) {
++            return;  // shortcut: result arguments need spilling; extend for raw SPIR-V loops.
++        }
++        auto* top = chain[outer];
++        auto*& guard = guards[top];
++        if (!guard) {
++            b.InsertBefore(top, [&] { guard = b.Var("exit_guard", false); });
++        }
++        b.InsertBefore(exit, [&] {
++            b.Store(guard, true);
++            ExitWithZeros(chain[0]);
++        });
++        exit->Destroy();
++        for (size_t i = 0; i < outer; ++i) {
++            GuardAfter(chain[i], guard, chain[i + 1]);
++        }
++        GuardAfter(top, guard, loop);
++    }
++
++    Result<SuccessType> Process() {
++        std::vector<core::ir::ExitLoop*> exits;
++        for (auto* inst : ir.Instructions()) {
++            if (auto* exit = inst->As<core::ir::ExitLoop>()) {
++                exits.push_back(exit);
++            }
++        }
++        for (auto* exit : exits) {
++            Fix(exit);
++        }
++        return Success;
++    }
++};
++
++struct DepthSampleState {
++    core::ir::Module& ir;
++    core::ir::Builder b{ir};
++    core::type::Manager& ty{ir.Types()};
++
++    bool IsSample(core::BuiltinFn fn) {
++        return fn == core::BuiltinFn::kTextureSample || fn == core::BuiltinFn::kTextureSampleBias ||
++               fn == core::BuiltinFn::kTextureSampleLevel ||
++               fn == core::BuiltinFn::kTextureSampleGrad;
++    }
++
++    void Replace(core::ir::CoreBuiltinCall* call, const core::type::DepthTexture* tex_ty) {
++        auto args = call->Args();
++        core::ir::Value* tex = args[0];
++        core::ir::Value* coords = args[2];
++        size_t idx = 3;
++        core::ir::Value* layer = nullptr;
++        if (tex_ty->Dim() == core::type::TextureDimension::k2dArray) {
++            layer = args[idx++];
++        }
++        core::ir::Value* level = nullptr;
++        switch (call->Func()) {
++            case core::BuiltinFn::kTextureSampleLevel:
++                level = args[idx++];
++                break;
++            case core::BuiltinFn::kTextureSampleBias:
++                idx += 1;
++                break;
++            case core::BuiltinFn::kTextureSampleGrad:
++                idx += 2;
++                break;
++            default:
++                break;
++        }
++        core::ir::Value* offset = idx < args.size() ? args[idx] : nullptr;
++
++        b.InsertBefore(call, [&] {
++            auto* vec2f = ty.vec2f();
++            auto* vec2i = ty.vec2i();
++            if (!level) {
++                level = b.Constant(0_i);
++            } else if (!level->Type()->Is<core::type::I32>()) {
++                level = b.Convert(ty.i32(), level)->Result();
++            }
++            // Texel space, with texel centers at integers.
++            auto* dims = b.Call(ty.vec2u(), core::BuiltinFn::kTextureDimensions, tex, level);
++            auto* p = b.Subtract(b.Multiply(coords, b.Convert(vec2f, dims)),
++                                 b.Splat(vec2f, 0.5_f));
++            auto* p0 = b.Call(vec2f, core::BuiltinFn::kFloor, p);
++            auto* f = b.Subtract(p, p0);
++            core::ir::Value* i0 = b.Convert(vec2i, p0)->Result();
++            if (offset) {
++                i0 = b.Add(i0, offset)->Result();
++            }
++            auto* max_i = b.Subtract(b.Convert(vec2i, dims), b.Splat(vec2i, 1_i));
++            auto* zero = b.Splat(vec2i, 0_i);
++            auto* lo = b.Call(vec2i, core::BuiltinFn::kClamp, i0, zero, max_i);
++            auto* hi = b.Call(vec2i, core::BuiltinFn::kClamp, b.Add(i0, b.Splat(vec2i, 1_i)),
++                              zero, max_i);
++            auto* lo_x = b.Swizzle(ty.i32(), lo, {0u});
++            auto* lo_y = b.Swizzle(ty.i32(), lo, {1u});
++            auto* hi_x = b.Swizzle(ty.i32(), hi, {0u});
++            auto* hi_y = b.Swizzle(ty.i32(), hi, {1u});
++            auto load = [&](core::ir::Value* x, core::ir::Value* y) -> core::ir::Value* {
++                auto* c = b.Construct(vec2i, x, y);
++                if (layer) {
++                    return b.Call(ty.f32(), core::BuiltinFn::kTextureLoad, tex, c, layer, level)->Result();
++                }
++                return b.Call(ty.f32(), core::BuiltinFn::kTextureLoad, tex, c, level)->Result();
++            };
++            auto* fx = b.Swizzle(ty.f32(), f, {0u});
++            auto* fy = b.Swizzle(ty.f32(), f, {1u});
++            auto* top = b.Call(ty.f32(), core::BuiltinFn::kMix, load(lo_x->Result(), lo_y->Result()),
++                               load(hi_x->Result(), lo_y->Result()), fx);
++            auto* bottom = b.Call(ty.f32(), core::BuiltinFn::kMix, load(lo_x->Result(), hi_y->Result()),
++                                  load(hi_x->Result(), hi_y->Result()), fx);
++            auto* res = b.Call(ty.f32(), core::BuiltinFn::kMix, top, bottom, fy);
++            call->Result()->ReplaceAllUsesWith(res->Result());
++        });
++        call->Destroy();
++    }
++
++    Result<SuccessType> Process() {
++        std::vector<std::pair<core::ir::CoreBuiltinCall*, const core::type::DepthTexture*>> calls;
++        for (auto* inst : ir.Instructions()) {
++            auto* call = inst->As<core::ir::CoreBuiltinCall>();
++            if (!call || !IsSample(call->Func()) || call->Args().size() < 3) {
++                continue;
++            }
++            auto* tex_ty = call->Args()[0]->Type()->As<core::type::DepthTexture>();
++            if (!tex_ty || (tex_ty->Dim() != core::type::TextureDimension::k2d &&
++                            tex_ty->Dim() != core::type::TextureDimension::k2dArray)) {
++                continue;
++            }
++            calls.push_back({call, tex_ty});
++        }
++        for (auto& [call, tex_ty] : calls) {
++            Replace(call, tex_ty);
++        }
++        return Success;
++    }
++};
++
++}  // namespace
++
+ 
+ Result<SuccessType> Lower(core::ir::Module& mod) {
++    TINT_CHECK_RESULT(LoopExitGuardState{mod}.Process());
+     TINT_CHECK_RESULT(core::ir::transform::DeadCodeElimination(mod));
+     TINT_CHECK_RESULT(lower::VectorElementPointer(mod));
+     TINT_CHECK_RESULT(lower::ShaderIO(mod));
+@@ -56,6 +251,7 @@
+     TINT_CHECK_RESULT(lower::DecomposeStridedArray(mod));
+     TINT_CHECK_RESULT(lower::Atomics(mod));
+     TINT_CHECK_RESULT(lower::Texture(mod));
++    TINT_CHECK_RESULT(DepthSampleState{mod}.Process());
+ 
+     // Remove the terminator args at this point. There are no logical short-circuiting operators in
+     // SPIR-V that we will lose track of, all the terminators are for hoisted values. We don't do
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/lower/texture.cc b/thirdparty/tint/src/tint/lang/spirv/reader/lower/texture.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/lower/texture.cc
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/lower/texture.cc
+@@ -104,6 +104,17 @@
+             }
+ 
+             auto* new_ty = TypeFor(type);
++            // Godot marks depth-copy sources explicitly. GLSL texture2D
++            // cannot express depth without a comparison operation, so restore
++            // that renderer-owned type before propagating it through helper calls.
++            if (ir.NameOf(var->Result()).Name() == "webgpu_depth_source") {
++                if (auto* sampled = new_ty->As<core::type::SampledTexture>()) {
++                    if (sampled->Dim() == core::type::TextureDimension::k2d ||
++                        sampled->Dim() == core::type::TextureDimension::k2dArray) {
++                        new_ty = ty.depth_texture(sampled->Dim());
++                    }
++                }
++            }
+             if (type->Is<spirv::type::Image>()) {
+                 var->Result()->SetType(ty.ptr(ptr->AddressSpace(), new_ty, ptr->Access()));
+                 values_to_fix_usages_.Push(var->Result());
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc b/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/lower/lower.cc
+@@ -144,6 +144,13 @@
+         auto args = call->Args();
+         core::ir::Value* tex = args[0];
+         core::ir::Value* coords = args[2];
++        auto* sampler = args[1];
++        if (auto* result = sampler->As<core::ir::InstructionResult>()) {
++            if (auto* load = result->Instruction()->As<core::ir::Load>()) {
++                sampler = load->From();
++            }
++        }
++        const bool nearest = ir.NameOf(sampler).Name().find("SAMPLER_NEAREST") != std::string::npos;
+         size_t idx = 3;
+         core::ir::Value* layer = nullptr;
+         if (tex_ty->Dim() == core::type::TextureDimension::k2dArray) {
+@@ -173,8 +180,22 @@
+             } else if (!level->Type()->Is<core::type::I32>()) {
+                 level = b.Convert(ty.i32(), level)->Result();
+             }
+-            // Texel space, with texel centers at integers.
++            // shortcut: implicit/bias/gradient LOD uses mip zero for Godot's single-mip depth;
++            // add sampler-state metadata before supporting arbitrary mipmapped RD depth samplers.
+             auto* dims = b.Call(ty.vec2u(), core::BuiltinFn::kTextureDimensions, tex, level);
++            if (nearest) {
++                core::ir::Value* c = b.Convert(vec2i, b.Call(vec2f, core::BuiltinFn::kFloor,
++                                                        b.Multiply(coords, b.Convert(vec2f, dims))))->Result();
++                if (offset) {
++                    c = b.Add(c, offset)->Result();
++                }
++                auto* maximum = b.Subtract(b.Convert(vec2i, dims), b.Splat(vec2i, 1_i));
++                c = b.Call(vec2i, core::BuiltinFn::kClamp, c, b.Splat(vec2i, 0_i), maximum)->Result();
++                auto* value = layer ? b.Call(ty.f32(), core::BuiltinFn::kTextureLoad, tex, c, layer, level)
++                                    : b.Call(ty.f32(), core::BuiltinFn::kTextureLoad, tex, c, level);
++                call->Result()->ReplaceAllUsesWith(value->Result());
++                return;
++            }
+             auto* p = b.Subtract(b.Multiply(coords, b.Convert(vec2f, dims)),
+                                  b.Splat(vec2f, 0.5_f));
+             auto* p0 = b.Call(vec2f, core::BuiltinFn::kFloor, p);

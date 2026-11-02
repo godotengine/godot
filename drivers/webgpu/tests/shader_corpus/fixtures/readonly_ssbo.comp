@@ -1,0 +1,36 @@
+#version 450
+
+layout(local_size_x = 256) in;
+
+struct InstanceData {
+    mat4 transform;
+    vec4 color;
+    uint flags;
+    float scale;
+    float pad0;
+    float pad1;
+};
+
+layout(set = 0, binding = 0) restrict readonly buffer Instances {
+    InstanceData data[];
+} instances;
+
+layout(set = 0, binding = 1) buffer OutputBuffer {
+    vec4 bounding_boxes[];
+} output_buf;
+
+layout(push_constant) uniform PushConstants {
+    uint count;
+    uint offset;
+} pc;
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= pc.count) return;
+
+    InstanceData inst = instances.data[idx + pc.offset];
+    vec3 pos = inst.transform[3].xyz;
+    float radius = inst.scale * 2.0;
+
+    output_buf.bounding_boxes[idx] = vec4(pos, radius);
+}

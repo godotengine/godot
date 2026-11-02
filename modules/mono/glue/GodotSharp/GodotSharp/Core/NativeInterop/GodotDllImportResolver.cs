@@ -23,7 +23,7 @@ namespace Godot.NativeInterop
                 {
                     return Win32.GetModuleHandle(IntPtr.Zero);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || OperatingSystem.IsAndroid())
                 {
                     return _internalHandle;
                 }

@@ -582,6 +582,7 @@ Copyright: 2015-2021, Arm Limited
 License: Apache-2.0 or Expat
 
 Files: thirdparty/spirv-headers/*
+ thirdparty/spirv-headers-webgpu/*
 Comment: SPIRV-Headers
 Copyright: 2015-2024, The Khronos Group Inc.
 License: Expat
@@ -590,6 +591,22 @@ Files: thirdparty/spirv-reflect/*
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
+
+Files: thirdparty/spirv-tools/*
+Comment: SPIRV-Tools
+Copyright: 2015-2026, The Khronos Group Inc.
+License: Apache-2.0
+
+Files: thirdparty/tint/*
+Comment: Tint shader translator
+Copyright: 2017-2026, The Dawn & Tint Authors
+License: BSD-3-clause
+
+Files: thirdparty/emdawnwebgpu/*
+Comment: Dawn WebGPU bindings for Emscripten
+Copyright: 2017-2025, The Dawn & Tint Authors
+ 2010-2025, Emscripten authors
+License: BSD-3-clause and Expat
 
 Files: thirdparty/swappy-frame-pacing/*
 Comment: Swappy

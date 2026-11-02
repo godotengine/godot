@@ -972,6 +972,19 @@ public:
 #endif
 	};
 
+	// 2dog: how an external texture is shared with a host compositor (see external_texture_*).
+	enum ExternalTextureShareHandleType {
+		EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_NONE = 0,
+		// 2dog: import D3D11 KMT shared textures; hosts manage the keyed mutex.
+		EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_D3D11_KMT_KEYED_MUTEX = 1,
+		// 2dog: export an opaque POSIX fd from driver-allocated memory.
+		EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_OPAQUE_FD = 2,
+		// 2dog: export an IOSurfaceRef from an IOSurface-backed texture.
+		EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_IOSURFACE = 3,
+		// 2dog: import D3D11 NT handles; some older Intel drivers reject KMT handles.
+		EXTERNAL_TEXTURE_SHARE_HANDLE_TYPE_D3D11_NT_KEYED_MUTEX = 4,
+	};
+
 	enum Limit {
 		LIMIT_MAX_BOUND_UNIFORM_SETS,
 		LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS,
@@ -1054,6 +1067,19 @@ public:
 		bool avoid_compute_after_draw = false;
 		bool dont_print_on_render_pipeline_creation_failure = false;
 		bool disable_ubershaders = false;
+		// API limitations (WebGPU).
+		bool async_texture_readback = false; // texture_get_data() is empty until an asynchronous readback completes.
+		bool no_input_attachments = false; // Subpass input attachments can't be read.
+		bool no_texture_swizzle = false; // Texture view component swizzles are ignored.
+		bool no_storage_render_targets = false; // Render targets can't be storage textures with sRGB views.
+		bool limited_read_write_storage = false; // Read-write storage textures are limited to R32 formats.
+		bool limited_read_write_storage_8bit = false; // R8 read-write storage textures are unsupported (8-bit storage formats without read-write access).
+		// Renderer policies for a high fixed cost per API call (WebGPU), needing RENDER_DRIVER_WEBGPU shaders.
+		bool force_omni_dual_paraboloid = false; // Fewer shadow passes than cubemaps.
+		bool merge_shadow_passes = false; // Draw shadow passes sharing a framebuffer in one render pass.
+		bool batch_instance_draws = false; // Instance same-mesh draws, pass the instance index via the first instance.
+		bool skeleton_atlas = false; // One bone buffer for all skeletons, uploaded with buffer_update_direct().
+		bool compact_scene_bindings = false; // Fewer Forward+ scene bindings: 4 lightmaps, 2 VoxelGIs and a lightmap uniform buffer.
 	};
 
 	////////////////////////////////////////////

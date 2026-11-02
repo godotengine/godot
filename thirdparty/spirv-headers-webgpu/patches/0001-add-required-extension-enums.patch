@@ -1,0 +1,79 @@
+--- a/thirdparty/spirv-headers-webgpu/include/spirv/unified1/spirv.hpp11
++++ b/thirdparty/spirv-headers-webgpu/include/spirv/unified1/spirv.hpp11
+@@ -739,6 +739,7 @@
+     SubgroupLocalInvocationId = 41,
+     VertexIndex = 42,
+     InstanceIndex = 43,
++    FragmentCoverageMaskMESA = 4096,
+     CoreIDARM = 4160,
+     CoreCountARM = 4161,
+     CoreMaxIDARM = 4162,
+@@ -1135,6 +1136,7 @@
+     ShaderLayer = 69,
+     ShaderViewportIndex = 70,
+     UniformDecoration = 71,
++    FragmentCoverageMESA = 4097,
+     CoreBuiltinsARM = 4165,
+     TileImageColorReadAccessEXT = 4166,
+     TileImageDepthReadAccessEXT = 4167,
+@@ -1392,6 +1394,8 @@
+     UntypedVariableLengthArrayINTEL = 6243,
+     SpecConditionalINTEL = 6245,
+     FunctionVariantsINTEL = 6246,
++    PredicatedIOINTEL = 6257,
++    RoundedDivideSqrtINTEL = 6265,
+     GroupUniformArithmeticKHR = 6400,
+     TensorFloat32RoundingINTEL = 6425,
+     MaskedGatherScatterINTEL = 6427,
+@@ -2624,6 +2628,8 @@
+     OpSpecConstantArchitectureINTEL = 6252,
+     OpSpecConstantCapabilitiesINTEL = 6253,
+     OpConditionalCopyObjectINTEL = 6254,
++    OpPredicatedLoadINTEL = 6258,
++    OpPredicatedStoreINTEL = 6259,
+     OpGroupIMulKHR = 6401,
+     OpGroupFMulKHR = 6402,
+     OpGroupBitwiseAndKHR = 6403,
+@@ -3506,6 +3512,8 @@
+     case Op::OpSpecConstantArchitectureINTEL: *hasResult = true; *hasResultType = true; break;
+     case Op::OpSpecConstantCapabilitiesINTEL: *hasResult = true; *hasResultType = true; break;
+     case Op::OpConditionalCopyObjectINTEL: *hasResult = true; *hasResultType = true; break;
++    case Op::OpPredicatedLoadINTEL: *hasResult = true; *hasResultType = true; break;
++    case Op::OpPredicatedStoreINTEL: *hasResult = false; *hasResultType = false; break;
+     case Op::OpGroupIMulKHR: *hasResult = true; *hasResultType = true; break;
+     case Op::OpGroupFMulKHR: *hasResult = true; *hasResultType = true; break;
+     case Op::OpGroupBitwiseAndKHR: *hasResult = true; *hasResultType = true; break;
+@@ -4108,6 +4116,7 @@
+     case BuiltIn::SubgroupLocalInvocationId: return "SubgroupLocalInvocationId";
+     case BuiltIn::VertexIndex: return "VertexIndex";
+     case BuiltIn::InstanceIndex: return "InstanceIndex";
++    case BuiltIn::FragmentCoverageMaskMESA: return "FragmentCoverageMaskMESA";
+     case BuiltIn::CoreIDARM: return "CoreIDARM";
+     case BuiltIn::CoreCountARM: return "CoreCountARM";
+     case BuiltIn::CoreMaxIDARM: return "CoreMaxIDARM";
+@@ -4306,6 +4315,7 @@
+     case Capability::ShaderLayer: return "ShaderLayer";
+     case Capability::ShaderViewportIndex: return "ShaderViewportIndex";
+     case Capability::UniformDecoration: return "UniformDecoration";
++    case Capability::FragmentCoverageMESA: return "FragmentCoverageMESA";
+     case Capability::CoreBuiltinsARM: return "CoreBuiltinsARM";
+     case Capability::TileImageColorReadAccessEXT: return "TileImageColorReadAccessEXT";
+     case Capability::TileImageDepthReadAccessEXT: return "TileImageDepthReadAccessEXT";
+@@ -4513,6 +4523,8 @@
+     case Capability::UntypedVariableLengthArrayINTEL: return "UntypedVariableLengthArrayINTEL";
+     case Capability::SpecConditionalINTEL: return "SpecConditionalINTEL";
+     case Capability::FunctionVariantsINTEL: return "FunctionVariantsINTEL";
++    case Capability::PredicatedIOINTEL: return "PredicatedIOINTEL";
++    case Capability::RoundedDivideSqrtINTEL: return "RoundedDivideSqrtINTEL";
+     case Capability::GroupUniformArithmeticKHR: return "GroupUniformArithmeticKHR";
+     case Capability::TensorFloat32RoundingINTEL: return "TensorFloat32RoundingINTEL";
+     case Capability::MaskedGatherScatterINTEL: return "MaskedGatherScatterINTEL";
+@@ -5571,6 +5583,8 @@
+     case Op::OpSpecConstantArchitectureINTEL: return "OpSpecConstantArchitectureINTEL";
+     case Op::OpSpecConstantCapabilitiesINTEL: return "OpSpecConstantCapabilitiesINTEL";
+     case Op::OpConditionalCopyObjectINTEL: return "OpConditionalCopyObjectINTEL";
++    case Op::OpPredicatedLoadINTEL: return "OpPredicatedLoadINTEL";
++    case Op::OpPredicatedStoreINTEL: return "OpPredicatedStoreINTEL";
+     case Op::OpGroupIMulKHR: return "OpGroupIMulKHR";
+     case Op::OpGroupFMulKHR: return "OpGroupFMulKHR";
+     case Op::OpGroupBitwiseAndKHR: return "OpGroupBitwiseAndKHR";

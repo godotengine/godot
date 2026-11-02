@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <cstring>
+
 #include "accessibility_server.h"
 
 #include "core/object/class_db.h"
@@ -231,6 +233,13 @@ AccessibilityServer *AccessibilityServer::create(int p_index, Error &r_error) {
 }
 
 void AccessibilityServer::register_create_function(const char *p_name, CreateFunction p_function) {
+	// 2dog: OS::initialize() registers its driver once per engine lifetime; replace instead of appending.
+	for (int i = 0; i < server_create_count; i++) {
+		if (strcmp(server_create_functions[i].name, p_name) == 0) {
+			server_create_functions[i].create_function = p_function;
+			return;
+		}
+	}
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
 	// Dummy server is always last
 	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];

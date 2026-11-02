@@ -4,6 +4,23 @@
 
 #include "area_lights_inc.glsl"
 
+#ifdef RENDER_DRIVER_WEBGPU
+// WebGPU disallows filtering samplers for non-comparison depth reads.
+// Preserve linear-clamp sampling with four depth texel loads instead.
+float webgpu_sample_shadow_depth(texture2D shadow, vec2 uv) {
+	ivec2 size = textureSize(sampler2D(shadow, SAMPLER_NEAREST_CLAMP), 0);
+	vec2 position = uv * vec2(size) - vec2(0.5);
+	ivec2 base = ivec2(floor(position));
+	vec2 weight = fract(position);
+	ivec2 maximum = size - ivec2(1);
+	float a = texelFetch(sampler2D(shadow, SAMPLER_NEAREST_CLAMP), clamp(base, ivec2(0), maximum), 0).r;
+	float b = texelFetch(sampler2D(shadow, SAMPLER_NEAREST_CLAMP), clamp(base + ivec2(1, 0), ivec2(0), maximum), 0).r;
+	float c = texelFetch(sampler2D(shadow, SAMPLER_NEAREST_CLAMP), clamp(base + ivec2(0, 1), ivec2(0), maximum), 0).r;
+	float d = texelFetch(sampler2D(shadow, SAMPLER_NEAREST_CLAMP), clamp(base + ivec2(1, 1), ivec2(0), maximum), 0).r;
+	return mix(mix(a, b, weight.x), mix(c, d, weight.x), weight.y);
+}
+#endif
+
 // This annotation macro must be placed before any loops that rely on specialization constants as their upper bound.
 // Drivers may choose to unroll these loops based on the possible range of the value that can be deduced from the
 // spec constant, which can lead to their code generation taking a much longer time than desired.
@@ -129,7 +146,9 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			scene_data_block.data.view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
-#ifdef USING_MOBILE_RENDERER
+#if defined(USING_MOBILE_RENDERER) && defined(RENDER_DRIVER_WEBGPU)
+	uint instance_index = batch_instance_index;
+#elif defined(USING_MOBILE_RENDERER)
 	uint instance_index = draw_call.instance_index;
 #else
 	uint instance_index = instance_index_interp;
@@ -423,7 +442,11 @@ half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_
 	SPEC_CONSTANT_LOOP_ANNOTATION
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples(); i++) {
 		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
+#ifdef RENDER_DRIVER_WEBGPU
+		float d = webgpu_sample_shadow_depth(shadow, suv);
+#else
 		float d = textureLod(sampler2D(shadow, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
+#endif
 		if (d > pssm_coord.z) {
 			blocker_average += d;
 			blocker_count += 1.0;
@@ -561,8 +584,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 				pos.xy = pos.xy * 0.5 + 0.5;
 				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
-
+#ifdef RENDER_DRIVER_WEBGPU
+				float d = webgpu_sample_shadow_depth(shadow_atlas, pos.xy);
+#else
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
+#endif
 				if (d > z_norm) {
 					blocker_average += d;
 					blocker_count += 1.0;
@@ -661,7 +687,11 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 		pos = pos * 0.5 + 0.5;
 		pos = uv_rect.xy + pos * uv_rect.zw;
+#ifdef RENDER_DRIVER_WEBGPU
+		float shadow_z = webgpu_sample_shadow_depth(shadow_atlas, pos);
+#else
 		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
+#endif
 		transmittance_z = half((depth - shadow_z) / omni_lights.data[idx].inv_radius);
 	}
 #endif // !SHADOWS_DISABLED
@@ -845,7 +875,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
+#ifdef RENDER_DRIVER_WEBGPU
+				float d = webgpu_sample_shadow_depth(shadow_atlas, suv);
+#else
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
+#endif
 				if (d > splane.z) {
 					blocker_average += d;
 					blocker_count += 1.0;
@@ -893,7 +927,11 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		splane /= splane.w;
 
 		vec3 shadow_uv = vec3(splane.xy * spot_lights.data[idx].atlas_rect.zw + spot_lights.data[idx].atlas_rect.xy, splane.z);
+#ifdef RENDER_DRIVER_WEBGPU
+		float shadow_z = webgpu_sample_shadow_depth(shadow_atlas, shadow_uv.xy);
+#else
 		float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), shadow_uv.xy, 0.0).r;
+#endif
 
 		shadow_z = shadow_z * 2.0 - 1.0;
 		float z_far = 1.0 / spot_lights.data[idx].inv_radius;
@@ -1064,8 +1102,11 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 				pos.xy = pos.xy * 0.5 + 0.5;
 				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
-
+#ifdef RENDER_DRIVER_WEBGPU
+				float d = webgpu_sample_shadow_depth(shadow_atlas, pos.xy);
+#else
 				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
+#endif
 				if (d > z_norm) {
 					blocker_average += d;
 					blocker_count += 1.0;
@@ -1160,7 +1201,9 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			scene_data_block.data.view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
-#ifdef USING_MOBILE_RENDERER
+#if defined(USING_MOBILE_RENDERER) && defined(RENDER_DRIVER_WEBGPU)
+	uint instance_index = batch_instance_index;
+#elif defined(USING_MOBILE_RENDERER)
 	uint instance_index = draw_call.instance_index;
 #else
 	uint instance_index = instance_index_interp;
@@ -1243,7 +1286,11 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 			pos = pos * 0.5 + 0.5;
 			pos = uv_rect.xy + pos * uv_rect.zw;
+#ifdef RENDER_DRIVER_WEBGPU
+			float shadow_z = webgpu_sample_shadow_depth(shadow_atlas, pos);
+#else
 			float shadow_z = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos, 0.0).r;
+#endif
 			transmittance_z = half((depth - shadow_z) / inv_center_range);
 		}
 #endif

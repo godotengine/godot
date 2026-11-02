@@ -24,6 +24,32 @@
 
 /custom.py
 
+# Sources restored from drivers/webgpu/dependencies.json; keep patches in Git.
+/thirdparty/.webgpu-cache/
+/thirdparty/*/.webgpu-source.json
+/thirdparty/tint/src/
+/thirdparty/tint/LICENSE
+/thirdparty/spirv-tools/source/
+/thirdparty/spirv-tools/include/
+/thirdparty/spirv-tools/generated/
+/thirdparty/spirv-tools/LICENSE
+/thirdparty/spirv-headers-webgpu/include/
+/thirdparty/spirv-headers-webgpu/LICENSE
+/thirdparty/emdawnwebgpu/webgpu/
+/thirdparty/emdawnwebgpu/webgpu_cpp/
+/thirdparty/emdawnwebgpu/emdawnwebgpu.port.py
+/thirdparty/emdawnwebgpu/README.md
+/thirdparty/emdawnwebgpu/VERSION.txt
+
+# Optional upstream tools restored by drivers/webgpu/tests/prepare_upstream.py.
+/webgpu_tests/benchmark/
+/webgpu_tests/driver_unit_tests/
+/webgpu_tests/resource_lifecycle/
+/webgpu_tests/scene_smoketest/
+/webgpu_tests/screenshot_comparison/
+/webgpu_tests/test_project/
+/webgpu_tests/profile_startup.mjs
+
 #############################
 ### Godot generated files ###
 #############################

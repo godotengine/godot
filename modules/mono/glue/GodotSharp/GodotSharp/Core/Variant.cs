@@ -40,12 +40,11 @@ public partial struct Variant : IDisposable
 
         private void Dispose(bool disposing)
         {
-            _native.DangerousSelfRef.Dispose();
+            // 2dog: release only after claiming registration; another caller or engine shutdown may own cleanup.
+            if (_weakReferenceToSelf != null && !DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf))
+                return;
 
-            if (_weakReferenceToSelf != null)
-            {
-                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
-            }
+            _native.DangerousSelfRef.Dispose();
         }
     }
 

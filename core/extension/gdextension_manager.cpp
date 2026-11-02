@@ -31,6 +31,7 @@
 #include "gdextension_manager.h"
 
 #include "core/config/engine.h"
+#include "core/core_globals.h"
 #include "core/extension/gdextension_function_loader.h"
 #include "core/extension/gdextension_library_loader.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
@@ -61,6 +62,17 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 	}
 
 	return LOAD_STATUS_OK;
+}
+
+void GDExtensionManager::load_embedded_extension() {
+	CoreGlobals::global_project_settings_function = nullptr;
+	CoreGlobals::global_world_init_function = nullptr;
+	if (CoreGlobals::global_init_func_libgodot != nullptr) {
+		GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&CoreGlobals::global_init_func_libgodot);
+		CoreGlobals::global_load_status_libgodot = load_extension_from_function("libgodot://main", ptr);
+	} else {
+		CoreGlobals::global_load_status_libgodot = LOAD_STATUS_FAILED;
+	}
 }
 
 void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {

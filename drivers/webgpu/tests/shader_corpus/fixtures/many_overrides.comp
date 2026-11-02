@@ -1,0 +1,57 @@
+#version 450
+
+// Stress test: 24 specialization constants.
+// Godot currently uses 4, but future shaders may use more.
+// Tests that the override detection, per-stage filtering,
+// and pipeline constant passing all scale correctly.
+
+layout(constant_id = 0) const uint CONST_0 = 0u;
+layout(constant_id = 1) const uint CONST_1 = 1u;
+layout(constant_id = 2) const uint CONST_2 = 2u;
+layout(constant_id = 3) const uint CONST_3 = 3u;
+layout(constant_id = 4) const uint CONST_4 = 4u;
+layout(constant_id = 5) const uint CONST_5 = 5u;
+layout(constant_id = 6) const uint CONST_6 = 6u;
+layout(constant_id = 7) const uint CONST_7 = 7u;
+layout(constant_id = 8) const float CONST_8 = 0.0;
+layout(constant_id = 9) const float CONST_9 = 1.0;
+layout(constant_id = 10) const float CONST_10 = 2.0;
+layout(constant_id = 11) const float CONST_11 = 3.0;
+layout(constant_id = 12) const int CONST_12 = 0;
+layout(constant_id = 13) const int CONST_13 = 1;
+layout(constant_id = 14) const int CONST_14 = -1;
+layout(constant_id = 15) const int CONST_15 = 42;
+layout(constant_id = 16) const bool CONST_16 = false;
+layout(constant_id = 17) const bool CONST_17 = true;
+layout(constant_id = 18) const bool CONST_18 = false;
+layout(constant_id = 19) const bool CONST_19 = true;
+layout(constant_id = 20) const uint CONST_20 = 100u;
+layout(constant_id = 21) const uint CONST_21 = 200u;
+layout(constant_id = 22) const uint CONST_22 = 300u;
+layout(constant_id = 23) const uint CONST_23 = 400u;
+
+layout(push_constant) uniform PushConstants {
+    uint index;
+} pc;
+
+layout(set = 0, binding = 0) buffer OutputBuf {
+    uint values[];
+} output_buf;
+
+void main() {
+    uint sum_u = CONST_0 + CONST_1 + CONST_2 + CONST_3 +
+                 CONST_4 + CONST_5 + CONST_6 + CONST_7 +
+                 CONST_20 + CONST_21 + CONST_22 + CONST_23;
+
+    float sum_f = CONST_8 + CONST_9 + CONST_10 + CONST_11;
+
+    int sum_i = CONST_12 + CONST_13 + CONST_14 + CONST_15;
+
+    uint bool_flags = (CONST_16 ? 1u : 0u) | (CONST_17 ? 2u : 0u) |
+                      (CONST_18 ? 4u : 0u) | (CONST_19 ? 8u : 0u);
+
+    output_buf.values[pc.index * 4u + 0u] = sum_u;
+    output_buf.values[pc.index * 4u + 1u] = uint(sum_f * 100.0);
+    output_buf.values[pc.index * 4u + 2u] = uint(sum_i + 1000);
+    output_buf.values[pc.index * 4u + 3u] = bool_flags;
+}

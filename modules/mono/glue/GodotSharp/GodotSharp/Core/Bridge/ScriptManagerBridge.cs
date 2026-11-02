@@ -25,6 +25,9 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void OnAlcUnloading(AssemblyLoadContext alc)
         {
+            // 2dog: never keep an unloading context alive for engine restarts.
+            _scriptAssemblies.RemoveWhere(assembly => AssemblyLoadContext.GetLoadContext(assembly) == alc);
+
             if (_alcData.TryRemove(alc, out var typesInAlc))
             {
                 foreach (var type in typesInAlc.Keys)
@@ -75,6 +78,26 @@ namespace Godot.Bridge
 
         private static ConcurrentDictionary<IntPtr, (string? assemblyName, string classFullName)>
             _scriptDataForReload = new();
+
+        /// <summary>
+        /// Drops all cached script bridge state. Must be called when the engine
+        /// is reinitialized in the same process (libgodot restart): the cached
+        /// entries reference native script objects owned by the previous engine
+        /// instance and are no longer valid. Call after refreshing NativeFuncs;
+        /// script registrations are replayed using the new engine callbacks.
+        /// </summary>
+        public static void ResetForEngineReinitialization()
+        {
+            _scriptTypeBiMap = new();
+            _pathTypeBiMap = new();
+            _scriptDataForReload = new();
+            // 2dog: managed assemblies survive native lifetimes; replay their script registrations.
+            foreach (var assembly in _scriptAssemblies)
+                LookupScriptsInAssembly(assembly);
+        }
+
+        // 2dog: every assembly whose scripts were registered, for ResetForEngineReinitialization().
+        private static readonly HashSet<Assembly> _scriptAssemblies = new();
 
         [UnmanagedCallersOnly]
         internal static void FrameCallback()
@@ -297,8 +320,16 @@ namespace Godot.Bridge
 
         // Called from GodotPlugins
         // ReSharper disable once UnusedMember.Local
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Assembly.GetTypes() only runs for assemblies carrying AssemblyHasScriptsAttribute. " + TrimJustifications.ScriptTypesAreRooted)]
         public static void LookupScriptsInAssembly(Assembly assembly)
         {
+            _scriptAssemblies.Add(assembly);
+            if (assembly.IsCollectible && AssemblyLoadContext.GetLoadContext(assembly) is { } assemblyAlc)
+                TrackAlcForUnloading(assemblyAlc);
+
+            [UnconditionalSuppressMessage("Trimming", "IL2067",
+                Justification = "Types reaching this boundary come from AssemblyHasScriptsAttribute or Assembly.GetTypes(). " + TrimJustifications.ScriptTypesAreRooted)]
             static void LookupScriptForClass(Type type)
             {
                 var scriptPathAttr = type.GetCustomAttributes(inherit: false)
@@ -501,6 +532,8 @@ namespace Godot.Bridge
             NativeFuncs.godotsharp_internal_reload_registered_script(outScript->Reference);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2067",
+            Justification = "The received type is the runtime type of a live script instance or a registered script class. " + TrimJustifications.ScriptTypesAreRooted)]
         internal static unsafe void GetOrLoadOrCreateScriptForType(Type scriptType, godot_ref* outScript)
         {
             static bool GetPathOtherwiseGetOrCreateScript(Type scriptType, godot_ref* outScript,
@@ -608,6 +641,8 @@ namespace Godot.Bridge
         /// <summary>
         /// WARNING: We need to make sure that after unlocking the bimap, we call godotsharp_internal_reload_registered_script
         /// </summary>
+        [UnconditionalSuppressMessage("Trimming", "IL2067",
+            Justification = "The received type is the runtime type of a live script instance or a registered script class. " + TrimJustifications.ScriptTypesAreRooted)]
         private static unsafe void CreateScriptBridgeForType(Type scriptType, godot_ref* outScript)
         {
             Debug.Assert(!scriptType.IsGenericTypeDefinition, $"Script type must be a constructed generic type or not generic at all. Type: {scriptType}.");
@@ -645,6 +680,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "Reload looks up a script type that was registered before the reload. " + TrimJustifications.ScriptTypesAreRooted)]
         internal static godot_bool TryReloadRegisteredScriptWithClass(IntPtr scriptPtr)
         {
             _scriptTypeBiMap.ReadWriteLock.EnterUpgradeableReadLock();
@@ -759,6 +796,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = "The walked base chain of a script type consists of script and native Godot types. " + TrimJustifications.ScriptTypesAreRooted)]
         internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_csharp_type_info* outTypeInfo,
             godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest, godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
@@ -947,7 +986,8 @@ namespace Godot.Bridge
             }
         }
 
-        private static List<MethodInfo>? GetSignalListForType(Type type)
+        private static List<MethodInfo>? GetSignalListForType(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
         {
             var getGodotSignalListMethod = type.GetMethod(
                 "GetGodotSignalList",
@@ -960,7 +1000,8 @@ namespace Godot.Bridge
             return (List<MethodInfo>?)getGodotSignalListMethod.Invoke(null, null);
         }
 
-        private static List<MethodInfo>? GetMethodListForType(Type type)
+        private static List<MethodInfo>? GetMethodListForType(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type)
         {
             var getGodotMethodListMethod = type.GetMethod(
                 "GetGodotMethodList",
@@ -1009,7 +1050,8 @@ namespace Godot.Bridge
             }
         }
 
-        private static unsafe void GetPropertyInfoListForType(Type type, IntPtr scriptPtr,
+        private static unsafe void GetPropertyInfoListForType(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type, IntPtr scriptPtr,
             delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
         {
             try
@@ -1107,6 +1149,8 @@ namespace Godot.Bridge
         private delegate bool InvokeGodotClassStaticMethodDelegate(in godot_string_name method, NativeVariantPtrArgs args, out godot_variant ret);
 
         [UnmanagedCallersOnly]
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = "The walked base chain of a script type consists of script and native Godot types. " + TrimJustifications.ScriptTypesAreRooted)]
         internal static unsafe godot_bool CallStatic(IntPtr scriptPtr, godot_string_name* method,
             godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
         {
@@ -1153,6 +1197,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "The walked base chain of a script type consists of script and native Godot types. " + TrimJustifications.ScriptTypesAreRooted)]
         internal static unsafe void GetPropertyDefaultValues(IntPtr scriptPtr,
             delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
         {
@@ -1175,7 +1221,8 @@ namespace Godot.Bridge
         }
 
         [SkipLocalsInit]
-        private static unsafe void GetPropertyDefaultValuesForType(Type type, IntPtr scriptPtr,
+        private static unsafe void GetPropertyDefaultValuesForType(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type type, IntPtr scriptPtr,
             delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
         {
             try

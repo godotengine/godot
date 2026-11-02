@@ -26,22 +26,38 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		}), { headers: response.headers });
 	}
 
-	function loadFetch(file, tracker, fileSize, raw) {
+	function loadFetch(file, tracker, fileSize, raw, compressedSuffix) {
 		tracker[file] = {
 			total: fileSize || 0,
 			loaded: 0,
 			done: false,
 		};
-		return fetch(file).then(function (response) {
-			if (!response.ok) {
-				return Promise.reject(new Error(`Failed loading file '${file}'`));
-			}
+		function consume(response) {
 			const tr = getTrackedResponse(response, tracker[file]);
 			if (raw) {
 				return Promise.resolve(tr);
 			}
 			return tr.arrayBuffer();
-		});
+		}
+		function plain() {
+			return fetch(file).then(function (response) {
+				if (!response.ok) {
+					return Promise.reject(new Error(`Failed loading file '${file}'`));
+				}
+				return consume(response);
+			});
+		}
+		// 2dog: try precompressed siblings for hosts without HTTP compression; fall back to plain files.
+		// 2dog: count inflated bytes to match fileSizes.
+		if (compressedSuffix && typeof DecompressionStream !== 'undefined') {
+			return fetch(file + compressedSuffix).then(function (response) {
+				if (!response.ok || !response.body) {
+					return plain();
+				}
+				return consume(new Response(response.body.pipeThrough(new DecompressionStream('gzip'))));
+			}, plain);
+		}
+		return plain();
 	}
 
 	function retry(func, attempts = 1) {
@@ -100,16 +116,16 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		progressFunc = callback;
 	};
 
-	this.loadPromise = function (file, fileSize, raw = false) {
-		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw), DOWNLOAD_ATTEMPTS_MAX);
+	this.loadPromise = function (file, fileSize, raw = false, compressedSuffix = '') {
+		return retry(loadFetch.bind(null, file, loadingFiles, fileSize, raw, compressedSuffix), DOWNLOAD_ATTEMPTS_MAX);
 	};
 
 	this.preloadedFiles = [];
-	this.preload = function (pathOrBuffer, destPath, fileSize) {
+	this.preload = function (pathOrBuffer, destPath, fileSize, compressedSuffix = '') {
 		let buffer = null;
 		if (typeof pathOrBuffer === 'string') {
 			const me = this;
-			return this.loadPromise(pathOrBuffer, fileSize).then(function (buf) {
+			return this.loadPromise(pathOrBuffer, fileSize, false, compressedSuffix).then(function (buf) {
 				me.preloadedFiles.push({
 					path: destPath || pathOrBuffer,
 					buffer: buf,

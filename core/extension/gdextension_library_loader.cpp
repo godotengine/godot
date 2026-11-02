@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/extension/gdextension.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/version.h"
 
@@ -182,6 +183,14 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	}
 
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
+
+#ifdef LIBGODOT_ENABLED
+	// 2dog: single-file hosts unpack GDExtension libraries next to libgodot, away from the executable's directory.
+	const String host_dir = OS::get_singleton()->get_environment("GODOT_GDEXTENSION_DIR");
+	if (!host_dir.is_empty() && !FileAccess::exists(abs_path) && FileAccess::exists(host_dir.path_join(abs_path.get_file()))) {
+		abs_path = host_dir.path_join(abs_path.get_file());
+	}
+#endif
 
 	Vector<String> abs_dependencies_paths;
 	if (!library_dependencies.is_empty()) {

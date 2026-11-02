@@ -1,0 +1,20 @@
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/lower/shader_io.cc b/thirdparty/tint/src/tint/lang/spirv/reader/lower/shader_io.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/lower/shader_io.cc	2026-05-12 10:45:41
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/lower/shader_io.cc	2026-05-11 19:54:10
+@@ -393,11 +393,11 @@
+             if (auto* store = inst->As<core::ir::Store>()) {
+                 auto* constant = store->From()->As<core::ir::Constant>();
+                 if (!constant) {
+-                    return Failure{"store to point_size is not a constant"};
+-                }
+-                TINT_ASSERT(constant->Type()->Is<core::type::F32>());
+-                if (constant->Value()->ValueAs<f32>() != 1.0f) {
+-                    return Failure{"store to point_size is not 1.0"};
++                    // Accept non-constant stores (e.g. from a variable).
++                    // PointSize is stripped during lowering so the value is irrelevant.
++                    // Godot shaders may read point_size from an input and write it out.
++                } else {
++                    // Constant store — just accept any value (will be stripped).
+                 }
+             } else if (inst->Is<core::ir::Load>()) {
+                 // Load instructions are OK.

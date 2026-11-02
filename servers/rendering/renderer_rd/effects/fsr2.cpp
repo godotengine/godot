@@ -549,6 +549,7 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_DEPTH_CLIP];
 		pass.shader = &shaders.depth_clip;
 		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(1, capabilities.fp16Supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
@@ -580,6 +581,7 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_RECONSTRUCT_PREVIOUS_DEPTH];
 		pass.shader = &shaders.reconstruct_previous_depth;
 		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(1, capabilities.fp16Supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
@@ -610,6 +612,7 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_LOCK];
 		pass.shader = &shaders.lock;
 		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(1, capabilities.fp16Supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
@@ -639,6 +642,8 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_ACCUMULATE];
 		pass.shader = &shaders.accumulate;
 		pass.shader->initialize(accumulate_modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(2, capabilities.fp16Supported && fp16_path_supported);
+		pass.shader->set_variant_enabled(3, capabilities.fp16Supported && fp16_path_supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported && fp16_path_supported ? 2 : 0;
 
@@ -724,6 +729,7 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_GENERATE_REACTIVE];
 		pass.shader = &shaders.autogen_reactive;
 		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(1, capabilities.fp16Supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 
@@ -746,6 +752,7 @@ FSR2Effect::FSR2Effect() {
 		Pass &pass = device.passes[FFX_FSR2_PASS_TCR_AUTOGENERATE];
 		pass.shader = &shaders.tcr_autogen;
 		pass.shader->initialize(modes_with_fp16, general_defines);
+		pass.shader->set_variant_enabled(1, capabilities.fp16Supported);
 		pass.shader_version = pass.shader->version_create();
 		pass.shader_variant = capabilities.fp16Supported ? 1 : 0;
 

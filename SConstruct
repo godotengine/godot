@@ -132,6 +132,7 @@ env.__class__.add_shared_library = methods.add_shared_library
 env.__class__.add_library = methods.add_library
 env.__class__.add_program = methods.add_program
 env.__class__.CommandNoCache = methods.CommandNoCache
+env.__class__.add_configuration_file = methods.add_configuration_file
 env.__class__.Run = methods.Run
 env.__class__.disable_warnings = methods.disable_warnings
 env.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
@@ -198,6 +199,11 @@ opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
+opts.Add(BoolVariable("webgpu", "Enable the WebGPU rendering driver on supported platforms", False))
+opts.Add(("webgpu_native_path", "Installed native Dawn C-API boundary SDK", ""))
+opts.Add(
+    BoolVariable("webgpu_shader_baker", "Bake portable WebGPU shaders in desktop editors without a Dawn SDK", False)
+)
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("accesskit", "Enable the AccessKit driver for screen reader support", True))
 opts.Add(BoolVariable("angle", "Enable the ANGLE rendering driver for OpenGL ES 3.0 on supported platforms", True))
@@ -276,6 +282,7 @@ opts.Add(
         True,
     )
 )
+opts.Add(BoolVariable("disable_crash_handler", "Disable crash handler if it exists", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
@@ -698,6 +705,18 @@ if env["scu_build"]:
 
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
+env["webgpu_shader_baker"] = bool(
+    env.editor_build and env["platform"] != "web" and (env["webgpu_shader_baker"] or env["webgpu"])
+)
+if env["webgpu_shader_baker"]:
+    env.Append(CPPDEFINES=["WEBGPU_SHADER_BAKER_ENABLED"])
+if env["webgpu"] or env["webgpu_shader_baker"]:
+    if env["webgpu"] and "webgpu" not in env.get("supported", []):
+        print_error("Target platform '{}' does not support the WebGPU rendering driver".format(env["platform"]))
+        Exit(255)
+    _helper_module("webgpu_dependencies", "drivers/webgpu/dependencies.py")
+    sys.modules["webgpu_dependencies"].prepare(platform=env["platform"])
+
 detect.configure(env)
 
 platform_string = env["platform"]
@@ -936,6 +955,10 @@ if env["disable_exceptions"]:
 elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
 
+# 2dog: library hosts may install signal handlers that conflict with Godot's crash handler.
+if env["disable_crash_handler"]:
+    env.AppendUnique(CPPDEFINES=["DISABLE_CRASH_HANDLER"])
+
 # Configure compiler warnings
 env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
 if env.msvc and not methods.using_clang(env):  # MSVC
@@ -1154,6 +1177,7 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
+env["RAWSUFFIX"] = suffix
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
 env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]

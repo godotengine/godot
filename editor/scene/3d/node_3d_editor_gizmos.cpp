@@ -211,6 +211,7 @@ void EditorNode3DGizmo::commit_subgizmos(const Vector<int> &p_ids, const Vector<
 void EditorNode3DGizmo::set_node_3d(Node3D *p_node) {
 	ERR_FAIL_NULL(p_node);
 	spatial_node = p_node;
+	spatial_node_id = p_node->get_instance_id();
 }
 
 void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden) {
@@ -886,6 +887,7 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 	hidden = false;
 	selected = false;
 	spatial_node = nullptr;
+	spatial_node_id = ObjectID();
 	gizmo_plugin = nullptr;
 	selectable_icon_size = -1.0f;
 }
@@ -1067,7 +1069,7 @@ Ref<EditorNode3DGizmo> EditorNode3DGizmoPlugin::get_gizmo(Node3D *p_spatial) {
 	ref->set_node_3d(p_spatial);
 	ref->set_hidden(current_state == HIDDEN);
 
-	current_gizmos.insert(ref.ptr());
+	current_gizmos.insert(ref->get_instance_id());
 	return ref;
 }
 
@@ -1214,8 +1216,11 @@ void EditorNode3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo,
 
 void EditorNode3DGizmoPlugin::set_state(int p_state) {
 	current_state = p_state;
-	for (EditorNode3DGizmo *current : current_gizmos) {
-		current->set_hidden(current_state == HIDDEN);
+	for (const ObjectID &current_id : current_gizmos) {
+		EditorNode3DGizmo *current = ObjectDB::get_instance<EditorNode3DGizmo>(current_id);
+		if (current) {
+			current->set_hidden(current_state == HIDDEN);
+		}
 	}
 }
 
@@ -1224,7 +1229,9 @@ int EditorNode3DGizmoPlugin::get_state() const {
 }
 
 void EditorNode3DGizmoPlugin::unregister_gizmo(EditorNode3DGizmo *p_gizmo) {
-	current_gizmos.erase(p_gizmo);
+	if (p_gizmo) {
+		current_gizmos.erase(p_gizmo->get_instance_id());
+	}
 }
 
 EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
@@ -1232,11 +1239,24 @@ EditorNode3DGizmoPlugin::EditorNode3DGizmoPlugin() {
 }
 
 EditorNode3DGizmoPlugin::~EditorNode3DGizmoPlugin() {
-	for (EditorNode3DGizmo *current : current_gizmos) {
+	HashSet<ObjectID> gizmos(current_gizmos);
+	current_gizmos.clear();
+	const bool editor_alive = Node3DEditor::get_singleton() != nullptr;
+	for (const ObjectID &current_id : gizmos) {
+		EditorNode3DGizmo *current = ObjectDB::get_instance<EditorNode3DGizmo>(current_id);
+		if (!current) {
+			continue;
+		}
 		current->set_plugin(nullptr);
-		current->get_node_3d()->remove_gizmo(current);
+		if (!editor_alive) {
+			continue;
+		}
+		Node3D *node_3d = current->get_node_3d();
+		if (node_3d && !node_3d->is_queued_for_deletion()) {
+			node_3d->remove_gizmo(current);
+		}
 	}
-	if (Node3DEditor::get_singleton()) {
+	if (editor_alive) {
 		Node3DEditor::get_singleton()->update_all_gizmos();
 	}
 }

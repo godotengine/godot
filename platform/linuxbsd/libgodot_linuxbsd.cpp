@@ -30,6 +30,7 @@
 
 #include "os_linuxbsd.h"
 
+#include "core/core_globals.h"
 #include "core/extension/godot_instance.h"
 #include "core/extension/libgodot.h"
 #include "main/main.h"
@@ -41,18 +42,26 @@ static GodotInstance *instance = nullptr;
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
 
+	CoreGlobals::global_init_func_libgodot = p_init_func;
+	CoreGlobals::engine_reinit_enabled = true;
+	CoreGlobals::libgodot_host_instance = true;
+
 	os = new OS_LinuxBSD();
 
 	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
 	if (err != OK) {
+		delete os;
+		os = nullptr;
 		return nullptr;
 	}
 
 	instance = memnew(GodotInstance);
-	if (!instance->initialize(p_init_func)) {
+	if (!instance->initialize()) {
 		memdelete(instance);
-		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		//instance = nullptr;
+		instance = nullptr;
+		Main::cleanup();
+		delete os;
+		os = nullptr;
 		return nullptr;
 	}
 
@@ -66,5 +75,99 @@ void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 		memdelete(godot_instance);
 		instance = nullptr;
 		Main::cleanup();
+		delete os;
+		os = nullptr;
+		CoreGlobals::global_init_func_libgodot = nullptr;
+		CoreGlobals::libgodot_host_instance = false;
 	}
+}
+
+int libgodot_import_project(const char *p_project_path, int p_extra_argc, const char *p_extra_argv[]) {
+#ifndef TOOLS_ENABLED
+	return -1;
+#else
+	ERR_FAIL_NULL_V(p_project_path, EXIT_FAILURE);
+	ERR_FAIL_COND_V_MSG(instance != nullptr || os != nullptr, EXIT_FAILURE,
+			"libgodot_import_project cannot run while a Godot instance exists in this process.");
+
+	// 2dog: keep ClassDB valid for later engine instances; never load a previous host's extension.
+	CoreGlobals::global_init_func_libgodot = nullptr;
+	CoreGlobals::engine_reinit_enabled = true;
+	CoreGlobals::libgodot_host_instance = false;
+
+	OS_LinuxBSD import_os;
+
+	Vector<char *> argv;
+	argv.push_back(const_cast<char *>("--headless"));
+	argv.push_back(const_cast<char *>("--import"));
+	argv.push_back(const_cast<char *>("--path"));
+	argv.push_back(const_cast<char *>(p_project_path));
+	for (int i = 0; i < p_extra_argc; i++) {
+		argv.push_back(const_cast<char *>(p_extra_argv[i]));
+	}
+
+	// 2dog: run the headless editor lifecycle in-process.
+	Error err = Main::setup("libgodot", argv.size(), argv.ptrw());
+	if (err != OK) {
+		return (err == ERR_HELP) ? EXIT_SUCCESS : EXIT_FAILURE;
+	}
+
+	if (Main::start() == EXIT_SUCCESS) {
+		import_os.run();
+	} else {
+		import_os.set_exit_code(EXIT_FAILURE);
+	}
+	Main::cleanup();
+
+	return import_os.get_exit_code();
+#endif
+}
+
+int libgodot_export_pack(const char *p_project_path, const char *p_preset, const char *p_output_path, int p_extra_argc, const char *p_extra_argv[]) {
+#ifndef TOOLS_ENABLED
+	return -1;
+#else
+	ERR_FAIL_NULL_V(p_project_path, EXIT_FAILURE);
+	ERR_FAIL_NULL_V(p_preset, EXIT_FAILURE);
+	ERR_FAIL_NULL_V(p_output_path, EXIT_FAILURE);
+	ERR_FAIL_COND_V_MSG(instance != nullptr || os != nullptr, EXIT_FAILURE,
+			"libgodot_export_pack cannot run while a Godot instance exists in this process.");
+
+	// 2dog: keep ClassDB valid for later engine instances; never load a previous host's extension.
+	CoreGlobals::global_init_func_libgodot = nullptr;
+	CoreGlobals::engine_reinit_enabled = true;
+	CoreGlobals::libgodot_host_instance = false;
+
+	OS_LinuxBSD export_os;
+
+	Vector<char *> argv;
+	// 2dog: an explicit --rendering-driver in the extra arguments keeps a window-less rendering device for the shader baker.
+	argv.push_back(const_cast<char *>("--headless"));
+	argv.push_back(const_cast<char *>("--export-pack"));
+	argv.push_back(const_cast<char *>(p_preset));
+	argv.push_back(const_cast<char *>(p_output_path));
+	argv.push_back(const_cast<char *>("--path"));
+	argv.push_back(const_cast<char *>(p_project_path));
+	for (int i = 0; i < p_extra_argc; i++) {
+		argv.push_back(const_cast<char *>(p_extra_argv[i]));
+	}
+	// 2dog: marks a host pack export; see EditorExportPlatform::export_pack and GodotTools' ExportPlugin.
+	argv.push_back(const_cast<char *>("++"));
+	argv.push_back(const_cast<char *>("--2dog-host-pack"));
+
+	// 2dog: run the editor lifecycle in-process.
+	Error err = Main::setup("libgodot", argv.size(), argv.ptrw());
+	if (err != OK) {
+		return (err == ERR_HELP) ? EXIT_SUCCESS : EXIT_FAILURE;
+	}
+
+	if (Main::start() == EXIT_SUCCESS) {
+		export_os.run();
+	} else {
+		export_os.set_exit_code(EXIT_FAILURE);
+	}
+	Main::cleanup();
+
+	return export_os.get_exit_code();
+#endif
 }

@@ -58,6 +58,11 @@ class RendererSceneRenderRD : public RendererSceneRender, public RenderingShader
 	friend RendererRD::SkyRD;
 	friend RendererRD::GI;
 
+	// 2dog: reset the singleton after other members finish teardown, when shader destructors need it.
+	struct SingletonReset {
+		~SingletonReset();
+	} singleton_reset;
+
 protected:
 	RendererRD::ForwardIDStorage *forward_id_storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
@@ -242,6 +247,7 @@ public:
 	/* render buffers */
 	virtual RD::DataFormat _render_buffers_get_preferred_color_format();
 	virtual bool _render_buffers_can_be_storage();
+	bool _render_buffers_use_raster_dof();
 	virtual Ref<RenderSceneBuffers> render_buffers_create() override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;
 

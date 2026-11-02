@@ -134,7 +134,7 @@ def add_module_version_string(self, s):
 
 
 def get_version_info(module_version_string="", silent=False):
-    build_name = "custom_build"
+    build_name = "2dog"
     if os.getenv("BUILD_NAME") is not None:
         build_name = str(os.getenv("BUILD_NAME"))
         if not silent:
@@ -602,6 +602,39 @@ def CommandNoCache(env, target, sources, command, **args):
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
     return result
+
+
+def add_configuration_file(env, name, opts=None, **args):
+    import json
+
+    from SCons.Node.FS import File
+    from SCons.Script import Flatten
+
+    libs = []
+    for lib in Flatten(env["LIBS"]):
+        if isinstance(lib, str) and not (lib.endswith(".a") or lib.endswith(".lib")):
+            libs.append(lib)
+        elif isinstance(lib, File):
+            path = lib.srcnode().abspath
+            if not (path.endswith(".a") or path.endswith(".lib")):
+                libs.append(path)
+
+    opts_default = {
+        "CFLAGS": env.subst("$CFLAGS"),
+        "CXXFLAGS": env.subst("$CXXFLAGS"),
+        "CCFLAGS": env.subst("$CCFLAGS"),
+        "LINKFLAGS": env.subst("$LINKFLAGS"),
+        "LIBS": ";".join(libs),
+    }
+    if isinstance(opts, dict):
+        opts_default.update(opts)
+        opts = opts_default
+    else:
+        opts = opts_default
+
+    config_file = env.Textfile(f"{name}{env['RAWSUFFIX']}.json", [env.Literal(json.dumps(opts, indent=4))], **args)
+    env.NoCache(config_file)
+    return config_file
 
 
 def Run(env, function, comstr="$GENCOMSTR"):

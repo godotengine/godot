@@ -68,6 +68,7 @@ class RenderSceneBuffersRD : public RenderSceneBuffers {
 
 private:
 	bool can_be_storage = true;
+	bool raster_dof = false;
 	bool force_hdr = false;
 	uint32_t max_cluster_elements = 512;
 	RD::DataFormat preferred_data_format = RD::DATA_FORMAT_MAX;
@@ -188,6 +189,8 @@ public:
 	// info from our renderer
 	void set_can_be_storage(const bool p_can_be_storage) { can_be_storage = p_can_be_storage; }
 	bool get_can_be_storage() const { return can_be_storage; }
+	void set_raster_dof(const bool p_raster_dof) { raster_dof = p_raster_dof; }
+	bool get_raster_dof() const { return raster_dof; }
 	void set_max_cluster_elements(const uint32_t p_max_elements) { max_cluster_elements = p_max_elements; }
 	uint32_t get_max_cluster_elements() { return max_cluster_elements; }
 	void set_preferred_data_format(const RD::DataFormat p_preferred_data_format) { preferred_data_format = p_preferred_data_format; }
@@ -330,6 +333,8 @@ public:
 	_FORCE_INLINE_ RendererRD::MaterialStorage::Samplers get_samplers() const {
 		return samplers;
 	}
+
+	static RSE::ViewportMSAA get_supported_msaa(RSE::ViewportMSAA p_requested, VectorView<RD::DataFormat> p_formats);
 
 	_FORCE_INLINE_ static RD::TextureSamples msaa_to_samples(RSE::ViewportMSAA p_msaa) {
 		switch (p_msaa) {

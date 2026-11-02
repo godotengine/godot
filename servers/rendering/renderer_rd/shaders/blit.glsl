@@ -188,4 +188,9 @@ void main() {
 			}
 		}
 	}
+#ifdef RENDER_DRIVER_WEBGPU
+	// WebGPU: force opaque alpha — Chrome may ignore CompositeAlphaMode_Opaque
+	// and compositing with alpha<1 produces transparent canvas output.
+	color.a = 1.0;
+#endif
 }

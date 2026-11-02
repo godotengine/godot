@@ -42,6 +42,7 @@ public:
 		FEATURE_VRS_BIT = 1U << 2U,
 		FEATURE_FP16_BIT = 1U << 3U,
 		FEATURE_FP32_BIT = 1U << 4U,
+		FEATURE_NO_IMAGE_ATOMICS_BIT = 1U << 5U, // The export targets devices without image atomics, such as WebGPU.
 	};
 
 	// Used by the shader baker to globally enable features on all the shaders that will be exported.

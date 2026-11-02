@@ -1,0 +1,21 @@
+#version 450
+layout(local_size_x = 1) in;
+layout(set = 0, binding = 0) uniform sampler2D first_tex;
+layout(set = 0, binding = 1) uniform sampler2DArray second_tex;
+layout(set = 0, binding = 2, std430) buffer Result {
+    vec4 first;
+    vec4 second;
+} result;
+
+vec2 coordinates(vec2 uv) {
+    if (uv.x > 0.5) {
+        return uv.yx;
+    }
+    return uv;
+}
+
+void main() {
+    vec2 uv = vec2(gl_GlobalInvocationID.xy) / 16.0;
+    result.first = textureLod(first_tex, coordinates(uv), 0.0);
+    result.second = textureLod(second_tex, vec3(coordinates(uv), 0.0), 0.0);
+}

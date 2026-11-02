@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "display_server_macos_embedded.h"
+#ifdef WEBGPU_ENABLED
+#include "drivers/webgpu/rendering_context_driver_webgpu.h"
+#endif
 
+#import "display_server_macos_embedded.h"
 #import "embedded_debugger.h"
 
 #import "core/config/project_settings.h"
@@ -89,6 +92,13 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
 	}
 #endif
+#endif
+#ifdef WEBGPU_ENABLED
+	if (rendering_driver == "webgpu") {
+		rendering_context = memnew(RenderingContextDriverWebGPU);
+	}
+#endif
+#if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}
@@ -161,7 +171,16 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 #ifdef METAL_ENABLED
 			RenderingContextDriverMetal::WindowPlatformData metal;
 #endif
+#ifdef WEBGPU_ENABLED
+			RenderingContextDriverWebGPU::WindowPlatformData webgpu;
+#endif
 		} wpd;
+#ifdef WEBGPU_ENABLED
+		if (rendering_driver == "webgpu") {
+			wpd.webgpu.kind = RenderingContextDriverWebGPU::WindowPlatformData::KIND_METAL_LAYER;
+			wpd.webgpu.window = (__bridge void *)layer;
+		}
+#endif
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
 			wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;

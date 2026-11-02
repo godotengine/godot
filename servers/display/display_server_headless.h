@@ -34,6 +34,8 @@
 
 class InputEvent;
 class NativeMenu;
+class RenderingContextDriver;
+class RenderingDevice;
 
 class DisplayServerHeadless : public DisplayServer {
 	GDSOFTCLASS(DisplayServerHeadless, DisplayServer);
@@ -54,6 +56,15 @@ private:
 
 	NativeMenu *native_menu = nullptr;
 	Callable input_event_callback;
+
+#if defined(RD_ENABLED)
+	// 2dog: a window-less rendering device, created when the command line asks for a rendering driver or method.
+	RenderingContextDriver *rendering_context = nullptr;
+	RenderingDevice *rendering_device = nullptr;
+
+	static RenderingContextDriver *_create_rendering_context(const String &p_driver);
+	bool _initialize_rendering_device(const String &p_driver);
+#endif
 
 public:
 	bool has_feature(DisplayServerEnums::Feature p_feature) const override { return false; }

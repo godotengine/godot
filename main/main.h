@@ -51,6 +51,8 @@ class Main {
 	static void print_help_option(const char *p_option, const char *p_description, CLIOptionAvailability p_availability = CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE);
 	static String format_help_option(const char *p_option);
 	static void print_help(const char *p_binary);
+	static void cleanup_setup_phase();
+	static void cleanup_servers_phase();
 	static uint64_t last_ticks;
 	static uint32_t hide_print_fps_attempts;
 	static uint32_t frames;

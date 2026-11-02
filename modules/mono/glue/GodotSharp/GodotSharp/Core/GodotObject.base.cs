@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
@@ -119,9 +120,15 @@ namespace Godot
 
             _disposed = true;
 
-            if (NativePtr != IntPtr.Zero)
+            // 2dog: only the unregister winner releases native memory; stale wrappers skip release.
+            // 2dog: read the pointer before claiming to survive a concurrent finalizer's reset.
+            IntPtr nativePtr = NativePtr;
+            bool owned = _weakReferenceToSelf == null ||
+                DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
+
+            if (nativePtr != IntPtr.Zero && owned)
             {
-                IntPtr gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(NativePtr);
+                IntPtr gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(nativePtr);
 
                 if (gcHandleToFree != IntPtr.Zero)
                 {
@@ -134,21 +141,16 @@ namespace Godot
 
                 if (_memoryOwn)
                 {
-                    NativeFuncs.godotsharp_internal_refcounted_disposed(NativePtr, gcHandleToFree,
+                    NativeFuncs.godotsharp_internal_refcounted_disposed(nativePtr, gcHandleToFree,
                         (!disposing).ToGodotBool());
                 }
                 else
                 {
-                    NativeFuncs.godotsharp_internal_object_disposed(NativePtr, gcHandleToFree);
+                    NativeFuncs.godotsharp_internal_object_disposed(nativePtr, gcHandleToFree);
                 }
-
-                NativePtr = IntPtr.Zero;
             }
 
-            if (_weakReferenceToSelf != null)
-            {
-                DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
-            }
+            NativePtr = IntPtr.Zero;
         }
 
         /// <summary>
@@ -221,6 +223,8 @@ namespace Godot
             return t;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = "The NativeName field is looked up on the nearest native base class. " + TrimJustifications.NativeClassesAreRooted)]
         internal static StringName? InternalGetClassNativeBaseName(Type t)
         {
             if (_nativeNames.TryGetValue(t, out var name))

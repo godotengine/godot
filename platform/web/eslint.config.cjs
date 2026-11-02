@@ -132,6 +132,7 @@ module.exports = [
 		languageOptions: {
 			globals: {
 				...globals.browser,
+				'___GODOT_WEBGPU_UNAVAILABLE_REASON___': true, // Substituted by SCons before compilation.
 				'Features': true,
 				'Godot': true,
 				'InternalConfig': true,

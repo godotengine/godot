@@ -1,0 +1,10 @@
+diff --git a/thirdparty/spirv-tools/source/opt/replace_desc_array_access_using_var_index.cpp b/thirdparty/spirv-tools/source/opt/replace_desc_array_access_using_var_index.cpp
+--- a/thirdparty/spirv-tools/source/opt/replace_desc_array_access_using_var_index.cpp
++++ b/thirdparty/spirv-tools/source/opt/replace_desc_array_access_using_var_index.cpp
+@@ -322,4 +322,6 @@ bool ReplaceDescArrayAccessUsingVarIndex::ReplaceNonUniformAccessWithSwitchCase(
+   // Replace OpPhi incoming block operand that uses |block| with |merge_block|
+   ReplacePhiIncomingBlock(block->id(), merge_block->id());
++  // The switch owns the operation now, including side effects such as image writes.
++  context()->KillInst(access_chain_final_user);
+   return true;
+ }

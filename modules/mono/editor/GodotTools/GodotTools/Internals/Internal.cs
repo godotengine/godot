@@ -59,6 +59,9 @@ namespace GodotTools.Internals
 
         public static void EditorNodeShowScriptScreen() => godot_icall_Internal_EditorNodeShowScriptScreen();
 
+        // 2dog: the editor was created by libgodot_create_godot_instance, inside a host that publishes the game.
+        public static bool IsLibGodotHostInstance() => godot_icall_Internal_IsLibGodotHostInstance();
+
         public static void EditorRunPlay() => godot_icall_Internal_EditorRunPlay();
 
         public static void EditorRunStop() => godot_icall_Internal_EditorRunStop();
@@ -180,6 +183,8 @@ namespace GodotTools.Internals
         public static partial void godot_icall_Utils_OS_GetPlatformName(out godot_string dest);
 
         public static partial bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(in godot_string filePath);
+
+        private static partial bool godot_icall_Internal_IsLibGodotHostInstance();
 
         #endregion
     }

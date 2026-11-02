@@ -272,7 +272,10 @@ namespace Godot.NativeInterop
         {
             if (p_managed_callable.Delegate != null)
             {
-                var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
+                object delegateTarget = p_managed_callable.TrampolineDelegate is { } managedTrampoline
+                    ? new Callable.ManagedTrampolineState(p_managed_callable.Delegate, managedTrampoline)
+                    : p_managed_callable.Delegate;
+                var gcHandle = CustomGCHandle.AllocStrong(delegateTarget, p_managed_callable.Delegate.GetType());
 
                 IntPtr objectPtr = p_managed_callable.Target != null ?
                     GodotObject.GetPtr(p_managed_callable.Target) :
@@ -316,8 +319,15 @@ namespace Godot.NativeInterop
                 {
                     unsafe
                     {
+                        var target = GCHandle.FromIntPtr(delegateGCHandle).Target;
+                        if (target is Callable.ManagedTrampolineState state)
+                        {
+                            return Callable.CreateWithManagedTrampoline(state.Delegate,
+                                (delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void>)trampoline,
+                                state.Trampoline);
+                        }
                         return Callable.CreateWithUnsafeTrampoline(
-                            (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target,
+                            (Delegate?)target,
                             (delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void>)trampoline);
                     }
                 }

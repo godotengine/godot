@@ -72,6 +72,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	bool hidden;
 	Vector<Instance> instances;
 	Node3D *spatial_node = nullptr;
+	ObjectID spatial_node_id;
 
 	DynamicBVH::ID bvh_node_id;
 
@@ -128,7 +129,7 @@ public:
 	bool is_selected() const { return selected; }
 
 	void set_node_3d(Node3D *p_node);
-	Node3D *get_node_3d() const { return spatial_node; }
+	Node3D *get_node_3d() const { return ObjectDB::get_instance<Node3D>(spatial_node_id); }
 	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
 	void handles_intersect_ray(Camera3D *p_camera, const Vector2 &p_point, bool p_shift_pressed, int &r_id, bool &r_secondary);
@@ -161,7 +162,7 @@ public:
 
 protected:
 	int current_state;
-	HashSet<EditorNode3DGizmo *> current_gizmos;
+	HashSet<ObjectID> current_gizmos;
 	HashMap<String, Vector<Ref<StandardMaterial3D>>> materials;
 
 	static void _bind_methods();

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
@@ -25,6 +26,9 @@ public partial class VariantUtils
 
         internal static FromVariantConverter? FromVariantCb;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2059",
+            Justification = "T's static constructor is the source-generated variant-converter registration; " +
+                            "if T has none the call is a no-op. " + TrimJustifications.ScriptTypesAreRooted)]
         static GenericConversion()
         {
             RuntimeHelpers.RunClassConstructor(typeof(T).TypeHandle);

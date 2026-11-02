@@ -30,9 +30,15 @@
 
 #include "property_list_helper.h"
 
+#include "core/core_globals.h"
+
 HashMap<StringName, Vector<PropertyListHelper *>> PropertyListHelper::base_helpers; // static
 
 void PropertyListHelper::clear_base_helpers() { // static
+	if (CoreGlobals::engine_reinit_enabled) {
+		// 2dog: base helpers are registered from _bind_methods(), which runs once per process in reinit mode.
+		return;
+	}
 	for (KeyValue<StringName, Vector<PropertyListHelper *>> &E : base_helpers) {
 		for (PropertyListHelper *helper : E.value) {
 			helper->clear();

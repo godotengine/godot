@@ -256,3 +256,14 @@ AudioStreamPreviewGenerator::AudioStreamPreviewGenerator() {
 	singleton = this;
 	set_process(true);
 }
+
+AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
+	// Preview workers retain pointers into previews until decoding finishes.
+	for (KeyValue<ObjectID, Preview> &E : previews) {
+		if (E.value.thread) {
+			E.value.thread->wait_to_finish();
+			memdelete(E.value.thread);
+		}
+	}
+	singleton = nullptr;
+}

@@ -59,6 +59,11 @@ int Fog::_get_fog_shader_group() {
 	}
 }
 
+void Fog::enable_no_atomics_shader_groups() {
+	volumetric_fog.shader.enable_group(VolumetricFogShader::SHADER_GROUP_NO_ATOMICS);
+	volumetric_fog.process_shader.enable_group(VolumetricFogShader::SHADER_GROUP_NO_ATOMICS);
+}
+
 int Fog::_get_fog_variant() {
 	RenderingDevice *rd = RD::get_singleton();
 	bool use_32_bit_atomics = rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT);

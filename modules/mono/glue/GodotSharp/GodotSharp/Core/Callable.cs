@@ -32,6 +32,19 @@ namespace Godot
         private readonly StringName _method;
         private readonly Delegate _delegate;
         private readonly unsafe delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> _trampoline;
+        private readonly ManagedTrampoline _managedTrampoline;
+
+        internal delegate void ManagedTrampoline(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret);
+
+        // 2dog: managed invocation preserves Mono wasm AOT generic context.
+        // 2dog: retain the original delegate for equality, disconnect, and marshalling.
+        internal sealed class ManagedTrampolineState(Delegate @delegate, ManagedTrampoline trampoline)
+        {
+            internal Delegate Delegate { get; } = @delegate;
+            internal ManagedTrampoline Trampoline { get; } = trampoline;
+        }
+
+        internal ManagedTrampoline TrampolineDelegate => _managedTrampoline;
 
         /// <summary>
         /// Object that contains the method.
@@ -66,16 +79,24 @@ namespace Godot
             _method = method;
             _delegate = null;
             _trampoline = null;
+            _managedTrampoline = null;
         }
 
         private unsafe Callable(Delegate @delegate,
-            delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline)
+            delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline,
+            ManagedTrampoline managedTrampoline = null)
         {
             _target = @delegate?.Target as GodotObject;
             _method = null;
             _delegate = @delegate;
             _trampoline = trampoline;
+            _managedTrampoline = managedTrampoline;
         }
+
+        internal static unsafe Callable CreateWithManagedTrampoline(Delegate @delegate,
+            delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void> trampoline,
+            ManagedTrampoline managedTrampoline)
+            => new(@delegate, trampoline, managedTrampoline);
 
         private const int VarArgsSpanThreshold = 10;
 

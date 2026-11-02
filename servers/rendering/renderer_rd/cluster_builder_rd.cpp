@@ -49,6 +49,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 
 	{
 		RD::FramebufferFormatID fb_format;
+		RD::FramebufferFormatID fb_format_msaa;
 		RD::PipelineColorBlendState blend_state;
 		RD::PipelineRasterizationState rasterization_state;
 		RD::PipelineMultisampleState ms;
@@ -73,6 +74,8 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			blend_state = RD::PipelineColorBlendState::create_blend();
 			shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
 		}
+		// Without empty framebuffers, the MSAA pass renders into a multisampled attachment.
+		fb_format_msaa = rd->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS) ? fb_format : rd->framebuffer_format_create_empty(RD::TEXTURE_SAMPLES_4);
 
 		cluster_render.cluster_render_shader.initialize(variants);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
@@ -91,7 +94,7 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			specialization_constants.push_back(sc);
 		}
 #endif
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0, 0, specialization_constants);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format_msaa, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0, 0, specialization_constants);
 	}
 	{
 		Vector<String> versions;

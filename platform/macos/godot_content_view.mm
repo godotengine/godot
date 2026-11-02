@@ -60,7 +60,7 @@
 
 - (void)displayLayer:(CALayer *)layer {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
+	if (ds && OS::get_singleton() && ds->has_window(window_id) && OS::get_singleton()->get_main_loop() && ds->get_is_resizing() && need_redraw) {
 		GodotProfileFrameMark;
 		GodotProfileZone("[GodotContentLayerDelegate displayLayer]");
 

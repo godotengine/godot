@@ -22,6 +22,9 @@ swift_file_names = list(map(lambda f: f.name, swift_files))
 setup_swift_builder(
     env_apple_embedded, apple_platform, sdk_path, current_path, bridging_header_filename, swift_file_names
 )
+# 2dog: library builds compile app.swift without its @main; the app that links the archive owns the entry point.
+if env["library_type"] != "executable":
+    env_apple_embedded.Append(SWIFTCFLAGS=["-D", "GODOT_LIBRARY"])
 
 # Use bundled Vulkan headers
 vulkan_dir = "#thirdparty/vulkan"

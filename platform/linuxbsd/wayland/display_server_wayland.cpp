@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef WEBGPU_ENABLED
+#include "drivers/webgpu/rendering_context_driver_webgpu.h"
+#endif
+
 #include "display_server_wayland.h"
 
 #ifdef WAYLAND_ENABLED
@@ -197,7 +201,7 @@ void DisplayServerWayland::_delete_window(DisplayServerEnums::WindowID p_window_
 	AccessibilityServer::get_singleton()->window_destroy(p_window_id);
 
 	if (wd.visible) {
-#ifdef VULKAN_ENABLED
+#ifdef RD_ENABLED
 		if (rendering_device) {
 			rendering_device->screen_free(p_window_id);
 		}
@@ -915,7 +919,17 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 #ifdef VULKAN_ENABLED
 				RenderingContextDriverVulkanWayland::WindowPlatformData vulkan;
 #endif
+#ifdef WEBGPU_ENABLED
+				RenderingContextDriverWebGPU::WindowPlatformData webgpu;
+#endif
 			} wpd;
+#ifdef WEBGPU_ENABLED
+			if (rendering_driver == "webgpu") {
+				wpd.webgpu.kind = RenderingContextDriverWebGPU::WindowPlatformData::KIND_WAYLAND;
+				wpd.webgpu.display = wayland_thread.get_wl_display();
+				wpd.webgpu.window = wayland_thread.window_get_wl_surface(wd.id);
+			}
+#endif
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.surface = wayland_thread.window_get_wl_surface(wd.id);
@@ -1487,11 +1501,11 @@ DisplayServerEnums::VSyncMode DisplayServerWayland::window_get_vsync_mode(Displa
 		return DisplayServerEnums::VSYNC_ENABLED;
 	}
 
-#ifdef VULKAN_ENABLED
+#ifdef RD_ENABLED
 	if (rendering_context) {
 		return rendering_context->window_get_vsync_mode(p_window_id);
 	}
-#endif // VULKAN_ENABLED
+#endif // RD_ENABLED
 
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
@@ -2244,7 +2258,6 @@ bool DisplayServerWayland::is_window_transparency_available() const {
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	Vector<String> drivers;
-
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
@@ -2252,6 +2265,9 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
+#endif
+#ifdef WEBGPU_ENABLED
+	drivers.push_back("webgpu");
 #endif
 	drivers.push_back("dummy");
 
@@ -2282,6 +2298,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 
 	r_error = ERR_UNAVAILABLE;
 	context = p_context;
+
+	// 2dog: Wayland must map the main window while creating it, so --hidden-window falls back to X11.
+	if (OS::get_singleton()->is_hidden_window()) {
+		WARN_PRINT("The Wayland display driver cannot keep the main window hidden (--hidden-window).");
+		return;
+	}
 
 	String current_desk = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower();
 	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
@@ -2320,7 +2342,12 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 	}
 
 #ifdef RD_ENABLED
-#ifdef VULKAN_ENABLED
+#ifdef WEBGPU_ENABLED
+	if (rendering_driver == "webgpu") {
+		rendering_context = memnew(RenderingContextDriverWebGPU);
+	}
+#endif
+#if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanWayland);
 	}
@@ -2581,6 +2608,20 @@ DisplayServerWayland::~DisplayServerWayland() {
 	// The thread needs the mutex to clean up. We're not going to touch Wayland
 	// stuff anymore from now on anyways.
 	wayland_thread.mutex.unlock();
+#ifdef WEBGPU_ENABLED
+	if (rendering_driver == "webgpu") {
+		// Dawn's Vulkan device may retain Wayland presentation resources after
+		// the surfaces are released. Destroy it while wl_display is still alive.
+		if (rendering_device) {
+			memdelete(rendering_device);
+			rendering_device = nullptr;
+		}
+		if (rendering_context) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+	}
+#endif
 	wayland_thread.destroy();
 
 	// Destroy all drivers.

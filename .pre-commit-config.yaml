@@ -179,7 +179,8 @@ repos:
             platform/(?!android|ios|linuxbsd|macos|web|windows)\w+/.*|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
             platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
-            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java
+            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java|
+            platform/web/libgodot_web\.cpp
           )$
 
       - id: header-guards

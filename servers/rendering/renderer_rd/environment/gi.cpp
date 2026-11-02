@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/math/geometry_3d.h"
+#include "core/os/os.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
@@ -447,14 +448,18 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		render_emission = create_clear_texture(tf_render, "SDFGI Render Emission");
 		render_emission_aniso = create_clear_texture(tf_render, "SDFGI Render Emission Aniso");
 
-		tf_render.format = RD::DATA_FORMAT_R8_UNORM; //at least its easy to visualize
+		tf_render.format = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::DATA_FORMAT_R32_SFLOAT : RD::DATA_FORMAT_R8_UNORM; // WebGPU read-write storage needs a 32-bit channel.
 
 		for (int i = 0; i < 8; i++) {
 			render_occlusion[i] = create_clear_texture(tf_render, String("SDFGI Render Occlusion ") + itos(i));
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
-		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
+		if (OS::get_singleton()->get_current_rendering_driver_name() == "webgpu") {
+			render_geom_facing = RD::get_singleton()->storage_buffer_create(cascade_size * cascade_size * cascade_size * sizeof(uint32_t));
+		} else {
+			render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
+		}
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
 		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
@@ -472,6 +477,12 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	tf_occlusion.format = RD::DATA_FORMAT_R16_UINT;
 	tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
 	tf_occlusion.shareable_formats.push_back(RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16);
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "webgpu") {
+		// WebGPU views cannot reinterpret packed integer storage as normalized
+		// channels. Store those channels directly with the same 4-bit values.
+		tf_occlusion.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tf_occlusion.shareable_formats.clear();
+	}
 	tf_occlusion.depth *= cascades.size(); //use depth for occlusion slices
 	tf_occlusion.width *= 2; //use width for the other half
 
@@ -479,11 +490,18 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	tf_light.format = RD::DATA_FORMAT_R32_UINT;
 	tf_light.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
 	tf_light.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "webgpu") {
+		// Keep radiance filterable without a packed-format view reinterpretation.
+		tf_light.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tf_light.shareable_formats.clear();
+	}
 
 	RD::TextureFormat tf_aniso0 = tf_sdf;
 	tf_aniso0.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 	RD::TextureFormat tf_aniso1 = tf_sdf;
-	tf_aniso1.format = RD::DATA_FORMAT_R8G8_UNORM;
+	// WebGPU's RG8 storage format supports separate reads/writes but not
+	// read_write access. RGBA8 preserves the normalized RG channels.
+	tf_aniso1.format = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::DATA_FORMAT_R8G8B8A8_UNORM : RD::DATA_FORMAT_R8G8_UNORM;
 
 	int passes = Math::nearest_shift(cascade_size) - 1;
 
@@ -517,11 +535,15 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		tf_octprobes.height = probe_axis_count * (SDFGI::LIGHTPROBE_OCT_SIZE + 2);
 		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_R32_UINT);
 		tf_octprobes.shareable_formats.push_back(RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+		if (OS::get_singleton()->get_current_rendering_driver_name() == "webgpu") {
+			tf_octprobes.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf_octprobes.shareable_formats.clear();
+		}
 		//lightprobe texture is an octahedral texture
 
 		lightprobe_data = create_clear_texture(tf_octprobes, "SDFGI LightProbe Data");
 		RD::TextureView tv;
-		tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+		tv.format_override = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 		lightprobe_texture = RD::get_singleton()->texture_create_shared(tv, lightprobe_data);
 
 		//texture handling ambient data, to integrate with volumetric foc
@@ -540,7 +562,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	occlusion_data = create_clear_texture(tf_occlusion, "SDFGI Occlusion Data");
 	{
 		RD::TextureView tv;
-		tv.format_override = RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
+		tv.format_override = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::DATA_FORMAT_R8G8B8A8_UNORM : RD::DATA_FORMAT_R4G4B4A4_UNORM_PACK16;
 		occlusion_texture = RD::get_singleton()->texture_create_shared(tv, occlusion_data);
 	}
 
@@ -556,7 +578,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 
 		{
 			RD::TextureView tv;
-			tv.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
+			tv.format_override = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::DATA_FORMAT_R16G16B16A16_SFLOAT : RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
 			cascade.light_tex = RD::get_singleton()->texture_create_shared(tv, cascade.light_data);
 		}
 
@@ -629,7 +651,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 			}
 			{
 				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::UNIFORM_TYPE_STORAGE_BUFFER : RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 6;
 				u.append_id(render_geom_facing);
 				uniforms.push_back(u);
@@ -678,7 +700,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 			}
 			{
 				RD::Uniform u;
-				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+				u.uniform_type = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::UNIFORM_TYPE_STORAGE_BUFFER : RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 2;
 				u.append_id(render_geom_facing);
 				uniforms.push_back(u);
@@ -977,7 +999,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		}
 		{
 			RD::Uniform u;
-			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.uniform_type = OS::get_singleton()->get_current_rendering_driver_name() == "webgpu" ? RD::UNIFORM_TYPE_STORAGE_BUFFER : RD::UNIFORM_TYPE_IMAGE;
 			u.binding = 3;
 			u.append_id(render_geom_facing);
 			uniforms.push_back(u);
@@ -2075,7 +2097,11 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		RD::get_singleton()->texture_clear(render_albedo, Color(0, 0, 0, 0), 0, 1, 0, 1);
 		RD::get_singleton()->texture_clear(render_emission, Color(0, 0, 0, 0), 0, 1, 0, 1);
 		RD::get_singleton()->texture_clear(render_emission_aniso, Color(0, 0, 0, 0), 0, 1, 0, 1);
-		RD::get_singleton()->texture_clear(render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		if (OS::get_singleton()->get_current_rendering_driver_name() == "webgpu") {
+			RD::get_singleton()->buffer_clear(render_geom_facing, 0, cascade_size * cascade_size * cascade_size * sizeof(uint32_t));
+		} else {
+			RD::get_singleton()->texture_clear(render_geom_facing, Color(0, 0, 0, 0), 0, 1, 0, 1);
+		}
 	}
 
 	//print_line("rendering cascade " + itos(p_region) + " objects: " + itos(p_cull_count) + " bounds: " + bounds + " from: " + from + " size: " + size + " cell size: " + rtos(cascades[cascade].cell_size));
@@ -3574,6 +3600,13 @@ void GI::init(SkyRD *p_sky) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
+	// The SDFGI and VoxelGI compute shaders read and write RGBA8, RGBA16 and RGBA32 storage textures in place. A platform
+	// without that access (WebGPU without texture-formats-tier2) keeps the rest of the clustered renderer, and the scene
+	// renderer skips these features with a warning.
+	const bool limited_read_write_storage = RD::get_singleton()->get_driver_workarounds().limited_read_write_storage;
+	sdfgi_supported = !limited_read_write_storage;
+	voxel_gi_supported = !limited_read_write_storage;
+
 	/* GI */
 
 	{
@@ -3582,7 +3615,9 @@ void GI::init(SkyRD *p_sky) {
 		voxel_gi_lights = memnew_arr(VoxelGILight, voxel_gi_max_lights);
 		voxel_gi_lights_uniform = RD::get_singleton()->uniform_buffer_create(voxel_gi_max_lights * sizeof(VoxelGILight));
 		voxel_gi_quality = RSE::VoxelGIQuality(CLAMP(int(GLOBAL_GET("rendering/global_illumination/voxel_gi/quality")), 0, 1));
+	}
 
+	if (voxel_gi_supported) {
 		String defines = "\n#define MAX_LIGHTS " + itos(voxel_gi_max_lights) + "\n";
 
 		Vector<String> versions;
@@ -3629,7 +3664,7 @@ void GI::init(SkyRD *p_sky) {
 
 	/* SDGFI */
 
-	{
+	if (sdfgi_supported) {
 		Vector<String> preprocess_modes;
 		preprocess_modes.push_back("\n#define MODE_SCROLL\n");
 		preprocess_modes.push_back("\n#define MODE_SCROLL_OCCLUSION\n");
@@ -3641,6 +3676,9 @@ void GI::init(SkyRD *p_sky) {
 		preprocess_modes.push_back("\n#define MODE_OCCLUSION\n");
 		preprocess_modes.push_back("\n#define MODE_STORE\n");
 		String defines = "\n#define OCCLUSION_SIZE " + itos(SDFGI::CASCADE_SIZE / SDFGI::PROBE_DIVISOR) + "\n";
+		if (RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS) < 512) {
+			defines += "\n#define SDFGI_SMALL_WORKGROUP\n";
+		}
 		sdfgi_shader.preprocess.initialize(preprocess_modes, defines);
 		sdfgi_shader.preprocess_shader = sdfgi_shader.preprocess.version_create();
 		for (int i = 0; i < SDFGIShader::PRE_PROCESS_MAX; i++) {
@@ -3648,7 +3686,7 @@ void GI::init(SkyRD *p_sky) {
 		}
 	}
 
-	{
+	if (sdfgi_supported) {
 		//calculate tables
 		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 
@@ -3662,7 +3700,7 @@ void GI::init(SkyRD *p_sky) {
 		}
 	}
 
-	{
+	if (sdfgi_supported) {
 		//calculate tables
 		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
@@ -3787,7 +3825,11 @@ void GI::init(SkyRD *p_sky) {
 
 		sdfgi_shader.debug_probes.initialize(versions, defines);
 
-		// TODO disable multiview versions if turned off
+		// Devices without multiview never use these versions, and shader bakes for them don't contain them.
+		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_MULTIVIEW)) {
+			sdfgi_shader.debug_probes.set_variant_enabled(SDFGIShader::PROBE_DEBUG_PROBES_MULTIVIEW, false);
+			sdfgi_shader.debug_probes.set_variant_enabled(SDFGIShader::PROBE_DEBUG_VISIBILITY_MULTIVIEW, false);
+		}
 
 		sdfgi_shader.debug_probes_shader = sdfgi_shader.debug_probes.version_create();
 
@@ -3799,8 +3841,9 @@ void GI::init(SkyRD *p_sky) {
 			ds.enable_depth_write = true;
 			ds.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 			for (int i = 0; i < SDFGIShader::PROBE_DEBUG_MAX; i++) {
-				// TODO check if version is enabled
-
+				if (!sdfgi_shader.debug_probes.is_variant_enabled(i)) {
+					continue;
+				}
 				RID debug_probes_shader_version = sdfgi_shader.debug_probes.version_get_shader(sdfgi_shader.debug_probes_shader, i);
 				sdfgi_shader.debug_probes_pipeline[i].setup(debug_probes_shader_version, RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 			}
@@ -4211,7 +4254,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 14;
-				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RD::get_singleton()->get_device_api_name() == "WebGPU" ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_UINT : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 				u.append_id(buffer);
 				uniforms.push_back(u);
 			}
@@ -4296,6 +4339,9 @@ void GI::voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D 
 }
 
 bool GI::voxel_gi_needs_update(RID p_probe) const {
+	if (!voxel_gi_supported) {
+		return false;
+	}
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL_V(voxel_gi, false);
 
@@ -4303,6 +4349,9 @@ bool GI::voxel_gi_needs_update(RID p_probe) const {
 }
 
 void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, const PagedArray<RenderGeometryInstance *> &p_dynamic_objects) {
+	if (!voxel_gi_supported) {
+		return;
+	}
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 	ERR_FAIL_NULL(voxel_gi);
 
@@ -4310,6 +4359,9 @@ void GI::voxel_gi_update(RID p_probe, bool p_update_light_instances, const Vecto
 }
 
 void GI::debug_voxel_gi(RID p_voxel_gi, RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
+	if (!voxel_gi_supported) {
+		return; // The instance texture is never filled.
+	}
 	VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_voxel_gi);
 	ERR_FAIL_NULL(voxel_gi);
 

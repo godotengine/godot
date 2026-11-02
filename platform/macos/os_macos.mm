@@ -1102,11 +1102,13 @@ void OS_MacOS_NSApp::run() {
 
 static bool sig_received = false;
 
+#ifndef LIBGODOT_ENABLED
 static void handle_interrupt(int sig) {
 	if (sig == SIGINT) {
 		sig_received = true;
 	}
 }
+#endif
 
 void OS_MacOS_NSApp::start_main() {
 	Error err;
@@ -1198,6 +1200,15 @@ void OS_MacOS_NSApp::cleanup() {
 
 OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv) :
 		OS_MacOS(p_execpath, p_argc, p_argv) {
+#ifdef LIBGODOT_ENABLED
+	// 2dog: embedded hosts own NSApplication setup, delegates, menus, and signal handlers.
+	// 2dog: borrow their AppKit instance without replacing host lifecycle handling.
+	hosted = NSApp != nil && [NSApp delegate] != nil;
+	if (hosted) {
+		return;
+	}
+#endif
+
 	// Implicitly create shared NSApplication instance.
 	[GodotApplication sharedApplication];
 
@@ -1216,10 +1227,26 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
 
+#ifndef LIBGODOT_ENABLED
+	// 2dog: process signal handling belongs to the host runtime in library builds.
 	struct sigaction action;
 	memset(&action, 0, sizeof(action));
 	action.sa_handler = handle_interrupt;
 	sigaction(SIGINT, &action, nullptr);
+#endif
+}
+
+OS_MacOS_NSApp::~OS_MacOS_NSApp() {
+	if (delegate == nullptr) {
+		return;
+	}
+	// 2dog: libgodot deletes this OS while NSApplication lives on; the delegate must not outlive it. Dropping it
+	// also lets the next engine instance install its own instead of treating it as a host delegate.
+	if ([NSApp delegate] == delegate) {
+		[NSApp setDelegate:nil];
+	}
+	[NSApp unregisterUserInterfaceItemSearchHandler:delegate];
+	delegate = nullptr;
 }
 
 // MARK: - OS_MacOS_Headless

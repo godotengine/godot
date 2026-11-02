@@ -21,3 +21,4 @@ misc/msvs/* eol=crlf
 *.png binary
 *.ttf binary
 *.tza binary
+drivers/webgpu/tests/shader_corpus/fixtures/*.spv binary

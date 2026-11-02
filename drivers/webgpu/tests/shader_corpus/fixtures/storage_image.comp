@@ -1,0 +1,23 @@
+#version 450
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(set = 0, binding = 0, r8) uniform image2D output_image;
+layout(set = 0, binding = 1) uniform sampler2D input_texture;
+
+layout(push_constant) uniform PushConstants {
+    vec2 texel_size;
+    float threshold;
+    float pad;
+} pc;
+
+void main() {
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = (vec2(pos) + 0.5) * pc.texel_size;
+
+    vec4 color = texture(input_texture, uv);
+    float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+    float result = luminance > pc.threshold ? 1.0 : 0.0;
+    imageStore(output_image, pos, vec4(result, 0.0, 0.0, 0.0));
+}

@@ -1,0 +1,39 @@
+diff --git a/thirdparty/tint/src/tint/lang/core/ir/validator.h b/thirdparty/tint/src/tint/lang/core/ir/validator.h
+--- a/thirdparty/tint/src/tint/lang/core/ir/validator.h	2026-05-12 10:45:37
++++ b/thirdparty/tint/src/tint/lang/core/ir/validator.h	2026-05-11 23:42:02
+@@ -94,6 +94,10 @@
+     /// space variables in function scopes, workgroup address space pointers as entry point inputs,
+     /// binding point on non-module scope variables in entry point interface.
+     kMslAllowEntryPointInterface,
++    /// Allows struct members whose declared size is smaller than their type's size.
++    /// Needed for Godot's runtime-specialized shaders where specialization constants
++    /// change effective struct sizes at runtime.
++    kAllowStructMemberSizeMismatch,
+ };
+ 
+ /// Capabilities is a set of Capability
+diff --git a/thirdparty/tint/src/tint/lang/core/ir/validator.cc b/thirdparty/tint/src/tint/lang/core/ir/validator.cc
+--- a/thirdparty/tint/src/tint/lang/core/ir/validator.cc	2026-05-12 10:45:37
++++ b/thirdparty/tint/src/tint/lang/core/ir/validator.cc	2026-05-11 23:42:11
+@@ -2237,7 +2237,9 @@
+ 
+                     // TODO(448608979): Remove guard once updated to handle RowMajor correctly
+                     if (!member->RowMajor()) {
+-                        if (member->Size() < member->Type()->Size()) {
++                        if (!capabilities_.Contains(
++                                Capability::kAllowStructMemberSizeMismatch) &&
++                            member->Size() < member->Type()->Size()) {
+                             diag() << "struct member " << member->Index()
+                                    << " with size=" << member->Size()
+                                    << " must be at least as large as the type with size "
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/reader.cc b/thirdparty/tint/src/tint/lang/spirv/reader/reader.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/reader.cc	2026-05-12 10:45:38
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/reader.cc	2026-05-11 23:42:17
+@@ -51,6 +51,7 @@
+                                          core::ir::Capabilities{
+                                              core::ir::Capability::kAllowMultipleEntryPoints,
+                                              core::ir::Capability::kAllowOverrides,
++                                             core::ir::Capability::kAllowStructMemberSizeMismatch,
+                                          },
+                                          "after spirv::ReadIR"));
+ 

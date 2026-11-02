@@ -748,6 +748,10 @@ class SampleNode {
 		if (!this.isStarted) {
 			return;
 		}
+		// 2dog: skip nodes cleared by AudioContext shutdown.
+		if (GodotAudio.ctx == null || this._source == null) {
+			return;
+		}
 		this.isPaused = true;
 		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
 		this._source.stop();
@@ -1331,6 +1335,13 @@ const _GodotAudio = {
 				resolve();
 				return;
 			}
+			// 2dog: stop sample playback without callbacks into the exiting engine.
+			// 2dog: clear stale nodes before the AudioContext closes.
+			GodotAudio.sampleFinishedCallback = null;
+			for (const sampleNode of GodotAudio.sampleNodes.values()) {
+				sampleNode.clear();
+			}
+			GodotAudio.sampleNodes.clear();
 			// Remove latency callback
 			if (GodotAudio.interval) {
 				clearInterval(GodotAudio.interval);
@@ -1345,7 +1356,10 @@ const _GodotAudio = {
 			let closed = Promise.resolve();
 			if (GodotAudio.driver) {
 				closed = GodotAudio.driver.close();
+				GodotAudio.driver = null; // 2dog: the next engine lifetime creates its own.
 			}
+			GodotAudio.audioPositionWorkletPromise = null;
+			GodotAudio.audioPositionWorkletNodes = [];
 			closed.then(function () {
 				return ctx.close();
 			}).then(function () {
@@ -1372,6 +1386,10 @@ const _GodotAudio = {
 			busIndex,
 			startOptions
 		) {
+			// 2dog: ignore samples started after AudioContext shutdown.
+			if (GodotAudio.ctx == null) {
+				return;
+			}
 			GodotAudio.SampleNode.stopSampleNode(playbackObjectId);
 			GodotAudio.SampleNode.create(
 				{
@@ -2084,6 +2102,7 @@ const GodotAudioWorklet = {
 		close: function () {
 			return new Promise(function (resolve, reject) {
 				if (GodotAudioWorklet.promise === null) {
+					resolve(); // 2dog: nothing to stop; never leave the shutdown chain pending.
 					return;
 				}
 				const p = GodotAudioWorklet.promise;
@@ -2236,9 +2255,11 @@ const GodotAudioScript = {
 
 		close: function () {
 			return new Promise(function (resolve, reject) {
-				GodotAudioScript.script.disconnect();
-				GodotAudioScript.script.onaudioprocess = null;
-				GodotAudioScript.script = null;
+				if (GodotAudioScript.script) {
+					GodotAudioScript.script.disconnect();
+					GodotAudioScript.script.onaudioprocess = null;
+					GodotAudioScript.script = null;
+				}
 				resolve();
 			});
 		},

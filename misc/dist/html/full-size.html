@@ -111,6 +111,7 @@ body {
 		<script>
 const GODOT_CONFIG = $GODOT_CONFIG;
 const GODOT_THREADS_ENABLED = $GODOT_THREADS_ENABLED;
+const GODOT_RENDERING_DRIVER = (GODOT_CONFIG['renderingDriver'] || '');
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
@@ -162,6 +163,7 @@ const engine = new Engine(GODOT_CONFIG);
 
 	const missing = Engine.getMissingFeatures({
 		threads: GODOT_THREADS_ENABLED,
+		renderingDriver: GODOT_RENDERING_DRIVER,
 	});
 
 	if (missing.length !== 0) {
@@ -197,8 +199,14 @@ const engine = new Engine(GODOT_CONFIG);
 		}
 	} else {
 		setStatusMode('progress');
+		// Show WebGPU initialization status if applicable.
+		if (GODOT_RENDERING_DRIVER === 'webgpu') {
+			setStatusNotice('Initializing WebGPU...');
+			setStatusMode('notice');
+		}
 		engine.startGame({
 			'onProgress': function (current, total) {
+				setStatusMode('progress');
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
 					statusProgress.max = total;

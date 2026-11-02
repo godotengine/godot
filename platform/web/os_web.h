@@ -111,6 +111,10 @@ public:
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
+#ifdef WEB_SIDE_MODULE_LOADER_ENABLED
+	Error close_dynamic_library(void *p_library_handle) override;
+	Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
+#endif
 
 	void resume_audio();
 

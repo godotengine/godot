@@ -45,8 +45,13 @@ layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) i
 
 layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D color_buffer;
 layout(set = 0, binding = 1) uniform sampler2D depth_buffer;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba16f, set = 0, binding = 2) uniform restrict readonly image2D velocity_buffer;
+layout(rgba16f, set = 0, binding = 3) uniform restrict readonly image2D last_velocity_buffer;
+#else
 layout(rg16f, set = 0, binding = 2) uniform restrict readonly image2D velocity_buffer;
 layout(rg16f, set = 0, binding = 3) uniform restrict readonly image2D last_velocity_buffer;
+#endif
 layout(set = 0, binding = 4) uniform sampler2D history_buffer;
 layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_buffer;
 

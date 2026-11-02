@@ -200,13 +200,12 @@ namespace Godot.Collections
 
         public void Dispose(bool disposing)
         {
+            // 2dog: release only after claiming registration; another caller or engine shutdown may own cleanup.
+            if (_weakReferenceToSelf != null && !DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf))
+                return;
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
-
-            if (_weakReferenceToSelf != null)
-            {
-                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
-            }
         }
 
         /// <summary>
@@ -338,7 +337,7 @@ namespace Godot.Collections
             ThrowIfReadOnly();
 
             var self = (godot_array)NativeValue;
-            return NativeFuncs.godotsharp_array_resize(ref self, newSize);
+            return (Error)NativeFuncs.godotsharp_array_resize(ref self, newSize);
         }
 
         /// <summary>

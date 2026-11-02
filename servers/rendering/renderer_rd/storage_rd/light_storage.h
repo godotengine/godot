@@ -57,6 +57,8 @@ private:
 	static LightStorage *singleton;
 	uint32_t max_cluster_elements = 512;
 
+	bool force_omni_dual_paraboloid = false; // Cached RD::DriverWorkarounds.
+
 	/* LIGHT */
 	struct Light {
 		RSE::LightType type;

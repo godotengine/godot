@@ -34,6 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
+#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
 
 Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
@@ -242,6 +243,15 @@ bool CompressedTexture2D::has_alpha() const {
 
 Ref<Image> CompressedTexture2D::get_image() const {
 	if (texture.is_valid()) {
+		const RenderingDevice *rd = RS::get_singleton()->get_rendering_device();
+		if (rd && rd->get_driver_workarounds().async_texture_readback && !path_to_file.is_empty()) {
+			// shortcut: reloads the file as the readback can't finish synchronously; drop once RD supports that there.
+			Ref<FileAccess> f = FileAccess::open(path_to_file, FileAccess::READ);
+			if (f.is_valid()) {
+				f->seek(4 + 8 * sizeof(uint32_t)); // Skip the header read by _load_data().
+				return load_image_from_file(f, 0);
+			}
+		}
 		return RS::get_singleton()->texture_2d_get(texture);
 	} else {
 		return Ref<Image>();

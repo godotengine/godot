@@ -32,6 +32,12 @@ jobs:
             scons-flags: threads=no arch=wasm32
             artifact: true
 
+          - name: Template w/ WebGPU, w/o threads, 32-bit (target=template_release, threads=no, webgpu=yes)
+            cache-name: web-webgpu-template
+            target: template_release
+            scons-flags: threads=no arch=wasm32 webgpu=yes
+            artifact: false
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7

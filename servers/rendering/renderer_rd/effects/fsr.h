@@ -68,6 +68,7 @@ private:
 	};
 
 	FsrUpscaleShaderRD fsr_shader;
+	FSRShaderVariant shader_variant;
 	RID shader_version;
 	PipelineDeferredRD pipeline;
 };

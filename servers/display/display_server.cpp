@@ -31,6 +31,8 @@
 #include "display_server.h"
 #include "display_server.compat.inc"
 
+#include <cstring>
+
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Input);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, NativeMenu);
 STATIC_ASSERT_INCOMPLETE_TYPE(class, Texture2D);
@@ -57,6 +59,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #endif
 #if defined(METAL_ENABLED)
 #include "drivers/metal/rendering_context_driver_metal.h"
+#endif
+#if defined(WEBGPU_ENABLED)
+#include "drivers/webgpu/rendering_context_driver_webgpu.h"
 #endif
 
 DisplayServer *DisplayServer::singleton = nullptr;
@@ -2025,6 +2030,14 @@ Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p
 }
 
 void DisplayServer::register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers) {
+	// 2dog: OS::initialize() registers its driver once per engine lifetime; replace instead of appending.
+	for (int i = 0; i < server_create_count; i++) {
+		if (strcmp(server_create_functions[i].name, p_name) == 0) {
+			server_create_functions[i].create_function = p_function;
+			server_create_functions[i].get_rendering_drivers_function = p_get_drivers;
+			return;
+		}
+	}
 	ERR_FAIL_COND(server_create_count == MAX_SERVERS);
 	// Headless display server is always last
 	server_create_functions[server_create_count] = server_create_functions[server_create_count - 1];
@@ -2142,6 +2155,11 @@ bool DisplayServer::is_rendering_device_supported() {
 		GODOT_CLANG_WARNING_POP
 	}
 #endif
+#ifdef WEBGPU_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverWebGPU);
+	}
+#endif
 
 	if (rcd != nullptr) {
 		err = rcd->initialize();
@@ -2222,6 +2240,11 @@ bool DisplayServer::can_create_rendering_device() {
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
 		GODOT_CLANG_WARNING_POP
+	}
+#endif
+#ifdef WEBGPU_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverWebGPU);
 	}
 #endif
 

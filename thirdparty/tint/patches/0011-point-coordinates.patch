@@ -1,0 +1,71 @@
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc b/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
+@@ -4392,6 +4392,7 @@
+         std::optional<uint32_t> binding;
+         core::Access access_mode = core::Access::kUndefined;
+         core::IOAttributes io_attributes;
++        bool point_coord = false;
+         auto interpolation = [&]() -> core::Interpolation& {
+             // Create the interpolation field with the default values on first call.
+             if (!io_attributes.interpolation.has_value()) {
+@@ -4421,7 +4422,11 @@
+                     binding = deco->GetSingleWordOperand(2);
+                     break;
+                 case spv::Decoration::BuiltIn:
+-                    io_attributes.builtin = Builtin(spv::BuiltIn(deco->GetSingleWordOperand(2)));
++                    if (spv::BuiltIn(deco->GetSingleWordOperand(2)) == spv::BuiltIn::PointCoord) {
++                        point_coord = true;
++                    } else {
++                        io_attributes.builtin = Builtin(spv::BuiltIn(deco->GetSingleWordOperand(2)));
++                    }
+                     break;
+                 case spv::Decoration::Invariant:
+                     io_attributes.invariant = true;
+@@ -4472,6 +4477,14 @@
+         }
+ 
+         auto* element_ty = Type(inst.type_id(), access_mode)->As<core::type::Pointer>();
++        // WebGPU points cover one pixel; WGSL has no PointCoord input.
++        if (point_coord) {
++            auto* store_ty = element_ty->StoreType();
++            auto* point = b_.Var(ty_.ptr(core::AddressSpace::kPrivate, store_ty, core::Access::kReadWrite));
++            point->SetInitializer(b_.Splat(store_ty, 0.5_f));
++            Emit(point, inst.result_id());
++            return;
++        }
+         if (element_ty->AddressSpace() == core::AddressSpace::kOut &&
+             element_ty->StoreType()->IsIntegerScalarOrVector()) {
+             io_attributes.interpolation = {
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc b/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/parser/parser.cc
+@@ -263,6 +263,11 @@
+             auto* func = *(functions_.Get(spv_id));
+             for (uint32_t i = 3; i < entry_point.NumInOperands(); ++i) {
+                 auto* val = Value(entry_point.GetSingleWordInOperand(i));
++                // PointCoord is emulated by a private constant, not a stage input.
++                auto* ptr = val->Type()->As<core::type::Pointer>();
++                if (ptr && ptr->AddressSpace() == core::AddressSpace::kPrivate) {
++                    continue;
++                }
+                 b_.Phony(val)->InsertBefore(func->Block()->Front());
+             }
+         }
+@@ -4223,7 +4228,15 @@
+             access_mode = ptr->Access();
+         }
+ 
+-        auto* access = b_.Access(Type(inst.type_id(), access_mode), base, std::move(indices));
++        auto* result_ty = Type(inst.type_id(), access_mode);
++        if (auto* ptr = base->Type()->As<core::type::Pointer>()) {
++            auto* result_ptr = result_ty->As<core::type::Pointer>();
++            if (ptr->AddressSpace() == core::AddressSpace::kPrivate && result_ptr &&
++                result_ptr->AddressSpace() == core::AddressSpace::kIn) {
++                result_ty = ty_.ptr(core::AddressSpace::kPrivate, result_ptr->StoreType(), access_mode);
++            }
++        }
++        auto* access = b_.Access(result_ty, base, std::move(indices));
+         Emit(access, inst.result_id());
+     }
+ 

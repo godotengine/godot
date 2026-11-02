@@ -610,12 +610,14 @@ private:
 	struct DrawListDrawInstruction : DrawListInstruction {
 		uint32_t vertex_count = 0;
 		uint32_t instance_count = 0;
+		uint32_t first_instance = 0;
 	};
 
 	struct DrawListDrawIndexedInstruction : DrawListInstruction {
 		uint32_t index_count = 0;
 		uint32_t instance_count = 0;
 		uint32_t first_index = 0;
+		uint32_t first_instance = 0;
 	};
 
 	struct DrawListDrawIndirectInstruction : DrawListInstruction {
@@ -925,8 +927,8 @@ public:
 	void add_draw_list_bind_uniform_sets(RDD::ShaderID p_shader, VectorView<RDD::UniformSetID> p_uniform_set, uint32_t p_first_index, uint32_t p_set_count);
 	void add_draw_list_bind_vertex_buffers(Span<RDD::BufferID> p_vertex_buffers, Span<uint64_t> p_vertex_buffer_offsets);
 	void add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect);
-	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count);
-	void add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index);
+	void add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_first_instance = 0);
+	void add_draw_list_draw_indexed(uint32_t p_index_count, uint32_t p_instance_count, uint32_t p_first_index, uint32_t p_first_instance = 0);
 	void add_draw_list_draw_indirect(RDD::BufferID p_buffer, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
 	void add_draw_list_draw_indexed_indirect(RDD::BufferID p_buffer, uint32_t p_offset, uint32_t p_draw_count, uint32_t p_stride);
 	void add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer);

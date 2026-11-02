@@ -14,13 +14,20 @@ namespace Godot
 {
     internal static class DelegateUtils
     {
+        // 2dog: AOT cannot construct arbitrary generic types. Remember concrete types seen by the serializer
+        // instead. Dynamic runtimes must not populate this set: it would keep editor reload assemblies alive.
+        private static readonly HashSet<Type> _aotSerializedGenericTypes = new();
+
+        internal static Delegate? GetDelegate(object? target)
+            => target is Callable.ManagedTrampolineState state ? state.Delegate : (Delegate?)target;
+
         [UnmanagedCallersOnly]
         internal static godot_bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
         {
             try
             {
-                var @delegateA = (Delegate?)GCHandle.FromIntPtr(delegateGCHandleA).Target;
-                var @delegateB = (Delegate?)GCHandle.FromIntPtr(delegateGCHandleB).Target;
+                var @delegateA = GetDelegate(GCHandle.FromIntPtr(delegateGCHandleA).Target);
+                var @delegateB = GetDelegate(GCHandle.FromIntPtr(delegateGCHandleB).Target);
                 return (@delegateA! == @delegateB!).ToGodotBool();
             }
             catch (Exception e)
@@ -35,7 +42,7 @@ namespace Godot
         {
             try
             {
-                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                var @delegate = GetDelegate(GCHandle.FromIntPtr(delegateGCHandle).Target);
                 return @delegate?.GetHashCode() ?? 0;
             }
             catch (Exception e)
@@ -50,7 +57,7 @@ namespace Godot
         {
             try
             {
-                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                var @delegate = GetDelegate(GCHandle.FromIntPtr(delegateGCHandle).Target);
                 int? argCount = @delegate?.Method?.GetParameters().Length;
                 if (argCount is null)
                 {
@@ -74,13 +81,21 @@ namespace Godot
         {
             try
             {
+                var target = GCHandle.FromIntPtr(delegateGCHandle).Target;
+                if (target is Callable.ManagedTrampolineState state)
+                {
+                    state.Trampoline(state.Delegate, new NativeVariantPtrArgs(args, argc), out godot_variant result);
+                    *outRet = result;
+                    return;
+                }
+
                 if (trampoline == null)
                 {
                     throw new ArgumentNullException(nameof(trampoline),
                         "Cannot dynamically invoke delegate because the trampoline is null.");
                 }
 
-                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
+                var @delegate = (Delegate)target!;
                 var trampolineFn = (delegate* managed<object, NativeVariantPtrArgs, out godot_variant, void>)trampoline;
 
                 trampolineFn(@delegate, new NativeVariantPtrArgs(args, argc), out godot_variant ret);
@@ -140,6 +155,9 @@ namespace Godot
             return false;
         }
 
+        // 2dog: delegate serialization reflects over rooted game types and closures.
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = TrimJustifications.ScriptTypesAreRooted)]
         private static bool TrySerializeSingleDelegate(Delegate @delegate, [MaybeNullWhen(false)] out byte[] buffer)
         {
             buffer = null;
@@ -295,6 +313,12 @@ namespace Godot
             }
             else if (type.IsGenericType)
             {
+                if (!RuntimeFeature.IsDynamicCodeSupported && type.IsConstructedGenericType)
+                {
+                    lock (_aotSerializedGenericTypes)
+                        _aotSerializedGenericTypes.Add(type);
+                }
+
                 Type genericTypeDef = type.GetGenericTypeDefinition();
                 Type[] genericArgs = type.GetGenericArguments();
 
@@ -326,7 +350,7 @@ namespace Godot
                 var serializedData = Collections.Array.CreateTakingOwnershipOfDisposableValue(
                     NativeFuncs.godotsharp_array_new_copy(*nSerializedData));
 
-                var @delegate = (Delegate)GCHandle.FromIntPtr(delegateGCHandle).Target!;
+                var @delegate = GetDelegate(GCHandle.FromIntPtr(delegateGCHandle).Target)!;
 
                 return TrySerializeDelegate(@delegate, serializedData)
                     .ToGodotBool();
@@ -412,6 +436,10 @@ namespace Godot
             return true;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = TrimJustifications.ScriptTypesAreRooted)]
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = TrimJustifications.ScriptTypesAreRooted)]
         private static bool TryDeserializeSingleDelegate(byte[] buffer, [MaybeNullWhen(false)] out Delegate @delegate)
         {
             @delegate = null;
@@ -510,6 +538,8 @@ namespace Godot
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = TrimJustifications.ScriptTypesAreRooted)]
         private static bool TryDeserializeMethodInfo(BinaryReader reader,
             [MaybeNullWhen(false)] out MethodInfo methodInfo)
         {
@@ -546,6 +576,8 @@ namespace Godot
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2055",
+            Justification = "Generic arguments were serialized from a live constructed type. " + TrimJustifications.ScriptTypesAreRooted)]
         private static Type? DeserializeType(BinaryReader reader)
         {
             int genericArgumentsCount = reader.ReadInt32();
@@ -579,7 +611,35 @@ namespace Godot
                     genericArgumentTypes[i] = genericArgumentType;
                 }
 
-                type = type.MakeGenericType(genericArgumentTypes);
+                if (RuntimeFeature.IsDynamicCodeSupported)
+                {
+                    type = type.MakeGenericType(genericArgumentTypes);
+                }
+                else
+                {
+                    // The serialization callbacks preserve delegates within the running application. Reuse a
+                    // type that actually existed there, rather than asking AOT for a new generic instantiation.
+                    lock (_aotSerializedGenericTypes)
+                    {
+                        foreach (Type candidate in _aotSerializedGenericTypes)
+                        {
+                            if (candidate.GetGenericTypeDefinition() != type)
+                                continue;
+
+                            Type[] arguments = candidate.GetGenericArguments();
+                            if (arguments.Length != genericArgumentTypes.Length)
+                                continue;
+
+                            int i = 0;
+                            while (i < arguments.Length && arguments[i] == genericArgumentTypes[i])
+                                i++;
+                            if (i == arguments.Length)
+                                return candidate;
+                        }
+                    }
+
+                    return null; // Unknown generic types cannot be reconstructed safely under AOT.
+                }
             }
 
             return type;
@@ -799,6 +859,9 @@ namespace Godot
                     [typeof(Variant)] = (in godot_variant variant) => VariantUtils.ConvertTo<Variant>(variant),
                 };
 
+            // 2dog: reflected collection and GodotObject array constructors are rooted.
+            [UnconditionalSuppressMessage("Trimming", "IL2070",
+                Justification = TrimJustifications.NativeClassesAreRooted)]
             public static object? ConvertToObjectOfType(in godot_variant variant, Type type)
             {
                 if (_toSystemObjectFuncByType.TryGetValue(type, out var func))
@@ -809,6 +872,8 @@ namespace Godot
 
                 if (typeof(GodotObject[]).IsAssignableFrom(type))
                 {
+                    [UnconditionalSuppressMessage("Trimming", "IL2067",
+                        Justification = "Array types have intrinsic constructors; nothing on the element type is reflected. " + TrimJustifications.ScriptTypesAreRooted)]
                     static GodotObject[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
                     {
                         var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(

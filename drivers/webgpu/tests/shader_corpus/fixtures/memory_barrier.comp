@@ -1,0 +1,19 @@
+#version 450
+
+// memoryBarrierShared() emits OpMemoryBarrier, which Tint does not support; barrier() remains.
+
+layout(local_size_x = 64) in;
+
+layout(set = 0, binding = 0) buffer Values {
+    float values[];
+} buf;
+
+shared float scratch[64];
+
+void main() {
+    uint idx = gl_LocalInvocationID.x;
+    scratch[idx] = buf.values[gl_GlobalInvocationID.x];
+    memoryBarrierShared();
+    barrier();
+    buf.values[gl_GlobalInvocationID.x] = scratch[63u - idx];
+}

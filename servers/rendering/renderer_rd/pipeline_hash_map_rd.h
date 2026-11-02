@@ -203,7 +203,11 @@ public:
 					return RID();
 				}
 			} else {
-				return RID();
+				// Without worker threads (web) the task ran inline; using its result spares compiling the ubershader.
+				if (_add_new_pipelines_to_map()) {
+					e = hash_map.find(p_key_hash);
+				}
+				return e != nullptr ? e->value() : RID();
 			}
 		} else {
 			return e->value();

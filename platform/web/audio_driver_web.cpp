@@ -179,6 +179,8 @@ AudioDriver::SpeakerMode AudioDriverWeb::get_speaker_mode() const {
 
 void AudioDriverWeb::finish() {
 	finish_driver();
+	// 2dog: the JS side closes its AudioContext at engine shutdown; the next lifetime must create a new one.
+	audio_context = AudioContext();
 	if (output_rb) {
 		memdelete_arr(output_rb);
 		output_rb = nullptr;

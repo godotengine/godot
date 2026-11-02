@@ -84,6 +84,12 @@
     <GodotFloat64 Condition=" '$(GodotFloat64)' == '' ">false</GodotFloat64>
   </PropertyGroup>
 
+  <!-- 2dog: controls automatic DisableRuntimeMarshallingAttribute generation for user assemblies. -->
+  <PropertyGroup Condition=" '$(GodotDisableRuntimeMarshalling)' == '' ">
+    <GodotDisableRuntimeMarshalling>false</GodotDisableRuntimeMarshalling>
+    <GodotDisableRuntimeMarshalling Condition=" '$(GodotTargetPlatform)' == 'web' ">true</GodotDisableRuntimeMarshalling>
+  </PropertyGroup>
+
   <!-- Godot DefineConstants. -->
   <PropertyGroup>
     <!-- Define constants to identify Godot builds. -->
@@ -103,6 +109,8 @@
     <_GodotDefineConstants>$(_GodotDefineConstants);$(_GodotPlatformConstants);$(_GodotVersionConstants)</_GodotDefineConstants>
   </PropertyGroup>
 
+  <!-- 2dog: platform-specific build properties. -->
   <Import Project="$(MSBuildThisFileDirectory)\Android.props" Condition=" '$(GodotTargetPlatform)' == 'android' " />
   <Import Project="$(MSBuildThisFileDirectory)\iOS.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
+  <Import Project="$(MSBuildThisFileDirectory)\Browser.props" Condition=" '$(GodotTargetPlatform)' == 'web' " />
 </Project>

@@ -35,13 +35,12 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            // 2dog: release only after claiming registration; another caller or engine shutdown may own cleanup.
+            if (_weakReferenceToSelf != null && !DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf))
+                return;
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
-
-            if (_weakReferenceToSelf != null)
-            {
-                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
-            }
         }
 
         private StringName(godot_string_name nativeValueToOwn)

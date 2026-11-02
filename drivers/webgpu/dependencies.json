@@ -1,0 +1,118 @@
+{
+  "tint": {
+    "revision": "db49a5496374b1f7284e0b9c8f2964c01d4bb20a",
+    "url": "https://codeload.github.com/google/dawn/tar.gz/db49a5496374b1f7284e0b9c8f2964c01d4bb20a",
+    "sha256": "923405c05f59343b87533cba2896123c6504f79e6404b581a03d6bddfffe3010",
+    "files": [
+      "LICENSE",
+      "src/utils/compiler.h",
+      "src/utils/numeric.h"
+    ],
+    "file_count": 816,
+    "generated": [],
+    "roots": [
+      "src/tint/api",
+      "src/tint/lang/core",
+      "src/tint/lang/spirv",
+      "src/tint/lang/wgsl",
+      "src/tint/utils",
+      "src/tint/lang/null/writer/common",
+      "src/tint/lang/hlsl/writer/common"
+    ],
+    "extensions": [
+      ".h",
+      ".cc",
+      ".inc"
+    ],
+    "exclude": [
+      "*_test.*",
+      "*_bench*",
+      "*_fuzz*",
+      "*/test/*",
+      "*/bench/*",
+      "*/fuzz/*",
+      "*/cmd/*",
+      "*/lang/spirv/writer/*",
+      "*/lang/wgsl/reader/*",
+      "*/lang/wgsl/ls/*"
+    ]
+  },
+  "spirv-tools": {
+    "revision": "3605cce5b11f6a085107fd400f1721cd2a59c49e",
+    "url": "https://codeload.github.com/KhronosGroup/SPIRV-Tools/tar.gz/3605cce5b11f6a085107fd400f1721cd2a59c49e",
+    "sha256": "693f7a9a00d599b99733428970fd8d897e3367d1d2e33e0ea54e4f15226db90e",
+    "files": [
+      "LICENSE"
+    ],
+    "file_count": 389,
+    "generated": [
+      "generated/build-version.inc",
+      "generated/core_tables_body.inc",
+      "generated/core_tables_header.inc",
+      "generated/generators.inc"
+    ],
+    "roots": [
+      "source",
+      "include"
+    ],
+    "extensions": [
+      ".h",
+      ".hpp",
+      ".cpp"
+    ],
+    "exclude": [
+      "*_test*",
+      "source/fuzz/*",
+      "source/reduce/*",
+      "source/diff/*",
+      "source/link/*",
+      "source/lint/*",
+      "source/wasm/*",
+      "source/mimalloc.cpp",
+      "source/pch_source.*",
+      "source/spirv_fuzzer_options.*",
+      "source/spirv_reducer_options.*"
+    ]
+  },
+  "spirv-headers-webgpu": {
+    "revision": "ad9184e76a66b1001c29db9b0a3e87f646c64de0",
+    "url": "https://codeload.github.com/KhronosGroup/SPIRV-Headers/tar.gz/ad9184e76a66b1001c29db9b0a3e87f646c64de0",
+    "sha256": "b5b7eba62453eb8c6f6a5fbf7155b71cde693bafe9cd5f03b79ed8c714816afe",
+    "files": [
+      "LICENSE",
+      "include/spirv/1.2/GLSL.std.450.h",
+      "include/spirv/unified1/DebugInfo.h",
+      "include/spirv/unified1/GLSL.std.450.h",
+      "include/spirv/unified1/NonSemanticClspvReflection.h",
+      "include/spirv/unified1/NonSemanticShaderDebugInfo.h",
+      "include/spirv/unified1/OpenCL.std.h",
+      "include/spirv/unified1/OpenCLDebugInfo100.h",
+      "include/spirv/unified1/spirv.h",
+      "include/spirv/unified1/spirv.hpp",
+      "include/spirv/unified1/spirv.hpp11"
+    ],
+    "file_count": 11,
+    "generated": []
+  },
+  "emdawnwebgpu": {
+    "revision": "v20251002.162335",
+    "url": "https://github.com/google/dawn/releases/download/v20251002.162335/emdawnwebgpu_pkg-v20251002.162335.zip",
+    "sha256": "5c8c3f0d1f115ad476068dbd65a85347103717138bc686ae08de9f98fcc93d9a",
+    "platforms": [
+      "web"
+    ],
+    "files": [
+      "README.md",
+      "VERSION.txt",
+      "emdawnwebgpu.port.py"
+    ],
+    "file_count": 18,
+    "generated": [
+      "webgpu/src/library_webgpu_legacy.js"
+    ],
+    "roots": [
+      "webgpu",
+      "webgpu_cpp"
+    ]
+  }
+}

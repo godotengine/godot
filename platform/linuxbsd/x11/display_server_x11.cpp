@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef WEBGPU_ENABLED
+#include "drivers/webgpu/rendering_context_driver_webgpu.h"
+#endif
+
 #include "display_server_x11.h"
 
 #ifdef X11_ENABLED
@@ -6318,13 +6322,15 @@ ProcessID DisplayServerX11::get_focused_process_id() {
 
 Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	Vector<String> drivers;
-
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
+#endif
+#ifdef WEBGPU_ENABLED
+	drivers.push_back("webgpu");
 #endif
 	drivers.push_back("dummy");
 
@@ -6657,7 +6663,17 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 #ifdef VULKAN_ENABLED
 				RenderingContextDriverVulkanX11::WindowPlatformData vulkan;
 #endif
+#ifdef WEBGPU_ENABLED
+				RenderingContextDriverWebGPU::WindowPlatformData webgpu;
+#endif
 			} wpd;
+#ifdef WEBGPU_ENABLED
+			if (rendering_driver == "webgpu") {
+				wpd.webgpu.kind = RenderingContextDriverWebGPU::WindowPlatformData::KIND_XLIB;
+				wpd.webgpu.display = x11_display;
+				wpd.webgpu.window_id = wd.x11_window;
+			}
+#endif
 #ifdef VULKAN_ENABLED
 			if (rendering_driver == "vulkan") {
 				wpd.vulkan.window = wd.x11_window;
@@ -7108,6 +7124,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 	}
 
 #if defined(RD_ENABLED)
+#ifdef WEBGPU_ENABLED
+	if (rendering_driver == "webgpu") {
+		rendering_context = memnew(RenderingContextDriverWebGPU);
+	}
+#endif
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanX11);

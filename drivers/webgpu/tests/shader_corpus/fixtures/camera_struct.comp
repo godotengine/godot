@@ -1,0 +1,25 @@
+#version 450
+layout(local_size_x = 1) in;
+
+struct Camera {
+    mat4 projection;
+    mat3x4 view;
+};
+layout(set = 0, binding = 0, std140) uniform Scene {
+    Camera current;
+    Camera previous;
+} scene;
+layout(set = 0, binding = 1, std430) buffer Result {
+    vec4 current;
+    vec4 previous;
+} result;
+
+vec4 project(Camera camera) {
+    mat4 view = transpose(mat4(camera.view[0], camera.view[1], camera.view[2], vec4(0, 0, 0, 1)));
+    return camera.projection * view * vec4(3, 2, 1, 1);
+}
+
+void main() {
+    result.current = project(scene.current);
+    result.previous = project(scene.previous);
+}

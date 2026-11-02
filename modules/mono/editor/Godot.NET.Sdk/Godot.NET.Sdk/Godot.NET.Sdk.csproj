@@ -36,8 +36,11 @@
       <Link>Sdk\SdkPackageVersions.props</Link>
     </None>
     <None Include="Sdk\Android.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Android.targets" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\iOS.props" Pack="true" PackagePath="Sdk" />
     <None Include="Sdk\iOS.targets" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Browser.props" Pack="true" PackagePath="Sdk" />
+    <None Include="Sdk\Browser.targets" Pack="true" PackagePath="Sdk" />
   </ItemGroup>
 
 </Project>

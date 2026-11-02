@@ -83,6 +83,10 @@ layout(push_constant, std430) uniform Params {
 params;
 
 #ifndef MODE_SET_COLOR
+#ifdef MODE_DEPTH
+// Tint restores this resource's depth type, which GLSL sampler2D cannot express.
+#define source_color webgpu_depth_source
+#endif
 #ifdef USE_MULTIVIEW
 layout(location = 0) in vec3 uv_interp;
 #else
@@ -132,7 +136,12 @@ void main() {
 #define M_PI 3.14159265359
 
 	float side;
+#ifdef RENDER_DRIVER_WEBGPU
+	side = floor(uv.y * 2.0);
+	uv.y = uv.y * 2.0 - side;
+#else
 	uv.y = modf(uv.y * 2.0, side);
+#endif
 	side = side * 2.0 - 1.0;
 	vec3 normal = vec3(uv * 2.0 - 1.0, 0.0);
 	normal.z = 0.5 - 0.5 * ((normal.x * normal.x) + (normal.y * normal.y));

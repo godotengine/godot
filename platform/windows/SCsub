@@ -114,6 +114,12 @@ if env["accesskit"] and not env.msvc:
 if env["library_type"] == "static_library":
     prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 elif env["library_type"] == "shared_library":
+    # Keep the standalone error callback object in non-SCU libgodot builds.
+    if env.msvc:
+        error_callback_symbol = (
+            "_libgodot_set_error_callback" if env["arch"] == "x86_32" else "libgodot_set_error_callback"
+        )
+        env.AppendUnique(LINKFLAGS=["/INCLUDE:" + error_callback_symbol])
     prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 else:
     prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])

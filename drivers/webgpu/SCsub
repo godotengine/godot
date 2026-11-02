@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+import native_loader
+import sources
+
+env_webgpu = env.Clone()
+baker_only = not env["webgpu"]
+target_sources = env.editor_sources if baker_only else env.drivers_sources
+
+# =============================================================================
+# Thirdparty: SPIRV-Tools (needed by Tint SPIR-V reader)
+# =============================================================================
+
+spirv_tools_dir = "#thirdparty/spirv-tools/"
+spirv_headers_dir = "#thirdparty/spirv-headers-webgpu/"
+
+spirv_tools_sources = sources.spirv_tools_sources()
+
+spirv_tools_sources = [spirv_tools_dir + f for f in spirv_tools_sources]
+
+env_spirv_tools = env_webgpu.Clone()
+env_spirv_tools.disable_warnings()
+env_spirv_tools.Prepend(
+    CPPPATH=[
+        spirv_tools_dir,  # For "source/..." includes used by SPIRV-Tools internally.
+        spirv_tools_dir + "source/",
+        spirv_tools_dir + "include/",
+        spirv_tools_dir + "generated/",
+        spirv_headers_dir + "include/",
+        spirv_headers_dir + "include/spirv/unified1/",  # For bare "DebugInfo.h" / "OpenCLDebugInfo100.h" includes.
+    ]
+)
+
+spirv_tools_obj = []
+
+# =============================================================================
+# Thirdparty: Tint (SPIR-V reader + WGSL writer from Google Dawn)
+# =============================================================================
+
+tint_dir = "#thirdparty/tint/"
+
+# Platform-independent Tint sources (all .cc files except platform-specific ones).
+tint_sources = sources.tint_sources(env["platform"])
+
+tint_sources = [tint_dir + f for f in tint_sources]
+
+env_tint = env_webgpu.Clone()
+env_tint.disable_warnings()
+
+# Recover Tint internal errors at the wrapper boundary, unwinding compiler-owned objects.
+for compiler_env in (env_tint, env_spirv_tools):
+    for flags in ("CCFLAGS", "CXXFLAGS"):
+        compiler_env[flags] = [
+            flag for flag in compiler_env[flags] if str(flag) not in ("-fno-exceptions", "-fignore-exceptions")
+        ]
+    if env.msvc:
+        compiler_env["CPPDEFINES"] = [
+            define
+            for define in compiler_env["CPPDEFINES"]
+            if not (isinstance(define, tuple) and define[0] == "_HAS_EXCEPTIONS")
+        ]
+        compiler_env.Append(CPPDEFINES=[("_HAS_EXCEPTIONS", 1)])
+        compiler_env.Append(CXXFLAGS=["/EHsc"])
+    else:
+        compiler_env.Append(CXXFLAGS=["-fwasm-exceptions" if env["platform"] == "web" else "-fexceptions"])
+if env["platform"] == "web":
+    env.Append(LINKFLAGS=["-fwasm-exceptions"])
+env_spirv_tools.add_source_files(spirv_tools_obj, spirv_tools_sources)
+
+# Tint requires C++20.
+env_tint["CXXFLAGS"] = [flag for flag in env_tint["CXXFLAGS"] if not str(flag).startswith(("/std:", "-std="))]
+if env.msvc:
+    env_tint.Append(CXXFLAGS=["/std:c++20", "/Zc:preprocessor"])
+else:
+    env_tint.Append(CXXFLAGS=["-std=c++20"])
+
+# Tint preprocessor defines: only enable SPIR-V reader + WGSL writer.
+env_tint.Append(
+    CPPDEFINES=[
+        ("TINT_BUILD_SPV_READER", 1),
+        ("TINT_BUILD_WGSL_WRITER", 1),
+        ("TINT_BUILD_WGSL_READER", 0),
+        ("TINT_BUILD_SPV_WRITER", 0),
+        ("TINT_BUILD_GLSL_WRITER", 0),
+        ("TINT_BUILD_HLSL_WRITER", 0),
+        ("TINT_BUILD_MSL_WRITER", 0),
+        ("TINT_BUILD_NULL_WRITER", 0),
+        ("TINT_BUILD_SYNTAX_TREE_WRITER", 0),
+        ("TINT_BUILD_IR_BINARY", 0),
+    ]
+)
+
+env_tint.Prepend(
+    CPPPATH=[
+        tint_dir,  # For src/tint/... includes.
+        tint_dir + "src/",  # Some internal includes use src/ prefix.
+        # SPIRV-Tools and SPIRV-Headers (Tint parser includes them directly).
+        spirv_tools_dir,  # For "source/opt/..." includes from Tint's SPIR-V reader.
+        spirv_tools_dir + "source/",
+        spirv_tools_dir + "include/",
+        spirv_tools_dir + "generated/",
+        spirv_headers_dir + "include/",
+        spirv_headers_dir + "include/spirv/unified1/",  # For bare "DebugInfo.h" includes from SPIRV-Tools.
+    ]
+)
+
+tint_obj = []
+env_tint.add_source_files(tint_obj, tint_sources)
+
+# Compile tint_wrapper.cpp in the Tint C++20 environment so that Tint's
+# headers (which use std::span, C++20 concepts, etc.) never leak into the
+# main Godot driver build (C++17).
+env_tint_wrapper = env_tint.Clone()
+env_tint_wrapper.add_source_files(tint_obj, ["#drivers/webgpu/tint_wrapper.cpp"])
+
+# =============================================================================
+# WebGPU driver sources
+# =============================================================================
+
+# Driver sources only need SPIRV-Tools/Headers for spirv_preprocess; they
+# never include Tint headers directly (that goes through tint_wrapper.h).
+env_webgpu.Prepend(
+    CPPPATH=[
+        spirv_tools_dir + "include/",
+        spirv_headers_dir + "include/",
+    ]
+)
+
+# Exclude tint_wrapper.cpp from the driver glob — it's compiled above in
+# the Tint C++20 environment instead.
+webgpu_sources = (
+    [File("#drivers/webgpu/spirv_preprocess.cpp"), File("#drivers/webgpu/rendering_shader_container_webgpu.cpp")]
+    if baker_only
+    else Glob("#drivers/webgpu/*.cpp")
+)
+webgpu_sources = [f for f in webgpu_sources if "tint_wrapper" not in str(f)]
+env_webgpu.add_source_files(target_sources, webgpu_sources)
+
+if not baker_only and env["platform"] != "web":
+    # Keep optional Dawn runtime requirements out of existing renderer paths.
+    dawn_loader = env.CommandNoCache(
+        "#drivers/webgpu/native/dawn_loader.gen.h",
+        [env.File(env["webgpu_native_path"] + "/include/dawn/webgpu.h"), "#drivers/webgpu/native/dawn_boundary.h"],
+        env.Run(native_loader.build_loader),
+    )
+    env.Depends(webgpu_sources, dawn_loader)
+    env.Depends(dawn_loader, env.Value(env["platform"] + ":" + env["library_type"]))
+    # Stage the isolated Dawn runtime and its sidecars beside the engine binary.
+    for dawn_runtime in env["webgpu_native_runtimes"]:
+        env.Command("#bin/" + env.File(dawn_runtime).name, dawn_runtime, Copy("$TARGET", "$SOURCE"))
+
+# Add thirdparty objects to the driver.
+target_sources += spirv_tools_obj
+target_sources += tint_obj

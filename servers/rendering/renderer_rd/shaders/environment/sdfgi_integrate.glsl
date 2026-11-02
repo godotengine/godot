@@ -30,7 +30,11 @@ layout(set = 0, binding = 7, std140) uniform Cascades {
 }
 cascades;
 
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba16f, set = 0, binding = 8) uniform restrict image2DArray lightprobe_texture_data;
+#else
 layout(r32ui, set = 0, binding = 8) uniform restrict uimage2DArray lightprobe_texture_data;
+#endif
 layout(rgba16i, set = 0, binding = 9) uniform restrict iimage2DArray lightprobe_history_texture;
 layout(rgba32i, set = 0, binding = 10) uniform restrict iimage2D lightprobe_average_texture;
 
@@ -466,8 +470,13 @@ void main() {
 		if (copy_to[i] == ivec3(-2, -2, -2)) {
 			continue;
 		}
+#ifdef RENDER_DRIVER_WEBGPU
+		imageStore(lightprobe_texture_data, copy_to[i], vec4(max(irradiance, vec3(0.0)), 0.0));
+		imageStore(lightprobe_texture_data, copy_to[i] + ivec3(0, 0, int(params.max_cascades)), vec4(max(radiance, vec3(0.0)), 0.0));
+#else
 		imageStore(lightprobe_texture_data, copy_to[i], uvec4(irradiance_rgbe));
 		imageStore(lightprobe_texture_data, copy_to[i] + ivec3(0, 0, int(params.max_cascades)), uvec4(radiance_rgbe));
+#endif
 	}
 
 #endif

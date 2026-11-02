@@ -4,6 +4,12 @@ Please keep categories (`##` level) listed alphabetically and matching their
 respective folder names. Use two empty lines to separate categories for
 readability.
 
+The WebGPU-only `tint`, `spirv-tools`, `spirv-headers-webgpu` and `emdawnwebgpu`
+sources use checksum-pinned upstream archive references. Their source snapshots
+and generated tables are restored to ignored paths; only local patches are
+tracked here. See [WebGPU dependency preparation](../drivers/webgpu/dependencies.md)
+and its lock file for the exact revisions, checksums and imported files.
+
 
 ## accesskit
 
@@ -238,6 +244,29 @@ Patches:
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
+
+
+## emdawnwebgpu
+
+- Upstream: https://github.com/google/dawn/releases/tag/v20251002.162335
+- Version: v20251002.162335 (emdawnwebgpu_pkg-v20251002.162335.zip, SHA-256
+  5c8c3f0d1f115ad476068dbd65a85347103717138bc686ae08de9f98fcc93d9a)
+- License: BSD-3-Clause and MIT / NCSA
+
+Files extracted from upstream source (restored using `drivers/webgpu/dependencies.py`):
+
+- `webgpu/` and `webgpu_cpp/` folders, including their `LICENSE` files
+- `emdawnwebgpu.port.py`, `README.md`, `VERSION.txt`
+
+Preparation derives `webgpu/src/library_webgpu_legacy.js`, changing only the
+stackSave/stackRestore JS-library dependency names to their Emscripten 3.x
+spelling for the pinned 3.1.56 .NET toolchain. Modern SDKs use the unmodified
+upstream JavaScript library.
+
+Patches:
+
+- `0001-select-legacy-stack-dependencies.patch` — Select the legacy JavaScript
+  library on Emscripten 3.x.
 
 
 ## enet
@@ -1049,6 +1078,20 @@ Files extracted from upstream source:
 - `include/spirv/unified1/spirv.{h,hpp,hpp11}` with the same folder structure
 - `LICENSE` (edited to keep only relevant license)
 
+## spirv-headers-webgpu
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Headers
+- Version: ad9184e76a66b1001c29db9b0a3e87f646c64de0 (2026)
+- License: MIT
+
+Separate headers used only by WebGPU's Tint and SPIRV-Tools. The engine's
+existing spirv-headers snapshot remains unchanged.
+
+Patches:
+
+- `0001-add-required-extension-enums.patch` — Add legacy extension definitions
+  required by the pinned SPIRV-Tools sources to the upstream C++11 header.
+
 
 ## spirv-reflect
 
@@ -1070,6 +1113,22 @@ Patches:
 - `0002-spirv-headers.patch` ([GH-111452](https://github.com/godotengine/godot/pull/111452))
 
 
+## spirv-tools
+
+- Upstream: https://github.com/KhronosGroup/SPIRV-Tools
+- Version: git (3605cce5b11f6a085107fd400f1721cd2a59c49e, 2026)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `source/` folder
+- `include/` folder
+- `generated/` folder (regenerated using the pinned upstream scripts and grammars)
+- `LICENSE`
+
+Required by Tint for SPIR-V parsing and validation. Version pinned by Dawn DEPS.
+
+
 ## swappy-frame-pacing
 
 - Upstream: https://android.googlesource.com/platform/frameworks/opt/gamesdk/ via https://github.com/godotengine/godot-swappy
@@ -1081,6 +1140,37 @@ Files extracted from upstream source:
 - `include/common/`
 - `include/swappy/{swappy_common.h,swappyVk.h}`
 - `LICENSE`
+
+
+## tint
+
+- Upstream: https://dawn.googlesource.com/dawn (src/tint/)
+- Version: git (db49a5496374b1f7284e0b9c8f2964c01d4bb20a, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `src/tint/` folder subset and `src/utils/{compiler,numeric}.h` (restored using
+  `drivers/webgpu/dependencies.py`)
+- `LICENSE`
+
+Patches:
+
+- `0000-atomic-aggregate-access.patch` — Preserve matrix/vector traversal in atomic access chains.
+- `0001-skip-block-layout-validation.patch` — `SetSkipBlockLayout(true)` for Godot UBO layout
+- `0002-allow-struct-member-size-mismatch.patch` — `kAllowStructMemberSizeMismatch` for specialization constants
+- `0003-decompose-strided-array-stride-guard.patch` — Skip padding when stride < element size
+- `0004-accept-non-constant-point-size.patch` — Accept non-constant `point_size` stores
+- `0005-size-emission-and-capability.patch` — `@size` emission guard for specialization constants
+- `0006-remove-abseil-dependency.patch` — Replace `absl::from_chars` with `std::from_chars`
+- `0007-extend-size-mismatch-to-struct-total-size.patch` — Extend `kAllowStructMemberSizeMismatch`
+  to the struct total-size check
+- `0008-emscripten-3-float-parsing.patch` — Locale-independent float parsing when libc++
+  deletes the `from_chars` overloads (Emscripten 3.x)
+- `0009-macos-float-parsing.patch` — Reuse that float parsing below macOS 26
+
+Used for SPIR-V to WGSL translation in the WebGPU rendering backend.
+Requires spirv-tools and spirv-headers-webgpu.
 
 
 ## thorvg

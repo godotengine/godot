@@ -44,6 +44,12 @@ void EditorRunNative::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			if (EditorExport::is_full_export_blocked()) {
+				// 2dog: one-click deploy runs a playable export, which a libgodot host's editor cannot build.
+				remote_debug->hide();
+				set_process(false);
+				break;
+			}
 			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 			if (changed) {

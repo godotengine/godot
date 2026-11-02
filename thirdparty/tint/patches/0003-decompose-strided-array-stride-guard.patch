@@ -1,0 +1,17 @@
+diff --git a/thirdparty/tint/src/tint/lang/spirv/reader/lower/decompose_strided_array.cc b/thirdparty/tint/src/tint/lang/spirv/reader/lower/decompose_strided_array.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/reader/lower/decompose_strided_array.cc	2026-05-12 10:45:40
++++ b/thirdparty/tint/src/tint/lang/spirv/reader/lower/decompose_strided_array.cc	2026-05-12 00:28:45
+@@ -127,9 +127,12 @@
+                 [&](const spirv::type::ExplicitLayoutArray* arr) {
+                     auto* new_element_type = RewriteType(arr->ElemType());
+ 
+-                    if (!arr->IsStrideImplicit()) {
++                    if (!arr->IsStrideImplicit() && arr->Stride() >= new_element_type->Size()) {
+                         // The stride does not match the implicit element stride, so we need to wrap
+                         // the element type in a structure that is padded to the target stride.
++                        // Skip padding when stride < element size (can happen with Godot's
++                        // runtime-specialized shaders where specialization constants change
++                        // effective struct sizes). In that case, use natural element stride.
+                         auto* element_struct =
+                             ty.Struct(sym.New("tint_padded_array_element"),
+                                       Vector{

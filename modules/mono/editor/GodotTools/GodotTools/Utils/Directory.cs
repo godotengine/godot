@@ -26,6 +26,28 @@ namespace GodotTools.Utils
             System.IO.Directory.Delete(path.GlobalizePath(), recursive);
         }
 
+        public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+        {
+            if (!Exists(sourceDir))
+                throw new DirectoryNotFoundException($"Source directory not found: {sourceDir.GlobalizePath()}");
+
+            string[] dirs = GetDirectories(sourceDir, "*", SearchOption.TopDirectoryOnly);
+
+            CreateDirectory(destinationDir);
+
+            foreach (string file in GetFiles(sourceDir, "*", SearchOption.TopDirectoryOnly))
+            {
+                GodotTools.Utils.File.Copy(file, Path.Combine(destinationDir, file.GetFile()));
+            }
+
+            if (recursive)
+            {
+                foreach (string subDir in dirs)
+                {
+                    CopyDirectory(subDir, Path.Combine(destinationDir, new DirectoryInfo(subDir).Name), true);
+                }
+            }
+        }
 
         public static string[] GetDirectories(string path, string searchPattern, SearchOption searchOption)
         {

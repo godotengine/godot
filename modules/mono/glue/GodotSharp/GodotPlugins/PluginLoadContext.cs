@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -8,7 +10,7 @@ namespace GodotPlugins
 {
     public class PluginLoadContext : AssemblyLoadContext
     {
-        private readonly AssemblyDependencyResolver _resolver;
+        private readonly AssemblyDependencyResolver? _resolver;
         private readonly ICollection<string> _sharedAssemblies;
         private readonly AssemblyLoadContext _mainLoadContext;
 
@@ -18,7 +20,9 @@ namespace GodotPlugins
             AssemblyLoadContext mainLoadContext, bool isCollectible)
             : base(isCollectible)
         {
-            _resolver = new AssemblyDependencyResolver(pluginPath);
+            // Android's runtime resolves the APK's managed bundle and does not
+            // support AssemblyDependencyResolver. Reuse the host load context.
+            _resolver = OperatingSystem.IsAndroid() ? null : new AssemblyDependencyResolver(pluginPath);
             _sharedAssemblies = sharedAssemblies;
             _mainLoadContext = mainLoadContext;
 
@@ -43,12 +47,26 @@ namespace GodotPlugins
             }
         }
 
+        // 2dog: only untrimmed desktop/editor deployments load plugins from disk; trimmed Android deployments
+        // resolve them through the host load context.
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "Plugin assemblies are loaded from disk in untrimmed deployments only.")]
         protected override Assembly? Load(AssemblyName assemblyName)
         {
             if (assemblyName.Name == null)
                 return null;
 
+            // 2dog: reuse host-loaded assemblies to preserve type identity across load contexts.
+            Assembly? existingAssembly = AssemblyLoadContext.Default.Assemblies
+                .FirstOrDefault(a => string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (existingAssembly != null)
+                return existingAssembly;
+
             if (_sharedAssemblies.Contains(assemblyName.Name))
+                return _mainLoadContext.LoadFromAssemblyName(assemblyName);
+
+            if (_resolver == null)
                 return _mainLoadContext.LoadFromAssemblyName(assemblyName);
 
             string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
@@ -74,7 +92,7 @@ namespace GodotPlugins
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
         {
-            string? libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+            string? libraryPath = _resolver?.ResolveUnmanagedDllToPath(unmanagedDllName);
             if (libraryPath != null)
                 return LoadUnmanagedDllFromPath(libraryPath);
 

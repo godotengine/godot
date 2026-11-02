@@ -1,0 +1,41 @@
+diff --git a/thirdparty/tint/src/tint/lang/spirv/validate/validate.cc b/thirdparty/tint/src/tint/lang/spirv/validate/validate.cc
+--- a/thirdparty/tint/src/tint/lang/spirv/validate/validate.cc	2026-05-12 10:45:35
++++ b/thirdparty/tint/src/tint/lang/spirv/validate/validate.cc	2026-05-11 23:04:42
+@@ -70,21 +70,35 @@
+     // time by scanning the whole module and building a string table.
+     spvtools::ValidatorOptions val_opts;
+     val_opts.SetFriendlyNames(false);
++    // Godot's runtime-specialized shaders can produce uniform buffer structs
++    // whose member offsets don't satisfy any standard alignment rules (the
++    // offsets match the C++ struct packing, which Vulkan GPUs accept but
++    // spirv-val rejects). Naga had no layout validation at all, so these
++    // always passed. Skip block layout validation to match that behavior.
++    val_opts.SetSkipBlockLayout(true);
+ 
+     if (tools.Validate(spirv.data(), spirv.size(), val_opts)) {
+         return Success;
+     }
+ 
++    // Build a summary with the specific validation errors first, then
++    // the disassembly. This ensures the actual error message is visible
++    // even if the output is truncated.
++    std::string summary = "SPIR-V failed validation.";
++    for (size_t i = 1; i < diags.Length(); i++) {
++        summary += " | " + diags[i].message.Plain();
++    }
++
+     std::string disassembly;
+     if (tools.Disassemble(
+             spirv.data(), spirv.size(), &disassembly,
+             SPV_BINARY_TO_TEXT_OPTION_INDENT | SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES)) {
+         diag::Diagnostic& err = diags.Front();
+-        err.message = "SPIR-V failed validation.\n\nDisassembly:\n" + std::move(disassembly);
++        err.message = summary + "\n\nDisassembly:\n" + std::move(disassembly);
+         err.severity = diag::Severity::Error;
+     } else {
+         diag::Diagnostic& err = diags.Front();
+-        err.message = "SPIR-V failed validation and disassembly\n";
++        err.message = summary + "\n";
+         err.severity = diag::Severity::Error;
+     }
+     auto file = std::make_shared<Source::File>("spirv", disassembly);

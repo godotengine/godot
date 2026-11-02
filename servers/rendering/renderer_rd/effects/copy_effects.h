@@ -178,6 +178,7 @@ private:
 		COPY_TO_FB_COPY_PANORAMA_TO_DP,
 		COPY_TO_FB_COPY2,
 		COPY_TO_FB_SET_COLOR,
+		COPY_TO_FB_DEPTH,
 
 		// These variants are disabled unless XR shaders are enabled.
 		// They should be listed last.

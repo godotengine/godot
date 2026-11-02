@@ -1,0 +1,35 @@
+#version 450
+
+// Tests deeply chained specialization constant operations:
+//   a = SPEC_A + SPEC_B
+//   b = a * SPEC_C
+//   c = b & 0xFF
+//   d = c >> 2
+// Each derived value feeds into the next, testing deferred
+// materialization of multi-level OpSpecConstantOp chains.
+
+layout(constant_id = 0) const uint SPEC_A = 10u;
+layout(constant_id = 1) const uint SPEC_B = 20u;
+layout(constant_id = 2) const uint SPEC_C = 3u;
+
+layout(push_constant) uniform PushConstants {
+    uint index;
+} pc;
+
+layout(set = 0, binding = 0) buffer OutputBuf {
+    uint values[];
+} output_buf;
+
+void main() {
+    // Chain of spec constant derived values
+    uint a = SPEC_A + SPEC_B;        // OpSpecConstantOp IAdd
+    uint b = a * SPEC_C;              // OpSpecConstantOp IMul
+    uint c = b & 0xFFu;              // OpSpecConstantOp BitwiseAnd
+    uint d = c >> 2u;                 // OpSpecConstantOp ShiftRightLogical
+
+    // Use all derived values so they aren't optimized away
+    output_buf.values[pc.index * 4u + 0u] = a;
+    output_buf.values[pc.index * 4u + 1u] = b;
+    output_buf.values[pc.index * 4u + 2u] = c;
+    output_buf.values[pc.index * 4u + 3u] = d;
+}

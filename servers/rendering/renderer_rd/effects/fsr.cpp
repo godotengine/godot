@@ -30,6 +30,8 @@
 
 #include "fsr.h"
 
+#include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
@@ -41,15 +43,15 @@ FSR::FSR() {
 	fsr_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
 	fsr_shader.initialize(fsr_upscale_modes);
 
-	FSRShaderVariant variant;
 	if (RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT)) {
-		variant = FSR_SHADER_VARIANT_NORMAL;
+		shader_variant = FSR_SHADER_VARIANT_NORMAL; // Keeps the fallback, so shader bakes cover FP16-less devices.
 	} else {
-		variant = FSR_SHADER_VARIANT_FALLBACK;
+		shader_variant = FSR_SHADER_VARIANT_FALLBACK;
+		fsr_shader.set_variant_enabled(FSR_SHADER_VARIANT_NORMAL, false);
 	}
 
 	shader_version = fsr_shader.version_create();
-	pipeline.create_compute_pipeline(fsr_shader.version_get_shader(shader_version, variant));
+	pipeline.create_compute_pipeline(fsr_shader.version_get_shader(shader_version, shader_variant));
 }
 
 FSR::~FSR() {
@@ -76,6 +78,17 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	}
 
 	RID upscale_texture = p_render_buffers->get_texture(SNAME("FSR"), SNAME("upscale_texture"));
+	RID destination_texture = p_destination_texture;
+	const bool webgpu = RD::get_singleton()->get_device_api_name() == "WebGPU";
+	if (webgpu) {
+		// WebGPU storage bindings require the shader's exact RGBA16F format.
+		// The final viewport may be LDR or sRGB and need not support storage.
+		if (!p_render_buffers->has_texture(SNAME("FSR"), SNAME("resolve_texture"))) {
+			p_render_buffers->create_texture(SNAME("FSR"), SNAME("resolve_texture"), RD::DATA_FORMAT_R16G16B16A16_SFLOAT,
+					RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT, RD::TEXTURE_SAMPLES_1, target_size, 1);
+		}
+		destination_texture = p_render_buffers->get_texture(SNAME("FSR"), SNAME("resolve_texture"));
+	}
 
 	FSRUpscalePushConstant push_constant;
 	memset(&push_constant, 0, sizeof(FSRUpscalePushConstant));
@@ -92,7 +105,7 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	push_constant.upscaled_height = target_size.height;
 	push_constant.sharpness = fsr_upscale_sharpness;
 
-	RID shader = fsr_shader.version_get_shader(shader_version, 0);
+	RID shader = fsr_shader.version_get_shader(shader_version, shader_variant);
 	ERR_FAIL_COND(shader.is_null());
 
 	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
@@ -112,7 +125,7 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 
 	//FSR Rcas
 	RD::Uniform u_upscale_texture_with_sampler(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, { default_sampler, upscale_texture });
-	RD::Uniform u_destination_texture(RD::UNIFORM_TYPE_IMAGE, 0, { p_destination_texture });
+	RD::Uniform u_destination_texture(RD::UNIFORM_TYPE_IMAGE, 0, { destination_texture });
 
 	push_constant.pass = FSR_UPSCALE_PASS_RCAS;
 	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_upscale_texture_with_sampler), 0);
@@ -123,4 +136,8 @@ void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_te
 	RD::get_singleton()->compute_list_dispatch(compute_list, dispatch_x, dispatch_y, 1);
 
 	RD::get_singleton()->compute_list_end();
+	if (webgpu) {
+		RID destination_fb = FramebufferCacheRD::get_singleton()->get_cache(p_destination_texture);
+		CopyEffects::get_singleton()->copy_to_fb_rect(destination_texture, destination_fb, Rect2i(Point2i(), target_size));
+	}
 }

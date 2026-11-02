@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -602,6 +603,9 @@ TextureStorage::TextureStorage() {
 		tformat.width = 4;
 		tformat.height = 4;
 		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | (vrs_supported ? RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT : 0);
+		if (!vrs_supported && !RD::get_singleton()->texture_is_format_supported_for_usage(tformat.format, RD::TEXTURE_USAGE_STORAGE_BIT)) {
+			tformat.usage_bits &= ~RD::TEXTURE_USAGE_STORAGE_BIT;
+		}
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
 
 		uint32_t pixel_size = RD::get_image_format_pixel_size(tformat.format);
@@ -995,6 +999,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 
 	TextureToRDFormat ret_format;
 	Ref<Image> image = _validate_texture_format(p_image, ret_format);
+	ERR_FAIL_COND(image.is_null());
 
 	Texture texture;
 
@@ -1089,6 +1094,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 			}
 
 			images.push_back(_validate_texture_format(p_layers[i], ret_format));
+			ERR_FAIL_COND(images[images.size() - 1].is_null());
 		}
 	}
 
@@ -1191,6 +1197,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 		for (int i = 0; i < p_data.size(); i++) {
 			TextureToRDFormat f;
 			images.write[i] = _validate_texture_format(p_data[i], f);
+			ERR_FAIL_COND(images[i].is_null());
 			if (i == 0) {
 				ret_format = f;
 				validated_format = images[0]->get_format();
@@ -1342,6 +1349,7 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	TextureToRDFormat ret_format;
 
 	Ref<Image> valid_image = _validate_texture_format(image, ret_format);
+	ERR_FAIL_COND(valid_image.is_null());
 	Texture texture;
 
 	texture.type = TextureStorage::TYPE_2D;
@@ -1631,6 +1639,7 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 #endif
 	TextureToRDFormat f;
 	Ref<Image> validated = _validate_texture_format(p_image, f);
+	ERR_FAIL_COND(validated.is_null());
 
 	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
 }
@@ -1889,6 +1898,9 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	}
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
+	if (data.is_empty() && RD::get_singleton()->get_driver_workarounds().async_texture_readback) {
+		return Ref<Image>(); // Not read back yet, the caller may retry next frame.
+	}
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image;
 
@@ -1923,7 +1935,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
 	}
 
-	if (tex->format != tex->validated_format) {
+	if (tex->format != tex->validated_format && !Image::is_format_compressed(tex->format)) {
 		image->convert(tex->format);
 	}
 
@@ -2271,7 +2283,20 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 	Image::Format original_format = p_image->get_format();
 	Ref<Image> image = p_image->duplicate();
 
-	switch (p_image->get_format()) {
+	const bool no_swizzle = RD::get_singleton()->get_driver_workarounds().no_texture_swizzle;
+	const bool expand_swizzled = no_swizzle && (original_format == Image::FORMAT_L8 || original_format == Image::FORMAT_LA8 || original_format == Image::FORMAT_RGBA4444 || original_format == Image::FORMAT_RGB565 || original_format == Image::FORMAT_DXT5_RA_AS_RG || original_format == Image::FORMAT_ETC2_RA_AS_RG);
+	const bool expand_luminance = no_swizzle && (original_format == Image::FORMAT_L8 || original_format == Image::FORMAT_LA8);
+	if (no_swizzle) {
+		if (expand_luminance || original_format == Image::FORMAT_RGBA4444 || original_format == Image::FORMAT_RGB565) {
+			image->convert(Image::FORMAT_RGBA8);
+		} else if (original_format == Image::FORMAT_DXT5_RA_AS_RG || original_format == Image::FORMAT_ETC2_RA_AS_RG) {
+			// Image decompression restores the RA encoding to RG, including every mip level.
+			ERR_FAIL_COND_V(image->decompress() != OK, Ref<Image>());
+			image->convert(Image::FORMAT_RGBA8);
+		}
+	}
+
+	switch (image->get_format()) {
 		case Image::FORMAT_L8: {
 			r_format.format = RD::DATA_FORMAT_R8_UNORM;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
@@ -2851,7 +2876,7 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 
 	// RGB formats are often not supported, only print warnings about them when launched with the --verbose flag.
 	const bool is_rgb_format = original_format == Image::FORMAT_RGB8 || original_format == Image::FORMAT_RGBH || original_format == Image::FORMAT_RGBF;
-	if ((is_print_verbose_enabled() || !is_rgb_format) && original_format != image->get_format()) {
+	if ((is_print_verbose_enabled() || (!is_rgb_format && !expand_swizzled)) && original_format != image->get_format()) {
 		WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(original_format), Image::get_format_name(image->get_format())));
 	}
 
@@ -4282,6 +4307,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	rt->color_format = render_target_get_color_format(rt->use_hdr, false);
 	rt->color_format_srgb = render_target_get_color_format(rt->use_hdr, true);
+	rt->msaa = RenderSceneBuffersRD::get_supported_msaa(rt->requested_msaa, rt->color_format);
 
 	if (rt->use_hdr) {
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBAH : Image::FORMAT_RGBH;
@@ -4628,11 +4654,11 @@ void TextureStorage::render_target_set_as_unused(RID p_render_target) {
 void TextureStorage::render_target_set_msaa(RID p_render_target, RSE::ViewportMSAA p_msaa) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
-	if (p_msaa == rt->msaa) {
+	if (p_msaa == rt->requested_msaa) {
 		return;
 	}
 
-	rt->msaa = p_msaa;
+	rt->requested_msaa = p_msaa;
 	_update_render_target(rt);
 }
 
@@ -5295,6 +5321,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 		return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	} else {
 		// FIXME: Storage bit should only be requested when FSR is required.
-		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		uint32_t bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (!RD::get_singleton()->get_driver_workarounds().no_storage_render_targets) {
+			bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+		}
+		return bits;
 	}
 }

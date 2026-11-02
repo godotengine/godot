@@ -80,7 +80,8 @@ def get_flags():
     return {
         "arch": "arm64",
         "target": "template_debug",
-        "supported": ["mono"],
+        # The JNI shared library can reuse the .NET host's registered GodotPlugins.
+        "supported": ["library", "mono"],
     }
 
 

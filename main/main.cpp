@@ -196,8 +196,10 @@ static PhysicsServer3D *physics_server_3d = nullptr;
 #ifndef XR_DISABLED
 static XRServer *xr_server = nullptr;
 #endif // XR_DISABLED
-// We error out if setup2() doesn't turn this true
+// 2dog: track setup phases separately so delayed setup2 failures can roll back phase one.
+static bool _setup_success = false;
 static bool _start_success = false;
+static bool _core_modules_initialized = false;
 
 // Drivers
 
@@ -298,6 +300,21 @@ bool profile_gpu = false;
 // Constants.
 
 static const String NULL_DISPLAY_DRIVER("headless");
+
+static const char *webgpu_unavailable_reason() {
+#if defined(WEB_ENABLED) && defined(THREADS_ENABLED)
+	return "WebGPU is unavailable in multithreaded browser runtimes. Use a single-threaded runtime or OpenGL Compatibility.";
+#elif defined(REAL_T_IS_DOUBLE)
+	return "WebGPU is unavailable in double-precision runtimes. Use a single-precision runtime or another rendering driver.";
+#elif defined(ANDROID_ENABLED)
+	return "WebGPU is unavailable on Android. Use Vulkan or OpenGL Compatibility.";
+#elif !defined(WEBGPU_ENABLED)
+	return "WebGPU is not included in this runtime. Use a WebGPU-enabled runtime or another rendering driver.";
+#else
+	return nullptr;
+#endif
+}
+
 static const String EMBEDDED_DISPLAY_DRIVER("embedded");
 static const String NULL_AUDIO_DRIVER("Dummy");
 
@@ -307,6 +324,165 @@ static const String NULL_AUDIO_DRIVER("Dummy");
 static const int OPTION_COLUMN_LENGTH = 32;
 
 /* Helper methods */
+
+static void reset_command_line_state() {
+	CoreGlobals::print_line_enabled = true;
+	CoreGlobals::print_error_enabled = true;
+
+	display_driver = "";
+	tablet_driver = "";
+	text_driver = "";
+	text_driver_idx = -1;
+	audio_driver_idx = -1;
+
+	accessibility_mode = AccessibilityServerEnums::AccessibilityMode::ACCESSIBILITY_AUTO;
+	accessibility_driver_name = "";
+	accessibility_mode_set = false;
+	single_window = false;
+	editor = false;
+	project_manager = false;
+	cmdline_tool = false;
+	locale = "";
+	log_file = "";
+	show_help = false;
+	quit_after = 0;
+	editor_pid = 0;
+#ifdef TOOLS_ENABLED
+	found_project = false;
+	recovery_mode = false;
+	auto_build_solutions = false;
+	debug_server_uri = "";
+	wait_for_import = false;
+	restore_editor_window_layout = true;
+#ifndef DISABLE_DEPRECATED
+	converter_max_kb_file = 4 * 1024;
+	converter_max_line_length = 100000;
+#endif // DISABLE_DEPRECATED
+	forwardable_cli_arguments.clear();
+#endif // TOOLS_ENABLED
+	single_threaded_scene = false;
+
+	window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
+	window_orientation = DisplayServerEnums::SCREEN_LANDSCAPE;
+	window_vsync_mode = DisplayServerEnums::VSYNC_ENABLED;
+	window_flags = 0;
+	window_size = Size2i(1152, 648);
+	init_screen = DisplayServerEnums::SCREEN_PRIMARY;
+	init_fullscreen = false;
+	init_maximized = false;
+	init_windowed = false;
+	init_always_on_top = false;
+	init_use_custom_pos = false;
+	init_use_custom_screen = false;
+	init_custom_pos = Vector2();
+	init_embed_parent_window_id = 0;
+#ifdef TOOLS_ENABLED
+	init_display_scale_found = false;
+	init_display_scale = 0;
+	init_custom_scale_found = false;
+	init_custom_scale = 1.0;
+	init_expand_to_title = false;
+	init_expand_to_title_found = false;
+#endif // TOOLS_ENABLED
+	use_custom_res = true;
+	force_res = false;
+
+	use_debug_profiler = false;
+#ifdef DEBUG_ENABLED
+	debug_collisions = false;
+	debug_paths = false;
+	debug_navigation = false;
+	debug_avoidance = false;
+	debug_canvas_item_redraw = false;
+	debug_mute_audio = false;
+#endif // DEBUG_ENABLED
+	max_fps = -1;
+	frame_delay = 0;
+	audio_output_latency = 0;
+	disable_render_loop = false;
+	fixed_fps = -1;
+	disable_vsync = false;
+	print_fps = false;
+#ifdef TOOLS_ENABLED
+	editor_pseudolocalization = false;
+	dump_gdextension_interface = false;
+	dump_gdextension_interface_header = false;
+	dump_extension_api = false;
+	include_docs_in_extension_api_dump = false;
+	validate_extension_api = false;
+	validate_extension_api_file = "";
+#endif // TOOLS_ENABLED
+	profile_gpu = false;
+}
+
+void Main::cleanup_setup_phase() {
+	EngineDebugger::deinitialize();
+
+#ifdef TOOLS_ENABLED
+	if (EditorPaths::get_singleton()) {
+		EditorPaths::free();
+	}
+#endif
+
+	if (performance) {
+		memdelete(performance);
+		performance = nullptr;
+	}
+	if (input_map) {
+		memdelete(input_map);
+		input_map = nullptr;
+	}
+	if (translation_server) {
+		memdelete(translation_server);
+		translation_server = nullptr;
+	}
+	if (globals) {
+		memdelete(globals);
+		globals = nullptr;
+	}
+	if (packed_data) {
+		memdelete(packed_data);
+		packed_data = nullptr;
+	}
+
+	unregister_core_driver_types();
+	if (_core_modules_initialized) {
+		unregister_core_extensions();
+		uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+		_core_modules_initialized = false;
+	}
+
+	if (engine) {
+		memdelete(engine);
+		engine = nullptr;
+	}
+
+	unregister_core_types();
+
+	OS::get_singleton()->_cmdline.clear();
+	OS::get_singleton()->_user_args.clear();
+
+	if (message_queue) {
+		memdelete(message_queue);
+		message_queue = nullptr;
+	}
+
+#if defined(STEAMAPI_ENABLED)
+	if (steam_tracker) {
+		memdelete(steam_tracker);
+		steam_tracker = nullptr;
+	}
+#endif
+
+	if (CoreGlobals::engine_reinit_enabled) {
+		AudioDriverManager::reset();
+	}
+
+	OS::get_singleton()->finalize_core();
+	_setup_success = false;
+	_start_success = false;
+	Thread::release_main_thread();
+}
 
 bool Main::is_cmdline_tool() {
 	return cmdline_tool;
@@ -411,11 +587,83 @@ void finalize_physics() {
 }
 
 void finalize_display() {
-	rendering_server->finish();
-	memdelete(rendering_server);
+	// 2dog: release cached cursor textures before RenderingServer shutdown.
+	if (display_server && rendering_server) {
+		for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
+			display_server->cursor_set_custom_image(Ref<Resource>(), (DisplayServerEnums::CursorShape)i);
+		}
+	}
 
-	memdelete(display_server);
-	memdelete(accessibility_server);
+	if (rendering_server) {
+		rendering_server->finish();
+		memdelete(rendering_server);
+		rendering_server = nullptr;
+	}
+
+	if (display_server) {
+		memdelete(display_server);
+		display_server = nullptr;
+	}
+	if (accessibility_server) {
+		memdelete(accessibility_server);
+		accessibility_server = nullptr;
+	}
+}
+
+// 2dog: roll back partial phase two before scene, navigation, and physics initialization.
+// 2dog: the caller cleans up phase one.
+void Main::cleanup_servers_phase() {
+	ResourceLoader::clear_thread_load_tasks();
+	ResourceLoader::clear_translation_remaps();
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2DManager::finalize_server_manager();
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3DManager::finalize_server_manager();
+#endif // NAVIGATION_3D_DISABLED
+
+	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	unregister_server_types();
+	EngineDebugger::deinitialize();
+
+#ifndef XR_DISABLED
+	if (xr_server) {
+		memdelete(xr_server);
+		xr_server = nullptr;
+	}
+#endif // XR_DISABLED
+	if (audio_server) {
+		audio_server->finish();
+		memdelete(audio_server);
+		audio_server = nullptr;
+	}
+
+	// 2dog: destroy OS-owned joypads before Input, matching normal Main::cleanup().
+	OS::get_singleton()->finalize();
+	finalize_display();
+
+	if (input) {
+		memdelete(input);
+		input = nullptr;
+	}
+	if (tsman) {
+		memdelete(tsman);
+		tsman = nullptr;
+	}
+#ifndef PHYSICS_3D_DISABLED
+	if (physics_server_3d_manager) {
+		memdelete(physics_server_3d_manager);
+		physics_server_3d_manager = nullptr;
+	}
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
+	if (physics_server_2d_manager) {
+		memdelete(physics_server_2d_manager);
+		physics_server_2d_manager = nullptr;
+	}
+#endif // PHYSICS_2D_DISABLED
 }
 
 void initialize_theme_db() {
@@ -621,9 +869,10 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--rendering-method <renderer>", "Renderer name. Requires driver support.\n");
 	print_help_option("--rendering-driver <driver>", "Rendering driver (depends on display driver).\n");
 	print_help_option("--gpu-index <device_index>", "Use a specific GPU (only available on the Forward+/Mobile renderers; run with --verbose to get a list of available devices).\n");
+	print_help_option("--gpu-luid <adapter_luid>", "Prefer the GPU whose OS adapter LUID matches (hexadecimal; Windows). Ignored when --gpu-index is set; falls back to automatic selection when no device matches.\n"); // 2dog:
 	print_help_option("--text-driver <driver>", "Text driver (used for font rendering, bidirectional support and shaping).\n");
 	print_help_option("--tablet-driver <driver>", "Pen tablet input driver.\n");
-	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script.\n");
+	print_help_option("--headless", "Enable headless mode (--display-driver headless --audio-driver Dummy). Useful for servers and with --script. With an explicit --rendering-driver or --rendering-method, a window-less rendering device still runs, as shader baking needs one.\n");
 	print_help_option("--log-file <file>", "Write output/error log to the specified path instead of the default location defined by the project.\n");
 	print_help_option("", "<file> path should be absolute or relative to the project directory.\n");
 	print_help_option("--write-movie <file>", "Write a video to the specified path (usually with .avi or .png extension).\n");
@@ -644,6 +893,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--hidden-window", "Never show the main window; rendering continues off-screen (2dog embedding hosts).\n");
 	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 	print_help_option("--accessibility-driver <driver>", "Select accessibility driver ['accesskit', 'dummy'].\n");
 
@@ -790,6 +1040,7 @@ Error Main::test_setup() {
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
+	gd_extension_load_extensions(); // 2dog: load non-embedded GDExtensions.
 
 	register_core_singletons();
 
@@ -1038,6 +1289,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
+	reset_command_line_state();
 
 	CoreGlobals::print_ready = true;
 
@@ -1197,7 +1449,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		}
 		// If gpu is specified, both editor and debug instances started from editor will inherit.
-		if (arg == "--gpu-index") {
+		if (arg == "--gpu-index" || arg == "--gpu-luid") { // 2dog: also forward --gpu-luid.
 			if (N) {
 				const String &next_arg = N->get();
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(arg);
@@ -1352,6 +1604,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing GPU index argument, aborting.\n");
+				goto error;
+			}
+		} else if (arg == "--gpu-luid") { // 2dog:
+			if (N) {
+				Engine::singleton->gpu_luid = (uint64_t)N->get().hex_to_int();
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing GPU LUID argument, aborting.\n");
 				goto error;
 			}
 		} else if (arg == "--gpu-validation") {
@@ -1773,6 +2033,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					OS::get_singleton()->print("Invalid project path specified: \"%s\", aborting.\n", p.utf8().get_data());
 					goto error;
 				}
+				// 2dog: record project paths explicitly; process CWD changes can race other engine instances.
+				String resolved = p.simplify_path();
+				project_path = resolved.is_absolute_path() ? resolved : OS::get_singleton()->get_cwd();
 				N = N->next();
 			} else {
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
@@ -1808,7 +2071,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				path = file.substr(0, sep);
 			}
 			if (OS::get_singleton()->set_cwd(path) == OK) {
-				// path already specified, don't override
+				// 2dog: record the resolved project path (see --path above).
+				String resolved = path.simplify_path();
+				project_path = resolved.is_absolute_path() ? resolved : OS::get_singleton()->get_cwd();
 			} else {
 				project_path = path;
 			}
@@ -2049,6 +2314,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 #endif // TOOLS_ENABLED
+		} else if (arg == "--hidden-window") {
+			// 2dog: embedding hosts composite the viewport, so keep the OS window unmapped.
+			OS::get_singleton()->_hidden_window = true;
 		} else if (arg == "--wid") {
 			if (N) {
 				init_embed_parent_window_id = N->get().to_int();
@@ -2102,6 +2370,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+
+	register_early_core_singletons();
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	_core_modules_initialized = true;
+	register_core_extensions(); // 2dog: embedded extensions can override project settings.
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, false, editor) == OK) {
@@ -2277,9 +2550,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
 	}
 
-	register_early_core_singletons();
-	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
-	register_core_extensions(); // core extensions must be registered after globals setup and before display
+	gd_extension_load_extensions(); // 2dog: load non-embedded GDExtensions.
 
 	if (!editor) {
 		ResourceUID::get_singleton()->enable_reverse_cache();
@@ -2339,7 +2610,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
-	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "") {
+	// 2dog: a libgodot world callback replaces main-scene loading, so it needs no main scene.
+	if (main_args.is_empty() && String(GLOBAL_GET("application/run/main_scene")) == "" && CoreGlobals::global_world_init_function == nullptr) {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -2386,12 +2658,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		// RenderingDevice driver overrides per platform.
 		GLOBAL_DEF_RST("rendering/rendering_device/driver", "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "vulkan,d3d12"), "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "vulkan,d3d12,webgpu"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan,webgpu"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.visionos", PROPERTY_HINT_ENUM, "metal"), "metal");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan,webgpu"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.web", PROPERTY_HINT_ENUM, "webgpu"), "webgpu");
+
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/webgpu/native_backend", PROPERTY_HINT_ENUM, "auto,d3d12,vulkan,metal,d3d11"), "auto");
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
@@ -2536,6 +2811,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		renderer_hints = "dummy";
 	}
 
+	if (display_driver != NULL_DISPLAY_DRIVER && rendering_driver.to_lower() == "webgpu" && webgpu_unavailable_reason()) {
+		OS::get_singleton()->printerr("%s\n", webgpu_unavailable_reason());
+		goto error;
+	}
+
 	if (!rendering_driver.is_empty()) {
 		// As the rendering drivers available may depend on the display driver and renderer
 		// selected, we can't do an exhaustive check here, but we can look through all
@@ -2607,6 +2887,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef METAL_ENABLED
 			available_drivers.push_back("metal");
 #endif
+#ifdef WEBGPU_ENABLED
+			available_drivers.push_back("webgpu");
+#endif
 		}
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
@@ -2646,7 +2929,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
-	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "forward_plus,mobile,gl_compatibility"), "gl_compatibility"); // Forward+ and Mobile use WebGPU.
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
@@ -2664,6 +2947,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
 			rendering_driver_source = OS::RenderingSource::RENDERING_SOURCE_PROJECT_SETTING;
 		}
+	}
+
+	if (display_driver != NULL_DISPLAY_DRIVER && rendering_driver.to_lower() == "webgpu" && webgpu_unavailable_reason()) {
+		OS::get_singleton()->printerr("%s\n", webgpu_unavailable_reason());
+		goto error;
 	}
 
 	// always convert to lower case for consistency in the code
@@ -2931,6 +3219,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
+	_setup_success = true;
 
 	if (p_second_phase) {
 		exit_err = setup2();
@@ -2961,52 +3250,8 @@ error:
 		OS::get_singleton()->remove_lock_file();
 	}
 
-	EngineDebugger::deinitialize();
-
-	if (performance) {
-		memdelete(performance);
-	}
-	if (input_map) {
-		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (globals) {
-		memdelete(globals);
-	}
-	if (packed_data) {
-		memdelete(packed_data);
-	}
-
-	unregister_core_driver_types();
-	unregister_core_extensions();
-
-	if (engine) {
-		memdelete(engine);
-	}
-
-	unregister_core_types();
-
-	OS::get_singleton()->_cmdline.clear();
-	OS::get_singleton()->_user_args.clear();
-
-	if (message_queue) {
-		memdelete(message_queue);
-	}
-
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
-
-#if defined(STEAMAPI_ENABLED)
-	if (steam_tracker) {
-		memdelete(steam_tracker);
-	}
-#endif
-
-	OS::get_singleton()->finalize_core();
-	locale = String();
-
-	Thread::release_main_thread();
+	cleanup_setup_phase();
 
 	return exit_err;
 }
@@ -3389,32 +3634,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 
-			if (display_server) {
-				memdelete(display_server);
-			}
-
-			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
-			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
-			unregister_server_types();
-
-			if (input) {
-				memdelete(input);
-			}
-			if (tsman) {
-				memdelete(tsman);
-			}
-#ifndef PHYSICS_3D_DISABLED
-			if (physics_server_3d_manager) {
-				memdelete(physics_server_3d_manager);
-			}
-#endif // PHYSICS_3D_DISABLED
-#ifndef PHYSICS_2D_DISABLED
-			if (physics_server_2d_manager) {
-				memdelete(physics_server_2d_manager);
-			}
-#endif // PHYSICS_2D_DISABLED
-
-			return err;
+			cleanup_servers_phase();
+			return err != OK ? err : ERR_CANT_CREATE;
 		}
 
 #ifdef TOOLS_ENABLED
@@ -3455,7 +3676,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 #endif
-		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS)) {
+		if (display_server->has_feature(DisplayServerEnums::FEATURE_SUBWINDOWS) && !OS::get_singleton()->is_hidden_window()) { // 2dog: --hidden-window skips the show.
 			display_server->show_window(DisplayServerEnums::MAIN_WINDOW_ID);
 		}
 
@@ -3749,14 +3970,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 				}
 			}
 		}
-		if (text_driver_idx >= 0) {
-			Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(text_driver_idx);
-			TextServerManager::get_singleton()->set_primary_interface(ts);
-			if (ts->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
-				ts->load_support_data("res://" + ts->get_support_data_filename());
-			}
-		} else {
+		if (text_driver_idx < 0) {
+			OS::get_singleton()->benchmark_end_measure("Startup", "Text Server");
+			cleanup_servers_phase();
 			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
+		}
+		Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(text_driver_idx);
+		TextServerManager::get_singleton()->set_primary_interface(ts);
+		if (ts->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			ts->load_support_data("res://" + ts->get_support_data_filename());
 		}
 
 		OS::get_singleton()->benchmark_end_measure("Startup", "Text Server");
@@ -4347,7 +4569,7 @@ int Main::start() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty()) {
+	if (!editor && !project_manager && !cmdline_tool && script.is_empty() && game_path.is_empty() && CoreGlobals::global_world_init_function == nullptr) {
 		// If we end up here, it means we didn't manage to detect what we want to run.
 		// Let's throw an error gently. The code leading to this is pretty brittle so
 		// this might end up triggered by valid usage, in which case we'll have to
@@ -4757,7 +4979,9 @@ int Main::start() {
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_GET("network/tls/certificate_bundle_override"));
 
-			if (!game_path.is_empty()) {
+			if (CoreGlobals::run_global_world_init_function()) {
+				// 2dog: the libgodot host initialized the world, so skip scene loading.
+			} else if (!game_path.is_empty()) {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid()) {
@@ -5219,7 +5443,12 @@ void Main::cleanup(bool p_force) {
 	GodotProfileZone("cleanup");
 	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
-		ERR_FAIL_COND(!_start_success);
+		ERR_FAIL_COND(!_setup_success);
+		if (!_start_success) {
+			OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
+			cleanup_setup_phase();
+			return;
+		}
 	}
 
 	// Printing in the usual way can become problematic during/after cleanup.
@@ -5239,6 +5468,7 @@ void Main::cleanup(bool p_force) {
 
 	if (movie_writer) {
 		movie_writer->end();
+		movie_writer = nullptr;
 	}
 
 	ResourceLoader::clear_thread_load_tasks();
@@ -5321,16 +5551,19 @@ void Main::cleanup(bool p_force) {
 #ifndef XR_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
+		xr_server = nullptr;
 	}
 #endif // XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
 		memdelete(audio_server);
+		audio_server = nullptr;
 	}
 
 	if (camera_server) {
 		memdelete(camera_server);
+		camera_server = nullptr;
 	}
 
 	OS::get_singleton()->finalize();
@@ -5339,35 +5572,44 @@ void Main::cleanup(bool p_force) {
 
 	if (input) {
 		memdelete(input);
+		input = nullptr;
 	}
 
 	if (packed_data) {
 		memdelete(packed_data);
+		packed_data = nullptr;
 	}
 	if (performance) {
 		memdelete(performance);
+		performance = nullptr;
 	}
 	if (input_map) {
 		memdelete(input_map);
+		input_map = nullptr;
 	}
 	if (translation_server) {
 		memdelete(translation_server);
+		translation_server = nullptr;
 	}
 	if (tsman) {
 		memdelete(tsman);
+		tsman = nullptr;
 	}
 #ifndef PHYSICS_3D_DISABLED
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
+		physics_server_3d_manager = nullptr;
 	}
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+		physics_server_2d_manager = nullptr;
 	}
 #endif // PHYSICS_2D_DISABLED
 	if (globals) {
 		memdelete(globals);
+		globals = nullptr;
 	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
@@ -5380,27 +5622,49 @@ void Main::cleanup(bool p_force) {
 	// Now should be safe to delete MessageQueue (famous last words).
 	message_queue->flush();
 	memdelete(message_queue);
+	message_queue = nullptr;
 
 #if defined(STEAMAPI_ENABLED)
 	if (steam_tracker) {
 		memdelete(steam_tracker);
+		steam_tracker = nullptr;
 	}
 #endif
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	_core_modules_initialized = false;
 
 	if (engine) {
 		memdelete(engine);
+		engine = nullptr;
 	}
 
 	unregister_core_types();
+
+	if (CoreGlobals::engine_reinit_enabled) {
+		// 2dog: OS-owned audio drivers must be re-registered by the next engine instance.
+		AudioDriverManager::reset();
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Shutdown", "Main::Cleanup");
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+
+	_start_success = false;
+	_setup_success = false;
+	last_ticks = 0;
+	frames = 0;
+	hide_print_fps_attempts = 3;
+	frame = 0;
+	force_redraw_requested = false;
+	iterating = 0;
+	physics_process_max = 0;
+	process_max = 0;
+	navigation_process_max = 0;
+	main_timer_sync = MainTimerSync();
 
 	Thread::release_main_thread();
 }

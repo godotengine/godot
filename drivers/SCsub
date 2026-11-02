@@ -59,9 +59,12 @@ if env["metal"]:
         print_error("Target platform '{}' does not support the Metal rendering driver".format(env["platform"]))
         Exit(255)
     SConscript("metal/SCsub")
+if env["webgpu"]:
+    SConscript("webgpu/SCsub")
 
 # Input drivers
-if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "visionos"]:
+# 2dog: "sdl3" supplies the full SDL itself through thirdparty/sdl3-full.
+if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "visionos", "sdl3"]:
     # TODO: Evaluate support for Android and Web.
     SConscript("sdl/SCsub")
 

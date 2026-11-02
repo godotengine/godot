@@ -828,6 +828,8 @@ void OS::benchmark_dump() {
 
 OS::OS() {
 	singleton = this;
+	// 2dog: Unix clocks restart with each OS instance; do not sleep until a previous lifetime's deadline.
+	target_ticks = 0;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

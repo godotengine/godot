@@ -37,9 +37,17 @@ layout(set = 0, binding = 5, std430) restrict buffer readonly ProcessVoxels {
 }
 process_voxels;
 
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba16f, set = 0, binding = 6) uniform restrict image3D dst_light;
+#else
 layout(r32ui, set = 0, binding = 6) uniform restrict uimage3D dst_light;
+#endif
 layout(rgba8, set = 0, binding = 7) uniform restrict image3D dst_aniso0;
+#ifdef RENDER_DRIVER_WEBGPU
+layout(rgba8, set = 0, binding = 8) uniform restrict image3D dst_aniso1;
+#else
 layout(rg8, set = 0, binding = 8) uniform restrict image3D dst_aniso1;
+#endif
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -509,7 +517,11 @@ void main() {
 	//save to 3D textures
 	imageStore(dst_aniso0, positioni, aniso0);
 	imageStore(dst_aniso1, positioni, vec4(aniso1, 0.0, 0.0));
+#ifdef RENDER_DRIVER_WEBGPU
+	imageStore(dst_light, positioni, vec4(light_total, 0.0));
+#else
 	imageStore(dst_light, positioni, uvec4(light_total_rgbe));
+#endif
 
 	//also fill neighbors, so light interpolation during the indirect pass works
 
@@ -548,7 +560,11 @@ void main() {
 	for (uint i = 0; i < max_neighbours; i++) {
 		if (bool(neighbors & (1 << i))) {
 			ivec3 neighbour_pos = positioni + neighbour_positions[i];
+#ifdef RENDER_DRIVER_WEBGPU
+			imageStore(dst_light, neighbour_pos, vec4(light_total, 0.0));
+#else
 			imageStore(dst_light, neighbour_pos, uvec4(light_total_rgbe));
+#endif
 			imageStore(dst_aniso0, neighbour_pos, aniso0);
 			imageStore(dst_aniso1, neighbour_pos, vec4(aniso1, 0.0, 0.0));
 		}

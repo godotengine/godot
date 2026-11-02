@@ -165,6 +165,11 @@ ivec2 multiview_uv(ivec2 uv) {
 #if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
 layout(location = 14) out vec2 point_coord_interp;
 #endif
+#ifdef RENDER_DRIVER_WEBGPU
+// Instance index including the batch offset or first instance, see RD::DriverWorkarounds::batch_instance_draws.
+// Multimeshes use gl_InstanceIndex for their own data.
+layout(location = 10) flat out uint batch_instance_index;
+#endif
 
 invariant gl_Position;
 
@@ -696,6 +701,9 @@ void vertex_shader(in vec3 vertex,
 }
 
 void main() {
+#ifdef RENDER_DRIVER_WEBGPU
+	batch_instance_index = sc_multimesh() ? draw_call.instance_index : (draw_call.instance_index + uint(gl_InstanceIndex));
+#endif
 #if defined(MODE_RENDER_MOTION_VECTORS)
 	vec3 prev_vertex;
 #ifdef NORMAL_USED
@@ -708,8 +716,13 @@ void main() {
 
 	_unpack_vertex_attributes(
 			previous_vertex_attrib,
+#ifdef RENDER_DRIVER_WEBGPU
+			instances.data[batch_instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[batch_instance_index].compressed_aabb_size_pad.xyz,
+#else
 			instances.data[draw_call.instance_index].compressed_aabb_position_pad.xyz,
 			instances.data[draw_call.instance_index].compressed_aabb_size_pad.xyz,
+#endif
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			previous_normal_attrib,
 #ifdef NORMAL_USED
@@ -728,10 +741,18 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
+#ifdef RENDER_DRIVER_WEBGPU
+			batch_instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[batch_instance_index].prev_transform,
+#else
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_previous_offset, instances.data[draw_call.instance_index].prev_transform,
+#endif
 #ifdef USE_DOUBLE_PRECISION
+#ifdef RENDER_DRIVER_WEBGPU
+			instances.data[batch_instance_index].prev_model_precision.xyz,
+#else
 			instances.data[draw_call.instance_index].prev_model_precision.xyz,
-			scene_data_block.prev_data.inv_view_precision,
+#endif
+			scene_data_block.prev_data.inv_view_precision.xyz,
 #endif
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -770,8 +791,13 @@ void main() {
 
 	_unpack_vertex_attributes(
 			vertex_angle_attrib,
+#ifdef RENDER_DRIVER_WEBGPU
+			instances.data[batch_instance_index].compressed_aabb_position_pad.xyz,
+			instances.data[batch_instance_index].compressed_aabb_size_pad.xyz,
+#else
 			instances.data[draw_call.instance_index].compressed_aabb_position_pad.xyz,
 			instances.data[draw_call.instance_index].compressed_aabb_size_pad.xyz,
+#endif
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			axis_tangent_attrib,
 #ifdef NORMAL_USED
@@ -790,10 +816,18 @@ void main() {
 			tangent,
 			binormal,
 #endif
+#ifdef RENDER_DRIVER_WEBGPU
+			batch_instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[batch_instance_index].transform,
+#else
 			draw_call.instance_index, draw_call.multimesh_motion_vectors_current_offset, instances.data[draw_call.instance_index].transform,
+#endif
 #ifdef USE_DOUBLE_PRECISION
+#ifdef RENDER_DRIVER_WEBGPU
+			instances.data[batch_instance_index].model_precision.xyz,
+#else
 			instances.data[draw_call.instance_index].model_precision.xyz,
-			scene_data_block.data.inv_view_precision,
+#endif
+			scene_data_block.data.inv_view_precision.xyz,
 #endif
 #ifdef MODE_DUAL_PARABOLOID
 			scene_data_block.data.dual_paraboloid_side,
@@ -968,6 +1002,9 @@ ivec2 multiview_uv(ivec2 uv) {
 }
 #endif // !USE_MULTIVIEW
 
+#ifdef RENDER_DRIVER_WEBGPU
+layout(location = 10) flat in uint batch_instance_index;
+#endif
 #if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
 layout(location = 14) in vec2 point_coord_interp;
 #endif
@@ -1055,7 +1092,12 @@ hvec4 fog_process(vec3 vertex) {
 		float mip_level = mix(1.0 / MAX_ROUGHNESS_LOD, 1.0, 1.0 - (abs(vertex.z) - scene_data_block.data.z_near) / (scene_data_block.data.z_far - scene_data_block.data.z_near));
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 		float roughness_lod, blend;
+#ifdef RENDER_DRIVER_WEBGPU
+		roughness_lod = floor(mip_level * MAX_ROUGHNESS_LOD);
+		blend = mip_level * MAX_ROUGHNESS_LOD - roughness_lod;
+#else
 		blend = modf(mip_level * MAX_ROUGHNESS_LOD, roughness_lod);
+#endif
 		float cube_lod = vec3_to_oct_lod(dFdx(cube_view), dFdy(cube_view), scene_data_block.data.radiance_pixel_size);
 		vec2 cube_uv = vec3_to_oct_with_border(cube_view, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		vec3 sky_sample_a = textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cube_uv, roughness_lod), cube_lod).rgb;
@@ -1230,9 +1272,15 @@ void main() {
 			scene_data.inv_view_matrix[1],
 			scene_data.inv_view_matrix[2],
 			vec4(0.0, 0.0, 0.0, 1.0)));
+#ifdef RENDER_DRIVER_WEBGPU
+	mat4 read_model_matrix = transpose(mat4(instances.data[batch_instance_index].transform[0],
+			instances.data[batch_instance_index].transform[1],
+			instances.data[batch_instance_index].transform[2],
+#else
 	mat4 read_model_matrix = transpose(mat4(instances.data[draw_call.instance_index].transform[0],
 			instances.data[draw_call.instance_index].transform[1],
 			instances.data[draw_call.instance_index].transform[2],
+#endif
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef LIGHT_VERTEX_USED
@@ -1240,7 +1288,11 @@ void main() {
 #endif //LIGHT_VERTEX_USED
 
 	mat3 model_normal_matrix;
+#ifdef RENDER_DRIVER_WEBGPU
+	if (bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+#else
 	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+#endif
 		model_normal_matrix = transpose(inverse(mat3(read_model_matrix)));
 	} else {
 		model_normal_matrix = mat3(read_model_matrix);
@@ -1477,7 +1529,11 @@ void main() {
 	vec3 vertex_ddy = dFdy(vertex);
 
 	uint decal_count = sc_decals(8);
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec2 decal_indices = instances.data[batch_instance_index].decals;
+#else
 	uvec2 decal_indices = instances.data[draw_call.instance_index].decals;
+#endif
 	for (uint i = 0; i < decal_count; i++) {
 		uint decal_index = (i > 3) ? ((decal_indices.y >> ((i - 4) * 8)) & 0xFF) : ((decal_indices.x >> (i * 8)) & 0xFF);
 		if (decal_index == 0xFF) {
@@ -1603,7 +1659,12 @@ void main() {
 		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 		float lod;
+#ifdef RENDER_DRIVER_WEBGPU
+		lod = floor(float(sqrt(roughness) * MAX_ROUGHNESS_LOD));
+		half blend = half(float(sqrt(roughness) * MAX_ROUGHNESS_LOD) - lod);
+#else
 		half blend = half(modf(float(sqrt(roughness) * MAX_ROUGHNESS_LOD), lod));
+#endif
 
 		float ref_lod = vec3_to_oct_lod(dFdx(vec3(ref_vec)), dFdy(vec3(ref_vec)), scene_data_block.data.radiance_pixel_size);
 		vec2 ref_uv = vec3_to_oct_with_border(ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
@@ -1664,7 +1725,12 @@ void main() {
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 
 		float lod;
+#ifdef RENDER_DRIVER_WEBGPU
+		lod = floor(roughness_lod);
+		half blend = half(roughness_lod - lod);
+#else
 		half blend = half(modf(roughness_lod, lod));
+#endif
 
 		float ref_lod = vec3_to_oct_lod(dFdx(vec3(cc_radiance_ref_vec)), dFdy(vec3(cc_radiance_ref_vec)), scene_data_block.data.radiance_pixel_size);
 		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
@@ -1689,8 +1755,13 @@ void main() {
 #ifdef USE_LIGHTMAP
 
 	//lightmap
+#ifdef RENDER_DRIVER_WEBGPU
+	if (bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+		uint index = instances.data[batch_instance_index].gi_offset;
+#else
 	if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
 		uint index = instances.data[draw_call.instance_index].gi_offset;
+#endif
 
 		// The world normal.
 		hvec3 wnormal = hmat3(inv_view_matrix) * indirect_normal;
@@ -1715,12 +1786,23 @@ void main() {
 		ambient_light += c[2] * hvec3(lightmap_captures.data[index].sh[7].rgb) * wnormal.x * wnormal.z * norm;
 		ambient_light += c[4] * hvec3(lightmap_captures.data[index].sh[8].rgb) * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) * norm;
 
+#ifdef RENDER_DRIVER_WEBGPU
+	} else if (bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
+		bool uses_sh = bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+		uint ofs = instances.data[batch_instance_index].gi_offset & 0xFFFF;
+		uint slice = instances.data[batch_instance_index].gi_offset >> 16;
+#else
 	} else if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
 		uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
 		uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
+#endif
 		vec3 uvw;
+#ifdef RENDER_DRIVER_WEBGPU
+		uvw.xy = uv2 * instances.data[batch_instance_index].lightmap_uv_scale.zw + instances.data[batch_instance_index].lightmap_uv_scale.xy;
+#else
 		uvw.xy = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+#endif
 		uvw.z = float(slice);
 
 		if (uses_sh) {
@@ -1785,7 +1867,11 @@ void main() {
 		// Interpolate between mirror and rough reflection by using linear_roughness * linear_roughness.
 		ref_vec = mix(ref_vec, bent_normal, roughness * roughness * roughness * roughness);
 
+#ifdef RENDER_DRIVER_WEBGPU
+		uvec2 reflection_indices = instances.data[batch_instance_index].reflection_probes;
+#else
 		uvec2 reflection_indices = instances.data[draw_call.instance_index].reflection_probes;
+#endif
 		for (uint i = 0; i < reflection_probe_count; i++) {
 			uint reflection_index = (i > 3) ? ((reflection_indices.y >> ((i - 4) * 8)) & 0xFF) : ((reflection_indices.x >> (i * 8)) & 0xFF);
 			if (reflection_index == 0xFF) {
@@ -1937,13 +2023,23 @@ void main() {
 #ifdef USE_LIGHTMAP
 		uint shadowmask_mode = LIGHTMAP_SHADOWMASK_MODE_NONE;
 
+#ifdef RENDER_DRIVER_WEBGPU
+		if (bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			const uint ofs = instances.data[batch_instance_index].gi_offset & 0xFFFF;
+#else
 		if (bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 			const uint ofs = instances.data[draw_call.instance_index].gi_offset & 0xFFFF;
+#endif
 			shadowmask_mode = lightmaps.data[ofs].flags;
 
 			if (shadowmask_mode != LIGHTMAP_SHADOWMASK_MODE_NONE) {
+#ifdef RENDER_DRIVER_WEBGPU
+				const uint slice = instances.data[batch_instance_index].gi_offset >> 16;
+				const vec2 scaled_uv = uv2 * instances.data[batch_instance_index].lightmap_uv_scale.zw + instances.data[batch_instance_index].lightmap_uv_scale.xy;
+#else
 				const uint slice = instances.data[draw_call.instance_index].gi_offset >> 16;
 				const vec2 scaled_uv = uv2 * instances.data[draw_call.instance_index].lightmap_uv_scale.zw + instances.data[draw_call.instance_index].lightmap_uv_scale.xy;
+#endif
 				const vec3 uvw = vec3(scaled_uv, float(slice));
 
 				if (sc_use_lightmap_bicubic_filter()) {
@@ -1963,11 +2059,19 @@ void main() {
 #else
 		for (uint i = 0; i < directional_lights_count; i++) {
 #endif
-				if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+#ifdef RENDER_DRIVER_WEBGPU
+				if (!bool(directional_lights.data[i].mask & instances.data[batch_instance_index].layer_mask)) {
+#else
+			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+#endif
 					continue; //not masked
 				}
 
-				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#ifdef RENDER_DRIVER_WEBGPU
+				if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#else
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#endif
 					continue; // Statically baked light and object uses lightmap, skip.
 				}
 
@@ -2101,11 +2205,19 @@ void main() {
 #ifndef USE_VERTEX_LIGHTING
 		uint directional_lights_count = sc_directional_lights(scene_data.directional_light_count);
 		for (uint i = 0; i < directional_lights_count; i++) {
+#ifdef RENDER_DRIVER_WEBGPU
+			if (!bool(directional_lights.data[i].mask & instances.data[batch_instance_index].layer_mask)) {
+#else
 			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+#endif
 				continue; //not masked
 			}
 
+#ifdef RENDER_DRIVER_WEBGPU
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[batch_instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#else
 			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+#endif
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 
@@ -2166,7 +2278,11 @@ void main() {
 
 #ifndef USE_VERTEX_LIGHTING
 	uint omni_light_count = sc_omni_lights(8);
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec2 omni_indices = instances.data[batch_instance_index].omni_lights;
+#else
 	uvec2 omni_indices = instances.data[draw_call.instance_index].omni_lights;
+#endif
 	for (uint i = 0; i < omni_light_count; i++) {
 		uint light_index = (i > 3) ? ((omni_indices.y >> ((i - 4) * 8)) & 0xFF) : ((omni_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {
@@ -2198,7 +2314,11 @@ void main() {
 	}
 
 	uint spot_light_count = sc_spot_lights(8);
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec2 spot_indices = instances.data[batch_instance_index].spot_lights;
+#else
 	uvec2 spot_indices = instances.data[draw_call.instance_index].spot_lights;
+#endif
 	for (uint i = 0; i < spot_light_count; i++) {
 		uint light_index = (i > 3) ? ((spot_indices.y >> ((i - 4) * 8)) & 0xFF) : ((spot_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {
@@ -2230,7 +2350,11 @@ void main() {
 	}
 
 	uint area_light_count = sc_area_lights(8);
+#ifdef RENDER_DRIVER_WEBGPU
+	uvec2 area_indices = instances.data[batch_instance_index].area_lights;
+#else
 	uvec2 area_indices = instances.data[draw_call.instance_index].area_lights;
+#endif
 	for (uint i = 0; i < area_light_count; i++) {
 		uint light_index = (i > 3) ? ((area_indices.y >> ((i - 4) * 8)) & 0xFF) : ((area_indices.x >> (i * 8)) & 0xFF);
 		if (i > 0 && light_index == 0xFF) {

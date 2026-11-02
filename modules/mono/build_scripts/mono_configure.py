@@ -20,3 +20,11 @@ def configure(env, env_mono):
         if not module_supports_tools_on(env["platform"]):
             raise RuntimeError("This module does not currently support building for this platform for editor builds.")
         env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
+
+    # 2dog: shared libgodot uses the host application's runtime instead of loading another CoreCLR.
+    if env.get("library_type", "") == "shared_library":
+        env_mono.Append(CPPDEFINES=["LIBGODOT_HOSTFXR"])
+
+    # 2dog: library hosts may register GodotPlugins directly instead of loading it from disk.
+    if env.get("library_type", "executable") != "executable":
+        env_mono.AppendUnique(CPPDEFINES=["GD_MONO_LIBGODOT_ENABLED"])

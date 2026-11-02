@@ -58,6 +58,15 @@ extern int godot_js_os_has_feature(const char *p_ftr);
 extern int godot_js_pwa_cb(void (*p_callback)());
 extern int godot_js_pwa_update();
 
+#ifdef WEB_SIDE_MODULE_LOADER_ENABLED
+// 2dog: GDExtension side modules (library_godot_dylink.js).
+extern int godot_js_dylink_open(const char *p_name, const uint8_t *p_bytes, int p_size);
+extern void *godot_js_dylink_symbol(int p_handle, const char *p_symbol);
+extern void godot_js_dylink_close(int p_handle);
+extern char *godot_js_dylink_error();
+extern char *godot_js_dylink_thread_load(int p_index, const char *p_name, const uint8_t *p_bytes, int p_size, const char *p_layout);
+#endif
+
 // Input
 extern void godot_js_input_mouse_button_cb(int (*p_callback)(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers));
 extern void godot_js_input_mouse_move_cb(void (*p_callback)(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure));

@@ -185,6 +185,8 @@ MeshStorage::MeshStorage() {
 			skeleton_shader.default_skeleton_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
 		}
 	}
+
+	use_skeleton_atlas = RD::get_singleton()->get_driver_workarounds().skeleton_atlas;
 }
 
 MeshStorage::~MeshStorage() {
@@ -195,9 +197,67 @@ MeshStorage::~MeshStorage() {
 
 	skeleton_shader.shader.version_free(skeleton_shader.version);
 
+	if (skeleton_atlas_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(skeleton_atlas_buffer);
+	}
+
 	RD::get_singleton()->free_rid(default_rd_storage_buffer);
 
 	singleton = nullptr;
+}
+
+uint32_t MeshStorage::_skeleton_atlas_alloc(uint32_t p_floats) {
+	// shortcut: first fit without coalescing, fragments if bone counts churn; merge neighbors if that shows up.
+	for (uint32_t i = 0; i < skeleton_atlas_free.size(); i++) {
+		SkeletonAtlasRange &range = skeleton_atlas_free[i];
+		if (range.size >= p_floats) {
+			const uint32_t offset = range.offset;
+			range.offset += p_floats;
+			range.size -= p_floats;
+			if (range.size == 0) {
+				skeleton_atlas_free.remove_at_unordered(i);
+			}
+			return offset;
+		}
+	}
+
+	const uint32_t offset = skeleton_atlas_used;
+	skeleton_atlas_used += p_floats;
+	if (skeleton_atlas_used <= skeleton_atlas_data.size()) {
+		return offset;
+	}
+
+	// Grow to the next power of two, at least 64 KiB.
+	uint32_t capacity = MAX(skeleton_atlas_data.size() * 2, uint32_t(64 * 1024 / sizeof(float)));
+	while (capacity < skeleton_atlas_used) {
+		capacity *= 2;
+	}
+	skeleton_atlas_data.resize_initialized(capacity);
+
+	// The CPU mirror holds every uploaded skeleton. Freeing the old buffer also frees the uniform sets using it.
+	if (skeleton_atlas_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(skeleton_atlas_buffer);
+	}
+	skeleton_atlas_buffer = RD::get_singleton()->storage_buffer_create(capacity * sizeof(float), skeleton_atlas_data.span().reinterpret<uint8_t>());
+	skeleton_atlas_uniform_set_3d = RID();
+
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.binding = 0;
+	u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+	u.append_id(skeleton_atlas_buffer);
+	uniforms.push_back(u);
+	skeleton_atlas_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, skeleton_shader.version_shader[0], SkeletonShader::UNIFORM_SET_SKELETON);
+
+	// Geometry instances cache the 3D uniform set, make them fetch the new one.
+	for (const RID &rid : skeleton_owner.get_owned_list()) {
+		Skeleton *skeleton = skeleton_owner.get_or_null(rid);
+		if (skeleton) {
+			skeleton->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_SKELETON_DATA);
+		}
+	}
+
+	return offset;
 }
 
 bool MeshStorage::free(RID p_rid) {
@@ -1204,7 +1264,9 @@ void MeshStorage::update_mesh_instances() {
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi_surface_uniform_set, SkeletonShader::UNIFORM_SET_INSTANCE);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, mi->mesh->surfaces[i]->uniform_set, SkeletonShader::UNIFORM_SET_SURFACE);
-			if (sk && sk->uniform_set_mi.is_valid()) {
+			if (use_skeleton_atlas && skeleton_atlas_uniform_set.is_valid()) {
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, skeleton_atlas_uniform_set, SkeletonShader::UNIFORM_SET_SKELETON);
+			} else if (sk && sk->uniform_set_mi.is_valid()) {
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sk->uniform_set_mi, SkeletonShader::UNIFORM_SET_SKELETON);
 			} else {
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, skeleton_shader.default_skeleton_uniform_set, SkeletonShader::UNIFORM_SET_SKELETON);
@@ -1245,7 +1307,7 @@ void MeshStorage::update_mesh_instances() {
 
 			push_constant.blend_shape_count = mi->mesh->blend_shape_count;
 			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RSE::BLEND_SHAPE_MODE_NORMALIZED;
-			push_constant.pad1 = 0;
+			push_constant.bone_offset = (use_skeleton_atlas && sk) ? sk->atlas_offset : 0;
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SkeletonShader::PushConstant));
 
@@ -2356,7 +2418,17 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 		skeleton->uniform_set_mi = RID();
 	}
 
-	if (skeleton->size) {
+	if (use_skeleton_atlas) {
+		if (skeleton->data.size()) {
+			skeleton_atlas_free.push_back({ skeleton->atlas_offset * 4, skeleton->data.size() });
+			skeleton->data.clear();
+		}
+		if (skeleton->size) {
+			skeleton->data.resize_initialized(skeleton->size * (skeleton->use_2d ? 8 : 12));
+			skeleton->atlas_offset = _skeleton_atlas_alloc(skeleton->data.size()) / 4;
+			_skeleton_make_dirty(skeleton);
+		}
+	} else if (skeleton->size) {
 		skeleton->data.resize(skeleton->size * (skeleton->use_2d ? 8 : 12));
 		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
 		memset(skeleton->data.ptr(), 0, skeleton->data.size() * sizeof(float));
@@ -2488,10 +2560,27 @@ void MeshStorage::skeleton_set_base_transform_2d(RID p_skeleton, const Transform
 }
 
 void MeshStorage::_update_dirty_skeletons() {
+	if (use_skeleton_atlas) {
+		// Copy dirty skeletons into the CPU mirror, then upload their whole range with one direct write.
+		uint32_t dirty_from = UINT32_MAX;
+		uint32_t dirty_to = 0;
+		for (Skeleton *skeleton = skeleton_dirty_list; skeleton; skeleton = skeleton->dirty_list) {
+			if (skeleton->size) {
+				const uint32_t offset = skeleton->atlas_offset * 4;
+				memcpy(skeleton_atlas_data.ptr() + offset, skeleton->data.ptr(), skeleton->data.size() * sizeof(float));
+				dirty_from = MIN(dirty_from, offset);
+				dirty_to = MAX(dirty_to, offset + skeleton->data.size());
+			}
+		}
+		if (dirty_from < dirty_to) {
+			RD::get_singleton()->buffer_update_direct(skeleton_atlas_buffer, dirty_from * sizeof(float), (dirty_to - dirty_from) * sizeof(float), skeleton_atlas_data.ptr() + dirty_from);
+		}
+	}
+
 	while (skeleton_dirty_list) {
 		Skeleton *skeleton = skeleton_dirty_list;
 
-		if (skeleton->size) {
+		if (skeleton->size && !use_skeleton_atlas) {
 			RD::get_singleton()->buffer_update(skeleton->buffer, 0, skeleton->data.size() * sizeof(float), skeleton->data.ptr());
 		}
 

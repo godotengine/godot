@@ -668,6 +668,7 @@ NavigationServer2DManager::NavigationServer2DManager() {
 }
 
 NavigationServer2DManager::~NavigationServer2DManager() {
+	singleton = nullptr;
 }
 
 void NavigationServer2DManager::initialize_server_manager() {

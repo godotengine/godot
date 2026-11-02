@@ -340,9 +340,18 @@ namespace Godot
         {
             // Skip 1 frame to avoid current method.
             var stackFrame = DebuggingUtils.GetCurrentStackFrame(skipFrames: 1);
-            string callerFilePath = ProjectSettings.LocalizePath(stackFrame.GetFileName());
-            DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out string callerName);
-            int callerLineNumber = stackFrame.GetFileLineNumber();
+            // 2dog: diagnostics must work without caller metadata in AOT or trimmed builds.
+            string callerFilePath = string.Empty;
+            string callerName = string.Empty;
+            int callerLineNumber = 0;
+            if (stackFrame is not null)
+            {
+                string fileName = stackFrame.GetFileName();
+                if (!string.IsNullOrEmpty(fileName))
+                    callerFilePath = ProjectSettings.LocalizePath(fileName);
+                DebuggingUtils.GetStackFrameMethodDecl(stackFrame, out callerName);
+                callerLineNumber = stackFrame.GetFileLineNumber();
+            }
 
             using godot_string messageStr = Marshaling.ConvertStringToNative(message);
             using godot_string callerNameStr = Marshaling.ConvertStringToNative(callerName);

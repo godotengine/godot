@@ -61,6 +61,13 @@ ToneMapper::ToneMapper(bool p_use_mobile_version) {
 			tonemap_mobile.shader.set_variant_enabled(TONEMAP_MOBILE_MODE_SUBPASS_1D_LUT_MULTIVIEW, false);
 		}
 
+		if (RD::get_singleton()->get_driver_workarounds().no_input_attachments) {
+			tonemap_mobile.shader.set_variant_enabled(TONEMAP_MOBILE_MODE_SUBPASS, false);
+			tonemap_mobile.shader.set_variant_enabled(TONEMAP_MOBILE_MODE_SUBPASS_1D_LUT, false);
+			tonemap_mobile.shader.set_variant_enabled(TONEMAP_MOBILE_MODE_SUBPASS_MULTIVIEW, false);
+			tonemap_mobile.shader.set_variant_enabled(TONEMAP_MOBILE_MODE_SUBPASS_1D_LUT_MULTIVIEW, false);
+		}
+
 		tonemap_mobile.shader_version = tonemap_mobile.shader.version_create();
 
 		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {

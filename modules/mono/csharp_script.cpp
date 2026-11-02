@@ -53,6 +53,7 @@
 #endif
 
 #include "core/config/engine.h"
+#include "core/core_globals.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -143,7 +144,7 @@ void CSharpLanguage::finalize() {
 	}
 
 	if (gdmono && gdmono->is_runtime_initialized() && GDMonoCache::godot_api_cache_updated) {
-		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown();
+		GDMonoCache::managed_callbacks.DisposablesTracker_OnGodotShuttingDown(CoreGlobals::engine_reinit_enabled);
 	}
 
 	finalizing = true;
@@ -166,6 +167,8 @@ void CSharpLanguage::finalize() {
 		memdelete(gdmono);
 		gdmono = nullptr;
 	}
+	// 2dog: the callbacks belong to the finished engine lifetime; the next GDMono::initialize() refreshes them.
+	GDMonoCache::godot_api_cache_updated = false;
 
 	// Clear here, after finalizing all domains to make sure there is nothing else referencing the elements.
 	script_bindings.clear();

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "servers/rendering/rendering_device_commons.h"
 
 class RenderSceneBuffersRD;
 
@@ -38,6 +39,7 @@ class RenderBufferCustomDataRD : public RefCounted {
 	GDCLASS(RenderBufferCustomDataRD, RefCounted);
 
 public:
+	virtual void get_msaa_texture_formats(Vector<RenderingDeviceCommons::DataFormat> &r_formats) const {}
 	virtual void configure(RenderSceneBuffersRD *p_render_buffers) = 0;
 	virtual void free_data() = 0; // called on cleanup
 

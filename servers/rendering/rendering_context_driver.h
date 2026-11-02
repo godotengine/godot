@@ -92,6 +92,9 @@ public:
 		String name = "Unknown";
 		uint32_t vendor = Vendor::VENDOR_UNKNOWN;
 		DeviceType type = DEVICE_TYPE_OTHER;
+		// 2dog: OS adapter identity (Windows LUID), for --gpu-luid selection.
+		uint64_t luid = 0;
+		bool luid_valid = false;
 	};
 
 	virtual ~RenderingContextDriver();

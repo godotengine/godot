@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/extension/gdextension_library_loader.h"
+#include "core/io/file_access.h"
 #include "editor/export/editor_export_plugin.h"
 
 class GDExtensionExportPlugin : public EditorExportPlugin {
@@ -115,6 +116,10 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		if (!library_path.is_empty()) {
 			libs_added.insert(library_path);
 			add_shared_object(library_path, tags);
+			if (p_features.has("web")) {
+				// 2dog: the web runtime reads side modules from the pack (OS_Web::open_dynamic_library).
+				add_file(library_path, FileAccess::get_file_as_bytes(library_path), false);
+			}
 
 			if (p_features.has("apple_embedded") && (library_path.ends_with(".a") || library_path.ends_with(".xcframework"))) {
 				String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
@@ -155,6 +160,9 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 				p_path, config, [features_wo_arch, arch_tag](String p_feature) { return features_wo_arch.has(p_feature) || (p_feature == arch_tag); });
 		for (const SharedObject &shared_object : dependencies_shared_objects) {
 			_add_shared_object(shared_object);
+			if (p_features.has("web")) {
+				add_file(shared_object.path, FileAccess::get_file_as_bytes(shared_object.path), false);
+			}
 		}
 	}
 

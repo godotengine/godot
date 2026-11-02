@@ -41,7 +41,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -60,7 +62,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -80,7 +84,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -101,7 +107,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -123,7 +131,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -146,7 +156,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -170,7 +182,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -195,7 +209,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -221,7 +237,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <inheritdoc cref="From(Action)"/>
@@ -248,7 +266,9 @@ public readonly partial struct Callable
             ret = default;
         }
 
-        return CreateWithUnsafeTrampoline(action, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(action, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(action, &Trampoline);
     }
 
     /// <summary>
@@ -268,7 +288,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -287,7 +309,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -307,7 +331,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -328,7 +354,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -350,7 +378,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -373,7 +403,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -397,7 +429,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -422,7 +456,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -448,7 +484,9 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 
     /// <inheritdoc cref="From{TResult}(Func{TResult})"/>
@@ -475,6 +513,8 @@ public readonly partial struct Callable
             ret = VariantUtils.CreateFrom(res);
         }
 
-        return CreateWithUnsafeTrampoline(func, &Trampoline);
+        return OperatingSystem.IsBrowser()
+            ? CreateWithManagedTrampoline(func, &Trampoline, Trampoline)
+            : CreateWithUnsafeTrampoline(func, &Trampoline);
     }
 }

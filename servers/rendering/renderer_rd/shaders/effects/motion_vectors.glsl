@@ -69,7 +69,11 @@ void main() {
 	vec2 cell_pos_delta_uv = cell_pos_uv - cell_pos_previous_uv;
 	bool motion_active = length(cell_pos_delta_uv) > epsilon;
 	vec3 color;
+#ifdef RENDER_DRIVER_WEBGPU
+	if (any(notEqual(cell_pos_delta_uv, cell_pos_delta_uv))) { // NaN check (isnan not available in WGSL)
+#else
 	if (any(isnan(cell_pos_delta_uv))) {
+#endif
 		color = nan_color;
 	} else if (motion_active) {
 		color = active_color;

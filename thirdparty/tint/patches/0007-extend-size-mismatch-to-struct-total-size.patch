@@ -1,0 +1,21 @@
+diff --git a/thirdparty/tint/src/tint/lang/core/ir/validator.cc b/thirdparty/tint/src/tint/lang/core/ir/validator.cc
+index a0dfe1e..451c918 100644
+--- a/thirdparty/tint/src/tint/lang/core/ir/validator.cc
++++ b/thirdparty/tint/src/tint/lang/core/ir/validator.cc
+@@ -2257,7 +2257,15 @@ void Validator::CheckType(const core::type::Type* root,
+ 
+                     cur_offset += (member->Offset() - cur_offset) + member->MinimumRequiredSize();
+                 }
+-                if (str->Size() < cur_offset) {
++                // GODOT PATCH (patches/0007, extends patches/0002): the total-size
++                // check must honor kAllowStructMemberSizeMismatch like the
++                // member-size check above — spec-constant-sized arrays leave the
++                // struct's Size() decoration at its unfolded value. Empirically
++                // required for the WebGPU driver (a build without it renders
++                // nothing); rationale and caveats in thirdparty/tint/patches/README.md
++                // and the introducing commit.
++                if (!capabilities_.Contains(Capability::kAllowStructMemberSizeMismatch) &&
++                    str->Size() < cur_offset) {
+                     diag() << "struct size (" << str->Size()
+                            << ") is smaller than the end of the last member (" << cur_offset << ")";
+                     return false;

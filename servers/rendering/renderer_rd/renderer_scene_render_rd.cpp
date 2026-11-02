@@ -243,6 +243,7 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	rb.instantiate();
 
 	rb->set_can_be_storage(_render_buffers_can_be_storage());
+	rb->set_raster_dof(_render_buffers_use_raster_dof());
 	rb->set_max_cluster_elements(max_cluster_elements);
 	rb->set_preferred_data_format(_render_buffers_get_preferred_color_format());
 	if (vrs) {
@@ -514,7 +515,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		buffers.half_texture[0] = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, 0, 0);
 		buffers.half_texture[1] = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, 0, 1);
 
-		if (can_use_storage) {
+		if (!_render_buffers_use_raster_dof()) {
 			for (uint32_t i = 0; i < rb->get_view_count(); i++) {
 				buffers.base_texture = use_upscaled_texture ? rb->get_upscaled_texture(i) : rb->get_internal_texture(i);
 				buffers.depth_texture = rb->get_depth_texture(i);
@@ -539,7 +540,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 			for (uint32_t i = 0; i < rb->get_view_count(); i++) {
 				buffers.base_texture = use_upscaled_texture ? rb->get_upscaled_texture(i) : rb->get_internal_texture(i);
-				buffers.depth_texture = p_use_msaa ? rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, i, 0) : rb->get_depth_texture(i);
+				// The clustered renderer resolves its depth buffer; the mobile renderer copies it to the back depth texture.
+				buffers.depth_texture = p_use_msaa && !can_use_storage ? rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, i, 0) : rb->get_depth_texture(i);
 				buffers.base_fb = FramebufferCacheRD::get_singleton()->get_cache(buffers.base_texture); // TODO move this into bokeh_dof_raster, we can do this internally
 
 				// In stereo p_render_data->z_near and p_render_data->z_far can be offset for our combined frustum.
@@ -1159,6 +1161,12 @@ RID RendererSceneRenderRD::render_buffers_get_default_voxel_gi_buffer() {
 
 RD::DataFormat RendererSceneRenderRD::_render_buffers_get_preferred_color_format() {
 	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+}
+
+bool RendererSceneRenderRD::_render_buffers_use_raster_dof() {
+	// The compute depth of field reads and writes the RGBA16 color buffer in place, which WebGPU allows only with
+	// texture-formats-tier2. The raster passes render through framebuffers instead.
+	return !_render_buffers_can_be_storage() || RD::get_singleton()->get_driver_workarounds().limited_read_write_storage;
 }
 
 bool RendererSceneRenderRD::_render_buffers_can_be_storage() {
@@ -1866,7 +1874,7 @@ void RendererSceneRenderRD::init() {
 		}
 	}
 
-	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
+	bokeh_dof = memnew(RendererRD::BokehDOF(_render_buffers_use_raster_dof()));
 	copy_effects = memnew(RendererRD::CopyEffects(raster_effects));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
@@ -1942,4 +1950,8 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
 	cull_argument.reset(); //avoid exit error
+}
+
+RendererSceneRenderRD::SingletonReset::~SingletonReset() {
+	RendererSceneRenderRD::singleton = nullptr;
 }

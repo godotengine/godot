@@ -278,6 +278,11 @@ int32_t Engine::get_gpu_index() const {
 	return gpu_idx;
 }
 
+// 2dog: expose the host compositor's GPU adapter LUID.
+uint64_t Engine::get_gpu_luid() const {
+	return gpu_luid;
+}
+
 bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }

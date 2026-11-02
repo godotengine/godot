@@ -36,16 +36,23 @@
 #include "ip_web.h"
 #include "net_socket_web.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/safe_refcount.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
 #include <dlfcn.h>
 #include <emscripten.h>
+#ifdef THREADS_ENABLED
+#include <emscripten/threading.h>
+#endif
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -102,6 +109,9 @@ void OS_Web::finalize() {
 		memdelete(driver);
 	}
 	audio_drivers.clear();
+	// 2dog: the callbacks reach this instance's IDB sync state; the next lifetime installs its own.
+	FileAccessUnix::close_notification_func = nullptr;
+	DirAccessUnix::remove_notification_func = nullptr;
 }
 
 // Miscellaneous
@@ -162,15 +172,16 @@ bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 		return true;
 	}
 
+	// 2dog: static library builds load GDExtensions through the side module loader.
 	if (p_feature == "web_extensions") {
-#ifdef WEB_DLINK_ENABLED
+#if defined(WEB_DLINK_ENABLED) || defined(WEB_SIDE_MODULE_LOADER_ENABLED)
 		return true;
 #else
 		return false;
 #endif
 	}
 	if (p_feature == "web_noextensions") {
-#ifdef WEB_DLINK_ENABLED
+#if defined(WEB_DLINK_ENABLED) || defined(WEB_SIDE_MODULE_LOADER_ENABLED)
 		return false;
 #else
 		return true;
@@ -274,6 +285,208 @@ bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
 
+#ifdef WEB_SIDE_MODULE_LOADER_ENABLED
+// 2dog: load GDExtension side modules from the exported pack through Godot's file system.
+static String _side_module_path(const String &p_path) {
+	if (FileAccess::exists(p_path)) {
+		return p_path;
+	}
+	const String local = ProjectSettings::get_singleton()->localize_path(p_path);
+	if (FileAccess::exists(local)) {
+		return local;
+	}
+	// 2dog: restore res:// when globalize_path has no resource directory for a packed project.
+	if (p_path.is_relative_path() && FileAccess::exists("res://" + p_path)) {
+		return "res://" + p_path;
+	}
+	return String();
+}
+
+static String _side_module_error() {
+	char *error = godot_js_dylink_error();
+	const String message = String::utf8(error);
+	free(error);
+	return message;
+}
+
+#ifdef THREADS_ENABLED
+// 2dog: wasm function tables are per thread, so every thread instantiates each side module at the memory and table
+// layout its first loader chose. Entries are append-only and never unloaded; the count publishes them.
+struct WebSideModule {
+	char *name = nullptr;
+	uint8_t *bytes = nullptr;
+	int size = 0;
+	char *layout = nullptr;
+};
+
+static constexpr int WEB_SIDE_MODULE_MAX = 256;
+static WebSideModule web_side_modules[WEB_SIDE_MODULE_MAX];
+static SafeNumeric<int> web_side_module_count;
+static thread_local int web_side_modules_synced = 0;
+static thread_local bool web_side_modules_syncing = false;
+
+static Mutex &_side_module_mutex() {
+	static Mutex mutex;
+	return mutex;
+}
+
+// 2dog: called at thread start (library_godot_dylink.js) and after every futex wait.
+extern "C" EMSCRIPTEN_KEEPALIVE void godot_web_sync_side_modules() {
+	if (web_side_modules_syncing) {
+		return;
+	}
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	// 2dog: the page thread never runs extension code (Godot runs on workers), so it skips the synchronous compiles.
+	if (emscripten_is_main_browser_thread()) {
+		return;
+	}
+#endif
+	const int count = web_side_module_count.get();
+	if (web_side_modules_synced >= count) {
+		return;
+	}
+	web_side_modules_syncing = true;
+	for (int i = web_side_modules_synced; i < count; i++) {
+		const WebSideModule &module = web_side_modules[i];
+		// 2dog: failures are reported by the loader; a thread without the module fails only if it calls into it.
+		godot_js_dylink_thread_load(i, module.name, module.bytes, module.size, module.layout);
+	}
+	web_side_modules_synced = count;
+	web_side_modules_syncing = false;
+}
+
+// 2dog: threads that were blocked while a module loaded catch up when they wake, before running more code, like
+// emscripten's dlsync. Threaded 2dog hosts link with --wrap=emscripten_futex_wait.
+extern "C" int __real_emscripten_futex_wait(volatile void *p_addr, uint32_t p_val, double p_max_wait_ms);
+extern "C" int __wrap_emscripten_futex_wait(volatile void *p_addr, uint32_t p_val, double p_max_wait_ms) {
+	const int ret = __real_emscripten_futex_wait(p_addr, p_val, p_max_wait_ms);
+	godot_web_sync_side_modules();
+	return ret;
+}
+
+static Error _load_side_module(const String &p_path, const Vector<uint8_t> &p_bytes, int &r_handle) {
+	const CharString name = p_path.get_file().utf8();
+	MutexLock lock(_side_module_mutex());
+	// 2dog: dependencies resolve by name among the modules this thread has loaded.
+	godot_web_sync_side_modules();
+	const int count = web_side_module_count.get();
+	for (int i = 0; i < count; i++) {
+		if (strcmp(web_side_modules[i].name, name.get_data()) == 0) {
+			r_handle = i + 1;
+			return OK;
+		}
+	}
+	ERR_FAIL_COND_V_MSG(count == WEB_SIDE_MODULE_MAX, ERR_OUT_OF_MEMORY, vformat("Can't open dynamic library: %s. Too many side modules.", p_path));
+
+	// 2dog: threads load from these bytes whenever they catch up, so they are kept.
+	WebSideModule module;
+	module.name = strdup(name.get_data());
+	module.size = p_bytes.size();
+	module.bytes = static_cast<uint8_t *>(malloc(module.size));
+	memcpy(module.bytes, p_bytes.ptr(), module.size);
+	module.layout = godot_js_dylink_thread_load(count, module.name, module.bytes, module.size, nullptr);
+	if (module.layout == nullptr) {
+		free(module.name);
+		free(module.bytes);
+		ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, _side_module_error()));
+	}
+	web_side_modules[count] = module;
+	web_side_modules_synced = count + 1;
+	web_side_module_count.set(count + 1);
+	r_handle = count + 1;
+	return OK;
+}
+
+static void _close_side_module(int) {
+	// 2dog: shared modules stay loaded: wasm instances cannot unload, and other threads may still run their code.
+}
+#else
+static Error _load_side_module(const String &p_path, const Vector<uint8_t> &p_bytes, int &r_handle) {
+	r_handle = godot_js_dylink_open(p_path.get_file().utf8().get_data(), p_bytes.ptr(), p_bytes.size());
+	ERR_FAIL_COND_V_MSG(r_handle == 0, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, _side_module_error()));
+	return OK;
+}
+
+static void _close_side_module(int p_handle) {
+	godot_js_dylink_close(p_handle);
+}
+#endif
+
+static Error _open_side_module(const String &p_path, int &r_handle) {
+	const String path = _side_module_path(p_path);
+	ERR_FAIL_COND_V_MSG(path.is_empty(), ERR_FILE_NOT_FOUND, vformat("Can't open dynamic library, file not found: '%s'.", p_path));
+	const Vector<uint8_t> bytes = FileAccess::get_file_as_bytes(path);
+	ERR_FAIL_COND_V_MSG(bytes.is_empty(), ERR_CANT_OPEN, vformat("Can't read dynamic library: '%s'.", path));
+	return _load_side_module(path, bytes, r_handle);
+}
+
+// 2dog: close dependencies with their owning library handle.
+static HashMap<int, Vector<int>> &_side_module_dependencies() {
+	static HashMap<int, Vector<int>> dependencies;
+	return dependencies;
+}
+
+Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
+	Vector<int> dependency_handles;
+	Error err = OK;
+	if (p_data != nullptr && p_data->library_dependencies != nullptr) {
+		// 2dog: load dependencies first so dylink needed entries resolve by file name.
+		for (const String &dependency : *p_data->library_dependencies) {
+			int dependency_handle = 0;
+			err = _open_side_module(dependency, dependency_handle);
+			if (err != OK) {
+				break;
+			}
+			dependency_handles.push_back(dependency_handle);
+		}
+	}
+
+	int handle = 0;
+	if (err == OK) {
+		err = _open_side_module(p_path, handle);
+	}
+	if (err != OK) {
+		for (int dependency_handle : dependency_handles) {
+			_close_side_module(dependency_handle);
+		}
+		return err;
+	}
+	if (!dependency_handles.is_empty()) {
+		_side_module_dependencies()[handle].append_array(dependency_handles);
+	}
+	p_library_handle = reinterpret_cast<void *>(static_cast<intptr_t>(handle));
+
+	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+		*p_data->r_resolved_path = _side_module_path(p_path);
+	}
+
+	return OK;
+}
+
+Error OS_Web::close_dynamic_library(void *p_library_handle) {
+	const int handle = static_cast<int>(reinterpret_cast<intptr_t>(p_library_handle));
+	_close_side_module(handle);
+	if (const Vector<int> *dependencies = _side_module_dependencies().getptr(handle)) {
+		for (int dependency_handle : *dependencies) {
+			_close_side_module(dependency_handle);
+		}
+		_side_module_dependencies().erase(handle);
+	}
+	return OK;
+}
+
+Error OS_Web::get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional) {
+#ifdef THREADS_ENABLED
+	godot_web_sync_side_modules();
+#endif
+	p_symbol_handle =godot_js_dylink_symbol(static_cast<int>(reinterpret_cast<intptr_t>(p_library_handle)), p_name.utf8().get_data());
+	if (p_symbol_handle == nullptr) {
+		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, vformat("Can't resolve symbol %s. Error: %s.", p_name, _side_module_error()));
+		return ERR_CANT_RESOLVE;
+	}
+	return OK;
+}
+#else
 Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
@@ -285,6 +498,7 @@ Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle
 
 	return OK;
 }
+#endif
 
 OS_Web *OS_Web::get_singleton() {
 	return static_cast<OS_Web *>(OS::get_singleton());

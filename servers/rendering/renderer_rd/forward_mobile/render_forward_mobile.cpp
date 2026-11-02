@@ -876,7 +876,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RID framebuffer;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool merge_transparent_pass = true; // If true: we can do our transparent pass in the same pass as our opaque pass.
-	bool using_subpass_post_process = true; // If true: we can do our post processing in a subpass
+	bool using_subpass_post_process = !no_input_attachments; // If true: we can do our post processing in a subpass
 	RendererRD::MaterialStorage::Samplers samplers;
 	bool hdr_render_target = false;
 
@@ -1685,7 +1685,42 @@ void RenderForwardMobile::_render_shadow_process() {
 void RenderForwardMobile::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
-	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
+	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
+		uint32_t merge_end = i + 1;
+		if (merge_shadow_passes) {
+			while (merge_end < scene_state.shadow_passes.size() && scene_state.shadow_passes[merge_end].framebuffer == scene_state.shadow_passes[i].framebuffer) {
+				merge_end++;
+			}
+		}
+
+		if (merge_end - i > 1) {
+			// One render pass for passes into disjoint rects of the same framebuffer, region clears go first.
+			for (uint32_t j = i; j < merge_end; j++) {
+				const SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[j];
+				if (shadow_pass.clear_depth) {
+					RD::get_singleton()->draw_list_begin(shadow_pass.framebuffer, RD::DRAW_CLEAR_DEPTH, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
+					RD::get_singleton()->draw_list_end();
+				}
+			}
+
+			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(scene_state.shadow_passes[i].framebuffer);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(scene_state.shadow_passes[i].framebuffer);
+			for (uint32_t j = i; j < merge_end; j++) {
+				const SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[j];
+				RD::get_singleton()->draw_list_set_viewport(draw_list, shadow_pass.rect);
+				RD::get_singleton()->draw_list_enable_scissor(draw_list, Rect2(Vector2(), shadow_pass.rect.size));
+
+				RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
+				render_list_parameters.framebuffer_format = fb_format;
+				_render_list(draw_list, fb_format, &render_list_parameters, 0, render_list_parameters.element_count);
+			}
+			RD::get_singleton()->draw_list_end();
+
+			i = merge_end - 1;
+			continue;
+		}
+
+		SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[i];
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, shadow_pass.rp_uniform_set, scene_shader.default_specialization, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from);
 		_render_list_with_draw_list(&render_list_parameters, shadow_pass.framebuffer, shadow_pass.clear_depth ? RD::DRAW_CLEAR_DEPTH : RD::DRAW_DEFAULT_ALL, Vector<Color>(), 0.0f, 0, shadow_pass.rect);
 	}
@@ -2441,6 +2476,11 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 	uint32_t prev_pipeline_hash = 0;
 
 	bool shadow_pass = (p_params->pass_mode == PASS_MODE_SHADOW) || (p_params->pass_mode == PASS_MODE_SHADOW_DP);
+	bool first_instance_eligible_pass = batch_instance_draws && p_pass_mode != PASS_MODE_DEPTH_MATERIAL;
+	bool pc_set_for_current_pipeline = false;
+	SceneState::PushConstant prev_fi_push_constant = {};
+	size_t prev_fi_push_constant_size = 0;
+	bool have_prev_fi_push_constant = false;
 
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurfaceDataCache *surf = p_params->elements[i];
@@ -2634,6 +2674,8 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			if (!pipeline_rd.is_null()) {
 				RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline_rd);
+				pc_set_for_current_pipeline = false;
+				have_prev_fi_push_constant = false;
 			}
 
 			if (xforms_uniform_set.is_valid() && prev_xforms_uniform_set != xforms_uniform_set) {
@@ -2669,8 +2711,6 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				push_constant_size = sizeof(SceneState::PushConstant) - sizeof(SceneState::PushConstantUbershader);
 			}
 
-			RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, push_constant_size);
-
 			uint32_t instance_count = surf->owner->instance_count > 1 ? surf->owner->instance_count : 1;
 			if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_PARTICLE_TRAILS) {
 				instance_count /= surf->owner->trail_steps;
@@ -2678,15 +2718,153 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 			bool indirect = bool(surf->owner->base_flags & INSTANCE_DATA_FLAG_MULTIMESH_INDIRECT);
 
-			if (emulate_point_size) {
-				if (indirect) {
-					WARN_PRINT("Indirect draws are not supported when emulating point size.");
+			// Instance batching: merge consecutive same-state draws into one
+			// instanced draw to reduce per-draw IPC crossings on WebGPU.
+			// Works for shadow and opaque color passes (not transparent — order matters).
+			const bool single_instance = instance_count == 1 && !(surf->owner->base_flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES));
+			uint32_t batch_count = 1;
+			if (batch_instance_draws && single_instance &&
+					!emulate_point_size && !indirect &&
+					!surf->owner->mesh_instance.is_valid() &&
+					p_pass_mode != PASS_MODE_COLOR_TRANSPARENT) {
+				while (i + batch_count < p_to_element) {
+					uint32_t next_i = i + batch_count;
+					const GeometryInstanceSurfaceDataCache *next_surf = p_params->elements[next_i];
+					const GeometryInstanceForwardMobile *next_inst = next_surf->owner;
+
+					// Must be active, non-multimesh, non-particles.
+					if (next_inst->instance_count == 0 || next_inst->instance_count > 1) {
+						break;
+					}
+					if (next_inst->base_flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES)) {
+						break;
+					}
+
+					// Cannot batch instances with per-instance vertex data (blend shapes/skeleton).
+					if (next_surf->owner->mesh_instance.is_valid()) {
+						break;
+					}
+
+					// Same LOD level (same index array).
+					const RenderElementInfo &next_info = p_params->element_info[next_i];
+					if (next_info.lod_index != element_info.lod_index) {
+						break;
+					}
+
+					if (shadow_pass) {
+						// Shadow pass: same mesh surface, material, cull variant.
+						if (next_surf->surface_shadow != mesh_surface) {
+							break;
+						}
+						if (next_surf->shader_shadow != shader || next_surf->material_uniform_set_shadow != material_uniform_set) {
+							break;
+						}
+						bool next_double_sided = (next_surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS) != 0;
+						bool curr_double_sided = (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_DOUBLE_SIDED_SHADOWS) != 0;
+						if (next_double_sided != curr_double_sided) {
+							break;
+						}
+						if (!next_double_sided && next_inst->mirror != inst->mirror) {
+							break;
+						}
+					} else {
+						// Color pass: same mesh surface, material, cull, pipeline specialization.
+						if (next_surf->surface != mesh_surface) {
+							break;
+						}
+						if (next_surf->shader != shader || next_surf->material_uniform_set != material_uniform_set) {
+							break;
+						}
+						// Same cull mode (ubershader push constant carries actual cull).
+						if (next_inst->mirror != inst->mirror) {
+							break;
+						}
+						// Same lightmap usage (affects pipeline version).
+						if (next_info.uses_lightmap != element_info.uses_lightmap) {
+							break;
+						}
+						// Same pipeline specialization (ubershader push constant must match).
+						if (next_inst->use_projector != inst->use_projector ||
+								next_inst->use_soft_shadow != inst->use_soft_shadow) {
+							break;
+						}
+						if (SceneShaderForwardMobile::shader_count_for(next_inst->omni_light_count) !=
+								SceneShaderForwardMobile::shader_count_for(inst->omni_light_count)) {
+							break;
+						}
+						if (SceneShaderForwardMobile::shader_count_for(next_inst->spot_light_count) !=
+								SceneShaderForwardMobile::shader_count_for(inst->spot_light_count)) {
+							break;
+						}
+						if (SceneShaderForwardMobile::shader_count_for(next_inst->area_light_count) !=
+								SceneShaderForwardMobile::shader_count_for(inst->area_light_count)) {
+							break;
+						}
+						if (SceneShaderForwardMobile::shader_count_for(next_inst->reflection_probe_count) !=
+								SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count)) {
+							break;
+						}
+						if ((next_inst->decals_count > 0) != (inst->decals_count > 0)) {
+							break;
+						}
+						// Same transforms uniform set (null for static instances).
+						if (next_surf->owner->transforms_uniform_set != surf->owner->transforms_uniform_set) {
+							break;
+						}
+					}
+
+					batch_count++;
 				}
-				RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
-			} else if (indirect) {
-				RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
+			}
+
+			// firstInstance optimization: encode base_index in firstInstance parameter
+			// and skip the per-draw push constant IPC when all OTHER fields match the
+			// previous draw. Shader formula: draw_call.instance_index + gl_InstanceIndex
+			// gives 0 + base_index = correct index.
+			bool can_use_first_instance = first_instance_eligible_pass && single_instance && !indirect && batch_count == 1 && !emulate_point_size;
+
+			if (can_use_first_instance) {
+				// Build the push constant with base_index=0 for firstInstance path.
+				uint32_t actual_base_index = push_constant.base_index;
+				push_constant.base_index = 0;
+
+				// Check if we can skip the push constant write (fields unchanged).
+				bool need_pc = !pc_set_for_current_pipeline;
+				if (!need_pc && have_prev_fi_push_constant && prev_fi_push_constant_size == push_constant_size) {
+					need_pc = memcmp(&push_constant, &prev_fi_push_constant, push_constant_size) != 0;
+				} else if (!need_pc) {
+					need_pc = true; // Size changed or no previous — must set.
+				}
+
+				if (need_pc) {
+					RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, push_constant_size);
+					prev_fi_push_constant = push_constant;
+					prev_fi_push_constant_size = push_constant_size;
+					have_prev_fi_push_constant = true;
+					pc_set_for_current_pipeline = true;
+				}
+
+				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), 1, 0, actual_base_index);
 			} else {
-				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
+				// Normal path: full push constant with actual base_index.
+				have_prev_fi_push_constant = false;
+				RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, push_constant_size);
+				pc_set_for_current_pipeline = true;
+
+				if (batch_count > 1) {
+					// Batched instanced draw: shader uses base_index + gl_InstanceIndex.
+					RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), batch_count);
+					i += batch_count - 1; // Skip batched elements (loop increments i).
+				} else if (emulate_point_size) {
+					if (indirect) {
+						WARN_PRINT("Indirect draws are not supported when emulating point size.");
+					}
+					RD::get_singleton()->draw_list_draw(draw_list, false, mesh_storage->mesh_surface_get_vertex_count(mesh_surface), instance_count * 6);
+				} else if (indirect) {
+					RD::get_singleton()->draw_list_draw_indirect(draw_list, index_array_rd.is_valid(), mesh_storage->_multimesh_get_command_buffer_rd_rid(surf->owner->data->base), surf->surface_index * sizeof(uint32_t) * mesh_storage->INDIRECT_MULTIMESH_COMMAND_STRIDE, 1, 0);
+				} else {
+					RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
+				}
 			}
 		}
 	}
@@ -2860,8 +3038,18 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_project
 	const bool positional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
 	global_pipeline_data_required.use_16_bit_shadows = directional_shadow_16_bits || positional_shadow_16_bits;
 	global_pipeline_data_required.use_32_bit_shadows = !directional_shadow_16_bits || !positional_shadow_16_bits;
-	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_2d_mode));
-	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_3d_mode));
+	const RD::DataFormat target_formats[] = {
+		RendererRD::TextureStorage::render_target_get_color_format(false, false),
+		RendererRD::TextureStorage::render_target_get_color_format(true, false),
+	};
+	const RD::DataFormat texture_formats[] = {
+		_render_buffers_get_preferred_color_format(),
+		RD::DATA_FORMAT_R16G16B16A16_SFLOAT, // HDR viewports can use the same precompiled pipelines.
+		RenderSceneBuffersRD::get_depth_format(false, true, false),
+		RenderSceneBuffersRD::get_velocity_format(),
+	};
+	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RenderSceneBuffersRD::get_supported_msaa(RSE::ViewportMSAA(msaa_2d_mode), { target_formats, std_size(target_formats) }));
+	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RenderSceneBuffersRD::get_supported_msaa(RSE::ViewportMSAA(msaa_3d_mode), { texture_formats, std_size(texture_formats) }));
 }
 
 void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_storage() {
@@ -3556,8 +3744,12 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 
 RenderForwardMobile::RenderForwardMobile() {
 	singleton = this;
+	const RD::DriverWorkarounds driver_workarounds = RD::get_singleton()->get_driver_workarounds();
+	batch_instance_draws = driver_workarounds.batch_instance_draws;
+	merge_shadow_passes = driver_workarounds.merge_shadow_passes;
+	no_input_attachments = driver_workarounds.no_input_attachments;
 
-	disable_ubershaders = RD::get_singleton()->get_driver_workarounds().disable_ubershaders;
+	disable_ubershaders = driver_workarounds.disable_ubershaders;
 	if (disable_ubershaders) {
 		print_verbose("Ubershaders: Disabled");
 	} else {
@@ -3588,6 +3780,11 @@ RenderForwardMobile::RenderForwardMobile() {
 	{
 		//lightmaps
 		scene_state.max_lightmaps = MAX_LIGHTMAPS;
+		if (RD::get_singleton()->get_device_api_name() == "WebGPU") {
+			// Leave bindings for material textures, shadows and reflections on small adapters.
+			const uint32_t textures = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+			scene_state.max_lightmaps = CLAMP(textures > 8 ? (textures - 8) / 4 : 1u, 1u, (uint32_t)MAX_LIGHTMAPS);
+		}
 		defines += "\n#define MAX_LIGHTMAP_TEXTURES " + itos(scene_state.max_lightmaps) + "\n";
 		defines += "\n#define MAX_LIGHTMAPS " + itos(scene_state.max_lightmaps) + "\n";
 
@@ -3638,4 +3835,5 @@ RenderForwardMobile::~RenderForwardMobile() {
 		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		memdelete_arr(scene_state.lightmap_captures);
 	}
+	singleton = nullptr;
 }

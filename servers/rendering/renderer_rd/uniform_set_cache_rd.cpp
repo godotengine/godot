@@ -82,4 +82,5 @@ UniformSetCacheRD::~UniformSetCacheRD() {
 	if (cache_instances_used > 0) {
 		ERR_PRINT("At exit: " + itos(cache_instances_used) + " uniform set cache instance(s) still in use.");
 	}
+	singleton = nullptr;
 }
