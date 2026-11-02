@@ -339,7 +339,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="id" type="int" />
 			<description>
-				Assigns the area to a descendant of [Object], so it can exist in the node tree.
+				Assigns the body to a descendant of [Object], so it can exist in the node tree.
 			</description>
 		</method>
 		<method name="body_clear_shapes">
