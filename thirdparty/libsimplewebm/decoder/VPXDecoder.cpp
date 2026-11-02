@@ -179,7 +179,7 @@ VPXDecoder::IMAGE_ERROR VPXDecoder::getImage(Image &image)
 	if (img->cs != VPX_CS_UNKNOWN)
 		m_last_space = img->cs;
 
-	if ((img->fmt & VPX_IMG_FMT_PLANAR) && !(img->fmt & VPX_IMG_FMT_HIGHBITDEPTH))
+	if (img->fmt & VPX_IMG_FMT_PLANAR)
 	{
 		if (img->stride[0] && img->stride[1] && img->stride[2])
 		{
@@ -192,6 +192,7 @@ VPXDecoder::IMAGE_ERROR VPXDecoder::getImage(Image &image)
 			image.cs = m_last_space;
 			image.chromaShiftW = img->x_chroma_shift;
 			image.chromaShiftH = img->y_chroma_shift;
+			image.bitDepth = img->bit_depth;
 
 			image.planes[0] = img->planes[0];
 			image.planes[1] = img->planes[uPlane];

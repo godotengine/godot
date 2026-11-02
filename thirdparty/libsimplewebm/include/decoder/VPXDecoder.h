@@ -48,6 +48,7 @@ public:
 		int cs;
 
 		int chromaShiftW, chromaShiftH;
+		int bitDepth;
 
 		unsigned char *planes[3];
 		int linesize[3];
@@ -78,7 +79,6 @@ public:
 
 	bool decode(const WebMFrame &frame);
 
-	// The image data is not copied. Only 8-bit planar images are supported.
 	IMAGE_ERROR getImage(Image &image);
 
 	bool reset();
