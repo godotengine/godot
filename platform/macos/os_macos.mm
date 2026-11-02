@@ -61,34 +61,6 @@
 #include <os/log.h>
 #include <sys/sysctl.h>
 
-void print_cferror(CFErrorRef p_error) {
-	if (p_error == nullptr) {
-		printf("Error object is null");
-		return;
-	}
-
-	CFStringRef domain = CFErrorGetDomain(p_error);
-	CFIndex code = CFErrorGetCode(p_error);
-	CFStringRef description = CFErrorCopyDescription(p_error);
-	CFDictionaryRef user_info = CFErrorCopyUserInfo(p_error);
-
-	NSLog(@"Domain: %@", (__bridge NSString *)domain);
-	NSLog(@"Code: %ld", (long)code);
-	NSLog(@"Description: %@", (__bridge NSString *)description);
-
-	// Print all keys in the user info dictionary.
-	if (user_info != NULL) {
-		NSLog(@"User Info: %@", (__bridge NSDictionary *)user_info);
-		CFRelease(user_info);
-	} else {
-		NSLog(@"User Info: (none)");
-	}
-
-	if (description != NULL) {
-		CFRelease(description);
-	}
-}
-
 void OS_MacOS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	bool wake_for_events = p_wake_for_events;
 	if (!wake_for_events) {
@@ -1071,19 +1043,17 @@ Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r
 	r_result = CFArrayCreateMutable(nullptr, num_certs, &kCFTypeArrayCallBacks);
 	ERR_FAIL_NULL_V(r_result, ERR_OUT_OF_MEMORY);
 
-	for (int i = 0; i < num_certs; i++) {
-		SecCertificateRef cert;
-		CFDataRef data;
-		const unsigned char *der = p_data[i].ptr();
-		size_t der_len = p_data[i].size();
+	for (const PackedByteArray &E : p_data) {
+		const unsigned char *der = E.ptr();
+		size_t der_len = E.size();
 
-		data = CFDataCreate(nullptr, der, (CFIndex)der_len);
+		CFDataRef data = CFDataCreate(nullptr, der, (CFIndex)der_len);
 		if (!data) {
 			status = ERR_OUT_OF_MEMORY;
 			break;
 		}
 
-		cert = SecCertificateCreateWithData(nullptr, data);
+		SecCertificateRef cert = SecCertificateCreateWithData(nullptr, data);
 		CFRelease(data);
 
 		if (!cert) {
@@ -1104,14 +1074,14 @@ Error der_to_cfarray(const Vector<PackedByteArray> &p_data, CFMutableArrayRef &r
 }
 
 Error OS_MacOS::verify_tls_certificate_chain(const String &p_hostname, const Vector<PackedByteArray> &p_tls_data, const Vector<PackedByteArray> &p_ca_data) {
-	CFStringRef host_str = CFStringCreateWithCString(kCFAllocatorDefault, p_hostname.utf8().get_data(), kCFStringEncodingUTF8);
+	CFStringRef host_str;
 	CFMutableArrayRef policies = nullptr;
 	SecTrustRef trust = nullptr;
 	SecPolicyRef policy = nullptr;
 
 	CFMutableArrayRef tls_certs = nullptr;
 	CFMutableArrayRef ca_certs = nullptr;
-	Error status = OK;
+	Error status = FAILED;
 	OSStatus ret;
 	CFErrorRef error = NULL;
 
