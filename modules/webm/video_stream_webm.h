@@ -55,8 +55,8 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 
 	WebMFrame **video_frames = nullptr;
 	WebMFrame *audio_frame = nullptr;
-	int video_frames_pos = 0;
-	int video_frames_capacity = 0;
+	int64_t video_frames_pos = 0;
+	int64_t video_frames_capacity = 0;
 
 	int num_decoded_samples = 0;
 	int samples_offset = -1;

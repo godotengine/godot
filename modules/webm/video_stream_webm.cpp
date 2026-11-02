@@ -491,7 +491,7 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 		audio_frame = nullptr;
 	}
 	if (video_frames) {
-		for (int i = 0; i < video_frames_capacity; ++i) {
+		for (int64_t i = 0; i < video_frames_capacity; ++i) {
 			memdelete(video_frames[i]);
 		}
 		memfree(video_frames);
