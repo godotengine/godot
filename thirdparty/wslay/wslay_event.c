@@ -564,6 +564,8 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
             ctx->read_enabled = 0;
             return (int)r;
           }
+        } else {
+          ctx->imsg->msg_length += iocb.payload_length;
         }
       }
       /* If RSV1 bit is set then it is too early for utf-8 validation */
@@ -572,7 +574,7 @@ int wslay_event_recv(wslay_event_context_ptr ctx) {
           ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
         size_t i;
         if (ctx->imsg->opcode == WSLAY_CONNECTION_CLOSE) {
-          i = 2;
+          i = ctx->ipayloadoff < 2 ? 2 - ctx->ipayloadoff : 0;
         } else {
           i = 0;
         }

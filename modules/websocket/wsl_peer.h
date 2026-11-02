@@ -81,10 +81,12 @@ private:
 	struct PendingMessage {
 		size_t payload_size = 0;
 		uint8_t opcode = 0;
+		bool frame_is_data = false;
 
 		void clear() {
 			payload_size = 0;
 			opcode = 0;
+			frame_is_data = false;
 		}
 	};
 

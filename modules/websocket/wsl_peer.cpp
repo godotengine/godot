@@ -565,8 +565,12 @@ ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, 
 		wslay_event_set_error(ctx, WSLAY_ERR_CALLBACK_FAILURE);
 		return -1;
 	}
-	// Make sure we don't read more than what our buffer can hold.
-	size_t buffer_limit = MIN(peer->in_buffer.payload_space_left(), peer->in_buffer.packets_space_left() * 2); // The minimum size of a websocket message is 2 bytes.
+	int payload_limit = peer->in_buffer.payload_space_left();
+	if (payload_limit == 0 && peer->pending_message.payload_size == (size_t)peer->inbound_buffer_size && peer->in_buffer.packets_left() == 0) {
+		// Finish a full fragmented message or process control frames. The cumulative message limit rejects extra payload before its chunk callback.
+		payload_limit = 1; // Do not prefetch bytes from the next message.
+	}
+	size_t buffer_limit = MIN(payload_limit, peer->in_buffer.packets_space_left() * 2); // The minimum size of a websocket message is 2 bytes.
 	size_t to_read = MIN(len, buffer_limit);
 	if (to_read == 0) {
 		wslay_event_set_error(ctx, WSLAY_ERR_WOULDBLOCK);
@@ -589,9 +593,10 @@ ssize_t WSLPeer::_wsl_recv_callback(wslay_event_context_ptr ctx, uint8_t *data, 
 void WSLPeer::_wsl_recv_start_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_start_arg *arg, void *user_data) {
 	WSLPeer *peer = (WSLPeer *)user_data;
 	uint8_t op = arg->opcode;
+	PendingMessage &pm = peer->pending_message;
+	pm.frame_is_data = !wslay_is_ctrl_frame(op);
 	if (op == WSLAY_TEXT_FRAME || op == WSLAY_BINARY_FRAME) {
 		// Get ready to process a data package.
-		PendingMessage &pm = peer->pending_message;
 		pm.opcode = op;
 	}
 }
@@ -599,7 +604,7 @@ void WSLPeer::_wsl_recv_start_callback(wslay_event_context_ptr ctx, const struct
 void WSLPeer::_wsl_frame_recv_chunk_callback(wslay_event_context_ptr ctx, const struct wslay_event_on_frame_recv_chunk_arg *arg, void *user_data) {
 	WSLPeer *peer = (WSLPeer *)user_data;
 	PendingMessage &pm = peer->pending_message;
-	if (pm.opcode != 0) {
+	if (pm.opcode != 0 && pm.frame_is_data) {
 		// Only write the payload.
 		peer->in_buffer.write_packet(arg->data, arg->data_length, nullptr);
 		pm.payload_size += arg->data_length;
@@ -911,6 +916,7 @@ void WSLPeer::_clear() {
 	was_string = 0;
 	in_buffer.clear();
 	packet_buffer.clear();
+	pending_message.clear();
 
 	// Close code info.
 	close_code = -1;
