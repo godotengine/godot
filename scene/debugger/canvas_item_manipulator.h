@@ -184,7 +184,7 @@ private:
 
 	bool grid_snap = false;
 	Point2 grid_step;
-	int grid_step_multiplier = 1;
+	int grid_step_multiplier = 0;
 	Point2 grid_offset;
 
 	bool ruler_tool_active = false;
