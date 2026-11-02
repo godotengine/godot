@@ -1,3 +1,4 @@
+Copyrignt (c) 2025-present Moritz Voss and 2dog Contributors
 Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md).
 Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 
