@@ -918,14 +918,21 @@ Error RenderingContextDriverVulkan::_create_vulkan_instance(const VkInstanceCrea
 	return OK;
 }
 
-Error RenderingContextDriverVulkan::initialize() {
-	Error err;
-
+// 2dog: split out so platform drivers can source the entry points from SDL instead of a loader.
+Error RenderingContextDriverVulkan::_volk_initialize() {
 #ifdef USE_VOLK
 	if (volkInitialize() != VK_SUCCESS) {
 		return FAILED;
 	}
 #endif
+	return OK;
+}
+
+Error RenderingContextDriverVulkan::initialize() {
+	Error err;
+
+	err = _volk_initialize();
+	ERR_FAIL_COND_V(err != OK, err);
 
 	err = _initialize_vulkan_version();
 	ERR_FAIL_COND_V(err != OK, err);

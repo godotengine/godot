@@ -55,7 +55,8 @@ if env["builtin_glslang"]:
         "SPIRV/SpvTools.cpp",
     ]
 
-    if env["platform"] == "windows":
+    # 2dog: the sdl3 platform is a Windows build on the dev host too.
+    if env["platform"] == "windows" or env.get("windows_like"):
         thirdparty_sources.append("glslang/OSDependent/Windows/ossource.cpp")
     else:
         thirdparty_sources.append("glslang/OSDependent/Unix/ossource.cpp")

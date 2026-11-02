@@ -26,7 +26,7 @@ elif env["builtin_wslay"]:
     env_ws.Prepend(CPPPATH=[thirdparty_dir])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
-    if env["platform"] == "windows":
+    if env["platform"] == "windows" or env.get("windows_like"):  # 2dog: sdl3 on a Windows host
         env_ws.Append(CPPDEFINES=["HAVE_WINSOCK2_H"])
     else:
         env_ws.Append(CPPDEFINES=["HAVE_NETINET_IN_H"])

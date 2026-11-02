@@ -57,13 +57,23 @@ JoypadSDL::~JoypadSDL() {
 			close_joypad(i);
 		}
 	}
+#ifdef SDL3_ENABLED
+	// 2dog: the display server owns the rest of SDL; never tear it down here.
+	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
+#else
 	SDL_Quit();
+#endif
 }
 
 Error JoypadSDL::initialize() {
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#ifdef SDL3_ENABLED
+	// 2dog: the SDL3 display server already initialised video, events and gamepad.
+	SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
+#else
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
+#endif
 
 	// Add Godot's mapping database from memory
 	int i = 0;
@@ -122,7 +132,12 @@ void JoypadSDL::process_events() {
 	}
 
 	SDL_Event sdl_event;
+#ifdef SDL3_ENABLED
+	// 2dog: the display server owns the pump and every other event type; take only ours so polling here cannot swallow its input.
+	while (SDL_PeepEvents(&sdl_event, 1, SDL_GETEVENT, SDL_EVENT_JOYSTICK_AXIS_MOTION, SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED) > 0) {
+#else
 	while (SDL_PollEvent(&sdl_event)) {
+#endif
 		// A new joypad was attached
 		if (sdl_event.type == SDL_EVENT_JOYSTICK_ADDED) {
 			int joy_id = Input::get_singleton()->get_unused_joy_id();
