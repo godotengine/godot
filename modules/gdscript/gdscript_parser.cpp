@@ -2049,7 +2049,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
 #ifdef DEBUG_ENABLED
-	bool unreachable = current_suite->has_return && !current_suite->has_unreachable_code;
+	bool unreachable = (current_suite->has_return || current_suite->has_continue || current_suite->has_break) && !current_suite->has_unreachable_code;
 #endif
 
 	List<AnnotationNode *> annotations;
@@ -2246,7 +2246,15 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			String end_statement_name = "block-terminating statement";
+			if (current_suite->has_return) {
+				end_statement_name = "\"return\"";
+			} else if (current_suite->has_continue) {
+				end_statement_name = "\"continue\"";
+			} else if (current_suite->has_break) {
+				end_statement_name = "\"break\"";
+			}
+			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, end_statement_name, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
 		}
 	}
 #endif
@@ -2296,6 +2304,7 @@ GDScriptParser::BreakNode *GDScriptParser::parse_break() {
 	if (!can_break) {
 		push_error(R"(Cannot use "break" outside of a loop.)");
 	}
+	current_suite->has_break = true;
 	BreakNode *break_node = alloc_node<BreakNode>();
 	complete_extents(break_node);
 	end_statement(R"("break")");
@@ -2397,9 +2406,12 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
 	n_if->true_block->parent_if = n_if;
 
-	if (n_if->true_block->has_continue) {
-		current_suite->has_continue = true;
-	}
+	// NOTE: The `has_continue` does not seem to be used anywhere other than detecting
+	// unreachable code, in which case we do not want to propagate it up from child suites
+	// which may or may not be executed.
+	// if (n_if->true_block->has_continue) {
+	// 	current_suite->has_continue = true;
+	// }
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
@@ -2424,9 +2436,12 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	if (n_if->false_block != nullptr && n_if->false_block->has_return && n_if->true_block->has_return) {
 		current_suite->has_return = true;
 	}
-	if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
-		current_suite->has_continue = true;
-	}
+	// NOTE: The `has_continue` does not seem to be used anywhere other than detecting
+	// unreachable code, in which case we do not want to propagate it up from child suites
+	// which may or may not be executed.
+	// if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
+	// 	current_suite->has_continue = true;
+	// }
 
 	return n_if;
 }
