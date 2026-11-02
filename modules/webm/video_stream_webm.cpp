@@ -309,7 +309,7 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 	bool reached_eos = false;
 
 	if (samples_offset > -1) {
-		// Mix remaining samples
+		// Mix remaining samples.
 		const int to_read = num_decoded_samples - samples_offset;
 		const int mixed = mix_callback(mix_udata, pcm.ptr() + (samples_offset * webm->getChannels()), to_read);
 		if (mixed != to_read) {
@@ -341,11 +341,17 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 			}
 		}
 
+		// Add a new video frame if necessary.
 		if (video_frames_pos >= video_frames_capacity) {
-			WebMFrame **video_frames_new = (WebMFrame **)memrealloc(video_frames, ++video_frames_capacity * sizeof(void *));
-			ERR_FAIL_COND(!video_frames_new); // Out of memory
-			(video_frames = video_frames_new)[video_frames_capacity - 1] = memnew(WebMFrame);
+			++video_frames_capacity;
+
+			WebMFrame **video_frames_new = (WebMFrame **)memrealloc(video_frames, video_frames_capacity * sizeof(WebMFrame *));
+			ERR_FAIL_COND_MSG(!video_frames_new, "Ran out of memory while decoding WebM.");
+			video_frames = video_frames_new;
+
+			video_frames[video_frames_capacity - 1] = memnew(WebMFrame);
 		}
+
 		WebMFrame *video_frame = video_frames[video_frames_pos];
 
 		if (!webm->readFrame(video_frame, audio_frame)) {
@@ -362,7 +368,7 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 	while (video_frames_pos > 0 && !video_frame_done) {
 		WebMFrame *video_frame = video_frames[0];
 
-		// It seems VPXDecoder::decode has to be executed even though we might skip this frame
+		// It seems VPXDecoder::decode has to be executed even though we might skip this frame.
 		if (video->decode(*video_frame)) {
 			if (should_process(*video_frame)) {
 				VPXDecoder::Image image;
@@ -439,7 +445,11 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		if (!seeking) {
 			video_pos = video_frame->time;
 		}
-		memmove(video_frames, video_frames + 1, (--video_frames_pos) * sizeof(void *));
+
+		--video_frames_pos;
+
+		// Move the current video frame to the end, so that it can be reused.
+		memmove(video_frames, video_frames + 1, video_frames_pos * sizeof(WebMFrame *));
 		video_frames[video_frames_pos] = video_frame;
 	}
 
