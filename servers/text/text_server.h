@@ -276,6 +276,7 @@ public:
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) = 0;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) = 0;
+	virtual bool font_validate(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) = 0;
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const = 0;
