@@ -186,7 +186,7 @@
 				If the [param event] inherits [InputEventMouse], this method will [b]not[/b] be called when:
 				- the control's [member mouse_filter] is set to [constant MOUSE_FILTER_IGNORE];
 				- the control is obstructed by another control on top, that doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				- the control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
+				- a child of the control received the event and has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
 				- the control's parent has [member clip_contents] enabled and the [param event]'s position is outside the parent's rectangle;
 				- the [param event]'s position is outside the control (see [method _has_point]).
 				[b]Note:[/b] The [param event]'s position is relative to this control's origin.
