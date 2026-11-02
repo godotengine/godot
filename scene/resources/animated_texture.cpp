@@ -37,55 +37,80 @@
 #include "servers/rendering/rendering_server.h"
 
 void AnimatedTexture::_update_proxy() {
-	RWLockRead r(rw_lock);
+	bool frame_changed = false;
 
-	float delta;
-	if (prev_ticks == 0) {
-		delta = 0;
-		prev_ticks = OS::get_singleton()->get_ticks_usec();
-	} else {
-		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
-		delta = float(double(ticks - prev_ticks) / 1000000.0);
-		prev_ticks = ticks;
-	}
+	{
+		RWLockRead r(rw_lock);
 
-	time += delta;
+		int previous_frame = current_frame;
 
-	float speed = speed_scale == 0 ? 0 : std::abs(1.0 / speed_scale);
-
-	int iter_max = frame_count;
-	while (iter_max && !pause) {
-		float frame_limit = frames[current_frame].duration * speed;
-
-		if (time > frame_limit) {
-			if (speed_scale > 0.0) {
-				current_frame++;
-			} else {
-				current_frame--;
-			}
-			if (current_frame >= frame_count) {
-				if (one_shot) {
-					current_frame = frame_count - 1;
-				} else {
-					current_frame = 0;
-				}
-			} else if (current_frame < 0) {
-				if (one_shot) {
-					current_frame = 0;
-				} else {
-					current_frame = frame_count - 1;
-				}
-			}
-			time -= frame_limit;
-
+		float delta;
+		if (prev_ticks == 0) {
+			delta = 0;
+			prev_ticks = OS::get_singleton()->get_ticks_usec();
 		} else {
-			break;
+			uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+			delta = float(double(ticks - prev_ticks) / 1000000.0);
+			prev_ticks = ticks;
 		}
-		iter_max--;
+
+		time += delta;
+
+		float speed = speed_scale == 0 ? 0 : std::abs(1.0 / speed_scale);
+
+		int iter_max = frame_count;
+		while (iter_max && !pause) {
+			float frame_limit = frames[current_frame].duration * speed;
+
+			if (time > frame_limit) {
+				if (speed_scale > 0.0) {
+					current_frame++;
+				} else {
+					current_frame--;
+				}
+				if (current_frame >= frame_count) {
+					if (one_shot) {
+						current_frame = frame_count - 1;
+					} else {
+						current_frame = 0;
+					}
+				} else if (current_frame < 0) {
+					if (one_shot) {
+						current_frame = 0;
+					} else {
+						current_frame = frame_count - 1;
+					}
+				}
+				time -= frame_limit;
+
+			} else {
+				break;
+			}
+			iter_max--;
+		}
+
+		frame_changed = current_frame != previous_frame;
+
+		if (frames[current_frame].texture.is_valid()) {
+			RenderingServer::get_singleton()->texture_proxy_update(proxy, frames[current_frame].texture->get_rid());
+		}
 	}
 
-	if (frames[current_frame].texture.is_valid()) {
-		RenderingServer::get_singleton()->texture_proxy_update(proxy, frames[current_frame].texture->get_rid());
+	if (frame_changed) {
+		emit_changed();
+	}
+}
+
+void AnimatedTexture::_frame_texture_changed(int p_frame) {
+	bool changed = false;
+
+	{
+		RWLockRead r(rw_lock);
+		changed = current_frame == p_frame;
+	}
+
+	if (changed) {
+		emit_changed();
 	}
 }
 
@@ -104,10 +129,19 @@ int AnimatedTexture::get_frames() const {
 void AnimatedTexture::set_current_frame(int p_frame) {
 	ERR_FAIL_COND(p_frame < 0 || p_frame >= frame_count);
 
-	RWLockWrite r(rw_lock);
+	{
+		RWLockWrite r(rw_lock);
 
-	current_frame = p_frame;
-	time = 0;
+		if (current_frame == p_frame) {
+			time = 0;
+			return;
+		}
+
+		current_frame = p_frame;
+		time = 0;
+	}
+
+	emit_changed();
 }
 
 int AnimatedTexture::get_current_frame() const {
@@ -136,9 +170,31 @@ void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture2D> &p_tex
 	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	RWLockWrite w(rw_lock);
+	bool changed = false;
 
-	frames[p_frame].texture = p_texture;
+	{
+		RWLockWrite w(rw_lock);
+
+		if (frames[p_frame].texture == p_texture) {
+			return;
+		}
+
+		if (frames[p_frame].texture.is_valid()) {
+			frames[p_frame].texture->disconnect_changed(callable_mp(this, &AnimatedTexture::_frame_texture_changed).bind(p_frame));
+		}
+
+		frames[p_frame].texture = p_texture;
+
+		if (frames[p_frame].texture.is_valid()) {
+			frames[p_frame].texture->connect_changed(callable_mp(this, &AnimatedTexture::_frame_texture_changed).bind(p_frame), CONNECT_REFERENCE_COUNTED); // The same texture can be assigned to multiple animation frames
+		}
+
+		changed = p_frame == current_frame;
+	}
+
+	if (changed) {
+		emit_changed();
+	}
 }
 
 Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
@@ -199,6 +255,45 @@ int AnimatedTexture::get_height() const {
 
 RID AnimatedTexture::get_rid() const {
 	return proxy;
+}
+
+void AnimatedTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	Ref<Texture2D> texture;
+
+	{
+		RWLockRead r(rw_lock);
+		texture = frames[current_frame].texture;
+	}
+
+	if (texture.is_valid()) {
+		texture->draw(p_canvas_item, p_pos, p_modulate, p_transpose);
+	}
+}
+
+void AnimatedTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+	Ref<Texture2D> texture;
+
+	{
+		RWLockRead r(rw_lock);
+		texture = frames[current_frame].texture;
+	}
+
+	if (texture.is_valid()) {
+		texture->draw_rect(p_canvas_item, p_rect, p_tile, p_modulate, p_transpose);
+	}
+}
+
+void AnimatedTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+	Ref<Texture2D> texture;
+
+	{
+		RWLockRead r(rw_lock);
+		texture = frames[current_frame].texture;
+	}
+
+	if (texture.is_valid()) {
+		texture->draw_rect_region(p_canvas_item, p_rect, p_src_rect, p_modulate, p_transpose, p_clip_uv);
+	}
 }
 
 bool AnimatedTexture::has_alpha() const {
