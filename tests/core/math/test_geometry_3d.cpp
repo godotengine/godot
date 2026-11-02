@@ -183,6 +183,8 @@ TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 	CHECK(Geometry3D::segment_intersects_triangle(Vector3(1, 1, 1), Vector3(-1, -1, -1), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), &result) == true);
 	CHECK(Geometry3D::segment_intersects_triangle(Vector3(1, 1, 1), Vector3(3, 0, 0), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), &result) == true);
 	CHECK(Geometry3D::segment_intersects_triangle(Vector3(1, 1, 1), Vector3(10, -1, -1), Vector3(-3, 0, 0), Vector3(0, 3, 0), Vector3(3, 0, 0), &result) == false);
+	CHECK(Geometry3D::segment_intersects_triangle(Vector3(0.005, 0.005, 0.005), Vector3(0.005, -0.005, 0.005), Vector3(0, 0, 0),  Vector3(0.02, 0, 0), Vector3(0, 0, 0.02), &result) == true);
+
 }
 
 TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
