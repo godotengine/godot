@@ -36,8 +36,6 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/os/shared_object.h"
-#include "core/version.h"
-#include "editor/file_system/editor_paths.h"
 #include "scene/resources/image_texture.h" // IWYU pragma: keep. Misdetection of `logo`.
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -99,20 +97,18 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_debug_symbols_file_name, String *r_err) const {
-	String current_version = GODOT_VERSION_FULL_CONFIG;
-	String template_debug_symbols_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(p_template_debug_symbols_file_name);
-	if (FileAccess::exists(template_debug_symbols_path)) {
+void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_debug_symbols_path, String *r_err) const {
+	if (FileAccess::exists(p_template_debug_symbols_path)) {
 		return;
 	}
 
-	if (FileAccess::exists(template_debug_symbols_path + ".zip")) {
+	if (FileAccess::exists(p_template_debug_symbols_path + ".zip")) {
 		return;
 	}
 
 	// Not found
 	if (r_err) {
-		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + template_debug_symbols_path + "\n";
+		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + p_template_debug_symbols_path + "\n";
 	}
 }
 
@@ -122,28 +118,41 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 
 	// Look for export templates (first official, and if defined custom templates).
 	String arch = p_preset->get("binary_format/architecture");
-	bool dvalid = exists_export_template(get_template_file_name("debug", arch), &err);
-	bool rvalid = exists_export_template(get_template_file_name("release", arch), &err);
+	String dtemplate_path = find_export_template(get_template_file_name("debug", arch), &err);
+	String rtemplate_path = find_export_template(get_template_file_name("release", arch), &err);
+	bool dvalid = dtemplate_path != "";
+	bool rvalid = rtemplate_path != "";
 
 	// Warn if the debug symbols files are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
-		check_export_template_debug_symbols(get_template_file_name("debug", arch) + ".debugsymbols", &err);
+		check_export_template_debug_symbols(dtemplate_path + ".debugsymbols", &err);
 		if (debug_symbol_mode == 2) {
-			check_export_template_debug_symbols(get_template_file_name("release", arch) + ".debugsymbols", &err);
+			check_export_template_debug_symbols(rtemplate_path + ".debugsymbols", &err);
 		}
 	}
 
-	if (p_preset->get("custom_template/debug") != "") {
-		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+	String dcustom_template_path = p_preset->get("custom_template/debug");
+	dcustom_template_path = dcustom_template_path.strip_edges();
+	if (dcustom_template_path != "") {
+		dvalid = FileAccess::exists(dcustom_template_path);
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
+		if (debug_symbol_mode > 0) {
+			check_export_template_debug_symbols(dcustom_template_path + ".debugsymbols", &err);
+		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
-		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+
+	String rcustom_template_path = p_preset->get("custom_template/release");
+	rcustom_template_path = rcustom_template_path.strip_edges();
+	if (rcustom_template_path != "") {
+		rvalid = FileAccess::exists(rcustom_template_path);
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
+		}
+		if (debug_symbol_mode == 2) {
+			check_export_template_debug_symbols(rcustom_template_path + ".debugsymbols", &err);
 		}
 	}
 
