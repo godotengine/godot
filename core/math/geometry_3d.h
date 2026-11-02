@@ -116,7 +116,7 @@ inline bool segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_
 	// the intersection point is on the line.
 	real_t t = f * e2.dot(q);
 
-	if (t > (real_t)CMP_EPSILON && t <= 1.0f) { // Ray intersection.
+	if (t >= 0.0f && t <= 1.0f) { // Segment intersection.
 		if (r_res) {
 			*r_res = p_from + rel * t;
 		}
