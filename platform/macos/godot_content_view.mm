@@ -556,7 +556,7 @@
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
 	const NSRect contentRect = [wd.window_view frame];
-	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
+	if (ds->mouse_get_mode() != DisplayServerEnums::MOUSE_MODE_CAPTURED && NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
 		ds->mouse_enter_window(window_id);
 	}
 
