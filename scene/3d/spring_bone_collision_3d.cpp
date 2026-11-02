@@ -39,6 +39,9 @@ PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
+	if (use_external_skeleton && external_skeleton_node_cache.is_null()) {
+		warnings.push_back(RTR("External Skeleton3D node not set! Please set a path to an external Skeleton3D node."));
+	}
 	if (!parent) {
 		warnings.push_back(RTR("Parent node should be a SpringBoneSimulator3D node."));
 	}
@@ -62,6 +65,8 @@ void SpringBoneCollision3D::_validate_property(PropertyInfo &p_property) const {
 		}
 	} else if (bone < 0 && (p_property.name == "position_offset" || p_property.name == "rotation_offset")) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "external_skeleton" && !use_external_skeleton) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -74,13 +79,64 @@ void SpringBoneCollision3D::_validate_bone_name() {
 	}
 }
 
+void SpringBoneCollision3D::_update_external_skeleton_cache() const{
+	external_skeleton_node_cache = ObjectID();
+	if (has_node(external_skeleton_node)) {
+		Node *node = get_node(external_skeleton_node);
+		ERR_FAIL_NULL_MSG(node, "Cannot update external skeleton cache: Node cannot be found!");
+
+		Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
+		ERR_FAIL_NULL_MSG(sk, "Cannot update external skeleton cache: Nodepath does not point to a Skeleton3D node!");
+
+		external_skeleton_node_cache = node->get_instance_id();
+	}
+}
+
 Skeleton3D *SpringBoneCollision3D::get_skeleton() const {
+	if (use_external_skeleton) {
+		if (external_skeleton_node_cache.is_valid()) {
+			return ObjectDB::get_instance<Skeleton3D>(external_skeleton_node_cache);
+		}
+		_update_external_skeleton_cache();
+		if (external_skeleton_node_cache.is_valid()) {
+			return ObjectDB::get_instance<Skeleton3D>(external_skeleton_node_cache);
+		}
+		return nullptr;
+	}
 	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
 	if (!parent) {
 		return nullptr;
 	}
 	return parent->get_skeleton();
 }
+
+void SpringBoneCollision3D::set_use_external_skeleton(bool p_use_external_skeleton) {
+	use_external_skeleton = p_use_external_skeleton;
+
+	if (use_external_skeleton) {
+		_update_external_skeleton_cache();
+	}
+
+	notify_property_list_changed();
+	update_configuration_warnings();
+}
+
+void SpringBoneCollision3D::set_external_skeleton(NodePath p_external_skeleton) {
+	external_skeleton_node = p_external_skeleton;
+	
+	_update_external_skeleton_cache();
+	notify_property_list_changed();
+	update_configuration_warnings();
+}
+
+NodePath SpringBoneCollision3D::get_external_skeleton() const {
+	return external_skeleton_node;
+}
+
+bool SpringBoneCollision3D::get_use_external_skeleton() const {
+	return use_external_skeleton;
+}
+
 
 void SpringBoneCollision3D::set_bone_name(const String &p_name) {
 	bone_name = p_name;
@@ -181,8 +237,15 @@ void SpringBoneCollision3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_offset", "offset"), &SpringBoneCollision3D::set_rotation_offset);
 	ClassDB::bind_method(D_METHOD("get_rotation_offset"), &SpringBoneCollision3D::get_rotation_offset);
 
+	ClassDB::bind_method(D_METHOD("set_use_external_skeleton", "use_external_skeleton"), &SpringBoneCollision3D::set_use_external_skeleton);
+	ClassDB::bind_method(D_METHOD("get_use_external_skeleton"), &SpringBoneCollision3D::get_use_external_skeleton);
+	ClassDB::bind_method(D_METHOD("set_external_skeleton", "external_skeleton"), &SpringBoneCollision3D::set_external_skeleton);
+	ClassDB::bind_method(D_METHOD("get_external_skeleton"), &SpringBoneCollision3D::get_external_skeleton);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bone_name"), "set_bone_name", "get_bone_name");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_bone", "get_bone");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_external_skeleton"), "set_use_external_skeleton", "get_use_external_skeleton");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "external_skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_external_skeleton", "get_external_skeleton");
 
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position_offset"), "set_position_offset", "get_position_offset");
@@ -193,6 +256,9 @@ void SpringBoneCollision3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_PARENTED: {
+			if (p_what == NOTIFICATION_ENTER_TREE && use_external_skeleton) {
+				_update_external_skeleton_cache();
+			}
 			_validate_bone_name();
 		} break;
 	}

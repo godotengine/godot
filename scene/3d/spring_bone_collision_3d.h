@@ -41,7 +41,12 @@ class SpringBoneCollision3D : public Node3D {
 	Vector3 position_offset;
 	Quaternion rotation_offset;
 
+	bool use_external_skeleton = false;
+	NodePath external_skeleton_node;
+	mutable ObjectID external_skeleton_node_cache;
+
 	void _validate_bone_name();
+	void _update_external_skeleton_cache() const;
 
 protected:
 	PackedStringArray get_configuration_warnings() const override;
@@ -64,6 +69,11 @@ public:
 	Vector3 get_position_offset() const;
 	void set_rotation_offset(const Quaternion &p_offset);
 	Quaternion get_rotation_offset() const;
+
+	void set_use_external_skeleton(bool p_use_external_skeleton);
+	bool get_use_external_skeleton() const;
+	void set_external_skeleton(NodePath p_external_skeleton);
+	NodePath get_external_skeleton() const;
 
 	void sync_pose();
 	Transform3D get_transform_from_skeleton(const Transform3D &p_center) const;
