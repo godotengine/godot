@@ -90,8 +90,10 @@ public:
 
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
+	virtual bool font_validate(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
 	GDVIRTUAL3(_font_set_data_ptr, RID, GDExtensionPtr<const uint8_t>, int64_t);
+	GDVIRTUAL1RC(bool, _font_validate, RID);
 
 	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
