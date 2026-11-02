@@ -569,6 +569,7 @@ public:
 
 	void focus_selection();
 	void focus_aabb();
+	void focus_point(const Vector3 &p_point, const real_t &p_distance = -1, const bool &p_clear_follow = false);
 
 	void assign_pending_data_pointers(
 			Node3D *p_preview_node,
