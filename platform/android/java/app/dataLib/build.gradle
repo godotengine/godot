@@ -14,8 +14,8 @@ dependencies {
     } else {
         // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
-        debugCompileOnly fileTree(dir: '../libs/debug', include: ['**/*.jar', '*.aar'])
-        releaseCompileOnly fileTree(dir: '../libs/release', include: ['**/*.jar', '*.aar'])
+        debugCompileOnly fileTree(dir: '../libs/debug', include: ['**/*.jar', '**/*.aar'])
+        releaseCompileOnly fileTree(dir: '../libs/release', include: ['**/*.jar', '**/*.aar'])
     }
 }
 
