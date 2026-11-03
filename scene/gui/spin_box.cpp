@@ -98,6 +98,18 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
+		if (p_only_update_if_value_changed) {
+			const double step = get_step();
+			String value = String::num(get_value(), Math::range_step_decimals(step));
+			if (is_localizing_numeral_system()) {
+				value = TranslationServer::get_singleton()->format_number(value, _get_locale());
+			}
+			if (value == last_text_value) {
+				// Keep pending input so it can be parsed after this update.
+				return;
+			}
+		}
+
 		const Variant current_value = get_value();
 		bool error = false;
 		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);

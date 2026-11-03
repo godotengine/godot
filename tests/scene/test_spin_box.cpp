@@ -127,6 +127,37 @@ TEST_CASE("[SceneTree][SpinBox] update_on_text_changed toggle") {
 	memdelete(spin);
 }
 
+TEST_CASE("[SceneTree][SpinBox] Plural format preserves value entered on focus exit") {
+	SpinBox *spin = memnew(SpinBox);
+	spin->set_min(1.0);
+	spin->set_max(100.0);
+	spin->set_value(8.0);
+	spin->set_step(1.0);
+	spin->set_format_with_plural("%d step", "%d steps");
+	spin->set_format_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(spin);
+	SceneTree::get_singleton()->process(0);
+
+	LineEdit *line_edit = spin->get_line_edit();
+	line_edit->grab_focus();
+	SceneTree::get_singleton()->process(0);
+	line_edit->edit();
+	SceneTree::get_singleton()->process(0);
+	REQUIRE(line_edit->is_editing());
+
+	line_edit->set_text("16");
+	line_edit->unedit();
+	line_edit->emit_signal(SNAME("editing_toggled"), false);
+	SceneTree::get_singleton()->process(0);
+
+	CHECK(spin->get_value() == doctest::Approx(16.0));
+	CHECK(line_edit->get_text().contains("16"));
+
+	memdelete(spin);
+}
+
 TEST_CASE("[SceneTree][SpinBox] apply parses expression") {
 	SpinBox *spin = memnew(SpinBox);
 	spin->set_max(1000.0);
