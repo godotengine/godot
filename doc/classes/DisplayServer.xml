@@ -1587,7 +1587,7 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Hides the toast notification with [param id] returned by [method send_toast_notification].
-				[b]Note:[/b] This method is only implemented on Windows.
+				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
 		<method name="ime_get_selection" qualifiers="const">
@@ -1909,11 +1909,11 @@
 			<return type="int" />
 			<param index="0" name="title" type="String" />
 			<param index="1" name="text" type="String" />
-			<param index="2" name="image" type="Texture2D" />
-			<param index="3" name="callback" type="Callable" />
+			<param index="2" name="image" type="Texture2D" default="null" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Displays a toast notification with [param title], [param text], and optionally [param image]. [param image] should be square, have a maximum edge length of 512 pixels, and should not exceed 4 MB when encoded as PNG. [param callback] should accept two arguments: [int] (notification ID) and [enum NotificationStatus]. Returns the notification ID or [constant INVALID_NOTIFICATION_ID] if it failed.
-				[b]Note:[/b] This method is only implemented on Windows.
+				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
 		<method name="set_hardware_keyboard_connection_change_callback">
