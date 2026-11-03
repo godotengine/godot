@@ -124,6 +124,9 @@ static inline std::string DescribeError(uint32_t code, bool prefixErrorCode = tr
         str = "(unknown)";
     }
 
+    // FormatMessage appends a trailing newline
+    str.erase(str.find_last_not_of("\r\n") + 1);
+
     return str;
 }
 

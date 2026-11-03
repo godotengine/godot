@@ -922,7 +922,7 @@ Files extracted from upstream source:
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.63 (f2448a8797c85814aa892efc1ab8707900fbcc78, 2026)
+- Version: 1.1.65 (24a1f2b92d212501a2b1b8d30ffd53abf55fcfa8, 2026)
 - License: Apache 2.0
 
 Files extracted from upstream source:
