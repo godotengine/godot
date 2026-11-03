@@ -1960,8 +1960,9 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	// Generate a unique name for the launch screen to avoid caching.
 	{
-		const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
-		const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
+		// The storyboard options only exist on platforms with a launch storyboard (iOS).
+		const String custom_launch_image_2x = p_preset->has("storyboard/custom_image@2x") ? String(p_preset->get("storyboard/custom_image@2x")) : String();
+		const String custom_launch_image_3x = p_preset->has("storyboard/custom_image@3x") ? String(p_preset->get("storyboard/custom_image@3x")) : String();
 
 		String launch_image_hash;
 		if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
