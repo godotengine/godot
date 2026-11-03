@@ -369,9 +369,6 @@ void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_sources_list();
-			if (tile_set.is_valid()) {
-				_update_patterns_list();
-			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -424,50 +421,8 @@ void TileSetEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	}
 }
 
-void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(tile_set.is_null());
-
-	if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
-		return;
-	}
-
-	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
-		Vector<int> selected = patterns_item_list->get_selected_items();
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Remove TileSet patterns"));
-		for (int i = 0; i < selected.size(); i++) {
-			int pattern_index = selected[i];
-			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
-			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
-		}
-		undo_redo->commit_action();
-		patterns_item_list->accept_event();
-	}
-}
-
-void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
-	// TODO optimize ?
-	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
-		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
-			patterns_item_list->set_item_icon(i, p_texture);
-			break;
-		}
-	}
-}
-
 void TileSetEditor::_update_patterns_list() {
-	ERR_FAIL_COND(tile_set.is_null());
-
-	// Recreate the items.
-	patterns_item_list->clear();
-	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
-		int id = patterns_item_list->add_item("");
-		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
-		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
-	}
-
-	// Update the label visibility.
+	patterns_item_list->update_list(tile_set);
 	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
 }
 
@@ -981,17 +936,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_mc->hide();
 
 	//// Patterns ////
-	int thumbnail_size = 64;
-	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	patterns_item_list->set_max_columns(0);
-	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
-	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
-	patterns_item_list->set_max_text_lines(2);
-	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
-	patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	patterns_item_list = memnew(TileSetPatternList);
 	patterns_mc->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);
@@ -999,8 +944,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_help_label->set_text(TTRC("Add new patterns in the TileMap editing mode."));
 	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
-	patterns_item_list->add_child(patterns_help_label);
+	patterns_mc->add_child(patterns_help_label);
 
 	// Expanded editor
 	expanded_area = memnew(PanelContainer);
