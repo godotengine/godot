@@ -256,7 +256,7 @@
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<param index="12" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] in local space. [code]pos.x[/code] indicates the left side of the column of text (including the full [param width] even if the text is narrower, and regardless of [param alignment]); [code]pos.y[/code] indicates the vertical position of the baseline of the first line of text. The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
