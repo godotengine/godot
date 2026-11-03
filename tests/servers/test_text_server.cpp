@@ -727,6 +727,24 @@ TEST_SUITE("[TextServer]") {
 
 				ts->free_rid(ctx);
 
+				ctx = ts->create_shaped_text();
+				CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+				ok = ts->shaped_text_add_string(ctx, "A ", font, 16);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+				ok = ts->shaped_text_add_object(ctx, "image", Size2(10, 10), INLINE_ALIGNMENT_CENTER, 1, 0.0);
+				CHECK_FALSE_MESSAGE(!ok, "Adding an inline object to the buffer failed.");
+				ok = ts->shaped_text_add_string(ctx, " B", font, 16);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+
+				const double object_x_before = ts->shaped_text_get_object_rect(ctx, "image").position.x;
+				width_old = ts->shaped_text_get_width(ctx);
+				width = ts->shaped_text_fit_to_width(ctx, 100, TextServer::JUSTIFICATION_WORD_BOUND);
+				const double object_x_after = ts->shaped_text_get_object_rect(ctx, "image").position.x;
+				CHECK_FALSE_MESSAGE((width <= width_old || width > 100), "Invalid fill width with an inline object.");
+				CHECK_MESSAGE(object_x_after > object_x_before, "Inline object was not moved with justified text.");
+
+				ts->free_rid(ctx);
+
 				for (int j = 0; j < font.size(); j++) {
 					ts->free_rid(font[j]);
 				}

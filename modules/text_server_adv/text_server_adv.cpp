@@ -5826,6 +5826,13 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 	}
 
 	sd->fit_width_minimum_reached = false;
+	Vector<double> glyph_advance_deltas;
+	if (!sd->objects.is_empty()) {
+		glyph_advance_deltas.resize(sd->glyphs.size());
+		for (int i = 0; i < glyph_advance_deltas.size(); i++) {
+			glyph_advance_deltas.write[i] = 0.0;
+		}
+	}
 	int start_pos = 0;
 	int end_pos = sd->glyphs.size() - 1;
 
@@ -5874,11 +5881,17 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 		// Trim spaces.
 		while ((start_pos < end_pos) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
+			if (!glyph_advance_deltas.is_empty()) {
+				glyph_advance_deltas.write[start_pos] -= sd->glyphs[start_pos].advance * sd->glyphs[start_pos].repeat;
+			}
 			sd->glyphs[start_pos].advance = 0;
 			start_pos += sd->glyphs[start_pos].count;
 		}
 		while ((start_pos < end_pos) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((sd->glyphs[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (sd->glyphs[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 			justification_width -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
+			if (!glyph_advance_deltas.is_empty()) {
+				glyph_advance_deltas.write[end_pos] -= sd->glyphs[end_pos].advance * sd->glyphs[end_pos].repeat;
+			}
 			sd->glyphs[end_pos].advance = 0;
 			end_pos -= sd->glyphs[end_pos].count;
 		}
@@ -5924,6 +5937,9 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 						} else {
 							gl.repeat = CLAMP(count + 1, 1, 255);
 						}
+						if (!glyph_advance_deltas.is_empty()) {
+							glyph_advance_deltas.write[i] += (gl.repeat - prev_count) * gl.advance;
+						}
 						justification_width += (gl.repeat - prev_count) * gl.advance;
 					}
 				}
@@ -5953,6 +5969,9 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 						gl.advance = MAX(gl.advance - 1, 0);
 						adv_remain -= 1.0;
 					}
+					if (!glyph_advance_deltas.is_empty()) {
+						glyph_advance_deltas.write[i] += (gl.advance - old_adv) * gl.repeat;
+					}
 					justification_width += (gl.advance - old_adv);
 				}
 			}
@@ -5965,6 +5984,29 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 
 	if (!p_jst_flags.has_flag(JUSTIFICATION_CONSTRAIN_ELLIPSIS)) {
 		sd->width = justification_width;
+	}
+
+	if (!glyph_advance_deltas.is_empty()) {
+		const ShapedTextDataAdvanced *span_owner = sd;
+		if (sd->parent != RID()) {
+			span_owner = shaped_owner.get_or_null(sd->parent);
+			ERR_FAIL_NULL_V(span_owner, Math::ceil(justification_width));
+		}
+		double position_delta = 0.0;
+		for (int i = 0; i < (int)sd->glyphs.size(); i++) {
+			const Glyph &gl = sd->glyphs[i];
+			if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + sd->first_span >= 0 && gl.span_index + sd->first_span < span_owner->spans.size()) {
+				const Variant &key = span_owner->spans[gl.span_index + sd->first_span].embedded_key;
+				if (key != Variant() && sd->objects.has(key)) {
+					if (sd->orientation == ORIENTATION_HORIZONTAL) {
+						sd->objects[key].rect.position.x += position_delta;
+					} else {
+						sd->objects[key].rect.position.y += position_delta;
+					}
+				}
+			}
+			position_delta += glyph_advance_deltas[i];
+		}
 	}
 
 	return Math::ceil(justification_width);
