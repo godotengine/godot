@@ -88,7 +88,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-05 07:04+0000\n"
+"PO-Revision-Date: 2026-08-19 05:51+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
@@ -97,7 +97,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "OK"
 msgstr "확인"
@@ -2467,10 +2467,10 @@ msgid "Download other versions."
 msgstr "다른 버전을 다운로드합니다."
 
 msgid "Store Page"
-msgstr "상점 페이지"
+msgstr "스토어 페이지"
 
 msgid "Open the web browser to show the asset in the online store page."
-msgstr "웹 브라우저를 열어 온라인 상점 페이지에서 애셋을 보여줍니다."
+msgstr "웹 브라우저를 열어 온라인 스토어 페이지에서 애셋을 보여줍니다."
 
 msgid "View Source"
 msgstr "소스 보기"
@@ -2626,9 +2626,6 @@ msgstr "온라인으로 이동"
 
 msgid "Failed to verify repository."
 msgstr "저장소 검증에 실패했습니다."
-
-msgid "Template"
-msgstr "템플릿"
 
 msgid "All"
 msgstr "모두"
@@ -4580,6 +4577,9 @@ msgstr ""
 "\"자리표시자로 불러오기\"를 활성화하면 \"편집할 수 있는 자식\"이 비활성화되"
 "고, 그러면 노드의 모든 속성이 디폴트로 복원됩니다."
 
+msgid "Toggle Load as Placeholder"
+msgstr "자리표시자로 불러오기 토글"
+
 msgid "Make Local"
 msgstr "로컬로 만들기"
 
@@ -4801,7 +4801,7 @@ msgid "Add Child Node..."
 msgstr "자식 노드 추가..."
 
 msgid "Instantiate Child Scene..."
-msgstr "자식 씬 인스턴스화..."
+msgstr "씬을 자식으로 인스턴스화..."
 
 msgid "Paste (as Child)"
 msgstr "(자식으로) 붙여넣기"
@@ -4834,10 +4834,10 @@ msgid "Reparent..."
 msgstr "부모 다시 지정..."
 
 msgid "Reparent to New Node..."
-msgstr "새 노드에 부모 노드 다시 지정..."
+msgstr "새 노드에 부모 다시 지정..."
 
 msgid "Make Scene Root"
-msgstr "씬 루트 만들기"
+msgstr "씬을 루트로 만들기"
 
 msgid "Toggle Access as Unique Name"
 msgstr "고유 이름으로 접근 토글"
@@ -6490,7 +6490,7 @@ msgid ""
 "Reason: %s."
 msgstr ""
 "다운로드 실패.\n"
-"사유: %s."
+"이유: %s."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Android 빌드 소스 압축 푸는 중"
@@ -10227,15 +10227,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "씬 선택기"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"이 기능을 활성화하면 파일 시스템 도크, 장면 도크 또는 2D 편집기 뷰포트에서 장"
-"면을 선택할 수 있습니다.\n"
-"Ctrl 키를 누른 상태에서 2D 편집기 뷰포트에서 장면을 선택할 수 있습니다."
-
 msgid "Edit Properties"
 msgstr "속성 편집"
 
@@ -10253,13 +10244,6 @@ msgstr "격자 셀 가운데에 스냅"
 
 msgid "Allow Overlapping"
 msgstr "겹침 허용"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"기존에 칠한 씬 위에 칠할 수 있도록 합니다.\n"
-"칠하는 동안 이 옵션을 임시로 토글하려면 Shift를 누르세요."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "이 스켈레톤에는 본이 없습니다. 자식 Bone2D 노드를 만드세요."
@@ -10880,15 +10864,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "속성 편집기 선택"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Ctrl을 누르고 있으면 여러 개의 타일을 만듭니다."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Shift를 누르고 있으면 큰 타일을 만듭니다."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Ctrl을 누르고 있으면 여러 지역을 선택합니다."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12628,6 +12603,9 @@ msgstr "%s+드래그: 스냅을 사용합니다."
 
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "좌클릭+드래그: 3D 공간에서 두 점 사이의 거리를 측정합니다."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+좌클릭+드래그: 컴포넌트 측정값을 보여줍니다."
 
 msgid ""
 "Scene contains\n"
@@ -15507,6 +15485,9 @@ msgstr "부모 선택"
 
 msgid "Use Template"
 msgstr "템플릿 사용"
+
+msgid "Template"
+msgstr "템플릿"
 
 msgid "Built-in Script:"
 msgstr "내장 스크립트:"

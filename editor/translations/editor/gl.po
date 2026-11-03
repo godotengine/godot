@@ -21,11 +21,12 @@
 # Julián Lacomba <julian_alberto93@yahoo.com.ar>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Sergio Souto Mourelle <sergiosoutomourelle@gmail.com>, 2025.
+# A4molaxd <a4molaxd@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-06-06 10:01+0000\n"
+"PO-Revision-Date: 2026-09-08 11:51+0000\n"
 "Last-Translator: ninjum <ninhum@gmx.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
@@ -33,10 +34,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 msgid "OK"
 msgstr "Vale"
+
+msgid "Failed"
+msgstr "Fracasado"
 
 msgid "Unauthorized"
 msgstr "Non autorizado"
@@ -1620,6 +1624,22 @@ msgctxt "Transition Type"
 msgid "Back"
 msgstr "Regreso"
 
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Spring (Efecto resorte)"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "Saída suave"
+
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "Entrada e saída suaves"
+
+msgctxt "Ease Type"
+msgid "Ease Out-In"
+msgstr "Saída suave"
+
 msgid "Change Animation Step"
 msgstr "Cambiar Paso de Animación"
 
@@ -1784,11 +1804,29 @@ msgstr "Advertencia: O AnimationPlayer está inactivo"
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Alternar entre o editor de curvas Bézier e o editor de pistas."
 
+msgid "Toggle function names in the track editor."
+msgstr "Cambiar nomes das funcións no editor de pistas."
+
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Só mostrar pistas de nodos seleccionados na árbore."
 
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"Ordenar as pistas/grupos alfabeticamente.\n"
+"Se está desactivado, as pistas móstranse na orde en que se engaden e pódense "
+"reordenar arrastrando e soltando."
+
 msgid "Group tracks by node or display them as plain list."
 msgstr "Agrupar pistas por nodo ou mostralas coma unha simple lista."
+
+msgid "Apply snapping to timeline cursor."
+msgstr "Aplicar axuste ao cursor da liña de tempo."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Aplicar axuste ao enteiro FPS máis cercano."
 
 msgid "Animation step value."
 msgstr "Valor de paso de animación."
@@ -1799,11 +1837,26 @@ msgstr "Segundos"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Auto Fit Bezier"
+msgstr "Axuste Automático de Bézier"
+
 msgid "Edit"
 msgstr "Editar"
 
 msgid "Animation properties."
 msgstr "Propiedades de Animación."
+
+msgid "Set Start Offset (Audio)"
+msgstr "Establecer Offset Inicial (Audio)"
+
+msgid "Set End Offset (Audio)"
+msgstr "Establecer Offset Final (Audio)"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "Mover Primeira Clave Seleccionada ao Cursor"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "Mover Última Clave Seleccionada ao Cursor"
 
 msgid "Delete Selection"
 msgstr "Eliminar Selección"
@@ -1819,6 +1872,9 @@ msgstr "Ir ao Seguinte Fotograma Clave"
 
 msgid "Go to Previous Keyframe"
 msgstr "Ir ao Fotograma Clave Anterior"
+
+msgid "Add tracks to RESET"
+msgstr "Engadir pistas a RESET"
 
 msgid "Use Bezier Curves"
 msgstr "Usar Curvas Bezier"
@@ -1841,6 +1897,12 @@ msgstr "Error Máximo de Precisión:"
 msgid "Optimize"
 msgstr "Optimizar"
 
+msgid "Trim keys placed in negative time"
+msgstr "Recortar Claves Ubicadas en Tempos Negativos"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "Recortar claves que exceden a duración da animación"
+
 msgid "Remove invalid keys"
 msgstr "Eliminar chaves inválidas"
 
@@ -1859,11 +1921,17 @@ msgstr "Limpiar"
 msgid "Scale Ratio:"
 msgstr "Relación de Escalado:"
 
+msgid "Select Transition and Easing"
+msgstr "Seleccionar Transición e suavización"
+
 msgid "Transition Type:"
 msgstr "Tipo de Transición:"
 
 msgid "Ease Type:"
 msgstr "Tipo de Interpolación:"
+
+msgid "FPS:"
+msgstr "FPS:"
 
 msgid "Animation Baker"
 msgstr "Bakeador de Animacions"
@@ -1889,6 +1957,27 @@ msgstr "Copiar Selección"
 msgid "Animation Change Keyframe Time"
 msgstr "Cambiar Tempo do Fotograma Clave da Animación"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "O nome do marcador é de só lectura no inspector."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"O nome dun marcador só se pode cambiar facendo clic co botón dereito sobre el "
+"no editor de animacións e seleccionando \"Cambiar nome de marcador\" para "
+"garantir cos nomes dos marcadores sexan todos únicos."
+
+msgid "Marker:"
+msgstr "Marcador:"
+
+msgid "Empty marker names are not allowed."
+msgstr "Non se permiten nomes de marcadores baleiros."
+
+msgid "Multi Edit Marker Color"
+msgstr "Cor do marcador de edición múltiple"
+
 msgid "Add Audio Track Clip"
 msgstr "Engadir Clip de Pista de Audio"
 
@@ -1898,14 +1987,29 @@ msgstr "Cambiar Offset de Inicio de Clip de Pista de Audio"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Cambiar Offset Final del Clip de Pista de Audio"
 
+msgid "'%s':"
+msgstr "'%s':"
+
+msgid "Root"
+msgstr "Raíz"
+
 msgid "Path:"
 msgstr "Ruta:"
 
 msgid "Errors"
 msgstr "Erros"
 
+msgid "Title"
+msgstr "Título"
+
+msgid "Verified Author"
+msgstr "Autor verificado"
+
 msgid "License"
 msgstr "Licenza"
+
+msgid "No changelog provided for this version."
+msgstr "Non se proporcionou ningún rexistro de trocos para esta versión."
 
 msgid "Loading..."
 msgstr "Cargando..."
@@ -1922,6 +2026,12 @@ msgstr "Instalar..."
 msgid "Version:"
 msgstr "Versión:"
 
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "Abre o navegador web para amosar o recurso na páxina da tenda en liña."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "Abre o navegador web para amosar unha páxina cos ficheiros fonte."
+
 msgid "Description"
 msgstr "Descrición"
 
@@ -1931,17 +2041,41 @@ msgstr "Houbo un erro na conexión; por favor, inténtao de novo."
 msgid "Can't connect."
 msgstr "Non se pode conectar."
 
+msgid "Can't connect to host:"
+msgstr "Non se pode conectar co servidor:"
+
 msgid "No response from host:"
 msgstr "Non houbo respota por parte do host:"
 
 msgid "No response."
 msgstr "Sen resposta."
 
+msgid "Can't resolve hostname:"
+msgstr "Non se pode resolver o nome do servidor:"
+
+msgid "Can't resolve."
+msgstr "Non se pode resolver."
+
+msgid "Request failed, return code:"
+msgstr "Fallou a solicitude, código de retorno:"
+
 msgid "Request failed."
 msgstr "A petición fallou."
 
+msgid "Cannot save response to:"
+msgstr "Non se pode gardar a resposta a:"
+
 msgid "Write error."
 msgstr "Erro de escritura."
+
+msgid "Request failed, too many redirects"
+msgstr "Fallou a solicitude, houbo demasiados redireccionamentos"
+
+msgid "Redirect loop."
+msgstr "Bucle de redirección."
+
+msgid "Request failed, timeout"
+msgstr "Fallou a solicitude, superouse o tempo de espera"
 
 msgid "Timeout."
 msgstr "Tempo de espera."

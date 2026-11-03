@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # BoneNI <bounkirdni@gmail.com>, 2026.
+# Bone NI <bounkirdni@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-08-06 05:30+0000\n"
-"Last-Translator: BoneNI <bounkirdni@gmail.com>\n"
+"PO-Revision-Date: 2026-08-10 14:28+0000\n"
+"Last-Translator: Bone NI <bounkirdni@gmail.com>\n"
 "Language-Team: Lao <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/lo/>\n"
 "Language: lo\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "ແອັບພລິເຄຊັນ"
@@ -569,7 +570,7 @@ msgid "Enable Magnetometer"
 msgstr "ເປີດໃຊ້ເຄື່ອງວັດແທກສະໜາມແມ່ເຫຼັກ (Magnetometer)"
 
 msgid "Joypads"
-msgstr "Joypads"
+msgstr "ຈອຍບັງຄັບ"
 
 msgid "Device"
 msgstr "ອຸປະກອນ"
@@ -614,7 +615,7 @@ msgid "Echo"
 msgstr "ການເຮັດຊ້ຳ (Echo)"
 
 msgid "Button Mask"
-msgstr "Button Mask"
+msgstr "ໜ້າກາກປຸ່ມ"
 
 msgid "Position"
 msgstr "ຕຳແໜ່ງ"
@@ -824,7 +825,7 @@ msgid "Threading"
 msgstr "ການໃຊ້ເທຣດ (Threading)"
 
 msgid "Worker Pool"
-msgstr "Worker Pool"
+msgstr "ກຸ່ມຜູ້ເຮັດວຽກ"
 
 msgid "Low Priority Thread Ratio"
 msgstr "ອັດຕາສ່ວນເທຣດບຸລິມະສິດຖອດ"
@@ -890,7 +891,7 @@ msgid "In Handle"
 msgstr "In Handle"
 
 msgid "Out Handle"
-msgstr "Out Handle"
+msgstr "ມືຈັບຂາອອກ"
 
 msgid "Handle Mode"
 msgstr "ໂໝດ Handle"
@@ -1370,7 +1371,7 @@ msgid "Shadow Meshes"
 msgstr "ເມັສເງົາ"
 
 msgid "Lightmap UV"
-msgstr "Lightmap UV"
+msgstr "UV ຜັງແສງ"
 
 msgid "LODs"
 msgstr "LODs"
@@ -1547,7 +1548,7 @@ msgid "Modulate Color Glyphs"
 msgstr "ປັບແຕ່ງສີຕົວອັກສອນ (Glyphs)"
 
 msgid "Hinting"
-msgstr "Hinting"
+msgstr "ການປັບຄົມ (Hinting)"
 
 msgid "Subpixel Positioning"
 msgstr "ການກຳນົດຕຳແໜ່ງ Subpixel"
@@ -1556,7 +1557,7 @@ msgid "Keep Rounding Remainders"
 msgstr "ຮັກສາຄ່າເສດການປັດເສດ"
 
 msgid "Oversampling"
-msgstr "Oversampling"
+msgstr "ການສຸ່ມຕົວຢ່າງເກີນ"
 
 msgid "Metadata Overrides"
 msgstr "ການແທນທີ່ເມຕາເດຕາ"
@@ -1592,7 +1593,7 @@ msgid "Embolden"
 msgstr "ເຮັດໃຫ້ໜາ"
 
 msgid "Face Index"
-msgstr "Face Index"
+msgstr "ດັດຊະນີໃບໜ້າຕົວອັກສອນ"
 
 msgid "Transform"
 msgstr "ການແປງ (Transform)"
@@ -1607,10 +1608,10 @@ msgid "Delimiter"
 msgstr "ຕົວຂັ້ນ (Delimiter)"
 
 msgid "Unescape Keys"
-msgstr "Unescape Keys"
+msgstr "ຖອດລະຫັດຄີ"
 
 msgid "Unescape Translations"
-msgstr "Unescape Translations"
+msgstr "ຖອດລະຫັດການແປ"
 
 msgid "Character Ranges"
 msgstr "ໄລຍະຕົວອັກສອນ"
@@ -1631,10 +1632,10 @@ msgid "Character Margin"
 msgstr "ຂອບຂອງຕົວອັກສອນ"
 
 msgid "Ascent"
-msgstr "Ascent"
+msgstr "ໄລຍະຫ່າງດ້ານເທິງ"
 
 msgid "Descent"
-msgstr "Descent"
+msgstr "ໄລຍະຫ່າງດ້ານລຸ່ມ"
 
 msgid "High Quality"
 msgstr "ຄຸນນະພາບສູງ"
@@ -1685,16 +1686,16 @@ msgid "Fix Alpha Border"
 msgstr "ແກ້ໄຂຂອບອັລຟາ (Alpha Border)"
 
 msgid "Premult Alpha"
-msgstr "Premult Alpha"
+msgstr "ຄ່າອັນຟາແບບຄຳນວນລ່ວງໜ້າ"
 
 msgid "Normal Map"
-msgstr "Normal Map"
+msgstr "ແຜນຜັງພື້ນຜິວ (Normal Map)"
 
 msgid "Roughness"
 msgstr "ຄວາມຂຸຂະ (Roughness)"
 
 msgid "Src Normal"
-msgstr "Src Normal"
+msgstr "ພື້ນຜິວຕົ້ນສະບັບ"
 
 msgid "Process"
 msgstr "ຂະບວນການ (Process)"
@@ -1803,7 +1804,7 @@ msgid "Draw Warning"
 msgstr "ແຕ້ມຄຳເຕືອນ"
 
 msgid "Keying"
-msgstr "Keying"
+msgstr "ການໃສ່ຄີຟຣີມ"
 
 msgid "Deletable"
 msgstr "ລົບໄດ້"
@@ -1923,7 +1924,7 @@ msgid "Editors"
 msgstr "ຕົວແກ້ໄຂ"
 
 msgid "3D Gizmos"
-msgstr "3D Gizmos"
+msgstr "ກິຊໂມ 3 ມິຕິ"
 
 msgid "Gizmo Colors"
 msgstr "ສີຂອງ Gizmo"
@@ -3582,10 +3583,10 @@ msgid "Enable Builtin Marker Tracking"
 msgstr "ເປີດໃຊ້ການຕິດຕາມມາກເກີໃນຕົວ"
 
 msgid "Aruco Dict"
-msgstr "Aruco Dict"
+msgstr "ວັດຈະນານຸກົມ Aruco"
 
 msgid "April Tag Dict"
-msgstr "April Tag Dict"
+msgstr "ວັດຈະນານຸກົມ April Tag"
 
 msgid "Eye Gaze Interaction"
 msgstr "ການໂຕ້ຕອບດ້ວຍການຈ້ອງເບິ່ງ"
@@ -4833,7 +4834,7 @@ msgid "Spatial Tracking State"
 msgstr "ສະຖານະການຕິດຕາມທາງພື້ນທີ່"
 
 msgid "April Dict"
-msgstr "April Dict"
+msgstr "ວັດຈະນານຸກົມ April"
 
 msgid "Bounds Size"
 msgstr "ຂະໜາດຂອບເຂດ"
@@ -5229,16 +5230,16 @@ msgid "Launcher Icons"
 msgstr "ໄອຄອນຕົວເປີດ (Launcher)"
 
 msgid "Main 192 X 192"
-msgstr "Main 192 X 192"
+msgstr "ຫຼັກ 192 X 192"
 
 msgid "Adaptive Foreground 432 X 432"
-msgstr "Adaptive Foreground 432 X 432"
+msgstr "ພື້ນໜ້າແບບປັບສະພາບໄດ້ 432 X 432"
 
 msgid "Adaptive Background 432 X 432"
-msgstr "Adaptive Background 432 X 432"
+msgstr "ພື້ນຫຼັງແບບປັບສະພາບໄດ້ 432 X 432"
 
 msgid "Adaptive Monochrome 432 X 432"
-msgstr "Adaptive Monochrome 432 X 432"
+msgstr "ສີຂາວດຳແບບປັບສະພາບໄດ້ 432 X 432"
 
 msgid "Gradle Build"
 msgstr "ການບິວດ໌ດ້ວຍ Gradle"
@@ -5517,7 +5518,7 @@ msgid "Installer Identity"
 msgstr "ຕົວຕົນຜູ້ຕິດຕັ້ງ"
 
 msgid "Apple Team ID"
-msgstr "Apple Team ID"
+msgstr "ໄອດີທີມ Apple"
 
 msgid "Identity"
 msgstr "ຕົວຕົນ"
@@ -5529,7 +5530,7 @@ msgid "Certificate Password"
 msgstr "ລະຫັດຜ່ານໃບຢັ້ງຢືນ"
 
 msgid "Provisioning Profile"
-msgstr "Provisioning Profile"
+msgstr "ໂປຣໄຟລ໌ການອະນຸມັດ"
 
 msgid "Custom File"
 msgstr "ໄຟລ໌ກຳນົດເອງ"
@@ -5565,7 +5566,7 @@ msgid "Debugging"
 msgstr "ການດີບັກ"
 
 msgid "App Sandbox"
-msgstr "App Sandbox"
+msgstr "ແຊນບັອກແອັບ"
 
 msgid "Network Server"
 msgstr "ເຊີບເວີເຄືອຂ່າຍ"
@@ -5613,10 +5614,10 @@ msgid "API UUID"
 msgstr "API UUID"
 
 msgid "API Key"
-msgstr "API Key"
+msgstr "ຄີ API"
 
 msgid "API Key ID"
-msgstr "API Key ID"
+msgstr "ໄອດີຄີ API"
 
 msgid "Location Usage Description"
 msgstr "ຄຳອະທິບາຍການໃຊ້ຕຳແໜ່ງ"
@@ -5688,7 +5689,7 @@ msgid "Use TLS"
 msgstr "ໃຊ້ TLS"
 
 msgid "TLS Key"
-msgstr "TLS Key"
+msgstr "ຄີ TLS"
 
 msgid "TLS Certificate"
 msgstr "ໃບຢັ້ງຢືນ TLS"
@@ -6255,7 +6256,7 @@ msgid "Gizmo Extents"
 msgstr "ຂອບເຂດ Gizmo"
 
 msgid "Multimesh"
-msgstr "Multimesh"
+msgstr "ເມຊຫຼາຍຊັ້ນ"
 
 msgid "Path Desired Distance"
 msgstr "ໄລຍະທາງເສັ້ນທາງທີ່ຕ້ອງການ"
@@ -6348,7 +6349,7 @@ msgid "Vertices"
 msgstr "ຈຸດຍອດ (Vertices)"
 
 msgid "NavigationPolygon"
-msgstr "NavigationPolygon"
+msgstr "ໂພລີກອນນຳທາງ"
 
 msgid "Affect Navigation Mesh"
 msgstr "ສົ່ງຜົນຕໍ່ Navigation Mesh"
@@ -9417,7 +9418,7 @@ msgid "FSR Sharpness"
 msgstr "ຄວາມຄົມຊັດຂອງ FSR"
 
 msgid "Variable Rate Shading"
-msgstr "Variable Rate Shading"
+msgstr "ການແຮເງົາແບບປ່ຽນອັດຕາໄດ້"
 
 msgid "Canvas Items"
 msgstr "ລາຍການແຄນວາສ"
@@ -9444,25 +9445,25 @@ msgid "Disable Input"
 msgstr "ປິດການປ້ອນຂໍ້ມູນ"
 
 msgid "Positional Shadow Atlas"
-msgstr "Positional Shadow Atlas"
+msgstr "ແຜນຜັງເງົາຕາມຕຳແໜ່ງ"
 
 msgid "16 Bits"
 msgstr "16 ບິດ"
 
 msgid "Quad 0"
-msgstr "Quad 0"
+msgstr "ສ່ວນທີ 0"
 
 msgid "Quad 1"
-msgstr "Quad 1"
+msgstr "ສ່ວນທີ 1"
 
 msgid "Quad 2"
-msgstr "Quad 2"
+msgstr "ສ່ວນທີ 2"
 
 msgid "Quad 3"
-msgstr "Quad 3"
+msgstr "ສ່ວນທີ 3"
 
 msgid "Canvas Cull Mask"
-msgstr "Canvas Cull Mask"
+msgstr "ໜ້າກາກຄັດອອກຂອງແຄນວາສ"
 
 msgid "Oversampling Override"
 msgstr "ການແທນທີ່ການສຸ່ມຕົວຢ່າງເກີນ (Oversampling Override)"
@@ -9516,7 +9517,7 @@ msgid "Exclude From Capture"
 msgstr "ຍົກເວັ້ນຈາກການຈັບພາບ (Capture)"
 
 msgid "Popup Wm Hint"
-msgstr "Popup Wm Hint"
+msgstr "ຄຳແນະນຳຕົວຈັດການວິນໂດປ໊ອບອັບ"
 
 msgid "Force Native"
 msgstr "ບັງຄັບໃຊ້ Native"
@@ -9717,7 +9718,7 @@ msgid "Tile Size"
 msgstr "ຂະໜາດໄທລ໌"
 
 msgid "UV Clipping"
-msgstr "ການຕັດ UV (UV Clipping)"
+msgstr "ການຕັດ UV"
 
 msgid "Occlusion Layers"
 msgstr "ເລເຢີການບັງ (Occlusion Layers)"
@@ -9750,7 +9751,7 @@ msgid "One Way Margin"
 msgstr "ຂອບທາງດຽວ"
 
 msgid "Terrains Peering Bit"
-msgstr "Terrains Peering Bit"
+msgstr "ບິດການເຊື່ອມຕໍ່ພື້ນທີ່"
 
 msgid "Transpose"
 msgstr "ສະລັບແກນ (Transpose)"
@@ -10107,7 +10108,7 @@ msgid "White"
 msgstr "ສີຂາວ"
 
 msgid "Agx White"
-msgstr "Agx White"
+msgstr "Agx ສີຂາວ"
 
 msgid "Agx Contrast"
 msgstr "ຄວາມຄົມຊັດ Agx"
@@ -10260,7 +10261,7 @@ msgid "Volumetric Fog"
 msgstr "ໝອກແບບມີມວນສານ (Volumetric Fog)"
 
 msgid "GI Inject"
-msgstr "GI Inject"
+msgstr "ການນຳເຂົ້າ GI"
 
 msgid "Anisotropy"
 msgstr "Anisotropy"
@@ -10269,10 +10270,10 @@ msgid "Detail Spread"
 msgstr "ການກະຈາຍລາຍລະອຽດ"
 
 msgid "Ambient Inject"
-msgstr "Ambient Inject"
+msgstr "ການນຳເຂົ້າແສງສະພາບແວດລ້ອມ"
 
 msgid "Temporal Reprojection"
-msgstr "Temporal Reprojection"
+msgstr "ການສາຍພາບຊ້ຳແບບຊົ່ວຄາວ"
 
 msgid "Adjustments"
 msgstr "ການປັບແຕ່ງ"
@@ -10395,7 +10396,7 @@ msgid "Texture Force sRGB"
 msgstr "ບັງຄັບ Texture ເປັນ sRGB"
 
 msgid "Texture MSDF"
-msgstr "Texture MSDF"
+msgstr "ເທັກເຈີ MSDF"
 
 msgid "ORM"
 msgstr "ORM"
@@ -10410,22 +10411,22 @@ msgid "On UV2"
 msgstr "ເທິງ UV2"
 
 msgid "Bent Normal Map"
-msgstr "Bent Normal Map"
+msgstr "ແຜນຜັງພື້ນຜິວແບບໂຄ້ງ"
 
 msgid "Rim"
 msgstr "ຂອບ (Rim)"
 
 msgid "Clearcoat"
-msgstr "Clearcoat"
+msgstr "ຊັ້ນເຄືອບໃສ (Clearcoat)"
 
 msgid "Flowmap"
-msgstr "Flowmap"
+msgstr "ແຜນຜັງການໄຫຼ (Flowmap)"
 
 msgid "Ambient Occlusion"
-msgstr "ການບັງແສງໂດຍຮອບ (AO)"
+msgstr "ການບັງແສງສະພາບແວດລ້ອມ"
 
 msgid "Deep Parallax"
-msgstr "Deep Parallax"
+msgstr "ພະລາແລັກແບບເລິກ"
 
 msgid "Min Layers"
 msgstr "ເລເຢີຕໍ່າສຸດ"
@@ -10470,13 +10471,13 @@ msgid "UV1"
 msgstr "UV1"
 
 msgid "Triplanar"
-msgstr "Triplanar"
+msgstr "ສາມລະນັບ (Triplanar)"
 
 msgid "Triplanar Sharpness"
 msgstr "ຄວາມຄົມຊັດ Triplanar"
 
 msgid "World Triplanar"
-msgstr "World Triplanar"
+msgstr "ສາມລະນັບແບບໂລກ"
 
 msgid "UV2"
 msgstr "UV2"
@@ -10494,10 +10495,10 @@ msgid "Particles Anim"
 msgstr "Anim ພາກຕິກເກິນ"
 
 msgid "H Frames"
-msgstr "H Frames"
+msgstr "ເຟຣມແນວນອນ"
 
 msgid "V Frames"
-msgstr "V Frames"
+msgstr "ເຟຣມແນວຕັ້ງ"
 
 msgid "Grow"
 msgstr "ຂະຫຍາຍ (Grow)"
@@ -10515,7 +10516,7 @@ msgid "Use Z Clip Scale"
 msgstr "ໃຊ້ Z Clip Scale"
 
 msgid "Z Clip Scale"
-msgstr "Z Clip Scale"
+msgstr "ອັດຕາສ່ວນການຕັດແກນ Z"
 
 msgid "Use FOV Override"
 msgstr "ໃຊ້ການແທນທີ່ FOV"
@@ -10551,7 +10552,7 @@ msgid "Blend Shape Mode"
 msgstr "ໂໝດ Blend Shape"
 
 msgid "Shadow Mesh"
-msgstr "Shadow Mesh"
+msgstr "ເມຊເງົາ"
 
 msgid "Base Texture"
 msgstr "Texture ພື້ນຖານ"
@@ -10608,13 +10609,13 @@ msgid "Low Hanging Obstacles"
 msgstr "ສິ່ງກີດຂວາງທີ່ຫ້ອຍຕໍ່າ"
 
 msgid "Ledge Spans"
-msgstr "Ledge Spans"
+msgstr "ໄລຍະຂອບ"
 
 msgid "Walkable Low Height Spans"
 msgstr "ພື້ນທີ່ສູງຕໍ່າທີ່ຍ່າງໄດ້"
 
 msgid "Baking AABB"
-msgstr "Baking AABB"
+msgstr "AABB ສຳລັບການອົບ"
 
 msgid "Baking AABB Offset"
 msgstr "ໄລຍະຫ່າງ Baking AABB"
@@ -11408,6 +11409,24 @@ msgstr "ຮູບຕົວຢ່າງໄຟລ໌"
 msgid "Folder Thumbnail"
 msgstr "ຮູບຕົວຢ່າງໂຟນເດີ"
 
+msgid "Menu Copy Path"
+msgstr "ເມນູ ຄັດລອກເສັ້ນທາງ"
+
+msgid "Menu Delete"
+msgstr "ລືບເມນູ"
+
+msgid "Menu New Folder"
+msgstr "ເມນູໂພນເດີໃໝ່"
+
+msgid "Menu Refresh"
+msgstr "ເມນູ ໂຫຼດຄືນໃໝ່"
+
+msgid "Menu Show in File Manager"
+msgstr "ເມນູ ສະແດງໃນຕົວຈັດການໄຟລ໌"
+
+msgid "Menu Open Bundle"
+msgstr "ເມນູ ເປີດຊຸດ"
+
 msgid "Folder Icon Color"
 msgstr "ສີໄອຄອນໂຟນເດີ"
 
@@ -11997,7 +12016,7 @@ msgid "Fallback values"
 msgstr "ຄ່າສຳຮອງ"
 
 msgid "Stylebox"
-msgstr "Stylebox"
+msgstr "ກ່ອງຮູບແບບ"
 
 msgid "Enable Input"
 msgstr "ເປີດໃຊ້ງານອິນພຸດ"
@@ -12201,7 +12220,7 @@ msgid "Path Types"
 msgstr "ປະເພດເສັ້ນທາງ"
 
 msgid "Path Rids"
-msgstr "RID ຂອງເສັ້ນທາງ"
+msgstr "ໄອດີເສັ້ນທາງ"
 
 msgid "Path Owner IDs"
 msgstr "ID ເຈົ້າຂອງເສັ້ນທາງ"
@@ -12675,7 +12694,7 @@ msgid "Texel Size"
 msgstr "ຂະໜາດເທັກເຊວ"
 
 msgid "Lightmap GI"
-msgstr "Lightmap GI"
+msgstr "GI ຜັງແສງ"
 
 msgid "Use Bicubic Filter"
 msgstr "ໃຊ້ຕົວຕອງແບບໄບຄິວບິກ"
@@ -12864,7 +12883,7 @@ msgid "Default Font Subpixel Positioning"
 msgstr "ການກຳນົດຕຳແໜ່ງຊັບພິກເຊວຟອນມາດຕະຖານ"
 
 msgid "Default Font Multichannel Signed Distance Field"
-msgstr "MSDF ຟອນມາດຕະຖານ"
+msgstr "ຟອນມາດຕະຖານ MSDF"
 
 msgid "Default Font Generate Mipmaps"
 msgstr "ການສ້າງມິບແມັບຟອນມາດຕະຖານ"

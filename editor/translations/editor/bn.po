@@ -4184,12 +4184,6 @@ msgstr "নেভিগেশন স্তর %d"
 msgid "Custom Data %d"
 msgstr "কাস্টম ডেটা %d"
 
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "একাধিক টাইলস তৈরি করতে Ctrl ধরে রাখুন।"
-
-msgid "Hold Shift to create big tiles."
-msgstr "বড় টাইলস তৈরি করতে Shift ধরে রাখুন।"
-
 msgid "Select tiles."
 msgstr "টাইলস নির্বাচন করুন।"
 

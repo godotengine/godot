@@ -2109,9 +2109,6 @@ msgstr "கடைசி"
 msgid "Go Online"
 msgstr "ஆன்லைனில் செல்லுங்கள்"
 
-msgid "Template"
-msgstr "வார்ப்புரு"
-
 msgid "All"
 msgstr "அனைத்தும்"
 
@@ -9151,15 +9148,6 @@ msgstr "டைல்செட் வளத்தின் ஆய்வாளர�
 msgid "Select a property editor"
 msgstr "ஒரு சொத்து எடிட்டரைத் தேர்ந்தெடுக்கவும்"
 
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "பல ஓடுகளை உருவாக்க கட்டுப்பாடு ஐ வைத்திருங்கள்."
-
-msgid "Hold Shift to create big tiles."
-msgstr "பெரிய ஓடுகளை உருவாக்க மாற்றத்தை நடத்துங்கள்."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "பல பகுதிகளைத் தேர்ந்தெடுக்க மாற்றத்தை வைத்திருங்கள்."
-
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
 "properties."
@@ -13096,6 +13084,9 @@ msgstr "பெற்றோரைத் தேர்ந்தெடுக்க�
 
 msgid "Use Template"
 msgstr "வார்ப்புருவைப் பயன்படுத்தவும்"
+
+msgid "Template"
+msgstr "வார்ப்புரு"
 
 msgid "Built-in Script:"
 msgstr "உள்ளமைக்கப்பட்ட ச்கிரிப்ட்:"

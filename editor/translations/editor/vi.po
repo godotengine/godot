@@ -62,13 +62,15 @@
 # LPL-sudo <lephuocloc070313@gmail.com>, 2026.
 # Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>, 2026.
 # The Earth <winterwolfvn123@gmail.com>, 2026.
+# Dao Duy Tin <duytin095@gmail.com>, 2026.
+# xanhAD <tnhuthao919@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-26 09:01+0000\n"
-"Last-Translator: The Earth <winterwolfvn123@gmail.com>\n"
+"PO-Revision-Date: 2026-10-18 03:51+0000\n"
+"Last-Translator: xanhAD <tnhuthao919@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -76,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -223,7 +225,7 @@ msgid "Bug"
 msgstr "Lỗi"
 
 msgid "Printer on fire"
-msgstr "Hệ thống quá tải"
+msgstr "Máy in đang bốc cháy"
 
 msgid "unset"
 msgstr "Chưa được đặt"
@@ -369,6 +371,9 @@ msgstr "Bàn cảm ứng PS4/5"
 msgid "Joypad Button %d"
 msgstr "Nút tay cầm %d"
 
+msgid "Pressure:"
+msgstr "Lực nhấn:"
+
 msgid "canceled"
 msgstr "đã hủy"
 
@@ -433,6 +438,15 @@ msgstr "Lên"
 msgid "Down"
 msgstr "Xuống"
 
+msgid "Page Up"
+msgstr "Cuộn lên"
+
+msgid "Page Down"
+msgstr "Cuộn xuống"
+
+msgid "Home"
+msgstr "Trang chủ"
+
 msgid "End"
 msgstr "Cuối"
 
@@ -453,6 +467,9 @@ msgstr "Hoàn tác"
 
 msgid "Redo"
 msgstr "Làm lại"
+
+msgid "Completion Query"
+msgstr "Truy vấn hoàn thành"
 
 msgid "New Line"
 msgstr "Dòng mới"
@@ -554,13 +571,22 @@ msgid "Toggle Insert Mode"
 msgstr "Bật/tắt chế độ ghi đè"
 
 msgid "Submit Text"
-msgstr "Xác nhận văn bản"
+msgstr "Gửi văn bản"
 
 msgid "Duplicate Nodes"
 msgstr "Thêm nút"
 
 msgid "Delete Nodes"
 msgstr "Xoá nút"
+
+msgid "Follow Input Port Connection"
+msgstr "Theo dõi kết nối cổng đầu vào"
+
+msgid "Follow Output Port Connection"
+msgstr "Theo dõi kết nối cổng Output"
+
+msgid "Go Up One Level"
+msgstr "Đi lên một cấp"
 
 msgid "Refresh"
 msgstr "Làm mới"
@@ -571,14 +597,44 @@ msgstr "Hiện các tệp ẩn"
 msgid "Find"
 msgstr "Tìm"
 
+msgid "Focus Path"
+msgstr "Đường dẫn Focus"
+
+msgid "Swap Input Direction"
+msgstr "Hoán đổi hướng đầu vào"
+
+msgid "Start Unicode Character Input"
+msgstr "Bắt đầu nhập ký tự Unicode"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "Bảng chọn màu: Xóa Preset"
+
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Trợ năng: Kéo và thả bằng bàn phím"
+
+msgid "Invalid input %d (not passed) in expression"
+msgstr "Đầu vào %d không hợp lệ (chưa được truyền vào) trong biểu thức"
+
+msgid "self can't be used because instance is null (not passed)"
+msgstr "Không thể sử dụng self vì instance là null (chưa được truyền vào)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Toán hạng không hợp lệ cho toán tử %s, %s và %s."
 
+msgid "Invalid index of type %s for base type %s"
+msgstr "Chỉ mục không hợp lệ thuộc kiểu %s đối với kiểu cơ sở %s"
+
+msgid "Invalid named index '%s' for base type %s"
+msgstr "Chỉ mục được đặt tên '%s' không hợp lệ cho kiểu cơ sở %s"
+
 msgid "Invalid arguments to construct '%s'"
 msgstr "Đối số không hợp lệ để dựng '%s'"
+
+msgid "On call to '%s':"
+msgstr "Khi gọi '%s':"
+
+msgid "Built-in script"
+msgstr "Script tích hợp sẵn"
 
 msgid "Built-in"
 msgstr "Tích hợp sẵn"
@@ -610,8 +666,35 @@ msgstr "Thời gian:"
 msgid "Value:"
 msgstr "Giá trị:"
 
+msgid "Update Selected Key Handles"
+msgstr "Cập nhật các điểm điều khiển Key đã chọn"
+
 msgid "Insert Key Here"
-msgstr "Chèn khung hình tại đây"
+msgstr "Chèn Key tại đây"
+
+msgid "Duplicate Selected Key(s)"
+msgstr "Nhân bản Key đã chọn"
+
+msgid "Cut Selected Key(s)"
+msgstr "Cắt Key đã chọn"
+
+msgid "Copy Selected Key(s)"
+msgstr "Sao chép Key đã chọn"
+
+msgid "Paste Key(s)"
+msgstr "Dán Key"
+
+msgid "Delete Selected Key(s)"
+msgstr "Xóa Key đã chọn"
+
+msgid "Make Handles Free"
+msgstr "Đặt điểm điều khiển thành Free"
+
+msgid "Make Handles Linear"
+msgstr "Đặt điểm điều khiển thành Linear"
+
+msgid "Make Handles Balanced"
+msgstr "Đặt điểm điều khiển thành Balanced"
 
 msgid "Make Handles Mirrored"
 msgstr "Dùng điểm nắm phản chiếu"
@@ -2532,9 +2615,6 @@ msgstr "Truy cập trực tuyến"
 
 msgid "Failed to verify repository."
 msgstr "Xác minh kho lưu trữ thất bại."
-
-msgid "Template"
-msgstr "Bản mẫu"
 
 msgid "All"
 msgstr "Tất cả"
@@ -4506,6 +4586,9 @@ msgid ""
 msgstr ""
 "Kích hoạt \"Load as Placeholder\" sẽ tự động tắt \"Editable Children\" và "
 "reset toàn bộ thuộc tính của node này về mặc định."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Bật/tắt tải dưới dạng placeholder"
 
 msgid "Make Local"
 msgstr "Chuyển thành cục bộ (Make Local)"
@@ -10286,15 +10369,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Bộ chọn Scene"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Khi bật, bạn có thể chọn scene từ cửa sổ FileSystem, Scene hoặc vùng nhìn 2D "
-"viewport.\n"
-"Giữ phím Ctrl để chọn trực tiếp từ 2D viewport."
-
 msgid "Edit Properties"
 msgstr "Chỉnh sửa thuộc tính"
 
@@ -10312,13 +10386,6 @@ msgstr "Hút dính vào tâm ô lưới"
 
 msgid "Allow Overlapping"
 msgstr "Cho phép chồng lấn"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Cho phép vẽ đè lên các scene đã vẽ trước đó.\n"
-"Giữ phím Shift khi vẽ để bật/tắt tạm thời tùy chọn này."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Bộ xương không có xương, tạo một số nút Bone2D."
@@ -10954,15 +11021,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Chọn một trình chỉnh sửa thuộc tính"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Giữ phím Ctrl để tạo nhiều ô gạch liên tiếp."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Giữ phím Shift để tạo các ô gạch lớn."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Giữ phím Shift để chọn nhiều vùng cùng lúc."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12802,6 +12860,9 @@ msgstr "%s+Kéo chuột: Sử dụng tính năng hút dính."
 
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "Chuột trái+Kéo: Đo khoảng cách giữa hai điểm trong không gian 3D."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift + Chuột trái + Kéo: Hiển thị số đo thành phần."
 
 msgid ""
 "Scene contains\n"
@@ -15733,6 +15794,9 @@ msgstr "Chọn lớp cha"
 
 msgid "Use Template"
 msgstr "Sử dụng mẫu (Template)"
+
+msgid "Template"
+msgstr "Bản mẫu"
 
 msgid "Built-in Script:"
 msgstr "Tệp lệnh có sẵn:"
@@ -22415,6 +22479,13 @@ msgstr "%s có thể thả vào đây. Nhấn %s để thả, nhấn %s để h�
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s không thể thả vào đây. Nhấn %s để hủy."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Các Label được bật tự động xuống dòng phải được cấu hình chiều rộng tối thiểu "
+"tùy chỉnh hoặc chiều rộng tối đa là một giá trị dương để hoạt động chính xác."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

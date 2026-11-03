@@ -29,13 +29,14 @@
 # Shrek3010 <martinlukac2244@gmail.com>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 # Gohurlok <Gohurlok@gmail.com>, 2026.
+# "Graweeld - (grwd)" <graweeld@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-14 15:01+0000\n"
-"Last-Translator: Gohurlok <Gohurlok@gmail.com>\n"
+"PO-Revision-Date: 2026-10-04 04:51+0000\n"
+"Last-Translator: Shrek3010 <martinlukac2244@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.10.1.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -61,7 +62,7 @@ msgid "Unauthorized"
 msgstr "Neoprávnený"
 
 msgid "Parameter out of range"
-msgstr "Parameter nedostupný : %s"
+msgstr "Parameter nedostupný"
 
 msgid "Out of memory"
 msgstr "Nedostatok pamäte"
@@ -69,23 +70,26 @@ msgstr "Nedostatok pamäte"
 msgid "File not found"
 msgstr "Súbor nebol nájdený"
 
+msgid "File: Bad drive"
+msgstr "Súbor: Zlý disk"
+
 msgid "File: Bad path"
-msgstr "Súbor: Zlá cesta"
+msgstr "Súbor: Nesprávna cesta"
 
 msgid "File: Permission denied"
-msgstr "Súbor"
+msgstr "Súbor: Povolenie zamietnuté"
 
 msgid "File already in use"
-msgstr "Súbor už existuje."
+msgstr "Súbor sa už používa"
 
 msgid "Can't open file"
-msgstr "Nie je možné otvoriť súbor"
+msgstr "Súbor nie je možné otvoriť"
 
 msgid "Can't write file"
-msgstr "Súbor sa nevie zapísať"
+msgstr "Súbor nie je možné zapísať"
 
 msgid "Can't read file"
-msgstr "Nie je možné prečítať súbor."
+msgstr "Súbor sa nedá otvoriť"
 
 msgid "File unrecognized"
 msgstr "Súbor nerozpoznaný"
@@ -120,11 +124,20 @@ msgstr "Čas vypršal."
 msgid "Can't connect"
 msgstr "Nie je možné pripojiť."
 
+msgid "Can't resolve"
+msgstr "Nerozpoznané."
+
 msgid "Connection error"
 msgstr "Problém s pripojením"
 
+msgid "Can't acquire resource"
+msgstr "Nieje možné získať zdroj"
+
 msgid "Can't fork"
 msgstr "Nedá sa rozvetviť"
+
+msgid "Invalid data"
+msgstr "Neplatné dáta."
 
 msgid "Invalid parameter"
 msgstr "Neplatný parameter"

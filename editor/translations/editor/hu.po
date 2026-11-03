@@ -2492,9 +2492,6 @@ msgstr "Utolsó"
 msgid "Go Online"
 msgstr "Lépj online"
 
-msgid "Template"
-msgstr "Sablon"
-
 msgid "All"
 msgstr "Mind"
 
@@ -11529,6 +11526,9 @@ msgstr "A szkript útvonala/neve érvényes."
 
 msgid "Will create a new script file."
 msgstr "Létrehoz egy új szkriptfájlt."
+
+msgid "Template"
+msgstr "Sablon"
 
 msgid "Built-in Script:"
 msgstr "Beépített szkript:"

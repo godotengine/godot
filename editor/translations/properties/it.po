@@ -104,13 +104,14 @@
 # Georgya <georgyavieira@gmail.com>, 2026.
 # Gianmarco Cavallo <cavallogianmarco@gmail.com>, 2026.
 # waris ali amjed <warisamjed@gmail.com>, 2026.
+# Giorgio Gandolfo <giorgiogandolfo06@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-21 11:50+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2026-09-19 09:38+0000\n"
+"Last-Translator: Giorgio Gandolfo <giorgiogandolfo06@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -118,7 +119,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -449,6 +450,9 @@ msgstr "Soglia di trascinamento"
 
 msgid "Snap Controls to Pixels"
 msgstr "Scatta i nodi Control ai pixel"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Mostra lo stato di focalizzazione all'evento del puntatore"
 
 msgid "Fonts"
 msgstr "Font"
@@ -1704,6 +1708,12 @@ msgstr "Modalità di scala"
 msgid "Delimiter"
 msgstr "Delimitatore"
 
+msgid "Unescape Keys"
+msgstr "Decodifica chiavi"
+
+msgid "Unescape Translations"
+msgstr "Decodifica traduzioni"
+
 msgid "Character Ranges"
 msgstr "Intervalli dei caratteri"
 
@@ -2154,6 +2164,9 @@ msgstr "Grassetto del font principale"
 
 msgid "Code Font"
 msgstr "Font del codice"
+
+msgid "Dragging Hover Wait Seconds"
+msgstr "Tempo di attesa al passaggio del mouse per il trascinamento in secondi"
 
 msgid "Behavior"
 msgstr "Comportamento"
@@ -2923,6 +2936,9 @@ msgstr "Lunghezza assi dell'osso"
 
 msgid "Bone Shape"
 msgstr "Forma dell'osso"
+
+msgid "Path3D Tilt Disk Size"
+msgstr "Dimensione disco di inclinazione Path3D"
 
 msgid "Lightmap GI Probe Size"
 msgstr "Dimensione di sonde GI delle lightmap"

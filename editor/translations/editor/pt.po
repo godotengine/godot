@@ -2644,9 +2644,6 @@ msgstr "Ficar Online"
 msgid "Failed to verify repository."
 msgstr "Falha ao verificar repositório."
 
-msgid "Template"
-msgstr "Modelo"
-
 msgid "All"
 msgstr "Todos"
 
@@ -10382,15 +10379,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Seletor de cena"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Quando ativado, pode selecionar cenas da guia de SistemaDeFicheiros, guia de "
-"Cena ou do viewport do editor 2D.\n"
-"Segurar Ctrl permite escolher a partir do viewport do editor 2D."
-
 msgid "Edit Properties"
 msgstr "Editar propriedades"
 
@@ -10408,13 +10396,6 @@ msgstr "Atrair ao Centro da Célula da Grade"
 
 msgid "Allow Overlapping"
 msgstr "Permitir Sobreposição"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Permite pintar sobre cenas já pintadas.\n"
-"Segure a tecla Shift enquanto pinta para ativar temporariamente esta opção."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
@@ -11041,15 +11022,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Selecione um editor de propriedades"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Segure Ctrl para criar múltiplos blocos."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Segure Shift para criar blocos maiores."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Segure Shift para selecionar múltiplas regiões."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -15740,6 +15712,9 @@ msgstr "Selecionar Pai"
 
 msgid "Use Template"
 msgstr "Usar Modelo"
+
+msgid "Template"
+msgstr "Modelo"
 
 msgid "Built-in Script:"
 msgstr "Script Incorporado:"

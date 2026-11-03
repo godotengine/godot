@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-04 19:30+0000\n"
+"PO-Revision-Date: 2026-08-08 09:57+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -112,7 +112,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -2655,9 +2655,6 @@ msgstr "Przejdź do trybu online"
 msgid "Failed to verify repository."
 msgstr "Nie udało się zweryfikować repozytorium."
 
-msgid "Template"
-msgstr "Szablon"
-
 msgid "All"
 msgstr "Wszystko"
 
@@ -4639,6 +4636,9 @@ msgid ""
 msgstr ""
 "Włączenie \"Wczytaj jako zastępczy\" wyłączy \"Edytowalne dzieci\" i sprawi, "
 "że wszystkie właściwości węzła zostaną przywrócone do domyślnych."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Przełącz wczytanie jako zastępczy"
 
 msgid "Make Local"
 msgstr "Uczyń lokalnym"
@@ -10397,15 +10397,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Wybieracz scen"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Kiedy włączone, możesz wybrać sceny z doku Systemu plików, doku Sceny, lub "
-"widoku edytora 2D.\n"
-"Przytrzymanie Ctrl włącza wybieranie z widoku edytora 2D."
-
 msgid "Edit Properties"
 msgstr "Edytuj właściwości"
 
@@ -10423,13 +10414,6 @@ msgstr "Przyciągaj do środka komórki siatki"
 
 msgid "Allow Overlapping"
 msgstr "Zezwól na nachodzenie"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Zezwalaj na malowanie po namalowanych już scenach.\n"
-"Przytrzymaj Shift podczas malowania, aby tymczasowo przełączyć tę opcję."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Ten szkielet nie ma kości. Stwórz jakieś węzły potomne Bone2D."
@@ -11058,15 +11042,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Wybierz edytor właściwości"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Przytrzymaj Ctrl, by stworzyć wiele kafelków."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Przytrzymaj Shift, by utworzyć duże kafelki."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Przytrzymaj Shift, aby zaznaczyć wiele regionów."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12854,6 +12829,9 @@ msgstr "%s+Przeciąganie: użyj przyciągania."
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr ""
 "LPM+Przeciągnij: Zmierz dystans pomiędzy dwoma punktami w przestrzeni 3D."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+LPM+Przeciągnij: Pokaż pomiary komponentów."
 
 msgid ""
 "Scene contains\n"
@@ -15779,6 +15757,9 @@ msgstr "Wybierz nadrzędny"
 
 msgid "Use Template"
 msgstr "Użyj szablonu"
+
+msgid "Template"
+msgstr "Szablon"
 
 msgid "Built-in Script:"
 msgstr "Skrypt wbudowany:"

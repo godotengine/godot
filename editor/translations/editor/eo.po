@@ -28,19 +28,20 @@
 # bruvzg <bruvzg13@proton.me>, 2026.
 # Matty-H <matissegouery@yahoo.fr>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# VeryUsual <72707293+VeryUsual@users.noreply.github.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-07-07 03:32+0000\n"
-"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
+"PO-Revision-Date: 2026-10-18 03:51+0000\n"
+"Last-Translator: VeryUsual <72707293+VeryUsual@users.noreply.github.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "Bone"
@@ -1691,6 +1692,9 @@ msgstr "Kontrolo de SHA-256-a haketaĵo eraris"
 msgid "Asset Download Error:"
 msgstr "Eraro de havaĵa elŝuto:"
 
+msgid "Ready to install."
+msgstr "Preta por instalado."
+
 msgid "Downloading (%s / %s)..."
 msgstr "Elŝutas (%s / %s)..."
 
@@ -1714,9 +1718,6 @@ msgstr "Reprovi"
 
 msgid "Download Error"
 msgstr "Elŝuta eraro"
-
-msgid "Template"
-msgstr "Ŝablono"
 
 msgid "All"
 msgstr "Ĉio"
@@ -2015,6 +2016,9 @@ msgstr "Alvokoj"
 
 msgid "Main Thread"
 msgstr "Ĉefa fadeno"
+
+msgid "Execution resumed."
+msgstr "La ekzekutado rekomenciĝis."
 
 msgid "Bytes:"
 msgstr "Bajtoj:"
@@ -5169,6 +5173,9 @@ msgstr "Elekti la patron"
 msgid "Use Template"
 msgstr "Uzi la ŝablonon"
 
+msgid "Template"
+msgstr "Ŝablono"
+
 msgid "Built-in Script:"
 msgstr "Enkonstruita skripto:"
 
@@ -5738,6 +5745,9 @@ msgstr "La konstanto '%s' estas deklarita sed neniam uzita."
 
 msgid "The function '%s' is declared but never used."
 msgstr "La funkcio '%s' estas deklarita sed neniam uzita."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "La loka variablo '%s' estas deklarita, sed neniam uzata."
 
 msgid ""
 "The total size of the %s for this shader on this device has been exceeded (%d/"

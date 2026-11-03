@@ -176,13 +176,15 @@
 # Bruno <alvesbrunodesouza@gmail.com>, 2026.
 # ickyDev <lunavicpotato@protonmail.com>, 2026.
 # Kawoshi <kawoshi@users.noreply.hosted.weblate.org>, 2026.
+# Josue Santiago <josuesantiagodasilva@gmail.com>, 2026.
+# Ritpop <aqueledavidcamara@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-07-08 04:02+0000\n"
-"Last-Translator: Kawoshi <kawoshi@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-08-27 08:12+0000\n"
+"Last-Translator: Ritpop <aqueledavidcamara@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -190,7 +192,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -11580,6 +11582,24 @@ msgstr "Miniatura de Arquivo"
 
 msgid "Folder Thumbnail"
 msgstr "Miniatura de Pasta"
+
+msgid "Menu Copy Path"
+msgstr "Copiar Caminho do Menu"
+
+msgid "Menu Delete"
+msgstr "Deletar do Menu"
+
+msgid "Menu New Folder"
+msgstr "Nova Pasta do Menu"
+
+msgid "Menu Refresh"
+msgstr "Atualizar Menu"
+
+msgid "Menu Show in File Manager"
+msgstr "Menu Mostrar em Gerenciador de Arquivos"
+
+msgid "Menu Open Bundle"
+msgstr "Menu Abrir Pacote"
 
 msgid "Folder Icon Color"
 msgstr "Cor de Ícone de Pasta"

@@ -41,7 +41,7 @@
 # محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
 # "P. A." <thekhanxp@gmail.com>, 2023.
 # MohammadSaleh Kamyab <mskf1383@envs.net>, 2023.
-# theBSH <bloodshot1387@hotmail.com>, 2023, 2024.
+# theBSH <bloodshot1387@hotmail.com>, 2023, 2024, 2026.
 # Amirhossein Basirat <amir.basirat.2004@gmail.com>, 2023.
 # Mehdi Fardadi <mahdi777jan@gmail.com>, 2024.
 # saeed dashti <saeed777724@gmail.com>, 2024.
@@ -58,7 +58,7 @@
 # Kia Prom <kiapromx@gmail.com>, 2025.
 # Arshia Borzoo <arshi.ahoora@gmail.com>, 2025.
 # Dr-helicopter <hashmya1@gmail.com>, 2025.
-# "Mahdi B. Jahani" <kelbowonl@gmail.com>, 2025.
+# "Mahdi B. Jahani" <kelbowonl@gmail.com>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Mazdak Parnian <mazdak.parniandg@gmail.com>, 2025.
 # Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
@@ -69,8 +69,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-03 10:02+0000\n"
-"Last-Translator: \"LordProfo (Nima)\" <nimaentity30@gmail.com>\n"
+"PO-Revision-Date: 2026-09-05 05:39+0000\n"
+"Last-Translator: theBSH <bloodshot1387@hotmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -78,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.9.1.dev0\n"
 
 msgid "OK"
 msgstr "باشه"
@@ -738,6 +738,9 @@ msgstr "لغو انتخاب کلیدها"
 msgid "Add Animation"
 msgstr "افزودن پویانمایی"
 
+msgid "No available animations"
+msgstr "بدون انیمیشن موجود"
+
 msgid "Add %s"
 msgstr "افزودن %s"
 
@@ -767,6 +770,9 @@ msgstr "افزودن نقطه پویانمایی"
 
 msgid "Remove BlendSpace1D Point"
 msgstr "برچیدن نقطهٔ BlendSpace1D"
+
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "مرتب سازی مجدد شاخص نقطه BlendSpace1D"
 
 msgid "Continuous"
 msgstr "پیوسته"
@@ -1682,6 +1688,9 @@ msgstr "برش کلید(ها)"
 msgid "Copy Key(s)"
 msgstr "کپی کلید(ها)"
 
+msgid "Send Key(s) to RESET"
+msgstr "ارسال کلید(ها) برای تنظیم مجدد"
+
 msgid "Delete Key(s)"
 msgstr "زدایش کلید(ها)"
 
@@ -2059,6 +2068,9 @@ msgstr "رفتن به فریم کلیدی بعدی"
 msgid "Go to Previous Keyframe"
 msgstr "رفتن به فریم کلیدی پیشین"
 
+msgid "Add tracks to RESET"
+msgstr "اضافه کردن آهنگ به RESET"
+
 msgid "Bake Animation..."
 msgstr "پخت پویانمایی..."
 
@@ -2284,6 +2296,12 @@ msgstr "نصب..."
 msgid "Version:"
 msgstr "نسخه:"
 
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "مرورگر وب را باز کنید تا دارایی در صفحه فروشگاه آنلاین نمایش داده شود."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "مرورگر وب را باز کنید تا صفحه‌ای حاوی فایل‌های منبع نمایش داده شود."
+
 msgid "Description"
 msgstr "شرح"
 
@@ -2377,6 +2395,12 @@ msgstr "خطاهای بارگیری"
 msgid "Updated (Oldest First)"
 msgstr "به‌روزرسانی‌شده (قدیمی‌ترین ابتدا)"
 
+msgid "Reviews (Highest Score First)"
+msgstr "نظرات (بالاترین امتیاز اول)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "نظرات (کمترین امتیاز اول)"
+
 msgid "Created (Newest First)"
 msgstr "ساخته شد(اول جدید ترین)"
 
@@ -2402,8 +2426,14 @@ msgstr "آنلاین شو"
 msgid "All"
 msgstr "همه"
 
+msgid "Repository returned with invalid data."
+msgstr "مخزن با داده‌های نامعتبر بازگردانده شد."
+
 msgid "No results for \"%s\"."
 msgstr "هیچ نتیجه ای برای \"%s\" وجود ندارد."
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "جستجو در الگوها. با استفاده از \"#tagname\" از برچسب‌ها استفاده کنید."
 
 msgid "Import..."
 msgstr "درون‌برد..."
@@ -2422,6 +2452,9 @@ msgstr "پروانه‌ها"
 
 msgid "Assets ZIP File"
 msgstr "پروندهٔ ZIP‌ دارایی‌ها"
+
+msgid "Asset Store"
+msgstr "فروشگاه دارایی"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "خطا در گشودن پروندهٔ دارایی برای «%s» (در چارچوب ZIP نیست)."
@@ -3569,6 +3602,9 @@ msgstr "این لنگرگاه را یک زبانه به چپ ببر."
 msgid "Close this dock."
 msgstr "این لنگرگاه را ببندید."
 
+msgid "This dock can't be closed."
+msgstr "این داک را نمی‌شود بست."
+
 msgid "Make this dock floating."
 msgstr "این لنگرگاه را شناور کن."
 
@@ -4439,6 +4475,13 @@ msgstr ""
 msgid "Filter by Type"
 msgstr "پالایش بر پایهٔ گونه"
 
+msgid ""
+"Selects all Nodes of the given type.\n"
+"Inserts \"type:\". You can also use the shorthand \"t:\"."
+msgstr ""
+"تمام گره‌های از نوع داده شده را انتخاب می‌کند.\n"
+"\"type:\" را وارد می‌کند. همچنین می‌توانید از اختصار \"t:\" استفاده کنید."
+
 msgid "Filter by Group"
 msgstr "پالایش بر پایهٔ گروه"
 
@@ -4667,6 +4710,15 @@ msgstr ""
 
 msgid "Spins when the editor window redraws."
 msgstr "هنگامی که پنجرهٔ ویراستار دوباره کشیده می‌شود می‌چرخد."
+
+msgid ""
+"Cannot save resource at path \"%s\", as it is imported.\n"
+"Imported resources can't be saved. Instead, modify the source file or change "
+"options in the Import dock."
+msgstr ""
+"این منبع را در مسیر \"%s\" نمیتوان ذخیره کرد، زیرا درون‌برد شده است\n"
+"منابع درون‌برد شده نمیتوانند ذخیره شوند. فایل منبع یا گزینه ها در نوار درون‌برد "
+"را تغییر دهید."
 
 msgid "Error saving resource at path \"%s\": %s."
 msgstr "خطای ذخیره منبع در مسیر\"%s\": '%s'."

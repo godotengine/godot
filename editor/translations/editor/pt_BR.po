@@ -217,13 +217,14 @@
 # Marco André Babinski <mab.babinski@gmail.com>, 2026.
 # Kawoshi <kawoshi@users.noreply.hosted.weblate.org>, 2026.
 # Jonathan M <jonathan2007toledo@gmail.com>, 2026.
+# dev0id <viniciuspsalamaia@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-07-21 23:38+0000\n"
-"Last-Translator: Jonathan M <jonathan2007toledo@gmail.com>\n"
+"PO-Revision-Date: 2026-08-27 08:12+0000\n"
+"Last-Translator: dev0id <viniciuspsalamaia@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -231,7 +232,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -249,7 +250,7 @@ msgid "Unauthorized"
 msgstr "Não autorizado"
 
 msgid "Parameter out of range"
-msgstr "Parâmetro fora de escala"
+msgstr "Parâmetro fora dos limites permitidos"
 
 msgid "Out of memory"
 msgstr "Memória excedida"
@@ -2779,9 +2780,6 @@ msgstr "Ativar Acesso Online"
 msgid "Failed to verify repository."
 msgstr "Falha ao verificar repositório."
 
-msgid "Template"
-msgstr "Modelo"
-
 msgid "All"
 msgstr "Todos"
 
@@ -4757,6 +4755,9 @@ msgid ""
 msgstr ""
 "Habilitar \"Carregar como Substituto\" desativará \"Filhos Editáveis\" e fará "
 "com que todas as propriedades do nó sejam revertidas ao padrão."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Alternar Carregar como Substituto"
 
 msgid "Make Local"
 msgstr "Tornar Local"
@@ -10527,15 +10528,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Seletor de cena"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Quando ativado, você pode selecionar cenas da aba de Arquivos, aba de Cena ou "
-"do viewport do editor 2D.\n"
-"Segurar Ctrl permite escolher a partir do viewport do editor 2D."
-
 msgid "Edit Properties"
 msgstr "Editar propriedades"
 
@@ -10553,13 +10545,6 @@ msgstr "Atrair ao Centro da Célula da Grade"
 
 msgid "Allow Overlapping"
 msgstr "Permitir Sobreposição"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Permite pintar sobre cenas já pintadas.\n"
-"Segure a tecla Shift enquanto pinta para ativar temporariamente esta opção."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
@@ -11187,15 +11172,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Selecione um editor de propriedades"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Segure Ctrl para criar múltiplos tiles."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Segure Shift para criar tiles grandes."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Segure Shift para selecionar múltiplas regiões."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12978,6 +12954,9 @@ msgstr "%s+Arrastar: Usar atração."
 
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "Clique Esquerdo+Arrastar: Medir a distância entre dois pontos em 3D."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+Clique Esquerdo+Arrastar: Mostrar medidas do componente."
 
 msgid ""
 "Scene contains\n"
@@ -15894,6 +15873,9 @@ msgstr "Selecionar Pai"
 
 msgid "Use Template"
 msgstr "Usar Modelo"
+
+msgid "Template"
+msgstr "Modelo"
 
 msgid "Built-in Script:"
 msgstr "Script Embutido:"

@@ -238,13 +238,16 @@
 # kureca <deviantart189@gmail.com>, 2026.
 # Артур <atter192837@gmail.com>, 2026.
 # DatVex <kinorealme241@gmail.com>, 2026.
+# serge-create <gabitovsergey2@gmail.com>, 2026.
+# SafnerDev <rafik3000@yahoo.com>, 2026.
+# psvmsout-ru <psvmsout-ru@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-15 06:32+0000\n"
-"Last-Translator: DatVex <kinorealme241@gmail.com>\n"
+"PO-Revision-Date: 2026-10-16 00:33+0000\n"
+"Last-Translator: psvmsout-ru <psvmsout-ru@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -253,7 +256,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -2802,9 +2805,6 @@ msgstr "Войти в сеть"
 msgid "Failed to verify repository."
 msgstr "Не удалось проверить репозиторий."
 
-msgid "Template"
-msgstr "Шаблон"
-
 msgid "All"
 msgstr "Все"
 
@@ -2849,7 +2849,7 @@ msgid "Assets ZIP File"
 msgstr "ZIP-файл ассетов"
 
 msgid "Asset Store"
-msgstr "Asset Store"
+msgstr "Магазин ассетов"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Ошибка при открытии файла ассета «%s» (не в формате ZIP)."
@@ -4794,6 +4794,9 @@ msgstr ""
 "Включение опции «Загрузить как заполнитель» отключит опцию «Редактируемые "
 "дочерние элементы» и приведёт к тому, что все свойства узла вернутся к "
 "значениям по умолчанию."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Переключатель \"Загрузить как заполнитель\""
 
 msgid "Make Local"
 msgstr "Сделать локальным"
@@ -7051,7 +7054,7 @@ msgid "Godot Project Pack"
 msgstr "Пакет проекта Godot"
 
 msgid "Android App Bundle"
-msgstr "Android App Bundle"
+msgstr "Набор приложения Android"
 
 msgid "Android Package"
 msgstr "Пакет Android"
@@ -10569,16 +10572,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Выбор сцены"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Если эта опция включена, вы можете выбирать сцены из панели Файловая система, "
-"панели Сцена или из области просмотра 2D-редактора.\n"
-"Удерживая нажатой клавишу Ctrl, вы можете выбирать сцены из области просмотра "
-"2D-редактора."
-
 msgid "Edit Properties"
 msgstr "Редактировать свойства"
 
@@ -10596,14 +10589,6 @@ msgstr "Привязка к центру ячейки сетки"
 
 msgid "Allow Overlapping"
 msgstr "Разрешить перекрытие"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Разрешить рисование поверх уже существующих нарисованных сцен.\n"
-"Удерживайте клавишу Shift во время рисования, чтобы временно переключить эту "
-"опцию."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние узлы Bone2D."
@@ -11234,15 +11219,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Выбрать редактор свойств"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Удерживайте Ctrl, чтобы создать несколько тайлов."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Удерживайте Shift, чтобы создать большие тайлы."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Удерживайте Ctrl для выбора нескольких областей."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -13015,10 +12991,10 @@ msgid ""
 msgstr ""
 "Нажмите для переключения между состояниями видимости.\n"
 "\n"
-"Открытый глаз: гизмо видно.\n"
-"Закрытый глаз: гизмо не видно.\n"
-"Полуоткрытый глаз: гизмо также видно сквозь непрозрачные поверхности "
-"(«рентген»)."
+"Открытый глаз: Гизмо видно.\n"
+"Закрытый глаз: Гизмо не видно.\n"
+"Полуоткрытый глаз: Гизмо также видно сквозь непрозрачные поверхности («x-"
+"ray»)."
 
 msgid "Snap Nodes to Floor"
 msgstr "Привязать узлы к полу"
@@ -13047,6 +13023,9 @@ msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr ""
 "ЛКМ+Перетащить: Измерьте расстояние между двумя точками в трехмерном "
 "пространстве."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+ЛКМ+Перетаскивание: Отображение размеров компонента."
 
 msgid ""
 "Scene contains\n"
@@ -15976,6 +15955,9 @@ msgstr "Выбрать родителя"
 
 msgid "Use Template"
 msgstr "Использовать шаблон"
+
+msgid "Template"
+msgstr "Шаблон"
 
 msgid "Built-in Script:"
 msgstr "Встроенный скрипт:"

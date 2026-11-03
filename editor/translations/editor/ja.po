@@ -83,15 +83,15 @@
 # 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
 # UtanoSchell <utano.mayonaka@gmail.com>, 2025.
 # Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
-# Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
-# RockHopperPenguin64 <ryo1108820@gmail.com>, 2025.
+# Viktor Jagebrant <vjagebrant@gmail.com>, 2025, 2026.
+# RockHopperPenguin64 <ryo1108820@gmail.com>, 2025, 2026.
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2025.
 # testkun08080 <testkun.08080@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Miz Tan <miz3232@users.noreply.hosted.weblate.org>, 2025.
 # kakeudon17 <tazayuu17@gmail.com>, 2025.
 # Amir Sabbagh <amir420c@gmail.com>, 2025.
-# Acotto <perc.fg.music@gmail.com>, 2025.
+# Acotto <perc.fg.music@gmail.com>, 2025, 2026.
 # Rudeus <95301440+7Luminaries@users.noreply.github.com>, 2026.
 # Eloy Robillard <eloy.robillard@proton.me>, 2026.
 # shortsun <weekenddamehuman@gmail.com>, 2026.
@@ -100,13 +100,16 @@
 # taisan11 <131413638+taisan11@users.noreply.github.com>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 # マムス <mamusu.silhouette@gmail.com>, 2026.
+# ChocolaMint <peterconnected@gmail.com>, 2026.
+# トリウミ <akihisa28toriumi@outlook.com>, 2026.
+# meteor0w0 <125735487+meteor0w0@users.noreply.github.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-03 10:02+0000\n"
-"Last-Translator: マムス <mamusu.silhouette@gmail.com>\n"
+"PO-Revision-Date: 2026-09-27 11:51+0000\n"
+"Last-Translator: meteor0w0 <125735487+meteor0w0@users.noreply.github.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -114,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -237,7 +240,7 @@ msgid "Script failed"
 msgstr "スクリプトが失敗しました"
 
 msgid "Cyclic link detected"
-msgstr "リンクに循環参照が見つかりました"
+msgstr "リンクに循環が見つかりました"
 
 msgid "Invalid declaration"
 msgstr "無効な宣言"
@@ -850,6 +853,9 @@ msgstr "同期"
 
 msgid "None"
 msgstr "None"
+
+msgid "Independent"
+msgstr "インデペンデント"
 
 msgid "Cyclic Mutable"
 msgstr "循環する変更可能な参照"
@@ -2341,6 +2347,12 @@ msgstr "インストール..."
 msgid "Version:"
 msgstr "バージョン:"
 
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "ブラウザーを開いてアセットをオンラインストアページに表示します。"
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "ブラウザーを開いてソースファイルを含んだページを表示します。"
+
 msgid "Description"
 msgstr "説明"
 
@@ -2432,6 +2444,21 @@ msgstr "再試行"
 msgid "Download Error"
 msgstr "ダウンロードエラー"
 
+msgid "Relevance"
+msgstr "関連性"
+
+msgid "Updated (Newest First)"
+msgstr "最終更新日(新しい順)"
+
+msgid "Updated (Oldest First)"
+msgstr "最終更新日(古い順)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "評価が高い順"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "評価が低い順"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "最初"
@@ -2451,14 +2478,17 @@ msgstr "最後"
 msgid "Go Online"
 msgstr "オンライン"
 
-msgid "Template"
-msgstr "テンプレート"
-
 msgid "All"
 msgstr "すべて"
 
+msgid "Repository returned with invalid data."
+msgstr "リポジトリから無効なデータが返されました。"
+
 msgid "No results for \"%s\"."
 msgstr "\"%s\" の結果はありません。"
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "テンプレートを検索。「#ハッシュタグ」を含めることでタグ検索ができます。"
 
 msgid "Import..."
 msgstr "インポート..."
@@ -2477,6 +2507,9 @@ msgstr "ライセンス文書"
 
 msgid "Assets ZIP File"
 msgstr "アセットのzipファイル"
+
+msgid "Asset Store"
+msgstr "アセットストア"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "\"%s\" のアセットファイルを開けません (ZIP形式ではありません)。"
@@ -4332,6 +4365,9 @@ msgstr ""
 "「プレースホルダーとしてロード」を有効にすると、「編集可能な子」が無効になり、"
 "ノードのすべてのプロパティがデフォルトに戻ります。"
 
+msgid "Toggle Load as Placeholder"
+msgstr "プレースホルダーとしてロード"
+
 msgid "Make Local"
 msgstr "ローカルにする"
 
@@ -4402,13 +4438,13 @@ msgid "Remove Node(s)"
 msgstr "ノードを除去"
 
 msgid "Change type of node(s)"
-msgstr "ノードのタイプを変更"
+msgstr "ノードの型を変更"
 
 msgid "Reparent to New Node"
 msgstr "親ノードを新規ノードに変更"
 
 msgid "This operation requires a single selected node."
-msgstr "この操作には選択されたノードが1つ必要です。"
+msgstr "この操作は複数のノード選択に非対応です。"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "開いているシーンを上書きすることはできません！"
@@ -4426,8 +4462,8 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
-"新しいシーンを保存できませんでした。おそらく依存関係(インスタンス)を満たせてい"
-"ません。"
+"新しいシーンを保存できませんでした。おそらく依存関係(インスタンス)を解決できて"
+"いません。"
 
 msgid "Error saving scene."
 msgstr "シーンを保存する際にエラーが発生しました。"
@@ -8702,7 +8738,7 @@ msgid "Game running not embedded."
 msgstr "ゲームが埋め込みなしで実行中。"
 
 msgid "Press play to start the game."
-msgstr "ゲームを開始するには再生ボタンを押します。"
+msgstr "ゲームを開始するには再生ボタンを押してください。"
 
 msgid "Embedding is disabled."
 msgstr "埋め込みは無効です。"
@@ -9832,15 +9868,6 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "プロパティエディターを選択"
 
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Ctrlを押しながら複数のタイルを作成できます。"
-
-msgid "Hold Shift to create big tiles."
-msgstr "Shiftを押しながら大きなタイルを作成できます。"
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Shift キーを押しながら複数の領域を選択します。"
-
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
 "properties."
@@ -10348,8 +10375,8 @@ msgid ""
 "To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
 "resource in the inspector and check Add UV2."
 msgstr ""
-"PrimitiveMesh にライトマップを適用するには、PrimitiveMeshのリソースのインスペ"
-"クターでAdd UV2をオンにしてください。"
+"プリミティブメッシュにライトマップを適用するには、プリミティブメッシュリソース"
+"のインスペクタでAdd UV2をオンにしてください。"
 
 msgid ""
 "To enable lightmapping support on a CSG mesh, select the root CSG node and "
@@ -11235,6 +11262,9 @@ msgstr ""
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "LMB＋ドラッグ：3D空間の2点間の距離を測定します。"
 
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "シフト＋左クリック＋ドラッグ：3D空間の2点間の距離を測定します。"
+
 msgid ""
 "Scene contains\n"
 "DirectionalLight3D.\n"
@@ -11242,7 +11272,7 @@ msgid ""
 msgstr ""
 "DirectionalLight3Dが\n"
 "シーンに含まれています。\n"
-"プレビューは無効です。"
+"プレビューは一時的に無効になりました。"
 
 msgid "Preview disabled."
 msgstr "プレビューは無効です。"
@@ -11254,7 +11284,7 @@ msgid ""
 msgstr ""
 "WorldEnvironmentが\n"
 "シーンに含まれています。\n"
-"プレビューは無効です。"
+"プレビューは一時的に無効になりました。"
 
 msgid "Set Preview Sun Direction"
 msgstr "プレビュー太陽の方向を設定"
@@ -11272,7 +11302,7 @@ msgid "Set Preview Sun Energy"
 msgstr "プレビュー太陽のエネルギーを設定"
 
 msgid "Set Preview Sun Max Shadow Distance"
-msgstr "セットプレビューの太陽の影の最大距離"
+msgstr "プレビューの太陽の影の最大距離を設定"
 
 msgid "Set Preview Environment Sky Color"
 msgstr "プレビュー環境の空の色を設定"
@@ -13653,7 +13683,7 @@ msgid "Select Frames"
 msgstr "フレームを選択"
 
 msgid "Frame Order"
-msgstr "フレームオーダー"
+msgstr "フレームの順番"
 
 msgid "As Selected"
 msgstr "選択順"
@@ -13965,6 +13995,9 @@ msgstr "親を選択"
 
 msgid "Use Template"
 msgstr "テンプレートを使用"
+
+msgid "Template"
+msgstr "テンプレート"
 
 msgid "Built-in Script:"
 msgstr "組み込みスクリプト:"
@@ -18355,8 +18388,8 @@ msgid ""
 "See instructions on finding your team ID: https://developer.apple.com/help/"
 "glossary/team-id"
 msgstr ""
-"チーム ID の確認方法については、こちらを参照してください: https://"
-"developer.apple.com/help/glossary/team-id"
+"チーム ID を見つける手順については、https://developer.apple.com/help/glossary/"
+"team-id をご覧ください。"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "組み込みのコード署名がエラー「%s」で失敗しました。"

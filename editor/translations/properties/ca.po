@@ -2,7 +2,7 @@
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
-# BennyBeat <bennybeat@gmail.com>, 2017.
+# BennyBeat <bennybeat@gmail.com>, 2017, 2026.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018, 2020, 2025.
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-15 19:03+0000\n"
-"Last-Translator: Júlia Rosell Saldaña <contacte@juliars.cat>\n"
+"PO-Revision-Date: 2026-08-30 06:40+0000\n"
+"Last-Translator: BennyBeat <bennybeat@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ca/>\n"
 "Language: ca\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "Aplicació"
@@ -11427,6 +11427,24 @@ msgstr "Miniatura de fitxer"
 
 msgid "Folder Thumbnail"
 msgstr "Miniatura de carpeta"
+
+msgid "Menu Copy Path"
+msgstr "Menú Copia Ruta"
+
+msgid "Menu Delete"
+msgstr "Menú Suprimeix"
+
+msgid "Menu New Folder"
+msgstr "Menú Carpeta Nova"
+
+msgid "Menu Refresh"
+msgstr "Menú Actualitza"
+
+msgid "Menu Show in File Manager"
+msgstr "Menú Mostra a l'Explorador de fitxers"
+
+msgid "Menu Open Bundle"
+msgstr "Menú Obre un paquet"
 
 msgid "Folder Icon Color"
 msgstr "Color de carpeta icona"

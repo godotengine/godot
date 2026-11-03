@@ -71,8 +71,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-27 16:01+0000\n"
-"Last-Translator: Ayran <gordeybalaban05@gmail.com>\n"
+"PO-Revision-Date: 2026-08-08 09:57+0000\n"
+"Last-Translator: User2068 <user603849745775@proton.me>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -81,7 +81,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "OK"
 msgstr "Гаразд"
@@ -2626,9 +2626,6 @@ msgstr "Вийти в Інтернет"
 msgid "Failed to verify repository."
 msgstr "Не вдалося перевірити репозиторій."
 
-msgid "Template"
-msgstr "Шаблон"
-
 msgid "All"
 msgstr "Все"
 
@@ -4626,6 +4623,9 @@ msgid ""
 msgstr ""
 "Увімкнення «Завантажити як заповнювач» вимкне «Редаговані дочірні елементи» "
 "та призведе до повернення всіх властивостей вузла до стандартних."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Увімкнути/вимкнути завантаження як заповнювач"
 
 msgid "Make Local"
 msgstr "Зробити локальним"
@@ -10382,15 +10382,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Вибір сцени"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Якщо ця опція увімкнена, ви можете вибирати сцени з панелі «Файлова система», "
-"панелі «Сцени» або робочої області 2D-редактора.\n"
-"Утримуючи клавішу Ctrl, можна вибирати сцени з робочої області 2D-редактора."
-
 msgid "Edit Properties"
 msgstr "Редагувати властивості"
 
@@ -10408,14 +10399,6 @@ msgstr "Прив'язати до центру комірки сітки"
 
 msgid "Allow Overlapping"
 msgstr "Дозволити накладення"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Дозволити малювання поверх існуючих намальованих сцен.\n"
-"Утримуйте клавішу Shift під час малювання, щоб тимчасово увімкнути або "
-"вимкнути цю опцію."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У цього каркаса немає кісток, створіть хоч якісь дочірні вузли Bone2D."
@@ -11042,15 +11025,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Вибрати редактор властивостей"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Утримуйте Ctrl, щоб створити кілька тайлів."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Утримуйте Shift, щоб створити велики тайлі."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Утримуйте Shift, щоб вибрати кілька регіонів."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12832,6 +12806,9 @@ msgstr "%s+Drag: Використовувати оснащення."
 
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "LMB+перетягування: Виміряйте відстань між двома точками в 3D-просторі."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+ліва кнопка миші+перетягування: показати розміри компонента."
 
 msgid ""
 "Scene contains\n"
@@ -15762,6 +15739,9 @@ msgstr "Виберіть батьківський елемент"
 
 msgid "Use Template"
 msgstr "Використати шаблон"
+
+msgid "Template"
+msgstr "Шаблон"
 
 msgid "Built-in Script:"
 msgstr "Вбудований скрипт:"

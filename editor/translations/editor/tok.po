@@ -10,12 +10,14 @@
 # jan Ipen <minebloxdash@gmail.com>, 2026.
 # cramangako <wljroccio@glow.sch.uk>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# ByteAtATime <byteatatime@proton.me>, 2026.
+# parchment <parchii@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-07-07 03:32+0000\n"
-"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
+"PO-Revision-Date: 2026-10-18 12:12+0000\n"
+"Last-Translator: parchment <parchii@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Toki Pona <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tok/>\n"
 "Language: tok\n"
@@ -23,10 +25,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
-msgstr "OK"
+msgstr "pona"
 
 msgid "Failed"
 msgstr "pakala"
@@ -42,6 +44,15 @@ msgstr "lipu li lon kin"
 
 msgid "Can't open file"
 msgstr "mi ken ala open e lipu"
+
+msgid "Can't write file"
+msgstr "mi ken ala ante e lipu"
+
+msgid "Can't read file"
+msgstr "mi ken ala lukin e lipu"
+
+msgid "File corrupt"
+msgstr "lipu li pakala"
 
 msgid "End of file"
 msgstr "pini lipu"
@@ -87,6 +98,12 @@ msgstr "pakala pi sona toki"
 
 msgid "Help"
 msgstr "wile pona"
+
+msgid "Bug"
+msgstr "pakala"
+
+msgid "Printer on fire"
+msgstr "ilo sitelen li seli"
 
 msgid "Physical"
 msgstr "lon"
@@ -644,6 +661,9 @@ msgstr "FPS:"
 msgid "Imported Animation cannot be edited!"
 msgstr "sitelen tawa lanpan li ken ala ante!"
 
+msgid "Error: "
+msgstr "pakala: "
+
 msgid "Root"
 msgstr "open"
 
@@ -671,6 +691,12 @@ msgstr "mi kama jo..."
 msgid "Install..."
 msgstr "o kama jo..."
 
+msgid "Version:"
+msgstr "nanpa:"
+
+msgid "Download other versions."
+msgstr "o kama jo e nanpa ante."
+
 msgid "Description"
 msgstr "toki sona"
 
@@ -695,6 +721,12 @@ msgstr "o alasa sin"
 msgid "Download Error"
 msgstr "pakala pi kama jo"
 
+msgid "Updated (Newest First)"
+msgstr "kama ante (open li sin)"
+
+msgid "Updated (Oldest First)"
+msgstr "kama ante (open li majuna)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "nanpa open"
@@ -712,7 +744,7 @@ msgid "Last"
 msgstr "nanpa pini"
 
 msgid "Go Online"
-msgstr "o lon linja"
+msgstr "o lon linluwi"
 
 msgid "All"
 msgstr "ale"
@@ -722,6 +754,9 @@ msgstr "ilo namako..."
 
 msgid "Sort:"
 msgstr "o lawa nanpa:"
+
+msgid "Source:"
+msgstr "tan:"
 
 msgid "Licenses"
 msgstr "lipu lawa"
@@ -738,6 +773,9 @@ msgstr "(en lipu %s)"
 
 msgid "Success!"
 msgstr "pona a!"
+
+msgid "No files conflict with your project."
+msgstr "lipu ala li ike tawa pali sina."
 
 msgid "Stop"
 msgstr "o pini"
@@ -1031,13 +1069,6 @@ msgstr "sina pana ala e nimi."
 
 msgid "Name contains invalid characters."
 msgstr "nimi li jo e sitelen pi ken ala."
-
-msgid ""
-"This filename begins with a dot rendering the file invisible to the editor.\n"
-"If you want to rename it anyway, use your operating system's file manager."
-msgstr ""
-"open pi nimi lipu li sike lili la ilo ante ken ala lukin e ona.\n"
-"sina wile ante e ona la, o kepeken lawa lipu pi OS sina."
 
 msgid "A file or folder with this name already exists."
 msgstr "(poki) lipu kepeken nimi ni li lon kin."
@@ -1416,6 +1447,9 @@ msgstr "pali pi nimi ala"
 msgid "Recovery Mode is enabled. Editor functionality has been restricted."
 msgstr "nasin alasa li lon. pali pi ilo ante li lili."
 
+msgid "Error saving resource at path \"%s\": %s."
+msgstr "mi awen e poki sona lon nasin \"%s\" la pakala ni li lon: %s."
+
 msgid "Can't open file for writing:"
 msgstr "mi ken ala open e lipu tawa sitelen:"
 
@@ -1457,6 +1491,16 @@ msgstr[0] "lon tenpo lili %d tawa"
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "lon tenpo suli %d tawa"
+
+msgid "Scene opened: %s."
+msgstr "ma pali li open: %s."
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"%s"
+msgstr ""
+"ma pali \"%s\" li jo e ante pi awen ala.\n"
+"%s"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "tenpo ni la ijo %s li lon ala! o toki e lon awen sin."
@@ -1818,8 +1862,17 @@ msgstr "ilo namako \"%s\" li ike tawa \"%s\""
 msgid "Common"
 msgstr "meso"
 
+msgid "Remove this file."
+msgstr "o weka e lipu ni."
+
+msgid "Download request failed: %s."
+msgstr "toki wile pi kama jo li pakala: %s."
+
 msgid "Download from:"
 msgstr "o kama jo tan:"
+
+msgid "Request failed"
+msgstr "toki wile li pakala"
 
 msgid "%s Export"
 msgstr "pana pi ilo %s"
@@ -4303,6 +4356,9 @@ msgid ""
 msgstr ""
 "nimi pali li ken ala. nimi li ken ala jo e ala e '/', ':', '=', '\\', anu '\"'"
 
+msgid "%s is an invalid name."
+msgstr "nimi %s li ken ala."
+
 msgid "%s is an invalid path. File does not exist."
 msgstr "%s li nasin pi ken ala. lipu li lon ala."
 
@@ -4685,6 +4741,21 @@ msgstr "sina wile ala wile weka e nasin ijo?"
 
 msgid "Remove Property"
 msgstr "o weka e nasin ijo"
+
+msgid "A: %s"
+msgstr "A: %s"
+
+msgid "B: %s"
+msgstr "B: %s"
+
+msgid "Duplicate?"
+msgstr "o pali tu anu seme?"
+
+msgid "Game Version:"
+msgstr "nanpa musi:"
+
+msgid "Editor Version:"
+msgstr "nanpa pi ilo ante:"
 
 msgid "Error loading %s: %s."
 msgstr "kama lon e %s la pakala li lon: %s."

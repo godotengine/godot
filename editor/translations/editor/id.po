@@ -82,13 +82,17 @@
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 # "Ahmad E. Nugraha" <ahmaderdiansha.9a@gmail.com>, 2026.
 # Mahiir <mhrirab.12@gmail.com>, 2026.
+# "fyrd.dev_" <psycogamma1@gmail.com>, 2026.
+# Peter Christian Erastus <peterce3@gmail.com>, 2026.
+# fatadhewe2012 <fatadhewe2012@gmail.com>, 2026.
+# Agus Arya <attomcorps@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-17 12:16+0000\n"
-"Last-Translator: Mahiir <mhrirab.12@gmail.com>\n"
+"PO-Revision-Date: 2026-10-01 21:08+0000\n"
+"Last-Translator: Agus Arya <attomcorps@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -96,7 +100,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.10\n"
 
 msgid "OK"
 msgstr "Oke"
@@ -120,7 +124,7 @@ msgid "Out of memory"
 msgstr "Kehabisan memori"
 
 msgid "File not found"
-msgstr "File tidak ditemukan."
+msgstr "Berkas tidak ada/tidak ditemukan"
 
 msgid "File: Bad drive"
 msgstr "Berkas: Drive Tidak Terbaca"
@@ -602,7 +606,7 @@ msgid "Follow Input Port Connection"
 msgstr "Ikuti Sambungan Port Masukan"
 
 msgid "Follow Output Port Connection"
-msgstr "Ikuti Sambungan Port Keluaran"
+msgstr "Ikuti Koneksi Port Output"
 
 msgid "Go Up One Level"
 msgstr "Naik Satu Tingkat"
@@ -741,7 +745,7 @@ msgid "Animation Cut Keys"
 msgstr "Kunci Potong Animasi"
 
 msgid "Animation Paste Keys"
-msgstr "Tempel Kunci Animasi"
+msgstr "Tempel Key Animasi"
 
 msgid "Animation Delete Keys"
 msgstr "Kunci Hapus Animasi"
@@ -1161,6 +1165,29 @@ msgid "Save Animation to File: %s"
 msgstr "Simpan Animasi ke File: %s"
 
 msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... → Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"File yang Anda pilih adalah sebuah scene impor dari model 3D seperti glTF "
+"atau FBX.\n"
+"\n"
+"Model tersebut muncul di sini, karena dalam Godot, model 3D dapat diimpor "
+"sebagai scene atau sebagai perpustakaan animasi (animation library).\n"
+"\n"
+"Jika Anda ingin menggunakan animasi dari model 3D ini, buka dialog Advanced "
+"Import Setting\n"
+"dan simpan animasi menggunakan Actions... -> Set Animation Save Paths,\n"
+"atau impor seluruh scene sebagai satu AnimationLibrary di dock Import."
+
+msgid ""
 "The file you selected is not a valid AnimationLibrary.\n"
 "\n"
 "If the animations you want are inside of this file, save them to a separate "
@@ -1346,6 +1373,9 @@ msgstr "Fitur onion skinning membutuhkan animasi RESET."
 msgid "Animation"
 msgstr "Animasi"
 
+msgid "Toggle Animation Dock"
+msgstr "Tampilkan/Sembunyikan Dock Animasi"
+
 msgid "Animation position (in seconds)."
 msgstr "Posisi Animasi (dalam detik)."
 
@@ -1509,6 +1539,9 @@ msgstr "Hubungkan node."
 
 msgid "Remove selected node or transition."
 msgstr "Hapus node atau transisi terpilih."
+
+msgid "Transition"
+msgstr "Transisi"
 
 msgid "New Transitions Should Auto Advance"
 msgstr "Transisi Baru Harus Auto Advance"
@@ -1751,6 +1784,9 @@ msgstr "Potong Kunci"
 
 msgid "Copy Key(s)"
 msgstr "Salin Kunci"
+
+msgid "Send Key(s) to RESET"
+msgstr "Kirim Kunci untuk MENGATUR ULANG"
 
 msgid "Delete Key(s)"
 msgstr "Hapus Key"
@@ -2121,6 +2157,9 @@ msgstr "Pergi ke Keyframe Berikutnya"
 msgid "Go to Previous Keyframe"
 msgstr "Pergi ke Keyframe Sebelumnya"
 
+msgid "Add tracks to RESET"
+msgstr "Tambah TRACK ke RESET"
+
 msgid "Bake Animation..."
 msgstr "Kemas Animasi..."
 
@@ -2223,6 +2262,27 @@ msgstr ""
 msgid "Marker:"
 msgstr "Penanda:"
 
+msgid "Animation Delete Markers"
+msgstr "Penanda Hapus Animasi"
+
+msgid "Marker '%s' already exists!"
+msgstr "Penanda '%s' telah ada!"
+
+msgid "Add Marker Key"
+msgstr "Tambah Kunci Penanda"
+
+msgid "Empty marker names are not allowed."
+msgstr "Nama marker yang kosong tidak diperbolehkan."
+
+msgid "Insert Marker"
+msgstr "Masukkan Penanda"
+
+msgid "Marker Name"
+msgstr "Nama Penanda"
+
+msgid "Marker Color"
+msgstr "Warna Penanda"
+
 msgid "Multi Edit Marker Color"
 msgstr "Penanda Multi Edit Warna"
 
@@ -2234,6 +2294,12 @@ msgstr "Seimbangkan Awalan Klip Trek Audio"
 
 msgid "Change Audio Track Clip End Offset"
 msgstr "Seimbangkan Akhiran Klip Trek Audio"
+
+msgid "%s at "
+msgstr "%s di "
+
+msgid "'%s':"
+msgstr "'%s':"
 
 msgid "Root"
 msgstr "Root"
@@ -2250,8 +2316,14 @@ msgstr "Judul"
 msgid "Author"
 msgstr "Pencipta"
 
+msgid "Verified Author"
+msgstr "Pembuat Terverifikasi"
+
 msgid "License"
 msgstr "Lisensi"
+
+msgid "No changelog provided for this version."
+msgstr "Tidak ada catatan perubahan yang disediakan untuk versi ini."
 
 msgid "Loading..."
 msgstr "Sedang memuat…"
@@ -2270,6 +2342,10 @@ msgstr "Versi:"
 
 msgid "Open the web browser to show the asset in the online store page."
 msgstr "Buka peramban web untuk menunjukkan aset di laman toko online."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr ""
+"Buka peramban web untuk menampilkan halaman yang memuat file-file sumber."
 
 msgid "Description"
 msgstr "Deskripsi"
@@ -2361,6 +2437,18 @@ msgstr "Coba Lagi"
 msgid "Download Error"
 msgstr "Unduhan Gagal"
 
+msgid "Updated (Newest First)"
+msgstr "Diperbarui (Terbaru di Urutan Pertama)"
+
+msgid "Updated (Oldest First)"
+msgstr "Diperbarui (Terlama di Urutan Pertama)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "Ulasan (Skor Tertinggi Terlebih Dahulu)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "Ulasan (Skor Terendah Terlebih Dahulu)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "Pertama"
@@ -2387,8 +2475,19 @@ msgstr ""
 msgid "All"
 msgstr "Semua"
 
+msgid "Repository returned with invalid data."
+msgstr "Repositori mengembalikan data yang tidak valid."
+
 msgid "No results for \"%s\"."
 msgstr "Tidak ada hasil untuk \"%s\"."
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "Cari templat. Dengan tag menggunakan \"#tagname\"."
+
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr ""
+"Cari Aset (Tidak Termasuk Templat, Proyek, dan Demo). Gunakan tag menggunakan "
+"\"#tagname\"."
 
 msgid "Import..."
 msgstr "Impor…"
@@ -2402,11 +2501,17 @@ msgstr "Sortir:"
 msgid "Category:"
 msgstr "Kategori:"
 
+msgid "Source:"
+msgstr "Sumber:"
+
 msgid "Licenses"
 msgstr "Lisensi"
 
 msgid "Assets ZIP File"
 msgstr "Berkas Aset ZIP"
+
+msgid "Asset Store"
+msgstr "Toko Aset"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Gagal saat membuka berkas aset untuk \"%s\" (tidak dalam format ZIP)."
@@ -2730,6 +2835,9 @@ msgstr ""
 "Ketika opsi ini diaktifkan, server debug editor akan tetap terbuka dan "
 "mendengarkan sesi baru yang dimulai di luar editor itu sendiri."
 
+msgid "Customize Run Instances..."
+msgstr "Kostumisasi Instansi yang dijalankan..."
+
 msgid "Set %s"
 msgstr "Setel %s"
 
@@ -2741,6 +2849,9 @@ msgstr "Sesi %d"
 
 msgid "Debug"
 msgstr "Debug"
+
+msgid "Save Branch as Scene..."
+msgstr "Simpan Cabang sebagai Adegan..."
 
 msgid "Copy Node Path"
 msgstr "Salin Lokasi Node"
@@ -2805,6 +2916,9 @@ msgstr "Pilih satu atau lebih item dari daftar untuk menampilkan grafiknya."
 
 msgid "Start"
 msgstr "Mulai"
+
+msgid "Autostart"
+msgstr "Jalankan Otomatis"
 
 msgid "Measure:"
 msgstr "Ukuran:"
@@ -10923,7 +11037,7 @@ msgid "Class name can't be a reserved keyword"
 msgstr "Nama kelas tidak boleh reserved keyword"
 
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Tidak cukup byte untuk decoding byte, atau format tidak valid."
+msgstr "Tidak cukup byte untuk men-decode byte, atau format tidak valid."
 
 msgid "%s/s"
 msgstr "%s / s"
@@ -11587,6 +11701,9 @@ msgstr "Berjalan pada perangkat..."
 msgid "Could not execute on device."
 msgstr "Tidak dapat dijalankan di perangkat."
 
+msgid "Custom Android source template not found."
+msgstr "Sumber templat kustom Android tidak ditemukan."
+
 msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
@@ -12032,6 +12149,12 @@ msgstr ""
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
 
+msgid "Invalid stencil mode: '%s'."
+msgstr "Mode stensil tidak valid: '%s'."
+
+msgid "Invalid render mode: '%s'."
+msgstr "Mode render tidak valid: '%s'."
+
 msgid "Expected a '%s'."
 msgstr "Mengharapkan adanya '%s'."
 
@@ -12066,10 +12189,13 @@ msgid "'##' must not appear at end of macro expansion."
 msgstr "'##' harus tidak boleh ada di bagian akhir peluasan makro."
 
 msgid "Unmatched '%s' directive."
-msgstr "Tidak ada kecocokan di jalur %d."
+msgstr "Tidak ada kecocokan di jalur '%s'."
 
 msgid "Missing condition."
 msgstr "Kondisi yang menghilang."
+
+msgid "Condition evaluation error."
+msgstr "Kesalahan Evaluasi Kondisi."
 
 msgid "Invalid '%s' directive."
 msgstr "Jalur '%s' tidak valid."

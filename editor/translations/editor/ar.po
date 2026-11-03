@@ -2387,9 +2387,6 @@ msgstr "الأخير"
 msgid "Go Online"
 msgstr "الاتصال بالشبكة"
 
-msgid "Template"
-msgstr "القالب"
-
 msgid "All"
 msgstr "الكل"
 
@@ -8531,12 +8528,6 @@ msgstr "قم بإنشاء وتخصيص طبقات البيانات المخصص�
 msgid "Select a property editor"
 msgstr "حدد محرر خاصية"
 
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "علّقْ على Ctrl لإنشاء بلاطات متعددة."
-
-msgid "Hold Shift to create big tiles."
-msgstr "علّقْ على Shift لإنشاء مربعات كبيرة."
-
 msgid "Paint properties."
 msgstr "خصائص الطلاء."
 
@@ -11816,6 +11807,9 @@ msgstr "مسار/اسم النص البرمجي صالح."
 
 msgid "Will create a new script file."
 msgstr "سوف يُنشئ ملفا برمجيا جديدا."
+
+msgid "Template"
+msgstr "القالب"
 
 msgid "Built-in Script:"
 msgstr "ملف النص المُدمج:"

@@ -37,13 +37,14 @@
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 # Kieli Puoli <kielipuoli@gmail.com>, 2026.
 # Niksu <notinuseuser@gmail.com>, 2026.
+# LenUser0 <lenuser0@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-05 16:48+0000\n"
-"Last-Translator: Niksu <notinuseuser@gmail.com>\n"
+"PO-Revision-Date: 2026-10-17 02:28+0000\n"
+"Last-Translator: LenUser0 <lenuser0@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -139,6 +140,9 @@ msgstr "Yhteysvirhe"
 
 msgid "Can't acquire resource"
 msgstr "Resurssin noutaminen epäonnistui"
+
+msgid "Can't fork"
+msgstr "Ei voi haarukoida"
 
 msgid "Invalid data"
 msgstr "Virheelliset tiedot"
@@ -2417,6 +2421,12 @@ msgstr "Arvostelut (paras tulos ensin)"
 msgid "Reviews (Lowest Score First)"
 msgstr "Arvostelut (heikoin tulos ensin)"
 
+msgid "Created (Newest First)"
+msgstr "Luotu (uusin ensin)"
+
+msgid "Created (Oldest First)"
+msgstr "Luotu (vanhin ensin)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "Ensimmäinen"
@@ -2436,11 +2446,17 @@ msgstr "Viimeinen"
 msgid "Go Online"
 msgstr "Mene verkkoon"
 
+msgid "Failed to verify repository."
+msgstr "Paketinhallinnan todentaminen epäonnistui."
+
 msgid "All"
 msgstr "Kaikki"
 
 msgid "No results for \"%s\"."
 msgstr "Ei tuloksia haulle \"%s\"."
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "Etsi malleja. Käytä tunnisteita sisällyttämällä \"#tunniste\"."
 
 msgid "Import..."
 msgstr "Tuo..."
@@ -6199,6 +6215,9 @@ msgstr "Riisu kuvitukset"
 msgid "Keep"
 msgstr "Pidä"
 
+msgid "Android App Bundle"
+msgstr "Android-sovelluspaketti"
+
 msgid "Features"
 msgstr "Ominaisuudet"
 
@@ -6255,6 +6274,13 @@ msgstr "Binääritunnukset (nopeampi lataus)"
 
 msgid "Compressed binary tokens (smaller files)"
 msgstr "Pakatut binääritunnukset (pienemmät tiedostot)"
+
+msgid ""
+"No presets found.\n"
+"Create one so that its parameters can be edited here."
+msgstr ""
+"Esiasetuksia ei löytynyt.\n"
+"Luo sellainen, jotta sen parametreja voisi muokata täällä."
 
 msgid "Export PCK/ZIP..."
 msgstr "Vie PCK/ZIP..."
@@ -6336,6 +6362,9 @@ msgstr ""
 
 msgid "Cannot remove:"
 msgstr "Ei voida poistaa:"
+
+msgid "Referenced by %s"
+msgstr "Viitattu hakemistosta %s"
 
 msgid "Fix Dependencies"
 msgstr "Korjaa riippuvuudet"
@@ -6584,6 +6613,9 @@ msgstr "Aliresursseja ei löydetty."
 
 msgid "Open a list of sub-resources."
 msgstr "Avaa aliresurssien luettelo."
+
+msgid "Selected resource will be previewed in the editor before accepting."
+msgstr "Valittua resurssia voi esikatsella muokkaimessa ennen hyväksymistä."
 
 msgid "Include approximate matches."
 msgstr "Sisällytä likimääräiset osumat."
@@ -6872,11 +6904,34 @@ msgstr ""
 msgid "Advanced Import Settings for '%s'"
 msgstr "Edistyneet Tuonti Asetukset '%s':lle"
 
+msgid "Select font rendering options, fallback font, and metadata override:"
+msgstr ""
+"Valitse fonttien renderöintiasetukset, varafontti ja metatietojen ohitus:"
+
 msgid "Pre-render Configurations"
 msgstr "Esi-renderöi Konfiguraatiot"
 
+msgid ""
+"Add font size, and variation coordinates, and select glyphs to pre-render:"
+msgstr ""
+"Lisää fonttikoko ja vaihtelukoordinaatit ja valitse esirenderöitävät glyyfit:"
+
 msgid "Configuration:"
 msgstr "Konfiguraatio:"
+
+msgid "Select translations to add all required glyphs to pre-render list:"
+msgstr ""
+"Valitse käännökset kaikkien tarvittavien glyyfien lisäämiseksi "
+"esirenderöintiluetteloon:"
+
+msgid "Glyphs from the Text"
+msgstr "Tekstin glyyfit"
+
+msgid "Shape Text and Add Glyphs"
+msgstr "Muotoile tekstiä ja lisää glyyfejä"
+
+msgid "Glyphs from the Character Map"
+msgstr "Glyyfit merkistöstä"
 
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Polku FBX2glTF-sovellukseen on tyhjä."
@@ -6898,6 +6953,9 @@ msgstr "Tuoja:"
 
 msgid "Reset to Defaults"
 msgstr "Palauta Oletusarvoihin"
+
+msgid "Dynamically rendered TrueType/OpenType font"
+msgstr "Dynaamisesti renderöity TrueType-/OpenType-fontti"
 
 msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (Automaattinen-Tunnistus)"
@@ -6928,6 +6986,10 @@ msgstr "Metadata nimellä \"%s\" on jo olemassa."
 
 msgid "Names starting with _ are reserved for editor-only metadata."
 msgstr "_ alkavat nimet ovat varattu vain editorin metadatalle."
+
+msgid "Make this property be put back at its original place."
+msgstr ""
+"Pakota tämän ominaisuuden asettaminen takaisin alkuperäiselle paikalleen."
 
 msgid "Pin Value"
 msgstr "Kiinnitä Arvo"
@@ -7019,8 +7081,21 @@ msgstr "Kopioi ominaisuuden polku"
 msgid "Edit Text:"
 msgstr "Muokkaa tekstiä:"
 
+msgid "Accept Custom Value Edit"
+msgstr "Hyväksy mukautetun arvon muokkaus"
+
+msgid "Cancel Custom Value Edit"
+msgstr "Peruuta mukautetun arvon muokkaus"
+
 msgid "Locale"
 msgstr "Kielialue"
+
+msgid ""
+"Toggles displaying between path and UID.\n"
+"The UID is the actual value of this property."
+msgstr ""
+"Vaihtaa polun ja UID:n näyttämisen välillä.\n"
+"UID on tämän ominaisuuden todellinen arvo."
 
 msgid "Layer %d"
 msgstr "Kerros %d"
@@ -7082,6 +7157,9 @@ msgstr "Uusi avain:"
 msgid "New Value:"
 msgstr "Uusi arvo:"
 
+msgid "Reorder"
+msgstr "Järjestä uudelleen"
+
 msgid "Size:"
 msgstr "Koko:"
 
@@ -7103,6 +7181,25 @@ msgstr "Lisää Käännös"
 msgid "Lock/Unlock Component Ratio"
 msgstr "Lukitse/Vapauta Komponentin Suhteellisuus"
 
+msgid "This %s is external to scene."
+msgstr "Tämä %s on kohtauksen ulkopuolinen."
+
+msgid ""
+"The %s cannot be edited in the inspector and can't be made unique directly."
+msgstr ""
+"%s ei ole muokattavissa tarkastajassa, eikä siitä voi tehdä yksilöllistä "
+"suoraan."
+
+msgid "Left-click to make it unique."
+msgstr ""
+"Tee siitä yksilöllinen napsauttamalla hiiren vasemmanpuoleista painiketta."
+
+msgid "It is possible to make its subresources unique."
+msgstr "Sen aliresursseista voi tehdä yksilöllisiä."
+
+msgid "In order to duplicate it, make its parent Resource unique."
+msgstr "Kahdenna se tekemällä sen pääresurssista yksilöllinen."
+
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
@@ -7110,11 +7207,22 @@ msgstr ""
 "Valittu resurssi (%s) ei vastaa mitään odotettua tyyppiä tälle ominaisuudelle "
 "(%s)."
 
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Avaa pikavalikon tiedostojen valitsemiseksi sallittujen resurssitiedostojen "
+"luettelosta."
+
 msgid "Inspect"
 msgstr "Tarkastele"
 
 msgid "Make Unique (Recursive)"
 msgstr "Tee yksilölliseksi (Rekursiivisesti)"
+
+msgid "In order to duplicate recursively, make its parent Resource unique."
+msgstr "Kahdenna se rekursiivisesti tekemällä sen pääresurssista yksilöllinen."
+
+msgid "Subresources have already been made unique."
+msgstr "Aliresursseista on jo tehty yksilöllisiä."
 
 msgid "Convert to %s"
 msgstr "Muunna muotoon %s"
@@ -7134,6 +7242,9 @@ msgstr "Tyyppi: %s"
 msgid "Dimensions: %d × %d"
 msgstr "Mitat: %d × %d"
 
+msgid "Advanced settings are always shown when searching."
+msgstr "Lisäasetukset näytetään aina haettaessa."
+
 msgid "Configure"
 msgstr "Määrittele"
 
@@ -7152,8 +7263,28 @@ msgstr "Valitse virtuaalinen metodi"
 msgid "Select Method"
 msgstr "Valitse metodi"
 
+msgid ""
+"Name: %s\n"
+"Path: %s\n"
+"Main Script: %s\n"
+"\n"
+"%s"
+msgstr ""
+"Nimi: %s\n"
+"Polku: %s\n"
+"Pääskripti: %s\n"
+"\n"
+"%s"
+
 msgid "Edit Plugin"
 msgstr "Muokkaa liitännäistä"
+
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Palautustila on käytössä. Käyttöönotetut liitännäiset eivät toimi tämän tilan "
+"ollessa aktiivisena."
 
 msgid "Installed Plugins:"
 msgstr "Asennetut Liitännäiset:"
@@ -7219,14 +7350,42 @@ msgstr ""
 msgid "Language:"
 msgstr "Kieli:"
 
+msgid ""
+"Required. The scripting language to use for the script.\n"
+"Note that a plugin may use several languages at once by adding more scripts "
+"to the plugin."
+msgstr ""
+"Pakollinen. Skriptille käytettävä komentokieli.\n"
+"Huomaathan, että liitännäisessä voi käyttää useita kieliä samanaikaisesti "
+"lisäämällä siihen skriptejä."
+
 msgid "Script Name:"
 msgstr "Skriptin nimi:"
+
+msgid ""
+"Optional. The name of the script file. If left empty, will default to the "
+"subfolder name."
+msgstr ""
+"Valinnainen. Skriptitiedoston nimi. Jos tämä jätetään tyhjäksi, "
+"oletusasetuksena käytetään alikansion nimeä."
 
 msgid "Plugin name is valid."
 msgstr "Lisäkkeen nimi kelpaa."
 
 msgid "Subfolder name is valid."
 msgstr "Alikansion nimi kelpaa."
+
+msgid "Failed to check for updates. Error: %d."
+msgstr "Päivitysten tarkistaminen epäonnistui. Virhe: %d."
+
+msgid "Failed to check for updates. Response code: %d."
+msgstr "Päivitysten tarkistaminen epäonnistui. Vastauskoodi: %d."
+
+msgid "Offline mode, update checks disabled."
+msgstr "Offline-tila. Päivitystarkistukset on poistettu käytöstä."
+
+msgid "An error has occurred. Click to try again."
+msgstr "Tapahtui virhe. Yritä uudelleen napsauttamalla."
 
 msgid "It would be a good idea to name your project."
 msgstr "Olisi hyvä idea antaa projektillesi nimi."
@@ -7237,11 +7396,83 @@ msgstr ""
 "Virheellinen \".zip\" projektitiedosto; se ei sisällä \"project.godot\" "
 "tiedostoa."
 
+msgid ""
+"You cannot save a project at the selected path. Please create a subfolder or "
+"choose a new path."
+msgstr ""
+"Projektia ei voi tallentaa valittuun polkuun. Luo alikansio tai valitse jokin "
+"muu polku."
+
+msgid "The project folder will be automatically created."
+msgstr "Projektikansio luodaan automaattisesti."
+
 msgid "The path specified doesn't exist."
 msgstr "Määritelty polku ei ole olemassa."
 
+msgid "The project folder exists and is empty."
+msgstr "Projektikansio on olemassa, ja se on tyhjä."
+
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"Valittu polku ei ole tyhjä. On erittäin suositeltavaa valita tyhjä kansio."
+
 msgid "New Game Project"
 msgstr "Uusi peliprojekti"
+
+msgid "Supports desktop platforms only."
+msgstr "Tukee vain työasemien ohjelmistoalustoja."
+
+msgid "Advanced 3D graphics available."
+msgstr "Edistynyt 3D-grafiikka saatavilla."
+
+msgid "Slower rendering of simple scenes."
+msgstr "Yksinkertaisten kohtausten renderöinti on hitaampaa."
+
+msgid "Supports desktop + mobile platforms."
+msgstr "Tukee työasemien ja mobiililaitteiden ohjelmistoalustoja."
+
+msgid "Less advanced 3D graphics."
+msgstr "Vähemmän edistynyt 3D-grafiikka."
+
+msgid "Less scalable for complex scenes."
+msgstr "Ei skaalaudu niin hyvin monimutkaisiin kohtauksiin."
+
+msgid "Fast rendering of simple scenes."
+msgstr "Yksinkertaisia kohtauksia voi renderöidä nopeasti."
+
+msgid "Supports desktop, mobile + web platforms."
+msgstr "Tukee työasemien, mobiililaitteiden ja webin ohjelmistoalustoja."
+
+msgid "Least advanced 3D graphics."
+msgstr "Vähiten edistynyt 3D-grafiikka."
+
+msgid "Intended for low-end/older devices."
+msgstr "Tarkoitettu vähemmän tehokkaille / vanhoille laitteille."
+
+msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
+msgstr "Käyttää OpenGL 3 -taustajärjestelmää (OpenGL 3.3/ES 3.0/WebGL2)."
+
+msgid "Fastest rendering of simple scenes."
+msgstr "Renderöi yksinkertaiset kohtaukset nopeimmin."
+
+msgid "Warning: This folder is not empty"
+msgstr "Varoitus: tämä kansio ei ole tyhjä"
+
+msgid ""
+"You are about to create a Godot project in a non-empty folder.\n"
+"The entire contents of this folder will be imported as project resources!\n"
+"\n"
+"Are you sure you wish to continue?"
+msgstr ""
+"Olet luomassa Godot-projektia kansioon, joka ei ole tyhjä.\n"
+"Kansion koko sisältö tuodaan resursseiksi projektiin!\n"
+"\n"
+"Haluatko varmasti jatkaa?"
+
+msgid "Couldn't create project directory, check permissions."
+msgstr "Projektin hakemistoa ei voitu luoda. Tarkista käyttöoikeudet."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "Tiedoston project.godot luonti projektin polkuun epäonnistui."
@@ -7262,7 +7493,7 @@ msgid "Couldn't save project at '%s' (error %d)."
 msgstr "Projektin tallennus epäonnistui kohteessa '%s'. (virhe %d)."
 
 msgid "Rename Project"
-msgstr "Nimetä projekti"
+msgstr "Nimeä projekti uudelleen"
 
 msgid "Import Existing Project"
 msgstr "Tuo olemassaoleva projekti"
@@ -7272,6 +7503,9 @@ msgstr "Luo uusi projekti"
 
 msgid "Install Project:"
 msgstr "Asenna projekti:"
+
+msgid "Duplicate Project"
+msgstr "Kahdenna projekti"
 
 msgid "Project Name:"
 msgstr "Projektin nimi:"
@@ -7287,6 +7521,28 @@ msgstr "Renderöijä:"
 
 msgid "Version Control Metadata:"
 msgstr "Versionhallinnan Metadata:"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "Tätä projektia on muokattu viimeksi toisessa Godot-versiossa: "
+
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "Sen avaaminen päivittää sen Godot %s.%s -versioon."
+
+msgid "Opening it will downgrade it to Godot %s.%s."
+msgstr "Sen avaaminen alentaa sen Godot %s.%s -versioon."
+
+msgid "Downgrading projects is not recommended."
+msgstr "Projektien versioiden alentaminen ei ole suositeltavaa."
+
+msgid "Unknown version"
+msgstr "Tuntematon versio"
+
+msgid "This project uses an unknown version of Godot."
+msgstr "Tämä projekti käyttää tuntematonta Godot-versiota."
+
+msgid "This project uses features unsupported by the current build:"
+msgstr ""
+"Tässä projektissa käytetään ominaisuuksia, joita nykyinen versio ei tue:"
 
 msgid "Error: Project is missing on the filesystem."
 msgstr "Virhe: projekti puuttuu tiedostojärjestelmästä."
@@ -7310,8 +7566,41 @@ msgstr "Projektinhallinta"
 msgid "You don't have any projects yet."
 msgstr "Sinulla ei ole vielä projekteja."
 
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Store!"
+msgstr ""
+"Aloita luomalla uusi projekti,\n"
+"tuomalla olemassa oleva projekti tai lataamalla projektimalli "
+"resurssikirjastosta!"
+
+msgid "Go Online and Open Asset Store"
+msgstr "Siirry online-tilaan ja avaa resurssikirjasto"
+
 msgid "Are you sure to run %d projects at once?"
 msgstr "Haluatko varmasti suorittaa %d projektia yhdenaikaisesti?"
+
+msgid ""
+"Can't open project at '%s'.\n"
+"Project file doesn't exist or is inaccessible."
+msgstr ""
+"Kohteessa %s olevaa projektia ei voi avata.\n"
+"Projektitiedostoa ei ole tai sitä ei voi käyttää."
+
+msgid ""
+"Can't open project at '%s'.\n"
+"Failed to start the editor."
+msgstr ""
+"Kohteessa %s olevaa projektia ei voi avata.\n"
+"Muokkainta ei voitu käynnistää."
+
+msgid ""
+"You requested to open %d projects in parallel. Do you confirm?\n"
+"Note that usual checks for engine version compatibility will be bypassed."
+msgstr ""
+"Pyysit %d projektin avaamista samanaikaisesti. Vahvistatko tämän?\n"
+"Huomaathan, että tavanomaiset pelimoottoriversion tarkistukset ohitetaan."
 
 msgid ""
 "The selected project \"%s\" does not specify its supported Godot version in "
@@ -7335,6 +7624,9 @@ msgstr ""
 "\n"
 "Varoitus: Et voi avata projektia tämän jälkeen enää moottorin vanhemmilla "
 "versioilla."
+
+msgid "Convert project.godot Only"
+msgstr "Muunna vain project.godot"
 
 msgid ""
 "The selected project \"%s\" was generated by an older engine version, and "
@@ -7371,6 +7663,31 @@ msgstr ""
 "Projektin asetukset on luotu uudemmalla versiolla, jonka asetukset eivät ole "
 "yhteensopivia tämän version kanssa."
 
+msgid ""
+"Warning: This project was last edited in Godot %s. Opening will change it to "
+"Godot %s.\n"
+"\n"
+msgstr ""
+"Varoitus: Tätä projektia on muokattu viimeksi Godot %s -versiossa. Sen "
+"avaaminen muuttaa sen Godot %s -versioon.\n"
+"\n"
+
+msgid ""
+"Warning: This project uses the following features not supported by this build "
+"of Godot:\n"
+"\n"
+"%s\n"
+"\n"
+msgstr ""
+"Varoitus: tässä projektissa käytetään seuraavia ominaisuuksia, joita tämä "
+"Godot-versio ei tue:\n"
+"\n"
+"%s\n"
+"\n"
+
+msgid "Open anyway? Project will be modified."
+msgstr "Avataanko se silti? Projektia muokataan."
+
 msgid "Remove %d projects from the list?"
 msgstr "Poista %d projektia listasta?"
 
@@ -7383,6 +7700,24 @@ msgid ""
 msgstr ""
 "Poista kaikki puuttuvat projektit listalta?\n"
 "Projektikansioiden sisältöjä ei muuteta."
+
+msgid "GDExtension addons"
+msgstr "GDExtension-lisäosat"
+
+msgid "Automatic scene restoring"
+msgstr "Kohtausten automaattinen palautus"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"Tämä tila on tarkoitettu vain perusmuokkauksiin vianetsinnässä, joten "
+"projektia ei voi suorittaa tässä tilassa. Projekti kannattaa varmuuskopioida "
+"ennen jatkamista."
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "Muokataanko projektia palautustilassa?"
 
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
@@ -7416,6 +7751,9 @@ msgstr ""
 "Suodattaaksesi projektit nimen ja koko polun mukaan, haussa tulee olla mukana "
 "vähintään yksi `/` merkki."
 
+msgid "Tags"
+msgstr "Tunnisteet"
+
 msgid "Edit Project"
 msgstr "Muokkaa projektia"
 
@@ -7424,6 +7762,16 @@ msgstr "Poista projekti"
 
 msgid "Remove Missing"
 msgstr "Poista puuttuva"
+
+msgid "Donate"
+msgstr "Lahjoita"
+
+msgid ""
+"Asset Store not available (due to using Web editor, or because SSL support "
+"disabled)."
+msgstr ""
+"Resurssikirjasto ei ole käytettävissä (web-muokkaimen käytön vuoksi tai koska "
+"SSL-tuki on poistettu käytöstä)."
 
 msgid "Select a Folder to Scan"
 msgstr "Valitse tutkittava kansio"
@@ -7434,8 +7782,29 @@ msgstr "Poista kaikki"
 msgid "Error"
 msgstr "Virhe"
 
+msgid "All Tags"
+msgstr "Kaikki tunnisteet"
+
+msgid "Click tag to add it to the project."
+msgstr "Lisää tunniste projektiin napsauttamalla sitä."
+
 msgid "Create New Tag"
-msgstr "Luo Uusi Tagi"
+msgstr "Luo uusi tunniste"
+
+msgid "Tags are capitalized automatically when displayed."
+msgstr "Tunnisteet muutetaan automaattisesti isokirjainalkuisiksi näytettäessä."
+
+msgid "New Tag Name"
+msgstr "Uuden tunnisteen nimi"
+
+msgid "example_tag (will display as Example Tag)"
+msgstr "esimerkki_tunnisteesta (näytetään muodossa Esimerkki Tunnisteesta)"
+
+msgid "Create Tag"
+msgstr "Luo tunniste"
+
+msgid "Project Tag: %s"
+msgstr "Projektin tunniste: %s"
 
 msgid "Restart Now"
 msgstr "Käynnistä uudelleen nyt"
@@ -7446,11 +7815,72 @@ msgstr "Kieli"
 msgid "Style"
 msgstr "Tyyli"
 
+msgid "Custom preset can be further configured in the editor."
+msgstr "Mukautettuja esiasetuksia voi säätää tarkemmin muokkaimessa."
+
+msgid "Check for Updates"
+msgstr "Tarkista päivitykset"
+
+msgid "Directory Naming Convention"
+msgstr "Hakemistojen nimeämiskäytäntö"
+
+msgid "Edit All Settings"
+msgstr "Muokkaa kaikkia asetuksia"
+
+msgid ""
+"Settings changed! The project manager must be restarted for changes to take "
+"effect."
+msgstr ""
+"Asetuksia on muutettu! Projektinhallinta on käynnistettävä uudelleen, jotta "
+"muutokset tulevat voimaan."
+
+msgid "Restart & Upgrade"
+msgstr "Käynnistä uudelleen ja päivitä uuteen versioon"
+
+msgid "Updating Project Scenes"
+msgstr "Päivitetään projektin kohtauksia"
+
+msgid "Re-saving scene:"
+msgstr "Tallennetaan kohtausta uudelleen:"
+
+msgid "Updating Project Resources"
+msgstr "Päivitetään projektin resursseja"
+
+msgid "Re-saving resource:"
+msgstr "Resurssia tallennetaan uudelleen:"
+
+msgid "Run the project's main scene."
+msgstr "Käynnistä projektin pääkohtaus."
+
 msgid "Play a custom scene."
 msgstr "Toista mukautettu kohtaus."
 
+msgid "Reload the played scene that was being edited."
+msgstr "Lataa toistettu muokattava kohtaus uudelleen."
+
+msgid "Failed to run the project because the project.godot file is missing."
+msgstr ""
+"Projektin suorittaminen epäonnistui, koska project.godot-tiedosto puuttuu."
+
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr ""
+"Palautustila on käytössä. Voit suorittaa projektin poistamalla sen käytöstä."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Automaattinen käynnistys on käytössä seuraaville profiloijille, ja tämä voi "
+"vaikuttaa suorituskykyyn:"
+
 msgid "Network Profiler"
 msgstr "Verkkoprofiloija"
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Poista palautustila käytöstä ja lataa projekti uudelleen."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "Palautustila on käytössä. Näytä lisätietoja napsauttamalla."
 
 msgid "Pause the running project's execution for debugging."
 msgstr "Pysäytä projektin suorittaminen virheenkorjausta varten."
@@ -7465,10 +7895,22 @@ msgid "Stop Running Project"
 msgstr "Lopeta Ajossa Oleva Projekti"
 
 msgid "Run Current Scene"
-msgstr "Aja Nykyinen Kohtaus"
+msgstr "Suorita nykyinen kohtaus"
+
+msgid "Run Scene in Regular Mode"
+msgstr "Suorita kohtaus normaalitilassa"
+
+msgid "Run Scene in XR Mode"
+msgstr "Suorita kohtaus XR-tilassa"
 
 msgid "Run Specific Scene"
-msgstr "Aja Tietty Kohtaus"
+msgstr "Suorita tietty kohtaus"
+
+msgid "Run in Regular Mode"
+msgstr "Suorita normaalitilassa"
+
+msgid "Run in XR Mode"
+msgstr "Suorita XR-tilassa"
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -7479,14 +7921,110 @@ msgstr ""
 "Ole hyvä ja lisää ajettava esiasetus Vienti-valikosta tai määrittele olemassa "
 "oleva esiasetus ajettavaksi."
 
+msgid "Deploy to First Device in List"
+msgstr "Käytä luettelon ensimmäiseen laitteeseen"
+
+msgid "Deploy to Second Device in List"
+msgstr "Käytä luettelon toiseen laitteeseen"
+
+msgid "Deploy to Third Device in List"
+msgstr "Käytä luettelon kolmanteen laitteeseen"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Käytä luettelon neljänteen laitteeseen"
+
 msgid "Project Run"
-msgstr "Aja Projekti"
+msgstr "Projektin suorittaminen"
+
+msgid "Suspend/Resume Embedded Project"
+msgstr "Keskeytä/jatka sulautettua projektia"
+
+msgid "Next Frame"
+msgstr "Seuraava ruutu"
+
+msgid "Window Dynamic Range"
+msgstr "Ikkunan dynaaminen alue"
+
+msgid "Game starting..."
+msgstr "Käynnistetään peliä..."
+
+msgid "Press play to start the game."
+msgstr "Käynnistä peli painamalla toistopainiketta."
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid ""
+"Window size: %s\n"
+"Mode: %s\n"
+"Maximum linear value: %.2f%s"
+msgstr ""
+"Ikkunan koko: %s\n"
+"Tila: %s\n"
+"Suurin sallittu lineaarinen arvo: %.2f%s"
+
+msgid "SDR"
+msgstr "SDR"
+
+msgid ""
+"\n"
+"Reference luminance: %.0f nits\n"
+"Maximum luminance: %.0f nits"
+msgstr ""
+"\n"
+"Viiteluminanssi: %.0f nits\n"
+"Enimmäisluminanssi: %.0f nits"
+
+msgid "Unmute game audio."
+msgstr "Poista pelin äänten mykistys."
+
+msgid "Mute game audio."
+msgstr "Mykistä pelin äänet."
+
+msgid "Display server does not support HDR output."
+msgstr "Näyttöpalvelin ei tue HDR-tuotoksia."
+
+msgid "Renderer does not support HDR output."
+msgstr "Renderöijä ei tue HDR-tuotoksia."
+
+msgid "Suspend"
+msgstr "Keskeytä"
+
+msgid "Change the game speed."
+msgstr "Muuta pelin nopeutta"
+
+msgid "Speed State"
+msgstr "Nopeuden tila"
+
+msgid "Reset Speed"
+msgstr "Palauta nopeus"
+
+msgid "Reset 2D Camera"
+msgstr "Palauta 2D-kamera"
+
+msgid "Reset 3D Camera"
+msgstr "Palauta 3D-kamera"
+
+msgid "Game Window Options"
+msgstr "Peli-ikkunan asetukset"
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Säilytä sulautetun pelin kuvasuhde."
+
+msgid "Stretch to Fit"
+msgstr "Venytä sopimaan"
 
 msgid "Clear All"
 msgstr "Tyhjennä kaikki"
 
 msgid "Run Instances"
 msgstr "Suorita ilmentymät"
+
+msgid "Comma-separated tags, example: demo, steam, event"
+msgstr "Pilkuin erotetut tunnisteet, esimerkiksi: demo, Steam, tapahtuma"
+
+msgid "Launch Arguments"
+msgstr "Käynnistä argumentit"
 
 msgid "Create Polygon"
 msgstr "Luo polygoni"
@@ -7500,6 +8038,9 @@ msgstr ""
 "Vasen hiirenkorva: Siirrä pistettä\n"
 "Oikea hiirenkorva: Poista piste"
 
+msgid "Move center of gravity to geometric center."
+msgstr "Siirrä painopiste geometriseen keskustaan."
+
 msgid "Edit Polygon"
 msgstr "Muokkaa polygonia"
 
@@ -7511,6 +8052,15 @@ msgstr "Muokkaa polygonia (poista piste)"
 
 msgid "Remove Polygon And Point"
 msgstr "Poista polygoni ja piste"
+
+msgid "Snap Camera2D Limits to the Viewport"
+msgstr "Kohdista Camera2D:n rajat näyttöruutuun"
+
+msgid "Camera2D"
+msgstr "Camera2D"
+
+msgid "Snap the Limits to the Viewport"
+msgstr "Kohdista rajat näyttöruutuun"
 
 msgid "Create Occluder Polygon"
 msgstr "Luo peittopolygoni"
@@ -7529,6 +8079,12 @@ msgstr "Reunapikselit"
 
 msgid "Centered"
 msgstr "Keskitetty"
+
+msgid "Failed to convert mask texture to RGBA8."
+msgstr "Maskin tekstuurin muunto RGBA8:aan epäonnistui."
+
+msgid "Mask texture has an invalid size."
+msgstr "Maskin tekstuurin koko on virheellinen."
 
 msgid "Generation Time (sec):"
 msgstr "Luontiaika (s):"
@@ -7665,6 +8221,9 @@ msgstr "Maalaa painot tietyllä voimakkuudella."
 msgid "Unpaint weights with specified intensity."
 msgstr "Poista painojen maalaus tietyllä voimakkuudella."
 
+msgid "Strength"
+msgstr "Voimakkuus"
+
 msgid "Radius:"
 msgstr "Säde:"
 
@@ -7709,6 +8268,16 @@ msgstr "Ruudukon Y-välistys:"
 
 msgid "Sync Bones to Polygon"
 msgstr "Synkkaa luut polygoniin"
+
+msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Muokattuja ominaisuuksia käytetään uusiin maalattuihin instansseihin. Ne "
+"tallennetaan paikallisesti nykyiseen kohtaukseen."
+
+msgid "Allow Overlapping"
+msgstr "Salli päällekkäisyydet"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Tällä luurangolla ei ole luita, luo joitakin Bone2D alisolmuja."
@@ -7782,6 +8351,9 @@ msgstr "Päivitä esikatselu"
 msgid "Settings:"
 msgstr "Asetukset:"
 
+msgid "%s (ID: %d)"
+msgstr "%s (tunnus: %d)"
+
 msgid "Next Line After Column"
 msgstr "Seuraa Rivi Sarakkeen Jälkeen"
 
@@ -7809,8 +8381,25 @@ msgstr "Tartu ruudukkoon"
 msgid "Polygon %d"
 msgstr "Polygonit %d"
 
+msgid "Linear Velocity"
+msgstr "Lineaarinen nopeus"
+
+msgid "No terrains"
+msgstr "Ei maastoja"
+
+msgid "No terrain"
+msgstr "Ei maastoa"
+
 msgid "Index: %d"
 msgstr "Indeksi: %d"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr ""
+"Vaihtoehtoisesti voit poimia laatan pitämällä %s-painiketta painettuna muiden "
+"työkalujen kanssa."
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "Vaihtoehtoisesti voit poistaa laattoja RMB:llä."
 
 msgid "Place Random Tile"
 msgstr "Aseta Satunnainen Laatta"
@@ -7821,8 +8410,67 @@ msgstr "Hajonta:"
 msgid "Tiles"
 msgstr "Laatat"
 
+msgid "Patterns"
+msgstr "Kuviot"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Maastosetti %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Yhdistämistila: maalaa maaston ja yhdistää sen sitten samaa maastoa "
+"käyttäviin ympärillä oleviin laattoihin."
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Polkutila: maalaa maaston ja yhdistää sen sitten samalla vedolla maalattuun "
+"edelliseen laattaan."
+
+msgid "Terrains"
+msgstr "Maastot"
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "Valitussa TileMapissa ei ole muokattavia kerroksia."
+
+msgid "The edited layer is disabled or invisible"
+msgstr "Muokattu kerros on poistettu käytöstä tai näkymätön"
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Open TileMap Dock"
+msgstr "Avaa TileMap-telakka"
+
+msgid "Select Next Tile Map Layer"
+msgstr "Valitse seuraava TileMap-kerros"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Valitse edellinen TileMap-kerros"
+
+msgid "TileMap Layers"
+msgstr "TileMap-kerrokset"
+
+msgid "Select previous layer"
+msgstr "Valitse edellinen kerros"
+
+msgid "Select next layer"
+msgstr "Valitse seuraava kerros"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "Valitse kaikki kohtauksen TileMap-kerrokset"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Korosta valittu TileMap-kerros"
+
 msgid "Toggle grid visibility."
-msgstr "Aseta ruudukon näkyvyys."
+msgstr "Vaihda ruudukon näkyvyyttä."
+
+msgid "Advanced settings."
+msgstr "Lisäasetukset."
 
 msgid "From Coords"
 msgstr "Koordinaateista"
@@ -7836,14 +8484,17 @@ msgstr "Atlas"
 msgid "Occlusion Layer %d"
 msgstr "Okkluusiokerros %d"
 
+msgid "Probability"
+msgstr "Todennäköisyys"
+
 msgid "Physics"
 msgstr "Fysiikka"
 
 msgid "Physics Layer %d"
-msgstr "Fysiikka Kerros %d"
+msgstr "Fysiikkakerros %d"
 
 msgid "No physics layers"
-msgstr "Ei fysiikka kerroksia"
+msgstr "Ei fysiikkakerroksia"
 
 msgid "Navigation"
 msgstr "Navigointi"
@@ -7853,6 +8504,27 @@ msgstr "Navigointi Kerros %d"
 
 msgid "Custom Data %d"
 msgstr "Mukautettu Data %d"
+
+msgid "Select a property editor"
+msgstr "Valitse ominaisuusmuokkain"
+
+msgid "Create tiles"
+msgstr "Luo laattoja"
+
+msgid "Remove tiles"
+msgstr "Poista laattoja"
+
+msgid "Move a tile"
+msgstr "Siirrä laattaa"
+
+msgid "Resize a tile"
+msgstr "Muuta laatan kokoa"
+
+msgid "Remove tile"
+msgstr "Poista laatta"
+
+msgid "Create tile alternatives"
+msgstr "Luo vaihtoehtoisia laattoja"
 
 msgid "Select tiles."
 msgstr "Valitse laatat."
@@ -10079,6 +10751,9 @@ msgstr "Skriptin polku/nimi kelpaa."
 
 msgid "Will create a new script file."
 msgstr "Luo uuden skriptitiedoston."
+
+msgid "Template"
+msgstr "Malli"
 
 msgid "Built-in Script:"
 msgstr "Sisäänrakennettu skripti:"

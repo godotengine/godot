@@ -30,13 +30,15 @@
 # M1ST3RWiCK <suwanruch.s@gmail.com>, 2026.
 # Krissaphon Natpaphatpisit <krissaphonfocus@gmail.com>, 2026.
 # MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# QonDonion <dolchanat.a@gmail.com>, 2026.
+# Tony Kate <tonyfreeplay@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-07 03:32+0000\n"
-"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
+"PO-Revision-Date: 2026-10-20 23:29+0000\n"
+"Last-Translator: Tony Kate <tonyfreeplay@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -44,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "ตกลง"
@@ -53,7 +55,7 @@ msgid "Failed"
 msgstr "ผิดพลาด"
 
 msgid "Unavailable"
-msgstr "ไม่มีคำอธิบายสำหรับ"
+msgstr "ไม่มีคำอธิบาย"
 
 msgid "Unconfigured"
 msgstr "ไม่ได้กำหนดค่า"
@@ -65,7 +67,7 @@ msgid "Parameter out of range"
 msgstr "พารามิเตอร์อยู่นอกช่วงที่กำหนด"
 
 msgid "Out of memory"
-msgstr "หน่วยความจำไม่เพียงพอ"
+msgstr "ความจำไม่เพียงพอ"
 
 msgid "File not found"
 msgstr "ไม่พบไฟล์"
@@ -714,7 +716,7 @@ msgid "Erase points."
 msgstr "ลบจุด"
 
 msgid "Enable snap and show grid."
-msgstr "เปิกการใช้งานการเข้าหาแลแสดงเส้นกริด"
+msgstr "เปิดใช้งานสแนปและแสดงเส้นกริด"
 
 msgid "Sync"
 msgstr "ซิงก์"
@@ -1654,6 +1656,9 @@ msgstr "ข้าม"
 msgid "Volume"
 msgstr "ระดับเสียง"
 
+msgid "Send"
+msgstr "ส่ง"
+
 msgid "Reset Volume"
 msgstr "รีเซ็ตระดับเสียง"
 
@@ -2059,6 +2064,9 @@ msgstr "รายละเอียดของคุณสมบัติ"
 msgid "(value)"
 msgstr "(ค่า)"
 
+msgid "There is currently no description for this property."
+msgstr "ยังไม่มีคำอธิบายสำหรับคุณสมบัตินี้"
+
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -2066,6 +2074,9 @@ msgstr "คุณสมบัตินี้ยังไม่มีคำอธ
 
 msgid "Editor"
 msgstr "ตัวแก้ไข"
+
+msgid "Click to copy."
+msgstr "คลิกเพื่อคัดลอก"
 
 msgid "Open"
 msgstr "เปิด"
@@ -2150,6 +2161,9 @@ msgstr "%s - Godot Engine"
 
 msgid "Dock Position"
 msgstr "ตำแหน่งแผง"
+
+msgid "Link to: %s"
+msgstr "ลิงก์ไปที่:%s"
 
 msgid "Favorites"
 msgstr "ที่ชื่นชอบ"
@@ -2238,6 +2252,36 @@ msgstr "ทรัพยากรใหม่..."
 msgid "Copy Path"
 msgstr "คัดลอกตำแหน่ง"
 
+msgid "Open in External Program"
+msgstr "เปิดในโปรแกรมภายนอก"
+
+msgid "Red"
+msgstr "แดง"
+
+msgid "Orange"
+msgstr "ส้ม"
+
+msgid "Yellow"
+msgstr "เหลือง"
+
+msgid "Green"
+msgstr "เขียว"
+
+msgid "Blue"
+msgstr "น้ำเงิน"
+
+msgid "Purple"
+msgstr "ม่วง"
+
+msgid "Pink"
+msgstr "ชมพู"
+
+msgid "Gray"
+msgstr "เทา"
+
+msgid "Directories"
+msgstr "โฟลเดอร์"
+
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
@@ -2263,6 +2307,9 @@ msgstr "ลบออกจากกลุ่ม"
 msgid "Rename Group"
 msgstr "เปลี่ยนชื่อกลุ่ม"
 
+msgid "Remove Group"
+msgstr "ลบกลุ่ม"
+
 msgid "Name:"
 msgstr "ชื่อ:"
 
@@ -2271,6 +2318,9 @@ msgstr "รายละเอียด:"
 
 msgid "Rename"
 msgstr "เปลี่ยนชื่อ"
+
+msgid "Filter Groups"
+msgstr "กรองกลุ่ม"
 
 msgid "Scene"
 msgstr "ฉาก"

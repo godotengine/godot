@@ -2296,9 +2296,6 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "Последна"
 
-msgid "Template"
-msgstr "Шаблон"
-
 msgid "All"
 msgstr "Всички"
 
@@ -5454,6 +5451,9 @@ msgstr "Име на Родител"
 
 msgid "Use Template"
 msgstr "Използвай Шаблон"
+
+msgid "Template"
+msgstr "Шаблон"
 
 msgid "Built-in Script:"
 msgstr "Вграден скрипт:"

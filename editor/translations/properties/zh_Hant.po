@@ -59,7 +59,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-04 12:17+0000\n"
+"PO-Revision-Date: 2026-08-31 09:51+0000\n"
 "Last-Translator: 李奕寯 <eugenelego88@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "應用程式"
@@ -560,7 +560,7 @@ msgid "Print to stdout"
 msgstr "輸出到標準輸出"
 
 msgid "Physics Ticks per Second"
-msgstr "每秒物理週期數"
+msgstr "每秒物理刻"
 
 msgid "Max Physics Steps per Frame"
 msgstr "每影格最大物理反覆運算數"
@@ -3246,7 +3246,7 @@ msgid "Verbose stdout"
 msgstr "詳細標準輸出"
 
 msgid "Physics Interpolation"
-msgstr "物理內插"
+msgstr "物理插值"
 
 msgid "Enable Warnings"
 msgstr "啟用警告"
@@ -4931,6 +4931,21 @@ msgstr "Java SDK 路徑"
 msgid "Android SDK Path"
 msgstr "Android SDK 路徑"
 
+msgid "scrcpy"
+msgstr "scrcpy"
+
+msgid "Virtual Display"
+msgstr "虛擬顯示器"
+
+msgid "No Decorations"
+msgstr "無邊框"
+
+msgid "Local IME"
+msgstr "本機 IME"
+
+msgid "Screen Size"
+msgstr "螢幕規格"
+
 msgid "Force System User"
 msgstr "強制系統使用者"
 
@@ -4946,8 +4961,17 @@ msgstr "遠端除錯使用 Wi-Fi"
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Wi-Fi 遠端除錯主機"
 
+msgid "Splash Screen"
+msgstr "初現畫面"
+
+msgid "Disable Godot Boot Splash"
+msgstr "停用 Godot 啟動畫面"
+
 msgid "Background Color"
 msgstr "背景顏色"
+
+msgid "Branding Image"
+msgstr "品牌形象"
 
 msgid "Launcher Icons"
 msgstr "啟動器圖示"
@@ -10853,6 +10877,24 @@ msgstr "檔案縮圖"
 msgid "Folder Thumbnail"
 msgstr "資料夾縮圖"
 
+msgid "Menu Copy Path"
+msgstr "選單複製路徑"
+
+msgid "Menu Delete"
+msgstr "選單刪除"
+
+msgid "Menu New Folder"
+msgstr "選單新增資料夾"
+
+msgid "Menu Refresh"
+msgstr "選單重新整理"
+
+msgid "Menu Show in File Manager"
+msgstr "選單顯示於檔案管理器"
+
+msgid "Menu Open Bundle"
+msgstr "選單開啟套組"
+
 msgid "Folder Icon Color"
 msgstr "資料夾圖示顏色"
 
@@ -10876,6 +10918,9 @@ msgstr "子功能表"
 
 msgid "Submenu Mirrored"
 msgstr "子功能表鏡像"
+
+msgid "Search"
+msgstr "搜尋"
 
 msgid "Font Separator"
 msgstr "分隔符號字體"

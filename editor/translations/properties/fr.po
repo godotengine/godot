@@ -163,13 +163,14 @@
 # "Alyx.dev" <alyxdev@ik.me>, 2026.
 # Anon_Ally <lang_open_project@bridge2open.org>, 2026.
 # phylaine MacKendal <phylaine@mailo.com>, 2026.
+# Guy Bachelier <guy.bachelier@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-29 15:01+0000\n"
-"Last-Translator: phylaine MacKendal <phylaine@mailo.com>\n"
+"PO-Revision-Date: 2026-09-29 16:51+0000\n"
+"Last-Translator: aioshiro <aioshiro57@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -177,7 +178,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "Application"
 msgstr "Application"
@@ -11569,6 +11570,24 @@ msgstr "Fichier Vignette"
 
 msgid "Folder Thumbnail"
 msgstr "Dossier Vignette"
+
+msgid "Menu Copy Path"
+msgstr "Menu Copier Chemin"
+
+msgid "Menu Delete"
+msgstr "Menu Supprimer"
+
+msgid "Menu New Folder"
+msgstr "Menu Nouveau Dossier"
+
+msgid "Menu Refresh"
+msgstr "Menu Actualiser"
+
+msgid "Menu Show in File Manager"
+msgstr "Menu Voir dans le gestionnaire de fichiers"
+
+msgid "Menu Open Bundle"
+msgstr "Menu Ouvrir le lot"
 
 msgid "Folder Icon Color"
 msgstr "Couleur d'icône de dossier"

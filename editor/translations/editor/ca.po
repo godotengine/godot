@@ -2,7 +2,7 @@
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
-# BennyBeat <bennybeat@gmail.com>, 2017.
+# BennyBeat <bennybeat@gmail.com>, 2017, 2026.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018, 2020, 2025.
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
@@ -17,7 +17,7 @@
 # Joel Garcia Cascalló <jocsencat@gmail.com>, 2021.
 # DFC <damiafluixacanals28@gmail.com>, 2021.
 # Roger VC <rogervilarasau@gmail.com>, 2022, 2025.
-# Jordi Borràs <jborras@centrekepler.com>, 2023.
+# Jordi Borràs <jborras@centrekepler.com>, 2023, 2026.
 # Marc GB <marc.giralt.butjosa@gmail.com>, 2023.
 # Ander Romero <anderromeroaldana@gmail.com>, 2023.
 # Francesc Arpi Roca <francesc.arpi@gmail.com>, 2024.
@@ -25,7 +25,7 @@
 # pc <polct50@users.noreply.hosted.weblate.org>, 2024.
 # sprin <graham32@tutamail.com>, 2024.
 # Azor Carreras Alcaraz <azorcarreras@gmail.com>, 2024.
-# Alberto Blanco Celdrán <flaberto.abc@gmail.com>, 2024, 2025.
+# Alberto Blanco Celdrán <flaberto.abc@gmail.com>, 2024, 2025, 2026.
 # Luna Moreno <akaluna99@gmail.com>, 2024.
 # Lukas Tenbrink <lukas.tenbrink@gmail.com>, 2025.
 # Alvaro <alvaro.garcia-bamala@epitech.eu>, 2025.
@@ -39,13 +39,14 @@
 # "Drussentis@gmail.com" <drussentis@gmail.com>, 2026.
 # Júlia Rosell Saldaña <contacte@juliars.cat>, 2026.
 # Miguel Rodriguez <miguelrod31082013@gmail.com>, 2026.
+# hazel <davidhuertasem08@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-08 04:01+0000\n"
-"Last-Translator: Miguel Rodriguez <miguelrod31082013@gmail.com>\n"
+"PO-Revision-Date: 2026-10-01 01:17+0000\n"
+"Last-Translator: Jordi Borràs <jborras@centrekepler.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -53,7 +54,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "OK"
 msgstr "D'acord"
@@ -92,7 +93,7 @@ msgid "File already in use"
 msgstr "Fitxer ja en ús"
 
 msgid "Can't open file"
-msgstr "No s'ha pogut obrir el fitxer:"
+msgstr "No s'ha pogut obrir el fitxer"
 
 msgid "Can't write file"
 msgstr "No es pot escriure al fitxer"
@@ -149,7 +150,7 @@ msgid "Invalid data"
 msgstr "Dades invàlides"
 
 msgid "Invalid parameter"
-msgstr "Paràmetre no vàlid"
+msgstr "Paràmetre invàlid"
 
 msgid "Already exists"
 msgstr "Ja existeix"
@@ -353,7 +354,7 @@ msgid "canceled"
 msgstr "cancel·lat"
 
 msgid "touched"
-msgstr "Tocat"
+msgstr "tocat"
 
 msgid "released"
 msgstr "deixat anar"
@@ -398,10 +399,10 @@ msgid "Close Dialog"
 msgstr "Tanca el diàleg"
 
 msgid "Focus Next"
-msgstr "Focus Següent"
+msgstr "Enfoca següent"
 
 msgid "Focus Prev"
-msgstr "Focus Previ"
+msgstr "Enfoca previ"
 
 msgid "Left"
 msgstr "Esquerra"
@@ -416,10 +417,10 @@ msgid "Down"
 msgstr "Avall"
 
 msgid "Page Up"
-msgstr "Pàgina Amunt"
+msgstr "Pàgina amunt"
 
 msgid "Page Down"
-msgstr "Pàgina Avall"
+msgstr "Pàgina avall"
 
 msgid "Home"
 msgstr "Inici"
@@ -446,10 +447,10 @@ msgid "Redo"
 msgstr "Refés"
 
 msgid "Completion Query"
-msgstr "Consulta de Compleció"
+msgstr "Consulta de compleció"
 
 msgid "New Line"
-msgstr "Nova Línia"
+msgstr "Nova línia"
 
 msgid "New Blank Line"
 msgstr "Nova línia en blanc"
@@ -476,13 +477,13 @@ msgid "Delete"
 msgstr "Esborra"
 
 msgid "Delete Word"
-msgstr "Elimina una Paraula"
+msgstr "Elimina paraula"
 
 msgid "Delete all to Right"
 msgstr "Elimina-ho tot a la dreta"
 
 msgid "Caret Left"
-msgstr "Cursor cap a l'Esquerra"
+msgstr "Cursor cap a l'esquerra"
 
 msgid "Caret Word Left"
 msgstr "Cursor una paraula cap a l'esquerra"
@@ -530,7 +531,7 @@ msgid "Scroll Down"
 msgstr "Enrotlla-ho avall"
 
 msgid "Select All"
-msgstr "Selecciona-ho Tot"
+msgstr "Selecciona-ho tot"
 
 msgid "Select Word Under Caret"
 msgstr "Selecciona la paraula sota el cursor"
@@ -572,7 +573,7 @@ msgid "Show Hidden"
 msgstr "Mostra els Fitxers Ocults"
 
 msgid "Find"
-msgstr "Cercar"
+msgstr "Cerca"
 
 msgid "Focus Path"
 msgstr "Enfoca Camí"
@@ -722,7 +723,7 @@ msgid "Add %s"
 msgstr "Afegeix %s"
 
 msgid "Load..."
-msgstr "Carregar..."
+msgstr "Carrega..."
 
 msgid "Move BlendSpace1D Node Point"
 msgstr "Moure Punt BlendSpace1D"
@@ -731,7 +732,7 @@ msgid "Change BlendSpace1D Config"
 msgstr "Canvia la configuració de BlendSpace1D"
 
 msgid "Change BlendSpace1D Labels"
-msgstr "Canviar Etiquetes de BlendSpace1D"
+msgstr "Canvia etiquetes de BlendSpace1D"
 
 msgid "This type of node can't be used. Only animation nodes are allowed."
 msgstr ""
@@ -794,7 +795,7 @@ msgid "Grid Step"
 msgstr "Pas de graella"
 
 msgid "Sync"
-msgstr "Sincronitzar"
+msgstr "Sincronitza"
 
 msgid "None"
 msgstr "Cap"
@@ -869,7 +870,7 @@ msgid "Change BlendSpace2D Config"
 msgstr "Canvia la configuració de BlendSpace2D"
 
 msgid "Change BlendSpace2D Labels"
-msgstr "Canviar Etiquetes BlendSpace2D"
+msgstr "Canvia etiquetes de BlendSpace2D"
 
 msgid "Remove BlendSpace2D Point"
 msgstr "Eliminar Punt BlendSpace2D"
@@ -965,7 +966,7 @@ msgid "Toggle Filter On/Off"
 msgstr "Commutar Filtre On/Off"
 
 msgid "Change Filter"
-msgstr "Canviar Filtre"
+msgstr "Canvia el filtre"
 
 msgid "Fill Selected Filter Children"
 msgstr "Ompliu els fills del filtre seleccionat"
@@ -1255,7 +1256,7 @@ msgid "Create new empty animation library."
 msgstr "Crea una nova biblioteca d'animacions buida."
 
 msgid "Load Library"
-msgstr "Carregar biblioteca"
+msgstr "Carrega biblioteca"
 
 msgid "Load animation library from disk."
 msgstr "Carregueu la biblioteca d'animacions des del disc."
@@ -1360,7 +1361,7 @@ msgid "Display list of animations in player."
 msgstr "Mostrar la llista d'animacions en el reproductor."
 
 msgid "Autoplay on Load"
-msgstr "Reproducció Automàtica en Carregar"
+msgstr "Reproducció automàtica en carregar"
 
 msgid "Enable Onion Skinning"
 msgstr "Activa l'Efecte Paper Ceba"
@@ -1405,7 +1406,7 @@ msgid "Animation Name:"
 msgstr "Nom de l'Animació:"
 
 msgid "Close"
-msgstr "Tancar"
+msgstr "Tanca"
 
 msgid "Error!"
 msgstr "Error !"
@@ -1506,13 +1507,13 @@ msgid "Animation Change Transition"
 msgstr "Modifica la Transició de l'Animació"
 
 msgid "Animation Change Position3D"
-msgstr "Animació canviar posició3D"
+msgstr "Animació Canvia Position3D"
 
 msgid "Animation Change Rotation3D"
-msgstr "Canviar l'animació de Rotació3D"
+msgstr "Animació Canvia Rotation3D"
 
 msgid "Animation Change Scale3D"
-msgstr "Canviar l'escala 3D a l'animació"
+msgstr "Animació Canvia Scale3D"
 
 msgid "Animation Change Keyframe Value"
 msgstr "Modifica el valor del fotograma clau de l'animació"
@@ -1524,19 +1525,19 @@ msgid "Animation Multi Change Transition"
 msgstr "Modifica diverses transicions d'animació"
 
 msgid "Animation Multi Change Position3D"
-msgstr "Canviar diverses posicions 3D a l'animació"
+msgstr "Animació Multicanvia Position3D"
 
 msgid "Animation Multi Change Rotation3D"
-msgstr "Canviar diverses rotacions 3D a l'animació"
+msgstr "Animació Multicanvia Rotation3D"
 
 msgid "Animation Multi Change Scale3D"
-msgstr "Canviar diverses escales 3D a l'animació"
+msgstr "Animació Multicanvia Scale3D"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Modifica el valor de diversos fotogrames clau de l'animació"
 
 msgid "Animation Multi Change Call"
-msgstr "Canviar diverses crides d'animació"
+msgstr "Animació Multicanvia Crida"
 
 msgid "Change Animation Length"
 msgstr "Canvia la durada de l'Animació"
@@ -2316,7 +2317,7 @@ msgid "Insert Marker..."
 msgstr "Insereix Marcador…"
 
 msgid "Rename Marker"
-msgstr "Canviar el nom del Marcador"
+msgstr "Canvia el nom del Marcador"
 
 msgid "Delete Marker(s)"
 msgstr "Eliminar Marcador(s)"
@@ -2367,10 +2368,10 @@ msgid "Add Audio Track Clip"
 msgstr "Afegir Clip de Pista d'Àudio"
 
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Canviar Desplaçament d'Inici de Clip de Pista d'Àudio"
+msgstr "Canvia desplaçament d'inici de clip de pista d'àudio"
 
 msgid "Change Audio Track Clip End Offset"
-msgstr "Canviar Desplaçament de Fi del Clip de Pista d'Àudio"
+msgstr "Canviar desplaçament de fi del clip de pista d'àudio"
 
 msgid "%s at "
 msgstr "%s a "
@@ -2436,7 +2437,7 @@ msgid "Downloading..."
 msgstr "Descarregant..."
 
 msgid "Install..."
-msgstr "Instal·lar..."
+msgstr "Instal·la..."
 
 msgid "Version:"
 msgstr "Versió:"
@@ -2530,7 +2531,7 @@ msgid "Asset Download Error:"
 msgstr "Error en la baixada de l'Actiu:"
 
 msgid "Ready to install."
-msgstr "A punt per instal·lar."
+msgstr "Preparat per instal·lar."
 
 msgid "Downloading (%s / %s)..."
 msgstr "Descarregant (%s / %s)..."
@@ -2606,9 +2607,6 @@ msgstr "Anar en línia"
 msgid "Failed to verify repository."
 msgstr "No s'ha pogut verificar el repositori."
 
-msgid "Template"
-msgstr "Plantilla"
-
 msgid "All"
 msgstr "Tot"
 
@@ -2677,7 +2675,7 @@ msgid "Ignore the root directory when extracting files."
 msgstr "Ignorar el directori arrel quan s'extreguin arxius."
 
 msgid "Select Install Folder"
-msgstr "Seleccionar carpeta d'instal·lació"
+msgstr "Selecciona carpeta d'instal·lació"
 
 msgid "Uncompressing Assets"
 msgstr "Descomprimint Recursos"
@@ -2703,7 +2701,7 @@ msgstr ""
 "instal·lar."
 
 msgid "Change Install Folder"
-msgstr "Canviar carpeta d'instal·lació"
+msgstr "Canvia carpeta d'instal·lació"
 
 msgid ""
 "Change the folder where the contents of the asset are going to be installed."
@@ -2731,7 +2729,7 @@ msgid "Destination Files"
 msgstr "Fitxers de destinació"
 
 msgid "Configure Asset Before Installing"
-msgstr "Configurar el recurs abans d'instal·lar-ho"
+msgstr "Configura el recurs abans d'instal·lar-ho"
 
 msgid "Install"
 msgstr "Instal·la"
@@ -2902,10 +2900,10 @@ msgid "Continue"
 msgstr "Continua"
 
 msgid "Debug with External Editor"
-msgstr "Depurar amb un Editor Extern"
+msgstr "Depura amb un editor extern"
 
 msgid "Deploy with Remote Debug"
-msgstr "Desplegar amb Depuració Remota"
+msgstr "Desplega amb depuració remota"
 
 msgid ""
 "When this option is enabled, using one-click deploy will make the executable "
@@ -2993,7 +2991,7 @@ msgstr ""
 "Això és útil per resoldre problemes amb el mode de processador baix."
 
 msgid "Synchronize Scene Changes"
-msgstr "Sincronitzar els Canvis en Escena"
+msgstr "Sincronitza els canvis en l'escena"
 
 msgid ""
 "When this option is enabled, any changes made to the scene in the editor will "
@@ -3007,7 +3005,7 @@ msgstr ""
 "sistema de fitxers en xarxa està activada."
 
 msgid "Synchronize Script Changes"
-msgstr "Sincronitzar els Canvis en Scripts"
+msgstr "Sincronitza els canvis en scripts"
 
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in the "
@@ -3058,7 +3056,7 @@ msgid "Session %d"
 msgstr "Sessió%d"
 
 msgid "Debug"
-msgstr "Depurar"
+msgstr "Depura"
 
 msgid ""
 "Some remote nodes were not selected, as the configured maximum selection is "
@@ -3853,7 +3851,7 @@ msgid "Move Tab Right"
 msgstr "Mou la pestanya a la dreta"
 
 msgid "Make Floating"
-msgstr "Fer flotant"
+msgstr "Fes flotant"
 
 msgid "Link to: %s"
 msgstr "Enllaç a: %s"
@@ -3906,8 +3904,8 @@ msgid ""
 msgstr ""
 "Aquest nom de fitxer comença amb un punt que fa que el fitxer sigui invisible "
 "per a l'editor.\n"
-"Si voleu canviar-li el nom de totes maneres, feu servir el gestor de fitxers "
-"del vostre sistema operatiu."
+"Si vols canviar-li el nom de totes maneres, utilitza el gestor de fitxers del "
+"teu sistema operatiu."
 
 msgid "A file or folder with this name already exists."
 msgstr "Ja existeix un Fitxer o Directori amb aquest nom."
@@ -4003,7 +4001,7 @@ msgid "Scene..."
 msgstr "Escena..."
 
 msgid "Script..."
-msgstr "Guió..."
+msgstr "Script..."
 
 msgid "Resource..."
 msgstr "Recurs..."
@@ -4191,11 +4189,11 @@ msgid ""
 "of extensions in Editor Settings > Docks > FileSystem."
 msgstr ""
 "L'editor no reconeix aquesta extensió de fitxer.\n"
-"Si voleu canviar-li el nom de totes maneres, feu servir el gestor de fitxers "
-"del vostre sistema operatiu.\n"
+"Si vols canviar-li el nom de totes maneres, utilitza el gestor de fitxers del "
+"teu sistema operatiu.\n"
 "Després de canviar el nom a una extensió desconeguda, el fitxer ja no es "
 "mostrarà a l'editor.\n"
-"Perquè l'editor reconegui aquesta extensió de fitxer, afegiu-la a una de les "
+"Perquè l'editor reconegui aquesta extensió de fitxer, afegeix-lo a una de les "
 "llistes d'extensions a Configuració de l'editor > Docks > Sistema de fitxers."
 
 msgid "Open Editor Settings"
@@ -4515,7 +4513,7 @@ msgid "Instantiated scenes can't become root"
 msgstr "Les escenes instanciades no es poden convertir en arrel"
 
 msgid "Make node as Root"
-msgstr "Fer el node com a arrel"
+msgstr "Fes el node com a arrel"
 
 msgid "Delete %d nodes and any children?"
 msgstr "Vols suprimir %d nodes i algun fill?"
@@ -4598,8 +4596,11 @@ msgstr ""
 "editables\" i es tornarà a totes les propietats del node al seu valor "
 "predeterminat."
 
+msgid "Toggle Load as Placeholder"
+msgstr "Carrega com a marcador de posició"
+
 msgid "Make Local"
-msgstr "Fer local"
+msgstr "Fes local"
 
 msgid "Can't toggle unique name for nodes in subscene!"
 msgstr "No es pot canviar el nom únic per als nodes de la subescena!"
@@ -5324,21 +5325,21 @@ msgid "Can't reload a scene that was never saved."
 msgstr "No es pot recarregar una escena mai desada."
 
 msgid "Save & Reload"
-msgstr "Desa i torna a carregar"
+msgstr "Desa i recarrega"
 
 msgid "Save before reloading the scene?"
-msgstr "Desar abans de tornar a carregar l'escena?"
+msgstr "Vols desar abans de recarregar l'escena?"
 
 msgid "Stop running project before reloading the current project?"
 msgstr ""
-"Voleu deixar d'executar el projecte abans de tornar a carregar el projecte "
+"Vols deixar d'executar el projecte abans de tornar a carregar el projecte "
 "actual?"
 
 msgid "Stop & Reload"
 msgstr "Atura i torna a carregar"
 
 msgid "Stop running project before exiting the editor?"
-msgstr "Voleu deixar d'executar el projecte abans de sortir de l'editor?"
+msgstr "Vols deixar d'executar el projecte abans de sortir de l'editor?"
 
 msgid "Stop & Quit"
 msgstr "Atura i surt"
@@ -5347,16 +5348,17 @@ msgid "The export templates are still being downloaded."
 msgstr "Les plantilles d'exportació encara s'estan baixant."
 
 msgid "Save modified resources before reloading?"
-msgstr "Deseu els recursos modificats abans de tornar a carregar?"
+msgstr "Vols desar els recursos modificats abans de tornar a carregar?"
 
 msgid "Save & Quit"
-msgstr "Desar i Sortir"
+msgstr "Desa i surt"
 
 msgid "Save modified resources before closing?"
 msgstr "Deseu els recursos modificats abans de tancar?"
 
 msgid "Save changes to the following scene(s) before reloading?"
-msgstr "Deseu els canvis a les escenes següents abans de tornar a carregar?"
+msgstr ""
+"Vols desar els canvis a les escenes següents abans de tornar a carregar?"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Desar els canvis a les escenes següents abans de sortir?"
@@ -5519,14 +5521,14 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"L'escena seleccionada '%s' no és un fitxer d'escena. Seleccioneu-ne un de "
-"vàlid?\n"
-"Podeu canviar-lo més endavant a \"Configuració del projecte\" a la categoria "
+"L'escena seleccionada '%s' no és un fitxer d'escena. Selecciona un de vàlid?\n"
+"Pots canviar-lo més endavant a \"Configuració del projecte\" a la categoria "
 "\"aplicació\"."
 
 msgid "User data dir '%s' is not valid. Change to a valid one?"
 msgstr ""
-"El directori de dades d'usuari '%s' no és vàlid. Canviar-ne per un de vàlid?"
+"El directori de dades d'usuari '%s' no és vàlid. Vols canviar-lo per un de "
+"vàlid?"
 
 msgid "Cannot run the script because it contains errors, check the output log."
 msgstr ""
@@ -5566,7 +5568,7 @@ msgid "This scene was never saved."
 msgstr "Aquesta escena mai es va salvar."
 
 msgid "Save & Close"
-msgstr "Desar i Tancar"
+msgstr "Desa i tanca"
 
 msgid "Save before closing?"
 msgstr "Desar abans de tancar?"
@@ -5649,7 +5651,7 @@ msgid "Pack Project as ZIP..."
 msgstr "Empaqueta el projecte com a ZIP..."
 
 msgid "Install Android Build Template..."
-msgstr "Instal·lar Plantilla de Compilació d'Android..."
+msgstr "Instal·la plantilla de dompilació d'Android..."
 
 msgid "Open User Data Folder"
 msgstr "Obriu la carpeta de dades d'usuari"
@@ -5678,10 +5680,10 @@ msgid "Open Editor Settings Folder"
 msgstr "Obre el directori de Configuració de l'Editor"
 
 msgid "Manage Editor Features..."
-msgstr "Administrar Característiques de l'Editor..."
+msgstr "Administra característiques de l'editor..."
 
 msgid "Manage Export Templates..."
-msgstr "Administrar Plantilles d'Exportació..."
+msgstr "Administra plantilles d'exportació..."
 
 msgid "Configure FBX Importer..."
 msgstr "Configura l'importador FBX..."
@@ -5763,7 +5765,7 @@ msgid "MeshLibrary..."
 msgstr "Biblioteca de Models (MeshLibrary)..."
 
 msgid "Reload Saved Scene"
-msgstr "Recarregar l'Escena Desada"
+msgstr "Recarrega l'escena desada"
 
 msgid "Close Scene"
 msgstr "Tanca l'Escena"
@@ -5784,7 +5786,7 @@ msgid "Project Settings"
 msgstr "Configuració del projecte"
 
 msgid "Find in Files..."
-msgstr "Cercar en Fitxers..."
+msgstr "Cerca en els fitxers..."
 
 msgid "Export..."
 msgstr "Exporta..."
@@ -5802,10 +5804,10 @@ msgid "Upgrade Project Files..."
 msgstr "Actualitza els fitxers del projecte..."
 
 msgid "Reload Current Project"
-msgstr "Recarregar Projecte Actual"
+msgstr "Recarrega projecte actual"
 
 msgid "Quit to Project List"
-msgstr "Sortir a la Llista de Projectes"
+msgstr "Surt a la llista de projectes"
 
 msgid "Command Palette..."
 msgstr "Paleta d'ordres..."
@@ -5909,7 +5911,7 @@ msgstr ""
 "pertinents."
 
 msgid "Manage Templates"
-msgstr "Administrar Plantilles"
+msgstr "Administra plantilles"
 
 msgid "Install from file"
 msgstr "Instal·la des d'un fitxer"
@@ -5936,7 +5938,7 @@ msgid "What action should be taken?"
 msgstr "Quina acció s'ha de prendre?"
 
 msgid "Reload from disk"
-msgstr "Torneu a carregar des del disc"
+msgstr "Torna a carregar des del disc"
 
 msgid "Ignore external changes"
 msgstr "Ignorar els canvis externs"
@@ -6540,10 +6542,10 @@ msgid "Downloading templates..."
 msgstr "S'estan baixant plantilles..."
 
 msgid "Install All Templates"
-msgstr "Instal·leu totes les plantilles"
+msgstr "Instal·la totes les plantilles"
 
 msgid "Install Selected Templates"
-msgstr "Instal·leu les plantilles seleccionades"
+msgstr "Instal·la les plantilles seleccionades"
 
 msgid "Download not available in offline mode."
 msgstr "La baixada no està disponible en mode fora de línia."
@@ -6586,7 +6588,7 @@ msgid "Export Template Manager"
 msgstr "Gestor de Plantilles d'Exportació"
 
 msgid "Download from:"
-msgstr "Descarregar des de:"
+msgstr "Descarrega des de:"
 
 msgid "Mirror"
 msgstr "Mirall"
@@ -6595,7 +6597,7 @@ msgid "Open in Web Browser"
 msgstr "Obre al navegador web"
 
 msgid "Install from a TPZ file."
-msgstr "Instal·leu des d'un fitxer TPZ."
+msgstr "Instal·la des d'un fitxer TPZ."
 
 msgid "Select Template File"
 msgstr "Seleccioneu un Fitxer de Plantilla"
@@ -7254,7 +7256,7 @@ msgid "Indentation"
 msgstr "Sagnat"
 
 msgid "Change Type of \"%s\""
-msgstr "Canviar el Tipus de \"%s\""
+msgstr "Canviar el tipus de \"%s\""
 
 msgid "Change"
 msgstr "Modifica"
@@ -7965,7 +7967,7 @@ msgstr ""
 "Baixeu l'eina necessària i proporcioneu un camí vàlid al binari:"
 
 msgid "Click this link to download FBX2glTF"
-msgstr "Feu clic a aquest enllaç per descarregar FBX2glTF"
+msgstr "Fes clic a aquest enllaç per descarregar FBX2glTF"
 
 msgid "Browse"
 msgstr "Navega"
@@ -8028,7 +8030,7 @@ msgid ""
 "the `editor/import/atlas_max_width` Project Setting to allow a wider texture, "
 "making the result more even in size."
 msgstr ""
-"%s: Textura de l'Atles significativament més gran en un eix (%d), considereu "
+"%s: Textura de l'atles significativament més gran en un eix (%d), considereu "
 "canviar la configuració del projecte `editor/import/atlas_max_width` per "
 "permetre una textura més àmplia, fent que el resultat sigui més uniforme en "
 "mida."
@@ -8557,7 +8559,7 @@ msgid ""
 msgstr ""
 "Nom: %s\n"
 "Camí: %s\n"
-"Guió principal: %s\n"
+"Script principal: %s\n"
 "\n"
 "%s"
 
@@ -8572,7 +8574,7 @@ msgstr ""
 "mentre aquest mode estigui actiu."
 
 msgid "Installed Plugins:"
-msgstr "Connectors Instal·lats:"
+msgstr "Connectors instal·lats:"
 
 msgid "Create New Plugin"
 msgstr "Crea un connector nou"
@@ -8878,7 +8880,7 @@ msgid "Create New Project"
 msgstr "Crea un Projecte nou"
 
 msgid "Install Project:"
-msgstr "Instal·la el Projecte:"
+msgstr "Instal·la el projecte:"
 
 msgid "Duplicate Project"
 msgstr "Projecte duplicat"
@@ -8890,7 +8892,7 @@ msgid "Project Path:"
 msgstr "Camí del Projecte:"
 
 msgid "Project Installation Path:"
-msgstr "Camí d'instal·lació del Projecte:"
+msgstr "Camí d'instal·lació del projecte:"
 
 msgid "Renderer:"
 msgstr "Renderitzador:"
@@ -9290,7 +9292,7 @@ msgid "Scan"
 msgstr "Explora"
 
 msgid "Scan Projects"
-msgstr "Projectes d'escaneig"
+msgstr "Escaneja projectes"
 
 msgid "Loading, please wait..."
 msgstr "S'està carregant, espereu..."
@@ -9517,10 +9519,10 @@ msgid "Play a custom scene."
 msgstr "Reprodueix una escena personalitzada."
 
 msgid "Reload the played scene that was being edited."
-msgstr "Torneu a carregar l'escena reproduïda que s'estava editant."
+msgstr "Recarrega l'escena reproduïda que s'estava editant."
 
 msgid "Reload the played custom scene."
-msgstr "Torneu a carregar l'escena personalitzada reproduïda."
+msgstr "Recarrega l'escena personalitzada reproduïda."
 
 msgid "Reload the played main scene."
 msgstr "Torneu a carregar l'escena principal reproduïda."
@@ -10219,7 +10221,7 @@ msgid ""
 msgstr "La propietat esquelet del Polygon2D no apunta a un node Skeleton2D"
 
 msgid "Sync Bones"
-msgstr "Sincronitzar Ossos"
+msgstr "Sincronitza ossos"
 
 msgid "Create UV Map"
 msgstr "Crea un Mapa UV"
@@ -10360,7 +10362,7 @@ msgid "Grid Step Y:"
 msgstr "Pas Y de la Quadrícula:"
 
 msgid "Sync Bones to Polygon"
-msgstr "Sincronitzar Ossos amb el Polígon"
+msgstr "Sincronitzar ossos al polígon"
 
 msgid "Paint Node(s)"
 msgstr "Nodes de pintura"
@@ -10419,16 +10421,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Selector d'escenes"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Quan està activat, podeu seleccionar escenes des del moll FileSystem, del "
-"moll d'escenes o de la finestra gràfica de l'editor 2D.\n"
-"Mantenir premuda la tecla Ctrl permet seleccionar des de la finestra gràfica "
-"de l'editor 2D."
-
 msgid "Edit Properties"
 msgstr "Edita les propietats"
 
@@ -10446,14 +10438,6 @@ msgstr "Ajusta al centre de cel·les de la quadrícula"
 
 msgid "Allow Overlapping"
 msgstr "Permet la superposició"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Permet pintar sobre escenes pintades existents.\n"
-"Manteniu premuda la tecla Maj mentre pinta per canviar temporalment aquesta "
-"opció."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Aquest esquelet no té ossos, crea alguns nodes Bone2D fills."
@@ -11088,15 +11072,6 @@ msgstr ""
 msgid "Select a property editor"
 msgstr "Seleccioneu un editor de propietats"
 
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Mantingueu premuda la tecla Ctrl per crear diverses fitxes."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Manteniu premuda la tecla Maj per crear fitxes grans."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Manteniu premuda la tecla Maj per seleccionar diverses regions."
-
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
 "properties."
@@ -11586,7 +11561,7 @@ msgid "Change Probe Origin Offset"
 msgstr "Canvia el desplaçament de l'origen de la sonda"
 
 msgid "Change Notifier AABB"
-msgstr "Canviar Notificador AABB"
+msgstr "Canvia notificador AABB"
 
 msgid "Low"
 msgstr "Baixa"
@@ -12896,6 +12871,9 @@ msgstr "%s+Arrossegament: utilitza l'ajust."
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "LMB+ Arrossegar: mesura la distància entre dos punts en l'espai 3D."
 
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Maj+LMB+Arrossega: Mostra les mesures dels components."
+
 msgid ""
 "Scene contains\n"
 "DirectionalLight3D.\n"
@@ -13091,7 +13069,7 @@ msgid "Orbit View 180"
 msgstr "Vista d'òrbita 180"
 
 msgid "Switch Perspective/Orthogonal View"
-msgstr "Canviar Vista Perspectiva/Ortogonal"
+msgstr "Canvia vista perspectiva/ortogonal"
 
 msgid "Insert Animation Key"
 msgstr "Insereix una Clau d'Animació"
@@ -14190,10 +14168,10 @@ msgid "Close Other Tabs"
 msgstr "Tanca les altres pestanyes"
 
 msgid "Close Tabs to the Right"
-msgstr "Tancar les Pestanyes a la Dreta"
+msgstr "Tanca les pestanyes a la dreta"
 
 msgid "Close All Tabs"
-msgstr "Tancar Totes les Pestanyes"
+msgstr "Tanca totes les pestanyes"
 
 msgid "Add a new scene."
 msgstr "Afegeix una escena nova."
@@ -15027,7 +15005,7 @@ msgid "Invalid PackedScene resource, could not instantiate it."
 msgstr "El recurs PackedScene no és vàlid, no s'ha pogut crear una instancia."
 
 msgid "Reload the scene to reflect its most actual state."
-msgstr "Torneu a carregar l'escena per reflectir el seu estat més real."
+msgstr "Recarrega l'escena per reflectir el seu estat més real."
 
 msgid "Preview is not available for this shader mode."
 msgstr "La vista prèvia no està disponible per a aquest mode d'ombrejat."
@@ -15635,10 +15613,10 @@ msgid "Replace in Files"
 msgstr "Substitueix a Fitxers"
 
 msgid "Find in Files"
-msgstr "Cercar en els Fitxers"
+msgstr "Cerca en els fitxers"
 
 msgid "Find:"
-msgstr "Cercar:"
+msgstr "Cerca:"
 
 msgid "Folder:"
 msgstr "Directori:"
@@ -15827,6 +15805,9 @@ msgstr "Seleccioneu Pare"
 msgid "Use Template"
 msgstr "Utilitzeu la plantilla"
 
+msgid "Template"
+msgstr "Plantilla"
+
 msgid "Built-in Script:"
 msgstr "Script integrat:"
 
@@ -15966,7 +15947,7 @@ msgid "Next Script"
 msgstr "Següent Script"
 
 msgid "Previous Script"
-msgstr "Guió anterior"
+msgstr "Script anterior"
 
 msgid "Open..."
 msgstr "Obrir..."
@@ -16050,7 +16031,7 @@ msgid "Capitalize"
 msgstr "Converteix a Majúscules"
 
 msgid "Script"
-msgstr "Guió"
+msgstr "Script"
 
 msgid "Connections to method:"
 msgstr "Connexions al mètode:"
@@ -16219,7 +16200,7 @@ msgid "Go to Line..."
 msgstr "Anar a la Línia..."
 
 msgid "Lookup Symbol"
-msgstr "Cercar Símbol"
+msgstr "Cerca símbol"
 
 msgid "Toggle Breakpoint"
 msgstr "Commuta el punt d'Interrupció"
@@ -16358,7 +16339,7 @@ msgid "Add Autoload"
 msgstr "Afegeix Autocàrrega"
 
 msgid "Select Script/Scene"
-msgstr "Seleccioneu Guió/Escena"
+msgstr "Seleccioneu Script/Escena"
 
 msgid "Create Scene"
 msgstr "Crear escena"
@@ -16683,7 +16664,7 @@ msgid "Engine Compilation Profile"
 msgstr "Perfil de compilació del motor"
 
 msgid "Load Profile"
-msgstr "Carregar Perfil"
+msgstr "Carrega perfil"
 
 msgid "Export Profile"
 msgstr "Exportar Perfil"
@@ -16840,7 +16821,7 @@ msgid "Remove Profile"
 msgstr "Eliminar Perfil"
 
 msgid "Make Current"
-msgstr "Fer Actual"
+msgstr "Fes actual"
 
 msgid "Configure Selected Profile:"
 msgstr "Configura el perfil seleccionat:"
@@ -17028,10 +17009,10 @@ msgid "Filter by Event"
 msgstr "Filtra per esdeveniment"
 
 msgid "Reload Extension"
-msgstr "Torna a carregar l'extensió"
+msgstr "Recarrega l'extensió"
 
 msgid "Installed GDExtensions:"
-msgstr "Instal·lat GDExtensions:"
+msgstr "GDExtensions instal·lades:"
 
 msgid "Min Version"
 msgstr "Versió mínima"
@@ -17040,7 +17021,7 @@ msgid "Max Version"
 msgstr "Versió màxima"
 
 msgid "Reload"
-msgstr "Torna a Carregar"
+msgstr "Recarrega"
 
 msgid "No Event Configured"
 msgstr "No s'ha configurat cap esdeveniment"
@@ -17365,11 +17346,11 @@ msgstr "Torna a Desar"
 
 msgctxt "Locale"
 msgid "Script:"
-msgstr "Guió:"
+msgstr "Script:"
 
 msgctxt "Locale"
 msgid "Script"
-msgstr "Guió"
+msgstr "Script"
 
 msgid "Changed Locale Language Filter"
 msgstr "S'ha canviat el filtre d'idioma de la configuració regional"
@@ -17504,7 +17485,7 @@ msgid ""
 "No VCS plugins are available in the project. Install a VCS plugin to use VCS "
 "integration features."
 msgstr ""
-"No hi ha connectors VCS disponibles al projecte. Instal·leu un connector VCS "
+"No hi ha connectors VCS disponibles al projecte. Instal·la un connector VCS "
 "per utilitzar les funcions d'integració de VCS."
 
 msgid ""
@@ -17793,7 +17774,7 @@ msgid "Not a script with an instance."
 msgstr "No és un script amb una instància."
 
 msgid "Not based on a script."
-msgstr "No es basa en un guió."
+msgstr "No es basa en un script."
 
 msgid "Not based on a resource file."
 msgstr "No es basa en un fitxer de recursos."
@@ -18166,7 +18147,7 @@ msgstr ""
 "compatible.\n"
 "Intentar crear/editar un projecte provocarà un error.\n"
 "\n"
-"Instal·leu el .NET SDK 8.0 o posterior des de https://get.dot.net i reinicieu "
+"Instal·la el .NET SDK 8.0 o posterior des de https://get.dot.net i reinicia "
 "Godot."
 
 msgid "Failed to load .NET runtime"
@@ -18192,7 +18173,7 @@ msgstr ""
 "No es pot carregar el temps d'execució .NET, concretament hostfxr.\n"
 "Intentar crear/editar un projecte provocarà un error.\n"
 "\n"
-"Instal·leu el .NET SDK 8.0 o posterior des de https://get.dot.net i reinicieu "
+"Instal·la el .NET SDK 8.0 o posterior des de https://get.dot.net i reinicia "
 "Godot."
 
 msgctxt "Network"
@@ -18252,7 +18233,7 @@ msgid "Toggle Replication Dock"
 msgstr "Commuta el Dock de replicació"
 
 msgid "Pick a node to synchronize:"
-msgstr "Trieu un node per sincronitzar:"
+msgstr "Tria un node per sincronitzar:"
 
 msgid "Add property to sync..."
 msgstr "Afegeix una propietat per sincronitzar..."
@@ -18377,7 +18358,7 @@ msgid "Change Start Position"
 msgstr "Canvia la posició inicial"
 
 msgid "Change End Position"
-msgstr "Canviar la posició final"
+msgstr "Canvia la posició final"
 
 msgid "Set Obstacle Vertices"
 msgstr "Establir vèrtexs d'obstacles"
@@ -18728,7 +18709,7 @@ msgid "Rename Action"
 msgstr "Canvia el nom de l'acció"
 
 msgid "Rename Actions Localized name"
-msgstr "Canviar el nom de les accions Nom localitzat"
+msgstr "Canvia el nom de les accions localitzat"
 
 msgid "Change Action Type"
 msgstr "Canvia el tipus d'acció"
@@ -19177,7 +19158,7 @@ msgid "Add Node(s) to Visual Shader"
 msgstr "Afegiu nodes a Visual Shader"
 
 msgid "Hold %s Key To Swap Connections"
-msgstr "Manteniu premuda la tecla %s per intercanviar connexions"
+msgstr "Mantén premuda la tecla %s per intercanviar connexions"
 
 msgid "Vertex"
 msgstr "Vèrtex"
@@ -20313,7 +20294,7 @@ msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr ""
-"El port de mostreig està connectat però no s'utilitza. Penseu en canviar la "
+"El port de mostreig està connectat però no s'utilitza. Pensa en canviar la "
 "font a \"SamplerPort\"."
 
 msgid "Invalid source for preview."
@@ -20490,7 +20471,7 @@ msgid "Uninstalling..."
 msgstr "Desinstal·lant..."
 
 msgid "Installing to device, please wait..."
-msgstr "S'està instal·lant al dispositiu, espereu..."
+msgstr "S'està instal·lant al dispositiu, un moment..."
 
 msgid "Could not install to device: %s"
 msgstr "No s'ha pogut instal·lar al dispositiu: %s"
@@ -20541,7 +20522,7 @@ msgid ""
 "Project menu."
 msgstr ""
 "La plantilla de compilació d'Android no està instal·lada al projecte. "
-"Instal·leu-lo des del menú Projecte."
+"Instal·la-la des del menú Projecte."
 
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
@@ -20679,9 +20660,9 @@ msgid ""
 "target sdk version. The resulting APK is unsigned."
 msgstr ""
 "Totes les eines \"apksigner\" ubicades al directori \"build-tools\" de l'SDK "
-"d'Android no s'han pogut executar. Si us plau, comproveu que teniu "
-"instal·lada la versió correcta per a la vostra versió sdk de destinació. "
-"L'APK resultant no està signat."
+"d'Android no s'han pogut executar. Si us plau, comprova que tens instal·lada "
+"la versió correcta per a la teva versió SDK de destinació. L'APK resultant no "
+"està signat."
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available in "
@@ -20732,8 +20713,8 @@ msgid ""
 "Trying to build from a gradle built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
-"S'està intentant crear a partir d'una plantilla construïda amb gradle, però "
-"no hi ha informació de versió. Torneu a instal·lar-lo des del menú "
+"S'està intentant crear a partir d'una plantilla construïda amb Gradle, però "
+"no hi ha informació de versió. Torna a instal·lar-la des del menú "
 "\"Projecte\"."
 
 msgid ""
@@ -20874,7 +20855,7 @@ msgid "Run on remote Linux/BSD system"
 msgstr "Executeu al sistema remot Linux/BSD"
 
 msgid "Stop and uninstall running project from the remote system"
-msgstr "Atureu i desinstal·leu el projecte en execució des del sistema remot"
+msgstr "Atura i desinstal·la el projecte en execució des del sistema remot"
 
 msgid "Run exported project on remote Linux/BSD system"
 msgstr "Executeu el projecte exportat al sistema Linux/BSD remot"
@@ -20926,8 +20907,8 @@ msgstr ""
 
 msgid "Installer signing identity is required for App Store distribution."
 msgstr ""
-"La identitat de signatura de l'instal·lador és necessària per a la "
-"distribució de l'App Store."
+"L'identitat de signatura de l'instal·lador és necessària per a la distribució "
+"de l'App Store."
 
 msgid "App sandbox is required for App Store distribution."
 msgstr "L'aplicació sandbox és necessària per a la distribució de l'App Store."
@@ -21082,8 +21063,8 @@ msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
 msgstr ""
-"No s'ha pogut iniciar l'executable de codesign, assegureu-vos que les eines "
-"de línia d'ordres Xcode estiguin instal·lades."
+"No s'ha pogut iniciar l'executable de codesign, assegura't que les eines de "
+"línia d'ordres Xcode estiguin instal·lades."
 
 msgid "Cannot sign directory %s."
 msgstr "No es pot signar el directori %s."
@@ -22565,6 +22546,13 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s no es pot deixar anar aquí. Utilitzeu %s per cancel·lar-lo."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Les etiquetes amb l'ajust automàtic habilitat han de tenir una amplada mínima "
+"o màxima personalitzada positiva configurada per funcionar correctament."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

@@ -50,13 +50,15 @@
 # NoNormal <no123normal@gmail.com>, 2026.
 # Adam Mezera <aadaanmez@gmail.com>, 2026.
 # quenia <queniaVT@proton.me>, 2026.
+# HomeBax Studios <jurasik.ody@gmail.com>, 2026.
+# Teodor Potancok <teodor.potancok@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-18 18:02+0000\n"
-"Last-Translator: quenia <queniaVT@proton.me>\n"
+"PO-Revision-Date: 2026-09-05 17:34+0000\n"
+"Last-Translator: Teodor Potancok <teodor.potancok@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -64,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.9.1.dev0\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -138,6 +140,9 @@ msgstr "Podpora dostupnosti"
 msgid "Updates per Second"
 msgstr "Aktualizace za sekundu"
 
+msgid "Accessibility Driver"
+msgstr "Ovladač přístupnosti"
+
 msgid "Display"
 msgstr "Zobrazení"
 
@@ -201,6 +206,9 @@ msgstr "Přepsání výšky okna"
 msgid "HDR"
 msgstr "HDR"
 
+msgid "Request HDR Output"
+msgstr "Vyžádat HDR výstup"
+
 msgid "Energy Saving"
 msgstr "Úspora energie"
 
@@ -212,6 +220,9 @@ msgstr "Animace"
 
 msgid "Warnings"
 msgstr "Varování"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Zkontrolujte neplatné cesty uzlů modifikátoru kostry"
 
 msgid "Check Invalid Track Paths"
 msgstr "Kontrola neplatných cest stop"
@@ -525,11 +536,20 @@ msgstr "Maximální počet vláken"
 msgid "Baking"
 msgstr "Pečení"
 
+msgid "Use Crash Prevention Checks"
+msgstr "Používejte kontroly prevence poškození"
+
 msgid "Baking Use Multiple Threads"
 msgstr "Použít více vláken pro vypalování"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Použít vysokoprioritní vlákna pro vypalování"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "Chyby sloučení hran NavMesh"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "Neshoda velikosti buněk NavMesh"
 
 msgid "Editor Overrides"
 msgstr "Přepsání Editoru"
@@ -576,6 +596,9 @@ msgstr "Emulovat myš z dotyku"
 msgid "Emulate Touch From Mouse"
 msgstr "Emulovat dotyk z myši"
 
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Ignorovat joypad v neostré aplikaci"
+
 msgid "Legacy Just Pressed Behavior"
 msgstr "Starší chování \"právě stisknuto\""
 
@@ -593,6 +616,9 @@ msgstr "Povolit gyroskop"
 
 msgid "Enable Magnetometer"
 msgstr "Povolit magnetometr"
+
+msgid "Joypads"
+msgstr "Joypady"
 
 msgid "Device"
 msgstr "Zařízení"
@@ -735,6 +761,9 @@ msgstr "Big-endian"
 msgid "Blocking Mode Enabled"
 msgstr "Režim blokování povolen"
 
+msgid "Connection"
+msgstr "Spojení"
+
 msgid "Read Chunk Size"
 msgstr "Velikost čteného bloku"
 
@@ -753,6 +782,9 @@ msgstr "Maximální velikost vstupní vyrovnávací paměti"
 msgid "Output Buffer Max Size"
 msgstr "Maximální velikost výstupní vyrovnávací paměti"
 
+msgid "Stream Peer"
+msgstr "Proud Peer"
+
 msgid "Resource"
 msgstr "Zdroj"
 
@@ -767,6 +799,9 @@ msgstr "Datové pole"
 
 msgid "Max Pending Connections"
 msgstr "Maximální počet čekajících připojení"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Filtr sousedů povolen"
 
 msgid "Region"
 msgstr "Oblast"
@@ -846,6 +881,9 @@ msgstr "Poměr vláken s nízkou prioritou"
 msgid "Locale"
 msgstr "Jazyk"
 
+msgid "Plural Rules Override"
+msgstr "Přepsání pravidel pro množné číslo"
+
 msgid "Test"
 msgstr "Testovací"
 
@@ -857,6 +895,9 @@ msgstr "Pseudolokalizace"
 
 msgid "Use Pseudolocalization"
 msgstr "Použít pseudolokalizaci"
+
+msgid "Replace with Accents"
+msgstr "Nahradit akcenty"
 
 msgid "Double Vowels"
 msgstr "Zdvojit samohlásky"
@@ -922,7 +963,7 @@ msgid "Remote Port"
 msgstr "Vzdálený port"
 
 msgid "Request Timeout"
-msgstr "Čas na požadavek vypršel"
+msgstr "Časový limit požadavku"
 
 msgid "Sync Breakpoints"
 msgstr "Synchronizovat breakpointy"
@@ -930,8 +971,14 @@ msgstr "Synchronizovat breakpointy"
 msgid "Title"
 msgstr "Nadpis"
 
+msgid "Layout Key"
+msgstr "Klíč rozvržení"
+
 msgid "Global"
 msgstr "Globální"
+
+msgid "Transient"
+msgstr "Přechodné"
 
 msgid "Closable"
 msgstr "Uzavíratelné"
@@ -1518,6 +1565,9 @@ msgstr "Povolit záložní ze systému"
 msgid "Force Autohinter"
 msgstr "Vynutit autohinter"
 
+msgid "Modulate Color Glyphs"
+msgstr "Modulace barevných glyfů"
+
 msgid "Hinting"
 msgstr "Hinting"
 
@@ -1578,6 +1628,9 @@ msgstr "Režim škálování"
 msgid "Delimiter"
 msgstr "Oddělovač"
 
+msgid "Unescape Keys"
+msgstr "Klávesy pro obnovení úniku"
+
 msgid "Character Ranges"
 msgstr "Rozsahy znaků"
 
@@ -1595,9 +1648,6 @@ msgstr "Okraj obrázku"
 
 msgid "Character Margin"
 msgstr "Okraj znaku"
-
-msgid "Ascent"
-msgstr "Výstup"
 
 msgid "Descent"
 msgstr "Sestup"
@@ -1627,7 +1677,7 @@ msgid "Limit"
 msgstr "Limit"
 
 msgid "Horizontal"
-msgstr "Horizonální"
+msgstr "Horizontální"
 
 msgid "Vertical"
 msgstr "Vertikální"
@@ -1912,6 +1962,12 @@ msgstr "Lokalizovat nastavení"
 msgid "Docks"
 msgstr "Doky"
 
+msgid "Dock Tab Style"
+msgstr "Styl záložky ukotvení"
+
+msgid "Bottom Dock Tab Style"
+msgstr "Styl spodní záložky Dock"
+
 msgid "UI Layout Direction"
 msgstr "Směr rozvržení uživatelského rozhraní"
 
@@ -1975,6 +2031,9 @@ msgstr "Hlavní font tučný"
 msgid "Code Font"
 msgstr "Font kódu"
 
+msgid "Dragging Hover Wait Seconds"
+msgstr "Přetažení (v sekundách) čekání při najetí myší"
+
 msgid "Behavior"
 msgstr "Chování"
 
@@ -2008,6 +2067,9 @@ msgstr "Režim spánku s nízkým využitím procesoru (µs)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Nezaměřený režim spánku s nízkým využitím procesoru (µs)"
 
+msgid "Import Resources When Unfocused"
+msgstr "Importovat zdroje, když nejsou zaostřeny"
+
 msgid "V-Sync Mode"
 msgstr "Režim V-Sync"
 
@@ -2028,6 +2090,9 @@ msgstr "Zeptat se před odebráním unikátního názvu"
 
 msgid "Inspector"
 msgstr "Inspektor"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Maximální počet položek slovníku na stránku"
 
 msgid "Show Low Level OpenType Features"
 msgstr "Zobrazit nízkoúrovňové OpenType funkce"
@@ -2087,7 +2152,7 @@ msgid "Icon Saturation"
 msgstr "Sytost ikon"
 
 msgid "Relationship Line Opacity"
-msgstr "Průhlednost linky vzahu"
+msgstr "Průhlednost čáry vztahu"
 
 msgid "Border Size"
 msgstr "Velikost okrajů"
@@ -2101,14 +2166,23 @@ msgstr "Základní řádkování"
 msgid "Additional Spacing"
 msgstr "Dodatečné řádkování"
 
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Používejte monospace písmo pro symboly editoru"
+
 msgid "Custom Theme"
 msgstr "Vlastní motiv"
 
 msgid "Touchscreen"
 msgstr "Dotyková obrazovka"
 
+msgid "Haptic on Long Press"
+msgstr "Haptický při dlouhém stisknutí"
+
 msgid "Scale Gizmo Handles"
 msgstr "Škálovat úchyty gizma"
+
+msgid "Touch Actions Panel"
+msgstr "Panel dotykových akcí"
 
 msgid "Scene Tabs"
 msgstr "Záložky scén"
@@ -2570,7 +2644,7 @@ msgid "Joint"
 msgstr "Kloub"
 
 msgid "AABB"
-msgstr "AABB (Osově rovnoběžný ohraňičující box)"
+msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "3D stream přehrávač"
@@ -2624,7 +2698,7 @@ msgid "CSG"
 msgstr "CSG (konstruktivní geometrie těles)"
 
 msgid "GridMap Grid"
-msgstr "Mřížka mřižkové mapy"
+msgstr "Mřížka GridMap"
 
 msgid "Spring Bone Joint"
 msgstr "Kloub pružinové kosti"
@@ -2635,6 +2709,9 @@ msgstr "Kolize pružinové kosti"
 msgid "Spring Bone Inside Collision"
 msgstr "Vnitřní kolize pružinové kosti"
 
+msgid "IK Chain"
+msgstr "Řetězec IK"
+
 msgid "Gizmo Settings"
 msgstr "Nastavení gizma"
 
@@ -2643,6 +2720,12 @@ msgstr "Délka osy kosti"
 
 msgid "Bone Shape"
 msgstr "Tvar kosti"
+
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Zobrazit tvary kolizí pouze při výběru"
+
+msgid "Primary Grid Steps"
+msgstr "Primární kroky mřížky"
 
 msgid "Grid Division Level Max"
 msgstr "Maximální úroveň rozdělení mřížky"
@@ -2709,6 +2792,9 @@ msgstr "Citlivost volného pohledu"
 
 msgid "Freelook Inertia"
 msgstr "Setrvačnost volného pohledu"
+
+msgid "Freelook Activation Modifier"
+msgstr "Modifikátor aktivace Freelooku"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "Propojit rychlosti přiblížení a volného pohledu"
@@ -2814,6 +2900,9 @@ msgstr "Výchozí vytváření Bézierových stop"
 
 msgid "Default Create Reset Tracks"
 msgstr "Výchozí vytváření resetovacích stop"
+
+msgid "Insert at Current Time"
+msgstr "Vložit v aktuálním čase"
 
 msgid "Onion Layers Past Color"
 msgstr "Barva minulých vrstev průhledného vrstvení"
@@ -2923,6 +3012,12 @@ msgstr "Limit dotazů (µsec)"
 msgid "Debugger"
 msgstr "Ladicí program"
 
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Automatické přepnutí na větev vzdálených scén"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Automatické přepnutí na trasování zásobníku"
+
 msgid "Profiler Frame History Size"
 msgstr "Velikost historie profilovacího rámce"
 
@@ -2937,6 +3032,9 @@ msgstr "Interval obnovení vzdáleného stromu scén"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Interval obnovení vzdáleného prozkoumávání"
+
+msgid "Profile Native Calls"
+msgstr "Profil nativní volání"
 
 msgid "Username"
 msgstr "Uživatelské jméno"
@@ -2958,6 +3056,9 @@ msgstr "Správce projektů"
 
 msgid "Sorting Order"
 msgstr "Seřadit podle"
+
+msgid "Directory Naming Convention"
+msgstr "Konvence pojmenování adresářů"
 
 msgid "Connection Colors"
 msgstr "Barvy spojení"
@@ -3166,6 +3267,9 @@ msgstr "Úroveň foveace"
 msgid "Foveation Dynamic"
 msgstr "Dynamická foveace"
 
+msgid "Foveation with Subsampled Images"
+msgstr "Foveace s podvzorkovanými obrazy"
+
 msgid "Submit Depth Buffer"
 msgstr "Předat vyrovnávací paměť hloubky"
 
@@ -3181,6 +3285,9 @@ msgstr "Utility pro ladění"
 msgid "Debug Message Types"
 msgstr "Typy zpráv ladění"
 
+msgid "Frame Synthesis"
+msgstr "Syntéza rámu"
+
 msgid "Hand Tracking"
 msgstr "Sledování rukou"
 
@@ -3192,6 +3299,12 @@ msgstr "Datový zdroj sledování rukou z ovladače"
 
 msgid "Hand Interaction Profile"
 msgstr "Interakční profil rukou"
+
+msgid "Aruco Dict"
+msgstr "Aruco Dict"
+
+msgid "April Tag Dict"
+msgstr "Dubnový tag dict"
 
 msgid "Eye Gaze Interaction"
 msgstr "Interakce s pohledem očí"
@@ -3394,6 +3507,9 @@ msgstr "Kompilace kreslení"
 msgid "Compilations Specialization"
 msgstr "Kompilace specializace"
 
+msgid "Basis Universal"
+msgstr "Univerzální základ"
+
 msgid "Operation"
 msgstr "Operace"
 
@@ -3508,8 +3624,29 @@ msgstr "GDScript"
 msgid "Max Call Stack"
 msgstr "Maximální velikost zásobníku volání"
 
+msgid "Always Track Local Variables"
+msgstr "Vždy sledovat lokální proměnné"
+
 msgid "Renamed in Godot 4 Hint"
 msgstr "Nápověda přejmenování v Godotu 4"
+
+msgid "Unassigned Variable"
+msgstr "Nepřiřazená proměnná"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Nepřiřazená proměnná operace Přiřadit"
+
+msgid "Unused Private Class Variable"
+msgstr "Nepoužitá proměnná soukromé třídy"
+
+msgid "Unused Signal"
+msgstr "Nepoužitý signál"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Základní třída stínovaných proměnných"
+
+msgid "Unsafe Property Access"
+msgstr "Nebezpečný přístup k vlastnosti"
 
 msgid "Redundant Await"
 msgstr "Nepotřebné Await"
@@ -3522,6 +3659,9 @@ msgstr "Assert Vždy False"
 
 msgid "Integer Division"
 msgstr "Dělení Čísel"
+
+msgid "Deprecated Keyword"
+msgstr "Zastaralé klíčové slovo"
 
 msgid "Copyright"
 msgstr "Copyright"
@@ -4085,7 +4225,7 @@ msgid "Auth Callback"
 msgstr "Metoda zpětného volání pro autentizaci"
 
 msgid "Auth Timeout"
-msgstr "Čas pro autentizaci vypršel"
+msgstr "Časový limit autorizace"
 
 msgid "Allow Object Decoding"
 msgstr "Povolit dekódování objektů"
@@ -4258,6 +4398,9 @@ msgstr "Alfa prolnutí"
 msgid "Enable Hole Punch"
 msgstr "Povolit děrování"
 
+msgid "Max Anisotropy"
+msgstr "Maximální anizotropie"
+
 msgid "Aspect Ratio"
 msgstr "Poměr stran"
 
@@ -4341,6 +4484,9 @@ msgstr "Režimy"
 
 msgid "Flags"
 msgstr "Příznaky"
+
+msgid "Stencil"
+msgstr "Šablona"
 
 msgid "Input Name"
 msgstr "Název vstupu"
@@ -4463,7 +4609,7 @@ msgid "Outbound Buffer Size"
 msgstr "Velikost odchozí vyrovnávací paměti"
 
 msgid "Handshake Timeout"
-msgstr "Vypršel čas pro inicializaci"
+msgstr "Časový limit inicializace"
 
 msgid "Max Queued Packets"
 msgstr "Maximum paketů ve frontě"
@@ -4744,6 +4890,9 @@ msgstr "Skript běhu"
 msgid "Cleanup Script"
 msgstr "Skript čištění"
 
+msgid "macOS"
+msgstr "macOS"
+
 msgid "Distribution Type"
 msgstr "Typ distribuce"
 
@@ -4997,7 +5146,7 @@ msgid "Head Include"
 msgstr "Zahrnout v head"
 
 msgid "Canvas Resize Policy"
-msgstr "Způsov změny velikosti canvas"
+msgstr "Zásady škálování plátna"
 
 msgid "Focus Canvas on Start"
 msgstr "Zaměřit canvas při startu"
@@ -5133,15 +5282,6 @@ msgstr "Vyhlazený"
 
 msgid "Drag"
 msgstr "Táhnout"
-
-msgid "Horizontal Enabled"
-msgstr "Horizontální orientace povolena"
-
-msgid "Vertical Enabled"
-msgstr "Povolit vertikálně"
-
-msgid "Horizontal Offset"
-msgstr "Horizonální offset"
 
 msgid "Left Margin"
 msgstr "Levý okraj"
@@ -5405,7 +5545,7 @@ msgid "Layer Max"
 msgstr "Maximální vrstva"
 
 msgid "Item Cull Mask"
-msgstr "Maska vyřazekí předmětů"
+msgstr "Vyřazovací maska předmětu"
 
 msgid "Shadow"
 msgstr "Stín"
@@ -5439,6 +5579,12 @@ msgstr "Mód bodu"
 
 msgid "Border"
 msgstr "Hranice"
+
+msgid "Sharp Limit"
+msgstr "Limit ostrosti"
+
+msgid "Round Precision"
+msgstr "Přesnost zaoblení"
 
 msgid "Antialiased"
 msgstr "Vyhlazený"
@@ -5546,10 +5692,13 @@ msgid "Begin"
 msgstr "Počátek"
 
 msgid "End"
-msgstr "End"
+msgstr "Konec"
 
 msgid "Follow Viewport"
 msgstr "Sledovat Viewport"
+
+msgid "Ignore Camera Scroll"
+msgstr "Ignorovat posouvání kamery"
 
 msgid "Screen Offset"
 msgstr "Offset obrazovky"
@@ -5562,6 +5711,9 @@ msgstr "Začátek limitu"
 
 msgid "Limit End"
 msgstr "Konec limitu"
+
+msgid "Ignore Camera Zoom"
+msgstr "Ignorovat přiblížení kamery"
 
 msgid "Motion"
 msgstr "Pohyb"
@@ -5656,6 +5808,9 @@ msgstr "Deaktivovat kolize"
 msgid "Softness"
 msgstr "Měkkost"
 
+msgid "Motor"
+msgstr "Motor"
+
 msgid "Bone 2D Nodepath"
 msgstr "Cesta k uzlu Bone 2D"
 
@@ -5669,7 +5824,7 @@ msgid "Simulate Physics"
 msgstr "Simulovat fyziku"
 
 msgid "Follow Bone When Simulating"
-msgstr "Slewovat kost při simulaci"
+msgstr "Sledovat kost při simulaci"
 
 msgid "Exclude Parent"
 msgstr "Vyloučit rodiče"
@@ -5799,7 +5954,7 @@ msgid "Tile Set"
 msgstr "Sada dlaždic"
 
 msgid "Rendering Quadrant Size"
-msgstr "Velukost vykreslovacího kvadrantu"
+msgstr "Velikost vykreslovacího kvadrantu"
 
 msgid "Collision Animatable"
 msgstr "Kolize pohyblivé"
@@ -5810,8 +5965,20 @@ msgstr "Režim viditelnosti kolizí"
 msgid "Navigation Visibility Mode"
 msgstr "Režim viditelnosti navigace"
 
+msgid "Use Kinematic Bodies"
+msgstr "Použít kinematická tělesa"
+
+msgid "Physics Quadrant Size"
+msgstr "Velikost fyzikálního kvadrantu"
+
 msgid "Doppler Tracking"
 msgstr "Dopplerovské sledování"
+
+msgid "Unit Size"
+msgstr "Velikost jednotky"
+
+msgid "Max dB"
+msgstr "Maximální dB"
 
 msgid "Degrees"
 msgstr "Stupně"
@@ -5829,7 +5996,7 @@ msgid "Override Pose"
 msgstr "Přepsat pózu"
 
 msgid "Keep Aspect"
-msgstr "Zachovat Aspekt"
+msgstr "Zachovat poměr stran"
 
 msgid "Cull Mask"
 msgstr "Maska vyřazení"
@@ -5841,7 +6008,7 @@ msgid "Far"
 msgstr "Daleký"
 
 msgid "Visibility AABB"
-msgstr "Přepnout viditelnost AABB"
+msgstr "AABB viditelnosti"
 
 msgid "Box Extents"
 msgstr "Rozsahy kvádru"
@@ -5980,7 +6147,7 @@ msgid "Alpha Antialiasing Mode"
 msgstr "Režim alfa vyhlazování"
 
 msgid "Alpha Antialiasing Edge"
-msgstr "Hrana alfa vyzhlazování"
+msgstr "Alfa vyhlazování okraje"
 
 msgid "Render Priority"
 msgstr "Priorita vykreslování"
@@ -6007,7 +6174,7 @@ msgid "Text Direction"
 msgstr "Směr textu"
 
 msgid "Structured Text BiDi Override"
-msgstr "Přepis obousměřnosti strukturovaného textu"
+msgstr "Přepis obousměrnosti strukturovaného textu"
 
 msgid "Structured Text BiDi Override Options"
 msgstr "Možnosti přepisu obousměrnosti strukturovaného textu"
@@ -6046,7 +6213,7 @@ msgid "Normal Bias"
 msgstr "Preference normály"
 
 msgid "Reverse Cull Face"
-msgstr "Obrátit vyřazení stěneami"
+msgstr "Obrácené vyřazení stěny"
 
 msgid "Transmittance Bias"
 msgstr "Preference propustnosti"
@@ -6282,6 +6449,9 @@ msgstr "Vítr"
 msgid "Force Magnitude"
 msgstr "Velikost síly"
 
+msgid "Reverb Bus"
+msgstr "Sběrnice dozvuku"
+
 msgid "Ray Pickable"
 msgstr "Vybíratelný paprskem"
 
@@ -6413,6 +6583,9 @@ msgstr "Práh LOD sítě"
 
 msgid "Profile"
 msgstr "Profil"
+
+msgid "Deprecated"
+msgstr "Zastaralé"
 
 msgid "Animate Physical Bones"
 msgstr "Animovat fyzické kosti"
@@ -6550,7 +6723,7 @@ msgid "Delay"
 msgstr "Zpoždění"
 
 msgid "Random Delay"
-msgstr "Náhodné zpodění"
+msgstr "Náhodné zpoždění"
 
 msgid "Explicit Elapse"
 msgstr "Explicitní uběhnutí"
@@ -6625,7 +6798,7 @@ msgid "Button Shortcut Feedback Highlight Time"
 msgstr "Čas zvýraznění zpětná vazby tlačítka na zkratku"
 
 msgid "Allow Unpress"
-msgstr "Povolit odstisknutí"
+msgstr "Povolit odmáčknutí"
 
 msgid "Text Overrun Behavior"
 msgstr "Chování při přetečení textu"
@@ -6951,9 +7124,6 @@ msgstr "Mrtvá zóna posouvání"
 msgid "Default Scroll Deadzone"
 msgstr "Výchozí mrtvá zóna posouvání"
 
-msgid "Stretch Shrink"
-msgstr "Roztáhnout změnšený"
-
 msgid "Mouse Target"
 msgstr "Cíl myši"
 
@@ -7237,7 +7407,7 @@ msgid "Custom Data"
 msgstr "Vlastní data"
 
 msgid "Tile Layout"
-msgstr "Odstranit rozvržení"
+msgstr "Rozvržení dlaždic"
 
 msgid "UV Clipping"
 msgstr "Ořez UV"
@@ -7267,7 +7437,7 @@ msgid "Format"
 msgstr "Formát"
 
 msgid "Multiplier"
-msgstr "Více hráčů"
+msgstr "Násobitel"
 
 msgid "Far Transition"
 msgstr "Daleký přechod"
@@ -7540,7 +7710,7 @@ msgid "Default Font Subpixel Positioning"
 msgstr "Výchozí subpixelové polohování fontů"
 
 msgid "LCD Subpixel Layout"
-msgstr "Odstranit rozvržení"
+msgstr "Rozvržení subpixelů LCD"
 
 msgid "Include Text Server Data"
 msgstr "Zahrnout data textového serveru"

@@ -120,13 +120,15 @@
 # Louish <louish666666@outlook.com>, 2026.
 # Floruit <1964993179@qq.com>, 2026.
 # 罗翌宸 <Luo_Yichen@yeah.net>, 2026.
+# 杨朔 <yshuo0625@163.com>, 2026.
+# mwz116 <hlcodev@163.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-07-27 00:22+0000\n"
-"Last-Translator: 罗翌宸 <Luo_Yichen@yeah.net>\n"
+"PO-Revision-Date: 2026-09-01 20:35+0000\n"
+"Last-Translator: Zhen Luo <461652354@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -134,7 +136,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "OK"
 msgstr "确定"
@@ -182,7 +184,7 @@ msgid "Can't read file"
 msgstr "无法读取文件"
 
 msgid "File unrecognized"
-msgstr "无法识别文件"
+msgstr "文件无法识别"
 
 msgid "File corrupt"
 msgstr "文件已损坏"
@@ -1220,7 +1222,7 @@ msgid "Some Animation files were invalid."
 msgstr "部分 Animation 文件无效。"
 
 msgid "Some of the selected animations were already added to the library."
-msgstr "所选动画中有部分已添加到库中。"
+msgstr "所选动画中有一部分已添加到库中。"
 
 msgid "Load Animations into Library"
 msgstr "将动画加载到库中"
@@ -2639,9 +2641,6 @@ msgstr "连接网络"
 msgid "Failed to verify repository."
 msgstr "仓库验证失败。"
 
-msgid "Template"
-msgstr "模板"
-
 msgid "All"
 msgstr "全部"
 
@@ -2789,7 +2788,7 @@ msgid "Toggle Audio Bus Mute"
 msgstr "切换音频总线静音"
 
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "开关音频总线旁通效果"
+msgstr "切换音频总线旁通效果"
 
 msgid "Select Audio Bus Send"
 msgstr "选择音频发送总线"
@@ -3002,7 +3001,7 @@ msgid ""
 "This is useful to troubleshoot low processor mode."
 msgstr ""
 "启用该选项时，2D 对象的重绘请求将在运行的项目中可见（短暂的闪烁）。\n"
-"适用于低处理器模式的故障排除很有用。"
+"适用于低处理器模式的故障排除。"
 
 msgid "Synchronize Scene Changes"
 msgstr "同步场景修改"
@@ -4554,6 +4553,9 @@ msgid ""
 msgstr ""
 "启用“加载为占位符”将禁用“子节点可编辑”，并导致节点的所有属性恢复到其默认值。"
 
+msgid "Toggle Load as Placeholder"
+msgstr "切换“作为占位符加载”"
+
 msgid "Make Local"
 msgstr "转为本地"
 
@@ -5590,7 +5592,7 @@ msgid "Toggle Last Opened Bottom Panel"
 msgstr "切换最近打开的底部面板"
 
 msgid "Toggle distraction-free mode."
-msgstr "开关专注模式。"
+msgstr "切换专注模式。"
 
 msgid "Copy Text"
 msgstr "复制文本"
@@ -7486,7 +7488,7 @@ msgid "Selected Animation Stop"
 msgstr "停止选中动画"
 
 msgid "Toggle Animation Skeleton Visibility"
-msgstr "开关动画骨架可见性"
+msgstr "切换动画骨骼可见性"
 
 msgid "Rotate Lights With Model"
 msgstr "灯光随模型旋转"
@@ -7794,7 +7796,7 @@ msgstr "属性：%s"
 msgid ""
 "Toggling the checkbox is disabled for Resource properties. Modify the "
 "property using the resource picker instead."
-msgstr "已禁用 Resource 资源复选框的开关。请使用资源拾取器修改属性。"
+msgstr "Resource 属性无法通过复选框切换。请改用资源选择器修改该属性。"
 
 msgid "Unfavorite Property"
 msgstr "取消收藏属性"
@@ -7969,7 +7971,7 @@ msgid "Locale"
 msgstr "区域"
 
 msgid "Toggle Display UID"
-msgstr "开关 UID 显示"
+msgstr "切换 UID 显示"
 
 msgid ""
 "Toggles displaying between path and UID.\n"
@@ -8152,7 +8154,7 @@ msgstr "为了复制它，使其父资源唯一化。"
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
-msgstr "所选资源（%s）与该属性（%s）所需的类型都不匹配。"
+msgstr "所选资源（%s）不匹配任何该属性预期的类型（%s）。"
 
 msgid "Quick Load..."
 msgstr "快速加载..."
@@ -9867,7 +9869,7 @@ msgid "Polygon"
 msgstr "多边形"
 
 msgid "Toggle Polygon Dock"
-msgstr "开关多边形面板"
+msgstr "切换多边形面板"
 
 msgid "Points"
 msgstr "点"
@@ -10011,14 +10013,6 @@ msgstr "启用后，在场景中选择其他节点时，绘制的父节点不会
 msgid "Scene Picker"
 msgstr "场景拾取器"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"启用后，你可以从‘文件系统’面板、‘场景’面板或 2D 编辑器的视口中选择场景。\n"
-"按住 Ctrl 键可从 2D 编辑器的视口中进行拾取。"
-
 msgid "Edit Properties"
 msgstr "绘制属性"
 
@@ -10036,13 +10030,6 @@ msgstr "吸附到网格单元中心"
 
 msgid "Allow Overlapping"
 msgstr "允许重叠"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"允许在已绘制的场景上进行覆盖绘制。\n"
-"在绘制时按住 Shift 键，可临时切换此选项。"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "该骨架没有骨骼，请创建一些 Bone2D 子节点。"
@@ -10656,15 +10643,6 @@ msgstr "请在 TileSet 资源的检查器中创建并自定义自定义数据层
 
 msgid "Select a property editor"
 msgstr "请选择属性编辑器"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "按住 Ctrl 创建多个图块。"
-
-msgid "Hold Shift to create big tiles."
-msgstr "按住 Shift 创建大型图块。"
-
-msgid "Hold Shift to select multiple regions."
-msgstr "按住 Shift 选择多个区域。"
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12235,7 +12213,7 @@ msgstr ""
 "点击时按住 Shift 键，还可启用飞行模式。"
 
 msgid "Toggle Camera Preview"
-msgstr "开关摄像机预览"
+msgstr "切换摄像机预览"
 
 msgid "Pilot"
 msgstr "Pilot（飞行）"
@@ -12248,7 +12226,7 @@ msgstr ""
 "在预览模式下允许使用 WASD 键移动和鼠标控制视角。"
 
 msgid "Toggle Pilot Mode in Preview"
-msgstr "在预览中开关飞行模式"
+msgstr "在预览中切换飞行模式"
 
 msgid "View Rotation Locked"
 msgstr "已锁定视角旋转"
@@ -12343,6 +12321,9 @@ msgstr "%s+拖放：使用吸附。"
 
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr "左键+拖动：测量 3D 空间中两点之间的距离。"
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift + 鼠标左键 + 拖拽：显示组件尺寸测量值。"
 
 msgid ""
 "Scene contains\n"
@@ -12483,7 +12464,7 @@ msgstr ""
 "如果一个 DirectionalLight3D 节点被添加到场景中，预览阳光将被禁用。"
 
 msgid "Toggle preview sunlight."
-msgstr "开关预览阳光。"
+msgstr "切换预览阳光。"
 
 msgid ""
 "Toggle preview environment.\n"
@@ -12494,7 +12475,7 @@ msgstr ""
 "如果一个 WorldEnvironment 节点被添加到场景中，预览环境将被禁用。"
 
 msgid "Toggle preview environment."
-msgstr "开关预览环境。"
+msgstr "切换预览环境。"
 
 msgid "Edit Sun and Environment settings."
 msgstr "编辑太阳和环境设置。"
@@ -13852,7 +13833,7 @@ msgid "Unable to preview font"
 msgstr "无法预览字体"
 
 msgid "Toggle margins preview grid."
-msgstr "开关边距预览网格。"
+msgstr "切换边距预览网格。"
 
 msgid "Styleboxes"
 msgstr "样式盒"
@@ -14302,7 +14283,7 @@ msgid "Theme"
 msgstr "主题"
 
 msgid "Toggle Theme Dock"
-msgstr "开关主题面板"
+msgstr "切换主题面板"
 
 msgid "Theme:"
 msgstr "主题："
@@ -14324,7 +14305,7 @@ msgstr "选择 UI 场景："
 
 msgid ""
 "Toggle the control picker, allowing to visually select control types for edit."
-msgstr "开关控件拾取器，可以可视化地选择所需编辑的控件类型。"
+msgstr "切换控件选择器，从而可视化地选择要编辑的控件类型。"
 
 msgid "Toggle Button"
 msgstr "切换按钮"
@@ -14548,7 +14529,7 @@ msgid "ResourcePreloader"
 msgstr "ResourcePreloader"
 
 msgid "Toggle ResourcePreloader Dock"
-msgstr "开关 ResourcePreloader 面板"
+msgstr "切换 ResourcePreloader 面板"
 
 msgid "Load Resource"
 msgstr "加载资源"
@@ -14893,7 +14874,7 @@ msgid "Select None"
 msgstr "全都不选"
 
 msgid "Toggle Settings Panel"
-msgstr "开关设置面板"
+msgstr "切换设置面板"
 
 msgid "Zoom to Fit"
 msgstr "自动适应缩放"
@@ -14929,7 +14910,7 @@ msgid "Create Frames from Sprite Sheet"
 msgstr "从精灵表中创建帧"
 
 msgid "Toggle color channel preview selection."
-msgstr "开关颜色通道选择预览。"
+msgstr "切换颜色通道选择预览。"
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "移动 GradientTexture2D 填充点"
@@ -15072,7 +15053,7 @@ msgid "Replace all (no undo)"
 msgstr "全部替换（无法撤销）"
 
 msgid "Toggle Search Results Bottom Panel"
-msgstr "开关搜索结果底部面板"
+msgstr "切换搜索结果底部面板"
 
 msgid "Path is empty."
 msgstr "路径为空。"
@@ -15182,6 +15163,9 @@ msgstr "选择父类"
 
 msgid "Use Template"
 msgstr "使用模板"
+
+msgid "Template"
+msgstr "模板"
 
 msgid "Built-in Script:"
 msgstr "内置脚本："
@@ -15665,7 +15649,7 @@ msgid "Rename Autoload"
 msgstr "重命名自动加载"
 
 msgid "Toggle Autoload Globals"
-msgstr "开关自动加载全局变量"
+msgstr "切换自动加载全局变量"
 
 msgid "Move Autoload"
 msgstr "移动自动加载"
@@ -16565,7 +16549,7 @@ msgid "Shader Editor"
 msgstr "着色器编辑器"
 
 msgid "Toggle Shader Editor Dock"
-msgstr "开关着色器编辑器面板"
+msgstr "切换着色器编辑器面板"
 
 msgid "No valid shader stages found."
 msgstr "没有找到有效的着色器阶段。"
@@ -16584,7 +16568,7 @@ msgid "ShaderFile"
 msgstr "ShaderFile"
 
 msgid "Toggle ShaderFile Dock"
-msgstr "开关着色器文件面板"
+msgstr "切换 ShaderFile 面板"
 
 msgid "Set Shader Global Variable"
 msgstr "设置着色器全局变量"
@@ -16629,7 +16613,7 @@ msgid "Warnings should be fixed to prevent errors."
 msgstr "应修复警告以防止出错。"
 
 msgid "Toggle Shader Preview"
-msgstr "开关着色器预览"
+msgstr "切换着色器预览"
 
 msgid "Remove All Shader Previews"
 msgstr "移除所有着色器预览"
@@ -16980,7 +16964,7 @@ msgid "Unmerged"
 msgstr "未合并"
 
 msgid "Toggle Version Control Dock"
-msgstr "开关版本控制面板"
+msgstr "切换版本控制面板"
 
 msgid "View file diffs before committing them to the latest version"
 msgstr "在提交到最新版本之前查看文件差异"
@@ -18028,7 +18012,7 @@ msgid "OpenXR Action Map"
 msgstr "OpenXR 动作映射"
 
 msgid "Toggle OpenXR Action Map Dock"
-msgstr "开关 OpenXR 动作映射面板"
+msgstr "切换 OpenXR 动作映射面板"
 
 msgid "Add Action Set"
 msgstr "添加动作集"
@@ -18300,13 +18284,13 @@ msgid "Set Tint Color"
 msgstr "设置着色颜色"
 
 msgid "Toggle Frame Color"
-msgstr "开关框架颜色"
+msgstr "切换框着色"
 
 msgid "Set Frame Color"
 msgstr "设置框架颜色"
 
 msgid "Toggle Auto Shrink"
-msgstr "开关自动收缩"
+msgstr "切换自动收缩"
 
 msgid "Set Parameter Name"
 msgstr "设置参数名称"
@@ -18444,7 +18428,7 @@ msgid "Show generated shader code."
 msgstr "显示生成的着色器代码。"
 
 msgid "Toggle shader preview."
-msgstr "开关着色器预览。"
+msgstr "切换着色器预览。"
 
 msgid "Generated Shader Code"
 msgstr "生成的着色器代码"

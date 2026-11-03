@@ -128,13 +128,15 @@
 # Georgya <georgyavieira@gmail.com>, 2026.
 # Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
 # waris ali amjed <warisamjed@gmail.com>, 2026.
+# Timothy Adamo <timothyadamo2212@gmail.com>, 2026.
+# Giorgio Gandolfo <giorgiogandolfo06@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-21 11:50+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2026-09-19 09:38+0000\n"
+"Last-Translator: Giorgio Gandolfo <giorgiogandolfo06@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -142,7 +144,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.8.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -993,11 +995,14 @@ msgstr "Passo in Y della griglia"
 msgid "Blend X Value"
 msgstr "Valore in X di fusione"
 
+msgid "Blend Y Value"
+msgstr "Sfumatura Asse Y"
+
 msgid "Max Y"
 msgstr "Max Y"
 
 msgid "Y Value"
-msgstr "Valore in Y"
+msgstr "Valore Y"
 
 msgid "Min Y"
 msgstr "Min Y"
@@ -1974,6 +1979,18 @@ msgid "Spring"
 msgstr "Molla"
 
 msgctxt "Ease Type"
+msgid "Ease In"
+msgstr "Entrata morbida"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "Uscita morbida"
+
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "Entrata-Uscita morbida"
+
+msgctxt "Ease Type"
 msgid "Ease Out-In"
 msgstr "Accelerazione-decelerazione"
 
@@ -2698,9 +2715,6 @@ msgstr "Vai online"
 
 msgid "Failed to verify repository."
 msgstr "Impossibile verificare il repository."
-
-msgid "Template"
-msgstr "Modello"
 
 msgid "All"
 msgstr "Tutto"
@@ -4697,6 +4711,9 @@ msgid ""
 msgstr ""
 "Abilitare \"Carica come segnaposto\" disabiliterà \"Figli modificabili\" e "
 "ripristinerà tutte le proprietà del nodo ai loro valori predefiniti."
+
+msgid "Toggle Load as Placeholder"
+msgstr "Carica come segnaposto"
 
 msgid "Make Local"
 msgstr "Rendi locale"
@@ -6945,6 +6962,9 @@ msgid ""
 msgstr ""
 "Filtri per escludere file/cartelle dal progetto\n"
 "(separati da virgole, per esempio: *.cfg, *.txt, docs/*)"
+
+msgid "Patching"
+msgstr "Patch"
 
 msgid "Enable Delta Encoding"
 msgstr "Abilita codifica delta"
@@ -10551,15 +10571,6 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Selettore di scene"
 
-msgid ""
-"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
-"2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
-msgstr ""
-"Se abilitata, è possibile selezionare le scene dal pannello Filesystem, dal "
-"pannello Scene o dalla viewport dell'editor 2D.\n"
-"Tenendo premuto Ctrl si abilita la selezione dalla viewport dell'editor 2D."
-
 msgid "Edit Properties"
 msgstr "Modifica proprietà"
 
@@ -10577,14 +10588,6 @@ msgstr "Aggancia al centro delle celle nella griglia"
 
 msgid "Allow Overlapping"
 msgstr "Permetti sovrapposizioni"
-
-msgid ""
-"Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
-msgstr ""
-"Permette di disegnare sopra le scene già disegnate.\n"
-"Tieni premuto Shift mentre dipingi per cambiare temporaneamente questa "
-"opzione."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Questo scheletro non ha ossa, crea dei nodi Bone2D figlio."
@@ -11221,15 +11224,6 @@ msgstr ""
 
 msgid "Select a property editor"
 msgstr "Seleziona un editor di proprietà"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Tieni premuto Ctrl per creare più tasselli."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Tieni premuto Maiusc per creare tasselli grandi."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Tieni premuto Shift per selezionare più regioni."
 
 msgid ""
 "TileSet is in read-only mode. Make the resource unique to edit TileSet "
@@ -12947,6 +12941,12 @@ msgid "View Rotation Locked"
 msgstr "Rotazione della vista bloccata"
 
 msgid ""
+"To zoom further, change the camera's clipping planes (View → Settings...)"
+msgstr ""
+"Per ingrandire ulteriormente, modifica i piani di ritaglio della telecamera "
+"(Vista -> Impostazioni...)"
+
+msgid ""
 "Hold %s to highlight a vertex on the currently selected node,\n"
 "then drag to move the node and snap it to vertices on neighboring nodes.\n"
 "\n"
@@ -13041,6 +13041,11 @@ msgstr "%s+Trascina: Usa scatto."
 msgid "LMB+Drag: Measure the distance between two points in 3D space."
 msgstr ""
 "Clic sinistro + Trascina: Misura la distanza tra due punti nello spazio 3D."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr ""
+"Clic sinistro + Trascina: Misura la distanza tra due punti nello spazio 3D.\n"
+"Maiusc + Clic sinistro + Trascina: Mostra misure per ogni componente."
 
 msgid ""
 "Scene contains\n"
@@ -15985,6 +15990,9 @@ msgstr "Seleziona padre"
 
 msgid "Use Template"
 msgstr "Usa modello"
+
+msgid "Template"
+msgstr "Modello"
 
 msgid "Built-in Script:"
 msgstr "Script integrato:"

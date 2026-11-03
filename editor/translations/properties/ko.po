@@ -63,7 +63,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-05 07:04+0000\n"
+"PO-Revision-Date: 2026-08-15 09:57+0000\n"
 "Last-Translator: Myeongjin <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -72,7 +72,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.8.1.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "애플리케이션"
@@ -11462,6 +11462,24 @@ msgstr "파일 썸네일"
 
 msgid "Folder Thumbnail"
 msgstr "폴더 썸네일"
+
+msgid "Menu Copy Path"
+msgstr "메뉴 경로 복사"
+
+msgid "Menu Delete"
+msgstr "메뉴 삭제"
+
+msgid "Menu New Folder"
+msgstr "메뉴 새 폴더"
+
+msgid "Menu Refresh"
+msgstr "메뉴 새로 고침"
+
+msgid "Menu Show in File Manager"
+msgstr "메뉴 파일 매니저에서 보이기"
+
+msgid "Menu Open Bundle"
+msgstr "메뉴 번들 열기"
 
 msgid "Folder Icon Color"
 msgstr "폴더 아이콘 색상"
