@@ -44,6 +44,7 @@
 
 #include <cerrno>
 #include <cstdlib>
+#include <cstring>
 
 void FileAccessUnix::check_errors(bool p_write) const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");
@@ -144,27 +145,39 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		CharString cs = path.utf8();
 		int fd = mkstemp(cs.ptrw());
 		if (fd == -1) {
-			last_error = ERR_FILE_CANT_OPEN;
-			return last_error;
-		}
-
-		struct stat file_stat = {};
-		int error = stat(save_path.utf8().get_data(), &file_stat);
-		if (!error) {
-			fchmod(fd, file_stat.st_mode & 0xFFF); // Mask to remove file type
+			// A read-only directory does not let us create the temporary file,
+			// but the target file in it can still be writable. Projects unpacked
+			// from archives or copied from shares often have such directories.
+			// In that case, write the target file in place.
+			int temp_errno = errno;
+			bool directory_denied = temp_errno == EACCES || temp_errno == EPERM;
+			if (!directory_denied || access(save_path.utf8().get_data(), W_OK) != 0) {
+				last_error = ERR_FILE_CANT_OPEN;
+				return last_error;
+			}
+			WARN_PRINT(vformat("Cannot create a temporary file next to '%s' (%s). Writing the file in place.", save_path, String::utf8(strerror(temp_errno))));
+			path = save_path;
+			save_path = "";
+			f = fopen(path.utf8().get_data(), mode_string);
 		} else {
-			fchmod(fd, 0644); // Fallback permissions
-		}
+			struct stat file_stat = {};
+			int error = stat(save_path.utf8().get_data(), &file_stat);
+			if (!error) {
+				fchmod(fd, file_stat.st_mode & 0xFFF); // Mask to remove file type
+			} else {
+				fchmod(fd, 0644); // Fallback permissions
+			}
 
-		path = String::utf8(cs.ptr());
+			path = String::utf8(cs.ptr());
 
-		f = fdopen(fd, mode_string);
-		if (f == nullptr) {
-			// Delete temp file and close descriptor if open failed.
-			::unlink(cs.ptr());
-			::close(fd);
-			last_error = ERR_FILE_CANT_OPEN;
-			return last_error;
+			f = fdopen(fd, mode_string);
+			if (f == nullptr) {
+				// Delete temp file and close descriptor if open failed.
+				::unlink(cs.ptr());
+				::close(fd);
+				last_error = ERR_FILE_CANT_OPEN;
+				return last_error;
+			}
 		}
 	} else {
 		f = fopen(path.utf8().get_data(), mode_string);
