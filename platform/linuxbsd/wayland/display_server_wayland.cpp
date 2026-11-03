@@ -1766,6 +1766,12 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	}
 }
 
+void DisplayServerWayland::cursor_clear_custom_image_cache() {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	custom_cursors.clear();
+}
+
 bool DisplayServerWayland::get_swap_cancel_ok() {
 	return swap_cancel_ok;
 }

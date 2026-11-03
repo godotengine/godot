@@ -263,6 +263,7 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape);
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_clear_custom_image_cache() {}
 
 	/* KEYBOARD */
 

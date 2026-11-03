@@ -404,6 +404,7 @@ public:
 	void cursor_update_shape();
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void cursor_clear_custom_image_cache() override;
 
 	virtual bool get_swap_cancel_ok() override;
 

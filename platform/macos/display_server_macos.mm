@@ -3150,6 +3150,12 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 	}
 }
 
+void DisplayServerMacOS::cursor_clear_custom_image_cache() {
+	_THREAD_SAFE_METHOD_
+
+	cursors_cache.clear();
+}
+
 bool DisplayServerMacOS::get_swap_cancel_ok() {
 	return false;
 }

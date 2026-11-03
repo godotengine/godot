@@ -351,6 +351,9 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 #endif
 
 void finalize_display() {
+	if (display_server) {
+		display_server->cursor_clear_custom_image_cache();
+	}
 	if (rendering_server) {
 		rendering_server->finish();
 	}
