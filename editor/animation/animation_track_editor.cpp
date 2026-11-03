@@ -7943,6 +7943,8 @@ void AnimationTrackEditor::_toggle_function_names() {
 }
 
 void AnimationTrackEditor::_view_group_toggle() {
+	EditorSettings::get_singleton()->set_project_metadata(
+        "animation_track_editor", "view_group_pressed", view_group->is_pressed());
 	_update_tracks();
 	view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 	bezier_edit->set_filtered(selected_filter->is_pressed());
@@ -8401,6 +8403,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_flat(true);
 	view_group->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
+	view_group->set_pressed(EditorSettings::get_singleton()->get_project_metadata(
+        "animation_track_editor", "view_group_pressed", false));
 	view_group->set_tooltip_text(TTRC("Group tracks by node or display them as plain list."));
 
 	tools_hf->add_child(view_group);
