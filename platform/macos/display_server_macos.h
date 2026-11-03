@@ -269,6 +269,7 @@ public:
 	DisplayServerEnums::WindowID _get_focused_window_or_popup() const;
 	void mouse_enter_window(DisplayServerEnums::WindowID p_window);
 	void mouse_exit_window(DisplayServerEnums::WindowID p_window);
+	DisplayServerEnums::WindowID get_mouseover_window() const { return window_mouseover_id; }
 	void update_presentation_mode();
 
 	bool is_always_on_top_recursive(DisplayServerEnums::WindowID p_window) const;
