@@ -1380,13 +1380,13 @@ void ControlOffsetTransformPreview::edit(Control *p_control) {
 
 	const Callable update_overlays = callable_mp(plugin, &EditorPlugin::update_overlays);
 
-	if (selected_control) {
+	if (selected_control && selected_control->is_inside_tree()) {
 		selected_control->disconnect(SceneStringName(draw), update_overlays);
 	}
 
 	selected_control = p_control;
 
-	if (selected_control) {
+	if (selected_control && selected_control->is_inside_tree()) {
 		selected_control->connect(SceneStringName(draw), update_overlays);
 	}
 
