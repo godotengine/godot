@@ -1603,14 +1603,13 @@ void main() {
 		hvec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
 		hvec3 anisotropic_tangent = cross(anisotropic_direction, view);
 		hvec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-		hvec3 bent_normal = normalize(mix(indirect_normal, anisotropic_normal, anisotropy * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
+		hvec3 bent_normal = normalize(mix(normal, anisotropic_normal, anisotropy * clamp(half(5.0) * roughness, half(0.0), half(1.0))));
 		hvec3 ref_vec = reflect(-view, bent_normal);
-		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
-		hvec3 ref_vec = reflect(-view, indirect_normal);
-		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
+		hvec3 ref_vec = reflect(-view, normal);
 #endif
-		half horizon = min(half(1.0) + dot(ref_vec, indirect_normal), half(1.0));
+		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
+		half horizon = min(half(1.0) + dot(ref_vec, geo_normal), half(1.0));
 		ref_vec = hvec3(scene_data.radiance_inverse_xform * vec3(ref_vec));
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 		float lod;
@@ -1872,7 +1871,7 @@ void main() {
 			}
 #endif // LIGHT_CLEARCOAT_USED
 
-			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light,
+			reflection_process(reflection_index, vertex, ref_vec, indirect_normal, roughness, ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
 					cc_ref_vec, mix(half(0.001), half(0.1), clearcoat_roughness), cc_reflection_accum,
 #endif

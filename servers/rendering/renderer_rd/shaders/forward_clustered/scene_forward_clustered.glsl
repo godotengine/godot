@@ -1704,13 +1704,11 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
-		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
 		vec3 ref_vec = reflect(-view, normal);
-		ref_vec = mix(ref_vec, normal, roughness * roughness);
 #endif
-
-		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		ref_vec = mix(ref_vec, indirect_normal, roughness * roughness);
+		float horizon = min(1.0 + dot(ref_vec, geo_normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
@@ -1945,7 +1943,7 @@ void fragment_shader(in SceneData scene_data) {
 		//make vertex orientation the world one, but still align to camera
 		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
 		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
-		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
+		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, normal);
 
 		//apply y-mult
 		cam_pos.y *= sdfgi.y_mult;
@@ -2017,7 +2015,7 @@ void fragment_shader(in SceneData scene_data) {
 		// Make vertex orientation the world one, but still align to camera.
 		vec3 cam_pos = mat3(inv_view_matrix) * vertex;
 		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
-		vec3 ref_vec = mat3(inv_view_matrix) * normalize(reflect(-view, indirect_normal));
+		vec3 ref_vec = mat3(inv_view_matrix) * normalize(reflect(-view, normal));
 
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(cam_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -2055,18 +2053,18 @@ void fragment_shader(in SceneData scene_data) {
 			vec2 base_coord = screen_uv;
 			vec2 closest_coord = base_coord;
 #ifdef USE_MULTIVIEW
-			float closest_ang = dot(indirect_normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
+			float closest_ang = dot(normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(base_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
 #else // USE_MULTIVIEW
-			float closest_ang = dot(indirect_normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0));
+			float closest_ang = dot(normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), base_coord, 0.0).xyz * 2.0 - 1.0));
 #endif // USE_MULTIVIEW
 
 			for (int i = 0; i < 4; i++) {
 				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
 				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
 #ifdef USE_MULTIVIEW
-				float neighbour_ang = dot(indirect_normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
+				float neighbour_ang = dot(normal, normalize(textureLod(sampler2DArray(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0));
 #else // USE_MULTIVIEW
-				float neighbour_ang = dot(indirect_normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0));
+				float neighbour_ang = dot(normal, normalize(textureLod(sampler2D(normal_roughness_buffer, SAMPLER_LINEAR_CLAMP), neighbour_coord, 0.0).xyz * 2.0 - 1.0));
 #endif // USE_MULTIVIEW
 				if (neighbour_ang > closest_ang) {
 					closest_ang = neighbour_ang;
@@ -2165,7 +2163,7 @@ void fragment_shader(in SceneData scene_data) {
 				}
 #endif // LIGHT_CLEARCOAT_USED
 
-				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light,
+				reflection_process(reflection_index, vertex, ref_vec, indirect_normal, roughness, ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
 						cc_ref_vec, mix(0.001, 0.1, clearcoat_roughness), cc_reflection_accum,
 #endif
