@@ -593,6 +593,16 @@ bool WorkerThreadPool::_handle_runlevel(ThreadData *p_thread_data, MutexLock<Bin
 					p_thread_data->pre_exited_languages = true;
 					runlevel_data.pre_exit_languages.num_idle_threads++;
 					control_cond_var.notify_all();
+
+					// Some threads may have gone back to sleep while low-priority tasks were queued.
+					// Wake them now that the queues are empty so they can report idle as well.
+					for (uint32_t i = 0; i < threads.size(); i++) {
+						ThreadData &thread = threads[i];
+						if (!thread.pre_exited_languages && !thread.signaled) {
+							thread.cond_var.notify_one();
+							thread.signaled = true;
+						}
+					}
 				}
 			}
 		} break;

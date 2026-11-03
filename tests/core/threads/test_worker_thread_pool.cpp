@@ -126,6 +126,61 @@ static void static_legit_task(void *p_arg) {
 	counter[1].add(1);
 }
 
+struct ShutdownTestData {
+	WorkerThreadPool *pool = nullptr;
+	SafeFlag finished;
+	SafeFlag timed_out;
+};
+
+static void static_shutdown_task(void *p_userdata) {
+	SafeFlag *started = (SafeFlag *)p_userdata;
+	started->set();
+	OS::get_singleton()->delay_usec(200000);
+}
+
+static void static_noop_task(void *) {
+}
+
+static void static_shutdown_watchdog(void *p_userdata) {
+	ShutdownTestData *data = (ShutdownTestData *)p_userdata;
+	uint64_t deadline = OS::get_singleton()->get_ticks_msec() + 2000;
+	while (!data->finished.is_set() && OS::get_singleton()->get_ticks_msec() < deadline) {
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	if (!data->finished.is_set()) {
+		// Unblock a regressed pool so the test can fail without hanging the test runner.
+		data->timed_out.set();
+		WorkerThreadPool::TaskID wake_task = data->pool->add_native_task(static_noop_task, nullptr, true);
+		data->pool->wait_for_task_completion(wake_task);
+	}
+}
+
+TEST_CASE("[WorkerThreadPool] Wake idle threads when exiting languages with queued low-priority tasks") {
+	WorkerThreadPool pool(false);
+	// Keep only one of the two worker threads eligible for low-priority work.
+	pool.init(2, 0.5);
+
+	SafeFlag started;
+	pool.add_native_task(static_shutdown_task, &started, false);
+	while (!started.is_set()) {
+		OS::get_singleton()->delay_usec(1000);
+	}
+	for (int i = 0; i < 3; i++) {
+		pool.add_native_task(static_shutdown_task, &started, false);
+	}
+
+	ShutdownTestData data;
+	data.pool = &pool;
+	Thread watchdog_thread;
+	watchdog_thread.start(static_shutdown_watchdog, &data);
+	pool.exit_languages_threads();
+	data.finished.set();
+	watchdog_thread.wait_to_finish();
+
+	CHECK_MESSAGE(!data.timed_out.is_set(), "All worker threads should report idle without an additional task notification.");
+}
+
 TEST_CASE("[WorkerThreadPool] Run a yielding daemon as the only hope for other tasks to run") {
 	exit.clear();
 	counter.clear();
