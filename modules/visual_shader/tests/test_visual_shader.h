@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "tests/test_macros.h"
+#include "../visual_shader.h" 
 
-#include "../visual_shader.h"
+#include "tests/test_macros.h"
 
 namespace TestVisualShader {
 
