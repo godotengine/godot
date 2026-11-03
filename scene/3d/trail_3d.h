@@ -173,6 +173,7 @@ private:
 	//Ribbon
 	void _do_rebuild();
 	real_t _calc_current_length() const;
+	void _schedule_process();
 	void _ensure_material();
 	void _init_clear_mesh();
 	void _process_trail();

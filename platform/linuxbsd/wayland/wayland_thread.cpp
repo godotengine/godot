@@ -327,9 +327,12 @@ void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_
 	ERR_FAIL_NULL(wayland_thread);
 
 	Key last_key = Key::NONE;
-	xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+	xkb_compose_status compose_status = XKB_COMPOSE_NOTHING;
+	if (p_ss->xkb_compose_state) {
+		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+	}
 
-	if (p_pressed) {
+	if (p_pressed && p_ss->xkb_compose_state) {
 		xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
 		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
 		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
@@ -2391,7 +2394,14 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	xkb_state_unref(ss->xkb_state);
 	ss->xkb_state = xkb_state_new(ss->xkb_keymap);
 
-	xkb_compose_table_unref(ss->xkb_compose_table);
+	if (ss->xkb_compose_state) {
+		xkb_compose_state_unref(ss->xkb_compose_state);
+		ss->xkb_compose_state = nullptr;
+	}
+	if (ss->xkb_compose_table) {
+		xkb_compose_table_unref(ss->xkb_compose_table);
+		ss->xkb_compose_table = nullptr;
+	}
 	const char *locale = getenv("LC_ALL");
 	if (!locale || !*locale) {
 		locale = getenv("LC_CTYPE");
@@ -2403,9 +2413,9 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 		locale = "C";
 	}
 	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
-
-	xkb_compose_state_unref(ss->xkb_compose_state);
-	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	if (ss->xkb_compose_table) {
+		ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	}
 
 	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }

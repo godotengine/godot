@@ -909,10 +909,15 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				Rect2i region = xr_interface->get_render_region();
 
 				if (vp->size != vp->internal_size) {
-					region.size.width = region.size.width / double(vp->size.width) * double(vp->internal_size.width);
-					region.size.height = region.size.height / double(vp->size.height) * double(vp->internal_size.height);
+					const Point2i region_end = region.position + region.size;
+					const int scaled_region_end_x =
+							region_end.x / double(vp->size.width) * double(vp->internal_size.width);
+					const int scaled_region_end_y =
+							region_end.y / double(vp->size.height) * double(vp->internal_size.height);
 					region.position.x = region.position.x / double(vp->size.width) * double(vp->internal_size.width);
 					region.position.y = region.position.y / double(vp->size.height) * double(vp->internal_size.height);
+					region.size.width = scaled_region_end_x - region.position.x;
+					region.size.height = scaled_region_end_y - region.position.y;
 				}
 
 				// Sometimes the openxr swapchain has been recreated but the viewport has not been

@@ -181,10 +181,12 @@ void Trail3D::_notification(int p_what) {
 }
 
 void Trail3D::set_width(float p_width) {
-	width = p_width;
-	if (limit_mode == LIMIT_MODE_MAX_LENGTH && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
-		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	if (width == p_width) {
+		return;
 	}
+	width = p_width;
+	_needs_rebuilding = true;
+	_schedule_process();
 }
 
 float Trail3D::get_width() const {
@@ -214,6 +216,7 @@ void Trail3D::set_width_curve(Ref<Curve> p_width_curve) {
 		width_curve->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	_needs_rebuilding = true;
+	_schedule_process();
 }
 
 Ref<Curve> Trail3D::get_width_curve() const {
@@ -221,12 +224,12 @@ Ref<Curve> Trail3D::get_width_curve() const {
 }
 
 void Trail3D::set_color(const Color &p_color) {
-	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
-		if (!RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
-			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
-		}
+	if (p_color == color) {
+		return;
 	}
 	color = p_color;
+	_needs_rebuilding = true;
+	_schedule_process();
 }
 
 Color Trail3D::get_color() const {
@@ -245,6 +248,7 @@ void Trail3D::set_color_gradient(Ref<Gradient> p_color_gradient) {
 		color_gradient->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	_needs_rebuilding = true;
+	_schedule_process();
 }
 
 Ref<Gradient> Trail3D::get_color_gradient() const {
@@ -307,6 +311,7 @@ Trail3D::MeshAlignment Trail3D::get_mesh_alignment() const {
 void Trail3D::set_tiling_mode(TilingMode p_tiling_mode) {
 	if (p_tiling_mode != tiling_mode) {
 		_needs_rebuilding = true;
+		_schedule_process();
 	}
 	tiling_mode = p_tiling_mode;
 	notify_property_list_changed();
@@ -319,6 +324,7 @@ Trail3D::TilingMode Trail3D::get_tiling_mode() const {
 void Trail3D::set_tiling_multiplier(float p_tiling_multiplier) {
 	if (p_tiling_multiplier != tiling_multiplier) {
 		_needs_rebuilding = true;
+		_schedule_process();
 	}
 	tiling_multiplier = p_tiling_multiplier;
 }
@@ -330,6 +336,12 @@ float Trail3D::get_tiling_multiplier() const {
 void Trail3D::rebuild() {
 	_needs_rebuilding = true;
 	_do_rebuild();
+}
+
+void Trail3D::_schedule_process() {
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH && is_inside_tree() && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 void Trail3D::clear() {
@@ -370,6 +382,7 @@ Trail3D::LimitMode Trail3D::get_limit_mode() const {
 void Trail3D::set_min_section_length(real_t p_min_section_length) {
 	if (p_min_section_length != min_section_length) {
 		_needs_rebuilding = true;
+		_schedule_process();
 	}
 	min_section_length = p_min_section_length;
 }
@@ -379,7 +392,11 @@ real_t Trail3D::get_min_section_length() const {
 }
 
 void Trail3D::set_lifetime(real_t p_lifetime) {
+	if (lifetime == p_lifetime) {
+		return;
+	}
 	lifetime = p_lifetime;
+	_schedule_process();
 }
 
 real_t Trail3D::get_lifetime() const {
@@ -387,7 +404,12 @@ real_t Trail3D::get_lifetime() const {
 }
 
 void Trail3D::set_max_length(real_t p_max_length) {
+	if (max_length == p_max_length) {
+		return;
+	}
 	max_length = p_max_length;
+	_needs_rebuilding = true;
+	_schedule_process();
 }
 
 real_t Trail3D::get_max_length() const {
@@ -397,6 +419,7 @@ real_t Trail3D::get_max_length() const {
 void Trail3D::set_pin_uv(bool p_pin_uv) {
 	if (p_pin_uv != pin_uv) {
 		_needs_rebuilding = true;
+		_schedule_process();
 	}
 	pin_uv = p_pin_uv;
 }
@@ -661,7 +684,7 @@ void Trail3D::_process_trail() {
 	Transform3D tf = get_global_transform_interpolated();
 	Vector3 pos = tf.origin;
 
-	if (!_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) <= CMP_EPSILON2) {
+	if (limit_mode != LIMIT_MODE_LIFETIME && !_needs_rebuilding && !_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) <= CMP_EPSILON2) {
 		// When the two last points are close enough, we manually stack them, so their distance will always be less
 		// than CMP_EPSILON2
 		return;
@@ -758,7 +781,7 @@ void Trail3D::_process_trail() {
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
-				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
+				_velocities.insert(1, (points[1] - points[2]).length() / MAX(_times[1] - _times[2], CMP_EPSILON));
 				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
@@ -823,9 +846,9 @@ void Trail3D::_process_trail() {
 
 			if (distance > 0.) {
 				points.write[last_index] += dir / distance * MIN(distance, speed_distance);
-				real_t time_until_touch = speed_distance / _velocities[last_index];
-				tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], MIN(delta / time_until_touch, 1.));
-				normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], MIN(delta / time_until_touch, 1.));
+				real_t interpolation = MIN(speed_distance / distance, 1.);
+				tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], interpolation);
+				normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], interpolation);
 			}
 			if (speed_distance > distance) {
 				points.remove_at(last_index);
@@ -835,6 +858,7 @@ void Trail3D::_process_trail() {
 				_velocities.remove_at(last_index);
 			}
 		}
+		last_index = points.size() - 1;
 		{
 			// Handle this special case, since point zero isn't a "real" pinned point
 			Vector3 dir = points[0] - points[1];
@@ -842,9 +866,9 @@ void Trail3D::_process_trail() {
 			if (points.size() == 2 && _times[0] - _times[1] > lifetime) {
 				if (distance > CMP_EPSILON) {
 					real_t speed_distance = _velocities[1] * delta;
-					real_t time_until_touch = speed_distance / _velocities[last_index];
-					tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], MIN(delta / time_until_touch, 1.));
-					normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], MIN(delta / time_until_touch, 1.));
+					real_t interpolation = MIN(speed_distance / distance, 1.);
+					tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], interpolation);
+					normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], interpolation);
 					points.write[1] += dir / distance * MIN(distance, speed_distance);
 				} else {
 					points.write[1] = points[0];

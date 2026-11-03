@@ -577,6 +577,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
+	int max_glow_index = -1;
 	if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 		RENDER_TIMESTAMP("Glow");
 
@@ -586,7 +587,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		Vector<float> glow_levels = environment_get_glow_levels(p_render_data->environment);
 		bool use_debanding = rb->get_use_debanding() && !texture_storage->render_target_is_using_hdr(render_target);
 
-		int max_glow_index = -1;
 		int min_glow_level = RSE::MAX_GLOW_LEVELS;
 		for (int i = 0; i < RSE::MAX_GLOW_LEVELS; i++) {
 			if (glow_levels[i] > 0.01) {
@@ -595,7 +595,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 
-		max_glow_index = MIN(max_glow_index, mipmaps - 1);
+		max_glow_index = MIN(max_glow_index, MAX(-1, mipmaps - (can_use_storage ? 1 : 2)));
 
 		float luminance_multiplier = rb->get_luminance_multiplier();
 		if (can_use_storage) {
@@ -626,48 +626,50 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			RID source;
 			RID dest;
 
-			for (uint32_t l = 0; l < rb->get_view_count(); l++) {
-				RD::get_singleton()->draw_command_begin_label("Gaussian Glow downsample");
+			if (max_glow_index >= 0) {
+				for (uint32_t l = 0; l < rb->get_view_count(); l++) {
+					RD::get_singleton()->draw_command_begin_label("Gaussian Glow downsample");
 
-				Size2i source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_COLOR, 0);
+					Size2i source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_COLOR, 0);
 
-				source = rb->get_internal_texture(l);
-				dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1); // Level 1 is quarter res.
+					source = rb->get_internal_texture(l);
+					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1); // Level 1 is quarter res.
 
-				copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, source_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment));
+					copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, source_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment));
 
-				Size2i vp_size;
-				for (int i = 1; i < (max_glow_index + 1); i++) {
-					source = dest;
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
+					Size2i vp_size;
+					for (int i = 1; i < (max_glow_index + 1); i++) {
+						source = dest;
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
 
-					copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment));
+						copy_effects->gaussian_glow_downsample_raster(source, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment));
+					}
+					RD::get_singleton()->draw_command_end_label();
+					RD::get_singleton()->draw_command_begin_label("Gaussian Glow upsample");
+
+					if (max_glow_index <= 0) {
+						// Only layer 1 is visible, just copy over.
+						source = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK); // Technically a waste, but oh well. I'm not optimizing for the case of only level 1.
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, 2);
+						RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1);
+						source_size = vp_size;
+
+						copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[0], 0.0, use_debanding);
+					}
+
+					for (int i = max_glow_index - 1; i >= 0; i--) {
+						source = dest;
+						source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 3);
+						vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
+						dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, i + 2);
+						RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
+
+						copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[i], i == (max_glow_index - 1) ? glow_levels[i + 1] : 1.0, use_debanding);
+					}
+					RD::get_singleton()->draw_command_end_label();
 				}
-				RD::get_singleton()->draw_command_end_label();
-				RD::get_singleton()->draw_command_begin_label("Gaussian Glow upsample");
-
-				if (max_glow_index <= 0) {
-					// Only layer 1 is visible, just copy over.
-					source = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK); // Technically a waste, but oh well. I'm not optimizing for the case of only level 1.
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, 2);
-					RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, 1);
-					source_size = vp_size;
-
-					copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[0], 0.0, use_debanding);
-				}
-
-				for (int i = max_glow_index - 1; i >= 0; i--) {
-					source = dest;
-					source_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 3);
-					vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i + 2); // RB_TEX_BLUR_0 is double the size of RB_TEX_BLUR_1, so go up a mip level.
-					dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, l, i + 2);
-					RID blend_tex = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i + 1);
-
-					copy_effects->gaussian_glow_upsample_raster(source, dest, blend_tex, luminance_multiplier, source_size, vp_size, glow_levels[i], i == (max_glow_index - 1) ? glow_levels[i + 1] : 1.0, use_debanding);
-				}
-				RD::get_singleton()->draw_command_end_label();
 			}
 		}
 	}
@@ -688,12 +690,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
-		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
+		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment) && max_glow_index >= 0) {
 			tonemap.use_glow = true;
 			tonemap.glow_mode = environment_get_glow_blend_mode(p_render_data->environment);
 			tonemap.glow_intensity = tonemap.glow_mode == RSE::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
 			for (int i = 0; i < RSE::MAX_GLOW_LEVELS; i++) {
-				tonemap.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
+				tonemap.glow_levels[i] = i <= max_glow_index ? environment_get_glow_levels(p_render_data->environment)[i] : 0.0f;
 			}
 
 			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, 0);
