@@ -796,7 +796,12 @@ namespace embree
 #endif
 
       /* return if there are no valid rays */
+#if defined(__GNUC__) && (__GNUC__ < 14)
+      /* Before GCC 14, AVX512 masks could end up broken by optimization */
+      unsigned short valid_bits = movemask(valid) & 0xffff;
+#else
       size_t valid_bits = movemask(valid);
+#endif
       if (unlikely(valid_bits == 0)) return;
 
       /* verify correct input */

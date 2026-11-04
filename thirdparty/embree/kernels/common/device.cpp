@@ -744,41 +744,4 @@ namespace embree
 #pragma GCC diagnostic pop
 
 #endif
-
-  DeviceEnterLeave::DeviceEnterLeave (RTCDevice hdevice)
-    : device((Device*)hdevice)
-  {
-    assert(device);
-    device->refInc();
-    device->enter();
-  }
-  
-  DeviceEnterLeave::DeviceEnterLeave (RTCScene hscene)
-    : device(((Scene*)hscene)->device)
-  {
-    assert(device);
-    device->refInc();
-    device->enter();
-  }
-  
-  DeviceEnterLeave::DeviceEnterLeave (RTCGeometry hgeometry)
-    : device(((Geometry*)hgeometry)->device)
-  {
-    assert(device);
-    device->refInc();
-    device->enter();
-  }
-  
-  DeviceEnterLeave::DeviceEnterLeave (RTCBuffer hbuffer)
-    : device(((Buffer*)hbuffer)->device)
-  {
-    assert(device);
-    device->refInc();
-    device->enter();
-  }
-  
-  DeviceEnterLeave::~DeviceEnterLeave() {
-    device->leave();
-    device->refDec();
-  }
 }

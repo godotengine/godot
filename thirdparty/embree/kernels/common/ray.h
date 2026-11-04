@@ -250,7 +250,7 @@ namespace embree
       if (geomID == RTC_INVALID_GEOMETRY_ID) return;
       const bool vt = (abs(tfar) <= FLT_LARGE) || (tfar == float(neg_inf));
       const bool vu = (abs(u) <= FLT_LARGE);
-      const bool vv = (abs(u) <= FLT_LARGE);
+      const bool vv = (abs(v) <= FLT_LARGE);
       const bool vnx = abs(Ng.x) <= FLT_LARGE;
       const bool vny = abs(Ng.y) <= FLT_LARGE;
       const bool vnz = abs(Ng.z) <= FLT_LARGE;
