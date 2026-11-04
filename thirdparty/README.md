@@ -828,7 +828,7 @@ Collection of single-file libraries used in Godot components.
 
 - `bcdec.h`
   * Upstream: https://github.com/iOrange/bcdec
-  * Version: git (3b29f8f44466c7d59852670f82f53905cf627d48, 2024)
+  * Version: git (80859ed3b7afb1c527a2a99d70c61457bea72d0c, 2026)
   * License: MIT or Unlicense
 - `cubemap_coeffs.h`
   * Upstream: https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes
