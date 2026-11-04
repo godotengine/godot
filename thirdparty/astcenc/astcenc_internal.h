@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -30,6 +30,7 @@
 #endif
 #include <cstdlib>
 #include <limits>
+#include <type_traits>
 
 #include "astcenc.h"
 #include "astcenc_mathlib.h"
@@ -77,7 +78,7 @@ static constexpr unsigned int BLOCK_MAX_COMPONENTS { 4 };
 /** @brief The maximum number of partitions a block can support. */
 static constexpr unsigned int BLOCK_MAX_PARTITIONS { 4 };
 
-/** @brief The number of partitionings, per partition count, suported by the ASTC format. */
+/** @brief The number of partitionings, per partition count, supported by the ASTC format. */
 static constexpr unsigned int BLOCK_MAX_PARTITIONINGS { 1024 };
 
 /** @brief The maximum number of texels used during partition selection for texel clustering. */
@@ -118,6 +119,9 @@ static constexpr unsigned int WEIGHTS_MAX_DECIMATION_MODES { 87 };
 
 /** @brief The high default error used to initialize error trackers. */
 static constexpr float ERROR_CALC_DEFAULT { 1e30f };
+
+/** @brief The maximum alpha-scale kernel radius. */
+static constexpr unsigned int ALPHASCALE_MAX_RADIUS { 64 };
 
 /**
  * @brief The minimum tuning setting threshold for the one partition fast path.
@@ -276,20 +280,20 @@ struct partition_metrics
 };
 
 /**
- * @brief Computed lines for a a three component analysis.
+ * @brief Computed lines for a three component analysis.
  */
 struct partition_lines3
 {
 	/** @brief Line for uncorrelated chroma. */
 	line3 uncor_line;
 
-	/** @brief Line for correlated chroma, passing though the origin. */
+	/** @brief Line for correlated chroma, passing through the origin. */
 	line3 samec_line;
 
 	/** @brief Post-processed line for uncorrelated chroma. */
 	processed_line3 uncor_pline;
 
-	/** @brief Post-processed line for correlated chroma, passing though the origin. */
+	/** @brief Post-processed line for correlated chroma, passing through the origin. */
 	processed_line3 samec_pline;
 
 	/**
@@ -336,7 +340,7 @@ struct partition_info
  * @brief The weight grid information for a single decimation pattern.
  *
  * ASTC can store one weight per texel, but is also capable of storing lower resolution weight grids
- * that are interpolated during decompression to assign a with to a texel. Storing fewer weights
+ * that are interpolated during decompression to assign a weight to a texel. Storing fewer weights
  * can free up a substantial amount of bits that we can then spend on more useful things, such as
  * more accurate endpoints and weights, or additional partitions.
  *
@@ -381,6 +385,7 @@ struct decimation_info
 	 */
 	ASTCENC_ALIGNAS uint8_t texel_weight_contribs_int_tr[4][BLOCK_MAX_TEXELS];
 
+#if !defined(ASTCENC_DECOMPRESS_ONLY)
 	/**
 	 * @brief The bilinear contribution of the N weights that are interpolated for each texel.
 	 * Value is between 0 and 1, stored transposed to improve vectorization.
@@ -407,6 +412,7 @@ struct decimation_info
 	 * Value is between 0 and 1, stored transposed to improve vectorization.
 	 */
 	float texel_contrib_for_weight[BLOCK_MAX_TEXELS][BLOCK_MAX_WEIGHTS];
+#endif
 };
 
 /**
@@ -530,13 +536,13 @@ struct decimation_mode
 struct block_size_descriptor
 {
 	/** @brief The block X dimension, in texels. */
-	uint8_t xdim;
+	uint8_t dim_x;
 
 	/** @brief The block Y dimension, in texels. */
-	uint8_t ydim;
+	uint8_t dim_y;
 
 	/** @brief The block Z dimension, in texels. */
-	uint8_t zdim;
+	uint8_t dim_z;
 
 	/** @brief The block total texel count. */
 	uint8_t texel_count;
@@ -598,6 +604,7 @@ struct block_size_descriptor
 	 */
 	uint16_t partitioning_packed_index[3][BLOCK_MAX_PARTITIONINGS];
 
+#if !defined(ASTCENC_DECOMPRESS_ONLY)
 	/** @brief The active texels for k-means partition selection. */
 	uint8_t kmeans_texels[BLOCK_MAX_KMEANS_TEXELS];
 
@@ -621,6 +628,7 @@ struct block_size_descriptor
 	 * Indexed by remapped index, not physical index.
 	 */
 	uint64_t coverage_bitmaps_4[BLOCK_MAX_PARTITIONINGS][4];
+#endif
 
 	/**
 	 * @brief Get the block mode structure for index @c block_mode.
@@ -786,13 +794,13 @@ struct image_block
 	uint8_t alpha_lns[BLOCK_MAX_TEXELS];
 
 	/** @brief The X position of this block in the input or output image. */
-	unsigned int xpos;
+	size_t pos_x;
 
 	/** @brief The Y position of this block in the input or output image. */
-	unsigned int ypos;
+	size_t pos_y;
 
 	/** @brief The Z position of this block in the input or output image. */
-	unsigned int zpos;
+	size_t pos_z;
 
 	/**
 	 * @brief Get an RGBA texel value from the data.
@@ -801,7 +809,7 @@ struct image_block
 	 *
 	 * @return The texel in RGBA component ordering.
 	 */
-	inline vfloat4 texel(unsigned int index) const
+	inline vfloat4 texel(size_t index) const
 	{
 		return vfloat4(data_r[index],
 		               data_g[index],
@@ -816,7 +824,7 @@ struct image_block
 	 *
 	 * @return The texel in RGB0 component ordering.
 	 */
-	inline vfloat4 texel3(unsigned int index) const
+	inline vfloat4 texel3(size_t index) const
 	{
 		return vfloat3(data_r[index],
 		               data_g[index],
@@ -1131,8 +1139,8 @@ struct symbolic_compressed_block
 /**
  * @brief Parameter structure for @c compute_pixel_region_variance().
  *
- * This function takes a structure to avoid spilling arguments to the stack on every function
- * invocation, as there are a lot of parameters.
+ * This function takes a structure to avoid spilling arguments to the stack on
+ * every function invocation, as there are a lot of parameters.
  */
 struct pixel_region_args
 {
@@ -1146,25 +1154,25 @@ struct pixel_region_args
 	bool have_z;
 
 	/** @brief The kernel radius for alpha processing. */
-	unsigned int alpha_kernel_radius;
+	size_t alpha_kernel_radius;
 
 	/** @brief The X dimension of the working data to process. */
-	unsigned int size_x;
+	size_t size_x;
 
 	/** @brief The Y dimension of the working data to process. */
-	unsigned int size_y;
+	size_t size_y;
 
 	/** @brief The Z dimension of the working data to process. */
-	unsigned int size_z;
+	size_t size_z;
 
 	/** @brief The X position of first src and dst data in the data set. */
-	unsigned int offset_x;
+	size_t offset_x;
 
 	/** @brief The Y position of first src and dst data in the data set. */
-	unsigned int offset_y;
+	size_t offset_y;
 
 	/** @brief The Z position of first src and dst data in the data set. */
-	unsigned int offset_z;
+	size_t offset_z;
 
 	/** @brief The working memory buffer. */
 	vfloat4 *work_memory;
@@ -1179,22 +1187,22 @@ struct avg_args
 	pixel_region_args arg;
 
 	/** @brief The image X dimensions. */
-	unsigned int img_size_x;
+	size_t img_size_x;
 
 	/** @brief The image Y dimensions. */
-	unsigned int img_size_y;
+	size_t img_size_y;
 
 	/** @brief The image Z dimensions. */
-	unsigned int img_size_z;
+	size_t img_size_z;
 
 	/** @brief The maximum working block dimensions in X and Y dimensions. */
-	unsigned int blk_size_xy;
+	size_t blk_size_xy;
 
 	/** @brief The maximum working block dimensions in Z dimensions. */
-	unsigned int blk_size_z;
+	size_t blk_size_z;
 
 	/** @brief The working block memory size. */
-	unsigned int work_memory_size;
+	size_t work_memory_size;
 };
 
 #if defined(ASTCENC_DIAGNOSTICS)
@@ -1213,8 +1221,11 @@ struct astcenc_contexti
 	/** @brief The thread count supported by this context. */
 	unsigned int thread_count;
 
+	/** @brief Is this context the owner of @c bsd, or is it a child inheriting it. */
+	bool owns_bsd;
+
 	/** @brief The block size descriptor this context was created with. */
-	block_size_descriptor* bsd;
+	const block_size_descriptor* bsd;
 
 	/*
 	 * Fields below here are not needed in a decompress-only build, but some remain as they are
@@ -1254,18 +1265,18 @@ struct astcenc_contexti
  * This will also initialize the partition table metadata, which is stored as part of the BSD
  * structure.
  *
- * @param      x_texels                 The number of texels in the block X dimension.
- * @param      y_texels                 The number of texels in the block Y dimension.
- * @param      z_texels                 The number of texels in the block Z dimension.
+ * @param      texels_x                 The number of texels in the block X dimension.
+ * @param      texels_y                 The number of texels in the block Y dimension.
+ * @param      texels_z                 The number of texels in the block Z dimension.
  * @param      can_omit_modes           Can we discard modes and partitionings that astcenc won't use?
  * @param      partition_count_cutoff   The partition count cutoff to use, if we can omit partitionings.
  * @param      mode_cutoff              The block mode percentile cutoff [0-1].
  * @param[out] bsd                      The descriptor to initialize.
  */
 void init_block_size_descriptor(
-	unsigned int x_texels,
-	unsigned int y_texels,
-	unsigned int z_texels,
+	unsigned int texels_x,
+	unsigned int texels_y,
+	unsigned int texels_z,
 	bool can_omit_modes,
 	unsigned int partition_count_cutoff,
 	float mode_cutoff,
@@ -1294,14 +1305,14 @@ void init_partition_tables(
  *
  * Returns a dynamically allocated array; caller must free with delete[].
  *
- * @param xdim The block x size.
- * @param ydim The block y size.
+ * @param dim_x The block x size.
+ * @param dim_y The block y size.
  *
  * @return The unpacked table.
  */
 const float* get_2d_percentile_table(
-	unsigned int xdim,
-	unsigned int ydim);
+	unsigned int dim_x,
+	unsigned int dim_y);
 
 /**
  * @brief Query if a 2D block size is legal.
@@ -1309,8 +1320,8 @@ const float* get_2d_percentile_table(
  * @return True if legal, false otherwise.
  */
 bool is_legal_2d_block_size(
-	unsigned int xdim,
-	unsigned int ydim);
+	unsigned int dim_x,
+	unsigned int dim_y);
 
 /**
  * @brief Query if a 3D block size is legal.
@@ -1318,9 +1329,9 @@ bool is_legal_2d_block_size(
  * @return True if legal, false otherwise.
  */
 bool is_legal_3d_block_size(
-	unsigned int xdim,
-	unsigned int ydim,
-	unsigned int zdim);
+	unsigned int dim_x,
+	unsigned int dim_y,
+	unsigned int dim_z);
 
 /* ============================================================================
   Functionality for managing BISE quantization and unquantization.
@@ -1595,7 +1606,7 @@ static inline vmask4 get_u8_component_mask(
 /**
  * @brief Setup computation of regional averages in an image.
  *
- * This must be done by only a single thread per image, before any thread calls
+ * This must be done by a single thread per image, before any thread calls
  * @c compute_averages().
  *
  * Results are written back into @c img->input_alpha_averages.
@@ -1607,9 +1618,9 @@ static inline vmask4 get_u8_component_mask(
  *
  * @return The number of tasks in the processing stage.
  */
-unsigned int init_compute_averages(
+size_t init_compute_averages(
 	const astcenc_image& img,
-	unsigned int alpha_kernel_radius,
+	size_t alpha_kernel_radius,
 	const astcenc_swizzle& swz,
 	avg_args& ag);
 
@@ -1625,6 +1636,7 @@ unsigned int init_compute_averages(
 void compute_pixel_region_variance(
 	astcenc_contexti& ctx,
 	const pixel_region_args& arg);
+
 /**
  * @brief Load a single image block from the input image.
  *
@@ -1632,9 +1644,9 @@ void compute_pixel_region_variance(
  * @param      img           The input image data.
  * @param[out] blk           The image block to populate.
  * @param      bsd           The block size information.
- * @param      xpos          The block X coordinate in the input image.
- * @param      ypos          The block Y coordinate in the input image.
- * @param      zpos          The block Z coordinate in the input image.
+ * @param      pos_x         The block X coordinate in the input image.
+ * @param      pos_y         The block Y coordinate in the input image.
+ * @param      pos_z         The block Z coordinate in the input image.
  * @param      swz           The swizzle to apply on load.
  */
 void load_image_block(
@@ -1642,9 +1654,9 @@ void load_image_block(
 	const astcenc_image& img,
 	image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz);
 
 /**
@@ -1657,9 +1669,9 @@ void load_image_block(
  * @param      img           The input image data.
  * @param[out] blk           The image block to populate.
  * @param      bsd           The block size information.
- * @param      xpos          The block X coordinate in the input image.
- * @param      ypos          The block Y coordinate in the input image.
- * @param      zpos          The block Z coordinate in the input image.
+ * @param      pos_x         The block X coordinate in the input image.
+ * @param      pos_y         The block Y coordinate in the input image.
+ * @param      pos_z         The block Z coordinate in the input image.
  * @param      swz           The swizzle to apply on load.
  */
 void load_image_block_fast_ldr(
@@ -1667,9 +1679,9 @@ void load_image_block_fast_ldr(
 	const astcenc_image& img,
 	image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz);
 
 /**
@@ -1678,18 +1690,18 @@ void load_image_block_fast_ldr(
  * @param[out] img    The output image data.
  * @param      blk    The image block to export.
  * @param      bsd    The block size information.
- * @param      xpos   The block X coordinate in the input image.
- * @param      ypos   The block Y coordinate in the input image.
- * @param      zpos   The block Z coordinate in the input image.
+ * @param      pos_x  The block X coordinate in the input image.
+ * @param      pos_y  The block Y coordinate in the input image.
+ * @param      pos_z  The block Z coordinate in the input image.
  * @param      swz    The swizzle to apply on store.
  */
 void store_image_block(
 	astcenc_image& img,
 	const image_block& blk,
 	const block_size_descriptor& bsd,
-	unsigned int xpos,
-	unsigned int ypos,
-	unsigned int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const astcenc_swizzle& swz);
 
 /* ============================================================================
@@ -1960,7 +1972,7 @@ unsigned int compute_ideal_endpoint_formats(
  * @param         pi                   The partition info for the current trial.
  * @param         di                   The weight grid decimation table.
  * @param         dec_weights_uquant   The quantized weight set.
- * @param[in,out] ep                   The color endpoints (modifed in place).
+ * @param[in,out] ep                   The color endpoints (modified in place).
  * @param[out]    rgbs_vectors         The RGB+scale vectors for LDR blocks.
  * @param[out]    rgbo_vectors         The RGB+offset vectors for HDR blocks.
  */
@@ -1984,7 +1996,7 @@ void recompute_ideal_colors_1plane(
  * @param         di                          The weight grid decimation table.
  * @param         dec_weights_uquant_plane1   The quantized weight set for plane 1.
  * @param         dec_weights_uquant_plane2   The quantized weight set for plane 2.
- * @param[in,out] ep                          The color endpoints (modifed in place).
+ * @param[in,out] ep                          The color endpoints (modified in place).
  * @param[out]    rgbs_vector                 The RGB+scale color for LDR blocks.
  * @param[out]    rgbo_vector                 The RGB+offset color for HDR blocks.
  * @param         plane2_component            The component assigned to plane 2.
@@ -2054,21 +2066,21 @@ void compress_block(
 	compression_working_buffers& tmpbuf);
 
 /**
- * @brief Decompress a symbolic block in to an image block.
+ * @brief Decompress a symbolic block into an image block.
  *
  * @param      decode_mode   The decode mode (LDR, HDR, etc).
  * @param      bsd           The block size information.
- * @param      xpos          The X coordinate of the block in the overall image.
- * @param      ypos          The Y coordinate of the block in the overall image.
- * @param      zpos          The Z coordinate of the block in the overall image.
+ * @param      pos_x         The X coordinate of the block in the overall image.
+ * @param      pos_y         The Y coordinate of the block in the overall image.
+ * @param      pos_z         The Z coordinate of the block in the overall image.
  * @param[out] blk           The decompressed image block color data.
  */
 void decompress_symbolic_block(
 	astcenc_profile decode_mode,
 	const block_size_descriptor& bsd,
-	int xpos,
-	int ypos,
-	int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const symbolic_compressed_block& scb,
 	image_block& blk);
 
@@ -2157,7 +2169,7 @@ void symbolic_to_physical(
  * flagged as an error block if the encoding is invalid.
  *
  * @param      bsd   The block size information.
- * @param      pcb   The physical compresesd block input.
+ * @param      pcb   The physical compressed block input.
  * @param[out] scb   The output symbolic representation.
  */
 void physical_to_symbolic(
@@ -2212,9 +2224,9 @@ template<typename T>
 void aligned_free(T* ptr)
 {
 #if defined(_WIN32)
-	_aligned_free(ptr);
+	_aligned_free(const_cast<typename std::remove_const<T>::type *>(ptr));
 #else
-	free(ptr);
+	free(const_cast<typename std::remove_const<T>::type *>(ptr));
 #endif
 }
 

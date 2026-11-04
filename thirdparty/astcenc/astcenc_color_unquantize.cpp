@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -38,6 +38,24 @@ static ASTCENC_SIMD_INLINE vint4 uncontract_color(
 	vmask4 mask(true, true, false, false);
 	vint4 bc0 = asr<1>(input + input.lane<2>());
 	return select(input, bc0, mask);
+}
+
+/**
+ * @brief Signed left shift that allows all bits to be shifted out.
+ *
+ * Doing this directly on a 32-bit signed type results in undefined behavior
+ * for many possible shifts although works in practice for most compilers.
+ *
+ * @param val     The original value.
+ * @param shift   The left shift amount.
+ *
+ * @return The shifted value.
+ */
+static ASTCENC_SIMD_INLINE int safe_signed_lsh(int val, int shift)
+{
+	unsigned int uval = astc::int_as_uint(val);
+	uval <<= shift;
+	return astc::uint_as_int(uval);
 }
 
 void rgba_delta_unpack(
@@ -335,45 +353,89 @@ static void hdr_rgbo_unpack(
 	int ohcomp = 1 << mode;
 
 	if (ohcomp & 0x30)
+	{
 		green |= bit0 << 6;
+	}
+
 	if (ohcomp & 0x3A)
+	{
 		green |= bit1 << 5;
+	}
+
 	if (ohcomp & 0x30)
+	{
 		blue |= bit2 << 6;
+	}
+
 	if (ohcomp & 0x3A)
+	{
 		blue |= bit3 << 5;
+	}
 
 	if (ohcomp & 0x3D)
+	{
 		scale |= bit6 << 5;
+	}
+
 	if (ohcomp & 0x2D)
+	{
 		scale |= bit5 << 6;
+	}
+
 	if (ohcomp & 0x04)
+	{
 		scale |= bit4 << 7;
+	}
 
 	if (ohcomp & 0x3B)
+	{
 		red |= bit4 << 6;
+	}
+
 	if (ohcomp & 0x04)
+	{
 		red |= bit3 << 6;
+	}
 
 	if (ohcomp & 0x10)
+	{
 		red |= bit5 << 7;
+	}
+
 	if (ohcomp & 0x0F)
+	{
 		red |= bit2 << 7;
+	}
 
 	if (ohcomp & 0x05)
+	{
 		red |= bit1 << 8;
+	}
+
 	if (ohcomp & 0x0A)
+	{
 		red |= bit0 << 8;
+	}
 
 	if (ohcomp & 0x05)
+	{
 		red |= bit0 << 9;
+	}
+
 	if (ohcomp & 0x02)
+	{
 		red |= bit6 << 9;
+	}
 
 	if (ohcomp & 0x01)
+	{
 		red |= bit3 << 10;
+	}
+
 	if (ohcomp & 0x02)
+	{
 		red |= bit5 << 10;
+	}
 
 	// expand to 12 bits.
 	static const int shamts[6] { 1, 1, 2, 3, 4, 5 };
@@ -414,19 +476,13 @@ static void hdr_rgbo_unpack(
 	int blue0 = blue - scale;
 
 	// clamp to [0,0xFFF].
-	if (red < 0)
-		red = 0;
-	if (green < 0)
-		green = 0;
-	if (blue < 0)
-		blue = 0;
+	red = astc::max(red, 0);
+	green = astc::max(green, 0);
+	blue = astc::max(blue, 0);
 
-	if (red0 < 0)
-		red0 = 0;
-	if (green0 < 0)
-		green0 = 0;
-	if (blue0 < 0)
-		blue0 = 0;
+	red0 = astc::max(red0, 0);
+	green0 = astc::max(green0, 0);
+	blue0 = astc::max(blue0, 0);
 
 	output0 = vint4(red0 << 4, green0 << 4, blue0 << 4, 0x7800);
 	output1 = vint4(red << 4, green << 4, blue << 4, 0x7800);
@@ -486,27 +542,49 @@ static void hdr_rgb_unpack(
 	// and prepend the variable-placement bits depending on mode.
 	int ohmod = 1 << modeval;	// one-hot-mode
 	if (ohmod & 0xA4)
+	{
 		a |= bit0 << 9;
+	}
+
 	if (ohmod & 0x8)
+	{
 		a |= bit2 << 9;
-	if (ohmod & 0x50)
-		a |= bit4 << 9;
+	}
 
 	if (ohmod & 0x50)
+	{
+		a |= bit4 << 9;
+	}
+
+	if (ohmod & 0x50)
+	{
 		a |= bit5 << 10;
+	}
+
 	if (ohmod & 0xA0)
+	{
 		a |= bit1 << 10;
+	}
 
 	if (ohmod & 0xC0)
+	{
 		a |= bit2 << 11;
+	}
 
 	if (ohmod & 0x4)
+	{
 		c |= bit1 << 6;
+	}
+
 	if (ohmod & 0xE8)
+	{
 		c |= bit3 << 6;
+	}
 
 	if (ohmod & 0x20)
+	{
 		c |= bit2 << 7;
+	}
 
 	if (ohmod & 0x5B)
 	{
@@ -537,21 +615,23 @@ static void hdr_rgb_unpack(
 	int32_t d0x = d0;
 	int32_t d1x = d1;
 	int sx_shamt = 32 - dbits;
-	d0x <<= sx_shamt;
+
+	d0x = safe_signed_lsh(d0x, sx_shamt);
 	d0x >>= sx_shamt;
-	d1x <<= sx_shamt;
+	d1x = safe_signed_lsh(d1x, sx_shamt);
 	d1x >>= sx_shamt;
+
 	d0 = d0x;
 	d1 = d1x;
 
 	// expand all values to 12 bits, with left-shift as needed.
 	int val_shamt = (modeval >> 1) ^ 3;
-	a <<= val_shamt;
-	b0 <<= val_shamt;
-	b1 <<= val_shamt;
-	c <<= val_shamt;
-	d0 <<= val_shamt;
-	d1 <<= val_shamt;
+	a = safe_signed_lsh(a, val_shamt);
+	b0 = safe_signed_lsh(b0, val_shamt);
+	b1 = safe_signed_lsh(b1, val_shamt);
+	c = safe_signed_lsh(c, val_shamt);
+	d0 = safe_signed_lsh(d0, val_shamt);
+	d1 = safe_signed_lsh(d1, val_shamt);
 
 	// then compute the actual color values.
 	int red1 = a;
@@ -698,36 +778,38 @@ static void hdr_alpha_unpack(
 	int& output0,
 	int& output1
 ) {
-
 	int v6 = input[0];
 	int v7 = input[1];
 
-	int selector = ((v6 >> 7) & 1) | ((v7 >> 6) & 2);
+	int modeval = ((v6 >> 7) & 1) | ((v7 >> 6) & 2);
 	v6 &= 0x7F;
 	v7 &= 0x7F;
-	if (selector == 3)
+
+	// Directly specified 12-bit alpha values
+	if (modeval == 3)
 	{
 		output0 = v6 << 5;
 		output1 = v7 << 5;
 	}
+	// Packed base + delta alpha values
 	else
 	{
-		v6 |= (v7 << (selector + 1)) & 0x780;
-		v7 &= (0x3f >> selector);
-		v7 ^= 32 >> selector;
-		v7 -= 32 >> selector;
-		v6 <<= (4 - selector);
-		v7 <<= (4 - selector);
-		v7 += v6;
+		// Transfer 1-3 high bits of v7 to make an 8-10 bit base
+		v6 |= (v7 << (modeval + 1)) & 0x780;
 
-		if (v7 < 0)
-		{
-			v7 = 0;
-		}
-		else if (v7 > 0xFFF)
-		{
-			v7 = 0xFFF;
-		}
+		// Extract remaining 4-6 bits and unbias to make signed delta
+		v7 &= (0x3f >> modeval);
+		v7 ^= 32 >> modeval;
+		v7 -= 32 >> modeval;
+
+		// Scale unsigned base to 12 bits
+		v6 = v6 << (4 - modeval);
+
+		// Scale signed delta to 6-10 bits
+		v7 = safe_signed_lsh(v7, 4 - modeval);
+
+		// Clamp computed base+delta value to valid range
+		v7 = astc::clamp(v6 + v7, 0, 0xFFF);
 
 		output0 = v6;
 		output1 = v7;

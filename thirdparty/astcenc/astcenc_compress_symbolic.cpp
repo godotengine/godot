@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2025 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -431,7 +431,6 @@ static float compress_symbolic_block_for_partition_1plane(
 	//     * Generate an optimized set of quantized weights
 	//     * Compute quantization errors for the mode
 
-
 	static const int8_t free_bits_for_partition_count[4] {
 		115 - 4, 111 - 4 - PARTITION_INDEX_BITS, 108 - 4 - PARTITION_INDEX_BITS, 105 - 4 - PARTITION_INDEX_BITS
 	};
@@ -620,7 +619,7 @@ static float compress_symbolic_block_for_partition_1plane(
 				best_errorval_in_mode = astc::min(errorval, best_errorval_in_mode);
 
 				// Average refinement improvement is 3.5% per iteration (allow 4.5%), but the first
-				// iteration can help more so we give it a extra 8% leeway. Use this knowledge to
+				// iteration can help more so we give it an extra 8% leeway. Use this knowledge to
 				// drive a heuristic to skip blocks that are unlikely to catch up with the best
 				// block we have already.
 				unsigned int iters_remaining = config.tune_refinement_limit - l;
@@ -954,7 +953,7 @@ static float compress_symbolic_block_for_partition_2planes(
 				best_errorval_in_mode = astc::min(errorval, best_errorval_in_mode);
 
 				// Average refinement improvement is 3.5% per iteration (allow 4.5%), but the first
-				// iteration can help more so we give it a extra 8% leeway. Use this knowledge to
+				// iteration can help more so we give it an extra 8% leeway. Use this knowledge to
 				// drive a heuristic to skip blocks that are unlikely to catch up with the best
 				// block we have already.
 				unsigned int iters_remaining = config.tune_refinement_limit - l;
@@ -1172,9 +1171,9 @@ void compress_block(
 	float lowest_correl;
 
 	TRACE_NODE(node0, "block");
-	trace_add_data("pos_x", blk.xpos);
-	trace_add_data("pos_y", blk.ypos);
-	trace_add_data("pos_z", blk.zpos);
+	trace_add_data("pos_x", blk.pos_x);
+	trace_add_data("pos_y", blk.pos_y);
+	trace_add_data("pos_z", blk.pos_z);
 
 	// Set stricter block targets for luminance data as we have more bits to play with
 	bool block_is_l = blk.is_luminance();
@@ -1285,7 +1284,7 @@ void compress_block(
 	// Only enable MODE0 fast path if enabled
 	// Never enable for 3D blocks as no "always" block modes are available
 	int start_trial = 1;
- 	if ((ctx.config.tune_search_mode0_enable >= TUNE_MIN_SEARCH_MODE0) && (bsd.zdim == 1))
+ 	if ((ctx.config.tune_search_mode0_enable >= TUNE_MIN_SEARCH_MODE0) && (bsd.dim_z == 1))
 	{
 		start_trial = 0;
 	}
@@ -1304,8 +1303,11 @@ void compress_block(
 		    1, 0,  scb, tmpbuf, QUANT_32);
 
 		// Record the quant level so we can use the filter later searches
-		const auto& bm = bsd.get_block_mode(scb.block_mode);
-		quant_limit = bm.get_weight_quant_mode();
+		if (scb.block_type != SYM_BTYPE_ERROR)
+		{
+			const auto& bm = bsd.get_block_mode(scb.block_mode);
+			quant_limit = bm.get_weight_quant_mode();
+		}
 
 		best_errorvals_for_pcount[0] = astc::min(best_errorvals_for_pcount[0], errorval);
 		if (errorval < (error_threshold * errorval_mult[i]))

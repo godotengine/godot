@@ -467,7 +467,7 @@ static inline void write_bits(
  * @brief Read up to 16 bits from two bytes.
  *
  * This function reads a packed N-bit field from two bytes in memory. The stored value must exist
- * within the two bytes, but can start at an arbitary bit offset and span the two bytes in memory.
+ * within the two bytes, but can start at an arbitrary bit offset and span the two bytes in memory.
  *
  * @param         bitcount    The number of bits to read.
  * @param         bitoffset   The bit offset to read from, between 0 and 7.
@@ -565,7 +565,7 @@ void encode_ise(
 
 			for (unsigned int j = 0; i < character_count; i++, j++)
 			{
-				// Truncated table as this iteration is always partital
+				// Truncated table as this iteration is always partial
 				static const uint8_t tbits[4]  { 2, 2, 1, 2 };
 				static const uint8_t tshift[4] { 0, 2, 4, 5 };
 
@@ -624,7 +624,7 @@ void encode_ise(
 
 			for (unsigned int j = 0; i < character_count; i++, j++)
 			{
-				// Truncated table as this iteration is always partital
+				// Truncated table as this iteration is always partial
 				static const uint8_t tbits[2]  { 3, 2 };
 				static const uint8_t tshift[2] { 0, 3 };
 

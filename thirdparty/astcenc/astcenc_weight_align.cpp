@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -130,6 +130,10 @@ static void compute_angular_offsets(
 		}
 
 		vfloat angle = atan2(anglesum_y, anglesum_x);
+
+		// Suppress NaNs generated if anglesums are both zero
+		angle = select(vfloat::zero(), angle, angle == angle);
+
 		vfloat ofs = angle * mult;
 		storea(ofs, offsets + i);
 	}
@@ -183,8 +187,8 @@ static void compute_lowest_and_highest_weight(
 		lane_id += vint(ASTCENC_SIMD_WIDTH);
 
 		vfloat weights = loada(dec_weight_ideal_value + i);
-		min_weight = min(min_weight, select(min_weight, weights, active));
-		max_weight = max(max_weight, select(max_weight, weights, active));
+		min_weight = min(select(min_weight, weights, active), min_weight);
+		max_weight = max(select(max_weight, weights, active), max_weight);
 	}
 
 	min_weight = hmin(min_weight);
