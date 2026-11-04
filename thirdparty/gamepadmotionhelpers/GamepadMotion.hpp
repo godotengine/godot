@@ -1,6 +1,6 @@
 // Copyright (c) 2020-2023 Julian "Jibb" Smart
 // Released under the MIT license. See https://github.com/JibbSmart/GamepadMotionHelpers/blob/main/LICENSE for more info
-// Version 9
+// Version 10
 
 #pragma once
 
@@ -635,11 +635,11 @@ namespace GamepadMotionHelpers
 				Grav = accelNorm * -gravityLength;
 			}
 
-			const Vec gravityDirection = Grav.Normalized() * Quaternion.Inverse(); // absolute gravity direction
+			const Vec gravityDirection = Grav.Normalized() * Quaternion; // gravity direction in world space
 			const float errorAngle = acosf(std::clamp(Vec(0.0f, -1.0f, 0.0f).Dot(gravityDirection), -1.f, 1.f));
-			const Vec flattened = Vec(0.0f, -1.0f, 0.0f).Cross(gravityDirection);
+			const Vec flattened = gravityDirection.Cross(Vec(0.0f, -1.0f, 0.0f));
 			Quat correctionQuat = AngleAxis(errorAngle, flattened.x, flattened.y, flattened.z);
-			Quaternion = Quaternion * correctionQuat;
+			Quaternion = correctionQuat * Quaternion;
 			
 			Accel = accel + Grav;
 		}
