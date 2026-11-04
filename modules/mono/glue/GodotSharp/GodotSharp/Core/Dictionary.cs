@@ -22,9 +22,22 @@ namespace Godot.Collections
         IReadOnlyDictionary<Variant, Variant>,
         IDisposable
     {
-        internal godot_dictionary.movable NativeValue;
+        private godot_dictionary.movable _nativeValue;
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private bool _disposed;
+
+        internal bool IsDisposed => _disposed;
+
+        internal ref godot_dictionary.movable NativeValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return ref _nativeValue;
+            }
+        }
 
         /// <summary>
         /// Constructs a new empty <see cref="Dictionary"/>.
@@ -63,8 +76,15 @@ namespace Godot.Collections
 
         public void Dispose(bool disposing)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             // Always dispose `NativeValue` even if disposing is true
-            NativeValue.DangerousSelfRef.Dispose();
+            _nativeValue.DangerousSelfRef.Dispose();
 
             if (_weakReferenceToSelf != null)
             {
@@ -455,6 +475,11 @@ namespace Godot.Collections
         /// <returns>A string representation of this dictionary.</returns>
         public override string ToString()
         {
+            if (_disposed)
+            {
+                return typeof(Dictionary).ToString();
+            }
+
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_to_string(ref self, out godot_string str);
             using (str)
@@ -949,7 +974,15 @@ namespace Godot.Collections
         /// Converts this <see cref="Dictionary{TKey, TValue}"/> to a string.
         /// </summary>
         /// <returns>A string representation of this dictionary.</returns>
-        public override string ToString() => _underlyingDict.ToString();
+        public override string ToString()
+        {
+            if (_underlyingDict.IsDisposed)
+            {
+                return GetType().ToString();
+            }
+
+            return _underlyingDict.ToString();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Dictionary<TKey, TValue> from) => Variant.CreateFrom(from);
