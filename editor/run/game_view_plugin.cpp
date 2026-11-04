@@ -688,7 +688,7 @@ void GameView::_embedding_failed() {
 
 void GameView::_embedded_process_focused() {
 	if (embed_on_play && !window_wrapper->get_window_enabled()) {
-		game_dock->make_visible();
+		EditorDockManager::get_singleton()->force_focus_dock(game_dock);
 	}
 }
 
