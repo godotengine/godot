@@ -148,6 +148,7 @@ void SpringBoneCollision3D::sync_pose() {
 	if (bone >= 0) {
 		Skeleton3D *sk = get_skeleton();
 		if (sk) {
+			// Don't use get_global_transform_interpolated() here, since it shouldn't write back fti result to the node's transform.
 			Transform3D tr = sk->get_global_transform() * sk->get_bone_global_pose(bone);
 			tr.origin += tr.basis.get_rotation_quaternion().xform(position_offset);
 			tr.basis *= Basis(rotation_offset);
@@ -157,10 +158,10 @@ void SpringBoneCollision3D::sync_pose() {
 }
 
 Transform3D SpringBoneCollision3D::get_transform_from_skeleton(const Transform3D &p_center) const {
-	Transform3D gtr = get_global_transform();
+	Transform3D gtr = get_global_transform_interpolated();
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
-		Transform3D tr = sk->get_global_transform();
+		Transform3D tr = sk->get_global_transform_interpolated();
 		gtr = tr.affine_inverse() * p_center * gtr;
 	}
 	return gtr;

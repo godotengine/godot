@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node_3d.h"
+#include "node_3d.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/math/transform_interpolator.h"
@@ -478,55 +479,9 @@ void Node3D::_disable_client_physics_interpolation() {
 	_set_physics_interpolated_client_side(false);
 }
 
-Transform3D Node3D::_get_global_transform_interpolated(real_t p_interpolation_fraction) {
-	ERR_FAIL_COND_V(!is_inside_tree(), Transform3D());
-
-	// Set in motion the mechanisms for client side interpolation if not already active.
-	if (!_is_physics_interpolated_client_side()) {
-		_set_physics_interpolated_client_side(true);
-
-		ERR_FAIL_COND_V(data.client_physics_interpolation_data != nullptr, Transform3D());
-		data.client_physics_interpolation_data = memnew(ClientPhysicsInterpolationData);
-		data.client_physics_interpolation_data->global_xform_curr = get_global_transform();
-		data.client_physics_interpolation_data->global_xform_prev = data.client_physics_interpolation_data->global_xform_curr;
-		data.client_physics_interpolation_data->current_physics_tick = Engine::get_singleton()->get_physics_frames();
-	}
-
-	// Storing the last tick we requested client interpolation allows us to timeout
-	// and remove client interpolated nodes from the list to save processing.
-	// We use some arbitrary timeout here, but this could potentially be user defined.
-
-	// Note: This timeout has to be larger than the number of ticks in a frame, otherwise the interpolated
-	// data will stop flowing before the next frame is drawn. This should only be relevant at high tick rates.
-	// We could alternatively do this by frames rather than ticks and avoid this problem, but then the behavior
-	// would be machine dependent.
-	data.client_physics_interpolation_data->timeout_physics_tick = Engine::get_singleton()->get_physics_frames() + 256;
-
-	// Make sure data is up to date.
-	update_client_physics_interpolation_data();
-
-	// Interpolate the current data.
-	const Transform3D &xform_curr = data.client_physics_interpolation_data->global_xform_curr;
-	const Transform3D &xform_prev = data.client_physics_interpolation_data->global_xform_prev;
-
-	Transform3D res;
-	TransformInterpolator::interpolate_transform_3d(xform_prev, xform_curr, res, p_interpolation_fraction);
-
-	SceneTree *tree = get_tree();
-
-	// This should not happen, as is_inside_tree() is checked earlier.
-	ERR_FAIL_NULL_V(tree, res);
-	if (!_client_physics_interpolation_node_3d_list.in_list()) {
-		tree->client_physics_interpolation_add_node_3d(&_client_physics_interpolation_node_3d_list);
-	}
-
-	return res;
-}
-
 // Visible nodes - get_global_transform_interpolated is cheap.
 // Invisible nodes - get_global_transform_interpolated is expensive, try to avoid.
-Transform3D Node3D::get_global_transform_interpolated() {
-#if 1
+Transform3D Node3D::get_global_transform_interpolated() const {
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
@@ -618,23 +573,6 @@ Transform3D Node3D::get_global_transform_interpolated() {
 	}
 
 	return get_global_transform();
-#else
-	// OLD METHOD - deprecated since moving to SceneTreeFTI,
-	// but leaving for reference and comparison for debugging.
-
-	if (!is_physics_interpolated_and_enabled()) {
-		return get_global_transform();
-	}
-
-	// If we are in the physics frame, the interpolated global transform is meaningless.
-	// However, there is an exception, we may want to use this as a means of starting off the client
-	// interpolation pump if not already started (when _is_physics_interpolated_client_side() is false).
-	if (Engine::get_singleton()->is_in_physics_frame() && _is_physics_interpolated_client_side()) {
-		return get_global_transform();
-	}
-
-	return _get_global_transform_interpolated(Engine::get_singleton()->get_physics_interpolation_fraction());
-#endif
 }
 
 Transform3D Node3D::get_global_transform() const {
