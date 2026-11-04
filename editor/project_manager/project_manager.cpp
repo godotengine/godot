@@ -1229,7 +1229,7 @@ void ProjectManager::_full_convert_button_pressed() {
 }
 
 void ProjectManager::_migration_guide_button_pressed() {
-	const String url = vformat("%s/tutorials/migrating/index.html", GODOT_VERSION_DOCS_URL);
+	const String url = vformat("%s/tutorials/migrating/index.html", EditorHelp::get_docs_url());
 	OS::get_singleton()->shell_open(url);
 }
 
