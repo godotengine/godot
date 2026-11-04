@@ -417,10 +417,10 @@ public:
 	}
 
 	template <typename M>
-	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>()) {
 		Locker::Lock lock(Locker::STATE_WRITE);
 
-		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
+		MethodBind *bind = create_vararg_method_bind(p_method, p_info);
 		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {
@@ -430,10 +430,10 @@ public:
 	}
 
 	template <typename M>
-	static MethodBind *bind_compatibility_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+	static MethodBind *bind_compatibility_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>()) {
 		Locker::Lock lock(Locker::STATE_WRITE);
 
-		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);
+		MethodBind *bind = create_vararg_method_bind(p_method, p_info);
 		ERR_FAIL_NULL_V(bind, nullptr);
 
 		if constexpr (std::is_same_v<typename member_function_traits<M>::return_type, Object *>) {

@@ -228,14 +228,14 @@
 			</description>
 		</method>
 		<method name="call_deferred_thread_group" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<param index="0" name="method" type="StringName" />
 			<description>
 				This function is similar to [method Object.call_deferred] except that the call will take place when the node thread group is processed. If the node thread group processes in sub-threads, then the call will be done on that thread, right before [constant NOTIFICATION_PROCESS] or [constant NOTIFICATION_PHYSICS_PROCESS], the [method _process] or [method _physics_process] or their internal versions are called.
 			</description>
 		</method>
 		<method name="call_thread_safe" qualifiers="vararg">
-			<return type="Variant" />
+			<return type="void" />
 			<param index="0" name="method" type="StringName" />
 			<description>
 				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.

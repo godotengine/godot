@@ -69,7 +69,7 @@ protected:
 			mi.name = "wasp_error";
 			mi.arguments.push_back(PropertyInfo(Variant::INT, "size"));
 
-			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "wasp_error", &SpawnWasps::create_wasps_error, mi, varray(), false);
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "wasp_error", &SpawnWasps::create_wasps_error, mi, varray());
 		}
 		ClassDB::bind_method(D_METHOD("echo", "size"), &SpawnWasps::echo_size);
 	}
