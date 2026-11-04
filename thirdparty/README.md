@@ -367,6 +367,10 @@ Files extracted from upstream source:
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
+Patches:
+
+- `0001-backport-upstream-commit-f3ca71c99.patch` (CVE-2026-95512)
+
 
 ## gamepadmotionhelpers
 
