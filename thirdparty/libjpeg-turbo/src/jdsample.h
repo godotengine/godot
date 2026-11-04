@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  */
@@ -43,7 +43,7 @@ typedef struct {
   /* Height of an input row group for each component. */
   int rowgroup_height[MAX_COMPONENTS];
 
-  /* These arrays save pixel expansion factors so that int_expand need not
+  /* These arrays save component expansion factors so that int_expand need not
    * recompute them each time.  They are unused for other upsampling methods.
    */
   UINT8 h_expand[MAX_COMPONENTS];

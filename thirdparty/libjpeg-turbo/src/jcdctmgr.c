@@ -6,7 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014-2015, 2022, 2024, D. R. Commander.
+ * Copyright (C) 2011, 2014-2015, 2022, 2024, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -22,6 +22,9 @@
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 #include "jsimddct.h"
 
+
+#if defined(DCT_ISLOW_SUPPORTED) || defined(DCT_IFAST_SUPPORTED) || \
+    defined(DCT_FLOAT_SUPPORTED)
 
 /* Private subobject for this module */
 
@@ -176,11 +179,17 @@ compute_reciprocal(UINT16 divisor, DCTELEM *dtbl)
   UDCTELEM c;
   int b, r;
 
-  if (divisor == 1) {
+  if (divisor <= 1) {
     /* divisor == 1 means unquantized, so these reciprocal/correction/shift
      * values will cause the C quantization algorithm to act like the
      * identity function.  Since only the C quantization algorithm is used in
      * these cases, the scale value is irrelevant.
+     *
+     * divisor == 0 can never happen in a normal program, because
+     * jpeg_add_quant_table() clamps values < 1.  However, a program could
+     * abuse the API by manually modifying the exposed quantization table just
+     * before calling jpeg_start_compress().  Thus, we effectively clamp
+     * values < 1 here as well, to avoid dividing by 0.
      */
     dtbl[DCTSIZE2 * 0] = (DCTELEM)1;                        /* reciprocal */
     dtbl[DCTSIZE2 * 1] = (DCTELEM)0;                        /* correction */
@@ -746,3 +755,6 @@ _jinit_forward_dct(j_compress_ptr cinfo)
 #endif
   }
 }
+
+#endif /* defined(DCT_ISLOW_SUPPORTED) || defined(DCT_IFAST_SUPPORTED) ||
+          defined(DCT_FLOAT_SUPPORTED) */

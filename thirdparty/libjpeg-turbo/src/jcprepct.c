@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, 2024, D. R. Commander.
+ * Copyright (C) 2022, 2024, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -38,21 +38,21 @@
 
 
 /*
- * For the simple (no-context-row) case, we just need to buffer one
- * row group's worth of pixels for the downsampling step.  At the bottom of
- * the image, we pad to a full row group by replicating the last pixel row.
- * The downsampler's last output row is then replicated if needed to pad
- * out to a full iMCU row.
+ * For the simple (no-context-row) case, we just need to buffer one row group's
+ * worth of components for the downsampling step.  At the bottom of the image,
+ * we pad to a full row group by replicating the last component row(s).  The
+ * downsampler's last output row is then replicated if needed to pad out to a
+ * full iMCU row.
  *
  * When providing context rows, we must buffer three row groups' worth of
- * pixels.  Three row groups are physically allocated, but the row pointer
+ * components.  Three row groups are physically allocated, but the row pointer
  * arrays are made five row groups high, with the extra pointers above and
  * below "wrapping around" to point to the last and first real row groups.
- * This allows the downsampler to access the proper context rows.
- * At the top and bottom of the image, we create dummy context rows by
- * copying the first or last real pixel row.  This copying could be avoided
- * by pointer hacking as is done in jdmainct.c, but it doesn't seem worth the
- * trouble on the compression side.
+ * This allows the downsampler to access the proper context rows.  At the top
+ * and bottom of the image, we create dummy context rows by copying the first
+ * or last real component row(s).  This copying could be avoided by pointer
+ * hacking, as is done in jdmainct.c, but it doesn't seem worth the trouble on
+ * the compression side.
  */
 
 

@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1998, Thomas G. Lane.
  * Modification developed 2002-2018 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2020, 2022, D. R. Commander.
+ * Copyright (C) 2015, 2020, 2022, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -30,7 +30,7 @@
  *
  * We also provide IDCT routines with various output sample block sizes for
  * direct resolution reduction or enlargement without additional resampling:
- * NxN (N=1...16) pixels for one 8x8 input DCT block.
+ * NxN (N=1...16) samples for one 8x8 input DCT block.
  *
  * For N<8 we simply take the corresponding low-frequency coefficients of
  * the 8x8 input DCT block and apply an NxN point IDCT on the sub-block
