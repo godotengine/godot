@@ -374,7 +374,7 @@ Files extracted from upstream source:
 ## gamepadmotionhelpers
 
 - Upstream: https://github.com/JibbSmart/GamepadMotionHelpers
-- Version: git (39b578aacf34c3a1c584d8f7f194adc776f88055, 2023)
+- Version: git (f1a76007ec058122a4bb6f19c816c6c0c7b7f12a, 2026)
 - License: MIT
 
 Files extracted from upstream source:
