@@ -1383,7 +1383,9 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			}
 			sky->processing_layer = 1;
 		}
-		sky->baked_exposure = p_luminance_multiplier;
+		// The radiance map is rendered with both multipliers applied, so both are part of the baked exposure.
+		// IBL_exposure_normalization divides by this value to only account for changes since the bake.
+		sky->baked_exposure = p_luminance_multiplier * p_brightness_multiplier;
 		sky->reflection.dirty = false;
 
 	} else {
