@@ -1179,7 +1179,7 @@ Patches:
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 3.2.0 (6f470c9ab24bf3992bc512ce07e8ecb00d9bf105, 2026)
+- Version: 3.4.0 (9b565f64599fe25accf6ba41245c07587c4fa7f4, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
