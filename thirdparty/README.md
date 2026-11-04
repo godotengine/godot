@@ -843,7 +843,7 @@ Collection of single-file libraries used in Godot components.
   * License: MIT
 - `FastNoiseLite.h`
   * Upstream: https://github.com/Auburn/FastNoiseLite
-  * Version: 1.1.0 (ee2f4eaeaffeaa599342544b22e62cb2f9cea570, 2023)
+  * Version: 1.1.1 (7ccfbc16eb1c932568f177d63a9ba51d89bbe516, 2024)
   * License: MIT
   * Patches:
     - `FastNoiseLite-0001-namespace-warnings.patch` ([GH-88526](https://github.com/godotengine/godot/pull/88526))
