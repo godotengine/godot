@@ -607,11 +607,18 @@ static etcpak_force_inline void ProcessRGB_AVX( const uint8_t* src, char*& dst )
 
     __m128i mask = _mm_set_epi64x( 0xFFFF0000 | -solid1, 0xFFFF0000 | -solid0 );
     __m128i d3 = _mm_and_si128( d2, mask );
-    _mm_storeu_si128( (__m128i*)dst, d3 );
 
-    for( int j=4; j<8; j++ ) dst[j] = (char)DxtcIndexTable[(uint8_t)dst[j]];
-    for( int j=12; j<16; j++ ) dst[j] = (char)DxtcIndexTable[(uint8_t)dst[j]];
+    __m128i x0 = _mm_andnot_si128( d3, _mm_set1_epi32( 0x55555555 ) );
+    __m128i x1 = _mm_andnot_si128( d3, _mm_set1_epi32( 0xAAAAAAAA ) );
+    __m128i x2 = _mm_slli_epi32( x0, 1 );
+    __m128i x3 = _mm_srli_epi32( x1, 1 );
+    __m128i x4 = _mm_xor_si128( x1, x2 );
+    __m128i x5 = _mm_or_si128( x3, x4 );
+    __m128i x6 = _mm_and_si128( d3, _mm_set1_epi64x( 0xFFFFFFFF ) );
+    __m128i x7 = _mm_and_si128( x5, _mm_set1_epi64x( 0xFFFFFFFF00000000 ) );
+    __m128i x8 = _mm_or_si128( x6, x7 );
 
+    _mm_storeu_si128( (__m128i*)dst, x8 );
     dst += 16;
 }
 #endif
