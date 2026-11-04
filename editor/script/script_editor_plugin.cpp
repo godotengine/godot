@@ -1432,8 +1432,6 @@ void DocumentEditorContainer::_resave_scripts(const String &p_str) {
 			continue; // Internal script, who cares.
 		}
 
-		_auto_format_text(seb);
-
 		Ref<TextFile> text_file = scr;
 		if (text_file.is_valid()) {
 			seb->apply_code();
@@ -2845,6 +2843,7 @@ void DocumentEditorContainer::apply_scripts() const {
 			continue;
 		}
 
+		_auto_format_text(seb);
 		if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 			teb->insert_final_newline();
 		}
@@ -2936,7 +2935,7 @@ void DocumentEditorContainer::_reload_scripts(bool p_refresh_only) {
 	disk_changed->hide();
 }
 
-void DocumentEditorContainer::_auto_format_text(ScriptEditorBase *p_seb) {
+void DocumentEditorContainer::_auto_format_text(ScriptEditorBase *p_seb) const {
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(p_seb)) {
 		if (trim_trailing_whitespace_on_save) {
 			teb->trim_trailing_whitespace();
