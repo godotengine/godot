@@ -380,7 +380,7 @@ public:
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
 		ERR_FAIL_COND_V(_elements == nullptr || _size == 0, false);
-		if (p_old_key == p_new_key) {
+		if (Comparator::compare(p_old_key, p_new_key)) {
 			return true;
 		}
 		const uint32_t new_hash = _hash(p_new_key);

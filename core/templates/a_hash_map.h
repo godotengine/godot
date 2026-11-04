@@ -359,7 +359,7 @@ public:
 	// Replace the key of an entry in-place, without invalidating iterators or changing the entries position during iteration.
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
-		if (p_old_key == p_new_key) {
+		if (Comparator::compare(p_old_key, p_new_key)) {
 			return true;
 		}
 		uint32_t meta_idx = 0;
