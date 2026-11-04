@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "rendering_shader_container_metal.h"
 
 #include "core/io/file_access.h"
@@ -882,3 +884,5 @@ MinOsVersion::MinOsVersion(const String &p_version) {
 		version = UINT32_MAX;
 	}
 }
+
+#endif // METAL_ENABLED

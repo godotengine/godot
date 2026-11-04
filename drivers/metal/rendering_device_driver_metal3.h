@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "drivers/metal/metal3_objects.h"
 #include "drivers/metal/rendering_device_driver_metal.h"
 
@@ -112,3 +114,5 @@ public:
 };
 
 } // namespace MTL3
+
+#endif // METAL_ENABLED

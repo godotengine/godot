@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef XAUDIO2_ENABLED
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -112,3 +114,5 @@ public:
 	AudioDriverXAudio2();
 	~AudioDriverXAudio2() {}
 };
+
+#endif // XAUDIO2_ENABLED

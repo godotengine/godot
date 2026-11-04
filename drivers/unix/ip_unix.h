@@ -48,4 +48,4 @@ public:
 	IPUnix();
 };
 
-#endif // UNIX_ENABLED
+#endif // defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef LINUXBSD_ENABLED
+
 #include "core/io/image.h"
 #include "core/templates/vector.h"
 
@@ -111,3 +113,5 @@ public:
 	JpegBufferDecoder(CameraFeed *p_camera_feed);
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
+
+#endif // LINUXBSD_ENABLED

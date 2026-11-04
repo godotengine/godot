@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
@@ -67,3 +69,5 @@ private:
 	EXT_PROTO_XRRESULT_FUNC3(xrGetMetalGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsMetalKHR *), p_graphics_requirements)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainImages, (XrSwapchain), p_swapchain, (uint32_t), p_image_capacity_input, (uint32_t *), p_image_count_output, (XrSwapchainImageBaseHeader *), p_images)
 };
+
+#endif // METAL_ENABLED

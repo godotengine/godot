@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include <alloca.h>
 
 #define PLATFORM_THREAD_OVERRIDE
@@ -42,3 +44,5 @@
 			_Pragma("clang diagnostic ignored \"-Wshadow\"") \
 					__strong typeof(var) var = GDWeak_##var; \
 	_Pragma("clang diagnostic pop")
+
+#endif // APPLE_EMBEDDED_ENABLED

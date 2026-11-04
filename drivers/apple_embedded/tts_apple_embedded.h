@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
@@ -59,3 +61,5 @@ struct TTSUtterance;
 - (void)speak:(const String &)text voice:(const String &)voice volume:(int)volume pitch:(float)pitch rate:(float)rate utterance_id:(int64_t)utterance_id interrupt:(bool)interrupt;
 - (Array)getVoices;
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

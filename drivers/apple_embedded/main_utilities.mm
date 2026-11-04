@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include "core/string/ustring.h"
 
 #import <UIKit/UIKit.h>
@@ -79,3 +81,5 @@ int process_args(int p_argc, char **p_args, char **r_args) {
 	p_argc = add_cmdline(p_argc, r_args);
 	return p_argc;
 }
+
+#endif // APPLE_EMBEDDED_ENABLED

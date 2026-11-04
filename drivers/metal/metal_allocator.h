@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/os/spin_lock.h"
 #include "core/templates/local_vector.h"
 
@@ -216,3 +218,5 @@ public:
 	void get_stats(MetalAllocatorStats &r_stats) override;
 #endif
 };
+
+#endif // METAL_ENABLED

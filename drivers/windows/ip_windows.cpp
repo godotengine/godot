@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(WINDOWS_ENABLED)
+#ifdef WINDOWS_ENABLED
 
 #include "ip_windows.h"
 

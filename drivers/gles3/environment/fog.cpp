@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "fog.h"
-
 #ifdef GLES3_ENABLED
+
+#include "fog.h"
 
 #include "core/math/aabb.h"
 #include "core/templates/rid.h"

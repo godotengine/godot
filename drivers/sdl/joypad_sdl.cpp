@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "joypad_sdl.h"
-
 #ifdef SDL_ENABLED
+
+#include "joypad_sdl.h"
 
 #include "core/input/default_controller_mappings.h"
 #include "core/variant/dictionary.h"

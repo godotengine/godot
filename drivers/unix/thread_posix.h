@@ -30,4 +30,8 @@
 
 #pragma once
 
+#ifdef UNIX_ENABLED
+
 void init_thread_posix();
+
+#endif // UNIX_ENABLED

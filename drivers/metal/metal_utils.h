@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/error/error_macros.h"
 
 #include <os/log.h>
@@ -162,3 +164,5 @@ constexpr uint32_t MSL_VERSION_40 = make_msl_version(4, 0);
  * |   4.0   |  26.0   |  26.0   |
  * |---------|---------|---------|
  */
+
+#endif // METAL_ENABLED

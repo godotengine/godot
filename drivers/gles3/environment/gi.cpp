@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "gi.h"
-
 #ifdef GLES3_ENABLED
+
+#include "gi.h"
 
 #include "core/math/aabb.h"
 #include "core/math/transform_3d.h"

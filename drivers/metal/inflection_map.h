@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 
@@ -122,3 +124,5 @@ protected:
 	HashMap<KeyType, IndexValue> _inflection_indexes;
 	IndexValue _linear_indexes[LinearCount];
 };
+
+#endif // METAL_ENABLED

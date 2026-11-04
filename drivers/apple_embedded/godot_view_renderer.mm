@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "godot_view_renderer.h"
 
 #include "core/config/project_settings.h"
@@ -56,3 +58,5 @@
 }
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

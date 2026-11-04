@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "texture_storage.h"
-
 #ifdef GLES3_ENABLED
+
+#include "texture_storage.h"
 
 #include "core/config/engine.h"
 #include "core/variant/typed_array.h"

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "config.h"
-
 #ifdef GLES3_ENABLED
+
+#include "config.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"

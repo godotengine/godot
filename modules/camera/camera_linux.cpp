@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef LINUXBSD_ENABLED
+
 #include "camera_linux.h"
 
 #include "camera_feed_linux.h"
@@ -186,3 +188,5 @@ CameraLinux::~CameraLinux() {
 		camera_thread.wait_to_finish();
 	}
 }
+
+#endif // LINUXBSD_ENABLED

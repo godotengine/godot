@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "tts_apple_embedded.h"
 
 #include "servers/display/display_server.h"
@@ -163,3 +165,5 @@
 }
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

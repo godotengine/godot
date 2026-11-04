@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <UIKit/UIKit.h>
 
 class String;
@@ -71,3 +73,5 @@ class String;
 
 // Implemented in subclasses
 extern GDTView *GDTViewCreate();
+
+#endif // APPLE_EMBEDDED_ENABLED

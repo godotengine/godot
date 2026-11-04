@@ -30,6 +30,8 @@
 
 #pragma once
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 
@@ -107,3 +109,5 @@ public:
 	Thread() = default;
 	~Thread();
 };
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

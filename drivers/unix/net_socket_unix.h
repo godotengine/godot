@@ -116,4 +116,4 @@ public:
 	~NetSocketUnix() override;
 };
 
-#endif // UNIX_ENABLED && !UNIX_SOCKET_UNAVAILABLE
+#endif // defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)

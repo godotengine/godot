@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -416,3 +418,5 @@ protected:
 };
 
 GODOT_CLANG_WARNING_POP
+
+#endif // METAL_ENABLED

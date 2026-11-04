@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "rendering_context_driver_metal.h"
 
 #include "core/os/os.h"
@@ -604,3 +606,5 @@ void RenderingContextDriverMetal::surface_destroy(SurfaceID p_surface) {
 	Surface *surface = (Surface *)(p_surface);
 	memdelete(surface);
 }
+
+#endif // METAL_ENABLED

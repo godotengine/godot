@@ -30,6 +30,8 @@
 
 #pragma once
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #ifdef __OBJC__
 #import <Foundation/NSString.h>
 #else
@@ -84,4 +86,6 @@ String to_string(NS::String *p_str);
 
 #endif
 
-} //namespace conv
+} // namespace conv
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <UIKit/UIKit.h>
 
 @class GDTView;
@@ -45,3 +47,5 @@
 #endif
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

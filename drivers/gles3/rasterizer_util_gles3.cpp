@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef GLES3_ENABLED
+
 #include "rasterizer_util_gles3.h"
 
 #include <platform_gl.h>
@@ -50,3 +52,5 @@ void RasterizerUtilGLES3::clear_depth(float p_depth) {
 void RasterizerUtilGLES3::clear_stencil(int32_t p_stencil) {
 	glClearStencil(p_stencil);
 }
+
+#endif // GLES3_ENABLED

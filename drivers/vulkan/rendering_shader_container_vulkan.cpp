@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "rendering_shader_container_vulkan.h"
 
 #include <thirdparty/misc/smolv.h>
@@ -119,3 +121,5 @@ bool RenderingShaderContainerFormatVulkan::get_debug_info_enabled() const {
 RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}
 
 RenderingShaderContainerFormatVulkan::~RenderingShaderContainerFormatVulkan() {}
+
+#endif // VULKAN_ENABLED

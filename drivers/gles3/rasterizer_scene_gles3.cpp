@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "rasterizer_scene_gles3.h"
-
 #ifdef GLES3_ENABLED
+
+#include "rasterizer_scene_gles3.h"
 
 #include "core/config/project_settings.h"
 #include "core/templates/sort_array.h"

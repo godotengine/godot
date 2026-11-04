@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef LINUXBSD_ENABLED
+
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -58,3 +60,5 @@ public:
 
 	void set_monitoring_feeds(bool p_monitoring_feeds) override;
 };
+
+#endif // LINUXBSD_ENABLED

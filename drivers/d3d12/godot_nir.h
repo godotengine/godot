@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "core/typedefs.h"
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmissing-field-initializers")
@@ -48,3 +50,5 @@ extern "C" {
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
 GODOT_MSVC_WARNING_POP
+
+#endif // D3D12_ENABLED

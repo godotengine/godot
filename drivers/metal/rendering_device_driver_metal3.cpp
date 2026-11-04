@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "rendering_device_driver_metal3.h"
 
 #include "core/config/project_settings.h"
@@ -328,3 +330,5 @@ RDD::CommandBufferID RenderingDeviceDriverMetal::command_buffer_create(CommandPo
 }
 
 } // namespace MTL3
+
+#endif // METAL_ENABLED

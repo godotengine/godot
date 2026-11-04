@@ -62,4 +62,4 @@ void SyslogLogger::print_error(const char *p_function, const char *p_file, int p
 SyslogLogger::~SyslogLogger() {
 }
 
-#endif
+#endif // UNIX_ENABLED

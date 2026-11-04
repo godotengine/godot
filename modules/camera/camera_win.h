@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef WINDOWS_ENABLED
+
 #include "servers/camera/camera_server.h"
 
 class CameraWindows : public CameraServer {
@@ -40,3 +42,5 @@ public:
 	CameraWindows();
 	~CameraWindows() {}
 };
+
+#endif // WINDOWS_ENABLED
