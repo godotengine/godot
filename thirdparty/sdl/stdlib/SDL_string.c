@@ -240,7 +240,7 @@ static Uint32 StepUTF8(const char **_str, const size_t slen)
         const Uint8 str2 = str[2];
         const Uint8 str3 = str[3];
         if (((str1 & 0xC0) == 0x80) && ((str2 & 0xC0) == 0x80) && ((str3 & 0xC0) == 0x80)) {  // If trailing bytes aren't 10xxxxxx, sequence is bogus.
-            const Uint32 octet2 = ((Uint32) (str1 & 0x1F)) << 12;
+            const Uint32 octet2 = ((Uint32) (str1 & 0x3F)) << 12;
             const Uint32 octet3 = ((Uint32) (str2 & 0x3F)) << 6;
             const Uint32 octet4 = ((Uint32) (str3 & 0x3F));
             const Uint32 result = ((octet & 0x07) << 18) | octet2 | octet3 | octet4;

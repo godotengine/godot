@@ -48,6 +48,8 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_ULTIMATE3_BUTTONS,
 };
 
+#define SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS (SDL_GAMEPAD_BUTTON_8BITDO_R4 + 1)
+
 #define SDL_8BITDO_FEATURE_REPORTID                             0x30
 #define SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID         0x06
 #define SDL_8BITDO_REPORTID_SDL_REPORTID                        0x04
@@ -159,6 +161,7 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_PRO_2_BT:
         case USB_PRODUCT_8BITDO_PRO_3:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+        case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS:
         case USB_PRODUCT_8BITDO_ULTIMATE3:
             return true;
         default:
@@ -195,6 +198,8 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         }
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+        // The Ultimate 2C Wireless controller has an 11 byte report with no sensor or rumble support
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         // Supported by default
         ctx->sensors_supported = true;
@@ -228,8 +233,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             SDL_Delay(10);
         }
-    }
-    else {
+    } else {
         Uint8 data[USB_PACKET_LENGTH];
         const int MAX_ATTEMPTS = 5;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
@@ -350,6 +354,8 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
 		// This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS;
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE3_BUTTONS;
     } else {
@@ -590,8 +596,13 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[8] & 0x40) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[8] & 0x80) != 0));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_PL, ((data[8] & 0x20) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_PR, ((data[8] & 0x04) != 0));
+        if (joystick->nbuttons > SDL_GAMEPAD_BUTTON_8BITDO_PR) {
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_PL, ((data[8] & 0x20) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_PR, ((data[8] & 0x04) != 0));
+        } else if (joystick->nbuttons > SDL_GAMEPAD_BUTTON_8BITDO_R4) {
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_L4, ((data[8] & 0x04) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_R4, ((data[8] & 0x20) != 0));
+        }
     }
 
     if (ctx->last_state[9] != data[9]) {

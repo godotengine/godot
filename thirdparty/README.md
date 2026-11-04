@@ -1067,7 +1067,7 @@ proposed by these libraries and better integrate them with Godot.
 ## sdl
 
 - Upstream: https://github.com/libsdl-org/SDL
-- Version: 3.4.16 (fa2c02bb6e21974a89ea9824bc53c9932abe5f9c, 2026)
+- Version: 3.4.20 (f00dc919ca35b9756316e86c4777392de442f9b2, 2026)
 - License: Zlib
 - Vendored: hidapi 0.14.0, license BSD-3-Clause
 

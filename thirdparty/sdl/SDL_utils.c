@@ -548,6 +548,9 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
             break;
+        case SDL_GAMEPAD_TYPE_STEAM:
+            name = SDL_strdup("Steam Controller");
+            break;
         default:
             len = (6 + 1 + 6 + 1);
             name = (char *)SDL_malloc(len);

@@ -265,10 +265,10 @@ size_t SDL_iconv(SDL_iconv_t cd,
             size_t n = srclen / 2;
             while (n) {
                 if (p[0] == 0xFF && p[1] == 0xFE) {
-                    cd->src_fmt = ENCODING_UTF16BE;
+                    cd->src_fmt = ENCODING_UTF16LE;
                     break;
                 } else if (p[0] == 0xFE && p[1] == 0xFF) {
-                    cd->src_fmt = ENCODING_UTF16LE;
+                    cd->src_fmt = ENCODING_UTF16BE;
                     break;
                 }
                 p += 2;
@@ -288,11 +288,11 @@ size_t SDL_iconv(SDL_iconv_t cd,
             while (n) {
                 if (p[0] == 0xFF && p[1] == 0xFE &&
                     p[2] == 0x00 && p[3] == 0x00) {
-                    cd->src_fmt = ENCODING_UTF32BE;
+                    cd->src_fmt = ENCODING_UTF32LE;
                     break;
                 } else if (p[0] == 0x00 && p[1] == 0x00 &&
                            p[2] == 0xFE && p[3] == 0xFF) {
-                    cd->src_fmt = ENCODING_UTF32LE;
+                    cd->src_fmt = ENCODING_UTF32BE;
                     break;
                 }
                 p += 4;

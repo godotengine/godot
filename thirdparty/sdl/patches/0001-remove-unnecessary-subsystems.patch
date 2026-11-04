@@ -1,5 +1,5 @@
 diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index 3e61b8ad4a..40982f2cfc 100644
+index 8354bd5de7..d62adb9b1e 100644
 --- a/thirdparty/sdl/SDL.c
 +++ b/thirdparty/sdl/SDL.c
 @@ -30,9 +30,9 @@
@@ -418,7 +418,7 @@ index 95c5dc1a6b..fd0037eb7e 100644
  
      if (!id_str) {
 diff --git a/thirdparty/sdl/core/windows/SDL_windows.c b/thirdparty/sdl/core/windows/SDL_windows.c
-index b8b27e5ced..c7924bf934 100644
+index 1e9e6bba97..ed5da3daf3 100644
 --- a/thirdparty/sdl/core/windows/SDL_windows.c
 +++ b/thirdparty/sdl/core/windows/SDL_windows.c
 @@ -24,7 +24,7 @@
@@ -1042,7 +1042,7 @@ index 377b04ec17..8bd09458c1 100644
  // Start and stop the event processing loop
  extern bool SDL_StartEventLoop(void);
 diff --git a/thirdparty/sdl/include/SDL3/SDL.h b/thirdparty/sdl/include/SDL3/SDL.h
-index 51848b51be..d9055809c4 100644
+index 0ba8cb73f4..220ca022ce 100644
 --- a/thirdparty/sdl/include/SDL3/SDL.h
 +++ b/thirdparty/sdl/include/SDL3/SDL.h
 @@ -48,7 +48,7 @@
@@ -1115,7 +1115,7 @@ index a4ea58025e..14d3790808 100644
      SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
  } SDL_GPURenderStateCreateInfo;
 diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
-index ccf6572f50..cf08c30b86 100644
+index 3ee5c218d6..ebfcef5b4f 100644
 --- a/thirdparty/sdl/joystick/SDL_joystick.c
 +++ b/thirdparty/sdl/joystick/SDL_joystick.c
 @@ -29,7 +29,7 @@
@@ -1127,7 +1127,7 @@ index ccf6572f50..cf08c30b86 100644
  #include "../sensor/SDL_sensor_c.h"
  #include "hidapi/SDL_hidapijoystick_c.h"
  
-@@ -1239,7 +1239,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+@@ -1240,7 +1240,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
         When a phone is being used as a gamepad, its orientation changes,
         so adjust sensor axes to match.
       */
@@ -1137,7 +1137,7 @@ index ccf6572f50..cf08c30b86 100644
          /* When a device in landscape orientation is laid flat, the axes change
             orientation as follows:
              -X to +X becomes -X to +X
-@@ -2309,10 +2310,10 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+@@ -2310,10 +2311,10 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
          return false;
      }
  
@@ -1153,7 +1153,7 @@ index ccf6572f50..cf08c30b86 100644
  }
  
 diff --git a/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c b/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
-index 7d1ef1a890..23deb54a75 100644
+index 1613ff4abd..a81af29de4 100644
 --- a/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
 +++ b/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
 @@ -138,11 +138,11 @@ void SDL_InitSteamVirtualGamepadInfo(void)
