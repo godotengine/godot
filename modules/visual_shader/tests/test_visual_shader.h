@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "../visual_shader.h" 
+#include "../visual_shader.h"
 
 #include "tests/test_macros.h"
 
