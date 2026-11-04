@@ -1601,6 +1601,10 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 	if (buffer_device_address_support) {
 		allocator_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	}
+	// See GH-125146 for context.
+	if (physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_AMD && physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+		allocator_info.flags |= VMA_ALLOCATOR_CREATE_IGNORE_MAX_MEMORY_ALLOCATION_COUNT_BIT;
+	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("Couldn't create Vulkan memory allocator (VkResult error %d).", err));
 
