@@ -488,6 +488,10 @@ Transform3D Node3D::get_global_transform_interpolated() const {
 	if (SceneTree::is_fti_enabled() && is_inside_tree() && !Engine::get_singleton()->is_in_physics_frame()) {
 		// Note that with SceneTreeFTI, we may want to calculate interpolated transform for a node
 		// with physics interpolation set to OFF, if it has a parent that is ON.
+		if (!is_physics_interpolated() && data.parent && !data.top_level) {
+			// The cached value is calculated before _process(), so return the transform calculated on-the-fly for a non-interpolated node.
+			return data.parent->get_global_transform_interpolated() * get_transform();
+		}
 
 		// Cheap case.
 		// We already pre-cache the visible_in_tree for VisualInstances, but NOT for Node3Ds, so we have to
