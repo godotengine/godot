@@ -909,7 +909,7 @@ Collection of single-file libraries used in Godot components.
     - `smaz-0002-decompress-input-bounds.patch` ([GH-124701](https://github.com/godotengine/godot/pull/124701))
 - `smolv.{cpp,h}`
   * Upstream: https://github.com/aras-p/smol-v
-  * Version: git (9dd54c379ac29fa148cb1b829bb939ba7381d8f4, 2024)
+  * Version: git (6303e979b59153ee7007fd14e06d3fed8687b64c, 2026)
   * License: Public Domain or MIT
 - `stb_rect_pack.h`
   * Upstream: https://github.com/nothings/stb
