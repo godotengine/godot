@@ -1233,6 +1233,7 @@ Patches:
 - `0001-VKEnumStringHelper-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
 - `0002-VMA-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` ([GH-99257](https://github.com/godotengine/godot/pull/99257))
+- `0004-VMA-ignore-maxMemoryAllocationCount.patch` ([GH-125146](https://github.com/godotengine/godot/pull/125146))
 
 
 ## wayland
