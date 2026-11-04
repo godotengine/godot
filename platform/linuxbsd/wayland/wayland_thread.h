@@ -782,6 +782,7 @@ private:
 	static void _wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
 	static void _wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120);
 	static void _wl_pointer_on_axis_relative_direction(void *data, struct wl_pointer *wl_pointer, uint32_t axis, uint32_t direction);
+	static void _wl_pointer_on_warp(void *data, struct wl_pointer *wl_pointer, wl_fixed_t surface_x, wl_fixed_t surface_y);
 
 	static void _wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
 	static void _wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
@@ -969,6 +970,7 @@ private:
 		.axis_discrete = _wl_pointer_on_axis_discrete,
 		.axis_value120 = _wl_pointer_on_axis_value120,
 		.axis_relative_direction = _wl_pointer_on_axis_relative_direction,
+		.warp = _wl_pointer_on_warp,
 	};
 
 	static constexpr struct wl_keyboard_listener wl_keyboard_listener = {
