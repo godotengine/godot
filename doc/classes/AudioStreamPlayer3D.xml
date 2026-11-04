@@ -45,6 +45,19 @@
 				Sets the position from which audio will be played, in seconds.
 			</description>
 		</method>
+		<method name="snapshot_get_state">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime playback state ([code]playing[/code], [code]position[/code], [code]stream_paused[/code]) for savestate systems. Stored properties such as [member stream] are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a playback state produced by [method snapshot_get_state]: plays from the saved position, or stops.
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>

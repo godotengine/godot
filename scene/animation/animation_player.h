@@ -237,8 +237,8 @@ public:
 	double get_current_animation_position() const;
 	double get_current_animation_length() const;
 
-	Dictionary _save_state() const;
-	void _load_state(const Dictionary &p_state);
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
 
 	void set_section_with_markers(const StringName &p_start_marker = StringName(), const StringName &p_end_marker = StringName());
 	void set_section(double p_start_time = -1, double p_end_time = -1);

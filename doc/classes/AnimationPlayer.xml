@@ -280,6 +280,19 @@
 				If the argument is empty, the section uses the beginning or end of the animation. If both are empty, it means that the section is not set.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime playback state ([code]playing[/code], [code]animation[/code], [code]position[/code], [code]custom_speed[/code]) for savestate systems. Stored properties such as [member AnimationMixer.speed_scale] are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a playback state produced by [method snapshot_get_state]: plays the saved animation from the saved position (paused if it was not playing), or stops.
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void" />
 			<param index="0" name="keep_state" type="bool" default="false" />

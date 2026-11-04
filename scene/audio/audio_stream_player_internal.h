@@ -107,6 +107,9 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
+	Dictionary snapshot_get_state();
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	void set_playback_type(AudioServer::PlaybackType p_playback_type);
 	AudioServer::PlaybackType get_playback_type() const;
 

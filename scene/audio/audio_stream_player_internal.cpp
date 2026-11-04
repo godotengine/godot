@@ -332,6 +332,24 @@ bool AudioStreamPlayerInternal::has_stream_playback() {
 	return !stream_playbacks.is_empty();
 }
 
+Dictionary AudioStreamPlayerInternal::snapshot_get_state() {
+	Dictionary state;
+	state["playing"] = is_playing();
+	state["position"] = get_playback_position();
+	state["stream_paused"] = get_stream_paused();
+	return state;
+}
+
+Error AudioStreamPlayerInternal::snapshot_set_state(const Dictionary &p_state) {
+	if (p_state.get("playing", false)) {
+		play_callable.call((float)p_state.get("position", 0.0));
+		set_stream_paused(p_state.get("stream_paused", false));
+	} else {
+		stop_callable.call();
+	}
+	return OK;
+}
+
 Ref<AudioStreamPlayback> AudioStreamPlayerInternal::get_stream_playback() {
 	ERR_FAIL_COND_V_MSG(stream_playbacks.is_empty(), Ref<AudioStreamPlayback>(), "Player is inactive. Call play() before requesting get_stream_playback().");
 	return stream_playbacks[stream_playbacks.size() - 1];

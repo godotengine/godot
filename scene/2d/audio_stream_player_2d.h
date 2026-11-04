@@ -109,6 +109,9 @@ public:
 	bool is_playing() const;
 	float get_playback_position();
 
+	Dictionary snapshot_get_state();
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
 

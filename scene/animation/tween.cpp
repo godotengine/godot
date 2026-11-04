@@ -501,6 +501,21 @@ static Ref<Tweener> _create_tweener_from_snapshot(const Dictionary &p_state, Twe
 		Ref<IntervalTweener> interval_tweener;
 		interval_tweener.instantiate(duration);
 		tweener = interval_tweener;
+	} else if (type == "callback" || type == "method") {
+		Callable callback = p_state.get("callback", Callable());
+		if (!callback.is_valid()) {
+			r_error = ERR_INVALID_DATA;
+			return Ref<Tweener>();
+		}
+		if (type == "callback") {
+			Ref<CallbackTweener> callback_tweener;
+			callback_tweener.instantiate(callback);
+			tweener = callback_tweener;
+		} else {
+			Ref<MethodTweener> method_tweener;
+			method_tweener.instantiate(callback, p_state.get("initial_val", Variant()), p_state.get("final_val", Variant()), (double)p_state.get("duration", 0.0));
+			tweener = method_tweener;
+		}
 	} else if (type == "subtween") {
 		Variant subtween_variant = p_state.get("subtween", Variant());
 		if (subtween_variant.get_type() != Variant::DICTIONARY) {
@@ -916,13 +931,10 @@ Dictionary PropertyTweener::snapshot_get_state() const {
 		state["reason"] = "missing_property_target";
 		return state;
 	}
-	if (custom_method.is_valid()) {
-		state["supported"] = false;
-		state["reason"] = "custom_property_interpolator";
-		return state;
-	}
-
 	state["target"] = target_instance;
+	if (custom_method.is_valid()) {
+		state["custom_interpolator"] = custom_method;
+	}
 	state["property"] = NodePath(Vector<StringName>(), property, false);
 	state["initial_val"] = initial_val;
 	state["base_final_val"] = base_final_val;
@@ -961,7 +973,7 @@ Error PropertyTweener::snapshot_set_state(const Dictionary &p_state) {
 	do_continue = p_state.get("do_continue", true);
 	do_continue_delayed = p_state.get("do_continue_delayed", false);
 	relative = p_state.get("relative", false);
-	custom_method = Callable();
+	custom_method = p_state.get("custom_interpolator", Callable());
 	ref_copy.unref();
 	if (target_instance->is_ref_counted()) {
 		ref_copy.reference_ptr(Object::cast_to<RefCounted>(target_instance));
@@ -1071,14 +1083,16 @@ bool CallbackTweener::step(double &r_delta) {
 Dictionary CallbackTweener::snapshot_get_state() const {
 	Dictionary state = Tweener::snapshot_get_state();
 	state["type"] = "callback";
-	state["supported"] = false;
-	state["reason"] = "callback_tweener";
+	state["callback"] = callback;
 	state["delay"] = delay;
 	return state;
 }
 
 Error CallbackTweener::snapshot_set_state(const Dictionary &p_state) {
-	return ERR_UNAVAILABLE;
+	Error err = Tweener::snapshot_set_state(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
+	delay = p_state.get("delay", 0.0);
+	return OK;
 }
 
 void CallbackTweener::_bind_methods() {
@@ -1172,15 +1186,23 @@ void MethodTweener::set_tween(const Ref<Tween> &p_tween) {
 Dictionary MethodTweener::snapshot_get_state() const {
 	Dictionary state = Tweener::snapshot_get_state();
 	state["type"] = "method";
-	state["supported"] = false;
-	state["reason"] = "method_tweener";
+	state["callback"] = callback;
+	state["initial_val"] = initial_val;
+	state["final_val"] = final_val;
 	state["duration"] = duration;
 	state["delay"] = delay;
+	state["trans_type"] = trans_type;
+	state["ease_type"] = ease_type;
 	return state;
 }
 
 Error MethodTweener::snapshot_set_state(const Dictionary &p_state) {
-	return ERR_UNAVAILABLE;
+	Error err = Tweener::snapshot_set_state(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
+	delay = p_state.get("delay", 0.0);
+	trans_type = (Tween::TransitionType)(int)p_state.get("trans_type", Tween::TRANS_LINEAR);
+	ease_type = (Tween::EaseType)(int)p_state.get("ease_type", Tween::EASE_IN_OUT);
+	return OK;
 }
 
 void MethodTweener::_bind_methods() {

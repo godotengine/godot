@@ -4377,6 +4377,14 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			texture_proxy_update(proxies[i], rt->texture);
 		}
 	}
+
+	// Freshly allocated GPU memory is undefined (it may hold stale data or NaN).
+	// Start from transparent black, as the GLES3 backend does, so anything that
+	// samples this target before its first draw reads deterministic zeros.
+	Vector<Color> clear_colors;
+	clear_colors.push_back(Color(0, 0, 0, 0));
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::DRAW_CLEAR_COLOR_0, clear_colors);
+	RD::get_singleton()->draw_list_end();
 }
 
 void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {

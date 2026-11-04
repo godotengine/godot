@@ -278,6 +278,14 @@ float AudioStreamPlayer2D::get_playback_position() {
 	return internal->get_playback_position();
 }
 
+Dictionary AudioStreamPlayer2D::snapshot_get_state() {
+	return internal->snapshot_get_state();
+}
+
+Error AudioStreamPlayer2D::snapshot_set_state(const Dictionary &p_state) {
+	return internal->snapshot_set_state(p_state);
+}
+
 void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 	internal->bus = p_bus; // This will be pushed to the audio server during the next physics timestep, which is fast enough.
 }
@@ -399,6 +407,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer2D::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer2D::get_playback_position);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AudioStreamPlayer2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AudioStreamPlayer2D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer2D::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer2D::get_bus);

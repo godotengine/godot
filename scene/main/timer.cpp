@@ -157,6 +157,22 @@ bool Timer::is_stopped() const {
 	return get_time_left() <= 0;
 }
 
+Dictionary Timer::snapshot_get_state() const {
+	Dictionary state;
+	state["running"] = !is_stopped();
+	state["time_left"] = get_time_left();
+	return state;
+}
+
+Error Timer::snapshot_set_state(const Dictionary &p_state) {
+	if (p_state.get("running", false)) {
+		start(p_state.get("time_left", -1.0));
+	} else {
+		stop();
+	}
+	return OK;
+}
+
 double Timer::get_time_left() const {
 	return time_left > 0 ? time_left : 0;
 }
@@ -229,6 +245,9 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ignoring_time_scale"), &Timer::is_ignoring_time_scale);
 
 	ClassDB::bind_method(D_METHOD("is_stopped"), &Timer::is_stopped);
+
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &Timer::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &Timer::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
 

@@ -180,33 +180,12 @@ bool AudioStreamPlayer::get_stream_paused() const {
 	return internal->get_stream_paused();
 }
 
-Dictionary AudioStreamPlayer::_save_state() {
-	Dictionary state;
-	state["playing"] = is_playing();
-	state["playback_position"] = get_playback_position();
-	state["pitch_scale"] = get_pitch_scale();
-	state["volume_db"] = get_volume_db();
-	state["stream_paused"] = get_stream_paused();
-	return state;
+Dictionary AudioStreamPlayer::snapshot_get_state() {
+	return internal->snapshot_get_state();
 }
 
-void AudioStreamPlayer::_load_state(const Dictionary &p_state) {
-	if (p_state.has("volume_db")) {
-		set_volume_db(p_state["volume_db"]);
-	}
-	if (p_state.has("pitch_scale")) {
-		set_pitch_scale(p_state["pitch_scale"]);
-	}
-	const bool was_playing = p_state.has("playing") && (bool)p_state["playing"];
-	if (was_playing) {
-		const float pos = p_state.has("playback_position") ? (float)p_state["playback_position"] : 0.0f;
-		play(pos);
-		if (p_state.has("stream_paused")) {
-			set_stream_paused(p_state["stream_paused"]);
-		}
-	} else {
-		stop();
-	}
+Error AudioStreamPlayer::snapshot_set_state(const Dictionary &p_state) {
+	return internal->snapshot_set_state(p_state);
 }
 
 Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
@@ -300,8 +279,8 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
 
-	ClassDB::bind_method(D_METHOD("_save_state"), &AudioStreamPlayer::_save_state);
-	ClassDB::bind_method(D_METHOD("_load_state", "state"), &AudioStreamPlayer::_load_state);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AudioStreamPlayer::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AudioStreamPlayer::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("set_max_polyphony", "max_polyphony"), &AudioStreamPlayer::set_max_polyphony);
 	ClassDB::bind_method(D_METHOD("get_max_polyphony"), &AudioStreamPlayer::get_max_polyphony);

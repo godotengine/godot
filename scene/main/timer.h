@@ -74,6 +74,9 @@ public:
 
 	bool is_stopped() const;
 
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	double get_time_left() const;
 
 	PackedStringArray get_configuration_warnings() const override;
