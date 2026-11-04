@@ -47,7 +47,7 @@
     interface version number is reset.
   </description>
 
-  <interface name="zwp_text_input_v3" version="1">
+  <interface name="zwp_text_input_v3" version="2">
     <description summary="text input">
       The zwp_text_input_v3 interface represents text input and input methods
       associated with a seat. It provides enter/leave events to follow the
@@ -168,7 +168,7 @@
 
     <enum name="change_cause">
       <description summary="text change reason">
-        Reason for the change of surrounding text or cursor posision.
+        Reason for the change of surrounding text or cursor position.
       </description>
       <entry name="input_method" value="0" summary="input method caused the change"/>
       <entry name="other" value="1" summary="something else than the input method caused the change"/>
@@ -179,7 +179,7 @@
         Tells the compositor why the text surrounding the cursor changed.
 
         Whenever the client detects an external change in text, cursor, or
-        anchor posision, it must issue this request to the compositor. This
+        anchor position, it must issue this request to the compositor. This
         request is intended to give the input method a chance to update the
         preedit text in an appropriate way, e.g. by removing it when the user
         starts typing with a keyboard.
@@ -210,6 +210,15 @@
       <entry name="sensitive_data" value="0x80" summary="typed text should not be stored"/>
       <entry name="latin" value="0x100" summary="just Latin characters should be entered"/>
       <entry name="multiline" value="0x200" summary="the text input is multiline"/>
+      <entry
+        name="on_screen_input_provided" value="0x400" since="2"
+        summary="an on-screen way to fill in the input is already provided by the client"/>
+      <entry
+        name="no_emoji" value="0x800" since="2"
+        summary="prefer not offering emoji support"/>
+      <entry
+        name="preedit_shown" value="0x1000" since="2"
+        summary="the text input will display preedit text in place"/>
     </enum>
 
     <enum name="content_purpose">
@@ -273,6 +282,19 @@
         the text input does not support describing the cursor area. If the
         empty values get applied, subsequent attempts to change them may have
         no effect.
+
+        As of version 2, the zwp_text_input_v3.commit request does not apply
+        values sent with this request. Instead, it stores them in a separate
+        "committed" area. The committed values, if still valid, get applied on
+        the next wl_surface.commit request on the surface with text-input focus.
+        Both committed and applied values get invalidated on:
+
+        - the next committed enable or disable request, or
+        - a change of the focused surface of the text-input (leave or enter events).
+
+        This double stage application allows the compositor to position
+        the input method popup in the same frame as the contents
+        of the text on the surface are updated.
       </description>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -403,8 +425,10 @@
     <event name="done">
       <description summary="apply changes">
         Instruct the application to apply changes to state requested by the
-        preedit_string, commit_string and delete_surrounding_text events. The
-        state relating to these events is double-buffered, and each one
+        preedit_string, commit_string delete_surrounding_text, and action
+        events.
+
+        The state relating to these events is double-buffered, and each one
         modifies the pending state. This event replaces the current state with
         the pending state.
 
@@ -417,6 +441,7 @@
         4. Calculate surrounding text to send.
         5. Insert new preedit text in cursor position.
         6. Place cursor inside preedit text.
+        7. Perform the requested action.
 
         The serial number reflects the last state of the zwp_text_input_v3
         object known to the compositor. The value of the serial argument must
@@ -432,9 +457,132 @@
       </description>
       <arg name="serial" type="uint"/>
     </event>
+
+    <!-- Version 2 additions -->
+    <enum name="error" since="2">
+      <entry name="invalid_action" value="0" summary="an invalid or duplicate action was specified"/>
+    </enum>
+
+    <enum name="action" since="2">
+      <description summary="action">
+        A possible action to perform on a text input.
+
+        The submit action is intended for input entries that expect some sort of
+        activation after user interaction, e.g. the URL entry in a browser.
+      </description>
+      <entry name="none" value="0" summary="no action"/>
+      <entry name="submit" value="1" summary="the action is submitted"/>
+    </enum>
+
+    <event name="action" since="2">
+      <description summary="action performed">
+        An action was performed on this text input.
+
+        Values set with this event are double-buffered. They must be applied
+        and reset to initial on the next zwp_text_input_v3.done event.
+
+        The initial value of action is none.
+      </description>
+      <arg name="action" type="uint" enum="action" summary="action performed"/>
+      <arg name="serial" type="uint" summary="serial number of the action event"/>
+    </event>
+
+    <event name="language" since="2">
+      <description summary="notify of language selection">
+        Notify the application of language used by the input method.
+
+        This event will be sent on creation if known and for all subsequent changes.
+
+        The language should be specified as an IETF BCP 47 tag.
+        Setting an empty string will reset any known language back to the default unknown state.
+      </description>
+      <arg name="language" type="string" summary="new language set by IME"/>
+    </event>
+
+    <request name="set_available_actions" since="2">
+      <description summary="set the available actions">
+        Set the actions available for this text input.
+
+        Values set with this request are double-buffered. They will get applied
+        on the next zwp_text_input_v3.commit request.
+
+        If the available_actions array contains the none action, or contains the
+        same action multiple times, the compositor must raise the invalid_action
+        protocol error.
+
+        Initially, no actions are available.
+      </description>
+      <arg name="available_actions" type="array" summary="available actions"/>
+    </request>
+
+    <request name="show_input_panel" since="2">
+      <description summary="show input panel">
+	Requests an input panel to be shown (e.g. a on-screen keyboard).
+
+	This request only hints the desired interaction pattern from the
+	client side, and its effect may be ignored by compositors given
+	other environmental factors. Repeated calls will be ignored.
+      </description>
+    </request>
+
+    <request name="hide_input_panel" since="2">
+      <description summary="hide input panel">
+	Requests an input panel to be hidden.
+
+	This request only hints the desired interaction pattern from the
+	client side, and its effect may be ignored by compositors given
+	other environmental factors. Repeated calls will be ignored.
+      </description>
+    </request>
+
+    <enum name="preedit_hint">
+      <description summary="preedit style hint">
+	Style hints for the preedit string.
+      </description>
+      <entry name="whole" value="1" summary="simple pre-edit text style, typically underlined"/>
+      <entry name="selection" value="2"
+        summary="hint for a selected piece of text, e.g. per-character navigation and composition"/>
+      <entry name="prediction" value="3" summary="predicted text, not typed by the user"/>
+      <entry name="prefix" value="4"
+        summary="prefixed text not being currently edited, e.g. prior to a 'selection' section"/>
+      <entry name="suffix" value="5"
+        summary="suffixed text not being currently edited, e.g. after a 'selection' section"/>
+      <entry name="spelling_error" value="6" summary="spelling error"/>
+      <entry name="compose_error" value="7"
+        summary="wrong composition, e.g. user input that can not be transliterated"/>
+    </enum>
+
+    <event name="preedit_hint" since="2">
+      <description summary="pre-edit">
+        Notify of contextual hints for the pre-edit string. This
+        event is always sent together with a zwp_text_input_v3.preedit_string
+        event.
+
+        The parameters start and end are counted in bytes relative to the
+        beginning of the text buffer submitted through
+        zwp_text_input_v3.preedit_string, and represent the substring in the
+        pre-edit text affected by the hint.
+
+        Multiple events may be submitted if the preedit string has different
+        sections. The extent of hints may overlap. The parts of the preedit
+        string that are not covered by any zwp_text_input_v3.preedit_hint event,
+        the text will be considered unhinted. This is also the case if no
+        preedit_hint event is sent.
+
+        Clients should provide recognizable visuals to these hints. if they are
+        unable to comply with this requisition, it may be preferable for them
+        keep the preedit_shown content hint disabled.
+
+        Values set with this event are double-buffered. They must be applied
+        and reset on the next zwp_text_input_v3.done event.
+      </description>
+      <arg name="start" type="uint" summary="starting point of the affected substring"/>
+      <arg name="end" type="uint" summary="end point of the affected substring"/>
+      <arg name="hint" type="uint" enum="preedit_hint" summary="hint to apply"/>
+    </event>
   </interface>
 
-  <interface name="zwp_text_input_manager_v3" version="1">
+  <interface name="zwp_text_input_manager_v3" version="2">
     <description summary="text input manager">
       A factory for text-input objects. This object is a global singleton.
     </description>

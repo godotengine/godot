@@ -1293,7 +1293,7 @@ Files extracted from upstream source:
 ## wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.47 (88223018d1b578d0d8869866da66d9608e05f928, 2025)
+- Version: 1.50 (3eab2dccf4bfdd85c16d312a6c8c8fbc2a6e73a8, 2026)
 - License: MIT
 
 Files extracted from upstream source:

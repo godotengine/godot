@@ -3710,6 +3710,15 @@ void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 
 	ss->ime_cursor = Vector2i();
 }
 
+void WaylandThread::_wp_text_input_on_action(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t action, uint32_t serial) {
+}
+
+void WaylandThread::_wp_text_input_on_language(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *language) {
+}
+
+void WaylandThread::_wp_text_input_on_preedit_hint(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t start, uint32_t end, uint32_t hint) {
+}
+
 void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);

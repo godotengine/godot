@@ -906,6 +906,9 @@ private:
 	static void _wp_text_input_on_commit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text);
 	static void _wp_text_input_on_delete_surrounding_text(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t before_length, uint32_t after_length);
 	static void _wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial);
+	static void _wp_text_input_on_action(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t action, uint32_t serial);
+	static void _wp_text_input_on_language(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *language);
+	static void _wp_text_input_on_preedit_hint(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t start, uint32_t end, uint32_t hint);
 
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
@@ -1140,6 +1143,9 @@ private:
 		.commit_string = _wp_text_input_on_commit_string,
 		.delete_surrounding_text = _wp_text_input_on_delete_surrounding_text,
 		.done = _wp_text_input_on_done,
+		.action = _wp_text_input_on_action,
+		.language = _wp_text_input_on_language,
+		.preedit_hint = _wp_text_input_on_preedit_hint,
 	};
 
 	// NOTE: Deprecated.
