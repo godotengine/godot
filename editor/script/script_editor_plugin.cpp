@@ -2950,6 +2950,17 @@ void DocumentEditorContainer::_auto_format_text(ScriptEditorBase *p_seb) {
 	}
 }
 
+void DocumentEditorContainer::auto_format_all_scripts() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!seb) {
+			continue;
+		}
+
+		_auto_format_text(seb);
+	}
+}
+
 void DocumentEditorContainer::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
 	_menu_option(FILE_MENU_NEW_SCRIPT);
 	script_create_dialog->config(p_base_name, p_base_path);
