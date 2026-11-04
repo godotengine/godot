@@ -5959,6 +5959,37 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 		}
 	}
 
+	if (!sd->objects.is_empty()) {
+		Vector<ShapedTextDataAdvanced::Span> &spans = sd->spans;
+		if (sd->parent != RID()) {
+			ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(sd->parent);
+			ERR_FAIL_COND_V(!parent_sd->valid.is_set(), false);
+			spans = parent_sd->spans;
+		}
+
+		double width = 0.0;
+		int sd_size = sd->glyphs.size();
+		int span_size = spans.size();
+		for (int i = 0; i < sd_size; i++) {
+			Glyph gl = sd->glyphs[i];
+			Variant key;
+			if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + sd->first_span >= 0 && gl.span_index + sd->first_span < span_size) {
+				key = spans[gl.span_index + sd->first_span].embedded_key;
+			}
+			if (key != Variant()) {
+				if (sd->orientation == ORIENTATION_HORIZONTAL) {
+					sd->objects[key].rect.position.x = width;
+					width += sd->objects[key].rect.size.x;
+				} else {
+					sd->objects[key].rect.position.y = width;
+					width += sd->objects[key].rect.size.y;
+				}
+			} else {
+				width += gl.advance * gl.repeat;
+			}
+		}
+	}
+
 	if (Math::floor(p_width) < Math::floor(justification_width)) {
 		sd->fit_width_minimum_reached = true;
 	}
