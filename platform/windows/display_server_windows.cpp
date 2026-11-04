@@ -1385,6 +1385,21 @@ static BOOL CALLBACK _MonitorEnumProcOrigin(HMONITOR hMonitor, HDC hdcMonitor, L
 	return TRUE;
 }
 
+typedef struct {
+	bool found;
+	RECT rect;
+} EnumMatchScreen;
+
+static BOOL CALLBACK _MonitorEnumMatchScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumMatchScreen *data = (EnumMatchScreen *)dwData;
+	if (data->rect.left == lprcMonitor->left && data->rect.right == lprcMonitor->right && data->rect.top == lprcMonitor->top && data->rect.bottom == lprcMonitor->bottom) {
+		data->found = true;
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 Point2i DisplayServerWindows::_get_screens_origin() const {
 	_THREAD_SAFE_METHOD_
 
@@ -2792,6 +2807,16 @@ void DisplayServerWindows::window_set_mode(DisplayServerEnums::WindowMode p_mode
 			rect.right = wd.width;
 			rect.top = 0;
 			rect.bottom = wd.height;
+		}
+
+		// Move window a bit if its client area fully matches area of a screen.
+		EnumMatchScreen data = { false, rect };
+		EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumMatchScreen, (LPARAM)&data);
+		if (data.found) {
+			rect.left += GetSystemMetrics(SM_CXSIZEFRAME);
+			rect.top += GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
+			rect.right += GetSystemMetrics(SM_CXSIZEFRAME);
+			rect.bottom += GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
 		}
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
