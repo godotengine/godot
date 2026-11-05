@@ -151,22 +151,22 @@ jobs:
           ls -l out
 
       - name: Build path gate
-        shell: bash
+        shell: python
         run: |
           # Fail if the checkout path survived in any binary (#54).
-          ws="$GITHUB_WORKSPACE"   # e.g. D:\a\godot\godot
-          fwd="${ws//\\//}"        # e.g. D:/a/godot/godot
-          hits=0
-          for f in out/*.exe; do
-            n=$(grep -a -o -i -F -e "$ws" -e "$fwd" "$f" | wc -l)
-            echo "$f: $n build-path strings"
-            [ "$n" -eq 0 ] || grep -a -o -i -F -e "$ws" -e "$fwd" "$f" | sort | uniq -c | head -5
-            hits=$((hits + n))
-          done
-          if [ "$hits" -ne 0 ]; then
-            echo "::error::build machine paths found in binaries (#54)"
-            exit 1
-          fi
+          import glob, os, re, sys
+          ws = os.environ["GITHUB_WORKSPACE"]  # e.g. D:\a\godot\godot
+          pattern = re.compile(re.escape(ws.lower()).replace(r"\\", r"[\\/]").encode() + rb"[^\x00]{0,80}")
+          hits = 0
+          for f in sorted(glob.glob("out/*.exe")):
+              found = pattern.findall(open(f, "rb").read().lower())
+              print(f"{f}: {len(found)} build-path strings")
+              for s in found[:5]:
+                  print("   ", s.decode(errors="replace"))
+              hits += len(found)
+          if hits:
+              print("::error::build machine paths found in binaries (#54)")
+              sys.exit(1)
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
