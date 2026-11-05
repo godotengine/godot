@@ -38,6 +38,7 @@ void OpenXRStructureBase::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_next", "entity"), &OpenXRStructureBase::set_next);
 	ClassDB::bind_method(D_METHOD("get_next"), &OpenXRStructureBase::get_next);
+	ClassDB::bind_method(D_METHOD("has_structure_type", "structure_type"), &OpenXRStructureBase::_has_structure_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next", PROPERTY_HINT_RESOURCE_TYPE, OpenXRStructureBase::get_class_static()), "set_next", "get_next");
 
@@ -50,6 +51,22 @@ void OpenXRStructureBase::set_next(const Ref<OpenXRStructureBase> p_next) {
 
 Ref<OpenXRStructureBase> OpenXRStructureBase::get_next() const {
 	return next;
+}
+
+bool OpenXRStructureBase::has_structure_type(XrStructureType p_structure_type) {
+	if (get_structure_type() == p_structure_type) {
+		return true;
+	}
+
+	if (get_next().is_valid()) {
+		return get_next()->has_structure_type(p_structure_type);
+	}
+
+	return false;
+}
+
+bool OpenXRStructureBase::_has_structure_type(uint64_t p_structure_type) {
+	return has_structure_type(XrStructureType(p_structure_type));
 }
 
 void *OpenXRStructureBase::get_header(void *p_next) {
