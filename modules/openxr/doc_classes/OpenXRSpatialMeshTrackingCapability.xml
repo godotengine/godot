@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialMeshTrackingCapability" inherits="OpenXRExtensionWrapper" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity mesh tracking logic.
+	</brief_description>
+	<description>
+		This class handles the OpenXR mesh tracking spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_built_in_tracking_state">
+			<return type="int" enum="OpenXRSpatialEntityExtension.TrackingState" />
+			<description>
+				Returns the state of the built-in tracking system.
+			</description>
+		</method>
+		<method name="is_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if mesh tracking is supported and enabled.
+			</description>
+		</method>
+		<method name="is_watertight_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if watertight meshes are supported.
+			</description>
+		</method>
+		<method name="start_built_in_tracking">
+			<return type="bool" />
+			<param index="0" name="watertight_mode" type="int" />
+			<description>
+				Starts the built-in mesh tracking logic. [param watertight_mode] allows you to specify whether you request or require watertight meshes. This will fail if built-in tracking is already enabled.
+			</description>
+		</method>
+		<method name="start_entity_discovery">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next_snapshot_create" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="next_snapshot_query" type="OpenXRStructureBase" default="null" />
+			<param index="4" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Calls [method OpenXRSpatialEntityExtension.discover_spatial_entities] and [method OpenXRSpatialEntityExtension.query_snapshot] with the mesh entities associated with [param spatial_context].
+				[param component_data] are the [OpenXRSpatialComponentData]s to discover for this mesh capability.
+				If [param next_snapshot_create] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+				If [param next_snapshot_query] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.query_snapshot].
+				[param user_callback], when non-null, is called with two parameters usually twice. The first parameter is the [RID] of the discovery snapshot and the second parameter is a boolean where [code]false[/code] indicates the discovery snapshot is about to be processed, and [code]true[/code] indicates the discovery snapshot has been processed and [param component_data] has valid data. The second call is skipped if an error was encountered.
+				The returned [OpenXRFutureResult] is identical to the return from [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+			</description>
+		</method>
+		<method name="stop_built_in_tracking">
+			<return type="void" />
+			<param index="0" name="clear_trackers" type="bool" default="true" />
+			<description>
+				Stops the built-in mesh tracking logic.
+			</description>
+		</method>
+	</methods>
+</class>

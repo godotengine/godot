@@ -88,6 +88,7 @@
 #include "extensions/spatial_entities/openxr_spatial_image_database.h"
 #include "extensions/spatial_entities/openxr_spatial_image_tracking.h"
 #include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
+#include "extensions/spatial_entities/openxr_spatial_mesh_tracking.h"
 #include "extensions/spatial_entities/openxr_spatial_plane_tracking.h"
 
 #include "scene/openxr_composition_layer.h"
@@ -220,6 +221,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			_register_extension(memnew(OpenXRSpatialAnchorCapability), true, true);
 			_register_extension(memnew(OpenXRSpatialPlaneTrackingCapability), true, true);
 			_register_extension(memnew(OpenXRSpatialMarkerTrackingCapability), true, true);
+			_register_extension(memnew(OpenXRSpatialMeshTrackingCapability), true, true);
 
 			OpenXRSpatialImageTrackingCapability *image_tracking_capability = memnew(OpenXRSpatialImageTrackingCapability);
 			OpenXRAPI::register_extension_wrapper(image_tracking_capability);
@@ -327,6 +329,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRPlaneTracker);
 		GDREGISTER_CLASS(OpenXRMarkerTracker);
 		GDREGISTER_CLASS(OpenXRImageTracker);
+		GDREGISTER_CLASS(OpenXRMeshTracker);
 
 		GDREGISTER_VIRTUAL_CLASS(OpenXRStructureBase);
 		GDREGISTER_CLASS(OpenXRSpatialContextPersistenceConfig);
@@ -340,6 +343,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationPlaneTracking);
 		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationImageTracking);
 
+		GDREGISTER_CLASS(OpenXRSpatialContextWaterTightMeshConfig);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationMeshTracking);
 		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialComponentData);
 		GDREGISTER_CLASS(OpenXRSpatialComponentBounded2DList);
 		GDREGISTER_CLASS(OpenXRSpatialComponentBounded3DList);
@@ -350,6 +355,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRSpatialComponentPolygon2DList);
 		GDREGISTER_CLASS(OpenXRSpatialComponentPlaneSemanticLabelList);
 		GDREGISTER_CLASS(OpenXRSpatialComponentMarkerList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMesh3DNormalsList);
 		GDREGISTER_CLASS(OpenXRSpatialQueryResultData);
 		GDREGISTER_CLASS(OpenXRSpatialComponentAnchorList);
 		GDREGISTER_CLASS(OpenXRSpatialComponentPersistenceList);
@@ -358,6 +364,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRSpatialAnchorCapability);
 		GDREGISTER_CLASS(OpenXRSpatialPlaneTrackingCapability);
 		GDREGISTER_CLASS(OpenXRSpatialMarkerTrackingCapability);
+		GDREGISTER_CLASS(OpenXRSpatialMeshTrackingCapability);
 		GDREGISTER_CLASS(OpenXrSpatialFilterArchetype);
 		GDREGISTER_CLASS(OpenXRSpatialImageTrackingCapability);
 

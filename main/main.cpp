@@ -2941,6 +2941,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable_builtin_for_image_database", PROPERTY_HINT_FILE, "*.tres"), "");
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/mesh_tracking/enable", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/mesh_tracking/enable_builtin_detection", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/mesh_tracking/watertight_mode", PROPERTY_HINT_ENUM, "Disabled,Optional,Required"), "1");
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/user_presence", false);

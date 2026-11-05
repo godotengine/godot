@@ -1,0 +1,3 @@
+Error: Validate extension JSON: API was removed: classes/OpenXRSpatialComponentMesh3DList/methods/get_mesh
+
+Method was never implemented and now that we are using the functionality, a different implementation was required.

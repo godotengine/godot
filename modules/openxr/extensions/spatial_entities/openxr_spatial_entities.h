@@ -210,7 +210,10 @@ public:
 	virtual void *get_structure_data(void *p_next) override;
 
 	Transform3D get_transform(int64_t p_index) const;
-	Ref<Mesh> get_mesh(int64_t p_index) const;
+	XrSpatialBufferIdEXT get_vertex_buffer_id(int64_t p_index) const;
+	PackedVector3Array get_vertices(RID p_snapshot, int64_t p_index) const;
+	XrSpatialBufferIdEXT get_index_buffer_id(int64_t p_index) const;
+	PackedInt32Array get_indices(RID p_snapshot, int64_t p_index) const;
 
 private:
 	Vector<XrSpatialMeshDataEXT> mesh3d_data;

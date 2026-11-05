@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRMeshTracker" inherits="OpenXRSpatialEntityTracker" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Spatial entity tracker for our spatial entity mesh tracking extension.
+	</brief_description>
+	<description>
+		Spatial entity tracker for our OpenXR spatial entity mesh tracking extension. These trackers contain mesh data that provide information about the environment around us.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_mesh_data">
+			<return type="void" />
+			<description>
+				Clears the mesh data for this tracker. You should only call this if you are handling your own discovery logic.
+			</description>
+		</method>
+		<method name="get_index_buffer_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the buffer id for the index buffer provided through [method set_index_buffer]. This allows checking if indices are unchanged and skip an expensive pull of data.
+			</description>
+		</method>
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Gets the index data for the mesh.
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="Mesh" />
+			<description>
+				Gets a mesh created from the mesh data provided by the runtime. This mesh is cached and will return the same resource when called while vertex, normal and index data remains unchanged.
+			</description>
+		</method>
+		<method name="get_mesh_adjusted_offset" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns our mesh offset but with world scale applied.
+			</description>
+		</method>
+		<method name="get_normal_buffer_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the buffer id for the normal buffer provided through [method set_normal_buffer]. This allows checking if normals are unchanged and skip an expensive pull of data.
+			</description>
+		</method>
+		<method name="get_normals" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Gets the normal data for the mesh.
+			</description>
+		</method>
+		<method name="get_shape">
+			<return type="Shape3D" />
+			<description>
+				Gets a collision shape built from the mesh data. This shape is cached and will return the same object until new source data is provided.
+			</description>
+		</method>
+		<method name="get_vertex_buffer_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the buffer id for the vertex buffer provided through [method set_vertex_buffer]. This allows checking if vertices are unchanged and skip an expensive pull of data.
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Gets the vertex data for the mesh.
+			</description>
+		</method>
+		<method name="set_index_buffer">
+			<return type="void" />
+			<param index="0" name="indices" type="PackedInt32Array" />
+			<param index="1" name="buffer_id" type="int" default="0" />
+			<param index="2" name="is_counter_clockwise" type="bool" default="false" />
+			<description>
+				Sets the buffer containing indices for our mesh data. Providing a value for [param buffer_id] allows you to check if OpenXR has supplied a new buffer on updates. [param is_counter_clockwise] specifies if data is in counter clockwise order (the default for OpenXR) and triggers a conversion to clockwise.
+			</description>
+		</method>
+		<method name="set_normal_buffer">
+			<return type="void" />
+			<param index="0" name="normals" type="PackedVector3Array" />
+			<param index="1" name="buffer_id" type="int" default="0" />
+			<description>
+				Sets the buffer containing normals for our mesh data. Providing a value for [param buffer_id] allows you to check if OpenXR has supplied a new buffer on updates.
+			</description>
+		</method>
+		<method name="set_vertex_buffer">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<param index="1" name="buffer_id" type="int" default="0" />
+			<description>
+				Sets the buffer containing vertices for our mesh data. Providing a value for [param buffer_id] allows you to check if OpenXR has supplied a new buffer on updates.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds_size" type="Vector3" setter="set_bounds_size" getter="get_bounds_size" default="Vector3(0, 0, 0)">
+			The bounding size of the mesh. This is a 3D size.
+		</member>
+		<member name="mesh_offset" type="Transform3D" setter="set_mesh_offset" getter="get_mesh_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			Mesh offset from our tracked pose.
+		</member>
+	</members>
+	<signals>
+		<signal name="mesh_changed">
+			<description>
+				Emitted when our mesh data has changed the mesh instance and collision needs to be updated.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -9,11 +9,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_mesh" qualifiers="const">
-			<return type="Mesh" />
-			<param index="0" name="index" type="int" />
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="snapshot" type="RID" />
+			<param index="1" name="index" type="int" />
 			<description>
-				Returns the mesh for the entity at this [param index].
+				Returns the mesh indices for the entity at this [param index].
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
@@ -21,6 +22,14 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the transform for positioning our mesh for the entity at this [param index].
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="snapshot" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the mesh vertices for the entity at this [param index].
 			</description>
 		</method>
 	</methods>

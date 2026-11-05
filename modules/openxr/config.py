@@ -51,6 +51,7 @@ def get_doc_classes():
         "OpenXRAnchorTracker",
         "OpenXRPlaneTracker",
         "OpenXRMarkerTracker",
+        "OpenXRMeshTracker",
         "OpenXRSpatialCapabilityConfigurationBaseHeader",
         "OpenXRSpatialCapabilityConfigurationAnchor",
         "OpenXRSpatialCapabilityConfigurationQrCode",
@@ -59,6 +60,8 @@ def get_doc_classes():
         "OpenXRSpatialCapabilityConfigurationAprilTag",
         "OpenXRSpatialContextPersistenceConfig",
         "OpenXRSpatialCapabilityConfigurationPlaneTracking",
+        "OpenXRSpatialContextWaterTightMeshConfig",
+        "OpenXRSpatialCapabilityConfigurationMeshTracking",
         "OpenXRSpatialComponentData",
         "OpenXRSpatialComponentBounded2DList",
         "OpenXRSpatialComponentBounded3DList",
@@ -69,6 +72,7 @@ def get_doc_classes():
         "OpenXRSpatialComponentPolygon2DList",
         "OpenXRSpatialComponentPlaneSemanticLabelList",
         "OpenXRSpatialComponentMarkerList",
+        "OpenXRSpatialComponentMesh3DNormalsList",
         "OpenXRSpatialQueryResultData",
         "OpenXRSpatialComponentAnchorList",
         "OpenXRSpatialComponentPersistenceList",
@@ -86,6 +90,7 @@ def get_doc_classes():
         "OpenXRImageTracker",
         "OpenXRSpatialImageTrackingCapability",
         "OpenXRSpatialImageDatabase",
+        "OpenXRSpatialMeshTrackingCapability",
     ]
 
 

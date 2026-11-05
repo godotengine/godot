@@ -506,7 +506,8 @@ PackedInt32Array OpenXRSpatialComponentMesh2DList::get_indices(RID p_snapshot, i
 
 void OpenXRSpatialComponentMesh3DList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transform", "index"), &OpenXRSpatialComponentMesh3DList::get_transform);
-	ClassDB::bind_method(D_METHOD("get_mesh", "index"), &OpenXRSpatialComponentMesh3DList::get_mesh);
+	ClassDB::bind_method(D_METHOD("get_vertices", "snapshot", "index"), &OpenXRSpatialComponentMesh3DList::get_vertices);
+	ClassDB::bind_method(D_METHOD("get_indices", "snapshot", "index"), &OpenXRSpatialComponentMesh3DList::get_indices);
 }
 
 void OpenXRSpatialComponentMesh3DList::set_capacity(uint32_t p_capacity) {
@@ -534,12 +535,86 @@ Transform3D OpenXRSpatialComponentMesh3DList::get_transform(int64_t p_index) con
 	return openxr_api->transform_from_pose(mesh3d_data[p_index].origin);
 }
 
-Ref<Mesh> OpenXRSpatialComponentMesh3DList::get_mesh(int64_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, mesh3d_data.size(), nullptr);
+XrSpatialBufferIdEXT OpenXRSpatialComponentMesh3DList::get_vertex_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh3d_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
 
-	// TODO implement, need to convert mesh data to Godot mesh resource
+	return mesh3d_data[p_index].vertexBuffer.bufferId;
+}
 
-	return nullptr;
+PackedVector3Array OpenXRSpatialComponentMesh3DList::get_vertices(RID p_snapshot, int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh3d_data.size(), PackedVector3Array());
+
+	const XrSpatialBufferEXT &buffer = mesh3d_data[p_index].vertexBuffer;
+	if (buffer.bufferId == XR_NULL_SPATIAL_BUFFER_ID_EXT) {
+		// We don't have data (yet).
+		return PackedVector3Array();
+	}
+
+	ERR_FAIL_COND_V(buffer.bufferType != XR_SPATIAL_BUFFER_TYPE_VECTOR3F_EXT, PackedVector3Array());
+
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, PackedVector3Array());
+
+	return se_extension->get_vector3_buffer(p_snapshot, buffer.bufferId);
+}
+
+XrSpatialBufferIdEXT OpenXRSpatialComponentMesh3DList::get_index_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh3d_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
+
+	return mesh3d_data[p_index].indexBuffer.bufferId;
+}
+
+PackedInt32Array OpenXRSpatialComponentMesh3DList::get_indices(RID p_snapshot, int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh3d_data.size(), PackedInt32Array());
+
+	const XrSpatialBufferEXT &buffer = mesh3d_data[p_index].indexBuffer;
+	if (buffer.bufferId == XR_NULL_SPATIAL_BUFFER_ID_EXT) {
+		// We don't have data (yet).
+		return PackedInt32Array();
+	}
+
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, PackedInt32Array());
+
+	PackedInt32Array ret;
+
+	switch (buffer.bufferType) {
+		case XR_SPATIAL_BUFFER_TYPE_UINT8_EXT: {
+			PackedByteArray data = se_extension->get_uint8_buffer(p_snapshot, buffer.bufferId);
+
+			ret.resize(data.size());
+			int count = ret.size();
+			int32_t *ptr = ret.ptrw();
+			for (int i = 0; i < count; i++) {
+				ptr[i] = data[i];
+			}
+		} break;
+		case XR_SPATIAL_BUFFER_TYPE_UINT16_EXT: {
+			Vector<uint16_t> data = se_extension->get_uint16_buffer(p_snapshot, buffer.bufferId);
+
+			ret.resize(data.size());
+			int count = ret.size();
+			int32_t *ptr = ret.ptrw();
+			for (int i = 0; i < count; i++) {
+				ptr[i] = data[i];
+			}
+		} break;
+		case XR_SPATIAL_BUFFER_TYPE_UINT32_EXT: {
+			Vector<uint32_t> data = se_extension->get_uint32_buffer(p_snapshot, buffer.bufferId);
+
+			ret.resize(data.size());
+			int count = ret.size();
+			int32_t *ptr = ret.ptrw();
+			for (int i = 0; i < count; i++) {
+				ptr[i] = data[i];
+			}
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(PackedInt32Array(), "OpenXR: Unsupported buffer type for indices.");
+		} break;
+	}
+
+	return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////
