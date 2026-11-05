@@ -212,6 +212,9 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
+    if env["debug_symbols"]:
+        env.Append(LINKFLAGS=["-Wl,--build-id"])
+
     if env["library_type"] == "shared_library":
         env.Append(CCFLAGS=["-fPIC"])
 

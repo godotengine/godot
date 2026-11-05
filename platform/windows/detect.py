@@ -780,6 +780,9 @@ def configure_mingw(env: "SConsEnvironment"):
     else:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
 
+    if env["debug_symbols"]:
+        env.Append(LINKFLAGS=["-Wl,--build-id"])
+
     ## Compile flags
 
     if not env["use_llvm"]:
