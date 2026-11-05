@@ -4,8 +4,8 @@ name: komm64 Windows Build
 # editor は毎回、export template (template_debug / template_release) は
 # tag push と workflow_dispatch のときだけビルドする。fork 専用 API を使う
 # game は公式 template では動かないので、Release に template も添付する。
-# __FILE__ に入るビルド機のパスは /d1trimfile で削り、残っていないことを
-# gate で確認する (#54)。
+# __FILE__ に入るビルド機のパスは /d1trimfile で削り、配布物に絶対パスが
+# 残っていないことを gate で確認する (#54)。
 # その他の build flag (D3D12 / ANGLE / WinRT / AccessKit) は公式と同等にして、
 # 後で「dev binary と production binary で挙動差があった」debug 困難を避ける。
 #
@@ -51,6 +51,8 @@ env:
     module_text_server_fb_enabled=yes
     debug_symbols=no
     "ccflags=/d1trimfile:${GITHUB_WORKSPACE}\\"
+    "angle_libs=${{ github.workspace }}/"
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.21.2/"
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
@@ -78,10 +80,9 @@ jobs:
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
-      # Following 4 SDK download steps mirror the official windows_builds.yml.
-      # Each is `continue-on-error: true` (or wraps with try/fallback) so a
-      # missing SDK falls back to building without that component instead of
-      # failing the whole build.
+      # SDK download steps mirror the official windows_builds.yml. ANGLE and
+      # AccessKit are required (a failed download fails the build), so shipped
+      # templates never silently lose them.
 
       - name: Download Direct3D 12 SDK components
         shell: sh
@@ -95,16 +96,16 @@ jobs:
           fi
         continue-on-error: true
 
-      - name: Download pre-built ANGLE
-        shell: sh
-        id: angle-sdk
-        run: |
-          if python ./misc/scripts/install_angle.py; then
-            echo "ANGLE_ENABLED=yes" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::ANGLE SDK installation failed, building without ANGLE support."
-            echo "ANGLE_ENABLED=no" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Download pre-built ANGLE static libraries
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: godotengine/godot-angle-static
+          version: tags/chromium/6601.2
+          file: godot-angle-static-x86_64-msvc-release.zip
+          target: angle/angle.zip
+
+      - name: Extract pre-built ANGLE static libraries
+        run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
 
       - name: Download WinRT components
         shell: sh
@@ -112,20 +113,21 @@ jobs:
         continue-on-error: true
 
       - name: Download pre-built AccessKit
-        shell: sh
-        id: accesskit-sdk
-        run: |
-          if python ./misc/scripts/install_accesskit.py; then
-            echo "ACCESSKIT_ENABLED=yes" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::AccessKit SDK installation failed, building without AccessKit support."
-            echo "ACCESSKIT_ENABLED=no" >> "$GITHUB_OUTPUT"
-          fi
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: godotengine/godot-accesskit-c-static
+          version: tags/0.21.2
+          file: accesskit-c-0.21.2.zip
+          target: accesskit-c-0.21.2/accesskit_c.zip
+
+      - name: Extract pre-built AccessKit
+        shell: bash
+        run: unzip -o accesskit-c-0.21.2/accesskit_c.zip
 
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} production=${{ matrix.target == 'template_release' && 'yes' || 'no' }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }} angle=${{ steps.angle-sdk.outputs.ANGLE_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} production=${{ matrix.target == 'template_release' && 'yes' || 'no' }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }}
           platform: windows
           target: ${{ matrix.target }}
 
@@ -153,13 +155,15 @@ jobs:
       - name: Build path gate
         shell: python
         run: |
-          # Fail if the checkout path survived in any binary (#54).
-          import glob, os, re, sys
-          ws = os.environ["GITHUB_WORKSPACE"]  # e.g. D:\a\godot\godot
-          pattern = re.compile(re.escape(ws.lower()).replace(r"\\", r"[\\/]").encode() + rb"[^\x00]{0,80}")
+          # Fail if any binary embeds an absolute source path, e.g. from
+          # __FILE__ in error macros (#54): X:\...\foo.h or X:/.../foo.cpp.
+          # Upstream's prebuilt godot-nir-static carries its own public CI path
+          # (same in official binaries), so it is not a leak of this machine.
+          import glob, re, sys
+          pattern = re.compile(rb"(?<![A-Za-z])[A-Za-z]:[\\/][^\x00\n]{0,160}?\.(?:h|hpp|c|cpp|inc)\b")
           hits = 0
           for f in sorted(glob.glob("out/*.exe")):
-              found = pattern.findall(open(f, "rb").read().lower())
+              found = [s for s in pattern.findall(open(f, "rb").read()) if b"godot-nir-static" not in s]
               print(f"{f}: {len(found)} build-path strings")
               for s in found[:5]:
                   print("   ", s.decode(errors="replace"))
