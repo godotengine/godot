@@ -328,6 +328,9 @@
 	}
 
 	[self windowDidResize:notification]; // Emit resize event, to ensure content is resized if the window was resized while it was hidden.
+	if (wd.window_view) {
+		[wd.window_view updateModifierFlags];
+	}
 
 	wd.focused = true;
 	ds->set_last_focused_window(window_id);
