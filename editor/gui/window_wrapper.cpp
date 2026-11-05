@@ -281,6 +281,13 @@ void WindowWrapper::set_window_title(const String &p_title) {
 	window->set_title(p_title);
 }
 
+void WindowWrapper::set_window_propagate_shortcuts_to_parent(bool p_enabled) {
+	if (!is_window_available()) {
+		return;
+	}
+	window->set_propagate_shortcuts_to_parent(p_enabled);
+}
+
 void WindowWrapper::set_margins_enabled(bool p_enabled) {
 	if (!is_window_available()) {
 		return;
