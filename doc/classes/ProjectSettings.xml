@@ -3722,6 +3722,17 @@
 			Enables the built-in logic for handling marker tracking for each selected marker type. Godot will query markers and manage [OpenXRMarkerTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
 			[b]Note:[/b] This functionality requires that marker tracking is supported and enabled.
 		</member>
+		<member name="xr/openxr/extensions/spatial_entity/mesh_tracking/enable" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], support for the mesh tracking extension is requested. If supported, you will be able to obtain mesh data for the environment detected by the XR runtime.
+			[b]Note:[/b] This requires that the OpenXR spatial entities and mesh tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/mesh_tracking/enable_builtin_detection" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], we enable the built-in logic for handling mesh detection. Godot will query detected mesh data and manage [OpenXRMeshTracker] instances for you. If disabled you'll need to create your own spatial context and perform your own discovery queries.
+			[b]Note:[/b] This functionality requires that mesh tracking is supported and enabled.
+		</member>
+		<member name="xr/openxr/extensions/spatial_entity/mesh_tracking/watertight_mode" type="int" setter="" getter="" default="&quot;1&quot;">
+			If built-in mesh tracking logic is enabled, this setting allows us to request watertight meshes if supported by the runtime. If you select that you require watertight meshes and this functionality is not supported by the XR runtime, built-in mesh tracking will not be enabled.
+		</member>
 		<member name="xr/openxr/extensions/spatial_entity/spatial_image_tracking/enable" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], support for the image tracking extension is requested. If supported, you will be able to query information about images detected by the XR runtime.
 			[b]Note:[/b] This requires that the OpenXR spatial entities and image tracking extensions are supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/spatial_entity/enabled] must be enabled for this setting to be used.

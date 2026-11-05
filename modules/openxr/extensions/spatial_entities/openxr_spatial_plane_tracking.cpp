@@ -815,6 +815,7 @@ void OpenXRSpatialPlaneTrackingCapability::stop_built_in_tracking(bool p_clear_t
 
 ////////////////////////////////////////////////////////////////////////////
 // Discovery logic
+
 Ref<OpenXRFutureResult> OpenXRSpatialPlaneTrackingCapability::_create_spatial_context() {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL_V(se_extension, nullptr);

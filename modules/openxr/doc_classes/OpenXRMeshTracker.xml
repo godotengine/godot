@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRMeshTracker" inherits="OpenXRSpatialEntityTracker" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Spatial entity tracker for our spatial entity mesh tracking extension.
+	</brief_description>
+	<description>
+		Spatial entity tracker for our OpenXR spatial entity mesh tracking extension. These trackers contain mesh data that provide information about the environment around us.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_mesh_data">
+			<return type="void" />
+			<description>
+				Clears the mesh data for this tracker. You should only call this if you are handling your own discovery logic.
+			</description>
+		</method>
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Gets the index data for the mesh.
+			</description>
+		</method>
+		<method name="get_mesh">
+			<return type="Mesh" />
+			<description>
+				Gets a mesh created from the mesh data provided by the runtime. This mesh is cached and will return the same resource when called while vertex, normal and index data remains unchanged.
+			</description>
+		</method>
+		<method name="get_mesh_adjusted_offset" qualifiers="const">
+			<return type="Transform3D" />
+			<description>
+				Returns our mesh offset but with world scale applied.
+			</description>
+		</method>
+		<method name="get_normals" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Gets the normal data for the mesh.
+			</description>
+		</method>
+		<method name="get_shape">
+			<return type="Shape3D" />
+			<description>
+				Gets a collision shape built from the mesh data.
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Gets the vertex data for the mesh.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds_size" type="Vector3" setter="set_bounds_size" getter="get_bounds_size" default="Vector3(0, 0, 0)">
+			The bounding size of the mesh. This is a 3D size.
+		</member>
+		<member name="mesh_offset" type="Transform3D" setter="set_mesh_offset" getter="get_mesh_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
+			Mesh offset from our tracked pose.
+		</member>
+	</members>
+	<signals>
+		<signal name="mesh_changed">
+			<description>
+				Emitted when our mesh data has changed the mesh instance and collision needs to be updated.
+			</description>
+		</signal>
+	</signals>
+</class>
