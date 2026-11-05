@@ -1,9 +1,11 @@
 name: komm64 Windows Build
 
-# komm64 fork 専用の Windows editor binary build workflow.
-# 公式の windows_builds.yml は msvc + clang-cl + template_release + mingw の
-# 4 ビルド matrix で重いので、ここでは MSVC editor binary 1 個に絞る。
-# template_release は配布フェーズが進んでから別 workflow で追加する想定。
+# komm64 fork 専用の Windows build workflow (MSVC).
+# editor は毎回、export template (template_debug / template_release) は
+# tag push と workflow_dispatch のときだけビルドする。fork 専用 API を使う
+# game は公式 template では動かないので、Release に template も添付する。
+# __FILE__ に入るビルド機のパスは /d1trimfile で削り、残っていないことを
+# gate で確認する (#54)。
 # その他の build flag (D3D12 / ANGLE / WinRT / AccessKit) は公式と同等にして、
 # 後で「dev binary と production binary で挙動差があった」debug 困難を避ける。
 #
@@ -21,8 +23,10 @@ name: komm64 Windows Build
 # 以降の branch CI / tag build が default_branch fallback で hit して数分。
 #
 # Output:
-#   - artifact: komm64-godot-windows-editor (60-day retention)
-#   - tag push 時のみ: GitHub Release に exe を添付
+#   - artifact: komm64-godot-windows-<target> (60-day retention)
+#   - tag push 時のみ: GitHub Release に editor exe と template を添付。
+#     template は export_templates/<version>/ にそのまま置ける名前
+#     (windows_{debug,release}_x86_64[_console].exe)
 
 on:
   workflow_dispatch:
@@ -41,16 +45,24 @@ permissions:
   contents: write
 
 env:
+  # /d1trimfile strips the checkout path from __FILE__ (error macros), so
+  # shipped binaries do not carry build-machine paths (#54).
   SCONS_FLAGS: >-
     module_text_server_fb_enabled=yes
     debug_symbols=no
+    "ccflags=/d1trimfile:${GITHUB_WORKSPACE}\\"
   SCONS_CACHE_MSVC_CONFIG: true
   PYTHONIOENCODING: utf8
 
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        # Templates only for releases (tag push) and manual runs.
+        target: ${{ fromJSON((github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')) && '["editor","template_debug","template_release"]' || '["editor"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -60,7 +72,7 @@ jobs:
       - name: Restore build cache
         uses: ./.github/actions/godot-cache-restore
         with:
-          cache-name: komm64-windows-editor
+          cache-name: komm64-windows-${{ matrix.target }}
         continue-on-error: true
 
       - name: Setup Python and SCons
@@ -113,31 +125,61 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }} angle=${{ steps.angle-sdk.outputs.ANGLE_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} production=${{ matrix.target == 'template_release' && 'yes' || 'no' }} d3d12=${{ steps.d3d12-sdk.outputs.D3D12_ENABLED }} accesskit=${{ steps.accesskit-sdk.outputs.ACCESSKIT_ENABLED }} angle=${{ steps.angle-sdk.outputs.ANGLE_ENABLED }}
           platform: windows
-          target: editor
+          target: ${{ matrix.target }}
 
       - name: Save build cache
         uses: ./.github/actions/godot-cache-save
         with:
-          cache-name: komm64-windows-editor
+          cache-name: komm64-windows-${{ matrix.target }}
         continue-on-error: true
 
       - name: Prepare artifact
+        shell: bash
         run: |
-          Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+          set -e
+          mkdir -p out
+          case "${{ matrix.target }}" in
+            editor)
+              cp bin/godot.windows.editor.x86_64.exe out/ ;;
+            template_*)
+              kind="${{ matrix.target }}"; kind="${kind#template_}"
+              cp "bin/godot.windows.${{ matrix.target }}.x86_64.exe" "out/windows_${kind}_x86_64.exe"
+              cp "bin/godot.windows.${{ matrix.target }}.x86_64.console.exe" "out/windows_${kind}_x86_64_console.exe" ;;
+          esac
+          ls -l out
+
+      - name: Build path gate
+        shell: bash
+        run: |
+          # Fail if the checkout path survived in any binary (#54).
+          ws="$GITHUB_WORKSPACE"   # e.g. D:\a\godot\godot
+          fwd="${ws//\\//}"        # e.g. D:/a/godot/godot
+          hits=0
+          for f in out/*.exe; do
+            n=$(grep -a -o -i -F -e "$ws" -e "$fwd" "$f" | wc -l)
+            echo "$f: $n build-path strings"
+            [ "$n" -eq 0 ] || grep -a -o -i -F -e "$ws" -e "$fwd" "$f" | sort | uniq -c | head -5
+            hits=$((hits + n))
+          done
+          if [ "$hits" -ne 0 ]; then
+            echo "::error::build machine paths found in binaries (#54)"
+            exit 1
+          fi
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
         with:
-          name: komm64-godot-windows-editor
-          path: bin/godot.windows.editor.x86_64.exe
+          name: komm64-godot-windows-${{ matrix.target }}
+          path: out/*
 
       # Headless smoke gate for komm64 fork-specific render_modes / features.
       # Catches the class of bug fixed in #26 — a parser whitelist out of sync
       # with backend render_mode_values mappings. Each new komm64 render_mode
       # / shader feature should add a line under the test_shader.gdshader.
       - name: Shader compile gate
+        if: matrix.target == 'editor'
         shell: bash
         run: |
           set -e
@@ -170,9 +212,19 @@ jobs:
           fi
           echo "Shader compile gate PASS"
 
-      - name: Create Release (tag push only)
-        if: startsWith(github.ref, 'refs/tags/')
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: komm64-godot-windows-*
+          merge-multiple: true
+          path: out
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: bin/godot.windows.editor.x86_64.exe
+          files: out/*
           generate_release_notes: true
