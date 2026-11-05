@@ -35,10 +35,7 @@ namespace bu_math
 	{
 	public:
 		typedef T scalar_type;
-		enum
-		{
-			num_elements = N
-		};
+		static constexpr int32_t num_elements = N;
 
 		inline vec()
 		{
@@ -1186,11 +1183,8 @@ namespace bu_math
 	{
 	public:
 		typedef T scalar_type;
-		enum
-		{
-			num_rows = R,
-			num_cols = C
-		};
+		static constexpr int32_t num_rows = R;
+		static constexpr int32_t num_cols = C;
 
 		typedef vec<R, T> col_vec;
 		typedef vec < (R > 1) ? (R - 1) : 0, T > subcol_vec;
