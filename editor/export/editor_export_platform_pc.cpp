@@ -123,7 +123,27 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	bool dvalid = dtemplate_path != "";
 	bool rvalid = rtemplate_path != "";
 
-	// Warn if the debug symbols files are not found.
+	String dcustom_template_path = p_preset->get("custom_template/debug");
+	dcustom_template_path = dcustom_template_path.strip_edges();
+	if (dcustom_template_path != "") {
+		dtemplate_path = dcustom_template_path;
+		dvalid = FileAccess::exists(dcustom_template_path);
+		if (!dvalid) {
+			err += TTR("Custom debug template not found.") + "\n";
+		}
+	}
+
+	String rcustom_template_path = p_preset->get("custom_template/release");
+	rcustom_template_path = rcustom_template_path.strip_edges();
+	if (rcustom_template_path != "") {
+		rtemplate_path = rcustom_template_path;
+		rvalid = FileAccess::exists(rcustom_template_path);
+		if (!rvalid) {
+			err += TTR("Custom release template not found.") + "\n";
+		}
+	}
+
+	// Warn if the debug symbols for the effectively used  files are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
 		if (dvalid) {
@@ -131,30 +151,6 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 		}
 		if (rvalid && debug_symbol_mode == 2) {
 			check_export_template_debug_symbols(rtemplate_path + ".debugsymbols", &err);
-		}
-	}
-
-	String dcustom_template_path = p_preset->get("custom_template/debug");
-	dcustom_template_path = dcustom_template_path.strip_edges();
-	if (dcustom_template_path != "") {
-		dvalid = FileAccess::exists(dcustom_template_path);
-		if (!dvalid) {
-			err += TTR("Custom debug template not found.") + "\n";
-		}
-		if (dvalid && debug_symbol_mode > 0) {
-			check_export_template_debug_symbols(dcustom_template_path + ".debugsymbols", &err);
-		}
-	}
-
-	String rcustom_template_path = p_preset->get("custom_template/release");
-	rcustom_template_path = rcustom_template_path.strip_edges();
-	if (rcustom_template_path != "") {
-		rvalid = FileAccess::exists(rcustom_template_path);
-		if (!rvalid) {
-			err += TTR("Custom release template not found.") + "\n";
-		}
-		if (rvalid && debug_symbol_mode == 2) {
-			check_export_template_debug_symbols(rcustom_template_path + ".debugsymbols", &err);
 		}
 	}
 
