@@ -126,8 +126,10 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	// Warn if the debug symbols files are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
-		check_export_template_debug_symbols(dtemplate_path + ".debugsymbols", &err);
-		if (debug_symbol_mode == 2) {
+		if (dvalid) {
+			check_export_template_debug_symbols(dtemplate_path + ".debugsymbols", &err);
+		}
+		if (rvalid && debug_symbol_mode == 2) {
 			check_export_template_debug_symbols(rtemplate_path + ".debugsymbols", &err);
 		}
 	}
@@ -139,7 +141,7 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
-		if (debug_symbol_mode > 0) {
+		if (dvalid && debug_symbol_mode > 0) {
 			check_export_template_debug_symbols(dcustom_template_path + ".debugsymbols", &err);
 		}
 	}
@@ -151,7 +153,7 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
-		if (debug_symbol_mode == 2) {
+		if (rvalid && debug_symbol_mode == 2) {
 			check_export_template_debug_symbols(rcustom_template_path + ".debugsymbols", &err);
 		}
 	}
