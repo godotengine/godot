@@ -58,6 +58,7 @@ private:
 	AspectRatioContainer *centering_container = nullptr;
 	ColorRect *bg_rect = nullptr;
 	TextureRect *checkerboard = nullptr;
+	Label *filename_label = nullptr;
 	Label *metadata_label = nullptr;
 	Button *metadata_toggle = nullptr;
 
@@ -67,6 +68,7 @@ private:
 	SpinBox *mipmap_spinbox = nullptr;
 
 	void _draw_outline();
+	void _update_filename_label_text();
 	void _update_metadata_label_text();
 	void _toggle_metadata_label();
 
