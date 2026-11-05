@@ -142,7 +142,7 @@ void LineBuilder::build() {
 			if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 				uvx0 = width_factor * 0.5f / tile_aspect;
 			} else if (texture_mode == Line2D::LINE_TEXTURE_STRETCH) {
-				uvx0 = width * width_factor / total_distance;
+				uvx0 = width * width_factor * 0.5f / total_distance;
 			}
 			new_arc(pos0, pos_up0 - pos0, -Math::PI, color0, Rect2(0.f, 0.f, uvx0 * 2, 1.f));
 			current_distance0 += modified_hw;
