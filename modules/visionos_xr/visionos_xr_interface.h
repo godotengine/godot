@@ -157,9 +157,12 @@ private:
 
 		RD::Texture current_color_texture;
 		RID current_color_texture_id;
+		uint64_t current_color_texture_source = 0;
 		RD::Texture current_depth_texture;
 		RID current_depth_texture_id;
+		uint64_t current_depth_texture_source = 0;
 		RID current_rasterization_rate_map_id;
+		uint64_t current_rasterization_rate_map_source = 0;
 
 		// Cached render target size, set in pre_render() on the render thread
 		// and read from the game thread via get_render_target_size().
