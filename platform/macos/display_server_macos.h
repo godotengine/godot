@@ -212,6 +212,7 @@ private:
 		Callable callback;
 	};
 	List<MenuCall> deferred_menu_calls;
+	DisplayServerEnums::WindowID confinement_window = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, DisplayServerEnums::WindowID p_window);
@@ -249,6 +250,8 @@ public:
 	Point2i _get_screens_origin() const;
 
 	void set_menu_delegate(NSMenu *p_menu);
+	DisplayServerEnums::WindowID get_confinement_window() const { return confinement_window; }
+	void set_confinement_window(DisplayServerEnums::WindowID p_window);
 
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, DisplayServerEnums::WindowEvent p_event) const;
