@@ -830,9 +830,11 @@
 		</method>
 		<method name="queue_free_children">
 			<return type="void" />
+			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
-				Queues all children of this node to be deleted at the end of the current frame. The node itself is not deleted.
-				[b]Note:[/b] This is equivalent to calling [method queue_free] on each child.
+				Removes all children from this node and queues them to be deleted at the end of the current frame. The node itself is not deleted.
+				If [param include_internal] is [code]false[/code], internal children are not removed (see [method add_child]'s [code]internal[/code] parameter).
+				This is equivalent to calling [method remove_child] and then [method queue_free] on each child, but faster. Children are removed from the last to the first, and [signal child_order_changed] is only emitted once.
 			</description>
 		</method>
 		<method name="remove_child">

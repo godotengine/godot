@@ -39,6 +39,7 @@ TEST_FORCE_LINK(test_node)
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "tests/signal_watcher.h"
 #include "tests/test_utils.h"
 
 namespace TestNode {
@@ -532,6 +533,58 @@ TEST_CASE("[SceneTree][Node] Duplicating node with internal children") {
 
 	memdelete(node);
 	memdelete(dup);
+}
+
+TEST_CASE("[SceneTree][Node] Queue freeing children") {
+	TestNode *node = memnew(TestNode);
+	SceneTree::get_singleton()->get_root()->add_child(node);
+
+	Node *child1 = memnew(Node);
+	Node *child2 = memnew(Node);
+	node->add_child(child1);
+	node->add_child(child2);
+	ObjectID child1_id = child1->get_instance_id();
+	ObjectID child2_id = child2->get_instance_id();
+
+	CHECK_EQ(node->get_child_count(false), 2);
+	CHECK_EQ(node->get_child_count(), 4);
+
+	Array empty_signal_args = { {} };
+	SIGNAL_WATCH(node, SNAME("child_order_changed"));
+
+	SUBCASE("Internal children should be kept when excluded") {
+		node->queue_free_children(false);
+
+		SIGNAL_CHECK("child_order_changed", empty_signal_args);
+		CHECK_EQ(node->get_child_count(false), 0);
+		CHECK_EQ(node->get_child_count(), 2);
+		CHECK_EQ(child1->get_parent(), nullptr);
+		CHECK_FALSE(child1->is_inside_tree());
+		CHECK(child1->is_queued_for_deletion());
+		CHECK(child2->is_queued_for_deletion());
+		CHECK_FALSE(node->is_queued_for_deletion());
+
+		SceneTree::get_singleton()->process(0);
+
+		CHECK(ObjectDB::get_instance(child1_id) == nullptr);
+		CHECK(ObjectDB::get_instance(child2_id) == nullptr);
+		CHECK_EQ(node->get_child_count(), 2);
+	}
+
+	SUBCASE("Internal children should be removed when included") {
+		node->queue_free_children();
+
+		SIGNAL_CHECK("child_order_changed", empty_signal_args);
+		CHECK_EQ(node->get_child_count(), 0);
+
+		SceneTree::get_singleton()->process(0);
+
+		CHECK(ObjectDB::get_instance(child1_id) == nullptr);
+		CHECK(ObjectDB::get_instance(child2_id) == nullptr);
+	}
+
+	SIGNAL_UNWATCH(node, SNAME("child_order_changed"));
+	memdelete(node);
 }
 
 TEST_CASE("[SceneTree][Node]Exported node checks") {
