@@ -42,5 +42,6 @@ protected:
 
 public:
 	static MeshInstance3D *convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d);
+	static Node *convert_importer_meshes_recursively(Node *p_root_node);
 	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;
 };
