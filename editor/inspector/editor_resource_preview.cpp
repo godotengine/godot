@@ -199,7 +199,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	r_texture = Ref<ImageTexture>();
 	r_small_texture = Ref<ImageTexture>();
 
-	for (int i = 0; i < preview_generators.size(); i++) {
+	for (int i = preview_generators.size() - 1; i >= 0; --i) {
 		if (!preview_generators[i]->handles(type)) {
 			continue;
 		}
