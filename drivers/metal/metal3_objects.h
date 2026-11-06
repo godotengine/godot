@@ -284,20 +284,9 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) QueryPool {
 	// A one byte private buffer, filled by the timestamp encoder so it always
 	// carries at least one command.
 	NS::SharedPtr<MTL::Buffer> dummy_buffer;
-	// The counter sample buffer timestamp domain is not queryable, so it is
-	// correlated against the CPU clock. queryTimestampFrequency() describes the
-	// Metal 4 counter heap domain instead, and is roughly 33x off here.
-	MTL::Device *device = nullptr;
-	MTL::Timestamp cpu_base = 0;
-	MTL::Timestamp gpu_base = 0;
-	double timestamp_to_nano = 0.0;
 	uint32_t count = 0;
 
 	QueryPool() = default;
-
-	// Resolves the GPU to CPU tick ratio on first use, once enough time has
-	// elapsed since creation for the correlation to be meaningful.
-	double _resolve_timestamp_to_nano();
 
 public:
 	// Returns nullptr if the device does not expose the timestamp counter set.
@@ -638,7 +627,7 @@ public:
 
 #pragma mark - Timestamp
 
-	void timestamp_write(QueryPool *p_pool, uint32_t p_index);
+	void timestamp_write(QueryPool *p_pool, uint32_t p_index, MTL::Fence *p_fence);
 
 #pragma mark - Synchronization
 
