@@ -715,10 +715,10 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 				const Color *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
 					uint8_t color8[4] = {
-						uint8_t(CLAMP(src[i].r * 255.0, 0.0, 255.0)),
-						uint8_t(CLAMP(src[i].g * 255.0, 0.0, 255.0)),
-						uint8_t(CLAMP(src[i].b * 255.0, 0.0, 255.0)),
-						uint8_t(CLAMP(src[i].a * 255.0, 0.0, 255.0))
+						uint8_t(CLAMP(Math::round(src[i].r * 255.0), 0.0, 255.0)),
+						uint8_t(CLAMP(Math::round(src[i].g * 255.0), 0.0, 255.0)),
+						uint8_t(CLAMP(Math::round(src[i].b * 255.0), 0.0, 255.0)),
+						uint8_t(CLAMP(Math::round(src[i].a * 255.0), 0.0, 255.0))
 					};
 					memcpy(&aw[p_offsets[ai] + i * p_attrib_stride], color8, 4);
 				}

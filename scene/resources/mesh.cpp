@@ -1232,10 +1232,10 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 						const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
 						uint8_t *dst = (uint8_t *)&dst_attribute_ptr[i * dst_attribute_stride + dst_offsets[Mesh::ARRAY_COLOR]];
 
-						dst[0] = uint8_t(CLAMP(src[0] * 255.0, 0.0, 255.0));
-						dst[1] = uint8_t(CLAMP(src[1] * 255.0, 0.0, 255.0));
-						dst[2] = uint8_t(CLAMP(src[2] * 255.0, 0.0, 255.0));
-						dst[3] = uint8_t(CLAMP(src[3] * 255.0, 0.0, 255.0));
+						dst[0] = uint8_t(CLAMP(Math::round(src[0] * 255.0), 0.0, 255.0));
+						dst[1] = uint8_t(CLAMP(Math::round(src[1] * 255.0), 0.0, 255.0));
+						dst[2] = uint8_t(CLAMP(Math::round(src[2] * 255.0), 0.0, 255.0));
+						dst[3] = uint8_t(CLAMP(Math::round(src[3] * 255.0), 0.0, 255.0));
 					}
 					src_offset += sizeof(float) * 4;
 				}
