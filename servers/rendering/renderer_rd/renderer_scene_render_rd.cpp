@@ -466,7 +466,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	Size2i target_size = rb->get_target_size();
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8; // FIXME I think this should check internal size, we do all our post processing at this size...
-	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
+	bool raw_color_debug = debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && !_render_buffers_get_normal_texture(rb).is_valid();
+	can_use_effects &= _debug_draw_can_use_effects(debug_draw) && !raw_color_debug;
 	bool can_use_storage = _render_buffers_can_be_storage();
 
 	RSE::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
@@ -723,7 +724,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.use_fxaa = use_fxaa;
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
-		if (p_render_data->environment.is_valid()) {
+		if (p_render_data->environment.is_valid() && !raw_color_debug) {
 			// When we are using RGB10A2 render buffer format, our scene
 			// is limited to a maximum of 2.0. In this case we should limit
 			// the max white of tonemappers, specifically AgX which defaults
@@ -749,7 +750,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
 		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
-		tonemap.convert_to_srgb = !using_hdr;
+		tonemap.convert_to_srgb = !using_hdr && !raw_color_debug;
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
 			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
@@ -792,7 +793,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
-		if (rb->get_use_debanding() && !using_hdr) {
+		if (rb->get_use_debanding() && !using_hdr && !raw_color_debug) {
 			if (use_smaa) {
 				// SMAA will apply 8-bit debanding.
 				if (!can_use_storage) {
@@ -913,6 +914,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	// Seeing we don't support FSR in our mobile renderer right now target_size = internal_size...
 	Size2i target_size = rb->get_target_size();
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8 && debug_draw == RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
+	bool raw_color_debug = debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && !_render_buffers_get_normal_texture(rb).is_valid();
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
@@ -920,7 +922,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
 
-	if (p_render_data->environment.is_valid()) {
+	if (p_render_data->environment.is_valid() && !raw_color_debug) {
 		// When we are using RGB10A2 render buffer format, our scene
 		// is limited to a maximum of 2.0. In this case we should limit
 		// the max white of tonemappers, specifically AgX which defaults
@@ -963,7 +965,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_color_correction = false;
 	tonemap.use_1d_color_correction = false;
 	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
-	tonemap.convert_to_srgb = !using_hdr;
+	tonemap.convert_to_srgb = !using_hdr && !raw_color_debug;
 
 	if (can_use_effects && p_render_data->environment.is_valid()) {
 		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
@@ -982,7 +984,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.luminance_multiplier = rb->get_luminance_multiplier();
 	tonemap.view_count = rb->get_view_count();
 
-	if (rb->get_use_debanding() && !using_hdr) {
+	if (rb->get_use_debanding() && !using_hdr && !raw_color_debug) {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_8_BIT;
 	} else {
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
@@ -1487,7 +1489,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
