@@ -155,4 +155,71 @@ TEST_CASE("[SceneTree][Button] is_hovered()") {
 	memdelete(button);
 }
 
+TEST_CASE("[SceneTree][Button] Touch toggle signals on press") {
+	Button *button = memnew(Button);
+	SceneTree::get_singleton()->get_root()->add_child(button);
+	button->set_size(Size2(100, 100));
+	button->set_toggle_mode(true);
+	button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+
+	SIGNAL_WATCH(button, "button_down");
+	SIGNAL_WATCH(button, "button_up");
+	SIGNAL_WATCH(button, "toggled");
+	SIGNAL_WATCH(button, "pressed");
+	Array no_args;
+	no_args.push_back(Array());
+
+	Ref<InputEventScreenTouch> touch;
+	touch.instantiate();
+	touch->set_position(Point2(20, 20));
+
+	SUBCASE("Each tap emits down and up without toggling again on release") {
+		for (int i = 0; i < 3; i++) {
+			touch->set_pressed(true);
+			static_cast<Control *>(button)->gui_input(touch);
+			SIGNAL_CHECK("button_down", no_args);
+			SIGNAL_CHECK_FALSE("button_up");
+			Array toggled_args = { { i % 2 == 0 } };
+			SIGNAL_CHECK("toggled", toggled_args);
+			SIGNAL_CHECK("pressed", no_args);
+
+			// A different finger must not release the active touch.
+			touch->set_index(1);
+			touch->set_pressed(false);
+			static_cast<Control *>(button)->gui_input(touch);
+			SIGNAL_CHECK_FALSE("button_up");
+
+			touch->set_index(0);
+			static_cast<Control *>(button)->gui_input(touch);
+			SIGNAL_CHECK("button_up", no_args);
+			SIGNAL_CHECK_FALSE("button_down");
+			SIGNAL_CHECK_FALSE("toggled");
+			SIGNAL_CHECK_FALSE("pressed");
+			CHECK(button->is_pressed() == (i % 2 == 0));
+		}
+	}
+
+	SUBCASE("A missing release does not prevent subsequent activations") {
+		for (int i = 0; i < 3; i++) {
+			// Use a new finger index as well as reusing the previous index.
+			touch->set_index(i / 2);
+			touch->set_pressed(true);
+			static_cast<Control *>(button)->gui_input(touch);
+			Array toggled_args = { { i % 2 == 0 } };
+			SIGNAL_CHECK("toggled", toggled_args);
+			SIGNAL_CHECK("pressed", no_args);
+			CHECK(button->is_pressed() == (i % 2 == 0));
+		}
+		touch->set_pressed(false);
+		static_cast<Control *>(button)->gui_input(touch);
+		SIGNAL_CHECK("button_up", no_args);
+	}
+
+	SIGNAL_UNWATCH(button, "button_down");
+	SIGNAL_UNWATCH(button, "button_up");
+	SIGNAL_UNWATCH(button, "toggled");
+	SIGNAL_UNWATCH(button, "pressed");
+	memdelete(button);
+}
+
 } // namespace TestButton
