@@ -36,6 +36,7 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/os/shared_object.h"
+#include "core/version.h"
 #include "scene/resources/image_texture.h" // IWYU pragma: keep. Misdetection of `logo`.
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -232,13 +233,25 @@ Error EditorExportPlatformPC::_unzip_debugsymbols(Ref<DirAccess> &p_da, const St
 bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, Error &r_err) {
 	r_err = OK;
 
-	// TODO: Consider other zip files as needed for official templates.
+	String sym_path = p_symbols_path + ".debugsymbols";
+	String zip_path = p_symbols_path + ".debugsymbols.zip";
+	String zip_path_full = p_symbols_path.get_base_dir().simplify_path().path_join(vformat("Godot_v%s-%s_debugsymbols_%s", GODOT_VERSION_NUMBER, GODOT_VERSION_STATUS, p_symbols_path.get_file())) + ".zip";
 
-	if (FileAccess::exists(p_symbols_path)) {
-		r_err = p_da->copy(p_symbols_path, p_path + ".debugsymbols");
-	} else if (FileAccess::exists(p_symbols_path + ".zip")) {
-		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file(), p_symbols_path + ".zip");
+	if (FileAccess::exists(sym_path)) {
+		r_err = p_da->copy(sym_path, p_path + ".debugsymbols");
+	} else if (FileAccess::exists(zip_path)) {
+		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file() + ".debugsymbols", p_symbols_path + ".debugsymbols.zip");
+	} else if (FileAccess::exists(zip_path_full)) {
+		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file() + ".debugsymbols", zip_path_full);
 	} else {
+		return false;
+	}
+	Vector<String> exec_debug_ids = OS::get_singleton()->get_debug_build_id(p_path);
+	Vector<String> symb_debug_ids = OS::get_singleton()->get_debug_build_id(p_path + ".debugsymbols");
+	print_line("Executable debug IDs: ", exec_debug_ids);
+	print_line("Symbols debug IDs: ", symb_debug_ids);
+	if (exec_debug_ids != symb_debug_ids) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Prepare Templates"), vformat(TTR("Executable and symbols debug ID mismatch: %s != %s."), exec_debug_ids, symb_debug_ids));
 		return false;
 	}
 	if (r_err == OK) {
@@ -299,7 +312,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	}
 	if (err == OK && copy_debug_symbols) {
 		// We don't copy symbols for the wrapper as they are trivial.
-		_copy_debugsymbols(da, p_path, template_path + ".debugsymbols", err);
+		_copy_debugsymbols(da, p_path, template_path, err);
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
