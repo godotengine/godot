@@ -32,19 +32,25 @@ _complete_godot_options() {
 --version
 --verbose
 --quiet
+--no-header
 --editor
 --project-manager
+--recovery-mode
 --debug-server
+--dap-port
+--lsp-port
 --quit
+--quit-after
 --language
 --path
+--scene
 --main-pack
 --render-thread
 --remote-fs
 --remote-fs-password
 --audio-driver
---audio-output-latency
 --display-driver
+--audio-output-latency
 --rendering-method
 --rendering-driver
 --gpu-index
@@ -59,18 +65,32 @@ _complete_godot_options() {
 --always-on-top
 --resolution
 --position
+--screen
 --single-window
 --xr-mode
+--wid
+--accessibility
+--accessibility-driver
 --debug
 --breakpoints
+--skip-breakpoints
+--ignore-error-breaks
 --profiling
 --gpu-profile
 --gpu-validation
 --gpu-abort
+--generate-spirv-debug-info
+--clear-shader-cache
+--extra-gpu-memory-tracking
+--accurate-breadcrumbs
 --remote-debug
 --debug-collisions
+--debug-paths
 --debug-navigation
+--debug-avoidance
 --debug-stringnames
+--debug-canvas-item-redraw
+--debug-mute-audio
 --max-fps
 --frame-delay
 --time-scale
@@ -78,19 +98,32 @@ _complete_godot_options() {
 --disable-render-loop
 --disable-crash-handler
 --fixed-fps
+--delta-smoothing
 --print-fps
+--single-threaded-scene
+--editor-pseudolocalization
 --script
+--main-loop
 --check-only
+--import
 --export-release
 --export-debug
 --export-pack
+--export-patch
+--patches
+--install-android-build-template
 --convert-3to4
 --validate-conversion-3to4
 --doctool
 --no-docbase
+--gdextension-docs
+--gdscript-docs
 --build-solutions
 --dump-gdextension-interface
+--dump-gdextension-interface-json
 --dump-extension-api
+--dump-extension-api-with-docs
+--validate-extension-api
 --benchmark
 --benchmark-file
 --test
@@ -117,23 +150,47 @@ _complete_godot_bash() {
   if [[ $prev == "--render-thread" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "unsafe safe separate" -- "$cur"))
+    COMPREPLY=($(compgen -W "safe separate" -- "$cur"))
+  elif [[ $prev == "--audio-driver" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "PulseAudio ALSA CoreAudio WASAPI XAudio2 Dummy" -- "$cur"))
+  elif [[ $prev == "--display-driver" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "x11 wayland macos windows headless" -- "$cur"))
   elif [[ $prev == "--rendering-method" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "forward_plus mobile gl_compatibility" -- "$cur"))
+    COMPREPLY=($(compgen -W "forward_plus mobile gl_compatibility dummy" -- "$cur"))
   elif [[ $prev == "--rendering-driver" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "vulkan opengl3 dummy" -- "$cur"))
-	elif [[ $prev == "--xr-mode" ]]; then
+    COMPREPLY=($(compgen -W "vulkan d3d12 metal opengl3 opengl3_es opengl3_angle dummy" -- "$cur"))
+  elif [[ $prev == "--xr-mode" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -W "default off on" -- "$cur"))
-  elif [[ $prev == "--path" || $prev == "--doctool" ]]; then
+  elif [[ $prev == "--accessibility" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "auto always disabled" -- "$cur"))
+  elif [[ $prev == "--accessibility-driver" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "accesskit dummy" -- "$cur"))
+  elif [[ $prev == "--delta-smoothing" ]]; then
+    local IFS=$' \n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -W "enable disable" -- "$cur"))
+  elif [[ $prev == "--path" || $prev == "--doctool" || $prev == "--gdscript-docs" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -d -- "$cur"))
+  elif [[ $prev == "--scene" ]]; then
+    local IFS=$'\n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -f -X "!*.@(scn|tscn|escn)" -- "$cur"))
   elif [[ $prev == "--main-pack" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207
@@ -142,6 +199,10 @@ _complete_godot_bash() {
     local IFS=$'\n\t'
     # shellcheck disable=SC2207
     COMPREPLY=($(compgen -f -X "!*.gd" -- "$cur"))
+  elif [[ $prev == "--log-file" || $prev == "--write-movie" || $prev == "--validate-extension-api" || $prev == "--benchmark-file" ]]; then
+    local IFS=$'\n\t'
+    # shellcheck disable=SC2207
+    COMPREPLY=($(compgen -f -- "$cur"))
   fi
 }
 
