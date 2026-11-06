@@ -30,6 +30,7 @@
 
 #include "trail_3d.h"
 
+#include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/material.h"
@@ -255,7 +256,9 @@ void Trail3D::set_material_mode(MaterialMode p_material_mode) {
 	if (material_mode == p_material_mode) {
 		return;
 	}
-	if (material.is_null()) {
+#ifdef TOOLS_ENABLED
+	// Auto-supply a shader so that it's easy to modify
+	if (material.is_null() && Engine::get_singleton()->is_editor_hint() && is_inside_tree()) {
 		if (material_mode == MATERIAL_MODE_ADD) {
 			if (alignment == MESH_ALIGNMENT_LOCAL) {
 				material = local_additive_material->duplicate_deep();
@@ -270,6 +273,7 @@ void Trail3D::set_material_mode(MaterialMode p_material_mode) {
 			}
 		}
 	}
+#endif
 	material_mode = p_material_mode;
 	notify_property_list_changed();
 	_ensure_material();
