@@ -4829,11 +4829,14 @@ Error TextureStorage::render_target_write_image(RID p_render_target, const Ref<I
 			return err;
 		}
 	}
-	if (image->get_format() != rt->image_format) {
+	// rt->image_format drops alpha for opaque targets, but rt->color always
+	// has four channels (see render_target_get_color_format).
+	const Image::Format upload_format = rt->use_hdr ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
+	if (image->get_format() != upload_format) {
 		if (image == p_image) {
 			image = image->duplicate();
 		}
-		image->convert(rt->image_format);
+		image->convert(upload_format);
 	}
 
 	RD::get_singleton()->texture_update(rt->color, 0, image->get_data());
