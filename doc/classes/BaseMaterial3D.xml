@@ -151,7 +151,7 @@
 			Sets the roughness of the clearcoat pass. A higher value results in a rougher clearcoat while a lower value results in a smoother clearcoat.
 		</member>
 		<member name="clearcoat_texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture that defines the strength of the clearcoat effect and the glossiness of the clearcoat. Strength is specified in the red channel while glossiness is specified in the green channel.
+			Texture that defines the strength and the roughness of the clearcoat effect. Strength is specified in the red channel and is multiplied by [member clearcoat]. Roughness is specified in the green channel and is multiplied by [member clearcoat_roughness].
 		</member>
 		<member name="cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" enum="BaseMaterial3D.CullMode" default="0">
 			Determines which side of the triangle to cull depending on whether the triangle faces towards or away from the camera.
