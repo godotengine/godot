@@ -806,7 +806,6 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	}
 
 	{
-
 		int blur_type = SSIL_BLUR_FAST;
 
 		RID blur_shader = ssil.blur_shader.version_get_shader(ssil.blur_shader_version, blur_type - SSIL_BLUR_FAST);
@@ -929,7 +928,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.blur_push_constant.half_screen_pixel_size[0] = (1.0 / p_ssil_buffers.buffer_width);
 		ssil.blur_push_constant.half_screen_pixel_size[1] = (1.0 / p_ssil_buffers.buffer_height);
 
-		if(ssil_half_size) {
+		if (ssil_half_size) {
 			ssil.blur_push_constant.half_screen_pixel_size[0] *= 2.0;
 			ssil.blur_push_constant.half_screen_pixel_size[1] *= 2.0;
 		}
@@ -960,9 +959,8 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-
 		// UPSAMPLE FROM QUARTER-RES
-		if(ssil_half_size) {
+		if (ssil_half_size) {
 			ssil.upsample_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
 			ssil.upsample_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
 			ssil.upsample_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
@@ -999,7 +997,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.blur_push_constant.half_screen_pixel_size[0] = (1.0 / p_ssil_buffers.buffer_width);
 		ssil.blur_push_constant.half_screen_pixel_size[1] = (1.0 / p_ssil_buffers.buffer_height);
 
-		if(!ssil_half_size) {
+		if (!ssil_half_size) {
 			ssil.blur_push_constant.half_screen_pixel_size[0] *= 2.0;
 			ssil.blur_push_constant.half_screen_pixel_size[1] *= 2.0;
 		}
@@ -1007,7 +1005,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		blur_type = SSIL_BLUR_ACCURATE;
 		ssil.blur_push_constant.blur_dir = 0;
 
-		if(ssil_half_size) {
+		if (ssil_half_size) {
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_source_set, 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_dest_uniform_set, 1);

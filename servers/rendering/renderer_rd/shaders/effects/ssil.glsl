@@ -145,20 +145,18 @@ float ign(vec2 p_uv, uint p_n) {
 }
 
 float randf(int x, int y) {
-    return mod(52.9829189 * mod(0.06711056 * float(x) + 0.00583715 * float(y), 1.0), 1.0);
+	return mod(52.9829189 * mod(0.06711056 * float(x) + 0.00583715 * float(y), 1.0), 1.0);
 }
 
-float GetBayerFromCoordLevel(vec2 pixelpos)
-{
-    ivec2 ppos = ivec2(pixelpos);
-    int sum = 0;
-    for(int i = 0; i<4; i++)
-    {
-         ivec2 t = ppos & 1;
-         sum = sum * 4 | (t.x ^ t.y) * 2 | t.x;
-         ppos /= 2;
-    }    
-    return float(sum) / float(1 << (2 * 4));
+float GetBayerFromCoordLevel(vec2 pixelpos) {
+	ivec2 ppos = ivec2(pixelpos);
+	int sum = 0;
+	for (int i = 0; i < 4; i++) {
+		ivec2 t = ppos & 1;
+		sum = sum * 4 | (t.x ^ t.y) * 2 | t.x;
+		ppos /= 2;
+	}
+	return float(sum) / float(1 << (2 * 4));
 }
 
 void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const int p_quality) {
@@ -277,7 +275,7 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const i
 
 				// handle out of bounds samples
 				if (sample_uv.x < 0.0 || sample_uv.x > 1.0 ||
-					sample_uv.y < 0.0 || sample_uv.y > 1.0) {
+						sample_uv.y < 0.0 || sample_uv.y > 1.0) {
 					break;
 				}
 
