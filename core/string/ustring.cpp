@@ -5206,7 +5206,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
 	uint64_t value_index = 0;
-	int selected_index = -1;
+	int64_t selected_index = -1;
 	int min_chars = 0;
 	int min_decimals = 0;
 	bool in_decimals = false;
@@ -5233,7 +5233,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 				case 'o': // Octal
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
@@ -5307,7 +5307,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					break;
 				}
 				case 'f': { // Float
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
@@ -5356,7 +5356,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					break;
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
@@ -5430,7 +5430,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					break;
 				}
 				case 's': { // String
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
@@ -5452,7 +5452,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					break;
 				}
 				case 'c': {
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
@@ -5551,7 +5551,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 				}
 
 				case '*': { // Dynamic width, based on value.
-					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
+					uint64_t index = (selected_index >= 0 ? (uint64_t)selected_index : value_index);
 					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}

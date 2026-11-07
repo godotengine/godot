@@ -1207,7 +1207,7 @@ void TextEdit::_notification(int p_what) {
 
 			int first_vis_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + 1;
-			draw_amount += draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
+			draw_amount += draw_placeholder ? (int)placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
 
 			// Draw minimap.
 			if (draw_minimap) {
@@ -1439,7 +1439,7 @@ void TextEdit::_notification(int p_what) {
 				const Ref<TextParagraph> ldata = draw_placeholder ? placeholder_data_buf : text.get_line_data(line);
 
 				const Vector<String> wrap_rows = draw_placeholder ? placeholder_wrapped_rows : get_line_wrapped_text(line);
-				int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
+				int line_wrap_amount = draw_placeholder ? (int)placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
 
 				int first_indent_line = 0;
 				float indent_ofs = 0.0;
@@ -7141,7 +7141,7 @@ int TextEdit::get_line_wrap_index_at_column(int p_line, int p_column) const {
 			return i;
 		}
 	}
-	return line_ranges.is_empty() ? 0 : line_ranges.size() - 1;
+	return line_ranges.is_empty() ? 0 : (int)line_ranges.size() - 1;
 }
 
 Vector<String> TextEdit::get_line_wrapped_text(int p_line) const {
@@ -9526,14 +9526,14 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		for (n_line = 0; n_line < text.size(); n_line++) {
 			if (!_is_line_hidden(n_line)) {
 				sc++;
-				sc += draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
+				sc += draw_placeholder ? (int)placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
 				if (sc > v_scroll_i) {
 					break;
 				}
 			}
 		}
 		n_line = MIN(n_line, text.size() - 1);
-		int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
+		int line_wrap_amount = draw_placeholder ? (int)placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(n_line);
 		int wi = line_wrap_amount - (sc - v_scroll_i - 1);
 		wi = CLAMP(wi, 0, line_wrap_amount);
 

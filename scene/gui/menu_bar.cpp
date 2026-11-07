@@ -68,7 +68,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
-		int old_sel = (selected_menu < 0) ? menu_cache.size() - 1 : selected_menu;
+		int old_sel = (selected_menu < 0) ? (int)menu_cache.size() - 1 : selected_menu;
 		do {
 			new_sel++;
 			if (new_sel >= menu_cache.size()) {

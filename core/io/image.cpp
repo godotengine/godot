@@ -4283,7 +4283,7 @@ bool Image::detect_signed(bool p_include_mips) const {
 
 	if (format >= Image::FORMAT_RH && format <= Image::FORMAT_RGBAH) {
 		const uint16_t *img_data = reinterpret_cast<const uint16_t *>(data.ptr());
-		const uint64_t img_size = p_include_mips ? (data.size() / 2) : (width * height * get_format_pixel_size(format) / 2);
+		const uint64_t img_size = p_include_mips ? ((uint64_t)data.size() / 2) : ((uint64_t)width * height * get_format_pixel_size(format) / 2);
 
 		for (uint64_t i = 0; i < img_size; i++) {
 			if ((img_data[i] & 0x8000) != 0 && (img_data[i] & 0x7fff) != 0) {
@@ -4293,7 +4293,7 @@ bool Image::detect_signed(bool p_include_mips) const {
 
 	} else if (format >= Image::FORMAT_RF && format <= Image::FORMAT_RGBAF) {
 		const uint32_t *img_data = reinterpret_cast<const uint32_t *>(data.ptr());
-		const uint64_t img_size = p_include_mips ? (data.size() / 4) : (width * height * get_format_pixel_size(format) / 4);
+		const uint64_t img_size = p_include_mips ? ((uint64_t)data.size() / 4) : ((uint64_t)width * height * get_format_pixel_size(format) / 4);
 
 		for (uint64_t i = 0; i < img_size; i++) {
 			if ((img_data[i] & 0x80000000) != 0 && (img_data[i] & 0x7fffffff) != 0) {

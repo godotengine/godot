@@ -2000,8 +2000,8 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 		script_stack.push_back(sptr);
 	}
 
-	const int start = p_reversed ? 0 : script_count - 1;
-	const int end = p_reversed ? script_count : -1;
+	const int start = p_reversed ? 0 : (int)script_count - 1;
+	const int end = p_reversed ? (int)script_count : -1;
 	const int step = p_reversed ? 1 : -1;
 
 	for (int idx = start; idx != end; idx += step) {
