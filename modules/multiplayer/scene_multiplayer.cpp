@@ -172,6 +172,7 @@ void SceneMultiplayer::clear() {
 	connected_peers.clear();
 	packet_cache.clear();
 	replicator->on_reset();
+	metadata->clear();
 	cache->clear();
 	relay_buffer->clear();
 }
@@ -220,12 +221,14 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 	uint8_t packet_type = p_packet[0] & CMD_MASK;
 
 	switch (packet_type) {
-		case NETWORK_COMMAND_SIMPLIFY_PATH: {
-			cache->process_simplify_path(p_from, p_packet, p_packet_len);
-		} break;
-
-		case NETWORK_COMMAND_CONFIRM_PATH: {
-			cache->process_confirm_path(p_from, p_packet, p_packet_len);
+		case NETWORK_COMMAND_PATH_HANDSHAKE: {
+			ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
+			if (p_packet[1] == SIMPLIFY_PATH) {
+				cache->process_simplify_path(p_from, p_packet, p_packet_len);
+			}
+			if (p_packet[1] == CONFIRM_PATH) {
+				cache->process_confirm_path(p_from, p_packet, p_packet_len);
+			}
 		} break;
 
 		case NETWORK_COMMAND_REMOTE_CALL: {
@@ -243,6 +246,9 @@ void SceneMultiplayer::_process_packet(int p_from, const uint8_t *p_packet, int 
 		} break;
 		case NETWORK_COMMAND_SYNC: {
 			replicator->on_sync_receive(p_from, p_packet, p_packet_len);
+		} break;
+		case NETWORK_COMMAND_DATA: {
+			_process_metadata(p_from, p_packet, p_packet_len);
 		} break;
 		default: {
 			ERR_FAIL_MSG("Invalid network command from " + itos(p_from));
@@ -388,6 +394,7 @@ void SceneMultiplayer::_admit_peer(int p_id) {
 	connected_peers.insert(p_id);
 	cache->on_peer_change(p_id, true);
 	replicator->on_peer_change(p_id, true);
+	metadata->on_peer_change(p_id, true);
 	if (p_id == 1) {
 		emit_signal(SNAME("connected_to_server"));
 	}
@@ -422,6 +429,7 @@ void SceneMultiplayer::_del_peer(int p_id) {
 
 	replicator->on_peer_change(p_id, false);
 	cache->on_peer_change(p_id, false);
+	metadata->on_peer_change(p_id, false);
 	connected_peers.erase(p_id);
 	emit_signal(SNAME("peer_disconnected"), p_id);
 }
@@ -635,6 +643,65 @@ int SceneMultiplayer::get_max_delta_packet_size() const {
 	return replicator->get_max_delta_packet_size();
 }
 
+void SceneMultiplayer::_process_metadata(int p_from, const uint8_t *p_packet, int p_packet_len) {
+	ERR_FAIL_COND_MSG(p_packet_len < 6, "Invalid packet received. Size too small.");
+	uint8_t metadata_type = p_packet[1];
+	int ofs = 2;
+	uint32_t name_length = int32_t(decode_uint32(&p_packet[ofs]));
+	ofs += 4;
+	String paths = String::utf8((const char *)(p_packet + ofs), name_length);
+	ofs += name_length;
+
+	uint32_t arg_size = decode_uint32(&p_packet[ofs]);
+	ofs += 4;
+	ERR_FAIL_COND(arg_size > uint32_t(p_packet_len - ofs));
+	Variant value;
+	Error err = MultiplayerAPI::decode_and_decompress_variant(value, &p_packet[ofs], arg_size, nullptr, false);
+	if (err == OK && metadata_type == REPLICATE_LOBBY_PROPERTY) {
+		metadata->add_lobby_property(paths);
+		if (metadata->set_lobby_property(paths, value)) {
+			emit_signal("lobby_property_changed", paths);
+		}
+	}
+	if (err == OK && metadata_type == REPLICATE_PEER_PROPERTY) {
+		metadata->add_peer_property(paths);
+		if (metadata->set_peer_property(paths, value, p_from)) {
+			emit_signal("peer_property_changed", paths, p_from);
+		}
+	}
+}
+
+void SceneMultiplayer::add_lobby_property(String p_prop_name) {
+	ERR_FAIL_COND_MSG(get_unique_id() != 1, "Only the server can create properties");
+	metadata->add_lobby_property(p_prop_name);
+}
+
+void SceneMultiplayer::add_peer_property(String p_prop_name) {
+	ERR_FAIL_COND_MSG(get_unique_id() != 1, "Only the server can create properties");
+	metadata->add_peer_property(p_prop_name);
+}
+
+void SceneMultiplayer::set_lobby_property(String p_prop_name, Variant value) {
+	ERR_FAIL_COND_MSG(get_unique_id() != 1, "Only the server can set lobby properties");
+	if (metadata->set_lobby_property(p_prop_name, value)) {
+		emit_signal("lobby_property_changed", p_prop_name);
+	}
+}
+
+void SceneMultiplayer::set_peer_property(String p_prop_name, Variant value) {
+	if (metadata->set_peer_property(p_prop_name, value, get_unique_id())) {
+		emit_signal("peer_property_changed", p_prop_name, get_unique_id());
+	}
+}
+
+Variant SceneMultiplayer::get_lobby_property(String p_prop_name) {
+	return metadata->get_lobby_property(p_prop_name);
+}
+
+Variant SceneMultiplayer::get_peer_property(String p_prop_name, int peer_id) {
+	return metadata->get_peer_property(p_prop_name, peer_id);
+}
+
 void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneMultiplayer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneMultiplayer::get_root_path);
@@ -664,6 +731,13 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneMultiplayer::get_max_delta_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneMultiplayer::set_max_delta_packet_size);
 
+	ClassDB::bind_method(D_METHOD("add_lobby_property", "name"), &SceneMultiplayer::add_lobby_property);
+	ClassDB::bind_method(D_METHOD("add_peer_property", "name"), &SceneMultiplayer::add_peer_property);
+	ClassDB::bind_method(D_METHOD("set_lobby_property", "name", "value"), &SceneMultiplayer::set_lobby_property);
+	ClassDB::bind_method(D_METHOD("set_peer_property", "name", "value"), &SceneMultiplayer::set_peer_property);
+	ClassDB::bind_method(D_METHOD("get_lobby_property", "name"), &SceneMultiplayer::get_lobby_property);
+	ClassDB::bind_method(D_METHOD("get_peer_property", "name", "id"), &SceneMultiplayer::get_peer_property);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
@@ -678,12 +752,15 @@ void SceneMultiplayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
+	ADD_SIGNAL(MethodInfo("lobby_property_changed", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("peer_property_changed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::INT, "id")));
 }
 
 SceneMultiplayer::SceneMultiplayer() {
 	relay_buffer.instantiate();
 	cache.instantiate(this);
 	replicator.instantiate(this, cache.ptr());
+	metadata.instantiate(this);
 	rpc.instantiate(this, cache.ptr(), replicator.ptr());
 	set_multiplayer_peer(Ref<OfflineMultiplayerPeer>(memnew(OfflineMultiplayerPeer)));
 }
@@ -692,6 +769,7 @@ SceneMultiplayer::~SceneMultiplayer() {
 	clear();
 	// Ensure unref in reverse order for safety (we shouldn't use those pointers in the deconstructors anyway).
 	rpc.unref();
+	metadata.unref();
 	replicator.unref();
 	cache.unref();
 }
