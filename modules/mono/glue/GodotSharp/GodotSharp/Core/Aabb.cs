@@ -510,15 +510,13 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="Aabb"/> intersects
-        /// the line segment between <paramref name="from"/> and <paramref name="to"/>.
+        /// Returns the first point where this bounding box and the given segment intersect, as a <see cref="Vector3"/>. If no intersection occurs, returns <see langword="null"/>.
+        /// The segment begins at <paramref name="from"/> and ends at <paramref name="to"/>.
         /// </summary>
         /// <param name="from">The start of the line segment.</param>
         /// <param name="to">The end of the line segment.</param>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> intersects the line segment.
-        /// </returns>
-        public readonly bool IntersectsSegment(Vector3 from, Vector3 to)
+        /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
+        public readonly Vector3? IntersectsSegment(Vector3 from, Vector3 to)
         {
             real_t min = 0f;
             real_t max = 1f;
@@ -535,7 +533,7 @@ namespace Godot
                 {
                     if (segFrom > boxEnd || segTo < boxBegin)
                     {
-                        return false;
+                        return null;
                     }
 
                     real_t length = segTo - segFrom;
@@ -546,7 +544,7 @@ namespace Godot
                 {
                     if (segTo > boxEnd || segFrom < boxBegin)
                     {
-                        return false;
+                        return null;
                     }
 
                     real_t length = segTo - segFrom;
@@ -565,11 +563,88 @@ namespace Godot
                 }
                 if (max < min)
                 {
-                    return false;
+                    return null;
                 }
             }
 
-            return true;
+            Vector3 rel = to - from;
+
+            Vector3 intersectionPoint = from + rel * min;
+
+            return intersectionPoint;
+        }
+
+        /// <summary>
+        /// Returns the first point where this bounding box and the given ray intersect, as a <see cref="Vector3"/>. If no intersection occurs, returns <see langword="null"/>.
+        /// The ray begin at <paramref name="from"/>, faces <paramref name="dir"/> and extends towards infinity.
+        /// </summary>
+        /// <param name="from">The start of the ray.</param>
+        /// <param name="dir">The direction of the ray.</param>
+        /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
+        public readonly Vector3? IntersectsRay(Vector3 from, Vector3 dir)
+        {
+            Vector3 end = _position + _size;
+            real_t tmin = -1e20f;
+            real_t tmax = 1e20f;
+            int axis = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (dir[i] == 0)
+                {
+                    if ((from[i] < _position[i]) || (from[i] > end[i]))
+                    {
+                        return null;
+                    }
+                }
+                else
+                { // ray not parallel to planes in this direction
+                    real_t t1 = (_position[i] - from[i]) / dir[i];
+                    real_t t2 = (end[i] - from[i]) / dir[i];
+
+                    if (t1 > t2)
+                    {
+                        (t1, t2) = (t2, t1);
+                    }
+                    if (t1 >= tmin)
+                    {
+                        tmin = t1;
+                        axis = i;
+                    }
+                    if (t2 < tmax)
+                    {
+                        if (t2 < 0)
+                        {
+                            return null;
+                        }
+                        tmax = t2;
+                    }
+                    if (tmin > tmax)
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            // Did the ray start from inside the box?
+            // In which case the intersection returned is the point of entry
+            // (behind the ray start) or the calling routine can use the ray origin as intersection point.
+            bool inside = tmin < 0;
+
+            // When inside the intersection point may be BEHIND the ray,
+            // so for general use we return the ray origin.
+            if (inside)
+            {
+                return from;
+            }
+
+            Vector3 intersectionPoint = from + dir * tmin;
+
+            // Prevent float error by making sure the point is exactly
+            // on the AABB border on the relevant axis.
+            intersectionPoint[axis] = (dir[axis] >= 0) ? _position[axis] : end[axis];
+
+            return intersectionPoint;
         }
 
         /// <summary>
