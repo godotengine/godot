@@ -118,10 +118,11 @@ Size2 Transform2D::get_scale() const {
 }
 
 void Transform2D::set_scale(const Size2 &p_scale) {
+	real_t det_sign = SIGN(determinant());
 	columns[0].normalize();
 	columns[1].normalize();
 	columns[0] *= p_scale.x;
-	columns[1] *= p_scale.y;
+	columns[1] *= det_sign * p_scale.y;
 }
 
 void Transform2D::scale(const Size2 &p_scale) {
