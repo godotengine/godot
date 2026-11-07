@@ -32,6 +32,9 @@
 
 #if defined(LINUXBSD_ENABLED)
 #include "camera_linux.h"
+#if defined(PIPEWIRE_ENABLED)
+#include "camera_pipewire.h"
+#endif
 #endif
 #if defined(WINDOWS_ENABLED)
 #include "camera_win.h"
@@ -49,8 +52,30 @@ void initialize_camera_module(ModuleInitializationLevel p_level) {
 	}
 
 #if defined(LINUXBSD_ENABLED)
+#if defined(PIPEWIRE_ENABLED)
+	bool pipewire_supported = true;
+#if defined(SOWRAP_ENABLED)
+#if defined(DEBUG_ENABLED)
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif // defined(DEBUG_ENABLED)
+	pipewire_supported = false;
+	if (initialize_pipewire(dylibloader_verbose) == 0) {
+		if (pw_check_library_version_dylibloader_wrapper_pipewire) {
+			pipewire_supported = pw_check_library_version(PW_MAJOR, PW_MINOR, PW_MICRO);
+		}
+	}
+#endif // defined(SOWRAP_ENABLED)
+	if (pipewire_supported) {
+		print_verbose("CameraServer: Using PipeWire driver.");
+		CameraServer::make_default<CameraPipeWire>();
+		return;
+	}
+#endif // defined(PIPEWIRE_ENABLED)
+	print_verbose("CameraServer: Using V4L2 driver.");
 	CameraServer::make_default<CameraLinux>();
-#endif
+#endif // defined(LINUXBSD_ENABLED)
 #if defined(WINDOWS_ENABLED)
 	CameraServer::make_default<CameraWindows>();
 #endif
