@@ -32,5 +32,13 @@
 				Sets the type of used transition from [enum Tween.TransitionType]. If not set, the default transition is used from the [Tween] that contains this Tweener.
 			</description>
 		</method>
+		<method name="set_trans_params">
+			<return type="MethodTweener" />
+			<param index="0" name="param1" type="float" />
+			<param index="1" name="param2" type="float" default="inf" />
+			<description>
+				Sets parameters of the transition. They are used only in specific transitions, check [enum Tween.TransitionType] for details.
+			</description>
+		</method>
 	</methods>
 </class>
