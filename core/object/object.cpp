@@ -294,7 +294,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 
 	if (p_name == CoreStringName(script)) {
-		ret = get_script();
+		ret = get_script_bind();
 		if (r_valid) {
 			*r_valid = true;
 		}
@@ -1047,11 +1047,12 @@ String Object::to_string() {
 }
 
 void Object::set_script(const Variant &p_script) {
-	if (get_script() == p_script) {
+	Ref<Script> s = p_script;
+
+	if (s == get_script()) {
 		return;
 	}
 
-	Ref<Script> s = p_script;
 	if (!p_script.is_null()) {
 		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
@@ -1086,8 +1087,13 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 	script_instance = p_instance;
 }
 
-Variant Object::get_script() const {
-	return script_instance ? Variant(Ref<Script>(script_instance->get_script())) : Variant();
+Variant Object::get_script_bind() const {
+	Script *script = get_script();
+	return script_instance ? Variant(script) : Variant();
+}
+
+Script *Object::get_script() const {
+	return script_instance ? script_instance->get_script() : nullptr;
 }
 
 bool Object::has_meta(const StringName &p_name) const {
@@ -1371,8 +1377,8 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 				Object *target = callable.get_object();
 #ifdef DEBUG_ENABLED
 				if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
-					Ref<Script> other_scr = target->get_script();
-					if (other_scr.is_valid() && !other_scr->is_tool()) {
+					Script *other_scr = target->get_script();
+					if (other_scr != nullptr && !other_scr->is_tool()) {
 						// Trying to call not-tool method in editor, just ignore it.
 						continue;
 					}
@@ -1919,7 +1925,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
-	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
+	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script_bind);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
 	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);

@@ -402,7 +402,7 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 
 	// Duplicate script first, so the scripted properties are considered.
 	BEFORE_USER_CODE
-	r->set_script(get_script());
+	r->set_script(get_script_bind());
 	AFTER_USER_CODE
 
 	for (const PropertyInfo &E : plist) {
