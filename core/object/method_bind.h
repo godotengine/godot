@@ -138,8 +138,8 @@ public:
 	virtual ~MethodBind();
 };
 
-// MethodBindVarArg base CRTP
-template <typename Derived, typename T, typename R, bool should_returns>
+// MethodBindVarArg base.
+template <typename T, typename R>
 class MethodBindVarArgBase : public MethodBind {
 protected:
 	R (T::*method)(const Variant **, int, Callable::CallError &);
@@ -148,7 +148,7 @@ protected:
 public:
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
-			return _gen_return_type_info();
+			return method_info.return_val;
 		} else if (p_arg < method_info.arguments.size()) {
 			return method_info.arguments[p_arg];
 		} else {
@@ -174,18 +174,17 @@ public:
 		ERR_FAIL_MSG("ptrcall can't be used with vararg methods. This is a bug.");
 	}
 
-	virtual bool is_const() const { return false; }
-
 	virtual bool is_vararg() const override { return true; }
 
+protected:
 	MethodBindVarArgBase(
 			R (T::*p_method)(const Variant **, int, Callable::CallError &),
 			const MethodInfo &p_method_info,
-			bool p_return_nil_is_variant) :
+			const PropertyInfo &p_return_info) :
 			method(p_method), method_info(p_method_info) {
 		set_argument_count(method_info.arguments.size());
 		Variant::Type *at = memnew_arr(Variant::Type, method_info.arguments.size() + 1);
-		at[0] = _gen_return_type_info().type;
+		at[0] = p_return_info.type;
 		if (method_info.arguments.size()) {
 #ifdef DEBUG_ENABLED
 			Vector<StringName> names;
@@ -203,86 +202,54 @@ public:
 #endif // DEBUG_ENABLED
 		}
 		argument_types = at;
-		if (p_return_nil_is_variant) {
-			method_info.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-		}
 
-		_set_returns(should_returns);
-	}
-
-private:
-	PropertyInfo _gen_return_type_info() const {
-		return Derived::_gen_return_type_info_impl();
+		method_info.return_val = p_return_info;
+		bool has_return = p_return_info.type != Variant::NIL || (p_return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+		_set_returns(has_return);
 	}
 };
 
-// variadic, no return
+// Variadic, no return.
 template <typename T>
-class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false> {
-	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
-
+class MethodBindVarArgT : public MethodBindVarArgBase<T, void> {
 public:
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
 #endif
-		(static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>::method)(p_args, p_arg_count, r_error);
+		(static_cast<T *>(p_object)->*(this->method))(p_args, p_arg_count, r_error);
 		return {};
 	}
 
-	MethodBindVarArgT(
-			void (T::*p_method)(const Variant **, int, Callable::CallError &),
-			const MethodInfo &p_method_info,
-			bool p_return_nil_is_variant) :
-			MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>(p_method, p_method_info, p_return_nil_is_variant) {
-	}
-
-private:
-	static PropertyInfo _gen_return_type_info_impl() {
-		return {};
-	}
+	MethodBindVarArgT(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_method_info) :
+			MethodBindVarArgBase<T, void>(p_method, p_method_info, PropertyInfo()) {}
 };
 
 template <typename T>
-MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
-	MethodBind *a = memnew((MethodBindVarArgT<T>)(p_method, p_info, p_return_nil_is_variant));
+MethodBind *create_vararg_method_bind(void (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info) {
+	MethodBind *a = memnew((MethodBindVarArgT<T>)(p_method, p_info));
 	a->set_instance_class(T::get_class_static());
 	return a;
 }
 
-// variadic, return
+// Variadic, return.
 template <typename T, typename R>
-class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true> {
-	friend class MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>;
-
+class MethodBindVarArgTR : public MethodBindVarArgBase<T, R> {
 public:
-	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") // Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
-
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
 #endif
-		return (static_cast<T *>(p_object)->*MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>::method)(p_args, p_arg_count, r_error);
+		return (static_cast<T *>(p_object)->*(this->method))(p_args, p_arg_count, r_error);
 	}
 
-	GODOT_GCC_WARNING_POP
-
-	MethodBindVarArgTR(
-			R (T::*p_method)(const Variant **, int, Callable::CallError &),
-			const MethodInfo &p_info,
-			bool p_return_nil_is_variant) :
-			MethodBindVarArgBase<MethodBindVarArgTR<T, R>, T, R, true>(p_method, p_info, p_return_nil_is_variant) {
-	}
-
-private:
-	static PropertyInfo _gen_return_type_info_impl() {
-		return GetTypeInfo<R>::get_class_info();
-	}
+	MethodBindVarArgTR(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info) :
+			MethodBindVarArgBase<T, R>(p_method, p_info, GetTypeInfo<R>::get_class_info()) {}
 };
 
 template <typename T, typename R>
-MethodBind *create_vararg_method_bind(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
-	MethodBind *a = memnew((MethodBindVarArgTR<T, R>)(p_method, p_info, p_return_nil_is_variant));
+MethodBind *create_vararg_method_bind(R (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info) {
+	MethodBind *a = memnew((MethodBindVarArgTR<T, R>)(p_method, p_info));
 	a->set_instance_class(T::get_class_static());
 	return a;
 }

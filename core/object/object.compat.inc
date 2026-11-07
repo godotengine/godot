@@ -43,8 +43,20 @@ bool Object::_is_class_bind_compat_118582(const String &p_name) const {
 	return false;
 }
 
+Variant Object::_call_deferred_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	_call_deferred_bind(p_args, p_argcount, r_error);
+	return Variant();
+}
+
 void Object::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_class", "class"), &Object::_is_class_bind_compat_118582);
+	{
+		MethodInfo mi;
+		mi.name = "call_deferred";
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
+
+		ClassDB::bind_compatibility_vararg_method(METHOD_FLAGS_DEFAULT, "call_deferred", &Object::_call_deferred_bind_compat_125169, mi, varray());
+	}
 }
 
 #else

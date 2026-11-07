@@ -54,7 +54,7 @@ protected:
 			mi.arguments.push_back(PropertyInfo(Variant::INT, "foo"));
 			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
 
-			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_7", &TestClass::test_func_7, mi, varray(), false);
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_7", &TestClass::test_func_7, mi, varray());
 		}
 
 		{
@@ -64,7 +64,7 @@ protected:
 			mi.arguments.push_back(PropertyInfo(Variant::INT, "bar"));
 			mi.arguments.push_back(PropertyInfo(Variant::INT, "baz"));
 
-			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_8", &TestClass::test_func_8, mi, varray(), false);
+			ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func_8", &TestClass::test_func_8, mi, varray());
 		}
 	}
 
