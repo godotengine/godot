@@ -224,6 +224,30 @@ Array Callable::get_bound_arguments() const {
 	return ret;
 }
 
+bool Callable::get_method_info_ref(MethodInfo &r_method_info) const {
+	if (is_custom()) {
+		return custom->get_method_info(r_method_info);
+	}
+
+	if (is_valid()) {
+		bool valid = false;
+		r_method_info = get_object()->get_method_info(method, &valid);
+		return valid;
+	}
+
+	r_method_info = MethodInfo();
+	return false;
+}
+
+Dictionary Callable::get_method_info() const {
+	MethodInfo mi;
+	bool valid = get_method_info_ref(mi);
+	if (valid) {
+		return mi.operator Dictionary();
+	}
+	return Dictionary();
+}
+
 int Callable::get_unbound_arguments_count() const {
 	if (!is_null() && is_custom()) {
 		return custom->get_unbound_arguments_count();
@@ -467,6 +491,11 @@ const Callable *CallableCustom::get_base_comparator() const {
 int CallableCustom::get_argument_count(bool &r_is_valid) const {
 	r_is_valid = false;
 	return 0;
+}
+
+bool CallableCustom::get_method_info(MethodInfo &r_method_info) const {
+	r_method_info = MethodInfo();
+	return false;
 }
 
 int CallableCustom::get_bound_arguments_count() const {
