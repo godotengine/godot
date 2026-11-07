@@ -466,8 +466,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	Size2i target_size = rb->get_target_size();
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8; // FIXME I think this should check internal size, we do all our post processing at this size...
-	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
+	bool has_normal_overlay = debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid();
+	can_use_effects &= _debug_draw_can_use_effects(debug_draw, has_normal_overlay);
 	bool can_use_storage = _render_buffers_can_be_storage();
+	bool raw_color_debug = debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && !can_use_storage;
 
 	RSE::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
 	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
@@ -746,10 +748,16 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.max_value = max_value;
 		}
 
+		if (raw_color_debug) {
+			tonemap.tonemap_mode = RSE::ENV_TONE_MAPPER_LINEAR;
+			tonemap.exposure = 1.0;
+			tonemap.white = 1.0;
+		}
+
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
 		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
-		tonemap.convert_to_srgb = !using_hdr;
+		tonemap.convert_to_srgb = !using_hdr && !raw_color_debug;
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
 			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
@@ -792,7 +800,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		}
 
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
-		if (rb->get_use_debanding() && !using_hdr) {
+		if (rb->get_use_debanding() && !using_hdr && !raw_color_debug) {
 			if (use_smaa) {
 				// SMAA will apply 8-bit debanding.
 				if (!can_use_storage) {
@@ -988,6 +996,13 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 	}
 
+	if (debug_draw == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && !_render_buffers_get_normal_texture(rb).is_valid()) {
+		tonemap.tonemap_mode = RSE::ENV_TONE_MAPPER_LINEAR;
+		tonemap.exposure = 1.0;
+		tonemap.convert_to_srgb = false;
+		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
+	}
+
 	tone_mapper->tonemapper_subpass(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
 	RD::get_singleton()->draw_command_end_label();
@@ -1000,7 +1015,7 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 	texture_storage->render_target_disable_clear_request(p_render_data->render_buffers->get_render_target());
 }
 
-bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p_debug_draw) {
+bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p_debug_draw, bool p_has_normal_overlay) {
 	bool can_use_effects = true;
 	switch (p_debug_draw) {
 		// No debug draw, use camera effects
@@ -1027,13 +1042,15 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS:
 		case RSE::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
 		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
-		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSIL:
 		case RSE::VIEWPORT_DEBUG_DRAW_SDFGI:
 		case RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
+			break;
+		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
+			can_use_effects = p_has_normal_overlay;
 			break;
 		// Other debug draw modes keep camera effects.
 		case RSE::VIEWPORT_DEBUG_DRAW_LIGHTING:
@@ -1487,7 +1504,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;

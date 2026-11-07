@@ -124,7 +124,7 @@ protected:
 	RendererRD::GI gi;
 
 	virtual void _update_shader_quality_settings() {}
-	static bool _debug_draw_can_use_effects(RSE::ViewportDebugDraw p_debug_draw);
+	static bool _debug_draw_can_use_effects(RSE::ViewportDebugDraw p_debug_draw, bool p_has_normal_overlay = true);
 
 private:
 	RSE::ViewportDebugDraw debug_draw = RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
