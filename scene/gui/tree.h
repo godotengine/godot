@@ -511,6 +511,9 @@ private:
 	TreeItem *single_select_defer = nullptr;
 	int single_select_defer_column = 0;
 
+	TreeItem *multi_deselect_defer = nullptr;
+	int multi_deselect_defer_column = 0;
+
 	int pressed_button = -1;
 	bool pressing_for_editor = false;
 	Vector2 pressing_pos;
