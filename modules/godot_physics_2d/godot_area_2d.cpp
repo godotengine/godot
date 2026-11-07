@@ -112,6 +112,10 @@ void GodotArea2D::set_area_monitor_callback(const Callable &p_callback) {
 	}
 }
 
+void GodotArea2D::set_gravity_target_callback(const Callable &p_callback) {
+	gravity_target_callback = p_callback;
+}
+
 void GodotArea2D::_set_space_override_mode(PS2DE::AreaSpaceOverrideMode &r_mode, PS2DE::AreaSpaceOverrideMode p_new_mode) {
 	bool do_override = p_new_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED;
 	if (do_override == (r_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED)) {
@@ -133,8 +137,8 @@ void GodotArea2D::set_param(PS2DE::AreaParameter p_param, const Variant &p_value
 		case PS2DE::AREA_PARAM_GRAVITY_VECTOR:
 			gravity_vector = p_value;
 			break;
-		case PS2DE::AREA_PARAM_GRAVITY_IS_POINT:
-			gravity_is_point = p_value;
+		case PS2DE::AREA_PARAM_GRAVITY_TYPE:
+			gravity_type = (PS2DE::AreaGravityType)(int)p_value;
 			break;
 		case PS2DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			gravity_point_unit_distance = p_value;
@@ -165,8 +169,8 @@ Variant GodotArea2D::get_param(PS2DE::AreaParameter p_param) const {
 			return gravity;
 		case PS2DE::AREA_PARAM_GRAVITY_VECTOR:
 			return gravity_vector;
-		case PS2DE::AREA_PARAM_GRAVITY_IS_POINT:
-			return gravity_is_point;
+		case PS2DE::AREA_PARAM_GRAVITY_TYPE:
+			return gravity_type;
 		case PS2DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			return gravity_point_unit_distance;
 		case PS2DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
@@ -236,7 +240,7 @@ void GodotArea2D::call_queries() {
 				monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(monitor_callback, (const Variant **)resptr, 5, ce));
+					ERR_PRINT_ONCE("Error calling monitor callback method " + Variant::get_callable_error_text(monitor_callback, (const Variant **)resptr, 5, ce));
 				}
 			}
 		} else {
@@ -278,7 +282,7 @@ void GodotArea2D::call_queries() {
 				area_monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
 
 				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(area_monitor_callback, (const Variant **)resptr, 5, ce));
+					ERR_PRINT_ONCE("Error calling area monitor callback method " + Variant::get_callable_error_text(area_monitor_callback, (const Variant **)resptr, 5, ce));
 				}
 			}
 		} else {
@@ -288,23 +292,42 @@ void GodotArea2D::call_queries() {
 	}
 }
 
-void GodotArea2D::compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const {
-	if (is_gravity_point()) {
-		const real_t gr_unit_dist = get_gravity_point_unit_distance();
-		Vector2 v = get_transform().xform(get_gravity_vector()) - p_position;
-		if (gr_unit_dist > 0) {
-			const real_t v_length_sq = v.length_squared();
-			if (v_length_sq > 0) {
-				const real_t gravity_strength = get_gravity() * gr_unit_dist * gr_unit_dist / v_length_sq;
-				r_gravity = v.normalized() * gravity_strength;
+void GodotArea2D::compute_gravity(const Vector2 &p_global_position, Vector2 &r_gravity) const {
+	switch (gravity_type) {
+		case PS2DE::AREA_GRAVITY_TYPE_DIRECTIONAL: {
+			r_gravity = get_gravity_vector() * get_gravity();
+		} break;
+		case PS2DE::AREA_GRAVITY_TYPE_POINT:
+		case PS2DE::AREA_GRAVITY_TYPE_TARGET: {
+			Vector2 target_local_position;
+			if (gravity_type == PS2DE::AREA_GRAVITY_TYPE_POINT) {
+				target_local_position = get_gravity_vector();
 			} else {
-				r_gravity = Vector2();
+				const Variant local_position_variant = get_inv_transform().xform(p_global_position);
+				const Variant *args[1] = { &local_position_variant };
+				Variant ret;
+				Callable::CallError ce;
+				gravity_target_callback.callp(args, 1, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling Area2D _calculate_gravity_target callback method " + Variant::get_callable_error_text(gravity_target_callback, args, 1, ce));
+				} else {
+					target_local_position = ret;
+				}
 			}
-		} else {
-			r_gravity = v.normalized() * get_gravity();
-		}
-	} else {
-		r_gravity = get_gravity_vector() * get_gravity();
+			const real_t gr_unit_dist = get_gravity_point_unit_distance();
+			Vector2 v = get_transform().xform(target_local_position) - p_global_position;
+			if (gr_unit_dist > 0) {
+				const real_t v_length_sq = v.length_squared();
+				if (v_length_sq > 0) {
+					const real_t gravity_strength = get_gravity() * gr_unit_dist * gr_unit_dist / v_length_sq;
+					r_gravity = v.normalized() * gravity_strength;
+				} else {
+					r_gravity = Vector2();
+				}
+			} else {
+				r_gravity = v.normalized() * get_gravity();
+			}
+		} break;
 	}
 }
 
