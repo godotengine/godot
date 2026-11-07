@@ -66,7 +66,9 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventScreenTouch> touch = p_event;
 	if (touch.is_valid()) {
-		if (status.touch_index == -1) {
+		// Accept a new tap after activation even if a modal consumed the previous release.
+		bool touch_action_completed = toggle_mode && action_mode == ACTION_MODE_BUTTON_PRESS && !status.press_attempt;
+		if (status.touch_index == -1 || (touch->is_pressed() && touch_action_completed)) {
 			if (touch->is_pressed()) {
 				status.touch_index = touch->get_index();
 				status.press_attempt = true;
@@ -254,7 +256,6 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
-					status.touch_index = -1; // Action completed, release matching touch so later taps aren't dropped if a modal consumes the release.
 				}
 
 				if (!status.disabled) {
