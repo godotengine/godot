@@ -375,13 +375,21 @@ int MeshInstance3D::get_surface_override_material_count() const {
 void MeshInstance3D::set_surface_override_material(int p_surface, const Ref<Material> &p_material) {
 	ERR_FAIL_INDEX(p_surface, surface_override_materials.size());
 
+	if (surface_override_materials[p_surface].is_valid()) {
+		surface_override_materials[p_surface]->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	surface_override_materials.write[p_surface] = p_material;
+	if (surface_override_materials[p_surface].is_valid()) {
+		surface_override_materials[p_surface]->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 
 	if (surface_override_materials[p_surface].is_valid()) {
 		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, surface_override_materials[p_surface]->get_rid());
 	} else {
 		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, RID());
 	}
+
+	notify_property_list_changed();
 }
 
 Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const {
@@ -413,6 +421,11 @@ void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
 	const int surface_count = mesh->get_surface_count();
 
+	for (const Ref<Material> &surface_override_material : surface_override_materials) {
+		if (surface_override_material.is_valid()) {
+			surface_override_material->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+		}
+	}
 	surface_override_materials.resize(surface_count);
 
 	uint32_t initialize_bs_from = blend_shape_tracks.size();
@@ -431,11 +444,13 @@ void MeshInstance3D::_mesh_changed() {
 
 	for (int surface_index = 0; surface_index < surface_count; ++surface_index) {
 		if (surface_override_materials[surface_index].is_valid()) {
+			surface_override_materials[surface_index]->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
 		}
 	}
 
 	update_gizmos();
+	notify_property_list_changed();
 }
 
 MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
