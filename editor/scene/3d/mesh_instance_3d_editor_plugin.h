@@ -39,6 +39,7 @@ class AspectRatioContainer;
 class ConfirmationDialog;
 class MenuButton;
 class SpinBox;
+class MeshUvViewer;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
@@ -49,8 +50,7 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_CREATE_OUTLINE_MESH,
 		MENU_OPTION_CREATE_DEBUG_TANGENTS,
 		MENU_OPTION_CREATE_UV2,
-		MENU_OPTION_DEBUG_UV1,
-		MENU_OPTION_DEBUG_UV2,
+		MENU_OPTION_DEBUG_UV,
 	};
 
 	enum ShapePlacement {
@@ -94,9 +94,7 @@ class MeshInstance3DEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 
 	AcceptDialog *debug_uv_dialog = nullptr;
-	AspectRatioContainer *debug_uv_arc = nullptr;
-	Control *debug_uv = nullptr;
-	Vector<Vector2> uv_lines;
+	MeshUvViewer *debug_uv = nullptr;
 
 	ConfirmationDialog *navigation_mesh_dialog = nullptr;
 
@@ -108,10 +106,11 @@ class MeshInstance3DEditor : public Control {
 	void _create_outline_mesh();
 	void _create_navigation_mesh();
 
+	void _show_uvs_popup();
 	void _create_uv_lines(int p_layer);
 	friend class MeshInstance3DEditorPlugin;
 
-	void _debug_uv_draw();
+	void _debug_uv_draw(int p_layer);
 
 protected:
 	void _node_removed(Node *p_node);
