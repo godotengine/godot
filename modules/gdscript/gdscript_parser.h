@@ -1585,7 +1585,7 @@ private:
 	bool is_statement_end_token() const;
 	bool is_statement_end() const;
 	void end_statement(const String &p_context);
-	void synchronize();
+	void synchronize(bool p_parse_class = false);
 	void push_multiline(bool p_state);
 	void pop_multiline();
 
