@@ -47,7 +47,7 @@
 				Returns all the [EditorNode3DGizmo] objects attached to this node. Only works in the editor.
 			</description>
 		</method>
-		<method name="get_global_transform_interpolated">
+		<method name="get_global_transform_interpolated" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
 				When using physics interpolation, there will be circumstances in which you want to know the interpolated (displayed) transform of a node rather than the standard transform (which may only be accurate to the most recent physics tick).
