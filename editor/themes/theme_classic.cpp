@@ -1499,17 +1499,19 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("resizer_color", "GraphFrame", gn_decoration_color);
 
 			// GraphFrame's title Label.
-			p_theme->set_type_variation("GraphFrameTitleLabel", "Label");
-			p_theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
-			p_theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLabel", EDSCALE_RND(22));
-			p_theme->set_color(SceneStringName(font_color), "GraphFrameTitleLabel", Color(1, 1, 1));
-			p_theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
-			p_theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
-			p_theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", EDSCALE_RND(1));
-			p_theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", EDSCALE_RND(1));
-			p_theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
-			p_theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", EDSCALE_RND(1));
-			p_theme->set_constant("line_spacing", "GraphFrameTitleLabel", EDSCALE_RND(3));
+			p_theme->set_type_variation("GraphFrameTitleLineEdit", "LineEdit");
+			p_theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLineEdit", memnew(StyleBoxEmpty));
+			p_theme->set_stylebox("read_only", "GraphFrameTitleLineEdit", memnew(StyleBoxEmpty));
+			p_theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLineEdit", EDSCALE_RND(22));
+			p_theme->set_color(SceneStringName(font_color), "GraphFrameTitleLineEdit", Color(1, 1, 1));
+			p_theme->set_color("font_uneditable_color", "GraphFrameTitleLineEdit", Color(1, 1, 1));
+			p_theme->set_color("font_shadow_color", "GraphFrameTitleLineEdit", Color(0, 0, 0, 0));
+			p_theme->set_color("font_outline_color", "GraphFrameTitleLineEdit", Color(1, 1, 1));
+			p_theme->set_constant("shadow_offset_x", "GraphFrameTitleLineEdit", EDSCALE_RND(1));
+			p_theme->set_constant("shadow_offset_y", "GraphFrameTitleLineEdit", EDSCALE_RND(1));
+			p_theme->set_constant("outline_size", "GraphFrameTitleLineEdit", 0);
+			p_theme->set_constant("shadow_outline_size", "GraphFrameTitleLineEdit", EDSCALE_RND(1));
+			p_theme->set_constant("line_spacing", "GraphFrameTitleLineEdit", EDSCALE_RND(3));
 		}
 
 		// VisualShader reroute node.
