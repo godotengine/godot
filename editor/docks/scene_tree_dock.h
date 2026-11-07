@@ -129,6 +129,7 @@ class SceneTreeDock : public EditorDock {
 	Button *button_2d = nullptr;
 	Button *button_3d = nullptr;
 	Button *button_ui = nullptr;
+	Button *button_inherit_scene = nullptr;
 	Button *button_custom = nullptr;
 	Button *button_clipboard = nullptr;
 

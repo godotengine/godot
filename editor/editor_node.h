@@ -149,6 +149,7 @@ public:
 		// Scene menu.
 		SCENE_NEW_SCENE,
 		SCENE_NEW_INHERITED_SCENE,
+		SCENE_NEW_INHERITED_FROM_ACTIVE,
 		SCENE_OPEN_SCENE,
 		SCENE_OPEN_PREV,
 		SCENE_OPEN_RECENT,
@@ -605,6 +606,7 @@ private:
 	void _viewport_resized();
 
 	void _update_undo_redo_allowed();
+	void _update_inherit_active_allowed();
 
 	int _save_external_resources(bool p_also_save_external_data = false);
 	void _save_scene_silently();

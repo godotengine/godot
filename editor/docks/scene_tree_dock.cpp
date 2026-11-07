@@ -1775,6 +1775,12 @@ void SceneTreeDock::_notification(int p_what) {
 			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 
+			button_inherit_scene = memnew(Button);
+			beginner_node_shortcuts->add_child(button_inherit_scene);
+			button_inherit_scene->set_text(TTRC("Inherited Scene..."));
+			button_inherit_scene->set_button_icon(get_editor_theme_icon(SNAME("PackedScene")));
+			button_inherit_scene->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_INSTANTIATE, false));
+
 			button_clipboard = memnew(Button);
 			node_shortcuts->add_child(button_clipboard);
 			button_clipboard->set_text(TTRC("Paste From Clipboard"));

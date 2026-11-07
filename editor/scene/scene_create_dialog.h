@@ -57,6 +57,7 @@ public:
 		ROOT_3D_SCENE,
 		ROOT_USER_INTERFACE,
 		ROOT_OTHER,
+		ROOT_INHERIT_SCENE,
 	};
 
 private:
@@ -69,10 +70,14 @@ private:
 	CheckBox *node_type_3d = nullptr;
 	CheckBox *node_type_gui = nullptr;
 	CheckBox *node_type_other = nullptr;
+	CheckBox *inherit_scene = nullptr;
 
 	LineEdit *other_type_display = nullptr;
 	Button *select_node_button = nullptr;
 	CreateDialog *select_node_dialog = nullptr;
+
+	LineEdit *inherit_scene_display = nullptr;
+	Button *inherit_scene_button = nullptr;
 
 	LineEdit *scene_name_edit = nullptr;
 	OptionButton *scene_extension_picker = nullptr;
@@ -82,14 +87,18 @@ private:
 
 	void accept_create();
 	void browse_types();
+	void browse_base_scene();
 	void on_type_picked();
 	void update_dialog();
+
+	void _on_base_scene_selected(String p_file);
 
 protected:
 	void _notification(int p_what);
 
 public:
 	void config(const String &p_dir, const String &p_scene_name = "");
+	bool is_inheriting_scene();
 
 	String get_scene_path() const;
 	String get_root_name() const;
