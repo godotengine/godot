@@ -42,6 +42,9 @@
 #include "core/extension/gdextension_manager.h"
 #include "core/extension/gdextension_resource_format.h"
 #include "core/extension/godot_instance.h"
+#ifdef TOOLS_ENABLED
+#include "core/extension/extension_api_dump.h"
+#endif
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
@@ -298,6 +301,10 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(GDExtension);
+
+#ifdef TOOLS_ENABLED
+	GDREGISTER_ABSTRACT_CLASS(GDExtensionAPIDump);
+#endif
 
 	GDREGISTER_ABSTRACT_CLASS(GodotInstance);
 
