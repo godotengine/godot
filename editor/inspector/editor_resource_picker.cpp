@@ -51,12 +51,24 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
+
+static ObjectID hovered_instance_id; // Used for highlight pickers sharing the same Resource.
+
+static void _set_hovered_picker(EditorResourcePicker *p_picker) {
+	if (p_picker == nullptr || p_picker->get_edited_resource().is_null()) {
+		hovered_instance_id = ObjectID();
+	} else {
+		hovered_instance_id = p_picker->get_edited_resource()->get_instance_id();
+	}
+	SceneTree::get_singleton()->call_group(SNAME("__EditorResourcePicker"), SNAME("queue_redraw"));
+}
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
 	List<PropertyInfo> property_list;
@@ -1096,6 +1108,7 @@ void EditorResourcePicker::_bind_methods() {
 void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			add_to_group(SNAME("__EditorResourcePicker"));
 			EditorNode::get_singleton()->connect("resource_counter_changed", callable_mp(this, &EditorResourcePicker::_update_resource));
 			_update_resource();
 			[[fallthrough]];
@@ -1114,6 +1127,12 @@ void EditorResourcePicker::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
+			if (!dropping && get_edited_resource().is_valid() && get_edited_resource()->get_instance_id() == hovered_instance_id) {
+				Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+				color.invert();
+				color.a *= 0.5;
+				draw_rect(Rect2(Point2(), get_size()), color, false);
+			}
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -1135,6 +1154,7 @@ void EditorResourcePicker::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			remove_from_group(SNAME("__EditorResourcePicker"));
 			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
 			Callable resource_counter_changed = callable_mp(this, &EditorResourcePicker::_update_resource);
 			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
@@ -1533,6 +1553,8 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect(SceneStringName(draw), callable_mp(this, &EditorResourcePicker::_button_draw));
 	assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	assign_button->connect(SceneStringName(mouse_entered), callable_mp_static(&_set_hovered_picker).bind(this));
+	assign_button->connect(SceneStringName(mouse_exited), callable_mp_static(&_set_hovered_picker).bind(Variant()));
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
