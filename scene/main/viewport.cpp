@@ -5865,18 +5865,27 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
+
+	const SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 #ifndef XR_DISABLED
-	if (is_using_xr() && (p_property.name == "size" || p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch" || p_property.name == "view_count")) {
-		p_property.usage = PROPERTY_USAGE_NONE; // Managed by XR
-	} else if (p_property.name == "size") {
+	const bool using_xr = is_using_xr();
 #else
-	if (p_property.name == "size") {
+	const bool using_xr = false;
 #endif
-		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-		if (parent_svc && parent_svc->is_stretch_enabled()) {
-			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
-		} else {
-			p_property.usage = PROPERTY_USAGE_DEFAULT;
+
+	if (p_property.name == "size") {
+		if (using_xr) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if (parent_svc && parent_svc->is_stretch_enabled()) {
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		}
+	} else if (p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch" || p_property.name == "view_count") {
+		if (using_xr) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "render_target_update_mode" || p_property.name == "handle_input_locally") {
+		if (parent_svc && parent_svc->is_adjust_viewport_properties_enabled()) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 }
@@ -5900,7 +5909,7 @@ void Viewport::CameraOverride<T>::enable(Viewport *p_viewport, const T *p_curren
 	}
 
 	T *override_camera = memnew(T);
-	override_camera->set_name(vformat("Override%s", T ::get_class_static()));
+	override_camera->set_name(vformat("Override%s", T::get_class_static()));
 	p_viewport->add_child(override_camera, false, Node::INTERNAL_MODE_BACK);
 
 	override_camera->make_current();
