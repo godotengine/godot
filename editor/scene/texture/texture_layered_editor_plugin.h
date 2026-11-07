@@ -48,6 +48,7 @@ class TextureLayeredEditor : public Control {
 	} theme_cache;
 
 	SpinBox *layer = nullptr;
+	Label *filename_label = nullptr;
 	Label *info = nullptr;
 	Button *info_toggle = nullptr;
 	Ref<TextureLayered> texture;

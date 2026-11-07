@@ -186,6 +186,15 @@ void TextureLayeredEditor::_update_gui() {
 
 	_texture_rect_update_area();
 
+	filename_label->set_tooltip_text(texture->get_path());
+	if (texture->get_path().is_empty()) {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		filename_label->set_text(TTRC("(Unsaved)"));
+	} else {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		filename_label->set_text(texture->get_path().get_file());
+	}
+
 	const Image::Format format = texture->get_format();
 	const String format_name = Image::get_format_name(format);
 	String texture_info;
@@ -265,6 +274,12 @@ void TextureLayeredEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			if (filename_label) {
+				Ref<Font> filename_label_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				filename_label->add_theme_font_override(SceneStringName(font), filename_label_font);
+				filename_label->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
+				filename_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+			}
 			if (info) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				info->add_theme_font_override(SceneStringName(font), metadata_label_font);
@@ -273,6 +288,9 @@ void TextureLayeredEditor::_notification(int p_what) {
 				info_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
 			}
 			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+		} break;
+		case NOTIFICATION_READY: {
+			channel_selector->set_custom_minimum_size(layer->get_minimum_size()); // To truly center filename_label.
 		} break;
 	}
 }
@@ -425,6 +443,28 @@ TextureLayeredEditor::TextureLayeredEditor() {
 
 	add_child(texture_rect);
 
+	HBoxContainer *header = memnew(HBoxContainer);
+	header->set_anchors_preset(PRESET_TOP_WIDE);
+	add_child(header);
+
+	channel_selector = memnew(ColorChannelSelector);
+	channel_selector->connect("selected_channels_changed", callable_mp(this, &TextureLayeredEditor::on_selected_channels_changed));
+	channel_selector->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
+	header->add_child(channel_selector);
+
+	filename_label = memnew(Label);
+	filename_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	filename_label->set_mouse_filter(MOUSE_FILTER_PASS);
+	filename_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE);
+	filename_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+
+	// It's okay that these colors are static since the grid color is static too.
+	filename_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+	filename_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+	filename_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+
+	header->add_child(filename_label);
+
 	layer = memnew(SpinBox);
 	layer->set_step(1);
 	layer->set_max(100);
@@ -435,12 +475,7 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	layer->set_anchor(SIDE_LEFT, 1);
 	layer->connect(SceneStringName(value_changed), callable_mp(this, &TextureLayeredEditor::_layer_changed));
 
-	add_child(layer);
-
-	channel_selector = memnew(ColorChannelSelector);
-	channel_selector->connect("selected_channels_changed", callable_mp(this, &TextureLayeredEditor::on_selected_channels_changed));
-	channel_selector->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT);
-	add_child(channel_selector);
+	header->add_child(layer);
 
 	info = memnew(Label);
 	info->set_focus_mode(FOCUS_ACCESSIBILITY);

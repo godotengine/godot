@@ -111,6 +111,13 @@ void TexturePreview::_notification(int p_what) {
 				break;
 			}
 
+			if (filename_label) {
+				Ref<Font> filename_label_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+				filename_label->add_theme_font_override(SceneStringName(font), filename_label_font);
+				filename_label->add_theme_font_size_override(SceneStringName(font_size), 18 * EDSCALE);
+				filename_label->add_theme_constant_override("outline_size", 8 * EDSCALE);
+			}
+
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
@@ -186,6 +193,20 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		return image->get_mipmap_count();
 	}
 	return -1;
+}
+
+void TexturePreview::_update_filename_label_text() {
+	const Ref<Texture2D> texture = texture_display->get_texture();
+	ERR_FAIL_COND(texture.is_null());
+
+	filename_label->set_tooltip_text(texture->get_path());
+	if (texture->get_path().is_empty()) {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		filename_label->set_text(TTRC("(Unsaved)"));
+	} else {
+		filename_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		filename_label->set_text(texture->get_path().get_file());
+	}
 }
 
 void TexturePreview::_update_metadata_label_text() {
@@ -296,8 +317,13 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	texture_display->set_instance_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
 	centering_container->add_child(texture_display);
 
+	HBoxContainer *header = memnew(HBoxContainer);
+	header->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	add_child(header);
+
 	// Creating a separate control so it is not affected by the filtering shader.
 	outline_overlay = memnew(Control);
+	outline_overlay->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	centering_container->add_child(outline_overlay);
 
 	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_draw_outline));
@@ -330,10 +356,32 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	if (p_show_metadata && !Math::is_power_of_2(components_mask)) {
 		channel_selector = memnew(ColorChannelSelector);
 		channel_selector->connect("selected_channels_changed", callable_mp(this, &TexturePreview::on_selected_channels_changed));
-		channel_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
-		channel_selector->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_available_channels_mask(components_mask);
-		add_child(channel_selector);
+		header->add_child(channel_selector);
+	}
+
+	if (p_texture.is_valid()) {
+		filename_label = memnew(Label);
+		filename_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		filename_label->set_mouse_filter(MOUSE_FILTER_PASS);
+		filename_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE);
+		filename_label->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
+
+		// It's okay that these colors are static since the grid color is static too.
+		filename_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1));
+		filename_label->add_theme_color_override("font_shadow_color", Color(0, 0, 0));
+		filename_label->add_theme_color_override("font_outline_color", Color(0, 0, 0));
+
+		header->add_child(filename_label);
+
+		_update_filename_label_text();
+		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_filename_label_text));
+
+		if (channel_selector) {
+			Control *spacer = memnew(Control);
+			spacer->set_custom_minimum_size(Size2(32 * EDSCALE, 0));
+			header->add_child(spacer);
+		}
 	}
 
 	if (p_show_metadata) {
