@@ -686,26 +686,31 @@ Error SceneDebugger::_msg_report_window_focused(const Array &p_args) {
 HashMap<String, SceneDebugger::ParseMessageFunc> SceneDebugger::message_handlers;
 
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
+	ParseMessageFunc *fn_ptr = message_handlers.getptr(p_msg);
+	r_captured = fn_ptr != nullptr;
+
+	if (fn_ptr == nullptr) {
+		if (p_msg.begins_with("live_") || p_msg.begins_with("runtime_node_select_")) {
+			// Messages with these prefixes are reserved and should be handled by the LiveEditor or RuntimeNodeSelect classes,
+			// so return ERR_SKIP.
+			r_captured = true;
+			return ERR_SKIP;
+		}
+		return OK;
+	}
+
+	if (!singleton->_is_active) {
+		if (singleton->_message_buffer.space_left() <= 0) {
+			singleton->_message_buffer.advance_read(1);
+		}
+		singleton->_message_buffer.write(DeferredMessage{ *fn_ptr, p_args });
+		return OK;
+	}
+
 	ERR_FAIL_NULL_V(SceneTree::get_singleton(), ERR_UNCONFIGURED);
 	ERR_FAIL_NULL_V(LiveEditor::get_singleton(), ERR_UNCONFIGURED);
 	ERR_FAIL_NULL_V(RuntimeNodeSelect::get_singleton(), ERR_UNCONFIGURED);
-
-	ParseMessageFunc *fn_ptr = message_handlers.getptr(p_msg);
-	if (fn_ptr) {
-		r_captured = true;
-		return (*fn_ptr)(p_args);
-	}
-
-	if (p_msg.begins_with("live_") || p_msg.begins_with("runtime_node_select_")) {
-		// Messages with these prefixes are reserved and should be handled by the LiveEditor or RuntimeNodeSelect classes,
-		// so return ERR_SKIP.
-		r_captured = true;
-		return ERR_SKIP;
-	}
-
-	r_captured = false;
-
-	return OK;
+	return (*fn_ptr)(p_args);
 }
 
 void SceneDebugger::_init_message_handlers() {
@@ -772,6 +777,24 @@ void SceneDebugger::_init_message_handlers() {
 #endif // _3D_DISABLED
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 	message_handlers["report_window_focused"] = _msg_report_window_focused;
+}
+
+void SceneDebugger::activate() {
+	if (!singleton) {
+		// Scene debugger was not set up, e.g. when running the editor.
+		return;
+	}
+
+	ERR_FAIL_NULL(SceneTree::get_singleton());
+	ERR_FAIL_NULL(LiveEditor::get_singleton());
+	ERR_FAIL_NULL(RuntimeNodeSelect::get_singleton());
+
+	singleton->_is_active = true;
+	while (singleton->_message_buffer.data_left() > 0) {
+		const DeferredMessage msg = singleton->_message_buffer.read();
+		msg.handler(msg.args);
+		singleton->_message_buffer.advance_read(1);
+	}
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
