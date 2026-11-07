@@ -98,8 +98,6 @@ void EditorMainScreen::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			set_popup(nullptr);
-
 			for (int i = 0; i < get_tab_count(); i++) {
 				EditorDock *dock = get_dock(i);
 				if (dock == Node3DEditor::get_singleton()) {
