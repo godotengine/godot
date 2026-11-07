@@ -2102,11 +2102,10 @@ void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<
 void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	Transform2D xform = p_canvas_xform;
 	Viewport *vp = Object::cast_to<Viewport>(p_node);
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 
-	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
-		if (editor_mode) {
-			xform = cl->get_transform();
-		}
+	if (cl) {
+		xform = cl->get_transform();
 	} else if (vp) {
 		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
 			return; // FIXME: Make subviewport selection work at runtime.
@@ -2171,11 +2170,10 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 
 	Transform2D xform = p_canvas_xform;
 	Viewport *vp = Object::cast_to<Viewport>(p_node);
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 
-	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
-		if (editor_mode) {
-			xform = cl->get_transform();
-		}
+	if (cl) {
+		xform = cl->get_transform();
 	} else if (vp) {
 		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
 			return; // FIXME: Make subviewport selection work at runtime.
@@ -2215,8 +2213,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
 				}
 			} else {
-				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+				find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), xform);
 			}
 		}
 	}
