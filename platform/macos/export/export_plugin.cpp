@@ -1930,10 +1930,10 @@ Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &
 }
 
 bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, bool p_debug, Error &r_err) {
-	if (DirAccess::exists(p_symbols_path.get_basename() + ".dSYM")) {
-		r_err = _copy_debugsymbols_recursively(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM", p_app_name, p_debug);
-	} else if (FileAccess::exists(p_symbols_path.get_basename() + ".dSYM.zip")) {
-		r_err = _unzip_debugsymbols(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM.zip", p_app_name, p_debug);
+	if (DirAccess::exists(p_symbols_path + ".dSYM")) {
+		r_err = _copy_debugsymbols_recursively(p_da, p_path.simplify_path(), p_symbols_path.simplify_path() + ".dSYM", p_app_name, p_debug);
+	} else if (FileAccess::exists(p_symbols_path + ".zip")) {
+		r_err = _unzip_debugsymbols(p_da, p_path.simplify_path(), p_symbols_path.simplify_path() + ".zip", p_app_name, p_debug);
 	} else {
 		return false;
 	}
@@ -2056,7 +2056,18 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	if (copy_debug_symbols) {
 		print_verbose("Exporting debug symbols to " + tmp_app_path_name + ".dSYM");
-		_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name, dbg_name, p_debug, err);
+		bool found = _copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name.get_basename(), dbg_name, p_debug, err);
+		if (!found) {
+			if (architecture == "universal") {
+				found = _copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name.get_base_dir().path_join(vformat("macos_%s.%s", p_debug ? "debug" : "release", architecture)), dbg_name, p_debug, err);
+				if (!found) {
+					_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".arm64.dSYM", src_pkg_name.get_base_dir().path_join(vformat("macos_%s.arm64", p_debug ? "debug" : "release")), dbg_name, p_debug, err);
+					_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".x86_64.dSYM", src_pkg_name.get_base_dir().path_join(vformat("macos_%s.x86_64", p_debug ? "debug" : "release")), dbg_name, p_debug, err);
+				}
+			} else {
+				_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name.get_base_dir().path_join(vformat("macos_%s.%s", p_debug ? "debug" : "release", architecture)), dbg_name, p_debug, err);
+			}
+		}
 	}
 
 	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
