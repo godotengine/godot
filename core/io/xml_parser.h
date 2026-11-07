@@ -118,6 +118,9 @@ public:
 
 	Error open(const String &p_path);
 	Error open_buffer(const Vector<uint8_t> &p_buffer);
+
+	// The buffer `p_buffer` must be null-terminated (i.e. `p_buffer[p_size] == 0`)
+	// and must remain valid in memory for the lifetime of this parser.
 	Error _open_buffer(const uint8_t *p_buffer, size_t p_size);
 
 	void close();
