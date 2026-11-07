@@ -909,6 +909,8 @@ void WSLPeer::_clear() {
 
 	// Pending packets info.
 	was_string = 0;
+	heartbeat_waiting = false;
+	pending_message.clear();
 	in_buffer.clear();
 	packet_buffer.clear();
 
