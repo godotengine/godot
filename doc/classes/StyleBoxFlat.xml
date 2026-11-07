@@ -40,6 +40,12 @@
 				Returns the given [param corner]'s radius.
 			</description>
 		</method>
+		<method name="get_corner_smoothing" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<description>
+			</description>
+		</method>
 		<method name="get_expand_margin" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="margin" type="int" enum="Side" />
@@ -75,6 +81,19 @@
 			<param index="0" name="radius" type="int" />
 			<description>
 				Sets the corner radius to [param radius] pixels for all corners.
+			</description>
+		</method>
+		<method name="set_corner_smoothing">
+			<return type="void" />
+			<param index="0" name="corner" type="int" enum="Corner" />
+			<param index="1" name="smoothing" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="set_corner_smoothing_all">
+			<return type="void" />
+			<param index="0" name="smoothing" type="float" />
+			<description>
 			</description>
 		</method>
 		<method name="set_expand_margin">
@@ -139,6 +158,18 @@
 		</member>
 		<member name="corner_radius_top_right" type="int" setter="set_corner_radius" getter="get_corner_radius" default="0">
 			The top-right corner's radius. If [code]0[/code], the corner is not rounded.
+		</member>
+		<member name="corner_smoothing_bottom_left" type="float" setter="set_corner_smoothing" getter="get_corner_smoothing" default="1.0">
+			The bottom-left corner's smoothing. A value of [code]0.0[/code] results in a sharp (unsmoothed) corner, [code]1.0[/code] produces a standard rounded corner, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes a corner gradually approach a perfect square.
+		</member>
+		<member name="corner_smoothing_bottom_right" type="float" setter="set_corner_smoothing" getter="get_corner_smoothing" default="1.0">
+			The bottom-right corner's smoothing. A value of [code]0.0[/code] results in a sharp (unsmoothed) corner, [code]1.0[/code] produces a standard rounded corner, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes a corner gradually approach a perfect square.
+		</member>
+		<member name="corner_smoothing_top_left" type="float" setter="set_corner_smoothing" getter="get_corner_smoothing" default="1.0">
+			The top-left corner's smoothing. A value of [code]0.0[/code] results in a sharp (unsmoothed) corner, [code]1.0[/code] produces a standard rounded corner, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes a corner gradually approach a perfect square.
+		</member>
+		<member name="corner_smoothing_top_right" type="float" setter="set_corner_smoothing" getter="get_corner_smoothing" default="1.0">
+			The top-right corner's smoothing. A value of [code]0.0[/code] results in a sharp (unsmoothed) corner, [code]1.0[/code] produces a standard rounded corner, and [code]2.0[/code] creates a squircle-like shape. Increasing the value further makes a corner gradually approach a perfect square.
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			Toggles drawing of the inner part of the stylebox.
