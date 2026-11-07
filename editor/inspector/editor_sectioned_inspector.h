@@ -60,6 +60,7 @@ class SectionedInspector : public HSplitContainer {
 	void _section_selected();
 
 	void _search_changed(const String &p_what);
+	void _edited_property_list_changed();
 	void _advanced_toggled(bool p_toggled_on);
 
 protected:
