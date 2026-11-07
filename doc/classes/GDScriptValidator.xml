@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptValidator" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Tool to check for errors and warnings on GDScript source code.
+	</brief_description>
+	<description>
+		[GDScriptValidator] validates GDScript source code against the project filesystem and reports errors and warnings found while analyzing the script and its dependencies.
+		[warning] This class is only available in Editor builds.[/warning]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_dependencies_with_errors" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns a list of paths pointing to scripts with errors preventing validated source code from being valid.
+			</description>
+		</method>
+		<method name="get_dependency_error" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="dependency" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns an error description for a given [param dependency] and [param idx].
+			</description>
+		</method>
+		<method name="get_dependency_error_count" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="dependency" type="String" />
+			<description>
+				Returns the amount of errors detected for a given [param dependency].
+			</description>
+		</method>
+		<method name="get_dependency_error_end_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="dependency" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns at which column of the [param dependency]'s source code the [param idx] error ends.
+			</description>
+		</method>
+		<method name="get_dependency_error_end_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="dependency" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns at which line of the [param dependency]'s source code the [param idx] error ends.
+			</description>
+		</method>
+		<method name="get_dependency_error_start_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="dependency" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns at which column of the [param dependency]'s source code the [param idx] error starts.
+			</description>
+		</method>
+		<method name="get_dependency_error_start_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="dependency" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns at which line of the [param dependency]'s source code the [param idx] error starts.
+			</description>
+		</method>
+		<method name="get_error" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns description of the error with index [param idx].
+			</description>
+		</method>
+		<method name="get_error_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the amount of errors in the validated source code.
+			</description>
+		</method>
+		<method name="get_error_end_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which column of the validated source code the [param idx] error ends.
+			</description>
+		</method>
+		<method name="get_error_end_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which line of the validated source code the [param idx] error ends.
+			</description>
+		</method>
+		<method name="get_error_start_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which column of the validated source code the [param idx] error starts.
+			</description>
+		</method>
+		<method name="get_error_start_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which line of the validated source code the [param idx] error starts.
+			</description>
+		</method>
+		<method name="get_safe_lines" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns a list of line indices where type safety is warranted.
+			</description>
+		</method>
+		<method name="get_validated_code">
+			<return type="String" />
+			<description>
+				Returns the source code being validated.
+			</description>
+		</method>
+		<method name="get_validated_path">
+			<return type="String" />
+			<description>
+				Returns the file path associated to the code being validated.
+			</description>
+		</method>
+		<method name="get_warning" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns description of the warning with index [param idx].
+			</description>
+		</method>
+		<method name="get_warning_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the amount of warnings found in the validated code.
+			</description>
+		</method>
+		<method name="get_warning_end_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which column of the validated source code the [param idx] warning ends.
+			</description>
+		</method>
+		<method name="get_warning_end_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which line of the validated source code the [param idx] warning ends.
+			</description>
+		</method>
+		<method name="get_warning_start_column" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which column of the validated source code the [param idx] warning starts.
+			</description>
+		</method>
+		<method name="get_warning_start_line" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns at which line of the validated source code the [param idx] warning starts.
+			</description>
+		</method>
+		<method name="get_warning_string_code" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns a code indicating what type the [param idx] warning is. Warning level of each type can be configured in [ProjectSettings] in the section [code]debug/gdscript/warnings[/code].
+			</description>
+		</method>
+		<method name="has_dependency_errors" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the validated code depends on any other script with errors.
+			</description>
+		</method>
+		<method name="has_errors" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the validated code has errors or depends on any other script with errors.
+			</description>
+		</method>
+		<method name="has_warnings" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns true if the validated code has any detected warning.
+			</description>
+		</method>
+		<method name="validate">
+			<return type="bool" />
+			<param index="0" name="code" type="String" />
+			<param index="1" name="path" type="String" default="&quot;&quot;" />
+			<description>
+				Analyze source [param code] in search of errors and warnings. If [param path] is provided, the analyzer will consider the given [param code] to be the contents of said file instead of the one in the filesystem.
+			</description>
+		</method>
+	</methods>
+</class>
