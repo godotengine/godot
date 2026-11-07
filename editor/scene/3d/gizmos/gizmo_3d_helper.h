@@ -85,6 +85,63 @@ public:
 		cylinder_commit_handle(p_id, p_radius_action_name, p_height_action_name, p_cancel, p_position_object, p_height_object, p_radius_object, p_position_property, p_height_property, p_radius_property);
 	}
 
+	// Tapered Capsule and Cylinder
+
+	enum tapered_revolution_handle {
+		RADIUS,
+		HEIGHT,
+		RADIUS_TOP,
+		RADIUS_BOTTOM,
+	};
+
+	Vector<Vector3> tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height, bool cylinder);
+	String tapered_capsule_cylinder_get_handle_name(int p_id, bool cylinder);
+
+	// Tapered capsule
+	void tapered_capsule_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_mid_height);
+	void tapered_capsule_commit_handle(int p_id, bool p_cancel, Object *p_object);
+
+	// Tapered cylinder
+	void tapered_cylinder_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_height);
+	void tapered_cylinder_commit_handle(int p_id, bool p_cancel, Object *p_object);
+
+	template <bool cylinder, class T>
+	void tapered_set_handle(Ref<T> revolution, const Vector3 p_segment[2], int p_id) {
+		real_t top_radius = revolution->get_top_radius();
+		real_t bottom_radius = revolution->get_bottom_radius();
+		real_t height_or_midheight;
+		if constexpr (cylinder) {
+			height_or_midheight = revolution->get_height();
+		} else {
+			height_or_midheight = revolution->get_mid_height();
+		}
+		if constexpr (cylinder) {
+			tapered_cylinder_set_handle(p_segment, p_id, top_radius, bottom_radius, height_or_midheight);
+		} else {
+			tapered_capsule_set_handle(p_segment, p_id, top_radius, bottom_radius, height_or_midheight);
+		}
+		switch (p_id) {
+			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_TOP:
+				revolution->set_top_radius(top_radius);
+				break;
+			case Gizmo3DHelper::tapered_revolution_handle::RADIUS_BOTTOM:
+				revolution->set_bottom_radius(bottom_radius);
+				break;
+			case Gizmo3DHelper::tapered_revolution_handle::RADIUS:
+				revolution->set_radius((top_radius + bottom_radius) / 2);
+				break;
+			case Gizmo3DHelper::tapered_revolution_handle::HEIGHT:
+				if constexpr (cylinder) {
+					revolution->set_height(height_or_midheight);
+				} else {
+					revolution->set_mid_height(height_or_midheight);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
 	// Cone frustum
 
 	Vector<Vector3> cone_frustum_get_handles(real_t p_height, real_t p_radius_top, real_t p_radius_bottom);
