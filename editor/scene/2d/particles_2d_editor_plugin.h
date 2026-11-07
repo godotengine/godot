@@ -113,9 +113,6 @@ class GPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
 		MENU_GENERATE_VISIBILITY_RECT = 200,
 	};
 
-	ConfirmationDialog *generate_visibility_rect = nullptr;
-	SpinBox *generate_seconds = nullptr;
-
 	void _generate_visibility_rect();
 
 protected:
