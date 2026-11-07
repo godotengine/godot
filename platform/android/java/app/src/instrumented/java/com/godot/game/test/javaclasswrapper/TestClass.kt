@@ -144,6 +144,101 @@ class TestClass {
 		}
 
 		@JvmStatic
+		fun testArgBooleanNullable(a: Boolean?): String {
+			return "Boolean: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgByteNullable(a: Byte?): String {
+			return "Byte: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgCharNullable(a: Char?): String {
+			return "Char: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgShortNullable(a: Short?): String {
+			return "Short: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgIntNullable(a: Int?): String {
+			return "Int: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgLongNullable(a: Long?): String {
+			return "Long: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgFloatNullable(a: Float?): String {
+			return "Float: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgDoubleNullable(a: Double?): String {
+			return "Double: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgBoolArrayNullable(a: BooleanArray?): String {
+			return "BoolArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgByteArrayNullable(a: ByteArray?): String {
+			return "ByteArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgCharArrayNullable(a: CharArray?): String {
+			return "CharArray: ${a?.joinToString("")}"
+		}
+
+		@JvmStatic
+		fun testArgShortArrayNullable(a: ShortArray?): String {
+			return "ShortArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgIntArrayNullable(a: IntArray?): String {
+			return "IntArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgLongArrayNullable(a: LongArray?): String {
+			return "LongArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgFloatArrayNullable(a: FloatArray?): String {
+			return "FloatArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgDoubleArrayNullable(a: DoubleArray?): String {
+			return "DoubleArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgStringArrayNullable(a: Array<String>?): String {
+			return "StringArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgCharSequenceArrayNullable(a: Array<CharSequence>?): String {
+			return "CharSequenceArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
+		fun testArgObjectArrayNullable(a: Array<TestClass2>?): String {
+			return "ObjectArray: ${a?.contentToString()}"
+		}
+
+		@JvmStatic
 		fun testArgBoolArray(a: BooleanArray): String {
 			return a.contentToString();
 		}
