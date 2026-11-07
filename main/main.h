@@ -69,20 +69,20 @@ public:
 #endif
 
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
-	static Error setup2(bool p_show_boot_logo = true); // The thread calling setup2() will effectively become the main thread.
+	_COLD_ static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
+	_COLD_ static Error setup2(bool p_show_boot_logo = true); // The thread calling setup2() will effectively become the main thread.
 	static String get_locale_override();
 	static void setup_boot_logo();
-	static Error test_setup();
-	static void test_cleanup();
-	static int start();
+	_COLD_ static Error test_setup();
+	_COLD_ static void test_cleanup();
+	_COLD_ static int start();
 
 	static bool iteration();
 	static void force_redraw();
 
 	static bool is_iterating();
 
-	static void cleanup(bool p_force = false);
+	_COLD_ static void cleanup(bool p_force = false);
 };
 
 // Test main override is for the testing behavior.
