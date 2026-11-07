@@ -230,6 +230,9 @@ private:
 
 	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
+	// Read-lock-only variant of class_get_default_property_value.
+	static Variant _class_get_default_property_value_uncached(const StringName &p_class, const StringName &p_property, bool *r_valid = nullptr);
+
 public:
 	template <typename T>
 	static void register_class(bool p_virtual = false) {
