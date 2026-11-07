@@ -18,7 +18,7 @@ internal static class Common
                              "must be declared with the partial modifier.";
 
         context.ReportDiagnostic(Diagnostic.Create(
-            new DiagnosticDescriptor(id: "GODOT-INTERNAL-G0001",
+            new DiagnosticDescriptor(id: "GDI0001",
                 title: message,
                 messageFormat: message,
                 category: "Usage",
@@ -52,7 +52,7 @@ internal static class Common
                              "containing types must be declared with the partial modifier.";
 
         context.ReportDiagnostic(Diagnostic.Create(
-            new DiagnosticDescriptor(id: "GODOT-INTERNAL-G0002",
+            new DiagnosticDescriptor(id: "GDI0002",
                 title: message,
                 messageFormat: message,
                 category: "Usage",
@@ -61,5 +61,24 @@ internal static class Common
                 description),
             outerTypeDeclSyntax.GetLocation(),
             outerTypeDeclSyntax.SyntaxTree.FilePath));
+    }
+
+    public static void ReportBadReturnTypeInteropMethod(GeneratorExecutionContext context,
+        IMethodSymbol method)
+    {
+        string message =
+            $"{method.ReturnType.ToDisplayString()} is not a valid return type for interop method {method.ToDisplayString()}.";
+        string description =
+            "The used type cannot be represented consistently in both native and managed code on all platforms.";
+
+        context.ReportDiagnostic(Diagnostic.Create(
+            new DiagnosticDescriptor(id: "GDI0003",
+                title: message,
+                messageFormat: message,
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                description),
+            method.Locations[0]));
     }
 }
