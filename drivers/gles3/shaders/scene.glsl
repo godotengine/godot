@@ -2360,6 +2360,15 @@ void main() {
 	vec3 light_vertex = vertex;
 #endif //LIGHT_VERTEX_USED
 
+// Macros for converting between different spaces.
+// From https://learnopengl.com/Getting-Started/Coordinate-Systems:
+//       -------model_matrix------->       ---view_matrix--->      ---projection_matrix--->      -???->
+// Model                             World                    View                          Clip        Screen
+//       <-inverse(model_matrix)???-       <-inv_view_matrix-      <-inv_projection_matrix-      <-???-
+#define VIEW_TO_MODEL(v) (model_matrix * v)
+#define VIEW_TO_WORLD(v) (scene_data_block.data.inv_view_matrix * v)
+#define WORLD_TO_VIEW(v) (scene_data_block.data.view_matrix * v)
+
 	highp mat3 model_normal_matrix;
 	if (bool(model_flags & uint(FLAGS_NON_UNIFORM_SCALE))) {
 		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
