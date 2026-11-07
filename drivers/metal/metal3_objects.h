@@ -375,14 +375,14 @@ private:
 	void _render_set_dirty_state();
 	void _render_bind_uniform_sets();
 	void _set_arg_buffer(MTL::RenderCommandEncoder *p_enc, const UniformSet &p_shader_set, MTL::Buffer *p_buffer, uint32_t p_offset, uint32_t p_set_index);
-	void _bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets);
-	void _bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets);
+	void _bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index);
+	void _bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index);
 
 #pragma mark - Compute
 
 	void _compute_set_dirty_state();
 	void _compute_bind_uniform_sets();
-	void _bind_uniforms_argument_buffers_compute(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets);
+	void _bind_uniforms_argument_buffers_compute(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index);
 
 protected:
 	void mark_push_constants_dirty() override;
@@ -417,7 +417,6 @@ public:
 		ResourceTracker resource_tracker;
 
 		LocalVector<MDUniformSet *> uniform_sets;
-		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
 
@@ -537,7 +536,6 @@ public:
 		BitField<DirtyFlag> dirty = DIRTY_NONE;
 
 		LocalVector<MDUniformSet *> uniform_sets;
-		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
 
@@ -585,7 +583,7 @@ public:
 
 #pragma mark - Render Commands
 
-	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override;
+	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override;
 	void render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects) override;
 	void render_begin_pass(RDD::RenderPassID p_render_pass,
 			RDD::FramebufferID p_frameBuffer,
@@ -597,7 +595,7 @@ public:
 			uint32_t p_instance_count,
 			uint32_t p_base_vertex,
 			uint32_t p_first_instance) override;
-	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) override;
+	void render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets) override;
 	void render_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint64_t p_offset) override;
 
 	void render_draw_indexed(uint32_t p_index_count,
@@ -617,7 +615,7 @@ public:
 
 	void compute_begin_pass() override;
 	void compute_end_pass() override;
-	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override;
+	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override;
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override;
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) override;
 

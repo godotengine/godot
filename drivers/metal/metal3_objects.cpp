@@ -920,7 +920,7 @@ MTL::RenderCommandEncoder *MDCommandBuffer::get_new_render_encoder_with_descript
 
 #pragma mark - Render Commands
 
-void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	if (uint32_t new_size = p_first_set_index + p_set_count; render.uniform_sets.size() < new_size) {
@@ -932,19 +932,6 @@ void MDCommandBuffer::render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_u
 
 	const MDShader *shader = (const MDShader *)p_shader.id;
 	DynamicOffsetLayout layout = shader->dynamic_offset_layout;
-
-	// Clear bits for sets being bound, then OR new values.
-	for (uint32_t i = 0; i < p_set_count && render.dynamic_offsets != 0; i++) {
-		uint32_t set_index = p_first_set_index + i;
-		uint32_t count = layout.get_count(set_index);
-		if (count > 0) {
-			uint32_t shift = layout.get_offset_index_shift(set_index);
-			uint32_t mask = ((1u << (count * 4u)) - 1u) << shift;
-			render.dynamic_offsets &= ~mask; // Clear this set's bits
-		}
-	}
-	render.dynamic_offsets |= p_dynamic_offsets;
-
 	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
 
@@ -1244,8 +1231,6 @@ void MDCommandBuffer::_render_bind_uniform_sets() {
 	render.uniform_set_mask = 0;
 
 	MDRenderShader *shader = render.pipeline->shader;
-	const uint32_t dynamic_offsets = render.dynamic_offsets;
-
 	while (set_uniforms != 0) {
 		// Find the index of the next set bit.
 		uint32_t index = (uint32_t)__builtin_ctzll(set_uniforms);
@@ -1256,10 +1241,10 @@ void MDCommandBuffer::_render_bind_uniform_sets() {
 			continue;
 		}
 		if (shader->uses_argument_buffers) {
-			_bind_uniforms_argument_buffers(set, shader, index, dynamic_offsets);
+			_bind_uniforms_argument_buffers(set, shader, index);
 		} else {
 			DirectEncoder de(render.encoder.get(), binding_cache, DirectEncoder::RENDER);
-			_bind_uniforms_direct(set, shader, de, index, dynamic_offsets);
+			_bind_uniforms_direct(set, shader, de, index);
 		}
 	}
 }
@@ -1425,7 +1410,7 @@ void MDCommandBuffer::render_draw(uint32_t p_vertex_count,
 	enc->drawPrimitives(render.pipeline->raster_state.render_primitive, p_base_vertex, p_vertex_count, p_instance_count, p_first_instance);
 }
 
-void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets, uint64_t p_dynamic_offsets) {
+void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const RDD::BufferID *p_buffers, const uint64_t *p_offsets) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
 	render.vertex_buffers.resize(p_binding_count);
@@ -1441,9 +1426,7 @@ void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const
 		NS::UInteger dynamic_offset = 0;
 		if (buf_info->is_dynamic()) {
 			const MetalBufferDynamicInfo *dyn_buf = (const MetalBufferDynamicInfo *)buf_info;
-			uint64_t frame_idx = p_dynamic_offsets & 0x3;
-			p_dynamic_offsets >>= 2;
-			dynamic_offset = frame_idx * dyn_buf->size_bytes;
+			dynamic_offset = dyn_buf->frame_idx * dyn_buf->size_bytes;
 		}
 		if (render.vertex_buffers[i] != buf_info->buffer.get()) {
 			render.vertex_buffers[i] = buf_info->buffer.get();
@@ -1572,7 +1555,6 @@ void MDCommandBuffer::RenderState::reset() {
 	index_type = MTL::IndexTypeUInt16;
 	dirty = DIRTY_NONE;
 	uniform_sets.clear();
-	dynamic_offsets = 0;
 	uniform_set_mask = 0;
 	clear_values.clear();
 	viewports.clear();
@@ -1668,8 +1650,6 @@ void MDCommandBuffer::_compute_bind_uniform_sets() {
 	compute.uniform_set_mask = 0;
 
 	MDComputeShader *shader = compute.pipeline->shader;
-	const uint32_t dynamic_offsets = compute.dynamic_offsets;
-
 	while (set_uniforms != 0) {
 		// Find the index of the next set bit.
 		uint32_t index = (uint32_t)__builtin_ctzll(set_uniforms);
@@ -1680,10 +1660,10 @@ void MDCommandBuffer::_compute_bind_uniform_sets() {
 			continue;
 		}
 		if (shader->uses_argument_buffers) {
-			_bind_uniforms_argument_buffers_compute(set, shader, index, dynamic_offsets);
+			_bind_uniforms_argument_buffers_compute(set, shader, index);
 		} else {
 			DirectEncoder de(compute.encoder.get(), binding_cache, DirectEncoder::COMPUTE);
-			_bind_uniforms_direct(set, shader, de, index, dynamic_offsets);
+			_bind_uniforms_direct(set, shader, de, index);
 		}
 	}
 }
@@ -1693,12 +1673,11 @@ void MDCommandBuffer::ComputeState::reset() {
 	encoder.reset();
 	dirty = DIRTY_NONE;
 	uniform_sets.clear();
-	dynamic_offsets = 0;
 	uniform_set_mask = 0;
 	resource_tracker.reset();
 }
 
-void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
 	if (uint32_t new_size = p_first_set_index + p_set_count; compute.uniform_sets.size() < new_size) {
@@ -1710,19 +1689,6 @@ void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_
 
 	const MDShader *shader = (const MDShader *)p_shader.id;
 	DynamicOffsetLayout layout = shader->dynamic_offset_layout;
-
-	// Clear bits for sets being bound, then OR new values.
-	for (uint32_t i = 0; i < p_set_count && compute.dynamic_offsets != 0; i++) {
-		uint32_t set_index = p_first_set_index + i;
-		uint32_t count = layout.get_count(set_index);
-		if (count > 0) {
-			uint32_t shift = layout.get_offset_index_shift(set_index);
-			uint32_t mask = ((1u << (count * 4u)) - 1u) << shift;
-			compute.dynamic_offsets &= ~mask; // Clear this set's bits
-		}
-	}
-	compute.dynamic_offsets |= p_dynamic_offsets;
-
 	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
 
@@ -1898,7 +1864,7 @@ void MDCommandBuffer::_set_arg_buffer(MTL::RenderCommandEncoder *p_enc, const Un
 	}
 }
 
-void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
 	DEV_ASSERT(render.encoder.get() != nullptr);
 
@@ -1918,20 +1884,12 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDSha
 
 		// Update dynamic buffer GPU addresses.
 		uint64_t *ptr = (uint64_t *)alloc.ptr;
-		DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
-		uint32_t dynamic_index = 0;
-
 		for (uint32_t i : shader_set.dynamic_uniforms) {
 			const RDD::BoundUniform &uniform = p_set->uniforms[i];
 			const UniformInfo &ui = shader_set.uniforms[i];
 			const UniformInfo::Indexes &idx = ui.arg_buffer;
-
-			uint32_t shift = layout.get_offset_index_shift(p_set_index, dynamic_index);
-			dynamic_index++;
-			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
-
 			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
+			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + buf_info->frame_idx * buf_info->size_bytes;
 			*(uint64_t *)(ptr + idx.buffer) = gpu_address;
 		}
 
@@ -1941,27 +1899,14 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDSha
 	}
 }
 
-void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index) {
 	DEV_ASSERT(!p_shader->uses_argument_buffers);
 
 	const UniformSet &set = p_shader->sets[p_set_index];
-	DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
-	uint32_t dynamic_index = 0;
-
 	for (uint32_t i = 0; i < MIN(p_set->uniforms.size(), set.uniforms.size()); i++) {
 		const RDD::BoundUniform &uniform = p_set->uniforms[i];
 		const UniformInfo &ui = set.uniforms[i];
 		const UniformInfo::Indexes &indexes = ui.slot;
-
-		uint32_t frame_idx;
-		if (uniform.is_dynamic()) {
-			uint32_t shift = layout.get_offset_index_shift(p_set_index, dynamic_index);
-			dynamic_index++;
-			frame_idx = (p_dynamic_offsets >> shift) & 0xf;
-		} else {
-			frame_idx = 0;
-		}
-
 		switch (uniform.type) {
 			case RDD::UNIFORM_TYPE_SAMPLER: {
 				size_t count = uniform.ids.size();
@@ -2034,7 +1979,7 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
 			case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-				p_enc.set(buf_info->buffer.get(), frame_idx * buf_info->size_bytes, indexes.buffer);
+				p_enc.set(buf_info->buffer.get(), buf_info->frame_idx * buf_info->size_bytes, indexes.buffer);
 			} break;
 			case RDD::UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				size_t count = uniform.ids.size();
@@ -2052,7 +1997,7 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 	}
 }
 
-void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
+void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
 	DEV_ASSERT(compute.encoder);
 
@@ -2075,20 +2020,12 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_se
 
 		// Update dynamic buffer GPU addresses.
 		uint64_t *ptr = (uint64_t *)alloc.ptr;
-		DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
-		uint32_t dynamic_index = 0;
-
 		for (uint32_t i : shader_set.dynamic_uniforms) {
 			const RDD::BoundUniform &uniform = p_set->uniforms[i];
 			const UniformInfo &ui = shader_set.uniforms[i];
 			const UniformInfo::Indexes &idx = ui.arg_buffer;
-
-			uint32_t shift = layout.get_offset_index_shift(p_set_index, dynamic_index);
-			dynamic_index++;
-			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
-
 			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
+			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + buf_info->frame_idx * buf_info->size_bytes;
 			*(uint64_t *)(ptr + idx.buffer) = gpu_address;
 		}
 
