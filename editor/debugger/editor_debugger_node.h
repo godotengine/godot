@@ -148,6 +148,7 @@ protected:
 	void _remote_objects_requested(const TypedArray<uint64_t> &p_ids, int p_debugger);
 	void _remote_selection_cleared(int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
+	void _delete_node_requested(int p_debugger);
 
 	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
 	void _breakpoints_cleared_in_tree(int p_debugger);
@@ -221,6 +222,8 @@ public:
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
+
+	void request_remote_delete();
 
 	void set_debug_mute_audio(bool p_mute);
 	bool get_debug_mute_audio() const;

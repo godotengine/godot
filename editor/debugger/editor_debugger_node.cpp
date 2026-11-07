@@ -96,6 +96,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree->connect("objects_selected", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested));
 	remote_scene_tree->connect("selection_cleared", callable_mp(this, &EditorDebuggerNode::_remote_selection_cleared));
 	remote_scene_tree->connect("save_node", callable_mp(this, &EditorDebuggerNode::_save_node_requested));
+	remote_scene_tree->connect("delete_node", callable_mp(this, &EditorDebuggerNode::_delete_node_requested));
 	remote_scene_tree->connect("button_clicked", callable_mp(this, &EditorDebuggerNode::_remote_tree_button_pressed));
 	SceneTreeDock::get_singleton()->add_remote_tree_editor(remote_scene_tree);
 	SceneTreeDock::get_singleton()->connect("remote_tree_selected", callable_mp(this, &EditorDebuggerNode::request_remote_tree));
@@ -230,6 +231,7 @@ void EditorDebuggerNode::_text_editor_stack_clear(const ScriptEditorDebugger *p_
 
 void EditorDebuggerNode::_bind_methods() {
 	// LiveDebug.
+	ClassDB::bind_method("request_remote_tree", &EditorDebuggerNode::request_remote_tree);
 	ClassDB::bind_method("live_debug_create_node", &EditorDebuggerNode::live_debug_create_node);
 	ClassDB::bind_method("live_debug_instantiate_node", &EditorDebuggerNode::live_debug_instantiate_node);
 	ClassDB::bind_method("live_debug_remove_node", &EditorDebuggerNode::live_debug_remove_node);
@@ -878,6 +880,27 @@ void EditorDebuggerNode::_save_node_requested(ObjectID p_id, const String &p_fil
 	get_current_debugger()->save_node(p_id, p_file);
 }
 
+void EditorDebuggerNode::_delete_node_requested(int p_debugger) {
+	if (p_debugger != tabs->get_current_tab()) {
+		return;
+	}
+	TypedArray<uint64_t> oids = remote_scene_tree->get_selection();
+	if (oids.is_empty()) {
+		return;
+	}
+
+	ScriptEditorDebugger *dbg = get_current_debugger();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action_for_history(TTR("Delete Remote Node(s)"), EditorUndoRedoManager::REMOTE_HISTORY);
+	undo_redo->add_do_method(dbg, "live_debug_delete_remote_nodes", oids);
+	undo_redo->add_undo_method(dbg, "live_debug_restore_remote_nodes", oids);
+	undo_redo->add_do_method(this, "request_remote_tree");
+	undo_redo->add_undo_method(this, "request_remote_tree");
+	undo_redo->commit_action();
+
+	dbg->clear_inspector();
+}
+
 void EditorDebuggerNode::_breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger) {
 	if (p_debugger != tabs->get_current_tab()) {
 		return;
@@ -966,6 +989,10 @@ void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const No
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_reparent_node(p_at, p_new_place, p_new_name, p_at_pos);
 	});
+}
+
+void EditorDebuggerNode::request_remote_delete() {
+	_delete_node_requested(tabs->get_current_tab());
 }
 
 void EditorDebuggerNode::set_debug_mute_audio(bool p_mute) {

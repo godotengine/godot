@@ -320,6 +320,8 @@ protected:
 public:
 	static EditorDock *get_dock() { return dock_singleton; }
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 

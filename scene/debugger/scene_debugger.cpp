@@ -159,6 +159,12 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 		return; // Ignore undo/redo actions in Input mode, as it can result in unwanted edits.
 	}
 
+	shortcut = p_settings.get("scene_tree/delete", Ref<Shortcut>());
+	if (shortcut.is_valid() && shortcut->matches_event(k) && !k->is_echo()) {
+		EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { "scene_tree/delete" });
+		return;
+	}
+
 	String action;
 	shortcut = p_settings.get("ui_undo", Ref<Shortcut>());
 	if (shortcut.is_valid() && shortcut->matches_event(k)) {
@@ -231,6 +237,20 @@ Error SceneDebugger::_msg_save_node(const Array &p_args) {
 	Array arr;
 	arr.append(p_args[1]);
 	EngineDebugger::get_singleton()->send_message("filesystem:update_file", { arr });
+	return OK;
+}
+
+Error SceneDebugger::_msg_delete_node(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() != 1, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_delete_nodes_func(p_args[0]);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
+	return OK;
+}
+
+Error SceneDebugger::_msg_restore_node(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() != 1, ERR_INVALID_DATA);
+	LiveEditor::get_singleton()->_restore_nodes_func(p_args[0]);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
@@ -714,6 +734,8 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["setup_embedded_shortcuts"] = _msg_setup_embedded_shortcuts;
 	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
 	message_handlers["save_node"] = _msg_save_node;
+	message_handlers["delete_node"] = _msg_delete_node;
+	message_handlers["restore_node"] = _msg_restore_node;
 	message_handlers["inspect_objects"] = _msg_inspect_objects;
 	message_handlers["change_canvas_item_states"] = _msg_change_canvas_item_states;
 #ifndef DISABLE_DEPRECATED
@@ -1442,4 +1464,37 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		}
 	}
 }
+void LiveEditor::_delete_nodes_func(const Array &p_ids) {
+	for (int i = 0; i < p_ids.size(); i++) {
+		ObjectID id = p_ids[i];
+		Node *node = ObjectDB::get_instance<Node>(id);
+		if (!node || !node->get_parent() || live_edit_remote_removed_nodes.has(id)) {
+			continue;
+		}
+		RemoteRemovedNode entry;
+		entry.parent_id = node->get_parent()->get_instance_id();
+		entry.position = node->get_index(false);
+		entry.node = node;
+		node->get_parent()->remove_child(node);
+		live_edit_remote_removed_nodes[id] = entry;
+	}
+}
+
+void LiveEditor::_restore_nodes_func(const Array &p_ids) {
+	for (int i = 0; i < p_ids.size(); i++) {
+		ObjectID id = p_ids[i];
+		if (!live_edit_remote_removed_nodes.has(id)) {
+			continue;
+		}
+		RemoteRemovedNode entry = live_edit_remote_removed_nodes[id];
+		Node *parent = ObjectDB::get_instance<Node>(entry.parent_id);
+		if (!parent) {
+			continue;
+		}
+		parent->add_child(entry.node);
+		parent->move_child(entry.node, MIN(entry.position, parent->get_child_count() - 1));
+		live_edit_remote_removed_nodes.erase(id);
+	}
+}
+
 #endif // DEBUG_ENABLED

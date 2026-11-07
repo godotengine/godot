@@ -151,6 +151,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	p_session->send_message("scene:debug_mute_audio", { mute_audio });
 
 	Dictionary shortcut_settings;
+	shortcut_settings["scene_tree/delete"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("scene_tree/delete"));
 	shortcut_settings["editor/suspend_resume_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
 	shortcut_settings["editor/next_frame_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
 	shortcut_settings["canvas_item_editor/select_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/select_mode"));
@@ -1298,6 +1299,20 @@ void GameView::_notification(int p_what) {
 	}
 }
 
+void GameView::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	if (node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->is_pressed()) {
+		return;
+	}
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+	if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
+		EditorDebuggerNode::get_singleton()->request_remote_delete();
+		accept_event();
+	}
+}
+
 void GameView::set_window_layout(Ref<ConfigFile> p_layout) {
 	floating_window_rect = p_layout->get_value("GameView", "floating_window_rect", Rect2i());
 	floating_window_screen = p_layout->get_value("GameView", "floating_window_screen", -1);
@@ -1552,6 +1567,8 @@ Button *GameView::_setup_button(const StringName &p_icon, const Ref<ButtonGroup>
 
 GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
 	singleton = this;
+
+	set_process_shortcut_input(true);
 
 	game_dock = memnew(EditorDock);
 	game_dock->set_name(TTRC("Game"));
