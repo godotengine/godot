@@ -1968,30 +1968,18 @@ void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	_rescan();
 }
 
-void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
-	const String base_dir = p_path.trim_suffix("/").get_base_dir();
-	if (!DirAccess::dir_exists_absolute(base_dir)) {
-		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(base_dir);
-		if (err != OK) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create base directory: %s"), TTR(error_names[err])));
-			return;
-		}
-	}
-	_try_duplicate_item(to_duplicate, p_path);
-}
-
 void FileSystemDock::_move_confirm() {
 	if (confirm_before_move_checkbox->is_pressed()) {
 		EditorSettings::get_singleton()->set("docks/filesystem/ask_before_moving_files", false);
 		confirm_before_move_checkbox->set_pressed(false);
 	}
 
-	_move_operation_confirm(confirm_move_to_dir, confirm_to_copy);
+	_move_operation_confirm(confirm_move_to_dir, "", confirm_to_copy);
 }
 
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 	overwrite_dialog->hide();
-	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
+	_move_operation_confirm(to_move_path, "", to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
 }
 
 void FileSystemDock::_convert_dialog_action() {
@@ -2045,11 +2033,11 @@ void FileSystemDock::_convert_dialog_action() {
 	}
 }
 
-Vector<String> FileSystemDock::_check_existing() {
+Vector<String> FileSystemDock::_check_existing(const String &p_new_name_or_empty) {
 	Vector<String> conflicting_items;
 	for (const FileOrFolder &item : to_move) {
 		String old_path = item.path.trim_suffix("/");
-		String new_path = to_move_path.path_join(old_path.get_file());
+		String new_path = to_move_path.path_join(p_new_name_or_empty.is_empty() ? old_path.get_file() : p_new_name_or_empty);
 
 		if ((item.is_file && FileAccess::exists(new_path)) || (!item.is_file && DirAccess::exists(new_path))) {
 			conflicting_items.push_back(old_path);
@@ -2058,12 +2046,12 @@ Vector<String> FileSystemDock::_check_existing() {
 	return conflicting_items;
 }
 
-void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_copy, Overwrite p_overwrite) {
+void FileSystemDock::_move_operation_confirm(const String &p_to_path, const String &p_new_name_or_empty, bool p_copy, Overwrite p_overwrite) {
 	if (p_overwrite == OVERWRITE_UNDECIDED) {
 		to_move_path = p_to_path;
 		to_move_or_copy = p_copy;
 
-		Vector<String> conflicting_items = _check_existing();
+		Vector<String> conflicting_items = _check_existing(p_new_name_or_empty);
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
 			overwrite_dialog_header->set_text(vformat(
@@ -2081,9 +2069,12 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	new_paths.resize(to_move.size());
 	for (int i = 0; i < to_move.size(); i++) {
 		if (p_overwrite == OVERWRITE_RENAME) {
+			if (!p_new_name_or_empty.is_empty()) {
+				ERR_PRINT("Unexpected scenario, user defined name should never trigger an overwrite");
+			}
 			new_paths.write[i] = _get_unique_name(to_move[i], p_to_path);
 		} else {
-			new_paths.write[i] = p_to_path.path_join(to_move[i].path.trim_suffix("/").get_file());
+			new_paths.write[i] = p_to_path.path_join(p_new_name_or_empty.is_empty() ? to_move[i].path.trim_suffix("/").get_file() : p_new_name_or_empty);
 		}
 	}
 
@@ -2636,7 +2627,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 			if (to_move.size() > 0) {
 				move_dialog->config(p_selected);
-				move_dialog->popup_centered(Vector2i(260 * EDSCALE, DisplayServer::get_singleton()->screen_get_size().y * 0.6));
+				move_dialog->popup_centered();
 			}
 		} break;
 
@@ -2698,18 +2689,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				return;
 			}
 
-			to_duplicate.path = p_selected[0];
-			to_duplicate.is_file = !to_duplicate.path.ends_with("/");
-			if (to_duplicate.is_file) {
-				String name = to_duplicate.path.get_file();
-				make_dir_dialog->config(to_duplicate.path.get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
-						DirectoryCreateDialog::MODE_FILE, TTR("Duplicating file:") + " " + name, name);
-			} else {
-				String name = to_duplicate.path.trim_suffix("/").get_file();
-				make_dir_dialog->config(to_duplicate.path.trim_suffix("/").get_base_dir(), callable_mp(this, &FileSystemDock::_duplicate_operation_confirm),
-						DirectoryCreateDialog::MODE_DIRECTORY, TTR("Duplicating folder:") + " " + name, name);
-			}
-			make_dir_dialog->popup_centered();
+			move_dialog->config(p_selected, true);
+			move_dialog->popup_centered();
 		} break;
 
 		case FILE_MENU_REIMPORT: {
@@ -3330,7 +3311,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				confirm_to_copy = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
 				if (!ask_before_moving_files) {
-					_move_operation_confirm(to_dir, confirm_to_copy);
+					_move_operation_confirm(to_dir, "", confirm_to_copy);
 				} else {
 					if (confirm_to_copy) {
 						move_confirm_text = vformat(TTRN("Copy %d selected item to \"%s\"?", "Copy %d selected items to \"%s\"?", to_move.size()), to_move.size(), target_dir);
