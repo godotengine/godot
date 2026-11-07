@@ -260,12 +260,52 @@ static void setup_global_classes(const String &p_dir) {
 	}
 }
 
+static void test_lookup_global_class(const String &p_code, const StringName &p_class) {
+	EditorLanguage::LookupResult lookup;
+	const Error err = GDScriptEditorLanguage::get_singleton()->lookup_code(p_code, p_class, "res://lookup.gd", nullptr, lookup);
+
+	REQUIRE_MESSAGE(err == OK, "Could not resolve global class '", p_class, "' in:\n", p_code);
+	CHECK(lookup.type == EditorLanguage::LookupResult::Type::CLASS);
+	CHECK(lookup.class_name == p_class);
+	CHECK(lookup.script_path == ScriptServer::get_global_class_path(p_class));
+	CHECK(lookup.location == 0);
+}
+
 TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
 		init_language("modules/gdscript/tests/scripts");
 
 		setup_global_classes("modules/gdscript/tests/scripts/completion");
 		test_directory("modules/gdscript/tests/scripts/completion");
+
+		finish_language();
+	}
+
+	TEST_CASE("[Editor] Lookup global class in type context") {
+		init_language("modules/gdscript/tests/scripts");
+
+		const String class_path = "res://completion/class_b.notest.gd";
+		String base_type;
+		const String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(class_path, &base_type);
+		ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), class_path, false, false);
+
+		const String cursor = String::chr(0xFFFF);
+
+		SUBCASE("Member variable type") {
+			test_lookup_global_class("var b: B" + cursor + "\n", "B");
+		}
+
+		SUBCASE("Local variable type") {
+			test_lookup_global_class("func f():\n\tvar b: B" + cursor + " = null\n", "B");
+		}
+
+		SUBCASE("Parameter type") {
+			test_lookup_global_class("func f(b: B" + cursor + "):\n\tpass\n", "B");
+		}
+
+		SUBCASE("Return type") {
+			test_lookup_global_class("func f() -> B" + cursor + ":\n\treturn null\n", "B");
+		}
 
 		finish_language();
 	}
