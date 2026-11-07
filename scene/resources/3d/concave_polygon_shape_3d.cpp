@@ -61,7 +61,12 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> ConcavePolygonShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> ConcavePolygonShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("ConcavePolygonShape3D Cache Miss");
+
 	Vector<Color> colors;
 
 	for (int i = 0; i < faces.size(); i++) {
@@ -74,6 +79,7 @@ Ref<ArrayMesh> ConcavePolygonShape3D::get_debug_arraymesh_faces(const Color &p_m
 	a[RSE::ARRAY_VERTEX] = faces;
 	a[RSE::ARRAY_COLOR] = colors;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+	debug_mesh_faces_cache = mesh;
 
 	return mesh;
 }
