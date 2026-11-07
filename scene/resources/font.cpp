@@ -1496,6 +1496,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat("Cannot open font from file: %s.", p_path));
 
 	int base_size = 16;
+	int page_count = 0;
 	int height = 0;
 	int ascent = 0;
 	int outline = 0;
@@ -1520,6 +1521,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 		uint8_t encoding = 9;
 		while (!f->eof_reached()) {
 			uint64_t off = f->get_position();
+			ERR_FAIL_COND_V_MSG(off + block_size > f->get_length(), ERR_FILE_CORRUPT, "Invalid BMFont block size.");
 			switch (block_type) {
 				case 1: /* info */ {
 					ERR_FAIL_COND_V_MSG(block_size < 15, ERR_CANT_CREATE, "Invalid BMFont info block size.");
@@ -1580,8 +1582,8 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 					// font name
 					PackedByteArray name_data;
 					name_data.resize(block_size - 14);
-					f->get_buffer(name_data.ptrw(), block_size - 14);
-					font_name = String::utf8((const char *)name_data.ptr(), block_size - 14);
+					int64_t name_sz = f->get_buffer(name_data.ptrw(), block_size - 14);
+					font_name = String::utf8((const char *)name_data.ptr(), name_sz);
 					set_fixed_size(base_size);
 				} break;
 				case 2: /* common */ {
@@ -1589,7 +1591,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 					height = f->get_16();
 					ascent = f->get_16();
 					f->get_32(); // scale, skip
-					f->get_16(); // pages, skip
+					page_count = f->get_16();
 					uint8_t flags = f->get_8();
 					packed = (flags & 0x01);
 					ch[3] = f->get_8();
@@ -1616,6 +1618,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 					CharString cs;
 					char32_t c = f->get_8();
 					while (!f->eof_reached() && f->get_position() <= off + block_size) {
+						ERR_FAIL_COND_V_MSG(page >= page_count, ERR_CANT_CREATE, "Invalid BMFont page index.");
 						if (c == '\0') {
 							String base_dir = p_path.get_base_dir();
 							String file = base_dir.path_join(String::utf8(cs.ptr(), cs.length()));
@@ -1703,7 +1706,10 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 
 						int texture_idx = f->get_8();
 						uint8_t channel = f->get_8();
-
+						if (idx > 0x10FFFF) {
+							WARN_PRINT(vformat("Invalid character code: \"%x\"", idx));
+							continue;
+						}
 						int ch_off = 0;
 						if (packed) {
 							switch (channel) {
@@ -1757,7 +1763,16 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 								kpk.y = 0x00;
 							}
 						}
-						set_kerning(0, base_size, kpk, Vector2((int16_t)f->get_16(), 0));
+						int16_t offset = f->get_16();
+						if (kpk.x > 0x10FFFF) {
+							WARN_PRINT(vformat("Invalid character code: \"%x\"", kpk.x));
+							continue;
+						}
+						if (kpk.y > 0x10FFFF) {
+							WARN_PRINT(vformat("Invalid character code: \"%x\"", kpk.y));
+							continue;
+						}
+						set_kerning(0, base_size, kpk, Vector2(offset, 0));
 					}
 				} break;
 				default: {
@@ -1879,6 +1894,9 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				if (keys.has("base")) {
 					ascent = keys["base"].to_int();
 				}
+				if (keys.has("pages")) {
+					page_count = CLAMP(keys["pages"].to_int(), 0, 32768);
+				}
 				if (keys.has("packed")) {
 					packed = (keys["packed"].to_int() == 1);
 				}
@@ -1913,6 +1931,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 				if (keys.has("id")) {
 					page = keys["id"].to_int();
 				}
+				ERR_FAIL_COND_V_MSG(page >= page_count, ERR_CANT_CREATE, "Invalid BMFont page index.");
 				if (keys.has("file")) {
 					String base_dir = p_path.get_base_dir();
 					String file = base_dir.path_join(keys["file"]);
@@ -1983,6 +2002,10 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 							idx = 0x00;
 						}
 					}
+				}
+				if (idx > 0x10FFFF) {
+					WARN_PRINT(vformat("Invalid character code: \"%x\"", idx));
+					continue;
 				}
 				if (keys.has("x")) {
 					uv_rect.position.x = keys["x"].to_int();
@@ -2069,6 +2092,14 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 						WARN_PRINT(vformat("Invalid BMFont OEM character %x (should be 0x00-0xFF).", kpk.x));
 						kpk.y = 0x00;
 					}
+				}
+				if (kpk.x > 0x10FFFF) {
+					WARN_PRINT(vformat("Invalid character code: \"%x\"", kpk.x));
+					continue;
+				}
+				if (kpk.y > 0x10FFFF) {
+					WARN_PRINT(vformat("Invalid character code: \"%x\"", kpk.y));
+					continue;
 				}
 				if (keys.has("amount")) {
 					set_kerning(0, base_size, kpk, Vector2(keys["amount"].to_int(), 0));
