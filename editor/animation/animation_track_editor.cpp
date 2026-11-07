@@ -3521,7 +3521,8 @@ bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
 }
 
 Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
-	if (!clicking_on_name || (get_editor()->is_sorting_alphabetically() && !get_editor()->is_grouping_tracks())) {
+	bool can_reorder_tracks = get_editor()->get_track_sort_order() == AnimationTrackEditor::SORT_TRACKS_UPDATE_ORDER && !get_editor()->is_grouping_tracks();
+	if (!clicking_on_name || !can_reorder_tracks) {
 		return Variant();
 	}
 
@@ -4060,10 +4061,6 @@ Size2 AnimationTrackEditGroup::get_minimum_size() const {
 	return Vector2(0, MAX(font->get_height(font_size), icon_size.y) + separation + content_margin);
 }
 
-String AnimationTrackEditGroup::get_node_name() const {
-	return node_name;
-}
-
 void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationTrackEditGroup::_zoom_changed));
@@ -4077,6 +4074,14 @@ void AnimationTrackEditGroup::set_root(Node *p_root) {
 
 void AnimationTrackEditGroup::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
+}
+
+String AnimationTrackEditGroup::get_node_name() const {
+	return node_name;
+}
+
+Node *AnimationTrackEditGroup::get_node() const {
+	return root ? root->get_node_or_null(node) : nullptr;
 }
 
 void AnimationTrackEditGroup::_zoom_changed() {
@@ -5246,12 +5251,11 @@ void AnimationTrackEditor::_update_tracks() {
 		}
 	}
 
-	RBMap<String, VBoxContainer *> group_sort;
+	RBMap<String, VBoxContainer *> group_map;
 	LocalVector<VBoxContainer *> group_containers;
 
-	bool use_grouping = !view_group->is_pressed();
+	bool use_grouping = is_grouping_tracks();
 	bool use_filter = selected_filter->is_pressed();
-	bool use_alphabetic_sorting = alphabetic_sorting->is_pressed();
 
 	AnimationTrackEdit *selected_track_edit = nullptr;
 
@@ -5350,7 +5354,7 @@ void AnimationTrackEditor::_update_tracks() {
 			String base_path = String(animation->track_get_path(i));
 			base_path = base_path.get_slicec(':', 0); // Remove sub-path.
 
-			if (!group_sort.has(base_path)) {
+			if (!group_map.has(base_path)) {
 				AnimationTrackEditGroup *g = memnew(AnimationTrackEditGroup);
 				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
 				String name = base_path;
@@ -5373,14 +5377,13 @@ void AnimationTrackEditor::_update_tracks() {
 				VBoxContainer *vb = memnew(VBoxContainer);
 				vb->add_theme_constant_override("separation", 0);
 				vb->add_child(g);
-				group_sort[base_path] = vb;
+				group_map[base_path] = vb;
 				group_containers.push_back(vb);
 			}
 
 			track_edit->set_in_group(true);
-			group_sort[base_path]->add_child(track_edit);
 
-			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(group_sort[base_path]->get_child(0));
+			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(group_map[base_path]->get_child(0));
 			ERR_FAIL_NULL_MSG(g, "The first child of this group's VBoxContainer isn't an AnimationTrackEditGroup. Collapsing this animation group may not work.");
 			g->track_edits.push_back(track_edit);
 
@@ -5418,41 +5421,23 @@ void AnimationTrackEditor::_update_tracks() {
 	}
 
 	if (use_grouping) {
-		if (use_alphabetic_sorting) {
-			struct GroupAlphaCompare {
-				bool operator()(const VBoxContainer *p_lhs, const VBoxContainer *p_rhs) const {
-					String lhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_lhs->get_child(0))->get_node_name();
-					String rhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_rhs->get_child(0))->get_node_name();
-					return lhs_node_name < rhs_node_name;
-				}
-			};
-
-			group_containers.sort_custom<GroupAlphaCompare>();
-		}
+		_sort_groups(group_containers);
 
 		for (VBoxContainer *vb : group_containers) {
 			track_vbox->add_child(vb);
 
 			AnimationTrackEditGroup *g = Object::cast_to<AnimationTrackEditGroup>(vb->get_child(0));
 			if (g) {
+				_sort_tracks(g->track_edits);
 				for (AnimationTrackEdit *i : g->track_edits) {
+					vb->add_child(i);
 					i->set_visible(!animation->editor_is_group_folded(g->node_name));
 				}
 			}
 		}
 
 	} else {
-		if (use_alphabetic_sorting) {
-			struct TrackAlphaCompare {
-				bool operator()(const AnimationTrackEdit *p_lhs, const AnimationTrackEdit *p_rhs) const {
-					String lhs_leaf = (String)p_lhs->get_path().slice(-p_lhs->get_path().get_subname_count() - 1);
-					String rhs_leaf = (String)p_rhs->get_path().slice(-p_rhs->get_path().get_subname_count() - 1);
-					return lhs_leaf < rhs_leaf;
-				}
-			};
-
-			track_edits.sort_custom<TrackAlphaCompare>();
-		}
+		_sort_tracks(track_edits);
 
 		for (AnimationTrackEdit *track_edit : track_edits) {
 			track_vbox->add_child(track_edit);
@@ -5461,6 +5446,81 @@ void AnimationTrackEditor::_update_tracks() {
 
 	if (selected_track_edit != nullptr) {
 		selected_track_edit->grab_focus();
+	}
+}
+
+void AnimationTrackEditor::_sort_groups(LocalVector<VBoxContainer *> &p_groups) {
+	if (get_group_sort_order() == SORT_GROUPS_AS_SCENE_TREE) {
+		struct GroupTreeOrderCompare {
+			bool operator()(const VBoxContainer *p_lhs, const VBoxContainer *p_rhs) const {
+				Node *lhs_node = Object::cast_to<AnimationTrackEditGroup>(p_lhs->get_child(0))->get_node();
+				Node *rhs_node = Object::cast_to<AnimationTrackEditGroup>(p_rhs->get_child(0))->get_node();
+
+				if (lhs_node == nullptr || !lhs_node->is_inside_tree()) {
+					return false;
+				} else if (rhs_node == nullptr || !rhs_node->is_inside_tree()) {
+					return true;
+				}
+				if (rhs_node == lhs_node) {
+					return false;
+				} else if (lhs_node->is_ancestor_of(rhs_node)) {
+					return true;
+				} else if (rhs_node->is_ancestor_of(lhs_node)) {
+					return false;
+				}
+
+				int l_depth = String(lhs_node->get_path()).get_slice_count("/");
+				int r_depth = String(rhs_node->get_path()).get_slice_count("/");
+				while (l_depth > r_depth) {
+					lhs_node = lhs_node->get_parent();
+					l_depth--;
+				}
+				while (r_depth > l_depth) {
+					rhs_node = rhs_node->get_parent();
+					r_depth--;
+				}
+				while (rhs_node->get_parent() != lhs_node->get_parent()) {
+					lhs_node = lhs_node->get_parent();
+					rhs_node = rhs_node->get_parent();
+					ERR_FAIL_COND_V(lhs_node == nullptr, false);
+					ERR_FAIL_COND_V(rhs_node == nullptr, true);
+				}
+				return lhs_node->get_index() < rhs_node->get_index();
+			}
+		};
+
+		p_groups.sort_custom<GroupTreeOrderCompare>();
+	} else { // Sort Alphabetically Ascending/Descending
+		struct GroupAlphaCompare {
+			bool operator()(const VBoxContainer *p_lhs, const VBoxContainer *p_rhs) const {
+				String lhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_lhs->get_child(0))->get_node_name();
+				String rhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_rhs->get_child(0))->get_node_name();
+				return lhs_node_name.to_lower() < rhs_node_name.to_lower();
+			}
+		};
+
+		p_groups.sort_custom<GroupAlphaCompare>();
+		if (get_group_sort_order() == SORT_GROUPS_BY_NAME_DESCENDING) {
+			p_groups.reverse();
+		}
+	}
+}
+
+void AnimationTrackEditor::_sort_tracks(LocalVector<AnimationTrackEdit *, int> &p_track_edits) {
+	if (get_track_sort_order() != SORT_TRACKS_UPDATE_ORDER) {
+		struct TrackAlphaCompare {
+			bool operator()(const AnimationTrackEdit *p_lhs, const AnimationTrackEdit *p_rhs) const {
+				String lhs_leaf = (String)p_lhs->get_path().slice(-p_lhs->get_path().get_subname_count() - 1);
+				String rhs_leaf = (String)p_rhs->get_path().slice(-p_rhs->get_path().get_subname_count() - 1);
+				return lhs_leaf.to_lower() < rhs_leaf.to_lower();
+			}
+		};
+
+		p_track_edits.sort_custom<TrackAlphaCompare>();
+
+		if (get_track_sort_order() == SORT_TRACKS_BY_NAME_DESCENDING) {
+			p_track_edits.reverse();
+		}
 	}
 }
 
@@ -5621,10 +5681,9 @@ void AnimationTrackEditor::_notification(int p_what) {
 			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
 			insert_at_current_time->set_button_icon(get_editor_theme_icon(SNAME("InsertAtCurrentTime")));
 			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
-			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			function_name_toggler->set_button_icon(get_editor_theme_icon(SNAME("MemberMethod")));
 			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
-			alphabetic_sorting->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
+			sort_settings_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -5647,6 +5706,10 @@ void AnimationTrackEditor::_notification(int p_what) {
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), get_editor_theme_icon(SNAME("BezierHandlesBalanced")));
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), get_editor_theme_icon(SNAME("BezierHandlesMirror")));
 
+			if (sort_settings_popup) {
+				PanelContainer *pc = Object::cast_to<PanelContainer>(sort_settings_popup->get_child(0, true));
+				pc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu")));
+			}
 			_update_timeline_margins();
 		} break;
 
@@ -7944,20 +8007,30 @@ void AnimationTrackEditor::_toggle_function_names() {
 
 void AnimationTrackEditor::_view_group_toggle() {
 	_update_tracks();
-	view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
+	group_sort->set_disabled(!is_grouping_tracks());
 	bezier_edit->set_filtered(selected_filter->is_pressed());
 }
 
 bool AnimationTrackEditor::is_grouping_tracks() {
-	if (!view_group) {
-		return false;
+	if (!group_tracks) {
+		return true; // Enabled by default.
 	}
 
-	return !view_group->is_pressed();
+	return group_tracks->is_pressed();
 }
 
-bool AnimationTrackEditor::is_sorting_alphabetically() {
-	return alphabetic_sorting->is_pressed();
+AnimationTrackEditor::GroupSort AnimationTrackEditor::get_group_sort_order() {
+	if (!group_sort) {
+		return SORT_GROUPS_BY_NAME_ASCENDING;
+	}
+	return (GroupSort)group_sort->get_selected_id();
+}
+
+AnimationTrackEditor::TrackSort AnimationTrackEditor::get_track_sort_order() {
+	if (!track_sort) {
+		return SORT_TRACKS_UPDATE_ORDER;
+	}
+	return (TrackSort)track_sort->get_selected_id();
 }
 
 bool AnimationTrackEditor::is_function_name_pressed() {
@@ -8101,6 +8174,73 @@ void AnimationTrackEditor::_show_dummy_player_warning() {
 void AnimationTrackEditor::_show_inactive_player_warning() {
 	EditorNode::get_singleton()->show_warning(
 			TTR("AnimationPlayer is inactive. The playback will not be processed."));
+}
+
+void AnimationTrackEditor::_show_sort_settings() {
+	if (!sort_settings_popup) {
+		sort_settings_popup = memnew(Popup);
+		sort_settings_popup->set_wrap_controls(true);
+
+		PanelContainer *pc = memnew(PanelContainer);
+		pc->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("PopupMenu")));
+		sort_settings_popup->add_child(pc);
+
+		VBoxContainer *vbox = memnew(VBoxContainer);
+		pc->add_child(vbox);
+
+		group_tracks = memnew(CheckBox);
+		group_tracks->set_pressed(true);
+		group_tracks->set_text("Group Tracks by Node");
+		group_tracks->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
+		group_tracks->set_tooltip_text(TTRC("Group tracks by node or display them as plain list."));
+		vbox->add_child(group_tracks);
+
+		GridContainer *grid = memnew(GridContainer);
+		grid->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid->set_columns(2);
+		vbox->add_child(grid);
+
+		HBoxContainer *sort_group_layout = memnew(HBoxContainer);
+		sort_group_layout->add_theme_constant_override(SNAME("separation"), 0);
+		grid->add_child(sort_group_layout);
+
+		Label *prefix_label = memnew(Label);
+		prefix_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		prefix_label->set_text(vformat("   %s", String::chr(0x2514))); // character └
+		sort_group_layout->add_child(prefix_label);
+		Label *sort_group_label = memnew(Label);
+		sort_group_label->set_text(TTRC("Sort Groups"));
+		sort_group_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		sort_group_layout->add_child(sort_group_label);
+
+		group_sort = memnew(OptionButton);
+		group_sort->set_h_size_flags(SIZE_EXPAND_FILL);
+		group_sort->add_item(TTRC("By Name (Ascending)"), SORT_GROUPS_BY_NAME_ASCENDING);
+		group_sort->add_item(TTRC("By Name (Descending)"), SORT_GROUPS_BY_NAME_DESCENDING);
+		group_sort->add_item(TTRC("Same as Scene Tree"), SORT_GROUPS_AS_SCENE_TREE);
+		group_sort->select(0);
+		group_sort->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_update_tracks).unbind(1));
+		grid->add_child(group_sort);
+
+		Label *sort_tracks_label = memnew(Label);
+		sort_tracks_label->set_text(TTRC("Sort Tracks"));
+		grid->add_child(sort_tracks_label);
+
+		track_sort = memnew(OptionButton);
+		track_sort->set_h_size_flags(SIZE_EXPAND_FILL);
+		track_sort->add_item("Update (creation) Order");
+		track_sort->add_item(TTRC("By Name (Ascending)"));
+		track_sort->add_item(TTRC("By Name (Descending)"));
+		track_sort->select(0);
+		track_sort->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_update_tracks).unbind(1));
+		grid->add_child(track_sort);
+
+		add_child(sort_settings_popup);
+		sort_settings_popup->reset_size();
+	}
+	Point2i window_offset = sort_settings_popup->is_embedded() ? Point2i() : sort_settings_button->get_window()->get_position();
+	sort_settings_popup->set_position(window_offset + sort_settings_button->get_global_position() - Vector2(0, sort_settings_popup->get_size().y));
+	sort_settings_popup->popup();
 }
 
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
@@ -8389,21 +8529,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	tools_hf->add_child(selected_filter);
 
-	alphabetic_sorting = memnew(Button);
-	alphabetic_sorting->set_flat(true);
-	alphabetic_sorting->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_update_tracks));
-	alphabetic_sorting->set_toggle_mode(true);
-	alphabetic_sorting->set_tooltip_text(TTRC("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
-
-	tools_hf->add_child(alphabetic_sorting);
-
-	view_group = memnew(Button);
-	view_group->set_flat(true);
-	view_group->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
-	view_group->set_toggle_mode(true);
-	view_group->set_tooltip_text(TTRC("Group tracks by node or display them as plain list."));
-
-	tools_hf->add_child(view_group);
+	sort_settings_button = memnew(Button);
+	sort_settings_button->set_flat(true);
+	sort_settings_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_sort_settings));
+	sort_settings_button->set_tooltip_text(TTRC("Adjust the sorting and grouping of the track list."));
+	tools_hf->add_child(sort_settings_button);
 
 	insert_at_current_time = memnew(Button);
 	insert_at_current_time->set_flat(true);
