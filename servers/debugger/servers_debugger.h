@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/error/error_list.h"
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
@@ -122,7 +121,7 @@ private:
 
 	static ServersDebugger *singleton;
 
-	static Error _capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+	static bool _capture(void *p_user, const String &p_cmd, const Array &p_data);
 
 	void _send_resource_usage();
 	String _get_resource_type_from_path(const String &p_path);

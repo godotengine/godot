@@ -589,6 +589,10 @@ void SceneTree::initialize() {
 	ERR_FAIL_NULL(root);
 	MainLoop::initialize();
 	root->_set_tree(this);
+
+#ifdef DEBUG_ENABLED
+	SceneDebugger::activate();
+#endif
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {

@@ -127,7 +127,7 @@ private:
 		void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) override;
 	};
 
-	static Error _capture(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+	static bool _capture(void *p_user, const String &p_msg, const Array &p_args);
 
 public:
 	static void initialize();

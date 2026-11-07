@@ -2253,20 +2253,19 @@ void EngineDebugger::script_debug(ScriptLanguage *p_lang, bool p_can_continue, b
 	::EngineDebugger::get_script_debugger()->debug(p_lang, p_can_continue, p_is_error_breakpoint);
 }
 
-Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
+bool EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data) {
 	Callable &capture = *(Callable *)p_user;
 	if (!capture.is_valid()) {
-		return FAILED;
+		return false;
 	}
 	Variant cmd = p_cmd, data = p_data;
 	const Variant *args[2] = { &cmd, &data };
 	Variant retval;
 	Callable::CallError err;
 	capture.callp(args, 2, retval, err);
-	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, FAILED, vformat("Error calling 'capture' to callable: %s.", Variant::get_callable_error_text(capture, args, 2, err)));
-	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, FAILED, vformat("Error calling 'capture' to callable: '%s'. Return type is not bool.", String(capture)));
-	r_captured = retval;
-	return OK;
+	ERR_FAIL_COND_V_MSG(err.error != Callable::CallError::CALL_OK, false, vformat("Error calling 'capture' to callable: %s.", Variant::get_callable_error_text(capture, args, 2, err)));
+	ERR_FAIL_COND_V_MSG(retval.get_type() != Variant::BOOL, true, vformat("Error calling 'capture' to callable: '%s'. Return type is not bool.", String(capture)));
+	return retval;
 }
 
 void EngineDebugger::line_poll() {

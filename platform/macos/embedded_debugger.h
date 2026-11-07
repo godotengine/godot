@@ -52,19 +52,19 @@ private:
 	DisplayServerMacOSEmbedded *ds;
 
 	/// Message handler function for parse_message.
-	typedef Error (EmbeddedDebugger::*ParseMessageFunc)(const Array &p_args);
+	typedef void (EmbeddedDebugger::*ParseMessageFunc)(const Array &p_args);
 	static HashMap<String, ParseMessageFunc> parse_message_handlers;
 	static void _init_parse_message_handlers();
 
-	Error _msg_window_size(const Array &p_args);
-	Error _msg_mouse_set_mode(const Array &p_args);
-	Error _msg_event(const Array &p_args);
-	Error _msg_win_event(const Array &p_args);
-	Error _msg_notification(const Array &p_args);
-	Error _msg_ime_update(const Array &p_args);
-	Error _msg_ds_state(const Array &p_args);
+	void _msg_window_size(const Array &p_args);
+	void _msg_mouse_set_mode(const Array &p_args);
+	void _msg_event(const Array &p_args);
+	void _msg_win_event(const Array &p_args);
+	void _msg_notification(const Array &p_args);
+	void _msg_ime_update(const Array &p_args);
+	void _msg_ds_state(const Array &p_args);
 
 public:
-	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
+	static bool parse_message(void *p_user, const String &p_msg, const Array &p_args);
 #endif
 };

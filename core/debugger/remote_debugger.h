@@ -104,9 +104,9 @@ private:
 
 	void _send_stack_vars(List<String> &p_names, List<Variant> &p_vals, int p_type);
 
-	Error _profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
-	Error _core_capture(const String &p_cmd, const Array &p_data, bool &r_captured);
-	Error _try_capture(const String &p_name, const Array &p_data, bool &r_captured);
+	bool _profiler_capture(const String &p_cmd, const Array &p_data);
+	bool _core_capture(const String &p_cmd, const Array &p_data);
+	bool _try_capture(const String &p_name, const Array &p_data);
 
 public:
 	// Overrides
