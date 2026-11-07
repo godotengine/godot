@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/input/input_enums.h"
+#include "core/input/input_event.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -98,6 +98,7 @@ protected:
 	};
 
 	PackedStringArray connected_input_names;
+	PackedStringArray connected_output_names;
 
 public:
 	static MIDIDriver *get_singleton();
@@ -106,7 +107,11 @@ public:
 	virtual ~MIDIDriver() = default;
 
 	virtual Error open() = 0;
+	virtual Error send(Ref<InputEventMIDI> p_event) {
+		return Error::FAILED;
+	}
 	virtual void close() = 0;
 
 	PackedStringArray get_connected_inputs() const;
+	PackedStringArray get_connected_outputs() const;
 };
