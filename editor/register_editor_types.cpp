@@ -82,6 +82,7 @@
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
 #include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
 #include "editor/scene/2d/line_2d_editor_plugin.h"
+#include "editor/scene/2d/mesh_instance_2d_editor_plugin.h"
 #include "editor/scene/2d/particles_2d_editor_plugin.h"
 #include "editor/scene/2d/path_2d_editor_plugin.h"
 #include "editor/scene/2d/physics/cast_2d_editor_plugin.h"
@@ -261,6 +262,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<GPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<LightOccluder2DEditorPlugin>();
 	EditorPlugins::add_by_type<Line2DEditorPlugin>();
+	EditorPlugins::add_by_type<MeshInstance2DEditorPlugin>();
 	EditorPlugins::add_by_type<Path2DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon2DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton2DEditorPlugin>();
