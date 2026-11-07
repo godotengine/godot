@@ -65,7 +65,17 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 			r_return_value = Variant();
 			return;
 		}
+		// If this is a ref-counted object, it should be kept alive, but this shouldn't
+		// ref init it. Because if it was called inside the constructor it would lead
+		// to the object being destroyed at the end of this function.
+		bool pending_unref = obj->is_ref_counted() ? (static_cast<RefCounted *>(obj))->reference() : false;
 		r_return_value = obj->callp(method, p_arguments, p_argcount, r_call_error);
+		if (pending_unref) {
+			// We have to do the same Ref<T> would do.
+			if ((static_cast<RefCounted *>(obj))->unreference()) {
+				memdelete(obj);
+			}
+		}
 	}
 }
 
