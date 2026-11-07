@@ -527,9 +527,13 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 	}
 
 	if (c.assigned != name) { // Reset.
+		if (!c.assigned.is_empty()) {
+			animation_set[c.assigned].animation->disconnect("changed", callable_mp(this, &AnimationPlayer::update_animation_length));
+		}
 		c.current.pos = p_from_end ? end : start;
 		c.assigned = name;
 		emit_signal(SNAME("current_animation_changed"), c.assigned);
+		animation_set[name].animation->connect("changed", callable_mp(this, &AnimationPlayer::update_animation_length));
 	} else {
 		if (p_from_end && Animation::is_less_or_equal_approx(c.current.pos, start)) {
 			// Animation reset but played backwards, set position to the end.
@@ -633,6 +637,9 @@ void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.string()));
+		if (!playback.assigned.is_empty()) {
+			animation_set[playback.assigned].animation->disconnect("changed", callable_mp(this, &AnimationPlayer::update_animation_length));
+		}
 		playback.current.pos = 0;
 		playback.current.is_enabled = true;
 		playback.current.animation_name = p_animation;
@@ -640,12 +647,17 @@ void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 		playback.current.start_time = -1;
 		playback.current.end_time = -1;
 		playback.assigned = p_animation;
+		animation_set[p_animation].animation->connect("changed", callable_mp(this, &AnimationPlayer::update_animation_length));
 		emit_signal(SNAME("current_animation_changed"), playback.assigned);
 	}
 }
 
 StringName AnimationPlayer::get_assigned_animation() const {
 	return playback.assigned;
+}
+
+void AnimationPlayer::update_animation_length() {
+	playback.current.animation_length = animation_set[playback.assigned].animation->get_length();
 }
 
 void AnimationPlayer::pause() {
