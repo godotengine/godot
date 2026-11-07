@@ -82,7 +82,11 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 
 	class_tree = memnew(Tree);
 
-	TreeSortAndFilterBar *filter_bar = memnew(TreeSortAndFilterBar(class_tree, TTRC("Filter Classes")));
+	String filter_tooltip = TTRC("Filter classes by entering a part of their name.\nSearch within a single column by specifying its name as a prefix\n(\"class:\", \"count:\").\nFiltering is case-insensitive.");
+	if (p_diff_data) {
+		filter_tooltip = TTRC("Filter classes by entering a part of their name.\nSearch within a single column by specifying its name as a prefix\n(\"class:\", \"a_count:\", \"b_count:\", \"delta:\").\nFiltering is case-insensitive.");
+	}
+	TreeSortAndFilterBar *filter_bar = memnew(TreeSortAndFilterBar(class_tree, TTRC("Filter Classes"), filter_tooltip));
 	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, 0);
 
 	TreeSortAndFilterBar::SortOptionIndexes default_sort;
