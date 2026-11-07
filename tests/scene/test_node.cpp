@@ -516,6 +516,128 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	memdelete(node2);
 }
 
+TEST_CASE("[SceneTree][Node][PackedScene] Testing duplication with instanced scenes") {
+	// Create a main scene with 1 child and save it to disk
+	Node *main = memnew(Node);
+	main->set_name("Main");
+	Node *main_child = memnew(Node);
+	main_child->set_name("MainChild");
+	main->add_child(main_child);
+	main_child->set_owner(main);
+	Ref<PackedScene> packed_main_scene;
+	packed_main_scene.instantiate();
+	Error err = packed_main_scene->pack(main);
+	REQUIRE(err == OK);
+	String main_path = TestUtils::get_temp_path("main.tscn");
+	packed_main_scene->set_path(main_path);
+	err = ResourceSaver::save(packed_main_scene, main_path);
+	REQUIRE(err == OK);
+	CHECK_FALSE(main->is_inside_tree());
+	CHECK_FALSE(main_child->is_inside_tree());
+
+	// Create a subscene with 1 child and save it to disk
+	Node *subscene = memnew(Node);
+	subscene->set_name("Subscene");
+	Node *subscene_child = memnew(Node);
+	subscene_child->set_name("SubsceneChild");
+	subscene->add_child(subscene_child);
+	subscene_child->set_owner(subscene);
+	Ref<PackedScene> packed_subscene;
+	packed_subscene.instantiate();
+	err = packed_subscene->pack(subscene);
+	REQUIRE(err == OK);
+	String subscene_path = TestUtils::get_temp_path("subscene.tscn");
+	packed_subscene->set_path(subscene_path);
+	err = ResourceSaver::save(packed_subscene, subscene_path);
+	REQUIRE(err == OK);
+	CHECK_FALSE(subscene->is_inside_tree());
+	CHECK_FALSE(subscene_child->is_inside_tree());
+
+	// Instantiate both scenes
+	Node *main_instance = packed_main_scene->instantiate();
+	CHECK(main_instance->is_instance());
+	Node *main_instance_child = main_instance->get_child(0);
+	CHECK_FALSE(main_instance_child->is_instance());
+	main_instance_child->set_owner(main_instance);
+	CHECK_FALSE(main_instance->is_inside_tree());
+	CHECK_FALSE(main_instance_child->is_inside_tree());
+
+	Node *subscene_instance = packed_subscene->instantiate();
+	CHECK(subscene_instance->is_instance());
+	Node *subscene_instance_child = subscene_instance->get_child(0);
+	CHECK_FALSE(subscene_instance_child->is_instance());
+	subscene_instance_child->set_owner(subscene_instance);
+	CHECK_FALSE(subscene_instance->is_inside_tree());
+	CHECK_FALSE(subscene_instance_child->is_inside_tree());
+
+	// Build this tree and duplicate the base node:
+	// main_instance                  | owner: null_ptr
+	// `- main_instance_child         | owner: main_instance
+	// `- subscene_instance           | owner: main_instance
+	//    `- subscene_instance_child  | owner: subscene_instance
+	//       `- local_grandchild 	  | owner: main_instance
+	//    `- local_child 			  | owner: main_instance
+	Node *local_child = memnew(Node);
+	local_child->set_name("LocalChild");
+	Node *local_grandchild = memnew(Node);
+	local_grandchild->set_name("LocalGrandchild");
+
+	main_instance->add_child(subscene_instance);
+	subscene_instance->set_owner(main_instance);
+	subscene_instance->add_child(local_child);
+	local_child->set_owner(main_instance);
+	subscene_instance_child->add_child(local_grandchild);
+	local_grandchild->set_owner(main_instance);
+
+	Node *main_dup = main_instance->duplicate(Node::DUPLICATE_DEFAULT);
+	Node *main_child_dup = main_dup->get_child(0);
+	Node *subscene_dup = main_dup->get_child(1);
+	Node *subscene_child_dup = subscene_dup->get_child(0);
+	Node *local_child_dup = subscene_dup->get_child(1);
+	Node *local_grandchild_dup = subscene_child_dup->get_child(0);
+
+	HashMap<Node *, Node *> node_dups;
+	node_dups[main_dup] = main_instance;
+	node_dups[main_child_dup] = main_instance_child;
+	node_dups[subscene_dup] = subscene_instance;
+	node_dups[subscene_child_dup] = subscene_instance_child;
+	node_dups[local_child_dup] = local_child;
+	node_dups[local_grandchild_dup] = local_grandchild;
+
+	for (const KeyValue<Node *, Node *> &E : node_dups) {
+		Node *dup = E.key;
+		Node *original = E.value;
+
+		CHECK_FALSE(dup == original);
+		CHECK_EQ(dup->get_child_count(), original->get_child_count());
+		CHECK_EQ(dup->get_name(), original->get_name());
+		CHECK_FALSE(dup->is_inside_tree());
+	}
+
+	// Only nodes that were part of an instance have their owners preserved across duplication
+	CHECK_FALSE(main_dup->get_owner());
+	CHECK_EQ(main_child_dup->get_owner(), main_dup);
+	CHECK_FALSE(subscene_dup->get_owner());
+	CHECK_EQ(subscene_child_dup->get_owner(), subscene_dup);
+	CHECK_FALSE(local_child_dup->get_owner());
+	CHECK_FALSE(local_grandchild_dup->get_owner());
+
+	CHECK_EQ(main_dup->get_scene_file_path(), main_path);
+	CHECK_EQ(subscene_dup->get_scene_file_path(), subscene_path);
+
+	CHECK(main_dup->is_instance());
+	CHECK_FALSE(main_child_dup->is_instance());
+	CHECK(subscene_dup->is_instance());
+	CHECK_FALSE(subscene_child_dup->is_instance());
+	CHECK_FALSE(local_child_dup->is_instance());
+	CHECK_FALSE(local_grandchild_dup->is_instance());
+
+	memdelete(main_dup);
+	memdelete(main_instance);
+	memdelete(main);
+	memdelete(subscene);
+}
+
 TEST_CASE("[SceneTree][Node] Duplicating node with internal children") {
 	GDREGISTER_CLASS(TestNode);
 
