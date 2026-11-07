@@ -39,7 +39,7 @@
 	self->speaking = false;
 	self->synth = [[AVSpeechSynthesizer alloc] init];
 	[self->synth setDelegate:self];
-	print_verbose("Text-to-Speech: AVSpeechSynthesizer initialized.");
+	PRINT_VERBOSE("Text-to-Speech: AVSpeechSynthesizer initialized.");
 	return self;
 }
 
