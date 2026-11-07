@@ -293,6 +293,7 @@ public:
 	};
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count);
+	VkResult _texture_create_image_view(VkImageViewCreateInfo p_create_info, VkImageView *r_view);
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
