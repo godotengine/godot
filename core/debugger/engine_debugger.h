@@ -90,6 +90,7 @@ private:
 	double physics_frame_time = 0.0;
 
 	uint32_t poll_every = 0;
+	bool ready_to_poll = false;
 
 protected:
 	static inline EngineDebugger *singleton = nullptr;
@@ -124,8 +125,12 @@ public:
 	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
 	Error capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured);
+	void mark_ready_to_poll();
 
 	void line_poll() {
+		if (!ready_to_poll) {
+			return;
+		}
 		// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught.
 		if (unlikely(poll_every % 2048) == 0) {
 			poll_events(false);
