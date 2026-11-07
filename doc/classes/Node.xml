@@ -589,6 +589,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_unique_scene_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the node's ID within its owner scene file. Persists across runs, renames, and reparenting within the same scene. Returns [code]0[/code] for nodes created at runtime.
+				[b]Note:[/b] Unique within one scene file. To differentiate the node across multiple scene instances, combine it with the IDs of the [member owner] chain.
+			</description>
+		</method>
 		<method name="get_viewport" qualifiers="const">
 			<return type="Viewport" />
 			<description>
@@ -1028,6 +1035,13 @@
 			<description>
 				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
+			</description>
+		</method>
+		<method name="set_unique_scene_id">
+			<return type="void" />
+			<param index="0" name="unique_id" type="int" />
+			<description>
+				Sets the node's ID within its scene. Saved to the scene file. Meant for nodes created at runtime.
 			</description>
 		</method>
 		<method name="update_configuration_warnings">
