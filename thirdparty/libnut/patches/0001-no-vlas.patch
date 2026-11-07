@@ -1,0 +1,44 @@
+diff --git a/thirdparty/libnut/framecode.c b/thirdparty/libnut/framecode.c
+index 4a894c4693..4ecd02f8be 100644
+--- a/thirdparty/libnut/framecode.c
++++ b/thirdparty/libnut/framecode.c
+@@ -24,8 +24,9 @@ void nut_framecode_generate(const nut_stream_header_tt s[], nut_frame_table_inpu
+ 		e_consume_h264,
+ 		e_consume_video,
+ 		e_consume_vorbis,
+-	} consume[stream_count];
++	} consume[NUT_MAX_STREAMS];
+ 
++	assert(stream_count <= NUT_MAX_STREAMS);
+ 	for (i = 0; i < stream_count; i++) consume[i] = e_consume_none;
+ 
+ 	// the basic framecodes.                                                flag,  pts, stream, mul, size, count
+diff --git a/thirdparty/libnut/libnut.h b/thirdparty/libnut/libnut.h
+index d1b578dfd0..1ab18f7bd4 100644
+--- a/thirdparty/libnut/libnut.h
++++ b/thirdparty/libnut/libnut.h
+@@ -16,6 +16,8 @@
+ /// @{
+ #define NUT_VERSION 2 ///< Version of NUT specification this library implements.
+ 
++#define NUT_MAX_STREAMS 16
++
+ /// Stream class values, only one can be set. Higher values are not legal.
+ enum nut_stream_class_tt {
+ 	NUT_VIDEO_CLASS    = 0, ///< = 0
+diff --git a/thirdparty/libnut/muxer.c b/thirdparty/libnut/muxer.c
+index 1b00b10a2c..a915811c43 100644
+--- a/thirdparty/libnut/muxer.c
++++ b/thirdparty/libnut/muxer.c
+@@ -276,9 +276,10 @@ static void put_syncpoint(nut_context_tt * nut) {
+ 	uint64_t pts = 0;
+ 	int timebase = 0;
+ 	int back_ptr = 0;
+-	int keys[nut->stream_count];
++	int keys[NUT_MAX_STREAMS];
+ 	syncpoint_list_tt * s = &nut->syncpoints;
+ 
++	assert(nut->stream_count <= NUT_MAX_STREAMS);
+ 	nut->last_syncpoint = bctello(nut->o);
+ 
+ 	for (i = 0; i < nut->stream_count; i++) {
