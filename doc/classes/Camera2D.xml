@@ -10,8 +10,8 @@
 		Note that the [Camera2D] node's [member Node2D.global_position] doesn't represent the actual position of the screen, which may differ due to applied smoothing or limits. You can use [method get_screen_center_position] to get the real position. Same for the node's [member Node2D.global_rotation] which may be different due to applied rotation smoothing. You can use [method get_screen_rotation] to get the current rotation of the screen.
 	</description>
 	<tutorials>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
+		<link title="2D Platformer Demo">https://store.godotengine.org/asset/godot-foundation/platformer-2d-demo/</link>
+		<link title="2D Isometric Demo">https://store.godotengine.org/asset/godot-foundation/isometric-game-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="align">
