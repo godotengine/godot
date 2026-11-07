@@ -69,65 +69,6 @@
 
 ///////////////////////////
 
-GDScriptNativeClass::GDScriptNativeClass(const StringName &p_name) {
-	name = p_name;
-}
-
-bool GDScriptNativeClass::_get(const StringName &p_name, Variant &r_ret) const {
-	bool ok;
-	int64_t v = ClassDB::get_integer_constant(name, p_name, &ok);
-
-	if (ok) {
-		r_ret = v;
-		return true;
-	}
-
-	const MethodBind *method = ClassDB::get_method(name, p_name);
-	if (method && method->is_static()) {
-		// Native static method.
-		r_ret = Callable(this, p_name);
-		return true;
-	}
-
-	return false;
-}
-
-void GDScriptNativeClass::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("new"), &GDScriptNativeClass::_new);
-}
-
-Variant GDScriptNativeClass::_new() {
-	Object *o = instantiate();
-	ERR_FAIL_NULL_V_MSG(o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
-
-	RefCounted *rc = Object::cast_to<RefCounted>(o);
-	if (rc) {
-		return Ref<RefCounted>(rc);
-	} else {
-		return o;
-	}
-}
-
-Object *GDScriptNativeClass::instantiate() {
-	return ClassDB::instantiate_no_placeholders(name);
-}
-
-Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	if (p_method == SNAME("new")) {
-		// Constructor.
-		return Object::callp(p_method, p_args, p_argcount, r_error);
-	}
-
-	const MethodBind *method = ClassDB::get_method(name, p_method);
-	if (method && method->is_static()) {
-		// Native static method.
-		return method->call(nullptr, p_args, p_argcount, r_error);
-	}
-
-	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-	return Variant();
-}
-
 GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
 	if (likely(p_script->valid) && p_script->initializer) {
 		return p_script->initializer;
@@ -2175,7 +2116,7 @@ void GDScriptLanguage::init() {
 		if (globals.has(class_name) || !GDScriptAnalyzer::class_exists(class_name)) {
 			continue;
 		}
-		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(class_name));
+		Ref<GDScriptNativeClass> nc = memnew(CompanionObject(class_name));
 		_add_global(class_name, nc);
 	}
 
@@ -2219,7 +2160,7 @@ void GDScriptLanguage::_extension_loaded(const Ref<GDExtension> &p_extension) {
 		if (globals.has(n)) {
 			continue;
 		}
-		Ref<GDScriptNativeClass> nc = memnew(GDScriptNativeClass(n));
+		Ref<GDScriptNativeClass> nc = memnew(CompanionObject(n));
 		_add_global(n, nc);
 	}
 }
