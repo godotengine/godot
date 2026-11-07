@@ -25,13 +25,15 @@ runs:
       uses: actions/checkout@v7
       with:
         submodules: recursive
-        repository: godotengine/godot-cpp
-        ref: ${{ inputs.godot-cpp-branch }}
+        # Checking out a specific branch of my godot-cpp fork that contains fixes needed for CI to pass.
+        # Remove after the PR is merged in godot-cpp.
+        repository: raulsntos/godot-cpp
+        ref: bitfield
         path: godot-cpp
 
     - name: Extract API
       shell: sh
-      run: ${{ inputs.bin }} --headless --dump-gdextension-interface --dump-extension-api
+      run: ${{ inputs.bin }} --headless --dump-gdextension-interface-json --dump-extension-api
 
     - name: SCons Build
       shell: sh
