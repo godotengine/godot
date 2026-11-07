@@ -83,6 +83,8 @@ public:
 private:
 	RBMap<int, Item> item_map;
 
+	String source_scene;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
