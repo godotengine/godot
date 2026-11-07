@@ -53,6 +53,7 @@ class TabBar;
 class TabContainer;
 class ThemeEditorPlugin;
 class TextureRect;
+class EditorQuickOpenDialog;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);
@@ -255,9 +256,12 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	ThemeItemImportTree *import_editor_theme_items = nullptr;
 	ThemeItemImportTree *import_other_theme_items = nullptr;
 
-	LineEdit *import_another_theme_value = nullptr;
+	PanelContainer *select_theme_panel_container = nullptr;
+	Button *import_another_theme_value = nullptr;
+	Button *import_another_theme_quick_button = nullptr;
 	Button *import_another_theme_button = nullptr;
 	EditorFileDialog *import_another_theme_dialog = nullptr;
+	EditorQuickOpenDialog *quick_open_dialog = nullptr;
 
 	ConfirmationDialog *confirm_closing_dialog = nullptr;
 
@@ -286,7 +290,8 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	void _confirm_edit_theme_item();
 	void _edit_theme_item_gui_input(const Ref<InputEvent> &p_event);
 
-	void _open_select_another_theme();
+	void _open_select_another_theme(bool p_quick);
+	void _select_another_theme_cbk_deferred(const String &p_path);
 	void _select_another_theme_cbk(const String &p_path);
 
 protected:
