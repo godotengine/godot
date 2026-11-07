@@ -1294,7 +1294,7 @@
 			<param index="1" name="instances" type="RDAccelerationStructureInstance[]" />
 			<description>
 				Builds the [param tlas]. The contents of previous builds are discarded.
-				Any BLAS provided through the [member RDAccelerationStructureInstance.blas] member must already have been built using the [method blas_build] method.
+				Any BLAS provided through the [member RDAccelerationStructureInstance.blas] property must already have been built using the [method blas_build] method.
 				The number of instances can be equal to or smaller than the maximum instance count provided in the [method tlas_create] method.
 				[b]Note:[/b] Freeing or rebuilding any of the provided BLASes after this method invalidates the TLAS and requires it to be rebuilt.
 			</description>
