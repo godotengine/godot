@@ -1,0 +1,7 @@
+GH-122983
+--------------
+
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/texture_rd_create/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "format_hint" argument to texture_rd_create.
+Compatibility method registered.
