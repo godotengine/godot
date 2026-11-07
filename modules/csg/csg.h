@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/math/aabb.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
@@ -42,7 +41,6 @@ struct CSGBrush {
 	struct Face {
 		Vector3 vertices[3];
 		Vector2 uvs[3];
-		AABB aabb;
 		bool smooth = false;
 		bool invert = false;
 		int material = 0;
@@ -50,17 +48,12 @@ struct CSGBrush {
 
 	Vector<Face> faces;
 	Vector<Ref<Material>> materials;
-
-	inline void _regen_face_aabbs() {
-		for (int i = 0; i < faces.size(); i++) {
-			faces.write[i].aabb = AABB();
-			faces.write[i].aabb.position = faces[i].vertices[0];
-			faces.write[i].aabb.expand_to(faces[i].vertices[1]);
-			faces.write[i].aabb.expand_to(faces[i].vertices[2]);
-		}
-	}
+	Vector<int> ngons;
+	int num_ngons = 0;
 
 	// Create a brush from faces.
 	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
 	void copy_from(const CSGBrush &p_brush, const Transform3D &p_xform);
+	void add_ngons(const Vector<int> &p_ngons);
+	Vector<int> get_ngon_faces(int p_ngon);
 };
