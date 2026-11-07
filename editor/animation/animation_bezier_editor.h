@@ -197,6 +197,7 @@ class AnimationBezierTrackEdit : public Control {
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
+	void _draw_multiline_clipped(const Vector<Point2> &p_points, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_line_clipped(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, int p_clip_left, int p_clip_right);
 	void _draw_track(int p_track, const Color &p_color);
 
