@@ -84,6 +84,7 @@ public:
 	void enable_window_on_screen(int p_screen = -1, bool p_auto_scale = false);
 
 	void set_window_title(const String &p_title);
+	void set_window_propagate_shortcuts_to_parent(bool p_enabled);
 	void set_margins_enabled(bool p_enabled);
 	Size2 get_margins_size();
 	Size2 get_margins_top_left();

@@ -1948,6 +1948,7 @@ void GameViewPluginBase::setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcess
 
 	window_wrapper = memnew(WindowWrapper);
 	window_wrapper->set_margins_enabled(true);
+	window_wrapper->set_window_propagate_shortcuts_to_parent(false);
 
 	game_view = memnew(GameView(debugger, p_embedded_process, window_wrapper));
 	game_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
