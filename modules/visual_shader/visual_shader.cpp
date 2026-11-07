@@ -1381,6 +1381,13 @@ static const char *type_string[VisualShader::TYPE_MAX] = {
 	"texture_blit",
 };
 
+void VisualShader::_resource_path_changed() {
+	const String path = get_path();
+	for (int i = 0; i < TYPE_MAX; i++) {
+		graph[i]->set_path(path.is_empty() ? String() : path + "::graph_" + type_string[i], true);
+	}
+}
+
 bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name;
 	if (prop_name == "mode") {

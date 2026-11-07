@@ -802,6 +802,11 @@ void VisualShaderGroup::create_default_nodes() {
 	graph->add_node(output_node, Vector2(400, 150), graph->get_valid_node_id());
 }
 
+void VisualShaderGroup::_resource_path_changed() {
+	const String path = get_path();
+	graph->set_path(path.is_empty() ? String() : path + "::graph", true);
+}
+
 VisualShaderGroup::VisualShaderGroup() {
 	graph.instantiate();
 	graph->connect("graph_changed", callable_mp(this, &VisualShaderGroup::_queue_update));
