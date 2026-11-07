@@ -97,20 +97,7 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
-	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
-		const Variant current_value = get_value();
-		bool error = false;
-		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);
-		if (error) {
-			line_edit->set_text_with_selection(RTR("<Invalid>"));
-			return;
-		}
-		line_edit->set_text_with_selection(text);
-		return;
-	}
-
-	double step = get_step();
-	String value = String::num(get_value(), Math::range_step_decimals(step));
+	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TranslationServer::get_singleton()->format_number(value, _get_locale());
 	}
@@ -122,7 +109,14 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 
 	if (!line_edit->is_editing()) {
 		if (!format.is_empty()) {
-			const Variant current_value = value;
+			Variant current_value;
+			if (use_default_format) {
+				// %s format displays the number as is.
+				current_value = value;
+			} else {
+				current_value = get_value();
+			}
+
 			bool error = false;
 			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
 			if (error) {
@@ -657,6 +651,7 @@ void SpinBox::set_format_with_plural(const String &p_format, const String &p_plu
 	}
 	format = p_format;
 	plural_format = p_plural;
+	use_default_format = p_format.contains("%s");
 
 	_update_text();
 	update_configuration_warnings();
