@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/visual_instance_3d.h"
+#include "scene/3d/voxelizer.h"
 
 class CameraAttributes;
 class Mesh;
@@ -108,10 +110,6 @@ public:
 
 	};
 
-	typedef void (*BakeBeginFunc)();
-	typedef bool (*BakeStepFunc)(int, const String &);
-	typedef void (*BakeEndFunc)();
-
 private:
 	Ref<VoxelGIData> probe_data;
 
@@ -120,6 +118,7 @@ private:
 	Subdiv subdiv = SUBDIV_128;
 	Vector3 size = Vector3(20, 20, 20);
 	Ref<CameraAttributes> camera_attributes;
+	Mutex bake_mutex;
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -128,22 +127,63 @@ private:
 		Transform3D local_xform;
 	};
 
+	class BakeData : public RefCounted {
+		GDCLASS(BakeData, RefCounted);
+
+	protected:
+		static void _bind_methods();
+
+	public:
+		static const String ATTACH_VISUAL_DEBUG_NAME;
+
+		ObjectID node_id;
+		Voxelizer baker;
+		List<PlotMesh> mesh_list;
+		bool create_visual_debug;
+		float exposure_normalization;
+		Ref<VoxelGIData> probe_data;
+
+		int voxelizer_plot_bake_base = 0;
+		int voxelizer_plot_bake_total = 0;
+		Vector3 voxel_gi_size;
+
+		bool voxelizer_plot_bake_step_function(int p_current, int p_total);
+		bool voxelizer_sdf_bake_step_function(int p_current, int p_total);
+		bool is_node_freed();
+
+		void bake_begin();
+		bool bake_step(int p_step, const String &p_status);
+		void bake_end();
+		void attach_visual_debug(MultiMeshInstance3D *p_mmi);
+	};
+
+	Ref<BakeData> bake_data;
+
 	void _find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes);
 	void _debug_bake();
+	void _attach_visual_debug(MultiMeshInstance3D *p_mmi);
 
 	float _get_camera_exposure_normalization();
+
+	void bake_begin();
+	bool bake_step(int p_step, const String &p_status);
+	void bake_end();
+
+	static void bake_task(void *p_user_data);
 
 protected:
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_property) const;
+	void _bake_bind_compat_116833(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
+	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
 public:
-	static BakeBeginFunc bake_begin_function;
-	static BakeStepFunc bake_step_function;
-	static BakeEndFunc bake_end_function;
+	static const String BAKE_BEGIN_NAME;
+	static const String BAKE_STEP_NAME;
+	static const String BAKE_END_NAME;
 
 	void set_probe_data(const Ref<VoxelGIData> &p_data);
 	Ref<VoxelGIData> get_probe_data() const;
@@ -159,7 +199,7 @@ public:
 
 	Vector3i get_estimated_cell_size() const;
 
-	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
+	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false, bool p_threaded = false);
 
 	virtual AABB get_aabb() const override;
 
