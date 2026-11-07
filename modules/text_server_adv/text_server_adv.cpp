@@ -515,8 +515,9 @@ bool TextServerAdvanced::_is_locale_using_support_data(const String &p_locale) c
 }
 
 bool TextServerAdvanced::_is_locale_right_to_left(const String &p_locale) const {
-	String l = p_locale.get_slicec('_', 0);
-	if ((l == "ar") || (l == "dv") || (l == "he") || (l == "fa") || (l == "ff") || (l == "ku") || (l == "ur")) {
+	ERR_FAIL_NULL_V(TranslationServer::get_singleton(), false);
+	String l = TranslationServer::get_singleton()->standardize_locale_dict(p_locale, true)["script"];
+	if ((l == "Adlm") || (l == "Arab") || (l == "Armi") || (l == "Avst") || (l == "Cprt") || (l == "Elym") || (l == "Hatr") || (l == "Hebr") || (l == "Hung") || (l == "Inds") || (l == "Khar") || (l == "Lydi") || (l == "Mand") || (l == "Mani") || (l == "Mend") || (l == "Merc") || (l == "Mero") || (l == "Narb") || (l == "Nbat") || (l == "Nkoo") || (l == "Orkh") || (l == "Palm") || (l == "Phli") || (l == "Phlp") || (l == "Phnx") || (l == "Prti") || (l == "Rohg") || (l == "Samr") || (l == "Sarb") || (l == "Sogo") || (l == "Syrc") || (l == "Thaa") || (l == "Yezi")) {
 		return true;
 	} else {
 		return false;
