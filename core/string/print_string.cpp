@@ -117,6 +117,9 @@ void __print_line_rich(const String &p_string) {
 	// Support of those ANSI escape codes varies across terminal emulators,
 	// especially for italic and strikethrough.
 
+	const bool color = OS::get_singleton()->is_stdout_color();
+	const String url_begin = color ? "\u001b]8;;" : "";
+	const String url_end = color ? "\u001b\\" : "";
 	String output;
 	int pos = 0;
 	bool in_named_url = false;
@@ -145,40 +148,40 @@ void __print_line_rich(const String &p_string) {
 
 		String tag = p_string.substr(brk_pos + 1, brk_end - brk_pos - 1);
 		if (tag == "b") {
-			output += "\u001b[1m";
+			output += color ? "\u001b[1m" : "";
 		} else if (tag == "/b") {
-			output += "\u001b[22m";
+			output += color ? "\u001b[22m" : "";
 		} else if (tag == "i") {
-			output += "\u001b[3m";
+			output += color ? "\u001b[3m" : "";
 		} else if (tag == "/i") {
-			output += "\u001b[23m";
+			output += color ? "\u001b[23m" : "";
 		} else if (tag == "u") {
-			output += "\u001b[4m";
+			output += color ? "\u001b[4m" : "";
 		} else if (tag == "/u") {
-			output += "\u001b[24m";
+			output += color ? "\u001b[24m" : "";
 		} else if (tag == "s") {
-			output += "\u001b[9m";
+			output += color ? "\u001b[9m" : "";
 		} else if (tag == "/s") {
-			output += "\u001b[29m";
+			output += color ? "\u001b[29m" : "";
 		} else if (tag == "indent") {
 			output += "    ";
 		} else if (tag == "/indent") {
 			output += "";
 		} else if (tag == "code") {
-			output += "\u001b[2m";
+			output += color ? "\u001b[2m" : "";
 		} else if (tag == "/code") {
-			output += "\u001b[22m";
+			output += color ? "\u001b[22m" : "";
 		} else if (tag.begins_with("url=")) {
 			// Support named URLs using OSC 8 escape codes:
 			// <https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda>
 			in_named_url = true;
 			const String url_link = tag.substr(strlen("url="));
-			output += vformat("\u001b]8;;%s\u001b\\", url_link);
+			output += vformat("%s%s%s", url_begin, url_link, url_end);
 		} else if (tag == "url") {
 			output += "";
 		} else if (tag == "/url") {
 			if (in_named_url) {
-				output += "\u001b]8;;\u001b\\";
+				output += vformat("%s%s", url_begin, url_end);
 				in_named_url = false;
 			} else {
 				// While it's legal to close an URL that was never opened using OSC 8 escape codes,
@@ -196,7 +199,9 @@ void __print_line_rich(const String &p_string) {
 			output += "";
 		} else if (tag.begins_with("color=")) {
 			String color_name = tag.trim_prefix("color=");
-			if (color_name == "black") {
+			if (!color) {
+				// No-op.
+			} else if (color_name == "black") {
 				output += "\u001b[30m";
 			} else if (color_name == "red") {
 				output += "\u001b[91m";
@@ -227,10 +232,12 @@ void __print_line_rich(const String &p_string) {
 				output += vformat("\u001b[38;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
 			}
 		} else if (tag == "/color") {
-			output += "\u001b[39m";
+			output += color ? "\u001b[39m" : "";
 		} else if (tag.begins_with("bgcolor=")) {
 			String color_name = tag.trim_prefix("bgcolor=");
-			if (color_name == "black") {
+			if (!color) {
+				// No-op.
+			} else if (color_name == "black") {
 				output += "\u001b[40m";
 			} else if (color_name == "red") {
 				output += "\u001b[101m";
@@ -261,10 +268,12 @@ void __print_line_rich(const String &p_string) {
 				output += vformat("\u001b[48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
 			}
 		} else if (tag == "/bgcolor") {
-			output += "\u001b[49m";
+			output += color ? "\u001b[49m" : "";
 		} else if (tag.begins_with("fgcolor=")) {
 			String color_name = tag.trim_prefix("fgcolor=");
-			if (color_name == "black") {
+			if (!color) {
+				// No-op.
+			} else if (color_name == "black") {
 				output += "\u001b[30;40m";
 			} else if (color_name == "red") {
 				output += "\u001b[91;101m";
@@ -295,13 +304,13 @@ void __print_line_rich(const String &p_string) {
 				output += vformat("\u001b[38;2;%d;%d;%d;48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255, c.r * 255, c.g * 255, c.b * 255);
 			}
 		} else if (tag == "/fgcolor") {
-			output += "\u001b[39;49m";
+			output += color ? "\u001b[39;49m" : "";
 		} else {
 			output += "[";
 			pos = brk_pos + 1;
 		}
 	}
-	output += "\u001b[0m"; // Reset.
+	output += color ? "\u001b[0m" : ""; // Reset.
 
 	if (!CoreGlobals::print_ready) {
 		__print_fallback(output, false, false);

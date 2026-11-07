@@ -1222,65 +1222,6 @@ String OS_Unix::expand_path(const String &p_path) const {
 	return path;
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
-
-	const char *err_details;
-	if (p_rationale && p_rationale[0]) {
-		err_details = p_rationale;
-	} else {
-		err_details = p_code;
-	}
-
-	// Disable color codes if stdout is not a TTY.
-	// This prevents Godot from writing ANSI escape codes when redirecting
-	// stdout and stderr to a file.
-	const bool tty = isatty(fileno(stdout));
-	const char *gray = tty ? "\E[0;90m" : "";
-	const char *red = tty ? "\E[0;91m" : "";
-	const char *red_bold = tty ? "\E[1;31m" : "";
-	const char *yellow = tty ? "\E[0;93m" : "";
-	const char *yellow_bold = tty ? "\E[1;33m" : "";
-	const char *magenta = tty ? "\E[0;95m" : "";
-	const char *magenta_bold = tty ? "\E[1;35m" : "";
-	const char *cyan = tty ? "\E[0;96m" : "";
-	const char *cyan_bold = tty ? "\E[1;36m" : "";
-	const char *reset = tty ? "\E[0m" : "";
-
-	const char *bold_color;
-	const char *normal_color;
-	switch (p_type) {
-		case ERR_WARNING:
-			bold_color = yellow_bold;
-			normal_color = yellow;
-			break;
-		case ERR_SCRIPT:
-			bold_color = magenta_bold;
-			normal_color = magenta;
-			break;
-		case ERR_SHADER:
-			bold_color = cyan_bold;
-			normal_color = cyan;
-			break;
-		case ERR_ERROR:
-		default:
-			bold_color = red_bold;
-			normal_color = red;
-			break;
-	}
-
-	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
-	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
-
-	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-		if (!backtrace->is_empty()) {
-			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
-		}
-	}
-}
-
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
