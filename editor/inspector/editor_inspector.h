@@ -104,6 +104,7 @@ protected:
 		int vertical_separation = 0;
 		int padding = 0;
 		int inspector_property_height = 0;
+		int draw_revert_icon = 1;
 
 		Color property_color;
 		Color readonly_property_color;

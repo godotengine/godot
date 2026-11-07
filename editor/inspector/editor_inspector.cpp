@@ -261,7 +261,7 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	// Always take the revert button into account, since values are changed constantly
 	// and we don't want to update the min width every time this happens.
-	if (!is_read_only()) {
+	if (!is_read_only() && theme_cache.draw_revert_icon) {
 		ms.width += theme_cache.revert_icon->get_width() + padding_sep;
 	}
 
@@ -651,7 +651,7 @@ void EditorProperty::_notification(int p_what) {
 				check_rect = Rect2();
 			}
 
-			if (can_revert && !is_read_only()) {
+			if (can_revert && !is_read_only() && theme_cache.draw_revert_icon) {
 				const Ref<Texture2D> &reload_icon = theme_cache.revert_icon;
 				int rectw = reload_icon->get_width() + half_padding + theme_cache.horizontal_separation;
 				text_limit -= rectw;
@@ -4143,6 +4143,7 @@ void EditorInspector::initialize_property_theme(EditorProperty::ThemeCache &p_ca
 	p_cache.vertical_separation = p_control->get_theme_constant(SNAME("separation"), SNAME("EditorPropertyContainer"));
 	p_cache.padding = int(EDITOR_GET("interface/theme/base_spacing")) * 2;
 	p_cache.inspector_property_height = p_control->get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor));
+	p_cache.draw_revert_icon = p_control->get_theme_constant(SNAME("draw_revert_icon"), SNAME("EditorProperty"));
 
 	p_cache.property_color = p_control->get_theme_color(SNAME("property_color"), SNAME("EditorProperty"));
 	p_cache.readonly_property_color = p_control->get_theme_color(SNAME("readonly_color"), SNAME("EditorProperty"));
