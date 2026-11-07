@@ -182,7 +182,9 @@ void uninitialize_gdscript_module(ModuleInitializationLevel p_level) {
 		ScriptServer::unregister_language(script_language_gd);
 
 		memdelete(gdscript_cache);
+		gdscript_cache = nullptr;
 		memdelete(script_language_gd);
+		script_language_gd = nullptr;
 
 		ResourceLoader::remove_resource_format_loader(resource_loader_gd);
 		resource_loader_gd.unref();
