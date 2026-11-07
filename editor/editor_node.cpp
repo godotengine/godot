@@ -9320,7 +9320,6 @@ EditorNode::EditorNode() {
 	renderer->set_flat(true);
 	renderer->set_theme_type_variation("TopBarOptionButton");
 	renderer->set_fit_to_longest_item(false);
-	renderer->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	renderer->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	renderer->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	renderer->set_tooltip_text(TTRC("Choose a renderer.\n\nNotes:\n- On mobile platforms, the Mobile renderer is used if Forward+ is selected here.\n- On the web platform, the Compatibility renderer is always used."));
