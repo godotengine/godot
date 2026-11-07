@@ -38,6 +38,7 @@
 #include "core/variant/callable.h"
 
 Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr);
+void gd_mono_disconnect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr);
 
 class BaseSignalCallable : public CallableCustom {
 public:
