@@ -209,7 +209,7 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 
 	if (force_uncompressed) {
 		// Save uncompressed (no platform variants needed).
-		Error err_unc = StreamedTexture2D::_save_data(p_save_path + ".stex", image, save_flags, streaming_min, streaming_max);
+		Error err_unc = StreamedTexture2D::save_data(p_save_path + ".stex", image, save_flags, streaming_min, streaming_max);
 		ERR_FAIL_COND_V_MSG(err_unc != OK, err_unc, "Failed to save uncompressed HDR streamed texture.");
 	} else {
 		if (can_s3tc_bptc) {
@@ -225,7 +225,7 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 			}
 			Ref<Image> image_s3tc_bptc = image->duplicate();
 			image_s3tc_bptc->compress_from_channels(image_compress_mode, used_channels);
-			Error err_s3tc = StreamedTexture2D::_save_data(p_save_path + "." + image_compress_format + ".stex", image_s3tc_bptc, save_flags, streaming_min, streaming_max);
+			Error err_s3tc = StreamedTexture2D::save_data(p_save_path + "." + image_compress_format + ".stex", image_s3tc_bptc, save_flags, streaming_min, streaming_max);
 			ERR_FAIL_COND_V_MSG(err_s3tc != OK, err_s3tc, "Failed to save S3TC/BPTC streamed texture.");
 			if (err_s3tc == OK) {
 				r_platform_variants->push_back(image_compress_format);
@@ -245,7 +245,7 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 			}
 			Ref<Image> image_etc2_astc = image->duplicate();
 			image_etc2_astc->compress_from_channels(image_compress_mode, used_channels);
-			Error err_etc2 = StreamedTexture2D::_save_data(p_save_path + "." + image_compress_format + ".stex", image_etc2_astc, save_flags, streaming_min, streaming_max);
+			Error err_etc2 = StreamedTexture2D::save_data(p_save_path + "." + image_compress_format + ".stex", image_etc2_astc, save_flags, streaming_min, streaming_max);
 			ERR_FAIL_COND_V_MSG(err_etc2 != OK, err_etc2, "Failed to save ETC2/ASTC streamed texture.");
 			if (err_etc2 == OK) {
 				r_platform_variants->push_back(image_compress_format);
