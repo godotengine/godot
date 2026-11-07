@@ -1177,7 +1177,7 @@ void AnimationMixer::_blend_calc_total_weight() {
 		if (Math::is_zero_approx(weight)) {
 			continue;
 		}
-		Span<real_t> track_weights = ai.playback_info.track_weights != nullptr ? *ai.playback_info.track_weights : Span<real_t>();
+		Span<real_t> track_weights = ai.playback_info.track_weights;
 
 		LocalVector<TrackCache *> *t_cache = animation_track_num_to_track_cache.getptr(a);
 		ERR_CONTINUE_EDMSG(!t_cache, "No animation in cache.");
@@ -1271,7 +1271,7 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 			int blend_idx = track->blend_idx;
 			ERR_CONTINUE(blend_idx < 0 || blend_idx >= track_count);
 			real_t blend;
-			Span<real_t> track_weights = ai.playback_info.track_weights != nullptr ? *ai.playback_info.track_weights : Span<real_t>();
+			Span<real_t> track_weights = ai.playback_info.track_weights;
 			if (!track_weights.is_empty() && blend_idx < static_cast<int>(track_weights.size())) {
 				blend = track_weights[blend_idx] * weight;
 			} else {
