@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/templates/ring_buffer.h"
+#include "core/templates/vector.h"
 
 template <typename T>
 class PacketBuffer {
