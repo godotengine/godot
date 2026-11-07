@@ -45,6 +45,7 @@
 			<param index="0" name="pos" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the pixel at the given position is opaque, [code]false[/code] otherwise. Also returns [code]false[/code] if the given position is out of bounds or this sprite's [member texture] is [code]null[/code]. [param pos] is in local coordinates.
+				This method accounts for fully transparent areas of the sprite allowing pixel-perfect click detection. 
 			</description>
 		</method>
 	</methods>
@@ -54,10 +55,11 @@
 			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when centered. This is caused by their position being between pixels. To prevent this, set this property to [code]false[/code], or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
-			If [code]true[/code], texture is flipped horizontally.
+			If [code]true[/code], texture is flipped horizontally. Used to face a single sprite left or right. 
+
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
-			If [code]true[/code], texture is flipped vertically.
+			If [code]true[/code], texture is flipped vertically. Can also be used to create a simple shadow or reflection effect beneath a sprite.
 		</member>
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			Current frame to display from sprite sheet. [member hframes] or [member vframes] must be greater than 1. This property is automatically adjusted when [member hframes] or [member vframes] are changed to keep pointing to the same visual frame (same column and row). If that's impossible, this value is reset to [code]0[/code].
@@ -83,7 +85,8 @@
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			[Texture2D] object to draw.
+			The [Texture2D] resource to draw. Can accept any resource that extends [Texture2D], including [ImageTexture], [AtlasTexture], and [CompressedTexture2D]....
+			Setting to [code]null[/code] will hide the sprite without removing the node.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
 			The number of rows in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
