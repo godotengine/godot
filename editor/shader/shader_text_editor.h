@@ -56,6 +56,7 @@ private:
 	MarginContainer *surface_container = nullptr;
 	MaterialEditor *surface = nullptr;
 	Ref<ShaderMaterial> shader_material;
+	Ref<ShaderMaterial> cached_source_material;
 	Ref<Environment> env;
 	MarginContainer *error_container = nullptr;
 	TextureRect *error_icon = nullptr;
@@ -134,7 +135,6 @@ class ShaderTextEditor : public CodeEditorBase {
 	VBoxContainer *preview_vbox = nullptr;
 	Timer *preview_timer = nullptr;
 	ScrollContainer *preview_sbox = nullptr;
-	Button *update_params_btn = nullptr;
 	Button *remove_all_btn = nullptr;
 
 	bool pending_update_shader_previews = false;
