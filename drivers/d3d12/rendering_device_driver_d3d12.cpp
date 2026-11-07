@@ -2709,6 +2709,14 @@ void RenderingDeviceDriverD3D12::command_pool_free(CommandPoolID p_cmd_pool) {
 
 // ----- BUFFER -----
 
+void RenderingDeviceDriverD3D12::_check_secondary_command_buffer_support() {
+	// Secondary command buffer support is only considered for vendors where it's known the feature works as expected.
+	// Multi-threaded access by using secondary command buffers is only thread-safe if enhanced barriers are supported.
+	const bool is_amd = context_device.vendor == RenderingContextDriver::Vendor::VENDOR_AMD;
+	const bool is_nvidia = context_device.vendor == RenderingContextDriver::Vendor::VENDOR_NVIDIA;
+	secondary_command_buffers_enabled = barrier_capabilities.enhanced_barriers_supported && (is_amd || is_nvidia);
+}
+
 RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPoolID p_cmd_pool) {
 	DEV_ASSERT(p_cmd_pool);
 
@@ -2785,12 +2793,17 @@ bool RenderingDeviceDriverD3D12::command_buffer_begin(CommandBufferID p_cmd_buff
 	return true;
 }
 
-bool RenderingDeviceDriverD3D12::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass, FramebufferID p_framebuffer) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+bool RenderingDeviceDriverD3D12::command_buffer_begin_secondary(CommandBufferID p_cmd_buffer, RenderPassID p_render_pass, uint32_t p_subpass) {
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
 	HRESULT res = cmd_buf_info->cmd_allocator->Reset();
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	cmd_buf_info->render_pass_state.current_subpass = p_subpass;
+	cmd_buf_info->render_pass_state.pass_info = pass_info;
+
 	return true;
 }
 
@@ -2808,11 +2821,19 @@ void RenderingDeviceDriverD3D12::command_buffer_end(CommandBufferID p_cmd_buffer
 }
 
 void RenderingDeviceDriverD3D12::command_buffer_execute_secondary(CommandBufferID p_cmd_buffer, VectorView<CommandBufferID> p_secondary_cmd_buffers) {
-	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	_command_check_descriptor_sets(p_cmd_buffer);
+
+	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	for (uint32_t i = 0; i < p_secondary_cmd_buffers.size(); i++) {
 		const CommandBufferInfo *secondary_cb_info = (const CommandBufferInfo *)p_secondary_cmd_buffers[i].id;
 		cmd_buf_info->cmd_list->ExecuteBundle(secondary_cb_info->cmd_list.Get());
 	}
+
+	// Bundles can change the current pipeline state. Reset the current bound pipelines in case it does.
+	cmd_buf_info->graphics_pso = nullptr;
+	cmd_buf_info->graphics_root_signature_crc = 0;
+	cmd_buf_info->compute_pso = nullptr;
+	cmd_buf_info->compute_root_signature_crc = 0;
 }
 
 /********************/
@@ -6098,6 +6119,10 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 			return !barrier_capabilities.enhanced_barriers_supported;
 		case API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS:
 			return true;
+		case API_TRAIT_CAN_USE_SECONDARY_COMMAND_BUFFERS:
+			return secondary_command_buffers_enabled;
+		case API_TRAIT_SCISSOR_AND_VIEWPORT_IN_SECONDARY_COMMAND_BUFFERS:
+			return false;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
 	}
@@ -6681,6 +6706,8 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	err = _initialize_command_signatures();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	_check_secondary_command_buffer_support();
 
 	return OK;
 }
