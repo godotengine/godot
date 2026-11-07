@@ -41,6 +41,7 @@
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/inspector/editor_inspector.h"
@@ -1056,13 +1057,40 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 			}
 		}
 
-		edited_resource = dropped_resource;
+		Dictionary drag_data = p_data;
+		ObjectID source_picker_id = drag_data.get("source_picker", ObjectID());
+		EditorResourcePicker *source_picker = Object::cast_to<EditorResourcePicker>(ObjectDB::get_instance(source_picker_id));
+		EditorProperty *source_ep = source_picker ? Object::cast_to<EditorProperty>(source_picker->get_parent()) : nullptr;
+		EditorProperty *dest_ep = Object::cast_to<EditorProperty>(get_parent());
 
 		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			edited_resource = dropped_resource;
 			// `_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE)` already calls `_resource_changed()`,
 			// so we don't need to manually call it in this case.
 			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+		} else if (source_ep && dest_ep &&
+				!source_ep->is_read_only() && !dest_ep->is_read_only() &&
+				source_ep->get_edited_object() && source_ep->get_edited_object() == dest_ep->get_edited_object() &&
+				source_ep->get_edited_property() != dest_ep->get_edited_property() &&
+				source_ep->is_checkable() && !source_ep->is_checked() &&
+				String(source_ep->get_edited_property()).begins_with("theme_override_") &&
+				String(dest_ep->get_edited_property()).begins_with("theme_override_")) {
+			Ref<Resource> shared_resource = dropped_resource->duplicate();
+			ERR_FAIL_COND(shared_resource.is_null());
+			EditorNode::setup_built_in_resource(shared_resource, _get_owner_path());
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(vformat(TTR("Set %s and %s"), source_ep->get_edited_property(), dest_ep->get_edited_property()), UndoRedo::MERGE_DISABLE, dest_ep->get_edited_object());
+
+			edited_resource = shared_resource;
+			source_ep->emit_changed(source_ep->get_edited_property(), shared_resource);
+			dest_ep->emit_changed(dest_ep->get_edited_property(), shared_resource);
+			undo_redo->commit_action();
+
+			source_ep->update_property();
+			dest_ep->update_property();
 		} else {
+			edited_resource = dropped_resource;
 			_resource_changed();
 		}
 	}
