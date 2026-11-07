@@ -117,6 +117,9 @@ void EditorAudioBus::_notification(int p_what) {
 			bypass->set_button_icon(get_editor_theme_icon(SNAME("AudioBusBypass")));
 			bypass->add_theme_color_override("icon_pressed_color", bypass_color);
 			bypass->add_theme_color_override("icon_hover_pressed_color", bypass_color_darkened);
+			sends_btn->set_button_icon(get_editor_theme_icon(SNAME("ArrowLeft")));
+			sends_btn->add_theme_color_override("icon_pressed_color", bypass_color);
+			sends_btn->add_theme_color_override("icon_hover_pressed_color", bypass_color_darkened);
 
 			bus_options->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
@@ -331,6 +334,7 @@ void EditorAudioBus::update_bus() {
 	track_name->set_text(AudioServer::get_singleton()->get_bus_name(index));
 	if (is_master) {
 		track_name->set_editable(false);
+		sends_btn->set_visible(false);
 	}
 
 	solo->set_pressed(AudioServer::get_singleton()->is_bus_solo(index));
@@ -339,25 +343,52 @@ void EditorAudioBus::update_bus() {
 	// effects..
 	effects->clear();
 
-	TreeItem *root = effects->create_item();
-	for (int i = 0; i < AudioServer::get_singleton()->get_bus_effect_count(index); i++) {
-		Ref<AudioEffect> afx = AudioServer::get_singleton()->get_bus_effect(index, i);
+	{
+		TreeItem *root = effects->create_item();
+		for (int i = 0; i < AudioServer::get_singleton()->get_bus_effect_count(index); i++) {
+			Ref<AudioEffect> afx = AudioServer::get_singleton()->get_bus_effect(index, i);
 
-		TreeItem *fx = effects->create_item(root);
-		fx->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		fx->set_editable(0, true);
-		fx->set_checked(0, AudioServer::get_singleton()->is_bus_effect_enabled(index, i));
-		fx->set_text(0, afx->get_name());
-		fx->set_metadata(0, i);
+			TreeItem *fx = effects->create_item(root);
+			fx->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+			fx->set_editable(0, true);
+			fx->set_checked(0, AudioServer::get_singleton()->is_bus_effect_enabled(index, i));
+			fx->set_text(0, afx->get_name());
+			fx->set_metadata(0, i);
+		}
+
+		TreeItem *add = effects->create_item(root);
+		add->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
+		add->set_editable(0, true);
+		add->set_selectable(0, false);
+		add->set_text(0, TTR("Add Effect"));
 	}
 
-	TreeItem *add = effects->create_item(root);
-	add->set_cell_mode(0, TreeItem::CELL_MODE_CUSTOM);
-	add->set_editable(0, true);
-	add->set_selectable(0, false);
-	add->set_text(0, TTR("Add Effect"));
-
 	update_send();
+
+	{
+		for (const Variant &item : sends->get_children()) {
+			Node *child = Object::cast_to<Node>(item);
+			child->queue_free();
+		}
+
+		TypedArray<StringName> bus_sends = AudioServer::get_singleton()->get_bus_sends(index);
+		for (const StringName send_name : bus_sends) {
+			_create_send_control(send_name,
+					AudioServer::get_singleton()->is_bus_sends_mute(index, send_name),
+					AudioServer::get_singleton()->get_bus_sends_volume_db(index, send_name));
+		}
+
+		sends_count->set_visible(!bus_sends.is_empty());
+		sends_count->set_text(itos(bus_sends.size()));
+
+		sends_send->get_popup()->clear();
+		for (int i = get_index() + 1; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+			StringName send_name = AudioServer::get_singleton()->get_bus_name(i);
+			if (!bus_sends.has(send_name)) {
+				sends_send->get_popup()->add_item(send_name);
+			}
+		}
+	}
 
 	updating_bus = false;
 }
@@ -593,6 +624,72 @@ void EditorAudioBus::_send_selected(int p_which) {
 	ur->commit_action();
 
 	updating_bus = false;
+}
+
+void EditorAudioBus::_sends_send_index_pressed(int p_which) {
+	const StringName send_bus = sends_send->get_popup()->get_item_text(p_which);
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Select Audio Bus Additional Send"));
+	ur->add_do_method(AudioServer::get_singleton(), "add_bus_sends", get_index(), send_bus);
+	ur->add_undo_method(AudioServer::get_singleton(), "remove_bus_sends", get_index(), AudioServer::get_singleton()->get_bus_index(send_bus));
+	ur->add_do_method(buses, "_update_bus", get_index());
+	ur->add_undo_method(buses, "_update_bus", get_index());
+	ur->commit_action();
+}
+
+void EditorAudioBus::_sends_muted(bool p_toggled_on, const StringName &p_send_name) {
+	if (updating_bus) {
+		return;
+	}
+
+	updating_bus = true;
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Audio Bus Send Mute"));
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_sends_mute", get_index(), p_send_name, !p_toggled_on);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_sends_mute", get_index(), p_send_name, !AudioServer::get_singleton()->is_bus_sends_mute(get_index(), p_send_name));
+	ur->add_do_method(buses, "_update_bus", get_index());
+	ur->add_undo_method(buses, "_update_bus", get_index());
+	ur->commit_action();
+
+	updating_bus = false;
+}
+
+void EditorAudioBus::_sends_volume_changed(float p_value, const StringName &p_send_name) {
+	if (updating_bus) {
+		return;
+	}
+
+	updating_bus = true;
+
+	const float p_db = _normalized_volume_to_scaled_db(p_value);
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Change Audio Bus Send Volume"), UndoRedo::MERGE_ENDS);
+	ur->add_do_method(AudioServer::get_singleton(), "set_bus_sends_volume_db", get_index(), p_send_name, p_db);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_sends_volume_db", get_index(), p_send_name, AudioServer::get_singleton()->get_bus_sends_volume_db(get_index(), p_send_name));
+	ur->add_do_method(buses, "_update_bus", get_index());
+	ur->add_undo_method(buses, "_update_bus", get_index());
+	ur->commit_action();
+
+	updating_bus = false;
+}
+
+void EditorAudioBus::_delete_send(const StringName &p_send_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Remove Audio Bus Send"));
+	ur->add_do_method(AudioServer::get_singleton(), "remove_bus_sends", get_index(), p_send_name);
+	ur->add_undo_method(AudioServer::get_singleton(), "add_bus_sends", get_index(), p_send_name);
+	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_sends_mute", get_index(), p_send_name, AudioServer::get_singleton()->is_bus_sends_mute(get_index(), p_send_name));
+	ur->add_undo_method(AudioServer::get_singleton(), "get_bus_sends_volume_db", get_index(), p_send_name, AudioServer::get_singleton()->get_bus_sends_volume_db(get_index(), p_send_name));
+	ur->add_do_method(buses, "_update_bus", get_index());
+	ur->add_undo_method(buses, "_update_bus", get_index());
+	ur->commit_action();
+}
+
+void EditorAudioBus::_sends_panel_toggled() {
+	sends_panel->set_visible(!sends_panel->is_visible());
 }
 
 void EditorAudioBus::_effect_selected() {
@@ -897,6 +994,54 @@ void EditorAudioBus::_effect_rmb(const Vector2 &p_pos, MouseButton p_button) {
 	delete_effect_popup->popup();
 }
 
+void EditorAudioBus::_create_send_control(const String &p_name, bool p_muted, float p_volume_db) {
+	PanelContainer *mc = memnew(PanelContainer);
+	mc->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
+
+	VBoxContainer *vb = memnew(VBoxContainer);
+	vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	vb->add_theme_constant_override(SNAME("separation"), 0);
+	mc->add_child(vb);
+
+	HBoxContainer *title_hb = memnew(HBoxContainer);
+
+	Label *name = memnew(Label);
+	name->set_text(p_name);
+	name->set_h_size_flags(SIZE_EXPAND_FILL);
+	title_hb->add_child(name);
+
+	Button *delete_btn = memnew(Button);
+	delete_btn->set_flat(true);
+	delete_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+	title_hb->add_child(delete_btn);
+	delete_btn->connect(SNAME("pressed"), callable_mp(this, &EditorAudioBus::_delete_send).bind(p_name));
+
+	vb->add_child(title_hb);
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	vb->add_child(hb);
+
+	CheckBox *checkbox = memnew(CheckBox);
+	checkbox->set_v_size_flags(SIZE_SHRINK_CENTER);
+	checkbox->set_pressed(!p_muted);
+	hb->add_child(checkbox);
+	checkbox->connect(SNAME("toggled"), callable_mp(this, &EditorAudioBus::_sends_muted).bind(p_name));
+
+	HSlider *send_slider = memnew(HSlider);
+	send_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	send_slider->set_v_size_flags(SIZE_SHRINK_CENTER);
+	send_slider->set_min(0.0);
+	send_slider->set_max(1.0);
+	send_slider->set_step(0.0001);
+	send_slider->set_clip_contents(false);
+	send_slider->set_accessibility_name(TTRC("Volume"));
+	send_slider->set_value(Math::db_to_linear(p_volume_db));
+	hb->add_child(send_slider);
+	send_slider->connect(SNAME("value_changed"), callable_mp(this, &EditorAudioBus::_sends_volume_changed).bind(p_name));
+
+	sends->add_child(mc);
+}
+
 void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
@@ -914,9 +1059,13 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 
 	set_tooltip_text(TTR("Drag & drop to rearrange."));
 
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override("separation", 4 * EDSCALE);
+	add_child(hb);
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_theme_constant_override("separation", 4 * EDSCALE);
-	add_child(vb);
+	hb->add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -981,8 +1130,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	spacer_top->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
 	vb->add_child(spacer_top);
 
-	HBoxContainer *hb = memnew(HBoxContainer);
-	vb->add_child(hb);
+	HBoxContainer *hb2 = memnew(HBoxContainer);
+	vb->add_child(hb2);
 
 	Control *spacer_bottom = memnew(Control);
 	spacer_bottom->set_custom_minimum_size(Size2(0, 2 * EDSCALE));
@@ -1021,7 +1170,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_volume_changed));
 	slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorAudioBus::_show_value));
 	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
-	hb->add_child(slider);
+	hb2->add_child(slider);
 
 	active_bus_texture = memnew(GradientTexture2D);
 	active_gradient = memnew(Gradient);
@@ -1061,7 +1210,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_l->set_over_texture(inactive_bus_texture);
 		channel[i].vu_l->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
 		channel[i].vu_l->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
-		hb->add_child(channel[i].vu_l);
+		hb2->add_child(channel[i].vu_l);
 		channel[i].vu_l->set_min(0);
 		channel[i].vu_l->set_max(1);
 		channel[i].vu_l->set_step(0.0001);
@@ -1087,7 +1236,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_r->set_over_texture(inactive_bus_texture);
 		channel[i].vu_r->set_tint_under(EDITOR_GET("editors/audio_buses/tint_under_color"));
 		channel[i].vu_r->set_tint_over(EDITOR_GET("editors/audio_buses/tint_over_color"));
-		hb->add_child(channel[i].vu_r);
+		hb2->add_child(channel[i].vu_r);
 		channel[i].vu_r->set_min(0);
 		channel[i].vu_r->set_max(1);
 		channel[i].vu_r->set_step(0.0001);
@@ -1116,7 +1265,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		scale->add_notch(_scaled_db_to_normalized_volume(db), db, renderNotch);
 	}
 	scale->set_mouse_filter(MOUSE_FILTER_PASS);
-	hb->add_child(scale);
+	hb2->add_child(scale);
 
 	effects = memnew(Tree);
 	effects->set_accessibility_name(TTRC("Effects"));
@@ -1138,13 +1287,58 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_theme_type_variation("EditorAudioBusEffectsTree");
 	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
+	HBoxContainer *sends_hb = memnew(HBoxContainer);
+
 	send = memnew(OptionButton);
 	send->set_accessibility_name(TTRC("Send"));
 	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	send->set_clip_text(true);
 	send->set_fit_to_longest_item(false);
+	send->set_h_size_flags(SIZE_EXPAND_FILL);
 	send->connect(SceneStringName(item_selected), callable_mp(this, &EditorAudioBus::_send_selected));
-	vb->add_child(send);
+	sends_hb->add_child(send);
+
+	sends_btn = memnew(Button);
+	sends_btn->set_theme_type_variation(SceneStringName(FlatButton));
+	sends_btn->set_toggle_mode(true);
+	sends_btn->set_tooltip_text(TTR("Show Sends"));
+	sends_btn->set_focus_mode(FOCUS_ACCESSIBILITY);
+	sends_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_sends_panel_toggled));
+	sends_hb->add_child(sends_btn);
+
+	sends_count = memnew(Label);
+	sends_count->set_anchors_and_offsets_preset(LayoutPreset::PRESET_FULL_RECT);
+	sends_count->set_offset(SIDE_BOTTOM, 4 * EDSCALE);
+	sends_count->set_offset(SIDE_RIGHT, 4 * EDSCALE);
+	sends_count->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	sends_count->set_vertical_alignment(VERTICAL_ALIGNMENT_BOTTOM);
+	sends_count->add_theme_font_size_override(SNAME("font_size"), 12 * EDSCALE);
+	sends_count->set_visible(false);
+	sends_btn->add_child(sends_count);
+
+	vb->add_child(sends_hb);
+
+	sends_panel = memnew(VBoxContainer);
+	sends_panel->set_custom_minimum_size(Size2(160, 0) * EDSCALE);
+	sends_panel->set_visible(false);
+
+	sends_send = memnew(MenuButton);
+	sends_send->set_text(TTRC("Add Send"));
+	sends_send->set_flat(false);
+	sends_send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	sends_send->set_h_size_flags(SIZE_EXPAND_FILL);
+	sends_send->get_popup()->connect(SNAME("index_pressed"), callable_mp(this, &EditorAudioBus::_sends_send_index_pressed));
+	sends_panel->add_child(sends_send);
+
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	sends_panel->add_child(scroll);
+
+	sends = memnew(VBoxContainer);
+	sends->set_h_size_flags(SIZE_EXPAND_FILL);
+	scroll->add_child(sends);
+
+	hb->add_child(sends_panel);
 
 	set_focus_mode(FOCUS_CLICK);
 

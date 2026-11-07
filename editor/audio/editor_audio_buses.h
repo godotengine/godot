@@ -100,6 +100,7 @@ class EditorAudioBus : public PanelContainer {
 	float peak_indicator_range;
 
 	OptionButton *send = nullptr;
+	MenuButton *sends_send = nullptr;
 
 	PopupMenu *effect_options = nullptr;
 	PopupMenu *bus_popup = nullptr;
@@ -108,12 +109,16 @@ class EditorAudioBus : public PanelContainer {
 	Panel *audio_value_preview_box = nullptr;
 	Label *audio_value_preview_label = nullptr;
 	Timer *preview_timer = nullptr;
+	Container *sends_panel = nullptr;
+	Label *sends_count = nullptr;
 
 	Button *solo = nullptr;
 	Button *mute = nullptr;
 	Button *bypass = nullptr;
+	Button *sends_btn = nullptr;
 
 	Tree *effects = nullptr;
+	VBoxContainer *sends = nullptr;
 
 	bool updating_bus = false;
 	bool is_master;
@@ -135,12 +140,18 @@ class EditorAudioBus : public PanelContainer {
 	void _mute_toggled();
 	void _bypass_toggled();
 	void _send_selected(int p_which);
+	void _sends_panel_toggled();
+	void _sends_send_index_pressed(int p_which);
+	void _sends_muted(bool p_toggled_on, const StringName &p_send_name);
+	void _sends_volume_changed(float p_value, const StringName &p_send_name);
+	void _delete_send(const StringName &p_send_name);
 	void _effect_edited();
 	void _effect_add(int p_which);
 	void _effect_selected();
 	void _delete_effect_pressed(int p_option);
 	void _effect_rmb(const Vector2 &p_pos, MouseButton p_button);
 	void _update_visible_channels();
+	void _create_send_control(const String &p_name, bool p_muted, float p_volume_db);
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
