@@ -605,7 +605,8 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 	}
 
 	for (const KeyValue<StringName, Variant> &K : metadata) {
-		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.string());
+		const uint32_t meta_usage = K.key.string().begins_with("_") ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
+		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.string(), PROPERTY_HINT_NONE, "", meta_usage);
 		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			Object *obj = K.value;
