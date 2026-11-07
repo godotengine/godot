@@ -62,9 +62,9 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), 1));
 
 	// Front layer falls back to the project icon; middle/back use a black placeholder when unset.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_front_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_middle_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_back_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_front_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jxl,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_middle_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jxl,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_back_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jxl,*.jpg,*.jpeg"), ""));
 }
 
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformVisionOS::get_icon_infos() const {
