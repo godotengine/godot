@@ -153,7 +153,7 @@ private:
 
 			float fog_frustum_end;
 			float ambient_inject;
-			float z_far;
+			float z_near;
 			uint32_t filter_axis;
 
 			float ambient_color[3];
@@ -171,19 +171,25 @@ private:
 			float detail_spread;
 			float gi_inject;
 			uint32_t max_voxel_gi_instances;
-			uint32_t cluster_type_size;
+			uint32_t bitmasks_per_type_count;
 
 			float screen_size[2];
-			uint32_t cluster_shift;
-			uint32_t cluster_width;
+			uint32_t tile_shift;
+			uint32_t tiles_per_row;
 
-			uint32_t max_cluster_element_count_div_32;
+			uint32_t bitmasks_per_tile_count;
 			uint32_t use_temporal_reprojection;
 			uint32_t temporal_frame;
 			float temporal_blend;
 
 			float sky_border_size[2];
-			float pad[2];
+			uint32_t cluster_z_bin_count;
+			float cluster_z_bin_scale;
+
+			uint32_t cluster_z_bin_offset;
+			uint32_t pad0;
+			uint32_t pad1;
+			uint32_t pad2;
 
 			float cam_rotation[12];
 			float to_prev_view[16];
@@ -350,7 +356,6 @@ public:
 		Vector2i rb_size;
 		double time;
 		bool is_using_radiance_octmap_array;
-		uint32_t max_cluster_elements;
 		bool volumetric_fog_filter_active;
 		RID shadow_sampler;
 		RID voxel_gi_buffer;

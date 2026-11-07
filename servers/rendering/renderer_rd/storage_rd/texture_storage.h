@@ -386,11 +386,12 @@ private:
 	};
 
 	struct DecalInstanceSort {
-		float depth;
+		float nearest_depth; // view space depth of the near edge, affected by the sorting offset
+		float center_distance;
 		DecalInstance *decal_instance;
 		Decal *decal;
 		bool operator<(const DecalInstanceSort &p_sort) const {
-			return depth < p_sort.depth;
+			return nearest_depth < p_sort.nearest_depth;
 		}
 	};
 

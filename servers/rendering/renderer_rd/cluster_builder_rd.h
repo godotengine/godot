@@ -30,9 +30,9 @@
 
 #pragma once
 
+#include "core/templates/local_vector.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_debug.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/cluster_render.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/cluster_store.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
 class ClusterBuilderSharedDataRD {
@@ -87,37 +87,23 @@ class ClusterBuilderSharedDataRD {
 		RID shader_pipelines[PIPELINE_MAX];
 	} cluster_render;
 
-	struct ClusterStore {
-		struct PushConstant {
-			uint32_t cluster_render_data_size; // how much data for a single cluster takes
-			uint32_t max_render_element_count_div_32; // divided by 32
-			uint32_t cluster_screen_size[2];
-			uint32_t render_element_count_div_32; // divided by 32
-			uint32_t max_cluster_element_count_div_32; // divided by 32
-
-			uint32_t pad1;
-			uint32_t pad2;
-		};
-
-		ClusterStoreShaderRD cluster_store_shader;
-		RID shader_version;
-		RID shader;
-		RID shader_pipeline;
-	} cluster_store;
-
 	struct ClusterDebug {
 		struct PushConstant {
 			uint32_t screen_size[2];
-			uint32_t cluster_screen_size[2];
+			uint32_t screen_size_in_tiles[2];
 
-			uint32_t cluster_shift;
+			uint32_t tile_shift;
 			uint32_t cluster_type;
 			float z_near;
 			float z_far;
 
 			uint32_t orthogonal;
-			uint32_t max_cluster_element_count_div_32;
+			uint32_t bitmasks_per_tile_count;
+			uint32_t z_bin_offset;
+			uint32_t z_bin_count;
 
+			float z_bin_scale;
+			uint32_t pad0;
 			uint32_t pad1;
 			uint32_t pad2;
 		};
@@ -136,6 +122,8 @@ public:
 class ClusterBuilderRD {
 public:
 	static constexpr float WIDE_SPOT_ANGLE_THRESHOLD_DEG = 60.0f;
+	static constexpr float Z_BIN_DEPTH = 0.5f;
+	static constexpr uint32_t MAX_Z_BINS = 8192; // Upper limit on number of bins, once we reach it the bins grow deeper instead
 
 	enum LightType {
 		LIGHT_TYPE_OMNI,
@@ -162,9 +150,8 @@ private:
 
 	struct RenderElementData {
 		uint32_t type; // 0-4
-		uint32_t touches_near;
-		uint32_t touches_far;
 		uint32_t original_index;
+		uint32_t pad[2];
 		float transform_inv[12]; // Transposed transform for less space.
 		float scale[3];
 		uint32_t has_wide_spot_angle;
@@ -190,38 +177,41 @@ private:
 		DIVISOR_4,
 	};
 
-	uint32_t cluster_size = 32;
+	uint32_t tile_size = 32;
 	bool use_msaa = true;
 	Divisor divisor = DIVISOR_4;
 
 	Size2i screen_size;
-	Size2i cluster_screen_size;
+	Size2i screen_size_in_tiles;
 
 	RID framebuffer;
-	RID cluster_render_buffer; // Used for creating.
-	RID cluster_buffer; // Used for rendering.
-	RID element_buffer; // Used for storing, to hint element touches far plane or near plane.
-	uint32_t cluster_render_buffer_size = 0;
+	RID cluster_buffer; // SS tile bitmasks of every element type, followed by the Z bins of every element type.
+	RID element_buffer; // Used for rendering the element proxies.
 	uint32_t cluster_buffer_size = 0;
+	uint32_t bitmasks_per_type_count = 0; // number of bitmasks of all tiles for one element type
+
+	LocalVector<uint32_t> z_bins; // Each bin packs the lowest element index and the highest one plus one (zero is empty)
+	uint32_t z_bin_offset = 0;
+	uint32_t z_bin_count = 1;
+	float z_bin_scale = 0;
 
 	RID cluster_render_uniform_set;
-	RID cluster_store_uniform_set;
 
 	// Persistent data.
 
 	void _clear();
+	void _add_to_z_bins(ElementType p_type, uint32_t p_index, const Vector2 &p_depth_range);
+
+	static _FORCE_INLINE_ Vector3 _get_area_light_half_size(float p_radius, const Vector2 &p_area_size) {
+		return Vector3(p_area_size.x / 2.0 + p_radius, p_area_size.y / 2.0 + p_radius, p_radius / 2.0);
+	}
 
 	struct StateUniform {
 		float projection[16];
-		float inv_z_far;
-		uint32_t screen_to_clusters_shift; // Shift to obtain coordinates in block indices.
-		uint32_t cluster_screen_width;
-		uint32_t cluster_data_size; // How much data is needed for a single cluster.
-		uint32_t cluster_depth_offset;
-
-		uint32_t pad0;
-		uint32_t pad1;
-		uint32_t pad2;
+		uint32_t screen_to_tiles_shift; // Shift to obtain coordinates in block indices.
+		uint32_t tiles_per_row;
+		uint32_t bitmasks_per_tile_count; // Number of mask words for a single tile
+		uint32_t bitmasks_per_type_count; // Number of mask words all tiles of one element type take
 	};
 
 	RID state_uniform;
@@ -229,6 +219,23 @@ private:
 	RID debug_uniform_set;
 
 public:
+	static uint32_t get_z_bin_count(float p_z_near, float p_z_far) {
+		return (uint32_t)CLAMP(Math::ceil((p_z_far - p_z_near) / Z_BIN_DEPTH), 1.0f, (float)MAX_Z_BINS);
+	}
+
+	static float get_z_bin_scale(float p_z_near, float p_z_far) {
+		return MIN(1.0f / Z_BIN_DEPTH, get_z_bin_count(p_z_near, p_z_far) / (p_z_far - p_z_near));
+	}
+
+	// in view space, returned as (near, far)
+	static Vector2 get_box_depth_range(const Transform3D &p_view_space_transform, const Vector3 &p_half_size) {
+		const real_t depth = -p_view_space_transform.origin.z;
+		const real_t half_depth = p_view_space_transform.basis.rows[Vector3::AXIS_Z].abs().dot(p_half_size);
+		return Vector2(depth - half_depth, depth + half_depth);
+	}
+
+	static Vector2 get_light_depth_range(LightType p_type, const Transform3D &p_view_space_transform, float p_radius, float p_spot_aperture, const Vector2 &p_area_size);
+
 	void setup(Size2i p_screen_size, uint32_t p_max_elements, RID p_depth_buffer, RID p_depth_buffer_sampler, RID p_color_buffer);
 
 	void begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y);
@@ -255,6 +262,8 @@ public:
 
 		radius *= p_radius;
 
+		const Vector2 depth_range = get_light_depth_range(p_type, xform, radius, p_spot_aperture, p_area_size);
+
 		// Spotlights with wide angle are trated as Omni lights.
 		// If the spot angle is above the threshold, we need a sphere instead of a cone for building the clusters
 		// since the cone gets too flat/large (spot angle close to 90 degrees) or
@@ -262,16 +271,6 @@ public:
 		if (p_type == LIGHT_TYPE_OMNI || (p_type == LIGHT_TYPE_SPOT && p_spot_aperture > WIDE_SPOT_ANGLE_THRESHOLD_DEG)) {
 			radius *= shared->sphere_overfit; // Overfit icosphere.
 
-			float depth = -xform.origin.z;
-			if (camera_orthogonal) {
-				e.touches_near = (depth - radius) < z_near;
-			} else {
-				// Contains camera inside light.
-				float radius2 = radius * shared->sphere_overfit; // Overfit again for outer size (camera may be outside actual sphere but behind an icosphere vertex)
-				e.touches_near = xform.origin.length_squared() < radius2 * radius2;
-			}
-
-			e.touches_far = (depth + radius) > z_far;
 			e.scale[0] = radius;
 			e.scale[1] = radius;
 			e.scale[2] = radius;
@@ -292,36 +291,7 @@ public:
 			radius *= shared->cone_overfit; // Overfit cone.
 
 			real_t len = Math::tan(Math::deg_to_rad(p_spot_aperture)) * radius;
-			// Approximate, probably better to use a cone support function.
-			float max_d = -1e20;
-			float min_d = 1e20;
-#define CONE_MINMAX(m_x, m_y) \
-	{ \
-		float d = -xform.xform(Vector3(len * m_x, len * m_y, -radius)).z; \
-		min_d = MIN(d, min_d); \
-		max_d = MAX(d, max_d); \
-	}
 
-			CONE_MINMAX(1, 1);
-			CONE_MINMAX(-1, 1);
-			CONE_MINMAX(-1, -1);
-			CONE_MINMAX(1, -1);
-
-			if (camera_orthogonal) {
-				e.touches_near = min_d < z_near;
-			} else {
-				Plane base_plane(-xform.basis.get_column(Vector3::AXIS_Z), xform.origin);
-				float dist = base_plane.distance_to(Vector3());
-				if (dist >= 0 && dist < radius) {
-					// Contains camera inside light, check angle.
-					float angle = Math::rad_to_deg(Math::acos((-xform.origin.normalized()).dot(-xform.basis.get_column(Vector3::AXIS_Z))));
-					e.touches_near = angle < p_spot_aperture * 1.05; //overfit aperture a little due to cone overfit
-				} else {
-					e.touches_near = false;
-				}
-			}
-
-			e.touches_far = max_d > z_far;
 			e.scale[0] = len * shared->cone_overfit;
 			e.scale[1] = len * shared->cone_overfit;
 			e.scale[2] = radius;
@@ -333,7 +303,7 @@ public:
 
 			cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]++;
 		} else { /* LIGHT_TYPE_AREA */
-			Vector3 scale = Vector3(p_area_size.x / 2.0 + radius, p_area_size.y / 2.0 + radius, radius / 2.0);
+			Vector3 scale = _get_area_light_half_size(radius, p_area_size);
 
 			for (uint32_t i = 0; i < 3; i++) {
 				float s = xform.basis.rows[i].length();
@@ -341,19 +311,6 @@ public:
 				xform.basis.rows[i] /= s;
 			}
 			xform.origin -= xform.basis.get_column(Vector3::AXIS_Z) * scale.z; // translate center to center of box
-
-			float depth = -xform.origin.z;
-			float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
-
-			if (camera_orthogonal) {
-				e.touches_near = (depth - box_depth) < z_near;
-			} else {
-				// Contains camera inside box.
-				Vector3 inside = xform.xform_inv(Vector3(0, 0, 0)).abs();
-				e.touches_near = inside.x < scale.x && inside.y < scale.y && inside.z < scale.z;
-			}
-
-			e.touches_far = depth + box_depth > z_far;
 
 			e.scale[0] = scale.x;
 			e.scale[1] = scale.y;
@@ -366,6 +323,8 @@ public:
 
 			cluster_count_by_type[ELEMENT_TYPE_AREA_LIGHT]++;
 		}
+
+		_add_to_z_bins((ElementType)e.type, e.original_index, depth_range);
 
 		render_element_count++;
 	}
@@ -381,6 +340,8 @@ public:
 		RenderElementData &e = render_elements[render_element_count];
 		Transform3D xform = view_xform * p_transform;
 
+		const Vector2 depth_range = get_box_depth_range(xform, p_half_size);
+
 		// Extract scale and scale the matrix by it, makes things simpler.
 		Vector3 scale = p_half_size;
 		for (uint32_t i = 0; i < 3; i++) {
@@ -388,19 +349,6 @@ public:
 			scale[i] *= s;
 			xform.basis.rows[i] /= s;
 		};
-
-		float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
-		float depth = -xform.origin.z;
-
-		if (camera_orthogonal) {
-			e.touches_near = depth - box_depth < z_near;
-		} else {
-			// Contains camera inside box.
-			Vector3 inside = xform.xform_inv(Vector3(0, 0, 0)).abs();
-			e.touches_near = inside.x < scale.x && inside.y < scale.y && inside.z < scale.z;
-		}
-
-		e.touches_far = depth + box_depth > z_far;
 
 		e.scale[0] = scale.x;
 		e.scale[1] = scale.y;
@@ -410,6 +358,8 @@ public:
 		e.original_index = cluster_count_by_type[e.type];
 
 		RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
+
+		_add_to_z_bins((ElementType)e.type, e.original_index, depth_range);
 
 		cluster_count_by_type[e.type]++;
 		render_element_count++;
@@ -424,7 +374,7 @@ public:
 	void debug(ElementType p_element);
 
 	RID get_cluster_buffer() const;
-	uint32_t get_cluster_size() const;
+	uint32_t get_tile_size() const;
 	uint32_t get_max_cluster_elements() const;
 
 	void set_shared(ClusterBuilderSharedDataRD *p_shared);

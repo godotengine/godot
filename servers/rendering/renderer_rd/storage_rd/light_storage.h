@@ -170,11 +170,12 @@ private:
 	};
 
 	struct LightInstanceDepthSort {
-		float depth;
+		float nearest_depth; // view space depth of the near edge
+		float center_distance;
 		LightInstance *light_instance;
 		Light *light;
 		bool operator<(const LightInstanceDepthSort &p_sort) const {
-			return depth < p_sort.depth;
+			return nearest_depth < p_sort.nearest_depth;
 		}
 	};
 
