@@ -41,15 +41,18 @@ class AudioDriverOpenSL : public AudioDriver {
 	Mutex mutex;
 
 	enum {
-		BUFFER_COUNT = 2
+		BUFFER_COUNT = 2,
+		DEFAULT_BUFFER_SIZE = 1024,
+		MIN_BUFFER_SIZE = 32,
 	};
 
 	bool pause = false;
 
-	uint32_t buffer_size = 0;
+	uint32_t buffer_size = DEFAULT_BUFFER_SIZE;
 	int16_t *buffers[BUFFER_COUNT] = {};
 	int32_t *mixdown_buffer = nullptr;
 	int last_free = 0;
+	int mix_rate = DEFAULT_MIX_RATE;
 
 	Vector<int16_t> rec_buffer;
 
@@ -86,6 +89,8 @@ class AudioDriverOpenSL : public AudioDriver {
 	Error init_input_device();
 
 public:
+	static const int DEFAULT_MIX_RATE = SL_SAMPLINGRATE_44_1 / 1000;
+
 	virtual const char *get_name() const override {
 		return "Android";
 	}
