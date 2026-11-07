@@ -1,0 +1,5 @@
+Validate extension JSON: Error: Field 'classes/Node3D/methods/get_global_transform_interpolated': is_const changed value in new API, from false to true.
+
+Change get_global_transform_interpolated() to be const;
+Since the old method _get_global_transform_interpolated() that prevented the code from being made const have long been omitted at compile time without causing any issues, the decision was made to remove it and make get_global_transform_interpolated() const.
+Compatibility method registered.

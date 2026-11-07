@@ -197,7 +197,6 @@ protected:
 
 	void _set_vi_visible(bool p_visible) { data.vi_visible = p_visible; }
 	bool _is_vi_visible() const { return data.vi_visible; }
-	Transform3D _get_global_transform_interpolated(real_t p_interpolation_fraction);
 	const Transform3D &_get_cached_global_transform_interpolated() const { return data.global_transform_interpolated; }
 	void _disable_client_physics_interpolation();
 
@@ -224,6 +223,11 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Transform3D _get_global_transform_interpolated_bind_compat_125137();
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -280,7 +284,7 @@ public:
 	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;
 
-	Transform3D get_global_transform_interpolated();
+	Transform3D get_global_transform_interpolated() const;
 	bool update_client_physics_interpolation_data();
 
 #ifdef TOOLS_ENABLED
