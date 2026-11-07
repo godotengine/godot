@@ -1139,8 +1139,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 			int i = 0;
 			while (remaining) {
 				// Animation speed may be changed by animation_finished or frame_changed signals.
-				double speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
-				double abs_speed = Math::abs(speed);
+				double speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale;
 
 				if (speed == 0) {
 					return; // Do nothing.
@@ -1150,6 +1149,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 				int fc = frames->get_frame_count(animation);
 
 				int last_frame = fc - 1;
+				double progress_end = 1.0;
 				if (!std::signbit(speed)) {
 					// Forwards.
 					if (frame_progress >= 1.0) {
@@ -1177,11 +1177,9 @@ void AnimatedSprite3D::_notification(int p_what) {
 						_queue_redraw();
 						emit_signal(SceneStringName(frame_changed));
 					}
-					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
-					frame_progress += to_process * abs_speed;
-					remaining -= to_process;
 				} else {
 					// Backwards.
+					progress_end = 0.0;
 					if (frame_progress <= 0) {
 						if (frame <= 0) {
 							SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(animation);
@@ -1207,10 +1205,12 @@ void AnimatedSprite3D::_notification(int p_what) {
 						_queue_redraw();
 						emit_signal(SceneStringName(frame_changed));
 					}
-					double to_process = MIN(frame_progress / abs_speed, remaining);
-					frame_progress -= to_process * abs_speed;
-					remaining -= to_process;
 				}
+
+				double frame_speed = speed * frame_speed_scale;
+				double to_process = MIN((progress_end - frame_progress) / frame_speed, remaining);
+				frame_progress += to_process * frame_speed;
+				remaining -= to_process;
 
 				i++;
 				if (i > fc) {
