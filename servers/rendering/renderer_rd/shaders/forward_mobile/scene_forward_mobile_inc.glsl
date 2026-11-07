@@ -233,6 +233,10 @@ bool sc_material_feedback() {
 	return ((sc_packed_2() >> 1) & 1U) != 0;
 }
 
+bool sc_use_directional_projector() {
+	return ((sc_packed_2() >> 2) & 1U) != 0;
+}
+
 layout(constant_id = 3) const bool sc_emulate_point_size = false;
 
 #ifdef POINT_SIZE_USED
