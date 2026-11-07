@@ -3436,9 +3436,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			return;
 		}
 		Vector2 pos = c->get_global_transform_with_canvas().affine_inverse().xform(p_pos);
-		if (c->is_stretch_enabled()) {
-			pos /= c->get_stretch_shrink();
-		}
+		pos = c->get_child_viewport_transform().affine_inverse().xform(pos);
 
 		for (int i = 0; i < c->get_child_count(); i++) {
 			SubViewport *v = Object::cast_to<SubViewport>(c->get_child(i));
@@ -5767,10 +5765,7 @@ Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position)
 	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
-		if (c->is_stretch_enabled()) {
-			container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
-		}
-		container_transform = c->get_viewport()->get_screen_transform_internal(p_absolute_position) * c->get_global_transform_with_canvas() * container_transform;
+		container_transform = c->get_viewport()->get_screen_transform_internal(p_absolute_position) * c->get_global_transform_with_canvas() * c->get_child_viewport_transform();
 	} else {
 		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
 	}
@@ -5786,11 +5781,7 @@ Transform2D SubViewport::get_popup_base_transform() const {
 	if (!c) {
 		return get_final_transform();
 	}
-	Transform2D container_transform;
-	if (c->is_stretch_enabled()) {
-		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
-	}
-	return c->get_screen_transform() * container_transform * get_final_transform();
+	return c->get_screen_transform() * c->get_child_viewport_transform() * get_final_transform();
 }
 
 Viewport *SubViewport::get_section_root_viewport() const {
