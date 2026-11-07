@@ -1,0 +1,3 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 2: A void function cannot return a value.
+>> ERROR at line 5: Non-void function should return a value.

@@ -2585,6 +2585,10 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	GDScriptParser::DataType result;
 
 	if (p_return->return_value == nullptr) {
+		if (has_expected_type && expected_type.builtin_type != Variant::NIL) {
+			push_error("Non-void function should return a value.", p_return);
+		}
+
 		// Return type is `null` by default.
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 		result.kind = GDScriptParser::DataType::BUILTIN;
@@ -2609,7 +2613,8 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
 #endif // DEBUG_ENABLED
 				mark_node_unsafe(p_return);
-			} else if (!is_call) {
+			}
+			if (!is_call || return_type.builtin_type != Variant::NIL) {
 				push_error("A void function cannot return a value.", p_return);
 			}
 			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
