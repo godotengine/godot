@@ -86,6 +86,7 @@ public:
 	Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) override;
 	void set_connection(const Ref<StreamPeer> &p_connection) override;
 	Ref<StreamPeer> get_connection() const override;
+	void disconnect_from_host() override;
 	void close() override;
 	Status get_status() const override;
 	bool has_response() const override;
