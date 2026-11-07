@@ -813,6 +813,40 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 		RD::get_singleton()->draw_command_begin_label("Edge Aware Blur");
 
+		// DOWNSAMPLE TO HALF-RES
+		{
+			ssil.upsample_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
+			ssil.upsample_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
+			ssil.upsample_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
+
+			RID upsample_shader = ssil.upsample_shader.version_get_shader(ssil.upsample_shader_version, 0);
+
+			RID source_blur_uniform_set;
+			{
+				RD::Uniform u_raw_ssil_output;
+				u_raw_ssil_output.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+				u_raw_ssil_output.binding = 1;
+				u_raw_ssil_output.append_id(default_sampler);
+				u_raw_ssil_output.append_id(dest_img);
+
+				RD::Uniform u_downsampled(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_horiz_qr }));
+
+				source_blur_uniform_set = uniform_set_cache->get_cache(upsample_shader, 0, u_downsampled, u_raw_ssil_output);
+			}
+
+			RID buffer_uniform_set;
+			{
+				buffer_uniform_set = uniform_set_cache->get_cache(upsample_shader, 1, u_edges);
+			}
+
+			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_UPSAMPLE].get_rid());
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_blur_uniform_set, 0);
+			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffer_uniform_set, 1);
+			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.upsample_push_constant, sizeof(SSILUpsamplePushConstant));
+			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.half_buffer_width, p_ssil_buffers.half_buffer_height, 1);
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		}
+
 		RID buffers_uniform_set;
 		{
 			buffers_uniform_set = uniform_set_cache->get_cache(blur_shader, 2, u_depth_texture_view);
@@ -927,7 +961,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 
-		// UPSAMPLE FROM QUARTER RES
+		// UPSAMPLE FROM QUARTER-RES
 		if(ssil_half_size) {
 			ssil.upsample_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
 			ssil.upsample_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
@@ -1008,7 +1042,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);	
+			RD::get_singleton()->compute_list_add_barrier(compute_list);
 		}
 
 		RD::get_singleton()->draw_command_end_label(); // blur
