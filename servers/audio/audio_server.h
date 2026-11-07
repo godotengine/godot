@@ -106,6 +106,9 @@ private:
 		struct Effect {
 			Ref<AudioEffect> effect;
 			bool enabled = false;
+			float wet_mix = 0.0f;
+
+			static constexpr float CROSSFADE_DURATION_SECONDS = 0.005f; // 5 ms crossfade
 #ifdef DEBUG_ENABLED
 			uint64_t prof_time = 0;
 #endif
