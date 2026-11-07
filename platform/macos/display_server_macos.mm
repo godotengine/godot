@@ -2555,6 +2555,9 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
 			wd.extend_to_title = p_enabled;
+			if (wd.borderless) {
+				return;
+			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
 
@@ -2589,6 +2592,9 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 				if (wd.layered_window) {
 					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
+				if (wd.extend_to_title) {
+					window_set_custom_window_buttons(wd, false);
+				}
 			} else {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
@@ -2603,6 +2609,9 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 					NSRect frameRect = [wd.window_object frame];
 					[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
 					[wd.window_object setFrame:frameRect display:NO];
+				}
+				if (wd.extend_to_title) {
+					window_set_custom_window_buttons(wd, true);
 				}
 			}
 			_update_window_style(wd, p_window);
@@ -2697,7 +2706,7 @@ bool DisplayServerMacOS::window_get_flag(DisplayServerEnums::WindowFlags p_flag,
 			return wd.resize_disabled;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE: {
-			return [wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView;
+			return wd.extend_to_title;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
