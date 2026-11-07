@@ -38,10 +38,25 @@
 				Returns the [NodePath] of the baked object at index [param user_idx].
 			</description>
 		</method>
+		<method name="is_preview_bake" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this baked lightmap is the result of a [i]preview bake[/i], [code]false[/code] otherwise. See also [method set_preview_bake].
+				See the [LightmapGI] class description for more information.
+			</description>
+		</method>
 		<method name="is_using_spherical_harmonics" qualifiers="const">
 			<return type="bool" />
 			<description>
 				If [code]true[/code], lightmaps were baked with directional information. See also [member LightmapGI.directional].
+			</description>
+		</method>
+		<method name="set_preview_bake">
+			<return type="void" />
+			<param index="0" name="preview_bake" type="bool" />
+			<description>
+				If [code]true[/code], the baked lightmap is considered to be a [i]preview bake[/i]. This is set to [code]true[/code] by the editor when using the [b]Preview Bake[/b] button at the top of the 3D editor, and [code]false[/code] when using the [b]Bake Lightmaps[/b] button. This method can also be used by plugins. See also [method is_preview_bake].
+				See the [LightmapGI] class description for more information.
 			</description>
 		</method>
 		<method name="set_uses_spherical_harmonics">
