@@ -177,7 +177,7 @@
 	</constructors>
 	<methods>
 		<method name="connect">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="flags" type="int" default="0" />
 			<description>

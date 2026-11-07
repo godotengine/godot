@@ -48,6 +48,7 @@ class MethodBind {
 	bool _const = false;
 	bool _returns = false;
 	bool _returns_raw_obj_ptr = false;
+	Variant::PTRBuiltInMethod variant_ptrcall = nullptr;
 
 protected:
 	Variant::Type *argument_types = nullptr;
@@ -106,6 +107,8 @@ public:
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0) | (is_static() ? METHOD_FLAG_STATIC : 0); }
 	_FORCE_INLINE_ StringName get_instance_class() const { return instance_class; }
 	_FORCE_INLINE_ void set_instance_class(const StringName &p_class) { instance_class = p_class; }
+	_FORCE_INLINE_ void set_variant_ptrcall(Variant::PTRBuiltInMethod p_ptrcall) { variant_ptrcall = p_ptrcall; }
+	_FORCE_INLINE_ Variant::PTRBuiltInMethod get_variant_ptrcall() const { return variant_ptrcall; }
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; }
 
@@ -113,10 +116,10 @@ public:
 	virtual bool is_valid() const { return true; }
 #endif
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
-	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const = 0;
+	virtual Variant call(void *p_caller, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const = 0;
+	virtual void validated_call(void *p_caller, const Variant **p_args, Variant *r_ret) const = 0;
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const = 0;
+	virtual void ptrcall(void *p_caller, const void **p_args, void *r_ret) const = 0;
 
 	StringName get_name() const;
 	void set_name(const StringName &p_name);
@@ -166,11 +169,11 @@ public:
 	}
 #endif // DEBUG_ENABLED
 
-	virtual void validated_call(Object *p_object, const Variant **p_args, Variant *r_ret) const override {
+	virtual void validated_call(void *p_caller, const Variant **p_args, Variant *r_ret) const override {
 		ERR_FAIL_MSG("Validated call can't be used with vararg methods. This is a bug.");
 	}
 
-	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) const override {
+	virtual void ptrcall(void *p_caller, const void **p_args, void *r_ret) const override {
 		ERR_FAIL_MSG("ptrcall can't be used with vararg methods. This is a bug.");
 	}
 
@@ -222,7 +225,8 @@ class MethodBindVarArgT : public MethodBindVarArgBase<MethodBindVarArgT<T>, T, v
 	friend class MethodBindVarArgBase<MethodBindVarArgT<T>, T, void, false>;
 
 public:
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+	virtual Variant call(void *p_caller, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+		Object *p_object = static_cast<Object *>(p_caller);
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
 #endif
@@ -258,7 +262,8 @@ class MethodBindVarArgTR : public MethodBindVarArgBase<MethodBindVarArgTR<T, R>,
 public:
 	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wmaybe-uninitialized") // Workaround GH-66343 raised only with UBSAN, seems to be a false positive.
 
-	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+	virtual Variant call(void *p_caller, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
+		Object *p_object = static_cast<Object *>(p_caller);
 #ifdef TOOLS_ENABLED
 		ERR_FAIL_COND_V_MSG(p_object && p_object->is_extension_placeholder() && p_object->get_class_name() == MethodBind::get_instance_class(), Variant(), vformat("Cannot call method bind '%s' on placeholder instance.", MethodBind::get_name()));
 #endif
