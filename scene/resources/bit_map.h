@@ -46,13 +46,19 @@ class BitMap : public Resource {
 
 	Vector<Vector<Vector2>> _march_square(const Rect2i &p_rect, const Point2i &p_start) const;
 
-	TypedArray<PackedVector2Array> _opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const;
+	TypedArray<PackedVector2Array> _opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool p_advanced_rdp) const;
 
 protected:
 	void _set_data(const Dictionary &p_d);
 	Dictionary _get_data() const;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Vector<Vector<Vector2>> _clip_opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon = 2.0) const;
+	TypedArray<PackedVector2Array> _opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon) const;
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void create(const Size2i &p_size);
@@ -75,5 +81,5 @@ public:
 	void blit(const Vector2i &p_pos, const Ref<BitMap> &p_bitmap);
 	Ref<Image> convert_to_image() const;
 
-	Vector<Vector<Vector2>> clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon = 2.0) const;
+	Vector<Vector<Vector2>> clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon = 2.0, bool p_advanced_rdp = false) const;
 };
