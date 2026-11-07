@@ -104,7 +104,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 		params.m_status_output = false;
 	}
 
-	basisu::job_pool job_pool(OS::get_singleton()->get_processor_count());
+	basisu::job_pool job_pool(OS::get_singleton()->get_default_thread_pool_size());
 	params.m_pJob_pool = &job_pool;
 
 	BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_MAX;
