@@ -4,7 +4,7 @@
 		A custom shader program with a visual editor.
 	</brief_description>
 	<description>
-		This class provides a graph-like visual editor for creating a [Shader]. Although [VisualShader]s do not require coding, they share the same logic with script shaders. They use [VisualShaderNode]s that can be connected to each other to control the flow of the shader. The visual shader graph is converted to a script shader behind the scenes.
+		This class provides a graph-like visual editor for creating a [Shader]. Although [VisualShader]s do not require coding, they share the same logic with GDShaders. They use [VisualShaderNode]s that can be connected to each other to control the flow of the shader. The visual shader graph is converted to a GDShader behind the scenes.
 	</description>
 	<tutorials>
 		<link title="Using VisualShaders">$DOCS_URL/tutorials/shaders/visual_shaders.html</link>
