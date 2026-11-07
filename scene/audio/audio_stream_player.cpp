@@ -44,8 +44,17 @@ void AudioStreamPlayer::_notification(int p_what) {
 		ERR_FAIL_COND(ae.is_null());
 
 		AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_AUDIO);
-	} else {
-		internal->notification(p_what);
+		return;
+	}
+
+	internal->notification(p_what);
+
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_UNPAUSED:
+		case NOTIFICATION_UNSUSPENDED: {
+			_flush_deferred_plays();
+		} break;
 	}
 }
 
@@ -108,22 +117,12 @@ int AudioStreamPlayer::get_max_polyphony() const {
 }
 
 void AudioStreamPlayer::play(float p_from_pos) {
-	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
-	if (stream_playback.is_null()) {
+	if (is_inside_tree() && !can_process()) {
+		deferred_plays.push_back(p_from_pos);
 		return;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
-	internal->ensure_playback_limit();
 
-	// Sample handling.
-	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
-		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
-		sample_playback->offset = p_from_pos;
-		sample_playback->volume_vector = _get_volume_vector();
-		sample_playback->bus = get_bus();
-
-		AudioServer::get_singleton()->start_sample_playback(sample_playback);
-	}
+	_play(p_from_pos);
 }
 
 void AudioStreamPlayer::seek(float p_seconds) {
@@ -131,6 +130,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 }
 
 void AudioStreamPlayer::stop() {
+	deferred_plays.clear();
 	internal->stop_basic();
 }
 
@@ -167,6 +167,36 @@ void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
 
 AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
 	return mix_target;
+}
+
+void AudioStreamPlayer::_play(float p_from_pos) {
+	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
+	if (stream_playback.is_null()) {
+		return;
+	}
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
+	internal->ensure_playback_limit();
+
+	// Sample handling.
+	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
+		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
+		sample_playback->offset = p_from_pos;
+		sample_playback->volume_vector = _get_volume_vector();
+		sample_playback->bus = get_bus();
+
+		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+	}
+}
+
+void AudioStreamPlayer::_flush_deferred_plays() {
+	if (deferred_plays.is_empty() || !can_process()) {
+		return;
+	}
+	const Vector<float> pending = deferred_plays;
+	deferred_plays.clear();
+	for (const float &from_pos : pending) {
+		_play(from_pos);
+	}
 }
 
 void AudioStreamPlayer::_set_playing(bool p_enable) {
