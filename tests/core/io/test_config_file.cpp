@@ -181,6 +181,7 @@ ui_accept={
 "events": [Object(InputEventKey,
 "resource_local_to_scene": false,
 "resource_name": "",
+"resource_inherits_state": null,
 "device": 16,
 "window_id": 0,
 "alt_pressed": false,
