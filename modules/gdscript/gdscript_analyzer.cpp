@@ -1873,7 +1873,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			p_function->return_type_constraint = return_type;
 		}
 
-#ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
 		// Not for the constructor which can vary in signature.
 		GDScriptParser::DataType base_type = parser->current_class->base_type;
@@ -1883,26 +1882,32 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		int default_par_count = 0;
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
-		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
+
+		bool can_match_parent_signature = !p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base);
+
+		if (can_match_parent_signature && p_function->return_type == nullptr) {
+			// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
+#ifdef DISABLE_DEPRECATED
+			p_function->return_type_constraint = parent_return_type;
+#else // !DISABLE_DEPRECATED
+			if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
+				GDScriptParser::DataType array_type;
+				array_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+				array_type.kind = GDScriptParser::DataType::BUILTIN;
+				array_type.builtin_type = Variant::ARRAY;
+
+				p_function->return_type_constraint = array_type;
+			} else {
+				p_function->return_type_constraint = parent_return_type;
+			}
+#endif // DISABLE_DEPRECATED
+		}
+
+#ifdef TOOLS_ENABLED
+		if (can_match_parent_signature) {
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
-			if (p_function->return_type == nullptr) {
-				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
-#ifdef DISABLE_DEPRECATED
-				p_function->return_type_constraint = parent_return_type;
-#else // !DISABLE_DEPRECATED
-				if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
-					GDScriptParser::DataType array_type;
-					array_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-					array_type.kind = GDScriptParser::DataType::BUILTIN;
-					array_type.builtin_type = Variant::ARRAY;
-
-					p_function->return_type_constraint = array_type;
-				} else {
-					p_function->return_type_constraint = parent_return_type;
-				}
-#endif // DISABLE_DEPRECATED
-			} else {
+			if (p_function->return_type != nullptr) {
 				// Check return type covariance.
 				GDScriptParser::DataType return_type = p_function->return_type_constraint;
 				if (return_type.is_variant()) {
