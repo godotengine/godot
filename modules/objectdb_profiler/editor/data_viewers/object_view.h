@@ -46,14 +46,18 @@ protected:
 	Tree *outbound_tree = nullptr;
 	VBoxContainer *object_details = nullptr;
 	TreeSortAndFilterBar *filter_bar = nullptr;
+	HashMap<int, Button *> diff_filter_buttons;
 	HSplitContainer *objects_view = nullptr;
 
 	HashMap<TreeItem *, SnapshotDataObject *> item_data_map;
 	HashMap<SnapshotDataObject *, TreeItem *> data_item_map;
 	HashMap<TreeItem *, TreeItem *> reference_item_map;
 
+	void _diff_filter_changed();
+	bool _should_show_item(TreeItem *p_item);
 	void _object_selected();
 	void _insert_data(GameStateSnapshot *p_snapshot, const String &p_name);
+	Ref<Texture2D> _get_class_icon_of_object(const SnapshotDataObject *p_object) const;
 	Tree *_make_references_list(Control *p_container, const String &p_name, const String &p_col_1, const String &p_col_1_tooltip, const String &p_col_2, const String &p_col_2_tooltip);
 	void _reference_selected(Tree *p_source_tree);
 
