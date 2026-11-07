@@ -115,7 +115,6 @@ public:
 	GDVIRTUAL1R(Error, _put_packet_script, PackedByteArray); // For GDScript.
 
 	EXBIND0RC(int, get_available_packet_count);
-	EXBIND0RC(int, get_max_packet_size);
 
 	/* MultiplayerPeer extension */
 	virtual void set_refuse_new_connections(bool p_enable) override;
