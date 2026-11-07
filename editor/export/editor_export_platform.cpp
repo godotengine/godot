@@ -228,8 +228,8 @@ Error EditorExportPlatform::_extract_android_assets(const String &p_bundle_path,
 	Error err = OK;
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
-	unzFile zip_file = unzOpen2(p_bundle_path.utf8().get_data(), &io);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
+	unzFile zip_file = unzOpen2_64(p_bundle_path.utf8().get_data(), &io);
 	if (!zip_file) {
 		return ERR_FILE_CANT_OPEN;
 	}
@@ -562,7 +562,7 @@ Error EditorExportPlatform::_save_zip_file(const Ref<EditorExportPreset> &p_pres
 			Z_DEFLATED,
 			Z_DEFAULT_COMPRESSION);
 
-	zipWriteInFileInZip(zip, p_data.ptr(), p_data.size());
+	godot_zip_write_file(zip, p_data.ptr(), p_data.size());
 	zipCloseFileInZip(zip);
 
 	zd->file_count += 1;
@@ -1965,7 +1965,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
-			zipOpenNewFileInZip4(p_zip,
+			zipOpenNewFileInZip4_64(p_zip,
 					p_folder.path_join(f).utf8().get_data(),
 					&zipfi,
 					nullptr,
@@ -1981,11 +1981,12 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					Z_DEFAULT_STRATEGY,
 					nullptr,
 					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+					1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					0); // zip64: don't pass because symlink target path (target_utf8) size will never be close to UINT_MAX
 
 			const CharString target_utf8 = da->read_link(f).utf8();
-			zipWriteInFileInZip(p_zip, target_utf8.get_data(), target_utf8.size());
+			godot_zip_write_file(p_zip, reinterpret_cast<const uint8_t *>(target_utf8.get_data()), target_utf8.size());
 			zipCloseFileInZip(p_zip);
 		} else if (da->current_is_dir()) {
 			zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);
@@ -2009,7 +2010,13 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 			zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 			zipfi.internal_fa = 0;
 
-			zipOpenNewFileInZip4(p_zip,
+			Ref<FileAccess> fa = FileAccess::open(dir.path_join(f), FileAccess::READ);
+			if (fa.is_null()) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.path_join(f)));
+				return;
+			}
+
+			zipOpenNewFileInZip4_64(p_zip,
 					p_folder.path_join(f).utf8().get_data(),
 					&zipfi,
 					nullptr,
@@ -2025,14 +2032,10 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 					Z_DEFAULT_STRATEGY,
 					nullptr,
 					0,
-					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-					1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+					1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+					fa->get_length() > UINT_MAX); // zip64: only pass if size exceeds 0xFFFFFFFF
 
-			Ref<FileAccess> fa = FileAccess::open(dir.path_join(f), FileAccess::READ);
-			if (fa.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.path_join(f)));
-				return;
-			}
 			const int bufsize = 16384;
 			uint8_t buf[bufsize];
 
@@ -2041,7 +2044,7 @@ void EditorExportPlatform::zip_folder_recursive(zipFile &p_zip, const String &p_
 				if (got == 0) {
 					break;
 				}
-				zipWriteInFileInZip(p_zip, buf, got);
+				godot_zip_write_file(p_zip, buf, got);
 			}
 
 			zipCloseFileInZip(p_zip);
@@ -2389,8 +2392,8 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, bo
 	String tmppath = EditorPaths::get_singleton()->get_temp_dir().path_join("packtmp");
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
-	zipFile zip = zipOpen2(tmppath.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
+	zipFile zip = zipOpen2_64(tmppath.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 
 	ZipData zd;
 	zd.ep = &ep;

@@ -70,13 +70,27 @@ int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p
 	return err;
 }
 
+int godot_zip_write_file(zipFile p_zip_file, const uint8_t *p_data, int64_t p_data_size) {
+	for (int64_t i = 0; i < p_data_size; i += INT_MAX) {
+		int chunk_size = static_cast<int>(MIN(p_data_size - i, INT_MAX));
+		const uint8_t *chunk = p_data + i;
+
+		int err = zipWriteInFileInZip(p_zip_file, chunk, chunk_size);
+		if (err != ZIP_OK) {
+			return err;
+		}
+	}
+	return ZIP_OK;
+}
+
 //
 
-void *zipio_open(voidpf p_opaque, const char *p_fname, int p_mode) {
+void *zipio_open(voidpf p_opaque, const void *p_fname, int p_mode) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, nullptr);
 
-	String fname = String::utf8(p_fname);
+	const char *fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
+	String fname = String::utf8(fname_chars);
 
 	int file_access_mode = 0;
 	if (p_mode & ZLIB_FILEFUNC_MODE_READ) {
@@ -119,7 +133,7 @@ uLong zipio_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uLong p_s
 	return 0;
 }
 
-long zipio_tell(voidpf p_opaque, voidpf p_stream) {
+ZPOS64_T zipio_tell(voidpf p_opaque, voidpf p_stream) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
@@ -127,7 +141,7 @@ long zipio_tell(voidpf p_opaque, voidpf p_stream) {
 	return (*fa)->get_position();
 }
 
-long zipio_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin) {
+long zipio_seek(voidpf p_opaque, voidpf p_stream, ZPOS64_T p_offset, int p_origin) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
@@ -174,14 +188,14 @@ void zipio_free(voidpf p_opaque, voidpf r_address) {
 	memfree(r_address);
 }
 
-zlib_filefunc_def zipio_create_io(Ref<FileAccess> *p_data) {
-	zlib_filefunc_def io;
+zlib_filefunc64_def zipio_create_io(Ref<FileAccess> *p_data) {
+	zlib_filefunc64_def io;
 	io.opaque = (void *)p_data;
-	io.zopen_file = zipio_open;
+	io.zopen64_file = zipio_open;
 	io.zread_file = zipio_read;
 	io.zwrite_file = zipio_write;
-	io.ztell_file = zipio_tell;
-	io.zseek_file = zipio_seek;
+	io.ztell64_file = zipio_tell;
+	io.zseek64_file = zipio_seek;
 	io.zclose_file = zipio_close;
 	io.zerror_file = zipio_testerror;
 	io.alloc_mem = zipio_alloc;

@@ -158,8 +158,8 @@ Error EditorExportPlatformPC::_unzip_debugsymbols(Ref<DirAccess> &p_da, const St
 	PackedByteArray extracted_data;
 	{
 		Ref<FileAccess> zip_access;
-		zlib_filefunc_def io = zipio_create_io(&zip_access);
-		unzFile uzf = unzOpen2(p_zip_path.utf8().get_data(), &io);
+		zlib_filefunc64_def io = zipio_create_io(&zip_access);
+		unzFile uzf = unzOpen2_64(p_zip_path.utf8().get_data(), &io);
 		if (!uzf) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Prepare Templates"), vformat(TTR("Could not find debug symbols to export: \"%s\"."), p_zip_path));
 			return ERR_FILE_NOT_FOUND;
@@ -183,8 +183,8 @@ Error EditorExportPlatformPC::_unzip_debugsymbols(Ref<DirAccess> &p_da, const St
 		}
 
 		// Read the file info.
-		unz_file_info info;
-		err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+		unz_file_info64 info;
+		err = unzGetCurrentFileInfo64(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 		if (err != UNZ_OK) {
 			unzCloseCurrentFile(uzf);
 			unzClose(uzf);
@@ -195,9 +195,10 @@ Error EditorExportPlatformPC::_unzip_debugsymbols(Ref<DirAccess> &p_da, const St
 		// Read the file data.
 		extracted_data.resize(info.uncompressed_size);
 		uint8_t *buffer = extracted_data.ptrw();
-		int to_read = extracted_data.size();
+		int64_t to_read = extracted_data.size();
 		while (to_read > 0) {
-			int bytes_read_current = unzReadCurrentFile(uzf, buffer, to_read);
+			int chunk_size = static_cast<int>(MIN(to_read, INT_MAX));
+			int bytes_read_current = unzReadCurrentFile(uzf, buffer, chunk_size);
 			if (bytes_read_current < 0 || (bytes_read_current == UNZ_EOF && to_read != 0)) {
 				unzCloseCurrentFile(uzf);
 				unzClose(uzf);

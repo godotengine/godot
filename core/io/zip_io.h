@@ -40,15 +40,17 @@
 int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_file_info, String &r_filepath);
 // Try to locate the file in the archive specified by the filepath (works with large paths and Unicode).
 int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p_case_sensitive = true);
+// Write the given data to the given zip file in chunks.
+int godot_zip_write_file(zipFile p_zip_file, const uint8_t *p_data, int64_t p_data_size);
 
 //
 
-void *zipio_open(voidpf p_opaque, const char *p_fname, int p_mode);
+void *zipio_open(voidpf p_opaque, const void *p_fname, int p_mode);
 uLong zipio_read(voidpf p_opaque, voidpf p_stream, void *p_buf, uLong p_size);
 uLong zipio_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uLong p_size);
 
-long zipio_tell(voidpf p_opaque, voidpf p_stream);
-long zipio_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin);
+ZPOS64_T zipio_tell(voidpf p_opaque, voidpf p_stream);
+long zipio_seek(voidpf p_opaque, voidpf p_stream, ZPOS64_T p_offset, int p_origin);
 
 int zipio_close(voidpf p_opaque, voidpf p_stream);
 
@@ -57,4 +59,4 @@ int zipio_testerror(voidpf p_opaque, voidpf p_stream);
 voidpf zipio_alloc(voidpf p_opaque, uInt p_items, uInt p_size);
 void zipio_free(voidpf p_opaque, voidpf p_address);
 
-zlib_filefunc_def zipio_create_io(Ref<FileAccess> *p_data);
+zlib_filefunc64_def zipio_create_io(Ref<FileAccess> *p_data);

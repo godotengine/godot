@@ -49,7 +49,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 
-static bool _is_zip_entry_symlink(const unz_file_info &p_info) {
+static bool _is_zip_entry_symlink(const unz_file_info64 &p_info) {
 	static constexpr uint32_t UNIX_FILE_TYPE_MASK = 0170000;
 	static constexpr uint32_t UNIX_FILE_TYPE_SYMLINK = 0120000;
 
@@ -121,9 +121,9 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 	asset_files.clear();
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(p_path.utf8().get_data(), &io);
 	if (!pkg) {
 		EditorToaster::get_singleton()->popup_str(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name), EditorToaster::SEVERITY_ERROR);
 		return;
@@ -133,9 +133,9 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 
 	while (ret == UNZ_OK) {
 		//get filename
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String source_name = String::utf8(fname);
 
@@ -514,9 +514,9 @@ void EditorAssetInstaller::ok_pressed() {
 
 void EditorAssetInstaller::_install_asset() {
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(package_path.utf8().get_data(), &io);
 	if (!pkg) {
 		EditorToaster::get_singleton()->popup_str(vformat(TTR("Error opening asset file for \"%s\" (not in ZIP format)."), asset_name), EditorToaster::SEVERITY_ERROR);
 		return;
@@ -529,9 +529,9 @@ void EditorAssetInstaller::_install_asset() {
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	for (int idx = 0; ret == UNZ_OK; ret = unzGoToNextFile(pkg), idx++) {
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
