@@ -34,6 +34,7 @@ namespace NavigationEnums3D {
 
 enum PathfindingAlgorithm {
 	PATHFINDING_ALGORITHM_ASTAR = 0,
+	PATHFINDING_ALGORITHM_DIJKSTRA = 1,
 };
 
 enum PathPostProcessing {
