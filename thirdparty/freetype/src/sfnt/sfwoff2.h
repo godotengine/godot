@@ -35,7 +35,7 @@ FT_BEGIN_HEADER
 #define WOFF2_SFNT_ENTRY_SIZE   16
 
   /* Suggested maximum size for output. */
-#define WOFF2_DEFAULT_MAX_SIZE  30 * 1024 * 1024
+#define WOFF2_DEFAULT_MAX_SIZE  40 * 1024 * 1024
 
   /* 98% of Google Fonts have no glyph above 5k bytes. */
 #define WOFF2_DEFAULT_GLYPH_BUF  5120

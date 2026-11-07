@@ -1,0 +1,15 @@
+diff --git a/thirdparty/freetype/src/sfnt/sfwoff2.h b/thirdparty/freetype/src/sfnt/sfwoff2.h
+index e0296d8260..9ac47c9426 100644
+--- a/thirdparty/freetype/src/sfnt/sfwoff2.h
++++ b/thirdparty/freetype/src/sfnt/sfwoff2.h
+@@ -34,9 +34,9 @@ FT_BEGIN_HEADER
+ #define WOFF2_SFNT_HEADER_SIZE  12
+ #define WOFF2_SFNT_ENTRY_SIZE   16
+ 
+   /* Suggested maximum size for output. */
+-#define WOFF2_DEFAULT_MAX_SIZE  30 * 1024 * 1024
++#define WOFF2_DEFAULT_MAX_SIZE  40 * 1024 * 1024
+ 
+   /* 98% of Google Fonts have no glyph above 5k bytes. */
+ #define WOFF2_DEFAULT_GLYPH_BUF  5120
+ 

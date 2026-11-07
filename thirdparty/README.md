@@ -370,6 +370,10 @@ Files extracted from upstream source:
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
+Patches:
+
+- `0001-woff-max-size.patch` ([GH-125039](https://github.com/godotengine/godot/issues/125039))
+
 
 ## gamepadmotionhelpers
 
