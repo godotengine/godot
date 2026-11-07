@@ -319,34 +319,11 @@ QueryPool *QueryPool::create(MTL::Device *p_device, uint32_t p_count) {
 	QueryPool *pool = memnew(QueryPool);
 	pool->sample_buffer = sample_buffer;
 	pool->dummy_buffer = NS::TransferPtr(p_device->newBuffer(1, MTL::ResourceStorageModePrivate | MTL::ResourceHazardTrackingModeUntracked));
-	pool->device = p_device;
-	p_device->sampleTimestamps(&pool->cpu_base, &pool->gpu_base);
 	pool->count = p_count;
 	return pool;
 }
 
-double QueryPool::_resolve_timestamp_to_nano() {
-	if (timestamp_to_nano != 0.0) {
-		return timestamp_to_nano;
-	}
-
-	MTL::Timestamp cpu_now = 0;
-	MTL::Timestamp gpu_now = 0;
-	device->sampleTimestamps(&cpu_now, &gpu_now);
-	if (gpu_now <= gpu_base || cpu_now <= cpu_base) {
-		return 0.0; // Too soon to correlate; try again on the next readback.
-	}
-	timestamp_to_nano = (double)(cpu_now - cpu_base) / (double)(gpu_now - gpu_base);
-	return timestamp_to_nano;
-}
-
 void QueryPool::get_results(uint32_t p_count, uint64_t *r_results) {
-	double to_nano = _resolve_timestamp_to_nano();
-	if (to_nano == 0.0) {
-		memset(r_results, 0, p_count * sizeof(uint64_t));
-		return;
-	}
-
 	NS::Data *data = sample_buffer->resolveCounterRange(NS::Range::Make(0, p_count));
 	ERR_FAIL_NULL(data);
 	const MTL::CounterResultTimestamp *src = (const MTL::CounterResultTimestamp *)data->bytes();
@@ -354,12 +331,12 @@ void QueryPool::get_results(uint32_t p_count, uint64_t *r_results) {
 	for (uint32_t i = 0; i < p_count; i++) {
 		// A slot the GPU never wrote resolves to the error value; hold the previous
 		// reading so the profiler reports a zero length span rather than garbage.
-		last = src[i].timestamp == COUNTER_ERROR_VALUE ? last : uint64_t((double)src[i].timestamp * to_nano);
+		last = src[i].timestamp == COUNTER_ERROR_VALUE ? last : src[i].timestamp;
 		r_results[i] = last;
 	}
 }
 
-void MDCommandBuffer::timestamp_write(QueryPool *p_pool, uint32_t p_index) {
+void MDCommandBuffer::timestamp_write(QueryPool *p_pool, uint32_t p_index, MTL::Fence *p_fence) {
 	end();
 
 	NS::SharedPtr<MTL::BlitPassDescriptor> desc = NS::TransferPtr(MTL::BlitPassDescriptor::alloc()->init());
@@ -375,9 +352,11 @@ void MDCommandBuffer::timestamp_write(QueryPool *p_pool, uint32_t p_index) {
 	enc->setLabel(NS::String::string(vformat("Timestamp %03d", p_index).utf8().get_data(), NS::UTF8StringEncoding));
 #endif
 	_fence_wait(enc);
+	enc->waitForFence(p_fence);
 	// An encoder with no commands may be elided, which would drop the sample.
 	enc->fillBuffer(p_pool->get_dummy_buffer(), NS::Range::Make(0, 1), 0);
 	_fence_update(enc);
+	enc->updateFence(p_fence);
 	enc->endEncoding();
 }
 
