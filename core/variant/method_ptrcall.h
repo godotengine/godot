@@ -33,6 +33,7 @@
 #include "core/object/object.h"
 #include "core/object/object_id.h"
 #include "core/typedefs.h"
+#include "core/variant/method_ptrarg.h"
 #include "core/variant/variant.h"
 
 namespace Internal {
@@ -136,12 +137,6 @@ struct PtrToArgStringConvertByReference {
 };
 
 } //namespace Internal
-
-template <typename T, typename = void>
-struct PtrToArg;
-
-template <typename T>
-struct PtrToArg<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : PtrToArg<std::decay_t<T>> {};
 
 template <>
 struct PtrToArg<bool> : Internal::PtrToArgConvert<bool, uint8_t> {};
