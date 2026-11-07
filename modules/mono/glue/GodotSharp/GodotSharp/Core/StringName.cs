@@ -38,6 +38,8 @@ namespace Godot
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
+            GC.KeepAlive(this); // Don't collect during manual dispose call.
+
             if (_weakReferenceToSelf != null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
@@ -98,6 +100,7 @@ namespace Godot
 
             var src = (godot_string_name)NativeValue;
             NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
+            GC.KeepAlive(this);
             using (dest)
                 return Marshaling.ConvertStringToManaged(dest);
         }

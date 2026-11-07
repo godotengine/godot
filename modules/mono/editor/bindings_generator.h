@@ -447,6 +447,11 @@ class BindingsGenerator {
 		 */
 		String cs_managed_to_variant;
 
+		/**
+		 * The parameter of this type needs `GC.KeepAlive` after unmanaged call to keep it alive.
+		 */
+		bool cs_keep_alive;
+
 		const DocData::ClassDoc *class_doc = nullptr;
 
 		bool is_deprecated = false;
@@ -618,6 +623,7 @@ class BindingsGenerator {
 			static String default_cs_managed_to_variant = "VariantUtils.CreateFrom<%1>(%0)";
 			cs_variant_to_managed = default_cs_variant_to_managed;
 			cs_managed_to_variant = default_cs_managed_to_variant;
+			cs_keep_alive = false;
 		}
 	};
 

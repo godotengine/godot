@@ -117,6 +117,11 @@ namespace Godot
                 godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
                     (godot_variant**)argsPtr, argc, out godot_variant_call_error vcall_error);
                 ExceptionUtils.DebugCheckCallError(callable, (godot_variant**)argsPtr, argc, vcall_error);
+                GC.KeepAlive(_target);
+                GC.KeepAlive(_method);
+                // TODO: Figure out a better way to call KeepAlive on Variant disposers.
+                for (int i = 0; i < argc; i++)
+                    GC.KeepAlive(args[i].Disposer);
                 return Variant.CreateTakingOwnershipOfDisposableValue(ret);
             }
         }
@@ -156,6 +161,11 @@ namespace Godot
                 }
 
                 NativeFuncs.godotsharp_callable_call_deferred(callable, (godot_variant**)argsPtr, argc);
+                GC.KeepAlive(_target);
+                GC.KeepAlive(_method);
+                // TODO: Figure out a better way to call KeepAlive on Variant disposers.
+                for (int i = 0; i < argc; i++)
+                    GC.KeepAlive(args[i].Disposer);
             }
         }
 

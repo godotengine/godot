@@ -59,6 +59,7 @@ namespace Godot.NativeInterop
                 var nativeNameSelf = (godot_string_name)nativeName.NativeValue;
                 NativeFuncs.godotsharp_internal_tie_native_managed_to_unmanaged(
                     GCHandle.ToIntPtr(gcHandle), unmanaged, nativeNameSelf, refCounted.ToGodotBool());
+                GC.KeepAlive(nativeName);
             }
             else
             {
@@ -74,6 +75,7 @@ namespace Godot.NativeInterop
                         GCHandle.ToIntPtr(gcHandle), unmanaged, &script, refCounted.ToGodotBool());
                 }
             }
+            GC.KeepAlive(managed); // For `AllocWeak`.
         }
 
         public static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, IntPtr unmanaged,
@@ -85,6 +87,7 @@ namespace Godot.NativeInterop
             var strongGCHandle = CustomGCHandle.AllocStrong(managed);
             NativeFuncs.godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
                 GCHandle.ToIntPtr(strongGCHandle), unmanaged);
+            GC.KeepAlive(managed); // Should be safe with `AllocStrong`, but just to be sure.
         }
 
         public static GodotObject EngineGetSingleton(string name)
