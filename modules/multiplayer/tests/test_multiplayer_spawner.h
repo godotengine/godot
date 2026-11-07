@@ -39,6 +39,8 @@
 #include "tests/test_utils.h"
 
 namespace TestMultiplayerSpawner {
+static const String WASP_PATH = "res://wasp.tscn";
+
 class Wasp : public Node {
 	GDCLASS(Wasp, Node);
 
@@ -54,7 +56,7 @@ public:
 
 	Wasp() {
 		set_name("Wasp");
-		set_scene_file_path("wasp.tscn");
+		set_scene_file_path(WASP_PATH);
 	}
 };
 
@@ -244,6 +246,8 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Spawnable scene") {
 }
 
 TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->create_id_for_path(WASP_PATH), WASP_PATH);
+
 	MultiplayerSpawner *multiplayer_spawner = memnew(MultiplayerSpawner);
 	SceneTree::get_singleton()->get_root()->add_child(multiplayer_spawner);
 	CHECK_EQ(multiplayer_spawner->get_spawn_node(), nullptr);
@@ -256,7 +260,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
 	SpawnWasps *spawn_wasps = memnew(SpawnWasps);
 
 	SUBCASE("Instantiates a node properly") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 		multiplayer_spawner->set_spawn_limit(1);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "wasp"));
@@ -269,7 +273,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
 	}
 
 	SUBCASE("Instantiates multiple nodes properly if there is no spawn limit") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "wasp"));
 
 		for (int i = 0; i < 10; i++) {
@@ -282,7 +286,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
 	}
 
 	SUBCASE("Fails if spawn limit is reached") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 		multiplayer_spawner->set_spawn_limit(1);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "wasp"));
@@ -310,7 +314,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
 	}
 
 	SUBCASE("Fails when spawn function fails") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 		multiplayer_spawner->set_spawn_limit(1);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "wasp_error"));
@@ -321,7 +325,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Instantiate custom") {
 	}
 
 	SUBCASE("Fails when spawn function not returns a node") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 		multiplayer_spawner->set_spawn_limit(1);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "echo"));
@@ -354,7 +358,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Spawn") {
 	multiplayer_spawner->set_spawn_path(NodePath("/root/Nest"));
 
 	SpawnWasps *spawn_wasps = memnew(SpawnWasps);
-	multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+	multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 	SUBCASE("Spawns a node, track it and add it to spawn node") {
 		multiplayer_spawner->set_spawn_limit(1);
@@ -419,7 +423,7 @@ TEST_CASE("[Multiplayer][MultiplayerSpawner][SceneTree] Spawn") {
 	}
 
 	SUBCASE("Fails when instantiate_custom not returns a node") {
-		multiplayer_spawner->add_spawnable_scene("wasp.tscn");
+		multiplayer_spawner->add_spawnable_scene(WASP_PATH);
 
 		multiplayer_spawner->set_spawn_limit(1);
 		multiplayer_spawner->set_spawn_function(Callable(spawn_wasps, "echo"));

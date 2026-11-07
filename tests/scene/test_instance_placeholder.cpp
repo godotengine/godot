@@ -358,6 +358,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	REQUIRE(err == OK);
 
 	const String internal_path = TestUtils::get_temp_path("instance_placeholder_test_internal.tscn");
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->create_id_for_path(internal_path), internal_path);
 	err = ResourceSaver::save(internal_scene, internal_path);
 	REQUIRE(err == OK);
 
@@ -387,6 +388,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	REQUIRE(err == OK);
 
 	const String main_path = TestUtils::get_temp_path("instance_placeholder_test_main.tscn");
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->create_id_for_path(main_path), main_path);
 	err = ResourceSaver::save(main_scene, main_path);
 	REQUIRE(err == OK);
 
@@ -450,6 +452,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	err = ResourceSaver::save(internal_scene, internal_path);
 	REQUIRE(err == OK);
 
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->create_id_for_path(internal_path), internal_path);
 	Ref<PackedScene> internal_scene_loaded = ResourceLoader::load(internal_path, "PackedScene", ResourceFormatLoader::CacheMode::CACHE_MODE_IGNORE, &err);
 	REQUIRE(err == OK);
 
@@ -492,6 +495,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	REQUIRE(err == OK);
 
 	// // Instantiate the scene.
+	ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->create_id_for_path(main_path), main_path);
 	Ref<PackedScene> main_scene_loaded = ResourceLoader::load(main_path, "PackedScene", ResourceFormatLoader::CacheMode::CACHE_MODE_IGNORE, &err);
 	REQUIRE(err == OK);
 
