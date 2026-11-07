@@ -33,6 +33,7 @@
 #ifdef GLES3_ENABLED
 
 #include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
 
@@ -97,7 +98,7 @@ void PostEffects::post_copy(
 	glDepthMask(GL_FALSE);
 	glDisable(GL_BLEND);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, p_dest_framebuffer);
+	FramebufferBinding binding(GL_FRAMEBUFFER, p_dest_framebuffer);
 	glViewport(0, 0, p_dest_size.x, p_dest_size.y);
 
 	PostShaderGLES3::ShaderVariant mode = PostShaderGLES3::MODE_DEFAULT;
@@ -185,7 +186,6 @@ void PostEffects::post_copy(
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glUseProgram(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
 #endif // GLES3_ENABLED
