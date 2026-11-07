@@ -30,6 +30,7 @@
 
 #include "instance_uniforms.h"
 
+#include "core/variant/variant_utility.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 void InstanceUniforms::free(RID p_self) {
@@ -93,6 +94,11 @@ bool InstanceUniforms::materials_finish(RID p_self) {
 	for (KeyValue<StringName, Item> &kv : _parameters) {
 		Item &i = kv.value;
 		if (i.is_valid()) {
+			if (i.value.get_type() != i.info.type) {
+				ERR_CONTINUE_MSG(!Variant::can_convert(i.value.get_type(), i.info.type),
+						"Cannot set instance shader uniform '" + i.info.name + "' of " + Variant::get_type_name(i.info.type) + " type with value of " + Variant::get_type_name(i.value.get_type()) + " type.");
+				i.value = VariantUtilityFunctions::type_convert(i.value, i.info.type);
+			}
 			RSG::material_storage->global_shader_parameters_instance_update(p_self, i.index, i.value, i.flags);
 		}
 	}
@@ -112,12 +118,20 @@ void InstanceUniforms::set(RID p_self, const StringName &p_name, const Variant &
 	ERR_FAIL_COND(p_value.get_type() == Variant::OBJECT);
 
 	if (Item *ptr = _parameters.getptr(p_name); ptr) {
-		ptr->value = p_value;
 		if (ptr->is_valid()) {
+			if (p_value.get_type() == ptr->info.type) {
+				ptr->value = p_value;
+			} else if (Variant::can_convert(p_value.get_type(), ptr->info.type)) {
+				ptr->value = VariantUtilityFunctions::type_convert(p_value, ptr->info.type);
+			} else {
+				ERR_FAIL_MSG("Cannot set instance shader uniform '" + ptr->info.name + "' of " + Variant::get_type_name(ptr->info.type) + " type with value of " + Variant::get_type_name(p_value.get_type()) + " type.");
+			}
 			RSG::material_storage->global_shader_parameters_instance_update(p_self, ptr->index, ptr->value, ptr->flags);
+		} else {
+			ptr->value = p_value;
 		}
 	} else {
-		Item i; // Initialize in materials_finish.
+		Item i; // Initialize in materials_append.
 		i.value = p_value;
 		_parameters[p_name] = i;
 	}
