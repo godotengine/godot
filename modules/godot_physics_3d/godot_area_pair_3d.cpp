@@ -69,6 +69,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 		if (has_space_override) {
 			body_has_attached_area = true;
 			body->add_area(area);
+			body->set_active(true, true);
 		}
 
 		if (area->has_monitor_callback()) {
@@ -78,6 +79,7 @@ bool GodotAreaPair3D::pre_solve(real_t p_step) {
 		if (has_space_override) {
 			body_has_attached_area = false;
 			body->remove_area(area);
+			body->set_active(true, true);
 		}
 
 		if (area->has_monitor_callback()) {
@@ -109,6 +111,7 @@ GodotAreaPair3D::~GodotAreaPair3D() {
 		if (body_has_attached_area) {
 			body_has_attached_area = false;
 			body->remove_area(area);
+			body->set_active(true, true);
 		}
 		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);

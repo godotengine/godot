@@ -249,6 +249,9 @@ real_t combine_friction(GodotBody2D *A, GodotBody2D *B) {
 }
 
 bool GodotBodyPair2D::setup(real_t p_step) {
+	prev_collided = collided;
+	prev_collide_A = collide_A;
+	prev_collide_B = collide_B;
 	check_ccd = false;
 
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
@@ -293,8 +296,6 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	if (B->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
-
-	bool prev_collided = collided;
 
 	collided = GodotCollisionSolver2D::solve(shape_A_ptr, xform_A, motion_A, shape_B_ptr, xform_B, motion_B, _add_contact, this, &sep_axis);
 	if (!collided) {
@@ -362,6 +363,14 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 bool GodotBodyPair2D::pre_solve(real_t p_step) {
 	if (oneway_disabled) {
+		if (prev_collided) {
+			if (prev_collide_A) {
+				A->set_active(true, true);
+			}
+			if (prev_collide_B) {
+				B->set_active(true, true);
+			}
+		}
 		return false;
 	}
 
@@ -384,6 +393,14 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			}
 		}
 
+		if (prev_collided) {
+			if (prev_collide_A) {
+				A->set_active(true, true);
+			}
+			if (prev_collide_B) {
+				B->set_active(true, true);
+			}
+		}
 		return false;
 	}
 
@@ -503,6 +520,14 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		do_process = true;
 	}
 
+	if (prev_collided && !collided) {
+		if (prev_collide_A) {
+			A->set_active(true, true);
+		}
+		if (prev_collide_B) {
+			B->set_active(true, true);
+		}
+	}
 	return do_process;
 }
 
@@ -608,6 +633,15 @@ GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p
 }
 
 GodotBodyPair2D::~GodotBodyPair2D() {
+	if (collided) {
+		if (collide_A) {
+			A->set_active(true, true);
+		}
+		if (collide_B) {
+			B->set_active(true, true);
+		}
+	}
+
 	A->remove_constraint(this, 0);
 	B->remove_constraint(this, 1);
 }

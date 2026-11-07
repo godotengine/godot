@@ -60,6 +60,7 @@ protected:
 
 	Vector3 sep_axis;
 	bool collided = false;
+	bool prev_collided = false;
 	bool check_ccd = false;
 
 	GodotSpace3D *space = nullptr;
@@ -88,6 +89,8 @@ class GodotBodyPair3D : public GodotBodyContact3D {
 
 	bool collide_A = false;
 	bool collide_B = false;
+	bool prev_collide_A = false;
+	bool prev_collide_B = false;
 
 	bool report_contacts_only = false;
 
@@ -120,6 +123,7 @@ class GodotBodySoftBodyPair3D : public GodotBodyContact3D {
 
 	bool body_collides = false;
 	bool soft_body_collides = false;
+	bool prev_body_collides = false;
 
 	bool report_contacts_only = false;
 

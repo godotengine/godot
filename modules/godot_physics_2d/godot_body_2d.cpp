@@ -130,7 +130,7 @@ void GodotBody2D::reset_mass_properties() {
 	_mass_properties_changed();
 }
 
-void GodotBody2D::set_active(bool p_active) {
+void GodotBody2D::set_active(bool p_active, bool reset_timer) {
 	if (active == p_active) {
 		return;
 	}
@@ -143,6 +143,18 @@ void GodotBody2D::set_active(bool p_active) {
 			active = false;
 		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
+
+			if (reset_timer) {
+				// `reset_timer` should be set upon removal of a constraint, or the change of some fundamental forces
+				// that the engine itself takes responsibility for and applies every frame (like gravity or constant force).
+				// `still_time = 0.0` will provide some time to test whether gravity or constant force might destabilize the system.
+				still_time = 0.0;
+			}
+
+			// Ensure at least one frame to allow a sleeping body to potentially move again before being put back to sleep.
+			if (still_time > get_space()->get_body_time_to_sleep()) {
+				still_time = get_space()->get_body_time_to_sleep();
+			}
 		}
 	} else if (get_space()) {
 		get_space()->body_remove_from_active_list(&active_list);
@@ -187,7 +199,7 @@ void GodotBody2D::set_param(PS2DE::BodyParameter p_param, const Variant &p_value
 		} break;
 		case PS2DE::BODY_PARAM_GRAVITY_SCALE: {
 			if (Math::is_zero_approx(gravity_scale)) {
-				wakeup();
+				set_active(true, true);
 			}
 			gravity_scale = p_value;
 		} break;
@@ -261,6 +273,7 @@ void GodotBody2D::set_mode(PS2DE::BodyMode p_mode) {
 			_inv_mass = 0;
 			_inv_inertia = 0;
 			_set_static(p_mode == PS2DE::BODY_MODE_STATIC);
+
 			set_active(p_mode == PS2DE::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector2();
 			angular_velocity = 0;
@@ -275,6 +288,9 @@ void GodotBody2D::set_mode(PS2DE::BodyMode p_mode) {
 			}
 			_mass_properties_changed();
 			_set_static(false);
+
+			// FIXME: There is no way to initialize a body in the sleeping state thanks to lines like this.
+			// However, these lines are doing something important so a fix needs a wider view.
 			set_active(true);
 
 		} break;
@@ -295,7 +311,6 @@ PS2DE::BodyMode GodotBody2D::get_mode() const {
 void GodotBody2D::_shapes_changed() {
 	_mass_properties_changed();
 	wakeup();
-	wakeup_neighbours();
 }
 
 void GodotBody2D::set_state(PS2DE::BodyState p_state, const Variant &p_variant) {
@@ -303,7 +318,6 @@ void GodotBody2D::set_state(PS2DE::BodyState p_state, const Variant &p_variant) 
 		case PS2DE::BODY_STATE_TRANSFORM: {
 			if (mode == PS2DE::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
-				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -313,7 +327,6 @@ void GodotBody2D::set_state(PS2DE::BodyState p_state, const Variant &p_variant) 
 			} else if (mode == PS2DE::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
-				wakeup_neighbours();
 			} else {
 				Transform2D t = p_variant;
 				t.orthonormalize();
@@ -391,8 +404,6 @@ Variant GodotBody2D::get_state(PS2DE::BodyState p_state) const {
 
 void GodotBody2D::set_space(GodotSpace2D *p_space) {
 	if (get_space()) {
-		wakeup_neighbours();
-
 		if (mass_properties_update_list.in_list()) {
 			get_space()->body_remove_from_mass_properties_update_list(&mass_properties_update_list);
 		}
@@ -653,28 +664,6 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	_update_transform_dependent();
 }
 
-void GodotBody2D::wakeup_neighbours() {
-	for (const Pair<GodotConstraint2D *, int> &E : constraint_list) {
-		const GodotConstraint2D *c = E.first;
-		GodotBody2D **n = c->get_body_ptr();
-		int bc = c->get_body_count();
-
-		for (int i = 0; i < bc; i++) {
-			if (i == E.second) {
-				continue;
-			}
-			GodotBody2D *b = n[i];
-			if (b->mode < PS2DE::BODY_MODE_RIGID) {
-				continue;
-			}
-
-			if (!b->is_active()) {
-				b->set_active(true);
-			}
-		}
-	}
-}
-
 void GodotBody2D::call_queries() {
 	Variant direct_state_variant = get_direct_state();
 
@@ -710,11 +699,11 @@ bool GodotBody2D::sleep_test(real_t p_step) {
 	ERR_FAIL_NULL_V(get_space(), true);
 
 	if (Math::abs(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
-		still_time = 0; //maybe this should be set to 0 on set_active?
+		still_time = 0;
 		return false;
 	}
 }
