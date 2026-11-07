@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
+#include "editor/gui/tree_sort_and_filter_line_edit.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/popup_menu.h"
