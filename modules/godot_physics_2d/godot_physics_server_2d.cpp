@@ -808,6 +808,16 @@ void GodotPhysicsServer2D::body_apply_impulse(RID p_body, const Vector2 &p_impul
 	body->wakeup();
 }
 
+void GodotPhysicsServer2D::body_apply_impulse_at_position(RID p_body, const Vector2 &p_impulse, const Vector2 &p_global_position) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	_update_shapes();
+
+	body->apply_impulse_at_position(p_impulse, p_global_position);
+	body->wakeup();
+}
+
 void GodotPhysicsServer2D::body_apply_central_force(RID p_body, const Vector2 &p_force) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
@@ -821,6 +831,14 @@ void GodotPhysicsServer2D::body_apply_force(RID p_body, const Vector2 &p_force, 
 	ERR_FAIL_NULL(body);
 
 	body->apply_force(p_force, p_position);
+	body->wakeup();
+}
+
+void GodotPhysicsServer2D::body_apply_force_at_position(RID p_body, const Vector2 &p_force, const Vector2 &p_global_position) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+
+	body->apply_force_at_position(p_force, p_global_position);
 	body->wakeup();
 }
 
