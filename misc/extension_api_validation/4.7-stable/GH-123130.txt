@@ -1,0 +1,7 @@
+GH-123130
+---------
+
+Validate extension JSON: Error: Field 'classes/Expression/methods/parse/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "allowed_scope" argument.
+Compatibility method registered.

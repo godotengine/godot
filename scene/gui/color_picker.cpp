@@ -675,7 +675,7 @@ void ColorPicker::_html_submitted(const String &p_html) {
 	if (text_is_constructor || !is_color_valid_hex(color)) {
 		Ref<Expression> expr;
 		expr.instantiate();
-		Error err = expr->parse(p_html);
+		Error err = expr->parse(p_html, Vector<String>(), Expression::FUNC_TYPE_MATH | Expression::FUNC_TYPE_RANDOM);
 		if (err == OK) {
 			Variant result = expr->execute(Array(), nullptr, false, true);
 			// This is basically the same as Variant::operator Color(), but remains original color if Color::from_string() fails
