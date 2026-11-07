@@ -42,6 +42,8 @@ private:
 
 	Transform2D last_valid_transform;
 
+	bool ancestor_push_pending = false;
+
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState2D *p_state);
 
