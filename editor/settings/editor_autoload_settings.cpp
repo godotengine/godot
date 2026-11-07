@@ -825,7 +825,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 }
 
 void EditorAutoloadSettings::autoload_remove(const StringName &p_name) {
-	ProjectSettings::get_singleton()->remove_autoload(p_name);
+	ProjectSettings::get_singleton()->set("autoload/" + p_name, Variant());
 	update_autoload();
 	emit_signal(autoload_changed);
 }
