@@ -42,10 +42,7 @@
 	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
-		<key>arm64</key>
-		<string>13.0</string>
-		<key>x86_64</key>
-		<string>11.0</string>
+$min_version_info
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	<true/>
