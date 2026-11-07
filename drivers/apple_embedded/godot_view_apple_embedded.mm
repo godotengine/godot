@@ -32,10 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/ustring.h"
 #import "drivers/apple_embedded/display_layer_apple_embedded.h"
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_renderer.h"
+#include "servers/display/accessibility_server.h"
 
 #import <CoreMotion/CoreMotion.h>
 
@@ -158,6 +160,55 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
+	if (AccessibilityServer::get_singleton()) {
+		if (AccessibilityServer::get_singleton()->window_create(DisplayServerEnums::MAIN_WINDOW_ID, (__bridge void *)self)) {
+			if (self.window) {
+				AccessibilityServer::get_singleton()->native_did_view_appear(DisplayServerEnums::MAIN_WINDOW_ID);
+			}
+		} else {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+		}
+	}
+}
+
+- (BOOL)isAccessibilityElement {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		return ac->native_is_accessibility_element(DisplayServerEnums::MAIN_WINDOW_ID);
+	}
+
+	return YES;
+}
+
+- (id)accessibilityElements {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		void *nodes = ac->native_create_node_info(DisplayServerEnums::MAIN_WINDOW_ID, nullptr, 0);
+		if (nodes) {
+			return (__bridge NSArray *)nodes;
+		} else {
+			return [NSMutableArray array];
+		}
+	}
+	return [super accessibilityElements];
+}
+
+- (id)accessibilityHitTest:(CGPoint)point {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (__bridge NSObject *)ac->native_hit_test(DisplayServerEnums::MAIN_WINDOW_ID, nullptr, 0, point.x, point.y, nullptr);
+	}
+	return nil;
+}
+
+- (void)didMoveToWindow {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		AccessibilityServer::get_singleton()->native_did_view_appear(DisplayServerEnums::MAIN_WINDOW_ID);
+	}
+	[super didMoveToWindow];
 }
 
 - (void)system_theme_changed {
