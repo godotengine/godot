@@ -41,4 +41,13 @@ object EditorUtils {
 
 	@JvmStatic
 	external fun orientationChanged(isPortrait: Boolean)
+
+	@JvmStatic
+	external fun setDistractionFreeMode(enter: Boolean)
+
+	@JvmStatic
+	external fun lockDistractionFreeMode()
+
+	@JvmStatic
+	external fun unlockDistractionFreeMode()
 }
