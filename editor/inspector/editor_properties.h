@@ -638,6 +638,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	virtual void update_using_transform(Transform3D p_transform);
 	void setup(const EditorPropertyRangeHint &p_range_hint);
@@ -654,6 +655,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	virtual void set_deferred_drag_mode_enabled(bool p_enabled = true) override;
 	virtual void update_property() override;
 	virtual void update_using_transform(Projection p_transform);
 	void setup(const EditorPropertyRangeHint &p_range_hint);
