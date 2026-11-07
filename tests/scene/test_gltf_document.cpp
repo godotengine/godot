@@ -251,6 +251,19 @@ TEST_CASE("[SceneTree][GLTFDocument] Load suzanne.glb") {
 	memdelete(node);
 }
 
+TEST_CASE("[GLTFState] No extraction prefix if not set") {
+	Ref<GLTFState> default_state;
+	default_state.instantiate();
+	default_state->set_filename("scene.gltf");
+	CHECK(default_state->get_extract_prefix().is_empty());
+
+	Ref<GLTFState> custom_prefix_state;
+	custom_prefix_state.instantiate();
+	custom_prefix_state->set_extract_prefix("custom");
+	custom_prefix_state->set_filename("scene.gltf");
+	CHECK(custom_prefix_state->get_extract_prefix() == "custom");
+}
+
 } // namespace TestGLTFDocument
 
 #endif // MODULE_GLTF_ENABLED
