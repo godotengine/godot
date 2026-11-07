@@ -992,7 +992,10 @@ void RuntimeNodeSelect::_update_selection() {
 			continue;
 		}
 
-		Transform2D xform = ci->get_global_transform_with_canvas();
+		// Convert item coordinates to screen coordinates then back to root canvas, to account for subviewports
+		Window *root = SceneTree::get_singleton()->get_root();
+		Transform2D xform = root->get_screen_transform().affine_inverse() * ci->get_viewport()->get_screen_transform() * ci->get_global_transform_with_canvas();
+
 		bool item_locked = CanvasItemManipulator::is_node_locked(ci);
 
 #ifdef TOOLS_ENABLED
