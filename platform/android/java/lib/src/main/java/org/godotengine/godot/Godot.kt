@@ -700,6 +700,7 @@ class Godot private constructor(val context: Context) {
 			return
 		}
 
+		godotInputHandler.onActivityResumed()
 		renderView?.onActivityResumed()
 		registerSensorsIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
@@ -746,6 +747,8 @@ class Godot private constructor(val context: Context) {
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainPause()
 		}
+
+		godotInputHandler.onActivityPaused()
 		renderView?.onActivityPaused()
 		mSensorManager?.unregisterListener(godotInputHandler)
 	}
