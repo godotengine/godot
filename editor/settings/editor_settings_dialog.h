@@ -60,6 +60,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	// Shortcuts
 	enum ShortcutButton {
+		SHORTCUT_CONFLICT,
 		SHORTCUT_ADD,
 		SHORTCUT_EDIT,
 		SHORTCUT_ERASE,
@@ -91,7 +92,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _event_config_confirmed();
 	bool _is_in_project_manager() const;
 
-	TreeItem *_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed);
+	TreeItem *_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_common, bool p_is_collapsed, const PackedStringArray &p_duplicate_shortcuts);
 	Array _event_list_to_array_helper(const List<Ref<InputEvent>> &p_events);
 	void _update_builtin_action(const String &p_name, const Array &p_events);
 	void _update_shortcut_events(const String &p_path, const Array &p_events);
