@@ -4352,10 +4352,20 @@ void TileMapLayerEditor::_draw_overlay() {
 	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
 	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 	if (scale_fading > 0) {
+		// Include partially visible tiles when culling the warning overlay.
+		Rect2 visible_rect = xform_inv.xform(Rect2(Vector2(), custom_overlay->get_size()));
+		visible_rect.position -= Vector2(tile_shape_size) / 2;
+		visible_rect.size += Vector2(tile_shape_size);
+
 		// Draw tiles with invalid IDs in the grid.
 		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
 		for (int i = 0; i < used_cells.size(); i++) {
 			Vector2i coords = used_cells[i];
+			Vector2 tile_center = tile_set->map_to_local(coords);
+			if (!visible_rect.has_point(tile_center)) {
+				continue;
+			}
+
 			int tile_source_id = edited_layer->get_cell_source_id(coords);
 			if (tile_source_id >= 0) {
 				Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
@@ -4380,7 +4390,7 @@ void TileMapLayerEditor::_draw_overlay() {
 
 					// Display the warning pattern.
 					Transform2D tile_xform;
-					tile_xform.set_origin(tile_set->map_to_local(coords));
+					tile_xform.set_origin(tile_center);
 					tile_xform.set_scale(tile_shape_size);
 					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
 
@@ -4389,7 +4399,7 @@ void TileMapLayerEditor::_draw_overlay() {
 					Vector2 icon_size;
 					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
 					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
-					Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
+					Rect2 rect = Rect2(xform.xform(tile_center) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
 					custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
 				}
 			}
