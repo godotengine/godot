@@ -205,6 +205,35 @@ public:
 
 		bool can_reference(const DataType &p_other) const;
 
+		bool is_same_exact(const DataType &p_other) const {
+			ERR_FAIL_COND_V(has_container_element_types(), false);
+			ERR_FAIL_COND_V(p_other.has_container_element_types(), false);
+
+			const Kind this_kind = (is_hard_type() && is_set()) ? kind : VARIANT;
+			const Kind other_kind = (p_other.is_hard_type() && p_other.is_set()) ? p_other.kind : VARIANT;
+			if (this_kind != other_kind) {
+				return false;
+			}
+
+			switch (kind) {
+				case BUILTIN:
+					return builtin_type == p_other.builtin_type;
+				case NATIVE:
+				case ENUM: // Enums use native_type to identify the enum and its base class.
+					return native_type == p_other.native_type;
+				case SCRIPT:
+					return script_type == p_other.script_type;
+				case CLASS:
+					return class_type == p_other.class_type || class_type->fqcn == p_other.class_type->fqcn;
+				case VARIANT:
+				case RESOLVING:
+				case UNRESOLVED:
+					break;
+			}
+			return false;
+		}
+
+		// TODO: Replace all analyzer occurrences with `is_same_exact` for generics or an alternative that handles polymorphism.
 		bool operator==(const DataType &p_other) const {
 			if (type_source == UNDETECTED || p_other.type_source == UNDETECTED) {
 				return true; // Can be considered equal for parsing purposes.
