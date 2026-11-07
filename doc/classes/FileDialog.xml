@@ -196,7 +196,7 @@
 			<return type="void" />
 			<param index="0" name="recents" type="PackedStringArray" />
 			<description>
-				Sets the list of recent directories, which is shared by all [FileDialog] nodes. Useful to restore the list of recents saved with [method set_recent_list]. This method can be called only from the main thread.
+				Sets the list of recent directories, which is shared by all [FileDialog] nodes. Useful to restore the list of recents saved via [method get_recent_list]. This method can be called only from the main thread.
 				[b]Note:[/b] [FileDialog] will update its internal [ItemList] of recent directories when its visibility changes. Be sure to call this method earlier if you want your changes to have effect.
 			</description>
 		</method>

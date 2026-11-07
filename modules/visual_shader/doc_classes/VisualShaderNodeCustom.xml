@@ -177,7 +177,7 @@
 			<param index="0" name="mode" type="int" enum="Shader.Mode" />
 			<param index="1" name="type" type="int" enum="VisualShader.Type" />
 			<description>
-				Override this method to prevent the node to be visible in the member dialog for the certain [param mode] and/or [param type].
+				Override this method to return [code]true[/code] if the node should be visible in the member dialog for the given [param mode] and/or [param type].
 				Defining this method is [b]optional[/b]. If not overridden, it's [code]true[/code].
 			</description>
 		</method>
