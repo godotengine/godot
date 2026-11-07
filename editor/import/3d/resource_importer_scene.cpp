@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/editor_interface.h"
@@ -3456,6 +3457,44 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		}
 	}
 	err = OK;
+
+	// Generate deterministic unique node IDs.
+	if (_scene_import_type == "PackedScene") {
+		uint32_t unique_scene_id = Node::UNIQUE_SCENE_ID_UNASSIGNED;
+		RandomPCG rng;
+		LocalVector<uint32_t> ids_saved;
+		// Use lowercase source path just like ResourceUID::create_id_for_path().
+		// Unlike ResourceUID we don't want to include project name when generating IDs so that scenes imported from addons stay the same.
+		rng.seed(src_path.to_lower().hash64());
+
+		LocalVector<Node *> nodes_to_give_id;
+		nodes_to_give_id.push_back(scene);
+
+		while (!nodes_to_give_id.is_empty()) {
+			Node *node = nodes_to_give_id[nodes_to_give_id.size() - 1];
+			nodes_to_give_id.remove_at(nodes_to_give_id.size() - 1);
+			while (true) {
+				uint32_t data = rng.rand();
+				unique_scene_id = data & 0x7FFFFFFF; // keep positive.
+
+				if (unique_scene_id == Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+					unique_scene_id = 1;
+				}
+				if (ids_saved.has(unique_scene_id)) {
+					continue;
+				}
+				break;
+			}
+			node->set_unique_scene_id(unique_scene_id);
+			ids_saved.push_back(unique_scene_id);
+
+			// Visit children.
+			int child_count = node->get_child_count();
+			for (int i = 0; i < child_count; i++) {
+				nodes_to_give_id.push_back(node->get_child(i));
+			}
+		}
+	}
 
 	progress.step(TTR("Running Custom Script..."), 2);
 
