@@ -5754,7 +5754,15 @@ void Tree::_notification(int p_what) {
 				if (v_scroll_value > 1 || v_scroll_below_max) {
 					int hint_height = theme_cache.scroll_hint->get_height();
 					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_TOP) && v_scroll_value > 1) {
-						draw_texture_rect(theme_cache.scroll_hint, Rect2(0, sticky_stack_end > 0 ? sticky_stack_end + draw_ofs.y : 0, size.width, hint_height), tile_scroll_hint, theme_cache.scroll_hint_color);
+						int y;
+						if (sticky_stack_end > 0) {
+							y = sticky_stack_end + draw_ofs.y;
+						} else if (show_column_titles) {
+							y = draw_ofs.y;
+						} else {
+							y = 0;
+						}
+						draw_texture_rect(theme_cache.scroll_hint, Rect2(0, y, size.width, hint_height), tile_scroll_hint, theme_cache.scroll_hint_color);
 					}
 					if ((scroll_hint_mode == SCROLL_HINT_MODE_BOTH || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM) && v_scroll_below_max) {
 						draw_texture_rect(theme_cache.scroll_hint, Rect2(Point2(0, size.height - hint_height), Size2(size.width, -hint_height)), tile_scroll_hint, theme_cache.scroll_hint_color);
