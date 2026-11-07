@@ -642,8 +642,8 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_constant("scrollbar_margin_top", "Tree", 0);
 			p_theme->set_constant("scrollbar_margin_right", "Tree", 0);
 			p_theme->set_constant("scrollbar_margin_bottom", "Tree", 0);
-			p_theme->set_constant("scrollbar_h_separation", "Tree", EDSCALE_RND(1));
-			p_theme->set_constant("scrollbar_v_separation", "Tree", EDSCALE_RND(1));
+			p_theme->set_constant("scrollbar_h_separation", "Tree", 0);
+			p_theme->set_constant("scrollbar_v_separation", "Tree", 0);
 
 			Color relationship_line_color = p_config.mono_color * Color(1, 1, 1, p_config.relationship_line_opacity);
 
