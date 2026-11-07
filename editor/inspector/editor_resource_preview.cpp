@@ -330,10 +330,12 @@ void EditorResourcePreview::_iterate() {
 		// No cache found, generate.
 		_generate_preview(texture, small_texture, item, cache_base, preview_metadata);
 	} else {
-		uint64_t modtime = FileAccess::get_modified_time(item.path);
+		uint64_t source_modtime = FileAccess::get_modified_time(item.path);
 		String import_path = item.path + ".import";
-		if (FileAccess::exists(import_path)) {
-			modtime = MAX(modtime, FileAccess::get_modified_time(import_path));
+		bool has_import_file = FileAccess::exists(import_path);
+		uint64_t import_modtime = 0;
+		if (has_import_file) {
+			import_modtime = FileAccess::get_modified_time(import_path);
 		}
 
 		int tsize;
@@ -351,22 +353,26 @@ void EditorResourcePreview::_iterate() {
 		} else if (outdated) {
 			cache_valid = false;
 			f.unref();
-		} else if (last_modtime != modtime) {
-			String last_md5 = f->get_line();
+		} else if (has_import_file && import_modtime > last_modtime) {
+			// Import settings changed; reload cached resource.
+			ResourceLoader::load(item.path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+			f.unref();
+			cache_valid = false;
+		} else if (source_modtime > last_modtime) {
 			String md5 = FileAccess::get_md5(item.path);
 			f.unref();
 
-			if (last_md5 != md5) {
+			if (hash != md5) {
 				cache_valid = false;
 			} else {
 				// Update modified time.
-
 				Ref<FileAccess> f2 = FileAccess::open(file, FileAccess::WRITE);
 				if (f2.is_null()) {
 					// Not returning as this would leave the thread hanging and would require
 					// some proper cleanup/disabling of resource preview generation.
 					ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 				} else {
+					uint64_t modtime = MAX(source_modtime, import_modtime);
 					_write_preview_cache(f2, thumbnail_size, has_small_texture, modtime, md5, preview_metadata);
 				}
 			}
