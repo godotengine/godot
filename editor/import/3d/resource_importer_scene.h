@@ -208,6 +208,18 @@ class ResourceImporterScene : public ResourceImporter {
 		SHAPE_TYPE_AUTOMATIC,
 	};
 
+	enum MaterialFilter {
+		MATERIAL_FILTER_DEFAULT = -1,
+		MATERIAL_FILTER_SOURCE,
+		MATERIAL_FILTER_PROJECT_DEFAULT,
+		MATERIAL_FILTER_NEAREST,
+		MATERIAL_FILTER_LINEAR,
+		MATERIAL_FILTER_NEAREST_MIPMAPS,
+		MATERIAL_FILTER_LINEAR_MIPMAPS,
+		MATERIAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
+		MATERIAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
+	};
+
 	static Error _check_resource_save_paths(ResourceUID::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data);
 	Array _get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
