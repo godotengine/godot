@@ -36,6 +36,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/scene_tree_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
@@ -168,8 +169,8 @@ void MultiMeshEditor::_populate() {
 	multimesh->set_use_colors(false);
 	multimesh->set_instance_count(instance_count);
 
-	float _tilt_random = populate_tilt_random->get_value();
-	float _rotate_random = populate_rotate_random->get_value();
+	float _tilt_random = populate_tilt_random->get_value() / 180.0;
+	float _rotate_random = populate_rotate_random->get_value() / 180.0;
 	float _scale_random = populate_scale_random->get_value();
 	float _scale = populate_scale->get_value();
 	int axis = populate_axis->get_selected();
@@ -212,7 +213,7 @@ void MultiMeshEditor::_populate() {
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
 
-		xform.basis.scale(Vector3(1, 1, 1) * (_scale + Math::random(-_scale_random, _scale_random)));
+		xform.basis.scale(Vector3(1, 1, 1) * Math::abs(_scale + Math::random(-_scale_random, _scale_random)));
 
 		multimesh->set_instance_transform(i, xform);
 	}
@@ -234,8 +235,8 @@ void MultiMeshEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_OPTION_POPULATE: {
 			if (_last_pp_node != node) {
-				surface_source->set_text("..");
-				mesh_source->set_text("..");
+				surface_source->set_text("");
+				mesh_source->set_text("");
 				populate_axis->select(1);
 				populate_rotate_random->set_value(0);
 				populate_tilt_random->set_value(0);
@@ -245,8 +246,9 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 				_last_pp_node = node;
 			}
-			populate_dialog->popup_centered(Size2(250, 380));
-
+			populate_dialog->popup_centered(Size2(320, 380) * EDSCALE);
+			// Lock popup height, but allow horizontal resize
+			populate_dialog->set_max_size(Size2(populate_dialog->get_max_size().x, populate_dialog->get_size().y));
 		} break;
 	}
 }
@@ -268,6 +270,15 @@ void MultiMeshEditor::_browse(bool p_source) {
 	std->popup_scenetree_dialog(browsed_node);
 }
 
+void MultiMeshEditor::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			surface_source_button->set_button_icon(get_theme_icon(SNAME("Search"), EditorStringName(EditorIcons)));
+			mesh_source_button->set_button_icon(get_theme_icon(SNAME("Search"), EditorStringName(EditorIcons)));
+		}
+	}
+}
+
 MultiMeshEditor::MultiMeshEditor() {
 	options = memnew(MenuButton);
 	options->set_switch_on_hover(true);
@@ -283,37 +294,45 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	populate_dialog = memnew(ConfirmationDialog);
 	populate_dialog->set_title(TTRC("Populate MultiMesh"));
+	populate_dialog->set_ok_button_text(TTRC("Populate"));
+	populate_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_populate));
 	add_child(populate_dialog);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	populate_dialog->add_child(vbc);
-	//populate_dialog->set_child_rect(vbc);
 
-	HBoxContainer *hbc = memnew(HBoxContainer);
+	HBoxContainer *hbc_surface_source = memnew(HBoxContainer);
 
 	surface_source = memnew(LineEdit);
-	hbc->add_child(surface_source);
+	surface_source->set_placeholder(TTRC("MeshInstance3D Path"));
 	surface_source->set_h_size_flags(SIZE_EXPAND_FILL);
 	surface_source->set_accessibility_name(TTRC("Target Surface:"));
-	Button *b = memnew(Button);
-	hbc->add_child(b);
-	b->set_accessibility_name(TTRC("Browse"));
-	b->set_text("..");
-	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(false));
+	hbc_surface_source->add_child(surface_source);
 
-	vbc->add_margin_child(TTRC("Target Surface:"), hbc);
+	surface_source_button = memnew(Button);
+	surface_source_button->set_accessibility_name(TTRC("Browse"));
+	surface_source_button->set_text(TTRC("Browse"));
+	surface_source_button->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(false));
 
-	hbc = memnew(HBoxContainer);
+	hbc_surface_source->add_child(surface_source_button);
+
+	vbc->add_margin_child(TTRC("Target Surface:"), hbc_surface_source);
+
+	HBoxContainer *hbc_mesh_source = memnew(HBoxContainer);
+
 	mesh_source = memnew(LineEdit);
-	hbc->add_child(mesh_source);
+	mesh_source->set_placeholder(TTRC("MeshInstance3D Path"));
 	mesh_source->set_h_size_flags(SIZE_EXPAND_FILL);
 	mesh_source->set_accessibility_name(TTRC("Source Mesh:"));
-	b = memnew(Button);
-	hbc->add_child(b);
-	b->set_accessibility_name(TTRC("Browse"));
-	b->set_text("..");
-	vbc->add_margin_child(TTRC("Source Mesh:"), hbc);
-	b->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(true));
+	hbc_mesh_source->add_child(mesh_source);
+
+	mesh_source_button = memnew(Button);
+	mesh_source_button->set_accessibility_name(TTRC("Browse"));
+	mesh_source_button->set_text(TTRC("Browse"));
+	mesh_source_button->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_browse).bind(true));
+	hbc_mesh_source->add_child(mesh_source_button);
+
+	vbc->add_margin_child(TTRC("Source Mesh:"), hbc_mesh_source);
 
 	populate_axis = memnew(OptionButton);
 	populate_axis->set_accessibility_name(TTRC("Mesh Up Axis:"));
@@ -323,53 +342,81 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_axis->select(2);
 	vbc->add_margin_child(TTRC("Mesh Up Axis:"), populate_axis);
 
-	populate_rotate_random = memnew(HSlider);
-	populate_rotate_random->set_max(1);
-	populate_rotate_random->set_step(0.01);
+	HBoxContainer *hb_random = memnew(HBoxContainer);
+	VBoxContainer *vb_random_labels = memnew(VBoxContainer);
+	VBoxContainer *vb_random_sliders = memnew(VBoxContainer);
+	vb_random_sliders->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	Label *random_rotation = memnew(Label);
+	random_rotation->set_text(TTRC("Rotation"));
+	random_rotation->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	vb_random_labels->add_child(random_rotation);
+
+	populate_rotate_random = memnew(EditorSpinSlider);
+	populate_rotate_random->set_min(0);
+	populate_rotate_random->set_max(180);
+	populate_rotate_random->set_step(1);
+	populate_rotate_random->set_suffix(U"°");
+	populate_rotate_random->set_label(U"±");
 	populate_rotate_random->set_accessibility_name(TTRC("Random Rotation:"));
-	vbc->add_margin_child(TTRC("Random Rotation:"), populate_rotate_random);
+	vb_random_sliders->add_child(populate_rotate_random);
 
-	populate_tilt_random = memnew(HSlider);
-	populate_tilt_random->set_max(1);
-	populate_tilt_random->set_step(0.01);
+	Label *random_tilt = memnew(Label);
+	random_tilt->set_text(TTRC("Tilt"));
+	random_tilt->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	vb_random_labels->add_child(random_tilt);
+
+	populate_tilt_random = memnew(EditorSpinSlider);
+	populate_tilt_random->set_min(0);
+	populate_tilt_random->set_max(180);
+	populate_tilt_random->set_step(1);
+	populate_tilt_random->set_suffix(U"°");
+	populate_tilt_random->set_label(U"±");
 	populate_tilt_random->set_accessibility_name(TTRC("Random Tilt:"));
-	vbc->add_margin_child(TTRC("Random Tilt:"), populate_tilt_random);
+	vb_random_sliders->add_child(populate_tilt_random);
 
-	populate_scale_random = memnew(SpinBox);
+	Label *random_scale = memnew(Label);
+	random_scale->set_text(TTRC("Scale"));
+	random_scale->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	vb_random_labels->add_child(random_scale);
+
+	populate_scale_random = memnew(EditorSpinSlider);
 	populate_scale_random->set_min(0);
-	populate_scale_random->set_max(1);
-	populate_scale_random->set_value(0);
+	populate_scale_random->set_max(2);
 	populate_scale_random->set_step(0.01);
+	populate_scale_random->set_label(U"±");
+	populate_scale_random->set_allow_greater(true);
 	populate_scale_random->set_accessibility_name(TTRC("Random Scale:"));
-	vbc->add_margin_child(TTRC("Random Scale:"), populate_scale_random);
+	vb_random_sliders->add_child(populate_scale_random);
 
-	populate_scale = memnew(SpinBox);
+	hb_random->add_child(vb_random_labels);
+	hb_random->add_child(vb_random_sliders);
+	vbc->add_margin_child(TTRC("Randomization:"), hb_random);
+
+	populate_scale = memnew(EditorSpinSlider);
 	populate_scale->set_min(0.001);
-	populate_scale->set_max(4096);
+	populate_scale->set_max(10);
 	populate_scale->set_value(1);
 	populate_scale->set_step(0.01);
-	populate_scale->set_accessibility_name(TTRC("Scale:"));
-	vbc->add_margin_child(TTRC("Scale:"), populate_scale);
+	populate_scale->set_allow_greater(true);
+	populate_scale->set_accessibility_name(TTRC("Base Scale:"));
+	vbc->add_margin_child(TTRC("Base Scale:"), populate_scale);
 
 	populate_amount = memnew(SpinBox);
-	populate_amount->set_anchor(SIDE_RIGHT, ANCHOR_END);
-	populate_amount->set_begin(Point2(20, 232));
-	populate_amount->set_end(Point2(-5, 237));
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
 	populate_amount->set_value(128);
+	populate_amount->set_custom_arrow_step(5);
 	populate_amount->set_accessibility_name(TTRC("Amount:"));
 	vbc->add_margin_child(TTRC("Amount:"), populate_amount);
 
-	populate_dialog->set_ok_button_text(TTRC("Populate"));
-
-	populate_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MultiMeshEditor::_populate));
-	std = memnew(SceneTreeDialog);
 	Vector<StringName> valid_types;
 	valid_types.push_back("MeshInstance3D");
+
+	std = memnew(SceneTreeDialog);
 	std->set_valid_types(valid_types);
-	populate_dialog->add_child(std);
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
+	populate_dialog->add_child(std);
 
 	_last_pp_node = nullptr;
 
