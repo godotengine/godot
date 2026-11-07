@@ -153,7 +153,7 @@ private:
 
 	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
 
-	void _add_stage(const char *p_code, StageType p_stage_type);
+	void _add_stage(const String &p_code, StageType p_stage_type);
 
 	String _version_get_sha1(Version *p_version) const;
 	bool _load_from_cache(Version *p_version);

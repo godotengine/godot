@@ -111,7 +111,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 	font.instantiate();
 	font->set_antialiasing(TextServer::FONT_ANTIALIASING_NONE);
 	font->set_generate_mipmaps(false);
-	font->set_multichannel_signed_distance_field(false);
+	font->set_render_mode(TextServer::FONT_RENDER_RASTER);
 	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
 	font->set_keep_rounding_remainders(true);

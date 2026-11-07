@@ -743,7 +743,10 @@ EditorBuildProfile::EditorBuildProfile() {
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_JOLT, settings_jolt);
 
 	HashMap<String, LocalVector<Variant>> settings_msdfgen = {
+#ifndef DISABLE_DEPRECATED
 		{ "gui/theme/default_font_multichannel_signed_distance_field", { true } },
+#endif
+		{ "gui/theme/gui/theme/default_font_render_mode", { TextServer::FONT_RENDER_MSDF } },
 	};
 	build_option_settings.insert(BUILD_OPTION_MSDFGEN, settings_msdfgen);
 }
