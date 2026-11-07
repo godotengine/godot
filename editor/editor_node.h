@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/callable_mp.h"
 #include "core/object/script_language.h"
 #include "core/os/process_id.h"
 #include "core/templates/safe_refcount.h"
@@ -120,6 +121,53 @@ struct EditorProgress {
 
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false, bool p_force_background = false);
 	~EditorProgress();
+};
+
+struct EditorCommandQueue {
+	friend class EditorNode;
+	struct Command {
+		String state;
+		int step_index;
+		Callable command;
+	};
+
+	String task;
+	String label;
+	int step_count = 0;
+	bool can_cancel = false;
+	bool run_in_background = false;
+	int next_step = 0;
+	LocalVector<Command, int> steps;
+	Thread *bg_process = nullptr;
+	Mutex mutex;
+	EditorProgress *progress = nullptr;
+
+protected:
+	static void _run_in_thread(void *p_command_queue);
+	static void _thread_done(uint64_t p_command_queue_ptr);
+	EditorCommandQueue(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel, bool p_force_background);
+
+public:
+	void add_step(const String &p_state, int p_step_index, const Callable &p_command);
+	void advance_step();
+	bool is_running_in_background() const;
+	bool is_done() const;
+
+	~EditorCommandQueue();
+};
+
+class EditorCommandLock {
+	friend class EditorNode;
+
+	static int lock_count;
+	EditorCommandLock() {
+		lock_count++;
+	}
+
+public:
+	~EditorCommandLock() {
+		lock_count--;
+	}
 };
 
 class EditorNode : public Node {
@@ -297,6 +345,8 @@ private:
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
+
+	LocalVector<EditorCommandQueue *, int> process_command_queue;
 
 #ifdef ANDROID_ENABLED
 	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar, main_box, and vk_spacer.
@@ -482,7 +532,6 @@ private:
 	int update_spinner_step = 0;
 
 	String saving_scene;
-	EditorProgress *save_scene_progress = nullptr;
 
 	DynamicFontImportSettingsDialog *fontdata_import_settings = nullptr;
 	SceneImportSettingsDialog *scene_import_settings = nullptr;
@@ -667,9 +716,7 @@ private:
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
 
-	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
-	void _save_scene_with_preview(String p_file, int p_idx = -1);
-	void _close_save_scene_progress();
+	void _save_scene_with_preview(const String &p_file, int p_idx = -1);
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
@@ -684,6 +731,7 @@ private:
 
 	void _save_editor_layout();
 	void _load_editor_layout();
+	void _load_editor_layout_finalize_step(const Ref<ConfigFile> &config);
 
 	void _save_central_editor_layout_to_config(Ref<ConfigFile> p_config_file);
 	void _load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file);
@@ -819,6 +867,17 @@ public:
 	static HashMap<String, Variant> get_initial_settings();
 
 	static void cleanup();
+
+	template <typename T = EditorCommandQueue>
+	T *start_editor_process(const String &p_task, const String &p_label, int p_step_count, bool p_can_cancel = false, bool p_force_background = false) {
+		T *cq = memnew(T(p_task, p_label, p_step_count, p_can_cancel, p_force_background));
+		process_command_queue.push_back(static_cast<EditorCommandQueue *>(cq));
+		return cq;
+	}
+	EditorCommandLock pause_editor_processes() {
+		// While the returned object is in scope, calls to Main::iterate() will skip running EditorCommandQueue.
+		return EditorCommandLock();
+	}
 
 	Ref<Texture2D> get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const;
 
