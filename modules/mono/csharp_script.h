@@ -286,6 +286,10 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
+#ifdef TOOLS_ENABLED
+	virtual void _resource_path_changed() override;
+#endif
+
 public:
 	static void reload_registered_script(Ref<CSharpScript> p_script);
 
