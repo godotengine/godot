@@ -37,7 +37,6 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
-#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
@@ -263,9 +262,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		float scale_x = get_global_transform_with_canvas().get_scale().x;
-		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
-		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
+		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
 		queue_redraw();
 	}
