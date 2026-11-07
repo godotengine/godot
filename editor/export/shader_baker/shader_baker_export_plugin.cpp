@@ -278,6 +278,21 @@ Ref<Resource> ShaderBakerExportPlugin::_customize_resource(const Ref<Resource> &
 	RendererRD::MaterialStorage *singleton = RendererRD::MaterialStorage::get_singleton();
 	DEV_ASSERT(singleton != nullptr);
 
+	Ref<Shader> shader = p_resource;
+	if (shader.is_valid()) {
+		RID shader_rid = shader->get_rid();
+		if (shader_rid.is_valid()) {
+			RendererRD::MaterialStorage::ShaderData *shader_data = singleton->shader_get_data(shader_rid);
+			if (shader_data != nullptr) {
+				Pair<ShaderRD *, RID> shader_version_pair = shader_data->get_native_shader_and_version();
+				if (shader_version_pair.first != nullptr) {
+					_customize_shader_version(shader_version_pair.first, shader_version_pair.second);
+				}
+			}
+		}
+		return Ref<Resource>();
+	}
+
 	Ref<Material> material = p_resource;
 	if (material.is_valid()) {
 		RID material_rid = material->get_rid();
@@ -348,6 +363,10 @@ Node *ShaderBakerExportPlugin::_customize_scene(Node *p_root, const String &p_pa
 			StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BillboardMode(int(properties["billboard"]));
 			Ref<Material> sprite_3d_material = StandardMaterial3D::get_material_for_2d(bool(properties["shaded"]), mat_transparency, bool(properties["double_sided"]), billboard_mode == StandardMaterial3D::BILLBOARD_ENABLED, billboard_mode == StandardMaterial3D::BILLBOARD_FIXED_Y, false, bool(properties["no_depth_test"]), bool(properties["fixed_size"]), BaseMaterial3D::TextureFilter(int(properties["texture_filter"])), BaseMaterial3D::AlphaAntiAliasing(int(properties["alpha_antialiasing_mode"])));
 			_customize_resource(sprite_3d_material, String());
+			if (sprite_3d != nullptr) {
+				sprite_3d_material = StandardMaterial3D::get_material_for_2d(bool(properties["shaded"]), mat_transparency, bool(properties["double_sided"]), billboard_mode == StandardMaterial3D::BILLBOARD_ENABLED, billboard_mode == StandardMaterial3D::BILLBOARD_FIXED_Y, false, bool(properties["no_depth_test"]), bool(properties["fixed_size"]), BaseMaterial3D::TextureFilter(int(properties["texture_filter"])), BaseMaterial3D::AlphaAntiAliasing(int(properties["alpha_antialiasing_mode"])), true);
+				_customize_resource(sprite_3d_material, String());
+			}
 
 			if (label_3d != nullptr) {
 				// Generate variants with and without MSDF support since we don't have access to the font here.
