@@ -1405,6 +1405,12 @@
 			The action to execute on the bottom panel when stopping the project.
 			[b]Note:[/b] This option won't do anything if the bottom panel switching is locked using the pin button in the corner of the bottom panel.
 		</member>
+		<member name="run/live_runtime/max_nodes" type="int" setter="" getter="">
+			The maximum number of nodes of the running game shown by the Live Runtime view of the 2D and 3D editors. Nodes beyond this number are not sent by the game.
+		</member>
+		<member name="run/live_runtime/update_rate" type="int" setter="" getter="">
+			How many times per second the running game sends changes to the Live Runtime view of the 2D and 3D editors. Only nodes that moved, appeared, disappeared or changed visibility are sent. Lower values reduce the cost in the game and the editor.
+		</member>
 		<member name="run/output/always_clear_output_on_play" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will clear the Output panel when running the project.
 		</member>

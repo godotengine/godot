@@ -126,6 +126,7 @@
 #include "editor/run/editor_run.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/game_view_plugin.h"
+#include "editor/run/live_runtime_plugin.h"
 #include "editor/scene/3d/material_3d_conversion_plugins.h"
 #include "editor/scene/3d/mesh_library_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -9631,6 +9632,7 @@ EditorNode::EditorNode() {
 
 	if (!Engine::get_singleton()->is_recovery_mode_hint()) {
 		add_editor_plugin(get_game_view_plugin());
+		add_editor_plugin(memnew(LiveRuntimePlugin));
 	}
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
