@@ -1141,6 +1141,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	int default_game_embed_mode = OS::get_singleton()->has_feature("xr_editor") ? -1 : 0;
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/game_embed_mode", default_game_embed_mode, game_embed_mode_hints);
 
+	// Live Runtime view (the 2D/3D editor follows the running game).
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/live_runtime/update_rate", 30, "1,120,1,suffix:Hz")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/live_runtime/max_nodes", 20000, "100,200000,100")
+
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true, true);
 

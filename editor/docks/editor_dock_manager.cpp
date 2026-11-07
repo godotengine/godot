@@ -535,6 +535,15 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		}
 		p_layout->set_value(p_section, "dock_bottom_split", value);
 	}
+
+	// The workspace split keeps its own state in distraction-free mode, since the split panel stays visible there.
+	if (workspace_split) {
+		if (is_workspace_split_active() && !workspace_split->get_split_offsets().is_empty()) {
+			p_layout->set_value(p_section, "dock_workspace_split", int(workspace_split->get_split_offsets()[0] / EDSCALE));
+		}
+		p_layout->set_value(p_section, "dock_workspace_split_vertical", is_workspace_split_vertical());
+		p_layout->set_value(p_section, "dock_workspace_split_swapped", workspace_split_swapped);
+	}
 }
 
 void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load) {
@@ -630,6 +639,14 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		bottom_hsplit->set_split_offsets(offsets);
 	}
 
+	if (workspace_split) {
+		set_workspace_split_vertical(p_layout->get_value(p_section, "dock_workspace_split_vertical", false));
+		set_workspace_split_swapped(p_layout->get_value(p_section, "dock_workspace_split_swapped", false));
+		const int workspace_offset = p_layout->get_value(p_section, "dock_workspace_split", 0);
+		offsets = { int(workspace_offset * EDSCALE) };
+		workspace_split->set_split_offsets(offsets);
+	}
+
 	update_docks_menu();
 }
 
@@ -664,6 +681,16 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot close unknown dock '%s'.", p_dock->get_display_title()));
 
 	if (!p_dock->is_open) {
+		return;
+	}
+
+	DockTabContainer *from_container = p_dock->get_parent_container();
+	if (from_container && from_container->dock_slot == EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT) {
+		// Closing a dock in the split panel closes the panel, not the dock: it goes back to the
+		// main screen (without becoming the current one), so it stays in the title bar.
+		DockTabContainer *main_screen = dock_slots[EditorDock::DOCK_SLOT_MAIN_SCREEN];
+		_move_dock(p_dock, main_screen, main_screen->get_tab_count(), false);
+		_update_layout();
 		return;
 	}
 
@@ -848,6 +875,47 @@ int EditorDockManager::get_vsplit_count() const {
 	return vsplits.size();
 }
 
+bool EditorDockManager::is_workspace_split_active() const {
+	const DockTabContainer *split_panel = dock_slots[EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT];
+	return split_panel && split_panel->get_tab_count() > 0;
+}
+
+void EditorDockManager::set_workspace_split_vertical(bool p_vertical) {
+	ERR_FAIL_NULL(workspace_split);
+	if (workspace_split->is_vertical() == p_vertical) {
+		return;
+	}
+	workspace_split->set_vertical(p_vertical);
+	_update_layout();
+}
+
+bool EditorDockManager::is_workspace_split_vertical() const {
+	return workspace_split && workspace_split->is_vertical();
+}
+
+void EditorDockManager::set_workspace_split_swapped(bool p_swapped) {
+	ERR_FAIL_NULL(workspace_split);
+	if (workspace_split_swapped == p_swapped) {
+		return;
+	}
+	workspace_split_swapped = p_swapped;
+
+	// The offset is measured from the first panel, so mirror it to keep the panel sizes.
+	PackedInt32Array offsets = workspace_split->get_split_offsets();
+	for (int i = 0; i < offsets.size(); i++) {
+		offsets.write[i] = -offsets[i];
+	}
+	Control *split_panel = dock_slots[EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT];
+	workspace_split->move_child(split_panel, workspace_split_swapped ? 0 : -1);
+	workspace_split->set_split_offsets(offsets);
+	_update_layout();
+}
+
+void EditorDockManager::set_workspace_split_from_margin(Side p_margin) {
+	set_workspace_split_vertical(p_margin == SIDE_TOP || p_margin == SIDE_BOTTOM);
+	set_workspace_split_swapped(p_margin == SIDE_LEFT || p_margin == SIDE_TOP);
+}
+
 PopupMenu *EditorDockManager::get_docks_menu() {
 	return docks_menu;
 }
@@ -892,6 +960,8 @@ void DockContextPopup::_notification(int p_what) {
 				tab_move_right_button->set_tooltip_text(TTR("Move this dock right one tab."));
 			}
 			close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+			workspace_vertical_button->set_button_icon(get_editor_theme_icon(SNAME("Panels2")));
+			workspace_swap_button->set_button_icon(get_editor_theme_icon(SNAME("MirrorX")));
 		} break;
 	}
 }
@@ -937,8 +1007,20 @@ void DockContextPopup::_float_dock() {
 	dock_manager->_open_dock_in_window(context_dock);
 }
 
+void DockContextPopup::_workspace_vertical_toggled(bool p_vertical) {
+	dock_manager->set_workspace_split_vertical(p_vertical);
+}
+
+void DockContextPopup::_workspace_swap() {
+	dock_manager->set_workspace_split_swapped(!dock_manager->is_workspace_split_swapped());
+}
+
 void DockContextPopup::_update_buttons() {
-	if (context_dock->global || context_dock->closable) {
+	DockTabContainer *context_container = context_dock->get_parent_container();
+	if (context_container && context_container->dock_slot == EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT) {
+		close_button->set_tooltip_text(TTRC("Close the split panel. The dock goes back to the main screen."));
+		close_button->set_disabled(false);
+	} else if (context_dock->global || context_dock->closable) {
 		close_button->set_tooltip_text(TTRC("Close this dock."));
 		close_button->set_disabled(false);
 	} else {
@@ -964,6 +1046,12 @@ void DockContextPopup::_update_buttons() {
 		tab_move_left_button->set_disabled(context_tab_index == 0);
 		tab_move_right_button->set_disabled(context_tab_index >= context_tab_container->get_tab_count() - 1);
 	}
+
+	// Workspace split controls, for main screen docks while the split panel is in use.
+	const bool in_workspace = context_tab_container && context_tab_container->layout == EditorDock::DOCK_LAYOUT_MAIN_SCREEN;
+	workspace_split_hb->set_visible(in_workspace && dock_manager->is_workspace_split_active());
+	workspace_vertical_button->set_pressed_no_signal(dock_manager->is_workspace_split_vertical());
+
 	reset_size();
 }
 
@@ -1016,6 +1104,27 @@ DockContextPopup::DockContextPopup() {
 	Control *separator = memnew(Control);
 	separator->set_custom_minimum_size(Vector2(0, 8 * EDSCALE));
 	dock_select_popup_vb->add_child(separator);
+
+	workspace_split_hb = memnew(HBoxContainer);
+	workspace_split_hb->hide();
+	dock_select_popup_vb->add_child(workspace_split_hb);
+
+	workspace_vertical_button = memnew(Button);
+	workspace_vertical_button->set_text(TTRC("Vertical Split"));
+	workspace_vertical_button->set_tooltip_text(TTRC("Stack the two workspace panels top and bottom instead of side by side."));
+	workspace_vertical_button->set_toggle_mode(true);
+	workspace_vertical_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	workspace_vertical_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	workspace_vertical_button->connect(SceneStringName(toggled), callable_mp(this, &DockContextPopup::_workspace_vertical_toggled));
+	workspace_split_hb->add_child(workspace_vertical_button);
+
+	workspace_swap_button = memnew(Button);
+	workspace_swap_button->set_text(TTRC("Swap Panels"));
+	workspace_swap_button->set_tooltip_text(TTRC("Swap the two workspace panels."));
+	workspace_swap_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	workspace_swap_button->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	workspace_swap_button->connect(SceneStringName(pressed), callable_mp(this, &DockContextPopup::_workspace_swap));
+	workspace_split_hb->add_child(workspace_swap_button);
 
 	make_float_button = memnew(Button);
 	make_float_button->set_text(TTRC("Make Floating"));

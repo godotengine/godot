@@ -53,6 +53,10 @@ void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data)
 			dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), dock_container, drop_tabbar->get_tab_count());
 		} else {
 			DockTabContainer *target_container = EditorDockManager::get_singleton()->get_dock_container(mouse_margin_target_slot);
+			if (mouse_margin_target_slot == EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT) {
+				// Dropping on an edge of the main screen opens the split panel on that side.
+				dock_manager->set_workspace_split_from_margin((Side)mouse_margin_index);
+			}
 			dock_manager->_move_dock(dock_manager->_get_dock_tab_dragged(), target_container, target_container->get_tab_count());
 		}
 	}

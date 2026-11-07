@@ -2003,10 +2003,11 @@ void GameViewPluginBase::_create_empty_info_label(const String &p_message) {
 }
 
 void GameViewPluginBase::_focus_another_editor() {
-	DockTabContainer *main_screen = EditorNode::get_editor_main_screen();
 	EditorDock *game_dock = GameView::get_dock();
+	// The Game dock can be in the main screen or in the split panel of the workspace.
+	DockTabContainer *main_screen = game_dock->get_parent_container();
 
-	if (main_screen->get_current_tab_control() != game_dock) {
+	if (!main_screen || main_screen->get_current_tab_control() != game_dock) {
 		// Already showing different screen, so nothing to do.
 		return;
 	}

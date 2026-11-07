@@ -63,6 +63,7 @@
 
 #ifdef DEBUG_ENABLED
 #include "scene/debugger/runtime_node_select.h"
+#include "scene/debugger/runtime_state_observer.h"
 #endif
 
 #ifndef PHYSICS_2D_DISABLED
@@ -79,6 +80,7 @@ SceneDebugger::SceneDebugger() {
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
+	memnew(RuntimeStateObserver);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif
@@ -95,6 +97,10 @@ SceneDebugger::~SceneDebugger() {
 	if (RuntimeNodeSelect::singleton) {
 		memdelete(RuntimeNodeSelect::singleton);
 		RuntimeNodeSelect::singleton = nullptr;
+	}
+
+	if (RuntimeStateObserver::get_singleton()) {
+		memdelete(RuntimeStateObserver::get_singleton());
 	}
 #endif // DEBUG_ENABLED
 

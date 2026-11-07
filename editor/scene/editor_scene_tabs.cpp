@@ -109,7 +109,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	// Currently the tab previews are displayed under the running game process when embed.
 	// Right now, the easiest technique to fix that is to prevent displaying the tab preview
 	// when the user is in the Game View.
-	if (EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab_control() == GameView::get_dock() && EditorRunBar::get_singleton()->is_playing()) {
+	if (GameView::get_dock() && GameView::get_dock()->is_visible_in_tree() && EditorRunBar::get_singleton()->is_playing()) {
 		return;
 	}
 

@@ -203,7 +203,10 @@
 		<constant name="DOCK_SLOT_MAIN_SCREEN" value="11" enum="DockSlot">
 			The editor's main screen.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="12" enum="DockSlot">
+		<constant name="DOCK_SLOT_MAIN_SCREEN_SPLIT" value="12" enum="DockSlot">
+			The second panel of the editor's main screen. It is shown next to the main screen when it holds at least one dock, so two main screens (for example the Game view and the 3D editor) can be seen at once.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="13" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>
