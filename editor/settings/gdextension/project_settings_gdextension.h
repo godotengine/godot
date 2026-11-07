@@ -32,6 +32,7 @@
 
 #include "scene/gui/box_container.h"
 
+class GDExtensionCreateDialog;
 class Tree;
 
 class ProjectSettingsGDExtension : public VBoxContainer {
@@ -45,9 +46,12 @@ class ProjectSettingsGDExtension : public VBoxContainer {
 		COLUMN_MAX,
 	};
 
+	GDExtensionCreateDialog *create_dialog = nullptr;
 	Tree *extension_list = nullptr;
 
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	void _on_create_gdextension_pressed();
+	void _on_gdextension_created();
 	void _on_item_activated();
 	void _update_extension_tree();
 
