@@ -71,6 +71,8 @@ public:
 	void reset();
 
 	void set_data(const LocalVector<Vector3> &p_path, const LocalVector<int32_t> &p_path_types, const LocalVector<RID> &p_path_rids, const LocalVector<int64_t> &p_path_owner_ids);
+
+	NavigationPathQueryResult3D();
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryResult3D::PathSegmentType);

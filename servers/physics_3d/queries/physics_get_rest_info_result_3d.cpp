@@ -71,3 +71,7 @@ void PhysicsGetRestInfoResult3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "collider_velocity"), "", "get_collider_velocity");
 }
+
+PhysicsGetRestInfoResult3D::PhysicsGetRestInfoResult3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsGetRestInfoResult3D);
+}
