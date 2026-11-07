@@ -52,6 +52,7 @@ class Parallax2D : public Node2D {
 	void _update_process();
 	void _update_repeat();
 	void _update_scroll();
+	void _process_autoscroll();
 
 protected:
 #ifdef TOOLS_ENABLED
