@@ -5,13 +5,36 @@ from io import TextIOWrapper
 
 import methods
 
+# Classes whose C++ type lives in `CoreBind::`.
+COREBIND_CLASSES = {
+    "ClassDB",
+    "Engine",
+    "EngineDebugger",
+    "Geometry2D",
+    "Geometry3D",
+    "Logger",
+    "Marshalls",
+    "Mutex",
+    "OS",
+    "ResourceLoader",
+    "ResourceSaver",
+    "Semaphore",
+    "Thread",
+}
+
 
 # Generate disabled classes
 def disabled_class_builder(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
         for c in source[0].read():
             if cs := c.strip():
-                file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
+                if cs in COREBIND_CLASSES:
+                    file.write(
+                        f"namespace CoreBind {{ class {cs}; }} "
+                        f"template <> struct is_class_enabled<CoreBind::{cs}> : std::false_type {{}};\n"
+                    )
+                else:
+                    file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
 
 # Generate version info
