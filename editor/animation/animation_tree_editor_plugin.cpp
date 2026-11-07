@@ -304,6 +304,11 @@ void AnimationTreeEditor::_node_removed(Node *p_node) {
 	}
 }
 
+void AnimationTreeEditor::_mute_audio_tracks_pressed() {
+	mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
+	AnimationMixer::set_editor_audio_muted(mute_audio_tracks->is_pressed());
+}
+
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
 	edited_path.clear();
 	for (int i = 0; i <= p_path; i++) {
@@ -424,6 +429,7 @@ void AnimationTreeEditor::_notification(int p_what) {
 			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			error_button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
 			error_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 			current_scope_error_label->add_theme_font_override(SNAME("normal_font"), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
 			current_scope_error_label->add_theme_font_size_override(SNAME("normal_font_size"), get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 			current_scope_error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -455,6 +461,11 @@ void AnimationTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			get_tree()->disconnect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			mute_audio_tracks->set_pressed(AnimationMixer::is_editor_audio_muted());
+			mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 		} break;
 	}
 }
@@ -527,9 +538,25 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	VBoxContainer *main_vbox_container = memnew(VBoxContainer);
 	add_child(main_vbox_container);
 
+	HBoxContainer *header_hb = memnew(HBoxContainer);
+	header_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_vbox_container->add_child(header_hb);
+
 	path_edit = memnew(ScrollContainer);
 	path_edit->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	main_vbox_container->add_child(path_edit);
+	path_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	header_hb->add_child(path_edit);
+
+	mute_audio_tracks = memnew(Button);
+	mute_audio_tracks->set_theme_type_variation(SceneStringName(FlatButton));
+	mute_audio_tracks->set_toggle_mode(true);
+	mute_audio_tracks->set_tooltip_text(TTRC("Mute audio tracks in Editor"));
+	// Icon changes when pressed, doesn't need accent color
+	mute_audio_tracks->add_theme_color_override(SNAME("icon_pressed_color"), Color(1, 1, 1));
+	mute_audio_tracks->add_theme_color_override(SNAME("icon_hover_pressed_color"), Color(1, 1, 1));
+	mute_audio_tracks->set_button_icon(get_editor_theme_icon(SNAME("AudioStreamPlayer")));
+	header_hb->add_child(mute_audio_tracks);
+	mute_audio_tracks->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_mute_audio_tracks_pressed));
 
 	path_hb = memnew(HBoxContainer);
 	path_hb->add_child(memnew(Label(TTR("Path:"))));
