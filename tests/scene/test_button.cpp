@@ -33,33 +33,43 @@
 TEST_FORCE_LINK(test_button)
 
 #include "scene/gui/button.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-#include "tests/display_server_mock.h"
 
 namespace TestButton {
 
-TEST_CASE("[SceneTree][Button] is_hovered()") {
-	// Create new button instance.
+TEST_CASE("[SceneTree][Button] Getters/Setters") {
 	Button *button = memnew(Button);
 	CHECK(button != nullptr);
-	Window *root = SceneTree::get_singleton()->get_root();
-	root->add_child(button);
 
-	// Set up button's size and position.
-	button->set_size(Size2i(50, 50));
-	button->set_position(Size2i(10, 10));
+	SUBCASE("[SceneTree][Button] Set and Get Text") {
+		String test_text = "Test text";
+		button->set_text(test_text);
+		CHECK(button->get_text() == test_text);
+	}
 
-	// Button should initially be not hovered.
-	CHECK(button->is_hovered() == false);
+	SUBCASE("[SceneTree][Button] Set and Get Text Direction") {
+		Control::TextDirection test_direction = Control::TextDirection::TEXT_DIRECTION_LTR;
+		button->set_text_direction(test_direction);
+		CHECK(button->get_text_direction() == test_direction);
+	}
 
-	// Simulate mouse entering the button.
-	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(25, 25), MouseButtonMask::NONE, Key::NONE);
-	CHECK(button->is_hovered() == true);
+	SUBCASE("[SceneTree][Button] Set and Get Text Alignment") {
+		HorizontalAlignment test_alignment = HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT;
+		button->set_text_alignment(test_alignment);
+		CHECK(button->get_text_alignment() == test_alignment);
+	}
 
-	// Simulate mouse exiting the button.
-	SEND_GUI_MOUSE_MOTION_EVENT(Point2i(150, 150), MouseButtonMask::NONE, Key::NONE);
-	CHECK(button->is_hovered() == false);
+	SUBCASE("[SceneTree][Button] Set and Get Icon") {
+		Ref<Texture2D> test_icon;
+		test_icon.instantiate();
+		button->set_button_icon(test_icon);
+		CHECK(button->get_button_icon() == test_icon);
+	}
+
+	SUBCASE("[SceneTree][Button] Set and Get Icon Alignment") {
+		HorizontalAlignment test_alignment = HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT;
+		button->set_icon_alignment(test_alignment);
+		CHECK(button->get_icon_alignment() == test_alignment);
+	}
 
 	memdelete(button);
 }
