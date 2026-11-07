@@ -36,11 +36,14 @@
 #include "core/os/thread_safe.h"
 
 class EditorPlugin;
+class EditorSettingTracker;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
 
 	_THREAD_SAFE_CLASS_
+
+	friend class EditorSettingTracker;
 
 public:
 	struct Plugin {
@@ -88,6 +91,8 @@ private:
 	};
 
 	static Ref<EditorSettings> singleton;
+
+	HashSet<EditorSettingTracker *> setting_trackers;
 
 	HashSet<String> changed_settings;
 	mutable String auto_language;
