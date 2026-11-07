@@ -39,6 +39,7 @@
 
 @property(assign, nonatomic) BOOL hasCalledProjectDataSetUp;
 @property(assign, nonatomic) BOOL hasStartedMain;
+@property(assign, nonatomic) BOOL hasSetupError;
 @property(assign, nonatomic) BOOL hasFinishedSetUp;
 
 @end
@@ -62,15 +63,16 @@
 		[self startMain];
 	}
 
-	self.hasFinishedSetUp = YES;
+	self.hasFinishedSetUp = !self.hasSetupError;
 
-	return NO;
+	return !self.hasFinishedSetUp;
 }
 
 - (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo {
 	self.hasCalledProjectDataSetUp = YES;
 	safeDispatchSyncToMain(^{
-		Main::setup2(p_show_boot_logo);
+		Error error = Main::setup2(p_show_boot_logo);
+		self.hasSetupError = error != OK;
 
 		// this might be necessary before here
 		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
@@ -98,10 +100,12 @@
 }
 
 - (void)startMain {
-	self.hasStartedMain = YES;
-	safeDispatchSyncToMain(^{
-		OS_AppleEmbedded::get_singleton()->start();
-	});
+	if (!self.hasSetupError) {
+		self.hasStartedMain = YES;
+		safeDispatchSyncToMain(^{
+			OS_AppleEmbedded::get_singleton()->start();
+		});
+	}
 }
 
 @end
