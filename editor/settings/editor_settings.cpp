@@ -909,6 +909,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/external/exec_path", "");
 
 	// Help
+	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_NONE, "text_editor/help/docs_base_url", GODOT_VERSION_DOCS_URL, "");
 	_initial_set("text_editor/help/show_help_index", true);
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 16, "8,48,1")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_source_font_size", 15, "8,48,1")

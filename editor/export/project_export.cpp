@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
@@ -697,7 +698,7 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 }
 
 void ProjectExportDialog::_open_key_help_link() {
-	OS::get_singleton()->shell_open(vformat("%s/engine_details/development/compiling/compiling_with_script_encryption_key.html", GODOT_VERSION_DOCS_URL));
+	OS::get_singleton()->shell_open(vformat("%s/engine_details/development/compiling/compiling_with_script_encryption_key.html", EditorHelp::get_docs_url()));
 }
 
 void ProjectExportDialog::_enc_pck_changed(bool p_pressed) {

@@ -383,7 +383,7 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
 			}
 		}
-	} else if (p_select.begins_with("http:") || p_select.begins_with("https:")) {
+	} else if (p_select.begins_with("http:") || p_select.begins_with("https:") || p_select.begins_with("file:")) {
 		OS::get_singleton()->shell_open(p_select);
 	} else if (p_select.begins_with("^")) { // Copy button.
 		DisplayServer::get_singleton()->clipboard_set(p_select.substr(1));
@@ -824,7 +824,7 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 }
 
 void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods) {
-#define HANDLE_DOC(m_string) ((p_classdoc.is_script_doc ? (m_string) : DTR(m_string)).strip_edges())
+#define HANDLE_DOC(m_string) ((p_classdoc.is_script_doc ? (m_string) : DTR(m_string)).strip_edges().replace(GODOT_VERSION_DOCS_URL, EditorHelp::get_docs_url()))
 
 	class_desc->add_newline();
 	class_desc->add_hr(100, 2, theme_cache.primary_hr_color);
@@ -998,7 +998,7 @@ void EditorHelp::_update_doc() {
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
-#define HANDLE_DOC(m_string) ((cd.is_script_doc ? (m_string) : DTR(m_string)).strip_edges())
+#define HANDLE_DOC(m_string) ((cd.is_script_doc ? (m_string) : DTR(m_string)).strip_edges().replace(GODOT_VERSION_DOCS_URL, EditorHelp::get_docs_url()))
 
 	// Class name
 
@@ -1134,7 +1134,7 @@ void EditorHelp::_update_doc() {
 	if (classes_with_csharp_differences.has(cd.name)) {
 		class_desc->add_newline();
 
-		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", GODOT_VERSION_DOCS_URL);
+		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", EditorHelp::get_docs_url());
 
 		_push_normal_font();
 		class_desc->push_color(theme_cache.text_color);
@@ -3037,6 +3037,11 @@ String EditorHelp::get_script_doc_cache_full_path() {
 	return EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_script_doc_cache.res");
 }
 
+String EditorHelp::get_docs_url() {
+	const String url = EDITOR_GET("text_editor/help/docs_base_url");
+	return url.is_empty() ? String(GODOT_VERSION_DOCS_URL) : url.trim_suffix("/");
+}
+
 DocTools *EditorHelp::get_doc_data() {
 	_wait_for_thread();
 	return doc;
@@ -3539,7 +3544,7 @@ EditorHelp::EditorHelp() {
 
 /// EditorHelpBit ///
 
-#define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
+#define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges().replace(GODOT_VERSION_DOCS_URL, EditorHelp::get_docs_url()))
 
 EditorHelpBit::HelpData EditorHelpBit::_get_class_help_data(const StringName &p_class_name) {
 	if (doc_class_cache.has(p_class_name)) {
@@ -4327,7 +4332,8 @@ void EditorHelpBit::_go_to_url(const String &p_what) {
 		section = vformat("#%s", clss);
 	}
 
-	String doc_url = clss.is_empty() ? String(GODOT_VERSION_DOCS_URL "/") : vformat(GODOT_VERSION_DOCS_URL "/classes/class_%s.html%s", clss, section);
+	String base_url = EditorHelp::get_docs_url();
+	String doc_url = clss.is_empty() ? String(base_url + "/") : vformat("%s/classes/class_%s.html%s", base_url, clss, section);
 	OS::get_singleton()->shell_open(doc_url);
 }
 

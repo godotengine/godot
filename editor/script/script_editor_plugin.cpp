@@ -1919,15 +1919,16 @@ void DocumentEditorContainer::_menu_option(int p_option) {
 				const HashMap<String, DocData::ClassDoc>::ConstIterator E = EditorHelp::get_doc_data()->class_list.find(eh->get_class());
 				native_class_doc = E && !E->value.is_script_doc;
 			}
+			String base_url = EditorHelp::get_docs_url();
 			if (native_class_doc) {
 				String name = eh->get_class().to_lower();
-				String doc_url = vformat(GODOT_VERSION_DOCS_URL "/classes/class_%s.html", name);
+				String doc_url = vformat("%s/classes/class_%s.html", base_url, name);
 				OS::get_singleton()->shell_open(doc_url);
 			} else if (seb) {
-				String doc_url = vformat(GODOT_VERSION_DOCS_URL "%s", seb->get_doc_url_path());
+				String doc_url = vformat("%s%s", base_url, seb->get_doc_url_path());
 				OS::get_singleton()->shell_open(doc_url);
 			} else {
-				OS::get_singleton()->shell_open(GODOT_VERSION_DOCS_URL "/");
+				OS::get_singleton()->shell_open(base_url + "/");
 			}
 		} break;
 		case FILE_MENU_HISTORY_NEXT: {

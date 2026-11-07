@@ -231,6 +231,7 @@ public:
 	static void save_script_doc_cache();
 	static String get_cache_full_path();
 	static String get_script_doc_cache_full_path();
+	static String get_docs_url();
 
 	// Adding scripts to DocData directly may make script doc cache inconsistent. Use methods below when adding script docs.
 	// Usage during startup can also cause deadlocks.
