@@ -816,6 +816,11 @@ void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, in
 	}
 #endif
 #endif
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		if (confinement_window == p_window) {
+			set_confinement_window(confinement_window);
+		}
+	}
 }
 
 bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) const {
@@ -1220,6 +1225,30 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
+void DisplayServerMacOS::set_confinement_window(DisplayServerEnums::WindowID p_window) {
+	if (confinement_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(confinement_window)) {
+		WindowData wd = windows[confinement_window];
+		if ([wd.window_object respondsToSelector:@selector(setMouseConfinementRect:)]) {
+			[wd.window_object setMouseConfinementRect:(NSRect)NSZeroRect];
+			if (!wd.resize_disabled) { // Restore resize.
+				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+			}
+			confinement_window = DisplayServerEnums::INVALID_WINDOW_ID;
+		}
+	}
+	if (p_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_window)) {
+		WindowData wd = windows[p_window];
+		if ([wd.window_object respondsToSelector:@selector(setMouseConfinementRect:)]) {
+			confinement_window = p_window;
+			CGAssociateMouseAndMouseCursorPosition(true);
+			[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+			[wd.window_object setMouseConfinementRect:[wd.window_view frame]];
+		} else {
+			CGAssociateMouseAndMouseCursorPosition(false);
+		}
+	}
+}
+
 void DisplayServerMacOS::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -1251,26 +1280,29 @@ void DisplayServerMacOS::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
-		CGAssociateMouseAndMouseCursorPosition(false);
+		set_confinement_window(window_id);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:NO];
-		CGAssociateMouseAndMouseCursorPosition(false);
+		set_confinement_window(window_id);
 	} else { // DisplayServerEnums::MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
@@ -1295,6 +1327,10 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 	}
 
 	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		if (confinement_window != DisplayServerEnums::INVALID_WINDOW_ID) {
+			return false;
+		}
+
 		// Discard late events.
 		if (p_timestamp < last_warp) {
 			return true;
@@ -2539,7 +2575,7 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
-			if (wd.fullscreen) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
+			if (wd.fullscreen || confinement_window == p_window) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
 				return;
 			}
 			if (p_enabled) {
@@ -2590,7 +2626,7 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
 			} else {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled || confinement_window == p_window ? 0 : NSWindowStyleMaskResizable)];
 				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
 				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
 				[wd.window_object setHasShadow:YES];
