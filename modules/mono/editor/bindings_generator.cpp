@@ -2937,6 +2937,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			}
 
 			if (use_span_for_arg) {
+				if (iarg.type.cname == name_cache.type_VarArg) {
+					arguments_sig += "params ";
+				}
 				arguments_sig += arg_type->c_type_in;
 			} else {
 				arguments_sig += arg_cs_type;
@@ -3076,6 +3079,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (p_imethod.is_hidden) {
 			p_output.append(MEMBER_BEGIN "[EditorBrowsable(EditorBrowsableState.Never)]");
+		}
+
+		if (p_use_span && p_imethod.is_vararg) {
+			p_output.append(MEMBER_BEGIN "[global::System.Runtime.CompilerServices.OverloadResolutionPriority(1)]");
 		}
 
 		p_output.append(MEMBER_BEGIN);
