@@ -53,6 +53,7 @@ namespace GodotTools.Ides.Rider
                 Globals.EditorDef(EditorPathSettingName, editorPath);
                 return;
             }
+            if (SyncWithGDScriptExternalEditorIfValid(editor, editorSettings, "text_editor/external/exec_path")) return;
 
             var paths = RiderPathLocator.GetAllRiderPaths().Where(info => IsMatch(editor, info.Path)).ToArray();
             if (paths.Length == 0)
@@ -63,6 +64,19 @@ namespace GodotTools.Ides.Rider
             string newPath = paths.Last().Path;
             Globals.EditorDef(EditorPathSettingName, newPath);
             editorSettings.SetSetting(EditorPathSettingName, newPath);
+        }
+
+        private static bool SyncWithGDScriptExternalEditorIfValid(ExternalEditorId editor, EditorSettings editorSettings, string settingName)
+        {
+            var editorPath = (string)editorSettings.GetSetting(settingName);
+            if (File.Exists(editorPath) && IsMatch(editor, editorPath))
+            {
+                editorSettings.SetSetting(EditorPathSettingName, editorPath);
+                Globals.EditorDef(EditorPathSettingName, editorPath);
+                return true;
+            }
+
+            return false;
         }
 
         private static bool IsMatch(ExternalEditorId editorId, string path)
