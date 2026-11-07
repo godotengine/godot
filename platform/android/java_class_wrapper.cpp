@@ -77,6 +77,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_VOID: {
 					//bug?
 				} break;
+				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BOOLEAN: {
+					if (p_args[i]->get_type() != Variant::BOOL && !p_args[i]->is_null()) {
+						arg_expected = Variant::BOOL;
+					}
+				} break;
 				case ARG_TYPE_BOOLEAN: {
 					if (p_args[i]->get_type() != Variant::BOOL) {
 						arg_expected = Variant::BOOL;
@@ -86,7 +91,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_CHAR:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_SHORT:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_INT:
-				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_LONG:
+				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_LONG: {
+					if (!p_args[i]->is_num() && !p_args[i]->is_null()) {
+						arg_expected = Variant::INT;
+					}
+				} break;
 				case ARG_TYPE_BYTE:
 				case ARG_TYPE_CHAR:
 				case ARG_TYPE_SHORT:
@@ -106,7 +115,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				} break;
 				case ARG_TYPE_STRING:
 				case ARG_TYPE_CHARSEQUENCE: {
-					if (!p_args[i]->is_string()) {
+					if (!p_args[i]->is_string() && p_args[i]->get_type() != Variant::NIL) {
 						arg_expected = Variant::STRING;
 					}
 				} break;
@@ -1037,9 +1046,13 @@ bool JavaClass::_convert_variant_to_jvalue(JNIEnv *p_env, const Variant &p_varia
 		} break;
 		case ARG_TYPE_STRING:
 		case ARG_TYPE_CHARSEQUENCE: {
-			String s = p_variant;
-			jstring jStr = p_env->NewStringUTF(s.utf8().get_data());
-			r_ret.l = jStr;
+			if (p_variant.is_string()) {
+				String s = p_variant;
+				jstring jStr = p_env->NewStringUTF(s.utf8().get_data());
+				r_ret.l = jStr;
+			} else {
+				r_ret.l = nullptr;
+			}
 		} break;
 		case ARG_TYPE_CALLABLE: {
 			jobject jcallable = callable_to_jcallable(p_env, p_variant);
