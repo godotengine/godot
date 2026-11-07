@@ -73,6 +73,10 @@
 		<member name="light_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			The light's strength multiplier (this is not a physical unit). For [OmniLight3D] and [SpotLight3D], changing this value will only change the light color's intensity, not the light's radius.
 		</member>
+		<member name="light_extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
+			Sets the extra cull margin for this light, allowing it to not get culled by the Forward+ clustering algorithm or the AABB-based algorithm in Mobile and Compatibility. Set along with [member Light3D.light_extra_cull_margin]. This allows lights on vertex-shaded materials or custom light shaders to not get culled early while their influence is still visible on screen. For best performance, this should be set to the lowest possible value that does not result in the light disappearing while its influence is still visible on screen.
+			[b]Note:[/b] When using standard per-pixel shaded materials, there is generally no need to increase this value above [code]0.0[/code].
+		</member>
 		<member name="light_indirect_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			Secondary multiplier used with indirect light (light bounces). Used with [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
 			[b]Note:[/b] This property is ignored if [member light_energy] is equal to [code]0.0[/code], as the light won't be present at all in the GI shader.
