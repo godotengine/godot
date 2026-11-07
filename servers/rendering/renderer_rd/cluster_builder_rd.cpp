@@ -452,7 +452,7 @@ void ClusterBuilderRD::bake_cluster() {
 			StateUniform state;
 
 			RendererRD::MaterialStorage::store_camera(adjusted_projection, state.projection);
-			state.inv_z_far = 1.0 / z_far;
+			state.z_far = z_far;
 			state.screen_to_clusters_shift = Math::get_shift_from_power_of_2(cluster_size);
 			state.screen_to_clusters_shift -= divisor; //screen is smaller, shift one less
 

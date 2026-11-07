@@ -85,9 +85,14 @@ void main() {
 	} else {
 		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
 	}
-	depth /= params.z_far;
 
-	uint slice = uint(clamp(floor(depth * 32.0), 0.0, 31.0));
+	// Custom near and far planes are used for depth slice calculation to make the log
+	// distribution more predictable and less dependent on the camera settings
+	const float cluster_near = 2.0;
+	float cluster_far = min(params.z_far, 2500.0);
+	float cluster_depth = clamp(depth, cluster_near, cluster_far);
+
+	uint slice = uint(clamp(floor(log(cluster_depth / cluster_near) * 32.0 / log(cluster_far / cluster_near)), 0.0, 31.0));
 	uint slice_minmax = cluster_data.data[offset + params.max_cluster_element_count_div_32 + slice];
 	uint item_min = slice_minmax & 0xFFFF;
 	uint item_max = slice_minmax >> 16;

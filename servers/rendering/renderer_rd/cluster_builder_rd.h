@@ -213,7 +213,7 @@ private:
 
 	struct StateUniform {
 		float projection[16];
-		float inv_z_far;
+		float z_far;
 		uint32_t screen_to_clusters_shift; // Shift to obtain coordinates in block indices.
 		uint32_t cluster_screen_width;
 		uint32_t cluster_data_size; // How much data is needed for a single cluster.
