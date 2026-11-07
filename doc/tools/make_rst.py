@@ -933,6 +933,7 @@ def get_git_branch() -> str:
 
 
 def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str, old_files: set[str]) -> None:
+    path = class_def.filepath
     class_name = class_def.name
     with StringIO() as f:
         # Remove the "Edit on Github" button from the online docs page.
@@ -959,7 +960,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(f".. _class_{sanitize_class_name(class_name)}:\n\n")
         f.write(make_heading(class_name, "=", False))
 
-        f.write(make_deprecated_experimental(class_def, state))
+        f.write(make_deprecated_experimental(class_def, state, path))
 
         ### INHERITANCE TREE ###
 
@@ -1008,7 +1009,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         if class_def.brief_description is not None and class_def.brief_description.strip() != "":
             has_description = True
 
-            f.write(f"{format_text_block(class_def.brief_description.strip(), class_def, state)}\n\n")
+            f.write(f"{format_text_block(class_def.brief_description.strip(), class_def, state, path)}\n\n")
 
         # Class description
         if class_def.description is not None and class_def.description.strip() != "":
@@ -1017,7 +1018,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(".. rst-class:: classref-introduction-group\n\n")
             f.write(make_heading("Description", "-"))
 
-            f.write(f"{format_text_block(class_def.description.strip(), class_def, state)}\n\n")
+            f.write(f"{format_text_block(class_def.description.strip(), class_def, state, path)}\n\n")
 
         if not has_description:
             f.write(".. container:: contribute\n\n\t")
@@ -1141,10 +1142,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Add signal description, or a call to action if it's missing.
 
-                f.write(make_deprecated_experimental(signal, state))
+                f.write(make_deprecated_experimental(signal, state, path))
 
                 if signal.description is not None and signal.description.strip() != "":
-                    f.write(f"{format_text_block(signal.description.strip(), signal, state)}\n\n")
+                    f.write(f"{format_text_block(signal.description.strip(), signal, state, path)}\n\n")
                 elif signal.deprecated is None and signal.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1190,10 +1191,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Add enum constant description.
 
-                    f.write(make_deprecated_experimental(value, state))
+                    f.write(make_deprecated_experimental(value, state, path))
 
                     if value.text is not None and value.text.strip() != "":
-                        f.write(f"{format_text_block(value.text.strip(), value, state)}")
+                        f.write(f"{format_text_block(value.text.strip(), value, state, path)}")
                     elif value.deprecated is None and value.experimental is None:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -1225,10 +1226,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Add constant description.
 
-                f.write(make_deprecated_experimental(constant, state))
+                f.write(make_deprecated_experimental(constant, state, path))
 
                 if constant.text is not None and constant.text.strip() != "":
-                    f.write(f"{format_text_block(constant.text.strip(), constant, state)}")
+                    f.write(f"{format_text_block(constant.text.strip(), constant, state, path)}")
                 elif constant.deprecated is None and constant.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1269,7 +1270,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     # Add annotation description, or a call to action if it's missing.
 
                     if m.description is not None and m.description.strip() != "":
-                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                        f.write(f"{format_text_block(m.description.strip(), m, state, path)}\n\n")
                     else:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -1329,10 +1330,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Add property description, or a call to action if it's missing.
 
-                f.write(make_deprecated_experimental(property_def, state))
+                f.write(make_deprecated_experimental(property_def, state, path))
 
                 if property_def.text is not None and property_def.text.strip() != "":
-                    f.write(f"{format_text_block(property_def.text.strip(), property_def, state)}\n\n")
+                    f.write(f"{format_text_block(property_def.text.strip(), property_def, state, path)}\n\n")
                 elif property_def.deprecated is None and property_def.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1346,7 +1347,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
                     # See also `BASE_STRINGS` and `editor/doc/editor_help.cpp`.
                     copy_note = f"[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details.[/note]"
-                    f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
+                    f.write(f"{format_text_block(copy_note, property_def, state, path)}\n\n")
 
                 index += 1
 
@@ -1378,10 +1379,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Add constructor description, or a call to action if it's missing.
 
-                    f.write(make_deprecated_experimental(m, state))
+                    f.write(make_deprecated_experimental(m, state, path))
 
                     if m.description is not None and m.description.strip() != "":
-                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                        f.write(f"{format_text_block(m.description.strip(), m, state, path)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -1425,10 +1426,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Add method description, or a call to action if it's missing.
 
-                    f.write(make_deprecated_experimental(m, state))
+                    f.write(make_deprecated_experimental(m, state, path))
 
                     if m.description is not None and m.description.strip() != "":
-                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                        f.write(f"{format_text_block(m.description.strip(), m, state, path)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -1469,10 +1470,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     # Add operator description, or a call to action if it's missing.
 
-                    f.write(make_deprecated_experimental(m, state))
+                    f.write(make_deprecated_experimental(m, state, path))
 
                     if m.description is not None and m.description.strip() != "":
-                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                        f.write(f"{format_text_block(m.description.strip(), m, state, path)}\n\n")
                     elif m.deprecated is None and m.experimental is None:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -1514,10 +1515,10 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                 # Add theme property description, or a call to action if it's missing.
 
-                f.write(make_deprecated_experimental(theme_item_def, state))
+                f.write(make_deprecated_experimental(theme_item_def, state, path))
 
                 if theme_item_def.text is not None and theme_item_def.text.strip() != "":
-                    f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state)}\n\n")
+                    f.write(f"{format_text_block(theme_item_def.text.strip(), theme_item_def, state, path)}\n\n")
                 elif theme_item_def.deprecated is None and theme_item_def.experimental is None:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
@@ -1686,7 +1687,7 @@ def make_getter_signature(class_def: ClassDef, property_def: PropertyDef, state:
     return f"{ret_type} {signature}"
 
 
-def make_deprecated_experimental(item: DefinitionBase, state: State) -> str:
+def make_deprecated_experimental(item: DefinitionBase, state: State, path: str) -> str:
     result = ""
 
     if item.deprecated is not None:
@@ -1695,7 +1696,7 @@ def make_deprecated_experimental(item: DefinitionBase, state: State) -> str:
             default_message = translate(f"This {item.definition_name} may be changed or removed in future versions.")
             result += f"**{deprecated_prefix}** {default_message}\n\n"
         else:
-            result += f"**{deprecated_prefix}** {format_text_block(item.deprecated.strip(), item, state)}\n\n"
+            result += f"**{deprecated_prefix}** {format_text_block(item.deprecated.strip(), item, state, path)}\n\n"
 
     if item.experimental is not None:
         experimental_prefix = translate("Experimental:")
@@ -1703,7 +1704,7 @@ def make_deprecated_experimental(item: DefinitionBase, state: State) -> str:
             default_message = translate(f"This {item.definition_name} may be changed or removed in future versions.")
             result += f"**{experimental_prefix}** {default_message}\n\n"
         else:
-            result += f"**{experimental_prefix}** {format_text_block(item.experimental.strip(), item, state)}\n\n"
+            result += f"**{experimental_prefix}** {format_text_block(item.experimental.strip(), item, state, path)}\n\n"
 
     return result
 
@@ -1835,7 +1836,7 @@ def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_
 # Formatting helpers.
 
 
-RESERVED_FORMATTING_TAGS = ["i", "b", "u", "lb", "rb", "code", "kbd", "center", "url", "br"]
+RESERVED_FORMATTING_TAGS = ["i", "b", "u", "lb", "rb", "code", "kbd", "center", "url", "br", "svg"]
 RESERVED_LAYOUT_TAGS = ["codeblocks"]
 RESERVED_CODEBLOCK_TAGS = ["codeblock", "gdscript", "csharp"]
 RESERVED_CROSSLINK_TAGS = [
@@ -1906,6 +1907,7 @@ def format_text_block(
     text: str,
     context: DefinitionBase,
     state: State,
+    path: str,
 ) -> str:
     result = preformat_text_block(text, state)
     if result is None:
@@ -2391,6 +2393,25 @@ def format_text_block(
                     pos = len(pre_text) + len(tag_text)
                     continue
 
+            elif is_in_tagset(tag_state.name, ["svg"]):
+                endsvg_pos = text.find("[/svg]", endq_pos + 1)
+                if endsvg_pos == -1:
+                    print_error(
+                        f"{state.current_class}.xml: Tag depth mismatch for [svg]: no closing [/svg] in {context_name}.",
+                        state,
+                    )
+                    break
+
+                svg_name = text[endq_pos + 1 : endsvg_pos]
+                pre_text = text[:pos]
+                post_text = text[endsvg_pos + 6 :]
+
+                with open(os.path.join(os.path.dirname(path), "images", svg_name + ".svg"), "r") as file:
+                    svg_content = file.read()
+
+                text = pre_text + ".. raw:: html\n\n\t" + svg_content + "\n" + post_text
+                pos = len(pre_text) + len(tag_text)
+                continue
             elif tag_state.name == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"
