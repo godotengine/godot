@@ -115,7 +115,7 @@ void Particles3DEmissionShapeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				const Vector3 offset = mat->get_emission_shape_offset();
 				const Vector3 scale = mat->get_emission_shape_scale();
 
-				const Vector3 box_extents = mat->get_emission_box_extents();
+				const Vector3 box_size = mat->get_emission_box_size();
 				Ref<BoxMesh> box;
 				box.instantiate();
 				const AABB box_aabb = box->get_aabb();
@@ -126,8 +126,8 @@ void Particles3DEmissionShapeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					Vector3 b;
 					box_aabb.get_edge(i, a, b);
 					// Multiplication by 2 due to the extents being only half of the box size.
-					lines.push_back(a * 2.0 * scale * box_extents + offset);
-					lines.push_back(b * 2.0 * scale * box_extents + offset);
+					lines.push_back(a * scale * box_size + offset);
+					lines.push_back(b * scale * box_size + offset);
 				}
 
 				if (p_gizmo->is_selected()) {
@@ -239,7 +239,7 @@ void Particles3DEmissionShapeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				p_gizmo->add_lines(points, material);
 			}
 		} else if (shape == CPUParticles3D::EMISSION_SHAPE_BOX) {
-			const Vector3 box_extents = particles->get_emission_box_extents();
+			const Vector3 box_size = particles->get_emission_box_size();
 			Ref<BoxMesh> box;
 			box.instantiate();
 			const AABB box_aabb = box->get_aabb();
@@ -249,9 +249,8 @@ void Particles3DEmissionShapeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				Vector3 a;
 				Vector3 b;
 				box_aabb.get_edge(i, a, b);
-				// Multiplication by 2 due to the extents being only half of the box size.
-				lines.push_back(a * 2.0 * box_extents);
-				lines.push_back(b * 2.0 * box_extents);
+				lines.push_back(a * box_size);
+				lines.push_back(b * box_size);
 			}
 
 			if (p_gizmo->is_selected()) {

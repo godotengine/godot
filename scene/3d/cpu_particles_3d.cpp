@@ -435,8 +435,8 @@ void CPUParticles3D::set_emission_sphere_radius(real_t p_radius) {
 	update_gizmos();
 }
 
-void CPUParticles3D::set_emission_box_extents(Vector3 p_extents) {
-	emission_box_extents = p_extents;
+void CPUParticles3D::set_emission_box_size(const Vector3 &p_size) {
+	emission_box_size = p_size;
 	update_gizmos();
 }
 
@@ -496,10 +496,6 @@ void CPUParticles3D::set_split_scale(bool p_split_scale) {
 
 real_t CPUParticles3D::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
-}
-
-Vector3 CPUParticles3D::get_emission_box_extents() const {
-	return emission_box_extents;
 }
 
 Vector<Vector3> CPUParticles3D::get_emission_points() const {
@@ -600,7 +596,7 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "emission_box_extents") {
+	} else if (p_property.name == "emission_box_size") {
 		if (emission_shape != EMISSION_SHAPE_BOX) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -938,7 +934,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 					p.transform.origin = Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s);
 				} break;
 				case EMISSION_SHAPE_BOX: {
-					p.transform.origin = Vector3(rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0) * emission_box_extents;
+					p.transform.origin = Vector3(rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0, rng->randf() * 2.0 - 1.0) * emission_box_size * 0.5;
 				} break;
 				case EMISSION_SHAPE_POINTS:
 				case EMISSION_SHAPE_DIRECTED_POINTS: {
@@ -1503,7 +1499,7 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
-	set_emission_box_extents(material->get_emission_box_extents());
+	set_emission_box_size(material->get_emission_box_size());
 	set_emission_ring_height(material->get_emission_ring_height());
 	set_emission_ring_radius(material->get_emission_ring_radius());
 	set_emission_ring_inner_radius(material->get_emission_ring_inner_radius());
@@ -1660,8 +1656,13 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &CPUParticles3D::set_emission_sphere_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &CPUParticles3D::get_emission_sphere_radius);
 
+	ClassDB::bind_method(D_METHOD("set_emission_box_size", "size"), &CPUParticles3D::set_emission_box_size);
+	ClassDB::bind_method(D_METHOD("get_emission_box_size"), &CPUParticles3D::get_emission_box_size);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_emission_box_extents", "extents"), &CPUParticles3D::set_emission_box_extents);
 	ClassDB::bind_method(D_METHOD("get_emission_box_extents"), &CPUParticles3D::get_emission_box_extents);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_emission_points", "array"), &CPUParticles3D::set_emission_points);
 	ClassDB::bind_method(D_METHOD("get_emission_points"), &CPUParticles3D::get_emission_points);
@@ -1709,7 +1710,10 @@ void CPUParticles3D::_bind_methods() {
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points,Ring", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01"), "set_emission_sphere_radius", "get_emission_sphere_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_size"), "set_emission_box_size", "get_emission_box_size");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_emission_box_extents", "get_emission_box_extents");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_points"), "set_emission_points", "get_emission_points");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "emission_normals"), "set_emission_normals", "get_emission_normals");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
@@ -1852,7 +1856,7 @@ CPUParticles3D::CPUParticles3D() {
 	set_param_max(PARAM_ANIM_OFFSET, 0);
 	set_emission_shape(EMISSION_SHAPE_POINT);
 	set_emission_sphere_radius(1);
-	set_emission_box_extents(Vector3(1, 1, 1));
+	set_emission_box_size(Vector3(2, 2, 2));
 	set_emission_ring_axis(Vector3(0, 0, 1.0));
 	set_emission_ring_height(1);
 	set_emission_ring_radius(1);
