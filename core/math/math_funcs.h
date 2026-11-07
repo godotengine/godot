@@ -632,10 +632,10 @@ _ALWAYS_INLINE_ float rotate_toward(float p_from, float p_to, float p_delta) {
 }
 
 _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
-	return log(p_linear) * 8.6858896380650365530225783783321;
+	return std::signbit(p_linear) ? -INF : log(p_linear) * 8.6858896380650365530225783783321;
 }
 _ALWAYS_INLINE_ float linear_to_db(float p_linear) {
-	return log(p_linear) * (float)8.6858896380650365530225783783321;
+	return std::signbit(p_linear) ? (float)-INF : log(p_linear) * (float)8.6858896380650365530225783783321;
 }
 
 _ALWAYS_INLINE_ double db_to_linear(double p_db) {

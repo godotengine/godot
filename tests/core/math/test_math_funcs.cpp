@@ -314,8 +314,8 @@ TEST_CASE_TEMPLATE("[Math] is_nan/is_inf/is_finite", T, float, double) {
 TEST_CASE_TEMPLATE("[Math] linear_to_db", T, float, double) {
 	CHECK(Math::linear_to_db((T)1.0) == doctest::Approx((T)0.0));
 	CHECK(Math::linear_to_db((T)20.0) == doctest::Approx((T)26.0206));
-	CHECK(Math::is_inf(Math::linear_to_db((T)0.0)));
-	CHECK(Math::is_nan(Math::linear_to_db((T)-20.0)));
+	CHECK(Math::linear_to_db((T)0.0) == (T)-Math::INF);
+	CHECK(Math::linear_to_db((T)-20.0) == (T)-Math::INF);
 }
 
 TEST_CASE_TEMPLATE("[Math] db_to_linear", T, float, double) {
@@ -323,6 +323,7 @@ TEST_CASE_TEMPLATE("[Math] db_to_linear", T, float, double) {
 	CHECK(Math::db_to_linear((T)1.0) == doctest::Approx((T)1.122018));
 	CHECK(Math::db_to_linear((T)20.0) == doctest::Approx((T)10.0));
 	CHECK(Math::db_to_linear((T)-20.0) == doctest::Approx((T)0.1));
+	CHECK(Math::db_to_linear((T)-Math::INF) == doctest::Approx((T)0.0));
 }
 
 TEST_CASE_TEMPLATE("[Math] step_decimals", T, float, double) {

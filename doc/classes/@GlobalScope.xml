@@ -672,6 +672,7 @@
 				[codeblock]
 				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db($Slider.value))
 				[/codeblock]
+				[b]Note:[/b] If [param lin] is negative, this function returns [code]-INF[/code].
 			</description>
 		</method>
 		<method name="log">
