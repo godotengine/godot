@@ -696,6 +696,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_readonly">
+			<return type="void" />
+			<description>
+				Export a property with [constant PROPERTY_USAGE_READ_ONLY] and [constant PROPERTY_USAGE_EDITOR] flags. The property is displayed in the inspector, but cannot be changed. This property is not stored on disk.
+				[codeblock]
+				var a # Not displayed in the editor.
+				@export var b # Displayed in the editor, can be changed from the editor.
+				@export_readonly var c: int # Displayed in the editor, cannot be changed from the editor.
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_subgroup">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
