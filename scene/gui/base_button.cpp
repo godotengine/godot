@@ -65,6 +65,11 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid() && touch->is_pressed() && touch->is_long_press() && action_mode == ACTION_MODE_BUTTON_PRESS) {
+		// A long-press notification must not activate the button again.
+		return;
+	}
+
 	if (touch.is_valid()) {
 		if (status.touch_index == -1) {
 			if (touch->is_pressed()) {
