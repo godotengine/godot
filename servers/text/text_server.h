@@ -538,8 +538,10 @@ public:
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_glyphs_wrapper(const RID &p_shaped) const;
+	GDExtensionPtr<const Glyph> _shaped_text_get_glyphs_gde_wrapper(const RID &p_shaped) const;
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) = 0;
 	TypedArray<Dictionary> _shaped_text_sort_logical_wrapper(const RID &p_shaped);
+	GDExtensionPtr<const Glyph> _shaped_text_sort_logical_gde_wrapper(const RID &p_shaped);
 	virtual int64_t shaped_text_get_glyph_count(const RID &p_shaped) const = 0;
 
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const = 0;
@@ -552,6 +554,7 @@ public:
 	virtual int64_t shaped_text_get_ellipsis_pos(const RID &p_shaped) const = 0;
 	virtual const Glyph *shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const;
+	GDExtensionPtr<const Glyph> _shaped_text_get_ellipsis_glyphs_gde_wrapper(const RID &p_shaped) const;
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const = 0;
 
 	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) = 0;
