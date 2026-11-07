@@ -370,6 +370,9 @@ void EditorProfiler::_update_frame() {
 
 	int dtime = display_time->get_selected();
 
+	int max_time_text_length = 0;
+	int max_calls_text_length = 0;
+
 	for (int i = 0; i < m.categories.size(); i++) {
 		TreeItem *category = variables->create_item(root);
 		category->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -377,7 +380,11 @@ void EditorProfiler::_update_frame() {
 		category->set_metadata(0, m.categories[i].signature);
 		category->set_text(0, String(m.categories[i].name));
 		category->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
-		category->set_text(1, _get_time_as_text(m, m.categories[i].total_time, 1));
+
+		const String &category_time_text = _get_time_as_text(m, m.categories[i].total_time, 1);
+		category->set_text(1, category_time_text);
+
+		max_time_text_length = MAX(max_time_text_length, category_time_text.length());
 
 		if (collapsed_categories.has(m.categories[i].signature)) {
 			category->set_collapsed(true);
@@ -410,9 +417,15 @@ void EditorProfiler::_update_frame() {
 				time += it.internal;
 			}
 
-			item->set_text(1, _get_time_as_text(m, time, it.calls));
+			const String &item_time_text = _get_time_as_text(m, time, it.calls);
+			item->set_text(1, item_time_text);
 
-			item->set_text(2, itos(it.calls));
+			max_time_text_length = MAX(max_time_text_length, item_time_text.length());
+
+			const String &item_calls_text = itos(it.calls);
+			item->set_text(2, item_calls_text);
+
+			max_calls_text_length = MAX(max_calls_text_length, item_calls_text.length());
 
 			if (plot_sigs.has(it.signature)) {
 				item->set_checked(0, true);
@@ -420,6 +433,20 @@ void EditorProfiler::_update_frame() {
 			}
 		}
 	}
+
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
+	float max_time_text_width = Math::ceil(
+			font->get_string_size(String("0").repeat(max_time_text_length), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+
+	float max_calls_text_width = Math::ceil(
+			font->get_string_size(String("0").repeat(max_calls_text_length), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x);
+
+	int margins = variables->get_theme_constant(SNAME("h_separation")) + variables->get_theme_constant(SNAME("item_margin"));
+
+	variables->set_column_custom_minimum_width(1, MAX((max_time_text_width + margins) * EDSCALE, 75 * EDSCALE));
+	variables->set_column_custom_minimum_width(2, MAX((max_calls_text_width + margins) * EDSCALE, 50 * EDSCALE));
 
 	updating_frame = false;
 }
@@ -776,7 +803,7 @@ EditorProfiler::EditorProfiler() {
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	variables = memnew(Tree);
-	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
+	variables->set_custom_minimum_size(Size2(340, 0) * EDSCALE);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
 	variables->set_columns(3);
