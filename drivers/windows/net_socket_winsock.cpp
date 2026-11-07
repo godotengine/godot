@@ -266,6 +266,25 @@ Error NetSocketWinSock::open(Family p_family, Type p_sock_type, IP::Type &ip_typ
 	return OK;
 }
 
+void NetSocketWinSock::shutdown(ShutdownType p_flag) {
+	if (_sock == INVALID_SOCKET) {
+		return;
+	}
+	switch (p_flag) {
+		case ShutdownType::SHUTDOWN_TYPE_READ:
+			::shutdown(_sock, SD_RECEIVE);
+			return;
+		case ShutdownType::SHUTDOWN_TYPE_WRITE:
+			::shutdown(_sock, SD_SEND);
+			return;
+		case ShutdownType::SHUTDOWN_TYPE_READ_WRITE:
+			::shutdown(_sock, SD_BOTH);
+			return;
+		default:
+			ERR_FAIL_MSG("Invalid shutdown flag");
+	}
+}
+
 void NetSocketWinSock::close() {
 	if (_sock != INVALID_SOCKET) {
 		closesocket(_sock);
