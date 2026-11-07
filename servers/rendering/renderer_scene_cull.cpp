@@ -2327,6 +2327,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			}
 
 			radius *= texture_size / (texture_size - 2.0); //add a texel by each side
+			radius = light->stabilize_directional_cascade_radius(i, radius);
 
 			z_min_cam = z_vec.dot(center) - radius;
 
