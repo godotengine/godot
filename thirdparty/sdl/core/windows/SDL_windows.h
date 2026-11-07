@@ -218,6 +218,9 @@ extern const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pa
 // Does all the win32 tapdancing to make GetModuleFileName work. Returns a SDL_malloc'd UTF-8 string, or NULL on failure.
 extern char *WIN_GetModulePath(HMODULE handle);
 
+// Return true if this system has a broken EZFRD64.DLL installed
+extern bool WIN_HasBrokenEZFRD64DLL(void);
+
 // Ends C function definitions when using C++
 #ifdef __cplusplus
 }

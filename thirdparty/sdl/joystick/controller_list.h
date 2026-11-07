@@ -175,7 +175,6 @@ static const ControllerDescription_t arrControllers[] = {
 //	{ MAKE_CONTROLLER_ID( 0x7545, 0x1122 ), k_eControllerType_PS4Controller, NULL },	// Giotek VX4 - trackpad/gyro don't work. Had to not filter on interface info. Light bar is flaky, but works.
 
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0ce6 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Controller
-	{ MAKE_CONTROLLER_ID( 0x054c, 0x0df2 ), k_eControllerType_PS5Controller, NULL },	// Sony DualSense Edge Controller
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0e5f ), k_eControllerType_PS5Controller, NULL },	// Access Controller for PS5
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0209 ), k_eControllerType_PS5Controller, NULL },	// Victrix Pro FS PS4/PS5 (PS5 mode)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0163 ), k_eControllerType_PS5Controller, NULL },	// HORI Fighting Commander OCTA
@@ -239,6 +238,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0301 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Controller" },	// PDP Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0313 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Afterglow" },	// PDP Afterglow Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0314 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Afterglow" },	// PDP Afterglow Gamepad for Xbox 360
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0338 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Afterglow" },	// PDP Afterglow Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0401 ), k_eControllerType_XBox360Controller, "PDP Xbox 360 Controller" },	// PDP Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0413 ), k_eControllerType_XBox360Controller, NULL },	// PDP Afterglow AX.1 (unlisted)
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0501 ), k_eControllerType_XBox360Controller, NULL },	// PDP Xbox 360 Controller (unlisted)
@@ -337,19 +337,15 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02d1 ), k_eControllerType_XBoxOneController, "Xbox One Controller" },         // Microsoft Xbox One Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02dd ), k_eControllerType_XBoxOneController, "Xbox One Controller" },         // Microsoft Xbox One Controller (Firmware 2015)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e0 ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },       // Microsoft Xbox One S Controller (Bluetooth)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxOneController, "Xbox One Elite Controller" },   // Microsoft Xbox One Elite Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ea ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },       // Microsoft Xbox One S Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02fd ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },       // Microsoft Xbox One S Controller (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02ff ), k_eControllerType_XBoxOneController, "Xbox One Controller" },         // Microsoft Xbox One Controller with XBOXGIP driver on Windows
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b0a ), k_eControllerType_XBoxOneController, "Xbox Adaptive Controller" },    // Microsoft Xbox Adaptive Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b0c ), k_eControllerType_XBoxOneController, "Xbox Adaptive Controller" },    // Microsoft Xbox Adaptive Controller (Bluetooth)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b12 ), k_eControllerType_XBoxOneController, "Xbox Series X Controller" },    // Microsoft Xbox Series X Controller
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b13 ), k_eControllerType_XBoxOneController, "Xbox Series X Controller" },    // Microsoft Xbox Series X Controller (BLE)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b20 ), k_eControllerType_XBoxOneController, "Xbox One S Controller" },       // Microsoft Xbox One S Controller (BLE)
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b21 ), k_eControllerType_XBoxOneController, "Xbox Adaptive Controller" },    // Microsoft Xbox Adaptive Controller (BLE)
-	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b22 ), k_eControllerType_XBoxOneController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller (BLE)
 	{ MAKE_CONTROLLER_ID( 0x0738, 0x4a01 ), k_eControllerType_XBoxOneController, NULL },	// Mad Catz FightStick TE 2
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0139 ), k_eControllerType_XBoxOneController, "PDP Xbox One Afterglow" },	// PDP Afterglow Wired Controller for Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x013B ), k_eControllerType_XBoxOneController, "PDP Xbox One Face-Off Controller" },	// PDP Face-Off Gamepad for Xbox One
@@ -469,6 +465,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1618 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin Duke
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1688 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin X91
 	{ MAKE_CONTROLLER_ID( 0x146b, 0x0611 ), k_eControllerType_XBoxOneController, NULL },	// Xbox Controller Mode for NACON Revolution 3
+	{ MAKE_CONTROLLER_ID( 0x3537, 0x109c ), k_eControllerType_XBoxOneController, "GameSir G7 Pro" },	// GameSir G7 Pro connected through its 2.4G dongle in Xbox mode
 
 	// These have been added via Minidump for unrecognized Xinput controller assert
 	{ MAKE_CONTROLLER_ID( 0x045e, 0x02a2 ), k_eControllerType_XBox360Controller, NULL },	// Unknown Controller - Microsoft VID
@@ -620,6 +617,22 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0003 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Red
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f0 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Taiko Controller For Switch
 
+	{ MAKE_CONTROLLER_ID( 0x054c, 0x0df2 ), k_eControllerType_PS5EdgeController, NULL },    // Sony DualSense Edge Controller
+
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x02e3 ), k_eControllerType_XBoxEliteController, "Xbox One Elite Controller" },   // Microsoft Xbox One Elite Controller
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b00 ), k_eControllerType_XBoxEliteController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b05 ), k_eControllerType_XBoxEliteController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x045e, 0x0b22 ), k_eControllerType_XBoxEliteController, "Xbox One Elite 2 Controller" }, // Microsoft Xbox One Elite Series 2 Controller (BLE)
+
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6000 ), k_eControllerType_8BitDoController, "8Bitdo SF30 Controller" }, // 8BitDo SF30 Pro Controller in Steam Mode
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6100 ), k_eControllerType_8BitDoController, "8Bitdo SF30 Controller" }, // 8BitDo SF30 Pro Controller in Steam Mode (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6001 ), k_eControllerType_8BitDoController, "8Bitdo SN30 Controller" }, // 8BitDo SN30 Pro Controller in Steam Mode
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6101 ), k_eControllerType_8BitDoController, "8Bitdo SN30 Controller" }, // 8BitDo SN30 Pro Controller in Steam Mode (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6003 ), k_eControllerType_8BitDoController, "8Bitdo Pro 2 Controller" }, // 8BitDo Pro 2 Controller in Steam Mode
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6006 ), k_eControllerType_8BitDoController, "8Bitdo Pro 2 Controller" }, // 8BitDo Pro 2 Controller in Steam Mode
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6009 ), k_eControllerType_8BitDoController, "8Bitdo Pro 3 Controller" }, // 8BitDo Pro 3 Controller in Steam Mode (Bluetooth)
+	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x6012 ), k_eControllerType_8BitDoController, "8Bitdo Ultimate 2 Wireless Controller" }, // 8BitDo Ultimate 2 Wireless Controller in Steam Mode (Bluetooth)
+
 	// Valve products
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch, NULL },	// Streaming mobile touch virtual controls
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1101 ), k_eControllerType_SteamController, NULL },	// Valve Legacy Steam Controller (CHELL)
@@ -635,4 +648,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1303 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Triton Controller (BLE)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1304 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Proteus Dongle (Proprietary)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1305 ), k_eControllerType_SteamControllerTriton, NULL },	// Valve Steam Nereid Dongle (Proprietary)
+
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x01AB ), k_eControllerType_HoriSteamController, NULL }, // HORI Wireless HORIPAD for Steam
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0196 ), k_eControllerType_HoriSteamController, NULL }, // HORI Wireless HORIPAD for Steam ( BT )
 };

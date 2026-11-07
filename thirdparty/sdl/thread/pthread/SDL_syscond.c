@@ -28,6 +28,12 @@
 
 #include "SDL_sysmutex_c.h"
 
+#if defined(HAVE_CLOCK_GETTIME) && defined(HAVE_PTHREAD_CONDATTR_SETCLOCK)
+#define COND_CLOCK CLOCK_MONOTONIC
+#else
+#define COND_CLOCK CLOCK_REALTIME
+#endif
+
 struct SDL_Condition
 {
     pthread_cond_t cond;
@@ -40,11 +46,21 @@ SDL_Condition *SDL_CreateCondition(void)
 
     cond = (SDL_Condition *)SDL_malloc(sizeof(SDL_Condition));
     if (cond) {
-        if (pthread_cond_init(&cond->cond, NULL) != 0) {
+        pthread_condattr_t attr;
+        if (pthread_condattr_init(&attr) != 0) {
+            SDL_SetError("pthread_condattr_init() failed");
+            SDL_free(cond);
+            return NULL;
+        }
+#ifdef HAVE_PTHREAD_CONDATTR_SETCLOCK
+        pthread_condattr_setclock(&attr, COND_CLOCK);
+#endif
+        if (pthread_cond_init(&cond->cond, &attr) != 0) {
             SDL_SetError("pthread_cond_init() failed");
             SDL_free(cond);
             cond = NULL;
         }
+        pthread_condattr_destroy(&attr);
     }
     return cond;
 }
@@ -80,9 +96,6 @@ void SDL_BroadcastCondition(SDL_Condition *cond)
 
 bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
-#ifndef HAVE_CLOCK_GETTIME
-    struct timeval delta;
-#endif
     struct timespec abstime;
 
     if (!cond || !mutex) {
@@ -94,11 +107,12 @@ bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 ti
     }
 
 #ifdef HAVE_CLOCK_GETTIME
-    clock_gettime(CLOCK_REALTIME, &abstime);
+    clock_gettime(COND_CLOCK, &abstime);
 
     abstime.tv_sec += (timeoutNS / SDL_NS_PER_SECOND);
     abstime.tv_nsec += (timeoutNS % SDL_NS_PER_SECOND);
 #else
+    struct timeval delta;
     gettimeofday(&delta, NULL);
 
     abstime.tv_sec = delta.tv_sec + (timeoutNS / SDL_NS_PER_SECOND);
