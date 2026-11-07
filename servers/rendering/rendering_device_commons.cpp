@@ -30,6 +30,8 @@
 
 #include "rendering_device_commons.h"
 
+#include "core/config/engine.h"
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -268,6 +270,103 @@ const char *const RenderingDeviceCommons::FORMAT_NAMES[DATA_FORMAT_MAX] = {
 	"Astc_12X10_Sfloat_Block",
 	"Astc_12X12_Sfloat_Block",
 };
+
+void RenderingDeviceCommons::print_breadcrumb_buffer_info(uint32_t p_last_breadcrumb_id, const uint32_t *p_breadcrumb_buffer_data, uint32_t p_breadcrumb_buffer_entry_count) {
+	if (p_last_breadcrumb_id == 0) {
+		ERR_PRINT("No breadcrumbs were ever sent by the device. Make sure 'rendering/rendering_device/device_lost_information/extended' was enabled in the project settings to gather this information.");
+		return;
+	}
+
+	String error_msg = "Printing last known breadcrumbs in reverse order (last executed first).";
+	if (!Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
+		error_msg += "\nSome of them might be inaccurate. Try running with --accurate-breadcrumbs for precise information.";
+	}
+
+	ERR_PRINT(error_msg);
+
+	uint32_t last_breadcrumb_offset = 0;
+	ERR_PRINT("Searching last breadcrumb. We've sent up to ID: " + itos(p_last_breadcrumb_id - 1));
+
+	// Scan the whole buffer to find the offset with the highest ID. That means that was the last one to be written.
+	// We use "p_last_breadcrumb_id - id" to account for wraparound. e.g. p_last_breadcrumb_id = 2 and id = 4294967294;
+	// then 2 - 4294967294 = 4. The one with the smallest difference is the closest to breadcrumb_id, which means it's
+	// the last written command.
+	uint32_t biggest_id = 0;
+	uint32_t smallest_id_diff = std::numeric_limits<uint32_t>::max();
+	for (uint32_t i = 0; i < p_breadcrumb_buffer_entry_count; ++i) {
+		const uint32_t id = p_breadcrumb_buffer_data[i * 2];
+		const uint32_t id_diff = p_last_breadcrumb_id - id;
+		if (id_diff < smallest_id_diff) {
+			biggest_id = i;
+			smallest_id_diff = id_diff;
+		}
+	}
+
+	ERR_PRINT("Last breadcrumb ID found: " + itos(p_breadcrumb_buffer_data[biggest_id * 2]));
+	last_breadcrumb_offset = biggest_id * 2;
+
+	const uint32_t entries_to_print = 8;
+	for (uint32_t i = 0; i < entries_to_print; i++) {
+		const uint32_t last_breadcrumb = p_breadcrumb_buffer_data[last_breadcrumb_offset + 1];
+		const uint32_t phase = last_breadcrumb & uint32_t(~((1 << 16) - 1));
+		const uint32_t user_data = last_breadcrumb & ((1 << 16) - 1);
+		error_msg = "Last known breadcrumb: ";
+		switch (phase) {
+			case BreadcrumbMarker::ALPHA_PASS:
+				error_msg += "ALPHA_PASS";
+				break;
+			case BreadcrumbMarker::BLIT_PASS:
+				error_msg += "BLIT_PASS";
+				break;
+			case BreadcrumbMarker::DEBUG_PASS:
+				error_msg += "DEBUG_PASS";
+				break;
+			case BreadcrumbMarker::LIGHTMAPPER_PASS:
+				error_msg += "LIGHTMAPPER_PASS";
+				break;
+			case BreadcrumbMarker::OPAQUE_PASS:
+				error_msg += "OPAQUE_PASS";
+				break;
+			case BreadcrumbMarker::POST_PROCESSING_PASS:
+				error_msg += "POST_PROCESSING_PASS";
+				break;
+			case BreadcrumbMarker::REFLECTION_PROBES:
+				error_msg += "REFLECTION_PROBES";
+				break;
+			case BreadcrumbMarker::SHADOW_PASS_CUBE:
+				error_msg += "SHADOW_PASS_CUBE";
+				break;
+			case BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:
+				error_msg += "SHADOW_PASS_DIRECTIONAL";
+				break;
+			case BreadcrumbMarker::SKY_PASS:
+				error_msg += "SKY_PASS";
+				break;
+			case BreadcrumbMarker::TRANSPARENT_PASS:
+				error_msg += "TRANSPARENT_PASS";
+				break;
+			case BreadcrumbMarker::UI_PASS:
+				error_msg += "UI_PASS";
+				break;
+			default:
+				error_msg += "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')';
+				break;
+		}
+
+		if (user_data != 0) {
+			error_msg += " | User data: " + itos(user_data);
+		}
+
+		ERR_PRINT(error_msg);
+
+		if (last_breadcrumb_offset == 0u) {
+			// Decrement last_breadcrumb_idx, wrapping underflow.
+			last_breadcrumb_offset = p_breadcrumb_buffer_entry_count * 2;
+		}
+
+		last_breadcrumb_offset -= 2;
+	}
+}
 
 /*****************/
 /**** TEXTURE ****/

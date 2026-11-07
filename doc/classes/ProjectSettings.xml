@@ -3358,6 +3358,10 @@
 			The number of entries in the sampler descriptor heap the Direct3D 12 rendering driver uses for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
+		<member name="rendering/rendering_device/device_lost_information/extended" type="bool" setter="" getter="" default="false">
+			Enables extended information by sending breadcrumbs to the driver that will be printed to the log when the GPU crashes. Use this option if you wish to gather more detailed information about GPU crashes that players might be running into.
+			[b]Note:[/b] This option can have a minor performance impact.
+		</member>
 		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the Forward+ or Mobile renderers. Editing this property has no effect in the default configuration, as first-party platforms each have platform-specific overrides. Use those overrides to configure the driver for each platform.
 			This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
