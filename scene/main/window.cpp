@@ -987,6 +987,9 @@ void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 			_propagate_window_notification(this, NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 			emit_signal(SNAME("output_max_linear_value_changed"), get_output_max_linear_value());
 		} break;
+		case DisplayServerEnums::WINDOW_EVENT_HINGE_STATUS_CHANGED: {
+			emit_signal(SNAME("hinge_status_changed"), DisplayServer::get_singleton()->screen_get_hinge_statue(current_screen), DisplayServer::get_singleton()->screen_get_hinge_angle(current_screen));
+		}
 	}
 }
 
@@ -3772,6 +3775,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 	ADD_SIGNAL(MethodInfo("title_changed"));
 	ADD_SIGNAL(MethodInfo("output_max_linear_value_changed", PropertyInfo(Variant::FLOAT, "output_max_linear_value")));
+	ADD_SIGNAL(MethodInfo("hinge_status_changed", PropertyInfo(Variant::INT, "status", PROPERTY_HINT_ENUM, "Closed,Fully Open,Partially Open,Unknown"), PropertyInfo(Variant::FLOAT, "angle")));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
