@@ -61,6 +61,7 @@ class PropertySelector : public ConfirmationDialog {
 	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;
+	String replacing_path;
 
 	void _create_subproperties(TreeItem *p_parent_item, Variant::Type p_type);
 	void _create_subproperty(TreeItem *p_parent_item, const String &p_name, Variant::Type p_type);
@@ -81,6 +82,7 @@ public:
 	void select_property_from_instance(Object *p_instance, const String &p_current = "");
 
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
+	void set_replacing_path(const String &p_path);
 
 	PropertySelector();
 };
