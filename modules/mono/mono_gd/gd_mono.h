@@ -46,10 +46,17 @@
 namespace gdmono {
 
 #ifdef TOOLS_ENABLED
+enum class PluginReloadError : uint32_t {
+	OK = 0,
+	ALC_UNLOAD_FAILED,
+	ALC_NOT_COLLECTIBLE,
+	EXCEPTION,
+};
+
 struct PluginCallbacks {
 	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *, String *);
 	using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *, const void **, int32_t);
-	using FuncUnloadProjectPluginCallback = bool(GD_CLR_STDCALL *)();
+	using FuncUnloadProjectPluginCallback = PluginReloadError(GD_CLR_STDCALL *)();
 	FuncLoadProjectAssemblyCallback LoadProjectAssemblyCallback = nullptr;
 	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
 	FuncUnloadProjectPluginCallback UnloadProjectPluginCallback = nullptr;
