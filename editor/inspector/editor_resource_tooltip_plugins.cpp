@@ -37,7 +37,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -58,7 +57,10 @@ void EditorResourceTooltipPlugin::_bind_methods() {
 
 VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path) {
 	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->add_theme_constant_override("separation", EditorNode::get_singleton()->get_gui_base()->get_theme_constant(SNAME("separation"), SNAME("Label")));
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		vb->add_theme_constant_override(SNAME("separation"), -sb->get_offset().y);
+	}
 
 	{
 		Label *label = memnew(Label(p_resource_path.get_file()));
@@ -130,6 +132,11 @@ bool EditorTextureTooltipPlugin::handles(const String &p_resource_type) const {
 
 Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		hb->add_theme_constant_override(SNAME("separation"), sb->get_offset().x);
+	}
+
 	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
 	DEV_ASSERT(vb);
 	vb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -139,13 +146,18 @@ Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resou
 	label->set_theme_type_variation(SNAME("TooltipLabel"));
 	vb->add_child(label);
 
+	Control *margin = memnew(Control);
+	hb->add_child(margin);
+	if (sb.is_valid()) {
+		margin->set_custom_minimum_size(Size2(sb->get_offset().x, 0));
+	}
+
 	TextureRect *tr = memnew(TextureRect);
 	tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	hb->add_child(tr);
 	request_thumbnail(p_resource_path, tr);
 
 	hb->add_child(vb);
-	hb->add_theme_constant_override(SNAME("separation"), 8 * EDSCALE);
 
 	return hb;
 }
@@ -171,6 +183,13 @@ Control *EditorAudioStreamTooltipPlugin::make_tooltip_for_path(const String &p_r
 		label->set_text(vformat(TTR("Length: %0.1fs"), length));
 	} else {
 		label->set_text(vformat(TTR("Length: %0.3fs"), length));
+	}
+
+	Control *margin = memnew(Control);
+	vb->add_child(margin);
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		margin->set_custom_minimum_size(Size2(0, sb->get_offset().y * 3));
 	}
 
 	TextureRect *tr = memnew(TextureRect);
