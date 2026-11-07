@@ -41,6 +41,7 @@ WebSocketPeer *EMWSPeer::_create(bool p_notify_postinitialize) {
 
 void EMWSPeer::_esws_on_connect(void *p_obj, char *p_proto) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
+	MutexLock lock(peer->mutex);
 	peer->ready_state = STATE_OPEN;
 	peer->selected_protocol.clear();
 	peer->selected_protocol.append_utf8(p_proto);
@@ -48,17 +49,20 @@ void EMWSPeer::_esws_on_connect(void *p_obj, char *p_proto) {
 
 void EMWSPeer::_esws_on_message(void *p_obj, const uint8_t *p_data, int p_data_size, int p_is_string) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
+	MutexLock lock(peer->mutex);
 	uint8_t is_string = p_is_string ? 1 : 0;
 	peer->in_buffer.write_packet(p_data, p_data_size, &is_string);
 }
 
 void EMWSPeer::_esws_on_error(void *p_obj) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
+	MutexLock lock(peer->mutex);
 	peer->ready_state = STATE_CLOSED;
 }
 
 void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int p_was_clean) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
+	MutexLock lock(peer->mutex);
 	peer->close_code = p_code;
 	peer->close_reason.clear();
 	peer->close_reason.append_utf8(p_reason);
@@ -66,6 +70,7 @@ void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int
 }
 
 Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls_options) {
+	MutexLock lock(mutex);
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
@@ -140,12 +145,14 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 }
 
 Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
+	MutexLock lock(mutex);
 	if (in_buffer.packets_left() == 0) {
 		return ERR_UNAVAILABLE;
 	}
 
 	int read = 0;
 	Error err = in_buffer.read_packet(packet_buffer.ptrw(), packet_buffer.size(), &was_string, read);
+
 	ERR_FAIL_COND_V(err != OK, err);
 
 	*r_buffer = packet_buffer.ptr();
@@ -155,6 +162,7 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 }
 
 int EMWSPeer::get_available_packet_count() const {
+	MutexLock lock(mutex);
 	return in_buffer.packets_left();
 }
 
@@ -170,6 +178,7 @@ bool EMWSPeer::was_string_packet() const {
 }
 
 void EMWSPeer::_clear() {
+	MutexLock lock(mutex);
 	if (peer_sock != -1) {
 		godot_js_websocket_destroy(peer_sock);
 		peer_sock = -1;
@@ -185,6 +194,7 @@ void EMWSPeer::_clear() {
 }
 
 void EMWSPeer::close(int p_code, const String &p_reason) {
+	MutexLock lock(mutex);
 	if (p_code < 0) {
 		if (peer_sock != -1) {
 			godot_js_websocket_destroy(peer_sock);
