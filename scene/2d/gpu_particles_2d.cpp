@@ -32,6 +32,7 @@
 #include "gpu_particles_2d.compat.inc"
 
 #include "core/config/engine.h"
+#include "core/math/transform_interpolator.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -140,6 +141,10 @@ void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 
 void GPUParticles2D::_update_particle_emission_transform() {
 	Transform2D xf2d = get_global_transform();
+	if (is_physics_interpolated_and_enabled()) {
+		TransformInterpolator::interpolate_transform_2d(_interpolation_data.xform_prev, _interpolation_data.xform_curr, xf2d, Engine::get_singleton()->get_physics_interpolation_fraction());
+	}
+
 	Transform3D xf;
 	xf.basis.set_column(0, Vector3(xf2d.columns[0].x, xf2d.columns[0].y, 0));
 	xf.basis.set_column(1, Vector3(xf2d.columns[1].x, xf2d.columns[1].y, 0));
@@ -802,6 +807,21 @@ void GPUParticles2D::_notification(int p_what) {
 					}
 				}
 			}
+
+			// We need to update the emission transform every frame if interpolation is enabled to propagate the correct transform.
+			if (is_physics_interpolated_and_enabled()) {
+				// This is happening after 0 or more physics ticks,
+				// so update the interpolation data if we haven't seen the results of the latest physics tick.
+				uint64_t pf = Engine::get_singleton()->get_physics_frames();
+				if (pf != _interpolation_data.last_physics_frame) {
+					_interpolation_data.last_physics_frame = pf;
+					_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+					_interpolation_data.xform_curr = get_global_transform();
+				}
+
+				// Propagate to the particles.
+				_update_particle_emission_transform();
+			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -815,6 +835,11 @@ void GPUParticles2D::_notification(int p_what) {
 				previous_velocity = velocity;
 			}
 			previous_position = get_global_position();
+		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_interpolation_data.xform_curr = get_global_transform_const();
+			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
 		} break;
 	}
 }
