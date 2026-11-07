@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="push_toast">
-			<return type="void" />
+			<return type="EditorToast" />
 			<param index="0" name="message" type="String" />
 			<param index="1" name="severity" type="int" enum="EditorToaster.Severity" default="0" />
 			<param index="2" name="tooltip" type="String" default="&quot;&quot;" />
