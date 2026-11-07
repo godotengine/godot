@@ -67,7 +67,9 @@ Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, con
 				if (state_collider_dicts.size() > 0) {
 					Array state_colliders;
 					for (int i = 0; i < state_collider_dicts.size(); i++) {
-						state_colliders.push_back(GLTFPhysicsShape::from_dictionary(state_collider_dicts[i]));
+						Dictionary state_collider_dict = state_collider_dicts[i];
+						state_collider_dict["extension"] = "OMI_collider";
+						state_colliders.push_back(GLTFPhysicsShape::from_dictionary(state_collider_dict));
 					}
 					p_state->set_additional_data(StringName("GLTFPhysicsShapes"), state_colliders);
 				}
@@ -97,6 +99,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			ERR_FAIL_INDEX_V_MSG(node_collider_index, state_colliders.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the collider index " + itos(node_collider_index) + " is not in the state colliders (size: " + itos(state_colliders.size()) + ").");
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), state_colliders[node_collider_index]);
 		} else {
+			node_collider_ext["extension"] = "OMI_collider";
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), GLTFPhysicsShape::from_dictionary(node_collider_ext));
 		}
 	}
