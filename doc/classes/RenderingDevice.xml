@@ -1222,6 +1222,13 @@
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
+		<method name="texture_get_nearest_supported_samples">
+			<return type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="0" name="format" type="RDTextureFormat" />
+			<description>
+				Returns the sample count that [method texture_create] will use for [param format]. This is [member RDTextureFormat.samples] if the driver supports that sample count for the format and usage, otherwise the nearest lower supported sample count. Use this to know the actual sample count in advance, for example when choosing a matching sample count for shaders or pipelines.
+			</description>
+		</method>
 		<method name="texture_is_discardable">
 			<return type="bool" />
 			<param index="0" name="texture" type="RID" />

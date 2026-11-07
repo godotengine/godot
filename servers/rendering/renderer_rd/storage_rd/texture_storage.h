@@ -941,6 +941,7 @@ public:
 
 	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
 	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
+	static RSE::ViewportMSAA render_target_get_nearest_supported_msaa(RSE::ViewportMSAA p_msaa, bool p_use_hdr);
 
 	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override;
 };
