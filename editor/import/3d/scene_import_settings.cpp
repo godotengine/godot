@@ -2002,4 +2002,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 SceneImportSettingsDialog::~SceneImportSettingsDialog() {
 	memdelete(scene_import_settings_data);
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

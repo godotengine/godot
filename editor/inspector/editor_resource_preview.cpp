@@ -636,4 +636,7 @@ EditorResourcePreview::EditorResourcePreview() {
 
 EditorResourcePreview::~EditorResourcePreview() {
 	stop();
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

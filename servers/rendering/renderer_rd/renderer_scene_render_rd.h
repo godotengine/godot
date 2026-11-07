@@ -173,6 +173,7 @@ private:
 
 public:
 	static RendererSceneRenderRD *get_singleton() { return singleton; }
+	static void reset_singleton();
 
 	/* LIGHTING */
 

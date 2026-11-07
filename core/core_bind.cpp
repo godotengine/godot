@@ -2324,6 +2324,10 @@ EngineDebugger::~EngineDebugger() {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
+
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
 
 void EngineDebugger::_bind_methods() {

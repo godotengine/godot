@@ -158,4 +158,5 @@ public:
 	void connect_filesystem_dock_signals(FileSystemDock *p_fs_dock);
 
 	ProjectSettingsEditor(EditorData *p_data);
+	~ProjectSettingsEditor();
 };
