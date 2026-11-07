@@ -233,17 +233,20 @@ String get_csharp_project_name() {
 	String name = GLOBAL_GET("dotnet/project/assembly_name");
 	if (name.is_empty()) {
 		name = GLOBAL_GET("application/config/name");
-		Vector<String> invalid_chars = Vector<String>({ //
-				// Windows reserved filename chars.
-				":", "*", "?", "\"", "<", ">", "|",
-				// Directory separators.
-				"/", "\\",
-				// Other chars that have been found to break assembly loading.
-				";", "'", "=", "," });
-		name = name.strip_edges();
-		for (int i = 0; i < invalid_chars.size(); i++) {
-			name = name.replace(invalid_chars[i], "-");
-		}
+	}
+
+	Vector<String> invalid_chars = Vector<String>({ //
+			// Windows reserved filename chars.
+			":", "*", "?", "\"", "<", ">", "|",
+			// Directory separators.
+			"/", "\\",
+			// iOS reserved chars.
+			"(", ")", "[", "]", "{", "}", "+",
+			// Other chars that have been found to break assembly loading.
+			";", "'", "=", "," });
+	name = name.strip_edges();
+	for (int i = 0; i < invalid_chars.size(); i++) {
+		name = name.replace(invalid_chars[i], "-");
 	}
 
 	if (name.is_empty()) {
