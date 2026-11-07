@@ -369,12 +369,12 @@ bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
-		if (prev_line.contains("@warning_ignore")) {
+		const int indent = text_editor->get_indent_level(line) / text_editor->get_indent_size();
+		if (prev_line.contains("@warning_ignore") && !text_editor->is_in_comment(line - 1, indent)) {
 			const int closing_bracket_idx = prev_line.find_char(')');
 			const String text_to_insert = ", " + code.quote(quote_style);
 			text_editor->insert_text(text_to_insert, line - 1, closing_bracket_idx);
 		} else {
-			const int indent = text_editor->get_indent_level(line) / text_editor->get_indent_size();
 			String annotation_indent;
 			if (!text_editor->is_indent_using_spaces()) {
 				annotation_indent = String("\t").repeat(indent);
