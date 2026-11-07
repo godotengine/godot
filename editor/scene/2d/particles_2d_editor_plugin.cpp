@@ -391,7 +391,31 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 
 	EditorProgress ep("gen_vrect", TTR("Generating Visibility Rect (Waiting for Particle Simulation)"), int(time));
 
-	bool was_emitting = particles->is_emitting();
+	const float previous_amount = edited_node->get("amount");
+	const float previous_speed_scale = edited_node->get("speed_scale");
+	const int previous_fixed_fps = edited_node->get("fixed_fps");
+	const float previous_explosiveness = edited_node->get("explosiveness");
+	const float previous_interp_to_end = edited_node->get("interp_to_end");
+	const int previous_interpolate = edited_node->get("interpolate");
+	// Increase particle amount temporarily (up to a reasonable limit) to improve the rect's coverage.
+	// Also increase simulation speed to reduce time to generate the rect,
+	// This also allows particles with short lifetimes to be simulated multiple cycles, further improving the rect's coverage.
+	//
+	// Fixed FPS always set to improve determinism regardless of the FPS the editor is running at.
+	// Since increasing speed scale also increases fixed FPS, we compensate for this to avoid FPS drops
+	// (which impact simulation accuracy).
+	// Also disable explosiveness and Interp to End, which negatively impact the accuracy of the generated rect.
+	//
+	// Lastly, disable interpolation temporarily so that the preview more accurately reflects the rect that will be generated.
+	edited_node->set("amount", MIN(previous_amount * 20.0, 20000));
+	const float temp_speed_scale = MAX(20.0, previous_speed_scale * 20.0);
+	edited_node->set("speed_scale", temp_speed_scale);
+	edited_node->set("fixed_fps", MAX(1, Math::round(60.0 / temp_speed_scale)));
+	edited_node->set("explosiveness", 0.0);
+	edited_node->set("interp_to_end", 0.0);
+	edited_node->set("interpolate", false);
+
+	const bool was_emitting = particles->is_emitting();
 	if (!was_emitting) {
 		particles->set_emitting(true);
 		OS::get_singleton()->delay_usec(1000);
@@ -416,6 +440,14 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 	if (!was_emitting) {
 		particles->set_emitting(false);
 	}
+
+	// Restore properties used before AABB generation.
+	edited_node->set("amount", previous_amount);
+	edited_node->set("speed_scale", previous_speed_scale);
+	edited_node->set("fixed_fps", previous_fixed_fps);
+	edited_node->set("explosiveness", previous_explosiveness);
+	edited_node->set("interp_to_end", previous_interp_to_end);
+	edited_node->set("interpolate", previous_interpolate);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
