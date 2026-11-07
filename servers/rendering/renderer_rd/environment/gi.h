@@ -401,7 +401,6 @@ private:
 		};
 		struct IntegratePushConstant {
 			enum {
-				SKY_FLAGS_MODE_COLOR = 0x01,
 				SKY_FLAGS_MODE_SKY = 0x02,
 				SKY_FLAGS_ORIENTATION_SIGN = 0x04,
 			};
@@ -426,6 +425,9 @@ private:
 
 			float sky_color_or_orientation[3];
 			float y_mult;
+
+			float ambient_color[3];
+			float ambient_color_sky_mix;
 
 			float sky_irradiance_border_size[2];
 			uint32_t store_ambient_texture;
@@ -684,6 +686,9 @@ public:
 
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
 		RID integrate_sky_uniform_set;
+		// The sky update_probes() integrated with, for store_probes() to reflect it.
+		RID probe_sky_uniform_set;
+		SDFGIShader::IntegratePushConstant probe_sky_push_constant = {};
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
