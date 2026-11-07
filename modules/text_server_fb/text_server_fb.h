@@ -290,7 +290,6 @@ class TextServerFallback : public TextServerExtension {
 #endif
 	bool _ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
 	bool _ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
-	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontFallback *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
@@ -595,6 +594,7 @@ public:
 
 	MODBIND2(font_set_data, const RID &, const PackedByteArray &);
 	MODBIND3(font_set_data_ptr, const RID &, const uint8_t *, int64_t);
+	MODBIND1RC(bool, font_validate, const RID &);
 
 	MODBIND2(font_set_face_index, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_face_index, const RID &);
