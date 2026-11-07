@@ -1,0 +1,14 @@
+config_version=5
+
+[application]
+config/name="RichTextEdit overflow regression"
+
+[display]
+window/size/viewport_width=1200
+window/size/viewport_height=800
+window/size/window_width_override=1200
+window/size/window_height_override=800
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+environment/defaults/default_clear_color=Color(1, 1, 1, 1)

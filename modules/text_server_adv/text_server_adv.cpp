@@ -1563,12 +1563,15 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 		}
 #endif
 		r_cache_for_size = E->value;
-		// Size used directly, remove from oversampling list.
-		if (p_oversampling == 0 && E->value->viewport_oversampling != 0) {
+		// A raster size may serve several font-size/oversampling pairs. Once
+		// shared (or used directly), retain it for the font lifetime: releasing
+		// one sampling level must not free textures in another item's draw list.
+		if (E->value->viewport_oversampling != 0 && E->value->viewport_oversampling != p_oversampling) {
 			OversamplingLevel *ol = oversampling_levels.getptr(E->value->viewport_oversampling);
 			if (ol) {
 				ol->fonts.erase(E->value);
 			}
+			E->value->viewport_oversampling = 0;
 		}
 		return true;
 	}

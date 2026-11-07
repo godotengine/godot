@@ -148,6 +148,8 @@ private:
 			String data;
 			Array bidi_override;
 			Ref<TextParagraph> data_buf;
+			Ref<TextParagraph> data_buf_disp;
+			Array style_infos;
 			Vector<RID> accessibility_text_root_element;
 
 			String ime_data;
@@ -162,6 +164,13 @@ private:
 			int height = 0;
 			int width = 0;
 			mutable float indent_ofs = -1.0;
+			// Sum of the visual row heights of this line, -1 when stale.
+			mutable int visual_height = -1;
+			// Deferred shaping: the shaped data is stale until the line is
+			// shaped again (on first read, or in the background).
+			bool shape_pending = false;
+			bool pending_text_changed = false;
+			bool pending_font_changed = false;
 
 			Line() {
 				data_buf.instantiate();
@@ -185,6 +194,8 @@ private:
 		bool use_default_word_separators = true;
 		bool use_custom_word_separators = false;
 		Callable inline_object_parser;
+		Callable style_parser;
+		Callable bidi_override_parser;
 
 		mutable bool max_line_width_dirty = true;
 		mutable bool max_line_height_dirty = true;
@@ -192,12 +203,65 @@ private:
 		mutable int max_line_height = 0;
 		mutable int total_visible_line_count = 0;
 		int width = -1;
+		int fit_width = -1;
 
 		int tab_size = 4;
 		int gutter_count = 0;
 		bool indent_wrapped_lines = false;
+		int visible_character_limit = -1;
+
+		// Prefix sums over lines, extended on demand. Entry i holds the value at
+		// the start of line i (characters including newlines, or visual pixels);
+		// entries [0, *_valid] are current.
+		mutable LocalVector<int> char_offsets;
+		mutable int char_offsets_valid = 0;
+		mutable LocalVector<int> visual_offsets;
+		mutable int visual_offsets_valid = 0;
+
+		void _invalidate_char_offsets(int p_from_line) const { char_offsets_valid = MIN(char_offsets_valid, MAX(p_from_line, 0)); }
+
+		// Bulk invalidations of large documents queue their lines instead of
+		// shaping them. The text measured so far estimates the queued lines.
+		bool deferred_shaping_enabled = false;
+		int bulk_invalidation_depth = 0;
+		bool shaping_pending_line = false;
+		int pending_shape_count = 0;
+		mutable double shaped_width_sum = 0.0;
+		mutable int64_t shaped_char_sum = 0;
+
+		void _ensure_shaped(int p_line) const {
+			if (text[p_line].shape_pending) {
+				const_cast<Text *>(this)->_shape_pending_line(p_line);
+			}
+		}
+		void _shape_pending_line(int p_line);
 
 	public:
+		// Invalidating more lines than this at once defers their shaping.
+		static constexpr int BULK_SHAPE_THRESHOLD = 64;
+		struct BulkInvalidation {
+			Text &owner;
+			bool active = false;
+			BulkInvalidation(Text &p_owner, int p_line_count) :
+					owner(p_owner), active(p_line_count > BULK_SHAPE_THRESHOLD) {
+				if (active) {
+					owner.bulk_invalidation_depth++;
+				}
+			}
+			~BulkInvalidation() {
+				if (active) {
+					owner.bulk_invalidation_depth--;
+				}
+			}
+		};
+		void set_deferred_shaping_enabled(bool p_enabled);
+		bool is_line_shape_pending(int p_line) const { return text[p_line].shape_pending; }
+		int get_pending_shape_count() const { return pending_shape_count; }
+		int find_pending_line(int p_from) const;
+		void shape_line(int p_line) const { _ensure_shaped(p_line); }
+		// The wrap count without shaping a pending line (an estimate then).
+		int get_line_wrap_amount_estimate(int p_line) const { return text[p_line].line_count - 1; }
+
 		void set_tab_size(int p_tab_size);
 		int get_tab_size() const;
 		void set_indent_wrapped_lines(bool p_enabled);
@@ -208,8 +272,12 @@ private:
 		void set_direction_and_language(TextServer::Direction p_direction, const String &p_language);
 		void set_draw_control_chars(bool p_enabled);
 		void set_inline_object_parser(const Callable &p_parser);
+		void set_style_parser(const Callable &p_parser);
+		void set_bidi_override_parser(const Callable &p_parser) { bidi_override_parser = p_parser; }
+		void set_visible_character_limit(int p_visible_characters);
 
 		int get_line_height() const;
+		int get_line_wrap_height(int p_line, int p_wrap_index) const;
 		int get_line_width(int p_line, int p_wrap_index = -1) const;
 		int get_max_width() const;
 		int get_total_visible_line_count() const;
@@ -227,6 +295,7 @@ private:
 
 		void set_width(float p_width);
 		float get_width() const;
+		void set_fit_width(float p_width);
 		void set_brk_flags(BitField<TextServer::LineBreakFlag> p_flags);
 		BitField<TextServer::LineBreakFlag> get_brk_flags() const;
 		int get_line_wrap_amount(int p_line) const;
@@ -241,6 +310,8 @@ private:
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
+		const Ref<TextParagraph> get_full_line_data(int p_line) const;
+		const Array &get_line_style_infos(int p_line) const;
 		float get_indent_offset(int p_line, bool p_rtl) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
@@ -253,10 +324,19 @@ private:
 		void clear();
 		void swap_additional_data(int p_from_line, int p_to_line);
 
-		void invalidate_cache(int p_line, bool p_text_changed = false);
+		void invalidate_cache(int p_line, bool p_text_changed = false, bool p_font_changed = true);
 		void invalidate_font();
 		void invalidate_all();
 		void invalidate_all_lines();
+
+		int get_line_char_offset(int p_line) const;
+		int find_line_at_char_offset(int p_offset) const;
+		int get_visual_height_cache(int p_line) const { return text[p_line].visual_height; }
+		void set_visual_height_cache(int p_line, int p_height) const { text[p_line].visual_height = p_height; }
+		void invalidate_visual_offsets(int p_from_line) const { visual_offsets_valid = MIN(visual_offsets_valid, MAX(p_from_line, 0)); }
+		void invalidate_all_visual_heights() const;
+		LocalVector<int> &get_visual_offsets() const { return visual_offsets; }
+		int &get_visual_offsets_valid() const { return visual_offsets_valid; }
 
 		_FORCE_INLINE_ const String &operator[](int p_line) const;
 		_FORCE_INLINE_ const String &get_text_with_ime(int p_line) const;
@@ -288,7 +368,15 @@ private:
 	/* Text */
 	Text text;
 	RID text_ci;
+	bool text_decoration_scale_tracking = false;
+	real_t text_decoration_pixel_size = 1.0;
+	real_t _get_text_decoration_pixel_size() const;
+	void _update_text_decoration_scale();
+	void _set_text_decoration_scale_tracking(bool p_enable);
 	bool setting_text = false;
+	int visible_characters = -1;
+	float visible_ratio = 1.0;
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	enum AltInputMode {
 		ALT_INPUT_NONE,
@@ -345,6 +433,7 @@ private:
 
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
+	Array _parse_structured_text(const String &p_text) const;
 
 	void _clear();
 	void _update_caches(bool p_invalidate_all = false);
@@ -385,7 +474,8 @@ private:
 		enum Type {
 			TYPE_NONE,
 			TYPE_INSERT,
-			TYPE_REMOVE
+			TYPE_REMOVE,
+			TYPE_CUSTOM,
 		};
 		LocalVector<Caret> start_carets;
 		LocalVector<Caret> end_carets;
@@ -396,6 +486,9 @@ private:
 		int to_line = 0;
 		int to_column = 0;
 		String text;
+		StringName custom_type;
+		Variant custom_before;
+		Variant custom_after;
 		uint32_t prev_version = 0;
 		uint32_t version = 0;
 		bool chain_forward = false;
@@ -411,6 +504,8 @@ private:
 
 	int complex_operation_count = 0;
 	bool next_operation_is_complex = false;
+	bool skip_next_complex_end_marker = false;
+	bool applying_undo_redo = false;
 
 	TextOperation current_op;
 	List<TextOperation> undo_stack;
@@ -594,13 +689,39 @@ private:
 	// Scrolling.
 	int first_visible_line = 0;
 	int first_visible_line_wrap_ofs = 0;
+	double first_visible_line_scroll_ofs = 0.0;
 	int first_visible_col = 0;
 
 	bool scrolling = false;
 	bool updating_scrolls = false;
 
+	// Rows are only drawn where the viewport can show them. When that skips
+	// content, the drawn area is remembered so a scrolled canvas redraws.
+	Rect2 draw_cull_rect;
+	bool draw_cull_tracking = false;
+	Rect2 _get_viewport_visible_rect() const;
+	void _update_draw_cull();
+	void _set_draw_cull_tracking(bool p_enable);
+	void _check_draw_cull();
+
+	int _get_line_visual_height(int p_line) const;
+	int _get_line_visual_offset(int p_line) const;
+	int _get_line_at_visual_offset(int p_offset) const;
+
+	// Background shaping of lines queued by bulk invalidations.
+	int pending_shape_cursor = 0;
+	int drawn_first_line = 0;
+	int drawn_last_line = INT_MAX;
+	mutable int64_t measured_row_height_sum = 0;
+	mutable int64_t measured_row_count = 0;
+	int _get_estimated_row_height() const;
+	void _process_pending_shaping();
+
 	void _update_scrollbars();
 	int _get_control_height() const;
+	int _get_default_line_height() const;
+	int _get_line_extra_top_margin(int p_line, int p_wrap_index) const;
+	int _get_line_extra_bottom_margin(int p_line, int p_wrap_index) const;
 
 	void _v_scroll_input();
 	void _scroll_moved(double p_to_val);
@@ -754,9 +875,63 @@ private:
 	bool _clear_carets_and_selection();
 
 protected:
+	// CSS `-webkit-text-stroke`: a run's outline is painted over its fill
+	// (centered on the glyph edge) instead of under it.
+	bool outline_over_fill = false;
+
+	// Subclasses may opt out of the text viewport without changing wrapping
+	// width. TextEdit and CodeEdit retain their normal clipping and scrolling.
+	virtual bool _is_text_clipping_enabled() const { return true; }
+
+	// Subclasses may force each text scroll bar to always or never be shown
+	// instead of following the content size. TextEdit and CodeEdit stay
+	// automatic on both axes.
+	enum ScrollBarMode {
+		SCROLL_BAR_MODE_AUTO,
+		SCROLL_BAR_MODE_NEVER,
+		SCROLL_BAR_MODE_ALWAYS,
+	};
+	virtual ScrollBarMode _get_h_scroll_bar_mode() const { return SCROLL_BAR_MODE_AUTO; }
+	virtual ScrollBarMode _get_v_scroll_bar_mode() const { return SCROLL_BAR_MODE_AUTO; }
+
+	void _update_text_clipping();
+	int _get_visible_content_height() const;
+
+	void _set_visible_characters(int p_visible);
+	int _get_visible_characters() const;
+	void _set_visible_ratio(float p_ratio);
+	float _get_visible_ratio() const;
+	void _set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior _get_visible_characters_behavior() const;
+	int _get_total_character_count() const;
+	int _get_line_character_offset(int p_line) const;
+	int _get_total_glyph_count() const;
+	int _get_glyph_offset(int p_line, int p_wrap_index) const;
+
 	void _reset_caret_blink_timer();
 	void _notification(int p_what);
 	static void _bind_methods();
+	void push_custom_undo_operation(const StringName &p_type, const Variant &p_before, const Variant &p_after);
+	void push_custom_undo_operation_isolated(const StringName &p_type, const Variant &p_before, const Variant &p_after);
+	bool amend_custom_undo_operation(const StringName &p_type, const Variant &p_after);
+	virtual void _apply_custom_undo_operation(const StringName &p_type, const Variant &p_data) {}
+
+	// Called just before text is inserted or removed, with the exact range, so a
+	// subclass can update line-aligned data before the affected lines reshape.
+	virtual void _text_inserting(int p_line, int p_column, const String &p_text) {}
+	virtual void _text_removing(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {}
+	bool _is_applying_undo_redo() const { return applying_undo_redo; }
+	// Reshapes a range of lines after a subclass changed their style data.
+	void _invalidate_lines(int p_from_line, int p_to_line);
+	// The marker number of an ordered list paragraph.
+	virtual int _get_list_item_number(int p_line, int p_list_type, int p_list_start) const;
+	// Lets bulk invalidations of large documents defer shaping lines that are
+	// not drawn; they are shaped on first use or in the background.
+	void _set_deferred_shaping_enabled(bool p_enabled) { text.set_deferred_shaping_enabled(p_enabled); }
+	bool _has_pending_shaping() const { return text.get_pending_shape_count() > 0; }
+	// Background shaping refined the estimated height of the content;
+	// p_finished is true once every queued line is shaped.
+	virtual void _deferred_layout_progressed(bool p_finished) {}
 
 #ifndef DISABLE_DEPRECATED
 	void _set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
@@ -766,6 +941,12 @@ protected:
 
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
+	virtual int _get_visual_line_wrap_height(int p_line, int p_wrap_index) const;
+	// Returns the line box and paragraph margins without the global theme
+	// line-spacing constant. RichTextEdit uses this as the CSS line-height base.
+	int _get_visual_line_wrap_content_height(int p_line, int p_wrap_index) const;
+	int _get_visual_line_wrap_top_margin(int p_line, int p_wrap_index) const;
+	int _get_visual_line_wrap_bottom_margin(int p_line, int p_wrap_index) const;
 
 	virtual String _get_accessibility_name() const override;
 
@@ -798,6 +979,7 @@ protected:
 
 	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
 	float _get_wrap_indent_offset(int p_line, int p_wrap_index, bool p_rtl) const;
+	float _get_line_style_visual_offset(int p_line, int p_wrap_index, bool p_rtl) const;
 
 	// Symbol lookup.
 	String lookup_symbol_word;
@@ -934,8 +1116,8 @@ public:
 	void clear();
 
 	void _set_text(const String &p_text, bool p_emit_signal = false);
-	void set_text(const String &p_text);
-	String get_text() const;
+	virtual void set_text(const String &p_text);
+	virtual String get_text() const;
 
 	int get_line_count() const;
 
@@ -966,6 +1148,7 @@ public:
 	Point2i get_next_visible_line_index_offset_from(int p_line_from, int p_wrap_index_from, int p_visible_amount) const;
 
 	void set_inline_object_handlers(const Callable &p_parser, const Callable &p_drawer, const Callable &p_click_handler);
+	void set_style_parser(const Callable &p_parser);
 
 	// Overridable actions
 	void handle_unicode_input(const uint32_t p_unicode, int p_caret = -1);
