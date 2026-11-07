@@ -39,6 +39,8 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
+#include "scene/gui/tab_bar.h"
 
 #ifndef DISABLE_DEPRECATED
 void LegacyMainScreenContainer::_force_dock_visible(EditorDock *p_dock, CanvasItem *p_child) {
@@ -182,10 +184,12 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 EditorMainScreen::EditorMainScreen() :
 		DockTabContainer(EditorDock::DOCK_SLOT_MAIN_SCREEN) {
 	layout = EditorDock::DOCK_LAYOUT_MAIN_SCREEN;
-	grid_rect = Rect2i(2, 0, 4, 4);
+	// The right half of the center cells is the split panel (EditorMainScreenSplit).
+	grid_rect = Rect2i(2, 0, 2, 4);
 
 	set_theme_type_variation("MainScreenContainer");
-	set_custom_minimum_size(Size2(0, 80) * EDSCALE);
+	set_custom_minimum_size(Size2(80, 80) * EDSCALE);
+	set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	set_draw_behind_parent(true);
 	get_tab_bar()->set_mouse_filter(Control::MOUSE_FILTER_PASS);
@@ -199,4 +203,170 @@ EditorMainScreen::EditorMainScreen() :
 	Ref<StyleBoxEmpty> sb;
 	sb.instantiate();
 	add_theme_style_override(SceneStringName(panel), sb);
+}
+
+DockTabContainer::TabStyle EditorMainScreenSplit::get_tab_style() const {
+	return (TabStyle)EDITOR_GET("interface/editor/docks/main_screen_dock_tab_style").operator int();
+}
+
+bool EditorMainScreenSplit::can_switch_dock() const {
+	if (get_current_tab() == -1) {
+		return true;
+	}
+	EditorDock *dock = get_dock(get_current_tab());
+	return dock && dock->is_allow_switch_screen();
+}
+
+void EditorMainScreenSplit::_update_header_height() {
+	int height = 0;
+	if (header_reference && header_reference->is_visible()) {
+		Ref<StyleBox> tabbar_style = get_theme_stylebox(SNAME("tabbar_background"));
+		height = header_reference->get_size().height;
+		if (tabbar_style.is_valid()) {
+			height -= tabbar_style->get_margin(SIDE_TOP) + tabbar_style->get_margin(SIDE_BOTTOM);
+		}
+	}
+	get_internal_container()->set_custom_minimum_size(Size2(0, MAX(0, height)));
+}
+
+void EditorMainScreenSplit::_queue_update_title_tabs() {
+	if (title_tabs_queued) {
+		return;
+	}
+	title_tabs_queued = true;
+	callable_mp(this, &EditorMainScreenSplit::_update_title_tabs).call_deferred();
+}
+
+void EditorMainScreenSplit::_update_title_tabs() {
+	title_tabs_queued = false;
+	if (!title_tabs) {
+		return;
+	}
+	title_tabs->set_tab_count(get_tab_count());
+	for (int i = 0; i < get_tab_count(); i++) {
+		title_tabs->set_tab_title(i, get_tab_title(i));
+		title_tabs->set_tab_icon(i, get_tab_icon(i));
+		title_tabs->set_tab_tooltip(i, get_tab_tooltip(i));
+	}
+	title_tabs->set_visible(get_tab_count() > 0);
+	// Selected while the dock is shown, like the main screen tabs.
+	title_tabs->set_current_tab(is_visible() ? get_current_tab() : -1);
+}
+
+void EditorMainScreenSplit::_update_title_tabs_theme() {
+	// The same look as the main screen tabs next to them (see TabContainer::_on_theme_changed()).
+	const StringName type = SNAME("MainScreenContainer");
+	title_tabs->begin_bulk_theme_override();
+	for (const char *name : { "tab_unselected", "tab_hovered", "tab_selected", "tab_disabled", "tab_focus" }) {
+		title_tabs->add_theme_style_override(name, get_theme_stylebox(name, type));
+	}
+	for (const char *name : { "font_selected_color", "font_hovered_color", "font_unselected_color", "font_disabled_color", "font_outline_color", "icon_selected_color", "icon_hovered_color", "icon_unselected_color", "icon_disabled_color" }) {
+		title_tabs->add_theme_color_override(name, get_theme_color(name, type));
+	}
+	title_tabs->add_theme_font_override(SceneStringName(font), get_theme_font(SceneStringName(font), type));
+	title_tabs->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SceneStringName(font_size), type));
+	title_tabs->add_theme_constant_override(SNAME("h_separation"), get_theme_constant(SNAME("icon_separation"), type));
+	title_tabs->add_theme_constant_override(SNAME("tab_separation"), get_theme_constant(SNAME("tab_separation"), type));
+	title_tabs->add_theme_constant_override(SNAME("icon_max_width"), get_theme_constant(SNAME("icon_max_width"), type));
+	title_tabs->add_theme_constant_override(SNAME("outline_size"), get_theme_constant(SNAME("outline_size"), type));
+	title_tabs->end_bulk_theme_override();
+}
+
+void EditorMainScreenSplit::_title_tab_clicked(int p_tab) {
+	if (maximized == MAXIMIZED_MAIN) {
+		EditorNode::get_singleton()->set_distraction_free_mode(false);
+	}
+	EditorDock *dock = get_dock(p_tab);
+	if (dock) {
+		EditorDockManager::get_singleton()->focus_dock(dock);
+	}
+	_queue_update_title_tabs();
+}
+
+void EditorMainScreenSplit::_maximize_toggled(bool p_pressed) {
+	EditorNode::get_singleton()->set_workspace_split_maximized(p_pressed);
+}
+
+void EditorMainScreenSplit::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			connect("tab_changed", callable_mp(this, &EditorMainScreenSplit::_queue_update_title_tabs).unbind(1));
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_header_height();
+			maximize_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			// Pressed is shown by the panel filling the workspace, as for the scene tabs' button.
+			maximize_button->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(CoreStringName(normal), SNAME("FlatMenuButton")));
+			if (title_tabs) {
+				_update_title_tabs_theme();
+			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_queue_update_title_tabs();
+		} break;
+	}
+}
+
+void EditorMainScreenSplit::set_header_reference(Control *p_control) {
+	header_reference = p_control;
+	header_reference->connect(SceneStringName(resized), callable_mp(this, &EditorMainScreenSplit::_update_header_height));
+	header_reference->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorMainScreenSplit::_update_header_height));
+	_update_header_height();
+}
+
+void EditorMainScreenSplit::set_main_side(Control *p_main_side) {
+	main_side = p_main_side;
+}
+
+void EditorMainScreenSplit::set_title_container(Control *p_container) {
+	title_tabs = memnew(TabBar);
+	title_tabs->set_focus_mode(FOCUS_NONE);
+	title_tabs->set_deselect_enabled(true);
+	title_tabs->set_clip_tabs(false);
+	title_tabs->set_v_size_flags(SIZE_SHRINK_CENTER);
+	title_tabs->hide();
+	title_tabs->connect("tab_clicked", callable_mp(this, &EditorMainScreenSplit::_title_tab_clicked));
+	p_container->add_child(title_tabs);
+	_update_title_tabs_theme();
+	_queue_update_title_tabs();
+}
+
+void EditorMainScreenSplit::set_maximized(Maximized p_maximized) {
+	maximized = p_maximized;
+	update_visibility();
+}
+
+void EditorMainScreenSplit::update_visibility() {
+	// Unlike side docks, the split stays visible in distraction-free mode: it is part of the workspace.
+	// Only maximizing one side of the workspace hides the other.
+	const bool active = get_tab_count() > 0;
+	if (!active && maximized == MAXIMIZED_SPLIT) {
+		// The maximized panel was closed or emptied: leave the maximized mode with it.
+		callable_mp(EditorNode::get_singleton(), &EditorNode::set_distraction_free_mode).call_deferred(false);
+	}
+	set_visible(active && maximized != MAXIMIZED_MAIN);
+	if (main_side) {
+		main_side->set_visible(!active || maximized != MAXIMIZED_SPLIT);
+	}
+	if (maximize_button) {
+		maximize_button->set_pressed_no_signal(maximized == MAXIMIZED_SPLIT);
+	}
+	_queue_update_title_tabs();
+}
+
+EditorMainScreenSplit::EditorMainScreenSplit() :
+		DockTabContainer(EditorDock::DOCK_SLOT_MAIN_SCREEN_SPLIT) {
+	layout = EditorDock::DOCK_LAYOUT_MAIN_SCREEN;
+	grid_rect = Rect2i(4, 0, 2, 4);
+
+	set_custom_minimum_size(Size2(80, 80) * EDSCALE);
+	set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	maximize_button = memnew(Button);
+	maximize_button->set_theme_type_variation("FlatMenuButton");
+	maximize_button->set_toggle_mode(true);
+	maximize_button->set_tooltip_text(TTRC("Maximize this panel: hide the docks and the main screen."));
+	maximize_button->connect(SceneStringName(toggled), callable_mp(this, &EditorMainScreenSplit::_maximize_toggled));
+	get_internal_container()->add_child(maximize_button);
 }

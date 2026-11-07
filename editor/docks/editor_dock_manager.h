@@ -35,6 +35,7 @@
 #include "scene/gui/split_container.h"
 
 class Button;
+class HBoxContainer;
 class ConfigFile;
 class Control;
 class EditorDock;
@@ -94,6 +95,8 @@ private:
 	DockSplitContainer *main_vsplit = nullptr;
 	DockSplitContainer *main_hsplit = nullptr;
 	DockSplitContainer *bottom_hsplit = nullptr;
+	DockSplitContainer *workspace_split = nullptr;
+	bool workspace_split_swapped = false;
 
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
@@ -143,6 +146,15 @@ public:
 	void set_main_vsplit(DockSplitContainer *p_split) { _register_split(&main_vsplit, p_split); }
 	void set_main_hsplit(DockSplitContainer *p_split) { _register_split(&main_hsplit, p_split); }
 	void set_bottom_hsplit(DockSplitContainer *p_split) { _register_split(&bottom_hsplit, p_split); }
+
+	// Main screen workspace split (main screen + DOCK_SLOT_MAIN_SCREEN_SPLIT).
+	void set_workspace_split(DockSplitContainer *p_split) { _register_split(&workspace_split, p_split); }
+	bool is_workspace_split_active() const;
+	void set_workspace_split_vertical(bool p_vertical);
+	bool is_workspace_split_vertical() const;
+	void set_workspace_split_swapped(bool p_swapped);
+	bool is_workspace_split_swapped() const { return workspace_split_swapped; }
+	void set_workspace_split_from_margin(Side p_margin);
 	void register_dock_slot(DockTabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
@@ -206,6 +218,10 @@ private:
 	Button *tab_move_right_button = nullptr;
 	Button *close_button = nullptr;
 
+	HBoxContainer *workspace_split_hb = nullptr;
+	Button *workspace_vertical_button = nullptr;
+	Button *workspace_swap_button = nullptr;
+
 	DockSlotGrid *dock_select = nullptr;
 
 	EditorDock *context_dock = nullptr;
@@ -217,6 +233,8 @@ private:
 	void _tab_move_right();
 	void _close_dock();
 	void _float_dock();
+	void _workspace_vertical_toggled(bool p_vertical);
+	void _workspace_swap();
 
 	void _update_buttons();
 
