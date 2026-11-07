@@ -113,7 +113,6 @@ public:
 	virtual int get_packet_channel() const override;
 	virtual TransferMode get_packet_mode() const override;
 
-	virtual bool is_server() const override;
 	virtual bool is_server_relay_supported() const override;
 
 	virtual void poll() override;
