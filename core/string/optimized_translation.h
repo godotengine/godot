@@ -40,13 +40,18 @@ class OptimizedTranslation : public Translation {
 	// so it's slower, but at the same time it has an extremely high chance
 	// of catching untranslated strings.
 
+	int version = 0;
+
 	// `hash_table[hash(0, text)]` produces a `bucket_table` index or 0xFFFFFFFF if not found.
 	Vector<int> hash_table;
 
 	// Continuous `Bucket`s in a flat layout.
 	Vector<int> bucket_table;
 
-	// Data for translated strings, UTF-8 encoded, either compressed or uncompressed.
+	// Plural string count, offset, length.
+	Vector<int> offsets;
+
+	// Data for translated strings, UTF-8 encoded.
 	Vector<uint8_t> strings;
 
 	struct Bucket {
@@ -60,12 +65,16 @@ class OptimizedTranslation : public Translation {
 			// Unique key for the text.
 			uint32_t key;
 
-			// Used to index into `strings`.
-			uint32_t str_offset;
+			// Used to index into `offsets`.
+			uint32_t offset;
 
+#ifndef DISABLE_DEPRECATED
 			// The string is not compressed if `comp_size` equals `uncomp_size`.
 			uint32_t comp_size;
 			uint32_t uncomp_size;
+#else
+			uint32_t reserved[2];
+#endif
 		};
 
 		Elem elem[1];
@@ -85,7 +94,11 @@ class OptimizedTranslation : public Translation {
 
 	// Helpers to guard against corrupted resources.
 	const Bucket *_get_bucket(uint32_t p_offset) const;
-	String _get_string(const Bucket::Elem &p_elem) const;
+	Vector<String> _get_strings(const Bucket::Elem &p_elem) const;
+	String _get_string(const Bucket::Elem &p_elem, int p_n) const;
+#ifndef DISABLE_DEPRECATED
+	String _get_string_v0(const Bucket::Elem &p_elem) const;
+#endif
 
 	virtual Vector<String> _get_message_list() const override;
 
