@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="../../glue/GodotSharp/Godot.SourceGenerators.Internal/Godot.SourceGenerators.Internal.csproj" />
+  <Project Path="../Godot.NET.Sdk/Godot.SourceGenerators/Godot.SourceGenerators.csproj" />
+  <Project Path="GodotTools.BuildLogger/GodotTools.BuildLogger.csproj" />
+  <Project Path="GodotTools.Core/GodotTools.Core.csproj" />
+  <Project Path="GodotTools.IdeMessaging/GodotTools.IdeMessaging.csproj" />
+  <Project Path="GodotTools.OpenVisualStudio/GodotTools.OpenVisualStudio.csproj" />
+  <Project Path="GodotTools.ProjectEditor/GodotTools.ProjectEditor.csproj" />
+  <Project Path="GodotTools.Shared/GodotTools.Shared.csproj" />
+  <Project Path="GodotTools/GodotTools.csproj" />
+</Solution>
