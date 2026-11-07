@@ -54,6 +54,9 @@ namespace GodotTools.Internals
 
         public static void EditorDebuggerNodeReloadScripts() => godot_icall_Internal_EditorDebuggerNodeReloadScripts();
 
+        public static void EditorTranslationParserAddParser(EditorTranslationParserPlugin translationParserPlugin) =>
+            godot_icall_EditorTranslationParser_AddParser(translationParserPlugin.NativeInstance);
+
         public static bool ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus = true) =>
             godot_icall_Internal_ScriptEditorEdit(resource.NativeInstance, line, col, grabFocus);
 
@@ -123,6 +126,8 @@ namespace GodotTools.Internals
         public static partial bool godot_icall_EditorProgress_Step(in godot_string task, in godot_string state,
             int step,
             bool forceRefresh);
+
+        public static partial void godot_icall_EditorTranslationParser_AddParser(IntPtr translationParserPlugin);
 
         private static partial void godot_icall_Internal_FullExportTemplatesDir(out godot_string dest);
 
