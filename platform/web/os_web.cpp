@@ -59,7 +59,10 @@ void OS_Web::initialize() {
 	IPWeb::make_default();
 	NetSocketWeb::make_default();
 	DisplayServerWeb::register_web_driver();
+
+#ifdef DEBUG_ENABLED
 	EngineDebugger::register_uri_handler("messageport://", RemoteDebuggerPeerMessagePort::create);
+#endif
 }
 
 void OS_Web::resume_audio() {

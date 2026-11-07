@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "godot_js.h"
 
 #include "core/debugger/remote_debugger_peer.h"
@@ -63,3 +65,5 @@ public:
 	RemoteDebuggerPeerMessagePort(int p_id = -1);
 	virtual ~RemoteDebuggerPeerMessagePort();
 };
+
+#endif // DEBUG_ENABLED
