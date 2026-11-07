@@ -919,6 +919,10 @@ Rect2 GraphEdit::_compute_shrinked_frame_rect(const GraphFrame *p_frame) {
 }
 
 void GraphEdit::_update_graph_frame(GraphFrame *p_frame) {
+	if (dragging && p_frame->is_selected() && !p_frame->is_autoshrink_enabled()) {
+		return;
+	}
+
 	Rect2 frame_rect = _compute_shrinked_frame_rect(p_frame);
 
 	Vector2 min_point = frame_rect.position;
