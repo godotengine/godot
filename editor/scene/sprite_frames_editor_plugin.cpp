@@ -1371,6 +1371,10 @@ void SpriteFramesEditor::_animation_loop_pressed() {
 		return;
 	}
 
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	SpriteFrames::LoopMode to_loop = SpriteFrames::LOOP_NONE;
@@ -1407,6 +1411,10 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	}
 
 	if (updating) {
+		return;
+	}
+
+	if (!frames->has_animation(edited_anim)) {
 		return;
 	}
 
