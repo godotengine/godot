@@ -87,6 +87,8 @@ public:
 	Vector3 get_position_a() { return m_pivotInA; }
 	Vector3 get_position_b() { return m_pivotInB; }
 
+	float get_applied_force() const;
+
 	GodotPinJoint3D(GodotBody3D *p_body_a, const Vector3 &p_pos_a, GodotBody3D *p_body_b, const Vector3 &p_pos_b);
 	~GodotPinJoint3D();
 };

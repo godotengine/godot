@@ -324,3 +324,13 @@ real_t GodotConeTwistJoint3D::get_param(PS3DE::ConeTwistJointParam p_param) cons
 
 	return 0;
 }
+
+float GodotConeTwistJoint3D::get_applied_force() const {
+	WARN_PRINT_ONCE("Applied force for ConeTwistJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}
+
+float GodotConeTwistJoint3D::get_applied_torque() const {
+	WARN_PRINT_ONCE("Applied torque for ConeTwistJoint3D is only supported by Jolt Physics. This will always return 0 with GodotPhysics3D.");
+	return 0.0f;
+}
