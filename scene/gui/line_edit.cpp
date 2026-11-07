@@ -1717,6 +1717,12 @@ void LineEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (selection.drag_attempt && !is_visible_in_tree()) {
+				callable_mp(this, &LineEdit::_cancel_drag_and_drop_text).call_deferred();
+			}
+		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			// Only allow editing if the LineEdit is not focused with arrow keys.
 			if (!(Input::get_singleton()->is_action_pressed("ui_up") || Input::get_singleton()->is_action_pressed("ui_down") || Input::get_singleton()->is_action_pressed("ui_left") || Input::get_singleton()->is_action_pressed("ui_right"))) {
@@ -3038,6 +3044,13 @@ void LineEdit::set_drag_and_drop_selection_enabled(const bool p_enabled) {
 
 bool LineEdit::is_drag_and_drop_selection_enabled() const {
 	return drag_and_drop_selection_enabled;
+}
+
+void LineEdit::_cancel_drag_and_drop_text() {
+	// Cancel the drag operation if drag originated from here.
+	if (selection.drag_attempt && get_viewport()) {
+		get_viewport()->gui_cancel_drag();
+	}
 }
 
 void LineEdit::_texture_changed() {

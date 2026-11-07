@@ -271,6 +271,8 @@ private:
 
 	void clear_internal();
 
+	void _cancel_drag_and_drop_text();
+
 	void _editor_settings_changed();
 
 	void _swap_current_input_direction();
