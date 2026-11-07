@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/gui/color_picker.h"
+#include "scene/resources/shader.h"
 
 class ColorPickerShape : public Object {
 	GDCLASS(ColorPickerShape, Object);

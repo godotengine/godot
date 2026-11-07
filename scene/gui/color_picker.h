@@ -33,7 +33,6 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
-#include "scene/resources/shader.h"
 
 class AspectRatioContainer;
 class ColorMode;
@@ -76,7 +75,6 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	ColorPresetButton(Color p_color, int p_size, bool p_recent);
-	~ColorPresetButton();
 };
 
 class ColorPicker : public VBoxContainer {
@@ -171,10 +169,6 @@ private:
 	static inline List<Color> preset_cache;
 	static inline List<Color> recent_preset_cache;
 
-#ifdef TOOLS_ENABLED
-	Object *editor_settings = nullptr;
-#endif
-
 	int current_slider_count = MODE_SLIDER_COUNT;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 1.0 / 2;
@@ -230,10 +224,14 @@ private:
 	Ref<ButtonGroup> preset_group;
 	Ref<ButtonGroup> recent_preset_group;
 
+#ifdef MACOS_ENABLED
 	HBoxContainer *perm_hb = nullptr;
 	void _req_permission();
+#endif // MACOS_ENABLED
 
 #ifdef TOOLS_ENABLED
+	Object *editor_settings = nullptr;
+
 	Callable quick_open_callback;
 	Callable palette_saved_callback;
 #endif // TOOLS_ENABLED
