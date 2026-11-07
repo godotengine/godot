@@ -1,8 +1,8 @@
 diff --git a/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m b/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
-index 98756f2eab..5f1abf110f 100644
+index 36e18f0ec7..b4b31704d0 100644
 --- a/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
 +++ b/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
-@@ -945,8 +945,6 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+@@ -946,8 +946,6 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
              GCMotion *motion = controller.motion;
              if (motion && motion.hasRotationRate) {
                  SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
@@ -11,7 +11,7 @@ index 98756f2eab..5f1abf110f 100644
                  SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
              }
          }
-@@ -1197,20 +1195,17 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
+@@ -1198,20 +1196,17 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
              if (motion && motion.sensorsActive) {
                  float data[3];
  

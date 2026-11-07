@@ -5,7 +5,7 @@ index 582d119f42..88b0d62dde 100644
 @@ -125,6 +125,14 @@ public:
      char name[MaxTokenLength + 1];
  };
-
+ 
 +inline void SetPpTokenName(TPpToken& ppToken, const char* src, size_t len)
 +{
 +    if (len >= sizeof(ppToken.name))
@@ -18,11 +18,11 @@ index 582d119f42..88b0d62dde 100644
  //
  // Implementation is in PpAtom.cpp
 @@ -156,6 +164,7 @@ public:
-
+ 
      // Map atom -> string.
      const char* getString(int atom) const { return stringMap[atom]->c_str(); }
 +    const TString* getTString(int atom) const { return stringMap[atom]; }
-
+ 
  protected:
      TStringAtomMap(TStringAtomMap&);
 @@ -261,7 +270,7 @@ public:

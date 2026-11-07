@@ -1,6 +1,7 @@
-diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
---- original/Foundation/NSSharedPtr.hpp	2026-09-12 13:18:42
-+++ patched/Foundation/NSSharedPtr.hpp	2026-09-12 13:18:42
+diff --git a/thirdparty/metal-cpp/Foundation/NSSharedPtr.hpp b/thirdparty/metal-cpp/Foundation/NSSharedPtr.hpp
+index f1cf68e421..27db7e36ca 100644
+--- a/thirdparty/metal-cpp/Foundation/NSSharedPtr.hpp
++++ b/thirdparty/metal-cpp/Foundation/NSSharedPtr.hpp
 @@ -22,6 +22,7 @@
  
  #include <cstddef>
@@ -9,7 +10,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
  
  namespace NS
  {
-@@ -139,7 +140,7 @@
+@@ -139,7 +140,7 @@ template <class _Class>
  _NS_INLINE NS::SharedPtr<_Class> RetainPtr(_Class* pObject)
  {
      NS::SharedPtr<_Class> ret;
@@ -18,7 +19,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
      return ret;
  }
  
-@@ -167,7 +168,7 @@
+@@ -167,7 +168,7 @@ _NS_INLINE NS::SharedPtr<_Class>::SharedPtr()
  template <class _Class>
  _NS_INLINE NS::SharedPtr<_Class>::~SharedPtr<_Class>() __attribute__((no_sanitize("undefined")))
  {
@@ -27,7 +28,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
  }
  
  template <class _Class>
-@@ -178,14 +179,14 @@
+@@ -178,14 +179,14 @@ _NS_INLINE NS::SharedPtr<_Class>::SharedPtr(std::nullptr_t) noexcept
  
  template <class _Class>
  _NS_INLINE NS::SharedPtr<_Class>::SharedPtr(const SharedPtr<_Class>& other) noexcept
@@ -44,7 +45,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
  {
  }
  
-@@ -225,7 +226,7 @@
+@@ -225,7 +226,7 @@ _NS_INLINE NS::SharedPtr<_Class>::operator bool() const
  template <class _Class>
  _NS_INLINE void NS::SharedPtr<_Class>::reset() __attribute__((no_sanitize("undefined")))
  {
@@ -53,7 +54,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
      m_pObject = nullptr;
  }
  
-@@ -240,9 +241,9 @@
+@@ -240,9 +241,9 @@ _NS_INLINE NS::SharedPtr<_Class>& NS::SharedPtr<_Class>::operator=(const SharedP
  {
      _Class* pOldObject = m_pObject;
  
@@ -65,7 +66,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
  
      return *this;
  }
-@@ -254,9 +255,9 @@
+@@ -254,9 +255,9 @@ _NS_INLINE NS::SharedPtr<_Class>::operator=(const SharedPtr<_OtherClass>& other)
  {
      _Class* pOldObject = m_pObject;
  
@@ -77,7 +78,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
  
      return *this;
  }
-@@ -266,13 +267,13 @@
+@@ -266,13 +267,13 @@ _NS_INLINE NS::SharedPtr<_Class>& NS::SharedPtr<_Class>::operator=(SharedPtr<_Cl
  {
      if (m_pObject != other.m_pObject)
      {
@@ -93,7 +94,7 @@ diff -ruN original/Foundation/NSSharedPtr.hpp patched/Foundation/NSSharedPtr.hpp
      }
      other.m_pObject = nullptr;
      return *this;
-@@ -285,7 +286,7 @@
+@@ -285,7 +286,7 @@ _NS_INLINE NS::SharedPtr<_Class>::operator=(SharedPtr<_OtherClass>&& other) __at
  {
      if (m_pObject != other.get())
      {

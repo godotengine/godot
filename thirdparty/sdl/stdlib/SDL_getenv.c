@@ -55,6 +55,7 @@ extern char **environ;
 static char **environ;
 #endif
 
+
 struct SDL_Environment
 {
     SDL_Mutex *lock;   // !!! FIXME: reuse SDL_HashTable's lock.

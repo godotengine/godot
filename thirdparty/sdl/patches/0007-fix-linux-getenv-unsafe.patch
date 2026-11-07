@@ -1,8 +1,8 @@
 diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
-index 17220c69ae..50a511262b 100644
+index e20962d65c..7edf0775c1 100644
 --- a/thirdparty/sdl/stdlib/SDL_getenv.c
 +++ b/thirdparty/sdl/stdlib/SDL_getenv.c
-@@ -555,7 +555,7 @@ int SDL_unsetenv_unsafe(const char *name)
+@@ -552,7 +552,7 @@ int SDL_unsetenv_unsafe(const char *name)
  #endif // HAVE_LIBC_ENVIRONMENT
  
  // Retrieve a variable named "name" from the environment

@@ -5,8 +5,8 @@ VERSION=3.4.16
 target=$(dirname "$(realpath $0)")
 pushd $target
 
-rm -rf atomic core events haptic hidapi include io joystick libm loadso \
-  sensor stdlib thread timer *.c *.h CREDITS.md LICENSE.txt
+rm -rf atomic core events filesystem haptic hidapi include io joystick libm loadso misc \
+  sensor stdlib thread time timer *.c *.h CREDITS.md LICENSE.txt
 rm -rf *.tar.gz tmp
 
 mkdir tmp && pushd tmp
@@ -88,6 +88,8 @@ cp -rv timer/{*.{c,h},unix,windows} $target/timer
 
 mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
+# Upstream file lacks a final newline.
+[ -n "$(tail -c1 $target/hidapi/VERSION)" ] && echo >> $target/hidapi/VERSION
 for dir in hidapi linux mac windows; do
   mkdir $target/hidapi/$dir
   cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir 2>/dev/null || :

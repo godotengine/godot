@@ -19,9 +19,13 @@ if [ -n "$1" ]; then
         "$SCRIPT_DIR/Metal" \
         "$SCRIPT_DIR/MetalFX" \
         "$SCRIPT_DIR/QuartzCore" \
-        "$SCRIPT_DIR/SingleHeader"
+        "$SCRIPT_DIR/LICENSE.txt"
 
-    unzip -q "$1" -d "$SCRIPT_DIR"
+    # The ZIP contains a top-level `metal-cpp` folder.
+    TMP_DIR="$(mktemp -d)"
+    unzip -q "$1" -d "$TMP_DIR"
+    cp -r "$TMP_DIR"/metal-cpp/{Foundation,Metal,MetalFX,QuartzCore,LICENSE.txt} "$SCRIPT_DIR"
+    rm -rf "$TMP_DIR"
 
     echo "Extracted metal-cpp $VERSION"
 else
@@ -44,11 +48,10 @@ if [ -d "$PATCH_DIR" ]; then
         fi
 
         PATCH_NAME="$(basename "$PATCH")"
-        PATCH_DIRECTORY="${SCRIPT_DIR#"$REPO_ROOT"/}"
-        if git -C "$REPO_ROOT" apply --directory="$PATCH_DIRECTORY" --check "$PATCH" > /dev/null 2>&1; then
-            git -C "$REPO_ROOT" apply --directory="$PATCH_DIRECTORY" "$PATCH"
+        if git -C "$REPO_ROOT" apply --check "$PATCH" > /dev/null 2>&1; then
+            git -C "$REPO_ROOT" apply "$PATCH"
             echo "  $PATCH_NAME: applied"
-        elif git -C "$REPO_ROOT" apply --directory="$PATCH_DIRECTORY" --reverse --check "$PATCH" > /dev/null 2>&1; then
+        elif git -C "$REPO_ROOT" apply --reverse --check "$PATCH" > /dev/null 2>&1; then
             echo "  $PATCH_NAME: already applied"
         else
             echo "  $PATCH_NAME: failed to apply"

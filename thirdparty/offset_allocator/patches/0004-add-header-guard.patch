@@ -1,4 +1,5 @@
 diff --git a/thirdparty/offset_allocator/offsetAllocator.hpp b/thirdparty/offset_allocator/offsetAllocator.hpp
+index 5468db9d29..0991f7aa03 100644
 --- a/thirdparty/offset_allocator/offsetAllocator.hpp
 +++ b/thirdparty/offset_allocator/offsetAllocator.hpp
 @@ -1,6 +1,9 @@
