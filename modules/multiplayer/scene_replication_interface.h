@@ -112,6 +112,8 @@ private:
 	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
 	void _free_remotes(const PeerInfo &p_info);
 
+	bool _is_rpc_visible_on_node(const ObjectID &p_oid, int p_peer) const;
+
 	template <typename T>
 	static T *get_id_as(const ObjectID &p_id) {
 		return p_id.is_valid() ? ObjectDB::get_instance<T>(p_id) : nullptr;
