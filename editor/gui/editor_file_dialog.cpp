@@ -104,6 +104,8 @@ void EditorFileDialog::_validate_property(PropertyInfo &p_property) const {
 	// Hide properties controlled by editor settings.
 	if (p_property.name == "use_native_dialog" || p_property.name == "show_hidden_files" || p_property.name == "display_mode") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "access") {
+		p_property.hint_string = "Resources,User Data,File System,Editor Resources";
 	}
 }
 
@@ -115,6 +117,9 @@ void EditorFileDialog::_dir_contents_changed() {
 	bool scan_required = false;
 	switch (get_access()) {
 		case FileDialog::ACCESS_RESOURCES: {
+			scan_required = true;
+		} break;
+		case FileDialog::ACCESS_EDITOR_RESOURCES: {
 			scan_required = true;
 		} break;
 		case FileDialog::ACCESS_USERDATA: {
