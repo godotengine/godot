@@ -4,7 +4,8 @@
 		A button that brings up a dropdown with selectable options when pressed.
 	</brief_description>
 	<description>
-		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+		[OptionButton] is a type of button that brings up a [PopupMenu] with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
+		To create a button that brings up a dropdown with selectable [i]actions[/i] instead, use [MenuButton].
 		See also [BaseButton] which contains common properties and methods associated with this node.
 		[b]Note:[/b] The IDs used for items are limited to signed 32-bit integers, not the full 64 bits of [int]. These have a range of [code]-2^31[/code] to [code]2^31 - 1[/code], that is, [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
