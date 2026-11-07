@@ -126,9 +126,11 @@ bool RefCounted::unreference() {
 	return die;
 }
 
-RefCounted::RefCounted() :
-		Object(true) {
+RefCounted::RefCounted() {
 	_define_ancestry(AncestralClass::REF_COUNTED);
+	// The reference bit is used for Variant, so it can be set here after
+	// the Object constructor. ObjectDB doesn't check or use it.
+	_set_id_reference_bit();
 	refcount.init();
 	refcount_init.init();
 	dereference_count.set(0);
