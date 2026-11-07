@@ -347,6 +347,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRSpatialAnchorCapability);
 		GDREGISTER_CLASS(OpenXRSpatialPlaneTrackingCapability);
 		GDREGISTER_CLASS(OpenXRSpatialMarkerTrackingCapability);
+		GDREGISTER_CLASS(OpenXrSpatialFilterArchetype);
 
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server) {

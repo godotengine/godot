@@ -39,6 +39,46 @@
 #include "core/object/class_db.h"
 
 ////////////////////////////////////////////////////////////////////////////
+// OpenXrSpatialFilterArchetype
+
+void *OpenXrSpatialFilterArchetype::get_header(void *p_next) {
+	void *n = p_next;
+	if (get_next().is_valid()) {
+		n = get_next()->get_header(n);
+	}
+
+	filter.next = n;
+
+	return (XrSpatialCapabilityConfigurationBaseHeaderEXT *)&filter;
+}
+
+XrStructureType OpenXrSpatialFilterArchetype::get_structure_type() {
+	return XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT;
+}
+
+XrSpatialArchetypeIdEXT OpenXrSpatialFilterArchetype::get_archetype_id() const {
+	return filter.archetype;
+}
+
+void OpenXrSpatialFilterArchetype::set_archetype_id(XrSpatialArchetypeIdEXT p_id) {
+	filter.archetype = p_id;
+}
+
+void OpenXrSpatialFilterArchetype::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_archetype_id", "archetype_id"), &OpenXrSpatialFilterArchetype::_set_archetype_id);
+	ClassDB::bind_method(D_METHOD("get_archetype_id"), &OpenXrSpatialFilterArchetype::_get_archetype_id);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "archetype_id"), "set_archetype_id", "get_archetype_id");
+}
+
+uint64_t OpenXrSpatialFilterArchetype::_get_archetype_id() const {
+	return (uint64_t)filter.archetype;
+}
+
+void OpenXrSpatialFilterArchetype::_set_archetype_id(uint64_t p_id) {
+	filter.archetype = XrSpatialArchetypeIdEXT(p_id);
+}
+
+////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialEntityExtension
 
 OpenXRSpatialEntityExtension *OpenXRSpatialEntityExtension::singleton = nullptr;
@@ -48,6 +88,7 @@ OpenXRSpatialEntityExtension *OpenXRSpatialEntityExtension::get_singleton() {
 }
 
 void OpenXRSpatialEntityExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("supports_archetypes"), &OpenXRSpatialEntityExtension::supports_archetypes);
 	ClassDB::bind_method(D_METHOD("supports_capability", "capability"), &OpenXRSpatialEntityExtension::_supports_capability);
 	ClassDB::bind_method(D_METHOD("supports_component_type", "capability", "component_type"), &OpenXRSpatialEntityExtension::_supports_component_type);
 
@@ -66,6 +107,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_spatial_snapshot", "spatial_snapshot"), &OpenXRSpatialEntityExtension::free_spatial_snapshot);
 	ClassDB::bind_method(D_METHOD("get_spatial_snapshot_handle", "spatial_snapshot"), &OpenXRSpatialEntityExtension::_get_spatial_snapshot_handle);
 	ClassDB::bind_method(D_METHOD("get_spatial_snapshot_context", "spatial_snapshot"), &OpenXRSpatialEntityExtension::get_spatial_snapshot_context);
+	ClassDB::bind_method(D_METHOD("get_snapshot_archetypes", "spatial_snapshot", "next"), &OpenXRSpatialEntityExtension::_get_snapshot_archetypes, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("query_snapshot", "spatial_snapshot", "component_data", "next"), &OpenXRSpatialEntityExtension::query_snapshot, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("get_string", "spatial_snapshot", "buffer_id"), &OpenXRSpatialEntityExtension::_get_string);
@@ -123,6 +165,7 @@ HashMap<String, bool *> OpenXRSpatialEntityExtension::get_requested_extensions(X
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled")) {
 		request_extensions[XR_EXT_SPATIAL_ENTITY_EXTENSION_NAME] = &spatial_entity_ext;
+		request_extensions[XR_EXT_SPATIAL_ENTITY_ARCHETYPES_EXTENSION_NAME] = &archetypes_ext;
 	}
 
 	return request_extensions;
@@ -151,6 +194,11 @@ void OpenXRSpatialEntityExtension::on_instance_created(const XrInstance p_instan
 		EXT_INIT_XR_FUNC(xrGetSpatialBufferVector2fEXT);
 		EXT_INIT_XR_FUNC(xrGetSpatialBufferVector3fEXT);
 	}
+
+	if (archetypes_ext) {
+		EXT_INIT_XR_FUNC(xrEnumerateSpatialArchetypesEXT);
+		EXT_INIT_XR_FUNC(xrEnumerateSpatialArchetypeComponentTypesEXT);
+	}
 }
 
 void OpenXRSpatialEntityExtension::on_instance_destroyed() {
@@ -177,6 +225,8 @@ void OpenXRSpatialEntityExtension::on_instance_destroyed() {
 	xrGetSpatialBufferFloatEXT_ptr = nullptr;
 	xrGetSpatialBufferVector2fEXT_ptr = nullptr;
 	xrGetSpatialBufferVector3fEXT_ptr = nullptr;
+	xrEnumerateSpatialArchetypesEXT_ptr = nullptr;
+	xrEnumerateSpatialArchetypeComponentTypesEXT_ptr = nullptr;
 }
 
 void OpenXRSpatialEntityExtension::on_session_destroyed() {
@@ -221,6 +271,10 @@ void OpenXRSpatialEntityExtension::on_session_destroyed() {
 
 bool OpenXRSpatialEntityExtension::get_active() const {
 	return spatial_entity_ext;
+}
+
+bool OpenXRSpatialEntityExtension::supports_archetypes() const {
+	return spatial_entity_ext && archetypes_ext;
 }
 
 bool OpenXRSpatialEntityExtension::_load_capabilities() {
@@ -748,6 +802,85 @@ uint64_t OpenXRSpatialEntityExtension::_get_spatial_snapshot_handle(RID p_spatia
 	return (uint64_t)get_spatial_snapshot_handle(p_spatial_snapshot);
 }
 
+LocalVector<OpenXRSpatialEntityExtension::Archetype> OpenXRSpatialEntityExtension::get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next) {
+	LocalVector<Archetype> archetypes;
+
+	if (!supports_archetypes()) {
+		// Fail without error, we'll fall back on default logic.
+		return archetypes;
+	}
+
+	SpatialSnapshotData *snapshot_data = spatial_snapshot_owner.get_or_null(p_spatial_snapshot);
+	ERR_FAIL_NULL_V(snapshot_data, archetypes);
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL_V(openxr_api, archetypes);
+
+	uint32_t capacity = 0;
+	XrResult result = xrEnumerateSpatialArchetypesEXT(snapshot_data->spatial_snapshot, 0, &capacity, nullptr);
+	if (XR_FAILED(result)) {
+		ERR_FAIL_V_MSG(archetypes, "OpenXR: Failed to get archetypes count [" + openxr_api->get_error_string(result) + "]");
+	}
+	if (capacity == 0) {
+		return archetypes;
+	}
+
+	LocalVector<XrSpatialArchetypeIdEXT> archetype_ids;
+	archetype_ids.resize(capacity);
+	result = xrEnumerateSpatialArchetypesEXT(snapshot_data->spatial_snapshot, archetype_ids.size(), &capacity, archetype_ids.ptr());
+	if (XR_FAILED(result)) {
+		ERR_FAIL_V_MSG(archetypes, "OpenXR: Failed to get archetypes [" + openxr_api->get_error_string(result) + "]");
+	}
+
+	archetypes.resize(capacity);
+	for (uint32_t i = 0; i < capacity; i++) {
+		archetypes[i].archetype_id = archetype_ids[i];
+
+		uint32_t comp_capacity = 0;
+		result = xrEnumerateSpatialArchetypeComponentTypesEXT(snapshot_data->spatial_snapshot, archetype_ids[i], 0, &comp_capacity, nullptr);
+		if (XR_FAILED(result)) {
+			ERR_FAIL_V_MSG(archetypes, "OpenXR: Failed to get component types count [" + openxr_api->get_error_string(result) + "]");
+		}
+
+		if (comp_capacity > 0) {
+			archetypes[i].component_types.resize(comp_capacity);
+
+			result = xrEnumerateSpatialArchetypeComponentTypesEXT(snapshot_data->spatial_snapshot, archetype_ids[i], archetypes[i].component_types.size(), &comp_capacity, archetypes[i].component_types.ptr());
+			if (XR_FAILED(result)) {
+				ERR_FAIL_V_MSG(archetypes, "OpenXR: Failed to get component types [" + openxr_api->get_error_string(result) + "]");
+			}
+		}
+	}
+
+	return archetypes;
+}
+
+TypedDictionary<uint64_t, TypedArray<OpenXRSpatialEntityExtension::ComponentType>> OpenXRSpatialEntityExtension::_get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next) {
+	TypedDictionary<uint64_t, TypedArray<ComponentType>> ret;
+
+	if (!supports_archetypes()) {
+		// Fail without error, we'll fall back on default logic.
+		return ret;
+	}
+
+	LocalVector<Archetype> archetypes = get_snapshot_archetypes(p_spatial_snapshot, p_next);
+
+	// Convert archetypes to Dictionary that can be used externally.
+	if (archetypes.size() > 0) {
+		for (const Archetype &archetype : archetypes) {
+			TypedArray<ComponentType> component_types;
+
+			for (const XrSpatialComponentTypeEXT &component_type : archetype.component_types) {
+				component_types.push_back(ComponentType(component_type));
+			}
+
+			ret[archetype.archetype_id] = component_types;
+		}
+	}
+
+	return ret;
+}
+
 bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next) {
 	SpatialSnapshotData *snapshot_data = spatial_snapshot_owner.get_or_null(p_spatial_snapshot);
 	ERR_FAIL_NULL_V(snapshot_data, false);
@@ -771,9 +904,11 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 		}
 	}
 
+	bool has_archetype_filter = false;
 	void *next = nullptr;
 	if (p_next.is_valid()) {
 		next = p_next->get_header(next);
+		has_archetype_filter = p_next->has_structure_type(XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT);
 	}
 
 	XrSpatialComponentDataQueryConditionEXT query_condition = {
@@ -783,8 +918,11 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 		nullptr // componentTypes
 	};
 
-	query_condition.componentTypeCount = component_types.size();
-	query_condition.componentTypes = component_types.ptr();
+	if (!has_archetype_filter) {
+		// If we have our archetype, we will get data for the components of that archetype.
+		query_condition.componentTypeCount = component_types.size();
+		query_condition.componentTypes = component_types.ptr();
+	}
 
 	XrSpatialComponentDataQueryResultEXT *query_result = (XrSpatialComponentDataQueryResultEXT *)query_result_data->get_structure_data(nullptr);
 	query_result->entityIdCapacityInput = 0;

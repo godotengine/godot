@@ -80,6 +80,7 @@ def get_doc_classes():
         "OpenXRSpatialContainerExtension",
         "OpenXRSpatialContainerSelfRenderingExtension",
         "OpenXRSpatialContainerState",
+        "OpenXrSpatialFilterArchetype",
     ]
 
 
