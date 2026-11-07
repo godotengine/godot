@@ -106,6 +106,7 @@ class AnimationBezierTrackEdit : public Control {
 	void _play_position_draw();
 	bool _is_track_displayed(int p_track_index);
 	bool _is_track_curves_displayed(int p_track_index);
+	int _find_key_in_track(const Animation::BezierTrack &p_track, double p_time);
 
 	typedef Pair<int, int> IntPair;
 
@@ -116,6 +117,7 @@ class AnimationBezierTrackEdit : public Control {
 	bool moving_selection = false;
 	int moving_selection_from_key = 0;
 	int moving_selection_from_track = 0;
+	HashMap<int, Animation::BezierTrack> revert_state;
 
 	Vector2 moving_selection_offset;
 
@@ -139,6 +141,8 @@ class AnimationBezierTrackEdit : public Control {
 	int moving_handle_track = 0;
 	Vector2 moving_handle_left;
 	Vector2 moving_handle_right;
+	Vector2 original_handle_left_value;
+	Vector2 original_handle_right_value;
 
 	struct PairHasher {
 		static _FORCE_INLINE_ uint32_t hash(const Pair<int, int> &p_value) {
@@ -154,6 +158,11 @@ class AnimationBezierTrackEdit : public Control {
 
 	void _clear_selection();
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
+	void _reset_revert_state();
+	Vector2 _get_moved_offset_for_key(const Animation::TKey<Animation::BezierKey> &p_key);
+	Vector2 _get_scaled_offset_for_key(const Animation::TKey<Animation::BezierKey> &p_key);
+	using KeyOffsetFunction = Vector2 (AnimationBezierTrackEdit::*)(const Animation::TKey<Animation::BezierKey> &);
+	void _apply_transform_changes(KeyOffsetFunction p_offset_fn);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, real_t p_pos, bool p_single);
 	bool _try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable);
 	void _change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto = false);
@@ -192,6 +201,7 @@ class AnimationBezierTrackEdit : public Control {
 	typedef RBSet<IntPair, PairCompare> SelectionSet;
 
 	SelectionSet selection;
+	SelectionSet revert_state_selection;
 
 	Ref<ViewPanner> panner;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);

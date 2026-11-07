@@ -5482,6 +5482,7 @@ void AnimationTrackEditor::_animation_changed() {
 	}
 
 	_check_bezier_exist();
+	_update_key_edit();
 
 	if (key_edit) {
 		if (key_edit->setting) {
