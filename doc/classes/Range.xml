@@ -73,7 +73,7 @@
 	<signals>
 		<signal name="changed">
 			<description>
-				Emitted when [member min_value], [member max_value], [member page], or [member step] change.
+				Emitted when [member min_value], [member max_value], [member page], [member step], or [member exp_edit] change.
 			</description>
 		</signal>
 		<signal name="value_changed">
