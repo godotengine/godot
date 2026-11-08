@@ -6526,8 +6526,20 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			if (_edit.plane != TRANSFORM_VIEW) {
 				if (!plane_mv) {
 					motion = motion_mask.dot(motion) * motion_mask;
-
 				} else {
+					// Adjust motion direction to the camera-facing handle orientation.
+					if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+						Basis plane_basis = Basis(_edit.original.basis);
+						const Vector3 dir = camera->get_global_position().direction_to(_edit.center);
+						for (int j = 0; j < 3; j++) {
+							int sign = plane_basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+							plane_basis.set_column(j, sign * plane_basis.get_column(j));
+						}
+						if (local_coords) {
+							motion = _edit.original.basis.inverse().xform(motion);
+						}
+						motion = plane_basis.xform(motion);
+					}
 					// Alternative planar scaling mode
 					if (p_shift) {
 						motion = motion_mask.dot(motion) * motion_mask;
