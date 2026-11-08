@@ -89,6 +89,8 @@ class RenderingServerDefault : public RenderingServer {
 	void _thread_loop();
 
 	void _draw(bool p_swap_buffers, double frame_step);
+	void _tick();
+	void _pre_draw(bool p_will_draw);
 	void _run_post_draw_steps();
 	void _init();
 	void _finish();
