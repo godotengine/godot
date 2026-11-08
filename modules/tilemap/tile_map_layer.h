@@ -388,6 +388,9 @@ private:
 
 	// Properties.
 	HashMap<Vector2i, CellData> tile_map_layer_data;
+#ifdef TOOLS_ENABLED
+	uint64_t cell_data_revision = 0;
+#endif
 
 	bool enabled = true;
 	Ref<TileSet> tile_set;
@@ -524,6 +527,7 @@ protected:
 public:
 #ifdef TOOLS_ENABLED
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	uint64_t get_cell_data_revision() const { return cell_data_revision; }
 #endif
 
 	// TileMap node.
