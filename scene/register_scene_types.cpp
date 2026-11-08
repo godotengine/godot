@@ -809,7 +809,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(BlitMaterial);
 
 	// SpriteFrames is needed by both AnimatedSprite2D and AnimatedSprite3D.
+#if !defined(_2D_DISABLED) || !defined(_3D_DISABLED)
 	GDREGISTER_CLASS(SpriteFrames);
+#endif // !defined(_2D_DISABLED) || !defined(_3D_DISABLED)
 
 	/* REGISTER 2D */
 
