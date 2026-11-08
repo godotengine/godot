@@ -1085,62 +1085,57 @@ GDScriptByteCodeGenerator::CallTarget GDScriptByteCodeGenerator::get_call_target
 
 void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	if (p_target.mode == Address::NIL) {
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL, 2 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_base);
 		append(Address());
-		append(p_arguments.size());
 		append(p_function_name);
 	} else {
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(p_base);
 		CallTarget ct = get_call_target(p_target);
 		append(ct.target);
-		append(p_arguments.size());
 		append(p_function_name);
 		ct.cleanup();
 	}
 }
 
 void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_SELF_BASE, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_SELF_BASE, p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_function_name);
 	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_function_name);
 	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, p_arguments.size());
 	GDScriptUtilityFunctions::FunctionPtr gds_function = GDScriptUtilityFunctions::get_function(p_function);
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
-	append(p_arguments.size());
 	append(gds_function);
 	ct.cleanup();
 #ifdef DEBUG_ENABLED
@@ -1171,25 +1166,23 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		if (result_type != temp_type) {
 			write_type_adjust(ct.target, result_type);
 		}
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, 1 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		append(ct.target);
-		append(p_arguments.size());
 		append(Variant::get_validated_utility_function(p_function));
 		ct.cleanup();
 #ifdef DEBUG_ENABLED
 		add_debug_name(utilities_names, get_utility_pos(Variant::get_validated_utility_function(p_function)), p_function);
 #endif
 	} else {
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
 		CallTarget ct = get_call_target(p_target);
 		append(ct.target);
-		append(p_arguments.size());
 		append(p_function);
 		ct.cleanup();
 	}
@@ -1216,15 +1209,14 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 	if (!is_validated) {
 		// Perform regular call.
 		if (p_is_static) {
-			append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_STATIC, p_arguments.size() + 1);
+			append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_STATIC, p_arguments.size());
 			for (int i = 0; i < p_arguments.size(); i++) {
 				append(p_arguments[i]);
 			}
+			append(p_type);
 			CallTarget ct = get_call_target(p_target);
 			append(ct.target);
-			append(p_type);
 			append(p_method);
-			append(p_arguments.size());
 			ct.cleanup();
 		} else {
 			write_call(p_target, p_base, p_method, p_arguments);
@@ -1239,14 +1231,13 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 		write_type_adjust(ct.target, result_type);
 	}
 
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, p_arguments.size());
 
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
 	append(ct.target);
-	append(p_arguments.size());
 	append(Variant::get_validated_builtin_method(p_type, p_method));
 	ct.cleanup();
 
@@ -1267,14 +1258,13 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 	const MethodBind *method = ClassDB::get_method(p_class, p_method);
 
 	// Perform regular call.
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
 	append(method);
-	append(p_arguments.size());
 	ct.cleanup();
 	return;
 }
@@ -1298,26 +1288,24 @@ void GDScriptByteCodeGenerator::write_call_native_static_validated(const GDScrip
 	}
 
 	GDScriptFunction::Opcode code = p_method->has_return() ? GDScriptFunction::OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN : GDScriptFunction::OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN;
-	append_opcode_and_argcount(code, 1 + p_arguments.size());
+	append_opcode_and_argcount(code, p_arguments.size());
 
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_method);
 	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, const MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
-	CallTarget ct = get_call_target(p_target);
 	append(p_base);
+	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_method);
 	ct.cleanup();
 }
@@ -1341,51 +1329,47 @@ void GDScriptByteCodeGenerator::write_call_method_bind_validated(const Address &
 	}
 
 	GDScriptFunction::Opcode code = p_method->has_return() ? GDScriptFunction::OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN : GDScriptFunction::OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN;
-	append_opcode_and_argcount(code, 2 + p_arguments.size());
+	append_opcode_and_argcount(code, p_arguments.size());
 
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(p_base);
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_method);
 	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
 	if (p_target.mode == Address::NIL) {
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL, 2 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
-		append(GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+		append(GDScriptFunction::ADDR_SELF);
 		append(Address());
-		append(p_arguments.size());
 		append(p_function_name);
 	} else {
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_RETURN, p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
-		append(GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
+		append(GDScriptFunction::ADDR_SELF);
 		CallTarget ct = get_call_target(p_target);
 		append(ct.target);
-		append(p_arguments.size());
 		append(p_function_name);
 		ct.cleanup();
 	}
 }
 
 void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
 	append(GDScriptFunction::ADDR_SELF);
 	CallTarget ct = get_call_target(p_target);
 	append(ct.target);
-	append(p_arguments.size());
 	append(p_function_name);
 	ct.cleanup();
 }
