@@ -2760,7 +2760,7 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-				MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left , rect.bottom - rect.top, TRUE);
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left , rect.bottom - rect.top, TRUE);
 	}
 }
 
