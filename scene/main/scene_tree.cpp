@@ -398,7 +398,10 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		nodes_copy = g.nodes;
 	}
 
-	Node **gr_nodes = nodes_copy.ptrw();
+	// Read through `ptr()`, as `ptrw()` would fork the shared buffer right away. The snapshot
+	// stays shared with `g.nodes`, and a callback that adds or removes a member forks `g.nodes`
+	// instead, so the copy only happens when the group actually changes during the call.
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -470,7 +473,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		nodes_copy = g.nodes;
 	}
 
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -532,7 +535,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 		nodes_copy = g.nodes;
 	}
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 	int gr_node_count = nodes_copy.size();
 
 	{
@@ -1465,7 +1468,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 
 	int gr_node_count = nodes_copy.size();
-	Node **gr_nodes = nodes_copy.ptrw();
+	Node *const *gr_nodes = nodes_copy.ptr();
 
 	{
 		_THREAD_SAFE_METHOD_
@@ -1588,7 +1591,7 @@ TypedArray<Node> SceneTree::_get_nodes_in_group(const StringName &p_group) {
 
 	ret.resize(nc);
 
-	Node **ptr = E->value.nodes.ptrw();
+	Node *const *ptr = E->value.nodes.ptr();
 	for (int i = 0; i < nc; i++) {
 		ret[i] = ptr[i];
 	}
