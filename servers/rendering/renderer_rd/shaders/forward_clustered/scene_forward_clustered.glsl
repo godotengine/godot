@@ -185,6 +185,35 @@ invariant gl_Position;
 
 #GLOBALS
 
+// invariant prevents the driver from optimizing gl_Position using FMA due to float rounding issues
+// Since FMA produces consistent results we can use to following macros to explicitly use it for matrix multiplications.
+
+// mat3(m_mat) * m_vec
+#define MAT3_MUL_VEC3(m_mat, m_vec) \
+	fma((m_mat)[0].xyz, (m_vec).xxx, fma((m_mat)[1].xyz, (m_vec).yyy, ((m_mat)[2].xyz) * (m_vec).zzz))
+
+// (m_mat * vec4(m_position, 1.0)).xyz
+#define AFFINE_MUL_POSITION(m_mat, m_position) \
+	fma((m_mat)[0].xyz, (m_position).xxx, fma((m_mat)[1].xyz, (m_position).yyy, fma((m_mat)[2].xyz, (m_position).zzz, (m_mat)[3].xyz)))
+
+// m_mat * m_vec
+#define MAT4_MUL_VEC4(m_mat, m_vec) \
+	fma((m_mat)[0], (m_vec).xxxx, fma((m_mat)[1], (m_vec).yyyy, fma((m_mat)[2], (m_vec).zzzz, (m_mat)[3] * (m_vec).wwww)))
+
+// m_a * m_b
+#define MAT4_MUL(m_a, m_b) \
+	mat4(MAT4_MUL_VEC4(m_a, (m_b)[0]), \
+			MAT4_MUL_VEC4(m_a, (m_b)[1]), \
+			MAT4_MUL_VEC4(m_a, (m_b)[2]), \
+			MAT4_MUL_VEC4(m_a, (m_b)[3]))
+
+// m_a * m_b, when both matrices are affine
+#define AFFINE_MAT_MUL(m_a, m_b) \
+	mat4(vec4(MAT3_MUL_VEC3(m_a, (m_b)[0].xyz), 0.0), \
+			vec4(MAT3_MUL_VEC3(m_a, (m_b)[1].xyz), 0.0), \
+			vec4(MAT3_MUL_VEC3(m_a, (m_b)[2].xyz), 0.0), \
+			vec4(AFFINE_MUL_POSITION(m_a, (m_b)[3].xyz), 1.0))
+
 #ifdef USE_DOUBLE_PRECISION
 // Helper functions for emulating double precision when adding floats.
 vec3 quick_two_sum(vec3 a, vec3 b, out vec3 out_p) {
@@ -337,7 +366,7 @@ void vertex_shader(vec3 vertex_input,
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
 		// Normally we can bake the multimesh transform into the model matrix, but when using double precision
 		// we avoid baking it in so we can emulate high precision.
-		read_model_matrix = model_matrix * matrix;
+		read_model_matrix = MAT4_MUL(model_matrix, matrix);
 #if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
 		model_matrix = read_model_matrix;
 #endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
@@ -392,7 +421,7 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = AFFINE_MUL_POSITION(model_matrix, vertex);
 
 #ifdef NORMAL_USED
 	// For correct non-uniform scale handling, normal has to be transformed by normal matrix, but tangent vectors need to use model matrix as is
@@ -418,25 +447,25 @@ void vertex_shader(vec3 vertex_input,
 			vec4(0.0, 0.0, 0.0, 1.0)));
 
 #ifdef USE_DOUBLE_PRECISION
-	mat4 modelview = read_view_matrix * model_matrix;
+	mat4 modelview = AFFINE_MAT_MUL(read_view_matrix, model_matrix);
 
 	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;
 	if (sc_multimesh()) {
-		modelview = modelview * matrix;
+		modelview = MAT4_MUL(modelview, matrix);
 
-		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		vec3 instance_origin = MAT3_MUL_VEC3(model_matrix, matrix[3].xyz);
 		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
 	}
 
 	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
 	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
-	modelview[3].xyz = mat3(read_view_matrix) * modelview[3].xyz;
+	modelview[3].xyz = MAT3_MUL_VEC3(read_view_matrix, modelview[3].xyz);
 #else
-	mat4 modelview = read_view_matrix * model_matrix;
+	mat4 modelview = AFFINE_MAT_MUL(read_view_matrix, model_matrix);
 #endif
 	mat3 modelview_normal = mat3(read_view_matrix) * model_normal_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
@@ -457,7 +486,7 @@ void vertex_shader(vec3 vertex_input,
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (modelview * vec4(vertex, 1.0)).xyz;
+	vertex = AFFINE_MUL_POSITION(modelview, vertex);
 
 #ifdef NORMAL_USED
 	// For correct non-uniform scale handling, normal has to be transformed by normal matrix, but tangent vectors need to use model matrix as is
@@ -474,7 +503,7 @@ void vertex_shader(vec3 vertex_input,
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
 
-	vertex = (read_view_matrix * vec4(vertex, 1.0)).xyz;
+	vertex = AFFINE_MUL_POSITION(read_view_matrix, vertex);
 #ifdef NORMAL_USED
 	normal = (read_view_matrix * vec4(normal, 0.0)).xyz;
 #endif
@@ -522,7 +551,7 @@ void vertex_shader(vec3 vertex_input,
 #ifdef OVERRIDE_POSITION
 	gl_Position = position;
 #else
-	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+	gl_Position = MAT4_MUL_VEC4(projection_matrix, vec4(vertex_interp, 1.0));
 #endif
 
 #ifdef USE_MULTIVIEW
