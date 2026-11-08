@@ -31,12 +31,68 @@
 #include "hb-cairo.h"
 
 
-typedef struct
+struct hb_cairo_budget_t
 {
+  /* Cairo serializes glyph-cache population for a scaled font.  Keeping the
+   * owner there lets recursive color-glyph callbacks share one session. */
+  int64_t budget = HB_BUDGET_DEFAULT;
+  int64_t budget_remaining = HB_BUDGET_GLYPH;
+  unsigned int active = 0;
+
+  void enter ()
+  {
+    if (!active++)
+      recharge ();
+  }
+
+  void leave ()
+  {
+    assert (active);
+    active--;
+  }
+
+  void recharge ()
+  {
+    budget_remaining = budget == HB_BUDGET_DEFAULT ?
+		       HB_BUDGET_GLYPH : budget;
+  }
+};
+
+struct hb_cairo_context_t
+{
+  hb_cairo_context_t (cairo_scaled_font_t *scaled_font_,
+		      cairo_t *cr_,
+		      hb_map_t *color_cache_,
+		      hb_cairo_budget_t *budget_) :
+    scaled_font (scaled_font_), cr (cr_), color_cache (color_cache_),
+    budget (budget_)
+  {
+    budget->enter ();
+  }
+
+  ~hb_cairo_context_t ()
+  {
+    budget->leave ();
+  }
+
+  bool set_budget (int64_t value)
+  {
+    budget->budget = value;
+    budget->recharge ();
+    return true;
+  }
+
+  int64_t get_budget () const { return budget->budget; }
+  int64_t *get_budget_remaining () { return &budget->budget_remaining; }
+
+  bool spend (unsigned int cost, unsigned int mult = 1)
+  { return hb_budget_spend (budget->budget_remaining, cost, mult); }
+
   cairo_scaled_font_t *scaled_font;
   cairo_t *cr;
   hb_map_t *color_cache;
-} hb_cairo_context_t;
+  hb_cairo_budget_t *budget;
+};
 
 static inline cairo_operator_t
 _hb_paint_composite_mode_to_cairo (hb_paint_composite_mode_t mode)

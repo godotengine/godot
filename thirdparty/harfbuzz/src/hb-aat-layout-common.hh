@@ -239,6 +239,8 @@ struct hb_aat_apply_context_t :
   {
     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_AAT_HAS_DELETED;
     _hb_glyph_info_set_aat_deleted (&buffer->cur());
+    if (likely (using_buffer_glyph_set))
+      buffer_glyph_set->add (DELETED_GLYPH);
     return buffer->replace_glyph (DELETED_GLYPH);
   }
 

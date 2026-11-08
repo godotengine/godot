@@ -438,6 +438,7 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
   }
 
   ALLOCATE_ARRAY (WORD, log_clusters, chars_len);
+#undef ALLOCATE_ARRAY
   /* Need log_clusters to assign features. */
   chars_len = 0;
   for (unsigned int i = 0; i < buffer->len; i++)
@@ -558,17 +559,6 @@ retry_getglyphs:
                 !glyphOffsets.resize_exact (maxGlyphCount)))
     FAIL ("Failed to allocate glyph positioning data.");
 
-  /* The -2 in the following is to compensate for possible
-   * alignment needed after the WORD array.  sizeof (WORD) == 2. */
-  unsigned int glyphs_size = (scratch_size * sizeof (int) - 2)
-			     / (sizeof (WORD) +
-				sizeof (DWRITE_SHAPING_GLYPH_PROPERTIES) +
-				sizeof (int) +
-				sizeof (DWRITE_GLYPH_OFFSET) +
-				sizeof (uint32_t));
-  ALLOCATE_ARRAY (uint32_t, vis_clusters, glyphs_size);
-
-#undef ALLOCATE_ARRAY
 
   unsigned fontEmSize = font->face->get_upem ();
 
@@ -601,17 +591,24 @@ retry_getglyphs:
    * very, *very*, carefully! */
 
   /* Calculate visual-clusters.  That's what we ship. */
+  hb_vector_t<uint32_t> vis_clusters;
+  if (unlikely (!vis_clusters.resize_exact (glyphCount)))
+    FAIL ("Failed to allocate visual clusters.");
+
   for (unsigned int i = 0; i < glyphCount; i++)
     vis_clusters[i] = (uint32_t) -1;
   for (unsigned int i = 0; i < buffer->len; i++)
   {
-    uint32_t *p =
-      &vis_clusters[log_clusters[buffer->info[i].utf16_index ()]];
-    *p = hb_min (*p, buffer->info[i].cluster);
+    unsigned int c = clusterMap[buffer->info[i].utf16_index ()];
+    if (likely (c < glyphCount))
+      vis_clusters[c] = hb_min (vis_clusters[c], buffer->info[i].cluster);
   }
   for (unsigned int i = 1; i < glyphCount; i++)
     if (vis_clusters[i] == (uint32_t) -1)
       vis_clusters[i] = vis_clusters[i - 1];
+  for (int i = (int) glyphCount - 2; i >= 0; i--)
+    if (vis_clusters[i] == (uint32_t) -1)
+      vis_clusters[i] = vis_clusters[i + 1];
 
 #undef utf16_index
 

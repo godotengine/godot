@@ -155,7 +155,6 @@ private:
 	Ref<Texture2D> _load_script_icon(const String &p_path) const;
 
 public:
-	EditorPlugin *get_handling_main_editor(Object *p_object);
 	Vector<EditorPlugin *> get_handling_sub_editors(Object *p_object);
 	EditorPlugin *get_editor_by_name(const String &p_name);
 

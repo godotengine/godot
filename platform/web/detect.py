@@ -115,7 +115,10 @@ def configure(env: "SConsEnvironment"):
 
     # Minimum emscripten requirements.
     if cc_semver < (6, 0, 1):
-        print_error("The minimum Emscripten version to build Godot is 6.0.1, detected: %s.%s.%s" % cc_semver)
+        print_error("Godot requires Emscripten 6.0.1+. Detected: {}.{}.{}".format(*cc_semver))
+        sys.exit(255)
+    if env["dlink_enabled"] and env["threads"] and cc_semver < (6, 0, 12):
+        print_error("Godot with dlink+threads requires Emscripten 6.0.12+. Detected: {}.{}.{}".format(*cc_semver))
         sys.exit(255)
 
     env.Append(LIBEMITTER=[library_emitter])
@@ -159,7 +162,7 @@ def configure(env: "SConsEnvironment"):
         print_info("Forcing `initial_memory=64` as it is required for the web editor.")
         env["initial_memory"] = 64
 
-    env.Append(LINKFLAGS=["-sINITIAL_MEMORY=%sMB" % env["initial_memory"]])
+    env.Append(LINKFLAGS=[f"-sINITIAL_MEMORY={env['initial_memory']}MB"])
 
     ## Copy env variables.
     env["ENV"] = os.environ
@@ -251,20 +254,16 @@ def configure(env: "SConsEnvironment"):
     if env["javascript_eval"]:
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
-    env.Append(LINKFLAGS=["-s%s=%sKB" % ("STACK_SIZE", env["stack_size"])])
+    env.Append(LINKFLAGS=[f"-sSTACK_SIZE={env['stack_size']}KB"])
 
     if env["threads"]:
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-pthread"])
         env.Append(LINKFLAGS=["-pthread"])
-        env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
+        env.Append(LINKFLAGS=[f"-sDEFAULT_PTHREAD_STACK_SIZE={env['default_pthread_stack_size']}KB"])
         env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=\"Module['emscriptenPoolSize']||8\""])
         env.Append(LINKFLAGS=["-sMAXIMUM_MEMORY=2048MB"])
-        if not env["dlink_enabled"]:
-            # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
-            # Not needed (and potentially dangerous) when dlink_enabled=yes, since we set EXPORT_ALL=1 in that case.
-            env["EXPORTED_FUNCTIONS"] += ["__emscripten_thread_crashed"]
 
     elif env["proxy_to_pthread"]:
         print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
@@ -286,8 +285,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
-    env.Append(LINKFLAGS=["-sWASM_BIGINT"])
-
     # Run the main application in a web worker
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
@@ -299,9 +296,6 @@ def configure(env: "SConsEnvironment"):
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-sENVIRONMENT=web,worker"])
-
-    # Wrap the JavaScript support code around a closure named Godot.
-    env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
 
     # Force long jump mode to 'wasm'
     env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='wasm'"])

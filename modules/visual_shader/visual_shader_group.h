@@ -156,7 +156,8 @@ class VisualShaderNodeGroup : public VisualShaderNode {
 
 	Ref<VisualShaderGroup> group;
 
-	void _emit_changed();
+	void _update_default_input_values();
+	void _on_group_changed();
 	bool _has_incompatible_nodes(Shader::Mode p_mode, VisualShader::Type p_type) const;
 
 protected:

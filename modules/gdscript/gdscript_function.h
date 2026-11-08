@@ -39,6 +39,7 @@
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
+struct ContainerType;
 class GDScriptInstance;
 class GDScript;
 
@@ -63,6 +64,7 @@ public:
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
+	bool is_type_exact(const ContainerType &p_container_type) const;
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const;
 
 	bool can_contain_object() const {
@@ -454,8 +456,6 @@ private:
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 #endif
-
-	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
 	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.

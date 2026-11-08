@@ -196,6 +196,61 @@ typedef void (*hb_draw_close_path_func_t) (hb_draw_funcs_t *dfuncs, void *draw_d
 					   void *user_data);
 
 /**
+ * hb_draw_set_budget_func_t:
+ * @dfuncs: draw functions object
+ * @draw_data: The data accompanying the draw functions
+ * @budget: the new work-budget policy
+ * @user_data: User data pointer passed to hb_draw_funcs_set_set_budget_func()
+ *
+ * Sets the work-budget policy and recharges the live work budget. @budget is
+ * #HB_BUDGET_DEFAULT, #HB_BUDGET_UNLIMITED, or a non-negative concrete value.
+ *
+ * Return value: `true` if the budget was set, `false` if unsupported
+ *
+ * Since: 14.5.0
+ **/
+typedef hb_bool_t (*hb_draw_set_budget_func_t) (hb_draw_funcs_t *dfuncs,
+						 void *draw_data,
+						 int64_t budget,
+						 void *user_data);
+
+/**
+ * hb_draw_get_budget_func_t:
+ * @dfuncs: draw functions object
+ * @draw_data: The data accompanying the draw functions
+ * @user_data: User data pointer passed to hb_draw_funcs_set_get_budget_func()
+ *
+ * Fetches the configured work-budget policy.
+ *
+ * Return value: the configured work-budget policy
+ *
+ * Since: 14.5.0
+ **/
+typedef int64_t (*hb_draw_get_budget_func_t) (hb_draw_funcs_t *dfuncs,
+					      void *draw_data,
+					      void *user_data);
+
+/**
+ * hb_draw_get_budget_remaining_func_t:
+ * @dfuncs: draw functions object
+ * @draw_data: The data accompanying the draw functions
+ * @user_data: User data pointer passed to
+ *   hb_draw_funcs_set_get_budget_remaining_func()
+ *
+ * Fetches the address of the live work budget. The returned address must stay
+ * valid while @draw_data is used with @dfuncs. The live value must be concrete;
+ * it must not contain #HB_BUDGET_DEFAULT.
+ *
+ * Return value: (nullable) (transfer none): the live work budget, or `NULL` if
+ *   live budget accounting is unsupported
+ *
+ * Since: 14.5.0
+ **/
+typedef int64_t *(*hb_draw_get_budget_remaining_func_t) (hb_draw_funcs_t *dfuncs,
+							 void *draw_data,
+							 void *user_data);
+
+/**
  * hb_draw_funcs_set_move_to_func:
  * @dfuncs: draw functions object
  * @func: (closure user_data) (destroy destroy) (scope notified): move-to callback
@@ -275,6 +330,54 @@ hb_draw_funcs_set_close_path_func (hb_draw_funcs_t           *dfuncs,
 				   hb_draw_close_path_func_t  func,
 				   void *user_data, hb_destroy_func_t destroy);
 
+/**
+ * hb_draw_funcs_set_set_budget_func:
+ * @dfuncs: draw functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): budget setter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the budget setter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_draw_funcs_set_set_budget_func (hb_draw_funcs_t         *dfuncs,
+				   hb_draw_set_budget_func_t  func,
+				   void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_draw_funcs_set_get_budget_func:
+ * @dfuncs: draw functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): budget getter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the budget-policy getter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_draw_funcs_set_get_budget_func (hb_draw_funcs_t         *dfuncs,
+				   hb_draw_get_budget_func_t  func,
+				   void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_draw_funcs_set_get_budget_remaining_func:
+ * @dfuncs: draw functions object
+ * @func: (closure user_data) (destroy destroy) (scope notified): live-budget getter
+ * @user_data: Data to pass to @func
+ * @destroy: (nullable): callback to destroy @user_data
+ *
+ * Sets the live-budget getter callback.
+ *
+ * Since: 14.5.0
+ **/
+HB_EXTERN void
+hb_draw_funcs_set_get_budget_remaining_func (hb_draw_funcs_t                   *dfuncs,
+					     hb_draw_get_budget_remaining_func_t  func,
+					     void *user_data, hb_destroy_func_t destroy);
+
 
 HB_EXTERN hb_draw_funcs_t *
 hb_draw_funcs_create (void);
@@ -305,6 +408,16 @@ hb_draw_funcs_make_immutable (hb_draw_funcs_t *dfuncs);
 
 HB_EXTERN hb_bool_t
 hb_draw_funcs_is_immutable (hb_draw_funcs_t *dfuncs);
+
+HB_EXTERN hb_bool_t
+hb_draw_set_budget (hb_draw_funcs_t *dfuncs, void *draw_data,
+		    int64_t budget);
+
+HB_EXTERN int64_t
+hb_draw_get_budget (hb_draw_funcs_t *dfuncs, void *draw_data);
+
+HB_EXTERN int64_t
+hb_draw_get_budget_remaining (hb_draw_funcs_t *dfuncs, void *draw_data);
 
 
 HB_EXTERN void

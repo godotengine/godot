@@ -233,6 +233,7 @@ public:
 	void delete_selection();
 
 	void _bezier_track_insert_key_at_anim(const Ref<Animation> &p_anim, int p_track, double p_time, real_t p_value, const Vector2 &p_in_handle, const Vector2 &p_out_handle, const Animation::HandleMode p_handle_mode, Animation::HandleSetMode p_handle_set_mode = Animation::HANDLE_SET_MODE_NONE);
+	void _track_remove_key_at_time_if_exists(const Ref<Animation> &p_anim, int p_track, double p_time);
 
 	AnimationBezierTrackEdit();
 };

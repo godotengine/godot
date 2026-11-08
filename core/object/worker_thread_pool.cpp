@@ -861,10 +861,8 @@ void WorkerThreadPool::finish() {
 
 	{
 		MutexLock lock(task_mutex);
-		SelfList<Task> *E = low_priority_task_queue.first();
-		while (E) {
-			print_error("Task waiting was never re-claimed: " + E->self()->description);
-			E = E->next();
+		for (const Task &task : low_priority_task_queue) {
+			print_error("Task waiting was never re-claimed: " + task.description);
 		}
 
 		_switch_runlevel(RUNLEVEL_EXIT);

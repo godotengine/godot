@@ -32,12 +32,14 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void CollisionPolygon2D::_build_polygon() {
 	collision_object->shape_owner_clear_shapes(owner_id);
@@ -129,7 +131,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				break;
 			}
 
@@ -169,10 +171,6 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -347,4 +345,8 @@ void CollisionPolygon2D::_bind_methods() {
 CollisionPolygon2D::CollisionPolygon2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

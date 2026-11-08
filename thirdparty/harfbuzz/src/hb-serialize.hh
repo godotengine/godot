@@ -87,6 +87,11 @@ struct hb_serialize_context_t
         virtual_links.push (o.virtual_links[i]);
     }
 
+    bool in_error () const
+    {
+      return real_links.in_error() || virtual_links.in_error();
+    }
+
     bool add_virtual_link (objidx_t objidx)
     {
       if (!objidx)

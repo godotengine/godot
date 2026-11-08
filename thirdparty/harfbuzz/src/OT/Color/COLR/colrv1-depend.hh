@@ -46,7 +46,8 @@ HB_INTERNAL void PaintColrLayers::dependv1 (hb_colrv1_depend_context_t* c) const
   }
 }
 
-HB_INTERNAL void PaintGlyph::dependv1 (hb_colrv1_depend_context_t* c) const
+template <typename Types>
+HB_INTERNAL void PaintGlyph<Types>::dependv1 (hb_colrv1_depend_context_t* c) const
 {
   // PaintGlyph (Format 10) references glyph outlines (from glyf/CFF), not paint graphs.
   // Self-reference is valid per OpenType spec: a base glyph can reference its own

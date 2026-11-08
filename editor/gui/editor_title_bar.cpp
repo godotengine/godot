@@ -150,7 +150,11 @@ void EditorTitleBar::_notification(int p_what) {
 			}
 			if (base && prev && next) {
 				Size2i title_size = get_size();
-				Size2i c_size = base->get_combined_minimum_size();
+				int center = title_size.x / 2;
+				int width = MIN(center - prev->get_position().x, next->get_position().x + next->get_size().x - center) * 1.9;
+				width = MAX(width, base->get_combined_minimum_size().x);
+				base->set_custom_maximum_size(Size2i(width, title_size.y));
+				Size2i c_size = base->get_bound_desired_size();
 
 				int min_offset = prev->get_position().x + prev->get_combined_minimum_size().x;
 				int max_offset = next->get_position().x + next->get_size().x - next->get_combined_minimum_size().x - c_size.x;
@@ -160,10 +164,7 @@ void EditorTitleBar::_notification(int p_what) {
 
 				fit_child_in_rect(prev, Rect2i(prev->get_position().x, 0, offset - prev->get_position().x, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
-
-				int center = title_size.x / 2;
-				int width = MIN(center - prev->get_position().x, next->get_position().x + next->get_size().x - center) * 1.9;
-				fit_child_in_rect(base, Rect2i(center - width / 2, 0, width, title_size.height));
+				fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
 			}
 		} break;
 	}

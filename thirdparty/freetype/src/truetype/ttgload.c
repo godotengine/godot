@@ -34,6 +34,10 @@
 #include "ttgxvar.h"
 #endif
 
+#ifdef TT_CONFIG_OPTION_VARC
+#include "ttvarc.h"
+#endif
+
 #include "tterrors.h"
 
 
@@ -51,7 +55,7 @@
    *
    * Simple glyph flags.
    */
-#define ON_CURVE_POINT  0x01  /* same value as FT_CURVE_TAG_ON            */
+#define ON_CURVE_POINT  0x01
 #define X_SHORT_VECTOR  0x02
 #define Y_SHORT_VECTOR  0x04
 #define REPEAT_FLAG     0x08
@@ -60,6 +64,7 @@
 #define Y_POSITIVE      0x20  /* two meanings depending on Y_SHORT_VECTOR */
 #define SAME_Y          0x20
 #define OVERLAP_SIMPLE  0x40  /* retained as FT_OUTLINE_OVERLAP           */
+#define CUBIC_FLAG      0x80
 
 
   /**************************************************************************
@@ -79,6 +84,7 @@
 #define OVERLAP_COMPOUND           0x0400  /* retained as FT_OUTLINE_OVERLAP */
 #define SCALED_COMPONENT_OFFSET    0x0800
 #define UNSCALED_COMPONENT_OFFSET  0x1000
+#define GID_IS_24_BIT              0x2000
 
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
@@ -345,8 +351,8 @@
     FT_Byte*        limit      = load->limit;
     FT_GlyphLoader  gloader    = load->gloader;
     FT_Outline*     outline    = &gloader->current.outline;
-    FT_Int          n_contours = load->n_contours;
-    FT_Int          n_points;
+    FT_UInt         n_contours = (FT_UInt)load->n_contours;
+    FT_UInt         n_points;
     FT_UShort       n_ins;
 
     FT_Byte         *flag, *flag_limit;
@@ -354,7 +360,6 @@
     FT_Vector       *vec, *vec_limit;
     FT_Pos          x, y;
     FT_UShort       *cont, *cont_limit;
-    FT_Int          last;
 
 
     /* check that we can add the contours to the glyph */
@@ -363,27 +368,25 @@
       goto Fail;
 
     /* check space for contours array + instructions count */
-    if ( n_contours >= 0xFFF || p + 2 * n_contours + 2 > limit )
+    if ( n_contours >= 0xFFFU || p + 2 * n_contours + 2 > limit )
       goto Invalid_Outline;
 
     /* reading the contours' endpoints & number of points */
     cont       = outline->contours;
     cont_limit = cont + n_contours;
 
-    last = -1;
+    n_points = 0;
     for ( ; cont < cont_limit; cont++ )
     {
       *cont = FT_NEXT_USHORT( p );
 
-      if ( *cont <= last )
+      if ( *cont < n_points )
         goto Invalid_Outline;
 
-      last = *cont;
+      n_points = *cont + 1U;
     }
 
-    n_points = last + 1;
-
-    FT_TRACE5(( "  # of points: %d\n", n_points ));
+    FT_TRACE5(( "  # of points: %u\n", n_points ));
 
     /* note that we will add four phantom points later */
     error = FT_GLYPHLOADER_CHECK_POINTS( gloader, n_points + 4, 0 );
@@ -527,8 +530,9 @@
       y     += delta;
       vec->y = y;
 
-      /* the cast is for stupid compilers */
-      *flag  = (FT_Byte)( f & ON_CURVE_POINT );
+      *flag = (FT_Byte)( f & ON_CURVE_POINT );
+      if ( load->face->is_extended_glyf && ( f & CUBIC_FLAG ) )
+        *flag |= FT_CURVE_TAG_CUBIC;
     }
 
     outline->n_points   = (FT_UShort)n_points;
@@ -570,7 +574,7 @@
       if ( error )
         goto Fail;
 
-      /* check space */
+      /* check space for the flags and a 16-bit glyph ID */
       if ( p + 4 > limit )
         goto Invalid_Composite;
 
@@ -579,7 +583,16 @@
       subglyph->arg1 = subglyph->arg2 = 0;
 
       subglyph->flags = FT_NEXT_USHORT( p );
-      subglyph->index = FT_NEXT_USHORT( p );
+      if ( loader->face->is_extended_glyf           &&
+           ( subglyph->flags & GID_IS_24_BIT ) != 0 )
+      {
+        if ( p + 3 > limit )
+          goto Invalid_Composite;
+
+        subglyph->index = (FT_Int)FT_NEXT_UOFF3( p );
+      }
+      else
+        subglyph->index = FT_NEXT_USHORT( p );
 
       /* we reject composites that have components */
       /* with invalid glyph indices                */
@@ -1148,7 +1161,15 @@
              IS_HINTED( loader->load_flags )    )
         {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-          if ( !loader->exec->backward_compatibility )
+          TT_Driver  driver =
+                       (TT_Driver)FT_FACE_DRIVER( (FT_Face)loader->face );
+
+
+          /* v40 approximates native ClearType's fine horizontal grid by */
+          /* leaving X offsets of components unrounded.                  */
+          if ( driver->interpreter_version != TT_INTERPRETER_VERSION_40 ||
+               loader->exec->mode == FT_RENDER_MODE_MONO                ||
+               FT_IS_TRICKY( (FT_Face)loader->face )                    )
 #endif
             x = FT_PIX_ROUND( x );
 
@@ -2538,6 +2559,84 @@
     }
 
 #endif /* FT_CONFIG_OPTION_SVG */
+
+#ifdef TT_CONFIG_OPTION_VARC
+
+    /* check for VARC glyphs */
+    if ( face->varc                                           &&
+         tt_face_has_varc_glyph( (FT_Face)face, glyph_index ) )
+    {
+      FT_TRACE3(( "Loading VARC glyph\n" ));
+
+      error = tt_face_load_varc_glyph( (FT_Face)face,
+                                       (FT_GlyphSlot)glyph,
+                                       glyph_index,
+                                       load_flags );
+      if ( !error )
+      {
+        FT_Short   left_bearing   = 0;
+        FT_Short   top_bearing    = 0;
+        FT_UShort  advance_width  = 0;
+        FT_UShort  advance_height = 0;
+
+
+        /* Get advance width and height. */
+        TT_Get_HMetrics( face, glyph_index,
+                         &left_bearing,
+                         &advance_width );
+        TT_Get_VMetrics( face, glyph_index,
+                         0,
+                         &top_bearing,
+                         &advance_height );
+
+        glyph->linearHoriAdvance = advance_width;
+        glyph->linearVertAdvance = advance_height;
+
+#ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+        {
+          FT_Int  advance = (FT_Int)advance_width;
+
+
+          tt_hadvance_adjust( (FT_Face)face, glyph_index, &advance );
+          advance_width = (FT_UShort)advance;
+        }
+#endif
+
+        {
+          FT_BBox  bbox;
+
+
+          FT_Outline_Get_CBox( &glyph->outline, &bbox );
+
+          glyph->metrics.horiBearingX = bbox.xMin;
+          glyph->metrics.horiBearingY = bbox.yMax;
+          glyph->metrics.width        = SUB_LONG( bbox.xMax, bbox.xMin );
+          glyph->metrics.height       = SUB_LONG( bbox.yMax, bbox.yMin );
+        }
+
+        if ( load_flags & FT_LOAD_NO_SCALE )
+        {
+          /* Under NO_SCALE the advance is in font units (no 26.6 shift), */
+          /* like the normal glyf path (pp2.x - pp1.x).                   */
+          glyph->metrics.horiAdvance = advance_width;
+          glyph->metrics.vertAdvance = advance_height;
+        }
+        else
+        {
+          glyph->metrics.horiAdvance = FT_MulFix( advance_width,
+                                                  size->metrics->x_scale );
+          glyph->metrics.vertAdvance = FT_MulFix( advance_height,
+                                                  size->metrics->y_scale );
+        }
+
+        FT_TRACE3(( "Successfully loaded VARC glyph\n" ));
+        goto Exit;
+      }
+
+      FT_TRACE3(( "Failed to load VARC glyph, falling back to glyf\n" ));
+    }
+
+#endif /* TT_CONFIG_OPTION_VARC */
 
     error = tt_loader_init( &loader, size, glyph, load_flags, FALSE );
     if ( error )

@@ -231,6 +231,32 @@ bool OptimizedTranslation::_get(const StringName &p_name, Variant &r_ret) const 
 	return true;
 }
 
+const OptimizedTranslation::Bucket *OptimizedTranslation::_get_bucket(uint32_t p_offset) const {
+	const uint64_t bucket_table_size = bucket_table.size();
+	ERR_FAIL_COND_V_MSG((uint64_t)p_offset + 2 > bucket_table_size, nullptr, "Invalid bucket offset, corrupt translation.");
+
+	const Bucket *bucket = (const Bucket *)&bucket_table.ptr()[p_offset];
+	ERR_FAIL_COND_V_MSG(bucket->size < 0 || (uint64_t)p_offset + 2 + (uint64_t)bucket->size * 4 > bucket_table_size, nullptr, "Invalid bucket size, corrupt translation.");
+	return bucket;
+}
+
+String OptimizedTranslation::_get_string(const Bucket::Elem &p_elem) const {
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.str_offset + p_elem.comp_size > (uint64_t)strings.size(), String(), "Invalid string offset, corrupt translation.");
+	const char *sptr = (const char *)strings.ptr();
+
+	if (p_elem.comp_size == p_elem.uncomp_size) {
+		return String::utf8(&sptr[p_elem.str_offset], p_elem.uncomp_size);
+	}
+
+	ERR_FAIL_COND_V_MSG(p_elem.uncomp_size > INT32_MAX, String(), "Invalid string size, corrupt translation.");
+	CharString uncomp;
+	Error err = uncomp.resize_uninitialized(p_elem.uncomp_size);
+	ERR_FAIL_COND_V(err != OK, String());
+	int len = smaz_decompress(&sptr[p_elem.str_offset], p_elem.comp_size, uncomp.ptrw(), p_elem.uncomp_size);
+	ERR_FAIL_COND_V_MSG(len > (int)p_elem.uncomp_size, String(), "Invalid compressed string, corrupt translation.");
+	return String::utf8(uncomp.get_data(), len);
+}
+
 StringName OptimizedTranslation::get_message(const StringName &p_src_text, const StringName &p_context) const {
 	// p_context passed in is ignore. The use of context is not yet supported in OptimizedTranslation.
 
@@ -245,10 +271,6 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 
 	const int *htr = hash_table.ptr();
 	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
 
 	uint32_t p = htptr[h % htsize];
 
@@ -256,14 +278,17 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName(); //nothing
 	}
 
-	const Bucket &bucket = *(const Bucket *)&btptr[p];
+	const Bucket *bucket = _get_bucket(p);
+	if (unlikely(!bucket)) {
+		return StringName(); // Helper already prints an error.
+	}
 
-	h = hash(bucket.func, str.get_data());
+	h = hash(bucket->func, str.get_data());
 
 	int idx = -1;
 
-	for (int i = 0; i < bucket.size; i++) {
-		if (bucket.elem[i].key == h) {
+	for (int i = 0; i < bucket->size; i++) {
+		if (bucket->elem[i].key == h) {
 			idx = i;
 			break;
 		}
@@ -273,14 +298,7 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName();
 	}
 
-	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
-		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
-	} else {
-		CharString uncomp;
-		uncomp.resize_uninitialized(bucket.elem[idx].uncomp_size + 1);
-		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
-		return String::utf8(uncomp.get_data());
-	}
+	return _get_string(bucket->elem[idx]);
 }
 
 Vector<String> OptimizedTranslation::get_translated_message_list() const {
@@ -288,26 +306,16 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 
 	const int *htr = hash_table.ptr();
 	const uint32_t *htptr = (const uint32_t *)&htr[0];
-	const int *btr = bucket_table.ptr();
-	const uint32_t *btptr = (const uint32_t *)&btr[0];
-	const uint8_t *sr = strings.ptr();
-	const char *sptr = (const char *)&sr[0];
 
 	for (int i = 0; i < hash_table.size(); i++) {
 		uint32_t p = htptr[i];
 		if (p != 0xFFFFFFFF) {
-			const Bucket &bucket = *(const Bucket *)&btptr[p];
-			for (int j = 0; j < bucket.size; j++) {
-				if (bucket.elem[j].comp_size == bucket.elem[j].uncomp_size) {
-					String rstr = String::utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
-					msgs.push_back(rstr);
-				} else {
-					CharString uncomp;
-					uncomp.resize_uninitialized(bucket.elem[j].uncomp_size + 1);
-					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
-					String rstr = String::utf8(uncomp.get_data());
-					msgs.push_back(rstr);
-				}
+			const Bucket *bucket = _get_bucket(p);
+			if (unlikely(!bucket)) {
+				return Vector<String>(); // Helper already prints an error.
+			}
+			for (int j = 0; j < bucket->size; j++) {
+				msgs.push_back(_get_string(bucket->elem[j]));
 			}
 		}
 	}

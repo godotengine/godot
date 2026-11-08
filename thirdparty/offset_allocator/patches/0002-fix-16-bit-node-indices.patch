@@ -1,44 +1,5 @@
-diff --git a/thirdparty/offset_allocator/offsetAllocator.hpp b/thirdparty/offset_allocator/offsetAllocator.hpp
---- a/thirdparty/offset_allocator/offsetAllocator.hpp
-+++ b/thirdparty/offset_allocator/offsetAllocator.hpp
-@@ -10,7 +10,7 @@ namespace OffsetAllocator
-     typedef unsigned int uint32;
- 
-     // 16 bit offsets mode will halve the metadata storage cost
--    // But it only supports up to 65536 maximum allocation count
-+    // But it only supports up to 65534 maximum allocation count
- #ifdef USE_16_BIT_NODE_INDICES
-     typedef uint16 NodeIndex;
- #else
-@@ -26,9 +26,10 @@ namespace OffsetAllocator
-     struct Allocation
-     {
-         static constexpr uint32 NO_SPACE = 0xffffffff;
-+        static constexpr NodeIndex NO_SPACE_METADATA = static_cast<NodeIndex>(-1);
-         
-         uint32 offset = NO_SPACE;
--        NodeIndex metadata = NO_SPACE; // internal: node index
-+        NodeIndex metadata = NO_SPACE_METADATA; // internal: node index
-     };
- 
-     struct StorageReport
-@@ -64,12 +65,12 @@ namespace OffsetAllocator
-         StorageReportFull storageReportFull() const;
-         
-     private:
--        uint32 insertNodeIntoBin(uint32 size, uint32 dataOffset);
--        void removeNodeFromBin(uint32 nodeIndex);
-+        NodeIndex insertNodeIntoBin(uint32 size, uint32 dataOffset);
-+        void removeNodeFromBin(NodeIndex nodeIndex);
- 
-         struct Node
-         {
--            static constexpr NodeIndex unused = 0xffffffff;
-+            static constexpr NodeIndex unused = static_cast<NodeIndex>(-1);
-             
-             uint32 dataOffset = 0;
-             uint32 dataSize = 0;
 diff --git a/thirdparty/offset_allocator/offsetAllocator.cpp b/thirdparty/offset_allocator/offsetAllocator.cpp
+index 16a97f0aa5..6d79f756a9 100644
 --- a/thirdparty/offset_allocator/offsetAllocator.cpp
 +++ b/thirdparty/offset_allocator/offsetAllocator.cpp
 @@ -142,7 +142,7 @@ namespace OffsetAllocator
@@ -175,3 +136,44 @@ diff --git a/thirdparty/offset_allocator/offsetAllocator.cpp b/thirdparty/offset
              while (nodeIndex != Node::unused)
              {
                  nodeIndex = m_nodes[nodeIndex].binListNext;
+diff --git a/thirdparty/offset_allocator/offsetAllocator.hpp b/thirdparty/offset_allocator/offsetAllocator.hpp
+index 155e21dd95..5468db9d29 100644
+--- a/thirdparty/offset_allocator/offsetAllocator.hpp
++++ b/thirdparty/offset_allocator/offsetAllocator.hpp
+@@ -10,7 +10,7 @@ namespace OffsetAllocator
+     typedef unsigned int uint32;
+ 
+     // 16 bit offsets mode will halve the metadata storage cost
+-    // But it only supports up to 65536 maximum allocation count
++    // But it only supports up to 65534 maximum allocation count
+ #ifdef USE_16_BIT_NODE_INDICES
+     typedef uint16 NodeIndex;
+ #else
+@@ -26,9 +26,10 @@ namespace OffsetAllocator
+     struct Allocation
+     {
+         static constexpr uint32 NO_SPACE = 0xffffffff;
++        static constexpr NodeIndex NO_SPACE_METADATA = static_cast<NodeIndex>(-1);
+         
+         uint32 offset = NO_SPACE;
+-        NodeIndex metadata = NO_SPACE; // internal: node index
++        NodeIndex metadata = NO_SPACE_METADATA; // internal: node index
+     };
+ 
+     struct StorageReport
+@@ -64,12 +65,12 @@ namespace OffsetAllocator
+         StorageReportFull storageReportFull() const;
+         
+     private:
+-        uint32 insertNodeIntoBin(uint32 size, uint32 dataOffset);
+-        void removeNodeFromBin(uint32 nodeIndex);
++        NodeIndex insertNodeIntoBin(uint32 size, uint32 dataOffset);
++        void removeNodeFromBin(NodeIndex nodeIndex);
+ 
+         struct Node
+         {
+-            static constexpr NodeIndex unused = 0xffffffff;
++            static constexpr NodeIndex unused = static_cast<NodeIndex>(-1);
+             
+             uint32 dataOffset = 0;
+             uint32 dataSize = 0;

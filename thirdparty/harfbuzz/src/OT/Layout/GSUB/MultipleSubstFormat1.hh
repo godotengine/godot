@@ -13,14 +13,14 @@ struct MultipleSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::template OffsetTo<Sequence<Types>>>
+  typename Types::template ArrayOf<typename Types::template OffsetTo<Sequence<Types>>>
                 sequence;               /* Array of Sequence tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (4 + Types::size, sequence);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, sequence);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {

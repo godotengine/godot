@@ -123,6 +123,7 @@ public:
 	virtual String get_bundle_icon_path() const override;
 	virtual String get_bundle_icon_name() const override;
 	virtual String get_godot_dir_name() const override;
+	String get_bundle_or_executable_path() const;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
 
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -34,7 +34,7 @@
     </PackageReference>
 
     <!-- Explicit reference needed to fix vulnerability: https://github.com/dotnet/roslyn-sdk/issues/1191 -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.10" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
   </ItemGroup>
 
   <ItemGroup>

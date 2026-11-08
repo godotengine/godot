@@ -160,7 +160,6 @@
 
 
 #include "hb-config.hh"
-#include "hb-limits.hh"
 
 
 /*
@@ -385,6 +384,13 @@
 #  define HB_NODISCARD
 #endif
 
+/* Like HB_NODISCARD but can be used on structs */
+#if __cplusplus >= 201703L
+#  define HB_NODISCARD_STRUCT [[nodiscard]]
+#else
+#  define HB_NODISCARD_STRUCT
+#endif
+
 #ifdef _WIN32
    /* We need Windows Vista for both Uniscribe backend and for
     * MemoryBarrier.  We don't support compiling on Windows XP,
@@ -557,6 +563,7 @@ extern "C" void  hb_free_impl(void *ptr);
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include
  * them directly.*/
+#include "hb-limits.hh"
 #include "hb-cplusplus.hh"
 #include "hb-meta.hh"
 #include "hb-mutex.hh"

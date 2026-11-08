@@ -160,6 +160,19 @@ hb_paint_custom_palette_color_nil (hb_paint_funcs_t *funcs, void *paint_data,
                                    hb_color_t *color,
                                    void *user_data) { return false; }
 
+static hb_bool_t
+hb_paint_set_budget_nil (hb_paint_funcs_t *funcs HB_UNUSED, void *paint_data HB_UNUSED,
+			 int64_t budget HB_UNUSED,
+			 void *user_data HB_UNUSED) { return false; }
+
+static int64_t
+hb_paint_get_budget_nil (hb_paint_funcs_t *funcs HB_UNUSED, void *paint_data HB_UNUSED,
+			 void *user_data HB_UNUSED) { return HB_BUDGET_DEFAULT; }
+
+static int64_t *
+hb_paint_get_budget_remaining_nil (hb_paint_funcs_t *funcs HB_UNUSED, void *paint_data HB_UNUSED,
+				   void *user_data HB_UNUSED) { return nullptr; }
+
 static bool
 _hb_paint_funcs_set_preamble (hb_paint_funcs_t  *funcs,
                              bool                func_is_null,
@@ -418,6 +431,67 @@ hb_bool_t
 hb_paint_funcs_is_immutable (hb_paint_funcs_t *funcs)
 {
   return hb_object_is_immutable (funcs);
+}
+
+/**
+ * hb_paint_set_budget:
+ * @funcs: paint functions object
+ * @paint_data: associated paint data
+ * @budget: the new work-budget policy
+ *
+ * Sets the work-budget policy and recharges the live work budget. Negative
+ * values other than #HB_BUDGET_DEFAULT are clamped to zero.
+ *
+ * Return value: `true` if the paint functions support work budgets
+ *
+ * Since: 14.5.0
+ **/
+hb_bool_t
+hb_paint_set_budget (hb_paint_funcs_t *funcs, void *paint_data, int64_t budget)
+{
+  return funcs->set_budget (paint_data, budget);
+}
+
+/**
+ * hb_paint_get_budget:
+ * @funcs: paint functions object
+ * @paint_data: associated paint data
+ *
+ * Fetches the configured work-budget policy.
+ *
+ * Return value: the configured policy, or #HB_BUDGET_DEFAULT if unsupported
+ *
+ * Since: 14.5.0
+ **/
+int64_t
+hb_paint_get_budget (hb_paint_funcs_t *funcs, void *paint_data)
+{
+  return funcs->get_budget (paint_data);
+}
+
+/**
+ * hb_paint_get_budget_remaining:
+ * @funcs: paint functions object
+ * @paint_data: associated paint data
+ *
+ * Fetches the live work budget. A negative value means the budget was
+ * exhausted. Zero means the preceding work fit exactly, but no positive-cost
+ * work can start.
+ *
+ * Return value: the live work budget; if it is not tracked, the concrete
+ *   configured policy or #HB_BUDGET_UNLIMITED
+ *
+ * Since: 14.5.0
+ **/
+int64_t
+hb_paint_get_budget_remaining (hb_paint_funcs_t *funcs, void *paint_data)
+{
+  int64_t *remaining = funcs->get_budget_remaining_ptr (paint_data);
+  if (remaining)
+    return *remaining;
+
+  int64_t budget = funcs->get_budget (paint_data);
+  return budget == HB_BUDGET_DEFAULT ? HB_BUDGET_UNLIMITED : budget;
 }
 
 

@@ -30,23 +30,23 @@
 /* pre-normalized distances */
 struct TripleDistances
 {
-  TripleDistances (): negative (1.0), positive (1.0) {}
-  TripleDistances (double neg_, double pos_): negative (neg_), positive (pos_) {}
-  TripleDistances (double min, double default_, double max)
+  TripleDistances (): negative (1.f), positive (1.f) {}
+  TripleDistances (float neg_, float pos_): negative (neg_), positive (pos_) {}
+  TripleDistances (float min, float default_, float max)
   {
     negative = default_ - min;
     positive = max - default_;
   }
 
-  double negative;
-  double positive;
+  float negative;
+  float positive;
 };
 
 struct Triple
 {
   Triple () = default;
 
-  Triple (double minimum_, double middle_, double maximum_) :
+  Triple (float minimum_, float middle_, float maximum_) :
     minimum (minimum_), middle (middle_), maximum (maximum_) {}
 
   bool operator == (const Triple &o) const
@@ -62,7 +62,7 @@ struct Triple
   bool is_point () const
   { return minimum == middle && middle == maximum; }
 
-  bool contains (double point) const
+  bool contains (float point) const
   { return minimum <= point && point <= maximum; }
 
   /* from hb_array_t hash ()*/
@@ -80,18 +80,18 @@ struct Triple
     return current;
   }
 
-  double minimum = 0;
-  double middle = 0;
-  double maximum = 0;
+  float minimum = 0;
+  float middle = 0;
+  float maximum = 0;
 };
 
-using rebase_tent_result_item_t = hb_pair_t<double, Triple>;
+using rebase_tent_result_item_t = hb_pair_t<float, Triple>;
 using rebase_tent_result_t = hb_vector_t<rebase_tent_result_item_t>;
 
 /* renormalize a normalized value v to the range of an axis,
  * considering the prenormalized distances as well as the new axis limits.
  * Ported from fonttools */
-HB_INTERNAL double renormalizeValue (double v, const Triple &triple,
+HB_INTERNAL float renormalizeValue (float v, const Triple &triple,
                                     const TripleDistances &triple_distances,
                                     bool extrapolate = true);
 /* Given a tuple (lower,peak,upper) "tent" and new axis limits

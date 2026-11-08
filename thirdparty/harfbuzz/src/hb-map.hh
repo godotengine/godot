@@ -257,11 +257,32 @@ struct hb_hashmap_t
     return true;
   }
 
+  template <typename T>
+  bool in_storage (const T &v) const
+  {
+    uintptr_t p = (uintptr_t) std::addressof (v);
+    return items &&
+	   (uintptr_t) items <= p && p < (uintptr_t) (items + size ());
+  }
+
   template <typename KK, typename VV>
   bool set_with_hash (KK&& key, uint32_t hash, VV&& value, bool overwrite = true)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely ((occupancy + occupancy / 2) >= mask && !alloc ())) return false;
+    if (unlikely ((occupancy + occupancy / 2) >= mask))
+    {
+      /* key or value may live in our own storage, eg. m.set (k, m.get (j)).
+       * alloc() frees that storage, so copy them out first. */
+      if (unlikely (in_storage (key) || in_storage (value)))
+      {
+	K key_copy;
+	key_copy = std::forward<KK> (key);
+	V value_copy;
+	value_copy = std::forward<VV> (value);
+	return set_with_hash (std::move (key_copy), hash, std::move (value_copy), overwrite);
+      }
+      if (unlikely (!alloc ())) return false;
+    }
 
     hash &= 0x3FFFFFFF; // We only store lower 30bit of hash
     unsigned int tombstone = (unsigned int) -1;

@@ -21,7 +21,7 @@ layout(push_constant, std430) uniform DrawCall {
 #ifdef UBERSHADER
 	uint sc_packed_0;
 	uint sc_packed_1;
-	float sc_packed_2;
+	uint sc_packed_2;
 	uint uc_packed_0;
 #endif
 }
@@ -44,7 +44,7 @@ uint sc_packed_1() {
 	return draw_call.sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return draw_call.sc_packed_2;
 }
 
@@ -57,7 +57,7 @@ uint uc_cull_mode() {
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
 layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
-layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
+layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
@@ -67,7 +67,7 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return pso_sc_packed_2;
 }
 
@@ -141,15 +141,15 @@ bool sc_scene_use_ambient_cubemap() {
 	return ((sc_packed_0() >> 16) & 1U) != 0;
 }
 
-bool sc_scene_use_reflection_cubemap() {
+bool sc_scene_use_reflection_color() {
 	return ((sc_packed_0() >> 17) & 1U) != 0;
 }
 
-bool sc_scene_roughness_limiter_enabled() {
+bool sc_scene_use_reflection_cubemap() {
 	return ((sc_packed_0() >> 18) & 1U) != 0;
 }
 
-bool sc_material_feedback() {
+bool sc_scene_roughness_limiter_enabled() {
 	return ((sc_packed_0() >> 19) & 1U) != 0;
 }
 
@@ -226,7 +226,11 @@ bool sc_use_lightmap_specular() {
 }
 
 half sc_luminance_multiplier() {
-	return half(sc_packed_2());
+	return ((sc_packed_2() >> 0) & 1U) != 0 ? half(2.0) : half(1.0);
+}
+
+bool sc_material_feedback() {
+	return ((sc_packed_2() >> 1) & 1U) != 0;
 }
 
 layout(constant_id = 3) const bool sc_emulate_point_size = false;

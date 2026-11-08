@@ -2,10 +2,10 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * minixml.c : the minimum size a xml parser can be ! */
 /* Project : miniupnp
- * webpage: http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+ * webpage: http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
 
-Copyright (c) 2005-2017, Thomas BERNARD
+Copyright (c) 2005-2026, Thomas BERNARD
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include "minixml.h"
 
-/* parseatt : used to parse the argument list
+/* parseatt : used to parse the attribute list
  * return 0 (false) in case of success and -1 (true) if the end
  * of the xmlbuffer is reached. */
 static int parseatt(struct xmlparser * p)
@@ -63,6 +63,9 @@ static int parseatt(struct xmlparser * p)
 				if(p->xml >= p->xmlend)
 					return -1;
 			}
+			/* p->xml points now to the character right after the '=' */
+			if(p->xml >= p->xmlend)
+				return -1;
 			while(IS_WHITE_SPACE(*p->xml))
 			{
 				p->xml++;
@@ -142,6 +145,8 @@ static void parseelt(struct xmlparser * p)
 				{
 					i = 0;
 					elementname = ++p->xml;
+					if (p->xml >= p->xmlend)
+						return;
 				}
 			}
 			if(i>0)
@@ -192,7 +197,7 @@ static void parseelt(struct xmlparser * p)
 							if ((p->xml + 1) >= p->xmlend)
 								return;
 						}
-						if(i>0 && p->datafunc && *(p->xml + 1) == '/')
+						if(i>0 && p->datafunc && (p->xml + 1) < p->xmlend && *(p->xml + 1) == '/')
 							p->datafunc(p->data, data, i);
 					}
 				}

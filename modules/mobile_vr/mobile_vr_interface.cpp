@@ -672,10 +672,10 @@ RID MobileVRInterface::get_vrs_texture() {
 	real_t aspect_ratio = target_size.x / target_size.y;
 	uint32_t view_count = get_view_count();
 
+	TypedArray<Projection> cms = get_camera_projections(XR_TRACKER_HEAD, aspect_ratio, 0.1, 1000.0);
+	ERR_FAIL_COND_V(((uint32_t)cms.size()) < view_count, RID());
 	for (uint32_t v = 0; v < view_count; v++) {
-		Projection cm = get_projection_for_view(v, aspect_ratio, 0.1, 1000.0);
-		Vector3 center = cm.xform(Vector3(0.0, 0.0, 999.0));
-
+		Vector3 center = ((Projection)cms[v]).xform(Vector3(0.0, 0.0, 999.0));
 		eye_foci.push_back(Vector2(center.x, center.y));
 	}
 

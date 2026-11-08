@@ -173,6 +173,7 @@ FT_BEGIN_HEADER
    *   FT_DEFINE_SERVICEDESCREC8
    *   FT_DEFINE_SERVICEDESCREC9
    *   FT_DEFINE_SERVICEDESCREC10
+   *   FT_DEFINE_SERVICEDESCREC11
    *
    * @description:
    *   Used to initialize an array of FT_ServiceDescRec structures.
@@ -347,6 +348,34 @@ FT_BEGIN_HEADER
     { serv_id_8, serv_data_8 },                                             \
     { serv_id_9, serv_data_9 },                                             \
     { serv_id_10, serv_data_10 },                                           \
+    { NULL, NULL }                                                          \
+  };
+
+#define FT_DEFINE_SERVICEDESCREC11( class_,                                 \
+                                    serv_id_1, serv_data_1,                 \
+                                    serv_id_2, serv_data_2,                 \
+                                    serv_id_3, serv_data_3,                 \
+                                    serv_id_4, serv_data_4,                 \
+                                    serv_id_5, serv_data_5,                 \
+                                    serv_id_6, serv_data_6,                 \
+                                    serv_id_7, serv_data_7,                 \
+                                    serv_id_8, serv_data_8,                 \
+                                    serv_id_9, serv_data_9,                 \
+                                    serv_id_10, serv_data_10,               \
+                                    serv_id_11, serv_data_11 )              \
+  static const FT_ServiceDescRec  class_[] =                                \
+  {                                                                         \
+    { serv_id_1, serv_data_1 },                                             \
+    { serv_id_2, serv_data_2 },                                             \
+    { serv_id_3, serv_data_3 },                                             \
+    { serv_id_4, serv_data_4 },                                             \
+    { serv_id_5, serv_data_5 },                                             \
+    { serv_id_6, serv_data_6 },                                             \
+    { serv_id_7, serv_data_7 },                                             \
+    { serv_id_8, serv_data_8 },                                             \
+    { serv_id_9, serv_data_9 },                                             \
+    { serv_id_10, serv_data_10 },                                           \
+    { serv_id_11, serv_data_11 },                                           \
     { NULL, NULL }                                                          \
   };
 

@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include <climits>
 #include <turbojpeg.h>
 #include "tvgJpgLoader.h"
 
@@ -29,21 +30,19 @@
 
 void JpgLoader::clear()
 {
-    if (freeData) tvg::free(data);
+    if (owner != Ownership::Borrow) tvg::free(data);
     data = nullptr;
     size = 0;
-    freeData = false;
+    owner = Ownership::Borrow;
 }
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-JpgLoader::JpgLoader() : ImageLoader(FileType::Jpg)
+JpgLoader::JpgLoader() : BitmapLoader(FileType::Jpg), jpegDecompressor(tjInitDecompress())
 {
-    jpegDecompressor = tjInitDecompress();
 }
-
 
 JpgLoader::~JpgLoader()
 {
@@ -54,65 +53,62 @@ JpgLoader::~JpgLoader()
     tjFree(surface.buf8);
 }
 
-
-bool JpgLoader::open(const char* path)
+Result JpgLoader::open(const char* path, const LoaderOps& ops)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    if (!(data = (unsigned char*) LoadModule::open(path, size))) return false;
+    if (!(data = (unsigned char*)Loader::open(path, size))) return Result::InvalidArguments;
+    owner = Ownership::Transfer;
 
     int width, height, subSample, colorSpace;
-    if (tjDecompressHeader3(jpegDecompressor, data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
+    if (tjDecompressHeader3(jpegDecompressor, data, size, &width, &height, &subSample, &colorSpace) < 0) return Result::InvalidArguments;
     w = static_cast<float>(width);
     h = static_cast<float>(height);
-    freeData = true;
-    return true;
+    return Result::Success;
 #else
-    return false;
+    return Result::NonSupport;
 #endif
 }
 
-
-bool JpgLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
+Result JpgLoader::open(const char* data, uint32_t size, const LoaderOps& ops)
 {
     int width, height, subSample, colorSpace;
-    if (tjDecompressHeader3(jpegDecompressor, (unsigned char *) data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
+    if (tjDecompressHeader3(jpegDecompressor, (unsigned char*)data, size, &width, &height, &subSample, &colorSpace) < 0) return Result::InvalidArguments;
 
-    if (copy) {
+    if (ops.owner == Ownership::Copy) {
         this->data = tvg::malloc<unsigned char>(size);
-        if (!this->data) return false;
         memcpy((unsigned char *)this->data, data, size);
-        freeData = true;
     } else {
         this->data = (unsigned char *) data;
-        freeData = false;
     }
-
+    owner = ops.owner;
     w = static_cast<float>(width);
     h = static_cast<float>(height);
     this->size = size;
 
-    return true;
+    return Result::Success;
 }
 
 
 bool JpgLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (w == 0 || h == 0) return false;
 
     //determine the image format
+    ColorSpace cs;
     TJPF format;
-    if (ImageLoader::cs == ColorSpace::ARGB8888 || ImageLoader::cs == ColorSpace::ARGB8888S) {
+    if (BitmapLoader::cs == ColorSpace::ARGB8888 || BitmapLoader::cs == ColorSpace::ARGB8888S) {
         format = TJPF_BGRX;
-        surface.cs = ColorSpace::ARGB8888;
+        cs = ColorSpace::XRGB8888;
     } else {
         format = TJPF_RGBX;
-        surface.cs = ColorSpace::ABGR8888;
+        cs = ColorSpace::XBGR8888;
     }
 
+    if (static_cast<int>(w) > INT_MAX / static_cast<int>(h) / tjPixelSize[format]) return false;
+
     auto image = (unsigned char *)tjAlloc(static_cast<int>(w) * static_cast<int>(h) * tjPixelSize[format]);
-    if (!image) return false;
 
     //decompress jpg image
     if (tjDecompress2(jpegDecompressor, data, size, image, static_cast<int>(w), 0, static_cast<int>(h), format, 0) < 0) {
@@ -122,14 +118,7 @@ bool JpgLoader::read()
         return false;
     }
 
-    //setup the surface
-    surface.buf8 = image;
-    surface.stride = w;
-    surface.w = w;
-    surface.h = h;
-    surface.channelSize = sizeof(uint32_t);
-    surface.premultiplied = true;
-
+    surface.setup((pixel_t*)image, w, w, h, sizeof(uint32_t), cs);
     clear();
     return true;
 }

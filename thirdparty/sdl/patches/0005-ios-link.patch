@@ -1,0 +1,28 @@
+diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
+index 40982f2cfc..9f62253c69 100644
+--- a/thirdparty/sdl/SDL.c
++++ b/thirdparty/sdl/SDL.c
+@@ -842,8 +842,9 @@ bool SDL_IsTablet(void)
+ #ifdef SDL_PLATFORM_ANDROID
+     return SDL_IsAndroidTablet();
+ #elif defined(SDL_PLATFORM_IOS)
+-    extern bool SDL_IsIPad(void);
+-    return SDL_IsIPad();
++    //extern bool SDL_IsIPad(void);
++    //return SDL_IsIPad();
++    return false;
+ #else
+     return false;
+ #endif
+@@ -854,8 +855,9 @@ bool SDL_IsTV(void)
+ #ifdef SDL_PLATFORM_ANDROID
+     return SDL_IsAndroidTV();
+ #elif defined(SDL_PLATFORM_IOS)
+-    extern bool SDL_IsAppleTV(void);
+-    return SDL_IsAppleTV();
++    //extern bool SDL_IsAppleTV(void);
++    //return SDL_IsAppleTV();
++    return false;
+ #else
+     return false;
+ #endif

@@ -154,6 +154,11 @@ public interface GodotHost {
 	default void onEditorWorkspaceSelected(String workspace) {}
 
 	/**
+	 * Invoked on the render thread to request showing the editor game dock.
+	 */
+	default void showEditorGameDock() {}
+
+	/**
 	 * Triggered when the editor's distraction-free mode changes.
 	 */
 	default void onDistractionFreeModeChanged(Boolean enabled) {}

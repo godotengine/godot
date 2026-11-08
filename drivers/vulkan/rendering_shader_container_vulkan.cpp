@@ -100,8 +100,12 @@ RenderingDeviceCommons::ShaderLanguageVersion RenderingShaderContainerFormatVulk
 	return SHADER_LANGUAGE_VULKAN_VERSION_1_1;
 }
 
-RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version() const {
-	return SHADER_SPIRV_VERSION_1_4;
+RenderingDeviceCommons::ShaderSpirvVersion RenderingShaderContainerFormatVulkan::get_shader_spirv_version(ShaderStage p_stage) const {
+	if (p_stage >= SHADER_STAGE_RAYGEN && p_stage <= SHADER_STAGE_INTERSECTION) {
+		return SHADER_SPIRV_VERSION_1_4;
+	} else {
+		return SHADER_SPIRV_VERSION_1_3;
+	}
 }
 
 void RenderingShaderContainerFormatVulkan::set_debug_info_enabled(bool p_debug_info_enabled) {

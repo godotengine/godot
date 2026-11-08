@@ -591,9 +591,9 @@ void MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, in
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->index_buffer_size);
 	const uint8_t *r = p_data.ptr();
 
-	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->index_buffer);
-	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->surfaces[p_surface]->index_buffer);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {

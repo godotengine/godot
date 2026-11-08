@@ -121,4 +121,7 @@ def make_debug_macos(target, source, env):
     else:
         dsymutil = "dsymutil"
     subprocess.run([dsymutil, dst, "-o", f"{dst}.dSYM"], check=True)
-    subprocess.run(["strip", "-u", "-r", dst], check=True)
+    if "APPLE_LLVM_CROSS" in os.environ or "osxcross" in env:
+        subprocess.run(["llvm-strip", dst], check=True)
+    else:
+        subprocess.run(["strip", "-u", "-r", dst], check=True)

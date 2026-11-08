@@ -846,8 +846,9 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	const int slice_count = images.size();
 	const int slice_width = images[0]->get_width();
 	const int slice_height = images[0]->get_height();
+	const int slice_pixels = slice_width * slice_height;
 
-	const int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	const int slices_per_texture = Image::MAX_PIXELS / slice_pixels;
 	const int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
 	const int last_count = slice_count % slices_per_texture;
 
@@ -1491,6 +1492,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		return BAKE_ERROR_ATLAS_TOO_SMALL;
 	} else if (bake_err == Lightmapper::BAKE_ERROR_USER_ABORTED) {
 		return BAKE_ERROR_USER_ABORTED;
+	} else if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT) {
+		return BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT;
 	}
 
 	// POSTBAKE: Save Textures.
@@ -2201,6 +2204,7 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 	BIND_ENUM_CONSTANT(BAKE_ERROR_ATLAS_TOO_SMALL);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT);
 
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_SCENE);

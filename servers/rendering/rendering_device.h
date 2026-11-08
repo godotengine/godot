@@ -1306,6 +1306,8 @@ public:
 
 	void update_pipeline_cache(bool p_closing = false);
 
+	_FORCE_INLINE_ bool is_pipeline_cache_enabled() const { return pipeline_cache_enabled; }
+
 private:
 	/****************/
 	/**** SCREEN ****/
@@ -1657,6 +1659,7 @@ private:
 			RID pipeline_shader;
 			RDD::ShaderID pipeline_shader_driver_id;
 			uint32_t pipeline_shader_layout_hash = 0;
+			uint32_t pipeline_push_constant_size = 0;
 			uint32_t local_group_size[3] = { 0, 0, 0 };
 			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 			uint32_t push_constant_size = 0;

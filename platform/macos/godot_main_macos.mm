@@ -41,6 +41,13 @@
 __attribute__((visibility("default"))) int main(int argc, char **argv) {
 	godot_init_profiler();
 
+	// Disable AppKit state restoration (Resume). Godot windows are not restorable, but the app-level
+	// NSPersistentUIManager still runs and its first flush stalls the main thread for 10-40 ms.
+	// -1 means NO without AppKit logging "ApplePersistence=NO" to stderr. Same as WebKit:
+	// https://github.com/WebKit/WebKit/blob/442437215121a26a9bdb8a2bbd8ddba24fae1ff7/Source/WebKit/WebProcess/cocoa/WebProcessCocoa.mm#L527
+	// Registered defaults have the lowest priority, so users can still override with `defaults write`.
+	[[NSUserDefaults standardUserDefaults] registerDefaults:@{@"ApplePersistence" : @(-1)}];
+
 #if defined(VULKAN_ENABLED)
 	setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1); // MoltenVK - enable full component swizzling support.
 	setenv("MVK_CONFIG_SWAPCHAIN_MIN_MAG_FILTER_USE_NEAREST", "0", 1); // MoltenVK - use linear surface scaling. TODO: remove when full DPI scaling is implemented.

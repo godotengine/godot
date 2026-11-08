@@ -334,7 +334,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	Button *reorder_button = memnew(Button);
 	reorder_button->set_accessibility_name(TTRC("Reorder"));
-	reorder_button->set_button_icon(EditorIconManager::get_icon(SNAME("TripleBar")));
+	reorder_button->set_button_icon(EditorIconManager::get_icon(SNAME("DragHandle")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
 	reorder_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
@@ -576,7 +576,7 @@ void EditorPropertyArray::update_property() {
 				slot.prop = new_prop;
 				slot.set_index(idx);
 			}
-			if (slot.index == changing_type_index) {
+			if (slot.index == changing_type_index && (!change_type || !change_type->is_visible())) {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}

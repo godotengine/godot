@@ -672,8 +672,17 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
-			if (!ClassDB::can_instantiate(t)) {
-				continue;
+			if (ClassDB::class_exists(t)) {
+				if (!ClassDB::can_instantiate(t)) {
+					continue;
+				}
+			} else if (ScriptServer::is_global_class(t)) {
+				Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(t));
+				if (!scr.is_valid() || !scr->is_script_valid() || scr->is_abstract()) {
+					continue;
+				}
+			} else {
+				ERR_CONTINUE_MSG(true, vformat(R"(Invalid class "%s")", t));
 			}
 
 			inheritors_array.push_back(t);
@@ -798,8 +807,12 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 }
 
 static bool _should_hide_type(const StringName &p_type) {
-	if (ClassDB::is_virtual(p_type)) {
+	if (ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type)) {
 		return true;
+	}
+	if (ScriptServer::is_global_class(p_type)) {
+		Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(p_type));
+		return scr.is_null() || !scr->is_script_valid() || scr->is_abstract();
 	}
 
 	if (p_type == SNAME("MissingResource")) {

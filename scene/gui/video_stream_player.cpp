@@ -337,6 +337,7 @@ void VideoStreamPlayer::play() {
 	if (playback.is_null()) {
 		return;
 	}
+	AudioServer::get_singleton()->set_mix_callback_state(_mix_audios, this, true);
 	playback->play();
 	set_process_internal(true);
 	first_frame = true;
@@ -354,6 +355,7 @@ void VideoStreamPlayer::stop() {
 		return;
 	}
 
+	AudioServer::get_singleton()->set_mix_callback_state(_mix_audios, this, false);
 	playback->stop();
 	resampler.flush();
 	set_process_internal(false);

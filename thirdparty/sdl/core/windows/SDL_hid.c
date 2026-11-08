@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -175,12 +175,39 @@ static CM_Register_NotificationFunc CM_Register_Notification;
 static CM_Unregister_NotificationFunc CM_Unregister_Notification;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
 static Uint64 s_LastDeviceNotification = 1;
+static HANDLE s_HotplugEvent = INVALID_HANDLE_VALUE;
+static SDL_AtomicInt s_HotplugRunning;
+static SDL_Thread *s_HotplugThread;
+
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+// Defined in SDL_windowsevents.c
+extern void WIN_CheckKeyboardAndMouseHotplug(bool hid_loaded);
+#endif
+
+static int SDLCALL DeviceHotplugThread(void *unused)
+{
+    bool hid_loaded = WIN_LoadHIDDLL();
+
+    // Always run the initial device detection
+    do {
+#ifdef SDL_VIDEO_DRIVER_WINDOWS
+        WIN_CheckKeyboardAndMouseHotplug(hid_loaded);
+#endif
+        WaitForSingleObject(s_HotplugEvent, INFINITE);
+    } while (SDL_GetAtomicInt(&s_HotplugRunning));
+
+    if (hid_loaded) {
+        WIN_UnloadHIDDLL();
+    }
+    return 0;
+}
 
 static DWORD CALLBACK SDL_DeviceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
 {
     if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
         action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
         s_LastDeviceNotification = SDL_GetTicksNS();
+        SetEvent(s_HotplugEvent);
     }
     return ERROR_SUCCESS;
 }
@@ -191,6 +218,11 @@ void WIN_InitDeviceNotification(void)
     if (s_DeviceNotificationsRequested > 1) {
         return;
     }
+
+    // Start the device hotplug thread
+    SDL_SetAtomicInt(&s_HotplugRunning, true);
+    s_HotplugEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    s_HotplugThread = SDL_CreateThread(DeviceHotplugThread, "DeviceHotplugThread", NULL);
 
     cfgmgr32_lib_handle = LoadLibraryA("cfgmgr32.dll");
     if (cfgmgr32_lib_handle) {
@@ -224,6 +256,12 @@ void WIN_QuitDeviceNotification(void)
     }
     // Make sure we have balanced calls to init/quit
     SDL_assert(s_DeviceNotificationsRequested == 0);
+
+    // Stop the device hotplug thread
+    SDL_SetAtomicInt(&s_HotplugRunning, false);
+    SetEvent(s_HotplugEvent);
+    SDL_WaitThread(s_HotplugThread, NULL);
+    s_HotplugThread = NULL;
 
     if (cfgmgr32_lib_handle) {
         if (s_DeviceNotificationFuncHandle && CM_Unregister_Notification) {

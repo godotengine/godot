@@ -10,8 +10,8 @@
  * # Date: 2015-03-12, 21:17:00 GMT [AG]
  * # Date: 2019-11-08, 23:22:00 GMT [AG]
  *
- * # Scripts-17.0.0.txt
- * # Date: 2025-07-24, 13:28:55 GMT
+ * # Scripts-18.0.0.txt
+ * # Date: 2026-06-29, 15:25:26 GMT
  */
 
 #include "hb.hh"

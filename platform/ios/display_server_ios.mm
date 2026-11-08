@@ -32,6 +32,10 @@
 
 #import "device_metrics.h"
 
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
+
 #import <UIKit/UIKit.h>
 #import <sys/utsname.h>
 
@@ -67,13 +71,27 @@ int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 	uname(&systemInfo);
 
 	NSString *string = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
-
-	NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiList];
-
-	for (NSArray *keyArray in iOSModelToDPI) {
-		if ([keyArray containsObject:string]) {
-			NSNumber *value = iOSModelToDPI[keyArray];
-			return [value intValue];
+	print_line(String::utf8([string UTF8String]));
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
+	if (@available(iOS 27.1, *)) {
+		if (!GDTAppDelegateService.viewController.godotView.hingeClosed) {
+			NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiListInternal];
+			for (NSArray *keyArray in iOSModelToDPI) {
+				if ([keyArray containsObject:string]) {
+					NSNumber *value = iOSModelToDPI[keyArray];
+					return [value intValue];
+				}
+			}
+		}
+	}
+#endif
+	{
+		NSDictionary *iOSModelToDPI = [GDTDeviceMetrics dpiList];
+		for (NSArray *keyArray in iOSModelToDPI) {
+			if ([keyArray containsObject:string]) {
+				NSNumber *value = iOSModelToDPI[keyArray];
+				return [value intValue];
+			}
 		}
 	}
 

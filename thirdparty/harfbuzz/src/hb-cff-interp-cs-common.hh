@@ -121,6 +121,7 @@ struct cs_interp_env_t : interp_env_t<ARG>
     hstem_count = 0;
     vstem_count = 0;
     hintmask_size = 0;
+    budget = nullptr;
     pt.set_int (0, 0);
     globalSubrs.init (globalSubrs_);
     localSubrs.init (localSubrs_);
@@ -186,6 +187,11 @@ struct cs_interp_env_t : interp_env_t<ARG>
   void set_endchar (bool endchar_flag_) { endchar_flag = endchar_flag_; }
   bool is_endchar () const { return endchar_flag; }
 
+  void set_budget (int64_t *budget_) { budget = budget_; }
+  int64_t *get_budget () const { return budget; }
+  bool spend_budget (unsigned int cost, unsigned int mult = 1)
+  { return !budget || hb_budget_spend (*budget, cost, mult); }
+
   const number_t &get_x () const { return pt.x; }
   const number_t &get_y () const { return pt.y; }
   const point_t &get_pt () const { return pt; }
@@ -201,6 +207,7 @@ struct cs_interp_env_t : interp_env_t<ARG>
   unsigned int  hstem_count;
   unsigned int  vstem_count;
   unsigned int  hintmask_size;
+  int64_t	*budget;
   call_stack_t	callStack;
   biased_subrs_t<SUBRS>   globalSubrs;
   biased_subrs_t<SUBRS>   localSubrs;
@@ -880,22 +887,39 @@ struct cs_interpreter_t : interpreter_t<ENV>
   bool interpret (PARAM& param, int64_t *budget = nullptr)
   {
     SUPER::env.set_endchar (false);
+    SUPER::env.set_budget (budget);
+
+    /* Cap the operator count by the caller's remaining budget so the single
+     * max_ops counter enforces both the structural limit and the live work
+     * budget, with no budget check in the hot loop.  The consumed operators
+     * are charged back after the loop, and since the cap never exceeds the
+     * remaining budget the charstring cannot overshoot it.  CFF2 blend
+     * charges its proportional work separately, in place. */
+    int64_t remaining = budget ? *budget : (int64_t) HB_CFF_MAX_OPS;
+    unsigned max_ops = (unsigned) hb_clamp (remaining, (int64_t) 0, (int64_t) HB_CFF_MAX_OPS);
+    unsigned start_ops = max_ops;
 
     bool ret = true;
-    unsigned max_ops = HB_CFF_MAX_OPS;
-    for (;;) {
-      OPSET::process_op (SUPER::env.fetch_op (), SUPER::env, param);
-      if (unlikely (SUPER::env.in_error () || !--max_ops))
-      {
-	SUPER::env.set_error ();
-	ret = false;
-	break;
+    if (likely (max_ops))
+      for (;;) {
+	OPSET::process_op (SUPER::env.fetch_op (), SUPER::env, param);
+	if (unlikely (SUPER::env.in_error () || !--max_ops))
+	{
+	  SUPER::env.set_error ();
+	  ret = false;
+	  break;
+	}
+	if (SUPER::env.is_endchar ())
+	  break;
       }
-      if (SUPER::env.is_endchar ())
-	break;
+    else
+    {
+      SUPER::env.set_error ();
+      ret = false;
     }
 
-    if (budget) *budget -= (int64_t) (HB_CFF_MAX_OPS - max_ops);
+    if (budget) *budget -= (int64_t) (start_ops - max_ops);
+
     return ret;
   }
 

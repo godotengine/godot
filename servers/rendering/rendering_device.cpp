@@ -280,7 +280,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 #ifdef MODULE_GLSLANG_ENABLED
 		case ShaderLanguage::SHADER_LANGUAGE_GLSL: {
 			ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
-			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
+			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version(p_stage);
 			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
 		}
 #endif
@@ -2106,11 +2106,7 @@ static _ALWAYS_INLINE_ void _copy_region(const uint8_t *__restrict p_src, uint8_
 	for (uint32_t y = p_src_h; y > 0; y--) {
 		const uint8_t *__restrict src = p_src + src_offset;
 		uint8_t *__restrict dst = p_dst + dst_offset;
-		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
-			*dst = *src;
-			src++;
-			dst++;
-		}
+		memcpy(dst, src, size_t(p_src_w) * p_unit_size);
 		src_offset += p_src_full_w * p_unit_size;
 		dst_offset += p_dst_pitch;
 	}
@@ -6818,23 +6814,30 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
 		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
-		switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
-				first_invalid_set = 0;
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
-				for (uint32_t i = 0; i < pcount; i++) {
-					if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
-						first_invalid_set = i;
-						break;
-					}
-				}
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
-				if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+		if (pipeline->push_constant_size != compute_list.state.pipeline_push_constant_size) {
+			// All sets must be invalidated as the pipeline layout is not compatible if the push constant range is different.
+			compute_list.state.pipeline_push_constant_size = pipeline->push_constant_size;
+			compute_list.state.push_constant_size = 0;
+			first_invalid_set = 0;
+		} else {
+			switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
 					first_invalid_set = 0;
-				}
-			} break;
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
+					for (uint32_t i = 0; i < pcount; i++) {
+						if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
+							first_invalid_set = i;
+							break;
+						}
+					}
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
+					if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+						first_invalid_set = 0;
+					}
+				} break;
+			}
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
@@ -8873,6 +8876,8 @@ Vector<uint8_t> RenderingDevice::_load_pipeline_cache() {
 }
 
 void RenderingDevice::update_pipeline_cache(bool p_closing) {
+	ERR_FAIL_COND(!pipeline_cache_enabled);
+
 	_THREAD_SAFE_METHOD_
 
 	{

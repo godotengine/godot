@@ -7,26 +7,29 @@ namespace OT {
 namespace Layout {
 namespace GSUB_impl {
 
-struct ReverseChainSingleSubstFormat1
+template <typename Types>
+struct ReverseChainSingleSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of table */
-  Array16OfOffset16To<Coverage>
+  Array16Of<typename Types::template OffsetTo<Coverage>>
                 backtrack;              /* Array of coverage tables
                                          * in backtracking sequence, in glyph
                                          * sequence order */
-  Array16OfOffset16To<Coverage>
+  /* Format 2 widens the backtrack and lookahead coverage offsets but
+   * keeps their counts 16-bit. */
+  Array16Of<typename Types::template OffsetTo<Coverage>>
                 lookaheadX;             /* Array of coverage tables
                                          * in lookahead sequence, in glyph
                                          * sequence order */
-  Array16Of<HBGlyphID16>
+  typename Types::template ArrayOf<typename Types::HBGlyphID>
                 substituteX;            /* Array of substitute
                                          * GlyphIDs--ordered by Coverage Index */
   public:
-  DEFINE_SIZE_MIN (10);
+  DEFINE_SIZE_MIN (6 + Types::LOffset::static_size + Types::HBUINT::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -194,11 +197,11 @@ struct ReverseChainSingleSubstFormat1
 
     unsigned int start_index = 0, end_index = 0;
     if (match_backtrack (c,
-                         backtrack.len, (HBUINT16 *) backtrack.arrayZ,
+                         backtrack.len, backtrack.arrayZ,
                          match_coverage, this,
                          &start_index) &&
         match_lookahead (c,
-                         lookahead.len, (HBUINT16 *) lookahead.arrayZ,
+                         lookahead.len, lookahead.arrayZ,
                          match_coverage, this,
                          c->buffer->idx + 1, &end_index))
     {
@@ -237,10 +240,8 @@ struct ReverseChainSingleSubstFormat1
   bool serialize_coverage_offset_array (hb_subset_context_t *c, Iterator it) const
   {
     TRACE_SERIALIZE (this);
-    auto *out = c->serializer->start_embed<Array16OfOffset16To<Coverage>> ();
-
-    if (unlikely (!c->serializer->allocate_size<HBUINT16> (HBUINT16::static_size)))
-      return_trace (false);
+    auto *out = c->serializer->start_embed<Array16Of<typename Types::template OffsetTo<Coverage>>> ();
+    if (unlikely (!out->serialize (c->serializer, 0u))) return_trace (false);
 
     for (auto& offset : it) {
       auto *o = out->serialize_append (c->serializer);
@@ -267,9 +268,9 @@ struct ReverseChainSingleSubstFormat1
     if (unlikely (!c->serializer->embed (this->coverage))) return_trace (false);
 
     if (!serialize_coverage_offset_array (c, backtrack_iter)) return_trace (false);
-    if (!serialize_coverage_offset_array (c, lookahead_iter)) return_trace (false);
+    if (!serialize_lookahead_coverage_offset_array (c, lookahead_iter)) return_trace (false);
 
-    auto *substitute_out = c->serializer->start_embed<Array16Of<HBGlyphID16>> ();
+    auto *substitute_out = c->serializer->start_embed<typename Types::template ArrayOf<typename Types::HBGlyphID>> ();
     auto substitutes =
     + coverage_subst_iter
     | hb_map (hb_second)
@@ -300,11 +301,28 @@ struct ReverseChainSingleSubstFormat1
     + hb_zip (this+coverage, substitute)
     | hb_filter (glyphset, hb_first)
     | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID16 &> p) -> hb_codepoint_pair_t
+    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const typename Types::HBGlyphID &> p) -> hb_codepoint_pair_t
                               { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
     ;
 
     return_trace (bool (it) && serialize (c, it, backtrack.iter (), lookahead.iter ()));
+  }
+
+  template<typename Iterator,
+           hb_requires (hb_is_iterator (Iterator))>
+  bool serialize_lookahead_coverage_offset_array (hb_subset_context_t *c, Iterator it) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->serializer->start_embed<Array16Of<typename Types::template OffsetTo<Coverage>>> ();
+    if (unlikely (!out->serialize (c->serializer, 0u))) return_trace (false);
+
+    for (auto& offset : it) {
+      auto *o = out->serialize_append (c->serializer);
+      if (unlikely (!o) || !o->serialize_subset (c, offset, this))
+        return_trace (false);
+    }
+
+    return_trace (true);
   }
 };
 

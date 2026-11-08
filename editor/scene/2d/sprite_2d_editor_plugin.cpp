@@ -147,6 +147,11 @@ void Sprite2DEditor::_popup_debug_uv_dialog() {
 	Ref<Texture2D> texture = node->get_texture();
 	if (texture.is_null()) {
 		error_message = TTR("Can't convert an empty sprite to mesh.");
+	} else {
+		Ref<Image> image = texture->get_image();
+		if (image.is_null()) {
+			error_message = TTR("Can't convert an empty sprite to mesh.");
+		}
 	}
 
 	if (!error_message.is_empty()) {

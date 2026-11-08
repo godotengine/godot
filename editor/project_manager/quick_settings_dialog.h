@@ -54,9 +54,7 @@ public:
 class QuickSettingsDialog : public AcceptDialog {
 	GDCLASS(QuickSettingsDialog, AcceptDialog);
 
-#ifndef ANDROID_ENABLED
 	Vector<String> editor_languages;
-#endif
 	Vector<String> editor_styles;
 	Vector<String> editor_themes;
 	Vector<String> editor_scales;
@@ -72,11 +70,7 @@ class QuickSettingsDialog : public AcceptDialog {
 
 	void _add_setting_control(const String &p_text, const String &p_setting, Control *p_control);
 
-#ifndef ANDROID_ENABLED
-	// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
-	// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
 	OptionButton *language_option_button = nullptr;
-#endif
 	OptionButton *style_option_button = nullptr;
 	OptionButton *theme_option_button = nullptr;
 	OptionButton *scale_option_button = nullptr;
@@ -87,9 +81,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	Label *custom_theme_label = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
 
-#ifndef ANDROID_ENABLED
 	void _language_selected(int p_id);
-#endif
 	void _style_selected(int p_id);
 	void _theme_selected(int p_id);
 	void _scale_selected(int p_id);

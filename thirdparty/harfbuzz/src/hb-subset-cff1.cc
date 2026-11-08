@@ -348,6 +348,11 @@ struct cff1_cs_opset_subr_subset_t : cff1_cs_opset_t<cff1_cs_opset_subr_subset_t
 				 cff1_cs_interp_env_t &env, subr_subset_param_t& param,
 				 cff1_biased_subrs_t& subrs, hb_set_t *closure)
   {
+    if (unlikely (!param.current_parsed_str->has_immediate_subr_number ()))
+    {
+      env.set_error ();
+      return;
+    }
     byte_str_ref_t    str_ref = env.str_ref;
     env.call_subr (subrs, type);
     param.current_parsed_str->add_call_op (op, str_ref, env.context.subr_num);
@@ -677,6 +682,7 @@ struct cff1_subset_plan
 	if (unlikely (!hb_plan_subset_cff_fdselect (plan,
 				  orig_fdcount,
 				  *acc.fdSelect,
+				  acc.num_glyphs,
 				  subset_fdcount,
 				  info.fd_select.size,
 				  subset_fdselect_format,
@@ -1008,6 +1014,7 @@ OT::cff1::accelerator_subset_t::subset (hb_subset_context_t *c) const
   if (unlikely (!cff_plan.create (*this, c->plan)))
   {
     DEBUG_MSG(SUBSET, nullptr, "Failed to generate a cff subsetting plan.");
+    c->serializer->err (HB_SERIALIZE_ERROR_OTHER);
     return false;
   }
 

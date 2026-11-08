@@ -221,21 +221,8 @@ RID RendererSceneRenderImplementation::RenderForwardMobile::RenderBufferDataForw
 	return RID();
 }
 
-RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_vrs_texture() {
 	ERR_FAIL_NULL_V(render_buffers, RID());
-
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	ERR_FAIL_NULL_V(texture_storage, RID());
-
-	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
-	// This approach ensures we only build the framebuffers we actually need for this viewport.
-	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
-	// this.
-
-	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
-	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
-
-	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
 #ifndef XR_DISABLED
@@ -254,6 +241,27 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	if (vrs_texture.is_null() && render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
+
+	return vrs_texture;
+}
+
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+	ERR_FAIL_NULL_V(render_buffers, RID());
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, RID());
+
+	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
+	// This approach ensures we only build the framebuffers we actually need for this viewport.
+	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
+	// this.
+
+	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
+	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
+
+	uint32_t view_count = render_buffers->get_view_count();
+
+	RID vrs_texture = get_vrs_texture();
 
 	Vector<RID> textures;
 	int color_buffer_id = 0;
@@ -1050,7 +1058,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	if (render_target.is_valid()) {
 		// Set subsampled images as not allowed on this render target, if we are using incompatible rendering features.
-		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process);
+		bool has_vrs_texture = rb_data.is_valid() && rb_data->get_vrs_texture().is_valid();
+		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process && has_vrs_texture);
 	}
 
 	if (p_render_data->scene_data->view_count > 1) {
@@ -1096,6 +1105,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool copy_canvas = false;
 	bool use_ambient_cubemap = false;
 	bool use_reflection_cubemap = false;
+	bool use_reflection_color = false;
 
 	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -1107,6 +1117,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RSE::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(p_render_data->environment);
 		use_ambient_cubemap = (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY) || ambient_source == RSE::ENV_AMBIENT_SOURCE_SKY;
 		use_reflection_cubemap = (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY) || reflection_source == RSE::ENV_REFLECTION_SOURCE_SKY;
+		use_reflection_color = (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_COLOR) || (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_CLEAR_COLOR);
 
 		if (p_render_data->camera_attributes.is_valid()) {
 			bg_energy_multiplier *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
@@ -1205,9 +1216,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
+		base_specialization.scene_use_reflection_color = use_reflection_color;
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
-		base_specialization.luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
+		if (p_render_data->render_buffers.is_valid()) {
+			// Encode as a boolean, as the luminance multiplier is always `2.0` (`true`) or `1.0` (`false`) in the Mobile renderer.
+			base_specialization.luminance_multiplier = p_render_data->render_buffers->get_luminance_multiplier() > (1.0 + CMP_EPSILON);
+		} else {
+			base_specialization.luminance_multiplier = false;
+		}
 	}
 
 	{
@@ -1899,7 +1916,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	{
 		//regular forward for now
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, rp_uniform_set, scene_shader.default_specialization);
-		_render_list_with_draw_list(&render_list_params, p_fb);
+		_render_list_with_draw_list(&render_list_params, p_fb, RD::DRAW_CLEAR_ALL);
 	}
 	RD::get_singleton()->draw_command_end_label();
 }
@@ -3498,17 +3515,13 @@ void RenderForwardMobile::_update_dirty_geometry_instances() {
 void RenderForwardMobile::_update_dirty_geometry_pipelines() {
 	if (global_pipeline_data_required.key != global_pipeline_data_compiled.key) {
 		// Go through the entire list of surfaces and compile pipelines for everything again.
-		SelfList<GeometryInstanceSurfaceDataCache> *list = geometry_surface_compilation_all_list.first();
-		while (list != nullptr) {
-			GeometryInstanceSurfaceDataCache *surface_cache = list->self();
-			_mesh_generate_all_pipelines_for_surface_cache(surface_cache, global_pipeline_data_required);
+		for (GeometryInstanceSurfaceDataCache &surface_cache : geometry_surface_compilation_all_list) {
+			_mesh_generate_all_pipelines_for_surface_cache(&surface_cache, global_pipeline_data_required);
 
-			if (surface_cache->compilation_dirty_element.in_list()) {
+			if (surface_cache.compilation_dirty_element.in_list()) {
 				// Remove any elements from the dirty list as they don't need to be processed again.
-				geometry_surface_compilation_dirty_list.remove(&surface_cache->compilation_dirty_element);
+				geometry_surface_compilation_dirty_list.remove(&surface_cache.compilation_dirty_element);
 			}
-
-			list = list->next();
 		}
 
 		global_pipeline_data_compiled.key = global_pipeline_data_required.key;
@@ -3588,7 +3601,7 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 
 	specialization.use_lightmap_bicubic_filter = lightmap_filter_bicubic_get();
 	specialization.use_material_debanding = material_use_debanding_get();
-	specialization.luminance_multiplier = 2.0f;
+	specialization.luminance_multiplier = true; // `true` is treated as a 2.0 multiplier.
 	scene_shader.set_default_specialization(specialization);
 
 	base_uniforms_changed(); //also need this

@@ -136,13 +136,15 @@ struct JstfLangSys : List16OfOffset16To<JstfPriority>
  * ExtenderGlyphs -- Extender Glyph Table
  */
 
-typedef SortedArray16Of<HBGlyphID16> ExtenderGlyphs;
+template <typename Types>
+using ExtenderGlyphs = SortedArray16Of<typename Types::HBGlyphID>;
 
 
 /*
  * JstfScript -- The Justification Table
  */
 
+template <typename Types>
 struct JstfScript
 {
   unsigned int get_lang_sys_count () const
@@ -174,17 +176,63 @@ struct JstfScript
   }
 
   protected:
-  Offset16To<ExtenderGlyphs>
+  typename Types::template LOffsetTo<ExtenderGlyphs<Types>>
 		extenderGlyphs;	/* Offset to ExtenderGlyph table--from beginning
 				 * of JstfScript table-may be NULL */
-  Offset16To<JstfLangSys>
+  typename Types::template LOffsetTo<JstfLangSys>
 		defaultLangSys;	/* Offset to DefaultJstfLangSys table--from
 				 * beginning of JstfScript table--may be Null */
   RecordArrayOf<JstfLangSys>
 		langSys;	/* Array of JstfLangSysRecords--listed
 				 * alphabetically by LangSysTag */
   public:
-  DEFINE_SIZE_ARRAY (6, langSys);
+  DEFINE_SIZE_ARRAY (2 * Types::LOffset::static_size + 2, langSys);
+};
+
+template <typename Types>
+struct JstfScriptRecord
+{
+  int cmp (hb_tag_t a) const { return tag.cmp (a); }
+
+  bool sanitize (hb_sanitize_context_t *c, const void *base) const
+  {
+    TRACE_SANITIZE (this);
+    const Record_sanitize_closure_t closure = {tag, base};
+    return_trace (c->check_struct (this) &&
+		  offset.sanitize (c, base, &closure));
+  }
+
+  Tag		tag;		/* 4-byte JstfScript identification tag */
+  typename Types::template LOffsetTo<JstfScript<Types>>
+		offset;		/* Offset from beginning of JSTF header */
+  public:
+  DEFINE_SIZE_STATIC (4 + Types::LOffset::static_size);
+};
+
+template <typename Types>
+struct JstfScriptList : SortedArray16Of<JstfScriptRecord<Types>>
+{
+  const Tag& get_tag (unsigned int i) const
+  { return (*this)[i].tag; }
+  unsigned int get_tags (unsigned int start_offset,
+			 unsigned int *script_count /* IN/OUT */,
+			 hb_tag_t     *script_tags /* OUT */) const
+  {
+    if (script_count)
+    {
+      + this->as_array ().sub_array (start_offset, script_count)
+      | hb_map (&JstfScriptRecord<Types>::tag)
+      | hb_sink (hb_array (script_tags, *script_count))
+      ;
+    }
+    return this->len;
+  }
+  const JstfScript<Types>& get_script (const void *base, unsigned int i) const
+  { return base+(*this)[i].offset; }
+  bool find_index (hb_tag_t tag, unsigned int *index) const
+  {
+    return this->bfind (tag, index, HB_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
+  }
 };
 
 
@@ -198,36 +246,89 @@ struct JSTF
   static constexpr hb_tag_t tableTag = HB_OT_TAG_JSTF;
 
   unsigned int get_script_count () const
-  { return scriptList.len; }
+  {
+#ifndef HB_NO_BEYOND_64K
+    if (has_script_list2 ()) return get_script_list2 ().len;
+#endif
+    return scriptList.len;
+  }
   const Tag& get_script_tag (unsigned int i) const
-  { return scriptList.get_tag (i); }
+  {
+#ifndef HB_NO_BEYOND_64K
+    if (has_script_list2 ()) return get_script_list2 ().get_tag (i);
+#endif
+    return scriptList.get_tag (i);
+  }
   unsigned int get_script_tags (unsigned int start_offset,
 				unsigned int *script_count /* IN/OUT */,
 				hb_tag_t     *script_tags /* OUT */) const
-  { return scriptList.get_tags (start_offset, script_count, script_tags); }
-  const JstfScript& get_script (unsigned int i) const
-  { return this+scriptList[i].offset; }
+  {
+#ifndef HB_NO_BEYOND_64K
+    if (has_script_list2 ())
+      return get_script_list2 ().get_tags (start_offset, script_count, script_tags);
+#endif
+    return scriptList.get_tags (start_offset, script_count, script_tags);
+  }
+  template <typename Types>
+  const JstfScript<Types>& get_script (unsigned int i) const;
   bool find_script_index (hb_tag_t tag, unsigned int *index) const
-  { return scriptList.find_index (tag, index); }
+  {
+#ifndef HB_NO_BEYOND_64K
+    if (has_script_list2 ()) return get_script_list2 ().find_index (tag, index);
+#endif
+    return scriptList.find_index (tag, index);
+  }
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    return_trace (version.sanitize (c) &&
-		  hb_barrier () &&
-		  likely (version.major == 1) &&
-		  scriptList.sanitize (c, this));
+    if (unlikely (!version.sanitize (c) ||
+		  !hb_barrier () ||
+		  version.major != 1 ||
+		  !scriptList.sanitize (c, this)))
+      return_trace (false);
+#ifndef HB_NO_BEYOND_64K
+    if (unlikely (version.minor >= 1 && !get_script_list2 ().sanitize (c, this)))
+      return_trace (false);
+#endif
+    return_trace (true);
   }
+
+  private:
+#ifndef HB_NO_BEYOND_64K
+  bool has_script_list2 () const
+  { return version.minor >= 1 && get_script_list2 ().len; }
+  const JstfScriptList<Layout::MediumTypes>& get_script_list2 () const
+  { return StructAfter<JstfScriptList<Layout::MediumTypes>> (scriptList); }
+#endif
 
   protected:
   FixedVersion<>version;	/* Version of the JSTF table--initially set
 				 * to 0x00010000u */
-  RecordArrayOf<JstfScript>
+  JstfScriptList<Layout::SmallTypes>
 		scriptList;	/* Array of JstfScripts--listed
 				 * alphabetically by ScriptTag */
+#ifndef HB_NO_BEYOND_64K
+/*JstfScriptList<Layout::MediumTypes>
+		scriptList2;*//* Array of JstfScript2s--listed
+				 * alphabetically by ScriptTag.
+				 * Present only if minorVersion is 1 or greater. */
+#endif
   public:
   DEFINE_SIZE_ARRAY (6, scriptList);
 };
+
+template <>
+inline const JstfScript<Layout::SmallTypes>&
+JSTF::get_script<Layout::SmallTypes> (unsigned int i) const
+{ return scriptList.get_script (this, i); }
+
+#ifndef HB_NO_BEYOND_64K
+template <>
+inline const JstfScript<Layout::MediumTypes>&
+JSTF::get_script<Layout::MediumTypes> (unsigned int i) const
+{ return get_script_list2 ().get_script (this, i); }
+#endif
 
 
 } /* namespace OT */

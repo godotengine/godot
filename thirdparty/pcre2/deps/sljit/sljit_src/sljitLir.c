@@ -2484,7 +2484,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_jump(struct sljit_compile
 			CHECK_ARGUMENT(compiler->last_flags & SLJIT_SET_Z);
 		else if ((compiler->last_flags & 0xff) == SLJIT_CARRY) {
 			CHECK_ARGUMENT((type & 0xfe) == SLJIT_CARRY);
-			compiler->last_flags = 0;
+			compiler->last_flags &= ~SLJIT_SET_Z;
 		} else
 			CHECK_ARGUMENT((type & 0xfe) == (compiler->last_flags & 0xff)
 				|| CHECK_UNORDERED(type, compiler->last_flags));
@@ -2746,7 +2746,7 @@ static SLJIT_INLINE CHECK_RETURN_TYPE check_sljit_emit_select(struct sljit_compi
 			CHECK_ARGUMENT(compiler->last_flags & SLJIT_SET_Z);
 		else if ((compiler->last_flags & 0xff) == SLJIT_CARRY) {
 			CHECK_ARGUMENT((type & 0xfe) == SLJIT_CARRY);
-			compiler->last_flags = 0;
+			compiler->last_flags &= ~SLJIT_SET_Z;
 		} else
 			CHECK_ARGUMENT((cond & 0xfe) == (compiler->last_flags & 0xff)
 				|| CHECK_UNORDERED(cond, compiler->last_flags));
@@ -3495,6 +3495,8 @@ static void sljit_reset_read_only_buffers(struct sljit_read_only_buffer *buffers
 #	include "sljitNativeS390X.c"
 #elif (defined SLJIT_CONFIG_LOONGARCH && SLJIT_CONFIG_LOONGARCH)
 #	include "sljitNativeLOONGARCH_64.c"
+#elif (defined SLJIT_CONFIG_ALPHA && SLJIT_CONFIG_ALPHA)
+#	include "sljitNativeALPHA_64.c"
 #endif /* SLJIT_CONFIG_X86 */
 
 #include "sljitSerialize.c"
@@ -3737,7 +3739,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_mem_update(struct sljit_compiler *
 #endif /* !SLJIT_CONFIG_ARM && !SLJIT_CONFIG_PPC */
 
 #if !(defined SLJIT_CONFIG_ARM_32 && SLJIT_CONFIG_ARM_32) \
-	&& !(defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS)
+	&& !(defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS) \
+	&& !(defined SLJIT_CONFIG_ALPHA && SLJIT_CONFIG_ALPHA)
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fmem(struct sljit_compiler *compiler, sljit_s32 type,
 	sljit_s32 freg,
@@ -3749,7 +3752,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fmem(struct sljit_compiler *compil
 	return sljit_emit_fmem_unaligned(compiler, type, freg, mem, memw);
 }
 
-#endif /* !SLJIT_CONFIG_ARM_32 && !SLJIT_CONFIG_MIPS */
+#endif /* !SLJIT_CONFIG_ARM_32 && !SLJIT_CONFIG_MIPS && !SLJIT_CONFIG_ALPHA */
 
 #if !(defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
 	&& !(defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)

@@ -483,7 +483,7 @@
 		<signal name="delete_nodes_request">
 			<param index="0" name="nodes" type="StringName[]" />
 			<description>
-				Emitted when this [GraphEdit] captures a [code]ui_graph_delete[/code] action ([kbd]Delete[/kbd] by default).
+				Emitted when this [GraphEdit] captures a [code]ui_graph_delete[/code] action ([kbd]Delete[/kbd] by default, or [kbd]Backspace[/kbd]/[kbd]Delete[/kbd] on macOS).
 				[param nodes] is an array of node names that should be removed. These usually include all selected nodes.
 			</description>
 		</signal>

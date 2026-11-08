@@ -65,7 +65,8 @@ struct BaseCoordFormat1
   DEFINE_SIZE_STATIC (4);
 };
 
-struct BaseCoordFormat2
+template <typename Types>
+struct BaseCoordFormat2_4
 {
   hb_position_t get_coord (hb_font_t *font, hb_direction_t direction) const
   {
@@ -95,13 +96,14 @@ struct BaseCoordFormat2
   }
 
   protected:
-  HBUINT16	format;		/* Format identifier--format = 2 */
+  HBUINT16	format;		/* Format identifier--format = 2 or 4 */
   FWORD		coordinate;	/* X or Y value, in design units */
-  HBGlyphID16	referenceGlyph;	/* Glyph ID of control glyph */
+  typename Types::HBGlyphID
+		referenceGlyph;	/* Glyph ID of control glyph */
   HBUINT16	coordPoint;	/* Index of contour point on the
 				 * reference glyph */
   public:
-  DEFINE_SIZE_STATIC (8);
+  DEFINE_SIZE_STATIC (6 + Types::HBGlyphID::static_size);
 };
 
 struct BaseCoordFormat3
@@ -181,6 +183,9 @@ struct BaseCoord
     case 1: hb_barrier (); return u.format1.get_coord (font, direction);
     case 2: hb_barrier (); return u.format2.get_coord (font, direction);
     case 3: hb_barrier (); return u.format3.get_coord (font, var_store, direction);
+#ifndef HB_NO_BEYOND_64K
+    case 4: hb_barrier (); return u.format4.get_coord (font, direction);
+#endif
     default:return 0;
     }
   }
@@ -202,6 +207,9 @@ struct BaseCoord
     case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+#ifndef HB_NO_BEYOND_64K
+    case 4: hb_barrier (); return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+#endif
     default:return_trace (c->default_return_value ());
     }
   }
@@ -215,6 +223,9 @@ struct BaseCoord
     case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
     case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
     case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
+#ifndef HB_NO_BEYOND_64K
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c));
+#endif
     default:return_trace (false);
     }
   }
@@ -223,8 +234,13 @@ struct BaseCoord
   union {
   struct { HBUINT16 v; }	format;
   BaseCoordFormat1	format1;
-  BaseCoordFormat2	format2;
+  BaseCoordFormat2_4<Layout::SmallTypes>
+			format2;
   BaseCoordFormat3	format3;
+#ifndef HB_NO_BEYOND_64K
+  BaseCoordFormat2_4<Layout::MediumTypes>
+			format4;
+#endif
   } u;
   public:
   DEFINE_SIZE_UNION (2, format.v);
@@ -790,10 +806,10 @@ struct BASE
     if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
 
     out->version = version;
-    if (has_var_store () && !subset_varstore (c, out))
-        return_trace (false);
+    bool ret = false;
+    if (version.to_int () >= 0x00010001u) ret |= subset_varstore (c, out);
 
-    bool ret = out->hAxis.serialize_subset (c, hAxis, this);
+    ret |= out->hAxis.serialize_subset (c, hAxis, this);
     ret |= out->vAxis.serialize_subset (c, vAxis, this);
 
     return_trace (ret);

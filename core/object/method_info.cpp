@@ -37,6 +37,7 @@
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
+	d["hash"] = get_compatibility_hash();
 	d["args"] = convert_property_list(arguments);
 	Array da;
 	for (int i = 0; i < default_arguments.size(); i++) {

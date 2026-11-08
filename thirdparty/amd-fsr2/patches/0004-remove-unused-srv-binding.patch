@@ -1,0 +1,12 @@
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl b/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
+index 402e35da30..45ec5bdb86 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_depth_clip_pass.glsl
+@@ -29,7 +29,6 @@
+ #define FSR2_BIND_SRV_DILATED_DEPTH                         2
+ #define FSR2_BIND_SRV_REACTIVE_MASK                         3
+ #define FSR2_BIND_SRV_TRANSPARENCY_AND_COMPOSITION_MASK     4
+-#define FSR2_BIND_SRV_PREPARED_INPUT_COLOR                  5
+ #define FSR2_BIND_SRV_PREVIOUS_DILATED_MOTION_VECTORS       6
+ #define FSR2_BIND_SRV_INPUT_MOTION_VECTORS                  7
+ #define FSR2_BIND_SRV_INPUT_COLOR                           8

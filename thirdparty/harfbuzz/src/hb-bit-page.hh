@@ -350,7 +350,7 @@ struct hb_bit_page_t
     for (int i = len () - 1; i >= 0; i--)
       if (v[i])
 	return i * ELT_BITS + elt_get_max (v[i]);
-    return 0;
+    return INVALID;
   }
 
   /*

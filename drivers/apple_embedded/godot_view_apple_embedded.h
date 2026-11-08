@@ -50,6 +50,7 @@ class String;
 @property(weak, nonatomic) id<GDTViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
+@property(assign, nonatomic) BOOL hingeClosed;
 
 @property(assign, nonatomic) BOOL useCADisplayLink;
 @property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;

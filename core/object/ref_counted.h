@@ -127,6 +127,7 @@ public:
 	}
 
 	operator Variant() const {
+		static_assert(std::is_base_of_v<RefCounted, T>, "T is not a RefCounted type or is an incomplete type.");
 		return Variant(reference);
 	}
 
@@ -212,9 +213,9 @@ public:
 		}
 	}
 
-	template <typename... VarArgs>
-	void instantiate(VarArgs... p_params) {
-		Ref<T> ref = memnew(T(p_params...));
+	template <typename... Args>
+	void instantiate(Args &&...p_params) {
+		Ref<T> ref = memnew(T(std::forward<Args>(p_params)...));
 		// Appropriate the new Ref, and if the previous one was set, free it.
 		SWAP(reference, ref.reference);
 	}

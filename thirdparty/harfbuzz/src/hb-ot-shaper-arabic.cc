@@ -35,6 +35,9 @@
 /* buffer var allocations */
 #define arabic_shaping_action() ot_shaper_var_u8_auxiliary() /* arabic shaping action */
 
+/* buffer **position** var allocations, used after GPOS */
+#define stch_advance() var.i32 /* advance used for stretching */
+
 #define HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH HB_BUFFER_SCRATCH_FLAG_SHAPER0
 
 /* See:
@@ -492,6 +495,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
    * First pass calculates the exact number of extra glyphs we need,
    * We then enlarge buffer to have that much room,
    * Second pass applies the stretch, copying things to the end of buffer.
+   *
+   * Cache glyph advances in the position scratch field during the first pass,
+   * for re-use these during the second pass.
    */
 
   int sign = font->x_scale < 0 ? -1 : +1;
@@ -531,7 +537,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	     hb_in_range<uint8_t> (info[i - 1].arabic_shaping_action(), STCH_FIXED, STCH_REPEATING))
       {
 	i--;
-	hb_position_t width = font->get_glyph_h_advance (info[i].codepoint);
+        if (step == MEASURE)
+          pos[i].stch_advance() = font->get_glyph_h_advance (info[i].codepoint);
+        hb_position_t width = pos[i].stch_advance();
 	if (info[i].arabic_shaping_action() == STCH_FIXED)
 	{
 	  w_fixed = hb_saturate_add (w_fixed, width);
@@ -617,7 +625,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	hb_position_t x_offset = w_remaining / 2;
 	for (unsigned int k = end; k > start; k--)
 	{
-	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
+          hb_position_t width = pos[k - 1].stch_advance();
 
 	  unsigned int repeat = 1;
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)

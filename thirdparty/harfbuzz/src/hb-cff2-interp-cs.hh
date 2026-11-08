@@ -201,6 +201,9 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
 
   bool have_coords () const { return num_coords; }
 
+  /* Subsetter instancing can defer rounding until absolute points are known. */
+  bool round_blends = true;
+
   protected:
   const int     *coords;
   unsigned int  num_coords;
@@ -263,7 +266,10 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
 				 unsigned n, unsigned i)
   {
     if (env.have_coords ())
-      arg.set_int (round (arg.to_real () + env.blend_deltas (blends)));
+    {
+      double v = arg.to_real () + env.blend_deltas (blends);
+      arg.set_real (env.round_blends ? round (v) : v);
+    }
     else if (unlikely (arg.blending ()))
     {
       /* A blend result used as an operand of a later blend: the value is
@@ -301,6 +307,11 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
     unsigned int count = env.argStack.get_count ();
     unsigned int total;
     if (unlikely (hb_unsigned_mul_overflows (k + 1, n, &total) || total > count))
+    {
+      env.set_error ();
+      return;
+    }
+    if (unlikely (!env.spend_budget (HB_BUDGET_1, total - n)))
     {
       env.set_error ();
       return;

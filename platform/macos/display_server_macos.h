@@ -78,6 +78,7 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
+		bool ime = false;
 		Key keycode = Key::NONE;
 		Key physical_keycode = Key::NONE;
 		Key key_label = Key::NONE;
@@ -174,7 +175,6 @@ private:
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
-	CGEventSourceRef event_source;
 	void _mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) override;
 
 	HDROutput &_get_hdr_output(DisplayServerEnums::WindowID p_window) override;
@@ -269,6 +269,7 @@ public:
 	DisplayServerEnums::WindowID _get_focused_window_or_popup() const;
 	void mouse_enter_window(DisplayServerEnums::WindowID p_window);
 	void mouse_exit_window(DisplayServerEnums::WindowID p_window);
+	DisplayServerEnums::WindowID get_mouseover_window() const { return window_mouseover_id; }
 	void update_presentation_mode();
 
 	bool is_always_on_top_recursive(DisplayServerEnums::WindowID p_window) const;
@@ -403,6 +404,7 @@ public:
 	void cursor_update_shape();
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void cursor_clear_custom_image_cache() override;
 
 	virtual bool get_swap_cancel_ok() override;
 

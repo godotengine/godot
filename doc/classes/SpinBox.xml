@@ -25,7 +25,7 @@
 		[/codeblocks]
 		See [Range] class for more options over the [SpinBox].
 		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
-		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background and audio feedback on its text field, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
 		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
 	</description>
 	<tutorials>
@@ -60,7 +60,7 @@
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
 		<member name="format" type="String" setter="set_format" getter="get_format" default="&quot;&quot;">
-			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"ERROR"[/code], with the error message available as a configuration warning.
+			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"&lt;Invalid&gt;"[/code], with the error message available as a configuration warning.
 			The following format strings can be used as examples:
 			- [code]"(%s)"[/code] displays as a number in parentheses (e.g. [code](6.9)[/code]).
 			- [code]"%d ms"[/code] displays as an integer with milliseconds unit (e.g. [code]420 ms[/code]).
@@ -154,6 +154,15 @@
 		</theme_item>
 		<theme_item name="updown" data_type="icon" type="Texture2D" deprecated="Use [theme_item up] and [theme_item down] instead.">
 			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. If a valid icon is assigned, it will replace [theme_item up] and [theme_item down].
+		</theme_item>
+		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
+			Played when this [SpinBox] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="sound" type="AudioStream">
+			Played when the up or down button is pressed while the [SpinBox] is disabled due to [member editable] being [code]false[/code].
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="sound" type="AudioStream">
+			Played when the up or down button is pressed.
 		</theme_item>
 		<theme_item name="down_background" data_type="style" type="StyleBox">
 			Background style of the down button.

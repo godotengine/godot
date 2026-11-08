@@ -299,7 +299,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 		// so it is best to use "deferred" calls instead of "immediate" for animation events that can trigger new animations.
 		_process_playback_data(b.data, p_delta, b.blend_left, false, false, false);
 	}
-	for (int i = to_erase.size() - 1; i >= 0; i--) {
+	for (int i = (int)to_erase.size() - 1; i >= 0; i--) {
 		c.blend.remove_at(to_erase[i]);
 	}
 }

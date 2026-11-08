@@ -144,7 +144,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -165,7 +165,7 @@
 				+Y ... -Y: bottom ... top;
 				+Z ... -Z: farther ... closer.
 				The gravity part value is measured as a vector with length of [code]9.8[/code] away from the center of the Earth, which is a negative Y value.
-				[b]Note:[/b] This feature is only supported on Windows, Linux, and macOS. On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -348,7 +348,6 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns [code]true[/code] if the joypad has motion sensors (gyroscope and/or accelerometer).
-				[b]Note:[/b] On iOS, joypad accelerometer sensor reading is not supported due to OS limitations.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
@@ -949,7 +948,8 @@
 		</constant>
 		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
 			Captures the mouse. The mouse will be hidden and its position locked at the center of the window manager's window.
-			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative].
+			[b]Note:[/b] If you want to process the mouse's movement in this mode, you need to use [member InputEventMouseMotion.relative] or [member InputEventMouseMotion.screen_relative].
+			[b]Note:[/b] Even when captured, the mouse cursor is still able to press buttons if they overlap with the center of the window.
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it visible.

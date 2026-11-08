@@ -362,7 +362,13 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
     return false;
 
   if (unlikely (n > hb_iup_set_t::PAGE_BITS))
-    return true; // Refuse to work
+  {
+    /* The forced and solution sets cannot hold this contour. Preserve
+     * its explicit deltas instead of leaving every reference false. */
+    for (unsigned i = 0; i < n; i++)
+      opt_indices.arrayZ[i] = true;
+    return true;
+  }
 
   bool all_within_tolerance = true;
   double tolerance_sq = tolerance * tolerance;

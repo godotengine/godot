@@ -14,13 +14,13 @@ struct composite_iter_tmpl : hb_iter_with_fallback_t<composite_iter_tmpl<Composi
 						     const CompositeGlyphRecord &>
 {
   typedef const CompositeGlyphRecord *__item_t__;
-  composite_iter_tmpl (hb_bytes_t glyph_, __item_t__ current_) :
-      glyph (glyph_), current (nullptr), current_size (0)
+  composite_iter_tmpl (hb_bytes_t glyph_, __item_t__ current_, bool extended_) :
+      glyph (glyph_), current (nullptr), current_size (0), extended (extended_)
   {
     set_current (current_);
   }
 
-  composite_iter_tmpl () : glyph (hb_bytes_t ()), current (nullptr), current_size (0) {}
+  composite_iter_tmpl () : glyph (hb_bytes_t ()), current (nullptr), current_size (0), extended (false) {}
 
   const CompositeGlyphRecord & __item__ () const { return *current; }
   bool __more__ () const { return current; }
@@ -43,7 +43,7 @@ struct composite_iter_tmpl : hb_iter_with_fallback_t<composite_iter_tmpl<Composi
       current_size = 0;
       return;
     }
-    unsigned size = current_->get_size ();
+    unsigned size = current_->get_size (extended);
     if (!glyph.check_range (current_, size))
     {
       current = nullptr;
@@ -59,6 +59,7 @@ struct composite_iter_tmpl : hb_iter_with_fallback_t<composite_iter_tmpl<Composi
   hb_bytes_t glyph;
   __item_t__ current;
   unsigned current_size;
+  bool extended;
 };
 
 

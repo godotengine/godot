@@ -34,6 +34,7 @@
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-math-table.hh"
 #include "hb-ot-cff1-table.hh"
+#include "hb-ot-var-varc-table.hh"
 #include "OT/Color/COLR/COLR.hh"
 #include "OT/Color/COLR/colrv1-depend.hh"
 
@@ -93,13 +94,9 @@ hb_depend_data_builder_t::compile (hb_face_t *face)
 #ifndef HB_NO_CFF
   OT::cff1_subset_accelerator_t (face).depend (this);
 #endif
-  /* XXX TODO: add face->table.VARC->depend (this) here.
-   * VARC closure and subsetting are not yet implemented (see hb-subset-plan.cc),
-   * so the right traversal architecture for VarComponent records hasn't been
-   * established. Implement VARC depend() in the same commit that adds VARC
-   * closure, so both share the same traversal model. Component conditions should
-   * be treated as over-approximations (include all components regardless of
-   * condition), consistent with how FeatureVariations edges are handled. */
+#ifndef HB_NO_VAR_COMPOSITES
+  face->table.VARC->depend (this);
+#endif
   return successful;
 }
 
@@ -111,8 +108,8 @@ hb_depend_data_builder_t::compile (hb_face_t *face)
  * @face: font face to collect dependencies from
  *
  * Calculates the dependencies between glyphs in the supplied face.
- * Extracts dependency information from GSUB, glyf, CFF, COLR,
- * and MATH tables. UVS (Unicode Variation Sequence) dependencies
+ * Extracts dependency information from GSUB, glyf, CFF, COLR, MATH,
+ * and VARC tables. UVS (Unicode Variation Sequence) dependencies
  * are not included; handle those via hb_font_get_variation_glyph().
  *
  * Example:

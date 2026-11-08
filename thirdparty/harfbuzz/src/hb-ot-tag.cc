@@ -352,7 +352,7 @@ hb_ot_tags_from_language (const char   *lang_str,
 
     if (first_len == 2)
     {
-      static hb_atomic_t<unsigned> last_tag_idx_2 = 0; /* Poor man's cache. */
+      static hb_atomic_t<unsigned> last_tag_idx_2 {0}; /* Poor man's cache. */
       unsigned tag_idx = last_tag_idx_2;
 
       if (likely (tag_idx < ARRAY_LENGTH (ot_languages2) &&
@@ -378,7 +378,7 @@ hb_ot_tags_from_language (const char   *lang_str,
 #ifndef HB_NO_LANGUAGE_LONG
     else if (first_len == 3)
     {
-      static hb_atomic_t<unsigned> last_tag_idx_3 = 0; /* Poor man's cache. */
+      static hb_atomic_t<unsigned> last_tag_idx_3 {0}; /* Poor man's cache. */
       unsigned tag_idx = last_tag_idx_3;
 
       if (likely (tag_idx < ARRAY_LENGTH (ot_languages3) &&
@@ -396,7 +396,7 @@ hb_ot_tags_from_language (const char   *lang_str,
 	return;
       }
 
-      static hb_atomic_t<unsigned> last_tag_idx_3_multi = 0; /* Poor man's cache. */
+      static hb_atomic_t<unsigned> last_tag_idx_3_multi {0}; /* Poor man's cache. */
       unsigned multi_tag_idx = last_tag_idx_3_multi;
 
       if (likely (multi_tag_idx < ARRAY_LENGTH (ot_languages3_multi) &&
