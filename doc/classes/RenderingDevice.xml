@@ -1056,6 +1056,26 @@
 				Returns the internal vertex input mask. Internally, the vertex input mask is an unsigned integer consisting of the locations (specified in GLSL via. [code]layout(location = ...)[/code]) of the input variables (specified in GLSL by the [code]in[/code] keyword).
 			</description>
 		</method>
+		<method name="snapshot_get_content">
+			<return type="Array" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Returns the arguments of the call that created [param rid], with its current contents where that call takes initial data. Calling the method named in the entry from [method snapshot_get_records] with these arguments makes an equal resource.
+			</description>
+		</method>
+		<method name="snapshot_get_records">
+			<return type="Dictionary[]" />
+			<description>
+				Returns every resource and format created on this device through the script API that still exists, oldest first, so that dependencies come before the resources that use them. Each entry has [code]seq[/code], [code]method[/code], [code]args[/code] and either [code]rid[/code] or, for a framebuffer or vertex format, [code]format_id[/code]. Arguments are plain data: an RD argument object is a [Dictionary] of its properties with its class in [code]__class[/code].
+			</description>
+		</method>
+		<method name="snapshot_get_texture_base">
+			<return type="RID" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the texture that the shared view [param texture] looks into, or [param texture] itself if it is not a shared view.
+			</description>
+		</method>
 		<method name="storage_buffer_create">
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />

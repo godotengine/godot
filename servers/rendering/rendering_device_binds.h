@@ -83,6 +83,19 @@ public:
 
 	void add_shareable_format(RD::DataFormat p_format) { base.shareable_formats.push_back(p_format); }
 	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.erase(p_format); }
+	PackedInt64Array _get_shareable_formats() const {
+		PackedInt64Array formats;
+		for (RD::DataFormat format : base.shareable_formats) {
+			formats.push_back(format);
+		}
+		return formats;
+	}
+	void _set_shareable_formats(const PackedInt64Array &p_formats) {
+		base.shareable_formats.clear();
+		for (int64_t format : p_formats) {
+			base.shareable_formats.push_back(RD::DataFormat(format));
+		}
+	}
 
 protected:
 	static void _bind_methods() {
@@ -100,6 +113,9 @@ protected:
 
 		ClassDB::bind_method(D_METHOD("add_shareable_format", "format"), &RDTextureFormat::add_shareable_format);
 		ClassDB::bind_method(D_METHOD("remove_shareable_format", "format"), &RDTextureFormat::remove_shareable_format);
+		ClassDB::bind_method(D_METHOD("_get_shareable_formats"), &RDTextureFormat::_get_shareable_formats);
+		ClassDB::bind_method(D_METHOD("_set_shareable_formats", "formats"), &RDTextureFormat::_set_shareable_formats);
+		ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "_shareable_formats", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_shareable_formats", "_get_shareable_formats");
 	}
 };
 

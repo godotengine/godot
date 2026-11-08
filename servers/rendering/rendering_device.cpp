@@ -3515,11 +3515,44 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create(
 	return framebuffer_format_create_multipass(p_format, passes, p_view_count, p_fragment_density_map_attachment);
 }
 
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_stable_id(const FramebufferFormatKey &p_key) const {
+	uint32_t h = hash_murmur3_one_32(p_key.view_count);
+	for (const AttachmentFormat &attachment : p_key.attachments) {
+		h = hash_murmur3_one_32(attachment.format, h);
+		h = hash_murmur3_one_32(attachment.samples, h);
+		h = hash_murmur3_one_32(attachment.usage_flags, h);
+	}
+	const auto hash_list = [&h](const Vector<int32_t> &p_list) {
+		h = hash_murmur3_one_32(p_list.size(), h);
+		for (int32_t value : p_list) {
+			h = hash_murmur3_one_32(value, h);
+		}
+	};
+	for (const FramebufferPass &pass : p_key.passes) {
+		hash_list(pass.color_attachments);
+		hash_list(pass.input_attachments);
+		hash_list(pass.resolve_attachments);
+		hash_list(pass.preserve_attachments);
+		h = hash_murmur3_one_32(pass.depth_attachment, h);
+	}
+	FramebufferFormatID id = FramebufferFormatID(hash_fmix32(h)) | (FramebufferFormatID(ID_TYPE_FRAMEBUFFER_FORMAT) << FramebufferFormatID(ID_BASE_SHIFT));
+	while (framebuffer_formats.has(id)) {
+		id++;
+	}
+	return id;
+}
+
 RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_multipass(const Vector<AttachmentFormat> &p_attachments, const Vector<FramebufferPass> &p_passes, uint32_t p_view_count, int32_t p_vrs_attachment) {
 	_THREAD_SAFE_METHOD_
 
+	// Copy capabilities do not affect a render pass; textures may have more than a script asked for.
+	Vector<AttachmentFormat> attachments = p_attachments;
+	for (AttachmentFormat &attachment : attachments) {
+		attachment.usage_flags &= ~(TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_COPY_TO_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT);
+	}
+
 	FramebufferFormatKey key;
-	key.attachments = p_attachments;
+	key.attachments = attachments;
 	key.passes = p_passes;
 	key.view_count = p_view_count;
 	key.vrs_method = vrs_method;
@@ -3540,12 +3573,12 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 		store_ops.push_back(RDD::ATTACHMENT_STORE_OP_STORE);
 	}
 
-	RDD::RenderPassID render_pass = _render_pass_create(driver, p_attachments, p_passes, load_ops, store_ops, p_view_count, vrs_method, p_vrs_attachment, vrs_texel_size, &samples); // Actions don't matter for this use case.
+	RDD::RenderPassID render_pass = _render_pass_create(driver, attachments, p_passes, load_ops, store_ops, p_view_count, vrs_method, p_vrs_attachment, vrs_texel_size, &samples); // Actions don't matter for this use case.
 	if (!render_pass) { // Was likely invalid.
 		return INVALID_ID;
 	}
 
-	FramebufferFormatID id = FramebufferFormatID(framebuffer_format_cache.size()) | (FramebufferFormatID(ID_TYPE_FRAMEBUFFER_FORMAT) << FramebufferFormatID(ID_BASE_SHIFT));
+	FramebufferFormatID id = _framebuffer_format_stable_id(key);
 	E = framebuffer_format_cache.insert(key, id);
 
 	FramebufferFormat fb_format;
@@ -3583,7 +3616,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 	RDD::RenderPassID render_pass = driver->render_pass_create({}, subpass, {}, 1, RDD::AttachmentReference());
 	ERR_FAIL_COND_V(!render_pass, FramebufferFormatID());
 
-	FramebufferFormatID id = FramebufferFormatID(framebuffer_format_cache.size()) | (FramebufferFormatID(ID_TYPE_FRAMEBUFFER_FORMAT) << FramebufferFormatID(ID_BASE_SHIFT));
+	FramebufferFormatID id = _framebuffer_format_stable_id(key);
 
 	E = framebuffer_format_cache.insert(key, id);
 
@@ -3924,7 +3957,10 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 	RDD::VertexFormatID driver_id = driver->vertex_format_create(vertex_descriptions, bindings);
 	ERR_FAIL_COND_V(!driver_id, 0);
 
-	VertexFormatID id = (vertex_format_cache.size() | ((int64_t)ID_TYPE_VERTEX_FORMAT << ID_BASE_SHIFT));
+	VertexFormatID id = (int64_t(key.hash()) | ((int64_t)ID_TYPE_VERTEX_FORMAT << ID_BASE_SHIFT));
+	while (vertex_formats.has(id)) {
+		id++;
+	}
 	vertex_format_cache[key] = id;
 	VertexDescriptionCache &ce = vertex_formats.insert(id, VertexDescriptionCache())->value;
 	ce.vertex_formats = vertex_descriptions;
@@ -4309,7 +4345,7 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 
 	Buffer buffer;
 	buffer.size = p_size_bytes;
-	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT);
+	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_UNIFORM_BIT);
 	if (p_creation_bits.has_flag(BUFFER_CREATION_DEVICE_ADDRESS_BIT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT);
 	}
@@ -7616,6 +7652,11 @@ void RenderingDevice::free_rid(RID p_rid) {
 }
 
 void RenderingDevice::_free_internal(RID p_id) {
+	{
+		_THREAD_SAFE_METHOD_
+		snapshot_records.erase(p_id);
+	}
+
 #ifdef DEV_ENABLED
 	String resource_name;
 	if (resource_names.has(p_id)) {
@@ -9086,11 +9127,11 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create_multipass", "attachments", "passes", "view_count"), &RenderingDevice::_framebuffer_format_create_multipass, DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
+	ClassDB::bind_method(D_METHOD("framebuffer_format_create_empty", "samples"), &RenderingDevice::_framebuffer_format_create_empty, DEFVAL(TEXTURE_SAMPLES_1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_get_texture_samples", "format", "render_pass"), &RenderingDevice::framebuffer_format_get_texture_samples, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("framebuffer_create", "textures", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_create_multipass", "textures", "passes", "validate_with_format", "view_count"), &RenderingDevice::_framebuffer_create_multipass, DEFVAL(INVALID_FORMAT_ID), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
+	ClassDB::bind_method(D_METHOD("framebuffer_create_empty", "size", "samples", "validate_with_format"), &RenderingDevice::_framebuffer_create_empty, DEFVAL(TEXTURE_SAMPLES_1), DEFVAL(INVALID_FORMAT_ID));
 	ClassDB::bind_method(D_METHOD("framebuffer_get_format", "framebuffer"), &RenderingDevice::framebuffer_get_format);
 	ClassDB::bind_method(D_METHOD("framebuffer_is_valid", "framebuffer"), &RenderingDevice::framebuffer_is_valid);
 
@@ -9102,13 +9143,13 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers", "offsets"), &RenderingDevice::_vertex_array_create, DEFVAL(Vector<int64_t>()));
 
 	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices", "creation_bits"), &RenderingDevice::_index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
+	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::_index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("shader_compile_binary_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_compile_binary_from_spirv, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("shader_create_from_spirv", "spirv_data", "name"), &RenderingDevice::_shader_create_from_spirv, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::shader_create_from_bytecode, DEFVAL(RID()));
-	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::shader_create_placeholder);
+	ClassDB::bind_method(D_METHOD("shader_create_from_bytecode", "binary_data", "placeholder_rid"), &RenderingDevice::_shader_create_from_bytecode, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("shader_create_placeholder"), &RenderingDevice::_shader_create_placeholder);
 
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
@@ -9196,6 +9237,9 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("raytracing_list_end"), &RenderingDevice::raytracing_list_end);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free_rid);
+	ClassDB::bind_method(D_METHOD("snapshot_get_records"), &RenderingDevice::snapshot_get_records);
+	ClassDB::bind_method(D_METHOD("snapshot_get_content", "rid"), &RenderingDevice::snapshot_get_content);
+	ClassDB::bind_method(D_METHOD("snapshot_get_texture_base", "texture"), &RenderingDevice::snapshot_get_texture_base);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
 	ClassDB::bind_method(D_METHOD("get_captured_timestamps_count"), &RenderingDevice::get_captured_timestamps_count);
@@ -9893,6 +9937,168 @@ RenderingDevice::RenderingDevice() {
 /**** BINDERS ****/
 /*****************/
 
+// A value as plain data: RD argument objects can be reused and changed by the
+// caller after the call, and a snapshot has to outlive them.
+static Variant _snapshot_encode(const Variant &p_value) {
+	if (p_value.get_type() == Variant::ARRAY) {
+		Array out;
+		for (const Variant &element : Array(p_value)) {
+			out.push_back(_snapshot_encode(element));
+		}
+		return out;
+	}
+	if (p_value.get_type() != Variant::OBJECT) {
+		return p_value;
+	}
+	Object *object = p_value;
+	if (object == nullptr) {
+		return Variant();
+	}
+	Dictionary out;
+	out["__class"] = object->get_class();
+	List<PropertyInfo> properties;
+	object->get_property_list(&properties);
+	for (const PropertyInfo &property : properties) {
+		if ((property.usage & PROPERTY_USAGE_STORAGE) && property.name != "script" && !property.name.begins_with("metadata/")) {
+			out[property.name] = _snapshot_encode(object->get(property.name));
+		}
+	}
+	return out;
+}
+
+RID RenderingDevice::_snapshot_record(RID p_rid, const String &p_method, const Vector<Variant> &p_args) {
+	if (p_rid.is_valid()) {
+		_THREAD_SAFE_METHOD_
+		SnapshotRecord record;
+		record.seq = ++snapshot_seq;
+		record.method = p_method;
+		for (const Variant &arg : p_args) {
+			record.args.push_back(_snapshot_encode(arg));
+		}
+		snapshot_records[p_rid] = record;
+	}
+	return p_rid;
+}
+
+int64_t RenderingDevice::_snapshot_record_format(int64_t p_id, const String &p_method, const Vector<Variant> &p_args) {
+	_THREAD_SAFE_METHOD_
+	if (p_id != INVALID_ID && !snapshot_format_records.has(p_id)) {
+		SnapshotRecord record;
+		record.seq = ++snapshot_seq;
+		record.method = p_method;
+		for (const Variant &arg : p_args) {
+			record.args.push_back(_snapshot_encode(arg));
+		}
+		snapshot_format_records[p_id] = record;
+	}
+	return p_id;
+}
+
+// The creation arguments of `p_rid`, with its current contents where the call
+// takes initial data: calling the method with these makes an equal resource.
+Array RenderingDevice::snapshot_get_content(RID p_rid) {
+	ERR_RENDER_THREAD_GUARD_V(Array());
+	_THREAD_SAFE_METHOD_
+
+	const SnapshotRecord *record = snapshot_records.getptr(p_rid);
+	ERR_FAIL_NULL_V_MSG(record, Array(), "RID was not created through the script API.");
+	Array args = record->args.duplicate();
+	if (record->method == "texture_create") {
+		const TextureFormat format = texture_get_format(p_rid);
+		if (format.usage_bits & TEXTURE_USAGE_CAN_COPY_FROM_BIT) {
+			Array layers;
+			for (uint32_t layer = 0; layer < format.array_layers; layer++) {
+				layers.push_back(texture_get_data(p_rid, layer));
+			}
+			args[2] = layers;
+		}
+	} else if (record->method == "vertex_buffer_create" || record->method == "uniform_buffer_create" || record->method == "storage_buffer_create") {
+		args[1] = buffer_get_data(p_rid);
+	} else if (record->method == "index_buffer_create") {
+		args[2] = buffer_get_data(p_rid);
+	}
+	return args;
+}
+
+// The texture a shared view looks into, or `p_texture` when it is not a view.
+RID RenderingDevice::snapshot_get_texture_base(RID p_texture) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	return texture != nullptr && texture->owner.is_valid() ? texture->owner : p_texture;
+}
+
+// Every resource and format scripts created, oldest first. A format entry has
+// "format_id" instead of "rid".
+TypedArray<Dictionary> RenderingDevice::snapshot_get_records() {
+	_THREAD_SAFE_METHOD_
+
+	LocalVector<Pair<uint64_t, Dictionary>> ordered;
+	const auto add = [&ordered](const SnapshotRecord &p_record, const String &p_key, const Variant &p_handle) {
+		Dictionary entry;
+		entry["seq"] = p_record.seq;
+		entry[p_key] = p_handle;
+		entry["method"] = p_record.method;
+		entry["args"] = p_record.args;
+		ordered.push_back(Pair<uint64_t, Dictionary>(p_record.seq, entry));
+	};
+	for (const KeyValue<int64_t, SnapshotRecord> &E : snapshot_format_records) {
+		add(E.value, "format_id", E.key);
+	}
+	for (const KeyValue<RID, SnapshotRecord> &E : snapshot_records) {
+		add(E.value, "rid", E.key);
+	}
+	struct BySeq {
+		_FORCE_INLINE_ bool operator()(const Pair<uint64_t, Dictionary> &p_a, const Pair<uint64_t, Dictionary> &p_b) const {
+			return p_a.first < p_b.first;
+		}
+	};
+	ordered.sort_custom<BySeq>();
+	TypedArray<Dictionary> out;
+	for (const Pair<uint64_t, Dictionary> &entry : ordered) {
+		out.push_back(entry.second);
+	}
+	return out;
+}
+
+RID RenderingDevice::_vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
+	return _snapshot_record(vertex_buffer_create(p_size_bytes, p_data, p_creation_bits), "vertex_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_creation_bits)));
+}
+
+RID RenderingDevice::_index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
+	return _snapshot_record(index_buffer_create(p_index_count, p_format, p_data, p_use_restart_indices, p_creation_bits), "index_buffer_create", varray(p_index_count, p_format, Vector<uint8_t>(), p_use_restart_indices, int64_t(p_creation_bits)));
+}
+
+RID RenderingDevice::_uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
+	return _snapshot_record(uniform_buffer_create(p_size_bytes, p_data, p_creation_bits), "uniform_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_creation_bits)));
+}
+
+RID RenderingDevice::_storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
+	return _snapshot_record(storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits), "storage_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_usage), int64_t(p_creation_bits)));
+}
+
+RID RenderingDevice::_texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
+	return _snapshot_record(texture_buffer_create(p_size_elements, p_format, p_data), "texture_buffer_create", varray(p_size_elements, p_format, p_data));
+}
+
+RID RenderingDevice::_framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples, int64_t p_format_check) {
+	return _snapshot_record(framebuffer_create_empty(p_size, p_samples, p_format_check), "framebuffer_create_empty", varray(p_size, p_samples, p_format_check));
+}
+
+int64_t RenderingDevice::_framebuffer_format_create_empty(TextureSamples p_samples) {
+	return _snapshot_record_format(framebuffer_format_create_empty(p_samples), "framebuffer_format_create_empty", varray(p_samples));
+}
+
+RID RenderingDevice::_index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) {
+	return _snapshot_record(index_array_create(p_index_buffer, p_index_offset, p_index_count), "index_array_create", varray(p_index_buffer, p_index_offset, p_index_count));
+}
+
+RID RenderingDevice::_shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
+	return _snapshot_record(shader_create_from_bytecode(p_shader_binary, p_placeholder), "shader_create_from_bytecode", varray(p_shader_binary, RID()));
+}
+
+RID RenderingDevice::_shader_create_placeholder() {
+	return _snapshot_record(shader_create_placeholder(), "shader_create_placeholder", Vector<Variant>());
+}
+
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
 	ERR_FAIL_COND_V(p_format.is_null(), RID());
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
@@ -9902,19 +10108,24 @@ RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const
 		ERR_FAIL_COND_V(byte_slice.is_empty(), RID());
 		data.push_back(byte_slice);
 	}
-	return texture_create(p_format->base, p_view->base, data);
+	// Everything a script creates must be able to come back from a snapshot.
+	TextureFormat format = p_format->base;
+	if (format.samples == TEXTURE_SAMPLES_1 && !(format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT)) {
+		format.usage_bits |= TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT;
+	}
+	return _snapshot_record(texture_create(format, p_view->base, data), "texture_create", varray(p_format, p_view, Array()));
 }
 
 RID RenderingDevice::_texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture) {
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
-	return texture_create_shared(p_view->base, p_with_texture);
+	return _snapshot_record(texture_create_shared(p_view->base, p_with_texture), "texture_create_shared", varray(p_view, p_with_texture));
 }
 
 RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type) {
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
-	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type);
+	return _snapshot_record(texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type), "texture_create_shared_from_slice", varray(p_view, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type));
 }
 
 Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {
@@ -9934,7 +10145,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		attachments.write[i] = af->base;
 	}
-	return framebuffer_format_create(attachments, p_view_count);
+	return _snapshot_record_format(framebuffer_format_create(attachments, p_view_count), "framebuffer_format_create", varray(p_attachments, p_view_count));
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count) {
@@ -9954,12 +10165,12 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 		passes.push_back(pass->base);
 	}
 
-	return framebuffer_format_create_multipass(attachments, passes, p_view_count);
+	return _snapshot_record_format(framebuffer_format_create_multipass(attachments, passes, p_view_count), "framebuffer_format_create_multipass", varray(p_attachments, p_passes, p_view_count));
 }
 
 RID RenderingDevice::_framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check, uint32_t p_view_count) {
 	Vector<RID> textures = Variant(p_textures);
-	return framebuffer_create(textures, p_format_check, p_view_count);
+	return _snapshot_record(framebuffer_create(textures, p_format_check, p_view_count), "framebuffer_create", varray(p_textures, p_format_check, p_view_count));
 }
 
 RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
@@ -9970,13 +10181,13 @@ RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_text
 		ERR_CONTINUE(pass.is_null());
 		passes.push_back(pass->base);
 	}
-	return framebuffer_create_multipass(textures, passes, p_format_check, p_view_count);
+	return _snapshot_record(framebuffer_create_multipass(textures, passes, p_format_check, p_view_count), "framebuffer_create_multipass", varray(p_textures, p_passes, p_format_check, p_view_count));
 }
 
 RID RenderingDevice::_sampler_create(const Ref<RDSamplerState> &p_state) {
 	ERR_FAIL_COND_V(p_state.is_null(), RID());
 
-	return sampler_create(p_state->base);
+	return _snapshot_record(sampler_create(p_state->base), "sampler_create", varray(p_state));
 }
 
 RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats) {
@@ -9988,7 +10199,7 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		descriptions.write[i] = af->base;
 	}
-	return vertex_format_create(descriptions);
+	return _snapshot_record_format(vertex_format_create(descriptions), "vertex_format_create", varray(p_vertex_formats));
 }
 
 RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets) {
@@ -10000,7 +10211,7 @@ RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatI
 		offsets.write[i] = p_offsets[i];
 	}
 
-	return vertex_array_create(p_vertex_count, p_vertex_format, buffers, offsets);
+	return _snapshot_record(vertex_array_create(p_vertex_count, p_vertex_format, buffers, offsets), "vertex_array_create", varray(p_vertex_count, p_vertex_format, p_src_buffers, p_offsets));
 }
 
 void RenderingDevice::_draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const TypedArray<RID> &p_vertex_buffers, const Vector<int64_t> &p_offsets) {
@@ -10071,7 +10282,7 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		}
 		stage_data.push_back(sd);
 	}
-	return shader_create_from_spirv(stage_data);
+	return _snapshot_record(shader_create_from_spirv(stage_data), "shader_create_from_spirv", varray(p_spirv, p_shader_name));
 }
 
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
@@ -10082,7 +10293,7 @@ RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms
 		ERR_FAIL_COND_V(uniform.is_null(), RID());
 		uniforms[i] = uniform->base;
 	}
-	return uniform_set_create(uniforms, p_shader, p_shader_set);
+	return _snapshot_record(uniform_set_create(uniforms, p_shader, p_shader_set), "uniform_set_create", varray(p_uniforms, p_shader, p_shader_set));
 }
 
 Error RenderingDevice::_buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data) {
@@ -10180,11 +10391,11 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 		}
 	}
 
-	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags, p_for_render_pass, _get_spec_constants(p_specialization_constants));
+	return _snapshot_record(render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags, p_for_render_pass, _get_spec_constants(p_specialization_constants)), "render_pipeline_create", varray(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, p_rasterization_state, p_multisample_state, p_depth_stencil_state, p_blend_state, int64_t(p_dynamic_state_flags), p_for_render_pass, p_specialization_constants));
 }
 
 RID RenderingDevice::_compute_pipeline_create(RID p_shader, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants = TypedArray<RDPipelineSpecializationConstant>()) {
-	return compute_pipeline_create(p_shader, _get_spec_constants(p_specialization_constants));
+	return _snapshot_record(compute_pipeline_create(p_shader, _get_spec_constants(p_specialization_constants)), "compute_pipeline_create", varray(p_shader, p_specialization_constants));
 }
 
 RID RenderingDevice::_raytracing_pipeline_create(const TypedArray<RDPipelineShader> &p_raygen_shaders, const TypedArray<RDPipelineShader> &p_miss_shaders, const TypedArray<RDHitGroup> &p_hit_groups, uint32_t p_max_trace_recursion_depth) {

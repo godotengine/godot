@@ -546,6 +546,32 @@ public:
 	typedef int64_t FramebufferFormatID;
 
 private:
+	// Everything scripts created on this device, so a snapshot can create it
+	// again. Creation order is dependency order.
+	struct SnapshotRecord {
+		uint64_t seq = 0;
+		String method;
+		Array args;
+	};
+	HashMap<RID, SnapshotRecord> snapshot_records;
+	HashMap<int64_t, SnapshotRecord> snapshot_format_records;
+	uint64_t snapshot_seq = 0;
+
+	RID _snapshot_record(RID p_rid, const String &p_method, const Vector<Variant> &p_args);
+	int64_t _snapshot_record_format(int64_t p_id, const String &p_method, const Vector<Variant> &p_args);
+	RID _framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples, int64_t p_format_check);
+	int64_t _framebuffer_format_create_empty(TextureSamples p_samples);
+	RID _index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
+	RID _shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder);
+	RID _shader_create_placeholder();
+
+public:
+	TypedArray<Dictionary> snapshot_get_records();
+	Array snapshot_get_content(RID p_rid);
+	RID snapshot_get_texture_base(RID p_texture);
+
+
+private:
 	struct FramebufferFormatKey {
 		Vector<AttachmentFormat> attachments;
 		Vector<FramebufferPass> passes;
@@ -677,6 +703,7 @@ private:
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
 	RBMap<FramebufferFormatKey, FramebufferFormatID> framebuffer_format_cache;
+	FramebufferFormatID _framebuffer_format_stable_id(const FramebufferFormatKey &p_key) const;
 	struct FramebufferFormat {
 		const RBMap<FramebufferFormatKey, FramebufferFormatID>::Element *E;
 		RDD::RenderPassID render_pass; // Here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec).
@@ -865,18 +892,14 @@ public:
 	};
 
 	RID vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
-	RID _vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0) {
-		return vertex_buffer_create(p_size_bytes, p_data, p_creation_bits);
-	}
+	RID _vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0);
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_descriptions);
 	RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>());
 
 	RID index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, Span<uint8_t> p_data = {}, bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0);
-	RID _index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0) {
-		return index_buffer_create(p_index_count, p_format, p_data, p_use_restart_indices, p_creation_bits);
-	}
+	RID _index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0);
 
 	RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
 
@@ -1049,19 +1072,13 @@ public:
 	/*****************/
 
 	RID uniform_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
-	RID _uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0) {
-		return uniform_buffer_create(p_size_bytes, p_data, p_creation_bits);
-	}
+	RID _uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0);
 
 	RID storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
-	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
-		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
-	}
+	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
 
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data = {});
-	RID _texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
-		return texture_buffer_create(p_size_elements, p_format, p_data);
-	}
+	RID _texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data);
 
 	struct Uniform {
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
