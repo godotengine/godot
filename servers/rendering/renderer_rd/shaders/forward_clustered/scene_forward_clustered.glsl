@@ -256,7 +256,7 @@ void vertex_shader(vec3 vertex_input,
 		in vec3 tangent_input,
 		in vec3 binormal_input,
 #endif
-		in uint instance_index, in uint multimesh_offset, in SceneData scene_data, in mat3x4 in_model_matrix,
+		in InstanceData instance_data, in uint multimesh_offset, in SceneData scene_data, in mat3x4 in_model_matrix,
 #ifdef USE_DOUBLE_PRECISION
 		in vec3 model_precision,
 #endif
@@ -281,7 +281,7 @@ void vertex_shader(vec3 vertex_input,
 #endif
 
 	mat3 model_normal_matrix;
-	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
+	if (bool(instance_data.flags & INSTANCE_FLAGS_NON_UNIFORM_SCALE)) {
 		model_normal_matrix = transpose(inverse(mat3(model_matrix)));
 	} else {
 		model_normal_matrix = mat3(model_matrix);
@@ -294,7 +294,7 @@ void vertex_shader(vec3 vertex_input,
 		//multimesh, instances are for it
 
 #ifdef USE_PARTICLE_TRAILS
-		uint trail_size = (instances.data[instance_index].flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
+		uint trail_size = (instance_data.flags >> INSTANCE_FLAGS_PARTICLE_TRAIL_SHIFT) & INSTANCE_FLAGS_PARTICLE_TRAIL_MASK;
 		uint stride = 3 + 1 + 1; //particles always uses this format
 
 		uint offset = trail_size * stride * INSTANCE_INDEX;
@@ -392,7 +392,7 @@ void vertex_shader(vec3 vertex_input,
 	uv2_interp = uv2_attrib;
 #endif
 
-	vec4 uv_scale = instances.data[instance_index].uv_scale;
+	vec4 uv_scale = instance_data.uv_scale;
 
 	if (uv_scale != vec4(0.0)) { // Compression enabled
 #ifdef UV_USED
@@ -601,11 +601,11 @@ void vertex_shader(vec3 vertex_input,
 				merged_mask &= ~(1u << bit);
 				uint light_index = 32 * i + bit;
 
-				if (!bool(omni_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+				if (!bool(omni_lights.data[light_index].mask & instance_data.layer_mask)) {
 					continue; //not masked
 				}
 
-				if (omni_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+				if (omni_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instance_data.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
@@ -636,11 +636,11 @@ void vertex_shader(vec3 vertex_input,
 
 				uint light_index = 32 * i + bit;
 
-				if (!bool(spot_lights.data[light_index].mask & instances.data[instance_index].layer_mask)) {
+				if (!bool(spot_lights.data[light_index].mask & instance_data.layer_mask)) {
 					continue; //not masked
 				}
 
-				if (spot_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+				if (spot_lights.data[light_index].bake_mode == LIGHT_BAKE_STATIC && bool(instance_data.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
@@ -657,11 +657,11 @@ void vertex_shader(vec3 vertex_input,
 		vec3 directional_specular = vec3(0.0);
 
 		for (uint i = 0; i < scene_data.directional_light_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instance_data.layer_mask)) {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instance_data.flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
@@ -802,6 +802,17 @@ void main() {
 
 	instance_index_interp = instance_index;
 
+	InstanceData instance_data;
+	// The gpu can put work of several different instances into one subgroup.
+	// Split the work apart per subgroup so the data can be loaded with a single scalar load
+	while (true) {
+		uint first_instance_index = subgroupBroadcastFirst(instance_index);
+		if (first_instance_index == instance_index) {
+			instance_data = instances.data[first_instance_index];
+			break;
+		}
+	}
+
 #ifdef MOTION_VECTORS
 	// Previous vertex.
 	vec3 prev_vertex;
@@ -815,8 +826,8 @@ void main() {
 
 	_unpack_vertex_attributes(
 			previous_vertex_attrib,
-			instances.data[instance_index].compressed_aabb_position_pad.xyz,
-			instances.data[instance_index].compressed_aabb_size_pad.xyz,
+			instance_data.compressed_aabb_position_pad.xyz,
+			instance_data.compressed_aabb_size_pad.xyz,
 
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			previous_normal_attrib,
@@ -837,9 +848,9 @@ void main() {
 			prev_tangent,
 			prev_binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform,
+			instance_data, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instance_data.prev_transform,
 #ifdef USE_DOUBLE_PRECISION
-			instances.data[instance_index].prev_model_precision.xyz,
+			instance_data.prev_model_precision.xyz,
 #endif
 			prev_screen_position);
 #else
@@ -858,8 +869,8 @@ void main() {
 
 	_unpack_vertex_attributes(
 			vertex_angle_attrib,
-			instances.data[instance_index].compressed_aabb_position_pad.xyz,
-			instances.data[instance_index].compressed_aabb_size_pad.xyz,
+			instance_data.compressed_aabb_position_pad.xyz,
+			instance_data.compressed_aabb_size_pad.xyz,
 #if defined(NORMAL_USED) || defined(TANGENT_USED)
 			axis_tangent_attrib,
 #ifdef NORMAL_USED
@@ -880,9 +891,9 @@ void main() {
 			tangent,
 			binormal,
 #endif
-			instance_index, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, instances.data[instance_index].transform,
+			instance_data, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, instance_data.transform,
 #ifdef USE_DOUBLE_PRECISION
-			instances.data[instance_index].model_precision.xyz,
+			instance_data.model_precision.xyz,
 #endif
 
 			screen_position);
