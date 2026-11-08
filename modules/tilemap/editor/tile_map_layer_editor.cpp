@@ -2714,6 +2714,10 @@ HashMap<Vector2i, TileMapCell> TileMapLayerEditorTerrainsPlugin::_draw_rect(Vect
 }
 
 RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vector2i p_coords, bool p_contiguous) {
+	if (selected_terrain_set < 0) {
+		return RBSet<Vector2i>();
+	}
+
 	const TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer) {
 		return RBSet<Vector2i>();
@@ -2737,7 +2741,9 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 		if (!tile_data) {
 			return RBSet<Vector2i>();
 		}
-		source_pattern = tile_data->get_terrains_pattern();
+		if (tile_data->get_terrain_set() >= 0) {
+			source_pattern = tile_data->get_terrains_pattern();
+		}
 	}
 
 	// If we are filling empty tiles, compute the tilemap boundaries.
@@ -2765,8 +2771,10 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 					if (atlas_source.is_valid()) {
 						tile_data = atlas_source->get_tile_data(edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
 					}
-					if (tile_data) {
+					if (tile_data && tile_data->get_terrain_set() >= 0) {
 						candidate_pattern = tile_data->get_terrains_pattern();
+					} else {
+						candidate_pattern = TileSet::TerrainsPattern();
 					}
 				}
 
@@ -2810,7 +2818,7 @@ RBSet<Vector2i> TileMapLayerEditorTerrainsPlugin::_get_cells_for_bucket_fill(Vec
 				if (atlas_source.is_valid()) {
 					tile_data = atlas_source->get_tile_data(edited_layer->get_cell_atlas_coords(coords), edited_layer->get_cell_alternative_tile(coords));
 				}
-				if (tile_data) {
+				if (tile_data && tile_data->get_terrain_set() >= 0) {
 					candidate_pattern = tile_data->get_terrains_pattern();
 				}
 			}
@@ -2871,6 +2879,11 @@ void TileMapLayerEditorTerrainsPlugin::_stop_dragging() {
 		case DRAG_TYPE_PICK: {
 			Vector2i coords = tile_set->local_to_map(mpos);
 			TileMapCell cell = edited_layer->get_cell(coords);
+			if (!tile_set->has_source(cell.source_id)) {
+				picker_button->set_pressed(false);
+				break;
+			}
+
 			TileData *tile_data = nullptr;
 
 			Ref<TileSetSource> source = tile_set->get_source(cell.source_id);
@@ -2879,7 +2892,7 @@ void TileMapLayerEditorTerrainsPlugin::_stop_dragging() {
 				tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
 			}
 
-			if (tile_data) {
+			if (tile_data && tile_data->get_terrain_set() >= 0) {
 				TileSet::TerrainsPattern terrains_pattern = tile_data->get_terrains_pattern();
 
 				// Find the tree item for the right terrain set.
