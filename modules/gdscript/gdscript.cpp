@@ -1748,12 +1748,32 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 }
 
 void GDScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const {
-	// exported members, not done yet!
-
 	const GDScript *sptr = script.ptr();
-	List<PropertyInfo> props;
 
 	while (sptr) {
+#ifdef TOOLS_ENABLED
+		r_properties->push_back(sptr->get_class_category());
+#endif
+
+		LocalVector<_GDScriptMemberSort> msort;
+		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
+			if (!sptr->members.has(F.key)) {
+				continue; // Skip base class members.
+			}
+			_GDScriptMemberSort ms;
+			ms.index = F.value.index;
+			ms.name = F.key;
+			msort.push_back(ms);
+		}
+
+		msort.sort();
+		for (const _GDScriptMemberSort &E : msort) {
+			PropertyInfo pinfo = sptr->member_indices[E.name].property_info;
+			validate_property(pinfo);
+			r_properties->push_back(pinfo);
+		}
+
+		// Call `_get_property_list`.
 		if (likely(sptr->valid)) {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
 			if (E) {
@@ -1826,41 +1846,12 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const
 						ERR_CONTINUE(pinfo.name.is_empty() && (pinfo.usage & PROPERTY_USAGE_STORAGE));
 						ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
 
-						props.push_back(pinfo);
+						validate_property(pinfo);
+						r_properties->push_back(pinfo);
 					}
 				}
 			}
 		}
-
-		//instance a fake script for editing the values
-
-		Vector<_GDScriptMemberSort> msort;
-		for (const KeyValue<StringName, GDScript::MemberInfo> &F : sptr->member_indices) {
-			if (!sptr->members.has(F.key)) {
-				continue; // Skip base class members.
-			}
-			_GDScriptMemberSort ms;
-			ms.index = F.value.index;
-			ms.name = F.key;
-			msort.push_back(ms);
-		}
-
-		msort.sort();
-		msort.reverse();
-		for (int i = 0; i < msort.size(); i++) {
-			props.push_front(sptr->member_indices[msort[i].name].property_info);
-		}
-
-#ifdef TOOLS_ENABLED
-		r_properties->push_back(sptr->get_class_category());
-#endif // TOOLS_ENABLED
-
-		for (PropertyInfo &prop : props) {
-			validate_property(prop);
-			r_properties->push_back(prop);
-		}
-
-		props.clear();
 
 		sptr = sptr->base.ptr();
 	}
