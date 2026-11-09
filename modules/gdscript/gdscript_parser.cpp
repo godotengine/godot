@@ -2409,9 +2409,9 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	// NOTE: The `has_continue` does not seem to be used anywhere other than detecting
 	// unreachable code, in which case we do not want to propagate it up from child suites
 	// which may or may not be executed.
-	// if (n_if->true_block->has_continue) {
-	// 	current_suite->has_continue = true;
-	// }
+	//if (n_if->true_block->has_continue) {
+	//	current_suite->has_continue = true;
+	//}
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
@@ -2439,9 +2439,9 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 	// NOTE: The `has_continue` does not seem to be used anywhere other than detecting
 	// unreachable code, in which case we do not want to propagate it up from child suites
 	// which may or may not be executed.
-	// if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
-	// 	current_suite->has_continue = true;
-	// }
+	//if (n_if->false_block != nullptr && n_if->false_block->has_continue) {
+	//	current_suite->has_continue = true;
+	//}
 
 	return n_if;
 }
