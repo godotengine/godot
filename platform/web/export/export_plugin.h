@@ -95,7 +95,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 			splash = _load_icon_or_splash_image(splash_path, &err);
 		}
 		if (splash_path.is_empty() || err != OK || splash.is_null() || splash->is_empty()) {
-			return Ref<Image>(memnew(Image(boot_splash_png)));
+			return Ref<Image>(memnew(Image(boot_splash_png, sizeof(boot_splash_png))));
 		}
 		return splash;
 	}

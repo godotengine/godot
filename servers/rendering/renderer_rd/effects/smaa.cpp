@@ -110,7 +110,7 @@ SMAA::SMAA() {
 		tf.height = SEARCHTEX_HEIGHT;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		smaa.search_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(search_tex_png).get_data() });
+		smaa.search_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(search_tex_png, sizeof(search_tex_png)).get_data() });
 	}
 
 	{
@@ -121,7 +121,7 @@ SMAA::SMAA() {
 		tf.height = AREATEX_HEIGHT;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		smaa.area_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(area_tex_png).get_data() });
+		smaa.area_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(area_tex_png, sizeof(area_tex_png)).get_data() });
 	}
 
 	{

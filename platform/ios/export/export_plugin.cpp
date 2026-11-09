@@ -185,7 +185,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		}
 
 		if (err != OK || splash.is_null() || splash->is_empty()) {
-			splash.instantiate(boot_splash_png);
+			splash.instantiate(boot_splash_png, sizeof(boot_splash_png));
 		}
 
 		// Using same image for both @2x and @3x
