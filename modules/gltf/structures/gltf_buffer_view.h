@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "../gltf_defines.h"
+#include "gltf_item.h"
 
-#include "core/io/resource.h"
-
-class GLTFBufferView : public Resource {
-	GDCLASS(GLTFBufferView, Resource);
+class GLTFBufferView : public GLTFItem {
+	GDCLASS(GLTFBufferView, GLTFItem);
 	friend class GLTFDocument;
 
 public:
@@ -93,5 +91,9 @@ public:
 	static GLTFBufferViewIndex write_new_buffer_view_into_state(const Ref<GLTFState> &p_gltf_state, const PackedByteArray &p_input_data, const int64_t p_alignment = 1, const ArrayBufferTarget p_target = TARGET_NONE, const int64_t p_byte_stride = -1, const GLTFBufferIndex p_buffer_index = 0, const bool p_deduplicate = true);
 
 	static Ref<GLTFBufferView> from_dictionary(const Dictionary &p_dict);
-	Dictionary to_dictionary() const;
+	virtual Error read_from_dictionary(const Dictionary &p_dict) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };

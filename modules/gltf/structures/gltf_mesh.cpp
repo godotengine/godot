@@ -42,8 +42,6 @@ void GLTFMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_weights", "blend_weights"), &GLTFMesh::set_blend_weights);
 	ClassDB::bind_method(D_METHOD("get_instance_materials"), &GLTFMesh::get_instance_materials);
 	ClassDB::bind_method(D_METHOD("set_instance_materials", "instance_materials"), &GLTFMesh::set_instance_materials);
-	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFMesh::get_additional_data);
-	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFMesh::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_name"), "set_original_name", "get_original_name");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh"), "set_mesh", "get_mesh");
@@ -81,12 +79,4 @@ Vector<float> GLTFMesh::get_blend_weights() {
 
 void GLTFMesh::set_blend_weights(const Vector<float> &p_blend_weights) {
 	blend_weights = Vector<float>(p_blend_weights);
-}
-
-Variant GLTFMesh::get_additional_data(const StringName &p_extension_name) {
-	return additional_data.get(p_extension_name, Variant());
-}
-
-void GLTFMesh::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
-	additional_data[p_extension_name] = p_additional_data;
 }

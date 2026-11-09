@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "gltf_item.h"
+
 #include "scene/resources/animation.h"
 
-class GLTFAnimation : public Resource {
-	GDCLASS(GLTFAnimation, Resource);
+class GLTFAnimation : public GLTFItem {
+	GDCLASS(GLTFAnimation, GLTFItem);
 
 protected:
 	static void _bind_methods();
@@ -64,7 +66,6 @@ public:
 	bool loop = false;
 	HashMap<int, NodeTrack> node_tracks;
 	HashMap<String, Channel<Variant>> pointer_tracks;
-	Dictionary additional_data;
 
 public:
 	static Interpolation godot_to_gltf_interpolation(const Ref<Animation> &p_godot_animation, int32_t p_godot_anim_track_index);
@@ -79,9 +80,6 @@ public:
 	HashMap<int, GLTFAnimation::NodeTrack> &get_node_tracks();
 	HashMap<String, GLTFAnimation::Channel<Variant>> &get_pointer_tracks();
 	bool is_empty_of_tracks() const;
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 	GLTFAnimation();
 };

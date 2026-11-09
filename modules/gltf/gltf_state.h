@@ -46,8 +46,8 @@
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 
-class GLTFState : public Resource {
-	GDCLASS(GLTFState, Resource);
+class GLTFState : public GLTFItem {
+	GDCLASS(GLTFState, GLTFItem);
 	friend class GLTFDocument;
 	friend class GLTFNode;
 
@@ -116,7 +116,6 @@ protected:
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
-	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
@@ -157,7 +156,6 @@ protected:
 	GLTFNodeIndex _get_node_index_bind_compat_113172(Node *p_node);
 	int _get_animation_players_count_bind_compat_113172(int p_anim_player_index);
 	AnimationPlayer *_get_animation_player_bind_compat_113172(int p_anim_player_index);
-	Variant _get_additional_data_bind_compat_113172(const StringName &p_extension_name);
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -321,9 +319,6 @@ public:
 	int get_animation_players_count(int p_anim_player_index) const;
 
 	AnimationPlayer *get_animation_player(int p_anim_player_index) const;
-
-	Variant get_additional_data(const StringName &p_extension_name) const;
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
 
 VARIANT_ENUM_CAST(GLTFState::HandleBinaryImageMode);

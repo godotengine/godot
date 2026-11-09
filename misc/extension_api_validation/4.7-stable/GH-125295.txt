@@ -1,0 +1,13 @@
+Validate extension JSON: API was removed: classes/GLTFAnimation/methods/get_additional_data
+Validate extension JSON: API was removed: classes/GLTFAnimation/methods/set_additional_data
+Validate extension JSON: API was removed: classes/GLTFLight/methods/get_additional_data
+Validate extension JSON: API was removed: classes/GLTFLight/methods/set_additional_data
+Validate extension JSON: API was removed: classes/GLTFMesh/methods/get_additional_data
+Validate extension JSON: API was removed: classes/GLTFMesh/methods/set_additional_data
+Validate extension JSON: API was removed: classes/GLTFNode/methods/get_additional_data
+Validate extension JSON: API was removed: classes/GLTFNode/methods/set_additional_data
+Validate extension JSON: API was removed: classes/GLTFState/methods/get_additional_data
+Validate extension JSON: API was removed: classes/GLTFState/methods/set_additional_data
+
+The additional data methods moved to GLTFItem. Function calls targeting them will now
+resolve to GLTFItem. Compatibility for the non-const getters is explicitly preserved.

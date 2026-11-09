@@ -100,8 +100,6 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations_bind);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "gltf_node_index"), &GLTFState::get_scene_node);
 	ClassDB::bind_method(D_METHOD("get_node_index", "scene_node"), &GLTFState::get_node_index);
-	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
-	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
 	ClassDB::bind_method(D_METHOD("get_handle_binary_image_mode"), &GLTFState::get_handle_binary_image_mode);
 	ClassDB::bind_method(D_METHOD("set_handle_binary_image_mode", "method"), &GLTFState::set_handle_binary_image_mode);
 	ClassDB::bind_method(D_METHOD("set_bake_fps", "value"), &GLTFState::set_bake_fps);
@@ -443,14 +441,6 @@ void GLTFState::set_filename(const String &p_filename) {
 	if (extract_prefix.is_empty()) {
 		extract_prefix = p_filename.get_basename();
 	}
-}
-
-Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {
-	return additional_data.get(p_extension_name, Variant());
-}
-
-void GLTFState::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {
-	additional_data[p_extension_name] = p_additional_data;
 }
 
 GLTFBufferViewIndex GLTFState::append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication = false) {
