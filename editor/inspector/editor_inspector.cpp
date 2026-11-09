@@ -6373,6 +6373,14 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 	}
 }
 
+void EditorInspector::set_scroll_cache(ObjectID p_id, int p_offset) {
+	scroll_cache[p_id] = p_offset;
+}
+
+void EditorInspector::remove_scroll_cache(ObjectID p_id) {
+	scroll_cache.erase(p_id);
+}
+
 void EditorInspector::set_property_prefix(const String &p_prefix) {
 	property_prefix = p_prefix;
 }
