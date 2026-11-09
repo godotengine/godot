@@ -5470,6 +5470,12 @@ Object *EditorInspector::get_next_edited_object() {
 	return next_object;
 }
 
+void EditorInspector::cleanup_object() {
+	if (!ObjectDB::get_instance(edited_object_id)) {
+		_clear();
+	}
+}
+
 void EditorInspector::edit(Object *p_object) {
 	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (object == p_object) {
