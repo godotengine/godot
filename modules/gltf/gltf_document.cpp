@@ -853,6 +853,7 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 		ERR_FAIL_COND_V(!dict.has("buffer"), ERR_PARSE_ERROR);
 		ERR_FAIL_COND_V(!dict.has("byteLength"), ERR_PARSE_ERROR);
 		Ref<GLTFBufferView> buffer_view = GLTFBufferView::from_dictionary(dict);
+		ERR_FAIL_COND_V(buffer_view.is_null(), ERR_PARSE_ERROR);
 		p_state->buffer_views.push_back(buffer_view);
 	}
 
@@ -890,6 +891,7 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 		ERR_FAIL_COND_V(!dict.has("count"), ERR_PARSE_ERROR);
 		ERR_FAIL_COND_V(!dict.has("type"), ERR_PARSE_ERROR);
 		Ref<GLTFAccessor> accessor = GLTFAccessor::from_dictionary(dict);
+		ERR_FAIL_COND_V(accessor.is_null(), ERR_PARSE_ERROR);
 		p_state->accessors.push_back(accessor);
 	}
 
@@ -3578,9 +3580,7 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> p_state) {
 
 	for (GLTFLightIndex light_i = 0; light_i < lights.size(); light_i++) {
 		Ref<GLTFLight> light = GLTFLight::from_dictionary(lights[light_i]);
-		if (light.is_null()) {
-			return Error::ERR_PARSE_ERROR;
-		}
+		ERR_FAIL_COND_V(light.is_null(), ERR_PARSE_ERROR);
 		p_state->lights.push_back(light);
 	}
 
@@ -3597,7 +3597,9 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> p_state) {
 	const Array cameras = p_state->json["cameras"];
 
 	for (GLTFCameraIndex i = 0; i < cameras.size(); i++) {
-		p_state->cameras.push_back(GLTFCamera::from_dictionary(cameras[i]));
+		Ref<GLTFCamera> camera = GLTFCamera::from_dictionary(cameras[i]);
+		ERR_FAIL_COND_V(camera.is_null(), ERR_PARSE_ERROR);
+		p_state->cameras.push_back(camera);
 	}
 
 	print_verbose("glTF: Total cameras: " + itos(p_state->cameras.size()));

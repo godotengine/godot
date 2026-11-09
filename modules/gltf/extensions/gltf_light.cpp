@@ -212,11 +212,17 @@ Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary &p_dictionary) {
 		light->range = p_dictionary["range"];
 	}
 	if (type == "spot") {
-		const Dictionary &spot = p_dictionary["spot"];
-		light->inner_cone_angle = spot["innerConeAngle"];
-		light->outer_cone_angle = spot["outerConeAngle"];
-		if (light->inner_cone_angle >= light->outer_cone_angle) {
-			ERR_PRINT("Error parsing glTF light: The inner angle must be smaller than the outer angle.");
+		if (p_dictionary.has("spot")) {
+			const Dictionary &spot = p_dictionary["spot"];
+			if (spot.has("innerConeAngle")) {
+				light->inner_cone_angle = spot["innerConeAngle"];
+			}
+			if (spot.has("outerConeAngle")) {
+				light->outer_cone_angle = spot["outerConeAngle"];
+			}
+			if (light->inner_cone_angle >= light->outer_cone_angle) {
+				WARN_PRINT("Error parsing glTF light: The inner angle must be smaller than the outer angle.");
+			}
 		}
 	} else if (type != "point" && type != "directional") {
 		ERR_PRINT("Error parsing glTF light: Light type '" + type + "' is unknown.");
