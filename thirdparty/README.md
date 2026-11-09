@@ -264,7 +264,7 @@ functionality to IPv4 only and no DTLS. We recommend against it.
 ## etcpak
 
 - Upstream: https://github.com/wolfpld/etcpak
-- Version: 2.0 (a43d6925bee49277945cf3e311e4a022ae0c2073, 2024)
+- Version: 2.1 (7f15da4739cc5f8562311bdbb800436986d268ca, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
