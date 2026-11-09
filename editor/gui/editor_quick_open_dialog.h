@@ -62,6 +62,8 @@ struct QuickOpenResultCandidate {
 	Ref<Texture2D> thumbnail;
 	Ref<FuzzySearchMatch> result;
 
+	bool has_preview = false;
+
 	static QuickOpenResultCandidate from_uid(const ResourceUID::ID &p_uid, bool &r_success);
 	static QuickOpenResultCandidate from_result(const Ref<FuzzySearchMatch> p_result, bool &r_success);
 };
