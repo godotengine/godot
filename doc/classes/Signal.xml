@@ -198,10 +198,10 @@
 			<param index="0" name="callable" type="Callable" />
 			<description>
 				Disconnects this signal from the specified [Callable]. If the connection does not exist, prints an error. Use [method is_connected] to make sure that the connection exists.
-				[b]Note:[/b] Callables are compared by their target object and target method name. Additional bindings are ignored for the purposes of this comparison. Two lambdas only compare equal if they are the same object by object identity.
+				[b]Note:[/b] Callables are compared by their target object and target method name. Additional bindings are ignored for the purposes of this comparison.
 				[codeblock]
 				my_signal.connect(my_callable.bind(0))
-				my_signal.disconnect(my_callable) # Disconnects even though it lacks the bound argument
+				my_signal.disconnect(my_callable) # Disconnects even though it lacks the bound argument.
 				[/codeblock]
 			</description>
 		</method>
