@@ -36,8 +36,99 @@ TEST_FORCE_LINK(test_button)
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "tests/display_server_mock.h"
+#include "tests/signal_watcher.h"
 
 namespace TestButton {
+
+TEST_CASE("[SceneTree][Button] Long press activates only once") {
+	Button *button = memnew(Button);
+	SceneTree::get_singleton()->get_root()->add_child(button);
+	button->set_size(Size2(100, 100));
+	button->set_toggle_mode(true);
+	button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	bool cancel_before_long_press = true;
+
+	SUBCASE("Android toggle on press") {}
+	SUBCASE("Android button on press") {
+		button->set_toggle_mode(false);
+	}
+	SUBCASE("Android toggle on release") {
+		button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_RELEASE);
+	}
+	SUBCASE("Android button on release") {
+		button->set_toggle_mode(false);
+		button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_RELEASE);
+	}
+	SUBCASE("Long press without cancellation") {
+		cancel_before_long_press = false;
+	}
+
+	SIGNAL_WATCH(button, "pressed");
+	SIGNAL_WATCH(button, "toggled");
+	Array no_args;
+	no_args.push_back(Array());
+	Array toggled_args = { { true } };
+	const bool activate_on_press = button->get_action_mode() == BaseButton::ACTION_MODE_BUTTON_PRESS;
+
+	Ref<InputEventScreenTouch> touch;
+	touch.instantiate();
+	touch->set_position(Point2(20, 20));
+	touch->set_pressed(true);
+	static_cast<Control *>(button)->gui_input(touch);
+	if (activate_on_press) {
+		SIGNAL_CHECK("pressed", no_args);
+		if (button->is_toggle_mode()) {
+			SIGNAL_CHECK("toggled", toggled_args);
+		}
+	} else {
+		SIGNAL_CHECK_FALSE("pressed");
+	}
+
+	if (cancel_before_long_press) {
+		// Android cancels the original touch before reporting the long press.
+		touch->set_pressed(false);
+		touch->set_canceled(true);
+		static_cast<Control *>(button)->gui_input(touch);
+	}
+	touch->set_canceled(false);
+	touch->set_pressed(true);
+	touch->set_long_press(true);
+	static_cast<Control *>(button)->gui_input(touch);
+	SIGNAL_CHECK_FALSE("pressed");
+	SIGNAL_CHECK_FALSE("toggled");
+
+	touch->set_pressed(false);
+	static_cast<Control *>(button)->gui_input(touch);
+	if (activate_on_press) {
+		SIGNAL_CHECK_FALSE("pressed");
+		SIGNAL_CHECK_FALSE("toggled");
+	} else {
+		SIGNAL_CHECK("pressed", no_args);
+		if (button->is_toggle_mode()) {
+			SIGNAL_CHECK("toggled", toggled_args);
+		}
+	}
+	if (button->is_toggle_mode()) {
+		CHECK(button->is_pressed());
+	}
+
+	// The next ordinary tap must still activate the button.
+	touch->set_long_press(false);
+	touch->set_pressed(true);
+	static_cast<Control *>(button)->gui_input(touch);
+	touch->set_pressed(false);
+	static_cast<Control *>(button)->gui_input(touch);
+	SIGNAL_CHECK("pressed", no_args);
+	if (button->is_toggle_mode()) {
+		Array untoggled_args = { { false } };
+		SIGNAL_CHECK("toggled", untoggled_args);
+		CHECK_FALSE(button->is_pressed());
+	}
+
+	SIGNAL_UNWATCH(button, "pressed");
+	SIGNAL_UNWATCH(button, "toggled");
+	memdelete(button);
+}
 
 TEST_CASE("[SceneTree][Button] is_hovered()") {
 	// Create new button instance.
