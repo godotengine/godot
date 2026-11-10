@@ -317,10 +317,11 @@ opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit
 opts.Add(
     BoolVariable(
         "redirect_build_objects",
-        "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
+        "Enable redirecting built objects/libraries to `obj_dir` to declutter the repository.",
         True,
     )
 )
+opts.Add("obj_dir", "Path to the directory for redirected build objects/libraries", "bin/obj")
 opts.Add(
     EnumVariable(
         "library_type",
@@ -1191,19 +1192,29 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
+
+def builders_emitter(target, source, env):
+    # Rebuild when the standalone builder scripts change.
+    env.Depends(target, ["#glsl_builders.py", "#gles3_builders.py", "#" + methods.BUILDER_RUNNER])
+    return target, source
+
+
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
         action=env.Run(glsl_builders.build_rd_headers),
+        emitter=builders_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLSL_HEADER": env.Builder(
         action=env.Run(glsl_builders.build_raw_headers),
+        emitter=builders_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),
     "GLES3_GLSL": env.Builder(
         action=env.Run(gles3_builders.build_gles3_headers),
+        emitter=builders_emitter,
         suffix="glsl.gen.h",
         src_suffix=".glsl",
     ),

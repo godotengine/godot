@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-import methods
+from misc.utility.color import print_error, print_warning
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
 
@@ -44,13 +44,13 @@ def detect_arch():
         # Catches x86, i386, i486, i586, i686, etc.
         return "x86_32"
     else:
-        methods.print_warning(f'Unsupported CPU architecture: "{host_machine}". Falling back to x86_64.')
+        print_warning(f'Unsupported CPU architecture: "{host_machine}". Falling back to x86_64.')
         return "x86_64"
 
 
 def validate_arch(arch, platform_name, supported_arches):
     if arch not in supported_arches:
-        methods.print_error(
+        print_error(
             f'Unsupported CPU architecture "{arch}" for {platform_name}. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit(255)
@@ -148,7 +148,7 @@ def check_accesskit_version(path, req_ver="0.23.1"):
                 dep_version = "0.21.3"
 
         if ver_parse(dep_version) != ver_parse(req_ver):
-            methods.print_warning(
+            print_warning(
                 f"Incompatible AccessKit version detected. Version required {req_ver}, version found {dep_version}.\n"
                 f"You can install required version by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
                 "See the documentation for more information:\n\t"
@@ -225,27 +225,34 @@ def detect_mvk(env, osname):
     return ""
 
 
-def combine_libs_apple_embedded(target, source, env):
-    lib_path = target[0].srcnode().abspath
+def combine_libs_apple_embedded(env):
+    """Return the command that combines the source libraries into the target library."""
     if "osxcross" in env:
         libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/${apple_target_triple}libtool"
     else:
         libtool = "$APPLE_TOOLCHAIN_PATH/usr/bin/libtool"
-    env.Execute(
-        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
-    )
+    return libtool + " -static -o $TARGET $SOURCES"
+
+
+def generate_bundle_options_apple_embedded(env):
+    """Return the options that `generate_bundle_apple_embedded` needs, as a JSON-compatible dict."""
+    options = {key: env[key] for key in ["dev_build", "precision", "vulkan", "vulkan_sdk_path", "accesskit"]}
+    options["extra_suffix"] = env.extra_suffix
+    options["accesskit_sdk_path"] = env.get("accesskit_sdk_path")
+    options["MODULES_EXTERNAL"] = env.get("MODULES_EXTERNAL", [])
+    return options
 
 
 def lipo_and_copy_apple_embedded(
     platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, module_prefix, app_dir, env
 ):
-    bin_dir = env.Dir("#bin").abspath
+    bin_dir = os.path.abspath("bin")
 
     # Lipo template libraries.
     #
-    # env.extra_suffix contains ".simulator" when building for simulator,
+    # env["extra_suffix"] contains ".simulator" when building for simulator,
     # but it's undesired when calling lipo()
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env["extra_suffix"].replace(".simulator", "")
     rel_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, extra_suffix + ".a")
     dbg_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, extra_suffix + ".a")
     rel_target_bin_sim = lipo(
@@ -317,13 +324,14 @@ def lipo_and_copy_apple_embedded(
         )
 
 
-def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, env):
+    # `env` is the dict from `generate_bundle_options_apple_embedded`.
     # Template bundle.
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env["extra_suffix"].replace(".simulator", "")
     app_prefix = "godot." + platform
     rel_prefix = platform + "." + "template_release"
     dbg_prefix = platform + "." + "template_debug"
-    if env.dev_build:
+    if env["dev_build"]:
         app_prefix += ".dev"
         rel_prefix += ".dev"
         dbg_prefix += ".dev"
@@ -332,18 +340,17 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
         rel_prefix += ".double"
         dbg_prefix += ".double"
 
-    app_dir = env.Dir("#bin/" + platform + "_xcode").abspath
-    templ = env.Dir("#misc/dist/apple_embedded_xcode").abspath
+    app_dir = os.path.abspath("bin/" + platform + "_xcode")
+    templ = os.path.abspath("misc/dist/apple_embedded_xcode")
     if os.path.exists(app_dir):
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
 
     lipo_and_copy_apple_embedded(platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, "", app_dir, env)
-    if "MODULES_EXTERNAL" in env:
-        for mod in env["MODULES_EXTERNAL"]:
-            lipo_and_copy_apple_embedded(
-                platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, mod, app_dir, env
-            )
+    for mod in env["MODULES_EXTERNAL"]:
+        lipo_and_copy_apple_embedded(
+            platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, mod, app_dir, env
+        )
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):
@@ -363,14 +370,14 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
             shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
 
     if env["accesskit"]:
-        ak_sdk_path = env.get("accesskit_sdk_path")
+        ak_sdk_path = env["accesskit_sdk_path"]
         if ak_sdk_path:
             ak_xcf = os.path.join(ak_sdk_path, "lib", "ios", "AccessKit.xcframework")
             if os.path.isdir(ak_xcf):
                 shutil.copytree(ak_xcf, app_dir + "/AccessKit.xcframework")
 
     # ZIP Xcode project bundle.
-    zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath
+    zip_dir = os.path.abspath("bin/" + (app_prefix + extra_suffix).replace(".", "_"))
     shutil.make_archive(zip_dir, "zip", root_dir=app_dir)
     shutil.rmtree(app_dir)
 
@@ -386,6 +393,8 @@ def setup_swift_builder(
     # Compile Swift sources and emit a Swift->ObjC interop header.
 
     from SCons.Script import Action, Builder
+
+    import methods
 
     if apple_platform == "macos":
         target_suffix = "macosx10.9"

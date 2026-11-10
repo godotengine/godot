@@ -4,29 +4,29 @@ import os
 import shutil
 import subprocess
 
-from methods import get_version_info
 from platform_methods import lipo
 
 
 def generate_bundle(target, source, env):
-    bin_dir = env.Dir("#bin").abspath
+    env = source[1]
+    bin_dir = os.path.abspath("bin")
+    dist_dir = os.path.abspath("misc/dist")
+    suffix = env["extra_suffix"] + env["module_version_string"]
 
-    if env.editor_build:
+    if env["editor_build"]:
         # Editor bundle.
         prefix = "godot." + env["platform"] + "." + env["target"]
-        if env.dev_build:
+        if env["dev_build"]:
             prefix += ".dev"
         if env["precision"] == "double":
             prefix += ".double"
 
         # Lipo editor executable.
-        target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
+        target_bin = lipo(bin_dir + "/" + prefix, suffix)
 
         # Assemble .app bundle and update version info.
-        app_dir = env.Dir(
-            "#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
-        ).abspath
-        templ = env.Dir("#misc/dist/macos_tools.app").abspath
+        app_dir = bin_dir + "/" + (prefix + suffix).replace(".", "_") + ".app"
+        templ = dist_dir + "/macos_tools.app"
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
 
@@ -43,10 +43,10 @@ def generate_bundle(target, source, env):
             os.mkdir(app_dir + "/Contents/MacOS")
         if target_bin != "":
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
-        if "mono" in env.module_version_string:
-            shutil.copytree(env.Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
-        version = get_version_info("", True)
-        with open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
+        if "mono" in env["module_version_string"]:
+            shutil.copytree(bin_dir + "/GodotSharp", app_dir + "/Contents/Resources/GodotSharp")
+        version = env["version"]
+        with open(dist_dir + "/macos" + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
             with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
                 for line in fin:
                     line = line.replace("$version", "{major}.{minor}.{patch}.{status}.{build}".format(**version))
@@ -66,10 +66,10 @@ def generate_bundle(target, source, env):
                 "--options=runtime",
                 "--entitlements",
             ]
-            if env.dev_build:
-                sign_command += [env.Dir("#misc/dist/macos").abspath + "/editor_debug.entitlements"]
+            if env["dev_build"]:
+                sign_command += [dist_dir + "/macos" + "/editor_debug.entitlements"]
             else:
-                sign_command += [env.Dir("#misc/dist/macos").abspath + "/editor.entitlements"]
+                sign_command += [dist_dir + "/macos" + "/editor.entitlements"]
             sign_command += [app_dir]
             subprocess.run(sign_command)
 
@@ -78,7 +78,7 @@ def generate_bundle(target, source, env):
         app_prefix = "godot." + env["platform"]
         rel_prefix = "godot." + env["platform"] + "." + "template_release"
         dbg_prefix = "godot." + env["platform"] + "." + "template_debug"
-        if env.dev_build:
+        if env["dev_build"]:
             app_prefix += ".dev"
             rel_prefix += ".dev"
             dbg_prefix += ".dev"
@@ -88,12 +88,12 @@ def generate_bundle(target, source, env):
             dbg_prefix += ".double"
 
         # Lipo template executables.
-        rel_target_bin = lipo(bin_dir + "/" + rel_prefix, env.extra_suffix + env.module_version_string)
-        dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, env.extra_suffix + env.module_version_string)
+        rel_target_bin = lipo(bin_dir + "/" + rel_prefix, suffix)
+        dbg_target_bin = lipo(bin_dir + "/" + dbg_prefix, suffix)
 
         # Assemble .app bundle.
-        app_dir = env.Dir("#bin/macos_template.app").abspath
-        templ = env.Dir("#misc/dist/macos_template.app").abspath
+        app_dir = bin_dir + "/macos_template.app"
+        templ = dist_dir + "/macos_template.app"
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
         shutil.copytree(templ, app_dir)
@@ -105,23 +105,16 @@ def generate_bundle(target, source, env):
             shutil.copy(dbg_target_bin, app_dir + "/Contents/MacOS/godot_macos_debug.universal")
 
         # ZIP .app bundle.
-        zip_dir = env.Dir(
-            "#bin/" + (app_prefix + env.extra_suffix + env.module_version_string).replace(".", "_")
-        ).abspath
+        zip_dir = bin_dir + "/" + (app_prefix + suffix).replace(".", "_")
         shutil.make_archive(zip_dir, "zip", root_dir=bin_dir, base_dir="macos_template.app")
         shutil.rmtree(app_dir)
 
 
 def make_debug_macos(target, source, env):
     dst = str(target[0])
-    if env["macports_clang"] != "no":
-        mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
-        mpclangver = env["macports_clang"]
-        dsymutil = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-dsymutil"
-    else:
-        dsymutil = "dsymutil"
+    dsymutil, llvm_strip = source
     subprocess.run([dsymutil, dst, "-o", f"{dst}.dSYM"], check=True)
-    if "APPLE_LLVM_CROSS" in os.environ or "osxcross" in env:
+    if llvm_strip:
         subprocess.run(["llvm-strip", dst], check=True)
     else:
         subprocess.run(["strip", "-u", "-r", dst], check=True)

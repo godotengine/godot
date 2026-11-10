@@ -870,7 +870,7 @@ def configure_mingw(env: "SConsEnvironment"):
                         env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
                     elif env["arch"] == "x86_32":
                         env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
-                env.Append(LIBPATH=["#bin/obj/platform/windows"])
+                env.Append(LIBPATH=[env.Dir("#").Dir(env["obj_dir"]).Dir("platform/windows")])
                 env.Append(
                     LIBS=[
                         "accesskit",
