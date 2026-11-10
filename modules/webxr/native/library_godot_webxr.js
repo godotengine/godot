@@ -467,7 +467,14 @@ const GodotWebXR = {
 		const oninputevent = GodotRuntime.get_func(p_on_input_event);
 		const onsimpleevent = GodotRuntime.get_func(p_on_simple_event);
 
-		let disable_webxr_layers = !!p_disable_webxr_layers || typeof XRWebGLBinding === 'undefined';
+		let disable_webxr_layers = !!p_disable_webxr_layers;
+
+		// Use the same check as the WebXR Layers Polyfill.
+		const webxr_layers_supported = (typeof XRWebGLBinding !== 'undefined') && (typeof XRMediaBinding !== 'undefined');
+		if (!disable_webxr_layers && !webxr_layers_supported) {
+			console.log('WebXR: Disabling WebXR Layers because it doesn\'t appear to be supported'); // eslint-disable-line no-console
+			disable_webxr_layers = true;
+		}
 
 		const session_init = {};
 		if (required_features.length > 0) {
