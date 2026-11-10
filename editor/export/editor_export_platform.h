@@ -197,6 +197,7 @@ protected:
 		return ret;
 	}
 
+	String get_official_debugsymbols_file_name(const String &p_template_file_name) const;
 	bool exists_export_template(const String &p_template_file_name, String *r_err) const;
 	String find_export_template(const String &p_template_file_name, String *r_err = nullptr) const;
 	Vector<String> gen_export_flags(BitField<EditorExportPlatform::DebugFlags> p_flags);
