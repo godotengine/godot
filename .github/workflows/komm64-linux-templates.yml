@@ -1,0 +1,99 @@
+name: komm64 Linux Templates
+
+# Linux x86_64 release export template for the komm64 fork (pixtube /
+# pixtube-player desktop builds). Same toolchain as the earlier A1 build:
+# Ubuntu 22.04, GCC 11.4, production=yes. __FILE__ paths are mapped away with
+# -ffile-prefix-map and a gate fails the run if any absolute source path is
+# left in the binary (#54).
+#
+# Trigger:
+#   - workflow_dispatch with `ref`: build any branch/tag/commit (artifact only)
+#   - tag push (v*-komm64*, except webgpu): build and attach to the Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or commit to build.
+        required: true
+        default: '4.6'
+  push:
+    tags:
+      - 'v*-komm64*'
+      - '!v*-komm64-webgpu*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+          submodules: recursive
+
+      - name: Setup dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwayland-bin
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          platform: linuxbsd
+          target: template_release
+          scons-flags: >-
+            arch=x86_64 production=yes debug_symbols=no
+            module_text_server_fb_enabled=yes
+            "ccflags=-ffile-prefix-map=${{ github.workspace }}/="
+
+      - name: Prepare artifact
+        run: |
+          set -e
+          mkdir -p out
+          cp bin/godot.linuxbsd.template_release.x86_64 out/linux_release.x86_64
+          gcc --version | head -1 > out/toolchain.txt
+          sha256sum out/linux_release.x86_64 | tee out/linux_release.x86_64.sha256
+          ls -l out
+
+      - name: Build path gate
+        shell: python
+        run: |
+          # Fail if the binary embeds an absolute source path (#54).
+          import re, sys
+          data = open("out/linux_release.x86_64", "rb").read()
+          pattern = re.compile(rb"/(?:home|runner|__w|github)/[^\x00\n]{0,160}?\.(?:h|hpp|c|cpp|inc)\b")
+          found = pattern.findall(data)
+          print(f"{len(found)} build-path strings")
+          for s in found[:5]:
+              print("   ", s.decode(errors="replace"))
+          if found:
+              print("::error::build machine paths found in the template (#54)")
+              sys.exit(1)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: komm64-godot-linux-template_release
+          path: out/
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: komm64-godot-linux-template_release
+          path: out
+
+      - name: Attach to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/linux_release.x86_64
