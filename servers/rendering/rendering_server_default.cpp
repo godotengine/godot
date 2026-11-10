@@ -296,6 +296,14 @@ void RenderingServerDefault::finish() {
 			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
 			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
 		}
+#ifdef RD_ENABLED
+		// The display server destroys the main device after the render worker
+		// has stopped. Return ownership to the calling (main) thread first.
+		RenderingDevice *rd = RenderingDevice::get_singleton();
+		if (rd) {
+			rd->make_current();
+		}
+#endif
 		server_thread = Thread::MAIN_ID;
 	} else {
 		_finish();
