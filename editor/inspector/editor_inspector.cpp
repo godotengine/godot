@@ -5470,6 +5470,13 @@ Object *EditorInspector::get_next_edited_object() {
 	return next_object;
 }
 
+List<EditorProperty *> EditorInspector::get_property_editors(const StringName &p_prop) {
+	if (editor_property_map.has(p_prop)) {
+		return List<EditorProperty *>(editor_property_map[p_prop]);
+	}
+	return List<EditorProperty *>();
+}
+
 void EditorInspector::edit(Object *p_object) {
 	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (object == p_object) {
