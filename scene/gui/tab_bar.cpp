@@ -773,10 +773,8 @@ void TabBar::_notification(int p_what) {
 			Vector2 size = get_size();
 
 			if (tabs.is_empty()) {
-				// Draw the drop indicator where the first tab would be if there are no tabs.
 				if (dragging_valid_tab) {
-					int x = rtl ? size.x : 0;
-					theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+					_draw_tab_drop(get_canvas_item());
 				}
 
 				return;
@@ -881,7 +879,7 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 		} else if (not_leftmost_tab) {
 			x -= Math::floor(0.5f * theme_cache.tab_separation);
 		}
-	} else {
+	} else if (!tabs.is_empty()) {
 		if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
 			x = get_tab_rect(0).position.x;
 			if (rtl) {
@@ -895,6 +893,9 @@ void TabBar::_draw_tab_drop(RID p_canvas_item) {
 				x += tab_rect.size.width;
 			}
 		}
+	} else {
+		// Draw the drop indicator where the first tab would be if there are no tabs.
+		x = rtl ? size.x : 0;
 	}
 
 	theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
