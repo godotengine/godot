@@ -70,7 +70,7 @@
 			Auto-translation mode for the [member format]. Useful when the format has a word that can be translated.
 		</member>
 		<member name="plural_format" type="String" setter="set_plural_format" getter="get_plural_format">
-			Plural version of [member format]. Used only if [member format] is not empty and [member format_auto_translate_mode] is not disabled. See also [method Object.tr_n].
+			Plural version of [member format]. Used only if [member format] is not empty and [member format_auto_translate_mode] is not disabled. If either [member format] or this contain [code]%s[/code] the other must also use it. See also [method Object.tr_n].
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;" deprecated="Use [member format] instead.">
 			Adds the specified prefix string before the numerical value of the [SpinBox]. This is used only if [member format] is empty.
