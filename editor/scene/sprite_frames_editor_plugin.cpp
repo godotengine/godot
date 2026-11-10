@@ -1624,6 +1624,12 @@ void SpriteFramesEditor::_update_anim_loop_button() {
 		return;
 	}
 
+	if (!frames->has_animation(edited_anim)) {
+		anim_loop->set_disabled(true);
+		return;
+	}
+	anim_loop->set_disabled(false);
+
 	SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(edited_anim);
 	anim_loop->set_pressed_no_signal(loop != SpriteFrames::LOOP_NONE);
 
@@ -1637,6 +1643,17 @@ void SpriteFramesEditor::_update_anim_loop_button() {
 		} break;
 	}
 }
+
+void SpriteFramesEditor::_update_anim_speed_spin() {
+	if (!frames->has_animation(edited_anim)) {
+		anim_speed->set_editable(false);
+		return;
+	}
+	anim_speed->set_editable(true);
+
+	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+}
+
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (!p_skip_selector) {
 		animations_dirty = true;
@@ -1673,6 +1690,8 @@ void SpriteFramesEditor::_update_library_impl() {
 			missing_anim_label->show();
 			anim_frames_vb->hide();
 			updating = false;
+			_update_anim_loop_button();
+			_update_anim_speed_spin();
 			return;
 		}
 		missing_anim_label->hide();
@@ -1790,7 +1809,7 @@ void SpriteFramesEditor::_update_library_impl() {
 		}
 	}
 
-	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+	_update_anim_speed_spin();
 	_update_anim_loop_button();
 	updating = false;
 }
