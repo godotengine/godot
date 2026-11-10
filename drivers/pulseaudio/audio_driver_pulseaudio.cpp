@@ -740,7 +740,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	spec.channels = pa_rec_map.channels;
 	spec.rate = mix_rate;
 
-	int input_latency = 30;
+	int input_latency = 10;
 	int input_buffer_frames = Math::closest_power_of_2(input_latency * mix_rate / 1000);
 	int input_buffer_size = input_buffer_frames * spec.channels;
 
@@ -764,7 +764,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	input_buffer_init(input_buffer_frames);
+	input_buffer_init(input_buffer_frames * 4);
 
 	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
 	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
