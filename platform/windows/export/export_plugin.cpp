@@ -813,6 +813,14 @@ static inline size_t _padding(size_t p_s, size_t p_a) {
 }
 
 Error EditorExportPlatformWindows::fixup_debug_symbol_link(const String &p_path, const String &p_symbol_file) {
+	if (p_symbol_file.ends_with(".pdb")) {
+		return _fixup_pdb_debug_symbol_link(p_path, p_symbol_file);
+	} else {
+		return _fixup_gnu_debug_symbol_link(p_path, p_symbol_file);
+	}
+}
+
+Error EditorExportPlatformWindows::_fixup_gnu_debug_symbol_link(const String &p_path, const String &p_symbol_file) {
 	// Patch the ".gnu_debuglink" section in the PE file so that it corresponds to external debug symbols file.
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
@@ -1000,6 +1008,141 @@ Error EditorExportPlatformWindows::fixup_debug_symbol_link(const String &p_path,
 
 	if (!found) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Debug Symbols Link"), TTR("Executable \".gnu_debuglink\" section not found."));
+		return ERR_FILE_CORRUPT;
+	}
+	return OK;
+}
+
+Error EditorExportPlatformWindows::_fixup_pdb_debug_symbol_link(const String &p_path, const String &p_symbol_file) {
+	// Patch the CodeView section in the PE file so that it corresponds to external debug symbols file.
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		return ERR_CANT_OPEN;
+	}
+
+	// Jump to the PE header and check the magic number.
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Symbols Link"), TTR("Executable file header corrupted."));
+			return ERR_FILE_CORRUPT;
+		}
+	}
+
+	// Process header.
+	int num_sections;
+
+	uint32_t dbg_off = 0;
+	uint32_t dbg_size = 0;
+
+	int64_t header_pos = f->get_position();
+	int64_t opt_header_pos = 0;
+	{
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+		opt_header_pos = f->get_position() + 2;
+
+		f->seek(opt_header_pos);
+		uint16_t pe_magic = f->get_16();
+		bool is_64 = (pe_magic == 0x020B);
+		if (is_64) {
+			f->seek(opt_header_pos + 160);
+		} else {
+			f->seek(opt_header_pos + 144);
+		}
+		dbg_off = f->get_32();
+		dbg_size = f->get_32();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(opt_header_pos + opt_header_size);
+	}
+
+	int64_t section_table_pos = f->get_position();
+
+	int dbg_section = -1;
+	uint32_t dbg_section_vsize = 0;
+	uint32_t dbg_section_free = 0;
+	uint32_t dbg_section_free_off = 0;
+
+	for (int i = 0; i < num_sections; i++) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos + 8);
+		uint32_t vsize = f->get_32();
+		uint32_t vaddr = f->get_32();
+		if (dbg_off >= vaddr && dbg_off < vaddr + vsize) {
+			uint32_t rsize = f->get_32();
+			uint32_t raddr = f->get_32();
+			dbg_off = dbg_off - vaddr + raddr;
+			dbg_section = i;
+			dbg_section_vsize = vsize;
+			dbg_section_free = vsize - rsize;
+			dbg_section_free_off = raddr + vsize;
+			break;
+		}
+	}
+
+	bool link_updated = false;
+	for (uint32_t pos = dbg_off; pos < dbg_off + dbg_size; pos += 28) {
+		f->seek(pos + 12);
+		uint32_t rec_type = f->get_32();
+		uint32_t rec_size = f->get_32();
+		uint32_t rec_rva = f->get_32();
+		uint32_t rec_offset = f->get_32();
+		if (rec_type == 0x00000002 /* TYPE_CODEVIEW */) {
+			f->seek(rec_offset);
+			uint32_t cv_signature = f->get_32();
+			uint32_t cv_size = 0;
+			if (cv_signature == 0x53445352 /* RSDS */) {
+				cv_size = rec_size - (2 * 4 + 16);
+				f->seek(rec_offset + 2 * 4 + 16);
+			} else {
+				continue;
+			}
+			CharString cs = p_symbol_file.utf8();
+			if ((int)cv_size >= cs.size()) {
+				// Overwrite existing PDB record.
+				link_updated = true;
+				f->store_buffer((const uint8_t *)cs.get_data(), cs.size());
+				for (uint32_t i = 0; i < cv_size - cs.size(); i++) {
+					f->store_8(0);
+				}
+			} else if ((int)dbg_section_free >= cs.size()) {
+				// Append to the end of a section.
+				link_updated = true;
+				f->seek(rec_offset);
+				Vector<uint8_t> data = f->get_buffer(2 * 4 + 16);
+				f->seek(rec_offset);
+				for (uint32_t i = 0; i < rec_size; i++) {
+					f->store_8(0);
+				}
+
+				f->seek(dbg_section_free_off);
+				f->store_buffer(data);
+				f->store_buffer((const uint8_t *)cs.get_data(), cs.size());
+				// Update debug directory.
+				f->seek(pos + 16);
+				f->store_32(data.size() + cs.size());
+				f->store_32(rec_rva - rec_offset + dbg_section_free_off);
+				f->store_32(dbg_section_free_off);
+				// Update section virtual size.
+				int64_t section_header_pos = section_table_pos + dbg_section * 40;
+				f->seek(section_header_pos + 8);
+				f->store_32(dbg_section_vsize + data.size() + cs.size());
+			}
+			break;
+		}
+	}
+
+	f->close();
+	if (!link_updated) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Debug Symbols Link"), TTR("CodeView debug section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
