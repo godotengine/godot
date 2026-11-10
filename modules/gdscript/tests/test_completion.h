@@ -103,8 +103,10 @@ static void test_directory(const String &p_dir) {
 			test_directory(path.path_join(next));
 		} else if (next.ends_with(".gd") && !next.ends_with(".notest.gd")) {
 			Ref<FileAccess> acc = FileAccess::open(path.path_join(next), FileAccess::READ, &err);
+			const String test_case_path = path.path_join(next);
 
 			if (err != OK) {
+				ERR_PRINT(vformat("Failed to open '%s'", test_case_path));
 				next = dir->get_next();
 				continue;
 			}
@@ -114,9 +116,9 @@ static void test_directory(const String &p_dir) {
 			code = code.replace_first(String::chr(0x27A1), String::chr(0xFFFF));
 			// Require pointer sentinel char in scripts.
 			int location = code.find_char(0xFFFF);
-			CHECK(location != -1);
+			CHECK_MESSAGE(location != -1, "Caret was not found for '", test_case_path, "'.");
 
-			String res_path = ProjectSettings::get_singleton()->localize_path(path.path_join(next));
+			String res_path = ProjectSettings::get_singleton()->localize_path(test_case_path);
 
 			ConfigFile conf;
 			if (conf.load(path.path_join(next.get_basename() + ".cfg")) != OK) {
@@ -207,14 +209,14 @@ static void test_directory(const String &p_dir) {
 					}
 				}
 			}
-			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", path.path_join(next), "'.");
-			CHECK_MESSAGE(include.is_empty(), "An autocompletion option is missing for '", path.path_join(next), "'.");
+			CHECK_MESSAGE(contains_excluded.is_empty(), "Autocompletion suggests illegal option '", contains_excluded, "' for '", test_case_path, "'.");
+			CHECK_MESSAGE(include.is_empty(), "An autocompletion option is missing for '", test_case_path, "'.");
 
 			String expected_call_hint = conf.get_value("output", "call_hint", call_hint);
 			bool expected_forced = conf.get_value("output", "forced", forced);
 
-			CHECK(expected_call_hint == call_hint);
-			CHECK(expected_forced == forced);
+			CHECK_MESSAGE(expected_call_hint == call_hint, "Unexpected call hint '", call_hint, "' for '", test_case_path, "'.");
+			CHECK_MESSAGE(expected_forced == forced, "Unexpected `forced` value '", forced, "' for '", test_case_path, "'.");
 
 			memdelete(scene);
 		}
