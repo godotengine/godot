@@ -71,6 +71,9 @@ private:
 protected:
 	static void _bind_methods();
 
+	// Necessary for the debugger to forward changes to a running project.
+	virtual void _resource_path_changed() override;
+
 	void _queue_update();
 	void _emit_pending_change();
 
