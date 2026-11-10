@@ -40,11 +40,15 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.database.ContentObserver
 import android.os.Build
 import android.os.Bundle
 import android.os.Debug
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -262,6 +266,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private var distractionFreeModeEnabled = false
 	private var activeWorkspace: String? = null
 	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
+	private var autoRotateEnabled = false
+	private lateinit var autoRotateObserver: ContentObserver
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -337,6 +343,24 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
 			changingOrientationAllowed = false
 		}
+
+		autoRotateEnabled = isAutoRotateEnabled()
+		autoRotateObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+			override fun onChange(selfChange: Boolean) {
+				super.onChange(selfChange)
+
+				val enabled = isAutoRotateEnabled()
+				if (autoRotateEnabled != enabled) {
+					autoRotateEnabled = enabled
+					toggleEditorOrientation()
+				}
+			}
+		}
+		contentResolver.registerContentObserver(
+			Settings.System.getUriFor(Settings.System.ACCELEROMETER_ROTATION),
+			false,
+			autoRotateObserver
+		)
 	}
 
 	override fun onConfigurationChanged(newConfig: Configuration) {
@@ -353,6 +377,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun onDestroy() {
 		gradleBuildProvider.buildEnvDisconnect()
+		contentResolver.unregisterContentObserver(autoRotateObserver)
 		super.onDestroy()
 	}
 
@@ -1103,9 +1128,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	private fun toggleEditorOrientation() {
 		if (distractionFreeModeEnabled) {
-			changingOrientationAllowed = true
-			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
-		} else if (changingOrientationAllowed) {
+			if (autoRotateEnabled) {
+				changingOrientationAllowed = true
+				requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+			}
+			return
+		}
+
+		if (changingOrientationAllowed) {
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
 			changingOrientationAllowed = false
 		}
@@ -1296,5 +1326,15 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun getBuildProvider(): BuildProvider? {
 		return gradleBuildProvider
+	}
+
+	// Returns true, if auto-rotate is enabled in device settings.
+	private fun isAutoRotateEnabled(): Boolean {
+		val status = Settings.System.getInt(
+			contentResolver,
+			Settings.System.ACCELEROMETER_ROTATION,
+			1
+		)
+		return status == 1
 	}
 }
