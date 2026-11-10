@@ -231,6 +231,7 @@ private:
 		_FORCE_INLINE_ bool operator()(const CodeCompletionOption &l, const CodeCompletionOption &r) const;
 	};
 
+	RID code_complete_ci;
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
