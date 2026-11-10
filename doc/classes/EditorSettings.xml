@@ -489,6 +489,9 @@
 		<member name="editors/3d/navigation/show_viewport_rotation_gizmo" type="bool" setter="" getter="">
 			If [code]true[/code], shows a small orientation gizmo in the top-right corner of the 3D editor's viewports.
 		</member>
+		<member name="editors/3d/navigation/show_viewport_zoom_pan_buttons" type="bool" setter="" getter="">
+			If [code]true[/code], shows buttons for zooming and panning the camera in the top-right corner of the 3D editor's viewports.
+		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>

@@ -188,8 +188,10 @@ void EditorColorMap::create() {
 	// 3D editor icons (always on a dark background, even in light theme).
 	add_conversion_exception("Camera3DDarkBackground");
 	add_conversion_exception("GuiTabMenuHlDarkBackground");
+	add_conversion_exception("ToolPanDarkBackground");
 	add_conversion_exception("ViewportSpeed");
 	add_conversion_exception("ViewportZoom");
+	add_conversion_exception("ZoomDarkBackground");
 
 	add_conversion_exception("MaterialPreviewLight1");
 	add_conversion_exception("MaterialPreviewLight2");

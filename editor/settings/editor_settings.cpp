@@ -1008,6 +1008,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/angle_snap_threshold", 10.0, "1,20,0.1,degrees")
 	_initial_set("editors/3d/navigation/show_viewport_rotation_gizmo", true);
+	_initial_set("editors/3d/navigation/show_viewport_zoom_pan_buttons", true);
 	bool should_show_viewport_navigation_gizmo = false;
 #ifdef ANDROID_ENABLED
 	should_show_viewport_navigation_gizmo = true;

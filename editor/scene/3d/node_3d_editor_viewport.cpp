@@ -74,6 +74,7 @@
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -519,6 +520,137 @@ void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
 	viewport = p_viewport;
 }
 
+void ViewportZoomPanControl::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			icon = get_editor_theme_icon(nav_mode == View3DController::NAV_MODE_ZOOM ? SNAME("ZoomDarkBackground") : SNAME("ToolPanDarkBackground"));
+			const Ref<StyleBoxFlat> overlay_style = get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
+			background_color = overlay_style->get_bg_color();
+			icon_color = get_theme_color(SNAME("font_dark_background_color"), EditorStringName(Editor));
+			icon_hover_color = get_theme_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor));
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (viewport != nullptr) {
+				_draw();
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			hovered = true;
+			queue_redraw();
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			hovered = false;
+			queue_redraw();
+		} break;
+	}
+}
+
+void ViewportZoomPanControl::_draw() {
+	const Vector2 center = get_size() / 2.0;
+	const real_t radius = get_size().x / 2.0;
+	const bool focused = focused_index != -1;
+
+	const Color c = focused ? background_color.lightened(0.25) : (hovered ? background_color.lightened(0.15) : background_color);
+	draw_circle(center, radius, c, true, -1.0, true);
+	draw_texture(icon, (center - icon->get_size() / 2.0).round(), focused || hovered ? icon_hover_color : icon_color);
+}
+
+void ViewportZoomPanControl::_process_click(int p_index, Vector2 p_position, bool p_pressed) {
+	if (focused_index != -1 && focused_index != p_index) {
+		return;
+	}
+	if (p_pressed) {
+		if (p_position.distance_to(get_size() / 2.0) < get_size().x / 2.0) {
+			focused_index = p_index;
+			saved_cursor = viewport->view_3d_controller->cursor;
+			queue_redraw();
+		}
+	} else {
+		focused_index = -1;
+		queue_redraw();
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->warp_mouse(focused_mouse_start);
+		}
+	}
+}
+
+void ViewportZoomPanControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
+	if (focused_index != p_index) {
+		return;
+	}
+	if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
+		focused_mouse_start = p_position;
+	}
+
+	if (nav_mode == View3DController::NAV_MODE_ZOOM) {
+		viewport->view_3d_controller->cursor_zoom(p_event, p_relative_position);
+	} else {
+		viewport->view_3d_controller->cursor_pan(p_event, p_relative_position);
+	}
+}
+
+void ViewportZoomPanControl::_cancel_navigation() {
+	if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->warp_mouse(focused_mouse_start);
+		viewport->view_3d_controller->cursor = saved_cursor;
+		focused_index = -1;
+		queue_redraw();
+	}
+}
+
+void ViewportZoomPanControl::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	// Key events
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		_cancel_navigation();
+	}
+
+	// Mouse events
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			_process_click(100, mb->get_position(), mb->is_pressed());
+			if (mb->is_pressed()) {
+				grab_focus();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			_cancel_navigation();
+		}
+	}
+
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		_process_drag(mm, 100, mm->get_global_position(), viewport->view_3d_controller->get_warped_mouse_motion(mm, viewport->surface->get_global_rect()));
+	}
+
+	// Touch events
+	const Ref<InputEventScreenTouch> screen_touch = p_event;
+	if (screen_touch.is_valid()) {
+		_process_click(screen_touch->get_index(), screen_touch->get_position(), screen_touch->is_pressed());
+	}
+
+	const Ref<InputEventScreenDrag> screen_drag = p_event;
+	if (screen_drag.is_valid()) {
+		_process_drag(nullptr, screen_drag->get_index(), screen_drag->get_position(), screen_drag->get_relative());
+	}
+}
+
+void ViewportZoomPanControl::set_navigation_mode(View3DController::NavigationMode p_nav_mode) {
+	nav_mode = p_nav_mode;
+}
+
+void ViewportZoomPanControl::set_viewport(Node3DEditorViewport *p_viewport) {
+	viewport = p_viewport;
+}
+
 void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 	// Set FOV override multiplier back to the default, so that the FOV
 	// setting specified in the View menu is correctly applied.
@@ -530,6 +662,10 @@ void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	bool show_viewport_rotation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_rotation_gizmo") && (!previewing_cinema && !previewing_camera);
 	rotation_control->set_visible(show_viewport_rotation_gizmo);
+
+	bool show_viewport_zoom_pan_buttons = EDITOR_GET("editors/3d/navigation/show_viewport_zoom_pan_buttons") && (!previewing_cinema && !previewing_camera);
+	zoom_control->set_visible(show_viewport_zoom_pan_buttons);
+	pan_control->set_visible(show_viewport_zoom_pan_buttons);
 
 	bool show_viewport_navigation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_navigation_gizmo") && (!previewing_cinema && !previewing_camera);
 	position_control->set_visible(show_viewport_navigation_gizmo);
@@ -4051,7 +4187,7 @@ void Node3DEditorViewport::_draw() {
 	EditorNode::get_singleton()->get_editor_plugins_over()->forward_3d_draw_over_viewport(surface);
 	EditorNode::get_singleton()->get_editor_plugins_force_over()->forward_3d_force_draw_over_viewport(surface);
 
-	if (surface->has_focus() || rotation_control->has_focus()) {
+	if (surface->has_focus() || rotation_control->has_focus() || zoom_control->has_focus() || pan_control->has_focus()) {
 		Size2 size = surface->get_size();
 		Rect2 r = Rect2(Point2(), size);
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
@@ -7254,7 +7390,30 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
 	rotation_control->set_focus_mode(FOCUS_CLICK);
+	rotation_control->set_tooltip_text(TTRC("Drag to orbit the view.\nClick an axis to align the view with it."));
 	top_right_vbox->add_child(rotation_control);
+
+	const int zoom_pan_control_size = 32;
+
+	zoom_control = memnew(ViewportZoomPanControl);
+	zoom_control->set_navigation_mode(View3DController::NAV_MODE_ZOOM);
+	zoom_control->set_custom_minimum_size(Size2(zoom_pan_control_size, zoom_pan_control_size) * EDSCALE);
+	zoom_control->set_h_size_flags(SIZE_SHRINK_END);
+	zoom_control->set_viewport(this);
+	zoom_control->set_focus_mode(FOCUS_CLICK);
+	zoom_control->set_tooltip_text(TTRC("Drag to zoom the view."));
+	zoom_control->set_accessibility_name(TTRC("Zoom View"));
+	top_right_vbox->add_child(zoom_control);
+
+	pan_control = memnew(ViewportZoomPanControl);
+	pan_control->set_navigation_mode(View3DController::NAV_MODE_PAN);
+	pan_control->set_custom_minimum_size(Size2(zoom_pan_control_size, zoom_pan_control_size) * EDSCALE);
+	pan_control->set_h_size_flags(SIZE_SHRINK_END);
+	pan_control->set_viewport(this);
+	pan_control->set_focus_mode(FOCUS_CLICK);
+	pan_control->set_tooltip_text(TTRC("Drag to pan the view."));
+	pan_control->set_accessibility_name(TTRC("Pan View"));
+	top_right_vbox->add_child(pan_control);
 
 	frame_time_panel = memnew(PanelContainer);
 	frame_time_panel->set_mouse_filter(MOUSE_FILTER_IGNORE);

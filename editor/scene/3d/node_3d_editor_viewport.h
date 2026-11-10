@@ -143,10 +143,38 @@ public:
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
 
+class ViewportZoomPanControl : public Control {
+	GDCLASS(ViewportZoomPanControl, Control);
+
+	Node3DEditorViewport *viewport = nullptr;
+	Ref<Texture2D> icon;
+	Color background_color;
+	Color icon_color;
+	Color icon_hover_color;
+	View3DController::Cursor saved_cursor;
+	Vector2i focused_mouse_start;
+	bool hovered = false;
+	int focused_index = -1;
+	View3DController::NavigationMode nav_mode = View3DController::NavigationMode::NAV_MODE_NONE;
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _cancel_navigation();
+
+public:
+	void set_navigation_mode(View3DController::NavigationMode p_nav_mode);
+	void set_viewport(Node3DEditorViewport *p_viewport);
+};
+
 class Node3DEditorViewport : public Control {
 	GDCLASS(Node3DEditorViewport, Control);
 	friend class Node3DEditor;
 	friend class ViewportNavigationControl;
+	friend class ViewportZoomPanControl;
 	friend class ViewportRotationControl;
 	enum {
 		VIEW_TOP,
@@ -305,6 +333,8 @@ private:
 	ViewportNavigationControl *position_control = nullptr;
 	ViewportNavigationControl *look_control = nullptr;
 	ViewportRotationControl *rotation_control = nullptr;
+	ViewportZoomPanControl *zoom_control = nullptr;
+	ViewportZoomPanControl *pan_control = nullptr;
 	Ref<Gradient> frame_time_gradient;
 	PanelContainer *frame_time_panel = nullptr;
 	VBoxContainer *frame_time_vbox = nullptr;
