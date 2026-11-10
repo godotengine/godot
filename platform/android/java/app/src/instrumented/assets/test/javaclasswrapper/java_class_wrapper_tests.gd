@@ -291,5 +291,6 @@ func test_final_fields() -> bool:
 	assert_equal(instance.finalStringField, "final")
 	assert_equal(TestClass.staticFinalIntField, 200)
 	assert_equal(TestClass.staticFinalStringField, "static final")
+	assert_true(TestClass.staticFinalTestClassField != null)
 
 	return true
