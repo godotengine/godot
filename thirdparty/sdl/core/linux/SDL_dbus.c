@@ -23,6 +23,7 @@
 #include "../../stdlib/SDL_vacopy.h"
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifdef SDL_USE_LIBDBUS
@@ -516,7 +517,19 @@ bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activa
             }
             uri = decoded_path;
         }
-        fd = open(uri, O_RDWR | O_CLOEXEC);
+
+        struct stat st;
+        if (stat(uri, &st) == 0) {
+            /* Open files and directories as read-only, as the fd is only used as proof
+             * of access by the portal, and a mismatch between fd write permissions and
+             * the portal write parameter will cause the fd to be rejected.
+             */
+            int oflags = O_RDONLY | O_CLOEXEC;
+            if (S_ISDIR(st.st_mode)) {
+                oflags |= O_DIRECTORY;
+            }
+            fd = open(uri, oflags);
+        }
         SDL_free(decoded_path);
         if (fd >= 0) {
             msg = dbus.message_new_method_call(bus_name, path, interface, "OpenFile");

@@ -1,8 +1,8 @@
 diff --git a/thirdparty/sdl/core/linux/SDL_dbus.c b/thirdparty/sdl/core/linux/SDL_dbus.c
-index cd7f77a100..663e70427a 100644
+index 2d3ae34b0b..de69b98c5f 100644
 --- a/thirdparty/sdl/core/linux/SDL_dbus.c
 +++ b/thirdparty/sdl/core/linux/SDL_dbus.c
-@@ -115,15 +115,18 @@ static bool LoadDBUSSyms(void)
+@@ -116,15 +116,18 @@ static bool LoadDBUSSyms(void)
  
  static void UnloadDBUSLibrary(void)
  {
@@ -21,7 +21,7 @@ index cd7f77a100..663e70427a 100644
      if (!dbus_handle) {
          dbus_handle = SDL_LoadObject(dbus_library);
          if (!dbus_handle) {
-@@ -136,6 +139,9 @@ static bool LoadDBUSLibrary(void)
+@@ -137,6 +140,9 @@ static bool LoadDBUSLibrary(void)
              }
          }
      }
@@ -32,7 +32,7 @@ index cd7f77a100..663e70427a 100644
  }
  
 diff --git a/thirdparty/sdl/core/linux/SDL_udev.c b/thirdparty/sdl/core/linux/SDL_udev.c
-index 3aaa0fb4e9..58b0b1ed42 100644
+index 107e1d6c76..a715ac3b90 100644
 --- a/thirdparty/sdl/core/linux/SDL_udev.c
 +++ b/thirdparty/sdl/core/linux/SDL_udev.c
 @@ -53,7 +53,9 @@ SDL_ELF_NOTE_DLOPEN(
@@ -61,7 +61,7 @@ index f2b1ce56e2..5958ba4f37 100644
  #include <sys/time.h>
  #include <sys/types.h>
 diff --git a/thirdparty/sdl/hidapi/linux/hid.c b/thirdparty/sdl/hidapi/linux/hid.c
-index c0cb6a7b0e..367b243830 100644
+index a66f62e4e6..411fa17099 100644
 --- a/thirdparty/sdl/hidapi/linux/hid.c
 +++ b/thirdparty/sdl/hidapi/linux/hid.c
 @@ -40,7 +40,37 @@

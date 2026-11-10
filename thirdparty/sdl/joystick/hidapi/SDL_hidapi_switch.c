@@ -351,6 +351,10 @@ typedef struct
         float fGyroScaleX;
         float fGyroScaleY;
         float fGyroScaleZ;
+
+        Sint16 sGyroOffsetX;
+        Sint16 sGyroOffsetY;
+        Sint16 sGyroOffsetZ;
     } m_IMUScaleData;
 } SDL_DriverSwitch_Context;
 
@@ -407,8 +411,10 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
                     continue;
                 }
                 if (reply->ucSubcommandID == k_eSwitchSubcommandIDs_SPIFlashRead) {
-                    SDL_assert(ucLen == sizeof(reply->spiReadData.opData));
-                    if (SDL_memcmp(&reply->spiReadData.opData, pBuf, ucLen) != 0) {
+                    SDL_assert(ucLen == sizeof(SwitchSPIOpData_t));
+                    const SwitchSPIOpData_t *request = (const SwitchSPIOpData_t *)pBuf;
+                    if (reply->spiReadData.opData.unAddress != request->unAddress ||
+                        reply->spiReadData.opData.ucLength < request->ucLength) {
                         // This was a reply for another SPI read command
                         continue;
                     }
@@ -958,10 +964,10 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
+static void LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 pLeftStickCal[9];
-    Uint8 pRightStickCal[9];
+    Uint8 pLeftStickCal[9]  = {0,0,0,0,0,0,0,0,0};
+    Uint8 pRightStickCal[9] = {0,0,0,0,0,0,0,0,0};
     bool have_left_stick_cal = false, have_right_stick_cal = false;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
@@ -997,38 +1003,26 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
         readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
         readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-        const int MAX_ATTEMPTS = 3;
-        for (int attempt = 0;; ++attempt) {
-            if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-                return false;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+            // We successfully read the calibration data
+            // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
+            if (!have_left_stick_cal) {
+                have_left_stick_cal = true;
+                SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
             }
-
-            if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
-                // We successfully read the calibration data
-                // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
-                if (!have_left_stick_cal) {
-                    have_left_stick_cal = true;
-                    SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
-                }
-
-                if (!have_right_stick_cal) {
-                    have_right_stick_cal = true;
-                    SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
-                }
-
-                break;
-            }
-
-            if (attempt == MAX_ATTEMPTS) {
-                return false;
+            if (!have_right_stick_cal) {
+                have_right_stick_cal = true;
+                SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
             }
         }
     }
 
-    // If we still don't have calibration data, return false
-    if (!have_left_stick_cal || !have_right_stick_cal)
-    {
-        return false;
+    // If we still don't have calibration data, use default values
+    if (!have_left_stick_cal) {
+        SDL_memset(pLeftStickCal, 0xFF, sizeof(pLeftStickCal));
+    }
+    if (!have_right_stick_cal) {
+        SDL_memset(pRightStickCal, 0xFF, sizeof(pRightStickCal));
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
@@ -1081,12 +1075,11 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
             ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
         }
     }
-
-    return true;
 }
 
 static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
 {
+    bool have_imu_cal = false;
     SwitchSubcommandInputPacket_t *reply = NULL;
 
     // Read Calibration Info
@@ -1122,29 +1115,48 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         // Check for user calibration data. If it's present and set, it'll override the factory settings
         readParams.unAddress = k_unSPIIMUUserScaleStartOffset;
         readParams.ucLength = k_unSPIIMUUserScaleLength;
-        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply) && (pIMUScale[0] | pIMUScale[1] << 8) == 0xA1B2) {
-            pIMUScale = reply->spiReadData.rgucReadData;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readParams, sizeof(readParams), &reply)) {
+            Uint8 *pUserIMUScale = reply->spiReadData.rgucReadData;
 
-            sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
-            sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
-            sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
+            if ((pUserIMUScale[0] | (pUserIMUScale[1] << 8)) == 0xA1B2) {
+                pIMUScale = pUserIMUScale;
 
-            sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
-            sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
-            sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
+                sAccelRawX = (pIMUScale[3] << 8) | pIMUScale[2];
+                sAccelRawY = (pIMUScale[5] << 8) | pIMUScale[4];
+                sAccelRawZ = (pIMUScale[7] << 8) | pIMUScale[6];
+
+                sGyroRawX = (pIMUScale[15] << 8) | pIMUScale[14];
+                sGyroRawY = (pIMUScale[17] << 8) | pIMUScale[16];
+                sGyroRawZ = (pIMUScale[19] << 8) | pIMUScale[18];
+            }
         }
 
-        // Accelerometer scale
-        ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+        if (sAccelSensCoeffX != sAccelRawX &&
+            sAccelSensCoeffY != sAccelRawY &&
+            sAccelSensCoeffZ != sAccelRawZ &&
+            sGyroSensCoeffX != sGyroRawX &&
+            sGyroSensCoeffY != sGyroRawY &&
+            sGyroSensCoeffZ != sGyroRawZ) {
+            // Gyro zero-rate offset
+            ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
+            ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
+            ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
 
-        // Gyro scale
-        ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
+            // Accelerometer scale
+            ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
 
-    } else {
+            // Gyro scale
+            ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
+
+            have_imu_cal = true;
+        }
+    }
+
+    if (!have_imu_cal) {
         // Use default values
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = SDL_PI_F / 180.0f / SWITCH_GYRO_SCALE;
@@ -1156,7 +1168,13 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.fGyroScaleX = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleY = gyroScale;
         ctx->m_IMUScaleData.fGyroScaleZ = gyroScale;
+
+        ctx->m_IMUScaleData.sGyroOffsetX = 0;
+        ctx->m_IMUScaleData.sGyroOffsetY = 0;
+        ctx->m_IMUScaleData.sGyroOffsetZ = 0;
     }
+
+    // FIXME: Should we read two reports and verify that gyro values are coming through?
     return true;
 }
 
@@ -1336,8 +1354,9 @@ static bool HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device *de
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
-            if (SDL_strncmp(name, "NES Controller", 14) == 0 ||
-                SDL_strncmp(name, "HVC Controller", 14) == 0) {
+            if (name &&
+                (SDL_strncmp(name, "NES Controller", 14) == 0 ||
+                 SDL_strncmp(name, "HVC Controller", 14) == 0)) {
                 return true;
             }
         }
@@ -1417,7 +1436,7 @@ static bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device, con
        controller to continually attempt to reconnect is to filter it out by manufacturer/product string.
        Note that the controller does have a different product string when connected over Bluetooth.
      */
-    if (SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
+    if (name && SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
         return false;
     }
 
@@ -1621,10 +1640,7 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
             }
         }
 
-        if (!LoadStickCalibration(ctx)) {
-            SDL_SetError("Couldn't load stick calibration");
-            return false;
-        }
+        LoadStickCalibration(ctx);
 
         if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCLeft &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCRight &&
@@ -2371,9 +2387,13 @@ static void SendSensorUpdate(Uint64 timestamp, SDL_Joystick *joystick, SDL_Drive
      * users will want consistent axis mappings across devices.
      */
     if (type == SDL_SENSOR_GYRO || type == SDL_SENSOR_GYRO_L || type == SDL_SENSOR_GYRO_R) {
-        data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * (float)values[1]);
-        data[1] = ctx->m_IMUScaleData.fGyroScaleZ * (float)values[2];
-        data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * (float)values[0]);
+        const float gyroX = (float)(values[0] - ctx->m_IMUScaleData.sGyroOffsetX);
+        const float gyroY = (float)(values[1] - ctx->m_IMUScaleData.sGyroOffsetY);
+        const float gyroZ = (float)(values[2] - ctx->m_IMUScaleData.sGyroOffsetZ);
+
+        data[0] = -(ctx->m_IMUScaleData.fGyroScaleY * gyroY);
+        data[1] = ctx->m_IMUScaleData.fGyroScaleZ * gyroZ;
+        data[2] = -(ctx->m_IMUScaleData.fGyroScaleX * gyroX);
     } else {
         data[0] = -(ctx->m_IMUScaleData.fAccelScaleY * (float)values[1]);
         data[1] = ctx->m_IMUScaleData.fAccelScaleZ * (float)values[2];

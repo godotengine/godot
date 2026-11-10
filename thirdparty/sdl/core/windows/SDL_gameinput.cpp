@@ -38,6 +38,10 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
             return false;
         }
 
+        if (WIN_HasBrokenEZFRD64DLL()) {
+            return SDL_SetError("GameInput disabled to prevent application crashing");
+        }
+
         typedef HRESULT (WINAPI *pfnGameInputCreate)(IGameInput **gameInput);
         pfnGameInputCreate pGameInputCreate = (pfnGameInputCreate)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
         if (!pGameInputCreate) {

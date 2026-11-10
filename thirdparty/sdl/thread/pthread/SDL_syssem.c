@@ -33,6 +33,12 @@
 #include "../generic/SDL_syssem.c"
 #else
 
+#if defined(HAVE_CLOCK_GETTIME) && (defined(HAVE_SEM_CLOCKWAIT) || defined(HAVE_SEM_CLOCKWAIT_NP))
+#define SEM_CLOCK CLOCK_MONOTONIC
+#else
+#define SEM_CLOCK CLOCK_REALTIME
+#endif
+
 struct SDL_Semaphore
 {
     sem_t sem;
@@ -62,15 +68,6 @@ void SDL_DestroySemaphore(SDL_Semaphore *sem)
 
 bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 {
-#ifdef HAVE_SEM_TIMEDWAIT
-#ifndef HAVE_CLOCK_GETTIME
-    struct timeval now;
-#endif
-    struct timespec ts_timeout;
-#else
-    Uint64 stop_time;
-#endif
-
     if (!sem) {
         return true;
     }
@@ -89,18 +86,20 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return (rc == 0);
     }
 
-#ifdef HAVE_SEM_TIMEDWAIT
-    /* Setup the timeout. sem_timedwait doesn't wait for
-     * a lapse of time, but until we reach a certain time.
+#if defined(HAVE_SEM_CLOCKWAIT) || defined(HAVE_SEM_CLOCKWAIT_NP) || defined(HAVE_SEM_TIMEDWAIT)
+    /* Setup the timeout. sem_clockwait and sem_timedwait don't wait
+     * for a lapse of time, but until we reach a certain time.
      * This time is now plus the timeout.
      */
+    struct timespec ts_timeout;
 #ifdef HAVE_CLOCK_GETTIME
-    clock_gettime(CLOCK_REALTIME, &ts_timeout);
+    clock_gettime(SEM_CLOCK, &ts_timeout);
 
     // Add our timeout to current time
     ts_timeout.tv_sec += (timeoutNS / SDL_NS_PER_SECOND);
     ts_timeout.tv_nsec += (timeoutNS % SDL_NS_PER_SECOND);
 #else
+    struct timeval now;
     gettimeofday(&now, NULL);
 
     // Add our timeout to current time
@@ -117,12 +116,18 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
     // Wait.
     int rc;
     do {
+#if defined(HAVE_SEM_CLOCKWAIT)
+        rc = sem_clockwait(&sem->sem, SEM_CLOCK, &ts_timeout);
+#elif defined(HAVE_SEM_CLOCKWAIT_NP)
+        rc = sem_clockwait_np(&sem->sem, SEM_CLOCK, TIMER_ABSTIME, &ts_timeout, NULL);
+#else
         rc = sem_timedwait(&sem->sem, &ts_timeout);
+#endif
     } while (rc < 0 && errno == EINTR);
 
     return (rc == 0);
 #else
-    stop_time = SDL_GetTicksNS() + timeoutNS;
+    Uint64 stop_time = SDL_GetTicksNS() + timeoutNS;
     while (sem_trywait(&sem->sem) != 0) {
         if (SDL_GetTicksNS() >= stop_time) {
             return false;
@@ -130,7 +135,7 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         SDL_DelayNS(100);
     }
     return true;
-#endif // HAVE_SEM_TIMEDWAIT
+#endif // defined(HAVE_SEM_CLOCKWAIT) || defined(HAVE_SEM_CLOCKWAIT_NP) || defined(HAVE_SEM_TIMEDWAIT)
 }
 
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
