@@ -824,6 +824,284 @@ void OS::benchmark_dump() {
 #endif
 }
 
+Vector<String> OS::_read_elf_debug_id(const Ref<FileAccess> &p_f) const {
+	// Read program architecture bits from class field.
+	int bits = p_f->get_8() * 32;
+
+	// Get info about the section header table.
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		p_f->seek(0x20);
+		section_table_pos = p_f->get_32();
+		p_f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		p_f->seek(0x28);
+		section_table_pos = p_f->get_64();
+		p_f->seek(0x3c);
+	}
+	int num_sections = p_f->get_16();
+	int string_section_idx = p_f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		// Jump to the strings section header.
+		p_f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			p_f->seek(p_f->get_position() + 0x10);
+			string_data_pos = p_f->get_32();
+			string_data_size = p_f->get_32();
+		} else { // 64
+			p_f->seek(p_f->get_position() + 0x18);
+			string_data_pos = p_f->get_64();
+			string_data_size = p_f->get_64();
+		}
+		ERR_FAIL_COND_V(string_data_pos == 0 || string_data_size == 0, Vector<String>());
+
+		// Read strings data.
+		p_f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		ERR_FAIL_NULL_V(strings, Vector<String>());
+		p_f->get_buffer(strings, string_data_size);
+	}
+
+	Vector<String> ids;
+	// Search for the ".note.gnu.build-id" section.
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		p_f->seek(section_header_pos);
+
+		uint32_t name_offset = p_f->get_32();
+		if (strcmp((char *)strings + name_offset, ".note.gnu.build-id") == 0) {
+			// ".note.gnu.build-id" section found.
+
+			int64_t link_start = 0;
+			if (bits == 32) {
+				p_f->seek(section_header_pos + 0x10);
+				link_start = p_f->get_32();
+			} else { // 64
+				p_f->seek(section_header_pos + 0x18);
+				link_start = p_f->get_64();
+			}
+			p_f->seek(link_start);
+
+			uint32_t name_size = p_f->get_32();
+			uint32_t data_size = p_f->get_32();
+			p_f->get_32(); // Type, skip.
+			if (data_size == 0) {
+				continue;
+			}
+			p_f->seek(p_f->get_position() + name_size);
+			// 160-bit SHA-1.
+			PackedByteArray id = p_f->get_buffer(data_size);
+			ids.push_back(String::hex_encode_buffer(id.ptr(), id.size()));
+			break;
+		}
+	}
+
+	memfree(strings);
+	return ids;
+}
+
+Vector<String> OS::_read_pe_debug_id(const Ref<FileAccess> &p_f) const {
+	// Jump to the PE header and check the magic number.
+	{
+		p_f->seek(0x3c);
+		uint32_t pe_pos = p_f->get_32();
+
+		p_f->seek(pe_pos);
+		uint32_t magic = p_f->get_32();
+		ERR_FAIL_COND_V(magic != 0x00004550, Vector<String>());
+	}
+
+	// Process header.
+	int num_sections = 0;
+
+	int64_t header_pos = p_f->get_position();
+	int64_t opt_header_pos = 0;
+	{
+		p_f->seek(header_pos + 2);
+		num_sections = p_f->get_16();
+		p_f->seek(header_pos + 16);
+		uint16_t opt_header_size = p_f->get_16();
+		opt_header_pos = p_f->get_position() + 2;
+		// Skip rest of header + optional header to go to the section headers.
+		p_f->seek(opt_header_pos + opt_header_size);
+	}
+
+	// Search for the ".buildid" section.
+	int64_t dbg_off = 0;
+	int64_t dbg_size = 0;
+	int64_t section_table_pos = p_f->get_position();
+	for (int i = 0; i < num_sections; i++) {
+		int64_t section_header_pos = section_table_pos + i * 40;
+		p_f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		p_f->get_buffer(section_name, 8);
+		section_name[8] = 0x00;
+		if (strcmp((char *)section_name, ".buildid") == 0) {
+			p_f->seek(section_table_pos + i * 40 + 16);
+			dbg_size = p_f->get_32();
+			p_f->seek(section_table_pos + i * 40 + 20);
+			dbg_off = p_f->get_32();
+			break;
+		}
+	}
+
+	Vector<String> ids;
+	for (uint32_t pos = dbg_off; pos < dbg_off + dbg_size; pos += 28) {
+		p_f->seek(pos + 12);
+		uint32_t rec_type = p_f->get_32();
+		uint32_t rec_size = p_f->get_32();
+		p_f->get_32();
+		uint32_t rec_offset = p_f->get_32();
+		if (rec_type == 0x00000002) {
+			// TYPE_CODEVIEW
+			p_f->seek(rec_offset);
+			uint32_t cv_signature = p_f->get_32();
+			uint32_t cv_size = 0;
+			if (cv_signature == 0x53445352) {
+				// RSDS
+				cv_size = rec_size - 4;
+			} else {
+				continue;
+			}
+			if (cv_size == 21) {
+				// UUID + 1
+				uint32_t uuid_1 = p_f->get_32();
+				uint16_t uuid_2 = p_f->get_16();
+				uint16_t uuid_3 = p_f->get_16();
+				uint16_t uuid_4 = p_f->get_16();
+				PackedByteArray uuid_5 = p_f->get_buffer(6);
+				uint32_t uuid_6 = p_f->get_32();
+				ids.push_back(vformat("%08x-%04x-%04x-%04x-%s-%x", uuid_1, uuid_2, uuid_3, uuid_4, String::hex_encode_buffer(uuid_5.ptr(), uuid_5.size()), uuid_6));
+			} else {
+				// Unknown ID type, read as is.
+				PackedByteArray id = p_f->get_buffer(cv_size);
+				ids.push_back(String::hex_encode_buffer(id.ptr(), id.size()));
+			}
+			break;
+		}
+	}
+
+	p_f->close();
+	return ids;
+}
+
+Vector<String> OS::_read_macho_debug_id(const Ref<FileAccess> &p_f) const {
+	Vector<uint64_t> offsets;
+	Vector<String> ids;
+
+	p_f->seek(0);
+	uint32_t magic = p_f->get_32();
+	if (magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf) {
+		// LipO.
+		bool swap = (magic == 0xbebafeca || magic == 0xbfbafeca);
+		bool is64 = (magic == 0xbfbafeca || magic == 0xcafebabf);
+		uint32_t fat_archs = p_f->get_32();
+		if (swap) {
+			fat_archs = BSWAP32(fat_archs);
+		}
+		for (uint32_t i = 0; i < fat_archs; i++) {
+			p_f->seek(p_f->get_position() + 2 * 4);
+			if (is64) {
+				uint64_t fat_offset = p_f->get_64();
+				if (swap) {
+					fat_offset = BSWAP64(fat_offset);
+				}
+				offsets.push_back(fat_offset);
+				p_f->seek(p_f->get_position() + 4 * 4);
+			} else {
+				uint32_t fat_offset = p_f->get_32();
+				if (swap) {
+					fat_offset = BSWAP32(fat_offset);
+				}
+				offsets.push_back(fat_offset);
+				p_f->seek(p_f->get_position() + 2 * 4);
+			}
+		}
+	} else {
+		offsets.push_back(0);
+	}
+	for (uint32_t i = 0; i < offsets.size(); i++) {
+		// MachO.
+		p_f->seek(offsets[i]);
+		magic = p_f->get_32();
+		if (magic != 0xcefaedfe && magic != 0xfeedface && magic != 0xcffaedfe && magic != 0xfeedfacf) {
+			continue;
+		}
+
+		// Read MachO header.
+		bool swap = (magic == 0xcffaedfe || magic == 0xcefaedfe);
+		bool is64 = (magic == 0xcffaedfe || magic == 0xfeedfacf);
+		p_f->seek(offsets[i] + 4 * 4);
+		uint32_t num_cmd = p_f->get_32();
+		if (swap) {
+			num_cmd = BSWAP32(num_cmd);
+		}
+		if (is64) { // Skip rest of header.
+			p_f->seek(offsets[i] + 8 * 4);
+		} else {
+			p_f->seek(offsets[i] + 7 * 4);
+		}
+
+		// Read load commands.
+		for (uint32_t j = 0; j < num_cmd; j++) {
+			uint64_t ps = p_f->get_position();
+			uint32_t cmd = p_f->get_32();
+			uint32_t cmdsize = p_f->get_32();
+			if (swap) {
+				cmd = BSWAP32(cmd);
+				cmdsize = BSWAP32(cmdsize);
+			}
+			if (cmd == 0x0000001b) {
+				// LC_UUID.
+				if (cmdsize == 24) {
+					// UUID.
+					uint32_t uuid_1 = BSWAP32(p_f->get_32());
+					uint16_t uuid_2 = BSWAP16(p_f->get_16());
+					uint16_t uuid_3 = BSWAP16(p_f->get_16());
+					uint16_t uuid_4 = BSWAP16(p_f->get_16());
+					PackedByteArray uuid_5 = p_f->get_buffer(6);
+					ids.push_back(vformat("%08x-%04x-%04x-%04x-%s", uuid_1, uuid_2, uuid_3, uuid_4, String::hex_encode_buffer(uuid_5.ptr(), uuid_5.size())));
+				} else {
+					// Unknown ID type, read as is.
+					PackedByteArray id = p_f->get_buffer(cmdsize - 8);
+					ids.push_back(String::hex_encode_buffer(id.ptr(), id.size()));
+				}
+				break;
+			}
+			p_f->seek(ps + cmdsize);
+		}
+	}
+
+	return ids;
+}
+
+Vector<String> OS::get_debug_build_id(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V(f.is_null(), Vector<String>());
+
+	uint32_t magic = f->get_32();
+	if (magic == 0x464c457f) {
+		return _read_elf_debug_id(f);
+	} else if ((magic & 0xffff) == 0x5a4d) {
+		return _read_pe_debug_id(f);
+	} else if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf || magic == 0xbebafeca || magic == 0xcafebabe || magic == 0xbfbafeca || magic == 0xcafebabf) {
+		return _read_macho_debug_id(f);
+	} else {
+		ERR_FAIL_V_MSG(Vector<String>(), "Unsupported executable format.");
+	}
+}
+
 OS::OS() {
 	singleton = this;
 
