@@ -37,10 +37,12 @@
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/separator.h"
 
 void EditorExpressionEvaluator::on_start() {
 	expression_input->set_editable(false);
 	evaluate_btn->set_disabled(true);
+	refresh_btn->set_disabled(true);
 
 	if (clear_on_run_checkbox->is_pressed()) {
 		inspector->clear_stack_variables();
@@ -111,6 +113,15 @@ void EditorExpressionEvaluator::_evaluate() {
 	expression_input->clear();
 }
 
+void EditorExpressionEvaluator::_refresh() {
+	PackedStringArray expressions = inspector->get_evaluated_expressions();
+	_clear();
+
+	for (const String &exp : expressions) {
+		editor_debugger->request_remote_evaluate(exp, editor_debugger->get_stack_script_frame());
+	}
+}
+
 void EditorExpressionEvaluator::_clear() {
 	inspector->clear_stack_variables();
 }
@@ -124,14 +135,42 @@ void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_exp
 	expression_index = -1;
 }
 
+void EditorExpressionEvaluator::_on_expression_deleted(const String &p_expression) {
+	PackedStringArray expressions = inspector->get_evaluated_expressions();
+	_clear();
+
+	for (const String &exp : expressions) {
+		if (exp == p_expression) {
+			continue;
+		} else {
+			editor_debugger->request_remote_evaluate(exp, editor_debugger->get_stack_script_frame());
+		}
+	}
+}
+
+void EditorExpressionEvaluator::_on_expression_edited(const String &p_old_expression, const String &p_new_expression) {
+	PackedStringArray expressions = inspector->get_evaluated_expressions();
+	_clear();
+
+	for (const String &exp : expressions) {
+		if (exp == p_old_expression) {
+			editor_debugger->request_remote_evaluate(p_new_expression, editor_debugger->get_stack_script_frame());
+		} else {
+			editor_debugger->request_remote_evaluate(exp, editor_debugger->get_stack_script_frame());
+		}
+	}
+}
+
 void EditorExpressionEvaluator::_on_debugger_breaked(bool p_breaked, bool p_can_debug) {
 	expression_input->set_editable(p_breaked);
 	evaluate_btn->set_disabled(!p_breaked || expression_input->get_text().is_empty());
+	refresh_btn->set_disabled(!p_breaked || inspector->get_evaluated_expressions().is_empty());
 }
 
 void EditorExpressionEvaluator::_on_debugger_clear_execution(Ref<Script> p_stack_script) {
 	expression_input->set_editable(false);
 	evaluate_btn->set_disabled(true);
+	refresh_btn->set_disabled(true);
 }
 
 void EditorExpressionEvaluator::_notification(int p_what) {
@@ -143,6 +182,9 @@ void EditorExpressionEvaluator::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			expression_input->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("expression"), EditorStringName(EditorFonts)));
 			expression_input->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("expression_size"), EditorStringName(EditorFonts)));
+
+			refresh_btn->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+			clear_btn->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 		} break;
 	}
 }
@@ -176,6 +218,14 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 	evaluate_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorExpressionEvaluator::_evaluate));
 	hb->add_child(evaluate_btn);
 
+	hb->add_child(memnew(VSeparator));
+
+	refresh_btn = memnew(Button);
+	refresh_btn->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	refresh_btn->set_text(TTRC("Refresh"));
+	refresh_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorExpressionEvaluator::_refresh));
+	hb->add_child(refresh_btn);
+
 	clear_btn = memnew(Button);
 	clear_btn->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	clear_btn->set_text(TTRC("Clear"));
@@ -187,9 +237,12 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 	inspector->set_property_name_style(EditorPropertyNameProcessor::STYLE_RAW);
 	inspector->set_read_only(true);
 	inspector->connect("object_selected", callable_mp(this, &EditorExpressionEvaluator::_remote_object_selected));
+	inspector->connect("evaluation_deleted", callable_mp(this, &EditorExpressionEvaluator::_on_expression_deleted));
+	inspector->connect("evaluation_edited", callable_mp(this, &EditorExpressionEvaluator::_on_expression_edited));
 	inspector->set_use_filter(true);
 	add_child(inspector);
 
 	expression_input->set_editable(false);
 	evaluate_btn->set_disabled(true);
+	refresh_btn->set_disabled(true);
 }

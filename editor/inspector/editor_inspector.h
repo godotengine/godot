@@ -142,6 +142,7 @@ public:
 
 private:
 	String label;
+	Rect2 label_rect;
 	int text_size;
 	friend class EditorInspector;
 	Object *object = nullptr;
@@ -249,6 +250,7 @@ public:
 
 	void set_label(const String &p_label);
 	String get_label() const;
+	Rect2 get_label_rect() const;
 
 	void set_read_only(bool p_read_only);
 	bool is_read_only() const;
@@ -916,6 +918,8 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void _property_activated(EditorProperty *p_editor);
 
 public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);

@@ -145,6 +145,8 @@ void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "int;Variant"), PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("canvas_item_objects_changed", PropertyInfo(Variant::DICTIONARY, "states")));
+	ADD_SIGNAL(MethodInfo("evaluation_deleted", PropertyInfo(Variant::STRING, "expression")));
+	ADD_SIGNAL(MethodInfo("evaluation_edited", PropertyInfo(Variant::STRING, "old_expression"), PropertyInfo(Variant::STRING, "new_expression")));
 }
 
 void EditorDebuggerInspector::_notification(int p_what) {
@@ -166,6 +168,62 @@ void EditorDebuggerInspector::_objects_edited(const String &p_prop, const TypedD
 
 void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 	emit_signal(SNAME("object_selected"), p_object);
+}
+
+void EditorDebuggerInspector::_property_activated(EditorProperty *p_editor) {
+	EditorInspector::_property_activated(p_editor);
+
+	String prop_name = p_editor->get_edited_property();
+	if (!prop_name.begins_with("Evaluated/")) {
+		return;
+	}
+	prop_name = prop_name.substr(10);
+	prop_name = prop_name.replace("%2E", ".").uri_decode();
+	edited_expression = prop_name;
+
+	if (edit_expression == nullptr) {
+		edit_expression = memnew(LineEdit);
+		edit_expression->connect(SceneStringName(text_submitted), callable_mp(this, &EditorDebuggerInspector::_edit_expression_submitted).unbind(1));
+		edit_expression->connect(SceneStringName(focus_exited), callable_mp(this, &EditorDebuggerInspector::_edit_expression_submitted));
+		Control *pivot = memnew(Control); // Used to break container relationship with (this) ScrollContainer
+		pivot->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		pivot->add_child(edit_expression);
+		add_child(pivot);
+	}
+	Rect2 edit_rect = p_editor->get_label_rect();
+
+	Control *p = Object::cast_to<Control>(p_editor);
+	while (p != nullptr && p != this) {
+		edit_rect.position += p->get_rect().position;
+		p = Object::cast_to<Control>(p->get_parent());
+	}
+
+	edit_rect.position.y += get_v_scroll();
+	float size_delta = edit_expression->get_combined_minimum_size().height - edit_rect.size.height;
+	edit_rect.grow_by(size_delta / 2.0);
+
+	edit_expression->set_text(prop_name);
+	edit_expression->set_position(edit_rect.position);
+	edit_expression->set_size(edit_rect.size);
+	edit_expression->show();
+	callable_mp(static_cast<Control *>(edit_expression), &Control::grab_focus).call_deferred(false);
+	callable_mp(edit_expression, &LineEdit::select_all).call_deferred();
+}
+
+void EditorDebuggerInspector::_edit_expression_submitted() {
+	edit_expression->hide();
+	if (edit_expression->get_text() == edited_expression) {
+		edited_expression = "";
+		return;
+	}
+
+	if (edit_expression->get_text().is_empty()) {
+		edited_expression = "";
+		emit_signal("evaluation_deleted", edited_expression, edit_expression->get_text());
+	}
+
+	emit_signal("evaluation_edited", edited_expression, edit_expression->get_text());
+	edited_expression = "";
 }
 
 EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_array, int p_debugger_id) {
@@ -472,6 +530,19 @@ void EditorDebuggerInspector::invalidate_selection_from_cache(const TypedArray<u
 			break;
 		}
 	}
+}
+
+PackedStringArray EditorDebuggerInspector::get_evaluated_expressions() const {
+	PackedStringArray vars;
+	for (const KeyValue<StringName, TypedDictionary<uint64_t, Variant>> &pair : variables->prop_values) {
+		String prop_name = String(pair.key);
+		if (prop_name.begins_with("Evaluated/")) {
+			prop_name = prop_name.substr(10);
+			prop_name = prop_name.replace("%2E", ".").uri_decode();
+			vars.append(prop_name);
+		}
+	}
+	return vars;
 }
 
 void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_offset) {
