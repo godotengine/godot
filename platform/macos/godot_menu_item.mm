@@ -45,6 +45,7 @@
 	self->state = 0;
 	self->indent = 0;
 	self->accel = Key::NONE;
+	self->icon_template = false;
 
 	return self;
 }

@@ -3485,10 +3485,22 @@ void DisplayServerMacOS::status_indicator_set_icon(DisplayServerEnums::Indicator
 			img->decompress();
 		}
 		nsimg = _convert_to_nsimg(img);
+		[nsimg setTemplate:indicators[p_id].icon_template];
 	}
 
 	NSStatusItem *item = indicators[p_id].item;
 	item.button.image = nsimg;
+}
+
+void DisplayServerMacOS::status_indicator_set_icon_template(DisplayServerEnums::IndicatorID p_id, bool p_template) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+	if (indicators[p_id].icon_template != p_template) {
+		indicators[p_id].icon_template = p_template;
+		NSStatusItem *item = indicators[p_id].item;
+		if (item.button.image) {
+			[item.button.image setTemplate:p_template];
+		}
+	}
 }
 
 void DisplayServerMacOS::status_indicator_set_tooltip(DisplayServerEnums::IndicatorID p_id, const String &p_tooltip) {

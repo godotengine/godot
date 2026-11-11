@@ -1981,6 +1981,15 @@
 				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
+		<method name="status_indicator_set_icon_template">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="template" type="bool" />
+			<description>
+				Marks the application status indicator icon as template image. Template images should consist of only black color and alpha channel mask. Template images are automatically colored to match system theme.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="status_indicator_set_menu">
 			<return type="void" />
 			<param index="0" name="id" type="int" />

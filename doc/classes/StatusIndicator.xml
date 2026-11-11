@@ -20,6 +20,9 @@
 		<member name="icon" type="Texture2D" setter="set_icon" getter="get_icon">
 			Status indicator icon.
 		</member>
+		<member name="icon_template" type="bool" setter="set_icon_template" getter="get_icon_template" default="false">
+			If [code]true[/code], the status indicator icon is marked as template image. Template images should consist of only black color and alpha channel mask. Template images are automatically colored to match system theme.
+		</member>
 		<member name="menu" type="NodePath" setter="set_menu" getter="get_menu" default="NodePath(&quot;&quot;)">
 			Status indicator native popup menu. If this is set, the [signal pressed] signal is not emitted.
 			[b]Note:[/b] Native popup is only supported if [NativeMenu] supports [constant NativeMenu.FEATURE_POPUP_MENU] feature.

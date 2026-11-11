@@ -184,6 +184,7 @@ public:
 
 	DisplayServerEnums::IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override { return DisplayServerEnums::INVALID_INDICATOR_ID; }
 	void status_indicator_set_icon(DisplayServerEnums::IndicatorID p_id, const Ref<Texture2D> &p_icon) override {}
+	void status_indicator_set_icon_template(DisplayServerEnums::IndicatorID p_id, bool p_template) override {}
 	void status_indicator_set_tooltip(DisplayServerEnums::IndicatorID p_id, const String &p_tooltip) override {}
 	void status_indicator_set_callback(DisplayServerEnums::IndicatorID p_id, const Callable &p_callback) override {}
 	void delete_status_indicator(DisplayServerEnums::IndicatorID p_id) override {}
