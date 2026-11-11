@@ -9956,6 +9956,12 @@ static Variant _snapshot_encode(const Variant &p_value) {
 	}
 	Dictionary out;
 	out["__class"] = object->get_class();
+	// Where an argument loaded from a file came from, so a snapshot can load
+	// it again instead of keeping its contents.
+	const Resource *resource = Object::cast_to<Resource>(object);
+	if (resource != nullptr && resource->get_path().begins_with("res://")) {
+		out["__path"] = resource->get_path();
+	}
 	List<PropertyInfo> properties;
 	object->get_property_list(&properties);
 	for (const PropertyInfo &property : properties) {
