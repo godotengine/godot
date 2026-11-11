@@ -48,7 +48,7 @@ bool CanvasItemManipulator::_gui_input_rulers_and_guides(const Ref<InputEvent> &
 	if (show_guides && show_rulers && drag_type == DRAG_NONE) {
 		Node *start = Object::cast_to<Node>(find_items_start_callback.call());
 		if (start) {
-			Transform2D xform = (Transform2D)local_transform_callback.call() * (Transform2D)global_transform_callback.call();
+			Transform2D xform = global_transform_callback.call();
 			// Retrieve the guide lists.
 			Array vguides = start->get_meta("_edit_vertical_guides_", Array());
 			Array hguides = start->get_meta("_edit_horizontal_guides_", Array());
@@ -130,7 +130,7 @@ bool CanvasItemManipulator::_gui_input_rulers_and_guides(const Ref<InputEvent> &
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE || drag_type == DRAG_H_GUIDE) {
 		// Move the guide.
 		if (m.is_valid()) {
-			Transform2D xform = (Transform2D)local_transform_callback.call() * (Transform2D)global_transform_callback.call();
+			Transform2D xform = global_transform_callback.call();
 			drag_to = xform.affine_inverse().xform(m->get_position());
 
 			dragged_guide_pos = xform.xform(snap_point(drag_to, SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES));
@@ -142,13 +142,11 @@ bool CanvasItemManipulator::_gui_input_rulers_and_guides(const Ref<InputEvent> &
 		if (show_guides && b.is_valid() && b->get_button_index() == MouseButton::LEFT && !b->is_pressed()) {
 			Node *start = Object::cast_to<Node>(find_items_start_callback.call());
 			if (start) {
-				Transform2D xform = (Transform2D)local_transform_callback.call() * (Transform2D)global_transform_callback.call();
-
 				// Retrieve the guide lists.
 				Array vguides = start->get_meta("_edit_vertical_guides_", Array());
 				Array hguides = start->get_meta("_edit_horizontal_guides_", Array());
 
-				Point2 edited = snap_point(xform.affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
+				Point2 edited = snap_point(Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position()), SNAP_GRID | SNAP_PIXEL | SNAP_OTHER_NODES);
 				if (drag_type == DRAG_V_GUIDE) {
 					String msg;
 					if (b->get_position().x > ruler_width) { // Add/move a vertical guide.
@@ -242,24 +240,18 @@ bool CanvasItemManipulator::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 
 				Transform2D xform = (Transform2D)global_transform_callback.call() * ci->get_screen_transform();
-				Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
-				Transform2D simple_xform;
-				if (local_space) {
-					simple_xform = (Transform2D)local_transform_callback.call() * unscaled_transform;
-				} else {
-					Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
-					simple_xform = (Transform2D)local_transform_callback.call() * translation;
-				}
+				Transform2D unscaled_xform = (xform * ci->get_transform().affine_inverse() * edit_transform).orthonormalized();
+				Transform2D simple_xform = local_space ? unscaled_xform : Transform2D(0.0f, unscaled_xform.get_origin());
 
 				drag_type = DRAG_SCALE_BOTH;
 
 				if (show_transformation_gizmos) {
-					Size2 scale_factor = Size2(GIZMO_HANDLE_DISTANCE, GIZMO_HANDLE_DISTANCE);
-					Rect2 x_handle_rect = Rect2(scale_factor.x * scale, -5 * scale, 10 * scale, 10 * scale);
+					Size2 scale_factor = Size2(GIZMO_HANDLE_DISTANCE, GIZMO_HANDLE_DISTANCE) * scale;
+					Rect2 x_handle_rect = Rect2(Point2(scale_factor.x, GIZMO_HANDLE_X_RECT.position.y * scale), GIZMO_HANDLE_X_RECT.size * scale);
 					if (x_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 						drag_type = DRAG_SCALE_X;
 					}
-					Rect2 y_handle_rect = Rect2(-5 * scale, scale_factor.y * scale, 10 * scale, 10 * scale);
+					Rect2 y_handle_rect = Rect2(Point2(GIZMO_HANDLE_Y_RECT.position.x * scale, scale_factor.y), GIZMO_HANDLE_Y_RECT.size * scale);
 					if (y_handle_rect.has_point(simple_xform.affine_inverse().xform(b->get_position()))) {
 						drag_type = DRAG_SCALE_Y;
 					}
@@ -317,14 +309,14 @@ bool CanvasItemManipulator::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			for (const Variant &var : drag_selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(var);
 				Transform2D parent_xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
-				Transform2D unscaled_transform = ((Transform2D)global_transform_callback.call() * parent_xform * edit_transform).orthonormalized();
-				Transform2D simple_xform;
+				Transform2D unscaled_xform = ((Transform2D)global_transform_callback.call() * parent_xform * edit_transform).orthonormalized();
 
+				Transform2D simple_xform;
 				if (local_space || drag_type == DRAG_SCALE_BOTH) {
-					simple_xform = ((Transform2D)local_transform_callback.call() * unscaled_transform).affine_inverse() * (Transform2D)global_transform_callback.call();
+					simple_xform = (unscaled_xform).affine_inverse() * (Transform2D)global_transform_callback.call();
 				} else {
-					Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
-					simple_xform = ((Transform2D)local_transform_callback.call() * translation).affine_inverse() * (Transform2D)global_transform_callback.call();
+					Transform2D translation = Transform2D(0.0f, unscaled_xform.get_origin());
+					simple_xform = (translation).affine_inverse() * (Transform2D)global_transform_callback.call();
 				}
 
 				bool uniform = m->is_shift_pressed();
@@ -447,18 +439,18 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 			// Start dragging if we still have nodes.
 			if (!drag_selection.is_empty()) {
-				Vector2 event_pos = b.is_valid() ? b->get_position() : (Point2)local_mouse_pos_callback.call();
+				Vector2 pos = b.is_valid() ? b->get_position() : (Point2)local_mouse_pos_callback.call();
 
 				if (move_temp_pivot) {
 					drag_type = DRAG_TEMP_PIVOT;
-					temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(event_pos);
+					temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(pos);
 					emit_signal(update_canvas_signal);
 					return true;
 				}
 
 				emit_signal("save_canvas_state_requested", drag_selection, false);
-				drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(event_pos);
-				Vector2 new_pos;
+				drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(pos);
+				Point2 new_pos;
 				if (drag_selection.size() == 1) {
 					const Node2D *n2d = Object::cast_to<Node2D>(drag_selection.front());
 					new_pos = snap_point(drag_from, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, n2d);
@@ -489,7 +481,7 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			drag_to = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
 			emit_signal("restore_canvas_state_requested", drag_selection, false);
 
-			Vector2 new_pos;
+			Point2 new_pos;
 			if (drag_selection.size() == 1) {
 				const Node2D *n2d = Object::cast_to<Node2D>(drag_selection.front());
 				new_pos = snap_point(drag_to, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, n2d);
@@ -849,14 +841,8 @@ bool CanvasItemManipulator::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			CanvasItem *ci = Object::cast_to<CanvasItem>(drag_selection.front());
 			Transform2D parent_xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
-			Transform2D unscaled_transform = ((Transform2D)global_transform_callback.call() * parent_xform * ci->_edit_get_transform()).orthonormalized();
-			Transform2D simple_xform;
-			if (local_space) {
-				simple_xform = (Transform2D)local_transform_callback.call() * unscaled_transform;
-			} else {
-				Transform2D translation = Transform2D(0.0f, unscaled_transform.get_origin());
-				simple_xform = (Transform2D)local_transform_callback.call() * translation;
-			}
+			Transform2D unscaled_xform = ((Transform2D)global_transform_callback.call() * parent_xform * ci->_edit_get_transform()).orthonormalized();
+			Transform2D simple_xform = local_space ? unscaled_xform : Transform2D(0.0f, unscaled_xform.get_origin());
 
 			if (show_transformation_gizmos) {
 				const Rect2 x_handle_rect = Rect2(GIZMO_HANDLE_X_RECT.position * scale, GIZMO_HANDLE_X_RECT.size * scale);
@@ -907,12 +893,7 @@ bool CanvasItemManipulator::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if (drag_type == DRAG_MOVE_X || drag_type == DRAG_MOVE_Y) {
 				const CanvasItem *selected = Object::cast_to<CanvasItem>(drag_selection.front());
 				Transform2D parent_xform = selected->get_screen_transform() * selected->get_transform().affine_inverse();
-				Transform2D unscaled_transform = ((Transform2D)global_transform_callback.call() * parent_xform * selected->_edit_get_transform()).orthonormalized();
-
-				Transform2D simple_xform = local_transform_callback.call();
-				if (local_space) {
-					simple_xform *= unscaled_transform;
-				}
+				Transform2D simple_xform = local_space ? ((Transform2D)global_transform_callback.call() * parent_xform * selected->_edit_get_transform()).orthonormalized() : Transform2D();
 
 				drag_delta = simple_xform.affine_inverse().basis_xform(drag_delta);
 				if (drag_type == DRAG_MOVE_X) {
@@ -1065,13 +1046,15 @@ bool CanvasItemManipulator::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 					anchor_pos[3] = Vector2(control->get_anchor(SIDE_LEFT), control->get_anchor(SIDE_BOTTOM));
 
 					Rect2 anchor_rects[4];
+					Size2 handle_size = ANCHOR_HANDLE_SIZE * scale;
+
 					for (int i = 0; i < 4; i++) {
 						anchor_pos[i] = ((Transform2D)global_transform_callback.call() * control->get_screen_transform()).xform(anchor_to_position(control, anchor_pos[i]));
-						anchor_rects[i] = Rect2(anchor_pos[i], ANCHOR_HANDLE_SIZE);
+						anchor_rects[i] = Rect2(anchor_pos[i], handle_size);
 						if (control->is_layout_rtl()) {
-							anchor_rects[i].position -= ANCHOR_HANDLE_SIZE * Vector2(real_t(i == 1 || i == 2), real_t(i <= 1));
+							anchor_rects[i].position -= handle_size * Vector2(real_t(i == 1 || i == 2), real_t(i <= 1));
 						} else {
-							anchor_rects[i].position -= ANCHOR_HANDLE_SIZE * Vector2(real_t(i == 0 || i == 3), real_t(i <= 1));
+							anchor_rects[i].position -= handle_size * Vector2(real_t(i == 0 || i == 3), real_t(i <= 1));
 						}
 					}
 
@@ -1084,7 +1067,7 @@ bool CanvasItemManipulator::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 
 					for (int i = 0; i < 4; i++) {
 						if (anchor_rects[i].has_point(b->get_position())) {
-							if ((anchor_pos[0] == anchor_pos[2]) && (anchor_pos[0].distance_to(b->get_position()) < ANCHOR_HANDLE_SIZE.length() / 3.0)) {
+							if ((anchor_pos[0] == anchor_pos[2]) && (anchor_pos[0].distance_to(b->get_position()) < handle_size.length() / 3.0)) {
 								drag_type = DRAG_ANCHOR_ALL;
 							} else {
 								drag_type = dragger[i];
@@ -2101,25 +2084,32 @@ void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<
 
 void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	Transform2D xform = p_canvas_xform;
-	Viewport *vp = Object::cast_to<Viewport>(p_node);
 
-	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
+	if (cl) {
 		if (editor_mode) {
-			xform = cl->get_transform();
+			xform *= cl->get_transform();
 		}
-	} else if (vp) {
-		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
-			return; // FIXME: Make subviewport selection work at runtime.
-		}
+	} else {
+		Viewport *vp = Object::cast_to<Viewport>(p_node);
+		if (vp) {
+			if (editor_mode) {
+				if (!vp->is_visible_subviewport()) {
+					return;
+				}
 
-		if (editor_mode && !vp->is_visible_subviewport()) {
-			return;
-		}
+				xform = vp->get_popup_base_transform();
 
-		xform = vp->get_popup_base_transform();
+				if (!vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
+					return;
+				}
+			} else {
+				if (vp != SceneTree::get_singleton()->get_root()) {
+					return; // FIXME: Make subviewport selection work at runtime.
+				}
 
-		if (editor_mode && !vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
-			return;
+				xform = vp->get_popup_base_transform();
+			}
 		}
 	}
 
@@ -2141,22 +2131,19 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 		return;
 	}
 
+	// Cameras don't affect `CanvasLayer`s.
+	// Only check at runtime, as cameras aren't active in the editor.
+	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+		xform *= SceneTree::get_singleton()->get_root()->get_canvas_transform();
+	}
+
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
 
-	Point2 pos = p_pos;
-
-	// Cameras don't affect `CanvasLayer`s.
-	// Only check at runtime, as cameras aren't active in the editor.
-	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
-		Window *root = SceneTree::get_singleton()->get_root();
-		pos = root->get_canvas_transform().affine_inverse().xform(p_pos);
-	}
-
 	xform = (xform * ci->get_transform()).affine_inverse();
 	const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
-	if (ci->_edit_is_selected_on_click(xform.xform(pos), local_grab_distance)) {
+	if (ci->_edit_is_selected_on_click(xform.xform(p_pos), local_grab_distance)) {
 		DebuggerHelpers::SelectResult res;
 		res.item = ci;
 		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
@@ -2170,25 +2157,32 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	}
 
 	Transform2D xform = p_canvas_xform;
-	Viewport *vp = Object::cast_to<Viewport>(p_node);
+	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 
-	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+	if (cl) {
 		if (editor_mode) {
 			xform = cl->get_transform();
 		}
-	} else if (vp) {
-		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
-			return; // FIXME: Make subviewport selection work at runtime.
-		}
+	} else {
+		Viewport *vp = Object::cast_to<Viewport>(p_node);
+		if (vp) {
+			if (editor_mode) {
+				if (!vp->is_visible_subviewport()) {
+					return;
+				}
 
-		if (editor_mode && !vp->is_visible_subviewport()) {
-			return;
-		}
+				xform = vp->get_popup_base_transform();
 
-		xform = vp->get_popup_base_transform();
+				if (!vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
+					return;
+				}
+			} else {
+				if (vp != SceneTree::get_singleton()->get_root()) {
+					return; // FIXME: Make subviewport selection work at runtime.
+				}
 
-		if (editor_mode && !vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
-			return;
+				xform = vp->get_popup_base_transform();
+			}
 		}
 	}
 
@@ -2210,13 +2204,12 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (ci) {
 				if (!ci->is_set_as_top_level()) {
-					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
+					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
 				} else {
-					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
+					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), xform);
 				}
 			} else {
-				CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-				find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
+				find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), xform);
 			}
 		}
 	}
@@ -2225,29 +2218,27 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		return;
 	}
 
+	// Cameras don't affect `CanvasLayer`s.
+	// Only check at runtime, as cameras aren't active in the editor.
+	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+		xform *= SceneTree::get_singleton()->get_root()->get_canvas_transform();
+	}
+
 	if (!ci->is_set_as_top_level()) {
 		xform *= p_parent_xform;
 	}
 	xform *= ci->get_transform();
 
-	Rect2 rect = p_rect;
-	// Cameras don't affect `CanvasLayer`s.
-	// Only check at runtime, as cameras aren't active in the editor.
-	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
-		Window *root = SceneTree::get_singleton()->get_root();
-		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
-	}
-
 	bool selected = false;
 	if (ci->_edit_use_rect()) {
 		Rect2 ci_rect = xform.xform(ci->_edit_get_rect());
-		if (rect.has_point(ci_rect.position) &&
-				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
-				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
-				rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
+		if (p_rect.has_point(ci_rect.position) &&
+				p_rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
+				p_rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
+				p_rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
 			selected = true;
 		}
-	} else if (rect.has_point(xform.xform(Point2()))) {
+	} else if (p_rect.has_point(xform.xform(Point2()))) {
 		selected = true;
 	}
 
@@ -2296,13 +2287,12 @@ void CanvasItemManipulator::set_tool(Tool p_tool) {
 	tool = p_tool;
 }
 
-void CanvasItemManipulator::set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input) {
+void CanvasItemManipulator::set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input) {
 	find_items_start_callback = p_find_items_start;
 	point_selected_callback = p_point_selected;
 	get_selection_callback = p_get_selection;
 	global_transform_callback = p_global_xform;
 #ifdef TOOLS_ENABLED
-	local_transform_callback = p_local_xform;
 	local_mouse_pos_callback = p_local_mouse_pos;
 	plugin_input_callback = p_plugin_input;
 #endif

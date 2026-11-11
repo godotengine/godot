@@ -200,7 +200,6 @@ private:
 
 	HashMap<int, Ref<Shortcut>> inputs;
 
-	Callable local_transform_callback;
 	Callable local_mouse_pos_callback;
 	Callable plugin_input_callback;
 
@@ -261,7 +260,7 @@ public:
 	void set_view_offset(const Point2 p_offset) { view_offset = p_offset; }
 	void set_viewport(Viewport *p_viewport) { viewport = p_viewport; }
 
-	void set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_local_xform, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input);
+	void set_callbacks(const Callable &p_find_items_start, const Callable &p_point_selected, const Callable &p_get_selection, const Callable &p_global_xform, const Callable &p_local_mouse_pos, const Callable &p_plugin_input);
 
 	static bool is_node_locked(const Node *p_node);
 
