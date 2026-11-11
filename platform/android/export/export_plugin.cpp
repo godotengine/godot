@@ -3678,6 +3678,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path);
+		OS::get_singleton()->set_environment("ANDROID_SDK_ROOT", sdk_path);
 #endif
 		String build_command;
 
