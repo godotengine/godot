@@ -777,6 +777,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["FOG"] = "fog";
+		actions.renames["GLOBAL_FOG_INFLUENCE"] = "global_fog_influence";
 		actions.renames["RADIANCE"] = "custom_radiance";
 		actions.renames["IRRADIANCE"] = "custom_irradiance";
 		actions.renames["BONE_INDICES"] = "bone_attrib";

@@ -712,6 +712,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["FOG"] = "fog_highp";
+		actions.renames["GLOBAL_FOG_INFLUENCE"] = "global_fog_influence";
 		actions.renames["RADIANCE"] = "custom_radiance_highp";
 		actions.renames["IRRADIANCE"] = "custom_irradiance_highp";
 		actions.renames["BONE_INDICES"] = "bone_attrib";
