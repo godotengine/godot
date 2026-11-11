@@ -3100,6 +3100,13 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		hide_unused_editors();
 		return;
 	}
+
+	Node *node = Object::cast_to<Node>(p_object);
+    if (node && !node->is_inside_tree()) {
+        push_item(nullptr);
+        return;
+    }
+
 	_add_to_history(p_object, p_property, p_inspector_only);
 	_edit_current();
 }
