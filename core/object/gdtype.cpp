@@ -90,6 +90,19 @@ void GDType::initialize() {
 	init_state = InitState::MUTABLE;
 }
 
+void GDType::clear_held_objects() {
+	for (const KeyValue<StringName, Member> &kv : _self_members) {
+		if (kv.value.type == Member::Type::METHOD) {
+			const_cast<MethodBind *>(kv.value.payload.method)->set_default_arguments(Vector<Variant>());
+		}
+	}
+	for (const KeyValue<StringName, LocalVector<MethodBind *>> &kv : self_compatibility_method_map) {
+		for (MethodBind *method_bind : kv.value) {
+			method_bind->set_default_arguments(Vector<Variant>());
+		}
+	}
+}
+
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
