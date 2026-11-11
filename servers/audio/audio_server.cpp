@@ -1740,7 +1740,7 @@ PackedVector2Array AudioServer::get_input_frames(int p_frames) {
 	PackedVector2Array ret;
 	AudioDriver *ad = AudioDriver::get_singleton();
 	ad->input_lock();
-	{   // Code block to prevent the COW buf buffer from leaking past the input_lock.
+	{ // Code block to prevent the COW buf buffer from leaking past the input_lock.
 		int input_position = ad->get_input_position();
 		Vector<int32_t> buf = ad->get_input_buffer();
 		if (input_position < input_buffer_ofs) {
