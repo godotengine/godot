@@ -618,6 +618,7 @@ Error ResourceLoaderText::load() {
 
 		Dictionary missing_resource_properties;
 
+		bool has_bundled = false;
 		while (true) {
 			String assign;
 			Variant value;
@@ -625,6 +626,11 @@ Error ResourceLoaderText::load() {
 			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
 
 			ERR_FAIL_COND_V_MSG(error, error, _get_error_string());
+
+			// We check if _bundled is in the embedded scene to provide backwards compatibility
+			if (assign == "_bundled") {
+				has_bundled = true;
+			}
 
 			if (!assign.is_empty()) {
 				if (do_assign) {
@@ -670,9 +676,8 @@ Error ResourceLoaderText::load() {
 						res->set(assign, value);
 					}
 				}
-				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
-				if (type == "PackedScene" && next_tag.name == "node") {
+				if (type == "PackedScene" && !has_bundled && next_tag.name == "node") {
 					res = _parse_node_tag(res, rp);
 				}
 
