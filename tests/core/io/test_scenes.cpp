@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_scenes)
 
 #include "core/io/file_access.h"
+#include "core/io/missing_resource.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -44,6 +45,7 @@ TEST_FORCE_LINK(test_scenes)
 #include "core/variant/variant.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/resource_format_text.h"
 #include "tests/test_utils.h"
 
 namespace TestScenes {
@@ -268,4 +270,166 @@ TEST_CASE("[Scenes] Simple scene saving and loading") {
 	}
 	f->close();
 }
+
+String get_text_header(const String &p_path) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return String();
+	}
+	while (!f->eof_reached()) {
+		const String header = f->get_line().strip_edges();
+		if (header.begins_with("[gd_")) {
+			return header;
+		}
+	}
+	return String();
+}
+
+// Reads the `format=N` value from the header line of a text scene/resource file. Returns -1 on failure.
+int get_text_format_version(const String &p_path) {
+	static const String format_prefix = "format=";
+	int format_version = -1;
+	const String header = get_text_header(p_path);
+	const int pos = header.find(format_prefix);
+	if (pos == -1) {
+		return format_version;
+	}
+	const String rest = header.substr(pos + format_prefix.length());
+	int end = 0;
+	while (end < rest.length() && rest[end] >= '0' && rest[end] <= '9') {
+		end++;
+	}
+	if (end == 0) {
+		return format_version;
+	}
+
+	format_version = rest.substr(0, end).to_int();
+	return format_version;
+}
+
+// Returns true if any line in the file equals p_line (or starts with it, if p_prefix is true).
+bool file_has_line(const String &p_path, const String &p_line, bool p_prefix = false) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return false;
+	}
+	while (!f->eof_reached()) {
+		const String line = f->get_line().strip_edges();
+		if (p_prefix ? line.begins_with(p_line) : line == p_line) {
+			return true;
+		}
+	}
+	return false;
+}
+
+Ref<PackedScene> make_simple_scene(const String &p_node_name) {
+	Node *node = memnew(Node);
+	node->set_name(p_node_name);
+	Ref<PackedScene> scene = memnew(PackedScene);
+	scene->pack(node);
+	memdelete(node);
+	return scene;
+}
+
+TEST_CASE("[Scenes] Text format version") {
+	SUBCASE("Scene without metadata or embedded scenes is not upgraded") {
+		Ref<PackedScene> scene = make_simple_scene("SimpleNode");
+
+		const String save_path = TestUtils::get_temp_path("format_version_no_meta.tscn");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+
+		CHECK(get_text_format_version(save_path) == ResourceLoaderText::FORMAT_VERSION_COMPAT);
+		CHECK(!file_has_line(save_path, "[resource]"));
+		validate_simple_scene(ResourceLoader::load(save_path));
+	}
+
+	SUBCASE("Scene with metadata is upgraded") {
+		Ref<PackedScene> scene = make_simple_scene("SimpleNode");
+		scene->set_meta("ExampleMetadata", Vector2i(40, 80));
+
+		const String save_path = TestUtils::get_temp_path("format_version_meta.tscn");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+
+		CHECK(get_text_format_version(save_path) >= ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED);
+		CHECK(file_has_line(save_path, "[resource]"));
+
+		Ref<PackedScene> loaded = ResourceLoader::load(save_path);
+		bool is_null = loaded.is_null();
+		CHECK(!is_null);
+		if (!is_null) {
+			CHECK(loaded->get_meta("ExampleMetadata") == Vector2i(40, 80));
+			validate_simple_scene(loaded);
+		}
+
+		// Removing the metadata should bring the version back down.
+		scene->remove_meta("ExampleMetadata");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+		CHECK(get_text_format_version(save_path) == ResourceLoaderText::FORMAT_VERSION_COMPAT);
+		CHECK(!file_has_line(save_path, "[resource]"));
+	}
+
+	SUBCASE("Scene with resource name is upgraded") {
+		Ref<PackedScene> scene = make_simple_scene("SimpleNode");
+		scene->set_name("SimpleScene");
+
+		const String save_path = TestUtils::get_temp_path("format_version_resource_name.tscn");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+		CHECK(get_text_format_version(save_path) >= ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED);
+		CHECK(file_has_line(save_path, "[resource]"));
+	}
+
+	SUBCASE("Missing resources metadata does not count as metadata") {
+		Ref<PackedScene> scene = make_simple_scene("SimpleNode");
+		scene->set_meta(META_MISSING_RESOURCES, Dictionary());
+
+		const String save_path = TestUtils::get_temp_path("format_version_missing_meta.tscn");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+		CHECK(get_text_format_version(save_path) == ResourceLoaderText::FORMAT_VERSION_COMPAT);
+		CHECK(!file_has_line(save_path, "[resource]"));
+		validate_simple_scene(ResourceLoader::load(save_path));
+
+		// ...but any other metadata alongside it does.
+		scene->set_meta("ExampleMetadata", Vector2i(40, 80));
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+		CHECK(get_text_format_version(save_path) >= ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED);
+		CHECK(file_has_line(save_path, "[resource]"));
+	}
+
+	SUBCASE("Scene with an embedded scene in its metadata is upgraded") {
+		Ref<PackedScene> scene = make_simple_scene("named_node");
+		scene->set_meta("inner_scene", make_simple_scene("inner_named_node"));
+
+		const String save_path = TestUtils::get_temp_path("format_version_embedded_in_meta.tscn");
+		CHECK(ResourceSaver::save(scene, save_path) == OK);
+		CHECK(get_text_format_version(save_path) >= ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED);
+
+		Ref<PackedScene> loaded = ResourceLoader::load(save_path);
+		Ref<PackedScene> loaded_inner = loaded.is_valid() ? Ref<PackedScene>(loaded->get_meta("inner_scene")) : Ref<PackedScene>();
+		bool is_null = loaded_inner.is_null();
+		CHECK(!is_null);
+		if (!is_null) {
+			Node *inner_node = loaded_inner->instantiate();
+			CHECK(inner_node->get_name() == "inner_named_node");
+			memdelete(inner_node);
+		}
+	}
+
+	SUBCASE("Non-scene resources are not upgraded") {
+		Ref<Resource> resource = memnew(Resource);
+		resource->set_meta("ExampleMetadata", Vector2i(40, 80));
+
+		const String save_path = TestUtils::get_temp_path("format_version_resource_meta.tres");
+		CHECK(ResourceSaver::save(resource, save_path) == OK);
+		CHECK(get_text_header(save_path).begins_with("[gd_resource"));
+		CHECK(get_text_format_version(save_path) == ResourceLoaderText::FORMAT_VERSION_COMPAT);
+
+		// A big PackedByteArray still gives the older, non-scene version.
+		PackedByteArray bytes;
+		bytes.resize_initialized(128);
+		resource->set_meta("bytes", bytes);
+		CHECK(ResourceSaver::save(resource, save_path) == OK);
+		CHECK(get_text_format_version(save_path) == ResourceLoaderText::FORMAT_VERSION_HAS_NEW_VARIANTS);
+	}
+}
+
 } // namespace TestScenes
