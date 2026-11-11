@@ -80,6 +80,7 @@ class JavaClass : public RefCounted {
 	struct FieldInfo {
 		bool _static = false;
 		bool _final = false;
+		bool _constant_value_initialized = false;
 		uint32_t field_type = 0;
 		StringName field_sig;
 		jfieldID field = nullptr;
