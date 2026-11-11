@@ -217,7 +217,10 @@ TEST_CASE("[UDSServer] When stopped shouldn't accept new connections") {
 	// Try to connect to non-existent socket
 	Ref<StreamPeerUDS> new_client;
 	new_client.instantiate();
+	// Silence connection failed error.
+	ERR_PRINT_OFF;
 	Error err = new_client->connect_to_host(SOCKET_PATH);
+	ERR_PRINT_ON;
 
 	// Connection should fail since socket doesn't exist
 	CHECK_NE(err, Error::OK);
