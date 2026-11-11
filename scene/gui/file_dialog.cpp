@@ -861,7 +861,7 @@ void FileDialog::update_file_list() {
 	}
 
 	dir_access->list_dir_begin();
-	if (dir_access->is_readable(dir_access->get_current_dir().utf8().get_data())) {
+	if (dir_access->is_readable(dir_access->get_current_dir())) {
 		message->hide();
 	} else {
 		message->set_text(ETR("You don't have permission to access contents of this folder."));
