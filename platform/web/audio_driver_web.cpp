@@ -188,9 +188,9 @@ void AudioDriverWeb::finish() {
 }
 
 Error AudioDriverWeb::input_start() {
-	lock();
+	input_lock();
 	input_buffer_init(buffer_length);
-	unlock();
+	input_unlock();
 	if (godot_audio_input_start()) {
 		return FAILED;
 	}
@@ -199,9 +199,9 @@ Error AudioDriverWeb::input_start() {
 
 Error AudioDriverWeb::input_stop() {
 	godot_audio_input_stop();
-	lock();
+	input_lock();
 	input_buffer.clear();
-	unlock();
+	input_unlock();
 	return OK;
 }
 
@@ -409,10 +409,10 @@ void AudioDriverWorklet::_audio_thread_func(void *p_data) {
 	int32_t step = 0;
 	while (!driver->quit) {
 		if (to_read) {
-			driver->lock();
+			driver->input_lock();
 			driver->_audio_driver_capture(rpos, to_read);
 			godot_audio_worklet_state_add(driver->state, STATE_SAMPLES_IN, -to_read);
-			driver->unlock();
+			driver->input_unlock();
 			rpos += to_read;
 			if (rpos >= in_samples) {
 				rpos -= in_samples;

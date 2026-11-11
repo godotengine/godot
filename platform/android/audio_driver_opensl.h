@@ -39,6 +39,7 @@
 class AudioDriverOpenSL : public AudioDriver {
 	bool active = false;
 	Mutex mutex;
+	Mutex input_mutex;
 
 	enum {
 		BUFFER_COUNT = 2
@@ -97,6 +98,8 @@ public:
 
 	virtual void lock() override;
 	virtual void unlock() override;
+	virtual void input_lock() override;
+	virtual void input_unlock() override;
 	virtual void finish() override;
 
 	virtual Error input_start() override;

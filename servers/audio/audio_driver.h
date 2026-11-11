@@ -99,6 +99,8 @@ public:
 
 	virtual void lock() = 0;
 	virtual void unlock() = 0;
+	virtual void input_lock() { lock(); }
+	virtual void input_unlock() { unlock(); }
 	virtual void finish() = 0;
 
 	virtual PackedStringArray get_output_device_list();
