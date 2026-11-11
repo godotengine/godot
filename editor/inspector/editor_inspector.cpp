@@ -3532,8 +3532,8 @@ void EditorInspectorArray::_setup() {
 	max_page = MAX(0, count - 1) / page_length;
 	array_elements.resize(MAX(0, end_array_index - begin_array_index));
 	if (page < 0 || page > max_page) {
-		WARN_PRINT(vformat("Invalid page number %d", page));
 		page = CLAMP(page, 0, max_page);
+		emit_signal("page_change_request", page);
 	}
 
 	Ref<Font> numbers_font;
