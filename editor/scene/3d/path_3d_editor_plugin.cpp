@@ -588,8 +588,8 @@ void Path3DGizmo::_update_transform_gizmo() {
 
 Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	path = p_path;
-        Ref<Curve3D> curve = path->get_curve();
-        cached_point_count = curve.is_valid() ? curve->get_point_count() : 0;
+	Ref<Curve3D> curve = path->get_curve();
+	cached_point_count = curve.is_valid() ? curve->get_point_count() : 0;
 	set_node_3d(p_path);
 	orig_in_length = 0;
 	orig_out_length = 0;
