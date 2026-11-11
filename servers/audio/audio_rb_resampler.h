@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "core/math/audio_frame.h"
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
+#include "servers/audio/audio_frame.h"
 
 struct AudioRBResampler {
 	uint32_t rb_bits;

@@ -14,11 +14,10 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #endif
 
+#include "../area_lights_inc.glsl"
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
 #include "../oct_inc.glsl"
-
-#include "../area_lights_inc.glsl"
 
 #define M_TAU 6.28318530718
 #define M_PI 3.14159265359
@@ -89,7 +88,7 @@ struct VoxelGIData {
 	bool blend_ambient; // 4 - 92
 	uint mipmaps; // 4 - 96
 
-	vec3 pad; // 12 - 108
+	vec3 octree_size; // 12 - 108
 	float exposure_normalization; // 4 - 112
 };
 
@@ -707,7 +706,7 @@ void main() {
 
 			//this causes corrupted pixels, i have no idea why..
 			if (all(bvec2(all(greaterThanEqual(position, vec3(0.0))), all(lessThan(position, voxel_gi_instances.data[i].bounds))))) {
-				position /= voxel_gi_instances.data[i].bounds;
+				position /= voxel_gi_instances.data[i].octree_size;
 
 				vec4 light = vec4(0.0);
 				for (uint j = 0; j < voxel_gi_instances.data[i].mipmaps; j++) {

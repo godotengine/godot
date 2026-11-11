@@ -124,6 +124,18 @@ public:
 	AnimationNodeSync();
 };
 
+class AnimationNodeObserverOneShot : public AnimationNodeObserver {
+	GDCLASS(AnimationNodeObserverOneShot, AnimationNodeObserver);
+
+protected:
+	static void _bind_methods() {
+		ADD_SIGNAL(MethodInfo("started"));
+		ADD_SIGNAL(MethodInfo("fade_in_finished"));
+		ADD_SIGNAL(MethodInfo("fade_out_started"));
+		ADD_SIGNAL(MethodInfo(SceneStringName(finished)));
+	}
+};
+
 class AnimationNodeOneShot : public AnimationNodeSync {
 	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
@@ -159,6 +171,8 @@ private:
 	StringName fade_in_remaining = "fade_in_remaining";
 	StringName fade_out_remaining = "fade_out_remaining";
 	StringName time_to_restart = "time_to_restart";
+
+	void _check_and_notify_state_changes(AnimationNodeInstance &p_instance, bool p_prev_active, bool p_prev_internal_active, double p_prev_fade_in_remaining);
 
 protected:
 	static void _bind_methods();
@@ -329,6 +343,16 @@ public:
 	AnimationNodeTimeSeek();
 };
 
+class AnimationNodeObserverTransition : public AnimationNodeObserver {
+	GDCLASS(AnimationNodeObserverTransition, AnimationNodeObserver);
+
+protected:
+	static void _bind_methods() {
+		ADD_SIGNAL(MethodInfo(SceneStringName(state_started), PropertyInfo(Variant::STRING, "state")));
+		ADD_SIGNAL(MethodInfo(SceneStringName(state_finished), PropertyInfo(Variant::STRING, "state")));
+	}
+};
+
 class AnimationNodeTransition : public AnimationNodeSync {
 	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
@@ -350,6 +374,8 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	bool allow_transition_to_self = false;
 
 	bool pending_update = false;
+
+	void _signal_state_change(const AnimationNodeInstance &p_instance, bool p_starting, int p_state, bool p_test_only);
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;

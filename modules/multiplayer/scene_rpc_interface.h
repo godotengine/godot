@@ -49,7 +49,7 @@ private:
 		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 		int channel = 0;
 
-		bool operator==(RPCConfig const &p_other) const {
+		bool operator==(const RPCConfig &p_other) const {
 			return name == p_other.name;
 		}
 	};

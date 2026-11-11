@@ -38,13 +38,16 @@
 #include <errno.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
+
 struct netlinkrequest {
   nlmsghdr header;
   ifaddrmsg msg;
 };
+
 namespace {
 const int kMaxReadSize = 4096;
 };
+
 int set_ifname(struct ifaddrs* ifaddr, int interface) {
   char buf[IFNAMSIZ] = {0};
   char* name = if_indextoname(interface, buf);
@@ -55,6 +58,7 @@ int set_ifname(struct ifaddrs* ifaddr, int interface) {
   strncpy(ifaddr->ifa_name, name, strlen(name) + 1);
   return 0;
 }
+
 int set_flags(struct ifaddrs* ifaddr) {
   int fd = socket(AF_INET, SOCK_DGRAM, 0);
   if (fd == -1) {
@@ -71,6 +75,7 @@ int set_flags(struct ifaddrs* ifaddr) {
   ifaddr->ifa_flags = ifr.ifr_flags;
   return 0;
 }
+
 int set_addresses(struct ifaddrs* ifaddr, ifaddrmsg* msg, void* data,
                   size_t len) {
   if (msg->ifa_family == AF_INET) {
@@ -89,6 +94,7 @@ int set_addresses(struct ifaddrs* ifaddr, ifaddrmsg* msg, void* data,
   }
   return 0;
 }
+
 int make_prefixes(struct ifaddrs* ifaddr, int family, int prefixlen) {
   char* prefix = NULL;
   if (family == AF_INET) {
@@ -120,6 +126,7 @@ int make_prefixes(struct ifaddrs* ifaddr, int family, int prefixlen) {
   *prefix = remainder;
   return 0;
 }
+
 int populate_ifaddrs(struct ifaddrs* ifaddr, ifaddrmsg* msg, void* bytes,
                      size_t len) {
   if (set_ifname(ifaddr, msg->ifa_index) != 0) {
@@ -136,16 +143,19 @@ int populate_ifaddrs(struct ifaddrs* ifaddr, ifaddrmsg* msg, void* bytes,
   }
   return 0;
 }
+
 int getifaddrs(struct ifaddrs** result) {
   int fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
   if (fd < 0) {
     return -1;
   }
+
   netlinkrequest ifaddr_request;
   memset(&ifaddr_request, 0, sizeof(ifaddr_request));
   ifaddr_request.header.nlmsg_flags = NLM_F_ROOT | NLM_F_REQUEST;
   ifaddr_request.header.nlmsg_type = RTM_GETADDR;
   ifaddr_request.header.nlmsg_len = NLMSG_LENGTH(sizeof(ifaddrmsg));
+
   ssize_t count = send(fd, &ifaddr_request, ifaddr_request.header.nlmsg_len, 0);
   if (static_cast<size_t>(count) != ifaddr_request.header.nlmsg_len) {
     close(fd);
@@ -207,6 +217,7 @@ int getifaddrs(struct ifaddrs** result) {
   freeifaddrs(start);
   return -1;
 }
+
 void freeifaddrs(struct ifaddrs* addrs) {
   struct ifaddrs* last = NULL;
   struct ifaddrs* cursor = addrs;

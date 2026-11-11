@@ -239,6 +239,14 @@ public class GodotEditText extends EditText {
 			return mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent);
 		}
 
+		// If EditText is empty, super.onKeyDown won't modify the Editable,
+		// so beforeTextChanged won't fire and Godot never receives the DEL event.
+		// Forward it directly in that case.
+		if (keyCode == KeyEvent.KEYCODE_DEL && length() == 0) {
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_DEL, 0, 0, true, false);
+			return true;
+		}
+
 		// pass event to godot in special cases
 		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
 			return true;
@@ -259,6 +267,12 @@ public class GodotEditText extends EditText {
 		// If this is a BACK key and we don't have focus anymore, forward to render view
 		if (keyCode == KeyEvent.KEYCODE_BACK && !hasFocus()) {
 			return mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent);
+		}
+
+		// Paired release event for the KEYCODE_DEL press forwarded in onKeyDown.
+		if (keyCode == KeyEvent.KEYCODE_DEL && length() == 0) {
+			mRenderView.getInputHandler().handleKeyEvent(KeyEvent.KEYCODE_DEL, 0, 0, false, false);
+			return true;
 		}
 
 		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent)) {

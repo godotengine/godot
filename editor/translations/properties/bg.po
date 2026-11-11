@@ -25,13 +25,14 @@
 # Jivko Chterev <Jivko91@gmail.com>, 2025.
 # Кристиан Николов <kris.nikolov07@gmail.com>, 2025, 2026.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
+# Antoan Ignatov <antoan.a.ignatov@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-10 10:02+0000\n"
-"Last-Translator: Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>\n"
+"PO-Revision-Date: 2026-04-17 08:09+0000\n"
+"Last-Translator: Antoan Ignatov <antoan.a.ignatov@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/bg/>\n"
 "Language: bg\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.15.1\n"
+"X-Generator: Weblate 5.17.1-dev\n"
 
 msgid "Application"
 msgstr "Апликация"
@@ -716,6 +717,9 @@ msgstr "Голям Ендиан"
 msgid "Blocking Mode Enabled"
 msgstr "Блокиращ Режим Включен"
 
+msgid "Connection"
+msgstr "Връзка"
+
 msgid "Read Chunk Size"
 msgstr "Размер на Прочетеното Парче"
 
@@ -905,12 +909,6 @@ msgstr "Крайно Отместване"
 msgid "Easing"
 msgstr "Облекчаване"
 
-msgid "Asset Library"
-msgstr "Библиотека с Активи"
-
-msgid "Available URLs"
-msgstr "Налични URL Адреси"
-
 msgid "Debug Adapter"
 msgstr "Адаптер за Дебъгване"
 
@@ -1021,6 +1019,9 @@ msgstr "Експортирай Само Проекта"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Изтрий Стари Файлове за Експорт Безусловно"
+
+msgid "Camera"
+msgstr "Kamera"
 
 msgid "Plugins"
 msgstr "Приставки"
@@ -1436,6 +1437,9 @@ msgstr "Root Име"
 msgid "Root Script"
 msgstr "Root Скрипт"
 
+msgid "Mesh Library"
+msgstr "Mesh Библиотека"
+
 msgid "Apply Root Scale"
 msgstr "Приложи Root Мащаб"
 
@@ -1664,6 +1668,12 @@ msgstr "Насищане"
 msgid "Color Map"
 msgstr "Цветова Карта"
 
+msgid "Fix Alpha Border"
+msgstr "Поправи Алфа Границата"
+
+msgid "Premult Alpha"
+msgstr "Premult Алфа"
+
 msgid "Normal Map"
 msgstr "Карта на Нормалите"
 
@@ -1690,12 +1700,6 @@ msgstr "Синьо"
 
 msgid "Alpha"
 msgstr "Алфа"
-
-msgid "Fix Alpha Border"
-msgstr "Поправи Алфа Границата"
-
-msgid "Premult Alpha"
-msgstr "Premult Алфа"
 
 msgid "Normal Map Invert Y"
 msgstr "Инвертирай Y на Нормалната Карта"
@@ -1908,6 +1912,12 @@ msgstr "Gizmo Цветове"
 msgid "Particles Emission Shape"
 msgstr "Форма на Емисиите на Частици"
 
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Preview"
+msgstr "Преглед"
+
 msgid "Interface"
 msgstr "Интерфейс"
 
@@ -1917,8 +1927,14 @@ msgstr "Език на Редактора"
 msgid "Use Threads"
 msgstr "Използвай Нишки"
 
+msgid "Available URLs"
+msgstr "Налични URL Адреси"
+
 msgid "Localize Settings"
 msgstr "Локализирай Настройките"
+
+msgid "Docks"
+msgstr "Докове"
 
 msgid "Dock Tab Style"
 msgstr "Стил на Док Раздела"
@@ -1929,6 +1945,9 @@ msgstr "Стил на Долния Док Раздел"
 msgid "UI Layout Direction"
 msgstr "UI Посока на Оформление"
 
+msgid "Appearance"
+msgstr "Изглед"
+
 msgid "Display Scale"
 msgstr "Мащаб на Дисплейа"
 
@@ -1938,14 +1957,14 @@ msgstr "Персонализиран Мащаб на Дисплейа"
 msgid "Editor Screen"
 msgstr "Екран на Редактора"
 
+msgid "Input"
+msgstr "Вход"
+
 msgid "Tablet Driver"
 msgstr "Драйвер за Таблета"
 
 msgid "Project Manager Screen"
 msgstr "Екран на Проектния Мениджър"
-
-msgid "Connection"
-msgstr "Връзка"
 
 msgid "Check for Updates"
 msgstr "Провери за Обновления"
@@ -2004,6 +2023,9 @@ msgstr "Кодов Шрифт"
 msgid "Dragging Hover Wait Seconds"
 msgstr "Изчакване в Секунди за Плъзгане на Курсора"
 
+msgid "Behavior"
+msgstr "Държание"
+
 msgid "Separate Distraction Mode"
 msgstr "Режим Премахни Разсейване"
 
@@ -2049,14 +2071,8 @@ msgstr "Продължително Обновяване"
 msgid "Collapse Main Menu"
 msgstr "Сгъване на Главното Меню"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "Покажи Селекцията на Root Дървото за Сцени"
-
 msgid "Derive Script Globals by Name"
 msgstr "Извличане на Глобални Променливи от Скрипт по Име"
-
-msgid "Docks"
-msgstr "Докове"
 
 msgid "Scene Tree"
 msgstr "Дърво на Сцената"
@@ -2391,9 +2407,6 @@ msgstr "Лист на Предупредителни Събития"
 msgid "Notice List"
 msgstr "Лист на Уведомления"
 
-msgid "Appearance"
-msgstr "Изглед"
-
 msgid "Enable Inline Color Picker"
 msgstr "Включи Вграден Избор на Цвят"
 
@@ -2471,9 +2484,6 @@ msgstr "Пространство на Рисуване"
 
 msgid "Line Spacing"
 msgstr "Разстояние Между Редовете"
-
-msgid "Behavior"
-msgstr "Държание"
 
 msgid "Empty Selection Clipboard"
 msgstr "Изчисти Избраното от Клипборда"
@@ -2684,9 +2694,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "Стриймвай Player 3D"
-
-msgid "Camera"
-msgstr "Kamera"
 
 msgid "Decal"
 msgstr "Декоративна Проекция"
@@ -3114,6 +3121,21 @@ msgstr "Включи TLS Версия 1"
 msgid "Remote Host"
 msgstr "Отдалечен Хост"
 
+msgid "Language Server"
+msgstr "Езиков Сървър"
+
+msgid "Enable Smart Resolve"
+msgstr "Включи Smart Resolve"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Покажи Родни Символи в Редактора"
+
+msgid "Use Thread"
+msgstr "Използвай Нишка"
+
+msgid "Poll Limit (µsec)"
+msgstr "Ограничение на Заявки (µsec)"
+
 msgid "Debugger"
 msgstr "Дебъгер"
 
@@ -3152,9 +3174,6 @@ msgstr "Път до Публичния SSH Ключ"
 
 msgid "SSH Private Key Path"
 msgstr "Път до Частния SSH Ключ"
-
-msgid "Input"
-msgstr "Вход"
 
 msgid "Buffering"
 msgstr "Буфериране"
@@ -3693,9 +3712,6 @@ msgstr "Приориет на Сблъсък"
 msgid "Flip Faces"
 msgstr "Обърни Лица"
 
-msgid "Mesh"
-msgstr "Mesh"
-
 msgid "Material"
 msgstr "Материал"
 
@@ -3929,21 +3945,6 @@ msgstr "Вземи Стандартния Възел Без Onready"
 
 msgid "Onready With Export"
 msgstr "Onready с Експорт"
-
-msgid "Language Server"
-msgstr "Езиков Сървър"
-
-msgid "Enable Smart Resolve"
-msgstr "Включи Smart Resolve"
-
-msgid "Show Native Symbols in Editor"
-msgstr "Покажи Родни Символи в Редактора"
-
-msgid "Use Thread"
-msgstr "Използвай Нишка"
-
-msgid "Poll Limit (µsec)"
-msgstr "Ограничение на Заявки (µsec)"
 
 msgid "Copyright"
 msgstr "Авторски Права"
@@ -4256,9 +4257,6 @@ msgstr "Опаковай по S"
 
 msgid "Wrap T"
 msgstr "Опаковай по T"
-
-msgid "Mesh Library"
-msgstr "Mesh Библиотека"
 
 msgid "Physics Material"
 msgstr "Физичен Материал"
@@ -4836,6 +4834,45 @@ msgstr "IGD Our Адрес"
 msgid "IGD Status"
 msgstr "IGD Статус"
 
+msgid "Tint Color Enabled"
+msgstr "Включи измяна на цвета"
+
+msgid "Tint Color"
+msgstr "Измени цвета"
+
+msgid "Expression"
+msgstr "Израз"
+
+msgid "Constant"
+msgstr "Константа"
+
+msgid "Source"
+msgstr "Източник"
+
+msgid "Function"
+msgstr "Функция"
+
+msgid "Hint"
+msgstr "Намек"
+
+msgid "Step"
+msgstr "Стъпка"
+
+msgid "Default Value Enabled"
+msgstr "Включена стандартна стойност"
+
+msgid "Default Value"
+msgstr "Стандартна стойност"
+
+msgid "Color Default"
+msgstr "Цветен стандарт"
+
+msgid "Texture Source"
+msgstr "Източник на Текстура"
+
+msgid "Condition"
+msgstr "Условие"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -4934,6 +4971,9 @@ msgstr "Използвай Wi-Fi за Отдалечено Дебъгване"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Wi-Fi Отдалечен Дебъг Хост"
+
+msgid "Background Color"
+msgstr "Цвят на Фона"
 
 msgid "Launcher Icons"
 msgstr "Икона на Стартиращата Програма"
@@ -5058,9 +5098,6 @@ msgstr "Поддръжка Large"
 msgid "Support Xlarge"
 msgstr "Поддръжка Xlarge"
 
-msgid "Background Color"
-msgstr "Цвят на Фона"
-
 msgid "User Data Backup"
 msgstr "Резервни Потребителски Данни"
 
@@ -5072,15 +5109,6 @@ msgstr "Командна Линия"
 
 msgid "Extra Args"
 msgstr "Допълнителни Аргименти"
-
-msgid "APK Expansion"
-msgstr "APK Expansion Файл"
-
-msgid "Salt"
-msgstr "Сол"
-
-msgid "Public Key"
-msgstr "Публичен Ключ"
 
 msgid "Permissions"
 msgstr "Достъп"
@@ -5211,8 +5239,26 @@ msgstr "Ъгъл на Експорт"
 msgid "High Res"
 msgstr "Висока Резолюция"
 
+msgid "Certificate Password"
+msgstr "Парола на Сертификат"
+
+msgid "Address Book"
+msgstr "Адресна Книга"
+
+msgid "Calendars"
+msgstr "Календари"
+
 msgid "Debugging"
 msgstr "Дебъгване"
+
+msgid "Network Client"
+msgstr "Мрежов Клиент"
+
+msgid "Device USB"
+msgstr "USB Устройство"
+
+msgid "Device Bluetooth"
+msgstr "Bluetooth Устройство"
 
 msgid "Variant"
 msgstr "Вариант"
@@ -5514,12 +5560,6 @@ msgstr "Коренен Връх"
 msgid "Reset"
 msgstr "Нулиране"
 
-msgid "Condition"
-msgstr "Условие"
-
-msgid "Expression"
-msgstr "Израз"
-
 msgid "Default Blend Time"
 msgstr "Стандартно време за преход"
 
@@ -5571,12 +5611,6 @@ msgstr "Филтри"
 msgid "Use Native Dialog"
 msgstr "Използвай Родни Диалогови Прозорци"
 
-msgid "Tint Color Enabled"
-msgstr "Включи измяна на цвета"
-
-msgid "Tint Color"
-msgstr "Измени цвета"
-
 msgid "Select Mode"
 msgstr "Режим на избиране"
 
@@ -5591,9 +5625,6 @@ msgstr "Режим на иконки"
 
 msgid "Prefer Native Menu"
 msgstr "Предпочитай Родното Меню"
-
-msgid "Step"
-msgstr "Стъпка"
 
 msgid "Scroll Active"
 msgstr "Превъртане Активно"
@@ -5772,9 +5803,6 @@ msgstr "Избледняване на Ръб"
 msgid "Item"
 msgstr "Елемент"
 
-msgid "Preview"
-msgstr "Преглед"
-
 msgid "Top Color"
 msgstr "Цвят отгоре"
 
@@ -5804,9 +5832,6 @@ msgstr "Път на Зареждане"
 
 msgid "Up Vector"
 msgstr "Вектор нагоре"
-
-msgid "Source"
-msgstr "Източник"
 
 msgid "Bloom"
 msgstr "Сияние"
@@ -5903,27 +5928,6 @@ msgstr "Стандартен текстов размер"
 
 msgid "File"
 msgstr "Файл"
-
-msgid "Constant"
-msgstr "Константа"
-
-msgid "Function"
-msgstr "Функция"
-
-msgid "Hint"
-msgstr "Намек"
-
-msgid "Default Value Enabled"
-msgstr "Включена стандартна стойност"
-
-msgid "Default Value"
-msgstr "Стандартна стойност"
-
-msgid "Color Default"
-msgstr "Цветен стандарт"
-
-msgid "Texture Source"
-msgstr "Източник на Текстура"
 
 msgid "Font Pressed Color"
 msgstr "Цвят на натиснат текст"

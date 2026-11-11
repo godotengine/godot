@@ -13,15 +13,18 @@ partial class ExportDiagnostics_GD0109
         /// </summary>
         public new static readonly global::Godot.StringName @MyButton = "MyButton";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyButton) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButton);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyButton(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0109)godotObject).@MyButton;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            var aux_delegate_get_MyButton = trampoline_get_MyButton;
+            collector.TryAdd(PropertyName.@MyButton, new(aux_delegate_get_MyButton.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
         }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

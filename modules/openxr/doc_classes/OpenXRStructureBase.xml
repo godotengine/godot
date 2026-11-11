@@ -15,6 +15,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_header">
+			<return type="int" />
+			<param index="0" name="next" type="int" />
+			<description>
+				Returns the structure pointer (any OpenXR structure that has an [code]XrStructureType[/code]) used for this structure. The pointer is valid as long as the instance exists.
+			</description>
+		</method>
 		<method name="get_structure_type">
 			<return type="int" />
 			<description>

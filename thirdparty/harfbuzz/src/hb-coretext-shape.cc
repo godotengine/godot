@@ -52,7 +52,8 @@ _hb_coretext_shaper_face_data_create (hb_face_t *face)
 void
 _hb_coretext_shaper_face_data_destroy (hb_coretext_face_data_t *data)
 {
-  CFRelease ((CGFontRef) data);
+  if (data)
+    CFRelease ((CGFontRef) data);
 }
 
 
@@ -65,7 +66,7 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
   CGFontRef cg_font = (CGFontRef) (const void *) face->data.coretext;
 
   CGFloat font_size = (CGFloat) (font->ptem > 0.f ? font->ptem : HB_CORETEXT_DEFAULT_FONT_SIZE);
-  CTFontRef ct_font = create_ct_font (cg_font, font_size);
+  hb_cf_ptr_t<CTFontRef> ct_font (create_ct_font (cg_font, font_size));
 
   if (unlikely (!ct_font))
   {
@@ -75,11 +76,11 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
 
   if (font->num_coords)
   {
-    CFMutableDictionaryRef variations =
+    hb_cf_ptr_t<CFMutableDictionaryRef> variations (
       CFDictionaryCreateMutable (kCFAllocatorDefault,
 				 font->num_coords,
 				 &kCFTypeDictionaryKeyCallBacks,
-				 &kCFTypeDictionaryValueCallBacks);
+				 &kCFTypeDictionaryValueCallBacks));
 
     unsigned count = font->num_coords;
     for (unsigned i = 0; i < count; i++)
@@ -90,37 +91,36 @@ _hb_coretext_shaper_font_data_create (hb_font_t *font)
 
       float v = hb_clamp (font->design_coords[i], info.min_value, info.max_value);
 
-      CFNumberRef tag_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag);
-      CFNumberRef value_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberFloatType, &v);
-      CFDictionarySetValue (variations, tag_number, value_number);
-      CFRelease (tag_number);
-      CFRelease (value_number);
+      hb_cf_ptr_t<CFNumberRef> tag_number (CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &info.tag));
+      hb_cf_ptr_t<CFNumberRef> value_number (CFNumberCreate (kCFAllocatorDefault, kCFNumberFloatType, &v));
+      if (variations && tag_number && value_number)
+	CFDictionarySetValue (variations, tag_number, value_number);
     }
 
-    CFDictionaryRef attributes =
-      CFDictionaryCreate (kCFAllocatorDefault,
-			  (const void **) &kCTFontVariationAttribute,
-			  (const void **) &variations,
-			  1,
-			  &kCFTypeDictionaryKeyCallBacks,
-			  &kCFTypeDictionaryValueCallBacks);
+    const void *keys[] = { kCTFontVariationAttribute };
+    const void *values[] = { variations.get () };
+    hb_cf_ptr_t<CFDictionaryRef> attributes (
+      variations ? CFDictionaryCreate (kCFAllocatorDefault,
+				       keys,
+				       values,
+				       1,
+				       &kCFTypeDictionaryKeyCallBacks,
+				       &kCFTypeDictionaryValueCallBacks) : nullptr);
 
-    CTFontDescriptorRef varDesc = CTFontDescriptorCreateWithAttributes (attributes);
-    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0, nullptr, varDesc);
-
-    CFRelease (ct_font);
-    CFRelease (attributes);
-    CFRelease (variations);
-    ct_font = new_ct_font;
+    hb_cf_ptr_t<CTFontDescriptorRef> varDesc (attributes ? CTFontDescriptorCreateWithAttributes (attributes) : nullptr);
+    hb_cf_ptr_t<CTFontRef> new_ct_font (varDesc ? CTFontCreateCopyWithAttributes (ct_font, 0, nullptr, varDesc) : nullptr);
+    if (new_ct_font)
+      ct_font = std::move (new_ct_font);
   }
 
-  return (hb_coretext_font_data_t *) ct_font;
+  return (hb_coretext_font_data_t *) ct_font.release ();
 }
 
 void
 _hb_coretext_shaper_font_data_destroy (hb_coretext_font_data_t *data)
 {
-  CFRelease ((CTFontRef) data);
+  if (data)
+    CFRelease ((CTFontRef) data);
 }
 
 /*
@@ -629,22 +629,19 @@ resize_and_retry:
 	  }
 	if (!matched)
 	{
-	  CGFontRef run_cg_font = CTFontCopyGraphicsFont (run_ct_font, nullptr);
+	  hb_cf_ptr_t<CGFontRef> run_cg_font (CTFontCopyGraphicsFont (run_ct_font, nullptr));
 	  if (run_cg_font)
-	  {
 	    matched = CFEqual (run_cg_font, cg_font);
-	    CFRelease (run_cg_font);
-	  }
 	}
 	if (!matched)
 	{
-	  CFStringRef font_ps_name = CTFontCopyName (ct_font, kCTFontPostScriptNameKey);
-	  CFStringRef run_ps_name = CTFontCopyName (run_ct_font, kCTFontPostScriptNameKey);
-	  CFComparisonResult result = CFStringCompare (run_ps_name, font_ps_name, 0);
-	  CFRelease (run_ps_name);
-	  CFRelease (font_ps_name);
-	  if (result == kCFCompareEqualTo)
-	    matched = true;
+	  hb_cf_ptr_t<CFStringRef> font_ps_name (CTFontCopyName (ct_font, kCTFontPostScriptNameKey));
+	  hb_cf_ptr_t<CFStringRef> run_ps_name (CTFontCopyName (run_ct_font, kCTFontPostScriptNameKey));
+	  if (font_ps_name && run_ps_name)
+	  {
+	    if (CFStringCompare (run_ps_name, font_ps_name, 0) == kCFCompareEqualTo)
+	      matched = true;
+	  }
 	}
 	if (!matched)
 	{
@@ -660,9 +657,9 @@ resize_and_retry:
 	  hb_position_t x_advance, y_advance, x_offset, y_offset;
 	  hb_font_get_glyph_advance_for_direction (font, notdef, dir, &x_advance, &y_advance);
 	  hb_font_get_glyph_origin_for_direction (font, notdef, dir, &x_offset, &y_offset);
-	  hb_position_t advance = x_advance + y_advance;
-	  x_offset = -x_offset;
-	  y_offset = -y_offset;
+	  hb_position_t advance = hb_saturate_add (x_advance, y_advance);
+	  x_offset = hb_saturate_neg (x_offset);
+	  y_offset = hb_saturate_neg (y_offset);
 
 	  unsigned int old_len = buffer->len;
 	  for (CFIndex j = range.location; j < range.location + range.length; j++)
@@ -760,7 +757,8 @@ resize_and_retry:
 	hb_glyph_info_t *info = run_info;
 	if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
 	{
-	  hb_position_t x_offset = round ((positions[0].x - advances_so_far) * x_mult);
+	  hb_position_t x_offset = hb_clamp_to<hb_position_t> (
+	      round ((positions[0].x - advances_so_far) * x_mult));
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -768,16 +766,17 @@ resize_and_retry:
 	      advance = positions[j + 1].x - positions[j].x;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].x - positions[0].x);
-	    /* int cast necessary to pass through negative values. */
-	    info->mask = (int) round (advance * x_mult);
+	    /* Signed cast necessary to pass through negative values. */
+	    info->mask = (hb_mask_t) hb_clamp_to<int32_t> (round (advance * x_mult));
 	    info->var1.i32 = x_offset;
-	    info->var2.i32 = round (positions[j].y * y_mult);
+	    info->var2.i32 = hb_clamp_to<int32_t> (round (positions[j].y * y_mult));
 	    info++;
 	  }
 	}
 	else
 	{
-	  hb_position_t y_offset = round ((positions[0].y - advances_so_far) * y_mult);
+	  hb_position_t y_offset = hb_clamp_to<hb_position_t> (
+	      round ((positions[0].y - advances_so_far) * y_mult));
 	  for (unsigned int j = 0; j < num_glyphs; j++)
 	  {
 	    CGFloat advance;
@@ -785,9 +784,9 @@ resize_and_retry:
 	      advance = positions[j + 1].y - positions[j].y;
 	    else /* last glyph */
 	      advance = run_advance - (positions[j].y - positions[0].y);
-	    /* int cast necessary to pass through negative values. */
-	    info->mask = (int) round (advance * y_mult);
-	    info->var1.i32 = round (positions[j].x * x_mult);
+	    /* Signed cast necessary to pass through negative values. */
+	    info->mask = (hb_mask_t) hb_clamp_to<int32_t> (round (advance * y_mult));
+	    info->var1.i32 = hb_clamp_to<int32_t> (round (positions[j].x * x_mult));
 	    info->var2.i32 = y_offset;
 	    info++;
 	  }

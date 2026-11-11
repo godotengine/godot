@@ -144,7 +144,7 @@ hb_shape_full (hb_font_t          *font,
 
   hb_shape_plan_t *shape_plan = hb_shape_plan_create_cached2 (font->face, &buffer->props,
 							      features, num_features,
-							      font->coords, font->num_coords,
+							      font->coords, font->has_nonzero_coords ? font->num_coords : 0,
 							      shaper_list);
 
   hb_bool_t res = hb_shape_plan_execute (shape_plan, font, buffer, features, num_features);
@@ -316,9 +316,10 @@ hb_shape_justify (hb_font_t          *font,
 
   /* Copy buffer text as we need it so we can shape multiple times. */
   unsigned text_len = buffer->len;
-  auto *text_info = (hb_glyph_info_t *) hb_malloc (text_len * sizeof (buffer->info[0]));
+  auto *text_info = (hb_glyph_info_t *) hb_malloc2 (text_len, sizeof (buffer->info[0]));
   if (unlikely (text_len && !text_info))
     return false;
+  HB_SCOPE_GUARD (hb_free (text_info));
   hb_memcpy (text_info, buffer->info, text_len * sizeof (buffer->info[0]));
   auto text = hb_array<const hb_glyph_info_t> (text_info, text_len);
 
@@ -427,8 +428,6 @@ hb_shape_justify (hb_font_t          *font,
 			  epsilon,
 			  (double) min_target_advance, (double) max_target_advance,
 			  ya, yb, y);
-
-  hb_free (text_info);
 
   if (failed)
     return false;

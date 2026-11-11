@@ -49,11 +49,16 @@ struct hb_hashmap_t
 
   void _copy (const hb_hashmap_t& o)
   {
+    if (unlikely (!o.successful))
+    {
+      successful = false;
+      return;
+    }
     if (unlikely (!o.mask)) return;
 
     if (hb_is_trivially_copy_assignable (item_t))
     {
-      items = (item_t *) hb_malloc (sizeof (item_t) * (o.mask + 1));
+      items = (item_t *) hb_malloc2 ((o.mask + 1), sizeof (item_t));
       if (unlikely (!items))
       {
 	successful = false;
@@ -199,12 +204,20 @@ struct hb_hashmap_t
   bool alloc (unsigned new_population = 0)
   {
     if (unlikely (!successful)) return false;
+    if (unlikely (population > 0x3FFFFFFFu || new_population > 0x3FFFFFFFu))
+    {
+      // Population sizes >0x3FFFFFFF will result in power
+      // being larger than 31, which in turn leads to a new size
+      // that overflows u32.
+      successful = false;
+      return false;
+    }
 
     if (new_population != 0 && (new_population + new_population / 2) < mask) return true;
 
     unsigned int power = hb_bit_storage (hb_max (hb_max ((unsigned) population, new_population) * 2, 4u));
     unsigned int new_size = 1u << power;
-    item_t *new_items = (item_t *) hb_malloc ((size_t) new_size * sizeof (item_t));
+    item_t *new_items = (item_t *) hb_malloc2 ((size_t) new_size, sizeof (item_t));
     if (unlikely (!new_items))
     {
       successful = false;
@@ -244,11 +257,32 @@ struct hb_hashmap_t
     return true;
   }
 
+  template <typename T>
+  bool in_storage (const T &v) const
+  {
+    uintptr_t p = (uintptr_t) std::addressof (v);
+    return items &&
+	   (uintptr_t) items <= p && p < (uintptr_t) (items + size ());
+  }
+
   template <typename KK, typename VV>
   bool set_with_hash (KK&& key, uint32_t hash, VV&& value, bool overwrite = true)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely ((occupancy + occupancy / 2) >= mask && !alloc ())) return false;
+    if (unlikely ((occupancy + occupancy / 2) >= mask))
+    {
+      /* key or value may live in our own storage, eg. m.set (k, m.get (j)).
+       * alloc() frees that storage, so copy them out first. */
+      if (unlikely (in_storage (key) || in_storage (value)))
+      {
+	K key_copy;
+	key_copy = std::forward<KK> (key);
+	V value_copy;
+	value_copy = std::forward<VV> (value);
+	return set_with_hash (std::move (key_copy), hash, std::move (value_copy), overwrite);
+      }
+      if (unlikely (!alloc ())) return false;
+    }
 
     hash &= 0x3FFFFFFF; // We only store lower 30bit of hash
     unsigned int tombstone = (unsigned int) -1;
@@ -288,7 +322,7 @@ struct hb_hashmap_t
     occupancy++;
     population++;
 
-    if (unlikely (length > max_chain_length) && occupancy * 8 > mask)
+    if (unlikely (length > max_chain_length) && occupancy > mask / 8)
       alloc (mask - 8); // This ensures we jump to next larger size
 
     return true;

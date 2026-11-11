@@ -13,14 +13,14 @@ struct MultipleSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::template OffsetTo<Sequence<Types>>>
+  typename Types::template ArrayOf<typename Types::template OffsetTo<Sequence<Types>>>
                 sequence;               /* Array of Sequence tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (4 + Types::size, sequence);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, sequence);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -41,6 +41,19 @@ struct MultipleSubstFormat1_2
     | hb_map (hb_second)
     | hb_map (hb_add (this))
     | hb_apply ([c] (const Sequence<Types> &_) { _.closure (c); })
+    ;
+  }
+
+  void depend (hb_depend_context_t *c) const
+  {
+    // Filter by parent_active_glyphs like closure does
+    + hb_zip (this+coverage, sequence)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<Sequence<Types>>&> &_)
+                {
+                  const Sequence<Types>& s = this+_.second;
+                  s.depend (c, _.first);
+                })
     ;
   }
 

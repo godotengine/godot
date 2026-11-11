@@ -61,10 +61,17 @@ HB_SUBSET_PLAN_MEMBER (hb_set_t, drop_tables)
 // Old -> New glyph id mapping
 HB_SUBSET_PLAN_MEMBER (hb_map_t, glyph_map_gsub)
 
+// Same mapping as glyph_map_gsub, as a flat array indexed by old gid,
+// with HB_MAP_VALUE_INVALID entries for glyphs not retained.  Sized to
+// the highest retained GSUB gid plus one.
+HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_codepoint_t>, glyph_map_gsub_flat)
+
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_gsub)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_mathed)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_colred)
+HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_varced)
+HB_SUBSET_PLAN_MEMBER (hb_set_t, _glyphset_cmaped)
 
 //active lookups we'd like to retain
 HB_SUBSET_PLAN_MEMBER (hb_map_t, gsub_lookups)
@@ -94,12 +101,16 @@ HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gpo
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, const OT::Feature*>), gsub_feature_substitutes_map)
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, const OT::Feature*>), gpos_feature_substitutes_map)
 
+//feature index->resolved lookup set mapping for fully-instanced lookup variations
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gsub_lookup_variations)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb::shared_ptr<hb_set_t>>), gpos_lookup_variations)
+
 // old feature_indexes set, used to reinstate the old features
 HB_SUBSET_PLAN_MEMBER (hb_set_t, gsub_old_features)
 HB_SUBSET_PLAN_MEMBER (hb_set_t, gpos_old_features)
 
-//feature_index->pair of (address of old feature, feature tag), used for inserting a catch all record
-//if necessary
+//feature_index->pair of (address of old feature, feature tag), used for alternate feature
+//parameter formats and inserting a catch all record if necessary
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<const void*, const void*>)>), gsub_old_feature_idx_tag_map)
 HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<unsigned, hb_pair_t E(<const void*, const void*>)>), gpos_old_feature_idx_tag_map)
 
@@ -115,6 +126,11 @@ HB_SUBSET_PLAN_MEMBER (hb_map_t, colrv1_new_deltaset_idx_varidx_map)
 
 //Old layout item variation index -> (New varidx, delta) mapping
 HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<unsigned, hb_pair_t E(<unsigned, int>)>), layout_variation_idx_delta_map)
+
+//Layout condition -> (source variation index, default value)
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<uintptr_t, hb_pair_t E(<unsigned, int>)>), layout_condition_values)
+//Layout condition -> (private variation index, rescaled default value)
+HB_SUBSET_PLAN_MEMBER (mutable hb_hashmap_t E(<uintptr_t, hb_pair_t E(<unsigned, int>)>), layout_condition_idx_value_map)
 
 //gdef varstore retained varidx mapping
 HB_SUBSET_PLAN_MEMBER (hb_vector_t<hb_inc_bimap_t>, gdef_varstore_inner_maps)
@@ -132,6 +148,20 @@ HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, TripleDistances>), axes_triple_
 
 //retained old axis index -> new axis index mapping in fvar axis array
 HB_SUBSET_PLAN_MEMBER (hb_map_t, axes_index_map)
+
+//old intermediate coords (post-fvar, post-avar-v1, pre-avar-v2) at new min/default/max
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, Triple>), old_intermediates)
+
+//avar2: reachable old-space final-coord range per axis, as Triple
+//(minimum, unused middle, maximum), F2Dot14-quantized. Only axes with a
+//constraining range (narrower than [-1, +1]) have entries. Used to cull
+//variation tuples/regions that a partial instance can never reach.
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, Triple>), avar2_reachable_ranges)
+
+//avar2: self-contained pinned axes -> constant old-space final coord.
+//These axes are removed from fvar/avar entirely; their contribution is
+//baked into the variation tables like an ordinary pin at that coord.
+HB_SUBSET_PLAN_MEMBER (hb_hashmap_t E(<hb_tag_t, double>), avar2_self_contained)
 
 //axis_index->axis_tag mapping in fvar axis array
 HB_SUBSET_PLAN_MEMBER (hb_map_t, axes_old_index_tag_map)

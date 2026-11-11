@@ -47,6 +47,12 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	const unsigned int height = tj3Get(tj_instance, TJPARAM_JPEGHEIGHT);
 	const TJCS colorspace = (TJCS)tj3Get(tj_instance, TJPARAM_COLORSPACE);
 
+	if (width * height > Image::MAX_PIXELS) {
+		tj3Destroy(tj_instance);
+		ERR_FAIL_V_MSG(ERR_UNAVAILABLE,
+				vformat("Too many pixels for Image. Maximum is %d pixels.", Image::MAX_PIXELS));
+	}
+
 	if (tj3Get(tj_instance, TJPARAM_PRECISION) > 8) {
 		// TODO: Proceed anyway and convert to rgb8?
 		ERR_PRINT("JPEGTurbo: JPEG files with precision > 8 are not currently supported.");
@@ -73,8 +79,12 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	data.resize(width * height * tjPixelSize[tj_pixel_format]);
 
 	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
-		tj3Destroy(tj_instance);
-		return ERR_FILE_CORRUPT;
+		if (tj3GetErrorCode(tj_instance) == TJERR_FATAL) {
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		} else {
+			WARN_PRINT(String::utf8(tj3GetErrorStr(tj_instance)));
+		}
 	}
 
 	tj3Destroy(tj_instance);

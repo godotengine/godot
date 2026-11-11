@@ -323,7 +323,8 @@
 		ke.macos_state = 0;
 		ke.pressed = true;
 		ke.echo = false;
-		ke.raw = false; // IME input event.
+		ke.raw = false; // Can have composite characters.
+		ke.ime = true; // IME event, do not remove.
 		ke.keycode = Key::NONE;
 		ke.physical_keycode = Key::NONE;
 		ke.key_label = Key::NONE;
@@ -522,7 +523,9 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
 	NSPoint delta = NSMakePoint([event deltaX], [event deltaY]);
-	NSPoint mpos = [event locationInWindow];
+	const CGPoint cg_pos = CGEventGetLocation([event CGEvent]);
+	const NSPoint screen_pos = NSMakePoint(cg_pos.x, CGDisplayBounds(CGMainDisplayID()).size.height - cg_pos.y);
+	NSPoint mpos = [wd.window_object convertPointFromScreen:screen_pos];
 
 	if (ds->update_mouse_wrap(wd, delta, mpos, [event timestamp])) {
 		return;
@@ -554,9 +557,11 @@
 	mm->set_relative_screen_position(relativeMotion);
 	ds->get_key_modifier_state([event modifierFlags], mm);
 
-	const NSRect contentRect = [wd.window_view frame];
-	if (NSPointInRect([event locationInWindow], contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
-		ds->mouse_enter_window(window_id);
+	if (ds->get_mouseover_window() != window_id) {
+		const NSRect contentRect = [wd.window_view frame];
+		if (NSPointInRect(mpos, contentRect) && [NSWindow windowNumberAtPoint:[NSEvent mouseLocation] belowWindowWithWindowNumber:0 /*topmost*/] == [wd.window_object windowNumber]) {
+			ds->mouse_enter_window(window_id);
+		}
 	}
 
 	Input::get_singleton()->parse_input_event(mm);
@@ -728,7 +733,7 @@
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
 			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
-			ke.raw = false;
+			ke.raw = false; // Can have composite characters.
 
 			ds->push_to_key_event_buffer(ke);
 		}
@@ -896,12 +901,12 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	ds->update_mouse_pos(wd, [event locationInWindow]);
 
-	double delta_x = [event scrollingDeltaX];
-	double delta_y = [event scrollingDeltaY];
+	double delta_x = [event deltaX];
+	double delta_y = [event deltaY];
 
 	if ([event hasPreciseScrollingDeltas]) {
-		delta_x *= 0.03;
-		delta_y *= 0.03;
+		delta_x = [event scrollingDeltaX];
+		delta_y = [event scrollingDeltaY];
 	}
 
 	if ([event momentumPhase] != NSEventPhaseNone) {
@@ -915,11 +920,14 @@
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
-		if (std::abs(delta_x)) {
-			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:std::abs(delta_x * 0.3)];
+		double delta_x_abs = Math::abs(delta_x);
+		double delta_y_abs = Math::abs(delta_y);
+
+		if (!Math::is_zero_approx(delta_x_abs)) {
+			[self processScrollEvent:event button:(0 > delta_x ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT) factor:delta_x_abs];
 		}
-		if (std::abs(delta_y)) {
-			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:std::abs(delta_y * 0.3)];
+		if (!Math::is_zero_approx(delta_y_abs)) {
+			[self processScrollEvent:event button:(0 < delta_y ? MouseButton::WHEEL_UP : MouseButton::WHEEL_DOWN) factor:delta_y_abs];
 		}
 	}
 }

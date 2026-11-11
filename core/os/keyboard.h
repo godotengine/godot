@@ -269,72 +269,72 @@ enum class KeyLocation {
 
 // To avoid having unnecessary operators, only define the ones that are needed.
 
-constexpr Key operator-(uint32_t a, Key b) {
-	return (Key)(a - (uint32_t)b);
+constexpr Key operator-(uint32_t p_left, Key p_right) {
+	return (Key)(p_left - (uint32_t)p_right);
 }
 
-constexpr Key &operator-=(Key &a, int b) {
-	a = static_cast<Key>(static_cast<int>(a) - static_cast<int>(b));
-	return a;
+constexpr Key &operator-=(Key &p_left, int p_right) {
+	p_left = static_cast<Key>(static_cast<int>(p_left) - static_cast<int>(p_right));
+	return p_left;
 }
 
-constexpr Key operator+(Key a, int b) {
-	return (Key)((int)a + (int)b);
+constexpr Key operator+(Key p_left, int p_right) {
+	return (Key)((int)p_left + (int)p_right);
 }
 
-constexpr Key operator+(Key a, Key b) {
-	return (Key)((int)a + (int)b);
+constexpr Key operator+(Key p_left, Key p_right) {
+	return (Key)((int)p_left + (int)p_right);
 }
 
-constexpr Key operator-(Key a, Key b) {
-	return (Key)((int)a - (int)b);
+constexpr Key operator-(Key p_left, Key p_right) {
+	return (Key)((int)p_left - (int)p_right);
 }
 
-constexpr Key operator&(Key a, Key b) {
-	return (Key)((int)a & (int)b);
+constexpr Key operator&(Key p_left, Key p_right) {
+	return (Key)((int)p_left & (int)p_right);
 }
 
-constexpr Key operator|(Key a, Key b) {
-	return (Key)((int)a | (int)b);
+constexpr Key operator|(Key p_left, Key p_right) {
+	return (Key)((int)p_left | (int)p_right);
 }
 
-constexpr Key &operator|=(Key &a, Key b) {
-	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
-	return a;
+constexpr Key &operator|=(Key &p_left, Key p_right) {
+	p_left = static_cast<Key>(static_cast<int>(p_left) | static_cast<int>(p_right));
+	return p_left;
 }
 
-constexpr Key &operator|=(Key &a, KeyModifierMask b) {
-	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b));
-	return a;
+constexpr Key &operator|=(Key &p_left, KeyModifierMask p_right) {
+	p_left = static_cast<Key>(static_cast<int>(p_left) | static_cast<int>(p_right));
+	return p_left;
 }
 
-constexpr Key &operator&=(Key &a, KeyModifierMask b) {
-	a = static_cast<Key>(static_cast<int>(a) & static_cast<int>(b));
-	return a;
+constexpr Key &operator&=(Key &p_left, KeyModifierMask p_right) {
+	p_left = static_cast<Key>(static_cast<int>(p_left) & static_cast<int>(p_right));
+	return p_left;
 }
 
-constexpr Key operator|(Key a, KeyModifierMask b) {
-	return (Key)((int)a | (int)b);
+constexpr Key operator|(Key p_left, KeyModifierMask p_right) {
+	return (Key)((int)p_left | (int)p_right);
 }
 
-constexpr Key operator&(Key a, KeyModifierMask b) {
-	return (Key)((int)a & (int)b);
+constexpr Key operator&(Key p_left, KeyModifierMask p_right) {
+	return (Key)((int)p_left & (int)p_right);
 }
 
-constexpr Key operator+(KeyModifierMask a, Key b) {
-	return (Key)((int)a + (int)b);
+constexpr Key operator+(KeyModifierMask p_left, Key p_right) {
+	return (Key)((int)p_left + (int)p_right);
 }
 
-constexpr Key operator|(KeyModifierMask a, Key b) {
-	return (Key)((int)a | (int)b);
+constexpr Key operator|(KeyModifierMask p_left, Key p_right) {
+	return (Key)((int)p_left | (int)p_right);
 }
 
-constexpr KeyModifierMask operator+(KeyModifierMask a, KeyModifierMask b) {
-	return (KeyModifierMask)((int)a + (int)b);
+constexpr KeyModifierMask operator+(KeyModifierMask p_left, KeyModifierMask p_right) {
+	return (KeyModifierMask)((int)p_left + (int)p_right);
 }
 
-constexpr KeyModifierMask operator|(KeyModifierMask a, KeyModifierMask b) {
-	return (KeyModifierMask)((int)a | (int)b);
+constexpr KeyModifierMask operator|(KeyModifierMask p_left, KeyModifierMask p_right) {
+	return (KeyModifierMask)((int)p_left | (int)p_right);
 }
 
 String keycode_get_string(Key p_code);

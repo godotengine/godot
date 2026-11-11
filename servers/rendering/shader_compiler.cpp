@@ -179,7 +179,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtos(p_float);
+	String num = String::num_scientific(p_float);
 	if (!num.contains_char('.') && !num.contains_char('e')) {
 		num += ".0";
 	}
@@ -382,64 +382,76 @@ void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const Str
 	}
 }
 
-static String _get_global_shader_uniform_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
+static String _get_global_shader_uniform_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type, bool p_function_access) {
+	const String open = p_function_access ? "(" : "[";
+	const String close = p_function_access ? ")" : "]";
+
+	const String v0 = p_buffer + open + p_index + close;
+
 	switch (p_type) {
 		case ShaderLanguage::TYPE_BOOL: {
-			return "bool(floatBitsToUint(" + p_buffer + "[" + p_index + "].x))";
+			return "bool(floatBitsToUint(" + v0 + ".x))";
 		}
 		case ShaderLanguage::TYPE_BVEC2: {
-			return "bvec2(floatBitsToUint(" + p_buffer + "[" + p_index + "].xy))";
+			return "bvec2(floatBitsToUint(" + v0 + ".xy))";
 		}
 		case ShaderLanguage::TYPE_BVEC3: {
-			return "bvec3(floatBitsToUint(" + p_buffer + "[" + p_index + "].xyz))";
+			return "bvec3(floatBitsToUint(" + v0 + ".xyz))";
 		}
 		case ShaderLanguage::TYPE_BVEC4: {
-			return "bvec4(floatBitsToUint(" + p_buffer + "[" + p_index + "].xyzw))";
+			return "bvec4(floatBitsToUint(" + v0 + ".xyzw))";
 		}
 		case ShaderLanguage::TYPE_INT: {
-			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].x)";
+			return "floatBitsToInt(" + v0 + ".x)";
 		}
 		case ShaderLanguage::TYPE_IVEC2: {
-			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xy)";
+			return "floatBitsToInt(" + v0 + ".xy)";
 		}
 		case ShaderLanguage::TYPE_IVEC3: {
-			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyz)";
+			return "floatBitsToInt(" + v0 + ".xyz)";
 		}
 		case ShaderLanguage::TYPE_IVEC4: {
-			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyzw)";
+			return "floatBitsToInt(" + v0 + ".xyzw)";
 		}
 		case ShaderLanguage::TYPE_UINT: {
-			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].x)";
+			return "floatBitsToUint(" + v0 + ".x)";
 		}
 		case ShaderLanguage::TYPE_UVEC2: {
-			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xy)";
+			return "floatBitsToUint(" + v0 + ".xy)";
 		}
 		case ShaderLanguage::TYPE_UVEC3: {
-			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyz)";
+			return "floatBitsToUint(" + v0 + ".xyz)";
 		}
 		case ShaderLanguage::TYPE_UVEC4: {
-			return "floatBitsToUint(" + p_buffer + "[" + p_index + "].xyzw)";
+			return "floatBitsToUint(" + v0 + ".xyzw)";
 		}
 		case ShaderLanguage::TYPE_FLOAT: {
-			return "(" + p_buffer + "[" + p_index + "].x)";
+			return "(" + v0 + ".x)";
 		}
 		case ShaderLanguage::TYPE_VEC2: {
-			return "(" + p_buffer + "[" + p_index + "].xy)";
+			return "(" + v0 + ".xy)";
 		}
 		case ShaderLanguage::TYPE_VEC3: {
-			return "(" + p_buffer + "[" + p_index + "].xyz)";
+			return "(" + v0 + ".xyz)";
 		}
 		case ShaderLanguage::TYPE_VEC4: {
-			return "(" + p_buffer + "[" + p_index + "].xyzw)";
+			return "(" + v0 + ".xyzw)";
 		}
 		case ShaderLanguage::TYPE_MAT2: {
-			return "mat2(" + p_buffer + "[" + p_index + "].xy," + p_buffer + "[" + p_index + "+1u].xy)";
+			const String v1 = p_buffer + open + p_index + "+1u" + close;
+			return "mat2(" + v0 + ".xy," + v1 + ".xy)";
 		}
 		case ShaderLanguage::TYPE_MAT3: {
-			return "mat3(" + p_buffer + "[" + p_index + "].xyz," + p_buffer + "[" + p_index + "+1u].xyz," + p_buffer + "[" + p_index + "+2u].xyz)";
+			const String v1 = p_buffer + open + p_index + "+1u" + close;
+			const String v2 = p_buffer + open + p_index + "+2u" + close;
+
+			return "mat3(" + v0 + ".xyz," + v1 + ".xyz," + v2 + ".xyz)";
 		}
 		case ShaderLanguage::TYPE_MAT4: {
-			return "mat4(" + p_buffer + "[" + p_index + "].xyzw," + p_buffer + "[" + p_index + "+1u].xyzw," + p_buffer + "[" + p_index + "+2u].xyzw," + p_buffer + "[" + p_index + "+3u].xyzw)";
+			const String v1 = p_buffer + open + p_index + "+1u" + close;
+			const String v2 = p_buffer + open + p_index + "+2u" + close;
+			const String v3 = p_buffer + open + p_index + "+3u" + close;
+			return "mat4(" + v0 + ".xyzw," + v1 + ".xyzw," + v2 + ".xyzw," + v3 + ".xyzw)";
 		}
 		default: {
 			ERR_FAIL_V("void");
@@ -475,6 +487,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			// Stencil modes.
 
 			for (int i = 0; i < pnode->stencil_modes.size(); i++) {
+				if (p_default_actions.stencil_mode_defines.has(pnode->stencil_modes[i]) && !used_smode_defines.has(pnode->stencil_modes[i])) {
+					r_gen_code.defines.push_back(p_default_actions.stencil_mode_defines[pnode->stencil_modes[i]]);
+					used_smode_defines.insert(pnode->stencil_modes[i]);
+				}
+
 				if (p_actions.stencil_mode_values.has(pnode->stencil_modes[i])) {
 					Pair<int *, int> &p = p_actions.stencil_mode_values[pnode->stencil_modes[i]];
 					*p.first = p.second;
@@ -929,7 +946,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
 			} else {
-				if (shader->uniforms.has(vnode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == vnode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.is_texture()) {
@@ -964,11 +990,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(vnode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type, p_default_actions.global_buffer_array_is_texture);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
-							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type, p_default_actions.global_buffer_array_is_texture);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(vnode->name);
@@ -1054,7 +1080,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (shader->uniforms.has(anode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == anode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
 					if (u.is_texture()) {
@@ -1064,11 +1099,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
 							code = actions.base_uniform_string + _mkid(anode->name); //texture, use as is
 							//global variable, this means the code points to an index to the global table
-							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type, p_default_actions.global_buffer_array_is_texture);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
-							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type, p_default_actions.global_buffer_array_is_texture);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(anode->name);
@@ -1479,6 +1514,15 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					code = "return;";
 				}
 			} else if (cfnode->flow_op == SL::FLOW_OP_DISCARD) {
+				if (p_default_actions.usage_defines.has("DISCARD") && !used_name_defines.has("DISCARD")) {
+					String define = p_default_actions.usage_defines["DISCARD"];
+					if (define.begins_with("@")) {
+						define = p_default_actions.usage_defines[define.substr(1)];
+					}
+					r_gen_code.defines.push_back(define);
+					used_name_defines.insert("DISCARD");
+				}
+
 				if (p_actions.usage_flag_pointers.has("DISCARD") && !used_flag_pointers.has("DISCARD")) {
 					*p_actions.usage_flag_pointers["DISCARD"] = true;
 					used_flag_pointers.insert("DISCARD");
@@ -1629,6 +1673,7 @@ Error ShaderCompiler::compile(RSE::ShaderMode p_mode, const String &p_code, Iden
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
+	used_smode_defines.clear();
 	used_flag_pointers.clear();
 	fragment_varyings.clear();
 

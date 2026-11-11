@@ -13,14 +13,14 @@ from misc.utility.color import Ansi, color_print
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
-if deps_folder:
+if deps_folder and not os.getenv("MSYSTEM"):
     deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
 else:
     deps_folder = os.path.join("bin", "build_deps")
 
 # ANGLE
 # Check for latest version: https://github.com/godotengine/godot-angle-static/releases/latest
-angle_version = "chromium/7219"
+angle_version = "chromium/8118.1"
 angle_folder = os.path.join(deps_folder, "angle")
 
 # Create dependencies folder

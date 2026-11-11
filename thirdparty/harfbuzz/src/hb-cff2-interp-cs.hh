@@ -78,7 +78,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
     num_coords = num_coords_;
     varStore = acc.varStore;
     do_blend = num_coords && varStore->size;
-    set_ivs (acc.privateDicts[fd].ivs);
+    orig_ivs = acc.privateDicts[fd].ivs;
+    set_ivs (orig_ivs);
   }
 
   ~cff2_cs_interp_env_t ()
@@ -179,6 +180,8 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   void	 set_region_count (unsigned int region_count_) { region_count = region_count_; }
   unsigned int get_ivs () const { return ivs; }
   void	 set_ivs (unsigned int ivs_) { ivs = ivs_; }
+  /* The FD's private-dict ivs, before any vsindex op in the charstring. */
+  unsigned int get_orig_ivs () const { return orig_ivs; }
   bool	 seen_vsindex () const { return seen_vsindex_; }
 
   double blend_deltas (hb_array_t<const ELEM> deltas) const
@@ -198,12 +201,16 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
 
   bool have_coords () const { return num_coords; }
 
+  /* Subsetter instancing can defer rounding until absolute points are known. */
+  bool round_blends = true;
+
   protected:
   const int     *coords;
   unsigned int  num_coords;
   const	 CFF2ItemVariationStore *varStore;
   unsigned int  region_count;
   unsigned int  ivs;
+  unsigned int  orig_ivs;
   hb_vector_t<float>  *scalars = nullptr;
   hb_atomic_t<hb_vector_t<float> *> *cached_scalars_vector = nullptr;
   bool	  do_blend;
@@ -259,7 +266,23 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
 				 unsigned n, unsigned i)
   {
     if (env.have_coords ())
-      arg.set_int (round (arg.to_real () + env.blend_deltas (blends)));
+    {
+      double v = arg.to_real () + env.blend_deltas (blends);
+      arg.set_real (env.round_blends ? round (v) : v);
+    }
+    else if (unlikely (arg.blending ()))
+    {
+      /* A blend result used as an operand of a later blend: the value is
+       * default + inner deltas + outer deltas, so accumulate the deltas. */
+      hb_vector_t<number_t> inner = std::move (arg.deltas);
+      arg.set_blends (n, i, blends);
+      if (likely (inner.length == arg.deltas.length))
+	for (unsigned j = 0; j < inner.length; j++)
+	  arg.deltas.arrayZ[j].set_real (arg.deltas.arrayZ[j].to_real () +
+					 inner.arrayZ[j].to_real ());
+      else
+	env.set_error ();
+    }
     else
       arg.set_blends (n, i, blends);
   }
@@ -284,6 +307,11 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
     unsigned int count = env.argStack.get_count ();
     unsigned int total;
     if (unlikely (hb_unsigned_mul_overflows (k + 1, n, &total) || total > count))
+    {
+      env.set_error ();
+      return;
+    }
+    if (unlikely (!env.spend_budget (HB_BUDGET_1, total - n)))
     {
       env.set_error ();
       return;

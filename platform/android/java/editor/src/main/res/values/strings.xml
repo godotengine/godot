@@ -20,5 +20,8 @@
 	<string name="show_game_resume_hint">Tap on \'Game\' to resume</string>
 	<string name="restart_embed_game_hint">Restart game to embed</string>
 	<string name="restart_non_embedded_game_hint">Restart Game to disable embedding</string>
-	<string name="lock_aspect_ratio_btn_text">Lock Aspect ratio (%d x %d)</string>
+	<string name="lock_aspect_ratio_btn_text">Lock Aspect ratio (%1$d x %2$d)</string>
+	<string name="don_t_select_locked_nodes">Don\'t Select Locked Nodes</string>
+	<string name="select_group_over_children">Select Group Over Children</string>
+	<string name="show_selection_visibility">Show Selection Visibility</string>
 </resources>

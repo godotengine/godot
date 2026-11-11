@@ -41,15 +41,16 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	virtual String get_sdk_name() const override { return "iphoneos"; }
 	virtual const Vector<String> get_device_types() const override { return device_types; }
 
-	virtual String get_minimum_deployment_target() const override { return "14.0"; }
+	virtual String get_minimum_deployment_target() const override { return "15.0"; }
 
 	virtual Vector<IconInfo> get_icon_infos() const override;
+	virtual void get_required_device_capabilities(const Ref<EditorExportPreset> &p_preset, Vector<String> &r_capabilities) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
 	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) override;
-	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) override;
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
 
 	virtual String _process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) override;

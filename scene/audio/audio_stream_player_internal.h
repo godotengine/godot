@@ -32,7 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server_enums.h"
 
 class AudioStream;
 class AudioStreamPlayback;
@@ -54,16 +54,14 @@ private:
 	Callable play_callable;
 	Callable stop_callable;
 	bool physical = false;
-	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
+	AuSE::PlaybackType playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	HashMap<StringName, ParameterData> playback_parameters;
 
 	void _set_process(bool p_enabled);
 	void _update_stream_parameters();
 
-	_FORCE_INLINE_ bool _is_sample() {
-		return (AudioServer::get_singleton()->get_default_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT) || get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE;
-	}
+	bool _is_sample();
 
 public:
 	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
@@ -81,7 +79,6 @@ public:
 	void ensure_playback_limit();
 
 	void notification(int p_what);
-	void validate_property(PropertyInfo &p_property) const;
 	bool set(const StringName &p_name, const Variant &p_value);
 	bool get(const StringName &p_name, Variant &r_ret) const;
 	void get_property_list(List<PropertyInfo> *p_list) const;
@@ -107,8 +104,8 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	void set_playback_type(AudioServer::PlaybackType p_playback_type);
-	AudioServer::PlaybackType get_playback_type() const;
+	void set_playback_type(AuSE::PlaybackType p_playback_type);
+	AuSE::PlaybackType get_playback_type() const;
 
 	AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, const Callable &p_stop_callable, bool p_physical);
 };

@@ -1247,6 +1247,16 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 
 ///////////////////////////////////////////////////////
 
+void AnimationNodeStateMachine::validate_node(const AnimationTree *p_tree, const StringName &p_path) const {
+	AnimationRootNode::validate_node(p_tree, p_path);
+
+	const String playback_path = String(p_path) + String(playback);
+	Ref<AnimationNodeStateMachinePlayback> pb = p_tree->get(playback_path);
+	if (pb.is_null()) {
+		add_validation_error(p_tree, p_path, vformat(RTR("No playback resource set at path: %s."), playback_path));
+	}
+}
+
 void AnimationNodeStateMachine::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeStateMachinePlayback::get_class_static(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ALWAYS_DUPLICATE)); // Don't store this object in .tres, it always needs to be made as unique object.

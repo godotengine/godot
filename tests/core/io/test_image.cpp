@@ -36,7 +36,7 @@ TEST_FORCE_LINK(test_image)
 #include "core/io/image.h"
 #include "tests/test_utils.h"
 
-#include "modules/modules_enabled.gen.h" // For bmp, jpg, svg, webp, tga.
+#include "modules/modules_enabled.gen.h" // For bmp, jpg, svg, webp, tga, exr.
 
 namespace TestImage {
 
@@ -80,7 +80,9 @@ TEST_CASE("[Image] Instantiation") {
 TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 	const String save_path_png = TestUtils::get_temp_path("image.png");
+#ifdef MODULE_TINYEXR_ENABLED
 	const String save_path_exr = TestUtils::get_temp_path("image.exr");
+#endif // MODULE_TINYEXR_ENABLED
 
 	// Save PNG
 	Error err;
@@ -90,13 +92,13 @@ TEST_CASE("[Image] Saving and loading") {
 			"The image should be saved successfully as a .png file.");
 
 	// Only available on editor builds.
-#ifdef TOOLS_ENABLED
+#ifdef MODULE_TINYEXR_ENABLED
 	// Save EXR
 	err = image->save_exr(save_path_exr, false);
 	CHECK_MESSAGE(
 			err == OK,
 			"The image should be saved successfully as an .exr file.");
-#endif // TOOLS_ENABLED
+#endif // MODULE_TINYEXR_ENABLED
 
 	// Load using load()
 	Ref<Image> image_load = memnew(Image());
@@ -121,7 +123,7 @@ TEST_CASE("[Image] Saving and loading") {
 			"The BMP image should load successfully.");
 #endif // MODULE_BMP_ENABLED
 
-#ifdef MODULE_EXR_ENABLED
+#ifdef MODULE_TINYEXR_ENABLED
 	// Load EXR
 	Ref<Image> image_exr;
 	image_exr.instantiate();
@@ -133,7 +135,7 @@ TEST_CASE("[Image] Saving and loading") {
 	CHECK_MESSAGE(
 			image_exr->load_exr_from_buffer(data_exr) == OK,
 			"The EXR image should load successfully.");
-#endif // MODULE_EXR_ENABLED
+#endif // MODULE_TINYEXR_ENABLED
 
 #ifdef MODULE_JPG_ENABLED
 	// Load JPG
@@ -377,8 +379,19 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 		CHECK_MESSAGE(gray_image->get_pixel(1, 1).is_equal_approx(Color(1, 1, 1, 1)), "convert() RGBA to L8 should be white.");
 		CHECK_MESSAGE(gray_image->get_pixel(1, 2).is_equal_approx(Color(0.250980407, 0.250980407, 0.250980407, 1)), "convert() RGBA to L8 should be around 0.250980407 (64).");
 		CHECK_MESSAGE(gray_image->get_pixel(2, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
-		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.121568628, 0.121568628, 0.121568628, 1)), "convert() RGBA to L8 should be around 0.121568628 (31).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.125490203, 0.125490203, 0.125490203, 1)), "convert() RGBA to L8 should be around 0.125490203 (32).");
 		CHECK_MESSAGE(gray_image->get_pixel(2, 2).is_equal_approx(Color(0.266666681, 0.266666681, 0.266666681, 1)), "convert() RGBA to L8 should be around 0.266666681 (68).");
+	}
+}
+
+TEST_CASE("[Image] Color rounding") {
+	Ref<Image> image = memnew(Image(1, 1, false, Image::FORMAT_R8));
+	for (int i = 0; i < 1024; i++) {
+		float expected_value = i / 1023.0f;
+		image->set_pixel(0, 0, Color(expected_value, 0.0f, 0.0f));
+
+		uint8_t expected_value_int = CLAMP(Math::round(expected_value * 255.0f), 0, 255);
+		CHECK_MESSAGE(image->get_data()[0] == expected_value_int, vformat("Pixel's r channel should be around %d", expected_value_int));
 	}
 }
 
@@ -458,6 +471,50 @@ TEST_CASE("[Image] Custom mipmaps") {
 				}
 			}
 		}
+	}
+}
+
+TEST_CASE("[Image] Linear and sRGB conversion of half-float formats") {
+	const Color linear = Color(0.5, 0.5, 0.5);
+	const Color srgb = linear.linear_to_srgb();
+
+	auto all_pixels_are = [](const Ref<Image> &p_image, const Color &p_color) {
+		for (int mip = 0; mip <= p_image->get_mipmap_count(); mip++) {
+			Ref<Image> level = p_image->get_image_from_mipmap(mip);
+			for (int y = 0; y < level->get_height(); y++) {
+				for (int x = 0; x < level->get_width(); x++) {
+					const Color pixel = level->get_pixel(x, y);
+					if (!Math::is_equal_approx(pixel.r, p_color.r, 0.001f) || !Math::is_equal_approx(pixel.g, p_color.g, 0.001f) || !Math::is_equal_approx(pixel.b, p_color.b, 0.001f)) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	};
+
+	for (Image::Format format : { Image::FORMAT_RGBH, Image::FORMAT_RGBAH }) {
+		Ref<Image> image = memnew(Image(8, 8, true, format));
+		image->fill(linear);
+
+		image->linear_to_srgb();
+		CHECK_MESSAGE(all_pixels_are(image, srgb), "linear_to_srgb() should convert every pixel of every mipmap.");
+
+		image->srgb_to_linear();
+		CHECK_MESSAGE(all_pixels_are(image, linear), "srgb_to_linear() should convert every pixel of every mipmap.");
+
+		// Holding the data makes the conversion copy it on write.
+		Ref<Image> shared = memnew(Image(512, 512, false, format));
+		shared->fill(linear);
+		const Vector<uint8_t> held_linear = shared->get_data();
+		shared->linear_to_srgb();
+		CHECK_MESSAGE(all_pixels_are(shared, srgb), "linear_to_srgb() should convert every pixel when the data is shared.");
+		CHECK_MESSAGE(all_pixels_are(Image::create_from_data(512, 512, false, format, held_linear), linear), "linear_to_srgb() should not change other copies of the data.");
+
+		const Vector<uint8_t> held_srgb = shared->get_data();
+		shared->srgb_to_linear();
+		CHECK_MESSAGE(all_pixels_are(shared, linear), "srgb_to_linear() should convert every pixel when the data is shared.");
+		CHECK_MESSAGE(all_pixels_are(Image::create_from_data(512, 512, false, format, held_srgb), srgb), "srgb_to_linear() should not change other copies of the data.");
 	}
 }
 

@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 # This script makes RST files from the XML class reference for use with the online docs.
-from __future__ import annotations
-
 import argparse
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from io import StringIO
 from typing import Any, TextIO
 
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
@@ -68,16 +67,16 @@ BASE_STRINGS = [
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
     "No return value.",
-    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
-    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!",
+    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
+    "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!",
     "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
     "Deprecated:",
     "Experimental:",
@@ -89,7 +88,7 @@ BASE_STRINGS = [
     "This operator may be changed or removed in future versions.",
     "This theme property may be changed or removed in future versions.",
     # See also `make_rst_class()` and `editor/doc/editor_help.cpp`.
-    "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
+    "[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.[/note]",
 ]
 strings_l10n: dict[str, str] = {}
 writing_translation = False
@@ -166,6 +165,7 @@ class State:
 
         # Additional content and structure checks and validators.
         self.script_language_parity_check: ScriptLanguageParityCheck = ScriptLanguageParityCheck()
+        self.reserved_tag_check: ReservedTagCheck = ReservedTagCheck()
 
     def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
@@ -392,7 +392,7 @@ class State:
 
                 theme_item_name = theme_item.attrib["name"]
                 theme_item_data_name = theme_item.attrib["data_type"]
-                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                theme_item_id = f"{theme_item_data_name}_{theme_item_name}"
                 if theme_item_id in class_def.theme_items:
                     print_error(
                         f'{class_name}.xml: Duplicate theme property "{theme_item_name}" of type "{theme_item_data_name}".',
@@ -423,7 +423,7 @@ class State:
 
         self.current_class = ""
 
-    def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
+    def parse_params(self, root: ET.Element, context: str) -> list["ParameterDef"]:
         param_elements = root.findall("param")
         params: Any = [None] * len(param_elements)
 
@@ -473,7 +473,7 @@ class TypeName:
             return make_type(self.type_name, state)
 
     @classmethod
-    def from_element(cls, element: ET.Element) -> TypeName:
+    def from_element(cls, element: ET.Element) -> "TypeName":
         return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
@@ -665,6 +665,56 @@ class ScriptLanguageParityCheck:
         self.hit_map[class_name].append((context, error))
 
 
+# Checks if reserved tags have matching opening/closing pairs.
+class ReservedTagCheck:
+    def __init__(self) -> None:
+        self.tag_depth = 0  # Number of opening tags - closing tags.
+        self.tag_stack: list[
+            str
+        ] = []  # List of unmatched opening tags. When tags mismatch, len(tag_stack) may differ from tag_depth.
+        self.tag_stack_error: str = ""  # First occurrence of a mismatched/duplicated opening/closing tag.
+
+    def reset(self) -> None:
+        self.tag_depth = 0
+        self.tag_stack.clear()
+        self.tag_stack_error = ""
+
+    def run_final_check(self) -> None:
+        if len(self.tag_stack) > 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"unmatched opening tag(s) [{']['.join(self.tag_stack)}]"
+
+    def add_opening_tag(self, tag_state_name: str) -> None:
+        self.tag_depth += 1
+
+        if tag_state_name in self.tag_stack:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"duplicated opening tags [{']['.join(self.tag_stack)}][{tag_state_name}]"
+
+        self.tag_stack.append(tag_state_name)
+
+    def add_closing_tag(self, tag_state_name: str) -> None:
+        self.tag_depth -= 1
+
+        if len(self.tag_stack) <= 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"extra closing tag [/{tag_state_name}]"
+        elif tag_state_name != self.tag_stack[-1]:
+            if tag_state_name in self.tag_stack:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"mismatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+
+                self.tag_stack.reverse()
+                self.tag_stack.remove(tag_state_name)
+                self.tag_stack.reverse()
+            else:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"unmatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+        else:
+            # Correct closing tag.
+            self.tag_stack.pop()
+
+
 # Entry point for the RST generator.
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -698,9 +748,7 @@ def main() -> None:
     if not args.dry_run and args.lang != "en":
         global writing_translation
         writing_translation = True
-        lang_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
-        )
+        lang_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "translations", f"{args.lang}.po")
         if os.path.exists(lang_file):
             try:
                 import polib  # type: ignore
@@ -771,6 +819,7 @@ def main() -> None:
 
     # Create the output folder recursively if it doesn't already exist.
     os.makedirs(args.output, exist_ok=True)
+    old_files = set(entry.path for entry in os.scandir(str(args.output)) if entry.name.endswith(".rst"))
 
     print("Generating the RST class reference...")
 
@@ -782,7 +831,7 @@ def main() -> None:
         state.current_class = class_name
 
         class_def.update_class_group(state)
-        make_rst_class(class_def, state, args.dry_run, args.output)
+        make_rst_class(class_def, state, args.dry_run, args.output, old_files)
 
         if class_def.class_group not in grouped_classes:
             grouped_classes[class_def.class_group] = []
@@ -796,9 +845,15 @@ def main() -> None:
     print("")
     print("Generating the index file...")
 
-    make_rst_index(grouped_classes, args.dry_run, args.output)
+    make_rst_index(grouped_classes, args.dry_run, args.output, old_files)
 
     print("")
+
+    # Clean existing `.rst` files we didn't generate this pass.
+    if not args.dry_run:
+        for old_file in old_files:
+            if os.path.exists(old_file):
+                os.remove(old_file)
 
     # Print out checks.
 
@@ -877,14 +932,9 @@ def get_git_branch() -> str:
 # Generator methods.
 
 
-def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str) -> None:
+def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir: str, old_files: set[str]) -> None:
     class_name = class_def.name
-    with open(
-        os.devnull if dry_run else os.path.join(output_dir, f"class_{sanitize_class_name(class_name, True)}.rst"),
-        "w",
-        encoding="utf-8",
-        newline="\n",
-    ) as f:
+    with StringIO() as f:
         # Remove the "Edit on Github" button from the online docs page.
         f.write(":github_url: hide\n\n")
 
@@ -973,7 +1023,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
             f.write(".. container:: contribute\n\n\t")
             f.write(
                 translate(
-                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                    "There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                 )
                 + "\n\n"
             )
@@ -1099,7 +1149,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1148,7 +1198,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this enum. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1183,7 +1233,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this constant. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1224,7 +1274,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this annotation. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1287,7 +1337,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1295,7 +1345,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 # Add copy note to built-in properties returning `Packed*Array`.
                 if property_def.type_name.type_name in PACKED_ARRAY_TYPES:
                     # See also `BASE_STRINGS` and `editor/doc/editor_help.cpp`.
-                    copy_note = f"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details."
+                    copy_note = f"[note]The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [{property_def.type_name.type_name}] for more details.[/note]"
                     f.write(f"{format_text_block(copy_note, property_def, state)}\n\n")
 
                 index += 1
@@ -1336,7 +1386,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this constructor. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1383,7 +1433,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1427,7 +1477,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
                             translate(
-                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                                "There is currently no description for this operator. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                             )
                             + "\n\n"
                         )
@@ -1472,7 +1522,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write(".. container:: contribute\n\n\t")
                     f.write(
                         translate(
-                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!"
+                            "There is currently no description for this theme property. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/development/documentation/class_reference.html>`__!"
                         )
                         + "\n\n"
                     )
@@ -1480,6 +1530,17 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 index += 1
 
         f.write(make_footer())
+
+        if not dry_run:
+            class_path = os.path.join(output_dir, f"class_{sanitize_class_name(class_name, True)}.rst")
+            old_files.discard(class_path)
+            dirty = True
+            if os.path.exists(class_path):
+                with open(class_path, "r", encoding="utf-8", newline="\n") as class_old:
+                    dirty = class_old.read() != f.getvalue()
+            if dirty:
+                with open(class_path, "wt", encoding="utf-8", newline="\n") as class_new:
+                    class_new.write(f.getvalue())
 
 
 def make_type(klass: str, state: State) -> str:
@@ -1717,10 +1778,8 @@ def make_link(url: str, title: str) -> str:
     return f"`{url} <{url}>`__"
 
 
-def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_dir: str) -> None:
-    with open(
-        os.devnull if dry_run else os.path.join(output_dir, "index.rst"), "w", encoding="utf-8", newline="\n"
-    ) as f:
+def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_dir: str, old_files: set[str]) -> None:
+    with StringIO() as f:
         # Remove the "Edit on Github" button from the online docs page, and disallow user-contributed notes
         # on the index page. User-contributed notes are allowed on individual class pages.
         f.write(":github_url: hide\n:allow_comments: False\n\n")
@@ -1761,6 +1820,17 @@ def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_
 
                 f.write("\n")
 
+        if not dry_run:
+            index_path = os.path.join(output_dir, "index.rst")
+            old_files.discard(index_path)
+            dirty = True
+            if os.path.exists(index_path):
+                with open(index_path, "r", encoding="utf-8", newline="\n") as index_old:
+                    dirty = index_old.read() != f.getvalue()
+            if dirty:
+                with open(index_path, "wt", encoding="utf-8", newline="\n") as index_new:
+                    index_new.write(f.getvalue())
+
 
 # Formatting helpers.
 
@@ -1780,6 +1850,7 @@ RESERVED_CROSSLINK_TAGS = [
     "theme_item",
     "param",
 ]
+RESERVED_ADMONITION_TAGS = ["important", "note", "tip", "warning"]
 
 
 def is_in_tagset(tag_text: str, tagset: list[str]) -> bool:
@@ -1857,18 +1928,20 @@ def format_text_block(
     has_codeblocks_csharp = False
 
     pos = 0
-    tag_depth = 0
-    debug_tag_stack: list[str] = []
+    admonition_pos = -1
+    state.reserved_tag_check.reset()
     while True:
-        if tag_depth > 2 or (
-            tag_depth == 2
+        if state.reserved_tag_check.tag_depth > 2 or (
+            state.reserved_tag_check.tag_depth == 2
+            and admonition_pos == -1
             and not (
-                debug_tag_stack[0] == "codeblocks"
-                and (debug_tag_stack[1] == "gdscript" or debug_tag_stack[1] == "csharp")
+                len(state.reserved_tag_check.tag_stack) == 2
+                and state.reserved_tag_check.tag_stack[0] == "codeblocks"
+                and state.reserved_tag_check.tag_stack[1] in ("gdscript", "csharp")
             )
         ):
             print_warning(
-                f"{state.current_class}.xml: Found nested tags [{']['.join(debug_tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
+                f"{state.current_class}.xml: Found nested tags [{']['.join(state.reserved_tag_check.tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
                 state,
             )
 
@@ -1906,11 +1979,19 @@ def format_text_block(
             if inside_code:
                 # Exiting codeblocks and inline code tags.
 
-                if tag_state.closing and tag_state.name == inside_code_tag:
+                # Escape opening square bracket if it immediately precedes a closing tag
+                if tag_text and tag_text.startswith("[/"):
+                    if not ignore_code_warnings:
+                        print_warning(
+                            f'{state.current_class}.xml: Found possibly misformatted tag "[{tag_state.raw}]" in {context_name}. {code_warning_if_intended_string}',
+                            state,
+                        )
+                    tag_text = "["
+                    post_text = text[pos + 1 :]
+                elif tag_state.closing and tag_state.name == inside_code_tag:
                     if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
-                        tag_depth -= 1
-                        debug_tag_stack.pop()
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
@@ -1919,8 +2000,7 @@ def format_text_block(
 
                     elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
-                        tag_depth -= 1
-                        debug_tag_stack.pop()
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         escape_post = True
@@ -1949,19 +2029,16 @@ def format_text_block(
                     has_codeblocks_gdscript = False
                     has_codeblocks_csharp = False
 
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     tag_text = ""
                     inside_code_tabs = False
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     tag_text = "\n.. tabs::"
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
-                tag_depth += 1
-                debug_tag_stack.append(tag_state.name)
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 if tag_state.name == "gdscript":
                     if not inside_code_tabs:
@@ -1999,9 +2076,10 @@ def format_text_block(
                 ignore_code_warnings = "skip-lint" in tag_state.arguments.split(" ")
 
             elif is_in_tagset(tag_state.name, ["code"]):
-                tag_text = "``"
-                tag_depth += 1
-                debug_tag_stack.append(tag_state.name)
+                # Escape formatting which can break rST, e.g. "(``)``".
+                # This cannot be done with an f-string because Python < 3.12 doesn't allow \ escapes.
+                tag_text = ("\\ " if pre_text.endswith("(") else "") + "``"
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 inside_code = True
                 inside_code_tag = "code"
@@ -2130,7 +2208,7 @@ def format_text_block(
 
                         # Default to the tag command name. This works by default for most tags,
                         # but method, member, and theme_item have special cases.
-                        ref_type = "_{}".format(tag_state.name)
+                        ref_type = f"_{tag_state.name}"
 
                         if target_class_name in state.classes:
                             class_def = state.classes[target_class_name]
@@ -2294,6 +2372,11 @@ def format_text_block(
                                 f"{state.current_class}.xml: Found nested tags [url][{rft}] in {context_name} (online doc will contain invalid RST markup).",
                                 state,
                             )
+                        elif link_title.find(f"[/{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][/{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
                     tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
@@ -2317,43 +2400,35 @@ def format_text_block(
 
             elif tag_state.name == "center":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                 tag_text = ""
 
             elif tag_state.name == "i":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "*"
 
             elif tag_state.name == "b":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "**"
 
             elif tag_state.name == "u":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = ""
 
@@ -2366,14 +2441,44 @@ def format_text_block(
             elif tag_state.name == "kbd":
                 tag_text = "`"
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
                     tag_text = ":kbd:" + tag_text
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
+            elif tag_state.name in RESERVED_ADMONITION_TAGS:
+                if tag_state.closing and admonition_pos == -1:
+                    print_error(
+                        f'{state.current_class}.xml: Closing admonition tag "[{tag_state.raw}]" has no opening counterpart.',
+                        state,
+                    )
+                    break
+                elif tag_state.closing:
+                    admonition_type = tag_state.name.removeprefix("/")
+                    admonition_contents = (
+                        (text[admonition_pos : pos + len(tag_state.name) + 3])
+                        .removeprefix(f"[{admonition_type}]")
+                        .removesuffix(f"[/{admonition_type}]")
+                        .strip()
+                    )
+                    lines = admonition_contents.splitlines()
+                    for i in range(len(lines)):
+                        lines[i] = "    " + lines[i]
+                    admonition_contents = "\n".join(lines)
+                    admonition_text = f".. classref_{admonition_type}::\n\n{admonition_contents}"
+                    if pre_text.rstrip() != "":
+                        pre_text = text[:admonition_pos].rstrip() + "\n\n"
+                    pre_text = pre_text + admonition_text
+                    tag_text = ""
+                    if post_text.lstrip() != "":
+                        post_text = "\n\n" + post_text.lstrip()
+                    admonition_pos = -1
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
+                else:
+                    tag_text = f"[{tag_state.name}]"
+                    admonition_pos = pos
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
 
             # Invalid syntax.
             else:
@@ -2423,9 +2528,17 @@ def format_text_block(
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
-    if tag_depth > 0:
+    if state.reserved_tag_check.tag_depth != 0:
         print_error(
             f"{state.current_class}.xml: Tag depth mismatch: too many (or too few) open/close tags in {context_name}.",
+            state,
+        )
+
+    state.reserved_tag_check.run_final_check()
+
+    if state.reserved_tag_check.tag_stack_error != "":
+        print_error(
+            f"{state.current_class}.xml: Tag order mismatch: {state.reserved_tag_check.tag_stack_error} in {context_name}.",
             state,
         )
 

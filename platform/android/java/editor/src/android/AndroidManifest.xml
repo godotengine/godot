@@ -17,6 +17,8 @@
     <uses-permission android:name="android.permission.HAND_TRACKING" />
 
     <application>
+        <meta-data android:name="com.google.ar.core" android:value="optional" />
+
         <uses-native-library android:name="libopenxr.google.so" android:required="false" />
 
         <property
@@ -36,6 +38,31 @@
             <property
                 android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
                 android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_UNMANAGED" />
+        </activity>
+
+        <activity
+            android:name=".GodotSpatialContainerGame0"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />
+        </activity>
+        <activity
+            android:name=".GodotSpatialContainerGame1"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <property
+                android:name="android.window.PROPERTY_XR_ACTIVITY_START_MODE"
+                android:value="XR_ACTIVITY_START_MODE_FULL_SPACE_MANAGED" />
         </activity>
     </application>
 

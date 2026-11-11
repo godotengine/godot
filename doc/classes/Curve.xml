@@ -128,7 +128,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="offset" type="float" />
 			<description>
-				Sets the offset from [code]0.5[/code].
+				Assigns the horizontal position [param offset] to the point at [param index].
 			</description>
 		</method>
 		<method name="set_point_right_mode">

@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
 #include "scene/main/scene_tree.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void GrooveJoint2D::_notification(int p_what) {
 	switch (p_what) {
@@ -42,7 +43,7 @@ void GrooveJoint2D::_notification(int p_what) {
 				break;
 			}
 
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				break;
 			}
 

@@ -140,7 +140,6 @@ internal class FilePicker {
 				}
 				intent.addCategory(Intent.CATEGORY_OPENABLE)
 			}
-			intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
 			activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
 		}
 

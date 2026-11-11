@@ -194,7 +194,7 @@
 		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
 		[wd.window_object setHasShadow:NO];
 	} else {
-		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled || ds->get_confinement_window() == window_id ? 0 : NSWindowStyleMaskResizable)];
 		[wd.window_object setHasShadow:YES];
 	}
 	if (wd.layered_window) {
@@ -327,6 +327,10 @@
 		ds->update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 	}
 
+	if (ds->mouse_get_mode() == DisplayServerEnums::MOUSE_MODE_CONFINED || ds->mouse_get_mode() == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		ds->set_confinement_window(window_id);
+	}
+
 	[self windowDidResize:notification]; // Emit resize event, to ensure content is resized if the window was resized while it was hidden.
 
 	wd.focused = true;
@@ -345,6 +349,12 @@
 
 	if (wd.window_button_view) {
 		[wd.window_button_view displayButtons];
+	}
+
+	if (ds->mouse_get_mode() == DisplayServerEnums::MOUSE_MODE_CONFINED || ds->mouse_get_mode() == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		if (ds->get_confinement_window() == window_id) {
+			ds->set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
+		}
 	}
 
 	wd.focused = false;

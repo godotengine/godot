@@ -39,11 +39,18 @@
 #include "resource_importer_mp3.h"
 
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
+
+#include "modules/mp3/editor/audio_stream_mp3_editor_plugin.h"
 
 static void _editor_init() {
 	Ref<ResourceImporterMP3> mp3_import;
 	mp3_import.instantiate();
 	ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
+
+	Ref<EditorInspectorPluginAudioStreamMP3> plugin;
+	plugin.instantiate();
+	EditorInspector::add_inspector_plugin(plugin);
 }
 #endif
 

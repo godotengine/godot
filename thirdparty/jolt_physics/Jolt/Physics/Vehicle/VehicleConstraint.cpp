@@ -153,6 +153,10 @@ void VehicleConstraint::OnStep(const PhysicsStepListenerContext &inContext)
 {
 	JPH_PROFILE_FUNCTION();
 
+	// Step only if we're in the broadphase
+	if (!mBody->IsInBroadPhase())
+		return;
+
 	// Callback to higher-level systems. We do it before PreCollide, in case steering changes.
 	if (mPreStepCallback != nullptr)
 		mPreStepCallback(*this, inContext);
@@ -362,17 +366,16 @@ void VehicleConstraint::BuildIslands(uint32 inConstraintIndex, IslandBuilder &io
 		inBodyManager.ActivateBodies(body_ids, num_bodies);
 	}
 
-	// Link the bodies into the same island
-	uint32 min_active_index = Body::cInactiveIndex;
+	// Link dynamic bodies into the same island as the vehicle
 	for (int i = 0; i < num_bodies; ++i)
 	{
 		const Body &body = inBodyManager.GetBody(body_ids[i]);
-		min_active_index = min(min_active_index, body.GetIndexInActiveBodiesInternal());
-		ioBuilder.LinkBodies(mBody->GetIndexInActiveBodiesInternal(), body.GetIndexInActiveBodiesInternal());
+		if (body.IsDynamic())
+			ioBuilder.LinkBodies(mBody->GetIndexInActiveBodiesInternal(), body.GetIndexInActiveBodiesInternal());
 	}
 
-	// Link the constraint in the island
-	ioBuilder.LinkConstraint(inConstraintIndex, mBody->GetIndexInActiveBodiesInternal(), min_active_index);
+	// Link the vehicle constraint to the car body
+	ioBuilder.LinkConstraint(inConstraintIndex, mBody->GetIndexInActiveBodiesInternal());
 }
 
 uint VehicleConstraint::BuildIslandSplits(LargeIslandSplitter &ioSplitter) const
@@ -437,7 +440,8 @@ void VehicleConstraint::SetupVelocityConstraint(float inDeltaTime)
 			if (settings->mSuspensionMaxLength > settings->mSuspensionMinLength)
 			{
 				float stiffness, damping;
-				if (settings->mSuspensionSpring.mMode == ESpringMode::FrequencyAndDamping)
+				ESpringMode mode = settings->mSuspensionSpring.mMode;
+				if (mode == ESpringMode::FrequencyAndDamping || mode == ESpringMode::MassNormalizedStiffnessAndDamping)
 				{
 					// Calculate effective mass based on vehicle configuration (the stiffness of the spring should not be affected by the dynamics of the vehicle): K = 1 / (J M^-1 J^T)
 					// Note that if no suspension force point is supplied we don't know where the force is applied so we assume it is applied at average suspension length
@@ -446,10 +450,19 @@ void VehicleConstraint::SetupVelocityConstraint(float inDeltaTime)
 					const MotionProperties *mp = mBody->GetMotionProperties();
 					float effective_mass = 1.0f / (mp->GetInverseMass() + force_point_x_neg_up.Dot(mp->GetLocalSpaceInverseInertia().Multiply3x3(force_point_x_neg_up)));
 
-					// Convert frequency and damping to stiffness and damping
-					float omega = 2.0f * JPH_PI * settings->mSuspensionSpring.mFrequency;
-					stiffness = effective_mass * Square(omega);
-					damping = 2.0f * effective_mass * settings->mSuspensionSpring.mDamping * omega;
+					if (mode == ESpringMode::FrequencyAndDamping)
+					{
+						// Convert frequency and damping to stiffness and damping
+						float omega = 2.0f * JPH_PI * settings->mSuspensionSpring.mFrequency;
+						stiffness = effective_mass * Square(omega);
+						damping = 2.0f * effective_mass * settings->mSuspensionSpring.mDamping * omega;
+					}
+					else
+					{
+						// Multiply only by effective mass
+						stiffness = effective_mass * settings->mSuspensionSpring.mStiffness;
+						damping = effective_mass * settings->mSuspensionSpring.mDamping;
+					}
 				}
 				else
 				{

@@ -272,7 +272,7 @@ struct OS2
     Triple *axis_range;
     if (c->plan->user_axes_location.has (HB_TAG ('w','g','h','t'), &axis_range))
     {
-      unsigned weight_class = static_cast<unsigned> (roundf (hb_clamp (axis_range->middle, 1.0, 1000.0)));
+      unsigned weight_class = static_cast<unsigned> (roundf (hb_clamp (axis_range->middle, 1.0f, 1000.0f)));
       if (os2_prime->usWeightClass != weight_class)
         os2_prime->usWeightClass = weight_class;
     }
@@ -346,10 +346,10 @@ struct OS2
 
   size_t get_size () const
   {
-    unsigned result = min_size;
-    if (version >= 1) result += v1X.get_size ();
-    if (version >= 2) result += v2X.get_size ();
-    if (version >= 5) result += v5X.get_size ();
+    size_t result = min_size;
+    if (version >= 1) result = hb_unsigned_add_saturate (result, v1X.get_size ());
+    if (version >= 2) result = hb_unsigned_add_saturate (result, v2X.get_size ());
+    if (version >= 5) result = hb_unsigned_add_saturate (result, v5X.get_size ());
     return result;
   }
 

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server_enums.h"
 #include "servers/movie_writer/movie_writer.h"
 
 #include <theora/theoraenc.h>
@@ -41,7 +41,7 @@ class MovieWriterOGV : public MovieWriter {
 	GDCLASS(MovieWriterOGV, MovieWriter)
 
 	uint32_t mix_rate = 48000;
-	AudioServer::SpeakerMode speaker_mode = AudioServer::SPEAKER_MODE_STEREO;
+	AuSE::SpeakerMode speaker_mode = AuSE::SPEAKER_MODE_STEREO;
 	String base_path;
 	uint32_t frame_count = 0;
 	uint32_t fps = 0;
@@ -125,7 +125,7 @@ class MovieWriterOGV : public MovieWriter {
 
 protected:
 	virtual uint32_t get_audio_mix_rate() const override;
-	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const override;
+	virtual AuSE::SpeakerMode get_audio_speaker_mode() const override;
 	virtual void get_supported_extensions(List<String> *r_extensions) const override;
 
 	virtual Error write_begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) override;

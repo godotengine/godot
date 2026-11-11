@@ -511,7 +511,7 @@ void DisplayServerMacOS::_process_key_events() {
 	for (int i = 0; i < key_event_pos; i++) {
 		const KeyEvent &ke = key_event_buffer[i];
 		if (ke.raw) {
-			// Non IME input - no composite characters, pass events as is.
+			// No composite characters, pass events as is.
 			k.instantiate();
 
 			k->set_window_id(ke.window_id);
@@ -749,7 +749,7 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 
 void DisplayServerMacOS::pop_last_key_event() {
 	// Does not pop last key event when it is an IME key event.
-	if (key_event_pos > 0 && key_event_buffer[key_event_pos - 1].raw) {
+	if (key_event_pos > 0 && !key_event_buffer[key_event_pos - 1].ime) {
 		key_event_pos--;
 	}
 }
@@ -816,6 +816,11 @@ void DisplayServerMacOS::window_resize(DisplayServerEnums::WindowID p_window, in
 	}
 #endif
 #endif
+	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		if (confinement_window == p_window) {
+			set_confinement_window(confinement_window);
+		}
+	}
 }
 
 bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) const {
@@ -1220,6 +1225,30 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
+void DisplayServerMacOS::set_confinement_window(DisplayServerEnums::WindowID p_window) {
+	if (confinement_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(confinement_window)) {
+		WindowData wd = windows[confinement_window];
+		if ([wd.window_object respondsToSelector:@selector(setMouseConfinementRect:)]) {
+			[wd.window_object setMouseConfinementRect:(NSRect)NSZeroRect];
+			if (!wd.resize_disabled) { // Restore resize.
+				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+			}
+			confinement_window = DisplayServerEnums::INVALID_WINDOW_ID;
+		}
+	}
+	if (p_window != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_window)) {
+		WindowData wd = windows[p_window];
+		if ([wd.window_object respondsToSelector:@selector(setMouseConfinementRect:)]) {
+			confinement_window = p_window;
+			CGAssociateMouseAndMouseCursorPosition(true);
+			[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+			[wd.window_object setMouseConfinementRect:[wd.window_view frame]];
+		} else {
+			CGAssociateMouseAndMouseCursorPosition(false);
+		}
+	}
+}
+
 void DisplayServerMacOS::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -1251,26 +1280,29 @@ void DisplayServerMacOS::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
-		CGAssociateMouseAndMouseCursorPosition(false);
+		set_confinement_window(window_id);
 	} else if (p_new_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:NO];
-		CGAssociateMouseAndMouseCursorPosition(false);
+		set_confinement_window(window_id);
 	} else { // DisplayServerEnums::MOUSE_MODE_VISIBLE
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
+		set_confinement_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
@@ -1295,6 +1327,10 @@ bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, N
 	}
 
 	if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED || mouse_mode == DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
+		if (confinement_window != DisplayServerEnums::INVALID_WINDOW_ID) {
+			return false;
+		}
+
 		// Discard late events.
 		if (p_timestamp < last_warp) {
 			return true;
@@ -1368,8 +1404,6 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 
 		// Do the warping.
-		CGEventSourceRef lEventRef = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
-		CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
 		CGAssociateMouseAndMouseCursorPosition(false);
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 		if (mouse_mode != DisplayServerEnums::MOUSE_MODE_CONFINED && mouse_mode != DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN) {
@@ -1534,6 +1568,84 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	return Rect2i();
 }
 
+TypedArray<Rect2> DisplayServerMacOS::get_display_cutouts(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	TypedArray<Rect2> ret = TypedArray<Rect2>();
+
+	ERR_FAIL_INDEX_V(p_screen, screen_count, ret);
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		float inset_left = safeAreaInsets.left * scale;
+		float inset_top = safeAreaInsets.top * scale;
+		float inset_right = safeAreaInsets.right * scale;
+		float inset_bottom = safeAreaInsets.bottom * scale;
+
+		float screen_width = nsrect.size.width * scale;
+		float screen_height = nsrect.size.height * scale;
+
+		if (inset_left > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, inset_left, screen_height);
+			ret.push_back(rect);
+		}
+
+		if (inset_top > 0) {
+			Rect2 rect = Rect2(0.0, 0.0, screen_width, inset_top);
+			ret.push_back(rect);
+		}
+
+		if (inset_bottom > 0) {
+			Rect2 rect = Rect2(0.0, screen_height - inset_bottom, screen_width, inset_bottom);
+			ret.push_back(rect);
+		}
+
+		if (inset_right > 0) {
+			Rect2 rect = Rect2(screen_width - inset_right, 0.0, inset_right, screen_width);
+			ret.push_back(rect);
+		}
+	}
+
+	return ret;
+}
+
+Rect2i DisplayServerMacOS::get_display_safe_area(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		const float scale = screen_get_max_scale();
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSEdgeInsets safeAreaInsets = [[screenArray objectAtIndex:p_screen] safeAreaInsets];
+
+		int inset_left = safeAreaInsets.left * scale;
+		int inset_top = safeAreaInsets.top * scale;
+		int inset_right = safeAreaInsets.right * scale;
+		int inset_bottom = safeAreaInsets.bottom * scale;
+
+		int screen_width = nsrect.size.width * scale;
+		int screen_height = nsrect.size.height * scale;
+
+		return Rect2i(
+				inset_left,
+				inset_top,
+				screen_width - (inset_left + inset_right),
+				screen_height - (inset_top + inset_bottom));
+	}
+
+	return Rect2i();
+}
+
 Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 	HashSet<CGWindowID> exclude_windows;
 	for (HashMap<DisplayServerEnums::WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
@@ -1557,6 +1669,8 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 
 	Color color;
 	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, 1, 1), capture_windows, kCGWindowListOptionAll);
+	CFRelease(capture_windows);
+	CFRelease(on_screen_windows);
 	if (image) {
 		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
 		if (color_space) {
@@ -1604,6 +1718,8 @@ Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
 
 	Ref<Image> img;
 	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	CFRelease(capture_windows);
+	CFRelease(on_screen_windows);
 	if (image) {
 		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
 		if (color_space) {
@@ -1652,6 +1768,8 @@ Ref<Image> DisplayServerMacOS::screen_get_image_rect(const Rect2i &p_rect) const
 
 	Ref<Image> img;
 	CGImageRef image = CGWindowListCreateImageFromArray(CGRectMake(position.x, position.y, size.width, size.height), capture_windows, kCGWindowListOptionAll);
+	CFRelease(capture_windows);
+	CFRelease(on_screen_windows);
 	if (image) {
 		CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
 		if (color_space) {
@@ -1689,7 +1807,7 @@ DisplayServerEnums::WindowID DisplayServerMacOS::create_sub_window(DisplayServer
 
 	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 
-	uint32_t set_flags = p_flags & ~(DisplayServerEnums::WINDOW_FLAG_MAX - 1); // Clear the flags that are not supported by the window.
+	uint32_t set_flags = p_flags & ((1 << DisplayServerEnums::WINDOW_FLAG_MAX) - 1); // Clear the flags that are not supported by the window.
 	while (set_flags != 0) {
 		// Find the index of the next set bit.
 		uint32_t index = (uint32_t)__builtin_ctzll(set_flags);
@@ -2457,7 +2575,7 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
-			if (wd.fullscreen) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
+			if (wd.fullscreen || confinement_window == p_window) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
 				return;
 			}
 			if (p_enabled) {
@@ -2508,7 +2626,7 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
 			} else {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled || confinement_window == p_window ? 0 : NSWindowStyleMaskResizable)];
 				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setEnabled:!wd.no_min_btn];
 				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:!wd.no_max_btn];
 				[wd.window_object setHasShadow:YES];
@@ -2891,13 +3009,8 @@ void DisplayServerMacOS::window_get_edr_values(DisplayServerEnums::WindowID p_wi
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
-		SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
+	SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
 
 #undef SET_VAL
 }
@@ -3075,6 +3188,12 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 
 		cursor_update_shape();
 	}
+}
+
+void DisplayServerMacOS::cursor_clear_custom_image_cache() {
+	_THREAD_SAFE_METHOD_
+
+	cursors_cache.clear();
 }
 
 bool DisplayServerMacOS::get_swap_cancel_ok() {
@@ -3677,11 +3796,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	r_error = OK;
 
 	memset(cursors, 0, sizeof(cursors));
-
-	event_source = CGEventSourceCreate(kCGEventSourceStateHIDSystemState);
-	ERR_FAIL_COND(!event_source);
-
-	CGEventSourceSetLocalEventsSuppressionInterval(event_source, 0.0);
 
 	int screen_count = get_screen_count();
 	for (int i = 0; i < screen_count; i++) {

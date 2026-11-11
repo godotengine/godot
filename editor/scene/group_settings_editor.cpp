@@ -528,7 +528,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	hbc->add_child(add_button);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_theme_type_variation("NoBorderBottomWideWindow");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(mc);
 

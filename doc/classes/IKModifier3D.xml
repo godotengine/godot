@@ -40,6 +40,7 @@
 		<member name="mutable_bone_axes" type="bool" setter="set_mutable_bone_axes" getter="are_bone_axes_mutable" default="true">
 			If [code]true[/code], the solver retrieves the bone axis from the bone pose every frame.
 			If [code]false[/code], the solver retrieves the bone axis from the bone rest and caches it, which increases performance slightly, but position changes in the bone pose made before processing this [IKModifier3D] are ignored.
+			[b]Note:[/b] The rendered gizmo's forward vector (a line between parent and child joints) will only respect the bone pose when this modifier is active.
 		</member>
 	</members>
 </class>

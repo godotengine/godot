@@ -1,5 +1,5 @@
 diff --git a/thirdparty/grisu2/grisu2.h b/thirdparty/grisu2/grisu2.h
-index f140e1a192..316a727ce0 100644
+index 3f3423281d..316a727ce0 100644
 --- a/thirdparty/grisu2/grisu2.h
 +++ b/thirdparty/grisu2/grisu2.h
 @@ -1,15 +1,11 @@
@@ -115,5 +115,4 @@ index f140e1a192..316a727ce0 100644
 -} // namespace simdjson
 -
 -#endif // SIMDJSON_SRC_TO_CHARS_CPP
-\ No newline at end of file
 +} // namespace grisu2

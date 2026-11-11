@@ -1538,6 +1538,7 @@ static const char *language_script_list[][2] = {
 	{ "tn", "Latn" },
 	{ "to", "Latn" },
 	{ "tog", "Latn" },
+	{ "tok", "Latn" },
 	{ "tpi", "Latn" },
 	{ "tr", "Latn Arab" },
 	{ "tru", "Latn Syrc" },

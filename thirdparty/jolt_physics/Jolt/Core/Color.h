@@ -93,6 +93,6 @@ public:
 	};
 };
 
-static_assert(std::is_trivial<Color>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Color>() && std::is_trivially_copyable<Color>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END

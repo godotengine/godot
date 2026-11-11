@@ -165,6 +165,9 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				WARN_PRINT_ONCE("MetalFX temporal and FSR upscaling are not supported in the Mobile renderer. Falling back to bilinear scaling.");
 			}
 
+			RenderingServerEnums::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
+
+#ifdef RD_ENABLED
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
 				if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
 					// Prefer MetalFX spatial if it is supported, which will be much more efficient than FSR2,
@@ -183,8 +186,6 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				WARN_PRINT_ONCE("MetalFX spatial upscaling is not supported by the current renderer or hardware. Falling back to FSR scaling.");
 			}
 
-			RSE::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
-
 			// If MetalFX Temporal upscaling is supported, verify limits.
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
 				double min_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE) / 1000'000.0;
@@ -197,6 +198,15 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
 				}
 			}
+#else
+			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
+				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_FSR2;
+				WARN_PRINT_ONCE("MetalFX upscaling is not supported by the current renderer or hardware. Falling back to FSR 2 scaling.");
+			} else if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_FSR;
+				WARN_PRINT_ONCE("MetalFX spatial upscaling is not supported by the current renderer or hardware. Falling back to FSR scaling.");
+			}
+#endif // RD_ENABLED
 
 			bool scaling_3d_is_not_bilinear = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			bool use_taa = p_viewport->use_taa;
@@ -306,13 +316,6 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 #ifndef _3D_DISABLED
 	RENDER_TIMESTAMP("> Render 3D Scene");
 
-	Ref<XRInterface> xr_interface;
-#ifndef XR_DISABLED
-	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
-		xr_interface = XRServer::get_singleton()->get_primary_interface();
-	}
-#endif // XR_DISABLED
-
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
 			float aspect = p_viewport->size.aspect();
@@ -329,7 +332,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, p_viewport->window_output_max_value, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, p_viewport->window_output_max_value, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("< Render 3D Scene");
 #endif // _3D_DISABLED
@@ -373,6 +376,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 
 		p_viewport->window_output_max_value = 1.0;
+#ifdef RD_ENABLED
 		DisplayServerEnums::WindowID parent_window = _get_containing_window(p_viewport);
 		if (RD::get_singleton() && parent_window != DisplayServerEnums::INVALID_WINDOW_ID) {
 			RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
@@ -380,9 +384,18 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				p_viewport->window_output_max_value = context_driver->window_get_output_max_linear_value(parent_window);
 			}
 		}
+#endif
 	}
 
 	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;
+
+#ifndef XR_DISABLED
+#if DEBUG_ENABLED
+	if (p_viewport->use_xr && !RSG::scene->is_xr_camera(p_viewport->camera)) {
+		WARN_PRINT("Viewport marked with use_xr but current camera is not an XRCamera3D");
+	}
+#endif
+#endif
 
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
 		//wants to draw 3D but there is no render buffer, create
@@ -893,7 +906,21 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 					_viewport_set_force_motion_vectors(vp, false);
 				}
 
-				RSG::texture_storage->render_target_set_render_region(vp->render_target, xr_interface->get_render_region());
+				Rect2i region = xr_interface->get_render_region();
+
+				if (vp->size != vp->internal_size) {
+					region.size.width = region.size.width / double(vp->size.width) * double(vp->internal_size.width);
+					region.size.height = region.size.height / double(vp->size.height) * double(vp->internal_size.height);
+					region.position.x = region.position.x / double(vp->size.width) * double(vp->internal_size.width);
+					region.position.y = region.position.y / double(vp->size.height) * double(vp->internal_size.height);
+				}
+
+				// Sometimes the openxr swapchain has been recreated but the viewport has not been
+				// reconfigured yet, though they should be by the next frame.
+				ERR_CONTINUE_MSG(Size2i(xr_interface->get_render_target_size()) != vp->size,
+						"XR viewport has not been resized to the XR render target size yet, skipping this frame.");
+
+				RSG::texture_storage->render_target_set_render_region(vp->render_target, region);
 
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
@@ -1022,23 +1049,25 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RSE::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-#ifdef DEBUG_ENABLED
 	const String rendering_method = OS::get_singleton()->get_current_rendering_method();
 	if (rendering_method != "forward_plus") {
 		if (p_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR) {
 			WARN_PRINT_ONCE_ED("FSR1 3D scaling is only available when using the Forward+ renderer.");
+			return;
 		}
 		if (p_mode == RSE::VIEWPORT_SCALING_3D_MODE_FSR2) {
 			WARN_PRINT_ONCE_ED("FSR2 3D scaling is only available when using the Forward+ renderer.");
+			return;
 		}
 		if (p_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
 			WARN_PRINT_ONCE_ED("MetalFX Temporal 3D scaling is only available when using the Forward+ renderer.");
+			return;
 		}
 	}
 	if (rendering_method == "gl_compatibility" && p_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 		WARN_PRINT_ONCE_ED("MetalFX Spatial 3D scaling is only available when using the Forward+ or Mobile renderer.");
+		return;
 	}
-#endif
 
 	if (viewport->scaling_3d_mode == p_mode) {
 		return;
@@ -1448,11 +1477,10 @@ bool RendererViewport::viewport_get_preserve_alpha(RID p_viewport) const {
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RSE::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-#ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_mode != RSE::VIEWPORT_SCREEN_SPACE_AA_DISABLED) {
 		WARN_PRINT_ONCE_ED("Screen-space AA is only available when using the Forward+ or Mobile renderer.");
+		return;
 	}
-#endif
 
 	if (viewport->screen_space_aa == p_mode) {
 		return;
@@ -1464,11 +1492,10 @@ void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RSE::Viewpor
 void RendererViewport::viewport_set_use_taa(RID p_viewport, bool p_use_taa) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-#ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
 		WARN_PRINT_ONCE_ED("TAA is only available when using the Forward+ renderer.");
+		return;
 	}
-#endif
 
 	if (viewport->use_taa == p_use_taa) {
 		return;

@@ -12,15 +12,15 @@ struct SingleSubstFormat2_4
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::HBGlyphID>
+  typename Types::template ArrayOf<typename Types::HBGlyphID>
                 substitute;             /* Array of substitute
                                          * GlyphIDs--ordered by Coverage Index */
 
   public:
-  DEFINE_SIZE_ARRAY (4 + Types::size, substitute);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, substitute);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -33,6 +33,31 @@ struct SingleSubstFormat2_4
 
   bool may_have_non_1to1 () const
   { return false; }
+
+  void depend (hb_depend_context_t *c) const
+  {
+    auto &cov = this+coverage;
+    auto &glyph_set = c->parent_active_glyphs ();
+
+    // Filter by active glyphs like closure does
+    if (substitute.len > glyph_set.get_population () * 4)
+    {
+      for (auto g : glyph_set)
+      {
+	unsigned i = cov.get_coverage (g);
+	if (i == NOT_COVERED || i >= substitute.len)
+	  continue;
+	c->depend_data->add_gsub_lookup (g, c->lookup_index, substitute.arrayZ[i]);
+      }
+
+      return;
+    }
+
+    + hb_zip (cov, substitute)
+    | hb_filter (glyph_set, hb_first)
+    | hb_apply ([&] (const hb_codepoint_pair_t &_) { c->depend_data->add_gsub_lookup (_.first, c->lookup_index, _.second); })
+    ;
+  }
 
   void closure (hb_closure_context_t *c) const
   {
@@ -89,7 +114,7 @@ struct SingleSubstFormat2_4
       return 0;
     }
 
-    if (alternate_count && *alternate_count)
+    if (alternate_count && *alternate_count && alternate_glyphs)
     {
       glyph_id = substitute[index];
 

@@ -70,7 +70,7 @@ int ZIPPacker::get_compression_level() const {
 Error ZIPPacker::start_file(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	if (!p_path.get_base_dir().is_empty() && !directories.has(p_path.get_base_dir())) {
+	if (!p_path.get_base_dir().is_empty() && !directories.has(p_path.get_base_dir() + "/")) {
 		add_directory(p_path.get_base_dir(), 0755, p_modified_time);
 	}
 
@@ -136,8 +136,9 @@ Error ZIPPacker::close_file() {
 }
 
 Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
+	String path = p_path.ends_with("/") ? p_path : p_path + "/";
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
-	ERR_FAIL_COND_V_MSG(directories.has(p_path), ERR_CANT_CREATE, vformat("Directory '%s' already exists.", p_path));
+	ERR_FAIL_COND_V_MSG(directories.has(path), ERR_CANT_CREATE, vformat("Directory '%s' already exists.", path));
 
 	uint64_t time = p_modified_time;
 	if (time == 0) {
@@ -168,7 +169,7 @@ Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPe
 	zipfi.internal_fa = 0;
 
 	int err = zipOpenNewFileInZip4(zf,
-			p_path.utf8().get_data(),
+			path.utf8().get_data(),
 			&zipfi,
 			nullptr,
 			0,
@@ -190,7 +191,7 @@ Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPe
 		return FAILED;
 	}
 
-	directories.insert(p_path);
+	directories.insert(path);
 	return OK;
 }
 

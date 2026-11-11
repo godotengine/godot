@@ -116,7 +116,6 @@ public:
 
 	ObjectID get_instance_id() const { return instance_id; }
 	void set_instance_id(ObjectID p_id) { instance_id = p_id; }
-	Object *get_instance() const;
 
 	JPH::Body *get_jolt_body() const { return jolt_body; }
 	JPH::BodyID get_jolt_id() const { return jolt_body->GetID(); }

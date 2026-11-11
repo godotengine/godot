@@ -6,7 +6,7 @@ public:
 		MODE_NINEPATCH,
 	};
 
-	enum Specializations {
+	enum Specializations : uint64_t {
 		DISABLE_LIGHTING = 1,
 	};
 
@@ -26,37 +26,20 @@ protected:
 			{ "DISABLE_LIGHTING", false },
 		};
 		static const Feedback *_feedbacks = nullptr;
-		static const char _vertex_code[] = {
-R"<!>(
-precision highp float;
-precision highp int;
-/* clang-format on */
-layout(location = 0) in highp vec3 vertex;
-
-out highp vec4 position_interp;
-
-void main() {
-	position_interp = vec4(vertex.x, 1, 0, 1);
-}
-
-)<!>"
+		static const uint8_t _code_compressed[] = {
+			120, 218, 149, 143, 205, 14, 130, 48, 16, 132, 189, 186, 79, 177, 199, 130, 200, 79, 244, 70, 124, 22, 210,
+			212, 2, 77, 42, 219, 148, 138, 168, 241, 221, 93, 252, 137, 134, 147, 94, 246, 48, 59, 243, 101, 6, 156,
+			215, 202, 244, 134, 58, 108, 77, 211, 58, 172, 45, 201, 80, 194, 92, 54, 29, 139, 89, 140, 202, 202, 174,
+			89, 215, 228, 15, 50, 32, 127, 227, 12, 172, 60, 211, 49, 8, 75, 74, 134, 41, 176, 195, 60, 98, 255, 43,
+			56, 104, 181, 225, 227, 131, 30, 75, 0, 54, 126, 244, 45, 58, 234, 205, 148, 169, 24, 175, 189, 99, 195,
+			64, 102, 143, 7, 105, 58, 17, 225, 21, 150, 51, 3, 179, 167, 156, 120, 242, 210, 49, 193, 34, 193, 156,
+			111, 84, 194, 13, 96, 1, 255, 172, 129, 239, 142, 63, 116, 249, 34, 226, 94, 187, 208, 114, 27, 33, 102,
+			177, 244, 130, 217, 28, 149, 158, 34, 92, 97, 145, 230, 220, 114, 89, 123, 217, 84, 138, 44, 249, 247, 152,
+			7, 235, 49, 96, 113, 7, 44, 120, 132, 251
 		};
+		const CharString _code = _decompress_code(_code_compressed, 195, 398);
 
-		static const char _fragment_code[] = {
-R"<!>(
-precision highp float;
-precision highp int;
-
-in highp vec4 position_interp;
-
-void main() {
-	highp float depth = ((position_interp.z / position_interp.w) + 1.0);
-	frag_color = vec4(depth);
-}
-)<!>"
-		};
-
-		_setup(_vertex_code, _fragment_code, "VertexFragmentShaderGLES3",
+		_setup(_code.get_data(), _code.get_data() + 206, "VertexFragmentShaderGLES3",
 				0, _uniform_strings, 0, _ubo_pairs,
 				0, _feedbacks, 0, _texunit_pairs,
 				1, _spec_pairs, 1, _variant_defines);

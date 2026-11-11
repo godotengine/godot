@@ -87,6 +87,11 @@ struct hb_serialize_context_t
         virtual_links.push (o.virtual_links[i]);
     }
 
+    bool in_error () const
+    {
+      return real_links.in_error() || virtual_links.in_error();
+    }
+
     bool add_virtual_link (objidx_t objidx)
     {
       if (!objidx)
@@ -195,7 +200,7 @@ struct hb_serialize_context_t
      };
   }
 
-  hb_serialize_context_t (void *start_, unsigned int size) :
+  hb_serialize_context_t (void *start_, size_t size) :
     start ((char *) start_),
     end (start + size),
     current (nullptr)
@@ -230,7 +235,7 @@ struct hb_serialize_context_t
         || errors == HB_SERIALIZE_ERROR_ARRAY_OVERFLOW;
   }
 
-  void reset (void *start_, unsigned int size)
+  void reset (void *start_, size_t size)
   {
     start = (char*) start_;
     end = start + size;
@@ -680,7 +685,7 @@ struct hb_serialize_context_t
   HB_NODISCARD
   Type *embed (const Type *obj)
   {
-    unsigned int size = obj->get_size ();
+    size_t size = obj->get_size ();
     Type *ret = this->allocate_size<Type> (size, false);
     if (unlikely (!ret)) return nullptr;
     hb_memcpy (ret, obj, size);
@@ -733,6 +738,7 @@ struct hb_serialize_context_t
   Type *extend_size (Type *obj, size_t size, bool clear = true)
   {
     if (unlikely (in_error ())) return nullptr;
+    if (unlikely (size >= INT_MAX)) { err (HB_SERIALIZE_ERROR_OTHER); return nullptr; }
 
     assert (this->start <= (char *) obj);
     assert ((char *) obj <= this->head);

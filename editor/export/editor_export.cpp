@@ -95,8 +95,8 @@ void EditorExport::_save() {
 		config->set_value(section, "patch_delta_include_filters", preset->get_patch_delta_include_filter());
 		config->set_value(section, "patch_delta_exclude_filters", preset->get_patch_delta_exclude_filter());
 
-		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
-		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
+		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filters_str());
+		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filters_str());
 		config->set_value(section, "seed", preset->get_seed());
 
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
@@ -108,9 +108,9 @@ void EditorExport::_save() {
 
 		for (const KeyValue<StringName, Variant> &E : preset->values) {
 			PropertyInfo *prop = preset->properties.getptr(E.key);
-			if (prop && prop->usage & PROPERTY_USAGE_SECRET) {
+			if (prop && prop->usage & PROPERTY_USAGE_SECRET && prop->usage & PROPERTY_USAGE_STORAGE) {
 				credentials->set_value(option_section, E.key, E.value);
-			} else {
+			} else if (prop && prop->usage & PROPERTY_USAGE_STORAGE) {
 				config->set_value(option_section, E.key, E.value);
 			}
 		}
@@ -407,10 +407,10 @@ void EditorExport::load_config() {
 			preset->set_enc_directory(config->get_value(section, "encrypt_directory"));
 		}
 		if (config->has_section_key(section, "encryption_include_filters")) {
-			preset->set_enc_in_filter(config->get_value(section, "encryption_include_filters"));
+			preset->set_enc_in_filters_str(config->get_value(section, "encryption_include_filters"));
 		}
 		if (config->has_section_key(section, "encryption_exclude_filters")) {
-			preset->set_enc_ex_filter(config->get_value(section, "encryption_exclude_filters"));
+			preset->set_enc_ex_filters_str(config->get_value(section, "encryption_exclude_filters"));
 		}
 		if (credentials->has_section_key(section, "script_encryption_key")) {
 			preset->set_script_encryption_key(credentials->get_value(section, "script_encryption_key"));

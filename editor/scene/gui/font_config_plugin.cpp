@@ -713,7 +713,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
+				menu->add_submenu_node_item(TTR(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -965,6 +965,10 @@ void FontPreview::set_data(const Ref<Font> &p_f) {
 
 void FontPreview::_preview_changed() {
 	queue_redraw();
+}
+
+FontPreview::FontPreview() {
+	set_clip_contents(true);
 }
 
 /*************************************************************************/

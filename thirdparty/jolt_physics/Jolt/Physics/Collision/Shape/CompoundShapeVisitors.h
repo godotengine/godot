@@ -154,7 +154,7 @@ struct CompoundShape::CastShapeVisitor
 {
 	JPH_INLINE			CastShapeVisitor(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const CompoundShape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector) :
 		mBoxCenter(inShapeCast.mShapeWorldBounds.GetCenter()),
-		mBoxExtent(inShapeCast.mShapeWorldBounds.GetExtent()),
+		mBoxExtent(inShapeCast.mShapeWorldBounds.GetExtent() + Vec3::sReplicate(inShapeCastSettings.mExtraConvexRadius)),
 		mScale(inScale),
 		mShapeCast(inShapeCast),
 		mShapeCastSettings(inShapeCastSettings),

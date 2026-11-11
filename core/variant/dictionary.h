@@ -43,7 +43,15 @@ struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 
-class Dictionary {
+/**
+ * Key-value Variant container (aka hash table or dictionary) using robin-hood hashing.
+ *
+ * Uses `HashMap` internally, thus remembers insertion order and is pointer-stable.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
+class _WARN_UNUSED_ Dictionary {
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;
@@ -86,10 +94,10 @@ public:
 
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
-	bool recursive_equal(const Dictionary &p_dictionary, int recursion_count) const;
+	bool recursive_equal(const Dictionary &p_dictionary, int p_recursion_count) const;
 
 	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 	void operator=(const Dictionary &p_dictionary);
 
 	void assign(const Dictionary &p_dictionary);
@@ -100,7 +108,7 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
-	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
+	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
@@ -113,8 +121,8 @@ public:
 	bool is_same_typed_key(const Dictionary &p_other) const;
 	bool is_same_typed_value(const Dictionary &p_other) const;
 
-	ContainerType get_key_type() const;
-	ContainerType get_value_type() const;
+	const ContainerType &get_key_type() const _LIFETIME_BOUND_;
+	const ContainerType &get_value_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_key_builtin() const;
 	uint32_t get_typed_value_builtin() const;
 	StringName get_typed_key_class_name() const;
@@ -129,6 +137,7 @@ public:
 
 	const void *id() const;
 
+	Dictionary(const Dictionary &p_base, const ContainerType &p_key_type, const ContainerType &p_value_type);
 	Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
 	Dictionary(const Dictionary &p_from);
 	Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init);

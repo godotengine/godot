@@ -33,188 +33,200 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
-#include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/md5.h>
-#include <mbedtls/sha1.h>
-#include <mbedtls/sha256.h>
-#if MBEDTLS_VERSION_MAJOR >= 3
-#include <mbedtls/compat-2.x.h>
-#endif
-
-// RandomGenerator
-CryptoCore::RandomGenerator::RandomGenerator() {
-	entropy = memalloc(sizeof(mbedtls_entropy_context));
-	mbedtls_entropy_init((mbedtls_entropy_context *)entropy);
-	mbedtls_entropy_add_source((mbedtls_entropy_context *)entropy, &CryptoCore::RandomGenerator::_entropy_poll, nullptr, 256, MBEDTLS_ENTROPY_SOURCE_STRONG);
-	ctx = memalloc(sizeof(mbedtls_ctr_drbg_context));
-	mbedtls_ctr_drbg_init((mbedtls_ctr_drbg_context *)ctx);
-}
-
-CryptoCore::RandomGenerator::~RandomGenerator() {
-	mbedtls_ctr_drbg_free((mbedtls_ctr_drbg_context *)ctx);
-	memfree(ctx);
-	mbedtls_entropy_free((mbedtls_entropy_context *)entropy);
-	memfree(entropy);
-}
-
-int CryptoCore::RandomGenerator::_entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len) {
-	*r_len = 0;
-	Error err = OS::get_singleton()->get_entropy(r_buffer, p_len);
-	ERR_FAIL_COND_V(err, MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
-	*r_len = p_len;
-	return 0;
-}
-
-Error CryptoCore::RandomGenerator::init() {
-	int ret = mbedtls_ctr_drbg_seed((mbedtls_ctr_drbg_context *)ctx, mbedtls_entropy_func, (mbedtls_entropy_context *)entropy, nullptr, 0);
-	if (ret) {
-		ERR_FAIL_COND_V_MSG(ret, FAILED, vformat(" failed\n  ! mbedtls_ctr_drbg_seed returned an error %d.", ret));
-	}
-	return OK;
-}
-
-Error CryptoCore::RandomGenerator::get_random_bytes(uint8_t *r_buffer, size_t p_bytes) {
-	ERR_FAIL_NULL_V(ctx, ERR_UNCONFIGURED);
-	int ret = mbedtls_ctr_drbg_random((mbedtls_ctr_drbg_context *)ctx, r_buffer, p_bytes);
-	ERR_FAIL_COND_V_MSG(ret, FAILED, vformat(" failed\n  ! mbedtls_ctr_drbg_seed returned an error %d.", ret));
-	return OK;
-}
+#include <psa/crypto.h>
 
 // MD5
 CryptoCore::MD5Context::MD5Context() {
-	ctx = memalloc(sizeof(mbedtls_md5_context));
-	mbedtls_md5_init((mbedtls_md5_context *)ctx);
+	ctx = memalloc_zeroed(sizeof(psa_hash_operation_t));
 }
 
 CryptoCore::MD5Context::~MD5Context() {
-	mbedtls_md5_free((mbedtls_md5_context *)ctx);
-	memfree((mbedtls_md5_context *)ctx);
+	psa_hash_abort((psa_hash_operation_t *)ctx);
+	memfree((psa_hash_operation_t *)ctx);
 }
 
 Error CryptoCore::MD5Context::start() {
-	int ret = mbedtls_md5_starts_ret((mbedtls_md5_context *)ctx);
+	int ret = psa_hash_setup((psa_hash_operation_t *)ctx, PSA_ALG_MD5);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::MD5Context::update(const uint8_t *p_src, size_t p_len) {
-	int ret = mbedtls_md5_update_ret((mbedtls_md5_context *)ctx, p_src, p_len);
+	int ret = psa_hash_update((psa_hash_operation_t *)ctx, p_src, p_len);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::MD5Context::finish(unsigned char r_hash[16]) {
-	int ret = mbedtls_md5_finish_ret((mbedtls_md5_context *)ctx, r_hash);
-	return ret ? FAILED : OK;
+	size_t size = 0;
+	int ret = psa_hash_finish((psa_hash_operation_t *)ctx, r_hash, 16, &size);
+	if (ret) {
+		psa_hash_abort((psa_hash_operation_t *)ctx);
+		return FAILED;
+	}
+	ERR_FAIL_COND_V(size != 16, ERR_BUG);
+	return OK;
 }
 
 // SHA1
 CryptoCore::SHA1Context::SHA1Context() {
-	ctx = memalloc(sizeof(mbedtls_sha1_context));
-	mbedtls_sha1_init((mbedtls_sha1_context *)ctx);
+	ctx = memalloc_zeroed(sizeof(psa_hash_operation_t));
 }
 
 CryptoCore::SHA1Context::~SHA1Context() {
-	mbedtls_sha1_free((mbedtls_sha1_context *)ctx);
-	memfree((mbedtls_sha1_context *)ctx);
+	psa_hash_abort((psa_hash_operation_t *)ctx);
+	memfree((psa_hash_operation_t *)ctx);
 }
 
 Error CryptoCore::SHA1Context::start() {
-	int ret = mbedtls_sha1_starts_ret((mbedtls_sha1_context *)ctx);
+	int ret = psa_hash_setup((psa_hash_operation_t *)ctx, PSA_ALG_SHA_1);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::SHA1Context::update(const uint8_t *p_src, size_t p_len) {
-	int ret = mbedtls_sha1_update_ret((mbedtls_sha1_context *)ctx, p_src, p_len);
+	int ret = psa_hash_update((psa_hash_operation_t *)ctx, p_src, p_len);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::SHA1Context::finish(unsigned char r_hash[20]) {
-	int ret = mbedtls_sha1_finish_ret((mbedtls_sha1_context *)ctx, r_hash);
-	return ret ? FAILED : OK;
+	size_t size = 0;
+	int ret = psa_hash_finish((psa_hash_operation_t *)ctx, r_hash, 20, &size);
+	if (ret) {
+		psa_hash_abort((psa_hash_operation_t *)ctx);
+		return FAILED;
+	}
+	ERR_FAIL_COND_V(size != 20, ERR_BUG);
+	return OK;
 }
 
 // SHA256
 CryptoCore::SHA256Context::SHA256Context() {
-	ctx = memalloc(sizeof(mbedtls_sha256_context));
-	mbedtls_sha256_init((mbedtls_sha256_context *)ctx);
+	ctx = memalloc_zeroed(sizeof(psa_hash_operation_t));
 }
 
 CryptoCore::SHA256Context::~SHA256Context() {
-	mbedtls_sha256_free((mbedtls_sha256_context *)ctx);
-	memfree((mbedtls_sha256_context *)ctx);
+	psa_hash_abort((psa_hash_operation_t *)ctx);
+	memfree((psa_hash_operation_t *)ctx);
 }
 
 Error CryptoCore::SHA256Context::start() {
-	int ret = mbedtls_sha256_starts_ret((mbedtls_sha256_context *)ctx, 0);
+	int ret = psa_hash_setup((psa_hash_operation_t *)ctx, PSA_ALG_SHA_256);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::SHA256Context::update(const uint8_t *p_src, size_t p_len) {
-	int ret = mbedtls_sha256_update_ret((mbedtls_sha256_context *)ctx, p_src, p_len);
+	int ret = psa_hash_update((psa_hash_operation_t *)ctx, p_src, p_len);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::SHA256Context::finish(unsigned char r_hash[32]) {
-	int ret = mbedtls_sha256_finish_ret((mbedtls_sha256_context *)ctx, r_hash);
-	return ret ? FAILED : OK;
+	size_t size = 0;
+	int ret = psa_hash_finish((psa_hash_operation_t *)ctx, r_hash, 32, &size);
+	if (ret) {
+		psa_hash_abort((psa_hash_operation_t *)ctx);
+		return FAILED;
+	}
+	ERR_FAIL_COND_V(size != 32, ERR_BUG);
+	return OK;
 }
 
 // AES256
 CryptoCore::AESContext::AESContext() {
-	ctx = memalloc(sizeof(mbedtls_aes_context));
-	mbedtls_aes_init((mbedtls_aes_context *)ctx);
+	ctx = memalloc_zeroed(sizeof(psa_cipher_operation_t));
 }
 
 CryptoCore::AESContext::~AESContext() {
-	mbedtls_aes_free((mbedtls_aes_context *)ctx);
-	memfree((mbedtls_aes_context *)ctx);
+	psa_cipher_abort((psa_cipher_operation_t *)ctx);
+	psa_destroy_key(key_id);
+	memfree((psa_cipher_operation_t *)ctx);
 }
 
-Error CryptoCore::AESContext::set_encode_key(const uint8_t *p_key, size_t p_bits) {
-	int ret = mbedtls_aes_setkey_enc((mbedtls_aes_context *)ctx, p_key, p_bits);
-	return ret ? FAILED : OK;
+void CryptoCore::AESContext::reset() {
+	psa_cipher_abort((psa_cipher_operation_t *)ctx);
+	psa_destroy_key(key_id);
+	key_id = PSA_KEY_ID_NULL;
+	alg = PSA_ALG_NONE;
 }
 
-Error CryptoCore::AESContext::set_decode_key(const uint8_t *p_key, size_t p_bits) {
-	int ret = mbedtls_aes_setkey_dec((mbedtls_aes_context *)ctx, p_key, p_bits);
-	return ret ? FAILED : OK;
+Error CryptoCore::AESContext::setup(Mode p_mode, Cipher p_cipher, const uint8_t *p_key, size_t p_key_length, const uint8_t *p_iv, size_t p_iv_size) {
+	reset();
+	psa_key_attributes_t attr = PSA_KEY_ATTRIBUTES_INIT;
+	switch (p_mode) {
+		case Mode::NONE:
+			return OK;
+		case Mode::ENCRYPT:
+		case Mode::DECRYPT:
+			break;
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
+	switch (p_cipher) {
+		case Cipher::CBC:
+			alg = PSA_ALG_CBC_NO_PADDING;
+			break;
+		case Cipher::ECB:
+			alg = PSA_ALG_ECB_NO_PADDING;
+			break;
+		case Cipher::CFB:
+			alg = PSA_ALG_CFB;
+			break;
+		default:
+			return ERR_INVALID_PARAMETER;
+	}
+	psa_set_key_usage_flags(&attr, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+	psa_set_key_algorithm(&attr, alg);
+	psa_set_key_type(&attr, PSA_KEY_TYPE_AES);
+	psa_set_key_bits(&attr, p_key_length << 3);
+	int ret = psa_import_key(&attr, p_key, p_key_length, &key_id);
+	if (ret) {
+		return FAILED;
+	}
+	if (p_mode == Mode::ENCRYPT) {
+		ret = psa_cipher_encrypt_setup((psa_cipher_operation_t *)ctx, key_id, alg);
+	} else {
+		ret = psa_cipher_decrypt_setup((psa_cipher_operation_t *)ctx, key_id, alg);
+	}
+	if (ret == PSA_SUCCESS && p_iv_size) {
+		ret = psa_cipher_set_iv((psa_cipher_operation_t *)ctx, p_iv, p_iv_size);
+	}
+	if (ret) {
+		reset();
+		return FAILED;
+	}
+	return OK;
 }
 
-Error CryptoCore::AESContext::encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]) {
-	int ret = mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_src, r_dst);
-	return ret ? FAILED : OK;
+Error CryptoCore::AESContext::update(const uint8_t *p_src, size_t p_src_size, uint8_t *r_dst, size_t p_dst_size) {
+	size_t size = 0;
+	int ret = psa_cipher_update((psa_cipher_operation_t *)ctx, p_src, p_src_size, r_dst, p_dst_size, &size);
+	if (ret) {
+		return FAILED;
+	}
+	ERR_FAIL_COND_V(p_dst_size != size, ERR_BUG);
+	return OK;
 }
 
-Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
-	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
-	return ret ? FAILED : OK;
-}
-
-Error CryptoCore::AESContext::encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
-	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
-	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
-	return ret ? FAILED : OK;
-}
-
-Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]) {
-	int ret = mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_src, r_dst);
-	return ret ? FAILED : OK;
-}
-
-Error CryptoCore::AESContext::decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
-	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, r_iv, p_src, r_dst);
-	return ret ? FAILED : OK;
-}
-
-Error CryptoCore::AESContext::decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
-	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
-	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
-	return ret ? FAILED : OK;
+Error CryptoCore::AESContext::finish(uint8_t *r_dst, size_t p_dst_size) {
+	size_t size = 0;
+	int ret = psa_cipher_finish((psa_cipher_operation_t *)ctx, r_dst, p_dst_size, &size);
+	reset();
+	if (ret) {
+		return FAILED;
+	}
+	ERR_FAIL_COND_V(p_dst_size != size, ERR_BUG);
+	return OK;
 }
 
 // CryptoCore
+Error CryptoCore::generate_random(uint8_t *r_buffer, size_t p_buffer_len) {
+	if (unlikely(!initialized)) {
+		// Fall back to raw get_entropy (might affect performance).
+		return OS::get_singleton()->get_entropy(r_buffer, p_buffer_len);
+	}
+	int ret = psa_generate_random(r_buffer, p_buffer_len);
+	ERR_FAIL_COND_V(ret, FAILED);
+	return OK;
+}
+
 String CryptoCore::b64_encode_str(const uint8_t *p_src, size_t p_src_len) {
 	size_t b64len = p_src_len / 3 * 4 + 4 + 1;
 	Vector<uint8_t> b64buff;
@@ -237,16 +249,66 @@ Error CryptoCore::b64_decode(uint8_t *r_dst, size_t p_dst_len, size_t *r_len, co
 }
 
 Error CryptoCore::md5(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[16]) {
-	int ret = mbedtls_md5_ret(p_src, p_src_len, r_hash);
+	ERR_FAIL_COND_V(PSA_HASH_LENGTH(PSA_ALG_MD5) != 16, ERR_BUG);
+	size_t size = 0;
+	int ret = psa_hash_compute(PSA_ALG_MD5, p_src, p_src_len, r_hash, 16, &size);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::sha1(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[20]) {
-	int ret = mbedtls_sha1_ret(p_src, p_src_len, r_hash);
+	ERR_FAIL_COND_V(PSA_HASH_LENGTH(PSA_ALG_SHA_1) != 20, ERR_BUG);
+	size_t size = 0;
+	int ret = psa_hash_compute(PSA_ALG_SHA_1, p_src, p_src_len, r_hash, 20, &size);
 	return ret ? FAILED : OK;
 }
 
 Error CryptoCore::sha256(const uint8_t *p_src, size_t p_src_len, unsigned char r_hash[32]) {
-	int ret = mbedtls_sha256_ret(p_src, p_src_len, r_hash, 0);
+	ERR_FAIL_COND_V(PSA_HASH_LENGTH(PSA_ALG_SHA_256) != 32, ERR_BUG);
+	size_t size = 0;
+	int ret = psa_hash_compute(PSA_ALG_SHA_256, p_src, p_src_len, r_hash, 32, &size);
 	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::encrypt_cfb(const uint8_t *p_src, uint8_t *r_dst, size_t p_length, const uint8_t *p_key, size_t p_key_length, const uint8_t p_iv[16]) {
+	AESContext ctx;
+	Error err = ctx.setup(AESContext::Mode::ENCRYPT, AESContext::Cipher::CFB, p_key, p_key_length, p_iv, 16);
+	ERR_FAIL_COND_V(err, err);
+	err = ctx.update(p_src, p_length, r_dst, p_length);
+	ERR_FAIL_COND_V(err, err);
+	err = ctx.finish(nullptr, 0);
+	ERR_FAIL_COND_V(err, err);
+	return OK;
+}
+
+Error CryptoCore::decrypt_cfb(const uint8_t *p_src, uint8_t *r_dst, size_t p_length, const uint8_t *p_key, size_t p_key_length, const uint8_t p_iv[16]) {
+	AESContext ctx;
+	Error err = ctx.setup(AESContext::Mode::DECRYPT, AESContext::Cipher::CFB, p_key, p_key_length, p_iv, 16);
+	ERR_FAIL_COND_V(err, err);
+	err = ctx.update(p_src, p_length, r_dst, p_length);
+	ERR_FAIL_COND_V(err, err);
+	err = ctx.finish(nullptr, 0);
+	ERR_FAIL_COND_V(err, err);
+	return OK;
+}
+
+bool CryptoCore::initialized = false;
+void CryptoCore::initialize() {
+	ERR_FAIL_COND(initialized);
+#ifdef GODOT_MBEDTLS_PLATFORM
+	godot_mbedtls_platform_init();
+#endif
+
+	int status = psa_crypto_init();
+	ERR_FAIL_COND_MSG(status != PSA_SUCCESS, "Failed to initialize psa crypto. Cryptographic functions will not work.");
+	initialized = true;
+}
+void CryptoCore::finalize() {
+	if (!initialized) {
+		return;
+	}
+	initialized = false;
+	mbedtls_psa_crypto_free(); // Not part of PSA for reasons.
+#ifdef GODOT_MBEDTLS_PLATFORM
+	godot_mbedtls_platform_free();
+#endif
 }

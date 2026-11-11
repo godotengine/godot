@@ -35,6 +35,9 @@
 /* buffer var allocations */
 #define arabic_shaping_action() ot_shaper_var_u8_auxiliary() /* arabic shaping action */
 
+/* buffer **position** var allocations, used after GPOS */
+#define stch_advance() var.i32 /* advance used for stretching */
+
 #define HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH HB_BUFFER_SCRATCH_FLAG_SHAPER0
 
 /* See:
@@ -492,6 +495,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
    * First pass calculates the exact number of extra glyphs we need,
    * We then enlarge buffer to have that much room,
    * Second pass applies the stretch, copying things to the end of buffer.
+   *
+   * Cache glyph advances in the position scratch field during the first pass,
+   * for re-use these during the second pass.
    */
 
   int sign = font->x_scale < 0 ? -1 : +1;
@@ -531,15 +537,17 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	     hb_in_range<uint8_t> (info[i - 1].arabic_shaping_action(), STCH_FIXED, STCH_REPEATING))
       {
 	i--;
-	hb_position_t width = font->get_glyph_h_advance (info[i].codepoint);
+        if (step == MEASURE)
+          pos[i].stch_advance() = font->get_glyph_h_advance (info[i].codepoint);
+        hb_position_t width = pos[i].stch_advance();
 	if (info[i].arabic_shaping_action() == STCH_FIXED)
 	{
-	  w_fixed += width;
+	  w_fixed = hb_saturate_add (w_fixed, width);
 	  n_fixed++;
 	}
 	else
 	{
-	  w_repeating += width;
+	  w_repeating = hb_saturate_add (w_repeating, width);
 	  n_repeating++;
 	}
       }
@@ -551,7 +559,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	      HB_ARABIC_GENERAL_CATEGORY_IS_WORD (_hb_glyph_info_get_general_category (&info[context - 1]))))
       {
 	context--;
-	w_total += pos[context].x_advance;
+	w_total = hb_saturate_add (w_total, pos[context].x_advance);
       }
       i++; // Don't touch i again.
 
@@ -573,7 +581,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	w_remaining_signed = -w_remaining_signed;
 	w_repeating_signed = -w_repeating_signed;
       }
-      hb_position_t w_remaining = (hb_position_t) (w_total - w_fixed);
+      hb_position_t w_remaining = hb_saturate_sub (w_total, w_fixed);
       if (w_remaining_signed > w_repeating_signed && w_repeating_signed > 0)
 	n_copies = w_remaining_signed / w_repeating_signed - 1;
 
@@ -586,7 +594,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	int64_t excess = (n_copies + 1) * w_repeating_signed - w_remaining_signed;
 	if (excess > 0)
 	{
-	  extra_repeat_overlap = excess / (n_copies * n_repeating);
+	  extra_repeat_overlap = hb_clamp_to<hb_position_t> (excess / ((int64_t) n_copies * (int64_t) n_repeating));
 	  w_remaining = 0;
 	}
       }
@@ -617,7 +625,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	hb_position_t x_offset = w_remaining / 2;
 	for (unsigned int k = end; k > start; k--)
 	{
-	  hb_position_t width = font->get_glyph_h_advance (info[k - 1].codepoint);
+          hb_position_t width = pos[k - 1].stch_advance();
 
 	  unsigned int repeat = 1;
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)
@@ -630,9 +638,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  {
 	    if (rtl)
 	    {
-	      x_offset -= width;
+	      x_offset = hb_saturate_sub (x_offset, width);
 	      if (n > 0)
-		x_offset += extra_repeat_overlap;
+		x_offset = hb_saturate_add (x_offset, extra_repeat_overlap);
 	    }
 	    pos[k - 1].x_offset = x_offset;
 	    /* Append copy. */
@@ -642,9 +650,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
 	    if (!rtl)
 	    {
-	      x_offset += width;
+	      x_offset = hb_saturate_add (x_offset, width);
 	      if (n > 0)
-		x_offset -= extra_repeat_overlap;
+		x_offset = hb_saturate_sub (x_offset, extra_repeat_overlap);
 	    }
 	  }
 	}

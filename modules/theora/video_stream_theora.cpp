@@ -421,7 +421,16 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			ogg_stream_clear(&to);
 		}
 		file.unref();
-		return;
+
+		vorbis_comment_clear(&vc);
+		vorbis_info_clear(&vi);
+		if (!ogg_stream_check(&vo)) {
+			ogg_stream_clear(&vo);
+		}
+
+		has_video = false;
+		has_audio = false;
+		ERR_FAIL_MSG("File '" + p_file + "' has no video stream.");
 	}
 
 	/* And now we have it all. Initialize decoders. */

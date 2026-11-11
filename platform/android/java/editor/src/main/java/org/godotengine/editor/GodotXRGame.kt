@@ -30,8 +30,11 @@
 
 package org.godotengine.editor
 
+import androidx.annotation.CallSuper
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.xr.XRMode
+import org.godotengine.openxr.vendors.utils.HYBRID_APP_SPATIAL_FEATURE
+import org.godotengine.openxr.vendors.utils.isHybridAppEnabled
 
 /**
  * Provide support for running XR apps / games from the editor window.
@@ -74,5 +77,15 @@ open class GodotXRGame: BaseGodotGame() {
 		}
 
 		return permissionsToEnable
+	}
+
+	@CallSuper
+	override fun supportsFeature(featureTag: String): Boolean {
+		if (HYBRID_APP_SPATIAL_FEATURE == featureTag) {
+			// Check if hybrid is enabled
+			return isHybridAppEnabled()
+		}
+
+		return super.supportsFeature(featureTag)
 	}
 }

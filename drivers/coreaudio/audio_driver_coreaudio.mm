@@ -75,6 +75,30 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 #endif
 #endif
 
+void AudioDriverCoreAudio::_release_output_unit() {
+	if (!audio_unit) {
+		return;
+	}
+
+#ifdef MACOS_ENABLED
+	AudioObjectPropertyAddress prop;
+	prop.mSelector = kAudioHardwarePropertyDefaultOutputDevice;
+	prop.mScope = kAudioObjectPropertyScopeGlobal;
+	prop.mElement = kAudioObjectPropertyElementMain;
+
+	// Ignore the status. The listener is only registered after the instance
+	// exists, so this also covers a failure before it was added.
+	AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
+#endif
+
+	OSStatus result = AudioComponentInstanceDispose(audio_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioComponentInstanceDispose failed");
+	}
+
+	audio_unit = nullptr;
+}
+
 Error AudioDriverCoreAudio::init() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
@@ -89,8 +113,10 @@ Error AudioDriverCoreAudio::init() {
 	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
 	ERR_FAIL_NULL_V(comp, FAILED);
 
-	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
+	AudioComponentInstance unit = nullptr;
+	OSStatus result = AudioComponentInstanceNew(comp, &unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
+	audio_unit = unit;
 
 #ifdef MACOS_ENABLED
 	AudioObjectPropertyAddress prop;
@@ -99,7 +125,10 @@ Error AudioDriverCoreAudio::init() {
 	prop.mElement = kAudioObjectPropertyElementMain;
 
 	result = AudioObjectAddPropertyListener(kAudioObjectSystemObject, &prop, &output_device_address_cb, this);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 #endif
 
 	AudioStreamBasicDescription strdesc;
@@ -107,7 +136,10 @@ Error AudioDriverCoreAudio::init() {
 	memset(&strdesc, 0, sizeof(strdesc));
 	UInt32 size = sizeof(strdesc);
 	result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kOutputBus, &strdesc, &size);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 
 	switch (strdesc.mChannelsPerFrame) {
 		case 2: // Stereo
@@ -127,16 +159,22 @@ Error AudioDriverCoreAudio::init() {
 	AudioDeviceID device_id;
 	UInt32 dev_id_size = sizeof(AudioDeviceID);
 
-	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_dev_id, 0, nullptr, &dev_id_size, &device_id);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 
 	double hw_mix_rate;
 	UInt32 hw_mix_rate_size = sizeof(hw_mix_rate);
 
 	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
 	result = AudioObjectGetPropertyData(device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 #else
 	double hw_mix_rate = [AVAudioSession sharedInstance].sampleRate;
 #endif
@@ -153,7 +191,10 @@ Error AudioDriverCoreAudio::init() {
 	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 
 	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
@@ -161,7 +202,10 @@ Error AudioDriverCoreAudio::init() {
 
 #ifdef MACOS_ENABLED
 	result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global, kOutputBus, &buffer_frames, sizeof(UInt32));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 #endif
 
 	unsigned int buffer_size = buffer_frames * channels;
@@ -176,13 +220,24 @@ Error AudioDriverCoreAudio::init() {
 	callback.inputProc = &AudioDriverCoreAudio::output_callback;
 	callback.inputProcRefCon = this;
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callback, sizeof(callback));
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 
 	result = AudioUnitInitialize(audio_unit);
-	ERR_FAIL_COND_V(result != noErr, FAILED);
+	if (result != noErr) {
+		_release_output_unit();
+		ERR_FAIL_V(FAILED);
+	}
 
 	if (GLOBAL_GET("audio/driver/enable_input")) {
-		return init_input_device();
+		Error input_err = init_input_device();
+		if (input_err != OK) {
+			finish_input_device();
+			_release_output_unit();
+			return input_err;
+		}
 	}
 	return OK;
 }
@@ -289,6 +344,16 @@ void AudioDriverCoreAudio::stop() {
 			active = false;
 		}
 	}
+}
+
+bool AudioDriverCoreAudio::set_output_device_sleep(bool p_enable) {
+	if (p_enable) {
+		stop();
+		return !active;
+	}
+
+	start();
+	return active;
 }
 
 int AudioDriverCoreAudio::get_mix_rate() const {
@@ -701,7 +766,7 @@ String AudioDriverCoreAudio::get_output_device() {
 
 void AudioDriverCoreAudio::set_output_device(const String &p_name) {
 	output_device_name = p_name;
-	if (active) {
+	if (audio_unit) {
 		_set_device(output_device_name);
 	}
 }
@@ -716,7 +781,7 @@ String AudioDriverCoreAudio::get_input_device() {
 
 void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 	input_device_name = p_name;
-	if (active) {
+	if (input_unit) {
 		_set_device(input_device_name, true);
 	}
 }

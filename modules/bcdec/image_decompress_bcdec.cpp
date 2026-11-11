@@ -272,7 +272,7 @@ void image_decompress_bcdec(Image *p_image) {
 			break;
 	}
 
-	int mm_count = p_image->get_mipmap_count();
+	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
 	int64_t target_size = Image::get_image_data_size(width, height, target_format, p_image->has_mipmaps());
 
 	// Decompressed data.

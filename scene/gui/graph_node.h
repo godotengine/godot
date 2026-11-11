@@ -67,6 +67,7 @@ class GraphNode : public GraphElement {
 		int max_size = -1;
 		bool will_stretch = false;
 		int final_size = 0;
+		float stretch_ratio = 0.0;
 	};
 
 	enum CustomAccessibilityAction {
@@ -114,6 +115,8 @@ class GraphNode : public GraphElement {
 	bool ignore_invalid_connection_type = false;
 
 	void _port_pos_update();
+
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
 protected:
 	void _notification(int p_what);
@@ -195,6 +198,7 @@ public:
 	Control::FocusMode get_slots_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 

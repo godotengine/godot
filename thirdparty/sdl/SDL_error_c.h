@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,11 +34,17 @@ typedef enum
     SDL_ErrorCodeOutOfMemory,
 } SDL_ErrorCode;
 
-typedef struct SDL_error
+typedef struct SDL_ErrorInfo
 {
     SDL_ErrorCode error;
     char *str;
     size_t len;
+} SDL_ErrorInfo;
+
+typedef struct SDL_error
+{
+    SDL_ErrorInfo info[2];  // there are two, so you can do SDL_SetError("%s", SDL_GetError()) without stomping the buffer.
+    int current;
     SDL_realloc_func realloc_func;
     SDL_free_func free_func;
 } SDL_error;

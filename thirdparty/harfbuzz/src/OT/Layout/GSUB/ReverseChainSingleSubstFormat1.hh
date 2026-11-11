@@ -7,26 +7,29 @@ namespace OT {
 namespace Layout {
 namespace GSUB_impl {
 
-struct ReverseChainSingleSubstFormat1
+template <typename Types>
+struct ReverseChainSingleSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of table */
-  Array16OfOffset16To<Coverage>
+  Array16Of<typename Types::template OffsetTo<Coverage>>
                 backtrack;              /* Array of coverage tables
                                          * in backtracking sequence, in glyph
                                          * sequence order */
-  Array16OfOffset16To<Coverage>
+  /* Format 2 widens the backtrack and lookahead coverage offsets but
+   * keeps their counts 16-bit. */
+  Array16Of<typename Types::template OffsetTo<Coverage>>
                 lookaheadX;             /* Array of coverage tables
                                          * in lookahead sequence, in glyph
                                          * sequence order */
-  Array16Of<HBGlyphID16>
+  typename Types::template ArrayOf<typename Types::HBGlyphID>
                 substituteX;            /* Array of substitute
                                          * GlyphIDs--ordered by Coverage Index */
   public:
-  DEFINE_SIZE_MIN (10);
+  DEFINE_SIZE_MIN (6 + Types::LOffset::static_size + Types::HBUINT::static_size);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -66,6 +69,76 @@ struct ReverseChainSingleSubstFormat1
 
   bool may_have_non_1to1 () const
   { return false; }
+
+  void depend (hb_depend_context_t *c) const {
+    // Filter by intersects and parent_active_glyphs like closure does
+    if (!intersects (c->glyphs)) return;
+
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
+
+    /* Build context set from backtrack and lookahead coverages.
+     * ReverseChainSingleSubst has contextual requirements - the substitution
+     * only fires when backtrack and lookahead glyphs are present. */
+    hb_set_t context_glyphs;
+
+    /* Add glyphs from backtrack coverages */
+    unsigned int count = backtrack.len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      hb_set_t back_glyphs;
+      (this+backtrack[i]).intersect_set (*c->glyphs, back_glyphs);
+      if (back_glyphs.get_population () == 1)
+        context_glyphs.add (back_glyphs.get_min ());
+      else if (back_glyphs.get_population () > 1)
+      {
+        hb_codepoint_t set_idx = c->depend_data->find_or_create_context_set (back_glyphs);
+        if (unlikely (set_idx == HB_CODEPOINT_INVALID))
+          return;
+        context_glyphs.add (HB_DEPEND_CONTEXT_SET_FLAG | set_idx);
+      }
+    }
+
+    /* Add glyphs from lookahead coverages */
+    count = lookahead.len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      hb_set_t look_glyphs;
+      (this+lookahead[i]).intersect_set (*c->glyphs, look_glyphs);
+      if (look_glyphs.get_population () == 1)
+        context_glyphs.add (look_glyphs.get_min ());
+      else if (look_glyphs.get_population () > 1)
+      {
+        hb_codepoint_t set_idx = c->depend_data->find_or_create_context_set (look_glyphs);
+        if (unlikely (set_idx == HB_CODEPOINT_INVALID))
+          return;
+        context_glyphs.add (HB_DEPEND_CONTEXT_SET_FLAG | set_idx);
+      }
+    }
+
+    /* Allocate context set and save/restore around edge creation */
+    if (unlikely (context_glyphs.in_error ()))
+    {
+      c->depend_data->fail ();
+      return;
+    }
+    hb_codepoint_t context_set_idx = context_glyphs.is_empty ()
+      ? HB_CODEPOINT_INVALID
+      : c->depend_data->find_or_create_context_set (context_glyphs);
+    if (unlikely (!context_glyphs.is_empty () &&
+                  context_set_idx == HB_CODEPOINT_INVALID))
+      return;
+
+    hb_codepoint_t saved_context = c->depend_data->current_context_set_index;
+    c->depend_data->current_context_set_index = context_set_idx;
+
+    + hb_zip (this+coverage, substitute)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_codepoint_pair_t &_) { c->depend_data->add_gsub_lookup (_.first, c->lookup_index, _.second); })
+    ;
+
+    c->depend_data->current_context_set_index = saved_context;
+  }
 
   void closure (hb_closure_context_t *c) const
   {
@@ -124,11 +197,11 @@ struct ReverseChainSingleSubstFormat1
 
     unsigned int start_index = 0, end_index = 0;
     if (match_backtrack (c,
-                         backtrack.len, (HBUINT16 *) backtrack.arrayZ,
+                         backtrack.len, backtrack.arrayZ,
                          match_coverage, this,
                          &start_index) &&
         match_lookahead (c,
-                         lookahead.len, (HBUINT16 *) lookahead.arrayZ,
+                         lookahead.len, lookahead.arrayZ,
                          match_coverage, this,
                          c->buffer->idx + 1, &end_index))
     {
@@ -167,10 +240,8 @@ struct ReverseChainSingleSubstFormat1
   bool serialize_coverage_offset_array (hb_subset_context_t *c, Iterator it) const
   {
     TRACE_SERIALIZE (this);
-    auto *out = c->serializer->start_embed<Array16OfOffset16To<Coverage>> ();
-
-    if (unlikely (!c->serializer->allocate_size<HBUINT16> (HBUINT16::static_size)))
-      return_trace (false);
+    auto *out = c->serializer->start_embed<Array16Of<typename Types::template OffsetTo<Coverage>>> ();
+    if (unlikely (!out->serialize (c->serializer, 0u))) return_trace (false);
 
     for (auto& offset : it) {
       auto *o = out->serialize_append (c->serializer);
@@ -197,9 +268,9 @@ struct ReverseChainSingleSubstFormat1
     if (unlikely (!c->serializer->embed (this->coverage))) return_trace (false);
 
     if (!serialize_coverage_offset_array (c, backtrack_iter)) return_trace (false);
-    if (!serialize_coverage_offset_array (c, lookahead_iter)) return_trace (false);
+    if (!serialize_lookahead_coverage_offset_array (c, lookahead_iter)) return_trace (false);
 
-    auto *substitute_out = c->serializer->start_embed<Array16Of<HBGlyphID16>> ();
+    auto *substitute_out = c->serializer->start_embed<typename Types::template ArrayOf<typename Types::HBGlyphID>> ();
     auto substitutes =
     + coverage_subst_iter
     | hb_map (hb_second)
@@ -230,11 +301,28 @@ struct ReverseChainSingleSubstFormat1
     + hb_zip (this+coverage, substitute)
     | hb_filter (glyphset, hb_first)
     | hb_filter (glyphset, hb_second)
-    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const HBGlyphID16 &> p) -> hb_codepoint_pair_t
+    | hb_map_retains_sorting ([&] (hb_pair_t<hb_codepoint_t, const typename Types::HBGlyphID &> p) -> hb_codepoint_pair_t
                               { return hb_pair (glyph_map[p.first], glyph_map[p.second]); })
     ;
 
     return_trace (bool (it) && serialize (c, it, backtrack.iter (), lookahead.iter ()));
+  }
+
+  template<typename Iterator,
+           hb_requires (hb_is_iterator (Iterator))>
+  bool serialize_lookahead_coverage_offset_array (hb_subset_context_t *c, Iterator it) const
+  {
+    TRACE_SERIALIZE (this);
+    auto *out = c->serializer->start_embed<Array16Of<typename Types::template OffsetTo<Coverage>>> ();
+    if (unlikely (!out->serialize (c->serializer, 0u))) return_trace (false);
+
+    for (auto& offset : it) {
+      auto *o = out->serialize_append (c->serializer);
+      if (unlikely (!o) || !o->serialize_subset (c, offset, this))
+        return_trace (false);
+    }
+
+    return_trace (true);
   }
 };
 

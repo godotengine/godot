@@ -14,8 +14,7 @@
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/CollisionDispatch.h>
 #include <Jolt/ObjectStream/TypeDeclarations.h>
-#include <Jolt/Core/StreamIn.h>
-#include <Jolt/Core/StreamOut.h>
+#include <Jolt/Core/StreamUtils.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -672,6 +671,50 @@ void Ragdoll::DriveToPoseUsingMotors(const SkeletonPose &inPose)
 			{
 				HingeConstraint *h_constraint = static_cast<HingeConstraint *>(constraint);
 				h_constraint->SetMotorState(EMotorState::Position);
+				h_constraint->SetTargetOrientationBS(joint_state.mRotation);
+			}
+			else
+				JPH_ASSERT(false, "Constraint type not implemented!");
+		}
+	}
+}
+
+void Ragdoll::DriveToPoseUsingMotors(const SkeletonPose &inPrevPose, const SkeletonPose &inPose, float inDeltaTime)
+{
+	JPH_ASSERT(inPrevPose.GetSkeleton() == mRagdollSettings->mSkeleton);
+	JPH_ASSERT(inPose.GetSkeleton() == mRagdollSettings->mSkeleton);
+	JPH_ASSERT(inDeltaTime > 0.0f);
+
+	// Move bodies into the correct position using constraints
+	for (int i = 0; i < (int)inPose.GetJointMatrices().size(); ++i)
+	{
+		int constraint_idx = mRagdollSettings->GetConstraintIndexForBodyIndex(i);
+		if (constraint_idx >= 0)
+		{
+			// Get desired rotation of this body relative to its parent
+			const SkeletalAnimation::JointState &prev_joint_state = inPrevPose.GetJoint(i);
+			const SkeletalAnimation::JointState &joint_state = inPose.GetJoint(i);
+
+			// Calculate the angular velocity needed to get from the previous pose to the current pose in the given delta time in body 1 space
+			Vec3 angular_velocity = (joint_state.mRotation * prev_joint_state.mRotation.Conjugated()).GetAngularVelocity(inDeltaTime);
+
+			// Drive constraint to target
+			TwoBodyConstraint *constraint = mConstraints[constraint_idx];
+			EConstraintSubType sub_type = constraint->GetSubType();
+			if (sub_type == EConstraintSubType::SwingTwist)
+			{
+				SwingTwistConstraint *st_constraint = static_cast<SwingTwistConstraint *>(constraint);
+				st_constraint->SetSwingMotorState(EMotorState::PositionAndVelocity);
+				st_constraint->SetTwistMotorState(EMotorState::PositionAndVelocity);
+				Quat body1_to_body2 = constraint->GetBody2()->GetRotation().Conjugated() * constraint->GetBody1()->GetRotation();
+				st_constraint->SetTargetAngularVelocityBS(body1_to_body2 * angular_velocity);
+				st_constraint->SetTargetOrientationBS(joint_state.mRotation);
+			}
+			else if (sub_type == EConstraintSubType::Hinge)
+			{
+				HingeConstraint *h_constraint = static_cast<HingeConstraint *>(constraint);
+				h_constraint->SetMotorState(EMotorState::PositionAndVelocity);
+				h_constraint->SetTargetAngularVelocity(h_constraint->GetLocalSpaceHingeAxis1().Dot(angular_velocity));
 				h_constraint->SetTargetOrientationBS(joint_state.mRotation);
 			}
 			else

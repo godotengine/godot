@@ -61,6 +61,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::Win
 		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
 
+		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
+
 		HashMap<RID, RID>::Iterator it = render_target_descriptors.find(rd_texture);
 		if (it == render_target_descriptors.end() || !RD::get_singleton()->uniform_set_is_valid(it->value)) {
 			Vector<RD::Uniform> uniforms;
@@ -70,13 +72,12 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::Win
 			u.append_id(blit.sampler);
 			u.append_id(rd_texture);
 			uniforms.push_back(u);
-			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
+			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, mode), 0);
 
 			it = render_target_descriptors.insert(rd_texture, uniform_set);
 		}
 
 		Size2 screen_size(RD::get_singleton()->screen_get_width(p_screen), RD::get_singleton()->screen_get_height(p_screen));
-		BlitMode mode = p_render_targets[i].lens_distortion.apply ? BLIT_MODE_LENS : (p_render_targets[i].multi_view.use_layer ? BLIT_MODE_USE_LAYER : BLIT_MODE_NORMAL);
 
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blit_pipelines.pipelines[mode]);
 		RD::get_singleton()->draw_list_bind_index_array(draw_list, blit.array);
@@ -375,17 +376,22 @@ RendererCompositorRD::RendererCompositorRD() {
 
 	if (rendering_method == "mobile" || textures_per_stage < 48) {
 		if (rendering_method == "forward_plus") {
-			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Defaulting to Mobile renderer.");
+			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Attempting to fallback to the Mobile renderer.");
 		}
+#ifdef MOBILE_RD_ENABLED
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
-	} else if (rendering_method == "forward_plus") {
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
+#endif // MOBILE_RD_ENABLED
 	} else {
-		// Fall back to our high end renderer.
-		ERR_PRINT(vformat("Cannot instantiate RenderingDevice-based renderer with renderer type '%s'. Defaulting to Forward+ renderer.", rendering_method));
+		if (rendering_method != "forward_plus") {
+			// Fall back to our high end renderer.
+			ERR_PRINT(vformat("Cannot instantiate RenderingDevice-based renderer with renderer type '%s'. Attempting to fallback to the to Forward+ renderer.", rendering_method));
+		}
+#ifdef FORWARD_RD_ENABLED
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
+#endif // FORWARD_RD_ENABLED
 	}
 
+	ERR_FAIL_NULL_MSG(scene, "No RendererSceneRenderRDs available.");
 	scene->init();
 }
 

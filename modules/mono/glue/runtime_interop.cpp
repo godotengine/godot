@@ -38,6 +38,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/compression.h"
@@ -66,11 +67,11 @@ bool godotsharp_dotnet_module_is_initialized() {
 	return GDMono::get_singleton()->is_initialized();
 }
 
-MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
+const MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
 	return ClassDB::get_method(*p_classname, *p_methodname);
 }
 
-MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
+const MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
 	return ClassDB::get_method_with_compatibility(*p_classname, *p_methodname, p_hash);
 }
 
@@ -86,9 +87,9 @@ Object *godotsharp_engine_get_singleton(const String *p_name) {
 	return Engine::get_singleton()->get_singleton_object(*p_name);
 }
 
-int32_t godotsharp_stack_info_vector_resize(
+int64_t godotsharp_stack_info_vector_resize(
 		Vector<ScriptLanguage::StackInfo> *p_stack_info_vector, int p_size) {
-	return (int32_t)p_stack_info_vector->resize(p_size);
+	return (int64_t)p_stack_info_vector->resize(p_size);
 }
 
 void godotsharp_stack_info_vector_destroy(
@@ -217,9 +218,9 @@ void godotsharp_internal_refcounted_disposed(Object *p_ptr, GCHandleIntPtr p_gch
 	}
 }
 
-int32_t godotsharp_internal_signal_awaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
+int64_t godotsharp_internal_signal_awaiter_connect(Object *p_source, StringName *p_signal, Object *p_target, GCHandleIntPtr p_awaiter_handle_ptr) {
 	StringName signal = p_signal ? *p_signal : StringName();
-	return (int32_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
+	return (int64_t)gd_mono_connect_signal_awaiter(p_source, signal, p_target, p_awaiter_handle_ptr);
 }
 
 GCHandleIntPtr godotsharp_internal_unmanaged_get_script_instance_managed(Object *p_unmanaged, bool *r_has_cs_script_instance) {
@@ -278,7 +279,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(script_binding.type_name == StringName());
 #endif
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
+	bool parent_is_object_class = p_unmanaged->is_class(script_binding.type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
 			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
 
@@ -356,7 +357,7 @@ void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, 
 	memnew_placement(r_output, Array);
 
 	for (int i = 0; i < p_input->size(); ++i) {
-		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+		if (((Object *)(*p_input)[i])->is_class(*p_native_name)) {
 			r_output->push_back(p_input[i]);
 		}
 	}
@@ -391,7 +392,7 @@ void godotsharp_node_path_new_from_string(NodePath *r_dest, const String *p_name
 }
 
 void godotsharp_string_name_as_string(String *r_dest, const StringName *p_name) {
-	memnew_placement(r_dest, String(p_name->operator String()));
+	memnew_placement(r_dest, String(p_name->string()));
 }
 
 void godotsharp_node_path_as_string(String *r_dest, const NodePath *p_np) {
@@ -1118,10 +1119,8 @@ void godotsharp_array_make_read_only(Array *p_self) {
 }
 
 void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
-	Variant elem_script_variant;
 	StringName elem_class_name = *p_elem_class_name;
 	if (p_elem_script && p_elem_script->is_valid()) {
-		elem_script_variant = Variant(p_elem_script->ptr());
 		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
 	}
 	p_self->set_typed(p_elem_type, elem_class_name, p_elem_script->ptr());
@@ -1151,8 +1150,8 @@ void godotsharp_array_remove_at(Array *p_self, int32_t p_index) {
 	p_self->remove_at(p_index);
 }
 
-int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
-	return (int32_t)p_self->resize(p_new_size);
+int64_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
+	return (int64_t)p_self->resize(p_new_size);
 }
 
 void godotsharp_array_reverse(Array *p_self) {
@@ -1282,16 +1281,12 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 }
 
 void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Ref<CSharpScript> *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Ref<CSharpScript> *p_value_script) {
-	Variant key_script_variant;
 	StringName key_class_name = *p_key_class_name;
 	if (p_key_script && p_key_script->is_valid()) {
-		key_script_variant = Variant(p_key_script->ptr());
 		key_class_name = p_key_script->ptr()->get_instance_base_type();
 	}
-	Variant value_script_variant;
 	StringName value_class_name = *p_value_class_name;
 	if (p_value_script && p_value_script->is_valid()) {
-		value_script_variant = Variant(p_value_script->ptr());
 		value_class_name = p_value_script->ptr()->get_instance_base_type();
 	}
 	p_self->set_typed(p_key_type, key_class_name, p_key_script->ptr(), p_value_type, value_class_name, p_value_script->ptr());
@@ -1436,7 +1431,7 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 		return;
 	}
 
-	Ref<WeakRef> wref;
+	Ref<CoreBind::WeakRef> wref;
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
 	if (rc) {
@@ -1566,62 +1561,31 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 			String("<" + p_ptr->get_class() + "#" + itos(p_ptr->get_instance_id()) + ">"));
 }
 
+void godotsharp_initialize_marshaling_information(size_t *r_ref_count_offset, size_t *r_capacity_offset, size_t *r_size_offset, size_t *r_data_offset) {
+	// Must be kept in sync with cowdata.h
+	// These are the definitions from cowdata.h that we must send out to managed land so that native interop struct (string/array/etc) alignment
+	// calculations match, since C# isn't aware of native alignments.
+	// For example, some platforms define max_align_t in such a way that alignof(max_align_t) and sizeof(max_align_t) returns 32, not 16.
+	static constexpr size_t ref_count_offset = 0;
+	static constexpr size_t capacity_offset = Memory::get_aligned_address(ref_count_offset + sizeof(SafeNumeric<uint64_t>), alignof(uint64_t));
+	static constexpr size_t size_offset = Memory::get_aligned_address(capacity_offset + sizeof(uint64_t), alignof(uint64_t));
+	static constexpr size_t data_offset = Memory::get_aligned_address(size_offset + sizeof(uint64_t), Memory::MAX_ALIGN);
+
+	*r_ref_count_offset = ref_count_offset;
+	*r_capacity_offset = capacity_offset;
+	*r_size_offset = size_offset;
+	*r_data_offset = data_offset;
+}
+
 #ifdef __cplusplus
 }
 #endif
-
-int64_t godotsharp_string_size(const String *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_byte_array_size(const PackedByteArray *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_int32_array_size(const PackedInt32Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_int64_array_size(const PackedInt64Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_float32_array_size(const PackedFloat32Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_float64_array_size(const PackedFloat64Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_string_array_size(const PackedStringArray *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_vector2_array_size(const PackedVector2Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_vector3_array_size(const PackedVector3Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_vector4_array_size(const PackedVector4Array *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_packed_color_array_size(const PackedColorArray *p_self) {
-	return p_self->size();
-}
-
-int64_t godotsharp_array_size(const Array *p_self) {
-	return p_self->size();
-}
 
 // The order in this array must match the declaration order of
 // the methods in 'GodotSharp/Core/NativeInterop/NativeFuncs.cs'.
 static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dotnet_module_is_initialized,
+	(void *)godotsharp_initialize_marshaling_information,
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_method_bind_get_method_with_compatibility,
 	(void *)godotsharp_get_class_constructor,
@@ -1846,18 +1810,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
-	(void *)godotsharp_string_size,
-	(void *)godotsharp_packed_byte_array_size,
-	(void *)godotsharp_packed_int32_array_size,
-	(void *)godotsharp_packed_int64_array_size,
-	(void *)godotsharp_packed_float32_array_size,
-	(void *)godotsharp_packed_float64_array_size,
-	(void *)godotsharp_packed_string_array_size,
-	(void *)godotsharp_packed_vector2_array_size,
-	(void *)godotsharp_packed_vector3_array_size,
-	(void *)godotsharp_packed_vector4_array_size,
-	(void *)godotsharp_packed_color_array_size,
-	(void *)godotsharp_array_size,
 };
 
 const void **godotsharp::get_runtime_interop_funcs(int32_t &r_size) {

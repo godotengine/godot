@@ -1,0 +1,3 @@
+GDTEST_OK
+~~ WARNING at line 6: (UNTYPED_DECLARATION) Parameter "_arg" has no static type.
+~~ WARNING at line 9: (UNTYPED_DECLARATION) Parameter "_var_args" has no static type.

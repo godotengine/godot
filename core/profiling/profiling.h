@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "profiling.gen.h" // IWYU pragma: keep.
+#include "core/profiling/profiling.gen.h" // IWYU pragma: keep.
 
 // This header provides profiling primitives (implemented as macros) for various backends.
 // See the "No profiling" branch at the bottom for a short description of the functions.
@@ -49,7 +49,9 @@
 
 #define TRACY_ENABLE
 
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4366) // The result of the unary operator may be unaligned.
 #include <tracy/Tracy.hpp>
+GODOT_MSVC_WARNING_POP
 
 // Hijacking the tracy namespace so we can use their macros.
 namespace tracy {
@@ -130,7 +132,7 @@ struct PerfettoGroupedEventEnder {
 	__godot_perfetto_zone_##m_group_name._end_now(); \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
 
-static HashSet<StringName> __tracing_system_call;
+static thread_local HashSet<StringName> __tracing_system_call;
 
 /**
  * Script tracing may cross function boundaries (tracing started in the caller script), so the logic below only triggers
@@ -144,7 +146,7 @@ struct PerfettoScriptTracer {
 
 	PerfettoScriptTracer(const StringName &p_file, const StringName &p_function, const StringName &p_name, int p_line, bool p_system_call) : name(p_name), is_system_call(p_system_call) {
 		if (is_system_call || !__tracing_system_call.erase(name)) {
-			TRACE_EVENT_BEGIN("godot_scripting", perfetto::DynamicString(p_name.operator String().utf8().get_data()), "source file", p_file.operator String().utf8().get_data(), "line number", p_line);
+			TRACE_EVENT_BEGIN("godot_scripting", perfetto::DynamicString(p_name.string().utf8().get_data()), "source file", p_file.string().utf8().get_data(), "line number", p_line);
 			tracing = true;
 		}
 
@@ -186,18 +188,20 @@ namespace apple::instruments {
 extern os_log_t LOG;
 extern os_log_t LOG_TRACING;
 
-typedef void (*DeferFunc)();
-
-class Defer {
+class Zone {
 public:
-	explicit Defer(DeferFunc p_fn) :
-			_fn(p_fn) {}
-	~Defer() {
-		_fn();
+	os_signpost_id_t id;
+	Zone() :
+			id(os_signpost_id_generate(LOG_TRACING)) {}
+	~Zone() {
+		end();
 	}
-
-private:
-	DeferFunc _fn;
+	void end() {
+		if (id != OS_SIGNPOST_ID_NULL) {
+			os_signpost_interval_end(LOG_TRACING, id, "Zone");
+			id = OS_SIGNPOST_ID_NULL;
+		}
+	}
 };
 
 } // namespace apple::instruments
@@ -206,22 +210,16 @@ private:
 	os_signpost_event_emit(apple::instruments::LOG, OS_SIGNPOST_ID_EXCLUSIVE, "Frame");
 
 #define GodotProfileZoneGroupedFirst(m_group_name, m_zone_name) \
-	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	apple::instruments::DeferFunc _GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() { \
-		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	}; \
-	apple::instruments::Defer _GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
+	apple::instruments::Zone _GD_VARNAME_CONCAT_(__instruments_zone__, _, m_group_name); \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, _GD_VARNAME_CONCAT_(__instruments_zone__, _, m_group_name).id, "Zone", "%{public}s", m_zone_name);
 
 #define GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name) \
-	_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name).~Defer();
+	_GD_VARNAME_CONCAT_(__instruments_zone__, _, m_group_name).end();
 
 #define GodotProfileZoneGrouped(m_group_name, m_zone_name) \
 	GodotProfileZoneGroupedEndEarly(m_group_name, m_zone_name); \
-	os_signpost_interval_begin(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name) = []() { \
-		os_signpost_interval_end(apple::instruments::LOG_TRACING, OS_SIGNPOST_ID_EXCLUSIVE, m_zone_name); \
-	}; \
-	new (&_GD_VARNAME_CONCAT_(__instruments_defer_zone_end__, _, m_group_name)) apple::instruments::Defer(_GD_VARNAME_CONCAT_(defer__fn, _, m_group_name));
+	_GD_VARNAME_CONCAT_(__instruments_zone__, _, m_group_name).id = os_signpost_id_generate(apple::instruments::LOG_TRACING); \
+	os_signpost_interval_begin(apple::instruments::LOG_TRACING, _GD_VARNAME_CONCAT_(__instruments_zone__, _, m_group_name).id, "Zone", "%{public}s", m_zone_name);
 
 #define GodotProfileZone(m_zone_name) \
 	GodotProfileZoneGroupedFirst(__COUNTER__, m_zone_name)

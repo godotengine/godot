@@ -113,7 +113,6 @@ private:
 	Error _initialize_instance_extensions();
 	Error _initialize_instance();
 	Error _initialize_devices();
-	void _check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, Device &r_device);
 
 	// Static callbacks.
 	static VKAPI_ATTR VkBool32 VKAPI_CALL _debug_messenger_callback(VkDebugUtilsMessageSeverityFlagBitsEXT p_message_severity, VkDebugUtilsMessageTypeFlagsEXT p_message_type, const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);

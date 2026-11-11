@@ -382,7 +382,6 @@ class TextServerAdvanced : public TextServerExtension {
 #endif
 	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
 	bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
-	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontAdvanced *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
@@ -569,9 +568,7 @@ class TextServerAdvanced : public TextServerExtension {
 					ubidi_close(bidi_iter[i]);
 				}
 			}
-			if (script_iter) {
-				memdelete(script_iter);
-			}
+			memdelete(script_iter);
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
 			}
@@ -761,7 +758,8 @@ class TextServerAdvanced : public TextServerExtension {
 			return RID();
 		}
 	};
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, const String &p_language, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
+	_FORCE_INLINE_ int _find_span(ShapedTextDataAdvanced *p_sd, int64_t p_index, int64_t p_span_start, int64_t p_span_end);
+	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, const String &p_language, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span_start, int64_t p_span_end, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
@@ -819,6 +817,7 @@ protected:
 public:
 	MODBIND1RC(bool, has_feature, Feature);
 	MODBIND0RC(String, get_name);
+	MODBIND0RC(String, get_short_name);
 	MODBIND0RC(int64_t, get_features);
 
 	MODBIND1(free_rid, const RID &);
@@ -843,6 +842,7 @@ public:
 
 	MODBIND2(font_set_data, const RID &, const PackedByteArray &);
 	MODBIND3(font_set_data_ptr, const RID &, const uint8_t *, int64_t);
+	MODBIND1RC(bool, font_validate, const RID &);
 
 	MODBIND2(font_set_face_index, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_face_index, const RID &);

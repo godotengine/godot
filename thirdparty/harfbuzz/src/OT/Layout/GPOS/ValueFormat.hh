@@ -102,15 +102,19 @@ struct ValueFormat : HBUINT16
 #endif
       ;
 
-    if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++, &ret));
-    if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++, &ret));
+    if (format & xPlacement)
+      glyph_pos.x_offset = hb_saturate_add (glyph_pos.x_offset, font->em_scale_x (get_short (values++, &ret)));
+    if (format & yPlacement)
+      glyph_pos.y_offset = hb_saturate_add (glyph_pos.y_offset, font->em_scale_y (get_short (values++, &ret)));
     if (format & xAdvance) {
-      if (likely (horizontal)) glyph_pos.x_advance += font->em_scale_x (get_short (values, &ret));
+      if (likely (horizontal))
+	glyph_pos.x_advance = hb_saturate_add (glyph_pos.x_advance, font->em_scale_x (get_short (values, &ret)));
       values++;
     }
     /* y_advance values grow downward but font-space grows upward, hence negation */
     if (format & yAdvance) {
-      if (unlikely (!horizontal)) glyph_pos.y_advance -= font->em_scale_y (get_short (values, &ret));
+      if (unlikely (!horizontal))
+	glyph_pos.y_advance = hb_saturate_sub (glyph_pos.y_advance, font->em_scale_y (get_short (values, &ret)));
       values++;
     }
 
@@ -127,26 +131,45 @@ struct ValueFormat : HBUINT16
     /* pixel -> fractional pixel */
     if (format & xPlaDevice)
     {
-      if (use_x_device) glyph_pos.x_offset  += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
+      if (use_x_device)
+	glyph_pos.x_offset = hb_saturate_add (glyph_pos.x_offset, get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache));
       values++;
     }
     if (format & yPlaDevice)
     {
-      if (use_y_device) glyph_pos.y_offset  += get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
+      if (use_y_device)
+	glyph_pos.y_offset = hb_saturate_add (glyph_pos.y_offset, get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache));
       values++;
     }
     if (format & xAdvDevice)
     {
-      if (horizontal && use_x_device) glyph_pos.x_advance += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
+      if (horizontal && use_x_device)
+	glyph_pos.x_advance = hb_saturate_add (glyph_pos.x_advance, get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache));
       values++;
     }
     if (format & yAdvDevice)
     {
       /* y_advance values grow downward but font-space grows upward, hence negation */
-      if (!horizontal && use_y_device) glyph_pos.y_advance -= get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
+      if (!horizontal && use_y_device)
+	glyph_pos.y_advance = hb_saturate_sub (glyph_pos.y_advance, get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache));
       values++;
     }
     return ret;
+  }
+
+  void position_single (hb_font_t *font,
+                        hb_blob_t *table_blob,
+                        hb_direction_t direction,
+                        const ValueBase *base,
+                        const Value *values,
+                        hb_glyph_position_t &pos) const
+  {
+    /* This is ugly... */
+    hb_buffer_t buffer {};
+    buffer.props.direction = direction;
+    hb_ot_apply_context_t c (1, font, &buffer, table_blob);
+
+    apply_value (&c, base, values, pos);
   }
 
   unsigned int get_effective_format (const Value *values, bool strip_hints, bool strip_empty, const ValueBase *base,
@@ -199,10 +222,14 @@ struct ValueFormat : HBUINT16
     if (!format) return;
 
     HBINT16 *x_placement = nullptr, *y_placement = nullptr, *x_adv = nullptr, *y_adv = nullptr;
-    if (format & xPlacement) x_placement = copy_value (c, new_format, xPlacement, *values++);
-    if (format & yPlacement) y_placement = copy_value (c, new_format, yPlacement, *values++);
-    if (format & xAdvance)   x_adv = copy_value (c, new_format, xAdvance, *values++);
-    if (format & yAdvance)   y_adv = copy_value (c, new_format, yAdvance, *values++);
+    if ((format | new_format) & xPlacement)
+      x_placement = copy_value (c, new_format, xPlacement, format & xPlacement ? *values++ : Null (Value));
+    if ((format | new_format) & yPlacement)
+      y_placement = copy_value (c, new_format, yPlacement, format & yPlacement ? *values++ : Null (Value));
+    if ((format | new_format) & xAdvance)
+      x_adv = copy_value (c, new_format, xAdvance, format & xAdvance ? *values++ : Null (Value));
+    if ((format | new_format) & yAdvance)
+      y_adv = copy_value (c, new_format, yAdvance, format & yAdvance ? *values++ : Null (Value));
 
     if (!has_device ())
       return;
@@ -431,9 +458,14 @@ struct ValueFormat : HBUINT16
     {
       unsigned varidx = (base + get_device (value)).get_variation_index ();
       hb_pair_t<unsigned, int> *varidx_delta;
-      if (varidx_delta_map->has (varidx, &varidx_delta) &&
-          varidx_delta->first != HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
-        return;
+      if (varidx_delta_map->has (varidx, &varidx_delta))
+      {
+        /* A device-only value needs a base field for its instanced delta. */
+        if (varidx_delta->second)
+          *format |= flag >> 4;
+        if (varidx_delta->first != HB_OT_LAYOUT_NO_VARIATIONS_INDEX)
+          return;
+      }
     }
     *format = *format & ~flag;
   }

@@ -303,21 +303,24 @@ void LightmapperRD::_sort_triangle_clusters(uint32_t p_cluster_size, uint32_t p_
 	}
 }
 
-Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata) {
+Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, int p_device_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	Vector<Size2i> sizes;
+	Size2i largest_mesh_lightmap_size;
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
-		atlas_size = atlas_size.max(s + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
+		largest_mesh_lightmap_size = largest_mesh_lightmap_size.max(s + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
 	}
 
-	int max = Math::nearest_power_of_2_templated(atlas_size.width);
-	max = MAX(max, Math::nearest_power_of_2_templated(atlas_size.height));
+	const int min_atlas_size = MAX(
+			Math::nearest_power_of_2_templated(largest_mesh_lightmap_size.width),
+			Math::nearest_power_of_2_templated(largest_mesh_lightmap_size.height));
 
-	if (max > p_max_texture_size) {
-		return BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
+	const int atlas_size_limit = MIN(int(p_max_texture_size * p_supersampling_factor), p_device_max_texture_size);
+	if (min_atlas_size > atlas_size_limit) {
+		return min_atlas_size > p_device_max_texture_size ? BAKE_ERROR_TEXTURE_EXCEEDS_DEVICE_LIMIT : BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE;
 	}
 
 	if (p_step_function) {
@@ -326,7 +329,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		}
 	}
 
-	atlas_size = Size2i(max, max);
+	atlas_size = Size2i(min_atlas_size, min_atlas_size);
 
 	Size2i best_atlas_size;
 	int best_atlas_slices = 0;
@@ -334,7 +337,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	Vector<Vector3i> best_atlas_offsets;
 
 	// Determine best texture array atlas size by bruteforce fitting.
-	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
+	while (atlas_size.x <= atlas_size_limit && atlas_size.y <= atlas_size_limit) {
 		Vector<Vector2i> source_sizes;
 		Vector<int> source_indices;
 		source_sizes.resize(sizes.size());
@@ -715,7 +718,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		lights_buffer = rd->storage_buffer_create(lb.size(), lb);
 
 		// Even when there are no seams, the buffer must exist.
-		static const Vector2i empty_seams[2];
+		static const Vector2i empty_seams[2] = {};
 		Span<uint8_t> sb = (seam_buffer_vec.is_empty() ? Span(empty_seams) : seam_buffer_vec.span()).reinterpret<uint8_t>();
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
@@ -1126,6 +1129,40 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	shadowmask_textures.clear();
 	int grid_size = 128;
 
+	// Attempt to create a local device by requesting it from rendering server first.
+	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
+	// a local rendering device manually depending on the current platform.
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	if (rd == nullptr) {
+#if defined(METAL_ENABLED)
+		rcd = memnew(RenderingContextDriverMetal);
+		rd = memnew(RenderingDevice);
+#endif
+#if defined(VULKAN_ENABLED)
+		if (rcd == nullptr) {
+			rcd = memnew(RenderingContextDriverVulkan);
+			rd = memnew(RenderingDevice);
+		}
+#endif
+		if (rcd != nullptr && rd != nullptr) {
+			err = rcd->initialize();
+			if (err == OK) {
+				err = rd->initialize(rcd);
+			}
+
+			if (err != OK) {
+				memdelete(rd);
+				memdelete(rcd);
+				rd = nullptr;
+				rcd = nullptr;
+			}
+		}
+	}
+
+	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
+
 	/* STEP 1: Fetch material textures and compute the bounds */
 
 	AABB bounds;
@@ -1134,8 +1171,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	Vector<Ref<Image>> albedo_images;
 	Vector<Ref<Image>> emission_images;
 
-	BakeError bake_error = _blit_meshes_into_atlas(p_max_texture_size, p_denoiser_range, albedo_images, emission_images, bounds, atlas_size, atlas_slices, p_supersampling_factor, p_step_function, p_bake_userdata);
+	const int device_max_texture_size = rd->limit_get(RD::LIMIT_MAX_TEXTURE_SIZE_2D);
+	BakeError bake_error = _blit_meshes_into_atlas(p_max_texture_size, device_max_texture_size, p_denoiser_range, albedo_images, emission_images, bounds, atlas_size, atlas_slices, p_supersampling_factor, p_step_function, p_bake_userdata);
 	if (bake_error != BAKE_OK) {
+		memdelete(rd);
+		memdelete(rcd);
 		return bake_error;
 	}
 
@@ -1172,42 +1212,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 #endif
-
-	// Attempt to create a local device by requesting it from rendering server first.
-	// If that fails because the current renderer is not implemented on top of RD, we fall back to creating
-	// a local rendering device manually depending on the current platform.
-	Error err;
-	RenderingContextDriver *rcd = nullptr;
-	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
-	if (rd == nullptr) {
-#if defined(RD_ENABLED)
-#if defined(METAL_ENABLED)
-		rcd = memnew(RenderingContextDriverMetal);
-		rd = memnew(RenderingDevice);
-#endif
-#if defined(VULKAN_ENABLED)
-		if (rcd == nullptr) {
-			rcd = memnew(RenderingContextDriverVulkan);
-			rd = memnew(RenderingDevice);
-		}
-#endif
-#endif
-		if (rcd != nullptr && rd != nullptr) {
-			err = rcd->initialize();
-			if (err == OK) {
-				err = rd->initialize(rcd);
-			}
-
-			if (err != OK) {
-				memdelete(rd);
-				memdelete(rcd);
-				rd = nullptr;
-				rcd = nullptr;
-			}
-		}
-	}
-
-	ERR_FAIL_NULL_V(rd, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
 	RID albedo_array_tex;
 	RID emission_array_tex;
@@ -1438,9 +1442,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_TEXTURES
 			FREE_BUFFERS
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1457,9 +1459,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
 
@@ -1657,9 +1657,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 
 		compute_shader->print_errors("compute_shader");
 	}
@@ -1704,9 +1702,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_RASTER_RESOURCES
 			FREE_COMPUTE_RESOURCES
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1765,9 +1761,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			FREE_RASTER_RESOURCES
 			FREE_COMPUTE_RESOURCES
 			memdelete(rd);
-			if (rcd != nullptr) {
-				memdelete(rcd);
-			}
+			memdelete(rcd);
 			return BAKE_ERROR_USER_ABORTED;
 		}
 	}
@@ -1890,9 +1884,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 							FREE_RASTER_RESOURCES
 							FREE_COMPUTE_RESOURCES
 							memdelete(rd);
-							if (rcd != nullptr) {
-								memdelete(rcd);
-							}
+							memdelete(rcd);
 							return BAKE_ERROR_USER_ABORTED;
 						}
 					}
@@ -1989,9 +1981,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				FREE_RASTER_RESOURCES
 				FREE_COMPUTE_RESOURCES
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2038,9 +2028,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 								FREE_RASTER_RESOURCES
 								FREE_COMPUTE_RESOURCES
 								memdelete(rd);
-								if (rcd != nullptr) {
-									memdelete(rcd);
-								}
+								memdelete(rcd);
 								return BAKE_ERROR_USER_ABORTED;
 							}
 						}
@@ -2067,9 +2055,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2156,9 +2142,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 						rd->free_rid(light_probe_buffer);
 					}
 					memdelete(rd);
-					if (rcd != nullptr) {
-						memdelete(rcd);
-					}
+					memdelete(rcd);
 					return BAKE_ERROR_USER_ABORTED;
 				}
 			}
@@ -2199,9 +2183,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 					rd->free_rid(light_probe_buffer);
 				}
 				memdelete(rd);
-				if (rcd != nullptr) {
-					memdelete(rcd);
-				}
+				memdelete(rcd);
 				return BAKE_ERROR_USER_ABORTED;
 			}
 		}
@@ -2276,9 +2258,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
 
-		if (rcd != nullptr) {
-			memdelete(rcd);
-		}
+		memdelete(rcd);
 
 		blendseams_shader->print_errors("blendseams_shader");
 	}
@@ -2464,9 +2444,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	memdelete(rd);
 
-	if (rcd != nullptr) {
-		memdelete(rcd);
-	}
+	memdelete(rcd);
 
 	return BAKE_OK;
 }

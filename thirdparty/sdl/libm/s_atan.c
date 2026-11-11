@@ -61,10 +61,6 @@ static const double aT[] = {
   1.62858201153657823623e-02, /* 0x3F90AD3A, 0xE322DA11 */
 };
 
-#ifdef __WATCOMC__ /* Watcom defines huge=__huge */
-#undef huge
-#endif
-
 static const double
 one   = 1.0,
 huge   = 1.0e300;

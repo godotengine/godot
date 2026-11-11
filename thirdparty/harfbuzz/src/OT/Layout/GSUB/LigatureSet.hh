@@ -12,7 +12,7 @@ template <typename Types>
 struct LigatureSet
 {
   public:
-  Array16OfOffset16To<Ligature<Types>>
+  Array16Of<typename Types::template OffsetTo<Ligature<Types>>>
                 ligature;               /* Array LigatureSet tables
                                          * ordered by preference */
   
@@ -51,6 +51,14 @@ struct LigatureSet
     + hb_iter (ligature)
     | hb_map (hb_add (this))
     | hb_apply ([c] (const Ligature<Types> &_) { _.closure (c); })
+    ;
+  }
+
+  void depend (hb_depend_context_t *c, hb_codepoint_t first) const
+  {
+    + hb_iter (ligature)
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const Ligature<Types> &_) { _.depend (c, first); })
     ;
   }
 
@@ -128,7 +136,10 @@ struct LigatureSet
       goto slow;
 
     if (seconds && !seconds->may_have (second))
+    {
+      c->buffer->unsafe_to_concat (c->buffer->idx, unsafe_to);
       return_trace (false);
+    }
     bool unsafe_to_concat = false;
     for (unsigned int i = 0; i < num_ligs; i++)
     {
@@ -152,10 +163,11 @@ struct LigatureSet
     return_trace (false);
   }
 
+  template <typename GlyphID>
   bool serialize (hb_serialize_context_t *c,
-                  hb_array_t<const HBGlyphID16> ligatures,
+                  hb_array_t<GlyphID> ligatures,
                   hb_array_t<const unsigned int> component_count_list,
-                  hb_array_t<const HBGlyphID16> &component_list /* Starting from second for each ligature */)
+                  hb_array_t<GlyphID> &component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);

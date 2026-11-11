@@ -465,7 +465,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<Mesh> mesh2 = node->get_mesh();
-			if (mesh.is_null()) {
+			if (mesh2.is_null()) {
 				err_dialog->set_text(TTR("No mesh to unwrap."));
 				err_dialog->popup_centered();
 				return;
@@ -903,6 +903,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	shape_dialog->connect(SceneStringName(confirmed), callable_mp(this, &MeshInstance3DEditor::_create_collision_shape));
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(AcceptDialog);

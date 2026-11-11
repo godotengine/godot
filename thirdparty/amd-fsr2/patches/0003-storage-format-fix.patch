@@ -1,0 +1,22 @@
+diff --git a/thirdparty/amd-fsr2/shaders/ffx_fsr2_callbacks_glsl.h b/thirdparty/amd-fsr2/shaders/ffx_fsr2_callbacks_glsl.h
+index b610037cc6..346b3ec750 100644
+--- a/thirdparty/amd-fsr2/shaders/ffx_fsr2_callbacks_glsl.h
++++ b/thirdparty/amd-fsr2/shaders/ffx_fsr2_callbacks_glsl.h
+@@ -241,7 +241,7 @@ layout (set = 0, binding = 1) uniform sampler s_LinearClamp;
+ 	layout (set = 1, binding = FSR2_BIND_UAV_DILATED_MOTION_VECTORS, rg16f)           writeonly uniform image2D  rw_dilated_motion_vectors;
+ #endif
+ #if defined FSR2_BIND_UAV_DILATED_DEPTH
+-	layout (set = 1, binding = FSR2_BIND_UAV_DILATED_DEPTH, r16f)                     writeonly uniform image2D  rw_dilatedDepth;
++	layout (set = 1, binding = FSR2_BIND_UAV_DILATED_DEPTH, r32f)                     writeonly uniform image2D  rw_dilatedDepth;
+ #endif
+ #if defined FSR2_BIND_UAV_INTERNAL_UPSCALED
+ 	layout (set = 1, binding = FSR2_BIND_UAV_INTERNAL_UPSCALED, rgba16f)              writeonly uniform image2D  rw_internal_upscaled_color;
+@@ -256,7 +256,7 @@ layout (set = 0, binding = 1) uniform sampler s_LinearClamp;
+ 	layout(set = 1, binding = FSR2_BIND_UAV_NEW_LOCKS, r8)				 		      uniform image2D    rw_new_locks;
+ #endif
+ #if defined FSR2_BIND_UAV_PREPARED_INPUT_COLOR
+-	layout (set = 1, binding = FSR2_BIND_UAV_PREPARED_INPUT_COLOR, rgba16)            writeonly uniform image2D  rw_prepared_input_color;
++	layout (set = 1, binding = FSR2_BIND_UAV_PREPARED_INPUT_COLOR, rgba16f)           writeonly uniform image2D  rw_prepared_input_color;
+ #endif
+ #if defined FSR2_BIND_UAV_LUMA_HISTORY
+ 	layout (set = 1, binding = FSR2_BIND_UAV_LUMA_HISTORY, rgba8)                     uniform image2D  rw_luma_history;

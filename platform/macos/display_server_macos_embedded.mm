@@ -285,7 +285,7 @@ void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
 	Input::get_singleton()->set_mouse_position(p_position);
 	// Convert from game pixels to points for the editor.
 	float inv_scale = 1.0f / screen_get_max_scale();
-	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(inv_scale * p_position) });
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(Vector2(p_position) * inv_scale) });
 }
 
 Point2i DisplayServerMacOSEmbedded::mouse_get_position() const {
@@ -413,7 +413,7 @@ bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 		case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case DisplayServerEnums::FEATURE_HIDPI:
 			// case DisplayServerEnums::FEATURE_ICON:
-			// case DisplayServerEnums::FEATURE_MOUSE:
+		case DisplayServerEnums::FEATURE_MOUSE:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 		case DisplayServerEnums::FEATURE_MOUSE_WARP:
 			// case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
@@ -425,6 +425,7 @@ bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 			// case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			// case DisplayServerEnums::FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_EMBEDDED:
 			return true;
 		default:
 			return false;
@@ -716,13 +717,8 @@ void DisplayServerMacOSEmbedded::window_get_edr_values(DisplayServerEnums::Windo
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, state.screen_max_edr);
-		SET_VAL(r_max_edr_value, state.screen_max_potential_edr);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, state.screen_max_edr);
+	SET_VAL(r_max_edr_value, state.screen_max_potential_edr);
 
 #undef SET_VAL
 }

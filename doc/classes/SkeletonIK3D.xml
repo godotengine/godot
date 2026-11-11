@@ -74,7 +74,7 @@
 			The name of the current root bone, the first bone in the IK chain.
 		</member>
 		<member name="target" type="Transform3D" setter="set_target_transform" getter="get_target_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
-			First target of the IK chain where the tip bone is placed and, if [member override_tip_basis] is [code]true[/code], how the tip bone is rotated. If a [member target_node] path is available the nodes transform is used instead and this property is ignored.
+			The first target of the IK chain where the tip bone is placed and, if [member override_tip_basis] is [code]true[/code], how the tip bone is rotated. If [member target_node] points to a valid node, that node's transform is used instead and this property is ignored.
 		</member>
 		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			Target node [NodePath] for the IK chain. If available, the node's current [Transform3D] is used instead of the [member target] property.

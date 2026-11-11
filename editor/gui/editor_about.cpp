@@ -123,7 +123,7 @@ void EditorAbout::_item_activated(int p_idx, ItemList *p_il) {
 		OS::get_singleton()->shell_open(val);
 	} else {
 		// Easter egg! :D
-		if (EditorRunBar::get_singleton()->is_playing()) {
+		if (EditorRunBar::get_singleton() && EditorRunBar::get_singleton()->is_playing()) {
 			// Don't allow if the game is running, as it will look weird if it's embedded.
 			EditorToaster::get_singleton()->popup_str(TTR("No distractions for this, close that game first."));
 			return;
@@ -157,19 +157,8 @@ Label *EditorAbout::_create_section(Control *p_parent, const String &p_name, con
 	il->set_max_columns(p_flags.has_flag(FLAG_SINGLE_COLUMN) ? 1 : 16);
 	il->add_theme_constant_override("h_separation", 16 * EDSCALE);
 
-	// Don't allow the Easter egg in the Project Manager.
-	if (p_flags.has_flag(FLAG_ALLOW_WEBSITE) || (p_flags.has_flag(FLAG_EASTER_EGG) && EditorNode::get_singleton())) {
-		Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
-		il->add_theme_style_override("focus", empty_stylebox);
-		il->add_theme_style_override("selected", empty_stylebox);
-
-		il->connect("item_activated", callable_mp(this, &EditorAbout::_item_activated).bind(il));
-	} else {
-		il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-		il->set_focus_mode(Control::FOCUS_NONE);
-	}
-
 	const char *const *names_ptr = p_src;
+	bool has_website = false;
 	if (p_flags.has_flag(FLAG_ALLOW_WEBSITE)) {
 		il->connect(SceneStringName(resized), callable_mp(this, &EditorAbout::_item_list_resized).bind(il));
 		il->connect(SceneStringName(focus_exited), callable_mp(il, &ItemList::deselect_all));
@@ -185,6 +174,7 @@ Label *EditorAbout::_create_section(Control *p_parent, const String &p_name, con
 				il->set_item_tooltip_enabled(-1, false);
 			} else {
 				il->set_item_metadata(-1, website);
+				has_website = true;
 			}
 
 			if (!*names_ptr && name.contains(" anonymous ")) {
@@ -196,6 +186,17 @@ Label *EditorAbout::_create_section(Control *p_parent, const String &p_name, con
 			il->add_item(String::utf8(*names_ptr++), nullptr, false);
 			il->set_item_tooltip_enabled(-1, false);
 		}
+	}
+
+	if ((has_website && p_flags.has_flag(FLAG_ALLOW_WEBSITE)) || p_flags.has_flag(FLAG_EASTER_EGG)) {
+		Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
+		il->add_theme_style_override("focus", empty_stylebox);
+		il->add_theme_style_override("selected", empty_stylebox);
+
+		il->connect("item_activated", callable_mp(this, &EditorAbout::_item_activated).bind(il));
+	} else {
+		il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		il->set_focus_mode(Control::FOCUS_NONE);
 	}
 
 	name_lists.append(il);

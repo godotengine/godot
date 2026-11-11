@@ -19,9 +19,13 @@ if [ -n "$1" ]; then
         "$SCRIPT_DIR/Metal" \
         "$SCRIPT_DIR/MetalFX" \
         "$SCRIPT_DIR/QuartzCore" \
-        "$SCRIPT_DIR/SingleHeader"
+        "$SCRIPT_DIR/LICENSE.txt"
 
-    unzip -q "$1" -d "$SCRIPT_DIR"
+    # The ZIP contains a top-level `metal-cpp` folder.
+    TMP_DIR="$(mktemp -d)"
+    unzip -q "$1" -d "$TMP_DIR"
+    cp -r "$TMP_DIR"/metal-cpp/{Foundation,Metal,MetalFX,QuartzCore,LICENSE.txt} "$SCRIPT_DIR"
+    rm -rf "$TMP_DIR"
 
     echo "Extracted metal-cpp $VERSION"
 else

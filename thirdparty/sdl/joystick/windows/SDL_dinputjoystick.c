@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -289,7 +289,7 @@ static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, Uint16 vendor_id, Uint1
     }
 
     *manufacturer_string = NULL;
-    *product_string = WIN_StringToUTF8(dipstr.wsz);
+    *product_string = WIN_StringToUTF8W(dipstr.wsz);
 
     return true;
 }
@@ -345,50 +345,31 @@ static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, Uint
 
 void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (!effect) {
-        return;
-    }
-    SDL_free(effect->rgdwAxes);
-    SDL_free(effect->rglDirection);
-    SDL_free(effect->lpvTypeSpecificParams);
-    SDL_free(effect);
+    SDL_free(effect);  // it's all allocated in a single SDL_calloc() (or using static data) now.
 }
 
 DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
-    DIEFFECT *effect;
-    DIPERIODIC *periodic;
-
-    // Create the effect
-    effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
+    DIEFFECT *effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect) + sizeof (DIPERIODIC));
     if (!effect) {
         return NULL;
     }
+
     effect->dwSize = sizeof(*effect);
     effect->dwGain = 10000;
     effect->dwFlags = DIEFF_OBJECTOFFSETS;
     effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; // In microseconds.
     effect->dwTriggerButton = DIEB_NOTRIGGER;
 
-    effect->cAxes = 2;
-    effect->rgdwAxes = (DWORD *)SDL_calloc(effect->cAxes, sizeof(DWORD));
-    if (!effect->rgdwAxes) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static DWORD rgdwAxes[] = { DIJOFS_X, DIJOFS_Y };
+    effect->cAxes = SDL_arraysize(rgdwAxes);
+    effect->rgdwAxes = rgdwAxes;
 
-    effect->rglDirection = (LONG *)SDL_calloc(effect->cAxes, sizeof(LONG));
-    if (!effect->rglDirection) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static LONG rglDirection[] = { 0, 0 };
+    effect->rglDirection = rglDirection;
     effect->dwFlags |= DIEFF_CARTESIAN;
 
-    periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    DIPERIODIC *periodic = (DIPERIODIC *)(effect + 1);  // we allocated this right after the effect struct.
     periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
     periodic->dwPeriod = 1000000;
 
@@ -620,6 +601,10 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
+        // DIJOYSTATE2.rgdwPOV only has room for 4 POVs, ignore any beyond that.
+        if (joystick->nhats >= 4) {
+            return DIENUM_CONTINUE;
+        }
         in->type = HAT;
         in->num = (Uint8)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
@@ -778,12 +763,14 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
         return SetDIerror("IDirectInputDevice8::SetDataFormat", result);
     }
 
-    // Get device capabilities
-    result =
-        IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
-                                            &joystick->hwdata->Capabilities);
-    if (FAILED(result)) {
-        return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+    if (!WIN_HasBrokenEZFRD64DLL()) {
+        // Get device capabilities to see if we are force feedback capable
+        result =
+            IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,
+                                                &joystick->hwdata->Capabilities);
+        if (FAILED(result)) {
+            return SetDIerror("IDirectInputDevice8::GetCapabilities", result);
+        }
     }
 
     // Force capable?
@@ -1042,7 +1029,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
             break;
         case HAT:
         {
-            Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
+            Uint8 pos = TranslatePOV(state.rgdwPOV[in->num]);
             SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }

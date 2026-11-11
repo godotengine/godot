@@ -113,8 +113,8 @@ public:
 			return (x == 0) && (y == 0) && (z == 0);
 		}
 
-		int64_t dot(const Point64 &b) const {
-			return x * b.x + y * b.y + z * b.z;
+		int64_t dot(const Point64 &p_other) const {
+			return x * p_other.x + y * p_other.y + z * p_other.z;
 		}
 	};
 
@@ -134,40 +134,40 @@ public:
 			z = p_z;
 		}
 
-		bool operator==(const Point32 &b) const {
-			return (x == b.x) && (y == b.y) && (z == b.z);
+		bool operator==(const Point32 &p_other) const {
+			return (x == p_other.x) && (y == p_other.y) && (z == p_other.z);
 		}
 
-		bool operator!=(const Point32 &b) const {
-			return (x != b.x) || (y != b.y) || (z != b.z);
+		bool operator!=(const Point32 &p_other) const {
+			return (x != p_other.x) || (y != p_other.y) || (z != p_other.z);
 		}
 
 		bool is_zero() {
 			return (x == 0) && (y == 0) && (z == 0);
 		}
 
-		Point64 cross(const Point32 &b) const {
-			return Point64((int64_t)y * b.z - (int64_t)z * b.y, (int64_t)z * b.x - (int64_t)x * b.z, (int64_t)x * b.y - (int64_t)y * b.x);
+		Point64 cross(const Point32 &p_other) const {
+			return Point64((int64_t)y * p_other.z - (int64_t)z * p_other.y, (int64_t)z * p_other.x - (int64_t)x * p_other.z, (int64_t)x * p_other.y - (int64_t)y * p_other.x);
 		}
 
-		Point64 cross(const Point64 &b) const {
-			return Point64(y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x);
+		Point64 cross(const Point64 &p_other) const {
+			return Point64(y * p_other.z - z * p_other.y, z * p_other.x - x * p_other.z, x * p_other.y - y * p_other.x);
 		}
 
-		int64_t dot(const Point32 &b) const {
-			return (int64_t)x * b.x + (int64_t)y * b.y + (int64_t)z * b.z;
+		int64_t dot(const Point32 &p_other) const {
+			return (int64_t)x * p_other.x + (int64_t)y * p_other.y + (int64_t)z * p_other.z;
 		}
 
-		int64_t dot(const Point64 &b) const {
-			return x * b.x + y * b.y + z * b.z;
+		int64_t dot(const Point64 &p_other) const {
+			return x * p_other.x + y * p_other.y + z * p_other.z;
 		}
 
-		Point32 operator+(const Point32 &b) const {
-			return Point32(x + b.x, y + b.y, z + b.z);
+		Point32 operator+(const Point32 &p_other) const {
+			return Point32(x + p_other.x, y + p_other.y, z + p_other.z);
 		}
 
-		Point32 operator-(const Point32 &b) const {
-			return Point32(x - b.x, y - b.y, z - b.z);
+		Point32 operator-(const Point32 &p_other) const {
+			return Point32(x - p_other.x, y - p_other.y, z - p_other.z);
 		}
 	};
 
@@ -198,57 +198,57 @@ public:
 			}
 		}
 
-		static Int128 mul(int64_t a, int64_t b);
+		static Int128 mul(int64_t p_left, int64_t p_right);
 
-		static Int128 mul(uint64_t a, uint64_t b);
+		static Int128 mul(uint64_t p_left, uint64_t p_right);
 
 		Int128 operator-() const {
 			return Int128(uint64_t(-int64_t(low)), ~high + (low == 0));
 		}
 
-		Int128 operator+(const Int128 &b) const {
+		Int128 operator+(const Int128 &p_other) const {
 #ifdef USE_X86_64_ASM
 			Int128 result;
 			__asm__("addq %[bl], %[rl]\n\t"
 					"adcq %[bh], %[rh]\n\t"
 					: [rl] "=r"(result.low), [rh] "=r"(result.high)
-					: "0"(low), "1"(high), [bl] "g"(b.low), [bh] "g"(b.high)
+					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
 			return result;
 #else
-			uint64_t lo = low + b.low;
-			return Int128(lo, high + b.high + (lo < low));
+			uint64_t lo = low + p_other.low;
+			return Int128(lo, high + p_other.high + (lo < low));
 #endif
 		}
 
-		Int128 operator-(const Int128 &b) const {
+		Int128 operator-(const Int128 &p_other) const {
 #ifdef USE_X86_64_ASM
 			Int128 result;
 			__asm__("subq %[bl], %[rl]\n\t"
 					"sbbq %[bh], %[rh]\n\t"
 					: [rl] "=r"(result.low), [rh] "=r"(result.high)
-					: "0"(low), "1"(high), [bl] "g"(b.low), [bh] "g"(b.high)
+					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
 			return result;
 #else
-			return *this + -b;
+			return *this + -p_other;
 #endif
 		}
 
-		Int128 &operator+=(const Int128 &b) {
+		Int128 &operator+=(const Int128 &p_other) {
 #ifdef USE_X86_64_ASM
 			__asm__("addq %[bl], %[rl]\n\t"
 					"adcq %[bh], %[rh]\n\t"
 					: [rl] "=r"(low), [rh] "=r"(high)
-					: "0"(low), "1"(high), [bl] "g"(b.low), [bh] "g"(b.high)
+					: "0"(low), "1"(high), [bl] "g"(p_other.low), [bh] "g"(p_other.high)
 					: "cc");
 #else
-			uint64_t lo = low + b.low;
+			uint64_t lo = low + p_other.low;
 			if (lo < low) {
 				++high;
 			}
 			low = lo;
-			high += b.high;
+			high += p_other.high;
 #endif
 			return *this;
 		}
@@ -260,7 +260,7 @@ public:
 			return *this;
 		}
 
-		Int128 operator*(int64_t b) const;
+		Int128 operator*(int64_t p_other) const;
 
 		real_t to_scalar() const {
 			return ((int64_t)high >= 0) ? real_t(high) * (real_t(0x100000000LL) * real_t(0x100000000LL)) + real_t(low) : -(-*this).to_scalar();
@@ -270,21 +270,21 @@ public:
 			return ((int64_t)high < 0) ? -1 : ((high || low) ? 1 : 0);
 		}
 
-		bool operator<(const Int128 &b) const {
-			return (high < b.high) || ((high == b.high) && (low < b.low));
+		bool operator<(const Int128 &p_other) const {
+			return (high < p_other.high) || ((high == p_other.high) && (low < p_other.low));
 		}
 
-		int32_t ucmp(const Int128 &b) const {
-			if (high < b.high) {
+		int32_t ucmp(const Int128 &p_other) const {
+			if (high < p_other.high) {
 				return -1;
 			}
-			if (high > b.high) {
+			if (high > p_other.high) {
 				return 1;
 			}
-			if (low < b.low) {
+			if (low < p_other.low) {
 				return -1;
 			}
-			if (low > b.low) {
+			if (low > p_other.low) {
 				return 1;
 			}
 			return 0;
@@ -327,7 +327,7 @@ public:
 			return (sign == 0) && (denominator == 0);
 		}
 
-		int32_t compare(const Rational64 &b) const;
+		int32_t compare(const Rational64 &p_other) const;
 
 		real_t to_scalar() const {
 			return sign * ((denominator == 0) ? FLT_MAX : (real_t)numerator / denominator);
@@ -374,9 +374,9 @@ public:
 			is_int_64 = false;
 		}
 
-		int32_t compare(const Rational128 &b) const;
+		int32_t compare(const Rational128 &p_other) const;
 
-		int32_t compare(int64_t b) const;
+		int32_t compare(int64_t p_int64) const;
 
 		real_t to_scalar() const {
 			return sign * ((denominator.get_sign() == 0) ? FLT_MAX : numerator.to_scalar() / denominator.to_scalar());
@@ -438,12 +438,12 @@ public:
 		void print_graph();
 #endif
 
-		Point32 operator-(const Vertex &b) const {
-			return point - b.point;
+		Point32 operator-(const Vertex &p_other) const {
+			return point - p_other.point;
 		}
 
-		Rational128 dot(const Point64 &b) const {
-			return (point.index >= 0) ? Rational128(point.dot(b)) : Rational128(point128.x * b.x + point128.y * b.y + point128.z * b.z, point128.denominator);
+		Rational128 dot(const Point64 &p_other) const {
+			return (point.index >= 0) ? Rational128(point.dot(p_other)) : Rational128(point128.x * p_other.x + point128.y * p_other.y + point128.z * p_other.z, point128.denominator);
 		}
 
 		real_t xvalue() const {
@@ -485,10 +485,10 @@ public:
 		Face *face = nullptr;
 		int32_t copy = -1;
 
-		void link(Edge *n) {
-			CHULL_ASSERT(reverse->target == n->reverse->target);
-			next = n;
-			n->prev = this;
+		void link(Edge *p_edge) {
+			CHULL_ASSERT(reverse->target == p_edge->reverse->target);
+			next = p_edge;
+			p_edge->prev = this;
 		}
 
 #ifdef DEBUG_CONVEX_HULL
@@ -540,8 +540,8 @@ public:
 			return (uint32_t)p_value;
 		}
 
-		static uint64_t mul(uint32_t a, uint32_t b) {
-			return (uint64_t)a * (uint64_t)b;
+		static uint64_t mul(uint32_t p_left, uint32_t p_right) {
+			return (uint64_t)p_left * (uint64_t)p_right;
 		}
 
 		static void shl_half(uint64_t &p_value) {
@@ -556,8 +556,8 @@ public:
 			return p_value.low;
 		}
 
-		static Int128 mul(uint64_t a, uint64_t b) {
-			return Int128::mul(a, b);
+		static Int128 mul(uint64_t p_left, uint64_t p_right) {
+			return Int128::mul(p_left, p_right);
 		}
 
 		static void shl_half(Int128 &p_value) {
@@ -674,64 +674,64 @@ public:
 
 	Vector3 get_coordinates(const Vertex *p_v);
 
-	real_t shrink(real_t amount, real_t p_clamp_amount);
+	real_t shrink(real_t p_amount, real_t p_clamp_amount);
 };
 
-ConvexHullInternal::Int128 ConvexHullInternal::Int128::operator*(int64_t b) const {
+ConvexHullInternal::Int128 ConvexHullInternal::Int128::operator*(int64_t p_other) const {
 	bool negative = (int64_t)high < 0;
 	Int128 a = negative ? -*this : *this;
-	if (b < 0) {
+	if (p_other < 0) {
 		negative = !negative;
-		b = -b;
+		p_other = -p_other;
 	}
-	Int128 result = mul(a.low, (uint64_t)b);
-	result.high += a.high * (uint64_t)b;
+	Int128 result = mul(a.low, (uint64_t)p_other);
+	result.high += a.high * (uint64_t)p_other;
 	return negative ? -result : result;
 }
 
-ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(int64_t a, int64_t b) {
+ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(int64_t p_left, int64_t p_right) {
 	Int128 result;
 
 #ifdef USE_X86_64_ASM
 	__asm__("imulq %[b]"
 			: "=a"(result.low), "=d"(result.high)
-			: "0"(a), [b] "r"(b)
+			: "0"(p_left), [p_right] "r"(p_right)
 			: "cc");
 	return result;
 
 #else
-	bool negative = a < 0;
+	bool negative = p_left < 0;
 	if (negative) {
-		a = -a;
+		p_left = -p_left;
 	}
-	if (b < 0) {
+	if (p_right < 0) {
 		negative = !negative;
-		b = -b;
+		p_right = -p_right;
 	}
-	DMul<uint64_t, uint32_t>::mul((uint64_t)a, (uint64_t)b, result.low, result.high);
+	DMul<uint64_t, uint32_t>::mul((uint64_t)p_left, (uint64_t)p_right, result.low, result.high);
 	return negative ? -result : result;
 #endif
 }
 
-ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(uint64_t a, uint64_t b) {
+ConvexHullInternal::Int128 ConvexHullInternal::Int128::mul(uint64_t p_left, uint64_t p_right) {
 	Int128 result;
 
 #ifdef USE_X86_64_ASM
 	__asm__("mulq %[b]"
 			: "=a"(result.low), "=d"(result.high)
-			: "0"(a), [b] "r"(b)
+			: "0"(p_left), [p_right] "r"(p_right)
 			: "cc");
 
 #else
-	DMul<uint64_t, uint32_t>::mul(a, b, result.low, result.high);
+	DMul<uint64_t, uint32_t>::mul(p_left, p_right, result.low, result.high);
 #endif
 
 	return result;
 }
 
-int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
-	if (sign != b.sign) {
-		return sign - b.sign;
+int32_t ConvexHullInternal::Rational64::compare(const Rational64 &p_other) const {
+	if (sign != p_other.sign) {
+		return sign - p_other.sign;
 	} else if (sign == 0) {
 		return 0;
 	}
@@ -754,7 +754,7 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 			"decb %%bh\n\t" // now bx=0x0000 if difference is zero, 0xff01 if it is negative, 0x0001 if it is positive (i.e., same sign as difference)
 			"shll $16, %%ebx\n\t" // ebx has same sign as difference
 			: "=&b"(result), [tmp] "=&r"(tmp), "=a"(dummy)
-			: "a"(denominator), [bn] "g"(b.numerator), [tn] "g"(numerator), [bd] "g"(b.denominator)
+			: "a"(denominator), [bn] "g"(p_other.numerator), [tn] "g"(numerator), [bd] "g"(p_other.denominator)
 			: "%rdx", "cc");
 	// if sign is +1, only bit 0 of result is inverted, which does not change the sign of result (and cannot result in zero)
 	// if sign is -1, all bits of result are inverted, which changes the sign of result (and again cannot result in zero)
@@ -762,24 +762,24 @@ int32_t ConvexHullInternal::Rational64::compare(const Rational64 &b) const {
 
 #else
 
-	return sign * Int128::mul(numerator, b.denominator).ucmp(Int128::mul(denominator, b.numerator));
+	return sign * Int128::mul(numerator, p_other.denominator).ucmp(Int128::mul(denominator, p_other.numerator));
 
 #endif
 }
 
-int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
-	if (sign != b.sign) {
-		return sign - b.sign;
+int32_t ConvexHullInternal::Rational128::compare(const Rational128 &p_other) const {
+	if (sign != p_other.sign) {
+		return sign - p_other.sign;
 	} else if (sign == 0) {
 		return 0;
 	}
 	if (is_int_64) {
-		return -b.compare(sign * (int64_t)numerator.low);
+		return -p_other.compare(sign * (int64_t)numerator.low);
 	}
 
 	Int128 nbd_low, nbd_high, dbn_low, dbn_high;
-	DMul<Int128, uint64_t>::mul(numerator, b.denominator, nbd_low, nbd_high);
-	DMul<Int128, uint64_t>::mul(denominator, b.numerator, dbn_low, dbn_high);
+	DMul<Int128, uint64_t>::mul(numerator, p_other.denominator, nbd_low, nbd_high);
+	DMul<Int128, uint64_t>::mul(denominator, p_other.numerator, dbn_low, dbn_high);
 
 	int32_t cmp = nbd_high.ucmp(dbn_high);
 	if (cmp) {
@@ -788,25 +788,25 @@ int32_t ConvexHullInternal::Rational128::compare(const Rational128 &b) const {
 	return nbd_low.ucmp(dbn_low) * sign;
 }
 
-int32_t ConvexHullInternal::Rational128::compare(int64_t b) const {
+int32_t ConvexHullInternal::Rational128::compare(int64_t p_int64) const {
 	if (is_int_64) {
 		int64_t a = sign * (int64_t)numerator.low;
-		return (a > b) ? 1 : ((a < b) ? -1 : 0);
+		return (a > p_int64) ? 1 : ((a < p_int64) ? -1 : 0);
 	}
-	if (b > 0) {
+	if (p_int64 > 0) {
 		if (sign <= 0) {
 			return -1;
 		}
-	} else if (b < 0) {
+	} else if (p_int64 < 0) {
 		if (sign >= 0) {
 			return 1;
 		}
-		b = -b;
+		p_int64 = -p_int64;
 	} else {
 		return sign;
 	}
 
-	return numerator.ucmp(denominator * b) * sign;
+	return numerator.ucmp(denominator * p_int64) * sign;
 }
 
 ConvexHullInternal::Edge *ConvexHullInternal::new_edge_pair(Vertex *p_from, Vertex *p_to) {
@@ -1570,8 +1570,8 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 }
 
 struct PointComparator {
-	_FORCE_INLINE_ bool operator()(const ConvexHullInternal::Point32 &p, const ConvexHullInternal::Point32 &q) const {
-		return (p.y < q.y) || ((p.y == q.y) && ((p.x < q.x) || ((p.x == q.x) && (p.z < q.z))));
+	_FORCE_INLINE_ bool operator()(const ConvexHullInternal::Point32 &p_left, const ConvexHullInternal::Point32 &p_right) const {
+		return (p_left.y < p_right.y) || ((p_left.y == p_right.y) && ((p_left.x < p_right.x) || ((p_left.x == p_right.x) && (p_left.z < p_right.z))));
 	}
 };
 

@@ -62,6 +62,103 @@ hb_paint_extents_pop_transform (hb_paint_funcs_t *funcs HB_UNUSED,
   c->pop_transform ();
 }
 
+/* Like the hb_draw_extents_get_funcs() sink, but tied to the paint
+ * session's live work budget. */
+struct hb_paint_extents_sink_t
+{
+  hb_extents_t<> extents;
+  int64_t *budget_remaining;
+
+  bool consume_segment ()
+  {
+    return hb_budget_spend (*budget_remaining, HB_BUDGET_1);
+  }
+};
+
+static void
+hb_paint_extents_count_move_to (hb_draw_funcs_t *dfuncs HB_UNUSED, void *data,
+				hb_draw_state_t *st HB_UNUSED,
+				float to_x, float to_y,
+				void *user_data HB_UNUSED)
+{
+  hb_paint_extents_sink_t *sink = (hb_paint_extents_sink_t *) data;
+  if (unlikely (!sink->consume_segment ())) return;
+  sink->extents.add_point (to_x, to_y);
+}
+
+static void
+hb_paint_extents_count_line_to (hb_draw_funcs_t *dfuncs HB_UNUSED, void *data,
+				hb_draw_state_t *st HB_UNUSED,
+				float to_x, float to_y,
+				void *user_data HB_UNUSED)
+{
+  hb_paint_extents_sink_t *sink = (hb_paint_extents_sink_t *) data;
+  if (unlikely (!sink->consume_segment ())) return;
+  sink->extents.add_point (to_x, to_y);
+}
+
+static void
+hb_paint_extents_count_quadratic_to (hb_draw_funcs_t *dfuncs HB_UNUSED, void *data,
+				     hb_draw_state_t *st HB_UNUSED,
+				     float control_x, float control_y,
+				     float to_x, float to_y,
+				     void *user_data HB_UNUSED)
+{
+  hb_paint_extents_sink_t *sink = (hb_paint_extents_sink_t *) data;
+  if (unlikely (!sink->consume_segment ())) return;
+  sink->extents.add_point (control_x, control_y);
+  sink->extents.add_point (to_x, to_y);
+}
+
+static void
+hb_paint_extents_count_cubic_to (hb_draw_funcs_t *dfuncs HB_UNUSED, void *data,
+				 hb_draw_state_t *st HB_UNUSED,
+				 float control1_x, float control1_y,
+				 float control2_x, float control2_y,
+				 float to_x, float to_y,
+				 void *user_data HB_UNUSED)
+{
+  hb_paint_extents_sink_t *sink = (hb_paint_extents_sink_t *) data;
+  if (unlikely (!sink->consume_segment ())) return;
+  sink->extents.add_point (control1_x, control1_y);
+  sink->extents.add_point (control2_x, control2_y);
+  sink->extents.add_point (to_x, to_y);
+}
+
+static int64_t *
+hb_paint_extents_get_budget_remaining (hb_draw_funcs_t *, void *draw_data, void *)
+{
+  return ((hb_paint_extents_sink_t *) draw_data)->budget_remaining;
+}
+
+static inline void free_static_paint_extents_draw_funcs ();
+
+static struct hb_paint_extents_draw_funcs_lazy_loader_t : hb_draw_funcs_lazy_loader_t<hb_paint_extents_draw_funcs_lazy_loader_t>
+{
+  static hb_draw_funcs_t *create ()
+  {
+    hb_draw_funcs_t *funcs = hb_draw_funcs_create ();
+
+    hb_draw_funcs_set_move_to_func (funcs, hb_paint_extents_count_move_to, nullptr, nullptr);
+    hb_draw_funcs_set_line_to_func (funcs, hb_paint_extents_count_line_to, nullptr, nullptr);
+    hb_draw_funcs_set_quadratic_to_func (funcs, hb_paint_extents_count_quadratic_to, nullptr, nullptr);
+    hb_draw_funcs_set_cubic_to_func (funcs, hb_paint_extents_count_cubic_to, nullptr, nullptr);
+    hb_draw_funcs_set_get_budget_remaining_func (funcs, hb_paint_extents_get_budget_remaining, nullptr, nullptr);
+
+    hb_draw_funcs_make_immutable (funcs);
+
+    hb_atexit (free_static_paint_extents_draw_funcs);
+
+    return funcs;
+  }
+} static_paint_extents_draw_funcs;
+
+static inline
+void free_static_paint_extents_draw_funcs ()
+{
+  static_paint_extents_draw_funcs.free_instance ();
+}
+
 static void
 hb_paint_extents_push_clip_glyph (hb_paint_funcs_t *funcs HB_UNUSED,
 				  void *paint_data,
@@ -71,10 +168,12 @@ hb_paint_extents_push_clip_glyph (hb_paint_funcs_t *funcs HB_UNUSED,
 {
   hb_paint_extents_context_t *c = (hb_paint_extents_context_t *) paint_data;
 
-  hb_extents_t<> extents;
-  hb_draw_funcs_t *draw_extent_funcs = hb_draw_extents_get_funcs ();
-  hb_font_draw_glyph (font, glyph, draw_extent_funcs, &extents);
-  c->push_clip (extents);
+  hb_paint_extents_sink_t sink {{}, &c->budget_remaining};
+  /* Skip the outline extraction when the session work budget is
+   * spent; an empty clip clips everything out. */
+  if (likely (c->budget_remaining >= 0))
+    hb_font_draw_glyph (font, glyph, static_paint_extents_draw_funcs.get_unconst (), &sink);
+  c->push_clip (sink.extents);
 }
 
 static void
@@ -200,6 +299,29 @@ hb_paint_extents_paint_sweep_gradient (hb_paint_funcs_t *funcs HB_UNUSED,
   c->paint ();
 }
 
+static hb_bool_t
+hb_paint_extents_set_budget (hb_paint_funcs_t *, void *paint_data,
+			     int64_t budget, void *)
+{
+  auto *context = (hb_paint_extents_context_t *) paint_data;
+  context->budget = budget;
+  context->budget_initialized = true;
+  context->recharge_budget ();
+  return true;
+}
+
+static int64_t
+hb_paint_extents_get_budget (hb_paint_funcs_t *, void *paint_data, void *)
+{
+  return ((hb_paint_extents_context_t *) paint_data)->budget;
+}
+
+static int64_t *
+hb_paint_extents_get_budget_remaining (hb_paint_funcs_t *, void *paint_data, void *)
+{
+  return &((hb_paint_extents_context_t *) paint_data)->budget_remaining;
+}
+
 static inline void free_static_paint_extents_funcs ();
 
 static struct hb_paint_extents_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_t<hb_paint_extents_funcs_lazy_loader_t>
@@ -220,6 +342,9 @@ static struct hb_paint_extents_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_
     hb_paint_funcs_set_linear_gradient_func (funcs, hb_paint_extents_paint_linear_gradient, nullptr, nullptr);
     hb_paint_funcs_set_radial_gradient_func (funcs, hb_paint_extents_paint_radial_gradient, nullptr, nullptr);
     hb_paint_funcs_set_sweep_gradient_func (funcs, hb_paint_extents_paint_sweep_gradient, nullptr, nullptr);
+    hb_paint_funcs_set_set_budget_func (funcs, hb_paint_extents_set_budget, nullptr, nullptr);
+    hb_paint_funcs_set_get_budget_func (funcs, hb_paint_extents_get_budget, nullptr, nullptr);
+    hb_paint_funcs_set_get_budget_remaining_func (funcs, hb_paint_extents_get_budget_remaining, nullptr, nullptr);
 
     hb_paint_funcs_make_immutable (funcs);
 

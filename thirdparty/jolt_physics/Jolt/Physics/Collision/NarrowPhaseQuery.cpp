@@ -376,9 +376,13 @@ void NarrowPhaseQuery::CastShape(const RShapeCast &inShapeCast, const ShapeCastS
 		const ShapeFilter &			mShapeFilter;
 	};
 
+	// Calculate bounds for shape and expand by extra convex radius
+	AABox bounds = inShapeCast.mShapeWorldBounds;
+	bounds.ExpandBy(Vec3::sReplicate(inShapeCastSettings.mExtraConvexRadius));
+
 	// Do broadphase test
 	MyCollector collector(inShapeCast, inShapeCastSettings, inBaseOffset, ioCollector, *mBodyLockInterface, inBodyFilter, inShapeFilter);
-	mBroadPhaseQuery->CastAABox({ inShapeCast.mShapeWorldBounds, inShapeCast.mDirection }, collector, inBroadPhaseLayerFilter, inObjectLayerFilter);
+	mBroadPhaseQuery->CastAABox({ bounds, inShapeCast.mDirection }, collector, inBroadPhaseLayerFilter, inObjectLayerFilter);
 }
 
 void NarrowPhaseQuery::CollectTransformedShapes(const AABox &inBox, TransformedShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const

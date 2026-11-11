@@ -124,7 +124,7 @@ public:
 	float						GetTargetAngle() const									{ return mTargetAngle; }
 
 	/// Set the target orientation in body space (R2 = R1 * inOrientation, where R1 and R2 are the world space rotations for body 1 and 2).
-	/// Calculates the local space target angle and calls SetTargetAngle. Motor state must be EMotorState::Position for this to have any effect.
+	/// Calculates the local space target angle and calls SetTargetAngle. Motor state must be EMotorState::Position or EMotorState::PositionAndVelocity for this to have any effect.
 	/// May set the wrong angle if inOrientation contains large rotations around other axis than the hinge axis.
 	void						SetTargetOrientationBS(QuatArg inOrientation);
 

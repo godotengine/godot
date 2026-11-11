@@ -33,7 +33,7 @@
 #include "core/variant/type_info.h"
 
 template <typename K, typename V>
-class TypedDictionary : public Dictionary {
+class _WARN_UNUSED_ TypedDictionary : public Dictionary {
 public:
 	_FORCE_INLINE_ void operator=(const Dictionary &p_dictionary) {
 		ERR_FAIL_COND_MSG(!is_same_typed(p_dictionary), "Cannot assign a dictionary with different element types.");

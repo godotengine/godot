@@ -33,13 +33,13 @@ package org.godotengine.editor.embed
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.RadioButton
 import androidx.core.content.edit
@@ -48,6 +48,7 @@ import androidx.fragment.app.Fragment
 import org.godotengine.editor.BaseGodotEditor
 import org.godotengine.editor.BaseGodotEditor.Companion.SNACKBAR_SHOW_DURATION_MS
 import org.godotengine.editor.R
+import org.godotengine.editor.utils.Utils
 import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.utils.DialogUtils
 
@@ -98,6 +99,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		fun suspendGame(suspended: Boolean)
 		fun dispatchNextFrame()
 		fun toggleSelectionVisibility(enabled: Boolean)
+		fun toggleSelectionAvoidLocked(enabled: Boolean)
+		fun toggleSelectionPreferGroup(enabled: Boolean)
 		fun overrideCamera(enabled: Boolean)
 		fun selectRuntimeNode(nodeType: NodeType)
 		fun selectRuntimeNodeSelectMode(selectMode: SelectMode)
@@ -142,9 +145,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val setTimeScaleButton: Button? by lazy {
 		view?.findViewById<Button>(R.id.game_menu_set_time_scale_button)
 	}
-	private val resetTimeScaleButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_reset_time_scale_button)
-	}
 	private val unselectNodesButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_unselect_nodes_button)
 	}
@@ -154,14 +154,14 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val select3DNodesButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_select_3d_nodes_button)
 	}
-	private val guiVisibilityButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_gui_visibility_button)
-	}
 	private val toolSelectButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_tool_select_button)
 	}
 	private val listSelectButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_list_select_button)
+	}
+	private val selectDropdownButton: ImageButton? by lazy {
+		view?.findViewById(R.id.game_menu_select_dropdown_button)
 	}
 	private val audioMuteButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_audio_mute_button)
@@ -188,6 +188,29 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 			inflate(R.menu.options_menu)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 				menu.setGroupDividerEnabled(true)
+			}
+		}
+	}
+
+	private val selectDropdownMenu: PopupMenu by lazy {
+		PopupMenu(context, selectDropdownButton).apply {
+			inflate(R.menu.select_dropdown_menu)
+			setOnMenuItemClickListener { item: MenuItem ->
+				when (item.itemId) {
+					R.id.menu_show_selection_visibility -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionVisibility(item.isChecked)
+					}
+					R.id.menu_dont_select_locked_nodes -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionAvoidLocked(item.isChecked)
+					}
+					R.id.menu_select_group_over_children -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionPreferGroup(item.isChecked)
+					}
+				}
+				true
 			}
 		}
 	}
@@ -335,13 +358,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 			}
 		}
 
-		resetTimeScaleButton?.apply {
-			setOnClickListener {
-				menuListener?.resetTimeScale()
-				setTimeScaleButton?.text = "1.0x"
-			}
-		}
-
 		unselectNodesButton?.apply{
 			setOnCheckedChangeListener { buttonView, isChecked ->
 				if (isChecked) {
@@ -363,13 +379,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				}
 			}
 		}
-		guiVisibilityButton?.apply{
-			setOnClickListener {
-				val isActivated = !it.isActivated
-				menuListener?.toggleSelectionVisibility(!isActivated)
-				it.isActivated = isActivated
-			}
-		}
 
 		toolSelectButton?.apply{
 			setOnCheckedChangeListener { buttonView, isChecked ->
@@ -384,6 +393,9 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 					menuListener?.selectRuntimeNodeSelectMode(GameMenuListener.SelectMode.LIST)
 				}
 			}
+		}
+		selectDropdownButton?.setOnClickListener {
+			selectDropdownMenu.show()
 		}
 		audioMuteButton?.apply{
 			setOnClickListener {
@@ -400,13 +412,15 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	}
 
 	internal fun refreshGameMenu(gameMenuState: Bundle) {
-		val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+		val sharedPrefs = Utils.getDefaultSharedPreferences(context)
 		if (menuListener?.isMenuBarCollapsable() == true) {
-			val collapsed = sharedPrefs.getBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
-			view?.isVisible = !collapsed
-			menuListener?.onGameMenuCollapsed(collapsed)
+			val collapsed = sharedPrefs?.getBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
+			if (collapsed != null) {
+				view?.isVisible = !collapsed
+				menuListener?.onGameMenuCollapsed(collapsed)
+			}
 		}
-		alwaysOnTopChecked = sharedPrefs.getBoolean(PREF_KEY_ALWAYS_ON_TOP, false)
+		alwaysOnTopChecked = sharedPrefs?.getBoolean(PREF_KEY_ALWAYS_ON_TOP, false) == true
 		isGameEmbedded = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_EMBEDDED, false)
 		isGameRunning = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_RUNNING, false)
 
@@ -418,11 +432,15 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		select2DNodesButton?.isChecked = nodeType == GameMenuListener.NodeType.TYPE_2D
 		select3DNodesButton?.isChecked = nodeType == GameMenuListener.NodeType.TYPE_3D
 
-		guiVisibilityButton?.isActivated = !gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_VISIBLE, true)
-
 		val selectMode = gameMenuState.getSerializable(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECT_MODE) as GameMenuListener.SelectMode? ?: GameMenuListener.SelectMode.SINGLE
 		toolSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.SINGLE
 		listSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.LIST
+
+		selectDropdownMenu.menu.apply {
+			findItem(R.id.menu_show_selection_visibility)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_VISIBLE, true)
+			findItem(R.id.menu_dont_select_locked_nodes)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED, false)
+			findItem(R.id.menu_select_group_over_children)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP, false)
+		}
 
 		audioMuteButton?.isActivated = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO, false)
 
@@ -464,7 +482,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	private fun collapseGameMenu() {
 		view?.isVisible = false
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, true)
 		}
 		menuListener?.onGameMenuCollapsed(true)
@@ -472,7 +490,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	internal fun expandGameMenu() {
 		view?.isVisible = true
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
 		}
 		menuListener?.onGameMenuCollapsed(false)
@@ -485,7 +503,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	private fun updateAlwaysOnTop(enabled: Boolean) {
 		alwaysOnTopChecked = enabled
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_ALWAYS_ON_TOP, enabled)
 		}
 	}
@@ -508,8 +526,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 				if (item.isChecked != isGameEmbedded && isGameRunning) {
 					activity?.let {
-						val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-						if (!sharedPrefs.getBoolean(PREF_KEY_DONT_SHOW_RESTART_GAME_HINT, false)) {
+						val sharedPrefs = Utils.getDefaultSharedPreferences(context)
+						if (sharedPrefs?.getBoolean(PREF_KEY_DONT_SHOW_RESTART_GAME_HINT, false) == false) {
 							DialogUtils.showSnackbar(
 								it,
 								if (item.isChecked) getString(R.string.restart_embed_game_hint) else getString(R.string.restart_non_embedded_game_hint),

@@ -37,6 +37,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/time.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
@@ -257,22 +259,10 @@ EditorSelectionHistory::EditorSelectionHistory() {
 
 ////////////////////////////////////////////////////////////
 
-EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
-	// We need to iterate backwards so that we can check user-created plugins first.
-	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
-	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			return editor_plugins[i];
-		}
-	}
-
-	return nullptr;
-}
-
 Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (EditorPlugin *plugin : editor_plugins) {
-		if (!plugin->has_main_screen() && plugin->handles(p_object)) {
+		if (plugin->handles(p_object)) {
 			sub_plugins.push_back(plugin);
 		}
 	}
@@ -342,7 +332,7 @@ Dictionary EditorData::get_scene_editor_states_with_selection(int p_idx) const {
 		for (Node *node : es.selection) {
 			selected_paths.push_back(root->get_path_to(node));
 		}
-		states["selected_nodes"] = selected_paths;
+		states["$selected_nodes"] = selected_paths;
 	}
 	return states;
 }
@@ -356,19 +346,10 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 	}
 
 	for (const KeyValue<Variant, Variant> &kv : p_states) {
-		String name = kv.key;
-		int idx = -1;
-		for (int i = 0; i < editor_plugins.size(); i++) {
-			if (editor_plugins[i]->get_plugin_name() == name) {
-				idx = i;
-				break;
-			}
+		EditorPlugin *plugin = get_editor_by_name(kv.key);
+		if (plugin) {
+			plugin->set_state(kv.value);
 		}
-
-		if (idx == -1) {
-			continue;
-		}
-		editor_plugins[idx]->set_state(kv.value);
 	}
 }
 
@@ -407,8 +388,8 @@ void EditorData::load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_
 	es.editor_states = states;
 
 	const Node *root = es.root;
-	if (root && p_config_file->has_section_key("editor_states", "selected_nodes")) {
-		TypedArray<NodePath> node_paths = p_config_file->get_value("editor_states", "selected_nodes");
+	if (root && p_config_file->has_section_key("editor_states", "$selected_nodes")) {
+		TypedArray<NodePath> node_paths = p_config_file->get_value("editor_states", "$selected_nodes");
 		List<Node *> nodes;
 
 		for (const Variant &np : node_paths) {
@@ -649,7 +630,9 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 
 	for (const PropertyInfo &pi : pinfo) {
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
+			// For comma-separated lists, instantiate the first item in the list (which is assumed to cover the most common use case).
+			// This is a situation where listing a subclass before a parent class makes sense (e.g. "NoiseTexture2D,Texture2D").
+			Object *prop = ClassDB::instantiate(String(pi.class_name).get_slicec(',', 0));
 			p_object->set(pi.name, prop);
 		}
 	}
@@ -708,6 +691,8 @@ void EditorData::remove_scene(int p_idx) {
 		undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
 	}
 	edited_scene.remove_at(p_idx);
+	// Removing scene also removes its editing history, which might invalidate the edited object.
+	InspectorDock::get_inspector_singleton()->cleanup_object();
 }
 
 void EditorData::set_scene_root(int p_idx, Node *p_root) {
@@ -726,6 +711,13 @@ void EditorData::set_scene_root(int p_idx, Node *p_root) {
 	if (!scene_info.path.is_empty()) {
 		scene_info.file_modified_time = FileAccess::get_modified_time(scene_info.path);
 	}
+}
+
+void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	EditedScene &scene_info = edited_scene.write[p_idx];
+
+	scene_info.scene = p_scene;
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
@@ -806,6 +798,9 @@ bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
 			new_selection.push_back(new_node);
 		}
 	}
+
+	// Make sure no editor is editing a node when the scene is freed.
+	EditorNode::get_singleton()->hide_unused_editors(SceneTreeDock::get_singleton());
 
 	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
 	Node *old_root = edited_scene[p_idx].root;
@@ -972,7 +967,7 @@ String EditorData::get_scene_path(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 
 	if (edited_scene[p_idx].root) {
-		if (edited_scene[p_idx].root->get_scene_file_path().is_empty()) {
+		if (edited_scene[p_idx].root->get_scene_file_path().is_empty() && !edited_scene[p_idx].path.is_empty()) {
 			edited_scene[p_idx].root->set_scene_file_path(edited_scene[p_idx].path);
 		} else {
 			return edited_scene[p_idx].root->get_scene_file_path();
@@ -1024,9 +1019,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 
 void EditorData::clear_edited_scenes() {
 	for (int i = 0; i < edited_scene.size(); i++) {
-		if (edited_scene[i].root) {
-			memdelete(edited_scene[i].root);
-		}
+		memdelete(edited_scene[i].root);
 	}
 	edited_scene.clear();
 	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
@@ -1283,7 +1276,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
@@ -1301,7 +1294,7 @@ void EditorSelection::add_node(Node *p_node) {
 	node_list_changed = true;
 	Object *meta = nullptr;
 	for (Object *E : editor_plugins) {
-		meta = E->call("_get_editor_data", p_node);
+		meta = E->call(SNAME("_get_editor_data"), p_node);
 		if (meta) {
 			break;
 		}
@@ -1321,7 +1314,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	changed = true;
 	node_list_changed = true;
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));

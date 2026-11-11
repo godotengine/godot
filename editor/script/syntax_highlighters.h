@@ -141,3 +141,28 @@ public:
 
 	EditorConfigFileSyntaxHighlighter() { highlighter.instantiate(); }
 };
+
+class GDShaderSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(GDShaderSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+	Vector<Point2i> disabled_branch_regions;
+	Color disabled_branch_color;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
+
+	virtual PackedStringArray _get_supported_languages() const override { return PackedStringArray{ "gdshader", "gdshaderinc" }; }
+	virtual String _get_name() const override { return TTR("GDShader"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	GDShaderSyntaxHighlighter() { highlighter.instantiate(); }
+
+	void add_disabled_branch_region(const Point2i &p_region);
+	void clear_disabled_branch_regions();
+	void set_disabled_branch_color(const Color &p_color);
+};

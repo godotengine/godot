@@ -181,8 +181,8 @@
 			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="flags" type="int" default="0" />
 			<description>
-				Connects this signal to the specified [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum Object.ConnectFlags] constants). You can provide additional arguments to the connected [param callable] by using [method Callable.bind].
-				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant Object.CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
+				Connects this signal to the specified [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum Object.ConnectFlags] constants). You can provide additional arguments to the connected [param callable] by using [method Callable.bind]. Returns [constant OK] if the signal was successfully connected, or [constant ERR_INVALID_PARAMETER] if the [Callable] is null or invalid.
+				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and prints an error, unless the signal is connected with [constant Object.CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.
 				[codeblock]
 				for button in $Buttons.get_children():
 					button.pressed.connect(_on_pressed.bind(button))
@@ -197,7 +197,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Disconnects this signal from the specified [Callable]. If the connection does not exist, generates an error. Use [method is_connected] to make sure that the connection exists.
+				Disconnects this signal from the specified [Callable]. If the connection does not exist, prints an error. Use [method is_connected] to make sure that the connection exists.
 			</description>
 		</method>
 		<method name="emit" qualifiers="vararg const">

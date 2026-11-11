@@ -49,6 +49,7 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 	const float *weights = p_weights.ptr();
 	float weights_sum = 0.0;
 	for (int64_t i = 0; i < weights_size; ++i) {
+		ERR_FAIL_COND_V_MSG(weights[i] < 0.0, -1, vformat("Weight array contains the negative value %f at index %d.", weights[i], i));
 		weights_sum += weights[i];
 	}
 

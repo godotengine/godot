@@ -185,7 +185,7 @@ Rect2 NavRegion2D::get_bounds() const {
 	return iteration->get_bounds();
 }
 
-LocalVector<Nav2D::Polygon> const &NavRegion2D::get_polygons() const {
+const LocalVector<Nav2D::Polygon> &NavRegion2D::get_polygons() const {
 	RWLockRead read_lock(iteration_rwlock);
 	return iteration->get_navmesh_polygons();
 }

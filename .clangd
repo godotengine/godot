@@ -32,6 +32,16 @@ CompileFlags:
 
 ---
 
+# Stylistic rules; apply gradually to codebase.
+
+If:
+  PathExclude: core/.*
+Diagnostics:
+  ClangTidy:
+    Remove: [readability-identifier-naming]
+
+---
+
 # Suppress warnings for third-party or partial code.
 
 If:

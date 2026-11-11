@@ -40,4 +40,8 @@
 @property(nonatomic, readonly, strong) GDTView *godotView;
 @property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
 
+#ifdef IOS_ENABLED
+- (void)propagateUIPreferencesToRootViewController;
+#endif
+
 @end

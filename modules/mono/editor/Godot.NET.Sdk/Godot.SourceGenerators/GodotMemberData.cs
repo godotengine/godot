@@ -44,6 +44,10 @@ namespace Godot.SourceGenerators
 
         public IPropertySymbol PropertySymbol { get; }
         public MarshalType Type { get; }
+
+        public bool IsReadOnly => PropertySymbol.IsReadOnly ||
+                                  PropertySymbol.SetMethodOrBaseSetMethod() is { IsInitOnly: true };
+        public bool IsWriteOnly => PropertySymbol.IsWriteOnly;
     }
 
     public readonly struct GodotFieldData
@@ -56,6 +60,8 @@ namespace Godot.SourceGenerators
 
         public IFieldSymbol FieldSymbol { get; }
         public MarshalType Type { get; }
+
+        public bool IsReadOnly => FieldSymbol.IsReadOnly;
     }
 
     public struct GodotPropertyOrFieldData

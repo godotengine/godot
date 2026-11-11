@@ -13,7 +13,7 @@ The original C implementation is by Florian Loitsch:
 The implementation simplified and adapted to JSON and C++11 by Daniel Lemire as part of simdjson:
 - https://github.com/simdjson/simdjson/blob/master/src/to_chars.cpp
 
-The `grisu2.h` file is the same as `to_chars.cpp` but with `godot.patch` applied to it, with the following changes:
+The `grisu2.h` file is the same as `to_chars.cpp` but with `patches/0001-godot-changes.patch` applied to it, with the following changes:
 - Simplify namespaces to just be one `grisu2` namespace.
 - Rename functions to ensure their names are unique.
 - Make `to_chars` handle both float and double types instead of just double.

@@ -53,26 +53,24 @@ struct [[nodiscard]] Vector3i {
 		AXIS_Z,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-		};
+	int32_t x = 0;
+	int32_t y = 0;
+	int32_t z = 0;
 
-		int32_t coord[3] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	constexpr int32_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector3i, x) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector3i, y) == 1 * sizeof(int32_t));
+		static_assert(offsetof(Vector3i, z) == 2 * sizeof(int32_t));
+		static_assert(sizeof(Vector3i) == 3 * sizeof(int32_t));
 
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 3);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	Vector3i::Axis min_axis_index() const;
@@ -148,8 +146,7 @@ struct [[nodiscard]] Vector3i {
 		return hash_fmix32(h);
 	}
 
-	constexpr Vector3i() :
-			x(0), y(0), z(0) {}
+	constexpr Vector3i() = default;
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };
@@ -221,25 +218,25 @@ constexpr Vector3i Vector3i::operator*(const Vector3i &p_v) const {
 }
 
 constexpr Vector3i &Vector3i::operator/=(const Vector3i &p_v) {
-	x /= p_v.x;
-	y /= p_v.y;
-	z /= p_v.z;
+	x = Math::division_no_overflow(x, p_v.x);
+	y = Math::division_no_overflow(y, p_v.y);
+	z = Math::division_no_overflow(z, p_v.z);
 	return *this;
 }
 
 constexpr Vector3i Vector3i::operator/(const Vector3i &p_v) const {
-	return Vector3i(x / p_v.x, y / p_v.y, z / p_v.z);
+	return Vector3i(Math::division_no_overflow(x, p_v.x), Math::division_no_overflow(y, p_v.y), Math::division_no_overflow(z, p_v.z));
 }
 
 constexpr Vector3i &Vector3i::operator%=(const Vector3i &p_v) {
-	x %= p_v.x;
-	y %= p_v.y;
-	z %= p_v.z;
+	x = Math::modulo_no_overflow(x, p_v.x);
+	y = Math::modulo_no_overflow(y, p_v.y);
+	z = Math::modulo_no_overflow(z, p_v.z);
 	return *this;
 }
 
 constexpr Vector3i Vector3i::operator%(const Vector3i &p_v) const {
-	return Vector3i(x % p_v.x, y % p_v.y, z % p_v.z);
+	return Vector3i(Math::modulo_no_overflow(x, p_v.x), Math::modulo_no_overflow(y, p_v.y), Math::modulo_no_overflow(z, p_v.z));
 }
 
 constexpr Vector3i &Vector3i::operator*=(int32_t p_scalar) {
@@ -272,25 +269,25 @@ constexpr Vector3i operator*(double p_scalar, const Vector3i &p_vector) {
 }
 
 constexpr Vector3i &Vector3i::operator/=(int32_t p_scalar) {
-	x /= p_scalar;
-	y /= p_scalar;
-	z /= p_scalar;
+	x = Math::division_no_overflow(x, p_scalar);
+	y = Math::division_no_overflow(y, p_scalar);
+	z = Math::division_no_overflow(z, p_scalar);
 	return *this;
 }
 
 constexpr Vector3i Vector3i::operator/(int32_t p_scalar) const {
-	return Vector3i(x / p_scalar, y / p_scalar, z / p_scalar);
+	return Vector3i(Math::division_no_overflow(x, p_scalar), Math::division_no_overflow(y, p_scalar), Math::division_no_overflow(z, p_scalar));
 }
 
 constexpr Vector3i &Vector3i::operator%=(int32_t p_scalar) {
-	x %= p_scalar;
-	y %= p_scalar;
-	z %= p_scalar;
+	x = Math::modulo_no_overflow(x, p_scalar);
+	y = Math::modulo_no_overflow(y, p_scalar);
+	z = Math::modulo_no_overflow(z, p_scalar);
 	return *this;
 }
 
 constexpr Vector3i Vector3i::operator%(int32_t p_scalar) const {
-	return Vector3i(x % p_scalar, y % p_scalar, z % p_scalar);
+	return Vector3i(Math::modulo_no_overflow(x, p_scalar), Math::modulo_no_overflow(y, p_scalar), Math::modulo_no_overflow(z, p_scalar));
 }
 
 constexpr Vector3i Vector3i::operator-() const {

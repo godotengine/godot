@@ -259,9 +259,10 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	{
+		missing_base_dir = false;
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->change_dir(p.get_base_dir()) != OK) {
-			return TTRC("Base path is invalid.");
+			missing_base_dir = true;
 		}
 	}
 
@@ -280,22 +281,12 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	}
 
 	// Check file extension.
-	String extension = p.get_extension();
-	List<String> extensions;
-
-	// Get all possible extensions for script.
-	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
-	}
-
 	bool found = false;
 	bool match = false;
-	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
+	for (int l = 0; l < language_menu->get_item_count(); l++) {
+		if (p.has_extension(ScriptServer::get_language(l)->get_extension())) {
 			found = true;
-			if (E == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
-				match = true;
-			}
+			match = l == language_menu->get_selected();
 			break;
 		}
 	}
@@ -350,6 +341,16 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 }
 
 void ScriptCreateDialog::ok_pressed() {
+	if (missing_base_dir) {
+		String path = file_path->get_text();
+		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(path.strip_edges().get_base_dir());
+		if (err != OK) {
+			alert->set_text(TTR("Error - Could not create the directory for the script."));
+			alert->popup_centered();
+			return;
+		}
+	}
+
 	if (is_new_script_created) {
 		_create_new();
 		if (_can_be_built_in()) {
@@ -466,15 +467,9 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 	}
 
 	file_browse->set_customization_flag_enabled(FileDialog::CUSTOMIZATION_OVERWRITE_WARNING, false);
+
 	file_browse->clear_filters();
-	List<String> extensions;
-
-	int lang = language_menu->get_selected();
-	ScriptServer::get_language(lang)->get_recognized_extensions(&extensions);
-
-	for (const String &E : extensions) {
-		file_browse->add_filter("*." + E);
-	}
+	file_browse->add_filter("*." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 
 	file_browse->set_current_path(file_path->get_text());
 	file_browse->popup_file_dialog();
@@ -626,6 +621,10 @@ void ScriptCreateDialog::_update_dialog() {
 	_update_template_menu();
 
 	// Is script path/name valid (order from top to bottom)?
+
+	if (missing_base_dir) {
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Base path is invalid, the target folder will be created automatically."), EditorValidationPanel::MSG_WARNING);
+	}
 
 	if (!is_built_in && !is_path_valid) {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
@@ -1023,6 +1022,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	add_child(file_browse);
 	set_ok_button_text(TTR("Create"));
 	alert = memnew(AcceptDialog);
+	alert->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

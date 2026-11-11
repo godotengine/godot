@@ -638,6 +638,9 @@ namespace respv {
         case SpvOpFunctionEnd:
         case SpvOpExtension:
         case SpvOpUndef:
+        case SpvOpSource:
+        case SpvOpName:
+        case SpvOpMemberName:
             rOperandWordStart = 0;
             rOperandWordCount = 0;
             rOperandWordStride = 0;
@@ -2310,8 +2313,6 @@ namespace respv {
         std::vector<Resolution> &resolutions;
         std::vector<uint8_t> &optimizedData;
         Options options;
-
-        OptimizerContext() = delete;
     };
 
     static void optimizerEliminateInstruction(uint32_t pInstructionIndex, OptimizerContext &rContext) {
@@ -2695,7 +2696,26 @@ namespace respv {
         }
     }
 
-    static void optimizerReduceLabelDegree(uint32_t pFirstLabelId, OptimizerContext &rContext) {
+    static bool optimizerCheckAdjacencyList(uint32_t pInstructionIndex, uint32_t pAdjacentInstructionIndex, OptimizerContext& rContext) {
+        uint32_t listIndex = rContext.instructionAdjacentListIndices[pInstructionIndex];
+        while (listIndex != UINT32_MAX) {
+            uint32_t adjacentInstructionIndex = rContext.listNodes[listIndex].instructionIndex;
+            if (adjacentInstructionIndex == pAdjacentInstructionIndex) {
+                return true;
+            }
+
+            listIndex = rContext.listNodes[listIndex].nextListIndex;
+        }
+
+        return false;
+    }
+
+    static bool optimizerReduceLabelDegree(uint32_t pFirstInstructionIndex, uint32_t pFirstLabelId, OptimizerContext &rContext) {
+        // Validate whether the label is part of the adjacent instruction list of the first instruction.
+        if (!optimizerCheckAdjacencyList(pFirstInstructionIndex, rContext.shader.results[pFirstLabelId].instructionIndex, rContext)) {
+            return false;
+        }
+
         thread_local std::vector<uint32_t> labelStack;
         thread_local std::vector<uint32_t> resultStack;
         thread_local std::vector<uint32_t> degreeReductions;
@@ -2766,6 +2786,8 @@ namespace respv {
         }
 
         optimizerReduceResultDegrees(rContext, resultStack);
+
+        return true;
     }
 
     static void optimizerEvaluateTerminator(uint32_t pInstructionIndex, OptimizerContext &rContext) {
@@ -2775,7 +2797,9 @@ namespace respv {
         uint32_t *optimizedWords = reinterpret_cast<uint32_t *>(rContext.optimizedData.data());
         SpvOp opCode = SpvOp(optimizedWords[wordIndex] & 0xFFFFU);
         uint32_t wordCount = (optimizedWords[wordIndex] >> 16U) & 0xFFFFU;
-        uint32_t defaultLabelId = UINT32_MAX;
+        uint32_t newDefaultLabelCondition = UINT32_MAX;
+        uint32_t newDefaultLabelId = UINT32_MAX;
+        bool terminatorReduced = false;
 
         // Both instructions share that the second word is the operator they must use to resolve the condition.
         // Operator can't be anything but a constant to be able to resolve a terminator.
@@ -2788,78 +2812,98 @@ namespace respv {
         if (opCode == SpvOpBranchConditional) {
             // Branch conditional only needs to choose either label depending on whether the result is true or false.
             if (operatorResolution.value.u32) {
-                defaultLabelId = optimizedWords[wordIndex + 2];
-                optimizerReduceLabelDegree(optimizedWords[wordIndex + 3], rContext);
+                newDefaultLabelId = optimizedWords[wordIndex + 2];
+                terminatorReduced = optimizerReduceLabelDegree(pInstructionIndex, optimizedWords[wordIndex + 3], rContext);
             }
             else {
-                defaultLabelId = optimizedWords[wordIndex + 3];
-                optimizerReduceLabelDegree(optimizedWords[wordIndex + 2], rContext);
+                newDefaultLabelId = optimizedWords[wordIndex + 3];
+                terminatorReduced = optimizerReduceLabelDegree(pInstructionIndex, optimizedWords[wordIndex + 2], rContext);
             }
 
-            // If there's a selection merge before this branch, we place the unconditional branch in its place.
-            const uint32_t mergeWordCount = 3;
-            uint32_t mergeWordIndex = wordIndex - mergeWordCount;
-            SpvOp mergeOpCode = SpvOp(optimizedWords[mergeWordIndex] & 0xFFFFU);
+            if (terminatorReduced) {
+                // If there's a selection merge before this branch, we place the unconditional branch in its place.
+                uint32_t mergeInstructionIndex = pInstructionIndex - 1;
+                uint32_t mergeWordIndex = rContext.shader.instructions[mergeInstructionIndex].wordIndex;
+                SpvOp mergeOpCode = SpvOp(optimizedWords[mergeWordIndex] & 0xFFFFU);
 
-            uint32_t patchWordIndex;
-            if (mergeOpCode == SpvOpSelectionMerge) {
-                optimizerReduceLabelDegree(optimizedWords[mergeWordIndex + 1], rContext);
-                patchWordIndex = mergeWordIndex;
-            }
-            else {
-                patchWordIndex = wordIndex;
-            }
+                uint32_t patchWordIndex;
+                if (mergeOpCode == SpvOpSelectionMerge) {
+                    optimizerReduceLabelDegree(mergeInstructionIndex, optimizedWords[mergeWordIndex + 1], rContext);
+                    patchWordIndex = mergeWordIndex;
+                }
+                else {
+                    patchWordIndex = wordIndex;
+                }
 
-            // Make the final label the new default case and reduce the word count.
-            optimizedWords[patchWordIndex] = SpvOpBranch | (2U << 16U);
-            optimizedWords[patchWordIndex + 1] = defaultLabelId;
+                // Make the final label the new default case and reduce the word count.
+                optimizedWords[patchWordIndex] = SpvOpBranch | (2U << 16U);
+                optimizedWords[patchWordIndex + 1] = newDefaultLabelId;
 
-            // Eliminate any remaining words on the block.
-            for (uint32_t i = patchWordIndex + 2; i < (wordIndex + wordCount); i++) {
-                optimizedWords[i] = UINT32_MAX;
+                // Eliminate any remaining words on the block.
+                for (uint32_t i = patchWordIndex + 2; i < (wordIndex + wordCount); i++) {
+                    optimizedWords[i] = UINT32_MAX;
+                }
             }
         }
         else if (opCode == SpvOpSwitch) {
+            thread_local std::vector<uint32_t> remainingCaseWords;
+            remainingCaseWords.clear();
+
             // Switch must compare the integer result of the operator to all the possible labels.
-            // If the label is not as possible result, then reduce its block's degree.
+            // If the label is not a possible result, then reduce its block's degree.
             for (uint32_t i = 3; i < wordCount; i += 2) {
                 if (operatorResolution.value.u32 == optimizedWords[wordIndex + i]) {
-                    defaultLabelId = optimizedWords[wordIndex + i + 1];
+                    newDefaultLabelCondition = optimizedWords[wordIndex + i];
+                    newDefaultLabelId = optimizedWords[wordIndex + i + 1];
                 }
-                else {
-                    optimizerReduceLabelDegree(optimizedWords[wordIndex + i + 1], rContext);
+                else if (!optimizerReduceLabelDegree(pInstructionIndex, optimizedWords[wordIndex + i + 1], rContext)) {
+                    remainingCaseWords.emplace_back(optimizedWords[wordIndex + i]);
+                    remainingCaseWords.emplace_back(optimizedWords[wordIndex + i + 1]);
                 }
             }
 
             // If none are chosen, the default label is selected. Otherwise, reduce the block's degree
-            // for the default label.
-            if (defaultLabelId == UINT32_MAX) {
-                defaultLabelId = optimizedWords[wordIndex + 2];
+            // for the default label. If the label can't be reduced, keep the old default label and
+            // reinsert the case again that was chosen as the new default label.
+            if (newDefaultLabelId == UINT32_MAX) {
+                newDefaultLabelId = optimizedWords[wordIndex + 2];
             }
-            else {
-                optimizerReduceLabelDegree(optimizedWords[wordIndex + 2], rContext);
+            else if (!optimizerReduceLabelDegree(pInstructionIndex, optimizedWords[wordIndex + 2], rContext)) {
+                remainingCaseWords.emplace_back(newDefaultLabelCondition);
+                remainingCaseWords.emplace_back(newDefaultLabelId);
             }
+
+            terminatorReduced = remainingCaseWords.empty();
 
             // Make the final label the new default case and reduce the word count.
-            optimizedWords[wordIndex] = SpvOpSwitch | (3U << 16U);
-            optimizedWords[wordIndex + 1] = rContext.shader.defaultSwitchOpConstantInt;
-            optimizedWords[wordIndex + 2] = defaultLabelId;
+            uint32_t extraWords = uint32_t(remainingCaseWords.size());
+            optimizedWords[wordIndex] = SpvOpSwitch | ((3U + extraWords) << 16U);
+            optimizedWords[wordIndex + 1] = terminatorReduced ? rContext.shader.defaultSwitchOpConstantInt : operatorId;
+            optimizedWords[wordIndex + 2] = newDefaultLabelId;
 
-            // Increase the degree of the default constant that was chosen so it's not considered as dead code.
-            uint32_t defaultConstantInstructionIndex = rContext.shader.results[rContext.shader.defaultSwitchOpConstantInt].instructionIndex;
-            rContext.instructionOutDegrees[defaultConstantInstructionIndex]++;
+            for (uint32_t j = 0; j < extraWords; j++) {
+                optimizedWords[wordIndex + 3 + j] = remainingCaseWords[j];
+            }
+
+            if (terminatorReduced) {
+                // Increase the degree of the default constant that was chosen so it's not considered as dead code.
+                uint32_t defaultConstantInstructionIndex = rContext.shader.results[rContext.shader.defaultSwitchOpConstantInt].instructionIndex;
+                rContext.instructionOutDegrees[defaultConstantInstructionIndex]++;
+            }
 
             // Eliminate any remaining words on the block.
-            for (uint32_t i = wordIndex + 3; i < (wordIndex + wordCount); i++) {
+            for (uint32_t i = wordIndex + 3 + extraWords; i < (wordIndex + wordCount); i++) {
                 optimizedWords[i] = UINT32_MAX;
             }
         }
 
-        // The condition operator can be discarded.
-        thread_local std::vector<uint32_t> resultStack;
-        resultStack.clear();
-        resultStack.emplace_back(operatorId);
-        optimizerReduceResultDegrees(rContext, resultStack);
+        if (terminatorReduced) {
+            // The condition operator can be discarded.
+            thread_local std::vector<uint32_t> resultStack;
+            resultStack.clear();
+            resultStack.emplace_back(operatorId);
+            optimizerReduceResultDegrees(rContext, resultStack);
+        }
     }
 
     static bool optimizerCompactPhi(uint32_t pInstructionIndex, OptimizerContext &rContext) {

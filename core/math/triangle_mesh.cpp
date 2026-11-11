@@ -522,6 +522,14 @@ Vector<Face3> TriangleMesh::get_faces() const {
 	return faces;
 }
 
+AABB TriangleMesh::get_aabb() const {
+	if (!valid) {
+		return AABB();
+	}
+
+	return bvh[bvh.size() - 1].aabb;
+}
+
 bool TriangleMesh::create_from_faces(const Vector<Vector3> &p_faces) {
 	create(p_faces);
 	return is_valid();

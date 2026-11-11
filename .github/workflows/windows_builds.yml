@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -93,11 +93,6 @@ jobs:
             echo "ANGLE_ENABLED=no" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Download WinRT components
-        shell: sh
-        run: python ./misc/scripts/install_winrt.py
-        continue-on-error: true
-
       - name: Download pre-built AccessKit
         shell: sh
         id: accesskit-sdk
@@ -125,6 +120,7 @@ jobs:
       - name: Prepare artifact
         if: matrix.compiler == 'msvc'
         run: |
+          Remove-Item bin/build_deps -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact

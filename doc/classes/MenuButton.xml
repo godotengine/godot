@@ -45,6 +45,7 @@
 		<member name="popup/item_{index}/checked" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the item at [code]index[/code] is checked.
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+			[b]Note:[/b] An item cannot be both in a checked and indeterminate state, so if [code]checked[/code] is set to [code]true[/code], [member popup/item_{index}/indeterminate] will be set to [code]false[/code].
 		</member>
 		<member name="popup/item_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the item at [code]index[/code] is disabled.
@@ -57,6 +58,11 @@
 		<member name="popup/item_{index}/id" type="int" setter="" getter="" default="0">
 			The ID of the item at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+		</member>
+		<member name="popup/item_{index}/indeterminate" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the item at [code]index[/code] is in an indeterminate state.
+			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. item_count - 1[/code] range.
+			[b]Note:[/b] An item cannot be both in a checked and indeterminate state, so if [code]indeterminate[/code] is set to [code]true[/code], [member popup/item_{index}/checked] will be set to [code]false[/code].
 		</member>
 		<member name="popup/item_{index}/separator" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the item at [code]index[/code] is a separator.

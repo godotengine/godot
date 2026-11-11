@@ -26,6 +26,7 @@
 		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
 			The name of the attached bone.
 		</member>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="position_offset" type="Vector3" setter="set_position_offset" getter="get_position_offset">
 			The offset of the position from [Skeleton3D]'s [member bone] pose position.
 		</member>

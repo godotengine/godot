@@ -48,13 +48,24 @@ namespace Godot.SourceGenerators
             return false;
         }
 
+        public static string? GetPropertyInfoClassName(this INamedTypeSymbol memberSymbol)
+        {
+            if (memberSymbol.GetAttributes()
+                .Any(a => a.AttributeClass?.IsGodotGlobalClassAttribute() ?? false))
+            {
+                return memberSymbol.Name;
+            }
+
+            return memberSymbol.GetGodotScriptNativeClassName();
+        }
+
         public static INamedTypeSymbol? GetGodotScriptNativeClass(this INamedTypeSymbol classTypeSymbol)
         {
             var symbol = classTypeSymbol;
 
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly?.Name == "GodotSharp")
+                if (symbol.ContainingAssembly is { Name: "GodotSharp" or "GodotSharpEditor" })
                     return symbol;
 
                 symbol = symbol.BaseType;
@@ -299,6 +310,9 @@ namespace Godot.SourceGenerators
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;
 
+        public static bool IsGodotIgnoreMemberAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.IgnoreMemberAttr;
+
         public static GodotMethodData? HasGodotCompatibleSignature(
             this IMethodSymbol method,
             MarshalUtils.TypeCache typeCache
@@ -393,5 +407,58 @@ namespace Godot.SourceGenerators
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
                ?? location.GetLineSpan().StartLinePosition.Line;
+
+        public static IMethodSymbol? GetMethodOrBaseGetMethod(this IPropertySymbol symbol)
+        {
+            return symbol.GetMethod ?? symbol.OverriddenProperty?.GetMethodOrBaseGetMethod();
+        }
+
+        public static IMethodSymbol? SetMethodOrBaseSetMethod(this IPropertySymbol symbol)
+        {
+            return symbol.SetMethod ?? symbol.OverriddenProperty?.SetMethodOrBaseSetMethod();
+        }
+
+        public static INamedTypeSymbol? GetClosestBaseTypeDeclaringGodotInternalMethod(
+            this INamedTypeSymbol classTypeSymbol, string godotInternalMethod)
+        {
+            var nativeClassTypeSymbol = classTypeSymbol.GetGodotScriptNativeClass();
+
+            var top = classTypeSymbol;
+
+            do
+            {
+                top = top.BaseType;
+
+                if (top == null ||
+                    SymbolEqualityComparer.Default.Equals(top, nativeClassTypeSymbol))
+                {
+                    // Reached a native class, stop looking.
+                    return null;
+                }
+            } while (
+                // Ignore while the type is extern AND...
+                top.IsExtern && (
+                    // not accessible from a derived class in this project OR...
+                    !IsExternSymbolAccessibleFromDerivedClass(top) ||
+                    // doesn't contain a GodotInternal type THAT IS...
+                    !top.GetTypeMembers("GodotInternal").Any(t =>
+                        // accessible from a derived class in this project AND...
+                        IsExternSymbolAccessibleFromDerivedClass(t)
+                        // has the method we're looking for.
+                        && t.MemberNames.Contains(godotInternalMethod)
+                    )
+                )
+            );
+
+            return top;
+
+            static bool IsExternSymbolAccessibleFromDerivedClass(INamedTypeSymbol externSymbol) =>
+                externSymbol.DeclaredAccessibility
+                    is not (Accessibility.NotApplicable
+                    or Accessibility.Private
+                    // C#'s 'private protected'. Access is granted derived classes BUT only within the same assembly.
+                    or Accessibility.ProtectedAndInternal or Accessibility.ProtectedAndFriend
+                    or Accessibility.Internal);
+        }
     }
 }

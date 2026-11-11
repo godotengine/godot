@@ -282,7 +282,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	for (KeyValue<int, PeerInfo> &E : peers_info) {
 		E.value.sync_nodes.erase(sid);
 		E.value.last_watch_usecs.erase(sid);
-		if (sync->get_net_id()) {
+		if (sync->get_net_id() && uint32_t(E.key) == tobj.remote_peer) {
 			E.value.recv_sync_ids.erase(sync->get_net_id());
 		}
 	}
@@ -520,7 +520,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 
 	// Encode scene ID, path ID, net ID, node name.
 	int path_id = multiplayer_cache->make_object_cache(p_spawner);
-	CharString cname = p_node->get_name().operator String().utf8();
+	CharString cname = p_node->get_name().string().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
 	uint8_t *ptr = packet_cache.ptrw();

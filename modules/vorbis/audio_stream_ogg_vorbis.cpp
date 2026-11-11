@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
 #include "core/templates/rb_map.h"
+#include "servers/audio/audio_server.h"
 
 #include <ogg/ogg.h>
 
@@ -428,10 +429,6 @@ Ref<AudioStreamPlayback> AudioStreamOggVorbis::instantiate_playback() {
 	return nullptr;
 }
 
-String AudioStreamOggVorbis::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
 void AudioStreamOggVorbis::maybe_update_info() {
 	ERR_FAIL_COND(packet_sequence.is_null());
 
@@ -567,13 +564,13 @@ void AudioStreamOggVorbis::get_parameter_list(List<Parameter> *r_parameters) {
 }
 
 Ref<AudioSample> AudioStreamOggVorbis::generate_sample() const {
+	const int mix_rate = AudioServer::get_singleton()->get_mix_rate();
 	Ref<AudioSample> sample;
 	sample.instantiate();
 	sample->stream = this;
-	sample->loop_mode = loop
-			? AudioSample::LoopMode::LOOP_FORWARD
-			: AudioSample::LoopMode::LOOP_DISABLED;
-	sample->loop_begin = loop_offset;
+	sample->loop_mode = loop ? AudioSample::LoopMode::LOOP_FORWARD : AudioSample::LoopMode::LOOP_DISABLED;
+	sample->sample_rate = mix_rate;
+	sample->loop_begin = Math::round(loop_offset * mix_rate);
 	sample->loop_end = 0;
 	return sample;
 }
@@ -737,7 +734,3 @@ void AudioStreamOggVorbis::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
-
-AudioStreamOggVorbis::AudioStreamOggVorbis() {}
-
-AudioStreamOggVorbis::~AudioStreamOggVorbis() {}

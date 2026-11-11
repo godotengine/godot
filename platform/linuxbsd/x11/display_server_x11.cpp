@@ -1662,7 +1662,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
-	//Get physical monitor Dimensions through XRandR and calculate dpi
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
@@ -1693,8 +1693,56 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 	}
 
-	//could not get dpi
+	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerX11::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 1.0);
+
+	// KDE on X11 stores fractional scaling in the Xsettings configuration file.
+	// Other desktop environments such as GNOME usually only support fractional scaling on Wayland.
+	// <https://wiki.archlinux.org/title/Xsettingsd>
+	const String xsettings_path = OS::get_singleton()->get_environment("HOME").path_join(".config/xsettingsd/xsettingsd.conf");
+	if (FileAccess::exists(xsettings_path)) {
+		Ref<FileAccess> file = FileAccess::open(xsettings_path, FileAccess::READ);
+		if (file.is_valid()) {
+			// The display scaling value is split into an integer portion, and a fractional part reported as `dpi * 1024`.
+			// The fractional part rolls over to `96 * 1024 = 98304` when reaching a new integer scale factor.
+			//
+			// We do not use the value reported by `screen_get_dpi()` as it reports the actual physical DPI of the monitor,
+			// rather than a pseudo-DPI value meant for scaling (which is always 96 DPI at 100% scaling, like on Windows).
+			int window_scaling_factor = 1;
+			float dpi = 0.0;
+			while (!file->eof_reached()) {
+				const String line = file->get_line().strip_edges();
+
+				if (line.begins_with("Gdk/WindowScalingFactor")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						window_scaling_factor = parts[1].to_int();
+					}
+				}
+
+				if (line.begins_with("Gdk/UnscaledDPI")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						dpi = parts[1].to_float() / 1024.0;
+					}
+				}
+			}
+
+			if (dpi > 0.0) {
+				return (dpi * MAX(window_scaling_factor, 1)) / 96.0;
+			}
+		}
+	}
+
+	// Could not get scale factor.
+	return 1.0;
 }
 
 int get_image_errorhandler(Display *dpy, XErrorEvent *ev) {
@@ -2439,6 +2487,9 @@ void DisplayServerX11::window_set_transient(DisplayServerEnums::WindowID p_windo
 			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup && _window_focus_check()) {
 				_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 			}
+		} else if (wd_window.focused && wd_window.ime_active && wd_parent.is_popup && (xwa.map_state == IsViewable)) {
+			// Popups are not managed by the window manager, so focus taken by the IME window of a nested popup (e.g. its search bar) has to be returned to the parent popup manually.
+			_set_input_focus(wd_parent.x11_window, RevertToPointerRoot);
 		}
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
@@ -3241,7 +3292,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			const uint8_t *r = w_icon->get_data().ptr();
 
 			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
+			const uint8_t *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
 				long v = 0;
@@ -3351,7 +3402,7 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 			xev.data.l[3] = 1;
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 
-			if (!p_enabled && !wd.fullscreen) {
+			if (!p_enabled && !wd.fullscreen && !wd.maximized) {
 				_set_wm_maximized(p_window, false);
 			}
 			wd.on_top = p_enabled;
@@ -3669,6 +3720,9 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Di
 		ERR_FAIL_NULL(cursor_image->pixels);
 
 		// Save it for a further usage
+		if (cursors[p_shape] != None) {
+			XFreeCursor(x11_display, cursors[p_shape]);
+		}
 		cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_image);
 
 		Vector<Variant> params;
@@ -3688,6 +3742,11 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Di
 		XcursorImageDestroy(cursor_image);
 	} else {
 		// Reset to default system cursor
+		if (cursors[p_shape] != None) {
+			XFreeCursor(x11_display, cursors[p_shape]);
+		}
+		cursors[p_shape] = None;
+
 		if (cursor_img[p_shape]) {
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
@@ -3698,6 +3757,12 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Di
 		current_cursor = DisplayServerEnums::CURSOR_MAX;
 		cursor_set_shape(c);
 	}
+}
+
+void DisplayServerX11::cursor_clear_custom_image_cache() {
+	_THREAD_SAFE_METHOD_
+
+	cursors_cache.clear();
 }
 
 bool DisplayServerX11::get_swap_cancel_ok() {
@@ -4915,6 +4980,9 @@ void DisplayServerX11::process_events() {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
+
+				// Release pressed events here instead of FocusOut because it's a no-op until NOTIFICATION_APPLICATION_FOCUS_OUT is processed.
+				Input::get_singleton()->release_pressed_events();
 			}
 		} else {
 			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
@@ -5274,8 +5342,6 @@ void DisplayServerX11::process_events() {
 					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
 				wd.focused = false;
-
-				Input::get_singleton()->release_pressed_events();
 
 				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
@@ -7365,7 +7431,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 					fallback = "bd_double_arrow";
 					break;
 				case DisplayServerEnums::CURSOR_MOVE:
-					cursor_img[i] = cursor_img[DisplayServerEnums::CURSOR_DRAG];
+					// Fallback to DRAG, but reload instead of aliasing to avoid double-free on cleanup.
+					cursor_img[i] = XcursorLibraryLoadImage("fleur", cursor_theme, cursor_size);
+					if (!cursor_img[i]) {
+						fallback = "grabbing";
+					}
 					break;
 				case DisplayServerEnums::CURSOR_VSPLIT:
 					fallback = "sb_v_double_arrow";
@@ -7469,8 +7539,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 DisplayServerX11::~DisplayServerX11() {
 	// Send owned clipboard data to clipboard manager before exit.
 	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
-	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
-	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
+	if (x11_main_window) {
+		_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
+		_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
+	}
 
 	events_thread_done.set();
 	events_thread.wait_to_finish();
@@ -7507,7 +7579,9 @@ DisplayServerX11::~DisplayServerX11() {
 			XDestroyIC(wd.xic);
 			wd.xic = nullptr;
 		}
-		XDestroyWindow(x11_display, wd.x11_xim_window);
+		if (x11_display) {
+			XDestroyWindow(x11_display, wd.x11_xim_window);
+		}
 #ifdef XKB_ENABLED
 		if (xkb_loaded_v05p) {
 			if (wd.xkb_state) {
@@ -7516,8 +7590,10 @@ DisplayServerX11::~DisplayServerX11() {
 			}
 		}
 #endif
-		XUnmapWindow(x11_display, wd.x11_window);
-		XDestroyWindow(x11_display, wd.x11_window);
+		if (x11_display) {
+			XUnmapWindow(x11_display, wd.x11_window);
+			XDestroyWindow(x11_display, wd.x11_window);
+		}
 	}
 
 #ifdef XKB_ENABLED
@@ -7572,27 +7648,22 @@ DisplayServerX11::~DisplayServerX11() {
 		XCloseIM(xim);
 	}
 
-	XCloseDisplay(x11_display);
+	if (x11_display) {
+		XCloseDisplay(x11_display);
+	}
+
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
 
 #ifdef SPEECHD_ENABLED
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete(tts);
 #endif
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
-		memdelete(screensaver);
-	}
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
-	if (atspi_monitor) {
-		memdelete(atspi_monitor);
-	}
+	memdelete(screensaver);
+	memdelete(portal_desktop);
+	memdelete(atspi_monitor);
 #endif
 }
 

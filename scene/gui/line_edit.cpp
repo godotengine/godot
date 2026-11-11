@@ -126,7 +126,8 @@ void LineEdit::_close_ime_window() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_position(Point2i(), wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(Rect2i(), wid);
 	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 }
 
@@ -135,15 +136,19 @@ void LineEdit::_update_ime_window_position() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2) + get_global_position();
+	Rect2i rect = Rect2i(get_global_position(), get_size());
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
+		rect.position += get_viewport()->get_popup_base_transform().get_origin();
 	}
 	// Take into account the window's transform.
 	pos = get_window()->get_screen_transform().xform(pos);
+	rect = get_window()->get_screen_transform().xform(rect);
 	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(rect, wid);
 }
 
 bool LineEdit::has_ime_text() const {
@@ -199,6 +204,8 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 		return;
 	}
 
+	const int previous_caret_column = caret_column;
+
 	shift_selection_check_pre(p_select);
 
 	if (p_move_by_word) {
@@ -228,6 +235,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
@@ -236,6 +244,8 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 		deselect();
 		return;
 	}
+
+	const int previous_caret_column = caret_column;
 
 	shift_selection_check_pre(p_select);
 
@@ -266,18 +276,23 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 
 	shift_selection_check_post(p_select);
 	_reset_caret_blink_timer();
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_start(bool p_select) {
+	const int previous_caret_column = caret_column;
 	shift_selection_check_pre(p_select);
 	set_caret_column(0);
 	shift_selection_check_post(p_select);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_move_caret_end(bool p_select) {
+	const int previous_caret_column = caret_column;
 	shift_selection_check_pre(p_select);
 	set_caret_column(text.length());
 	shift_selection_check_post(p_select);
+	_play_caret_moved_sound(caret_column != previous_caret_column);
 }
 
 void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
@@ -291,6 +306,7 @@ void LineEdit::_backspace(bool p_word, bool p_all_to_left) {
 	}
 
 	if (caret_column == 0) {
+		play_theme_sound(theme_cache.text_change_rejected_sound);
 		return; // Nothing to do.
 	}
 
@@ -337,6 +353,7 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 	}
 
 	if (caret_column == text.length()) {
+		play_theme_sound(theme_cache.text_change_rejected_sound);
 		return; // Nothing to do.
 	}
 
@@ -373,6 +390,16 @@ void LineEdit::_delete(bool p_word, bool p_all_to_right) {
 			set_caret_column(TS->shaped_text_next_character_pos(text_rid, caret_column));
 			delete_text(cc, caret_column);
 		}
+	}
+}
+
+void LineEdit::_play_caret_moved_sound(bool p_valid) {
+	if (p_valid) {
+		play_theme_sound(theme_cache.caret_moved_sound);
+	} else if (!last_key_is_echo) {
+		// Only play the rejected sound if the last key was not a repeat
+		// to avoid spamming the sound effect (since the caret won't have further moved).
+		play_theme_sound(theme_cache.caret_move_rejected_sound);
 	}
 }
 
@@ -516,6 +543,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			set_caret_at_pixel_pos(b->get_position().x);
+			play_theme_sound(theme_cache.caret_moved_sound);
 
 			if (b->is_shift_pressed()) {
 				selection_fill_at_caret();
@@ -921,12 +949,15 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	last_key_is_echo = k->is_echo();
+
 	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 	if (k->is_action_pressed("ui_text_submit")) {
 		emit_signal(SceneStringName(text_submitted), text);
 
 		if (editing && !keep_editing_on_text_submit) {
 			unedit();
+			play_theme_sound(theme_cache.text_submitted_sound);
 			emit_signal(SNAME("editing_toggled"), false);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -956,12 +987,18 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Undo / Redo
 		if (k->is_action("ui_undo", true)) {
+			if (!has_undo()) {
+				play_theme_sound(theme_cache.text_change_rejected_sound);
+			}
 			undo();
 			accept_event();
 			return;
 		}
 
 		if (k->is_action("ui_redo", true)) {
+			if (!has_redo()) {
+				play_theme_sound(theme_cache.text_change_rejected_sound);
+			}
 			redo();
 			accept_event();
 			return;
@@ -1101,6 +1138,12 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		l->set_text(t);
 		l->set_focus_mode(FOCUS_ACCESSIBILITY);
 		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
+		l->add_theme_font_override(SceneStringName(font), theme_cache.font);
+		l->add_theme_font_size_override(SceneStringName(font_size), theme_cache.font_size);
+		l->add_theme_constant_override(SNAME("outline_size"), theme_cache.font_outline_size);
+		l->add_theme_color_override(SceneStringName(font_color), theme_cache.font_color);
+		l->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
+		l->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty())); // Ensure that the label has no margins inherited from the theme.
 		set_drag_preview(l);
 		return t;
 	}
@@ -1177,8 +1220,8 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture2D> icon = theme_cache.clear_icon;
-	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon->get_width() : p_pos.x > get_size().width - icon->get_width() - theme_cache.normal->get_margin(SIDE_RIGHT);
+	Point2 icon_size = _get_right_icon_size(theme_cache.clear_icon);
+	return is_layout_rtl() ? p_pos.x < theme_cache.normal->get_margin(SIDE_LEFT) + icon_size.x : p_pos.x > get_size().width - icon_size.y - theme_cache.normal->get_margin(SIDE_RIGHT);
 }
 
 void LineEdit::_update_theme_item_cache() {
@@ -1686,6 +1729,8 @@ void LineEdit::_notification(int p_what) {
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
+			} else if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
+				deselect();
 			}
 		} break;
 
@@ -2423,6 +2468,7 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		// Truncate text to append to fit in max_length, if needed.
 		int available_chars = max_length - text.length();
 		if (p_text.length() > available_chars) {
+			play_theme_sound(theme_cache.text_change_rejected_sound);
 			emit_signal(SNAME("text_change_rejected"), p_text.substr(available_chars));
 			p_text = p_text.substr(0, available_chars);
 		}
@@ -2475,12 +2521,16 @@ Size2 LineEdit::get_minimum_size() const {
 	int icon_max_width = 0;
 	if (right_icon.is_valid()) {
 		Point2 right_icon_size = _get_right_icon_size(right_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = right_icon_size.width;
 	}
 	if (clear_button_enabled) {
 		Point2 right_icon_size = _get_right_icon_size(theme_cache.clear_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = MAX(icon_max_width, right_icon_size.width);
 	}
 	min_size.width += icon_max_width;
@@ -3079,6 +3129,8 @@ void LineEdit::_text_changed() {
 
 void LineEdit::_emit_text_change() {
 	emit_signal(SceneStringName(text_changed), text);
+	play_theme_sound(theme_cache.text_changed_sound);
+
 	text_changed_dirty = false;
 }
 
@@ -3560,6 +3612,13 @@ void LineEdit::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, LineEdit, clear_icon, "clear");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, LineEdit, clear_button_color_pressed);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, caret_moved_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, caret_move_rejected_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_submitted_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_changed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, LineEdit, text_change_rejected_sound);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
 }

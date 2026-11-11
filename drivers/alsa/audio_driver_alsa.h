@@ -35,7 +35,7 @@
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_driver.h"
 
 typedef struct _snd_pcm snd_pcm_t;
 typedef unsigned long snd_pcm_uframes_t;

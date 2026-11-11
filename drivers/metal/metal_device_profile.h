@@ -122,6 +122,19 @@ struct MetalDeviceProfile {
 	MinOsVersion min_os_version;
 	Features features;
 
+	struct MinimumRequirements {
+		GPU gpu = GPU::Apple1;
+		uint32_t msl_version = 0;
+
+		bool operator>(const MinimumRequirements &p_other) const {
+			return gpu > p_other.gpu || msl_version > p_other.msl_version;
+		}
+	};
+
+	MinimumRequirements get_minimum_requirements() const {
+		return { gpu, features.msl_version };
+	}
+
 	static const MetalDeviceProfile *get_profile(Platform p_platform, GPU p_gpu, MinOsVersion p_min_os_version);
 
 	MetalDeviceProfile() = default;

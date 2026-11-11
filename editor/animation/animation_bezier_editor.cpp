@@ -287,6 +287,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			const Ref<Font> source_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			const int source_font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
 			const Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			const Color h_line_color = get_theme_color(SNAME("h_line_color"), SNAME("AnimationBezierTrackEdit"));
@@ -499,6 +501,13 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
+				Ref<Font> font_to_use = font;
+				int font_size_to_use = font_size;
+				if (EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols")) {
+					font_to_use = source_font;
+					font_size_to_use = source_font_size;
+				}
+
 				float remove_hpos = limit - h_separation - remove->get_width();
 				float lock_hpos = remove_hpos - h_separation - lock->get_width();
 				float visibility_hpos = lock_hpos - h_separation - visibility_visible->get_width();
@@ -515,7 +524,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					path = path.replace_first(base_path, "");
 
 					Color cc = color;
-					TextLine text_buf = TextLine(path, font, font_size);
+					TextLine text_buf = TextLine(path, font_to_use, font_size_to_use);
 					text_buf.set_width(limit - margin - buttons_width - h_separation * 2);
 
 					Rect2 rect = Rect2(margin, vofs, solo_hpos - h_separation - solo->get_width(), text_buf.get_size().y + v_separation);
@@ -662,7 +671,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				if (selected_track >= 0 && track_count > 0 && !hidden_tracks.has(selected_track)) {
+				if (selected_track >= 0 && track_count > 0 && !is_filtered && !hidden_tracks.has(selected_track)) {
 					// Draw edited curve.
 					_draw_track(selected_track, selected_track_color);
 				}
@@ -2045,7 +2054,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 				real_t newpos = animation->track_get_key_time(E->get().first, E->get().second);
 				newpos += -scaling_selection_offset.x + (newpos - scaling_selection_pivot.x) * (scaling_selection_scale.x - 1);
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->get().first, newpos);
+				undo_redo->add_undo_method(this, "_track_remove_key_at_time_if_exists", animation, E->get().first, newpos);
 			}
 
 			// 5 - (undo) Reinsert keys.
@@ -2641,6 +2650,9 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, dst_time, value, key.transition);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, dst_time);
+			if (key.track_type == Animation::TYPE_BEZIER) {
+				undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), selected_track, dst_time, key.handle_mode);
+			}
 
 			Pair<int, float> p;
 			p.first = selected_track;
@@ -2706,6 +2718,13 @@ void AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim(const Ref<Animat
 	p_anim->bezier_track_set_key_handle_mode(p_track, idx, p_handle_mode, p_handle_set_mode);
 }
 
+void AnimationBezierTrackEdit::_track_remove_key_at_time_if_exists(const Ref<Animation> &p_anim, int p_track, double p_time) {
+	int idx = p_anim->track_find_key(p_track, p_time, Animation::FIND_MODE_APPROX);
+	if (idx != -1) {
+		p_anim->track_remove_key(p_track, idx);
+	}
+}
+
 void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_clear_selection"), &AnimationBezierTrackEdit::_clear_selection);
 	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"), &AnimationBezierTrackEdit::_clear_selection_for_anim);
@@ -2715,6 +2734,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_lock_track"), &AnimationBezierTrackEdit::_lock_track);
 	ClassDB::bind_method(D_METHOD("_hide_track"), &AnimationBezierTrackEdit::_hide_track);
 	ClassDB::bind_method(D_METHOD("_bezier_track_insert_key_at_anim"), &AnimationBezierTrackEdit::_bezier_track_insert_key_at_anim, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
+	ClassDB::bind_method(D_METHOD("_track_remove_key_at_time_if_exists"), &AnimationBezierTrackEdit::_track_remove_key_at_time_if_exists);
 
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single"), PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::INT, "track")));

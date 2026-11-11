@@ -64,7 +64,6 @@ public:
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
-				notify_property_list_changed();
 			}
 			return true;
 		}
@@ -235,12 +234,23 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	HashMap<String, Dictionary> value_frequency;
 	HashSet<String> extensions;
 
+	String import_type;
+
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		extensions.insert(p_paths[i].get_extension());
 		Error err = config->load(p_paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
+
+		const String type = config->get_value("remap", "type", String());
+		if (import_type.is_empty()) {
+			import_type = type;
+		} else if (import_type != type) {
+			// All should be the same type.
+			clear();
+			return;
+		}
 
 		if (i == 0) {
 			String importer_name = config->get_value("remap", "importer");
@@ -306,6 +316,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 			for (const KeyValue<Variant, Variant> &kv : d) {
 				int f = kv.value;
 				if (f > freq) {
+					freq = f;
 					value = kv.key;
 				}
 			}
@@ -430,6 +441,8 @@ void ImportDock::_importer_selected(int i_idx) {
 		}
 		_update_options(params->base_options_path, config);
 	}
+
+	_set_dirty(true);
 }
 
 void ImportDock::_preset_selected(int p_idx) {
@@ -493,6 +506,8 @@ void ImportDock::_preset_selected(int p_idx) {
 			params->update();
 		} break;
 	}
+
+	_set_dirty(true);
 }
 
 void ImportDock::clear() {
@@ -691,7 +706,7 @@ void ImportDock::_reimport() {
 	}
 
 	EditorFileSystem::get_singleton()->reimport_files(params->paths);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed")); //it changed, so force emitting the signal
+	EditorFileSystem::get_singleton()->filesystem_changed(); // It changed, so force emitting the signal.
 
 	_set_dirty(false);
 }
@@ -701,6 +716,7 @@ void ImportDock::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				imported->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit")));
+				_set_dirty(dirty);
 			}
 		} break;
 
@@ -716,6 +732,7 @@ void ImportDock::_property_edited(const StringName &p_prop) {
 }
 
 void ImportDock::_set_dirty(bool p_dirty) {
+	dirty = p_dirty;
 	if (p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
@@ -785,7 +802,7 @@ ImportDock::ImportDock() {
 	hb->add_child(preset);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_theme_type_variation("NoBorderPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	content->add_child(mc);
 

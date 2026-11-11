@@ -126,7 +126,7 @@ void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_exp
 
 void EditorExpressionEvaluator::_on_debugger_breaked(bool p_breaked, bool p_can_debug) {
 	expression_input->set_editable(p_breaked);
-	evaluate_btn->set_disabled(!p_breaked);
+	evaluate_btn->set_disabled(!p_breaked || expression_input->get_text().is_empty());
 }
 
 void EditorExpressionEvaluator::_on_debugger_clear_execution(Ref<Script> p_stack_script) {

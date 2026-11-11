@@ -44,9 +44,6 @@ class VelocityTracker3D : public RefCounted {
 	Vector<PositionHistory> position_history;
 	int position_history_len = 0;
 
-protected:
-	static void _bind_methods();
-
 public:
 	void reset(const Vector3 &p_new_pos);
 	void set_track_physics_step(bool p_track_physics_step);

@@ -211,7 +211,7 @@
 				Returns [code]true[/code] if this [Callable] is a custom callable. Custom callables are used:
 				- for binding/unbinding arguments (see [method bind] and [method unbind]);
 				- for representing methods of built-in [Variant] types (see [method create]);
-				- for representing global, lambda, and RPC functions in GDScript;
+				- for representing global and lambda functions in GDScript;
 				- for other purposes in the core, GDExtension, and C#.
 			</description>
 		</method>

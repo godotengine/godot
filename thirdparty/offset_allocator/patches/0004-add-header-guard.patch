@@ -1,0 +1,20 @@
+diff --git a/thirdparty/offset_allocator/offsetAllocator.hpp b/thirdparty/offset_allocator/offsetAllocator.hpp
+index 5468db9d29..0991f7aa03 100644
+--- a/thirdparty/offset_allocator/offsetAllocator.hpp
++++ b/thirdparty/offset_allocator/offsetAllocator.hpp
+@@ -1,6 +1,9 @@
+ // (C) Sebastian Aaltonen 2023
+ // MIT License (see file: LICENSE)
+ 
++#ifndef OFFSET_ALLOCATOR_HPP
++#define OFFSET_ALLOCATOR_HPP
++
+ //#define USE_16_BIT_OFFSETS
+ 
+ namespace OffsetAllocator
+@@ -94,3 +97,5 @@ namespace OffsetAllocator
+         uint32 m_freeOffset;
+     };
+ }
++
++#endif

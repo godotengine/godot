@@ -80,6 +80,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define BINDINGS_CLASS_CONSTRUCTOR_EDITOR "EditorConstructors"
 #define BINDINGS_CLASS_CONSTRUCTOR_DICTIONARY "BuiltInMethodConstructors"
 
+#define CS_LOCAL_RET "ret"
 #define CS_PARAM_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
@@ -148,18 +149,29 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"GltfAccessor.MethodName.GetType",
 };
 
+// We force the following enums to always add the 'Enum' suffix which is usually
+// a disambiguator when there are other members in the class with the same name.
+// This avoids hiding the enum when the property is declared in a derived class,
+// and the need for the 'new' keyword. It can also be used to avoid breaking compat
+// later if a new member is added with the same name as the enum.
+const Vector<String> enums_with_forced_suffix = {
+	"LineBase3D.MaterialMode",
+	"LineBase3D.MeshAlignment",
+	"LineBase3D.TilingMode",
+};
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
 
 	r_enum_itype.cs_type = r_enum_itype.proxy_name;
 	r_enum_itype.cs_in_expr = "(int)%0";
-	r_enum_itype.cs_out = "%5return (%2)%0(%1);";
+	r_enum_itype.cs_out = "%5%4 (%2)%0(%1);";
 
 	{
 		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
 		r_enum_itype.c_in = "%5%0 %1_in = %1;\n";
-		r_enum_itype.c_out = "%5return (%0)(%1);\n";
+		r_enum_itype.c_out = "%5%4 (%0)(%1);\n";
 		r_enum_itype.c_type = "long";
 		r_enum_itype.c_arg_in = "&%s_in";
 	}
@@ -1762,10 +1774,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
-		Error save_err = _save_file(output_file, constants_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		RETURN_IF_ERROR(_save_file(output_file, constants_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1775,10 +1784,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder extensions_source;
 		_generate_array_extensions(extensions_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
-		Error save_err = _save_file(output_file, extensions_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		RETURN_IF_ERROR(_save_file(output_file, extensions_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1858,11 +1864,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -1892,20 +1894,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -1925,10 +1921,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }
@@ -2016,11 +2009,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -2052,20 +2041,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		if (!icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -2085,10 +2068,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }
@@ -2221,7 +2201,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output.append(CS_SINGLETON_INSTANCE_SUFFIX);
 			}
 		} else {
-			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+			ERR_PRINT("Base type '" + itype.base_name.string() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
 	}
@@ -2319,7 +2299,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	for (const PropertyInterface &iprop : itype.properties) {
 		Error prop_err = _generate_cs_property(itype, iprop, output);
 		ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
-				"Failed to generate property '" + iprop.cname.operator String() +
+				"Failed to generate property '" + iprop.cname.string() +
 						"' for class '" + itype.name + "'.");
 	}
 
@@ -3165,11 +3145,19 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (return_type->cname == name_cache.type_void) {
 			p_output << INDENT2 << im_call << "(" << icall_params << ");\n";
 		} else if (return_type->cs_out.is_empty()) {
-			p_output << INDENT2 "return " << im_call << "(" << icall_params << ");\n";
+			p_output << INDENT2 << return_cs_type << " " CS_LOCAL_RET " = " << im_call << "(" << icall_params << ");\n";
 		} else {
 			p_output.append(sformat(return_type->cs_out, im_call, icall_params,
-					return_cs_type, return_type->c_type_out, String(), INDENT2));
+					return_cs_type, return_type->c_type_out, return_cs_type + " " CS_LOCAL_RET " =", INDENT2));
 			p_output.append("\n");
+		}
+
+		if (!p_itype.is_singleton && !p_imethod.is_static) {
+			p_output << INDENT2 "global::System.GC.KeepAlive(this);\n";
+		}
+
+		if (return_type->cname != name_cache.type_void) {
+			p_output << INDENT2 "return " CS_LOCAL_RET ";\n";
 		}
 
 		p_output.append(CLOSE_BLOCK_L1);
@@ -3562,7 +3550,7 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 				r_output << base_indent << "return " C_LOCAL_RET ";\n";
 			} else {
 				r_output << sformat(return_type->c_out, return_type->c_type_out, C_LOCAL_RET,
-						return_type->name, String(), String(), base_indent);
+						return_type->name, String(), "return", base_indent);
 			}
 		}
 	};
@@ -3925,7 +3913,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			itype.is_compat_singleton = true;
 		}
 
-		itype.c_out = "%5return ";
+		itype.c_out = "%5%4 ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
 		itype.c_out += itype.is_ref_counted ? "(%1.Reference);\n" : "(%1);\n";
 
@@ -3933,7 +3921,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 
-		itype.cs_out = "%5return (%2)%0(%1);";
+		itype.cs_out = "%5%4 (%2)%0(%1);";
 
 		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
@@ -4058,7 +4046,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = nullptr;
+			const MethodBind *m = nullptr;
 
 			if (!imethod.is_virtual) {
 				bool method_exists = false;
@@ -4255,12 +4243,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
+		const AHashMap<StringName, GDType::Member> &member_map = class_info->gdtype->members(true);
 
-		for (const KeyValue<StringName, const MethodInfo *> &E : signal_map) {
+		for (const KeyValue<StringName, GDType::Member> &E : member_map) {
+			if (E.value.type != GDType::Member::Type::SIGNAL) {
+				continue;
+			}
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = *E.value;
+			const MethodInfo &method_info = *E.value.payload.signal;
 
 			if (method_info.name.begins_with("_")) {
 				// Signals starting with an underscore are internal and not meant to be exposed.
@@ -4351,21 +4342,22 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
-
-		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
+		for (const KeyValue<StringName, GDType::Member> &kv : member_map) {
+			if (kv.value.type != GDType::Member::Type::ENUM) {
+				continue;
+			}
 			StringName enum_proxy_cname = kv.key;
-			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
-			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
+			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.string());
+			if (enums_with_forced_suffix.has(itype.proxy_name + "." + enum_proxy_name) || itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
 				// we append 'Enum' to the enum name in those cases.
 				// We have several conflicts between enums and PascalCase properties.
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value->is_bitfield);
-			for (const KeyValue<StringName, int64_t> &kv_case : kv.value->values) {
-				String constant_name = kv_case.key.operator String();
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value.payload.enum_info->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : kv.value.payload.enum_info->values) {
+				String constant_name = kv_case.key.string();
 				constants.erase(kv_case.key);
 
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), kv_case.value);
@@ -4409,8 +4401,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
-			ERR_FAIL_NULL_V(value, false);
+			const GDType::Member *member = class_info->gdtype->members(true).getptr(StringName(constant_name));
+			ERR_FAIL_NULL_V(member, false);
+			int64_t value = member->payload.integer_constant.value;
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
 
@@ -4420,7 +4413,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				constant_proxy_name += "Constant";
 			}
 
-			ConstantInterface iconstant(constant_name, constant_proxy_name, *value);
+			ConstantInterface iconstant(constant_name, constant_proxy_name, value);
 
 			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -4765,7 +4758,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
 	itype.cs_in_expr = "%0.ToGodotBool()";
-	itype.cs_out = "%5return %0(%1).ToBool();";
+	itype.cs_out = "%5%4 %0(%1).ToBool();";
 	itype.c_type = "godot_bool";
 	itype.c_type_in = itype.c_type;
 	itype.c_type_out = itype.c_type;
@@ -4782,7 +4775,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype = TypeInterface::create_value_type(String(m_name)); \
 		if (itype.name != "long" && itype.name != "ulong") { \
 			itype.c_in = "%5%0 %1_in = %1;\n"; \
-			itype.c_out = "%5return (%0)(%1);\n"; \
+			itype.c_out = "%5%4 (%0)(%1);\n"; \
 			itype.c_type = "long"; \
 			itype.c_arg_in = "&%s_in"; \
 		} else { \
@@ -4819,7 +4812,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		{
 			// The expected type for 'float' in ptrcall is 'double'
 			itype.c_in = "%5%0 %1_in = %1;\n";
-			itype.c_out = "%5return (%0)%1;\n";
+			itype.c_out = "%5%4 (%0)%1;\n";
 			itype.c_type = "double";
 			itype.c_arg_in = "&%s_in";
 		}
@@ -4849,7 +4842,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "string";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOSTR_TO_GODOT "(%1);\n";
-	itype.c_out = "%5return " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MONOSTR_FROM_GODOT "(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_string";
 	itype.c_type_in = itype.cs_type;
@@ -4866,7 +4859,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null StringName to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_string_name";
 	itype.c_type_in = itype.c_type;
@@ -4884,7 +4877,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0?.NativeValue ?? default)";
 	// Cannot pass null NodePath to ptrcall
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_node_path";
 	itype.c_type_in = itype.c_type;
@@ -4912,7 +4905,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.proxy_name = "Variant";
 	itype.cs_type = itype.proxy_name;
 	itype.c_in = "%5%0 %1_in = (%0)%1.NativeVar;\n";
-	itype.c_out = "%5return Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 Variant.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_variant";
 	itype.c_type_in = itype.cs_type;
@@ -4925,7 +4918,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface::create_value_type(String("Callable"));
 	itype.cs_in_expr = "%0";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_CALLABLE "(in %1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_CALLABLE "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_callable";
 	itype.c_type_in = "in " + itype.cs_type;
@@ -4941,7 +4934,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.cs_type = itype.proxy_name;
 	itype.cs_in_expr = "%0";
 	itype.c_in = "%5using %0 %1_in = " C_METHOD_MANAGED_TO_SIGNAL "(in %1);\n";
-	itype.c_out = "%5return " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
+	itype.c_out = "%5%4 " C_METHOD_MANAGED_FROM_SIGNAL "(in %1);\n";
 	itype.c_arg_in = "&%s_in";
 	itype.c_type = "godot_signal";
 	itype.c_type_in = "in " + itype.cs_type;
@@ -4971,7 +4964,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype.proxy_name = #m_proxy_t "[]"; \
 		itype.cs_type = itype.proxy_name; \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
-		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
+		itype.c_out = "%5%4 " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
 		itype.c_arg_in = "&%s_in"; \
 		itype.c_type = #m_managed_type; \
 		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">"; \
@@ -5007,7 +5000,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 1;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_array";
 	itype.c_type_in = itype.c_type;
@@ -5020,7 +5013,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Array's itype
 	itype.name = "Array_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5%4 new %2(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToArray(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromArray(%0)";
@@ -5034,7 +5027,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.type_parameter_count = 2;
 	itype.cs_type = BINDINGS_NAMESPACE_COLLECTIONS "." + itype.proxy_name;
 	itype.cs_in_expr = "(%1)(%0 ?? new()).NativeValue";
-	itype.c_out = "%5return %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
+	itype.c_out = "%5%4 %0.CreateTakingOwnershipOfDisposableValue(%1);\n";
 	itype.c_arg_in = "&%s";
 	itype.c_type = "godot_dictionary";
 	itype.c_type_in = itype.c_type;
@@ -5047,7 +5040,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	// Reuse Dictionary's itype
 	itype.name = "Dictionary_@generic";
 	itype.cname = itype.name;
-	itype.cs_out = "%5return new %2(%0(%1));";
+	itype.cs_out = "%5%4 new %2(%0(%1));";
 	// For generic Godot collections, Variant.From<T>/As<T> is slower, so we need this special case
 	itype.cs_variant_to_managed = "VariantUtils.ConvertToDictionary(%0)";
 	itype.cs_managed_to_variant = "VariantUtils.CreateFromDictionary(%0)";
@@ -5095,7 +5088,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.operator String()), CoreConstants::is_global_constant_bitfield(i));
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.string()), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -5111,7 +5104,7 @@ void BindingsGenerator::_populate_global_constants() {
 		for (EnumInterface &ienum : global_enums) {
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = ienum.cname.operator String();
+			enum_itype.name = ienum.cname.string();
 			enum_itype.cname = ienum.cname;
 			enum_itype.proxy_name = ienum.proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);

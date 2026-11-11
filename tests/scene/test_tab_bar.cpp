@@ -868,7 +868,282 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_bar->get_tab_rect(2).position.x == tab_rects[1].size.x);
 	}
 
+	SUBCASE("[TabBar] tab separation") {
+		tab_bar->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
+		tab_bar->set_clip_tabs(false);
+
+		// Set separation to 0 first.
+		tab_bar->add_theme_constant_override("tab_separation", 0);
+		MessageQueue::get_singleton()->flush();
+
+		tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		// Verify adjacency.
+		CHECK(tab_rects[1].position.x == tab_rects[0].position.x + tab_rects[0].size.x);
+		CHECK(tab_rects[2].position.x == tab_rects[1].position.x + tab_rects[1].size.x);
+
+		// Apply separation.
+		int separation = 20;
+		tab_bar->add_theme_constant_override("tab_separation", separation);
+		MessageQueue::get_singleton()->flush();
+
+		Vector<Rect2> rects_sep = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		// Tab 0 should not move.
+		CHECK(rects_sep[0].position.x == tab_rects[0].position.x);
+
+		// Tab 1 should move by 1 * separation.
+		CHECK(rects_sep[1].position.x == tab_rects[1].position.x + separation);
+
+		// Tab 2 should move by 2 * separation.
+		CHECK(rects_sep[2].position.x == tab_rects[2].position.x + (separation * 2));
+
+		// Verify minimum size increased by total separation (separation * (tab_count - 1)).
+		Size2 min_size_0 = Size2(tab_rects[0].size.x + tab_rects[1].size.x + tab_rects[2].size.x, tab_rects[0].size.y);
+		Size2 expected_min_size = min_size_0;
+		expected_min_size.x += separation * 2;
+
+		CHECK(tab_bar->get_minimum_size().x == expected_min_size.x);
+	}
+
+	SUBCASE("[TabBar] hidden tabs remove separation") {
+		// Setup: Left alignment, no clipping, explicit separation.
+		tab_bar->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
+		tab_bar->set_clip_tabs(false);
+		int separation = 20;
+		tab_bar->add_theme_constant_override("tab_separation", separation);
+
+		tab_bar->clear_tabs();
+		tab_bar->add_tab("A");
+		tab_bar->add_tab("B");
+		tab_bar->add_tab("C");
+		MessageQueue::get_singleton()->flush();
+
+		// All tabs visible. Layout: [A] - 20px - [B] - 20px - [C].
+		tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		CHECK(tab_rects[1].position.x == tab_rects[0].position.x + tab_rects[0].size.x + separation);
+		CHECK(tab_rects[2].position.x == tab_rects[1].position.x + tab_rects[1].size.x + separation);
+
+		// Hide middle tab. Layout: [A] - 20px - [C].
+		// The separation belonging to B should not be present.
+		tab_bar->set_tab_hidden(1, true);
+		MessageQueue::get_singleton()->flush();
+
+		tab_rects = {
+			tab_bar->get_tab_rect(0),
+			tab_bar->get_tab_rect(1),
+			tab_bar->get_tab_rect(2)
+		};
+
+		// Position of C should now be right after A + 1 separation.
+		float expected_c_pos = tab_rects[0].position.x + tab_rects[0].size.x + separation;
+		CHECK(tab_rects[2].position.x == expected_c_pos);
+	}
+
+	SUBCASE("[TabBar] sizing modes") {
+		tab_bar->clear_tabs();
+		tab_bar->set_tab_alignment(TabBar::ALIGNMENT_LEFT);
+		tab_bar->set_clip_tabs(false);
+
+		// Ensure we have a defined width that is larger than the content.
+		tab_bar->set_size(Size2(1000, 100));
+
+		tab_bar->add_tab("S"); // Small
+		tab_bar->add_tab("Medium"); // Medium
+		tab_bar->add_tab("Large Text"); // Large
+		MessageQueue::get_singleton()->flush();
+
+		// Get baseline sizes (Fit Content).
+		float width_s = tab_bar->get_tab_rect(0).size.x;
+		float width_m = tab_bar->get_tab_rect(1).size.x;
+		float width_l = tab_bar->get_tab_rect(2).size.x;
+
+		// Fit Content Sizing: Tabs adjust width to fit their content.
+		CHECK(tab_bar->get_tab_sizing() == TabBar::TAB_SIZING_FIT_CONTENT);
+		CHECK(width_s < width_m);
+		CHECK(width_m < width_l);
+
+		// Uniform Sizing: All tabs should become the size of the largest tab ("Large Text").
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_UNIFORM);
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(tab_bar->get_tab_rect(0).size.x == width_l);
+		CHECK(tab_bar->get_tab_rect(1).size.x == width_l);
+		CHECK(tab_bar->get_tab_rect(2).size.x == width_l);
+
+		// Justify Sizing: Tabs fill the space, but keep relative size differences based on content.
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_JUSTIFY);
+		MessageQueue::get_singleton()->flush();
+
+		float justify_width_0 = tab_bar->get_tab_rect(0).size.x;
+		float justify_width_1 = tab_bar->get_tab_rect(1).size.x;
+		float justify_width_2 = tab_bar->get_tab_rect(2).size.x;
+
+		// Order implies size difference is preserved.
+		CHECK(justify_width_0 < justify_width_1);
+		CHECK(justify_width_1 < justify_width_2);
+
+		// Even the smallest tab should be wider than its natural size because we have 1000px to fill.
+		CHECK(justify_width_0 > width_s);
+
+		// Expand Sizing: Tabs should be equal width, dividing the 1000px available space (minus margins/separations).
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_EXPAND);
+		MessageQueue::get_singleton()->flush();
+
+		float expand_width_0 = tab_bar->get_tab_rect(0).size.x;
+		float expand_width_1 = tab_bar->get_tab_rect(1).size.x;
+		float expand_width_2 = tab_bar->get_tab_rect(2).size.x;
+
+		// Allow 1px difference for rounding errors in distribution.
+		CHECK(Math::abs(expand_width_0 - expand_width_1) <= 1.0f);
+		CHECK(Math::abs(expand_width_1 - expand_width_2) <= 1.0f);
+
+		// They should be significantly larger than the "Large" natural width because they are filling 1000px.
+		CHECK(expand_width_0 > width_l);
+
+		// Verify they fill the width (approximate check).
+		float total_width = expand_width_0 + expand_width_1 + expand_width_2;
+		CHECK(total_width > 900.0f); // Sanity check against container size.
+	}
+
+	SUBCASE("[TabBar] separation reduces expand sizing width") {
+		tab_bar->clear_tabs();
+		tab_bar->set_size(Size2(200, 50));
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_EXPAND);
+
+		// Add 2 tabs.
+		tab_bar->add_tab("1");
+		tab_bar->add_tab("2");
+		MessageQueue::get_singleton()->flush();
+
+		// Available space = 200. Each tab = 100.
+		tab_bar->add_theme_constant_override("tab_separation", 0);
+		MessageQueue::get_singleton()->flush();
+		float width_sep_0 = tab_bar->get_tab_rect(0).size.x;
+		CHECK(Math::is_equal_approx(width_sep_0, 100.0f));
+
+		// Separation = 50. Available space = 200 - 50 = 150. Each tab = 75.
+		int separation = 50;
+		tab_bar->add_theme_constant_override("tab_separation", separation);
+		MessageQueue::get_singleton()->flush();
+
+		float width_sep_50 = tab_bar->get_tab_rect(0).size.x;
+		CHECK(Math::is_equal_approx(width_sep_50, 75.0f));
+
+		// Ensure layout is contiguous: [Tab 75] [Sep 50] [Tab 75] = 200 total.
+		Rect2 r1 = tab_bar->get_tab_rect(0);
+		Rect2 r2 = tab_bar->get_tab_rect(1);
+		CHECK(r2.position.x == r1.size.x + separation);
+	}
+
+	SUBCASE("[TabBar] max width caps sizing modes") {
+		tab_bar->clear_tabs();
+		tab_bar->set_size(Size2(1000, 50));
+
+		// Create a tab with very long text that naturally exceeds the max width.
+		tab_bar->add_tab("This is a very long tab title that should exceed 200px");
+		MessageQueue::get_singleton()->flush();
+
+		float standard_tab_width = tab_bar->get_tab_rect(0).size.x;
+
+		// Set constraint.
+		int max_w = 200;
+		tab_bar->set_max_tab_width(max_w);
+		MessageQueue::get_singleton()->flush();
+
+		// Verify the unconstrained width is greater than max width, then verify the current width is constrained.
+		CHECK(standard_tab_width > max_w);
+
+		// Fit Content: Width should be constrained to 200px.
+		CHECK(tab_bar->get_tab_rect(0).size.x == max_w);
+
+		// Uniform: Width should be constrained to 200px.
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_UNIFORM);
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_tab_rect(0).size.x == max_w);
+
+		// Justify: Width should be constrained to 200px.
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_JUSTIFY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_tab_rect(0).size.x == max_w);
+
+		// Expand: Width should be constrained to 200px.
+		tab_bar->set_tab_sizing(TabBar::TAB_SIZING_EXPAND);
+		MessageQueue::get_singleton()->flush();
+		CHECK(tab_bar->get_tab_rect(0).size.x == max_w);
+	}
+
 	memdelete(tab_bar);
+}
+
+TEST_CASE("[SceneTree][TabBar] Sizing") {
+	const String tab_title = "A tab title that should fit.";
+	const real_t minimum_width = 25;
+	const real_t maximum_width = 1000;
+
+	TabBar *single_tab_bar = memnew(TabBar);
+	TabBar *all_tabs_bar = memnew(TabBar);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(single_tab_bar);
+	root->add_child(all_tabs_bar);
+
+	single_tab_bar->set_clip_tabs(true);
+	single_tab_bar->set_custom_maximum_size(Size2(maximum_width, -1));
+	single_tab_bar->set_custom_minimum_size(Size2(minimum_width, 0));
+	single_tab_bar->add_tab(tab_title);
+
+	all_tabs_bar->set_clip_tabs(true);
+	all_tabs_bar->set_custom_maximum_size(Size2(maximum_width, -1));
+	all_tabs_bar->set_custom_minimum_size(Size2(minimum_width, 0));
+	all_tabs_bar->add_tab(tab_title);
+	all_tabs_bar->add_tab(tab_title);
+	all_tabs_bar->add_tab(tab_title);
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width > single_tab_bar->get_size().width,
+			"TabBar expands beyond the one-tab minimum size when all tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width <= maximum_width,
+			"TabBar width will increase up to the custom maximum width when all tabs fit.");
+	CHECK_FALSE(all_tabs_bar->get_offset_buttons_visible());
+
+	// Limit the bar so the first two tabs fit after reserving space for the offset buttons, but not all three.
+	const real_t tab_separation = all_tabs_bar->get_theme_constant("tab_separation");
+	const real_t offset_buttons_width = all_tabs_bar->get_theme_icon("decrement_icon")->get_width() + all_tabs_bar->get_theme_icon("increment_icon")->get_width();
+	const real_t partial_fit_maximum_width = all_tabs_bar->get_tab_rect(0).size.width + all_tabs_bar->get_tab_rect(1).size.width + tab_separation + offset_buttons_width + 1;
+	single_tab_bar->set_custom_maximum_size(Size2(partial_fit_maximum_width, -1));
+	all_tabs_bar->set_custom_maximum_size(Size2(partial_fit_maximum_width, -1));
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width > single_tab_bar->get_size().width,
+			"TabBar expands beyond the one-tab minimum size when some tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_size().width <= partial_fit_maximum_width,
+			"TabBar width will increase up to the custom maximum width when some tabs fit.");
+	CHECK_MESSAGE(
+			all_tabs_bar->get_offset_buttons_visible(),
+			"TabBar shows offset buttons when not all tabs fit.");
+	CHECK_MESSAGE(
+			((all_tabs_bar->get_tab_rect(1).position.x > 0) && (all_tabs_bar->get_tab_rect(2).position.x == 0)),
+			"TabBar displays some tabs while clipping the remaining tabs.");
+
+	memdelete(all_tabs_bar);
+	memdelete(single_tab_bar);
 }
 
 TEST_CASE("[SceneTree][TabBar] Mouse interaction") {

@@ -53,7 +53,8 @@
 
 #define push(n)             { *++sp = n; }
 #define pop()               (*sp--)
-#define slotat(x)           (map[(x)])
+#define slotat(x)           ((map + (x) >= &smap[-1] && map + (x) < smap.end()) ? \
+                                map[(x)] : (status = Machine::slot_offset_out_bounds, nullptr))
 #define DIE                 { is=seg.last(); status = Machine::died_early; EXIT(1); }
 #define POSITIONED          1
 

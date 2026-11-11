@@ -72,7 +72,7 @@ class AngleConstraintPart
 	}
 
 public:
-	/// Calculate properties used during the functions below
+	/// Calculate properties used during the functions below. Creates a constraint without spring.
 	/// @param inBody1 The first body that this constraint is attached to
 	/// @param inBody2 The second body that this constraint is attached to
 	/// @param inWorldSpaceAxis The axis of rotation along which the constraint acts (normalized)
@@ -91,12 +91,11 @@ public:
 		}
 	}
 
-	/// Calculate properties used during the functions below
+	/// Calculate properties used during the functions below. Set inFrequency to zero if you don't want to drive using a spring.
 	/// @param inDeltaTime Time step
 	/// @param inBody1 The first body that this constraint is attached to
 	/// @param inBody2 The second body that this constraint is attached to
 	/// @param inWorldSpaceAxis The axis of rotation along which the constraint acts (normalized)
-	/// Set the following terms to zero if you don't want to drive the constraint to zero with a spring:
 	/// @param inBias Bias term (b) for the constraint impulse: lambda = J v + b
 	///	@param inC Value of the constraint equation (C)
 	///	@param inFrequency Oscillation frequency (Hz)
@@ -107,16 +106,20 @@ public:
 
 		if (inv_effective_mass == 0.0f)
 			Deactivate();
-		else
+		else if (inFrequency > 0.0f)
 			mSpringPart.CalculateSpringPropertiesWithFrequencyAndDamping(inDeltaTime, inv_effective_mass, inBias, inC, inFrequency, inDamping, mEffectiveMass);
+		else
+		{
+			mEffectiveMass = 1.0f / inv_effective_mass;
+			mSpringPart.CalculateSpringPropertiesWithBias(inBias);
+		}
 	}
 
-	/// Calculate properties used during the functions below
+	/// Calculate properties used during the functions below. Set inStiffness and inDamping to zero if you don't want to drive using a spring.
 	/// @param inDeltaTime Time step
 	/// @param inBody1 The first body that this constraint is attached to
 	/// @param inBody2 The second body that this constraint is attached to
 	/// @param inWorldSpaceAxis The axis of rotation along which the constraint acts (normalized)
-	/// Set the following terms to zero if you don't want to drive the constraint to zero with a spring:
 	/// @param inBias Bias term (b) for the constraint impulse: lambda = J v + b
 	///	@param inC Value of the constraint equation (C)
 	///	@param inStiffness Spring stiffness k.
@@ -127,21 +130,44 @@ public:
 
 		if (inv_effective_mass == 0.0f)
 			Deactivate();
-		else
+		else if (inStiffness > 0.0f || inDamping > 0.0f)
 			mSpringPart.CalculateSpringPropertiesWithStiffnessAndDamping(inDeltaTime, inv_effective_mass, inBias, inC, inStiffness, inDamping, mEffectiveMass);
+		else
+		{
+			mEffectiveMass = 1.0f / inv_effective_mass;
+			mSpringPart.CalculateSpringPropertiesWithBias(inBias);
+		}
 	}
 
-	/// Selects one of the above functions based on the spring settings
-	inline void					CalculateConstraintPropertiesWithSettings(float inDeltaTime, const Body &inBody1, const Body &inBody2, Vec3Arg inWorldSpaceAxis, float inBias, float inC, const SpringSettings &inSpringSettings)
+	/// Calculate properties used during the functions below based on inSpringSettings.
+	/// Turns to a hard limit when inSpringSettings has stiffness / frequency = 0
+	inline void					CalculateConstraintPropertiesWithSettingsForLimit(float inDeltaTime, const Body &inBody1, const Body &inBody2, Vec3Arg inWorldSpaceAxis, float inBias, float inC, const SpringSettings &inSpringSettings)
 	{
 		float inv_effective_mass = CalculateInverseEffectiveMass(inBody1, inBody2, inWorldSpaceAxis);
 
 		if (inv_effective_mass == 0.0f)
 			Deactivate();
-		else if (inSpringSettings.mMode == ESpringMode::FrequencyAndDamping)
-			mSpringPart.CalculateSpringPropertiesWithFrequencyAndDamping(inDeltaTime, inv_effective_mass, inBias, inC, inSpringSettings.mFrequency, inSpringSettings.mDamping, mEffectiveMass);
+		else if (!inSpringSettings.HasStiffness())
+		{
+			mEffectiveMass = 1.0f / inv_effective_mass;
+			mSpringPart.CalculateSpringPropertiesWithBias(inBias);
+		}
 		else
-			mSpringPart.CalculateSpringPropertiesWithStiffnessAndDamping(inDeltaTime, inv_effective_mass, inBias, inC, inSpringSettings.mStiffness, inSpringSettings.mDamping, mEffectiveMass);
+			mSpringPart.CalculateSpringPropertiesWithSettings(inDeltaTime, inv_effective_mass, inBias, inC, inSpringSettings, mEffectiveMass);
+	}
+
+	/// Calculate properties used during the functions below based on inSpringSettings.
+	/// Assumes the spring has either stiffness or damping.
+	inline void					CalculateConstraintPropertiesWithSettingsForMotor(float inDeltaTime, const Body &inBody1, const Body &inBody2, Vec3Arg inWorldSpaceAxis, float inBias, float inC, const SpringSettings &inSpringSettings)
+	{
+		JPH_ASSERT(inSpringSettings.HasStiffnessOrDamping());
+
+		float inv_effective_mass = CalculateInverseEffectiveMass(inBody1, inBody2, inWorldSpaceAxis);
+
+		if (inv_effective_mass == 0.0f)
+			Deactivate();
+		else
+			mSpringPart.CalculateSpringPropertiesWithSettings(inDeltaTime, inv_effective_mass, inBias, inC, inSpringSettings, mEffectiveMass);
 	}
 
 	/// Deactivate this constraint

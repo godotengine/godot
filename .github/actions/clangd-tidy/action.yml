@@ -22,9 +22,18 @@ runs:
 
         echo "::group::Installing clangd-tidy"
         # Don't know which python we're using, so just access the global scope.
-        python -m pip install clangd clangd-tidy clang-tidy==22.1.0
+        python -m pip install clangd clangd-tidy clang-tidy==22.1.7
         echo "::endgroup::"
 
         echo "::group::Running clangd-tidy"
-        clangd-tidy ${{ inputs.changed-files }}
+        CHANGED_FILES='${{ inputs.changed-files }}'
+        CHANGED_FILES_LENGTH=${#CHANGED_FILES}
+        if [ "$CHANGED_FILES_LENGTH" -lt 5 ]; then
+          echo "No changed files to check."
+        elif [ "$CHANGED_FILES_LENGTH" -gt 100000 ]; then
+          # Avoid argument length limitations by using xargs to pass the file list.
+          printf '%s\n' $CHANGED_FILES | tr -d '"' | xargs clangd-tidy
+        else
+          clangd-tidy $CHANGED_FILES
+        fi
         echo "::endgroup::"

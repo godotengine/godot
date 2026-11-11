@@ -33,27 +33,27 @@
 #include "core/io/file_access.h"
 #include "core/string/translation.h"
 
-Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_error) {
+Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> r_file, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
-	const String path = f->get_path();
+	const String path = r_file->get_path();
 	Ref<Translation> translation;
 	translation.instantiate();
 	String config;
 
-	uint32_t magic = f->get_32();
+	uint32_t magic = r_file->get_32();
 	if (magic == 0x950412de) {
 		// Load binary MO file.
 
-		uint16_t version_maj = f->get_16();
-		uint16_t version_min = f->get_16();
+		uint16_t version_maj = r_file->get_16();
+		uint16_t version_min = r_file->get_16();
 		ERR_FAIL_COND_V_MSG(version_maj > 1, Ref<Resource>(), vformat("Unsupported MO file %s, version %d.%d.", path, version_maj, version_min));
 
-		uint32_t num_strings = f->get_32();
-		uint32_t id_table_offset = f->get_32();
-		uint32_t trans_table_offset = f->get_32();
+		uint32_t num_strings = r_file->get_32();
+		uint32_t id_table_offset = r_file->get_32();
+		uint32_t trans_table_offset = r_file->get_32();
 
 		// Read string tables.
 		for (uint32_t i = 0; i < num_strings; i++) {
@@ -64,14 +64,14 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			// Read id strings and context.
 			{
 				Vector<uint8_t> data;
-				f->seek(id_table_offset + i * 8);
+				r_file->seek(id_table_offset + i * 8);
 				uint32_t str_start = 0;
-				uint32_t str_len = f->get_32();
-				uint32_t str_offset = f->get_32();
+				uint32_t str_len = r_file->get_32();
+				uint32_t str_offset = r_file->get_32();
 
 				data.resize(str_len + 1);
-				f->seek(str_offset);
-				f->get_buffer(data.ptrw(), str_len);
+				r_file->seek(str_offset);
+				r_file->get_buffer(data.ptrw(), str_len);
 				data.write[str_len] = 0;
 
 				bool is_plural = false;
@@ -98,13 +98,13 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 			// Read translated strings.
 			{
 				Vector<uint8_t> data;
-				f->seek(trans_table_offset + i * 8);
-				uint32_t str_len = f->get_32();
-				uint32_t str_offset = f->get_32();
+				r_file->seek(trans_table_offset + i * 8);
+				uint32_t str_len = r_file->get_32();
+				uint32_t str_offset = r_file->get_32();
 
 				data.resize(str_len + 1);
-				f->seek(str_offset);
-				f->get_buffer(data.ptrw(), str_len);
+				r_file->seek(str_offset);
+				r_file->get_buffer(data.ptrw(), str_len);
 				data.write[str_len] = 0;
 
 				if (msg_id.is_empty()) {
@@ -137,7 +137,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 
 	} else {
 		// Try to load as text PO file.
-		f->seek(0);
+		r_file->seek(0);
 
 		enum Status {
 			STATUS_NONE,
@@ -167,8 +167,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 		bool is_eof = false;
 
 		while (!is_eof) {
-			String l = f->get_line().strip_edges();
-			is_eof = f->eof_reached();
+			String l = r_file->get_line().strip_edges();
+			is_eof = r_file->eof_reached();
 
 			// If we reached last line and it's not a content line, break, otherwise let processing that last loop
 			if (is_eof && l.is_empty()) {

@@ -54,6 +54,11 @@ layout(set = 0, binding = 2) uniform texture2D source2;
 
 layout(set = 0, binding = 3) uniform texture2D source3;
 
+layout(set = 0, binding = 4, std430) restrict readonly buffer GlobalShaderUniformData {
+	vec4 data[];
+}
+global_shader_uniforms;
+
 layout(location = 0) in vec2 uv;
 
 layout (location = 0) out vec4 out_color0;
@@ -79,8 +84,6 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #GLOBALS
 
 vec3 linear_to_srgb(vec3 color) {
-	// If going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }

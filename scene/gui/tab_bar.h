@@ -62,6 +62,14 @@ public:
 		DRAW_MAX,
 	};
 
+	enum SizingMode {
+		TAB_SIZING_FIT_CONTENT,
+		TAB_SIZING_UNIFORM,
+		TAB_SIZING_JUSTIFY,
+		TAB_SIZING_EXPAND,
+		TAB_SIZING_MAX
+	};
+
 private:
 	struct Tab {
 		mutable RID accessibility_item_element;
@@ -112,6 +120,7 @@ private:
 	int current = -1;
 	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
+	SizingMode tab_sizing = TAB_SIZING_FIT_CONTENT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
@@ -134,6 +143,16 @@ private:
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 	bool switch_on_drag_hover = true;
+
+	// Touch interaction
+	bool touch_dragging_starting = false;
+	bool touch_dragging_in_progress = false;
+	Vector2 drag_accum;
+	Vector2 drag_from;
+	int tab_pressing = -1;
+	bool can_start_drag_drop = true;
+	bool touch_long_press_dragging = false;
+	const float DRAG_THRESHOLD = 8.0f;
 
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
@@ -180,6 +199,13 @@ private:
 		Ref<Texture2D> close_icon;
 		Ref<StyleBox> button_pressed_style;
 		Ref<StyleBox> button_hl_style;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
 	} theme_cache;
 
 	Timer *hover_switch_delay = nullptr;
@@ -200,6 +226,12 @@ private:
 
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
+
+	bool _select_previous_available(bool p_play_sound);
+	bool _select_next_available(bool p_play_sound);
+
+	bool _handle_scroll_button(const Point2 &p_pos);
+	void _update_scroll_button_highlight(const Point2 &p_pos);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -270,6 +302,9 @@ public:
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
 
+	void set_tab_sizing(SizingMode p_sizing);
+	SizingMode get_tab_sizing() const;
+
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
@@ -334,9 +369,11 @@ public:
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
+	Size2 get_desired_size() const override;
 
 	TabBar();
 };
 
 VARIANT_ENUM_CAST(TabBar::AlignmentMode);
+VARIANT_ENUM_CAST(TabBar::SizingMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);

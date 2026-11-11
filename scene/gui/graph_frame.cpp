@@ -323,11 +323,11 @@ bool GraphFrame::has_point(const Point2 &p_point) const {
 	return false;
 }
 
-Size2 GraphFrame::get_minimum_size() const {
+Size2 GraphFrame::_get_minimum_size(bool p_use_desired_sizes) const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = (p_use_desired_sizes ? titlebar_hbox->get_bound_desired_size() : titlebar_hbox->get_minimum_size()) + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -335,16 +335,29 @@ Size2 GraphFrame::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_bound_minimum_size();
-		size.width += sb_panel->get_minimum_size().width;
+		Size2 size = p_use_desired_sizes ? child->get_bound_desired_size() : child->get_bound_minimum_size();
+		Size2 max_size = child->get_custom_maximum_size();
 
-		minsize.x = MAX(minsize.x, size.x);
-		minsize.y += MAX(minsize.y, size.y);
+		real_t width = (child->get_h_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.width >= 0) ? max_size.width : size.width;
+		real_t height = (child->get_v_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.height >= 0) ? max_size.height : size.height;
+
+		width += sb_panel->get_minimum_size().width;
+
+		minsize.width = MAX(minsize.width, width);
+		minsize.height += MAX(minsize.height, height);
 	}
 
 	minsize.height += sb_panel->get_minimum_size().height;
 
 	return minsize;
+}
+
+Size2 GraphFrame::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 GraphFrame::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 GraphFrame::GraphFrame() {

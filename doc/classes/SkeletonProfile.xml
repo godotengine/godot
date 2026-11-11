@@ -178,7 +178,7 @@
 	<members>
 		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" default="0">
 			The amount of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 56 bones.
-			The size of elements in [BoneMap] updates when changing this property in it's assigned [SkeletonProfile].
+			The size of elements in [BoneMap] updates when changing this property in its assigned [SkeletonProfile].
 		</member>
 		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" default="0">
 			The amount of groups of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 4 groups.

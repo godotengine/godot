@@ -55,8 +55,16 @@ public:
 		BitField<AxisFlag> axis_flags = AXIS_FLAG_ALL;
 		BitField<AxisFlag> invert_flags = 0;
 
+		bool global = false;
 		bool relative = true;
 		bool additive = false;
+
+		bool is_global() {
+			if (reference_type == REFERENCE_TYPE_NODE) {
+				return false;
+			}
+			return global;
+		}
 
 		bool is_relative() {
 			if (reference_type == REFERENCE_TYPE_NODE) {
@@ -109,6 +117,9 @@ public:
 	bool is_axis_y_inverted(int p_index) const;
 	void set_axis_z_inverted(int p_index, bool p_enabled);
 	bool is_axis_z_inverted(int p_index) const;
+
+	void set_global(int p_index, bool p_enabled);
+	bool is_global(int p_index) const;
 
 	void set_relative(int p_index, bool p_enabled);
 	bool is_relative(int p_index) const;
