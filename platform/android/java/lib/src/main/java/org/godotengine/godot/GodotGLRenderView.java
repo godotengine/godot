@@ -118,10 +118,11 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 
 	@Override
 	public boolean onHoverEvent(MotionEvent event) {
+		boolean handled = inputHandler.onGenericMotionEvent(event) || super.onHoverEvent(event);
 		if (accessibilityNodeProvider != null && GodotLib.onAccessibilityHoverEvent(mWindowID, this, event.getAction(), event.getX(), event.getY())) {
-			return true;
+			handled = true;
 		}
-		return super.onHoverEvent(event);
+		return handled;
 	}
 
 	@Override
