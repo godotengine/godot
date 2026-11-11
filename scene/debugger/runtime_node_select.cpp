@@ -217,6 +217,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	view_3d_controller->set_zoom_style(p_settings.get("editors/3d/navigation/zoom_style", View3DController::ZOOM_VERTICAL));
 	view_3d_controller->set_zoom_inertia(p_settings.get("editors/3d/navigation_feel/zoom_inertia", 0));
+	view_3d_controller->set_zoom_scalar(p_settings.get("editors/3d/navigation_feel/zoom_scalar", 1.0));
 	view_3d_controller->set_zoom_mouse_button(p_settings.get("editors/3d/navigation/zoom_mouse_button", View3DController::NAV_MOUSE_BUTTON_MIDDLE));
 
 	view_3d_controller->set_angle_snap_threshold(p_settings.get("editors/3d/navigation_feel/angle_snap_threshold", 10));

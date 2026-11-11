@@ -85,7 +85,7 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 			navigating = false;
 		}
 
-		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
+		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor() * zoom_scalar;
 		switch (b->get_button_index()) {
 			case MouseButton::WHEEL_UP: {
 				if (freelook) {
