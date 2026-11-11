@@ -322,16 +322,16 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 	curr->get() = Vector2(p_x, p_y);
 };
 
-LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT OS_Windows::WndProc(HWND p_window, UINT p_umsg, WPARAM p_wparam, LPARAM p_lparam) {
 	if (drop_events) {
 		if (user_proc) {
-			return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
+			return CallWindowProcW(user_proc, p_window, p_umsg, p_wparam, p_lparam);
 		} else {
-			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+			return DefWindowProcW(p_window, p_umsg, p_wparam, p_lparam);
 		}
 	};
 
-	switch (uMsg) // Check For Windows Messages
+	switch (p_umsg) // Check For Windows Messages
 	{
 		case WM_SETFOCUS: {
 			window_has_focus = true;
@@ -357,11 +357,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_ACTIVATE: // Watch For Window Activate Message
 		{
-			minimized = HIWORD(wParam) != 0;
+			minimized = HIWORD(p_wparam) != 0;
 			if (!main_loop) {
 				return 0;
 			};
-			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
+			if (LOWORD(p_wparam) == WA_ACTIVE || LOWORD(p_wparam) == WA_CLICKACTIVE) {
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 				window_focused = true;
 				alt_mem = false;
@@ -376,7 +376,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			};
 
 			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
-				wintab_WTEnable(wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+				wintab_WTEnable(wtctx, GET_WM_ACTIVATE_STATE(p_wparam, p_lparam));
 			}
 
 			return 0; // Return  To The Message Loop
@@ -384,7 +384,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_GETMINMAXINFO: {
 			if (video_mode.resizable && !video_mode.fullscreen) {
 				Size2 decor = get_real_window_size() - get_window_size(); // Size of window decorations
-				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
+				MINMAXINFO *min_max_info = (MINMAXINFO *)p_lparam;
 				if (min_size != Size2()) {
 					min_max_info->ptMinTrackSize.x = min_size.x + decor.x;
 					min_max_info->ptMinTrackSize.y = min_size.y + decor.y;
@@ -405,13 +405,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		case WM_SYSCOMMAND: // Intercept System Commands
 		{
-			switch (wParam) // Check System Calls
+			switch (p_wparam) // Check System Calls
 			{
 				case SC_SCREENSAVE: // Screensaver Trying To Start?
 				case SC_MONITORPOWER: // Monitor Trying To Enter Powersave?
 					return 0; // Prevent From Happening
 				case SC_KEYMENU:
-					if ((lParam >> 16) <= 0)
+					if ((p_lparam >> 16) <= 0)
 						return 0;
 			}
 			break; // Exit
@@ -438,13 +438,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			UINT dwSize;
 
-			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+			GetRawInputData((HRAWINPUT)p_lparam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dwSize];
 			if (lpb == NULL) {
 				return 0;
 			}
 
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+			if (GetRawInputData((HRAWINPUT)p_lparam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
 				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
 
 			RAWINPUT *raw = (RAWINPUT *)lpb;
@@ -465,7 +465,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				// centering just so it works as before
 				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(hWnd, &pos);
+				ClientToScreen(p_window, &pos);
 				SetCursorPos(pos.x, pos.y);
 
 				mm->set_position(c);
@@ -489,7 +489,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					coords.x = abs_pos.x;
 					coords.y = abs_pos.y;
 
-					ScreenToClient(hWnd, &coords);
+					ScreenToClient(p_window, &coords);
 
 					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
 					old_x = coords.x;
@@ -523,7 +523,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WT_PACKET: {
 			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
 				PACKET packet;
-				if (wintab_WTPacket(wtctx, wParam, &packet)) {
+				if (wintab_WTPacket(wtctx, p_wparam, &packet)) {
 					float pressure = float(packet.pkNormalPressure - min_pressure) / float(max_pressure - min_pressure);
 					last_pressure = pressure;
 					last_pressure_update = 0;
@@ -541,7 +541,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 					POINT coords;
 					GetCursorPos(&coords);
-					ScreenToClient(hWnd, &coords);
+					ScreenToClient(p_window, &coords);
 
 					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
 					if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -576,7 +576,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						Point2i ncenter = mm->get_position();
 						center = ncenter;
 						POINT pos = { (int)c.x, (int)c.y };
-						ClientToScreen(hWnd, &pos);
+						ClientToScreen(p_window, &pos);
 						SetCursorPos(pos.x, pos.y);
 					}
 
@@ -606,7 +606,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				break;
 			}
 
-			uint32_t pointer_id = LOWORD(wParam);
+			uint32_t pointer_id = LOWORD(p_wparam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
 			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
 				break;
@@ -632,7 +632,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				break;
 			}
 
-			uint32_t pointer_id = LOWORD(wParam);
+			uint32_t pointer_id = LOWORD(p_wparam);
 			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
 			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
 				break;
@@ -670,7 +670,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				TRACKMOUSEEVENT tme;
 				tme.cbSize = sizeof(TRACKMOUSEEVENT);
 				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
+				tme.hwndTrack = p_window;
 				tme.dwHoverTime = HOVER_DEFAULT;
 				TrackMouseEvent(&tme);
 			}
@@ -688,7 +688,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (pen_info.penMask & PEN_MASK_PRESSURE) {
 				mm->set_pressure((float)pen_info.pressure / 1024);
 			} else {
-				mm->set_pressure((HIWORD(wParam) & POINTER_MESSAGE_FLAG_FIRSTBUTTON) ? 1.0f : 0.0f);
+				mm->set_pressure((HIWORD(p_wparam) & POINTER_MESSAGE_FLAG_FIRSTBUTTON) ? 1.0f : 0.0f);
 			}
 			if ((pen_info.penMask & PEN_MASK_TILT_X) && (pen_info.penMask & PEN_MASK_TILT_Y)) {
 				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
@@ -701,10 +701,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_button_mask(last_button_state);
 
 			POINT coords; //client coords
-			coords.x = GET_X_LPARAM(lParam);
-			coords.y = GET_Y_LPARAM(lParam);
+			coords.x = GET_X_LPARAM(p_lparam);
+			coords.y = GET_Y_LPARAM(p_lparam);
 
-			ScreenToClient(hWnd, &coords);
+			ScreenToClient(p_window, &coords);
 
 			mm->set_position(Vector2(coords.x, coords.y));
 			mm->set_global_position(Vector2(coords.x, coords.y));
@@ -722,7 +722,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				Point2i ncenter = mm->get_position();
 				center = ncenter;
 				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(hWnd, &pos);
+				ClientToScreen(p_window, &pos);
 				SetCursorPos(pos.x, pos.y);
 			}
 
@@ -773,7 +773,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				TRACKMOUSEEVENT tme;
 				tme.cbSize = sizeof(TRACKMOUSEEVENT);
 				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
+				tme.hwndTrack = p_window;
 				tme.dwHoverTime = HOVER_DEFAULT;
 				TrackMouseEvent(&tme);
 			}
@@ -786,8 +786,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 
-			mm->set_control((wParam & MK_CONTROL) != 0);
-			mm->set_shift((wParam & MK_SHIFT) != 0);
+			mm->set_control((p_wparam & MK_CONTROL) != 0);
+			mm->set_shift((p_wparam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
 			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
@@ -796,12 +796,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					last_pressure_update++;
 				} else {
 					last_tilt = Vector2();
-					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+					last_pressure = (p_wparam & MK_LBUTTON) ? 1.0f : 0.0f;
 					last_pen_inverted = false;
 				}
 			} else {
 				last_tilt = Vector2();
-				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				last_pressure = (p_wparam & MK_LBUTTON) ? 1.0f : 0.0f;
 				last_pen_inverted = false;
 			}
 
@@ -811,8 +811,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			mm->set_button_mask(last_button_state);
 
-			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
-			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mm->set_position(Vector2(GET_X_LPARAM(p_lparam), GET_Y_LPARAM(p_lparam)));
+			mm->set_global_position(Vector2(GET_X_LPARAM(p_lparam), GET_Y_LPARAM(p_lparam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 				Point2i c(video_mode.width / 2, video_mode.height / 2);
@@ -827,7 +827,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				Point2i ncenter = mm->get_position();
 				center = ncenter;
 				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(hWnd, &pos);
+				ClientToScreen(p_window, &pos);
 				SetCursorPos(pos.x, pos.y);
 			}
 
@@ -871,7 +871,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
 
-			switch (uMsg) {
+			switch (p_umsg) {
 				case WM_LBUTTONDOWN: {
 					mb->set_pressed(true);
 					mb->set_button_index(1);
@@ -913,7 +913,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} break;
 				case WM_MOUSEWHEEL: {
 					mb->set_pressed(true);
-					int motion = (short)HIWORD(wParam);
+					int motion = (short)HIWORD(p_wparam);
 					if (!motion)
 						return 0;
 
@@ -926,7 +926,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} break;
 				case WM_MOUSEHWHEEL: {
 					mb->set_pressed(true);
-					int motion = (short)HIWORD(wParam);
+					int motion = (short)HIWORD(p_wparam);
 					if (!motion)
 						return 0;
 
@@ -939,21 +939,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				} break;
 				case WM_XBUTTONDOWN: {
 					mb->set_pressed(true);
-					if (HIWORD(wParam) == XBUTTON1)
+					if (HIWORD(p_wparam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
 					else
 						mb->set_button_index(BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONUP: {
 					mb->set_pressed(false);
-					if (HIWORD(wParam) == XBUTTON1)
+					if (HIWORD(p_wparam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
 					else
 						mb->set_button_index(BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONDBLCLK: {
 					mb->set_pressed(true);
-					if (HIWORD(wParam) == XBUTTON1)
+					if (HIWORD(p_wparam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
 					else
 						mb->set_button_index(BUTTON_XBUTTON2);
@@ -964,8 +964,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 
-			mb->set_control((wParam & MK_CONTROL) != 0);
-			mb->set_shift((wParam & MK_SHIFT) != 0);
+			mb->set_control((p_wparam & MK_CONTROL) != 0);
+			mb->set_shift((p_wparam & MK_SHIFT) != 0);
 			mb->set_alt(alt_mem);
 			//mb->get_alt()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed())
@@ -974,16 +974,16 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				last_button_state &= ~(1 << (mb->get_button_index() - 1));
 			mb->set_button_mask(last_button_state);
 
-			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+			mb->set_position(Vector2(GET_X_LPARAM(p_lparam), GET_Y_LPARAM(p_lparam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED && !use_raw_input) {
 				mb->set_position(Vector2(old_x, old_y));
 			}
 
-			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
+			if (p_umsg != WM_MOUSEWHEEL && p_umsg != WM_MOUSEHWHEEL) {
 				if (mb->is_pressed()) {
 					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED)
-						SetCapture(hWnd);
+						SetCapture(p_window);
 				} else {
 					if (--pressrc <= 0) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
@@ -998,7 +998,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				coords.x = mb->get_position().x;
 				coords.y = mb->get_position().y;
 
-				ScreenToClient(hWnd, &coords);
+				ScreenToClient(p_window, &coords);
 
 				mb->set_position(Vector2(coords.x, coords.y));
 			}
@@ -1019,18 +1019,18 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 
 		case WM_MOVE: {
-			if (!IsIconic(hWnd)) {
-				int x = LOWORD(lParam);
-				int y = HIWORD(lParam);
+			if (!IsIconic(p_window)) {
+				int x = LOWORD(p_lparam);
+				int y = HIWORD(p_lparam);
 				last_pos = Point2(x, y);
 			}
 		} break;
 
 		case WM_SIZE: {
 			// Ignore size when a SIZE_MINIMIZED event is triggered
-			if (wParam != SIZE_MINIMIZED) {
-				int window_w = LOWORD(lParam);
-				int window_h = HIWORD(lParam);
+			if (p_wparam != SIZE_MINIMIZED) {
+				int window_w = LOWORD(p_lparam);
+				int window_h = HIWORD(p_lparam);
 				if (window_w > 0 && window_h > 0 && !preserve_window_size) {
 					video_mode.width = window_w;
 					video_mode.height = window_h;
@@ -1040,13 +1040,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 
-			if (wParam == SIZE_MAXIMIZED) {
+			if (p_wparam == SIZE_MAXIMIZED) {
 				maximized = true;
 				minimized = false;
-			} else if (wParam == SIZE_MINIMIZED) {
+			} else if (p_wparam == SIZE_MINIMIZED) {
 				maximized = false;
 				minimized = true;
-			} else if (wParam == SIZE_RESTORED) {
+			} else if (p_wparam == SIZE_RESTORED) {
 				maximized = false;
 				minimized = false;
 			}
@@ -1055,13 +1055,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		case WM_ENTERSIZEMOVE: {
 			input->release_pressed_events();
-			move_timer_id = SetTimer(hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
+			move_timer_id = SetTimer(p_window, 1, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
 		} break;
 		case WM_EXITSIZEMOVE: {
-			KillTimer(hWnd, move_timer_id);
+			KillTimer(p_window, move_timer_id);
 		} break;
 		case WM_TIMER: {
-			if (wParam == move_timer_id) {
+			if (p_wparam == move_timer_id) {
 				process_key_events();
 				if (!Main::is_iterating()) {
 					Main::iteration();
@@ -1073,19 +1073,19 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_KEYDOWN: {
-			if (wParam == VK_SHIFT)
-				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			if (wParam == VK_CONTROL)
-				control_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-			if (wParam == VK_MENU) {
-				alt_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
-				if (lParam & (1 << 24))
+			if (p_wparam == VK_SHIFT)
+				shift_mem = (p_umsg == WM_KEYDOWN || p_umsg == WM_SYSKEYDOWN);
+			if (p_wparam == VK_CONTROL)
+				control_mem = (p_umsg == WM_KEYDOWN || p_umsg == WM_SYSKEYDOWN);
+			if (p_wparam == VK_MENU) {
+				alt_mem = (p_umsg == WM_KEYDOWN || p_umsg == WM_SYSKEYDOWN);
+				if (p_lparam & (1 << 24))
 					gr_mem = alt_mem;
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
-				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
+				if (p_wparam == VK_F4 && alt_mem && (p_umsg == WM_KEYDOWN || p_umsg == WM_SYSKEYDOWN)) {
 					if (main_loop)
 						main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 				}
@@ -1101,19 +1101,19 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.shift = (wParam != VK_SHIFT) ? shift_mem : false;
-			ke.alt = (!(wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
-			ke.control = (wParam != VK_CONTROL) ? control_mem : false;
+			ke.shift = (p_wparam != VK_SHIFT) ? shift_mem : false;
+			ke.alt = (!(p_wparam == VK_MENU && (p_umsg == WM_KEYDOWN || p_umsg == WM_SYSKEYDOWN))) ? alt_mem : false;
+			ke.control = (p_wparam != VK_CONTROL) ? control_mem : false;
 			ke.meta = meta_mem;
-			ke.uMsg = uMsg;
+			ke.uMsg = p_umsg;
 
 			if (ke.uMsg == WM_SYSKEYDOWN)
 				ke.uMsg = WM_KEYDOWN;
 			if (ke.uMsg == WM_SYSKEYUP)
 				ke.uMsg = WM_KEYUP;
 
-			ke.wParam = wParam;
-			ke.lParam = lParam;
+			ke.wParam = p_wparam;
+			ke.lParam = p_lparam;
 			key_event_buffer[key_event_pos++] = ke;
 
 		} break;
@@ -1123,17 +1123,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		case WM_TOUCH: {
 			BOOL bHandled = FALSE;
-			UINT cInputs = LOWORD(wParam);
+			UINT cInputs = LOWORD(p_wparam);
 			PTOUCHINPUT pInputs = memnew_arr(TOUCHINPUT, cInputs);
 			if (pInputs) {
-				if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT))) {
+				if (GetTouchInputInfo((HTOUCHINPUT)p_lparam, cInputs, pInputs, sizeof(TOUCHINPUT))) {
 					for (UINT i = 0; i < cInputs; i++) {
 						TOUCHINPUT ti = pInputs[i];
 						POINT touch_pos = {
 							TOUCH_COORD_TO_PIXEL(ti.x),
 							TOUCH_COORD_TO_PIXEL(ti.y),
 						};
-						ScreenToClient(hWnd, &touch_pos);
+						ScreenToClient(p_window, &touch_pos);
 						//do something with each touch input entry
 						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
 							_drag_event(touch_pos.x, touch_pos.y, ti.dwID);
@@ -1150,7 +1150,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				/* handle the error here, probably out of memory */
 			}
 			if (bHandled) {
-				CloseTouchInputHandle((HTOUCHINPUT)lParam);
+				CloseTouchInputHandle((HTOUCHINPUT)p_lparam);
 				return 0;
 			};
 
@@ -1160,7 +1160,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			joypad->probe_joypads();
 		} break;
 		case WM_SETCURSOR: {
-			if (LOWORD(lParam) == HTCLIENT) {
+			if (LOWORD(p_lparam) == HTCLIENT) {
 				if (window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 					//Hide the cursor
 					if (hCursor == NULL) {
@@ -1180,7 +1180,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		} break;
 		case WM_DROPFILES: {
-			HDROP hDropInfo = (HDROP)wParam;
+			HDROP hDropInfo = (HDROP)p_wparam;
 			const int buffsize = 4096;
 			wchar_t buf[buffsize];
 
@@ -1202,20 +1202,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		default: {
 			if (user_proc) {
-				return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
+				return CallWindowProcW(user_proc, p_window, p_umsg, p_wparam, p_lparam);
 			};
 		};
 	}
 
-	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	return DefWindowProcW(p_window, p_umsg, p_wparam, p_lparam);
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WndProc(HWND p_window, UINT p_umsg, WPARAM p_wparam, LPARAM p_lparam) {
 	OS_Windows *os_win = static_cast<OS_Windows *>(OS::get_singleton());
-	if (os_win)
-		return os_win->WndProc(hWnd, uMsg, wParam, lParam);
-	else
-		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+	if (os_win) {
+		return os_win->WndProc(p_window, p_umsg, p_wparam, p_lparam);
+	} else {
+		return DefWindowProcW(p_window, p_umsg, p_wparam, p_lparam);
+	}
 }
 
 void OS_Windows::process_key_events() {
