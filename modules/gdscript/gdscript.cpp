@@ -178,10 +178,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(nullptr);
-		{
-			MutexLock lock(GDScriptLanguage::singleton->mutex);
-			instances.remove(&instance->script_instance_list);
-		}
 		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 	}
 
@@ -196,10 +192,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
 			instance->owner->set_script_instance(nullptr);
-			{
-				MutexLock lock(GDScriptLanguage::singleton->mutex);
-				instances.remove(&instance->script_instance_list);
-			}
 			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 		}
 	}
