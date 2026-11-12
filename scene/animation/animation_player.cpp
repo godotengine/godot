@@ -366,7 +366,7 @@ void AnimationPlayer::_blend_post_process() {
 					if (!finished_anim.is_empty()) {
 						emit_signal(SceneStringName(animation_finished), finished_anim);
 					}
-					emit_signal(SNAME("current_animation_changed"), "");
+					_reset_current();
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
 						get_tree()->quit();
@@ -816,6 +816,13 @@ void AnimationPlayer::_animation_changed(const StringName &p_name) {
 	}
 }
 
+void AnimationPlayer::_reset_current() {
+	playback.current.is_enabled = false;
+	playback.current.animation_name = String();
+	playback.current.speed_scale = 1;
+	emit_signal(SNAME("current_animation_changed"), "");
+}
+
 void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 	_clear_caches(clear_cache_on_stop);
 	Playback &c = playback;
@@ -827,10 +834,7 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 		} else {
 			seek_internal(start, true, true, true);
 		}
-		c.current.is_enabled = false;
-		c.current.animation_name = String();
-		c.current.speed_scale = 1;
-		emit_signal(SNAME("current_animation_changed"), "");
+		_reset_current();
 	}
 	_set_process(false);
 	playback_queue.clear();
