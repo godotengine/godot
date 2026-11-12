@@ -118,13 +118,18 @@
 # 张华 <i1tb@qq.com>, 2026.
 # kexuejiaLv0 <timezhang35@gmail.com>, 2026.
 # Louish <louish666666@outlook.com>, 2026.
+# Floruit <1964993179@qq.com>, 2026.
+# 罗翌宸 <Luo_Yichen@yeah.net>, 2026.
+# 杨朔 <yshuo0625@163.com>, 2026.
+# mwz116 <hlcodev@163.com>, 2026.
+# 风青山 <bee@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-06-10 12:01+0000\n"
-"Last-Translator: 张华 <i1tb@qq.com>\n"
+"PO-Revision-Date: 2026-11-04 11:46+0000\n"
+"Last-Translator: 风青山 <bee@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -132,7 +137,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.11.1.dev0\n"
 
 msgid "OK"
 msgstr "确定"
@@ -168,7 +173,7 @@ msgid "File: Permission denied"
 msgstr "文件：权限不足"
 
 msgid "File already in use"
-msgstr "文件正被使用"
+msgstr "文件被占用"
 
 msgid "Can't open file"
 msgstr "无法打开文件"
@@ -180,10 +185,10 @@ msgid "Can't read file"
 msgstr "无法读取文件"
 
 msgid "File unrecognized"
-msgstr "无法识别文件"
+msgstr "文件无法识别"
 
 msgid "File corrupt"
-msgstr "文件损坏"
+msgstr "文件已损坏"
 
 msgid "Missing dependencies for file"
 msgstr "文件缺少依赖"
@@ -222,13 +227,13 @@ msgid "Can't acquire resource"
 msgstr "无法获取资源"
 
 msgid "Can't fork"
-msgstr "无法分叉"
+msgstr "无法分支"
 
 msgid "Invalid data"
-msgstr "无效数据"
+msgstr "数据无效"
 
 msgid "Invalid parameter"
-msgstr "无效参数"
+msgstr "参数无效"
 
 msgid "Already exists"
 msgstr "已存在"
@@ -279,7 +284,7 @@ msgid "Bug"
 msgstr "Bug"
 
 msgid "Printer on fire"
-msgstr "打印机起火"
+msgstr "打印机故障"
 
 msgid "unset"
 msgstr "未设置"
@@ -666,6 +671,9 @@ msgstr "ColorPicker：删除预设"
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "无障碍：键盘拖放"
 
+msgid "Toggle Fullscreen"
+msgstr "切换全屏"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "表达式中的输入 %d 无效（未传递）"
 
@@ -894,8 +902,8 @@ msgstr ""
 msgid "Blend"
 msgstr "混合"
 
-msgid "Open Editor"
-msgstr "打开编辑器"
+msgid "Open"
+msgstr "打开"
 
 msgid "Index"
 msgstr "索引"
@@ -912,9 +920,6 @@ msgstr ""
 
 msgid "Position"
 msgstr "位置"
-
-msgid "Blend Value"
-msgstr "混合值"
 
 msgid "Min"
 msgstr "最小值"
@@ -972,12 +977,6 @@ msgstr "网格 X 步长"
 
 msgid "Grid Y Step"
 msgstr "网格 Y 步长"
-
-msgid "Blend X Value"
-msgstr "X 混合值"
-
-msgid "Blend Y Value"
-msgstr "Y 混合值"
 
 msgid "Max Y"
 msgstr "Y 最大值"
@@ -1218,7 +1217,7 @@ msgid "Some Animation files were invalid."
 msgstr "部分 Animation 文件无效。"
 
 msgid "Some of the selected animations were already added to the library."
-msgstr "所选动画中有部分已添加到库中。"
+msgstr "所选动画中有一部分已添加到库中。"
 
 msgid "Load Animations into Library"
 msgstr "将动画加载到库中"
@@ -1495,12 +1494,6 @@ msgstr "不能从“结束”状态转换！"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "从“%s”到“%s”的过渡已经存在！"
-
-msgid "Play/Travel to %s"
-msgstr "播放/前往 %s"
-
-msgid "Edit %s"
-msgstr "编辑 %s"
 
 msgid "Add Node and Transition"
 msgstr "添加节点和过渡"
@@ -2065,19 +2058,6 @@ msgstr ""
 "一些选项（包括循环）可在此处使用。要添加自定义轨道，请启用“保存为文件”\n"
 "和“保留自定义轨道”。"
 
-msgid ""
-"Some AnimationPlayerEditor's options are disabled since this is the dummy "
-"AnimationPlayer for preview.\n"
-"\n"
-"The dummy player is forced active, non-deterministic and doesn't have the "
-"root motion track. Furthermore, the original node is inactive temporary."
-msgstr ""
-"部分 AnimationPlayerEditor 选项已禁用，因为这是用于预览的虚拟 "
-"AnimationPlayer。\n"
-"\n"
-"虚拟播放器被强制激活，是非确定性的，并且没有根运动轨道。此外，原始节点暂时处于"
-"非激活状态。"
-
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayer 未激活。不会处理播放。"
 
@@ -2637,11 +2617,11 @@ msgstr "连接网络"
 msgid "Failed to verify repository."
 msgstr "仓库验证失败。"
 
-msgid "Template"
-msgstr "模板"
-
 msgid "All"
 msgstr "全部"
+
+msgid "Repository returned with invalid data."
+msgstr "仓库返回了无效数据。"
 
 msgid "No results for \"%s\"."
 msgstr "未找到 “%s”。"
@@ -2651,6 +2631,9 @@ msgstr "与 “%s” “%s” 无兼容结果。"
 
 msgid "Unstable"
 msgstr "不稳定"
+
+msgid "Asset Store"
+msgstr "资源商店"
 
 msgid "Search templates. Use tags by including \"#tagname\"."
 msgstr "搜索模板。使用标签时，请包含 \"#标签名\"。"
@@ -2678,9 +2661,6 @@ msgstr "许可证"
 
 msgid "Assets ZIP File"
 msgstr "资产 ZIP 文件"
-
-msgid "Asset Store"
-msgstr "资源商店"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "打开“%s”的资产文件时出错（不是 ZIP 格式）。"
@@ -2784,7 +2764,7 @@ msgid "Toggle Audio Bus Mute"
 msgstr "切换音频总线静音"
 
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "开关音频总线旁通效果"
+msgstr "切换音频总线旁通效果"
 
 msgid "Select Audio Bus Send"
 msgstr "选择音频发送总线"
@@ -2879,29 +2859,14 @@ msgstr "切换音频面板"
 msgid "Layout:"
 msgstr "布局："
 
+msgid "Save As..."
+msgstr "另存为..."
+
 msgid "Add Bus"
 msgstr "添加总线"
 
 msgid "Add a new Audio Bus to this layout."
 msgstr "为此布局添加一个新的音频总线。"
-
-msgid "Load"
-msgstr "加载"
-
-msgid "Load an existing Bus Layout."
-msgstr "加载现有的总线布局。"
-
-msgid "Save this Bus Layout to a file."
-msgstr "将此总线布局保存到文件。"
-
-msgid "Load Default"
-msgstr "加载默认值"
-
-msgid "Load the default Bus Layout."
-msgstr "加载默认总线布局。"
-
-msgid "Create a new Bus Layout."
-msgstr "创建新的总线布局。"
 
 msgid "Audio Bus Layout"
 msgstr "音频总线布局"
@@ -2927,34 +2892,8 @@ msgstr "使用外部编辑器调试"
 msgid "Deploy with Remote Debug"
 msgstr "使用远程调试部署"
 
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"启用此选项时，使用一键部署将使可执行文件尝试连接到此计算机的 IP，以便调试正在"
-"运行的项目。\n"
-"此选项用于远程调试（通常与移动设备一起使用）。\n"
-"你不需要启用它就可以在本地使用 GDScript 调试器。"
-
 msgid "Small Deploy with Network Filesystem"
 msgstr "使用网络文件系统的小型部署"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"启用此选项时，对 Android 使用一键部署将仅导出不包含项目数据的可执行文件。\n"
-"编辑器文件将根据项目通过网络提供文件系统。\n"
-"在 Android 上，部署将使用 USB 线缆提高性能。此选项可加快具有大型资产的项目的测"
-"试速度。"
 
 msgid "Visible Collision Shapes"
 msgstr "显示碰撞区域"
@@ -2997,7 +2936,7 @@ msgid ""
 "This is useful to troubleshoot low processor mode."
 msgstr ""
 "启用该选项时，2D 对象的重绘请求将在运行的项目中可见（短暂的闪烁）。\n"
-"适用于低处理器模式的故障排除很有用。"
+"适用于低处理器模式的故障排除。"
 
 msgid "Synchronize Scene Changes"
 msgstr "同步场景修改"
@@ -3621,20 +3560,11 @@ msgstr "点击复制。"
 msgid "Click to open in browser."
 msgstr "点击在浏览器中打开。"
 
-msgid "Toggle Files Panel"
-msgstr "切换文件面板"
-
-msgid "Scripts"
-msgstr "脚本"
-
 msgid "No description available."
 msgstr "暂无可用描述。"
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr "未来版本中可能会修改或移除此注解。"
-
-msgid "Open"
-msgstr "打开"
 
 msgid "Open in File Manager"
 msgstr "在文件管理器中打开"
@@ -3974,21 +3904,6 @@ msgstr "编辑依赖项..."
 msgid "Create New"
 msgstr "新建"
 
-msgid "Folder..."
-msgstr "文件夹..."
-
-msgid "Scene..."
-msgstr "场景..."
-
-msgid "Script..."
-msgstr "脚本..."
-
-msgid "Resource..."
-msgstr "资源..."
-
-msgid "TextFile..."
-msgstr "文本文件..."
-
 msgid "Expand Folder"
 msgstr "展开文件夹"
 
@@ -4028,17 +3943,32 @@ msgstr "在终端中打开文件夹"
 msgid "New Folder..."
 msgstr "新建文件夹..."
 
+msgid "Folder..."
+msgstr "文件夹..."
+
 msgid "New Scene..."
 msgstr "新建场景..."
+
+msgid "Scene..."
+msgstr "场景..."
 
 msgid "New Script..."
 msgstr "新建脚本..."
 
+msgid "Script..."
+msgstr "脚本..."
+
 msgid "New Resource..."
 msgstr "新建资源..."
 
+msgid "Resource..."
+msgstr "资源..."
+
 msgid "New TextFile..."
 msgstr "新建文本文件..."
+
+msgid "TextFile..."
+msgstr "文本文件..."
 
 msgid "Sort Files"
 msgstr "文件排序"
@@ -4121,11 +4051,11 @@ msgstr "筛选文件"
 msgid "Directories"
 msgstr "目录"
 
-msgid "Display Mode"
-msgstr "显示模式"
-
 msgid "Files"
 msgstr "文件"
+
+msgid "Display Mode"
+msgstr "显示模式"
 
 msgid ""
 "Scanning Files,\n"
@@ -4281,6 +4211,9 @@ msgstr "默认"
 msgid "Set as Default for '%s'"
 msgstr "设置为“%s”的默认值"
 
+msgid "Load Default"
+msgstr "加载默认值"
+
 msgid "Clear Default for '%s'"
 msgstr "清除“%s”的默认值"
 
@@ -4324,11 +4257,6 @@ msgid ""
 "settings."
 msgstr "在文件系统或检查器中选择资源文件以调整导入设置。"
 
-msgid ""
-"The following resources will be duplicated and embedded within this resource/"
-"object."
-msgstr "以下资源将被复制并嵌入到此资源/对象中。"
-
 msgid "This object has no resources to duplicate."
 msgstr "此对象没有可复制的资源。"
 
@@ -4340,6 +4268,9 @@ msgstr "加载资源失败。"
 
 msgid "(Current)"
 msgstr "（当前）"
+
+msgid "Go to previous edited object in history."
+msgstr "前往历史记录中上一个编辑的对象。"
 
 msgid "Expand Non-Default"
 msgstr "展开非默认项"
@@ -4371,20 +4302,20 @@ msgstr "检查器"
 msgid "Open Inspector Dock"
 msgstr "打开检查器面板"
 
-msgid "Create a new resource in memory and edit it."
-msgstr "在内存中新建资源并编辑。"
-
-msgid "Load an existing resource from disk and edit it."
-msgstr "从磁盘加载现有资源并编辑。"
+msgid "Go to next edited object in history."
+msgstr "前往历史记录中下一个编辑的对象。"
 
 msgid "Save the currently edited resource."
 msgstr "保存当前正在编辑的资源。"
 
-msgid "Save As..."
-msgstr "另存为..."
-
 msgid "Extra resource options."
 msgstr "额外的资源选项。"
+
+msgid "Create a new resource in memory and edit it."
+msgstr "在内存中新建资源并编辑。"
+
+msgid "Save Resource As..."
+msgstr "资源另存为..."
 
 msgid "Edit Resource from Clipboard"
 msgstr "编辑剪贴板中的资源"
@@ -4392,23 +4323,11 @@ msgstr "编辑剪贴板中的资源"
 msgid "Copy Resource"
 msgstr "复制资源"
 
-msgid "Make Resource Built-In"
-msgstr "将资源转为内置"
-
-msgid "Go to previous edited object in history."
-msgstr "前往历史记录中上一个编辑的对象。"
-
-msgid "Go to next edited object in history."
-msgstr "前往历史记录中下一个编辑的对象。"
-
-msgid "History of recently edited objects."
-msgstr "最近编辑对象的历史记录。"
-
-msgid "Open documentation for this object."
-msgstr "为此对象打开文档。"
-
 msgid "Open Documentation"
 msgstr "打开文档"
+
+msgid "Make Resource Built-In"
+msgstr "将资源转为内置"
 
 msgid "Filter Properties"
 msgstr "筛选属性"
@@ -4436,16 +4355,8 @@ msgid ""
 "of its nodes."
 msgstr "无法实例化场景“%s”，因为当前场景存在于该场景的一个节点中。"
 
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "实例化场景"
-
 msgid "Error loading audio stream from %s"
 msgstr "从 %s 加载音频流时出错"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "创建 AudioStreamPlayer"
 
 msgid "Replace with Branch Scene"
 msgstr "替换为分支场景"
@@ -4534,9 +4445,6 @@ msgstr ""
 "无法保存分支，该分支是继承场景的一部分。\n"
 "要将此分支保存为其自己的场景，请打开原始场景，右键单击此分支，然后选择“将分支"
 "保存为场景”。"
-
-msgid "Save New Scene As..."
-msgstr "将新场景另存为..."
 
 msgid ""
 "Disabling \"Editable Children\" will cause all properties of this subscene's "
@@ -4851,6 +4759,9 @@ msgstr "本地"
 msgid "Delete Related Animation Tracks"
 msgstr "删除相关的动画轨道"
 
+msgid "Save New Scene As..."
+msgstr "将新场景另存为..."
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "是否清除继承？（不可撤销！）"
 
@@ -4925,14 +4836,6 @@ msgid "Toggle visibility of editor messages."
 msgstr "切换编辑器消息的可见性。"
 
 msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"%s\" directory manually before attempting this operation again."
-msgstr ""
-"此项目已安装 Android 构建模板，不会被覆盖。\n"
-"在执行此操作之前，请手动删除“%s”目录。"
-
-msgid ""
 "This will set up your project for gradle Android builds by installing the "
 "source template to \"%s\".\n"
 "Note that in order to make gradle builds instead of using pre-built APKs, the "
@@ -5002,9 +4905,6 @@ msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr "无法保存此资源，因为它不属于已编辑的场景。请先唯一化此资源。"
-
-msgid "Save Resource As..."
-msgstr "资源另存为..."
 
 msgid "Can't open file for writing:"
 msgstr "无法以写入模式打开文件："
@@ -5186,11 +5086,6 @@ msgid ""
 "The current scene has no root node, but %d modified external resource(s) and/"
 "or plugin data were saved anyway."
 msgstr "当前场景没有根节点，但仍保存了 %d 个已修改的外部资源和/或插件数据。"
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr "保存场景需要根节点。你可以使用场景树面板添加根节点。"
 
 msgid "Save Scene As..."
 msgstr "场景另存为..."
@@ -5521,9 +5416,6 @@ msgstr "版本控制设置..."
 msgid "Pack Project as ZIP..."
 msgstr "项目打包为 ZIP..."
 
-msgid "Install Android Build Template..."
-msgstr "安装 Android 构建模板..."
-
 msgid "Open User Data Folder"
 msgstr "打开 “用户数据” 文件夹"
 
@@ -5585,7 +5477,7 @@ msgid "Toggle Last Opened Bottom Panel"
 msgstr "切换最近打开的底部面板"
 
 msgid "Toggle distraction-free mode."
-msgstr "开关专注模式。"
+msgstr "切换专注模式。"
 
 msgid "Copy Text"
 msgstr "复制文本"
@@ -5656,6 +5548,9 @@ msgstr "项目设置"
 msgid "Find in Files..."
 msgstr "在文件中查找..."
 
+msgid "Replace in Files..."
+msgstr "在文件中替换..."
+
 msgid "Export..."
 msgstr "导出..."
 
@@ -5682,9 +5577,6 @@ msgstr "命令面板..."
 
 msgid "Take Screenshot"
 msgstr "截取屏幕截图"
-
-msgid "Toggle Fullscreen"
-msgstr "切换全屏"
 
 msgid "Search Help..."
 msgstr "搜索帮助..."
@@ -5829,11 +5721,14 @@ msgstr "选择当前"
 msgid "Open Project Settings"
 msgstr "打开项目设置"
 
-msgid "Ok"
-msgstr "确定"
-
 msgid "Warning!"
 msgstr "警告！"
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "编辑器设置中的 Java SDK 路径无效。"
+
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "编辑器设置中的 Android SDK 路径无效。"
 
 msgid "Can't get filesystem access."
 msgstr "无法访问文件系统。"
@@ -5999,10 +5894,10 @@ msgstr "“着色器烘焙器”不适用于兼容性渲染器。"
 msgid ""
 "The editor is currently using a different renderer than what the target "
 "platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to \"%s\" renderer temporarily to fix this."
+"Switch to the \"%s\" renderer temporarily to fix this."
 msgstr ""
-"编辑器当前使用的渲染器与目标平台使用的渲染器不同。“着色器烘焙器”将无法包括核心"
-"着色器。暂时切换到“%s”渲染器来解决这个问题。"
+"编辑器当前使用的渲染器与目标平台不同。“着色器烘焙器”将无法包括核心着色器。暂时"
+"切换到“%s”渲染器来解决这个问题。"
 
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "目标文件夹不存在或无法访问：“%s”"
@@ -6102,6 +5997,12 @@ msgstr "已启用相机模块，但未设置相机使用说明。"
 msgid "Invalid additional PList content: "
 msgstr "无效的额外 PList 内容： "
 
+msgid "Export Icons"
+msgstr "导出图标"
+
+msgid "Could not open a directory at path \"%s\"."
+msgstr "无法打开位于“%s”的目录。"
+
 msgid "Select device from the list"
 msgstr "从列表中选择设备"
 
@@ -6128,14 +6029,6 @@ msgstr "运行失败，详见编辑器日志。"
 
 msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
 msgstr "使用兼容性渲染器时不支持“着色器烘焙器”。"
-
-msgid ""
-"The editor is currently using a different renderer than what the target "
-"platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to the \"%s\" renderer temporarily to fix this."
-msgstr ""
-"编辑器当前使用的渲染器与目标平台不同。“着色器烘焙器”将无法包括核心着色器。暂时"
-"切换到“%s”渲染器来解决这个问题。"
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -6515,6 +6408,9 @@ msgstr "为定义的所有预设导出项目。"
 msgid "All presets must have an export path defined for Export All to work."
 msgstr "所有预设都必须定义导出路径才能使“全部导出”生效。"
 
+msgid "Advanced settings are always shown when searching."
+msgstr "搜索时始终显示高级设置。"
+
 msgid "Hide encryption key"
 msgstr "隐藏加密密钥"
 
@@ -6559,13 +6455,6 @@ msgstr "预设"
 
 msgid "Add..."
 msgstr "添加..."
-
-msgid ""
-"If checked, the preset will be available for use in one-click deploy.\n"
-"Only one preset per platform may be marked as runnable."
-msgstr ""
-"如果选中，此预设将可用于一键部署。\n"
-"每个平台只能有一个预设标记为可运行。"
 
 msgid "Advanced Options"
 msgstr "高级选项"
@@ -6727,6 +6616,9 @@ msgstr ""
 
 msgid "More Info..."
 msgstr "更多信息..."
+
+msgid "Scripts"
+msgstr "脚本"
 
 msgid "GDScript Export Mode:"
 msgstr "GDScript 导出模式："
@@ -7224,8 +7116,8 @@ msgstr "移动"
 msgid "No sub-resources found."
 msgstr "找不到子资源。"
 
-msgid "Open a list of sub-resources."
-msgstr "打开子资源列表。"
+msgid "Type: %s"
+msgstr "类型：%s"
 
 msgid "Search files..."
 msgstr "搜索文件..."
@@ -7481,7 +7373,7 @@ msgid "Selected Animation Stop"
 msgstr "停止选中动画"
 
 msgid "Toggle Animation Skeleton Visibility"
-msgstr "开关动画骨架可见性"
+msgstr "切换动画骨骼可见性"
 
 msgid "Rotate Lights With Model"
 msgstr "灯光随模型旋转"
@@ -7516,16 +7408,8 @@ msgstr "音频流导入器：%s"
 msgid "Enable"
 msgstr "启用"
 
-msgid "Enable looping."
-msgstr "启用循环。"
-
 msgid "Offset:"
 msgstr "偏移："
-
-msgid ""
-"Loop offset (from beginning). Note that if BPM is set, this setting will be "
-"ignored."
-msgstr "循环偏移（相对于开头）。注意如果设置了 BPM，这个设置会被忽略。"
 
 msgid "Loop:"
 msgstr "循环："
@@ -7533,35 +7417,11 @@ msgstr "循环："
 msgid "BPM:"
 msgstr "BPM："
 
-msgid ""
-"Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
-"This is required in order to configure beat information."
-msgstr ""
-"配置互动流使用的每小节拍数（节奏）。\n"
-"这是配置节拍信息所必需的。"
-
 msgid "Beat Count:"
 msgstr "拍数："
 
-msgid ""
-"Configure the amount of Beats used for music-aware looping. If zero, it will "
-"be autodetected from the length.\n"
-"It is recommended to set this value (either manually or by clicking on a beat "
-"number in the preview) to ensure looping works properly."
-msgstr ""
-"配置用于音乐感知循环的拍数。如果为零，则会根据长度自动检测。\n"
-"建议设置这个值（手动输入或点击预览中的拍数），以确保能够正常循环。"
-
 msgid "Bar Beats:"
 msgstr "节拍："
-
-msgid ""
-"Configure the Beats Per Bar. This used for music-aware transitions between "
-"AudioStreams."
-msgstr "配置每小节的拍数。这用于音频流之间的音乐感知过渡。"
-
-msgid "Music Playback:"
-msgstr "播放音乐："
 
 msgid "Preview:"
 msgstr "预览："
@@ -7789,7 +7649,7 @@ msgstr "属性：%s"
 msgid ""
 "Toggling the checkbox is disabled for Resource properties. Modify the "
 "property using the resource picker instead."
-msgstr "已禁用 Resource 资源复选框的开关。请使用资源拾取器修改属性。"
+msgstr "Resource 属性无法通过复选框切换。请改用资源选择器修改该属性。"
 
 msgid "Unfavorite Property"
 msgstr "取消收藏属性"
@@ -7845,6 +7705,15 @@ msgstr "启用"
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d 处改动)"
+
+msgid "Copy Value"
+msgstr "复制值"
+
+msgid "Paste Value"
+msgstr "粘贴值"
+
+msgid "Copy Property Path"
+msgstr "复制属性路径"
 
 msgid "Copy Section Values"
 msgstr "复制分区值"
@@ -7933,15 +7802,6 @@ msgstr "将 %s 解除固定"
 msgid "Add metadata %s"
 msgstr "添加元数据 %s"
 
-msgid "Copy Value"
-msgstr "复制值"
-
-msgid "Paste Value"
-msgstr "粘贴值"
-
-msgid "Copy Property Path"
-msgstr "复制属性路径"
-
 msgid "Edit Text:"
 msgstr "编辑文本："
 
@@ -7964,7 +7824,7 @@ msgid "Locale"
 msgstr "区域"
 
 msgid "Toggle Display UID"
-msgstr "开关 UID 显示"
+msgstr "切换 UID 显示"
 
 msgid ""
 "Toggles displaying between path and UID.\n"
@@ -8027,17 +7887,17 @@ msgstr "临时欧拉值"
 msgid "Temporary Euler %s"
 msgstr "临时欧拉值 %s"
 
-msgid "Assign..."
-msgstr "指定..."
-
-msgid "Assign Node"
-msgstr "指定节点"
-
 msgid "Copy as Text"
 msgstr "复制文本"
 
 msgid "Show Node in Tree"
 msgstr "在树中显示节点"
+
+msgid "Assign..."
+msgstr "指定..."
+
+msgid "Assign Node"
+msgstr "指定节点"
 
 msgid "Node Path"
 msgstr "节点路径"
@@ -8147,7 +8007,7 @@ msgstr "为了复制它，使其父资源唯一化。"
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
-msgstr "所选资源（%s）与该属性（%s）所需的类型都不匹配。"
+msgstr "所选资源（%s）不匹配任何该属性预期的类型（%s）。"
 
 msgid "Quick Load..."
 msgstr "快速加载..."
@@ -8210,9 +8070,6 @@ msgstr "大小：%s"
 msgid "Invalid file or broken link."
 msgstr "文件无效或链接失效。"
 
-msgid "Type: %s"
-msgstr "类型：%s"
-
 msgid "Dimensions: %d × %d"
 msgstr "尺寸：%d × %d"
 
@@ -8224,9 +8081,6 @@ msgstr "长度：%0.1fs"
 
 msgid "Length: %0.3fs"
 msgstr "长度：%0.3fs"
-
-msgid "Advanced settings are always shown when searching."
-msgstr "搜索时始终显示高级设置。"
 
 msgid "Event Configured"
 msgstr "配置事件"
@@ -8616,9 +8470,6 @@ msgstr "打开它将降级到 Godot %s.%s。"
 msgid "Downgrading projects is not recommended."
 msgstr "不建议降级项目。"
 
-msgid "Unknown version"
-msgstr "未知版本"
-
 msgid "This project uses an unknown version of Godot."
 msgstr "该项目使用了未知版本的 Godot。"
 
@@ -9004,9 +8855,6 @@ msgstr "正常编辑"
 msgid "Edit in Recovery Mode"
 msgstr "在恢复模式中编辑"
 
-msgid "Backup project first"
-msgstr "事先备份项目"
-
 msgid "Convert Full Project"
 msgstr "转换完整项目"
 
@@ -9083,9 +8931,6 @@ msgstr "样式"
 
 msgid "Color Preset"
 msgstr "颜色预设"
-
-msgid "Custom preset can be further configured in the editor."
-msgstr "可以在编辑器中进一步配置自定义预设。"
 
 msgid "Display Scale"
 msgstr "显示缩放"
@@ -9311,9 +9156,6 @@ msgstr "远程部署"
 msgid "Project Run"
 msgstr "项目运行"
 
-msgid "Suspend/Resume Embedded Project"
-msgstr "挂起/恢复嵌入的项目"
-
 msgid "Next Frame"
 msgstr "下一帧"
 
@@ -9328,12 +9170,6 @@ msgstr "正在启动游戏……"
 
 msgid "Game running not embedded."
 msgstr "游戏未嵌入运行。"
-
-msgid "Press play to start the game."
-msgstr "点击运行启动游戏。"
-
-msgid "Embedding is disabled."
-msgstr "嵌入已禁用。"
 
 msgid "Game embedding not available on your OS."
 msgstr "操作系统不支持游戏嵌入。"
@@ -9362,9 +9198,6 @@ msgstr "游戏以最大化开始运行时不支持游戏嵌入。"
 
 msgid "Game embedding not available when the game starts in fullscreen."
 msgstr "游戏以全屏开始运行时不支持游戏嵌入。"
-
-msgid "Game embedding not available in single window mode."
-msgstr "单窗口模式下不支持游戏嵌入。"
 
 msgid "Game embedding not available when the game starts in headless mode."
 msgstr "游戏以无头模式启动时不支持嵌入。"
@@ -9438,16 +9271,38 @@ msgstr ""
 "并将 rendering/rendering_device/driver 高级项目\n"
 "设置更改为支持 HDR 输出的驱动程序。"
 
-msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
-msgstr "%s+Alt+鼠标右键: 显示点击位置的所有节点列表。"
+msgid "%s+Drag: Rotate selected node around pivot."
+msgstr "%s+拖动：围绕轴心旋转选中节点。"
+
+msgid "V: Set selected node's pivot position."
+msgstr "V：设置选中节点的轴心位置。"
+
+msgid "Shift: Scale proportionally."
+msgstr "Shift：按比例缩放。"
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "在点击的位置显示可选择的节点列表。"
+
+msgid "Click to change object's pivot."
+msgstr "点击修改对象的轴心。"
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift：设置临时轴心。"
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
+msgstr "按住 Shift 点击该按钮可以将临时轴心放置到所选节点的中心。"
+
+msgid ""
+"You can also use Pan View shortcut (Space by default) to pan in any mode."
+msgstr "你还可以使用平移视图快捷键（默认为空格）在任何模式下平移。"
+
+msgid "Game"
+msgstr "游戏"
 
 msgid "Suspend"
 msgstr "挂起"
-
-msgid ""
-"Force pause at SceneTree level. Stops all processing, but you can still "
-"interact with the project."
-msgstr "在SceneTree级别强制暂停。停止所有处理，但你仍然可以与项目交互。"
 
 msgid "Change the game speed."
 msgstr "改变游戏速度。"
@@ -9455,47 +9310,11 @@ msgstr "改变游戏速度。"
 msgid "Speed State"
 msgstr "速度状态"
 
-msgid "Reset the game speed."
-msgstr "重置游戏速度。"
-
-msgid "Reset Speed"
-msgstr "重置速度"
-
 msgid "Input"
 msgstr "输入"
 
-msgid "Allow game input."
-msgstr "允许游戏输入。"
-
-msgid ""
-"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
-"2D camera."
-msgstr "禁用游戏输入，允许选择 Node2D、Control，允许操控 2D 相机。"
-
-msgid ""
-"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
-msgstr "禁用游戏输入，允许选择 Node3D，允许操控 3D 相机。"
-
-msgid "Show list of selectable nodes at position clicked."
-msgstr "在点击的位置显示可选择的节点列表。"
-
-msgid "Toggle Selection Visibility"
-msgstr "切换显示选中项"
-
-msgid "Selection Options"
-msgstr "选择选项"
-
-msgid "Don't Select Locked Nodes"
-msgstr "不要选择锁定节点"
-
-msgid "Select Group Over Children"
-msgstr "优先选择分组"
-
 msgid "Override the in-game camera."
 msgstr "覆盖游戏相机。"
-
-msgid "Camera Override Options"
-msgstr "相机覆盖选项"
 
 msgid "Reset 2D Camera"
 msgstr "重置 2D 相机"
@@ -9509,28 +9328,17 @@ msgstr "在游戏中操控"
 msgid "Manipulate From Editors"
 msgstr "在编辑器中操控"
 
-msgid "Game Window Options"
-msgstr "游戏窗口选项"
+msgid "Don't Select Locked Nodes"
+msgstr "不要选择锁定节点"
 
-msgid "Embed Game on Next Play"
-msgstr "下次运行时嵌入游戏"
-
-msgid "Make Game Workspace Floating on Next Play"
-msgstr "下次运行时浮动游戏工作区"
+msgid "Select Group Over Children"
+msgstr "优先选择分组"
 
 msgid "Embedded Window Sizing"
 msgstr "嵌入式窗口尺寸"
 
 msgid "Fixed Size"
 msgstr "固定大小"
-
-msgid ""
-"Embedded game size is based on project settings.\n"
-"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
-"desired size."
-msgstr ""
-"嵌入游戏的大小以项目设置为基础。\n"
-"游戏工作区小于所需尺寸时使用“Keep Aspect”模式。"
 
 msgid "Keep Aspect Ratio"
 msgstr "保持宽高比"
@@ -9541,14 +9349,8 @@ msgstr "保持嵌入游戏的纵横比。"
 msgid "Stretch to Fit"
 msgstr "伸展以适应"
 
-msgid "Embedded game size stretches to fit the Game Workspace."
-msgstr "嵌入游戏的大小拉伸至符合游戏工作区。"
-
 msgid "Game Workspace"
 msgstr "游戏工作区"
-
-msgid "Game"
-msgstr "游戏"
 
 msgid "Clear All"
 msgstr "全部清除"
@@ -9862,7 +9664,7 @@ msgid "Polygon"
 msgstr "多边形"
 
 msgid "Toggle Polygon Dock"
-msgstr "开关多边形面板"
+msgstr "切换多边形面板"
 
 msgid "Points"
 msgstr "点"
@@ -9973,6 +9775,10 @@ msgid ""
 msgstr "已编辑的属性将应用于新绘制的实例，并会存储在当前场景中。"
 
 msgid ""
+"The selected scene could not be found. It may have been moved or deleted."
+msgstr "所选的场景未找到。该文件可能已被移动或删除。"
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -9983,17 +9789,8 @@ msgstr ""
 msgid "Pinned Node: %s"
 msgstr "已固定的节点：%s"
 
-msgid ""
-"The selected scene could not be found. It may have been moved or deleted."
-msgstr "所选的场景未找到。该文件可能已被移动或删除。"
-
 msgid "Advanced Settings"
 msgstr "高级设置"
-
-msgid ""
-"Hold Alt while painting to temporarily switch to the previously used paint "
-"snap mode."
-msgstr "在绘制时按住 Alt 键，可临时切换到上一次使用的绘制吸附模式。"
 
 msgid "Pin Node"
 msgstr "固定节点"
@@ -10009,10 +9806,10 @@ msgstr "场景拾取器"
 msgid ""
 "When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
 "2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
+"Holding %s enables picking from the 2D editor's viewport."
 msgstr ""
 "启用后，你可以从‘文件系统’面板、‘场景’面板或 2D 编辑器的视口中选择场景。\n"
-"按住 Ctrl 键可从 2D 编辑器的视口中进行拾取。"
+"按住 %s 键可从 2D 编辑器的视口中进行拾取。"
 
 msgid "Edit Properties"
 msgstr "绘制属性"
@@ -10034,10 +9831,10 @@ msgstr "允许重叠"
 
 msgid ""
 "Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
+"Hold %s while painting to temporarily toggle this option."
 msgstr ""
 "允许在已绘制的场景上进行覆盖绘制。\n"
-"在绘制时按住 Shift 键，可临时切换此选项。"
+"在绘制时按住 %s 键，可临时切换此选项。"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "该骨架没有骨骼，请创建一些 Bone2D 子节点。"
@@ -10134,892 +9931,6 @@ msgstr "更新预览"
 
 msgid "Settings:"
 msgstr "设置："
-
-msgid "Merge TileSetAtlasSource"
-msgstr "合并 TileSetAtlasSource"
-
-msgid "%s (ID: %d)"
-msgstr "%s（ID：%d）"
-
-msgid "Atlas Merging"
-msgstr "图集合并"
-
-msgid "Merge (Keep original Atlases)"
-msgstr "合并（保留原有图集）"
-
-msgid "Merge"
-msgstr "合并"
-
-msgid "Next Line After Column"
-msgstr "列后的下一行"
-
-msgid "Please select two atlases or more."
-msgstr "请至少选择两个图集。"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: 0"
-msgstr ""
-"源：%d\n"
-"图集坐标：%s\n"
-"备选：0"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"源：%d\n"
-"图集坐标：%s\n"
-"备选：%d"
-
-msgid "Center View"
-msgstr "居中视图"
-
-msgid ""
-"The selected atlas source has no valid texture. Assign a texture in the "
-"TileSet bottom tab."
-msgstr "所选图集源中没有有效的纹理。请在 TileSet 底部选项卡中分配纹理。"
-
-msgid "Base Tiles"
-msgstr "基础图块"
-
-msgid "Alternative Tiles"
-msgstr "备选图块"
-
-msgid "Reset Polygons"
-msgstr "重置多边形"
-
-msgid "Clear Polygons"
-msgstr "清空多边形"
-
-msgid "Rotate Polygons Right"
-msgstr "向右旋转多边形"
-
-msgid "Rotate Polygons Left"
-msgstr "向左旋转多边形"
-
-msgid "Flip Polygons Horizontally"
-msgstr "水平翻转多边形"
-
-msgid "Flip Polygons Vertically"
-msgstr "垂直翻转多边形"
-
-msgid "Edit Polygons"
-msgstr "编辑多边形"
-
-msgid "Expand editor"
-msgstr "展开编辑器"
-
-msgid "Add polygon tool"
-msgstr "多边形添加工具"
-
-msgid "Edit points tool"
-msgstr "点编辑工具"
-
-msgid "Delete points tool"
-msgstr "点删除工具"
-
-msgid "Advanced"
-msgstr "高级"
-
-msgid "Reset to default tile shape"
-msgstr "重置为默认图块形状"
-
-msgid "Rotate Right"
-msgstr "向右旋转"
-
-msgid "Rotate Left"
-msgstr "向左旋转"
-
-msgid "Flip Horizontally"
-msgstr "水平翻转"
-
-msgid "Flip Vertically"
-msgstr "垂直翻转"
-
-msgid "Toggle Grid Snap"
-msgstr "切换栅格吸附"
-
-msgid "Disable Snap"
-msgstr "禁用吸附"
-
-msgid "Half-Pixel Snap"
-msgstr "半像素吸附"
-
-msgid "Grid Snap"
-msgstr "栅格吸附"
-
-msgid "Subdivision"
-msgstr "细分"
-
-msgid "Painting Tiles Property"
-msgstr "绘制图块属性"
-
-msgid "Painting:"
-msgstr "绘制："
-
-msgid "Polygon %d"
-msgstr "多边形%d"
-
-msgid "One Way"
-msgstr "单向"
-
-msgid "One Way Margin"
-msgstr "单向边距"
-
-msgid "Linear Velocity"
-msgstr "线速度"
-
-msgid "Angular Velocity"
-msgstr "角速度"
-
-msgid "No terrains"
-msgstr "没有地形"
-
-msgid "No terrain"
-msgstr "没有地形"
-
-msgid "Painting Terrain Set"
-msgstr "绘制地形集"
-
-msgid "Painting Terrain"
-msgstr "绘制地形"
-
-msgid "Pick"
-msgstr "选取"
-
-msgid "Drawing Rect:"
-msgstr "绘制矩形："
-
-msgid "Can't rotate patterns when using non-square tile grid."
-msgstr "使用非正方形图块栅格时无法旋转图案。"
-
-msgid "Shift: Draw line."
-msgstr "Shift：绘制直线。"
-
-msgid "%s+Shift: Draw rectangle."
-msgstr "%s+Shift：绘制矩形。"
-
-msgid "No Texture Atlas Source (ID: %d)"
-msgstr "没有纹理图集源（ID：%d）"
-
-msgid "Scene Collection Source (ID: %d)"
-msgstr "场景合集源（ID：%d）"
-
-msgid "Empty Scene Collection Source (ID: %d)"
-msgstr "空场景合集源（ID: %d）"
-
-msgid "Unknown Type Source (ID: %d)"
-msgstr "未知类型源（ID：%d）"
-
-msgid "Add TileSet pattern"
-msgstr "添加 TileSet 图案"
-
-msgid "Remove TileSet patterns"
-msgstr "移除 TileSet 图案"
-
-msgid "Index: %d"
-msgstr "索引：%d"
-
-msgid "Tile with Invalid Scene"
-msgstr "包含无效场景的图块"
-
-msgid ""
-"The selected scene collection source has no scenes. Add scenes in the TileSet "
-"bottom tab."
-msgstr "所选场景合集源中没有场景。请在 TileSet 底部选项卡中添加场景。"
-
-msgid "Delete tiles"
-msgstr "删除图块"
-
-msgid "Change selection"
-msgstr "修改选中项"
-
-msgid "Move tiles"
-msgstr "移动图块"
-
-msgid "Paint tiles"
-msgstr "绘制图块"
-
-msgid "Paste tiles"
-msgstr "粘贴图块"
-
-msgid "Selection Tool"
-msgstr "选择工具"
-
-msgid "Paint Tool"
-msgstr "绘制工具"
-
-msgid "Line Tool"
-msgstr "直线工具"
-
-msgid "Rect Tool"
-msgstr "矩形工具"
-
-msgid "Bucket Tool"
-msgstr "油漆桶工具"
-
-msgid "Alternatively hold %s with other tools to pick tile."
-msgstr "也可以在使用其他工具时按住 %s 来挑选图块。"
-
-msgid "Alternatively use RMB to erase tiles."
-msgstr "也可以用鼠标右键擦除图块。"
-
-msgid "Erase"
-msgstr "擦除"
-
-msgid "Rotate Tile Left"
-msgstr "向左旋转图块"
-
-msgid "Rotate Tile Right"
-msgstr "向右旋转图块"
-
-msgid "Flip Tile Horizontally"
-msgstr "水平翻转图块"
-
-msgid "Flip Tile Vertically"
-msgstr "垂直翻转图块"
-
-msgid "Contiguous"
-msgstr "连续"
-
-msgid "Place Random Tile"
-msgstr "放置随机图块"
-
-msgid ""
-"Modifies the chance of painting nothing instead of a randomly selected tile."
-msgstr "修改不绘制任何内容的概率，不会绘制随机选择的图块。"
-
-msgid "Scattering:"
-msgstr "散布："
-
-msgid "Tiles"
-msgstr "图块"
-
-msgid ""
-"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
-"bottom panel to add one."
-msgstr "这个 TileMap 的 TileSet 中没有配置图块源。请在 TileSet 底部面板中添加。"
-
-msgid "Sort sources"
-msgstr "源排序"
-
-msgid "Sort by ID (Ascending)"
-msgstr "按 ID 排序（升序）"
-
-msgid "Sort by ID (Descending)"
-msgstr "按 ID 排序（降序）"
-
-msgid "Invalid source selected."
-msgstr "所选源无效。"
-
-msgid "Patterns"
-msgstr "图案"
-
-msgid "Drag and drop or paste a TileMap selection here to store a pattern."
-msgstr "如果要存储图案，请将 TileMap 的选中项拖放或粘贴至此。"
-
-msgid "Paint terrain"
-msgstr "绘制地形"
-
-msgid "Matches Corners and Sides"
-msgstr "匹配角落和侧边"
-
-msgid "Matches Corners Only"
-msgstr "仅匹配角落"
-
-msgid "Matches Sides Only"
-msgstr "仅匹配侧边"
-
-msgid "Terrain Set %d (%s)"
-msgstr "地形集 %d（%s）"
-
-msgid ""
-"Connect mode: paints a terrain, then connects it with the surrounding tiles "
-"with the same terrain."
-msgstr "连接模式：绘制一个地形，然后将其与周围具有相同地形的图块连接起来。"
-
-msgid ""
-"Path mode: paints a terrain, then connects it to the previous tile painted "
-"within the same stroke."
-msgstr "路径模式：绘制一个地形，并在同一笔画内将其与前一个图块连接起来。"
-
-msgid "Terrains"
-msgstr "地形"
-
-msgid "No Layers"
-msgstr "没有层"
-
-msgid "Replace Tiles with Proxies"
-msgstr "用代理替换图块"
-
-msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "将 TileMap 图层提取为独立的 TileMapLayer 节点"
-
-msgid "Can't edit multiple layers at once."
-msgstr "无法同时编辑多层。"
-
-msgid "The selected TileMap has no layer to edit."
-msgstr "所选 TileMap 没有图层可供编辑。"
-
-msgid "The edited layer is disabled or invisible"
-msgstr "正在编辑的图层已禁用或已隐藏"
-
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"正在编辑的 TileMap 或 TileMapLayer 节点没有 TileSet 资源。\n"
-"请在检查器的 TileSet 属性中创建或加载 TileSet 资源。"
-
-msgid "TileMap"
-msgstr "TileMap"
-
-msgid "Open TileMap Dock"
-msgstr "打开TileMap面板"
-
-msgid "Select Next Tile Map Layer"
-msgstr "选择下一个图块地图层"
-
-msgid "Select Previous Tile Map Layer"
-msgstr "选择上一个图块地图层"
-
-msgid "TileMap Layers"
-msgstr "TileMap 层"
-
-msgid "Select previous layer"
-msgstr "选中上一层"
-
-msgid "Select next layer"
-msgstr "选中下一层"
-
-msgid "Select all TileMapLayers in scene"
-msgstr "选中场景中的所有 TileMapLayer"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "高亮所选 TileMap 图层"
-
-msgid "Toggle grid visibility."
-msgstr "切换栅格可见性。"
-
-msgid "Advanced settings."
-msgstr "高级设置。"
-
-msgid "Automatically Replace Tiles with Proxies"
-msgstr "自动将图块替换为代理"
-
-msgid "Remove Tile Proxies"
-msgstr "移除图块代理"
-
-msgid "Create Alternative-level Tile Proxy"
-msgstr "创建替代级别的图块代理"
-
-msgid "Create Coords-level Tile Proxy"
-msgstr "创建坐标级别的图块代理"
-
-msgid "Create source-level Tile Proxy"
-msgstr "创建源级别的图块代理"
-
-msgid "Delete All Invalid Tile Proxies"
-msgstr "删除所有无效的图块代理"
-
-msgid "Delete All Tile Proxies"
-msgstr "删除所有图块代理"
-
-msgid "Tile Proxies Management"
-msgstr "图块代理管理"
-
-msgid "Source-level proxies"
-msgstr "源级别代理"
-
-msgid "Coords-level proxies"
-msgstr "坐标级别代理"
-
-msgid "Alternative-level proxies"
-msgstr "替代级别代理"
-
-msgid "Add a new tile proxy:"
-msgstr "添加一个新的图块代理："
-
-msgid "From Source"
-msgstr "从源"
-
-msgid "From Coords"
-msgstr "从坐标"
-
-msgid "From Alternative"
-msgstr "从备选"
-
-msgid "To Source"
-msgstr "到源"
-
-msgid "To Coords"
-msgstr "到坐标"
-
-msgid "To Alternative"
-msgstr "到备选"
-
-msgid "Global actions:"
-msgstr "全局动作："
-
-msgid "Clear Invalid"
-msgstr "清除无效"
-
-msgid "Atlas"
-msgstr "图集"
-
-msgid "Base Tile"
-msgstr "基础图块"
-
-msgid "Alternative Tile"
-msgstr "备选图块"
-
-msgid ""
-"Selected tile:\n"
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"选中图块：\n"
-"源：%d\n"
-"图集坐标：%s\n"
-"备选：%d"
-
-msgid "Rendering"
-msgstr "渲染"
-
-msgid "Texture Origin"
-msgstr "纹理原点"
-
-msgid "Modulate"
-msgstr "调色"
-
-msgid "Z Index"
-msgstr "Z 索引"
-
-msgid "Y Sort Origin"
-msgstr "Y 排序原点"
-
-msgid "Occlusion Layer %d"
-msgstr "遮挡层 %d"
-
-msgid "Probability"
-msgstr "概率"
-
-msgid "Physics"
-msgstr "物理"
-
-msgid "Physics Layer %d"
-msgstr "物理层 %d"
-
-msgid "No physics layers"
-msgstr "无物理层"
-
-msgid ""
-"Create and customize physics layers in the inspector of the TileSet resource."
-msgstr "请在 TileSet 资源的检查器中创建并自定义物理层。"
-
-msgid "Navigation"
-msgstr "导航"
-
-msgid "Navigation Layer %d"
-msgstr "导航层 %d"
-
-msgid "No navigation layers"
-msgstr "无导航层"
-
-msgid ""
-"Create and customize navigation layers in the inspector of the TileSet "
-"resource."
-msgstr "请在 TileSet 资源的检查器中创建并自定义导航层。"
-
-msgid "Custom Data"
-msgstr "自定义数据"
-
-msgid "Custom Data %d"
-msgstr "自定义数据 %d"
-
-msgid "No custom data layers"
-msgstr "无自定义数据层"
-
-msgid ""
-"Create and customize custom data layers in the inspector of the TileSet "
-"resource."
-msgstr "请在 TileSet 资源的检查器中创建并自定义自定义数据层。"
-
-msgid "Select a property editor"
-msgstr "请选择属性编辑器"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "按住 Ctrl 创建多个图块。"
-
-msgid "Hold Shift to create big tiles."
-msgstr "按住 Shift 创建大型图块。"
-
-msgid "Hold Shift to select multiple regions."
-msgstr "按住 Shift 选择多个区域。"
-
-msgid ""
-"TileSet is in read-only mode. Make the resource unique to edit TileSet "
-"properties."
-msgstr "TileSet 处于只读模式。要编辑 TileSet 的属性请先唯一化该资源。"
-
-msgid "Paint properties."
-msgstr "绘制属性。"
-
-msgid "Create tiles"
-msgstr "创建多个图块"
-
-msgid "Create a tile"
-msgstr "创建单个图块"
-
-msgid "Remove tiles"
-msgstr "移除图块"
-
-msgid "Move a tile"
-msgstr "移动图块"
-
-msgid "Resize a tile"
-msgstr "调整图块大小"
-
-msgid "Remove tile"
-msgstr "移除图块"
-
-msgid "Create tile alternatives"
-msgstr "创建备选图块"
-
-msgid "Remove Tiles Outside the Texture"
-msgstr "移除纹理外的图块"
-
-msgid "Create tiles in non-transparent texture regions"
-msgstr "在不透明纹理区域中创建图块"
-
-msgid "Remove tiles in fully transparent texture regions"
-msgstr "从全透明纹理区域中移除图块"
-
-msgid ""
-"The tile's unique identifier within this TileSet. Each tile stores its source "
-"ID, so changing one may make tiles invalid."
-msgstr ""
-"图块在该 TileSet 中的唯一标识符。每个图块都会存储来源 ID，所以修改后可能会让图"
-"块失效。"
-
-msgid ""
-"The human-readable name for the atlas. Use a descriptive name here for "
-"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
-msgstr ""
-"图集的人类可读名称。请在此处使用有意义的名称，方便组织（例如“地形”“装饰品”等名"
-"称）。"
-
-msgid "The image from which the tiles will be created."
-msgstr "图块是从哪个图片创建的。"
-
-msgid ""
-"The margins on the image's edges that should not be selectable as tiles (in "
-"pixels). Increasing this can be useful if you download a tilesheet image that "
-"has margins on the edges (e.g. for attribution)."
-msgstr ""
-"图像边缘不应作为可选图块的边距（单位为像素）。如果你下载的图块表图像在边缘存在"
-"边距（例如为了归属问题），就可以增大这个属性。"
-
-msgid ""
-"The separation between each tile on the atlas in pixels. Increasing this can "
-"be useful if the tilesheet image you're using contains guides (such as "
-"outlines between every tile)."
-msgstr ""
-"图集中图块与图块之间的距离，单位为像素。如果你使用的图块表图像中包含参考线（例"
-"如图块之间的轮廓），就可以增大这个属性。"
-
-msgid ""
-"The size of each tile on the atlas in pixels. In most cases, this should "
-"match the tile size defined in the TileMap property (although this is not "
-"strictly necessary)."
-msgstr ""
-"图集中每个图块的大小，单位为像素。大多数情况下应该与 TileMap 属性中定义的图块"
-"大小一致（但这并不是硬性规定）。"
-
-msgid ""
-"If checked, adds a 1-pixel transparent edge around each tile to prevent "
-"texture bleeding when filtering is enabled. It's recommended to leave this "
-"enabled unless you're running into rendering issues due to texture padding."
-msgstr ""
-"勾选后会在每个图块周围添加 1 个像素的透明边缘，防止启用过滤时的纹理出血现象。"
-"推荐保持启用，除非遇到了由于纹理内边距而导致的渲染问题。"
-
-msgid ""
-"The position of the tile's top-left corner in the atlas. The position and "
-"size must be within the atlas and can't overlap another tile.\n"
-"Each painted tile has associated atlas coords, so changing this property may "
-"cause your TileMaps to not display properly."
-msgstr ""
-"图块左上角在图集中的位置。位置和大小必须位于图集之中，不能与其他图块重叠。\n"
-"绘制出的每个图块都有对应的图集坐标，所以修改这个属性可能会导致 TileMap 无法正"
-"确显示。"
-
-msgid "The unit size of the tile."
-msgstr "图块的单位尺寸。"
-
-msgid ""
-"Number of columns for the animation grid. If number of columns is lower than "
-"number of frames, the animation will automatically adjust row count."
-msgstr "动画网格的列数。如果列数比帧数小，则动画会自动调整行数。"
-
-msgid "The space (in tiles) between each frame of the animation."
-msgstr "动画中帧与帧之间的间隔（单位为图块）。"
-
-msgid "Animation speed in frames per second."
-msgstr "动画的速度，单位为每秒的帧数。"
-
-msgid ""
-"Determines how animation will start. In \"Default\" mode all tiles start "
-"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
-"animation with a random offset."
-msgstr ""
-"决定动画的开始方式。“Default”模式下所有图块都会在同一帧开始动画。“Random "
-"Start Times”模式下，每个图块在开始动画时都有随机偏移量。"
-
-msgid "If [code]true[/code], the tile is horizontally flipped."
-msgstr "如果为 [code]true[/code]，则图块会左右翻转。"
-
-msgid "If [code]true[/code], the tile is vertically flipped."
-msgstr "如果为 [code]true[/code]，则图块会上下翻转。"
-
-msgid ""
-"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
-"and then flipped vertically. In practice, this means that to rotate a tile by "
-"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
-"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
-"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
-"[b]Flip V[/b] and [b]Transpose[/b]."
-msgstr ""
-"如果为 [code]true[/code]，则图块会在[i]逆时针[/i]旋转 90 度后上下翻转。实践"
-"中，如果需要将图块顺时针旋转 90 度但不翻转，就应该启用[b]水平翻转[/b]和[b]转置"
-"[/b]。如果要将图块顺时针旋转 180 度，请启用[b]水平翻转[/b]和[b]垂直翻转[/b]。"
-"如果要将图块顺时针旋转 270 度，请启用[b]垂直翻转[/b]和[b]转置[/b]。"
-
-msgid ""
-"The origin to use for drawing the tile. This can be used to visually offset "
-"the tile compared to the base tile."
-msgstr ""
-"绘制该图块所使用的原点。可以用来在视觉上将图块进行相对于基础图块的偏移。"
-
-msgid "The color multiplier to use when rendering the tile."
-msgstr "渲染该图块时使用的颜色乘数。"
-
-msgid ""
-"The material to use for this tile. This can be used to apply a different "
-"blend mode or custom shaders to a single tile."
-msgstr "图块所使用的材质。可以用来为图块应用不同的混合模式和自定义着色器。"
-
-msgid ""
-"The sorting order for this tile. Higher values will make the tile render in "
-"front of others on the same layer. The index is relative to the TileMap's own "
-"Z index."
-msgstr ""
-"图块的排序顺序。在同一层中，值越大的图块在渲染时越靠前。该索引号是以 TileMap "
-"本身 Z 索引为基础的相对值。"
-
-msgid ""
-"The vertical offset to use for tile sorting based on its Y coordinate (in "
-"pixels). This allows using layers as if they were on different height for top-"
-"down games. Adjusting this can help alleviate issues with sorting certain "
-"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
-"is placed on."
-msgstr ""
-"根据 Y 坐标（以像素为单位）进行图块排序时使用的垂直偏移量。这样就能够将不同的"
-"层视为在不同高度上，适用于俯视角游戏。调整这个值可以帮助缓解某些图块排序问题。"
-"仅当放置图块的 TileMap 图层上的 Y Sort Enabled 为 true 时才有效。"
-
-msgid ""
-"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
-"will not be used in terrains."
-msgstr "图块所属的地形集索引号。[code]-1[/code] 表示地形中不使用该图块。"
-
-msgid ""
-"The index of the terrain inside the terrain set this tile belongs to. "
-"[code]-1[/code] means it will not be used in terrains."
-msgstr "图块所属地形集中地形的索引号。[code]-1[/code] 表示地形中不使用该图块。"
-
-msgid ""
-"The relative probability of this tile appearing when painting with \"Place "
-"Random Tile\" enabled."
-msgstr "启用“放置随机图块”进行绘制时，出现该图块的相对概率。"
-
-msgid ""
-"The current atlas source has tiles outside the texture.\n"
-"You can clear it using \"%s\" option in the 3 dots menu."
-msgstr ""
-"当前图集源存在位于纹理之外的图块。\n"
-"可以使用三点菜单中的“%s”选项清理。"
-
-msgid "Setup"
-msgstr "设置"
-
-msgid ""
-"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
-"control for rectangle editing)."
-msgstr "图集设置。图块添加/移除工具（Shift 键创建大图块、Ctrl 键编辑矩形）。"
-
-msgid "Select tiles."
-msgstr "选择图块。"
-
-msgid "Paint"
-msgstr "绘制"
-
-msgid ""
-"No tiles selected.\n"
-"Select one or more tiles from the palette to edit its properties."
-msgstr ""
-"未选中图块。\n"
-"请在候选中选择一个或多个图块，对属性进行编辑。"
-
-msgid "Paint Properties:"
-msgstr "绘制属性："
-
-msgid "Create Tiles in Non-Transparent Texture Regions"
-msgstr "在不透明纹理区域创建图块"
-
-msgid "Remove Tiles in Fully Transparent Texture Regions"
-msgstr "在全透明纹理区域移除图块"
-
-msgid "Create an Alternative Tile"
-msgstr "创建备选图块"
-
-msgid "Create a Tile"
-msgstr "创建图块"
-
-msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
-msgstr "是否自动在不透明纹理区域创建图块？"
-
-msgid ""
-"The atlas's texture was modified.\n"
-"Would you like to automatically create tiles in the atlas?"
-msgstr ""
-"该图集的纹理发生改变。\n"
-"是否想要自动在该图集中创建图块？"
-
-msgid "Yes"
-msgstr "是"
-
-msgid "No"
-msgstr "否"
-
-msgid "Invalid texture selected."
-msgstr "所选纹理无效。"
-
-msgid "Add a new atlas source"
-msgstr "新建图集源"
-
-msgid "Remove source"
-msgstr "移除源"
-
-msgid "Add atlas source"
-msgstr "添加图集源"
-
-msgid "TileSet"
-msgstr "TileSet"
-
-msgid "Open TileSet Dock"
-msgstr "打开TileSet面板"
-
-msgid "Tile Sources"
-msgstr "图块源"
-
-msgid "Sort Sources"
-msgstr "源排序"
-
-msgid "A palette of tiles made from a texture."
-msgstr "根据一张纹理制作的图块拼盘。"
-
-msgid "Scenes Collection"
-msgstr "场景合集"
-
-msgid "A collection of scenes that can be instantiated and placed as tiles."
-msgstr "能够实例化并作为图块放置的场景合集。"
-
-msgid "Open Atlas Merging Tool"
-msgstr "打开图集合并工具"
-
-msgid "Manage Tile Proxies"
-msgstr "管理图块代理"
-
-msgid ""
-"No TileSet source selected. Select or create a TileSet source.\n"
-"You can create a new source by using the Add button on the left or by "
-"dropping a tileset texture onto the source list."
-msgstr ""
-"尚未选择 TileSet 源。请选择或创建 TileSet 源。\n"
-"源的新建方法有两种，可以使用左侧的“添加”按钮，也可以将图块集纹理拖放到源列表"
-"中。"
-
-msgid "Add new patterns in the TileMap editing mode."
-msgstr "请在 TileMap 编辑模式中添加新的图案。"
-
-msgid ""
-"Warning: Modifying a source ID will result in all TileMaps using that source "
-"to reference an invalid source instead. This may result in unexpected data "
-"loss. Change this ID carefully."
-msgstr ""
-"警告：修改源 ID 会导致所有使用该源的 TileMap 引用无效的源。可能导致意料之外的"
-"数据丢失。请谨慎修改 ID。"
-
-msgid "Add a Scene Tile"
-msgstr "添加场景图块"
-
-msgid "Remove a Scene Tile"
-msgstr "移除场景图块"
-
-msgid "Drag and drop scenes here or use the Add button."
-msgstr "请将场景拖放至此处或使用“添加”按钮。"
-
-msgid ""
-"The human-readable name for the scene collection. Use a descriptive name here "
-"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
-msgstr ""
-"场景合集的人类可读名称。请在此处使用有意义的名称，方便组织（例如“障碍物”“装饰"
-"品”等名称）。"
-
-msgid ""
-"ID of the scene tile in the collection. Each painted tile has associated ID, "
-"so changing this property may cause your TileMaps to not display properly."
-msgstr ""
-"合集中场景图块的 ID。绘制的图块都有对应的 ID，修改这个属性可能导致 TileMap 无"
-"法正确显示。"
-
-msgid "Absolute path to the scene associated with this tile."
-msgstr "该图块对应的场景的绝对路径。"
-
-msgid ""
-"If [code]true[/code], a placeholder marker will be displayed on top of the "
-"scene's preview. The marker is displayed anyway if the scene has no valid "
-"preview."
-msgstr ""
-"如果为 [code]true[/code]，则会在场景预览的顶部显示占位标记。该标记也会在场景不"
-"存在有效预览时显示。"
-
-msgid "Scenes collection properties:"
-msgstr "场景合集属性："
-
-msgid "Tile properties:"
-msgstr "图块属性："
-
-msgid "Eraser Tool"
-msgstr "橡皮工具"
-
-msgid "Picker Tool"
-msgstr "取色工具"
-
-msgid ""
-"Source ID: %d\n"
-"Texture path: %s"
-msgstr ""
-"源ID：%d\n"
-"纹理路径：%s"
-
-msgid "Source ID: %d"
-msgstr "源ID：%d"
 
 msgid "Bone Picker:"
 msgstr "骨骼拾取器："
@@ -11596,51 +10507,6 @@ msgid "Filter Meshes"
 msgstr "筛选网格"
 
 msgid ""
-"The item's name, shown in the editor. It can also be used to look up the item "
-"later using [method MeshLibrary.find_item_by_name]."
-msgstr ""
-"该项的名称，将在编辑器中显示。也可用于后续通过 [method "
-"MeshLibrary.find_item_by_name] 方法查找该项。"
-
-msgid ""
-"The item's mesh. Used by other parts of the engine (e.g. [GridMap], which "
-"displays them in a 3D tile)."
-msgstr ""
-"该项的网格。引擎的其他部分会使用它（例如 [GridMap]，会在 3D 图块中显示它们）。"
-
-msgid "The transform to apply to the item's mesh."
-msgstr "应用于该项网格的变换。"
-
-msgid ""
-"The shadow casting mode used by the item's mesh. See [enum "
-"RenderingServer.ShadowCastingSetting]."
-msgstr ""
-"该对象的网格（Mesh）所使用的阴影投射模式。请参阅 [enum "
-"RenderingServer.ShadowCastingSetting]。"
-
-msgid ""
-"The item's collision shapes.\n"
-"The array should consist of [Shape3D] objects, each followed by a "
-"[Transform3D] that will be applied to it. For shapes that should not have a "
-"transform, use [constant Transform3D.IDENTITY]."
-msgstr ""
-"该项的碰撞形状。\n"
-"该数组应由 [Shape3D] 对象组成，每个对象后需跟随一个将要应用到它的 "
-"[Transform3D]。对于不需要变换的形状，请使用 [constant Transform3D.IDENTITY]。"
-
-msgid "The item's navigation mesh."
-msgstr "该项的导航网格。"
-
-msgid "The transform to apply to the item's navigation mesh."
-msgstr "应用于该项导航网格的变换。"
-
-msgid "The item's navigation layers bitmask."
-msgstr "该项的导航层位掩码。"
-
-msgid "The texture to use as the item's preview icon in the editor."
-msgstr "用作该项在编辑器中预览图标的纹理。"
-
-msgid ""
 "No items found inside the MeshLibrary.\n"
 "You can add some by using the Add button on the left, or by importing them "
 "from a scene file via the Import menu."
@@ -11721,14 +10587,503 @@ msgstr "填充"
 msgid "Unnamed Gizmo"
 msgstr "未命名小工具"
 
-msgid "Transform Aborted."
-msgstr "变换中止。"
+msgid ""
+"Hold %s to highlight a vertex on the currently selected node,\n"
+"then drag to move the node and snap it to vertices on neighboring nodes.\n"
+"\n"
+"For nodes without a vertex-based representation,\n"
+"Snap Origin to Vertex is always used instead."
+msgstr ""
+"按住 %s 以高亮当前选中节点上的一个顶点，\n"
+"然后拖拽来移动该节点，并将其吸附到相邻节点的顶点上。\n"
+"\n"
+"对于没有基于顶点表示的节点，\n"
+"将始终改用“将原点吸附到顶点”功能。"
+
+msgid ""
+"Hold %s to highlight another node's vertex,\n"
+"then click to teleport the selected node to the highlighted vertex."
+msgstr ""
+"按住 %s 以高亮另一个节点的顶点，\n"
+"然后单击将选中节点瞬间移动到高亮的顶点处。"
+
+msgid ""
+"Snap to vertices of visual meshes.\n"
+"Hold Shift while vertex snapping to temporarily snap to collision shapes "
+"instead."
+msgstr ""
+"吸附到可视网格的顶点上。\n"
+"在顶点吸附时按住 Shift 键，可临时改为吸附到碰撞形状上。"
+
+msgid ""
+"Snap to vertices of collision shapes.\n"
+"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
+msgstr ""
+"吸附到碰撞形状的顶点上。\n"
+"在顶点吸附时按住 Shift 键，可临时改为吸附到网格顶点上。"
+
+msgid "XForm Dialog"
+msgstr "变换对话框"
+
+msgid "Lock Selected"
+msgstr "锁定所选项"
+
+msgid "Unlock Selected"
+msgstr "解锁所选项"
+
+msgid "Group Selected"
+msgstr "编组所选项"
+
+msgid "Ungroup Selected"
+msgstr "解组所选项"
+
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"点击以切换可见状态。\n"
+"\n"
+"睁眼：小工具可见。\n"
+"闭眼：小工具隐藏。\n"
+"半睁眼：小工具也可穿过不透明的表面可见（“X 光”）。"
+
+msgid "Snap Nodes to Floor"
+msgstr "将节点吸附至地面"
+
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "找不到可吸附的坚实地板。"
+
+msgid "Add Preview Sun to Scene"
+msgstr "添加预览太阳至场景"
+
+msgid "Add Preview Environment to Scene"
+msgstr "添加预览环境至场景"
+
+msgid "%s+Drag: Use snap."
+msgstr "%s+拖放：使用吸附。"
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "左键+拖动：测量 3D 空间中两点之间的距离。"
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift + 鼠标左键 + 拖拽：显示组件尺寸测量值。"
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"场景包含\n"
+"DirectionalLight3D。\n"
+"预览已禁用。"
+
+msgid "Preview disabled."
+msgstr "预览已禁用。"
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"场景包含\n"
+"WorldEnvironment。\n"
+"预览已禁用。"
+
+msgid "Set Preview Sun Direction"
+msgstr "设置预览太阳方向"
+
+msgid "Set Preview Sun Altitude"
+msgstr "设置预览太阳纬度"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "设置预览太阳方位角"
+
+msgid "Set Preview Sun Color"
+msgstr "设置预览太阳颜色"
+
+msgid "Set Preview Sun Energy"
+msgstr "设置预览太阳能量"
+
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "设置预览太阳最大阴影距离"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "设置预览环境天空颜色"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "设置预览环境地面颜色"
+
+msgid "Set Preview Environment Energy"
+msgstr "设置预览环境能量"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr "设置预览环境环境光遮蔽"
+
+msgid "Set Preview Environment Glow"
+msgstr "设置预览环境辉光"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "设置预览环境色调映射"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "设置预览环境全局光照"
+
+msgid "Transform Mode"
+msgstr "变换模式"
+
+msgid "Move Mode"
+msgstr "移动模式"
+
+msgid "Rotate Mode"
+msgstr "旋转模式"
+
+msgid "Scale Mode"
+msgstr "缩放模式"
+
+msgid "Select Mode"
+msgstr "选择模式"
+
+msgid "Show List of Selectable Nodes"
+msgstr "显示可选节点列表"
+
+msgid "Ruler Mode"
+msgstr "标尺模式"
+
+msgid "Lock selected node, preventing selection and movement."
+msgstr "锁定选定的节点，防止选择和移动。"
+
+msgid "Lock"
+msgstr "锁定"
+
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "解锁选定的节点，允许选择和移动。"
+
+msgid "Unlock"
+msgstr "解锁"
+
+msgid ""
+"Groups the selected node with its children. This selects the parent when any "
+"child node is clicked in 2D and 3D view."
+msgstr ""
+"将所选节点与其子节点组合。这样在 2D 和 3D 视图中点击子节点就会选中父节点。"
+
+msgid "Group"
+msgstr "分组"
+
+msgid ""
+"Ungroups the selected node from its children. Child nodes will be individual "
+"items in 2D and 3D view."
+msgstr "解除所选节点与其子节点的组合。子节点在 2D 和 3D 视图中为独立对象。"
+
+msgid "Ungroup"
+msgstr "取消分组"
+
+msgid "Use Local Space"
+msgstr "使用本地空间"
+
+msgid "Use Trackball"
+msgstr "使用轨道球"
+
+msgid "Preserve Children Transform"
+msgstr "保持子节点变换"
+
+msgid ""
+"When enabled, transforming a node will preserve the global transform of its "
+"children.\n"
+"This also applies when editing transform properties in the Inspector."
+msgstr ""
+"当启用该选项后，变换节点时将保持其子节点的全局变换。\n"
+"此设置在检查器中编辑变换属性时同样生效。"
+
+msgid "Use Snap"
+msgstr "使用吸附"
+
+msgid "Snap Vertex to Vertex"
+msgstr "顶点吸附到顶点"
+
+msgid "Snap Origin to Vertex"
+msgstr "将原点吸附到顶点"
+
+msgid "Snap to Mesh Vertices"
+msgstr "吸附到网格顶点"
+
+msgid "Snap to Collision Vertices"
+msgstr "吸附到碰撞形状的顶点"
+
+msgid "Configure Snap..."
+msgstr "设置吸附..."
+
+msgid ""
+"Toggle preview sunlight.\n"
+"If a DirectionalLight3D node is added to the scene, preview sunlight is "
+"disabled."
+msgstr ""
+"切换预览阳光。\n"
+"如果一个 DirectionalLight3D 节点被添加到场景中，预览阳光将被禁用。"
+
+msgid "Toggle preview sunlight."
+msgstr "切换预览阳光。"
+
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"切换预览环境。\n"
+"如果一个 WorldEnvironment 节点被添加到场景中，预览环境将被禁用。"
+
+msgid "Toggle preview environment."
+msgstr "切换预览环境。"
+
+msgid "Edit Sun and Environment settings."
+msgstr "编辑太阳和环境设置。"
+
+msgid "Bottom View"
+msgstr "底视图"
+
+msgid "Top View"
+msgstr "顶视图"
+
+msgid "Rear View"
+msgstr "后视图"
+
+msgid "Front View"
+msgstr "前视图"
+
+msgid "Left View"
+msgstr "左视图"
+
+msgid "Right View"
+msgstr "右视图"
+
+msgid "Orbit View Down"
+msgstr "视图向下环绕"
+
+msgid "Orbit View Left"
+msgstr "视图向左环绕"
+
+msgid "Orbit View Right"
+msgstr "视图向右环绕"
+
+msgid "Orbit View Up"
+msgstr "视图向上环绕"
+
+msgid "Orbit View 180"
+msgstr "视图环绕至背面"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "切换透视图/正交视图"
+
+msgid "Insert Animation Key"
+msgstr "插入动画帧"
+
+msgid "Focus Origin"
+msgstr "聚焦原点"
+
+msgid "Focus Selection"
+msgstr "聚焦选中项"
+
+msgid "Align Transform with View"
+msgstr "将变换与视图对齐"
+
+msgid "Align Rotation with View"
+msgstr "将旋转与视图对齐"
+
+msgid "Toggle Freelook"
+msgstr "切换自由观看"
+
+msgid "Decrease Field of View"
+msgstr "减小视野"
+
+msgid "Increase Field of View"
+msgstr "增大视野"
+
+msgid "Reset Field of View to Default"
+msgstr "重置为默认视野"
+
+msgid "Transform"
+msgstr "变换"
+
+msgid "Snap Object to Floor"
+msgstr "吸附物体到地面"
+
+msgid "Transform Dialog..."
+msgstr "变换对话框..."
 
 msgid "Vertex Snap"
 msgstr "顶点吸附"
 
-msgid "Vertex Snap Canceled."
-msgstr "顶点吸附已取消。"
+msgid "View"
+msgstr "视图"
+
+msgid "1 Viewport"
+msgstr "1 个视口"
+
+msgid "2 Viewports"
+msgstr "2 个视口"
+
+msgid "2 Viewports (Alt)"
+msgstr "2 个视口（备选）"
+
+msgid "3 Viewports"
+msgstr "3 个视口"
+
+msgid "3 Viewports (Alt)"
+msgstr "3 个视口（备选）"
+
+msgid "4 Viewports"
+msgstr "4 个视口"
+
+msgid "Gizmos"
+msgstr "小工具"
+
+msgid "View Origin"
+msgstr "显示原点"
+
+msgid "View Grid"
+msgstr "显示栅格"
+
+msgid "Preview Translation"
+msgstr "预览翻译"
+
+msgid "Settings..."
+msgstr "设置..."
+
+msgid "Snap Settings"
+msgstr "吸附设置"
+
+msgid "Translate Snap"
+msgstr "平移吸附"
+
+msgid "Translate Snap:"
+msgstr "平移吸附:"
+
+msgid "Rotate Snap"
+msgstr "旋转吸附"
+
+msgid "Rotate Snap:"
+msgstr "旋转吸附："
+
+msgid "Scale Snap"
+msgstr "缩放吸附"
+
+msgid "Scale Snap:"
+msgstr "缩放吸附："
+
+msgid "Viewport Settings"
+msgstr "视口设置"
+
+msgid ""
+"FOV is defined as a vertical value, as the editor camera always uses the Keep "
+"Height aspect mode."
+msgstr "FOV 是垂直方向的值，因为编辑器相机始终使用 Keep Height 长宽比模式。"
+
+msgid "Perspective VFOV (deg.):"
+msgstr "透视垂直视角（角度）："
+
+msgid "View Z-Near:"
+msgstr "视图近平面 Z："
+
+msgid "View Z-Far:"
+msgstr "视图远平面 Z："
+
+msgid "Transform Change"
+msgstr "修改变换"
+
+msgid "Translate:"
+msgstr "移动："
+
+msgid "Rotate (deg.):"
+msgstr "旋转（角度）:"
+
+msgid "Scale (ratio):"
+msgstr "缩放（比率）:"
+
+msgid "Transform Type"
+msgstr "变换类型"
+
+msgid "Pre"
+msgstr "前置"
+
+msgid "Post"
+msgstr "后置"
+
+msgid "Preview Sun"
+msgstr "预览太阳"
+
+msgid "Sun Direction"
+msgstr "太阳方向"
+
+msgid "Angular Altitude"
+msgstr "高度角"
+
+msgid "Azimuth"
+msgstr "方位角"
+
+msgid "Sun Color"
+msgstr "太阳颜色"
+
+msgid "Sun Energy"
+msgstr "太阳能量"
+
+msgid "Shadow Max Distance"
+msgstr "阴影最大距离"
+
+msgid "Add Sun to Scene"
+msgstr "将太阳添加到场景"
+
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"在当前场景中添加一个匹配预览太阳设置的 DirectionalLight3D 节点。\n"
+"点击时按住 Shift 键，也可以将预览环境添加到当前场景中。"
+
+msgid "Preview Environment"
+msgstr "预览环境"
+
+msgid "Sky Color"
+msgstr "天空颜色"
+
+msgid "Ground Color"
+msgstr "地面颜色"
+
+msgid "Sky Energy"
+msgstr "天空能量"
+
+msgid "AO"
+msgstr "环境光遮蔽"
+
+msgid "Glow"
+msgstr "辉光"
+
+msgid "Tonemap"
+msgstr "色调映射"
+
+msgid "GI"
+msgstr "全局光"
+
+msgid "Post Process"
+msgstr "后期处理"
+
+msgid "Add Environment to Scene"
+msgstr "将环境添加到场景"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"在当前场景中添加一个匹配预览环境设置的 WorldEnvironment 节点。\n"
+"点击时按住Shift键，也可以将预览太阳添加到当前场景中。"
+
+msgid "Transform Aborted."
+msgstr "变换中止。"
 
 msgid "Reset Transform"
 msgstr "重置变换"
@@ -11831,12 +11186,6 @@ msgstr "前视图。"
 msgid "Rear View."
 msgstr "后视图。"
 
-msgid "Align Transform with View"
-msgstr "将变换与视图对齐"
-
-msgid "Align Rotation with View"
-msgstr "将旋转与视图对齐"
-
 msgid "Set Surface %d Override Material"
 msgstr "设置表面 %d 覆盖材质"
 
@@ -11845,10 +11194,6 @@ msgstr "设置材质覆盖"
 
 msgid "Error instantiating scene from %s."
 msgstr "从 %s 实例化场景时出错。"
-
-msgid "Can't drop the file..."
-msgid_plural "Can't drop the files..."
-msgstr[0] "无法拖放文件..."
 
 msgid "Circular dependency found at %s."
 msgstr "%s 中发现循环依赖。"
@@ -11942,9 +11287,6 @@ msgstr "自由观看加速调整"
 
 msgid "Freelook Slow Modifier"
 msgstr "自由观看减速调整"
-
-msgid "View"
-msgstr "视图"
 
 msgid "Perspective"
 msgstr "透视"
@@ -12160,9 +11502,6 @@ msgstr "查看小工具"
 msgid "View Transform Gizmo"
 msgstr "查看变换小工具"
 
-msgid "View Grid"
-msgstr "显示栅格"
-
 msgid "View Information"
 msgstr "查看信息"
 
@@ -12230,7 +11569,7 @@ msgstr ""
 "点击时按住 Shift 键，还可启用飞行模式。"
 
 msgid "Toggle Camera Preview"
-msgstr "开关摄像机预览"
+msgstr "切换摄像机预览"
 
 msgid "Pilot"
 msgstr "Pilot（飞行）"
@@ -12243,7 +11582,7 @@ msgstr ""
 "在预览模式下允许使用 WASD 键移动和鼠标控制视角。"
 
 msgid "Toggle Pilot Mode in Preview"
-msgstr "在预览中开关飞行模式"
+msgstr "在预览中切换飞行模式"
 
 msgid "View Rotation Locked"
 msgstr "已锁定视角旋转"
@@ -12251,496 +11590,6 @@ msgstr "已锁定视角旋转"
 msgid ""
 "To zoom further, change the camera's clipping planes (View → Settings...)"
 msgstr "若要进一步缩放，需修改相机的裁剪平面（视图 → 设置...）"
-
-msgid ""
-"Hold %s to highlight a vertex on the currently selected node,\n"
-"then drag to move the node and snap it to vertices on neighboring nodes.\n"
-"\n"
-"For nodes without a vertex-based representation,\n"
-"Snap Origin to Vertex is always used instead."
-msgstr ""
-"按住 %s 以高亮当前选中节点上的一个顶点，\n"
-"然后拖拽来移动该节点，并将其吸附到相邻节点的顶点上。\n"
-"\n"
-"对于没有基于顶点表示的节点，\n"
-"将始终改用“将原点吸附到顶点”功能。"
-
-msgid ""
-"Hold %s to highlight another node's vertex,\n"
-"then click to teleport the selected node to the highlighted vertex."
-msgstr ""
-"按住 %s 以高亮另一个节点的顶点，\n"
-"然后单击将选中节点瞬间移动到高亮的顶点处。"
-
-msgid ""
-"Snap to vertices of visual meshes.\n"
-"Hold Shift while vertex snapping to temporarily snap to collision shapes "
-"instead."
-msgstr ""
-"吸附到可视网格的顶点上。\n"
-"在顶点吸附时按住 Shift 键，可临时改为吸附到碰撞形状上。"
-
-msgid ""
-"Snap to vertices of collision shapes.\n"
-"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
-msgstr ""
-"吸附到碰撞形状的顶点上。\n"
-"在顶点吸附时按住 Shift 键，可临时改为吸附到网格顶点上。"
-
-msgid "XForm Dialog"
-msgstr "变换对话框"
-
-msgid "Lock Selected"
-msgstr "锁定所选项"
-
-msgid "Unlock Selected"
-msgstr "解锁所选项"
-
-msgid "Group Selected"
-msgstr "编组所选项"
-
-msgid "Ungroup Selected"
-msgstr "解组所选项"
-
-msgid ""
-"Click to toggle between visibility states.\n"
-"\n"
-"Open eye: Gizmo is visible.\n"
-"Closed eye: Gizmo is hidden.\n"
-"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
-msgstr ""
-"点击以切换可见状态。\n"
-"\n"
-"睁眼：小工具可见。\n"
-"闭眼：小工具隐藏。\n"
-"半睁眼：小工具也可穿过不透明的表面可见（“X 光”）。"
-
-msgid "Snap Nodes to Floor"
-msgstr "将节点吸附至地面"
-
-msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "找不到可吸附的坚实地板。"
-
-msgid "Add Preview Sun to Scene"
-msgstr "添加预览太阳至场景"
-
-msgid "Add Preview Environment to Scene"
-msgstr "添加预览环境至场景"
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr "Alt+右键：显示点击位置的所有节点列表，包含已锁定节点。"
-
-msgid "%s+Drag: Rotate selected node around pivot."
-msgstr "%s+拖动：围绕轴心旋转选中节点。"
-
-msgid "%s+Drag: Use snap."
-msgstr "%s+拖放：使用吸附。"
-
-msgid "LMB+Drag: Measure the distance between two points in 3D space."
-msgstr "左键+拖动：测量 3D 空间中两点之间的距离。"
-
-msgid ""
-"Scene contains\n"
-"DirectionalLight3D.\n"
-"Preview disabled."
-msgstr ""
-"场景包含\n"
-"DirectionalLight3D。\n"
-"预览已禁用。"
-
-msgid "Preview disabled."
-msgstr "预览已禁用。"
-
-msgid ""
-"Scene contains\n"
-"WorldEnvironment.\n"
-"Preview disabled."
-msgstr ""
-"场景包含\n"
-"WorldEnvironment。\n"
-"预览已禁用。"
-
-msgid "Set Preview Sun Direction"
-msgstr "设置预览太阳方向"
-
-msgid "Set Preview Sun Altitude"
-msgstr "设置预览太阳纬度"
-
-msgid "Set Preview Sun Azimuth"
-msgstr "设置预览太阳方位角"
-
-msgid "Set Preview Sun Color"
-msgstr "设置预览太阳颜色"
-
-msgid "Set Preview Sun Energy"
-msgstr "设置预览太阳能量"
-
-msgid "Set Preview Sun Max Shadow Distance"
-msgstr "设置预览太阳最大阴影距离"
-
-msgid "Set Preview Environment Sky Color"
-msgstr "设置预览环境天空颜色"
-
-msgid "Set Preview Environment Ground Color"
-msgstr "设置预览环境地面颜色"
-
-msgid "Set Preview Environment Energy"
-msgstr "设置预览环境能量"
-
-msgid "Set Preview Environment Ambient Occlusion"
-msgstr "设置预览环境环境光遮蔽"
-
-msgid "Set Preview Environment Glow"
-msgstr "设置预览环境辉光"
-
-msgid "Set Preview Environment Tonemap"
-msgstr "设置预览环境色调映射"
-
-msgid "Set Preview Environment Global Illumination"
-msgstr "设置预览环境全局光照"
-
-msgid "Transform Mode"
-msgstr "变换模式"
-
-msgid "Move Mode"
-msgstr "移动模式"
-
-msgid "Rotate Mode"
-msgstr "旋转模式"
-
-msgid "Scale Mode"
-msgstr "缩放模式"
-
-msgid "Select Mode"
-msgstr "选择模式"
-
-msgid "Show List of Selectable Nodes"
-msgstr "显示可选节点列表"
-
-msgid "Lock selected node, preventing selection and movement."
-msgstr "锁定选定的节点，防止选择和移动。"
-
-msgid "Lock"
-msgstr "锁定"
-
-msgid "Unlock selected node, allowing selection and movement."
-msgstr "解锁选定的节点，允许选择和移动。"
-
-msgid "Unlock"
-msgstr "解锁"
-
-msgid ""
-"Groups the selected node with its children. This selects the parent when any "
-"child node is clicked in 2D and 3D view."
-msgstr ""
-"将所选节点与其子节点组合。这样在 2D 和 3D 视图中点击子节点就会选中父节点。"
-
-msgid "Group"
-msgstr "分组"
-
-msgid ""
-"Ungroups the selected node from its children. Child nodes will be individual "
-"items in 2D and 3D view."
-msgstr "解除所选节点与其子节点的组合。子节点在 2D 和 3D 视图中为独立对象。"
-
-msgid "Ungroup"
-msgstr "取消分组"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"左键+拖动：测量两点之间的距离。 \n"
-"Shift+左键+拖动：显示分量测量值。"
-
-msgid "Ruler Mode"
-msgstr "标尺模式"
-
-msgid "Use Local Space"
-msgstr "使用本地空间"
-
-msgid "Use Snap"
-msgstr "使用吸附"
-
-msgid "Use Trackball"
-msgstr "使用轨道球"
-
-msgid "Preserve Children Transform"
-msgstr "保持子节点变换"
-
-msgid ""
-"When enabled, transforming a node will preserve the global transform of its "
-"children.\n"
-"This also applies when editing transform properties in the Inspector."
-msgstr ""
-"当启用该选项后，变换节点时将保持其子节点的全局变换。\n"
-"此设置在检查器中编辑变换属性时同样生效。"
-
-msgid ""
-"Toggle preview sunlight.\n"
-"If a DirectionalLight3D node is added to the scene, preview sunlight is "
-"disabled."
-msgstr ""
-"切换预览阳光。\n"
-"如果一个 DirectionalLight3D 节点被添加到场景中，预览阳光将被禁用。"
-
-msgid "Toggle preview sunlight."
-msgstr "开关预览阳光。"
-
-msgid ""
-"Toggle preview environment.\n"
-"If a WorldEnvironment node is added to the scene, preview environment is "
-"disabled."
-msgstr ""
-"切换预览环境。\n"
-"如果一个 WorldEnvironment 节点被添加到场景中，预览环境将被禁用。"
-
-msgid "Toggle preview environment."
-msgstr "开关预览环境。"
-
-msgid "Edit Sun and Environment settings."
-msgstr "编辑太阳和环境设置。"
-
-msgid "Bottom View"
-msgstr "底视图"
-
-msgid "Top View"
-msgstr "顶视图"
-
-msgid "Rear View"
-msgstr "后视图"
-
-msgid "Front View"
-msgstr "前视图"
-
-msgid "Left View"
-msgstr "左视图"
-
-msgid "Right View"
-msgstr "右视图"
-
-msgid "Orbit View Down"
-msgstr "视图向下环绕"
-
-msgid "Orbit View Left"
-msgstr "视图向左环绕"
-
-msgid "Orbit View Right"
-msgstr "视图向右环绕"
-
-msgid "Orbit View Up"
-msgstr "视图向上环绕"
-
-msgid "Orbit View 180"
-msgstr "视图环绕至背面"
-
-msgid "Switch Perspective/Orthogonal View"
-msgstr "切换透视图/正交视图"
-
-msgid "Insert Animation Key"
-msgstr "插入动画帧"
-
-msgid "Focus Origin"
-msgstr "聚焦原点"
-
-msgid "Focus Selection"
-msgstr "聚焦选中项"
-
-msgid "Toggle Freelook"
-msgstr "切换自由观看"
-
-msgid "Decrease Field of View"
-msgstr "减小视野"
-
-msgid "Increase Field of View"
-msgstr "增大视野"
-
-msgid "Reset Field of View to Default"
-msgstr "重置为默认视野"
-
-msgid "Transform"
-msgstr "变换"
-
-msgid "Snap Object to Floor"
-msgstr "吸附物体到地面"
-
-msgid "Transform Dialog..."
-msgstr "变换对话框..."
-
-msgid "Snap Vertex to Vertex"
-msgstr "顶点吸附到顶点"
-
-msgid "Snap Origin to Vertex"
-msgstr "将原点吸附到顶点"
-
-msgid "Snap to Mesh Vertices"
-msgstr "吸附到网格顶点"
-
-msgid "Snap to Collision Vertices"
-msgstr "吸附到碰撞形状的顶点"
-
-msgid "Configure Snap..."
-msgstr "设置吸附..."
-
-msgid "1 Viewport"
-msgstr "1 个视口"
-
-msgid "2 Viewports"
-msgstr "2 个视口"
-
-msgid "2 Viewports (Alt)"
-msgstr "2 个视口（备选）"
-
-msgid "3 Viewports"
-msgstr "3 个视口"
-
-msgid "3 Viewports (Alt)"
-msgstr "3 个视口（备选）"
-
-msgid "4 Viewports"
-msgstr "4 个视口"
-
-msgid "Gizmos"
-msgstr "小工具"
-
-msgid "View Origin"
-msgstr "显示原点"
-
-msgid "Preview Translation"
-msgstr "预览翻译"
-
-msgid "Settings..."
-msgstr "设置..."
-
-msgid "Snap Settings"
-msgstr "吸附设置"
-
-msgid "Translate Snap"
-msgstr "平移吸附"
-
-msgid "Translate Snap:"
-msgstr "平移吸附:"
-
-msgid "Rotate Snap"
-msgstr "旋转吸附"
-
-msgid "Rotate Snap:"
-msgstr "旋转吸附："
-
-msgid "Scale Snap"
-msgstr "缩放吸附"
-
-msgid "Scale Snap:"
-msgstr "缩放吸附："
-
-msgid "Viewport Settings"
-msgstr "视口设置"
-
-msgid ""
-"FOV is defined as a vertical value, as the editor camera always uses the Keep "
-"Height aspect mode."
-msgstr "FOV 是垂直方向的值，因为编辑器相机始终使用 Keep Height 长宽比模式。"
-
-msgid "Perspective VFOV (deg.):"
-msgstr "透视垂直视角（角度）："
-
-msgid "View Z-Near:"
-msgstr "视图近平面 Z："
-
-msgid "View Z-Far:"
-msgstr "视图远平面 Z："
-
-msgid "Transform Change"
-msgstr "修改变换"
-
-msgid "Translate:"
-msgstr "移动："
-
-msgid "Rotate (deg.):"
-msgstr "旋转（角度）:"
-
-msgid "Scale (ratio):"
-msgstr "缩放（比率）:"
-
-msgid "Transform Type"
-msgstr "变换类型"
-
-msgid "Pre"
-msgstr "前置"
-
-msgid "Post"
-msgstr "后置"
-
-msgid "Preview Sun"
-msgstr "预览太阳"
-
-msgid "Sun Direction"
-msgstr "太阳方向"
-
-msgid "Angular Altitude"
-msgstr "高度角"
-
-msgid "Azimuth"
-msgstr "方位角"
-
-msgid "Sun Color"
-msgstr "太阳颜色"
-
-msgid "Sun Energy"
-msgstr "太阳能量"
-
-msgid "Shadow Max Distance"
-msgstr "阴影最大距离"
-
-msgid "Add Sun to Scene"
-msgstr "将太阳添加到场景"
-
-msgid ""
-"Adds a DirectionalLight3D node matching the preview sun settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview environment to the current "
-"scene."
-msgstr ""
-"在当前场景中添加一个匹配预览太阳设置的 DirectionalLight3D 节点。\n"
-"点击时按住 Shift 键，也可以将预览环境添加到当前场景中。"
-
-msgid "Preview Environment"
-msgstr "预览环境"
-
-msgid "Sky Color"
-msgstr "天空颜色"
-
-msgid "Ground Color"
-msgstr "地面颜色"
-
-msgid "Sky Energy"
-msgstr "天空能量"
-
-msgid "AO"
-msgstr "环境光遮蔽"
-
-msgid "Glow"
-msgstr "辉光"
-
-msgid "Tonemap"
-msgstr "色调映射"
-
-msgid "GI"
-msgstr "全局光"
-
-msgid "Post Process"
-msgstr "后期处理"
-
-msgid "Add Environment to Scene"
-msgstr "将环境添加到场景"
-
-msgid ""
-"Adds a WorldEnvironment node matching the preview environment settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview sun to the current scene."
-msgstr ""
-"在当前场景中添加一个匹配预览环境设置的 WorldEnvironment 节点。\n"
-"点击时按住Shift键，也可以将预览太阳添加到当前场景中。"
 
 msgid ""
 "Can't determine a save path for the occluder.\n"
@@ -13054,9 +11903,6 @@ msgstr "主线间隔："
 msgid "X Primary Step"
 msgstr "X 主步长"
 
-msgid "steps"
-msgstr "步"
-
 msgid "Y Primary Step"
 msgstr "Y 主步长"
 
@@ -13068,40 +11914,6 @@ msgstr "旋转步长："
 
 msgid "Scale Step:"
 msgstr "缩放步长："
-
-msgid ""
-"Children of a container get their position and size determined only by their "
-"parent."
-msgstr "容器的子节点只会从容器节点获取位置和大小。"
-
-msgid "Move Node(s) to Position"
-msgstr "移动节点到位置"
-
-msgid "Move Vertical Guide"
-msgstr "移动垂直参考线"
-
-msgid "Create Vertical Guide"
-msgstr "创建垂直参考线"
-
-msgid "Remove Vertical Guide"
-msgstr "移除垂直参考线"
-
-msgid "Move Horizontal Guide"
-msgstr "移动水平参考线"
-
-msgid "Create Horizontal Guide"
-msgstr "创建水平参考线"
-
-msgid "Remove Horizontal Guide"
-msgstr "移除水平参考线"
-
-msgid "Create Horizontal and Vertical Guides"
-msgstr "创建垂直水平参考线"
-
-msgid ""
-"Can't modify anchor offsets when the parent has a size of 0. Disable the "
-"anchors mode in the toolbar."
-msgstr "父节点尺寸为 0 时，无法修改锚点偏移。请在工具栏中禁用锚点模式。"
 
 msgid "Add 2D Node Here..."
 msgstr "在此处添加 2D 节点..."
@@ -13115,35 +11927,8 @@ msgstr "在此处粘贴节点"
 msgid "Move Node(s) Here"
 msgstr "移动节点到此处"
 
-msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "将 CanvasItem“%s”的轴心偏移量设为 (%d, %d)"
-
-msgid "Rotate %d CanvasItems"
-msgstr "旋转 %d 个 CanvasItem"
-
-msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "将 CanvasItem“%s”的旋转设为 %d 度"
-
-msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "移动 CanvasItem“%s”的锚点"
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "将 Node2D“%s”缩放为 (%s, %s)"
-
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "将 Control“%s”的大小更改为 (%d, %d)"
-
-msgid "Scale %d CanvasItems"
-msgstr "缩放 %d 个 CanvasItem"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "将 CanvasItem“%s”缩放为 (%s, %s)"
-
-msgid "Move %d CanvasItems"
-msgstr "移动 %d 个 CanvasItem"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "移动 CanvasItem“%s”至 (%d, %d)"
+msgid "Move Node(s) to Position"
+msgstr "移动节点到位置"
 
 msgid "px"
 msgstr "px"
@@ -13160,35 +11945,8 @@ msgstr "旋转："
 msgid "Scaling:"
 msgstr "缩放："
 
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+拖动：移动选中节点。"
-
-msgid "%s+Alt+Drag: Scale selected node."
-msgstr "%s+Alt+Drag：缩放选中节点。"
-
-msgid "V: Set selected node's pivot position."
-msgstr "V：设置选中节点的轴心位置。"
-
 msgid "RMB: Add node at position clicked."
 msgstr "右键：在点击位置添加节点。"
-
-msgid "Shift: Scale proportionally."
-msgstr "Shift：按比例缩放。"
-
-msgid "Click to change object's pivot."
-msgstr "点击修改对象的轴心。"
-
-msgid "Shift: Set temporary pivot."
-msgstr "Shift：设置临时轴心。"
-
-msgid ""
-"Click this button while holding Shift to put the temporary pivot in the "
-"center of the selected nodes."
-msgstr "按住 Shift 点击该按钮可以将临时轴心放置到所选节点的中心。"
-
-msgid ""
-"You can also use Pan View shortcut (Space by default) to pan in any mode."
-msgstr "你还可以使用平移视图快捷键（默认为空格）在任何模式下平移。"
 
 msgid "LMB+Drag: Measure the distance between two points in 2D space."
 msgstr "左键+拖动：测量 2D 空间中两点之间的距离。"
@@ -13232,6 +11990,9 @@ msgstr "缩放至 800%"
 msgid "Zoom to 1600%"
 msgstr "缩放至 1600%"
 
+msgid "Center View"
+msgstr "居中视图"
+
 msgid "Scene Paint Mode"
 msgstr "场景绘制模式"
 
@@ -13243,6 +12004,12 @@ msgstr "修改轴心"
 
 msgid "Pan Mode"
 msgstr "平移模式"
+
+msgid ""
+"Groups the selected node with its children. This causes the parent to be "
+"selected when any child node is clicked in 2D and 3D view."
+msgstr ""
+"将所选节点与其子节点组合。这样在 2D 和 3D 视图中点击子节点就会选中父节点。"
 
 msgid "Use Smart Snap"
 msgstr "使用智能吸附"
@@ -13285,12 +12052,6 @@ msgstr "吸附到参考线"
 
 msgid "Smart Snapping"
 msgstr "智能吸附"
-
-msgid ""
-"Groups the selected node with its children. This causes the parent to be "
-"selected when any child node is clicked in 2D and 3D view."
-msgstr ""
-"将所选节点与其子节点组合。这样在 2D 和 3D 视图中点击子节点就会选中父节点。"
 
 msgid "Skeleton Options"
 msgstr "骨架选项"
@@ -13404,14 +12165,6 @@ msgstr "实例化： "
 msgid "Dropping a Texture file as a %s node..."
 msgstr "将纹理文件拖入并创建为 %s 节点……"
 
-msgid "[b]Hold Alt + Shift:[/b] Add Texture as a different node type."
-msgstr "[b]按住 Alt + Shift：[/b] 将纹理添加为不同的节点类型。"
-
-msgid ""
-"All selected CanvasItems are either invisible or locked in some way and can't "
-"be transformed."
-msgstr "所选 CanvasItem 均处于不可见或锁定状态，无法进行变换。"
-
 msgid "Method in target node must be specified."
 msgstr "必须指定目标节点的方法。"
 
@@ -13473,6 +12226,12 @@ msgstr "接收方法："
 
 msgid "Receiver Method"
 msgstr "接收方法"
+
+msgid "Pick"
+msgstr "选取"
+
+msgid "Advanced"
+msgstr "高级"
 
 msgid "Deferred"
 msgstr "延迟"
@@ -13582,6 +12341,9 @@ msgstr "缓出"
 
 msgid "Smoothstep"
 msgstr "平滑插值"
+
+msgid "Toggle Grid Snap"
+msgstr "切换栅格吸附"
 
 msgid "Snap Step"
 msgstr "吸附步长"
@@ -13854,56 +12616,28 @@ msgid "Unable to preview font"
 msgstr "无法预览字体"
 
 msgid "Toggle margins preview grid."
-msgstr "开关边距预览网格。"
+msgstr "切换边距预览网格。"
 
 msgid "Styleboxes"
 msgstr "样式盒"
 
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "{num} 个颜色"
-
 msgid "No colors found."
 msgstr "没有颜色。"
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "{num} 个常量"
 
 msgid "No constants found."
 msgstr "没有常量。"
 
-msgid "1 font"
-msgid_plural "{num} fonts"
-msgstr[0] "{num} 个字体"
-
 msgid "No fonts found."
 msgstr "没有字体。"
-
-msgid "1 font size"
-msgid_plural "{num} font sizes"
-msgstr[0] "{num} 个字体大小"
 
 msgid "No font sizes found."
 msgstr "未找到字体大小。"
 
-msgid "1 icon"
-msgid_plural "{num} icons"
-msgstr[0] "{num} 个图标"
-
 msgid "No icons found."
 msgstr "没有图标。"
 
-msgid "1 stylebox"
-msgid_plural "{num} styleboxes"
-msgstr[0] "{num} 个样式盒"
-
 msgid "No styleboxes found."
 msgstr "没有样式盒。"
-
-msgid "{num} currently selected"
-msgid_plural "{num} currently selected"
-msgstr[0] "当前选中 {num} 个"
 
 msgid "Nothing was selected for the import."
 msgstr "未选择导入项。"
@@ -14304,7 +13038,7 @@ msgid "Theme"
 msgstr "主题"
 
 msgid "Toggle Theme Dock"
-msgstr "开关主题面板"
+msgstr "切换主题面板"
 
 msgid "Theme:"
 msgstr "主题："
@@ -14326,7 +13060,7 @@ msgstr "选择 UI 场景："
 
 msgid ""
 "Toggle the control picker, allowing to visually select control types for edit."
-msgstr "开关控件拾取器，可以可视化地选择所需编辑的控件类型。"
+msgstr "切换控件选择器，从而可视化地选择要编辑的控件类型。"
 
 msgid "Toggle Button"
 msgstr "切换按钮"
@@ -14550,7 +13284,7 @@ msgid "ResourcePreloader"
 msgstr "ResourcePreloader"
 
 msgid "Toggle ResourcePreloader Dock"
-msgstr "开关 ResourcePreloader 面板"
+msgstr "切换 ResourcePreloader 面板"
 
 msgid "Load Resource"
 msgstr "加载资源"
@@ -14647,10 +13381,6 @@ msgstr "点击禁用。"
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "节点有 {num} 个连接。"
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "节点属于分组："
 
 msgid "Click to show signals dock."
 msgstr "点击显示信号面板。"
@@ -14813,6 +13543,9 @@ msgstr "这个资源中没有动画。"
 msgid "Animation Frames:"
 msgstr "动画帧："
 
+msgid "Load"
+msgstr "加载"
+
 msgid "Load Sheet"
 msgstr "加载表"
 
@@ -14895,7 +13628,7 @@ msgid "Select None"
 msgstr "全都不选"
 
 msgid "Toggle Settings Panel"
-msgstr "开关设置面板"
+msgstr "切换设置面板"
 
 msgid "Zoom to Fit"
 msgstr "自动适应缩放"
@@ -14931,7 +13664,7 @@ msgid "Create Frames from Sprite Sheet"
 msgstr "从精灵表中创建帧"
 
 msgid "Toggle color channel preview selection."
-msgstr "开关颜色通道选择预览。"
+msgstr "切换颜色通道选择预览。"
 
 msgid "Move GradientTexture2D Fill Point"
 msgstr "移动 GradientTexture2D 填充点"
@@ -14969,6 +13702,9 @@ msgstr "吸附模式："
 msgid "Pixel Snap"
 msgstr "像素吸附"
 
+msgid "Grid Snap"
+msgstr "栅格吸附"
+
 msgid "Offset X"
 msgstr "X 偏移"
 
@@ -14999,52 +13735,17 @@ msgstr "编辑区域"
 msgid "Write your logic in the _run() method."
 msgstr "在 _run() 方法中填写逻辑代码。"
 
-msgid "Replace in Files"
-msgstr "在文件中替换"
-
 msgid "Find in Files"
 msgstr "在文件中查找"
-
-msgid "Find:"
-msgstr "查找："
-
-msgid "Folder:"
-msgstr "文件夹："
 
 msgid "Select Folder"
 msgstr "选择文件夹"
 
-msgid "Includes:"
-msgstr "包含："
-
-msgid "Include the files with the following expressions. Use \",\" to separate."
-msgstr "包含下列表达式中的文件。使用“,”分隔。"
-
-msgid "example: scripts,scenes/*/test.gd"
-msgstr "示例：scripts,scenes/*/test.gd"
-
-msgid "Excludes:"
-msgstr "排除："
-
 msgid "Exclude the files with the following expressions. Use \",\" to separate."
 msgstr "排除下列表达式中的文件。使用“,”分隔。"
 
-msgid "example: res://addons,scenes/test/*.gd"
-msgstr "示例：res://addons,scenes/test/*.gd"
-
-msgid "Filters:"
-msgstr "筛选："
-
-msgid ""
-"Include the files with the following extensions. Add or remove them in "
-"ProjectSettings."
-msgstr "包含下列扩展名的文件。可在项目设置中添加或移除。"
-
-msgid "Find..."
-msgstr "查找..."
-
-msgid "Replace..."
-msgstr "替换..."
+msgid "Include the files with the following expressions. Use \",\" to separate."
+msgstr "包含下列表达式中的文件。使用“,”分隔。"
 
 msgid "Searching..."
 msgstr "搜索中..."
@@ -15064,17 +13765,8 @@ msgstr "%d 处匹配，共 %d 个文件"
 msgid "%d matches in %d files"
 msgstr "%d 处匹配，共 %d 个文件"
 
-msgid "Keep Results"
-msgstr "保留结果"
-
-msgid "Keep these results and show subsequent results in a new window"
-msgstr "保留这些结果并在新窗口中显示后续结果"
-
-msgid "Replace all (no undo)"
-msgstr "全部替换（无法撤销）"
-
-msgid "Toggle Search Results Bottom Panel"
-msgstr "开关搜索结果底部面板"
+msgid "Find:"
+msgstr "查找："
 
 msgid "Path is empty."
 msgstr "路径为空。"
@@ -15090,9 +13782,6 @@ msgstr "名称以英文句点开头。"
 
 msgid "Path is not local."
 msgstr "路径不是本地的。"
-
-msgid "Base path is invalid."
-msgstr "基本路径无效。"
 
 msgid "A directory with the same name exists."
 msgstr "存在同名目录。"
@@ -15185,6 +13874,9 @@ msgstr "选择父类"
 msgid "Use Template"
 msgstr "使用模板"
 
+msgid "Template"
+msgstr "模板"
+
 msgid "Built-in Script:"
 msgstr "内置脚本："
 
@@ -15214,6 +13906,21 @@ msgstr "书签"
 
 msgid "Emoji & Symbols"
 msgstr "Emoji & 符号"
+
+msgid "Open File in Inspector"
+msgstr "在检查器中打开文件"
+
+msgid "Inspect Native Shader Code..."
+msgstr "检查原生着色器代码..."
+
+msgid "Unsaved file."
+msgstr "未保存的文件。"
+
+msgid "%s Class Reference"
+msgstr "%s 类参考"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "切换按字母顺序排列方法。"
 
 msgid "(truncated)"
 msgstr "（已截断）"
@@ -15277,9 +13984,6 @@ msgstr "导入主题"
 msgid "Save Theme As..."
 msgstr "主题另存为..."
 
-msgid "Make the script editor floating."
-msgstr "浮动脚本编辑器面板。"
-
 msgid "Open '%s' in Godot online documentation."
 msgstr "在 Godot 在线文档中打开“%s”。"
 
@@ -15292,11 +13996,8 @@ msgstr "在线文档"
 msgid "Open Godot online documentation."
 msgstr "打开 Godot 在线文档。"
 
-msgid "Unsaved file."
-msgstr "未保存的文件。"
-
-msgid "%s Class Reference"
-msgstr "%s 类参考"
+msgid "Find..."
+msgstr "查找..."
 
 msgid "Find Next"
 msgstr "查找下一个"
@@ -15304,23 +14005,11 @@ msgstr "查找下一个"
 msgid "Find Previous"
 msgstr "查找上一个"
 
-msgid "Filter Scripts"
-msgstr "筛选脚本"
-
-msgid "Toggle alphabetical sorting of the method list."
-msgstr "切换按字母顺序排列方法。"
-
-msgid "Sort"
-msgstr "排序"
-
 msgid "Next Script"
 msgstr "下一个脚本"
 
 msgid "Previous Script"
 msgstr "上一个脚本"
-
-msgid "Open..."
-msgstr "打开..."
 
 msgid "Save All"
 msgstr "全部保存"
@@ -15340,12 +14029,6 @@ msgstr "后退"
 msgid "History Next"
 msgstr "前进"
 
-msgid "Import Theme..."
-msgstr "导入主题..."
-
-msgid "Reload Theme"
-msgstr "重新加载主题"
-
 msgid "Close All"
 msgstr "关闭全部"
 
@@ -15355,8 +14038,26 @@ msgstr "关闭下方选项卡"
 msgid "Close Docs"
 msgstr "关闭文档"
 
-msgid "Navigate to script list."
-msgstr "导航到脚本列表。"
+msgid "Toggle Files Panel"
+msgstr "切换文件面板"
+
+msgid "Import Theme..."
+msgstr "导入主题..."
+
+msgid "Reload Theme"
+msgstr "重新加载主题"
+
+msgid "Open..."
+msgstr "打开..."
+
+msgid "New Shader Include..."
+msgstr "新建着色器头文件..."
+
+msgid "Load Shader File..."
+msgstr "加载着色器文件..."
+
+msgid "Load Shader Include File..."
+msgstr "加载着色器头文件..."
 
 msgid "Site Search"
 msgstr "搜索网站"
@@ -15373,23 +14074,11 @@ msgstr "前往下一个编辑文档。"
 msgid "Discard"
 msgstr "忽略"
 
-msgid "Script Editor"
-msgstr "脚本编辑器"
-
-msgid "There are unsaved changes in the following built-in script(s):"
-msgstr "以下内置脚本中存在未保存的更改："
-
-msgid "Save changes to the following script(s) before quitting?"
-msgstr "退出前要保存以下脚本更改吗？"
-
 msgid "Reopen Closed Script"
 msgstr "重新打开关闭的脚本"
 
 msgid "Clear Recent Scripts"
 msgstr "清除最近的脚本"
-
-msgid "Replace in Files..."
-msgstr "在文件中替换..."
 
 msgid "Uppercase"
 msgstr "大写"
@@ -15433,34 +14122,6 @@ msgstr "UID路径"
 
 msgid "file path"
 msgstr "文件路径"
-
-msgid "Drop file path."
-msgid_plural "Drop file paths."
-msgstr[0] "复制文件路径。"
-
-msgid "Hold %s: Add const preload by %s."
-msgid_plural "Hold %s: Add const preloads by %s."
-msgstr[0] "按住 %s：通过 %s 添加 const 预加载。"
-
-msgid "Hold %s+Shift: Add const preload by %s."
-msgid_plural "Hold %s+Shift: Add const preloads by %s."
-msgstr[0] "按住 %s+Shift：通过 %s 添加 const 预加载。"
-
-msgid "Hold Alt: Add @export var pointing to the resource."
-msgid_plural "Hold Alt: Add @export vars pointing to the resources."
-msgstr[0] "按住 Alt 键：添加指向资源的 @export 变量。"
-
-msgid "Drop node path."
-msgid_plural "Drop node paths."
-msgstr[0] "复制节点路径。"
-
-msgid "Hold %s: Add @onready var pointing to the node path."
-msgid_plural "Hold %s: Add @onready vars pointing to the node paths."
-msgstr[0] "按住 %s：添加指向节点路径的 @onready 变量。"
-
-msgid "Hold Alt: Add @export var pointing to the node."
-msgid_plural "Hold Alt: Add @export vars pointing to the nodes."
-msgstr[0] "按住 Alt 键：添加指向节点的 @export 变量。"
 
 msgid "Drop property path."
 msgstr "复制属性路径。"
@@ -15534,6 +14195,9 @@ msgstr "将缩进转为制表符"
 
 msgid "Auto Indent"
 msgstr "自动缩进"
+
+msgid "Replace..."
+msgstr "替换..."
 
 msgid "Show Tooltip"
 msgstr "显示工具提示"
@@ -15667,7 +14331,7 @@ msgid "Rename Autoload"
 msgstr "重命名自动加载"
 
 msgid "Toggle Autoload Globals"
-msgstr "开关自动加载全局变量"
+msgstr "切换自动加载全局变量"
 
 msgid "Move Autoload"
 msgstr "移动自动加载"
@@ -15939,9 +14603,6 @@ msgstr "是否重置编辑的配置？"
 msgid "File saving failed."
 msgstr "保存文件失败。"
 
-msgid "Create a new profile?"
-msgstr "新建配置？"
-
 msgid ""
 "This will scan all files in the current project to detect used classes.\n"
 "Note that the first scan may take a while, specially in larger projects."
@@ -15973,6 +14634,9 @@ msgstr "节点和类："
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "文件 “%s” 的格式无效，导入中止。"
+
+msgid "Can't load build profile. File '%s' is invalid."
+msgstr "无法加载构建配置文件。文件‘%s’无效。"
 
 msgid "Error saving profile to path: '%s'."
 msgstr "将配置保存到路径 “%s” 时出错。"
@@ -16034,6 +14698,9 @@ msgstr "清除所有搜索筛选器。"
 
 msgid "3D Editor"
 msgstr "3D 编辑器"
+
+msgid "Script Editor"
+msgstr "脚本编辑器"
 
 msgid "Scene Tree Editing"
 msgstr "场景树编辑"
@@ -16506,9 +15173,6 @@ msgstr "打开着色器 / 选择位置"
 msgid "Invalid shader type selected."
 msgstr "选择了无效的着色器类型。"
 
-msgid "Invalid base path."
-msgstr "无效的基本路径。"
-
 msgid "Invalid extension for selected shader type."
 msgstr "对于所选的着色器类型，扩展名无效。"
 
@@ -16539,35 +15203,11 @@ msgstr "内置着色器："
 msgid "Create Shader"
 msgstr "创建着色器"
 
-msgid "Save changes to the following shaders(s) before quitting?"
-msgstr "退出前要保存以下着色器更改吗？"
-
-msgid "There are unsaved changes in the following built-in shaders(s):"
-msgstr "以下内置着色器中存在未保存的更改："
-
-msgid "New Shader Include..."
-msgstr "新建着色器头文件..."
-
-msgid "Load Shader File..."
-msgstr "加载着色器文件..."
-
-msgid "Load Shader Include File..."
-msgstr "加载着色器头文件..."
-
-msgid "Open File in Inspector"
-msgstr "在检查器中打开文件"
-
-msgid "Inspect Native Shader Code..."
-msgstr "检查原生着色器代码..."
-
-msgid "Copy Shader Path"
-msgstr "复制着色器路径"
-
 msgid "Shader Editor"
 msgstr "着色器编辑器"
 
 msgid "Toggle Shader Editor Dock"
-msgstr "开关着色器编辑器面板"
+msgstr "切换着色器编辑器面板"
 
 msgid "No valid shader stages found."
 msgstr "没有找到有效的着色器阶段。"
@@ -16586,7 +15226,7 @@ msgid "ShaderFile"
 msgstr "ShaderFile"
 
 msgid "Toggle ShaderFile Dock"
-msgstr "开关着色器文件面板"
+msgstr "切换 ShaderFile 面板"
 
 msgid "Set Shader Global Variable"
 msgstr "设置着色器全局变量"
@@ -16621,17 +15261,17 @@ msgstr "预览行必须包含赋值操作。"
 msgid "Preview only available for bool, int, float, vec2, vec3, vec4."
 msgstr "预览仅适用于 bool、int、float、vec2、vec3、vec4。"
 
+msgid "Warnings should be fixed to prevent errors."
+msgstr "应修复警告以防止出错。"
+
 msgid "Error at line %d:"
 msgstr "第 %d 行存在错误："
 
 msgid "Error at line %d in include %s:%d:"
 msgstr "第 %d 行存在错误，位于 %s:%d："
 
-msgid "Warnings should be fixed to prevent errors."
-msgstr "应修复警告以防止出错。"
-
 msgid "Toggle Shader Preview"
-msgstr "开关着色器预览"
+msgstr "切换着色器预览"
 
 msgid "Remove All Shader Previews"
 msgstr "移除所有着色器预览"
@@ -16641,9 +15281,6 @@ msgstr "前往下一个着色器预览"
 
 msgid "Go to Previous Shader Preview"
 msgstr "转到上一个着色器预览"
-
-msgid "Shader Previews"
-msgstr "着色器预览"
 
 msgid "Update Parameters"
 msgstr "更新参数"
@@ -16655,16 +15292,6 @@ msgstr "将预览中的着色器参数更新为当前 ShaderMaterial 检查器�
 
 msgid "Remove all line shader previews."
 msgstr "移除所有行着色器预览。"
-
-msgid ""
-"This shader has been modified on disk.\n"
-"What action should be taken?"
-msgstr ""
-"这个着色器已在硬盘上修改。\n"
-"应该采取什么行动？"
-
-msgid "Resave"
-msgstr "重新保存"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -16982,7 +15609,7 @@ msgid "Unmerged"
 msgstr "未合并"
 
 msgid "Toggle Version Control Dock"
-msgstr "开关版本控制面板"
+msgstr "切换版本控制面板"
 
 msgid "View file diffs before committing them to the latest version"
 msgstr "在提交到最新版本之前查看文件差异"
@@ -17059,67 +15686,6 @@ msgstr "修改圆环内半径"
 
 msgid "Change Torus Outer Radius"
 msgstr "修改圆环外半径"
-
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert() 的类型参数无效，请使用 TYPE_* 常量。"
-
-msgid "Expected an integer between 0 and 2^32 - 1."
-msgstr "预期为 0 到 2^32 -1 之间的整数。"
-
-msgid "Expected a string of length 1 (a character)."
-msgstr "预期为长度为 1 的字符串（单个字符）。"
-
-msgid "Range too big."
-msgstr "范围过大。"
-
-msgid "Cannot resize array."
-msgstr "无法调整数组大小。"
-
-msgid "Step argument is zero!"
-msgstr "步长参数为零！"
-
-msgid "Not a script with an instance."
-msgstr "不是带有实例的脚本。"
-
-msgid "Not based on a script."
-msgstr "不是基于脚本。"
-
-msgid "Not based on a resource file."
-msgstr "不是基于资源文件。"
-
-msgid "Invalid instance dictionary format (missing @path)."
-msgstr "实例字典格式无效（缺失 @path）。"
-
-msgid "Invalid instance dictionary format (can't load script at @path)."
-msgstr "实例字典格式无效（无法加载位于 @path 的脚本）。"
-
-msgid "Invalid instance dictionary format (invalid script at @path)."
-msgstr "实例字典格式无效（位于 @path 的脚本无效）。"
-
-msgid "Invalid instance dictionary (invalid subclasses)."
-msgstr "实例字典格式无效（子类无效）。"
-
-msgid "Cannot instantiate GDScript class."
-msgstr "无法实例化 GDScript 类。"
-
-msgid "Value of type '%s' can't provide a length."
-msgstr "类型为“%s”的值无法提供长度。"
-
-msgid ""
-"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
-"types."
-msgstr "is_instance_of() 的类型参数无效，内置类型请使用 TYPE_* 常量。"
-
-msgid "Type argument is a previously freed instance."
-msgstr "类型参数是已释放的实例。"
-
-msgid ""
-"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
-"class or a script."
-msgstr "is_instance_of() 的类型参数无效，请使用 TYPE_* 常量、类或脚本。"
-
-msgid "Value argument is a previously freed instance."
-msgstr "值参数是已释放的实例。"
 
 msgid "Export Scene to glTF 2.0 File"
 msgstr "将场景导出为 glTF 2.0 文件"
@@ -17205,15 +15771,6 @@ msgstr "GridMap 绘制"
 msgid "GridMap Selection"
 msgstr "GridMap 选择"
 
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"修改网格所在层：\n"
-"上一个平面（%s）\n"
-"下一个平面（%s）"
-
 msgid "GridMap"
 msgstr "GridMap"
 
@@ -17249,6 +15806,12 @@ msgstr "拾取距离："
 
 msgid "Selection"
 msgstr "选择"
+
+msgid "Erase"
+msgstr "擦除"
+
+msgid "Paint"
+msgstr "绘制"
 
 msgid "Cursor Rotate X"
 msgstr "光标沿 X 轴旋转"
@@ -17430,18 +15993,6 @@ msgstr "类名必须是有效的标识符"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "解码字节数不够，或格式无效。"
 
-msgid ""
-"Unable to load .NET runtime, no compatible version was found.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"无法加载 .NET 运行时，未找到兼容的版本。\n"
-"尝试创建/编辑项目会导致崩溃。\n"
-"\n"
-"请从 https://get.dot.net 安装 .NET SDK 8.0 或后续版本，然后重启 Godot。"
-
 msgid "Failed to load .NET runtime"
 msgstr "加载 .NET 运行时失败"
 
@@ -17454,18 +16005,6 @@ msgstr ""
 
 msgid ".NET assemblies not found"
 msgstr "未找到 .NET 程序集"
-
-msgid ""
-"Unable to load .NET runtime, specifically hostfxr.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"无法加载 .NET 运行时的 hostfxr。\n"
-"尝试创建和编辑项目会导致崩溃。\n"
-"\n"
-"请从 https://get.dot.net 安装 .NET SDK 8.0 或后续版本，然后重启 Godot。"
 
 msgctxt "Network"
 msgid "Down"
@@ -17879,6 +16418,12 @@ msgid ""
 "Was the same reference returned by multiple getters on the source object?"
 msgstr "源对象的多个getter方法是否返回了相同的引用？"
 
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
 msgid "Sort By %s (Ascending)"
 msgstr "按 %s 排序（升序）"
 
@@ -18030,7 +16575,7 @@ msgid "OpenXR Action Map"
 msgstr "OpenXR 动作映射"
 
 msgid "Toggle OpenXR Action Map Dock"
-msgstr "开关 OpenXR 动作映射面板"
+msgstr "切换 OpenXR 动作映射面板"
 
 msgid "Add Action Set"
 msgstr "添加动作集"
@@ -18185,6 +16730,892 @@ msgstr "排序小于零时打洞功能才能够正常工作。"
 msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
 msgstr "OpenXR 可见遮罩的父节点必须为 XRCamera3D。"
 
+msgid "Merge TileSetAtlasSource"
+msgstr "合并 TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s（ID：%d）"
+
+msgid "Atlas Merging"
+msgstr "图集合并"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "合并（保留原有图集）"
+
+msgid "Merge"
+msgstr "合并"
+
+msgid "Next Line After Column"
+msgstr "列后的下一行"
+
+msgid "Please select two atlases or more."
+msgstr "请至少选择两个图集。"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"源：%d\n"
+"图集坐标：%s\n"
+"备选：0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"源：%d\n"
+"图集坐标：%s\n"
+"备选：%d"
+
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr "所选图集源中没有有效的纹理。请在 TileSet 底部选项卡中分配纹理。"
+
+msgid "Base Tiles"
+msgstr "基础图块"
+
+msgid "Alternative Tiles"
+msgstr "备选图块"
+
+msgid "Reset Polygons"
+msgstr "重置多边形"
+
+msgid "Clear Polygons"
+msgstr "清空多边形"
+
+msgid "Rotate Polygons Right"
+msgstr "向右旋转多边形"
+
+msgid "Rotate Polygons Left"
+msgstr "向左旋转多边形"
+
+msgid "Flip Polygons Horizontally"
+msgstr "水平翻转多边形"
+
+msgid "Flip Polygons Vertically"
+msgstr "垂直翻转多边形"
+
+msgid "Edit Polygons"
+msgstr "编辑多边形"
+
+msgid "Expand editor"
+msgstr "展开编辑器"
+
+msgid "Add polygon tool"
+msgstr "多边形添加工具"
+
+msgid "Edit points tool"
+msgstr "点编辑工具"
+
+msgid "Delete points tool"
+msgstr "点删除工具"
+
+msgid "Reset to default tile shape"
+msgstr "重置为默认图块形状"
+
+msgid "Rotate Right"
+msgstr "向右旋转"
+
+msgid "Rotate Left"
+msgstr "向左旋转"
+
+msgid "Flip Horizontally"
+msgstr "水平翻转"
+
+msgid "Flip Vertically"
+msgstr "垂直翻转"
+
+msgid "Disable Snap"
+msgstr "禁用吸附"
+
+msgid "Half-Pixel Snap"
+msgstr "半像素吸附"
+
+msgid "Subdivision"
+msgstr "细分"
+
+msgid "Painting Tiles Property"
+msgstr "绘制图块属性"
+
+msgid "Painting:"
+msgstr "绘制："
+
+msgid "Polygon %d"
+msgstr "多边形%d"
+
+msgid "One Way"
+msgstr "单向"
+
+msgid "One Way Margin"
+msgstr "单向边距"
+
+msgid "Linear Velocity"
+msgstr "线速度"
+
+msgid "Angular Velocity"
+msgstr "角速度"
+
+msgid "No terrains"
+msgstr "没有地形"
+
+msgid "No terrain"
+msgstr "没有地形"
+
+msgid "Painting Terrain Set"
+msgstr "绘制地形集"
+
+msgid "Painting Terrain"
+msgstr "绘制地形"
+
+msgid "Drawing Rect:"
+msgstr "绘制矩形："
+
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr "使用非正方形图块栅格时无法旋转图案。"
+
+msgid "Shift: Draw line."
+msgstr "Shift：绘制直线。"
+
+msgid "%s+Shift: Draw rectangle."
+msgstr "%s+Shift：绘制矩形。"
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "没有纹理图集源（ID：%d）"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "场景合集源（ID：%d）"
+
+msgid "Empty Scene Collection Source (ID: %d)"
+msgstr "空场景合集源（ID: %d）"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "未知类型源（ID：%d）"
+
+msgid "Add TileSet pattern"
+msgstr "添加 TileSet 图案"
+
+msgid "Remove TileSet patterns"
+msgstr "移除 TileSet 图案"
+
+msgid "Index: %d"
+msgstr "索引：%d"
+
+msgid "Tile with Invalid Scene"
+msgstr "包含无效场景的图块"
+
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr "所选场景合集源中没有场景。请在 TileSet 底部选项卡中添加场景。"
+
+msgid "Delete tiles"
+msgstr "删除图块"
+
+msgid "Change selection"
+msgstr "修改选中项"
+
+msgid "Move tiles"
+msgstr "移动图块"
+
+msgid "Paint tiles"
+msgstr "绘制图块"
+
+msgid "Paste tiles"
+msgstr "粘贴图块"
+
+msgid "Selection Tool"
+msgstr "选择工具"
+
+msgid "Paint Tool"
+msgstr "绘制工具"
+
+msgid "Line Tool"
+msgstr "直线工具"
+
+msgid "Rect Tool"
+msgstr "矩形工具"
+
+msgid "Bucket Tool"
+msgstr "油漆桶工具"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "也可以在使用其他工具时按住 %s 来挑选图块。"
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "也可以用鼠标右键擦除图块。"
+
+msgid "Rotate Tile Left"
+msgstr "向左旋转图块"
+
+msgid "Rotate Tile Right"
+msgstr "向右旋转图块"
+
+msgid "Flip Tile Horizontally"
+msgstr "水平翻转图块"
+
+msgid "Flip Tile Vertically"
+msgstr "垂直翻转图块"
+
+msgid "Contiguous"
+msgstr "连续"
+
+msgid "Place Random Tile"
+msgstr "放置随机图块"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr "修改不绘制任何内容的概率，不会绘制随机选择的图块。"
+
+msgid "Scattering:"
+msgstr "散布："
+
+msgid "Tiles"
+msgstr "图块"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr "这个 TileMap 的 TileSet 中没有配置图块源。请在 TileSet 底部面板中添加。"
+
+msgid "Sort sources"
+msgstr "源排序"
+
+msgid "Sort by ID (Ascending)"
+msgstr "按 ID 排序（升序）"
+
+msgid "Sort by ID (Descending)"
+msgstr "按 ID 排序（降序）"
+
+msgid "Invalid source selected."
+msgstr "所选源无效。"
+
+msgid "Patterns"
+msgstr "图案"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr "如果要存储图案，请将 TileMap 的选中项拖放或粘贴至此。"
+
+msgid "Paint terrain"
+msgstr "绘制地形"
+
+msgid "Matches Corners and Sides"
+msgstr "匹配角落和侧边"
+
+msgid "Matches Corners Only"
+msgstr "仅匹配角落"
+
+msgid "Matches Sides Only"
+msgstr "仅匹配侧边"
+
+msgid "Terrain Set %d (%s)"
+msgstr "地形集 %d（%s）"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr "连接模式：绘制一个地形，然后将其与周围具有相同地形的图块连接起来。"
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr "路径模式：绘制一个地形，并在同一笔画内将其与前一个图块连接起来。"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "No Layers"
+msgstr "没有层"
+
+msgid "Replace Tiles with Proxies"
+msgstr "用代理替换图块"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "将 TileMap 图层提取为独立的 TileMapLayer 节点"
+
+msgid "Can't edit multiple layers at once."
+msgstr "无法同时编辑多层。"
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "所选 TileMap 没有图层可供编辑。"
+
+msgid "The edited layer is disabled or invisible"
+msgstr "正在编辑的图层已禁用或已隐藏"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"正在编辑的 TileMap 或 TileMapLayer 节点没有 TileSet 资源。\n"
+"请在检查器的 TileSet 属性中创建或加载 TileSet 资源。"
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Open TileMap Dock"
+msgstr "打开TileMap面板"
+
+msgid "Select Next Tile Map Layer"
+msgstr "选择下一个图块地图层"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "选择上一个图块地图层"
+
+msgid "TileMap Layers"
+msgstr "TileMap 层"
+
+msgid "Select previous layer"
+msgstr "选中上一层"
+
+msgid "Select next layer"
+msgstr "选中下一层"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "选中场景中的所有 TileMapLayer"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "高亮所选 TileMap 图层"
+
+msgid "Toggle grid visibility."
+msgstr "切换栅格可见性。"
+
+msgid "Advanced settings."
+msgstr "高级设置。"
+
+msgid "Automatically Replace Tiles with Proxies"
+msgstr "自动将图块替换为代理"
+
+msgid "Remove Tile Proxies"
+msgstr "移除图块代理"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "创建替代级别的图块代理"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "创建坐标级别的图块代理"
+
+msgid "Create source-level Tile Proxy"
+msgstr "创建源级别的图块代理"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "删除所有无效的图块代理"
+
+msgid "Delete All Tile Proxies"
+msgstr "删除所有图块代理"
+
+msgid "Tile Proxies Management"
+msgstr "图块代理管理"
+
+msgid "Source-level proxies"
+msgstr "源级别代理"
+
+msgid "Coords-level proxies"
+msgstr "坐标级别代理"
+
+msgid "Alternative-level proxies"
+msgstr "替代级别代理"
+
+msgid "Add a new tile proxy:"
+msgstr "添加一个新的图块代理："
+
+msgid "From Source"
+msgstr "从源"
+
+msgid "From Coords"
+msgstr "从坐标"
+
+msgid "From Alternative"
+msgstr "从备选"
+
+msgid "To Source"
+msgstr "到源"
+
+msgid "To Coords"
+msgstr "到坐标"
+
+msgid "To Alternative"
+msgstr "到备选"
+
+msgid "Global actions:"
+msgstr "全局动作："
+
+msgid "Clear Invalid"
+msgstr "清除无效"
+
+msgid "Atlas"
+msgstr "图集"
+
+msgid "Base Tile"
+msgstr "基础图块"
+
+msgid "Alternative Tile"
+msgstr "备选图块"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"选中图块：\n"
+"源：%d\n"
+"图集坐标：%s\n"
+"备选：%d"
+
+msgid "Rendering"
+msgstr "渲染"
+
+msgid "Occlusion Layer %d"
+msgstr "遮挡层 %d"
+
+msgid "Physics"
+msgstr "物理"
+
+msgid "Physics Layer %d"
+msgstr "物理层 %d"
+
+msgid "No physics layers"
+msgstr "无物理层"
+
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr "请在 TileSet 资源的检查器中创建并自定义物理层。"
+
+msgid "Navigation"
+msgstr "导航"
+
+msgid "Navigation Layer %d"
+msgstr "导航层 %d"
+
+msgid "No navigation layers"
+msgstr "无导航层"
+
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr "请在 TileSet 资源的检查器中创建并自定义导航层。"
+
+msgid "Custom Data"
+msgstr "自定义数据"
+
+msgid "Custom Data %d"
+msgstr "自定义数据 %d"
+
+msgid "No custom data layers"
+msgstr "无自定义数据层"
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr "请在 TileSet 资源的检查器中创建并自定义自定义数据层。"
+
+msgid "Select a property editor"
+msgstr "请选择属性编辑器"
+
+msgid "Hold %s to create multiple tiles."
+msgstr "按住 %s 创建多个图块。"
+
+msgid "Hold %s to create big tiles."
+msgstr "按住 %s 创建大型图块。"
+
+msgid "Hold %s to select multiple regions."
+msgstr "按住 %s 选择多个区域。"
+
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr "TileSet 处于只读模式。要编辑 TileSet 的属性请先唯一化该资源。"
+
+msgid "Paint properties."
+msgstr "绘制属性。"
+
+msgid "Create tiles"
+msgstr "创建多个图块"
+
+msgid "Create a tile"
+msgstr "创建单个图块"
+
+msgid "Remove tiles"
+msgstr "移除图块"
+
+msgid "Move a tile"
+msgstr "移动图块"
+
+msgid "Resize a tile"
+msgstr "调整图块大小"
+
+msgid "Remove tile"
+msgstr "移除图块"
+
+msgid "Create tile alternatives"
+msgstr "创建备选图块"
+
+msgid "Remove Tiles Outside the Texture"
+msgstr "移除纹理外的图块"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "在不透明纹理区域中创建图块"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "从全透明纹理区域中移除图块"
+
+msgid ""
+"The tile's unique identifier within this TileSet. Each tile stores its source "
+"ID, so changing one may make tiles invalid."
+msgstr ""
+"图块在该 TileSet 中的唯一标识符。每个图块都会存储来源 ID，所以修改后可能会让图"
+"块失效。"
+
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"图集的人类可读名称。请在此处使用有意义的名称，方便组织（例如“地形”“装饰品”等名"
+"称）。"
+
+msgid "The image from which the tiles will be created."
+msgstr "图块是从哪个图片创建的。"
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"图像边缘不应作为可选图块的边距（单位为像素）。如果你下载的图块表图像在边缘存在"
+"边距（例如为了归属问题），就可以增大这个属性。"
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"图集中图块与图块之间的距离，单位为像素。如果你使用的图块表图像中包含参考线（例"
+"如图块之间的轮廓），就可以增大这个属性。"
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"图集中每个图块的大小，单位为像素。大多数情况下应该与 TileMap 属性中定义的图块"
+"大小一致（但这并不是硬性规定）。"
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"勾选后会在每个图块周围添加 1 个像素的透明边缘，防止启用过滤时的纹理出血现象。"
+"推荐保持启用，除非遇到了由于纹理内边距而导致的渲染问题。"
+
+msgid ""
+"The position of the tile's top-left corner in the atlas. The position and "
+"size must be within the atlas and can't overlap another tile.\n"
+"Each painted tile has associated atlas coords, so changing this property may "
+"cause your TileMaps to not display properly."
+msgstr ""
+"图块左上角在图集中的位置。位置和大小必须位于图集之中，不能与其他图块重叠。\n"
+"绘制出的每个图块都有对应的图集坐标，所以修改这个属性可能会导致 TileMap 无法正"
+"确显示。"
+
+msgid "The unit size of the tile."
+msgstr "图块的单位尺寸。"
+
+msgid ""
+"Number of columns for the animation grid. If number of columns is lower than "
+"number of frames, the animation will automatically adjust row count."
+msgstr "动画网格的列数。如果列数比帧数小，则动画会自动调整行数。"
+
+msgid "The space (in tiles) between each frame of the animation."
+msgstr "动画中帧与帧之间的间隔（单位为图块）。"
+
+msgid "Animation speed in frames per second."
+msgstr "动画的速度，单位为每秒的帧数。"
+
+msgid ""
+"Determines how animation will start. In \"Default\" mode all tiles start "
+"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
+"animation with a random offset."
+msgstr ""
+"决定动画的开始方式。“Default”模式下所有图块都会在同一帧开始动画。“Random "
+"Start Times”模式下，每个图块在开始动画时都有随机偏移量。"
+
+msgid "If [code]true[/code], the tile is horizontally flipped."
+msgstr "如果为 [code]true[/code]，则图块会左右翻转。"
+
+msgid "If [code]true[/code], the tile is vertically flipped."
+msgstr "如果为 [code]true[/code]，则图块会上下翻转。"
+
+msgid ""
+"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
+"and then flipped vertically. In practice, this means that to rotate a tile by "
+"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
+"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
+"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
+"[b]Flip V[/b] and [b]Transpose[/b]."
+msgstr ""
+"如果为 [code]true[/code]，则图块会在[i]逆时针[/i]旋转 90 度后上下翻转。实践"
+"中，如果需要将图块顺时针旋转 90 度但不翻转，就应该启用[b]水平翻转[/b]和[b]转置"
+"[/b]。如果要将图块顺时针旋转 180 度，请启用[b]水平翻转[/b]和[b]垂直翻转[/b]。"
+"如果要将图块顺时针旋转 270 度，请启用[b]垂直翻转[/b]和[b]转置[/b]。"
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"绘制该图块所使用的原点。可以用来在视觉上将图块进行相对于基础图块的偏移。"
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "渲染该图块时使用的颜色乘数。"
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr "图块所使用的材质。可以用来为图块应用不同的混合模式和自定义着色器。"
+
+msgid ""
+"The sorting order for this tile. Higher values will make the tile render in "
+"front of others on the same layer. The index is relative to the TileMap's own "
+"Z index."
+msgstr ""
+"图块的排序顺序。在同一层中，值越大的图块在渲染时越靠前。该索引号是以 TileMap "
+"本身 Z 索引为基础的相对值。"
+
+msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"根据 Y 坐标（以像素为单位）进行图块排序时使用的垂直偏移量。这样就能够将不同的"
+"层视为在不同高度上，适用于俯视角游戏。调整这个值可以帮助缓解某些图块排序问题。"
+"仅当放置图块的 TileMap 图层上的 Y Sort Enabled 为 true 时才有效。"
+
+msgid ""
+"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
+"will not be used in terrains."
+msgstr "图块所属的地形集索引号。[code]-1[/code] 表示地形中不使用该图块。"
+
+msgid ""
+"The index of the terrain inside the terrain set this tile belongs to. "
+"[code]-1[/code] means it will not be used in terrains."
+msgstr "图块所属地形集中地形的索引号。[code]-1[/code] 表示地形中不使用该图块。"
+
+msgid ""
+"The relative probability of this tile appearing when painting with \"Place "
+"Random Tile\" enabled."
+msgstr "启用“放置随机图块”进行绘制时，出现该图块的相对概率。"
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"当前图集源存在位于纹理之外的图块。\n"
+"可以使用三点菜单中的“%s”选项清理。"
+
+msgid "Setup"
+msgstr "设置"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr "图集设置。图块添加/移除工具（Shift 键创建大图块、Ctrl 键编辑矩形）。"
+
+msgid "Select tiles."
+msgstr "选择图块。"
+
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"未选中图块。\n"
+"请在候选中选择一个或多个图块，对属性进行编辑。"
+
+msgid "Paint Properties:"
+msgstr "绘制属性："
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "在不透明纹理区域创建图块"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "在全透明纹理区域移除图块"
+
+msgid "Create an Alternative Tile"
+msgstr "创建备选图块"
+
+msgid "Create a Tile"
+msgstr "创建图块"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "是否自动在不透明纹理区域创建图块？"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"该图集的纹理发生改变。\n"
+"是否想要自动在该图集中创建图块？"
+
+msgid "Invalid texture selected."
+msgstr "所选纹理无效。"
+
+msgid "Add a new atlas source"
+msgstr "新建图集源"
+
+msgid "Remove source"
+msgstr "移除源"
+
+msgid "Add atlas source"
+msgstr "添加图集源"
+
+msgid "TileSet"
+msgstr "TileSet"
+
+msgid "Open TileSet Dock"
+msgstr "打开TileSet面板"
+
+msgid "Tile Sources"
+msgstr "图块源"
+
+msgid "Sort Sources"
+msgstr "源排序"
+
+msgid "A palette of tiles made from a texture."
+msgstr "根据一张纹理制作的图块拼盘。"
+
+msgid "Scenes Collection"
+msgstr "场景合集"
+
+msgid "A collection of scenes that can be instantiated and placed as tiles."
+msgstr "能够实例化并作为图块放置的场景合集。"
+
+msgid "Open Atlas Merging Tool"
+msgstr "打开图集合并工具"
+
+msgid "Manage Tile Proxies"
+msgstr "管理图块代理"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"尚未选择 TileSet 源。请选择或创建 TileSet 源。\n"
+"源的新建方法有两种，可以使用左侧的“添加”按钮，也可以将图块集纹理拖放到源列表"
+"中。"
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "请在 TileMap 编辑模式中添加新的图案。"
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"警告：修改源 ID 会导致所有使用该源的 TileMap 引用无效的源。可能导致意料之外的"
+"数据丢失。请谨慎修改 ID。"
+
+msgid "Add a Scene Tile"
+msgstr "添加场景图块"
+
+msgid "Remove a Scene Tile"
+msgstr "移除场景图块"
+
+msgid "Drag and drop scenes here or use the Add button."
+msgstr "请将场景拖放至此处或使用“添加”按钮。"
+
+msgid ""
+"The human-readable name for the scene collection. Use a descriptive name here "
+"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
+msgstr ""
+"场景合集的人类可读名称。请在此处使用有意义的名称，方便组织（例如“障碍物”“装饰"
+"品”等名称）。"
+
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"合集中场景图块的 ID。绘制的图块都有对应的 ID，修改这个属性可能导致 TileMap 无"
+"法正确显示。"
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "该图块对应的场景的绝对路径。"
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"如果为 [code]true[/code]，则会在场景预览的顶部显示占位标记。该标记也会在场景不"
+"存在有效预览时显示。"
+
+msgid "Scenes collection properties:"
+msgstr "场景合集属性："
+
+msgid "Tile properties:"
+msgstr "图块属性："
+
+msgid "Eraser Tool"
+msgstr "橡皮工具"
+
+msgid "Picker Tool"
+msgstr "取色工具"
+
+msgid ""
+"Source ID: %d\n"
+"Texture path: %s"
+msgstr ""
+"源ID：%d\n"
+"纹理路径：%s"
+
+msgid "Source ID: %d"
+msgstr "源ID：%d"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"TileMap 节点被已弃用，由多个 TileMapLayer 节点代替。\n"
+"将 TileMap 节点转换为多个 TileMapLayer 节点：选中该节点后打开 TileMap 底部面"
+"板，点击右上角的工具箱图标，然后选择“将 TileMap 图层提取为独立的 TileMapLayer "
+"节点”。"
+
+msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"Y 排序图层与非 Y 排序图层具有相同的 Z 索引值。\n"
+"这可能会导致不需要的行为，因为未按 Y 排序的层将作为一个整体，与来自 Y 排序层的"
+"图块一起进行 Y 排序。"
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr "TileMap 图层设置为 Y 排序，但 TileMap 节点本身未启用 Y 排序。"
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"TileMap 节点启用了 Y 排序，但是 TileMap 中并没有启用了 Y 排序的层。\n"
+"这可能会导致不需要的行为，因为未按 Y 排序的层将作为一个整体进行 Y 排序。"
+
+msgid ""
+"Isometric TileSet will likely not look as intended without Y-sort enabled for "
+"the TileMap and all of its layers."
+msgstr ""
+"如果不对 TileMap 和它的所有层启用 Y-sort，等轴 TileSet 可能看起来不像预期的那"
+"样。"
+
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr "E 常数 (2.718282)。表示自然对数的基数。"
 
@@ -18209,15 +17640,6 @@ msgstr "τ (Tau) 常数 (6.283185)或 360 度。"
 msgid "Sqrt2 constant (1.414214). Square root of 2."
 msgstr "Sqrt2 常数 (1.414214)。2 的平方根。"
 
-msgid "Drag and drop nodes here to attach them."
-msgstr "将节点拖放至此即可附加。"
-
-msgid "Add Input"
-msgstr "添加输入"
-
-msgid "Add Output"
-msgstr "添加输出"
-
 msgid "Int"
 msgstr "Int"
 
@@ -18232,6 +17654,15 @@ msgstr "Vector4"
 
 msgid "Sampler"
 msgstr "采样器"
+
+msgid "Drag and drop nodes here to attach them."
+msgstr "将节点拖放至此即可附加。"
+
+msgid "Add Input"
+msgstr "添加输入"
+
+msgid "Add Output"
+msgstr "添加输出"
 
 msgid "[default]"
 msgstr "[默认]"
@@ -18302,13 +17733,13 @@ msgid "Set Tint Color"
 msgstr "设置着色颜色"
 
 msgid "Toggle Frame Color"
-msgstr "开关框架颜色"
+msgstr "切换框着色"
 
 msgid "Set Frame Color"
 msgstr "设置框架颜色"
 
 msgid "Toggle Auto Shrink"
-msgstr "开关自动收缩"
+msgstr "切换自动收缩"
 
 msgid "Set Parameter Name"
 msgstr "设置参数名称"
@@ -18446,7 +17877,7 @@ msgid "Show generated shader code."
 msgstr "显示生成的着色器代码。"
 
 msgid "Toggle shader preview."
-msgstr "开关着色器预览。"
+msgstr "切换着色器预览。"
 
 msgid "Generated Shader Code"
 msgstr "生成的着色器代码"
@@ -18679,18 +18110,6 @@ msgstr "灯光着色器模式的 “%s” 输入参数。"
 
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "顶点着色器模式的 “%s” 输入参数。"
-
-msgid "'%s' input parameter for start shader mode."
-msgstr "用于启动着色器模式的“%s”输入参数。"
-
-msgid "'%s' input parameter for process shader mode."
-msgstr "处理着色器模式的“%s”输入参数。"
-
-msgid "'%s' input parameter for start and process shader modes."
-msgstr "启动和处理着色器模式的“%s”输入参数。"
-
-msgid "'%s' input parameter for process and collide shader modes."
-msgstr "处理和碰撞着色器模式的“%s”输入参数。"
 
 msgid ""
 "A node for help to multiply a position input vector by rotation using "
@@ -19029,9 +18448,6 @@ msgstr "返回在线性空间中从深度预处理得到的深度值。"
 msgid "Reconstructs the World Position of the Node from the depth texture."
 msgstr "根据深度纹理重新构造节点的世界位置。"
 
-msgid "Unpacks the Screen Normal Texture in World Space"
-msgstr "在世界空间中分解屏幕法线纹理"
-
 msgid "Perform the 2D texture lookup."
 msgstr "执行 2D 纹理查找。"
 
@@ -19139,13 +18555,6 @@ msgstr "邻近淡化效果是根据每个像素与另一个物体的距离来淡
 
 msgid "Returns a random value between the minimum and maximum input values."
 msgstr "返回一个介于最小和最大输入值之间的随机值。"
-
-msgid ""
-"Builds a rotation matrix from the given axis and angle, multiply the input "
-"vector by it and returns both this vector and a matrix."
-msgstr ""
-"根据给定的旋转轴和旋转角来构建旋转矩阵，该矩阵会与输入向量相乘，返回的是该向量"
-"和矩阵。"
 
 msgid "Vector function."
 msgstr "向量函数。"
@@ -19528,9 +18937,6 @@ msgstr "包名中每段的第一个字符均不能是“%s”。"
 msgid "The package must have at least one '.' separator."
 msgstr "包名必须至少包含一个“.”分隔符。"
 
-msgid "Error creating keystores directory:"
-msgstr "创建密钥库目录出错："
-
 msgid "Invalid package name:"
 msgstr "无效的包名称："
 
@@ -19639,11 +19045,6 @@ msgid "Custom Android source template not found."
 msgstr "找不到自定义 Android 源码模板。"
 
 msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。"
-
-msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr "“调试密钥库”“调试用户”“调试密码”必须全部填写或者全部留空。"
@@ -19659,51 +19060,11 @@ msgstr "“发布密钥库”“发布用户”“发布密码”必须全部填
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "未在导出预设中正确设置“发布密钥库”。"
 
-msgid "A valid Java SDK path is required in Editor Settings."
-msgstr "编辑器设置中需要有效的 Java SDK 路径。"
-
-msgid "Invalid Java SDK path in Editor Settings."
-msgstr "编辑器设置中的 Java SDK 路径无效。"
-
-msgid "Missing 'bin' directory!"
-msgstr "缺失“bin”目录！"
-
-msgid "Unable to find 'java' command using the Java SDK path."
-msgstr "无法使用 Java SDK 路径找到“java”命令。"
-
-msgid "Please check the Java SDK directory specified in Editor Settings."
-msgstr "请检查编辑器设置中指定的 Java SDK 目录。"
-
-msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "编辑器设置中需要有效的 Android SDK 路径。"
-
-msgid "Invalid Android SDK path in Editor Settings."
-msgstr "编辑器设置中的 Android SDK 路径无效。"
-
-msgid "Missing 'platform-tools' directory!"
-msgstr "缺失“platform-tools”目录！"
-
-msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr "找不到 Android SDK 平台工具的 adb 命令。"
-
-msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "请检查编辑器设置中指定的 Android SDK 目录。"
-
-msgid "Missing 'build-tools' directory!"
-msgstr "缺失“build-tools”目录！"
-
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "找不到 Android SDK 生成工具的 apksigner 命令。"
 
-msgid ""
-"ETC2/ASTC texture compression is required for Android export. In Project "
-"Settings, search for 'ETC2' in the search field, or enable 'Advanced "
-"Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import "
-"ETC2 ASTC'."
-msgstr ""
-"导出 Android 版本需要 ETC2/ASTC 纹理压缩格式。请在“项目设置”中搜索字段 "
-"'ETC2'，或者启用“高级设置”并进入 渲染 > 纹理 > VRAM 压缩，以开启 导入 ETC2 "
-"ASTC 选项。"
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "请检查编辑器设置中指定的 Android SDK 目录。"
 
 msgid "\"Use Gradle Build\" is required for transparent background on Android"
 msgstr "必须启用“使用 Gradle 构建”才能启用 Android 的透明背景"
@@ -19729,9 +19090,6 @@ msgid ""
 "needed."
 msgstr ""
 "项目名称不符合包名格式的要求，会被更新为“%s”。如有需要，请显式指定包名。"
-
-msgid "AAB signing is not supported"
-msgstr "不支持 AAB 签名"
 
 msgid "Signing debug APK..."
 msgstr "正在签名调试 APK……"
@@ -19799,13 +19157,6 @@ msgstr "无效文件名！Android APK 必须有 *.apk 扩展。"
 
 msgid "Unsupported export format!"
 msgstr "不支持的导出格式！"
-
-msgid ""
-"Trying to build from a gradle built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"尝试从自定义构建模板构建，但是它所使用的版本信息不存在。请从“项目”菜单中重新安"
-"装。"
 
 msgid ""
 "Java SDK path must be configured in Editor Settings at 'export/android/"
@@ -19880,12 +19231,6 @@ msgstr "无法解压未对齐的临时 APK。"
 
 msgid "Metal renderer require iOS 14+."
 msgstr "金属材质渲染器需要iOS 14+。"
-
-msgid "Export Icons"
-msgstr "导出图标"
-
-msgid "Could not open a directory at path \"%s\"."
-msgstr "无法打开位于“%s”的目录。"
 
 msgid "Debug Script Export"
 msgstr "调试脚本导出"
@@ -20119,6 +19464,9 @@ msgstr "无法签名目录 %s。"
 msgid "Cannot sign file %s."
 msgstr "无法签名文件 %s。"
 
+msgid "Could not open \"%s\"."
+msgstr "无法打开“%s”。"
+
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr "不支持相对符号链接，导出的“%s”可能损坏！"
 
@@ -20146,6 +19494,12 @@ msgstr "`hdiutil create` 失败 - 文件已存在。"
 msgid "`hdiutil create` failed."
 msgstr "`hdiutil create` 失败。"
 
+msgid "Could not create directory \"%s\"."
+msgstr "无法创建目录“%s”。"
+
+msgid "Could not create directory: \"%s\"."
+msgstr "无法创建目录：“%s”。"
+
 msgid "Exporting for macOS"
 msgstr "正在为 macOS 导出"
 
@@ -20157,12 +19511,6 @@ msgstr "无法找到导出的模板应用：“%s”。"
 
 msgid "Invalid export format."
 msgstr "导出格式无效。"
-
-msgid "Could not create directory: \"%s\"."
-msgstr "无法创建目录：“%s”。"
-
-msgid "Could not create directory \"%s\"."
-msgstr "无法创建目录“%s”。"
 
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might be "
@@ -20178,9 +19526,6 @@ msgid ""
 msgstr ""
 "无法为可执行文件“%s”设置Unix权限。请在将转换的导出.app文件转移至macOS或Linux系"
 "统后使用“chmod +x”命令为其重新设置。"
-
-msgid "Could not open \"%s\"."
-msgstr "无法打开“%s”。"
 
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
@@ -20650,48 +19995,6 @@ msgid ""
 msgstr "这根骨骼没有合适的放松姿势。请到 Skeleton2D 节点中设置一个。"
 
 msgid ""
-"The TileMap node is deprecated as it is superseded by the use of multiple "
-"TileMapLayer nodes.\n"
-"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
-"panel with this node selected, click the toolbox icon in the top-right corner "
-"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
-msgstr ""
-"TileMap 节点被已弃用，由多个 TileMapLayer 节点代替。\n"
-"将 TileMap 节点转换为多个 TileMapLayer 节点：选中该节点后打开 TileMap 底部面"
-"板，点击右上角的工具箱图标，然后选择“将 TileMap 图层提取为独立的 TileMapLayer "
-"节点”。"
-
-msgid ""
-"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole with tiles from Y-sorted layers."
-msgstr ""
-"Y 排序图层与非 Y 排序图层具有相同的 Z 索引值。\n"
-"这可能会导致不需要的行为，因为未按 Y 排序的层将作为一个整体，与来自 Y 排序层的"
-"图块一起进行 Y 排序。"
-
-msgid ""
-"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
-"node itself."
-msgstr "TileMap 图层设置为 Y 排序，但 TileMap 节点本身未启用 Y 排序。"
-
-msgid ""
-"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
-"TileMap's layers.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole."
-msgstr ""
-"TileMap 节点启用了 Y 排序，但是 TileMap 中并没有启用了 Y 排序的层。\n"
-"这可能会导致不需要的行为，因为未按 Y 排序的层将作为一个整体进行 Y 排序。"
-
-msgid ""
-"Isometric TileSet will likely not look as intended without Y-sort enabled for "
-"the TileMap and all of its layers."
-msgstr ""
-"如果不对 TileMap 和它的所有层启用 Y-sort，等轴 TileSet 可能看起来不像预期的那"
-"样。"
-
-msgid ""
 "Forward axis and primary rotation axis must not be parallel in setting %s."
 msgstr "设置 %s 中的前向坐标轴和主旋转坐标轴不可平行。"
 
@@ -20722,9 +20025,6 @@ msgid ""
 msgstr ""
 "CPUParticles3D 动画需要使用 StandardMaterial3D，其 Billboard Mode 应被设置"
 "为“Particle Billboard”。"
-
-msgid "Decals are only available when using the Forward+ or Mobile renderer."
-msgstr "贴花仅在使用 Forward+ 或 Mobile 渲染器时可用。"
 
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
@@ -20759,13 +20059,6 @@ msgstr "该场景的 Environment 中启用体积雾后，体积雾才可见。"
 
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "粒子不可见，因为绘制阶段中没有指定网格。"
-
-msgid ""
-"Particles animation requires the usage of a BaseMaterial3D whose Billboard "
-"Mode is set to \"Particle Billboard\"."
-msgstr ""
-"粒子动画需要使用 BaseMaterial3D，其 Billboard Mode 应被设置为“Particle "
-"Billboard”。"
 
 msgid ""
 "Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
@@ -21300,6 +20593,54 @@ msgstr ""
 "AnimationTree 节点（或其某个父级节点）的处理模式已被设置为“已禁用”。\n"
 "请在检查器中更改处理模式以允许播放。"
 
+msgid "Create Horizontal and Vertical Guides"
+msgstr "创建垂直水平参考线"
+
+msgid ""
+"Can't modify anchor offsets when the parent has a size of 0. Disable the "
+"anchors mode in the toolbar."
+msgstr "父节点尺寸为 0 时，无法修改锚点偏移。请在工具栏中禁用锚点模式。"
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "将 CanvasItem“%s”的轴心偏移量设为 (%d, %d)"
+
+msgid "Rotate %d CanvasItems"
+msgstr "旋转 %d 个 CanvasItem"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "将 CanvasItem“%s”的旋转设为 %d 度"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "移动 CanvasItem“%s”的锚点"
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "将 Node2D“%s”缩放为 (%s, %s)"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "将 Control“%s”的大小更改为 (%d, %d)"
+
+msgid "Scale %d CanvasItems"
+msgstr "缩放 %d 个 CanvasItem"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "将 CanvasItem“%s”缩放为 (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "移动 %d 个 CanvasItem"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "移动 CanvasItem“%s”至 (%d, %d)"
+
+msgid ""
+"Children of a container get their position and size determined only by their "
+"parent."
+msgstr "容器的子节点只会从容器节点获取位置和大小。"
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr "所选 CanvasItem 均处于不可见或锁定状态，无法进行变换。"
+
 msgid "Top Orthogonal"
 msgstr "正交顶视图"
 
@@ -21388,6 +20729,11 @@ msgstr "%s 可以在此处放置。使用 %s 放置，使用 %s 取消。"
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s 无法在此处放置。使用 %s 取消。"
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr "启用了自动换行的标签必须配置正的自定义最小或最大宽度才能正常工作。"
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

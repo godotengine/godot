@@ -65,13 +65,16 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>, 2026.
 # User2068 <user603849745775@proton.me>, 2026.
+# Ayran <gordeybalaban05@gmail.com>, 2026.
+# User2068 <user2068@users.noreply.hosted.weblate.org>, 2026.
+# Sonic Fans <fanssonic6@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-10 12:01+0000\n"
-"Last-Translator: User2068 <user603849745775@proton.me>\n"
+"PO-Revision-Date: 2026-11-10 04:56+0000\n"
+"Last-Translator: Sonic Fans <fanssonic6@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -80,7 +83,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 msgid "OK"
 msgstr "Гаразд"
@@ -614,6 +617,9 @@ msgstr "ColorPicker: Видалити пресет"
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Доступність: перетягування з клавіатури"
 
+msgid "Toggle Fullscreen"
+msgstr "На весь екран"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Некоректні вхідні дані %d (не передано) у виразі"
 
@@ -848,8 +854,8 @@ msgstr ""
 msgid "Blend"
 msgstr "Змішати"
 
-msgid "Open Editor"
-msgstr "Відкрити вікно редактора"
+msgid "Open"
+msgstr "Відкрити"
 
 msgid "Index"
 msgstr "Індекс"
@@ -867,9 +873,6 @@ msgstr ""
 
 msgid "Position"
 msgstr "Позиція"
-
-msgid "Blend Value"
-msgstr "Значення суміші"
 
 msgid "Min"
 msgstr "Мін"
@@ -927,12 +930,6 @@ msgstr "Крок сітки X"
 
 msgid "Grid Y Step"
 msgstr "Крок сітки Y"
-
-msgid "Blend X Value"
-msgstr "Значення суміші X"
-
-msgid "Blend Y Value"
-msgstr "Значення Y суміші"
 
 msgid "Max Y"
 msgstr "Макс Y"
@@ -1467,12 +1464,6 @@ msgstr "Неможливо перейти з \"Кінця\"!"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "Перехід від \"%s\" до \"%s\" вже існує!"
-
-msgid "Play/Travel to %s"
-msgstr "Відтворення/подорож до %s"
-
-msgid "Edit %s"
-msgstr "Редагування %s"
 
 msgid "Add Node and Transition"
 msgstr "Додати вузол і перехід"
@@ -2047,19 +2038,6 @@ msgstr ""
 "увімкніть опції \"Зберегти у файл\" і\n"
 "\"Зберегти власні доріжки\"."
 
-msgid ""
-"Some AnimationPlayerEditor's options are disabled since this is the dummy "
-"AnimationPlayer for preview.\n"
-"\n"
-"The dummy player is forced active, non-deterministic and doesn't have the "
-"root motion track. Furthermore, the original node is inactive temporary."
-msgstr ""
-"Деякі опції редактора AnimationPlayerEditor вимкнено, оскільки це фіктивний "
-"плеєр для попереднього перегляду.\n"
-"\n"
-"Фіктивний програвач є примусово активним, недетермінованим і не має кореневої "
-"доріжки руху. Крім того, оригінальний вузол тимчасово неактивний."
-
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "Програвач AnimationPlayer неактивний. Відтворення не буде оброблено."
 
@@ -2625,11 +2603,11 @@ msgstr "Вийти в Інтернет"
 msgid "Failed to verify repository."
 msgstr "Не вдалося перевірити репозиторій."
 
-msgid "Template"
-msgstr "Шаблон"
-
 msgid "All"
 msgstr "Все"
+
+msgid "Repository returned with invalid data."
+msgstr "Репозиторій повернув некоректні дані."
 
 msgid "No results for \"%s\"."
 msgstr "Нічого не знайдено для «%s»."
@@ -2639,6 +2617,9 @@ msgstr "Результатів, що відповідають %s %s, не зна
 
 msgid "Unstable"
 msgstr "Нестабільний"
+
+msgid "Asset Store"
+msgstr "Магазин ресурсів"
 
 msgid "Search templates. Use tags by including \"#tagname\"."
 msgstr "Пошук шаблонів. Використовуйте теги, додаючи «#назва_тегу»."
@@ -2668,9 +2649,6 @@ msgstr "Ліцензії"
 msgid "Assets ZIP File"
 msgstr "ZIP файл ресурсів"
 
-msgid "Asset Store"
-msgstr "Магазин ресурсів"
-
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr ""
 "Помилка під час спроби відкрити файл пакунка для «%s» (не у форматі ZIP)."
@@ -2680,9 +2658,9 @@ msgstr "%s (вже існує)"
 
 msgid "%d file conflicts with your project and won't be installed"
 msgid_plural "%d files conflict with your project and won't be installed"
-msgstr[0] "Файл %d конфліктує з вашим проектом і не буде інстальований"
-msgstr[1] "Файли %d конфліктують з вашим проектом і не будуть інстальовано"
-msgstr[2] "Файли %d конфліктують з вашим проектом і не будуть інстальовані"
+msgstr[0] "Файл %d конфліктує з вашим проєктом і не буде інстальований"
+msgstr[1] "Файли %d конфліктують з вашим проєктом і не будуть інстальовані"
+msgstr[2] "Файли %d конфліктують з вашим проєктом і не будуть інстальовані"
 
 msgid "This asset doesn't have a root directory, so it can't be ignored."
 msgstr "Цей ресурс не має кореневого каталогу, тому його не можна ігнорувати."
@@ -2872,29 +2850,14 @@ msgstr "Перемикнути аудіо док-станція"
 msgid "Layout:"
 msgstr "Компонування:"
 
+msgid "Save As..."
+msgstr "Зберегти як..."
+
 msgid "Add Bus"
 msgstr "Додати шину"
 
 msgid "Add a new Audio Bus to this layout."
 msgstr "Додати нову аудіошину до цього компонування."
-
-msgid "Load"
-msgstr "Завантажити"
-
-msgid "Load an existing Bus Layout."
-msgstr "Завантажити наявне компонування шини."
-
-msgid "Save this Bus Layout to a file."
-msgstr "Зберегти це компонування шини у файлі."
-
-msgid "Load Default"
-msgstr "Завантажити типовий"
-
-msgid "Load the default Bus Layout."
-msgstr "Завантажити типове компонування шини."
-
-msgid "Create a new Bus Layout."
-msgstr "Створити нове компонування шини."
 
 msgid "Audio Bus Layout"
 msgstr "Компонування звукової шини"
@@ -2920,38 +2883,8 @@ msgstr "Зневадження за допомогою зовнішнього р
 msgid "Deploy with Remote Debug"
 msgstr "Запускати з віддаленим налагодженням"
 
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"Якщо увімкнено цей параметр, використання розгортання в одне клацання "
-"призведе до того, що виконуваний файл спробує встановити з'єднання із IP-"
-"адресою цього комп'ютера, уможливлюючи діагностику запущеного проєкту.\n"
-"Цей параметр призначено для віддаленої діагностики (типово, за допомогою "
-"мобільного пристрою).\n"
-"Його вмикання не знадобиться, якщо ви хочете використовувати засіб "
-"діагностики GDScript локально."
-
 msgid "Small Deploy with Network Filesystem"
 msgstr "Невелике розгортання з використанням мережевої файлової системи"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"Якщо цей параметр увімкнено, використання розгортання в одне клацання для "
-"Android призведе до експортування лише виконуваного файла без даних проєкту.\n"
-"Файлова система буде надана редактором у проєкті за допомогою мережі.\n"
-"На Android для збільшення швидкодії буде використано USB-кабель. Цей параметр "
-"значно прискорює тестування ігор зі значними за об'ємом ресурсами."
 
 msgid "Visible Collision Shapes"
 msgstr "Видимі контури зіткнень"
@@ -2970,7 +2903,7 @@ msgid ""
 "When this option is enabled, curve resources used by path nodes will be "
 "visible in the running project."
 msgstr ""
-"Коли цю опцію увімкнено у запущеному проекті будуть видимі, ресурси кривої, "
+"Коли цю опцію увімкнено, у запущеному проєкті будуть видимі ресурси кривої, "
 "що використовуються вузлами шляху."
 
 msgid "Visible Navigation"
@@ -2981,7 +2914,7 @@ msgid ""
 "in the running project."
 msgstr ""
 "Коли цей параметр увімкнено, навігаційні сітки та багатокутники будуть видимі "
-"у запущеному проекті."
+"у запущеному проєкті."
 
 msgid "Visible Avoidance"
 msgstr "Видиме уникнення"
@@ -2991,7 +2924,7 @@ msgid ""
 "velocities will be visible in the running project."
 msgstr ""
 "Коли цей параметр увімкнено, форми об’єктів уникнення, радіуси та швидкості "
-"будуть видимі у запущеному проекті."
+"будуть видимі у запущеному проєкті."
 
 msgid "Debug CanvasItem Redraws"
 msgstr "Налагодження перемальовувань CanvasItem"
@@ -3002,7 +2935,7 @@ msgid ""
 "This is useful to troubleshoot low processor mode."
 msgstr ""
 "Якщо цю опцію увімкнено, запити на перемальовування 2D-об'єктів стануть "
-"видимими (у вигляді короткого спалаху) у запущеному проекті.\n"
+"видимими (у вигляді короткого спалаху) у запущеному проєкті.\n"
 "Це корисно для усунення несправностей у режимі низької завантаженості "
 "процесора."
 
@@ -3650,20 +3583,11 @@ msgstr "Натисніть, щоб скопіювати."
 msgid "Click to open in browser."
 msgstr "Натисніть, щоб відкрити в браузері."
 
-msgid "Toggle Files Panel"
-msgstr "Перемикання панелі файлів"
-
-msgid "Scripts"
-msgstr "Сценарії"
-
 msgid "No description available."
 msgstr "Опис відсутній."
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Ця анотація може бути змінена або видалена в наступних версіях."
-
-msgid "Open"
-msgstr "Відкрити"
 
 msgid "Open in File Manager"
 msgstr "Відкрити у менеджері файлів"
@@ -4022,21 +3946,6 @@ msgstr "Редагувати залежності..."
 msgid "Create New"
 msgstr "Створити новий"
 
-msgid "Folder..."
-msgstr "Тека..."
-
-msgid "Scene..."
-msgstr "Сцена…"
-
-msgid "Script..."
-msgstr "Скрипт…"
-
-msgid "Resource..."
-msgstr "Ресурс…"
-
-msgid "TextFile..."
-msgstr "Текстовий файл…"
-
 msgid "Expand Folder"
 msgstr "Розгорнути теку"
 
@@ -4076,17 +3985,32 @@ msgstr "Відкрийте папку в терміналі"
 msgid "New Folder..."
 msgstr "Створити теку..."
 
+msgid "Folder..."
+msgstr "Тека..."
+
 msgid "New Scene..."
 msgstr "Нова сцена…"
+
+msgid "Scene..."
+msgstr "Сцена…"
 
 msgid "New Script..."
 msgstr "Новий скрипт…"
 
+msgid "Script..."
+msgstr "Скрипт…"
+
 msgid "New Resource..."
 msgstr "Створити ресурс…"
 
+msgid "Resource..."
+msgstr "Ресурс…"
+
 msgid "New TextFile..."
 msgstr "Новий текстовий файл…"
+
+msgid "TextFile..."
+msgstr "Текстовий файл…"
 
 msgid "Sort Files"
 msgstr "Впорядкувати файли"
@@ -4169,11 +4093,11 @@ msgstr "Фільтрувати файли"
 msgid "Directories"
 msgstr "Довідники"
 
-msgid "Display Mode"
-msgstr "Режим відображення"
-
 msgid "Files"
 msgstr "Файли"
+
+msgid "Display Mode"
+msgstr "Режим відображення"
 
 msgid ""
 "Scanning Files,\n"
@@ -4333,6 +4257,9 @@ msgstr "Типовий"
 msgid "Set as Default for '%s'"
 msgstr "Задати як типове для '%s'"
 
+msgid "Load Default"
+msgstr "Завантажити типовий"
+
 msgid "Clear Default for '%s'"
 msgstr "Очистити типове для '%s'"
 
@@ -4384,11 +4311,6 @@ msgstr ""
 "Виберіть файл ресурсів у файловій системі або у інспекторі для коригування "
 "параметрів імпортування."
 
-msgid ""
-"The following resources will be duplicated and embedded within this resource/"
-"object."
-msgstr "Наступні ресурси будуть продубльовані та вбудовані в цей ресурс/об'єкт."
-
 msgid "This object has no resources to duplicate."
 msgstr "Цей об'єкт не має ресурсів для дублювання."
 
@@ -4400,6 +4322,9 @@ msgstr "Не вдалося завантажити ресурс."
 
 msgid "(Current)"
 msgstr "(Поточний)"
+
+msgid "Go to previous edited object in history."
+msgstr "Перейти до попереднього редагованого об'єкта в історії."
 
 msgid "Expand Non-Default"
 msgstr "Розгорнути не типові"
@@ -4431,20 +4356,20 @@ msgstr "Інспектор"
 msgid "Open Inspector Dock"
 msgstr "Відкрити док інспектора"
 
-msgid "Create a new resource in memory and edit it."
-msgstr "Створити новий ресурс у пам'яті й відредагувати його."
-
-msgid "Load an existing resource from disk and edit it."
-msgstr "Завантажити наявний ресурс із диска та відредагувати його."
+msgid "Go to next edited object in history."
+msgstr "Перейти до наступного редагованого об'єкта в історії."
 
 msgid "Save the currently edited resource."
 msgstr "Зберегти поточний редагований ресурс."
 
-msgid "Save As..."
-msgstr "Зберегти як..."
-
 msgid "Extra resource options."
 msgstr "Додаткові параметри ресурсу."
+
+msgid "Create a new resource in memory and edit it."
+msgstr "Створити новий ресурс у пам'яті й відредагувати його."
+
+msgid "Save Resource As..."
+msgstr "Зберегти ресурс як..."
 
 msgid "Edit Resource from Clipboard"
 msgstr "Редагувати ресурс з буфера обміну"
@@ -4452,23 +4377,11 @@ msgstr "Редагувати ресурс з буфера обміну"
 msgid "Copy Resource"
 msgstr "Копіювати ресурс"
 
-msgid "Make Resource Built-In"
-msgstr "Зробити ресурс вбудованим"
-
-msgid "Go to previous edited object in history."
-msgstr "Перейти до попереднього редагованого об'єкта в історії."
-
-msgid "Go to next edited object in history."
-msgstr "Перейти до наступного редагованого об'єкта в історії."
-
-msgid "History of recently edited objects."
-msgstr "Історія недавно змінених об'єктів."
-
-msgid "Open documentation for this object."
-msgstr "Відкрити документацію для цього об'єкта."
-
 msgid "Open Documentation"
 msgstr "Відкрити документацію"
+
+msgid "Make Resource Built-In"
+msgstr "Зробити ресурс вбудованим"
 
 msgid "Filter Properties"
 msgstr "Фільтрувати властивості"
@@ -4498,20 +4411,8 @@ msgstr ""
 "Не можна створити екземпляр сцени \"%s\", оскільки поточна сцена існує у "
 "одному з його вузлів."
 
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "Екземпляр сцени"
-msgstr[1] "Створення екземплярів сцен"
-msgstr[2] "Створення екземплярів сцени"
-
 msgid "Error loading audio stream from %s"
 msgstr "Помилка завантаження аудіопотоку з %s"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "Створіть AudioStreamPlayer"
-msgstr[1] "Створення AudioStreamPlayers"
-msgstr[2] "Створення AudioStreamPlayers"
 
 msgid "Replace with Branch Scene"
 msgstr "Замінити гілкою сцени"
@@ -4605,9 +4506,6 @@ msgstr ""
 "Не можна зберігати гілку, яка є частиною успадкованої сцени.\n"
 "Щоб зберегти цю гілку до її власної сцени, відкрийте початкову сцену, "
 "клацніть правою кнопкою миші на її гілці і виберіть «Зберегти гілку як сцену»."
-
-msgid "Save New Scene As..."
-msgstr "Зберегти нову сцену як..."
 
 msgid ""
 "Disabling \"Editable Children\" will cause all properties of this subscene's "
@@ -4936,6 +4834,9 @@ msgstr "Локальний"
 msgid "Delete Related Animation Tracks"
 msgstr "Видалити пов’язані треки анімації"
 
+msgid "Save New Scene As..."
+msgstr "Зберегти нову сцену як..."
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Вилучити успадковування? (Без можливості скасувати!)"
 
@@ -5012,21 +4913,12 @@ msgid "Toggle visibility of editor messages."
 msgstr "Переключити видимість повідомлень редактора."
 
 msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"%s\" directory manually before attempting this operation again."
-msgstr ""
-"Шаблон збірки Android уже встановлено в цьому проекті, і його не буде "
-"перезаписано.\n"
-"Видаліть каталог \"%s\" вручну перед повторною спробою цієї операції."
-
-msgid ""
 "This will set up your project for gradle Android builds by installing the "
 "source template to \"%s\".\n"
 "Note that in order to make gradle builds instead of using pre-built APKs, the "
 "\"Use Gradle Build\" option should be enabled in the Android export preset."
 msgstr ""
-"Це налаштує ваш проект на збірки gradle для Android, встановивши вихідний "
+"Це налаштує ваш проєкт на збірки gradle для Android, встановивши вихідний "
 "шаблон до \"%s\".\n"
 "Зауважте, що для того, щоб створювати збірки gradle замість використання "
 "готових APK, вам слід увімкнути опцію \"Використовувати збірку gradle\" у "
@@ -5098,9 +4990,6 @@ msgid ""
 msgstr ""
 "Цей ресурс неможливо зберегти, оскільки він не належить до редагованої сцени. "
 "Спочатку, зробіть його унікальним."
-
-msgid "Save Resource As..."
-msgstr "Зберегти ресурс як..."
 
 msgid "Can't open file for writing:"
 msgstr "Не вдалося відкрити файл для запису:"
@@ -5303,13 +5192,6 @@ msgid ""
 msgstr ""
 "Поточна сцена не має кореневого вузла, але все одно було збережено %d "
 "змінених зовнішніх ресурсів та/або даних плагіна."
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr ""
-"Для збереження сцени потрібен кореневий вузол. Ви можете додати кореневий "
-"вузол за допомогою бічної панелі ієрархії сцени."
 
 msgid "Save Scene As..."
 msgstr "Зберегти сцену як..."
@@ -5667,9 +5549,6 @@ msgstr "Налаштування контролю версій..."
 msgid "Pack Project as ZIP..."
 msgstr "Запакувати проект як ZIP..."
 
-msgid "Install Android Build Template..."
-msgstr "Встановити шаблон збирання для Android…"
-
 msgid "Open User Data Folder"
 msgstr "Відкриття теки даних користувача"
 
@@ -5803,6 +5682,9 @@ msgstr "Параметри проекту"
 msgid "Find in Files..."
 msgstr "Знайти у файлах…"
 
+msgid "Replace in Files..."
+msgstr "Замінити у файлах…"
+
 msgid "Export..."
 msgstr "Експорт..."
 
@@ -5829,9 +5711,6 @@ msgstr "Палітра команд..."
 
 msgid "Take Screenshot"
 msgstr "Зробити знімок вікна"
-
-msgid "Toggle Fullscreen"
-msgstr "На весь екран"
 
 msgid "Search Help..."
 msgstr "Пошук в довідці..."
@@ -5979,11 +5858,14 @@ msgstr "Вибрати поточний"
 msgid "Open Project Settings"
 msgstr "Відкрити налаштування проекту"
 
-msgid "Ok"
-msgstr "Добре"
-
 msgid "Warning!"
 msgstr "Увага!"
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
+
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
 
 msgid "Can't get filesystem access."
 msgstr "Не вдалося отримати доступ до файлової системи."
@@ -6154,7 +6036,7 @@ msgstr "«Shader Baker» не працює з рендерером сумісн�
 msgid ""
 "The editor is currently using a different renderer than what the target "
 "platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to \"%s\" renderer temporarily to fix this."
+"Switch to the \"%s\" renderer temporarily to fix this."
 msgstr ""
 "Редактор наразі використовує інший рендерер, ніж той, що використовуватиме "
 "цільова платформа. «Shader Baker» не зможе включати основні шейдери. "
@@ -6272,6 +6154,12 @@ msgstr "Модуль камери увімкнено, але опис викор
 msgid "Invalid additional PList content: "
 msgstr "Недійсний додатковий вміст PList: "
 
+msgid "Export Icons"
+msgstr "Експортування піктограм"
+
+msgid "Could not open a directory at path \"%s\"."
+msgstr "Не вдалося відкрити каталог на шляху \"%s\"."
+
 msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
@@ -6299,15 +6187,6 @@ msgstr "Помилка запуску, подробиці дивіться в ж
 msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
 msgstr ""
 "«Shader Baker» не підтримується під час використання рендерера сумісності."
-
-msgid ""
-"The editor is currently using a different renderer than what the target "
-"platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to the \"%s\" renderer temporarily to fix this."
-msgstr ""
-"Редактор наразі використовує інший рендерер, ніж той, що використовуватиме "
-"цільова платформа. «Shader Baker» не зможе включати основні шейдери. "
-"Тимчасово перемкніться на рендерер «%s», щоб виправити це."
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -6710,6 +6589,9 @@ msgstr ""
 "Щоб можна було скористатися пунктом «Експортувати усе», має бути визначено "
 "шлях для експортування для усіх наборів."
 
+msgid "Advanced settings are always shown when searching."
+msgstr "Розширені налаштування завжди відображаються під час пошуку."
+
 msgid "Hide encryption key"
 msgstr "Приховати ключ шифрування"
 
@@ -6754,13 +6636,6 @@ msgstr "Набори"
 
 msgid "Add..."
 msgstr "Додати..."
-
-msgid ""
-"If checked, the preset will be available for use in one-click deploy.\n"
-"Only one preset per platform may be marked as runnable."
-msgstr ""
-"Якщо позначено, набором можна буде скористатися в одне клацання.\n"
-"Придатним до запуску можна визначати лише один набір на одну платформу."
 
 msgid "Advanced Options"
 msgstr "Додаткові параметри"
@@ -6922,6 +6797,9 @@ msgstr ""
 
 msgid "More Info..."
 msgstr "Додаткова інформація…"
+
+msgid "Scripts"
+msgstr "Сценарії"
 
 msgid "GDScript Export Mode:"
 msgstr "Режим експорту GDScript:"
@@ -7374,7 +7252,7 @@ msgid "Base path: %s"
 msgstr "Базовий шлях: %s"
 
 msgid "Folder name is valid."
-msgstr "Некоректна назва теки."
+msgstr "Назва теки є коректною."
 
 msgid "Godot Engine contributors"
 msgstr "Учасники розробки рушія Godot"
@@ -7438,8 +7316,8 @@ msgstr "Перемістити"
 msgid "No sub-resources found."
 msgstr "Підлеглих ресурсів не знайдено."
 
-msgid "Open a list of sub-resources."
-msgstr "Відкрити список підлеглих ресурсів."
+msgid "Type: %s"
+msgstr "Введіть: %s"
 
 msgid "Search files..."
 msgstr "Пошук файлів..."
@@ -7741,18 +7619,8 @@ msgstr "Імпортер аудіо-потоку: %s"
 msgid "Enable"
 msgstr "Увімкнути"
 
-msgid "Enable looping."
-msgstr "Увімкнути цикл."
-
 msgid "Offset:"
 msgstr "Зсув:"
-
-msgid ""
-"Loop offset (from beginning). Note that if BPM is set, this setting will be "
-"ignored."
-msgstr ""
-"Зсув циклу (від початку). Зауважте, що якщо задано BPM, цей параметр буде "
-"ігноруватися."
 
 msgid "Loop:"
 msgstr "Цикл:"
@@ -7760,40 +7628,11 @@ msgstr "Цикл:"
 msgid "BPM:"
 msgstr "УД./ХВ:"
 
-msgid ""
-"Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
-"This is required in order to configure beat information."
-msgstr ""
-"Налаштуйте кількість ударів на такт (темп), що використовується для "
-"інтерактивних потоків.\n"
-"Це необхідно для налаштування інформації про удари."
-
 msgid "Beat Count:"
 msgstr "Кількість ударів:"
 
-msgid ""
-"Configure the amount of Beats used for music-aware looping. If zero, it will "
-"be autodetected from the length.\n"
-"It is recommended to set this value (either manually or by clicking on a beat "
-"number in the preview) to ensure looping works properly."
-msgstr ""
-"Налаштуйте кількість ударів, що використовуються для зациклення музики. Якщо "
-"значення дорівнює нулю, його буде автоматично визначено з довжини.\n"
-"Рекомендується встановити це значення (або вручну, або натиснувши на номер "
-"такту у попередньому перегляді), щоб зациклення працювало належним чином."
-
 msgid "Bar Beats:"
 msgstr "Ударів у такті:"
-
-msgid ""
-"Configure the Beats Per Bar. This used for music-aware transitions between "
-"AudioStreams."
-msgstr ""
-"Налаштуйте кількість Ударів на такт. Використовується для переходів між "
-"аудіопотоками з урахуванням музики."
-
-msgid "Music Playback:"
-msgstr "Відтворення музики:"
 
 msgid "Preview:"
 msgstr "Попередній перегляд:"
@@ -8107,6 +7946,15 @@ msgstr[0] "(%d зміна)"
 msgstr[1] "(%d зміни)"
 msgstr[2] "(%d змін)"
 
+msgid "Copy Value"
+msgstr "Копіювати значення"
+
+msgid "Paste Value"
+msgstr "Вставити значення"
+
+msgid "Copy Property Path"
+msgstr "Копіювати шлях до властивості"
+
 msgid "Copy Section Values"
 msgstr "Копіювати значення розділу"
 
@@ -8195,15 +8043,6 @@ msgstr "Відшпилено %s"
 msgid "Add metadata %s"
 msgstr "Додати метадані %s"
 
-msgid "Copy Value"
-msgstr "Копіювати значення"
-
-msgid "Paste Value"
-msgstr "Вставити значення"
-
-msgid "Copy Property Path"
-msgstr "Копіювати шлях до властивості"
-
 msgid "Edit Text:"
 msgstr "Редагувати текст:"
 
@@ -8291,17 +8130,17 @@ msgstr "Тимчасовий ейлер"
 msgid "Temporary Euler %s"
 msgstr "Тимчасовий Ейлер %s"
 
-msgid "Assign..."
-msgstr "Призначити…"
-
-msgid "Assign Node"
-msgstr "Призначити вузол"
-
 msgid "Copy as Text"
 msgstr "Копіювати як текст"
 
 msgid "Show Node in Tree"
 msgstr "Показати вузол у дереві"
+
+msgid "Assign..."
+msgstr "Призначити…"
+
+msgid "Assign Node"
+msgstr "Призначити вузол"
 
 msgid "Node Path"
 msgstr "Шлях вузла"
@@ -8489,9 +8328,6 @@ msgstr "Розмір: %s"
 msgid "Invalid file or broken link."
 msgstr "Недійсний файл або непрацююче посилання."
 
-msgid "Type: %s"
-msgstr "Введіть: %s"
-
 msgid "Dimensions: %d × %d"
 msgstr "Розміри: %d × %d"
 
@@ -8503,9 +8339,6 @@ msgstr "Довжина: %0.1fs"
 
 msgid "Length: %0.3fs"
 msgstr "Довжина: %0.3fs"
-
-msgid "Advanced settings are always shown when searching."
-msgstr "Розширені налаштування завжди відображаються під час пошуку."
 
 msgid "Event Configured"
 msgstr "Подія налаштована"
@@ -8916,9 +8749,6 @@ msgstr "Якщо його відкрити, версія буде понижен
 
 msgid "Downgrading projects is not recommended."
 msgstr "Не рекомендується знижувати рівень складності проектів."
-
-msgid "Unknown version"
-msgstr "Невідома версія"
 
 msgid "This project uses an unknown version of Godot."
 msgstr "У цьому проєкті використовується невідома версія Godot."
@@ -9332,9 +9162,6 @@ msgstr "Відредагуйте нормально"
 msgid "Edit in Recovery Mode"
 msgstr "Редагувати в режимі відновлення"
 
-msgid "Backup project first"
-msgstr "Спочатку резервне копіювання проекту"
-
 msgid "Convert Full Project"
 msgstr "Перетворити повний проект"
 
@@ -9411,9 +9238,6 @@ msgstr "Стиль"
 
 msgid "Color Preset"
 msgstr "Набір колір"
-
-msgid "Custom preset can be further configured in the editor."
-msgstr "Спеціальний стиль можна додатково налаштувати в редакторі."
 
 msgid "Display Scale"
 msgstr "Масштаб дисплея"
@@ -9657,9 +9481,6 @@ msgstr "Віддалене розгортання"
 msgid "Project Run"
 msgstr "Запуск проєкту"
 
-msgid "Suspend/Resume Embedded Project"
-msgstr "Призупинити/відновити вбудований проект"
-
 msgid "Next Frame"
 msgstr "Наступний кадр"
 
@@ -9674,12 +9495,6 @@ msgstr "Початок гри..."
 
 msgid "Game running not embedded."
 msgstr "Гра працює не вбудовано."
-
-msgid "Press play to start the game."
-msgstr "Натисніть кнопку відтворення, щоб почати гру."
-
-msgid "Embedding is disabled."
-msgstr "Вбудовування вимкнено."
 
 msgid "Game embedding not available on your OS."
 msgstr "Вбудована гра недоступна у вашій ОС."
@@ -9711,9 +9526,6 @@ msgstr "Вбудовування гри недоступне, коли гра п
 msgid "Game embedding not available when the game starts in fullscreen."
 msgstr ""
 "Вбудовування гри недоступне, коли гра запускається в повноекранному режимі."
-
-msgid "Game embedding not available in single window mode."
-msgstr "Вставлення гри недоступне в режимі одного вікна."
 
 msgid "Game embedding not available when the game starts in headless mode."
 msgstr "Вбудовування гри недоступне, коли гра запускається в режимі headless."
@@ -9787,19 +9599,42 @@ msgstr ""
 "на рендерер, що підтримує вивід HDR, а також розширене налаштування проекту\n"
 "rendering/rendering_device/driver на драйвер, що підтримує вивід HDR."
 
-msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
+msgid "%s+Drag: Rotate selected node around pivot."
+msgstr "%s+Drag: Повернути вибраний вузол навколо осі опори."
+
+msgid "V: Set selected node's pivot position."
+msgstr "V: Встановити поворотне положення вибраного вузла."
+
+msgid "Shift: Scale proportionally."
+msgstr "Shift: масштабувати пропорційно."
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "Показати список виділених вузлів у позиції клацання."
+
+msgid "Click to change object's pivot."
+msgstr "Клацніть, щоб змінити опору об'єкта."
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: встановити тимчасову опору."
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
 msgstr ""
-"%s+Alt+ПКМ: Показати список усіх вузлів у позиції, на яку було натиснуто."
+"Натисніть цю кнопку, утримуючи Shift, щоб розмістити тимчасову опору в центрі "
+"вибраних вузлів."
+
+msgid ""
+"You can also use Pan View shortcut (Space by default) to pan in any mode."
+msgstr ""
+"Ви також можете використати комбінацію клавіш Панорамування (за замовчуванням "
+"Пробіл) для панорамування в будь-якому режимі."
+
+msgid "Game"
+msgstr "Гра"
 
 msgid "Suspend"
 msgstr "Призупинити"
-
-msgid ""
-"Force pause at SceneTree level. Stops all processing, but you can still "
-"interact with the project."
-msgstr ""
-"Примусова пауза на рівні SceneTree. Зупиняє всю обробку, але ви все ще можете "
-"взаємодіяти з проєктом."
 
 msgid "Change the game speed."
 msgstr "Змінити швидкість гри."
@@ -9807,50 +9642,11 @@ msgstr "Змінити швидкість гри."
 msgid "Speed State"
 msgstr "Стан швидкості"
 
-msgid "Reset the game speed."
-msgstr "Скинути швидкість гри."
-
-msgid "Reset Speed"
-msgstr "Скинути швидкість"
-
 msgid "Input"
 msgstr "Введення"
 
-msgid "Allow game input."
-msgstr "Дозволити введення в гру."
-
-msgid ""
-"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
-"2D camera."
-msgstr ""
-"Вимкніть ігровий вхід і дозвольте вибирати Node2D, елементи керування та "
-"керувати 2D-камерою."
-
-msgid ""
-"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
-msgstr ""
-"Вимкніть ігровий вхід і дозвольте вибирати Node3D і керувати 3D-камерою."
-
-msgid "Show list of selectable nodes at position clicked."
-msgstr "Показати список виділених вузлів у позиції клацання."
-
-msgid "Toggle Selection Visibility"
-msgstr "Перемкнути видимість виділеного"
-
-msgid "Selection Options"
-msgstr "Параметри вибору"
-
-msgid "Don't Select Locked Nodes"
-msgstr "Не вибирайте заблоковані вузли"
-
-msgid "Select Group Over Children"
-msgstr "Виберіть групу над дітьми"
-
 msgid "Override the in-game camera."
 msgstr "Перевизначте камеру в грі."
-
-msgid "Camera Override Options"
-msgstr "Параметри перевизначення камери"
 
 msgid "Reset 2D Camera"
 msgstr "Скинути налаштування 2D-камери"
@@ -9864,29 +9660,17 @@ msgstr "Маніпулювання в грі"
 msgid "Manipulate From Editors"
 msgstr "Маніпулювання з редакторів"
 
-msgid "Game Window Options"
-msgstr "Параметри ігрового вікна"
+msgid "Don't Select Locked Nodes"
+msgstr "Не вибирайте заблоковані вузли"
 
-msgid "Embed Game on Next Play"
-msgstr "Вставити гру під час наступного відтворення"
-
-msgid "Make Game Workspace Floating on Next Play"
-msgstr "Зробіть ігрову робочу область плаваючою під час наступної гри"
+msgid "Select Group Over Children"
+msgstr "Виберіть групу над дітьми"
 
 msgid "Embedded Window Sizing"
 msgstr "Розмір вбудованого вікна"
 
 msgid "Fixed Size"
 msgstr "Фіксований розмір"
-
-msgid ""
-"Embedded game size is based on project settings.\n"
-"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
-"desired size."
-msgstr ""
-"Розмір вбудованої гри залежить від параметрів проекту.\n"
-"Режим «Зберігати пропорції» використовується, коли робоча область гри менша "
-"за потрібний розмір."
 
 msgid "Keep Aspect Ratio"
 msgstr "Зберегти співвідношення сторін"
@@ -9897,15 +9681,8 @@ msgstr "Зберігайте співвідношення сторін вбуд�
 msgid "Stretch to Fit"
 msgstr "Розтягнути, щоб підігнати"
 
-msgid "Embedded game size stretches to fit the Game Workspace."
-msgstr ""
-"Розмір вбудованої гри розтягується відповідно до ігрового робочого простору."
-
 msgid "Game Workspace"
 msgstr "Ігровий робочий простір"
-
-msgid "Game"
-msgstr "Гра"
 
 msgid "Clear All"
 msgstr "Очистити все"
@@ -10339,6 +10116,11 @@ msgstr ""
 "будуть збережені локально в поточній сцені."
 
 msgid ""
+"The selected scene could not be found. It may have been moved or deleted."
+msgstr ""
+"Не вдалося знайти вказану сцену. Можливо, її було переміщено або видалено."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10350,20 +10132,8 @@ msgstr ""
 msgid "Pinned Node: %s"
 msgstr "Закріплений вузол: %s"
 
-msgid ""
-"The selected scene could not be found. It may have been moved or deleted."
-msgstr ""
-"Не вдалося знайти вказану сцену. Можливо, її було переміщено або видалено."
-
 msgid "Advanced Settings"
 msgstr "Додаткові параметри"
-
-msgid ""
-"Hold Alt while painting to temporarily switch to the previously used paint "
-"snap mode."
-msgstr ""
-"Утримуйте клавішу Alt під час малювання, щоб тимчасово перейти до "
-"попереднього режиму прив'язки малювання."
 
 msgid "Pin Node"
 msgstr "Закріпити вузол"
@@ -10381,11 +10151,11 @@ msgstr "Вибір сцени"
 msgid ""
 "When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
 "2D editor's viewport.\n"
-"Holding Ctrl enables picking from the 2D editor's viewport."
+"Holding %s enables picking from the 2D editor's viewport."
 msgstr ""
-"Якщо ця опція увімкнена, ви можете вибирати сцени з панелі «Файлова система», "
-"панелі «Сцени» або робочої області 2D-редактора.\n"
-"Утримуючи клавішу Ctrl, можна вибирати сцени з робочої області 2D-редактора."
+"Якщо ця опція увімкнена, ви можете вибирати сцени з дока «Файлова система», "
+"дока «Сцени» або робочої області 2D-редактора.\n"
+"Утримуючи клавішу %s, можна вибирати сцени з робочої області 2D-редактора."
 
 msgid "Edit Properties"
 msgstr "Редагувати властивості"
@@ -10407,11 +10177,11 @@ msgstr "Дозволити накладення"
 
 msgid ""
 "Allow painting over existing painted scenes.\n"
-"Hold Shift while painting to temporarily toggle this option."
+"Hold %s while painting to temporarily toggle this option."
 msgstr ""
 "Дозволити малювання поверх існуючих намальованих сцен.\n"
-"Утримуйте клавішу Shift під час малювання, щоб тимчасово увімкнути або "
-"вимкнути цю опцію."
+"Утримуйте клавішу %s під час малювання, щоб тимчасово увімкнути або вимкнути "
+"цю опцію."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У цього каркаса немає кісток, створіть хоч якісь дочірні вузли Bone2D."
@@ -10508,940 +10278,6 @@ msgstr "Оновити перегляд"
 
 msgid "Settings:"
 msgstr "Параметри:"
-
-msgid "Merge TileSetAtlasSource"
-msgstr "Об'єднати TileSetAtlasSource"
-
-msgid "%s (ID: %d)"
-msgstr "%s (ID: %d)"
-
-msgid "Atlas Merging"
-msgstr "Об'єднати атласи"
-
-msgid "Merge (Keep original Atlases)"
-msgstr "Об'єднати (зберегти оригінальні атласи)"
-
-msgid "Merge"
-msgstr "Об'єднати"
-
-msgid "Next Line After Column"
-msgstr "Наступний рядок після стовпчика"
-
-msgid "Please select two atlases or more."
-msgstr "Будь ласка, виберіть два атласи або більше."
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: 0"
-msgstr ""
-"Джерело: %d\n"
-"Координати атласу: %s\n"
-"Альтернатива: 0"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"Джерело: %d\n"
-"Координати атласу: %s\n"
-"Альтернатива: %d"
-
-msgid "Center View"
-msgstr "Вид по центру"
-
-msgid ""
-"The selected atlas source has no valid texture. Assign a texture in the "
-"TileSet bottom tab."
-msgstr ""
-"Вибране джерело атласу не має правильної текстури. Призначте текстуру на "
-"нижній вкладці TileSet."
-
-msgid "Base Tiles"
-msgstr "Базова плитка"
-
-msgid "Alternative Tiles"
-msgstr "Альтернативна плитка"
-
-msgid "Reset Polygons"
-msgstr "Скинути полігони"
-
-msgid "Clear Polygons"
-msgstr "Очистити полігони"
-
-msgid "Rotate Polygons Right"
-msgstr "Повернути полігони вправо"
-
-msgid "Rotate Polygons Left"
-msgstr "Повернути полігони вліво"
-
-msgid "Flip Polygons Horizontally"
-msgstr "Віддзеркалити полігони горизонтально"
-
-msgid "Flip Polygons Vertically"
-msgstr "Віддзеркалити полігони вертикально"
-
-msgid "Edit Polygons"
-msgstr "Редагувати полігони"
-
-msgid "Expand editor"
-msgstr "Розгорнути редактор"
-
-msgid "Add polygon tool"
-msgstr "Додати інструмент полігона"
-
-msgid "Edit points tool"
-msgstr "Редагувати інструмент полігона"
-
-msgid "Delete points tool"
-msgstr "Вилучити інструмент полігона"
-
-msgid "Advanced"
-msgstr "Додатково"
-
-msgid "Reset to default tile shape"
-msgstr "Відновити форму плитки за замовчуванням"
-
-msgid "Rotate Right"
-msgstr "Обернути праворуч"
-
-msgid "Rotate Left"
-msgstr "Обернути ліворуч"
-
-msgid "Flip Horizontally"
-msgstr "Віддзеркалити горизонтально"
-
-msgid "Flip Vertically"
-msgstr "Віддзеркалити вертикально"
-
-msgid "Toggle Grid Snap"
-msgstr "Перемкнути прилипання до ґратки"
-
-msgid "Disable Snap"
-msgstr "Вимкнути Snap"
-
-msgid "Half-Pixel Snap"
-msgstr "Напівпіксельна знімка"
-
-msgid "Grid Snap"
-msgstr "Прилипання до ґратки"
-
-msgid "Subdivision"
-msgstr "Підрозділ"
-
-msgid "Painting Tiles Property"
-msgstr "Властивість малювання плиток"
-
-msgid "Painting:"
-msgstr "Малювання:"
-
-msgid "Polygon %d"
-msgstr "Багатокутник %d"
-
-msgid "One Way"
-msgstr "В один бік"
-
-msgid "One Way Margin"
-msgstr "Односторонній маржинальний депозит"
-
-msgid "Linear Velocity"
-msgstr "Лінійна швидкість"
-
-msgid "Angular Velocity"
-msgstr "Швидкість обертання"
-
-msgid "No terrains"
-msgstr "Нема місцевостей"
-
-msgid "No terrain"
-msgstr "Нема місцевості"
-
-msgid "Painting Terrain Set"
-msgstr "Набір для малювання місцевості"
-
-msgid "Painting Terrain"
-msgstr "Малювання місцевості"
-
-msgid "Pick"
-msgstr "Вибирати"
-
-msgid "Drawing Rect:"
-msgstr "Прямокутник для малювання:"
-
-msgid "Can't rotate patterns when using non-square tile grid."
-msgstr "Неможливо обертати шаблони при використанні неквадратної сітки плиток."
-
-msgid "Shift: Draw line."
-msgstr "Shift: малює лінію."
-
-msgid "%s+Shift: Draw rectangle."
-msgstr "%s+Shift: Намалювати прямокутник."
-
-msgid "No Texture Atlas Source (ID: %d)"
-msgstr "Нема джерела текстурного атласу (ID: %d)"
-
-msgid "Scene Collection Source (ID: %d)"
-msgstr "Джерело колекції сцен (ID: %d)"
-
-msgid "Empty Scene Collection Source (ID: %d)"
-msgstr "Джерело порожньої колекції сцен (ID: %d)"
-
-msgid "Unknown Type Source (ID: %d)"
-msgstr "Джерело невідомого типу (ID: %d)"
-
-msgid "Add TileSet pattern"
-msgstr "Додати шаблон Набору плиток"
-
-msgid "Remove TileSet patterns"
-msgstr "Вилучити шаблон Набору плиток"
-
-msgid "Index: %d"
-msgstr "Індекс: %d"
-
-msgid "Tile with Invalid Scene"
-msgstr "Плитка з неприпустимою сценою"
-
-msgid ""
-"The selected scene collection source has no scenes. Add scenes in the TileSet "
-"bottom tab."
-msgstr ""
-"Вибране джерело колекції сцен не містить сцен. Додайте сцени на нижній "
-"вкладці TileSet."
-
-msgid "Delete tiles"
-msgstr "Видалити плитки"
-
-msgid "Change selection"
-msgstr "Змінити вибір"
-
-msgid "Move tiles"
-msgstr "Переміщення плиток"
-
-msgid "Paint tiles"
-msgstr "Малювати плитки"
-
-msgid "Paste tiles"
-msgstr "Вставити плитки"
-
-msgid "Selection Tool"
-msgstr "Інструмент виділення"
-
-msgid "Paint Tool"
-msgstr "Інструмент для малювання"
-
-msgid "Line Tool"
-msgstr "Інструмент «Лінія»"
-
-msgid "Rect Tool"
-msgstr "Інструмент Rect"
-
-msgid "Bucket Tool"
-msgstr "Відро інструмент"
-
-msgid "Alternatively hold %s with other tools to pick tile."
-msgstr "Або утримуйте %s іншими інструментами, щоб вибрати плитку."
-
-msgid "Alternatively use RMB to erase tiles."
-msgstr "Або використовуйте ПКМ, щоб стерти плитки."
-
-msgid "Erase"
-msgstr "Стерти"
-
-msgid "Rotate Tile Left"
-msgstr "Повернути плитку вліво"
-
-msgid "Rotate Tile Right"
-msgstr "Повернути плитку вправо"
-
-msgid "Flip Tile Horizontally"
-msgstr "Перевернути плитку по горизонталі"
-
-msgid "Flip Tile Vertically"
-msgstr "Перевернути тайл вертикально"
-
-msgid "Contiguous"
-msgstr "Суміжні"
-
-msgid "Place Random Tile"
-msgstr "Розмістити випадкову плитку"
-
-msgid ""
-"Modifies the chance of painting nothing instead of a randomly selected tile."
-msgstr "Змінює ймовірність малювання пустоти замість випадково вибраної плитки."
-
-msgid "Scattering:"
-msgstr "Розсіювання:"
-
-msgid "Tiles"
-msgstr "Плитки"
-
-msgid ""
-"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
-"bottom panel to add one."
-msgstr ""
-"TileSet цього TileMap не має налаштованого джерела плиток. Перейдіть до "
-"нижньої панелі TileSet, щоб додати його."
-
-msgid "Sort sources"
-msgstr "Сортувати джерела"
-
-msgid "Sort by ID (Ascending)"
-msgstr "Сортування за ідентифікатором (за зростанням)"
-
-msgid "Sort by ID (Descending)"
-msgstr "Сортування за ідентифікатором (за спаданням)"
-
-msgid "Invalid source selected."
-msgstr "Вибрано недійсне джерело."
-
-msgid "Patterns"
-msgstr "Візерунки"
-
-msgid "Drag and drop or paste a TileMap selection here to store a pattern."
-msgstr ""
-"Перетягніть або вставте сюди вибрану Карту плиток, щоб зберегти Візерунок."
-
-msgid "Paint terrain"
-msgstr "Малюнок місцевості"
-
-msgid "Matches Corners and Sides"
-msgstr "Зіставити кути та сторони"
-
-msgid "Matches Corners Only"
-msgstr "Зіставити лише кути"
-
-msgid "Matches Sides Only"
-msgstr "Зіставити лише сторони"
-
-msgid "Terrain Set %d (%s)"
-msgstr "Набір місцевості %d (%s)"
-
-msgid ""
-"Connect mode: paints a terrain, then connects it with the surrounding tiles "
-"with the same terrain."
-msgstr ""
-"Режим з'єднання: малює місцевість, а потім з'єднує її з навколишніми плитками "
-"з такою ж місцевістю."
-
-msgid ""
-"Path mode: paints a terrain, then connects it to the previous tile painted "
-"within the same stroke."
-msgstr ""
-"Режим шляху: зафарбовує рельєф, а потім з’єднує його з попередньою плиткою, "
-"намальованою тим самим штрихом."
-
-msgid "Terrains"
-msgstr "Місцевості"
-
-msgid "No Layers"
-msgstr "Без шарів"
-
-msgid "Replace Tiles with Proxies"
-msgstr "Замінити плитки на проксі"
-
-msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "Витягнути шари TileMap як окремі вузли TileMapLayer"
-
-msgid "Can't edit multiple layers at once."
-msgstr "Не можна редагувати кілька шарів одночасно."
-
-msgid "The selected TileMap has no layer to edit."
-msgstr "Вибраний TileMap не має шару для редагування."
-
-msgid "The edited layer is disabled or invisible"
-msgstr "Редагований шар вимкнено або невидимий"
-
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"Відредагований вузол TileMap або TileMapLayer не має ресурсу TileSet.\n"
-"Створіть або завантажте ресурс TileSet у властивості Tile Set в інспекторі."
-
-msgid "TileMap"
-msgstr "TileMap"
-
-msgid "Open TileMap Dock"
-msgstr "Відкрити TileMap док-станція"
-
-msgid "Select Next Tile Map Layer"
-msgstr "Вибрати наступний шар карти плиток"
-
-msgid "Select Previous Tile Map Layer"
-msgstr "Вибрати попередній шар карти плиток"
-
-msgid "TileMap Layers"
-msgstr "Шари Карти плиток"
-
-msgid "Select previous layer"
-msgstr "Виберіть попередній шар"
-
-msgid "Select next layer"
-msgstr "Виберіть наступний шар"
-
-msgid "Select all TileMapLayers in scene"
-msgstr "Виберіть усі TileMapLayers у сцені"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "Виділити вибраний шар Карти плиток"
-
-msgid "Toggle grid visibility."
-msgstr "Перемкнути видимість ґратки."
-
-msgid "Advanced settings."
-msgstr "Розширені налаштування."
-
-msgid "Automatically Replace Tiles with Proxies"
-msgstr "Автоматична заміна плиток на проксі"
-
-msgid "Remove Tile Proxies"
-msgstr "Видалити проксі плиток"
-
-msgid "Create Alternative-level Tile Proxy"
-msgstr "Створити альтернативний рівень проксі плиток"
-
-msgid "Create Coords-level Tile Proxy"
-msgstr "Створення плиткового проксі-сервера рівня Coords"
-
-msgid "Create source-level Tile Proxy"
-msgstr "Створити джерело-рівень проксі плиток"
-
-msgid "Delete All Invalid Tile Proxies"
-msgstr "Видалити усі недійсні проксі плиток"
-
-msgid "Delete All Tile Proxies"
-msgstr "Видалити всі проксі плиток"
-
-msgid "Tile Proxies Management"
-msgstr "Керівник проксі плиток"
-
-msgid "Source-level proxies"
-msgstr "Джерело рівень проксі"
-
-msgid "Coords-level proxies"
-msgstr "Координатний рівень проксі"
-
-msgid "Alternative-level proxies"
-msgstr "Альтернативний рівень проксі"
-
-msgid "Add a new tile proxy:"
-msgstr "Додати новий проксі плитки:"
-
-msgid "From Source"
-msgstr "З джерела"
-
-msgid "From Coords"
-msgstr "З координат"
-
-msgid "From Alternative"
-msgstr "З альтернативи"
-
-msgid "To Source"
-msgstr "До джерела"
-
-msgid "To Coords"
-msgstr "До Координат"
-
-msgid "To Alternative"
-msgstr "До Альтернативи"
-
-msgid "Global actions:"
-msgstr "Глобальні дії:"
-
-msgid "Clear Invalid"
-msgstr "Очистити Недійсні"
-
-msgid "Atlas"
-msgstr "Атлас"
-
-msgid "Base Tile"
-msgstr "Базова плитка"
-
-msgid "Alternative Tile"
-msgstr "Альтернативна плитка"
-
-msgid ""
-"Selected tile:\n"
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"Вибрана плитка:\n"
-"Джерело: %d\n"
-"Атласні координати: %s\n"
-"Альтернатива: %d"
-
-msgid "Rendering"
-msgstr "Рендеринг"
-
-msgid "Texture Origin"
-msgstr "Джерело текстури"
-
-msgid "Modulate"
-msgstr "Модулювати"
-
-msgid "Z Index"
-msgstr "Індекс Z"
-
-msgid "Y Sort Origin"
-msgstr "Y Походження сортування"
-
-msgid "Occlusion Layer %d"
-msgstr "Шар оклюзії %d"
-
-msgid "Probability"
-msgstr "Ймовірність"
-
-msgid "Physics"
-msgstr "Фізика"
-
-msgid "Physics Layer %d"
-msgstr "Фізичний шар %d"
-
-msgid "No physics layers"
-msgstr "Ніяких фізичних шарів"
-
-msgid ""
-"Create and customize physics layers in the inspector of the TileSet resource."
-msgstr "Створюйте та налаштовуйте фізичні шари в інспекторі ресурсу TileSet."
-
-msgid "Navigation"
-msgstr "Навігація"
-
-msgid "Navigation Layer %d"
-msgstr "Шар навігації %d"
-
-msgid "No navigation layers"
-msgstr "Немає навігаційних шарів"
-
-msgid ""
-"Create and customize navigation layers in the inspector of the TileSet "
-"resource."
-msgstr ""
-"Створюйте та налаштовуйте навігаційні шари в інспекторі ресурсу TileSet."
-
-msgid "Custom Data"
-msgstr "Спеціальні дані"
-
-msgid "Custom Data %d"
-msgstr "Спеціальні дані %d"
-
-msgid "No custom data layers"
-msgstr "Немає спеціальних шарів даних"
-
-msgid ""
-"Create and customize custom data layers in the inspector of the TileSet "
-"resource."
-msgstr ""
-"Створюйте та налаштовуйте кастомні шари даних в інспекторі ресурсу TileSet."
-
-msgid "Select a property editor"
-msgstr "Вибрати редактор властивостей"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Утримуйте Ctrl, щоб створити кілька тайлів."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Утримуйте Shift, щоб створити велики тайлі."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Утримуйте Shift, щоб вибрати кілька регіонів."
-
-msgid ""
-"TileSet is in read-only mode. Make the resource unique to edit TileSet "
-"properties."
-msgstr ""
-"TileSet знаходиться у режимі тільки для читання. Зробіть ресурс унікальним, "
-"щоб редагувати властивості TileSet."
-
-msgid "Paint properties."
-msgstr "Властивості малювання."
-
-msgid "Create tiles"
-msgstr "Створити плитки"
-
-msgid "Create a tile"
-msgstr "Створити плитку"
-
-msgid "Remove tiles"
-msgstr "Вилучити плитки"
-
-msgid "Move a tile"
-msgstr "Перемістити плитку"
-
-msgid "Resize a tile"
-msgstr "Змінити розмір плитки"
-
-msgid "Remove tile"
-msgstr "Вилучити плитку"
-
-msgid "Create tile alternatives"
-msgstr "Створити альтернативи плитки"
-
-msgid "Remove Tiles Outside the Texture"
-msgstr "Видаліть плитки за межами текстури"
-
-msgid "Create tiles in non-transparent texture regions"
-msgstr "Створити плитки у непрозорих областях текстури"
-
-msgid "Remove tiles in fully transparent texture regions"
-msgstr "Видалити плитки з повністю прозорих областей текстури"
-
-msgid ""
-"The tile's unique identifier within this TileSet. Each tile stores its source "
-"ID, so changing one may make tiles invalid."
-msgstr ""
-"Унікальний ідентифікатор тайла в межах цього TileSet. Кожен тайл зберігає "
-"свій ідентифікатор, тому його зміна може зробити тайли недійсними."
-
-msgid ""
-"The human-readable name for the atlas. Use a descriptive name here for "
-"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
-msgstr ""
-"Людська назва атласу. Використовуйте тут описову назву для організаційних "
-"цілей (наприклад, «місцевість», «оздоблення» тощо)."
-
-msgid "The image from which the tiles will be created."
-msgstr "Зображення, з якого буде створено тайли."
-
-msgid ""
-"The margins on the image's edges that should not be selectable as tiles (in "
-"pixels). Increasing this can be useful if you download a tilesheet image that "
-"has margins on the edges (e.g. for attribution)."
-msgstr ""
-"Поля по краях зображення, які не повинні бути виділені як тайли (у пікселях). "
-"Збільшення цього параметра може бути корисним, якщо ви завантажуєте тайлове "
-"зображення, яке має поля по краях (наприклад, для атрибуції)."
-
-msgid ""
-"The separation between each tile on the atlas in pixels. Increasing this can "
-"be useful if the tilesheet image you're using contains guides (such as "
-"outlines between every tile)."
-msgstr ""
-"Відстань між кожним тайлом на атласі в пікселях. Збільшення цього параметра "
-"може бути корисним, якщо тайлове зображення, яке ви використовуєте, містить "
-"напрямні (наприклад, контури між кожною плиткою)."
-
-msgid ""
-"The size of each tile on the atlas in pixels. In most cases, this should "
-"match the tile size defined in the TileMap property (although this is not "
-"strictly necessary)."
-msgstr ""
-"Розмір кожного тайла на атласі в пікселях. У більшості випадків він має "
-"відповідати розміру тайла, визначеному у властивості TileMap (хоча це не є "
-"обов'язковою умовою)."
-
-msgid ""
-"If checked, adds a 1-pixel transparent edge around each tile to prevent "
-"texture bleeding when filtering is enabled. It's recommended to leave this "
-"enabled unless you're running into rendering issues due to texture padding."
-msgstr ""
-"Якщо цей пункт увімкнено, додає 1-піксельний прозорий край навколо кожної "
-"плитки, щоб запобігти обрізанню текстури при увімкненій фільтрації. "
-"Рекомендується залишити цей параметр увімкненим, якщо тільки ви не стикаєтеся "
-"з проблемами відображення, пов'язаними з накладанням текстур."
-
-msgid ""
-"The position of the tile's top-left corner in the atlas. The position and "
-"size must be within the atlas and can't overlap another tile.\n"
-"Each painted tile has associated atlas coords, so changing this property may "
-"cause your TileMaps to not display properly."
-msgstr ""
-"Положення верхнього лівого кута тайла в атласі. Позиція і розмір повинні бути "
-"в межах атласу і не можуть перекривати інший тайл.\n"
-"Кожен зафарбований тайл має пов'язані з ним координати в атласі, тому зміна "
-"цієї властивості може призвести до неправильного відображення ваших TileMaps."
-
-msgid "The unit size of the tile."
-msgstr "Одиничний розмір плитки."
-
-msgid ""
-"Number of columns for the animation grid. If number of columns is lower than "
-"number of frames, the animation will automatically adjust row count."
-msgstr ""
-"Кількість стовпчиків для сітки анімації. Якщо кількість стовпчиків менша за "
-"кількість кадрів, анімація автоматично змінить кількість рядків."
-
-msgid "The space (in tiles) between each frame of the animation."
-msgstr "Простір (у плитці) між кожним кадром анімації."
-
-msgid "Animation speed in frames per second."
-msgstr "Швидкість анімації в кадрах в секунду."
-
-msgid ""
-"Determines how animation will start. In \"Default\" mode all tiles start "
-"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
-"animation with a random offset."
-msgstr ""
-"Визначає спосіб запуску анімації. У режимі \"За замовчуванням\" усі плитки "
-"починають анімацію в один і той самий кадр. У режимі \"Випадковий час "
-"початку\" кожна плитка починає анімацію з випадковим зсувом."
-
-msgid "If [code]true[/code], the tile is horizontally flipped."
-msgstr "Якщо [code]true[/code], то тайл (плитка) перевертається горизонтально."
-
-msgid "If [code]true[/code], the tile is vertically flipped."
-msgstr "Якщо [code]true[/code], то тайл (плитка) перевертається вертикально."
-
-msgid ""
-"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
-"and then flipped vertically. In practice, this means that to rotate a tile by "
-"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
-"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
-"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
-"[b]Flip V[/b] and [b]Transpose[/b]."
-msgstr ""
-"Якщо [code]true[/code], то тайл (плитка) повертається на 90 градусів [i]проти "
-"годинникової стрілки[/i], а потім перевертається вертикально. На практиці це "
-"означає, що для повороту плитки на 90 градусів за годинниковою стрілкою без "
-"її перевертання слід увімкнути [b]Flip H[/b] і [b]Transpose[/b]. Щоб "
-"повернути плитку на 180 градусів за годинниковою стрілкою, увімкніть [b]Flip "
-"H[/b] і [b]Flip V[/b]. Щоб повернути плитку на 270 градусів за годинниковою "
-"стрілкою, увімкніть [b]Перевернути V[/b] і [b]Транспонувати[/b]."
-
-msgid ""
-"The origin to use for drawing the tile. This can be used to visually offset "
-"the tile compared to the base tile."
-msgstr ""
-"Початок, який використовується для малювання плитки. Це може бути використано "
-"для візуального зміщення плитки порівняно з базовою плиткою."
-
-msgid "The color multiplier to use when rendering the tile."
-msgstr "Множник кольору, який використовуватиметься при рендерингу плитки."
-
-msgid ""
-"The material to use for this tile. This can be used to apply a different "
-"blend mode or custom shaders to a single tile."
-msgstr ""
-"Матеріал, який буде використано для цієї плитки. За допомогою цього параметра "
-"можна застосувати інший режим накладання або власні шейдери до однієї плитки."
-
-msgid ""
-"The sorting order for this tile. Higher values will make the tile render in "
-"front of others on the same layer. The index is relative to the TileMap's own "
-"Z index."
-msgstr ""
-"Порядок сортування для цієї плитки. Вищі значення призведуть до того, що "
-"плитка буде відрендерена перед іншими плитками на тому ж шарі. Індекс "
-"відносно власного індексу Z TileMap."
-
-msgid ""
-"The vertical offset to use for tile sorting based on its Y coordinate (in "
-"pixels). This allows using layers as if they were on different height for top-"
-"down games. Adjusting this can help alleviate issues with sorting certain "
-"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
-"is placed on."
-msgstr ""
-"Вертикальний зсув для сортування плитки за координатою Y (у пікселях). Це "
-"дозволяє використовувати шари так, ніби вони знаходяться на різній висоті для "
-"ігор зверху вниз. Налаштування цього параметра може допомогти вирішити "
-"проблеми з сортуванням певних тайлів (плитків). Діє лише якщо для шару "
-"TileMap, на якому розміщено тайл (плитку), увімкнено сортування за "
-"координатою Y."
-
-msgid ""
-"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
-"will not be used in terrains."
-msgstr ""
-"Індекс групи ландшафтів, до якої належить цей тайл (плитка). [code]-1[/code] "
-"означає, що він не буде використовуватися в ландшафтах."
-
-msgid ""
-"The index of the terrain inside the terrain set this tile belongs to. "
-"[code]-1[/code] means it will not be used in terrains."
-msgstr ""
-"Індекс ландшафту всередині набору ландшафтів, до якого належить цей тайл "
-"(плитка). [code]-1[/code] означає, що він не буде використовуватися в "
-"ландшафтах."
-
-msgid ""
-"The relative probability of this tile appearing when painting with \"Place "
-"Random Tile\" enabled."
-msgstr ""
-"Відносна ймовірність появи цьго тайлу (плитки) при малюванні з увімкненим "
-"параметром \"Розмістити випадкову плитку\"."
-
-msgid ""
-"The current atlas source has tiles outside the texture.\n"
-"You can clear it using \"%s\" option in the 3 dots menu."
-msgstr ""
-"Поточне джерело атласу містить плитки за межами текстури.\n"
-"Ви можете очистити його за допомогою опції «%s» у меню з трьома крапками."
-
-msgid "Setup"
-msgstr "Налаштування"
-
-msgid ""
-"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
-"control for rectangle editing)."
-msgstr ""
-"Налаштування атласу. Інструмент додавання/видалення плиток (використовуйте "
-"клавішу Shift для створення великих плиток, Ctrl для редагування "
-"прямокутників)."
-
-msgid "Select tiles."
-msgstr "Вибрати плитки."
-
-msgid "Paint"
-msgstr "Фарба"
-
-msgid ""
-"No tiles selected.\n"
-"Select one or more tiles from the palette to edit its properties."
-msgstr ""
-"Не вибрано жодної плитки.\n"
-"Виберіть одну або декілька плиток з палітри, щоб змінити їхні властивості."
-
-msgid "Paint Properties:"
-msgstr "Властивості малювання:"
-
-msgid "Create Tiles in Non-Transparent Texture Regions"
-msgstr "Створення плиток у непрозорих областях текстур"
-
-msgid "Remove Tiles in Fully Transparent Texture Regions"
-msgstr "Видалити плитки у повністю прозорих областях текстури"
-
-msgid "Create an Alternative Tile"
-msgstr "Створити альтернативну плитку"
-
-msgid "Create a Tile"
-msgstr "Створити плитку"
-
-msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
-msgstr "Автоматично створювати плитки у непрозорих областях текстур?"
-
-msgid ""
-"The atlas's texture was modified.\n"
-"Would you like to automatically create tiles in the atlas?"
-msgstr ""
-"Текстуру атласу було змінено.\n"
-"Бажаєте автоматично створити плитки в атласі?"
-
-msgid "Yes"
-msgstr "Так"
-
-msgid "No"
-msgstr "Ні"
-
-msgid "Invalid texture selected."
-msgstr "Обрано невірну текстуру."
-
-msgid "Add a new atlas source"
-msgstr "Додати нове джерело атласу"
-
-msgid "Remove source"
-msgstr "Видалити джерело"
-
-msgid "Add atlas source"
-msgstr "Додати джерело атласу"
-
-msgid "TileSet"
-msgstr "TileSet"
-
-msgid "Open TileSet Dock"
-msgstr "Відкрити док TileSet"
-
-msgid "Tile Sources"
-msgstr "Джерела плитки"
-
-msgid "Sort Sources"
-msgstr "Сортувати джерела"
-
-msgid "A palette of tiles made from a texture."
-msgstr "Палітра плитки з текстури."
-
-msgid "Scenes Collection"
-msgstr "Колекція сцен"
-
-msgid "A collection of scenes that can be instantiated and placed as tiles."
-msgstr "Набір сцен, які можна створювати та розміщувати як плитки."
-
-msgid "Open Atlas Merging Tool"
-msgstr "Відкрити інструмент злиття атласів"
-
-msgid "Manage Tile Proxies"
-msgstr "Керівник проксі плиток"
-
-msgid ""
-"No TileSet source selected. Select or create a TileSet source.\n"
-"You can create a new source by using the Add button on the left or by "
-"dropping a tileset texture onto the source list."
-msgstr ""
-"Не вибрано жодного джерела TileSet.\n"
-"Виберіть або створіть джерело TileSet'а. Ви можете створити нове джерело за "
-"допомогою кнопки Додати ліворуч або перетягнувши текстуру набору плиток до "
-"списку джерел."
-
-msgid "Add new patterns in the TileMap editing mode."
-msgstr "Додати нові візерунки в режимі редагування Карти плиток."
-
-msgid ""
-"Warning: Modifying a source ID will result in all TileMaps using that source "
-"to reference an invalid source instead. This may result in unexpected data "
-"loss. Change this ID carefully."
-msgstr ""
-"Попередження: Зміна ідентифікатора джерела призведе до того, що всі TileMaps, "
-"які використовують це джерело, посилатимуться на недійсне джерело. Це може "
-"призвести до неочікуваної втрати даних. Змінюйте цей ідентифікатор обережно."
-
-msgid "Add a Scene Tile"
-msgstr "Додайте плитку сцени"
-
-msgid "Remove a Scene Tile"
-msgstr "Видалити плитку сцени"
-
-msgid "Drag and drop scenes here or use the Add button."
-msgstr "Перетягніть сцени сюди або скористайтеся кнопкою «Додати»."
-
-msgid ""
-"The human-readable name for the scene collection. Use a descriptive name here "
-"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
-msgstr ""
-"Зрозуміла назва колекції сцен. Використовуйте тут описову назву для "
-"організаційних цілей (наприклад, «перешкоди», «прикраси» тощо)."
-
-msgid ""
-"ID of the scene tile in the collection. Each painted tile has associated ID, "
-"so changing this property may cause your TileMaps to not display properly."
-msgstr ""
-"ID плитки сцени в колекції. Кожна намальована плитка має пов’язаний "
-"ідентифікатор, тому зміна цієї властивості може спричинити неправильне "
-"відображення ваших TileMaps."
-
-msgid "Absolute path to the scene associated with this tile."
-msgstr "Абсолютний шлях до сцени, пов’язаної з цією плиткою."
-
-msgid ""
-"If [code]true[/code], a placeholder marker will be displayed on top of the "
-"scene's preview. The marker is displayed anyway if the scene has no valid "
-"preview."
-msgstr ""
-"Якщо [code]true[/code], маркер-заповнювач відображатиметься поверх "
-"попереднього перегляду сцени. Маркер все одно відображається, якщо сцена не "
-"має дійсного попереднього перегляду."
-
-msgid "Scenes collection properties:"
-msgstr "Властивості колекції сцен:"
-
-msgid "Tile properties:"
-msgstr "Властивості плитки:"
-
-msgid "Eraser Tool"
-msgstr "Гумковий Інструмент"
-
-msgid "Picker Tool"
-msgstr "Інструмент вибору"
-
-msgid ""
-"Source ID: %d\n"
-"Texture path: %s"
-msgstr ""
-"Ідентифікатор джерела: %d\n"
-"Шлях текстури: %s"
-
-msgid "Source ID: %d"
-msgstr "Ідентифікатор джерела: %d"
 
 msgid "Bone Picker:"
 msgstr "Вибір кістки:"
@@ -12040,56 +10876,6 @@ msgid "Filter Meshes"
 msgstr "Фільтрувати сітки"
 
 msgid ""
-"The item's name, shown in the editor. It can also be used to look up the item "
-"later using [method MeshLibrary.find_item_by_name]."
-msgstr ""
-"Назва елемента, що відображається в редакторі. Її також можна використовувати "
-"для подальшого пошуку елемента за допомогою методу [method "
-"MeshLibrary.find_item_by_name]."
-
-msgid ""
-"The item's mesh. Used by other parts of the engine (e.g. [GridMap], which "
-"displays them in a 3D tile)."
-msgstr ""
-"Сітка об'єкта. Використовується іншими компонентами движка (наприклад, "
-"[GridMap], який відображає їх у вигляді 3D-плиток)."
-
-msgid "The transform to apply to the item's mesh."
-msgstr "Перетворення, яке слід застосувати до сітки об’єкта."
-
-msgid ""
-"The shadow casting mode used by the item's mesh. See [enum "
-"RenderingServer.ShadowCastingSetting]."
-msgstr ""
-"Режим відтворення тіней, що використовується сіткою об’єкта. Див. [enum "
-"RenderingServer.ShadowCastingSetting]."
-
-msgid ""
-"The item's collision shapes.\n"
-"The array should consist of [Shape3D] objects, each followed by a "
-"[Transform3D] that will be applied to it. For shapes that should not have a "
-"transform, use [constant Transform3D.IDENTITY]."
-msgstr ""
-"Фігури зіткнення об'єкта.\n"
-"Масив повинен складатися з об'єктів типу [Shape3D], за кожним з яких слідує "
-"об'єкт типу [Transform3D], що буде до нього застосовано. Для фігур, які не "
-"повинні мати трансформації, використовуйте [constant Transform3D.IDENTITY]."
-
-msgid "The item's navigation mesh."
-msgstr "Навігаційна сітка об'єкта."
-
-msgid "The transform to apply to the item's navigation mesh."
-msgstr "Перетворення, яке слід застосувати до навігаційної сітки об’єкта."
-
-msgid "The item's navigation layers bitmask."
-msgstr "Бітова маска рівнів навігації елемента."
-
-msgid "The texture to use as the item's preview icon in the editor."
-msgstr ""
-"Текстура, яка буде використовуватися як піктограма попереднього перегляду "
-"об’єкта в редакторі."
-
-msgid ""
 "No items found inside the MeshLibrary.\n"
 "You can add some by using the Add button on the left, or by importing them "
 "from a scene file via the Import menu."
@@ -12170,14 +10956,518 @@ msgstr "Заповнити"
 msgid "Unnamed Gizmo"
 msgstr "Гаджет без назви"
 
-msgid "Transform Aborted."
-msgstr "Перетворення перервано."
+msgid ""
+"Hold %s to highlight a vertex on the currently selected node,\n"
+"then drag to move the node and snap it to vertices on neighboring nodes.\n"
+"\n"
+"For nodes without a vertex-based representation,\n"
+"Snap Origin to Vertex is always used instead."
+msgstr ""
+"Утримуйте клавішу %s, щоб виділити вершину на поточно вибраному вузлі,\n"
+"потім перетягніть, щоб перемістити вузол і прив’язати його до вершин сусідніх "
+"вузлів.\n"
+"\n"
+"Для вузлів, що не мають вершинного представлення,\n"
+"замість цього завжди використовується функція «Прив’язати початок до вершини»."
+
+msgid ""
+"Hold %s to highlight another node's vertex,\n"
+"then click to teleport the selected node to the highlighted vertex."
+msgstr ""
+"Утримуйте клавішу %s, щоб виділити вершину іншого вузла,\n"
+"а потім клацніть, щоб перемістити вибраний вузол до виділеної вершини."
+
+msgid ""
+"Snap to vertices of visual meshes.\n"
+"Hold Shift while vertex snapping to temporarily snap to collision shapes "
+"instead."
+msgstr ""
+"Прив'язування до вершин візуальних сіток.\n"
+"Утримуйте клавішу Shift під час прив'язування до вершин, щоб тимчасово "
+"прив'язуватися до фігур зіткнення."
+
+msgid ""
+"Snap to vertices of collision shapes.\n"
+"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
+msgstr ""
+"Прив'язування до вершин фігур зіткнення.\n"
+"Утримуйте клавішу Shift під час прив'язування до вершин, щоб тимчасово "
+"прив'язуватися до вершин сітки."
+
+msgid "XForm Dialog"
+msgstr "Вікно XForm"
+
+msgid "Lock Selected"
+msgstr "Заблокувати позначене"
+
+msgid "Unlock Selected"
+msgstr "Розблокувати позначене"
+
+msgid "Group Selected"
+msgstr "Згрупувати позначені"
+
+msgid "Ungroup Selected"
+msgstr "Розгрупувати позначені"
+
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Клацніть для перемикання між станами видимості.\n"
+"\n"
+"Відкрите око: Gizmo є видимим.\n"
+"Закрите око: Gizmo приховано.\n"
+"Напівзакрите око: Gizmo є також видимим крізь непрозорі поверхні («рентген»)."
+
+msgid "Snap Nodes to Floor"
+msgstr "Приліпити вузли до підлоги"
+
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "Не вдалося знайти твердої основи для прилипання позначеного фрагмента."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Додати до сцени попередній перегляд Сонця"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Додати до сцени попереднього перегляду середовище"
+
+msgid "%s+Drag: Use snap."
+msgstr "%s+Drag: Використовувати оснащення."
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "LMB+перетягування: Виміряйте відстань між двома точками в 3D-просторі."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+ліва кнопка миші+перетягування: показати розміри компонента."
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"Вміст сцени\n"
+"DirectionalLight3D.\n"
+"Попередній перегляд вимкнено."
+
+msgid "Preview disabled."
+msgstr "Попередній перегляд вимкнено."
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"Вміст сцени\n"
+"WorldEnvironment.\n"
+"Попередній перегляд вимкнено."
+
+msgid "Set Preview Sun Direction"
+msgstr "Встановити попередній перегляд напрямку Сонця"
+
+msgid "Set Preview Sun Altitude"
+msgstr "Встановити попередній перегляд висоти над сонцем"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "Встановити попередній перегляд азимуту сонця"
+
+msgid "Set Preview Sun Color"
+msgstr "Встановити попередній перегляд кольору сонця"
+
+msgid "Set Preview Sun Energy"
+msgstr "Встановити попередній перегляд Сонячна енергія"
+
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "Встановити попередній перегляд Максимальна відстань від тіні до сонця"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "Встановити попередній перегляд середовища Колір неба"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "Встановити колір фону середовища попереднього перегляду"
+
+msgid "Set Preview Environment Energy"
+msgstr "Встановити попередній перегляд Навколишнє середовище Енергія"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr ""
+"Встановити середовище попереднього перегляду Оклюзія навколишнього середовища"
+
+msgid "Set Preview Environment Glow"
+msgstr "Встановити сяйво середовища попереднього перегляду"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "Встановити тональну карту середовища попереднього перегляду"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "Встановити попередній перегляд середовища Глобальне освітлення"
+
+msgid "Transform Mode"
+msgstr "Режим трансформації"
+
+msgid "Move Mode"
+msgstr "Режим переміщення"
+
+msgid "Rotate Mode"
+msgstr "Режим повороту"
+
+msgid "Scale Mode"
+msgstr "Режим масштабування"
+
+msgid "Select Mode"
+msgstr "Режим виділення"
+
+msgid "Show List of Selectable Nodes"
+msgstr "Показати список доступних вузлів"
+
+msgid "Ruler Mode"
+msgstr "Режим вимірювання"
+
+msgid "Lock selected node, preventing selection and movement."
+msgstr "Блокувати вибраний вузол, запобігаючи виділенню та переміщенню."
+
+msgid "Lock"
+msgstr "Замок"
+
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "Розблокувати вибраний вузол і дозволити виділення та переміщення."
+
+msgid "Unlock"
+msgstr "Розблокувати"
+
+msgid ""
+"Groups the selected node with its children. This selects the parent when any "
+"child node is clicked in 2D and 3D view."
+msgstr ""
+"Групує вибраний вузол з його дочірніми вузлами. Вибирає батьківський вузол "
+"при натисканні будь-якого дочірнього вузла у 2D та 3D відображенні."
+
+msgid "Group"
+msgstr "Групи"
+
+msgid ""
+"Ungroups the selected node from its children. Child nodes will be individual "
+"items in 2D and 3D view."
+msgstr ""
+"Відокремлює вибраний вузол від його дочірніх вузлів. Дочірні вузли будуть "
+"окремими об'єктами у 2D і 3D-відображенні."
+
+msgid "Ungroup"
+msgstr "Розгрупувати"
+
+msgid "Use Local Space"
+msgstr "Використати локальний простір"
+
+msgid "Use Trackball"
+msgstr "Використовувати трекбол"
+
+msgid "Preserve Children Transform"
+msgstr "Збережімо дітей, змінимо світ"
+
+msgid ""
+"When enabled, transforming a node will preserve the global transform of its "
+"children.\n"
+"This also applies when editing transform properties in the Inspector."
+msgstr ""
+"Якщо ця опція увімкнена, під час трансформації вузла глобальна трансформація "
+"його дочірніх елементів зберігатиметься.\n"
+"Це також стосується редагування властивостей трансформації в Інспекторі."
+
+msgid "Use Snap"
+msgstr "За допомогою функції прив'язки"
+
+msgid "Snap Vertex to Vertex"
+msgstr "Прив'язати вершину до вершини"
+
+msgid "Snap Origin to Vertex"
+msgstr "Прив'язати початок до вершини"
+
+msgid "Snap to Mesh Vertices"
+msgstr "Прив'язати до вершин сітки"
+
+msgid "Snap to Collision Vertices"
+msgstr "Прив'язати до вершин зіткнення"
+
+msgid "Configure Snap..."
+msgstr "Налаштування прив'язки..."
+
+msgid ""
+"Toggle preview sunlight.\n"
+"If a DirectionalLight3D node is added to the scene, preview sunlight is "
+"disabled."
+msgstr ""
+"Перемкнути попередній перегляд сонячного світла.\n"
+"Якщо до сцени додано вузол DirectionalLight3D, перегляд сонячного світла буде "
+"вимкнено."
+
+msgid "Toggle preview sunlight."
+msgstr "Увімкнути/вимкнути попередній перегляд сонячного світла."
+
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"Перемкнути попередній перегляд середовища.\n"
+"Якщо до сцени додано вузол WorldEnvironment, перегляд середовища буде "
+"вимкнено."
+
+msgid "Toggle preview environment."
+msgstr "Увімкнути/вимкнути середовище попереднього перегляду."
+
+msgid "Edit Sun and Environment settings."
+msgstr "Редагувати параметри сонця та середовища."
+
+msgid "Bottom View"
+msgstr "Вигляд знизу"
+
+msgid "Top View"
+msgstr "Вигляд згори"
+
+msgid "Rear View"
+msgstr "Вигляд ззаду"
+
+msgid "Front View"
+msgstr "Вигляд спереду"
+
+msgid "Left View"
+msgstr "Вигляд зліва"
+
+msgid "Right View"
+msgstr "Вигляд справа"
+
+msgid "Orbit View Down"
+msgstr "Орбітальний вид вниз"
+
+msgid "Orbit View Left"
+msgstr "Орбітальний вид ліворуч"
+
+msgid "Orbit View Right"
+msgstr "Орбітальний вид праворуч"
+
+msgid "Orbit View Up"
+msgstr "Орбітальний вид згори"
+
+msgid "Orbit View 180"
+msgstr "Орбітальний вид 180"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "Перемкнути перегляд перспективи/ортогональний перегляд"
+
+msgid "Insert Animation Key"
+msgstr "Вставити ключ анімації"
+
+msgid "Focus Origin"
+msgstr "Фокус на центрі"
+
+msgid "Focus Selection"
+msgstr "Фокусувати позначене"
+
+msgid "Align Transform with View"
+msgstr "Вирівняти перетворення з переглядом"
+
+msgid "Align Rotation with View"
+msgstr "Вирівняти обертання із переглядом"
+
+msgid "Toggle Freelook"
+msgstr "Перемикання огляду"
+
+msgid "Decrease Field of View"
+msgstr "Зменшити поле зору"
+
+msgid "Increase Field of View"
+msgstr "Збільшити поле зору"
+
+msgid "Reset Field of View to Default"
+msgstr "Повернутися до типового поля зору"
+
+msgid "Transform"
+msgstr "Перетворення"
+
+msgid "Snap Object to Floor"
+msgstr "Приліпити об'єкт до підлоги"
+
+msgid "Transform Dialog..."
+msgstr "Вікно перетворення..."
 
 msgid "Vertex Snap"
 msgstr "Прив'язка до вершини"
 
-msgid "Vertex Snap Canceled."
-msgstr "Прив'язка до вершин скасовано."
+msgid "View"
+msgstr "Перегляд"
+
+msgid "1 Viewport"
+msgstr "1 панель перегляду"
+
+msgid "2 Viewports"
+msgstr "2 панелі перегляду"
+
+msgid "2 Viewports (Alt)"
+msgstr "2 панелі перегляду (альт.)"
+
+msgid "3 Viewports"
+msgstr "3 панелі перегляду"
+
+msgid "3 Viewports (Alt)"
+msgstr "3 панелі перегляду (альт.)"
+
+msgid "4 Viewports"
+msgstr "4 панелі перегляду"
+
+msgid "Gizmos"
+msgstr "Гаджети"
+
+msgid "View Origin"
+msgstr "Перегляд центра"
+
+msgid "View Grid"
+msgstr "Перегляд ґратки"
+
+msgid "Preview Translation"
+msgstr "Попередній перегляд перекладу"
+
+msgid "Settings..."
+msgstr "Параметри…"
+
+msgid "Snap Settings"
+msgstr "Параметри прилипання"
+
+msgid "Translate Snap"
+msgstr "Перекласти Знімки"
+
+msgid "Translate Snap:"
+msgstr "Пересувне прилипання:"
+
+msgid "Rotate Snap"
+msgstr "Поворот знімки"
+
+msgid "Rotate Snap:"
+msgstr "Поворот знімки:"
+
+msgid "Scale Snap"
+msgstr "Масштаб знімки"
+
+msgid "Scale Snap:"
+msgstr "Масштаб знімки:"
+
+msgid "Viewport Settings"
+msgstr "Параметри панелі перегляду"
+
+msgid ""
+"FOV is defined as a vertical value, as the editor camera always uses the Keep "
+"Height aspect mode."
+msgstr ""
+"FOV визначається як вертикальне значення, оскільки камера редактора завжди "
+"використовує режим співвідношення Keep Height."
+
+msgid "Perspective VFOV (deg.):"
+msgstr "Перспектива VFOV (град.):"
+
+msgid "View Z-Near:"
+msgstr "Ближнє Z перегляду:"
+
+msgid "View Z-Far:"
+msgstr "Дальнє Z перегляду:"
+
+msgid "Transform Change"
+msgstr "Зміна перетворення"
+
+msgid "Translate:"
+msgstr "Перенесення:"
+
+msgid "Rotate (deg.):"
+msgstr "Обертання (град.):"
+
+msgid "Scale (ratio):"
+msgstr "Масштаб (коеф.):"
+
+msgid "Transform Type"
+msgstr "Тип перетворення"
+
+msgid "Pre"
+msgstr "До"
+
+msgid "Post"
+msgstr "Після"
+
+msgid "Preview Sun"
+msgstr "Попередній перегляд сонця"
+
+msgid "Sun Direction"
+msgstr "Напрямок сонця"
+
+msgid "Angular Altitude"
+msgstr "Кутова висота"
+
+msgid "Azimuth"
+msgstr "Азимут"
+
+msgid "Sun Color"
+msgstr "Колір сонця"
+
+msgid "Sun Energy"
+msgstr "Сила Сонця"
+
+msgid "Shadow Max Distance"
+msgstr "Максимальна відстань тіні"
+
+msgid "Add Sun to Scene"
+msgstr "Додати сонце до сцени"
+
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"Додає до поточної сцени вузол DirectionalLight3D, що відповідає параметрам "
+"попереднього перегляду сонця.\n"
+"Утримуйте натиснутою клавішу Shift, щоб також додати до поточної сцени "
+"середовище попереднього перегляду."
+
+msgid "Preview Environment"
+msgstr "Перегляд середовища"
+
+msgid "Sky Color"
+msgstr "Колір неба"
+
+msgid "Ground Color"
+msgstr "Колір грунту"
+
+msgid "Sky Energy"
+msgstr "Яскравість неба"
+
+msgid "AO"
+msgstr "AO"
+
+msgid "Glow"
+msgstr "Сяйво"
+
+msgid "Tonemap"
+msgstr "Переспрямування"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Post Process"
+msgstr "Пост-обробка"
+
+msgid "Add Environment to Scene"
+msgstr "Додати середовище до Сцени"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"Додає до поточної сцени вузол WorldEnvironment відповідно до параметрів "
+"попереднього перегляду середовища.\n"
+"Щоб додати до поточної сцени сонце, утримуйте клавішу Shift під час клацання."
+
+msgid "Transform Aborted."
+msgstr "Перетворення перервано."
 
 msgid "Reset Transform"
 msgstr "Скинути трансформацію"
@@ -12284,12 +11574,6 @@ msgstr "Вигляд спереду."
 msgid "Rear View."
 msgstr "Вигляд ззаду."
 
-msgid "Align Transform with View"
-msgstr "Вирівняти перетворення з переглядом"
-
-msgid "Align Rotation with View"
-msgstr "Вирівняти обертання із переглядом"
-
 msgid "Set Surface %d Override Material"
 msgstr "Задати поверхню %d Перевизначити матеріал"
 
@@ -12298,12 +11582,6 @@ msgstr "Встановити перевизначення матеріалу"
 
 msgid "Error instantiating scene from %s."
 msgstr "Помилка інстанціювання (створення) сцени з %s."
-
-msgid "Can't drop the file..."
-msgid_plural "Can't drop the files..."
-msgstr[0] "Не вдається зберегти файл..."
-msgstr[1] "Не вдається зберегти файли..."
-msgstr[2] "Не вдається зберегти файлів..."
 
 msgid "Circular dependency found at %s."
 msgstr "Кругову залежність виявлено на %s."
@@ -12400,9 +11678,6 @@ msgstr "Коефіцієнт швидкості огляду"
 
 msgid "Freelook Slow Modifier"
 msgstr "Модифікатор швидкості довільного огляду"
-
-msgid "View"
-msgstr "Перегляд"
 
 msgid "Perspective"
 msgstr "Перспектива"
@@ -12638,9 +11913,6 @@ msgstr "Перегляд гаджетів"
 msgid "View Transform Gizmo"
 msgstr "Переглянути Transform Gizmo"
 
-msgid "View Grid"
-msgstr "Перегляд ґратки"
-
 msgid "View Information"
 msgstr "Перегляд відомостей"
 
@@ -12736,513 +12008,6 @@ msgid ""
 msgstr ""
 "Щоб збільшити масштаб, змініть площини відсікання камери (Вигляд → "
 "Налаштування...)"
-
-msgid ""
-"Hold %s to highlight a vertex on the currently selected node,\n"
-"then drag to move the node and snap it to vertices on neighboring nodes.\n"
-"\n"
-"For nodes without a vertex-based representation,\n"
-"Snap Origin to Vertex is always used instead."
-msgstr ""
-"Утримуйте клавішу %s, щоб виділити вершину на поточно вибраному вузлі,\n"
-"потім перетягніть, щоб перемістити вузол і прив’язати його до вершин сусідніх "
-"вузлів.\n"
-"\n"
-"Для вузлів, що не мають вершинного представлення,\n"
-"замість цього завжди використовується функція «Прив’язати початок до вершини»."
-
-msgid ""
-"Hold %s to highlight another node's vertex,\n"
-"then click to teleport the selected node to the highlighted vertex."
-msgstr ""
-"Утримуйте клавішу %s, щоб виділити вершину іншого вузла,\n"
-"а потім клацніть, щоб перемістити вибраний вузол до виділеної вершини."
-
-msgid ""
-"Snap to vertices of visual meshes.\n"
-"Hold Shift while vertex snapping to temporarily snap to collision shapes "
-"instead."
-msgstr ""
-"Прив'язування до вершин візуальних сіток.\n"
-"Утримуйте клавішу Shift під час прив'язування до вершин, щоб тимчасово "
-"прив'язуватися до фігур зіткнення."
-
-msgid ""
-"Snap to vertices of collision shapes.\n"
-"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
-msgstr ""
-"Прив'язування до вершин фігур зіткнення.\n"
-"Утримуйте клавішу Shift під час прив'язування до вершин, щоб тимчасово "
-"прив'язуватися до вершин сітки."
-
-msgid "XForm Dialog"
-msgstr "Вікно XForm"
-
-msgid "Lock Selected"
-msgstr "Заблокувати позначене"
-
-msgid "Unlock Selected"
-msgstr "Розблокувати позначене"
-
-msgid "Group Selected"
-msgstr "Згрупувати позначені"
-
-msgid "Ungroup Selected"
-msgstr "Розгрупувати позначені"
-
-msgid ""
-"Click to toggle between visibility states.\n"
-"\n"
-"Open eye: Gizmo is visible.\n"
-"Closed eye: Gizmo is hidden.\n"
-"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
-msgstr ""
-"Клацніть для перемикання між станами видимості.\n"
-"\n"
-"Відкрите око: Gizmo є видимим.\n"
-"Закрите око: Gizmo приховано.\n"
-"Напівзакрите око: Gizmo є також видимим крізь непрозорі поверхні («рентген»)."
-
-msgid "Snap Nodes to Floor"
-msgstr "Приліпити вузли до підлоги"
-
-msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "Не вдалося знайти твердої основи для прилипання позначеного фрагмента."
-
-msgid "Add Preview Sun to Scene"
-msgstr "Додати до сцени попередній перегляд Сонця"
-
-msgid "Add Preview Environment to Scene"
-msgstr "Додати до сцени попереднього перегляду середовище"
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+ПКМ: показати список усіх вузлів у позиції клацання, включно із "
-"заблокованими."
-
-msgid "%s+Drag: Rotate selected node around pivot."
-msgstr "%s+Drag: Повернути вибраний вузол навколо осі опори."
-
-msgid "%s+Drag: Use snap."
-msgstr "%s+Drag: Використовувати оснащення."
-
-msgid "LMB+Drag: Measure the distance between two points in 3D space."
-msgstr "LMB+перетягування: Виміряйте відстань між двома точками в 3D-просторі."
-
-msgid ""
-"Scene contains\n"
-"DirectionalLight3D.\n"
-"Preview disabled."
-msgstr ""
-"Вміст сцени\n"
-"DirectionalLight3D.\n"
-"Попередній перегляд вимкнено."
-
-msgid "Preview disabled."
-msgstr "Попередній перегляд вимкнено."
-
-msgid ""
-"Scene contains\n"
-"WorldEnvironment.\n"
-"Preview disabled."
-msgstr ""
-"Вміст сцени\n"
-"WorldEnvironment.\n"
-"Попередній перегляд вимкнено."
-
-msgid "Set Preview Sun Direction"
-msgstr "Встановити попередній перегляд напрямку Сонця"
-
-msgid "Set Preview Sun Altitude"
-msgstr "Встановити попередній перегляд висоти над сонцем"
-
-msgid "Set Preview Sun Azimuth"
-msgstr "Встановити попередній перегляд азимуту сонця"
-
-msgid "Set Preview Sun Color"
-msgstr "Встановити попередній перегляд кольору сонця"
-
-msgid "Set Preview Sun Energy"
-msgstr "Встановити попередній перегляд Сонячна енергія"
-
-msgid "Set Preview Sun Max Shadow Distance"
-msgstr "Встановити попередній перегляд Максимальна відстань від тіні до сонця"
-
-msgid "Set Preview Environment Sky Color"
-msgstr "Встановити попередній перегляд середовища Колір неба"
-
-msgid "Set Preview Environment Ground Color"
-msgstr "Встановити колір фону середовища попереднього перегляду"
-
-msgid "Set Preview Environment Energy"
-msgstr "Встановити попередній перегляд Навколишнє середовище Енергія"
-
-msgid "Set Preview Environment Ambient Occlusion"
-msgstr ""
-"Встановити середовище попереднього перегляду Оклюзія навколишнього середовища"
-
-msgid "Set Preview Environment Glow"
-msgstr "Встановити сяйво середовища попереднього перегляду"
-
-msgid "Set Preview Environment Tonemap"
-msgstr "Встановити тональну карту середовища попереднього перегляду"
-
-msgid "Set Preview Environment Global Illumination"
-msgstr "Встановити попередній перегляд середовища Глобальне освітлення"
-
-msgid "Transform Mode"
-msgstr "Режим трансформації"
-
-msgid "Move Mode"
-msgstr "Режим переміщення"
-
-msgid "Rotate Mode"
-msgstr "Режим повороту"
-
-msgid "Scale Mode"
-msgstr "Режим масштабування"
-
-msgid "Select Mode"
-msgstr "Режим виділення"
-
-msgid "Show List of Selectable Nodes"
-msgstr "Показати список доступних вузлів"
-
-msgid "Lock selected node, preventing selection and movement."
-msgstr "Блокувати вибраний вузол, запобігаючи виділенню та переміщенню."
-
-msgid "Lock"
-msgstr "Замок"
-
-msgid "Unlock selected node, allowing selection and movement."
-msgstr "Розблокувати вибраний вузол і дозволити виділення та переміщення."
-
-msgid "Unlock"
-msgstr "Розблокувати"
-
-msgid ""
-"Groups the selected node with its children. This selects the parent when any "
-"child node is clicked in 2D and 3D view."
-msgstr ""
-"Групує вибраний вузол з його дочірніми вузлами. Вибирає батьківський вузол "
-"при натисканні будь-якого дочірнього вузла у 2D та 3D відображенні."
-
-msgid "Group"
-msgstr "Групи"
-
-msgid ""
-"Ungroups the selected node from its children. Child nodes will be individual "
-"items in 2D and 3D view."
-msgstr ""
-"Відокремлює вибраний вузол від його дочірніх вузлів. Дочірні вузли будуть "
-"окремими об'єктами у 2D і 3D-відображенні."
-
-msgid "Ungroup"
-msgstr "Розгрупувати"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"ЛКМ + перетягування: виміряти відстань між двома точками.\n"
-"Shift + ЛКМ + перетягування: показати виміри компонентів."
-
-msgid "Ruler Mode"
-msgstr "Режим вимірювання"
-
-msgid "Use Local Space"
-msgstr "Використати локальний простір"
-
-msgid "Use Snap"
-msgstr "За допомогою функції прив'язки"
-
-msgid "Use Trackball"
-msgstr "Використовувати трекбол"
-
-msgid "Preserve Children Transform"
-msgstr "Збережімо дітей, змінимо світ"
-
-msgid ""
-"When enabled, transforming a node will preserve the global transform of its "
-"children.\n"
-"This also applies when editing transform properties in the Inspector."
-msgstr ""
-"Якщо ця опція увімкнена, під час трансформації вузла глобальна трансформація "
-"його дочірніх елементів зберігатиметься.\n"
-"Це також стосується редагування властивостей трансформації в Інспекторі."
-
-msgid ""
-"Toggle preview sunlight.\n"
-"If a DirectionalLight3D node is added to the scene, preview sunlight is "
-"disabled."
-msgstr ""
-"Перемкнути попередній перегляд сонячного світла.\n"
-"Якщо до сцени додано вузол DirectionalLight3D, перегляд сонячного світла буде "
-"вимкнено."
-
-msgid "Toggle preview sunlight."
-msgstr "Увімкнути/вимкнути попередній перегляд сонячного світла."
-
-msgid ""
-"Toggle preview environment.\n"
-"If a WorldEnvironment node is added to the scene, preview environment is "
-"disabled."
-msgstr ""
-"Перемкнути попередній перегляд середовища.\n"
-"Якщо до сцени додано вузол WorldEnvironment, перегляд середовища буде "
-"вимкнено."
-
-msgid "Toggle preview environment."
-msgstr "Увімкнути/вимкнути середовище попереднього перегляду."
-
-msgid "Edit Sun and Environment settings."
-msgstr "Редагувати параметри сонця та середовища."
-
-msgid "Bottom View"
-msgstr "Вигляд знизу"
-
-msgid "Top View"
-msgstr "Вигляд згори"
-
-msgid "Rear View"
-msgstr "Вигляд ззаду"
-
-msgid "Front View"
-msgstr "Вигляд спереду"
-
-msgid "Left View"
-msgstr "Вигляд зліва"
-
-msgid "Right View"
-msgstr "Вигляд справа"
-
-msgid "Orbit View Down"
-msgstr "Орбітальний вид вниз"
-
-msgid "Orbit View Left"
-msgstr "Орбітальний вид ліворуч"
-
-msgid "Orbit View Right"
-msgstr "Орбітальний вид праворуч"
-
-msgid "Orbit View Up"
-msgstr "Орбітальний вид згори"
-
-msgid "Orbit View 180"
-msgstr "Орбітальний вид 180"
-
-msgid "Switch Perspective/Orthogonal View"
-msgstr "Перемкнути перегляд перспективи/ортогональний перегляд"
-
-msgid "Insert Animation Key"
-msgstr "Вставити ключ анімації"
-
-msgid "Focus Origin"
-msgstr "Фокус на центрі"
-
-msgid "Focus Selection"
-msgstr "Фокусувати позначене"
-
-msgid "Toggle Freelook"
-msgstr "Перемикання огляду"
-
-msgid "Decrease Field of View"
-msgstr "Зменшити поле зору"
-
-msgid "Increase Field of View"
-msgstr "Збільшити поле зору"
-
-msgid "Reset Field of View to Default"
-msgstr "Повернутися до типового поля зору"
-
-msgid "Transform"
-msgstr "Перетворення"
-
-msgid "Snap Object to Floor"
-msgstr "Приліпити об'єкт до підлоги"
-
-msgid "Transform Dialog..."
-msgstr "Вікно перетворення..."
-
-msgid "Snap Vertex to Vertex"
-msgstr "Прив'язати вершину до вершини"
-
-msgid "Snap Origin to Vertex"
-msgstr "Прив'язати початок до вершини"
-
-msgid "Snap to Mesh Vertices"
-msgstr "Прив'язати до вершин сітки"
-
-msgid "Snap to Collision Vertices"
-msgstr "Прив'язати до вершин зіткнення"
-
-msgid "Configure Snap..."
-msgstr "Налаштування прив'язки..."
-
-msgid "1 Viewport"
-msgstr "1 панель перегляду"
-
-msgid "2 Viewports"
-msgstr "2 панелі перегляду"
-
-msgid "2 Viewports (Alt)"
-msgstr "2 панелі перегляду (альт.)"
-
-msgid "3 Viewports"
-msgstr "3 панелі перегляду"
-
-msgid "3 Viewports (Alt)"
-msgstr "3 панелі перегляду (альт.)"
-
-msgid "4 Viewports"
-msgstr "4 панелі перегляду"
-
-msgid "Gizmos"
-msgstr "Гаджети"
-
-msgid "View Origin"
-msgstr "Перегляд центра"
-
-msgid "Preview Translation"
-msgstr "Попередній перегляд перекладу"
-
-msgid "Settings..."
-msgstr "Параметри…"
-
-msgid "Snap Settings"
-msgstr "Параметри прилипання"
-
-msgid "Translate Snap"
-msgstr "Перекласти Знімки"
-
-msgid "Translate Snap:"
-msgstr "Пересувне прилипання:"
-
-msgid "Rotate Snap"
-msgstr "Поворот знімки"
-
-msgid "Rotate Snap:"
-msgstr "Поворот знімки:"
-
-msgid "Scale Snap"
-msgstr "Масштаб знімки"
-
-msgid "Scale Snap:"
-msgstr "Масштаб знімки:"
-
-msgid "Viewport Settings"
-msgstr "Параметри панелі перегляду"
-
-msgid ""
-"FOV is defined as a vertical value, as the editor camera always uses the Keep "
-"Height aspect mode."
-msgstr ""
-"FOV визначається як вертикальне значення, оскільки камера редактора завжди "
-"використовує режим співвідношення Keep Height."
-
-msgid "Perspective VFOV (deg.):"
-msgstr "Перспектива VFOV (град.):"
-
-msgid "View Z-Near:"
-msgstr "Ближнє Z перегляду:"
-
-msgid "View Z-Far:"
-msgstr "Дальнє Z перегляду:"
-
-msgid "Transform Change"
-msgstr "Зміна перетворення"
-
-msgid "Translate:"
-msgstr "Перенесення:"
-
-msgid "Rotate (deg.):"
-msgstr "Обертання (град.):"
-
-msgid "Scale (ratio):"
-msgstr "Масштаб (коеф.):"
-
-msgid "Transform Type"
-msgstr "Тип перетворення"
-
-msgid "Pre"
-msgstr "До"
-
-msgid "Post"
-msgstr "Після"
-
-msgid "Preview Sun"
-msgstr "Попередній перегляд сонця"
-
-msgid "Sun Direction"
-msgstr "Напрямок сонця"
-
-msgid "Angular Altitude"
-msgstr "Кутова висота"
-
-msgid "Azimuth"
-msgstr "Азимут"
-
-msgid "Sun Color"
-msgstr "Колір сонця"
-
-msgid "Sun Energy"
-msgstr "Сила Сонця"
-
-msgid "Shadow Max Distance"
-msgstr "Максимальна відстань тіні"
-
-msgid "Add Sun to Scene"
-msgstr "Додати сонце до сцени"
-
-msgid ""
-"Adds a DirectionalLight3D node matching the preview sun settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview environment to the current "
-"scene."
-msgstr ""
-"Додає до поточної сцени вузол DirectionalLight3D, що відповідає параметрам "
-"попереднього перегляду сонця.\n"
-"Утримуйте натиснутою клавішу Shift, щоб також додати до поточної сцени "
-"середовище попереднього перегляду."
-
-msgid "Preview Environment"
-msgstr "Перегляд середовища"
-
-msgid "Sky Color"
-msgstr "Колір неба"
-
-msgid "Ground Color"
-msgstr "Колір грунту"
-
-msgid "Sky Energy"
-msgstr "Яскравість неба"
-
-msgid "AO"
-msgstr "AO"
-
-msgid "Glow"
-msgstr "Сяйво"
-
-msgid "Tonemap"
-msgstr "Переспрямування"
-
-msgid "GI"
-msgstr "GI"
-
-msgid "Post Process"
-msgstr "Пост-обробка"
-
-msgid "Add Environment to Scene"
-msgstr "Додати середовище до Сцени"
-
-msgid ""
-"Adds a WorldEnvironment node matching the preview environment settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview sun to the current scene."
-msgstr ""
-"Додає до поточної сцени вузол WorldEnvironment відповідно до параметрів "
-"попереднього перегляду середовища.\n"
-"Щоб додати до поточної сцени сонце, утримуйте клавішу Shift під час клацання."
 
 msgid ""
 "Can't determine a save path for the occluder.\n"
@@ -13559,9 +12324,6 @@ msgstr "Основна лінія кожні:"
 msgid "X Primary Step"
 msgstr "X Основний крок"
 
-msgid "steps"
-msgstr "кроки"
-
 msgid "Y Primary Step"
 msgstr "Y Основний крок"
 
@@ -13573,44 +12335,6 @@ msgstr "Крок повороту:"
 
 msgid "Scale Step:"
 msgstr "Крок масштабу:"
-
-msgid ""
-"Children of a container get their position and size determined only by their "
-"parent."
-msgstr ""
-"Дочки контейнера отримують позицію і розмір, які визначаються тільки їхнім "
-"батьком."
-
-msgid "Move Node(s) to Position"
-msgstr "Пересунути вузол(и) на Позицію"
-
-msgid "Move Vertical Guide"
-msgstr "Перемістити вертикальну напрямну"
-
-msgid "Create Vertical Guide"
-msgstr "Створити вертикальну напрямну"
-
-msgid "Remove Vertical Guide"
-msgstr "Вилучити вертикальну напрямну"
-
-msgid "Move Horizontal Guide"
-msgstr "Перемістити горизонтальну напрямну"
-
-msgid "Create Horizontal Guide"
-msgstr "Створити горизонтальну напрямну"
-
-msgid "Remove Horizontal Guide"
-msgstr "Вилучити горизонтальну напрямну"
-
-msgid "Create Horizontal and Vertical Guides"
-msgstr "Створити горизонтальні та вертикальні напрямні"
-
-msgid ""
-"Can't modify anchor offsets when the parent has a size of 0. Disable the "
-"anchors mode in the toolbar."
-msgstr ""
-"Неможливо змінити зміщення якорів, якщо розмір батьківського елемента "
-"дорівнює 0. Вимкніть режим якорів на панелі інструментів."
 
 msgid "Add 2D Node Here..."
 msgstr "Додати тут 2D-вузол..."
@@ -13624,35 +12348,8 @@ msgstr "Вставити вузол(и) сюди"
 msgid "Move Node(s) Here"
 msgstr "Пересунути вузол(и) сюди"
 
-msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "Встановити зсув бази CanvasItem «%s» у (%d, %d)"
-
-msgid "Rotate %d CanvasItems"
-msgstr "Обертати %d CanvasItem"
-
-msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Обернути CanvasItem «%s» на %d градусів"
-
-msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Пересунути прив'язку CanvasItem «%s»"
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Масштабувати Node2D «%s» до (%s, %s)"
-
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Змінити розміри елемента керування «%s» до (%d, %d)"
-
-msgid "Scale %d CanvasItems"
-msgstr "Масштабувати %d CanvasItem"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Масштабувати CanvasItem «%s» до (%s, %s)"
-
-msgid "Move %d CanvasItems"
-msgstr "Пересунути %d CanvasItem"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Пересунути CanvasItem «%s» до (%d, %d)"
+msgid "Move Node(s) to Position"
+msgstr "Пересунути вузол(и) на Позицію"
 
 msgid "px"
 msgstr "пкс."
@@ -13669,39 +12366,8 @@ msgstr "Обертання:"
 msgid "Scaling:"
 msgstr "Масштаб:"
 
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Перетягування: Перемістити виділений вузол."
-
-msgid "%s+Alt+Drag: Scale selected node."
-msgstr "%s+Alt+Drag: Масштабувати вибраний вузол."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Встановити поворотне положення вибраного вузла."
-
 msgid "RMB: Add node at position clicked."
 msgstr "ПКМ: додати вузол у позиції клацання."
-
-msgid "Shift: Scale proportionally."
-msgstr "Shift: масштабувати пропорційно."
-
-msgid "Click to change object's pivot."
-msgstr "Клацніть, щоб змінити опору об'єкта."
-
-msgid "Shift: Set temporary pivot."
-msgstr "Shift: встановити тимчасову опору."
-
-msgid ""
-"Click this button while holding Shift to put the temporary pivot in the "
-"center of the selected nodes."
-msgstr ""
-"Натисніть цю кнопку, утримуючи Shift, щоб розмістити тимчасову опору в центрі "
-"вибраних вузлів."
-
-msgid ""
-"You can also use Pan View shortcut (Space by default) to pan in any mode."
-msgstr ""
-"Ви також можете використати комбінацію клавіш Панорамування (за замовчуванням "
-"Пробіл) для панорамування в будь-якому режимі."
 
 msgid "LMB+Drag: Measure the distance between two points in 2D space."
 msgstr ""
@@ -13747,6 +12413,9 @@ msgstr "Масштаб у 800%"
 msgid "Zoom to 1600%"
 msgstr "Масштаб у 1600%"
 
+msgid "Center View"
+msgstr "Вид по центру"
+
 msgid "Scene Paint Mode"
 msgstr "Режим малювання сцени"
 
@@ -13758,6 +12427,14 @@ msgstr "Зміна опорної точки"
 
 msgid "Pan Mode"
 msgstr "Режим панорамування"
+
+msgid ""
+"Groups the selected node with its children. This causes the parent to be "
+"selected when any child node is clicked in 2D and 3D view."
+msgstr ""
+"Групує вибраний вузол з його дочірніми вузлами. Це призводить до того, що при "
+"натисканні будь-якого дочірнього вузла у 2D- та 3D-вигляді буде вибрано "
+"батьківський вузол."
 
 msgid "Use Smart Snap"
 msgstr "Використати кмітливе прив'язування"
@@ -13800,14 +12477,6 @@ msgstr "Прилипання до напрямних"
 
 msgid "Smart Snapping"
 msgstr "Інтелектуальне прилипання"
-
-msgid ""
-"Groups the selected node with its children. This causes the parent to be "
-"selected when any child node is clicked in 2D and 3D view."
-msgstr ""
-"Групує вибраний вузол з його дочірніми вузлами. Це призводить до того, що при "
-"натисканні будь-якого дочірнього вузла у 2D- та 3D-вигляді буде вибрано "
-"батьківський вузол."
 
 msgid "Skeleton Options"
 msgstr "Параметри каркаса"
@@ -13923,17 +12592,6 @@ msgstr "Створити екземпляр: "
 msgid "Dropping a Texture file as a %s node..."
 msgstr "Перетягування файлу текстури як вузла %s..."
 
-msgid "[b]Hold Alt + Shift:[/b] Add Texture as a different node type."
-msgstr ""
-"[b]Утримуйте клавіші Alt + Shift:[/b] Додати текстуру як вузол іншого типу."
-
-msgid ""
-"All selected CanvasItems are either invisible or locked in some way and can't "
-"be transformed."
-msgstr ""
-"Усі виділені CanvasItems або невидимі, або заблоковані певним чином і не "
-"можуть бути трансформовані."
-
 msgid "Method in target node must be specified."
 msgstr "Має бути вказано метод у цільовому вузлі."
 
@@ -13997,6 +12655,12 @@ msgstr "Метод-отримувач:"
 
 msgid "Receiver Method"
 msgstr "Метод приймача"
+
+msgid "Pick"
+msgstr "Вибирати"
+
+msgid "Advanced"
+msgstr "Додатково"
 
 msgid "Deferred"
 msgstr "Відкладені"
@@ -14108,6 +12772,9 @@ msgstr "Перейти з"
 
 msgid "Smoothstep"
 msgstr "Згладжений"
+
+msgid "Toggle Grid Snap"
+msgstr "Перемкнути прилипання до ґратки"
 
 msgid "Snap Step"
 msgstr "Крок швидкого набору"
@@ -14391,65 +13058,23 @@ msgstr "Перемикання сітки попереднього перегл�
 msgid "Styleboxes"
 msgstr "Стильові панелі"
 
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "1 колір"
-msgstr[1] "{num} кольори"
-msgstr[2] "{num} кольорів"
-
 msgid "No colors found."
 msgstr "Кольорів не знайдено."
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "1 константа"
-msgstr[1] "{num} константи"
-msgstr[2] "{num} констант"
 
 msgid "No constants found."
 msgstr "Сталих не знайдено."
 
-msgid "1 font"
-msgid_plural "{num} fonts"
-msgstr[0] "1 шрифт"
-msgstr[1] "{num} шрифти"
-msgstr[2] "{num} шрифтів"
-
 msgid "No fonts found."
 msgstr "Шрифтів не знайдено."
-
-msgid "1 font size"
-msgid_plural "{num} font sizes"
-msgstr[0] "1 розмір шрифту"
-msgstr[1] "{num} розміри шрифту"
-msgstr[2] "{num} розмірів шрифту"
 
 msgid "No font sizes found."
 msgstr "Розмірів шрифтів не знайдено."
 
-msgid "1 icon"
-msgid_plural "{num} icons"
-msgstr[0] "1 піктограма"
-msgstr[1] "{num} піктограми"
-msgstr[2] "{num} піктограм"
-
 msgid "No icons found."
 msgstr "Піктограм не знайдено."
 
-msgid "1 stylebox"
-msgid_plural "{num} styleboxes"
-msgstr[0] "1 панель стилю"
-msgstr[1] "{num} панелі стилю"
-msgstr[2] "{num} панелей стилю"
-
 msgid "No styleboxes found."
 msgstr "Панелей стилів не знайдено."
-
-msgid "{num} currently selected"
-msgid_plural "{num} currently selected"
-msgstr[0] "{num} зараз вибраний"
-msgstr[1] "{num} зараз вибраних"
-msgstr[2] "{num} зараз вибраних"
 
 msgid "Nothing was selected for the import."
 msgstr "Для імпорту нічого не було вибрано."
@@ -15216,12 +13841,6 @@ msgstr[0] "Вузол має одне з'єднання."
 msgstr[1] "Вузол має {num} з'єднання."
 msgstr[2] "Вузол має {num} з'єднань."
 
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Вузол у цій групі:"
-msgstr[1] "Вузли у наступного групах:"
-msgstr[2] "Вузли у наступних групах:"
-
 msgid "Click to show signals dock."
 msgstr "Клацніть, щоб переглянути панель сигналів."
 
@@ -15384,6 +14003,9 @@ msgstr "Цей ресурс не має жодної анімації."
 msgid "Animation Frames:"
 msgstr "Кадри анімації:"
 
+msgid "Load"
+msgstr "Завантажити"
+
 msgid "Load Sheet"
 msgstr "Завантажувальний лист"
 
@@ -15540,6 +14162,9 @@ msgstr "Режим прилипання:"
 msgid "Pixel Snap"
 msgstr "Прилипання до пікселів"
 
+msgid "Grid Snap"
+msgstr "Прилипання до ґратки"
+
 msgid "Offset X"
 msgstr "Зсув X"
 
@@ -15570,58 +14195,21 @@ msgstr "Редагувати область"
 msgid "Write your logic in the _run() method."
 msgstr "Напишіть свою логіку в методі _run()."
 
-msgid "Replace in Files"
-msgstr "Замінити у файлах"
-
 msgid "Find in Files"
 msgstr "Знайти у файлах"
 
-msgid "Find:"
-msgstr "Знайти:"
-
-msgid "Folder:"
-msgstr "Тека:"
-
 msgid "Select Folder"
 msgstr "Вибрати папку"
-
-msgid "Includes:"
-msgstr "Включає:"
-
-msgid "Include the files with the following expressions. Use \",\" to separate."
-msgstr ""
-"Включіть файли за допомогою наступних виразів. Використовуйте \",\" для "
-"розділення."
-
-msgid "example: scripts,scenes/*/test.gd"
-msgstr "приклад: scripts,scenes/*/test.gd"
-
-msgid "Excludes:"
-msgstr "Виключає:"
 
 msgid "Exclude the files with the following expressions. Use \",\" to separate."
 msgstr ""
 "Виключіть файли за допомогою наступних виразів. Використовуйте \",\" для "
 "розділення."
 
-msgid "example: res://addons,scenes/test/*.gd"
-msgstr "приклад: res://addons,scenes/test/*.gd"
-
-msgid "Filters:"
-msgstr "Фільтри:"
-
-msgid ""
-"Include the files with the following extensions. Add or remove them in "
-"ProjectSettings."
+msgid "Include the files with the following expressions. Use \",\" to separate."
 msgstr ""
-"Включити файли із вказаними нижче суфіксами назв. Додати і вилучити суфікси "
-"можна у параметрах проєкту."
-
-msgid "Find..."
-msgstr "Знайти..."
-
-msgid "Replace..."
-msgstr "Замінити..."
+"Включіть файли за допомогою наступних виразів. Використовуйте \",\" для "
+"розділення."
 
 msgid "Searching..."
 msgstr "Шукаємо…"
@@ -15641,17 +14229,8 @@ msgstr "%d відповідників у %d файлі"
 msgid "%d matches in %d files"
 msgstr "%d відповідників у %d файлах"
 
-msgid "Keep Results"
-msgstr "Зберегти результати"
-
-msgid "Keep these results and show subsequent results in a new window"
-msgstr "Зберегти ці результати та показати наступні результати в новому вікні"
-
-msgid "Replace all (no undo)"
-msgstr "Замінити всі (без скасування)"
-
-msgid "Toggle Search Results Bottom Panel"
-msgstr "Перемкнути нижню панель результатів пошуку"
+msgid "Find:"
+msgstr "Знайти:"
 
 msgid "Path is empty."
 msgstr "Порожній шлях."
@@ -15667,9 +14246,6 @@ msgstr "Назва починається з крапки."
 
 msgid "Path is not local."
 msgstr "Шлях не є локальним."
-
-msgid "Base path is invalid."
-msgstr "Базовий шлях недійсний."
 
 msgid "A directory with the same name exists."
 msgstr "Каталог із такою назвою вже існує."
@@ -15766,6 +14342,9 @@ msgstr "Виберіть батьківський елемент"
 msgid "Use Template"
 msgstr "Використати шаблон"
 
+msgid "Template"
+msgstr "Шаблон"
+
 msgid "Built-in Script:"
 msgstr "Вбудований скрипт:"
 
@@ -15795,6 +14374,21 @@ msgstr "Закладки"
 
 msgid "Emoji & Symbols"
 msgstr "Емодзі та символи"
+
+msgid "Open File in Inspector"
+msgstr "Відкрити файл в Інспекторі"
+
+msgid "Inspect Native Shader Code..."
+msgstr "Перевірте рідний код шейдера..."
+
+msgid "Unsaved file."
+msgstr "Незбережений файл."
+
+msgid "%s Class Reference"
+msgstr "Довідник з класу %s"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Увімкнути або вимкнути упорядковування за абеткою у списку методів."
 
 msgid "(truncated)"
 msgstr "(усічений)"
@@ -15864,9 +14458,6 @@ msgstr "Імпортувати тему"
 msgid "Save Theme As..."
 msgstr "Зберегти тему як..."
 
-msgid "Make the script editor floating."
-msgstr "Зробіть редактор скриптів плаваючим."
-
 msgid "Open '%s' in Godot online documentation."
 msgstr "Відкрити '%s' в онлайн-документації Godot."
 
@@ -15879,11 +14470,8 @@ msgstr "Онлайн документація"
 msgid "Open Godot online documentation."
 msgstr "Відкрити онлайнову документацію Godot."
 
-msgid "Unsaved file."
-msgstr "Незбережений файл."
-
-msgid "%s Class Reference"
-msgstr "Довідник з класу %s"
+msgid "Find..."
+msgstr "Знайти..."
 
 msgid "Find Next"
 msgstr "Знайти далі"
@@ -15891,23 +14479,11 @@ msgstr "Знайти далі"
 msgid "Find Previous"
 msgstr "Знайти позаду"
 
-msgid "Filter Scripts"
-msgstr "Фільтрувати скрипти"
-
-msgid "Toggle alphabetical sorting of the method list."
-msgstr "Увімкнути або вимкнути упорядковування за абеткою у списку методів."
-
-msgid "Sort"
-msgstr "Сортувати"
-
 msgid "Next Script"
 msgstr "Наступний скрипт"
 
 msgid "Previous Script"
 msgstr "Попередній скрипт"
-
-msgid "Open..."
-msgstr "Відкрити..."
 
 msgid "Save All"
 msgstr "Зберегти все"
@@ -15927,12 +14503,6 @@ msgstr "Попередній у журналі"
 msgid "History Next"
 msgstr "Наступний файл"
 
-msgid "Import Theme..."
-msgstr "Імпортувати тему…"
-
-msgid "Reload Theme"
-msgstr "Перезавантажити тему"
-
 msgid "Close All"
 msgstr "Закрити все"
 
@@ -15942,8 +14512,26 @@ msgstr "Закрити вкладки нижче"
 msgid "Close Docs"
 msgstr "Закрити документацію"
 
-msgid "Navigate to script list."
-msgstr "Перейдіть до списку скриптів."
+msgid "Toggle Files Panel"
+msgstr "Перемикання панелі файлів"
+
+msgid "Import Theme..."
+msgstr "Імпортувати тему…"
+
+msgid "Reload Theme"
+msgstr "Перезавантажити тему"
+
+msgid "Open..."
+msgstr "Відкрити..."
+
+msgid "New Shader Include..."
+msgstr "Новий Shader Include..."
+
+msgid "Load Shader File..."
+msgstr "Завантажити Файл Шейдера..."
+
+msgid "Load Shader Include File..."
+msgstr "Завантажити Файл Shader Include..."
 
 msgid "Site Search"
 msgstr "Пошук по сайту"
@@ -15960,23 +14548,11 @@ msgstr "Перейти до наступного редагованого док
 msgid "Discard"
 msgstr "Скинути"
 
-msgid "Script Editor"
-msgstr "Редактор скриптів"
-
-msgid "There are unsaved changes in the following built-in script(s):"
-msgstr "У наступних вбудованих скриптах є незбережені зміни:"
-
-msgid "Save changes to the following script(s) before quitting?"
-msgstr "Зберегти зміни в наступних сценаріях перед виходом?"
-
 msgid "Reopen Closed Script"
 msgstr "Повторно відкрити закритий скрипт"
 
 msgid "Clear Recent Scripts"
 msgstr "Спорожнити список нещодавніх скриптів"
-
-msgid "Replace in Files..."
-msgstr "Замінити у файлах…"
 
 msgid "Uppercase"
 msgstr "Верхній регістр"
@@ -16022,61 +14598,6 @@ msgstr "Шлях до UID"
 
 msgid "file path"
 msgstr "шлях до файлу"
-
-msgid "Drop file path."
-msgid_plural "Drop file paths."
-msgstr[0] "Вкажіть шлях до файлу."
-msgstr[1] "Вкажіть шляхи до файли."
-msgstr[2] "Вкажіть шляхів до файлів."
-
-msgid "Hold %s: Add const preload by %s."
-msgid_plural "Hold %s: Add const preloads by %s."
-msgstr[0] ""
-"Утримувати %s: додати постійне попереднє завантаження за допомогою %s."
-msgstr[1] ""
-"Утримувати %s: додати постійна попереднього завантаження за допомогою %s."
-msgstr[2] ""
-"Утримувати %s: додати постійні попередні завантаження за допомогою %s."
-
-msgid "Hold %s+Shift: Add const preload by %s."
-msgid_plural "Hold %s+Shift: Add const preloads by %s."
-msgstr[0] ""
-"Утримуйте клавіші %s+Shift: додати постійне попереднє завантаження на %s."
-msgstr[1] ""
-"Утримуйте клавіші %s+Shift: додати постійна попереднього завантаження на %s."
-msgstr[2] ""
-"Утримуйте клавіші %s+Shift: додати постійні попередні завантаження на %s."
-
-msgid "Hold Alt: Add @export var pointing to the resource."
-msgid_plural "Hold Alt: Add @export vars pointing to the resources."
-msgstr[0] "Утримуйте клавішу Alt: додайте змінну @export, яка вказує на ресурс."
-msgstr[1] ""
-"Утримуйте клавішу Alt: додайте змінних @export, що вказують на ресурси."
-msgstr[2] ""
-"Утримуйте клавішу Alt: додайте змінні @export, що вказують на ресурсів."
-
-msgid "Drop node path."
-msgid_plural "Drop node paths."
-msgstr[0] "Видалити шлях до вузла."
-msgstr[1] "Видалити шляху до вузла."
-msgstr[2] "Видалити шляхи до вузла."
-
-msgid "Hold %s: Add @onready var pointing to the node path."
-msgid_plural "Hold %s: Add @onready vars pointing to the node paths."
-msgstr[0] "Збережіть %s: додайте змінну @onready, яка вказує на шлях до вузла."
-msgstr[1] ""
-"Збережіть %s: додайте змінних @onready, що вказують на шляхи до вузли."
-msgstr[2] ""
-"Збережіть %s: додайте змінні @onready, що вказують на шляхи до вузлів."
-
-msgid "Hold Alt: Add @export var pointing to the node."
-msgid_plural "Hold Alt: Add @export vars pointing to the nodes."
-msgstr[0] ""
-"Утримуйте клавішу Alt: додайте змінну @export, що вказує на цей вузол."
-msgstr[1] ""
-"Утримуйте клавішу Alt: додайте змінних @export, що вказують на вузли."
-msgstr[2] ""
-"Утримуйте клавішу Alt: додайте змінні @export, що вказують на вузлів."
 
 msgid "Drop property path."
 msgstr "Видалити шлях до об’єкта."
@@ -16151,6 +14672,9 @@ msgstr "Перетворити відступ на табуляції"
 
 msgid "Auto Indent"
 msgstr "Автовідступ"
+
+msgid "Replace..."
+msgstr "Замінити..."
 
 msgid "Show Tooltip"
 msgstr "Показати підказку"
@@ -16572,9 +15096,6 @@ msgstr "Скинути відредагований профіль?"
 msgid "File saving failed."
 msgstr "Не вдалося зберегти файл."
 
-msgid "Create a new profile?"
-msgstr "Створити новий профіль?"
-
 msgid ""
 "This will scan all files in the current project to detect used classes.\n"
 "Note that the first scan may take a while, specially in larger projects."
@@ -16610,6 +15131,9 @@ msgstr "Вузли і класи:"
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "Формат файла «%s» є некоректним, імпортування перервано."
+
+msgid "Can't load build profile. File '%s' is invalid."
+msgstr "Не вдається завантажити профіль збірки. Файл «%s» є недійсним."
 
 msgid "Error saving profile to path: '%s'."
 msgstr "Помилка під час спроби зберегти профіль до каталогу: «%s»."
@@ -16671,6 +15195,9 @@ msgstr "Очистити усі пошукові фільтри."
 
 msgid "3D Editor"
 msgstr "3D-редактор"
+
+msgid "Script Editor"
+msgstr "Редактор скриптів"
 
 msgid "Scene Tree Editing"
 msgstr "Редагування ієрархії сцени"
@@ -17156,9 +15683,6 @@ msgstr "Відкрити шейдер / Вибрати розташування"
 msgid "Invalid shader type selected."
 msgstr "Вибрано недійсний тип шейдера."
 
-msgid "Invalid base path."
-msgstr "Некоректний базовий шлях."
-
 msgid "Invalid extension for selected shader type."
 msgstr "Недійсне розширення для вибраного типу шейдера."
 
@@ -17190,30 +15714,6 @@ msgstr "Вбудований шейдер:"
 
 msgid "Create Shader"
 msgstr "Створити шейдер"
-
-msgid "Save changes to the following shaders(s) before quitting?"
-msgstr "Зберегти зміни в наступних шейдерах перед виходом?"
-
-msgid "There are unsaved changes in the following built-in shaders(s):"
-msgstr "Є незбережені зміни в наступних вбудованих шейдерах:"
-
-msgid "New Shader Include..."
-msgstr "Новий Shader Include..."
-
-msgid "Load Shader File..."
-msgstr "Завантажити Файл Шейдера..."
-
-msgid "Load Shader Include File..."
-msgstr "Завантажити Файл Shader Include..."
-
-msgid "Open File in Inspector"
-msgstr "Відкрити файл в Інспекторі"
-
-msgid "Inspect Native Shader Code..."
-msgstr "Перевірте рідний код шейдера..."
-
-msgid "Copy Shader Path"
-msgstr "Копіювати шлях шейдера"
 
 msgid "Shader Editor"
 msgstr "Редактор шейдера"
@@ -17278,14 +15778,14 @@ msgstr ""
 "Попередній перегляд доступний лише для типів bool, int, float, vec2, vec3, "
 "vec4."
 
+msgid "Warnings should be fixed to prevent errors."
+msgstr "Попередження слід виправити, щоб запобігти помилкам."
+
 msgid "Error at line %d:"
 msgstr "Помилка в рядку %d:"
 
 msgid "Error at line %d in include %s:%d:"
 msgstr "Помилка в рядку %d у вкладці %s:%d:"
-
-msgid "Warnings should be fixed to prevent errors."
-msgstr "Попередження слід виправити, щоб запобігти помилкам."
 
 msgid "Toggle Shader Preview"
 msgstr "Увімкнути попередній перегляд шейдера"
@@ -17299,9 +15799,6 @@ msgstr "Перейти до попереднього перегляду наст
 msgid "Go to Previous Shader Preview"
 msgstr "Перейти до попереднього перегляду шейдера"
 
-msgid "Shader Previews"
-msgstr "Попередній перегляд шейдерів"
-
 msgid "Update Parameters"
 msgstr "Оновити параметри"
 
@@ -17314,16 +15811,6 @@ msgstr ""
 
 msgid "Remove all line shader previews."
 msgstr "Вилучити всі попередні перегляди шейдерів ліній."
-
-msgid ""
-"This shader has been modified on disk.\n"
-"What action should be taken?"
-msgstr ""
-"До цього шейдера внесено зміни на диску.\n"
-"Що слід зробити?"
-
-msgid "Resave"
-msgstr "Перезаписати"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -17735,73 +16222,6 @@ msgstr "Змінити внутрішній радіус тора"
 msgid "Change Torus Outer Radius"
 msgstr "Змінити зовнішній радіус тора"
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Недійсний аргумент типу для convert(), використовуйте константи TYPE_*."
-
-msgid "Expected an integer between 0 and 2^32 - 1."
-msgstr "Очікувалося ціле число від 0 до 2^32 - 1."
-
-msgid "Expected a string of length 1 (a character)."
-msgstr "Очікувався рядок довжиною 1 (один символ)."
-
-msgid "Range too big."
-msgstr "Занадто великий діапазон."
-
-msgid "Cannot resize array."
-msgstr "Неможливо змінити розмір масиву."
-
-msgid "Step argument is zero!"
-msgstr "Аргумент кроку нуль!"
-
-msgid "Not a script with an instance."
-msgstr "Не скрипт з екземпляром."
-
-msgid "Not based on a script."
-msgstr "Не на основі сценарію."
-
-msgid "Not based on a resource file."
-msgstr "Не базується на файлі ресурсів."
-
-msgid "Invalid instance dictionary format (missing @path)."
-msgstr "Недійсний формат словника екземплярів (відсутній @path)."
-
-msgid "Invalid instance dictionary format (can't load script at @path)."
-msgstr ""
-"Недійсний формат словника екземпляра (не вдається завантажити скрипт за "
-"@path)."
-
-msgid "Invalid instance dictionary format (invalid script at @path)."
-msgstr "Недійсний формат словника екземпляра (недійсний скрипт на @path)."
-
-msgid "Invalid instance dictionary (invalid subclasses)."
-msgstr "Недійсний словник екземплярів (недійсні підкласи)."
-
-msgid "Cannot instantiate GDScript class."
-msgstr "Не вдається інстанціювати клас GDScript."
-
-msgid "Value of type '%s' can't provide a length."
-msgstr "Значення типу \"%s\" не може надати довжину."
-
-msgid ""
-"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
-"types."
-msgstr ""
-"Недійсний аргумент типу для is_instance_of(), використовуйте константи TYPE_* "
-"для вбудованих типів."
-
-msgid "Type argument is a previously freed instance."
-msgstr "Аргумент типу — це попередньо звільнений екземпляр."
-
-msgid ""
-"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
-"class or a script."
-msgstr ""
-"Недійсний аргумент типу для is_instance_of(), має бути константою TYPE_*, "
-"класом або сценарієм."
-
-msgid "Value argument is a previously freed instance."
-msgstr "Аргумент значення — це попередньо звільнений екземпляр."
-
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Експортувати сцену у файл glTF 2.0"
 
@@ -17892,15 +16312,6 @@ msgstr "Малюнок GridMap"
 msgid "GridMap Selection"
 msgstr "Вибір GridMap"
 
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Змінити підлогу сітки:\n"
-"Попередній літак (%s)\n"
-"Наступний літак (%s)"
-
 msgid "GridMap"
 msgstr "GridMap"
 
@@ -17936,6 +16347,12 @@ msgstr "Відстань вибору:"
 
 msgid "Selection"
 msgstr "Вибір"
+
+msgid "Erase"
+msgstr "Стерти"
+
+msgid "Paint"
+msgstr "Фарба"
 
 msgid "Cursor Rotate X"
 msgstr "Обертання вказівника навколо X"
@@ -18118,20 +16535,6 @@ msgstr "Ім'я класу має бути дійсним ідентифікат
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостатньо байтів для їх декодування або вказано некоректний формат."
 
-msgid ""
-"Unable to load .NET runtime, no compatible version was found.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"Не вдалося завантажити середовище виконання .NET, сумісної версії не "
-"знайдено. \n"
-"Спроба створити/редагувати проект призведе до збою. \n"
-"\n"
-"Установіть .NET SDK 8.0 або новішої версії з https://get.dot.net і "
-"перезапустіть Godot."
-
 msgid "Failed to load .NET runtime"
 msgstr "Не вдалося завантажити середовище виконання .NET"
 
@@ -18144,19 +16547,6 @@ msgstr ""
 
 msgid ".NET assemblies not found"
 msgstr ".NET збірок не знайдено"
-
-msgid ""
-"Unable to load .NET runtime, specifically hostfxr.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"Не вдалося завантажити середовище виконання .NET, зокрема hostfxr. \n"
-"Спроба створити/редагувати проект призведе до збою. \n"
-"\n"
-"Установіть .NET SDK 8.0 або новішої версії з https://get.dot.net і "
-"перезапустіть Godot."
 
 msgctxt "Network"
 msgid "Down"
@@ -18586,6 +16976,12 @@ msgstr ""
 "Чи було одне й те саме посилання повернуте кількома методами отримання на "
 "вихідному об'єкті?"
 
+msgid "Yes"
+msgstr "Так"
+
+msgid "No"
+msgstr "Ні"
+
 msgid "Sort By %s (Ascending)"
 msgstr "Сортувати %s (за зростанням)"
 
@@ -18911,6 +17307,948 @@ msgstr ""
 msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
 msgstr "Маска видимості OpenXR повинна мати вузол XRCamera3D як батьківський."
 
+msgid "Merge TileSetAtlasSource"
+msgstr "Об'єднати TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
+msgid "Atlas Merging"
+msgstr "Об'єднати атласи"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "Об'єднати (зберегти оригінальні атласи)"
+
+msgid "Merge"
+msgstr "Об'єднати"
+
+msgid "Next Line After Column"
+msgstr "Наступний рядок після стовпчика"
+
+msgid "Please select two atlases or more."
+msgstr "Будь ласка, виберіть два атласи або більше."
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"Джерело: %d\n"
+"Координати атласу: %s\n"
+"Альтернатива: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Джерело: %d\n"
+"Координати атласу: %s\n"
+"Альтернатива: %d"
+
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"Вибране джерело атласу не має правильної текстури. Призначте текстуру на "
+"нижній вкладці TileSet."
+
+msgid "Base Tiles"
+msgstr "Базова плитка"
+
+msgid "Alternative Tiles"
+msgstr "Альтернативна плитка"
+
+msgid "Reset Polygons"
+msgstr "Скинути полігони"
+
+msgid "Clear Polygons"
+msgstr "Очистити полігони"
+
+msgid "Rotate Polygons Right"
+msgstr "Повернути полігони вправо"
+
+msgid "Rotate Polygons Left"
+msgstr "Повернути полігони вліво"
+
+msgid "Flip Polygons Horizontally"
+msgstr "Віддзеркалити полігони горизонтально"
+
+msgid "Flip Polygons Vertically"
+msgstr "Віддзеркалити полігони вертикально"
+
+msgid "Edit Polygons"
+msgstr "Редагувати полігони"
+
+msgid "Expand editor"
+msgstr "Розгорнути редактор"
+
+msgid "Add polygon tool"
+msgstr "Додати інструмент полігона"
+
+msgid "Edit points tool"
+msgstr "Редагувати інструмент полігона"
+
+msgid "Delete points tool"
+msgstr "Вилучити інструмент полігона"
+
+msgid "Reset to default tile shape"
+msgstr "Відновити форму плитки за замовчуванням"
+
+msgid "Rotate Right"
+msgstr "Обернути праворуч"
+
+msgid "Rotate Left"
+msgstr "Обернути ліворуч"
+
+msgid "Flip Horizontally"
+msgstr "Віддзеркалити горизонтально"
+
+msgid "Flip Vertically"
+msgstr "Віддзеркалити вертикально"
+
+msgid "Disable Snap"
+msgstr "Вимкнути Snap"
+
+msgid "Half-Pixel Snap"
+msgstr "Напівпіксельна знімка"
+
+msgid "Subdivision"
+msgstr "Підрозділ"
+
+msgid "Painting Tiles Property"
+msgstr "Властивість малювання плиток"
+
+msgid "Painting:"
+msgstr "Малювання:"
+
+msgid "Polygon %d"
+msgstr "Багатокутник %d"
+
+msgid "One Way"
+msgstr "В один бік"
+
+msgid "One Way Margin"
+msgstr "Односторонній маржинальний депозит"
+
+msgid "Linear Velocity"
+msgstr "Лінійна швидкість"
+
+msgid "Angular Velocity"
+msgstr "Швидкість обертання"
+
+msgid "No terrains"
+msgstr "Нема місцевостей"
+
+msgid "No terrain"
+msgstr "Нема місцевості"
+
+msgid "Painting Terrain Set"
+msgstr "Набір для малювання місцевості"
+
+msgid "Painting Terrain"
+msgstr "Малювання місцевості"
+
+msgid "Drawing Rect:"
+msgstr "Прямокутник для малювання:"
+
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr "Неможливо обертати шаблони при використанні неквадратної сітки плиток."
+
+msgid "Shift: Draw line."
+msgstr "Shift: малює лінію."
+
+msgid "%s+Shift: Draw rectangle."
+msgstr "%s+Shift: Намалювати прямокутник."
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "Нема джерела текстурного атласу (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "Джерело колекції сцен (ID: %d)"
+
+msgid "Empty Scene Collection Source (ID: %d)"
+msgstr "Джерело порожньої колекції сцен (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Джерело невідомого типу (ID: %d)"
+
+msgid "Add TileSet pattern"
+msgstr "Додати шаблон Набору плиток"
+
+msgid "Remove TileSet patterns"
+msgstr "Вилучити шаблон Набору плиток"
+
+msgid "Index: %d"
+msgstr "Індекс: %d"
+
+msgid "Tile with Invalid Scene"
+msgstr "Плитка з неприпустимою сценою"
+
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"Вибране джерело колекції сцен не містить сцен. Додайте сцени на нижній "
+"вкладці TileSet."
+
+msgid "Delete tiles"
+msgstr "Видалити плитки"
+
+msgid "Change selection"
+msgstr "Змінити вибір"
+
+msgid "Move tiles"
+msgstr "Переміщення плиток"
+
+msgid "Paint tiles"
+msgstr "Малювати плитки"
+
+msgid "Paste tiles"
+msgstr "Вставити плитки"
+
+msgid "Selection Tool"
+msgstr "Інструмент виділення"
+
+msgid "Paint Tool"
+msgstr "Інструмент для малювання"
+
+msgid "Line Tool"
+msgstr "Інструмент «Лінія»"
+
+msgid "Rect Tool"
+msgstr "Інструмент Rect"
+
+msgid "Bucket Tool"
+msgstr "Відро інструмент"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "Або утримуйте %s іншими інструментами, щоб вибрати плитку."
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "Або використовуйте ПКМ, щоб стерти плитки."
+
+msgid "Rotate Tile Left"
+msgstr "Повернути плитку вліво"
+
+msgid "Rotate Tile Right"
+msgstr "Повернути плитку вправо"
+
+msgid "Flip Tile Horizontally"
+msgstr "Перевернути плитку по горизонталі"
+
+msgid "Flip Tile Vertically"
+msgstr "Перевернути тайл вертикально"
+
+msgid "Contiguous"
+msgstr "Суміжні"
+
+msgid "Place Random Tile"
+msgstr "Розмістити випадкову плитку"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr "Змінює ймовірність малювання пустоти замість випадково вибраної плитки."
+
+msgid "Scattering:"
+msgstr "Розсіювання:"
+
+msgid "Tiles"
+msgstr "Плитки"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"TileSet цього TileMap не має налаштованого джерела плиток. Перейдіть до "
+"нижньої панелі TileSet, щоб додати його."
+
+msgid "Sort sources"
+msgstr "Сортувати джерела"
+
+msgid "Sort by ID (Ascending)"
+msgstr "Сортування за ідентифікатором (за зростанням)"
+
+msgid "Sort by ID (Descending)"
+msgstr "Сортування за ідентифікатором (за спаданням)"
+
+msgid "Invalid source selected."
+msgstr "Вибрано недійсне джерело."
+
+msgid "Patterns"
+msgstr "Візерунки"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Перетягніть або вставте сюди вибрану Карту плиток, щоб зберегти Візерунок."
+
+msgid "Paint terrain"
+msgstr "Малюнок місцевості"
+
+msgid "Matches Corners and Sides"
+msgstr "Зіставити кути та сторони"
+
+msgid "Matches Corners Only"
+msgstr "Зіставити лише кути"
+
+msgid "Matches Sides Only"
+msgstr "Зіставити лише сторони"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Набір місцевості %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Режим з'єднання: малює місцевість, а потім з'єднує її з навколишніми плитками "
+"з такою ж місцевістю."
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Режим шляху: зафарбовує рельєф, а потім з’єднує його з попередньою плиткою, "
+"намальованою тим самим штрихом."
+
+msgid "Terrains"
+msgstr "Місцевості"
+
+msgid "No Layers"
+msgstr "Без шарів"
+
+msgid "Replace Tiles with Proxies"
+msgstr "Замінити плитки на проксі"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "Витягнути шари TileMap як окремі вузли TileMapLayer"
+
+msgid "Can't edit multiple layers at once."
+msgstr "Не можна редагувати кілька шарів одночасно."
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "Вибраний TileMap не має шару для редагування."
+
+msgid "The edited layer is disabled or invisible"
+msgstr "Редагований шар вимкнено або невидимий"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"Відредагований вузол TileMap або TileMapLayer не має ресурсу TileSet.\n"
+"Створіть або завантажте ресурс TileSet у властивості Tile Set в інспекторі."
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Open TileMap Dock"
+msgstr "Відкрити TileMap док-станція"
+
+msgid "Select Next Tile Map Layer"
+msgstr "Вибрати наступний шар карти плиток"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Вибрати попередній шар карти плиток"
+
+msgid "TileMap Layers"
+msgstr "Шари Карти плиток"
+
+msgid "Select previous layer"
+msgstr "Виберіть попередній шар"
+
+msgid "Select next layer"
+msgstr "Виберіть наступний шар"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "Виберіть усі TileMapLayers у сцені"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Виділити вибраний шар Карти плиток"
+
+msgid "Toggle grid visibility."
+msgstr "Перемкнути видимість ґратки."
+
+msgid "Advanced settings."
+msgstr "Розширені налаштування."
+
+msgid "Automatically Replace Tiles with Proxies"
+msgstr "Автоматична заміна плиток на проксі"
+
+msgid "Remove Tile Proxies"
+msgstr "Видалити проксі плиток"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Створити альтернативний рівень проксі плиток"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Створення плиткового проксі-сервера рівня Coords"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Створити джерело-рівень проксі плиток"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Видалити усі недійсні проксі плиток"
+
+msgid "Delete All Tile Proxies"
+msgstr "Видалити всі проксі плиток"
+
+msgid "Tile Proxies Management"
+msgstr "Керівник проксі плиток"
+
+msgid "Source-level proxies"
+msgstr "Джерело рівень проксі"
+
+msgid "Coords-level proxies"
+msgstr "Координатний рівень проксі"
+
+msgid "Alternative-level proxies"
+msgstr "Альтернативний рівень проксі"
+
+msgid "Add a new tile proxy:"
+msgstr "Додати новий проксі плитки:"
+
+msgid "From Source"
+msgstr "З джерела"
+
+msgid "From Coords"
+msgstr "З координат"
+
+msgid "From Alternative"
+msgstr "З альтернативи"
+
+msgid "To Source"
+msgstr "До джерела"
+
+msgid "To Coords"
+msgstr "До Координат"
+
+msgid "To Alternative"
+msgstr "До Альтернативи"
+
+msgid "Global actions:"
+msgstr "Глобальні дії:"
+
+msgid "Clear Invalid"
+msgstr "Очистити Недійсні"
+
+msgid "Atlas"
+msgstr "Атлас"
+
+msgid "Base Tile"
+msgstr "Базова плитка"
+
+msgid "Alternative Tile"
+msgstr "Альтернативна плитка"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Вибрана плитка:\n"
+"Джерело: %d\n"
+"Атласні координати: %s\n"
+"Альтернатива: %d"
+
+msgid "Rendering"
+msgstr "Рендеринг"
+
+msgid "Occlusion Layer %d"
+msgstr "Шар оклюзії %d"
+
+msgid "Physics"
+msgstr "Фізика"
+
+msgid "Physics Layer %d"
+msgstr "Фізичний шар %d"
+
+msgid "No physics layers"
+msgstr "Ніяких фізичних шарів"
+
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr "Створюйте та налаштовуйте фізичні шари в інспекторі ресурсу TileSet."
+
+msgid "Navigation"
+msgstr "Навігація"
+
+msgid "Navigation Layer %d"
+msgstr "Шар навігації %d"
+
+msgid "No navigation layers"
+msgstr "Немає навігаційних шарів"
+
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Створюйте та налаштовуйте навігаційні шари в інспекторі ресурсу TileSet."
+
+msgid "Custom Data"
+msgstr "Спеціальні дані"
+
+msgid "Custom Data %d"
+msgstr "Спеціальні дані %d"
+
+msgid "No custom data layers"
+msgstr "Немає спеціальних шарів даних"
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Створюйте та налаштовуйте кастомні шари даних в інспекторі ресурсу TileSet."
+
+msgid "Select a property editor"
+msgstr "Вибрати редактор властивостей"
+
+msgid "Hold %s to create multiple tiles."
+msgstr "Утримуйте клавішу %s, щоб створити кілька плиток."
+
+msgid "Hold %s to create big tiles."
+msgstr "Утримуйте клавішу %s, щоб створити великі плитки."
+
+msgid "Hold %s to select multiple regions."
+msgstr "Утримуйте клавішу %s, щоб вибрати кілька областей."
+
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr ""
+"TileSet знаходиться у режимі тільки для читання. Зробіть ресурс унікальним, "
+"щоб редагувати властивості TileSet."
+
+msgid "Paint properties."
+msgstr "Властивості малювання."
+
+msgid "Create tiles"
+msgstr "Створити плитки"
+
+msgid "Create a tile"
+msgstr "Створити плитку"
+
+msgid "Remove tiles"
+msgstr "Вилучити плитки"
+
+msgid "Move a tile"
+msgstr "Перемістити плитку"
+
+msgid "Resize a tile"
+msgstr "Змінити розмір плитки"
+
+msgid "Remove tile"
+msgstr "Вилучити плитку"
+
+msgid "Create tile alternatives"
+msgstr "Створити альтернативи плитки"
+
+msgid "Remove Tiles Outside the Texture"
+msgstr "Видаліть плитки за межами текстури"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "Створити плитки у непрозорих областях текстури"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "Видалити плитки з повністю прозорих областей текстури"
+
+msgid ""
+"The tile's unique identifier within this TileSet. Each tile stores its source "
+"ID, so changing one may make tiles invalid."
+msgstr ""
+"Унікальний ідентифікатор тайла в межах цього TileSet. Кожен тайл зберігає "
+"свій ідентифікатор, тому його зміна може зробити тайли недійсними."
+
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"Людська назва атласу. Використовуйте тут описову назву для організаційних "
+"цілей (наприклад, «місцевість», «оздоблення» тощо)."
+
+msgid "The image from which the tiles will be created."
+msgstr "Зображення, з якого буде створено тайли."
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"Поля по краях зображення, які не повинні бути виділені як тайли (у пікселях). "
+"Збільшення цього параметра може бути корисним, якщо ви завантажуєте тайлове "
+"зображення, яке має поля по краях (наприклад, для атрибуції)."
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"Відстань між кожним тайлом на атласі в пікселях. Збільшення цього параметра "
+"може бути корисним, якщо тайлове зображення, яке ви використовуєте, містить "
+"напрямні (наприклад, контури між кожною плиткою)."
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"Розмір кожного тайла на атласі в пікселях. У більшості випадків він має "
+"відповідати розміру тайла, визначеному у властивості TileMap (хоча це не є "
+"обов'язковою умовою)."
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"Якщо цей пункт увімкнено, додає 1-піксельний прозорий край навколо кожної "
+"плитки, щоб запобігти обрізанню текстури при увімкненій фільтрації. "
+"Рекомендується залишити цей параметр увімкненим, якщо тільки ви не стикаєтеся "
+"з проблемами відображення, пов'язаними з накладанням текстур."
+
+msgid ""
+"The position of the tile's top-left corner in the atlas. The position and "
+"size must be within the atlas and can't overlap another tile.\n"
+"Each painted tile has associated atlas coords, so changing this property may "
+"cause your TileMaps to not display properly."
+msgstr ""
+"Положення верхнього лівого кута тайла в атласі. Позиція і розмір повинні бути "
+"в межах атласу і не можуть перекривати інший тайл.\n"
+"Кожен зафарбований тайл має пов'язані з ним координати в атласі, тому зміна "
+"цієї властивості може призвести до неправильного відображення ваших TileMaps."
+
+msgid "The unit size of the tile."
+msgstr "Одиничний розмір плитки."
+
+msgid ""
+"Number of columns for the animation grid. If number of columns is lower than "
+"number of frames, the animation will automatically adjust row count."
+msgstr ""
+"Кількість стовпчиків для сітки анімації. Якщо кількість стовпчиків менша за "
+"кількість кадрів, анімація автоматично змінить кількість рядків."
+
+msgid "The space (in tiles) between each frame of the animation."
+msgstr "Простір (у плитці) між кожним кадром анімації."
+
+msgid "Animation speed in frames per second."
+msgstr "Швидкість анімації в кадрах в секунду."
+
+msgid ""
+"Determines how animation will start. In \"Default\" mode all tiles start "
+"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
+"animation with a random offset."
+msgstr ""
+"Визначає спосіб запуску анімації. У режимі \"За замовчуванням\" усі плитки "
+"починають анімацію в один і той самий кадр. У режимі \"Випадковий час "
+"початку\" кожна плитка починає анімацію з випадковим зсувом."
+
+msgid "If [code]true[/code], the tile is horizontally flipped."
+msgstr "Якщо [code]true[/code], то тайл (плитка) перевертається горизонтально."
+
+msgid "If [code]true[/code], the tile is vertically flipped."
+msgstr "Якщо [code]true[/code], то тайл (плитка) перевертається вертикально."
+
+msgid ""
+"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
+"and then flipped vertically. In practice, this means that to rotate a tile by "
+"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
+"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
+"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
+"[b]Flip V[/b] and [b]Transpose[/b]."
+msgstr ""
+"Якщо [code]true[/code], то тайл (плитка) повертається на 90 градусів [i]проти "
+"годинникової стрілки[/i], а потім перевертається вертикально. На практиці це "
+"означає, що для повороту плитки на 90 градусів за годинниковою стрілкою без "
+"її перевертання слід увімкнути [b]Flip H[/b] і [b]Transpose[/b]. Щоб "
+"повернути плитку на 180 градусів за годинниковою стрілкою, увімкніть [b]Flip "
+"H[/b] і [b]Flip V[/b]. Щоб повернути плитку на 270 градусів за годинниковою "
+"стрілкою, увімкніть [b]Перевернути V[/b] і [b]Транспонувати[/b]."
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"Початок, який використовується для малювання плитки. Це може бути використано "
+"для візуального зміщення плитки порівняно з базовою плиткою."
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "Множник кольору, який використовуватиметься при рендерингу плитки."
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr ""
+"Матеріал, який буде використано для цієї плитки. За допомогою цього параметра "
+"можна застосувати інший режим накладання або власні шейдери до однієї плитки."
+
+msgid ""
+"The sorting order for this tile. Higher values will make the tile render in "
+"front of others on the same layer. The index is relative to the TileMap's own "
+"Z index."
+msgstr ""
+"Порядок сортування для цієї плитки. Вищі значення призведуть до того, що "
+"плитка буде відрендерена перед іншими плитками на тому ж шарі. Індекс "
+"відносно власного індексу Z TileMap."
+
+msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"Вертикальний зсув для сортування плитки за координатою Y (у пікселях). Це "
+"дозволяє використовувати шари так, ніби вони знаходяться на різній висоті для "
+"ігор зверху вниз. Налаштування цього параметра може допомогти вирішити "
+"проблеми з сортуванням певних тайлів (плитків). Діє лише якщо для шару "
+"TileMap, на якому розміщено тайл (плитку), увімкнено сортування за "
+"координатою Y."
+
+msgid ""
+"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
+"will not be used in terrains."
+msgstr ""
+"Індекс групи ландшафтів, до якої належить цей тайл (плитка). [code]-1[/code] "
+"означає, що він не буде використовуватися в ландшафтах."
+
+msgid ""
+"The index of the terrain inside the terrain set this tile belongs to. "
+"[code]-1[/code] means it will not be used in terrains."
+msgstr ""
+"Індекс ландшафту всередині набору ландшафтів, до якого належить цей тайл "
+"(плитка). [code]-1[/code] означає, що він не буде використовуватися в "
+"ландшафтах."
+
+msgid ""
+"The relative probability of this tile appearing when painting with \"Place "
+"Random Tile\" enabled."
+msgstr ""
+"Відносна ймовірність появи цьго тайлу (плитки) при малюванні з увімкненим "
+"параметром \"Розмістити випадкову плитку\"."
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"Поточне джерело атласу містить плитки за межами текстури.\n"
+"Ви можете очистити його за допомогою опції «%s» у меню з трьома крапками."
+
+msgid "Setup"
+msgstr "Налаштування"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr ""
+"Налаштування атласу. Інструмент додавання/видалення плиток (використовуйте "
+"клавішу Shift для створення великих плиток, Ctrl для редагування "
+"прямокутників)."
+
+msgid "Select tiles."
+msgstr "Вибрати плитки."
+
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"Не вибрано жодної плитки.\n"
+"Виберіть одну або декілька плиток з палітри, щоб змінити їхні властивості."
+
+msgid "Paint Properties:"
+msgstr "Властивості малювання:"
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "Створення плиток у непрозорих областях текстур"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "Видалити плитки у повністю прозорих областях текстури"
+
+msgid "Create an Alternative Tile"
+msgstr "Створити альтернативну плитку"
+
+msgid "Create a Tile"
+msgstr "Створити плитку"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "Автоматично створювати плитки у непрозорих областях текстур?"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"Текстуру атласу було змінено.\n"
+"Бажаєте автоматично створити плитки в атласі?"
+
+msgid "Invalid texture selected."
+msgstr "Обрано невірну текстуру."
+
+msgid "Add a new atlas source"
+msgstr "Додати нове джерело атласу"
+
+msgid "Remove source"
+msgstr "Видалити джерело"
+
+msgid "Add atlas source"
+msgstr "Додати джерело атласу"
+
+msgid "TileSet"
+msgstr "TileSet"
+
+msgid "Open TileSet Dock"
+msgstr "Відкрити док TileSet"
+
+msgid "Tile Sources"
+msgstr "Джерела плитки"
+
+msgid "Sort Sources"
+msgstr "Сортувати джерела"
+
+msgid "A palette of tiles made from a texture."
+msgstr "Палітра плитки з текстури."
+
+msgid "Scenes Collection"
+msgstr "Колекція сцен"
+
+msgid "A collection of scenes that can be instantiated and placed as tiles."
+msgstr "Набір сцен, які можна створювати та розміщувати як плитки."
+
+msgid "Open Atlas Merging Tool"
+msgstr "Відкрити інструмент злиття атласів"
+
+msgid "Manage Tile Proxies"
+msgstr "Керівник проксі плиток"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Не вибрано жодного джерела TileSet.\n"
+"Виберіть або створіть джерело TileSet'а. Ви можете створити нове джерело за "
+"допомогою кнопки Додати ліворуч або перетягнувши текстуру набору плиток до "
+"списку джерел."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "Додати нові візерунки в режимі редагування Карти плиток."
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"Попередження: Зміна ідентифікатора джерела призведе до того, що всі TileMaps, "
+"які використовують це джерело, посилатимуться на недійсне джерело. Це може "
+"призвести до неочікуваної втрати даних. Змінюйте цей ідентифікатор обережно."
+
+msgid "Add a Scene Tile"
+msgstr "Додайте плитку сцени"
+
+msgid "Remove a Scene Tile"
+msgstr "Видалити плитку сцени"
+
+msgid "Drag and drop scenes here or use the Add button."
+msgstr "Перетягніть сцени сюди або скористайтеся кнопкою «Додати»."
+
+msgid ""
+"The human-readable name for the scene collection. Use a descriptive name here "
+"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
+msgstr ""
+"Зрозуміла назва колекції сцен. Використовуйте тут описову назву для "
+"організаційних цілей (наприклад, «перешкоди», «прикраси» тощо)."
+
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"ID плитки сцени в колекції. Кожна намальована плитка має пов’язаний "
+"ідентифікатор, тому зміна цієї властивості може спричинити неправильне "
+"відображення ваших TileMaps."
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "Абсолютний шлях до сцени, пов’язаної з цією плиткою."
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"Якщо [code]true[/code], маркер-заповнювач відображатиметься поверх "
+"попереднього перегляду сцени. Маркер все одно відображається, якщо сцена не "
+"має дійсного попереднього перегляду."
+
+msgid "Scenes collection properties:"
+msgstr "Властивості колекції сцен:"
+
+msgid "Tile properties:"
+msgstr "Властивості плитки:"
+
+msgid "Eraser Tool"
+msgstr "Гумковий Інструмент"
+
+msgid "Picker Tool"
+msgstr "Інструмент вибору"
+
+msgid ""
+"Source ID: %d\n"
+"Texture path: %s"
+msgstr ""
+"Ідентифікатор джерела: %d\n"
+"Шлях текстури: %s"
+
+msgid "Source ID: %d"
+msgstr "Ідентифікатор джерела: %d"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Вузол TileMap застарів, оскільки його замінює використання кількох вузлів "
+"TileMapLayer.\n"
+"Щоб перетворити TileMap на набір вузлів TileMapLayer, відкрийте нижню панель "
+"TileMap, вибравши цей вузол, клацніть значок панелі інструментів у верхньому "
+"правому куті та виберіть «Витягнути шари TileMap як окремі вузли "
+"TileMapLayer»."
+
+msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"Відсортований за Y шар має таке саме значення індексу Z, що і не "
+"відсортований за Y шар.\n"
+"Це може призвести до небажаної поведінки, оскільки шар, який не відсортований "
+"за Y, буде відсортовано за Y в загальному з допомогою плиток з відсортованих "
+"за Y шарів."
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr ""
+"Шар Карти плиток визначено як відсортований за Y, але Y-сортування не "
+"увімкнено на самому вузлі TileMap."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"Вузол TileMap встановлено як Y-сортований, але Y-сортування не ввімкнено на "
+"жодному з шарів TileMap.\n"
+"Це може призвести до небажаної поведінки, оскільки шар, який не відсортовано "
+"за Y, буде відсортовано за Y загалом."
+
+msgid ""
+"Isometric TileSet will likely not look as intended without Y-sort enabled for "
+"the TileMap and all of its layers."
+msgstr ""
+"Ізометричний Набір плиток, ймовірно, не виглядатиме так, як передбачалося, "
+"без увімкненого Y-сортування для Карти плиток і всіх її шарів."
+
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr "Стала Ойлера (2.718282). Це значення є основою натурального логарифма."
 
@@ -18935,15 +18273,6 @@ msgstr "Стала τ (6.283185), радіанна міра кута у 360 гр
 msgid "Sqrt2 constant (1.414214). Square root of 2."
 msgstr "Квадратний корінь з двох (1.414214)."
 
-msgid "Drag and drop nodes here to attach them."
-msgstr "Перетягніть вузли сюди, щоб приєднати їх."
-
-msgid "Add Input"
-msgstr "Додати вхід"
-
-msgid "Add Output"
-msgstr "Додати вихід"
-
 msgid "Int"
 msgstr "Міжн"
 
@@ -18958,6 +18287,15 @@ msgstr "Vector4"
 
 msgid "Sampler"
 msgstr "Зразок"
+
+msgid "Drag and drop nodes here to attach them."
+msgstr "Перетягніть вузли сюди, щоб приєднати їх."
+
+msgid "Add Input"
+msgstr "Додати вхід"
+
+msgid "Add Output"
+msgstr "Додати вихід"
 
 msgid "[default]"
 msgstr "[за замовчуванням]"
@@ -19429,18 +18767,6 @@ msgstr "Вхідний параметр «%s» для режиму світла 
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "Вхідний параметр «%s» для режиму вершин шейдера."
 
-msgid "'%s' input parameter for start shader mode."
-msgstr "Вхідний параметр '%s' для режиму запуску шейдера."
-
-msgid "'%s' input parameter for process shader mode."
-msgstr "'%s' вхідний параметр для режиму обробки шейдера."
-
-msgid "'%s' input parameter for start and process shader modes."
-msgstr "'%s' вхідний параметр для режимів запуску та обробки шейдерів."
-
-msgid "'%s' input parameter for process and collide shader modes."
-msgstr "'%s' вхідний параметр для режимів обробки та зіткнення шейдерів."
-
 msgid ""
 "A node for help to multiply a position input vector by rotation using "
 "specific axis. Intended to work with emitters."
@@ -19805,9 +19131,6 @@ msgstr ""
 msgid "Reconstructs the World Position of the Node from the depth texture."
 msgstr "Відновлює світову позицію вузла на основі текстури глибини."
 
-msgid "Unpacks the Screen Normal Texture in World Space"
-msgstr "Розпаковує нормальну текстуру екрана у світовому просторі"
-
 msgid "Perform the 2D texture lookup."
 msgstr "Виконує пошук 2D текстури."
 
@@ -19925,13 +19248,6 @@ msgid "Returns a random value between the minimum and maximum input values."
 msgstr ""
 "Повертає випадкове значення між мінімальним та максимальним значенням вхідних "
 "даних."
-
-msgid ""
-"Builds a rotation matrix from the given axis and angle, multiply the input "
-"vector by it and returns both this vector and a matrix."
-msgstr ""
-"Будує матрицю обертання на основі заданої осі та кута, множить на них вхідний "
-"вектор і повертає як цей вектор, так і матрицю."
 
 msgid "Vector function."
 msgstr "Векторна функція."
@@ -20341,9 +19657,6 @@ msgstr "Символ \"%s\" не може бути першим символом
 msgid "The package must have at least one '.' separator."
 msgstr "У пакеті має бути принаймні один '.' сепаратор."
 
-msgid "Error creating keystores directory:"
-msgstr "Помилка створення каталогу сховищ ключів:"
-
 msgid "Invalid package name:"
 msgstr "Некоректна назва пакунка:"
 
@@ -20483,13 +19796,6 @@ msgid "Custom Android source template not found."
 msgstr "Користувацький вихідний шаблон Android не знайдено."
 
 msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr ""
-"У проєкті не встановлено шаблон збирання Android. Встановіть його за "
-"допомогою меню «Проєкт»."
-
-msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
@@ -20511,58 +19817,14 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "У шаблоні експортування неправильно налаштовано сховище ключів випуску."
 
-msgid "A valid Java SDK path is required in Editor Settings."
-msgstr "У налаштуваннях редактора потрібен дійсний шлях Java SDK."
-
-msgid "Invalid Java SDK path in Editor Settings."
-msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
-
-msgid "Missing 'bin' directory!"
-msgstr "Відсутній каталог \"bin\"!"
-
-msgid "Unable to find 'java' command using the Java SDK path."
-msgstr "Неможливо знайти команду «java» за допомогою шляху Java SDK."
-
-msgid "Please check the Java SDK directory specified in Editor Settings."
+msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
-"Будь ласка, перевірте каталог Java SDK, указаний у налаштуваннях редактора."
-
-msgid "A valid Android SDK path is required in Editor Settings."
-msgstr ""
-"У параметрах редактора має бути вказано коректний шлях до SDK для Android."
-
-msgid "Invalid Android SDK path in Editor Settings."
-msgstr "Некоректний шлях до SDK для Android у параметрах редактора."
-
-msgid "Missing 'platform-tools' directory!"
-msgstr "Не знайдено каталогу «platform-tools»!"
-
-msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr ""
-"Не вдалося знайти програми adb із інструментів платформи SDK для Android."
+"Не вдалося знайти програми apksigner з інструментів збирання SDK для Android."
 
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr ""
 "Будь ласка, перевірте, чи правильно вказано каталог SDK для Android у "
 "параметрах редактора."
-
-msgid "Missing 'build-tools' directory!"
-msgstr "Не знайдено каталогу «build-tools»!"
-
-msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr ""
-"Не вдалося знайти програми apksigner з інструментів збирання SDK для Android."
-
-msgid ""
-"ETC2/ASTC texture compression is required for Android export. In Project "
-"Settings, search for 'ETC2' in the search field, or enable 'Advanced "
-"Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import "
-"ETC2 ASTC'."
-msgstr ""
-"Для експорту на Android необхідне стиснення текстур у форматі ETC2/ASTC. У "
-"налаштуваннях проєкту введіть «ETC2» у поле пошуку або увімкніть «Розширені "
-"налаштування» та перейдіть до розділу «Рендеринг» > «Текстури» > «Стиснення "
-"VRAM», щоб увімкнути опцію «Імпортувати ETC2 ASTC»."
 
 msgid "\"Use Gradle Build\" is required for transparent background on Android"
 msgstr ""
@@ -20592,9 +19854,6 @@ msgid ""
 msgstr ""
 "Назва проекту не відповідає вимогам до формату назви пакету та буде замінено "
 "на \"%s\". Будь ласка, вкажіть іншу назву пакету, якщо потрібно."
-
-msgid "AAB signing is not supported"
-msgstr "Підписання AAB не підтримується"
 
 msgid "Signing debug APK..."
 msgstr "Підписання налагоджувального APK..."
@@ -20666,14 +19925,6 @@ msgstr ""
 
 msgid "Unsupported export format!"
 msgstr "Непідтримуваний формат експортування!"
-
-msgid ""
-"Trying to build from a gradle built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Намагаємося виконати збирання на основі нетипового шаблона збирання, але не "
-"виявлено даних щодо версії. Будь ласка, повторно встановіть шаблон за "
-"допомогою меню «Проєкт»."
 
 msgid ""
 "Java SDK path must be configured in Editor Settings at 'export/android/"
@@ -20754,12 +20005,6 @@ msgstr "Не вдалося розпакувати тимчасовий неви
 
 msgid "Metal renderer require iOS 14+."
 msgstr "Metal renderer вимагає iOS 14+."
-
-msgid "Export Icons"
-msgstr "Експортування піктограм"
-
-msgid "Could not open a directory at path \"%s\"."
-msgstr "Не вдалося відкрити каталог на шляху \"%s\"."
 
 msgid "Debug Script Export"
 msgstr "Експорт сценарію налагодження"
@@ -21014,6 +20259,9 @@ msgstr "Неможливо підписати каталог %s."
 msgid "Cannot sign file %s."
 msgstr "Не вдається підписати файл %s."
 
+msgid "Could not open \"%s\"."
+msgstr "Не вдалося відкрити \"%s\"."
+
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr ""
 "Відносні символічні посилання не підтримуються, експортований \"%s\" може "
@@ -21043,6 +20291,12 @@ msgstr "`hdiutil create` не вдалося - файл існує."
 msgid "`hdiutil create` failed."
 msgstr "`hdiutil create` не вдалося."
 
+msgid "Could not create directory \"%s\"."
+msgstr "Не вдалося створити каталог \"%s\"."
+
+msgid "Could not create directory: \"%s\"."
+msgstr "Не вдалося створити каталог: \"%s\"."
+
 msgid "Exporting for macOS"
 msgstr "Експорт для macOS"
 
@@ -21054,12 +20308,6 @@ msgstr "Не вдалося знайти шаблон програми для е
 
 msgid "Invalid export format."
 msgstr "Неправильний формат експорту."
-
-msgid "Could not create directory: \"%s\"."
-msgstr "Не вдалося створити каталог: \"%s\"."
-
-msgid "Could not create directory \"%s\"."
-msgstr "Не вдалося створити каталог \"%s\"."
 
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might be "
@@ -21078,9 +20326,6 @@ msgstr ""
 "Не вдалося встановити дозволи Unix для виконуваного файлу \"%s\". "
 "Використовуйте \"chmod +x\", щоб установити його після перенесення "
 "експортованого .app до macOS або Linux."
-
-msgid "Could not open \"%s\"."
-msgstr "Не вдалося відкрити \"%s\"."
 
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
@@ -21609,56 +20854,6 @@ msgstr ""
 "встановіть її."
 
 msgid ""
-"The TileMap node is deprecated as it is superseded by the use of multiple "
-"TileMapLayer nodes.\n"
-"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
-"panel with this node selected, click the toolbox icon in the top-right corner "
-"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
-msgstr ""
-"Вузол TileMap застарів, оскільки його замінює використання кількох вузлів "
-"TileMapLayer.\n"
-"Щоб перетворити TileMap на набір вузлів TileMapLayer, відкрийте нижню панель "
-"TileMap, вибравши цей вузол, клацніть значок панелі інструментів у верхньому "
-"правому куті та виберіть «Витягнути шари TileMap як окремі вузли "
-"TileMapLayer»."
-
-msgid ""
-"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole with tiles from Y-sorted layers."
-msgstr ""
-"Відсортований за Y шар має таке саме значення індексу Z, що і не "
-"відсортований за Y шар.\n"
-"Це може призвести до небажаної поведінки, оскільки шар, який не відсортований "
-"за Y, буде відсортовано за Y в загальному з допомогою плиток з відсортованих "
-"за Y шарів."
-
-msgid ""
-"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
-"node itself."
-msgstr ""
-"Шар Карти плиток визначено як відсортований за Y, але Y-сортування не "
-"увімкнено на самому вузлі TileMap."
-
-msgid ""
-"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
-"TileMap's layers.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole."
-msgstr ""
-"Вузол TileMap встановлено як Y-сортований, але Y-сортування не ввімкнено на "
-"жодному з шарів TileMap.\n"
-"Це може призвести до небажаної поведінки, оскільки шар, який не відсортовано "
-"за Y, буде відсортовано за Y загалом."
-
-msgid ""
-"Isometric TileSet will likely not look as intended without Y-sort enabled for "
-"the TileMap and all of its layers."
-msgstr ""
-"Ізометричний Набір плиток, ймовірно, не виглядатиме так, як передбачалося, "
-"без увімкненого Y-сортування для Карти плиток і всіх її шарів."
-
-msgid ""
 "Forward axis and primary rotation axis must not be parallel in setting %s."
 msgstr ""
 "Вісь руху вперед та основна вісь обертання не повинні бути паралельними в "
@@ -21696,10 +20891,6 @@ msgid ""
 msgstr ""
 "Анімація CPUParticles3D вимагає використання StandardMaterial3D, режим "
 "Billboard Mode якого встановлено на \"Particle Billboard\"."
-
-msgid "Decals are only available when using the Forward+ or Mobile renderer."
-msgstr ""
-"Декалі доступні лише під час використання рендерера Forward+ або Mobile."
 
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
@@ -21744,13 +20935,6 @@ msgstr ""
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Нічого не видно, оскільки сітки не було пов'язано із проходами малювання."
-
-msgid ""
-"Particles animation requires the usage of a BaseMaterial3D whose Billboard "
-"Mode is set to \"Particle Billboard\"."
-msgstr ""
-"Анімація частинок вимагає використання BaseMaterial3D, режим Billboard Mode "
-"якого встановлено на \"Particle Billboard\"."
 
 msgid ""
 "Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
@@ -22384,6 +21568,60 @@ msgstr ""
 "встановлено як «Вимкнено».\n"
 "Змініть режим обробки в інспекторі, щоб увімкнути відтворення."
 
+msgid "Create Horizontal and Vertical Guides"
+msgstr "Створити горизонтальні та вертикальні напрямні"
+
+msgid ""
+"Can't modify anchor offsets when the parent has a size of 0. Disable the "
+"anchors mode in the toolbar."
+msgstr ""
+"Неможливо змінити зміщення якорів, якщо розмір батьківського елемента "
+"дорівнює 0. Вимкніть режим якорів на панелі інструментів."
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "Встановити зсув бази CanvasItem «%s» у (%d, %d)"
+
+msgid "Rotate %d CanvasItems"
+msgstr "Обертати %d CanvasItem"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Обернути CanvasItem «%s» на %d градусів"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Пересунути прив'язку CanvasItem «%s»"
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "Масштабувати Node2D «%s» до (%s, %s)"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "Змінити розміри елемента керування «%s» до (%d, %d)"
+
+msgid "Scale %d CanvasItems"
+msgstr "Масштабувати %d CanvasItem"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Масштабувати CanvasItem «%s» до (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "Пересунути %d CanvasItem"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "Пересунути CanvasItem «%s» до (%d, %d)"
+
+msgid ""
+"Children of a container get their position and size determined only by their "
+"parent."
+msgstr ""
+"Дочки контейнера отримують позицію і розмір, які визначаються тільки їхнім "
+"батьком."
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Усі виділені CanvasItems або невидимі, або заблоковані певним чином і не "
+"можуть бути трансформовані."
+
 msgid "Top Orthogonal"
 msgstr "Верхній ортогональний"
 
@@ -22482,6 +21720,14 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s не можна скинути сюди. Використайте %s для скасування."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Для правильної роботи міток із увімкненим автоматичним перенесенням рядків "
+"необхідно налаштувати додаткову мінімальну або максимальну ширину з "
+"додатковим знаком."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

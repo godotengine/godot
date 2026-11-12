@@ -848,6 +848,21 @@ msgstr "ワーカープール"
 msgid "Low Priority Thread Ratio"
 msgstr "優先度の低いスレッドの比率"
 
+msgid "Target"
+msgstr "ターゲット"
+
+msgid "Start Offset"
+msgstr "始点オフセット"
+
+msgid "Max Results"
+msgstr "最大表示件数"
+
+msgid "Names"
+msgstr "名前"
+
+msgid "Strings"
+msgstr "文字列"
+
 msgid "Locale"
 msgstr "ロケール"
 
@@ -910,9 +925,6 @@ msgstr "ハンドルモード"
 
 msgid "Stream"
 msgstr "ストリーム"
-
-msgid "Start Offset"
-msgstr "始点オフセット"
 
 msgid "End Offset"
 msgstr "終点オフセット"
@@ -997,9 +1009,6 @@ msgstr "プッシュ通知"
 
 msgid "Access Wi-Fi"
 msgstr "Wi-Fiのアクセス"
-
-msgid "Performance Gaming Tier"
-msgstr "ゲーミング性能ランク"
 
 msgid "Shader Baker"
 msgstr "シェーダーベイカー"
@@ -1520,12 +1529,6 @@ msgstr "垂直"
 msgid "Layout"
 msgstr "レイアウト"
 
-msgid "Fix Alpha Border"
-msgstr "アルファ境界を修正"
-
-msgid "Premult Alpha"
-msgstr "乗算済みアルファ"
-
 msgid "Normal Map"
 msgstr "法線マップ"
 
@@ -1534,6 +1537,12 @@ msgstr "ラフネス"
 
 msgid "Src Normal"
 msgstr "ラフネス用の法線マップ"
+
+msgid "Fix Alpha Border"
+msgstr "アルファ境界を修正"
+
+msgid "Premult Alpha"
+msgstr "乗算済みアルファ"
 
 msgid "Process"
 msgstr "インポートプロセス"
@@ -1691,27 +1700,6 @@ msgstr "バージョンコントロール"
 
 msgid "Plugin Name"
 msgstr "プラグイン名"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "テクスチャ"
-
-msgid "Margins"
-msgstr "マージン"
-
-msgid "Separation"
-msgstr "分離"
-
-msgid "Alternative ID"
-msgstr "代替ID"
-
-msgid "Speed"
-msgstr "速さ"
-
-msgid "Frames Count"
-msgstr "フレーム数"
 
 msgid "Editors"
 msgstr "エディター"
@@ -1872,11 +1860,11 @@ msgstr "継続的に更新"
 msgid "Collapse Main Menu"
 msgstr "メインメニューを折りたたむ"
 
-msgid "Derive Script Globals by Name"
-msgstr "名前からスクリプト内のグローバルスコープを推論する"
-
 msgid "Scene Tree"
 msgstr "シーンツリー"
+
+msgid "Derive Script Globals by Name"
+msgstr "名前からスクリプト内のグローバルスコープを推論する"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "ユニーク名を無効にする前に確認する"
@@ -2072,9 +2060,6 @@ msgstr "表示モード"
 
 msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
-
-msgid "Max Results"
-msgstr "最大表示件数"
 
 msgid "Blender"
 msgstr "Blender"
@@ -2298,11 +2283,11 @@ msgstr "シーンを変更したとき、そのシーンにアタッチしたス
 msgid "Drop Preload Resources as UID"
 msgstr "プリロードリソースをUIDとしてドロップ"
 
-msgid "Documentation"
-msgstr "ドキュメント"
-
 msgid "Enable Tooltips"
 msgstr "ツールチップを有効化"
+
+msgid "Documentation"
+msgstr "ドキュメント"
 
 msgid "Script List"
 msgstr "スクリプト一覧"
@@ -3012,9 +2997,6 @@ msgstr "Windowsアイコン"
 msgid "Text Driver"
 msgstr "テキストドライバー"
 
-msgid "Search in File Extensions"
-msgstr "ファイル拡張子で検索"
-
 msgid "Mouse Cursor"
 msgstr "マウスカーソル"
 
@@ -3474,17 +3456,83 @@ msgstr "最大異方性"
 msgid "Bone Update"
 msgstr "ボーン更新"
 
-msgid "Names"
-msgstr "名前"
+msgid "ID"
+msgstr "ID"
 
-msgid "Strings"
-msgstr "文字列"
+msgid "Texture"
+msgstr "テクスチャ"
+
+msgid "Margins"
+msgstr "マージン"
+
+msgid "Separation"
+msgstr "分離"
+
+msgid "Alternative ID"
+msgstr "代替ID"
+
+msgid "Speed"
+msgstr "速さ"
+
+msgid "Frames Count"
+msgstr "フレーム数"
+
+msgid "Tile Set"
+msgstr "タイルセット"
+
+msgid "Y Sort Origin"
+msgstr "Yソート原点"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "Custom Data"
+msgstr "カスタムデータ"
+
+msgid "Tile Size"
+msgstr "タイルサイズ"
+
+msgid "Physics Layers"
+msgstr "物理レイヤー"
+
+msgid "Scene"
+msgstr "シーン"
+
+msgid "Polygons Count"
+msgstr "ポリゴン数"
+
+msgid "Points"
+msgstr "点"
+
+msgid "Flip H"
+msgstr "水平反転"
+
+msgid "Flip V"
+msgstr "垂直反転"
+
+msgid "Transpose"
+msgstr "行列(縦横)入れ替え"
+
+msgid "Texture Origin"
+msgstr "テクスチャの原点"
+
+msgid "Modulate"
+msgstr "変調"
+
+msgid "Z Index"
+msgstr "Zインデックス"
+
+msgid "Probability"
+msgstr "確率"
 
 msgid "Flags"
 msgstr "フラグ"
 
 msgid "Expression"
 msgstr "式"
+
+msgid "Group"
+msgstr "グループ"
 
 msgid "Constant"
 msgstr "コンスタント"
@@ -3635,6 +3683,9 @@ msgstr "権限"
 
 msgid "Custom Permissions"
 msgstr "カスタムの権限"
+
+msgid "Performance Gaming Tier"
+msgstr "ゲーミング性能ランク"
 
 msgid "Spotlight 80 X 80"
 msgstr "Spotlight 80 x 80"
@@ -3885,12 +3936,6 @@ msgstr "スピードスケール"
 msgid "Centered"
 msgstr "中央"
 
-msgid "Flip H"
-msgstr "水平反転"
-
-msgid "Flip V"
-msgstr "垂直反転"
-
 msgid "Current"
 msgstr "現在"
 
@@ -3974,9 +4019,6 @@ msgstr "放出シェイプ"
 
 msgid "Shape"
 msgstr "シェイプ"
-
-msgid "Points"
-msgstr "点"
 
 msgid "Colors"
 msgstr "カラー"
@@ -4248,12 +4290,6 @@ msgstr "横フレーム数"
 msgid "Vframes"
 msgstr "縦フレーム数"
 
-msgid "Tile Set"
-msgstr "タイルセット"
-
-msgid "Y Sort Origin"
-msgstr "Yソート原点"
-
 msgid "Enabling"
 msgstr "有効化"
 
@@ -4350,9 +4386,6 @@ msgstr "パラメーター"
 
 msgid "Emission Energy"
 msgstr "発光エネルギー"
-
-msgid "Modulate"
-msgstr "変調"
 
 msgid "Albedo Mix"
 msgstr "アルベドミックス"
@@ -4513,11 +4546,8 @@ msgstr "プロファイル"
 msgid "Show Rest Only"
 msgstr "レストのみを表示"
 
-msgid "Target"
-msgstr "ターゲット"
-
-msgid "Track Physics Step"
-msgstr "物理ステップの追跡"
+msgid "Max Length"
+msgstr "最大長"
 
 msgid "Sorting"
 msgstr "ソート"
@@ -4714,9 +4744,6 @@ msgstr "アイコンスケール"
 msgid "Label Settings"
 msgstr "ラベル設定"
 
-msgid "Max Length"
-msgstr "最大長"
-
 msgid "URI"
 msgstr "URI"
 
@@ -4768,6 +4795,9 @@ msgstr "スクロール可能"
 msgid "Update on Text Changed"
 msgstr "テキスト変更時の更新"
 
+msgid "Format"
+msgstr "フォーマット"
+
 msgid "Current Tab"
 msgstr "現在のタブ"
 
@@ -4795,9 +4825,6 @@ msgstr "オーディオトラック"
 msgid "Expand"
 msgstr "拡大"
 
-msgid "Z Index"
-msgstr "Zインデックス"
-
 msgid "Use Parent Material"
 msgstr "親のマテリアルを使用"
 
@@ -4821,9 +4848,6 @@ msgstr "ノード名と番号の区切り"
 
 msgid "Node Name Casing"
 msgstr "ノード名の命名規則"
-
-msgid "Group"
-msgstr "グループ"
 
 msgid "Shape Color"
 msgstr "シェイプ色"
@@ -4954,38 +4978,8 @@ msgstr "B"
 msgid "Use Gravity"
 msgstr "重力を使用"
 
-msgid "Terrains"
-msgstr "地形"
-
-msgid "Custom Data"
-msgstr "カスタムデータ"
-
-msgid "Tile Size"
-msgstr "タイルサイズ"
-
-msgid "Physics Layers"
-msgstr "物理レイヤー"
-
-msgid "Scene"
-msgstr "シーン"
-
-msgid "Polygons Count"
-msgstr "ポリゴン数"
-
-msgid "Transpose"
-msgstr "行列(縦横)入れ替え"
-
-msgid "Texture Origin"
-msgstr "テクスチャの原点"
-
-msgid "Probability"
-msgstr "確率"
-
 msgid "Distance"
 msgstr "距離"
-
-msgid "Item"
-msgstr "アイテム"
 
 msgid "Add UV2"
 msgstr "UV2を追加"
@@ -5053,8 +5047,14 @@ msgstr "一時停止"
 msgid "Atlas"
 msgstr "アトラス"
 
-msgid "Format"
-msgstr "フォーマット"
+msgid "Buffer Length"
+msgstr "バッファサイズ"
+
+msgid "Playback Mode"
+msgstr "再生モード"
+
+msgid "Random Volume Offset dB"
+msgstr "ランダム音量オフセット (dB)"
 
 msgid "Exposure"
 msgstr "露出"
@@ -5649,15 +5649,6 @@ msgstr "入力デバイス"
 
 msgid "Playback Speed Scale"
 msgstr "再生スピードスケール"
-
-msgid "Playback Mode"
-msgstr "再生モード"
-
-msgid "Random Volume Offset dB"
-msgstr "ランダム音量オフセット (dB)"
-
-msgid "Buffer Length"
-msgstr "バッファサイズ"
 
 msgid "Dry"
 msgstr "ドライ"
