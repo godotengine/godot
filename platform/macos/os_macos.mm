@@ -318,7 +318,9 @@ String OS_MacOS::get_version() const {
 String OS_MacOS::get_version_alias() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	String macos_string;
-	if (ver.majorVersion == 26) {
+	if (ver.majorVersion == 27) {
+		macos_string += "Golden Gate";
+	} else if (ver.majorVersion == 26) {
 		macos_string += "Tahoe";
 	} else if (ver.majorVersion == 15) {
 		macos_string += "Sequoia";
