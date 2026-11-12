@@ -512,7 +512,7 @@ void EditorAssetLibraryItemDescription::_zoom_toggled(bool p_pressed) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const String &p_ai_reason, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
 	asset_id = p_asset_id;
 	title = p_title;
 	item->configure(p_title, p_asset_id, p_author, p_author_id, p_verified, p_license_type, p_license_url, p_rating);
@@ -532,8 +532,12 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, const S
 	description->clear();
 	description->append_text(p_description);
 
+	if (!p_ai_reason.is_empty()) {
+		description->append_text("\n\n[b]" + TTR("This Item Uses AI") + "[/b]\n" + p_ai_reason);
+	}
+
 	if (!p_tags.is_empty()) {
-		description->append_text("\n[b]" + TTR("Tags:") + "[/b]");
+		description->append_text("\n\n[b]" + TTR("Tags:") + "[/b]");
 		for (const KeyValue<String, String> &KV : p_tags) {
 			description->add_text(" ");
 			description->push_meta("#" + KV.value);
@@ -1564,6 +1568,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	args += "&type=" + String(templates_only ? "1" : "0");
 	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
+	String ai = uses_ai->get_selected_metadata();
+	if (!ai.is_empty()) {
+		args += "&uses_ai=" + ai;
+	}
+
 	if (!EDITOR_GET("asset_store/show_incompatible_assets")) {
 		args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
 		if (GODOT_VERSION_PATCH > 0) {
@@ -1954,6 +1963,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			ERR_FAIL_COND(!d.has("body_bbcode"));
 			ERR_FAIL_COND(!d.has("source"));
 			ERR_FAIL_COND(!d.has("store_url"));
+			ERR_FAIL_COND(!d.has("uses_ai_reason"));
 
 			ERR_FAIL_COND(!d.has("publisher"));
 			Dictionary p = d["publisher"];
@@ -1980,7 +1990,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect(SNAME("install_requested"), callable_mp(this, &EditorAssetLibrary::_install_asset));
 			description->connect(SNAME("tag_clicked"), callable_mp(this, &EditorAssetLibrary::_tag_clicked));
 
-			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
+			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], d["uses_ai_reason"], tags, d["store_url"], d["source"]);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(d["slug"]);
 			if (download_item) {
@@ -2289,6 +2299,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
+
+	search_hb2->add_child(memnew(Label(TTRC("Uses AI:"))));
+	uses_ai = memnew(OptionButton);
+	uses_ai->add_item(TTRC("No Preference"));
+	uses_ai->set_item_metadata(-1, "");
+	uses_ai->add_item(TTRC("Exclude"));
+	uses_ai->set_item_metadata(-1, "False");
+	uses_ai->set_clip_text(true);
+	uses_ai->set_fit_to_longest_item(false);
+	uses_ai->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_hb2->add_child(uses_ai);
+	uses_ai->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Source:"))));
 	repository = memnew(OptionButton);
