@@ -72,7 +72,9 @@ void Quaternion::normalize() {
 }
 
 Quaternion Quaternion::normalized() const {
-	return *this / length();
+	Quaternion q = *this;
+	q.normalize();
+	return q;
 }
 
 bool Quaternion::is_normalized() const {
