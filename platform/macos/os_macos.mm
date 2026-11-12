@@ -340,7 +340,7 @@ String OS_MacOS::get_version_alias() const {
 	} else if (ver.majorVersion == 10 && ver.minorVersion == 13) {
 		macos_string += "High Sierra";
 	} else {
-		macos_string += "Unknown";
+		macos_string += itos(ver.majorVersion);
 	}
 	// macOS versions older than 10.13 cannot run Godot.
 	return vformat("%s (%s)", macos_string, get_version());
