@@ -1564,6 +1564,11 @@ void EditorAssetLibrary::_search(int p_page) {
 	args += "&type=" + String(templates_only ? "1" : "0");
 	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
+	String ai = uses_ai->get_selected_metadata();
+	if (!ai.is_empty()) {
+		args += "&uses_ai=" + ai;
+	}
+
 	if (!EDITOR_GET("asset_store/show_incompatible_assets")) {
 		args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
 		if (GODOT_VERSION_PATCH > 0) {
@@ -2289,6 +2294,20 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
+
+	search_hb2->add_child(memnew(Label(TTRC("Uses AI:"))));
+	uses_ai = memnew(OptionButton);
+	uses_ai->add_item(TTRC("No Preference"));
+	uses_ai->set_item_metadata(-1, "");
+	uses_ai->add_item(TTRC("Uses AI"));
+	uses_ai->set_item_metadata(-1, "True");
+	uses_ai->add_item(TTRC("No AI"));
+	uses_ai->set_item_metadata(-1, "False");
+	uses_ai->set_clip_text(true);
+	uses_ai->set_fit_to_longest_item(false);
+	uses_ai->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	search_hb2->add_child(uses_ai);
+	uses_ai->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Source:"))));
 	repository = memnew(OptionButton);
