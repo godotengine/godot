@@ -286,9 +286,7 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 			// We're done! We read back the whole file.
 			read_block--;
 			at_end = true;
-			if (dst_idx + 1 < p_length) {
-				read_eof = true;
-			}
+			read_eof = true;
 			return dst_idx;
 		}
 
