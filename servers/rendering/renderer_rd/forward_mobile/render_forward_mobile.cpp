@@ -470,6 +470,17 @@ void RenderForwardMobile::update() {
 	RendererSceneRenderRD::update();
 	_update_global_pipeline_data_requirements_from_project();
 	_update_global_pipeline_data_requirements_from_light_storage();
+
+	// GPU particles stay queued: their first update has to run post-cull, in _fill_render_list().
+	SelfList<GeometryInstanceForwardMobile> *E = geometry_instance_dirty_list.first();
+	while (E) {
+		SelfList<GeometryInstanceForwardMobile> *next = E->next();
+		if (E->self()->data->base_type != RSE::INSTANCE_PARTICLES) {
+			_geometry_instance_update(E->self());
+		}
+		E = next;
+	}
+	_update_dirty_geometry_pipelines();
 }
 
 /* Render functions */
