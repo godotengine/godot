@@ -3689,6 +3689,10 @@ RenderForwardMobile::RenderForwardMobile() {
 	const bool root_hdr_render_target = GLOBAL_GET("rendering/viewport/hdr_2d");
 	global_pipeline_data_required.use_hdr_render_target = root_hdr_render_target;
 	global_pipeline_data_required.use_ldr_render_target = !root_hdr_render_target;
+	global_pipeline_data_required.use_multiview = scene_shader.is_multiview_shader_group_enabled();
+	// SceneTree defines rendering/vrs/mode after the renderer is created, so it may not exist yet.
+	const int vrs_mode = ProjectSettings::get_singleton()->has_setting("rendering/vrs/mode") ? int(GLOBAL_GET("rendering/vrs/mode")) : 0;
+	global_pipeline_data_required.use_vrs = is_vrs_supported() && vrs_mode != RSE::VIEWPORT_VRS_DISABLED;
 }
 
 RenderForwardMobile::~RenderForwardMobile() {
