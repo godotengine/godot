@@ -918,8 +918,16 @@
 	}
 
 	if ([event phase] != NSEventPhaseNone || [event momentumPhase] != NSEventPhaseNone) {
+		// Touchpad with inertial scrolling, keep deltas as is.
 		[self processPanEvent:event dx:delta_x dy:delta_y];
 	} else {
+		// Mouse scroll wheel.
+		if ([event hasPreciseScrollingDeltas]) {
+			// Deltas are in pixels, convert to lines.
+			delta_x /= 32.0;
+			delta_y /= 32.0;
+		}
+
 		double delta_x_abs = Math::abs(delta_x);
 		double delta_y_abs = Math::abs(delta_y);
 
