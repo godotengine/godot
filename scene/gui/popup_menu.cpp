@@ -791,7 +791,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 
 			if (!item_clickable_area.has_point(pos)) {
 				if (mouse_over >= 0) {
-					_mouse_over_update(pos);
+					_mouse_over_update(pos, false);
 				}
 				return;
 			}
@@ -802,7 +802,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			}
 
 			touch_pressed_item = over;
-			_mouse_over_update(pos);
+			_mouse_over_update(pos, false);
 		}
 
 		if (touch->is_released()) {
@@ -817,22 +817,28 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			}
 
 			int over = _get_mouse_over(pos);
-			if (over < 0 || items[over].separator || items[over].disabled) {
+			// Verify tap released on the same item it started on.
+			if (over < 0 || over != touch_pressed_item) {
 				return;
 			}
 
-			// Verify tap released on the same item it started on.
-			if (over == touch_pressed_item) {
-				if (items[over].submenu) {
-					if (!items[over].submenu->is_visible()) {
-						_activate_submenu(over);
-					}
-					return;
-				}
-				activate_item(over);
+			if (items[over].separator) {
+				return;
 			}
 
-			touch_pressed_item = -1;
+			play_theme_sound(items[over].disabled ? theme_cache.item_activated_disabled_sound : theme_cache.item_activated_sound);
+
+			if (items[over].disabled) {
+				return;
+			}
+
+			if (items[over].submenu) {
+				if (!items[over].submenu->is_visible()) {
+					_activate_submenu(over);
+				}
+				return;
+			}
+			activate_item(over);
 		}
 	}
 
@@ -913,7 +919,7 @@ bool PopupMenu::_is_mouse_moving_toward_submenu(const Vector2 &p_relative, bool 
 	return bottom_target.dot(p_relative) > 0 && top_target.dot(p_relative) > 0;
 }
 
-void PopupMenu::_mouse_over_update(const Point2 &p_over) {
+void PopupMenu::_mouse_over_update(const Point2 &p_over, bool p_play_sound) {
 	int over_index = _get_mouse_over(p_over);
 	int id = (over_index < 0 || items[over_index].separator || items[over_index].disabled) ? -1 : (items[over_index].id >= 0 ? items[over_index].id : over_index);
 	if (id < 0) {
@@ -945,7 +951,7 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 
 	if (over_index != mouse_over) {
 		mouse_over = over_index;
-		if (!items[over_index].disabled) {
+		if (p_play_sound && !items[over_index].disabled) {
 			play_theme_sound(theme_cache.item_hovered_sound);
 		}
 		queue_accessibility_update();
