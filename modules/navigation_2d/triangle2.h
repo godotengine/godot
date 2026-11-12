@@ -43,7 +43,7 @@ struct Triangle2 {
 
 	Vector2 get_closest_point_to(const Vector2 &p_point) const;
 
-	Triangle2() {}
+	Triangle2() = default;
 	Triangle2(const Vector2 &p_v1, const Vector2 &p_v2, const Vector2 &p_v3) {
 		vertex[0] = p_v1;
 		vertex[1] = p_v2;

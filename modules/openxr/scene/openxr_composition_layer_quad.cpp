@@ -51,8 +51,7 @@ OpenXRCompositionLayerQuad::OpenXRCompositionLayerQuad() {
 	}
 }
 
-OpenXRCompositionLayerQuad::~OpenXRCompositionLayerQuad() {
-}
+OpenXRCompositionLayerQuad::~OpenXRCompositionLayerQuad() = default;
 
 void OpenXRCompositionLayerQuad::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quad_size", "size"), &OpenXRCompositionLayerQuad::set_quad_size);

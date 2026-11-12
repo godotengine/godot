@@ -269,7 +269,7 @@ public:
 		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
-		Iterator() {}
+		Iterator() = default;
 		Iterator(const Iterator &p_it) { elem_ptr = p_it.elem_ptr; }
 
 	private:
@@ -294,7 +294,7 @@ public:
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
-		ConstIterator() {}
+		ConstIterator() = default;
 		ConstIterator(const ConstIterator &p_it) { elem_ptr = p_it.elem_ptr; }
 
 	private:
@@ -315,7 +315,7 @@ public:
 		return ConstIterator(ptr() + size());
 	}
 
-	_FORCE_INLINE_ Vector() {}
+	_FORCE_INLINE_ Vector() = default;
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
 	_FORCE_INLINE_ explicit Vector(Span<T> p_span) :

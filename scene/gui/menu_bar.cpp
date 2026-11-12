@@ -1017,5 +1017,4 @@ MenuBar::MenuBar() {
 	set_process_shortcut_input(true);
 }
 
-MenuBar::~MenuBar() {
-}
+MenuBar::~MenuBar() = default;

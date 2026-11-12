@@ -44,7 +44,7 @@ class Vector;
 
 class RendererParticlesStorage {
 public:
-	virtual ~RendererParticlesStorage() {}
+	virtual ~RendererParticlesStorage() = default;
 
 	/* PARTICLES */
 

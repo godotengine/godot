@@ -57,7 +57,7 @@ private:
 		int pos = 0;
 		int extra_spread_frames = 0;
 
-		Comb() {}
+		Comb() = default;
 	};
 
 	struct AllPass {
@@ -65,7 +65,7 @@ private:
 		float *buffer = nullptr;
 		int pos = 0;
 		int extra_spread_frames = 0;
-		AllPass() {}
+		AllPass() = default;
 	};
 
 	Comb comb[MAX_COMBS];

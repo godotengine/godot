@@ -533,8 +533,7 @@ Error EGLManager::initialize(void *p_native_display) {
 	return OK;
 }
 
-EGLManager::EGLManager() {
-}
+EGLManager::EGLManager() = default;
 
 EGLManager::~EGLManager() {
 	for (unsigned int i = 0; i < displays.size(); i++) {

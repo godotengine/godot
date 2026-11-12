@@ -46,8 +46,7 @@ RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_textures_require_layout_transitions = false;
 }
 
-RenderingDeviceGraph::~RenderingDeviceGraph() {
-}
+RenderingDeviceGraph::~RenderingDeviceGraph() = default;
 
 String RenderingDeviceGraph::_usage_to_string(ResourceUsage p_usage) {
 	switch (p_usage) {

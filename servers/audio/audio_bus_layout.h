@@ -55,7 +55,7 @@ class AudioBusLayout : public Resource {
 		float volume_db = 0.0f;
 		StringName send;
 
-		Bus() {}
+		Bus() = default;
 	};
 
 	Vector<Bus> buses;

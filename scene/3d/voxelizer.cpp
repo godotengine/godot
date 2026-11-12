@@ -1075,5 +1075,4 @@ Transform3D Voxelizer::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
 
-Voxelizer::Voxelizer() {
-}
+Voxelizer::Voxelizer() = default;

@@ -391,8 +391,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	}
 }
 
-RasterizerGLES3::~RasterizerGLES3() {
-}
+RasterizerGLES3::~RasterizerGLES3() = default;
 
 void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen &p_blit, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_blit.render_target);

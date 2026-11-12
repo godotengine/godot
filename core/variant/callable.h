@@ -166,7 +166,7 @@ public:
 	virtual int get_unbound_arguments_count() const;
 
 	CallableCustom();
-	virtual ~CallableCustom() {}
+	virtual ~CallableCustom() = default;
 };
 
 // This is just a proxy object to object signals, its only
@@ -202,7 +202,7 @@ public:
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);
 	Signal(ObjectID p_object, const StringName &p_name);
-	Signal() {}
+	Signal() = default;
 };
 
 // Zero-constructing Signal initializes name and object to 0 (and thus empty).

@@ -186,7 +186,7 @@ public:
 			type = p_type;
 		}
 
-		Token() {}
+		Token() = default;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -195,7 +195,7 @@ public:
 		// true: Comment starts at beginning of line or after indentation.
 		// false: Inline comment (starts after some code).
 		bool new_line = false;
-		CommentData() {}
+		CommentData() = default;
 		CommentData(const String &p_comment, bool p_new_line) {
 			comment = p_comment;
 			new_line = p_new_line;
@@ -223,7 +223,7 @@ public:
 
 	virtual Token scan() = 0;
 
-	virtual ~GDScriptTokenizer() {}
+	virtual ~GDScriptTokenizer() = default;
 };
 
 class GDScriptTokenizerText : public GDScriptTokenizer {

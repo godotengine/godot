@@ -197,5 +197,4 @@ EQ::EQ() {
 	mix_rate = 44100;
 }
 
-EQ::~EQ() {
-}
+EQ::~EQ() = default;

@@ -146,4 +146,4 @@ void PhysicsDirectBodyState2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 }
 
-PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
+PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() = default;

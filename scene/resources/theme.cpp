@@ -2168,8 +2168,6 @@ void Theme::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_TYPE_MAX);
 }
 
-Theme::Theme() {
-}
+Theme::Theme() = default;
 
-Theme::~Theme() {
-}
+Theme::~Theme() = default;

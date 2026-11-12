@@ -330,5 +330,4 @@ CollisionShape3D::CollisionShape3D() {
 	debug_color = _get_default_debug_color();
 }
 
-CollisionShape3D::~CollisionShape3D() {
-}
+CollisionShape3D::~CollisionShape3D() = default;

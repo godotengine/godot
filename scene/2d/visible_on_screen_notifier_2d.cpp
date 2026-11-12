@@ -249,5 +249,4 @@ void VisibleOnScreenEnabler2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENABLE_MODE_WHEN_PAUSED);
 }
 
-VisibleOnScreenEnabler2D::VisibleOnScreenEnabler2D() {
-}
+VisibleOnScreenEnabler2D::VisibleOnScreenEnabler2D() = default;

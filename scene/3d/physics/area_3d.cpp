@@ -815,5 +815,4 @@ Area3D::Area3D() :
 	set_monitorable(true);
 }
 
-Area3D::~Area3D() {
-}
+Area3D::~Area3D() = default;

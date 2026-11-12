@@ -52,7 +52,7 @@ public:
 
 	SceneDebuggerObject(ObjectID p_id);
 	SceneDebuggerObject(Object *p_obj);
-	SceneDebuggerObject() {}
+	SceneDebuggerObject() = default;
 
 	void serialize(Array &r_arr, int p_max_size = 1 << 20);
 	void deserialize(const Array &p_arr);
@@ -85,7 +85,7 @@ public:
 			view_flags = p_view_flags;
 		}
 
-		RemoteNode() {}
+		RemoteNode() = default;
 	};
 
 	List<RemoteNode> nodes;
@@ -93,6 +93,6 @@ public:
 	void serialize(Array &r_arr);
 	void deserialize(const Array &p_arr);
 	SceneDebuggerTree(Node *p_root);
-	SceneDebuggerTree() {}
+	SceneDebuggerTree() = default;
 };
 #endif // DEBUG_ENABLED

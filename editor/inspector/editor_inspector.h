@@ -767,7 +767,7 @@ public:
 		Type type = Type::EMPTY;
 		Variant value;
 
-		PropertyClipboard() {}
+		PropertyClipboard();
 	};
 
 private:
@@ -1001,3 +1001,5 @@ public:
 
 	EditorInspector();
 };
+
+inline EditorInspector::PropertyClipboard::PropertyClipboard() = default;

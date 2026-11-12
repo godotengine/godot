@@ -364,7 +364,7 @@ public:
 			_num_keys = p_num_keys;
 			_key_idx = p_key_idx;
 		}
-		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator() = default;
 		_FORCE_INLINE_ Iterator(const Iterator &p_it) {
 			_keys = p_it._keys;
 			_num_keys = p_it._num_keys;

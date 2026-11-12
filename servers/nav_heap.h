@@ -101,7 +101,7 @@ public:
 		_buffer.clear();
 	}
 
-	Heap() {}
+	Heap() = default;
 
 	Heap(const LessThan &p_less_than) :
 			_less_than(p_less_than) {}

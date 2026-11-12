@@ -304,5 +304,4 @@ GodotStep2D::GodotStep2D() {
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);
 }
 
-GodotStep2D::~GodotStep2D() {
-}
+GodotStep2D::~GodotStep2D() = default;

@@ -116,6 +116,6 @@ bool RenderingShaderContainerFormatVulkan::get_debug_info_enabled() const {
 	return debug_info_enabled;
 }
 
-RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() {}
+RenderingShaderContainerFormatVulkan::RenderingShaderContainerFormatVulkan() = default;
 
-RenderingShaderContainerFormatVulkan::~RenderingShaderContainerFormatVulkan() {}
+RenderingShaderContainerFormatVulkan::~RenderingShaderContainerFormatVulkan() = default;

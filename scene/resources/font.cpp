@@ -587,8 +587,7 @@ Font::Font() {
 	cache_wrap.set_capacity(16);
 }
 
-Font::~Font() {
-}
+Font::~Font() = default;
 
 /*************************************************************************/
 /*  FontFile                                                             */
@@ -2925,8 +2924,7 @@ char32_t FontFile::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) 
 	return TS->font_get_char_from_glyph_index(cache[0], p_size, p_glyph_index);
 }
 
-FontFile::FontFile() {
-}
+FontFile::FontFile() = default;
 
 FontFile::~FontFile() {
 	_clear_cache();
@@ -3266,8 +3264,7 @@ FontVariation::FontVariation() {
 	}
 }
 
-FontVariation::~FontVariation() {
-}
+FontVariation::~FontVariation() = default;
 
 /*************************************************************************/
 /*  SystemFont                                                           */
@@ -3829,5 +3826,4 @@ SystemFont::SystemFont() {
 	/* NOP */
 }
 
-SystemFont::~SystemFont() {
-}
+SystemFont::~SystemFont() = default;

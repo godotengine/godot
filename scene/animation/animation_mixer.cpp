@@ -2564,8 +2564,7 @@ AnimationMixer::AnimationMixer() {
 	root_node = NodePath("..");
 }
 
-AnimationMixer::~AnimationMixer() {
-}
+AnimationMixer::~AnimationMixer() = default;
 
 void AnimatedValuesBackup::set_data(const AHashMap<Animation::TrackCacheID, AnimationMixer::TrackCache *, HashHasher> &p_data) {
 	clear_data();

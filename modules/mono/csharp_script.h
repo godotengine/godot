@@ -452,7 +452,7 @@ struct CSharpScriptBinding {
 	MonoGCHandleData gchandle;
 	Object *owner = nullptr;
 
-	CSharpScriptBinding() {}
+	CSharpScriptBinding() = default;
 };
 
 class ManagedCallableMiddleman : public Object {

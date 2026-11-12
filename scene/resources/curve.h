@@ -55,7 +55,7 @@ public:
 		TangentMode left_mode = TANGENT_FREE;
 		TangentMode right_mode = TANGENT_FREE;
 
-		Point() {}
+		Point() = default;
 
 		Point(const Vector2 &p_position,
 				real_t p_left = 0.0,

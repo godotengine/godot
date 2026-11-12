@@ -229,8 +229,7 @@ Popup::Popup() {
 	set_flag(FLAG_POPUP_WM_HINT, true);
 }
 
-Popup::~Popup() {
-}
+Popup::~Popup() = default;
 
 #ifdef TOOLS_ENABLED
 PackedStringArray PopupPanel::get_configuration_warnings() const {

@@ -72,4 +72,4 @@ void RenderingDeviceDriver::command_begin_compute_pass(CommandBufferID p_cmd_buf
 void RenderingDeviceDriver::command_end_compute_pass(CommandBufferID p_cmd_buffer) {
 }
 
-RenderingDeviceDriver::~RenderingDeviceDriver() {}
+RenderingDeviceDriver::~RenderingDeviceDriver() = default;

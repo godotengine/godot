@@ -98,7 +98,7 @@ private:
 			Vector<AudioFrame> buffer;
 			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio = 0;
-			Channel() {}
+			Channel() = default;
 		};
 
 		Vector<Channel> channels;

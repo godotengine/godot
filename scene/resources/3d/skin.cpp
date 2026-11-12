@@ -160,5 +160,4 @@ void Skin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_binds"), &Skin::clear_binds);
 }
 
-Skin::Skin() {
-}
+Skin::Skin() = default;

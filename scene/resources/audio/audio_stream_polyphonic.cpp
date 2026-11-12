@@ -63,8 +63,7 @@ void AudioStreamPolyphonic::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony", PROPERTY_HINT_RANGE, "1,128,1"), "set_polyphony", "get_polyphony");
 }
 
-AudioStreamPolyphonic::AudioStreamPolyphonic() {
-}
+AudioStreamPolyphonic::AudioStreamPolyphonic() = default;
 
 ////////////////////////
 
@@ -353,5 +352,4 @@ void AudioStreamPlaybackPolyphonic::_bind_methods() {
 	BIND_CONSTANT(INVALID_ID);
 }
 
-AudioStreamPlaybackPolyphonic::AudioStreamPlaybackPolyphonic() {
-}
+AudioStreamPlaybackPolyphonic::AudioStreamPlaybackPolyphonic() = default;

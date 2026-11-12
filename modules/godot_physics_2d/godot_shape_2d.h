@@ -43,7 +43,7 @@ public:
 	virtual void _shape_changed() = 0;
 	virtual void remove_shape(GodotShape2D *p_shape) = 0;
 
-	virtual ~GodotShapeOwner2D() {}
+	virtual ~GodotShapeOwner2D() = default;
 };
 
 class GodotShape2D {
@@ -127,7 +127,7 @@ public:
 			}
 		}
 	}
-	GodotShape2D() {}
+	GodotShape2D() = default;
 	virtual ~GodotShape2D();
 };
 
@@ -217,7 +217,7 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	_FORCE_INLINE_ GodotSeparationRayShape2D() {}
+	_FORCE_INLINE_ GodotSeparationRayShape2D() = default;
 	_FORCE_INLINE_ GodotSeparationRayShape2D(real_t p_length) { length = p_length; }
 };
 
@@ -257,7 +257,7 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	_FORCE_INLINE_ GodotSegmentShape2D() {}
+	_FORCE_INLINE_ GodotSegmentShape2D() = default;
 	_FORCE_INLINE_ GodotSegmentShape2D(const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_n) {
 		a = p_a;
 		b = p_b;
@@ -463,7 +463,7 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	GodotConvexPolygonShape2D() {}
+	GodotConvexPolygonShape2D() = default;
 	~GodotConvexPolygonShape2D();
 };
 

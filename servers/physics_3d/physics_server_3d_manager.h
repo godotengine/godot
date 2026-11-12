@@ -43,15 +43,13 @@ class PhysicsServer3DManager : public Object {
 		String name;
 		Callable create_callback;
 
-		ClassInfo() {}
+		ClassInfo() = default;
 
 		ClassInfo(String p_name, Callable p_create_callback) :
 				name(p_name),
 				create_callback(p_create_callback) {}
 
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
+		ClassInfo(const ClassInfo &p_ci) = default;
 
 		void operator=(const ClassInfo &p_ci) {
 			name = p_ci.name;

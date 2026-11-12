@@ -60,7 +60,7 @@ public:
 		bool active = false;
 
 	public:
-		Profiler() {}
+		Profiler() = default;
 		Profiler(void *p_data, ProfilingToggle p_toggle, ProfilingAdd p_add, ProfilingTick p_tick) {
 			data = p_data;
 			toggle = p_toggle;
@@ -76,7 +76,7 @@ public:
 		void *data = nullptr;
 
 	public:
-		Capture() {}
+		Capture() = default;
 		Capture(void *p_data, CaptureFunc p_capture) {
 			data = p_data;
 			capture = p_capture;

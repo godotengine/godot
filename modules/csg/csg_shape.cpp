@@ -1245,8 +1245,7 @@ CSGBrush *CSGCombiner3D::_build_brush() {
 	return memnew(CSGBrush); //does not build anything
 }
 
-CSGCombiner3D::CSGCombiner3D() {
-}
+CSGCombiner3D::CSGCombiner3D() = default;
 
 /////////////////////
 

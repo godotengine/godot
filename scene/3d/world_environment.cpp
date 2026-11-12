@@ -223,5 +223,4 @@ void WorldEnvironment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "compositor", PROPERTY_HINT_RESOURCE_TYPE, Compositor::get_class_static()), "set_compositor", "get_compositor");
 }
 
-WorldEnvironment::WorldEnvironment() {
-}
+WorldEnvironment::WorldEnvironment() = default;

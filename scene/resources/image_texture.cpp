@@ -524,8 +524,7 @@ void ImageTexture3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT), "_set_images", "_get_images");
 }
 
-ImageTexture3D::ImageTexture3D() {
-}
+ImageTexture3D::ImageTexture3D() = default;
 
 ImageTexture3D::~ImageTexture3D() {
 	if (texture.is_valid()) {

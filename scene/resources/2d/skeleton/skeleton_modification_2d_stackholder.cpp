@@ -134,5 +134,4 @@ SkeletonModification2DStackHolder::SkeletonModification2DStackHolder() {
 	enabled = true;
 }
 
-SkeletonModification2DStackHolder::~SkeletonModification2DStackHolder() {
-}
+SkeletonModification2DStackHolder::~SkeletonModification2DStackHolder() = default;

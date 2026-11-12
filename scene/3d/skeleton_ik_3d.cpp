@@ -389,8 +389,7 @@ void SkeletonIK3D::_notification(int p_what) {
 	}
 }
 
-SkeletonIK3D::SkeletonIK3D() {
-}
+SkeletonIK3D::SkeletonIK3D() = default;
 
 SkeletonIK3D::~SkeletonIK3D() {
 	FabrikInverseKinematic::free_task(task);

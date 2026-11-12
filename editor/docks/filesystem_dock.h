@@ -236,7 +236,7 @@ private:
 		String path;
 		bool is_file = false;
 
-		FileOrFolder() {}
+		FileOrFolder() = default;
 		FileOrFolder(const String &p_path, bool p_is_file) :
 				path(p_path),
 				is_file(p_is_file) {}

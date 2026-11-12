@@ -83,8 +83,8 @@ public:
 	virtual void set_discover_ipv6(bool ipv6) override;
 	virtual bool is_discover_ipv6() const override;
 
-	UPNPMiniUPNP() {}
-	virtual ~UPNPMiniUPNP() {}
+	UPNPMiniUPNP() = default;
+	virtual ~UPNPMiniUPNP() = default;
 };
 
 #endif // WEB_ENABLED

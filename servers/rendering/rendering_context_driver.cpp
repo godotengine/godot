@@ -30,8 +30,7 @@
 
 #include "rendering_context_driver.h"
 
-RenderingContextDriver::~RenderingContextDriver() {
-}
+RenderingContextDriver::~RenderingContextDriver() = default;
 
 RenderingContextDriver::SurfaceID RenderingContextDriver::surface_get_from_window(DisplayServerEnums::WindowID p_window) const {
 	HashMap<DisplayServerEnums::WindowID, SurfaceID>::ConstIterator it = window_surface_map.find(p_window);

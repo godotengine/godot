@@ -145,8 +145,6 @@ void MultiMeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh
 }
 #endif // NAVIGATION_3D_DISABLED
 
-MultiMeshInstance3D::MultiMeshInstance3D() {
-}
+MultiMeshInstance3D::MultiMeshInstance3D() = default;
 
-MultiMeshInstance3D::~MultiMeshInstance3D() {
-}
+MultiMeshInstance3D::~MultiMeshInstance3D() = default;

@@ -160,7 +160,7 @@ int ZIPReader::get_compression_level(const String &p_path, bool p_case_sensitive
 	return level;
 }
 
-ZIPReader::ZIPReader() {}
+ZIPReader::ZIPReader() = default;
 
 ZIPReader::~ZIPReader() {
 	if (fa.is_valid()) {

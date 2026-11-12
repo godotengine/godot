@@ -524,8 +524,6 @@ void RetargetModifier3D::_notification(int p_what) {
 	}
 }
 
-RetargetModifier3D::RetargetModifier3D() {
-}
+RetargetModifier3D::RetargetModifier3D() = default;
 
-RetargetModifier3D::~RetargetModifier3D() {
-}
+RetargetModifier3D::~RetargetModifier3D() = default;

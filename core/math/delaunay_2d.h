@@ -39,7 +39,7 @@ public:
 		int points[3];
 		Vector2 circum_center;
 		real_t circum_radius_squared;
-		Triangle() {}
+		Triangle() = default;
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;
 			points[1] = p_b;
@@ -50,7 +50,7 @@ public:
 	struct Edge {
 		int points[2];
 		bool bad = false;
-		Edge() {}
+		Edge() = default;
 		Edge(int p_a, int p_b) {
 			// Store indices in a sorted manner to avoid having to check both orientations later.
 			if (p_a > p_b) {

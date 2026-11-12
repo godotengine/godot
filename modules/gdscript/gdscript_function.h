@@ -145,7 +145,7 @@ public:
 		*this = p_other;
 	}
 
-	~GDScriptDataType() {}
+	~GDScriptDataType() = default;
 };
 
 class GDScriptFunction {

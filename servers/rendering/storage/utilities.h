@@ -131,7 +131,7 @@ private:
 
 class RendererUtilities {
 public:
-	virtual ~RendererUtilities() {}
+	virtual ~RendererUtilities() = default;
 
 	/* INSTANCES */
 

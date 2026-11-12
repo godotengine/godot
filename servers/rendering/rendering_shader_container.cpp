@@ -1042,6 +1042,6 @@ bool RenderingShaderContainer::decompress_code(const uint8_t *p_compressed_bytes
 	return true;
 }
 
-RenderingShaderContainer::RenderingShaderContainer() {}
+RenderingShaderContainer::RenderingShaderContainer() = default;
 
-RenderingShaderContainer::~RenderingShaderContainer() {}
+RenderingShaderContainer::~RenderingShaderContainer() = default;

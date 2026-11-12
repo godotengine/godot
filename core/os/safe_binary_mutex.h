@@ -81,8 +81,7 @@ public:
 		return const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(tls_data.lock);
 	}
 
-	_ALWAYS_INLINE_ SafeBinaryMutex() {
-	}
+	_ALWAYS_INLINE_ SafeBinaryMutex() = default;
 
 	_ALWAYS_INLINE_ ~SafeBinaryMutex() {
 		DEV_ASSERT(!tls_data.count);

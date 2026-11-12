@@ -137,7 +137,7 @@ private:
 		Branch *parent = nullptr;
 		bool else_defined = false;
 
-		Branch() {}
+		Branch() = default;
 
 		Branch(bool p_condition, Branch *p_parent) :
 				parent(p_parent) {

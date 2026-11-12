@@ -58,7 +58,7 @@ class AudioDriverWASAPI : public AudioDriver {
 		String device_name = "Default"; // Output OR Input
 		String new_device = "Default"; // Output OR Input
 
-		AudioDeviceWASAPI() {}
+		AudioDeviceWASAPI() = default;
 	};
 
 	AudioDeviceWASAPI audio_input;

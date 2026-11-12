@@ -467,11 +467,9 @@ void SkeletonProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(TAIL_DIRECTION_END);
 }
 
-SkeletonProfile::SkeletonProfile() {
-}
+SkeletonProfile::SkeletonProfile() = default;
 
-SkeletonProfile::~SkeletonProfile() {
-}
+SkeletonProfile::~SkeletonProfile() = default;
 
 SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	is_read_only = true;
@@ -851,7 +849,6 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 	bones.write[55].group = "Body";
 }
 
-SkeletonProfileHumanoid::~SkeletonProfileHumanoid() {
-}
+SkeletonProfileHumanoid::~SkeletonProfileHumanoid() = default;
 
 //////////////////////////////////////

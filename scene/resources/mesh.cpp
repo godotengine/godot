@@ -974,8 +974,7 @@ Transform3D Mesh::get_builtin_bind_pose(int p_index) const {
 	return Transform3D();
 }
 
-Mesh::Mesh() {
-}
+Mesh::Mesh() = default;
 
 enum OldArrayType {
 	OLD_ARRAY_VERTEX,

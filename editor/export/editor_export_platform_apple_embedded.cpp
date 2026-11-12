@@ -3141,5 +3141,4 @@ void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_
 #endif
 }
 
-EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() {
-}
+EditorExportPlatformAppleEmbedded::~EditorExportPlatformAppleEmbedded() = default;

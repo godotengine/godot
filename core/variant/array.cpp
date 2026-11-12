@@ -48,7 +48,7 @@ struct ArrayPrivate {
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	ContainerTypeValidate typed;
 
-	ArrayPrivate() {}
+	ArrayPrivate() = default;
 	ArrayPrivate(std::initializer_list<Variant> p_init) :
 			array(p_init) {}
 };

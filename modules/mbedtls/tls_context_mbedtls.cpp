@@ -72,8 +72,7 @@ void CookieContextMbedTLS::clear() {
 	inited = false;
 }
 
-CookieContextMbedTLS::CookieContextMbedTLS() {
-}
+CookieContextMbedTLS::CookieContextMbedTLS() = default;
 
 CookieContextMbedTLS::~CookieContextMbedTLS() {
 	clear();
@@ -235,8 +234,7 @@ mbedtls_ssl_context *TLSContextMbedTLS::get_context() {
 	return &tls;
 }
 
-TLSContextMbedTLS::TLSContextMbedTLS() {
-}
+TLSContextMbedTLS::TLSContextMbedTLS() = default;
 
 TLSContextMbedTLS::~TLSContextMbedTLS() {
 	clear();

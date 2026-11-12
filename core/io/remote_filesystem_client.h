@@ -57,5 +57,5 @@ protected:
 
 public:
 	Error synchronize_with_server(const String &p_host, int p_port, const String &p_password, String &r_cache_path);
-	virtual ~RemoteFilesystemClient() {}
+	virtual ~RemoteFilesystemClient() = default;
 };

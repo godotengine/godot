@@ -102,8 +102,6 @@ void WebRTCPeerConnection::_bind_methods() {
 	BIND_ENUM_CONSTANT(SIGNALING_STATE_CLOSED);
 }
 
-WebRTCPeerConnection::WebRTCPeerConnection() {
-}
+WebRTCPeerConnection::WebRTCPeerConnection() = default;
 
-WebRTCPeerConnection::~WebRTCPeerConnection() {
-}
+WebRTCPeerConnection::~WebRTCPeerConnection() = default;

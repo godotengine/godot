@@ -505,5 +505,4 @@ SkeletonModification2DTwoBoneIK::SkeletonModification2DTwoBoneIK() {
 	editor_draw_gizmo = true;
 }
 
-SkeletonModification2DTwoBoneIK::~SkeletonModification2DTwoBoneIK() {
-}
+SkeletonModification2DTwoBoneIK::~SkeletonModification2DTwoBoneIK() = default;

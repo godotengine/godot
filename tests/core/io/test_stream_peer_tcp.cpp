@@ -207,9 +207,9 @@ Error MockNetSocket::leave_multicast_group(const IPAddress &p_multi_address, con
 	return OK;
 }
 
-MockNetSocket::MockNetSocket() {}
+MockNetSocket::MockNetSocket() = default;
 
-MockNetSocket::~MockNetSocket() {}
+MockNetSocket::~MockNetSocket() = default;
 
 TEST_CASE("[StreamPeerTCP] Basics") {
 	Ref<MockNetSocket> ns;

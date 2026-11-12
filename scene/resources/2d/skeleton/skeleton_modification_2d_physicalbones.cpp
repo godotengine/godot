@@ -297,5 +297,4 @@ SkeletonModification2DPhysicalBones::SkeletonModification2DPhysicalBones() {
 	editor_draw_gizmo = false; // Nothing to really show in a gizmo right now.
 }
 
-SkeletonModification2DPhysicalBones::~SkeletonModification2DPhysicalBones() {
-}
+SkeletonModification2DPhysicalBones::~SkeletonModification2DPhysicalBones() = default;

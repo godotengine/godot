@@ -429,8 +429,7 @@ void AnimationNodeAnimation::_update_animation_cache(AnimationTree *p_tree, Anim
 	p_instance.cached_animation_version = animation_version;
 }
 
-AnimationNodeAnimation::AnimationNodeAnimation() {
-}
+AnimationNodeAnimation::AnimationNodeAnimation() = default;
 
 ////////////////////////////////////////////////////////
 
@@ -449,8 +448,7 @@ bool AnimationNodeSync::is_using_sync() const {
 	return sync;
 }
 
-AnimationNodeSync::AnimationNodeSync() {
-}
+AnimationNodeSync::AnimationNodeSync() = default;
 
 ////////////////////////////////////////////////////////
 void AnimationNodeOneShot::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
@@ -1526,8 +1524,7 @@ void AnimationNodeTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
 }
 
-AnimationNodeTransition::AnimationNodeTransition() {
-}
+AnimationNodeTransition::AnimationNodeTransition() = default;
 
 /////////////////////
 
@@ -1989,5 +1986,4 @@ AnimationNodeBlendTree::AnimationNodeBlendTree() {
 	_initialize_node_tree();
 }
 
-AnimationNodeBlendTree::~AnimationNodeBlendTree() {
-}
+AnimationNodeBlendTree::~AnimationNodeBlendTree() = default;

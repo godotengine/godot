@@ -67,8 +67,7 @@ void PlaceholderTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
-PlaceholderTexture2D::PlaceholderTexture2D() {
-}
+PlaceholderTexture2D::PlaceholderTexture2D() = default;
 
 PlaceholderTexture2D::~PlaceholderTexture2D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
@@ -125,8 +124,8 @@ void PlaceholderTexture3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
-PlaceholderTexture3D::PlaceholderTexture3D() {
-}
+PlaceholderTexture3D::PlaceholderTexture3D() = default;
+
 PlaceholderTexture3D::~PlaceholderTexture3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (rid.is_valid()) {

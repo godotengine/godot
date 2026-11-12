@@ -636,8 +636,7 @@ Performance::MonitorCall::MonitorCall(Performance::MonitorType p_type, const Cal
 	_arguments = p_arguments;
 }
 
-Performance::MonitorCall::MonitorCall() {
-}
+Performance::MonitorCall::MonitorCall() = default;
 
 Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	Vector<const Variant *> arguments_mem;

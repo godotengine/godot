@@ -430,11 +430,9 @@ void CryptoMbedTLS::finalize_crypto() {
 	HMACContextMbedTLS::finalize();
 }
 
-CryptoMbedTLS::CryptoMbedTLS() {
-}
+CryptoMbedTLS::CryptoMbedTLS() = default;
 
-CryptoMbedTLS::~CryptoMbedTLS() {
-}
+CryptoMbedTLS::~CryptoMbedTLS() = default;
 
 Ref<X509CertificateMbedTLS> CryptoMbedTLS::default_certs;
 

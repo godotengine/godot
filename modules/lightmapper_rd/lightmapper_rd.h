@@ -126,8 +126,7 @@ class LightmapperRD : public Lightmapper {
 		bool operator==(const Edge &p_seam) const {
 			return a == p_seam.a && b == p_seam.b && na == p_seam.na && nb == p_seam.nb;
 		}
-		Edge() {
-		}
+		Edge() = default;
 
 		Edge(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_na, const Vector3 &p_nb) {
 			a = p_a;
@@ -167,7 +166,7 @@ class LightmapperRD : public Lightmapper {
 			b = p_b;
 			indices = p_indices;
 		}
-		EdgeUV2() {}
+		EdgeUV2() = default;
 	};
 
 	struct Seam {

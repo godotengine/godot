@@ -142,5 +142,4 @@ BlitMaterial::BlitMaterial() {
 	set_blend_mode(BLEND_MODE_MIX);
 }
 
-BlitMaterial::~BlitMaterial() {
-}
+BlitMaterial::~BlitMaterial() = default;

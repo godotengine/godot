@@ -1491,8 +1491,7 @@ void Skeleton3D::physical_bones_remove_collision_exception(RID p_exception) {
 #endif // PHYSICS_3D_DISABLED
 #endif // _DISABLE_DEPRECATED
 
-Skeleton3D::Skeleton3D() {
-}
+Skeleton3D::Skeleton3D() = default;
 
 Skeleton3D::~Skeleton3D() {
 	// Some skins may remain bound.

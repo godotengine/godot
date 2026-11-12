@@ -78,7 +78,7 @@ class GodotArea2D : public GodotCollisionObject2D {
 			return rid == p_key.rid && instance_id == p_key.instance_id && body_shape == p_key.body_shape && area_shape == p_key.area_shape;
 		}
 
-		_FORCE_INLINE_ BodyKey() {}
+		_FORCE_INLINE_ BodyKey() = default;
 		BodyKey(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(GodotArea2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	};

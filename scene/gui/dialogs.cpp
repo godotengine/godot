@@ -503,8 +503,7 @@ AcceptDialog::AcceptDialog() {
 	set_default_title(ETR("Alert!"));
 }
 
-AcceptDialog::~AcceptDialog() {
-}
+AcceptDialog::~AcceptDialog() = default;
 
 // ConfirmationDialog
 

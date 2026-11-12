@@ -675,7 +675,7 @@ public:
 	 * The constructors must not depend on other overloads
 	 */
 
-	_FORCE_INLINE_ constexpr String() {}
+	_FORCE_INLINE_ constexpr String() = default;
 	_FORCE_INLINE_ String(const String &p_str) = default;
 	_FORCE_INLINE_ String(String &&p_str) = default;
 #ifdef SIZE_EXTRA

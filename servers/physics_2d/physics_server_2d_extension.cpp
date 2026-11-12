@@ -49,8 +49,7 @@ void PhysicsDirectSpaceState2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_rest_info, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_rest_info");
 }
 
-PhysicsDirectSpaceState2DExtension::PhysicsDirectSpaceState2DExtension() {
-}
+PhysicsDirectSpaceState2DExtension::PhysicsDirectSpaceState2DExtension() = default;
 
 void PhysicsDirectBodyState2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_total_gravity);
@@ -120,8 +119,7 @@ void PhysicsDirectBodyState2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_space_state);
 }
 
-PhysicsDirectBodyState2DExtension::PhysicsDirectBodyState2DExtension() {
-}
+PhysicsDirectBodyState2DExtension::PhysicsDirectBodyState2DExtension() = default;
 
 thread_local const HashSet<RID> *PhysicsServer2DExtension::exclude_bodies = nullptr;
 thread_local const HashSet<ObjectID> *PhysicsServer2DExtension::exclude_objects = nullptr;
@@ -356,8 +354,6 @@ void PhysicsServer2DExtension::_bind_methods() {
 #endif
 }
 
-PhysicsServer2DExtension::PhysicsServer2DExtension() {
-}
+PhysicsServer2DExtension::PhysicsServer2DExtension() = default;
 
-PhysicsServer2DExtension::~PhysicsServer2DExtension() {
-}
+PhysicsServer2DExtension::~PhysicsServer2DExtension() = default;

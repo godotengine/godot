@@ -131,5 +131,4 @@ void ResourceImporterOggVorbis::_bind_methods() {
 #endif
 }
 
-ResourceImporterOggVorbis::ResourceImporterOggVorbis() {
-}
+ResourceImporterOggVorbis::ResourceImporterOggVorbis() = default;

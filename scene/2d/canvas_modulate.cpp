@@ -131,8 +131,6 @@ PackedStringArray CanvasModulate::get_configuration_warnings() const {
 	return warnings;
 }
 
-CanvasModulate::CanvasModulate() {
-}
+CanvasModulate::CanvasModulate() = default;
 
-CanvasModulate::~CanvasModulate() {
-}
+CanvasModulate::~CanvasModulate() = default;

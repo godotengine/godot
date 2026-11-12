@@ -478,7 +478,7 @@ private:
 					return hash_fmix32(h);
 				}
 
-				SliceKey() {}
+				SliceKey() = default;
 				SliceKey(RID p_rid, uint32_t p_layer) {
 					rid = p_rid;
 					layer = p_layer;

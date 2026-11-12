@@ -42,8 +42,7 @@ Gradient::Gradient() {
 	points[1].offset = 1;
 }
 
-Gradient::~Gradient() {
-}
+Gradient::~Gradient() = default;
 
 void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &Gradient::add_point);

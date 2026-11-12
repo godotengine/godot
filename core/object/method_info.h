@@ -72,7 +72,7 @@ struct MethodInfo {
 
 	uint32_t get_compatibility_hash() const;
 
-	MethodInfo() {}
+	MethodInfo() = default;
 
 	explicit MethodInfo(const GDExtensionMethodInfo &p_info) :
 			name(*reinterpret_cast<StringName *>(p_info.name)),

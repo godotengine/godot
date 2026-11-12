@@ -86,7 +86,7 @@ public:
 
 	virtual void close() override;
 
-	FileAccessWindowsPipe() {}
+	FileAccessWindowsPipe() = default;
 	virtual ~FileAccessWindowsPipe();
 };
 

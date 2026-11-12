@@ -114,7 +114,7 @@ private:
 			return hash_fmix32(h);
 		}
 
-		NTKey() {}
+		NTKey() = default;
 		NTKey(const StringName &p_context, const StringName &p_texture_name) {
 			context = p_context;
 			buffer_name = p_texture_name;
@@ -147,7 +147,7 @@ private:
 			return hash_fmix32(h);
 		}
 
-		NTSliceKey() {}
+		NTSliceKey() = default;
 		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view, RD::TextureSliceType p_slice_type) {
 			layer = p_layer;
 			layers = p_layers;

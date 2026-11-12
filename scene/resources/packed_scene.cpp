@@ -2532,8 +2532,7 @@ void SceneState::_bind_methods() {
 	BIND_ENUM_CONSTANT(GEN_EDIT_STATE_MAIN_INHERITED);
 }
 
-SceneState::SceneState() {
-}
+SceneState::SceneState() = default;
 
 ////////////////
 

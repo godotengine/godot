@@ -111,7 +111,7 @@ struct LightInstance {
 	int32_t gl_id = -1;
 	int32_t shadow_id = -1;
 
-	LightInstance() {}
+	LightInstance() = default;
 };
 
 /* REFLECTION PROBE */
@@ -260,14 +260,14 @@ private:
 				uint64_t version = 0;
 				uint64_t alloc_tick = 0;
 
-				Shadow() {}
+				Shadow() = default;
 			};
 
 			Vector<Shadow> shadows;
 			LocalVector<GLuint> textures;
 			LocalVector<GLuint> fbos;
 
-			Quadrant() {}
+			Quadrant() = default;
 		} quadrants[4];
 
 		// Ordered from smallest (worst) shadow size to largest (best).

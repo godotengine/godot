@@ -50,5 +50,5 @@ public:
 	virtual void set_normal(int p_vertex_id, const Vector3 &p_normal);
 	virtual void set_aabb(const AABB &p_aabb);
 
-	virtual ~PhysicsServer3DRenderingServerHandler() {}
+	virtual ~PhysicsServer3DRenderingServerHandler() = default;
 };

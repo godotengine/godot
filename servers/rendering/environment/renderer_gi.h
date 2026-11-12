@@ -43,7 +43,7 @@ class Vector;
 
 class RendererGI {
 public:
-	virtual ~RendererGI() {}
+	virtual ~RendererGI() = default;
 
 	/* VOXEL GI API */
 

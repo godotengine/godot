@@ -244,8 +244,10 @@ private:
 /// Use this for `Object` subclasses that are registered in `ClassDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
-private: \
+public: \
 	void operator=(const m_class &p_rval) = delete; \
+\
+private: \
 	friend class ::ClassDB; \
 \
 	static GDType &get_gdtype_static_mutable() { \
@@ -395,7 +397,7 @@ public:
 
 		operator Variant() const;
 
-		Connection() {}
+		Connection() = default;
 		Connection(const Variant &p_variant);
 	};
 

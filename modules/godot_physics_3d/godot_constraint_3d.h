@@ -77,5 +77,5 @@ public:
 	virtual bool pre_solve(real_t p_step) = 0;
 	virtual void solve(real_t p_step) = 0;
 
-	virtual ~GodotConstraint3D() {}
+	virtual ~GodotConstraint3D() = default;
 };

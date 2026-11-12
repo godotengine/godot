@@ -44,7 +44,7 @@ public:
 	virtual void free() = 0;
 
 	Node3DGizmo();
-	virtual ~Node3DGizmo() {}
+	virtual ~Node3DGizmo() = default;
 };
 
 class Node3D : public Node {

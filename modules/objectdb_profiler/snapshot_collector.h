@@ -34,7 +34,7 @@
 #include "scene/debugger/scene_debugger_object.h"
 
 struct SnapshotDataTransportObject : public SceneDebuggerObject {
-	SnapshotDataTransportObject() {}
+	SnapshotDataTransportObject() = default;
 	SnapshotDataTransportObject(Object *p_obj) :
 			SceneDebuggerObject(p_obj) {}
 

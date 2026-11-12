@@ -462,8 +462,7 @@ struct RenderTarget {
 	Color clear_color = Color(1, 1, 1, 1);
 	bool clear_requested = false;
 
-	RenderTarget() {
-	}
+	RenderTarget() = default;
 };
 
 class TextureStorage : public RendererTextureStorage {

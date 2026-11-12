@@ -421,7 +421,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID texture;
 		uint32_t other = 0;
 
-		TextureState() {}
+		TextureState() = default;
 
 		TextureState(RID p_texture, RSE::CanvasItemTextureFilter p_base_filter, RSE::CanvasItemTextureRepeat p_base_repeat, bool p_texture_is_data, bool p_use_linear_colors) {
 			texture = p_texture;
@@ -479,8 +479,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	struct RIDSetKey {
 		TextureState state;
 
-		RIDSetKey() {
-		}
+		RIDSetKey() = default;
 
 		RIDSetKey(TextureState p_state) :
 				state(p_state) {

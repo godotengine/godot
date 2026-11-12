@@ -38,7 +38,7 @@ struct Vector3;
 
 class RendererFog {
 public:
-	virtual ~RendererFog() {}
+	virtual ~RendererFog() = default;
 
 	/* FOG VOLUMES */
 

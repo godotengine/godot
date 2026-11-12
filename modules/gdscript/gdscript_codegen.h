@@ -52,7 +52,7 @@ public:
 		uint32_t address = 0;
 		GDScriptDataType type;
 
-		Address() {}
+		Address() = default;
 		Address(AddressMode p_mode, const GDScriptDataType &p_type = GDScriptDataType()) {
 			mode = p_mode;
 			type = p_type;
@@ -161,5 +161,5 @@ public:
 	virtual void write_return(const Address &p_return_value, bool p_use_conversion) = 0;
 	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
 
-	virtual ~GDScriptCodeGenerator() {}
+	virtual ~GDScriptCodeGenerator() = default;
 };

@@ -85,8 +85,8 @@ public:
 	virtual int add_port_mapping(int port, int port_internal = 0, String desc = "", String proto = "UDP", int duration = 0) const = 0;
 	virtual int delete_port_mapping(int port, String proto = "UDP") const = 0;
 
-	UPNPDevice() {}
-	virtual ~UPNPDevice() {}
+	UPNPDevice() = default;
+	virtual ~UPNPDevice() = default;
 };
 
 VARIANT_ENUM_CAST(UPNPDevice::IGDStatus)

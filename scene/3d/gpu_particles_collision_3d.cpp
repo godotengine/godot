@@ -93,8 +93,7 @@ GPUParticlesCollisionSphere3D::GPUParticlesCollisionSphere3D() :
 		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE) {
 }
 
-GPUParticlesCollisionSphere3D::~GPUParticlesCollisionSphere3D() {
-}
+GPUParticlesCollisionSphere3D::~GPUParticlesCollisionSphere3D() = default;
 
 ///////////////////////////
 
@@ -141,8 +140,7 @@ GPUParticlesCollisionBox3D::GPUParticlesCollisionBox3D() :
 		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_BOX_COLLIDE) {
 }
 
-GPUParticlesCollisionBox3D::~GPUParticlesCollisionBox3D() {
-}
+GPUParticlesCollisionBox3D::~GPUParticlesCollisionBox3D() = default;
 
 ///////////////////////////////
 ///////////////////////////
@@ -662,8 +660,7 @@ GPUParticlesCollisionSDF3D::GPUParticlesCollisionSDF3D() :
 		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_SDF_COLLIDE) {
 }
 
-GPUParticlesCollisionSDF3D::~GPUParticlesCollisionSDF3D() {
-}
+GPUParticlesCollisionSDF3D::~GPUParticlesCollisionSDF3D() = default;
 
 ////////////////////////////
 ////////////////////////////
@@ -845,8 +842,7 @@ GPUParticlesCollisionHeightField3D::GPUParticlesCollisionHeightField3D() :
 		GPUParticlesCollision3D(RSE::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE) {
 }
 
-GPUParticlesCollisionHeightField3D::~GPUParticlesCollisionHeightField3D() {
-}
+GPUParticlesCollisionHeightField3D::~GPUParticlesCollisionHeightField3D() = default;
 
 ////////////////////////////
 ////////////////////////////
@@ -944,8 +940,7 @@ GPUParticlesAttractorSphere3D::GPUParticlesAttractorSphere3D() :
 		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT) {
 }
 
-GPUParticlesAttractorSphere3D::~GPUParticlesAttractorSphere3D() {
-}
+GPUParticlesAttractorSphere3D::~GPUParticlesAttractorSphere3D() = default;
 
 ///////////////////////////
 
@@ -992,8 +987,7 @@ GPUParticlesAttractorBox3D::GPUParticlesAttractorBox3D() :
 		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_BOX_ATTRACT) {
 }
 
-GPUParticlesAttractorBox3D::~GPUParticlesAttractorBox3D() {
-}
+GPUParticlesAttractorBox3D::~GPUParticlesAttractorBox3D() = default;
 
 ///////////////////////////
 
@@ -1054,5 +1048,4 @@ GPUParticlesAttractorVectorField3D::GPUParticlesAttractorVectorField3D() :
 		GPUParticlesAttractor3D(RSE::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT) {
 }
 
-GPUParticlesAttractorVectorField3D::~GPUParticlesAttractorVectorField3D() {
-}
+GPUParticlesAttractorVectorField3D::~GPUParticlesAttractorVectorField3D() = default;

@@ -252,7 +252,7 @@ public:
 				update_visibility(p_update_visibility),
 				required(p_required) {
 		}
-		ExportOption() {}
+		ExportOption() = default;
 	};
 
 	virtual Ref<EditorExportPreset> create_preset();

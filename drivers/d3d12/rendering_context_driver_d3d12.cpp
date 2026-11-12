@@ -67,7 +67,7 @@ const GUID CLSID_D3D12SDKConfigurationGodot = { 0x7cda6aca, 0xa03e, 0x49c8, { 0x
 #endif
 #endif
 
-RenderingContextDriverD3D12::RenderingContextDriverD3D12() {}
+RenderingContextDriverD3D12::RenderingContextDriverD3D12() = default;
 
 RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
 	// Let's release manually everything that may still be holding

@@ -162,7 +162,7 @@ public:
 		_FORCE_INLINE_ bool operator!=(const ChildrenIterator &b) const { return _ptr != b._ptr; }
 
 		ChildrenIterator(Node **p_ptr) { _ptr = p_ptr; }
-		ChildrenIterator() {}
+		ChildrenIterator() = default;
 		ChildrenIterator(const ChildrenIterator &p_it) { _ptr = p_it._ptr; }
 
 	private:

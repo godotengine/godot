@@ -94,7 +94,7 @@ public:
 
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 	TerrainConstraint(Ref<TileSet> p_tile_set, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
-	TerrainConstraint() {}
+	TerrainConstraint() = default;
 };
 
 #ifdef DEBUG_ENABLED

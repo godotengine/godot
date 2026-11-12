@@ -267,7 +267,7 @@ public:
 			*this = p_other;
 		}
 
-		~DataType() {}
+		~DataType() = default;
 	};
 
 	struct ParserError {
@@ -362,7 +362,7 @@ public:
 
 		virtual bool is_expression() const { return false; }
 
-		virtual ~Node() {}
+		virtual ~Node() = default;
 	};
 
 	struct ExpressionNode : public Node {
@@ -374,7 +374,7 @@ public:
 		DataType type_constraint;
 
 		virtual bool is_expression() const override { return true; }
-		virtual ~ExpressionNode() {}
+		virtual ~ExpressionNode() = default;
 
 	protected:
 		ExpressionNode() {}
@@ -426,7 +426,7 @@ public:
 
 		DataType type_constraint;
 
-		virtual ~AssignableNode() {}
+		virtual ~AssignableNode() = default;
 
 	protected:
 		AssignableNode() {}

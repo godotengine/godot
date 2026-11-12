@@ -216,8 +216,7 @@ void ZIPPacker::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_BEST);
 }
 
-ZIPPacker::ZIPPacker() {
-}
+ZIPPacker::ZIPPacker() = default;
 
 ZIPPacker::~ZIPPacker() {
 	if (fa.is_valid()) {

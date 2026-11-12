@@ -102,8 +102,7 @@ bool GLTFAnimation::is_empty_of_tracks() const {
 	return node_tracks.is_empty() && pointer_tracks.is_empty();
 }
 
-GLTFAnimation::GLTFAnimation() {
-}
+GLTFAnimation::GLTFAnimation() = default;
 
 Variant GLTFAnimation::get_additional_data(const StringName &p_extension_name) {
 	return additional_data.get(p_extension_name, Variant());

@@ -63,5 +63,5 @@ public:
 
 	virtual void update() = 0;
 
-	virtual ~GodotBroadPhase2D() {}
+	virtual ~GodotBroadPhase2D() = default;
 };

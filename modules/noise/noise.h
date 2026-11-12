@@ -279,7 +279,7 @@ protected:
 
 public:
 	// Virtual destructor so we can delete any Noise derived object when referenced as a Noise*.
-	virtual ~Noise() {}
+	virtual ~Noise() = default;
 
 	virtual real_t get_noise_1d(real_t p_x) const = 0;
 

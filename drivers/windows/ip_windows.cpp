@@ -152,7 +152,6 @@ IP *IPWindows::_create_unix() {
 	return memnew(IPWindows);
 }
 
-IPWindows::IPWindows() {
-}
+IPWindows::IPWindows() = default;
 
 #endif // WINDOWS_ENABLED

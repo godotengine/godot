@@ -57,5 +57,4 @@ void AudioEffect::_bind_methods() {
 	GDVIRTUAL_BIND(_instantiate);
 }
 
-AudioEffect::AudioEffect() {
-}
+AudioEffect::AudioEffect() = default;

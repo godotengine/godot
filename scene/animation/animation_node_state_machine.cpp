@@ -191,8 +191,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("advance_condition_changed"));
 }
 
-AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
-}
+AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() = default;
 
 ////////////////////////////////////////////////////////
 

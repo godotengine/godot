@@ -56,7 +56,7 @@ public:
 		virtual bool is_utf8() const = 0;
 		bool is_eof() const;
 
-		virtual ~Stream() {}
+		virtual ~Stream() = default;
 	};
 
 	struct StreamFile : public Stream {

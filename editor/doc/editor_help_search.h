@@ -124,7 +124,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 		bool name = false;
 		String keyword;
 
-		MemberMatch() {}
+		MemberMatch() = default;
 		MemberMatch(const T *p_doc) :
 				doc(p_doc) {}
 	};

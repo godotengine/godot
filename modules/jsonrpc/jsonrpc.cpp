@@ -34,11 +34,9 @@
 #include "core/io/json.h"
 #include "core/object/class_db.h"
 
-JSONRPC::JSONRPC() {
-}
+JSONRPC::JSONRPC() = default;
 
-JSONRPC::~JSONRPC() {
-}
+JSONRPC::~JSONRPC() = default;
 
 void JSONRPC::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_method", "name", "callback"), &JSONRPC::set_method);

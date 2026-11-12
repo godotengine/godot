@@ -161,5 +161,4 @@ void ResourcePreloader::_bind_methods() {
 #endif
 }
 
-ResourcePreloader::ResourcePreloader() {
-}
+ResourcePreloader::ResourcePreloader() = default;

@@ -115,8 +115,7 @@ void NetSocketWinSock::cleanup() {
 	_create = nullptr;
 }
 
-NetSocketWinSock::NetSocketWinSock() {
-}
+NetSocketWinSock::NetSocketWinSock() = default;
 
 NetSocketWinSock::~NetSocketWinSock() {
 	close();

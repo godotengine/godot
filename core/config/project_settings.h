@@ -85,7 +85,7 @@ protected:
 		bool ignore_value_in_docs = false;
 #endif // DEBUG_ENABLED
 
-		VariantContainer() {}
+		VariantContainer() = default;
 
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),

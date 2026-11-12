@@ -1027,8 +1027,7 @@ void Sprite3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 }
 
-Sprite3D::Sprite3D() {
-}
+Sprite3D::Sprite3D() = default;
 
 ////////////////////////////////////////
 
@@ -1560,5 +1559,4 @@ void AnimatedSprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 }
 
-AnimatedSprite3D::AnimatedSprite3D() {
-}
+AnimatedSprite3D::AnimatedSprite3D() = default;

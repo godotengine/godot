@@ -93,8 +93,8 @@ public:
 	bool get_use_debanding() const { return use_debanding; }
 	void set_use_debanding(bool p_use_debanding) { use_debanding = p_use_debanding; }
 
-	RenderSceneBuffersConfiguration() {}
-	virtual ~RenderSceneBuffersConfiguration() {}
+	RenderSceneBuffersConfiguration() = default;
+	virtual ~RenderSceneBuffersConfiguration() = default;
 };
 
 class RenderSceneBuffers : public RefCounted {
@@ -104,8 +104,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	RenderSceneBuffers() {}
-	virtual ~RenderSceneBuffers() {}
+	RenderSceneBuffers() = default;
+	virtual ~RenderSceneBuffers() = default;
 
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) = 0;
 

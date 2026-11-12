@@ -2822,8 +2822,7 @@ void CanvasMaterialData::bind_uniforms() {
 	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1, filter_from_uniform_canvas, repeat_from_uniform_canvas); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
 }
 
-CanvasMaterialData::~CanvasMaterialData() {
-}
+CanvasMaterialData::~CanvasMaterialData() = default;
 
 GLES3::MaterialData *GLES3::_create_canvas_material_func(ShaderData *p_shader) {
 	CanvasMaterialData *material_data = memnew(CanvasMaterialData);
@@ -2958,8 +2957,8 @@ void SkyMaterialData::update_parameters(const HashMap<StringName, Variant> &p_pa
 	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, true);
 }
 
-SkyMaterialData::~SkyMaterialData() {
-}
+SkyMaterialData::~SkyMaterialData() = default;
+
 GLES3::MaterialData *GLES3::_create_sky_material_func(ShaderData *p_shader) {
 	SkyMaterialData *material_data = memnew(SkyMaterialData);
 	material_data->shader_data = static_cast<SkyShaderData *>(p_shader);
@@ -3274,8 +3273,7 @@ void SceneMaterialData::update_parameters(const HashMap<StringName, Variant> &p_
 	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, true);
 }
 
-SceneMaterialData::~SceneMaterialData() {
-}
+SceneMaterialData::~SceneMaterialData() = default;
 
 GLES3::MaterialData *GLES3::_create_scene_material_func(ShaderData *p_shader) {
 	SceneMaterialData *material_data = memnew(SceneMaterialData);
@@ -3376,8 +3374,7 @@ void ParticleProcessMaterialData::update_parameters(const HashMap<StringName, Va
 	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, true);
 }
 
-ParticleProcessMaterialData::~ParticleProcessMaterialData() {
-}
+ParticleProcessMaterialData::~ParticleProcessMaterialData() = default;
 
 GLES3::MaterialData *GLES3::_create_particles_material_func(ShaderData *p_shader) {
 	ParticleProcessMaterialData *material_data = memnew(ParticleProcessMaterialData);
@@ -3499,8 +3496,7 @@ void TexBlitMaterialData::bind_uniforms() {
 	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1);
 }
 
-TexBlitMaterialData::~TexBlitMaterialData() {
-}
+TexBlitMaterialData::~TexBlitMaterialData() = default;
 
 GLES3::MaterialData *GLES3::_create_tex_blit_material_func(ShaderData *p_shader) {
 	TexBlitMaterialData *material_data = memnew(TexBlitMaterialData);

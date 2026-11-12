@@ -182,7 +182,7 @@ Vector<Vector2> GodotNavigationServer2D::simplify_path(const Vector<Vector2> &p_
 	return simplified_path;
 }
 
-GodotNavigationServer2D::GodotNavigationServer2D() {}
+GodotNavigationServer2D::GodotNavigationServer2D() = default;
 
 GodotNavigationServer2D::~GodotNavigationServer2D() {
 	flush_queries();

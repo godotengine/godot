@@ -90,7 +90,7 @@ class TextServerFallback : public TextServerExtension {
 		int32_t x = 0;
 		int32_t y = 0;
 
-		FontTexturePosition() {}
+		FontTexturePosition() = default;
 		FontTexturePosition(int32_t p_id, int32_t p_x, int32_t p_y) :
 				index(p_id), x(p_x), y(p_y) {}
 	};
@@ -111,7 +111,7 @@ class TextServerFallback : public TextServerExtension {
 			return FontTexturePosition(p_id, xx, y);
 		}
 
-		Shelf() {}
+		Shelf() = default;
 		Shelf(int32_t p_x, int32_t p_y, int32_t p_w, int32_t p_h) :
 				x(p_x), y(p_y), w(p_w), h(p_h) {}
 	};
@@ -161,7 +161,7 @@ class TextServerFallback : public TextServerExtension {
 			return FontTexturePosition(-1, 0, 0);
 		}
 
-		ShelfPackTexture() {}
+		ShelfPackTexture() = default;
 		ShelfPackTexture(int32_t p_w, int32_t p_h) :
 				texture_w(p_w), texture_h(p_h) {}
 	};

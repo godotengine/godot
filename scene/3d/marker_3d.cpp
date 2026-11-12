@@ -51,5 +51,4 @@ void Marker3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gizmo_extents", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater,suffix:m"), "set_gizmo_extents", "get_gizmo_extents");
 }
 
-Marker3D::Marker3D() {
-}
+Marker3D::Marker3D() = default;

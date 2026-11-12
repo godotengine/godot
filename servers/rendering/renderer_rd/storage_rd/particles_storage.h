@@ -378,7 +378,7 @@ private:
 		virtual RenderingServerTypes::ShaderNativeSourceCode get_native_source_code() const;
 		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
-		ParticlesShaderData() {}
+		ParticlesShaderData() = default;
 		virtual ~ParticlesShaderData();
 	};
 

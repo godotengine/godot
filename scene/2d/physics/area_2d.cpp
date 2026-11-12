@@ -680,5 +680,4 @@ Area2D::Area2D() :
 	set_hide_clip_children(true);
 }
 
-Area2D::~Area2D() {
-}
+Area2D::~Area2D() = default;

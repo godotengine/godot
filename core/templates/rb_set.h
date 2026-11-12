@@ -110,7 +110,7 @@ public:
 
 		explicit operator bool() const { return E != nullptr; }
 		Iterator(Element *p_element) { E = p_element; }
-		Iterator() {}
+		Iterator() = default;
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
 	private:
@@ -135,7 +135,7 @@ public:
 		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
 
 		_FORCE_INLINE_ ConstIterator(const Element *p_element) { E = p_element; }
-		_FORCE_INLINE_ ConstIterator() {}
+		_FORCE_INLINE_ ConstIterator() = default;
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
 		explicit operator bool() const { return E != nullptr; }
@@ -737,7 +737,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ RBSet() {}
+	_FORCE_INLINE_ RBSet() = default;
 
 	~RBSet() {
 		clear();

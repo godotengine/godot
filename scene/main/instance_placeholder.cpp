@@ -254,5 +254,4 @@ void InstancePlaceholder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
 }
 
-InstancePlaceholder::InstancePlaceholder() {
-}
+InstancePlaceholder::InstancePlaceholder() = default;

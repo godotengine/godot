@@ -60,7 +60,7 @@ protected:
 	bool recognize(const String &p_extension) const;
 
 public:
-	virtual ~ImageFormatLoader() {}
+	virtual ~ImageFormatLoader() = default;
 };
 
 VARIANT_BITFIELD_CAST(ImageFormatLoader::LoaderFlags);

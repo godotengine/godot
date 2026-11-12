@@ -2507,5 +2507,4 @@ Vector<Color> LightmapperRD::get_bake_probe_sh(int p_probe) const {
 	return ret;
 }
 
-LightmapperRD::LightmapperRD() {
-}
+LightmapperRD::LightmapperRD() = default;

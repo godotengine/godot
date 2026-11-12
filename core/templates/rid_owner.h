@@ -85,7 +85,7 @@ protected:
 	}
 
 public:
-	virtual ~RID_AllocBase() {}
+	virtual ~RID_AllocBase() = default;
 };
 
 template <typename T, bool THREAD_SAFE = false>

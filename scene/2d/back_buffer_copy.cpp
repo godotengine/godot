@@ -112,5 +112,4 @@ BackBufferCopy::BackBufferCopy() {
 	set_hide_clip_children(true);
 }
 
-BackBufferCopy::~BackBufferCopy() {
-}
+BackBufferCopy::~BackBufferCopy() = default;

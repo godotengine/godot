@@ -55,7 +55,7 @@ private:
 			return name == p_to.name;
 		}
 
-		ReplicationProperty() {}
+		ReplicationProperty() = default;
 
 		ReplicationProperty(const NodePath &p_name) {
 			name = p_name;
@@ -103,7 +103,7 @@ public:
 	const List<NodePath> &get_sync_properties();
 	const List<NodePath> &get_watch_properties();
 
-	SceneReplicationConfig() {}
+	SceneReplicationConfig() = default;
 };
 
 VARIANT_ENUM_CAST(SceneReplicationConfig::ReplicationMode);

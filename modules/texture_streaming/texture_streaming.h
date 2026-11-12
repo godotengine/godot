@@ -346,7 +346,7 @@ private:
 			return Image::get_image_data_size(w, h, format, true);
 		}
 
-		StreamingState() {}
+		StreamingState() = default;
 
 		StreamingState(const StreamingState &p_other) {
 			texture = p_other.texture;
