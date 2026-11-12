@@ -106,7 +106,7 @@ void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p
 		return;
 	}
 
-	if (FileAccess::exists(p_template_path.get_base_dir().path_join(platform_independent_debug_symbols_filename(p_template_path.get_file())))) {
+	if (FileAccess::exists(p_template_path.get_base_dir().path_join(get_official_debug_symbols_file_name(p_template_path.get_file())))) {
 		return;
 	}
 
@@ -273,7 +273,7 @@ bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const Stri
 
 	String sym_path = p_symbols_path + ".debugsymbols";
 	String zip_path = p_symbols_path + ".debugsymbols.zip";
-	String zip_path_full = p_symbols_path.simplify_path().path_join(platform_independent_debug_symbols_filename(p_symbols_path.get_file()));
+	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debug_symbols_file_name(p_symbols_path.get_file()));
 
 	if (FileAccess::exists(sym_path)) {
 		r_err = p_da->copy(sym_path, p_path + ".debugsymbols");

@@ -594,7 +594,7 @@ Ref<Texture2D> EditorExportPlatform::get_option_icon(int p_index) const {
 	return theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons));
 }
 
-String EditorExportPlatform::platform_independent_debug_symbols_filename(const String &p_template_file_name) const {
+String EditorExportPlatform::get_official_debug_symbols_file_name(const String &p_template_file_name) const {
 	return vformat("Godot_v%s-%s_debugsymbols_%s%s", GODOT_VERSION_NUMBER, GODOT_VERSION_STATUS, p_template_file_name, ".zip");
 }
 

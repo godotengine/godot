@@ -1962,7 +1962,7 @@ bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const S
 	String template_file_name = get_template_file_name(p_debug ? "debug" : "release", p_arch);
 	String sym_path = p_symbols_path.simplify_path().path_join(vformat("godot_%s%s", template_file_name, ".dSYM"));
 	String zip_path = p_symbols_path.simplify_path().path_join(template_file_name) + ".debugsymbols.zip";
-	String zip_path_full = p_symbols_path.simplify_path().path_join(platform_independent_debug_symbols_filename(template_file_name));
+	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debug_symbols_file_name(template_file_name));
 
 	if (DirAccess::exists(sym_path)) {
 		print_verbose(vformat("Exporting debug symbols from %s, for architecture %s.", sym_path, p_arch));
