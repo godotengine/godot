@@ -36,7 +36,6 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/os/shared_object.h"
-#include "core/version.h"
 #include "scene/resources/image_texture.h" // IWYU pragma: keep. Misdetection of `logo`.
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
@@ -98,18 +97,22 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_debug_symbols_path, String *r_err) const {
-	if (FileAccess::exists(p_template_debug_symbols_path)) {
+void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_path, String *r_err) const {
+	if (FileAccess::exists(p_template_path + ".debugsymbols")) {
 		return;
 	}
 
-	if (FileAccess::exists(p_template_debug_symbols_path + ".zip")) {
+	if (FileAccess::exists(p_template_path + ".debugsymbols.zip")) {
+		return;
+	}
+
+	if (FileAccess::exists(p_template_path.get_base_dir().path_join(platform_independent_debug_symbols_filename(p_template_path.get_file())))) {
 		return;
 	}
 
 	// Not found.
 	if (r_err) {
-		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + p_template_debug_symbols_path + "\n";
+		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + p_template_path + "\n";
 	}
 }
 
@@ -148,10 +151,10 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
 		if (dvalid) {
-			check_export_template_debug_symbols(dtemplate_path + ".debugsymbols", &err);
+			check_export_template_debug_symbols(dtemplate_path, &err);
 		}
 		if (rvalid && debug_symbol_mode == 2) {
-			check_export_template_debug_symbols(rtemplate_path + ".debugsymbols", &err);
+			check_export_template_debug_symbols(rtemplate_path, &err);
 		}
 	}
 
@@ -270,7 +273,7 @@ bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const Stri
 
 	String sym_path = p_symbols_path + ".debugsymbols";
 	String zip_path = p_symbols_path + ".debugsymbols.zip";
-	String zip_path_full = p_symbols_path.get_base_dir().simplify_path().path_join(vformat("Godot_v%s-%s_debugsymbols_%s", GODOT_VERSION_NUMBER, GODOT_VERSION_STATUS, p_symbols_path.get_file())) + ".zip";
+	String zip_path_full = p_symbols_path.simplify_path().path_join(platform_independent_debug_symbols_filename(p_symbols_path.get_file()));
 
 	if (FileAccess::exists(sym_path)) {
 		r_err = p_da->copy(sym_path, p_path + ".debugsymbols");
