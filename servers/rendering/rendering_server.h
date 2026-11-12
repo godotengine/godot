@@ -481,7 +481,7 @@ public:
 	virtual void particles_restart(RID p_particles) = 0;
 
 	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) = 0;
-	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_skeleton) = 0;
+	virtual void particles_set_baked_emission_texture(RID p_particles, RID p_skeleton, int p_points_count) = 0;
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 

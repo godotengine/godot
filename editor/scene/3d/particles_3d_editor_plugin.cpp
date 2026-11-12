@@ -542,6 +542,9 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 		}
 	}
 	Ref<Image> image3 = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
+	// TODO
+	// Add emission texture to the node instead
+	particles->set_emission_texture(ImageTexture::create_from_image(image3), point_count);
 	undo_redo->add_do_property(matptr, "emission_skin_texture", ImageTexture::create_from_image(image3));
 	undo_redo->add_undo_property(matptr, "emission_skin_texture", matptr->get_emission_skin_texture());
 	undo_redo->add_do_property(matptr, "emission_point_count", point_count);

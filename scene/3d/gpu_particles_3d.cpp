@@ -362,22 +362,22 @@ void GPUParticles3D::set_emission_texture(const Ref<Texture2D> &p_emission_textu
 
 	emission_texture = p_emission_texture;
 	if (emission_texture.is_valid()) {
-		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), emission_texture->get_rid(), emission_texture_points_count);
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, emission_texture->get_rid(), emission_texture_points_count);
 	} else {
-		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), RID(), emission_texture_points_count);
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, RID(), emission_texture_points_count);
 	}
 }
 
-Ref<Texture2D> GPUParticles3D::get_fixed_fps() const {
+Ref<Texture2D> GPUParticles3D::get_emission_texture() const {
 	return emission_texture;
 }
 
 void GPUParticles3D::set_emission_texture_points_count(int p_emission_texture_point_count) {
 	emission_texture_points_count = p_emission_texture_point_count;
 	if (emission_texture.is_valid()) {
-		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), emission_texture->get_rid(), emission_texture_points_count);
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, emission_texture->get_rid(), emission_texture_points_count);
 	} else {
-		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), RID(), emission_texture_points_count);
+		RS::get_singleton()->particles_set_baked_emission_texture(particles, RID(), emission_texture_points_count);
 	}
 }
 
