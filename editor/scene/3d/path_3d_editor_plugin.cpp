@@ -436,7 +436,7 @@ void Path3DGizmo::redraw() {
 	}
 
 	// 2. Draw handles when selected.
-	if (Path3DEditorPlugin::singleton->get_edited_path() == path) {
+	if (is_selected() && Path3DEditorPlugin::singleton->get_edited_path() == path) {
 		PackedVector3Array handle_lines;
 		PackedVector3Array tilt_handle_lines;
 		PackedVector3Array primary_handle_points;
