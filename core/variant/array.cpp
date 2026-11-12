@@ -224,8 +224,10 @@ void Array::assign(const Array &p_array) {
 		return;
 	}
 
-	const Variant *source = p_array._p->array.ptr();
-	int size = p_array._p->array.size();
+	// Pin the source against reentrant mutation during conversion.
+	const Vector<Variant> pinned_source = p_array._p->array;
+	const Variant *source = pinned_source.ptr();
+	int size = pinned_source.size();
 
 	if ((source_typed.variant_type == Variant::NIL && typed.variant_type == Variant::OBJECT) || (source_typed.variant_type == Variant::OBJECT && source_typed.can_reference(typed))) {
 		// from variants to objects or
@@ -236,7 +238,7 @@ void Array::assign(const Array &p_array) {
 				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.variant_type)));
 			}
 		}
-		_p->array = p_array._p->array;
+		_p->array = pinned_source;
 		return;
 	}
 	if (typed.variant_type == Variant::OBJECT || source_typed.variant_type == Variant::OBJECT) {
