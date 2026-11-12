@@ -211,9 +211,10 @@ Ref<JavaObject> OpenXRCompositionLayerExtension::composition_layer_get_android_s
 }
 
 void OpenXRCompositionLayerExtension::_composition_layer_free_rt(RID p_layer) {
+	MutexLock lock(composition_layer_mutex);
+
 	_composition_layer_unregister_rt(p_layer);
 
-	MutexLock lock(composition_layer_mutex);
 	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
 	if (layer) {
 		for (OpenXRExtensionWrapper *extension : OpenXRAPI::get_registered_extension_wrappers()) {
@@ -228,7 +229,9 @@ void OpenXRCompositionLayerExtension::_composition_layer_free_rt(RID p_layer) {
 void OpenXRCompositionLayerExtension::_composition_layer_register_rt(RID p_layer) {
 	CompositionLayer *layer = composition_layer_owner.get_or_null(p_layer);
 	ERR_FAIL_NULL(layer);
-	registered_composition_layers.push_back(layer);
+	if (!registered_composition_layers.has(layer)) {
+		registered_composition_layers.push_back(layer);
+	}
 }
 
 void OpenXRCompositionLayerExtension::_composition_layer_unregister_rt(RID p_layer) {
