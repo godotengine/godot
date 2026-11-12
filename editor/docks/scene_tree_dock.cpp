@@ -4076,6 +4076,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	ERR_FAIL_COND(!EditorNode::get_singleton()->get_edited_scene());
 	menu->clear(false);
+	pending_click_select = nullptr;
 
 	const List<Node *> selection = editor_selection->get_top_selected_node_list(); // Only the top-level selected nodes.
 	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // All selected nodes.
@@ -5393,7 +5394,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 	main_mc->add_child(scene_tree);
 	scene_tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
+	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb), CONNECT_DEFERRED);
 
 	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);
 	scene_tree->connect("node_renamed", callable_mp(this, &SceneTreeDock::_node_renamed), CONNECT_DEFERRED);
