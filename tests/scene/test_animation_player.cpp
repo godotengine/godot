@@ -62,4 +62,38 @@ TEST_CASE("[AnimationPlayer] get & set blend_time") {
 	memdelete(animation_player);
 }
 
+TEST_CASE("[AnimationPlayer] animation active state") {
+	const Ref<Animation> animation = memnew(Animation);
+	animation->set_length(0.1);
+	const Ref<AnimationLibrary> animation_library = memnew(AnimationLibrary);
+	animation_library->add_animation("animation", animation);
+
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	animation_player->set_root_node(NodePath("."));
+	animation_player->add_animation_library("", animation_library);
+
+	CHECK_FALSE(animation_player->is_playing());
+	CHECK_FALSE(animation_player->is_animation_active());
+
+	animation_player->play("animation");
+	CHECK(animation_player->is_playing());
+	CHECK(animation_player->is_animation_active());
+
+	animation_player->pause();
+	CHECK_FALSE(animation_player->is_playing());
+	CHECK(animation_player->is_animation_active());
+
+	animation_player->play();
+	animation_player->advance(0.1);
+	CHECK_FALSE(animation_player->is_playing());
+	CHECK_FALSE(animation_player->is_animation_active());
+
+	animation_player->play("animation");
+	animation_player->stop();
+	CHECK_FALSE(animation_player->is_playing());
+	CHECK_FALSE(animation_player->is_animation_active());
+
+	memdelete(animation_player);
+}
+
 } // namespace TestAnimationPlayer
