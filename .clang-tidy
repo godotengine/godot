@@ -8,6 +8,8 @@ Checks:
   - modernize-redundant-void-arg
   - modernize-use-bool-literals
   - modernize-use-default-member-init
+  - modernize-use-equals-default
+  - modernize-use-equals-delete
   - modernize-use-nullptr
   - performance-move-const-arg
   - readability-braces-around-statements
@@ -23,6 +25,8 @@ CheckOptions:
   modernize-use-bool-literals.IgnoreMacros: false
   modernize-use-default-member-init.IgnoreMacros: false
   modernize-use-default-member-init.UseAssignment: true
+  modernize-use-equals-default.IgnoreMacros: false
+  modernize-use-equals-delete.IgnoreMacros: false
   readability-identifier-naming.ParameterCase: lower_case
   readability-identifier-naming.ParameterIgnoredRegexp: ^r_[a-z0-9_]*[a-z0-9]$
   readability-identifier-naming.ParameterPrefix: p_
