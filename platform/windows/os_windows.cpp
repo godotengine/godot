@@ -1320,12 +1320,13 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	sa.bInheritHandle = true;
 	sa.lpSecurityDescriptor = nullptr;
 
-	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, 0), ret);
-	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, 0)) {
+	constexpr DWORD pipe_buffer_size = 64 * 1024;
+	ERR_FAIL_COND_V(!CreatePipe(&pipe_in[0], &pipe_in[1], &sa, pipe_buffer_size), ret);
+	if (!CreatePipe(&pipe_out[0], &pipe_out[1], &sa, pipe_buffer_size)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
 	}
-	if (!CreatePipe(&pipe_err[0], &pipe_err[1], &sa, 0)) {
+	if (!CreatePipe(&pipe_err[0], &pipe_err[1], &sa, pipe_buffer_size)) {
 		CLEAN_PIPES
 		ERR_FAIL_V(ret);
 	}
