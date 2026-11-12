@@ -341,6 +341,15 @@ String OpenXRAPI::get_error_string(XrResult p_result) const {
 	}
 }
 
+void OpenXRAPI::report_frame_loop_error(XrResult &r_last_error, XrResult p_result, const char *p_what) {
+	if (p_result == r_last_error) {
+		print_verbose(vformat("OpenXR: %s, again [%s]", p_what, get_error_string(p_result)));
+		return;
+	}
+	r_last_error = p_result;
+	print_error(vformat("OpenXR: %s [%s]. Repeats are only printed with --verbose.", p_what, get_error_string(p_result)));
+}
+
 String OpenXRAPI::get_swapchain_format_name(int64_t p_swapchain_format) const {
 	// This is rendering engine dependent...
 	if (graphics_extension) {
@@ -2730,7 +2739,7 @@ bool OpenXRAPI::process() {
 
 	XrResult result = xrWaitFrame(session, &frame_wait_info, &frame_state);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: xrWaitFrame() was not successful [", get_error_string(result), "]");
+		report_frame_loop_error(last_wait_frame_error, result, "xrWaitFrame() was not successful");
 
 		// reset just in case
 		frame_state.predictedDisplayTime = 0;
@@ -2741,6 +2750,7 @@ bool OpenXRAPI::process() {
 
 		return false;
 	}
+	last_wait_frame_error = XR_SUCCESS;
 
 	if (frame_state.predictedDisplayPeriod > 500000000) {
 		// display period more then 0.5 seconds? must be wrong data
@@ -2806,9 +2816,10 @@ void OpenXRAPI::pre_render() {
 	};
 	XrResult result = xrBeginFrame(session, &frame_begin_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to begin frame [", get_error_string(result), "]");
+		report_frame_loop_error(render_state.last_begin_frame_error, result, "failed to begin frame");
 		return;
 	}
+	render_state.last_begin_frame_error = XR_SUCCESS;
 
 	// Reset this, we haven't found a viewport for output yet
 	render_state.has_xr_viewport = false;
@@ -3038,9 +3049,10 @@ void OpenXRAPI::end_frame() {
 		};
 		result = xrEndFrame(session, &frame_end_info);
 		if (XR_FAILED(result)) {
-			print_line("OpenXR: rendering skipped and failed to end frame! [", get_error_string(result), "]");
+			report_frame_loop_error(render_state.last_end_frame_error, result, "rendering skipped and failed to end frame");
 			return;
 		}
+		render_state.last_end_frame_error = XR_SUCCESS;
 
 		end_debug_label_region(); // Session frame #
 
@@ -3146,9 +3158,10 @@ void OpenXRAPI::end_frame() {
 	};
 	result = xrEndFrame(session, &frame_end_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to end frame! [", get_error_string(result), "]");
+		report_frame_loop_error(render_state.last_end_frame_error, result, "failed to end frame");
 		return;
 	}
+	render_state.last_end_frame_error = XR_SUCCESS;
 
 	end_debug_label_region(); // Session frame #
 }
