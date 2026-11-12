@@ -203,10 +203,10 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
-void OS_Web::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
-#ifndef PROXY_TO_PTHREAD_ENABLED
-	OS::add_frame_delay(p_can_draw, p_wake_for_events);
-#endif
+void OS_Web::add_frame_delay(bool /*p_can_draw*/, bool /*p_wake_for_events*/) {
+	// web_main.cpp already caps the frame rate by skipping animation frames. The default
+	// implementation calls delay_usec(), which is a busy wait on the browser's main thread:
+	// with max_fps set, every drawn frame spun until the next one was due.
 }
 
 void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
