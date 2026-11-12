@@ -97,7 +97,7 @@ Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
 
-void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p_template_path, String *r_err) const {
+void EditorExportPlatformPC::check_export_template_debugsymbols(const String &p_template_path, String *r_err) const {
 	if (FileAccess::exists(p_template_path + ".debugsymbols")) {
 		return;
 	}
@@ -106,13 +106,13 @@ void EditorExportPlatformPC::check_export_template_debug_symbols(const String &p
 		return;
 	}
 
-	if (FileAccess::exists(p_template_path.get_base_dir().path_join(get_official_debug_symbols_file_name(p_template_path.get_file())))) {
+	if (FileAccess::exists(p_template_path.get_base_dir().path_join(get_official_debugsymbols_file_name(p_template_path.get_file())))) {
 		return;
 	}
 
 	// Not found.
 	if (r_err) {
-		*r_err += TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found:") + "\n" + p_template_path + "\n";
+		*r_err += vformat(TTR("Export Debug Symbols is set, but no export template .debugsymbols nor .debugsymbols.zip found for: %s"), p_template_path.get_file()) + "\n";
 	}
 }
 
@@ -151,10 +151,10 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
 		if (dvalid) {
-			check_export_template_debug_symbols(dtemplate_path, &err);
+			check_export_template_debugsymbols(dtemplate_path, &err);
 		}
 		if (rvalid && debug_symbol_mode == 2) {
-			check_export_template_debug_symbols(rtemplate_path, &err);
+			check_export_template_debugsymbols(rtemplate_path, &err);
 		}
 	}
 
@@ -273,7 +273,7 @@ bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const Stri
 
 	String sym_path = p_symbols_path + ".debugsymbols";
 	String zip_path = p_symbols_path + ".debugsymbols.zip";
-	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debug_symbols_file_name(p_symbols_path.get_file()));
+	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debugsymbols_file_name(p_symbols_path.get_file()));
 
 	if (FileAccess::exists(sym_path)) {
 		r_err = p_da->copy(sym_path, p_path + ".debugsymbols");

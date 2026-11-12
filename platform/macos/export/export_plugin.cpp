@@ -1832,7 +1832,7 @@ Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const
 		String file = String::utf8(fname);
 		if (file.begins_with(vformat("godot_%s.dSYM/", template_file_name))) {
 			file = file.trim_prefix(vformat("godot_%s.dSYM/", template_file_name));
-			file = file.replace(vformat("godot_%s", template_file_name), p_app_name);
+			file = file.replace("godot_" + template_file_name, p_app_name);
 
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
@@ -1922,7 +1922,7 @@ Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &
 			if (src_da->current_is_dir()) {
 				dirs.push_back(n);
 			} else {
-				const String &rel_path = n.replace(vformat("godot_macos_%s", template_file_name), p_app_name);
+				const String &rel_path = n.replace("godot_" + template_file_name, p_app_name);
 				if (!n.is_relative_path()) {
 					src_da->list_dir_end();
 					if (err != OK) {
@@ -1960,13 +1960,13 @@ Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &
 
 bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, const String &p_arch, bool p_debug, const Vector<String> &p_exec_ids, Vector<String> *r_symb_ids, Error &r_err) {
 	String template_file_name = get_template_file_name(p_debug ? "debug" : "release", p_arch);
-	String sym_path = p_symbols_path.simplify_path().path_join(vformat("godot_%s%s", template_file_name, ".dSYM"));
+	String sym_path = p_symbols_path.simplify_path().path_join(vformat("godot_%s.dSYM", template_file_name));
 	String zip_path = p_symbols_path.simplify_path().path_join(template_file_name) + ".debugsymbols.zip";
-	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debug_symbols_file_name(template_file_name));
+	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debugsymbols_file_name(template_file_name));
 
 	if (DirAccess::exists(sym_path)) {
 		print_verbose(vformat("Exporting debug symbols from %s, for architecture %s.", sym_path, p_arch));
-		Vector<String> symb_debug_ids = OS::get_singleton()->get_debug_build_id(sym_path.path_join("Contents").path_join("Resources").path_join("DWARF").path_join(vformat("godot_%s", template_file_name)));
+		Vector<String> symb_debug_ids = OS::get_singleton()->get_debug_build_id(sym_path.path_join("Contents").path_join("Resources").path_join("DWARF").path_join("godot_" + template_file_name));
 		if (!symb_debug_ids.is_empty()) {
 			int id_match = 0;
 			for (const String &E : symb_debug_ids) {
