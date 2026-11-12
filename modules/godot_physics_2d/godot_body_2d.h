@@ -156,6 +156,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	void _update_transform_dependent();
 
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
+	friend class GodotPinJoint2D;
 
 public:
 	void set_state_sync_callback(const Callable &p_callable);
@@ -249,10 +250,6 @@ public:
 			}
 			biased_angular_velocity += delta_av;
 		}
-	}
-
-	_FORCE_INLINE_ void apply_bias_torque_impulse(real_t p_torque) {
-		biased_angular_velocity += _inv_inertia * p_torque;
 	}
 
 	_FORCE_INLINE_ void apply_central_force(const Vector2 &p_force) {
