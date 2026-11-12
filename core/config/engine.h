@@ -85,6 +85,8 @@ private:
 
 	uint64_t _process_frames = 0;
 	bool _in_physics = false;
+	bool _drawing_step = true;
+	bool _drop_pending_ticks = false;
 
 	List<Singleton> singletons;
 	HashMap<StringName, Object *> singleton_ptrs;
@@ -138,6 +140,12 @@ public:
 	uint64_t get_physics_frames() const { return _physics_frames; }
 	uint64_t get_process_frames() const { return _process_frames; }
 	bool is_in_physics_frame() const { return _in_physics; }
+	bool is_drawing_step() const { return _drawing_step; }
+	// The current step becomes the iteration's last, so it is the one drawn.
+	void drop_pending_ticks() {
+		_drop_pending_ticks = true;
+		_drawing_step = true;
+	}
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }
 	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }

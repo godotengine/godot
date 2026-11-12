@@ -19,6 +19,12 @@
 				[b]Warning:[/b] When [param include_variables] is [code]true[/code], any captured variables can potentially (e.g. with GDScript backtraces) be their actual values, including any object references. This means that storing such a [ScriptBacktrace] will prevent those objects from being deallocated, so it's generally recommended not to do so.
 			</description>
 		</method>
+		<method name="drop_pending_ticks">
+			<return type="void" />
+			<description>
+				With [member ProjectSettings.application/run/fixed_tick_rate] set, the remaining ticks of the current loop iteration are skipped, so the current tick is the one drawn ([method is_drawing_step] returns [code]true[/code] from here on), and the next iteration runs one tick, instead of catching up the ticks that fell due meanwhile. Call it after a known stall that is not game time, such as loading or saving. Does nothing without a fixed tick rate.
+			</description>
+		</method>
 		<method name="get_architecture_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -254,6 +260,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the engine is running embedded in the editor. This is useful to prevent attempting to update window mode or window flags that are not supported when running the project embedded in the editor.
+			</description>
+		</method>
+		<method name="is_drawing_step" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the frame is drawn after the current process step. With [member ProjectSettings.application/run/fixed_tick_rate] set, one loop iteration may run several process steps and draw only after the last one; this returns [code]false[/code] during the earlier steps. Without a fixed tick rate, this is always [code]true[/code].
 			</description>
 		</method>
 		<method name="is_in_physics_frame" qualifiers="const">
