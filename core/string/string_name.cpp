@@ -184,7 +184,7 @@ char32_t StringName::operator[](int p_index) const {
 		return _data->name[p_index];
 	}
 
-	CRASH_BAD_INDEX(p_index, 0);
+	CRASH_NOW_MSG("Cannot index into an empty StringName.");
 	return 0;
 }
 
