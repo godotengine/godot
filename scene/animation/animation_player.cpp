@@ -360,6 +360,7 @@ void AnimationPlayer::_blend_post_process() {
 				}
 			} else {
 				_clear_caches(clear_cache_on_stop);
+				playback.finished = true;
 				playing = false;
 				_set_process(false);
 				if (end_notify) {
@@ -468,6 +469,7 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 	ERR_FAIL_COND_MSG(p_start_time >= 0 && p_end_time >= 0 && Animation::is_greater_approx(p_start_time, p_end_time), vformat("Start time %f is greater than end time %f.", p_start_time, p_end_time));
 
 	Playback &c = playback;
+	c.finished = false;
 
 	if (c.current.is_enabled) {
 		double blend_time = 0.0;
@@ -635,6 +637,7 @@ void AnimationPlayer::set_assigned_animation(const StringName &p_animation) {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation.string()));
 		playback.current.pos = 0;
 		playback.current.is_enabled = true;
+		playback.finished = false;
 		playback.current.animation_name = p_animation;
 		playback.current.animation_length = animation_set[p_animation].animation->get_length();
 		playback.current.start_time = -1;
@@ -675,6 +678,7 @@ void AnimationPlayer::seek_internal(double p_time, bool p_update, bool p_update_
 	if (!active) {
 		return;
 	}
+	playback.finished = false;
 
 	bool is_backward = Animation::is_less_approx(p_time, playback.current.pos);
 
@@ -726,6 +730,10 @@ void AnimationPlayer::_check_immediately_after_start() {
 
 bool AnimationPlayer::is_valid() const {
 	return playback.current.is_enabled;
+}
+
+bool AnimationPlayer::is_animation_active() const {
+	return playback.current.is_enabled && !playback.finished;
 }
 
 double AnimationPlayer::get_current_animation_position() const {
@@ -1023,7 +1031,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
-	ClassDB::bind_method(D_METHOD("is_animation_active"), &AnimationPlayer::is_valid);
+	ClassDB::bind_method(D_METHOD("is_animation_active"), &AnimationPlayer::is_animation_active);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "animation"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);
