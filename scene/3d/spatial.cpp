@@ -851,11 +851,10 @@ void Spatial::_propagate_visible_in_tree(bool p_visible_in_tree) {
 
 	data.visible_in_tree = p_visible_in_tree;
 
-	for (int32_t n = 0; n < get_child_count(); n++) {
-		Spatial *s = Object::cast_to<Spatial>(get_child(n));
-		if (s) {
-			s->_propagate_visible_in_tree(p_visible_in_tree);
-		}
+	for (uint32_t n = 0; n < data.spatial_children.size(); n++) {
+		Spatial *s = data.spatial_children.get_unchecked(n);
+		DEV_ASSERT(s);
+		s->_propagate_visible_in_tree(p_visible_in_tree);
 	}
 }
 
