@@ -285,8 +285,8 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
-			};
-		};
+			}
+		}
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
@@ -294,20 +294,29 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
-			};
-		};
+			}
+		}
 		js.mapping = mapping;
 	} else {
 		js.connected = false;
-		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-			if (i < JOY_AXIS_MAX) {
-				set_joy_axis(p_idx, i, 0.0f);
+		for (int i = JOY_BUTTON_0; i < JOY_BUTTON_MAX; i++) {
+			if (is_joy_button_pressed(p_idx, i)) {
+				_button_event(p_idx, i, false, true);
+				int c = _combine_device(i, p_idx);
+				joy_buttons_pressed.erase(c);
 			}
-
+		}
+		for (int i = JOY_AXIS_0; i < JOY_AXIS_MAX; i++) {
 			int c = _combine_device(i, p_idx);
-			joy_buttons_pressed.erase(c);
-		};
-	};
+			if (_joy_axis.has(c)) {
+				if (_joy_axis[c] != 0.0f) {
+					_axis_event(p_idx, i, 0.0f, true);
+				}
+				_joy_axis.erase(c);
+			}
+		}
+	}
+
 	joy_names[p_idx] = js;
 
 	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
@@ -1044,25 +1053,31 @@ void InputDefault::joy_hat(int p_device, int p_val) {
 	joy_names[p_device].hat_current = p_val;
 }
 
-void InputDefault::_button_event(int p_device, int p_index, bool p_pressed) {
+void InputDefault::_button_event(int p_device, int p_index, bool p_pressed, bool p_immediate) {
 	Ref<InputEventJoypadButton> ievent;
 	ievent.instance();
 	ievent->set_device(p_device);
 	ievent->set_button_index(p_index);
 	ievent->set_pressed(p_pressed);
-
-	parse_input_event(ievent);
+	if (p_immediate) {
+		_parse_input_event_impl(ievent, false);
+	} else {
+		parse_input_event(ievent);
+	}
 }
 
-void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
+void InputDefault::_axis_event(int p_device, int p_axis, float p_value, bool p_immediate) {
 	Ref<InputEventJoypadMotion> ievent;
 	ievent.instance();
 	ievent->set_device(p_device);
 	ievent->set_axis(p_axis);
 	ievent->set_axis_value(p_value);
-
-	parse_input_event(ievent);
-};
+	if (p_immediate) {
+		_parse_input_event_impl(ievent, false);
+	} else {
+		parse_input_event(ievent);
+	}
+}
 
 InputDefault::JoyEvent InputDefault::_get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button) {
 	JoyEvent event;
