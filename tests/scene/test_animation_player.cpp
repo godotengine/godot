@@ -62,4 +62,37 @@ TEST_CASE("[AnimationPlayer] get & set blend_time") {
 	memdelete(animation_player);
 }
 
+TEST_CASE("[AnimationPlayer] is_animation_active after natural completion") {
+	const Ref<Animation> animation = memnew(Animation);
+	animation->set_length(1.0);
+	const Ref<AnimationLibrary> animation_library = memnew(AnimationLibrary);
+	animation_library->add_animation("animation", animation);
+
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	animation_player->add_animation_library("", animation_library);
+	animation_player->play("animation");
+
+	CHECK(animation_player->is_animation_active());
+	animation_player->advance(1.0);
+	CHECK_FALSE(animation_player->is_animation_active());
+
+	memdelete(animation_player);
+}
+
+TEST_CASE("[AnimationPlayer] is_animation_active while paused") {
+	const Ref<Animation> animation = memnew(Animation);
+	animation->set_length(1.0);
+	const Ref<AnimationLibrary> animation_library = memnew(AnimationLibrary);
+	animation_library->add_animation("animation", animation);
+
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	animation_player->add_animation_library("", animation_library);
+	animation_player->play("animation");
+	animation_player->pause();
+
+	CHECK(animation_player->is_animation_active());
+
+	memdelete(animation_player);
+}
+
 } // namespace TestAnimationPlayer
