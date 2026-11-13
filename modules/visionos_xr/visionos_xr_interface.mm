@@ -319,6 +319,12 @@ void VisionOSXRInterface::RenderThread::uninitialize() {
 	if (current_rasterization_rate_map_id != RID()) {
 		rendering_device->free_rid(current_rasterization_rate_map_id);
 	}
+	current_color_texture_id = RID();
+	current_depth_texture_id = RID();
+	current_rasterization_rate_map_id = RID();
+	current_color_texture_source = 0;
+	current_depth_texture_source = 0;
+	current_rasterization_rate_map_source = 0;
 	initialized = false;
 }
 
@@ -1060,13 +1066,17 @@ RID VisionOSXRInterface::RenderThread::get_color_texture() {
 		return RID();
 	}
 
-	if (current_color_texture_id != RID()) {
-		rendering_device->free_rid(current_color_texture_id);
-	}
-
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
 
 	id<MTLTexture> color_texture = cp_drawable_get_color_texture(current_drawable, 0);
+	const uint64_t color_texture_source = (uint64_t)(__bridge void *)color_texture;
+	if (current_color_texture_id.is_valid() && current_color_texture_source == color_texture_source) {
+		return current_color_texture_id;
+	}
+	if (current_color_texture_id.is_valid()) {
+		rendering_device->free_rid(current_color_texture_id);
+	}
+	current_color_texture_source = color_texture_source;
 	current_color_texture_id = rendering_device->texture_create_from_extension(
 			MTL::texture_type_from_metal(color_texture.textureType),
 			pixel_formats->getDataFormat((MTL::PixelFormat)color_texture.pixelFormat),
@@ -1089,12 +1099,16 @@ RID VisionOSXRInterface::RenderThread::get_depth_texture() {
 		return RID();
 	}
 
-	if (current_depth_texture_id != RID()) {
-		rendering_device->free_rid(current_depth_texture_id);
-	}
-
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
 	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(current_drawable, 0);
+	const uint64_t depth_texture_source = (uint64_t)(__bridge void *)depth_texture;
+	if (current_depth_texture_id.is_valid() && current_depth_texture_source == depth_texture_source) {
+		return current_depth_texture_id;
+	}
+	if (current_depth_texture_id.is_valid()) {
+		rendering_device->free_rid(current_depth_texture_id);
+	}
+	current_depth_texture_source = depth_texture_source;
 
 	current_depth_texture_id = rendering_device->texture_create_from_extension(
 			MTL::texture_type_from_metal(depth_texture.textureType),
@@ -1118,14 +1132,18 @@ RID VisionOSXRInterface::RenderThread::get_vrs_texture() {
 		return RID();
 	}
 
-	if (current_rasterization_rate_map_id != RID()) {
-		rendering_device->free_rid(current_rasterization_rate_map_id);
-	}
-
 	ERR_FAIL_NULL_V_MSG(current_drawable, RID(), "Current drawable is nil, pre_render() has probably not been called.");
 	size_t count = cp_drawable_get_rasterization_rate_map_count(current_drawable);
 	ERR_FAIL_COND_V_MSG(count == 0, RID(), "No rasterizationRateMaps found.");
 	id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(current_drawable, 0);
+	const uint64_t rasterization_rate_map_source = (uint64_t)(__bridge void *)rasterization_rate_map;
+	if (current_rasterization_rate_map_id.is_valid() && current_rasterization_rate_map_source == rasterization_rate_map_source) {
+		return current_rasterization_rate_map_id;
+	}
+	if (current_rasterization_rate_map_id.is_valid()) {
+		rendering_device->free_rid(current_rasterization_rate_map_id);
+	}
+	current_rasterization_rate_map_source = rasterization_rate_map_source;
 	MTLSize logical_size = rasterization_rate_map.screenSize;
 
 	// The type, format and sample count are spoofed. They satisfy
