@@ -221,7 +221,7 @@ private:
 	/****************/
 
 	VmaAllocator allocator = nullptr;
-	HashMap<uint32_t, VmaPool> small_allocs_pools;
+	VmaPool small_allocs_pools[VK_MAX_MEMORY_TYPES]{};
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
