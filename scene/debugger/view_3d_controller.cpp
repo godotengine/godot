@@ -81,6 +81,10 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 			return true;
 		}
 
+		if (b->is_released() && navigating) {
+			navigating = false;
+		}
+
 		const real_t zoom_factor = 1 + (ZOOM_FREELOOK_MULTIPLIER - 1) * b->get_factor();
 		switch (b->get_button_index()) {
 			case MouseButton::WHEEL_UP: {
@@ -202,7 +206,6 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 			} break;
 
 			default: {
-				navigating = false;
 				return false;
 			}
 		}

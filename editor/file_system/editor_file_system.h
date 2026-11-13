@@ -268,6 +268,7 @@ class EditorFileSystem : public Node {
 
 	List<String> sources_changed;
 	List<ItemAction> scan_actions;
+	bool updating_scan_actions = false;
 
 	bool _update_scan_actions();
 

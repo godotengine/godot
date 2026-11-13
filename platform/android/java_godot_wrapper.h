@@ -85,6 +85,7 @@ private:
 	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _on_distraction_free_mode_changed = nullptr;
+	jmethodID _show_editor_game_dock = nullptr;
 	jmethodID _get_activity = nullptr;
 	jmethodID _build_env_connect = nullptr;
 	jmethodID _build_env_disconnect = nullptr;
@@ -160,6 +161,7 @@ public:
 
 	void on_editor_workspace_selected(const String &p_workspace);
 	void on_distraction_free_mode_changed(bool p_enabled);
+	void show_editor_game_dock();
 
 	bool build_env_connect(const Callable &p_callback);
 	void build_env_disconnect();

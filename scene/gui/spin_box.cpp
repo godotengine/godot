@@ -125,6 +125,9 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 			const Variant current_value = value;
 			bool error = false;
 			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
+			if (!error && !plural_format.is_empty() && (plural_format.contains("%s") != use_default_format)) {
+				error = true;
+			}
 			if (error) {
 				line_edit->set_text_with_selection(RTR("<Invalid>"));
 				return;
@@ -779,6 +782,8 @@ PackedStringArray SpinBox::get_configuration_warnings() const {
 		}
 		if (format.is_empty()) {
 			warnings.push_back(RTR("The format property is empty, while plural_format was specified. It will have no effect."));
+		} else if (use_default_format != plural_format.contains("%s")) {
+			warnings.push_back(RTR("The format and plural_format properties have inconsistent %s placeholder usage."));
 		}
 	}
 	return warnings;

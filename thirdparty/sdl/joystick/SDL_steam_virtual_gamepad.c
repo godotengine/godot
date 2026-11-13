@@ -260,5 +260,7 @@ void SDL_QuitSteamVirtualGamepadInfo(void)
         SDL_FreeSteamVirtualGamepadInfo();
         SDL_free(SDL_steam_virtual_gamepad_info_file);
         SDL_steam_virtual_gamepad_info_file = NULL;
+        SDL_steam_virtual_gamepad_info_file_mtime = 0;
+        SDL_steam_virtual_gamepad_info_check_time = 0;
     }
 }

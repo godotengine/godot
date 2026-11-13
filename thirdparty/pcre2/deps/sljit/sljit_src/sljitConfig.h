@@ -133,7 +133,7 @@ extern "C" {
       nonzero value - FPU is present.
 */
 
-/* For further configurations, see the beginning of sljitConfigInternal.h */
+/* For further configurations, see sljitConfigCPU.h and sljitConfigInternal.h */
 
 #ifdef __cplusplus
 } /* extern "C" */

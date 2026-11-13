@@ -869,6 +869,16 @@ void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::S
 	}
 }
 
+void CSGShape3D::_physics_debug_changed() {
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_3D_DISABLED)
+	if (_is_debug_collision_shape_visible()) {
+		_update_debug_collision_shape();
+	} else {
+		_clear_debug_collision_shape();
+	}
+#endif
+}
+
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
@@ -923,7 +933,7 @@ Ref<ConcavePolygonShape3D> CSGShape3D::bake_collision_shape() {
 }
 
 bool CSGShape3D::_is_debug_collision_shape_visible() {
-	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->is_debugging_collisions_hint();
+	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled();
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
@@ -1061,14 +1071,6 @@ void CSGShape3D::_notification(int p_what) {
 				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (_is_debug_collision_shape_visible()) {
-				_update_debug_collision_shape();
-			} else {
-				_clear_debug_collision_shape();
-			}
 		} break;
 #endif // PHYSICS_3D_DISABLED
 	}
@@ -1224,6 +1226,10 @@ void CSGShape3D::_bind_methods() {
 
 CSGShape3D::CSGShape3D() {
 	set_notify_local_transform(true);
+
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_3D_DISABLED)
+	PhysicsServer3D::get_singleton()->connect("_debug_changed", callable_mp(this, &CSGShape3D::_physics_debug_changed));
+#endif
 }
 
 CSGShape3D::~CSGShape3D() {

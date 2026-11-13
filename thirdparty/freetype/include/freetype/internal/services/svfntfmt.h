@@ -40,6 +40,7 @@ FT_BEGIN_HEADER
 #define FT_FONT_FORMAT_TYPE_42   "Type 42"
 #define FT_FONT_FORMAT_CID       "CID Type 1"
 #define FT_FONT_FORMAT_CFF       "CFF"
+#define FT_FONT_FORMAT_HVF       "HVF"
 #define FT_FONT_FORMAT_PFR       "PFR"
 #define FT_FONT_FORMAT_WINFNT    "Windows FNT"
 

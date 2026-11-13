@@ -55,20 +55,20 @@ static hb_blob_t *
 _hb_cg_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
 {
   CGFontRef cg_font = reinterpret_cast<CGFontRef> (user_data);
-  CFDataRef cf_data = CGFontCopyTableForTag (cg_font, tag);
+  if (unlikely (!cg_font))
+    return nullptr;
+
+  hb_cf_ptr_t<CFDataRef> cf_data (CGFontCopyTableForTag (cg_font, tag));
   if (unlikely (!cf_data))
     return nullptr;
 
   const char *data = reinterpret_cast<const char*> (CFDataGetBytePtr (cf_data));
   const size_t length = CFDataGetLength (cf_data);
   if (!data || !length)
-  {
-    CFRelease (cf_data);
     return nullptr;
-  }
 
   return hb_blob_create (data, length, HB_MEMORY_MODE_READONLY,
-			 reinterpret_cast<void *> (const_cast<__CFData *> (cf_data)),
+			 reinterpret_cast<void *> (const_cast<__CFData *> (cf_data.release ())),
 			 release_table_data);
 }
 
@@ -80,12 +80,28 @@ _hb_cg_get_table_tags (const hb_face_t *face HB_UNUSED,
 		       void *user_data)
 {
   CGFontRef cg_font = reinterpret_cast<CGFontRef> (user_data);
+  if (unlikely (!cg_font))
+  {
+    if (table_count)
+      *table_count = 0;
+    return 0;
+  }
 
-  CTFontRef ct_font = create_ct_font (cg_font, (CGFloat) HB_CORETEXT_DEFAULT_FONT_SIZE);
+  hb_cf_ptr_t<CTFontRef> ct_font (create_ct_font (cg_font, (CGFloat) HB_CORETEXT_DEFAULT_FONT_SIZE));
+  if (unlikely (!ct_font))
+  {
+    if (table_count)
+      *table_count = 0;
+    return 0;
+  }
 
-  auto arr = CTFontCopyAvailableTables (ct_font, kCTFontTableOptionNoOptions);
-  HB_SCOPE_GUARD (CFRelease (arr));
-  HB_SCOPE_GUARD (CFRelease (ct_font));
+  hb_cf_ptr_t<CFArrayRef> arr (CTFontCopyAvailableTables (ct_font, kCTFontTableOptionNoOptions));
+  if (unlikely (!arr))
+  {
+    if (table_count)
+      *table_count = 0;
+    return 0;
+  }
 
   unsigned population = (unsigned) CFArrayGetCount (arr);
 
@@ -120,31 +136,38 @@ _hb_cg_get_table_tags (const hb_face_t *face HB_UNUSED,
 static void
 _hb_cg_font_release (void *data)
 {
-  CGFontRelease ((CGFontRef) data);
+  if (data)
+    CGFontRelease ((CGFontRef) data);
 }
 
 
 static CTFontDescriptorRef
 get_last_resort_font_desc ()
 {
-  // TODO Handle allocation failures?
-  CTFontDescriptorRef last_resort = CTFontDescriptorCreateWithNameAndSize (CFSTR("LastResort"), 0);
-  CFArrayRef cascade_list = CFArrayCreate (kCFAllocatorDefault,
-					   (const void **) &last_resort,
-					   1,
-					   &kCFTypeArrayCallBacks);
-  CFRelease (last_resort);
-  CFDictionaryRef attributes = CFDictionaryCreate (kCFAllocatorDefault,
-						   (const void **) &kCTFontCascadeListAttribute,
-						   (const void **) &cascade_list,
-						   1,
-						   &kCFTypeDictionaryKeyCallBacks,
-						   &kCFTypeDictionaryValueCallBacks);
-  CFRelease (cascade_list);
+  hb_cf_ptr_t<CTFontDescriptorRef> last_resort (CTFontDescriptorCreateWithNameAndSize (CFSTR("LastResort"), 0));
+  if (unlikely (!last_resort))
+    return nullptr;
 
-  CTFontDescriptorRef font_desc = CTFontDescriptorCreateWithAttributes (attributes);
-  CFRelease (attributes);
-  return font_desc;
+  const void *cascade_elements[] = { last_resort.get () };
+  hb_cf_ptr_t<CFArrayRef> cascade_list (CFArrayCreate (kCFAllocatorDefault,
+						       cascade_elements,
+						       1,
+						       &kCFTypeArrayCallBacks));
+  if (unlikely (!cascade_list))
+    return nullptr;
+
+  const void *keys[] = { kCTFontCascadeListAttribute };
+  const void *values[] = { cascade_list.get () };
+  hb_cf_ptr_t<CFDictionaryRef> attributes (CFDictionaryCreate (kCFAllocatorDefault,
+							       keys,
+							       values,
+							       1,
+							       &kCFTypeDictionaryKeyCallBacks,
+							       &kCFTypeDictionaryValueCallBacks));
+  if (unlikely (!attributes))
+    return nullptr;
+
+  return CTFontDescriptorCreateWithAttributes (attributes);
 }
 
 static void
@@ -159,6 +182,10 @@ release_data (void *info, const void *data, size_t size)
 CGFontRef
 create_cg_font (CFArrayRef ct_font_desc_array, unsigned int named_instance_index)
 {
+  hb_cf_ptr_t<CFArrayRef> desc_array (ct_font_desc_array);
+  if (unlikely (!desc_array))
+    return nullptr;
+
   if (named_instance_index == 0)
   {
     // Default instance. We don't know which one is it. Return the first one.
@@ -166,22 +193,16 @@ create_cg_font (CFArrayRef ct_font_desc_array, unsigned int named_instance_index
   }
   else
     named_instance_index--;
-  auto ct_font_desc = (CFArrayGetCount (ct_font_desc_array) > (CFIndex) named_instance_index) ?
-		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (ct_font_desc_array, (CFIndex) named_instance_index) : nullptr;
+  auto ct_font_desc = (CFArrayGetCount (desc_array) > (CFIndex) named_instance_index) ?
+		      (CTFontDescriptorRef) CFArrayGetValueAtIndex (desc_array, (CFIndex) named_instance_index) : nullptr;
   if (unlikely (!ct_font_desc))
-  {
-    CFRelease (ct_font_desc_array);
     return nullptr;
-  }
-  auto ct_font = ct_font_desc ? CTFontCreateWithFontDescriptor (ct_font_desc, 0, nullptr) : nullptr;
-  CFRelease (ct_font_desc_array);
+
+  hb_cf_ptr_t<CTFontRef> ct_font (CTFontCreateWithFontDescriptor (ct_font_desc, 0, nullptr));
   if (unlikely (!ct_font))
     return nullptr;
 
-  auto cg_font = ct_font ? CTFontCopyGraphicsFont (ct_font, nullptr) : nullptr;
-  CFRelease (ct_font);
-
-  return cg_font;
+  return CTFontCopyGraphicsFont (ct_font, nullptr);
 }
 
 CGFontRef
@@ -212,23 +233,27 @@ create_cg_font (hb_blob_t *blob, unsigned int index)
     (defined(__WATCH_OS_VERSION_MIN_REQUIRED) && __WATCH_OS_VERSION_MIN_REQUIRED >= 40000) || \
     (defined(__MACCATALYST_VERSION_MIN_REQUIRED) && __MACCATALYST_VERSION_MIN_REQUIRED >= 130100) || \
     (defined(__VISION_OS_VERSION_MIN_REQUIRED) && __VISION_OS_VERSION_MIN_REQUIRED >= 10000)
-    auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromData (CFDataCreate (kCFAllocatorDefault, (const UInt8 *) blob_data, blob_length));
-    if (likely (ct_font_desc_array))
-      return create_cg_font (ct_font_desc_array, named_instance_index);
+    hb_cf_ptr_t<CFDataRef> data (CFDataCreate (kCFAllocatorDefault, (const UInt8 *) blob_data, blob_length));
+    if (data)
+    {
+      auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromData (data);
+      if (likely (ct_font_desc_array))
+	return create_cg_font (ct_font_desc_array, named_instance_index);
+    }
 #endif
     return nullptr;
   }
 
   hb_blob_reference (blob);
-  CGDataProviderRef provider = CGDataProviderCreateWithData (blob, blob_data, blob_length, &release_data);
-  CGFontRef cg_font = nullptr;
-  if (likely (provider))
+  hb_cf_ptr_t<CGDataProviderRef> provider (CGDataProviderCreateWithData (blob, blob_data, blob_length, &release_data));
+  if (unlikely (!provider))
   {
-    cg_font = CGFontCreateWithDataProvider (provider);
-    if (unlikely (!cg_font))
-      DEBUG_MSG (CORETEXT, blob, "CGFontCreateWithDataProvider() failed");
-    CGDataProviderRelease (provider);
+    hb_blob_destroy (blob);
+    return nullptr;
   }
+  CGFontRef cg_font = CGFontCreateWithDataProvider (provider);
+  if (unlikely (!cg_font))
+    DEBUG_MSG (CORETEXT, blob, "CGFontCreateWithDataProvider() failed");
   return cg_font;
 }
 
@@ -236,8 +261,10 @@ CGFontRef
 create_cg_font (hb_face_t *face)
 {
   CGFontRef cg_font = nullptr;
+  if (unlikely (!face))
+    return nullptr;
   if (face->destroy == _hb_cg_font_release)
-    cg_font = CGFontRetain ((CGFontRef) face->user_data);
+    cg_font = face->user_data ? CGFontRetain ((CGFontRef) face->user_data) : nullptr;
   else
   {
     hb_blob_t *blob = hb_face_reference_blob (face);
@@ -250,36 +277,40 @@ create_cg_font (hb_face_t *face)
 CTFontRef
 create_ct_font (CGFontRef cg_font, CGFloat font_size)
 {
-  CTFontRef ct_font = nullptr;
+  if (unlikely (!cg_font))
+    return nullptr;
+
+  hb_cf_ptr_t<CTFontRef> ct_font;
 
   /* CoreText does not enable trak table usage / tracking when creating a CTFont
    * using CTFontCreateWithGraphicsFont. The only way of enabling tracking seems
    * to be through the CTFontCreateUIFontForLanguage call. */
-  CFStringRef cg_postscript_name = CGFontCopyPostScriptName (cg_font);
-  if (CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSText")) ||
-      CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSDisplay")))
+  hb_cf_ptr_t<CFStringRef> cg_postscript_name (CGFontCopyPostScriptName (cg_font));
+  if (cg_postscript_name)
   {
+    if (CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSText")) ||
+	CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSDisplay")))
+    {
 #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1080
 # define kCTFontUIFontSystem kCTFontSystemFontType
 # define kCTFontUIFontEmphasizedSystem kCTFontEmphasizedSystemFontType
 #endif
-    CTFontUIFontType font_type = kCTFontUIFontSystem;
-    if (CFStringHasSuffix (cg_postscript_name, CFSTR ("-Bold")))
-      font_type = kCTFontUIFontEmphasizedSystem;
+      CTFontUIFontType font_type = kCTFontUIFontSystem;
+      if (CFStringHasSuffix (cg_postscript_name, CFSTR ("-Bold")))
+	font_type = kCTFontUIFontEmphasizedSystem;
 
-    ct_font = CTFontCreateUIFontForLanguage (font_type, font_size, nullptr);
-    CFStringRef ct_result_name = CTFontCopyPostScriptName(ct_font);
-    if (CFStringCompare (ct_result_name, cg_postscript_name, 0) != kCFCompareEqualTo)
-    {
-      CFRelease(ct_font);
-      ct_font = nullptr;
+      ct_font.reset (CTFontCreateUIFontForLanguage (font_type, font_size, nullptr));
+      if (ct_font)
+      {
+	hb_cf_ptr_t<CFStringRef> ct_result_name (CTFontCopyPostScriptName (ct_font));
+	if (!ct_result_name || CFStringCompare (ct_result_name, cg_postscript_name, 0) != kCFCompareEqualTo)
+	  ct_font.reset ();
+      }
     }
-    CFRelease (ct_result_name);
   }
-  CFRelease (cg_postscript_name);
 
   if (!ct_font)
-    ct_font = CTFontCreateWithGraphicsFont (cg_font, font_size, nullptr, nullptr);
+    ct_font.reset (CTFontCreateWithGraphicsFont (cg_font, font_size, nullptr, nullptr));
 
   if (unlikely (!ct_font)) {
     DEBUG_MSG (CORETEXT, cg_font, "Font CTFontCreateWithGraphicsFont() failed");
@@ -297,14 +328,13 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   if (&CTGetCoreTextVersion != nullptr && CTGetCoreTextVersion() < 0x00070000) {
 #pragma GCC diagnostic pop
-    CFStringRef fontName = CTFontCopyPostScriptName (ct_font);
-    bool isEmojiFont = CFStringCompare (fontName, CFSTR("AppleColorEmoji"), 0) == kCFCompareEqualTo;
-    CFRelease (fontName);
+    hb_cf_ptr_t<CFStringRef> fontName (CTFontCopyPostScriptName (ct_font));
+    bool isEmojiFont = fontName && CFStringCompare (fontName, CFSTR("AppleColorEmoji"), 0) == kCFCompareEqualTo;
     if (!isEmojiFont)
-      return ct_font;
+      return ct_font.release ();
   }
 
-  CFURLRef original_url = nullptr;
+  hb_cf_ptr_t<CFURLRef> original_url;
 #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
   ATSFontRef atsFont;
   FSRef fsref;
@@ -312,56 +342,54 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
   atsFont = CTFontGetPlatformFont (ct_font, NULL);
   status = ATSFontGetFileReference (atsFont, &fsref);
   if (status == noErr)
-    original_url = CFURLCreateFromFSRef (NULL, &fsref);
+    original_url.reset (CFURLCreateFromFSRef (NULL, &fsref));
 #else
-  original_url = (CFURLRef) CTFontCopyAttribute (ct_font, kCTFontURLAttribute);
+  original_url.reset ((CFURLRef) CTFontCopyAttribute (ct_font, kCTFontURLAttribute));
 #endif
 
   /* Create font copy with cascade list that has LastResort first; this speeds up CoreText
    * font fallback which we don't need anyway. */
   {
-    CTFontDescriptorRef last_resort_font_desc = get_last_resort_font_desc ();
-    CTFontRef new_ct_font = CTFontCreateCopyWithAttributes (ct_font, 0.0, nullptr, last_resort_font_desc);
-    CFRelease (last_resort_font_desc);
-    if (new_ct_font)
+    hb_cf_ptr_t<CTFontDescriptorRef> last_resort_font_desc (get_last_resort_font_desc ());
+    if (last_resort_font_desc)
     {
-      /* The CTFontCreateCopyWithAttributes call fails to stay on the same font
-       * when reconfiguring the cascade list and may switch to a different font
-       * when there are fonts that go by the same name, since the descriptor is
-       * just name and size.
-       *
-       * Avoid reconfiguring the cascade lists if the new font is outside the
-       * system locations that we cannot access from the sandboxed renderer
-       * process in Blink. This can be detected by the new file URL location
-       * that the newly found font points to. */
-      CFURLRef new_url = nullptr;
+      hb_cf_ptr_t<CTFontRef> new_ct_font (CTFontCreateCopyWithAttributes (ct_font, 0.0, nullptr, last_resort_font_desc));
+      if (new_ct_font)
+      {
+	/* The CTFontCreateCopyWithAttributes call fails to stay on the same font
+	 * when reconfiguring the cascade list and may switch to a different font
+	 * when there are fonts that go by the same name, since the descriptor is
+	 * just name and size.
+	 *
+	 * Avoid reconfiguring the cascade lists if the new font is outside the
+	 * system locations that we cannot access from the sandboxed renderer
+	 * process in Blink. This can be detected by the new file URL location
+	 * that the newly found font points to. */
+	hb_cf_ptr_t<CFURLRef> new_url;
 #if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-      atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
-      status = ATSFontGetFileReference (atsFont, &fsref);
-      if (status == noErr)
-	new_url = CFURLCreateFromFSRef (NULL, &fsref);
+	atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
+	status = ATSFontGetFileReference (atsFont, &fsref);
+	if (status == noErr)
+	  new_url.reset (CFURLCreateFromFSRef (NULL, &fsref));
 #else
-      new_url = (CFURLRef) CTFontCopyAttribute (new_ct_font, kCTFontURLAttribute);
+	new_url.reset ((CFURLRef) CTFontCopyAttribute (new_ct_font, kCTFontURLAttribute));
 #endif
-      // Keep reconfigured font if URL cannot be retrieved (seems to be the case
-      // on Mac OS 10.12 Sierra), speculative fix for crbug.com/625606
-      if (!original_url || !new_url || CFEqual (original_url, new_url)) {
-	CFRelease (ct_font);
-	ct_font = new_ct_font;
-      } else {
-	CFRelease (new_ct_font);
-	DEBUG_MSG (CORETEXT, ct_font, "Discarding reconfigured CTFont, location changed.");
+	// Keep reconfigured font if URL cannot be retrieved (seems to be the case
+	// on Mac OS 10.12 Sierra), speculative fix for crbug.com/625606
+	if (!original_url || !new_url || CFEqual (original_url, new_url)) {
+	  ct_font = std::move (new_ct_font);
+	} else {
+	  DEBUG_MSG (CORETEXT, ct_font, "Discarding reconfigured CTFont, location changed.");
+	}
       }
-      if (new_url)
-	CFRelease (new_url);
+      else
+	DEBUG_MSG (CORETEXT, ct_font, "Font copy with empty cascade list failed");
     }
     else
       DEBUG_MSG (CORETEXT, ct_font, "Font copy with empty cascade list failed");
   }
 
-  if (original_url)
-    CFRelease (original_url);
-  return ct_font;
+  return ct_font.release ();
 }
 
 /**
@@ -378,6 +406,9 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
 hb_face_t *
 hb_coretext_face_create (CGFontRef cg_font)
 {
+  if (unlikely (!cg_font))
+    return hb_face_get_empty ();
+
   hb_face_t *face = hb_face_create_for_tables (_hb_cg_reference_table, CGFontRetain (cg_font), _hb_cg_font_release);
   hb_face_set_get_table_tags_func (face, _hb_cg_get_table_tags, cg_font, nullptr);
   return face;
@@ -403,20 +434,6 @@ hb_face_t *
 hb_coretext_face_create_from_file_or_fail (const char   *file_name,
 					   unsigned int  index)
 {
-  auto url = CFURLCreateFromFileSystemRepresentation (nullptr,
-						      (const UInt8 *) file_name,
-						      strlen (file_name),
-						      false);
-  if (unlikely (!url))
-    return nullptr;
-
-  auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromURL (url);
-  if (unlikely (!ct_font_desc_array))
-  {
-    CFRelease (url);
-    return nullptr;
-  }
-
   unsigned ttc_index = index & 0xFFFF;
   unsigned named_instance_index = index >> 16;
 
@@ -426,13 +443,27 @@ hb_coretext_face_create_from_file_or_fail (const char   *file_name,
     return nullptr; // CoreText does not support TTCs
   }
 
-  auto cg_font = create_cg_font (ct_font_desc_array, named_instance_index);
-  CFRelease (url);
+  hb_cf_ptr_t<CFURLRef> url (CFURLCreateFromFileSystemRepresentation (nullptr,
+								      (const UInt8 *) file_name,
+								      strlen (file_name),
+								      false));
+  if (unlikely (!url))
+    return nullptr;
+
+  auto ct_font_desc_array = CTFontManagerCreateFontDescriptorsFromURL (url);
+  if (unlikely (!ct_font_desc_array))
+    return nullptr;
+
+  hb_cf_ptr_t<CGFontRef> cg_font (create_cg_font (ct_font_desc_array, named_instance_index));
+  if (unlikely (!cg_font))
+    return nullptr;
 
   hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
   if (unlikely (hb_face_is_immutable (face)))
+  {
+    hb_face_destroy (face);
     return nullptr;
+  }
 
   hb_face_set_index (face, index);
 
@@ -459,14 +490,16 @@ hb_face_t *
 hb_coretext_face_create_from_blob_or_fail (hb_blob_t    *blob,
 					   unsigned int  index)
 {
-  auto cg_font = create_cg_font (blob, index);
+  hb_cf_ptr_t<CGFontRef> cg_font (create_cg_font (blob, index));
   if (unlikely (!cg_font))
     return nullptr;
 
   hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
   if (unlikely (hb_face_is_immutable (face)))
+  {
+    hb_face_destroy (face);
     return nullptr;
+  }
 
   hb_face_set_index (face, index);
 
@@ -487,7 +520,7 @@ hb_coretext_face_create_from_blob_or_fail (hb_blob_t    *blob,
 CGFontRef
 hb_coretext_face_get_cg_font (hb_face_t *face)
 {
-  return (CGFontRef) (const void *) face->data.coretext;
+  return face ? (CGFontRef) (const void *) face->data.coretext : nullptr;
 }
 
 /**
@@ -509,9 +542,15 @@ hb_coretext_face_get_cg_font (hb_face_t *face)
 hb_font_t *
 hb_coretext_font_create (CTFontRef ct_font)
 {
-  CGFontRef cg_font = CTFontCopyGraphicsFont (ct_font, nullptr);
+  if (unlikely (!ct_font))
+    return hb_font_get_empty ();
+
+  hb_cf_ptr_t<CGFontRef> cg_font (CTFontCopyGraphicsFont (ct_font, nullptr));
+  if (unlikely (!cg_font))
+    return hb_font_get_empty ();
+
   hb_face_t *face = hb_coretext_face_create (cg_font);
-  CFRelease (cg_font);
+  cg_font.reset ();
   hb_font_t *font = hb_font_create (face);
   hb_face_destroy (face);
 
@@ -521,10 +560,9 @@ hb_coretext_font_create (CTFontRef ct_font)
   hb_font_set_ptem (font, CTFontGetSize (ct_font));
 
   /* Copy font variations */
-  CFDictionaryRef variations = CTFontCopyVariation (ct_font);
+  hb_cf_ptr_t<CFDictionaryRef> variations (CTFontCopyVariation (ct_font));
   if (variations)
   {
-    HB_SCOPE_GUARD (CFRelease (variations));
 
     hb_vector_t<hb_variation_t> vars;
     hb_vector_t<CFTypeRef> keys;
@@ -542,7 +580,7 @@ hb_coretext_font_create (CTFontRef ct_font)
 	CFNumberGetValue ((CFNumberRef) keys.arrayZ[i], kCFNumberIntType, &tag);
 	CFNumberGetValue ((CFNumberRef) values.arrayZ[i], kCFNumberFloatType, &value);
 
-	hb_variation_t var = {tag, value};
+	hb_variation_t var = {(hb_tag_t) tag, value};
 	vars.push (var);
       }
       hb_font_set_variations (font, vars.arrayZ, vars.length);
@@ -572,7 +610,7 @@ hb_coretext_font_create (CTFontRef ct_font)
 CTFontRef
 hb_coretext_font_get_ct_font (hb_font_t *font)
 {
-  return (CTFontRef) (const void *) font->data.coretext;
+  return font ? (CTFontRef) (const void *) font->data.coretext : nullptr;
 }
 
 

@@ -221,7 +221,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		if (!preserve_cursor && !is_selection_only()) {
 			text_editor->unfold_line(pos.y);
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
-			text_editor->center_viewport_to_caret(0);
+			base_text_editor->center_viewport_to_caret();
 			text_editor->set_code_hint("");
 
 			line_col_changed_for_result = true;
@@ -1634,6 +1634,9 @@ Point2i CodeTextEditor::get_pos_for_display(Point2i p_internal_position) const {
 
 	int corrected_column = 0;
 	for (int i = 0; i < p_internal_position.y; i++) {
+		if (i >= line_text.size()) {
+			break;
+		}
 		if (line_text[i] == '\t') {
 			corrected_column += indent_size - (corrected_column % indent_size);
 		} else {

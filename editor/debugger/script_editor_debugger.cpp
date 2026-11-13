@@ -992,19 +992,12 @@ void ScriptEditorDebugger::_msg_window_title(uint64_t p_thread_id, const Array &
 
 void ScriptEditorDebugger::_msg_editor_shortcut_pressed(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.size() != 1);
-
 	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut(p_data[0]);
-	if (shortcut.is_null()) {
-		return;
-	}
-
-	Array events = shortcut->get_events();
-	if (!events.is_empty()) {
-		Ref<InputEventKey> k = events[0].duplicate();
-		if (k.is_valid()) {
-			k->set_pressed(true);
-			Input::get_singleton()->parse_input_event(k);
-		}
+	if (shortcut.is_valid() && shortcut->has_valid_event()) {
+		Ref<InputEventShortcut> s;
+		s.instantiate();
+		s->set_shortcut(shortcut);
+		Input::get_singleton()->parse_input_event(s);
 	}
 }
 
@@ -1130,6 +1123,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			if (tabs->has_theme_stylebox_override(SceneStringName(panel))) {
+				add_style();
+			}
+
 			skip_breakpoints->set_button_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
 			ignore_error_breaks->set_button_icon(get_editor_theme_icon(ignore_error_breaks_value ? SNAME("NotificationDisabled") : SNAME("Notification")));
 			ignore_error_breaks->add_theme_color_override("icon_normal_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -1794,9 +1791,9 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 	}
 
 	if (!p_enabled) {
-		path_item->remove_child(breakpoint_item);
+		memdelete(breakpoint_item);
 		if (path_item->get_first_child() == nullptr) {
-			breakpoints_tree->get_root()->remove_child(path_item);
+			memdelete(path_item);
 		}
 	}
 }

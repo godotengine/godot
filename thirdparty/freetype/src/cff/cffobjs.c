@@ -624,7 +624,13 @@
       /* Note that this is only necessary for pure CFF and CEF fonts; */
       /* SFNT based fonts use the `name' table instead.               */
 
-      cffface->num_glyphs = (FT_Long)cff->num_glyphs;
+      /* VARC can define glyphs beyond the CFF2 CharStrings INDEX. */
+#ifdef TT_CONFIG_OPTION_VARC
+      if ( !cff2                                         ||
+           !face->varc                                   ||
+           cff->num_glyphs > face->max_profile.numGlyphs )
+#endif
+        cffface->num_glyphs = (FT_Long)cff->num_glyphs;
 
       dict = &cff->top_font.font_dict;
 

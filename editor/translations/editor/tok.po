@@ -9,12 +9,15 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # jan Ipen <minebloxdash@gmail.com>, 2026.
 # cramangako <wljroccio@glow.sch.uk>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# ByteAtATime <byteatatime@proton.me>, 2026.
+# parchment <parchii@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-02-09 13:58+0000\n"
-"Last-Translator: cramangako <wljroccio@glow.sch.uk>\n"
+"PO-Revision-Date: 2026-10-18 12:12+0000\n"
+"Last-Translator: parchment <parchii@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Toki Pona <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tok/>\n"
 "Language: tok\n"
@@ -22,10 +25,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
-msgstr "OK"
+msgstr "pona"
 
 msgid "Failed"
 msgstr "pakala"
@@ -41,6 +44,15 @@ msgstr "lipu li lon kin"
 
 msgid "Can't open file"
 msgstr "mi ken ala open e lipu"
+
+msgid "Can't write file"
+msgstr "mi ken ala ante e lipu"
+
+msgid "Can't read file"
+msgstr "mi ken ala lukin e lipu"
+
+msgid "File corrupt"
+msgstr "lipu li pakala"
 
 msgid "End of file"
 msgstr "pini lipu"
@@ -86,6 +98,12 @@ msgstr "pakala pi sona toki"
 
 msgid "Help"
 msgstr "wile pona"
+
+msgid "Bug"
+msgstr "pakala"
+
+msgid "Printer on fire"
+msgstr "ilo sitelen li seli"
 
 msgid "Physical"
 msgstr "lon"
@@ -275,6 +293,9 @@ msgstr "o weka e ijo pali"
 msgid "Find"
 msgstr "o alasa"
 
+msgid "Toggle Fullscreen"
+msgstr "o ante tu e lukin pi suli ale"
+
 msgid "B"
 msgstr "B"
 
@@ -314,8 +335,8 @@ msgstr "o weka e lili."
 msgid "None"
 msgstr "ala"
 
-msgid "Open Editor"
-msgstr "o open e ilo ante"
+msgid "Open"
+msgstr "o open"
 
 msgid "Open Animation Node"
 msgstr "o open e ijo pali pi sitelen tawa"
@@ -564,9 +585,6 @@ msgstr "ante tawa li lon!"
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "ante tan \"%s\" tawa \"%s\" li lon kin!"
 
-msgid "Edit %s"
-msgstr "o ante e %s"
-
 msgid "Select and move nodes."
 msgstr "o anu o tawa e ijo pali."
 
@@ -643,6 +661,9 @@ msgstr "FPS:"
 msgid "Imported Animation cannot be edited!"
 msgstr "sitelen tawa lanpan li ken ala ante!"
 
+msgid "Error: "
+msgstr "pakala: "
+
 msgid "Root"
 msgstr "open"
 
@@ -670,6 +691,12 @@ msgstr "mi kama jo..."
 msgid "Install..."
 msgstr "o kama jo..."
 
+msgid "Version:"
+msgstr "nanpa:"
+
+msgid "Download other versions."
+msgstr "o kama jo e nanpa ante."
+
 msgid "Description"
 msgstr "toki sona"
 
@@ -694,6 +721,12 @@ msgstr "o alasa sin"
 msgid "Download Error"
 msgstr "pakala pi kama jo"
 
+msgid "Updated (Newest First)"
+msgstr "kama ante (open li sin)"
+
+msgid "Updated (Oldest First)"
+msgstr "kama ante (open li majuna)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "nanpa open"
@@ -711,7 +744,7 @@ msgid "Last"
 msgstr "nanpa pini"
 
 msgid "Go Online"
-msgstr "o lon linja"
+msgstr "o lon linluwi"
 
 msgid "All"
 msgstr "ale"
@@ -721,6 +754,9 @@ msgstr "ilo namako..."
 
 msgid "Sort:"
 msgstr "o lawa nanpa:"
+
+msgid "Source:"
+msgstr "tan:"
 
 msgid "Licenses"
 msgstr "lipu lawa"
@@ -737,6 +773,9 @@ msgstr "(en lipu %s)"
 
 msgid "Success!"
 msgstr "pona a!"
+
+msgid "No files conflict with your project."
+msgstr "lipu ala li ike tawa pali sina."
 
 msgid "Stop"
 msgstr "o pini"
@@ -786,11 +825,11 @@ msgstr "o tawa e kulupu pi ante kalama"
 msgid "Error saving file: %s"
 msgstr "mi awen e lipu ni la pakala li lon: %s"
 
+msgid "Save As..."
+msgstr "o awen sama..."
+
 msgid "Add Bus"
 msgstr "o pana e kulupu"
-
-msgid "Load"
-msgstr "o kama lon"
 
 msgid "Visible Paths"
 msgstr "nasin li ken lukin"
@@ -927,14 +966,8 @@ msgstr "o pilin tawa jasima."
 msgid "Click to open in browser."
 msgstr "o pilin tawa open lon linja."
 
-msgid "Scripts"
-msgstr "lipu ilo"
-
 msgid "No description available."
 msgstr "toki sona li lon ala."
-
-msgid "Open"
-msgstr "o open"
 
 msgid "Open in File Manager"
 msgstr "o open lon lawa lipu"
@@ -1031,13 +1064,6 @@ msgstr "sina pana ala e nimi."
 msgid "Name contains invalid characters."
 msgstr "nimi li jo e sitelen pi ken ala."
 
-msgid ""
-"This filename begins with a dot rendering the file invisible to the editor.\n"
-"If you want to rename it anyway, use your operating system's file manager."
-msgstr ""
-"open pi nimi lipu li sike lili la ilo ante ken ala lukin e ona.\n"
-"sina wile ante e ona la, o kepeken lawa lipu pi OS sina."
-
 msgid "A file or folder with this name already exists."
 msgstr "(poki) lipu kepeken nimi ni li lon kin."
 
@@ -1071,21 +1097,6 @@ msgstr "o kepeken"
 msgid "Create New"
 msgstr "o pali sin e"
 
-msgid "Folder..."
-msgstr "poki lipu..."
-
-msgid "Scene..."
-msgstr "ma pali..."
-
-msgid "Script..."
-msgstr "lipu ilo..."
-
-msgid "Resource..."
-msgstr "poki sona..."
-
-msgid "TextFile..."
-msgstr "lipu toki..."
-
 msgid "Set Folder Color..."
 msgstr "o ante e kule pi poki ni..."
 
@@ -1098,17 +1109,32 @@ msgstr "o ante tawa..."
 msgid "New Folder..."
 msgstr "poki lipu sin..."
 
+msgid "Folder..."
+msgstr "poki lipu..."
+
 msgid "New Scene..."
 msgstr "ma pali sin..."
+
+msgid "Scene..."
+msgstr "ma pali..."
 
 msgid "New Script..."
 msgstr "lipu ilo sin..."
 
+msgid "Script..."
+msgstr "lipu ilo..."
+
 msgid "New Resource..."
 msgstr "poki sona sin..."
 
+msgid "Resource..."
+msgstr "poki sona..."
+
 msgid "New TextFile..."
 msgstr "lipu toki sin..."
+
+msgid "TextFile..."
+msgstr "lipu toki..."
 
 msgid "Sort Files"
 msgstr "o lawa nanpa e lipu"
@@ -1246,14 +1272,8 @@ msgstr "mi kama lon ala e poki sona."
 msgid "Inspector"
 msgstr "ma pi nasin ijo"
 
-msgid "Save As..."
-msgstr "o awen sama..."
-
 msgid "Copy Resource"
 msgstr "o jasima e poki sona"
-
-msgid "Open documentation for this object."
-msgstr "o open e lipu toki pi ijo ni."
 
 msgid "Open Documentation"
 msgstr "o open e lipu toki"
@@ -1274,14 +1294,6 @@ msgid ""
 "Cannot instantiate the scene '%s' because the current scene exists within one "
 "of its nodes."
 msgstr "mi ken ala open e ma pali '%s' tan ma pali ni li lon ijo pali wan ona."
-
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "o open e ma pali"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "o pali sin e ijo pali AudioStreamPlayer"
 
 msgid "Move Node in Parent"
 msgstr "o tawa e ijo pali lon mama"
@@ -1415,6 +1427,9 @@ msgstr "pali pi nimi ala"
 msgid "Recovery Mode is enabled. Editor functionality has been restricted."
 msgstr "nasin alasa li lon. pali pi ilo ante li lili."
 
+msgid "Error saving resource at path \"%s\": %s."
+msgstr "mi awen e poki sona lon nasin \"%s\" la pakala ni li lon: %s."
+
 msgid "Can't open file for writing:"
 msgstr "mi ken ala open e lipu tawa sitelen:"
 
@@ -1456,6 +1471,16 @@ msgstr[0] "lon tenpo lili %d tawa"
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "lon tenpo suli %d tawa"
+
+msgid "Scene opened: %s."
+msgstr "ma pali li open: %s."
+
+msgid ""
+"Scene \"%s\" has unsaved changes.\n"
+"%s"
+msgstr ""
+"ma pali \"%s\" li jo e ante pi awen ala.\n"
+"%s"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "tenpo ni la ijo %s li lon ala! o toki e lon awen sin."
@@ -1718,9 +1743,6 @@ msgstr "o kama lon sin e pali ni"
 msgid "Quit to Project List"
 msgstr "o tawa lipu kulupu pali"
 
-msgid "Toggle Fullscreen"
-msgstr "o ante tu e lukin pi suli ale"
-
 msgid "Search Help..."
 msgstr "o alasa lon pona..."
 
@@ -1775,9 +1797,6 @@ msgstr "o open sin"
 msgid "Load Errors"
 msgstr "o kama lon e pakala"
 
-msgid "Ok"
-msgstr "pona"
-
 msgid "Warning!"
 msgstr "toki suli!"
 
@@ -1817,8 +1836,17 @@ msgstr "ilo namako \"%s\" li ike tawa \"%s\""
 msgid "Common"
 msgstr "meso"
 
+msgid "Remove this file."
+msgstr "o weka e lipu ni."
+
+msgid "Download request failed: %s."
+msgstr "toki wile pi kama jo li pakala: %s."
+
 msgid "Download from:"
 msgstr "o kama jo tan:"
+
+msgid "Request failed"
+msgstr "toki wile li pakala"
 
 msgid "%s Export"
 msgstr "pana pi ilo %s"
@@ -1854,6 +1882,9 @@ msgid ""
 msgstr ""
 "lawa len tawa jo ala e (poki) lipu\n"
 "(comma-separated, e.g: *.tscn, *.tres, scenes/*)"
+
+msgid "Scripts"
+msgstr "lipu ilo"
 
 msgid "GDScript Export Mode:"
 msgstr "nasin pana pi toki GDScript:"
@@ -2800,20 +2831,11 @@ msgstr "musi li open..."
 msgid "Game running not embedded."
 msgstr "musi li lon ala insa ilo pi ante musi."
 
-msgid "Embedding is disabled."
-msgstr "lon insa ilo ante li ala."
-
-msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
-msgstr "%s+Alt+RMB: o ken lukin e kulupu pi ijo pali ale lon pilin sina."
-
 msgid "Suspend"
 msgstr "o awen"
 
 msgid "Input"
 msgstr "pana tan sina"
-
-msgid "Allow game input."
-msgstr "o ken e pana musi tan sina."
 
 msgid "Reset 2D Camera"
 msgstr "o ante open e ilo lukin 2D"
@@ -2980,192 +3002,6 @@ msgstr "Sprite2D"
 msgid "Settings:"
 msgstr "lawa toki:"
 
-msgid "Merge"
-msgstr "o wan"
-
-msgid "Alternative Tiles"
-msgstr "leko ante"
-
-msgid "Reset Polygons"
-msgstr "o ante open e ijo pi linja mute"
-
-msgid "Clear Polygons"
-msgstr "o weka e ijo pi linja mute"
-
-msgid "Rotate Polygons Right"
-msgstr "o sike teje e ijo pi linja mute"
-
-msgid "Rotate Polygons Left"
-msgstr "o sike soto e ijo pi linja mute"
-
-msgid "Edit Polygons"
-msgstr "o ante e ijo pi linja mute"
-
-msgid "Advanced"
-msgstr "namako"
-
-msgid "Rotate Right"
-msgstr "o sike teje"
-
-msgid "Rotate Left"
-msgstr "o sike soto"
-
-msgid "Shift: Draw line."
-msgstr "Shift: o sitelen e linja."
-
-msgid "%s+Shift: Draw rectangle."
-msgstr "%s+Shift: o sitelen e leko."
-
-msgid "Tile with Invalid Scene"
-msgstr "leko kepeken ma pali pi ken ala"
-
-msgid "Delete tiles"
-msgstr "o weka e leko"
-
-msgid "Change selection"
-msgstr "o ante e anu"
-
-msgid "Move tiles"
-msgstr "o tawa e leko"
-
-msgid "Paint tiles"
-msgstr "o sitelen e leko"
-
-msgid "Selection Tool"
-msgstr "ilo anu"
-
-msgid "Paint Tool"
-msgstr "ilo sitelen"
-
-msgid "Line Tool"
-msgstr "ilo sitelen linja"
-
-msgid "Rect Tool"
-msgstr "ilo sitelen leko"
-
-msgid "Alternatively hold %s with other tools to pick tile."
-msgstr "ante la o kepeken nena %s kepeken ilo ante tawa anu e leko."
-
-msgid "Alternatively use RMB to erase tiles."
-msgstr "ante la o kepeken nena RMB tawa weka e leko."
-
-msgid "Erase"
-msgstr "o weka"
-
-msgid "Rotate Tile Left"
-msgstr "o sike soto e leko"
-
-msgid "Rotate Tile Right"
-msgstr "o sike teje e leko"
-
-msgid "Tiles"
-msgstr "leko"
-
-msgid "Paint terrain"
-msgstr "o sitelen e ma"
-
-msgid "Terrain Set %d (%s)"
-msgstr "kulupu ma nanpa %d (%s)"
-
-msgid "Terrains"
-msgstr "ma"
-
-msgid "No Layers"
-msgstr "selo ala"
-
-msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "o open e selo mute TileMap tawa ijo pali mute TileMapLayer"
-
-msgid "Can't edit multiple layers at once."
-msgstr "sina ken ala ante e lipu mute lon tenpo sama."
-
-msgid "The edited layer is disabled or invisible"
-msgstr "selo ante li ala anu ken lukin ala"
-
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"ijo pali ante TileMap anu ijo pali ante TileMapLayer li jo e poki sona "
-"TileSet ala.\n"
-"o pali sin anu kama lon e poki sona TileSet lon nasin ijo pi kulupu leko lon "
-"ma pi nasin ijo."
-
-msgid "TileMap"
-msgstr "TileMap"
-
-msgid "Select Next Tile Map Layer"
-msgstr "o anu e lipu kama pi lipu ma leko"
-
-msgid "Select Previous Tile Map Layer"
-msgstr "o anu e lipu tawa pi lipu ma leko"
-
-msgid "TileMap Layers"
-msgstr "lipu pi TileMap"
-
-msgid "Select previous layer"
-msgstr "o anu e lipu tawa"
-
-msgid "Select next layer"
-msgstr "o anu e lipu kama"
-
-msgid "Select all TileMapLayers in scene"
-msgstr "o anu e ijo pali TileMapLayer ale lon ma pali"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "o walo e selo TileMap anu"
-
-msgid "Toggle grid visibility."
-msgstr "o ante tu e sijelo lukin pi kulupu leko."
-
-msgid "Advanced settings."
-msgstr "lawa toki namako."
-
-msgid "From Source"
-msgstr "tan open"
-
-msgid "From Coords"
-msgstr "tan lon"
-
-msgid "From Alternative"
-msgstr "tan ante"
-
-msgid "To Source"
-msgstr "tawa open"
-
-msgid "To Coords"
-msgstr "tawa lon"
-
-msgid "To Alternative"
-msgstr "tawa ante"
-
-msgid "Clear Invalid"
-msgstr "o weka e ken ala"
-
-msgid "Create tiles"
-msgstr "o pali sin e leko"
-
-msgid "Create a tile"
-msgstr "o pali sin e leko"
-
-msgid "Remove tiles"
-msgstr "o weka e leko"
-
-msgid "Move a tile"
-msgstr "o tawa e leko"
-
-msgid "Resize a tile"
-msgstr "o ante e suli leko"
-
-msgid "Remove tile"
-msgstr "o weka e leko"
-
-msgid "TileSet"
-msgstr "TileSet"
-
-msgid "Eraser Tool"
-msgstr "ilo sitelen weka"
-
 msgid "Change Camera FOV"
 msgstr "o ante e ma lukin pi ilo lukin"
 
@@ -3226,6 +3062,120 @@ msgstr "selo tan:"
 
 msgid "Mesh Up Axis:"
 msgstr "nasin sewi pi selo ni:"
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"ma pali li jo e\n"
+"ijo pali DirectionalLight3D.\n"
+"mi ken ala e lukin lili."
+
+msgid "Preview disabled."
+msgstr "mi ken ala e lukin lili."
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"ma pali li jo e\n"
+"ijo pali WorldEnvironment.\n"
+"mi ken ala e lukin lili."
+
+msgid "Move Mode"
+msgstr "nasin tawa"
+
+msgid "Rotate Mode"
+msgstr "nasin sike"
+
+msgid "Scale Mode"
+msgstr "nasin pi ante suli"
+
+msgid "Ruler Mode"
+msgstr "nasin pi sona nanpa"
+
+msgid "Group"
+msgstr "o kulupu"
+
+msgid "Edit Sun and Environment settings."
+msgstr "o ante e lawa toki suno e lawa toki ma."
+
+msgid "Bottom View"
+msgstr "lukin anpa"
+
+msgid "Top View"
+msgstr "lukin sewi"
+
+msgid "Rear View"
+msgstr "lukin monsi"
+
+msgid "Front View"
+msgstr "lukin sinpin"
+
+msgid "Left View"
+msgstr "lukin soto"
+
+msgid "Right View"
+msgstr "lukin teje"
+
+msgid "Orbit View Down"
+msgstr "lukin sike anpa"
+
+msgid "Orbit View Left"
+msgstr "lukin sike soto"
+
+msgid "Orbit View Right"
+msgstr "lukin sike teje"
+
+msgid "Orbit View Up"
+msgstr "lukin sike sewi"
+
+msgid "Orbit View 180"
+msgstr "lukin sike 180"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "o ante tu e lukin pi nanpa/lon pona"
+
+msgid "Decrease Field of View"
+msgstr "o lili e ma pi lukin sina"
+
+msgid "Increase Field of View"
+msgstr "o suli e ma pi lukin sina"
+
+msgid "Reset Field of View to Default"
+msgstr "o ante open e ma pi lukin sina tawa meso"
+
+msgid "Transform"
+msgstr "o ante"
+
+msgid "View"
+msgstr "lukin"
+
+msgid "1 Viewport"
+msgstr "ijo Viewport 1"
+
+msgid "2 Viewports"
+msgstr "ijo Viewport 2"
+
+msgid "2 Viewports (Alt)"
+msgstr "ijo Viewport 2 (ante)"
+
+msgid "3 Viewports"
+msgstr "ijo Viewport 3"
+
+msgid "3 Viewports (Alt)"
+msgstr "ijo Viewport 3 (ante)"
+
+msgid "4 Viewports"
+msgstr "ijo Viewport 4"
+
+msgid "Settings..."
+msgstr "lawa toki..."
+
+msgid "Viewport Settings"
+msgstr "lawa toki pi ijo Viewport"
 
 msgid "X-Axis Transform."
 msgstr "ante pi nasin X."
@@ -3296,125 +3246,11 @@ msgstr "ante Viewport pi suli lukin nanpa 1"
 msgid "Viewport Zoom Modifier 2"
 msgstr "ante Viewport pi suli lukin nanpa 2"
 
-msgid "View"
-msgstr "lukin"
-
 msgid "Perspective"
 msgstr "nasin lukin pi lon pona"
 
 msgid "Orthogonal"
 msgstr "nasin lukin pi nanpa pona"
-
-msgid ""
-"Scene contains\n"
-"DirectionalLight3D.\n"
-"Preview disabled."
-msgstr ""
-"ma pali li jo e\n"
-"ijo pali DirectionalLight3D.\n"
-"mi ken ala e lukin lili."
-
-msgid "Preview disabled."
-msgstr "mi ken ala e lukin lili."
-
-msgid ""
-"Scene contains\n"
-"WorldEnvironment.\n"
-"Preview disabled."
-msgstr ""
-"ma pali li jo e\n"
-"ijo pali WorldEnvironment.\n"
-"mi ken ala e lukin lili."
-
-msgid "Move Mode"
-msgstr "nasin tawa"
-
-msgid "Rotate Mode"
-msgstr "nasin sike"
-
-msgid "Scale Mode"
-msgstr "nasin pi ante suli"
-
-msgid "Group"
-msgstr "o kulupu"
-
-msgid "Ruler Mode"
-msgstr "nasin pi sona nanpa"
-
-msgid "Edit Sun and Environment settings."
-msgstr "o ante e lawa toki suno e lawa toki ma."
-
-msgid "Bottom View"
-msgstr "lukin anpa"
-
-msgid "Top View"
-msgstr "lukin sewi"
-
-msgid "Rear View"
-msgstr "lukin monsi"
-
-msgid "Front View"
-msgstr "lukin sinpin"
-
-msgid "Left View"
-msgstr "lukin soto"
-
-msgid "Right View"
-msgstr "lukin teje"
-
-msgid "Orbit View Down"
-msgstr "lukin sike anpa"
-
-msgid "Orbit View Left"
-msgstr "lukin sike soto"
-
-msgid "Orbit View Right"
-msgstr "lukin sike teje"
-
-msgid "Orbit View Up"
-msgstr "lukin sike sewi"
-
-msgid "Orbit View 180"
-msgstr "lukin sike 180"
-
-msgid "Switch Perspective/Orthogonal View"
-msgstr "o ante tu e lukin pi nanpa/lon pona"
-
-msgid "Decrease Field of View"
-msgstr "o lili e ma pi lukin sina"
-
-msgid "Increase Field of View"
-msgstr "o suli e ma pi lukin sina"
-
-msgid "Reset Field of View to Default"
-msgstr "o ante open e ma pi lukin sina tawa meso"
-
-msgid "Transform"
-msgstr "o ante"
-
-msgid "1 Viewport"
-msgstr "ijo Viewport 1"
-
-msgid "2 Viewports"
-msgstr "ijo Viewport 2"
-
-msgid "2 Viewports (Alt)"
-msgstr "ijo Viewport 2 (ante)"
-
-msgid "3 Viewports"
-msgstr "ijo Viewport 3"
-
-msgid "3 Viewports (Alt)"
-msgstr "ijo Viewport 3 (ante)"
-
-msgid "4 Viewports"
-msgstr "ijo Viewport 4"
-
-msgid "Settings..."
-msgstr "lawa toki..."
-
-msgid "Viewport Settings"
-msgstr "lawa toki pi ijo Viewport"
 
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
@@ -3436,24 +3272,6 @@ msgstr "o pali sin e ijo Polygon3D"
 
 msgid "Move Node(s) Here"
 msgstr "o tawa e ijo pali tawa ni"
-
-msgid "Rotate %d CanvasItems"
-msgstr "o sike e ijo CanvasItem %d"
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "o suli e ijo Node2D \"%s\" tawa (%s, %s)"
-
-msgid "Scale %d CanvasItems"
-msgstr "o sule e ijo CanvasItem %d"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "o suli e ijo CanvasItem \"%s\" tawa (%s, %s)"
-
-msgid "Move %d CanvasItems"
-msgstr "o tawa e ijo CanvasItem %d"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "o tawa e ijo CanvasItem \"%s\" tawa (%d,%d)"
 
 msgid "Zoom to 3.125%"
 msgstr "o suli e lukin tawa 3.125%"
@@ -3514,6 +3332,9 @@ msgstr "o kulupu tawa ijo pali:"
 
 msgid "Connect to Script:"
 msgstr "o kulupu tawa lipu ilo:"
+
+msgid "Advanced"
+msgstr "namako"
 
 msgid "One Shot"
 msgstr "wan taso"
@@ -3599,51 +3420,23 @@ msgstr "suli soto"
 msgid "Right Wide"
 msgstr "suli teje"
 
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "kule {num}"
-
 msgid "No colors found."
 msgstr "mi lukin e kule ala."
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "nanpa awen {num}"
 
 msgid "No constants found."
 msgstr "mi lukin e nanpa awen ala."
 
-msgid "1 font"
-msgid_plural "{num} fonts"
-msgstr[0] "nasin sitelen {num}"
-
 msgid "No fonts found."
 msgstr "mi lukin e nasin sitelen ala."
-
-msgid "1 font size"
-msgid_plural "{num} font sizes"
-msgstr[0] "suli {num} pi nasin sitelen"
 
 msgid "No font sizes found."
 msgstr "mi lukin e suli ala pi nasin sitelen."
 
-msgid "1 icon"
-msgid_plural "{num} icons"
-msgstr[0] "sitelen lili {num}"
-
 msgid "No icons found."
 msgstr "mi lukin e sitilen lili ala."
 
-msgid "1 stylebox"
-msgid_plural "{num} styleboxes"
-msgstr[0] "ijo Stylebox {num}"
-
 msgid "No styleboxes found."
 msgstr "mi lukin e ijo Stylebox ala."
-
-msgid "{num} currently selected"
-msgid_plural "{num} currently selected"
-msgstr[0] "ijo {num} li anu lon tenpo ni"
 
 msgid "Updating the editor"
 msgstr "mi sin e ilo ante"
@@ -3929,10 +3722,6 @@ msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "ijo pali li jo e olin {num}."
 
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "ijo pali li lon kulupu ni:"
-
 msgid "Click to show groups dock."
 msgstr "o pilin tawa ken lukin e ma kulupu."
 
@@ -4007,6 +3796,9 @@ msgstr "poki sona ni li jo ala e sitelen tawa."
 msgid "Animation Frames:"
 msgstr "sitelen pi sitelen tawa:"
 
+msgid "Load"
+msgstr "o kama lon"
+
 msgid "Delete Frame"
 msgstr "o weka e sitelen"
 
@@ -4076,23 +3868,11 @@ msgstr "o pali sin e sitelen tan lipu sitelen"
 msgid "Find in Files"
 msgstr "o alasa lon lipu"
 
-msgid "Find:"
-msgstr "o alasa:"
-
-msgid "Folder:"
-msgstr "poki:"
-
-msgid "Filters:"
-msgstr "lawa len:"
-
-msgid "Find..."
-msgstr "o alasa..."
-
 msgid "Searching..."
 msgstr "mi alasa..."
 
-msgid "Toggle Search Results Bottom Panel"
-msgstr "o ante tu e ma anpa pi kili alasa"
+msgid "Find:"
+msgstr "o alasa:"
 
 msgid "Path is empty."
 msgstr "nasin li jo ala."
@@ -4154,6 +3934,12 @@ msgstr "linja"
 msgid "Go To"
 msgstr "o tawa"
 
+msgid "Open File in Inspector"
+msgstr "o open e lipu lon ma pi nasin ijo"
+
+msgid "Unsaved file."
+msgstr "lipu li awen ala."
+
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "mi ken ala open e '%s'. ken la ijo li tawa anu weka e lipu ni."
 
@@ -4196,8 +3982,8 @@ msgstr "lipu toki lon linja"
 msgid "Open Godot online documentation."
 msgstr "o open e lipu toki pi ilo Koto lon linja."
 
-msgid "Unsaved file."
-msgstr "lipu li awen ala."
+msgid "Find..."
+msgstr "o alasa..."
 
 msgid "Find Next"
 msgstr "o alasa e kama"
@@ -4205,20 +3991,11 @@ msgstr "o alasa e kama"
 msgid "Find Previous"
 msgstr "o alasa e tawa"
 
-msgid "Filter Scripts"
-msgstr "o lawa len e lipu ilo"
-
-msgid "Sort"
-msgstr "o lawa nanpa"
-
 msgid "Next Script"
 msgstr "lipu ilo kama"
 
 msgid "Previous Script"
 msgstr "lipu ilo tawa"
-
-msgid "Open..."
-msgstr "o open..."
 
 msgid "Save All"
 msgstr "o awen e ale"
@@ -4229,20 +4006,23 @@ msgstr "kama pi tenpo pini"
 msgid "History Next"
 msgstr "tawa pi tenpo pini"
 
-msgid "Reload Theme"
-msgstr "o kama lon e poki sona pi ante sitelen"
-
 msgid "Close All"
 msgstr "o weka e ale"
 
 msgid "Close Docs"
 msgstr "o weka e lipu toki"
 
+msgid "Reload Theme"
+msgstr "o kama lon e poki sona pi ante sitelen"
+
+msgid "Open..."
+msgstr "o open..."
+
+msgid "Load Shader File..."
+msgstr "o kama lon e lipu pi ilo sitelen..."
+
 msgid "Discard"
 msgstr "o weka"
-
-msgid "Script Editor"
-msgstr "ilo ante pi lipu ilo"
 
 msgid "Reopen Closed Script"
 msgstr "o open sin e lipu ilo pini"
@@ -4299,6 +4079,9 @@ msgid ""
 msgstr ""
 "nimi pali li ken ala. nimi li ken ala jo e ala e '/', ':', '=', '\\', anu '\"'"
 
+msgid "%s is an invalid name."
+msgstr "nimi %s li ken ala."
+
 msgid "%s is an invalid path. File does not exist."
 msgstr "%s li nasin pi ken ala. lipu li lon ala."
 
@@ -4319,6 +4102,9 @@ msgstr "o toki e lon:"
 
 msgid "3D Editor"
 msgstr "ilo ante 3D"
+
+msgid "Script Editor"
+msgstr "ilo ante pi lipu ilo"
 
 msgid "FileSystem Dock"
 msgstr "ma pi nasin lipu"
@@ -4510,20 +4296,11 @@ msgstr "nasin:"
 msgid "Create Shader"
 msgstr "o pali sin e ilo sitelen"
 
-msgid "Load Shader File..."
-msgstr "o kama lon e lipu pi ilo sitelen..."
-
-msgid "Open File in Inspector"
-msgstr "o open e lipu lon ma pi nasin ijo"
-
 msgid "Shader Editor"
 msgstr "ilo ante sitelen"
 
 msgid "ShaderFile"
 msgstr "ShaderFile"
-
-msgid "Resave"
-msgstr "o awen sin e ni"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -4588,15 +4365,6 @@ msgstr "CSG"
 msgid "Change CSG Box Size"
 msgstr "o ante e suli pi leko CSG"
 
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"o ante e anpa noka leko:\n"
-"selo nanpa tawa (%s)\n"
-"selo nanpa kama (%s)"
-
 msgid "GridMap"
 msgstr "ijo pali Gridmap"
 
@@ -4620,6 +4388,9 @@ msgstr "o weka e tawa sike"
 
 msgid "GridMap Settings"
 msgstr "lawa toki GridMap"
+
+msgid "Erase"
+msgstr "o weka"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
@@ -4682,6 +4453,21 @@ msgstr "sina wile ala wile weka e nasin ijo?"
 msgid "Remove Property"
 msgstr "o weka e nasin ijo"
 
+msgid "A: %s"
+msgstr "A: %s"
+
+msgid "B: %s"
+msgstr "B: %s"
+
+msgid "Duplicate?"
+msgstr "o pali tu anu seme?"
+
+msgid "Game Version:"
+msgstr "nanpa musi:"
+
+msgid "Editor Version:"
+msgstr "nanpa pi ilo ante:"
+
 msgid "Error loading %s: %s."
 msgstr "kama lon e %s la pakala li lon: %s."
 
@@ -4696,6 +4482,202 @@ msgstr "Float"
 
 msgid "Vector2"
 msgstr "Vector2"
+
+msgid "Merge"
+msgstr "o wan"
+
+msgid "Alternative Tiles"
+msgstr "leko ante"
+
+msgid "Reset Polygons"
+msgstr "o ante open e ijo pi linja mute"
+
+msgid "Clear Polygons"
+msgstr "o weka e ijo pi linja mute"
+
+msgid "Rotate Polygons Right"
+msgstr "o sike teje e ijo pi linja mute"
+
+msgid "Rotate Polygons Left"
+msgstr "o sike soto e ijo pi linja mute"
+
+msgid "Edit Polygons"
+msgstr "o ante e ijo pi linja mute"
+
+msgid "Rotate Right"
+msgstr "o sike teje"
+
+msgid "Rotate Left"
+msgstr "o sike soto"
+
+msgid "Polygon %d"
+msgstr "ijo pi linja mute %d"
+
+msgid "Shift: Draw line."
+msgstr "Shift: o sitelen e linja."
+
+msgid "%s+Shift: Draw rectangle."
+msgstr "%s+Shift: o sitelen e leko."
+
+msgid "Tile with Invalid Scene"
+msgstr "leko kepeken ma pali pi ken ala"
+
+msgid "Delete tiles"
+msgstr "o weka e leko"
+
+msgid "Change selection"
+msgstr "o ante e anu"
+
+msgid "Move tiles"
+msgstr "o tawa e leko"
+
+msgid "Paint tiles"
+msgstr "o sitelen e leko"
+
+msgid "Selection Tool"
+msgstr "ilo anu"
+
+msgid "Paint Tool"
+msgstr "ilo sitelen"
+
+msgid "Line Tool"
+msgstr "ilo sitelen linja"
+
+msgid "Rect Tool"
+msgstr "ilo sitelen leko"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "ante la o kepeken nena %s kepeken ilo ante tawa anu e leko."
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "ante la o kepeken nena RMB tawa weka e leko."
+
+msgid "Rotate Tile Left"
+msgstr "o sike soto e leko"
+
+msgid "Rotate Tile Right"
+msgstr "o sike teje e leko"
+
+msgid "Tiles"
+msgstr "leko"
+
+msgid "Paint terrain"
+msgstr "o sitelen e ma"
+
+msgid "Terrain Set %d (%s)"
+msgstr "kulupu ma nanpa %d (%s)"
+
+msgid "Terrains"
+msgstr "ma"
+
+msgid "No Layers"
+msgstr "selo ala"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "o open e selo mute TileMap tawa ijo pali mute TileMapLayer"
+
+msgid "Can't edit multiple layers at once."
+msgstr "sina ken ala ante e lipu mute lon tenpo sama."
+
+msgid "The edited layer is disabled or invisible"
+msgstr "selo ante li ala anu ken lukin ala"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"ijo pali ante TileMap anu ijo pali ante TileMapLayer li jo e poki sona "
+"TileSet ala.\n"
+"o pali sin anu kama lon e poki sona TileSet lon nasin ijo pi kulupu leko lon "
+"ma pi nasin ijo."
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Select Next Tile Map Layer"
+msgstr "o anu e lipu kama pi lipu ma leko"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "o anu e lipu tawa pi lipu ma leko"
+
+msgid "TileMap Layers"
+msgstr "lipu pi TileMap"
+
+msgid "Select previous layer"
+msgstr "o anu e lipu tawa"
+
+msgid "Select next layer"
+msgstr "o anu e lipu kama"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "o anu e ijo pali TileMapLayer ale lon ma pali"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "o walo e selo TileMap anu"
+
+msgid "Toggle grid visibility."
+msgstr "o ante tu e sijelo lukin pi kulupu leko."
+
+msgid "Advanced settings."
+msgstr "lawa toki namako."
+
+msgid "From Source"
+msgstr "tan open"
+
+msgid "From Coords"
+msgstr "tan lon"
+
+msgid "From Alternative"
+msgstr "tan ante"
+
+msgid "To Source"
+msgstr "tawa open"
+
+msgid "To Coords"
+msgstr "tawa lon"
+
+msgid "To Alternative"
+msgstr "tawa ante"
+
+msgid "Clear Invalid"
+msgstr "o weka e ken ala"
+
+msgid "Create tiles"
+msgstr "o pali sin e leko"
+
+msgid "Create a tile"
+msgstr "o pali sin e leko"
+
+msgid "Remove tiles"
+msgstr "o weka e leko"
+
+msgid "Move a tile"
+msgstr "o tawa e leko"
+
+msgid "Resize a tile"
+msgstr "o ante e suli leko"
+
+msgid "Remove tile"
+msgstr "o weka e leko"
+
+msgid "TileSet"
+msgstr "TileSet"
+
+msgid "Eraser Tool"
+msgstr "ilo sitelen weka"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"ijo pali TileMap li ike tan ijo pali TileMapLayer mute li pona.\n"
+"sina wile ante e ijo pali TileMap tawa kulupu pi ijo pali TileMapLayer la, o "
+"anu e ijo pali ni la o open e ma anpa TileMap, la o pilin e sitelen pi poki "
+"ilo lon ma sewi teje, la o anu e \"o open e selo mute TileMap tawa ijo pali "
+"mute TileMapLayer\"."
 
 msgid "Int"
 msgstr "Int"
@@ -4958,19 +4940,6 @@ msgstr "ijo pali B li wile PhysicsBody2D"
 msgid "Node A and Node B must be different PhysicsBody2Ds"
 msgstr "ijo pali A en ijo pali B li wile ijo pali ante PhysicsBody2D"
 
-msgid ""
-"The TileMap node is deprecated as it is superseded by the use of multiple "
-"TileMapLayer nodes.\n"
-"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
-"panel with this node selected, click the toolbox icon in the top-right corner "
-"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
-msgstr ""
-"ijo pali TileMap li ike tan ijo pali TileMapLayer mute li pona.\n"
-"sina wile ante e ijo pali TileMap tawa kulupu pi ijo pali TileMapLayer la, o "
-"anu e ijo pali ni la o open e ma anpa TileMap, la o pilin e sitelen pi poki "
-"ilo lon ma sewi teje, la o anu e \"o open e selo mute TileMap tawa ijo pali "
-"mute TileMapLayer\"."
-
 msgid "Node A and Node B must be PhysicsBody3Ds"
 msgstr "ijo pali A en ijo pali B li wile PhysicsBody3D"
 
@@ -4998,6 +4967,24 @@ msgstr ""
 "tan ni la, tenpo ala la ijo pali GeometryInstance3D li ken lukin.\n"
 "sina wile pona e ni la, o ante e nanpa pini ona tawa ala anu nanpa suli tawa "
 "nanpa open ona."
+
+msgid "Rotate %d CanvasItems"
+msgstr "o sike e ijo CanvasItem %d"
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "o suli e ijo Node2D \"%s\" tawa (%s, %s)"
+
+msgid "Scale %d CanvasItems"
+msgstr "o sule e ijo CanvasItem %d"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "o suli e ijo CanvasItem \"%s\" tawa (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "o tawa e ijo CanvasItem %d"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "o tawa e ijo CanvasItem \"%s\" tawa (%d,%d)"
 
 msgid "Top Orthogonal"
 msgstr "lukin sewi pi nanpa pona"

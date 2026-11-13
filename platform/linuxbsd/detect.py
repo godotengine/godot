@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
-from platform_methods import detect_arch, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -127,6 +127,11 @@ def configure(env: "SConsEnvironment"):
             env["CXX"] = "clang++"
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+    if env["library_type"] == "executable" and env["arch"] not in ["x86_32", "arm32"]:
+        # PIE has a performance cost on 32-bit, and it's a niche target. Not worth the tradeoff.
+        env.Append(CCFLAGS=["-fPIE"], LINKFLAGS=["-pie"])
+    env.Append(LINKFLAGS=["-Wl,-z,relro", "-Wl,-z,now"])
+
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
@@ -173,7 +178,7 @@ def configure(env: "SConsEnvironment"):
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
                 ]
             )
-            env.Append(LINKFLAGS=["-fsanitize=undefined"])
+            env.Append(LINKFLAGS=["-fsanitize=undefined,vptr"])
             if env["use_llvm"]:
                 env.Append(
                     CCFLAGS=[
@@ -206,6 +211,9 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
+
+    if env["debug_symbols"]:
+        env.Append(LINKFLAGS=["-Wl,--build-id"])
 
     if env["library_type"] == "shared_library":
         env.Append(CCFLAGS=["-fPIC"])
@@ -512,19 +520,22 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
-            elif env["arch"] == "arm32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
-            elif env["arch"] == "rv64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
-            env.Append(LIBS=["accesskit"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+                elif env["arch"] == "arm32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+                elif env["arch"] == "rv64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+                env.Append(LIBS=["accesskit"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"

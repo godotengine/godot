@@ -6,6 +6,7 @@
 	<description>
 		This object contains the intersection information produced by [method PhysicsDirectSpaceState2D.intersect_ray_into].
 		After calling [method PhysicsDirectSpaceState2D.intersect_ray_into], the fields of this object will be populated with the hit information if the ray intersects a shape. If no intersection occurred, the values remain unchanged from the previous state.
+		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
 	</tutorials>

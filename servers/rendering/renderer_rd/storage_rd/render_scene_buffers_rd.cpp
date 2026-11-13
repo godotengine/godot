@@ -163,7 +163,7 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 	view_count = p_config->get_view_count();
 
 	scaling_3d_mode = p_config->get_scaling_3d_mode();
-	msaa_3d = p_config->get_msaa_3d();
+	msaa_3d = get_nearest_supported_msaa_3d(p_config->get_msaa_3d(), can_be_storage);
 	screen_space_aa = p_config->get_screen_space_aa();
 
 	fsr_sharpness = p_config->get_fsr_sharpness();
@@ -820,6 +820,26 @@ RD::DataFormat RenderSceneBuffersRD::get_depth_format(bool p_resolve, bool p_msa
 
 		return RD::get_singleton()->texture_is_format_supported_for_usage(preferred_formats[0], get_depth_usage_bits(p_resolve, p_msaa, p_storage)) ? preferred_formats[0] : preferred_formats[1];
 	}
+}
+
+RSE::ViewportMSAA RenderSceneBuffersRD::get_nearest_supported_msaa(RSE::ViewportMSAA p_msaa, RD::DataFormat p_format, uint32_t p_usage_bits) {
+	if (p_msaa == RSE::VIEWPORT_MSAA_DISABLED) {
+		return p_msaa;
+	}
+
+	RD::TextureFormat tf;
+	tf.format = p_format;
+	tf.usage_bits = p_usage_bits;
+	tf.samples = msaa_to_samples(p_msaa);
+	RD::TextureSamples samples = RD::get_singleton()->texture_get_nearest_supported_samples(tf);
+	if (samples != tf.samples && is_print_verbose_enabled()) {
+		print_verbose(vformat("MSAA %dx is not supported by the current hardware. Falling back to %dx.", 1 << tf.samples, 1 << samples));
+	}
+	return samples_to_msaa(samples);
+}
+
+RSE::ViewportMSAA RenderSceneBuffersRD::get_nearest_supported_msaa_3d(RSE::ViewportMSAA p_msaa, bool p_storage) {
+	return get_nearest_supported_msaa(p_msaa, get_depth_format(false, true, p_storage), get_depth_usage_bits(false, true, p_storage));
 }
 
 uint32_t RenderSceneBuffersRD::get_depth_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {

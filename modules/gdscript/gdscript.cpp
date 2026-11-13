@@ -33,6 +33,7 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
+#include "gdscript_helper.h"
 #include "gdscript_linter.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
@@ -48,7 +49,10 @@
 #endif
 
 #ifdef TESTS_ENABLED
-#include "tests/gdscript_test_runner.h"
+#ifndef DISABLE_DEPRECATED
+#include "core/error/error_macros.h"
+#include "core/os/os.h"
+#endif
 #endif
 
 #include "core/config/engine.h"
@@ -174,10 +178,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
 		instance->owner->set_script_instance(nullptr);
-		{
-			MutexLock lock(GDScriptLanguage::singleton->mutex);
-			instances.remove(&instance->script_instance_list);
-		}
 		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 	}
 
@@ -192,10 +192,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
 			instance->owner->set_script_instance(nullptr);
-			{
-				MutexLock lock(GDScriptLanguage::singleton->mutex);
-				instances.remove(&instance->script_instance_list);
-			}
 			ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance: " + error_text);
 		}
 	}
@@ -2059,9 +2055,19 @@ void GDScriptInstance::reload_members() {
 	// Transfer the old members into their new position.
 	for (KeyValue<StringName, GDScript::MemberInfo> &E : script->member_indices) {
 		const GDScript::MemberInfo *old = script->old_member_indices.getptr(E.key);
+		bool member_value_assigned = false;
+
 		if (old != nullptr) {
-			Variant value = members[old->index];
-			new_members[E.value.index] = value;
+			const Variant value = members[old->index];
+			const bool is_same_type = E.value.data_type.is_type(value, false);
+			if (is_same_type) {
+				member_value_assigned = true;
+				new_members[E.value.index] = value;
+			}
+		}
+
+		if (!member_value_assigned) {
+			new_members[E.value.index] = GDScriptHelper::construct_empty_value_for_data_type(E.value.data_type);
 		}
 	}
 	members = std::move(new_members);
@@ -2188,7 +2194,12 @@ void GDScriptLanguage::init() {
 #endif // DEBUG_ENABLED
 
 #ifdef TESTS_ENABLED
-	GDScriptTests::GDScriptTestRunner::handle_cmdline();
+#ifndef DISABLE_DEPRECATED
+	if (OS::get_singleton()->get_cmdline_args().find("--gdscript-generate-tests")) {
+		ERR_PRINT(R"(The command for generating GDScript test output has changed to "--test gdscript-generate-tests")");
+		exit(-1);
+	}
+#endif // !DISABLE_DEPRECATED
 #endif // TESTS_ENABLED
 }
 

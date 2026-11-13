@@ -842,6 +842,18 @@ msgstr "कार्यकर्ता पूल"
 msgid "Low Priority Thread Ratio"
 msgstr "कम प्राथमिकता थ्रेड अनुपात"
 
+msgid "Target"
+msgstr "लक्ष्य"
+
+msgid "Start Offset"
+msgstr "ऑफसेट प्रारंभ करें"
+
+msgid "Max Results"
+msgstr "अधिकतम परिणाम"
+
+msgid "Subject"
+msgstr "विषय"
+
 msgid "Locale"
 msgstr "लोकेल"
 
@@ -910,9 +922,6 @@ msgstr "हैंडल मोड"
 
 msgid "Stream"
 msgstr "धारा"
-
-msgid "Start Offset"
-msgstr "ऑफसेट प्रारंभ करें"
 
 msgid "End Offset"
 msgstr "अंत ऑफसेट"
@@ -1061,12 +1070,6 @@ msgstr "क्षमता"
 msgid "Access Wi-Fi"
 msgstr "एक्सेस Wi-FI"
 
-msgid "Performance Gaming Tier"
-msgstr "प्रदर्शन गेमिंग टियर"
-
-msgid "Performance A 12"
-msgstr "प्रदर्शन ए 12"
-
 msgid "Shader Baker"
 msgstr "शेडर बेकर"
 
@@ -1084,24 +1087,6 @@ msgstr "आईट्यून्स शेयरिंग से सुलभ"
 
 msgid "Privacy"
 msgstr "गोपनीयता"
-
-msgid "Camera Usage Description"
-msgstr "कैमरा उपयोग विवरण"
-
-msgid "Camera Usage Description Localized"
-msgstr "कैमरा उपयोग विवरण स्थानीयकृत"
-
-msgid "Microphone Usage Description"
-msgstr "माइक्रोफोन उपयोग विवरण"
-
-msgid "Microphone Usage Description Localized"
-msgstr "माइक्रोफोन उपयोग विवरण स्थानीयकृत"
-
-msgid "Photolibrary Usage Description"
-msgstr "चित्र पुस्तकालय उपयोग विवरण"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "चित्र पुस्तकालय उपयोग विवरण स्थानीयकृत"
 
 msgid "Tracking Enabled"
 msgstr "ट्रैकिंग सक्रिय"
@@ -1685,6 +1670,15 @@ msgstr "व्यवस्था"
 msgid "Layout"
 msgstr "लेआउट"
 
+msgid "Normal Map"
+msgstr "सामान्य मानचित्र"
+
+msgid "Roughness"
+msgstr "बेअदबी"
+
+msgid "Src Normal"
+msgstr "Src सामान्य"
+
 msgid "Base Scale"
 msgstr "आधार पैमाना"
 
@@ -1699,15 +1693,6 @@ msgstr "अल्फ़ा बॉर्डर ठीक करें"
 
 msgid "Premult Alpha"
 msgstr "प्रीमल्ट अल्फ़ा"
-
-msgid "Normal Map"
-msgstr "सामान्य मानचित्र"
-
-msgid "Roughness"
-msgstr "बेअदबी"
-
-msgid "Src Normal"
-msgstr "Src सामान्य"
 
 msgid "Process"
 msgstr "प्रक्रिया"
@@ -1889,42 +1874,6 @@ msgstr "प्लगइन नाम"
 
 msgid "Autoload on Startup"
 msgstr "स्टार्टअप पर स्वतः लोड"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "बुनावट"
-
-msgid "Margins"
-msgstr "मार्जिन्स"
-
-msgid "Separation"
-msgstr "विभाजन"
-
-msgid "Texture Region Size"
-msgstr "बुनावट क्षेत्र आकार"
-
-msgid "Use Texture Padding"
-msgstr "बुनावट पैडिंग का उपयोग करें"
-
-msgid "Atlas Coords"
-msgstr "एटलस निर्देशांक"
-
-msgid "Size in Atlas"
-msgstr "एटलस में आकार"
-
-msgid "Alternative ID"
-msgstr "वैकल्पिक ID"
-
-msgid "Speed"
-msgstr "स्पीड"
-
-msgid "Frames Count"
-msgstr "फ़्रेम गणना"
-
-msgid "Duration"
-msgstr "अवधि"
 
 msgid "Current Group Idx"
 msgstr "वर्तमान समूह Idx"
@@ -2130,11 +2079,11 @@ msgstr "मुख्य मेनू को संक्षिप्त कर�
 msgid "Show Renderer Selector"
 msgstr "रेंडरर चयनकर्ता दिखाएँ"
 
-msgid "Derive Script Globals by Name"
-msgstr "नाम से स्क्रिप्ट ग्लोबल्स प्राप्त करें"
-
 msgid "Scene Tree"
 msgstr "दृश्य वृक्ष"
+
+msgid "Derive Script Globals by Name"
+msgstr "नाम से स्क्रिप्ट ग्लोबल्स प्राप्त करें"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "अद्वितीय नाम रद्द करने से पहले पूछें"
@@ -2369,9 +2318,6 @@ msgstr "थंबनेल साइज"
 
 msgid "Quick Open Dialog"
 msgstr "त्वरित खुला संवाद"
-
-msgid "Max Results"
-msgstr "अधिकतम परिणाम"
 
 msgid "Instant Preview"
 msgstr "तुरंत प्रीव्यू"
@@ -3636,6 +3582,9 @@ msgstr "सीमलेस ब्लेंड स्कर्ट"
 msgid "Bump Strength"
 msgstr "टक्कर की ताकत"
 
+msgid "Duration"
+msgstr "अवधि"
+
 msgid "Is Sticky"
 msgstr "चिपचिपा है"
 
@@ -3669,8 +3618,86 @@ msgstr "हाथ"
 msgid "Hand Skeleton"
 msgstr "हाथ का कंकाल"
 
-msgid "Subject"
-msgstr "विषय"
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "बुनावट"
+
+msgid "Margins"
+msgstr "मार्जिन्स"
+
+msgid "Separation"
+msgstr "विभाजन"
+
+msgid "Texture Region Size"
+msgstr "बुनावट क्षेत्र आकार"
+
+msgid "Use Texture Padding"
+msgstr "बुनावट पैडिंग का उपयोग करें"
+
+msgid "Atlas Coords"
+msgstr "एटलस निर्देशांक"
+
+msgid "Size in Atlas"
+msgstr "एटलस में आकार"
+
+msgid "Alternative ID"
+msgstr "वैकल्पिक ID"
+
+msgid "Speed"
+msgstr "स्पीड"
+
+msgid "Frames Count"
+msgstr "फ़्रेम गणना"
+
+msgid "Use Kinematic Bodies"
+msgstr "किनेमैटिक देह का उपयोग करें"
+
+msgid "Bottom Left Side"
+msgstr "नीचे बाईं ओर"
+
+msgid "Top Left Corner"
+msgstr "शीर्ष बायां कोना"
+
+msgid "Top Right Side"
+msgstr "शीर्ष दाहिनी ओर"
+
+msgid "Top Right Corner"
+msgstr "शीर्ष दायां कोना"
+
+msgid "Terrains"
+msgstr "भूमियाँ"
+
+msgid "UV Clipping"
+msgstr "यूवी क्लिपिंग"
+
+msgid "One Way"
+msgstr "एक तरफ़ा रास्ता"
+
+msgid "Flip H"
+msgstr "पलटना H"
+
+msgid "Flip V"
+msgstr "पलटना V"
+
+msgid "Transpose"
+msgstr "ट्रांसपोज़"
+
+msgid "Modulate"
+msgstr "मिलाना"
+
+msgid "Z Index"
+msgstr "Z सूचकांक"
+
+msgid "Terrain"
+msgstr "भू-भाग"
+
+msgid "Miscellaneous"
+msgstr "विविध"
+
+msgid "Probability"
+msgstr "संभावना"
 
 msgid "Discover Multicast If"
 msgstr "मल्टीकास्ट इफ की खोज करें"
@@ -3837,6 +3864,12 @@ msgstr "निर्दिष्ट उपकरण श्रेणी"
 msgid "Storyboard"
 msgstr "दृश्य क्रम"
 
+msgid "Performance Gaming Tier"
+msgstr "प्रदर्शन गेमिंग टियर"
+
+msgid "Performance A 12"
+msgstr "प्रदर्शन ए 12"
+
 msgid "Spotlight 80 X 80"
 msgstr "स्पॉटलाइट 80 x 80"
 
@@ -3939,6 +3972,18 @@ msgstr "API कुंजी"
 msgid "API Key ID"
 msgstr "API कुंजी ID"
 
+msgid "Microphone Usage Description"
+msgstr "माइक्रोफोन उपयोग विवरण"
+
+msgid "Microphone Usage Description Localized"
+msgstr "माइक्रोफोन उपयोग विवरण स्थानीयकृत"
+
+msgid "Camera Usage Description"
+msgstr "कैमरा उपयोग विवरण"
+
+msgid "Camera Usage Description Localized"
+msgstr "कैमरा उपयोग विवरण स्थानीयकृत"
+
 msgid "Address Book Usage Description"
 msgstr "पता पुस्तिका उपयोग विवरण"
 
@@ -4028,12 +4073,6 @@ msgstr "D3D12 चपलता SDK मल्टीआर्क"
 
 msgid "Speed Scale"
 msgstr "गति पैमाना"
-
-msgid "Flip H"
-msgstr "पलटना H"
-
-msgid "Flip V"
-msgstr "पलटना V"
 
 msgid "Volume dB"
 msgstr "ध्वनि स्तर dB"
@@ -4401,9 +4440,6 @@ msgstr "हड्डी उपकरण दिखाएँ"
 msgid "Rest"
 msgstr "विश्राम"
 
-msgid "Use Kinematic Bodies"
-msgstr "किनेमैटिक देह का उपयोग करें"
-
 msgid "Unit Size"
 msgstr "इकाई का आकार"
 
@@ -4454,9 +4490,6 @@ msgstr "उत्सर्जन"
 
 msgid "Parameters"
 msgstr "पैरैमिटर्स"
-
-msgid "Modulate"
-msgstr "मिलाना"
 
 msgid "Albedo Mix"
 msgstr "अल्बेडो मिक्स"
@@ -4737,9 +4770,6 @@ msgstr "आपरिवर्तक"
 msgid "Deprecated"
 msgstr "पदावनत"
 
-msgid "Target"
-msgstr "लक्ष्य"
-
 msgid "Use Magnet"
 msgstr "चुंबक उपयोग"
 
@@ -4751,6 +4781,9 @@ msgstr "प्रभाव"
 
 msgid "Inside"
 msgstr "अंदर"
+
+msgid "Max Length"
+msgstr "अधिकतम लंबाई"
 
 msgid "Geometry"
 msgstr "रेखागणित"
@@ -5010,9 +5043,6 @@ msgstr "अधिकतम दृश्यमान रेखाएँ"
 msgid "Placeholder Text"
 msgstr "प्लेसहोल्डर लेख"
 
-msgid "Max Length"
-msgstr "अधिकतम लंबाई"
-
 msgid "Keep Editing on Text Submit"
 msgstr "लेख सबमिट पर संपादन जारी रखें"
 
@@ -5109,6 +5139,9 @@ msgstr "फोकस का पालन करें"
 msgid "Default Scroll Deadzone"
 msgstr "प्रायिक स्क्रॉल डेडज़ोन"
 
+msgid "Format"
+msgstr "फ़ोर्मैट"
+
 msgid "Dragger Visibility"
 msgstr "ड्रैगर दृश्यता"
 
@@ -5186,9 +5219,6 @@ msgstr "प्रकाश मास्क"
 
 msgid "Visibility Layer"
 msgstr "दृश्यता परत"
-
-msgid "Z Index"
-msgstr "Z सूचकांक"
 
 msgid "Use Parent Material"
 msgstr "पेरेंट सामग्री का उपयोग करें"
@@ -5391,39 +5421,6 @@ msgstr "FABRIK डेटा चेन लंबाई"
 msgid "Jiggle Data Chain Length"
 msgstr "जिगल डेटा चेन लंबाई"
 
-msgid "Bottom Left Side"
-msgstr "नीचे बाईं ओर"
-
-msgid "Top Left Corner"
-msgstr "शीर्ष बायां कोना"
-
-msgid "Top Right Side"
-msgstr "शीर्ष दाहिनी ओर"
-
-msgid "Top Right Corner"
-msgstr "शीर्ष दायां कोना"
-
-msgid "Terrains"
-msgstr "भूमियाँ"
-
-msgid "UV Clipping"
-msgstr "यूवी क्लिपिंग"
-
-msgid "One Way"
-msgstr "एक तरफ़ा रास्ता"
-
-msgid "Transpose"
-msgstr "ट्रांसपोज़"
-
-msgid "Terrain"
-msgstr "भू-भाग"
-
-msgid "Miscellaneous"
-msgstr "विविध"
-
-msgid "Probability"
-msgstr "संभावना"
-
 msgid "Density"
 msgstr "घनत्व"
 
@@ -5438,9 +5435,6 @@ msgstr "नक्शा गहराई"
 
 msgid "Map Data"
 msgstr "नक्शा डेटा"
-
-msgid "Item"
-msgstr "वस्तु"
 
 msgid "Add UV2"
 msgstr "ऐड UV2"
@@ -5514,11 +5508,14 @@ msgstr "समतल"
 msgid "Atlas"
 msgstr "मानचित्र संग्रह"
 
-msgid "Format"
-msgstr "फ़ोर्मैट"
-
 msgid "Mix Rate"
 msgstr "मिश्रण दर"
+
+msgid "Buffer Length"
+msgstr "बफ़र लंबाई"
+
+msgid "Random Volume Offset dB"
+msgstr "यादृच्छिक ध्वनि मात्रा ऑफसेट dB"
 
 msgid "Stereo"
 msgstr "स्टीरियो"
@@ -6081,12 +6078,6 @@ msgstr "चैनल निष्क्रिय थ्रेशोल्ड dB"
 msgid "Video Delay Compensation (ms)"
 msgstr "वीडियो विलंब समायोजन (ms)"
 
-msgid "Random Volume Offset dB"
-msgstr "यादृच्छिक ध्वनि मात्रा ऑफसेट dB"
-
-msgid "Buffer Length"
-msgstr "बफ़र लंबाई"
-
 msgid "Voice Count"
 msgstr "स्वर गणना"
 
@@ -6222,9 +6213,6 @@ msgstr "व्युत्क्रम जड़त्व"
 msgid "Center of Mass Local"
 msgstr "द्रव्यमान केंद्र स्थानीय"
 
-msgid "Shape RID"
-msgstr "आकार RID"
-
 msgid "Sleep Threshold Linear"
 msgstr "निद्रा सीमा रेखीय"
 
@@ -6239,6 +6227,9 @@ msgstr "संपर्क पुनर्चक्रण त्रिज्य�
 
 msgid "Contact Max Allowed Penetration"
 msgstr "संपर्क की अधिकतम अनुमत पैठ"
+
+msgid "Shape RID"
+msgstr "आकार RID"
 
 msgid "Inverse Inertia Tensor"
 msgstr "व्युत्क्रम जड़त्व टेंसर"

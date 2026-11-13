@@ -1427,8 +1427,11 @@ private:
 	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
-	HashSet<int> unsafe_lines;
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	HashSet<int> unsafe_lines;
+#endif
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1615,6 +1618,7 @@ private:
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool _export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class, PropertyHint p_hint, Variant::Type p_type);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
@@ -1704,14 +1708,15 @@ public:
 #ifdef DEBUG_ENABLED
 	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
-	int get_last_line_number() const { return current.end_line; }
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
 
 	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
+
+	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
+	int get_last_line_number() const { return current.end_line; }
 #endif // TOOLS_ENABLED
 
 	GDScriptParser();

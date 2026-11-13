@@ -1,0 +1,13 @@
+diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
+index e20962d65c..7edf0775c1 100644
+--- a/thirdparty/sdl/stdlib/SDL_getenv.c
++++ b/thirdparty/sdl/stdlib/SDL_getenv.c
+@@ -552,7 +552,7 @@ int SDL_unsetenv_unsafe(const char *name)
+ #endif // HAVE_LIBC_ENVIRONMENT
+ 
+ // Retrieve a variable named "name" from the environment
+-#ifdef HAVE_LIBC_ENVIRONMENT
++#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
+ const char *SDL_getenv_unsafe(const char *name)
+ {
+ #ifdef SDL_PLATFORM_ANDROID

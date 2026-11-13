@@ -61,7 +61,7 @@ HB_MARK_AS_FLAG_T (hb_subset_depend_edge_flags_t);
  * Records that glyph A depends on glyph B through a specific OpenType
  * mechanism (table_tag), with additional metadata:
  *
- * - table_tag: Source table (GSUB, glyf, CFF, COLR, MATH)
+ * - table_tag: Source table (GSUB, glyf, CFF, COLR, MATH, VARC)
  * - dependent: Target glyph ID
  * - layout_tag: Feature tag (for GSUB), else 0
  * - ligature_set: Index into sets array for ligature components, else INVALID

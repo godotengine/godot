@@ -168,13 +168,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
-	void _clear_tmp_manifest(const Ref<EditorExportPreset> &p_preset);
+	void _clear_tmp_src_dirs(const Ref<EditorExportPreset> &p_preset);
 
-	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, int p_export_format, bool p_debug);
+	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir, bool p_give_internet, int p_export_format, bool p_debug);
 
 	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
 
-	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset);
+	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir);
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
 
@@ -188,7 +188,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome, Ref<Image> &splash_icon, Ref<Image> &splash_branding_image);
 
-	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
+	void _copy_icons_to_gradle_project(const String &p_export_src_dir,
 			const Ref<Image> &p_main_image,
 			const Ref<Image> &p_foreground,
 			const Ref<Image> &p_background,

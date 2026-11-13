@@ -298,8 +298,8 @@ static const String NULL_AUDIO_DRIVER("Dummy");
 
 // The length of the longest column in the command-line help we should align to
 // (excluding the 2-space left and right margins).
-// Currently, this is `--export-release <preset> <path>`.
-static const int OPTION_COLUMN_LENGTH = 32;
+// Currently, this is `--dump-gdextension-interface-json`.
+static const int OPTION_COLUMN_LENGTH = 33;
 
 /* Helper methods */
 
@@ -351,11 +351,18 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 #endif
 
 void finalize_display() {
-	rendering_server->finish();
+	if (display_server) {
+		display_server->cursor_clear_custom_image_cache();
+	}
+	if (rendering_server) {
+		rendering_server->finish();
+	}
 	memdelete(rendering_server);
-
+	rendering_server = nullptr;
 	memdelete(display_server);
+	display_server = nullptr;
 	memdelete(accessibility_server);
+	accessibility_server = nullptr;
 }
 
 void initialize_theme_db() {
@@ -494,7 +501,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-h, --help", "Display this help message.\n");
 	print_help_option("--version", "Display the version string.\n");
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
-	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	print_help_option("-q, --quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
 	print_help_option("--no-header", "Do not print engine version and rendering driver/method header on startup.\n");
 
 	print_help_title("Run options");
@@ -525,10 +532,10 @@ void Main::print_help(const char *p_binary) {
 #else
 	print_help_option("--render-thread <mode>", "Render thread mode (\"unsafe\" [deprecated], \"safe\", \"separate\").\n");
 #endif // DISABLE_DEPRECATED
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	print_help_option("--remote-fs <address>", "Remote filesystem (<host/IP>[:<port>] address).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--remote-fs-password <password>", "Password for remote filesystem.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 
 	print_help_option("--audio-driver <driver>", "Audio driver [");
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
@@ -580,19 +587,20 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--position <X>,<Y>", "Request window position.\n");
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
-#endif
+#endif // XR_DISABLED
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
 	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 	print_help_option("--accessibility-driver <driver>", "Select accessibility driver ['accesskit', 'dummy'].\n");
 
 	print_help_title("Debug options");
 #ifdef DEBUG_ENABLED
-	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
-	print_help_option("-b, --breakpoints", "Breakpoint list as source:line comma-separated pairs, no spaces (use %%20 instead).\n");
-	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
-	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
+	print_help_option("-d, --debug", "Debug (local stdout debugger).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("-b, --breakpoints <list>", "Breakpoint list as source:line comma-separated pairs, no spaces (use %20 instead).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("--skip-breakpoints", "If debugger is connected, skips all breakpoints.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("--profiling", "Enable profiling in the script debugger.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
@@ -602,21 +610,18 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information (Vulkan only). This allows source-level shader debugging with RenderDoc.\n");
 	print_help_option("--clear-shader-cache", "Clear the shader_cache directory at launch, so it's re-generated.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
-	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
-	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
+	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
+	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
-	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n");
-#endif
-	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
 #ifdef DEBUG_ENABLED
+	print_help_option("--remote-debug <uri>", "Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-collisions", "Show collision shapes when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-paths", "Show path lines when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-navigation", "Show navigation polygons when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-avoidance", "Show navigation avoidance debug visuals when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-stringnames", "Print all StringName allocations to stdout when the engine quits.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 	print_help_option("--debug-canvas-item-redraw", "Display a rectangle each time a canvas item requests a redraw (useful to troubleshoot low processor mode).\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
-
+	print_help_option("--debug-mute-audio", "Mute all audio output when running the scene.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
 	print_help_option("--max-fps <fps>", "Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.\n");
 	print_help_option("--frame-delay <ms>", "Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.\n");
@@ -628,6 +633,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
 #ifdef TOOLS_ENABLED
+	print_help_option("--single-threaded-scene", "Force scene tree to run in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--editor-pseudolocalization", "Enable pseudolocalization for the editor and the project manager.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 
@@ -895,8 +901,11 @@ void Main::test_cleanup() {
 	OS::get_singleton()->finalize();
 
 	memdelete(packed_data);
+	packed_data = nullptr;
 	memdelete(translation_server);
+	translation_server = nullptr;
 	memdelete(tsman);
+	tsman = nullptr;
 #ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3DManager::finalize_server_manager();
 #endif // PHYSICS_3D_DISABLED
@@ -904,12 +913,14 @@ void Main::test_cleanup() {
 	PhysicsServer2DManager::finalize_server_manager();
 #endif // PHYSICS_2D_DISABLED
 	memdelete(globals);
+	globals = nullptr;
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
 	memdelete(engine);
+	engine = nullptr;
 
 	unregister_core_types();
 
@@ -1053,7 +1064,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String audio_driver = "";
 	String project_path = ".";
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	String debug_uri = "";
 	bool skip_breakpoints = false;
 	bool ignore_error_breaks = false;
@@ -1070,7 +1081,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
 	bool clear_shader_cache = false;
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	String remotefs;
 	String remotefs_pass;
 #endif
@@ -1492,7 +1503,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (arg == "--remote-fs") { // remote filesystem
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			if (N) {
 				remotefs = N->get();
 				N = N->next();
@@ -1504,10 +1515,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			ERR_PRINT(
 					"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 		} else if (arg == "--remote-fs-password") { // remote filesystem password
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			if (N) {
 				remotefs_pass = N->get();
 				N = N->next();
@@ -1520,7 +1531,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
 			goto error;
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 		} else if (arg == "--render-thread") { // render thread mode
 
 			if (N) {
@@ -1775,7 +1786,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
 			goto error;
 #endif // defined(OVERRIDE_PATH_ENABLED)
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
 
 			if (N) {
@@ -1786,7 +1797,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
 				goto error;
 			}
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 		} else if (arg == "--max-fps") { // set maximum rendered FPS
 
 			if (N) {
@@ -1851,7 +1862,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
 #else
@@ -1883,7 +1894,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			test_rd_creation = true;
 #endif // defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--remote-debug") {
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 			if (N) {
 				debug_uri = N->get();
 				if (!debug_uri.contains("://")) { // wrong address
@@ -1901,7 +1912,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
 			goto error;
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 		} else if (arg == "--editor-pid") { // not exposed to user
 			if (N) {
@@ -1947,12 +1958,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
 		} else if (I->get() == "--ignore-error-breaks") {
 			ignore_error_breaks = true;
-#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 #ifndef XR_DISABLED
 		} else if (arg == "--xr-mode") {
 			if (N) {
@@ -2049,7 +2060,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#if defined(MACOS_ENABLED) && defined(TOOLS_ENABLED)
+	if (display_driver == EMBEDDED_DISPLAY_DRIVER && (debug_uri.is_empty() || editor_pid == 0 || init_embed_parent_window_id == 0)) {
+		OS::get_singleton()->print("Error: \"--embedded\" requires \"--remote-debug <uri>\", \"--wid <window_id>\", and \"--editor-pid <pid>\" arguments. Aborting.\n");
+		goto error;
+	}
+#endif
+
+#ifdef DEBUG_ENABLED
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	if (!remotefs.is_empty()) {
@@ -2067,7 +2085,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 	}
-#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#endif // DEBUG_ENABLED
 
 	OS::get_singleton()->_in_editor = editor;
 	if (globals->setup(project_path, main_pack, false, editor) == OK) {
@@ -2270,7 +2288,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 
-#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+#ifdef DEBUG_ENABLED
 	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
 #ifdef TOOLS_ENABLED
 		if (editor_pid) {
@@ -2278,6 +2296,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 #endif
 	});
+#if MACOS_ENABLED
+	if (display_driver == EMBEDDED_DISPLAY_DRIVER && !EngineDebugger::get_singleton()) {
+		OS::get_singleton()->print("Error: Connection to debug server failed. Aborting.\n");
+		goto error;
+	}
+#endif
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -2790,6 +2814,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
+#ifndef WEB_ENABLED
 		if (project_manager) {
 			// The project manager doesn't need to play sound (TTS audio output is not emitted by Godot, but by the system itself).
 			// Disable audio output so it doesn't appear in the list of applications outputting sound in the OS.
@@ -2798,6 +2823,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else {
 			audio_driver = GLOBAL_GET("audio/driver/driver");
 		}
+#else
+		audio_driver = GLOBAL_GET("audio/driver/driver");
+#endif
 	}
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
@@ -3040,15 +3068,21 @@ error:
 	EngineDebugger::deinitialize();
 
 	memdelete(performance);
+	performance = nullptr;
 	memdelete(input_map);
+	input_map = nullptr;
 	memdelete(translation_server);
+	translation_server = nullptr;
 	memdelete(globals);
+	globals = nullptr;
 	memdelete(packed_data);
+	packed_data = nullptr;
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 
 	memdelete(engine);
+	engine = nullptr;
 
 	unregister_core_types();
 
@@ -3056,11 +3090,13 @@ error:
 	OS::get_singleton()->_user_args.clear();
 
 	memdelete(message_queue);
+	message_queue = nullptr;
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
 	memdelete(steam_tracker);
+	steam_tracker = nullptr;
 #endif
 
 	OS::get_singleton()->finalize_core();
@@ -3404,13 +3440,16 @@ Error Main::setup2(bool p_show_boot_logo) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 
 			memdelete(display_server);
+			display_server = nullptr;
 
 			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 			unregister_server_types();
 
 			memdelete(input);
+			input = nullptr;
 			memdelete(tsman);
+			tsman = nullptr;
 #ifndef PHYSICS_3D_DISABLED
 			PhysicsServer3DManager::finalize_server_manager();
 #endif // PHYSICS_3D_DISABLED
@@ -3983,7 +4022,7 @@ void Main::setup_boot_logo() {
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 			Ref<Image> splash = (editor || project_manager) ? memnew(Image(boot_splash_editor_png)) : memnew(Image(boot_splash_png));
 #else
-			Ref<Image> splash = memnew(Image(boot_splash_png));
+			Ref<Image> splash = memnew(Image(boot_splash_png, sizeof(boot_splash_png)));
 #endif
 
 			MAIN_PRINT("Main: ClearColor");
@@ -3995,7 +4034,7 @@ void Main::setup_boot_logo() {
 
 #if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
 		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-			Ref<Image> icon = memnew(Image(app_icon_png));
+			Ref<Image> icon = memnew(Image(app_icon_png, sizeof(app_icon_png)));
 			DisplayServer::get_singleton()->set_icon(icon);
 		}
 #endif
@@ -4441,7 +4480,12 @@ int Main::start() {
 	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
-			sml->set_debug_collisions_hint(true);
+#ifndef PHYSICS_2D_DISABLED
+			PhysicsServer2D::get_singleton()->debug_set_enabled(true);
+#endif
+#ifndef PHYSICS_3D_DISABLED
+			PhysicsServer3D::get_singleton()->debug_set_enabled(true);
+#endif
 		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
@@ -4835,7 +4879,7 @@ int Main::start() {
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {
-		Ref<Image> icon = memnew(Image(app_icon_png));
+		Ref<Image> icon = memnew(Image(app_icon_png, sizeof(app_icon_png)));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}
 
@@ -5237,14 +5281,17 @@ void Main::cleanup(bool p_force) {
 	}
 #endif
 
-	GDExtensionManager::get_singleton()->shutdown();
-
-	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
-		TextServerManager::get_singleton()->get_interface(i)->cleanup();
-	}
-
 	if (movie_writer) {
 		movie_writer->end();
+		movie_writer = nullptr;
+	}
+
+	GDExtensionManager::get_singleton()->shutdown();
+
+	if (TextServerManager::get_singleton()) {
+		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+			TextServerManager::get_singleton()->get_interface(i)->cleanup();
+		}
 	}
 
 	ResourceLoader::clear_thread_load_tasks();
@@ -5275,11 +5322,13 @@ void Main::cleanup(bool p_force) {
 
 	ScriptServer::finish_languages();
 
-	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
-	RenderingServer::get_singleton()->sync();
+	if (rendering_server) {
+		// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
+		RenderingServer::get_singleton()->sync();
 
-	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_shader_parameters_clear();
+		//clear global shader variables before scene and other graphics stuff are deinitialized.
+		rendering_server->global_shader_parameters_clear();
+	}
 
 #ifndef XR_DISABLED
 	if (xr_server) {
@@ -5293,7 +5342,6 @@ void Main::cleanup(bool p_force) {
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_EDITOR);
 	unregister_editor_types();
-
 #endif
 
 	ImageLoader::cleanup();
@@ -5332,26 +5380,35 @@ void Main::cleanup(bool p_force) {
 
 #ifndef XR_DISABLED
 	memdelete(xr_server);
+	xr_server = nullptr;
 #endif // XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();
-		memdelete(audio_server);
 	}
+	memdelete(audio_server);
+	audio_server = nullptr;
 
 	memdelete(camera_server);
+	camera_server = nullptr;
 
 	OS::get_singleton()->finalize();
 
 	finalize_display();
 
 	memdelete(input);
+	input = nullptr;
 
 	memdelete(packed_data);
+	packed_data = nullptr;
 	memdelete(performance);
+	performance = nullptr;
 	memdelete(input_map);
+	input_map = nullptr;
 	memdelete(translation_server);
+	translation_server = nullptr;
 	memdelete(tsman);
+	tsman = nullptr;
 #ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2DManager::finalize_server_manager();
 #endif // PHYSICS_2D_DISABLED
@@ -5359,6 +5416,7 @@ void Main::cleanup(bool p_force) {
 	PhysicsServer3DManager::finalize_server_manager();
 #endif // PHYSICS_3D_DISABLED
 	memdelete(globals);
+	globals = nullptr;
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
@@ -5370,9 +5428,11 @@ void Main::cleanup(bool p_force) {
 	// Now should be safe to delete MessageQueue (famous last words).
 	message_queue->flush();
 	memdelete(message_queue);
+	message_queue = nullptr;
 
 #if defined(STEAMAPI_ENABLED)
 	memdelete(steam_tracker);
+	steam_tracker = nullptr;
 #endif
 
 	unregister_core_driver_types();
@@ -5380,6 +5440,7 @@ void Main::cleanup(bool p_force) {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
 	memdelete(engine);
+	engine = nullptr;
 
 	unregister_core_types();
 

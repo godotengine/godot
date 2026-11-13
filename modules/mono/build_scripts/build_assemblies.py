@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import os
 import os.path
 import shlex
@@ -251,6 +249,16 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
     return 0
 
 
+def write_file_if_different(path, content):
+    if os.path.isfile(path):
+        with open(path, "r", encoding="utf-8") as f:
+            existing_content = f.read()
+        if existing_content == content:
+            return
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
+
+
 def generate_sdk_package_versions():
     # I can't believe importing files in Python is so convoluted when not
     # following the golden standard for packages/modules.
@@ -328,8 +336,7 @@ def generate_sdk_package_versions():
 """
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(props)
+    write_file_if_different(os.path.join(dirname(script_path), "SdkPackageVersions.props"), props)
 
     # Also write the versioned docs URL to a constant for the Source Generators.
 
@@ -353,8 +360,7 @@ def generate_sdk_package_versions():
     )
     os.makedirs(generators_dir, exist_ok=True)
 
-    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(constants)
+    write_file_if_different(os.path.join(generators_dir, "Common.Constants.cs"), constants)
 
 
 def build_all(

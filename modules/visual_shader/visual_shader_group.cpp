@@ -802,6 +802,11 @@ void VisualShaderGroup::create_default_nodes() {
 	graph->add_node(output_node, Vector2(400, 150), graph->get_valid_node_id());
 }
 
+void VisualShaderGroup::_resource_path_changed() {
+	const String path = get_path();
+	graph->set_path(path.is_empty() ? String() : path + "::graph", true);
+}
+
 VisualShaderGroup::VisualShaderGroup() {
 	graph.instantiate();
 	graph->connect("graph_changed", callable_mp(this, &VisualShaderGroup::_queue_update));
@@ -814,7 +819,7 @@ VisualShaderGroup::VisualShaderGroup() {
 
 ////////////// Group
 
-void VisualShaderNodeGroup::_emit_changed() {
+void VisualShaderNodeGroup::_update_default_input_values() {
 	for (int i = 0; i < get_input_port_count(); i++) {
 		const PortType type = get_input_port_type(i);
 		const Variant default_value_variant = VisualShaderNode::get_port_type_default_value_variant(type);
@@ -823,7 +828,10 @@ void VisualShaderNodeGroup::_emit_changed() {
 			set_input_port_default_value(i, default_value_variant);
 		}
 	}
+}
 
+void VisualShaderNodeGroup::_on_group_changed() {
+	_update_default_input_values();
 	emit_changed();
 }
 
@@ -923,13 +931,13 @@ void VisualShaderNodeGroup::set_group(const Ref<VisualShaderGroup> &p_group) {
 	}
 
 	if (group.is_valid()) {
-		group->disconnect_changed(callable_mp(this, &VisualShaderNodeGroup::_emit_changed));
+		group->disconnect_changed(callable_mp(this, &VisualShaderNodeGroup::_on_group_changed));
 	}
 	group = p_group;
 	if (group.is_valid()) {
-		group->connect_changed(callable_mp(this, &VisualShaderNodeGroup::_emit_changed));
+		group->connect_changed(callable_mp(this, &VisualShaderNodeGroup::_on_group_changed));
 	}
-	emit_changed();
+	_on_group_changed();
 }
 
 Ref<VisualShaderGroup> VisualShaderNodeGroup::get_group() const {

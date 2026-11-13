@@ -41,6 +41,8 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 
@@ -267,7 +269,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 
 				bool init_show_startup_alert = GLOBAL_GET("xr/openxr/startup_alert");
 				if (init_show_startup_alert) {
-					OS::get_singleton()->alert(init_error_message);
+					callable_mp(CoreBind::OS::get_singleton(), &CoreBind::OS::alert).call_deferred(init_error_message, "ALERT!");
 				}
 
 				memdelete(openxr_api);

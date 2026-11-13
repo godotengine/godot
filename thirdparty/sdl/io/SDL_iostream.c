@@ -956,7 +956,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
     }
 
-#elif defined(SDL_PLATFORM_IOS)
+#elif defined(SDL_PLATFORM_IOS) && !defined(SDL_FILESYSTEM_DUMMY)
 
     // Try to open the file on the filesystem first
     FILE *fp = NULL;

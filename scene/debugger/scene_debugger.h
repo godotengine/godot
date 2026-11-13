@@ -110,7 +110,9 @@ private:
 	static Error _msg_runtime_node_select_setup(const Array &p_args);
 	static Error _msg_runtime_node_select_set_node_type(const Array &p_args);
 	static Error _msg_runtime_node_select_set_ci_tool(const Array &p_args);
+#ifdef TOOLS_ENABLED
 	static Error _msg_runtime_node_select_set_ci_local_space(const Array &p_args);
+#endif // TOOLS_ENABLED
 	static Error _msg_runtime_node_select_set_n3d_tool(const Array &p_args);
 	static Error _msg_runtime_node_select_set_selection_visible(const Array &p_args);
 	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);

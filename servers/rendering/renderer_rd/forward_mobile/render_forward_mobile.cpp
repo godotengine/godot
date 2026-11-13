@@ -221,21 +221,8 @@ RID RendererSceneRenderImplementation::RenderForwardMobile::RenderBufferDataForw
 	return RID();
 }
 
-RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_vrs_texture() {
 	ERR_FAIL_NULL_V(render_buffers, RID());
-
-	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
-	ERR_FAIL_NULL_V(texture_storage, RID());
-
-	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
-	// This approach ensures we only build the framebuffers we actually need for this viewport.
-	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
-	// this.
-
-	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
-	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
-
-	uint32_t view_count = render_buffers->get_view_count();
 
 	RID vrs_texture;
 #ifndef XR_DISABLED
@@ -254,6 +241,27 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	if (vrs_texture.is_null() && render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
 		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 	}
+
+	return vrs_texture;
+}
+
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type, bool p_resolve_depth) {
+	ERR_FAIL_NULL_V(render_buffers, RID());
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, RID());
+
+	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
+	// This approach ensures we only build the framebuffers we actually need for this viewport.
+	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
+	// this.
+
+	RSE::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
+	bool use_msaa = msaa_3d != RSE::VIEWPORT_MSAA_DISABLED;
+
+	uint32_t view_count = render_buffers->get_view_count();
+
+	RID vrs_texture = get_vrs_texture();
 
 	Vector<RID> textures;
 	int color_buffer_id = 0;
@@ -1050,7 +1058,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	if (render_target.is_valid()) {
 		// Set subsampled images as not allowed on this render target, if we are using incompatible rendering features.
-		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process);
+		bool has_vrs_texture = rb_data.is_valid() && rb_data->get_vrs_texture().is_valid();
+		texture_storage->render_target_set_subsampled_allowed(render_target, using_subpass_post_process && has_vrs_texture);
 	}
 
 	if (p_render_data->scene_data->view_count > 1) {
@@ -1907,7 +1916,7 @@ void RenderForwardMobile::_render_particle_collider_heightfield(RID p_fb, const 
 	{
 		//regular forward for now
 		RenderListParameters render_list_params(render_list[RENDER_LIST_SECONDARY].elements.ptr(), render_list[RENDER_LIST_SECONDARY].element_info.ptr(), render_list[RENDER_LIST_SECONDARY].elements.size(), false, pass_mode, rp_uniform_set, scene_shader.default_specialization);
-		_render_list_with_draw_list(&render_list_params, p_fb);
+		_render_list_with_draw_list(&render_list_params, p_fb, RD::DRAW_CLEAR_ALL);
 	}
 	RD::get_singleton()->draw_command_end_label();
 }
@@ -2908,8 +2917,8 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_project
 	const bool positional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
 	global_pipeline_data_required.use_16_bit_shadows = directional_shadow_16_bits || positional_shadow_16_bits;
 	global_pipeline_data_required.use_32_bit_shadows = !directional_shadow_16_bits || !positional_shadow_16_bits;
-	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_2d_mode));
-	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_3d_mode));
+	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RendererRD::TextureStorage::render_target_get_nearest_supported_msaa(RSE::ViewportMSAA(msaa_2d_mode), false));
+	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RenderSceneBuffersRD::get_nearest_supported_msaa_3d(RSE::ViewportMSAA(msaa_3d_mode), _render_buffers_can_be_storage()));
 }
 
 void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_storage() {

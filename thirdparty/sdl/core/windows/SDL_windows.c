@@ -768,4 +768,35 @@ char *WIN_GetModulePath(HMODULE handle)
     return retval;
 }
 
+bool WIN_HasBrokenEZFRD64DLL(void)
+{
+    static bool checked = false;
+    static bool has_broken_EZFRD64_DLL = false;
+
+    if (!checked) {
+#ifdef _WIN64
+        if (SDL_GetHintBoolean("SDL_CHECK_BROKEN_EZFRD64", true)) {
+            // The 64-bit version of EZFRD64.DLL crashes after being loaded,
+            // which happens implicitly when querying the device capabilities,
+            // so make sure we don't do that if there's a possibility of crashing
+            static const char *directories[] = {
+                "C:/Windows/USB_Vibration",
+                "C:/Windows/USB Vibration"
+            };
+            for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64_DLL; ++i) {
+                int count = 0;
+                char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
+                if (count > 0) {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Broken EZFRD64.DLL detected, disabling GameInput and DirectInput force feedback");
+                    has_broken_EZFRD64_DLL = true;
+                }
+                SDL_free(files);
+            }
+        }
+#endif
+        checked = true;
+    }
+    return has_broken_EZFRD64_DLL;
+}
+
 #endif // defined(SDL_PLATFORM_WINDOWS)

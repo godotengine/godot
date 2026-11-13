@@ -353,7 +353,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
         if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; }; }
         #elif defined(__wasm64__)
         if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return BigInt(v); }; }
-        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Math.floor(Number(ptr) / 4); }; } // This should NOT be SDL_floor()
         #else
         #error Please define your platform.
         #endif
@@ -842,8 +842,9 @@ bool SDL_IsTablet(void)
 #ifdef SDL_PLATFORM_ANDROID
     return SDL_IsAndroidTablet();
 #elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsIPad(void);
-    return SDL_IsIPad();
+    //extern bool SDL_IsIPad(void);
+    //return SDL_IsIPad();
+    return false;
 #else
     return false;
 #endif
@@ -854,8 +855,9 @@ bool SDL_IsTV(void)
 #ifdef SDL_PLATFORM_ANDROID
     return SDL_IsAndroidTV();
 #elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsAppleTV(void);
-    return SDL_IsAppleTV();
+    //extern bool SDL_IsAppleTV(void);
+    //return SDL_IsAppleTV();
+    return false;
 #else
     return false;
 #endif

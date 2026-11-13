@@ -36,7 +36,6 @@
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include "core/variant/container_type_validate.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -848,7 +847,11 @@ Error ResourceLoaderText::load() {
 		}
 
 		if (!missing_resource_properties.is_empty()) {
-			resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+			if (is_scene) {
+				packed_scene->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+			} else {
+				resource->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+			}
 		}
 
 		if (!is_scene) {

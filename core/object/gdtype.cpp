@@ -90,6 +90,19 @@ void GDType::initialize() {
 	init_state = InitState::MUTABLE;
 }
 
+void GDType::clear_held_objects() {
+	for (const KeyValue<StringName, Member> &kv : _self_members) {
+		if (kv.value.type == Member::Type::METHOD) {
+			const_cast<MethodBind *>(kv.value.payload.method)->set_default_arguments(Vector<Variant>());
+		}
+	}
+	for (const KeyValue<StringName, LocalVector<MethodBind *>> &kv : self_compatibility_method_map) {
+		for (MethodBind *method_bind : kv.value) {
+			method_bind->set_default_arguments(Vector<Variant>());
+		}
+	}
+}
+
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
@@ -124,6 +137,12 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 	Member::IntegerConstant entry{ p_constant, enum_info };
 	_members.insert(p_name, Member::create_integer_constant(entry));
 	_self_members.insert(p_name, Member::create_integer_constant(entry));
+}
+
+void GDType::bind_integer_constant_raw(const char *p_enum_qualified_name, const char *p_name, int64_t p_constant, bool p_is_bitfield) {
+	String enum_name = GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(p_enum_qualified_name);
+	String value_name = String(p_name).get_slice("::", 1);
+	bind_integer_constant(enum_name, value_name, p_constant, p_is_bitfield);
 }
 
 const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance) const {

@@ -3485,6 +3485,19 @@ extern "C" {
 #define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
 
 /**
+ * A variable controlling the pixel storage mode of the PS2's framebuffer.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "32"
+ * - "24" (default)
+ * - "16"
+ *
+ * \since This hint is available since SDL 3.4.20.
+ */
+#define SDL_HINT_PS2_GS_COLOR_DEPTH "SDL_PS2_GS_COLOR_DEPTH"
+
+/**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
  *
  * Also known as Z-order. The variable can take a negative or positive value.

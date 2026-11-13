@@ -127,6 +127,7 @@ void EditorDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("opened"));
 	ADD_SIGNAL(MethodInfo("closed"));
 	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
+	ADD_SIGNAL(MethodInfo("_focused"));
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);

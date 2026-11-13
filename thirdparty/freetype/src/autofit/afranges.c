@@ -104,7 +104,8 @@
     AF_UNIRANGE_REC(  0xFE7A,  0xFE7A ),
     AF_UNIRANGE_REC(  0xFE7C,  0xFE7C ),
     AF_UNIRANGE_REC(  0xFE7E,  0xFE7E ),
-    AF_UNIRANGE_REC( 0x10EFD, 0x10EFF ),
+    AF_UNIRANGE_REC( 0x10ECB, 0x10ECF ),
+    AF_UNIRANGE_REC( 0x10EF0, 0x10EFF ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -118,7 +119,8 @@
 
   const AF_Script_UniRangeRec  af_armn_nonbase_uniranges[] =
   {
-    AF_UNIRANGE_REC(  0x0559,  0x055F ),
+    AF_UNIRANGE_REC(  0x0558,  0x055F ),
+    AF_UNIRANGE_REC(  0x058B,  0x058C ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -156,7 +158,8 @@
 
   const AF_Script_UniRangeRec  af_beng_uniranges[] =
   {
-    AF_UNIRANGE_REC(  0x0980,  0x09FF ),  /* Bengali */
+    AF_UNIRANGE_REC(  0x0980,  0x09FF ),  /* Bengali            */
+    AF_UNIRANGE_REC( 0x11DF0, 0x11DFF ),  /* Bengali Supplement */
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -168,6 +171,7 @@
     AF_UNIRANGE_REC(  0x09CD,  0x09CD ),
     AF_UNIRANGE_REC(  0x09E2,  0x09E3 ),
     AF_UNIRANGE_REC(  0x09FE,  0x09FE ),
+    AF_UNIRANGE_REC( 0x11DF0, 0x11DF0 ),
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -470,7 +474,7 @@
     AF_UNIRANGE_REC(  0x0591,  0x05BF ),
     AF_UNIRANGE_REC(  0x05C1,  0x05C2 ),
     AF_UNIRANGE_REC(  0x05C4,  0x05C5 ),
-    AF_UNIRANGE_REC(  0x05C7,  0x05C7 ),
+    AF_UNIRANGE_REC(  0x05C7,  0x05C9 ),
     AF_UNIRANGE_REC(  0xFB1E,  0xFB1E ),
     AF_UNIRANGE_REC(       0,       0 )
   };
@@ -586,7 +590,7 @@
     AF_UNIRANGE_REC(  0xAB6A,  0xAB6F ),  /* ... continued                          */
     AF_UNIRANGE_REC(  0xFB00,  0xFB06 ),  /* Alphab. Present. Forms (Latin Ligs)    */
     AF_UNIRANGE_REC( 0x1D400, 0x1D7FF ),  /* Mathematical Alphanumeric Symbols      */
-    AF_UNIRANGE_REC( 0x1DF00, 0x1DFFF ),  /* Latin Extended-G                       */
+    AF_UNIRANGE_REC( 0x1DF00, 0x1DFCC ),  /* Latin Extended-G                       */
     AF_UNIRANGE_REC(       0,       0 )
   };
 
@@ -643,7 +647,8 @@
     AF_UNIRANGE_REC(  0xA7F8,  0xA7F9 ),  /* more modifier letters               */
     AF_UNIRANGE_REC(  0xAB5C,  0xAB5F ),  /* more modifier letters               */
     AF_UNIRANGE_REC(  0xAB69,  0xAB69 ),  /* modifier letter small turned w      */
-    AF_UNIRANGE_REC( 0x10780, 0x107FB ),  /* Latin Extended-F                    */
+    AF_UNIRANGE_REC( 0x10780, 0x107BF ),  /* Latin Extended-F                    */
+    AF_UNIRANGE_REC( 0x1DFCD, 0x1DFFF ),  /* Latin Extended-G (subset)           */
     AF_UNIRANGE_REC(       0,       0 )
   };
 

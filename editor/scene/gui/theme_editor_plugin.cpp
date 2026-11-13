@@ -151,7 +151,17 @@ void ThemeItemImportTree::_update_items_tree() {
 
 			names.clear();
 			filtered_names.clear();
-			base_theme->get_theme_item_list(dt, E, &names);
+
+			if (base_theme == ThemeDB::get_singleton()->get_default_theme()) {
+				// For the default theme, include all registered theme items, even if they aren't assigned.
+				List<ThemeDB::ThemeItemBind> binds;
+				ThemeDB::get_singleton()->get_class_items(E, &binds, false, dt);
+				for (const ThemeDB::ThemeItemBind &bind : binds) {
+					names.push_back(bind.item_name);
+				}
+			} else {
+				base_theme->get_theme_item_list(dt, E, &names);
+			}
 
 			bool data_type_has_filtered_items = false;
 
@@ -2374,8 +2384,8 @@ void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
 }
 
 void ThemeTypeDialog::_add_type_confirmed() {
-	emit_signal(SNAME("type_selected"), pre_submitted_value);
 	hide();
+	emit_signal(SNAME("type_selected"), pre_submitted_value);
 }
 
 void ThemeTypeDialog::_notification(int p_what) {
@@ -3657,6 +3667,14 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 
 void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+	if (p_value == edited_type) {
+		type_variation_edit->unedit();
+		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
+		EditorNode::get_singleton()->show_warning(TTR("A type cannot be set as a variation of itself."));
+		return;
+	}
+
 	ur->create_action(TTR("Set Theme Type Variation"));
 
 	if (p_value.is_empty()) {

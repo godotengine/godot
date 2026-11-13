@@ -37,7 +37,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/inspector/editor_resource_preview.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -58,15 +57,21 @@ void EditorResourceTooltipPlugin::_bind_methods() {
 
 VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path) {
 	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->add_theme_constant_override("separation", -4 * EDSCALE);
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		vb->add_theme_constant_override(SNAME("separation"), -sb->get_offset().y);
+	}
+
 	{
 		Label *label = memnew(Label(p_resource_path.get_file()));
+		label->set_theme_type_variation(SNAME("TooltipLabel"));
 		vb->add_child(label);
 	}
 
 	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
 	if (id != ResourceUID::INVALID_ID) {
 		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
+		label->set_theme_type_variation(SNAME("TooltipLabel"));
 		vb->add_child(label);
 	}
 
@@ -74,9 +79,11 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		Ref<FileAccess> f = FileAccess::open(p_resource_path, FileAccess::READ);
 		if (f.is_valid()) {
 			Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
+			label->set_theme_type_variation(SNAME("TooltipLabel"));
 			vb->add_child(label);
 		} else {
 			Label *label = memnew(Label(TTR("Invalid file or broken link.")));
+			label->set_theme_type_variation(SNAME("TooltipLabel"));
 			label->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			vb->add_child(label);
 			return vb;
@@ -86,14 +93,17 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 	if (ResourceLoader::exists(p_resource_path)) {
 		String type = ResourceLoader::get_resource_type(p_resource_path);
 		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
+		label->set_theme_type_variation(SNAME("TooltipLabel"));
 		vb->add_child(label);
 	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->is_link(p_resource_path)) {
 		Label *link = memnew(Label(vformat(TTR("Link to: %s"), da->read_link(p_resource_path))));
+		link->set_theme_type_variation(SNAME("TooltipLabel"));
 		vb->add_child(link);
 	}
+
 	return vb;
 }
 
@@ -122,13 +132,25 @@ bool EditorTextureTooltipPlugin::handles(const String &p_resource_type) const {
 
 Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const {
 	HBoxContainer *hb = memnew(HBoxContainer);
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		hb->add_theme_constant_override(SNAME("separation"), sb->get_offset().x);
+	}
+
 	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
 	DEV_ASSERT(vb);
 	vb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
 	Vector2 dimensions = p_metadata.get("dimensions", Vector2());
 	Label *label = memnew(Label(vformat(TTR(U"Dimensions: %d × %d"), dimensions.x, dimensions.y)));
+	label->set_theme_type_variation(SNAME("TooltipLabel"));
 	vb->add_child(label);
+
+	Control *margin = memnew(Control);
+	hb->add_child(margin);
+	if (sb.is_valid()) {
+		margin->set_custom_minimum_size(Size2(sb->get_offset().x, 0));
+	}
 
 	TextureRect *tr = memnew(TextureRect);
 	tr->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
@@ -136,6 +158,7 @@ Control *EditorTextureTooltipPlugin::make_tooltip_for_path(const String &p_resou
 	request_thumbnail(p_resource_path, tr);
 
 	hb->add_child(vb);
+
 	return hb;
 }
 
@@ -149,13 +172,24 @@ Control *EditorAudioStreamTooltipPlugin::make_tooltip_for_path(const String &p_r
 	VBoxContainer *vb = Object::cast_to<VBoxContainer>(p_base);
 	DEV_ASSERT(vb);
 
+	Label *label = memnew(Label);
+	label->set_theme_type_variation(SNAME("TooltipLabel"));
+	vb->add_child(label);
+
 	double length = p_metadata.get("length", 0.0);
 	if (length >= 60.0) {
-		vb->add_child(memnew(Label(vformat(TTR("Length: %0dm %0ds"), int(length / 60.0), int(std::fmod(length, 60))))));
+		label->set_text(vformat(TTR("Length: %0dm %0ds"), int(length / 60.0), int(std::fmod(length, 60))));
 	} else if (length >= 1.0) {
-		vb->add_child(memnew(Label(vformat(TTR("Length: %0.1fs"), length))));
+		label->set_text(vformat(TTR("Length: %0.1fs"), length));
 	} else {
-		vb->add_child(memnew(Label(vformat(TTR("Length: %0.3fs"), length))));
+		label->set_text(vformat(TTR("Length: %0.3fs"), length));
+	}
+
+	Control *margin = memnew(Control);
+	vb->add_child(margin);
+	Ref<StyleBox> sb = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SceneStringName(panel), SNAME("TooltipLabel"));
+	if (sb.is_valid()) {
+		margin->set_custom_minimum_size(Size2(0, sb->get_offset().y * 3));
 	}
 
 	TextureRect *tr = memnew(TextureRect);

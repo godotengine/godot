@@ -133,6 +133,29 @@ TEST_CASE("[SceneTree][Tree]") {
 		memdelete(tree);
 	}
 
+	// https://github.com/godotengine/godot/issues/124209
+	SUBCASE("[Tree] Create items after moving items.") {
+		Tree *tree = memnew(Tree);
+		TreeItem *root = tree->create_item();
+
+		TreeItem *child1 = tree->create_item(root);
+		TreeItem *child2 = tree->create_item(root);
+		TreeItem *child3 = tree->create_item(root);
+
+		child3->move_before(child2);
+		TreeItem *child4 = tree->create_item(root, 0);
+		TreeItem *child5 = tree->create_item(root, 2);
+
+		CHECK_EQ(root->get_child_count(), 5);
+		CHECK_EQ(root->get_child(0), child4);
+		CHECK_EQ(root->get_child(1), child1);
+		CHECK_EQ(root->get_child(2), child5);
+		CHECK_EQ(root->get_child(3), child3);
+		CHECK_EQ(root->get_child(4), child2);
+
+		memdelete(tree);
+	}
+
 	SUBCASE("[Tree] Previous and Next items.") {
 		Tree *tree = memnew(Tree);
 		TreeItem *root = tree->create_item();

@@ -5,6 +5,7 @@
     <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
 
     <!-- To generate the .runtimeconfig.json file-->
     <EnableDynamicLoading>true</EnableDynamicLoading>

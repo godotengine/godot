@@ -220,10 +220,10 @@ Error WebRTCMultiplayerPeer::_initialize(int p_self_id, NetworkMode p_mode, cons
 
 		switch (mode) {
 			case TRANSFER_MODE_UNRELIABLE_ORDERED:
-				cfg["maxPacketLifetime"] = 1;
+				cfg["maxPacketLifeTime"] = 1;
 				break;
 			case TRANSFER_MODE_UNRELIABLE:
-				cfg["maxPacketLifetime"] = 1;
+				cfg["maxPacketLifeTime"] = 1;
 				cfg["ordered"] = false;
 				break;
 			case TRANSFER_MODE_RELIABLE:
@@ -311,7 +311,7 @@ Error WebRTCMultiplayerPeer::add_peer(const Ref<WebRTCPeerConnection> &p_peer, i
 	ERR_FAIL_COND_V(peer->channels.get(CH_RELIABLE).is_null(), FAILED);
 
 	cfg["id"] = 2;
-	cfg["maxPacketLifetime"] = p_unreliable_lifetime;
+	cfg["maxPacketLifeTime"] = p_unreliable_lifetime;
 	peer->channels.get(CH_ORDERED) = p_peer->create_data_channel("ordered", cfg);
 	ERR_FAIL_COND_V(peer->channels.get(CH_ORDERED).is_null(), FAILED);
 

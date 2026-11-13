@@ -2783,8 +2783,8 @@
     {
       do
       {
-        point->y += movement;
-        point     = point->next;
+        point->y = ADD_LONG( point->y, movement );
+        point    = point->next;
 
       } while ( point != first_point );
     }
@@ -3739,7 +3739,7 @@
 
         pos = ADD_LONG( high_min_y, adjustment_amount );
         if ( adjust_below_top && is_top_tilde )
-          pos += high_height;
+          pos = ADD_LONG( pos, high_height );
 
         if ( pos % 64 == 0 && tilde_height < 3 * 64 )
         {
@@ -3892,7 +3892,7 @@
 
         pos = SUB_LONG( low_max_y, adjustment_amount );
         if ( adjust_above_bottom && is_bottom_tilde )
-          pos -= low_height;
+          pos = SUB_LONG( pos, low_height );
 
         if ( pos % 64 == 0 && tilde_height < 3 * 64 )
         {

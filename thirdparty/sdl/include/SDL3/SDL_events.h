@@ -831,6 +831,7 @@ typedef struct SDL_PenProximityEvent
     SDL_WindowID windowID; /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
     SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event (added in 3.4.16). */
+    SDL_PenDeviceType device_type; /**< the device type of the pen, if known (added in 3.4.18). */
 } SDL_PenProximityEvent;
 
 /**
@@ -854,6 +855,7 @@ typedef struct SDL_PenMotionEvent
     SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event */
     float x;                /**< X coordinate, relative to window */
     float y;                /**< Y coordinate, relative to window */
+    SDL_PenDeviceType device_type; /**< the device type of the pen, if known (added in 3.4.18). */
 } SDL_PenMotionEvent;
 
 /**
@@ -876,6 +878,7 @@ typedef struct SDL_PenTouchEvent
     float y;                /**< Y coordinate, relative to window */
     bool eraser;        /**< true if eraser end is used (not all pens support this). */
     bool down;          /**< true if the pen is touching or false if the pen is lifted off */
+    SDL_PenDeviceType device_type; /**< the device type of the pen, if known (added in 3.4.18). */
 } SDL_PenTouchEvent;
 
 /**
@@ -898,6 +901,7 @@ typedef struct SDL_PenButtonEvent
     float y;                /**< Y coordinate, relative to window */
     Uint8 button;       /**< The pen button index (first button is 1). */
     bool down;      /**< true if the button is pressed */
+    SDL_PenDeviceType device_type; /**< the device type of the pen, if known (added in 3.4.18). */
 } SDL_PenButtonEvent;
 
 /**
@@ -920,6 +924,7 @@ typedef struct SDL_PenAxisEvent
     float y;                /**< Y coordinate, relative to window */
     SDL_PenAxis axis;       /**< Axis that has changed */
     float value;            /**< New value of axis */
+    SDL_PenDeviceType device_type; /**< the device type of the pen, if known (added in 3.4.18). */
 } SDL_PenAxisEvent;
 
 /**

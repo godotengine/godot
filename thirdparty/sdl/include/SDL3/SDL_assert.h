@@ -131,7 +131,12 @@ extern "C" {
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(__MINGW32__)
+    #include <_mingw.h>
+    #ifdef __MINGW64_VERSION_MAJOR
     #include <intrin.h>
+    #else
+    extern void __cdecl __debugbreak(void);
+    #endif
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(_MSC_VER) && defined(_M_IX86)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }

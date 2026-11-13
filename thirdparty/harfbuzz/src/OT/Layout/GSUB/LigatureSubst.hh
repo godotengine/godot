@@ -34,15 +34,15 @@ struct LigatureSubst
     }
   }
 
-  /* TODO This function is only used by small GIDs, and not updated to 24bit GIDs. Should
-   * be done by using iterators. While at it perhaps using iterator of arrays of hb_codepoint_t
-   * instead. */
+  /* TODO This function should be done using iterators. While at it perhaps
+   * using iterator of arrays of hb_codepoint_t instead. */
+  template <typename GlyphID>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> first_glyphs,
+                  hb_sorted_array_t<GlyphID> first_glyphs,
                   hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-                  hb_array_t<const HBGlyphID16> ligatures_list,
+                  hb_array_t<GlyphID> ligatures_list,
                   hb_array_t<const unsigned int> component_count_list,
-                  hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
+                  hb_array_t<GlyphID> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (u.format.v))) return_trace (false);

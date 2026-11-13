@@ -2878,22 +2878,25 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					importer_mesh->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
 
 					if (!lightmap_cache.is_empty()) {
-						if (r_lightmap_caches.is_empty()) {
-							r_lightmap_caches.push_back(lightmap_cache);
-						} else {
-							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
+						// MD5 is stored at the beginning of the cache data
+						const String new_md5 = String::md5(lightmap_cache.ptr());
 
-							for (int i = 0; i < r_lightmap_caches.size(); i++) {
-								String md5 = String::md5(r_lightmap_caches[i].ptr());
-								if (new_md5 < md5) {
-									r_lightmap_caches.insert(i, lightmap_cache);
-									break;
-								}
-
-								if (new_md5 == md5) {
-									break;
-								}
+						bool handled = false;
+						for (int i = 0; i < r_lightmap_caches.size(); i++) {
+							String md5 = String::md5(r_lightmap_caches[i].ptr());
+							if (new_md5 < md5) {
+								r_lightmap_caches.insert(i, lightmap_cache);
+								handled = true;
+								break;
 							}
+
+							if (new_md5 == md5) {
+								handled = true;
+								break;
+							}
+						}
+						if (!handled) {
+							r_lightmap_caches.push_back(lightmap_cache);
 						}
 					}
 				}

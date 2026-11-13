@@ -40,12 +40,12 @@ struct AnchorFormat3
     if ((font->x_ppem || font->has_nonzero_coords) && xDeviceTable.sanitize (&c->sanitizer, this))
     {
       hb_barrier ();
-      *x += (this+xDeviceTable).get_x_delta (font, c->var_store, c->var_store_cache);
+      *x += (this+xDeviceTable).get_x_delta_f (font, c->var_store, c->var_store_cache);
     }
     if ((font->y_ppem || font->has_nonzero_coords) && yDeviceTable.sanitize (&c->sanitizer, this))
     {
       hb_barrier ();
-      *y += (this+yDeviceTable).get_y_delta (font, c->var_store, c->var_store_cache);
+      *y += (this+yDeviceTable).get_y_delta_f (font, c->var_store, c->var_store_cache);
     }
   }
 

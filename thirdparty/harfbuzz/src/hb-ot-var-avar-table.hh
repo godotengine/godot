@@ -104,6 +104,11 @@ struct AxisValueMap
     from_coord = renormalizeValue ((double) from_coord, unmapped_range, triple_distances);
     to_coord = renormalizeValue ((double) to_coord, axis_range, triple_distances);
 
+    /* Malformed input can renormalize outside [-1,1], which would
+     * overflow F2DOT14. */
+    from_coord = hb_clamp (from_coord, -1.f, 1.f);
+    to_coord = hb_clamp (to_coord, -1.f, 1.f);
+
     coords[0].set_float (from_coord);
     coords[1].set_float (to_coord);
   }
@@ -252,7 +257,7 @@ struct SegmentMaps : Array16Of<AxisValueMap>
     float unmapped_middle = unmap_float (axis_range.middle);
     float unmapped_max = unmap_float (axis_range.maximum);
 
-    return Triple{(double) unmapped_min, (double) unmapped_middle, (double) unmapped_max};
+    return Triple{unmapped_min, unmapped_middle, unmapped_max};
   }
 
   bool subset (hb_subset_context_t *c, hb_tag_t axis_tag,
@@ -1020,9 +1025,9 @@ struct avar
            * Omitting that knot (as a plain two-tent encoding would) makes
            * interior coordinates wrong. */
           double z_old = _avar2_normalize_value ((double) old_def,
-                                                 new_user->minimum,
-                                                 new_user->middle,
-                                                 new_user->maximum);
+                                                 (double) new_user->minimum,
+                                                 (double) new_user->middle,
+                                                 (double) new_user->maximum);
           z_old = _avar2_map_new_mapping (new_mapping, z_old);
           z_old = (double) roundf ((float) (z_old * 16384.0)) / 16384.0;
           if (-1.0 < z_old && z_old < 1.0)
@@ -1045,9 +1050,9 @@ struct avar
             if (!(-1.0 < z && z < 1.0))
               continue;
             double user = _avar2_denormalize_value (from,
-                                                    new_user->minimum,
-                                                    new_user->middle,
-                                                    new_user->maximum);
+                                                    (double) new_user->minimum,
+                                                    (double) new_user->middle,
+                                                    (double) new_user->maximum);
             double n_old = _avar2_normalize_value (user, old_min, old_def, old_max);
             double x_old = (double) old_seg_maps[i]->map_float ((float) n_old);
             x_old = (double) roundf ((float) (x_old * 16384.0)) / 16384.0;
@@ -1066,17 +1071,17 @@ struct avar
            * steep retained segment that cannot be reproduced in F2Dot14). */
           unsigned err = _avar2_estimate_offset_error (*old_seg_maps[i], new_mapping,
                                                        old_min, old_def, old_max,
-                                                       new_user->minimum,
-                                                       new_user->middle,
-                                                       new_user->maximum,
+                                                       (double) new_user->minimum,
+                                                       (double) new_user->middle,
+                                                       (double) new_user->maximum,
                                                        knots);
           if (with_breakpoints.length != knots.length)
           {
             unsigned err_with = _avar2_estimate_offset_error (*old_seg_maps[i], new_mapping,
                                                               old_min, old_def, old_max,
-                                                              new_user->minimum,
-                                                              new_user->middle,
-                                                              new_user->maximum,
+                                                              (double) new_user->minimum,
+                                                              (double) new_user->middle,
+                                                              (double) new_user->maximum,
                                                               with_breakpoints);
             if (err_with <= err)
             {

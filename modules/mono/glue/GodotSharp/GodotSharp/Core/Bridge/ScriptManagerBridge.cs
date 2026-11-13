@@ -1095,13 +1095,33 @@ namespace Godot.Bridge
 
         private static void GetGodotClassTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
         {
-            var getGodotClassTrampolines = type.GetNestedType("GodotInternal",
-                    BindingFlags.DeclaredOnly | BindingFlags.Static |
-                    BindingFlags.NonPublic | BindingFlags.Public)
-                ?.GetMethod(
-                    "GetGodotClassTrampolines",
+            Type? godotInternalType;
+
+            if (type.IsGenericType)
+            {
+                var getGodotClassGodotInternalType = type.GetMethod("GetGodotClassGodotInternalType",
                     BindingFlags.DeclaredOnly | BindingFlags.Static |
                     BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (getGodotClassGodotInternalType == null)
+                    return;
+
+                godotInternalType = (Type?)getGodotClassGodotInternalType.Invoke(null, null);
+            }
+            else
+            {
+                godotInternalType = type.GetNestedType("GodotInternal",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+            }
+
+            if (godotInternalType == null)
+                return;
+
+            var getGodotClassTrampolines = godotInternalType.GetMethod(
+                "GetGodotClassTrampolines",
+                BindingFlags.DeclaredOnly | BindingFlags.Static |
+                BindingFlags.NonPublic | BindingFlags.Public);
 
             if (getGodotClassTrampolines == null)
                 return;
@@ -1123,6 +1143,7 @@ namespace Godot.Bridge
             public int Type;
             public int Hint;
             public int Usage;
+            public unsafe godot_string_name* ClassName; // Not owned
             public godot_bool Exported;
 
             public void Dispose()
@@ -1201,7 +1222,10 @@ namespace Godot.Bridge
                             Hint = (int)property.Hint,
                             HintString = Marshaling.ConvertStringToNative(property.HintString),
                             Usage = (int)property.Usage,
-                            Exported = property.Exported.ToGodotBool()
+                            ClassName = property.ClassName is not null
+                                ? property.ClassName.NativeValue.DangerousSelfRef.GetUnsafeAddress() // Not owned
+                                : null,
+                            Exported = property.Exported.ToGodotBool(),
                         };
 
                         interopProperties[i] = interopProperty;

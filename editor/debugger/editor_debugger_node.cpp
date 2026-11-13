@@ -492,8 +492,10 @@ void EditorDebuggerNode::_update_errors(bool p_force) {
 	int error_count = 0;
 	int warning_count = 0;
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		error_count += dbg->get_error_count();
-		warning_count += dbg->get_warning_count();
+		if (dbg->is_session_active()) {
+			error_count += dbg->get_error_count();
+			warning_count += dbg->get_warning_count();
+		}
 	});
 
 	if (p_force || error_count != last_error_count || warning_count != last_warning_count) {

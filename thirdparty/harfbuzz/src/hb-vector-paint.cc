@@ -722,9 +722,9 @@ hb_vector_paint_get_precision (const hb_vector_paint_t *paint)
  *
  * Discards accumulated paint output so @paint can be reused for
  * another render.  User configuration (transform, scale factors,
- * precision, foreground, palette, custom palette colors)
- * is preserved.  Call hb_vector_paint_reset() to also reset
- * user configuration to defaults.
+ * precision, foreground, background, palette, custom palette colors,
+ * SVG id prefix, and budget) is preserved.  Call hb_vector_paint_reset()
+ * to also reset user configuration to defaults.
  *
  * Since: 14.2.0
  */
@@ -744,7 +744,7 @@ hb_vector_paint_clear (hb_vector_paint_t *paint)
   paint->transform_group_overflow_depth = 0;
   paint->clip_rect_counter = 0;
   paint->clip_path_counter = 0;
-  paint->work_left = HB_VECTOR_MAX_PAINT_WORK;
+  paint->recharge_budget ();
   paint->gradient_counter = 0;
   paint->color_glyph_depth = 0;
   paint->path_def_count = 0;
@@ -759,6 +759,8 @@ hb_vector_paint_clear (hb_vector_paint_t *paint)
  * @paint: a paint context.
  *
  * Renders accumulated paint content to an output blob.
+ * Accumulated content and extents are cleared on return, including
+ * when rendering fails. User configuration is preserved.
  *
  * Return value: (transfer full) (nullable): output blob, or `NULL` if rendering cannot proceed.
  *
@@ -767,6 +769,7 @@ hb_vector_paint_clear (hb_vector_paint_t *paint)
 hb_blob_t *
 hb_vector_paint_render (hb_vector_paint_t *paint)
 {
+  HB_SCOPE_GUARD (hb_vector_paint_clear (paint));
   switch (paint->format)
   {
     case HB_VECTOR_FORMAT_SVG:
@@ -784,7 +787,8 @@ hb_vector_paint_render (hb_vector_paint_t *paint)
  * hb_vector_paint_reset:
  * @paint: a paint context.
  *
- * Resets @paint state and clears accumulated content.
+ * Restores user configuration to defaults and clears accumulated content.
+ * The output format and attached user data are preserved.
  *
  * Since: 13.0.0
  */
@@ -795,17 +799,25 @@ hb_vector_paint_reset (hb_vector_paint_t *paint)
   paint->x_scale_factor = 1.f;
   paint->y_scale_factor = 1.f;
   paint->foreground = HB_COLOR (0, 0, 0, 255);
+  paint->background = HB_COLOR (0, 0, 0, 0);
   paint->palette = 0;
+  hb_vector_paint_set_svg_prefix (paint, nullptr);
+  hb_vector_paint_clear_custom_palette_colors (paint);
   paint->set_precision (2);
+  paint->budget = HB_BUDGET_DEFAULT;
   hb_vector_paint_clear (paint);
 }
 
 /**
  * hb_vector_paint_recycle_blob:
  * @paint: a paint context.
- * @blob: (nullable): previously rendered blob to recycle.
+ * @blob: (transfer full) (nullable): previously rendered blob to recycle.
  *
  * Provides a blob for internal buffer reuse by later render calls.
+ * The caller transfers ownership of one reference to @paint and must
+ * not destroy that reference after this call. Finish accessing @blob
+ * and its data before recycling: later renders may reuse the blob
+ * and overwrite its data.
  *
  * Since: 13.0.0
  */

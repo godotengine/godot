@@ -45,6 +45,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/inspector/editor_inspector.h"
@@ -502,6 +503,9 @@ void ProjectManager::_show_quick_settings() {
 	if (!EditorPropertyNameProcessor::get_singleton()) {
 		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 		add_child(epnp);
+
+		EditorIconManager *icon_manager = memnew(EditorIconManager);
+		add_child(icon_manager);
 
 		EditorHelp::generate_doc();
 	}
@@ -1280,9 +1284,6 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		bool keycode_handled = true;
 
 		switch (k->get_keycode()) {
-			case Key::ENTER: {
-				_open_selected_projects_check_recovery_mode();
-			} break;
 			case Key::HOME: {
 				if (project_list->get_project_count() > 0) {
 					project_list->ensure_project_visible(0);
@@ -1564,7 +1565,7 @@ ProjectManager::ProjectManager() {
 
 		HBoxContainer *left_hbox = memnew(HBoxContainer);
 		left_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
-		left_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		left_hbox->set_h_size_flags(Control::SIZE_FILL);
 		left_hbox->set_stretch_ratio(1.0);
 		title_bar->add_child(left_hbox);
 
@@ -1598,6 +1599,7 @@ ProjectManager::ProjectManager() {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
 			left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			title_bar->add_child(left_spacer);
 		}
 
@@ -1612,6 +1614,7 @@ ProjectManager::ProjectManager() {
 			// Spacer to center main toggles.
 			right_spacer = memnew(Control);
 			right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			title_bar->add_child(right_spacer);
 		}
 
@@ -1619,7 +1622,7 @@ ProjectManager::ProjectManager() {
 
 		HBoxContainer *right_hbox = memnew(HBoxContainer);
 		right_hbox->set_alignment(BoxContainer::ALIGNMENT_END);
-		right_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		right_hbox->set_h_size_flags(Control::SIZE_FILL);
 		right_hbox->set_stretch_ratio(1.0);
 		title_bar->add_child(right_hbox);
 

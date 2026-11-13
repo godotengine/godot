@@ -280,7 +280,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 #ifdef MODULE_GLSLANG_ENABLED
 		case ShaderLanguage::SHADER_LANGUAGE_GLSL: {
 			ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
-			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
+			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version(p_stage);
 			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
 		}
 #endif
@@ -1646,6 +1646,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	}
 
 	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
+	ERR_FAIL_COND_V_MSG(format.samples > TEXTURE_SAMPLES_1 && format.texture_type != TEXTURE_TYPE_2D && format.texture_type != TEXTURE_TYPE_2D_ARRAY, RID(),
+			"Multisample textures must be 2D or 2D array.");
 
 	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
 
@@ -1763,6 +1765,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 
 	Texture texture;
 	format.usage_bits |= forced_usage_bits;
+	format.samples = driver->texture_get_nearest_supported_samples(format);
 	texture.driver_id = driver->texture_create(format, tv);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 	texture.type = format.texture_type;
@@ -2106,11 +2109,7 @@ static _ALWAYS_INLINE_ void _copy_region(const uint8_t *__restrict p_src, uint8_
 	for (uint32_t y = p_src_h; y > 0; y--) {
 		const uint8_t *__restrict src = p_src + src_offset;
 		uint8_t *__restrict dst = p_dst + dst_offset;
-		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
-			*dst = *src;
-			src++;
-			dst++;
-		}
+		memcpy(dst, src, size_t(p_src_w) * p_unit_size);
 		src_offset += p_src_full_w * p_unit_size;
 		dst_offset += p_dst_pitch;
 	}
@@ -2978,6 +2977,12 @@ bool RenderingDevice::texture_is_valid(RID p_texture) {
 	ERR_RENDER_THREAD_GUARD_V(false);
 
 	return texture_owner.owns(p_texture);
+}
+
+RD::TextureSamples RenderingDevice::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	ERR_RENDER_THREAD_GUARD_V(TEXTURE_SAMPLES_1);
+
+	return driver->texture_get_nearest_supported_samples(p_format);
 }
 
 RD::TextureFormat RenderingDevice::texture_get_format(RID p_texture) {
@@ -6818,23 +6823,30 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
 		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
-		switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
-				first_invalid_set = 0;
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
-				for (uint32_t i = 0; i < pcount; i++) {
-					if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
-						first_invalid_set = i;
-						break;
-					}
-				}
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
-				if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+		if (pipeline->push_constant_size != compute_list.state.pipeline_push_constant_size) {
+			// All sets must be invalidated as the pipeline layout is not compatible if the push constant range is different.
+			compute_list.state.pipeline_push_constant_size = pipeline->push_constant_size;
+			compute_list.state.push_constant_size = 0;
+			first_invalid_set = 0;
+		} else {
+			switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
 					first_invalid_set = 0;
-				}
-			} break;
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
+					for (uint32_t i = 0; i < pcount; i++) {
+						if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
+							first_invalid_set = i;
+							break;
+						}
+					}
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
+					if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+						first_invalid_set = 0;
+					}
+				} break;
+			}
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
@@ -9334,6 +9346,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture"), &RenderingDevice::texture_resolve_multisample);
 
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingDevice::_texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_nearest_supported_samples", "format"), &RenderingDevice::_texture_get_nearest_supported_samples);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture"), &RenderingDevice::texture_get_native_handle);
 #endif
@@ -10171,6 +10184,11 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type, p_layers);
+}
+
+RD::TextureSamples RenderingDevice::_texture_get_nearest_supported_samples(const Ref<RDTextureFormat> &p_format) {
+	ERR_FAIL_COND_V(p_format.is_null(), TEXTURE_SAMPLES_1);
+	return texture_get_nearest_supported_samples(p_format->base);
 }
 
 Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {

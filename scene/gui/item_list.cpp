@@ -962,20 +962,20 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
+					const String search_lower = search_string.to_lower();
 					for (int i = current - 1; i >= 0; i--) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.to_lower().begins_with(search_lower)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
 								emit_signal(SceneStringName(item_selected), current);
 							}
-
-							break;
+							accept_event();
+							return;
 						}
 					}
-					accept_event();
-					return;
 				}
+				search_string = ""; // No more matches, navigate normally.
 			}
 
 			if (current >= current_columns) {
@@ -1010,19 +1010,20 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				uint64_t diff = now - search_time_msec;
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
+					const String search_lower = search_string.to_lower();
 					for (int i = current + 1; i < items.size(); i++) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_SELECT(i) && items[i].text.to_lower().begins_with(search_lower)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
 								emit_signal(SceneStringName(item_selected), current);
 							}
-							break;
+							accept_event();
+							return;
 						}
 					}
-					accept_event();
-					return;
 				}
+				search_string = ""; // No more matches, navigate normally.
 			}
 
 			if (current < items.size() - current_columns) {
@@ -1515,7 +1516,7 @@ void ItemList::_notification(int p_what) {
 					}
 
 					const int y = base_ofs.y + separators[i];
-					if (rtl && scroll_bar_v->is_visible()) {
+					if (rtl) {
 						draw_line(Vector2(size.width - theme_cache.panel_style->get_margin(SIDE_LEFT) - width, y), Vector2(size.width - theme_cache.panel_style->get_margin(SIDE_LEFT), y), theme_cache.guide_color);
 					} else {
 						draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width + theme_cache.panel_style->get_margin(SIDE_LEFT), y), theme_cache.guide_color);
@@ -1708,6 +1709,7 @@ void ItemList::_notification(int p_what) {
 						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
 						if (wraparound_items && text_w + text_ofs.x > width) {
 							text_w = width - text_ofs.x;
+							text_w = MAX(1, text_w);
 						}
 						items.write[i].text_buf->set_width(text_w);
 
@@ -1735,6 +1737,7 @@ void ItemList::_notification(int p_what) {
 						float text_w = items[i].rect_cache.size.width - text_width_ofs;
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
+							text_w = MAX(1, text_w);
 						}
 						items.write[i].text_buf->set_width(text_w);
 
@@ -2044,7 +2047,7 @@ int ItemList::_get_available_item_width() const {
 			}
 		}
 	} else {
-		width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
+		width -= MAX(0, theme_cache.scrollbar_margin_right - theme_cache.panel_style->get_margin(SIDE_RIGHT));
 	}
 
 	return width;

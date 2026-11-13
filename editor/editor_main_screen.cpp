@@ -119,10 +119,12 @@ Rect2 EditorMainScreen::get_drag_hint_rect() const {
 	const Rect2 tab_rect = get_internal_container()->get_global_rect();
 	const Rect2 content_rect = get_global_rect();
 	Rect2 final_rect = tab_rect.merge(content_rect);
-	float tab_x = get_tab_bar()->get_global_transform().xform(get_tab_bar()->get_tab_rect(0).position).x;
-	final_rect.position.x = MIN(tab_x, content_rect.position.x);
-	tab_x = get_tab_bar()->get_global_transform().xform(get_tab_bar()->get_tab_rect(-1).get_end()).x;
-	final_rect.set_end(Vector2(MAX(tab_x, content_rect.get_end().x), final_rect.get_end().y));
+	if (get_tab_count() > 0) {
+		float tab_x = get_tab_bar()->get_global_transform().xform(get_tab_bar()->get_tab_rect(0).position).x;
+		final_rect.position.x = MIN(tab_x, content_rect.position.x);
+		tab_x = get_tab_bar()->get_global_transform().xform(get_tab_bar()->get_tab_rect(-1).get_end()).x;
+		final_rect.set_end(Vector2(MAX(tab_x, content_rect.get_end().x), final_rect.get_end().y));
+	}
 	return final_rect;
 }
 

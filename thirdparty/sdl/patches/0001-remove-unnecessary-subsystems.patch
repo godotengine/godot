@@ -1,8 +1,21 @@
 diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index 3e61b8ad4a..d8e845057a 100644
+index 8354bd5de7..d62adb9b1e 100644
 --- a/thirdparty/sdl/SDL.c
 +++ b/thirdparty/sdl/SDL.c
-@@ -44,23 +44,23 @@
+@@ -30,9 +30,9 @@
+ // this checks for HAVE_DBUS_DBUS_H internally.
+ #include "core/linux/SDL_dbus.h"
+ 
+-#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
+-#include "core/unix/SDL_gtk.h"
+-#endif
++// #if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
++// #include "core/unix/SDL_gtk.h"
++// #endif
+ 
+ #ifdef SDL_PLATFORM_EMSCRIPTEN
+ #include <emscripten.h>
+@@ -44,23 +44,25 @@
  #include "SDL_hints_c.h"
  #include "SDL_log_c.h"
  #include "SDL_properties_c.h"
@@ -25,36 +38,50 @@ index 3e61b8ad4a..d8e845057a 100644
 -#include "video/SDL_pixels_c.h"
 -#include "video/SDL_surface_c.h"
 -#include "video/SDL_video_c.h"
--#include "filesystem/SDL_filesystem_c.h"
--#include "io/SDL_asyncio_c.h"
 +// #include "tray/SDL_tray_utils.h"
 +// #include "video/SDL_pixels_c.h"
 +// #include "video/SDL_surface_c.h"
 +// #include "video/SDL_video_c.h"
-+// #include "filesystem/SDL_filesystem_c.h"
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+ #include "filesystem/SDL_filesystem_c.h"
+-#include "io/SDL_asyncio_c.h"
++#endif
 +// #include "io/SDL_asyncio_c.h"
  #ifdef SDL_PLATFORM_ANDROID
  #include "core/android/SDL_android.h"
  #endif
-@@ -301,7 +301,7 @@ void SDL_InitMainThread(void)
+@@ -173,7 +175,7 @@ const char *SDL_GetAppMetadataProperty(const char *name)
+     }
+     if (!value || !*value) {
+         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
+-            value = SDL_GetExeName();
++            // value = SDL_GetExeName();
+             if (!value) {
+                 value = "SDL Application";
+             }
+@@ -300,8 +302,10 @@ void SDL_InitMainThread(void)
+ 
      SDL_InitTLSData();
      SDL_InitEnvironment();
-     SDL_InitTicks();
--    SDL_InitFilesystem();
-+    // SDL_InitFilesystem();
+-    SDL_InitTicks();
++	SDL_InitTicks();
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+     SDL_InitFilesystem();
++#endif
  
      if (!done_info) {
          const char *value;
-@@ -320,7 +320,7 @@ void SDL_InitMainThread(void)
+@@ -320,7 +324,9 @@ void SDL_InitMainThread(void)
  
  static void SDL_QuitMainThread(void)
  {
--    SDL_QuitFilesystem();
-+    // SDL_QuitFilesystem();
++#ifndef SDL_FILESYSTEM_DUMMY // Godot change
+     SDL_QuitFilesystem();
++#endif
      SDL_QuitTicks();
      SDL_QuitEnvironment();
      SDL_QuitTLSData();
-@@ -711,7 +711,7 @@ void SDL_Quit(void)
+@@ -711,7 +717,7 @@ void SDL_Quit(void)
      SDL_HelperWindowDestroy();
  #endif
      SDL_QuitSubSystem(SDL_ALL_SUBSYSTEM_FLAGS);
@@ -63,7 +90,7 @@ index 3e61b8ad4a..d8e845057a 100644
  
  #ifdef SDL_USE_LIBDBUS
      SDL_DBus_Quit();
-@@ -722,14 +722,14 @@ void SDL_Quit(void)
+@@ -722,14 +728,14 @@ void SDL_Quit(void)
  #endif
  
      SDL_QuitTimers();
@@ -377,8 +404,196 @@ index fa43ee6c57..711fe68881 100644
      SDL_free(item->touchscreen_data->slots);
      SDL_free(item->touchscreen_data->name);
      SDL_free(item->touchscreen_data);
+diff --git a/thirdparty/sdl/core/unix/SDL_appid.c b/thirdparty/sdl/core/unix/SDL_appid.c
+index 95c5dc1a6b..fd0037eb7e 100644
+--- a/thirdparty/sdl/core/unix/SDL_appid.c
++++ b/thirdparty/sdl/core/unix/SDL_appid.c
+@@ -30,7 +30,7 @@ const char *SDL_GetAppID(void)
+ 
+     if (!id_str) {
+         // If the hint isn't set, try to use the application's executable name
+-        id_str = SDL_GetExeName();
++        // id_str = SDL_GetExeName();
+     }
+ 
+     if (!id_str) {
+diff --git a/thirdparty/sdl/core/windows/SDL_windows.c b/thirdparty/sdl/core/windows/SDL_windows.c
+index 1e9e6bba97..ed5da3daf3 100644
+--- a/thirdparty/sdl/core/windows/SDL_windows.c
++++ b/thirdparty/sdl/core/windows/SDL_windows.c
+@@ -24,7 +24,7 @@
+ 
+ #include "SDL_windows.h"
+ 
+-#include "../../video/SDL_surface_c.h"
++// #include "../../video/SDL_surface_c.h"
+ 
+ #include <shellapi.h> // CommandLineToArgvW()
+ 
+@@ -534,7 +534,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
+     if (ShouldAppsUseDarkModeFunc) {
+         value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
+     } else {
+-        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
++        // value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
+     }
+     FreeLibrary(uxtheme);
+     if (!IsWindowsBuildVersionAtLeast(18362)) {
+@@ -552,79 +552,79 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
+ #endif
+ }
+ 
+-HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
+-{
+-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+-    SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+-    if (!s) {
+-        return NULL;
+-    }
+-
+-    /* The dimensions will be needed after s is freed */
+-    const int width = s->w;
+-    const int height = s->h;
+-
+-    BITMAPINFO bmpInfo;
+-    SDL_zero(bmpInfo);
+-    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+-    bmpInfo.bmiHeader.biWidth = width;
+-    bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
+-    bmpInfo.bmiHeader.biPlanes = 1;
+-    bmpInfo.bmiHeader.biBitCount = 32;
+-    bmpInfo.bmiHeader.biCompression = BI_RGB;
+-
+-    HDC hdc = GetDC(NULL);
+-    void *pBits = NULL;
+-    HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
+-    if (!hBitmap) {
+-        ReleaseDC(NULL, hdc);
+-        SDL_DestroySurface(s);
+-        return NULL;
+-    }
+-
+-    SDL_memcpy(pBits, s->pixels, width * height * 4);
+-
+-    SDL_DestroySurface(s);
+-
+-    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
+-    if (!hMask) {
+-        DeleteObject(hBitmap);
+-        ReleaseDC(NULL, hdc);
+-        return NULL;
+-    }
+-
+-    HDC hdcMem = CreateCompatibleDC(hdc);
+-    HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
+-
+-    for (int y = 0; y < height; y++) {
+-        for (int x = 0; x < width; x++) {
+-            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
+-            BYTE alpha = pixel[3];
+-            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
+-            SetPixel(hdcMem, x, y, maskColor);
+-        }
+-    }
+-
+-    ICONINFO iconInfo;
+-    iconInfo.fIcon = TRUE;
+-    iconInfo.xHotspot = 0;
+-    iconInfo.yHotspot = 0;
+-    iconInfo.hbmMask = hMask;
+-    iconInfo.hbmColor = hBitmap;
+-
+-    HICON hIcon = CreateIconIndirect(&iconInfo);
+-
+-    SelectObject(hdcMem, oldBitmap);
+-    DeleteDC(hdcMem);
+-    DeleteObject(hBitmap);
+-    DeleteObject(hMask);
+-    ReleaseDC(NULL, hdc);
+-
+-    return hIcon;
+-#else
+-    return NULL;
+-#endif
+-}
++// HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
++// {
++// #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
++//     SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
++//     if (!s) {
++//         return NULL;
++//     }
++
++//     /* The dimensions will be needed after s is freed */
++//     const int width = s->w;
++//     const int height = s->h;
++
++//     BITMAPINFO bmpInfo;
++//     SDL_zero(bmpInfo);
++//     bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
++//     bmpInfo.bmiHeader.biWidth = width;
++//     bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
++//     bmpInfo.bmiHeader.biPlanes = 1;
++//     bmpInfo.bmiHeader.biBitCount = 32;
++//     bmpInfo.bmiHeader.biCompression = BI_RGB;
++
++//     HDC hdc = GetDC(NULL);
++//     void *pBits = NULL;
++//     HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
++//     if (!hBitmap) {
++//         ReleaseDC(NULL, hdc);
++//         SDL_DestroySurface(s);
++//         return NULL;
++//     }
++
++//     SDL_memcpy(pBits, s->pixels, width * height * 4);
++
++//     SDL_DestroySurface(s);
++
++//     HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
++//     if (!hMask) {
++//         DeleteObject(hBitmap);
++//         ReleaseDC(NULL, hdc);
++//         return NULL;
++//     }
++
++//     HDC hdcMem = CreateCompatibleDC(hdc);
++//     HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
++
++//    for (int y = 0; y < height; y++) {
++//        for (int x = 0; x < width; x++) {
++//            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
++//            BYTE alpha = pixel[3];
++//            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
++//            SetPixel(hdcMem, x, y, maskColor);
++//        }
++//    }
++
++//     ICONINFO iconInfo;
++//     iconInfo.fIcon = TRUE;
++//     iconInfo.xHotspot = 0;
++//     iconInfo.yHotspot = 0;
++//     iconInfo.hbmMask = hMask;
++//     iconInfo.hbmColor = hBitmap;
++
++//     HICON hIcon = CreateIconIndirect(&iconInfo);
++
++//     SelectObject(hdcMem, oldBitmap);
++//     DeleteDC(hdcMem);
++//     DeleteObject(hBitmap);
++//     DeleteObject(hMask);
++//     ReleaseDC(NULL, hdc);
++
++//     return hIcon;
++// #else
++//     return NULL;
++// #endif
++// }
+ 
+ // Some GUIDs we need to know without linking to libraries that aren't available before Vista.
+ /* *INDENT-OFF* */ // clang-format off
 diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
-index 06f1053cf6..43e75e1c36 100644
+index 06f1053cf6..2b17e6c247 100644
 --- a/thirdparty/sdl/events/SDL_events.c
 +++ b/thirdparty/sdl/events/SDL_events.c
 @@ -24,10 +24,10 @@
@@ -395,7 +610,7 @@ index 06f1053cf6..43e75e1c36 100644
  #include "../timer/SDL_timer_c.h"
  #include "../core/linux/SDL_udev.h"
  #ifndef SDL_JOYSTICK_DISABLED
-@@ -39,7 +39,7 @@
+@@ -39,16 +39,16 @@
  #ifdef HAVE_DBUS_DBUS_H
  #include "core/linux/SDL_dbus.h"
  #endif
@@ -404,6 +619,18 @@ index 06f1053cf6..43e75e1c36 100644
  
  #ifdef SDL_PLATFORM_ANDROID
  #include "../core/android/SDL_android.h"
+ #include "../video/android/SDL_androidevents.h"
+ #endif
+ 
+-#ifdef SDL_PLATFORM_UNIX
+-#include "../tray/SDL_tray_utils.h"
+-#endif
++// #ifdef SDL_PLATFORM_UNIX
++// #include "../tray/SDL_tray_utils.h"
++// #endif
+ 
+ // An arbitrary limit so we don't have unbounded growth
+ #define SDL_MAX_QUEUED_EVENTS 65535
 @@ -989,7 +989,7 @@ void SDL_StopEventLoop(void)
      }
  
@@ -451,9 +678,15 @@ index 06f1053cf6..43e75e1c36 100644
  #endif
  }
  
-@@ -1488,9 +1488,9 @@ void SDL_PumpEventMaintenance(void)
+@@ -1484,13 +1484,13 @@ void SDL_PumpEventMaintenance(void)
+     }
+ #endif
  
-     SDL_UpdateCursorAnimation();
+-    SDL_SendPendingPenProximity();
++    // SDL_SendPendingPenProximity();
+ 
+-    SDL_UpdateCursorAnimation();
++    // SDL_UpdateCursorAnimation();
  
 -    SDL_UpdateTrays();
 +    // SDL_UpdateTrays();
@@ -809,7 +1042,7 @@ index 377b04ec17..8bd09458c1 100644
  // Start and stop the event processing loop
  extern bool SDL_StartEventLoop(void);
 diff --git a/thirdparty/sdl/include/SDL3/SDL.h b/thirdparty/sdl/include/SDL3/SDL.h
-index 51848b51be..d9055809c4 100644
+index 0ba8cb73f4..220ca022ce 100644
 --- a/thirdparty/sdl/include/SDL3/SDL.h
 +++ b/thirdparty/sdl/include/SDL3/SDL.h
 @@ -48,7 +48,7 @@
@@ -829,287 +1062,6 @@ index 51848b51be..d9055809c4 100644
 +// #include <SDL3/SDL_oldnames.h>
  
  #endif /* SDL_h_ */
-diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
-index ccf6572f50..cf08c30b86 100644
---- a/thirdparty/sdl/joystick/SDL_joystick.c
-+++ b/thirdparty/sdl/joystick/SDL_joystick.c
-@@ -29,7 +29,7 @@
- #include "SDL_steam_virtual_gamepad.h"
- 
- #include "../events/SDL_events_c.h"
--#include "../video/SDL_sysvideo.h"
-+// #include "../video/SDL_sysvideo.h"
- #include "../sensor/SDL_sensor_c.h"
- #include "hidapi/SDL_hidapijoystick_c.h"
- 
-@@ -1239,7 +1239,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
-        When a phone is being used as a gamepad, its orientation changes,
-        so adjust sensor axes to match.
-      */
--    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
-+    // if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
-+    if (true) {
-         /* When a device in landscape orientation is laid flat, the axes change
-            orientation as follows:
-             -X to +X becomes -X to +X
-@@ -2309,10 +2310,10 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
-         return false;
-     }
- 
--    if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
--        // We have windows but we don't have focus, ignore the event.
--        return true;
--    }
-+    // if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
-+    //     // We have windows but we don't have focus, ignore the event.
-+    //     return true;
-+    // }
-     return false;
- }
- 
-diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index d8e845057a..41216d3fd7 100644
---- a/thirdparty/sdl/SDL.c
-+++ b/thirdparty/sdl/SDL.c
-@@ -30,9 +30,9 @@
- // this checks for HAVE_DBUS_DBUS_H internally.
- #include "core/linux/SDL_dbus.h"
- 
--#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
--#include "core/unix/SDL_gtk.h"
--#endif
-+// #if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
-+// #include "core/unix/SDL_gtk.h"
-+// #endif
- 
- #ifdef SDL_PLATFORM_EMSCRIPTEN
- #include <emscripten.h>
-@@ -173,7 +173,7 @@ const char *SDL_GetAppMetadataProperty(const char *name)
-     }
-     if (!value || !*value) {
-         if (SDL_strcmp(name, SDL_PROP_APP_METADATA_NAME_STRING) == 0) {
--            value = SDL_GetExeName();
-+            // value = SDL_GetExeName();
-             if (!value) {
-                 value = "SDL Application";
-             }
-diff --git a/thirdparty/sdl/core/unix/SDL_appid.c b/thirdparty/sdl/core/unix/SDL_appid.c
-index 95c5dc1a6b..fd0037eb7e 100644
---- a/thirdparty/sdl/core/unix/SDL_appid.c
-+++ b/thirdparty/sdl/core/unix/SDL_appid.c
-@@ -30,7 +30,7 @@ const char *SDL_GetAppID(void)
- 
-     if (!id_str) {
-         // If the hint isn't set, try to use the application's executable name
--        id_str = SDL_GetExeName();
-+        // id_str = SDL_GetExeName();
-     }
- 
-     if (!id_str) {
-diff --git a/thirdparty/sdl/core/windows/SDL_windows.c b/thirdparty/sdl/core/windows/SDL_windows.c
-index b8b27e5ced..c7924bf934 100644
---- a/thirdparty/sdl/core/windows/SDL_windows.c
-+++ b/thirdparty/sdl/core/windows/SDL_windows.c
-@@ -24,7 +24,7 @@
- 
- #include "SDL_windows.h"
- 
--#include "../../video/SDL_surface_c.h"
-+// #include "../../video/SDL_surface_c.h"
- 
- #include <shellapi.h> // CommandLineToArgvW()
- 
-@@ -534,7 +534,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
-     if (ShouldAppsUseDarkModeFunc) {
-         value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
-     } else {
--        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-+        // value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-     }
-     FreeLibrary(uxtheme);
-     if (!IsWindowsBuildVersionAtLeast(18362)) {
-@@ -552,79 +552,79 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
- #endif
- }
- 
--HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
--{
--#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
--    SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
--    if (!s) {
--        return NULL;
--    }
--
--    /* The dimensions will be needed after s is freed */
--    const int width = s->w;
--    const int height = s->h;
--
--    BITMAPINFO bmpInfo;
--    SDL_zero(bmpInfo);
--    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
--    bmpInfo.bmiHeader.biWidth = width;
--    bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
--    bmpInfo.bmiHeader.biPlanes = 1;
--    bmpInfo.bmiHeader.biBitCount = 32;
--    bmpInfo.bmiHeader.biCompression = BI_RGB;
--
--    HDC hdc = GetDC(NULL);
--    void *pBits = NULL;
--    HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
--    if (!hBitmap) {
--        ReleaseDC(NULL, hdc);
--        SDL_DestroySurface(s);
--        return NULL;
--    }
--
--    SDL_memcpy(pBits, s->pixels, width * height * 4);
--
--    SDL_DestroySurface(s);
--
--    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
--    if (!hMask) {
--        DeleteObject(hBitmap);
--        ReleaseDC(NULL, hdc);
--        return NULL;
--    }
--
--    HDC hdcMem = CreateCompatibleDC(hdc);
--    HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
--
--    for (int y = 0; y < height; y++) {
--        for (int x = 0; x < width; x++) {
--            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
--            BYTE alpha = pixel[3];
--            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
--            SetPixel(hdcMem, x, y, maskColor);
--        }
--    }
--
--    ICONINFO iconInfo;
--    iconInfo.fIcon = TRUE;
--    iconInfo.xHotspot = 0;
--    iconInfo.yHotspot = 0;
--    iconInfo.hbmMask = hMask;
--    iconInfo.hbmColor = hBitmap;
--
--    HICON hIcon = CreateIconIndirect(&iconInfo);
--
--    SelectObject(hdcMem, oldBitmap);
--    DeleteDC(hdcMem);
--    DeleteObject(hBitmap);
--    DeleteObject(hMask);
--    ReleaseDC(NULL, hdc);
--
--    return hIcon;
--#else
--    return NULL;
--#endif
--}
-+// HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
-+// {
-+// #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-+//     SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
-+//     if (!s) {
-+//         return NULL;
-+//     }
-+
-+//     /* The dimensions will be needed after s is freed */
-+//     const int width = s->w;
-+//     const int height = s->h;
-+
-+//     BITMAPINFO bmpInfo;
-+//     SDL_zero(bmpInfo);
-+//     bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-+//     bmpInfo.bmiHeader.biWidth = width;
-+//     bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
-+//     bmpInfo.bmiHeader.biPlanes = 1;
-+//     bmpInfo.bmiHeader.biBitCount = 32;
-+//     bmpInfo.bmiHeader.biCompression = BI_RGB;
-+
-+//     HDC hdc = GetDC(NULL);
-+//     void *pBits = NULL;
-+//     HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
-+//     if (!hBitmap) {
-+//         ReleaseDC(NULL, hdc);
-+//         SDL_DestroySurface(s);
-+//         return NULL;
-+//     }
-+
-+//     SDL_memcpy(pBits, s->pixels, width * height * 4);
-+
-+//     SDL_DestroySurface(s);
-+
-+//     HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
-+//     if (!hMask) {
-+//         DeleteObject(hBitmap);
-+//         ReleaseDC(NULL, hdc);
-+//         return NULL;
-+//     }
-+
-+//     HDC hdcMem = CreateCompatibleDC(hdc);
-+//     HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
-+
-+//    for (int y = 0; y < height; y++) {
-+//        for (int x = 0; x < width; x++) {
-+//            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
-+//            BYTE alpha = pixel[3];
-+//            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
-+//            SetPixel(hdcMem, x, y, maskColor);
-+//        }
-+//    }
-+
-+//     ICONINFO iconInfo;
-+//     iconInfo.fIcon = TRUE;
-+//     iconInfo.xHotspot = 0;
-+//     iconInfo.yHotspot = 0;
-+//     iconInfo.hbmMask = hMask;
-+//     iconInfo.hbmColor = hBitmap;
-+
-+//     HICON hIcon = CreateIconIndirect(&iconInfo);
-+
-+//     SelectObject(hdcMem, oldBitmap);
-+//     DeleteDC(hdcMem);
-+//     DeleteObject(hBitmap);
-+//     DeleteObject(hMask);
-+//     ReleaseDC(NULL, hdc);
-+
-+//     return hIcon;
-+// #else
-+//     return NULL;
-+// #endif
-+// }
- 
- // Some GUIDs we need to know without linking to libraries that aren't available before Vista.
- /* *INDENT-OFF* */ // clang-format off
-diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
-index 43e75e1c36..2b17e6c247 100644
---- a/thirdparty/sdl/events/SDL_events.c
-+++ b/thirdparty/sdl/events/SDL_events.c
-@@ -46,9 +46,9 @@
- #include "../video/android/SDL_androidevents.h"
- #endif
- 
--#ifdef SDL_PLATFORM_UNIX
--#include "../tray/SDL_tray_utils.h"
--#endif
-+// #ifdef SDL_PLATFORM_UNIX
-+// #include "../tray/SDL_tray_utils.h"
-+// #endif
- 
- // An arbitrary limit so we don't have unbounded growth
- #define SDL_MAX_QUEUED_EVENTS 65535
-@@ -1484,9 +1484,9 @@ void SDL_PumpEventMaintenance(void)
-     }
- #endif
- 
--    SDL_SendPendingPenProximity();
-+    // SDL_SendPendingPenProximity();
- 
--    SDL_UpdateCursorAnimation();
-+    // SDL_UpdateCursorAnimation();
- 
-     // SDL_UpdateTrays();
- 
 diff --git a/thirdparty/sdl/include/SDL3/SDL_render.h b/thirdparty/sdl/include/SDL3/SDL_render.h
 index a4ea58025e..14d3790808 100644
 --- a/thirdparty/sdl/include/SDL3/SDL_render.h
@@ -1162,8 +1114,46 @@ index a4ea58025e..14d3790808 100644
  
      SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
  } SDL_GPURenderStateCreateInfo;
+diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
+index 3ee5c218d6..ebfcef5b4f 100644
+--- a/thirdparty/sdl/joystick/SDL_joystick.c
++++ b/thirdparty/sdl/joystick/SDL_joystick.c
+@@ -29,7 +29,7 @@
+ #include "SDL_steam_virtual_gamepad.h"
+ 
+ #include "../events/SDL_events_c.h"
+-#include "../video/SDL_sysvideo.h"
++// #include "../video/SDL_sysvideo.h"
+ #include "../sensor/SDL_sensor_c.h"
+ #include "hidapi/SDL_hidapijoystick_c.h"
+ 
+@@ -1240,7 +1240,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+        When a phone is being used as a gamepad, its orientation changes,
+        so adjust sensor axes to match.
+      */
+-    if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    // if (SDL_GetNaturalDisplayOrientation(SDL_GetPrimaryDisplay()) == SDL_ORIENTATION_LANDSCAPE) {
++    if (true) {
+         /* When a device in landscape orientation is laid flat, the axes change
+            orientation as follows:
+             -X to +X becomes -X to +X
+@@ -2310,10 +2311,10 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+         return false;
+     }
+ 
+-    if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
+-        // We have windows but we don't have focus, ignore the event.
+-        return true;
+-    }
++    // if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
++    //     // We have windows but we don't have focus, ignore the event.
++    //     return true;
++    // }
+     return false;
+ }
+ 
 diff --git a/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c b/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
-index 7d1ef1a890..23deb54a75 100644
+index 1613ff4abd..a81af29de4 100644
 --- a/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
 +++ b/thirdparty/sdl/joystick/SDL_steam_virtual_gamepad.c
 @@ -138,11 +138,11 @@ void SDL_InitSteamVirtualGamepadInfo(void)
@@ -1428,45 +1418,6 @@ index 826e45b13c..e9da9e21c7 100644
          GIP_MetadataFree(&attachment->metadata);
          SDL_free(attachment);
          context->attachments[i] = NULL;
-diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index 41216d3fd7..40982f2cfc 100644
---- a/thirdparty/sdl/SDL.c
-+++ b/thirdparty/sdl/SDL.c
-@@ -59,7 +59,9 @@
- // #include "video/SDL_pixels_c.h"
- // #include "video/SDL_surface_c.h"
- // #include "video/SDL_video_c.h"
--// #include "filesystem/SDL_filesystem_c.h"
-+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
-+#include "filesystem/SDL_filesystem_c.h"
-+#endif
- // #include "io/SDL_asyncio_c.h"
- #ifdef SDL_PLATFORM_ANDROID
- #include "core/android/SDL_android.h"
-@@ -300,8 +302,10 @@ void SDL_InitMainThread(void)
- 
-     SDL_InitTLSData();
-     SDL_InitEnvironment();
--    SDL_InitTicks();
--    // SDL_InitFilesystem();
-+	SDL_InitTicks();
-+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
-+    SDL_InitFilesystem();
-+#endif
- 
-     if (!done_info) {
-         const char *value;
-@@ -320,7 +324,9 @@ void SDL_InitMainThread(void)
- 
- static void SDL_QuitMainThread(void)
- {
--    // SDL_QuitFilesystem();
-+#ifndef SDL_FILESYSTEM_DUMMY // Godot change
-+    SDL_QuitFilesystem();
-+#endif
-     SDL_QuitTicks();
-     SDL_QuitEnvironment();
-     SDL_QuitTLSData();
 diff --git a/thirdparty/sdl/time/SDL_time.c b/thirdparty/sdl/time/SDL_time.c
 index ba0a2cf7fa..8f1492b3df 100644
 --- a/thirdparty/sdl/time/SDL_time.c

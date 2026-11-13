@@ -46,63 +46,68 @@ struct SubsetGlyph
 
     if (unlikely (!dest_glyph.length)) return_trace (true);
 
+    bool extended = source_glyph.is_extended ();
+
     /* update components gids. */
-    for (auto &_ : Glyph (dest_glyph).get_composite_iterator ())
+    for (auto &_ : Glyph (dest_glyph, old_gid, extended).get_composite_iterator ())
     {
       hb_codepoint_t new_gid;
-      if (plan->new_gid_for_old_gid (_.get_gid(), &new_gid))
-	const_cast<CompositeGlyphRecord &> (_).set_gid (new_gid);
+      if (plan->new_gid_for_old_gid (_.get_gid (extended), &new_gid))
+	const_cast<CompositeGlyphRecord &> (_).set_gid (new_gid, extended);
     }
 
 #ifndef HB_NO_BEYOND_64K
-    auto it = Glyph (dest_glyph).get_composite_iterator ();
-    if (it)
+    if (extended)
     {
-      /* lower GID24 to GID16 in components if possible. */
-      char *p = it ? (char *) &*it : nullptr;
-      char *q = p;
-      const char *end = dest_glyph.arrayZ + dest_glyph.length;
-      while (it)
+      auto it = Glyph (dest_glyph, old_gid, extended).get_composite_iterator ();
+      if (it)
       {
-	auto &rec = const_cast<CompositeGlyphRecord &> (*it);
-	++it;
+	/* lower GID24 to GID16 in components if possible. */
+	char *p = it ? (char *) &*it : nullptr;
+	char *q = p;
+	const char *end = dest_glyph.arrayZ + dest_glyph.length;
+	while (it)
+	{
+	  auto &rec = const_cast<CompositeGlyphRecord &> (*it);
+	  ++it;
 
-	q += rec.get_size ();
+	  q += rec.get_size (extended);
 
-	rec.lower_gid_24_to_16 ();
+	  rec.lower_gid_24_to_16 ();
 
-	unsigned size = rec.get_size ();
+	  unsigned size = rec.get_size (extended);
 
-	memmove (p, &rec, size);
+	  memmove (p, &rec, size);
 
-	p += size;
+	  p += size;
+	}
+	memmove (p, q, end - q);
+	p += end - q;
+
+	/* We want to shorten the glyph, but we can't do that without
+	 * updating the length in the loca table, which is already
+	 * written out :-(.  So we just fill the rest of the glyph with
+	 * harmless instructions, since that's what they will be
+	 * interpreted as.
+	 *
+	 * Should move the lowering to _populate_subset_glyphs() to
+	 * fix this issue. */
+
+	hb_memset (p, 0x7A /* TrueType instruction ROFF; harmless */, end - p);
+	p += end - p;
+	dest_glyph = hb_bytes_t (dest_glyph.arrayZ, p - (char *) dest_glyph.arrayZ);
+
+	// TODO: Padding; & trim serialized bytes.
+	// TODO: Update length in loca. Ugh.
       }
-      memmove (p, q, end - q);
-      p += end - q;
-
-      /* We want to shorten the glyph, but we can't do that without
-       * updating the length in the loca table, which is already
-       * written out :-(.  So we just fill the rest of the glyph with
-       * harmless instructions, since that's what they will be
-       * interpreted as.
-       *
-       * Should move the lowering to _populate_subset_glyphs() to
-       * fix this issue. */
-
-      hb_memset (p, 0x7A /* TrueType instruction ROFF; harmless */, end - p);
-      p += end - p;
-      dest_glyph = hb_bytes_t (dest_glyph.arrayZ, p - (char *) dest_glyph.arrayZ);
-
-      // TODO: Padding; & trim serialized bytes.
-      // TODO: Update length in loca. Ugh.
     }
 #endif
 
     if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
-      Glyph (dest_glyph).drop_hints ();
+      Glyph (dest_glyph, old_gid, extended).drop_hints ();
 
     if (plan->flags & HB_SUBSET_FLAGS_SET_OVERLAPS_FLAG)
-      Glyph (dest_glyph).set_overlaps_flag ();
+      Glyph (dest_glyph, old_gid, extended).set_overlaps_flag ();
 
     return_trace (true);
   }

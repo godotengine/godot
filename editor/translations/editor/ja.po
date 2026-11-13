@@ -83,27 +83,33 @@
 # 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
 # UtanoSchell <utano.mayonaka@gmail.com>, 2025.
 # Myeongjin Lee <aranet100@gmail.com>, 2025, 2026.
-# Viktor Jagebrant <vjagebrant@gmail.com>, 2025.
-# RockHopperPenguin64 <ryo1108820@gmail.com>, 2025.
+# Viktor Jagebrant <vjagebrant@gmail.com>, 2025, 2026.
+# RockHopperPenguin64 <ryo1108820@gmail.com>, 2025, 2026.
 # Septian Ganendra Savero Kurniawan <mail@init.id>, 2025.
 # testkun08080 <testkun.08080@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Miz Tan <miz3232@users.noreply.hosted.weblate.org>, 2025.
 # kakeudon17 <tazayuu17@gmail.com>, 2025.
 # Amir Sabbagh <amir420c@gmail.com>, 2025.
-# Acotto <perc.fg.music@gmail.com>, 2025.
+# Acotto <perc.fg.music@gmail.com>, 2025, 2026.
 # Rudeus <95301440+7Luminaries@users.noreply.github.com>, 2026.
 # Eloy Robillard <eloy.robillard@proton.me>, 2026.
 # shortsun <weekenddamehuman@gmail.com>, 2026.
 # "IndigoCarmine (Yuhei Yamada)" <tamanisikaminai@gmail.com>, 2026.
 # Chikashi Suzuki <underground.resources823@gmail.com>, 2026.
+# taisan11 <131413638+taisan11@users.noreply.github.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# マムス <mamusu.silhouette@gmail.com>, 2026.
+# ChocolaMint <peterconnected@gmail.com>, 2026.
+# トリウミ <akihisa28toriumi@outlook.com>, 2026.
+# meteor0w0 <125735487+meteor0w0@users.noreply.github.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-20 16:31+0000\n"
-"Last-Translator: Rudeus <95301440+7Luminaries@users.noreply.github.com>\n"
+"PO-Revision-Date: 2026-09-27 11:51+0000\n"
+"Last-Translator: meteor0w0 <125735487+meteor0w0@users.noreply.github.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -111,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -234,7 +240,7 @@ msgid "Script failed"
 msgstr "スクリプトが失敗しました"
 
 msgid "Cyclic link detected"
-msgstr "リンクに循環参照が見つかりました"
+msgstr "リンクに循環が見つかりました"
 
 msgid "Invalid declaration"
 msgstr "無効な宣言"
@@ -450,6 +456,9 @@ msgstr "選択"
 msgid "Cancel"
 msgstr "キャンセル"
 
+msgid "Close Dialog"
+msgstr "ダイアログを閉じる"
+
 msgid "Focus Next"
 msgstr "次にフォーカス"
 
@@ -642,6 +651,9 @@ msgstr "カラーピッカー: プリセットの削除"
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "アクセシビリティ: キーボードのドラッグ＆ドロップ"
 
+msgid "Toggle Fullscreen"
+msgstr "フルスクリーンを有効化 / 無効化"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "無効入力 :式に%d が渡されていません"
 
@@ -768,11 +780,14 @@ msgstr "すべてのキーの選択を解除"
 msgid "Add Animation"
 msgstr "アニメーションを追加"
 
+msgid "No available animations"
+msgstr "使用可能なアニメーションはありません"
+
 msgid "Add %s"
 msgstr "%s を追加"
 
 msgid "Load..."
-msgstr "読み込む.."
+msgstr "...を読み込む。"
 
 msgid "Move BlendSpace1D Node Point"
 msgstr "BlendSpace1Dノードポイントを移動"
@@ -799,6 +814,9 @@ msgstr "アニメーションポイントを追加"
 msgid "Remove BlendSpace1D Point"
 msgstr "BlendSpace1Dのポイントを削除"
 
+msgid "Change BlendSpace1D Point Name"
+msgstr "BlendSpace1D ポイントの名前を変更"
+
 msgid "Continuous"
 msgstr "継続的"
 
@@ -807,6 +825,19 @@ msgstr "離散"
 
 msgid "Capture"
 msgstr "キャプチャ"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"ノードの選択と移動を行います。\n"
+"\n"
+"右クリック: クリックした位置にノードを追加します。\n"
+"\n"
+"Shift+左クリック+ドラッグ：選択したノードと他のノードを接続するか、ノードのな"
+"い領域を選択した場合は新しいノードを作成します。"
 
 msgid "Create points."
 msgstr "点を作成する。"
@@ -826,14 +857,43 @@ msgstr "同期"
 msgid "None"
 msgstr "None"
 
-msgid "Open Editor"
-msgstr "エディターで開く"
+msgid "Independent"
+msgstr "インデペンデント"
+
+msgid "Cyclic Mutable"
+msgstr "循環する変更可能な参照"
+
+msgid "Cyclic Length"
+msgstr "循環長"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"循環同期の 1 サイクルの長さを秒単位で設定します。すべてのアニメーションは、こ"
+"の時間内に 1 サイクルを完了するように時間スケールされます。"
+
+msgid "Blend"
+msgstr "ブレンド"
+
+msgid "Open"
+msgstr "開く"
+
+msgid "Index"
+msgstr "インデックス"
+
+msgid "Blend Point Index"
+msgstr "ブレンドポイントのインデックス"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"ブレンドポイントのインデックスです。\n"
+"有効な範囲外の値は、最も近いインデックスに制限されます。"
 
 msgid "Position"
 msgstr "位置"
-
-msgid "Blend Value"
-msgstr "値のブレンド"
 
 msgid "Min"
 msgstr "最小値"
@@ -865,6 +925,9 @@ msgstr "BlendSpace2Dのポイントを削除する"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2Dの三角形を削除する"
 
+msgid "Change BlendSpace2D Point Name"
+msgstr "BlendSpace2Dのポイントの名前を変更"
+
 msgid "Toggle Auto Triangles"
 msgstr "三角形の自動作成をオン / オフ"
 
@@ -882,12 +945,6 @@ msgstr "グリッドXのステップ:"
 
 msgid "Grid Y Step"
 msgstr "グリッドYのステップ:"
-
-msgid "Blend X Value"
-msgstr "X値のブレンド"
-
-msgid "Blend Y Value"
-msgstr "Y値のブレンド"
 
 msgid "Max Y"
 msgstr "最大のY"
@@ -1391,12 +1448,6 @@ msgstr "\"End\" へのトランザクションは不可能！"
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "\"%s\" から \"%s\" へのトランザクションは既に存在します！"
-
-msgid "Play/Travel to %s"
-msgstr "再生/移動 %s"
-
-msgid "Edit %s"
-msgstr "編集 %s"
 
 msgid "Add Node and Transition"
 msgstr "ノードとトランジションを追加"
@@ -1916,20 +1967,6 @@ msgstr ""
 "カスタムトラックを追加するには、「ファイルに保存」と「カスタムトラックを保持す"
 "る」を有効にしてください。"
 
-msgid ""
-"Some AnimationPlayerEditor's options are disabled since this is the dummy "
-"AnimationPlayer for preview.\n"
-"\n"
-"The dummy player is forced active, non-deterministic and doesn't have the "
-"root motion track. Furthermore, the original node is inactive temporary."
-msgstr ""
-"プレビュー用のダミーAnimationPlayerのため、AnimationPlayerEditorのいくつかのオ"
-"プションは無効になっています。\n"
-"\n"
-"ダミープレイヤーは強制的にアクティブにされ、非決定的で、ルートモーショントラッ"
-"クを持っていません。さらに、オリジナルのノードは一時的に非アクティブになってい"
-"ます。"
-
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayerは非アクティブです。プレイバックは処理されません。"
 
@@ -2260,8 +2297,14 @@ msgstr "タイトル"
 msgid "Author"
 msgstr "作者"
 
+msgid "Verified Author"
+msgstr "認証済みの作者"
+
 msgid "License"
 msgstr "ライセンス"
+
+msgid "No changelog provided for this version."
+msgstr "このバージョンの変更履歴は提供されていません。"
 
 msgid "Loading..."
 msgstr "読み込み中..."
@@ -2277,6 +2320,12 @@ msgstr "インストール..."
 
 msgid "Version:"
 msgstr "バージョン:"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "ブラウザーを開いてアセットをオンラインストアページに表示します。"
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "ブラウザーを開いてソースファイルを含んだページを表示します。"
 
 msgid "Description"
 msgstr "説明"
@@ -2369,6 +2418,21 @@ msgstr "再試行"
 msgid "Download Error"
 msgstr "ダウンロードエラー"
 
+msgid "Relevance"
+msgstr "関連性"
+
+msgid "Updated (Newest First)"
+msgstr "最終更新日(新しい順)"
+
+msgid "Updated (Oldest First)"
+msgstr "最終更新日(古い順)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "評価が高い順"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "評価が低い順"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "最初"
@@ -2388,14 +2452,20 @@ msgstr "最後"
 msgid "Go Online"
 msgstr "オンライン"
 
-msgid "Template"
-msgstr "テンプレート"
-
 msgid "All"
 msgstr "すべて"
 
+msgid "Repository returned with invalid data."
+msgstr "リポジトリから無効なデータが返されました。"
+
 msgid "No results for \"%s\"."
 msgstr "\"%s\" の結果はありません。"
+
+msgid "Asset Store"
+msgstr "アセットストア"
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "テンプレートを検索。「#ハッシュタグ」を含めることでタグ検索ができます。"
 
 msgid "Import..."
 msgstr "インポート..."
@@ -2606,29 +2676,14 @@ msgstr "ファイルの保存エラー: %s"
 msgid "Layout:"
 msgstr "レイアウト:"
 
+msgid "Save As..."
+msgstr "名前を付けて保存..."
+
 msgid "Add Bus"
 msgstr "バスを追加"
 
 msgid "Add a new Audio Bus to this layout."
 msgstr "新規オーディオバスをこのレイアウトに追加する。"
-
-msgid "Load"
-msgstr "読み込み"
-
-msgid "Load an existing Bus Layout."
-msgstr "既存のバスレイアウトを読み込む。"
-
-msgid "Save this Bus Layout to a file."
-msgstr "このバスレイアウトをファイルに保存。"
-
-msgid "Load Default"
-msgstr "デフォルトを読み込む"
-
-msgid "Load the default Bus Layout."
-msgstr "デフォルトのバスレイアウトを読み込む。"
-
-msgid "Create a new Bus Layout."
-msgstr "新規バスレイアウトを作成。"
 
 msgid "Audio Bus Layout"
 msgstr "オーディオバスのレイアウト"
@@ -2651,38 +2706,8 @@ msgstr "外部エディターでデバッグ"
 msgid "Deploy with Remote Debug"
 msgstr "リモートデバッグでデプロイ"
 
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"このオプションを有効にすると、ワンクリック・デプロイをするときに実行ファイルが"
-"このコンピュータの IP に接続しようとするので、実行中のプロジェクトをデバッグす"
-"ることができます。\n"
-"このオプションは、リモートデバッグに使用することを意図しています (通常はモバイ"
-"ルデバイスにおいて)。\n"
-"ローカルで GDScript デバッガーを使用するためには有効にする必要はありません。"
-
 msgid "Small Deploy with Network Filesystem"
 msgstr "ネットワークファイルシステムでスモールデプロイ"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"このオプションを有効にすると、Androidへのワンクリック・デプロイ時にプロジェク"
-"ト用データ無しの実行可能ファイルのみをエクスポートします。\n"
-"ファイルシステムは、エディターによってプロジェクトからネットワークを通じて供給"
-"されます。\n"
-"Androidでは、デプロイはUSBケーブルの利用でさらに高速になります。このオプション"
-"は大きなアセットのあるプロジェクトでテストを高速化できます。"
 
 msgid "Visible Collision Shapes"
 msgstr "コリジョン形状を表示"
@@ -3365,21 +3390,12 @@ msgstr "クリックでコピーする。"
 msgid "Click to open in browser."
 msgstr "クリックでブラウザを開く。"
 
-msgid "Toggle Files Panel"
-msgstr "ファイルパネルを切り替え"
-
-msgid "Scripts"
-msgstr "スクリプト"
-
 msgid "No description available."
 msgstr "説明はありません。"
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr ""
 "このアノテーションは将来のバージョンで変更または削除される可能性があります。"
-
-msgid "Open"
-msgstr "開く"
 
 msgid "Open in File Manager"
 msgstr "ファイルマネージャーで開く"
@@ -3718,21 +3734,6 @@ msgstr "依存関係の編集..."
 msgid "Create New"
 msgstr "新規作成"
 
-msgid "Folder..."
-msgstr "フォルダー..."
-
-msgid "Scene..."
-msgstr "シーン..."
-
-msgid "Script..."
-msgstr "スクリプト..."
-
-msgid "Resource..."
-msgstr "リソース..."
-
-msgid "TextFile..."
-msgstr "テキストファイル..."
-
 msgid "Expand Folder"
 msgstr "フォルダを展開する"
 
@@ -3772,17 +3773,32 @@ msgstr "フォルダをターミナルで開く"
 msgid "New Folder..."
 msgstr "新規フォルダー..."
 
+msgid "Folder..."
+msgstr "フォルダー..."
+
 msgid "New Scene..."
 msgstr "新規シーン..."
+
+msgid "Scene..."
+msgstr "シーン..."
 
 msgid "New Script..."
 msgstr "新規スクリプト..."
 
+msgid "Script..."
+msgstr "スクリプト..."
+
 msgid "New Resource..."
 msgstr "新規リソース..."
 
+msgid "Resource..."
+msgstr "リソース..."
+
 msgid "New TextFile..."
 msgstr "新規テキストファイル..."
+
+msgid "TextFile..."
+msgstr "テキストファイル..."
 
 msgid "Sort Files"
 msgstr "ファイルの並び替え"
@@ -3865,11 +3881,11 @@ msgstr "ファイルを絞り込む"
 msgid "Directories"
 msgstr "ディレクトリ"
 
-msgid "Display Mode"
-msgstr "表示モード"
-
 msgid "Files"
 msgstr "ファイル"
+
+msgid "Display Mode"
+msgstr "表示モード"
 
 msgid ""
 "Scanning Files,\n"
@@ -3995,6 +4011,9 @@ msgstr "デフォルト"
 msgid "Set as Default for '%s'"
 msgstr "'%s' のデフォルトとして設定"
 
+msgid "Load Default"
+msgstr "デフォルトを読み込む"
+
 msgid "Clear Default for '%s'"
 msgstr "'%s' のデフォルトをクリア"
 
@@ -4045,11 +4064,6 @@ msgstr ""
 "ファイルシステムやインスペクターにあるリソースファイルを選択してインポート設定"
 "を調整します。"
 
-msgid ""
-"The following resources will be duplicated and embedded within this resource/"
-"object."
-msgstr "次のリソースが複製され、このリソース/オブジェクト内に埋め込まれます。"
-
 msgid "Make Sub-Resources Unique"
 msgstr "サブリソースをユニーク化する"
 
@@ -4058,6 +4072,9 @@ msgstr "リソースの読み込みに失敗しました。"
 
 msgid "(Current)"
 msgstr "(現在)"
+
+msgid "Go to previous edited object in history."
+msgstr "履歴内の前に編集したオブジェクトに移動する。"
 
 msgid "Expand Non-Default"
 msgstr "デフォルト以外を展開"
@@ -4089,20 +4106,20 @@ msgstr "インスペクター"
 msgid "Open Inspector Dock"
 msgstr "インスペクタードックを開く"
 
-msgid "Create a new resource in memory and edit it."
-msgstr "新規リソースをメモリ上に作成して編集する。"
-
-msgid "Load an existing resource from disk and edit it."
-msgstr "既存のリソースをディスクから読み込み編集する。"
+msgid "Go to next edited object in history."
+msgstr "履歴内の次に編集したオブジェクトに移動する。"
 
 msgid "Save the currently edited resource."
 msgstr "現在編集中のリソースを保存する。"
 
-msgid "Save As..."
-msgstr "名前を付けて保存..."
-
 msgid "Extra resource options."
 msgstr "追加のリソースオプション。"
+
+msgid "Create a new resource in memory and edit it."
+msgstr "新規リソースをメモリ上に作成して編集する。"
+
+msgid "Save Resource As..."
+msgstr "リソースを別名で保存..."
 
 msgid "Edit Resource from Clipboard"
 msgstr "クリップボードからリソースを編集"
@@ -4110,23 +4127,11 @@ msgstr "クリップボードからリソースを編集"
 msgid "Copy Resource"
 msgstr "リソースをコピー"
 
-msgid "Make Resource Built-In"
-msgstr "リソースを組み込みにする"
-
-msgid "Go to previous edited object in history."
-msgstr "履歴内の前に編集したオブジェクトに移動する。"
-
-msgid "Go to next edited object in history."
-msgstr "履歴内の次に編集したオブジェクトに移動する。"
-
-msgid "History of recently edited objects."
-msgstr "最近編集したオブジェクトの履歴。"
-
-msgid "Open documentation for this object."
-msgstr "このオブジェクトのドキュメントを開く。"
-
 msgid "Open Documentation"
 msgstr "ドキュメントを開く"
+
+msgid "Make Resource Built-In"
+msgstr "リソースを組み込みにする"
 
 msgid "Filter Properties"
 msgstr "プロパティを絞り込む"
@@ -4156,16 +4161,8 @@ msgstr ""
 "現在のシーンがそのノード内に存在するので、シーン '%s' をインスタンス化できませ"
 "ん。"
 
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "シーンのインスタンス化"
-
 msgid "Error loading audio stream from %s"
 msgstr "%s のオーディオ ストリームのロード中にエラーが発生しました"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "AudioStreamPlayerを作成"
 
 msgid "Replace with Branch Scene"
 msgstr "ブランチ シーンで置き換え"
@@ -4259,9 +4256,6 @@ msgstr ""
 "このブランチを自身のシーンで保存するには、元のシーンを開き、ブランチを右クリッ"
 "クして、\"ブランチをシーンとして保存\"を選択してください。"
 
-msgid "Save New Scene As..."
-msgstr "新規シーンに名前を付けて保存..."
-
 msgid ""
 "Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
 "all properties of the node to be reverted to their default."
@@ -4339,13 +4333,13 @@ msgid "Remove Node(s)"
 msgstr "ノードを除去"
 
 msgid "Change type of node(s)"
-msgstr "ノードのタイプを変更"
+msgstr "ノードの型を変更"
 
 msgid "Reparent to New Node"
 msgstr "親ノードを新規ノードに変更"
 
 msgid "This operation requires a single selected node."
-msgstr "この操作には選択されたノードが1つ必要です。"
+msgstr "この操作は複数のノード選択に非対応です。"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "開いているシーンを上書きすることはできません！"
@@ -4363,8 +4357,8 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
-"新しいシーンを保存できませんでした。おそらく依存関係(インスタンス)を満たせてい"
-"ません。"
+"新しいシーンを保存できませんでした。おそらく依存関係(インスタンス)を解決できて"
+"いません。"
 
 msgid "Error saving scene."
 msgstr "シーンを保存する際にエラーが発生しました。"
@@ -4561,6 +4555,9 @@ msgstr "ローカル"
 msgid "Delete Related Animation Tracks"
 msgstr "関連するアニメーションのトラックを削除します"
 
+msgid "Save New Scene As..."
+msgstr "新規シーンに名前を付けて保存..."
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "継承をクリアしますか？ (元に戻せません！)"
 
@@ -4630,15 +4627,6 @@ msgid "Toggle visibility of editor messages."
 msgstr "エディターメッセージの表示/非表示を切り替えます。"
 
 msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"%s\" directory manually before attempting this operation again."
-msgstr ""
-"アンドロイド用ビルドテンプレートは既にこのプロジェクトにインストール済みで、上"
-"書きはされません。\n"
-"\"%s\" ディレクトリを手動で削除して再度操作を試してください。"
-
-msgid ""
 "This will set up your project for gradle Android builds by installing the "
 "source template to \"%s\".\n"
 "Note that in order to make gradle builds instead of using pre-built APKs, the "
@@ -4700,9 +4688,6 @@ msgid ""
 msgstr ""
 "このリソースは編集したシーンに属していないため保存できません。まずユニーク化し"
 "てください。"
-
-msgid "Save Resource As..."
-msgstr "リソースを別名で保存..."
 
 msgid "Can't open file for writing:"
 msgstr "書き込み用にファイルを開けません:"
@@ -4884,13 +4869,6 @@ msgid ""
 msgstr ""
 "現行シーンにはルートノードがありませんが、%d 個の変更された外部リソースとプラ"
 "グイン データが保存されました。"
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr ""
-"シーンを保存するにはルートノードが必要です。シーンツリーのドックからルートノー"
-"ドを追加できます。"
 
 msgid "Save Scene As..."
 msgstr "名前を付けてシーンを保存..."
@@ -5224,9 +5202,6 @@ msgstr "バージョン管理設定..."
 msgid "Pack Project as ZIP..."
 msgstr "プロジェクトをZIPにパック..."
 
-msgid "Install Android Build Template..."
-msgstr "Androidビルドテンプレートのインストール..."
-
 msgid "Open User Data Folder"
 msgstr "ユーザーデータフォルダーを開く"
 
@@ -5357,6 +5332,9 @@ msgstr "プロジェクト設定"
 msgid "Find in Files..."
 msgstr "複数ファイル内を検索..."
 
+msgid "Replace in Files..."
+msgstr "複数ファイル内で置換..."
+
 msgid "Export..."
 msgstr "エクスポート..."
 
@@ -5383,9 +5361,6 @@ msgstr "コマンドパレット..."
 
 msgid "Take Screenshot"
 msgstr "スクリーンショットを撮る"
-
-msgid "Toggle Fullscreen"
-msgstr "フルスクリーンを有効化 / 無効化"
 
 msgid "Search Help..."
 msgstr "ヘルプを検索…"
@@ -5508,11 +5483,14 @@ msgstr "現在のものを選択"
 msgid "Open Project Settings"
 msgstr "プロジェクト設定を開く"
 
-msgid "Ok"
-msgstr "OK"
-
 msgid "Warning!"
 msgstr "警告！"
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "エディタ設定のJava SDKパスが無効です。"
+
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "エディター設定のAndroid SDKパスが無効です。"
 
 msgid "Can't get filesystem access."
 msgstr "ファイルシステムにアクセスできません。"
@@ -5680,7 +5658,7 @@ msgstr "「シェーダーベイカー」は\"互換性\"レンダリングで�
 msgid ""
 "The editor is currently using a different renderer than what the target "
 "platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to \"%s\" renderer temporarily to fix this."
+"Switch to the \"%s\" renderer temporarily to fix this."
 msgstr ""
 "エディタは現在、ターゲットプラットフォームで使用されるレンダラーとは異なるレン"
 "ダラーを使用しています。「Shader Baker」はコアシェーダを組み込むことができませ"
@@ -5796,6 +5774,12 @@ msgstr "カスタム リリーステンプレートが見つかりません。"
 msgid "Invalid additional PList content: "
 msgstr "無効な追加のPListコンテンツです: "
 
+msgid "Export Icons"
+msgstr "エクスポートアイコン"
+
+msgid "Could not open a directory at path \"%s\"."
+msgstr "\"%s\" のディレクトリを開くことができません。"
+
 msgid "Select device from the list"
 msgstr "一覧からデバイスを選択"
 
@@ -5825,15 +5809,6 @@ msgstr "実行に失敗しました。詳細についてはエディターログ
 
 msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
 msgstr "互換性レンダラーを使用する場合、「Shader Baker」はサポートされません。"
-
-msgid ""
-"The editor is currently using a different renderer than what the target "
-"platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to the \"%s\" renderer temporarily to fix this."
-msgstr ""
-"エディタは現在、ターゲットプラットフォームで使用されるレンダラーとは異なるレン"
-"ダラーを使用しています。「Shader Baker」はコアシェーダを組み込むことができませ"
-"ん。この問題を解決するには、一時的に「%s」レンダラーに切り替えてください。"
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -5962,6 +5937,9 @@ msgstr ""
 "全てのプリセットはエクスポートが全て機能するために、エクスポートパスを定義する"
 "必要があります。"
 
+msgid "Advanced settings are always shown when searching."
+msgstr "検索時には常に詳細設定が表示されます。"
+
 msgid "Delete preset '%s'?"
 msgstr "プリセット '%s' を削除しますか？"
 
@@ -6000,15 +5978,6 @@ msgstr "プリセット"
 
 msgid "Add..."
 msgstr "追加..."
-
-msgid ""
-"If checked, the preset will be available for use in one-click deploy.\n"
-"Only one preset per platform may be marked as runnable."
-msgstr ""
-"チェックした場合、ワンクリック・デプロイでもこのプリセットが使われるようになり"
-"ます。\n"
-"ひとつのプラットフォームに対し、ひとつのプリセットのみが実行可能としてマークで"
-"きます。"
 
 msgid "Advanced Options"
 msgstr "高度なオプション"
@@ -6127,6 +6096,9 @@ msgstr ""
 
 msgid "More Info..."
 msgstr "詳細情報..."
+
+msgid "Scripts"
+msgstr "スクリプト"
 
 msgid "GDScript Export Mode:"
 msgstr "GDScript エクスポートモード:"
@@ -6577,8 +6549,8 @@ msgstr "移動"
 msgid "No sub-resources found."
 msgstr "サブリソースが見つかりませんでした。"
 
-msgid "Open a list of sub-resources."
-msgstr "サブリソースのリストを開く。"
+msgid "Type: %s"
+msgstr "型： %s"
 
 msgid "Search files..."
 msgstr "ファイルを検索…"
@@ -6854,18 +6826,8 @@ msgstr "オーディオ ストリーム インポーター: %s"
 msgid "Enable"
 msgstr "有効"
 
-msgid "Enable looping."
-msgstr "ループを有効化"
-
 msgid "Offset:"
 msgstr "オフセット:"
-
-msgid ""
-"Loop offset (from beginning). Note that if BPM is set, this setting will be "
-"ignored."
-msgstr ""
-"ループのオフセット（先頭から）。BPMが設定されている場合、この設定は無視されま"
-"すのでご注意ください。"
 
 msgid "Loop:"
 msgstr "ループ:"
@@ -6873,40 +6835,11 @@ msgstr "ループ:"
 msgid "BPM:"
 msgstr "BPM:"
 
-msgid ""
-"Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
-"This is required in order to configure beat information."
-msgstr ""
-"インタラクティブストリームに使用するBeats Per Measure（テンポ）を設定しま"
-"す。\n"
-"これは、ビート情報を設定するために必要です。"
-
 msgid "Beat Count:"
 msgstr "ビート数:"
 
-msgid ""
-"Configure the amount of Beats used for music-aware looping. If zero, it will "
-"be autodetected from the length.\n"
-"It is recommended to set this value (either manually or by clicking on a beat "
-"number in the preview) to ensure looping works properly."
-msgstr ""
-"音楽を考慮したループ再生に使用するBeatsの量を設定します。0の場合、長さから自動"
-"検出されます。\n"
-"ループ再生が正しく機能するように、この値を設定することをお勧めします（手動また"
-"はプレビューでビート番号をクリック）"
-
 msgid "Bar Beats:"
 msgstr "小節あたりの拍数:"
-
-msgid ""
-"Configure the Beats Per Bar. This used for music-aware transitions between "
-"AudioStreams."
-msgstr ""
-"Beats Per Bar を設定します。AudioStream間の音楽を考慮したトランジションに使用"
-"されます。"
-
-msgid "Music Playback:"
-msgstr "音楽の再生設定:"
 
 msgid "Preview:"
 msgstr "プレビュー:"
@@ -7201,6 +7134,15 @@ msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(%d個の変更)"
 
+msgid "Copy Value"
+msgstr "値をコピー"
+
+msgid "Paste Value"
+msgstr "値を貼り付け"
+
+msgid "Copy Property Path"
+msgstr "プロパティのパスをコピー"
+
 msgid "Add element to property array with prefix %s."
 msgstr "要素を接頭辞 %s を持つプロパティ配列に追加します。"
 
@@ -7281,15 +7223,6 @@ msgstr "%s をピン留め解除"
 msgid "Add metadata %s"
 msgstr "メタデータ %s を追加"
 
-msgid "Copy Value"
-msgstr "値をコピー"
-
-msgid "Paste Value"
-msgstr "値を貼り付け"
-
-msgid "Copy Property Path"
-msgstr "プロパティのパスをコピー"
-
 msgid "Edit Text:"
 msgstr "テキストを編集:"
 
@@ -7364,17 +7297,17 @@ msgstr "一時的なオイラー"
 msgid "Temporary Euler %s"
 msgstr "一時的なオイラー %s"
 
-msgid "Assign..."
-msgstr "割り当て..."
-
-msgid "Assign Node"
-msgstr "ノードを割り当て"
-
 msgid "Copy as Text"
 msgstr "パスをコピー"
 
 msgid "Show Node in Tree"
 msgstr "ツリーでノードを表示"
+
+msgid "Assign..."
+msgstr "割り当て..."
+
+msgid "Assign Node"
+msgstr "ノードを割り当て"
 
 msgid "Node Path"
 msgstr "ノードパス"
@@ -7541,9 +7474,6 @@ msgstr "サイズ： %s"
 msgid "Invalid file or broken link."
 msgstr "無効なファイルバージョンです。"
 
-msgid "Type: %s"
-msgstr "型： %s"
-
 msgid "Dimensions: %d × %d"
 msgstr "寸法：%d × %d"
 
@@ -7555,9 +7485,6 @@ msgstr "長さ: %0.1f秒"
 
 msgid "Length: %0.3fs"
 msgstr "長さ: %0.3f秒"
-
-msgid "Advanced settings are always shown when searching."
-msgstr "検索時には常に詳細設定が表示されます。"
 
 msgid "Event Configured"
 msgstr "イベント設定済"
@@ -7955,9 +7882,6 @@ msgstr "プロジェクトパス"
 msgid "This project was last edited in a different Godot version: "
 msgstr "このプロジェクトはGodotの別バージョンで最終変更されました: "
 
-msgid "Unknown version"
-msgstr "不明なバージョン"
-
 msgid "This project uses features unsupported by the current build:"
 msgstr ""
 "このプロジェクトは現在のGodotビルドでサポートされていない機能を使用しています:"
@@ -8323,9 +8247,6 @@ msgstr "通常の編集"
 msgid "Edit in Recovery Mode"
 msgstr "リカバリーモードで編集"
 
-msgid "Backup project first"
-msgstr "先にプロジェクトをバックアップ"
-
 msgid "Convert Full Project"
 msgstr "プロジェクト全体を変換"
 
@@ -8399,9 +8320,6 @@ msgstr "言語:"
 
 msgid "Style"
 msgstr "スタイル"
-
-msgid "Custom preset can be further configured in the editor."
-msgstr "カスタムプリセットは、エディタで詳細に設定できます。"
 
 msgid "Display Scale"
 msgstr "表示スケール"
@@ -8623,9 +8541,6 @@ msgstr "リモートデプロイ"
 msgid "Project Run"
 msgstr "プロジェクトの実行"
 
-msgid "Suspend/Resume Embedded Project"
-msgstr "埋め込みプロジェクトの一時停止/再開"
-
 msgid "Next Frame"
 msgstr "次フレーム"
 
@@ -8637,12 +8552,6 @@ msgstr "ゲーム起動中..."
 
 msgid "Game running not embedded."
 msgstr "ゲームが埋め込みなしで実行中。"
-
-msgid "Press play to start the game."
-msgstr "ゲームを開始するには再生ボタンを押します。"
-
-msgid "Embedding is disabled."
-msgstr "埋め込みは無効です。"
 
 msgid "Game embedding not available on your OS."
 msgstr "ゲームの埋め込みは現在のOSでは利用できません。"
@@ -8677,24 +8586,45 @@ msgstr ""
 msgid "Game embedding not available when the game starts in fullscreen."
 msgstr "ゲームが全画面で起動した場合、ゲームの埋め込みは利用できません。"
 
-msgid "Game embedding not available in single window mode."
-msgstr "シングルウィンドウモードではゲームの埋め込みは利用できません。"
-
 msgid "Unmute game audio."
 msgstr "ゲームオーディオのミュートを解除します。"
 
 msgid "Mute game audio."
 msgstr "ゲームオーディオをミュートします。"
 
-msgid "Suspend"
-msgstr "中断"
+msgid "V: Set selected node's pivot position."
+msgstr "V: 選択したノードのピボット位置を設定します。"
+
+msgid "Shift: Scale proportionally."
+msgstr "Shift: 比率を保って拡大縮小。"
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "クリックした位置の選択可能なノードのリストを表示します。"
+
+msgid "Click to change object's pivot."
+msgstr "クリックしてオブジェクトの回転ピボットを変更します。"
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: 一時ピボットを設定します。"
 
 msgid ""
-"Force pause at SceneTree level. Stops all processing, but you can still "
-"interact with the project."
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
 msgstr ""
-"SceneTreeレベルで強制ポーズします。すべての処理は停止しますが、プロジェクトへ"
-"のインタラクトは可能です。"
+"Shiftキーを押しながらこのボタンをクリックすると、選択したノードの中心に一時ピ"
+"ボットが配置されます。"
+
+msgid ""
+"You can also use Pan View shortcut (Space by default) to pan in any mode."
+msgstr ""
+"パン・ビューのショートカット (デフォルトではスペース) を使用して、どのモードで"
+"もパンすることができます。"
+
+msgid "Game"
+msgstr "ゲーム"
+
+msgid "Suspend"
+msgstr "中断"
 
 msgid "Speed State"
 msgstr "速度状態"
@@ -8702,30 +8632,8 @@ msgstr "速度状態"
 msgid "Input"
 msgstr "入力"
 
-msgid "Allow game input."
-msgstr "ゲームの入力を許可します。"
-
-msgid ""
-"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
-"2D camera."
-msgstr ""
-"ゲームの入力を無効化し、Node2DやControlの選択、2Dカメラの操作を可能にします。"
-
-msgid ""
-"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
-msgstr "ゲームの入力を無効化し、Node3Dの選択、3Dカメラの操作を可能にします。"
-
-msgid "Show list of selectable nodes at position clicked."
-msgstr "クリックした位置の選択可能なノードのリストを表示します。"
-
-msgid "Toggle Selection Visibility"
-msgstr "選択範囲の表示を切り替え"
-
 msgid "Override the in-game camera."
 msgstr "ゲーム内のカメラをオーバーライドします。"
-
-msgid "Camera Override Options"
-msgstr "カメラのオーバーライドオプション"
 
 msgid "Reset 2D Camera"
 msgstr "2Dカメラをリセット"
@@ -8739,23 +8647,8 @@ msgstr "ゲーム内で操作"
 msgid "Manipulate From Editors"
 msgstr "エディターから操作"
 
-msgid "Embed Game on Next Play"
-msgstr "次の実行時にゲームを埋め込む"
-
-msgid "Make Game Workspace Floating on Next Play"
-msgstr "次の実行時にゲームのワークスペースをフローティング化する"
-
 msgid "Embedded Window Sizing"
 msgstr "埋め込みウィンドウのサイズ調整"
-
-msgid ""
-"Embedded game size is based on project settings.\n"
-"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
-"desired size."
-msgstr ""
-"ゲームの埋め込みのサイズは、プロジェクト設定に依存します。\n"
-"ゲームのワークスペースが目的のサイズより小さい場合、 'Keep Aspect' モードが使"
-"用されます。"
 
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "ゲームの埋め込みのアスペクト比を維持します。"
@@ -8763,15 +8656,8 @@ msgstr "ゲームの埋め込みのアスペクト比を維持します。"
 msgid "Stretch to Fit"
 msgstr "フィットするように引き伸ばす"
 
-msgid "Embedded game size stretches to fit the Game Workspace."
-msgstr ""
-"ゲームのワークスペースに合わせて、ゲームの埋め込みのサイズが拡大します。"
-
 msgid "Game Workspace"
 msgstr "ゲームのワークスペース"
-
-msgid "Game"
-msgstr "ゲーム"
 
 msgid "Clear All"
 msgstr "すべてクリア"
@@ -9253,910 +9139,6 @@ msgstr "プレビューを更新"
 msgid "Settings:"
 msgstr "設定:"
 
-msgid "Merge TileSetAtlasSource"
-msgstr "TileSetAtlasSource の統合"
-
-msgid "%s (ID: %d)"
-msgstr "%s (ID: %d)"
-
-msgid "Atlas Merging"
-msgstr "アトラスのマージ"
-
-msgid "Merge (Keep original Atlases)"
-msgstr "統合 (元のアトラスを保持)"
-
-msgid "Merge"
-msgstr "統合"
-
-msgid "Next Line After Column"
-msgstr "列の次の行"
-
-msgid "Please select two atlases or more."
-msgstr "2つ以上のアトラスを選択してください。"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: 0"
-msgstr ""
-"ソース: %d\n"
-"アトラス座標: %s\n"
-"代替: 0"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"ソース: %d\n"
-"アトラス座標: %s\n"
-"代替: %d"
-
-msgid "Center View"
-msgstr "中心ビュー"
-
-msgid ""
-"The selected atlas source has no valid texture. Assign a texture in the "
-"TileSet bottom tab."
-msgstr ""
-"選択されたアトラスソースに有効なテクスチャがありません。TileSet 下部タブでテク"
-"スチャを割り当ててください。"
-
-msgid "Base Tiles"
-msgstr "ベース タイル"
-
-msgid "Alternative Tiles"
-msgstr "代替タイル"
-
-msgid "Reset Polygons"
-msgstr "ポリゴンをリセット"
-
-msgid "Clear Polygons"
-msgstr "ポリゴンをクリア"
-
-msgid "Rotate Polygons Right"
-msgstr "ポリゴンを右に回転"
-
-msgid "Rotate Polygons Left"
-msgstr "ポリゴンを左に回転"
-
-msgid "Flip Polygons Horizontally"
-msgstr "ポリゴンを水平方向に反転"
-
-msgid "Flip Polygons Vertically"
-msgstr "ポリゴンを垂直方向に反転"
-
-msgid "Edit Polygons"
-msgstr "ポリゴンを編集"
-
-msgid "Expand editor"
-msgstr "エディターを展開する"
-
-msgid "Add polygon tool"
-msgstr "ポリゴンツールを追加"
-
-msgid "Edit points tool"
-msgstr "ポイントツールの編集"
-
-msgid "Delete points tool"
-msgstr "ポイントツールの削除"
-
-msgid "Advanced"
-msgstr "高度な設定"
-
-msgid "Reset to default tile shape"
-msgstr "デフォルトのタイル形状に戻す"
-
-msgid "Rotate Right"
-msgstr "右に回転"
-
-msgid "Rotate Left"
-msgstr "左に回転"
-
-msgid "Flip Horizontally"
-msgstr "左右反転"
-
-msgid "Flip Vertically"
-msgstr "上下反転"
-
-msgid "Toggle Grid Snap"
-msgstr "グリッドスナップの切り替え"
-
-msgid "Disable Snap"
-msgstr "スナップを無効にする"
-
-msgid "Half-Pixel Snap"
-msgstr "半ピクセルスナップ"
-
-msgid "Grid Snap"
-msgstr "グリッドスナップ"
-
-msgid "Subdivision"
-msgstr "サブディビジョン"
-
-msgid "Painting Tiles Property"
-msgstr "タイルプロパティをペイント"
-
-msgid "Painting:"
-msgstr "ペイント設定:"
-
-msgid "No terrains"
-msgstr "地形なし"
-
-msgid "No terrain"
-msgstr "地形なし"
-
-msgid "Painting Terrain Set"
-msgstr "地形セットをペイント"
-
-msgid "Painting Terrain"
-msgstr "地形を塗る"
-
-msgid "Pick"
-msgstr "選択"
-
-msgid "Drawing Rect:"
-msgstr "長方形を描画:"
-
-msgid "Can't rotate patterns when using non-square tile grid."
-msgstr ""
-"正方形以外のタイルグリッドを使用している場合、パターンを回転できません。"
-
-msgid "Shift: Draw line."
-msgstr "Shift: 線を描画。"
-
-msgid "No Texture Atlas Source (ID: %d)"
-msgstr "テクスチャ アトラス ソースなし (ID: %d)"
-
-msgid "Scene Collection Source (ID: %d)"
-msgstr "シーン コレクション ソース (ID: %d)"
-
-msgid "Empty Scene Collection Source (ID: %d)"
-msgstr "空のシーンコレクションソース (ID: %d)"
-
-msgid "Unknown Type Source (ID: %d)"
-msgstr "不明な型のソース (ID: %d)"
-
-msgid "Add TileSet pattern"
-msgstr "TileSet パターンを追加"
-
-msgid "Remove TileSet patterns"
-msgstr "TileSet パターンを削除"
-
-msgid "Index: %d"
-msgstr "インデックス: %d"
-
-msgid "Tile with Invalid Scene"
-msgstr "無効なシーンのタイル"
-
-msgid ""
-"The selected scene collection source has no scenes. Add scenes in the TileSet "
-"bottom tab."
-msgstr ""
-"選択されたシーンコレクションソースにはシーンがありません。TileSet下部タブで"
-"シーンを追加してください。"
-
-msgid "Delete tiles"
-msgstr "タイルを削除"
-
-msgid "Change selection"
-msgstr "選択範囲を変更"
-
-msgid "Move tiles"
-msgstr "タイルを移動"
-
-msgid "Paint tiles"
-msgstr "タイルをペイント"
-
-msgid "Paste tiles"
-msgstr "タイルを貼り付け"
-
-msgid "Selection Tool"
-msgstr "選択ツール"
-
-msgid "Paint Tool"
-msgstr "ペイントツール"
-
-msgid "Line Tool"
-msgstr "直線"
-
-msgid "Rect Tool"
-msgstr "矩形ツール"
-
-msgid "Bucket Tool"
-msgstr "バケツツール"
-
-msgid "Alternatively hold %s with other tools to pick tile."
-msgstr "または、%s キーを押しながら他のツールを使用してタイルを選びます。"
-
-msgid "Alternatively use RMB to erase tiles."
-msgstr "または、RMB を使用してタイルを消去します。"
-
-msgid "Erase"
-msgstr "消去"
-
-msgid "Rotate Tile Left"
-msgstr "タイルを左に回転"
-
-msgid "Rotate Tile Right"
-msgstr "タイルを右に回転"
-
-msgid "Flip Tile Horizontally"
-msgstr "タイルを左右反転"
-
-msgid "Flip Tile Vertically"
-msgstr "タイルを上下反転"
-
-msgid "Contiguous"
-msgstr "隣接"
-
-msgid "Place Random Tile"
-msgstr "ランダムタイルを配置"
-
-msgid ""
-"Modifies the chance of painting nothing instead of a randomly selected tile."
-msgstr "ランダムに選ばれたタイルの代わりに何も描かない確率を変更します。"
-
-msgid "Scattering:"
-msgstr "ばらつき:"
-
-msgid "Tiles"
-msgstr "タイル"
-
-msgid ""
-"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
-"bottom panel to add one."
-msgstr ""
-"このタイルマップのタイルセットにはタイルソースが設定されていません。タイルセッ"
-"トの下部パネルから追加してください。"
-
-msgid "Sort sources"
-msgstr "ソースの並べ替え"
-
-msgid "Sort by ID (Ascending)"
-msgstr "ID (昇順) で並び替え"
-
-msgid "Sort by ID (Descending)"
-msgstr "ID (降順) で並び替え"
-
-msgid "Invalid source selected."
-msgstr "選択したソースが無効です。"
-
-msgid "Patterns"
-msgstr "パターン"
-
-msgid "Drag and drop or paste a TileMap selection here to store a pattern."
-msgstr ""
-"TileMap の選択範囲をここにドラッグ アンド ドロップするか貼り付けて、パターンを"
-"保存します。"
-
-msgid "Paint terrain"
-msgstr "地形を塗る"
-
-msgid "Matches Corners and Sides"
-msgstr "角と側面にマッチさせる"
-
-msgid "Matches Corners Only"
-msgstr "角にのみマッチさせる"
-
-msgid "Matches Sides Only"
-msgstr "側面にのみマッチさせる"
-
-msgid "Terrain Set %d (%s)"
-msgstr "地形セット %d (%s)"
-
-msgid ""
-"Connect mode: paints a terrain, then connects it with the surrounding tiles "
-"with the same terrain."
-msgstr ""
-"コネクトモード：地形をペイントし、同じ地形がある周囲のタイルと接続します。"
-
-msgid ""
-"Path mode: paints a terrain, then connects it to the previous tile painted "
-"within the same stroke."
-msgstr ""
-"パス モード: 地形をペイントし、同じストローク内でペイントされた前のタイルに接"
-"続します。"
-
-msgid "Terrains"
-msgstr "地形"
-
-msgid "No Layers"
-msgstr "レイヤーなし"
-
-msgid "Replace Tiles with Proxies"
-msgstr "タイルをプロキシに置き換える"
-
-msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "TileMapレイヤーを個別のTileMapLayerノードとして抽出"
-
-msgid "Can't edit multiple layers at once."
-msgstr "一度に複数のレイヤーは編集できません。"
-
-msgid "The selected TileMap has no layer to edit."
-msgstr "選択されたTileMapには編集するレイヤーがありません。"
-
-msgid "The edited layer is disabled or invisible"
-msgstr "編集されたレイヤーは無効化または不可視化されています"
-
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"編集中のTileMapまたはTileMapLayer ノードにTileSetリソースがありません。\n"
-"インスペクタのTile SetプロパティでTileSetリソースを作成または読み込んでくださ"
-"い。"
-
-msgid "TileMap"
-msgstr "TileMap"
-
-msgid "Select Next Tile Map Layer"
-msgstr "次のタイル マップ レイヤーを選択"
-
-msgid "Select Previous Tile Map Layer"
-msgstr "前のタイル マップ レイヤーを選択"
-
-msgid "TileMap Layers"
-msgstr "TileMap レイヤー"
-
-msgid "Select previous layer"
-msgstr "前のレイヤーを選択"
-
-msgid "Select next layer"
-msgstr "次のレイヤーを選択"
-
-msgid "Select all TileMapLayers in scene"
-msgstr "シーンのタイル マップ レイヤーを全て選択"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "選択したタイルマップ レイヤーをハイライト表示"
-
-msgid "Toggle grid visibility."
-msgstr "グリッドの表示を切り替え"
-
-msgid "Advanced settings."
-msgstr "高度な設定です。"
-
-msgid "Automatically Replace Tiles with Proxies"
-msgstr "タイルを自動的にプロキシに置き換える"
-
-msgid "Remove Tile Proxies"
-msgstr "タイルプロキシを削除"
-
-msgid "Create Alternative-level Tile Proxy"
-msgstr "代替レベルのタイルプロキシを作成"
-
-msgid "Create Coords-level Tile Proxy"
-msgstr "座標レベルのタイルプロキシを作成"
-
-msgid "Create source-level Tile Proxy"
-msgstr "ソースレベルのタイルプロキシを作成"
-
-msgid "Delete All Invalid Tile Proxies"
-msgstr "すべての無効なタイルプロキシを削除"
-
-msgid "Delete All Tile Proxies"
-msgstr "すべてのタイルプロキシを削除"
-
-msgid "Tile Proxies Management"
-msgstr "タイルプロキシ管理"
-
-msgid "Source-level proxies"
-msgstr "ソースレベルのプロキシ"
-
-msgid "Coords-level proxies"
-msgstr "座標レベルのプロキシ"
-
-msgid "Alternative-level proxies"
-msgstr "代替レベルのプロキシ"
-
-msgid "Add a new tile proxy:"
-msgstr "新しいタイルプロキシを追加:"
-
-msgid "From Source"
-msgstr "ソースから"
-
-msgid "From Coords"
-msgstr "座標から"
-
-msgid "From Alternative"
-msgstr "代替から"
-
-msgid "To Source"
-msgstr "ソースへ"
-
-msgid "To Coords"
-msgstr "座標へ"
-
-msgid "To Alternative"
-msgstr "代替へ"
-
-msgid "Global actions:"
-msgstr "グローバルアクション:"
-
-msgid "Clear Invalid"
-msgstr "無効を除去"
-
-msgid "Atlas"
-msgstr "アトラス"
-
-msgid "Base Tile"
-msgstr "ベース タイル"
-
-msgid "Alternative Tile"
-msgstr "代替タイル"
-
-msgid ""
-"Selected tile:\n"
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"選択したタイル:\n"
-"ソース: %d\n"
-"アトラス座標: %s\n"
-"代替: %d"
-
-msgid "Rendering"
-msgstr "レンダリング"
-
-msgid "Texture Origin"
-msgstr "テクスチャの原点"
-
-msgid "Modulate"
-msgstr "変調"
-
-msgid "Z Index"
-msgstr "Zインデックス"
-
-msgid "Y Sort Origin"
-msgstr "Yソート原点"
-
-msgid "Occlusion Layer %d"
-msgstr "オクルージョン レイヤー %d"
-
-msgid "Probability"
-msgstr "確率"
-
-msgid "Physics"
-msgstr "物理"
-
-msgid "Physics Layer %d"
-msgstr "物理レイヤー %d"
-
-msgid "No physics layers"
-msgstr "物理レイヤーなし"
-
-msgid ""
-"Create and customize physics layers in the inspector of the TileSet resource."
-msgstr ""
-"TileSetリソースのインスペクタで物理レイヤーを作成し、カスタマイズします。"
-
-msgid "Navigation"
-msgstr "ナビゲーション"
-
-msgid "Navigation Layer %d"
-msgstr "ナビゲーションレイヤー %d"
-
-msgid "No navigation layers"
-msgstr "ナビゲーションレイヤーなし"
-
-msgid ""
-"Create and customize navigation layers in the inspector of the TileSet "
-"resource."
-msgstr ""
-"TileSetリソースのインスペクタでナビゲーションレイヤーを作成し、カスタマイズし"
-"ます。"
-
-msgid "Custom Data"
-msgstr "カスタムデータ"
-
-msgid "Custom Data %d"
-msgstr "カスタムデータ %d"
-
-msgid "No custom data layers"
-msgstr "カスタムデータレイヤーなし"
-
-msgid ""
-"Create and customize custom data layers in the inspector of the TileSet "
-"resource."
-msgstr ""
-"TileSetリソースのインスペクタでデータレイヤーを作成し、カスタマイズできます。"
-
-msgid "Select a property editor"
-msgstr "プロパティエディターを選択"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Ctrlを押しながら複数のタイルを作成できます。"
-
-msgid "Hold Shift to create big tiles."
-msgstr "Shiftを押しながら大きなタイルを作成できます。"
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Shift キーを押しながら複数の領域を選択します。"
-
-msgid ""
-"TileSet is in read-only mode. Make the resource unique to edit TileSet "
-"properties."
-msgstr ""
-"TileSetが読み込み専用モードになっています。TileSetプロパティを編集するには、リ"
-"ソースをユニーク化にしてください。"
-
-msgid "Paint properties."
-msgstr "ペイント設定。"
-
-msgid "Create tiles"
-msgstr "タイルを作成"
-
-msgid "Create a tile"
-msgstr "タイルを作成"
-
-msgid "Remove tiles"
-msgstr "タイルを除去"
-
-msgid "Move a tile"
-msgstr "タイルを移動"
-
-msgid "Resize a tile"
-msgstr "タイルのサイズ変更"
-
-msgid "Remove tile"
-msgstr "タイルを除去"
-
-msgid "Create tile alternatives"
-msgstr "代替タイルを作成"
-
-msgid "Remove Tiles Outside the Texture"
-msgstr "テクスチャー外のタイルを削除"
-
-msgid "Create tiles in non-transparent texture regions"
-msgstr "不透明なテクスチャ領域にタイルを作成"
-
-msgid "Remove tiles in fully transparent texture regions"
-msgstr "完全に透明なテクスチャ領域のタイルを削除"
-
-msgid ""
-"The tile's unique identifier within this TileSet. Each tile stores its source "
-"ID, so changing one may make tiles invalid."
-msgstr ""
-"このTileSet内のタイルのユニークな識別子。 各タイルにはソースIDが保存されている"
-"ため、ソースIDを変更するとタイルが無効になる可能性があります。"
-
-msgid ""
-"The human-readable name for the atlas. Use a descriptive name here for "
-"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
-msgstr ""
-"人間が読めるアトラス名。ここでは整理のために説明的な名前を使用します "
-"(\"terrain\", \"decoration \"など)。"
-
-msgid "The image from which the tiles will be created."
-msgstr "タイルの元になる画像。"
-
-msgid ""
-"The margins on the image's edges that should not be selectable as tiles (in "
-"pixels). Increasing this can be useful if you download a tilesheet image that "
-"has margins on the edges (e.g. for attribution)."
-msgstr ""
-"画像の端にある余白 (ピクセル単位) はタイルとして選択できません。これを増やす"
-"と、端に余白のあるタイルシート画像をダウンロードする場合に便利です（帰属表示の"
-"ためなど）。"
-
-msgid ""
-"The separation between each tile on the atlas in pixels. Increasing this can "
-"be useful if the tilesheet image you're using contains guides (such as "
-"outlines between every tile)."
-msgstr ""
-"アトラス上の各タイルの間隔をピクセル単位で指定します。使用するタイルシート画像"
-"にガイド（各タイル間のアウトラインなど）が含まれている場合、これを増やすと便利"
-"です。"
-
-msgid ""
-"The size of each tile on the atlas in pixels. In most cases, this should "
-"match the tile size defined in the TileMap property (although this is not "
-"strictly necessary)."
-msgstr ""
-"アトラス上の各タイルのピクセルサイズ。ほとんどの場合、これはTileMapプロパティ"
-"で定義されたタイルサイズと一致する必要があります（ただし、これは厳密には必要で"
-"はありません）。"
-
-msgid ""
-"If checked, adds a 1-pixel transparent edge around each tile to prevent "
-"texture bleeding when filtering is enabled. It's recommended to leave this "
-"enabled unless you're running into rendering issues due to texture padding."
-msgstr ""
-"チェックした場合、フィルタリングが有効なときにテクスチャのにじみを防ぐために、"
-"各タイルの周囲に1ピクセルの透明なエッジを追加します。テクスチャのパディングが"
-"原因でレンダリングの問題が発生しない限り、これを有効にしておくことをお勧めしま"
-"す。"
-
-msgid ""
-"The position of the tile's top-left corner in the atlas. The position and "
-"size must be within the atlas and can't overlap another tile.\n"
-"Each painted tile has associated atlas coords, so changing this property may "
-"cause your TileMaps to not display properly."
-msgstr ""
-"タイルの左上の頂点のアトラス内の座標。位置とサイズはアトラス内になければなら"
-"ず、他のタイルと重ねることはできません。\n"
-"ペイントされた各タイルは、関連するアトラス座標を持っているので、このプロパティ"
-"を変更すると、タイルマップが正しく表示されないことがあります。"
-
-msgid "The unit size of the tile."
-msgstr "タイルの単位サイズ。"
-
-msgid ""
-"Number of columns for the animation grid. If number of columns is lower than "
-"number of frames, the animation will automatically adjust row count."
-msgstr ""
-"アニメーショングリッドの列数。カラム数がフレーム数より小さい場合、アニメーショ"
-"ンは自動的に行数を調整します。"
-
-msgid "The space (in tiles) between each frame of the animation."
-msgstr "アニメーションの各フレーム間のスペース (タイル単位)。"
-
-msgid "Animation speed in frames per second."
-msgstr "アニメーションの速度（1秒あたりのフレーム数）。"
-
-msgid ""
-"Determines how animation will start. In \"Default\" mode all tiles start "
-"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
-"animation with a random offset."
-msgstr ""
-"アニメーションの開始方法を決定します。\"Default\" モードでは、すべてのタイルが"
-"同じフレームでアニメーションを開始します。\"Random Start Times\" モードでは、"
-"各タイルはランダムなオフセットでアニメーションを開始します。"
-
-msgid "If [code]true[/code], the tile is horizontally flipped."
-msgstr "[code]true[/code]の場合、タイルは水平に反転します."
-
-msgid "If [code]true[/code], the tile is vertically flipped."
-msgstr "[code]true[/code]の場合、タイルは縦に反転します."
-
-msgid ""
-"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
-"and then flipped vertically. In practice, this means that to rotate a tile by "
-"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
-"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
-"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
-"[b]Flip V[/b] and [b]Transpose[/b]."
-msgstr ""
-"[code]true[/code]の場合、タイルは90度[i]反時計回り[/i]に回転した後、垂直に反転"
-"します。実際には、これは、タイルを反転させずに時計回りに90度回転させるには、"
-"[b]Flip H[/b]と[b]Transpose[/b]を有効にする必要があることを意味します。タイル"
-"を時計回りに180度回転させるには、[b]Flip H[/b]と[b]Flip V[/b]を有効にします。"
-"タイルを時計回りに270度回転させるには、[b]Flip V[/b]と[b]Transpose[/b]を有効に"
-"します。"
-
-msgid ""
-"The origin to use for drawing the tile. This can be used to visually offset "
-"the tile compared to the base tile."
-msgstr ""
-"タイルの描画に使用する原点。これは、ベースタイルと比較してタイルを視覚的に移動"
-"させるために使用することができます。"
-
-msgid "The color multiplier to use when rendering the tile."
-msgstr "タイルをレンダリングするときに使用する色の乗数。"
-
-msgid ""
-"The material to use for this tile. This can be used to apply a different "
-"blend mode or custom shaders to a single tile."
-msgstr ""
-"タイルに使用するマテリアル。これは、単一のタイルに異なるブレンドモードやカスタ"
-"ムシェーダーを適用するために使用することができます。"
-
-msgid ""
-"The sorting order for this tile. Higher values will make the tile render in "
-"front of others on the same layer. The index is relative to the TileMap's own "
-"Z index."
-msgstr ""
-"タイルのソート順。同じレイヤーのタイルでは、値が大きいほど手前にレンダリングさ"
-"れます。インデックスはTileMapのZインデックスからの相対値です。"
-
-msgid ""
-"The vertical offset to use for tile sorting based on its Y coordinate (in "
-"pixels). This allows using layers as if they were on different height for top-"
-"down games. Adjusting this can help alleviate issues with sorting certain "
-"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
-"is placed on."
-msgstr ""
-"Y座標（ピクセル単位）に基づいてタイルをソートするために使用する垂直方向のオフ"
-"セット。これにより、トップダウンゲームでレイヤーを異なる高さにあるかのように使"
-"用できます。これを調整することで、特定のタイルをソートする際の問題を軽減するこ"
-"とができます。タイルが配置されているTileMapレイヤーのY Sort Enabledがtrueの場"
-"合のみ有効です。"
-
-msgid ""
-"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
-"will not be used in terrains."
-msgstr ""
-"このタイルが属する地形セットのインデックス。[code]-1[/code]は地形で使用されな"
-"いことを意味します。"
-
-msgid ""
-"The index of the terrain inside the terrain set this tile belongs to. "
-"[code]-1[/code] means it will not be used in terrains."
-msgstr ""
-"このタイルが属する地形セット内の地形のインデックス。[code]-1[/code]は地形で使"
-"用されないことを意味します。"
-
-msgid ""
-"The relative probability of this tile appearing when painting with \"Place "
-"Random Tile\" enabled."
-msgstr ""
-"「ランダムタイルを配置」 で塗りつぶしたときに、このタイルが出現する相対確率を"
-"表す。"
-
-msgid ""
-"The current atlas source has tiles outside the texture.\n"
-"You can clear it using \"%s\" option in the 3 dots menu."
-msgstr ""
-"現在のアトラスソースには、テクスチャの外部にタイルがあります。\n"
-"3ドットメニュー内の\"%s\"オプションを使用することでそれらを消去できます。"
-
-msgid "Setup"
-msgstr "セットアップ"
-
-msgid ""
-"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
-"control for rectangle editing)."
-msgstr ""
-"アトラスを設定。タイルツールを追加/削除（Shiftキーで大きなタイルを作成、Ctrl"
-"キーで長方形を編集）。"
-
-msgid "Select tiles."
-msgstr "タイルを選択します。"
-
-msgid "Paint"
-msgstr "ペイント"
-
-msgid ""
-"No tiles selected.\n"
-"Select one or more tiles from the palette to edit its properties."
-msgstr ""
-"タイルが選択されていません。\n"
-"パレットから1つ以上のタイルを選択してプロパティを編集します。"
-
-msgid "Paint Properties:"
-msgstr "ペイント設定:"
-
-msgid "Create Tiles in Non-Transparent Texture Regions"
-msgstr "不透明なテクスチャ領域にタイルを作成"
-
-msgid "Remove Tiles in Fully Transparent Texture Regions"
-msgstr "完全に透明なテクスチャ領域のタイルを削除"
-
-msgid "Create an Alternative Tile"
-msgstr "代替タイルを作成"
-
-msgid "Create a Tile"
-msgstr "タイルを作成"
-
-msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
-msgstr "不透明なテクスチャ領域にタイルを自動作成しますか？"
-
-msgid ""
-"The atlas's texture was modified.\n"
-"Would you like to automatically create tiles in the atlas?"
-msgstr ""
-"アトラスのテクスチャが変更されました。\n"
-"アトラスにタイルを自動的に作成しますか？"
-
-msgid "Yes"
-msgstr "はい"
-
-msgid "No"
-msgstr "いいえ"
-
-msgid "Invalid texture selected."
-msgstr "無効なテクスチャが選択されています。"
-
-msgid "Add a new atlas source"
-msgstr "新しいアトラスソースを追加"
-
-msgid "Remove source"
-msgstr "ソースを削除"
-
-msgid "Add atlas source"
-msgstr "アトラスソースを追加"
-
-msgid "TileSet"
-msgstr "TileSet"
-
-msgid "Tile Sources"
-msgstr "タイルソース"
-
-msgid "Sort Sources"
-msgstr "ソースの並べ替え"
-
-msgid "A palette of tiles made from a texture."
-msgstr "テクスチャから作成されたタイルのパレット。"
-
-msgid "Scenes Collection"
-msgstr "シーンコレクション"
-
-msgid "A collection of scenes that can be instantiated and placed as tiles."
-msgstr "タイルと同じように初期化して設置できるシーンのコレクションです。"
-
-msgid "Open Atlas Merging Tool"
-msgstr "アトラスの統合ツールを開く"
-
-msgid "Manage Tile Proxies"
-msgstr "タイルプロキシの管理"
-
-msgid ""
-"No TileSet source selected. Select or create a TileSet source.\n"
-"You can create a new source by using the Add button on the left or by "
-"dropping a tileset texture onto the source list."
-msgstr ""
-"タイルセットのソースが選択されていません。タイルセットのソースを選択するか作成"
-"してください。\n"
-"左にある追加ボタンを押すか、タイルセットにしたいテクスチャーをソースリストにド"
-"ラッグ&ドロップすることで新しいソースを追加することができます。"
-
-msgid "Add new patterns in the TileMap editing mode."
-msgstr "TileMap 編集モードで新しいパターンを追加します。"
-
-msgid ""
-"Warning: Modifying a source ID will result in all TileMaps using that source "
-"to reference an invalid source instead. This may result in unexpected data "
-"loss. Change this ID carefully."
-msgstr ""
-"警告: ソースIDを変更すると、そのソースを使用しているすべてのTileMapが、代わり"
-"に無効なソースを参照することになります。その結果、予期せぬデータ損失が発生する"
-"可能性があります。このIDは慎重に変更してください。"
-
-msgid "Add a Scene Tile"
-msgstr "シーンタイルの追加"
-
-msgid "Remove a Scene Tile"
-msgstr "シーン タイルを削除"
-
-msgid "Drag and drop scenes here or use the Add button."
-msgstr "ここにシーンをドラッグ＆ドロップするか、追加ボタンを押してください。"
-
-msgid ""
-"The human-readable name for the scene collection. Use a descriptive name here "
-"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
-msgstr ""
-"シーンコレクションの人間が読める名前。ここでは、整理のために説明的な名前を使用"
-"してください (\"障害物\", \"飾り\" など)。"
-
-msgid ""
-"ID of the scene tile in the collection. Each painted tile has associated ID, "
-"so changing this property may cause your TileMaps to not display properly."
-msgstr ""
-"コレクション内のシーンタイルのID。各ペイントタイルは関連するIDを持っているの"
-"で、このプロパティを変更すると TileMaps が正しく表示されないことがあります。"
-
-msgid "Absolute path to the scene associated with this tile."
-msgstr "このタイルに関連するシーンへの絶対パス。"
-
-msgid ""
-"If [code]true[/code], a placeholder marker will be displayed on top of the "
-"scene's preview. The marker is displayed anyway if the scene has no valid "
-"preview."
-msgstr ""
-"[code]true[/code] の場合、プレースホルダ マーカーがシーンのプレビューの上に表"
-"示されます。 シーンに有効なプレビューがない場合でも、マーカーは表示されます。"
-
-msgid "Scenes collection properties:"
-msgstr "シーン コレクションのプロパティ:"
-
-msgid "Tile properties:"
-msgstr "タイル設定:"
-
-msgid "Eraser Tool"
-msgstr "消去ツール"
-
-msgid "Picker Tool"
-msgstr "ピッカーツール"
-
-msgid ""
-"Source ID: %d\n"
-"Texture path: %s"
-msgstr ""
-"ソースID：%d\n"
-"テクスチャのパス：%s"
-
 msgid "Bone Picker:"
 msgstr "ボーンピッカー:"
 
@@ -10282,8 +9264,8 @@ msgid ""
 "To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
 "resource in the inspector and check Add UV2."
 msgstr ""
-"PrimitiveMesh にライトマップを適用するには、PrimitiveMeshのリソースのインスペ"
-"クターでAdd UV2をオンにしてください。"
+"プリミティブメッシュにライトマップを適用するには、プリミティブメッシュリソース"
+"のインスペクタでAdd UV2をオンにしてください。"
 
 msgid ""
 "To enable lightmapping support on a CSG mesh, select the root CSG node and "
@@ -10706,6 +9688,424 @@ msgstr "データの投入"
 msgid "Unnamed Gizmo"
 msgstr "名無しのギズモ"
 
+msgid "XForm Dialog"
+msgstr "XFormダイアログ"
+
+msgid "Lock Selected"
+msgstr "選択対象をロック"
+
+msgid "Unlock Selected"
+msgstr "選択対象をロック解除"
+
+msgid "Group Selected"
+msgstr "選択対象をグループ化"
+
+msgid "Ungroup Selected"
+msgstr "選択対象をグループ解除"
+
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"クリックで可視状態のオン / オフ。\n"
+"\n"
+"開いた目: ギズモは可視。\n"
+"閉じた目: ギズモは非可視。\n"
+"半開きの目: ギズモは非透明な面を通しても可視 (「X線」)。"
+
+msgid "Snap Nodes to Floor"
+msgstr "ノードを床面にスナップ"
+
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "選択対象をスナップさせる剛体の床面を見つけられませんでした。"
+
+msgid "Add Preview Sun to Scene"
+msgstr "シーンにプレビューの太陽を追加"
+
+msgid "Add Preview Environment to Scene"
+msgstr "シーンにプレビューの環境を追加"
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "LMB＋ドラッグ：3D空間の2点間の距離を測定します。"
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "シフト＋左クリック＋ドラッグ：3D空間の2点間の距離を測定します。"
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"DirectionalLight3Dが\n"
+"シーンに含まれています。\n"
+"プレビューは一時的に無効になりました。"
+
+msgid "Preview disabled."
+msgstr "プレビューは無効です。"
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"WorldEnvironmentが\n"
+"シーンに含まれています。\n"
+"プレビューは一時的に無効になりました。"
+
+msgid "Set Preview Sun Direction"
+msgstr "プレビュー太陽の方向を設定"
+
+msgid "Set Preview Sun Altitude"
+msgstr "プレビュー太陽の高度を設定"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "プレビュー太陽の方位角を設定"
+
+msgid "Set Preview Sun Color"
+msgstr "プレビュー太陽の色を設定"
+
+msgid "Set Preview Sun Energy"
+msgstr "プレビュー太陽のエネルギーを設定"
+
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "プレビューの太陽の影の最大距離を設定"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "プレビュー環境の空の色を設定"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "プレビュー環境の地面の色を設定"
+
+msgid "Set Preview Environment Energy"
+msgstr "プレビュー環境のエネルギーを設定"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr "プレビュー環境のアンビエントオクルージョンを設定"
+
+msgid "Set Preview Environment Glow"
+msgstr "プレビュー環境のグローを設定"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "プレビュー環境のトーンマップを設定"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "プレビュー環境のグローバルイルミネーションを設定"
+
+msgid "Move Mode"
+msgstr "移動モード"
+
+msgid "Rotate Mode"
+msgstr "回転モード"
+
+msgid "Scale Mode"
+msgstr "スケールモード"
+
+msgid "Select Mode"
+msgstr "選択モード"
+
+msgid "Ruler Mode"
+msgstr "定規モード"
+
+msgid "Lock selected node, preventing selection and movement."
+msgstr "選択したノードをロックして、選択と移動をできなくします。"
+
+msgid "Lock"
+msgstr "ロック済み"
+
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "選択したノードのロックを解除し、選択と移動を可能にします。"
+
+msgid "Unlock"
+msgstr "ロック解除"
+
+msgid ""
+"Groups the selected node with its children. This selects the parent when any "
+"child node is clicked in 2D and 3D view."
+msgstr ""
+"選択されたノードとその子ノードをグループ化します。これにより、2D / 3Dビューで"
+"子ノードがクリックされると、親ノードが選択されます。"
+
+msgid "Group"
+msgstr "グループ"
+
+msgid ""
+"Ungroups the selected node from its children. Child nodes will be individual "
+"items in 2D and 3D view."
+msgstr ""
+"選択したノードを子ノードからグループ解除します。子ノードは、2Dおよび3Dビューで"
+"は個々のアイテムになります。"
+
+msgid "Ungroup"
+msgstr "グループ解除"
+
+msgid "Use Local Space"
+msgstr "ローカル空間を使用"
+
+msgid "Use Snap"
+msgstr "スナップを使用"
+
+msgid "Configure Snap..."
+msgstr "スナップの設定..."
+
+msgid ""
+"Toggle preview sunlight.\n"
+"If a DirectionalLight3D node is added to the scene, preview sunlight is "
+"disabled."
+msgstr ""
+"プレビューの太陽光を切り替えます。\n"
+"シーンにDirectionalLight3Dノードが追加されている場合、プレビューの太陽光は無効"
+"になります。"
+
+msgid "Toggle preview sunlight."
+msgstr "プレビュー太陽光を切り替えます。"
+
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"プレビューの環境を切り替えます。\n"
+"WorldEnvironmentノードがシーンに追加されている場合、プレビューの環境は無効にな"
+"ります。"
+
+msgid "Toggle preview environment."
+msgstr "プレビュー環境を切り替えます。"
+
+msgid "Edit Sun and Environment settings."
+msgstr "太陽と環境の設定を編集します。"
+
+msgid "Bottom View"
+msgstr "下面図"
+
+msgid "Top View"
+msgstr "上面図"
+
+msgid "Rear View"
+msgstr "後面図"
+
+msgid "Front View"
+msgstr "前面図"
+
+msgid "Left View"
+msgstr "左側面図"
+
+msgid "Right View"
+msgstr "右側面図"
+
+msgid "Orbit View Down"
+msgstr "オービットビュー 下"
+
+msgid "Orbit View Left"
+msgstr "オービットビュー 左"
+
+msgid "Orbit View Right"
+msgstr "オービットビュー 右"
+
+msgid "Orbit View Up"
+msgstr "オービットビュー 上"
+
+msgid "Orbit View 180"
+msgstr "オービットビュー 180"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "透視投影 / 平行投影の切り替え"
+
+msgid "Insert Animation Key"
+msgstr "アニメーションキーを挿入"
+
+msgid "Focus Origin"
+msgstr "原点にフォーカス"
+
+msgid "Focus Selection"
+msgstr "選択対象にフォーカス"
+
+msgid "Align Transform with View"
+msgstr "トランスフォームをビューに合わせる"
+
+msgid "Align Rotation with View"
+msgstr "回転をビューに合わせる"
+
+msgid "Toggle Freelook"
+msgstr "フリールックのオン / オフ"
+
+msgid "Decrease Field of View"
+msgstr "視野を狭める"
+
+msgid "Increase Field of View"
+msgstr "視野を広げる"
+
+msgid "Reset Field of View to Default"
+msgstr "視野をデフォルトに戻す"
+
+msgid "Transform"
+msgstr "トランスフォーム"
+
+msgid "Snap Object to Floor"
+msgstr "オブジェクトを床面にスナップ"
+
+msgid "Transform Dialog..."
+msgstr "トランスフォームのダイアログ..."
+
+msgid "View"
+msgstr "ビュー"
+
+msgid "1 Viewport"
+msgstr "1 ビューポート"
+
+msgid "2 Viewports"
+msgstr "2 ビューポート"
+
+msgid "2 Viewports (Alt)"
+msgstr "2 ビューポート (Alt)"
+
+msgid "3 Viewports"
+msgstr "3 ビューポート"
+
+msgid "3 Viewports (Alt)"
+msgstr "3 ビューポート (Alt)"
+
+msgid "4 Viewports"
+msgstr "4 ビューポート"
+
+msgid "Gizmos"
+msgstr "ギズモ"
+
+msgid "View Origin"
+msgstr "原点を表示"
+
+msgid "View Grid"
+msgstr "グリッドを表示"
+
+msgid "Preview Translation"
+msgstr "プレビュー翻訳"
+
+msgid "Settings..."
+msgstr "設定..."
+
+msgid "Snap Settings"
+msgstr "スナップ設定"
+
+msgid "Translate Snap:"
+msgstr "移動スナップ:"
+
+msgid "Viewport Settings"
+msgstr "ビューポート設定"
+
+msgid ""
+"FOV is defined as a vertical value, as the editor camera always uses the Keep "
+"Height aspect mode."
+msgstr ""
+"エディタカメラは常に高さを保つアスペクトモードを使用するため、FOVは垂直方向の"
+"値として定義されます。"
+
+msgid "Perspective VFOV (deg.):"
+msgstr "視野角 (度):"
+
+msgid "View Z-Near:"
+msgstr "ビューのZ-Near:"
+
+msgid "View Z-Far:"
+msgstr "ビューのZ-Far:"
+
+msgid "Transform Change"
+msgstr "トランスフォーム変更"
+
+msgid "Translate:"
+msgstr "移動:"
+
+msgid "Rotate (deg.):"
+msgstr "回転(度):"
+
+msgid "Scale (ratio):"
+msgstr "縮尺(比):"
+
+msgid "Transform Type"
+msgstr "トランスフォーム タイプ"
+
+msgid "Pre"
+msgstr "前"
+
+msgid "Post"
+msgstr "後"
+
+msgid "Preview Sun"
+msgstr "プレビューの太陽"
+
+msgid "Sun Direction"
+msgstr "太陽の方向"
+
+msgid "Angular Altitude"
+msgstr "角高度"
+
+msgid "Azimuth"
+msgstr "方位角"
+
+msgid "Sun Color"
+msgstr "太陽の色"
+
+msgid "Sun Energy"
+msgstr "太陽エネルギー"
+
+msgid "Shadow Max Distance"
+msgstr "シャドウの最大距離"
+
+msgid "Add Sun to Scene"
+msgstr "太陽をシーンに追加"
+
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"プレビューの太陽の設定に合うDirectionalLight3Dノードを現在のシーンに追加しま"
+"す。\n"
+"Shiftを押しながらクリックすると、プレビューの環境も現在のシーンに追加されま"
+"す。"
+
+msgid "Preview Environment"
+msgstr "プレビューの環境"
+
+msgid "Sky Color"
+msgstr "空の色"
+
+msgid "Ground Color"
+msgstr "地面の色"
+
+msgid "Sky Energy"
+msgstr "空のエネルギー"
+
+msgid "AO"
+msgstr "AO"
+
+msgid "Glow"
+msgstr "Glow(にじみ/発光)"
+
+msgid "Tonemap"
+msgstr "トーンマップ"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Post Process"
+msgstr "ポストプロセス"
+
+msgid "Add Environment to Scene"
+msgstr "環境をシーンに追加"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"プレビューの環境の設定に一致する WorldEnvironment ノードを現在のシーンに追加し"
+"ます。\n"
+"Shiftを押しながらクリックすると、プレビューの太陽も現在のシーンに追加されま"
+"す。"
+
 msgid "Transform Aborted."
 msgstr "トランスフォームは中止されました。"
 
@@ -10762,12 +10162,6 @@ msgstr "前面図。"
 
 msgid "Rear View."
 msgstr "後面図。"
-
-msgid "Align Transform with View"
-msgstr "トランスフォームをビューに合わせる"
-
-msgid "Align Rotation with View"
-msgstr "回転をビューに合わせる"
 
 msgid "Set Surface %d Override Material"
 msgstr "サーフェス%dにオーバーライドマテリアルを設定"
@@ -10837,9 +10231,6 @@ msgstr "フリールックの速度調整"
 
 msgid "Freelook Slow Modifier"
 msgstr "フリールックの減速調整"
-
-msgid "View"
-msgstr "ビュー"
 
 msgid "Perspective"
 msgstr "透視投影"
@@ -11061,9 +10452,6 @@ msgstr "ギズモを表示"
 msgid "View Transform Gizmo"
 msgstr "ビュー変換ギズモ"
 
-msgid "View Grid"
-msgstr "グリッドを表示"
-
 msgid "View Information"
 msgstr "情報を表示"
 
@@ -11120,414 +10508,6 @@ msgstr "カメラのプレビューを切り替え"
 
 msgid "View Rotation Locked"
 msgstr "ビューの回転を固定中"
-
-msgid "XForm Dialog"
-msgstr "XFormダイアログ"
-
-msgid "Lock Selected"
-msgstr "選択対象をロック"
-
-msgid "Unlock Selected"
-msgstr "選択対象をロック解除"
-
-msgid "Group Selected"
-msgstr "選択対象をグループ化"
-
-msgid "Ungroup Selected"
-msgstr "選択対象をグループ解除"
-
-msgid ""
-"Click to toggle between visibility states.\n"
-"\n"
-"Open eye: Gizmo is visible.\n"
-"Closed eye: Gizmo is hidden.\n"
-"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
-msgstr ""
-"クリックで可視状態のオン / オフ。\n"
-"\n"
-"開いた目: ギズモは可視。\n"
-"閉じた目: ギズモは非可視。\n"
-"半開きの目: ギズモは非透明な面を通しても可視 (「X線」)。"
-
-msgid "Snap Nodes to Floor"
-msgstr "ノードを床面にスナップ"
-
-msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "選択対象をスナップさせる剛体の床面を見つけられませんでした。"
-
-msgid "Add Preview Sun to Scene"
-msgstr "シーンにプレビューの太陽を追加"
-
-msgid "Add Preview Environment to Scene"
-msgstr "シーンにプレビューの環境を追加"
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+右クリック: クリックした位置のすべてのノードを一覧で表示。ロックされたもの"
-"も含む。"
-
-msgid "LMB+Drag: Measure the distance between two points in 3D space."
-msgstr "LMB＋ドラッグ：3D空間の2点間の距離を測定します。"
-
-msgid ""
-"Scene contains\n"
-"DirectionalLight3D.\n"
-"Preview disabled."
-msgstr ""
-"DirectionalLight3Dが\n"
-"シーンに含まれています。\n"
-"プレビューは無効です。"
-
-msgid "Preview disabled."
-msgstr "プレビューは無効です。"
-
-msgid ""
-"Scene contains\n"
-"WorldEnvironment.\n"
-"Preview disabled."
-msgstr ""
-"WorldEnvironmentが\n"
-"シーンに含まれています。\n"
-"プレビューは無効です。"
-
-msgid "Set Preview Sun Direction"
-msgstr "プレビュー太陽の方向を設定"
-
-msgid "Set Preview Sun Altitude"
-msgstr "プレビュー太陽の高度を設定"
-
-msgid "Set Preview Sun Azimuth"
-msgstr "プレビュー太陽の方位角を設定"
-
-msgid "Set Preview Sun Color"
-msgstr "プレビュー太陽の色を設定"
-
-msgid "Set Preview Sun Energy"
-msgstr "プレビュー太陽のエネルギーを設定"
-
-msgid "Set Preview Sun Max Shadow Distance"
-msgstr "セットプレビューの太陽の影の最大距離"
-
-msgid "Set Preview Environment Sky Color"
-msgstr "プレビュー環境の空の色を設定"
-
-msgid "Set Preview Environment Ground Color"
-msgstr "プレビュー環境の地面の色を設定"
-
-msgid "Set Preview Environment Energy"
-msgstr "プレビュー環境のエネルギーを設定"
-
-msgid "Set Preview Environment Ambient Occlusion"
-msgstr "プレビュー環境のアンビエントオクルージョンを設定"
-
-msgid "Set Preview Environment Glow"
-msgstr "プレビュー環境のグローを設定"
-
-msgid "Set Preview Environment Tonemap"
-msgstr "プレビュー環境のトーンマップを設定"
-
-msgid "Set Preview Environment Global Illumination"
-msgstr "プレビュー環境のグローバルイルミネーションを設定"
-
-msgid "Move Mode"
-msgstr "移動モード"
-
-msgid "Rotate Mode"
-msgstr "回転モード"
-
-msgid "Scale Mode"
-msgstr "スケールモード"
-
-msgid "Select Mode"
-msgstr "選択モード"
-
-msgid "Lock selected node, preventing selection and movement."
-msgstr "選択したノードをロックして、選択と移動をできなくします。"
-
-msgid "Lock"
-msgstr "ロック済み"
-
-msgid "Unlock selected node, allowing selection and movement."
-msgstr "選択したノードのロックを解除し、選択と移動を可能にします。"
-
-msgid "Unlock"
-msgstr "ロック解除"
-
-msgid ""
-"Groups the selected node with its children. This selects the parent when any "
-"child node is clicked in 2D and 3D view."
-msgstr ""
-"選択されたノードとその子ノードをグループ化します。これにより、2D / 3Dビューで"
-"子ノードがクリックされると、親ノードが選択されます。"
-
-msgid "Group"
-msgstr "グループ"
-
-msgid ""
-"Ungroups the selected node from its children. Child nodes will be individual "
-"items in 2D and 3D view."
-msgstr ""
-"選択したノードを子ノードからグループ解除します。子ノードは、2Dおよび3Dビューで"
-"は個々のアイテムになります。"
-
-msgid "Ungroup"
-msgstr "グループ解除"
-
-msgid "Ruler Mode"
-msgstr "定規モード"
-
-msgid "Use Local Space"
-msgstr "ローカル空間を使用"
-
-msgid "Use Snap"
-msgstr "スナップを使用"
-
-msgid ""
-"Toggle preview sunlight.\n"
-"If a DirectionalLight3D node is added to the scene, preview sunlight is "
-"disabled."
-msgstr ""
-"プレビューの太陽光を切り替えます。\n"
-"シーンにDirectionalLight3Dノードが追加されている場合、プレビューの太陽光は無効"
-"になります。"
-
-msgid "Toggle preview sunlight."
-msgstr "プレビュー太陽光を切り替えます。"
-
-msgid ""
-"Toggle preview environment.\n"
-"If a WorldEnvironment node is added to the scene, preview environment is "
-"disabled."
-msgstr ""
-"プレビューの環境を切り替えます。\n"
-"WorldEnvironmentノードがシーンに追加されている場合、プレビューの環境は無効にな"
-"ります。"
-
-msgid "Toggle preview environment."
-msgstr "プレビュー環境を切り替えます。"
-
-msgid "Edit Sun and Environment settings."
-msgstr "太陽と環境の設定を編集します。"
-
-msgid "Bottom View"
-msgstr "下面図"
-
-msgid "Top View"
-msgstr "上面図"
-
-msgid "Rear View"
-msgstr "後面図"
-
-msgid "Front View"
-msgstr "前面図"
-
-msgid "Left View"
-msgstr "左側面図"
-
-msgid "Right View"
-msgstr "右側面図"
-
-msgid "Orbit View Down"
-msgstr "オービットビュー 下"
-
-msgid "Orbit View Left"
-msgstr "オービットビュー 左"
-
-msgid "Orbit View Right"
-msgstr "オービットビュー 右"
-
-msgid "Orbit View Up"
-msgstr "オービットビュー 上"
-
-msgid "Orbit View 180"
-msgstr "オービットビュー 180"
-
-msgid "Switch Perspective/Orthogonal View"
-msgstr "透視投影 / 平行投影の切り替え"
-
-msgid "Insert Animation Key"
-msgstr "アニメーションキーを挿入"
-
-msgid "Focus Origin"
-msgstr "原点にフォーカス"
-
-msgid "Focus Selection"
-msgstr "選択対象にフォーカス"
-
-msgid "Toggle Freelook"
-msgstr "フリールックのオン / オフ"
-
-msgid "Decrease Field of View"
-msgstr "視野を狭める"
-
-msgid "Increase Field of View"
-msgstr "視野を広げる"
-
-msgid "Reset Field of View to Default"
-msgstr "視野をデフォルトに戻す"
-
-msgid "Transform"
-msgstr "トランスフォーム"
-
-msgid "Snap Object to Floor"
-msgstr "オブジェクトを床面にスナップ"
-
-msgid "Transform Dialog..."
-msgstr "トランスフォームのダイアログ..."
-
-msgid "Configure Snap..."
-msgstr "スナップの設定..."
-
-msgid "1 Viewport"
-msgstr "1 ビューポート"
-
-msgid "2 Viewports"
-msgstr "2 ビューポート"
-
-msgid "2 Viewports (Alt)"
-msgstr "2 ビューポート (Alt)"
-
-msgid "3 Viewports"
-msgstr "3 ビューポート"
-
-msgid "3 Viewports (Alt)"
-msgstr "3 ビューポート (Alt)"
-
-msgid "4 Viewports"
-msgstr "4 ビューポート"
-
-msgid "Gizmos"
-msgstr "ギズモ"
-
-msgid "View Origin"
-msgstr "原点を表示"
-
-msgid "Preview Translation"
-msgstr "プレビュー翻訳"
-
-msgid "Settings..."
-msgstr "設定..."
-
-msgid "Snap Settings"
-msgstr "スナップ設定"
-
-msgid "Translate Snap:"
-msgstr "移動スナップ:"
-
-msgid "Viewport Settings"
-msgstr "ビューポート設定"
-
-msgid ""
-"FOV is defined as a vertical value, as the editor camera always uses the Keep "
-"Height aspect mode."
-msgstr ""
-"エディタカメラは常に高さを保つアスペクトモードを使用するため、FOVは垂直方向の"
-"値として定義されます。"
-
-msgid "Perspective VFOV (deg.):"
-msgstr "視野角 (度):"
-
-msgid "View Z-Near:"
-msgstr "ビューのZ-Near:"
-
-msgid "View Z-Far:"
-msgstr "ビューのZ-Far:"
-
-msgid "Transform Change"
-msgstr "トランスフォーム変更"
-
-msgid "Translate:"
-msgstr "移動:"
-
-msgid "Rotate (deg.):"
-msgstr "回転(度):"
-
-msgid "Scale (ratio):"
-msgstr "縮尺(比):"
-
-msgid "Transform Type"
-msgstr "トランスフォーム タイプ"
-
-msgid "Pre"
-msgstr "前"
-
-msgid "Post"
-msgstr "後"
-
-msgid "Preview Sun"
-msgstr "プレビューの太陽"
-
-msgid "Sun Direction"
-msgstr "太陽の方向"
-
-msgid "Angular Altitude"
-msgstr "角高度"
-
-msgid "Azimuth"
-msgstr "方位角"
-
-msgid "Sun Color"
-msgstr "太陽の色"
-
-msgid "Sun Energy"
-msgstr "太陽エネルギー"
-
-msgid "Shadow Max Distance"
-msgstr "シャドウの最大距離"
-
-msgid "Add Sun to Scene"
-msgstr "太陽をシーンに追加"
-
-msgid ""
-"Adds a DirectionalLight3D node matching the preview sun settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview environment to the current "
-"scene."
-msgstr ""
-"プレビューの太陽の設定に合うDirectionalLight3Dノードを現在のシーンに追加しま"
-"す。\n"
-"Shiftを押しながらクリックすると、プレビューの環境も現在のシーンに追加されま"
-"す。"
-
-msgid "Preview Environment"
-msgstr "プレビューの環境"
-
-msgid "Sky Color"
-msgstr "空の色"
-
-msgid "Ground Color"
-msgstr "地面の色"
-
-msgid "Sky Energy"
-msgstr "空のエネルギー"
-
-msgid "AO"
-msgstr "AO"
-
-msgid "Glow"
-msgstr "Glow(にじみ/発光)"
-
-msgid "Tonemap"
-msgstr "トーンマップ"
-
-msgid "GI"
-msgstr "GI"
-
-msgid "Post Process"
-msgstr "ポストプロセス"
-
-msgid "Add Environment to Scene"
-msgstr "環境をシーンに追加"
-
-msgid ""
-"Adds a WorldEnvironment node matching the preview environment settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview sun to the current scene."
-msgstr ""
-"プレビューの環境の設定に一致する WorldEnvironment ノードを現在のシーンに追加し"
-"ます。\n"
-"Shiftを押しながらクリックすると、プレビューの太陽も現在のシーンに追加されま"
-"す。"
 
 msgid ""
 "Can't determine a save path for the occluder.\n"
@@ -11836,9 +10816,6 @@ msgstr "基本ラインの間隔:"
 msgid "X Primary Step"
 msgstr "Xプライマリステップ"
 
-msgid "steps"
-msgstr "ステップ"
-
 msgid "Y Primary Step"
 msgstr "Yプライマリステップ"
 
@@ -11851,35 +10828,6 @@ msgstr "回転のステップ:"
 msgid "Scale Step:"
 msgstr "スケールのステップ:"
 
-msgid ""
-"Children of a container get their position and size determined only by their "
-"parent."
-msgstr "コンテナの子の位置とサイズは、その親によってのみ決定されます。"
-
-msgid "Move Node(s) to Position"
-msgstr "ノード（複数可）をポジションに移動する"
-
-msgid "Move Vertical Guide"
-msgstr "垂直ガイドを移動"
-
-msgid "Create Vertical Guide"
-msgstr "垂直ガイドを作成"
-
-msgid "Remove Vertical Guide"
-msgstr "垂直ガイドを削除"
-
-msgid "Move Horizontal Guide"
-msgstr "水平ガイドを移動"
-
-msgid "Create Horizontal Guide"
-msgstr "水平ガイドを作成"
-
-msgid "Remove Horizontal Guide"
-msgstr "水平ガイドを削除"
-
-msgid "Create Horizontal and Vertical Guides"
-msgstr "水平垂直ガイドを作成"
-
 msgid "Instantiate Scene Here..."
 msgstr "ここにシーンをインスタンス化..."
 
@@ -11889,35 +10837,8 @@ msgstr "ここにノードを貼り付け"
 msgid "Move Node(s) Here"
 msgstr "ここにノードを移動"
 
-msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "CanvasItem \"%s\" の Pivot Offset を (%d, %d) に設定します"
-
-msgid "Rotate %d CanvasItems"
-msgstr "%d 個のCanvasItemを回転"
-
-msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "CanvasItem \"%s\" を %d 度回転"
-
-msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "CanvasItem \"%s\" のアンカーを移動"
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Node2D \"%s\" を (%s, %s) にスケールします"
-
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Control \"%s\" を (%d, %d) にリサイズします"
-
-msgid "Scale %d CanvasItems"
-msgstr "%d 個の CanvasItem を拡大縮小"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "CanvasItem \"%s\" を (%s, %s) に拡大縮小"
-
-msgid "Move %d CanvasItems"
-msgstr "%d 個の CanvasItem を移動"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "CanvasItem \"%s\" を (%d, %d) に移動"
+msgid "Move Node(s) to Position"
+msgstr "ノード（複数可）をポジションに移動する"
 
 msgid "px"
 msgstr "px"
@@ -11934,36 +10855,8 @@ msgstr "回転:"
 msgid "Scaling:"
 msgstr "スケール:"
 
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+ドラッグ: 選択したノードを移動します。"
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: 選択したノードのピボット位置を設定します。"
-
 msgid "RMB: Add node at position clicked."
 msgstr "右クリック: クリックした位置にノードを追加。"
-
-msgid "Shift: Scale proportionally."
-msgstr "Shift: 比率を保って拡大縮小。"
-
-msgid "Click to change object's pivot."
-msgstr "クリックしてオブジェクトの回転ピボットを変更します。"
-
-msgid "Shift: Set temporary pivot."
-msgstr "Shift: 一時ピボットを設定します。"
-
-msgid ""
-"Click this button while holding Shift to put the temporary pivot in the "
-"center of the selected nodes."
-msgstr ""
-"Shiftキーを押しながらこのボタンをクリックすると、選択したノードの中心に一時ピ"
-"ボットが配置されます。"
-
-msgid ""
-"You can also use Pan View shortcut (Space by default) to pan in any mode."
-msgstr ""
-"パン・ビューのショートカット (デフォルトではスペース) を使用して、どのモードで"
-"もパンすることができます。"
 
 msgid "Paste Pose"
 msgstr "ポーズを貼り付け"
@@ -12004,11 +10897,21 @@ msgstr "800%にズーム"
 msgid "Zoom to 1600%"
 msgstr "1600%にズーム"
 
+msgid "Center View"
+msgstr "中心ビュー"
+
 msgid "Change Pivot"
 msgstr "ピボットを変更"
 
 msgid "Pan Mode"
 msgstr "パンモード"
+
+msgid ""
+"Groups the selected node with its children. This causes the parent to be "
+"selected when any child node is clicked in 2D and 3D view."
+msgstr ""
+"選択したノードを子でグループ化します。 これにより、子ノードが2Dと3Dビューでク"
+"リックしたときに親が選択されるようになります。"
 
 msgid "Use Smart Snap"
 msgstr "スマートスナップを使用"
@@ -12051,13 +10954,6 @@ msgstr "ガイドにスナップ"
 
 msgid "Smart Snapping"
 msgstr "スマートスナップ"
-
-msgid ""
-"Groups the selected node with its children. This causes the parent to be "
-"selected when any child node is clicked in 2D and 3D view."
-msgstr ""
-"選択したノードを子でグループ化します。 これにより、子ノードが2Dと3Dビューでク"
-"リックしたときに親が選択されるようになります。"
 
 msgid "Skeleton Options"
 msgstr "スケルトンのオプション"
@@ -12163,12 +11059,6 @@ msgstr "継承されたシーンを作成中: %s"
 msgid "Instantiating: "
 msgstr "インスタンス化 "
 
-msgid ""
-"All selected CanvasItems are either invisible or locked in some way and can't "
-"be transformed."
-msgstr ""
-"選択された全ての CanvasItemが不可視化または固定されているため変換できません。"
-
 msgid "Method in target node must be specified."
 msgstr "対象ノードのメソッドを指定してください。"
 
@@ -12232,6 +11122,12 @@ msgstr "受信側メソッド:"
 
 msgid "Receiver Method"
 msgstr "受信側メソッド"
+
+msgid "Pick"
+msgstr "選択"
+
+msgid "Advanced"
+msgstr "高度な設定"
 
 msgid "Deferred"
 msgstr "遅延"
@@ -12338,6 +11234,9 @@ msgstr "イージング(Ease Out)"
 
 msgid "Smoothstep"
 msgstr "スムーズステップ"
+
+msgid "Toggle Grid Snap"
+msgstr "グリッドスナップの切り替え"
 
 msgid "Play This Scene"
 msgstr "シーンをプレイ"
@@ -12610,51 +11509,23 @@ msgstr "フォントをプレビューできません"
 msgid "Styleboxes"
 msgstr "StyleBox"
 
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "{num}色"
-
 msgid "No colors found."
 msgstr "カラーが見つかりませんでした。"
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "{num} 定数"
 
 msgid "No constants found."
 msgstr "定数が見つかりませんでした。"
 
-msgid "1 font"
-msgid_plural "{num} fonts"
-msgstr[0] "{num} フォント"
-
 msgid "No fonts found."
 msgstr "フォントが見つかりませんでした。"
-
-msgid "1 font size"
-msgid_plural "{num} font sizes"
-msgstr[0] "{num} フォントサイズ"
 
 msgid "No font sizes found."
 msgstr "フォントサイズが見つかりませんでした。"
 
-msgid "1 icon"
-msgid_plural "{num} icons"
-msgstr[0] "{num} アイコン"
-
 msgid "No icons found."
 msgstr "アイコンが見つかりませんでした。"
 
-msgid "1 stylebox"
-msgid_plural "{num} styleboxes"
-msgstr[0] "{num} StyleBox"
-
 msgid "No styleboxes found."
 msgstr "StyleBoxが見つかりませんでした。"
-
-msgid "{num} currently selected"
-msgid_plural "{num} currently selected"
-msgstr[0] "{num} 個 選択中"
 
 msgid "Nothing was selected for the import."
 msgstr "インポート用に何も選択されていません。"
@@ -13402,10 +12273,6 @@ msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "ノードには {num} 個の接続があります。"
 
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "ノードは次のグループ内にあります:"
-
 msgid "Click to show signals dock."
 msgstr "クリックでシグナルのドックを表示します。"
 
@@ -13556,6 +12423,9 @@ msgstr "このリソースにはアニメーションはありません。"
 msgid "Animation Frames:"
 msgstr "アニメーション フレーム:"
 
+msgid "Load"
+msgstr "読み込み"
+
 msgid "Load Sheet"
 msgstr "シートを読み込む"
 
@@ -13587,7 +12457,7 @@ msgid "Select Frames"
 msgstr "フレームを選択"
 
 msgid "Frame Order"
-msgstr "フレームオーダー"
+msgstr "フレームの順番"
 
 msgid "As Selected"
 msgstr "選択順"
@@ -13694,6 +12564,9 @@ msgstr "Snapモード:"
 msgid "Pixel Snap"
 msgstr "ピクセルスナップ"
 
+msgid "Grid Snap"
+msgstr "グリッドスナップ"
+
 msgid "Offset X"
 msgstr "X オフセット"
 
@@ -13724,47 +12597,11 @@ msgstr "領域を編集"
 msgid "Write your logic in the _run() method."
 msgstr "ロジックを _run() メソッドに記述する。"
 
-msgid "Replace in Files"
-msgstr "複数ファイル内で置換"
-
 msgid "Find in Files"
 msgstr "複数ファイル内を検索"
 
-msgid "Find:"
-msgstr "検索:"
-
-msgid "Folder:"
-msgstr "フォルダー:"
-
 msgid "Select Folder"
 msgstr "このフォルダーを選択"
-
-msgid "Includes:"
-msgstr "含まれる内容:"
-
-msgid "example: scripts,scenes/*/test.gd"
-msgstr "例: scripts,scenes/*/test.gd"
-
-msgid "Excludes:"
-msgstr "除外:"
-
-msgid "example: res://addons,scenes/test/*.gd"
-msgstr "例: res://addons,scenes/test/*.gd"
-
-msgid "Filters:"
-msgstr "フィルター:"
-
-msgid ""
-"Include the files with the following extensions. Add or remove them in "
-"ProjectSettings."
-msgstr ""
-"次の拡張子を持つファイルを含めます。ProjectSettingsで追加または削除します。"
-
-msgid "Find..."
-msgstr "検索..."
-
-msgid "Replace..."
-msgstr "置換..."
 
 msgid "Searching..."
 msgstr "検索中..."
@@ -13781,14 +12618,8 @@ msgstr "%d 件の一致が見つかりました (%d 個のファイル内)"
 msgid "%d matches in %d files"
 msgstr "%d 件の一致が見つかりました (%d 個のファイル内)"
 
-msgid "Keep these results and show subsequent results in a new window"
-msgstr "これらの結果を保持し、以降の結果は新しいウィンドウで表示します"
-
-msgid "Replace all (no undo)"
-msgstr "すべて置換（アンドゥ不可）"
-
-msgid "Toggle Search Results Bottom Panel"
-msgstr "検索結果の下部パネルの切り替え"
+msgid "Find:"
+msgstr "検索:"
 
 msgid "Path is empty."
 msgstr "パスが空です。"
@@ -13804,9 +12635,6 @@ msgstr "名前をドットで始めることはできません。"
 
 msgid "Path is not local."
 msgstr "パスはローカルではありません。"
-
-msgid "Base path is invalid."
-msgstr "ベースパスが無効です。"
 
 msgid "A directory with the same name exists."
 msgstr "同名のフォルダーが存在します。"
@@ -13900,6 +12728,9 @@ msgstr "親を選択"
 msgid "Use Template"
 msgstr "テンプレートを使用"
 
+msgid "Template"
+msgstr "テンプレート"
+
 msgid "Built-in Script:"
 msgstr "組み込みスクリプト:"
 
@@ -13929,6 +12760,21 @@ msgstr "ブックマーク"
 
 msgid "Emoji & Symbols"
 msgstr "絵文字・記号"
+
+msgid "Open File in Inspector"
+msgstr "インスペクターでファイルを開く"
+
+msgid "Inspect Native Shader Code..."
+msgstr "ネイティブシェーダーコードを検査する..."
+
+msgid "Unsaved file."
+msgstr "未保存のファイルです。"
+
+msgid "%s Class Reference"
+msgstr "%s クラスリファレンス"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "メソッドリストのアルファベット順ソートを切り替える。"
 
 msgid "(truncated)"
 msgstr "(省略されました)"
@@ -13999,9 +12845,6 @@ msgstr "テーマのインポート"
 msgid "Save Theme As..."
 msgstr "テーマを名前をつけて保存..."
 
-msgid "Make the script editor floating."
-msgstr "スクリプトエディタをフローティング化します。"
-
 msgid "Open '%s' in Godot online documentation."
 msgstr "Godotのオンラインドキュメントで '%s' を開く。"
 
@@ -14014,11 +12857,8 @@ msgstr "オンラインドキュメント"
 msgid "Open Godot online documentation."
 msgstr "Godotのオンラインドキュメントを開く。"
 
-msgid "Unsaved file."
-msgstr "未保存のファイルです。"
-
-msgid "%s Class Reference"
-msgstr "%s クラスリファレンス"
+msgid "Find..."
+msgstr "検索..."
 
 msgid "Find Next"
 msgstr "次を検索"
@@ -14026,23 +12866,11 @@ msgstr "次を検索"
 msgid "Find Previous"
 msgstr "前を検索"
 
-msgid "Filter Scripts"
-msgstr "スクリプトを絞り込む"
-
-msgid "Toggle alphabetical sorting of the method list."
-msgstr "メソッドリストのアルファベット順ソートを切り替える。"
-
-msgid "Sort"
-msgstr "ソート"
-
 msgid "Next Script"
 msgstr "次のスクリプト"
 
 msgid "Previous Script"
 msgstr "前のスクリプト"
-
-msgid "Open..."
-msgstr "開く..."
 
 msgid "Save All"
 msgstr "すべて保存"
@@ -14056,12 +12884,6 @@ msgstr "前の履歴"
 msgid "History Next"
 msgstr "次の履歴"
 
-msgid "Import Theme..."
-msgstr "テーマのインポート..."
-
-msgid "Reload Theme"
-msgstr "テーマを再読み込み"
-
 msgid "Close All"
 msgstr "すべて閉じる"
 
@@ -14070,6 +12892,27 @@ msgstr "下のタブを全て閉じる"
 
 msgid "Close Docs"
 msgstr "ドキュメントを閉じる"
+
+msgid "Toggle Files Panel"
+msgstr "ファイルパネルを切り替え"
+
+msgid "Import Theme..."
+msgstr "テーマのインポート..."
+
+msgid "Reload Theme"
+msgstr "テーマを再読み込み"
+
+msgid "Open..."
+msgstr "開く..."
+
+msgid "New Shader Include..."
+msgstr "新規シェーダーインクルード…"
+
+msgid "Load Shader File..."
+msgstr "シェーダーファイルを読み込む…"
+
+msgid "Load Shader Include File..."
+msgstr "シェーダーインクルードファイルを読み込む…"
 
 msgid "Search the reference documentation."
 msgstr "リファレンス文書を探す。"
@@ -14083,23 +12926,11 @@ msgstr "次の編集したドキュメントへ移動。"
 msgid "Discard"
 msgstr "破棄"
 
-msgid "Script Editor"
-msgstr "スクリプトエディター"
-
-msgid "There are unsaved changes in the following built-in script(s):"
-msgstr "以下の組み込みスクリプトに未保存の変更があります:"
-
-msgid "Save changes to the following script(s) before quitting?"
-msgstr "終了する前に、以下のスクリプトへの変更を保存しますか？"
-
 msgid "Reopen Closed Script"
 msgstr "閉じたスクリプトを再び開く"
 
 msgid "Clear Recent Scripts"
 msgstr "最近開いたスクリプトの履歴をクリア"
-
-msgid "Replace in Files..."
-msgstr "複数ファイル内で置換..."
 
 msgid "Uppercase"
 msgstr "大文字"
@@ -14205,6 +13036,9 @@ msgstr "インデントをタブに変換"
 
 msgid "Auto Indent"
 msgstr "自動インデント"
+
+msgid "Replace..."
+msgstr "置換..."
 
 msgid "Contextual Help"
 msgstr "コンテキスト ヘルプ"
@@ -14522,9 +13356,6 @@ msgstr "編集したプロファイルをリセットしますか？"
 msgid "File saving failed."
 msgstr "ファイル保存エラー"
 
-msgid "Create a new profile?"
-msgstr "新規プロファイルを作成しますか？"
-
 msgid ""
 "This will scan all files in the current project to detect used classes.\n"
 "Note that the first scan may take a while, specially in larger projects."
@@ -14607,6 +13438,9 @@ msgstr "すべての検索フィルタをクリア。"
 
 msgid "3D Editor"
 msgstr "3Dエディター"
+
+msgid "Script Editor"
+msgstr "スクリプトエディター"
 
 msgid "Scene Tree Editing"
 msgstr "シーンツリーの編集"
@@ -15014,9 +13848,6 @@ msgstr "N/A"
 msgid "Open Shader / Choose Location"
 msgstr "シェーダーを開く / 場所を選択する"
 
-msgid "Invalid base path."
-msgstr "無効なベースパスです。"
-
 msgid "Note: Built-in shaders can't be edited using an external editor."
 msgstr "注: 組み込みシェーダーは外部のエディターでは編集できません。"
 
@@ -15043,27 +13874,6 @@ msgstr "組み込みシェーダー:"
 
 msgid "Create Shader"
 msgstr "シェーダーの作成"
-
-msgid "Save changes to the following shaders(s) before quitting?"
-msgstr "終了する前に、以下のシェーダーへの変更を保存しますか？"
-
-msgid "There are unsaved changes in the following built-in shaders(s):"
-msgstr "以下の組み込みシェーダに未保存の変更があります:"
-
-msgid "New Shader Include..."
-msgstr "新規シェーダーインクルード…"
-
-msgid "Load Shader File..."
-msgstr "シェーダーファイルを読み込む…"
-
-msgid "Load Shader Include File..."
-msgstr "シェーダーインクルードファイルを読み込む…"
-
-msgid "Open File in Inspector"
-msgstr "インスペクターでファイルを開く"
-
-msgid "Inspect Native Shader Code..."
-msgstr "ネイティブシェーダーコードを検査する..."
 
 msgid "Shader Editor"
 msgstr "シェーダーエディター"
@@ -15099,24 +13909,14 @@ msgstr "名前 '%s' は予約されたシェーダー言語キーワードです
 msgid "Add Shader Global Parameter"
 msgstr "シェーダーのグローバルパラメーターを追加"
 
+msgid "Warnings should be fixed to prevent errors."
+msgstr "エラーを防ぐために警告を修正する必要があります。"
+
 msgid "Error at line %d:"
 msgstr "%d 行目でエラーが発生しました："
 
 msgid "Error at line %d in include %s:%d:"
 msgstr "%d 行目でエラーが発生しました %s:%d:"
-
-msgid "Warnings should be fixed to prevent errors."
-msgstr "エラーを防ぐために警告を修正する必要があります。"
-
-msgid ""
-"This shader has been modified on disk.\n"
-"What action should be taken?"
-msgstr ""
-"このシェーダーはディスク上で修正されています。\n"
-"どうしますか？"
-
-msgid "Resave"
-msgstr "再保存"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -15476,71 +14276,6 @@ msgstr "トーラスの内半径を変更"
 msgid "Change Torus Outer Radius"
 msgstr "トーラスの外半径を変更"
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Convert() の型引数が無効です。TYPE_* 定数を使用してください。"
-
-msgid "Expected an integer between 0 and 2^32 - 1."
-msgstr "0から2^32−1 の範囲の整数が必要です。"
-
-msgid "Expected a string of length 1 (a character)."
-msgstr "1文字の文字列が必要です。"
-
-msgid "Range too big."
-msgstr "範囲が大きすぎます。"
-
-msgid "Cannot resize array."
-msgstr "配列のサイズを変更できません。"
-
-msgid "Step argument is zero!"
-msgstr "ステップ引数がゼロです！"
-
-msgid "Not a script with an instance."
-msgstr "インスタンスのスクリプトではありません。"
-
-msgid "Not based on a script."
-msgstr "スクリプトがベースになっていません。"
-
-msgid "Not based on a resource file."
-msgstr "リソースファイルがベースになっていません。"
-
-msgid "Invalid instance dictionary format (missing @path)."
-msgstr "無効なインスタンス辞書形式です (@path がありません)。"
-
-msgid "Invalid instance dictionary format (can't load script at @path)."
-msgstr "無効なインスタンス辞書形式です (@path のスクリプトをロードできません)。"
-
-msgid "Invalid instance dictionary format (invalid script at @path)."
-msgstr "無効なインスタンス辞書形式です (@path が無効なスクリプトです)。"
-
-msgid "Invalid instance dictionary (invalid subclasses)."
-msgstr "無効なインスタンス辞書です (無効なサブクラスです)。"
-
-msgid "Cannot instantiate GDScript class."
-msgstr "GDScriptクラスをインスタンス化できません。"
-
-msgid "Value of type '%s' can't provide a length."
-msgstr "型 '%s' の値には長さが指定できません。"
-
-msgid ""
-"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
-"types."
-msgstr ""
-"is_instance_of() の型引数が無効です。組み込み型には TYPE_* 定数を使用してくだ"
-"さい。"
-
-msgid "Type argument is a previously freed instance."
-msgstr "型引数は以前に解放されたインスタンスです。"
-
-msgid ""
-"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
-"class or a script."
-msgstr ""
-"is_instance_of() の型引数が無効です。TYPE_* 定数、クラス、またはスクリプトであ"
-"る必要があります。"
-
-msgid "Value argument is a previously freed instance."
-msgstr "値の引数は以前に解放されたインスタンスです。"
-
 msgid "Export Scene to glTF 2.0 File"
 msgstr "シーンをglTF 2.0ファイルにエクスポートする"
 
@@ -15618,15 +14353,6 @@ msgstr "GridMap ペイント"
 msgid "GridMap Selection"
 msgstr "GridMap の選択"
 
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"グリッドフロアを変更:\n"
-"前の平面(%s)\n"
-"次の平面(%s)"
-
 msgid "GridMap"
 msgstr "グリッドマップ"
 
@@ -15659,6 +14385,12 @@ msgstr "選択距離:"
 
 msgid "Selection"
 msgstr "選択範囲"
+
+msgid "Erase"
+msgstr "消去"
+
+msgid "Paint"
+msgstr "ペイント"
 
 msgid "Cursor Rotate X"
 msgstr "X軸でカーソルを回転"
@@ -15830,20 +14562,6 @@ msgstr "クラス名は有効な識別子である必要があります"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "デコードするにはバイトが足りないか、または無効な形式です。"
 
-msgid ""
-"Unable to load .NET runtime, no compatible version was found.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-".NETランタイムの読み込みに失敗しました。互換性のあるバージョンが見つかりませ"
-"ん。\n"
-"プロジェクトの作成・編集を行うとクラッシュする可能性があります。\n"
-"\n"
-".NET SDK 8.0またはそれ以降のバージョンを https://get.dot.net よりインストール"
-"し、Godotを再起動してください。"
-
 msgid "Failed to load .NET runtime"
 msgstr ".NETランタイムの読み込みに失敗しました"
 
@@ -15857,19 +14575,6 @@ msgstr ""
 
 msgid ".NET assemblies not found"
 msgstr ".NET アセンブリが見つかりません"
-
-msgid ""
-"Unable to load .NET runtime, specifically hostfxr.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-".NETランタイム（hostfxr）の読み込みに失敗しました。\n"
-"プロジェクトの作成・編集を行うとクラッシュする可能性があります。\n"
-"\n"
-"https://dotnet.microsoft.com/ja-jp/download から .NET SDK 8.0 以上をインストー"
-"ルし、Godot を再起動してください。"
 
 msgctxt "Network"
 msgid "Down"
@@ -16183,6 +14888,12 @@ msgid ""
 "Was the same reference returned by multiple getters on the source object?"
 msgstr "ソースオブジェクトの複数のゲッターから、同じ参照が返されましたか？"
 
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
+
 msgid "Summary"
 msgstr "概要"
 
@@ -16410,6 +15121,910 @@ msgid ""
 msgstr ""
 "ホールパンチングは sort order が0より小さくなければ期待通りに動作しません。"
 
+msgid "Merge TileSetAtlasSource"
+msgstr "TileSetAtlasSource の統合"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
+msgid "Atlas Merging"
+msgstr "アトラスのマージ"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "統合 (元のアトラスを保持)"
+
+msgid "Merge"
+msgstr "統合"
+
+msgid "Next Line After Column"
+msgstr "列の次の行"
+
+msgid "Please select two atlases or more."
+msgstr "2つ以上のアトラスを選択してください。"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: %d"
+
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"選択されたアトラスソースに有効なテクスチャがありません。TileSet 下部タブでテク"
+"スチャを割り当ててください。"
+
+msgid "Base Tiles"
+msgstr "ベース タイル"
+
+msgid "Alternative Tiles"
+msgstr "代替タイル"
+
+msgid "Reset Polygons"
+msgstr "ポリゴンをリセット"
+
+msgid "Clear Polygons"
+msgstr "ポリゴンをクリア"
+
+msgid "Rotate Polygons Right"
+msgstr "ポリゴンを右に回転"
+
+msgid "Rotate Polygons Left"
+msgstr "ポリゴンを左に回転"
+
+msgid "Flip Polygons Horizontally"
+msgstr "ポリゴンを水平方向に反転"
+
+msgid "Flip Polygons Vertically"
+msgstr "ポリゴンを垂直方向に反転"
+
+msgid "Edit Polygons"
+msgstr "ポリゴンを編集"
+
+msgid "Expand editor"
+msgstr "エディターを展開する"
+
+msgid "Add polygon tool"
+msgstr "ポリゴンツールを追加"
+
+msgid "Edit points tool"
+msgstr "ポイントツールの編集"
+
+msgid "Delete points tool"
+msgstr "ポイントツールの削除"
+
+msgid "Reset to default tile shape"
+msgstr "デフォルトのタイル形状に戻す"
+
+msgid "Rotate Right"
+msgstr "右に回転"
+
+msgid "Rotate Left"
+msgstr "左に回転"
+
+msgid "Flip Horizontally"
+msgstr "左右反転"
+
+msgid "Flip Vertically"
+msgstr "上下反転"
+
+msgid "Disable Snap"
+msgstr "スナップを無効にする"
+
+msgid "Half-Pixel Snap"
+msgstr "半ピクセルスナップ"
+
+msgid "Subdivision"
+msgstr "サブディビジョン"
+
+msgid "Painting Tiles Property"
+msgstr "タイルプロパティをペイント"
+
+msgid "Painting:"
+msgstr "ペイント設定:"
+
+msgid "Polygon %d"
+msgstr "ポリゴン %d"
+
+msgid "No terrains"
+msgstr "地形なし"
+
+msgid "No terrain"
+msgstr "地形なし"
+
+msgid "Painting Terrain Set"
+msgstr "地形セットをペイント"
+
+msgid "Painting Terrain"
+msgstr "地形を塗る"
+
+msgid "Drawing Rect:"
+msgstr "長方形を描画:"
+
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr ""
+"正方形以外のタイルグリッドを使用している場合、パターンを回転できません。"
+
+msgid "Shift: Draw line."
+msgstr "Shift: 線を描画。"
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "テクスチャ アトラス ソースなし (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "シーン コレクション ソース (ID: %d)"
+
+msgid "Empty Scene Collection Source (ID: %d)"
+msgstr "空のシーンコレクションソース (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "不明な型のソース (ID: %d)"
+
+msgid "Add TileSet pattern"
+msgstr "TileSet パターンを追加"
+
+msgid "Remove TileSet patterns"
+msgstr "TileSet パターンを削除"
+
+msgid "Index: %d"
+msgstr "インデックス: %d"
+
+msgid "Tile with Invalid Scene"
+msgstr "無効なシーンのタイル"
+
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"選択されたシーンコレクションソースにはシーンがありません。TileSet下部タブで"
+"シーンを追加してください。"
+
+msgid "Delete tiles"
+msgstr "タイルを削除"
+
+msgid "Change selection"
+msgstr "選択範囲を変更"
+
+msgid "Move tiles"
+msgstr "タイルを移動"
+
+msgid "Paint tiles"
+msgstr "タイルをペイント"
+
+msgid "Paste tiles"
+msgstr "タイルを貼り付け"
+
+msgid "Selection Tool"
+msgstr "選択ツール"
+
+msgid "Paint Tool"
+msgstr "ペイントツール"
+
+msgid "Line Tool"
+msgstr "直線"
+
+msgid "Rect Tool"
+msgstr "矩形ツール"
+
+msgid "Bucket Tool"
+msgstr "バケツツール"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "または、%s キーを押しながら他のツールを使用してタイルを選びます。"
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "または、RMB を使用してタイルを消去します。"
+
+msgid "Rotate Tile Left"
+msgstr "タイルを左に回転"
+
+msgid "Rotate Tile Right"
+msgstr "タイルを右に回転"
+
+msgid "Flip Tile Horizontally"
+msgstr "タイルを左右反転"
+
+msgid "Flip Tile Vertically"
+msgstr "タイルを上下反転"
+
+msgid "Contiguous"
+msgstr "隣接"
+
+msgid "Place Random Tile"
+msgstr "ランダムタイルを配置"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr "ランダムに選ばれたタイルの代わりに何も描かない確率を変更します。"
+
+msgid "Scattering:"
+msgstr "ばらつき:"
+
+msgid "Tiles"
+msgstr "タイル"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"このタイルマップのタイルセットにはタイルソースが設定されていません。タイルセッ"
+"トの下部パネルから追加してください。"
+
+msgid "Sort sources"
+msgstr "ソースの並べ替え"
+
+msgid "Sort by ID (Ascending)"
+msgstr "ID (昇順) で並び替え"
+
+msgid "Sort by ID (Descending)"
+msgstr "ID (降順) で並び替え"
+
+msgid "Invalid source selected."
+msgstr "選択したソースが無効です。"
+
+msgid "Patterns"
+msgstr "パターン"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"TileMap の選択範囲をここにドラッグ アンド ドロップするか貼り付けて、パターンを"
+"保存します。"
+
+msgid "Paint terrain"
+msgstr "地形を塗る"
+
+msgid "Matches Corners and Sides"
+msgstr "角と側面にマッチさせる"
+
+msgid "Matches Corners Only"
+msgstr "角にのみマッチさせる"
+
+msgid "Matches Sides Only"
+msgstr "側面にのみマッチさせる"
+
+msgid "Terrain Set %d (%s)"
+msgstr "地形セット %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"コネクトモード：地形をペイントし、同じ地形がある周囲のタイルと接続します。"
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"パス モード: 地形をペイントし、同じストローク内でペイントされた前のタイルに接"
+"続します。"
+
+msgid "Terrains"
+msgstr "地形"
+
+msgid "No Layers"
+msgstr "レイヤーなし"
+
+msgid "Replace Tiles with Proxies"
+msgstr "タイルをプロキシに置き換える"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "TileMapレイヤーを個別のTileMapLayerノードとして抽出"
+
+msgid "Can't edit multiple layers at once."
+msgstr "一度に複数のレイヤーは編集できません。"
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "選択されたTileMapには編集するレイヤーがありません。"
+
+msgid "The edited layer is disabled or invisible"
+msgstr "編集されたレイヤーは無効化または不可視化されています"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"編集中のTileMapまたはTileMapLayer ノードにTileSetリソースがありません。\n"
+"インスペクタのTile SetプロパティでTileSetリソースを作成または読み込んでくださ"
+"い。"
+
+msgid "TileMap"
+msgstr "TileMap"
+
+msgid "Select Next Tile Map Layer"
+msgstr "次のタイル マップ レイヤーを選択"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "前のタイル マップ レイヤーを選択"
+
+msgid "TileMap Layers"
+msgstr "TileMap レイヤー"
+
+msgid "Select previous layer"
+msgstr "前のレイヤーを選択"
+
+msgid "Select next layer"
+msgstr "次のレイヤーを選択"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "シーンのタイル マップ レイヤーを全て選択"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "選択したタイルマップ レイヤーをハイライト表示"
+
+msgid "Toggle grid visibility."
+msgstr "グリッドの表示を切り替え"
+
+msgid "Advanced settings."
+msgstr "高度な設定です。"
+
+msgid "Automatically Replace Tiles with Proxies"
+msgstr "タイルを自動的にプロキシに置き換える"
+
+msgid "Remove Tile Proxies"
+msgstr "タイルプロキシを削除"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "代替レベルのタイルプロキシを作成"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "座標レベルのタイルプロキシを作成"
+
+msgid "Create source-level Tile Proxy"
+msgstr "ソースレベルのタイルプロキシを作成"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "すべての無効なタイルプロキシを削除"
+
+msgid "Delete All Tile Proxies"
+msgstr "すべてのタイルプロキシを削除"
+
+msgid "Tile Proxies Management"
+msgstr "タイルプロキシ管理"
+
+msgid "Source-level proxies"
+msgstr "ソースレベルのプロキシ"
+
+msgid "Coords-level proxies"
+msgstr "座標レベルのプロキシ"
+
+msgid "Alternative-level proxies"
+msgstr "代替レベルのプロキシ"
+
+msgid "Add a new tile proxy:"
+msgstr "新しいタイルプロキシを追加:"
+
+msgid "From Source"
+msgstr "ソースから"
+
+msgid "From Coords"
+msgstr "座標から"
+
+msgid "From Alternative"
+msgstr "代替から"
+
+msgid "To Source"
+msgstr "ソースへ"
+
+msgid "To Coords"
+msgstr "座標へ"
+
+msgid "To Alternative"
+msgstr "代替へ"
+
+msgid "Global actions:"
+msgstr "グローバルアクション:"
+
+msgid "Clear Invalid"
+msgstr "無効を除去"
+
+msgid "Atlas"
+msgstr "アトラス"
+
+msgid "Base Tile"
+msgstr "ベース タイル"
+
+msgid "Alternative Tile"
+msgstr "代替タイル"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"選択したタイル:\n"
+"ソース: %d\n"
+"アトラス座標: %s\n"
+"代替: %d"
+
+msgid "Rendering"
+msgstr "レンダリング"
+
+msgid "Occlusion Layer %d"
+msgstr "オクルージョン レイヤー %d"
+
+msgid "Physics"
+msgstr "物理"
+
+msgid "Physics Layer %d"
+msgstr "物理レイヤー %d"
+
+msgid "No physics layers"
+msgstr "物理レイヤーなし"
+
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr ""
+"TileSetリソースのインスペクタで物理レイヤーを作成し、カスタマイズします。"
+
+msgid "Navigation"
+msgstr "ナビゲーション"
+
+msgid "Navigation Layer %d"
+msgstr "ナビゲーションレイヤー %d"
+
+msgid "No navigation layers"
+msgstr "ナビゲーションレイヤーなし"
+
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"TileSetリソースのインスペクタでナビゲーションレイヤーを作成し、カスタマイズし"
+"ます。"
+
+msgid "Custom Data"
+msgstr "カスタムデータ"
+
+msgid "Custom Data %d"
+msgstr "カスタムデータ %d"
+
+msgid "No custom data layers"
+msgstr "カスタムデータレイヤーなし"
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"TileSetリソースのインスペクタでデータレイヤーを作成し、カスタマイズできます。"
+
+msgid "Select a property editor"
+msgstr "プロパティエディターを選択"
+
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr ""
+"TileSetが読み込み専用モードになっています。TileSetプロパティを編集するには、リ"
+"ソースをユニーク化にしてください。"
+
+msgid "Paint properties."
+msgstr "ペイント設定。"
+
+msgid "Create tiles"
+msgstr "タイルを作成"
+
+msgid "Create a tile"
+msgstr "タイルを作成"
+
+msgid "Remove tiles"
+msgstr "タイルを除去"
+
+msgid "Move a tile"
+msgstr "タイルを移動"
+
+msgid "Resize a tile"
+msgstr "タイルのサイズ変更"
+
+msgid "Remove tile"
+msgstr "タイルを除去"
+
+msgid "Create tile alternatives"
+msgstr "代替タイルを作成"
+
+msgid "Remove Tiles Outside the Texture"
+msgstr "テクスチャー外のタイルを削除"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "不透明なテクスチャ領域にタイルを作成"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "完全に透明なテクスチャ領域のタイルを削除"
+
+msgid ""
+"The tile's unique identifier within this TileSet. Each tile stores its source "
+"ID, so changing one may make tiles invalid."
+msgstr ""
+"このTileSet内のタイルのユニークな識別子。 各タイルにはソースIDが保存されている"
+"ため、ソースIDを変更するとタイルが無効になる可能性があります。"
+
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"人間が読めるアトラス名。ここでは整理のために説明的な名前を使用します "
+"(\"terrain\", \"decoration \"など)。"
+
+msgid "The image from which the tiles will be created."
+msgstr "タイルの元になる画像。"
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"画像の端にある余白 (ピクセル単位) はタイルとして選択できません。これを増やす"
+"と、端に余白のあるタイルシート画像をダウンロードする場合に便利です（帰属表示の"
+"ためなど）。"
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"アトラス上の各タイルの間隔をピクセル単位で指定します。使用するタイルシート画像"
+"にガイド（各タイル間のアウトラインなど）が含まれている場合、これを増やすと便利"
+"です。"
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"アトラス上の各タイルのピクセルサイズ。ほとんどの場合、これはTileMapプロパティ"
+"で定義されたタイルサイズと一致する必要があります（ただし、これは厳密には必要で"
+"はありません）。"
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"チェックした場合、フィルタリングが有効なときにテクスチャのにじみを防ぐために、"
+"各タイルの周囲に1ピクセルの透明なエッジを追加します。テクスチャのパディングが"
+"原因でレンダリングの問題が発生しない限り、これを有効にしておくことをお勧めしま"
+"す。"
+
+msgid ""
+"The position of the tile's top-left corner in the atlas. The position and "
+"size must be within the atlas and can't overlap another tile.\n"
+"Each painted tile has associated atlas coords, so changing this property may "
+"cause your TileMaps to not display properly."
+msgstr ""
+"タイルの左上の頂点のアトラス内の座標。位置とサイズはアトラス内になければなら"
+"ず、他のタイルと重ねることはできません。\n"
+"ペイントされた各タイルは、関連するアトラス座標を持っているので、このプロパティ"
+"を変更すると、タイルマップが正しく表示されないことがあります。"
+
+msgid "The unit size of the tile."
+msgstr "タイルの単位サイズ。"
+
+msgid ""
+"Number of columns for the animation grid. If number of columns is lower than "
+"number of frames, the animation will automatically adjust row count."
+msgstr ""
+"アニメーショングリッドの列数。カラム数がフレーム数より小さい場合、アニメーショ"
+"ンは自動的に行数を調整します。"
+
+msgid "The space (in tiles) between each frame of the animation."
+msgstr "アニメーションの各フレーム間のスペース (タイル単位)。"
+
+msgid "Animation speed in frames per second."
+msgstr "アニメーションの速度（1秒あたりのフレーム数）。"
+
+msgid ""
+"Determines how animation will start. In \"Default\" mode all tiles start "
+"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
+"animation with a random offset."
+msgstr ""
+"アニメーションの開始方法を決定します。\"Default\" モードでは、すべてのタイルが"
+"同じフレームでアニメーションを開始します。\"Random Start Times\" モードでは、"
+"各タイルはランダムなオフセットでアニメーションを開始します。"
+
+msgid "If [code]true[/code], the tile is horizontally flipped."
+msgstr "[code]true[/code]の場合、タイルは水平に反転します."
+
+msgid "If [code]true[/code], the tile is vertically flipped."
+msgstr "[code]true[/code]の場合、タイルは縦に反転します."
+
+msgid ""
+"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
+"and then flipped vertically. In practice, this means that to rotate a tile by "
+"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
+"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
+"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
+"[b]Flip V[/b] and [b]Transpose[/b]."
+msgstr ""
+"[code]true[/code]の場合、タイルは90度[i]反時計回り[/i]に回転した後、垂直に反転"
+"します。実際には、これは、タイルを反転させずに時計回りに90度回転させるには、"
+"[b]Flip H[/b]と[b]Transpose[/b]を有効にする必要があることを意味します。タイル"
+"を時計回りに180度回転させるには、[b]Flip H[/b]と[b]Flip V[/b]を有効にします。"
+"タイルを時計回りに270度回転させるには、[b]Flip V[/b]と[b]Transpose[/b]を有効に"
+"します。"
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"タイルの描画に使用する原点。これは、ベースタイルと比較してタイルを視覚的に移動"
+"させるために使用することができます。"
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "タイルをレンダリングするときに使用する色の乗数。"
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr ""
+"タイルに使用するマテリアル。これは、単一のタイルに異なるブレンドモードやカスタ"
+"ムシェーダーを適用するために使用することができます。"
+
+msgid ""
+"The sorting order for this tile. Higher values will make the tile render in "
+"front of others on the same layer. The index is relative to the TileMap's own "
+"Z index."
+msgstr ""
+"タイルのソート順。同じレイヤーのタイルでは、値が大きいほど手前にレンダリングさ"
+"れます。インデックスはTileMapのZインデックスからの相対値です。"
+
+msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"Y座標（ピクセル単位）に基づいてタイルをソートするために使用する垂直方向のオフ"
+"セット。これにより、トップダウンゲームでレイヤーを異なる高さにあるかのように使"
+"用できます。これを調整することで、特定のタイルをソートする際の問題を軽減するこ"
+"とができます。タイルが配置されているTileMapレイヤーのY Sort Enabledがtrueの場"
+"合のみ有効です。"
+
+msgid ""
+"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
+"will not be used in terrains."
+msgstr ""
+"このタイルが属する地形セットのインデックス。[code]-1[/code]は地形で使用されな"
+"いことを意味します。"
+
+msgid ""
+"The index of the terrain inside the terrain set this tile belongs to. "
+"[code]-1[/code] means it will not be used in terrains."
+msgstr ""
+"このタイルが属する地形セット内の地形のインデックス。[code]-1[/code]は地形で使"
+"用されないことを意味します。"
+
+msgid ""
+"The relative probability of this tile appearing when painting with \"Place "
+"Random Tile\" enabled."
+msgstr ""
+"「ランダムタイルを配置」 で塗りつぶしたときに、このタイルが出現する相対確率を"
+"表す。"
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"現在のアトラスソースには、テクスチャの外部にタイルがあります。\n"
+"3ドットメニュー内の\"%s\"オプションを使用することでそれらを消去できます。"
+
+msgid "Setup"
+msgstr "セットアップ"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr ""
+"アトラスを設定。タイルツールを追加/削除（Shiftキーで大きなタイルを作成、Ctrl"
+"キーで長方形を編集）。"
+
+msgid "Select tiles."
+msgstr "タイルを選択します。"
+
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"タイルが選択されていません。\n"
+"パレットから1つ以上のタイルを選択してプロパティを編集します。"
+
+msgid "Paint Properties:"
+msgstr "ペイント設定:"
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "不透明なテクスチャ領域にタイルを作成"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "完全に透明なテクスチャ領域のタイルを削除"
+
+msgid "Create an Alternative Tile"
+msgstr "代替タイルを作成"
+
+msgid "Create a Tile"
+msgstr "タイルを作成"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "不透明なテクスチャ領域にタイルを自動作成しますか？"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"アトラスのテクスチャが変更されました。\n"
+"アトラスにタイルを自動的に作成しますか？"
+
+msgid "Invalid texture selected."
+msgstr "無効なテクスチャが選択されています。"
+
+msgid "Add a new atlas source"
+msgstr "新しいアトラスソースを追加"
+
+msgid "Remove source"
+msgstr "ソースを削除"
+
+msgid "Add atlas source"
+msgstr "アトラスソースを追加"
+
+msgid "TileSet"
+msgstr "TileSet"
+
+msgid "Tile Sources"
+msgstr "タイルソース"
+
+msgid "Sort Sources"
+msgstr "ソースの並べ替え"
+
+msgid "A palette of tiles made from a texture."
+msgstr "テクスチャから作成されたタイルのパレット。"
+
+msgid "Scenes Collection"
+msgstr "シーンコレクション"
+
+msgid "A collection of scenes that can be instantiated and placed as tiles."
+msgstr "タイルと同じように初期化して設置できるシーンのコレクションです。"
+
+msgid "Open Atlas Merging Tool"
+msgstr "アトラスの統合ツールを開く"
+
+msgid "Manage Tile Proxies"
+msgstr "タイルプロキシの管理"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"タイルセットのソースが選択されていません。タイルセットのソースを選択するか作成"
+"してください。\n"
+"左にある追加ボタンを押すか、タイルセットにしたいテクスチャーをソースリストにド"
+"ラッグ&ドロップすることで新しいソースを追加することができます。"
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "TileMap 編集モードで新しいパターンを追加します。"
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"警告: ソースIDを変更すると、そのソースを使用しているすべてのTileMapが、代わり"
+"に無効なソースを参照することになります。その結果、予期せぬデータ損失が発生する"
+"可能性があります。このIDは慎重に変更してください。"
+
+msgid "Add a Scene Tile"
+msgstr "シーンタイルの追加"
+
+msgid "Remove a Scene Tile"
+msgstr "シーン タイルを削除"
+
+msgid "Drag and drop scenes here or use the Add button."
+msgstr "ここにシーンをドラッグ＆ドロップするか、追加ボタンを押してください。"
+
+msgid ""
+"The human-readable name for the scene collection. Use a descriptive name here "
+"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
+msgstr ""
+"シーンコレクションの人間が読める名前。ここでは、整理のために説明的な名前を使用"
+"してください (\"障害物\", \"飾り\" など)。"
+
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"コレクション内のシーンタイルのID。各ペイントタイルは関連するIDを持っているの"
+"で、このプロパティを変更すると TileMaps が正しく表示されないことがあります。"
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "このタイルに関連するシーンへの絶対パス。"
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"[code]true[/code] の場合、プレースホルダ マーカーがシーンのプレビューの上に表"
+"示されます。 シーンに有効なプレビューがない場合でも、マーカーは表示されます。"
+
+msgid "Scenes collection properties:"
+msgstr "シーン コレクションのプロパティ:"
+
+msgid "Tile properties:"
+msgstr "タイル設定:"
+
+msgid "Eraser Tool"
+msgstr "消去ツール"
+
+msgid "Picker Tool"
+msgstr "ピッカーツール"
+
+msgid ""
+"Source ID: %d\n"
+"Texture path: %s"
+msgstr ""
+"ソースID：%d\n"
+"テクスチャのパス：%s"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"TileMapノードは複数のTileMapLayerで置き換えられるため非推奨となりました。\n"
+"TileMapノードをTileMapLayerノードに変換するには、TileMapを選択した状態で下パネ"
+"ルを開き、右上のツールボックスアイコンから「TileMapレイヤーを個別の"
+"TileMapLayerノードとして抽出」を選択して下さい。"
+
+msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"Y ソートされたレイヤーは、Y ソートされていないレイヤーと同じ Z インデックス値"
+"を持ちます。\n"
+"これにより、Y ソートされていないレイヤーは、Y ソートされたレイヤーのタイルとと"
+"もに全体として Y ソートされるため、望ましくない動作が発生する可能性がありま"
+"す。"
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr ""
+"TileMap レイヤーは Y ソートとして設定されていますが、TileMap ノード自体では Y "
+"ソートが有効になっていません。"
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"TileMap ノードは Y ソートとして設定されていますが、TileMap のどのレイヤーでも "
+"Y ソートが有効になっていません。\n"
+"Y ソートされていないレイヤーも含め全体として Y ソートされるため、望ましくない"
+"動作が発生する可能性があります。"
+
+msgid ""
+"Isometric TileSet will likely not look as intended without Y-sort enabled for "
+"the TileMap and all of its layers."
+msgstr ""
+"Isometric TileSet は、TileMap とそのすべてのレイヤーに対して Y ソートが有効に"
+"なっていないと、意図したとおりに表示されない可能性があります。"
+
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr "ネイピア数(2.718282)。自然対数のベースを表します。"
 
@@ -16434,15 +16049,6 @@ msgstr "τ(タウ)定数(6.283185)または360度。"
 msgid "Sqrt2 constant (1.414214). Square root of 2."
 msgstr "Sqrt2定数(1.414214)。2の平方根。"
 
-msgid "Drag and drop nodes here to attach them."
-msgstr "ここにノードをドラッグ＆ドロップして取り付けます。"
-
-msgid "Add Input"
-msgstr "入力を追加"
-
-msgid "Add Output"
-msgstr "出力を追加"
-
 msgid "Int"
 msgstr "Int"
 
@@ -16457,6 +16063,15 @@ msgstr "Vector4"
 
 msgid "Sampler"
 msgstr "\\ Sampler"
+
+msgid "Drag and drop nodes here to attach them."
+msgstr "ここにノードをドラッグ＆ドロップして取り付けます。"
+
+msgid "Add Input"
+msgstr "入力を追加"
+
+msgid "Add Output"
+msgstr "出力を追加"
 
 msgid "[default]"
 msgstr "[デフォルト]"
@@ -16917,18 +16532,6 @@ msgstr "ライトシェーダーモードの '%s' 入力パラメーター。"
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "頂点シェーダーモードの '%s' 入力パラメーター。"
 
-msgid "'%s' input parameter for start shader mode."
-msgstr "シェーダーモード開始の '%s' 入力パラメーター。"
-
-msgid "'%s' input parameter for process shader mode."
-msgstr "プロセスシェーダーモードの '%s' 入力パラメーター。"
-
-msgid "'%s' input parameter for start and process shader modes."
-msgstr "シェーダーモードの開始と処理のための '%s' 入力パラメーター。"
-
-msgid "'%s' input parameter for process and collide shader modes."
-msgstr "プロセスおよび衝突シェーダーモードの '%s' 入力パラメーター。"
-
 msgid ""
 "A node for help to multiply a position input vector by rotation using "
 "specific axis. Intended to work with emitters."
@@ -17260,9 +16863,6 @@ msgstr "深度プリパスで得られた深度値を線形空間で返す。"
 msgid "Reconstructs the World Position of the Node from the depth texture."
 msgstr "深度テクスチャからノードのワールドポジションを再構築します。"
 
-msgid "Unpacks the Screen Normal Texture in World Space"
-msgstr "ワールド空間のスクリーン法線テクスチャを展開します"
-
 msgid "Perform the 2D texture lookup."
 msgstr "2Dテクスチャ・ルックアップを実行します。"
 
@@ -17377,13 +16977,6 @@ msgstr ""
 
 msgid "Returns a random value between the minimum and maximum input values."
 msgstr "最小入力値と最大入力値の間のランダムな値を返します。"
-
-msgid ""
-"Builds a rotation matrix from the given axis and angle, multiply the input "
-"vector by it and returns both this vector and a matrix."
-msgstr ""
-"指定された軸と角度から回転行列を構築し、入力ベクトルにそれを掛けて、このベクト"
-"ルと行列の両方を返します。"
 
 msgid "Vector function."
 msgstr "ベクトル関数。"
@@ -17759,9 +17352,6 @@ msgstr "文字 '%s' はパッケージセグメントの最初の文字に使用
 msgid "The package must have at least one '.' separator."
 msgstr "パッケージは最低でも一つの '.' で区切る必要があります。"
 
-msgid "Error creating keystores directory:"
-msgstr "キーストアのディレクトリ作成エラー:"
-
 msgid "Invalid package name:"
 msgstr "無効なパッケージ名:"
 
@@ -17850,13 +17440,6 @@ msgid "Custom Android source template not found."
 msgstr "カスタム Android ソーステンプレートが見つかりません。"
 
 msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr ""
-"Android ビルド テンプレートがプロジェクトにインストールされていません。[プロ"
-"ジェクト] メニューからインストールします。"
-
-msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
@@ -17876,41 +17459,11 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "エクスポート設定にてリリース キーストアが誤って設定されています。"
 
-msgid "A valid Java SDK path is required in Editor Settings."
-msgstr "エディタ設定で有効なJava SDKのパスを指定することが必要です。"
-
-msgid "Invalid Java SDK path in Editor Settings."
-msgstr "エディタ設定のJava SDKパスが無効です。"
-
-msgid "Missing 'bin' directory!"
-msgstr "'bin' ディレクトリがありません！"
-
-msgid "Unable to find 'java' command using the Java SDK path."
-msgstr "Java SDKのパスから 'java' コマンドを見つけることができません。"
-
-msgid "Please check the Java SDK directory specified in Editor Settings."
-msgstr "エディタ設定で指定されたJava SDKディレクトリを確認してください。"
-
-msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "エディター設定でAndroid SDKパスの指定が必要です。"
-
-msgid "Invalid Android SDK path in Editor Settings."
-msgstr "エディター設定のAndroid SDKパスが無効です。"
-
-msgid "Missing 'platform-tools' directory!"
-msgstr "'platform-tools' ディレクトリがありません！"
-
-msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr "Android SDK platform-toolsのadbコマンドが見つかりません。"
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "Android SDK build-toolsのapksignerコマンドが見つかりません。"
 
 msgid "Please check in the Android SDK directory specified in Editor Settings."
 msgstr "エディター設定で指定されたAndroid SDKのディレクトリを確認してください。"
-
-msgid "Missing 'build-tools' directory!"
-msgstr "'build-tools' ディレクトリがありません！"
-
-msgid "Unable to find Android SDK build-tools' apksigner command."
-msgstr "Android SDK build-toolsのapksignerコマンドが見つかりません。"
 
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
@@ -17933,9 +17486,6 @@ msgid ""
 msgstr ""
 "プロジェクト名はパッケージ名の形式の要件を満たしていないため、「%s」に更新され"
 "ます。 必要に応じてパッケージ名を明示的に指定してください。"
-
-msgid "AAB signing is not supported"
-msgstr "AAB署名は未サポート"
 
 msgid "Signing debug APK..."
 msgstr "デバッグ APK に署名中..."
@@ -17995,13 +17545,6 @@ msgstr "無効なファイル名です！ Android APKには拡張子 *.apk が�
 
 msgid "Unsupported export format!"
 msgstr "サポートされていないエクスポート形式です！"
-
-msgid ""
-"Trying to build from a gradle built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Gradle でビルドされたテンプレートからビルドしようとしましたが、そのバージョン"
-"情報が存在しません。「プロジェクト」メニューから再インストールしてください。"
 
 msgid ""
 "Java SDK path must be configured in Editor Settings at 'export/android/"
@@ -18073,12 +17616,6 @@ msgstr "temporary unaligned APKを展開できませんでした。"
 
 msgid "Metal renderer require iOS 14+."
 msgstr "MetalレンダラーにはiOS 14以降が必要です。"
-
-msgid "Export Icons"
-msgstr "エクスポートアイコン"
-
-msgid "Could not open a directory at path \"%s\"."
-msgstr "\"%s\" のディレクトリを開くことができません。"
 
 msgid "Debug Script Export"
 msgstr "デバッグスクリプトのエクスポート"
@@ -18289,8 +17826,8 @@ msgid ""
 "See instructions on finding your team ID: https://developer.apple.com/help/"
 "glossary/team-id"
 msgstr ""
-"チーム ID の確認方法については、こちらを参照してください: https://"
-"developer.apple.com/help/glossary/team-id"
+"チーム ID を見つける手順については、https://developer.apple.com/help/glossary/"
+"team-id をご覧ください。"
 
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "組み込みのコード署名がエラー「%s」で失敗しました。"
@@ -18314,6 +17851,9 @@ msgstr "ディレクトリ %s に署名できません。"
 
 msgid "Cannot sign file %s."
 msgstr "ファイル %s に署名できません。"
+
+msgid "Could not open \"%s\"."
+msgstr "「%s」を開けません。"
 
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr ""
@@ -18346,6 +17886,12 @@ msgstr "`hdiutil create` が失敗しました - ファイルは存在します�
 msgid "`hdiutil create` failed."
 msgstr "`hdiutil create`が失敗しました。"
 
+msgid "Could not create directory \"%s\"."
+msgstr "ディレクトリ「%s」を作成できませんでした。"
+
+msgid "Could not create directory: \"%s\"."
+msgstr "ディレクトリ「%s」を作成できませんでした。"
+
 msgid "Exporting for macOS"
 msgstr "macOS用にエクスポート"
 
@@ -18357,12 +17903,6 @@ msgstr "エクスポートするテンプレートアプリが見つかりませ
 
 msgid "Invalid export format."
 msgstr "無効なエクスポート形式です。"
-
-msgid "Could not create directory: \"%s\"."
-msgstr "ディレクトリ「%s」を作成できませんでした。"
-
-msgid "Could not create directory \"%s\"."
-msgstr "ディレクトリ「%s」を作成できませんでした。"
 
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might be "
@@ -18381,9 +17921,6 @@ msgstr ""
 "実行可能ファイル \"%s\" の Unix パーミッションを設定できません。エクスポートし"
 "た .app を macOS または Linux に転送した後、\"chmod +x\" を使用して設定してく"
 "ださい。"
-
-msgid "Could not open \"%s\"."
-msgstr "「%s」を開けません。"
 
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
@@ -18894,54 +18431,6 @@ msgstr ""
 "い。"
 
 msgid ""
-"The TileMap node is deprecated as it is superseded by the use of multiple "
-"TileMapLayer nodes.\n"
-"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
-"panel with this node selected, click the toolbox icon in the top-right corner "
-"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
-msgstr ""
-"TileMapノードは複数のTileMapLayerで置き換えられるため非推奨となりました。\n"
-"TileMapノードをTileMapLayerノードに変換するには、TileMapを選択した状態で下パネ"
-"ルを開き、右上のツールボックスアイコンから「TileMapレイヤーを個別の"
-"TileMapLayerノードとして抽出」を選択して下さい。"
-
-msgid ""
-"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole with tiles from Y-sorted layers."
-msgstr ""
-"Y ソートされたレイヤーは、Y ソートされていないレイヤーと同じ Z インデックス値"
-"を持ちます。\n"
-"これにより、Y ソートされていないレイヤーは、Y ソートされたレイヤーのタイルとと"
-"もに全体として Y ソートされるため、望ましくない動作が発生する可能性がありま"
-"す。"
-
-msgid ""
-"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
-"node itself."
-msgstr ""
-"TileMap レイヤーは Y ソートとして設定されていますが、TileMap ノード自体では Y "
-"ソートが有効になっていません。"
-
-msgid ""
-"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
-"TileMap's layers.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole."
-msgstr ""
-"TileMap ノードは Y ソートとして設定されていますが、TileMap のどのレイヤーでも "
-"Y ソートが有効になっていません。\n"
-"Y ソートされていないレイヤーも含め全体として Y ソートされるため、望ましくない"
-"動作が発生する可能性があります。"
-
-msgid ""
-"Isometric TileSet will likely not look as intended without Y-sort enabled for "
-"the TileMap and all of its layers."
-msgstr ""
-"Isometric TileSet は、TileMap とそのすべてのレイヤーに対して Y ソートが有効に"
-"なっていないと、意図したとおりに表示されない可能性があります。"
-
-msgid ""
 "Forward axis and primary rotation axis must not be parallel in setting %s."
 msgstr "設定 %s において、前方軸と主回転軸は平行であってはなりません。"
 
@@ -19017,13 +18506,6 @@ msgstr ""
 
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "描画パスにメッシュが割り当てられていないため、何も表示されません。"
-
-msgid ""
-"Particles animation requires the usage of a BaseMaterial3D whose Billboard "
-"Mode is set to \"Particle Billboard\"."
-msgstr ""
-"パーティクル アニメーションには、Billboard Mode が「Particle Billboard」に設定"
-"されている BaseMaterial3D を使用する必要があります。"
 
 msgid ""
 "Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
@@ -19553,6 +19035,50 @@ msgstr "パス: %s に再生リソースが設定されていません。"
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "グラフのルートAnimationNodeが設定されていません。"
+
+msgid "Create Horizontal and Vertical Guides"
+msgstr "水平垂直ガイドを作成"
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "CanvasItem \"%s\" の Pivot Offset を (%d, %d) に設定します"
+
+msgid "Rotate %d CanvasItems"
+msgstr "%d 個のCanvasItemを回転"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "CanvasItem \"%s\" を %d 度回転"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "CanvasItem \"%s\" のアンカーを移動"
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "Node2D \"%s\" を (%s, %s) にスケールします"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "Control \"%s\" を (%d, %d) にリサイズします"
+
+msgid "Scale %d CanvasItems"
+msgstr "%d 個の CanvasItem を拡大縮小"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "CanvasItem \"%s\" を (%s, %s) に拡大縮小"
+
+msgid "Move %d CanvasItems"
+msgstr "%d 個の CanvasItem を移動"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "CanvasItem \"%s\" を (%d, %d) に移動"
+
+msgid ""
+"Children of a container get their position and size determined only by their "
+"parent."
+msgstr "コンテナの子の位置とサイズは、その親によってのみ決定されます。"
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"選択された全ての CanvasItemが不可視化または固定されているため変換できません。"
 
 msgid "Top Orthogonal"
 msgstr "上面 平行投影"

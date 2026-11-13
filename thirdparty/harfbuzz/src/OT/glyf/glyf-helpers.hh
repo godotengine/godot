@@ -89,7 +89,8 @@ template<typename Iterator,
 static bool
 _add_loca_and_head (hb_subset_context_t *c,
 		    Iterator padded_offsets,
-		    bool use_short_loca)
+		    bool use_short_loca,
+		    bool extended)
 {
   unsigned num_offsets = c->plan->num_output_glyphs () + 1;
   unsigned entry_size = use_short_loca ? 2 : 4;
@@ -112,7 +113,7 @@ _add_loca_and_head (hb_subset_context_t *c,
 					 loca_prime_data,
 					 hb_free);
 
-  bool result = c->plan->add_table (HB_OT_TAG_loca, loca_blob)
+  bool result = c->plan->add_table (extended ? HB_OT_TAG_LOCA : HB_OT_TAG_loca, loca_blob)
 	     && _add_head_and_set_loca_version (c->plan, use_short_loca);
 
   hb_blob_destroy (loca_blob);

@@ -886,15 +886,18 @@ static bool HIDAPI_DriverXboxOne_HandleDescriptorReport(SDL_Joystick *joystick, 
             ctx->last_buttons = value;
 
             const SDL_GamepadButton *button_map;
-            if (field->bit_size == 12) {
+            int button_count;
+            if (field->bit_size == 12 || size == 15) {
                 button_map = button_map_12;
+                button_count = SDL_arraysize(button_map_12);
             } else if (field->bit_size == 15) {
                 button_map = button_map_15;
+                button_count = SDL_arraysize(button_map_15);
             } else {
                 // Should never happen
                 break;
             }
-            for (int button_index = 0; button_index < field->bit_size; ++button_index, value >>= 1) {
+            for (int button_index = 0; button_index < button_count; ++button_index, value >>= 1) {
                 SDL_GamepadButton button = button_map[button_index];
                 if (button == SDL_GAMEPAD_BUTTON_INVALID) {
                     continue;

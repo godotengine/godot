@@ -36,6 +36,7 @@
 
 #include "core/io/file_access.h"
 #include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 #include <thirdparty/dr_libs/dr_bridge.h>
 
@@ -307,13 +308,13 @@ int AudioStreamMP3::get_bar_beats() const {
 }
 
 Ref<AudioSample> AudioStreamMP3::generate_sample() const {
+	const int mix_rate = AudioServer::get_singleton()->get_mix_rate();
 	Ref<AudioSample> sample;
 	sample.instantiate();
 	sample->stream = this;
-	sample->loop_mode = loop
-			? AudioSample::LoopMode::LOOP_FORWARD
-			: AudioSample::LoopMode::LOOP_DISABLED;
-	sample->loop_begin = loop_offset;
+	sample->loop_mode = loop ? AudioSample::LoopMode::LOOP_FORWARD : AudioSample::LoopMode::LOOP_DISABLED;
+	sample->sample_rate = mix_rate;
+	sample->loop_begin = Math::round(loop_offset * mix_rate);
 	sample->loop_end = 0;
 	return sample;
 }

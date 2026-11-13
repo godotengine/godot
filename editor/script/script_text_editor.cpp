@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
@@ -412,6 +413,7 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 
 void ScriptTextEditor::_on_mouse_exited() {
 	drag_info_label->hide();
+	hover_tooltip_timer->stop();
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
@@ -753,6 +755,13 @@ void ScriptTextEditor::_update_background_color() {
 			int warning_start_column = warning.start_column - 1;
 			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
 			int warning_end_column = warning.end_column - 1;
+
+			// If this warning's range extends to a non-existent line, then the
+			// best we can do is have it go to the end of this current line.
+			if (warning.end_line - 1 >= te->get_line_count() - 1) {
+				warning_end_column = te->get_line(warning_end_line).length();
+			}
+
 			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
 			if (warning_underline_color.a != 0.0) {
@@ -780,6 +789,13 @@ void ScriptTextEditor::_update_background_color() {
 			int error_start_column = error.start_column - 1;
 			int error_end_line = CLAMP(error.end_line - 1, 0, te->get_line_count() - 1);
 			int error_end_column = error.end_column - 1;
+
+			// If this error's range extends to a non-existent line, then the
+			// best we can do is have it go to the end of this current line.
+			if (error.end_line - 1 >= te->get_line_count() - 1) {
+				error_end_column = te->get_line(error_end_line).length();
+			}
+
 			int folded_line_header = te->get_folded_line_header(error_start_line);
 
 			if (error_underline_color.a != 0.0) {
@@ -1665,6 +1681,17 @@ void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (!(focus_owner && (this == focus_owner || is_ancestor_of(focus_owner)))) {
+		return;
+	}
+
+	if (ED_IS_SHORTCUT("script_text_editor/rename_symbol", p_event)) {
+		_edit_option(RENAME_SYMBOL);
+		accept_event();
+		return;
+	}
+
 	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_event);
 	if (custom_callback.is_valid()) {
 #ifndef DISABLE_DEPRECATED
@@ -1850,6 +1877,29 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case RENAME_SYMBOL: {
+			String text = tx->get_word_under_caret(0);
+			if (text.is_empty()) {
+				text = tx->get_selected_text(0);
+			}
+			if (text.is_empty()) {
+				break;
+			}
+			Ref<Script> script = edited_res;
+
+			EditorLanguage::LookupResult result;
+			String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(tx->get_caret_line(0), tx->get_caret_column(0));
+			if (script->get_language()->get_editor_language()->lookup_code_for_rename(code_text, text, script->get_path(), result) != OK) {
+				break;
+			}
+
+			if (result.script_path.is_empty()) {
+				// Don't allow renaming native symbols.
+				break;
+			}
+			ScriptEditor::get_singleton()->rename_symbol(text, result);
+		} break;
+
 		default: {
 			if (CodeEditorBase::_edit_option(p_op)) {
 				return true;
@@ -1915,9 +1965,6 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
-		} break;
-		case NOTIFICATION_MOUSE_EXIT: {
-			hover_tooltip_timer->stop();
 		} break;
 	}
 }
@@ -2480,9 +2527,11 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 
 		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
+		bool allow_rename = false;
 
 		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
+			allow_rename = ScriptServer::is_global_class(word_at_pos);
 		} else {
 			Ref<Script> script = edited_res;
 			Node *base = get_tree()->get_edited_scene_root();
@@ -2492,6 +2541,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			EditorLanguage::LookupResult result;
 			if (script->get_language()->get_editor_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
+				allow_rename = !result.script_path.is_empty();
 			}
 		}
 
@@ -2519,11 +2569,11 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, local_pos);
+		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, allow_rename, local_pos);
 	}
 }
 
-void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_position) {
+void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_allow_rename, const Vector2 &p_position) {
 	CodeEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
 
 	if (p_selection) {
@@ -2537,6 +2587,10 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+		}
+		if (p_allow_rename) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/rename_symbol"), RENAME_SYMBOL);
+			context_menu->set_item_text(-1, TTR("Rename Symbol (Experimental)"));
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2620,6 +2674,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
+	ED_SHORTCUT("script_text_editor/rename_symbol", TTRC("Rename Symbol"), Key::F2);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);

@@ -88,14 +88,6 @@
 		<member name="capabilities/additional" type="PackedStringArray" setter="" getter="">
 			Additional data added to the [code]UIRequiredDeviceCapabilities[/code] array of the [code]Info.plist[/code] file.
 		</member>
-		<member name="capabilities/performance_a12" type="bool" setter="" getter="">
-			Requires the graphics performance and features of the A12 Bionic and later chips (devices supporting all Vulkan renderer features).
-			Enabling this option limits supported devices to: iPhone XS, iPhone XR, iPad Mini (5th gen.), iPad Air (3rd gen.), iPad (8th gen), and newer.
-		</member>
-		<member name="capabilities/performance_gaming_tier" type="bool" setter="" getter="">
-			Requires the graphics performance and features of the A17 Pro and later chips.
-			Enabling this option limits supported devices to: iPhone 15 Pro and newer.
-		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>

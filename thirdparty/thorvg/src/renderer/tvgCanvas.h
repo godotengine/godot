@@ -31,7 +31,8 @@ struct Canvas::Impl
 {
     Scene* scene;
     RenderMethod* renderer;
-    RenderRegion vport = {{0, 0}, {INT32_MAX, INT32_MAX}};
+    RenderRegion vport = {0, 0, INT32_MAX, INT32_MAX};
+    Array<RenderData> clips;
     Status status = Status::Synced;
 
     Impl() : scene(Scene::gen())
@@ -82,13 +83,14 @@ struct Canvas::Impl
             return Result::InsufficientCondition;
         }
 
-        Array<RenderData> clips;
         auto flag = RenderUpdateFlag::None;
 
         //TODO: All is too harsh, can be optimized.
         if (status == Status::Damaged) flag = RenderUpdateFlag::All;
 
         if (!renderer->preUpdate()) return Result::InsufficientCondition;
+
+        clips.clear();
 
         auto m = tvg::identity();
         PAINT(scene)->update(renderer, m, clips, 255, flag);
@@ -129,11 +131,11 @@ struct Canvas::Impl
     Result viewport(int32_t x, int32_t y, int32_t w, int32_t h)
     {
         if (status == Status::Synced || status == Status::Damaged) {
-            RenderRegion val = {{x, y}, {x + w, y + h}};
+            RenderRegion val = {x, y, x + w, y + h};
             //intersect if the target buffer is already set.
             auto surface = renderer->mainSurface();
             if (surface && surface->w > 0 && surface->h > 0) {
-                val.intersect({{0, 0}, {(int32_t)surface->w, (int32_t)surface->h}});
+                val.intersect({0, 0, (int32_t)surface->w, (int32_t)surface->h});
             }
             if (vport == val) return Result::Success;
             renderer->viewport(val);
@@ -143,6 +145,16 @@ struct Canvas::Impl
         }
         TVGLOG("RENDERER", "viewport() is only allowed after sync.");
         return Result::InsufficientCondition;
+    }
+
+    uint32_t dirtyRegions() const
+    {
+        return (status == Status::Drawing) ? renderer->dirtyRegions() : 0;
+    }
+
+    Result dirtyRegions(Region* regions, uint32_t cnt) const
+    {
+        return (status == Status::Drawing) ? renderer->dirtyRegions(regions, cnt) : Result::InsufficientCondition;
     }
 };
 

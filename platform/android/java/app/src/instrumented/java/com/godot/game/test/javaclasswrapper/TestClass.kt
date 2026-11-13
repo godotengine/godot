@@ -70,6 +70,7 @@ class TestClass {
 
 		@JvmField val staticFinalIntField: Int = 200
 		@JvmField val staticFinalStringField: String = "static final"
+		@JvmField val staticFinalTestClassField: TestClass = TestClass()
 
 		@JvmStatic
 		fun stringify(value: Any?): String {

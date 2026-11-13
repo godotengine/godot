@@ -78,6 +78,16 @@
 #define RECORD_PIPELINE_STATISTICS_PATH "./pipelines.csv"
 #endif
 
+#define POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_LOCK \
+	if (powervr_rogue_shader_crash_workaround_mutex) { \
+		powervr_rogue_shader_crash_workaround_mutex->lock(); \
+	}
+
+#define POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_UNLOCK \
+	if (powervr_rogue_shader_crash_workaround_mutex) { \
+		powervr_rogue_shader_crash_workaround_mutex->unlock(); \
+	}
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -587,6 +597,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_NV_RAY_TRACING_VALIDATION_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_RAY_QUERY_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_SPIRV_1_4_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -747,6 +758,11 @@ void RenderingDeviceDriverVulkan::_check_driver_workarounds(const VkPhysicalDevi
 
 	// Workaround for a bug in NVIDIA drivers where submitting a render pass with no bound pipeline and an attachment using the "Don't Care" store operation causes a crash.
 	driver_workarounds.avoid_store_op_dont_care_in_draw_list_with_no_bound_pipeline = (p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_NVIDIA);
+
+	// Workaround for shader compilers ("libufwriter.so") in PowerVR Rogue GPUs (and some B-Series BXM-8-256) where creating shader modules or pipelines concurrently causes a crash.
+	if (p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_IMGTEC && (strstr(p_device_properties.deviceName, "Rogue") != nullptr || strstr(p_device_properties.deviceName, "BXM-8-256") != nullptr)) {
+		powervr_rogue_shader_crash_workaround_mutex = memnew(BinaryMutex); // Non-null mutex pointer enables the workaround.
+	}
 }
 
 void RenderingDeviceDriverVulkan::_get_device_properties() {
@@ -1585,6 +1601,10 @@ Error RenderingDeviceDriverVulkan::_initialize_allocator() {
 	if (buffer_device_address_support) {
 		allocator_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 	}
+	// See GH-125146 for context.
+	if (physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_AMD && physical_device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+		allocator_info.flags |= VMA_ALLOCATOR_CREATE_IGNORE_MAX_MEMORY_ALLOCATION_COUNT_BIT;
+	}
 	VkResult err = vmaCreateAllocator(&allocator_info, &allocator);
 	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, vformat("Couldn't create Vulkan memory allocator (VkResult error %d).", err));
 
@@ -1860,7 +1880,7 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 		// Debug marker extensions.
 		CharString obj_data = p_object_name.utf8();
 		VkDebugMarkerObjectNameInfoEXT name_info;
-		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
 		name_info.pNext = nullptr;
 		name_info.objectType = _convert_to_debug_report_objectType(p_object_type);
 		name_info.object = p_object_handle;
@@ -2285,6 +2305,10 @@ VkSampleCountFlagBits RenderingDeviceDriverVulkan::_ensure_supported_sample_coun
 	return VK_SAMPLE_COUNT_1_BIT;
 }
 
+RDD::TextureSamples RenderingDeviceDriverVulkan::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	return TextureSamples(Math::get_shift_from_power_of_2((uint32_t)_ensure_supported_sample_count(p_format.samples)));
+}
+
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &p_format, const TextureView &p_view) {
 	VkImageCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -2335,7 +2359,8 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	create_info.mipLevels = p_format.mipmaps;
 	create_info.arrayLayers = p_format.array_layers;
 
-	create_info.samples = _ensure_supported_sample_count(p_format.samples);
+	ERR_FAIL_COND_V_MSG(texture_get_nearest_supported_samples(p_format) != p_format.samples, TextureID(), "Unsupported sample count.");
+	create_info.samples = RD_TO_VK_SAMPLE_COUNT[p_format.samples];
 	create_info.tiling = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
 
 	// Usage.
@@ -4464,7 +4489,10 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 		shader_module_create_info.codeSize = decoded_spirv.size();
 		shader_module_create_info.pCode = (const uint32_t *)(decoded_spirv.ptr());
 
+		POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_LOCK
 		res = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &vk_module);
+		POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_UNLOCK
+
 		if (res != VK_SUCCESS) {
 			error_text = vformat("Error (%d) creating module for shader stage %s.", res, String(SHADER_STAGE_NAMES[shader_refl.stages_vector[i]]));
 			break;
@@ -4931,8 +4959,8 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 				acceleration_structure_write->accelerationStructureCount = 1;
 				acceleration_structure_write->pAccelerationStructures = &accel_info->vk_acceleration_structure;
 
-				vk_writes[i].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
-				vk_writes[i].pNext = acceleration_structure_write;
+				vk_writes[writes_amount].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+				vk_writes[writes_amount].pNext = acceleration_structure_write;
 			} break;
 			default: {
 				DEV_ASSERT(false);
@@ -6213,7 +6241,11 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 					shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 					shader_module_create_info.pCode = (const uint32_t *)(respv_optimized_data.data());
 					shader_module_create_info.codeSize = respv_optimized_data.size();
+
+					POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_LOCK
 					VkResult err = vkCreateShaderModule(vk_device, &shader_module_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SHADER_MODULE), &shader_module);
+					POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_UNLOCK
+
 					if (err == VK_SUCCESS) {
 						// Replace the module used in the creation info.
 						vk_pipeline_stages[i].module = shader_module;
@@ -6276,7 +6308,10 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 #endif
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
+
+	POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_LOCK
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
+	POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_UNLOCK
 
 	// Don't print error for VK_ERROR_UNKNOWN on Adreno 660.
 	if (unlikely(err == VK_ERROR_UNKNOWN && driver_workarounds.dont_print_on_render_pipeline_creation_failure)) {
@@ -6792,7 +6827,11 @@ RDD::PipelineID RenderingDeviceDriverVulkan::compute_pipeline_create(ShaderID p_
 	}
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
+
+	POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_LOCK
 	VkResult err = vkCreateComputePipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
+	POWERVR_ROGUE_SHADER_CRASH_WORKAROUND_MUTEX_UNLOCK
+
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("Couldn't create Vulkan compute pipelines (VkResult error %d).", err));
 
 	return PipelineID(vk_pipeline);
@@ -7541,6 +7580,8 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 		buffer_free(breadcrumb_buffer);
 	}
 #endif
+
+	memdelete(powervr_rogue_shader_crash_workaround_mutex);
 
 	while (small_allocs_pools.size()) {
 		HashMap<uint32_t, VmaPool>::Iterator E = small_allocs_pools.begin();

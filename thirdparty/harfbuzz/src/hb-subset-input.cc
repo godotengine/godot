@@ -663,7 +663,8 @@ hb_subset_axis_range_from_string (const char *str, int len,
     }
 
     double v;
-    if (!hb_parse_double (&str, part, &v)) return false;
+    const char *piece_end = part ? part : end;
+    if (!hb_parse_double (&str, piece_end, &v)) return false;
     values[i] = v;
 
     if (part == NULL) break;

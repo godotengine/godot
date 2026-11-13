@@ -71,6 +71,9 @@ private:
 protected:
 	static void _bind_methods();
 
+	// Necessary for the debugger to forward changes to a running project.
+	virtual void _resource_path_changed() override;
+
 	void _queue_update();
 	void _emit_pending_change();
 
@@ -156,7 +159,8 @@ class VisualShaderNodeGroup : public VisualShaderNode {
 
 	Ref<VisualShaderGroup> group;
 
-	void _emit_changed();
+	void _update_default_input_values();
+	void _on_group_changed();
 	bool _has_incompatible_nodes(Shader::Mode p_mode, VisualShader::Type p_type) const;
 
 protected:

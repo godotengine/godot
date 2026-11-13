@@ -96,6 +96,19 @@ hb_draw_close_path_nil (hb_draw_funcs_t *dfuncs HB_UNUSED, void *draw_data HB_UN
 			hb_draw_state_t *st HB_UNUSED,
 			void *user_data HB_UNUSED) {}
 
+static hb_bool_t
+hb_draw_set_budget_nil (hb_draw_funcs_t *dfuncs HB_UNUSED, void *draw_data HB_UNUSED,
+			int64_t budget HB_UNUSED,
+			void *user_data HB_UNUSED) { return false; }
+
+static int64_t
+hb_draw_get_budget_nil (hb_draw_funcs_t *dfuncs HB_UNUSED, void *draw_data HB_UNUSED,
+			void *user_data HB_UNUSED) { return HB_BUDGET_DEFAULT; }
+
+static int64_t *
+hb_draw_get_budget_remaining_nil (hb_draw_funcs_t *dfuncs HB_UNUSED, void *draw_data HB_UNUSED,
+				  void *user_data HB_UNUSED) { return nullptr; }
+
 
 static bool
 _hb_draw_funcs_set_preamble (hb_draw_funcs_t    *dfuncs,
@@ -353,6 +366,67 @@ hb_bool_t
 hb_draw_funcs_is_immutable (hb_draw_funcs_t *dfuncs)
 {
   return hb_object_is_immutable (dfuncs);
+}
+
+/**
+ * hb_draw_set_budget:
+ * @dfuncs: draw functions object
+ * @draw_data: associated draw data
+ * @budget: the new work-budget policy
+ *
+ * Sets the work-budget policy and recharges the live work budget. Negative
+ * values other than #HB_BUDGET_DEFAULT are clamped to zero.
+ *
+ * Return value: `true` if the draw functions support work budgets
+ *
+ * Since: 14.5.0
+ **/
+hb_bool_t
+hb_draw_set_budget (hb_draw_funcs_t *dfuncs, void *draw_data, int64_t budget)
+{
+  return dfuncs->set_budget (draw_data, budget);
+}
+
+/**
+ * hb_draw_get_budget:
+ * @dfuncs: draw functions object
+ * @draw_data: associated draw data
+ *
+ * Fetches the configured work-budget policy.
+ *
+ * Return value: the configured policy, or #HB_BUDGET_DEFAULT if unsupported
+ *
+ * Since: 14.5.0
+ **/
+int64_t
+hb_draw_get_budget (hb_draw_funcs_t *dfuncs, void *draw_data)
+{
+  return dfuncs->get_budget (draw_data);
+}
+
+/**
+ * hb_draw_get_budget_remaining:
+ * @dfuncs: draw functions object
+ * @draw_data: associated draw data
+ *
+ * Fetches the live work budget. A negative value means the budget was
+ * exhausted. Zero means the preceding work fit exactly, but no positive-cost
+ * work can start.
+ *
+ * Return value: the live work budget; if it is not tracked, the concrete
+ *   configured policy or #HB_BUDGET_UNLIMITED
+ *
+ * Since: 14.5.0
+ **/
+int64_t
+hb_draw_get_budget_remaining (hb_draw_funcs_t *dfuncs, void *draw_data)
+{
+  int64_t *remaining = dfuncs->get_budget_remaining_ptr (draw_data);
+  if (remaining)
+    return *remaining;
+
+  int64_t budget = dfuncs->get_budget (draw_data);
+  return budget == HB_BUDGET_DEFAULT ? HB_BUDGET_UNLIMITED : budget;
 }
 
 

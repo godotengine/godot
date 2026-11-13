@@ -794,6 +794,7 @@ void Path3DEditorPlugin::update_handles() {
 void Path3DEditorPlugin::edit(Object *p_object) {
 	if (path) {
 		path->disconnect("curve_changed", callable_mp(this, &Path3DEditorPlugin::_update_toolbar));
+		_edit.gizmo.unref();
 	}
 
 	path = Object::cast_to<Path3D>(p_object);

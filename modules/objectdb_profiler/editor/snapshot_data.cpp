@@ -41,6 +41,8 @@
 #include "modules/gdscript/gdscript.h"
 #endif
 
+#include <zlib.h>
+
 SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnapshot *p_snapshot, ResourceCache &resource_cache) :
 		snapshot(p_snapshot) {
 	remote_object_id = p_obj.id;

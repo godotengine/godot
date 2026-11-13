@@ -1214,11 +1214,12 @@ void TextEdit::_notification(int p_what) {
 				int minimap_visible_lines = get_minimap_visible_lines();
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int tab_size = text.get_tab_size();
+				int ofs_y = style->get_margin(SIDE_TOP);
 
 				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
 				int control_height = _get_control_height() - viewport_height;
-				int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+				int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / (MAX(v_scroll->get_max(), minimap_visible_lines) - draw_amount);
 
 				// Calculate the first line.
 				int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
@@ -1242,9 +1243,9 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
 				} else {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
 				}
 
 				for (int i = 0; i < minimap_draw_amount; i++) {
@@ -1307,15 +1308,15 @@ void TextEdit::_notification(int p_what) {
 
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * 3, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
 							}
 						}
 
@@ -1367,9 +1368,9 @@ void TextEdit::_notification(int p_what) {
 
 							if (characters > 0) {
 								if (rtl) {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(size.width - xpos - minimap_char_size.x * characters, minimap_line_height * i + ofs_y), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								} else {
-									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(xpos, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
+									RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(Point2(xpos, minimap_line_height * i + ofs_y), Point2(minimap_char_size.x * characters, minimap_char_size.y)), current_color);
 								}
 							}
 
@@ -1858,7 +1859,7 @@ void TextEdit::_notification(int p_what) {
 						for (int j = 0; j < underline.size(); j++) {
 							Rect2 rect = Rect2(
 									underline[j].x + char_margin,
-									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
+									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size) + MIN(theme_cache.line_spacing * 0.5, 0),
 									underline[j].y - underline[j].x,
 									theme_cache.font_size * 0.1);
 
@@ -4035,7 +4036,8 @@ void TextEdit::_close_ime_window() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_position(Point2(), wid);
+	DisplayServer::get_singleton()->window_set_ime_position(Point2i(), wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(Rect2i(), wid);
 	DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 }
 
@@ -4044,19 +4046,25 @@ void TextEdit::_update_ime_window_position() {
 	if (wid == DisplayServerEnums::INVALID_WINDOW_ID || !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_IME)) {
 		return;
 	}
-	if (!editable) {
+	if (!editable || carets.is_empty()) {
 		DisplayServer::get_singleton()->window_set_ime_active(false, wid);
 		return;
 	}
-	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
-	Point2 pos = get_global_position() + get_caret_draw_pos();
+	const Caret &caret = carets[0];
+	float h = theme_cache.font->get_height(theme_cache.font_size);
+	Rect2i rect = Rect2i(Vector2i(0, caret.draw_pos.y - h) + get_global_position(), Size2i(get_size().width, h));
+	Point2 pos = get_global_position() + caret.draw_pos;
 	if (get_window()->get_embedder()) {
 		pos += get_viewport()->get_popup_base_transform().get_origin();
+		rect.position += get_viewport()->get_popup_base_transform().get_origin();
 	}
 	// Take into account the window's transform.
 	pos = get_window()->get_screen_transform().xform(pos);
+	rect = get_window()->get_screen_transform().xform(rect);
 	// The window will move to the updated position the next time the IME is updated, not immediately.
+	DisplayServer::get_singleton()->window_set_ime_active(true, wid);
 	DisplayServer::get_singleton()->window_set_ime_position(pos, wid);
+	DisplayServer::get_singleton()->window_set_ime_rect(rect, wid);
 }
 
 void TextEdit::_update_ime_text() {

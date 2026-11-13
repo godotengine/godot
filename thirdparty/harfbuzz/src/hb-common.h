@@ -95,6 +95,25 @@ HB_BEGIN_DECLS
 typedef int hb_bool_t;
 
 /**
+ * HB_BUDGET_DEFAULT:
+ *
+ * Use the implementation's finite default work budget.
+ *
+ * Since: 14.5.0
+ **/
+#define HB_BUDGET_DEFAULT ((int64_t) (-0x7FFFFFFFFFFFFFFF - 1))
+
+/**
+ * HB_BUDGET_UNLIMITED:
+ *
+ * Use an effectively unlimited work budget. Structural safety limits remain
+ * active.
+ *
+ * Since: 14.5.0
+ **/
+#define HB_BUDGET_UNLIMITED ((int64_t) 0x7FFFFFFFFFFFFFFF)
+
+/**
  * hb_codepoint_t:
  * 
  * Data type for holding Unicode codepoints. Also

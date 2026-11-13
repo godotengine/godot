@@ -270,7 +270,6 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::B
 // Should also contain classes not derived from either `Resource` or `Node`.
 const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildProfile::build_option_classes = {
 	{ BUILD_OPTION_2D, {
-			"Curve2D",
 			"Node2D",
 			"OccluderPolygon2D",
 			"SkeletonModificationStack2D",
@@ -610,7 +609,7 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 			for (int i = 0; i < BUILD_OPTION_MAX; i++) {
 				String f = build_option_identifiers[i];
 				if (f == key) {
-					build_options_disabled[i] = true;
+					build_options_disabled[i] = !build_option_disabled_by_default[i];
 					break;
 				}
 			}

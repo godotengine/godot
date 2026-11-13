@@ -191,6 +191,11 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
+	RID frid = font->_get_rid();
+	if (!TS->font_validate(frid)) {
+		return FAILED;
+	}
+
 	if (subpixel_positioning == 4 || hinting == 3 || hinting == 4) /* Dected Pixel Fonts */ {
 		Array rids = font->get_rids();
 		if (!rids.is_empty()) {

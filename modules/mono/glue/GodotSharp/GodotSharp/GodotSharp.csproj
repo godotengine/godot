@@ -10,6 +10,7 @@
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
     <EnableDefaultItems>false</EnableDefaultItems>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
 
     <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>

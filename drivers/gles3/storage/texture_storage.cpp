@@ -323,7 +323,7 @@ void TextureStorage::_tex_blit_shader_initialize() {
 
 	{
 		String global_defines;
-		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
 		material_storage->shaders.tex_blit_shader.initialize(global_defines, 1);
 	}
 
@@ -1414,6 +1414,9 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 		m->bind_uniforms();
 		version = m->shader_data->version;
 	}
+
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 4);
+	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, tex_blit_fbo);
 	TightLocalVector<GLenum> draw_buffers;

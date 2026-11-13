@@ -291,11 +291,10 @@
     /* It is called with either q2 or q3 positive, which is necessary    */
     /* for the peak to exist and avoids undefined FT_MSB.                */
 
-    shift = 27 - FT_MSB( (FT_UInt32)( FT_ABS( q1 ) |
-                                      FT_ABS( q2 ) |
-                                      FT_ABS( q3 ) |
-                                      FT_ABS( q4 ) ) );
-
+    shift = 8 * sizeof ( FT_Pos ) - 5 - FT_MSB( ULABS( q1 ) |
+                                                ULABS( q2 ) |
+                                                ULABS( q3 ) |
+                                                ULABS( q4 ) );
     if ( shift > 0 )
     {
       /* upscaling too much just wastes time */

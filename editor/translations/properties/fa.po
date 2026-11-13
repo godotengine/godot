@@ -51,13 +51,14 @@
 # ali zia <sampadpars@gmail.com>, 2025.
 # نام <z.xp.xp.900@gmail.com>, 2025.
 # Sajjad Zavar <zavarsajjad98@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-21 16:30+0000\n"
-"Last-Translator: Sajjad Zavar <zavarsajjad98@gmail.com>\n"
+"PO-Revision-Date: 2026-07-07 03:32+0000\n"
+"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
 "Language: fa\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -778,6 +779,21 @@ msgstr "خزینهٔ کارگر"
 msgid "Low Priority Thread Ratio"
 msgstr "نسبت ریسهٔ اولویت پایین"
 
+msgid "Target"
+msgstr "هدف"
+
+msgid "Start Offset"
+msgstr "انحراف آغازین"
+
+msgid "Max Results"
+msgstr "نتایج بیشینه‌"
+
+msgid "Subject"
+msgstr "موضوع"
+
+msgid "Strings"
+msgstr "رشته‌ها"
+
 msgid "Locale"
 msgstr "بومی"
 
@@ -828,9 +844,6 @@ msgstr "دسته بیرون"
 
 msgid "Stream"
 msgstr "استریم"
-
-msgid "Start Offset"
-msgstr "انحراف آغازین"
 
 msgid "Request Timeout"
 msgstr "درخواست وقفه"
@@ -1178,30 +1191,6 @@ msgstr "نام افزایه"
 msgid "Autoload on Startup"
 msgstr "خودبارکردن هنگام راه‌اندازی"
 
-msgid "ID"
-msgstr "شناسه"
-
-msgid "Texture"
-msgstr "بافت"
-
-msgid "Margins"
-msgstr "لبه‌ها"
-
-msgid "Separation"
-msgstr "جدایی"
-
-msgid "Texture Region Size"
-msgstr "اندازهٔ دامنهٔ بافت"
-
-msgid "Alternative ID"
-msgstr "شناسهٔ دگرگزین"
-
-msgid "Speed"
-msgstr "سرعت"
-
-msgid "Duration"
-msgstr "مدت"
-
 msgid "Editors"
 msgstr "ویراستارها"
 
@@ -1427,9 +1416,6 @@ msgstr "نمایش پرونده‌های پنهان شده"
 msgid "Display Mode"
 msgstr "حالت نمایشگر"
 
-msgid "Max Results"
-msgstr "نتایج بیشینه‌"
-
 msgid "Show Search Highlight"
 msgstr "نمایش برجسته‌های جستجو"
 
@@ -1550,11 +1536,11 @@ msgstr "بازبارکردن خودکار اسکریپت‌ها هنگام دگ�
 msgid "Open Dominant Script on Scene Change"
 msgstr "گشودن اسکریپت چیره بر دگرگونی صحنه"
 
-msgid "Documentation"
-msgstr "مستندات"
-
 msgid "Enable Tooltips"
 msgstr "به‌کاراندازی پندابزار"
+
+msgid "Documentation"
+msgstr "مستندات"
 
 msgid "Script List"
 msgstr "فهرست اسکریپت"
@@ -1883,9 +1869,6 @@ msgstr "محیط"
 msgid "Icon"
 msgstr "آیکن"
 
-msgid "Search in File Extensions"
-msgstr "جستجو در پسوند پرونده"
-
 msgid "Mouse Cursor"
 msgstr "نشانگر موس"
 
@@ -2156,6 +2139,9 @@ msgstr "یک‌پارچه"
 msgid "In 3D Space"
 msgstr "در فضای سه‌بعدی"
 
+msgid "Duration"
+msgstr "مدت"
+
 msgid "Display Refresh Rate"
 msgstr "نرخ نوگردانی نمایشگر"
 
@@ -2180,11 +2166,83 @@ msgstr "برد جنبش"
 msgid "Tracker"
 msgstr "ردیاب"
 
-msgid "Subject"
-msgstr "موضوع"
+msgid "ID"
+msgstr "شناسه"
 
-msgid "Strings"
-msgstr "رشته‌ها"
+msgid "Texture"
+msgstr "بافت"
+
+msgid "Margins"
+msgstr "لبه‌ها"
+
+msgid "Separation"
+msgstr "جدایی"
+
+msgid "Texture Region Size"
+msgstr "اندازهٔ دامنهٔ بافت"
+
+msgid "Alternative ID"
+msgstr "شناسهٔ دگرگزین"
+
+msgid "Speed"
+msgstr "سرعت"
+
+msgid "Tile Set"
+msgstr "دسته‌کاشی"
+
+msgid "Collision Animatable"
+msgstr "پویانمایش‌پذیری برخوردگاه"
+
+msgid "Collision Visibility Mode"
+msgstr "حالت پدیداری برخوردگاه"
+
+msgid "Navigation Visibility Mode"
+msgstr "حالت پدیداری ناوبری"
+
+msgid "Collision Enabled"
+msgstr "به‌کاراندازی برخوردگاه"
+
+msgid "Use Kinematic Bodies"
+msgstr "بکاربردن بدن‌های جنبشی"
+
+msgid "Right Corner"
+msgstr "گوشهٔ راست"
+
+msgid "Left Corner"
+msgstr "گوشهٔ چپ"
+
+msgid "Top Left Corner"
+msgstr "گوشهٔ چپ بالا"
+
+msgid "Custom Data"
+msgstr "داده سفارشی"
+
+msgid "Tile Layout"
+msgstr "چیدمان کاشی"
+
+msgid "Physics Layers"
+msgstr "لایه‌های فیزیک"
+
+msgid "Custom Data Layers"
+msgstr "لایه‌های سفارشی داده‌"
+
+msgid "Scenes"
+msgstr "صحنه‌ها"
+
+msgid "Scene"
+msgstr "صحنه"
+
+msgid "Points"
+msgstr "نقطه‌ها"
+
+msgid "Texture Origin"
+msgstr "خاستگاه بافت"
+
+msgid "Z Index"
+msgstr "اندیس Z"
+
+msgid "Miscellaneous"
+msgstr "متفرقه"
 
 msgid "Description URL"
 msgstr "URL شرح"
@@ -2197,6 +2255,9 @@ msgstr "نام درونداد"
 
 msgid "Autoshrink"
 msgstr "تنجش خودکار"
+
+msgid "Group"
+msgstr "گروه"
 
 msgid "Constant"
 msgstr "ثابت"
@@ -2464,9 +2525,6 @@ msgstr "پیش‌پردازش"
 
 msgid "Shape"
 msgstr "شکل"
-
-msgid "Points"
-msgstr "نقطه‌ها"
 
 msgid "Colors"
 msgstr "رنگ‌ها"
@@ -2970,24 +3028,6 @@ msgstr "زاویهٔ استخوان"
 msgid "Editor Settings"
 msgstr "تنظیمات ویراستار"
 
-msgid "Tile Set"
-msgstr "دسته‌کاشی"
-
-msgid "Collision Animatable"
-msgstr "پویانمایش‌پذیری برخوردگاه"
-
-msgid "Collision Visibility Mode"
-msgstr "حالت پدیداری برخوردگاه"
-
-msgid "Navigation Visibility Mode"
-msgstr "حالت پدیداری ناوبری"
-
-msgid "Collision Enabled"
-msgstr "به‌کاراندازی برخوردگاه"
-
-msgid "Use Kinematic Bodies"
-msgstr "بکاربردن بدن‌های جنبشی"
-
 msgid "Node Path"
 msgstr "مسیر گره"
 
@@ -3246,14 +3286,14 @@ msgstr "منسوخ"
 msgid "Root Bone"
 msgstr "استخوان ریشه"
 
-msgid "Target"
-msgstr "هدف"
-
 msgid "Magnet"
 msgstr "آهن‌ربا"
 
 msgid "Active"
 msgstr "فعال"
+
+msgid "Max Length"
+msgstr "بیشینهٔ درازا"
 
 msgid "Geometry"
 msgstr "هندسه"
@@ -3495,9 +3535,6 @@ msgstr "مقیاس آیکن"
 msgid "Visible Characters"
 msgstr "نویسه‌های پدیدار"
 
-msgid "Max Length"
-msgstr "بیشینهٔ درازا"
-
 msgid "Blink"
 msgstr "پلک"
 
@@ -3552,6 +3589,9 @@ msgstr "حالت پیمایش عمودی"
 msgid "Scrollable"
 msgstr "پیمایش‌پذیر"
 
+msgid "Format"
+msgstr "چارچوب"
+
 msgid "Stretch Shrink"
 msgstr "تنجش کشش"
 
@@ -3603,9 +3643,6 @@ msgstr "لایه پدیداری"
 msgid "Ordering"
 msgstr "سامان‌بندی"
 
-msgid "Z Index"
-msgstr "اندیس Z"
-
 msgid "Z as Relative"
 msgstr "Z به‌عنوان نسبی"
 
@@ -3638,9 +3675,6 @@ msgstr "الویت فیزیک"
 
 msgid "Thread Group"
 msgstr "گروه ریسه"
-
-msgid "Group"
-msgstr "گروه"
 
 msgid "Auto Translate"
 msgstr "ترجمهٔ خودکار"
@@ -3762,47 +3796,11 @@ msgstr "بایت"
 msgid "Bone 2D Node"
 msgstr "گرهٔ استخوان دوبعدی"
 
-msgid "Right Corner"
-msgstr "گوشهٔ راست"
-
-msgid "Left Corner"
-msgstr "گوشهٔ چپ"
-
-msgid "Top Left Corner"
-msgstr "گوشهٔ چپ بالا"
-
-msgid "Custom Data"
-msgstr "داده سفارشی"
-
-msgid "Tile Layout"
-msgstr "چیدمان کاشی"
-
-msgid "Physics Layers"
-msgstr "لایه‌های فیزیک"
-
-msgid "Custom Data Layers"
-msgstr "لایه‌های سفارشی داده‌"
-
-msgid "Scenes"
-msgstr "صحنه‌ها"
-
-msgid "Scene"
-msgstr "صحنه"
-
-msgid "Texture Origin"
-msgstr "خاستگاه بافت"
-
-msgid "Miscellaneous"
-msgstr "متفرقه"
-
 msgid "Density"
 msgstr "چگالی"
 
 msgid "Density Texture"
 msgstr "بافت چگالی"
-
-msgid "Item"
-msgstr "مورد"
 
 msgid "Add UV2"
 msgstr "افزودن فرابنفش ۲"
@@ -3831,8 +3829,11 @@ msgstr "آسمان شب"
 msgid "Atlas"
 msgstr "اطلس"
 
-msgid "Format"
-msgstr "چارچوب"
+msgid "Buffer Length"
+msgstr "درازای بافر"
+
+msgid "Playback Mode"
+msgstr "حالت بازنواخت"
 
 msgid "Stereo"
 msgstr "استریو"
@@ -4116,6 +4117,18 @@ msgstr "تیک"
 msgid "Updown"
 msgstr "بالاپایین"
 
+msgid "Scrollbar Margin Left"
+msgstr "لبهٔ چپ نوار پیمایش"
+
+msgid "Scrollbar Margin Top"
+msgstr "لبهٔ بالای نوار پیمایش"
+
+msgid "Scrollbar Margin Right"
+msgstr "لبهٔ راست نوار پیمایش"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "لبهٔ پایین نوار پیمایش"
+
 msgid "Embedded Border"
 msgstr "مرز نهادینه‌شده"
 
@@ -4160,18 +4173,6 @@ msgstr "مرز پیمایش"
 
 msgid "Scroll Speed"
 msgstr "تندی پیمایش"
-
-msgid "Scrollbar Margin Left"
-msgstr "لبهٔ چپ نوار پیمایش"
-
-msgid "Scrollbar Margin Top"
-msgstr "لبهٔ بالای نوار پیمایش"
-
-msgid "Scrollbar Margin Right"
-msgstr "لبهٔ راست نوار پیمایش"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "لبهٔ پایین نوار پیمایش"
 
 msgid "Scrollbar H Separation"
 msgstr "جدایی افقی نوار پیمایش"
@@ -4221,12 +4222,6 @@ msgstr "دستگاه درونداد"
 msgid "Playback Speed Scale"
 msgstr "مقیاس تندی بازنواخت"
 
-msgid "Playback Mode"
-msgstr "حالت بازنواخت"
-
-msgid "Buffer Length"
-msgstr "درازای بافر"
-
 msgid "Dry"
 msgstr "خشک"
 
@@ -4243,7 +4238,7 @@ msgid "Level dB"
 msgstr "سطح دسی‌بل"
 
 msgid "Pan"
-msgstr "Pan"
+msgstr "پیمایش"
 
 msgid "Sidechain"
 msgstr "زنجیره‌جانبی"
@@ -4293,9 +4288,6 @@ msgstr "به‌کاراندازی پیوند اتصالات"
 msgid "Inverse Inertia"
 msgstr "ماندگری وارونه"
 
-msgid "Canvas Instance ID"
-msgstr "شناسهٔ بوم نمونه"
-
 msgid "Default Gravity"
 msgstr "گرانش پیش‌فرض"
 
@@ -4322,6 +4314,9 @@ msgstr "موتور فیزیک"
 
 msgid "Max Collisions"
 msgstr "بیشینهٔ برخوردگاه‌ها"
+
+msgid "Canvas Instance ID"
+msgstr "شناسهٔ بوم نمونه"
 
 msgid "Vertex"
 msgstr "رأس"

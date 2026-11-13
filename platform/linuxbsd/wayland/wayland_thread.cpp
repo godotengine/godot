@@ -34,6 +34,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/image.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 
 #ifdef __FreeBSD__
@@ -326,35 +327,37 @@ void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_
 	ERR_FAIL_NULL(wayland_thread);
 
 	Key last_key = Key::NONE;
-	xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
-
-	if (p_pressed) {
-		xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
-		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+	xkb_compose_status compose_status = XKB_COMPOSE_NOTHING;
+	if (p_ss->xkb_compose_state) {
 		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+		if (p_pressed) {
+			xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
+			xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+			compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
 
-		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
-			// We need to generate multiple key events to report the composed result, One
-			// per character.
-			char str_xkb[256] = {};
-			int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
+			if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+				// We need to generate multiple key events to report the composed result, One
+				// per character.
+				char str_xkb[256] = {};
+				int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
 
-			String decoded_str = String::utf8(str_xkb, str_xkb_size);
-			for (int i = 0; i < decoded_str.length(); ++i) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
-				if (k.is_null()) {
-					continue;
+				String decoded_str = String::utf8(str_xkb, str_xkb_size);
+				for (int i = 0; i < decoded_str.length(); ++i) {
+					Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
+					if (k.is_null()) {
+						continue;
+					}
+
+					k->set_unicode(decoded_str[i]);
+					k->set_echo(p_echo);
+
+					Ref<InputEventMessage> msg;
+					msg.instantiate();
+					msg->event = k;
+					wayland_thread->push_message(msg);
+
+					last_key = k->get_keycode();
 				}
-
-				k->set_unicode(decoded_str[i]);
-				k->set_echo(p_echo);
-
-				Ref<InputEventMessage> msg;
-				msg.instantiate();
-				msg->event = k;
-				wayland_thread->push_message(msg);
-
-				last_key = k->get_keycode();
 			}
 		}
 	}
@@ -2404,7 +2407,11 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
 
 	xkb_compose_state_unref(ss->xkb_compose_state);
-	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	if (ss->xkb_compose_table) {
+		ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	} else {
+		ss->xkb_compose_state = nullptr;
+	}
 
 	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
@@ -3709,6 +3716,8 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
+	ws->pending_xdg_activation_token = nullptr;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
@@ -4562,6 +4571,10 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 		wl_callback_destroy(ws.frame_callback);
 	}
 
+	if (ws.pending_xdg_activation_token) {
+		xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
+	}
+
 	if (ws.xdg_surface) {
 		xdg_surface_destroy(ws.xdg_surface);
 	}
@@ -5001,6 +5014,37 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 	}
 }
 
+void WaylandThread::window_set_input_region(DisplayServerEnums::WindowID p_window_id, bool p_empty_region, const Vector<Vector2> &p_region) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	wl_region *region = nullptr;
+	if (p_empty_region) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+	} else if (!p_region.is_empty()) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+
+		double win_scale = window_state_get_scale_factor(&ws);
+		Size2i scaled_size = scale_vector2i(ws.rect.size, win_scale);
+		for (int x = 0; x < scaled_size.x; x++) {
+			for (int y = 0; y < scaled_size.y; y++) {
+				Vector2 point = Vector2(x, y);
+				if (Geometry2D::is_point_in_polygon(point, p_region)) {
+					// Convert region points to window logical scale.
+					point = scale_vector2i(point, 1.0 / win_scale);
+					wl_region_add(region, point.x, point.y, 1, 1);
+				}
+			}
+		}
+	}
+
+	wl_surface_set_input_region(ws.wl_surface, region);
+
+	if (region) {
+		wl_region_destroy(region);
+	}
+}
+
 void WaylandThread::window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
@@ -5227,15 +5271,52 @@ DisplayServerEnums::WindowMode WaylandThread::window_get_mode(DisplayServerEnums
 	return ws.mode;
 }
 
-void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id) {
+/**
+ * Request attention for the given window from wayland.
+ * Since wayland does not offer an explicit way to specify whether or not the window should be pinged or brought
+ * to the top we can only hint it to. Wayland compositors generally make the decision based on the completeness and
+ * validity of the activation token that was passed. So when we want weak focus we pass a token with minimal information
+ * and when we want strong focus we pass a token with additional information
+ */
+void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id, bool p_hint_strong_focus) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	uint32_t last_serial = MAX(MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial), ss->pointer_enter_serial);
+
+	// Try to find a reasonable requesting surface
+	WindowState *focused_window = nullptr;
+	if (ss) {
+		if (ss->focused_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->focused_id);
+		}
+		DisplayServerEnums::WindowID pointed_window_id = pointer_get_pointed_window_id();
+		if (!focused_window && pointed_window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(pointed_window_id);
+		}
+		if (!focused_window && ss->dnd_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->dnd_id);
+		}
+	}
 
 	if (registry.xdg_activation) {
+		if (ws.pending_xdg_activation_token) {
+			xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
+			ws.pending_xdg_activation_token = nullptr;
+		}
+
 		// Window attention requests are done through the XDG activation protocol.
-		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &ws);
-		xdg_activation_token_v1_commit(xdg_activation_token);
+		ws.pending_xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
+		// Set additional data on activation token when we want strong attention
+		if (p_hint_strong_focus) {
+			xdg_activation_token_v1_set_serial(ws.pending_xdg_activation_token, last_serial, wl_seat_current);
+			if (focused_window) {
+				xdg_activation_token_v1_set_surface(ws.pending_xdg_activation_token, focused_window->wl_surface);
+			}
+		}
+		xdg_activation_token_v1_add_listener(ws.pending_xdg_activation_token, &xdg_activation_token_listener, &ws);
+		xdg_activation_token_v1_commit(ws.pending_xdg_activation_token);
 	}
 }
 

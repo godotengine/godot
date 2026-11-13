@@ -240,6 +240,7 @@ TypedArray<Transform3D> XRInterfaceExtension::get_camera_offsets(const StringNam
 	return camera_offsets;
 }
 
+#ifndef DISABLE_DEPRECATED
 Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D transform;
 	GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform);
@@ -261,6 +262,7 @@ Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double
 
 	return Projection();
 }
+#endif
 
 RID XRInterfaceExtension::get_vrs_texture() {
 	RID vrs_texture;

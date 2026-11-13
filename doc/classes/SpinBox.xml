@@ -60,7 +60,7 @@
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
 		<member name="format" type="String" setter="set_format" getter="get_format" default="&quot;&quot;">
-			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"ERROR"[/code], with the error message available as a configuration warning.
+			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, the value is displayed with no special formatting. If the format string is invalid, the [SpinBox] will display [code]"&lt;Invalid&gt;"[/code], with the error message available as a configuration warning.
 			The following format strings can be used as examples:
 			- [code]"(%s)"[/code] displays as a number in parentheses (e.g. [code](6.9)[/code]).
 			- [code]"%d ms"[/code] displays as an integer with milliseconds unit (e.g. [code]420 ms[/code]).
@@ -70,7 +70,7 @@
 			Auto-translation mode for the [member format]. Useful when the format has a word that can be translated.
 		</member>
 		<member name="plural_format" type="String" setter="set_plural_format" getter="get_plural_format">
-			Plural version of [member format]. Used only if [member format] is not empty and [member format_auto_translate_mode] is not disabled. See also [method Object.tr_n].
+			Plural version of [member format]. Used only if [member format] is not empty and [member format_auto_translate_mode] is not disabled. If either [member format] or this contain [code]%s[/code] the other must also use it. See also [method Object.tr_n].
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix" default="&quot;&quot;" deprecated="Use [member format] instead.">
 			Adds the specified prefix string before the numerical value of the [SpinBox]. This is used only if [member format] is empty.

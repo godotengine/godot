@@ -276,7 +276,7 @@ void *OpenXRSpatialContainerSelfRenderingExtension::set_projection_layer_and_get
 	return &container_view_config;
 }
 
-XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers) {
+XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid) {
 	if (!is_enabled() || active_spatial_container == XR_NULL_HANDLE) {
 		return XR_ERROR_INITIALIZATION_FAILED;
 	}
@@ -316,7 +316,6 @@ XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_
 		ERR_FAIL_V_MSG(result, "OpenXR: Couldn't locate spatial container views [" + openxr_api->get_error_string(result) + "]");
 	}
 
-	r_should_submit_layers = active_view_state.shouldSubmitLayers;
 	r_view_pose_valid = !((active_view_state.viewStateFlags & XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0 ||
 			(active_view_state.viewStateFlags & XR_VIEW_STATE_POSITION_VALID_BIT) == 0);
 

@@ -47,6 +47,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/display/accessibility_server.h"
@@ -988,12 +989,12 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 }
 
 void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
-	Size2 parent_rect_size = get_parent_anchorable_rect().size;
+	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	if (p_keep_offsets) {
 		// If computing anchors, we need to ensure the parent rect size is valid to avoid division by zero.
-		ERR_FAIL_COND(parent_rect_size.x == 0.0);
-		ERR_FAIL_COND(parent_rect_size.y == 0.0);
+		ERR_FAIL_COND(parent_rect.size.x == 0.0);
+		ERR_FAIL_COND(parent_rect.size.y == 0.0);
 	}
 
 	real_t x = p_rect.position.x;
@@ -1016,19 +1017,19 @@ void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
 	}
 
 	if (is_layout_rtl()) {
-		x = parent_rect_size.x - x - p_rect.size.x;
+		x = parent_rect.size.x + (parent_rect.position.x * 2) - x - p_rect.size.x;
 	}
 
 	if (p_keep_offsets) {
-		data.anchor[0] = (x - data.offset[0]) / parent_rect_size.x;
-		data.anchor[1] = (y - data.offset[1]) / parent_rect_size.y;
-		data.anchor[2] = (x + p_rect.size.x - data.offset[2]) / parent_rect_size.x;
-		data.anchor[3] = (y + p_rect.size.y - data.offset[3]) / parent_rect_size.y;
+		data.anchor[0] = (x - data.offset[0]) / parent_rect.size.x;
+		data.anchor[1] = (y - data.offset[1]) / parent_rect.size.y;
+		data.anchor[2] = (x + p_rect.size.x - data.offset[2]) / parent_rect.size.x;
+		data.anchor[3] = (y + p_rect.size.y - data.offset[3]) / parent_rect.size.y;
 	} else {
-		data.offset[0] = x - (data.anchor[0] * parent_rect_size.x);
-		data.offset[1] = y - (data.anchor[1] * parent_rect_size.y);
-		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect_size.x);
-		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect_size.y);
+		data.offset[0] = x - (data.anchor[0] * parent_rect.size.x);
+		data.offset[1] = y - (data.anchor[1] * parent_rect.size.y);
+		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect.size.x);
+		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect.size.y);
 	}
 }
 
@@ -1352,7 +1353,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 	ERR_FAIL_INDEX((int)p_resize_mode, 4);
 
 	// Calculate the size if the node is not resized
-	Size2 min_size = get_minimum_size();
+	Size2 min_size = get_bound_minimum_size();
 	Size2 new_size = get_size();
 	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
 		new_size.x = min_size.x;
@@ -1377,21 +1378,21 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_LEFT_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin + parent_rect.position.x;
+			data.offset[0] = x * (0.0 - data.anchor[0]) + p_margin;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.offset[0] = x * (0.5 - data.anchor[0]) - new_size.x / 2 + parent_rect.position.x;
+			data.offset[0] = x * (0.5 - data.anchor[0]) - new_size.x / 2;
 			break;
 
 		case PRESET_TOP_RIGHT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_RIGHT_WIDE:
-			data.offset[0] = x * (1.0 - data.anchor[0]) - new_size.x - p_margin + parent_rect.position.x;
+			data.offset[0] = x * (1.0 - data.anchor[0]) - new_size.x - p_margin;
 			break;
 	}
 
@@ -1405,21 +1406,21 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (0.0 - data.anchor[1]) + p_margin;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.offset[1] = parent_rect.size.y * (0.5 - data.anchor[1]) - new_size.y / 2 + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (0.5 - data.anchor[1]) - new_size.y / 2;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_BOTTOM_RIGHT:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_BOTTOM_WIDE:
-			data.offset[1] = parent_rect.size.y * (1.0 - data.anchor[1]) - new_size.y - p_margin + parent_rect.position.y;
+			data.offset[1] = parent_rect.size.y * (1.0 - data.anchor[1]) - new_size.y - p_margin;
 			break;
 	}
 
@@ -1429,14 +1430,14 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_LEFT:
 		case PRESET_CENTER_LEFT:
 		case PRESET_LEFT_WIDE:
-			data.offset[2] = x * (0.0 - data.anchor[2]) + new_size.x + p_margin + parent_rect.position.x;
+			data.offset[2] = x * (0.0 - data.anchor[2]) + new_size.x + p_margin;
 			break;
 
 		case PRESET_CENTER_TOP:
 		case PRESET_CENTER_BOTTOM:
 		case PRESET_CENTER:
 		case PRESET_VCENTER_WIDE:
-			data.offset[2] = x * (0.5 - data.anchor[2]) + new_size.x / 2 + parent_rect.position.x;
+			data.offset[2] = x * (0.5 - data.anchor[2]) + new_size.x / 2;
 			break;
 
 		case PRESET_TOP_RIGHT:
@@ -1447,7 +1448,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_HCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin + parent_rect.position.x;
+			data.offset[2] = x * (1.0 - data.anchor[2]) - p_margin;
 			break;
 	}
 
@@ -1457,14 +1458,14 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_TOP_RIGHT:
 		case PRESET_CENTER_TOP:
 		case PRESET_TOP_WIDE:
-			data.offset[3] = parent_rect.size.y * (0.0 - data.anchor[3]) + new_size.y + p_margin + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (0.0 - data.anchor[3]) + new_size.y + p_margin;
 			break;
 
 		case PRESET_CENTER_LEFT:
 		case PRESET_CENTER_RIGHT:
 		case PRESET_CENTER:
 		case PRESET_HCENTER_WIDE:
-			data.offset[3] = parent_rect.size.y * (0.5 - data.anchor[3]) + new_size.y / 2 + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (0.5 - data.anchor[3]) + new_size.y / 2;
 			break;
 
 		case PRESET_BOTTOM_LEFT:
@@ -1475,7 +1476,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 		case PRESET_BOTTOM_WIDE:
 		case PRESET_VCENTER_WIDE:
 		case PRESET_FULL_RECT:
-			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin + parent_rect.position.y;
+			data.offset[3] = parent_rect.size.y * (1.0 - data.anchor[3]) - p_margin;
 			break;
 	}
 
@@ -1847,8 +1848,7 @@ void Control::update_maximum_size() {
 	}
 	// Same with desired size.
 	if (!data.updating_last_desired_size) {
-		data.updating_last_desired_size = true;
-		callable_mp(this, &Control::_update_desired_size).call_deferred();
+		update_desired_size();
 	}
 
 	callable_mp(this, &Control::_update_maximum_size).call_deferred();
@@ -2164,7 +2164,7 @@ void Control::remove_child_notify(Node *p_child) {
 
 bool Control::is_layout_pending() const {
 	ERR_MAIN_THREAD_GUARD_V(false);
-	return data.layout_pending;
+	return data.layout_pending || !is_inside_tree() || !is_visible_in_tree();
 }
 
 bool Control::is_layout_pending_in_tree() const {
@@ -2202,6 +2202,18 @@ Control *Control::get_layout_pending_control_in_tree() const {
 }
 
 void Control::call_on_all_layout_pending_finished(const Callable &p_callable) {
+	if (!is_inside_tree()) {
+		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
+		connect(SceneStringName(tree_entered), recheck, CONNECT_ONE_SHOT);
+		return;
+	}
+
+	if (!is_visible_in_tree()) {
+		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
+		connect(SceneStringName(visibility_changed), recheck, CONNECT_ONE_SHOT);
+		return;
+	}
+
 	Control *pending_control = get_layout_pending_control_in_tree();
 	if (pending_control != nullptr) {
 		Callable recheck(memnew(LayoutRecheckCallable(get_instance_id(), p_callable)));
@@ -3123,11 +3135,23 @@ void Control::release_focus() {
 
 void Control::play_theme_sound(const Ref<AudioStream> &p_stream) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_stream.is_null() || p_stream->get_length() == 0 || !get_tree()) {
+	if (p_stream.is_null() || !get_tree()) {
 		return;
 	}
 
-	get_tree()->play_theme_sound(p_stream);
+	// Ignore playback attempt if the sound has no length, so that empty AudioStream resources
+	// can be used to disable sounds on specific controls using theme overrides.
+	// Without this check, no sound would be played, but a
+	// "Failed to instantiate playback." error would also be printed.
+	bool sound_no_length = false;
+	if (!Object::cast_to<AudioStreamRandomizer>(p_stream.ptr())) {
+		// AudioStreamRandomizer has no length defined.
+		sound_no_length = p_stream->get_length() == 0;
+	}
+
+	if (!sound_no_length) {
+		get_tree()->play_theme_sound(p_stream);
+	}
 }
 
 static Control *_next_control(Control *p_from) {
@@ -5007,6 +5031,8 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
 	ClassDB::bind_method(D_METHOD("find_valid_focus_neighbor", "side"), &Control::find_valid_focus_neighbor);
+
+	ClassDB::bind_method(D_METHOD("play_theme_sound", "stream"), &Control::play_theme_sound);
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);

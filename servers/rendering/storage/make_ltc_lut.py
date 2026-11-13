@@ -15,11 +15,11 @@ def run(target, source, env):
         file.write(
             "// LTC Lookup table for BRDF fitting by Eric Heitz (https://eheitzresearch.wordpress.com/415-2/) \n"
         )
-        file.write("static const int LTC_LUT_DIMENSIONS = 64; // 64x64\n")
-        file.write("static const uint8_t LTC_LUT1[] = {")
+        file.write("constexpr int LTC_LUT_DIMENSIONS = 64; // 64x64\n")
+        file.write("inline constexpr uint8_t LTC_LUT1[] = {")
         write_bytes(file, source[1])
         file.write("};\n\n")
 
-        file.write("static const uint8_t LTC_LUT2[] = {")
+        file.write("inline constexpr uint8_t LTC_LUT2[] = {")
         write_bytes(file, source[2])
         file.write("};\n\n")

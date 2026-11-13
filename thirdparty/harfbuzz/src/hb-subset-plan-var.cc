@@ -60,7 +60,9 @@
  static double
  _tent_eval (const Triple &tent, double v)
  {
-   double start = tent.minimum, peak = tent.middle, end = tent.maximum;
+   double start = (double) tent.minimum;
+   double peak = (double) tent.middle;
+   double end = (double) tent.maximum;
    if (unlikely (start > peak || peak > end)) return 1.0;
    if (unlikely (start < 0.0 && end > 0.0 && peak != 0.0)) return 1.0;
    if (peak == 0.0 || v == peak) return 1.0;
@@ -80,7 +82,7 @@
    double b = _tent_eval (tent, hi);
    *tmin = hb_min (a, b);
    *tmax = hb_max (a, b);
-   if (lo <= tent.middle && tent.middle <= hi)
+   if (lo <= (double) tent.middle && (double) tent.middle <= hi)
      *tmax = hb_max (*tmax, 1.0);
  }
 
@@ -118,8 +120,8 @@
      if (plan->user_axes_location.has (tag))
      {
        if (!plan->old_intermediates.has (tag, &old_int)) return false;
-       lo = old_int->minimum;
-       hi = old_int->maximum;
+       lo = (double) old_int->minimum;
+       hi = (double) old_int->maximum;
      }
      else if (axis.is_hidden ())
        lo = hi = 0.0; /* private axis: intermediate is always 0 */
@@ -214,17 +216,17 @@
        {
 	 const Triple &tent = _.second;
 	 /* Tents the runtime ignores (constant scalar 1) add no breakpoints. */
-	 if (tent.middle == 0.0 ||
+	 if (tent.middle == 0.f ||
 	     tent.minimum > tent.middle || tent.middle > tent.maximum ||
-	     (tent.minimum < 0.0 && tent.maximum > 0.0))
+	     (tent.minimum < 0.f && tent.maximum > 0.f))
 	   continue;
 	 int pos = add_grid_axis (_.first);
 	 if (pos < 0) return false;
 	 auto &points = grid_points[pos];
 	 double blo = points[0], bhi = points[1];
-	 points.push (hb_clamp (tent.minimum, blo, bhi));
-	 points.push (hb_clamp (tent.middle, blo, bhi));
-	 points.push (hb_clamp (tent.maximum, blo, bhi));
+	 points.push (hb_clamp ((double) tent.minimum, blo, bhi));
+	 points.push (hb_clamp ((double) tent.middle, blo, bhi));
+	 points.push (hb_clamp ((double) tent.maximum, blo, bhi));
 	 tents.push (hb_pair ((unsigned) pos, tent));
 	 if (points.in_error () || tents.in_error ()) return false;
        }
@@ -465,6 +467,21 @@ normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
     return true;
 
   hb_array_t<const OT::AxisRecord> axes = face->table.fvar->get_axes ();
+  for (const auto &axis : axes)
+  {
+    hb_tag_t tag = axis.get_axis_tag ();
+    const Triple *range;
+    float minimum, middle, maximum;
+    axis.get_coordinates (minimum, middle, maximum);
+    if (plan->user_axes_location.has (tag, &range) && !range->is_point () &&
+        range->minimum == minimum &&
+        range->middle == middle &&
+        range->maximum == maximum)
+      plan->user_axes_location.del (tag);
+  }
+  if (plan->user_axes_location.is_empty ())
+    return true;
+
   if (!plan->check_success (plan->normalized_coords.resize (axes.length)))
     return false;
 
@@ -583,21 +600,27 @@ normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
        * (its 'pinned' path flattens ALL blends; lift this once
        * https://github.com/harfbuzz/harfbuzz/pull/4710 lands, porting
        * fontTools' instantiateCFF2 from
-       * https://github.com/fonttools/fonttools/pull/3506), and VARC passes
-       * through verbatim with explicit fvar axis indices that renumbering
-       * would desynchronize. Such axes stay in fvar as ordinary hidden
-       * pins. */
-      bool detect_self_contained = true;
-      for (hb_tag_t table_tag : { HB_TAG ('C','F','F','2'), HB_TAG ('V','A','R','C') })
-      {
-        hb_blob_t *blob = hb_face_reference_table (face, table_tag);
-        if (hb_blob_get_length (blob))
-          detect_self_contained = false;
-        hb_blob_destroy (blob);
-      }
+       * https://github.com/fonttools/fonttools/pull/3506). Such axes stay
+       * in fvar as ordinary hidden pins. VARC remaps its axis indices and
+       * rejects instancing of axes it references. */
+      hb_blob_t *cff2_blob = hb_face_reference_table (face, HB_TAG ('C','F','F','2'));
+      bool detect_self_contained = !hb_blob_get_length (cff2_blob);
+      hb_blob_destroy (cff2_blob);
       if (!_compute_avar2_reachable_ranges (plan, axes, avar_table,
                                             detect_self_contained))
         return false;
+
+#ifndef HB_NO_VAR_COMPOSITES
+      /* VARC overrides can reach coordinates outside the font-level
+       * ranges. Do not cull variation data using those ranges. */
+      if (!plan->drop_tables.has (HB_TAG ('V','A','R','C')))
+      {
+        hb_blob_t *varc_blob = hb_face_reference_table (face, HB_TAG ('V','A','R','C'));
+        if (hb_blob_get_length (varc_blob))
+          plan->avar2_reachable_ranges.reset ();
+        hb_blob_destroy (varc_blob);
+      }
+#endif
 
       /* Keep all axes in fvar (pinned ones as hidden), EXCEPT self-contained
        * pinned axes, which are removed entirely. */
@@ -756,6 +779,13 @@ update_instance_metrics_map_from_cff2 (hb_subset_plan_t *plan)
       plan->vmtx_map.set (new_gid, hb_pair ((unsigned) vert_aw, tsb));
       plan->bounds_height_vec[new_gid] = extents.height;
     }
+  }
+  /* No glyph contributed bounds: do not serialize the accumulator's
+   * inverted sentinels into head (or a downgraded CFF FontBBox). */
+  if (plan->head_maxp_info.xMin > plan->head_maxp_info.xMax)
+  {
+    plan->head_maxp_info.xMin = plan->head_maxp_info.xMax = 0;
+    plan->head_maxp_info.yMin = plan->head_maxp_info.yMax = 0;
   }
   hb_font_destroy (font);
   if (hvar_store_cache)

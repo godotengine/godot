@@ -61,7 +61,16 @@ task zipGradleBuild(type: Zip) {
     doFirst {
         logger.lifecycle("Generating Godot gradle build template")
     }
-    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradlew', 'gradlew.bat', 'gradle/**']))
+    from(fileTree(dir: 'app', excludes: [
+        'dataLib/src/main/assets/**',
+        'libs/exportedProjectAAR/**',
+        'src/androidTestInstrumented/**',
+        'src/instrumented/**',
+        'src/main/assets/**',
+        '**/build/**',
+        '**/.gradle/**',
+        '**/*.iml'
+    ]), fileTree(dir: '.', includes: ['gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'
     archiveFileName = 'android_source.zip'
     destinationDirectory = file(binDir)

@@ -2650,7 +2650,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *c
 	shift_arg &= 0x1f;
 
 	if (src2 == SLJIT_IMM) {
-		src2w = src2w << shift_arg;
+		src2w = (sljit_sw)((sljit_uw)src2w << shift_arg);
 		shift_arg = 0;
 	}
 

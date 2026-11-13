@@ -1319,7 +1319,7 @@ void DocumentEditorContainer::_close_tab(int p_idx, bool p_save) {
 			_update_history_arrows();
 		}
 
-		document_list->update_list();
+		_update_filenames();
 		_save_layout();
 		_update_find_replace_bar();
 	}
@@ -2200,6 +2200,10 @@ void DocumentEditorContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
+			if (!is_visible()) {
+				break;
+			}
+
 			const int kb_height = DisplayServer::get_singleton()->virtual_keyboard_get_height();
 			if (kb_height == last_kb_height) {
 				break;
@@ -2207,32 +2211,30 @@ void DocumentEditorContainer::_notification(int p_what) {
 
 			last_kb_height = kb_height;
 			float spacer_height = 0.0f;
-			const float status_bar_height = 28 * EDSCALE; // Magic number
-			const bool kb_visible = kb_height > 0;
 
-			if (kb_visible) {
-				if (TextEditorBase *editor = Object::cast_to<TextEditorBase>(_get_current_editor())) {
-					if (CodeTextEditor *code_editor = editor->get_code_editor()) {
-						if (CodeEdit *text_editor = code_editor->get_text_editor()) {
-							if (!text_editor->has_focus()) {
-								break;
-							}
+			if (EditorNode::get_singleton()->is_portrait()) {
+				// Reset virtual_keyboard_spacer and let EditorNode handle resizing in portrait mode.
+				virtual_keyboard_spacer->set_custom_minimum_size(Size2());
+			} else {
+				const float status_bar_height = 28 * EDSCALE;
+				const float control_bottom = get_global_position().y + get_size().y;
+				const float extra_bottom = get_viewport_rect().size.y - control_bottom;
+				spacer_height = float(kb_height) - extra_bottom - status_bar_height;
+				spacer_height = fmax(0, spacer_height);
+				virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
+				EditorSceneTabs::get_singleton()->set_visible(kb_height == 0);
+			}
+
+			// Make sure caret is visible after resize.
+			if (TextEditorBase *editor = Object::cast_to<TextEditorBase>(_get_current_editor())) {
+				if (CodeTextEditor *code_editor = editor->get_code_editor()) {
+					if (CodeEdit *text_editor = code_editor->get_text_editor()) {
+						if (text_editor->has_focus()) {
 							text_editor->adjust_viewport_to_caret();
 						}
 					}
 				}
-
-				const float control_bottom = get_global_position().y + get_size().y;
-				const float extra_bottom = get_viewport_rect().size.y - control_bottom;
-				spacer_height = float(kb_height) - extra_bottom - status_bar_height;
-
-				if (spacer_height < 0.0f) {
-					spacer_height = 0.0f;
-				}
 			}
-
-			virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
-			EditorSceneTabs::get_singleton()->set_visible(!kb_visible);
 		} break;
 #endif
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
@@ -2259,7 +2261,7 @@ void DocumentEditorContainer::_close_builtin_scripts_from_scene(const String &p_
 void DocumentEditorContainer::_toggle_files_pressed(bool p_pressed) {
 	ERR_FAIL_NULL(list_split);
 	list_split->set_visible(p_pressed);
-	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
+	EditorSettings::get_singleton()->set_project_metadata("show_files_panel", config_section, list_split->is_visible());
 }
 
 void DocumentEditorContainer::edited_scene_changed() {
@@ -2351,14 +2353,10 @@ void DocumentEditorContainer::_connect_to_scene() {
 	if (!edited_scene) {
 		return;
 	}
-	_connect_to_scene_recursive(edited_scene, edited_scene);
+	_connect_to_scene_recursive(edited_scene);
 }
 
-void DocumentEditorContainer::_connect_to_scene_recursive(Node *p_current, Node *p_base) {
-	if (p_current != p_base && p_current->get_owner() != p_base) {
-		return;
-	}
-
+void DocumentEditorContainer::_connect_to_scene_recursive(Node *p_current) {
 	_queue_update_list();
 	const Callable update_callable = callable_mp(this, &DocumentEditorContainer::_queue_update_list);
 	if (p_current->is_connected(CoreStringName(script_changed), update_callable)) {
@@ -2366,11 +2364,8 @@ void DocumentEditorContainer::_connect_to_scene_recursive(Node *p_current, Node 
 	}
 	p_current->connect(CoreStringName(script_changed), update_callable);
 	p_current->connect(SceneStringName(tree_exited), update_callable);
-	p_current->connect(SNAME("child_entered_tree"), callable_mp(this, &DocumentEditorContainer::_connect_to_scene_recursive).bind(p_base), CONNECT_DEFERRED);
-
-	for (Node *child : p_current->iterate_children()) {
-		_connect_to_scene_recursive(child, p_base);
-	}
+	// Use `child_entered_tree` to recursively connect to children.
+	p_current->connect(SNAME("child_entered_tree"), callable_mp(this, &DocumentEditorContainer::_connect_to_scene_recursive));
 }
 
 void DocumentEditorContainer::_update_document_list() {
@@ -2717,6 +2712,16 @@ Vector<Control *> DocumentEditorContainer::get_all_editors() const {
 	return editors;
 }
 
+void DocumentEditorContainer::focus_active_editor() {
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(get_active_editor());
+	EditorHelp *eh = Object::cast_to<EditorHelp>(get_active_editor());
+	if (seb && seb->get_base_editor()) {
+		seb->get_base_editor()->grab_focus();
+	} else if (eh) {
+		eh->set_focused();
+	}
+}
+
 PackedStringArray DocumentEditorContainer::get_unsaved_scripts() const {
 	PackedStringArray unsaved_list;
 
@@ -2743,7 +2748,7 @@ PackedStringArray DocumentEditorContainer::get_unsaved_files() const {
 
 void DocumentEditorContainer::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
-	if (!current || _test_script_times_on_disk()) {
+	if (!current || !current->is_unsaved() || _test_script_times_on_disk()) {
 		return;
 	}
 
@@ -3733,6 +3738,15 @@ void DocumentEditorContainer::update_docs_from_script(const Ref<Script> &p_scrip
 	}
 }
 
+void ScriptEditor::rename_symbol(const String &p_symbol, const EditorLanguage::LookupResult &p_lookup) {
+	FindInFiles::get_singleton()->get_container()->create_rename_control(p_symbol, p_lookup);
+	EditorDockManager::get_singleton()->focus_dock(FindInFiles::get_singleton()->get_container());
+
+	LineEdit *name_edit = FindInFiles::get_singleton()->get_container()->get_search_control()->get_rename_line_edit();
+	callable_mp((Control *)name_edit, &Control::grab_focus).call_deferred(false);
+	callable_mp(name_edit, &LineEdit::select_all).call_deferred();
+}
+
 void DocumentEditorContainer::_update_selected_editor_menu() {
 	for (ScriptEditorBase::EditMenusBase *editor_menu : editor_menus) {
 		editor_menu->set_visible(editor_menu->handles(_get_current_editor()));
@@ -4055,10 +4069,21 @@ DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const St
 	toggle_files_button->connect(SceneStringName(toggled), callable_mp(this, &DocumentEditorContainer::_toggle_files_pressed));
 	toggle_files_button->set_accessibility_name(TTRC("Toggle Document List"));
 	toggle_files_button->set_toggle_mode(true);
+	toggle_files_button->set_flat(true);
 	toggle_files_button->set_shortcut_context(this);
 	toggle_files_button->set_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"));
 	menu_hb->add_child(toggle_files_button);
-	bool initial_state = EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true);
+#ifndef DISABLE_DEPRECATED
+	EditorSettings *es = EditorSettings::get_singleton();
+	if (es && es->get_project_metadata("files_panel", "show_files_panel", "") != "") {
+		bool show_files_panel = es->get_project_metadata("files_panel", "show_files_panel", true);
+		es->set_project_metadata("show_files_panel", "ScriptEditor", show_files_panel);
+		es->set_project_metadata("show_files_panel", "ShaderEditor", show_files_panel);
+		es->set_project_metadata("files_panel", "show_files_panel", Variant());
+		es->save_project_metadata();
+	}
+#endif
+	bool initial_state = EditorSettings::get_singleton()->get_project_metadata("show_files_panel", config_section, true);
 	toggle_files_button->set_pressed_no_signal(initial_state);
 	_toggle_files_pressed(initial_state);
 
@@ -4151,6 +4176,7 @@ DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const St
 
 	script_name_button = memnew(Button);
 	script_name_button->set_flat(true);
+	script_name_button->set_theme_type_variation(SceneStringName(FlatButton));
 	script_name_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button->set_tooltip_text(TTRC("Navigate to document list."));
@@ -4307,15 +4333,7 @@ bool ScriptEditor::should_use_external_editor(const Ref<Script> &p_for_script) {
 }
 
 void ScriptEditor::focus_editor() {
-	EditorDockManager::get_singleton()->focus_dock(this);
-	Control *active_editor = script_container->get_active_editor();
-	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(active_editor);
-	EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor);
-	if (seb) {
-		seb->get_base_editor()->grab_focus();
-	} else if (eh) {
-		eh->set_focused();
-	}
+	EditorDockManager::get_singleton()->force_focus_dock(this);
 }
 
 void ScriptEditor::focus_script_editor(const Ref<Resource> &p_for_resource) {
@@ -4331,7 +4349,7 @@ void ScriptEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 		remove_theme_constant_override("margin_right");
 		remove_theme_constant_override("margin_bottom");
 	} else {
-		int margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		int margin = EDSCALE_RND(EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor)));
 		add_theme_constant_override("margin_left", margin);
 		add_theme_constant_override("margin_right", margin);
 		add_theme_constant_override("margin_bottom", margin);
@@ -4531,6 +4549,7 @@ ScriptEditor::ScriptEditor() {
 	script_container = memnew(DocumentEditorContainer(true, "ScriptEditor", "script_editor_cache.cfg"));
 	script_container->set_handled_resource_types({ "GDScript", "Script", "JSON" });
 	add_child(script_container);
+	connect("_focused", callable_mp(script_container, &DocumentEditorContainer::focus_active_editor));
 
 	help_search_dialog = memnew(EditorHelpSearch);
 	add_child(help_search_dialog);

@@ -43,6 +43,8 @@
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For texture_streaming.
+
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
@@ -1803,8 +1805,8 @@ void fragment() {)";
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
 
 	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
-	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
-	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * ndc;
+	vec4 refraction_ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * refraction_ndc;
 	refraction_view_pos.xyz /= refraction_view_pos.w;
 
 	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
@@ -1833,8 +1835,8 @@ void fragment() {)";
 		code += vformat(R"(
 	// Proximity Fade: Enabled
 	float proximity_depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
-	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
-	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * ndc;
+	vec4 proximity_ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
+	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * proximity_ndc;
 	proximity_view_pos.xyz /= proximity_view_pos.w;
 	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z %s proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
 )",
@@ -2054,14 +2056,29 @@ void fragment() {)";
 #endif
 	if (streaming_enabled && flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
-	// Write triplanar UV to UV for texture streaming feedback.
-	// Pick the UV projection of the dominant triplanar axis.
-	if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
-		STREAMING_UV = uv1_triplanar_pos.zy * vec2(-1.0, 1.0);
-	} else if (uv1_power_normal.y >= uv1_power_normal.z) {
-		STREAMING_UV = uv1_triplanar_pos.xz;
-	} else {
-		STREAMING_UV = uv1_triplanar_pos.xy;
+	// Texture streaming feedback for triplanar.
+	// Keep in sync with visual shader.
+	{
+		vec3 pos_ddx = dFdx(uv1_triplanar_pos);
+		vec3 pos_ddy = dFdy(uv1_triplanar_pos);
+		vec2 uv_ddx;
+		vec2 uv_ddy;
+		if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
+			uv_ddx = pos_ddx.zy;
+			uv_ddy = pos_ddy.zy;
+		} else if (uv1_power_normal.y >= uv1_power_normal.z) {
+			uv_ddx = pos_ddx.xz;
+			uv_ddy = pos_ddy.xz;
+		} else {
+			uv_ddx = pos_ddx.xy;
+			uv_ddy = pos_ddy.xy;
+		}
+
+		float uv_ddx_sq = dot(uv_ddx, uv_ddx);
+		float uv_ddy_sq = dot(uv_ddy, uv_ddy);
+		const float MAX_ANISOTROPY = 16.0;
+		float footprint_sq = max(min(uv_ddx_sq, uv_ddy_sq), max(uv_ddx_sq, uv_ddy_sq) / (MAX_ANISOTROPY * MAX_ANISOTROPY));
+		STREAMING_LOD = 0.5 * log2(max(footprint_sq, 1e-30)) + 12.0;
 	}
 )";
 	}

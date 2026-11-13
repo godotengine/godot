@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_list.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
@@ -383,7 +384,7 @@ class DocumentEditorContainer : public MarginContainer {
 	void _auto_format_text(ScriptEditorBase *p_seb);
 
 	void _connect_to_scene();
-	void _connect_to_scene_recursive(Node *p_current, Node *p_base);
+	void _connect_to_scene_recursive(Node *p_current);
 	void _update_document_list();
 	void _queue_update_list();
 
@@ -459,6 +460,7 @@ public:
 
 	Control *get_active_editor() const;
 	Vector<Control *> get_all_editors() const;
+	void focus_active_editor();
 
 	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
@@ -571,6 +573,7 @@ public:
 	void update_doc(const String &p_name) { script_container->update_doc(p_name); }
 	void clear_docs_from_script(const Ref<Script> &p_script) { script_container->clear_docs_from_script(p_script); }
 	void update_docs_from_script(const Ref<Script> &p_script) { script_container->update_docs_from_script(p_script); }
+	void rename_symbol(const String &p_symbol, const EditorLanguage::LookupResult &p_lookup);
 
 	void trigger_live_script_reload(const String &p_script_path) { script_container->trigger_live_script_reload(p_script_path); }
 

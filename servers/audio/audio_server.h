@@ -193,6 +193,7 @@ private:
 	struct CallbackItem {
 		AudioCallback callback;
 		void *userdata = nullptr;
+		bool is_playing = false;
 	};
 
 	SafeList<CallbackItem *> update_callback_list;
@@ -339,6 +340,7 @@ public:
 
 	void add_mix_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_mix_callback(AudioCallback p_callback, void *p_userdata);
+	void set_mix_callback_state(AudioCallback p_callback, void *p_userdata, bool p_is_playing);
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;

@@ -65,6 +65,14 @@
 #include "scene/debugger/runtime_node_select.h"
 #endif
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif
+
 SceneDebugger::SceneDebugger() {
 	singleton = this;
 
@@ -124,11 +132,13 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	LocalVector<String> shortcuts = {
 		"editor/suspend_resume_embedded_project",
 		"canvas_item_editor/select_mode",
+		"canvas_item_editor/pan_mode",
+#ifdef TOOLS_ENABLED
 		"canvas_item_editor/move_mode",
 		"canvas_item_editor/rotate_mode",
 		"canvas_item_editor/scale_mode",
-		"canvas_item_editor/pan_mode",
 		"canvas_item_editor/use_local_space",
+#endif
 	};
 	for (const String &key : shortcuts) {
 		Ref<Shortcut> shortcut = p_settings.get(key, Ref<Shortcut>());
@@ -144,6 +154,7 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 		return;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (RuntimeNodeSelect::get_singleton()->node_select_type == RuntimeNodeSelect::NODE_TYPE_NONE) {
 		return; // Ignore undo/redo actions in Input mode, as it can result in unwanted edits.
 	}
@@ -185,6 +196,7 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	}
 
 	EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { action });
+#endif
 }
 
 void SceneDebugger::_on_window_size_changed() {
@@ -214,7 +226,7 @@ Error SceneDebugger::_msg_request_scene_tree(const Array &p_args) {
 }
 
 Error SceneDebugger::_msg_save_node(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.size() != 2, ERR_INVALID_DATA);
 	_save_node(p_args[0], p_args[1]);
 	Array arr;
 	arr.append(p_args[1]);
@@ -334,7 +346,12 @@ Error SceneDebugger::_msg_hdr_output_toggle_requested(const Array &p_args) {
 Error SceneDebugger::_msg_set_debug_collisions(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enabled = p_args[0];
-	SceneTree::get_singleton()->set_debug_collisions_hint(enabled);
+#ifndef PHYSICS_2D_DISABLED
+	PhysicsServer2D::get_singleton()->debug_set_enabled(enabled);
+#endif
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3D::get_singleton()->debug_set_enabled(enabled);
+#endif
 	return OK;
 }
 
@@ -520,18 +537,21 @@ Error SceneDebugger::_msg_runtime_node_select_set_node_type(const Array &p_args)
 }
 
 Error SceneDebugger::_msg_runtime_node_select_set_ci_tool(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.size() != 2, ERR_INVALID_DATA);
 	CanvasItemManipulator::Tool tool = (CanvasItemManipulator::Tool)p_args[0];
-	RuntimeNodeSelect::get_singleton()->_set_ci_tool(tool);
+	bool shift_pressed = p_args[1];
+	RuntimeNodeSelect::get_singleton()->_set_ci_tool(tool, shift_pressed);
 	return OK;
 }
 
+#ifdef TOOLS_ENABLED
 Error SceneDebugger::_msg_runtime_node_select_set_ci_local_space(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enabled = p_args[0];
 	RuntimeNodeSelect::get_singleton()->_set_ci_local_space(enabled);
 	return OK;
 }
+#endif
 
 Error SceneDebugger::_msg_runtime_node_select_set_n3d_tool(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
@@ -738,7 +758,9 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_node_type"] = _msg_runtime_node_select_set_node_type;
 	message_handlers["runtime_node_select_set_selection_visible"] = _msg_runtime_node_select_set_selection_visible;
 	message_handlers["runtime_node_select_set_ci_tool"] = _msg_runtime_node_select_set_ci_tool;
+#ifdef TOOLS_ENABLED
 	message_handlers["runtime_node_select_set_ci_local_space"] = _msg_runtime_node_select_set_ci_local_space;
+#endif // TOOLS_ENABLED
 	message_handlers["runtime_node_select_set_n3d_tool"] = _msg_runtime_node_select_set_n3d_tool;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;

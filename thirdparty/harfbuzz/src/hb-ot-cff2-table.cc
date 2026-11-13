@@ -123,6 +123,9 @@ bool OT::cff2::accelerator_t::get_extents_at (hb_font_t *font,
 
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
 
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
+
   unsigned int fd = fdSelect->get_fd (glyph);
   const hb_ubytes_t str = (*charStrings)[glyph];
   cff2_cs_interp_env_t<number_t> env (str, *this, fd, coords.arrayZ, coords.length);
@@ -207,13 +210,19 @@ struct cff2_path_procs_path_t : path_procs_t<cff2_path_procs_path_t, cff2_cs_int
 
 struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_param_t, number_t, cff2_path_procs_path_t> {};
 
-bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
+bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph,
+				       hb_draw_session_t &draw_session,
+				       int64_t *budget) const
 {
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
+
   return get_path_at (font,
 		      glyph,
 		      draw_session,
 		      hb_array (font->coords,
-				font->has_nonzero_coords ? font->num_coords : 0));
+				font->has_nonzero_coords ? font->num_coords : 0),
+		      budget);
 }
 
 bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords, int64_t *budget) const
@@ -224,6 +233,9 @@ bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph
 #endif
 
   if (unlikely (!is_valid () || (glyph >= num_glyphs))) return false;
+
+  int64_t stack_budget = HB_BUDGET_GLYPH;
+  if (!budget) budget = &stack_budget;
 
   unsigned int fd = fdSelect->get_fd (glyph);
   const hb_ubytes_t str = (*charStrings)[glyph];

@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from methods import print_error, print_warning
-from platform_methods import validate_arch
+from platform_methods import check_accesskit_version, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -249,17 +249,20 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/arm64-v8a/static/"])
-            elif env["arch"] == "arm32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/armeabi-v7a/static/"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86_64/static/"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86/static/"])
-            env.Append(LIBS=["accesskit"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/arm64-v8a/static/"])
+                elif env["arch"] == "arm32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/armeabi-v7a/static/"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86_64/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86/static/"])
+                env.Append(LIBS=["accesskit"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"

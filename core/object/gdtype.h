@@ -147,16 +147,23 @@ public:
 	InitState get_init_state() const { return init_state; }
 	void initialize();
 
+	// Removes all held objects, which at the time of writing are only MethodBind defaults.
+	// The reason to do this is to allow a GDExtension to unload itself, and Objects held
+	// here might have references back to the extension.
+	void clear_held_objects();
+
 	const GDType *get_super_type() const { return super_type; }
 	const StringName &get_name() const { return name; }
 	const StringName &get_super_type_name() const {
-		static const StringName EMPTY;
-		return super_type ? super_type->name : EMPTY;
+		return super_type ? super_type->name : StringName::EMPTY;
 	}
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
 	// Binding
+
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
+	// Minimal footprint helper for codebase callers. Helps avoid binary size.
+	void bind_integer_constant_raw(const char *p_enum_qualified_name, const char *p_value_name, int64_t p_constant, bool p_is_bitfield = false);
 
 	void add_signal(MethodInfo p_signal);
 

@@ -31,15 +31,6 @@
 
 #include "hb-raster.h"
 
-/* Scanline work of the edges accumulated in @draw since the last
- * render/clear: one unit per edge plus its span in rows, clamped to
- * @max_rows per edge.  This is what rasterizing the edges costs, as
- * each edge is walked once per row it crosses.  Used by the paint
- * layer to charge consumed outline work against its session work
- * budget. */
-HB_INTERNAL int64_t
-hb_raster_draw_get_edge_work (hb_raster_draw_t *draw, unsigned max_rows);
-
 /* Visibility clip box for curve flattening, in device pixels.  Curves
  * whose control-point bounding box falls entirely outside the box are
  * replaced by their chord, which is exact for coverage inside the box.
@@ -49,14 +40,14 @@ hb_raster_draw_set_clip_box (hb_raster_draw_t *draw,
 			     float x0, float y0,
 			     float x1, float y1);
 
-/* Points curve-flattening work charges at the caller's session budget
- * (one unit per Bézier subdivision) instead of the standalone
- * per-session HB_RASTER_MAX_DRAW_WORK budget.  The rasterizer's local
- * accumulated-edge limit still applies.  Cleared by hb_raster_draw_clear()
- * (and hence after every render). */
-HB_INTERNAL void
-hb_raster_draw_set_external_work (hb_raster_draw_t *draw,
-				  int64_t *work_left);
+/* Estimated sweep work for the accumulated edges: each edge is charged
+ * its scanline span plus its column span, both clipped to the surface.
+ * Raster paint uses this to precharge its separate pixel budget before
+ * rendering a mask. */
+HB_INTERNAL int64_t
+hb_raster_draw_get_pixel_work (const hb_raster_draw_t *draw,
+			       unsigned int max_rows,
+			       unsigned int max_cols);
 
 /* Shared pixel helpers (used by paint and image compositing). */
 

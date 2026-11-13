@@ -711,7 +711,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 vec3 trace_environment_color(vec3 ray_dir) {
 	vec3 sky_dir = normalize(mat3(bake_params.env_transform) * ray_dir);
-	vec2 st = vec2(atan(sky_dir.x, sky_dir.z), acos(sky_dir.y));
+	vec2 st = vec2(atan(sky_dir.x, sky_dir.z) - PI, acos(sky_dir.y));
 	if (st.x < 0.0) {
 		st.x += PI * 2.0;
 	}

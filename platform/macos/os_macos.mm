@@ -318,7 +318,9 @@ String OS_MacOS::get_version() const {
 String OS_MacOS::get_version_alias() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	String macos_string;
-	if (ver.majorVersion == 26) {
+	if (ver.majorVersion == 27) {
+		macos_string += "Golden Gate";
+	} else if (ver.majorVersion == 26) {
 		macos_string += "Tahoe";
 	} else if (ver.majorVersion == 15) {
 		macos_string += "Sequoia";
@@ -338,7 +340,7 @@ String OS_MacOS::get_version_alias() const {
 	} else if (ver.majorVersion == 10 && ver.minorVersion == 13) {
 		macos_string += "High Sierra";
 	} else {
-		macos_string += "Unknown";
+		macos_string += itos(ver.majorVersion);
 	}
 	// macOS versions older than 10.13 cannot run Godot.
 	return vformat("%s (%s)", macos_string, get_version());
@@ -457,6 +459,20 @@ String OS_MacOS::get_bundle_resource_dir() const {
 	if (main) {
 		NSString *resource_path = [main resourcePath];
 		ret.append_utf8([resource_path UTF8String]);
+	}
+	return ret;
+}
+
+String OS_MacOS::get_bundle_or_executable_path() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *resource_path = [main bundlePath];
+		ret.append_utf8([resource_path UTF8String]);
+	}
+	if (ret.is_empty()) {
+		ret = get_executable_path();
 	}
 	return ret;
 }
@@ -933,7 +949,7 @@ String OS_MacOS::get_unique_id() const {
 	static String serial_number;
 
 	if (serial_number.is_empty()) {
-#if defined(__x86_64) || defined(__x86_64__)
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 		io_service_t platform_expert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
 #else
 		io_service_t platform_expert = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"));

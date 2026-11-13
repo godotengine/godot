@@ -1737,6 +1737,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 
 			unsigned int num_entries = 0;
 			const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
+			p_font_data->font_name = String();
 			for (unsigned int i = 0; i < num_entries; i++) {
 				if (names[i].name_id != HB_OT_NAME_ID_FONT_FAMILY) {
 					continue;
@@ -2332,6 +2333,12 @@ void TextServerAdvanced::_font_set_face_index(const RID &p_font_rid, int64_t p_f
 	if (fd->face_index != p_face_index) {
 		fd->face_index = p_face_index;
 		_font_clear_cache(fd);
+#ifdef MODULE_FREETYPE_ENABLED
+		if (fd->face) {
+			FT_Done_Face(fd->face);
+			fd->face = nullptr;
+		}
+#endif
 	}
 }
 
@@ -5948,6 +5955,37 @@ double TextServerAdvanced::_shaped_text_fit_to_width(const RID &p_shaped, double
 					}
 					justification_width += (gl.advance - old_adv);
 				}
+			}
+		}
+	}
+
+	if (!sd->objects.is_empty()) {
+		Vector<ShapedTextDataAdvanced::Span> &spans = sd->spans;
+		if (sd->parent != RID()) {
+			ShapedTextDataAdvanced *parent_sd = shaped_owner.get_or_null(sd->parent);
+			ERR_FAIL_COND_V(!parent_sd->valid.is_set(), false);
+			spans = parent_sd->spans;
+		}
+
+		double width = 0.0;
+		int sd_size = sd->glyphs.size();
+		int span_size = spans.size();
+		for (int i = 0; i < sd_size; i++) {
+			Glyph gl = sd->glyphs[i];
+			Variant key;
+			if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + sd->first_span >= 0 && gl.span_index + sd->first_span < span_size) {
+				key = spans[gl.span_index + sd->first_span].embedded_key;
+			}
+			if (key != Variant()) {
+				if (sd->orientation == ORIENTATION_HORIZONTAL) {
+					sd->objects[key].rect.position.x = width;
+					width += sd->objects[key].rect.size.x;
+				} else {
+					sd->objects[key].rect.position.y = width;
+					width += sd->objects[key].rect.size.y;
+				}
+			} else {
+				width += gl.advance * gl.repeat;
 			}
 		}
 	}

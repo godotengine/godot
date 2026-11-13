@@ -1,0 +1,19 @@
+diff --git a/thirdparty/misc/ifaddrs-android.cc b/thirdparty/misc/ifaddrs-android.cc
+index 78268406ea..06bb4e1dca 100644
+--- a/thirdparty/misc/ifaddrs-android.cc
++++ b/thirdparty/misc/ifaddrs-android.cc
+@@ -25,8 +25,7 @@
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-#if defined(ANDROID)
+-#include "talk/base/ifaddrs-android.h"
++#include "ifaddrs-android.h"
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/types.h>
+@@ -231,4 +230,3 @@ void freeifaddrs(struct ifaddrs* addrs) {
+     delete last;
+   }
+ }
+-#endif  // defined(ANDROID)

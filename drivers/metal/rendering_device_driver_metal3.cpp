@@ -94,6 +94,9 @@ void RenderingDeviceDriverMetal::_resolve_sync_mode() {
 		// Apple GPUs only sample counters at stage boundaries, which is all the
 		// timestamp encoders rely on.
 		timestamp_queries_supported = device->supportsCounterSampling(MTL::CounterSamplingPointAtStageBoundary);
+		if (timestamp_queries_supported) {
+			timestamp_fence = NS::TransferPtr(device->newFence());
+		}
 	} else {
 		print_verbose("Metal 3: Native hazard tracking enabled.");
 	}
@@ -315,7 +318,7 @@ void RenderingDeviceDriverMetal::command_timestamp_write(CommandBufferID p_cmd_b
 	}
 	MDCommandBuffer *cmd = (MDCommandBuffer *)(p_cmd_buffer.id);
 	QueryPool *pool = (QueryPool *)(p_pool_id.id);
-	cmd->timestamp_write(pool, p_index);
+	cmd->timestamp_write(pool, p_index, timestamp_fence.get());
 }
 
 #pragma mark - Command Buffers

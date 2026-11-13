@@ -332,6 +332,8 @@ static void HIDAPI_InitializeDiscovery(void)
             if (SDL_HIDAPI_discovery.m_pUdev != NULL) {
                 SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
                 if (SDL_HIDAPI_discovery.m_pUdevMonitor != NULL) {
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "hidraw", NULL);
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "usb", NULL);
                     usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
@@ -1176,7 +1178,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             }
             return true;
         } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
-                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER || product_id == USB_PRODUCT_FLYDIGI_V2_APEX6)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }

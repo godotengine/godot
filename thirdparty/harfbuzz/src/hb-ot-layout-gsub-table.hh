@@ -161,14 +161,22 @@ GSUB_accelerator_t::depend (hb_depend_data_builder_t *builder, hb_face_t *face) 
       lookup_indexes.reset ();
       for (auto feature_index : feature_indexes)
       {
-        auto feature_ptr = fv.find_substitute (i, feature_index);
-        if (feature_ptr != nullptr)
-          feature_ptr->add_lookup_indexes_to (&lookup_indexes);
+	auto feature_ptr = fv.find_substitute (i, feature_index);
+	if (feature_ptr != nullptr)
+	  feature_ptr->add_lookup_indexes_to (&lookup_indexes);
       }
       for (auto lookup_index : lookup_indexes)
-        if (unlikely (!builder->add_lookup_feature (lookup_index, ft)))
+	if (unlikely (!builder->add_lookup_feature (lookup_index, ft)))
 	  return;
     }
+
+#ifndef HB_NO_VAR
+    lookup_indexes.reset ();
+    fv.collect_lookup_variation_lookups (&feature_indexes, &lookup_indexes);
+    for (auto lookup_index : lookup_indexes)
+      if (unlikely (!builder->add_lookup_feature (lookup_index, ft)))
+	return;
+#endif
   }
 
   if (unlikely (!builder->finish_lookup_features ()))

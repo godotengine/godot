@@ -140,13 +140,15 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ResourceTracker {
 
 struct BindingCache {
 	struct BufferBinding {
-		MTL::Buffer *buffer = nullptr;
-		NS::UInteger offset = 0;
+		MTL::Buffer *buffer;
+		NS::UInteger offset;
 
 		bool operator!=(const BufferBinding &p_other) const {
 			return buffer != p_other.buffer || offset != p_other.offset;
 		}
 	};
+
+	static_assert(std::is_trivially_constructible_v<BufferBinding>);
 
 	LocalVector<MTL::Texture *> textures;
 	LocalVector<MTL::SamplerState *> samplers;
@@ -159,11 +161,14 @@ struct BindingCache {
 	}
 
 private:
+	// Returns true if p_vec was resized, and therefore new elements were initialized.
 	template <typename T>
-	_FORCE_INLINE_ void ensure_size(LocalVector<T> &p_vec, uint32_t p_required) {
+	_FORCE_INLINE_ bool ensure_size(LocalVector<T> &p_vec, uint32_t p_required) {
 		if (p_vec.size() < p_required) {
 			p_vec.resize_initialized(p_required);
+			return true;
 		}
+		return false;
 	}
 
 public:
@@ -240,6 +245,15 @@ public:
 		}
 		return false;
 	}
+
+	_FORCE_INLINE_ void invalidate_buffer(uint32_t p_index) {
+		if (!ensure_size(buffers, p_index + 1)) {
+			buffers.ptr()[p_index] = {
+				.buffer = nullptr,
+				.offset = 0,
+			};
+		}
+	}
 };
 
 // A type used to encode resources directly to a MTLCommandEncoder
@@ -270,20 +284,9 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) QueryPool {
 	// A one byte private buffer, filled by the timestamp encoder so it always
 	// carries at least one command.
 	NS::SharedPtr<MTL::Buffer> dummy_buffer;
-	// The counter sample buffer timestamp domain is not queryable, so it is
-	// correlated against the CPU clock. queryTimestampFrequency() describes the
-	// Metal 4 counter heap domain instead, and is roughly 33x off here.
-	MTL::Device *device = nullptr;
-	MTL::Timestamp cpu_base = 0;
-	MTL::Timestamp gpu_base = 0;
-	double timestamp_to_nano = 0.0;
 	uint32_t count = 0;
 
 	QueryPool() = default;
-
-	// Resolves the GPU to CPU tick ratio on first use, once enough time has
-	// elapsed since creation for the correlation to be meaningful.
-	double _resolve_timestamp_to_nano();
 
 public:
 	// Returns nullptr if the device does not expose the timestamp counter set.
@@ -360,6 +363,7 @@ private:
 
 	void _render_set_dirty_state();
 	void _render_bind_uniform_sets();
+	void _set_arg_buffer(MTL::RenderCommandEncoder *p_enc, const UniformSet &p_shader_set, MTL::Buffer *p_buffer, uint32_t p_offset, uint32_t p_set_index);
 	void _bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 	void _bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 
@@ -405,6 +409,22 @@ public:
 		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
+
+		enum ArgBufferStage {
+			ARG_BUFFER_STAGE_VERTEX,
+			ARG_BUFFER_STAGE_FRAGMENT,
+			ARG_BUFFER_STAGE_MAX,
+		};
+		BindingCache arg_buffer_cache[ARG_BUFFER_STAGE_MAX];
+
+		MDRenderPipeline::RasterState encoder_raster;
+		MDRenderPipeline::RasterState raster_state;
+
+		_FORCE_INLINE_ void clear_arg_buffer_cache() {
+			for (BindingCache &cache : arg_buffer_cache) {
+				cache.clear();
+			}
+		}
 
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
@@ -457,13 +477,6 @@ public:
 				}
 			}
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
-		}
-
-		_FORCE_INLINE_ void mark_blend_dirty() {
-			if (!blend_constants.has_value()) {
-				return;
-			}
-			dirty.set_flag(DirtyFlag::DIRTY_BLEND);
 		}
 
 		MTL::ScissorRect clip_to_render_area(MTL::ScissorRect p_rect) const {
@@ -614,7 +627,7 @@ public:
 
 #pragma mark - Timestamp
 
-	void timestamp_write(QueryPool *p_pool, uint32_t p_index);
+	void timestamp_write(QueryPool *p_pool, uint32_t p_index, MTL::Fence *p_fence);
 
 #pragma mark - Synchronization
 

@@ -45,7 +45,6 @@ extern HWND SDL_HelperWindow;
 // local variables
 static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
-static bool has_broken_EZFRD64DLL = false;
 
 // Taken from Wine - Thanks!
 static DIOBJECTDATAFORMAT dfDIJoystick2[] = {
@@ -346,50 +345,31 @@ static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, Uint
 
 void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (!effect) {
-        return;
-    }
-    SDL_free(effect->rgdwAxes);
-    SDL_free(effect->rglDirection);
-    SDL_free(effect->lpvTypeSpecificParams);
-    SDL_free(effect);
+    SDL_free(effect);  // it's all allocated in a single SDL_calloc() (or using static data) now.
 }
 
 DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
-    DIEFFECT *effect;
-    DIPERIODIC *periodic;
-
-    // Create the effect
-    effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
+    DIEFFECT *effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect) + sizeof (DIPERIODIC));
     if (!effect) {
         return NULL;
     }
+
     effect->dwSize = sizeof(*effect);
     effect->dwGain = 10000;
     effect->dwFlags = DIEFF_OBJECTOFFSETS;
     effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; // In microseconds.
     effect->dwTriggerButton = DIEB_NOTRIGGER;
 
-    effect->cAxes = 2;
-    effect->rgdwAxes = (DWORD *)SDL_calloc(effect->cAxes, sizeof(DWORD));
-    if (!effect->rgdwAxes) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static DWORD rgdwAxes[] = { DIJOFS_X, DIJOFS_Y };
+    effect->cAxes = SDL_arraysize(rgdwAxes);
+    effect->rgdwAxes = rgdwAxes;
 
-    effect->rglDirection = (LONG *)SDL_calloc(effect->cAxes, sizeof(LONG));
-    if (!effect->rglDirection) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static LONG rglDirection[] = { 0, 0 };
+    effect->rglDirection = rglDirection;
     effect->dwFlags |= DIEFF_CARTESIAN;
 
-    periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    DIPERIODIC *periodic = (DIPERIODIC *)(effect + 1);  // we allocated this right after the effect struct.
     periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
     periodic->dwPeriod = 1000000;
 
@@ -438,29 +418,6 @@ bool SDL_DINPUT_JoystickInit(void)
         dinput = NULL;
         return SetDIerror("IDirectInput::Initialize", result);
     }
-
-#ifdef _WIN64
-    if (SDL_GetHintBoolean("SDL_JOYSTICK_CHECK_EZFRD64", true)) {
-        // The 64-bit version of EZFRD64.DLL crashes after being loaded,
-        // which happens implicitly when querying the device capabilities,
-        // so make sure we don't do that if there's a possibility of crashing
-        static const char *directories[] = {
-            "C:/Windows/USB_Vibration",
-            "C:/Windows/USB Vibration"
-        };
-        for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64DLL; ++i) {
-            int count = 0;
-            char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
-            if (count > 0) {
-                has_broken_EZFRD64DLL = true;
-            }
-            SDL_free(files);
-        }
-        if (has_broken_EZFRD64DLL) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Broken EZFRD64.DLL detected, disabling DirectInput force feedback");
-        }
-    }
-#endif
     return true;
 }
 
@@ -806,7 +763,7 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
         return SetDIerror("IDirectInputDevice8::SetDataFormat", result);
     }
 
-    if (!has_broken_EZFRD64DLL) {
+    if (!WIN_HasBrokenEZFRD64DLL()) {
         // Get device capabilities to see if we are force feedback capable
         result =
             IDirectInputDevice8_GetCapabilities(joystick->hwdata->InputDevice,

@@ -263,6 +263,7 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape);
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2());
+	virtual void cursor_clear_custom_image_cache() {}
 
 	/* KEYBOARD */
 
@@ -472,6 +473,7 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID);
+	virtual void window_set_ime_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
 
 	virtual bool window_maximize_on_title_dbl_click() const { return false; }
 	virtual bool window_minimize_on_title_dbl_click() const { return false; }

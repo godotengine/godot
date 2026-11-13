@@ -300,25 +300,50 @@ struct CPAL
 
     hb_vector_t<unsigned> first_color_index_for_layer;
     hb_map_t first_color_to_layer_index;
+    /* Two palettes that retain exactly the same color records can share the
+     * same block of color records. This commonly happens after subsetting
+     * when the colors that distinguished the palettes are dropped. Map from
+     * a layer's retained colors to its index to find equal layers without
+     * scanning all of them. The keys point into layer_retained_colors,
+     * which keeps them alive. */
+    hb_hashmap_t<hb_array_t<const BGRAColor>, unsigned> retained_colors_to_layer_index;
+    hb_vector_t<hb_vector_t<BGRAColor>> layer_retained_colors;
+
+    const hb_array_t<const BGRAColor> all_color_records = (this+colorRecordsZ).as_array (numColorRecords);
 
     const hb_array_t<const HBUINT16> colorRecordIndices = colorRecordIndicesZ.as_array (numPalettes);
     for (const auto first_color_record_idx : colorRecordIndices)
     {
       if (first_color_to_layer_index.has (first_color_record_idx)) continue;
 
-      first_color_index_for_layer.push (first_color_record_idx);
-      if (unlikely (!c->serializer->propagate_error (first_color_index_for_layer))) return_trace (false);
-      first_color_to_layer_index.set (first_color_record_idx,
-                                      first_color_index_for_layer.length - 1);
+      hb_vector_t<BGRAColor> retained_colors;
+      if (unlikely (!retained_colors.alloc (retained_color_indices.get_population ()))) return_trace (false);
+      for (hb_codepoint_t color_index : retained_color_indices)
+	retained_colors.push (all_color_records[first_color_record_idx + color_index]);
+
+      unsigned layer_index = first_color_index_for_layer.length;
+      unsigned *candidate_layer_index = nullptr;
+      if (retained_colors_to_layer_index.has (retained_colors.as_array (), &candidate_layer_index))
+	layer_index = *candidate_layer_index;
+      else
+      {
+	first_color_index_for_layer.push (first_color_record_idx);
+	if (unlikely (!c->serializer->propagate_error (first_color_index_for_layer))) return_trace (false);
+
+	if (unlikely (!layer_retained_colors.push_or_fail (std::move (retained_colors)))) return_trace (false);
+	if (unlikely (!retained_colors_to_layer_index.set (layer_retained_colors.tail ().as_array (), layer_index)))
+	  return_trace (false);
+      }
+      first_color_to_layer_index.set (first_color_record_idx, layer_index);
+      if (unlikely (!c->serializer->propagate_error (first_color_to_layer_index))) return_trace (false);
     }
 
     out->numColorRecords = first_color_index_for_layer.length
                            * retained_color_indices.get_population ();
 
-    const hb_array_t<const BGRAColor> color_records = (this+colorRecordsZ).as_array (numColorRecords);
     if (!out->serialize (c->serializer,
                          colorRecordIndices,
-                         color_records,
+                         all_color_records,
                          first_color_index_for_layer,
                          first_color_to_layer_index,
                          retained_color_indices))

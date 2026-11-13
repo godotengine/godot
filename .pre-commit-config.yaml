@@ -5,8 +5,7 @@ exclude: |
   (?x)^(
     .*thirdparty/.*|
     .*-(dll|dylib|so)_wrap\.[ch]|
-    platform/android/java/editor/src/main/java/com/android/.*|
-    platform/android/java/lib/src/main/java/com/google/.*
+    platform/android/java/editor/src/main/java/com/android/.*
   )$
 
 repos:
@@ -53,7 +52,7 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.17.1
     hooks:
       - id: ruff-check
         args: [--color=always]
@@ -65,11 +64,12 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+    rev: v2.4.1
     hooks:
       - id: mypy
         files: \.py$
         types_or: [text]
+        additional_dependencies: [scons==4.11.1]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
@@ -140,7 +140,7 @@ repos:
           - --config
           - platform/web/eslint.config.cjs
         additional_dependencies:
-          - "@eslint/js@^9.12.0"
+          - "@eslint/js@^9.39.5"
           - "@html-eslint/eslint-plugin@^0.27.0"
           - "@html-eslint/parser@^0.27.0"
           - "@stylistic/eslint-plugin@^2.13.0"

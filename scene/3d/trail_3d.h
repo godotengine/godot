@@ -30,13 +30,13 @@
 
 #pragma once
 
-#include "scene/3d/line_3d.h"
+#include "scene/3d/line_base_3d.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/mesh.h"
 
-class Trail3D : public Line3D {
-	GDCLASS(Trail3D, Line3D);
+class Trail3D : public LineBase3D {
+	GDCLASS(Trail3D, LineBase3D);
 
 	// Lots of code for this node is inspired/ported from
 	// https://codeberg.org/MajorMcDoom/cozy-cube-godot-addons/src/branch/main
@@ -120,7 +120,7 @@ private:
 	Ref<Gradient> color_gradient;
 	MaterialMode material_mode = MATERIAL_MODE_MIX;
 	MeshAlignment alignment = MESH_ALIGNMENT_BILLBOARD;
-	TilingMode tiling_mode = TILING_MODE_LENGTH;
+	TilingMode tiling_mode = TILING_MODE_TILE;
 	float tiling_multiplier = 1.0;
 	float tiling_offset = 0.0;
 	PackedVector3Array points;
@@ -169,6 +169,8 @@ private:
 	real_t _last_pinned_u = 0.0;
 	Vector3 _previous_position;
 	bool _transform_changed = false;
+	bool _has_one_shot_connection = false;
+	void _ensure_frame_pre_draw_connection(bool p_is_one_shot);
 
 	//Ribbon
 	void _do_rebuild();
