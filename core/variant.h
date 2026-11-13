@@ -177,6 +177,7 @@ public:
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
+	int32_t get_array_size() const;
 
 	ObjectID get_object_instance_id() const;
 	bool is_invalid_object() const;

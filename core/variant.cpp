@@ -868,6 +868,41 @@ bool Variant::is_one() const {
 	return false;
 }
 
+int32_t Variant::get_array_size() const {
+	// Update this switch if any new Variant::Type enum values are added.
+	static_assert(VARIANT_MAX == POOL_COLOR_ARRAY + 1, "Variant::Type enum changed, update Variant::get_array_size()");
+
+	switch (type) {
+		case ARRAY: {
+			return reinterpret_cast<const Array *>(_data._mem)->size();
+		} break;
+		case POOL_BYTE_ARRAY: {
+			return reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem)->size();
+		} break;
+		case POOL_INT_ARRAY: {
+			return reinterpret_cast<const PoolVector<int> *>(_data._mem)->size();
+		} break;
+		case POOL_REAL_ARRAY: {
+			return reinterpret_cast<const PoolVector<real_t> *>(_data._mem)->size();
+		} break;
+		case POOL_STRING_ARRAY: {
+			return reinterpret_cast<const PoolVector<String> *>(_data._mem)->size();
+		} break;
+		case POOL_VECTOR2_ARRAY: {
+			return reinterpret_cast<const PoolVector<Vector2> *>(_data._mem)->size();
+		} break;
+		case POOL_VECTOR3_ARRAY: {
+			return reinterpret_cast<const PoolVector<Vector3> *>(_data._mem)->size();
+		} break;
+		case POOL_COLOR_ARRAY: {
+			return reinterpret_cast<const PoolVector<Color> *>(_data._mem)->size();
+		} break;
+		default: {
+			return -1;
+		} break;
+	}
+}
+
 ObjectID Variant::get_object_instance_id() const {
 	if (unlikely(type != OBJECT)) {
 		return 0;
