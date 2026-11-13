@@ -108,9 +108,16 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	Transform2D postxf;
 	postxf.set_rotation_scale_and_skew(rotation, scale, skew);
 	new_pos = postxf.xform(new_pos);
-
 	position += new_pos;
+
 	scale *= new_scale;
+	// Avoid having 0 scale values, can lead to errors in physics and rendering.
+	if (Math::is_zero_approx(scale.x)) {
+		scale.x = CMP_EPSILON;
+	}
+	if (Math::is_zero_approx(scale.y)) {
+		scale.y = CMP_EPSILON;
+	}
 
 	_update_transform();
 }
