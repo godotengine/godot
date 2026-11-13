@@ -100,7 +100,9 @@ void TilesEditorUtils::_thread() {
 				viewport->add_child(tile_map_layer);
 
 				Rect2 encompassing_rect;
-				encompassing_rect.set_position(tile_map_layer->map_to_local(tile_map_layer->get_tile_map_layer_data().begin()->key));
+				if (!tile_map_layer->get_tile_map_layer_data().is_empty()) {
+					encompassing_rect.set_position(tile_map_layer->map_to_local(tile_map_layer->get_tile_map_layer_data().begin()->key));
+				}
 				for (KeyValue<Vector2i, CellData> kv : tile_map_layer->get_tile_map_layer_data()) {
 					Vector2i cell = kv.key;
 					Vector2 world_pos = tile_map_layer->map_to_local(cell);
