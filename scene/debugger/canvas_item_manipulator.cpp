@@ -688,7 +688,7 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 				if (control) {
 					Size2 parent_rect_size = control->get_parent_anchorable_rect().size;
 					if (parent_rect_size.x == 0.0 || parent_rect_size.y == 0.0) {
-						emit_signal("anchors_mode_warn_requested", TTRC("Can't modify anchor offsets when the parent has a size of 0. Disable the anchors mode in the toolbar."));
+						emit_signal("warning_emitted", TTRC("Can't modify anchor offsets when the parent has a size of 0. Disable the anchors mode in the toolbar."));
 						return true;
 					}
 				}
@@ -1903,7 +1903,7 @@ bool CanvasItemManipulator::is_node_movable(const Node *p_node, bool p_popup_war
 
 	if (Object::cast_to<Control>(p_node) && Object::cast_to<Container>(p_node->get_parent())) {
 		if (p_popup_warning) {
-			emit_signal("unmovable_items_warn_requested", TTRC("Children of a container get their position and size determined only by their parent."));
+			emit_signal("warning_emitted", TTRC("Children of a container get their position and size determined only by their parent."));
 		}
 		return false;
 	}
