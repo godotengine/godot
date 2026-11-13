@@ -446,12 +446,25 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent, bool p_disabl
 		_add_nodes(p_node->get_child(i), item, disable_visibility);
 	}
 
+	// If valid_types is set, we want to show normally the valid_types,
+	// and gray out any nodes that are not in valid types.
+	// valid_types can contain both standard nodes (e.g. Sprite)
+	// and custom user nodes (handled via valid_scripts).
 	if (valid_types.size()) {
 		bool valid = false;
+
 		for (int i = 0; i < valid_types.size(); i++) {
-			if (p_node->is_class(valid_types[i])) {
+			const StringName &type = valid_types[i];
+
+			if (p_node->is_class(type)) {
 				valid = true;
 				break;
+			} else if (_valid_scripts[i].is_valid()) {
+				Ref<Script> node_script = p_node->get_script();
+				if (node_script.is_valid() && node_script->inherits_script(_valid_scripts[i])) {
+					valid = true;
+					break;
+				}
 			}
 		}
 
@@ -575,11 +588,33 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	updating_tree = true;
 	tree->clear();
+
+	// As a one-off, pre-resolve all custom scripts.
+	// Note: This could alternatively be done in SceneTreeEditor::set_valid_types,
+	// although could cause possible lifetime issues with ref counted Scripts, by keeping
+	// Scripts alive longer.
+	_valid_scripts.resize(valid_types.size());
+
+	for (int i = 0; i < valid_types.size(); i++) {
+		const StringName &type = valid_types[i];
+		if (ScriptServer::is_global_class(type)) {
+			String target_path = ScriptServer::get_global_class_path(type);
+
+			// This step is potentially expensive, so better to pre-cache as a one-off per update,
+			// rather than once per node.
+			_valid_scripts[i] = ResourceLoader::load(target_path, "Script", false);
+		}
+	}
+
 	if (get_scene_node()) {
 		_add_nodes(get_scene_node(), nullptr);
 		last_hash = hash_djb2_one_64(0);
 		_compute_hash(get_scene_node(), last_hash);
 	}
+
+	// Finished with the _valid_scripts, release any references.
+	_valid_scripts.clear();
+
 	updating_tree = false;
 	tree_dirty = false;
 
