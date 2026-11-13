@@ -361,7 +361,7 @@ void AnimationPlayer::_blend_post_process() {
 			} else {
 				_clear_caches(clear_cache_on_stop);
 				playing = false;
-				animation_active = false;
+				playback.current.is_enabled = false;
 				_set_process(false);
 				if (end_notify) {
 					if (!finished_anim.is_empty()) {
@@ -548,7 +548,6 @@ void AnimationPlayer::play_section(const StringName &p_name, double p_start_time
 
 	_set_process(true); // Always process when starting an animation.
 	playing = true;
-	animation_active = true;
 
 	emit_signal(SceneStringName(animation_started), c.assigned);
 
@@ -730,10 +729,6 @@ bool AnimationPlayer::is_valid() const {
 	return playback.current.is_enabled;
 }
 
-bool AnimationPlayer::is_animation_active() const {
-	return animation_active;
-}
-
 double AnimationPlayer::get_current_animation_position() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.is_enabled, 0, "AnimationPlayer has no current animation.");
 	return playback.current.pos;
@@ -836,7 +831,6 @@ void AnimationPlayer::_stop_internal(bool p_reset, bool p_keep_state) {
 		c.current.is_enabled = false;
 		c.current.animation_name = String();
 		c.current.speed_scale = 1;
-		animation_active = false;
 		emit_signal(SNAME("current_animation_changed"), "");
 	}
 	_set_process(false);
@@ -1030,7 +1024,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
 	ClassDB::bind_method(D_METHOD("stop", "keep_state"), &AnimationPlayer::stop, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
-	ClassDB::bind_method(D_METHOD("is_animation_active"), &AnimationPlayer::is_animation_active);
+	ClassDB::bind_method(D_METHOD("is_animation_active"), &AnimationPlayer::is_valid);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "animation"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);

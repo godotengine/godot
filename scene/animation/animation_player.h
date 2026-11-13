@@ -139,7 +139,6 @@ private:
 	float get_current_blend_amount();
 
 	bool playing = false;
-	bool animation_active = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -222,7 +221,6 @@ public:
 	StringName get_assigned_animation() const;
 	void set_assigned_animation(const StringName &p_animation);
 	bool is_valid() const;
-	bool is_animation_active() const;
 
 	void set_speed_scale(float p_speed);
 	float get_speed_scale() const;
