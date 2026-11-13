@@ -2384,8 +2384,8 @@ void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
 }
 
 void ThemeTypeDialog::_add_type_confirmed() {
-	emit_signal(SNAME("type_selected"), pre_submitted_value);
 	hide();
+	emit_signal(SNAME("type_selected"), pre_submitted_value);
 }
 
 void ThemeTypeDialog::_notification(int p_what) {
@@ -3667,6 +3667,14 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 
 void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+	if (p_value == edited_type) {
+		type_variation_edit->unedit();
+		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
+		EditorNode::get_singleton()->show_warning(TTR("A type cannot be set as a variation of itself."));
+		return;
+	}
+
 	ur->create_action(TTR("Set Theme Type Variation"));
 
 	if (p_value.is_empty()) {

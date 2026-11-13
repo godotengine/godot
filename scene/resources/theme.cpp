@@ -1408,6 +1408,7 @@ void Theme::set_type_variation(const StringName &p_theme_type, const StringName 
 	ERR_FAIL_COND_MSG(p_theme_type == StringName(), vformat("An empty theme type cannot be marked as a variation of another type (\"%s\").", p_base_type));
 	ERR_FAIL_COND_MSG(ClassDB::class_exists(p_theme_type), vformat("A type associated with a built-in class cannot be marked as a variation of another type (variation: \"%s\", base: \"%s\").", p_theme_type, p_base_type));
 	ERR_FAIL_COND_MSG(p_base_type == StringName(), "An empty theme type cannot be the base type of a variation. Use clear_type_variation() instead if you want to unmark '" + String(p_theme_type) + "' as a variation.");
+	ERR_FAIL_COND_MSG(p_base_type == p_theme_type, "A type cannot be set as a variation of itself.");
 
 	if (variation_map.has(p_theme_type)) {
 		StringName old_base = variation_map[p_theme_type];
