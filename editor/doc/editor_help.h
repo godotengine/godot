@@ -190,6 +190,9 @@ class EditorHelp : public VBoxContainer {
 	inline static Thread worker_thread;
 	inline static Thread loader_thread; // Only load scripts here to avoid deadlocking with main thread.
 
+	// Raised by cleanup_doc(); every static entry point MessageQueue can reach checks it.
+	inline static SafeFlag _doc_torn_down = SafeFlag(false);
+
 	inline static SafeFlag _script_docs_loaded = SafeFlag(false);
 	inline static LocalVector<DocData::ClassDoc> _docs_to_add;
 	inline static LocalVector<String> _docs_to_remove;

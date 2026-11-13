@@ -6779,9 +6779,11 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	return singleton->immediate_dialog_confirmed;
 }
 
+// No EditorNode means no editor UI to drive -- either it has not been built yet
+// or it is already gone, as in the MessageQueue flush inside Main::cleanup().
+// Answering false there sent teardown-time callers off doing interactive work.
 bool EditorNode::is_cmdline_mode() {
-	ERR_FAIL_NULL_V(singleton, false);
-	return singleton->cmdline_mode;
+	return !singleton || singleton->cmdline_mode;
 }
 
 void EditorNode::cleanup() {
