@@ -160,6 +160,14 @@ const Vector<String> enums_with_forced_suffix = {
 	"LineBase3D.TilingMode",
 };
 
+// The following constants are meant to be used with 32-bit integer APIs
+// (e.g. `Material.RenderPriority`), so they are generated as `int` instead of `long`
+// to avoid requiring explicit casts.
+const Vector<String> constants_with_int32_type = {
+	"Material.RENDER_PRIORITY_MAX",
+	"Material.RENDER_PRIORITY_MIN",
+};
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -2234,7 +2242,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append("\")]");
 		}
 
-		output.append(MEMBER_BEGIN "public const long ");
+		output.append(MEMBER_BEGIN "public const ");
+		output.append(iconstant.is_int32 ? "int " : "long ");
 		output.append(iconstant.proxy_name);
 		output.append(" = ");
 		output.append(itos(iconstant.value));
@@ -4414,6 +4423,12 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			ConstantInterface iconstant(constant_name, constant_proxy_name, value);
+
+			if (constants_with_int32_type.has(itype.name + "." + constant_name)) {
+				ERR_FAIL_COND_V_MSG(value < INT32_MIN || value > INT32_MAX, false,
+						"Constant '" + itype.name + "." + constant_name + "' does not fit in a 32-bit integer.");
+				iconstant.is_int32 = true;
+			}
 
 			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
