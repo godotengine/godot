@@ -67,6 +67,10 @@ class CollisionObject : public Spatial {
 	Map<uint32_t, ShapeData> shapes;
 	bool only_update_transform_changes = false; //this is used for sync physics in KinematicBody
 
+	// Physics bodies using sync to physics defer setting global xform to callbacks from the physics.
+	// In these cases, resets should also be deferred until the callback, because global_xforms will be stale.
+	bool _fti_physics_reset_requested = false;
+
 	bool capture_input_on_drag;
 	bool ray_pickable;
 
@@ -94,7 +98,7 @@ protected:
 
 	void set_only_update_transform_changes(bool p_enable);
 
-	void _on_transform_changed();
+	void _on_transform_changed(bool p_in_physics_callback);
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT;
