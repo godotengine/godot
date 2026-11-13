@@ -143,4 +143,4 @@ void AudioEffectStereoEnhance::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "surround", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_surround", "get_surround");
 }
 
-AudioEffectStereoEnhance::AudioEffectStereoEnhance() {}
+AudioEffectStereoEnhance::AudioEffectStereoEnhance() = default;

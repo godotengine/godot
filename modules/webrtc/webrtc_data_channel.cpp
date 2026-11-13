@@ -65,5 +65,4 @@ WebRTCDataChannel::WebRTCDataChannel() {
 	_in_buffer_shift = Math::nearest_shift(uint32_t((int)GLOBAL_GET("network/limits/webrtc/max_channel_in_buffer_kb") - 1)) + (uint32_t)10;
 }
 
-WebRTCDataChannel::~WebRTCDataChannel() {
-}
+WebRTCDataChannel::~WebRTCDataChannel() = default;

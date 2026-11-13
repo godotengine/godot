@@ -75,7 +75,7 @@ private:
 		void try_next_candidate(const Ref<StreamPeerTCP> &p_tcp);
 		void start(const String &p_host, int p_port);
 		void stop();
-		Resolver() {}
+		Resolver() = default;
 	};
 
 	struct PendingMessage {

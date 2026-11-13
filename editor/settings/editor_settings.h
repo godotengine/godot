@@ -79,7 +79,7 @@ private:
 		bool save = false;
 		bool restart_if_changed = false;
 
-		VariantContainer() {}
+		VariantContainer() = default;
 
 		VariantContainer(const Variant &p_variant, int p_order) :
 				order(p_order),

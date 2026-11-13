@@ -40,6 +40,5 @@ public:
 	static Mode get_mode();
 	static void *get_compositor_services_device();
 
-private:
 	RenderModeVisionOS() = delete;
 };

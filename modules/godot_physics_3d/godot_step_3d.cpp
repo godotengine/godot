@@ -414,5 +414,4 @@ GodotStep3D::GodotStep3D() {
 	all_constraints.reserve(CONSTRAINT_COUNT_RESERVE);
 }
 
-GodotStep3D::~GodotStep3D() {
-}
+GodotStep3D::~GodotStep3D() = default;

@@ -48,7 +48,7 @@ protected:
 	GDVIRTUAL1(_set_use_debanding, bool)
 
 public:
-	virtual ~RenderSceneBuffersExtension() {}
+	virtual ~RenderSceneBuffersExtension() = default;
 
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 

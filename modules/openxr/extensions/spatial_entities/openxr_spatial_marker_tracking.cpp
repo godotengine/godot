@@ -140,8 +140,7 @@ OpenXRSpatialCapabilityConfigurationAruco::OpenXRSpatialCapabilityConfigurationA
 	set_aruco_dict((XrSpatialMarkerArucoDictEXT)(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_50_EXT + aruco_dict));
 }
 
-OpenXRSpatialCapabilityConfigurationAruco::~OpenXRSpatialCapabilityConfigurationAruco() {
-}
+OpenXRSpatialCapabilityConfigurationAruco::~OpenXRSpatialCapabilityConfigurationAruco() = default;
 
 void OpenXRSpatialCapabilityConfigurationAruco::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enabled_components"), &OpenXRSpatialCapabilityConfigurationAruco::_get_enabled_components);
@@ -232,8 +231,7 @@ OpenXRSpatialCapabilityConfigurationAprilTag::OpenXRSpatialCapabilityConfigurati
 	set_april_dict((XrSpatialMarkerAprilTagDictEXT)(XR_SPATIAL_MARKER_APRIL_TAG_DICT_16H5_EXT + april_tag_dict));
 }
 
-OpenXRSpatialCapabilityConfigurationAprilTag::~OpenXRSpatialCapabilityConfigurationAprilTag() {
-}
+OpenXRSpatialCapabilityConfigurationAprilTag::~OpenXRSpatialCapabilityConfigurationAprilTag() = default;
 
 void OpenXRSpatialCapabilityConfigurationAprilTag::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enabled_components"), &OpenXRSpatialCapabilityConfigurationAprilTag::_get_enabled_components);

@@ -37,7 +37,7 @@ class Tree;
 class TreeItem;
 
 struct ClassData {
-	ClassData() {}
+	ClassData() = default;
 	ClassData(const String &p_name, const String &p_parent) :
 			class_name(p_name), parent_class_name(p_parent) {}
 	String class_name;

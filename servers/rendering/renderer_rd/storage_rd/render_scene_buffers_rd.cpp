@@ -37,8 +37,7 @@
 #include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
 #include "servers/rendering/rendering_server_enums.h"
 
-RenderSceneBuffersRD::RenderSceneBuffersRD() {
-}
+RenderSceneBuffersRD::RenderSceneBuffersRD() = default;
 
 RenderSceneBuffersRD::~RenderSceneBuffersRD() {
 	cleanup();

@@ -404,7 +404,7 @@ public:
 
 		Node(Type t) :
 				type(t) {}
-		virtual ~Node() {}
+		virtual ~Node() = default;
 	};
 
 	template <typename T>
@@ -664,7 +664,7 @@ public:
 				return size;
 			}
 
-			Varying() {}
+			Varying() = default;
 		};
 
 		struct Uniform {
@@ -887,7 +887,7 @@ public:
 		bool constant = false;
 		Vector<Scalar> values;
 
-		BuiltInInfo() {}
+		BuiltInInfo() = default;
 
 		BuiltInInfo(DataType p_type, bool p_constant = false, const Vector<Scalar> &p_values = {}) :
 				type(p_type),
@@ -915,7 +915,7 @@ public:
 		StringName name;
 		Vector<StringName> options;
 
-		ModeInfo() {}
+		ModeInfo() = default;
 
 		ModeInfo(const StringName &p_name) :
 				name(p_name) {
@@ -1016,7 +1016,7 @@ private:
 
 			TkPos pos;
 
-			Item() {}
+			Item() = default;
 			Item(ItemType p_type, TkPos p_pos) :
 					type(p_type), pos(p_pos) {}
 		};

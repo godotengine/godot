@@ -136,6 +136,6 @@ public:
 	virtual bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) override { return false; }
 	virtual bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) override { return false; }
 
-	AccessibilityServerDummy() {}
-	virtual ~AccessibilityServerDummy() {}
+	AccessibilityServerDummy() = default;
+	virtual ~AccessibilityServerDummy() = default;
 };

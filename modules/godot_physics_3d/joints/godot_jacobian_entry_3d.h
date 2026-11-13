@@ -54,7 +54,7 @@ subject to the following restrictions:
 
 class GodotJacobianEntry3D {
 public:
-	GodotJacobianEntry3D() {}
+	GodotJacobianEntry3D() = default;
 	//constraint between two different rigidbodies
 	GodotJacobianEntry3D(
 			const Basis &world2A,

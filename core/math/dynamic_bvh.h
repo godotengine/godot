@@ -120,12 +120,12 @@ private:
 			return (Math::abs(d.x) + Math::abs(d.y) + Math::abs(d.z));
 		}
 
-		_FORCE_INLINE_ int select_by_proximity(const Volume &p_a, const Volume &p_b, uint32_t &tiebreaker) const {
+		_FORCE_INLINE_ int select_by_proximity(const Volume &p_a, const Volume &p_b, uint32_t &p_tiebreaker) const {
 			real_t prox_a = get_proximity_to(p_a);
 			real_t prox_b = get_proximity_to(p_b);
 			if (prox_a == prox_b) {
-				tiebreaker *= 1664525U;
-				return (tiebreaker % 48271U) & 1;
+				p_tiebreaker *= 1664525U;
+				return (p_tiebreaker % 48271U) & 1;
 			}
 			return prox_a < prox_b ? 0 : 1;
 		}
@@ -308,7 +308,7 @@ public:
 	/* Discouraged, but works as a reference on how it must be used */
 	struct DefaultQueryResult {
 		virtual bool operator()(void *p_data) = 0; //return true whether you want to continue the query
-		virtual ~DefaultQueryResult() {}
+		virtual ~DefaultQueryResult() = default;
 	};
 
 	template <typename QueryResult>

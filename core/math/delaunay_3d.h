@@ -62,7 +62,7 @@ class Delaunay3D {
 		LocalVector<GridPos> grid_positions;
 		List<Simplex *>::Element *SE = nullptr;
 
-		_FORCE_INLINE_ Simplex() {}
+		_FORCE_INLINE_ Simplex() = default;
 		_FORCE_INLINE_ Simplex(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d) {
 			points[0] = p_a;
 			points[1] = p_b;
@@ -78,7 +78,7 @@ class Delaunay3D {
 			return triangle[0] == p_triangle.triangle[0] && triangle[1] == p_triangle.triangle[1] && triangle[2] == p_triangle.triangle[2];
 		}
 
-		_FORCE_INLINE_ Triangle() {}
+		_FORCE_INLINE_ Triangle() = default;
 		_FORCE_INLINE_ Triangle(uint32_t p_a, uint32_t p_b, uint32_t p_c) {
 			if (p_a > p_b) {
 				SWAP(p_a, p_b);

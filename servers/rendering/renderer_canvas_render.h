@@ -194,7 +194,7 @@ public:
 
 			Command *next = nullptr;
 			Type type;
-			virtual ~Command() {}
+			virtual ~Command() = default;
 		};
 
 		struct CommandRect : public Command {

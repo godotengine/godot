@@ -57,7 +57,7 @@ protected:
 	void _request_object_snapshot(int p_request_id);
 
 public:
-	ObjectDBProfilerDebuggerPlugin() {}
+	ObjectDBProfilerDebuggerPlugin() = default;
 
 	virtual bool has_capture(const String &p_capture) const override;
 	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;

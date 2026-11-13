@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "core/variant/binder_common.h"
+#include "core/variant/type_info.h"
 
 #include <openxr/openxr.h>
 
@@ -48,7 +48,7 @@ public:
 	bool is_interactable() const;
 	bool is_visible() const;
 
-	OpenXRSpatialContainerState() {}
+	OpenXRSpatialContainerState() = default;
 	OpenXRSpatialContainerState(const XrSpatialContainerStateEXT &p_state);
 
 protected:

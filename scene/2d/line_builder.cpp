@@ -39,8 +39,7 @@ static inline Vector2 interpolate(const Rect2 &r, const Vector2 &v) {
 			Math::lerp(r.position.y, r.position.y + r.get_size().y, v.y));
 }
 
-LineBuilder::LineBuilder() {
-}
+LineBuilder::LineBuilder() = default;
 
 void LineBuilder::build() {
 	// Need at least 2 points to draw a line, so clear the output and return.

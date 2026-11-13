@@ -107,8 +107,8 @@ public:
 	virtual void set_discover_ipv6(bool ipv6) = 0;
 	virtual bool is_discover_ipv6() const = 0;
 
-	UPNP() {}
-	virtual ~UPNP() {}
+	UPNP() = default;
+	virtual ~UPNP() = default;
 };
 
 VARIANT_ENUM_CAST(UPNP::UPNPResult)

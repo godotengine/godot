@@ -75,8 +75,7 @@ future: no idea
 
  */
 
-Node3DGizmo::Node3DGizmo() {
-}
+Node3DGizmo::Node3DGizmo() = default;
 
 void Node3D::_notify_dirty() {
 #ifdef TOOLS_ENABLED

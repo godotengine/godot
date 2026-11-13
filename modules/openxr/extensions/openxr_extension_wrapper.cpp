@@ -475,5 +475,4 @@ OpenXRExtensionWrapper::OpenXRExtensionWrapper() {
 	openxr_api_extension.instantiate();
 }
 
-OpenXRExtensionWrapper::~OpenXRExtensionWrapper() {
-}
+OpenXRExtensionWrapper::~OpenXRExtensionWrapper() = default;

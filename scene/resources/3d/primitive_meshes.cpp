@@ -2785,8 +2785,7 @@ void TubeTrailMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 }
 
-TubeTrailMesh::TubeTrailMesh() {
-}
+TubeTrailMesh::TubeTrailMesh() = default;
 
 // RIBBON TRAIL
 
@@ -3038,8 +3037,7 @@ void RibbonTrailMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHAPE_CROSS)
 }
 
-RibbonTrailMesh::RibbonTrailMesh() {
-}
+RibbonTrailMesh::RibbonTrailMesh() = default;
 
 /*************************************************************************/
 /*  TextMesh                                                             */

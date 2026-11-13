@@ -51,11 +51,9 @@ void VideoStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_get_mix_rate);
 }
 
-VideoStreamPlayback::VideoStreamPlayback() {
-}
+VideoStreamPlayback::VideoStreamPlayback() = default;
 
-VideoStreamPlayback::~VideoStreamPlayback() {
-}
+VideoStreamPlayback::~VideoStreamPlayback() = default;
 
 void VideoStreamPlayback::stop() {
 	GDVIRTUAL_CALL(_stop);
@@ -185,11 +183,9 @@ void VideoStream::_bind_methods() {
 	GDVIRTUAL_BIND(_instantiate_playback);
 }
 
-VideoStream::VideoStream() {
-}
+VideoStream::VideoStream() = default;
 
-VideoStream::~VideoStream() {
-}
+VideoStream::~VideoStream() = default;
 
 void VideoStream::set_audio_track(int p_track) {
 	audio_track = p_track;

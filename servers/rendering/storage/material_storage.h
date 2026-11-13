@@ -36,7 +36,7 @@
 
 class RendererMaterialStorage {
 public:
-	virtual ~RendererMaterialStorage() {}
+	virtual ~RendererMaterialStorage() = default;
 
 	/* GLOBAL SHADER UNIFORM API */
 	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) = 0;

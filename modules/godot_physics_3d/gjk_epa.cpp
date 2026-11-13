@@ -31,7 +31,7 @@
 #include "gjk_epa.h"
 
 /* Disabling formatting for thirdparty code snippet */
-/* clang-format off */
+/* clang-format off */ /* NOLINTBEGIN */
 
 /*************** Bullet's GJK-EPA2 IMPLEMENTATION *******************/
 
@@ -991,7 +991,7 @@ bool Penetration(	const GodotShape3D*	shape0,
 #undef EPA_INSIDE_EPS
 } // end of namespace
 
-/* clang-format on */
+/* clang-format on */ /* NOLINTEND */
 
 bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 	GjkEpa2::sResults res;

@@ -180,5 +180,4 @@ CheckButton::CheckButton(const String &p_text) :
 	}
 }
 
-CheckButton::~CheckButton() {
-}
+CheckButton::~CheckButton() = default;

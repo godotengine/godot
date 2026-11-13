@@ -135,7 +135,7 @@ public:
 				option(p_info),
 				default_value(p_default) {
 		}
-		ImportOption() {}
+		ImportOption() = default;
 	};
 
 	enum ImportOrder {

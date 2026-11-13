@@ -81,7 +81,7 @@ private:
 			}
 		}
 
-		ShapePair() {}
+		ShapePair() = default;
 		ShapePair(int p_bs, int p_as) {
 			body_shape = p_bs;
 			area_shape = p_as;
@@ -113,7 +113,7 @@ private:
 			}
 		}
 
-		AreaShapePair() {}
+		AreaShapePair() = default;
 		AreaShapePair(int p_bs, int p_as) {
 			area_shape = p_bs;
 			self_shape = p_as;

@@ -33,7 +33,6 @@
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
-#include "scene/main/scene_tree.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
 void GrooveJoint2D::_notification(int p_what) {
@@ -92,5 +91,4 @@ void GrooveJoint2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_RANGE, "1,65535,1,exp,suffix:px"), "set_initial_offset", "get_initial_offset");
 }
 
-GrooveJoint2D::GrooveJoint2D() {
-}
+GrooveJoint2D::GrooveJoint2D() = default;

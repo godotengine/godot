@@ -57,7 +57,7 @@ private:
 	struct BaseTemplateUserdata {
 		virtual void callback() {}
 		virtual void callback_indexed(uint32_t p_index) {}
-		virtual ~BaseTemplateUserdata() {}
+		virtual ~BaseTemplateUserdata() = default;
 	};
 
 	struct Group {

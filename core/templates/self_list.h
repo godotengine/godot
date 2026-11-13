@@ -152,7 +152,7 @@ public:
 			_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
 
 			_FORCE_INLINE_ ConstIterator(const SelfList<T> *p_elem) { E = p_elem; }
-			_FORCE_INLINE_ ConstIterator() {}
+			_FORCE_INLINE_ ConstIterator() = default;
 			_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
 		private:
@@ -177,7 +177,7 @@ public:
 			_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
 
 			Iterator(SelfList<T> *p_elem) { E = p_elem; }
-			Iterator() {}
+			Iterator() = default;
 			Iterator(const Iterator &p_it) { E = p_it.E; }
 
 			operator ConstIterator() const {

@@ -203,8 +203,7 @@ bool PhysicsDirectSpaceState2D::_get_rest_info_into(RequiredParam<PhysicsShapeQu
 	return rest_info(shape_query->get_parameters(), &result->result);
 }
 
-PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() {
-}
+PhysicsDirectSpaceState2D::PhysicsDirectSpaceState2D() = default;
 
 void PhysicsDirectSpaceState2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState2D::_intersect_ray);

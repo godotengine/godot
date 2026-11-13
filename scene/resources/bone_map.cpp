@@ -187,7 +187,6 @@ BoneMap::BoneMap() {
 	_validate_bone_map();
 }
 
-BoneMap::~BoneMap() {
-}
+BoneMap::~BoneMap() = default;
 
 //////////////////////////////////////

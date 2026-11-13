@@ -180,7 +180,7 @@ public:
 		p_name._data = nullptr;
 	}
 	StringName(const String &p_name, bool p_static = false);
-	constexpr StringName() {}
+	constexpr StringName() = default;
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_

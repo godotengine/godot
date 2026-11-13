@@ -186,11 +186,9 @@ void ArrayOccluder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_indices", "get_indices");
 }
 
-ArrayOccluder3D::ArrayOccluder3D() {
-}
+ArrayOccluder3D::ArrayOccluder3D() = default;
 
-ArrayOccluder3D::~ArrayOccluder3D() {
-}
+ArrayOccluder3D::~ArrayOccluder3D() = default;
 
 /////////////////////////////////////////////////
 
@@ -230,11 +228,9 @@ void QuadOccluder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
-QuadOccluder3D::QuadOccluder3D() {
-}
+QuadOccluder3D::QuadOccluder3D() = default;
 
-QuadOccluder3D::~QuadOccluder3D() {
-}
+QuadOccluder3D::~QuadOccluder3D() = default;
 
 /////////////////////////////////////////////////
 
@@ -296,11 +292,9 @@ void BoxOccluder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 }
 
-BoxOccluder3D::BoxOccluder3D() {
-}
+BoxOccluder3D::BoxOccluder3D() = default;
 
-BoxOccluder3D::~BoxOccluder3D() {
-}
+BoxOccluder3D::~BoxOccluder3D() = default;
 
 /////////////////////////////////////////////////
 
@@ -365,11 +359,9 @@ void SphereOccluder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "suffix:m"), "set_radius", "get_radius");
 }
 
-SphereOccluder3D::SphereOccluder3D() {
-}
+SphereOccluder3D::SphereOccluder3D() = default;
 
-SphereOccluder3D::~SphereOccluder3D() {
-}
+SphereOccluder3D::~SphereOccluder3D() = default;
 
 /////////////////////////////////////////////////
 
@@ -426,11 +418,9 @@ void PolygonOccluder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 }
 
-PolygonOccluder3D::PolygonOccluder3D() {
-}
+PolygonOccluder3D::PolygonOccluder3D() = default;
 
-PolygonOccluder3D::~PolygonOccluder3D() {
-}
+PolygonOccluder3D::~PolygonOccluder3D() = default;
 
 /////////////////////////////////////////////////
 
@@ -758,8 +748,6 @@ void OccluderInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");
 }
 
-OccluderInstance3D::OccluderInstance3D() {
-}
+OccluderInstance3D::OccluderInstance3D() = default;
 
-OccluderInstance3D::~OccluderInstance3D() {
-}
+OccluderInstance3D::~OccluderInstance3D() = default;

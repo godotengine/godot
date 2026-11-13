@@ -36,8 +36,7 @@
 #include "servers/audio/audio_driver.h"
 #include "servers/audio/audio_server.h"
 
-AudioStreamInteractive::AudioStreamInteractive() {
-}
+AudioStreamInteractive::AudioStreamInteractive() = default;
 
 Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 	Ref<AudioStreamPlaybackInteractive> playback_transitioner;
@@ -542,11 +541,9 @@ void AudioStreamInteractive::_bind_methods() {
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
-AudioStreamPlaybackInteractive::AudioStreamPlaybackInteractive() {
-}
+AudioStreamPlaybackInteractive::AudioStreamPlaybackInteractive() = default;
 
-AudioStreamPlaybackInteractive::~AudioStreamPlaybackInteractive() {
-}
+AudioStreamPlaybackInteractive::~AudioStreamPlaybackInteractive() = default;
 
 void AudioStreamPlaybackInteractive::stop() {
 	if (!active) {

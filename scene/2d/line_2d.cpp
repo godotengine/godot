@@ -36,8 +36,7 @@
 #include "scene/2d/line_builder.h"
 #include "servers/rendering/rendering_server.h"
 
-Line2D::Line2D() {
-}
+Line2D::Line2D() = default;
 
 #ifdef DEBUG_ENABLED
 Rect2 Line2D::_edit_get_rect() const {

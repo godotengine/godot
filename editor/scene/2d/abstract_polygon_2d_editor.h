@@ -47,7 +47,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	Button *button_center = nullptr;
 
 	struct Vertex {
-		Vertex() {}
+		Vertex() = default;
 		Vertex(int p_vertex) :
 				vertex(p_vertex) {}
 		Vertex(int p_polygon, int p_vertex) :
@@ -64,7 +64,7 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	};
 
 	struct PosVertex : public Vertex {
-		PosVertex() {}
+		PosVertex() = default;
 		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
 				Vertex(p_vertex.polygon, p_vertex.vertex),
 				pos(p_pos) {}

@@ -34,8 +34,7 @@
 #include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
-AudioStreamSynchronized::AudioStreamSynchronized() {
-}
+AudioStreamSynchronized::AudioStreamSynchronized() = default;
 
 Ref<AudioStreamPlayback> AudioStreamSynchronized::instantiate_playback() {
 	Ref<AudioStreamPlaybackSynchronized> playback_playlist;
@@ -173,8 +172,7 @@ void AudioStreamSynchronized::_bind_methods() {
 //////////////////////
 //////////////////////
 
-AudioStreamPlaybackSynchronized::AudioStreamPlaybackSynchronized() {
-}
+AudioStreamPlaybackSynchronized::AudioStreamPlaybackSynchronized() = default;
 
 AudioStreamPlaybackSynchronized::~AudioStreamPlaybackSynchronized() {
 	if (stream.is_valid()) {

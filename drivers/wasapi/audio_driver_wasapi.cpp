@@ -134,8 +134,8 @@ class CMMNotificationClient : public IMMNotificationClient {
 public:
 	ComPtr<IMMDeviceEnumerator> enumerator = nullptr;
 
-	CMMNotificationClient() {}
-	virtual ~CMMNotificationClient() {}
+	CMMNotificationClient() = default;
+	virtual ~CMMNotificationClient() = default;
 
 	ULONG STDMETHODCALLTYPE AddRef() {
 		return InterlockedIncrement(&_cRef);

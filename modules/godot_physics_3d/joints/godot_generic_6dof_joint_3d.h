@@ -87,7 +87,7 @@ public:
 	real_t m_accumulatedImpulse = 0.0;
 	//!@}
 
-	GodotG6DOFRotationalLimitMotor3D() {}
+	GodotG6DOFRotationalLimitMotor3D() = default;
 
 	bool isLimited() {
 		return (m_loLimit < m_hiLimit);
@@ -190,9 +190,11 @@ protected:
 
 	//!@}
 
+public:
 	GodotGeneric6DOFJoint3D(const GodotGeneric6DOFJoint3D &) = delete;
 	void operator=(const GodotGeneric6DOFJoint3D &) = delete;
 
+protected:
 	void buildLinearJacobian(
 			GodotJacobianEntry3D &jacLinear, const Vector3 &normalWorld,
 			const Vector3 &pivotAInW, const Vector3 &pivotBInW);

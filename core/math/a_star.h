@@ -91,7 +91,7 @@ class AStar3D : public RefCounted {
 		}
 		bool operator==(const Segment &p_s) const { return key == p_s.key; }
 
-		Segment() {}
+		Segment() = default;
 		Segment(int64_t p_from, int64_t p_to) {
 			if (p_from < p_to) {
 				key.first = p_from;

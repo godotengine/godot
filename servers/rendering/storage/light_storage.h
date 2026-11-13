@@ -35,7 +35,7 @@
 
 class RendererLightStorage {
 public:
-	virtual ~RendererLightStorage() {}
+	virtual ~RendererLightStorage() = default;
 
 	/* Light API */
 

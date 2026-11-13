@@ -60,7 +60,7 @@ class GodotNavigationServer3D;
 class NavMeshGenerator3D;
 
 struct SetCommand3D {
-	virtual ~SetCommand3D() {}
+	virtual ~SetCommand3D() = default;
 	virtual void exec(GodotNavigationServer3D *server) = 0;
 };
 

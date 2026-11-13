@@ -50,7 +50,7 @@ class BindingsGenerator {
 		bool is_deprecated = false;
 		String deprecation_message;
 
-		ConstantInterface() {}
+		ConstantInterface() = default;
 
 		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value) {
 			name = p_name;
@@ -69,7 +69,7 @@ class BindingsGenerator {
 			return p_ienum.cname == cname;
 		}
 
-		EnumInterface() {}
+		EnumInterface() = default;
 
 		EnumInterface(const StringName &p_cname, const String &p_proxy_name, bool p_is_flags) {
 			cname = p_cname;
@@ -106,7 +106,7 @@ class BindingsGenerator {
 
 		List<TypeReference> generic_type_parameters;
 
-		TypeReference() {}
+		TypeReference() = default;
 
 		TypeReference(const StringName &p_cname) :
 				cname(p_cname) {}
@@ -133,7 +133,7 @@ class BindingsGenerator {
 		 */
 		String default_argument;
 
-		ArgumentInterface() {}
+		ArgumentInterface() = default;
 	};
 
 	struct MethodInterface {
@@ -210,7 +210,7 @@ class BindingsGenerator {
 			arguments.push_back(argument);
 		}
 
-		MethodInterface() {}
+		MethodInterface() = default;
 	};
 
 	struct SignalInterface {
@@ -233,7 +233,7 @@ class BindingsGenerator {
 			arguments.push_back(argument);
 		}
 
-		SignalInterface() {}
+		SignalInterface() = default;
 	};
 
 	struct TypeInterface {
@@ -633,7 +633,7 @@ class BindingsGenerator {
 
 		_FORCE_INLINE_ int get_arguments_count() const { return argument_types.size(); }
 
-		InternalCall() {}
+		InternalCall() = default;
 
 		InternalCall(ClassDB::APIType api_type, const String &p_name, const String &p_unique_sig = String()) {
 			name = p_name;
@@ -740,11 +740,10 @@ class BindingsGenerator {
 			return false;
 		}
 
-		NameCache() {}
+		NameCache() = default;
 
-	private:
-		NameCache(const NameCache &);
-		void operator=(const NameCache &);
+		NameCache(const NameCache &) = delete;
+		void operator=(const NameCache &) = delete;
 	};
 
 	NameCache name_cache;

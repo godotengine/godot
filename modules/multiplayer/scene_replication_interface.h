@@ -52,7 +52,7 @@ private:
 
 		bool operator==(const ObjectID &p_other) { return id == p_other; }
 
-		TrackedNode() {}
+		TrackedNode() = default;
 		TrackedNode(const ObjectID &p_id) { id = p_id; }
 		TrackedNode(const ObjectID &p_id, uint32_t p_net_id) {
 			id = p_id;

@@ -66,7 +66,7 @@ inline constexpr bool is_class_enabled_v = is_class_enabled<T>::value;
 struct MethodDefinition {
 	StringName name;
 	Vector<StringName> args;
-	MethodDefinition() {}
+	MethodDefinition() = default;
 	MethodDefinition(const char *p_name) :
 			name(p_name) {}
 	MethodDefinition(const StringName &p_name) :

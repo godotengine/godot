@@ -407,5 +407,4 @@ OpenXRAPIExtension::OpenXRAlphaBlendModeSupport OpenXRAPIExtension::is_environme
 	return (OpenXRAPIExtension::OpenXRAlphaBlendModeSupport)OpenXRAPI::get_singleton()->is_environment_blend_mode_alpha_blend_supported();
 }
 
-OpenXRAPIExtension::OpenXRAPIExtension() {
-}
+OpenXRAPIExtension::OpenXRAPIExtension() = default;

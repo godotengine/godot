@@ -154,5 +154,4 @@ void MeshTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "image_size", PROPERTY_HINT_RANGE, "0,16384,1,suffix:px"), "set_image_size", "get_image_size");
 }
 
-MeshTexture::MeshTexture() {
-}
+MeshTexture::MeshTexture() = default;

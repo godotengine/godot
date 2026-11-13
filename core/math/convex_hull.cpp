@@ -125,8 +125,7 @@ public:
 		int32_t z = 0;
 		int32_t index = -1;
 
-		Point32() {
-		}
+		Point32() = default;
 
 		Point32(int32_t p_x, int32_t p_y, int32_t p_z) {
 			x = p_x;
@@ -176,8 +175,7 @@ public:
 		uint64_t low = 0;
 		uint64_t high = 0;
 
-		Int128() {
-		}
+		Int128() = default;
 
 		Int128(uint64_t p_low, uint64_t p_high) {
 			low = p_low;
@@ -390,8 +388,7 @@ public:
 		Int128 z;
 		Int128 denominator;
 
-		PointR128() {
-		}
+		PointR128() = default;
 
 		PointR128(Int128 p_x, Int128 p_y, Int128 p_z, Int128 p_denominator) {
 			x = p_x;
@@ -427,8 +424,7 @@ public:
 		Point32 point;
 		int32_t copy = -1;
 
-		Vertex() {
-		}
+		Vertex() = default;
 
 #ifdef DEBUG_CONVEX_HULL
 		void print() {
@@ -508,8 +504,7 @@ public:
 		Point32 dir0;
 		Point32 dir1;
 
-		Face() {
-		}
+		Face() = default;
 
 		void init(Vertex *p_a, const Vertex *p_b, const Vertex *p_c) {
 			nearby_vertex = p_a;
@@ -593,8 +588,7 @@ private:
 		Vertex *min_yx = nullptr;
 		Vertex *max_yx = nullptr;
 
-		IntermediateHull() {
-		}
+		IntermediateHull() = default;
 	};
 
 	enum Orientation { ORIENTATION_NONE,

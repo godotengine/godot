@@ -62,11 +62,9 @@ void Separator::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Separator, separator_style, "separator");
 }
 
-Separator::Separator() {
-}
+Separator::Separator() = default;
 
-Separator::~Separator() {
-}
+Separator::~Separator() = default;
 
 HSeparator::HSeparator() {
 	orientation = HORIZONTAL;

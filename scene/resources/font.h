@@ -58,7 +58,7 @@ class Font : public Resource {
 			return (font_size == p_b.font_size) && (width == p_b.width) && (jst_flags == p_b.jst_flags) && (brk_flags == p_b.brk_flags) && (direction == p_b.direction) && (orientation == p_b.orientation) && (text == p_b.text);
 		}
 
-		ShapedTextKey() {}
+		ShapedTextKey() = default;
 		ShapedTextKey(const String &p_text, int p_font_size, float p_width, BitField<TextServer::JustificationFlag> p_jst_flags, BitField<TextServer::LineBreakFlag> p_brk_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 			text = p_text;
 			font_size = p_font_size;

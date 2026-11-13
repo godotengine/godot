@@ -130,7 +130,7 @@ private:
 
 		ForwardID forward_id = -1;
 
-		LightInstance() {}
+		LightInstance() = default;
 	};
 
 	mutable RID_Owner<LightInstance> light_instance_owner;
@@ -413,12 +413,12 @@ private:
 				uint64_t fog_version = 0; // used for fog
 				uint64_t alloc_tick = 0;
 
-				Shadow() {}
+				Shadow() = default;
 			};
 
 			Vector<Shadow> shadows;
 
-			Quadrant() {}
+			Quadrant() = default;
 		} quadrants[4];
 
 		int size_order[4] = { 0, 1, 2, 3 };

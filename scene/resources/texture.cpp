@@ -150,8 +150,7 @@ void Texture2D::_bind_methods() {
 	GDVIRTUAL_BIND(_draw_rect_region, "to_canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv");
 }
 
-Texture2D::Texture2D() {
-}
+Texture2D::Texture2D() = default;
 
 TypedArray<Image> Texture3D::_get_datai() const {
 	Vector<Ref<Image>> data = get_data();

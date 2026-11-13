@@ -788,9 +788,7 @@ const String OpenXRRenderModelData::get_node_name(uint32_t p_node_index) const {
 	return node_names[p_node_index];
 }
 
-OpenXRRenderModelData::OpenXRRenderModelData() {
-}
+OpenXRRenderModelData::OpenXRRenderModelData() = default;
 
-OpenXRRenderModelData::~OpenXRRenderModelData() {
-}
+OpenXRRenderModelData::~OpenXRRenderModelData() = default;
 #endif // MODULE_GLTF_ENABLED

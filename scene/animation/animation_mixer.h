@@ -160,7 +160,7 @@ protected:
 				total_weight(p_other.total_weight),
 				animation_instance_weight_applied_at(p_other.animation_instance_weight_applied_at) {}
 
-		virtual ~TrackCache() {}
+		virtual ~TrackCache() = default;
 	};
 
 	struct TrackCacheTransform : public TrackCache {
@@ -178,22 +178,7 @@ protected:
 		Quaternion rot;
 		Vector3 scale;
 
-		TrackCacheTransform(const TrackCacheTransform &p_other) :
-				TrackCache(p_other),
-#ifndef _3D_DISABLED
-				skeleton_id(p_other.skeleton_id),
-#endif
-				bone_idx(p_other.bone_idx),
-				loc_used(p_other.loc_used),
-				rot_used(p_other.rot_used),
-				scale_used(p_other.scale_used),
-				init_loc(p_other.init_loc),
-				init_rot(p_other.init_rot),
-				init_scale(p_other.init_scale),
-				loc(p_other.loc),
-				rot(p_other.rot),
-				scale(p_other.scale) {
-		}
+		TrackCacheTransform(const TrackCacheTransform &p_other) = default;
 
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
@@ -211,11 +196,7 @@ protected:
 		float value = 0;
 		int shape_index = -1;
 
-		TrackCacheBlendShape(const TrackCacheBlendShape &p_other) :
-				TrackCache(p_other),
-				init_value(p_other.init_value),
-				value(p_other.value),
-				shape_index(p_other.shape_index) {}
+		TrackCacheBlendShape(const TrackCacheBlendShape &p_other) = default;
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
 	};
@@ -234,17 +215,7 @@ protected:
 
 		Variant element_size;
 
-		TrackCacheValue(const TrackCacheValue &p_other) :
-				TrackCache(p_other),
-				init_value(p_other.init_value),
-				value(p_other.value),
-				subpath(p_other.subpath),
-				is_init(p_other.is_init),
-				use_continuous(p_other.use_continuous),
-				use_discrete(p_other.use_discrete),
-				is_using_angle(p_other.is_using_angle),
-				is_variant_interpolatable(p_other.is_variant_interpolatable),
-				element_size(p_other.element_size) {}
+		TrackCacheValue(const TrackCacheValue &p_other) = default;
 
 		TrackCacheValue() { type = Animation::TYPE_VALUE; }
 		~TrackCacheValue() {

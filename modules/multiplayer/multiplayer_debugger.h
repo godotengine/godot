@@ -64,7 +64,7 @@ public:
 		void write_to_array(Array &r_arr) const;
 		bool read_from_array(const Array &p_arr, int p_offset);
 
-		SyncInfo() {}
+		SyncInfo() = default;
 		SyncInfo(MultiplayerSynchronizer *p_sync);
 	};
 

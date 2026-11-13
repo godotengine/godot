@@ -37,7 +37,7 @@
 #include "scene/3d/physics/physics_body_3d.h"
 #include "servers/rendering/rendering_server.h"
 
-SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
+SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() = default;
 
 void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	clear();
@@ -105,8 +105,7 @@ void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, p_aabb);
 }
 
-SoftBody3D::PinnedPoint::PinnedPoint() {
-}
+SoftBody3D::PinnedPoint::PinnedPoint() = default;
 
 SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	point_index = obj_tocopy.point_index;

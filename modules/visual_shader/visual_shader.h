@@ -85,7 +85,7 @@ public:
 		VaryingMode mode = VARYING_MODE_MAX;
 		VaryingType type = VARYING_TYPE_MAX;
 
-		Varying() {}
+		Varying() = default;
 
 		Varying(String p_name, VaryingMode p_mode, VaryingType p_type) :
 				name(p_name), mode(p_mode), type(p_type) {}

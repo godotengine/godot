@@ -232,8 +232,6 @@ void MultiMeshInstance2D::navmesh_parse_source_geometry(const Ref<NavigationPoly
 }
 #endif // NAVIGATION_2D_DISABLED
 
-MultiMeshInstance2D::MultiMeshInstance2D() {
-}
+MultiMeshInstance2D::MultiMeshInstance2D() = default;
 
-MultiMeshInstance2D::~MultiMeshInstance2D() {
-}
+MultiMeshInstance2D::~MultiMeshInstance2D() = default;

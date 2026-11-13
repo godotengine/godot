@@ -127,12 +127,9 @@ public:
 			return E != nullptr;
 		}
 
-		Iterator &operator=(const Iterator &p_it) {
-			E = p_it.E;
-			return *this;
-		}
+		Iterator &operator=(const Iterator &p_it) = default;
 		Iterator(Element *p_element) { E = p_element; }
-		Iterator() {}
+		Iterator() = default;
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
 	private:
@@ -159,12 +156,9 @@ public:
 			return E != nullptr;
 		}
 
-		ConstIterator &operator=(const ConstIterator &p_it) {
-			E = p_it.E;
-			return *this;
-		}
+		ConstIterator &operator=(const ConstIterator &p_it) = default;
 		ConstIterator(const Element *p_element) { E = p_element; }
-		ConstIterator() {}
+		ConstIterator() = default;
 		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
 	private:
@@ -831,7 +825,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ RBMap() {}
+	_FORCE_INLINE_ RBMap() = default;
 
 	~RBMap() {
 		clear();

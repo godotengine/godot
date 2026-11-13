@@ -720,5 +720,4 @@ OptionButton::OptionButton(const String &p_text) :
 	property_helper.setup_for_instance(base_property_helper, this);
 }
 
-OptionButton::~OptionButton() {
-}
+OptionButton::~OptionButton() = default;

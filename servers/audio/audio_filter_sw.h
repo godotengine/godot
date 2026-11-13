@@ -93,7 +93,7 @@ public:
 
 	void prepare_coefficients(Coeffs *p_coeffs);
 
-	AudioFilterSW() {}
+	AudioFilterSW() = default;
 };
 
 /* inline methods */

@@ -297,7 +297,7 @@ public:
 		Array as_array() const;
 
 		TerrainsPattern(const TileSet *p_tile_set, int p_terrain_set);
-		TerrainsPattern() {}
+		TerrainsPattern() = default;
 	};
 
 protected:

@@ -80,7 +80,7 @@ public:
 		return cmp(*this, b) >= 0;
 	}
 
-	SemVer() {}
+	SemVer() = default;
 
 	SemVer(int p_major, int p_minor, int p_patch,
 			const String &p_prerelease, const String &p_build_metadata) :

@@ -112,7 +112,7 @@ public:
 	virtual Error update(const PackedByteArray &p_data) = 0;
 	virtual PackedByteArray finish() = 0;
 
-	virtual ~HMACContext() {}
+	virtual ~HMACContext() = default;
 };
 
 class Crypto : public RefCounted {

@@ -113,7 +113,7 @@ private:
 		String name;
 		bool is_default = false;
 
-		ExportArchitecture() {}
+		ExportArchitecture() = default;
 
 		ExportArchitecture(String p_name, bool p_is_default) {
 			name = p_name;

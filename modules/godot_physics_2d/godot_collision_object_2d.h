@@ -198,5 +198,5 @@ public:
 		return collision_layer & p_other->collision_mask || p_other->collision_layer & collision_mask;
 	}
 
-	virtual ~GodotCollisionObject2D() {}
+	virtual ~GodotCollisionObject2D() = default;
 };

@@ -775,8 +775,7 @@ bool ShaderGLES3::version_free(RID p_version) {
 
 bool ShaderGLES3::shader_cache_cleanup_on_start = false;
 
-ShaderGLES3::ShaderGLES3() {
-}
+ShaderGLES3::ShaderGLES3() = default;
 
 void ShaderGLES3::initialize(const String &p_general_defines, int p_base_texture_index) {
 	general_defines = p_general_defines.utf8();

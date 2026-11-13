@@ -549,8 +549,7 @@ ShaderMaterial::ShaderMaterial() {
 	// Material RID will be empty until it is required.
 }
 
-ShaderMaterial::~ShaderMaterial() {
-}
+ShaderMaterial::~ShaderMaterial() = default;
 
 /////////////////////////////////
 

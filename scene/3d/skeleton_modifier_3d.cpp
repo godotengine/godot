@@ -397,5 +397,4 @@ Vector3 SkeletonModifier3D::get_projected_normal(const Vector3 &p_a, const Vecto
 	return (p_point - h).normalized();
 }
 
-SkeletonModifier3D::SkeletonModifier3D() {
-}
+SkeletonModifier3D::SkeletonModifier3D() = default;

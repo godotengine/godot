@@ -193,5 +193,4 @@ NinePatchRect::NinePatchRect() {
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
 }
 
-NinePatchRect::~NinePatchRect() {
-}
+NinePatchRect::~NinePatchRect() = default;

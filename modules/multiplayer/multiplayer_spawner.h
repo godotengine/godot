@@ -60,7 +60,7 @@ private:
 			id = p_id;
 			args = p_args;
 		}
-		SpawnInfo() {}
+		SpawnInfo() = default;
 	};
 
 	ObjectID spawn_node;
@@ -112,5 +112,5 @@ public:
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);
 
-	MultiplayerSpawner() {}
+	MultiplayerSpawner() = default;
 };

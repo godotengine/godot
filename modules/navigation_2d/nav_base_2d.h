@@ -63,5 +63,5 @@ public:
 	virtual void set_owner_id(ObjectID p_owner_id) {}
 	ObjectID get_owner_id() const { return owner_id; }
 
-	virtual ~NavBase2D() {}
+	virtual ~NavBase2D() = default;
 };

@@ -300,5 +300,4 @@ TextureRect::TextureRect() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
-TextureRect::~TextureRect() {
-}
+TextureRect::~TextureRect() = default;

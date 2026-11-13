@@ -128,5 +128,5 @@ public:
 
 	Ref<AudioEffectInstance> instantiate() override;
 
-	AudioEffectDelay() {}
+	AudioEffectDelay() = default;
 };

@@ -255,8 +255,7 @@ protected:
 public:
 	bool block_update = false;
 
-	ShaderGlobalsEditorInterface() {
-	}
+	ShaderGlobalsEditorInterface() = default;
 };
 
 static Variant create_var(RSE::GlobalShaderParameterType p_type) {

@@ -234,7 +234,7 @@ public:
 		creation_function = p_creation_function;
 	}
 
-	PipelineHashMapRD() {}
+	PipelineHashMapRD() = default;
 
 	~PipelineHashMapRD() {
 		clear_pipelines();

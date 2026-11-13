@@ -314,8 +314,7 @@ CameraAttributesPractical::CameraAttributesPractical() {
 	notify_property_list_changed();
 }
 
-CameraAttributesPractical::~CameraAttributesPractical() {
-}
+CameraAttributesPractical::~CameraAttributesPractical() = default;
 
 //////////////////////////////////////////////////////
 /* CameraAttributesPhysical */
@@ -508,5 +507,4 @@ CameraAttributesPhysical::CameraAttributesPhysical() {
 	notify_property_list_changed();
 }
 
-CameraAttributesPhysical::~CameraAttributesPhysical() {
-}
+CameraAttributesPhysical::~CameraAttributesPhysical() = default;

@@ -597,8 +597,7 @@ void AnimationNode::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILTER_BLEND);
 }
 
-AnimationNode::AnimationNode() {
-}
+AnimationNode::AnimationNode() = default;
 
 ////////////////////
 
@@ -1165,5 +1164,4 @@ AnimationTree::AnimationTree() {
 	callback_mode_discrete = ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS;
 }
 
-AnimationTree::~AnimationTree() {
-}
+AnimationTree::~AnimationTree() = default;

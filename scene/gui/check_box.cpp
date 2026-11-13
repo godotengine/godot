@@ -181,5 +181,4 @@ CheckBox::CheckBox(const String &p_text) :
 	}
 }
 
-CheckBox::~CheckBox() {
-}
+CheckBox::~CheckBox() = default;

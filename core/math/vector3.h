@@ -219,8 +219,7 @@ struct [[nodiscard]] Vector3 {
 		return hash_fmix32(h);
 	}
 
-	constexpr Vector3() :
-			x(0), y(0), z(0) {}
+	constexpr Vector3() = default;
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :
 			x(p_x), y(p_y), z(p_z) {}
 };

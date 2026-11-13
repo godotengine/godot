@@ -42,5 +42,5 @@ public:
 	virtual String get_resource_type(const String &p_path) const override;
 
 	ResourceFormatDDS();
-	virtual ~ResourceFormatDDS() {}
+	virtual ~ResourceFormatDDS() = default;
 };

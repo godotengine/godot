@@ -50,8 +50,7 @@ void PhysicsDirectSpaceState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_closest_point_to_object_volume, "object", "point");
 }
 
-PhysicsDirectSpaceState3DExtension::PhysicsDirectSpaceState3DExtension() {
-}
+PhysicsDirectSpaceState3DExtension::PhysicsDirectSpaceState3DExtension() = default;
 
 void PhysicsDirectBodyState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_total_gravity);
@@ -122,8 +121,7 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_space_state);
 }
 
-PhysicsDirectBodyState3DExtension::PhysicsDirectBodyState3DExtension() {
-}
+PhysicsDirectBodyState3DExtension::PhysicsDirectBodyState3DExtension() = default;
 
 thread_local const HashSet<RID> *PhysicsServer3DExtension::exclude_bodies = nullptr;
 thread_local const HashSet<ObjectID> *PhysicsServer3DExtension::exclude_objects = nullptr;
@@ -443,8 +441,6 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
 }
 
-PhysicsServer3DExtension::PhysicsServer3DExtension() {
-}
+PhysicsServer3DExtension::PhysicsServer3DExtension() = default;
 
-PhysicsServer3DExtension::~PhysicsServer3DExtension() {
-}
+PhysicsServer3DExtension::~PhysicsServer3DExtension() = default;

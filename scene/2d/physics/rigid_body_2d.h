@@ -104,7 +104,7 @@ private:
 			return body_shape < p_sp.body_shape;
 		}
 
-		ShapePair() {}
+		ShapePair() = default;
 		ShapePair(int p_bs, int p_ls) {
 			body_shape = p_bs;
 			local_shape = p_ls;

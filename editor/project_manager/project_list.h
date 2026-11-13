@@ -174,7 +174,7 @@ public:
 
 		ProjectListItemControl *control = nullptr;
 
-		Item() {}
+		Item() = default;
 
 		Item(const String &p_name,
 				const String &p_description,

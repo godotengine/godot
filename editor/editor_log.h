@@ -58,7 +58,7 @@ private:
 		int count = 1;
 		bool clear = true;
 
-		LogMessage() {}
+		LogMessage() = default;
 
 		LogMessage(const String &p_text, MessageType p_type, bool p_clear) :
 				text(p_text),

@@ -149,8 +149,8 @@ public:
 	virtual void set_sample_bus_solo(int p_bus, bool p_enable) {}
 	virtual void set_sample_bus_mute(int p_bus, bool p_enable) {}
 
-	AudioDriver() {}
-	virtual ~AudioDriver() {}
+	AudioDriver() = default;
+	virtual ~AudioDriver() = default;
 };
 
 class AudioDriverManager {

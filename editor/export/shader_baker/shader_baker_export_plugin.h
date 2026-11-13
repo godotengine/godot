@@ -45,7 +45,7 @@ class ShaderBakerExportPluginPlatform : public RefCounted {
 public:
 	virtual RenderingShaderContainerFormat *create_shader_container_format(const Ref<EditorExportPlatform> &p_platform, const Ref<EditorExportPreset> &p_preset) = 0;
 	virtual bool matches_driver(const String &p_driver) = 0;
-	virtual ~ShaderBakerExportPluginPlatform() {}
+	virtual ~ShaderBakerExportPluginPlatform() = default;
 };
 
 class ShaderBakerExportPlugin : public EditorExportPlugin {

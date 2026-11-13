@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../../openxr_util.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 #include "openxr_spatial_container_state.h"

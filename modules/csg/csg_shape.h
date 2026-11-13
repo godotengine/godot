@@ -295,7 +295,7 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox3D() {}
+	CSGBox3D() = default;
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {

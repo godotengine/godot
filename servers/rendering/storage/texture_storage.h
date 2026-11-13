@@ -60,7 +60,7 @@ public:
 
 	/* Texture API */
 
-	virtual ~RendererTextureStorage() {}
+	virtual ~RendererTextureStorage() = default;
 
 	virtual RID texture_allocate() = 0;
 	virtual void texture_free(RID p_rid) = 0;

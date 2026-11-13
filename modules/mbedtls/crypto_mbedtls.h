@@ -77,7 +77,7 @@ public:
 	Error load_from_string(const String &p_string_key, bool p_public_only) override;
 	bool is_public_only() const override { return public_only; }
 
-	CryptoKeyMbedTLS() {}
+	CryptoKeyMbedTLS() = default;
 	~CryptoKeyMbedTLS() override {
 		_clear();
 	}
@@ -135,7 +135,7 @@ public:
 	Error update(const PackedByteArray &p_data) override;
 	PackedByteArray finish() override;
 
-	HMACContextMbedTLS() {}
+	HMACContextMbedTLS() = default;
 	~HMACContextMbedTLS() override;
 };
 

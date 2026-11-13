@@ -322,5 +322,5 @@ public:
 	void call_set_vsync_mode(DisplayServerEnums::VSyncMode p_mode, DisplayServerEnums::WindowID p_window);
 
 	RendererViewport();
-	virtual ~RendererViewport() {}
+	virtual ~RendererViewport() = default;
 };

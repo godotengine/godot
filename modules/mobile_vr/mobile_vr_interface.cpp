@@ -682,7 +682,7 @@ RID MobileVRInterface::get_vrs_texture() {
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
 }
 
-MobileVRInterface::MobileVRInterface() {}
+MobileVRInterface::MobileVRInterface() = default;
 
 MobileVRInterface::~MobileVRInterface() {
 	// and make sure we cleanup if we haven't already

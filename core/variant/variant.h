@@ -219,7 +219,7 @@ private:
 				memdelete(p_array);
 			}
 		}
-		_FORCE_INLINE_ virtual ~PackedArrayRefBase() {} //needs virtual destructor, but make inline
+		_FORCE_INLINE_ virtual ~PackedArrayRefBase() = default; //needs virtual destructor, but make inline
 	};
 
 	template <typename T>
@@ -376,13 +376,13 @@ private:
 		}
 	}
 
+public:
 	// Avoid accidental conversion. If you reached this point, it's because you most likely forgot to dereference
 	// a Variant pointer (so add * like this: *variant_pointer).
 
-	Variant(const Variant *) {}
-	Variant(const Variant **) {}
+	Variant(const Variant *) = delete;
+	Variant(const Variant **) = delete;
 
-public:
 	_FORCE_INLINE_ Type get_type() const {
 		return type;
 	}
@@ -877,7 +877,7 @@ public:
 		_data = p_variant._data;
 		p_variant.type = NIL;
 	}
-	_FORCE_INLINE_ Variant() {}
+	_FORCE_INLINE_ Variant() = default;
 	_FORCE_INLINE_ ~Variant() {
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();

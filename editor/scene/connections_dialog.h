@@ -60,7 +60,7 @@ public:
 		int unbinds = 0;
 		Vector<Variant> binds;
 
-		ConnectionData() {}
+		ConnectionData() = default;
 
 		ConnectionData(const Connection &p_connection) {
 			source = p_connection.signal.get_object();

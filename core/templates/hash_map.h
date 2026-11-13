@@ -43,7 +43,7 @@ struct HashMapElement {
 	HashMapElement *next = nullptr;
 	HashMapElement *prev = nullptr;
 	KeyValue<TKey, TValue> data;
-	HashMapElement() {}
+	HashMapElement() = default;
 	HashMapElement(const TKey &p_key, const TValue &p_value) :
 			data(p_key, p_value) {}
 };
@@ -466,7 +466,7 @@ public:
 		}
 
 		_FORCE_INLINE_ ConstIterator(const HashMapElement<TKey, TValue> *p_element) { E = p_element; }
-		_FORCE_INLINE_ ConstIterator() {}
+		_FORCE_INLINE_ ConstIterator() = default;
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 		_FORCE_INLINE_ void operator=(const ConstIterator &p_it) {
 			E = p_it.E;
@@ -502,7 +502,7 @@ public:
 		}
 
 		_FORCE_INLINE_ Iterator(HashMapElement<TKey, TValue> *p_element) { E = p_element; }
-		_FORCE_INLINE_ Iterator() {}
+		_FORCE_INLINE_ Iterator() = default;
 		_FORCE_INLINE_ Iterator(const Iterator &p_it) { E = p_it.E; }
 		_FORCE_INLINE_ void operator=(const Iterator &p_it) {
 			E = p_it.E;

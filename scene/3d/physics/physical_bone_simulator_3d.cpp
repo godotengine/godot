@@ -395,5 +395,4 @@ void PhysicalBoneSimulator3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &PhysicalBoneSimulator3D::physical_bones_remove_collision_exception);
 }
 
-PhysicalBoneSimulator3D::PhysicalBoneSimulator3D() {
-}
+PhysicalBoneSimulator3D::PhysicalBoneSimulator3D() = default;

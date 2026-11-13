@@ -139,7 +139,7 @@ struct MotionParameters {
 	HashSet<ObjectID> exclude_objects;
 	bool recovery_as_collision = false;
 
-	MotionParameters() {}
+	MotionParameters() = default;
 
 	MotionParameters(const Transform2D &p_from, const Vector2 &p_motion, real_t p_margin = 0.08) :
 			from(p_from),

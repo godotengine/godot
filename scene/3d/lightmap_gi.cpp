@@ -2212,5 +2212,4 @@ void LightmapGI::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENVIRONMENT_MODE_CUSTOM_COLOR);
 }
 
-LightmapGI::LightmapGI() {
-}
+LightmapGI::LightmapGI() = default;

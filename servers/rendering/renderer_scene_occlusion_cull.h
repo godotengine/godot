@@ -202,7 +202,7 @@ public:
 		RID get_debug_texture();
 		const Size2i &get_occlusion_buffer_size() const { return occlusion_buffer_size; }
 
-		virtual ~HZBuffer() {}
+		virtual ~HZBuffer() = default;
 	};
 
 	static RendererSceneOcclusionCull *get_singleton() { return singleton; }

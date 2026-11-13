@@ -154,5 +154,4 @@ AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
 	stop();
 }
 
-AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() {
-}
+AudioStreamPlaybackMicrophone::AudioStreamPlaybackMicrophone() = default;

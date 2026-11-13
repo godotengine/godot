@@ -59,7 +59,7 @@ public:
 	virtual void slider_draw(int p_which) = 0;
 
 	ColorMode(ColorPicker *p_color_picker);
-	virtual ~ColorMode() {}
+	virtual ~ColorMode() = default;
 };
 
 class ColorModeHSV : public ColorMode {

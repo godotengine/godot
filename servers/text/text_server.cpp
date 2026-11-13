@@ -2412,8 +2412,7 @@ TextServer::TextServer() {
 	_init_diacritics_map();
 }
 
-TextServer::~TextServer() {
-}
+TextServer::~TextServer() = default;
 
 BitField<TextServer::TextOverrunFlag> TextServer::get_overrun_flags_from_behavior(TextServer::OverrunBehavior p_behavior) {
 	BitField<TextOverrunFlag> overrun_flags = OVERRUN_NO_TRIM;

@@ -401,8 +401,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_energy_multiplier(1.0);
 }
 
-ProceduralSkyMaterial::~ProceduralSkyMaterial() {
-}
+ProceduralSkyMaterial::~ProceduralSkyMaterial() = default;
 
 /////////////////////////////////////////
 /* PanoramaSkyMaterial */
@@ -515,8 +514,7 @@ PanoramaSkyMaterial::PanoramaSkyMaterial() {
 	set_energy_multiplier(1.0);
 }
 
-PanoramaSkyMaterial::~PanoramaSkyMaterial() {
-}
+PanoramaSkyMaterial::~PanoramaSkyMaterial() = default;
 
 //////////////////////////////////
 /* PhysicalSkyMaterial */
@@ -838,5 +836,4 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_use_debanding(true);
 }
 
-PhysicalSkyMaterial::~PhysicalSkyMaterial() {
-}
+PhysicalSkyMaterial::~PhysicalSkyMaterial() = default;

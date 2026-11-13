@@ -208,5 +208,4 @@ void VisibleOnScreenEnabler3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENABLE_MODE_WHEN_PAUSED);
 }
 
-VisibleOnScreenEnabler3D::VisibleOnScreenEnabler3D() {
-}
+VisibleOnScreenEnabler3D::VisibleOnScreenEnabler3D() = default;

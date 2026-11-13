@@ -138,5 +138,4 @@ void MissingNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_signals", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_signals", "is_recording_signals");
 }
 
-MissingNode::MissingNode() {
-}
+MissingNode::MissingNode() = default;

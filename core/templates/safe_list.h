@@ -225,7 +225,7 @@ public:
 		return true;
 	}
 
-	_FORCE_INLINE_ SafeList() {}
+	_FORCE_INLINE_ SafeList() = default;
 	_FORCE_INLINE_ SafeList(std::initializer_list<T> p_init) {
 		for (const T &E : p_init) {
 			insert(E);

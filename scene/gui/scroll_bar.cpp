@@ -772,8 +772,7 @@ ScrollBar::ScrollBar(Orientation p_orientation) {
 	set_step(0);
 }
 
-ScrollBar::~ScrollBar() {
-}
+ScrollBar::~ScrollBar() = default;
 
 void VScrollBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VScrollBar, padding_left);

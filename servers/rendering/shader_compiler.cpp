@@ -1710,5 +1710,4 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("texelFetch");
 }
 
-ShaderCompiler::ShaderCompiler() {
-}
+ShaderCompiler::ShaderCompiler() = default;

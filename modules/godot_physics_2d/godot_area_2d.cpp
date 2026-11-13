@@ -315,5 +315,4 @@ GodotArea2D::GodotArea2D() :
 	_set_static(true); //areas are not active by default
 }
 
-GodotArea2D::~GodotArea2D() {
-}
+GodotArea2D::~GodotArea2D() = default;

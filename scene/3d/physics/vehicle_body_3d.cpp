@@ -47,7 +47,7 @@ public:
 
 	real_t getDiagonal() const { return m_Adiag; }
 
-	btVehicleJacobianEntry() {}
+	btVehicleJacobianEntry() = default;
 	//constraint between two different rigidbodies
 	btVehicleJacobianEntry(
 			const Basis &world2A,
