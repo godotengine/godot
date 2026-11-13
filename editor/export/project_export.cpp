@@ -1640,7 +1640,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(preset_hb);
 
 	add_preset = memnew(MenuButton);
-	add_preset->set_text(TTRC("Add..."));
+	add_preset->set_text(TTRC("Add"));
 	add_preset->get_popup()->connect("index_pressed", callable_mp(this, &ProjectExportDialog::_add_preset));
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);
@@ -2046,11 +2046,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Export buttons, dialogs and errors.
 
 	set_cancel_button_text(TTRC("Close"));
-	set_ok_button_text(TTRC("Export PCK/ZIP..."));
+	set_ok_button_text(TTRC("Export PCK/ZIP"));
 	get_ok_button()->set_tooltip_text(TTRC("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
 	get_ok_button()->set_disabled(true);
 
-	export_button = add_button(TTRC("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+	export_button = add_button(TTRC("Export Project"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
 	export_button->set_tooltip_text(TTRC("Export the project as a playable build (Godot executable and project data) for the selected preset."));
 	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset.
