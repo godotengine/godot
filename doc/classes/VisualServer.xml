@@ -1108,6 +1108,65 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="fti_instance_create">
+			<return type="RID" />
+			<description>
+				FTI ("fixed timestep interpolation") instance provides a convenience physics interpolation wrapper for users creating instances directly on the server rather than through Nodes.
+				FTI instance internally contains a regular instance, but provides extra functionality. It manages the lifetime of the regular instance for you (freeing it when the FTI instance is freed).
+				There are thus two [code]RIDs[/code] to be concerned with - the FTI instance [code]RID[/code], and the internal regular instance [code]RID[/code], which can be retrieved using [method fti_instance_get_instance].
+				[codeblock]
+				# Create an FTI instance and link it to the regular instance.
+				var fti_instance = VisualServer.fti_instance_create()
+				var instance = VisualServer.fti_instance_get_instance(fti_instance)
+
+				# Set the scenario from the world, this ensures it
+				# appears with the same objects as the scene.
+				var scenario = get_world().scenario
+				VisualServer.instance_set_scenario(instance, scenario)
+
+				# Add an example mesh to it.
+				var mesh = load("res://test_model.obj")
+				VisualServer.instance_set_base(instance, mesh)
+
+				# Use this function instead of instance_set_transform().
+				VisualServer.fti_instance_set_transform(fti_instance, xform)
+
+				# This function provides reset_physics_interpolation().
+				VisualServer.fti_instance_reset(fti_instance)
+
+				# Be sure to free RID on the server after use.
+				# Note that the fti_instance automatically frees
+				# the underlying regular instance, so you should not
+				# call free_rid(instance), as it would result
+				# in trying to free an already deleted object.
+				VisualServer.free_rid(fti_instance)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="fti_instance_get_instance">
+			<return type="RID" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<description>
+				This function provides access to the internal regular instance [code]RID[/code], which you need in order to call regular non-FTI VisualServer functions.
+				[b]Note:[/b] There is no need to call free for this [code]RID[/code]. The lifetime will be managed for you by the FTI instance.
+				[b]Note:[/b] It is recommended to call this function only once during FTI instance creation, and keep a record of the instance [code]RID[/code] in your own code. This is because the function could potentially cause a stall reading back from the server, so it is important not to call it every frame.
+			</description>
+		</method>
+		<method name="fti_instance_reset">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<description>
+				Equivalent to [method Node.reset_physics_interpolation] for Nodes.
+			</description>
+		</method>
+		<method name="fti_instance_set_transform">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<argument index="1" name="transform" type="Transform" />
+			<description>
+				Equivalent to [method instance_set_transform], but provides automatic physics interpolation.
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int" />
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo" />

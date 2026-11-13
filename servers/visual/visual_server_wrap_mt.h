@@ -499,6 +499,12 @@ public:
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
 
+	/* FTI HELPER API */
+	FUNCRID(fti_instance)
+	FUNC1R(RID, fti_instance_get_instance, RID)
+	FUNC2(fti_instance_set_transform, RID, const Transform &)
+	FUNC1(fti_instance_reset, RID)
+
 	/* BLOB SHADOWS */
 	FUNCRID(capsule_shadow)
 	FUNC5(capsule_shadow_update, RID, const Vector3 &, real_t, const Vector3 &, real_t)
