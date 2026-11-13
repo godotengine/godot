@@ -204,9 +204,11 @@ PinJoint2DSW::PinJoint2DSW(const Vector2 &p_pos, Body2DSW *p_body_a, Body2DSW *p
 
 PinJoint2DSW::~PinJoint2DSW() {
 	if (A) {
+		A->set_active(true, true);
 		A->remove_constraint(this);
 	}
 	if (B) {
+		B->set_active(true, true);
 		B->remove_constraint(this);
 	}
 }
@@ -348,6 +350,8 @@ GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_
 }
 
 GrooveJoint2DSW::~GrooveJoint2DSW() {
+	A->set_active(true, true);
+	B->set_active(true, true);
 	A->remove_constraint(this);
 	B->remove_constraint(this);
 }
@@ -449,6 +453,8 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 }
 
 DampedSpringJoint2DSW::~DampedSpringJoint2DSW() {
+	A->set_active(true, true);
+	B->set_active(true, true);
 	A->remove_constraint(this);
 	B->remove_constraint(this);
 }

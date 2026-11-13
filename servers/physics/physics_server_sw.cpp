@@ -1279,6 +1279,7 @@ void PhysicsServerSW::free(RID p_rid) {
 		JointSW *joint = joint_owner.get(p_rid);
 
 		for (int i = 0; i < joint->get_body_count(); i++) {
+			joint->get_body_ptr()[i]->set_active(true, true);
 			joint->get_body_ptr()[i]->remove_constraint(joint);
 		}
 		joint_owner.free(p_rid);

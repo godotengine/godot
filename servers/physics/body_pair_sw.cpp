@@ -198,6 +198,19 @@ real_t combine_friction(BodySW *A, BodySW *B) {
 }
 
 bool BodyPairSW::setup(real_t p_step) {
+	bool prev_collided = collided;
+
+	if (!setup_internal(p_step)) {
+		if (prev_collided) {
+			A->set_active(true, true);
+			B->set_active(true, true);
+		}
+		return false;
+	}
+	return true;
+}
+
+bool BodyPairSW::setup_internal(real_t p_step) {
 	//cannot collide
 	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
 		collided = false;
@@ -463,6 +476,10 @@ BodyPairSW::BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B) :
 }
 
 BodyPairSW::~BodyPairSW() {
+	if (collided) {
+		A->set_active(true, true);
+		B->set_active(true, true);
+	}
 	A->remove_constraint(this);
 	B->remove_constraint(this);
 }

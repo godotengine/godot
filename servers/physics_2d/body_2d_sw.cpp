@@ -101,7 +101,7 @@ void Body2DSW::update_inertias() {
 	//_update_shapes();
 }
 
-void Body2DSW::set_active(bool p_active) {
+void Body2DSW::set_active(bool p_active, bool reset_timer) {
 	if (active == p_active) {
 		return;
 	}
@@ -117,21 +117,20 @@ void Body2DSW::set_active(bool p_active) {
 		}
 		if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
-		}
 
-		//still_time=0;
-	}
-	/*
-	if (!space)
-		return;
+			if (reset_timer) {
+				// `reset_timer` should be set upon removal of a constraint, or the change of some fundamental forces
+				// that the engine itself takes responsibility for and applies every frame (like gravity or constant force).
+				// `still_time = 0.0` will provide some time to test whether gravity or constant force might destabilize the system.
+				still_time = 0.0;
+			}
 
-	for(int i=0;i<get_shape_count();i++) {
-		Shape &s=shapes[i];
-		if (s.bpid>0) {
-			get_space()->get_broadphase()->set_active(s.bpid,active);
+			// Ensure at least one frame to allow a sleeping body to potentially move again before being put back to sleep.
+			if (still_time > get_space()->get_body_time_to_sleep()) {
+				still_time = get_space()->get_body_time_to_sleep();
+			}
 		}
 	}
-*/
 }
 
 void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, real_t p_value) {
@@ -251,7 +250,6 @@ Physics2DServer::BodyMode Body2DSW::get_mode() const {
 void Body2DSW::_shapes_changed() {
 	_update_inertia();
 	wakeup();
-	wakeup_neighbours();
 }
 
 void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_variant) {
@@ -259,7 +257,6 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 		case Physics2DServer::BODY_STATE_TRANSFORM: {
 			if (mode == Physics2DServer::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
-				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -269,7 +266,6 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 			} else if (mode == Physics2DServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
-				wakeup_neighbours();
 			} else {
 				Transform2D t = p_variant;
 				t.orthonormalize();
@@ -352,8 +348,6 @@ Variant Body2DSW::get_state(Physics2DServer::BodyState p_state) const {
 
 void Body2DSW::set_space(Space2DSW *p_space) {
 	if (get_space()) {
-		wakeup_neighbours();
-
 		if (inertia_update_list.in_list()) {
 			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
 		}
@@ -566,28 +560,6 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	//_update_inertia_tensor();
 }
 
-void Body2DSW::wakeup_neighbours() {
-	for (Map<Constraint2DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-		const Constraint2DSW *c = E->key();
-		Body2DSW **n = c->get_body_ptr();
-		int bc = c->get_body_count();
-
-		for (int i = 0; i < bc; i++) {
-			if (i == E->get()) {
-				continue;
-			}
-			Body2DSW *b = n[i];
-			if (b->mode != Physics2DServer::BODY_MODE_RIGID) {
-				continue;
-			}
-
-			if (!b->is_active()) {
-				b->set_active(true);
-			}
-		}
-	}
-}
-
 void Body2DSW::call_queries() {
 	if (fi_callback) {
 		Variant v = direct_access;
@@ -618,9 +590,9 @@ bool Body2DSW::sleep_test(real_t p_step) {
 	}
 
 	if (Math::abs(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
 		still_time = 0; //maybe this should be set to 0 on set_active?
 		return false;
