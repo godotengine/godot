@@ -2933,17 +2933,24 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	// Look for export templates (official templates first, then custom).
-	bool dvalid = exists_export_template("macos.zip", &err);
+	String dtemplate_path = find_export_template("macos.zip", &err);
+	String rtemplate_path = dtemplate_path;
+	bool dvalid = dtemplate_path != "";
 	bool rvalid = dvalid; // Both in the same ZIP.
 
-	if (p_preset->get("custom_template/debug") != "") {
-		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+	String dcustom_template_path = p_preset->get("custom_template/debug");
+	dcustom_template_path = dcustom_template_path.strip_edges();
+	if (dcustom_template_path != "") {
+		dtemplate_path = dcustom_template_path;
+		dvalid = FileAccess::exists(dcustom_template_path);
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-	if (p_preset->get("custom_template/release") != "") {
-		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+	String rcustom_template_path = p_preset->get("custom_template/release");
+	if (rcustom_template_path != "") {
+		rtemplate_path = rcustom_template_path;
+		rvalid = FileAccess::exists(rcustom_template_path);
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
@@ -2973,10 +2980,67 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		ERR_PRINT("Invalid architecture");
 	}
 
+	// Warn if the debug symbols for the effectively used files are not found.
+	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
+	if (debug_symbol_mode > 0) {
+		if (dvalid) {
+			bool sym_found = false;
+			if (architecture == "universal") {
+				sym_found = check_export_template_debugsymbols(dtemplate_path.get_base_dir(), "universal", false);
+				if (!sym_found) {
+					sym_found = check_export_template_debugsymbols(dtemplate_path.get_base_dir(), "arm64", false);
+					sym_found = sym_found && check_export_template_debugsymbols(dtemplate_path.get_base_dir(), "x86_64", false);
+				}
+			} else {
+				sym_found = check_export_template_debugsymbols(dtemplate_path.get_base_dir(), architecture, false);
+				if (!sym_found) {
+					sym_found = check_export_template_debugsymbols(dtemplate_path.get_base_dir(), "universal", false);
+				}
+			}
+			if (!sym_found) {
+				r_error += TTR("Export Debug Symbols is set, but no debug export template .dSYM nor .debugsymbols.zip found.") + "\n";
+			}
+		}
+		if (rvalid && debug_symbol_mode == 2) {
+			bool sym_found = false;
+			if (architecture == "universal") {
+				sym_found = check_export_template_debugsymbols(rtemplate_path.get_base_dir(), "universal", true);
+				if (!sym_found) {
+					sym_found = check_export_template_debugsymbols(rtemplate_path.get_base_dir(), "arm64", true);
+					sym_found = sym_found && check_export_template_debugsymbols(rtemplate_path.get_base_dir(), "x86_64", true);
+				}
+			} else {
+				sym_found = check_export_template_debugsymbols(rtemplate_path.get_base_dir(), architecture, true);
+				if (!sym_found) {
+					sym_found = check_export_template_debugsymbols(rtemplate_path.get_base_dir(), "universal", true);
+				}
+			}
+			if (!sym_found) {
+				r_error += TTR("Export Debug Symbols is set, but no release export template .dSYM nor .debugsymbols.zip found.") + "\n";
+			}
+		}
+	}
+
 	if (!err.is_empty()) {
 		r_error = err;
 	}
 	return valid;
+}
+
+bool EditorExportPlatformMacOS::check_export_template_debugsymbols(const String &p_symbols_path, const String &p_arch, bool p_debug) const {
+	String template_file_name = get_template_file_name(p_debug ? "debug" : "release", p_arch);
+	String sym_path = p_symbols_path.simplify_path().path_join(vformat("godot_%s.dSYM", template_file_name));
+	String zip_path = p_symbols_path.simplify_path().path_join(template_file_name) + ".debugsymbols.zip";
+	String zip_path_full = p_symbols_path.simplify_path().path_join(get_official_debugsymbols_file_name(template_file_name));
+	if (DirAccess::exists(sym_path)) {
+		return true;
+	} else if (FileAccess::exists(zip_path)) {
+		return true;
+	} else if (FileAccess::exists(zip_path_full)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
