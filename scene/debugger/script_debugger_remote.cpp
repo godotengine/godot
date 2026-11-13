@@ -155,7 +155,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
 	while (true) {
-		loop_begin_usec = OS::get_singleton()->get_ticks_usec();
+		loop_begin_usec = OS::get_singleton()->get_ticks_usec_raw();
 
 		_get_output();
 
@@ -337,6 +337,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 				_save_node(cmd[1], cmd[2]);
 			} else if (command == "set_skip_breakpoints") {
 				skip_breakpoints = cmd[1];
+			} else if (command == "set_game_speed") {
+				float speed = cmd[1];
+				OS::get_singleton()->set_primary_time_scale(speed);
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -347,7 +350,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, 
 		}
 
 		// This is for the camera override to stay live even when the game is paused from the editor
-		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
+		loop_time_sec = (OS::get_singleton()->get_ticks_usec_raw() - loop_begin_usec) / 1000000.0f;
 		VisualServer::get_singleton()->sync();
 		if (VisualServer::get_singleton()->has_changed()) {
 			VisualServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
@@ -822,6 +825,9 @@ void ScriptDebuggerRemote::_poll_events() {
 			}
 		} else if (command == "set_skip_breakpoints") {
 			skip_breakpoints = cmd[1];
+		} else if (command == "set_game_speed") {
+			float speed = cmd[1];
+			OS::get_singleton()->set_primary_time_scale(speed);
 		} else {
 			_parse_live_edit(cmd);
 		}
@@ -926,7 +932,7 @@ void ScriptDebuggerRemote::idle_poll() {
 	}
 
 	if (performance) {
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		uint64_t pt = OS::get_singleton()->get_ticks_msec_raw();
 		if (pt - last_perf_time > 1000) {
 			last_perf_time = pt;
 			int max = performance->get("MONITOR_MAX");
@@ -951,7 +957,7 @@ void ScriptDebuggerRemote::idle_poll() {
 	}
 
 	if (profiling_network) {
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		uint64_t pt = OS::get_singleton()->get_ticks_msec_raw();
 		if (pt - last_net_bandwidth_time > 200) {
 			last_net_bandwidth_time = pt;
 			_send_network_bandwidth_usage();
@@ -1031,7 +1037,7 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 	oe.msec = time % 1000;
 	Array cstack;
 
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
+	uint64_t ticks = OS::get_singleton()->get_ticks_usec_raw() / 1000;
 	msec_count += ticks - last_msec;
 	last_msec = ticks;
 
@@ -1082,7 +1088,7 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 void ScriptDebuggerRemote::_print_handler(void *p_this, const String &p_string, bool p_error) {
 	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote *)p_this;
 
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
+	uint64_t ticks = OS::get_singleton()->get_ticks_usec_raw() / 1000;
 	sdr->msec_count += ticks - sdr->last_msec;
 	sdr->last_msec = ticks;
 

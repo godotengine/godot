@@ -288,13 +288,13 @@ void ScriptDebuggerLocal::idle_poll() {
 		return;
 	}
 
-	uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
+	uint64_t diff = OS::get_singleton()->get_ticks_usec_raw() - idle_accum;
 
 	if (diff < 1000000) { //show every one second
 		return;
 	}
 
-	idle_accum = OS::get_singleton()->get_ticks_usec();
+	idle_accum = OS::get_singleton()->get_ticks_usec_raw();
 
 	int ofs = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -388,6 +388,6 @@ ScriptDebuggerLocal::ScriptDebuggerLocal() {
 	process_time = 0.0f;
 	physics_time = 0.0f;
 	physics_frame_time = 0.0f;
-	idle_accum = OS::get_singleton()->get_ticks_usec();
+	idle_accum = OS::get_singleton()->get_ticks_usec_raw();
 	options["variable_prefix"] = "";
 }

@@ -226,6 +226,22 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 	}
 }
 
+void ScriptEditorDebugger::set_game_speed(float p_speed) {
+	_game_speed = p_speed;
+
+	// If we aren't connected to a debugging session, just save the speed.
+	// We'll refresh it when we next start a session.
+	if (connection.is_null()) {
+		return;
+	}
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+	Array msg;
+	msg.push_back("set_game_speed");
+	msg.push_back(p_speed);
+	ppeer->put_var(msg);
+	_clear_execution();
+}
+
 void ScriptEditorDebugger::debug_next() {
 	ERR_FAIL_COND(!breaked);
 	ERR_FAIL_COND(connection.is_null());
@@ -1442,6 +1458,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 					if (network_profiler->is_profiling()) {
 						_network_profiler_activate(true);
+					}
+
+					// Ensure that game speed is resent each time we start a run.
+					if (_game_speed != 1) {
+						set_game_speed(_game_speed);
 					}
 				}
 			}

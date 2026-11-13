@@ -644,6 +644,18 @@ void EditorNode::_notification(int p_what) {
 	}
 }
 
+void EditorNode::_speed_state_changed(int p_index) {
+	ERR_FAIL_INDEX(p_index, (int)speed_state.NUM_SCALES);
+
+	String label = String(speed_state.TIME_SCALE_LABELS[p_index]) + "x";
+	speed_state.menu->set_text(label);
+
+	if (ScriptEditor::get_singleton()->get_debugger()) {
+		float speed = speed_state.TIME_SCALE_RANGES[p_index];
+		ScriptEditor::get_singleton()->get_debugger()->set_game_speed(speed);
+	}
+}
+
 void EditorNode::_update_update_spinner() {
 	update_spinner->set_visible(EditorSettings::get_singleton()->get("interface/editor/show_update_spinner"));
 
@@ -2305,6 +2317,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		play_button->set_icon(gui_base->get_icon("Reload", "EditorIcons"));
 	}
 	stop_button->set_disabled(false);
+	speed_state.menu->show();
 
 	_playing_edited = p_current;
 }
@@ -2670,6 +2683,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			play_custom_scene_button->set_pressed(false);
 			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
 			stop_button->set_disabled(true);
+			speed_state.menu->hide();
 
 			if (EDITOR_GET_CACHED(bool, "run/output/always_close_output_on_stop")) {
 				for (int i = 0; i < bottom_panel_items.size(); i++) {
@@ -5807,6 +5821,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_toggle_distraction_free_mode", &EditorNode::_toggle_distraction_free_mode);
 	ClassDB::bind_method("_version_control_menu_option", &EditorNode::_version_control_menu_option);
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
+	ClassDB::bind_method("_speed_state_changed", &EditorNode::_speed_state_changed);
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
 	ClassDB::bind_method(D_METHOD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
@@ -6697,6 +6712,19 @@ EditorNode::EditorNode() {
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);
+
+	speed_state.menu = memnew(MenuButton);
+	play_hb->add_child(speed_state.menu);
+	speed_state.menu->set_text("1.0x");
+	speed_state.menu->set_focus_mode(Control::FOCUS_NONE);
+	speed_state.menu->set_tooltip(TTR("Change the game speed."));
+	speed_state.menu->hide();
+	PopupMenu *menu = speed_state.menu->get_popup();
+	menu->connect("index_pressed", this, "_speed_state_changed");
+	for (uint32_t n = 0; n < speed_state.NUM_SCALES; n++) {
+		String label = String(speed_state.TIME_SCALE_LABELS[n]) + "x";
+		menu->add_item(label);
+	}
 
 	play_button = memnew(ToolButton);
 	play_hb->add_child(play_button);

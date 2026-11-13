@@ -105,7 +105,7 @@ bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 }
 
 Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uint64_t p_timeout, const Vector<String> &p_extra_headers) {
-	if (OS::get_singleton()->get_ticks_msec() - time > p_timeout) {
+	if (OS::get_singleton()->get_ticks_msec_raw() - time > p_timeout) {
 		print_verbose(vformat("WebSocket handshake timed out after %.3f seconds.", p_timeout * 0.001));
 		return ERR_TIMEOUT;
 	}
@@ -264,7 +264,7 @@ void WSLServer::poll() {
 			peer->connection = conn;
 		}
 		peer->tcp = conn;
-		peer->time = OS::get_singleton()->get_ticks_msec();
+		peer->time = OS::get_singleton()->get_ticks_msec_raw();
 		_pending.push_back(peer);
 	}
 }

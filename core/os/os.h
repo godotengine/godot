@@ -79,6 +79,28 @@ private:
 
 	void *_stack_bottom;
 
+#ifdef DEBUG_ENABLED
+	struct PrimaryClock {
+		// 32.32 fixed-point. 1.0 is UINT32_MAX + 1.
+		std::atomic<uint64_t> current_time_scale{ (uint64_t)UINT32_MAX + 1 };
+		std::atomic<uint64_t> sync_raw_tick{ 0 };
+		std::atomic<uint64_t> sync_fluid_tick{ 0 };
+
+		// sequence is for a Sequence Lock pattern,
+		// so reads can be lockless.
+		std::atomic<uint32_t> sequence{ 0 };
+
+		// Mutex is for writing (time scale and a sync point).
+		Mutex mutex;
+
+		// Only used for diagnosing non-monotonic clocks.
+		// Unused in regular builds.
+		mutable std::atomic<uint64_t> last_returned{ 0 };
+
+		uint64_t calculate_ticks_usec(uint64_t p_raw_tick, uint64_t p_sync_raw_tick, uint64_t p_sync_fluid_tick, uint64_t p_time_scale) const;
+	} _primary_clock;
+#endif
+
 	CompositeLogger *_logger;
 
 	bool restart_on_exit;
@@ -463,8 +485,17 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const = 0;
 	virtual void add_frame_delay(bool p_can_draw);
 
-	virtual uint64_t get_ticks_usec() const = 0;
+#ifdef DEBUG_ENABLED
+	void set_primary_time_scale(double p_scale);
+	uint64_t get_ticks_usec() const;
+#else
+	// Passthrough in release, primary time scale is not available.
+	void set_primary_time_scale(double p_scale) {}
+	uint64_t get_ticks_usec() const { return get_ticks_usec_raw(); }
+#endif
+	virtual uint64_t get_ticks_usec_raw() const = 0;
 	uint32_t get_ticks_msec() const;
+	uint32_t get_ticks_msec_raw() const;
 	uint64_t get_splash_tick_msec() const;
 
 	virtual bool can_draw() const = 0;
