@@ -1361,10 +1361,9 @@ void Window::_update_viewport_size() {
 	//update the viewport part
 
 #ifndef XR_DISABLED
-	// If `use_xr` set, we should skip this logic.
-	if (is_using_xr()) {
-		return;
-	}
+	const bool is_xr = is_using_xr();
+#else
+	const bool is_xr = false;
 #endif // XR_DISABLED
 
 	Size2i final_size;
@@ -1383,7 +1382,7 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
+	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0 || is_xr) {
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
 	} else {
@@ -1483,8 +1482,10 @@ void Window::_update_viewport_size() {
 		}
 	}
 
-	bool allocate = is_inside_tree() && visible && (window_id != DisplayServerEnums::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, 1, final_size_override, allocate);
+	if (!is_xr) {
+		bool allocate = is_inside_tree() && visible && (window_id != DisplayServerEnums::INVALID_WINDOW_ID || embedder != nullptr);
+		_set_size(final_size, 1, final_size_override, allocate);
+	}
 
 	if (window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -1494,7 +1495,7 @@ void Window::_update_viewport_size() {
 
 	notification(NOTIFICATION_WM_SIZE_CHANGED);
 
-	if (embedder) {
+	if (embedder && !is_xr) {
 		float scale = MIN(embedder->stretch_transform.get_scale().width, embedder->stretch_transform.get_scale().height);
 		Viewport::set_oversampling_override(scale);
 		Size2 s = Size2(final_size.width * scale, final_size.height * scale).ceil();
