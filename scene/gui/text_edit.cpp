@@ -1688,7 +1688,7 @@ void TextEdit::_notification(int p_what) {
 					if (!clipped && lookup_symbol_word.length() != 0) { // Highlight word
 						if (is_unicode_identifier_start(lookup_symbol_word[0]) || lookup_symbol_word[0] == '.') {
 							Color highlight_underline_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
-							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, search_flags, 0);
+							int lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 							int lookup_symbol_word_len = lookup_symbol_word.length();
 							while (lookup_symbol_word_col != -1) {
 								const Vector<Vector2> sel = TS->shaped_text_get_selection(rid, lookup_symbol_word_col + start, lookup_symbol_word_col + lookup_symbol_word_len + start);
@@ -1708,7 +1708,7 @@ void TextEdit::_notification(int p_what) {
 									RS::get_singleton()->canvas_item_add_rect(text_ci, rect, highlight_underline_color);
 								}
 
-								lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, search_flags, lookup_symbol_word_col + lookup_symbol_word_len);
+								lookup_symbol_word_col = _get_column_pos_of_word(lookup_symbol_word, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, lookup_symbol_word_col + lookup_symbol_word_len);
 							}
 						}
 					}
