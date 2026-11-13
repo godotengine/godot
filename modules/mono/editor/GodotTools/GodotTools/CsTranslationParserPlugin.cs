@@ -25,6 +25,8 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
     }
 
     private List<MetadataReference>? _projectReferences;
+    private List<string[]>? _projectDefineConstants;
+    private System.DateTime _projectDefineConstantsWriteTime;
     private Array<string[]> _ret = new Array<string[]>();
     private List<SyntaxTree> _syntaxTreeCaches = new List<SyntaxTree>();
 
@@ -82,13 +84,27 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
         var res = ResourceLoader.Load<CSharpScript>(path, "Script");
         var text = res.SourceCode;
 
-        foreach (string configuration in _configurations)
+        // Defines only depend on the project file and the configuration/platform pairs, so compute them
+        // once instead of running an MSBuild evaluation for every file. The cache is rebuilt when the
+        // project file changes, and only stored after every pair succeeds so a failure is retried.
+        var projectWriteTime = System.IO.File.GetLastWriteTimeUtc(GodotSharpDirs.ProjectCsProjPath);
+        if (_projectDefineConstants == null || projectWriteTime != _projectDefineConstantsWriteTime)
         {
-            foreach (string targetPlatform in _targetPlatforms)
+            var defineConstants = new List<string[]>();
+            foreach (string configuration in _configurations)
             {
-                var symbols = GetProjectDefineConstants(GodotSharpDirs.ProjectCsProjPath, configuration, targetPlatform);
-                ParseCode(text, symbols, _projectReferences);
+                foreach (string targetPlatform in _targetPlatforms)
+                {
+                    defineConstants.Add(GetProjectDefineConstants(GodotSharpDirs.ProjectCsProjPath, configuration, targetPlatform));
+                }
             }
+            _projectDefineConstants = defineConstants;
+            _projectDefineConstantsWriteTime = projectWriteTime;
+        }
+
+        foreach (string[] symbols in _projectDefineConstants)
+        {
+            ParseCode(text, symbols, _projectReferences);
         }
         _syntaxTreeCaches.Clear();
         return _ret;
