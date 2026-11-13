@@ -989,12 +989,12 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 }
 
 void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
-	Size2 parent_rect_size = get_parent_anchorable_rect().size;
+	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	if (p_keep_offsets) {
 		// If computing anchors, we need to ensure the parent rect size is valid to avoid division by zero.
-		ERR_FAIL_COND(parent_rect_size.x == 0.0);
-		ERR_FAIL_COND(parent_rect_size.y == 0.0);
+		ERR_FAIL_COND(parent_rect.size.x == 0.0);
+		ERR_FAIL_COND(parent_rect.size.y == 0.0);
 	}
 
 	real_t x = p_rect.position.x;
@@ -1017,19 +1017,19 @@ void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
 	}
 
 	if (is_layout_rtl()) {
-		x = parent_rect_size.x - x - p_rect.size.x;
+		x = parent_rect.size.x + (parent_rect.position.x * 2) - x - p_rect.size.x;
 	}
 
 	if (p_keep_offsets) {
-		data.anchor[0] = (x - data.offset[0]) / parent_rect_size.x;
-		data.anchor[1] = (y - data.offset[1]) / parent_rect_size.y;
-		data.anchor[2] = (x + p_rect.size.x - data.offset[2]) / parent_rect_size.x;
-		data.anchor[3] = (y + p_rect.size.y - data.offset[3]) / parent_rect_size.y;
+		data.anchor[0] = (x - data.offset[0]) / parent_rect.size.x;
+		data.anchor[1] = (y - data.offset[1]) / parent_rect.size.y;
+		data.anchor[2] = (x + p_rect.size.x - data.offset[2]) / parent_rect.size.x;
+		data.anchor[3] = (y + p_rect.size.y - data.offset[3]) / parent_rect.size.y;
 	} else {
-		data.offset[0] = x - (data.anchor[0] * parent_rect_size.x);
-		data.offset[1] = y - (data.anchor[1] * parent_rect_size.y);
-		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect_size.x);
-		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect_size.y);
+		data.offset[0] = x - (data.anchor[0] * parent_rect.size.x);
+		data.offset[1] = y - (data.anchor[1] * parent_rect.size.y);
+		data.offset[2] = x + p_rect.size.x - (data.anchor[2] * parent_rect.size.x);
+		data.offset[3] = y + p_rect.size.y - (data.anchor[3] * parent_rect.size.y);
 	}
 }
 
