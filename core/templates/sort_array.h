@@ -222,8 +222,8 @@ public:
 	inline void introselect(int64_t p_first, int64_t p_nth, int64_t p_last, T *p_array, int64_t p_max_depth) const {
 		while (p_last - p_first > 3) {
 			if (p_max_depth == 0) {
-				partial_select(p_first, p_nth + 1, p_last, p_array);
-				SWAP(p_first, p_nth);
+				partial_select(p_first, p_last, p_nth + 1, p_array);
+				SWAP(p_array[p_first], p_array[p_nth]);
 				return;
 			}
 
