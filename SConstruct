@@ -1037,7 +1037,9 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
-        if env["platform"] != "macos":
+        if env.msvc:
+            env.AppendUnique(LINKFLAGS=["-WX"])
+        elif env["platform"] != "macos":
             env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings"])
         elif env["arch"] != "x86_64":
             # Disabled for x86-64 macOS build due to MoltenVK min. target version mismatch.
