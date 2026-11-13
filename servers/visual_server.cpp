@@ -1053,10 +1053,10 @@ bool VisualServer::_mesh_find_format(VS::PrimitiveType p_primitive, const Array 
 		r_format |= (1 << i);
 
 		if (i == VS::ARRAY_VERTEX) {
-			r_array_len = PoolVector3Array(p_arrays[i]).size();
+			r_array_len = MAX(p_arrays[i].get_array_size(), 0);
 			ERR_FAIL_COND_V(r_array_len == 0, false);
 		} else if (i == VS::ARRAY_INDEX) {
-			r_index_array_len = PoolIntArray(p_arrays[i]).size();
+			r_index_array_len = MAX(p_arrays[i].get_array_size(), 0);
 		}
 	}
 
