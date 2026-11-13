@@ -697,6 +697,9 @@ public:
 	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
+	// komm64: the script's functions suspended in an await, for snapshots.
+	Array snapshot_get_pending_awaits() const;
+	void snapshot_cancel_pending_awaits();
 	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);

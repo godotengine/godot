@@ -526,6 +526,11 @@ public:
 	void _clear_stack();
 	void _clear_connections();
 
+	// komm64: where this suspended function stopped, in every build.
+	StringName get_function_name() const { return function ? function->get_name() : StringName(); }
+	StringName get_function_source() const { return function ? function->get_source() : StringName(); }
+	int get_line() const { return state.line; }
+
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };

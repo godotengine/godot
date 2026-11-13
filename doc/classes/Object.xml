@@ -986,6 +986,18 @@
 				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
 			</description>
 		</method>
+		<method name="snapshot_cancel_pending_awaits">
+			<return type="void" />
+			<description>
+				Drops every function of this object's script that is suspended in an [code]await[/code], so none of them resumes. Used when a saved state replaces the object's state.
+			</description>
+		</method>
+		<method name="snapshot_get_pending_awaits" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the functions of this object's script that are suspended in an [code]await[/code], each as a [Dictionary] with [code]function[/code] ([StringName]), [code]source[/code] (the script path) and [code]line[/code] ([int]). A saved state does not hold them.
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>

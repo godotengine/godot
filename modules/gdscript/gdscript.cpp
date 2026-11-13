@@ -2063,6 +2063,34 @@ void GDScriptInstance::reload_members() {
 #endif
 }
 
+Array GDScriptInstance::get_pending_awaits() const {
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	Array out;
+	for (const SelfList<GDScriptFunctionState> *E = pending_func_states.first(); E; E = E->next()) {
+		const GDScriptFunctionState *state = E->self();
+		Dictionary d;
+		d["function"] = state->get_function_name();
+		d["source"] = String(state->get_function_source());
+		d["line"] = state->get_line();
+		out.push_back(d);
+	}
+	return out;
+}
+
+void GDScriptInstance::cancel_pending_awaits() {
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		// As in the destructor: clearing the stack may destroy the state.
+		pending_func_states.remove(E);
+		GDScriptFunctionState *state = E->self();
+		ObjectID state_id = state->get_instance_id();
+		state->_clear_connections();
+		if (ObjectDB::get_instance(state_id)) {
+			state->_clear_stack();
+		}
+	}
+}
+
 GDScriptInstance::~GDScriptInstance() {
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 

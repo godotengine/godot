@@ -69,6 +69,11 @@ public:
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
 	virtual void notification(int p_notification, bool p_reversed = false) = 0;
+
+	// komm64: functions of this instance suspended in an await, as
+	// {function, source, line}, and dropping them so they never resume.
+	virtual Array get_pending_awaits() const { return Array(); }
+	virtual void cancel_pending_awaits() {}
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {
 			*r_valid = false;

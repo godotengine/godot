@@ -652,6 +652,16 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 	return Variant();
 }
 
+Array Object::snapshot_get_pending_awaits() const {
+	return script_instance ? script_instance->get_pending_awaits() : Array();
+}
+
+void Object::snapshot_cancel_pending_awaits() {
+	if (script_instance) {
+		script_instance->cancel_pending_awaits();
+	}
+}
+
 bool Object::has_method(const StringName &p_method) const {
 	if (p_method == CoreStringName(free_)) {
 		return true;
@@ -1890,6 +1900,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("callv", "method", "arg_array"), &Object::callv);
 
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
+	ClassDB::bind_method(D_METHOD("snapshot_get_pending_awaits"), &Object::snapshot_get_pending_awaits);
+	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
 
