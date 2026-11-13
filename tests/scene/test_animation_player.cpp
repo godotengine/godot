@@ -75,6 +75,7 @@ TEST_CASE("[AnimationPlayer] is_animation_active after natural completion") {
 	CHECK(animation_player->is_animation_active());
 	animation_player->advance(1.0);
 	CHECK_FALSE(animation_player->is_animation_active());
+	CHECK(animation_player->is_valid()); // Playback data remains available after natural completion.
 
 	memdelete(animation_player);
 }
