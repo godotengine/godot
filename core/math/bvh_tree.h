@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_TREE_H
-#define BVH_TREE_H
+#pragma once
 
 // BVH Tree
 // This is an implementation of a dynamic BVH with templated leaf size.
@@ -38,15 +37,17 @@
 // It also means that the splitting logic etc have to be completely different
 // to a simpler tree.
 // Note that MAX_CHILDREN should be fixed at 2 for now.
-
-#include "core/local_vector.h"
 #include "core/math/aabb.h"
 #include "core/math/bvh_abb.h"
-#include "core/math/geometry.h"
 #include "core/math/vector3.h"
+#include "core/version_generated.gen.h"
+#if GODOT_VERSION_MAJOR >= 4
+#include "core/templates/local_vector.h"
+#include "core/templates/pooled_list.h"
+#else
+#include "core/local_vector.h"
 #include "core/pooled_list.h"
-#include "core/print_string.h"
-#include <limits.h>
+#endif
 
 #define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 
@@ -54,8 +55,17 @@
 #define BVH_EXPAND_LEAF_AABBS
 
 // never do these checks in release
-#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+#if ((GODOT_VERSION_MAJOR >= 4) && defined(DEV_ENABLED)) || (defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED))
 //#define BVH_VERBOSE
+
+#ifdef BVH_VERBOSE
+#if GODOT_VERSION_MAJOR >= 4
+#include "core/variant/variant.h"
+#else
+#include "core/print_string.h"
+#endif
+#endif
+
 //#define BVH_VERBOSE_TREE
 //#define BVH_VERBOSE_PAIRING
 //#define BVH_VERBOSE_MOVES
@@ -107,12 +117,10 @@ struct BVHHandle {
 };
 
 // helper class to make iterative versions of recursive functions
-template <class T>
+template <typename T>
 class BVH_IterativeInfo {
 public:
-	enum {
-		ALLOCA_STACK_SIZE = 128
-	};
+	constexpr static const size_t ALLOCA_STACK_SIZE = 128;
 
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -140,7 +148,11 @@ public:
 	// request new addition to stack
 	T *request() {
 		if (depth > threshold) {
+#if GODOT_VERSION_MAJOR >= 4
+			if (aux_stack.is_empty()) {
+#else
 			if (aux_stack.empty()) {
+#endif
 				aux_stack.resize(ALLOCA_STACK_SIZE * 2);
 				memcpy(aux_stack.ptr(), stack, get_alloca_stacksize());
 			} else {
@@ -153,7 +165,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyPairTestFunction {
 public:
 	static bool user_pair_check(const T *p_a, const T *p_b) {
@@ -162,7 +174,7 @@ public:
 	}
 };
 
-template <class T>
+template <typename T>
 class BVH_DummyCullTestFunction {
 public:
 	static bool user_cull_check(const T *p_a, const T *p_b) {
@@ -171,12 +183,12 @@ public:
 	}
 };
 
-template <class T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, class USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, class USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, class BOUNDS = AABB, class POINT = Vector3>
+template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename USER_PAIR_TEST_FUNCTION = BVH_DummyPairTestFunction<T>, typename USER_CULL_TEST_FUNCTION = BVH_DummyCullTestFunction<T>, bool USE_PAIRS = false, typename BOUNDS = AABB, typename POINT = Vector3>
 class BVH_Tree {
 	friend class BVH;
 
-#include "bvh_pair.inc"
-#include "bvh_structs.inc"
+#include "core/math/bvh_pair.inc"
+#include "core/math/bvh_structs.inc"
 
 public:
 	BVH_Tree() {
@@ -217,7 +229,7 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_old_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 		parent.children[child_num] = p_new_child_id;
 
 		TNode &new_child = _nodes[p_new_child_id];
@@ -229,14 +241,13 @@ private:
 		BVH_ASSERT(!parent.is_leaf());
 
 		int child_num = parent.find_child(p_child_id);
-		BVH_ASSERT(child_num != BVHCommon::INVALID);
+		BVH_ASSERT(child_num != -1);
 
 		parent.remove_child_internal(child_num);
 
 		// no need to keep back references for children at the moment
 
-		// Always a node id, as tnode is never a leaf.
-		uint32_t sibling_id = BVHCommon::INVALID;
+		uint32_t sibling_id = BVHCommon::INVALID; // always a node id, as tnode is never a leaf
 		bool sibling_present = false;
 
 		// if there are more children, or this is the root node, don't try and delete
@@ -447,16 +458,14 @@ private:
 		return child_node_id;
 	}
 
-#include "bvh_cull.inc"
-#include "bvh_debug.inc"
-#include "bvh_integrity.inc"
-#include "bvh_logic.inc"
-#include "bvh_misc.inc"
-#include "bvh_public.inc"
-#include "bvh_refit.inc"
-#include "bvh_split.inc"
+#include "core/math/bvh_cull.inc"
+#include "core/math/bvh_debug.inc"
+#include "core/math/bvh_integrity.inc"
+#include "core/math/bvh_logic.inc"
+#include "core/math/bvh_misc.inc"
+#include "core/math/bvh_public.inc"
+#include "core/math/bvh_refit.inc"
+#include "core/math/bvh_split.inc"
 };
 
 #undef VERBOSE_PRINT
-
-#endif // BVH_TREE_H
