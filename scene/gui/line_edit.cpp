@@ -1717,6 +1717,12 @@ void LineEdit::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (selection.drag_attempt && get_viewport() && !is_visible_in_tree()) {
+				callable_mp(get_viewport(), &Viewport::gui_cancel_drag).call_deferred();
+			}
+		} break;
+
 		case NOTIFICATION_FOCUS_ENTER: {
 			// Only allow editing if the LineEdit is not focused with arrow keys.
 			if (!(Input::get_singleton()->is_action_pressed("ui_up") || Input::get_singleton()->is_action_pressed("ui_down") || Input::get_singleton()->is_action_pressed("ui_left") || Input::get_singleton()->is_action_pressed("ui_right"))) {
