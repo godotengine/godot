@@ -4900,6 +4900,9 @@ void RasterizerStorageGLES2::particles_set_amount(RID p_particles, int p_amount)
 void RasterizerStorageGLES2::particles_set_lifetime(RID p_particles, float p_lifetime) {
 }
 
+void RasterizerStorageGLES2::particles_set_lifetime_infinite(RID p_particles, bool p_lifetime_infinite) {
+}
+
 void RasterizerStorageGLES2::particles_set_one_shot(RID p_particles, bool p_one_shot) {
 }
 
