@@ -37,6 +37,8 @@
 #include "core/simple_type.h"
 #include "core/typedefs.h"
 
+#include <atomic>
+
 #define COMMA(N) _COMMA_##N
 #define _COMMA_0
 #define _COMMA_1 ,
@@ -225,16 +227,21 @@
 #define CMD_TYPE(N) Command##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 #define CMD_ASSIGN_PARAM(N) cmd->p##N = p##N
 
-#define DECL_PUSH(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>       \
-	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
-		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                 \
-		cmd->instance = p_instance;                                          \
-		cmd->method = p_method;                                              \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
-		unlock();                                                            \
-		if (sync)                                                            \
-			sync->post();                                                    \
+#define DECL_PUSH(N)                                                                    \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                  \
+	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {            \
+		if (unlikely(is_bypassing())) { \
+			flush_if_pending(); \
+			(p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                            \
+			return;                                                                     \
+		}                                                                               \
+		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                            \
+		cmd->instance = p_instance;                                                     \
+		cmd->method = p_method;                                                         \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                            \
+		unlock();                                                                       \
+		if (sync)                                                                       \
+			sync->post();                                                               \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -242,6 +249,11 @@
 #define DECL_PUSH_AND_RET(N)                                                                   \
 	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R>                \
 	void push_and_ret(T *p_instance, M p_method, COMMA_SEP_LIST(PARAM, N) COMMA(N) R *r_ret) { \
+		if (unlikely(is_bypassing())) {        \
+			flush_if_pending(); \
+			*r_ret = (p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                          \
+			return;                                                                            \
+		}                                                                                      \
 		SyncSemaphore *ss = _alloc_sync_sem();                                                 \
 		CMD_RET_TYPE(N) *cmd = allocate_and_lock<CMD_RET_TYPE(N)>();                           \
 		cmd->instance = p_instance;                                                            \
@@ -258,20 +270,25 @@
 
 #define CMD_SYNC_TYPE(N) CommandSync##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 
-#define DECL_PUSH_AND_SYNC(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                \
-	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
-		SyncSemaphore *ss = _alloc_sync_sem();                                        \
-		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                \
-		cmd->instance = p_instance;                                                   \
-		cmd->method = p_method;                                                       \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
-		cmd->sync_sem = ss;                                                           \
-		unlock();                                                                     \
-		if (sync)                                                                     \
-			sync->post();                                                             \
-		ss->sem.wait();                                                               \
-		ss->in_use = false;                                                           \
+#define DECL_PUSH_AND_SYNC(N)                                                           \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                  \
+	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {   \
+		if (unlikely(is_bypassing())) { \
+			flush_if_pending(); \
+			(p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                            \
+			return;                                                                     \
+		}                                                                               \
+		SyncSemaphore *ss = _alloc_sync_sem();                                          \
+		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                  \
+		cmd->instance = p_instance;                                                     \
+		cmd->method = p_method;                                                         \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                            \
+		cmd->sync_sem = ss;                                                             \
+		unlock();                                                                       \
+		if (sync)                                                                       \
+			sync->post();                                                               \
+		ss->sem.wait();                                                                 \
+		ss->in_use = false;                                                             \
 	}
 
 #define MAX_CMD_PARAMS 13
@@ -315,13 +332,15 @@ class CommandQueueMT {
 	};
 
 	uint8_t *command_mem;
-	uint32_t read_ptr_and_epoch;
-	uint32_t write_ptr_and_epoch;
+	// Atomic for flush_if_pending(). Other uses are under the lock anyway.
+	std::atomic<uint32_t> read_ptr_and_epoch;
+	std::atomic<uint32_t> write_ptr_and_epoch;
 	uint32_t dealloc_ptr;
 	uint32_t command_mem_size;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
 	Semaphore *sync;
+	bool (*is_bypass_enabled_for_thread)();
 
 	template <class T>
 	T *allocate() {
@@ -332,7 +351,7 @@ class CommandQueueMT {
 		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, nullptr);
 
 	tryagain:
-		uint32_t write_ptr = write_ptr_and_epoch >> 1;
+		uint32_t write_ptr = write_ptr_and_epoch.load(std::memory_order_relaxed) >> 1;
 
 		if (write_ptr < dealloc_ptr) {
 			// behind dealloc_ptr, check that there is room
@@ -364,7 +383,7 @@ class CommandQueueMT {
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
 				*p = 1;
-				write_ptr_and_epoch = 0 | (1 & ~write_ptr_and_epoch); // Invert epoch.
+				write_ptr_and_epoch.store(0 | (1 & ~write_ptr_and_epoch.load(std::memory_order_relaxed)), std::memory_order_relaxed); // Invert epoch.
 				// See if we can get the thread to run and clear up some more space while we wait.
 				// This is required if alloc_size * 2 + 4 > COMMAND_MEM_SIZE
 				if (sync) {
@@ -383,7 +402,7 @@ class CommandQueueMT {
 		// allocate the command
 		T *cmd = memnew_placement(&command_mem[write_ptr], T);
 		write_ptr += size;
-		write_ptr_and_epoch = (write_ptr << 1) | (write_ptr_and_epoch & 1);
+		write_ptr_and_epoch.store((write_ptr << 1) | (write_ptr_and_epoch.load(std::memory_order_relaxed) & 1), std::memory_order_relaxed);
 		return cmd;
 	}
 
@@ -409,21 +428,21 @@ class CommandQueueMT {
 	tryagain:
 
 		// tried to read an empty queue
-		if (read_ptr_and_epoch == write_ptr_and_epoch) {
+		if (read_ptr_and_epoch.load(std::memory_order_relaxed) == write_ptr_and_epoch.load(std::memory_order_relaxed)) {
 			if (p_lock) {
 				unlock();
 			}
 			return false;
 		}
 
-		uint32_t read_ptr = read_ptr_and_epoch >> 1;
+		uint32_t read_ptr = read_ptr_and_epoch.load(std::memory_order_relaxed) >> 1;
 		uint32_t size_ptr = read_ptr;
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
 
 		if (size == 0) {
 			*(uint32_t *)&command_mem[read_ptr] = 0; // clear in-use bit.
 			//end of ringbuffer, wrap
-			read_ptr_and_epoch = 0 | (1 & ~read_ptr_and_epoch); // Invert epoch.
+			read_ptr_and_epoch.store(0 | (1 & ~read_ptr_and_epoch.load(std::memory_order_relaxed)), std::memory_order_relaxed); // Invert epoch.
 			goto tryagain;
 		}
 
@@ -433,7 +452,7 @@ class CommandQueueMT {
 
 		read_ptr += size;
 
-		read_ptr_and_epoch = (read_ptr << 1) | (read_ptr_and_epoch & 1);
+		read_ptr_and_epoch.store((read_ptr << 1) | (read_ptr_and_epoch.load(std::memory_order_relaxed) & 1), std::memory_order_relaxed);
 
 		if (p_lock) {
 			unlock();
@@ -460,6 +479,10 @@ class CommandQueueMT {
 	bool dealloc_one();
 
 public:
+	bool is_bypassing() const {
+		return is_bypass_enabled_for_thread && is_bypass_enabled_for_thread();
+	}
+
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
 	SPACE_SEP_LIST(DECL_PUSH, 13)
@@ -487,7 +510,17 @@ public:
 		unlock();
 	}
 
-	CommandQueueMT(bool p_sync);
+	void flush_if_pending() {
+		// Dealing with the read and write heads outside the lock is safe because
+		// the only case where they must not be stale (a command pushed by
+		// another thread that then synchronized with this one) is already
+		// covered by that synchronization.
+		if (unlikely(read_ptr_and_epoch.load(std::memory_order_relaxed) != write_ptr_and_epoch.load(std::memory_order_relaxed)) && (!sync || is_bypassing())) {
+			flush_all();
+		}
+	}
+
+	CommandQueueMT(bool p_sync, bool (*is_bypass_enabled_for_thread)() = nullptr);
 	~CommandQueueMT();
 };
 
