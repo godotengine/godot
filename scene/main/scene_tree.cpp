@@ -1369,7 +1369,7 @@ void SceneTree::queue_delete(Object *p_object) {
 			// Use a prime number to combine the group with the child id.
 			// Provided there are less than the prime number children in a node,
 			// there will be no collisions. Even if there are collisions, it is no problem.
-			uint32_t group = parent_id * 937;
+			uint32_t group = (uint64_t)parent_id * 937;
 
 			// Rollover the group, we never want the group + the child id
 			// to overflow 31 bits

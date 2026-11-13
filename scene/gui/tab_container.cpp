@@ -1000,12 +1000,12 @@ Size2 TabContainer::get_minimum_size() const {
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
 	Popup *popup = Object::cast_to<Popup>(p_popup);
-	popup_obj_id = popup ? popup->get_instance_id() : 0;
+	popup_obj_id = popup ? popup->get_instance_id() : ObjectID();
 	update();
 }
 
 Popup *TabContainer::get_popup() const {
-	if (popup_obj_id) {
+	if (popup_obj_id.is_valid()) {
 		Popup *popup = ObjectDB::get_instance<Popup>(popup_obj_id);
 		if (popup) {
 			return popup;
@@ -1013,7 +1013,7 @@ Popup *TabContainer::get_popup() const {
 #ifdef DEBUG_ENABLED
 			ERR_PRINT("Popup assigned to TabContainer is gone!");
 #endif
-			popup_obj_id = 0;
+			popup_obj_id = ObjectID();
 		}
 	}
 	return nullptr;
@@ -1110,7 +1110,6 @@ TabContainer::TabContainer() {
 	previous = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
-	popup_obj_id = 0;
 	all_tabs_in_front = false;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
