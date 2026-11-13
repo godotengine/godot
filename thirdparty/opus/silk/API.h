@@ -34,9 +34,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "entenc.h"
 #include "entdec.h"
 
-#ifdef __cplusplus
-extern "C"
-{
+#ifdef ENABLE_DEEP_PLC
+#include "lpcnet_private.h"
 #endif
 
 #define SILK_MAX_FRAMES_PER_PACKET  3
@@ -56,7 +55,8 @@ typedef struct {
 /* Get size in bytes of the Silk encoder state */
 /***********************************************/
 opus_int silk_Get_Encoder_Size(                         /* O    Returns error code                              */
-    opus_int                        *encSizeBytes       /* O    Number of bytes in SILK encoder state           */
+    opus_int                        *encSizeBytes,      /* O    Number of bytes in SILK encoder state           */
+    opus_int                         channels           /* I    Number of channels                              */
 );
 
 /*************************/
@@ -64,6 +64,7 @@ opus_int silk_Get_Encoder_Size(                         /* O    Returns error co
 /*************************/
 opus_int silk_InitEncoder(                              /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
+    int                              channels,          /* I    Number of channels                              */
     int                              arch,              /* I    Run-time architecture                           */
     silk_EncControlStruct           *encStatus          /* O    Encoder Status                                  */
 );
@@ -76,16 +77,27 @@ opus_int silk_InitEncoder(                              /* O    Returns error co
 opus_int silk_Encode(                                   /* O    Returns error code                              */
     void                            *encState,          /* I/O  State                                           */
     silk_EncControlStruct           *encControl,        /* I    Control status                                  */
-    const opus_int16                *samplesIn,         /* I    Speech sample input vector                      */
+    const opus_res                  *samplesIn,         /* I    Speech sample input vector                      */
     opus_int                        nSamplesIn,         /* I    Number of samples in input vector               */
     ec_enc                          *psRangeEnc,        /* I/O  Compressor data structure                       */
     opus_int32                      *nBytesOut,         /* I/O  Number of bytes in payload (input: Max bytes)   */
-    const opus_int                  prefillFlag         /* I    Flag to indicate prefilling buffers no coding   */
+    const opus_int                  prefillFlag,        /* I    Flag to indicate prefilling buffers no coding   */
+    int                             activity            /* I    Decision of Opus voice activity detector        */
 );
 
 /****************************************/
 /* Decoder functions                    */
 /****************************************/
+
+
+/***********************************************/
+/* Load OSCE models from external data pointer */
+/***********************************************/
+opus_int silk_LoadOSCEModels(
+    void *decState,                                     /* O    I/O State                                       */
+    const unsigned char *data,                          /* I    pointer to binary blob                          */
+    int len                                             /* I    length of binary blob data                      */
+);
 
 /***********************************************/
 /* Get size in bytes of the Silk decoder state */
@@ -95,8 +107,12 @@ opus_int silk_Get_Decoder_Size(                         /* O    Returns error co
 );
 
 /*************************/
-/* Init or Reset decoder */
+/* Init and Reset decoder */
 /*************************/
+opus_int silk_ResetDecoder(                              /* O    Returns error code                              */
+    void                            *decState            /* I/O  State                                           */
+);
+
 opus_int silk_InitDecoder(                              /* O    Returns error code                              */
     void                            *decState           /* I/O  State                                           */
 );
@@ -110,8 +126,11 @@ opus_int silk_Decode(                                   /* O    Returns error co
     opus_int                        lostFlag,           /* I    0: no loss, 1 loss, 2 decode fec                */
     opus_int                        newPacketFlag,      /* I    Indicates first decoder call for this packet    */
     ec_dec                          *psRangeDec,        /* I/O  Compressor data structure                       */
-    opus_int16                      *samplesOut,        /* O    Decoded output speech vector                    */
+    opus_res                        *samplesOut,        /* O    Decoded output speech vector                    */
     opus_int32                      *nSamplesOut,       /* O    Number of samples decoded                       */
+#ifdef ENABLE_DEEP_PLC
+    LPCNetPLCState                  *lpcnet,
+#endif
     int                             arch                /* I    Run-time architecture                           */
 );
 
@@ -127,8 +146,5 @@ opus_int silk_get_TOC(
 );
 #endif
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif

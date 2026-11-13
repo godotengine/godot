@@ -64,7 +64,7 @@ extern "C" {
 /**Export control for opus functions */
 
 #ifndef OPUS_EXPORT
-# if defined(WIN32)
+# if defined(_WIN32)
 #  if defined(OPUS_BUILD) && defined(DLL_EXPORT)
 #   define OPUS_EXPORT __declspec(dllexport)
 #  else
@@ -165,14 +165,42 @@ extern "C" {
 #define OPUS_GET_EXPERT_FRAME_DURATION_REQUEST 4041
 #define OPUS_SET_PREDICTION_DISABLED_REQUEST 4042
 #define OPUS_GET_PREDICTION_DISABLED_REQUEST 4043
-
 /* Don't use 4045, it's already taken by OPUS_GET_GAIN_REQUEST */
+#define OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST 4046
+#define OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST 4047
+#define OPUS_GET_IN_DTX_REQUEST              4049
+#define OPUS_SET_DRED_DURATION_REQUEST 4050
+#define OPUS_GET_DRED_DURATION_REQUEST 4051
+#define OPUS_SET_DNN_BLOB_REQUEST 4052
+/*#define OPUS_GET_DNN_BLOB_REQUEST 4053 */
+#define OPUS_SET_OSCE_BWE_REQUEST 4054
+#define OPUS_GET_OSCE_BWE_REQUEST 4055
+#define OPUS_SET_QEXT_REQUEST 4056
+#define OPUS_GET_QEXT_REQUEST 4057
+#define OPUS_SET_IGNORE_EXTENSIONS_REQUEST 4058
+#define OPUS_GET_IGNORE_EXTENSIONS_REQUEST 4059
+
+/** Defines for the presence of extended APIs. */
+#define OPUS_HAVE_OPUS_PROJECTION_H
 
 /* Macros to trigger compilation errors when the wrong types are provided to a CTL */
-#define __opus_check_int(x) (((void)((x) == (opus_int32)0)), (opus_int32)(x))
-#define __opus_check_int_ptr(ptr) ((ptr) + ((ptr) - (opus_int32*)(ptr)))
-#define __opus_check_uint_ptr(ptr) ((ptr) + ((ptr) - (opus_uint32*)(ptr)))
-#define __opus_check_val16_ptr(ptr) ((ptr) + ((ptr) - (opus_val16*)(ptr)))
+#define opus_check_int(x) (((void)((x) == (opus_int32)0)), (opus_int32)(x))
+
+#ifdef DISABLE_PTR_CHECK
+/* Disable checks to prevent ubsan from complaining about NULL checks
+   in test_opus_api. */
+#define opus_check_int_ptr(ptr) (ptr)
+#define opus_check_uint_ptr(ptr) (ptr)
+#define opus_check_uint8_ptr(ptr) (ptr)
+#define opus_check_val16_ptr(ptr) (ptr)
+#define opus_check_void_ptr(ptr) (ptr)
+#else
+#define opus_check_int_ptr(ptr) ((ptr) + ((ptr) - (opus_int32*)(ptr)))
+#define opus_check_uint_ptr(ptr) ((ptr) + ((ptr) - (opus_uint32*)(ptr)))
+#define opus_check_uint8_ptr(ptr) ((ptr) + ((ptr) - (opus_uint8*)(ptr)))
+#define opus_check_val16_ptr(ptr) ((ptr) + ((ptr) - (opus_val16*)(ptr)))
+#define opus_check_void_ptr(x) ((void)((void *)0 == (x)), (x))
+#endif
 /** @endcond */
 
 /** @defgroup opus_ctlvalues Pre-defined values for CTL interface
@@ -192,6 +220,10 @@ extern "C" {
 /** Only use when lowest-achievable latency is what matters most. Voice-optimized modes cannot be used.
  * @hideinitializer */
 #define OPUS_APPLICATION_RESTRICTED_LOWDELAY 2051
+/** Experts only: forces SILK encoding; don't allocate CELT state at all. Disables OPUS_SET_APPLICATION. */
+#define OPUS_APPLICATION_RESTRICTED_SILK     2052
+/** Experts only: forces CELT encoding; don't allocate SILK state at all. Disables OPUS_SET_APPLICATION. */
+#define OPUS_APPLICATION_RESTRICTED_CELT     2053
 
 #define OPUS_SIGNAL_VOICE                    3001 /**< Signal being encoded is voice */
 #define OPUS_SIGNAL_MUSIC                    3002 /**< Signal being encoded is music */
@@ -208,6 +240,9 @@ extern "C" {
 #define OPUS_FRAMESIZE_20_MS                 5004 /**< Use 20 ms frames */
 #define OPUS_FRAMESIZE_40_MS                 5005 /**< Use 40 ms frames */
 #define OPUS_FRAMESIZE_60_MS                 5006 /**< Use 60 ms frames */
+#define OPUS_FRAMESIZE_80_MS                 5007 /**< Use 80 ms frames */
+#define OPUS_FRAMESIZE_100_MS                5008 /**< Use 100 ms frames */
+#define OPUS_FRAMESIZE_120_MS                5009 /**< Use 120 ms frames */
 
 /**@}*/
 
@@ -242,13 +277,13 @@ extern "C" {
   * @param[in] x <tt>opus_int32</tt>: Allowed values: 0-10, inclusive.
   *
   * @hideinitializer */
-#define OPUS_SET_COMPLEXITY(x) OPUS_SET_COMPLEXITY_REQUEST, __opus_check_int(x)
+#define OPUS_SET_COMPLEXITY(x) OPUS_SET_COMPLEXITY_REQUEST, opus_check_int(x)
 /** Gets the encoder's complexity configuration.
   * @see OPUS_SET_COMPLEXITY
   * @param[out] x <tt>opus_int32 *</tt>: Returns a value in the range 0-10,
   *                                      inclusive.
   * @hideinitializer */
-#define OPUS_GET_COMPLEXITY(x) OPUS_GET_COMPLEXITY_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_COMPLEXITY(x) OPUS_GET_COMPLEXITY_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the bitrate in the encoder.
   * Rates from 500 to 512000 bits per second are meaningful, as well as the
@@ -261,7 +296,7 @@ extern "C" {
   *                                   is determined based on the number of
   *                                   channels and the input sampling rate.
   * @hideinitializer */
-#define OPUS_SET_BITRATE(x) OPUS_SET_BITRATE_REQUEST, __opus_check_int(x)
+#define OPUS_SET_BITRATE(x) OPUS_SET_BITRATE_REQUEST, opus_check_int(x)
 /** Gets the encoder's bitrate configuration.
   * @see OPUS_SET_BITRATE
   * @param[out] x <tt>opus_int32 *</tt>: Returns the bitrate in bits per second.
@@ -269,7 +304,7 @@ extern "C" {
   *                                      number of channels and the input
   *                                      sampling rate.
   * @hideinitializer */
-#define OPUS_GET_BITRATE(x) OPUS_GET_BITRATE_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_BITRATE(x) OPUS_GET_BITRATE_REQUEST, opus_check_int_ptr(x)
 
 /** Enables or disables variable bitrate (VBR) in the encoder.
   * The configured bitrate may not be met exactly because frames must
@@ -284,7 +319,7 @@ extern "C" {
   *               #OPUS_SET_VBR_CONSTRAINT.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_VBR(x) OPUS_SET_VBR_REQUEST, __opus_check_int(x)
+#define OPUS_SET_VBR(x) OPUS_SET_VBR_REQUEST, opus_check_int(x)
 /** Determine if variable bitrate (VBR) is enabled in the encoder.
   * @see OPUS_SET_VBR
   * @see OPUS_GET_VBR_CONSTRAINT
@@ -295,7 +330,7 @@ extern "C" {
   *               #OPUS_GET_VBR_CONSTRAINT.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_VBR(x) OPUS_GET_VBR_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_VBR(x) OPUS_GET_VBR_REQUEST, opus_check_int_ptr(x)
 
 /** Enables or disables constrained VBR in the encoder.
   * This setting is ignored when the encoder is in CBR mode.
@@ -313,7 +348,7 @@ extern "C" {
   *               serialization speed of the nominal bitrate.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_VBR_CONSTRAINT(x) OPUS_SET_VBR_CONSTRAINT_REQUEST, __opus_check_int(x)
+#define OPUS_SET_VBR_CONSTRAINT(x) OPUS_SET_VBR_CONSTRAINT_REQUEST, opus_check_int(x)
 /** Determine if constrained VBR is enabled in the encoder.
   * @see OPUS_SET_VBR_CONSTRAINT
   * @see OPUS_GET_VBR
@@ -323,7 +358,7 @@ extern "C" {
   * <dt>1</dt><dd>Constrained VBR (default).</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_VBR_CONSTRAINT(x) OPUS_GET_VBR_CONSTRAINT_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_VBR_CONSTRAINT(x) OPUS_GET_VBR_CONSTRAINT_REQUEST, opus_check_int_ptr(x)
 
 /** Configures mono/stereo forcing in the encoder.
   * This can force the encoder to produce packets encoded as either mono or
@@ -338,7 +373,7 @@ extern "C" {
   * <dt>2</dt>         <dd>Forced stereo</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_FORCE_CHANNELS(x) OPUS_SET_FORCE_CHANNELS_REQUEST, __opus_check_int(x)
+#define OPUS_SET_FORCE_CHANNELS(x) OPUS_SET_FORCE_CHANNELS_REQUEST, opus_check_int(x)
 /** Gets the encoder's forced channel configuration.
   * @see OPUS_SET_FORCE_CHANNELS
   * @param[out] x <tt>opus_int32 *</tt>:
@@ -348,7 +383,7 @@ extern "C" {
   * <dt>2</dt>         <dd>Forced stereo</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_FORCE_CHANNELS(x) OPUS_GET_FORCE_CHANNELS_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_FORCE_CHANNELS(x) OPUS_GET_FORCE_CHANNELS_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the maximum bandpass that the encoder will select automatically.
   * Applications should normally use this instead of #OPUS_SET_BANDWIDTH
@@ -366,7 +401,7 @@ extern "C" {
   * <dt>OPUS_BANDWIDTH_FULLBAND</dt>     <dd>20 kHz passband (default)</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_MAX_BANDWIDTH(x) OPUS_SET_MAX_BANDWIDTH_REQUEST, __opus_check_int(x)
+#define OPUS_SET_MAX_BANDWIDTH(x) OPUS_SET_MAX_BANDWIDTH_REQUEST, opus_check_int(x)
 
 /** Gets the encoder's configured maximum allowed bandpass.
   * @see OPUS_SET_MAX_BANDWIDTH
@@ -379,7 +414,7 @@ extern "C" {
   * <dt>#OPUS_BANDWIDTH_FULLBAND</dt>     <dd>20 kHz passband (default)</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_MAX_BANDWIDTH(x) OPUS_GET_MAX_BANDWIDTH_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_MAX_BANDWIDTH(x) OPUS_GET_MAX_BANDWIDTH_REQUEST, opus_check_int_ptr(x)
 
 /** Sets the encoder's bandpass to a specific value.
   * This prevents the encoder from automatically selecting the bandpass based
@@ -398,7 +433,7 @@ extern "C" {
   * <dt>#OPUS_BANDWIDTH_FULLBAND</dt>     <dd>20 kHz passband</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_BANDWIDTH(x) OPUS_SET_BANDWIDTH_REQUEST, __opus_check_int(x)
+#define OPUS_SET_BANDWIDTH(x) OPUS_SET_BANDWIDTH_REQUEST, opus_check_int(x)
 
 /** Configures the type of signal being encoded.
   * This is a hint which helps the encoder's mode selection.
@@ -410,7 +445,7 @@ extern "C" {
   * <dt>#OPUS_SIGNAL_MUSIC</dt><dd>Bias thresholds towards choosing MDCT modes.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_SIGNAL(x) OPUS_SET_SIGNAL_REQUEST, __opus_check_int(x)
+#define OPUS_SET_SIGNAL(x) OPUS_SET_SIGNAL_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured signal type.
   * @see OPUS_SET_SIGNAL
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
@@ -420,7 +455,7 @@ extern "C" {
   * <dt>#OPUS_SIGNAL_MUSIC</dt><dd>Bias thresholds towards choosing MDCT modes.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_SIGNAL(x) OPUS_GET_SIGNAL_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_SIGNAL(x) OPUS_GET_SIGNAL_REQUEST, opus_check_int_ptr(x)
 
 
 /** Configures the encoder's intended application.
@@ -437,7 +472,7 @@ extern "C" {
   * of operation.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_APPLICATION(x) OPUS_SET_APPLICATION_REQUEST, __opus_check_int(x)
+#define OPUS_SET_APPLICATION(x) OPUS_SET_APPLICATION_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured application.
   * @see OPUS_SET_APPLICATION
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
@@ -451,7 +486,7 @@ extern "C" {
   * of operation.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_APPLICATION(x) OPUS_GET_APPLICATION_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_APPLICATION(x) OPUS_GET_APPLICATION_REQUEST, opus_check_int_ptr(x)
 
 /** Gets the total samples of delay added by the entire codec.
   * This can be queried by the encoder and then the provided number of samples can be
@@ -466,7 +501,7 @@ extern "C" {
   * hard-coding a value.
   * @param[out] x <tt>opus_int32 *</tt>:   Number of lookahead samples
   * @hideinitializer */
-#define OPUS_GET_LOOKAHEAD(x) OPUS_GET_LOOKAHEAD_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_LOOKAHEAD(x) OPUS_GET_LOOKAHEAD_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the encoder's use of inband forward error correction (FEC).
   * @note This is only applicable to the LPC layer
@@ -474,19 +509,21 @@ extern "C" {
   * @param[in] x <tt>opus_int32</tt>: Allowed values:
   * <dl>
   * <dt>0</dt><dd>Disable inband FEC (default).</dd>
-  * <dt>1</dt><dd>Enable inband FEC.</dd>
+  * <dt>1</dt><dd>Inband FEC enabled. If the packet loss rate is sufficiently high, Opus will automatically switch to SILK even at high rates to enable use of that FEC.</dd>
+  * <dt>2</dt><dd>Inband FEC enabled, but does not necessarily switch to SILK if we have music.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_INBAND_FEC(x) OPUS_SET_INBAND_FEC_REQUEST, __opus_check_int(x)
+#define OPUS_SET_INBAND_FEC(x) OPUS_SET_INBAND_FEC_REQUEST, opus_check_int(x)
 /** Gets encoder's configured use of inband forward error correction.
   * @see OPUS_SET_INBAND_FEC
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
   * <dl>
   * <dt>0</dt><dd>Inband FEC disabled (default).</dd>
-  * <dt>1</dt><dd>Inband FEC enabled.</dd>
+  * <dt>1</dt><dd>Inband FEC enabled. If the packet loss rate is sufficiently high, Opus will automatically switch to SILK even at high rates to enable use of that FEC.</dd>
+  * <dt>2</dt><dd>Inband FEC enabled, but does not necessarily switch to SILK if we have music.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_INBAND_FEC(x) OPUS_GET_INBAND_FEC_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_INBAND_FEC(x) OPUS_GET_INBAND_FEC_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the encoder's expected packet loss percentage.
   * Higher values trigger progressively more loss resistant behavior in the encoder
@@ -495,13 +532,13 @@ extern "C" {
   * @see OPUS_GET_PACKET_LOSS_PERC
   * @param[in] x <tt>opus_int32</tt>:   Loss percentage in the range 0-100, inclusive (default: 0).
   * @hideinitializer */
-#define OPUS_SET_PACKET_LOSS_PERC(x) OPUS_SET_PACKET_LOSS_PERC_REQUEST, __opus_check_int(x)
+#define OPUS_SET_PACKET_LOSS_PERC(x) OPUS_SET_PACKET_LOSS_PERC_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured packet loss percentage.
   * @see OPUS_SET_PACKET_LOSS_PERC
   * @param[out] x <tt>opus_int32 *</tt>: Returns the configured loss percentage
   *                                      in the range 0-100, inclusive (default: 0).
   * @hideinitializer */
-#define OPUS_GET_PACKET_LOSS_PERC(x) OPUS_GET_PACKET_LOSS_PERC_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_PACKET_LOSS_PERC(x) OPUS_GET_PACKET_LOSS_PERC_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the encoder's use of discontinuous transmission (DTX).
   * @note This is only applicable to the LPC layer
@@ -512,7 +549,7 @@ extern "C" {
   * <dt>1</dt><dd>Enabled DTX.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_DTX(x) OPUS_SET_DTX_REQUEST, __opus_check_int(x)
+#define OPUS_SET_DTX(x) OPUS_SET_DTX_REQUEST, opus_check_int(x)
 /** Gets encoder's configured use of discontinuous transmission.
   * @see OPUS_SET_DTX
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
@@ -521,7 +558,7 @@ extern "C" {
   * <dt>1</dt><dd>DTX enabled.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_DTX(x) OPUS_GET_DTX_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_DTX(x) OPUS_GET_DTX_REQUEST, opus_check_int_ptr(x)
 /** Configures the depth of signal being encoded.
   *
   * This is a hint which helps the encoder identify silence and near-silence.
@@ -540,13 +577,13 @@ extern "C" {
   * @param[in] x <tt>opus_int32</tt>: Input precision in bits, between 8 and 24
   *                                   (default: 24).
   * @hideinitializer */
-#define OPUS_SET_LSB_DEPTH(x) OPUS_SET_LSB_DEPTH_REQUEST, __opus_check_int(x)
+#define OPUS_SET_LSB_DEPTH(x) OPUS_SET_LSB_DEPTH_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured signal depth.
   * @see OPUS_SET_LSB_DEPTH
   * @param[out] x <tt>opus_int32 *</tt>: Input precision in bits, between 8 and
   *                                      24 (default: 24).
   * @hideinitializer */
-#define OPUS_GET_LSB_DEPTH(x) OPUS_GET_LSB_DEPTH_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_LSB_DEPTH(x) OPUS_GET_LSB_DEPTH_REQUEST, opus_check_int_ptr(x)
 
 /** Configures the encoder's use of variable duration frames.
   * When variable duration is enabled, the encoder is free to use a shorter frame
@@ -566,10 +603,12 @@ extern "C" {
   * <dt>OPUS_FRAMESIZE_20_MS</dt><dd>Use 20 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_40_MS</dt><dd>Use 40 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_60_MS</dt><dd>Use 60 ms frames.</dd>
-  * <dt>OPUS_FRAMESIZE_VARIABLE</dt><dd>Optimize the frame size dynamically.</dd>
+  * <dt>OPUS_FRAMESIZE_80_MS</dt><dd>Use 80 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_100_MS</dt><dd>Use 100 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_120_MS</dt><dd>Use 120 ms frames.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_EXPERT_FRAME_DURATION(x) OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, __opus_check_int(x)
+#define OPUS_SET_EXPERT_FRAME_DURATION(x) OPUS_SET_EXPERT_FRAME_DURATION_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured use of variable duration frames.
   * @see OPUS_SET_EXPERT_FRAME_DURATION
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
@@ -581,10 +620,12 @@ extern "C" {
   * <dt>OPUS_FRAMESIZE_20_MS</dt><dd>Use 20 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_40_MS</dt><dd>Use 40 ms frames.</dd>
   * <dt>OPUS_FRAMESIZE_60_MS</dt><dd>Use 60 ms frames.</dd>
-  * <dt>OPUS_FRAMESIZE_VARIABLE</dt><dd>Optimize the frame size dynamically.</dd>
+  * <dt>OPUS_FRAMESIZE_80_MS</dt><dd>Use 80 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_100_MS</dt><dd>Use 100 ms frames.</dd>
+  * <dt>OPUS_FRAMESIZE_120_MS</dt><dd>Use 120 ms frames.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_EXPERT_FRAME_DURATION(x) OPUS_GET_EXPERT_FRAME_DURATION_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_EXPERT_FRAME_DURATION(x) OPUS_GET_EXPERT_FRAME_DURATION_REQUEST, opus_check_int_ptr(x)
 
 /** If set to 1, disables almost all use of prediction, making frames almost
   * completely independent. This reduces quality.
@@ -595,7 +636,7 @@ extern "C" {
   * <dt>1</dt><dd>Disable prediction.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_SET_PREDICTION_DISABLED(x) OPUS_SET_PREDICTION_DISABLED_REQUEST, __opus_check_int(x)
+#define OPUS_SET_PREDICTION_DISABLED(x) OPUS_SET_PREDICTION_DISABLED_REQUEST, opus_check_int(x)
 /** Gets the encoder's configured prediction status.
   * @see OPUS_SET_PREDICTION_DISABLED
   * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
@@ -604,7 +645,26 @@ extern "C" {
   * <dt>1</dt><dd>Prediction disabled.</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_PREDICTION_DISABLED(x) OPUS_GET_PREDICTION_DISABLED_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_PREDICTION_DISABLED(x) OPUS_GET_PREDICTION_DISABLED_REQUEST, opus_check_int_ptr(x)
+
+/** If non-zero, enables Deep Redundancy (DRED) and use the specified maximum number of 10-ms redundant frames
+  * @hideinitializer */
+#define OPUS_SET_DRED_DURATION(x) OPUS_SET_DRED_DURATION_REQUEST, opus_check_int(x)
+/** Gets the encoder's configured Deep Redundancy (DRED) maximum number of frames.
+  * @hideinitializer */
+#define OPUS_GET_DRED_DURATION(x) OPUS_GET_DRED_DURATION_REQUEST, opus_check_int_ptr(x)
+
+/** Provide external DNN weights from binary object (only when explicitly built without the weights)
+  * @hideinitializer */
+#define OPUS_SET_DNN_BLOB(data, len) OPUS_SET_DNN_BLOB_REQUEST, opus_check_void_ptr(data), opus_check_int(len)
+
+/** If set to 1, enables quality extension (QEXT), otherwise disables it (default). Warning: This will *hurt* audio quality unless operating at
+    a very high bitrate.
+  * @hideinitializer */
+#define OPUS_SET_QEXT(x) OPUS_SET_QEXT_REQUEST, opus_check_int(x)
+/** Gets the encoder's configured quality extension (QEXT).
+  * @hideinitializer */
+#define OPUS_GET_QEXT(x) OPUS_GET_QEXT_REQUEST, opus_check_int_ptr(x)
 
 /**@}*/
 
@@ -657,7 +717,7 @@ extern "C" {
   * @param[out] x <tt>opus_uint32 *</tt>: Entropy coder state
   *
   * @hideinitializer */
-#define OPUS_GET_FINAL_RANGE(x) OPUS_GET_FINAL_RANGE_REQUEST, __opus_check_uint_ptr(x)
+#define OPUS_GET_FINAL_RANGE(x) OPUS_GET_FINAL_RANGE_REQUEST, opus_check_uint_ptr(x)
 
 /** Gets the encoder's configured bandpass or the decoder's last bandpass.
   * @see OPUS_SET_BANDWIDTH
@@ -671,7 +731,7 @@ extern "C" {
   * <dt>#OPUS_BANDWIDTH_FULLBAND</dt>     <dd>20 kHz passband</dd>
   * </dl>
   * @hideinitializer */
-#define OPUS_GET_BANDWIDTH(x) OPUS_GET_BANDWIDTH_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_BANDWIDTH(x) OPUS_GET_BANDWIDTH_REQUEST, opus_check_int_ptr(x)
 
 /** Gets the sampling rate the encoder or decoder was initialized with.
   * This simply returns the <code>Fs</code> value passed to opus_encoder_init()
@@ -679,7 +739,41 @@ extern "C" {
   * @param[out] x <tt>opus_int32 *</tt>: Sampling rate of encoder or decoder.
   * @hideinitializer
   */
-#define OPUS_GET_SAMPLE_RATE(x) OPUS_GET_SAMPLE_RATE_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_SAMPLE_RATE(x) OPUS_GET_SAMPLE_RATE_REQUEST, opus_check_int_ptr(x)
+
+/** If set to 1, disables the use of phase inversion for intensity stereo,
+  * improving the quality of mono downmixes, but slightly reducing normal
+  * stereo quality. Disabling phase inversion in the decoder does not comply
+  * with RFC 6716, although it does not cause any interoperability issue and
+  * is expected to become part of the Opus standard once RFC 6716 is updated
+  * by draft-ietf-codec-opus-update.
+  * @see OPUS_GET_PHASE_INVERSION_DISABLED
+  * @param[in] x <tt>opus_int32</tt>: Allowed values:
+  * <dl>
+  * <dt>0</dt><dd>Enable phase inversion (default).</dd>
+  * <dt>1</dt><dd>Disable phase inversion.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_SET_PHASE_INVERSION_DISABLED(x) OPUS_SET_PHASE_INVERSION_DISABLED_REQUEST, opus_check_int(x)
+/** Gets the encoder's configured phase inversion status.
+  * @see OPUS_SET_PHASE_INVERSION_DISABLED
+  * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
+  * <dl>
+  * <dt>0</dt><dd>Stereo phase inversion enabled (default).</dd>
+  * <dt>1</dt><dd>Stereo phase inversion disabled.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_GET_PHASE_INVERSION_DISABLED(x) OPUS_GET_PHASE_INVERSION_DISABLED_REQUEST, opus_check_int_ptr(x)
+/** Gets the DTX state of the encoder.
+  * Returns whether the last encoded frame was either a comfort noise update
+  * during DTX or not encoded because of DTX.
+  * @param[out] x <tt>opus_int32 *</tt>: Returns one of the following values:
+  * <dl>
+  * <dt>0</dt><dd>The encoder is not in DTX.</dd>
+  * <dt>1</dt><dd>The encoder is in DTX.</dd>
+  * </dl>
+  * @hideinitializer */
+#define OPUS_GET_IN_DTX(x) OPUS_GET_IN_DTX_REQUEST, opus_check_int_ptr(x)
 
 /**@}*/
 
@@ -698,17 +792,17 @@ extern "C" {
   *
   * @param[in] x <tt>opus_int32</tt>:   Amount to scale PCM signal by in Q8 dB units.
   * @hideinitializer */
-#define OPUS_SET_GAIN(x) OPUS_SET_GAIN_REQUEST, __opus_check_int(x)
+#define OPUS_SET_GAIN(x) OPUS_SET_GAIN_REQUEST, opus_check_int(x)
 /** Gets the decoder's configured gain adjustment. @see OPUS_SET_GAIN
   *
   * @param[out] x <tt>opus_int32 *</tt>: Amount to scale PCM signal by in Q8 dB units.
   * @hideinitializer */
-#define OPUS_GET_GAIN(x) OPUS_GET_GAIN_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_GAIN(x) OPUS_GET_GAIN_REQUEST, opus_check_int_ptr(x)
 
 /** Gets the duration (in samples) of the last packet successfully decoded or concealed.
   * @param[out] x <tt>opus_int32 *</tt>: Number of samples (at current sampling rate).
   * @hideinitializer */
-#define OPUS_GET_LAST_PACKET_DURATION(x) OPUS_GET_LAST_PACKET_DURATION_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_LAST_PACKET_DURATION(x) OPUS_GET_LAST_PACKET_DURATION_REQUEST, opus_check_int_ptr(x)
 
 /** Gets the pitch of the last decoded frame, if available.
   * This can be used for any post-processing algorithm requiring the use of pitch,
@@ -720,7 +814,27 @@ extern "C" {
   * @param[out] x <tt>opus_int32 *</tt>: pitch period at 48 kHz (or 0 if not available)
   *
   * @hideinitializer */
-#define OPUS_GET_PITCH(x) OPUS_GET_PITCH_REQUEST, __opus_check_int_ptr(x)
+#define OPUS_GET_PITCH(x) OPUS_GET_PITCH_REQUEST, opus_check_int_ptr(x)
+
+/** Enables blind bandwidth extension for wideband signals if decoding sampling rate is 48 kHz.
+  * @param[in] x <tt>opus_int32 </tt>: 1 enables bandwidth extension, 0 disables it.
+  * The default is 0.
+  *
+  * @hideinitializer */
+ #define OPUS_SET_OSCE_BWE(x) OPUS_SET_OSCE_BWE_REQUEST, opus_check_int(x)
+/** Gets blind bandwidth extension flag for wideband signals if decoding sampling rate is 48 kHz.
+  * @param[out] x <tt>opus_int32 *</tt>: 1 if bwe enabled, 0 if disabled.
+  *
+  * @hideinitializer */
+ #define OPUS_GET_OSCE_BWE(x) OPUS_GET_OSCE_BWE_REQUEST, opus_check_int_ptr(x)
+
+/** If set to 1, the decoder will ignore all extensions found in the padding area
+  * (does not affect DRED, which is decoded separately).
+  * @hideinitializer */
+#define OPUS_SET_IGNORE_EXTENSIONS(x) OPUS_SET_IGNORE_EXTENSIONS_REQUEST, opus_check_int(x)
+/** Gets whether the decoder is ignoring extensions.
+  * @hideinitializer */
+#define OPUS_GET_IGNORE_EXTENSIONS(x) OPUS_GET_IGNORE_EXTENSIONS_REQUEST, opus_check_int_ptr(x)
 
 /**@}*/
 

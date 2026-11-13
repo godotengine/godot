@@ -48,7 +48,7 @@ void silk_process_NLSFs(
 
     silk_assert( psEncC->speech_activity_Q8 >=   0 );
     silk_assert( psEncC->speech_activity_Q8 <= SILK_FIX_CONST( 1.0, 8 ) );
-    silk_assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
+    celt_assert( psEncC->useInterpolatedNLSFs == 1 || psEncC->indices.NLSFInterpCoef_Q2 == ( 1 << 2 ) );
 
     /***********************/
     /* Calculate mu values */
@@ -60,7 +60,7 @@ void silk_process_NLSFs(
         NLSF_mu_Q20 = silk_ADD_RSHIFT( NLSF_mu_Q20, NLSF_mu_Q20, 1 );
     }
 
-    silk_assert( NLSF_mu_Q20 >  0 );
+    celt_assert( NLSF_mu_Q20 >  0 );
     silk_assert( NLSF_mu_Q20 <= SILK_FIX_CONST( 0.005, 20 ) );
 
     /* Calculate NLSF weights */
@@ -89,7 +89,7 @@ void silk_process_NLSFs(
         NLSF_mu_Q20, psEncC->NLSF_MSVQ_Survivors, psEncC->indices.signalType );
 
     /* Convert quantized NLSFs back to LPC coefficients */
-    silk_NLSF2A( PredCoef_Q12[ 1 ], pNLSF_Q15, psEncC->predictLPCOrder );
+    silk_NLSF2A( PredCoef_Q12[ 1 ], pNLSF_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
     if( doInterpolate ) {
         /* Calculate the interpolated, quantized LSF vector for the first half */
@@ -97,11 +97,11 @@ void silk_process_NLSFs(
             psEncC->indices.NLSFInterpCoef_Q2, psEncC->predictLPCOrder );
 
         /* Convert back to LPC coefficients */
-        silk_NLSF2A( PredCoef_Q12[ 0 ], pNLSF0_temp_Q15, psEncC->predictLPCOrder );
+        silk_NLSF2A( PredCoef_Q12[ 0 ], pNLSF0_temp_Q15, psEncC->predictLPCOrder, psEncC->arch );
 
     } else {
         /* Copy LPC coefficients for first half from second half */
-        silk_assert( psEncC->predictLPCOrder <= MAX_LPC_ORDER );
+        celt_assert( psEncC->predictLPCOrder <= MAX_LPC_ORDER );
         silk_memcpy( PredCoef_Q12[ 0 ], PredCoef_Q12[ 1 ], psEncC->predictLPCOrder * sizeof( opus_int16 ) );
     }
 }

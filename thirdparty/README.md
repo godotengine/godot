@@ -475,18 +475,26 @@ scripts/resource_to_cpp.py (used in modules/denoise/resource_to_cpp.py)
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.5 (opus) and 0.8 (opusfile) (2017)
+- Version: 1.6.1 (22244de5a79bd1d6d623c32e72bf1954b56235be, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- all .c and .h files in src/ (both opus and opusfile)
-- all .h files in include/ (both opus and opusfile) as opus/
-- remove unused `opus_demo.c`,
-- remove `http.c`, `wincerts.c` and `winerrno.h` (part of
-  unused libopusurl)
-- celt/ and silk/ subfolders
-- COPYING
+- all .c and .h files in `src/`, minus the `opus_demo.c`, `opus_compare.c`,
+  `qext_compare.c` and `repacketizer_demo.c` programs, and the unused
+  `tansig_table.h`
+- all .h files in `include/` as `opus/`
+- .c and .h files directly in `celt/`, `silk/`, `silk/fixed/` and `silk/float/`,
+  minus:
+  * `celt/opus_custom_demo.c` and `celt/mini_kfft.c`
+  * headers for unused platforms or options: `celt/fixed_c5x.h`,
+    `celt/fixed_c6x.h`, `celt/fixed_debug.h`, `celt/static_modes_*_arm_ne10.h`
+- .h files in `celt/arm/`, `silk/arm/` and `silk/fixed/arm/`, used by the ARM
+  options in `config.h`; the other CPU-specific files are left out
+- `COPYING`
+
+`config.h` was created for Godot, based on the output of the libopus configure
+script.
 
 
 ## pcre2

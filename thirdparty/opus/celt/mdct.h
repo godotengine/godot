@@ -57,21 +57,20 @@ typedef struct {
 #include "arm/mdct_arm.h"
 #endif
 
-
 int clt_mdct_init(mdct_lookup *l,int N, int maxshift, int arch);
 void clt_mdct_clear(mdct_lookup *l, int arch);
 
 /** Compute a forward MDCT and scale by 4/N, trashes the input array */
 void clt_mdct_forward_c(const mdct_lookup *l, kiss_fft_scalar *in,
                         kiss_fft_scalar * OPUS_RESTRICT out,
-                        const opus_val16 *window, int overlap,
+                        const celt_coef *window, int overlap,
                         int shift, int stride, int arch);
 
 /** Compute a backward MDCT (no scaling) and performs weighted overlap-add
     (scales implicitly by 1/2) */
 void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
       kiss_fft_scalar * OPUS_RESTRICT out,
-      const opus_val16 * OPUS_RESTRICT window,
+      const celt_coef * OPUS_RESTRICT window,
       int overlap, int shift, int stride, int arch);
 
 #if !defined(OVERRIDE_OPUS_MDCT)
@@ -80,7 +79,7 @@ void clt_mdct_backward_c(const mdct_lookup *l, kiss_fft_scalar *in,
 
 extern void (*const CLT_MDCT_FORWARD_IMPL[OPUS_ARCHMASK+1])(
       const mdct_lookup *l, kiss_fft_scalar *in,
-      kiss_fft_scalar * OPUS_RESTRICT out, const opus_val16 *window,
+      kiss_fft_scalar * OPUS_RESTRICT out, const celt_coef *window,
       int overlap, int shift, int stride, int arch);
 
 #define clt_mdct_forward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \
@@ -90,7 +89,7 @@ extern void (*const CLT_MDCT_FORWARD_IMPL[OPUS_ARCHMASK+1])(
 
 extern void (*const CLT_MDCT_BACKWARD_IMPL[OPUS_ARCHMASK+1])(
       const mdct_lookup *l, kiss_fft_scalar *in,
-      kiss_fft_scalar * OPUS_RESTRICT out, const opus_val16 *window,
+      kiss_fft_scalar * OPUS_RESTRICT out, const celt_coef *window,
       int overlap, int shift, int stride, int arch);
 
 #define clt_mdct_backward(_l, _in, _out, _window, _overlap, _shift, _stride, _arch) \

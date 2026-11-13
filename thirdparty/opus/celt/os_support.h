@@ -39,10 +39,9 @@
 #include "opus_defines.h"
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 
-/** Opus wrapper for malloc(). To do your own dynamic allocation, all you need to do is replace this function and opus_free */
+/** Opus wrapper for malloc(). To do your own dynamic allocation replace this function, opus_realloc, and opus_free */
 #ifndef OVERRIDE_OPUS_ALLOC
 static OPUS_INLINE void *opus_alloc (size_t size)
 {
@@ -50,7 +49,15 @@ static OPUS_INLINE void *opus_alloc (size_t size)
 }
 #endif
 
-/** Same as celt_alloc(), except that the area is only needed inside a CELT call (might cause problem with wideband though) */
+#ifndef OVERRIDE_OPUS_REALLOC
+static OPUS_INLINE void *opus_realloc (void *ptr, size_t size)
+{
+   return realloc(ptr, size);
+}
+#endif
+
+/** Used only for non-threadsafe pseudostack.
+    If desired, this can always return the same area of memory rather than allocating a new one every time. */
 #ifndef OVERRIDE_OPUS_ALLOC_SCRATCH
 static OPUS_INLINE void *opus_alloc_scratch (size_t size)
 {
@@ -59,7 +66,7 @@ static OPUS_INLINE void *opus_alloc_scratch (size_t size)
 }
 #endif
 
-/** Opus wrapper for free(). To do your own dynamic allocation, all you need to do is replace this function and opus_alloc */
+/** Opus wrapper for free(). To do your own dynamic allocation replace this function, opus_realloc, and opus_free */
 #ifndef OVERRIDE_OPUS_FREE
 static OPUS_INLINE void opus_free (void *ptr)
 {
@@ -89,4 +96,3 @@ static OPUS_INLINE void opus_free (void *ptr)
 #endif*/
 
 #endif /* OS_SUPPORT_H */
-

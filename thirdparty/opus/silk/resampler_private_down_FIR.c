@@ -136,7 +136,7 @@ static OPUS_INLINE opus_int16 *silk_resampler_private_down_FIR_INTERPOL(
             }
             break;
         default:
-            silk_assert( 0 );
+            celt_assert( 0 );
     }
     return out;
 }

@@ -41,8 +41,12 @@
 #include "mathops.h"
 #include "stack_alloc.h"
 
+#ifndef M_PI
+#define M_PI 3.141592653
+#endif
+
 /* The guts header contains all the multiplication and addition macros that are defined for
-   complex numbers.  It also delares the kf_ internal functions.
+   complex numbers.  It also declares the kf_ internal functions.
 */
 
 static void kf_bfly2(
@@ -70,8 +74,8 @@ static void kf_bfly2(
    } else
 #endif
    {
-      opus_val16 tw;
-      tw = QCONST16(0.7071067812f, 15);
+      celt_coef tw;
+      tw = QCONST32(0.7071067812f, COEF_SHIFT-1);
       /* We know that m==4 here because the radix-2 is just after a radix-4 */
       celt_assert(m==4);
       for (i=0;i<N;i++)
@@ -82,18 +86,18 @@ static void kf_bfly2(
          C_SUB( Fout2[0] ,  Fout[0] , t );
          C_ADDTO( Fout[0] ,  t );
 
-         t.r = S_MUL(Fout2[1].r+Fout2[1].i, tw);
-         t.i = S_MUL(Fout2[1].i-Fout2[1].r, tw);
+         t.r = S_MUL(ADD32_ovflw(Fout2[1].r, Fout2[1].i), tw);
+         t.i = S_MUL(SUB32_ovflw(Fout2[1].i, Fout2[1].r), tw);
          C_SUB( Fout2[1] ,  Fout[1] , t );
          C_ADDTO( Fout[1] ,  t );
 
          t.r = Fout2[2].i;
-         t.i = -Fout2[2].r;
+         t.i = NEG32_ovflw(Fout2[2].r);
          C_SUB( Fout2[2] ,  Fout[2] , t );
          C_ADDTO( Fout[2] ,  t );
 
-         t.r = S_MUL(Fout2[3].i-Fout2[3].r, tw);
-         t.i = S_MUL(-Fout2[3].i-Fout2[3].r, tw);
+         t.r = S_MUL(SUB32_ovflw(Fout2[3].i, Fout2[3].r), tw);
+         t.i = S_MUL(NEG32_ovflw(ADD32_ovflw(Fout2[3].i, Fout2[3].r)), tw);
          C_SUB( Fout2[3] ,  Fout[3] , t );
          C_ADDTO( Fout[3] ,  t );
          Fout += 8;
@@ -126,10 +130,10 @@ static void kf_bfly4(
          C_ADDTO( *Fout , scratch1 );
          C_SUB( scratch1 , Fout[1] , Fout[3] );
 
-         Fout[1].r = scratch0.r + scratch1.i;
-         Fout[1].i = scratch0.i - scratch1.r;
-         Fout[3].r = scratch0.r - scratch1.i;
-         Fout[3].i = scratch0.i + scratch1.r;
+         Fout[1].r = ADD32_ovflw(scratch0.r, scratch1.i);
+         Fout[1].i = SUB32_ovflw(scratch0.i, scratch1.r);
+         Fout[3].r = SUB32_ovflw(scratch0.r, scratch1.i);
+         Fout[3].i = ADD32_ovflw(scratch0.i, scratch1.r);
          Fout+=4;
       }
    } else {
@@ -160,10 +164,10 @@ static void kf_bfly4(
             tw3 += fstride*3;
             C_ADDTO( *Fout , scratch[3] );
 
-            Fout[m].r = scratch[5].r + scratch[4].i;
-            Fout[m].i = scratch[5].i - scratch[4].r;
-            Fout[m3].r = scratch[5].r - scratch[4].i;
-            Fout[m3].i = scratch[5].i + scratch[4].r;
+            Fout[m].r = ADD32_ovflw(scratch[5].r, scratch[4].i);
+            Fout[m].i = SUB32_ovflw(scratch[5].i, scratch[4].r);
+            Fout[m3].r = SUB32_ovflw(scratch[5].r, scratch[4].i);
+            Fout[m3].i = ADD32_ovflw(scratch[5].i, scratch[4].r);
             ++Fout;
          }
       }
@@ -192,7 +196,7 @@ static void kf_bfly3(
    kiss_fft_cpx * Fout_beg = Fout;
 #ifdef FIXED_POINT
    /*epi3.r = -16384;*/ /* Unused */
-   epi3.i = -28378;
+   epi3.i = -QCONST32(0.86602540f, COEF_SHIFT-1);
 #else
    epi3 = st->twiddles[fstride*m];
 #endif
@@ -212,18 +216,18 @@ static void kf_bfly3(
          tw1 += fstride;
          tw2 += fstride*2;
 
-         Fout[m].r = Fout->r - HALF_OF(scratch[3].r);
-         Fout[m].i = Fout->i - HALF_OF(scratch[3].i);
+         Fout[m].r = SUB32_ovflw(Fout->r, HALF_OF(scratch[3].r));
+         Fout[m].i = SUB32_ovflw(Fout->i, HALF_OF(scratch[3].i));
 
          C_MULBYSCALAR( scratch[0] , epi3.i );
 
          C_ADDTO(*Fout,scratch[3]);
 
-         Fout[m2].r = Fout[m].r + scratch[0].i;
-         Fout[m2].i = Fout[m].i - scratch[0].r;
+         Fout[m2].r = ADD32_ovflw(Fout[m].r, scratch[0].i);
+         Fout[m2].i = SUB32_ovflw(Fout[m].i, scratch[0].r);
 
-         Fout[m].r -= scratch[0].i;
-         Fout[m].i += scratch[0].r;
+         Fout[m].r = SUB32_ovflw(Fout[m].r, scratch[0].i);
+         Fout[m].i = ADD32_ovflw(Fout[m].i, scratch[0].r);
 
          ++Fout;
       } while(--k);
@@ -249,10 +253,10 @@ static void kf_bfly5(
    kiss_fft_cpx * Fout_beg = Fout;
 
 #ifdef FIXED_POINT
-   ya.r = 10126;
-   ya.i = -31164;
-   yb.r = -26510;
-   yb.i = -19261;
+   ya.r = QCONST32(0.30901699f, COEF_SHIFT-1);
+   ya.i = -QCONST32(0.95105652f, COEF_SHIFT-1);
+   yb.r = -QCONST32(0.80901699f, COEF_SHIFT-1);
+   yb.i = -QCONST32(0.58778525f, COEF_SHIFT-1);
 #else
    ya = st->twiddles[fstride*m];
    yb = st->twiddles[fstride*2*m];
@@ -282,22 +286,22 @@ static void kf_bfly5(
          C_ADD( scratch[8],scratch[2],scratch[3]);
          C_SUB( scratch[9],scratch[2],scratch[3]);
 
-         Fout0->r += scratch[7].r + scratch[8].r;
-         Fout0->i += scratch[7].i + scratch[8].i;
+         Fout0->r = ADD32_ovflw(Fout0->r, ADD32_ovflw(scratch[7].r, scratch[8].r));
+         Fout0->i = ADD32_ovflw(Fout0->i, ADD32_ovflw(scratch[7].i, scratch[8].i));
 
-         scratch[5].r = scratch[0].r + S_MUL(scratch[7].r,ya.r) + S_MUL(scratch[8].r,yb.r);
-         scratch[5].i = scratch[0].i + S_MUL(scratch[7].i,ya.r) + S_MUL(scratch[8].i,yb.r);
+         scratch[5].r = ADD32_ovflw(scratch[0].r, ADD32_ovflw(S_MUL(scratch[7].r,ya.r), S_MUL(scratch[8].r,yb.r)));
+         scratch[5].i = ADD32_ovflw(scratch[0].i, ADD32_ovflw(S_MUL(scratch[7].i,ya.r), S_MUL(scratch[8].i,yb.r)));
 
-         scratch[6].r =  S_MUL(scratch[10].i,ya.i) + S_MUL(scratch[9].i,yb.i);
-         scratch[6].i = -S_MUL(scratch[10].r,ya.i) - S_MUL(scratch[9].r,yb.i);
+         scratch[6].r =  ADD32_ovflw(S_MUL(scratch[10].i,ya.i), S_MUL(scratch[9].i,yb.i));
+         scratch[6].i = NEG32_ovflw(ADD32_ovflw(S_MUL(scratch[10].r,ya.i), S_MUL(scratch[9].r,yb.i)));
 
          C_SUB(*Fout1,scratch[5],scratch[6]);
          C_ADD(*Fout4,scratch[5],scratch[6]);
 
-         scratch[11].r = scratch[0].r + S_MUL(scratch[7].r,yb.r) + S_MUL(scratch[8].r,ya.r);
-         scratch[11].i = scratch[0].i + S_MUL(scratch[7].i,yb.r) + S_MUL(scratch[8].i,ya.r);
-         scratch[12].r = - S_MUL(scratch[10].i,yb.i) + S_MUL(scratch[9].i,ya.i);
-         scratch[12].i = S_MUL(scratch[10].r,yb.i) - S_MUL(scratch[9].r,ya.i);
+         scratch[11].r = ADD32_ovflw(scratch[0].r, ADD32_ovflw(S_MUL(scratch[7].r,yb.r), S_MUL(scratch[8].r,ya.r)));
+         scratch[11].i = ADD32_ovflw(scratch[0].i, ADD32_ovflw(S_MUL(scratch[7].i,yb.r), S_MUL(scratch[8].i,ya.r)));
+         scratch[12].r = SUB32_ovflw(S_MUL(scratch[9].i,ya.i), S_MUL(scratch[10].i,yb.i));
+         scratch[12].i = SUB32_ovflw(S_MUL(scratch[10].r,yb.i), S_MUL(scratch[9].r,ya.i));
 
          C_ADD(*Fout2,scratch[11],scratch[12]);
          C_SUB(*Fout3,scratch[11],scratch[12]);
@@ -412,7 +416,12 @@ static void compute_twiddles(kiss_twiddle_cpx *twiddles, int nfft)
 #ifdef FIXED_POINT
    for (i=0;i<nfft;++i) {
       opus_val32 phase = -i;
+#ifdef ENABLE_QEXT
+      twiddles[i].r = (int)MIN32(2147483647, floor(.5+2147483648*cos((2*M_PI/nfft)*phase)));
+      twiddles[i].i = (int)MIN32(2147483647, floor(.5+2147483648*sin((2*M_PI/nfft)*phase)));
+#else
       kf_cexp2(twiddles+i, DIV32(SHL32(phase,17),nfft));
+#endif
    }
 #else
    for (i=0;i<nfft;++i) {
@@ -454,10 +463,17 @@ kiss_fft_state *opus_fft_alloc_twiddles(int nfft,void * mem,size_t * lenmem,
         st->nfft=nfft;
 #ifdef FIXED_POINT
         st->scale_shift = celt_ilog2(st->nfft);
+# ifdef ENABLE_QEXT
+        if (st->nfft == 1<<st->scale_shift)
+           st->scale = QCONST32(1.0f, 30);
+        else
+           st->scale = (((opus_int64)1073741824<<st->scale_shift)+st->nfft/2)/st->nfft;
+# else
         if (st->nfft == 1<<st->scale_shift)
            st->scale = Q15ONE;
         else
            st->scale = (1073741824+st->nfft/2)/st->nfft>>(15-st->scale_shift);
+# endif
 #else
         st->scale = 1.f/nfft;
 #endif
@@ -518,7 +534,32 @@ void opus_fft_free(const kiss_fft_state *cfg, int arch)
 
 #endif /* CUSTOM_MODES */
 
-void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout)
+#ifdef FIXED_POINT
+#ifndef OVERRIDE_fft_downshift
+static void fft_downshift(kiss_fft_cpx *x, int N, int *total, int step) {
+   int shift;
+   shift = IMIN(step, *total);
+   *total -= shift;
+   if (shift == 1) {
+      int i;
+      for (i=0;i<N;i++) {
+         x[i].r = SHR32(x[i].r, 1);
+         x[i].i = SHR32(x[i].i, 1);
+      }
+   } else if (shift>0) {
+      int i;
+      for (i=0;i<N;i++) {
+         x[i].r = PSHR32(x[i].r, shift);
+         x[i].i = PSHR32(x[i].i, shift);
+      }
+   }
+}
+#endif /* OVERRIDE_fft_downshift */
+#else
+#define fft_downshift(x, N, total, step)
+#endif
+
+void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout ARG_FIXED(int downshift))
 {
     int m2, m;
     int p;
@@ -548,28 +589,33 @@ void opus_fft_impl(const kiss_fft_state *st,kiss_fft_cpx *fout)
        switch (st->factors[2*i])
        {
        case 2:
+          fft_downshift(fout, st->nfft, &downshift, 1);
           kf_bfly2(fout, m, fstride[i]);
           break;
        case 4:
+          fft_downshift(fout, st->nfft, &downshift, 2);
           kf_bfly4(fout,fstride[i]<<shift,st,m, fstride[i], m2);
           break;
  #ifndef RADIX_TWO_ONLY
        case 3:
+          fft_downshift(fout, st->nfft, &downshift, 2);
           kf_bfly3(fout,fstride[i]<<shift,st,m, fstride[i], m2);
           break;
        case 5:
+          fft_downshift(fout, st->nfft, &downshift, 3);
           kf_bfly5(fout,fstride[i]<<shift,st,m, fstride[i], m2);
           break;
  #endif
        }
        m = m2;
     }
+    fft_downshift(fout, st->nfft, &downshift, downshift);
 }
 
 void opus_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *fout)
 {
    int i;
-   opus_val16 scale;
+   celt_coef scale;
 #ifdef FIXED_POINT
    /* Allows us to scale with MULT16_32_Q16(), which is faster than
       MULT16_32_Q15() on ARM. */
@@ -582,10 +628,10 @@ void opus_fft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *f
    for (i=0;i<st->nfft;i++)
    {
       kiss_fft_cpx x = fin[i];
-      fout[st->bitrev[i]].r = SHR32(MULT16_32_Q16(scale, x.r), scale_shift);
-      fout[st->bitrev[i]].i = SHR32(MULT16_32_Q16(scale, x.i), scale_shift);
+      fout[st->bitrev[i]].r = S_MUL2(x.r, scale);
+      fout[st->bitrev[i]].i = S_MUL2(x.i, scale);
    }
-   opus_fft_impl(st, fout);
+   opus_fft_impl(st, fout ARG_FIXED(scale_shift));
 }
 
 
@@ -598,7 +644,7 @@ void opus_ifft_c(const kiss_fft_state *st,const kiss_fft_cpx *fin,kiss_fft_cpx *
       fout[st->bitrev[i]] = fin[i];
    for (i=0;i<st->nfft;i++)
       fout[i].i = -fout[i].i;
-   opus_fft_impl(st, fout);
+   opus_fft_impl(st, fout ARG_FIXED(0));
    for (i=0;i<st->nfft;i++)
       fout[i].i = -fout[i].i;
 }

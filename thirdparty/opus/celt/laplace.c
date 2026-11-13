@@ -132,3 +132,104 @@ int ec_laplace_decode(ec_dec *dec, unsigned fs, int decay)
    ec_dec_update(dec, fl, IMIN(fl+fs,32768), 32768);
    return val;
 }
+
+void ec_laplace_encode_p0(ec_enc *enc, int value, opus_uint16 p0, opus_uint16 decay)
+{
+   int s;
+   opus_uint16 sign_icdf[3];
+   sign_icdf[0] = 32768-p0;
+   sign_icdf[1] = sign_icdf[0]/2;
+   sign_icdf[2] = 0;
+   s = value == 0 ? 0 : (value > 0 ? 1 : 2);
+   ec_enc_icdf16(enc, s, sign_icdf, 15);
+   value = abs(value);
+   if (value)
+   {
+      int i;
+      opus_uint16 icdf[8];
+      icdf[0] = IMAX(7, decay);
+      for (i=1;i<7;i++)
+      {
+         icdf[i] = IMAX(7-i, (icdf[i-1] * (opus_int32)decay) >> 15);
+      }
+      icdf[7] = 0;
+      value--;
+      do {
+         ec_enc_icdf16(enc, IMIN(value, 7), icdf, 15);
+         value -= 7;
+      } while (value >= 0);
+   }
+}
+
+int ec_laplace_decode_p0(ec_dec *dec, opus_uint16 p0, opus_uint16 decay)
+{
+   int s;
+   int value;
+   opus_uint16 sign_icdf[3];
+   sign_icdf[0] = 32768-p0;
+   sign_icdf[1] = sign_icdf[0]/2;
+   sign_icdf[2] = 0;
+   s = ec_dec_icdf16(dec, sign_icdf, 15);
+   if (s==2) s = -1;
+   if (s != 0)
+   {
+      int i;
+      int v;
+      opus_uint16 icdf[8];
+      icdf[0] = IMAX(7, decay);
+      for (i=1;i<7;i++)
+      {
+         icdf[i] = IMAX(7-i, (icdf[i-1] * (opus_int32)decay) >> 15);
+      }
+      icdf[7] = 0;
+      value = 1;
+      do {
+         v = ec_dec_icdf16(dec, icdf, 15);
+         value += v;
+      } while (v == 7);
+      return s*value;
+   } else return 0;
+}
+
+#if 0
+
+#include <stdio.h>
+#define NB_VALS 10
+#define DATA_SIZE 10000
+int main() {
+   ec_enc enc;
+   ec_dec dec;
+   unsigned char *ptr;
+   int i;
+   int decay, p0;
+   int val[NB_VALS] = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+   /*for (i=0;i<NB_VALS;i++) {
+      val[i] = -log(rand()/(float)RAND_MAX);
+      if (rand()%2) val[i] = -val[i];
+   }*/
+   p0 = 16000;
+   decay = 16000;
+   ptr = (unsigned char *)malloc(DATA_SIZE);
+   ec_enc_init(&enc,ptr,DATA_SIZE);
+   for (i=0;i<NB_VALS;i++) {
+      printf("%d ", val[i]);
+   }
+   printf("\n");
+   for (i=0;i<NB_VALS;i++) {
+      ec_laplace_encode_p0(&enc, val[i], p0, decay);
+   }
+
+   ec_enc_done(&enc);
+
+   ec_dec_init(&dec,ec_get_buffer(&enc),ec_range_bytes(&enc));
+
+   for (i=0;i<NB_VALS;i++) {
+      val[i] = ec_laplace_decode_p0(&dec, p0, decay);
+   }
+   for (i=0;i<NB_VALS;i++) {
+      printf("%d ", val[i]);
+   }
+   printf("\n");
+}
+
+#endif

@@ -87,4 +87,3 @@ void silk_LTP_analysis_filter_FIX(
         x_ptr       += subfr_length;
     }
 }
-

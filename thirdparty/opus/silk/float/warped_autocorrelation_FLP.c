@@ -42,11 +42,11 @@ void silk_warped_autocorrelation_FLP(
 {
     opus_int    n, i;
     double      tmp1, tmp2;
-    double      state[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-    double      C[     MAX_SHAPE_LPC_ORDER + 1 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+    double      state[ MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
+    double      C[     MAX_SHAPE_LPC_ORDER + 1 ] = { 0 };
 
     /* Order must be even */
-    silk_assert( ( order & 1 ) == 0 );
+    celt_assert( ( order & 1 ) == 0 );
 
     /* Loop over samples */
     for( n = 0; n < length; n++ ) {
@@ -54,11 +54,13 @@ void silk_warped_autocorrelation_FLP(
         /* Loop over allpass sections */
         for( i = 0; i < order; i += 2 ) {
             /* Output of allpass section */
-            tmp2 = state[ i ] + warping * ( state[ i + 1 ] - tmp1 );
+            /* We voluntarily use two multiples instead of factoring the expression to
+               reduce the length of the dependency chain (tmp1->tmp2->tmp1... ). */
+            tmp2 = state[ i ] + warping * state[ i + 1 ] - warping * tmp1;
             state[ i ] = tmp1;
             C[ i ] += state[ 0 ] * tmp1;
             /* Output of allpass section */
-            tmp1 = state[ i + 1 ] + warping * ( state[ i + 2 ] - tmp2 );
+            tmp1 = state[ i + 1 ] + warping * state[ i + 2 ] - warping * tmp2;
             state[ i + 1 ] = tmp2;
             C[ i + 1 ] += state[ 0 ] * tmp2;
         }

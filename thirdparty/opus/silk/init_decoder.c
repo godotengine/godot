@@ -31,6 +31,42 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "main.h"
 
+#ifdef ENABLE_OSCE
+#include "osce.h"
+#endif
+
+#include "structs.h"
+
+/************************/
+/* Reset Decoder State  */
+/************************/
+opus_int silk_reset_decoder(
+    silk_decoder_state          *psDec                          /* I/O  Decoder state pointer                       */
+)
+{
+    /* Clear the entire encoder state, except anything copied */
+    silk_memset( &psDec->SILK_DECODER_STATE_RESET_START, 0, sizeof( silk_decoder_state ) - ((char*) &psDec->SILK_DECODER_STATE_RESET_START - (char*)psDec) );
+
+    /* Used to deactivate LSF interpolation */
+    psDec->first_frame_after_reset = 1;
+    psDec->prev_gain_Q16 = 65536;
+    psDec->arch = opus_select_arch();
+
+    /* Reset CNG state */
+    silk_CNG_Reset( psDec );
+
+    /* Reset PLC state */
+    silk_PLC_Reset( psDec );
+
+#ifdef ENABLE_OSCE
+    /* Reset OSCE state and method */
+    osce_reset(&psDec->osce, OSCE_DEFAULT_METHOD);
+#endif
+
+    return 0;
+}
+
+
 /************************/
 /* Init Decoder State   */
 /************************/
@@ -41,16 +77,7 @@ opus_int silk_init_decoder(
     /* Clear the entire encoder state, except anything copied */
     silk_memset( psDec, 0, sizeof( silk_decoder_state ) );
 
-    /* Used to deactivate LSF interpolation */
-    psDec->first_frame_after_reset = 1;
-    psDec->prev_gain_Q16 = 65536;
-
-    /* Reset CNG state */
-    silk_CNG_Reset( psDec );
-
-    /* Reset PLC state */
-    silk_PLC_Reset( psDec );
+    silk_reset_decoder( psDec );
 
     return(0);
 }
-

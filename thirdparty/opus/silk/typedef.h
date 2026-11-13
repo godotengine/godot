@@ -67,11 +67,14 @@ __attribute__((noreturn))
 static OPUS_INLINE void _silk_fatal(const char *str, const char *file, int line)
 {
    fprintf (stderr, "Fatal (internal) error in %s, line %d: %s\n", file, line, str);
+#if defined(_MSC_VER)
+   _set_abort_behavior( 0, _WRITE_ABORT_MSG);
+#endif
    abort();
 }
 #  define silk_assert(COND) {if (!(COND)) {silk_fatal("assertion failed: " #COND);}}
 # else
-#  define silk_assert(COND)
+#  define silk_assert(COND) ((void)(COND))
 # endif
 #endif
 

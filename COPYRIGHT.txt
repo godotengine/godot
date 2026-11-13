@@ -362,10 +362,10 @@ License: Zlib
 
 Files: ./thirdparty/opus/
 Comment: Opus
-Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
+Copyright: 2001-2023, Xiph.Org, Skype Limited, Octasic,
  Jean-Marc Valin, Timothy B. Terriberry,
  CSIRO, Gregory Maxwell, Mark Borgerding,
- Erik de Castro Lopo
+ Erik de Castro Lopo, Mozilla, Amazon
 License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
