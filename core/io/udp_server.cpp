@@ -34,6 +34,7 @@ void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
+	ClassDB::bind_method(D_METHOD("get_local_port"), &UDPServer::get_local_port);
 	ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);
 	ClassDB::bind_method(D_METHOD("take_connection"), &UDPServer::take_connection);
 	ClassDB::bind_method(D_METHOD("stop"), &UDPServer::stop);
@@ -90,6 +91,7 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
 
 	Error err;
 	IP::Type ip_type = IP::TYPE_ANY;
@@ -112,9 +114,13 @@ Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 		stop();
 		return err;
 	}
-	bind_address = p_bind_address;
-	bind_port = p_port;
 	return OK;
+}
+
+int UDPServer::get_local_port() const {
+	uint16_t local_port;
+	_sock->get_socket_address(nullptr, &local_port);
+	return local_port;
 }
 
 bool UDPServer::is_listening() const {
@@ -176,8 +182,6 @@ void UDPServer::stop() {
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
-	bind_port = 0;
-	bind_address = IP_Address();
 	List<Peer>::Element *E = peers.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();
