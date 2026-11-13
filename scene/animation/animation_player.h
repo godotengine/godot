@@ -96,6 +96,7 @@ private:
 		bool seeked = false;
 		bool internal_seeked = false;
 		bool started = false;
+		bool finished = false;
 		LocalVector<Blend> blend;
 	} playback;
 
@@ -221,6 +222,7 @@ public:
 	StringName get_assigned_animation() const;
 	void set_assigned_animation(const StringName &p_animation);
 	bool is_valid() const;
+	bool is_animation_active() const;
 
 	void set_speed_scale(float p_speed);
 	float get_speed_scale() const;
