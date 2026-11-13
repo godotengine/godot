@@ -17,7 +17,7 @@ repos:
         exclude: (SConstruct|SCsub)$ # SCons files use shebangs for syntax highlighting only.
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v22.1.5
+    rev: v23.1.5
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
@@ -48,7 +48,7 @@ repos:
             # TODO: `inc` ignored for now, because they don't include their parent header.
             "--allow-extensions=c,h,cpp,hpp,cc,hh,cxx,hxx,m,mm",
           ]
-        additional_dependencies: [clangd, clang-tidy==22.1.7]
+        additional_dependencies: [clangd, clang-tidy==23.1.4]
         stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
