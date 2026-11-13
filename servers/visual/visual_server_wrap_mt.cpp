@@ -78,6 +78,7 @@ void VisualServerWrapMT::set_physics_interpolation_enabled(bool p_enabled) {
 	if (Thread::get_caller_id() != server_thread) {
 		command_queue.push(visual_server, &VisualServer::set_physics_interpolation_enabled, p_enabled);
 	} else {
+		command_queue.flush_if_pending();
 		visual_server->set_physics_interpolation_enabled(p_enabled);
 	}
 }
@@ -86,6 +87,7 @@ void VisualServerWrapMT::tick() {
 	if (Thread::get_caller_id() != server_thread) {
 		command_queue.push(visual_server, &VisualServer::tick);
 	} else {
+		command_queue.flush_if_pending();
 		visual_server->tick();
 	}
 }
@@ -94,6 +96,7 @@ void VisualServerWrapMT::pre_draw(bool p_will_draw) {
 	if (Thread::get_caller_id() != server_thread) {
 		command_queue.push(visual_server, &VisualServer::pre_draw, p_will_draw);
 	} else {
+		command_queue.flush_if_pending();
 		visual_server->pre_draw(p_will_draw);
 	}
 }
