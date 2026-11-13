@@ -421,6 +421,9 @@ private:
 		bool use_hdr = false;
 		bool use_debanding = false;
 
+		// Set for XR targets: an override replaces the color buffer every frame.
+		bool expect_override = false;
+
 		bool sdf_enabled = false;
 
 		RID backbuffer; //used for effects
@@ -504,6 +507,7 @@ private:
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
+	void _ensure_render_target_color(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
 	void _render_target_allocate_sdf(RenderTarget *rt);
 	void _render_target_clear_sdf(RenderTarget *rt);
@@ -904,6 +908,7 @@ public:
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
 	virtual RID render_target_get_vrs_texture(RID p_render_target) const override;
 
+	virtual void render_target_set_expect_override(RID p_render_target, bool p_expect) override;
 	virtual void render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) override;
 	virtual RID render_target_get_override_color(RID p_render_target) const override;
 	virtual RID render_target_get_override_depth(RID p_render_target) const override;
