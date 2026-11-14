@@ -913,10 +913,14 @@
 	</methods>
 	<members>
 		<member name="emulate_mouse_from_touch" type="bool" setter="set_emulate_mouse_from_touch" getter="is_emulating_mouse_from_touch">
-			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen. See also [member ProjectSettings.input_devices/pointing/emulate_mouse_from_touch].
+			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen. The original touch events are still sent. The created mouse events will use [constant InputEvent.DEVICE_ID_EMULATION] to distinguish them. This can be used to support touch input for controls that only support mouse events. See also [member ProjectSettings.input_devices/pointing/emulate_mouse_from_touch].
+		</member>
+		<member name="emulate_swap_mouse_and_touch" type="bool" setter="set_emulate_swap_mouse_and_touch" getter="is_emulating_swap_mouse_and_touch">
+			If [code]true[/code], mouse input acts like touch input and vice versa. Unlike [member emulate_mouse_from_touch] and [member emulate_touch_from_mouse], the original event that triggered it will not be sent and the mouse or touch event will not use [constant InputEvent.DEVICE_ID_EMULATION].
+			Both [member emulate_mouse_from_touch] and [member emulate_touch_from_mouse] can work with this setting to send emulated events from the swapped event. For example, clicking the mouse will send a touch event instead and if [member emulate_touch_from_mouse] is enabled, it will also send an emulated mouse event. This allows testing mouse or touch input on devices that only support touch or mouse.
 		</member>
 		<member name="emulate_touch_from_mouse" type="bool" setter="set_emulate_touch_from_mouse" getter="is_emulating_touch_from_mouse">
-			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
+			If [code]true[/code], sends touch input events when clicking or dragging the mouse. The original mouse events are still sent. The created touch events will use [constant InputEvent.DEVICE_ID_EMULATION] to distinguish them. This can be used to support mouse input for controls that only support touch events. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
 		<member name="ignore_joypad_on_unfocused_application" type="bool" setter="set_ignore_joypad_on_unfocused_application" getter="is_ignoring_joypad_on_unfocused_application">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
