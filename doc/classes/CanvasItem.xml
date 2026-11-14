@@ -210,7 +210,7 @@
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<param index="6" name="scale" type="float" default="1.0" />
 			<description>
-				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
+				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.render_mode] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
 				Value of the [param pixel_range] should the same that was used during distance field texture generation.
 				[b]Note:[/b] Styleboxes, textures, and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called. In GDScript, when the function with the local variables ends, the local variables get destroyed before the rendering takes place.
@@ -355,7 +355,7 @@
 			<param index="2" name="scale" type="Vector2" default="Vector2(1, 1)" />
 			<description>
 				Sets a custom local transform for drawing via components. Anything drawn afterwards will be transformed by this.
-				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
+				[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [param scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_render_mode] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.render_mode] can be enabled in the inspector.
 			</description>
 		</method>
 		<method name="draw_set_transform_matrix">
@@ -363,6 +363,20 @@
 			<param index="0" name="xform" type="Transform2D" />
 			<description>
 				Sets a custom local transform for drawing via matrix. Anything drawn afterwards will be transformed by this.
+			</description>
+		</method>
+		<method name="draw_slug_texture">
+			<return type="void" />
+			<param index="0" name="texture" type="Texture2D" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="offset" type="int" />
+			<param index="3" name="src_rect" type="Rect2" />
+			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="5" name="scale" type="float" default="1.0" />
+			<param index="6" name="color" type="bool" default="false" />
+			<description>
+				Draws a textured rectangle region of the HargBuzz/SLUG texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.render_mode].
+				[b]Note:[/b] Styleboxes, textures, and meshes stored only inside local variables should [b]not[/b] be used with this method in GDScript, because the drawing operation doesn't begin immediately once this method is called. In GDScript, when the function with the local variables ends, the local variables get destroyed before the rendering takes place.
 			</description>
 		</method>
 		<method name="draw_string" qualifiers="const">

@@ -58,6 +58,7 @@ public:
 	virtual Image::Format get_format() const override;
 
 	void update(const Ref<Image> &p_image);
+	void update_partial(const Ref<Image> &p_image, const Vector2i &p_offset);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;
@@ -72,6 +73,7 @@ public:
 
 	void draw_msdf_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, float p_px_range = 1.0, float p_scale = 1.0) const;
 	void draw_lcd_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1)) const;
+	void draw_slug(RID p_canvas_item, const Rect2 &p_rect, uint32_t p_offset, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), float p_scale = 1.0, bool p_color = false) const;
 
 	bool is_pixel_opaque(int p_x, int p_y) const override;
 

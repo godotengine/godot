@@ -39,6 +39,9 @@ layout(location = 6) out flat vec4 varying_E;
 layout(location = 7) out flat vec4 varying_F;
 layout(location = 8) out vec2 pixel_size_interp;
 #endif // USE_NINEPATCH
+#ifndef USE_PRIMITIVE
+layout(location = 9) out flat uvec2 varying_H;
+#endif
 #endif // !USE_ATTRIBUTES
 
 #define read_draw_data_color_texture_pixel_size params.color_texture_pixel_size
@@ -95,6 +98,7 @@ layout(location = 15) in uvec4 attrib_H;
 #define read_draw_data_ninepatch_margins attrib_D
 #define read_draw_data_dst_rect attrib_E
 #define read_draw_data_src_rect attrib_F
+#define read_draw_data_offset attrib_G.xy
 
 #endif // USE_PRIMITIVE
 
@@ -120,6 +124,8 @@ vec3 srgb_to_linear(vec3 color) {
 }
 #endif
 
+/* [[TextServer::SLUG_V_METHODS]] */
+
 void main() {
 #ifndef USE_ATTRIBUTES
 	varying_A = vec4(read_draw_data_world_x, read_draw_data_world_y);
@@ -134,6 +140,9 @@ void main() {
 	varying_E = vec4(read_draw_data_dst_rect.z, read_draw_data_dst_rect.w, read_draw_data_ninepatch_pixel_size.x, read_draw_data_ninepatch_pixel_size.y);
 	varying_F = read_draw_data_src_rect;
 #endif // USE_NINEPATCH
+#ifndef USE_PRIMITIVE
+	varying_H = read_draw_data_offset;
+#endif
 #endif // !USE_ATTRIBUTES
 
 	vec4 instance_custom = vec4(0.0);
@@ -267,6 +276,18 @@ void main() {
 
 	float point_size = 1.0;
 
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE) && defined(HB_SLUG_ENABLED)
+	if (sc_use_slug() || sc_use_slug_color()) {
+		float scale = params.text_data.x;
+		vec4 jac = vec4(scale, 0.0, 0.0, -scale);
+		vec2 viewport = vec2(1.0 / canvas_data.screen_pixel_size.x, 1.0 / canvas_data.screen_pixel_size.y);
+		vec2 vertex_norm_arr[4] = vec2[](vec2(-1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0));
+		vec2 vertex_norm = vertex_norm_arr[gl_VertexIndex];
+		uv.y = -uv.y;
+		hb_gpu_dilate(vertex, uv, vertex_norm, jac, model_matrix, viewport);
+	}
+#endif
+
 #ifdef USE_WORLD_VERTEX_COORDS
 	vertex = (model_matrix * vec4(vertex, 0.0, 1.0)).xy;
 #endif
@@ -348,8 +369,12 @@ layout(location = 8) in vec2 pixel_size_interp;
 #define read_draw_data_dst_rect_w varying_E.y
 #define read_draw_data_ninepatch_pixel_size (varying_E.zw)
 #define read_draw_data_src_rect_ninepatch (varying_F);
-
 #endif // USE_NINEPATCH
+
+#ifndef USE_PRIMITIVE
+layout(location = 9) in flat uvec2 varying_H;
+#define read_draw_data_offset varying_H
+#endif
 
 #endif // USE_ATTRIBUTES
 
@@ -562,9 +587,13 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	}
 }
 
-float msdf_median(float r, float g, float b) {
-	return max(min(r, g), min(max(r, g), b));
+ivec4 slug_fetch(int offset) {
+	int atlas_width = textureSize(slug_texture, 0).x;
+	return texelFetch(slug_texture, ivec2(offset % atlas_width, offset / atlas_width), 0);
 }
+
+/* [[TextServer::MSDF_F_METHODS]] */
+/* [[TextServer::SLUG_F_METHODS]] */
 
 void main() {
 	vec4 color = color_interp;
@@ -605,32 +634,43 @@ void main() {
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 	// only used by TYPE_RECT
-	if (sc_use_msdf()) {
-		float px_range = params.msdf.x;
-		float outline_thickness = params.msdf.y;
-
-		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
-		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
-		vec2 dest_size = vec2(1.0) / fwidth(uv);
-		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
-		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b);
-
-		if (outline_thickness > 0) {
-			float cr = clamp(outline_thickness, 0.0, (px_range / 2.0) - 1.0) / px_range;
-			d = min(d, msdf_sample.a);
-			float a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
-			color.a = a * color.a;
-		} else {
-			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
-			color.a = a * color.a;
-		}
-	} else if (sc_use_lcd()) {
+	if (sc_use_lcd()) {
 		vec4 lcd_sample = texture(sampler2D(color_texture, texture_sampler), uv);
 		if (lcd_sample.a == 1.0) {
 			color.rgb = lcd_sample.rgb * color.a;
 		} else {
 			color = vec4(0.0, 0.0, 0.0, 0.0);
 		}
+#ifdef MSDF_ENABLED
+	} else if (sc_use_msdf()) {
+		float px_range = params.text_data.x;
+		float outline_thickness = params.text_data.y;
+
+		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
+		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
+		vec2 dest_size = vec2(1.0) / fwidth(uv);
+		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
+
+		color.a = msdf_draw(msdf_sample, outline_thickness, px_range, px_size) * color.a;
+#endif
+#ifdef HB_SLUG_ENABLED
+	} else if (sc_use_slug()) {
+		float coverage = hb_gpu_draw(uv, read_draw_data_offset.x);
+		float brightness = dot(color.rgb, vec3(1.0 / 3.0));
+		float ppem = 1.0 / max(fwidth(uv).x, fwidth(uv).y);
+		coverage = hb_gpu_stem_darken(coverage, brightness, ppem);
+		color.a = color.a * coverage;
+	} else if (sc_use_slug_color()) {
+		float coverage = 0.0;
+		vec4 c = hb_gpu_paint(uv, read_draw_data_offset.x, color, coverage);
+		if (coverage > 0.0 && coverage < 1.0) {
+			float brightness = c.a > 0.0 ? dot(c.rgb, vec3(1.0 / 3.0)) / c.a : 0.0;
+			float ppem = 1.0 / max(fwidth(uv).x, fwidth(uv).y);
+			float adj = hb_gpu_stem_darken(coverage, brightness, ppem);
+			c *= adj / coverage;
+		}
+		color = c;
+#endif
 	} else {
 #else
 	{
