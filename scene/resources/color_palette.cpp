@@ -34,6 +34,7 @@
 
 void ColorPalette::set_colors(const PackedColorArray &p_colors) {
 	colors = p_colors;
+	emit_changed();
 }
 
 PackedColorArray ColorPalette::get_colors() const {
