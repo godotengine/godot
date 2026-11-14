@@ -68,7 +68,7 @@ private:
 	} theme_cache;
 
 	bool is_pressed = false;
-	bool has_input = false;
+	bool is_in_deadzone = true;
 	bool has_moved = false;
 	Vector2 raw_input_vector;
 	Vector2 input_vector;
@@ -81,6 +81,7 @@ private:
 	void _update_joystick(const Vector2 &p_pos);
 	void _handle_input_actions();
 	void _reset();
+	void _set_is_in_deadzone(bool p_is_in_deadzone);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -119,6 +120,8 @@ public:
 
 	void set_visibility_mode(VisibilityMode p_mode);
 	VisibilityMode get_visibility_mode() const;
+
+	bool get_is_in_deadzone() const;
 };
 
 VARIANT_ENUM_CAST(VirtualJoystick::JoystickMode);
