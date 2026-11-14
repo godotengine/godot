@@ -224,7 +224,21 @@ public:
 	}
 
 	//these go through command queue if they are in another thread
-	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
+	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) override {
+		WRITE_ACTION
+		if (ASYNC_COND_PUSH) {
+			// A retained Image can still be edited by its caller (for example a
+			// font atlas). Queue a value snapshot, with copy-on-write pixel data.
+			Ref<Image> snapshot;
+			if (p_image.is_valid()) {
+				snapshot = p_image->duplicate();
+			}
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::texture_2d_update, p_texture, snapshot, p_layer);
+		} else {
+			command_queue.flush_if_pending();
+			RSG::texture_storage->texture_2d_update(p_texture, p_image, p_layer);
+		}
+	}
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
 	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
