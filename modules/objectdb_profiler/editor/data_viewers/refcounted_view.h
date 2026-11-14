@@ -31,11 +31,10 @@
 #pragma once
 
 #include "../snapshot_data.h"
-#include "shared_controls.h"
 #include "snapshot_view.h"
 
-class Tree;
 class HSplitContainer;
+class TreeSortAndFilterBar;
 
 class SnapshotRefCountedView : public SnapshotView {
 	GDCLASS(SnapshotRefCountedView, SnapshotView);
