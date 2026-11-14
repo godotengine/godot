@@ -74,6 +74,8 @@ class EditorBottomPanel : public DockTabContainer {
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
 	void _update_center_split_offset();
+	void _update_tab_alignment();
+
 	EditorDock *_get_dock_from_control(Control *p_control) const;
 
 protected:
