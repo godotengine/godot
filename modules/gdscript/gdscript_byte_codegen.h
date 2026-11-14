@@ -420,7 +420,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		opcodes.push_back(get_indexed_getter_pos(p_indexed_getter));
 	}
 
-	void append(const Variant::ValidatedBuiltInMethod p_method) {
+	void append_builtin_method(const Variant::ValidatedBuiltInMethod p_method) {
 		opcodes.push_back(get_builtin_method_pos(p_method));
 	}
 
