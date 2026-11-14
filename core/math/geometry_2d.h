@@ -363,19 +363,10 @@ public:
 	// Assumes cartesian coordinate system with +x to the right, +y up.
 	// If using screen coordinates (+x to the right, +y down) the result will need to be flipped.
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
-		int c = p_polygon.size();
-		if (c < 3) {
+		if (p_polygon.size() < 3) {
 			return false;
 		}
-		const Vector2 *p = p_polygon.ptr();
-		real_t sum = 0;
-		for (int i = 0; i < c; i++) {
-			const Vector2 &v1 = p[i];
-			const Vector2 &v2 = p[(i + 1) % c];
-			sum += (v2.x - v1.x) * (v2.y + v1.y);
-		}
-
-		return sum > 0.0f;
+		return Triangulate::get_area(p_polygon) <= 0.0f;
 	}
 
 	// Alternate implementation that should be faster.
