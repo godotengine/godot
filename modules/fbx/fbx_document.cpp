@@ -1046,7 +1046,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 	return p_state->images.size() - 1;
 }
 
-Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_path) {
+Error FBXDocument::_parse_images(Ref<FBXState> p_state) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 
 	const ufbx_scene *fbx_scene = p_state->scene.get();
@@ -1057,8 +1057,8 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 		if (path.is_absolute_path()) {
 			path = path.get_file();
 		}
-		if (!p_base_path.is_empty()) {
-			path = p_base_path.path_join(path);
+		if (!p_state->base_path.is_empty()) {
+			path = p_state->base_path.path_join(path);
 		}
 		path = path.simplify_path();
 		Vector<uint8_t> data;
@@ -2015,7 +2015,7 @@ void FBXDocument::_process_mesh_instances(Ref<FBXState> p_state, Node *p_scene_r
 	}
 }
 
-Error FBXDocument::_parse(Ref<FBXState> p_state, const String &p_path, Ref<FileAccess> p_file) {
+Error FBXDocument::_parse(Ref<FBXState> p_state, Ref<FileAccess> p_file) {
 	p_state->scene.reset();
 
 	Error err = ERR_INVALID_DATA;
@@ -2106,7 +2106,7 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, const String &p_path, Ref<FileA
 		}
 	}
 
-	err = _parse_fbx_state(p_state, p_path);
+	err = _parse_fbx_state(p_state);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	return OK;
@@ -2170,7 +2170,7 @@ Error FBXDocument::append_from_buffer(const PackedByteArray &p_bytes, const Stri
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	state->base_path = p_base_path.get_base_dir();
-	err = _parse(state, state->base_path, file_access);
+	err = _parse(state, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -2180,7 +2180,7 @@ Error FBXDocument::append_from_buffer(const PackedByteArray &p_bytes, const Stri
 	return OK;
 }
 
-Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_search_path) {
+Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state) {
 	Error err;
 
 	// Abort parsing if the scene is not loaded.
@@ -2196,7 +2196,7 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 
 	if (!p_state->discard_meshes_and_materials) {
 		/* PARSE IMAGES */
-		err = _parse_images(p_state, p_search_path);
+		err = _parse_images(p_state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
@@ -2260,7 +2260,7 @@ Error FBXDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state
 	if (p_state == Ref<FBXState>()) {
 		p_state.instantiate();
 	}
-	state->filename = p_path.get_file().get_basename();
+	state->filename = p_path.get_file();
 	state->use_named_skin_binds = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
 	state->discard_meshes_and_materials = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
@@ -2272,7 +2272,7 @@ Error FBXDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state
 		base_path = p_path.get_base_dir();
 	}
 	state->base_path = base_path;
-	err = _parse(p_state, base_path, file);
+	err = _parse(p_state, file);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
