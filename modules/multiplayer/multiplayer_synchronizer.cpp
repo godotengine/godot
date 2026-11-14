@@ -295,6 +295,11 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 	}
 
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (net_id == 0) {
+				get_multiplayer()->send_request_path(this);
+			}
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			_start();
 		} break;
