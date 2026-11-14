@@ -730,6 +730,11 @@ bool SceneTree::process(double p_time) {
 	process_timers(p_time, false); //go through timers
 	process_tweens(p_time, false);
 
+	// Timer and tween callbacks may have requested a scene change.
+	if (unlikely(pending_new_scene_id.is_valid())) {
+		_flush_scene_change();
+	}
+
 	flush_transform_notifications(); // Additional transforms after timers update.
 
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
