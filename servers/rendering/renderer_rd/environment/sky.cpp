@@ -882,7 +882,9 @@ void sky() {
 			RD::Uniform u;
 			u.binding = 0;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-			RID vfog = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+			// Opaque black: no in-scattering and full transmittance, so it leaves the sky untouched
+			// if volumetric fog is enabled in the UBO but its texture is not available.
+			RID vfog = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_BLACK);
 			u.append_id(vfog);
 			uniforms.push_back(u);
 		}
@@ -1486,6 +1488,13 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 	Projection projection = sky_scene_state.cam_projection;
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
+
+	// The volumetric fog is (re)created after setup_sky() (e.g. when the viewport is resized),
+	// which invalidates the uniform set gathered there. Use the current one instead.
+	if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
+		Ref<RendererRD::Fog::VolumetricFog> fog = p_render_buffers->get_custom_data(RB_SCOPE_FOG);
+		sky_scene_state.fog_uniform_set = fog->sky_uniform_set;
+	}
 
 	bool is_multiview = sky_scene_state.view_count > 1;
 
