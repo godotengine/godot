@@ -35,6 +35,7 @@
 
 void ImporterMeshInstance3D::set_mesh(const Ref<ImporterMesh> &p_mesh) {
 	mesh = p_mesh;
+	blend_shape_values.resize_initialized(mesh->get_blend_shape_count());
 }
 Ref<ImporterMesh> ImporterMeshInstance3D::get_mesh() const {
 	return mesh;
@@ -45,6 +46,44 @@ void ImporterMeshInstance3D::set_skin(const Ref<Skin> &p_skin) {
 }
 Ref<Skin> ImporterMeshInstance3D::get_skin() const {
 	return skin;
+}
+
+int ImporterMeshInstance3D::get_blend_shape_count() const {
+	if (mesh.is_null()) {
+		return 0;
+	}
+	return mesh->get_blend_shape_count();
+}
+
+int ImporterMeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
+	if (mesh.is_null()) {
+		return -1;
+	}
+	for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+		if (mesh->get_blend_shape_name(i) == p_name) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+float ImporterMeshInstance3D::get_blend_shape_value(int p_blend_shape) const {
+	ERR_FAIL_COND_V(mesh.is_null(), 0.0);
+	ERR_FAIL_INDEX_V(p_blend_shape, (int)mesh->get_blend_shape_count(), 0);
+	// ImporterMesh doesn't emit changed signals, so we just assume the value is 0.0 if it hasn't been set yet.
+	if (p_blend_shape >= (int)blend_shape_values.size()) {
+		return 0.0;
+	}
+	return blend_shape_values[p_blend_shape];
+}
+
+void ImporterMeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
+	ERR_FAIL_COND(mesh.is_null());
+	if ((int)blend_shape_values.size() != mesh->get_blend_shape_count()) {
+		blend_shape_values.resize_initialized(mesh->get_blend_shape_count());
+	}
+	ERR_FAIL_INDEX(p_blend_shape, (int)blend_shape_values.size());
+	blend_shape_values[p_blend_shape] = p_value;
 }
 
 void ImporterMeshInstance3D::set_surface_material(int p_idx, const Ref<Material> &p_material) {
@@ -161,6 +200,11 @@ void ImporterMeshInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_visibility_range_fade_mode", "mode"), &ImporterMeshInstance3D::set_visibility_range_fade_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_range_fade_mode"), &ImporterMeshInstance3D::get_visibility_range_fade_mode);
+
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &ImporterMeshInstance3D::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("find_blend_shape_by_name", "name"), &ImporterMeshInstance3D::find_blend_shape_by_name);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_value", "blend_shape_idx"), &ImporterMeshInstance3D::get_blend_shape_value);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_value", "blend_shape_idx", "value"), &ImporterMeshInstance3D::set_blend_shape_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, ImporterMesh::get_class_static()), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");

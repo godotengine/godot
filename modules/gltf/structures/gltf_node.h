@@ -52,6 +52,7 @@ private:
 	bool joint = false;
 	bool visible = true;
 	Vector<int> children;
+	Vector<float> weights;
 	GLTFLightIndex light = -1;
 	Dictionary additional_data;
 
@@ -94,6 +95,9 @@ public:
 
 	Vector3 get_scale();
 	void set_scale(const Vector3 &p_scale);
+
+	Vector<float> get_weights();
+	void set_weights(const Vector<float> &p_blend_shape_weights);
 
 	Vector<int> get_children();
 	void set_children(const Vector<int> &p_children);
