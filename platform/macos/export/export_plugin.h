@@ -136,6 +136,7 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+	bool check_export_template_debugsymbols(const String &p_symbols_path, const String &p_arch, bool p_debug) const;
 
 public:
 	virtual String get_name() const override {
@@ -151,6 +152,7 @@ public:
 	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
+	String get_template_file_name(const String &p_target, const String &p_arch) const;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
