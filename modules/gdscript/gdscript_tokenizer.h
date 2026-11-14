@@ -78,6 +78,7 @@ public:
 			MINUS,
 			STAR,
 			STAR_STAR,
+			TILDE_SLASH,
 			SLASH,
 			PERCENT,
 			// Assignment
