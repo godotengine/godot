@@ -79,6 +79,8 @@ class AnimationLibraryEditor : public AcceptDialog {
 	StringName file_dialog_animation;
 	StringName file_dialog_library;
 
+	Label *zero_libraries_error_label = nullptr;
+	Button *create_global_library_button = nullptr;
 	Button *new_library_button = nullptr;
 	Button *load_library_button = nullptr;
 
@@ -95,6 +97,7 @@ class AnimationLibraryEditor : public AcceptDialog {
 
 	AnimationMixer *mixer = nullptr;
 
+	void _create_global_library();
 	void _add_library();
 	void _add_library_validate(const String &p_name);
 	void _add_library_confirm();
