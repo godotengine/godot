@@ -74,7 +74,7 @@ void XMLParser::_parse_closing_xml_element() {
 	next_char();
 	const char *pBeginClose = P;
 
-	while (*P && *P != '>') {
+	while (peek() && peek() != '>') {
 		next_char();
 	}
 
@@ -83,7 +83,7 @@ void XMLParser::_parse_closing_xml_element() {
 	print_line("XML CLOSE: " + node_name);
 #endif
 
-	if (*P) {
+	if (peek()) {
 		next_char();
 	}
 }
@@ -93,19 +93,19 @@ void XMLParser::_ignore_definition() {
 
 	const char *F = P;
 	// move until end marked with '>' reached
-	while (*P && *P != '>') {
+	while (peek() && peek() != '>') {
 		next_char();
 	}
 	node_name.clear();
 	node_name.append_utf8(F, P - F);
 
-	if (*P) {
+	if (peek()) {
 		next_char();
 	}
 }
 
 bool XMLParser::_parse_cdata() {
-	if (*(P + 1) != '[') {
+	if (peek(1) != '[') {
 		return false;
 	}
 
@@ -113,12 +113,12 @@ bool XMLParser::_parse_cdata() {
 
 	// skip '<![CDATA['
 	int count = 0;
-	while (*P && count < 8) {
+	while (peek() && count < 8) {
 		next_char();
 		++count;
 	}
 
-	if (!*P) {
+	if (!peek()) {
 		node_name = "";
 		return true;
 	}
@@ -127,10 +127,10 @@ bool XMLParser::_parse_cdata() {
 	const char *cDataEnd = nullptr;
 
 	// find end of CDATA
-	while (*P && !cDataEnd) {
-		if (*P == '>' &&
-				(*(P - 1) == ']') &&
-				(*(P - 2) == ']')) {
+	while (peek() && !cDataEnd) {
+		if (peek() == '>' &&
+				(peek(-1) == ']') &&
+				(peek(-2) == ']')) {
 			cDataEnd = P - 2;
 		}
 
@@ -174,10 +174,10 @@ void XMLParser::_parse_comment() {
 		pCommentBegin = P;
 
 		int count = 1;
-		while (*P && count) {
-			if (*P == '>') {
+		while (peek() && count) {
+			if (peek() == '>') {
 				--count;
-			} else if (*P == '<') {
+			} else if (peek() == '<') {
 				++count;
 			}
 			next_char();
@@ -205,28 +205,28 @@ void XMLParser::_parse_opening_xml_element() {
 	const char *startName = P;
 
 	// find end of element
-	while (*P && *P != '>' && !_is_white_space(*P)) {
+	while (peek() && peek() != '>' && !_is_white_space(peek())) {
 		next_char();
 	}
 
 	const char *endName = P;
 
 	// find attributes
-	while (*P && *P != '>') {
-		if (_is_white_space(*P)) {
+	while (peek() && peek() != '>') {
+		if (_is_white_space(peek())) {
 			next_char();
 		} else {
-			if (*P != '/') {
+			if (peek() != '/') {
 				// we've got an attribute
 
 				// read the attribute names
 				const char *attributeNameBegin = P;
 
-				while (*P && !_is_white_space(*P) && *P != '=') {
+				while (peek() && !_is_white_space(peek()) && peek() != '=') {
 					next_char();
 				}
 
-				if (!*P) {
+				if (!peek()) {
 					break;
 				}
 
@@ -235,25 +235,25 @@ void XMLParser::_parse_opening_xml_element() {
 
 				// read the attribute value
 				// check for quotes and single quotes, thx to murphy
-				while ((*P != '\"') && (*P != '\'') && *P) {
+				while (peek() != '\"' && peek() != '\'' && peek()) {
 					next_char();
 				}
 
-				if (!*P) { // malformatted xml file
+				if (!peek()) { // malformatted xml file
 					break;
 				}
 
-				const char attributeQuoteChar = *P;
+				const char attributeQuoteChar = peek();
 
 				next_char();
 				const char *attributeValueBegin = P;
 
-				while (*P != attributeQuoteChar && *P) {
+				while (peek() != attributeQuoteChar && peek()) {
 					next_char();
 				}
 
 				const char *attributeValueEnd = P;
-				if (*P) {
+				if (peek()) {
 					next_char();
 				}
 
@@ -287,7 +287,7 @@ void XMLParser::_parse_opening_xml_element() {
 	print_line("XML OPEN: " + node_name);
 #endif
 
-	if (*P) {
+	if (peek()) {
 		next_char();
 	}
 }
@@ -297,7 +297,7 @@ void XMLParser::_parse_current_node() {
 	node_offset = P - data;
 
 	// more forward until '<' found
-	while (*P != '<' && *P) {
+	while (peek() != '<' && peek()) {
 		next_char();
 	}
 
@@ -308,14 +308,14 @@ void XMLParser::_parse_current_node() {
 		}
 	}
 
-	if (!*P) {
+	if (!peek()) {
 		return;
 	}
 
 	next_char();
 
 	// based on current token, parse and report next element
-	switch (*P) {
+	switch (peek()) {
 		case '/':
 			_parse_closing_xml_element();
 			break;
