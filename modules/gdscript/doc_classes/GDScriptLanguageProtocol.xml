@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_text_document" deprecated="[GDScriptTextDocument] is deprecated.">
+		<method name="get_text_document" deprecated="">
 			<return type="GDScriptTextDocument" />
 			<description>
 				Returns the language server's [GDScriptTextDocument] instance.
