@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_headless_extension.h                                           */
+/*  openxr_headless_extension.cpp                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,38 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "openxr_headless_extension.h"
 
-#include "../util.h"
-#include "openxr_extension_wrapper.h"
+#include "../../openxr_api.h"
 
-class OpenXRHeadlessExtension : public OpenXRExtensionWrapper {
-	GDCLASS(OpenXRHeadlessExtension, OpenXRExtensionWrapper);
+#include <openxr/openxr.h>
 
-protected:
-	static void _bind_methods() {}
+// Implementation for:
+// https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MND_headless
 
-public:
-	static OpenXRHeadlessExtension *get_singleton();
+HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVersion p_version) {
+	HashMap<String, bool *> request_extensions;
 
-	OpenXRHeadlessExtension();
-	virtual ~OpenXRHeadlessExtension() override;
-
-	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
-
-	virtual void on_instance_created(const XrInstance p_instance) override;
-
-	void get_current_xrtime(XrTime *result);
-
-	bool is_available();
-
-private:
-	static OpenXRHeadlessExtension *singleton;
-
-	bool headless_ext = false;
+	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = nullptr;
 
 #ifdef UNIX_ENABLED
-	bool convert_timespec_time_ext = false;
-	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec *), timespecTime, (XrTime *), time);
+	request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = nullptr;
 #endif
-};
+
+	return request_extensions;
+}
+
+void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
+#ifdef UNIX_ENABLED
+	EXT_INIT_XR_FUNC(xrConvertTimespecTimeToTimeKHR);
+#endif
+}
+
+void OpenXRHeadlessExtension::post_wait_frame(XrFrameWaitInfo *frame_wait_info, XrFrameState *frame_state) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+	XrInstance instance = openxr_api->get_instance();
+	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
+
+#ifdef UNIX_ENABLED
+	timespec time;
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	xrConvertTimespecTimeToTimeKHR(instance, &time, &frame_state->predictedDisplayTime);
+#endif
+}

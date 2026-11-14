@@ -229,4 +229,7 @@ public:
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) = 0; // `create_projection_fov` creates a proper projection matrix based on asymmetric FOV data provided by OpenXR.
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) = 0; // `get_texture` returns a Godot texture RID for the current active texture in our swapchain.
 	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) = 0; // `get_density_map` returns a Godot texture RID for the current active density map in our swapchain (if any).
+
+	virtual bool is_headless() { return false; } // `is_headless` returns whether this extension is a headless, or a dummy graphics extension, meaning it doesn't actually do anything graphics related.
+	virtual void post_wait_frame(XrFrameWaitInfo *frame_wait_info, XrFrameState *frame_state) {} // `post_wait_frame` is called immediately after `xrWaitFrame` and allows modifying `frame_wait_info` and `frame_state`.
 };
