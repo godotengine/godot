@@ -901,6 +901,24 @@ Error GDScript::reload(bool p_keep_state) {
 	if (p_keep_state) {
 		// Update the properties in the inspector.
 		update_exports();
+		if (Engine::get_singleton()->is_editor_hint()) {
+			Vector<ObjectID> owners;
+			{
+				MutexLock lock(GDScriptLanguage::singleton->mutex);
+				for (SelfList<GDScriptInstance> *E = instances.first();
+						E; E = E->next()) {
+					owners.push_back(
+							E->self()->get_owner()->get_instance_id());
+				}
+			}
+
+			for (const ObjectID &id : owners) {
+				Object *owner = ObjectDB::get_instance(id);
+				if (owner) {
+					owner->notify_property_list_changed();
+				}
+			}
+		}
 	}
 #endif
 
