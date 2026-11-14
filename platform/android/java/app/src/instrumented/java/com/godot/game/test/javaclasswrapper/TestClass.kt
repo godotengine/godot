@@ -145,6 +145,16 @@ class TestClass {
 		}
 
 		@JvmStatic
+		fun testArgStringNullable(a: String?): String {
+			return "String: ${a}"
+		}
+
+		@JvmStatic
+		fun testArgCharSequenceNullable(a: CharSequence?): String {
+			return "CharSequence: ${a}"
+		}
+
+		@JvmStatic
 		fun testArgBoolArray(a: BooleanArray): String {
 			return a.contentToString();
 		}
