@@ -36,7 +36,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/texture_rect.h"
 
 class NoisePreview : public Control {
@@ -49,7 +49,7 @@ class NoisePreview : public Control {
 	Size2i _preview_texture_size;
 
 	TextureRect *_texture_rect = nullptr;
-	Button *_3d_space_switch = nullptr;
+	CheckBox *_3d_space_switch = nullptr;
 
 public:
 	NoisePreview() {
@@ -60,13 +60,13 @@ public:
 		_texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_COVERED);
 		add_child(_texture_rect);
 
-		_3d_space_switch = memnew(Button);
+		_3d_space_switch = memnew(CheckBox);
 		_3d_space_switch->set_text(TTR("3D"));
 		_3d_space_switch->set_tooltip_text(TTR("Toggles whether the noise preview is computed in 3D space."));
-		_3d_space_switch->set_toggle_mode(true);
 		_3d_space_switch->set_offset(SIDE_LEFT, PADDING_3D_SPACE_SWITCH);
 		_3d_space_switch->set_offset(SIDE_TOP, PADDING_3D_SPACE_SWITCH);
-		_3d_space_switch->connect(SceneStringName(pressed), callable_mp(this, &NoisePreview::_on_3d_button_pressed));
+		_3d_space_switch->connect(SceneStringName(toggled), callable_mp(this, &NoisePreview::_on_3d_button_toggled));
+		_3d_space_switch->set_theme_type_variation(SNAME("EditorInspectorButton"));
 		add_child(_3d_space_switch);
 	}
 
@@ -85,8 +85,8 @@ public:
 	}
 
 private:
-	void _on_3d_button_pressed() {
-		if (_3d_space_switch->is_pressed()) {
+	void _on_3d_button_toggled(bool p_pressed) {
+		if (p_pressed) {
 			_noise->set_meta("_preview_in_3d_space_", true);
 		} else {
 			_noise->remove_meta("_preview_in_3d_space_");
