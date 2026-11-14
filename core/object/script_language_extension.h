@@ -236,6 +236,14 @@ GDVIRTUAL_NATIVE_PTR(ScriptLanguageExtensionProfilingInfo)
 
 class ScriptLanguageExtension : public ScriptLanguage {
 	GDCLASS(ScriptLanguageExtension, ScriptLanguage)
+
+#ifdef TOOLS_ENABLED
+	using Range = EditorLanguage::Range;
+	using DiagnosticSeverity = EditorLanguage::DiagnosticSeverity;
+	using Diagnostic = EditorLanguage::Diagnostic;
+	using DiagnosticRelatedInformation = EditorLanguage::DiagnosticRelatedInformation;
+#endif
+
 protected:
 	// See CodeEdit::CodeCompletionKind and EditorLanguage::CompletionKind.
 	enum CodeCompletionKind {
@@ -311,8 +319,8 @@ private:
 			return script_language->auto_indent_code(r_code, p_from_line, p_to_line);
 		}
 
-		virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const override {
-			return script_language->validate(p_code, p_path, r_functions, r_errors, r_warnings, r_safe_lines);
+		virtual bool validate(const String &p_code, const String &p_path, LocalVector<Diagnostic> *r_diagnostics, List<String> *r_functions, HashSet<int> *r_safe_lines) const override {
+			return script_language->validate(p_code, p_path, r_functions, r_diagnostics, r_safe_lines);
 		}
 
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {
@@ -393,9 +401,9 @@ public:
 	GDVIRTUAL6RC_REQUIRED(Dictionary, _validate, const String &, const String &, bool, bool, bool, bool)
 
 #ifdef TOOLS_ENABLED
-	bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<EditorLanguage::ScriptError> *r_errors = nullptr, List<EditorLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const {
+	bool validate(const String &p_code, const String &p_path, List<String> *r_functions, LocalVector<Diagnostic> *r_diagnostics, HashSet<int> *r_safe_lines) const {
 		Dictionary ret;
-		GDVIRTUAL_CALL(_validate, p_script, p_path, r_functions != nullptr, r_errors != nullptr, r_warnings != nullptr, r_safe_lines != nullptr, ret);
+		GDVIRTUAL_CALL(_validate, p_code, p_path, r_functions != nullptr, r_diagnostics != nullptr, r_diagnostics != nullptr, r_safe_lines != nullptr, ret);
 		if (!ret.has("valid")) {
 			return false;
 		}
@@ -405,7 +413,8 @@ public:
 				r_functions->push_back(functions[i]);
 			}
 		}
-		if (r_errors != nullptr && ret.has("errors")) {
+		HashMap<String, LocalVector<Dictionary>> related_errors;
+		if (r_diagnostics != nullptr && ret.has("errors")) {
 			Array errors = ret["errors"];
 			for (const Variant &error : errors) {
 				Dictionary err = error;
@@ -413,20 +422,32 @@ public:
 				ERR_CONTINUE(!err.has("column"));
 				ERR_CONTINUE(!err.has("message"));
 
-				EditorLanguage::ScriptError serr;
 				if (err.has("path")) {
-					serr.path = err["path"];
+					related_errors[err["path"]].push_back(err);
+					continue;
 				}
-				serr.start_line = err["line"];
-				serr.start_column = err["column"];
-				serr.end_line = err["line"];
-				serr.end_column = err["column"];
-				serr.message = err["message"];
 
-				r_errors->push_back(serr);
+				Range range(err["line"], err["column"], err["line"], err["column"]);
+				r_diagnostics->push_back(Diagnostic(DiagnosticSeverity::ERROR, err["message"], range));
 			}
 		}
-		if (r_warnings != nullptr && ret.has("warnings")) {
+		for (const KeyValue<String, LocalVector<Dictionary>> &E : related_errors) {
+			const int last_line = p_code.count("\n");
+			Range range(last_line, 0, last_line, 0);
+			Diagnostic diagnostic(DiagnosticSeverity::ERROR, String(), range);
+			diagnostic.tags.group = true;
+
+			for (const Dictionary &dict : E.value) {
+				int line = dict["line"];
+				int column = dict["column"];
+				Range related_range(line, column, line, column);
+				DiagnosticRelatedInformation related(dict["message"], related_range, E.key);
+				diagnostic.related_information.push_back(related);
+			}
+
+			r_diagnostics->push_back(diagnostic);
+		}
+		if (r_diagnostics != nullptr && ret.has("warnings")) {
 			ERR_FAIL_COND_V(!ret.has("warnings"), false);
 			Array warnings = ret["warnings"];
 			for (const Variant &warning : warnings) {
@@ -436,13 +457,10 @@ public:
 				ERR_CONTINUE(!warn.has("string_code"));
 				ERR_CONTINUE(!warn.has("message"));
 
-				EditorLanguage::Warning swarn;
-				swarn.start_line = warn["start_line"];
-				swarn.end_line = warn["end_line"];
-				swarn.string_code = warn["string_code"];
-				swarn.message = warn["message"];
-
-				r_warnings->push_back(swarn);
+				Range range(warn["start_line"], 0, warn["end_line"], p_code.get_slicec('\n', warn["end_line"]).size());
+				Diagnostic diagnostic(DiagnosticSeverity::WARNING, warn["message"], range);
+				diagnostic.code = warn["string_code"];
+				r_diagnostics->push_back(diagnostic);
 			}
 		}
 		if (r_safe_lines != nullptr && ret.has("safe_lines")) {
