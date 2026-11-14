@@ -330,7 +330,7 @@ AnimationNode::NodeTimeInfo AnimationNode::process(ProcessState &p_process_state
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	if (p_playback_info.seeked) {
 		if (p_playback_info.is_external_seeking) {
-			pi.delta = position - p_playback_info.time;
+			pi.delta = p_playback_info.time - position;
 		}
 	} else {
 		pi.time = position + get_process_delta(p_instance, p_playback_info);
