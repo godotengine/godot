@@ -211,7 +211,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
-	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	static void _bind_methods();
 
@@ -234,7 +234,7 @@ public:
 
 	virtual bool is_script_valid() const override { return valid; }
 
-	bool inherits_script(const Ref<Script> &p_script) const override;
+	virtual bool inherits_script(const Ref<Script> &p_script) const override;
 
 	GDScript *find_class(const String &p_qualified_name);
 	bool has_class(const GDScript *p_script);
@@ -242,8 +242,6 @@ public:
 	bool is_root_script() const { return _owner == nullptr; }
 	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
-	const HashMap<StringName, Variant> &get_constants() const { return constants; }
-	const HashSet<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
@@ -259,12 +257,11 @@ public:
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
 
-	bool is_tool() const override { return tool; }
-	bool is_abstract() const override { return _is_abstract; }
+	virtual bool is_tool() const override { return tool; }
+	virtual bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 	StringName debug_get_static_var_by_index(int p_idx) const;
 
@@ -298,9 +295,8 @@ public:
 
 	void set_binary_tokens_source(const Vector<uint8_t> &p_binary_tokens);
 	const Vector<uint8_t> &get_binary_tokens_source() const;
-	Vector<uint8_t> get_as_binary_tokens() const;
 
-	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
