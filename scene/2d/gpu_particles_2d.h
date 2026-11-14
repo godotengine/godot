@@ -96,6 +96,12 @@ private:
 
 	void _texture_changed();
 
+	struct InterpolationData {
+		uint64_t last_physics_frame = UINT64_MAX;
+		Transform2D xform_curr;
+		Transform2D xform_prev;
+	} _interpolation_data;
+
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
