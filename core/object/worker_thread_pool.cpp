@@ -538,7 +538,8 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 
 			if (p_caller_pool_thread->pool->task_queue.first()) {
 				task_to_process = task_queue.first()->self();
-				if ((p_task == ThreadData::YIELDING || p_caller_pool_thread->has_pump_task == true) && task_to_process->is_pump_task) {
+				// A pump thread takes no tasks while it waits: one could flush the pump's own queue from inside it.
+				if (p_caller_pool_thread->has_pump_task || (p_task == ThreadData::YIELDING && task_to_process->is_pump_task)) {
 					task_to_process = nullptr;
 					_notify_threads(p_caller_pool_thread, 1, 0);
 				} else {
