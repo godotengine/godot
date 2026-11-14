@@ -74,6 +74,7 @@ private:
 
 	SceneShaderForwardMobile scene_shader;
 	bool disable_ubershaders = false;
+	bool single_pass_directional_shadows = false;
 
 	/* Render Buffer */
 
