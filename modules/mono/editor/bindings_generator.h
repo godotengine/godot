@@ -47,6 +47,9 @@ class BindingsGenerator {
 		int64_t value = 0;
 		const DocData::ConstantDoc *const_doc = nullptr;
 
+		// Whether the constant is generated as `int` instead of `long` in C#.
+		bool is_int32 = false;
+
 		bool is_deprecated = false;
 		String deprecation_message;
 
