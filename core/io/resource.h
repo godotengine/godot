@@ -88,6 +88,9 @@ private:
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
+	// komm64: the file this resource was duplicated from, directly or through
+	// copies of copies; empty for anything else. Snapshots rebuild a copy from it.
+	String snapshot_origin;
 
 	SelfList<Resource> remapped_list;
 
@@ -152,6 +155,7 @@ public:
 	String get_scene_unique_id() const;
 
 	Ref<Resource> duplicate(bool p_deep = false) const;
+	String snapshot_get_origin() const { return snapshot_origin; }
 	Ref<Resource> duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
 	Ref<Resource> _duplicate_from_variant(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 	static void _teardown_duplicate_from_variant();

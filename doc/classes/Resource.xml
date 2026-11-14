@@ -150,6 +150,12 @@
 				Calls [method _setup_local_to_scene]. If [member resource_local_to_scene] is set to [code]true[/code], this method is automatically called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
 			</description>
 		</method>
+		<method name="snapshot_get_origin" qualifiers="const">
+			<return type="String" />
+			<description>
+				komm64: The path of the file this resource was duplicated from, directly or through copies of copies, or an empty [String] if it is not such a copy. A snapshot saves a copy as this path and the properties that differ from the file, and rebuilds it by duplicating the file again.
+			</description>
+		</method>
 		<method name="take_over_path">
 			<return type="void" />
 			<param index="0" name="path" type="String" />

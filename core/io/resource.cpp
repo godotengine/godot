@@ -399,6 +399,8 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 	if (p_params.local_scene) {
 		r->local_scene = p_params.local_scene;
 	}
+	// A file's copy remembers the file; a copy of a copy, the same file.
+	r->snapshot_origin = is_built_in() ? snapshot_origin : get_path();
 
 	// Duplicate script first, so the scripted properties are considered.
 	BEFORE_USER_CODE
@@ -762,6 +764,7 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("emit_changed"), &Resource::emit_changed);
 
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("snapshot_get_origin"), &Resource::snapshot_get_origin);
 	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::_duplicate_deep_bind, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 
 	// TODO: Once we can break compatibility, change the binding to "copy_from". For now, we have to avoid clashing with the method from `Image`.
