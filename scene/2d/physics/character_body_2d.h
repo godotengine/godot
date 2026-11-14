@@ -62,6 +62,7 @@ public:
 	Vector2 get_position_delta() const;
 	const Vector2 &get_floor_normal() const;
 	const Vector2 &get_wall_normal() const;
+	const Vector2 &get_ceiling_normal() const;
 	const Vector2 &get_real_velocity() const;
 
 	real_t get_floor_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
@@ -133,6 +134,7 @@ private:
 	Vector2 floor_normal;
 	Vector2 platform_velocity;
 	Vector2 wall_normal;
+	Vector2 ceiling_normal;
 	Vector2 last_motion;
 	Vector2 previous_position;
 	Vector2 real_velocity;
