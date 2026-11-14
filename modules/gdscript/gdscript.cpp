@@ -2797,7 +2797,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 		while (subclass) {
 			if (subclass->extends_used) {
 				if (!subclass->extends_path.is_empty()) {
-					String subpath = subclass->extends_path;
+					String subpath = ResourceUID::ensure_path_nocheck(subclass->extends_path);
 					if (subpath.is_relative_path()) {
 						subpath = path.get_base_dir().path_join(subpath).simplify_path();
 					}

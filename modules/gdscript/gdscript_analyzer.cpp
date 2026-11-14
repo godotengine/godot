@@ -436,15 +436,27 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 		int extends_index = 0;
 
+		bool path_valid = true;
 		if (!p_class->extends_path.is_empty()) {
 			if (p_class->extends_path.is_relative_path()) {
 				p_class->extends_path = class_type.script_path.get_base_dir().path_join(p_class->extends_path).simplify_path();
+			} else if (p_class->extends_path.begins_with("uid://")) {
+				ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(p_class->extends_path);
+				if (id != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(id)) {
+					p_class->extends_path = ResourceUID::get_singleton()->get_id_path(id);
+				} else {
+					path_valid = false; // Needed to avoid UID errors.
+				}
 			}
-			if (!p_class->extends_path.has_extension(GDScriptLanguage::get_singleton()->get_extension())) {
+			if (path_valid && !p_class->extends_path.has_extension(GDScriptLanguage::get_singleton()->get_extension())) {
 				push_error(vformat(R"("%s" is not a GDScript.)", p_class->extends_path), p_class, p_class->extends_end_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column);
 				return ERR_PARSE_ERROR;
 			}
-			Ref<GDScriptParserRef> ext_parser = parser->get_depended_parser_for(p_class->extends_path);
+			Ref<GDScriptParserRef> ext_parser;
+			if (path_valid) {
+				ext_parser = parser->get_depended_parser_for(p_class->extends_path);
+			}
+
 			if (ext_parser.is_null()) {
 				push_error(vformat(R"(Could not resolve super class path "%s".)", p_class->extends_path), p_class);
 				return ERR_PARSE_ERROR;

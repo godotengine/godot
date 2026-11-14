@@ -1,0 +1,2 @@
+func ancestor():
+	print("Fine")
