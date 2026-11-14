@@ -231,4 +231,33 @@ TEST_CASE("[XMLParser] CDATA") {
 	CHECK_EQ(parser.get_node_name(), "a");
 }
 
+TEST_CASE("[XMLParser] State reset and attribute leakage") {
+	const String input = "<elem attr=\"val\"/><!-- comment -->";
+	XMLParser parser;
+	REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "elem");
+	CHECK_EQ(parser.get_attribute_count(), 1);
+	CHECK_EQ(parser.get_attribute_name(0), "attr");
+	CHECK_EQ(parser.get_attribute_value(0), "val");
+
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+	CHECK_EQ(parser.get_node_name(), " comment ");
+	// Verify that attributes do not leak to the next non-element node
+	CHECK_EQ(parser.get_attribute_count(), 0);
+
+	parser.close();
+
+	// Verify full state reset after close
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_NONE);
+	CHECK_EQ(parser.get_node_name(), "");
+	CHECK_EQ(parser.get_attribute_count(), 0);
+	CHECK_EQ(parser.get_current_line(), 0);
+	CHECK_EQ(parser.get_node_offset(), 0);
+	CHECK_EQ(parser.is_empty(), false);
+}
+
 } // namespace TestXMLParser
