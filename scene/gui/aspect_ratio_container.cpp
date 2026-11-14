@@ -34,7 +34,14 @@
 #include "scene/gui/texture_rect.h"
 
 Size2 AspectRatioContainer::get_minimum_size() const {
-	return Container::_get_minimum_size();
+	Size2 ms = Container::_get_minimum_size();
+
+	if (stretch_mode == STRETCH_WIDTH_CONTROLS_HEIGHT) {
+		ms.y = MAX(ms.y, get_size().x / ratio);
+	} else if (stretch_mode == STRETCH_HEIGHT_CONTROLS_WIDTH) {
+		ms.x = MAX(ms.x, get_size().y * ratio);
+	}
+	return ms;
 }
 
 void AspectRatioContainer::set_ratio(float p_ratio) {
@@ -42,6 +49,9 @@ void AspectRatioContainer::set_ratio(float p_ratio) {
 		return;
 	}
 	ratio = p_ratio;
+	if (stretch_mode == STRETCH_WIDTH_CONTROLS_HEIGHT || stretch_mode == STRETCH_HEIGHT_CONTROLS_WIDTH) {
+		update_minimum_size();
+	}
 	queue_sort();
 }
 
@@ -91,6 +101,11 @@ Vector<int> AspectRatioContainer::get_allowed_size_flags_vertical() const {
 
 void AspectRatioContainer::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			if (stretch_mode == STRETCH_WIDTH_CONTROLS_HEIGHT || stretch_mode == STRETCH_HEIGHT_CONTROLS_WIDTH) {
+				update_minimum_size();
+			}
+		} break;
 		case NOTIFICATION_SORT_CHILDREN: {
 			bool rtl = is_layout_rtl();
 			Size2 size = get_size();
