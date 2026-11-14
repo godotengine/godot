@@ -1827,7 +1827,7 @@ void SpringBoneSimulator3D::_process_joints(double p_delta, Skeleton3D *p_skelet
 		Transform3D current_world_pose = p_center_transform * current_global_pose;
 		Quaternion current_rot = current_global_pose.basis.get_rotation_quaternion();
 		Vector3 current_origin = p_center_transform.xform(current_global_pose.origin);
-		Vector3 external = p_inverted_center_rotation.xform((external_force + p_joints[i]->gravity_direction * p_joints[i]->gravity) * p_delta);
+		Vector3 external = p_inverted_center_rotation.xform((external_force + p_joints[i]->gravity_direction.normalized() * p_joints[i]->gravity) * p_delta);
 
 		// Integration of velocity by verlet.
 		Vector3 next_tail = verlet->current_tail +
