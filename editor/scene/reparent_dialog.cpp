@@ -45,6 +45,11 @@ void ReparentDialog::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect(SceneStringName(confirmed), callable_mp(this, &ReparentDialog::_reparent));
 		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			// Wait for SceneTreeEditor's deferred first visible update before restoring the marked nodes.
+			callable_mp(this, &ReparentDialog::_mark_current).call_deferred();
+		} break;
 	}
 }
 
@@ -59,7 +64,12 @@ void ReparentDialog::_reparent() {
 	}
 }
 
+void ReparentDialog::_mark_current() {
+	tree->set_marked(current_selection, false, false);
+}
+
 void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
+	current_selection = p_selection;
 	tree->set_marked(p_selection, false, false);
 	tree->set_selected(nullptr);
 }
