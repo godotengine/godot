@@ -78,12 +78,18 @@ private:
 	HashSet<Ref<Resource>> remote_dependencies;
 	EditorDebuggerRemoteObjects *variables = nullptr;
 
+	String edited_expression;
+	LineEdit *edit_expression = nullptr;
+
+	void _edit_expression_submitted();
 	void _object_selected(ObjectID p_object);
 	void _objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void _property_activated(EditorProperty *p_editor) override;
 
 public:
 	EditorDebuggerInspector();
@@ -95,6 +101,8 @@ public:
 	void clear_remote_inspector();
 	void clear_cache();
 	void invalidate_selection_from_cache(const TypedArray<uint64_t> &p_ids);
+
+	PackedStringArray get_evaluated_expressions() const;
 
 	// Stack Dump variables
 	String get_stack_variable(const String &p_var);

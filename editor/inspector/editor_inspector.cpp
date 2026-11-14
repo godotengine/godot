@@ -703,8 +703,10 @@ void EditorProperty::_notification(int p_what) {
 
 			int v_ofs = (size.height - font->get_height(font_size)) / 2;
 			if (rtl) {
+				label_rect = Rect2(size.width - text_limit, v_ofs, text_limit, font->get_height(font_size));
 				draw_string(font, Point2(size.width - ofs - text_limit, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_RIGHT, text_limit, font_size, color);
 			} else {
+				label_rect = Rect2(0, v_ofs, text_limit, font->get_height(font_size));
 				draw_string(font, Point2(ofs, v_ofs + font->get_ascent(font_size)), label, HORIZONTAL_ALIGNMENT_LEFT, text_limit, font_size, color);
 			}
 
@@ -848,6 +850,10 @@ void EditorProperty::set_label(const String &p_label) {
 
 String EditorProperty::get_label() const {
 	return label;
+}
+
+Rect2 EditorProperty::get_label_rect() const {
+	return label_rect;
 }
 
 Object *EditorProperty::get_edited_object() {
@@ -1260,7 +1266,11 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		select();
+		if (mb->is_double_click()) {
+			emit_signal(SNAME("activated"));
+		} else {
+			select();
+		}
 
 		if (keying_rect.has_point(mpos)) {
 			accept_event();
@@ -1747,6 +1757,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("object_id_selected", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
+	ADD_SIGNAL(MethodInfo("activated"));
 
 	GDVIRTUAL_BIND(_update_property)
 	GDVIRTUAL_BIND(_set_read_only, "read_only")
@@ -4279,6 +4290,7 @@ void EditorInspector::_connect_property_editor_signals(EditorProperty *p_ep, boo
 	p_ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
 	p_ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
 	p_ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+	p_ep->connect("activated", callable_mp(this, &EditorInspector::_property_activated).bind(p_ep));
 	p_ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
 	p_ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 	p_ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
@@ -6055,6 +6067,10 @@ void EditorInspector::_property_selected(const String &p_path, int p_focusable) 
 	emit_signal(SNAME("property_selected"), p_path);
 }
 
+void EditorInspector::_property_activated(EditorProperty *p_editor) {
+	emit_signal("property_activated", p_editor->get_edited_property());
+}
+
 void EditorInspector::_object_id_selected(const String &p_path, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_id);
 }
@@ -6505,6 +6521,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_static_method("EditorInspector", "get_property_clipboard", &EditorInspector::get_property_clipboard_property_value);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("property_activated", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("resource_selected", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), PropertyInfo(Variant::STRING, "path")));
