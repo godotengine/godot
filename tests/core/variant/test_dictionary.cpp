@@ -739,6 +739,90 @@ TEST_CASE("[Dictionary] Object value init") {
 	memdelete(b);
 }
 
+TEST_CASE("[Dictionary] Freed object keys") {
+	Dictionary dict;
+	Variant keys[2];
+	alignas(Object) uint8_t object_memory[sizeof(Object)];
+	for (int i = 0; i < 2; i++) {
+		// Reuse the address to guarantee a hash collision between distinct objects.
+		Object *object = memnew_placement(object_memory, Object);
+		keys[i] = object;
+		dict[keys[i]] = i;
+		object->~Object();
+	}
+
+	REQUIRE_EQ(dict.size(), 2);
+	REQUIRE_EQ(keys[0].hash(), keys[1].hash());
+	REQUIRE_FALSE(keys[0].identity_compare(keys[1]));
+
+	SUBCASE("Iteration") {
+		const Variant *key = dict.next(nullptr);
+		for (int i = 0; i < 2; i++) {
+			REQUIRE(key != nullptr);
+			CHECK(key->identity_compare(keys[i]));
+			key = dict.next(key);
+		}
+		// Bound the iteration so a regression fails instead of hanging the test suite.
+		CHECK(key == nullptr);
+	}
+
+	SUBCASE("Lookup, update and erase") {
+		CHECK_EQ(dict.get(keys[0], -1), Variant(0));
+		CHECK_EQ(dict.get(keys[1], -1), Variant(1));
+		dict[keys[1]] = 2;
+		CHECK_EQ(dict.size(), 2);
+		CHECK_EQ(dict.get(keys[0], -1), Variant(0));
+		CHECK_EQ(dict.get(keys[1], -1), Variant(2));
+
+		CHECK(dict.erase(keys[0]));
+		CHECK_FALSE(dict.has(keys[0]));
+		CHECK(dict.has(keys[1]));
+		CHECK_EQ(dict.get(keys[1], -1), Variant(2));
+		CHECK(dict.erase(keys[1]));
+		CHECK(dict.is_empty());
+	}
+
+	SUBCASE("Insertion after freeing") {
+		dict.clear();
+		dict[keys[0]] = 0;
+		dict[keys[1]] = 1;
+		CHECK_EQ(dict.size(), 2);
+		CHECK_EQ(dict.get(keys[0], -1), Variant(0));
+		CHECK_EQ(dict.get(keys[1], -1), Variant(1));
+	}
+
+	SUBCASE("Null keys remain distinct") {
+		Variant nil;
+		Variant null_object = static_cast<Object *>(nullptr);
+		dict[nil] = 2;
+		dict[null_object] = 3;
+		CHECK_EQ(dict.size(), 4);
+		CHECK_EQ(dict.get(nil, -1), Variant(2));
+		CHECK_EQ(dict.get(null_object, -1), Variant(3));
+		CHECK_EQ(dict.get(keys[0], -1), Variant(0));
+		CHECK_EQ(dict.get(keys[1], -1), Variant(1));
+	}
+
+	SUBCASE("Key and value comparison") {
+		Dictionary first_key = { { keys[0], 0 } };
+		Dictionary second_key = { { keys[1], 0 } };
+		CHECK_NE(first_key, second_key);
+
+		// Object identity is only used for keys, not for ordinary value comparisons.
+		CHECK_EQ(keys[0], keys[1]);
+		CHECK(keys[0].hash_compare(keys[1]));
+		CHECK(Variant::evaluate(Variant::OP_EQUAL, keys[0], Variant()));
+		Dictionary first_value = { { 0, keys[0] } };
+		Dictionary second_value = { { 0, keys[1] } };
+		CHECK_EQ(first_value, second_value);
+
+		Array values = { keys[0], keys[1] };
+		CHECK_EQ(values.find(keys[1]), 0);
+		CHECK_EQ(values.rfind(keys[0]), 1);
+		CHECK_EQ(values.count(keys[0]), 2);
+	}
+}
+
 TEST_CASE("[Dictionary] RefCounted value init") {
 	Ref<RefCounted> a = memnew(RefCounted);
 	Ref<RefCounted> b = memnew(RefCounted);
