@@ -39,8 +39,8 @@ Error ZIPReader::open(const String &p_path) {
 		close();
 	}
 
-	zlib_filefunc_def io = zipio_create_io(&fa);
-	uzf = unzOpen2(p_path.utf8().get_data(), &io);
+	zlib_filefunc64_def io = zipio_create_io(&fa);
+	uzf = unzOpen2_64(p_path.utf8().get_data(), &io);
 	return uzf != nullptr ? OK : FAILED;
 }
 
@@ -59,8 +59,8 @@ Error ZIPReader::close() {
 PackedStringArray ZIPReader::get_files() {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), PackedStringArray(), "ZIPReader must be opened before use.");
 
-	unz_global_info gi;
-	int err = unzGetGlobalInfo(uzf, &gi);
+	unz_global_info64 gi;
+	int err = unzGetGlobalInfo64(uzf, &gi);
 	ERR_FAIL_COND_V(err != UNZ_OK, PackedStringArray());
 	if (gi.number_entry == 0) {
 		return PackedStringArray();
@@ -82,7 +82,7 @@ PackedStringArray ZIPReader::get_files() {
 
 	PackedStringArray arr;
 	arr.resize(s.size());
-	int idx = 0;
+	int64_t idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
 		arr.set(idx++, E->get());
 	}
@@ -101,18 +101,19 @@ PackedByteArray ZIPReader::read_file(const String &p_path, bool p_case_sensitive
 	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "Could not open file within zip archive.");
 
 	// Read the file info.
-	unz_file_info info;
-	err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+	unz_file_info64 info;
+	err = unzGetCurrentFileInfo64(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 	ERR_FAIL_COND_V_MSG(err != UNZ_OK, PackedByteArray(), "Unable to read file information from zip archive.");
-	ERR_FAIL_COND_V_MSG(info.uncompressed_size > INT_MAX, PackedByteArray(), "File contents too large to read from zip archive (>2 GB).");
+	ERR_FAIL_COND_V_MSG(info.uncompressed_size > INT64_MAX, PackedByteArray(), "File contents too large to read from zip archive.");
 
 	// Read the file data.
 	PackedByteArray data;
-	data.resize(info.uncompressed_size);
+	ERR_FAIL_COND_V_MSG(data.resize(static_cast<int64_t>(info.uncompressed_size)) != OK, PackedByteArray(), "Failed to allocate memory for file contents in zip archive.");
 	uint8_t *buffer = data.ptrw();
-	int to_read = data.size();
+	int64_t to_read = data.size();
 	while (to_read > 0) {
-		int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
+		int chunk_size = static_cast<int>(MIN(to_read, INT_MAX));
+		int bytes_read = unzReadCurrentFile(uzf, buffer, chunk_size);
 		ERR_FAIL_COND_V_MSG(bytes_read < 0, PackedByteArray(), "IO/zlib error reading file from zip archive.");
 		ERR_FAIL_COND_V_MSG(bytes_read == UNZ_EOF && to_read != 0, PackedByteArray(), "Incomplete file read from zip archive.");
 		DEV_ASSERT(bytes_read <= to_read);

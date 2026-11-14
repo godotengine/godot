@@ -40,12 +40,13 @@ struct ZipData {
 	Ref<FileAccess> f;
 };
 
-static void *godot_open(voidpf p_opaque, const char *p_fname, int p_mode) {
+static void *godot_open(voidpf p_opaque, const void *p_fname, int p_mode) {
 	if (p_mode & ZLIB_FILEFUNC_MODE_WRITE) {
 		return nullptr;
 	}
 
-	Ref<FileAccess> f = FileAccess::open(String::utf8(p_fname), FileAccess::READ);
+	const char *fname_chars = static_cast<const char *>(p_fname); // Godot always passes UTF-8 filename
+	Ref<FileAccess> f = FileAccess::open(String::utf8(fname_chars), FileAccess::READ);
 	ERR_FAIL_COND_V(f.is_null(), nullptr);
 
 	ZipData *zd = memnew(ZipData);
@@ -63,12 +64,12 @@ static uLong godot_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uL
 	return 0;
 }
 
-static long godot_tell(voidpf p_opaque, voidpf p_stream) {
+static ZPOS64_T godot_tell(voidpf p_opaque, voidpf p_stream) {
 	ZipData *zd = (ZipData *)p_stream;
 	return zd->f->get_position();
 }
 
-static long godot_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin) {
+static long godot_seek(voidpf p_opaque, voidpf p_stream, ZPOS64_T p_offset, int p_origin) {
 	ZipData *zd = (ZipData *)p_stream;
 
 	uint64_t pos = p_offset;
@@ -117,25 +118,25 @@ unzFile ZipArchive::get_file_handle(const String &p_file) const {
 	ERR_FAIL_COND_V_MSG(!file_exists(p_file), nullptr, vformat("File '%s' doesn't exist.", p_file));
 	File file = files[p_file];
 
-	zlib_filefunc_def io;
+	zlib_filefunc64_def io;
 	memset(&io, 0, sizeof(io));
 
 	io.opaque = nullptr;
-	io.zopen_file = godot_open;
+	io.zopen64_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
 
-	io.ztell_file = godot_tell;
-	io.zseek_file = godot_seek;
+	io.ztell64_file = godot_tell;
+	io.zseek64_file = godot_seek;
 	io.zclose_file = godot_close;
 	io.zerror_file = godot_testerror;
 
 	io.alloc_mem = godot_alloc;
 	io.free_mem = godot_free;
 
-	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(packages[file.package].filename.utf8().get_data(), &io);
 	ERR_FAIL_NULL_V_MSG(pkg, nullptr, vformat("Cannot open file '%s'.", packages[file.package].filename));
-	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
+	int unz_err = unzGoToFilePos64(pkg, &file.file_pos);
 	if (unz_err != UNZ_OK || unzOpenCurrentFile(pkg) != UNZ_OK) {
 		unzClose(pkg);
 		ERR_FAIL_V(nullptr);
@@ -152,20 +153,20 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 		return false;
 	}
 
-	zlib_filefunc_def io;
+	zlib_filefunc64_def io;
 	memset(&io, 0, sizeof(io));
 
 	io.opaque = nullptr;
-	io.zopen_file = godot_open;
+	io.zopen64_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;
 
-	io.ztell_file = godot_tell;
-	io.zseek_file = godot_seek;
+	io.ztell64_file = godot_tell;
+	io.zseek64_file = godot_seek;
 	io.zclose_file = godot_close;
 	io.zerror_file = godot_testerror;
 
-	unzFile zfile = unzOpen2(p_path.utf8().get_data(), &io);
+	unzFile zfile = unzOpen2_64(p_path.utf8().get_data(), &io);
 	ERR_FAIL_NULL_V(zfile, false);
 
 	unz_global_info64 gi;
@@ -186,7 +187,7 @@ bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint6
 
 		File f;
 		f.package = pkg_num;
-		unzGetFilePos(zfile, &f.file_pos);
+		unzGetFilePos64(zfile, &f.file_pos);
 
 		String fname = String("res://") + String::utf8(filename_inzip);
 		files[fname] = f;

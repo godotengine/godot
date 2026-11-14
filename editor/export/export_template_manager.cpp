@@ -227,9 +227,9 @@ void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
 
 void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(p_file.utf8().get_data(), &io);
 	if (!pkg) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't open the export templates file."));
 		return;
@@ -242,9 +242,9 @@ void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
 	String contents_dir;
 
 	while (ret == UNZ_OK) {
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -310,9 +310,9 @@ void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
 	ret = unzGoToFirstFile(pkg);
 	while (ret == UNZ_OK) {
 		// Get filename.
-		unz_file_info info;
+		unz_file_info64 info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -1518,9 +1518,9 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	// Uncompress source template.
 
 	Ref<FileAccess> io_fa;
-	zlib_filefunc_def io = zipio_create_io(&io_fa);
+	zlib_filefunc64_def io = zipio_create_io(&io_fa);
 
-	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
+	unzFile pkg = unzOpen2_64(p_file.utf8().get_data(), &io);
 	ERR_FAIL_NULL_V_MSG(pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
 
 	int ret = unzGoToFirstFile(pkg);
@@ -1538,9 +1538,9 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 	int idx = 0;
 	while (ret == UNZ_OK) {
 		// Get file path.
-		unz_file_info info;
+		unz_file_info64 info;
 		char fpath[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
+		ret = unzGetCurrentFileInfo64(pkg, &info, fpath, 16384, nullptr, 0, nullptr, 0);
 		if (ret != UNZ_OK) {
 			break;
 		}
@@ -2096,8 +2096,8 @@ void TemplateDownloader::_download_completed() {
 	{
 		// Read back the mini-ZIP.
 		Ref<FileAccess> zip_access;
-		zlib_filefunc_def io = zipio_create_io(&zip_access);
-		unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
+		zlib_filefunc64_def io = zipio_create_io(&zip_access);
+		unzFile uzf = unzOpen2_64(mini_zip_path.utf8().get_data(), &io);
 		if (!uzf) {
 			_download_failed(TTR("ZIP reader could not open mini-ZIP."));
 			return;
@@ -2123,8 +2123,8 @@ void TemplateDownloader::_download_completed() {
 		}
 
 		// Read the file info.
-		unz_file_info info;
-		err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+		unz_file_info64 info;
+		err = unzGetCurrentFileInfo64(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
 		if (err != UNZ_OK) {
 			unzCloseCurrentFile(uzf);
 			unzClose(uzf);
@@ -2135,9 +2135,10 @@ void TemplateDownloader::_download_completed() {
 		// Read the file data.
 		extracted_data.resize(info.uncompressed_size);
 		uint8_t *buffer = extracted_data.ptrw();
-		int to_read = extracted_data.size();
+		int64_t to_read = extracted_data.size();
 		while (to_read > 0) {
-			int bytes_read_current = unzReadCurrentFile(uzf, buffer, to_read);
+			int chunk_size = static_cast<int>(MIN(to_read, INT_MAX));
+			int bytes_read_current = unzReadCurrentFile(uzf, buffer, chunk_size);
 			if (bytes_read_current < 0 || (bytes_read_current == UNZ_EOF && to_read != 0)) {
 				unzCloseCurrentFile(uzf);
 				unzClose(uzf);

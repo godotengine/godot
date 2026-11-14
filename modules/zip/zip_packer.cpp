@@ -40,8 +40,8 @@ Error ZIPPacker::open(const String &p_path, ZipAppend p_append) {
 		close();
 	}
 
-	zlib_filefunc_def io = zipio_create_io(&fa);
-	zf = zipOpen2(p_path.utf8().get_data(), p_append, nullptr, &io);
+	zlib_filefunc64_def io = zipio_create_io(&fa);
+	zf = zipOpen2_64(p_path.utf8().get_data(), p_append, nullptr, &io);
 	return zf != nullptr ? OK : FAILED;
 }
 
@@ -67,7 +67,13 @@ int ZIPPacker::get_compression_level() const {
 	return compression_level;
 }
 
+#ifndef DISABLE_DEPRECATED
 Error ZIPPacker::start_file(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
+	return open_file(p_path, false, p_permissions, p_modified_time);
+}
+#endif // DISABLE_DEPRECATED
+
+Error ZIPPacker::open_file(const String &p_path, bool p_zip64, BitField<FileAccess::UnixPermissionFlags> p_permissions, uint64_t p_modified_time) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
 	if (!p_path.get_base_dir().is_empty() && !directories.has(p_path.get_base_dir() + "/")) {
@@ -102,7 +108,7 @@ Error ZIPPacker::start_file(const String &p_path, BitField<FileAccess::UnixPermi
 	zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUU UUUUUUUU 00000000 00ADVSHR: Unix permissions (U) + DOS read-only flag (R).
 	zipfi.internal_fa = 0;
 
-	int err = zipOpenNewFileInZip4(zf,
+	int err = zipOpenNewFileInZip4_64(zf,
 			p_path.utf8().get_data(),
 			&zipfi,
 			nullptr,
@@ -118,15 +124,16 @@ Error ZIPPacker::start_file(const String &p_path, BitField<FileAccess::UnixPermi
 			Z_DEFAULT_STRATEGY,
 			nullptr,
 			0,
-			0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+			0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+			1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+			p_zip64); // zip64: only pass if p_zip64 is true
 	return err == ZIP_OK ? OK : FAILED;
 }
 
 Error ZIPPacker::write_file(const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
-	return zipWriteInFileInZip(zf, p_data.ptr(), p_data.size()) == ZIP_OK ? OK : FAILED;
+	return godot_zip_write_file(zf, p_data.ptr(), p_data.size()) == ZIP_OK ? OK : FAILED;
 }
 
 Error ZIPPacker::close_file() {
@@ -168,7 +175,7 @@ Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPe
 	zipfi.external_fa = (_mode << 16L) | 0x10 | ((_mode & 0200) ? 0 : 1); // UUUUUUUU UUUUUUUU 00000000 00ADVSHR: Unix permissions (U) + DOS directory flag (D) + DOS read-only flag (R).
 	zipfi.internal_fa = 0;
 
-	int err = zipOpenNewFileInZip4(zf,
+	int err = zipOpenNewFileInZip4_64(zf,
 			path.utf8().get_data(),
 			&zipfi,
 			nullptr,
@@ -184,9 +191,13 @@ Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPe
 			Z_DEFAULT_STRATEGY,
 			nullptr,
 			0,
-			0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
-			1 << 11); // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
-	zipCloseFileInZip(zf);
+			0x032D, // "version made by", 0x03 - Unix, 0x2D - ZIP specification version 4.5, required to store Unix file permissions and use 64-bit
+			1 << 11, // Bit 11 is the language encoding flag. When set, filename and comment fields must be encoded using UTF-8.
+			0); // zip64: don't pass because directories never need 64-bit extensions
+	if (err != ZIP_OK) {
+		return FAILED;
+	}
+	err = zipCloseFileInZip(zf);
 	if (err != ZIP_OK) {
 		return FAILED;
 	}
@@ -201,7 +212,10 @@ void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_compression_level"), &ZIPPacker::get_compression_level);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_level"), "set_compression_level", "get_compression_level");
 	ClassDB::bind_method(D_METHOD("add_directory", "path", "permissions", "modified_time"), &ZIPPacker::add_directory, DEFVAL(0755), DEFVAL(0));
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("start_file", "path", "permissions", "modified_time"), &ZIPPacker::start_file, DEFVAL(0644), DEFVAL(0));
+#endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("open_file", "path", "zip64", "permissions", "modified_time"), &ZIPPacker::open_file, DEFVAL(false), DEFVAL(0644), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
 	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
 	ClassDB::bind_method(D_METHOD("close"), &ZIPPacker::close);

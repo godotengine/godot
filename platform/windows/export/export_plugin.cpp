@@ -337,8 +337,8 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		}
 
 		Ref<FileAccess> io_fa_dst;
-		zlib_filefunc_def io_dst = zipio_create_io(&io_fa_dst);
-		zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
+		zlib_filefunc64_def io_dst = zipio_create_io(&io_fa_dst);
+		zipFile zip = zipOpen2_64(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io_dst);
 
 		zip_folder_recursive(zip, tmp_dir_path, "", pkg_name);
 
