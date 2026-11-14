@@ -947,6 +947,7 @@ public:
 	HashMap<int, SceneModificationsEntry> scenes_modification_table;
 	List<String> scenes_reimported;
 	List<String> resources_reimported;
+	List<String> uninstanced_scenes_reimported;
 
 	void update_node_from_node_modification_entry(Node *p_node, ModificationNodeEntry &p_node_modification);
 
@@ -1027,6 +1028,7 @@ public:
 	void find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list);
 	void preload_reimporting_with_path_in_edited_scenes(const List<String> &p_scenes);
 	void reload_instances_with_path_in_edited_scenes();
+	void reload_uninstanced_scenes();
 
 	bool is_exiting() const { return exiting; }
 
