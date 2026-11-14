@@ -647,19 +647,19 @@ public:
 			real_t p_to_t, real_t p_pre_t, real_t p_post_t, real_t p_pre_pre_t, real_t p_post_post_t);
 
 	static bool is_less_or_equal_approx(double a, double b) {
-		return a < b || Math::is_equal_approx(a, b);
+		return a < b || Math::is_equal_approx(a, b, 0.001);
 	}
 
 	static bool is_less_approx(double a, double b) {
-		return a < b && !Math::is_equal_approx(a, b);
+		return a < b && !Math::is_equal_approx(a, b, 0.001);
 	}
 
 	static bool is_greater_or_equal_approx(double a, double b) {
-		return a > b || Math::is_equal_approx(a, b);
+		return a > b || Math::is_equal_approx(a, b, 0.001);
 	}
 
 	static bool is_greater_approx(double a, double b) {
-		return a > b && !Math::is_equal_approx(a, b);
+		return a > b && !Math::is_equal_approx(a, b, 0.001);
 	}
 
 	static TrackType get_cache_type(TrackType p_type);
