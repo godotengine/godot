@@ -1772,7 +1772,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			// Select to the first character of a wrapped line.
 			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 11).get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 8).get_center(), MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 9).get_center(), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "so");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
