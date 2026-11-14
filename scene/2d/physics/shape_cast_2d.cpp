@@ -231,7 +231,7 @@ void ShapeCast2D::_notification(int p_what) {
 			if (shape.is_null()) {
 				break;
 			}
-			Color draw_col = collided ? Color(1.0, 0.01, 0) : get_tree()->get_debug_collisions_color();
+			Color draw_col = collided ? debug_shape_colliding_custom_color : get_tree()->get_debug_collisions_color();
 			if (!enabled) {
 				float g = draw_col.get_v();
 				draw_col.r = g;
@@ -405,6 +405,19 @@ Array ShapeCast2D::get_collision_result() const {
 	return ret;
 }
 
+void ShapeCast2D::set_debug_shape_colliding_custom_color(const Color &p_color) {
+	if (debug_shape_colliding_custom_color == p_color) {
+		return;
+	}
+
+	debug_shape_colliding_custom_color = p_color;
+	queue_redraw();
+}
+
+const Color &ShapeCast2D::get_debug_shape_colliding_custom_color() const {
+	return debug_shape_colliding_custom_color;
+}
+
 PackedStringArray ShapeCast2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
@@ -469,6 +482,9 @@ void ShapeCast2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_collision_result"), &ShapeCast2D::get_collision_result);
 
+	ClassDB::bind_method(D_METHOD("set_debug_shape_colliding_custom_color", "debug_shape_colliding_custom_color"), &ShapeCast2D::set_debug_shape_colliding_custom_color);
+	ClassDB::bind_method(D_METHOD("get_debug_shape_colliding_custom_color"), &ShapeCast2D::get_debug_shape_colliding_custom_color);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
@@ -480,6 +496,9 @@ void ShapeCast2D::_bind_methods() {
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+
+	ADD_GROUP("Debug Shape", "debug_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_colliding_custom_color"), "set_debug_shape_colliding_custom_color", "get_debug_shape_colliding_custom_color");
 }
 
 ShapeCast2D::ShapeCast2D() {
