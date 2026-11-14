@@ -587,3 +587,27 @@ Ref<Resource> BlitMaterialConversionPlugin::convert(const Ref<Resource> &p_resou
 	smat->set_name(mat->get_name());
 	return smat;
 }
+
+String ShaderConversionPlugin::converts_to() const {
+	return "ShaderMaterial";
+}
+
+bool ShaderConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<Shader> shader = p_resource;
+	return shader.is_valid();
+}
+
+Ref<Resource> ShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<Shader> shader = p_resource;
+	ERR_FAIL_COND_V(shader.is_null(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+	smat->set_shader(shader);
+	return smat;
+}
+
+bool ShaderConversionPlugin::replaces_source() const {
+	// The shader is still needed by the material, so the material is created as a new resource instead.
+	return false;
+}
