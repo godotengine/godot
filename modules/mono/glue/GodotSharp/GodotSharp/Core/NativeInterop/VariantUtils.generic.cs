@@ -187,7 +187,7 @@ public partial class VariantUtils
             return CreateFromArray(UnsafeAs<Godot.Collections.Array>(from));
 
         if (typeof(T) == typeof(Variant))
-            return NativeFuncs.godotsharp_variant_new_copy((godot_variant)UnsafeAs<Variant>(from).NativeVar);
+            return UnsafeAs<Variant>(from).CopyNativeVariant();
 
         // More complex checks here at the end, to avoid screwing the simple ones in case they're not optimized away.
 
