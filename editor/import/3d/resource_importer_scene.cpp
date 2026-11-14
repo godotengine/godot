@@ -3511,6 +3511,47 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		post_importer_plugins.write[i]->post_process(scene, p_options);
 	}
 
+	// Generate deterministic unique node IDs.
+	if (_scene_import_type == "PackedScene") {
+		uint32_t unique_scene_id = Node::UNIQUE_SCENE_ID_UNASSIGNED;
+		LocalVector<uint32_t> ids_saved;
+
+		LocalVector<Node *> nodes_to_give_id;
+		nodes_to_give_id.push_back(scene);
+
+		while (!nodes_to_give_id.is_empty()) {
+			Node *node = nodes_to_give_id[nodes_to_give_id.size() - 1];
+			nodes_to_give_id.resize(nodes_to_give_id.size() - 1);
+
+			// Add children to queue.
+			for (Node *child : node->iterate_children()) {
+				nodes_to_give_id.push_back(child);
+			}
+
+			//  Skip if unique ID is already assigned by EditorSceneFormatImporter.
+			if (node->get_unique_scene_id() != Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+				ids_saved.push_back(node->get_unique_scene_id());
+				continue;
+			}
+
+			uint32_t data = p_source_id ^ node->get_name().string().hash64();
+			while (true) {
+				unique_scene_id = data & 0x7FFFFFFF; // keep positive.
+
+				if (unique_scene_id == Node::UNIQUE_SCENE_ID_UNASSIGNED) {
+					unique_scene_id = 1;
+				}
+				if (ids_saved.has(unique_scene_id)) {
+					data += 1;
+					continue;
+				}
+				break;
+			}
+			node->set_unique_scene_id(unique_scene_id);
+			ids_saved.push_back(unique_scene_id);
+		}
+	}
+
 	progress.step(TTR("Saving..."), 104);
 
 	int flags = 0;
