@@ -76,6 +76,12 @@
 		<member name="expand_margin_top" type="float" setter="set_expand_margin" getter="get_expand_margin" default="0.0">
 			Expands the top margin of this style box when drawing, causing it to be drawn larger than requested.
 		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], the texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], the texture is flipped vertically.
+		</member>
 		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Modulates the color of the texture when this style box is drawn.
 		</member>
