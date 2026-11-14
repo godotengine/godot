@@ -506,11 +506,14 @@ Node *SceneState::_instantiate(GenEditState p_edit_state, LocalVector<DeferredNo
 					} else {
 						Variant value = props[nprops[j].value];
 
-						if (value.get_type() == Variant::OBJECT && p_edit_state == GEN_EDIT_STATE_DISABLED) {
-							//handle resources that are local to scene by duplicating them if needed
+						if (value.get_type() == Variant::OBJECT) {
 							Ref<Resource> res = value;
-							if (res.is_valid()) {
+							if (p_edit_state == GEN_EDIT_STATE_DISABLED) {
 								value = make_local_resource(value, n, resources_local_to_scenes, node, snames[nprops[j].name], i, ret_nodes, p_edit_state);
+							} else if (p_edit_state == GEN_EDIT_STATE_MAIN && res.is_valid() && res->is_local_to_scene()) {
+								Node *base = (i == 0 || node->is_instance()) ? node : (node->get_owner() ? node->get_owner() : ret_nodes[0]);
+								res->configure_for_local_scene(base, resources_local_to_scenes[base]);
+								resources_local_to_scenes[base][res] = res;
 							}
 						} else {
 							// Making sure that instances of inherited scenes don't share the same
