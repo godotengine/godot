@@ -156,6 +156,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	void _update_transform_dependent();
 
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
+	friend class GodotPinJoint2D;
 
 public:
 	void set_state_sync_callback(const Callable &p_callable);
