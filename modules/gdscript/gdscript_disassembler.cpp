@@ -682,7 +682,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				bool ret = (_code_ptr[ip]) == OPCODE_CALL_RETURN;
 				bool async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
 
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-ret ";
@@ -692,13 +692,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					text += "call ";
 				}
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
 				if (ret || async) {
-					text += DADDR(2 + argc) + " = ";
+					text += DADDR(argc + 2) + " = ";
 				}
 
-				text += DADDR(1 + argc) + ".";
-				text += String(_global_names_ptr[_code_ptr[ip + 2 + instr_var_args]]);
+				text += DADDR(argc + 1) + ".";
+				text += String(_global_names_ptr[_code_ptr[ip + argc + 3]]);
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -709,12 +708,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 5 + argc;
+				incr = argc + 4;
 			} break;
 			case OPCODE_CALL_METHOD_BIND:
 			case OPCODE_CALL_METHOD_BIND_RET: {
 				bool ret = (_code_ptr[ip]) == OPCODE_CALL_METHOD_BIND_RET;
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-method_bind-ret ";
@@ -722,14 +721,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					text += "call-method_bind ";
 				}
 
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 3]];
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
 				if (ret) {
-					text += DADDR(2 + argc) + " = ";
+					text += DADDR(argc + 2) + " = ";
 				}
 
-				text += DADDR(1 + argc) + ".";
+				text += DADDR(argc + 1) + ".";
 				text += method->get_name();
 				text += "(";
 
@@ -741,19 +739,18 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 5 + argc;
+				incr = argc + 4;
 			} break;
 			case OPCODE_CALL_BUILTIN_STATIC: {
-				int instr_var_args = _code_ptr[++ip];
-				Variant::Type type = (Variant::Type)_code_ptr[ip + 1 + instr_var_args];
-				int argc = _code_ptr[ip + 3 + instr_var_args];
+				int argc = _code_ptr[++ip];
+				Variant::Type type = (Variant::Type)_code_ptr[ip + argc + 1];
 
 				text += "call built-in method static ";
-				text += DADDR(1 + argc);
+				text += DADDR(argc + 2);
 				text += " = ";
 				text += Variant::get_type_name(type);
 				text += ".";
-				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].string();
+				text += _global_names_ptr[_code_ptr[ip + argc + 3]].string();
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -764,15 +761,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr += 5 + argc;
+				incr += argc + 4;
 			} break;
 			case OPCODE_CALL_NATIVE_STATIC: {
-				int instr_var_args = _code_ptr[++ip];
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
-				int argc = _code_ptr[ip + 2 + instr_var_args];
+				int argc = _code_ptr[++ip];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 2]];
 
 				text += "call native method static ";
-				text += DADDR(1 + argc);
+				text += DADDR(argc + 1);
 				text += " = ";
 				text += method->get_instance_class();
 				text += ".";
@@ -787,15 +783,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr += 4 + argc;
+				incr += argc + 3;
 			} break;
 
 			case OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 				text += "call native static method validated (return) ";
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(1 + argc) + " = ";
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 2]];
+				text += DADDR(argc + 1) + " = ";
 				text += method->get_instance_class();
 				text += ".";
 				text += method->get_name();
@@ -807,17 +802,15 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					text += DADDR(1 + i);
 				}
 				text += ")";
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 
 			case OPCODE_CALL_NATIVE_STATIC_VALIDATED_NO_RETURN: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call native static method validated (no return) ";
 
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
-
-				int argc = _code_ptr[ip + 1 + instr_var_args];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 2]];
 
 				text += method->get_instance_class();
 				text += ".";
@@ -832,16 +825,15 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 
 			case OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 				text += "call method-bind validated (return) ";
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(2 + argc) + " = ";
-				text += DADDR(1 + argc) + ".";
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 3]];
+				text += DADDR(argc + 2) + " = ";
+				text += DADDR(argc + 1) + ".";
 				text += method->get_name();
 				text += "(";
 				for (int i = 0; i < argc; i++) {
@@ -851,19 +843,17 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					text += DADDR(1 + i);
 				}
 				text += ")";
-				incr = 5 + argc;
+				incr = argc + 4;
 			} break;
 
 			case OPCODE_CALL_METHOD_BIND_VALIDATED_NO_RETURN: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call method-bind validated (no return) ";
 
-				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + argc + 3]];
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-
-				text += DADDR(1 + argc) + ".";
+				text += DADDR(argc + 1) + ".";
 				text += method->get_name();
 				text += "(";
 
@@ -875,19 +865,18 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 5 + argc;
+				incr = argc + 4;
 			} break;
 
 			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
-				int instr_var_args = _code_ptr[++ip];
-				int argc = _code_ptr[ip + 1 + instr_var_args];
+				int argc = _code_ptr[++ip];
 
 				text += "call-builtin-method validated ";
 
-				text += DADDR(2 + argc) + " = ";
+				text += DADDR(argc + 2) + " = ";
 
-				text += DADDR(1) + ".";
-				text += builtin_methods_names[_code_ptr[ip + 4 + argc]];
+				text += DADDR(argc + 1) + ".";
+				text += builtin_methods_names[_code_ptr[ip + argc + 3]];
 
 				text += "(";
 
@@ -899,17 +888,16 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 5 + argc;
+				incr = argc + 4;
 			} break;
 			case OPCODE_CALL_UTILITY: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call-utility ";
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(1 + argc) + " = ";
+				text += DADDR(argc + 1) + " = ";
 
-				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				text += _global_names_ptr[_code_ptr[ip + argc + 2]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -920,17 +908,16 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 			case OPCODE_CALL_UTILITY_VALIDATED: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call-utility validated ";
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(1 + argc) + " = ";
+				text += DADDR(argc + 1) + " = ";
 
-				text += utilities_names[_code_ptr[ip + 3 + argc]];
+				text += utilities_names[_code_ptr[ip + argc + 2]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -941,17 +928,16 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 			case OPCODE_CALL_GDSCRIPT_UTILITY: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call-gdscript-utility ";
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(1 + argc) + " = ";
+				text += DADDR(argc + 1) + " = ";
 
-				text += gds_utilities_names[_code_ptr[ip + 3 + argc]];
+				text += gds_utilities_names[_code_ptr[ip + argc + 2]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -962,17 +948,16 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 			case OPCODE_CALL_SELF_BASE: {
-				int instr_var_args = _code_ptr[++ip];
+				int argc = _code_ptr[++ip];
 
 				text += "call-self-base ";
 
-				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += DADDR(2 + argc) + " = ";
+				text += DADDR(argc + 1) + " = ";
 
-				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				text += _global_names_ptr[_code_ptr[ip + argc + 2]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -983,7 +968,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 4 + argc;
+				incr = argc + 3;
 			} break;
 			case OPCODE_AWAIT: {
 				text += "await ";
