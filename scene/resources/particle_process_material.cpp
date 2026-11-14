@@ -112,7 +112,7 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->rotation_velocity_3d_curve = "rotation_velocity_3d_curve";
 
 	shader_names->emission_sphere_radius = "emission_sphere_radius";
-	shader_names->emission_box_extents = "emission_box_extents";
+	shader_names->emission_box_size = "emission_box_size";
 	shader_names->emission_texture_point_count = "emission_texture_point_count";
 	shader_names->emission_texture_points = "emission_texture_points";
 	shader_names->emission_texture_normal = "emission_texture_normal";
@@ -293,7 +293,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "uniform float emission_sphere_radius;\n";
 		} break;
 		case EMISSION_SHAPE_BOX: {
-			code += "uniform vec3 emission_box_extents;\n";
+			code += "uniform vec3 emission_box_size;\n";
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
 			code += "uniform sampler2D emission_texture_normal : hint_default_black;\n";
@@ -716,7 +716,7 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		pos = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);\n";
 	}
 	if (emission_shape == EMISSION_SHAPE_BOX) {
-		code += "		pos = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_extents;\n";
+		code += "		pos = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_size * 0.5;\n";
 	}
 	if (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 		code += "		int point = min(emission_texture_point_count - 1, int(params.emission_texture_position * float(emission_texture_point_count)));\n";
@@ -1805,9 +1805,9 @@ void ParticleProcessMaterial::set_emission_sphere_radius(real_t p_radius) {
 #endif
 }
 
-void ParticleProcessMaterial::set_emission_box_extents(Vector3 p_extents) {
-	emission_box_extents = p_extents;
-	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
+void ParticleProcessMaterial::set_emission_box_size(const Vector3 &p_size) {
+	emission_box_size = p_size;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_size, p_size);
 #ifdef TOOLS_ENABLED
 	emit_signal("emission_shape_changed");
 #endif
@@ -1890,8 +1890,8 @@ real_t ParticleProcessMaterial::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
 
-Vector3 ParticleProcessMaterial::get_emission_box_extents() const {
-	return emission_box_extents;
+Vector3 ParticleProcessMaterial::get_emission_box_size() const {
+	return emission_box_size;
 }
 
 Ref<Texture2D> ParticleProcessMaterial::get_emission_point_texture() const {
@@ -2158,7 +2158,7 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "emission_box_extents") {
+	} else if (p_property.name == "emission_box_size") {
 		if (emission_shape != EMISSION_SHAPE_BOX) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
@@ -2216,10 +2216,6 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 
-		} else if (p_property.name == "emission_box_extents") {
-			if (emission_shape != EMISSION_SHAPE_BOX) {
-				p_property.usage = PROPERTY_USAGE_NONE;
-			}
 		} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
 			if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 				p_property.usage = PROPERTY_USAGE_NONE;
@@ -2467,8 +2463,13 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &ParticleProcessMaterial::set_emission_sphere_radius);
 	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &ParticleProcessMaterial::get_emission_sphere_radius);
 
+	ClassDB::bind_method(D_METHOD("set_emission_box_size", "size"), &ParticleProcessMaterial::set_emission_box_size);
+	ClassDB::bind_method(D_METHOD("get_emission_box_size"), &ParticleProcessMaterial::get_emission_box_size);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_emission_box_extents", "extents"), &ParticleProcessMaterial::set_emission_box_extents);
 	ClassDB::bind_method(D_METHOD("get_emission_box_extents"), &ParticleProcessMaterial::get_emission_box_extents);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_emission_point_texture", "texture"), &ParticleProcessMaterial::set_emission_point_texture);
 	ClassDB::bind_method(D_METHOD("get_emission_point_texture"), &ParticleProcessMaterial::get_emission_point_texture);
@@ -2586,7 +2587,10 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_shape_scale"), "set_emission_shape_scale", "get_emission_shape_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points,Ring"), "set_emission_shape", "get_emission_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_sphere_radius", PROPERTY_HINT_RANGE, "0.01,128,0.01,or_greater"), "set_emission_sphere_radius", "get_emission_sphere_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents"), "set_emission_box_extents", "get_emission_box_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_size"), "set_emission_box_size", "get_emission_box_size");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_box_extents", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_emission_box_extents", "get_emission_box_extents");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_point_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_point_texture", "get_emission_point_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_normal_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_normal_texture", "get_emission_normal_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_color_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_emission_color_texture", "get_emission_color_texture");
@@ -2795,7 +2799,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_rotation_3d_max(Vector3(0.0, 0.0, 0.0));
 	set_emission_shape(EMISSION_SHAPE_POINT);
 	set_emission_sphere_radius(1);
-	set_emission_box_extents(Vector3(1, 1, 1));
+	set_emission_box_size(Vector3(2, 2, 2));
 	set_emission_ring_axis(Vector3(0, 0, 1.0));
 	set_emission_ring_height(1);
 	set_emission_ring_radius(1);

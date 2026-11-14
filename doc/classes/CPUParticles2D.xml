@@ -170,8 +170,11 @@
 		<member name="emission_points" type="PackedVector2Array" setter="set_emission_points" getter="get_emission_points">
 			Sets the initial positions to spawn particles when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
 		</member>
-		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">
-			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
+		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents" deprecated="Use [member emission_rect_size] instead.">
+			The rectangle's extents (half size) if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
+		</member>
+		<member name="emission_rect_size" type="Vector2" setter="set_emission_rect_size" getter="get_emission_rect_size">
+			The rectangle's size if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
 		</member>
 		<member name="emission_ring_inner_radius" type="float" setter="set_emission_ring_inner_radius" getter="get_emission_ring_inner_radius">
 			The ring's inner radius if [member emission_shape] is set to [constant EMISSION_SHAPE_RING].
