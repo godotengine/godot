@@ -946,6 +946,22 @@ void FindInFilesContainer::create_rename_control(const String &p_symbol, const E
 	ERR_FAIL_COND(scr.is_null());
 	exts.insert(scr->get_language()->get_extension());
 
+	if (p_lookup.type == EditorLanguage::LookupResult::Type::CLASS_PROPERTY) {
+		const Ref<Script> script = ResourceLoader::load(p_lookup.script_path);
+
+		List<PropertyInfo> script_properties;
+		script->get_script_property_list(&script_properties);
+		for (const PropertyInfo &pi : script_properties) {
+			if (pi.name == p_symbol) {
+				if (pi.usage & PROPERTY_USAGE_STORAGE) {
+					// The renamed symbol is an exported variable, so also search in scenes.
+					exts.insert("tscn");
+				}
+				break;
+			}
+		}
+	}
+
 	FindInFilesSearch *finder = new_panel->get_finder();
 	finder->set_search_text(p_symbol);
 	finder->set_match_case(true);
@@ -1004,6 +1020,12 @@ void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line
 	Ref<Texture2D> remove_texture = get_editor_theme_icon(SNAME("Close"));
 	Ref<Texture2D> replace_texture = get_editor_theme_icon(SNAME("ReplaceText"));
 
+	bool is_renaming = !symbol_rename.script_path.is_empty();
+	bool is_scene = p_fpath.has_extension("tscn");
+	if (is_renaming && is_scene && p_begin > 0) {
+		return;
+	}
+
 	HashMap<String, TreeItem *>::Iterator E = file_items.find(p_fpath);
 	if (!E) {
 		file_item = results_display->create_item();
@@ -1060,28 +1082,30 @@ void FindInFilesResultsPanel::_on_result_found(const String &p_fpath, int p_line
 		_update_replace_item(item, r);
 
 		bool check_item = false;
-		if (!symbol_rename.script_path.is_empty()) {
-			const Ref<Script> source_script = ResourceLoader::load(p_fpath);
-			if (source_script.is_valid()) {
-				PackedStringArray lines = source_script->get_source_code().split("\n");
-				const String current_line = lines[p_line_number - 1];
-				lines.write[p_line_number - 1] = current_line.insert(p_begin, String::chr(0xFFFF));
+		if (is_renaming) {
+			if (!is_scene) {
+				const Ref<Script> source_script = ResourceLoader::load(p_fpath);
+				if (source_script.is_valid()) {
+					PackedStringArray lines = source_script->get_source_code().split("\n");
+					const String current_line = lines[p_line_number - 1];
+					lines.write[p_line_number - 1] = current_line.insert(p_begin, String::chr(0xFFFF));
 
-				EditorLanguage::LookupResult result;
-				Error err = source_script->get_language()->get_editor_language()->lookup_code_for_rename(String("\n").join(lines), current_line.substr(p_begin, p_end - p_begin), source_script->get_path(), result);
-				if (err == OK) {
-					check_item = result.type == symbol_rename.type &&
-							result.class_name == symbol_rename.class_name &&
-							result.class_member == symbol_rename.class_member &&
-							result.doc_type == symbol_rename.doc_type &&
-							result.enumeration == symbol_rename.enumeration &&
-							result.is_bitfield == symbol_rename.is_bitfield &&
-							result.value == symbol_rename.value &&
-							result.script_path == symbol_rename.script_path &&
-							result.location == symbol_rename.location;
+					EditorLanguage::LookupResult result;
+					Error err = source_script->get_language()->get_editor_language()->lookup_code_for_rename(String("\n").join(lines), current_line.substr(p_begin, p_end - p_begin), source_script->get_path(), result);
+					if (err == OK) {
+						check_item = result.type == symbol_rename.type &&
+								result.class_name == symbol_rename.class_name &&
+								result.class_member == symbol_rename.class_member &&
+								result.doc_type == symbol_rename.doc_type &&
+								result.enumeration == symbol_rename.enumeration &&
+								result.is_bitfield == symbol_rename.is_bitfield &&
+								result.value == symbol_rename.value &&
+								result.script_path == symbol_rename.script_path &&
+								result.location == symbol_rename.location;
+					}
+				} else {
+					ERR_PRINT(vformat("Failed to load Script at \"%s\".", p_fpath));
 				}
-			} else {
-				ERR_PRINT(vformat("Failed to load Script at \"%s\".", p_fpath));
 			}
 		} else {
 			check_item = true;
