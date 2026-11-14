@@ -118,6 +118,13 @@
 				[b]Note:[/b] The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on the result of [method get_bus_volume_db].
 			</description>
 		</method>
+		<method name="get_debug_mute" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the editor's Mute Game button is enabled, or if the game has debugging enabled and is started with the [code]--debug-mute-audio[/code] flag.
+				[b]Note:[/b] If debugging is not enabled, this will always return [code]false[/code].
+			</description>
+		</method>
 		<method name="get_driver_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -402,6 +409,13 @@
 			<param index="2" name="new_name" type="StringName" />
 			<description>
 				Emitted when the audio bus at [param bus_index] is renamed from [param old_name] to [param new_name].
+			</description>
+		</signal>
+		<signal name="debug_mute_toggled">
+			<param index="0" name="debug_mute_enabled" type="bool" />
+			<description>
+				Emitted when the editor's Mute Game button is toggled, with the new state as [param debug_mute_enabled].
+				[b]Note:[/b] If debugging is not enabled, this will never be emitted.
 			</description>
 		</signal>
 	</signals>
