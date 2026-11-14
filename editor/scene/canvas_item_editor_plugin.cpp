@@ -2640,7 +2640,7 @@ void CanvasItemEditor::_notification(int p_what) {
 					callable_mp(this, &CanvasItemEditor::_select_click_on_item),
 					callable_mp(this, &CanvasItemEditor::_get_selection_callback),
 					callable_mp((Viewport *)EditorNode::get_singleton()->get_scene_root(), &Viewport::get_global_canvas_transform),
-					callable_mp((CanvasItem *)viewport, &CanvasItem::get_local_mouse_position),
+					callable_mp((Viewport *)EditorNode::get_singleton()->get_scene_root(), &Viewport::get_mouse_position),
 					callable_mp(EditorNode::get_singleton()->get_editor_plugins_over(), &EditorPluginList::forward_gui_input));
 
 			ControlEditorToolbar::get_singleton()->connect("anchors_mode_toggled", callable_mp(*ci_manipulator, &CanvasItemManipulator::set_anchors_mode_enabled));

@@ -439,17 +439,15 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 			// Start dragging if we still have nodes.
 			if (!drag_selection.is_empty()) {
-				Vector2 pos = b.is_valid() ? b->get_position() : (Point2)local_mouse_pos_callback.call();
-
 				if (move_temp_pivot) {
 					drag_type = DRAG_TEMP_PIVOT;
-					temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(pos);
+					temp_pivot = local_mouse_pos_callback.call();
 					emit_signal(update_canvas_signal);
 					return true;
 				}
 
 				emit_signal("save_canvas_state_requested", drag_selection, false);
-				drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(pos);
+				drag_from = Transform2D(global_transform_callback.call()).affine_inverse().xform(b.is_valid() ? b->get_position() : (Point2)local_mouse_pos_callback.call());
 				Point2 new_pos;
 				if (drag_selection.size() == 1) {
 					const Node2D *n2d = Object::cast_to<Node2D>(drag_selection.front());
@@ -514,7 +512,7 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 
 	if (drag_type == DRAG_TEMP_PIVOT) {
 		if (m.is_valid()) {
-			temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
+			temp_pivot = local_mouse_pos_callback.call();
 			emit_signal(update_canvas_signal);
 			return true;
 		}
@@ -770,6 +768,12 @@ bool CanvasItemManipulator::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 
 			emit_signal("restore_canvas_state_requested", drag_selection, false);
 
+			bool using_temp_pivot = !Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y);
+			Transform2D window_offset;
+			if (!editor_mode && using_temp_pivot) {
+				window_offset = viewport->get_popup_base_transform().affine_inverse();
+			}
+
 			for (const Variant &var : drag_selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(var);
 				drag_to = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
@@ -789,8 +793,8 @@ bool CanvasItemManipulator::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				}
 
 				ci->_edit_set_rotation(new_rotation);
-				if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
-					Transform2D xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
+				if (using_temp_pivot) {
+					Transform2D xform = window_offset * ci->get_screen_transform() * ci->get_transform().affine_inverse();
 					Vector2 radius = xform.xform(ci->_edit_get_position()) - temp_pivot;
 					radius = radius.rotated(new_rotation - prev_rotation);
 					ci->_edit_set_position(xform.affine_inverse().xform(temp_pivot + radius));
@@ -1187,7 +1191,7 @@ bool CanvasItemManipulator::_gui_input_ruler_tool(const Ref<InputEvent> &p_event
 
 	Point2 previous_origin = ruler_tool_origin;
 	if (!ruler_tool_active) {
-		ruler_tool_origin = snap_point((Point2)local_mouse_pos_callback.call() / zoom + view_offset);
+		ruler_tool_origin = snap_point(local_mouse_pos_callback.call());
 	}
 
 	if (ruler_tool_active && b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
@@ -1880,15 +1884,22 @@ void CanvasItemManipulator::center_temp_pivot_on_selection() {
 	Array selection;
 	get_selection_callback.call(selection);
 
-	if (!selection.is_empty()) {
-		Vector2 center;
-		for (const Variant &var : selection) {
-			const CanvasItem *ci = Object::cast_to<CanvasItem>(var);
-			Transform2D xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
-			center += xform.xform(ci->_edit_get_position());
-		}
-		temp_pivot = center / selection.size();
+	if (selection.is_empty()) {
+		return;
 	}
+
+	Transform2D window_offset;
+	if (!editor_mode) {
+		window_offset = viewport->get_popup_base_transform().affine_inverse();
+	}
+
+	Vector2 center;
+	for (const Variant &var : selection) {
+		const CanvasItem *ci = Object::cast_to<CanvasItem>(var);
+		Transform2D xform = window_offset * ci->get_screen_transform() * ci->get_transform().affine_inverse();
+		center += xform.xform(ci->_edit_get_position());
+	}
+	temp_pivot = center / selection.size();
 }
 
 void CanvasItemManipulator::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
