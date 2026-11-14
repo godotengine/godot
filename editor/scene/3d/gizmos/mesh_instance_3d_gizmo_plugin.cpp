@@ -66,6 +66,32 @@ String MeshInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_giz
 		return helper->box_get_handle_name(p_id);
 	}
 
+	if (Object::cast_to<SphereMesh>(*mesh->get_mesh())) {
+		return helper->sphere_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<PrismMesh>(*mesh->get_mesh())) {
+		return helper->prism_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<TorusMesh>(*mesh->get_mesh())) {
+		return helper->torus_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<QuadMesh>(*mesh->get_mesh())) {
+		return helper->quad_get_handle_name(p_id);
+	} else if (Object::cast_to<PlaneMesh>(*mesh->get_mesh())) {
+		return helper->plane_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<RibbonTrailMesh>(*mesh->get_mesh())) {
+		return helper->ribbon_get_handle_name(p_id);
+	}
+
+	if (Object::cast_to<TubeTrailMesh>(*mesh->get_mesh())) {
+		return helper->tube_get_handle_name(p_id);
+	}
+
 	return "";
 }
 
@@ -85,6 +111,39 @@ Variant MeshInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_g
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		return box_mesh->get_size();
+	}
+
+	const Ref<SphereMesh> sphere_mesh = mesh->get_mesh();
+	if (sphere_mesh.is_valid()) {
+		return Vector2(sphere_mesh->get_radius(), sphere_mesh->get_height());
+	}
+
+	const Ref<PrismMesh> prism_mesh = mesh->get_mesh();
+	if (prism_mesh.is_valid()) {
+		return prism_mesh->get_size();
+	}
+
+	const Ref<TorusMesh> torus_mesh = mesh->get_mesh();
+	if (torus_mesh.is_valid()) {
+		return Vector2(torus_mesh->get_inner_radius(), torus_mesh->get_outer_radius());
+	}
+
+	const Ref<QuadMesh> quad_mesh = mesh->get_mesh();
+	const Ref<PlaneMesh> plane_mesh = mesh->get_mesh();
+	if (quad_mesh.is_valid()) {
+		return quad_mesh->get_size();
+	} else if (plane_mesh.is_valid()) {
+		return plane_mesh->get_size();
+	}
+
+	const Ref<RibbonTrailMesh> ribbon_mesh = mesh->get_mesh();
+	if (ribbon_mesh.is_valid()) {
+		return Vector3(ribbon_mesh->get_size(), ribbon_mesh->get_sections(), ribbon_mesh->get_section_length());
+	}
+
+	const Ref<TubeTrailMesh> tube_mesh = mesh->get_mesh();
+	if (tube_mesh.is_valid()) {
+		return Vector3(tube_mesh->get_radius(), tube_mesh->get_sections(), tube_mesh->get_section_length());
 	}
 
 	return Variant();
@@ -128,6 +187,68 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 		box_mesh->set_size(box_size);
 		mesh->set_global_position(position);
 	}
+
+	const Ref<SphereMesh> sphere_mesh = mesh->get_mesh();
+	if (sphere_mesh.is_valid()) {
+		real_t radius, height;
+		helper->sphere_set_handle(segment, p_id, radius, height, sphere_mesh->get_is_hemisphere());
+		sphere_mesh->set_radius(radius);
+		sphere_mesh->set_height(height);
+	}
+
+	const Ref<PrismMesh> prism_mesh = mesh->get_mesh();
+	if (prism_mesh.is_valid()) {
+		Vector3 prism_size, position;
+		helper->prism_set_handle(segment, p_id, prism_size, position);
+		prism_mesh->set_size(prism_size);
+		mesh->set_global_position(position);
+	}
+
+	const Ref<TorusMesh> torus_mesh = mesh->get_mesh();
+	if (torus_mesh.is_valid()) {
+		real_t radius_in, radius_out;
+		helper->torus_set_handle(segment, p_id, radius_in, radius_out);
+		torus_mesh->set_inner_radius(radius_in);
+		torus_mesh->set_outer_radius(radius_out);
+	}
+
+	const Ref<QuadMesh> quad_mesh = mesh->get_mesh();
+	const Ref<PlaneMesh> plane_mesh = mesh->get_mesh();
+	if (quad_mesh.is_valid()) {
+		Vector2 size;
+		Vector3 position;
+		helper->quad_set_handle(segment, p_id, size, position);
+		quad_mesh->set_size(size);
+		mesh->set_global_position(position);
+	} else if (plane_mesh.is_valid()) {
+		Vector2 size;
+		Vector3 position;
+		helper->plane_set_handle(segment, p_id, size, position);
+		plane_mesh->set_size(size);
+		mesh->set_global_position(position);
+	}
+
+	const Ref<RibbonTrailMesh> ribbon_mesh = mesh->get_mesh();
+	if (ribbon_mesh.is_valid()) {
+		real_t height, size;
+		Vector3 position;
+		helper->ribbon_set_handle(segment, p_id, height, size, position);
+		int sections = MAX(int(height / ribbon_mesh->get_section_length()), 2);
+		ribbon_mesh->set_size(size);
+		ribbon_mesh->set_sections(sections);
+		mesh->set_global_position(position);
+	}
+
+	const Ref<TubeTrailMesh> tube_mesh = mesh->get_mesh();
+	if (tube_mesh.is_valid()) {
+		real_t height, radius;
+		Vector3 position;
+		helper->tube_set_handle(segment, p_id, height, radius, position);
+		int sections = MAX(int(height / tube_mesh->get_section_length()), 2);
+		tube_mesh->set_radius(radius);
+		tube_mesh->set_sections(sections);
+		mesh->set_global_position(position);
+	}
 }
 
 void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -146,6 +267,39 @@ void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		helper->box_commit_handle(TTR("Change Box Mesh Size"), p_cancel, mesh, *box_mesh);
+	}
+
+	const Ref<SphereMesh> sphere_mesh = mesh->get_mesh();
+	if (sphere_mesh.is_valid()) {
+		helper->sphere_commit_handle(p_id, TTR("Change Sphere Mesh Radius"), TTR("Change Sphere Mesh Height"), p_cancel, *sphere_mesh, *sphere_mesh);
+	}
+
+	const Ref<PrismMesh> prism_mesh = mesh->get_mesh();
+	if (prism_mesh.is_valid()) {
+		helper->prism_commit_handle(TTR("Change Prism Mesh Size"), p_cancel, mesh, *prism_mesh);
+	}
+
+	const Ref<TorusMesh> torus_mesh = mesh->get_mesh();
+	if (torus_mesh.is_valid()) {
+		helper->torus_commit_handle(p_id, TTR("Change Torus Mesh Radius"), p_cancel, *torus_mesh);
+	}
+
+	const Ref<QuadMesh> quad_mesh = mesh->get_mesh();
+	const Ref<PlaneMesh> plane_mesh = mesh->get_mesh();
+	if (quad_mesh.is_valid()) {
+		helper->quad_commit_handle(TTR("Change Quad Mesh Size"), p_cancel, mesh, *quad_mesh);
+	} else if (plane_mesh.is_valid()) {
+		helper->plane_commit_handle(TTR("Change Plane Mesh Size"), p_cancel, mesh, *plane_mesh);
+	}
+
+	const Ref<RibbonTrailMesh> ribbon_mesh = mesh->get_mesh();
+	if (ribbon_mesh.is_valid()) {
+		helper->ribbon_commit_handle(p_id, TTR("Change Ribbon Trail Mesh Radius"), TTR("Change Ribbon Trail Mesh Height"), p_cancel, mesh, *ribbon_mesh, *ribbon_mesh);
+	}
+
+	const Ref<TubeTrailMesh> tube_mesh = mesh->get_mesh();
+	if (tube_mesh.is_valid()) {
+		helper->tube_commit_handle(p_id, TTR("Change Tube Trail Mesh Radius"), TTR("Change Tube Trail Mesh Height"), p_cancel, mesh, *tube_mesh, *tube_mesh);
 	}
 }
 
@@ -197,6 +351,45 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		const Vector<Vector3> handles = helper->box_get_handles(box_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<SphereMesh> sphere_mesh = mesh->get_mesh();
+	if (sphere_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->sphere_get_handles(sphere_mesh->get_radius(), sphere_mesh->get_height(), sphere_mesh->get_is_hemisphere());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<PrismMesh> prism_mesh = mesh->get_mesh();
+	if (prism_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->prism_get_handles(prism_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<TorusMesh> torus_mesh = mesh->get_mesh();
+	if (torus_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->torus_get_handles(torus_mesh->get_inner_radius(), torus_mesh->get_outer_radius());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<QuadMesh> quad_mesh = mesh->get_mesh();
+	if (quad_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->quad_get_handles(quad_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
+	} else if (plane_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->plane_get_handles(plane_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<TubeTrailMesh> tube_mesh = mesh->get_mesh();
+	if (tube_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->tube_get_handles(tube_mesh->get_sections() * tube_mesh->get_section_length(), tube_mesh->get_radius());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<RibbonTrailMesh> ribbon_mesh = mesh->get_mesh();
+	if (ribbon_mesh.is_valid()) {
+		const Vector<Vector3> handles = helper->ribbon_get_handles(ribbon_mesh->get_sections() * ribbon_mesh->get_section_length(), ribbon_mesh->get_size());
 		p_gizmo->add_handles(handles, handles_material);
 	}
 }

@@ -43,6 +43,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
 void CSGShapeEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -206,6 +207,38 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 		return p_id == 0 ? "Radius" : "Height";
 	}
 
+	if (Object::cast_to<CSGMesh3D>(cs)) {
+		CSGMesh3D *s = Object::cast_to<CSGMesh3D>(cs);
+
+		if (Object::cast_to<BoxMesh>(*s->get_mesh())) {
+			return helper->box_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<SphereMesh>(*s->get_mesh())) {
+			return helper->sphere_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<CapsuleMesh>(*s->get_mesh())) {
+			return helper->capsule_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<CylinderMesh>(*s->get_mesh())) {
+			return helper->cone_frustum_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<PrismMesh>(*s->get_mesh())) {
+			return helper->prism_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<TorusMesh>(*s->get_mesh())) {
+			return helper->torus_get_handle_name(p_id);
+		}
+
+		if (Object::cast_to<TubeTrailMesh>(*s->get_mesh())) {
+			return helper->tube_get_handle_name(p_id);
+		}
+	}
+
 	if (Object::cast_to<CSGTorus3D>(cs)) {
 		return p_id == 0 ? "InnerRadius" : "OuterRadius";
 	}
@@ -229,6 +262,45 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
 		return Vector2(s->get_radius(), s->get_height());
+	}
+
+	if (Object::cast_to<CSGMesh3D>(cs)) {
+		CSGMesh3D *s = Object::cast_to<CSGMesh3D>(cs);
+
+		const Ref<BoxMesh> box_mesh = s->get_mesh();
+		if (box_mesh.is_valid()) {
+			return box_mesh->get_size();
+		}
+
+		const Ref<SphereMesh> sphere_mesh = s->get_mesh();
+		if (sphere_mesh.is_valid()) {
+			return Vector2(sphere_mesh->get_radius(), sphere_mesh->get_height());
+		}
+
+		const Ref<CapsuleMesh> capsule_mesh = s->get_mesh();
+		if (capsule_mesh.is_valid()) {
+			return Vector2(capsule_mesh->get_radius(), capsule_mesh->get_height());
+		}
+
+		const Ref<CylinderMesh> cylinder_mesh = s->get_mesh();
+		if (cylinder_mesh.is_valid()) {
+			return Vector3(cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius(), cylinder_mesh->get_height());
+		}
+
+		const Ref<PrismMesh> prism_mesh = s->get_mesh();
+		if (prism_mesh.is_valid()) {
+			return prism_mesh->get_size();
+		}
+
+		const Ref<TorusMesh> torus_mesh = s->get_mesh();
+		if (torus_mesh.is_valid()) {
+			return Vector2(torus_mesh->get_inner_radius(), torus_mesh->get_outer_radius());
+		}
+
+		const Ref<TubeTrailMesh> tube_mesh = s->get_mesh();
+		if (tube_mesh.is_valid()) {
+			return Vector3(tube_mesh->get_radius(), tube_mesh->get_sections(), tube_mesh->get_section_length());
+		}
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
@@ -287,6 +359,74 @@ void CSGShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 		s->set_global_position(position);
 	}
 
+	if (Object::cast_to<CSGMesh3D>(cs)) {
+		CSGMesh3D *s = Object::cast_to<CSGMesh3D>(cs);
+
+		const Ref<BoxMesh> box_mesh = s->get_mesh();
+		if (box_mesh.is_valid()) {
+			Vector3 box_size, position;
+			helper->box_set_handle(sg, p_id, box_size, position);
+			box_mesh->set_size(box_size);
+			s->set_global_position(position);
+		}
+
+		const Ref<SphereMesh> sphere_mesh = s->get_mesh();
+		if (sphere_mesh.is_valid()) {
+			real_t radius, height;
+			helper->sphere_set_handle(sg, p_id, radius, height, sphere_mesh->get_is_hemisphere());
+			sphere_mesh->set_radius(radius);
+			sphere_mesh->set_height(height);
+		}
+
+		const Ref<CapsuleMesh> capsule_mesh = s->get_mesh();
+		if (capsule_mesh.is_valid()) {
+			real_t height, radius;
+			Vector3 position;
+			helper->capsule_set_handle(sg, p_id, height, radius, position);
+			capsule_mesh->set_height(height);
+			capsule_mesh->set_radius(radius);
+			s->set_global_position(position);
+		}
+
+		const Ref<CylinderMesh> cylinder_mesh = s->get_mesh();
+		if (cylinder_mesh.is_valid()) {
+			real_t height, radius_top, radius_bottom;
+			Vector3 position;
+			helper->cone_frustum_set_handle(sg, p_id, height, radius_top, radius_bottom, position);
+			cylinder_mesh->set_height(height);
+			cylinder_mesh->set_top_radius(radius_top);
+			cylinder_mesh->set_bottom_radius(radius_bottom);
+			s->set_global_position(position);
+		}
+
+		const Ref<PrismMesh> prism_mesh = s->get_mesh();
+		if (prism_mesh.is_valid()) {
+			Vector3 prism_size, position;
+			helper->prism_set_handle(sg, p_id, prism_size, position);
+			prism_mesh->set_size(prism_size);
+			s->set_global_position(position);
+		}
+
+		const Ref<TorusMesh> torus_mesh = s->get_mesh();
+		if (torus_mesh.is_valid()) {
+			real_t radius_in, radius_out;
+			helper->torus_set_handle(sg, p_id, radius_in, radius_out);
+			torus_mesh->set_inner_radius(radius_in);
+			torus_mesh->set_outer_radius(radius_out);
+		}
+
+		const Ref<TubeTrailMesh> tube_mesh = s->get_mesh();
+		if (tube_mesh.is_valid()) {
+			real_t height, radius;
+			Vector3 position;
+			helper->tube_set_handle(sg, p_id, height, radius, position);
+			int sections = MAX(int(height / tube_mesh->get_section_length()), 2);
+			tube_mesh->set_radius(radius);
+			tube_mesh->set_sections(sections);
+			s->set_global_position(position);
+		}
+	}
+
 	if (Object::cast_to<CSGTorus3D>(cs)) {
 		CSGTorus3D *s = Object::cast_to<CSGTorus3D>(cs);
 
@@ -334,6 +474,45 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		helper->cylinder_commit_handle(p_id, TTR("Change CSG Cylinder Radius"), TTR("Change CSG Cylinder Height"), p_cancel, cs);
+	}
+
+	if (Object::cast_to<CSGMesh3D>(cs)) {
+		CSGMesh3D *s = Object::cast_to<CSGMesh3D>(cs);
+
+		const Ref<BoxMesh> box_mesh = s->get_mesh();
+		if (box_mesh.is_valid()) {
+			helper->box_commit_handle(TTR("Change CSG Mesh Size"), p_cancel, s, *box_mesh);
+		}
+
+		const Ref<SphereMesh> sphere_mesh = s->get_mesh();
+		if (sphere_mesh.is_valid()) {
+			helper->sphere_commit_handle(p_id, TTR("Change CSG Mesh Radius"), TTR("Change CSG Mesh Height"), p_cancel, *sphere_mesh, *sphere_mesh);
+		}
+
+		const Ref<CapsuleMesh> capsule_mesh = s->get_mesh();
+		if (capsule_mesh.is_valid()) {
+			helper->cylinder_commit_handle(p_id, TTR("Change CSG Mesh Radius"), TTR("Change CSG Mesh Height"), p_cancel, s, *capsule_mesh, *capsule_mesh);
+		}
+
+		const Ref<CylinderMesh> cylinder_mesh = s->get_mesh();
+		if (cylinder_mesh.is_valid()) {
+			helper->cone_frustum_commit_handle(p_id, TTR("Change CSG Mesh Radius"), TTR("Change CSG Mesh Height"), p_cancel, s, *cylinder_mesh, *cylinder_mesh, *cylinder_mesh);
+		}
+
+		const Ref<PrismMesh> prism_mesh = s->get_mesh();
+		if (prism_mesh.is_valid()) {
+			helper->prism_commit_handle(TTR("Change CSG Mesh Size"), p_cancel, s, *prism_mesh);
+		}
+
+		const Ref<TorusMesh> torus_mesh = s->get_mesh();
+		if (torus_mesh.is_valid()) {
+			helper->torus_commit_handle(p_id, TTR("Change CSG Mesh Radius"), p_cancel, *torus_mesh);
+		}
+
+		const Ref<TubeTrailMesh> tube_mesh = s->get_mesh();
+		if (tube_mesh.is_valid()) {
+			helper->tube_commit_handle(p_id, TTR("Change CSG Mesh Radius"), TTR("Change CSG Mesh Height"), p_cancel, s, *tube_mesh, *tube_mesh);
+		}
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
@@ -477,6 +656,52 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector<Vector3> handles = helper->cylinder_get_handles(s->get_height(), s->get_radius());
 		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	if (Object::cast_to<CSGMesh3D>(cs)) {
+		CSGMesh3D *s = Object::cast_to<CSGMesh3D>(cs);
+
+		const Ref<BoxMesh> box_mesh = s->get_mesh();
+		if (box_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->box_get_handles(box_mesh->get_size());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<SphereMesh> sphere_mesh = s->get_mesh();
+		if (sphere_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->sphere_get_handles(sphere_mesh->get_radius(), sphere_mesh->get_height(), sphere_mesh->get_is_hemisphere());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<CapsuleMesh> capsule_mesh = s->get_mesh();
+		if (capsule_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->capsule_get_handles(capsule_mesh->get_height(), capsule_mesh->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<CylinderMesh> cylinder_mesh = s->get_mesh();
+		if (cylinder_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->cone_frustum_get_handles(cylinder_mesh->get_height(), cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<PrismMesh> prism_mesh = s->get_mesh();
+		if (prism_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->prism_get_handles(prism_mesh->get_size());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<TorusMesh> torus_mesh = s->get_mesh();
+		if (torus_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->torus_get_handles(torus_mesh->get_inner_radius(), torus_mesh->get_outer_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
+
+		const Ref<TubeTrailMesh> tube_mesh = s->get_mesh();
+		if (tube_mesh.is_valid()) {
+			const Vector<Vector3> handles = helper->tube_get_handles(tube_mesh->get_sections() * tube_mesh->get_section_length(), tube_mesh->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
