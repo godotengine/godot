@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentMesh3DNormalsList" inherits="OpenXRSpatialComponentData" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries mesh3d normal result data.
+	</brief_description>
+	<description>
+		Object for storing the queries 3d mesh normal result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_normals" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<param index="0" name="snapshot" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the mesh normals for the entity at this [param index].
+			</description>
+		</method>
+	</methods>
+</class>

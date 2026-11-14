@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXrSpatialFilterArchetype" inherits="OpenXRStructureBase" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Structure that filters on an archetype.
+	</brief_description>
+	<description>
+		An instance of this structure can be used as the [code]next[/code] parameter of the method [method OpenXRSpatialEntityExtension.query_snapshot] to filter the snapshot by archetype.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="archetype_id" type="int" setter="set_archetype_id" getter="get_archetype_id" default="0">
+			The archetype to filter on. The archetype must match an entry returned by [method OpenXRSpatialEntityExtension.get_snapshot_archetypes] for this snapshot.
+		</member>
+	</members>
+</class>

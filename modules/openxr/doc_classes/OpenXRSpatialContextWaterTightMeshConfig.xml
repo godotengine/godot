@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialContextWaterTightMeshConfig" inherits="OpenXRStructureBase" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration structure to enable watertight meshes.
+	</brief_description>
+	<description>
+		Configuration structure to enable watertight meshes. This can be added as a next structure to [OpenXRSpatialCapabilityConfigurationMeshTracking].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="enable_watertight_mesh" type="bool" setter="set_enable_watertight_mesh" getter="get_enable_watertight_mesh" default="true">
+			If [code]true[/code] we will request watertight meshes. Setting this to [code]false[/code] has the same behavior as not including this structure at all.
+		</member>
+	</members>
+</class>
