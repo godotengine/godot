@@ -171,7 +171,7 @@ TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
 	CHECK(Geometry3D::segment_intersects_cylinder(Vector3(10, 10, 10), Vector3(6, 6, 6), 5, 5, &result, &normal) == false);
 }
 
-TEST_CASE("[Geometry3D] Segment Intersects Cylinder") {
+TEST_CASE("[Geometry3D] Segment Intersects Sphere") {
 	Vector3 result, normal;
 	CHECK(Geometry3D::segment_intersects_sphere(Vector3(10, 10, 10), Vector3(0, 0, 0), Vector3(0, 0, 0), 5, &result, &normal) == true);
 	CHECK(Geometry3D::segment_intersects_sphere(Vector3(10, 10, 10), Vector3(0, 0, 2.5), Vector3(0, 0, 0), 5, &result, &normal) == true);
