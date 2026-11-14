@@ -959,3 +959,7 @@ MeshInstance3D::MeshInstance3D() {
 	}
 #endif
 }
+
+MeshInstance3D::~MeshInstance3D() {
+	set_base(RID());
+}
