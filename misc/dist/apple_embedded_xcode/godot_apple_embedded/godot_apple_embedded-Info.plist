@@ -32,6 +32,7 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	$docs_in_place
+	$gamemode
 	<key>UIFileSharingEnabled</key>
 	$docs_sharing
 	<key>UIRequiredDeviceCapabilities</key>
