@@ -4811,6 +4811,8 @@ void EditorNode::_set_main_scene_state(const Dictionary &p_state) {
 
 	if (p_state.has("node_filter")) {
 		SceneTreeDock::get_singleton()->set_filter(p_state["node_filter"]);
+	} else {
+		SceneTreeDock::get_singleton()->set_filter("");
 	}
 
 	// This should only happen at the very end.
