@@ -222,6 +222,7 @@ private:
 
 	VmaAllocator allocator = nullptr;
 	HashMap<uint32_t, VmaPool> small_allocs_pools;
+	BinaryMutex small_allocs_pools_mutex;
 
 	VmaPool _find_or_create_small_allocs_pool(uint32_t p_mem_type_index);
 
