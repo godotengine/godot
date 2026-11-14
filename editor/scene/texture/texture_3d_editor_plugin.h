@@ -48,6 +48,7 @@ class Texture3DEditor : public Control {
 	} theme_cache;
 
 	SpinBox *layer = nullptr;
+	Label *filename_label = nullptr;
 	Label *info = nullptr;
 	Button *info_toggle = nullptr;
 	Ref<Texture3D> texture;
