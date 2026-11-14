@@ -1277,6 +1277,17 @@ Patches:
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` ([GH-99257](https://github.com/godotengine/godot/pull/99257))
 - `0004-VMA-ignore-maxMemoryAllocationCount.patch` ([GH-125146](https://github.com/godotengine/godot/pull/125146))
 
+## wasm3
+
+- Upstream: https://github.com/wasm3/wasm3
+- Version: master (35b5e2fb53c5cbc1ff3d7e42c381cd7cfa14f308, 2024)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `source/*.{c,h}`
+- `source/extra/wasi_core.h`
+- `LICENSE`
 
 ## wayland
 
