@@ -272,18 +272,37 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 
 	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
 
-	if (light->type != RSE::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+	if (light->projector.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RSE::LIGHT_OMNI);
 	}
 
 	light->projector = p_texture;
 
-	if (light->type != RSE::LIGHT_DIRECTIONAL) {
-		if (light->projector.is_valid()) {
-			texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RSE::LIGHT_OMNI);
-		}
-		light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+	if (light->projector.is_valid()) {
+		texture_storage->texture_add_to_decal_atlas(light->projector, light->type == RSE::LIGHT_OMNI);
 	}
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR);
+}
+
+void LightStorage::light_set_projector_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_size = p_size;
+}
+
+void LightStorage::light_set_projector_offset(RID p_light, const Vector2 &p_offset) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_offset = p_offset;
+}
+
+void LightStorage::light_set_projector_repeat(RID p_light, bool p_repeat) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->projector_repeat = p_repeat;
 }
 
 void LightStorage::light_set_negative(RID p_light, bool p_enable) {
@@ -726,7 +745,7 @@ void LightStorage::set_max_lights(const uint32_t p_max_lights) {
 	directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 }
 
-void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows) {
+void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows, bool &r_directional_light_use_projectors) {
 	ForwardIDStorage *forward_id_storage = ForwardIDStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -741,6 +760,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	uint32_t directional_contact_shadows_count = 0;
 
 	r_directional_light_soft_shadows = false;
+	r_directional_light_use_projectors = false;
 
 	for (int i = 0; i < (int)p_lights.size(); i++) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_lights[i]);
@@ -826,6 +846,49 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= RendererSceneRenderRD::get_singleton()->directional_shadow_quality_radius_get(); // Only use quality radius for PCF
+					}
+
+					RID projector = light->projector;
+
+					if (projector.is_valid()) {
+						Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
+
+						light_data.projector_rect[0] = rect.position.x;
+						light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped
+						light_data.projector_rect[2] = rect.size.width;
+						light_data.projector_rect[3] = -rect.size.height;
+
+						light_data.projector_not_repeat = 1.0 - (float)light->projector_repeat;
+
+						// Compute projector matrix
+						Projection projector_projection;
+						projector_projection.set_orthogonal(-light->projector_size.x / 2.0f, +light->projector_size.x / 2.0f,
+								-light->projector_size.y / 2.0f, +light->projector_size.y / 2.0f,
+								0.0f, 0.0f);
+
+						Transform3D modelview = (inverse_transform * light_transform).inverse();
+
+						Projection projector_mtx = projector_projection * modelview;
+
+						// Storing the projector matrix line x and y
+						// Note : Projector offset is stored in the w component
+						light_data.projector_matrix_line_x[0] = projector_mtx[0][0];
+						light_data.projector_matrix_line_x[1] = projector_mtx[1][0];
+						light_data.projector_matrix_line_x[2] = projector_mtx[2][0];
+						light_data.projector_matrix_line_x[3] = projector_mtx[3][0] + 2.0 * light->projector_offset.x / light->projector_size.x;
+
+						light_data.projector_matrix_line_y[0] = projector_mtx[0][1];
+						light_data.projector_matrix_line_y[1] = projector_mtx[1][1];
+						light_data.projector_matrix_line_y[2] = projector_mtx[2][1];
+						light_data.projector_matrix_line_y[3] = projector_mtx[3][1] + 2.0 * light->projector_offset.y / light->projector_size.y;
+
+						r_directional_light_use_projectors = true;
+
+					} else {
+						light_data.projector_rect[0] = 0;
+						light_data.projector_rect[1] = 0;
+						light_data.projector_rect[2] = 0;
+						light_data.projector_rect[3] = 0;
 					}
 
 					int limit = smode == RSE::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == RSE::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);
