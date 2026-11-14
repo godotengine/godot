@@ -1,0 +1,17 @@
+{
+  "solution": {
+    "path": "..\\..\\Godot.sln",
+    "projects": [
+      "editor\\Godot.NET.Sdk\\Godot.SourceGenerators\\Godot.SourceGenerators.csproj",
+      "editor\\GodotTools\\GodotTools.BuildLogger\\GodotTools.BuildLogger.csproj",
+      "editor\\GodotTools\\GodotTools.Core\\GodotTools.Core.csproj",
+      "editor\\GodotTools\\GodotTools.IdeMessaging.CLI\\GodotTools.IdeMessaging.CLI.csproj",
+      "editor\\GodotTools\\GodotTools.IdeMessaging\\GodotTools.IdeMessaging.csproj",
+      "editor\\GodotTools\\GodotTools.OpenVisualStudio\\GodotTools.OpenVisualStudio.csproj",
+      "editor\\GodotTools\\GodotTools.ProjectEditor\\GodotTools.ProjectEditor.csproj",
+      "editor\\GodotTools\\GodotTools.Shared\\GodotTools.Shared.csproj",
+      "editor\\GodotTools\\GodotTools\\GodotTools.csproj",
+      "glue\\GodotSharp\\Godot.SourceGenerators.Internal\\Godot.SourceGenerators.Internal.csproj"
+    ]
+  }
+}

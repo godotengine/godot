@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "..\\..\\Godot.sln",
+    "projects": [
+      "editor\\Godot.NET.Sdk\\Godot.NET.Sdk\\Godot.NET.Sdk.csproj",
+      "editor\\Godot.NET.Sdk\\Godot.SourceGenerators.Sample\\Godot.SourceGenerators.Sample.csproj",
+      "editor\\Godot.NET.Sdk\\Godot.SourceGenerators.Tests\\Godot.SourceGenerators.Tests.csproj",
+      "editor\\Godot.NET.Sdk\\Godot.SourceGenerators\\Godot.SourceGenerators.csproj",
+      "glue\\GodotSharp\\Godot.SourceGenerators.Internal\\Godot.SourceGenerators.Internal.csproj"
+    ]
+  }
+}
