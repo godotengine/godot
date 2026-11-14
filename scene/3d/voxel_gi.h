@@ -108,10 +108,6 @@ public:
 
 	};
 
-	typedef void (*BakeBeginFunc)();
-	typedef bool (*BakeStepFunc)(int, const String &);
-	typedef void (*BakeEndFunc)();
-
 private:
 	Ref<VoxelGIData> probe_data;
 
@@ -130,8 +126,14 @@ private:
 
 	void _find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes);
 	void _debug_bake();
+	bool _voxelizer_plot_bake_step_function(int p_current, int p_total);
+	bool _voxelizer_sdf_bake_step_function(int p_current, int p_total);
 
 	float _get_camera_exposure_normalization();
+
+	void bake_begin();
+	bool bake_step(int p_step, const String &p_status);
+	void bake_end();
 
 protected:
 	static void _bind_methods();
@@ -141,9 +143,9 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	static BakeBeginFunc bake_begin_function;
-	static BakeStepFunc bake_step_function;
-	static BakeEndFunc bake_end_function;
+	static const String BAKE_BEGIN_NAME;
+	static const String BAKE_STEP_NAME;
+	static const String BAKE_END_NAME;
 
 	void set_probe_data(const Ref<VoxelGIData> &p_data);
 	Ref<VoxelGIData> get_probe_data() const;
