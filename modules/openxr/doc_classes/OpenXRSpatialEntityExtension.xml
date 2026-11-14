@@ -207,6 +207,14 @@
 				Returns [code]true[/code] if this spatial entity [param capability] is supported by the hardware used.
 			</description>
 		</method>
+		<method name="supports_capability_feature">
+			<return type="bool" />
+			<param index="0" name="capability" type="int" enum="OpenXRSpatialEntityExtension.Capability" />
+			<param index="1" name="feature" type="int" enum="OpenXRSpatialEntityExtension.CapabilityFeature" />
+			<description>
+				Returns [code]true[/code] if this capability feature is supported.
+			</description>
+		</method>
 		<method name="supports_component_type">
 			<return type="bool" />
 			<param index="0" name="capability" type="int" enum="OpenXRSpatialEntityExtension.Capability" />
@@ -253,6 +261,39 @@
 		<constant name="CAPABILITY_ANCHOR" value="1000762000" enum="Capability">
 			Anchor capability.
 		</constant>
+		<constant name="CAPABILITY_IMAGE_TRACKING" value="1000782000" enum="Capability">
+			Image tracking capability.
+		</constant>
+		<constant name="CAPABILITY_OBJECT_TRACKING_ANDROID" value="1000785000" enum="Capability">
+			Object tracking capability (Android vendor extension).
+		</constant>
+		<constant name="CAPABILITY_DEPTH_RAYCAST_ANDROID" value="1000786000" enum="Capability">
+			Depth raycast capability (Android vendor extension).
+		</constant>
+		<constant name="CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS" value="1000743000" enum="CapabilityFeature">
+			Fixed size tracking markers feature.
+		</constant>
+		<constant name="CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS" value="1000743001" enum="CapabilityFeature">
+			Static markers feature.
+		</constant>
+		<constant name="CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID" value="1000761000" enum="CapabilityFeature">
+			Spherical bounds feature (Android vendor extension).
+		</constant>
+		<constant name="CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID" value="1000761001" enum="CapabilityFeature">
+			Box bounds feature (Android vendor extension).
+		</constant>
+		<constant name="CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID" value="1000761002" enum="CapabilityFeature">
+			Frustum bounds feature (Android vendor extension).
+		</constant>
+		<constant name="CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES" value="1000782000" enum="CapabilityFeature">
+			Automatic size detection for image tracking feature.
+		</constant>
+		<constant name="CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES" value="1000782001" enum="CapabilityFeature">
+			Static image tracking feature.
+		</constant>
+		<constant name="CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES" value="1000782002" enum="CapabilityFeature">
+			Fixed size image tracking feature.
+		</constant>
 		<constant name="COMPONENT_TYPE_BOUNDED_2D" value="1" enum="ComponentType">
 			Component that provides the 2D bounds for a spatial entity. The corresponding list structure is [code]XrSpatialComponentBounded2DListEXT[/code]; the corresponding data structure is [code]XrSpatialBounded2DDataEXT[/code].
 		</constant>
@@ -285,6 +326,18 @@
 		</constant>
 		<constant name="COMPONENT_TYPE_PERSISTENCE" value="1000763000" enum="ComponentType">
 			Component that provides the persisted UUID for a spatial entity. The corresponding list structure is [code]XrSpatialComponentPersistenceListEXT; the corresponding data structure is [code]XrSpatialPersistenceDataEXT[/code] (Added by the [code]XR_EXT_spatial_persistence[/code] extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_IMAGE_2D" value="1000782000" enum="ComponentType">
+			Component that provides meta data for detected 2D image.
+		</constant>
+		<constant name="COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID" value="1000785000" enum="ComponentType">
+			Component that provides semantic label data (Android vendor extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_RAYCAST_RESULT_ANDROID" value="1000786000" enum="ComponentType">
+			Component that provides raycast result data (Android vendor extension).
+		</constant>
+		<constant name="COMPONENT_TYPE_SUBSUMED_BY_ANDROID" value="1000791000" enum="ComponentType">
+			Component that provides subsumed data (Android vendor extension).
 		</constant>
 		<constant name="TRACKING_UNSUPPORTED_CAPABILITY" value="-3" enum="TrackingState">
 			A capability supplied when creating the spatial context for tracking is unsupported.

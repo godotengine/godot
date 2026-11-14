@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialImageDatabase" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Resource for storing image data that can be submitted to the spatial entities image tracking system.
+	</brief_description>
+	<description>
+		This resource stores image data that can be submitted to the spatial entities image tracking system. This allows you to configure the images that should be tracked within the editor. As image tracking data is immutable, image data is not submitted to OpenXR until tracking is initialized.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_image_database">
+			<return type="RID" />
+			<description>
+				This method will create an image tracking database resource with the spatial entities image tracking system and on success, return a valid RID. You can use this RID when calling [method OpenXRSpatialImageTrackingCapability.start_built_in_tracking] or [method OpenXRSpatialImageTrackingCapability.image_database_submit]. You will need to free this RID by calling [method OpenXRSpatialImageTrackingCapability.image_database_free].
+				[b]Note:[/b] Calling this method will fail if spatial entities image tracking is not enabled or available.
+			</description>
+		</method>
+		<method name="has_images">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this object has valid image data. Note that there will always be one empty image entry that is ignored by this check.
+			</description>
+		</method>
+	</methods>
+</class>
