@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_editor_plugin.h"
@@ -45,6 +46,273 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/shader_include.h"
 #include "servers/display/display_server.h"
+
+void ScriptEditorDiagnosticPanelRow::set_warning(const String &p_message) {
+	is_error = false;
+	const Ref<Texture2D> icon = get_editor_theme_icon(SNAME("NodeWarning"));
+	icon_display->set_texture(icon);
+	icon_display->set_size(icon->get_size());
+
+	ignore_button->show();
+
+	diagnostic_code = "";
+	diagnostic_message = p_message;
+	start_line = -1;
+	start_column = -1;
+	end_line = -1;
+	end_column = -1;
+}
+
+void ScriptEditorDiagnosticPanelRow::set_warning(const EditorLanguage::Warning &p_warning) {
+	is_error = false;
+	const Ref<Texture2D> icon = get_editor_theme_icon(SNAME("NodeWarning"));
+	icon_display->set_texture(icon);
+	icon_display->set_size(icon->get_size());
+
+	ignore_button->show();
+
+	diagnostic_code = p_warning.string_code;
+	diagnostic_message = p_warning.message;
+	start_line = p_warning.start_line;
+	start_column = p_warning.start_column;
+	end_line = p_warning.end_line;
+	end_column = p_warning.end_column;
+}
+
+void ScriptEditorDiagnosticPanelRow::set_error(const String &p_message) {
+	is_error = true;
+	const Ref<Texture2D> icon = get_editor_theme_icon(SNAME("ScriptError"));
+	icon_display->set_texture(icon);
+	icon_display->set_size(icon->get_size());
+
+	ignore_button->hide();
+
+	diagnostic_code = "";
+	diagnostic_message = p_message;
+	start_line = -1;
+	start_column = -1;
+	end_line = -1;
+	end_column = -1;
+}
+
+void ScriptEditorDiagnosticPanelRow::set_error(const EditorLanguage::ScriptError &p_error) {
+	is_error = true;
+	const Ref<Texture2D> icon = get_editor_theme_icon(SNAME("ScriptError"));
+	icon_display->set_texture(icon);
+	icon_display->set_size(icon->get_size());
+
+	ignore_button->hide();
+
+	diagnostic_code = "";
+	diagnostic_message = p_error.message;
+	start_line = p_error.start_line;
+	start_column = p_error.start_column;
+	end_line = p_error.end_line;
+	end_column = p_error.end_column;
+}
+
+void ScriptEditorDiagnosticPanelRow::_update_text() {
+	Color text_color;
+	if (is_error) {
+		icon_display->set_texture(get_editor_theme_icon(SNAME("StatusError")));
+		text_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+	} else {
+		icon_display->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
+		text_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	}
+	message_display->clear();
+	message_display->push_color(text_color);
+	if (!diagnostic_code.is_empty()) {
+		message_display->push_bold();
+		message_display->add_text(diagnostic_code);
+		message_display->add_text(": ");
+		message_display->pop(); // Bold
+	}
+
+	message_display->add_text(diagnostic_message);
+	message_display->pop(); // Color
+	message_display->add_text(" ");
+
+	if (start_line != -1 && start_column != -1) {
+		message_display->add_text(vformat(TTR("[Line %s, Col %s]"), start_line, start_column));
+	}
+}
+
+void ScriptEditorDiagnosticPanelRow::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	// Handle jumping to the diagnostic location if it is double-clicked.
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->is_double_click()) {
+			if (!has_meta(SNAME("location"))) {
+				return;
+			}
+
+			Dictionary signal_data = get_meta(SNAME("location"));
+			signal_data["operation"] = "goto";
+			emit_signal(SNAME("action_requested"), signal_data);
+		}
+	}
+}
+
+void ScriptEditorDiagnosticPanelRow::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_MOUSE_ENTER: {
+			is_being_hovered = true; // TODO: make this actually do stuff
+			queue_redraw();
+			break;
+		}
+		case NOTIFICATION_MOUSE_EXIT: {
+			is_being_hovered = false;
+			queue_redraw();
+			break;
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_text();
+
+			int font_size = message_display->get_theme_font_size(SNAME("normal_font_size"));
+			icon_display->set_size(Size2(font_size, font_size));
+
+			ignore_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+			copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			break;
+		}
+		case NOTIFICATION_DRAW: {
+			Rect2i rect = Rect2i(Point2i(), get_rect().size);
+			if (is_being_hovered) {
+				hover_box->draw(get_canvas_item(), rect);
+			} else {
+				// TODO: Dunno if this is a memory leak or if it'll clean itself up.
+				memnew(StyleBoxEmpty)->draw(get_canvas_item(), rect);
+			}
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void ScriptEditorDiagnosticPanelRow::_on_ignore_button_clicked() {
+	if (!has_meta(SNAME("location")) || !has_meta(SNAME("diagnostic_code"))) {
+		return;
+	}
+	Dictionary signal_data = get_meta(SNAME("location"));
+	signal_data["operation"] = "ignore";
+	signal_data["code"] = get_meta(SNAME("diagnostic_code"));
+	emit_signal(SNAME("action_requested"), signal_data);
+}
+
+void ScriptEditorDiagnosticPanelRow::_on_copy_button_clicked() {
+	DisplayServer::get_singleton()->clipboard_set(message_display->get_parsed_text());
+}
+
+void ScriptEditorDiagnosticPanelRow::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("action_requested", PropertyInfo(Variant::DICTIONARY, "action_data")));
+}
+
+ScriptEditorDiagnosticPanelRow::ScriptEditorDiagnosticPanelRow() {
+	add_theme_constant_override(SNAME("margin_top"), 15);
+	add_theme_constant_override(SNAME("margin_left"), 15);
+	add_theme_constant_override(SNAME("margin_bottom"), 15);
+	add_theme_constant_override(SNAME("margin_right"), 15);
+
+	hbox = memnew(HBoxContainer);
+	add_child(hbox);
+
+	icon_display = memnew(TextureRect);
+	icon_display->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT);
+	icon_display->set_mouse_filter(MOUSE_FILTER_IGNORE);
+
+	message_display = memnew(RichTextLabel);
+	message_display->set_fit_content(true);
+	message_display->set_h_size_flags(SIZE_EXPAND_FILL);
+	message_display->set_v_size_flags(SIZE_FILL);
+	message_display->add_theme_style_override(SNAME("normal"), memnew(StyleBoxEmpty));
+	message_display->set_mouse_filter(MOUSE_FILTER_PASS);
+	message_display->set_selection_enabled(true);
+	message_display->set_context_menu_enabled(true);
+
+	ignore_button = memnew(Button);
+	ignore_button->set_tooltip_text(TTR("Ignore this diagnostic for the current line."));
+	ignore_button->connect(SNAME("pressed"), callable_mp(this, &ScriptEditorDiagnosticPanelRow::_on_ignore_button_clicked));
+	// ignore_button->set_flat(true);
+
+	copy_button = memnew(Button);
+	copy_button->set_tooltip_text(TTR("Copy this diagnostic."));
+	copy_button->connect(SNAME("pressed"), callable_mp(this, &ScriptEditorDiagnosticPanelRow::_on_copy_button_clicked));
+	// copy_button->set_flat(true);
+
+	set_h_size_flags(SIZE_EXPAND_FILL);
+	set_v_size_flags(SIZE_FILL);
+
+	hbox->add_child(icon_display);
+	hbox->add_child(message_display);
+
+	hbox->add_child(ignore_button);
+	hbox->add_child(copy_button);
+
+	hover_box = memnew(StyleBoxFlat);
+	hover_box->set_bg_color(Color(1.0, 1.0, 1.0, 0.1));
+	hover_box->set_corner_radius_all(20.0);
+	hover_box->set_content_margin_all(5.0);
+}
+
+void ScriptEditorDiagnosticPanel::add_warning(const String &p_message) {
+	ScriptEditorDiagnosticPanelRow *row = memnew(ScriptEditorDiagnosticPanelRow);
+	row->set_warning(p_message);
+	row->connect(SNAME("action_requested"), callable_mp(this, &ScriptEditorDiagnosticPanel::_on_action_requested));
+	vbox->add_child(row);
+}
+
+void ScriptEditorDiagnosticPanel::add_warning(const EditorLanguage::Warning &p_warning) {
+	ScriptEditorDiagnosticPanelRow *row = memnew(ScriptEditorDiagnosticPanelRow);
+	row->set_warning(p_warning);
+	row->connect(SNAME("action_requested"), callable_mp(this, &ScriptEditorDiagnosticPanel::_on_action_requested));
+	vbox->add_child(row);
+
+	Dictionary location_data;
+	location_data["line"] = p_warning.start_line - 1;
+	location_data["column"] = p_warning.start_column - 1;
+	row->set_meta(SNAME("location"), location_data);
+	row->set_meta(SNAME("diagnostic_code"), p_warning.string_code);
+}
+
+void ScriptEditorDiagnosticPanel::add_error(const String &p_message) {
+	ScriptEditorDiagnosticPanelRow *row = memnew(ScriptEditorDiagnosticPanelRow);
+	row->set_error(p_message);
+	row->connect(SNAME("action_requested"), callable_mp(this, &ScriptEditorDiagnosticPanel::_on_action_requested));
+	vbox->add_child(row);
+}
+
+void ScriptEditorDiagnosticPanel::add_error(const EditorLanguage::ScriptError &p_error) {
+	ScriptEditorDiagnosticPanelRow *row = memnew(ScriptEditorDiagnosticPanelRow);
+	row->set_error(p_error);
+	row->connect(SNAME("action_requested"), callable_mp(this, &ScriptEditorDiagnosticPanel::_on_action_requested));
+	vbox->add_child(row);
+
+	Dictionary location_data;
+	location_data["line"] = p_error.start_line - 1;
+	location_data["column"] = p_error.start_column - 1;
+	row->set_meta(SNAME("location"), location_data);
+}
+
+void ScriptEditorDiagnosticPanel::_on_action_requested(const Dictionary &p_data) {
+	emit_signal(SNAME("action_requested"), p_data);
+}
+
+void ScriptEditorDiagnosticPanel::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("action_requested", PropertyInfo(Variant::DICTIONARY, "location")));
+}
+
+ScriptEditorDiagnosticPanel::ScriptEditorDiagnosticPanel() {
+	vbox = memnew(VBoxContainer);
+	add_child(vbox);
+
+	vbox->add_theme_constant_override(SNAME("separation"), 0);
+	vbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	vbox->set_v_size_flags(SIZE_EXPAND_FILL);
+}
 
 void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("name_changed"));
@@ -824,13 +1092,20 @@ void CodeEditorBase::set_breakpoint(int p_line, bool p_enabled) {
 }
 
 void CodeEditorBase::_show_warnings_panel(bool p_show) {
-	warnings_panel->set_visible(p_show);
+	// warnings_panel->set_visible(p_show);
+	warnings_panel_tree->set_visible(p_show);
 }
 
 bool CodeEditorBase::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		goto_line_centered(p_line.operator int64_t());
 		return true;
+	} else if (p_line.get_type() == Variant::DICTIONARY) {
+		Dictionary as_dict = p_line;
+		if (as_dict.get("operation", "goto") == "goto") {
+			goto_line_centered(as_dict.get("line", 0), as_dict.get("column", 0));
+			return true;
+		}
 	}
 	return false;
 }
@@ -961,6 +1236,13 @@ CodeEditorBase::CodeEditorBase() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 	warnings_panel->connect("meta_clicked", callable_mp(this, &CodeEditorBase::_warning_clicked));
+
+	warnings_panel_tree = memnew(ScriptEditorDiagnosticPanel);
+	warnings_panel_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
+	warnings_panel_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+	warnings_panel_tree->set_focus_mode(FOCUS_CLICK);
+	warnings_panel_tree->hide();
+	warnings_panel_tree->connect("action_requested", callable_mp(this, &CodeEditorBase::_warning_clicked));
 
 	editor_box = memnew(VSplitContainer);
 	add_child(editor_box);

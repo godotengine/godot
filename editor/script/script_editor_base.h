@@ -32,11 +32,89 @@
 
 #include "editor/gui/code_editor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/style_box_flat.h"
 
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
 class DocumentEditorContainer;
+
+class ScriptEditorDiagnosticPanelRow : public MarginContainer {
+	GDCLASS(ScriptEditorDiagnosticPanelRow, MarginContainer);
+
+	static void _bind_methods();
+
+	HBoxContainer *hbox;
+	TextureRect *icon_display;
+	RichTextLabel *message_display;
+
+	Button *ignore_button;
+	Button *copy_button;
+
+	Ref<StyleBoxFlat> hover_box;
+
+	bool is_error = false;
+	bool is_being_hovered = false;
+
+	String diagnostic_code;
+	String diagnostic_message;
+	int start_line = -1;
+	int start_column = -1;
+	int end_line = -1;
+	int end_column = -1;
+
+	void _on_ignore_button_clicked();
+	void _on_copy_button_clicked();
+	void _update_text();
+
+protected:
+	void gui_input(const Ref<InputEvent> &p_event) override;
+	void _notification(int p_what);
+
+public:
+	void set_warning(const String &p_message);
+	void set_warning(const EditorLanguage::Warning &p_warning);
+
+	void set_error(const String &p_message);
+	void set_error(const EditorLanguage::ScriptError &p_error);
+
+	ScriptEditorDiagnosticPanelRow();
+};
+
+class ScriptEditorDiagnosticPanel : public ScrollContainer {
+	GDCLASS(ScriptEditorDiagnosticPanel, ScrollContainer);
+
+	VBoxContainer *vbox = nullptr;
+
+	static void _bind_methods();
+
+	void _on_action_requested(const Dictionary &p_data);
+
+public:
+	enum DiagnosticAction {
+		ACTION_IGNORE_WARNING,
+		ACTION_COPY
+	};
+
+	void clear() {
+		for (int i = 0; i < vbox->get_child_count(); i++) {
+			vbox->get_child(i)->queue_free();
+		}
+	}
+
+	void add_warning(const String &p_message);
+	void add_warning(const EditorLanguage::Warning &p_warning);
+
+	void add_error(const String &p_message);
+	void add_error(const EditorLanguage::ScriptError &p_error);
+
+	void add_suberror(TreeItem *p_parent_item, const EditorLanguage::ScriptError &p_error);
+
+	ScriptEditorDiagnosticPanel();
+};
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -277,6 +355,7 @@ protected:
 
 	VSplitContainer *editor_box = nullptr;
 	RichTextLabel *warnings_panel = nullptr;
+	ScriptEditorDiagnosticPanel *warnings_panel_tree = nullptr;
 
 	static void _code_complete_scripts(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force);
 	virtual void _code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) = 0;
