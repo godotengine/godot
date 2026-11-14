@@ -4555,7 +4555,10 @@ void DisplayServerWindows::process_events() {
 
 	_THREAD_SAFE_LOCK_
 
-	bool has_touch_events = process_raw_input();
+	bool has_touch_events = true;
+	if (!disable_bulk_raw_input) {
+		has_touch_events = process_raw_input();
+	}
 
 	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
 	const WindowData &wd = windows[window_id];
@@ -8088,6 +8091,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 		return;
 	}
 
+	disable_bulk_raw_input = GLOBAL_GET("input_devices/compatibility/windows/disable_raw_event_bulk_processing");
 	_register_raw_input_devices(DisplayServerEnums::INVALID_WINDOW_ID);
 
 	String appname;
