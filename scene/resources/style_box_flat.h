@@ -50,6 +50,9 @@ class StyleBoxFlat : public StyleBox {
 
 	int corner_detail = 8;
 	int shadow_size = 0;
+	bool approximate_gaussian = false;
+	int gaussian_rings = 6;
+	real_t gaussian_spread = 0;
 	Point2 shadow_offset;
 	real_t aa_size = 1;
 
@@ -81,6 +84,15 @@ public:
 
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
+
+	void set_approximate_gaussian(bool p_approximate_gaussian);
+	bool is_using_approximate_gaussian() const;
+
+	void set_gaussian_rings(int p_gaussian_rings);
+	int get_gaussian_rings() const;
+
+	void set_gaussian_spread(real_t p_gaussian_spread);
+	real_t get_gaussian_spread() const;
 
 	void set_expand_margin(Side p_expand_side, float p_size);
 	void set_expand_margin_all(float p_expand_margin_size);
