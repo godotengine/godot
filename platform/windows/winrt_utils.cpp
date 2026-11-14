@@ -30,6 +30,8 @@
 
 #include "winrt_utils.h"
 
+#include "winrt_defines.h"
+
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/os/mutex.h"

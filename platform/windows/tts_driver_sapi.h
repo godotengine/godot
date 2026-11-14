@@ -38,8 +38,6 @@
 #include <sapi.h>
 #include <winnls.h>
 
-#include <cwchar>
-
 struct TTSUtterance;
 
 class TTSDriverSAPI : public TTSDriver {

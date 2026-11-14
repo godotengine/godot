@@ -32,7 +32,6 @@
 
 #ifdef D3D12_ENABLED
 
-#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
