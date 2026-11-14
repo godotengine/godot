@@ -118,7 +118,7 @@ void LineBuilder::build() {
 	}
 
 	if (_interpolate_color) {
-		color0 = gradient->get_color(0);
+		color0 = gradient->get_color_at_offset(0);
 	} else {
 		colors.push_back(default_color);
 	}
@@ -390,7 +390,7 @@ void LineBuilder::build() {
 			current_distance1 += pos0.distance_to(pos1);
 		}
 		if (_interpolate_color) {
-			color1 = gradient->get_color(gradient->get_point_count() - 1);
+			color1 = gradient->get_color_at_offset(1);
 		}
 		if (retrieve_curve) {
 			width_factor = curve->sample_baked(1.f);
