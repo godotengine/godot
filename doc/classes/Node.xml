@@ -828,6 +828,15 @@
 				[b]Note:[/b] The node will only be freed after all other deferred calls are finished. Using this method is not always the same as calling [method Object.free] through [method Object.call_deferred].
 			</description>
 		</method>
+		<method name="queue_free_children">
+			<return type="void" />
+			<param index="0" name="include_internal" type="bool" default="false" />
+			<description>
+				Removes all children from this node and queues them to be deleted at the end of the current frame. The node itself is not deleted.
+				If [param include_internal] is [code]false[/code], internal children are not removed (see [method add_child]'s [code]internal[/code] parameter).
+				This is equivalent to calling [method remove_child] and then [method queue_free] on each child, but faster. Children are removed from the last to the first, and [signal child_order_changed] is only emitted once.
+			</description>
+		</method>
 		<method name="remove_child">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />

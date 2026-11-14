@@ -392,6 +392,8 @@ protected:
 	friend class SceneState;
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
+	template <bool p_notify_order_changed>
+	void _remove_child_nocheck(Node *p_child);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
@@ -785,6 +787,7 @@ public:
 	static String adjust_name_casing(const String &p_name);
 
 	void queue_free();
+	void queue_free_children(bool p_include_internal = true);
 
 	//hacks for speed
 	static void init_node_hrcr();
