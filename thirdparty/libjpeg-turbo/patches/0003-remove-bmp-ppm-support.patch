@@ -1,23 +1,26 @@
 diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
-index 6fecc5cb80..21d26536c1 100644
+index 07aa4d39e3..f2d18ecd2d 100644
 --- a/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
 +++ b/thirdparty/libjpeg-turbo/src/turbojpeg-mp.c
-@@ -286,271 +286,6 @@ bailout:
+@@ -277,292 +277,6 @@ bailout:
    return retval;
  }
  
 -
 -/*************************** Packed-Pixel Image I/O **************************/
 -
+-#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+-
 -/* TurboJPEG 3.0+ */
--DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
--  (tjhandle handle, const char *filename, int *width, int align, int *height,
+-#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+-static
+-#endif
+-_JSAMPLE *GET_NAME(_tj3LoadImageFromFileHandle, BITS_IN_JSAMPLE)
+-  (tjhandle handle, FILE *file, int *width, int align, int *height,
 -   int *pixelFormat)
 -{
 -  static const char FUNCTION_NAME[] =
 -    GET_STRING(tj3LoadImage, BITS_IN_JSAMPLE);
--
--#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
 -
 -  int retval = 0, tempc;
 -  size_t pitch;
@@ -26,12 +29,11 @@ index 6fecc5cb80..21d26536c1 100644
 -  j_compress_ptr cinfo = NULL;
 -  cjpeg_source_ptr src;
 -  _JSAMPLE *dstBuf = NULL;
--  FILE *file = NULL;
 -  boolean invert;
 -
 -  GET_TJINSTANCE(handle, NULL)
 -
--  if (!filename || !width || align < 1 || !height || !pixelFormat ||
+-  if (!file || !width || align < 1 || !height || !pixelFormat ||
 -      *pixelFormat < TJPF_UNKNOWN || *pixelFormat >= TJ_NUMPF)
 -    THROW("Invalid argument");
 -  if ((align & (align - 1)) != 0)
@@ -44,22 +46,12 @@ index 6fecc5cb80..21d26536c1 100644
 -  this2 = (tjinstance *)handle2;
 -  cinfo = &this2->cinfo;
 -
--#ifdef _MSC_VER
--  if (fopen_s(&file, filename, "rb") || file == NULL)
--#else
--  if ((file = fopen(filename, "rb")) == NULL)
--#endif
--    THROW_UNIX("Cannot open input file");
--
 -  if ((tempc = getc(file)) < 0 || ungetc(tempc, file) == EOF)
 -    THROW_UNIX("Could not read input file")
 -  else if (tempc == EOF)
 -    THROW("Input file contains no data");
 -
--  if (setjmp(this2->jerr.setjmp_buffer)) {
--    /* If we get here, the JPEG code has signaled an error. */
--    retval = -1;  goto bailout;
--  }
+-  CATCH_LIBJPEG(this2);
 -
 -  cinfo->data_precision = BITS_IN_JSAMPLE;
 -  if (*pixelFormat == TJPF_UNKNOWN) cinfo->in_color_space = JCS_UNKNOWN;
@@ -110,10 +102,7 @@ index 6fecc5cb80..21d26536c1 100644
 -                                   sizeof(_JSAMPLE))) == NULL)
 -    THROW("Memory allocation failure");
 -
--  if (setjmp(this2->jerr.setjmp_buffer)) {
--    /* If we get here, the JPEG code has signaled an error. */
--    retval = -1;  goto bailout;
--  }
+-  CATCH_LIBJPEG(this2);
 -
 -  while (cinfo->next_scanline < cinfo->image_height) {
 -    int i, nlines = (*src->get_pixel_rows) (cinfo, src);
@@ -135,6 +124,41 @@ index 6fecc5cb80..21d26536c1 100644
 -
 -bailout:
 -  tj3Destroy(handle2);
+-  if (retval < 0) { free(dstBuf);  dstBuf = NULL; }
+-  return dstBuf;
+-}
+-
+-#endif /* BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED) */
+-
+-DLLEXPORT _JSAMPLE *GET_NAME(tj3LoadImage, BITS_IN_JSAMPLE)
+-  (tjhandle handle, const char *filename, int *width, int align, int *height,
+-   int *pixelFormat)
+-{
+-  static const char FUNCTION_NAME[] =
+-    GET_STRING(tj3LoadImage, BITS_IN_JSAMPLE);
+-
+-#if BITS_IN_JSAMPLE != 16 || defined(C_LOSSLESS_SUPPORTED)
+-
+-  int retval = 0;
+-  _JSAMPLE *dstBuf = NULL;
+-  FILE *file = NULL;
+-
+-  GET_TJINSTANCE(handle, NULL)
+-
+-  if (!filename)
+-    THROW("Invalid argument");
+-
+-#ifdef _MSC_VER
+-  if (fopen_s(&file, filename, "rb") || file == NULL)
+-#else
+-  if ((file = fopen(filename, "rb")) == NULL)
+-#endif
+-    THROW_UNIX("Cannot open input file");
+-
+-  dstBuf = GET_NAME(_tj3LoadImageFromFileHandle, BITS_IN_JSAMPLE)
+-             (handle, file, width, align, height, pixelFormat);
+-
+-bailout:
 -  if (file) fclose(file);
 -  if (retval < 0) { free(dstBuf);  dstBuf = NULL; }
 -  return dstBuf;
@@ -174,7 +198,7 @@ index 6fecc5cb80..21d26536c1 100644
 -  j_decompress_ptr dinfo = NULL;
 -  djpeg_dest_ptr dst;
 -  FILE *file = NULL;
--  char *ptr = NULL;
+-  const char *ptr = NULL;
 -  boolean invert;
 -
 -  GET_TJINSTANCE(handle, -1)
@@ -198,10 +222,7 @@ index 6fecc5cb80..21d26536c1 100644
 -#endif
 -    THROW_UNIX("Cannot open output file");
 -
--  if (setjmp(this2->jerr.setjmp_buffer)) {
--    /* If we get here, the JPEG code has signaled an error. */
--    retval = -1;  goto bailout;
--  }
+-  CATCH_LIBJPEG(this2);
 -
 -  this2->dinfo.out_color_space = pf2cs[pixelFormat];
 -  dinfo->image_width = width;  dinfo->image_height = height;
@@ -275,10 +296,10 @@ index 6fecc5cb80..21d26536c1 100644
  #undef _JSAMPROW
  #undef _buffer
 diff --git a/thirdparty/libjpeg-turbo/src/turbojpeg.c b/thirdparty/libjpeg-turbo/src/turbojpeg.c
-index d514da43d2..969174f72e 100644
+index 98421cab82..6b9d230a89 100644
 --- a/thirdparty/libjpeg-turbo/src/turbojpeg.c
 +++ b/thirdparty/libjpeg-turbo/src/turbojpeg.c
-@@ -3091,48 +3091,3 @@ bailout:
+@@ -3097,48 +3097,3 @@ bailout:
    free(sizes);
    return retval;
  }

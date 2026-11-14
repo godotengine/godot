@@ -1,6 +1,6 @@
 diff --git a/thirdparty/libjpeg-turbo/src/jconfig.h b/thirdparty/libjpeg-turbo/src/jconfig.h
 new file mode 100644
-index 0000000000..50e5986c69
+index 0000000000..591d50ae40
 --- /dev/null
 +++ b/thirdparty/libjpeg-turbo/src/jconfig.h
 @@ -0,0 +1,69 @@
@@ -12,10 +12,10 @@ index 0000000000..50e5986c69
 +#define JPEG_LIB_VERSION  62
 +
 +/* libjpeg-turbo version */
-+#define LIBJPEG_TURBO_VERSION  3.1.3
++#define LIBJPEG_TURBO_VERSION  3.1.4.1
 +
 +/* libjpeg-turbo version in integer form */
-+#define LIBJPEG_TURBO_VERSION_NUMBER  3001003
++#define LIBJPEG_TURBO_VERSION_NUMBER  3001004
 +
 +/* Support arithmetic encoding when using 8-bit samples */
 +#define C_ARITH_CODING_SUPPORTED 1
@@ -75,7 +75,7 @@ index 0000000000..50e5986c69
 +#endif
 diff --git a/thirdparty/libjpeg-turbo/src/jconfigint.h b/thirdparty/libjpeg-turbo/src/jconfigint.h
 new file mode 100644
-index 0000000000..38acc75108
+index 0000000000..37d9da62a5
 --- /dev/null
 +++ b/thirdparty/libjpeg-turbo/src/jconfigint.h
 @@ -0,0 +1,103 @@
@@ -111,7 +111,7 @@ index 0000000000..38acc75108
 +#define PACKAGE_NAME  "libjpeg-turbo"
 +
 +/* Version number of package */
-+#define VERSION  "3.1.3"
++#define VERSION  "3.1.4.1"
 +
 +/* The size of `size_t', as computed by sizeof. */
 +#if defined(__SIZEOF_SIZE_T__)
@@ -184,7 +184,7 @@ index 0000000000..38acc75108
 +#endif
 diff --git a/thirdparty/libjpeg-turbo/src/jversion.h b/thirdparty/libjpeg-turbo/src/jversion.h
 new file mode 100644
-index 0000000000..40f7a6cc82
+index 0000000000..d14d52a74f
 --- /dev/null
 +++ b/thirdparty/libjpeg-turbo/src/jversion.h
 @@ -0,0 +1,58 @@
@@ -196,7 +196,7 @@ index 0000000000..40f7a6cc82
 + * This file was part of the Independent JPEG Group's software:
 + * Copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
 + * libjpeg-turbo Modifications:
-+ * Copyright (C) 2010, 2012-2024, D. R. Commander.
++ * Copyright (C) 2010, 2012-2026, D. R. Commander.
 + * For conditions of distribution and use, see the accompanying README.ijg
 + * file.
 + *
@@ -229,11 +229,11 @@ index 0000000000..40f7a6cc82
 + */
 +
 +#define JCOPYRIGHT1 \
-+  "Copyright (C) 2009-2024 D. R. Commander\n" \
++  "Copyright (C) 2009-2026 D. R. Commander\n" \
++  "Copyright (C) 2015-2016, 2018, 2022 Matthieu Darbois\n" \
++  "Copyright (C) 2019-2021 Arm Limited\n" \
 +  "Copyright (C) 2015, 2020 Google, Inc.\n" \
-+  "Copyright (C) 2019-2020 Arm Limited\n" \
-+  "Copyright (C) 2015-2016, 2018 Matthieu Darbois\n" \
-+  "Copyright (C) 2011-2016 Siarhei Siamashka\n" \
++  "Copyright (C) 2011, 2014, 2016 Siarhei Siamashka\n" \
 +  "Copyright (C) 2015 Intel Corporation\n"
 +#define JCOPYRIGHT2 \
 +  "Copyright (C) 2013-2014 Linaro Limited\n" \

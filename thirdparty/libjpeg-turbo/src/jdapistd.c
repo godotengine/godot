@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2015-2020, 2022-2025, D. R. Commander.
+ * Copyright (C) 2010, 2015-2020, 2022-2026, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -408,7 +408,10 @@ read_and_discard_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines)
   void (*color_quantize) (j_decompress_ptr cinfo, _JSAMPARRAY input_buf,
                           _JSAMPARRAY output_buf, int num_rows) = NULL;
 
-  if (!master->using_merged_upsample && cinfo->cconvert &&
+  if (cinfo->cconvert &&
+#ifdef UPSAMPLE_MERGING_SUPPORTED
+      !master->using_merged_upsample &&
+#endif
       cinfo->cconvert->_color_convert) {
     color_convert = cinfo->cconvert->_color_convert;
     cinfo->cconvert->_color_convert = noop_convert;

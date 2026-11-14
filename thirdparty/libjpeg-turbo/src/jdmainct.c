@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, 2022, 2024, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2022, 2024, 2026, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -36,8 +36,8 @@
  * chosen such that these numbers are integers.  In practice DCT_scaled_size
  * values will likely be powers of two, so we actually have the stronger
  * condition that DCT_scaled_size / min_DCT_scaled_size is an integer.)
- * Upsampling will typically produce max_v_samp_factor pixel rows from each
- * row group (times any additional scale factor that the upsampler is
+ * Upsampling will typically produce max_v_samp_factor rows of each component
+ * from each row group (times any additional scale factor that the upsampler is
  * applying).
  *
  * The coefficient or difference controller will deliver data to us one iMCU
