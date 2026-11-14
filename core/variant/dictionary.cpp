@@ -37,8 +37,11 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 #include "core/templates/hash_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/container_type_validate.h"
+#include "core/variant/type_helpers.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
+
+namespace TypeHelpers = VariantTypeHelpers;
 
 struct DictionaryPrivate {
 	SafeRefCount refcount;
@@ -481,13 +484,13 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *key = &E.key;
 			if (key->get_type() != Variant::NIL && (key->get_type() != Variant::OBJECT || !typed_key.validate_object(*key, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.variant_type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", TypeHelpers::get_type_display_name(*key), TypeHelpers::get_display_name(typed_key)));
 			}
 			key_data[i++] = *key;
 		}
 	} else if (typed_key.variant_type == Variant::OBJECT || typed_key_source.variant_type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.variant_type), Variant::get_type_name(typed_value_source.variant_type),
-				Variant::get_type_name(typed_key.variant_type), Variant::get_type_name(typed_value.variant_type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", TypeHelpers::get_display_name(typed_key_source), TypeHelpers::get_display_name(typed_value_source),
+				TypeHelpers::get_display_name(typed_key), TypeHelpers::get_display_name(typed_value)));
 	} else if (typed_key_source.variant_type == Variant::NIL && typed_key.variant_type != Variant::OBJECT) {
 		// From variants to primitives.
 		int i = 0;
@@ -498,11 +501,11 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(key->get_type(), typed_key.variant_type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.variant_type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert key from "%s" to "%s".)", TypeHelpers::get_type_display_name(*key), TypeHelpers::get_display_name(typed_key)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_key.variant_type, key_data[i++], &key, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", TypeHelpers::get_type_display_name(*key), TypeHelpers::get_display_name(typed_key)));
 		}
 	} else if (Variant::can_convert_strict(typed_key_source.variant_type, typed_key.variant_type)) {
 		// From primitives to different convertible primitives.
@@ -511,11 +514,11 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			const Variant *key = &E.key;
 			Callable::CallError ce;
 			Variant::construct(typed_key.variant_type, key_data[i++], &key, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", Variant::get_type_name(key->get_type()), Variant::get_type_name(typed_key.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert key from "%s" to "%s".)", TypeHelpers::get_type_display_name(*key), TypeHelpers::get_display_name(typed_key)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.variant_type), Variant::get_type_name(typed_value_source.variant_type),
-				Variant::get_type_name(typed_key.variant_type), Variant::get_type_name(typed_value.variant_type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", TypeHelpers::get_display_name(typed_key_source), TypeHelpers::get_display_name(typed_value_source),
+				TypeHelpers::get_display_name(typed_key), TypeHelpers::get_display_name(typed_value)));
 	}
 
 	if (typed_value == typed_value_source || typed_value.variant_type == Variant::NIL || (typed_value_source.variant_type == Variant::OBJECT && typed_value.can_reference(typed_value_source))) {
@@ -534,13 +537,13 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 		for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
 			const Variant *value = &E.value;
 			if (value->get_type() != Variant::NIL && (value->get_type() != Variant::OBJECT || !typed_value.validate_object(*value, "assign"))) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.variant_type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed_value)));
 			}
 			value_data[i++] = *value;
 		}
 	} else if (typed_value.variant_type == Variant::OBJECT || typed_value_source.variant_type == Variant::OBJECT) {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", Variant::get_type_name(typed_key_source.variant_type), Variant::get_type_name(typed_value_source.variant_type),
-				Variant::get_type_name(typed_key.variant_type), Variant::get_type_name(typed_value.variant_type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s]".)", TypeHelpers::get_display_name(typed_key_source), TypeHelpers::get_display_name(typed_value_source),
+				TypeHelpers::get_display_name(typed_key), TypeHelpers::get_display_name(typed_value)));
 	} else if (typed_value_source.variant_type == Variant::NIL && typed_value.variant_type != Variant::OBJECT) {
 		// From variants to primitives.
 		int i = 0;
@@ -551,11 +554,11 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 				continue;
 			}
 			if (!Variant::can_convert_strict(value->get_type(), typed_value.variant_type)) {
-				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.variant_type)));
+				ERR_FAIL_MSG(vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i], TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed_value)));
 			}
 			Callable::CallError ce;
 			Variant::construct(typed_value.variant_type, value_data[i++], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed_value)));
 		}
 	} else if (Variant::can_convert_strict(typed_value_source.variant_type, typed_value.variant_type)) {
 		// From primitives to different convertible primitives.
@@ -564,11 +567,11 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 			const Variant *value = &E.value;
 			Callable::CallError ce;
 			Variant::construct(typed_value.variant_type, value_data[i++], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], Variant::get_type_name(value->get_type()), Variant::get_type_name(typed_value.variant_type)));
+			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert value at key "%s" from "%s" to "%s".)", key_data[i - 1], TypeHelpers::get_type_display_name(*value), TypeHelpers::get_display_name(typed_value)));
 		}
 	} else {
-		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", Variant::get_type_name(typed_key_source.variant_type), Variant::get_type_name(typed_value_source.variant_type),
-				Variant::get_type_name(typed_key.variant_type), Variant::get_type_name(typed_value.variant_type)));
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Dictionary[%s, %s]" to "Dictionary[%s, %s].)", TypeHelpers::get_display_name(typed_key_source), TypeHelpers::get_display_name(typed_value_source),
+				TypeHelpers::get_display_name(typed_key), TypeHelpers::get_display_name(typed_value)));
 	}
 
 	for (int i = 0; i < size; i++) {
