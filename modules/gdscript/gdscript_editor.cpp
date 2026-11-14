@@ -3431,6 +3431,7 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 			} else {
 				r_base_type.kind = GDScriptParser::DataType::SCRIPT;
 				r_base_type.script_type = scr;
+				r_base_type.script_path = scr->get_path();
 			}
 
 			return true;
