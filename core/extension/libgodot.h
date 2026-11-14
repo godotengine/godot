@@ -32,6 +32,8 @@
 
 #include "core/extension/gdextension_interface.gen.h"
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -45,6 +47,9 @@ extern "C" {
 #define LIBGODOT_API
 #endif
 
+typedef void *LogCallbackData;
+typedef void (*LogCallbackFunction)(LogCallbackData p_data, const char *p_log_message, bool p_err);
+
 /**
  * @name libgodot_create_godot_instance
  * @since 4.6
@@ -54,10 +59,11 @@ extern "C" {
  * @param p_argc The number of command line arguments.
  * @param p_argv The C-style array of command line arguments.
  * @param p_init_func GDExtension initialization function of the host application.
+ * @param p_log_func Initialization log function, called with log message c string.
  *
  * @return A pointer to created \ref GodotInstance GDExtension object or nullptr if there was an error.
  */
-LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func);
+LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, LogCallbackFunction p_log_func, LogCallbackData p_log_data);
 
 /**
  * @name libgodot_destroy_godot_instance
