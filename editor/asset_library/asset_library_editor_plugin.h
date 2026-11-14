@@ -282,6 +282,7 @@ class EditorAssetLibrary : public EditorDock {
 	Timer *filter_debounce_timer = nullptr;
 	OptionButton *sort = nullptr;
 	OptionButton *categories = nullptr;
+	OptionButton *uses_ai = nullptr;
 	OptionButton *repository = nullptr;
 	MenuButton *licenses = nullptr;
 	HBoxContainer *error_hb = nullptr;
