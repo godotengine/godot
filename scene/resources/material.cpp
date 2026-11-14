@@ -1371,32 +1371,37 @@ void vertex() {)";
 		// Generate tangent and binormal in world space.
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
 			code += R"(
-	vec3 normal = MODEL_NORMAL_MATRIX * NORMAL;
+	vec3 normal = normalize(MODEL_NORMAL_MATRIX * NORMAL);
 )";
 		} else {
 			code += R"(
-	vec3 normal = NORMAL;
+	vec3 normal = normalize(NORMAL);
 )";
 		}
 		code += R"(
-	TANGENT = vec3(0.0, 0.0, -1.0) * abs(normal.x);
-	TANGENT += vec3(1.0, 0.0, 0.0) * abs(normal.y);
-	TANGENT += vec3(1.0, 0.0, 0.0) * abs(normal.z);
+	vec3 a = abs(normal);
+	float binormal_sign;
+	if (a.x >= a.y && a.x >= a.z) {
+		TANGENT = vec3(0.0, 0.0, -1.0);
+		binormal_sign = sign(normal.x);
+	} else if (a.y >= a.z) {
+		TANGENT = vec3(1.0, 0.0, 0.0);
+		binormal_sign = sign(normal.y);
+	} else {
+		TANGENT = vec3(1.0, 0.0, 0.0);
+		binormal_sign = sign(normal.z);
+	}
+
+	TANGENT = normalize(TANGENT - normal * dot(normal, TANGENT));
+	BINORMAL = cross(normal, TANGENT) * binormal_sign;
+
+
 )";
 		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
 			code += "	TANGENT = inverse(MODEL_NORMAL_MATRIX) * normalize(TANGENT);\n";
-		} else {
-			code += "	TANGENT = normalize(TANGENT);\n";
-		}
-
-		code += R"(
-	BINORMAL = vec3(0.0, 1.0, 0.0) * abs(normal.x);
-	BINORMAL += vec3(0.0, 0.0, -1.0) * abs(normal.y);
-	BINORMAL += vec3(0.0, 1.0, 0.0) * abs(normal.z);
-)";
-		if (flags[FLAG_UV1_USE_WORLD_TRIPLANAR]) {
 			code += "	BINORMAL = inverse(MODEL_NORMAL_MATRIX) * normalize(BINORMAL);\n";
 		} else {
+			code += "	TANGENT = normalize(TANGENT);\n";
 			code += "	BINORMAL = normalize(BINORMAL);\n";
 		}
 	}
