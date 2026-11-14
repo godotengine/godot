@@ -628,14 +628,27 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	tile_inspector->edit(nullptr);
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
+			tile_inspector->show();
 			if (tile_proxy_object.is_null() || tile_proxy_object->is_different(tile_set_atlas_source, selection)) {
+				Ref<AtlasTileProxyObject> old_proxy_object = tile_proxy_object;
 				tile_proxy_object.instantiate(this);
+
+				// Preserve unfolded inspector sections and scroll.
+				if (old_proxy_object.is_valid()) {
+					for (const String &unfolded : old_proxy_object->editor_get_section_folding()) {
+						tile_proxy_object->editor_set_section_unfold(unfolded, true, true);
+					}
+
+					tile_inspector->set_scroll_cache(tile_proxy_object->get_instance_id(), tile_inspector->get_scroll_offset());
+					tile_inspector->remove_scroll_cache(old_proxy_object->get_instance_id());
+				}
 				tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 			}
 			tile_proxy_object->edit(tile_set_atlas_source, selection);
 			tile_inspector->edit(tile_proxy_object.ptr());
+		} else {
+			tile_inspector->hide();
 		}
-		tile_inspector->set_visible(!selection.is_empty());
 		tile_inspector_no_tile_selected_label->set_visible(selection.is_empty());
 	} else {
 		tile_inspector->hide();
