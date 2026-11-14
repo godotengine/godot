@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
+from platform_methods import combine_libs_ar, get_libs_as_nodes
+
 Import("env")
 
 import platform_linuxbsd_builders
@@ -41,7 +43,10 @@ if env["dbus"]:
         common_linuxbsd.append("dbus-so_wrap.c")
 
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", common_linuxbsd)
+    linuxbsd_lib = env.add_library("linuxbsd", common_linuxbsd)
+    prog = env.CommandNoCache(
+        "#bin/libgodot" + env["LIBSUFFIX"], [linuxbsd_lib] + get_libs_as_nodes(env), env.Run(combine_libs_ar)
+    )
 elif env["library_type"] == "shared_library":
     prog = env.add_shared_library("#bin/godot", common_linuxbsd)
 else:
