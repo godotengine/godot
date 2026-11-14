@@ -37,6 +37,8 @@
 TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin, bool p_add_title) const {
 	Vector<Vector<String>> raw;
 
+	EditorTranslationParser::get_singleton()->begin_parse();
+
 	for (const String &path : p_sources) {
 		Vector<Vector<String>> parsed_from_file;
 

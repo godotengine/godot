@@ -37,6 +37,10 @@
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
+void EditorTranslationParserPlugin::begin_parse() {
+	GDVIRTUAL_CALL(_begin_parse);
+}
+
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
 	TypedArray<PackedStringArray> ret;
 
@@ -110,6 +114,7 @@ void EditorTranslationParserPlugin::customize_strings(Vector<Vector<String>> &r_
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
+	GDVIRTUAL_BIND(_begin_parse);
 	GDVIRTUAL_BIND(_parse_file, "path");
 	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_customize_strings, "strings");
@@ -175,6 +180,15 @@ Ref<EditorTranslationParserPlugin> EditorTranslationParser::get_parser(const Str
 	WARN_PRINT("No translation parser available for \"" + p_extension + "\" extension.");
 
 	return nullptr;
+}
+
+void EditorTranslationParser::begin_parse() {
+	for (const Ref<EditorTranslationParserPlugin> &parser : standard_parsers) {
+		parser->begin_parse();
+	}
+	for (const Ref<EditorTranslationParserPlugin> &parser : custom_parsers) {
+		parser->begin_parse();
+	}
 }
 
 void EditorTranslationParser::customize_strings(Vector<Vector<String>> &r_strings) const {
