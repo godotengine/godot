@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -14,13 +15,16 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Aabb : IEquatable<Aabb>
     {
+        [JsonIgnore]
         private Vector3 _position;
+        [JsonIgnore]
         private Vector3 _size;
 
         /// <summary>
         /// Beginning corner. Typically has values lower than <see cref="End"/>.
         /// </summary>
         /// <value>Directly uses a private field.</value>
+        [JsonInclude]
         public Vector3 Position
         {
             readonly get { return _position; }
@@ -32,6 +36,7 @@ namespace Godot
         /// If the size is negative, you can use <see cref="Abs"/> to fix it.
         /// </summary>
         /// <value>Directly uses a private field.</value>
+        [JsonInclude]
         public Vector3 Size
         {
             readonly get { return _size; }
@@ -46,6 +51,7 @@ namespace Godot
         /// Getting is equivalent to <paramref name="value"/> = <see cref="Position"/> + <see cref="Size"/>,
         /// setting is equivalent to <see cref="Size"/> = <paramref name="value"/> - <see cref="Position"/>
         /// </value>
+        [JsonIgnore]
         public Vector3 End
         {
             readonly get { return _position + _size; }
@@ -56,6 +62,7 @@ namespace Godot
         /// The volume of this <see cref="Aabb"/>.
         /// See also <see cref="HasVolume"/>.
         /// </summary>
+        [JsonIgnore]
         public readonly real_t Volume
         {
             get { return _size.X * _size.Y * _size.Z; }
