@@ -160,7 +160,7 @@ private:
 	Vector<ResourceUID::ID> *_get_history();
 	void _add_candidate(QuickOpenResultCandidate &p_candidate);
 	Vector<Ref<FuzzySearchMatch>> _get_fuzzy_search_results();
-	void _use_default_candidates();
+	void _use_default_candidates(bool p_include_addons);
 	void _score_and_sort_candidates();
 	void _update_result_items(int p_new_visible_results_count, int p_new_selection_index);
 
