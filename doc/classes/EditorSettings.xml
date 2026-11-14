@@ -516,6 +516,9 @@
 		<member name="editors/3d/navigation_feel/zoom_inertia" type="float" setter="" getter="">
 			The inertia to use when zooming in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
+		<member name="editors/3d/navigation_feel/zoom_scalar" type="float" setter="" getter="">
+			A scalar applied when zooming in the 3D editor. Higher values make the camera zoom faster
+		</member>
 		<member name="editors/3d/primary_grid_color" type="Color" setter="" getter="">
 			The color to use for the primary 3D grid. The color's alpha channel affects the grid's opacity.
 		</member>
