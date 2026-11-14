@@ -1,2 +1,14 @@
 GDTEST_OK
 Inner
+inner
+sub of inner
+test_subclass_key: ok
+subclass instance
+base-typed variable
+test_multi_file: ok
+node2d
+node3d
+sub of native
+test_native: ok
+class reference key
+test_class_reference_key: ok
