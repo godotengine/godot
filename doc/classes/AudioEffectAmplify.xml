@@ -15,8 +15,8 @@
 			Amount of amplification in dB. Positive values make the sound louder, negative values make it quieter. Value can range from -80 to 24.
 		</member>
 		<member name="volume_linear" type="float" setter="set_volume_linear" getter="get_volume_linear">
-			Amount of amplification as a linear value.
-			[b]Note:[/b] This member modifies [member volume_db] for convenience. The returned value is equivalent to the result of [method @GlobalScope.db_to_linear] on [member volume_db]. Setting this member is equivalent to setting [member volume_db] to the result of [method @GlobalScope.linear_to_db] on a value.
+			Amount of amplification, as a linear value.
+			[b]Note:[/b] This property affects [member volume_db] for convenience. See also [method @GlobalScope.db_to_linear] and [method @GlobalScope.linear_to_db].
 		</member>
 	</members>
 </class>
