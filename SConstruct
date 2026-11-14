@@ -275,6 +275,13 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
+opts.Add(
+    BoolVariable(
+        "math_errno",
+        "Compile with -fmath-errno so sin/cos are never merged into one fused call. Keeps results identical between builds and platforms. Disable to allow fused/vectorized math, which can be slightly faster but may change results by 1 ULP",
+        True,
+    )
+)
 opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
@@ -942,6 +949,17 @@ if env["disable_exceptions"]:
         env.Append(CXXFLAGS=["-fno-exceptions"])
 elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
+
+# Make sinf/cosf etc. behave the same in every build type and on every platform.
+# Clang defaults to -fno-math-errno on Darwin; without errno it can merge adjacent sinf(x)/cosf(x)
+# calls into one combined `__sincosf_stret` call whose result can differ by 1 ULP from cosf(x).
+# Android, musl, the BSDs and Emscripten also defaults to off, and are not affected by the above, but
+# keeping errno gives all platforms the same behavior.
+if not env.msvc:  # MSVC and clang-cl are skipped: errno is already on there, and cl.exe has no such flag.
+    if env["math_errno"]:
+        env.Append(CCFLAGS=["-fmath-errno"])
+    else:
+        env.Append(CCFLAGS=["-fno-math-errno"])
 
 # Configure compiler warnings
 env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
