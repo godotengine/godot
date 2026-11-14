@@ -196,7 +196,11 @@ void main() {
 
 	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT) != 0 ? vertex_base.yx : vertex_base.xy);
 	vec4 color = read_draw_data_modulation;
+#ifdef USE_NINEPATCH
+	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * vertex_base;
+#else
 	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(read_draw_data_src_rect.zw, vec2(0.0, 0.0)));
+#endif
 	uvec4 bones = uvec4(0, 0, 0, 0);
 
 #endif // USE_ATTRIBUTES
