@@ -1106,9 +1106,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool use_ambient_cubemap = false;
 	bool use_reflection_cubemap = false;
 	bool use_reflection_color = false;
+	bool debug_normal_buffer = get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER;
 
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
-		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW || debug_normal_buffer) {
+		clear_color = Color(0, 0, 0, 1); //in overdraw mode and debug normal mode, BG should always be black
 	} else if (is_environment(p_render_data->environment)) {
 		RSE::EnvironmentAmbientSource ambient_source = environment_get_ambient_source(p_render_data->environment);
 		RSE::EnvironmentBG bg_mode = environment_get_background(p_render_data->environment);
@@ -1197,6 +1198,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	SceneShaderForwardMobile::ShaderSpecialization base_specialization = scene_shader.default_specialization;
 
 	{
+		base_specialization.debug_draw_normal_buffer = debug_normal_buffer;
 		base_specialization.use_directional_soft_shadows = p_render_data->directional_light_count > 0 ? p_render_data->directional_light_soft_shadows : false;
 		base_specialization.directional_lights = SceneShaderForwardMobile::shader_count_for(p_render_data->directional_light_count);
 		base_specialization.directional_light_blend_splits = light_storage->get_directional_light_blend_splits(p_render_data->directional_light_count);
@@ -2367,10 +2369,11 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 #else
 				bool force_alpha = false;
 #endif
+				bool skip_alpha = unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER);
 				if (!force_alpha && (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE)) {
 					rl->add_element(surf);
 				}
-				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
+				if (!skip_alpha && (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA))) {
 					render_list[RENDER_LIST_ALPHA].add_element(surf);
 				}
 
@@ -2537,7 +2540,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
 			pipeline_specialization.decals = inst->decals_count > 0;
 			pipeline_specialization.use_lightmap_specular = element_info.uses_lightmap_specular;
-
+			pipeline_specialization.debug_draw_normal_buffer &= p_pass_mode == PASS_MODE_COLOR;
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_uniform_set = scene_shader.default_material_uniform_set;
