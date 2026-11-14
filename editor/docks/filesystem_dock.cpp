@@ -4623,7 +4623,6 @@ FileSystemDock::FileSystemDock() {
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
-	button_toggle_display_mode->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
