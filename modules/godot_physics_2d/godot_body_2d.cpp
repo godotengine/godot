@@ -426,7 +426,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 
 	ERR_FAIL_NULL(get_space());
 
-	int ac = areas.size();
+	uint32_t ac = areas.size();
 
 	bool gravity_done = false;
 	bool linear_damp_done = false;
@@ -442,7 +442,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 	// Combine gravity and damping from overlapping areas in priority order.
 	if (ac) {
 		areas.sort();
-		const AreaCMP *aa = &areas[0];
+		const AreaCMP *aa = areas.ptr();
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			if (!gravity_done) {
 				PS2DE::AreaSpaceOverrideMode area_gravity_mode = (PS2DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS2DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE);

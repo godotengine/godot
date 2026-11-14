@@ -33,6 +33,7 @@
 #include "core/math/rect2.h"
 #include "core/math/transform_2d.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "servers/physics_2d/physics_server_2d_enums.h"
 
@@ -482,15 +483,15 @@ class GodotConcavePolygonShape2D : public GodotConcaveShape2D {
 		int points[2] = {};
 	};
 
-	Vector<Segment> segments;
-	Vector<Point2> points;
+	LocalVector<Segment> segments;
+	LocalVector<Point2> points;
 
 	struct BVH {
 		Rect2 aabb;
 		int left = 0, right = 0;
 	};
 
-	Vector<BVH> bvh;
+	LocalVector<BVH> bvh;
 	int bvh_depth = 0;
 
 	struct BVH_CompareX {
@@ -505,7 +506,7 @@ class GodotConcavePolygonShape2D : public GodotConcaveShape2D {
 		}
 	};
 
-	int _generate_bvh(BVH *p_bvh, int p_len, int p_depth);
+	uint32_t _generate_bvh(BVH *p_bvh, int p_len, int p_depth);
 
 public:
 	virtual PS2DE::ShapeType get_type() const override { return PS2DE::SHAPE_CONCAVE_POLYGON; }
