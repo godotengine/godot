@@ -152,10 +152,10 @@ index 6dc0cf3318..1e5b02550e 100644
  
  #define FATAL(x)   THROW_RUNTIME_ERROR(x)
 diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
-index 83ead95122..e89ae04f8b 100644
+index c515a6b29f..d3929ea2fe 100644
 --- a/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
 +++ b/thirdparty/embree/common/tasking/taskschedulerinternal.cpp
-@@ -48,13 +48,13 @@ namespace embree
+@@ -46,13 +46,13 @@ namespace embree
      {
        Task* prevTask = thread.task;
        thread.task = this;
@@ -176,10 +176,10 @@ index 83ead95122..e89ae04f8b 100644
        add_dependencies(-1);
      }
 diff --git a/thirdparty/embree/common/tasking/taskschedulerinternal.h b/thirdparty/embree/common/tasking/taskschedulerinternal.h
-index b01bebf7c3..d4e0c7386b 100644
+index e0a910dbe9..2c624b5112 100644
 --- a/thirdparty/embree/common/tasking/taskschedulerinternal.h
 +++ b/thirdparty/embree/common/tasking/taskschedulerinternal.h
-@@ -131,7 +131,7 @@ namespace embree
+@@ -126,7 +126,7 @@ namespace embree
        {
          size_t ofs = bytes + ((align - stackPtr) & (align-1));
          if (stackPtr + ofs > CLOSURE_STACK_SIZE)
@@ -188,7 +188,7 @@ index b01bebf7c3..d4e0c7386b 100644
          stackPtr += ofs;
          return &stack[stackPtr-bytes];
        }
-@@ -140,7 +140,7 @@ namespace embree
+@@ -135,7 +135,7 @@ namespace embree
        __forceinline void push_right(Thread& thread, const size_t size, const Closure& closure, TaskGroupContext* context)
        {
          if (right >= TASK_STACK_SIZE)
@@ -233,10 +233,10 @@ index 2bd292de4d..10f629a244 100644
          }
  
 diff --git a/thirdparty/embree/kernels/common/rtcore.cpp b/thirdparty/embree/kernels/common/rtcore.cpp
-index 8da5c9d86c..a34eb2a0c4 100644
+index 5f8ec82c7e..a51fb6b6a4 100644
 --- a/thirdparty/embree/kernels/common/rtcore.cpp
 +++ b/thirdparty/embree/kernels/common/rtcore.cpp
-@@ -358,7 +358,7 @@ RTC_NAMESPACE_BEGIN;
+@@ -341,7 +341,7 @@ RTC_NAMESPACE_BEGIN;
      if (quality != RTC_BUILD_QUALITY_LOW &&
          quality != RTC_BUILD_QUALITY_MEDIUM &&
          quality != RTC_BUILD_QUALITY_HIGH)
@@ -245,7 +245,7 @@ index 8da5c9d86c..a34eb2a0c4 100644
      scene->setBuildQuality(quality);
      RTC_CATCH_END2(scene);
    }
-@@ -1831,7 +1831,7 @@ RTC_API void rtcSetGeometryTransform(RTCGeometry hgeometry, unsigned int timeSte
+@@ -1792,7 +1792,7 @@ RTC_API void rtcSetGeometryTransform(RTCGeometry hgeometry, unsigned int timeSte
          quality != RTC_BUILD_QUALITY_MEDIUM &&
          quality != RTC_BUILD_QUALITY_HIGH &&
          quality != RTC_BUILD_QUALITY_REFIT)

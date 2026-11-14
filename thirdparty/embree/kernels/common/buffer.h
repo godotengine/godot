@@ -248,8 +248,21 @@ namespace embree
     /*! sets the buffer view */
     void set(const Ref<Buffer>& buffer_in, size_t offset_in, size_t stride_in, size_t num_in, RTCFormat format_in)
     {
-      if ((offset_in + stride_in * num_in) > (stride_in * buffer_in->numBytes))
+      if (stride_in > 0xFFFFFFFFu) {
+        throw_RTCError(RTC_ERROR_INVALID_ARGUMENT,"stride too large");
+      }
+
+      if (num_in > 0xFFFFFFFFu) {
+        throw_RTCError(RTC_ERROR_INVALID_ARGUMENT,"item count too large");
+      }
+
+      if (offset_in > buffer_in->numBytes) {
+        throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "offset too large");
+      }
+
+      if (stride_in * num_in > buffer_in->numBytes - offset_in) {
         throw_RTCError(RTC_ERROR_INVALID_ARGUMENT, "buffer range out of bounds");
+      }
 
       ptr_ofs = buffer_in->getHostPtr() + offset_in;
       dptr_ofs = buffer_in->getDevicePtr() + offset_in;

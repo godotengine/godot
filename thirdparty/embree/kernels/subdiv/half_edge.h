@@ -316,6 +316,7 @@ namespace embree
         const Vec3fa v = vertices[p->getStartVertexIndex()];
         if (!isvalid(v)) return false;
       }
+      if (n < 2) return false;
       N += n-2;
       return n >= 3 && n <= MAX_PATCH_VALENCE;
     }

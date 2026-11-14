@@ -101,7 +101,7 @@ namespace embree
     __forceinline void wait()
     {
       mutex.lock();
-      count++;
+      count = count + 1;
       
       if (count == barrierSize) {
         count = 0;

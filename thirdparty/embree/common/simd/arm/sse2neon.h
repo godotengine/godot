@@ -9048,7 +9048,7 @@ FORCE_INLINE int _sse2neon_sido_negative(int res, int lb, int imm8, int bound)
 FORCE_INLINE int _sse2neon_clz(unsigned int x)
 {
 #if _MSC_VER
-    DWORD cnt = 0;
+    unsigned long cnt = 0;
     if (_BitScanForward(&cnt, x))
         return cnt;
     return 32;
@@ -9060,7 +9060,7 @@ FORCE_INLINE int _sse2neon_clz(unsigned int x)
 FORCE_INLINE int _sse2neon_ctz(unsigned int x)
 {
 #if _MSC_VER
-    DWORD cnt = 0;
+    unsigned long cnt = 0;
     if (_BitScanReverse(&cnt, x))
         return 31 - cnt;
     return 32;

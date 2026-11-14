@@ -193,9 +193,9 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time for mblur and non-mblur case */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, unsigned int vid, float time) const
+    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, unsigned int vid, float time, const bool motion_blur = true) const
     {
-      if (hasMotionBlur()) gather(p0,p1,vid,time);
+      if (hasMotionBlur() && motion_blur) gather(p0,p1,vid,time);
       else                 gather(p0,p1,vid);
     }
 
@@ -250,9 +250,9 @@ namespace embree
     }
 
     /*! loads cone curve vertices for specified time for mblur and non-mblur geometry */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, bool& cL, bool& cR, unsigned int primID, size_t vid, float time) const
+    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, bool& cL, bool& cR, unsigned int primID, size_t vid, float time, const bool motion_blur = true) const
     {
-      if (hasMotionBlur()) gather(p0,p1,cL,cR,primID,vid,time);
+      if (hasMotionBlur() && motion_blur) gather(p0,p1,cL,cR,primID,vid,time);
       else                 gather(p0,p1,cL,cR,primID,vid);
     }
 
@@ -335,9 +335,9 @@ namespace embree
     }
 
     /*! loads curve vertices for specified time for mblur and non-mblur geometry */
-    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, unsigned int primID, size_t vid, float time) const
+    __forceinline void gather_safe(Vec3ff& p0, Vec3ff& p1, Vec3ff& p2, Vec3ff& p3, unsigned int primID, size_t vid, float time, const bool motion_blur = true) const
     {
-      if (hasMotionBlur()) gather(p0,p1,p2,p3,primID,vid,time);
+      if (hasMotionBlur() && motion_blur) gather(p0,p1,p2,p3,primID,vid,time);
       else                 gather(p0,p1,p2,p3,primID,vid);
     }
 

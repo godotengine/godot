@@ -8,7 +8,7 @@ import sys
 from collections.abc import Callable
 from typing import Any
 
-git_tag = "v4.4.0"
+git_tag = "v4.4.1"
 
 include_dirs = [
     "common/tasking",

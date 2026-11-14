@@ -224,15 +224,4 @@ namespace embree
   };
 
 #endif
-
-  struct DeviceEnterLeave
-  {
-    DeviceEnterLeave (RTCDevice hdevice);
-    DeviceEnterLeave (RTCScene hscene);
-    DeviceEnterLeave (RTCGeometry hgeometry);
-    DeviceEnterLeave (RTCBuffer hbuffer);
-    ~DeviceEnterLeave();
-  private:
-    Device* device;
-  };
 }
