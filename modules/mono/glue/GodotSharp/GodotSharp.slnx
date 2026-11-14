@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Godot.SourceGenerators.Internal/Godot.SourceGenerators.Internal.csproj" />
+  <Project Path="GodotPlugins/GodotPlugins.csproj" />
+  <Project Path="GodotSharp/GodotSharp.csproj" />
+  <Project Path="GodotSharpEditor/GodotSharpEditor.csproj" />
+</Solution>
