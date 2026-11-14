@@ -105,11 +105,17 @@
 		<member name="bg_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0.6, 0.6, 0.6, 1)">
 			The background color of the stylebox.
 		</member>
+		<member name="bg_texture" type="Texture2D" setter="set_bg_texture" getter="get_bg_texture">
+			The background texture of the stylebox. It is modulated by [member bg_color].
+		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend" default="false">
 			If [code]true[/code], the border will fade into the background color.
 		</member>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color" default="Color(0.8, 0.8, 0.8, 1)">
 			Sets the color of the border.
+		</member>
+		<member name="border_texture" type="Texture2D" setter="set_border_texture" getter="get_border_texture">
+			The border texture of the stylebox. It is modulated by [member border_color].
 		</member>
 		<member name="border_width_bottom" type="int" setter="set_border_width" getter="get_border_width" default="0">
 			Border width for the bottom border.
@@ -167,6 +173,9 @@
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size" default="0">
 			The shadow size in pixels.
+		</member>
+		<member name="shadow_texture" type="Texture2D" setter="set_shadow_texture" getter="get_shadow_texture">
+			The shadow texture of the stylebox. It is modulated by [member shadow_color].
 		</member>
 		<member name="skew" type="Vector2" setter="set_skew" getter="get_skew" default="Vector2(0, 0)">
 			If set to a non-zero value on either axis, [member skew] distorts the StyleBox horizontally and/or vertically. This can be used for "futuristic"-style UIs. Positive values skew the StyleBox towards the right (X axis) and upwards (Y axis), while negative values skew the StyleBox towards the left (X axis) and downwards (Y axis).
