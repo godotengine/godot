@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AssignTweener" inherits="Tweener" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Instantly assigns a value to an [Object]'s property.
+	</brief_description>
+	<description>
+		[AssignTweener] is used to assign a value to an [Object]'s property.
+		The tweener will finish automatically if the target object is freed.
+		[b]Note:[/b] [method Tween.tween_assign] is the only correct way to create [AssignTweener]. Any [AssignTweener] created manually will not function correctly.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="set_delay">
+			<return type="AssignTweener" />
+			<param index="0" name="delay" type="float" />
+			<description>
+				Makes the assignment delayed by given time in seconds.
+				[b]Example:[/b] Set the node's position to [code](100, 100)[/code] after 2 seconds:
+				[codeblocks]
+				[gdscript]
+				var tween = get_tree().create_tween()
+				tween.tween_assign(self, "position", Vector2(100, 100)).set_delay(2)
+				[/gdscript]
+				[csharp]
+				Tween tween = GetTree().CreateTween();
+				tween.TweenAssign(this, "position", new Vector2(100.0f, 100.0f)).SetDelay(2.0f);
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+	</methods>
+</class>
