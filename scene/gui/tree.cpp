@@ -3341,7 +3341,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, cons
 			case TreeItem::CELL_MODE_STRING: {
 				// Nothing in particular.
 
-				if (select_mode == SELECT_MULTI && (get_viewport()->get_processed_events_count() == focus_in_id || !already_cursor)) {
+				if (select_mode == SELECT_MULTI && (get_viewport()->get_processed_events_count() == focus_in_id || !already_cursor || single_select_defer)) {
 					bring_up_editor = false;
 				}
 
