@@ -43,6 +43,9 @@
 		<member name="joystick_size" type="float" setter="set_joystick_size" getter="get_joystick_size" default="100.0">
 			The size of the joystick in pixels.
 		</member>
+		<member name="raw_input" type="Vector2" setter="set_raw_input" getter="get_raw_input" default="Vector2(0, 0)">
+			The raw input of the joystick as [Vector2] with a maximum length of [code]1.0[/code]. Changing this property manually can be used to move the joystick tip by code.
+		</member>
 		<member name="tip_size" type="float" setter="set_tip_size" getter="get_tip_size" default="50.0">
 			The size of the joystick tip in pixels.
 		</member>
