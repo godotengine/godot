@@ -859,12 +859,12 @@ NavMap3D::NavMap3D() {
 
 	path_query_slots_max = GLOBAL_GET("navigation/pathfinding/max_threads");
 
-	int processor_count = OS::get_singleton()->get_processor_count();
+	int thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	if (path_query_slots_max < 0) {
-		path_query_slots_max = processor_count;
+		path_query_slots_max = thread_count;
 	}
-	if (processor_count < path_query_slots_max) {
-		path_query_slots_max = processor_count;
+	if (thread_count < path_query_slots_max) {
+		path_query_slots_max = thread_count;
 	}
 	if (path_query_slots_max < 1) {
 		path_query_slots_max = 1;
