@@ -33,6 +33,7 @@
 #include "scene/gui/graph_element.h"
 
 class HBoxContainer;
+class LineEdit;
 
 class GraphFrame : public GraphElement {
 	GDCLASS(GraphFrame, GraphElement);
@@ -51,8 +52,9 @@ private:
 	String title;
 
 	HBoxContainer *titlebar_hbox = nullptr;
-	Label *title_label = nullptr;
+	LineEdit *title_line_edit = nullptr;
 
+	bool title_editable = false;
 	bool autoshrink_enabled = true;
 	int autoshrink_margin = 40;
 	int drag_margin = 16;
@@ -68,6 +70,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _sync_title(bool p_editing);
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -76,6 +79,9 @@ protected:
 public:
 	void set_title(const String &p_title);
 	String get_title() const;
+
+	void set_title_editable(bool p_editable);
+	bool get_title_editable() const;
 
 	void set_autoshrink_enabled(bool p_enable);
 	bool is_autoshrink_enabled() const;
