@@ -249,3 +249,8 @@ AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 	ERR_FAIL_INDEX_V(p_driver, driver_count, nullptr);
 	return drivers[p_driver];
 }
+
+void AudioDriverManager::reset() {
+	drivers[0] = &AudioDriverManager::dummy_driver;
+	driver_count = 1;
+}
