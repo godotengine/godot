@@ -32,6 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
+#include "core/templates/ring_buffer.h"
 
 class Array;
 class InputEvent;
@@ -67,6 +68,16 @@ private:
 	typedef Error (*ParseMessageFunc)(const Array &p_args);
 	static HashMap<String, ParseMessageFunc> message_handlers;
 	static void _init_message_handlers();
+
+	// The scene debugger is only functional once the scene tree was set up.
+	// Since messages can arrive before that, we need to buffer them.
+	bool _is_active = false;
+	struct DeferredMessage {
+		ParseMessageFunc handler;
+		Array args;
+	};
+	// Using a `RingBuffer`, limits memory consumption when using a custom `MainLoop` that's not a `SceneTree`.
+	RingBuffer<DeferredMessage> _message_buffer = RingBuffer<DeferredMessage>(4);
 
 	static Error _msg_setup_scene(const Array &p_args);
 	static Error _msg_setup_game_view(const Array &p_args);
@@ -130,6 +141,7 @@ private:
 #endif // _3D_DISABLED
 
 public:
+	static void activate();
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
