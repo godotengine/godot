@@ -363,6 +363,7 @@ public:
 
 	virtual void decals_set_filter(RSE::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RSE::LightProjectorFilter p_filter) = 0;
+	virtual void base_material_3d_set_default_filter(RSE::MaterialFilter p_filter) = 0;
 	virtual void lightmaps_set_bicubic_filter(bool p_enable) = 0;
 	virtual void material_set_use_debanding(bool p_enable) = 0;
 
