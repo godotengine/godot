@@ -73,11 +73,10 @@ MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_
 	return mesh_instance_node_3d;
 }
 
-Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
-	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+Node *GLTFDocumentExtensionConvertImporterMesh::convert_importer_meshes_recursively(Node *p_root_node) {
+	ERR_FAIL_NULL_V(p_root_node, nullptr);
 	List<Node *> queue;
-	queue.push_back(p_root);
+	queue.push_back(p_root_node);
 	List<Node *> delete_queue;
 	while (!queue.is_empty()) {
 		List<Node *>::Element *E = queue.front();
@@ -86,6 +85,9 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		if (importer_mesh_3d) {
 			delete_queue.push_back(importer_mesh_3d);
 			node = convert_importer_mesh_instance_3d(importer_mesh_3d);
+			if (p_root_node == importer_mesh_3d) {
+				p_root_node = node;
+			}
 		}
 		int child_count = node->get_child_count();
 		for (int i = 0; i < child_count; i++) {
@@ -99,5 +101,13 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		memdelete(node);
 		delete_queue.pop_front();
 	}
+	return p_root_node;
+}
+
+Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_state, Node *p_root) {
+	ERR_FAIL_NULL_V(p_root, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	Node *converted_root = convert_importer_meshes_recursively(p_root);
+	ERR_FAIL_COND_V_MSG(converted_root != p_root, ERR_INVALID_PARAMETER, "GLTFDocumentExtensionConvertImporterMesh cannot handle converting a scene root node importer mesh.");
 	return OK;
 }
