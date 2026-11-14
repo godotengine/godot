@@ -1719,47 +1719,49 @@ Error AudioServer::set_input_device_active(bool p_is_active) {
 
 int AudioServer::get_input_frames_available() {
 	AudioDriver *ad = AudioDriver::get_singleton();
-	ad->lock();
+	ad->input_lock();
 	int64_t input_position = ad->get_input_position();
 	if (input_position < input_buffer_ofs) {
 		input_position += ad->get_input_buffer().size();
 	}
-	ad->unlock();
+	ad->input_unlock();
 	return (int)((input_position - input_buffer_ofs) / 2); // Buffer is stereo.
 }
 
 int AudioServer::get_input_buffer_length_frames() {
 	AudioDriver *ad = AudioDriver::get_singleton();
-	ad->lock();
+	ad->input_lock();
 	int buffsize = ad->get_input_buffer().size();
-	ad->unlock();
+	ad->input_unlock();
 	return buffsize / 2;
 }
 
 PackedVector2Array AudioServer::get_input_frames(int p_frames) {
 	PackedVector2Array ret;
 	AudioDriver *ad = AudioDriver::get_singleton();
-	ad->lock();
-	int input_position = ad->get_input_position();
-	Vector<int32_t> buf = ad->get_input_buffer();
-	if (input_position < input_buffer_ofs) {
-		input_position += buf.size();
-	}
-	if ((input_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
-		ret.resize(p_frames);
-		for (int i = 0; i < p_frames; i++) {
-			float l = (buf[input_buffer_ofs++] >> 16) / 32768.f;
-			if (input_buffer_ofs >= buf.size()) {
-				input_buffer_ofs = 0;
+	ad->input_lock();
+	{ // Code block to prevent the COW buf buffer from leaking past the input_lock.
+		int input_position = ad->get_input_position();
+		Vector<int32_t> buf = ad->get_input_buffer();
+		if (input_position < input_buffer_ofs) {
+			input_position += buf.size();
+		}
+		if ((input_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
+			ret.resize(p_frames);
+			for (int i = 0; i < p_frames; i++) {
+				float l = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+				if (input_buffer_ofs >= buf.size()) {
+					input_buffer_ofs = 0;
+				}
+				float r = (buf[input_buffer_ofs++] >> 16) / 32768.f;
+				if (input_buffer_ofs >= buf.size()) {
+					input_buffer_ofs = 0;
+				}
+				ret.write[i] = Vector2(l, r);
 			}
-			float r = (buf[input_buffer_ofs++] >> 16) / 32768.f;
-			if (input_buffer_ofs >= buf.size()) {
-				input_buffer_ofs = 0;
-			}
-			ret.write[i] = Vector2(l, r);
 		}
 	}
-	ad->unlock();
+	ad->input_unlock();
 	return ret;
 }
 

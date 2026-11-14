@@ -182,11 +182,13 @@ void AudioDriverOpenSL::start() {
 }
 
 void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf queueItf) {
+	input_lock();
 	for (int i = 0; i < rec_buffer.size(); i++) {
 		int32_t sample = rec_buffer[i] << 16;
 		input_buffer_write(sample);
 		input_buffer_write(sample); // call twice to convert to Stereo
 	}
+	input_unlock();
 
 	SLresult res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
@@ -254,7 +256,9 @@ Error AudioDriverOpenSL::init_input_device() {
 
 	const int rec_buffer_frames = 2048;
 	rec_buffer.resize(rec_buffer_frames);
+	input_lock();
 	input_buffer_init(rec_buffer_frames);
+	input_unlock();
 
 	res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
@@ -318,6 +322,14 @@ void AudioDriverOpenSL::unlock() {
 	if (active) {
 		mutex.unlock();
 	}
+}
+
+void AudioDriverOpenSL::input_lock() {
+	input_mutex.lock();
+}
+
+void AudioDriverOpenSL::input_unlock() {
+	input_mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {
