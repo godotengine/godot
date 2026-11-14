@@ -186,6 +186,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_get_preserves_source_file" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the source file should also be exported at its original [code]res://[/code] path, alongside the result of [method _import]. Override this when the source file must remain readable at run-time. Defaults to [code]false[/code].
+				Source files exported this way are never processed by [method EditorExportPlugin._customize_resource].
+			</description>
+		</method>
 		<method name="_get_preset_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
