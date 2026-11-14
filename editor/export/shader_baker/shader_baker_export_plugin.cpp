@@ -134,9 +134,11 @@ bool ShaderBakerExportPlugin::_begin_customize_resources(const Ref<EditorExportP
 		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_VRS_BIT);
 	}
 
-	// Both FP16 and FP32 variants should be included.
+	// iOS always has FP16 support, so we can skip the FP32 variants on that platform for smaller exports.
 	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP16_BIT);
-	renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP32_BIT);
+	if (!p_features.has("ios")) {
+		renderer_features.set_flag(RenderingShaderLibrary::FEATURE_FP32_BIT);
+	}
 
 	RendererSceneRenderRD::get_singleton()->enable_features(renderer_features);
 
