@@ -103,6 +103,9 @@ private:
 		int line_spacing = 0;
 	} theme_cache;
 
+	bool hflip = false;
+	bool vflip = false;
+
 	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
 	void _texture_changed();
 	void _update_style_margins(const Ref<StyleBox> &p_stylebox);
@@ -164,6 +167,12 @@ public:
 	void set_vertical_icon_alignment(VerticalAlignment p_alignment);
 	HorizontalAlignment get_icon_alignment() const;
 	VerticalAlignment get_vertical_icon_alignment() const;
+
+	void set_icon_flip_h(bool p_flip);
+	bool is_icon_flipped_h() const;
+
+	void set_icon_flip_v(bool p_flip);
+	bool is_icon_flipped_v() const;
 
 	Button(const String &p_text = String());
 	~Button();
