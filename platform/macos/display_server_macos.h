@@ -199,6 +199,7 @@ private:
 	struct IndicatorData {
 		id delegate;
 		id item;
+		bool icon_template = false;
 	};
 
 	DisplayServerEnums::IndicatorID indicator_id_counter = 0;
@@ -430,6 +431,7 @@ public:
 
 	virtual DisplayServerEnums::IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
 	virtual void status_indicator_set_icon(DisplayServerEnums::IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
+	virtual void status_indicator_set_icon_template(DisplayServerEnums::IndicatorID p_id, bool p_template) override;
 	virtual void status_indicator_set_tooltip(DisplayServerEnums::IndicatorID p_id, const String &p_tooltip) override;
 	virtual void status_indicator_set_menu(DisplayServerEnums::IndicatorID p_id, const RID &p_menu_rid) override;
 	virtual void status_indicator_set_callback(DisplayServerEnums::IndicatorID p_id, const Callable &p_callback) override;

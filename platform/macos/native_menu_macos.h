@@ -136,6 +136,7 @@ public:
 	virtual int get_item_state(const RID &p_rid, int p_idx) const override;
 	virtual int get_item_max_states(const RID &p_rid, int p_idx) const override;
 	virtual Ref<Texture2D> get_item_icon(const RID &p_rid, int p_idx) const override;
+	virtual bool get_item_icon_template(const RID &p_rid, int p_idx) const override;
 	virtual int get_item_indentation_level(const RID &p_rid, int p_idx) const override;
 
 	virtual void set_item_checked(const RID &p_rid, int p_idx, bool p_checked) override;
@@ -155,6 +156,7 @@ public:
 	virtual void set_item_state(const RID &p_rid, int p_idx, int p_state) override;
 	virtual void set_item_max_states(const RID &p_rid, int p_idx, int p_max_states) override;
 	virtual void set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon) override;
+	virtual void set_item_icon_template(const RID &p_rid, int p_idx, bool p_template) override;
 	virtual void set_item_indentation_level(const RID &p_rid, int p_idx, int p_level) override;
 	virtual int set_item_index(const RID &p_rid, int p_idx, int p_target_idx) override;
 

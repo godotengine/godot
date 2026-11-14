@@ -93,6 +93,7 @@ class PopupMenu : public Popup {
 		bool shortcut_is_disabled = false;
 		bool allow_echo = false;
 		bool submenu_bound = false;
+		bool icon_template = false;
 
 		// Returns (0,0) if icon is null.
 		Size2 get_icon_size() const {
@@ -348,6 +349,7 @@ public:
 	void set_item_language(int p_idx, const String &p_language);
 	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
+	void set_item_icon_template(int p_idx, bool p_template);
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
@@ -379,6 +381,7 @@ public:
 	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
+	bool get_item_icon_template(int p_idx) const;
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;

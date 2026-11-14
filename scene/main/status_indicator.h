@@ -38,6 +38,7 @@ class StatusIndicator : public Node {
 	GDCLASS(StatusIndicator, Node);
 
 	Ref<Texture2D> icon;
+	bool icon_template = false;
 	String tooltip;
 	bool visible = true;
 	DisplayServerEnums::IndicatorID iid = DisplayServerEnums::INVALID_INDICATOR_ID;
@@ -52,6 +53,9 @@ protected:
 public:
 	void set_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_icon() const;
+
+	void set_icon_template(bool p_template);
+	bool get_icon_template() const;
 
 	void set_tooltip(const String &p_tooltip);
 	String get_tooltip() const;

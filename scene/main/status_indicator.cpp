@@ -53,6 +53,7 @@ void StatusIndicator::_notification(int p_what) {
 						RID menu_rid = pm->bind_global_menu();
 						DisplayServer::get_singleton()->status_indicator_set_menu(iid, menu_rid);
 					}
+					DisplayServer::get_singleton()->status_indicator_set_icon_template(iid, icon_template);
 				}
 			}
 		} break;
@@ -79,6 +80,8 @@ void StatusIndicator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tooltip"), &StatusIndicator::get_tooltip);
 	ClassDB::bind_method(D_METHOD("set_icon", "texture"), &StatusIndicator::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon"), &StatusIndicator::get_icon);
+	ClassDB::bind_method(D_METHOD("set_icon_template", "template"), &StatusIndicator::set_icon_template);
+	ClassDB::bind_method(D_METHOD("get_icon_template"), &StatusIndicator::get_icon_template);
 	ClassDB::bind_method(D_METHOD("set_visible", "visible"), &StatusIndicator::set_visible);
 	ClassDB::bind_method(D_METHOD("is_visible"), &StatusIndicator::is_visible);
 	ClassDB::bind_method(D_METHOD("set_menu", "menu"), &StatusIndicator::set_menu);
@@ -89,6 +92,7 @@ void StatusIndicator::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip", "get_tooltip");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_icon", "get_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "icon_template"), "set_icon_template", "get_icon_template");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "menu", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "PopupMenu"), "set_menu", "get_menu");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 }
@@ -107,6 +111,18 @@ void StatusIndicator::set_icon(const Ref<Texture2D> &p_icon) {
 
 Ref<Texture2D> StatusIndicator::get_icon() const {
 	return icon;
+}
+
+void StatusIndicator::set_icon_template(bool p_template) {
+	ERR_MAIN_THREAD_GUARD;
+	icon_template = p_template;
+	if (iid != DisplayServerEnums::INVALID_INDICATOR_ID) {
+		DisplayServer::get_singleton()->status_indicator_set_icon_template(iid, icon_template);
+	}
+}
+
+bool StatusIndicator::get_icon_template() const {
+	return icon_template;
 }
 
 void StatusIndicator::set_tooltip(const String &p_tooltip) {
