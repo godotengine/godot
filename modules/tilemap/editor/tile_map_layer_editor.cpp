@@ -161,7 +161,6 @@ void TileMapLayerEditorTilesPlugin::_update_translation() {
 		_update_scenes_collection_view();
 		_update_tile_set_sources_list();
 	}
-	_update_patterns_list();
 }
 
 Vector<TileMapLayerSubEditorPlugin::TabData> TileMapLayerEditorTilesPlugin::get_tabs() const {
@@ -338,7 +337,11 @@ void TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<Inpu
 		return;
 	}
 
-	if (ED_IS_SHORTCUT("tiles_editor/paste", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	if (ED_IS_SHORTCUT("tiles_editor/paste", p_event)) {
 		select_last_pattern = true;
 		int new_pattern_index = tile_set->get_patterns_count();
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -347,29 +350,6 @@ void TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<Inpu
 		undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
 		undo_redo->commit_action();
 		patterns_item_list->accept_event();
-	}
-
-	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
-		Vector<int> selected = patterns_item_list->get_selected_items();
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Remove TileSet patterns"));
-		for (int i = 0; i < selected.size(); i++) {
-			int pattern_index = selected[i];
-			undo_redo->add_do_method(*tile_set, "remove_pattern", pattern_index);
-			undo_redo->add_undo_method(*tile_set, "add_pattern", tile_set->get_pattern(pattern_index), pattern_index);
-		}
-		undo_redo->commit_action();
-		patterns_item_list->accept_event();
-	}
-}
-
-void TileMapLayerEditorTilesPlugin::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture) {
-	// TODO optimize ?
-	for (int i = 0; i < patterns_item_list->get_item_count(); i++) {
-		if (patterns_item_list->get_item_metadata(i) == p_pattern) {
-			patterns_item_list->set_item_icon(i, p_texture);
-			break;
-		}
 	}
 }
 
@@ -380,20 +360,7 @@ void TileMapLayerEditorTilesPlugin::_update_patterns_list() {
 	}
 
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
-	if (tile_set.is_null()) {
-		return;
-	}
-
-	// Recreate the items.
-	patterns_item_list->clear();
-	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
-		int id = patterns_item_list->add_item("");
-		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
-		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileMapLayerEditorTilesPlugin::_pattern_preview_done));
-	}
-
-	// Update the label visibility.
+	patterns_item_list->update_list(tile_set);
 	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
 
 	// Added a new pattern, thus select the last one.
@@ -401,8 +368,8 @@ void TileMapLayerEditorTilesPlugin::_update_patterns_list() {
 		patterns_item_list->select(tile_set->get_patterns_count() - 1);
 		patterns_item_list->grab_focus(true);
 		_update_selection_pattern_from_tileset_pattern_selection();
+		select_last_pattern = false;
 	}
-	select_last_pattern = false;
 }
 
 void TileMapLayerEditorTilesPlugin::_update_atlas_view() {
@@ -2471,29 +2438,18 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	patterns_mc->set_name(TTRC("Patterns"));
 	patterns_mc->connect(SceneStringName(visibility_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_tab_changed));
 
-	int thumbnail_size = 64;
-	patterns_item_list = memnew(ItemList);
-	patterns_item_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	patterns_item_list->set_max_columns(0);
-	patterns_item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
-	patterns_item_list->set_fixed_column_width(thumbnail_size * 3 / 2);
-	patterns_item_list->set_max_text_lines(2);
-	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
-	patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
+	patterns_item_list = memnew(TileSetPatternList);
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileMapLayerEditorTilesPlugin::_patterns_item_list_gui_input));
 	patterns_item_list->connect(SceneStringName(item_selected), callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
-	patterns_item_list->connect("item_activated", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_selection_pattern_from_tileset_pattern_selection).unbind(1));
-	patterns_item_list->connect("empty_clicked", callable_mp(this, &TileMapLayerEditorTilesPlugin::patterns_item_list_empty_clicked));
+	patterns_item_list->connect("empty_clicked", callable_mp(this, &TileMapLayerEditorTilesPlugin::patterns_item_list_empty_clicked), CONNECT_DEFERRED);
 	patterns_mc->add_child(patterns_item_list);
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	patterns_help_label->set_text(TTRC("Drag and drop or paste a TileMap selection here to store a pattern."));
-	patterns_help_label->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
 	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
-	patterns_item_list->add_child(patterns_help_label);
+	patterns_mc->add_child(patterns_help_label);
 
 	// Update.
 	_update_source_display();

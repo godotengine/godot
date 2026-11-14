@@ -119,6 +119,25 @@ public:
 	TileSetSourceItemList();
 };
 
+class TileSetPatternList : public ItemList {
+	GDCLASS(TileSetPatternList, ItemList);
+
+	Ref<TileSet> tile_set;
+
+	void _empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _pattern_preview_done(const Ref<TileMapPattern> &p_pattern, const Ref<Texture2D> &p_texture, int p_index);
+
+protected:
+	void _notification(int p_notification);
+
+public:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	void update_list(const Ref<TileSet> &p_from_tileset);
+
+	TileSetPatternList();
+};
+
 class TileMapEditorPlugin : public EditorPlugin {
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
