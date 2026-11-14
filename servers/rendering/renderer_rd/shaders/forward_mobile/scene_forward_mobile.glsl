@@ -1132,6 +1132,7 @@ void main() {
 	float premul_alpha_highp = 1.0;
 #endif
 	vec4 fog_highp = vec4(0.0);
+	float global_fog_influence = 1.;
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance_highp = vec4(0.0);
 #endif
@@ -2404,8 +2405,8 @@ void main() {
 #endif // MODE_UNSHADED
 
 #ifndef FOG_DISABLED
-	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, fog.rgb, fog.a);
-	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a);
+	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, vec3(fog.rgb), fog.a * global_fog_influence);
+	specular_buffer.rgb = mix(specular_buffer.rgb, vec3(0.0), fog.a * global_fog_influence);
 #endif // !FOG_DISABLED
 
 #else //MODE_MULTIPLE_RENDER_TARGETS
@@ -2415,10 +2416,9 @@ void main() {
 #else // MODE_UNSHADED
 	hvec4 out_color = hvec4(emission + ambient_light + diffuse_light + direct_specular_light + indirect_specular_light, alpha);
 #endif // MODE_UNSHADED
-
 #ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a);
+	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a * half(global_fog_influence));
 #endif // !FOG_DISABLED
 
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
