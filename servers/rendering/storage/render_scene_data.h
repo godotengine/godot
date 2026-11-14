@@ -47,4 +47,12 @@ public:
 	virtual Projection get_view_projection(uint32_t p_view) const = 0;
 
 	virtual RID get_uniform_buffer() const = 0;
+
+	virtual RID get_directional_light_buffer() const = 0;
+	virtual RID get_omni_light_buffer() const = 0;
+	virtual RID get_spot_light_buffer() const = 0;
+
+	virtual RID decal_atlas_get_texture() const = 0;
+	virtual RID decal_atlas_get_texture_srgb() const = 0;
+	virtual RID directional_shadow_get_texture() const = 0;
 };
