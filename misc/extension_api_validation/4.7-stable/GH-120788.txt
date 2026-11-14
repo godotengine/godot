@@ -1,0 +1,6 @@
+GH-120788
+--------------
+
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Node/methods/get_last_exclusive_window': arguments
+
+Added a "stop_at_dialogs" boolean parameter, if "true", stops the traversal of Window nodes before a dialog (AcceptDialog or any class extending it, such as ConfirmationDialog/FileDialog). Default is "false" (the old behavior).

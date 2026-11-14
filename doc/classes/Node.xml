@@ -399,8 +399,10 @@
 		</method>
 		<method name="get_last_exclusive_window" qualifiers="const">
 			<return type="Window" />
+			<param index="0" name="stop_at_dialog" type="bool" default="false" />
 			<description>
 				Returns the [Window] that contains this node, or the last exclusive child in a chain of windows starting with the one that contains this node.
+				If [param stop_at_dialog] is [code]true[/code], the traversal stops before an [AcceptDialog] or any class extending it (such as [ConfirmationDialog]).
 			</description>
 		</method>
 		<method name="get_multiplayer_authority" qualifiers="const">

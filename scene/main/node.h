@@ -448,6 +448,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
 	Variant _get_rpc_config_bind_compat_106848() const;
+	Window *_get_last_exclusive_window_bind_compat_120788() const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -553,7 +554,7 @@ public:
 
 	Window *get_window() const;
 	Window *get_non_popup_window() const;
-	Window *get_last_exclusive_window() const;
+	Window *get_last_exclusive_window(bool p_stop_at_dialogs = false) const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_NULL_V(data.tree, nullptr);
