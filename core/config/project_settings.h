@@ -165,6 +165,9 @@ public:
 
 #ifdef TOOLS_ENABLED
 	HashMap<String, PropertyInfo> editor_settings_info;
+
+	bool handle_renamed_files(const HashMap<String, String> &p_renames);
+	bool handle_removed_files(const HashMap<String, String> &p_removes);
 #endif
 
 	void set_setting(const String &p_setting, const Variant &p_value);
