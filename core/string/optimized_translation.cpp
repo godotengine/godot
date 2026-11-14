@@ -32,94 +32,73 @@
 #include "optimized_translation.compat.inc"
 
 #include "core/object/class_db.h"
+#include "core/string/plural_rules.h"
 #include "core/templates/pair.h"
 
+#ifndef DISABLE_DEPRECATED
 extern "C" {
 #include <thirdparty/misc/smaz.h>
 }
-
-struct CompressedString {
-	int orig_len = 0;
-	CharString compressed;
-	int offset = 0;
-};
+#endif
 
 bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
-	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_V(p_from.is_null(), false);
 
 	List<StringName> keys;
-	{
-		List<StringName> raw_keys;
-		p_from->get_message_list(&raw_keys);
-
-		for (const StringName &key : raw_keys) {
-			const String key_str = key.string();
-			int p = key_str.find_char(0x04);
-			if (p == -1) {
-				keys.push_back(key);
-			} else {
-				const String &msgctxt = key_str.substr(0, p);
-				const String &msgid = key_str.substr(p + 1);
-				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", msgid, msgctxt));
-			}
-		}
-	}
+	p_from->get_message_list(&keys);
 
 	int size = Math::larger_prime(keys.size());
 
 	Vector<Vector<Pair<int, CharString>>> buckets;
 	Vector<HashMap<uint32_t, int>> table;
 	Vector<uint32_t> hfunc_table;
-	Vector<CompressedString> compressed;
 
+	version = 1;
 	table.resize(size);
 	hfunc_table.resize(size);
 	buckets.resize(size);
-	compressed.resize(keys.size());
+	offsets.clear();
+	strings.clear();
 
-	int idx = 0;
-	int total_compression_size = 0;
-
+	int total_str_size = 0;
 	for (const StringName &E : keys) {
-		//hash string
-		CharString cs = E.string().utf8();
-		uint32_t h = hash(0, cs.get_data());
-		Pair<int, CharString> p;
-		p.first = idx;
-		p.second = cs;
-		buckets.write[h % size].push_back(p);
+		int off_start = offsets.size();
 
-		//compress string
-		CharString src_s = p_from->get_message(E).string().utf8();
-		CompressedString ps;
-		ps.orig_len = src_s.size();
-		ps.offset = total_compression_size;
-
-		if (ps.orig_len != 0) {
-			CharString dst_s;
-			dst_s.resize_uninitialized(src_s.size());
-			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
-			if (ret >= src_s.size()) {
-				//if compressed is larger than original, just use original
-				ps.orig_len = src_s.size();
-				ps.compressed = src_s;
-			} else {
-				dst_s.resize_uninitialized(ret);
-				//ps.orig_len=;
-				ps.compressed = dst_s;
-			}
-		} else {
-			ps.orig_len = 1;
-			ps.compressed.resize_uninitialized(1);
-			ps.compressed[0] = 0;
+		// Hash key.
+		{
+			CharString cs = E.string().utf8();
+			uint32_t h = hash(0, cs.get_data());
+			Pair<int, CharString> p;
+			p.first = off_start;
+			p.second = cs;
+			buckets.write[h % size].push_back(p);
 		}
 
-		compressed.write[idx] = ps;
-		total_compression_size += ps.compressed.size();
-		idx++;
+		String msgctxt;
+		String msgid = E.string();
+		int sep = msgid.find_char(0x04);
+		if (sep != -1) {
+			msgctxt = msgid.substr(0, sep);
+			msgid = msgid.substr(sep + 1);
+		}
+
+		List<StringName> src_s;
+		p_from->get_plural_message_list(msgid, msgctxt, &src_s);
+		int str_idx = 0;
+		offsets.resize(off_start + 1 + src_s.size() * 2);
+		offsets.write[off_start] = src_s.size();
+
+		for (const StringName &str : src_s) {
+			CharString cs = str.string().utf8();
+			strings.resize(total_str_size + cs.length());
+			memcpy(&strings.write[total_str_size], cs.get_data(), cs.length());
+			offsets.write[off_start + 1 + str_idx * 2] = total_str_size;
+			offsets.write[off_start + 1 + str_idx * 2 + 1] = cs.length();
+			total_str_size += cs.length();
+			str_idx++;
+		}
 	}
 
 	int bucket_table_size = 0;
@@ -177,21 +156,15 @@ bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 		for (const KeyValue<uint32_t, int> &E : t) {
 			btw[btindex++] = E.key;
-			btw[btindex++] = compressed[E.value].offset;
-			btw[btindex++] = compressed[E.value].compressed.size();
-			btw[btindex++] = compressed[E.value].orig_len;
+			btw[btindex++] = E.value;
+			btw[btindex++] = 0;
+			btw[btindex++] = 0;
 		}
-	}
-
-	strings.resize(total_compression_size);
-	uint8_t *cw = strings.ptrw();
-
-	for (int i = 0; i < compressed.size(); i++) {
-		memcpy(&cw[compressed[i].offset], compressed[i].compressed.get_data(), compressed[i].compressed.size());
 	}
 
 	ERR_FAIL_COND_V(btindex != bucket_table_size, false);
 	set_locale(p_from->get_locale());
+	set_plural_rules_override(p_from->get_plural_rules_override());
 
 	return true;
 #else
@@ -201,10 +174,14 @@ bool OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value) {
 	String prop_name = p_name.string();
-	if (prop_name == "hash_table") {
+	if (prop_name == "version") {
+		version = p_value;
+	} else if (prop_name == "hash_table") {
 		hash_table = p_value;
 	} else if (prop_name == "bucket_table") {
 		bucket_table = p_value;
+	} else if (prop_name == "offset_table") {
+		offsets = p_value;
 	} else if (prop_name == "strings") {
 		strings = p_value;
 	} else if (prop_name == "load_from") {
@@ -218,10 +195,14 @@ bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value
 
 bool OptimizedTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 	String prop_name = p_name.string();
-	if (prop_name == "hash_table") {
+	if (prop_name == "version") {
+		r_ret = version;
+	} else if (prop_name == "hash_table") {
 		r_ret = hash_table;
 	} else if (prop_name == "bucket_table") {
 		r_ret = bucket_table;
+	} else if (prop_name == "offset_table") {
+		r_ret = offsets;
 	} else if (prop_name == "strings") {
 		r_ret = strings;
 	} else {
@@ -240,33 +221,86 @@ const OptimizedTranslation::Bucket *OptimizedTranslation::_get_bucket(uint32_t p
 	return bucket;
 }
 
-String OptimizedTranslation::_get_string(const Bucket::Elem &p_elem) const {
-	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.str_offset + p_elem.comp_size > (uint64_t)strings.size(), String(), "Invalid string offset, corrupt translation.");
+#ifndef DISABLE_DEPRECATED
+String OptimizedTranslation::_get_string_v0(const Bucket::Elem &p_elem) const {
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.offset + p_elem.comp_size > (uint64_t)strings.size(), String(), "Invalid string offset, corrupt translation.");
 	const char *sptr = (const char *)strings.ptr();
 
 	if (p_elem.comp_size == p_elem.uncomp_size) {
-		return String::utf8(&sptr[p_elem.str_offset], p_elem.uncomp_size);
+		return String::utf8(&sptr[p_elem.offset], p_elem.uncomp_size);
 	}
 
 	ERR_FAIL_COND_V_MSG(p_elem.uncomp_size > INT32_MAX, String(), "Invalid string size, corrupt translation.");
 	CharString uncomp;
 	Error err = uncomp.resize_uninitialized(p_elem.uncomp_size);
 	ERR_FAIL_COND_V(err != OK, String());
-	int len = smaz_decompress(&sptr[p_elem.str_offset], p_elem.comp_size, uncomp.ptrw(), p_elem.uncomp_size);
+	int len = smaz_decompress(&sptr[p_elem.offset], p_elem.comp_size, uncomp.ptrw(), p_elem.uncomp_size);
 	ERR_FAIL_COND_V_MSG(len > (int)p_elem.uncomp_size, String(), "Invalid compressed string, corrupt translation.");
 	return String::utf8(uncomp.get_data(), len);
 }
+#endif
+
+String OptimizedTranslation::_get_string(const Bucket::Elem &p_elem, int p_n) const {
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.offset + 1 > (uint64_t)offsets.size(), String(), "Invalid offset, corrupt translation.");
+	int count = offsets[p_elem.offset];
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.offset + 1 + count * 2 > (uint64_t)offsets.size(), String(), "Invalid string count, corrupt translation.");
+
+	int index = 0;
+	if (p_n > 0) {
+		index = _get_plural_rules()->evaluate(p_n);
+	}
+	ERR_FAIL_INDEX_V_MSG(index, count, String(), "Invalid plural index or number of plural translations.");
+
+	const char *sptr = (const char *)strings.ptr();
+	int offset = offsets[p_elem.offset + 1 + index * 2];
+	int len = offsets[p_elem.offset + 1 + index * 2 + 1];
+	ERR_FAIL_COND_V_MSG((uint64_t)offset + len > (uint64_t)strings.size(), String(), "Invalid string offset, corrupt translation.");
+
+	return String::utf8(&sptr[offset], len);
+}
+
+Vector<String> OptimizedTranslation::_get_strings(const Bucket::Elem &p_elem) const {
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.offset + 1 > (uint64_t)offsets.size(), Vector<String>(), "Invalid offset, corrupt translation.");
+	int count = offsets[p_elem.offset];
+	ERR_FAIL_COND_V_MSG((uint64_t)p_elem.offset + 1 + count * 2 > (uint64_t)offsets.size(), Vector<String>(), "Invalid string count, corrupt translation.");
+
+	const char *sptr = (const char *)strings.ptr();
+
+	Vector<String> ret;
+	for (int i = 0; i < count; i++) {
+		int offset = offsets[p_elem.offset + 1 + i * 2];
+		int len = offsets[p_elem.offset + 1 + i * 2 + 1];
+		ERR_FAIL_COND_V_MSG((uint64_t)offset + len > (uint64_t)strings.size(), Vector<String>(), "Invalid string offset, corrupt translation.");
+		ret.push_back(String::utf8(&sptr[offset], len));
+	}
+
+	return ret;
+}
 
 StringName OptimizedTranslation::get_message(const StringName &p_src_text, const StringName &p_context) const {
-	// p_context passed in is ignore. The use of context is not yet supported in OptimizedTranslation.
-
 	int htsize = hash_table.size();
 
 	if (htsize == 0) {
 		return StringName();
 	}
 
-	CharString str = p_src_text.string().utf8();
+	String key;
+#ifdef DISABLE_DEPRECATED
+	ERR_FAIL_COND_V_MSG(version != 1, StringName(), vformat("Unsupported data version %d.", version));
+#else
+	ERR_FAIL_COND_V_MSG(version != 1 && version != 0, StringName(), vformat("Unsupported data version %d.", version));
+	if (version == 0) {
+		key = p_src_text.string(); // Context not supported.
+	}
+#endif
+	if (version == 1) {
+		if (!p_context.is_empty()) {
+			key = vformat("%s\x04%s", p_context, p_src_text);
+		} else {
+			key = p_src_text.string();
+		}
+	}
+	CharString str = key.utf8();
 	uint32_t h = hash(0, str.get_data());
 
 	const int *htr = hash_table.ptr();
@@ -298,10 +332,23 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName();
 	}
 
-	return _get_string(bucket->elem[idx]);
+#ifndef DISABLE_DEPRECATED
+	if (version == 0) {
+		return _get_string_v0(bucket->elem[idx]);
+	}
+#endif
+	if (version == 1) {
+		return _get_string(bucket->elem[idx], 0);
+	}
+	return StringName();
 }
 
 Vector<String> OptimizedTranslation::get_translated_message_list() const {
+#ifdef DISABLE_DEPRECATED
+	ERR_FAIL_COND_V_MSG(version != 1, Vector<String>(), vformat("Unsupported data version %d.", version));
+#else
+	ERR_FAIL_COND_V_MSG(version != 1 && version != 0, Vector<String>(), vformat("Unsupported data version %d.", version));
+#endif
 	Vector<String> msgs;
 
 	const int *htr = hash_table.ptr();
@@ -315,7 +362,14 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 				return Vector<String>(); // Helper already prints an error.
 			}
 			for (int j = 0; j < bucket->size; j++) {
-				msgs.push_back(_get_string(bucket->elem[j]));
+#ifndef DISABLE_DEPRECATED
+				if (version == 0) {
+					msgs.push_back(_get_string_v0(bucket->elem[j]));
+				}
+#endif
+				if (version == 1) {
+					msgs.append_array(_get_strings(bucket->elem[j]));
+				}
 			}
 		}
 	}
@@ -323,8 +377,59 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 }
 
 StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
-	// The use of plurals translation is not yet supported in OptimizedTranslation.
-	return get_message(p_src_text, p_context);
+#ifdef DISABLE_DEPRECATED
+	ERR_FAIL_COND_V_MSG(version != 1, StringName(), vformat("Unsupported data version %d.", version));
+#else
+	ERR_FAIL_COND_V_MSG(version != 1 && version != 0, StringName(), vformat("Unsupported data version %d.", version));
+	if (version == 0) {
+		return get_message(p_src_text, p_context);
+	}
+#endif
+	int htsize = hash_table.size();
+
+	if (htsize == 0) {
+		return StringName();
+	}
+
+	String key;
+	if (!p_context.is_empty()) {
+		key = vformat("%s\x04%s", p_context, p_src_text);
+	} else {
+		key = p_src_text.string();
+	}
+	CharString str = key.utf8();
+	uint32_t h = hash(0, str.get_data());
+
+	const int *htr = hash_table.ptr();
+	const uint32_t *htptr = (const uint32_t *)&htr[0];
+
+	uint32_t p = htptr[h % htsize];
+
+	if (p == 0xFFFFFFFF) {
+		return StringName(); //nothing
+	}
+
+	const Bucket *bucket = _get_bucket(p);
+	if (unlikely(!bucket)) {
+		return StringName(); // Helper already prints an error.
+	}
+
+	h = hash(bucket->func, str.get_data());
+
+	int idx = -1;
+
+	for (int i = 0; i < bucket->size; i++) {
+		if (bucket->elem[i].key == h) {
+			idx = i;
+			break;
+		}
+	}
+
+	if (idx == -1) {
+		return StringName();
+	}
+
+	return _get_string(bucket->elem[idx], p_n);
 }
 
 Vector<String> OptimizedTranslation::_get_message_list() const {
@@ -342,8 +447,10 @@ int OptimizedTranslation::get_message_count() const {
 }
 
 void OptimizedTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::INT, "version", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "offset_table", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, Translation::get_class_static(), PROPERTY_USAGE_EDITOR));
 }

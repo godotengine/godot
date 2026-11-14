@@ -194,6 +194,16 @@ StringName Translation::get_plural_message(const StringName &p_src_text, const S
 	return msgstrs->get(index);
 }
 
+void Translation::get_plural_message_list(const StringName &p_src_text, const StringName &p_context, List<StringName> *r_messages) const {
+	const Vector<StringName> *msgstrs = translation_map.getptr({ p_context, p_src_text });
+	if (msgstrs == nullptr) {
+		return;
+	}
+	for (int i = 0; i < msgstrs->size(); i++) {
+		r_messages->push_back(msgstrs->get(i));
+	}
+}
+
 void Translation::erase_message(const StringName &p_src_text, const StringName &p_context) {
 	translation_map.erase({ p_context, p_src_text });
 }
