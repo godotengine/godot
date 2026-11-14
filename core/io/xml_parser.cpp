@@ -341,7 +341,17 @@ Error XMLParser::seek(uint64_t p_pos) {
 	ERR_FAIL_NULL_V(data, ERR_FILE_EOF);
 	ERR_FAIL_COND_V(p_pos >= length, ERR_FILE_EOF);
 
+	if (line_offsets.is_empty() && length > 0) {
+		line_offsets.push_back(0);
+		for (uint64_t i = 0; i < length; i++) {
+			if (data[i] == '\n') {
+				line_offsets.push_back(i + 1);
+			}
+		}
+	}
+
 	P = data + p_pos;
+	current_line = line_offsets.bsearch(p_pos, false) - 1;
 
 	return read();
 }
@@ -463,6 +473,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 		data_copy = nullptr;
 	}
 
+	line_offsets.clear();
 	length = p_buffer.size();
 	data_copy = memnew_arr(char, length + 1);
 	memcpy(data_copy, p_buffer.ptr(), length);
@@ -483,6 +494,7 @@ Error XMLParser::_open_buffer(const uint8_t *p_buffer, size_t p_size) {
 		data_copy = nullptr;
 	}
 
+	line_offsets.clear();
 	length = p_size;
 	data = (const char *)p_buffer;
 	P = data;
@@ -505,6 +517,7 @@ Error XMLParser::open(const String &p_path) {
 		data_copy = nullptr;
 	}
 
+	line_offsets.clear();
 	data_copy = memnew_arr(char, length + 1);
 	file->get_buffer((uint8_t *)data_copy, length);
 	data_copy[length] = 0;
@@ -545,6 +558,7 @@ void XMLParser::close() {
 	node_empty = false;
 	node_type = NODE_NONE;
 	node_offset = 0;
+	line_offsets.clear();
 }
 
 int XMLParser::get_current_line() const {
