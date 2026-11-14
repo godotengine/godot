@@ -61,7 +61,7 @@ public:
 
 	String breakpoint_find_source(const String &p_source) const;
 	void set_break_language(ScriptLanguage *p_lang) { break_lang = p_lang; }
-	ScriptLanguage *get_break_language() { return break_lang; }
+	ScriptLanguage *get_break_language() const { return break_lang; }
 	void set_skip_breakpoints(bool p_skip_breakpoints);
 	bool is_skipping_breakpoints();
 	void set_ignore_error_breaks(bool p_ignore);
@@ -78,7 +78,6 @@ public:
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 
 	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
-	ScriptLanguage *get_break_language() const;
 
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info);
 	Vector<StackInfo> get_error_stack_info() const;
