@@ -625,11 +625,13 @@ bool GDScriptParser::is_at_end() const {
 	return check(GDScriptTokenizer::Token::TK_EOF);
 }
 
-void GDScriptParser::synchronize() {
+void GDScriptParser::synchronize(bool p_parse_class) {
 	panic_mode = false;
 	while (!is_at_end()) {
 		if (previous.type == GDScriptTokenizer::Token::NEWLINE || previous.type == GDScriptTokenizer::Token::SEMICOLON) {
-			return;
+			if (!p_parse_class || current.type != GDScriptTokenizer::Token::DEDENT) {
+				return;
+			}
 		}
 
 		switch (current.type) {
@@ -1226,7 +1228,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			next_is_static = false;
 		}
 		if (panic_mode) {
-			synchronize();
+			synchronize(true);
 		}
 		if (!p_is_multiline) {
 			class_end = true;
