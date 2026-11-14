@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamGeneratorPlayback" inherits="AudioStreamPlaybackResampled" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Plays back audio generated using [AudioStreamGenerator].
+		Playback class used for [AudioStreamGenerator]. Necessary component to hold procedurally generated audio frames for [AudioStreamGenerator].
 	</brief_description>
 	<description>
-		This class is meant to be used with [AudioStreamGenerator] to play back the generated audio in real-time.
+		Playback component of [AudioStreamGenerator]. This class is meant to be used with [AudioStreamGenerator] to store and play back generated audio frames in real-time. Audio frames must be generated via a script and pushed to the internal ring buffer of this class using [method push_buffer] or [method push_frame].
 	</description>
 	<tutorials>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
@@ -15,39 +15,39 @@
 			<return type="bool" />
 			<param index="0" name="amount" type="int" />
 			<description>
-				Returns [code]true[/code] if a buffer of the size [param amount] can be pushed to the audio sample data buffer without overflowing it, [code]false[/code] otherwise.
+				Returns [code]true[/code] if a buffer of the size [param amount] can be pushed to the audio frame data buffer without overflowing it.
 			</description>
 		</method>
 		<method name="clear_buffer">
 			<return type="void" />
 			<description>
-				Clears the audio sample data buffer.
+				Clears the audio frame data buffer.
 			</description>
 		</method>
 		<method name="get_frames_available" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of frames that can be pushed to the audio sample data buffer without overflowing it. If the result is [code]0[/code], the buffer is full.
+				Returns the number of frames that can be pushed to the audio frame data buffer without overflowing it. If the result is [code]0[/code], the buffer is full.
 			</description>
 		</method>
 		<method name="get_skips" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of times the playback skipped due to a buffer underrun in the audio sample data. This value is reset at the start of the playback.
+				Returns the number of times the playback skipped due to a buffer underrun in the internal mixing step. This value is reset at the start of the playback.
 			</description>
 		</method>
 		<method name="push_buffer">
 			<return type="bool" />
 			<param index="0" name="frames" type="PackedVector2Array" />
 			<description>
-				Pushes several audio data frames to the buffer. This is usually more efficient than [method push_frame] in C# and compiled languages via GDExtension, but [method push_buffer] may be [i]less[/i] efficient in GDScript.
+				Pushes several audio frames to the buffer. This is usually [i]more[/i] efficient than [method push_frame] in C# and compiled languages via GDExtension, but [method push_buffer] may be [i]less[/i] efficient in GDScript.
 			</description>
 		</method>
 		<method name="push_frame">
 			<return type="bool" />
 			<param index="0" name="frame" type="Vector2" />
 			<description>
-				Pushes a single audio data frame to the buffer. This is usually less efficient than [method push_buffer] in C# and compiled languages via GDExtension, but [method push_frame] may be [i]more[/i] efficient in GDScript.
+				Pushes a single audio frame to the buffer. This is usually [i]less[/i] efficient than [method push_buffer] in C# and compiled languages via GDExtension, but [method push_frame] may be [i]more[/i] efficient in GDScript.
 			</description>
 		</method>
 	</methods>
