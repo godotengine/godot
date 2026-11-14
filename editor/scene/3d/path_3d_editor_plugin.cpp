@@ -574,6 +574,10 @@ void Path3DGizmo::redraw() {
 }
 
 void Path3DGizmo::_update_transform_gizmo() {
+	if (path && path->get_curve().is_null()) {
+		Node3DEditor::get_singleton()->clear_subgizmo_selection(path);
+		return;
+	}
 	Node3DEditor::get_singleton()->update_transform_gizmo();
 }
 
