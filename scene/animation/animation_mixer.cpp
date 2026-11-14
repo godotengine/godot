@@ -695,11 +695,7 @@ bool AnimationMixer::_update_caches() {
 	const String mixer_name = "AnimationMixer";
 #endif
 
-	Ref<Animation> reset_anim;
-	bool has_reset_anim = has_animation(SceneStringName(RESET));
-	if (has_reset_anim) {
-		reset_anim = get_animation(SceneStringName(RESET));
-	}
+	Ref<Animation> reset_anim = get_animation_or_null(SceneStringName(RESET));
 	for (const StringName &E : sname_list) {
 		const Ref<Animation> &anim = get_animation(E);
 		for (int i = 0; i < anim->get_track_count(); i++) {
@@ -773,7 +769,7 @@ bool AnimationMixer::_update_caches() {
 						track_value->is_variant_interpolatable = Animation::is_variant_interpolatable(track_value->init_value);
 
 						// If there is a Reset Animation, it takes precedence by overwriting.
-						if (has_reset_anim) {
+						if (reset_anim.is_valid()) {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								if (is_value) {
@@ -844,7 +840,7 @@ bool AnimationMixer::_update_caches() {
 						}
 
 						// For non Skeleton3D bone animation.
-						if (has_reset_anim && !has_rest) {
+						if (reset_anim.is_valid() && !has_rest) {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								switch (track_src_type) {
@@ -890,7 +886,7 @@ bool AnimationMixer::_update_caches() {
 						track_bshape->object_id = mesh_3d->get_instance_id();
 						track = track_bshape;
 
-						if (has_reset_anim) {
+						if (reset_anim.is_valid()) {
 							int rt = reset_anim->find_track(path, track_src_type);
 							if (rt >= 0 && reset_anim->track_is_enabled(rt) && reset_anim->track_get_key_count(rt) > 0) {
 								track_bshape->init_value = reset_anim->track_get_key_value(rt, 0);
