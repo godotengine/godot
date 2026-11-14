@@ -141,8 +141,9 @@ void GDScriptByteCodeGenerator::pop_temporary() {
 		// However, the cleanup will be performed an the end of the
 		// statement, to allow object references to survive chaining.
 		temporaries_pending_clear.insert(slot_idx);
+	} else {
+		temporaries_pool[temporaries[slot_idx].type].push_back(slot_idx);
 	}
-	temporaries_pool[temporaries[slot_idx].type].push_back(slot_idx);
 	used_temporaries.pop_back();
 }
 
@@ -1924,11 +1925,10 @@ void GDScriptByteCodeGenerator::end_block() {
 
 void GDScriptByteCodeGenerator::clear_temporaries() {
 	for (int slot_idx : temporaries_pending_clear) {
-		// The temporary may have been reused as something else since it was added to the list.
-		// In that case, there's **no** need to clear it.
 		if (temporaries[slot_idx].can_contain_object) {
 			clear_address(Address(Address::TEMPORARY, slot_idx)); // Can contain `RefCounted`, so clear it.
 		}
+		temporaries_pool[temporaries[slot_idx].type].push_back(slot_idx);
 	}
 	temporaries_pending_clear.clear();
 }
