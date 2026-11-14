@@ -35,7 +35,6 @@
 class ProgressBar : public Range {
 	GDCLASS(ProgressBar, Range);
 
-	bool show_percentage = true;
 	bool indeterminate = false;
 	bool editor_preview_indeterminate = false;
 
@@ -70,8 +69,13 @@ public:
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
 
+	void set_format(const String &p_format);
+	String get_format() const;
+
+#ifndef DISABLE_DEPRECATED
 	void set_show_percentage(bool p_visible);
 	bool is_percentage_shown() const;
+#endif
 
 	void set_indeterminate(bool p_indeterminate);
 	bool is_indeterminate() const;
@@ -80,12 +84,17 @@ public:
 	bool is_editor_preview_indeterminate_enabled() const;
 
 	Size2 get_minimum_size() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 	ProgressBar();
 
 private:
 	float _indeterminate_fill_progress = 0;
 
 	FillMode mode = FILL_BEGIN_TO_END;
+
+	String label_format = "%d%%";
+
+	String _get_formatted_text(double current, double min, double max) const;
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);
