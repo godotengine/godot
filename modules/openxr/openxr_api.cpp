@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_server.h"
@@ -72,6 +73,7 @@
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/platform/openxr_headless_extension.h"
 #include "extensions/spatial_container/openxr_spatial_container_extension.h"
 
 #ifndef DISABLE_DEPRECATED
@@ -1275,6 +1277,10 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 
+	if (graphics_extension->is_headless()) {
+		return true;
+	}
+
 	{
 		// Build a vector with swapchain formats we want to use, from best fit to worst
 		Vector<int64_t> usable_swapchain_formats;
@@ -1750,7 +1756,13 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		return false;
 	}
 
-	if (p_rendering_driver == "vulkan") {
+	if (true) {
+		// TODO: This is hardcoded to assume we want a "headless" session.
+		//       Obviously we'd want to do this only when actually requested.
+		//       Such as from a project setting or "--xr-mode headless" arg.
+		graphics_extension = memnew(OpenXRHeadlessExtension);
+		register_extension_wrapper(graphics_extension);
+	} else if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
 		graphics_extension = memnew(OpenXRVulkanExtension);
 		register_extension_wrapper(graphics_extension);
@@ -2742,6 +2754,8 @@ bool OpenXRAPI::process() {
 		return false;
 	}
 
+	graphics_extension->post_wait_frame(&frame_wait_info, &frame_state);
+
 	if (frame_state.predictedDisplayPeriod > 500000000) {
 		// display period more then 0.5 seconds? must be wrong data
 		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
@@ -2789,7 +2803,7 @@ void OpenXRAPI::pre_render() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || graphics_extension->is_headless()) {
 		return;
 	}
 
@@ -2989,7 +3003,7 @@ void OpenXRAPI::end_frame() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || graphics_extension->is_headless()) {
 		return;
 	}
 
