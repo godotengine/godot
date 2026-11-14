@@ -99,3 +99,7 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult2D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult2D::get_collision_unsafe_fraction);
 }
+
+PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsTestMotionResult2D);
+}

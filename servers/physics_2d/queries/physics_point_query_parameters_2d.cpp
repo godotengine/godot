@@ -76,3 +76,7 @@ void PhysicsPointQueryParameters2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
+
+PhysicsPointQueryParameters2D::PhysicsPointQueryParameters2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsPointQueryParameters2D);
+}

@@ -60,4 +60,6 @@ public:
 	int get_collider_shape(int p_collision_index = 0) const;
 	int get_collision_local_shape(int p_collision_index = 0) const;
 	real_t get_collision_depth(int p_collision_index = 0) const;
+
+	PhysicsTestMotionResult3D();
 };

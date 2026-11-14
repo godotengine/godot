@@ -96,3 +96,7 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 }
+
+PhysicsRayQueryParameters3D::PhysicsRayQueryParameters3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsRayQueryParameters3D);
+}

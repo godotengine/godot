@@ -35,6 +35,7 @@
 PhysicsIntersectPointResult3D::PhysicsIntersectPointResult3D(int p_max_intersections) {
 	ERR_FAIL_COND(p_max_intersections < 0);
 	result.resize(p_max_intersections);
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsIntersectPointResult3D);
 }
 
 int PhysicsIntersectPointResult3D::get_max_intersections() const {

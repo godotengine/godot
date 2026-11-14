@@ -50,4 +50,6 @@ public:
 	ObjectID get_collider_id() const;
 	Object *get_collider() const;
 	int get_collider_shape() const;
+
+	PhysicsIntersectRayResult2D();
 };
