@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../gdscript_parser.h"
+#include "../toolchain/compilation_unit.h"
 #include "godot_lsp.h"
 
 #include "core/variant/variant.h"
@@ -105,6 +106,7 @@ struct GodotRange {
 class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	Vector<String> lines;
+	GDScriptCompilationUnit unit;
 
 	LSP::DocumentSymbol class_symbol;
 	Vector<LSP::Diagnostic> diagnostics;

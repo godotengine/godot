@@ -40,6 +40,7 @@
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
 #include "../language_server/godot_lsp.h"
+#include "../toolchain/compilation_unit.h"
 #include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
@@ -310,7 +311,8 @@ void assert_no_errors_in(const String &p_path) {
 	err = parser.parse(source, p_path, true);
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while parsing '%s'", p_path));
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 
 #ifdef DEBUG_ENABLED
