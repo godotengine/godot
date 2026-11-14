@@ -628,7 +628,8 @@ namespace Godot.Collections
         /// The array is read-only.
         /// </exception>
         /// <param name="span">The span of <see cref="Variant"/> items to add.</param>
-        public void AddRange<[MustBeVariant] T>(ReadOnlySpan<T> span)
+        [OverloadResolutionPriority(1)]
+        public void AddRange<[MustBeVariant] T>(params ReadOnlySpan<T> span)
         {
             ThrowIfReadOnly();
             if (span.Length == 0)
@@ -1738,7 +1739,8 @@ namespace Godot.Collections
         /// The array is read-only.
         /// </exception>
         /// <param name="span">The span of <see cref="Variant"/> items to add.</param>
-        public void AddRange(ReadOnlySpan<T> span)
+        [OverloadResolutionPriority(1)]
+        public void AddRange(params ReadOnlySpan<T> span)
         {
             ThrowIfReadOnly();
 
