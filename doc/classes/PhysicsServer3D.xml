@@ -356,6 +356,14 @@
 				Use [method body_add_shape] to add shapes to it, use [method body_set_state] to set its transform, and use [method body_set_space] to add the body to a space.
 			</description>
 		</method>
+		<method name="body_get_aabb" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape" type="int" />
+			<description>
+				Returns the [AABB] of the nth shape of a body.
+			</description>
+		</method>
 		<method name="body_get_collision_layer" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
