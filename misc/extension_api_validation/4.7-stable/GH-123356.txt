@@ -1,0 +1,21 @@
+Validate extension JSON: API was removed: classes/CSGBox3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGBox3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGBox3D/properties/material
+Validate extension JSON: API was removed: classes/CSGCylinder3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGCylinder3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGCylinder3D/properties/material
+Validate extension JSON: API was removed: classes/CSGMesh3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGMesh3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGMesh3D/properties/material
+Validate extension JSON: API was removed: classes/CSGPolygon3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGPolygon3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGPolygon3D/properties/material
+Validate extension JSON: API was removed: classes/CSGSphere3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGSphere3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGSphere3D/properties/material
+Validate extension JSON: API was removed: classes/CSGTorus3D/methods/get_material
+Validate extension JSON: API was removed: classes/CSGTorus3D/methods/set_material
+Validate extension JSON: API was removed: classes/CSGTorus3D/properties/material
+
+The property and its setter and getter were moved to their common base class CSGPrimitive3D.
+They are still reachable on every subclass through inheritance and the method hashes are unchanged, so this shouldn't affect compatibility.
