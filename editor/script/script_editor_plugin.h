@@ -471,6 +471,7 @@ public:
 	void save_current_script();
 	void save_all_scripts();
 	void update_script_times();
+	void auto_format_all_scripts();
 	void sort_document_editors();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
@@ -558,6 +559,7 @@ public:
 	void save_current_script() { script_container->save_current_script(); }
 	void save_all_scripts() { script_container->save_all_scripts(); }
 	void update_script_times() { script_container->update_script_times(); }
+	void auto_format_all_scripts() { script_container->auto_format_all_scripts(); }
 
 	void set_scene_root_script(const Ref<Script> &p_script);
 	Vector<Ref<Script>> get_open_scripts() const { return script_container->get_open_scripts(); }
