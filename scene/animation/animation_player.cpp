@@ -361,6 +361,7 @@ void AnimationPlayer::_blend_post_process() {
 			} else {
 				_clear_caches(clear_cache_on_stop);
 				playing = false;
+				playback.current.is_enabled = false;
 				_set_process(false);
 				if (end_notify) {
 					if (!finished_anim.is_empty()) {
