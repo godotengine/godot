@@ -105,7 +105,7 @@ void DirectoryCreateDialog::_on_dir_path_changed() {
 			if (mode == MODE_DIRECTORY) {
 				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Using slashes in folder names will create subfolders recursively."), EditorValidationPanel::MSG_OK);
 			} else {
-				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Using slashes in path will create the file in subfolder, creating new subfolders if necessary."), EditorValidationPanel::MSG_OK);
+				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("Using slashes in path will create the file in a subfolder, creating new subfolders if necessary."), EditorValidationPanel::MSG_OK);
 			}
 		} else if (mode == MODE_FILE) {
 			validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTRC("File name is valid."), EditorValidationPanel::MSG_OK);
