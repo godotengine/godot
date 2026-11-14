@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GLTFItem" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for all glTF item classes.
+	</brief_description>
+	<description>
+		GLTFItem is a minimal base class, common to all classes that represent the data of glTF items found in glTF files. This includes nodes, meshes, materials, textures, and animations.
+		GLTFItem classes can be serialized to a [Dictionary] using [method write_to_dictionary] on export, and read back with [method read_from_dictionary]. Derived classes will usually define their own [code]from_dictionary[/code] static functions, which will construct instances and call [method read_from_dictionary].
+		You can extend a glTF item with additional properties by using [method get_additional_data] and [method set_additional_data].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_read_from_dictionary" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Callback method that should read custom keys from the [Dictionary]. Do not call this method directly. This can be overridden in derived classes when creating a custom [GLTFItem] type in GDScript or another scripting language. See [method read_from_dictionary] for details.
+			</description>
+		</method>
+		<method name="_write_to_dictionary" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<description>
+				Callback method that should write custom keys to the [Dictionary]. Do not call this method directly. This can be overridden in derived classes when creating a custom [GLTFItem] type in GDScript or another scripting language. See [method write_to_dictionary] for details.
+			</description>
+		</method>
+		<method name="get_additional_data" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+				Gets additional arbitrary data in this [GLTFItem] instance. This can be used to keep per-item state data in [GLTFDocumentExtension] classes, which is important because they are stateless. The [param extension_name] is used as a key to store the data, and is generally the name of the [GLTFDocumentExtension] class, which is not necessarily the same as the name of the extension in the glTF file. If nothing was set, the return value is [code]null[/code].
+			</description>
+		</method>
+		<method name="has_additional_data" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="extension_name" type="StringName" />
+			<description>
+				Checks if this [GLTFItem] instance has additional data set for the given extension name. If nothing was set, the return value is [code]false[/code].
+			</description>
+		</method>
+		<method name="read_from_dictionary">
+			<return type="int" enum="Error" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Reads glTF properties from the given [Dictionary] and applies them to this item. In [GLTFItem] itself, this considers the [code]"name"[/code] and [code]"extras"[/code] keys. The [code]"extras"[/code] key is copied to the [Object] metadata, which can be retrieved with [code].get_meta("extras")[/code]. Derived classes can read and apply more keys as needed. Custom classes can implement [method _read_from_dictionary] to handle custom keys.
+				[b]Note:[/b] This function supports being re-run to apply overrides from the given [Dictionary]. As long as a first pass has properly initialized the object, it is able to handle partial dictionaries and will usually not fail if some required keys are missing. The [code]from_dictionary[/code] static functions on individual derived classes should be used instead when constructing a new object, as they usually check for required keys and will usually fail if given incomplete data.
+				[b]Note:[/b] If the return value is not [constant OK], the data of the object may now be in an invalid state, with partially applied changes. If this happens, user code either needs to validate and fix it, discard/replace the broken object, or propagate the error to abort the entire glTF file import.
+			</description>
+		</method>
+		<method name="set_additional_data">
+			<return type="void" />
+			<param index="0" name="extension_name" type="StringName" />
+			<param index="1" name="additional_data" type="Variant" />
+			<description>
+				Sets additional arbitrary data in this [GLTFItem] instance. This can be used to keep per-item state data in [GLTFDocumentExtension] classes, which is important because they are stateless. The [param extension_name] is used as a key to store the data, and is generally the name of the [GLTFDocumentExtension] class, which is not necessarily the same as the name of the extension in the glTF file. The [param additional_data] value can be any type.
+			</description>
+		</method>
+		<method name="write_to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Writes the data of this [GLTFItem] to a [Dictionary] of glTF properties. In [GLTFItem] itself, only the [code]"name"[/code] and [code]"extras"[/code] keys are handled. Derived classes can write more keys as needed. Custom classes can implement [method _write_to_dictionary] for custom keys.
+			</description>
+		</method>
+	</methods>
+</class>

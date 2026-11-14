@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "core/io/resource.h"
+#include "../structures/gltf_item.h"
 
 class GLTFObjectModelProperty;
 class Light3D;
 
 // https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual
 
-class GLTFLight : public Resource {
-	GDCLASS(GLTFLight, Resource)
+class GLTFLight : public GLTFItem {
+	GDCLASS(GLTFLight, GLTFItem)
 	friend class GLTFDocument;
 
 protected:
@@ -51,7 +51,6 @@ private:
 	float range = Math::INF;
 	float inner_cone_angle = 0.0f;
 	float outer_cone_angle = Math::TAU / 8.0f;
-	Dictionary additional_data;
 
 public:
 	static void set_cone_inner_attenuation_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop);
@@ -78,8 +77,9 @@ public:
 	Light3D *to_node() const;
 
 	static Ref<GLTFLight> from_dictionary(const Dictionary &p_dictionary);
-	Dictionary to_dictionary() const;
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+	virtual Error read_from_dictionary(const Dictionary &p_dictionary) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };

@@ -270,48 +270,75 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dict
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFPhysicsShape>(), "Failed to parse GLTFPhysicsShape, missing required field 'type'.");
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();
-	String shape_type = p_dictionary["type"];
-	if (shape_type == "hull") {
-		shape_type = "convex";
-	}
-	gltf_shape->shape_type = shape_type;
-	if (shape_type != "box" && shape_type != "capsule" && shape_type != "cylinder" && shape_type != "sphere" && shape_type != "convex" && shape_type != "trimesh") {
-		ERR_PRINT("GLTFPhysicsShape: Error parsing unknown shape type '" + shape_type + "'. Only box, capsule, cylinder, sphere, convex, and trimesh are supported.");
-	}
-	Dictionary properties;
-	if (p_dictionary.has(shape_type)) {
-		properties = p_dictionary[shape_type];
-	} else {
-		properties = p_dictionary;
-	}
-	if (properties.has("radius")) {
-		gltf_shape->set_radius(properties["radius"]);
-	}
-	if (properties.has("height")) {
-		gltf_shape->set_height(properties["height"]);
-	}
-	if (properties.has("size")) {
-		const Array &arr = properties["size"];
-		if (arr.size() == 3) {
-			gltf_shape->set_size(Vector3(arr[0], arr[1], arr[2]));
-		} else {
-			ERR_PRINT("GLTFPhysicsShape: Error parsing the size, it must have exactly 3 numbers.");
-		}
-	}
-	if (properties.has("isTrigger")) {
-		gltf_shape->set_is_trigger(properties["isTrigger"]);
-	}
-	if (properties.has("mesh")) {
-		gltf_shape->set_mesh_index(properties["mesh"]);
-	}
-	if (unlikely(gltf_shape->get_mesh_index() < 0 && (shape_type == "convex" || shape_type == "trimesh"))) {
-		ERR_PRINT("Error parsing GLTFPhysicsShape: The mesh-based shape type '" + shape_type + "' does not have a valid mesh index.");
+	const Error err = gltf_shape->read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return Ref<GLTFPhysicsShape>(); // Don't print again, `read_from_dictionary` should already print its own error.
 	}
 	return gltf_shape;
 }
 
-Dictionary GLTFPhysicsShape::to_dictionary() const {
-	Dictionary gltf_shape;
+Error GLTFPhysicsShape::read_from_dictionary(const Dictionary &p_dictionary) {
+	const Error err = GLTFItem::read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return err; // Don't print again, the source should have already printed.
+	}
+	_shape_cache.unref();
+	String declared_shape_type;
+	if (p_dictionary.has("type")) {
+		declared_shape_type = p_dictionary["type"];
+	} else {
+		declared_shape_type = shape_type;
+	}
+	// Compatibility aliases for different iterations of the physics extensions.
+	// Khronos glTF 2.1: convexMesh and mesh. OMI_physics_shape: convex and trimesh. OMI_collider: hull and trimesh.
+	if (declared_shape_type == "hull" || declared_shape_type == "convexMesh") {
+		shape_type = "convex";
+	} else if (declared_shape_type == "mesh") {
+		shape_type = "trimesh";
+	} else {
+		shape_type = declared_shape_type;
+	}
+	if (shape_type != "box" && shape_type != "capsule" && shape_type != "cylinder" && shape_type != "sphere" && shape_type != "convex" && shape_type != "trimesh") {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "GLTFPhysicsShape: Error parsing unknown shape type '" + shape_type + "'. Only box, capsule, cylinder, sphere, convex, and trimesh are supported.");
+	}
+	Dictionary properties;
+	if (p_dictionary.has(declared_shape_type)) {
+		properties = p_dictionary[declared_shape_type];
+	} else {
+		properties = p_dictionary;
+	}
+	if (properties.has("radius")) {
+		radius = properties["radius"];
+	}
+	if (properties.has("height")) {
+		height = properties["height"];
+	}
+	if (properties.has("size")) {
+		const Array &arr = properties["size"];
+		if (arr.size() == 3) {
+			size = Vector3(arr[0], arr[1], arr[2]);
+		} else {
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "GLTFPhysicsShape: Error parsing the size, it must have exactly 3 numbers.");
+		}
+	}
+#ifndef DISABLE_DEPRECATED
+	// "isTrigger" is only present in the deprecated OMI_collider extension.
+	if (properties.has("isTrigger")) {
+		is_trigger = properties["isTrigger"];
+	}
+#endif // DISABLE_DEPRECATED
+	if (properties.has("mesh")) {
+		mesh_index = properties["mesh"];
+		importer_mesh.unref();
+	}
+	if (unlikely(mesh_index < 0 && (shape_type == "convex" || shape_type == "trimesh"))) {
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing GLTFPhysicsShape: The mesh-based shape type '" + shape_type + "' does not have a valid mesh index.");
+	}
+	return OK;
+}
+
+Dictionary GLTFPhysicsShape::write_to_dictionary() const {
+	Dictionary gltf_shape = GLTFItem::write_to_dictionary();
 	gltf_shape["type"] = shape_type;
 	Dictionary sub;
 	if (shape_type == "box") {
@@ -333,5 +360,6 @@ Dictionary GLTFPhysicsShape::to_dictionary() const {
 		sub["mesh"] = get_mesh_index();
 	}
 	gltf_shape[shape_type] = sub;
+	gltf_shape.sort();
 	return gltf_shape;
 }

@@ -54,7 +54,9 @@ Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, con
 				if (state_shape_dicts.size() > 0) {
 					Array state_shapes;
 					for (int i = 0; i < state_shape_dicts.size(); i++) {
-						state_shapes.push_back(GLTFPhysicsShape::from_dictionary(state_shape_dicts[i]));
+						Ref<GLTFPhysicsShape> shape = GLTFPhysicsShape::from_dictionary(state_shape_dicts[i]);
+						ERR_FAIL_COND_V(shape.is_null(), ERR_PARSE_ERROR);
+						state_shapes.push_back(shape);
 					}
 					p_state->set_additional_data(StringName("GLTFPhysicsShapes"), state_shapes);
 				}
@@ -67,7 +69,9 @@ Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, con
 				if (state_collider_dicts.size() > 0) {
 					Array state_colliders;
 					for (int i = 0; i < state_collider_dicts.size(); i++) {
-						state_colliders.push_back(GLTFPhysicsShape::from_dictionary(state_collider_dicts[i]));
+						Ref<GLTFPhysicsShape> shape = GLTFPhysicsShape::from_dictionary(state_collider_dicts[i]);
+						ERR_FAIL_COND_V(shape.is_null(), ERR_PARSE_ERROR);
+						state_colliders.push_back(shape);
 					}
 					p_state->set_additional_data(StringName("GLTFPhysicsShapes"), state_colliders);
 				}
@@ -97,7 +101,9 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			ERR_FAIL_INDEX_V_MSG(node_collider_index, state_colliders.size(), Error::ERR_FILE_CORRUPT, "glTF Physics: On node " + p_gltf_node->get_name() + ", the collider index " + itos(node_collider_index) + " is not in the state colliders (size: " + itos(state_colliders.size()) + ").");
 			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), state_colliders[node_collider_index]);
 		} else {
-			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), GLTFPhysicsShape::from_dictionary(node_collider_ext));
+			Ref<GLTFPhysicsShape> shape = GLTFPhysicsShape::from_dictionary(node_collider_ext);
+			ERR_FAIL_COND_V(shape.is_null(), ERR_PARSE_ERROR);
+			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), shape);
 		}
 	}
 #endif // DISABLE_DEPRECATED
@@ -142,7 +148,9 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 			}
 		}
 		if (physics_body_ext.has("motion") || physics_body_ext.has("type")) {
-			p_gltf_node->set_additional_data(StringName("GLTFPhysicsBody"), GLTFPhysicsBody::from_dictionary(physics_body_ext));
+			Ref<GLTFPhysicsBody> body = GLTFPhysicsBody::from_dictionary(physics_body_ext);
+			ERR_FAIL_COND_V(body.is_null(), ERR_PARSE_ERROR);
+			p_gltf_node->set_additional_data(StringName("GLTFPhysicsBody"), body);
 		}
 	}
 	return OK;
@@ -583,7 +591,7 @@ Array _get_or_create_state_shapes_in_state(const Ref<GLTFState> &p_state) {
 GLTFShapeIndex _export_node_shape(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsShape> &p_physics_shape) {
 	Array state_shapes = _get_or_create_state_shapes_in_state(p_state);
 	GLTFShapeIndex size = state_shapes.size();
-	Dictionary shape_dict = p_physics_shape->to_dictionary();
+	Dictionary shape_dict = p_physics_shape->write_to_dictionary();
 	for (GLTFShapeIndex i = 0; i < size; i++) {
 		Dictionary other = state_shapes[i];
 		if (other == shape_dict) {
@@ -705,7 +713,7 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 	Dictionary physics_body_ext;
 	Ref<GLTFPhysicsBody> physics_body = p_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
 	if (physics_body.is_valid()) {
-		physics_body_ext = physics_body->to_dictionary();
+		physics_body_ext = physics_body->write_to_dictionary();
 		Variant compound_trigger_nodes = p_gltf_node->get_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"));
 		if (compound_trigger_nodes.is_array()) {
 			Dictionary trigger_property = physics_body_ext.get_or_add("trigger", {});

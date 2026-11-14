@@ -105,48 +105,73 @@ Ref<GLTFCamera> GLTFCamera::from_dictionary(const Dictionary &p_dictionary) {
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFCamera>(), "Failed to parse glTF camera, missing required field 'type'.");
 	Ref<GLTFCamera> camera;
 	camera.instantiate();
-	const String &type = p_dictionary["type"];
-	if (type == "perspective") {
-		camera->set_perspective(true);
-		if (p_dictionary.has("perspective")) {
-			const Dictionary &persp = p_dictionary["perspective"];
-			camera->set_fov(persp["yfov"]);
-			if (persp.has("zfar")) {
-				camera->set_depth_far(persp["zfar"]);
-			}
-			camera->set_depth_near(persp["znear"]);
-		}
-	} else if (type == "orthographic") {
-		camera->set_perspective(false);
-		if (p_dictionary.has("orthographic")) {
-			const Dictionary &ortho = p_dictionary["orthographic"];
-			camera->set_size_mag(ortho["ymag"]);
-			camera->set_depth_far(ortho["zfar"]);
-			camera->set_depth_near(ortho["znear"]);
-		}
-	} else {
-		ERR_PRINT("Error parsing glTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
+	const Error err = camera->read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return Ref<GLTFCamera>(); // Don't print again, `read_from_dictionary` should already print its own error.
 	}
 	return camera;
 }
 
-Dictionary GLTFCamera::to_dictionary() const {
-	Dictionary d;
-	if (perspective) {
-		Dictionary persp;
-		persp["yfov"] = fov;
-		persp["zfar"] = depth_far;
-		persp["znear"] = depth_near;
-		d["perspective"] = persp;
-		d["type"] = "perspective";
-	} else {
-		Dictionary ortho;
-		ortho["ymag"] = size_mag;
-		ortho["xmag"] = size_mag;
-		ortho["zfar"] = depth_far;
-		ortho["znear"] = depth_near;
-		d["orthographic"] = ortho;
-		d["type"] = "orthographic";
+Error GLTFCamera::read_from_dictionary(const Dictionary &p_dictionary) {
+	const Error err = GLTFItem::read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return err; // Don't print again, the source should have already printed.
 	}
-	return d;
+	// See https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/camera.schema.json
+	if (p_dictionary.has("type")) {
+		const String type = p_dictionary["type"];
+		if (type == "perspective") {
+			perspective = true;
+		} else if (type == "orthographic") {
+			perspective = false;
+		} else {
+			ERR_PRINT("Error parsing glTF camera: Camera type '" + type + "' is unknown, should be perspective or orthographic.");
+		}
+	}
+	if (perspective && p_dictionary.has("perspective")) {
+		const Dictionary &perspective_dict = p_dictionary["perspective"];
+		if (perspective_dict.has("yfov")) {
+			fov = perspective_dict["yfov"];
+		}
+		if (perspective_dict.has("zfar")) {
+			depth_far = perspective_dict["zfar"];
+		}
+		if (perspective_dict.has("znear")) {
+			depth_near = perspective_dict["znear"];
+		}
+	} else if (!perspective && p_dictionary.has("orthographic")) {
+		const Dictionary &orthographic_dict = p_dictionary["orthographic"];
+		if (orthographic_dict.has("ymag")) {
+			size_mag = orthographic_dict["ymag"];
+		}
+		if (orthographic_dict.has("zfar")) {
+			depth_far = orthographic_dict["zfar"];
+		}
+		if (orthographic_dict.has("znear")) {
+			depth_near = orthographic_dict["znear"];
+		}
+	}
+	return OK;
+}
+
+Dictionary GLTFCamera::write_to_dictionary() const {
+	Dictionary dict = GLTFItem::write_to_dictionary();
+	if (perspective) {
+		Dictionary perspective_dict;
+		perspective_dict["yfov"] = fov;
+		perspective_dict["zfar"] = depth_far;
+		perspective_dict["znear"] = depth_near;
+		dict["perspective"] = perspective_dict;
+		dict["type"] = "perspective";
+	} else {
+		Dictionary orthographic_dict;
+		orthographic_dict["ymag"] = size_mag;
+		orthographic_dict["xmag"] = size_mag;
+		orthographic_dict["zfar"] = depth_far;
+		orthographic_dict["znear"] = depth_near;
+		dict["orthographic"] = orthographic_dict;
+		dict["type"] = "orthographic";
+	}
+	dict.sort();
+	return dict;
 }

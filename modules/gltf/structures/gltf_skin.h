@@ -31,15 +31,15 @@
 #pragma once
 
 #include "../gltf_defines.h"
+#include "gltf_item.h"
 
-#include "core/io/resource.h"
 #include "scene/resources/3d/skin.h"
 
 template <typename T>
 class TypedArray;
 
-class GLTFSkin : public Resource {
-	GDCLASS(GLTFSkin, Resource);
+class GLTFSkin : public GLTFItem {
+	GDCLASS(GLTFSkin, GLTFItem);
 	friend class GLTFDocument;
 	friend class SkinTool;
 	friend class FBXDocument;
