@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-import build_scripts.mono_configure as mono_configure
-
 Import("env")
 Import("env_modules")
 
@@ -10,7 +8,8 @@ env_mono = env_modules.Clone()
 
 # Configure Mono
 
-mono_configure.configure(env, env_mono)
+if env.editor_build:
+    env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
 # Add sources
 
