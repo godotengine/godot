@@ -52,6 +52,7 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
@@ -994,6 +995,17 @@ void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {
 
 EditorDebuggerNode::CameraOverride EditorDebuggerNode::get_camera_override() {
 	return camera_override;
+}
+
+void EditorDebuggerNode::set_viewport_debug_draw_mode(int p_mode) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_viewport_debug_draw_mode(Viewport::DebugDraw(p_mode));
+	});
+	viewport_debug_draw_mode = p_mode;
+}
+
+int EditorDebuggerNode::get_viewport_debug_draw_mode() {
+	return viewport_debug_draw_mode;
 }
 
 void EditorDebuggerNode::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
