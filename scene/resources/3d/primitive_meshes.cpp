@@ -1116,7 +1116,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 	thisrow = 0;
 	prevrow = 0;
-	const real_t side_normal_y = (bottom_radius - top_radius) / height;
+	const real_t side_normal_y = Math::is_zero_approx(height) ? 0 : (bottom_radius - top_radius) / height;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
 		v /= (rings + 1);
@@ -1989,7 +1989,7 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
-	float scale = height / radius * (is_hemisphere ? 1.0 : 0.5);
+	float scale = Math::is_zero_approx(radius) ? 0 : height / radius * (is_hemisphere ? 1.0 : 0.5);
 
 	// Only used if we calculate UV2
 	float circumference = radius * Math::TAU;
