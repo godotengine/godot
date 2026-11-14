@@ -2184,13 +2184,14 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 	Transform3D light_transform = p_instance->transform;
 	light_transform.orthonormalize(); //scale does not count on lights
 
-	real_t max_distance = p_cam_projection.get_z_far();
+	const Vector2 depth_range = p_cam_projection.get_frustum_depth_range();
+	real_t max_distance = depth_range.y;
 	real_t shadow_max = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 		max_distance = MIN(shadow_max, max_distance);
 	}
-	max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
-	real_t min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
+	max_distance = MAX(max_distance, depth_range.x + 0.001);
+	real_t min_distance = MIN(depth_range.x, max_distance);
 
 	real_t pancake_size = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
 

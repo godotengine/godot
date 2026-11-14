@@ -524,6 +524,42 @@ TEST_CASE("[Projection] Orthographic check") {
 	CHECK(ortho.is_orthogonal());
 }
 
+TEST_CASE("[Projection] Frustum depth range") {
+	SUBCASE("Z-facing planes match get_z_near(), get_z_far()") {
+		Projection persp = Projection::create_perspective(90, 0.5, 1, 50, false);
+		CHECK(persp.get_frustum_depth_range() == Vector2(persp.get_z_near(), persp.get_z_far()));
+
+		Projection frustum = Projection::create_frustum_aspect(1.0, 4.0 / 3.0, Vector2(0.5, -0.25), 0.5, 50, true);
+		CHECK(frustum.get_frustum_depth_range() == Vector2(frustum.get_z_near(), frustum.get_z_far()));
+
+		Projection ortho = Projection::create_orthogonal(-2, 3, -0.5, 1.5, 1.2, 15);
+		CHECK(ortho.get_frustum_depth_range() == Vector2(ortho.get_z_near(), ortho.get_z_far()));
+	}
+
+	SUBCASE("Oblique planes") {
+		const real_t fovy = 75;
+		const real_t aspect = 16.0 / 9.0;
+		Projection proj = Projection::create_perspective(fovy, aspect, 0.05, 100, false);
+
+		const Vector4 plane(0.6, 0, -0.8, -2);
+		const Vector4 corner(
+				(SIGN(plane.x) + proj.columns[2][0]) / proj.columns[0][0],
+				(SIGN(plane.y) + proj.columns[2][1]) / proj.columns[1][1],
+				-1,
+				(1 + proj.columns[2][2]) / proj.columns[3][2]);
+		const Vector4 scaled = plane * (2 / plane.dot(corner));
+		proj.columns[0][2] = scaled.x;
+		proj.columns[1][2] = scaled.y;
+		proj.columns[2][2] = scaled.z + 1;
+		proj.columns[3][2] = scaled.w;
+
+		const real_t tan_x = Math::tan(Math::deg_to_rad(fovy * 0.5)) * aspect;
+		const Vector2 range = proj.get_frustum_depth_range();
+		CHECK(range.x == doctest::Approx(2 / (0.6 * tan_x + 0.8)).epsilon(0.001));
+		CHECK(range.y == doctest::Approx(100).epsilon(0.001)); // need *some* allowance
+	}
+}
+
 TEST_CASE("[Projection] Planes extraction") {
 	Projection persp = Projection::create_perspective(90, 1, 1, 40, false);
 	Vector<Plane> planes = persp.get_projection_planes(Transform3D());
