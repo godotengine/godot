@@ -1,0 +1,48 @@
+diff --git a/thirdparty/astcenc/astcenc.h b/thirdparty/astcenc/astcenc.h
+index 3f638d887c..6bbf97e08e 100644
+--- a/thirdparty/astcenc/astcenc.h
++++ b/thirdparty/astcenc/astcenc.h
+@@ -189,7 +189,8 @@
+ 		#define ASTCENC_PUBLIC ASTCENC_EXTERN_C __attribute__ ((visibility ("default")))
+ 	#endif
+ #else
+-	#define ASTCENC_PUBLIC ASTCENC_EXTERN_C
++	// Godot: Keep C++ linkage, prebuilt ANGLE links against the mangled API of this copy.
++	#define ASTCENC_PUBLIC
+ #endif
+ 
+ /* ============================================================================
+@@ -764,6 +765,13 @@ ASTCENC_PUBLIC enum astcenc_error astcenc_context_alloc(
+ 	struct astcenc_context** context,
+ 	const struct astcenc_context* parent_context);
+ 
++// Godot: Pre-5.4.0 signature used by prebuilt ANGLE. Must stay in astcenc_entry.cpp, otherwise
++// the linker falls back to the copy of astcenc in ANGLE, which clashes with this one.
++ASTCENC_PUBLIC enum astcenc_error astcenc_context_alloc(
++	const struct astcenc_config* config,
++	unsigned int thread_count,
++	struct astcenc_context** context);
++
+ /**
+  * @brief Compress an image.
+  *
+diff --git a/thirdparty/astcenc/astcenc_entry.cpp b/thirdparty/astcenc/astcenc_entry.cpp
+index de51aa1e73..8a87ada75d 100644
+--- a/thirdparty/astcenc/astcenc_entry.cpp
++++ b/thirdparty/astcenc/astcenc_entry.cpp
+@@ -865,6 +865,15 @@ astcenc_error astcenc_context_alloc(
+ 	return ASTCENC_SUCCESS;
+ }
+ 
++/* See header for documentation. */
++astcenc_error astcenc_context_alloc(
++	const astcenc_config* configp,
++	unsigned int thread_count,
++	astcenc_context** context
++) {
++	return astcenc_context_alloc(configp, thread_count, context, nullptr);
++}
++
+ /* See header for documentation. */
+ void astcenc_context_free(
+ 	astcenc_context* ctxo

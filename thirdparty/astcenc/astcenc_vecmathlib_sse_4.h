@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2019-2024 Arm Limited
+// Copyright 2019-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -207,8 +207,14 @@ struct vint4
 	 */
 	ASTCENC_SIMD_INLINE explicit vint4(const uint8_t *p)
 	{
-		// _mm_loadu_si32 would be nicer syntax, but missing on older GCC
-		__m128i t = _mm_cvtsi32_si128(*reinterpret_cast<const int*>(p));
+		// Copy through a uint32_t to avoid load through a reinterpreted
+		// pointer, which is both unaligned and an aliasing violation.
+		int32_t tmp;
+		std::memcpy(&tmp, p, sizeof(tmp));
+
+		// _mm_loadu_si32 would be nicer syntax, but missing on older GCC and
+		// generates broken code on GCC 11.x before 11.3.
+		__m128i t = _mm_cvtsi32_si128(tmp);
 
 #if ASTCENC_SSE >= 41
 		m = _mm_cvtepu8_epi32(t);
@@ -724,6 +730,8 @@ ASTCENC_SIMD_INLINE vfloat4 operator/(vfloat4 a, vfloat4 b)
 
 /**
  * @brief Overload: vector by vector equality.
+ *
+ * Returns vector of false mask values if a or b is NaN.
  */
 ASTCENC_SIMD_INLINE vmask4 operator==(vfloat4 a, vfloat4 b)
 {
@@ -732,6 +740,8 @@ ASTCENC_SIMD_INLINE vmask4 operator==(vfloat4 a, vfloat4 b)
 
 /**
  * @brief Overload: vector by vector inequality.
+ *
+ * Returns vector of true mask values if a or b is NaN.
  */
 ASTCENC_SIMD_INLINE vmask4 operator!=(vfloat4 a, vfloat4 b)
 {
@@ -988,7 +998,7 @@ static inline uint16_t float_to_float16(float a)
 ASTCENC_SIMD_INLINE vfloat4 float16_to_float(vint4 a)
 {
 #if ASTCENC_F16C >= 1
-	__m128i packed = _mm_packs_epi32(a.m, a.m);
+	__m128i packed = _mm_packus_epi32(a.m, a.m);
 	__m128 f32 = _mm_cvtph_ps(packed);
 	return vfloat4(f32);
 #else
@@ -1218,7 +1228,7 @@ ASTCENC_SIMD_INLINE vint4 vtable_lookup_32bit(
  */
 ASTCENC_SIMD_INLINE vint4 interleave_rgba8(vint4 r, vint4 g, vint4 b, vint4 a)
 {
-// Workaround an XCode compiler internal fault; note is slower than slli_epi32
+// Workaround an Xcode compiler internal fault; note it is slower than slli_epi32
 // so we should revert this when we get the opportunity
 #if defined(__APPLE__)
 	__m128i value = r.m;

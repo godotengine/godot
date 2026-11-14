@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2022 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -48,7 +48,7 @@
 static void brent_kung_prefix_sum(
 	vfloat4* d,
 	size_t items,
-	int stride
+	size_t stride
 ) {
 	if (items < 2)
 		return;
@@ -109,29 +109,29 @@ void compute_pixel_region_variance(
 	astcenc_swizzle swz = arg.swz;
 	bool have_z = arg.have_z;
 
-	int size_x = arg.size_x;
-	int size_y = arg.size_y;
-	int size_z = arg.size_z;
+	size_t size_x = arg.size_x;
+	size_t size_y = arg.size_y;
+	size_t size_z = arg.size_z;
 
-	int offset_x = arg.offset_x;
-	int offset_y = arg.offset_y;
-	int offset_z = arg.offset_z;
+	size_t offset_x = arg.offset_x;
+	size_t offset_y = arg.offset_y;
+	size_t offset_z = arg.offset_z;
 
-	int alpha_kernel_radius = arg.alpha_kernel_radius;
+	size_t alpha_kernel_radius = arg.alpha_kernel_radius;
 
 	float*   input_alpha_averages = ctx.input_alpha_averages;
 	vfloat4* work_memory = arg.work_memory;
 
 	// Compute memory sizes and dimensions that we need
-	int kernel_radius = alpha_kernel_radius;
-	int kerneldim = 2 * kernel_radius + 1;
-	int kernel_radius_xy = kernel_radius;
-	int kernel_radius_z = have_z ? kernel_radius : 0;
+	size_t kernel_radius = alpha_kernel_radius;
+	size_t kerneldim = 2 * kernel_radius + 1;
+	size_t kernel_radius_xy = kernel_radius;
+	size_t kernel_radius_z = have_z ? kernel_radius : 0;
 
-	int padsize_x = size_x + kerneldim;
-	int padsize_y = size_y + kerneldim;
-	int padsize_z = size_z + (have_z ? kerneldim : 0);
-	int sizeprod = padsize_x * padsize_y * padsize_z;
+	size_t padsize_x = size_x + kerneldim;
+	size_t padsize_y = size_y + kerneldim;
+	size_t padsize_z = size_z + (have_z ? kerneldim : 0);
+	size_t sizeprod = padsize_x * padsize_y * padsize_z;
 
 	int zd_start = have_z ? 1 : 0;
 
@@ -139,12 +139,12 @@ void compute_pixel_region_variance(
 	vfloat4 *varbuf2 = work_memory + sizeprod;
 
 	// Scaling factors to apply to Y and Z for accesses into the work buffers
-	int yst = padsize_x;
-	int zst = padsize_x * padsize_y;
+	size_t yst = padsize_x;
+	size_t zst = padsize_x * padsize_y;
 
 	// Scaling factors to apply to Y and Z for accesses into result buffers
-	int ydt = img->dim_x;
-	int zdt = img->dim_x * img->dim_y;
+	size_t ydt = img->dim_x;
+	size_t zdt = img->dim_x * img->dim_y;
 
 	// Macros to act as accessor functions for the work-memory
 	#define VARBUF1(z, y, x) varbuf1[z * zst + y * yst + x]
@@ -158,21 +158,49 @@ void compute_pixel_region_variance(
 		data[ASTCENC_SWZ_0] = 0;
 		data[ASTCENC_SWZ_1] = 255;
 
-		for (int z = zd_start; z < padsize_z; z++)
+		for (size_t z = zd_start; z < padsize_z; z++)
 		{
-			int z_src = (z - zd_start) + offset_z - kernel_radius_z;
-			z_src = astc::clamp(z_src, 0, static_cast<int>(img->dim_z - 1));
+			size_t z_src = (z - zd_start) + offset_z;
+			if (z_src <= kernel_radius_z)
+			{
+				z_src = 0;
+			}
+			else
+			{
+				z_src -= kernel_radius_z;
+			}
+
+			z_src = astc::min(z_src, static_cast<size_t>(img->dim_z - 1));
+
 			uint8_t* data8 = static_cast<uint8_t*>(img->data[z_src]);
 
-			for (int y = 1; y < padsize_y; y++)
+			for (size_t y = 1; y < padsize_y; y++)
 			{
-				int y_src = (y - 1) + offset_y - kernel_radius_xy;
-				y_src = astc::clamp(y_src, 0, static_cast<int>(img->dim_y - 1));
-
-				for (int x = 1; x < padsize_x; x++)
+				size_t y_src = (y - 1) + offset_y;
+				if (y_src <= kernel_radius_xy)
 				{
-					int x_src = (x - 1) + offset_x - kernel_radius_xy;
-					x_src = astc::clamp(x_src, 0, static_cast<int>(img->dim_x - 1));
+					y_src = 0;
+				}
+				else
+				{
+					y_src -= kernel_radius_xy;
+				}
+
+				y_src = astc::min(y_src, static_cast<size_t>(img->dim_y - 1));
+
+				for (size_t x = 1; x < padsize_x; x++)
+				{
+					size_t x_src = (x - 1) + offset_x;
+					if (x_src <= kernel_radius_xy)
+					{
+						x_src = 0;
+					}
+					else
+					{
+						x_src -= kernel_radius_xy;
+					}
+
+					x_src = astc::min(x_src, static_cast<size_t>(img->dim_x - 1));
 
 					data[0] = data8[(4 * img->dim_x * y_src) + (4 * x_src    )];
 					data[1] = data8[(4 * img->dim_x * y_src) + (4 * x_src + 1)];
@@ -202,21 +230,49 @@ void compute_pixel_region_variance(
 		data[ASTCENC_SWZ_0] = 0;
 		data[ASTCENC_SWZ_1] = 0x3C00;
 
-		for (int z = zd_start; z < padsize_z; z++)
+		for (size_t z = zd_start; z < padsize_z; z++)
 		{
-			int z_src = (z - zd_start) + offset_z - kernel_radius_z;
-			z_src = astc::clamp(z_src, 0, static_cast<int>(img->dim_z - 1));
+			size_t z_src = (z - zd_start) + offset_z;
+			if (z_src <= kernel_radius_z)
+			{
+				z_src = 0;
+			}
+			else
+			{
+				z_src -= kernel_radius_z;
+			}
+
+			z_src = astc::min(z_src, static_cast<size_t>(img->dim_z - 1));
+
 			uint16_t* data16 = static_cast<uint16_t*>(img->data[z_src]);
 
-			for (int y = 1; y < padsize_y; y++)
+			for (size_t y = 1; y < padsize_y; y++)
 			{
-				int y_src = (y - 1) + offset_y - kernel_radius_xy;
-				y_src = astc::clamp(y_src, 0, static_cast<int>(img->dim_y - 1));
-
-				for (int x = 1; x < padsize_x; x++)
+				size_t y_src = (y - 1) + offset_y;
+				if (y_src <= kernel_radius_xy)
 				{
-					int x_src = (x - 1) + offset_x - kernel_radius_xy;
-					x_src = astc::clamp(x_src, 0, static_cast<int>(img->dim_x - 1));
+					y_src = 0;
+				}
+				else
+				{
+					y_src -= kernel_radius_xy;
+				}
+
+				y_src = astc::min(y_src, static_cast<size_t>(img->dim_y - 1));
+
+				for (size_t x = 1; x < padsize_x; x++)
+				{
+					size_t x_src = (x - 1) + offset_x;
+					if (x_src <= kernel_radius_xy)
+					{
+						x_src = 0;
+					}
+					else
+					{
+						x_src -= kernel_radius_xy;
+					}
+
+					x_src = astc::min(x_src, static_cast<size_t>(img->dim_x - 1));
 
 					data[0] = data16[(4 * img->dim_x * y_src) + (4 * x_src    )];
 					data[1] = data16[(4 * img->dim_x * y_src) + (4 * x_src + 1)];
@@ -241,21 +297,49 @@ void compute_pixel_region_variance(
 		data[ASTCENC_SWZ_0] = 0.0f;
 		data[ASTCENC_SWZ_1] = 1.0f;
 
-		for (int z = zd_start; z < padsize_z; z++)
+		for (size_t z = zd_start; z < padsize_z; z++)
 		{
-			int z_src = (z - zd_start) + offset_z - kernel_radius_z;
-			z_src = astc::clamp(z_src, 0, static_cast<int>(img->dim_z - 1));
+			size_t z_src = (z - zd_start) + offset_z;
+			if (z_src <= kernel_radius_z)
+			{
+				z_src = 0;
+			}
+			else
+			{
+				z_src -= kernel_radius_z;
+			}
+
+			z_src = astc::min(z_src, static_cast<size_t>(img->dim_z - 1));
+
 			float* data32 = static_cast<float*>(img->data[z_src]);
 
-			for (int y = 1; y < padsize_y; y++)
+			for (size_t y = 1; y < padsize_y; y++)
 			{
-				int y_src = (y - 1) + offset_y - kernel_radius_xy;
-				y_src = astc::clamp(y_src, 0, static_cast<int>(img->dim_y - 1));
-
-				for (int x = 1; x < padsize_x; x++)
+				size_t y_src = (y - 1) + offset_y;
+				if (y_src <= kernel_radius_xy)
 				{
-					int x_src = (x - 1) + offset_x - kernel_radius_xy;
-					x_src = astc::clamp(x_src, 0, static_cast<int>(img->dim_x - 1));
+					y_src = 0;
+				}
+				else
+				{
+					y_src -= kernel_radius_xy;
+				}
+
+				y_src = astc::min(y_src, static_cast<size_t>(img->dim_y - 1));
+
+				for (size_t x = 1; x < padsize_x; x++)
+				{
+					size_t x_src = (x - 1) + offset_x;
+					if (x_src <= kernel_radius_xy)
+					{
+						x_src = 0;
+					}
+					else
+					{
+						x_src -= kernel_radius_xy;
+					}
+
+					x_src = astc::min(x_src, static_cast<size_t>(img->dim_x - 1));
 
 					data[0] = data32[(4 * img->dim_x * y_src) + (4 * x_src    )];
 					data[1] = data32[(4 * img->dim_x * y_src) + (4 * x_src + 1)];
@@ -278,15 +362,15 @@ void compute_pixel_region_variance(
 
 	// Pad with an extra layer of 0s; this forms the edge of the SAT tables
 	vfloat4 vbz = vfloat4::zero();
-	for (int z = 0; z < padsize_z; z++)
+	for (size_t z = 0; z < padsize_z; z++)
 	{
-		for (int y = 0; y < padsize_y; y++)
+		for (size_t y = 0; y < padsize_y; y++)
 		{
 			VARBUF1(z, y, 0) = vbz;
 			VARBUF2(z, y, 0) = vbz;
 		}
 
-		for (int x = 0; x < padsize_x; x++)
+		for (size_t x = 0; x < padsize_x; x++)
 		{
 			VARBUF1(z, 0, x) = vbz;
 			VARBUF2(z, 0, x) = vbz;
@@ -295,9 +379,9 @@ void compute_pixel_region_variance(
 
 	if (have_z)
 	{
-		for (int y = 0; y < padsize_y; y++)
+		for (size_t y = 0; y < padsize_y; y++)
 		{
-			for (int x = 0; x < padsize_x; x++)
+			for (size_t x = 0; x < padsize_x; x++)
 			{
 				VARBUF1(0, y, x) = vbz;
 				VARBUF2(0, y, x) = vbz;
@@ -307,18 +391,18 @@ void compute_pixel_region_variance(
 
 	// Generate summed-area tables for N and N^2; this is done in-place, using
 	// a Brent-Kung parallel-prefix based algorithm to minimize precision loss
-	for (int z = zd_start; z < padsize_z; z++)
+	for (size_t z = zd_start; z < padsize_z; z++)
 	{
-		for (int y = 1; y < padsize_y; y++)
+		for (size_t y = 1; y < padsize_y; y++)
 		{
 			brent_kung_prefix_sum(&(VARBUF1(z, y, 1)), padsize_x - 1, 1);
 			brent_kung_prefix_sum(&(VARBUF2(z, y, 1)), padsize_x - 1, 1);
 		}
 	}
 
-	for (int z = zd_start; z < padsize_z; z++)
+	for (size_t z = zd_start; z < padsize_z; z++)
 	{
-		for (int x = 1; x < padsize_x; x++)
+		for (size_t x = 1; x < padsize_x; x++)
 		{
 			brent_kung_prefix_sum(&(VARBUF1(z, 1, x)), padsize_y - 1, yst);
 			brent_kung_prefix_sum(&(VARBUF2(z, 1, x)), padsize_y - 1, yst);
@@ -327,9 +411,9 @@ void compute_pixel_region_variance(
 
 	if (have_z)
 	{
-		for (int y = 1; y < padsize_y; y++)
+		for (size_t y = 1; y < padsize_y; y++)
 		{
-			for (int x = 1; x < padsize_x; x++)
+			for (size_t x = 1; x < padsize_x; x++)
 			{
 				brent_kung_prefix_sum(&(VARBUF1(1, y, x)), padsize_z - 1, zst);
 				brent_kung_prefix_sum(&(VARBUF2(1, y, x)), padsize_z - 1, zst);
@@ -353,38 +437,38 @@ void compute_pixel_region_variance(
 	// Use the summed-area tables to compute variance for each neighborhood
 	if (have_z)
 	{
-		for (int z = 0; z < size_z; z++)
+		for (size_t z = 0; z < size_z; z++)
 		{
-			int z_src = z + kernel_radius_z;
-			int z_dst = z + offset_z;
-			int z_low  = z_src - alpha_kernel_radius;
-			int z_high = z_src + alpha_kernel_radius + 1;
+			size_t z_src = z + kernel_radius_z;
+			size_t z_dst = z + offset_z;
+			size_t z_low  = z_src - alpha_kernel_radius;
+			size_t z_high = z_src + alpha_kernel_radius + 1;
 
-			for (int y = 0; y < size_y; y++)
+			for (size_t y = 0; y < size_y; y++)
 			{
-				int y_src = y + kernel_radius_xy;
-				int y_dst = y + offset_y;
-				int y_low  = y_src - alpha_kernel_radius;
-				int y_high = y_src + alpha_kernel_radius + 1;
+				size_t y_src = y + kernel_radius_xy;
+				size_t y_dst = y + offset_y;
+				size_t y_low  = y_src - alpha_kernel_radius;
+				size_t y_high = y_src + alpha_kernel_radius + 1;
 
-				for (int x = 0; x < size_x; x++)
+				for (size_t x = 0; x < size_x; x++)
 				{
-					int x_src = x + kernel_radius_xy;
-					int x_dst = x + offset_x;
-					int x_low  = x_src - alpha_kernel_radius;
-					int x_high = x_src + alpha_kernel_radius + 1;
+					size_t x_src = x + kernel_radius_xy;
+					size_t x_dst = x + offset_x;
+					size_t x_low  = x_src - alpha_kernel_radius;
+					size_t x_high = x_src + alpha_kernel_radius + 1;
 
 					// Summed-area table lookups for alpha average
-					float vasum = (  VARBUF1(z_high, y_low,  x_low).lane<3>()
-					               - VARBUF1(z_high, y_low,  x_high).lane<3>()
-					               - VARBUF1(z_high, y_high, x_low).lane<3>()
+					float vasum = (  VARBUF1(z_high,  y_low,  x_low).lane<3>()
+					               - VARBUF1(z_high,  y_low, x_high).lane<3>()
+					               - VARBUF1(z_high, y_high,  x_low).lane<3>()
 					               + VARBUF1(z_high, y_high, x_high).lane<3>()) -
-					              (  VARBUF1(z_low,  y_low,  x_low).lane<3>()
-					               - VARBUF1(z_low,  y_low,  x_high).lane<3>()
-					               - VARBUF1(z_low,  y_high, x_low).lane<3>()
+					              (  VARBUF1(z_low,   y_low,  x_low).lane<3>()
+					               - VARBUF1(z_low,   y_low, x_high).lane<3>()
+					               - VARBUF1(z_low,  y_high,  x_low).lane<3>()
 					               + VARBUF1(z_low,  y_high, x_high).lane<3>());
 
-					int out_index = z_dst * zdt + y_dst * ydt + x_dst;
+					size_t out_index = z_dst * zdt + y_dst * ydt + x_dst;
 					input_alpha_averages[out_index] = (vasum * alpha_rsamples);
 				}
 			}
@@ -392,19 +476,19 @@ void compute_pixel_region_variance(
 	}
 	else
 	{
-		for (int y = 0; y < size_y; y++)
+		for (size_t y = 0; y < size_y; y++)
 		{
-			int y_src = y + kernel_radius_xy;
-			int y_dst = y + offset_y;
-			int y_low  = y_src - alpha_kernel_radius;
-			int y_high = y_src + alpha_kernel_radius + 1;
+			size_t y_src = y + kernel_radius_xy;
+			size_t y_dst = y + offset_y;
+			size_t y_low  = y_src - alpha_kernel_radius;
+			size_t y_high = y_src + alpha_kernel_radius + 1;
 
-			for (int x = 0; x < size_x; x++)
+			for (size_t x = 0; x < size_x; x++)
 			{
-				int x_src = x + kernel_radius_xy;
-				int x_dst = x + offset_x;
-				int x_low  = x_src - alpha_kernel_radius;
-				int x_high = x_src + alpha_kernel_radius + 1;
+				size_t x_src = x + kernel_radius_xy;
+				size_t x_dst = x + offset_x;
+				size_t x_low  = x_src - alpha_kernel_radius;
+				size_t x_high = x_src + alpha_kernel_radius + 1;
 
 				// Summed-area table lookups for alpha average
 				float vasum = VARBUF1(0, y_low,  x_low).lane<3>()
@@ -412,7 +496,7 @@ void compute_pixel_region_variance(
 				            - VARBUF1(0, y_high, x_low).lane<3>()
 				            + VARBUF1(0, y_high, x_high).lane<3>();
 
-				int out_index = y_dst * ydt + x_dst;
+				size_t out_index = y_dst * ydt + x_dst;
 				input_alpha_averages[out_index] = (vasum * alpha_rsamples);
 			}
 		}
@@ -420,26 +504,28 @@ void compute_pixel_region_variance(
 }
 
 /* See header for documentation. */
-unsigned int init_compute_averages(
+size_t init_compute_averages(
 	const astcenc_image& img,
-	unsigned int alpha_kernel_radius,
+	size_t alpha_kernel_radius,
 	const astcenc_swizzle& swz,
 	avg_args& ag
 ) {
-	unsigned int size_x = img.dim_x;
-	unsigned int size_y = img.dim_y;
-	unsigned int size_z = img.dim_z;
+	size_t size_x = img.dim_x;
+	size_t size_y = img.dim_y;
+	size_t size_z = img.dim_z;
 
 	// Compute maximum block size and from that the working memory buffer size
-	unsigned int kernel_radius = alpha_kernel_radius;
-	unsigned int kerneldim = 2 * kernel_radius + 1;
+	size_t kernel_radius = alpha_kernel_radius;
+	size_t kerneldim = 2 * kernel_radius + 1;
 
-	bool have_z = (size_z > 1);
-	unsigned int max_blk_size_xy = have_z ? 16 : 32;
-	unsigned int max_blk_size_z = astc::min(size_z, have_z ? 16u : 1u);
+	bool have_z = size_z > 1;
+	size_t max_blk_size_xy = have_z ? 16u : 32u;
 
-	unsigned int max_padsize_xy = max_blk_size_xy + kerneldim;
-	unsigned int max_padsize_z = max_blk_size_z + (have_z ? kerneldim : 0);
+	size_t max_blk_size_z_lim = have_z ? 16u : 1u;
+	size_t max_blk_size_z = astc::min(size_z, max_blk_size_z_lim);
+
+	size_t max_padsize_xy = max_blk_size_xy + kerneldim;
+	size_t max_padsize_z = max_blk_size_z + (have_z ? kerneldim : 0);
 
 	// Perform block-wise averages calculations across the image
 	// Initialize fields which are not populated until later
@@ -464,9 +550,9 @@ unsigned int init_compute_averages(
 	ag.work_memory_size = 2 * max_padsize_xy * max_padsize_xy * max_padsize_z;
 
 	// The parallel task count
-	unsigned int z_tasks = (size_z + max_blk_size_z - 1) / max_blk_size_z;
-	unsigned int y_tasks = (size_y + max_blk_size_xy - 1) / max_blk_size_xy;
-	return z_tasks * y_tasks;
+	size_t tasks_z = astc::get_block_count_safe(size_z, max_blk_size_z);
+	size_t tasks_y = astc::get_block_count_safe(size_y, max_blk_size_xy);
+	return tasks_z * tasks_y;
 }
 
 #endif

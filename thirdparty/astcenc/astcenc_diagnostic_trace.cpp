@@ -84,7 +84,7 @@ TraceNode::TraceNode(
 	vsnprintf (buffer, bufsz, format, args);
 	va_end (args);
 
-	// Guarantee there is a nul terminator
+	// Guarantee there is a NUL terminator
 	buffer[bufsz - 1] = 0;
 
 	// Generate the node
@@ -191,7 +191,7 @@ void trace_add_data(
 	vsnprintf (buffer, bufsz, format, args);
 	va_end (args);
 
-	// Guarantee there is a nul terminator
+	// Guarantee there is a NUL terminator
 	buffer[bufsz - 1] = 0;
 
 	std::string value = "\"" + std::string(buffer) + "\"";
@@ -237,6 +237,15 @@ void trace_add_data(
 void trace_add_data(
 	const char* key,
 	unsigned int value
+) {
+	TraceNode* node = g_TraceLog->get_current_leaf();
+	node->add_attrib("int", key, std::to_string(value));
+}
+
+/* See header for documentation. */
+void trace_add_data(
+	const char* key,
+	size_t value
 ) {
 	TraceNode* node = g_TraceLog->get_current_leaf();
 	node->add_attrib("int", key, std::to_string(value));
