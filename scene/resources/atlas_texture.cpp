@@ -34,6 +34,14 @@
 #include "core/object/class_db.h"
 
 int AtlasTexture::get_width() const {
+	return transpose ? get_region_height() : get_region_width();
+}
+
+int AtlasTexture::get_height() const {
+	return transpose ? get_region_width() : get_region_height();
+}
+
+int AtlasTexture::get_region_width() const {
 	if (rounded_region.size.width == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_width();
@@ -44,7 +52,7 @@ int AtlasTexture::get_width() const {
 	}
 }
 
-int AtlasTexture::get_height() const {
+int AtlasTexture::get_region_height() const {
 	if (rounded_region.size.height == 0) {
 		if (atlas.is_valid()) {
 			return atlas->get_height();
@@ -117,6 +125,42 @@ Rect2 AtlasTexture::get_margin() const {
 	return margin;
 }
 
+void AtlasTexture::set_flip_h(const bool p_flip) {
+	if (hflip == p_flip) {
+		return;
+	}
+	hflip = p_flip;
+	emit_changed();
+}
+
+bool AtlasTexture::is_flipped_h() const {
+	return hflip;
+}
+
+void AtlasTexture::set_flip_v(const bool p_flip) {
+	if (vflip == p_flip) {
+		return;
+	}
+	vflip = p_flip;
+	emit_changed();
+}
+
+bool AtlasTexture::is_flipped_v() const {
+	return vflip;
+}
+
+void AtlasTexture::set_transpose(const bool p_transpose) {
+	if (transpose == p_transpose) {
+		return;
+	}
+	transpose = p_transpose;
+	emit_changed();
+}
+
+bool AtlasTexture::is_transposed() const {
+	return transpose;
+}
+
 void AtlasTexture::set_filter_clip(const bool p_enable) {
 	filter_clip = p_enable;
 	emit_changed();
@@ -149,13 +193,39 @@ void AtlasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &AtlasTexture::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &AtlasTexture::get_margin);
 
+	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &AtlasTexture::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"), &AtlasTexture::is_flipped_h);
+
+	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &AtlasTexture::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"), &AtlasTexture::is_flipped_v);
+
+	ClassDB::bind_method(D_METHOD("set_transpose", "transpose"), &AtlasTexture::set_transpose);
+	ClassDB::bind_method(D_METHOD("is_transposed"), &AtlasTexture::is_transposed);
+
 	ClassDB::bind_method(D_METHOD("set_filter_clip", "enable"), &AtlasTexture::set_filter_clip);
 	ClassDB::bind_method(D_METHOD("has_filter_clip"), &AtlasTexture::has_filter_clip);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_atlas", "get_atlas");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region", PROPERTY_HINT_NONE, "suffix:px"), "set_region", "get_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "margin", PROPERTY_HINT_NONE, "suffix:px"), "set_margin", "get_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "is_transposed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_clip"), "set_filter_clip", "has_filter_clip");
+}
+
+void AtlasTexture::draw_oriented(RID p_canvas_item, const Rect2 p_draw, const Rect2 p_source, const Color &p_modulate, bool p_transpose) const {
+	Rect2 source = p_source;
+
+	if (hflip) {
+		source.size.x = -source.size.x;
+	}
+
+	if (vflip) {
+		source.size.y = -source.size.y;
+	}
+
+	atlas->draw_rect_region(p_canvas_item, p_draw, source, p_modulate, p_transpose ? !transpose : transpose, filter_clip);
 }
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
@@ -163,7 +233,7 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 		return;
 	}
 	const Rect2 rc = _get_region_rect();
-	atlas->draw_rect_region(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose, filter_clip);
+	draw_oriented(p_canvas_item, Rect2(p_pos + margin.position, rc.size), rc, p_modulate, p_transpose);
 }
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
@@ -176,7 +246,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		draw_oriented(p_canvas_item, dr, src_c, p_modulate, p_transpose);
 	}
 }
 
@@ -189,7 +259,7 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, p_src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		draw_oriented(p_canvas_item, dr, src_c, p_modulate, p_transpose);
 	}
 }
 
@@ -208,7 +278,14 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	Vector2 scale = p_rect.size / src.size;
 
 	src.position += (rounded_region.position - margin.position);
-	Rect2 src_clipped = _get_region_rect().intersection(src);
+
+	Rect2 clip_target = src;
+	if (transpose) {
+		clip_target.size = Vector2(clip_target.size.y, clip_target.size.x);
+	}
+
+	Rect2 src_clipped = _get_region_rect().intersection(clip_target);
+
 	if (src_clipped.size == Size2()) {
 		return false;
 	}
@@ -231,8 +308,34 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 		return true;
 	}
 
-	int x = p_x + rounded_region.position.x - margin.position.x;
-	int y = p_y + rounded_region.position.y - margin.position.y;
+	int x = rounded_region.position.x - margin.position.x;
+	int y = rounded_region.position.y - margin.position.y;
+
+	if (transpose) {
+		if (hflip) {
+			y += rounded_region.size.y - p_x;
+		} else {
+			y += p_x;
+		}
+
+		if (vflip) {
+			x += rounded_region.size.x - p_y;
+		} else {
+			x += p_y;
+		}
+	} else {
+		if (hflip) {
+			x += rounded_region.size.x - p_x;
+		} else {
+			x += p_x;
+		}
+
+		if (vflip) {
+			y += rounded_region.size.y - p_y;
+		} else {
+			y += p_y;
+		}
+	}
 
 	// Margin edge may outside of atlas.
 	if (x < 0 || x >= atlas->get_width()) {
