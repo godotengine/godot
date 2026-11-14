@@ -1492,7 +1492,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				}
 			}
 
-			undo_redo->create_action(TTR("Remove tiles"));
+			undo_redo->create_action(TTR("Remove tiles"), UndoRedo::MERGE_DISABLE, tile_set_atlas_source);
 			undo_redo->add_do_method(this, "_set_selection_from_array", Array());
 			for (const Vector2i &E : to_delete) {
 				Vector2i coords = E;
