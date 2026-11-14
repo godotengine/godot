@@ -189,6 +189,8 @@ class DisplayServerX11 : public DisplayServer {
 		bool is_popup = false;
 		bool layered_window = false;
 		bool mpass = false;
+		// Reapply position on first ConfigureNotify (some WMs ignore map position).
+		bool pending_position = false;
 
 		Window embed_parent = 0;
 
