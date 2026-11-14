@@ -305,7 +305,9 @@ public:
 
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
+#ifdef DEBUG_ENABLED
 	virtual void initialize_debugging() {}
+#endif
 
 	virtual uint64_t get_static_memory_usage() const;
 	virtual uint64_t get_static_memory_peak_usage() const;

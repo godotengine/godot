@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
+
 #include "engine_profiler.h"
 
 #include "core/debugger/engine_debugger.h"
@@ -39,6 +41,7 @@ void EngineProfiler::_bind_methods() {
 	GDVIRTUAL_BIND(_tick, "frame_time", "process_time", "physics_time", "physics_frame_time");
 }
 
+#ifdef DEBUG_ENABLED
 void EngineProfiler::toggle(bool p_enable, const Array &p_array) {
 	GDVIRTUAL_CALL(_toggle, p_enable, p_array);
 }
@@ -75,9 +78,14 @@ Error EngineProfiler::unbind() {
 	registration.clear();
 	return OK;
 }
+#endif // DEBUG_ENABLED
 
 EngineProfiler::~EngineProfiler() {
+#ifdef DEBUG_ENABLED
 	if (is_bound()) {
 		unbind();
 	}
+#endif
 }
+
+#endif // defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "remote_debugger_peer_messageport.h"
 
 #include "core/config/project_settings.h"
@@ -128,3 +130,5 @@ Ref<RemoteDebuggerPeer> RemoteDebuggerPeerMessagePort::create(const String &p_ur
 	}
 	return peer;
 }
+
+#endif // DEBUG_ENABLED

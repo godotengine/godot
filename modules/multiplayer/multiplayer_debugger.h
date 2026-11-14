@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/debugger/engine_profiler.h"
 
 class MultiplayerSynchronizer;
@@ -133,3 +135,5 @@ public:
 	static void initialize();
 	static void deinitialize();
 };
+
+#endif // DEBUG_ENABLED
