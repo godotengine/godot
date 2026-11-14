@@ -171,6 +171,8 @@ class FindInFilesSearchPanel : public ScrollContainer {
 
 	ConfirmationDialog *rename_confirm = nullptr;
 
+	void _update_replace_all_button();
+
 protected:
 	void _notification(int p_what);
 
