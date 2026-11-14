@@ -73,7 +73,7 @@ OpenXRFrameSynthesisExtension::~OpenXRFrameSynthesisExtension() {
 HashMap<String, bool *> OpenXRFrameSynthesisExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-	if (GLOBAL_GET("xr/openxr/extensions/frame_synthesis")) {
+	if (GLOBAL_GET("xr/openxr/extensions/frame_synthesis/enabled")) {
 		request_extensions[XR_EXT_FRAME_SYNTHESIS_EXTENSION_NAME] = &frame_synthesis_ext;
 	}
 
