@@ -12,6 +12,12 @@
 		<link title="Playing videos">$DOCS_URL/tutorials/animation/playing_videos.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_stream_frame_duration" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the duration of a single video frame for the current stream, in seconds.
+			</description>
+		</method>
 		<method name="get_stream_length" qualifiers="const">
 			<return type="float" />
 			<description>
