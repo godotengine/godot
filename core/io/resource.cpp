@@ -272,7 +272,12 @@ void Resource::reload_from_file() {
 		return;
 	}
 
-	copy_from(s);
+	Error err = copy_from(s);
+	ERR_FAIL_COND(err != OK);
+#ifdef TOOLS_ENABLED
+	// The copy matches the file just loaded; its setters are not editor edits.
+	set_edited(false);
+#endif
 }
 
 Variant Resource::_duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage) const {
