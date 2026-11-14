@@ -160,6 +160,10 @@
 /modules/vorbis/**/SCsub                      @godotengine/audio @godotengine/buildsystem
 /modules/vorbis/doc_classes/                  @godotengine/audio @godotengine/documentation
 /modules/vorbis/editor/                       @godotengine/audio @godotengine/editor
+/modules/opus/                                @godotengine/audio
+/modules/opus/**/*.py                         @godotengine/audio @godotengine/buildsystem
+/modules/opus/**/SCsub                        @godotengine/audio @godotengine/buildsystem
+/modules/opus/doc_classes/                    @godotengine/audio @godotengine/documentation
 
 ## Import
 /modules/astcenc/                             @godotengine/asset-pipeline
