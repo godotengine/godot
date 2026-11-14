@@ -40,6 +40,7 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
+#include "servers/display/accessibility_server.h"
 
 @implementation GodotContentLayerDelegate
 
@@ -75,6 +76,35 @@
 @end
 
 @implementation GodotContentView
+
+- (id)accessibilityChildren {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		void *nodes = ac->native_create_node_info(window_id, nullptr, 0);
+		if (nodes) {
+			return (__bridge NSArray *)nodes;
+		} else {
+			return [NSMutableArray array];
+		}
+	}
+	return [super accessibilityChildren];
+}
+
+- (id)accessibilityHitTest:(NSPoint)point {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (__bridge NSObject *)ac->native_hit_test(window_id, nullptr, 0, point.x, point.y, nullptr);
+	}
+	return [super accessibilityHitTest:point];
+}
+
+- (id)accessibilityFocusedUIElement {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (__bridge NSObject *)ac->native_find_focus(window_id, nullptr, 0);
+	}
+	return [super accessibilityFocusedUIElement];
+}
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)event {
 	return YES;
@@ -122,22 +152,6 @@
 	self.layer.needsDisplayOnBoundsChange = YES;
 }
 
-- (void)addObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
-	[registered_observers addObject:[[targetObserver description] stringByAppendingString:keyPath]];
-	[super addObserver:targetObserver forKeyPath:keyPath options:options context:context];
-}
-
-- (void)removeObserver:(NSObject *)targetObserver forKeyPath:(NSString *)keyPath {
-	if ([registered_observers containsObject:[[targetObserver description] stringByAppendingString:keyPath]]) {
-		@try {
-			[super removeObserver:targetObserver forKeyPath:keyPath];
-			[registered_observers removeObject:[[targetObserver description] stringByAppendingString:keyPath]];
-		} @catch (NSException *exception) {
-			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-		}
-	}
-}
-
 - (id)init {
 	self = [super init];
 	layer_delegate = [[GodotContentLayerDelegate alloc] init];
@@ -147,7 +161,6 @@
 	mouse_down_control = false;
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
-	registered_observers = [[NSMutableSet alloc] init];
 	[self updateTrackingAreas];
 
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;

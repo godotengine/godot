@@ -157,7 +157,7 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 		[wd.window_object setRestorable:NO];
 		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
 
-		if (!AccessibilityServer::get_singleton()->window_create(id, (__bridge void *)wd.window_object)) {
+		if (!AccessibilityServer::get_singleton()->window_create(id, (__bridge void *)wd.window_view)) {
 			if (OS::get_singleton()->is_stdout_verbose()) {
 				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
 			}
