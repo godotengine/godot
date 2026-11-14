@@ -1663,7 +1663,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					if (!clipped && highlight_all_occurrences && !only_whitespaces_highlighted && !highlighted_text.is_empty()) { // Highlight
-						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
+						int highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, search_flags, 0);
 						int highlighted_text_len = highlighted_text.length();
 						while (highlighted_text_col != -1) {
 							const Vector<Vector2> sel = TS->shaped_text_get_selection(rid, highlighted_text_col + start, highlighted_text_col + highlighted_text_len + start);
@@ -1681,7 +1681,7 @@ void TextEdit::_notification(int p_what) {
 								RS::get_singleton()->canvas_item_add_rect(text_ci, rect, theme_cache.word_highlighted_color);
 							}
 
-							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, highlighted_text_col + highlighted_text_len);
+							highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, search_flags, highlighted_text_col + highlighted_text_len);
 						}
 					}
 
@@ -6668,7 +6668,7 @@ void TextEdit::add_selection_for_next_occurrence() {
 	int column = get_selection_from_column(caret) + 1;
 	int line = get_selection_from_line(caret);
 
-	const Point2i next_occurrence = search(highlighted_text, SEARCH_MATCH_CASE, line, column);
+	const Point2i next_occurrence = search(highlighted_text, search_flags, line, column);
 
 	if (next_occurrence.x == -1 || next_occurrence.y == -1) {
 		return;
@@ -6709,7 +6709,7 @@ void TextEdit::skip_selection_for_next_occurrence() {
 	int column = get_selection_from_column(caret) + 1;
 	int line = get_selection_from_line(caret);
 
-	const Point2i next_occurrence = search(searched_text, SEARCH_MATCH_CASE, line, column);
+	const Point2i next_occurrence = search(searched_text, search_flags, line, column);
 
 	if (next_occurrence.x == -1 || next_occurrence.y == -1) {
 		return;
