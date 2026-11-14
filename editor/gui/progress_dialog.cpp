@@ -165,9 +165,9 @@ void ProgressDialog::_update_ui() {
 }
 
 void ProgressDialog::_popup() {
-	// Activate processing of all inputs in EditorNode, and the EditorNode::input method
+	// Activate blocking of all inputs in EditorNode, and the EditorNode::input method
 	// will discard every key input.
-	EditorNode::get_singleton()->set_process_input(true);
+	EditorNode::get_singleton()->set_block_input(true);
 	// Disable all other windows to prevent interaction with them.
 	for (ObjectID wid : host_windows) {
 		Window *w = ObjectDB::get_instance<Window>(wid);
@@ -275,7 +275,7 @@ void ProgressDialog::end_task(const String &p_task) {
 
 	if (tasks.is_empty()) {
 		hide();
-		EditorNode::get_singleton()->set_process_input(false);
+		EditorNode::get_singleton()->set_block_input(false);
 		for (ObjectID wid : host_windows) {
 			Window *w = ObjectDB::get_instance<Window>(wid);
 			if (w) {
