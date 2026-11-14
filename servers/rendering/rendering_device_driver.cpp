@@ -59,6 +59,10 @@ uint64_t RenderingDeviceDriver::api_trait_get(ApiTrait p_trait) {
 			return true;
 		case API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS:
 			return false;
+		case API_TRAIT_CAN_USE_SECONDARY_COMMAND_BUFFERS:
+			return false;
+		case API_TRAIT_SCISSOR_AND_VIEWPORT_IN_SECONDARY_COMMAND_BUFFERS:
+			return false;
 		default:
 			ERR_FAIL_V(0);
 	}
