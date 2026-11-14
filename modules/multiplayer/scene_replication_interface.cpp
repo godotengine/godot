@@ -599,9 +599,23 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	// Check that we can spawn.
 	Node *parent = spawner->get_node_or_null(spawner->get_spawn_path());
 	ERR_FAIL_NULL_V(parent, ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(parent->has_node(name), ERR_INVALID_DATA);
 
 	Node *node = nullptr;
+	bool already_exists = parent->has_node(name);
+	//ERR_FAIL_COND_V(parent->has_node(name), ERR_INVALID_DATA);
+	if (already_exists) {
+		ERR_FAIL_COND_V(!peers_info.has(p_from), ERR_UNAVAILABLE);
+		ERR_FAIL_COND_V(peers_info[p_from].recv_nodes.has(net_id), ERR_ALREADY_IN_USE);
+		node = parent->get_node(name);
+		ObjectID oid = node->get_instance_id();
+		TrackedNode &tobj = _track(oid);
+		tobj.spawner = spawner->get_instance_id();
+		tobj.net_id = net_id;
+		tobj.remote_peer = p_from;
+		peers_info[p_from].recv_nodes[net_id] = oid;
+		return OK;
+	}
+
 	if (scene_id == MultiplayerSpawner::INVALID_ID) {
 		// Custom spawn.
 		ERR_FAIL_COND_V(p_buffer_len - ofs < 4, ERR_INVALID_DATA);
