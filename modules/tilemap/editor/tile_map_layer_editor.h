@@ -387,6 +387,14 @@ private:
 	void _node_change(Node *p_node);
 
 	Control *custom_overlay = nullptr;
+	struct InvalidCell {
+		Vector2i coords;
+		Color color;
+	};
+	Vector<InvalidCell> invalid_cells;
+	bool invalid_cells_cache_dirty = true;
+	uint64_t invalid_cells_revision = 0;
+	void _update_invalid_cells_cache(const TileMapLayer *p_layer);
 	void _draw_overlay();
 
 	// Vector to keep plugins.

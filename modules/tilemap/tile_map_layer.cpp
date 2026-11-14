@@ -2802,6 +2802,10 @@ void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vec
 	c.set_atlas_coords(atlas_coords);
 	c.alternative_tile = alternative_tile;
 
+#ifdef TOOLS_ENABLED
+	cell_data_revision++;
+#endif
+
 	// Make the given cell dirty.
 	if (!E->value.dirty_list_element.in_list()) {
 		dirty.cell_list.add(&(E->value.dirty_list_element));
