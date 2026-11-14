@@ -4,7 +4,7 @@
 		A built-in type representing a method or a standalone function.
 	</brief_description>
 	<description>
-		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.
+		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a custom callable used for different purposes (see [method is_custom]). Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for [Signal] callbacks.
 		[codeblocks]
 		[gdscript]
 		func print_args(arg1, arg2, arg3 = ""):
@@ -93,16 +93,16 @@
 		<method name="bind" qualifiers="vararg const">
 			<return type="Callable" />
 			<description>
-				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
+				Returns a copy of this [Callable] with arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[b]Note:[/b] While bind does return a copy, this does not matter for [method Signal.connect] and [method Signal.disconnect] because callables are matched by object and method name, but not their bound arguments. Thus you can still disconnect using the callable's original reference.
 			</description>
 		</method>
 		<method name="bindv">
 			<return type="Callable" />
 			<param index="0" name="arguments" type="Array" />
 			<description>
-				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				Returns a copy of this [Callable] with arguments from an array bound. See also [method bind]
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
