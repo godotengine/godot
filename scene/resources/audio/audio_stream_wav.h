@@ -120,7 +120,7 @@ private:
 	int64_t loop_begin = 0;
 	int64_t loop_end = 0;
 	uint32_t mix_rate = 44100;
-	TightLocalVector<uint8_t, uint64_t> data;
+	Vector<uint8_t> data;
 
 	Dictionary tags;
 
