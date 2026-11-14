@@ -31,6 +31,8 @@
 #include "core/math/math_funcs_binary.h"
 #include "tests/test_macros.h"
 
+#include <cmath>
+
 TEST_FORCE_LINK(test_math_funcs)
 
 namespace TestMathFuncs {
@@ -694,6 +696,51 @@ TEST_CASE("[Math] division_no_overflow/modulo_no_overflow") {
 	int64_t den = -1;
 	CHECK(Math::division_no_overflow(num, den) == INT64_MIN);
 	CHECK(Math::modulo_no_overflow(num, den) == 0);
+}
+
+static uint32_t float_bits(float p_value) {
+	uint32_t bits;
+	memcpy(&bits, &p_value, sizeof(bits));
+	return bits;
+}
+
+// Compilers may fuse adjacent `sinf(x)` and `cosf(x)` into a single combined call (e.g. `__sincosf_stret` on
+// Apple platforms), which can return a result that differs in the last bit from `cosf(x)`. The build must not
+// do this, otherwise this can create issues with differing platforms and differing build types disagree and mismatch.
+// Kept as a separate non-inlined function with the two calls adjacent, which is the pattern that gets fused.
+static _NO_INLINE_ void sin_cos_and_reference(float p_x, float &r_sin, float &r_cos, float &r_ref_sin, float &r_ref_cos) {
+	// The reference goes through volatile function pointers so it can never be folded or fused.
+	typedef float (*TrigFn)(float);
+	static volatile TrigFn ref_sin = ::sinf;
+	static volatile TrigFn ref_cos = ::cosf;
+
+	r_sin = Math::sin(p_x);
+	r_cos = Math::cos(p_x);
+	r_ref_sin = ref_sin(p_x);
+	r_ref_cos = ref_cos(p_x);
+}
+
+#ifndef SIN_COS_MATH_ERRNO_TESTS_MAY_FAIL
+#define SIN_COS_TEST_CASE(x) TEST_CASE(x)
+#else
+#define SIN_COS_TEST_CASE(x) TEST_CASE_MAY_FAIL(x)
+#endif
+
+SIN_COS_TEST_CASE("[Math] sin and cos on the same float argument match separate libm calls") {
+	// Bit patterns of the inputs, laundered through volatile so nothing is constant-folded.
+	// These are known values that are known to produce different results between the two calls.
+	static volatile uint32_t input_bits[] = { 0x400735cf, 0x3f5613d6, 0x3f800000, 0x40490fdb, 0xbf9a2e15, 0x41457ae1, 0x3a83126f };
+	for (volatile uint32_t &vbits : input_bits) {
+		uint32_t bits = vbits;
+		float x;
+		memcpy(&x, &bits, sizeof(x));
+
+		float s, c, ref_s, ref_c;
+		sin_cos_and_reference(x, s, c, ref_s, ref_c);
+
+		CHECK_MESSAGE(float_bits(s) == float_bits(ref_s), "sin(", x, ") bits differ from sinf()");
+		CHECK_MESSAGE(float_bits(c) == float_bits(ref_c), "cos(", x, ") bits differ from cosf()");
+	}
 }
 
 } // namespace TestMathFuncs
