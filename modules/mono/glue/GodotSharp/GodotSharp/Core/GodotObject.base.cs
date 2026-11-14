@@ -157,6 +157,11 @@ namespace Godot
         /// <returns>A string representation of this object.</returns>
         public override string ToString()
         {
+            if (_disposed)
+            {
+                return GetType().ToString();
+            }
+
             NativeFuncs.godotsharp_object_to_string(GetPtr(this), out godot_string str);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);

@@ -28,9 +28,22 @@ namespace Godot.Collections
         ICollection,
         IDisposable
     {
-        internal godot_array.movable NativeValue;
+        private godot_array.movable _nativeValue;
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
+        private bool _disposed;
+
+        internal bool IsDisposed => _disposed;
+
+        internal ref godot_array.movable NativeValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                return ref _nativeValue;
+            }
+        }
 
         /// <summary>
         /// Constructs a new empty <see cref="Array"/>.
@@ -200,8 +213,15 @@ namespace Godot.Collections
 
         public void Dispose(bool disposing)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
             // Always dispose `NativeValue` even if disposing is true
-            NativeValue.DangerousSelfRef.Dispose();
+            _nativeValue.DangerousSelfRef.Dispose();
 
             if (_weakReferenceToSelf != null)
             {
@@ -1025,6 +1045,11 @@ namespace Godot.Collections
         /// <returns>A string representation of this array.</returns>
         public override string ToString()
         {
+            if (_disposed)
+            {
+                return typeof(Array).ToString();
+            }
+
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_to_string(ref self, out godot_string str);
             using (str)
@@ -1934,7 +1959,15 @@ namespace Godot.Collections
         /// Converts this <see cref="Array{T}"/> to a string.
         /// </summary>
         /// <returns>A string representation of this array.</returns>
-        public override string ToString() => _underlyingArray.ToString();
+        public override string ToString()
+        {
+            if (_underlyingArray is null || _underlyingArray.IsDisposed)
+            {
+                return typeof(Array<T>).ToString();
+            }
+
+            return _underlyingArray.ToString();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Array<T> from) => Variant.CreateFrom(from);
