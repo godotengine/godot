@@ -426,12 +426,6 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 		AFTER_USER_CODE
 	}
 
-	// komm64: track origin path for duplicated resources (StateShot factory hook).
-	const String origin_path = get_path();
-	if (!origin_path.is_empty()) {
-		r->set_meta(SNAME("_origin_path"), origin_path);
-	}
-
 	return r;
 
 #undef BEFORE_USER_CODE
