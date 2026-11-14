@@ -65,6 +65,7 @@ class AudioStreamPreviewGenerator : public Node {
 		SafeFlag generating;
 		ObjectID id;
 		WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
+		uint64_t last_modified_time = 0;
 
 		// Needed for the bookkeeping of the Map
 		void operator=(const Preview &p_rhs) {
@@ -100,6 +101,7 @@ public:
 	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
 
 	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
+	Ref<AudioStreamPreview> generate_preview_internal(const Ref<AudioStream> &p_stream, bool p_force = false);
 
 	AudioStreamPreviewGenerator();
 	~AudioStreamPreviewGenerator();
