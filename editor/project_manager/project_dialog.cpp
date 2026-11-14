@@ -36,6 +36,7 @@
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -1165,7 +1166,7 @@ ProjectDialog::ProjectDialog() {
 	rvb->add_child(rs_button);
 	LinkButton *ri_link = memnew(LinkButton);
 	ri_link->set_text(TTRC("More information"));
-	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
+	ri_link->set_uri(EditorHelp::get_docs_url() + "/tutorials/rendering/renderers.html");
 	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	rvb->add_child(ri_link);
 #if defined(GLES3_ENABLED)
