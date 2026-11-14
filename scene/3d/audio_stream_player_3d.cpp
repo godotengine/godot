@@ -286,6 +286,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			if (setplay.get() > 0 || (internal->active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
 				force_update_panning = false;
 				volume_vector = _update_panning();
+				last_mix_count = AudioServer::get_singleton()->get_mix_count();
 			}
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
