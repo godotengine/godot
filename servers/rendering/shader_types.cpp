@@ -171,6 +171,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["DEPTH"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["SCREEN_UV"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["POINT_COORD"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["MOTION_VECTOR"] = ShaderLanguage::TYPE_VEC2;
 
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["NODE_POSITION_WORLD"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["CAMERA_POSITION_WORLD"] = constt(ShaderLanguage::TYPE_VEC3);
