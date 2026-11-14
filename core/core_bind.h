@@ -677,7 +677,7 @@ public:
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	void script_debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
-	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+	static bool call_capture(void *p_user, const String &p_cmd, const Array &p_data);
 
 	void line_poll();
 

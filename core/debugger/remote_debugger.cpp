@@ -336,18 +336,17 @@ void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_va
 	}
 }
 
-Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, bool &r_captured) {
+bool RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data) {
 	const int idx = p_msg.find_char(':');
-	r_captured = false;
 	if (idx < 0) { // No prefix, unknown message.
-		return OK;
+		return false;
 	}
 	const String cap = p_msg.substr(0, idx);
 	if (!has_capture(cap)) {
-		return ERR_UNAVAILABLE; // Unknown message...
+		return false; // Unknown message...
 	}
 	const String msg = p_msg.substr(idx + 1);
-	return capture_parse(cap, msg, p_data, r_captured);
+	return capture_parse(cap, msg, p_data);
 }
 
 void RemoteDebugger::_poll_messages() {
@@ -619,9 +618,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 				send_message("evaluation_return", stvar.serialize());
 			} else {
-				bool captured = false;
-				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
-				if (!captured) {
+				if (!_try_capture(command, data)) {
 					WARN_PRINT(vformat("Unknown message received from debugger: %s.", command));
 				}
 			}
@@ -673,9 +670,8 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 
 		const String cmd = arr[0];
 		const int idx = cmd.find_char(':');
-		bool parsed = false;
 		if (idx < 0) { // Not prefix, use scripts capture.
-			capture_parse("core", cmd, arr[1], parsed);
+			capture_parse("core", cmd, arr[1]);
 			continue;
 		}
 
@@ -685,7 +681,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		}
 
 		const String msg = cmd.substr(idx + 1);
-		capture_parse(cap, msg, arr[1], parsed);
+		capture_parse(cap, msg, arr[1]);
 	}
 
 	// Reload scripts during idle poll only.
@@ -721,14 +717,13 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 	}
 }
 
-Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
-	r_captured = true;
+bool RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data) {
 	if (p_cmd == "reload_scripts") {
 		script_paths_to_reload = p_data;
 	} else if (p_cmd == "reload_all_scripts") {
 		reload_all_scripts = true;
 	} else if (p_cmd == "breakpoint") {
-		ERR_FAIL_COND_V(p_data.size() < 3, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.size() < 3, true);
 		bool set = p_data[2];
 		if (set) {
 			script_debugger->insert_breakpoint(p_data[1], p_data[0]);
@@ -737,32 +732,30 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {
-		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.is_empty(), true);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "set_ignore_error_breaks") {
-		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.is_empty(), true);
 		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
 	} else {
-		r_captured = false;
+		return false;
 	}
-	return OK;
+	return true;
 }
 
-Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data, bool &r_captured) {
-	r_captured = false;
-	ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(p_data[0].get_type() != Variant::BOOL, ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!has_profiler(p_cmd), ERR_UNAVAILABLE);
+bool RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data) {
+	ERR_FAIL_COND_V(p_data.is_empty(), true);
+	ERR_FAIL_COND_V(p_data[0].get_type() != Variant::BOOL, true);
+	ERR_FAIL_COND_V(!has_profiler(p_cmd), true);
 	Array opts;
 	if (p_data.size() > 1) { // Optional profiler parameters.
-		ERR_FAIL_COND_V(p_data[1].get_type() != Variant::ARRAY, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data[1].get_type() != Variant::ARRAY, true);
 		opts = p_data[1];
 	}
-	r_captured = true;
 	profiler_enable(p_cmd, p_data[0], opts);
-	return OK;
+	return true;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
@@ -781,13 +774,13 @@ RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
 
 	// Core and profiler captures.
 	Capture core_cap(this,
-			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return static_cast<RemoteDebugger *>(p_user)->_core_capture(p_cmd, p_data, r_captured);
+			[](void *p_user, const String &p_cmd, const Array &p_data) {
+				return static_cast<RemoteDebugger *>(p_user)->_core_capture(p_cmd, p_data);
 			});
 	register_message_capture("core", core_cap);
 	Capture profiler_cap(this,
-			[](void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
-				return static_cast<RemoteDebugger *>(p_user)->_profiler_capture(p_cmd, p_data, r_captured);
+			[](void *p_user, const String &p_cmd, const Array &p_data) {
+				return static_cast<RemoteDebugger *>(p_user)->_profiler_capture(p_cmd, p_data);
 			});
 	register_message_capture("profiler", profiler_cap);
 
