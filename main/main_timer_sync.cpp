@@ -531,6 +531,13 @@ void MainTimerSync::set_cpu_ticks_usec(uint64_t p_cpu_ticks_usec) {
 	current_cpu_ticks_usec = p_cpu_ticks_usec;
 }
 
+void MainTimerSync::drop_elapsed(uint64_t p_keep_usec) {
+	const uint64_t elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
+	if (elapsed > p_keep_usec) {
+		last_cpu_ticks_usec = current_cpu_ticks_usec - p_keep_usec;
+	}
+}
+
 void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 	fixed_fps = p_fixed_fps;
 }

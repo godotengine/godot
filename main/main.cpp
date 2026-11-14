@@ -4972,6 +4972,12 @@ bool Main::iteration() {
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);
+	// komm64: without a fixed tick, a dropped stall counts as one more frame
+	// of the last frame's length.
+	if (fixed_tick_rate <= 0.0 && Engine::get_singleton()->_drop_pending_ticks) {
+		main_timer_sync.drop_elapsed(uint64_t(Engine::get_singleton()->_process_step * 1000000.0));
+		Engine::get_singleton()->_drop_pending_ticks = false;
+	}
 
 	const uint64_t ticks_elapsed = ticks - last_ticks;
 

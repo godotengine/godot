@@ -137,6 +137,9 @@ public:
 	void init(uint64_t p_cpu_ticks_usec);
 	// set measured wall clock time
 	void set_cpu_ticks_usec(uint64_t p_cpu_ticks_usec);
+	// komm64: count only p_keep_usec of the time since the last frame, so a
+	// stall (a load, a save) is not game time.
+	void drop_elapsed(uint64_t p_keep_usec);
 	//set fixed fps
 	void set_fixed_fps(int p_fixed_fps);
 

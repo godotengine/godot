@@ -22,7 +22,9 @@
 		<method name="drop_pending_ticks">
 			<return type="void" />
 			<description>
-				With [member ProjectSettings.application/run/fixed_tick_rate] set, the remaining ticks of the current loop iteration are skipped, so the current tick is the one drawn ([method is_drawing_step] returns [code]true[/code] from here on), and the next iteration runs one tick, instead of catching up the ticks that fell due meanwhile. Call it after a known stall that is not game time, such as loading or saving. Does nothing without a fixed tick rate.
+				Makes the time since the last frame not game time. Call it after a known stall that is not game time, such as loading or saving.
+				With [member ProjectSettings.application/run/fixed_tick_rate] set, the remaining ticks of the current loop iteration are skipped, so the current tick is the one drawn ([method is_drawing_step] returns [code]true[/code] from here on), and the next iteration runs one tick, instead of catching up the ticks that fell due meanwhile.
+				Without it, the next frame's delta (and the physics steps it runs) is the last frame's delta instead of the time that passed.
 			</description>
 		</method>
 		<method name="get_architecture_name" qualifiers="const">
