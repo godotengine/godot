@@ -294,6 +294,26 @@ uniform lowp uint directional_shadow_index;
 #endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
 #endif // USE_ADDITIVE_LIGHTING
 
+#ifdef USE_MULTIVIEW
+uniform highp sampler2DArray depth_buffer; // texunit:-7
+uniform highp sampler2DArray color_buffer; // texunit:-6
+vec3 multiview_uv(vec2 uv) {
+	return vec3(uv, ViewIndex);
+}
+ivec3 multiview_uv(ivec2 uv) {
+	return ivec3(uv, int(ViewIndex));
+}
+#else
+uniform highp sampler2D depth_buffer; // texunit:-7
+uniform highp sampler2D color_buffer; // texunit:-6
+vec2 multiview_uv(vec2 uv) {
+	return uv;
+}
+ivec2 multiview_uv(ivec2 uv) {
+	return uv;
+}
+#endif
+
 #ifdef USE_VERTEX_LIGHTING
 
 out vec3 diffuse_light_interp;
