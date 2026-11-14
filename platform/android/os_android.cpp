@@ -110,6 +110,7 @@ void OS_Android::initialize_core() {
 
 #ifdef TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+
 #else // TOOLS_ENABLED
 	FileAccess::make_default<FileAccessAndroid>(FileAccess::ACCESS_RESOURCES);
 #if defined(OVERRIDE_PATH_ENABLED)
@@ -119,6 +120,7 @@ void OS_Android::initialize_core() {
 #endif // defined(OVERRIDE_PATH_ENABLED)
 #endif // TOOLS_ENABLED
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
+	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_EDITOR_RESOURCES);
 	FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_FILESYSTEM);
 
 #ifdef TOOLS_ENABLED
@@ -132,6 +134,7 @@ void OS_Android::initialize_core() {
 #endif // defined(OVERRIDE_PATH_ENABLED)
 #endif // TOOLS_ENABLED
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
+	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_EDITOR_RESOURCES);
 	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_FILESYSTEM);
 
 	NetSocketAndroid::make_default();
