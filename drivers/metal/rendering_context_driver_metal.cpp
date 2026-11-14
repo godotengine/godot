@@ -190,7 +190,13 @@ public:
 		frame_buffer.size = Size2i(width, height);
 
 		CA::MetalDrawable *drawable = layer->nextDrawable();
-		ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
+		if (drawable == nullptr) {
+			// Give the slot back, it will never be presented. Otherwise, after
+			// frame_buffers.size() timeouts every later acquire fails.
+			rear = (rear + frame_buffers.size() - 1) % frame_buffers.size();
+			count--;
+			ERR_FAIL_V_MSG(RDD::FramebufferID(), "no drawable available");
+		}
 		drawables[rear] = drawable;
 		frame_buffer.set_texture(0, drawable->texture());
 
@@ -347,7 +353,12 @@ public:
 		if (now >= target_time) {
 			target_time = now + 1'000'000; // 1 second into the future.
 			CA::MetalDrawable *drawable = layer->nextDrawable();
-			ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
+			if (drawable == nullptr) {
+				// Give the slot back, it will never be presented.
+				rear = (rear + 2) % 3;
+				count.fetch_sub(1, std::memory_order_relaxed);
+				ERR_FAIL_V_MSG(RDD::FramebufferID(), "no drawable available");
+			}
 			drawables[rear] = drawable;
 			frame_buffer.set_texture(0, drawable->texture());
 		} else {
