@@ -23,7 +23,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zxdg_decoration_manager_v1" version="1">
+  <interface name="zxdg_decoration_manager_v1" version="2">
     <description summary="window decoration manager">
       This interface allows a compositor to announce support for server-side
       decorations.
@@ -60,18 +60,33 @@
       <description summary="create a new toplevel decoration object">
         Create a new decoration object associated with the given toplevel.
 
-        Creating an xdg_toplevel_decoration from an xdg_toplevel which has a
-        buffer attached or committed is a client error, and any attempts by a
-        client to attach or manipulate a buffer prior to the first
-        xdg_toplevel_decoration.configure event must also be treated as
-        errors.
+        For objects of version 1, creating an xdg_toplevel_decoration from an
+        xdg_toplevel which has a buffer attached or committed is a client
+        error, and any attempts by a client to attach or manipulate a buffer
+        prior to the first xdg_toplevel_decoration.configure event must also be
+        treated as errors.
+
+        For objects of version 2 or newer, creating an xdg_toplevel_decoration
+        from an xdg_toplevel which has a buffer attached or committed is
+        allowed. The initial decoration mode of the surface if a buffer is
+        already attached depends on whether a xdg_toplevel_decoration object
+        has been associated with the surface or not prior to this request.
+
+        If an xdg_toplevel_decoration was associated with the surface, then
+        destroyed without a surface commit, the previous decoration mode is
+        retained.
+
+        If no xdg_toplevel_decoration was associated with the surface prior to
+        this request, or if a surface commit has been performed after a previous
+        xdg_toplevel_decoration object associated with the surface was
+        destroyed, the decoration mode is assumed to be client-side.
       </description>
       <arg name="id" type="new_id" interface="zxdg_toplevel_decoration_v1"/>
       <arg name="toplevel" type="object" interface="xdg_toplevel"/>
     </request>
   </interface>
 
-  <interface name="zxdg_toplevel_decoration_v1" version="1">
+  <interface name="zxdg_toplevel_decoration_v1" version="2">
     <description summary="decoration object for a toplevel surface">
       The decoration object allows the compositor to toggle server-side window
       decorations for a toplevel surface. The client can request to switch to
@@ -94,7 +109,8 @@
     <request name="destroy" type="destructor">
       <description summary="destroy the decoration object">
         Switch back to a mode without any server-side decorations at the next
-        commit.
+        commit, unless a new xdg_toplevel_decoration is created for the surface
+        first.
       </description>
     </request>
 

@@ -1281,7 +1281,7 @@ Patches:
 ## wayland
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland
-- Version: 1.24.0 (736d12ac67c20c60dc406dc49bb06be878501f86, 2025)
+- Version: 1.26.0 (87cc8a8728a923fc57938faa81ba0e74f34ecdc7, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1293,7 +1293,7 @@ Files extracted from upstream source:
 ## wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.47 (88223018d1b578d0d8869866da66d9608e05f928, 2025)
+- Version: 1.50 (3eab2dccf4bfdd85c16d312a6c8c8fbc2a6e73a8, 2026)
 - License: MIT
 
 Files extracted from upstream source:

@@ -782,6 +782,7 @@ private:
 	static void _wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
 	static void _wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120);
 	static void _wl_pointer_on_axis_relative_direction(void *data, struct wl_pointer *wl_pointer, uint32_t axis, uint32_t direction);
+	static void _wl_pointer_on_warp(void *data, struct wl_pointer *wl_pointer, wl_fixed_t surface_x, wl_fixed_t surface_y);
 
 	static void _wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
 	static void _wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
@@ -905,6 +906,9 @@ private:
 	static void _wp_text_input_on_commit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text);
 	static void _wp_text_input_on_delete_surrounding_text(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t before_length, uint32_t after_length);
 	static void _wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial);
+	static void _wp_text_input_on_action(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t action, uint32_t serial);
+	static void _wp_text_input_on_language(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *language);
+	static void _wp_text_input_on_preedit_hint(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t start, uint32_t end, uint32_t hint);
 
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
@@ -969,6 +973,7 @@ private:
 		.axis_discrete = _wl_pointer_on_axis_discrete,
 		.axis_value120 = _wl_pointer_on_axis_value120,
 		.axis_relative_direction = _wl_pointer_on_axis_relative_direction,
+		.warp = _wl_pointer_on_warp,
 	};
 
 	static constexpr struct wl_keyboard_listener wl_keyboard_listener = {
@@ -1138,6 +1143,9 @@ private:
 		.commit_string = _wp_text_input_on_commit_string,
 		.delete_surrounding_text = _wp_text_input_on_delete_surrounding_text,
 		.done = _wp_text_input_on_done,
+		.action = _wp_text_input_on_action,
+		.language = _wp_text_input_on_language,
+		.preedit_hint = _wp_text_input_on_preedit_hint,
 	};
 
 	// NOTE: Deprecated.
