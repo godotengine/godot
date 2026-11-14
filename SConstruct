@@ -384,6 +384,8 @@ opts.Add("cpp_compiler_launcher", "C++ compiler launcher (e.g. `ccache`)")
 # in following code (especially platform and custom_modules).
 opts.Update(env)
 
+methods.print_unrecognized_options(opts)
+
 # Setup caching logic early to catch everything.
 methods.prepare_cache(env)
 
