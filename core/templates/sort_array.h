@@ -245,29 +245,31 @@ public:
 		insertion_sort(p_first, p_last, p_array);
 	}
 
-	inline void unguarded_linear_insert(int64_t p_last, T p_value, T *p_array) const {
+	inline void unguarded_linear_insert(int64_t p_last, T *p_array) const {
+		T val = std::move(p_array[p_last]);
 		int64_t next = p_last - 1;
-		while (compare(p_value, p_array[next])) {
+		while (compare(val, p_array[next])) {
 			if constexpr (Validate) {
 				ERR_BAD_COMPARE(next == 0);
 			}
-			p_array[p_last] = p_array[next];
+			p_array[p_last] = std::move(p_array[next]);
 			p_last = next;
 			next--;
 		}
-		p_array[p_last] = p_value;
+
+		p_array[p_last] = val;
 	}
 
 	inline void linear_insert(int64_t p_first, int64_t p_last, T *p_array) const {
-		T val = p_array[p_last];
-		if (compare(val, p_array[p_first])) {
+		if (compare(p_array[p_last], p_array[p_first])) {
+			T val = std::move(p_array[p_last]);
 			for (int64_t i = p_last; i > p_first; i--) {
-				p_array[i] = p_array[i - 1];
+				p_array[i] = std::move(p_array[i - 1]);
 			}
 
-			p_array[p_first] = val;
+			p_array[p_first] = std::move(val);
 		} else {
-			unguarded_linear_insert(p_last, val, p_array);
+			unguarded_linear_insert(p_last, p_array);
 		}
 	}
 
@@ -282,7 +284,7 @@ public:
 
 	inline void unguarded_insertion_sort(int64_t p_first, int64_t p_last, T *p_array) const {
 		for (int64_t i = p_first; i != p_last; i++) {
-			unguarded_linear_insert(i, p_array[i], p_array);
+			unguarded_linear_insert(i, p_array);
 		}
 	}
 
