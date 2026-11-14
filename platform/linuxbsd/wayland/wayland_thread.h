@@ -215,6 +215,9 @@ public:
 		List<struct wl_output *> wl_outputs;
 		List<struct wl_seat *> wl_seats;
 
+		struct wl_fixes *wl_fixes = nullptr;
+		uint32_t wl_fixes_name = 0;
+
 		// xdg-shell globals.
 
 		struct xdg_wm_base *xdg_wm_base = nullptr;
