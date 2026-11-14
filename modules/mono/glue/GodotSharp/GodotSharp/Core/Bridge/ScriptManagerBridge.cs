@@ -1143,7 +1143,7 @@ namespace Godot.Bridge
             public int Type;
             public int Hint;
             public int Usage;
-            public unsafe godot_string_name* ClassName; // Not owned
+            public godot_string_name ClassName; // Not owned
             public godot_bool Exported;
 
             public void Dispose()
@@ -1223,8 +1223,8 @@ namespace Godot.Bridge
                             HintString = Marshaling.ConvertStringToNative(property.HintString),
                             Usage = (int)property.Usage,
                             ClassName = property.ClassName is not null
-                                ? property.ClassName.NativeValue.DangerousSelfRef.GetUnsafeAddress() // Not owned
-                                : null,
+                                ? (godot_string_name)property.ClassName.NativeValue // Not owned
+                                : default,
                             Exported = property.Exported.ToGodotBool(),
                         };
 
