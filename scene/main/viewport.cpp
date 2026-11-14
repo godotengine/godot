@@ -5901,7 +5901,7 @@ void Viewport::CameraOverride<T>::enable(Viewport *p_viewport, const T *p_curren
 	}
 
 	T *override_camera = memnew(T);
-	override_camera->set_name(vformat("Override%s", T ::get_class_static()));
+	override_camera->set_name(vformat("Override%s", T::get_class_static()));
 	p_viewport->add_child(override_camera, false, Node::INTERNAL_MODE_BACK);
 
 	override_camera->make_current();

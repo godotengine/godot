@@ -1772,7 +1772,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_method(m_type, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_method, m_method, &m_type ::m_method); \
+	METHOD_CLASS(m_type, m_method, m_method, &m_type::m_method); \
 	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
@@ -1782,7 +1782,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type ::m_method); \
+	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type::m_method); \
 	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
@@ -1792,7 +1792,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to ::m_method); \
+	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to::m_method); \
 	register_builtin_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
@@ -1802,7 +1802,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_compat_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_convert_compat_method(m_type_from, m_type_to, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to ::m_method); \
+	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to::m_method); \
 	register_builtin_compat_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
@@ -1812,7 +1812,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type ::m_method); \
+	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type::m_method); \
 	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 
@@ -1822,7 +1822,7 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
 #else
 #define bind_static_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type ::m_method); \
+	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type::m_method); \
 	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
 #endif // DEBUG_ENABLED
 

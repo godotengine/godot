@@ -50,7 +50,7 @@ bool ShaderBakerExportPluginPlatformD3D12::matches_driver(const String &p_driver
 	return p_driver == "d3d12";
 }
 
-ShaderBakerExportPluginPlatformD3D12 ::~ShaderBakerExportPluginPlatformD3D12() {
+ShaderBakerExportPluginPlatformD3D12::~ShaderBakerExportPluginPlatformD3D12() {
 	if (lib_d3d12 != nullptr) {
 		FreeLibrary((HMODULE)(lib_d3d12));
 	}
