@@ -48,6 +48,18 @@ class RenderSceneBuffers;
 
 class RenderingMethod {
 public:
+	/* CULLING VOLUME API */
+
+	virtual RID culling_volume_allocate() = 0;
+	virtual void culling_volume_initialize(RID p_rid) = 0;
+
+	virtual void culling_volume_set_mask(RID p_culling_volume, int p_mask) = 0;
+	virtual void culling_volume_set_plane(RID p_culling_volume, const Plane &p_plane) = 0;
+	virtual void culling_volume_set_sphere(RID p_culling_volume, const Vector3 &p_origin, real_t p_radius) = 0;
+	virtual void culling_volume_set_cylinder(RID p_culling_volume, const Vector3 &p_origin, const Vector3 &p_axis, real_t p_radius) = 0;
+
+	/* CAMERA API */
+
 	virtual RID camera_allocate() = 0;
 	virtual void camera_initialize(RID p_rid) = 0;
 
@@ -355,7 +367,7 @@ public:
 
 	virtual void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas, float p_window_output_max_value) = 0;
 
-	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, RenderingServerTypes::RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, const LocalVector<RID> &p_extra_culling_volumes, RenderingServerTypes::RenderInfo *r_render_info = nullptr) = 0;
 
 	virtual void update() = 0;
 	virtual void render_probes() = 0;

@@ -69,6 +69,35 @@ public:
 	void tick();
 	void pre_draw(bool p_will_draw);
 
+	/* CULLING VOLUME API */
+
+	struct CullingVolume {
+		RSE::CullingVolumeType type;
+		int mask;
+
+		Plane plane; // Used for plane only.
+		uint32_t plane_signs[3]; // Used for plane only.
+
+		Vector3 origin; // Used for sphere and cylinder.
+		real_t radius_sqr; // Used for sphere only.
+		Vector3 axis; // Used for cylinder only.
+
+		CullingVolume() {
+			type = RSE::CULLING_VOLUME_TYPE_MAX;
+			mask = 0x00ff;
+		}
+	};
+
+	mutable RID_Owner<CullingVolume, true> culling_volume_owner;
+
+	RID culling_volume_allocate();
+	void culling_volume_initialize(RID p_rid);
+
+	void culling_volume_set_mask(RID p_culling_volume, int p_mask);
+	void culling_volume_set_plane(RID p_culling_volume, const Plane &p_plane);
+	void culling_volume_set_sphere(RID p_culling_volume, const Vector3 &p_origin, real_t p_radius);
+	void culling_volume_set_cylinder(RID p_culling_volume, const Vector3 &p_origin, const Vector3 &p_axis, real_t p_radius);
+
 	/* CAMERA API */
 
 	struct Camera {
@@ -227,6 +256,140 @@ public:
 
 				if (p_frustum.planes_ptr[i].distance_to(min) >= 0.0) {
 					return false;
+				}
+			}
+
+			return true;
+		}
+		_ALWAYS_INLINE_ bool in_culling_volumes(int mask, const LocalVector<CullingVolume> &p_culling_volumes) const {
+			if (p_culling_volumes.is_empty()) {
+				return true;
+			}
+
+			for (const CullingVolume &culling_volume : p_culling_volumes) {
+				if ((mask & culling_volume.mask) == 0) {
+					// Ignore this culling volume.
+					continue;
+				}
+
+				switch (culling_volume.type) {
+					case RSE::CULLING_VOLUME_TYPE_PLANE: {
+						// Note, same as with in_frustum, this may give some false positives, which is fine.
+						Vector3 min(
+								bounds[culling_volume.plane_signs[0]],
+								bounds[culling_volume.plane_signs[1]],
+								bounds[culling_volume.plane_signs[2]]);
+
+						if (culling_volume.plane.distance_to(min) >= 0.0) {
+							return false;
+						}
+					} break;
+					case RSE::CULLING_VOLUME_TYPE_SPHERE: {
+						bool outside = true;
+
+						const Vector3 &origin = culling_volume.origin;
+						real_t radius_sqr = culling_volume.radius_sqr;
+
+						// Center our bounds.
+						real_t adj_bounds[6];
+						adj_bounds[0] = bounds[0] - origin.x;
+						adj_bounds[1] = bounds[1] - origin.y;
+						adj_bounds[2] = bounds[2] - origin.z;
+						adj_bounds[3] = bounds[3] - origin.x;
+						adj_bounds[4] = bounds[4] - origin.y;
+						adj_bounds[5] = bounds[5] - origin.z;
+
+						// Only check an axis if both values lie on the same side of our origin.
+						bool check_x = (adj_bounds[0] > 0.0) || (adj_bounds[3] < 0.0);
+						bool check_y = (adj_bounds[1] > 0.0) || (adj_bounds[4] < 0.0);
+						bool check_z = (adj_bounds[2] > 0.0) || (adj_bounds[5] < 0.0);
+
+						// Square or zero our values depending on whether we need to check an axis.
+						adj_bounds[0] *= check_x ? adj_bounds[0] : 0.0;
+						adj_bounds[1] *= check_y ? adj_bounds[1] : 0.0;
+						adj_bounds[2] *= check_z ? adj_bounds[2] : 0.0;
+						adj_bounds[3] *= check_x ? adj_bounds[3] : 0.0;
+						adj_bounds[4] *= check_y ? adj_bounds[4] : 0.0;
+						adj_bounds[5] *= check_z ? adj_bounds[5] : 0.0;
+
+						// Culled if for all corners: length(x - origin.x, y - origin.y, z - origin.z) > size
+						for (int i = 0; i < (check_x ? 2 : 1) && outside; i++) {
+							real_t x2 = adj_bounds[i ? 3 : 0];
+							for (int j = 0; j < (check_y ? 2 : 1) && outside; j++) {
+								real_t y2 = adj_bounds[j ? 4 : 1];
+								for (int k = 0; k < (check_z ? 2 : 1) && outside; k++) {
+									real_t z2 = adj_bounds[k ? 5 : 2];
+									if (x2 + y2 + z2 <= radius_sqr) {
+										// At least one corner is inside of our volume, so we keep this!
+										outside = false;
+									}
+								}
+							}
+						}
+
+						if (outside) {
+							// All points outside of our culling volume? then cull!
+							return false;
+						}
+					} break;
+					case RSE::CULLING_VOLUME_TYPE_CYLINDER: {
+						bool outside = true;
+
+						const Vector3 &origin = culling_volume.origin;
+						const Vector3 &axis = culling_volume.axis;
+
+						// Center our bounds.
+						real_t adj_bounds[6];
+						adj_bounds[0] = bounds[0] - origin.x;
+						adj_bounds[1] = bounds[1] - origin.y;
+						adj_bounds[2] = bounds[2] - origin.z;
+						adj_bounds[3] = bounds[3] - origin.x;
+						adj_bounds[4] = bounds[4] - origin.y;
+						adj_bounds[5] = bounds[5] - origin.z;
+
+						// Note: this check can fail if all bounds are outside of our volume, but AABB crosses through the volume.
+						// We can only do the same trick as with the spherical volume check if our axis vector is axis aligned.
+						bool check_x = true;
+						bool check_y = true;
+						bool check_z = true;
+						if (axis.x == 0.0 && adj_bounds[0] <= 0.0 && adj_bounds[3] >= 0.0) {
+							check_x = false;
+							adj_bounds[0] = 0.0;
+						}
+						if (axis.y == 0.0 && adj_bounds[1] <= 0.0 && adj_bounds[4] >= 0.0) {
+							check_y = false;
+							adj_bounds[1] = 0.0;
+						}
+						if (axis.z == 0.0 && adj_bounds[2] <= 0.0 && adj_bounds[5] >= 0.0) {
+							check_z = false;
+							adj_bounds[2] = 0.0;
+						}
+
+						// Culled if for all corners: axis.cross(p - origin).length_squared() > 1.0
+						// We can use length_squared() and save a sqrt seeing 1.0 squared is still 1.0
+						Vector3 p;
+						for (int i = 0; i < (check_x ? 2 : 1) && outside; i++) {
+							p.x = adj_bounds[i ? 3 : 0];
+							for (int j = 0; j < (check_y ? 2 : 1) && outside; j++) {
+								p.y = adj_bounds[j ? 4 : 1];
+								for (int k = 0; k < (check_z ? 2 : 1) && outside; k++) {
+									p.z = adj_bounds[k ? 5 : 2];
+									if (axis.cross(p).length_squared() <= 1.0) {
+										// At least one corner is inside of our volume, so we keep this!
+										outside = false;
+									}
+								}
+							}
+						}
+
+						if (outside) {
+							// All points outside of our culling volume? then cull!
+							return false;
+						}
+					} break;
+					default:
+						// ignore
+						break;
 				}
 			}
 
@@ -1126,6 +1289,7 @@ public:
 		SpinLock lock;
 
 		Frustum frustum;
+		LocalVector<CullingVolume> extra_culling_volumes;
 	} cull;
 
 	struct VisibilityCullData {
@@ -1160,10 +1324,10 @@ public:
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows = true, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, float p_window_output_max_value, bool p_using_shadows = true, const LocalVector<RID> &p_extra_culling_volumes = LocalVector<RID>(), RenderingServerTypes::RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas, float p_window_output_max_value);
 
-	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
+	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, float p_window_output_max_value, const LocalVector<RID> &p_extra_culling_volumes, RenderingServerTypes::RenderInfo *r_render_info = nullptr);
 	void update_dirty_instances() const;
 
 	void render_particle_colliders();
