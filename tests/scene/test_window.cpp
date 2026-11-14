@@ -91,6 +91,26 @@ TEST_CASE("[SceneTree][Window]") {
 		memdelete(c);
 		memdelete(w);
 	}
+
+	SUBCASE("Exclusive window doesn't lose focus on background mouse press") {
+		Window *w = memnew(Window);
+		root->add_child(w);
+
+		w->set_transient(true);
+		w->set_exclusive(true);
+
+		w->set_size(Size2i(100, 100));
+		w->set_position(Point2i(0, 0));
+
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(50, 50), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(w->has_focus());
+
+		// When root window is clicked, focus should stay on window node because window node is exclusive.
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(500, 500), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(w->has_focus());
+
+		memdelete(w);
+	}
 }
 
 } // namespace TestWindow
