@@ -218,7 +218,7 @@ GDExtensionBool __attribute__((visibility("default"))) compatibility_test_init(G
 	string_name_destructor = variant_get_ptr_destructor(GDEXTENSION_VARIANT_TYPE_STRING_NAME);
 
 	string_name_new_with_latin1_chars = (GDExtensionInterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars");
-	if (classdb_get_method_bind == NULL) {
+	if (string_name_new_with_latin1_chars == NULL) {
 		fprintf(stderr, "Failed to load interface method `string_name_new_with_latin1_chars`\n");
 		return false;
 	}
