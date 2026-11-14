@@ -214,10 +214,18 @@ bool NavRegion3D::sync() {
 		return requires_map_update;
 	}
 
+	// Publish the completed iteration first so pending changes can start building
+	// before the current sync request is cleared.
+	if (iteration_ready) {
+		_sync_iteration();
+		requires_map_update = true;
+	}
+
 	if (iteration_dirty && !iteration_building && !iteration_ready) {
 		_build_iteration();
 	}
 
+	// Publish the result immediately if the build was synchronous.
 	if (iteration_ready) {
 		_sync_iteration();
 		requires_map_update = true;
