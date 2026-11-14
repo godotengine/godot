@@ -366,7 +366,9 @@ protected:
 
 	GDVIRTUAL1RC(bool, _can_handle, Object *)
 	GDVIRTUAL1(_parse_begin, Object *)
+	GDVIRTUAL2R(bool, _parse_category_header, Object *, String)
 	GDVIRTUAL2(_parse_category, Object *, String)
+	GDVIRTUAL2R(VBoxContainer *, _parse_group_section, Object *, String)
 	GDVIRTUAL2(_parse_group, Object *, String)
 	GDVIRTUAL7R(bool, _parse_property, Object *, Variant::Type, String, PropertyHint, String, BitField<PropertyUsageFlags>, bool)
 	GDVIRTUAL1(_parse_end, Object *)
@@ -382,7 +384,9 @@ public:
 
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);
+	virtual bool parse_category_header(Object *p_object, const String &p_category);
 	virtual void parse_category(Object *p_object, const String &p_category);
+	virtual VBoxContainer *parse_group_section(Object *p_object, const String &p_group);
 	virtual void parse_group(Object *p_object, const String &p_group);
 	virtual bool parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide = false);
 	virtual void parse_end(Object *p_object);
