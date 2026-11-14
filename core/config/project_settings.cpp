@@ -1871,6 +1871,7 @@ ProjectSettings::ProjectSettings() {
 	// Input settings
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/ios/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
