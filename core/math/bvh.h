@@ -184,6 +184,11 @@ public:
 		BVH_LOCKED_FUNCTION
 		return item_get_tree_id(h);
 	}
+	uint32_t get_tree_collision_mask(uint32_t p_handle) const {
+		BVHHandle h;
+		h.set(p_handle);
+		return item_get_tree_collision_mask(h);
+	}
 	int get_subindex(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
@@ -454,6 +459,9 @@ private:
 			abb.from(expanded_aabb);
 
 			tree.item_fill_cullparams(h, params);
+			if (params.tree_collision_mask == 0) {
+				continue;
+			}
 
 			// find all the existing paired aabbs that are no longer
 			// paired, and send callbacks
@@ -495,6 +503,7 @@ public:
 private:
 	// supplemental funcs
 	uint32_t item_get_tree_id(BVHHandle p_handle) const { return _get_extra(p_handle).tree_id; }
+	uint32_t item_get_tree_collision_mask(BVHHandle p_handle) const { return _get_extra(p_handle).tree_collision_mask; }
 	T *item_get_userdata(BVHHandle p_handle) const { return _get_extra(p_handle).userdata; }
 	int item_get_subindex(BVHHandle p_handle) const { return _get_extra(p_handle).subindex; }
 
