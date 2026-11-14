@@ -530,7 +530,7 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 
 	bool history_modified = false;
 
-	if (first_open && history_file->load(_get_cache_file_path()) == OK) {
+	if (first_open && history_file->load(_get_cache_file_path()) == OK && history_file->has_section("selected_history")) {
 		// Load history when opening for the first time.
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
