@@ -72,10 +72,20 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		bool valid = true;
 
 		for (int i = 0; i < pc; i++) {
+			// Null is always OK for array types.
+			if ((ptypes[i] & ARG_ARRAY_BIT) && p_args[i]->get_type() == Variant::NIL) {
+				continue;
+			}
+
 			Variant::Type arg_expected = Variant::NIL;
 			switch (ptypes[i]) {
 				case ARG_TYPE_VOID: {
 					//bug?
+				} break;
+				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_BOOLEAN: {
+					if (p_args[i]->get_type() != Variant::BOOL && p_args[i]->get_type() != Variant::NIL) {
+						arg_expected = Variant::BOOL;
+					}
 				} break;
 				case ARG_TYPE_BOOLEAN: {
 					if (p_args[i]->get_type() != Variant::BOOL) {
@@ -86,7 +96,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_CHAR:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_SHORT:
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_INT:
-				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_LONG:
+				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_LONG: {
+					if (!p_args[i]->is_num() && p_args[i]->get_type() != Variant::NIL) {
+						arg_expected = Variant::INT;
+					}
+				} break;
 				case ARG_TYPE_BYTE:
 				case ARG_TYPE_CHAR:
 				case ARG_TYPE_SHORT:
@@ -97,7 +111,11 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} break;
 				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_FLOAT:
-				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_DOUBLE:
+				case ARG_NUMBER_CLASS_BIT | ARG_TYPE_DOUBLE: {
+					if (!p_args[i]->is_num() && p_args[i]->get_type() != Variant::NIL) {
+						arg_expected = Variant::FLOAT;
+					}
+				} break;
 				case ARG_TYPE_FLOAT:
 				case ARG_TYPE_DOUBLE: {
 					if (!p_args[i]->is_num()) {
@@ -940,6 +958,12 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 }
 
 bool JavaClass::_convert_variant_to_jvalue(JNIEnv *p_env, const Variant &p_variant, uint32_t p_sig, const StringName &p_strsig, jvalue &r_ret) {
+	// Allow passing null for all the boxed number and array types.
+	if (p_variant.get_type() == Variant::NIL && (p_sig & (ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT))) {
+		r_ret.l = nullptr;
+		return true;
+	}
+
 	switch (p_sig) {
 		case ARG_TYPE_VOID: {
 			r_ret.l = nullptr;
@@ -1267,6 +1291,8 @@ bool JavaClass::_convert_variant_to_jvalue(JNIEnv *p_env, const Variant &p_varia
 				p_env->DeleteLocalRef(c);
 			}
 		} break;
+		default:
+			return false;
 	}
 
 	return true;
