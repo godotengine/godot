@@ -4512,6 +4512,12 @@ CanvasItemEditor::CanvasItemEditor() {
 	callable_mp(this, &CanvasItemEditor::set_state).call_deferred(get_state());
 }
 
+CanvasItemEditor::~CanvasItemEditor() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
 
 void CanvasItemEditorPlugin::edit(Object *p_object) {

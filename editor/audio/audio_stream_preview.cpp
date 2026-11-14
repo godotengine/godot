@@ -273,4 +273,7 @@ AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
 		}
 	}
 	previews.clear();
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

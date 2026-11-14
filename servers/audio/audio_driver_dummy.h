@@ -81,5 +81,5 @@ public:
 	static AudioDriverDummy *get_dummy_singleton() { return singleton; }
 
 	AudioDriverDummy();
-	~AudioDriverDummy() {}
+	~AudioDriverDummy();
 };
