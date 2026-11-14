@@ -573,6 +573,5 @@ protected:
 
 
 def build_gles3_headers(target, source, env):
-    env.NoCache(target)
     for src in source:
         build_gles3_header(f"{src}.gen.h", str(src))

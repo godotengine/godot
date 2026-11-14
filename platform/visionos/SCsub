@@ -4,7 +4,11 @@ from misc.utility.scons_hints import *
 from platform_visionos_builders import generate_bundle
 from SCons.Script import Glob
 
-from platform_methods import combine_libs_apple_embedded, setup_swift_builder
+from platform_methods import (
+    combine_libs_apple_embedded,
+    generate_bundle_options_apple_embedded,
+    setup_swift_builder,
+)
 
 Import("env")
 
@@ -43,8 +47,16 @@ if "LIBS_EXTERNAL" in env_visionos:
 env_visionos.Depends(visionos_lib, env_visionos["SWIFT_OBJC_HEADER_TARGET"])
 
 combine_command = env_visionos.Command(
-    "#bin/libgodot" + env_visionos["LIBSUFFIX"], [visionos_lib] + env_visionos["LIBS"], combine_libs_apple_embedded
+    "#bin/libgodot" + env_visionos["LIBSUFFIX"],
+    [visionos_lib] + env_visionos["LIBS"],
+    combine_libs_apple_embedded(env_visionos),
 )
 
 if env["generate_bundle"]:
-    env.AlwaysBuild(env.CommandNoCache("generate_bundle", combine_command, env.Run(generate_bundle)))
+    env.AlwaysBuild(
+        env.CommandNoCache(
+            "generate_bundle",
+            [combine_command, env.Value(generate_bundle_options_apple_embedded(env))],
+            env.Run(generate_bundle),
+        )
+    )

@@ -1,6 +1,8 @@
 import atexit
+import base64
 import contextlib
 import glob
+import json
 import math
 import os
 import re
@@ -85,15 +87,16 @@ def add_source_files(self, sources, files, allow_gen=False):
 
 def redirect_emitter(target, source, env):
     """
-    Emitter to automatically redirect object/library build files to the `bin/obj` directory,
+    Emitter to automatically redirect object/library build files to the `obj_dir` directory,
     retaining subfolder structure. External build files will attempt to retain subfolder
-    structure relative to their environment's parent directory, sorted under `bin/obj/external`.
+    structure relative to their environment's parent directory, sorted under `obj_dir/external`.
     If `redirect_build_objects` is `False`, an external build file isn't relative to the passed
     environment, or a file is being written directly into `bin`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
 
+    obj_dir = env.Dir("#").Dir(env["obj_dir"])
     redirected_targets = []
     for item in target:
         path = Path(item.get_abspath()).resolve()
@@ -101,9 +104,9 @@ def redirect_emitter(target, source, env):
         if path.parent == base_folder / "bin":
             pass
         elif base_folder in path.parents:
-            item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
+            item = obj_dir.File(str(path.relative_to(base_folder)))
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
-            item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
+            item = obj_dir.File(f"external/{path.relative_to(alt_base)}")
         else:
             print_warning(f'Failed to redirect "{path}"')
         redirected_targets.append(item)
@@ -598,15 +601,96 @@ def add_program(env, name, sources, **args):
 
 
 def CommandNoCache(env, target, sources, command, **args):
+    if function := getattr(command, "function", None):
+        from SCons.Node.Python import Value
+
+        # The Ninja backend defers any target that has a `Value` source to SCons.
+        # A standalone builder gets the values as arguments, so drop them as sources.
+        nodes = env.arg2nodes(env.Flatten([sources]), env.fs.Entry)
+        if any(isinstance(node, Value) for node in nodes):
+            sources = [node for node in nodes if not isinstance(node, Value)]
+            command = Run(env, function, command.comstr, source=nodes)
+
     result = env.Command(target, sources, command, **args)
     env.NoCache(result)
+    # Rebuild when the standalone builder script changes.
+    if script := getattr(command, "script", None):
+        env.Depends(result, ["#" + script, "#" + BUILDER_RUNNER])
     return result
 
 
-def Run(env, function, comstr="$GENCOMSTR"):
+BUILDER_RUNNER = "misc/scripts/run_builder.py"
+BUILDER_VALUE_PREFIX = "json:"
+
+
+def encode_value(value) -> str:
+    """Encode a JSON-compatible value as a single shell-safe command line argument."""
+    return BUILDER_VALUE_PREFIX + base64.urlsafe_b64encode(json.dumps(value).encode()).decode()
+
+
+def decode_value(value: str):
+    """Decode an argument from `encode_value()`. Other arguments are returned as is."""
+    if not value.startswith(BUILDER_VALUE_PREFIX):
+        return value
+    return json.loads(base64.urlsafe_b64decode(value[len(BUILDER_VALUE_PREFIX) :]))
+
+
+def Run(env, function, comstr="$GENCOMSTR", source=None):
+    """
+    Create an action from a builder.
+
+    A builder function from a `.py` file runs as a standalone command through
+    `BUILDER_RUNNER`, so the Ninja backend does not need SCons to execute it.
+    Its module must be importable without SCons. Nodes are passed as paths.
+    Other values, and the content of `Value` nodes, must be JSON-compatible and
+    are passed as is. `env` is a dict with only `production` and `dev_build`.
+
+    - `source`: Optional list to pass instead of the sources of the target, for
+    builders that need options rather than files.
+    """
+    from SCons.Node import Node
+    from SCons.Node.Python import Value
     from SCons.Script import Action
 
-    return Action(function, comstr)
+    code = getattr(function, "__code__", None)
+    if code is None or not code.co_filename.endswith(".py"):
+        return Action(function, comstr)
+
+    script = os.path.relpath(code.co_filename, base_folder).replace("\\", "/")
+    explicit_source = source
+
+    def to_arg(item):
+        if isinstance(item, Value):
+            return encode_value(item.read())
+        return str(item) if isinstance(item, Node) else encode_value(item)
+
+    def generator(target, source, env, for_signature):
+        args = [script, function.__name__]
+        if env["production"]:
+            args += ["--production"]
+        if env["dev_build"]:
+            args += ["--dev-build"]
+        args += ["--target", *map(str, target), "--source"]
+        args += map(to_arg, source if explicit_source is None else explicit_source)
+
+        # Long command lines go to an argument file named after its content, so
+        # the command only changes when the arguments do.
+        if sum(map(len, args)) > 2048:
+            content = "\n".join(args).encode()
+            args_dir = env.Dir("#").Dir(env["obj_dir"]).Dir("args")
+            argfile = Path(str(args_dir), zlib.crc32(content).to_bytes(4, "big").hex() + ".txt")
+            if not argfile.is_file():
+                argfile.parent.mkdir(parents=True, exist_ok=True)
+                argfile.write_bytes(content)
+            args = ["@" + argfile.as_posix()]
+
+        return [[sys.executable, BUILDER_RUNNER, *args]]
+
+    action = Action(generator, comstr, generator=True)
+    action.function = function
+    action.comstr = comstr
+    action.script = script
+    return action
 
 
 def detect_darwin_toolchain_path(env):
@@ -1585,7 +1669,7 @@ def compress_buffer_zstd(buffer: bytes, env):
     # Long-distance matching helps a lot with the editor translations on lower levels,
     # but costs some extra decompression time (+30%). It's not helping at high levels.
     level = 20 if env["production"] else 7
-    ldm = False if env["production"] or env.dev_build else True
+    ldm = False if env["production"] or env["dev_build"] else True
     has_compression_zstd = True
     try:
         import compression.zstd

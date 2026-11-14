@@ -113,6 +113,16 @@ if lib_arch_dir != "" and host_subpath != "":
     if env["generate_android_binaries"]:
         env_android.AlwaysBuild(
             env_android.CommandNoCache(
-                "generate_android_binaries", lib, env.Run(platform_android_builders.generate_android_binaries)
+                "generate_android_binaries",
+                lib,
+                env.Run(
+                    platform_android_builders.generate_android_binaries,
+                    source=[
+                        {
+                            key: env[key]
+                            for key in ["target", "module_mono_enabled", "debug_symbols", "separate_debug_symbols"]
+                        }
+                    ],
+                ),
             )
         )
