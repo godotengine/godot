@@ -80,10 +80,16 @@ void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		return;
 	}
 
+	if (ancestor_push_pending) {
+		ancestor_push_pending = false;
+		return;
+	}
+
 	last_valid_transform = p_state->get_transform();
 	set_notify_local_transform(false);
 	set_global_transform(last_valid_transform);
 	set_notify_local_transform(true);
+	last_valid_transform = get_global_transform();
 	_on_transform_changed();
 }
 
@@ -96,6 +102,7 @@ void AnimatableBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			last_valid_transform = get_global_transform();
+			ancestor_push_pending = false;
 			_update_kinematic_motion();
 		} break;
 
@@ -114,7 +121,18 @@ void AnimatableBody3D::_notification(int p_what) {
 			set_notify_local_transform(false);
 			set_global_transform(last_valid_transform);
 			set_notify_local_transform(true);
+			last_valid_transform = get_global_transform();
 			_on_transform_changed();
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			// Used by sync to physics, send the new transform to the physics when an ancestor moved us.
+			if (is_only_update_transform_changes_enabled() && get_global_transform() != last_valid_transform) {
+				last_valid_transform = get_global_transform();
+				PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_TRANSFORM, last_valid_transform);
+				ancestor_push_pending = true;
+				_on_transform_changed();
+			}
 		} break;
 	}
 }
