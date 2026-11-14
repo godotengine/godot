@@ -103,6 +103,12 @@
 				Returns the list of stored animation keys.
 			</description>
 		</method>
+		<method name="get_fpslod_current_index_level" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the index of the currently active [FPSLODLevel].
+			</description>
+		</method>
 		<method name="get_root_motion_position" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -313,11 +319,29 @@
 			[b]Note:[/b] In [AnimationTree], the blending with [AnimationNodeAdd2], [AnimationNodeAdd3], [AnimationNodeSub2] or the weight greater than [code]1.0[/code] may produce unexpected results.
 			For example, if [AnimationNodeAdd2] blends two nodes with the amount [code]1.0[/code], then total weight is [code]2.0[/code] but it will be normalized to make the total amount [code]1.0[/code] and the result will be equal to [AnimationNodeBlend2] with the amount [code]0.5[/code].
 		</member>
+		<member name="fps_lod_enable" type="bool" setter="set_fpslod" getter="is_fpslod" default="false">
+			Enables frame skipping using FPSLOD.
+			Animation frames are skipped based on the distance of the active camera and the [member fps_lod_target] node, as well as [FPSLODLevel] levels. This is effective for improving performance when you have multiple animated models overlapping each other.
+			This occurs if [member fps_lod_manual] is set to [code]false[/code], otherwise, frames are always skipped, regardless of the camera. This can be used for manual frame skipping or for specific artistic animation styles.
+		</member>
+		<member name="fps_lod_levels" type="FPSLODLevel[]" setter="set_fpslod_levels" getter="get_fpslod_levels" default="[]">
+			Specifies an array of [FPSLODLevel] used to calculate levels of detail in [b]FPSLOD[/b].
+		</member>
+		<member name="fps_lod_manual" type="bool" setter="set_fpslod_manual" getter="is_fpslod_manual" default="false">
+			Sets the manual frame skipping mode for [b]FPSLOD[/b].
+			See also [member fps_lod_skip_frames].
+		</member>
+		<member name="fps_lod_skip_frames" type="int" setter="set_fpslod_skip_frames" getter="get_fpslod_skip_frames" default="0">
+			Sets the strength of animation frame skipping when [member fps_lod_manual] is [code]true[/code].
+		</member>
+		<member name="fps_lod_target" type="NodePath" setter="set_fpslod_target" getter="get_fpslod_target" default="NodePath(&quot;&quot;)">
+			Specifies the target node to denote the origin of coordinates from which the calculation to the active camera begins when [b]FPSLOD[/b] is enabled.
+		</member>
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
 			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
-		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local" default="false">
+		<member name="root_motion_local" type="bool" setter="set_root_motion_local" getter="is_root_motion_local">
 			If [code]true[/code], [method get_root_motion_position] value is extracted as a local translation value before blending. In other words, it is treated like the translation is done after the rotation.
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
