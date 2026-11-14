@@ -2219,7 +2219,7 @@ void Input::parse_mapping(const String &p_mapping) {
 			continue;
 		}
 
-		if (output == "platform" || output == "hint") {
+		if (output == "platform" || output == "hint" || output == "crc") {
 			continue;
 		}
 
@@ -2281,7 +2281,7 @@ void Input::parse_mapping(const String &p_mapping) {
 				break;
 			case 'h':
 				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
-						vformat("Invalid had input \"%s\" in mapping:\n%s", input, p_mapping));
+						vformat("Invalid hat input \"%s\" in mapping:\n%s", input, p_mapping));
 				binding.inputType = TYPE_HAT;
 				binding.input.hat.hat = (HatDir)input.substr(1, 1).to_int();
 				binding.input.hat.hat_mask = static_cast<HatMask>(input.substr(3).to_int());
