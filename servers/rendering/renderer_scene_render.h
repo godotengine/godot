@@ -330,6 +330,7 @@ public:
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time, double p_step) = 0;
 	virtual void set_debug_draw_mode(RSE::ViewportDebugDraw p_debug_draw) = 0;
+	virtual void set_debug_wireframe_color(const Color &p_color) {}
 
 	virtual Ref<RenderSceneBuffers> render_buffers_create() = 0;
 	virtual void gi_set_use_half_resolution(bool p_enable) = 0;

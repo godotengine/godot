@@ -185,6 +185,7 @@ private:
 		float IBL_exposure_normalization; // Adjusts for baked exposure.
 		uint32_t camera_visible_layers;
 		float pass_alpha_multiplier;
+		float wireframe_color[4];
 	};
 
 	struct UBODATA {

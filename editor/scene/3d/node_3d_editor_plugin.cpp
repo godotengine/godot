@@ -2562,6 +2562,8 @@ void Node3DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			RS::get_singleton()->set_debug_wireframe_color(EDITOR_GET("editors/3d/wireframe_overlay_color"));
+
 			_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
 			_refresh_menu_icons();
@@ -2620,6 +2622,8 @@ void Node3DEditor::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+				RS::get_singleton()->set_debug_wireframe_color(EDITOR_GET("editors/3d/wireframe_overlay_color"));
+
 				const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
 				const Color active_selection_box_color = EDITOR_GET("editors/3d/active_selection_box_color");
 

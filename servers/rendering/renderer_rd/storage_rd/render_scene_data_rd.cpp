@@ -128,6 +128,11 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RSE::ViewportDebugDraw 
 	RendererRD::MaterialStorage::store_soft_shadow_kernel(render_scene_render->soft_shadow_kernel_get(), ubo.soft_shadow_kernel);
 	ubo.camera_visible_layers = camera_visible_layers;
 	ubo.pass_alpha_multiplier = p_opaque_render_buffers && p_apply_alpha_multiplier ? 0.0f : 1.0f;
+	const Color wireframe_color = render_scene_render->get_debug_wireframe_color().srgb_to_linear();
+	ubo.wireframe_color[0] = wireframe_color.r;
+	ubo.wireframe_color[1] = wireframe_color.g;
+	ubo.wireframe_color[2] = wireframe_color.b;
+	ubo.wireframe_color[3] = 1.0;
 
 	ubo.viewport_size[0] = p_viewport_size.x;
 	ubo.viewport_size[1] = p_viewport_size.y;

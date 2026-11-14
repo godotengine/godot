@@ -3222,5 +3222,27 @@ void main() {
 	}
 #endif
 
+#ifndef MODE_RENDER_DEPTH
+	if (sc_wireframe_overlay()) {
+#ifdef MODE_SEPARATE_SPECULAR
+		diffuse_buffer = vec4(scene_data_block.data.wireframe_color.rgb, 0.0);
+		specular_buffer = vec4(0.0);
+#else
+		frag_color = vec4(scene_data_block.data.wireframe_color.rgb, 1.0);
+#endif
+
+#ifdef DEPTH_USED
+		gl_FragDepth = gl_FragCoord.z;
+#endif
+
+#ifdef MOTION_VECTORS
+		vec2 current_clip = screen_position.xy / screen_position.w - scene_data_block.data.taa_jitter;
+		vec2 previous_clip = prev_screen_position.xy / prev_screen_position.w - scene_data_block.prev_data.taa_jitter;
+		motion_vector = (previous_clip - current_clip) * 0.5;
+#endif
+		return;
+	}
+#endif
+
 	fragment_shader(scene_data_block.data);
 }

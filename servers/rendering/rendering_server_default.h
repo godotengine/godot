@@ -910,6 +910,7 @@ public:
 	FUNC1(light_projectors_set_filter, RSE::LightProjectorFilter);
 	FUNC1(lightmaps_set_bicubic_filter, bool);
 	FUNC1(material_set_use_debanding, bool);
+	FUNC1(set_debug_wireframe_color, const Color &);
 
 	/* CAMERA ATTRIBUTES */
 

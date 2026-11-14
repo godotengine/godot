@@ -128,6 +128,7 @@ protected:
 
 private:
 	RSE::ViewportDebugDraw debug_draw = RSE::VIEWPORT_DEBUG_DRAW_DISABLED;
+	Color debug_wireframe_color = Color(0.0, 0.0, 0.0);
 	static RendererSceneRenderRD *singleton;
 
 	/* Shadow atlas */
@@ -345,6 +346,14 @@ public:
 	virtual void set_debug_draw_mode(RSE::ViewportDebugDraw p_debug_draw) override;
 	_FORCE_INLINE_ RSE::ViewportDebugDraw get_debug_draw_mode() const {
 		return debug_draw;
+	}
+
+	void set_debug_wireframe_color(const Color &p_color) override {
+		debug_wireframe_color = p_color;
+	}
+
+	Color get_debug_wireframe_color() const {
+		return debug_wireframe_color;
 	}
 
 	virtual void set_time(double p_time, double p_step) override;
