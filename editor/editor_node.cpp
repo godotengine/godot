@@ -507,6 +507,8 @@ void EditorNode::_update_from_settings() {
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
 
+	RSE::MotionBlurQuality motion_blur_quality = RSE::MotionBlurQuality(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_quality")));
+	RS::get_singleton()->camera_attributes_set_motion_blur_quality(motion_blur_quality);
 	RSE::DOFBokehShape dof_shape = RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RSE::DOFBlurQuality dof_quality = RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));
