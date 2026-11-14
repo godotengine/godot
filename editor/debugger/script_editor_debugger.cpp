@@ -1710,6 +1710,18 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 	}
 }
 
+void ScriptEditorDebugger::live_debug_delete_remote_nodes(const TypedArray<uint64_t> &p_ids) {
+	Array msg;
+	msg.push_back(p_ids);
+	_put_msg("scene:delete_node", msg);
+}
+
+void ScriptEditorDebugger::live_debug_restore_remote_nodes(const TypedArray<uint64_t> &p_ids) {
+	Array msg;
+	msg.push_back(p_ids);
+	_put_msg("scene:restore_node", msg);
+}
+
 bool ScriptEditorDebugger::get_debug_mute_audio() const {
 	return debug_mute_audio;
 }
@@ -2077,6 +2089,8 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("live_debug_restore_node"), &ScriptEditorDebugger::live_debug_restore_node);
 	ClassDB::bind_method(D_METHOD("live_debug_duplicate_node"), &ScriptEditorDebugger::live_debug_duplicate_node);
 	ClassDB::bind_method(D_METHOD("live_debug_reparent_node"), &ScriptEditorDebugger::live_debug_reparent_node);
+	ClassDB::bind_method(D_METHOD("live_debug_delete_remote_nodes"), &ScriptEditorDebugger::live_debug_delete_remote_nodes);
+	ClassDB::bind_method(D_METHOD("live_debug_restore_remote_nodes"), &ScriptEditorDebugger::live_debug_restore_remote_nodes);
 	ClassDB::bind_method(D_METHOD("update_remote_object", "id", "property", "value", "field"), &ScriptEditorDebugger::update_remote_object);
 
 	ADD_SIGNAL(MethodInfo("started"));
