@@ -32,6 +32,7 @@
 
 #include "../nav_utils_2d.h"
 #include "nav_base_iteration_2d.h"
+#include "nav_polygon_bvh_2d.h"
 
 #include "core/math/rect2.h"
 
@@ -76,6 +77,7 @@ public:
 	Transform2D transform;
 	real_t surface_area = 0.0;
 	Rect2 bounds;
+	NavPolygonBVH2D polygon_bvh;
 	LocalVector<Nav2D::ConnectableEdge> external_edges;
 
 	const Transform2D &get_transform() const { return transform; }

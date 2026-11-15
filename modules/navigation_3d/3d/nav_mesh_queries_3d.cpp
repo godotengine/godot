@@ -240,36 +240,37 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 
 	const LocalVector<Ref<NavRegionIteration3D>> &regions = p_map_iteration.region_iterations;
 
+	// Find the initial poly and the end poly on this map.
 	for (const Ref<NavRegionIteration3D> &region : regions) {
-		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr())) {
+		// All polygons share the region's layers; only consider usable regions with compatible layers.
+		if (!_query_task_is_connection_owner_usable(p_query_task, region.ptr()) || (p_query_task.navigation_layers & region->get_navigation_layers()) == 0) {
 			continue;
 		}
+		const LocalVector<Polygon> &polygons = region->get_navmesh_polygons();
+		if (!region->polygon_bvh.is_empty()) {
+			// Use the BVH to check the distances to the origin/destination.
+			region->polygon_bvh.find_closest_point(polygons, p_query_task.start_position, begin_d, p_query_task.begin_polygon, p_query_task.begin_position);
+			region->polygon_bvh.find_closest_point(polygons, p_query_task.target_position, end_d, p_query_task.end_polygon, p_query_task.end_position);
+		} else {
+			for (const Polygon &p : region->get_navmesh_polygons()) {
+				// For each face check the distance between the origin/destination.
+				for (uint32_t point_id = 2; point_id < p.vertices.size(); point_id++) {
+					const Face3 face(p.vertices[0], p.vertices[point_id - 1], p.vertices[point_id]);
+					Vector3 point = face.get_closest_point_to(p_query_task.start_position);
+					real_t distance_to_point = point.distance_to(p_query_task.start_position);
+					if (distance_to_point < begin_d) {
+						begin_d = distance_to_point;
+						p_query_task.begin_polygon = &p;
+						p_query_task.begin_position = point;
+					}
 
-		// Find the initial poly and the end poly on this map.
-		for (const Polygon &p : region->get_navmesh_polygons()) {
-			// Only consider the polygon if it in a region with compatible layers.
-			if ((p_query_task.navigation_layers & p.owner->get_navigation_layers()) == 0) {
-				continue;
-			}
-
-			// For each face check the distance between the origin/destination.
-			for (uint32_t point_id = 2; point_id < p.vertices.size(); point_id++) {
-				const Face3 face(p.vertices[0], p.vertices[point_id - 1], p.vertices[point_id]);
-
-				Vector3 point = face.get_closest_point_to(p_query_task.start_position);
-				real_t distance_to_point = point.distance_to(p_query_task.start_position);
-				if (distance_to_point < begin_d) {
-					begin_d = distance_to_point;
-					p_query_task.begin_polygon = &p;
-					p_query_task.begin_position = point;
-				}
-
-				point = face.get_closest_point_to(p_query_task.target_position);
-				distance_to_point = point.distance_to(p_query_task.target_position);
-				if (distance_to_point < end_d) {
-					end_d = distance_to_point;
-					p_query_task.end_polygon = &p;
-					p_query_task.end_position = point;
+					point = face.get_closest_point_to(p_query_task.target_position);
+					distance_to_point = point.distance_to(p_query_task.target_position);
+					if (distance_to_point < end_d) {
+						end_d = distance_to_point;
+						p_query_task.end_polygon = &p;
+						p_query_task.end_position = point;
+					}
 				}
 			}
 		}

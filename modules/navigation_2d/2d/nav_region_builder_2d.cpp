@@ -52,6 +52,8 @@ void NavRegionBuilder2D::build_iteration(NavRegionIterationBuild2D &r_build) {
 
 	_build_step_merge_edge_connection_pairs(r_build);
 
+	_build_step_build_polygon_bvh(r_build);
+
 	_build_update_iteration(r_build);
 }
 
@@ -253,6 +255,10 @@ void NavRegionBuilder2D::_build_step_merge_edge_connection_pairs(NavRegionIterat
 			region_iteration->external_edges.push_back(ce);
 		}
 	}
+}
+
+void NavRegionBuilder2D::_build_step_build_polygon_bvh(NavRegionIterationBuild2D &r_build) {
+	r_build.region_iteration->polygon_bvh.build(r_build.region_iteration->navmesh_polygons);
 }
 
 void NavRegionBuilder2D::_build_update_iteration(NavRegionIterationBuild2D &r_build) {
