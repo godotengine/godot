@@ -622,6 +622,7 @@ private:
 	int minimap_width = 80;
 	Point2 minimap_char_size = Point2(1, 2);
 	int minimap_line_spacing = 1;
+	int minimap_margin = 2; // The margin is part of the minimap.
 
 	// Minimap scroll.
 	bool minimap_clicked = false;
