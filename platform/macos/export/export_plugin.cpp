@@ -2475,7 +2475,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	for (const KeyValue<String, Vector<PackedByteArray>> &E : universal_binaries) {
 		if (!LipO::create_file(E.key, E.value)) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to create universal bninary \"%s\""), E.key));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to create universal binary \"%s\""), E.key));
 			err = ERR_CANT_CREATE;
 		}
 		// chmod with 0755 if the file is executable.
