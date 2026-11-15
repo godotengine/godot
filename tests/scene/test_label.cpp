@@ -36,11 +36,72 @@ TEST_FORCE_LINK(test_label)
 
 #if defined(MODULE_TEXT_SERVER_FB_ENABLED) || defined(MODULE_TEXT_SERVER_ADV_ENABLED)
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/margin_container.h"
+#include "scene/gui/panel_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
 namespace TestLabel {
+
+TEST_CASE("[SceneTree][Label] Autowrapped labels in a maximum-width container") {
+	Control *control = memnew(Control);
+	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_custom_maximum_size(Size2(200, -1));
+	panel->set_size(Size2(40, 40));
+	control->add_child(panel);
+	MarginContainer *margin = memnew(MarginContainer);
+	for (const char *side : { "margin_left", "margin_top", "margin_right", "margin_bottom" }) {
+		margin->add_theme_constant_override(side, 10);
+	}
+	panel->add_child(margin);
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	margin->add_child(vbox);
+	Label *heading = memnew(Label);
+	heading->set_text("ABC");
+	vbox->add_child(heading);
+	Label *first = memnew(Label);
+	first->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	first->set_text("abc");
+	vbox->add_child(first);
+	Label *second = memnew(Label);
+	second->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	second->set_text("xyz");
+	vbox->add_child(second);
+	control->set_anchors_preset(Control::PRESET_CENTER_BOTTOM);
+	SceneTree::get_singleton()->get_root()->add_child(control);
+	panel->set_position(Point2(-1, -1));
+	control->set_position(Point2(101, 101));
+	SceneTree::get_singleton()->process(0);
+	SceneTree::get_singleton()->process(0);
+
+	INFO("Panel height: ", panel->get_size().height, ", minimum: ", panel->get_combined_minimum_size().height,
+			", heading height: ", heading->get_size().height, ", first label height: ", first->get_size().height);
+	CHECK(first->get_line_count() == 1);
+	CHECK(second->get_line_count() == 1);
+	CHECK(first->get_size().height == doctest::Approx(heading->get_size().height));
+	CHECK(second->get_size().height == doctest::Approx(heading->get_size().height));
+	CHECK(panel->get_size().height == doctest::Approx(panel->get_combined_minimum_size().height));
+
+	memdelete(control);
+}
+
+TEST_CASE("[SceneTree][Label] Autowrapping respects a width below the maximum") {
+	Label *label = memnew(Label);
+	label->set_custom_maximum_size(Size2(200, -1));
+	label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	label->set_text("A long line of text that must wrap at the assigned width.");
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	SceneTree::get_singleton()->process(0);
+	label->set_size(Size2(50, label->get_size().height));
+	const int narrow_line_count = label->get_line_count();
+	CHECK(narrow_line_count > 1);
+	label->set_size(Size2(200, label->get_size().height));
+	SceneTree::get_singleton()->process(0);
+	CHECK(label->get_line_count() < narrow_line_count);
+	memdelete(label);
+}
 
 TEST_CASE("[SceneTree][Label] Custom minimum size") {
 	// This is an anti-regression test case introduced in GH-116640. When the old minimum size behavior is removed, this test case should be removed too.

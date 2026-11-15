@@ -1530,7 +1530,13 @@ void Control::set_position(const Point2 &p_point, bool p_keep_offsets) {
 	}
 #endif // TOOLS_ENABLED
 
-	_compute_layout_rect(Rect2(p_point, data.size_cache), p_keep_offsets);
+	// Preserve the layout size, rather than baking a temporary minimum or maximum
+	// size constraint into the offsets when only the position is being changed.
+	Size2 parent_size = get_parent_anchorable_rect().size;
+	Size2 layout_size(
+			data.offset[SIDE_RIGHT] - data.offset[SIDE_LEFT] + parent_size.x * (data.anchor[SIDE_RIGHT] - data.anchor[SIDE_LEFT]),
+			data.offset[SIDE_BOTTOM] - data.offset[SIDE_TOP] + parent_size.y * (data.anchor[SIDE_BOTTOM] - data.anchor[SIDE_TOP]));
+	_compute_layout_rect(Rect2(p_point, layout_size), p_keep_offsets);
 	_size_changed();
 }
 
