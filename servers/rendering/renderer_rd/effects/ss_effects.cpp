@@ -686,7 +686,7 @@ void SSEffects::ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_IMPORTANCE_MAP, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? size : half_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_EDGES, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_RAW, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, size, view_count);
-	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_BLURRED_PONG, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? half_size : size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_BLURRED_PONG, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size, view_count);
 }
 
 void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_reprojection, const SSILSettings &p_settings) {
@@ -746,7 +746,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.gather_push_constant.radius = p_settings.radius;
 		ssil.gather_push_constant.thickness = p_settings.thickness;
 		ssil.gather_push_constant.normal_rejection = p_settings.normal_rejection;
-		ssil.gather_push_constant.intensity = p_settings.intensity;
+		ssil.gather_push_constant.intensity = p_settings.intensity * Math::PI;
 
 		ssil.gather_push_constant.frame_index = p_settings.frame_index;
 		ssil.gather_push_constant.quality = ssil_quality;
@@ -808,192 +808,61 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 	{
 		int blur_type = SSIL_BLUR_FAST;
 
+		if (!ssil_half_size) {
+			blur_type = SSIL_BLUR_ACCURATE;
+		}
+
 		RID blur_shader = ssil.blur_shader.version_get_shader(ssil.blur_shader_version, blur_type - SSIL_BLUR_FAST);
 
 		RD::get_singleton()->draw_command_begin_label("Edge Aware Blur");
 
-		// DOWNSAMPLE TO HALF-RES
-		{
-			ssil.upsample_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
-			ssil.upsample_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
-			ssil.upsample_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
-
-			RID upsample_shader = ssil.upsample_shader.version_get_shader(ssil.upsample_shader_version, 0);
-
-			RID source_blur_uniform_set;
-			{
-				RD::Uniform u_raw_ssil_output;
-				u_raw_ssil_output.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-				u_raw_ssil_output.binding = 1;
-				u_raw_ssil_output.append_id(default_sampler);
-				u_raw_ssil_output.append_id(dest_img);
-
-				RD::Uniform u_downsampled(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_horiz_qr }));
-
-				source_blur_uniform_set = uniform_set_cache->get_cache(upsample_shader, 0, u_downsampled, u_raw_ssil_output);
-			}
-
-			RID buffer_uniform_set;
-			{
-				buffer_uniform_set = uniform_set_cache->get_cache(upsample_shader, 1, u_edges);
-			}
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_UPSAMPLE].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_blur_uniform_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffer_uniform_set, 1);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.upsample_push_constant, sizeof(SSILUpsamplePushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.half_buffer_width, p_ssil_buffers.half_buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		}
-
 		RID buffers_uniform_set;
 		{
-			buffers_uniform_set = uniform_set_cache->get_cache(blur_shader, 2, u_depth_texture_view);
+			RD::Uniform u_normal_buffer_blur;
+			u_normal_buffer_blur.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u_normal_buffer_blur.binding = 1;
+			u_normal_buffer_blur.append_id(p_normal_buffer);
+
+			buffers_uniform_set = uniform_set_cache->get_cache(blur_shader, 2, u_depth_texture_view, u_normal_buffer_blur);
 		}
 
-		RID apong_dest_uniform_set;
+		RID horiz_dest_uniform_set;
 		{
-			RD::Uniform u_blurred_pong(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_horiz_qr }));
-			apong_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong);
+			RD::Uniform u_blurred_pong_hr;
+			u_blurred_pong_hr.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u_blurred_pong_hr.binding = 0;
+			u_blurred_pong_hr.append_id(blurred_horiz_hr);
+
+			horiz_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong_hr);
 		}
 
-		RID bpong_dest_uniform_set;
-		{
-			RD::Uniform u_blurred_pong_qr(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_vert_qr }));
-			bpong_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong_qr);
-		}
-
-		RID cpong_dest_uniform_set;
-		{
-			RD::Uniform u_blurred_pong_hr(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_horiz_hr }));
-			cpong_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong_hr);
-		}
-
-		RID final_dest_uniform_set;
+		RID vert_dest_uniform_set;
 		{
 			RD::Uniform u_blurred_pong_vhr(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_vert_hr }));
-			final_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong_vhr);
+			vert_dest_uniform_set = uniform_set_cache->get_cache(blur_shader, 1, u_blurred_pong_vhr);
 		}
 
-		RID source_ssil_uniform_set;
-		{
-			RD::Uniform u_ssil_raw;
-			u_ssil_raw.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-			u_ssil_raw.binding = 0;
-			u_ssil_raw.append_id(default_sampler);
-			u_ssil_raw.append_id(dest_img);
-			source_ssil_uniform_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_raw);
-		}
-
-		RID apong_source_set;
-		{
-			RD::Uniform u_ssil_pong_qr;
-			u_ssil_pong_qr.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-			u_ssil_pong_qr.binding = 0;
-			u_ssil_pong_qr.append_id(default_sampler);
-			u_ssil_pong_qr.append_id(blurred_horiz_qr);
-			apong_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_qr);
-		}
-
-		RID bpong_source_set;
+		RID horiz_source_set;
 		{
 			RD::Uniform u_ssil_pong_horiz;
 			u_ssil_pong_horiz.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_ssil_pong_horiz.binding = 0;
 			u_ssil_pong_horiz.append_id(default_sampler);
-			u_ssil_pong_horiz.append_id(blurred_vert_qr);
-			bpong_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_horiz);
+			u_ssil_pong_horiz.append_id(dest_img);
+
+			horiz_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_horiz);
 		}
 
-		RID cpong_source_set;
+		RID vert_source_set;
 		{
 			RD::Uniform u_ssil_pong_horiz;
 			u_ssil_pong_horiz.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_ssil_pong_horiz.binding = 0;
 			u_ssil_pong_horiz.append_id(default_sampler);
 			u_ssil_pong_horiz.append_id(blurred_horiz_hr);
-			cpong_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_horiz);
+			vert_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_horiz);
 		}
 
-		RID dpong_source_set;
-		{
-			RD::Uniform u_ssil_pong_horiz;
-			u_ssil_pong_horiz.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-			u_ssil_pong_horiz.binding = 0;
-			u_ssil_pong_horiz.append_id(default_sampler);
-			u_ssil_pong_horiz.append_id(blurred_horiz_hr);
-			dpong_source_set = uniform_set_cache->get_cache(blur_shader, 0, u_ssil_pong_horiz);
-		}
-
-		ssil.blur_push_constant.half_screen_pixel_size[0] = (1.0 / p_ssil_buffers.buffer_width);
-		ssil.blur_push_constant.half_screen_pixel_size[1] = (1.0 / p_ssil_buffers.buffer_height);
-
-		if (ssil_half_size) {
-			ssil.blur_push_constant.half_screen_pixel_size[0] *= 2.0;
-			ssil.blur_push_constant.half_screen_pixel_size[1] *= 2.0;
-		}
-
-		ssil.blur_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
-
-		ssil.blur_push_constant.blur_dir = 0;
-
-		int x_groups = ssil_half_size ? p_ssil_buffers.half_buffer_width : p_ssil_buffers.buffer_width;
-		int y_groups = ssil_half_size ? p_ssil_buffers.half_buffer_height : p_ssil_buffers.buffer_height;
-
-		// FIRST PASS
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_ssil_uniform_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, apong_dest_uniform_set, 1);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-		ssil.blur_push_constant.blur_dir = 1;
-
-		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, apong_source_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, bpong_dest_uniform_set, 1);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
-		RD::get_singleton()->compute_list_add_barrier(compute_list);
-
-		// UPSAMPLE FROM QUARTER-RES
-		if (ssil_half_size) {
-			ssil.upsample_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
-			ssil.upsample_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
-			ssil.upsample_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
-
-			RID upsample_shader = ssil.upsample_shader.version_get_shader(ssil.upsample_shader_version, 0);
-
-			RID source_blur_uniform_set;
-			{
-				RD::Uniform u_blurred_0x25;
-				u_blurred_0x25.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-				u_blurred_0x25.binding = 1;
-				u_blurred_0x25.append_id(default_sampler);
-				u_blurred_0x25.append_id(blurred_vert_qr);
-
-				RD::Uniform u_upsampled(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ blurred_horiz_hr }));
-
-				source_blur_uniform_set = uniform_set_cache->get_cache(upsample_shader, 0, u_upsampled, u_blurred_0x25);
-			}
-
-			RID buffers_uniform_set;
-			{
-				buffers_uniform_set = uniform_set_cache->get_cache(upsample_shader, 1, u_edges);
-			}
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_UPSAMPLE].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, source_blur_uniform_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 1);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.upsample_push_constant, sizeof(SSILUpsamplePushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		}
-
-		// SECOND PASS
 		ssil.blur_push_constant.half_screen_pixel_size[0] = (1.0 / p_ssil_buffers.buffer_width);
 		ssil.blur_push_constant.half_screen_pixel_size[1] = (1.0 / p_ssil_buffers.buffer_height);
 
@@ -1002,46 +871,35 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			ssil.blur_push_constant.half_screen_pixel_size[1] *= 2.0;
 		}
 
-		blur_type = SSIL_BLUR_ACCURATE;
+		ssil.blur_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
+
+		ssil.blur_push_constant.full_screen_size[0] = p_settings.full_screen_size.x;
+		ssil.blur_push_constant.full_screen_size[1] = p_settings.full_screen_size.y;
+
 		ssil.blur_push_constant.blur_dir = 0;
 
-		if (ssil_half_size) {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_source_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_dest_uniform_set, 1);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		int x_groups = ssil_half_size ? p_ssil_buffers.buffer_width : p_ssil_buffers.half_buffer_width;
+		int y_groups = ssil_half_size ? p_ssil_buffers.buffer_height : p_ssil_buffers.half_buffer_height;
 
-			ssil.blur_push_constant.blur_dir = 1;
+		// FIRST PASS (horizontal)
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, horiz_source_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, horiz_dest_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, dpong_source_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, final_dest_uniform_set, 1);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		} else {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, bpong_source_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_dest_uniform_set, 1);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
+		ssil.blur_push_constant.blur_dir = 1;
 
-			ssil.blur_push_constant.blur_dir = 1;
-
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cpong_source_set, 0);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, final_dest_uniform_set, 1);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
-			RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
-			RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssil_buffers.buffer_width, p_ssil_buffers.buffer_height, 1);
-			RD::get_singleton()->compute_list_add_barrier(compute_list);
-		}
+		// SECOND PASS (vertical)
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[blur_type].get_rid());
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, vert_source_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, vert_dest_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, buffers_uniform_set, 2);
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
+		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 		RD::get_singleton()->draw_command_end_label(); // blur
 	}

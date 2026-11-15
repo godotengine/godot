@@ -144,10 +144,6 @@ float ign(vec2 p_uv, uint p_n) {
 	return mod(52.9829189 * mod(0.06711056 * p_uv.x + 0.00583715 * p_uv.y, 1.0), 1.0);
 }
 
-float randf(int x, int y) {
-	return mod(52.9829189 * mod(0.06711056 * float(x) + 0.00583715 * float(y), 1.0), 1.0);
-}
-
 float GetBayerFromCoordLevel(vec2 pixelpos) {
 	ivec2 ppos = ivec2(pixelpos);
 	int sum = 0;
@@ -157,6 +153,14 @@ float GetBayerFromCoordLevel(vec2 pixelpos) {
 		ppos /= 2;
 	}
 	return float(sum) / float(1 << (2 * 4));
+}
+
+float remap_pdf_tri_unity(float v) {
+	v = v * 2.0 - 1.0;
+	v = sign(v) * (1.0 - sqrt(1.0 - abs(v)));
+
+	//return v; //note: [-1;1[
+	return 0.5 + 0.5 * v; //note: [0;1[
 }
 
 void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const int p_quality) {
@@ -213,7 +217,7 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const i
 
 	for (uint i = 0u; i < dir_count; ++i) {
 		uint n = frame * dir_count + i;
-		float rnd01 = ign(floor(p_pos * vec2(params.screen_size)), n);
+		float rnd01 = remap_pdf_tri_unity(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)));
 
 		vec3 sample_dir_vs;
 		vec2 dir;
@@ -257,7 +261,7 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const i
 
 		vec2 randf_uv = floor(p_pos * params.screen_size);
 		//vec2 rnd01_vc2 = vec2(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)), fract(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size))) + 0.6180339887);
-		vec2 rnd01_vc2 = vec2(ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 1u), ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 2u));
+		vec2 rnd01_vc2 = vec2(ign(randf_uv, n), fract(ign(randf_uv, n) + 0.6180339887));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
 			vec2 ray_dir0 = dir * d;
@@ -364,7 +368,7 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, float depth, const i
 	gi *= fade_out;
 
 	ao *= norm;
-	ao = clamp(pow(ao, params.intensity), 0.0, 1.0);
+	ao *= fade_out;
 
 	r_color = vec4(gi, ao);
 	r_edges = edgesLRTB;

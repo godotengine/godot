@@ -278,6 +278,10 @@ private:
 		float edge_sharpness;
 		int blur_dir;
 		float half_screen_pixel_size[2];
+
+		int32_t full_screen_size[2];
+		float pad1;
+		float pad2;
 	};
 
 	struct SSILUpsamplePushConstant {
