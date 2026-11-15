@@ -738,6 +738,14 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 							bones.write[index] = 0; // TODO: What should this be padded with?
 							weights.write[index] = 0.0f;
 						}
+
+						// Vertices without any skin weight would collapse to the origin, since all of their
+						// weights are zero. Other DCCs (Blender, Unity) leave such vertices in place, so bind
+						// them fully to the first bone (usually the root) to keep them at their rest position.
+						if (!(total_weight > 0.0f)) {
+							bones.write[vertex_i * num_skin_weights] = 0;
+							weights.write[vertex_i * num_skin_weights] = 1.0f;
+						}
 					}
 					array[Mesh::ARRAY_BONES] = bones;
 					array[Mesh::ARRAY_WEIGHTS] = weights;
