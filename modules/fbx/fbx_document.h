@@ -81,6 +81,7 @@ private:
 	Error _parse_images(Ref<FBXState> p_state, const String &p_base_path);
 	Error _parse_materials(Ref<FBXState> p_state);
 	Error _parse_skins(Ref<FBXState> p_state);
+	Error _add_neutral_bones(Ref<FBXState> p_state);
 	Error _parse_animations(Ref<FBXState> p_state);
 	BoneAttachment3D *_generate_bone_attachment(Ref<FBXState> p_state,
 			Skeleton3D *p_skeleton,
