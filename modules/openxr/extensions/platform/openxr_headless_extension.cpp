@@ -42,7 +42,8 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 
 	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = nullptr;
 
-#ifdef UNIX_ENABLED
+// This is defined on supported platforms.
+#ifdef XR_USE_TIMESPEC
 	request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = nullptr;
 #endif
 
@@ -50,7 +51,7 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 }
 
 void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
-#ifdef UNIX_ENABLED
+#ifdef XR_USE_TIMESPEC
 	EXT_INIT_XR_FUNC(xrConvertTimespecTimeToTimeKHR);
 #endif
 }
@@ -61,7 +62,7 @@ void OpenXRHeadlessExtension::post_wait_frame(XrFrameWaitInfo *frame_wait_info, 
 	XrInstance instance = openxr_api->get_instance();
 	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
 
-#ifdef UNIX_ENABLED
+#ifdef XR_USE_TIMESPEC
 	timespec time;
 	clock_gettime(CLOCK_MONOTONIC, &time);
 	xrConvertTimespecTimeToTimeKHR(instance, &time, &frame_state->predictedDisplayTime);

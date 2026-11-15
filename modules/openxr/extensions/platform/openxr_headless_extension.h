@@ -60,7 +60,8 @@ public:
 private:
 	static OpenXRHeadlessExtension *singleton;
 
-#ifdef UNIX_ENABLED
+// This is defined on supported platforms.
+#ifdef XR_USE_TIMESPEC
 	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec *), timespecTime, (XrTime *), time);
 #endif
 };
