@@ -453,6 +453,9 @@ protected:
 	// Internationalization.
 
 	virtual TypedArray<Vector3i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+#ifdef TOOLS_ENABLED
+	bool _is_project_root_layout_rtl() const;
+#endif // TOOLS_ENABLED
 
 	// Base object overrides.
 
