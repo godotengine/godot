@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: Annotation "@theme_color" cannot be used with another "@theme_*" annotation.

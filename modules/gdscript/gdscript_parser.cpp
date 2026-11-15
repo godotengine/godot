@@ -38,6 +38,7 @@
 #include "core/math/math_defs.h"
 #include "core/object/class_db.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/resources/theme.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/string/string_builder.h"
@@ -149,6 +150,13 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+		// Theme item annotations.
+		register_annotation(MethodInfo("@theme_color", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_COLOR>, varray(""));
+		register_annotation(MethodInfo("@theme_constant", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_CONSTANT>, varray(""));
+		register_annotation(MethodInfo("@theme_font", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_FONT>, varray(""));
+		register_annotation(MethodInfo("@theme_font_size", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_FONT_SIZE>, varray(""));
+		register_annotation(MethodInfo("@theme_icon", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_ICON>, varray(""));
+		register_annotation(MethodInfo("@theme_stylebox", PropertyInfo(Variant::STRING, "name")), AnnotationInfo::VARIABLE, &GDScriptParser::theme_item_annotation<Theme::DATA_TYPE_STYLEBOX>, varray(""));
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 		register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::NIL>, varray(), true);
@@ -4547,6 +4555,78 @@ bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_ta
 	}
 	variable->onready = true;
 	current_class->onready_used = true;
+	return true;
+}
+
+template <int t_data_type>
+bool GDScriptParser::theme_item_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to class variables.)", p_annotation->name));
+	ERR_FAIL_NULL_V(p_class, false);
+
+	const StringName native_type = p_class->self_type.native_type;
+	if (!ClassDB::is_parent_class(native_type, SNAME("Control")) && !ClassDB::is_parent_class(native_type, SNAME("Window"))) {
+		push_error(vformat(R"("%s" can only be used in classes that inherit "Control" or "Window".)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	// The items are bound under the script's class_name: an inner class or an unnamed script has no type to bind them to.
+	if (p_class->outer != nullptr || p_class->identifier == nullptr) {
+		push_error(vformat(R"("%s" can only be used in a script that has a "class_name".)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->theme_item) {
+		push_error(vformat(R"(Annotation "%s" cannot be used with another "@theme_*" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	// The variable must be typed, and its type must hold what the theme gives.
+	const DataType type = variable->type_constraint;
+	if (!type.is_hard_type()) {
+		push_error(vformat(R"(Annotation "%s" requires the variable to have a type.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	bool holds = false;
+	String expected;
+	switch (t_data_type) {
+		case Theme::DATA_TYPE_COLOR:
+			expected = "Color";
+			holds = type.kind == DataType::BUILTIN && type.builtin_type == Variant::COLOR;
+			break;
+		case Theme::DATA_TYPE_CONSTANT:
+		case Theme::DATA_TYPE_FONT_SIZE:
+			expected = "int";
+			holds = type.kind == DataType::BUILTIN && type.builtin_type == Variant::INT;
+			break;
+		case Theme::DATA_TYPE_FONT:
+			expected = "Font";
+			break;
+		case Theme::DATA_TYPE_ICON:
+			expected = "Texture2D";
+			break;
+		case Theme::DATA_TYPE_STYLEBOX:
+			expected = "StyleBox";
+			break;
+	}
+	if (expected == "Font" || expected == "Texture2D" || expected == "StyleBox") {
+		// Its class, or a class it inherits from (a Resource variable can hold a Font).
+		holds = type.kind == DataType::NATIVE && ClassDB::is_parent_class(expected, type.native_type);
+	}
+	if (!holds) {
+		push_error(vformat(R"(Annotation "%s" requires a variable of type "%s", not "%s".)", p_annotation->name, expected, type.to_string()), p_annotation);
+		return false;
+	}
+
+	const String name = p_annotation->resolved_arguments.is_empty() ? String() : String(p_annotation->resolved_arguments[0]);
+	variable->theme_item = true;
+	variable->theme_item_data_type = t_data_type;
+	variable->theme_item_name = name.is_empty() ? variable->identifier->name : StringName(name);
 	return true;
 }
 

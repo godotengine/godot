@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/object/ref_counted.h"
 #include "scene/resources/theme.h"
 
@@ -108,6 +109,7 @@ public:
 		StringName item_name;
 		StringName type_name;
 		bool external = false;
+		Variant default_value;
 
 		ThemeItemSetter setter;
 
@@ -122,7 +124,17 @@ private:
 	HashMap<StringName, HashMap<StringName, ThemeItemBind>> theme_item_binds;
 	HashMap<StringName, List<ThemeItemBind>> theme_item_binds_list; // Used for listing purposes.
 
+	// What GDExtensionThemeItems calls: an extension class's item, set on each instance through the
+	// extension's own callback, which only ThemeDB holds.
+	static void _bind_extension_item(int p_data_type, const StringName &p_class_name, const StringName &p_item_name, const Variant &p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata);
+	static void _unbind_extension_items(const StringName &p_class_name);
+
 	void _sort_theme_items();
+
+	// The default theme while its change signal waits for the end of the frame (see _hold_default_theme_changes()).
+	Ref<Theme> held_default_theme;
+	void _hold_default_theme_changes();
+	void _release_default_theme_changes();
 
 protected:
 	static void _bind_methods();
@@ -162,6 +174,13 @@ public:
 
 	void get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result);
 
+	// The parent theme type of p_type: the base of a script class, or the parent of a native class.
+	StringName get_parent_type(const StringName &p_type) const;
+	// The theme type a node is themed as: its script's class_name if it has one, else its native class.
+	StringName get_node_theme_type(const Node *p_node) const;
+	// The value of a theme item for p_node (a Control or a Window), as its get_theme_* methods give it.
+	Variant get_node_theme_item(const Node *p_node, Theme::DataType p_data_type, const StringName &p_item_name, const StringName &p_theme_type = StringName()) const;
+
 	// Global theme contexts.
 
 	ThemeContext *create_theme_context(Node *p_node, Vector<Ref<Theme>> &p_themes);
@@ -173,7 +192,8 @@ public:
 
 	// Theme item binding.
 
-	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter);
+	void bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter, const Variant &p_default_value = Variant());
+	void unbind_class_items(const StringName &p_class_name);
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 

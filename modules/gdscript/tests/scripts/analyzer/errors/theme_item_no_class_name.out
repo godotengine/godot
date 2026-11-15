@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 3: "@theme_color" can only be used in a script that has a "class_name".

@@ -728,6 +728,22 @@ void GDExtension::_register_extension_class_signal(GDExtensionClassLibraryPtr p_
 	ClassDB::add_signal(class_name, s);
 }
 
+void GDExtension::_register_extension_class_theme_item(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionInt p_data_type, GDExtensionConstStringNamePtr p_item_name, GDExtensionConstVariantPtr p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName item_name = *reinterpret_cast<const StringName *>(p_item_name);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), vformat("Attempt to register extension class theme item '%s' for unexisting class '%s'.", item_name, class_name));
+#ifdef TOOLS_ENABLED
+	// If the extension is still marked as reloading, that means it failed to register again.
+	Extension *extension = &self->extension_classes[class_name];
+	if (extension->is_reloading) {
+		return;
+	}
+#endif
+	const Variant default_value = p_default_value ? *reinterpret_cast<const Variant *>(p_default_value) : Variant();
+	GDExtensionThemeItems::bind((int)p_data_type, class_name, item_name, default_value, p_setter, p_setter_userdata);
+}
+
 void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
@@ -743,6 +759,8 @@ void GDExtension::_unregister_extension_class(GDExtensionClassLibraryPtr p_libra
 	ERR_FAIL_COND_MSG(ext->gdextension.children.size(), vformat("Attempt to unregister class '%s' while other extension classes inherit from it.", class_name));
 
 	ClassDB::unregister_extension_class(class_name);
+
+	GDExtensionThemeItems::unbind(class_name);
 
 	if (ext->gdextension.parent != nullptr) {
 		ext->gdextension.parent->children.erase(&ext->gdextension);
@@ -897,6 +915,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class_property_group", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_group);
 	register_interface_function("classdb_register_extension_class_property_subgroup", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_subgroup);
 	register_interface_function("classdb_register_extension_class_signal", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_signal);
+	register_interface_function("classdb_register_extension_class_theme_item", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_theme_item);
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
@@ -1120,3 +1139,22 @@ void GDExtensionEditorHelp::remove_class(const String &p_class) {
 	editor_help_remove_class(p_class);
 }
 #endif // TOOLS_ENABLED
+
+void GDExtensionThemeItems::bind(int p_data_type, const StringName &p_class_name, const StringName &p_item_name, const Variant &p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata) {
+	// Without scene (no ThemeDB) there is nothing to bind to: not an error.
+	if (bind_func) {
+		bind_func(p_data_type, p_class_name, p_item_name, p_default_value, p_setter, p_setter_userdata);
+	}
+}
+
+void GDExtensionThemeItems::unbind(const StringName &p_class_name) {
+	if (unbind_func) {
+		unbind_func(p_class_name);
+	}
+}
+
+void GDExtensionThemeItems::call_setter(GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata, const Object *p_object, const Variant &p_value) {
+	GDExtensionClassInstancePtr instance = p_object->_get_extension_instance();
+	ERR_FAIL_NULL(instance);
+	p_setter(p_setter_userdata, instance, &p_value);
+}

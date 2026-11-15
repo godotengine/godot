@@ -862,6 +862,28 @@
             ]
         },
         {
+            "name": "GDExtensionClassThemeItemSetter",
+            "kind": "function",
+            "description": [
+                "Called by the engine each time an instance's theme changes, with the theme item's value as the theme now gives it.",
+                "Only the engine calls it: the extension passes it when it registers the item, and does not expose it as a method or a property."
+            ],
+            "arguments": [
+                {
+                    "name": "p_setter_userdata",
+                    "type": "void*"
+                },
+                {
+                    "name": "p_instance",
+                    "type": "GDExtensionClassInstancePtr"
+                },
+                {
+                    "name": "p_value",
+                    "type": "GDExtensionConstVariantPtr"
+                }
+            ]
+        },
+        {
             "name": "GDExtensionClassGetRID",
             "kind": "function",
             "return_value": {
@@ -9149,6 +9171,65 @@
                 "Provided structs can be safely freed once the function returns."
             ],
             "since": "4.1"
+        },
+        {
+            "name": "classdb_register_extension_class_theme_item",
+            "arguments": [
+                {
+                    "name": "p_library",
+                    "type": "GDExtensionClassLibraryPtr",
+                    "description": [
+                        "A pointer the library received by the GDExtension's entry point function."
+                    ]
+                },
+                {
+                    "name": "p_class_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the class name."
+                    ]
+                },
+                {
+                    "name": "p_data_type",
+                    "type": "GDExtensionInt",
+                    "description": [
+                        "The item's data type, a Theme.DataType value."
+                    ]
+                },
+                {
+                    "name": "p_item_name",
+                    "type": "GDExtensionConstStringNamePtr",
+                    "description": [
+                        "A pointer to a StringName with the theme item name."
+                    ]
+                },
+                {
+                    "name": "p_default_value",
+                    "type": "GDExtensionConstVariantPtr",
+                    "description": [
+                        "A pointer to a Variant with the item's default value, written into the default theme; NULL or a nil Variant for none."
+                    ]
+                },
+                {
+                    "name": "p_setter",
+                    "type": "GDExtensionClassThemeItemSetter",
+                    "description": [
+                        "The function the engine calls with the item's value each time an instance's theme changes; NULL for none, in which case the class reads the item with Control's get_theme_* methods."
+                    ]
+                },
+                {
+                    "name": "p_setter_userdata",
+                    "type": "void*",
+                    "description": [
+                        "Passed back to p_setter as it is. The extension owns it and keeps it valid until the class is unregistered."
+                    ]
+                }
+            ],
+            "description": [
+                "Registers a theme item on an extension class, so the inspector's Theme Overrides and the Theme editor list it.",
+                "Each time an instance's theme changes, the engine reads the item and passes it to p_setter, as it does for its own classes."
+            ],
+            "since": "4.8"
         },
         {
             "name": "classdb_unregister_extension_class",

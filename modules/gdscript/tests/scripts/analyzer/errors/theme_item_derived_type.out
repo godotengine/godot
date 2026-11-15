@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: Annotation "@theme_icon" requires a variable of type "Texture2D", not "ImageTexture".

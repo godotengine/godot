@@ -61,6 +61,7 @@
 #include "core/io/file_access.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/extension/gdextension_manager.h"
@@ -734,6 +735,50 @@ void GDScript::_restore_old_static_data() {
 
 #endif
 
+void GDScript::_unbind_theme_items() {
+	if (theme_items_bound_as == StringName()) {
+		return;
+	}
+	if (ThemeDB::get_singleton()) {
+		ThemeDB::get_singleton()->unbind_class_items(theme_items_bound_as);
+	}
+	theme_items_bound_as = StringName();
+	bound_theme_items.clear();
+}
+
+void GDScript::_bind_theme_items() {
+	// Nothing bound and nothing to bind: the common case, on any thread.
+	if (theme_items.is_empty() && theme_items_bound_as == StringName()) {
+		return;
+	}
+
+	// ThemeDB isn't thread-safe; a script compiled by a loading thread binds on the main thread.
+	if (!Thread::is_main_thread()) {
+		callable_mp(this, &GDScript::_bind_theme_items).call_deferred();
+		return;
+	}
+
+	// Rebinding writes the default theme, and every write re-themes every control: skip it when nothing changed.
+	if (theme_items_bound_as == global_name && bound_theme_items == theme_items) {
+		return;
+	}
+
+	_unbind_theme_items();
+
+	if (theme_items.is_empty() || global_name == StringName() || !ThemeDB::get_singleton()) {
+		return;
+	}
+
+	for (const ThemeItem &item : theme_items) {
+		const Theme::DataType data_type = (Theme::DataType)item.data_type;
+		const StringName member = item.member;
+
+		ThemeDB::get_singleton()->bind_class_item(data_type, global_name, member, item.item_name, [data_type, member](Node *p_instance, const StringName &p_item_name, const StringName &p_type_name) { p_instance->set(member, ThemeDB::get_singleton()->get_node_theme_item(p_instance, data_type, p_item_name, p_type_name)); }, item.default_value);
+	}
+	theme_items_bound_as = global_name;
+	bound_theme_items = theme_items;
+}
+
 Error GDScript::reload(bool p_keep_state) {
 	if (reloading) {
 		return OK;
@@ -869,6 +914,8 @@ Error GDScript::reload(bool p_keep_state) {
 			return err;
 		}
 	}
+
+	_bind_theme_items();
 
 #ifdef TOOLS_ENABLED
 	// Done after compilation because it needs the GDScript object's inner class GDScript objects,
@@ -1439,6 +1486,8 @@ void GDScript::_recurse_replace_function_ptrs(const HashMap<GDScriptFunction *, 
 }
 
 void GDScript::clear() {
+	_unbind_theme_items();
+
 	if (clearing) {
 		return;
 	}

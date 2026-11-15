@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
@@ -50,6 +51,7 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/item_list.h"
@@ -2330,6 +2332,17 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	if (include_own_types) {
 		edited_theme->get_type_list(&names);
 	}
+	// Script classes (class_name) built on Control or Window are theme types too.
+	if (show_script_classes) {
+		LocalVector<StringName> global_classes;
+		ScriptServer::get_global_class_list(global_classes);
+		for (const StringName &global_class : global_classes) {
+			const StringName native_base = ScriptServer::get_global_class_native_base(global_class);
+			if (ClassDB::is_parent_class(native_base, SNAME("Control")) || ClassDB::is_parent_class(native_base, SNAME("Window"))) {
+				names.push_back(global_class);
+			}
+		}
+	}
 	names.sort_custom<StringName::AlphCompare>();
 
 	Vector<StringName> unique_names;
@@ -2354,6 +2367,12 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 
 		add_type_options->add_item(E, item_icon);
 	}
+}
+
+void ThemeTypeDialog::_show_script_classes_toggled(bool p_pressed) {
+	show_script_classes = p_pressed;
+	EditorSettings::get_singleton()->set_project_metadata("theme_editor", "show_script_classes", p_pressed);
+	_update_add_type_options(add_type_filter->get_text());
 }
 
 void ThemeTypeDialog::_add_type_filter_cbk(const String &p_value) {
@@ -2449,6 +2468,14 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	mc->add_child(add_type_options);
 	add_type_options->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeDialog::_add_type_options_cbk));
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
+
+	show_script_classes = EditorSettings::get_singleton()->get_project_metadata("theme_editor", "show_script_classes", false);
+	show_script_classes_check = memnew(CheckBox);
+	show_script_classes_check->set_text(TTR("Show Script Classes"));
+	show_script_classes_check->set_tooltip_text(TTR("Also list the script classes (class_name) that extend Control or Window. Each one is a theme type of its own, which falls back to the class it extends."));
+	show_script_classes_check->set_pressed_no_signal(show_script_classes);
+	show_script_classes_check->connect(SceneStringName(toggled), callable_mp(this, &ThemeTypeDialog::_show_script_classes_toggled));
+	add_type_vb->add_child(show_script_classes_check);
 
 	add_type_confirmation = memnew(ConfirmationDialog);
 	add_type_confirmation->set_flag(Window::FLAG_RESIZE_DISABLED, true);
@@ -2603,6 +2630,10 @@ HashMap<StringName, bool> ThemeTypeEditor::_get_type_items(String p_type_name, T
 		if (default_type.is_empty()) {
 			default_type = p_type_name;
 		}
+
+		// A script class binds its items when it compiles: load it, and keep it, or a script nobody has used yet would show none.
+		// Loading it also loads the script classes it extends.
+		edited_type_script = ScriptServer::is_global_class(default_type) ? ResourceLoader::load(ScriptServer::get_global_class_path(default_type)) : Ref<Resource>();
 
 		List<ThemeDB::ThemeItemBind> theme_binds;
 		ThemeDB::get_singleton()->get_class_items(default_type, &theme_binds, true, p_type);

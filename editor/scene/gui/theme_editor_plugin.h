@@ -299,22 +299,27 @@ public:
 	ThemeItemEditorDialog(ThemeTypeEditor *p_theme_editor);
 };
 
+class CheckBox;
+
 class ThemeTypeDialog : public ConfirmationDialog {
 	GDCLASS(ThemeTypeDialog, ConfirmationDialog);
 
 	Ref<Theme> edited_theme;
 	bool include_own_types = false;
+	bool show_script_classes = false;
 
 	String pre_submitted_value;
 
 	FilterLineEdit *add_type_filter = nullptr;
 	ItemList *add_type_options = nullptr;
+	CheckBox *show_script_classes_check = nullptr;
 	ConfirmationDialog *add_type_confirmation = nullptr;
 
 	void _dialog_about_to_show();
 	void ok_pressed() override;
 
 	void _update_add_type_options(const String &p_filter = "");
+	void _show_script_classes_toggled(bool p_pressed);
 
 	void _add_type_filter_cbk(const String &p_value);
 	void _add_type_options_cbk(int p_index);
@@ -344,6 +349,8 @@ class ThemeTypeEditor : public MarginContainer {
 	GDCLASS(ThemeTypeEditor, MarginContainer);
 
 	Ref<Theme> edited_theme;
+	// Keeps a script class loaded while its type is edited, so its theme items stay bound.
+	Ref<Resource> edited_type_script;
 	String edited_type;
 	bool updating = false;
 

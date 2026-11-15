@@ -32,10 +32,12 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
+#include "core/object/script_language.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
@@ -119,6 +121,20 @@ void ThemeDB::finalize_theme() {
 
 void ThemeDB::set_default_theme(const Ref<Theme> &p_default) {
 	default_theme = p_default;
+
+	if (default_theme.is_null()) {
+		return;
+	}
+
+	_hold_default_theme_changes();
+
+	for (const KeyValue<StringName, List<ThemeItemBind>> &E : theme_item_binds_list) {
+		for (const ThemeItemBind &bind : E.value) {
+			if (bind.default_value.get_type() != Variant::NIL) {
+				default_theme->set_theme_item(bind.data_type, bind.item_name, bind.class_name, bind.default_value);
+			}
+		}
+	}
 }
 
 Ref<Theme> ThemeDB::get_default_theme() {
@@ -218,11 +234,49 @@ void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector
 		return;
 	}
 
+	// A script class (class_name) is a theme type too: it, then the script classes it extends,
+	// then the native class it is built on.
+	StringName type = p_base_type;
+	while (ScriptServer::is_global_class(type)) {
+		r_result.push_back(type);
+		type = ScriptServer::get_global_class_base(type);
+	}
+
 	// TODO: It may make sense to stop at Control/Window, because their parent classes cannot be used in
 	// a meaningful way.
-	if (!ClassDB::get_inheritance_chain_nocheck(p_base_type, r_result)) {
-		r_result.push_back(p_base_type);
+	if (!ClassDB::get_inheritance_chain_nocheck(type, r_result)) {
+		r_result.push_back(type);
 	}
+}
+
+StringName ThemeDB::get_parent_type(const StringName &p_type) const {
+	if (ScriptServer::is_global_class(p_type)) {
+		return ScriptServer::get_global_class_base(p_type);
+	}
+	return ClassDB::get_parent_class_nocheck(p_type);
+}
+
+StringName ThemeDB::get_node_theme_type(const Node *p_node) const {
+	ERR_FAIL_NULL_V(p_node, StringName());
+
+	// The nearest class_name in the node's script chain; an unnamed script extending one counts as it.
+	for (Ref<Script> script = p_node->get_script(); script.is_valid(); script = script->get_base_script()) {
+		const StringName name = script->get_global_name();
+		if (name != StringName()) {
+			return name;
+		}
+	}
+	return p_node->get_class_name();
+}
+
+Variant ThemeDB::get_node_theme_item(const Node *p_node, Theme::DataType p_data_type, const StringName &p_item_name, const StringName &p_theme_type) const {
+	if (const Control *control = Object::cast_to<Control>(p_node)) {
+		return control->get_theme_item(p_data_type, p_item_name, p_theme_type);
+	}
+	if (const Window *window = Object::cast_to<Window>(p_node)) {
+		return window->get_theme_item(p_data_type, p_item_name, p_theme_type);
+	}
+	return Variant();
 }
 
 // Global theme contexts.
@@ -342,7 +396,28 @@ ThemeContext *ThemeDB::get_nearest_theme_context(Node *p_for_node) const {
 
 // Theme item binding.
 
-void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter) {
+// Every change to the default theme re-themes every control that uses it. Items are bound and
+// unbound many at a time (a script rebinds all of its own when it reloads), so the default theme
+// holds its change signal until the end of the frame and sends it once. The values are there at once.
+void ThemeDB::_hold_default_theme_changes() {
+	if (held_default_theme.is_valid() || default_theme.is_null()) {
+		return;
+	}
+	held_default_theme = default_theme;
+	held_default_theme->_freeze_change_propagation();
+	callable_mp(this, &ThemeDB::_release_default_theme_changes).call_deferred();
+}
+
+void ThemeDB::_release_default_theme_changes() {
+	if (held_default_theme.is_null()) {
+		return;
+	}
+	Ref<Theme> theme = held_default_theme;
+	held_default_theme.unref();
+	theme->_unfreeze_and_propagate_changes();
+}
+
+void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, ThemeItemSetter p_setter, const Variant &p_default_value) {
 	ERR_FAIL_COND_MSG(theme_item_binds[p_class_name].has(p_prop_name), vformat("Failed to bind theme item '%s' in class '%s': already bound", p_prop_name, p_class_name));
 
 	ThemeItemBind bind;
@@ -350,9 +425,33 @@ void ThemeDB::bind_class_item(Theme::DataType p_data_type, const StringName &p_c
 	bind.class_name = p_class_name;
 	bind.item_name = p_item_name;
 	bind.setter = p_setter;
+	bind.default_value = p_default_value;
 
 	theme_item_binds[p_class_name][p_prop_name] = bind;
 	theme_item_binds_list[p_class_name].push_back(bind);
+
+	// Live nodes of the class learn the new item on the next theme change: make one, default or not.
+	if (default_theme.is_valid()) {
+		_hold_default_theme_changes();
+		if (p_default_value.get_type() != Variant::NIL) {
+			default_theme->set_theme_item(p_data_type, p_item_name, p_class_name, p_default_value);
+		}
+	}
+}
+
+void ThemeDB::unbind_class_items(const StringName &p_class_name) {
+	HashMap<StringName, List<ThemeItemBind>>::Iterator E = theme_item_binds_list.find(p_class_name);
+	if (E && default_theme.is_valid()) {
+		_hold_default_theme_changes();
+		for (const ThemeItemBind &bind : E->value) {
+			if (bind.default_value.get_type() != Variant::NIL) {
+				default_theme->clear_theme_item(bind.data_type, bind.item_name, p_class_name);
+			}
+		}
+	}
+
+	theme_item_binds.erase(p_class_name);
+	theme_item_binds_list.erase(p_class_name);
 }
 
 void ThemeDB::bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter) {
@@ -375,16 +474,18 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 
 	// Use the hierarchy to initialize all inherited theme caches. Setters carry the necessary
 	// context and will set the values appropriately.
-	StringName class_name = p_instance->get_class();
+	StringName class_name = get_node_theme_type(p_instance);
 	while (class_name != StringName()) {
 		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
 		if (E) {
 			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
-				F.value.setter(p_instance, F.value.item_name, F.value.type_name);
+				if (F.value.setter) {
+					F.value.setter(p_instance, F.value.item_name, F.value.type_name);
+				}
 			}
 		}
 
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+		class_name = get_parent_type(class_name);
 	}
 }
 
@@ -402,7 +503,7 @@ void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind
 	StringName class_name = p_class_name;
 	while (class_name != StringName()) {
 		class_hierarchy.push_front(class_name); // Put parent classes in front.
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+		class_name = get_parent_type(class_name);
 	}
 
 	HashSet<StringName> inherited_props;
@@ -428,6 +529,28 @@ void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind
 			}
 		}
 	}
+}
+
+void ThemeDB::_bind_extension_item(int p_data_type, const StringName &p_class_name, const StringName &p_item_name, const Variant &p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata) {
+	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, vformat("Failed to bind theme item '%s' in class '%s': invalid data type %d.", p_item_name, p_class_name, p_data_type));
+	const Theme::DataType data_type = (Theme::DataType)p_data_type;
+
+	// The extension's setter stays private to it, as an engine class's does: ThemeDB alone holds the
+	// callback, and calls it with the value the instance's theme gives now.
+	ThemeItemSetter setter;
+	if (p_setter) {
+		setter = [data_type, p_setter, p_setter_userdata](Node *p_instance, const StringName &p_item, const StringName &p_type_name) {
+			const Variant value = ThemeDB::get_singleton()->get_node_theme_item(p_instance, data_type, p_item, p_type_name);
+			GDExtensionThemeItems::call_setter(p_setter, p_setter_userdata, p_instance, value);
+		};
+	}
+
+	// The item name is also the prop name.
+	get_singleton()->bind_class_item(data_type, p_class_name, p_item_name, p_item_name, setter, p_default_value);
+}
+
+void ThemeDB::_unbind_extension_items(const StringName &p_class_name) {
+	get_singleton()->unbind_class_items(p_class_name);
 }
 
 void ThemeDB::_sort_theme_items() {
@@ -476,12 +599,18 @@ ThemeDB *ThemeDB::get_singleton() {
 
 ThemeDB::ThemeDB() {
 	singleton = this;
+	GDExtensionThemeItems::bind_func = &ThemeDB::_bind_extension_item;
+	GDExtensionThemeItems::unbind_func = &ThemeDB::_unbind_extension_items;
+
 	if (MessageQueue::get_singleton()) { // May not exist in tests etc.
 		callable_mp(this, &ThemeDB::_sort_theme_items).call_deferred();
 	}
 }
 
 ThemeDB::~ThemeDB() {
+	GDExtensionThemeItems::bind_func = nullptr;
+	GDExtensionThemeItems::unbind_func = nullptr;
+
 	// For technical reasons unit tests recreate and destroy the default
 	// theme over and over again. Make sure that finalize_theme() also
 	// frees any objects that can be recreated by initialize_theme*().

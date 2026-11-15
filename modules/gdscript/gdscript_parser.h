@@ -1308,6 +1308,10 @@ public:
 		PropertyInfo export_info;
 		int assignments = 0;
 		bool is_static = false;
+		// @theme_*: the theme item this variable holds, set on every theme change.
+		bool theme_item = false;
+		int theme_item_data_type = 0; // A Theme::DataType.
+		StringName theme_item_name;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
@@ -1616,6 +1620,8 @@ private:
 	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool abstract_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	template <int t_data_type>
+	bool theme_item_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool _export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class, PropertyHint p_hint, Variant::Type p_type);

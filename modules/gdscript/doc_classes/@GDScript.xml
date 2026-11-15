@@ -818,6 +818,76 @@
 				[b]Warning:[/b] Currently, due to a bug, scripts are never freed, even if [annotation @static_unload] annotation is used.
 			</description>
 		</annotation>
+		<annotation name="@theme_color">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a color theme item named [param name], or named after the property if [param name] is empty. The property must be a [Color]. The script must extend [Control] or [Window] and have a [code]class_name[/code]: that name is the theme type the item belongs to.
+				Each time the node's theme changes, the property is set to the color the theme gives for this item, found as [method Control.get_theme_color] would find it: the node's theme overrides, then the themes from the node up to the root, then the project theme and the default theme. A script class with no value of its own falls back to the script classes it extends, then to its native class, so a [code]GlowButton[/code] that extends [Button] reads every [Button] item it does not set itself.
+				A constant initializer is the item's value in the default theme. The Theme editor and the inspector's Theme Overrides section show it as the item's default.
+				[codeblock]
+				class_name GlowButton
+				extends Button
+
+				@theme_color var glow_color: Color = Color.GOLD
+				@theme_constant("glow_px") var glow_size: int = 4
+
+				func _draw():
+				    draw_rect(Rect2(Vector2.ZERO, size).grow(glow_size), glow_color, false, glow_size)
+				[/codeblock]
+				[b]Note:[/b] The property is set when the node enters the tree and on every theme change after that. Until then it holds its initializer. Setting it from a script only lasts until the next theme change: use [method Control.add_theme_color_override] to change it for one node.
+			</description>
+		</annotation>
+		<annotation name="@theme_constant">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a constant theme item, such as a separation or a margin, named [param name], or named after the property if [param name] is empty. The property must be an [int]. See [annotation @theme_color] for which scripts can use it and how the property follows the theme.
+				[codeblock]
+				@theme_constant("glow_px") var glow_size: int = 4
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@theme_font">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a font theme item named [param name], or named after the property if [param name] is empty. The property must be a [Font], or a class [Font] inherits from. See [annotation @theme_color] for which scripts can use it and how the property follows the theme.
+				[codeblock]
+				@theme_font var title_font: Font
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@theme_font_size">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a font size theme item named [param name], or named after the property if [param name] is empty. The property must be an [int]. See [annotation @theme_color] for which scripts can use it and how the property follows the theme.
+				[codeblock]
+				@theme_font_size var title_font_size: int = 24
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@theme_icon">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as an icon theme item named [param name], or named after the property if [param name] is empty. The property must be a [Texture2D], or a class [Texture2D] inherits from: an [ImageTexture] is refused, because a theme may hold any [Texture2D]. See [annotation @theme_color] for which scripts can use it and how the property follows the theme.
+				[codeblock]
+				@theme_icon var badge: Texture2D
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@theme_stylebox">
+			<return type="void" />
+			<param index="0" name="name" type="String" default="&quot;&quot;" />
+			<description>
+				Mark the following property as a [StyleBox] theme item named [param name], or named after the property if [param name] is empty. The property must be a [StyleBox], or a class [StyleBox] inherits from. See [annotation @theme_color] for which scripts can use it and how the property follows the theme.
+				[codeblock]
+				@theme_stylebox var frame: StyleBox
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@tool">
 			<return type="void" />
 			<description>

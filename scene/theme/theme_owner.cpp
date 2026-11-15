@@ -180,7 +180,7 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 	const Window *for_w = Object::cast_to<Window>(p_for_node);
 	ERR_FAIL_COND_MSG(!for_c && !for_w, "Only Control and Window nodes and derivatives can be polled for theming.");
 
-	StringName type_name = p_for_node->get_class_name();
+	StringName type_name = ThemeDB::get_singleton()->get_node_theme_type(p_for_node);
 	StringName type_variation;
 	if (for_c) {
 		type_variation = for_c->get_theme_type_variation();
@@ -189,7 +189,7 @@ void ThemeOwner::get_theme_type_dependencies(const Node *p_for_node, const Strin
 	}
 
 	// If we are looking for dependencies of the current class (or a variation of it), check relevant themes.
-	if (p_theme_type == StringName() || p_theme_type == type_name || p_theme_type == type_variation) {
+	if (p_theme_type == StringName() || p_theme_type == type_name || p_theme_type == p_for_node->get_class_name() || p_theme_type == type_variation) {
 		// We need one theme that can give us a valid dependency chain. It must be complete
 		// (i.e. variations can depend on other variations, but only within the same theme,
 		// and eventually the chain must lead to native types).

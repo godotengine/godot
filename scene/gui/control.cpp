@@ -277,7 +277,7 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 		if (type != Theme::DATA_TYPE_MAX) {
 			List<ThemeDB::ThemeItemBind> theme_items;
-			ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true, type);
+			ThemeDB::get_singleton()->get_class_items(ThemeDB::get_singleton()->get_node_theme_type(this), &theme_items, true, type);
 
 			List<StringName> sn;
 			for (const ThemeDB::ThemeItemBind &E : theme_items) {
@@ -482,7 +482,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	ERR_MAIN_THREAD_GUARD;
 	List<ThemeDB::ThemeItemBind> theme_items;
-	ThemeDB::get_singleton()->get_class_items(get_class_name(), &theme_items, true);
+	ThemeDB::get_singleton()->get_class_items(ThemeDB::get_singleton()->get_node_theme_type(this), &theme_items, true);
 
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Theme Overrides", "theme_override_"), PROPERTY_HINT_NONE, "theme_override_", PROPERTY_USAGE_GROUP));
 
@@ -3799,6 +3799,13 @@ void Control::_theme_changed() {
 	}
 }
 
+void Control::_script_changed() {
+	// Only this node's type changed: its children are themed as before.
+	if (is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
+}
+
 void Control::_notify_theme_override_changed() {
 	if (!data.bulk_theme_override && is_inside_tree()) {
 		notification(NOTIFICATION_THEME_CHANGED);
@@ -3894,13 +3901,17 @@ StringName Control::get_theme_type_variation() const {
 
 /// Theme property lookup.
 
+bool Control::_is_own_theme_type(const StringName &p_theme_type) const {
+	return p_theme_type == StringName() || p_theme_type == data.theme_type_variation || p_theme_type == get_class_name() || p_theme_type == ThemeDB::get_singleton()->get_node_theme_type(this);
+}
+
 Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(Ref<Texture2D>());
 	if (!data.initialized) {
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const Ref<Texture2D> *tex = data.theme_icon_override.getptr(p_name);
 		if (tex) {
 			return *tex;
@@ -3924,7 +3935,7 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const Ref<StyleBox> *style = data.theme_style_override.getptr(p_name);
 		if (style) {
 			return *style;
@@ -3948,7 +3959,7 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const Ref<Font> *font = data.theme_font_override.getptr(p_name);
 		if (font) {
 			return *font;
@@ -3972,7 +3983,7 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const int *font_size = data.theme_font_size_override.getptr(p_name);
 		if (font_size && (*font_size) > 0) {
 			return *font_size;
@@ -3996,7 +4007,7 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const Color *color = data.theme_color_override.getptr(p_name);
 		if (color) {
 			return *color;
@@ -4020,7 +4031,7 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		const int *constant = data.theme_constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
@@ -4140,7 +4151,7 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_icon_override(p_name)) {
 			return true;
 		}
@@ -4157,7 +4168,7 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_stylebox_override(p_name)) {
 			return true;
 		}
@@ -4174,7 +4185,7 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_theme
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_font_override(p_name)) {
 			return true;
 		}
@@ -4191,7 +4202,7 @@ bool Control::has_theme_font_size(const StringName &p_name, const StringName &p_
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_font_size_override(p_name)) {
 			return true;
 		}
@@ -4208,7 +4219,7 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_color_override(p_name)) {
 			return true;
 		}
@@ -4225,7 +4236,7 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
 	}
 
-	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+	if (_is_own_theme_type(p_theme_type)) {
 		if (has_theme_constant_override(p_name)) {
 			return true;
 		}
@@ -5468,6 +5479,7 @@ Control::Control() {
 	_define_ancestry(AncestralClass::CONTROL);
 
 	data.theme_owner = memnew(ThemeOwner(this));
+	connect(CoreStringName(script_changed), callable_mp(this, &Control::_script_changed));
 
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }

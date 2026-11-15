@@ -93,6 +93,7 @@ class GDExtension : public Resource {
 	static void _register_extension_class_property_group(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_group_name, GDExtensionConstStringNamePtr p_prefix);
 	static void _register_extension_class_property_subgroup(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_subgroup_name, GDExtensionConstStringNamePtr p_prefix);
 	static void _register_extension_class_signal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_signal_name, const GDExtensionPropertyInfo *p_argument_info, GDExtensionInt p_argument_count);
+	static void _register_extension_class_theme_item(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionInt p_data_type, GDExtensionConstStringNamePtr p_item_name, GDExtensionConstVariantPtr p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata);
 	static void _unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name);
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
 	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
@@ -224,3 +225,22 @@ public:
 };
 
 #endif // TOOLS_ENABLED
+
+class GDExtensionThemeItems {
+protected:
+	friend class ThemeDB;
+
+	// ThemeDB is in scene/, which core can't include: it fills these in when it is created.
+	typedef void (*BindFunc)(int p_data_type, const StringName &p_class_name, const StringName &p_item_name, const Variant &p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata);
+	static inline BindFunc bind_func = nullptr;
+
+	typedef void (*UnbindFunc)(const StringName &p_class_name);
+	static inline UnbindFunc unbind_func = nullptr;
+
+public:
+	static void bind(int p_data_type, const StringName &p_class_name, const StringName &p_item_name, const Variant &p_default_value, GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata);
+	static void unbind(const StringName &p_class_name);
+	// Calls an extension's theme item setter on p_object. ThemeDB can't: only the extension layer
+	// may see an object's extension instance, as for method calls.
+	static void call_setter(GDExtensionClassThemeItemSetter p_setter, void *p_setter_userdata, const Object *p_object, const Variant &p_value);
+};

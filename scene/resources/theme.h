@@ -40,6 +40,8 @@ class Theme : public Resource {
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
+	friend class ThemeDB;
+
 #ifdef TOOLS_ENABLED
 	friend class ThemeItemImportTree;
 	friend class ThemeItemEditorDialog;

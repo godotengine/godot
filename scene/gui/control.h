@@ -424,6 +424,7 @@ private:
 	void _theme_changed();
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
+	void _script_changed();
 
 	void _ensure_allocated_offset_transform();
 
@@ -449,6 +450,9 @@ protected:
 	// Theming.
 
 	virtual void _update_theme_item_cache();
+
+	// Whether p_theme_type is this control's own type, so its overrides apply: none given, its variation, its native class or its script's class_name.
+	bool _is_own_theme_type(const StringName &p_theme_type) const;
 
 	// Internationalization.
 

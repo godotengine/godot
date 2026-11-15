@@ -227,6 +227,7 @@ private:
 	void _theme_changed();
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
+	void _script_changed();
 
 	struct ThemeCache {
 		Ref<StyleBox> embedded_border;
@@ -277,6 +278,7 @@ protected:
 	virtual void _post_popup() {}
 
 	virtual void _update_theme_item_cache();
+	bool _is_own_theme_type(const StringName &p_theme_type) const;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) {}
 
 	void _notification(int p_what);

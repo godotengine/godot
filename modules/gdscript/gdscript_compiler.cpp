@@ -2757,6 +2757,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 	p_script->implicit_ready = nullptr;
 	p_script->static_initializer = nullptr;
 	p_script->rpc_config.clear();
+	p_script->theme_items.clear();
 	p_script->lambda_info.clear();
 
 	p_script->clearing = false;
@@ -2915,6 +2916,17 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 					minfo.index = p_script->member_indices.size();
 					p_script->member_indices[name] = minfo;
 					p_script->members.insert(name);
+				}
+
+				if (variable->theme_item) {
+					GDScript::ThemeItem item;
+					item.data_type = variable->theme_item_data_type;
+					item.item_name = variable->theme_item_name;
+					item.member = name;
+					if (variable->initializer != nullptr && variable->initializer->is_constant) {
+						item.default_value = variable->initializer->reduced_value;
+					}
+					p_script->theme_items.push_back(item);
 				}
 
 #ifdef TOOLS_ENABLED

@@ -100,6 +100,25 @@ class GDScript : public Script {
 	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
+	// This class's @theme_* variables (not its base classes'), bound to ThemeDB under global_name.
+	struct ThemeItem {
+		int data_type = 0; // A Theme::DataType.
+		StringName item_name;
+		StringName member;
+		Variant default_value;
+		bool operator==(const ThemeItem &p_other) const {
+			return data_type == p_other.data_type && item_name == p_other.item_name && member == p_other.member && default_value == p_other.default_value;
+		}
+		bool operator!=(const ThemeItem &p_other) const { return !(*this == p_other); }
+	};
+	Vector<ThemeItem> theme_items;
+	// The class name they're bound under, to unbind them on reload or free.
+	StringName theme_items_bound_as;
+	// What is bound now, so a reload that leaves the items as they were touches nothing.
+	Vector<ThemeItem> bound_theme_items;
+	void _bind_theme_items();
+	void _unbind_theme_items();
+
 public:
 	struct LambdaInfo {
 		int capture_count;
