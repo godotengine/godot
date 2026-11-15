@@ -140,7 +140,7 @@ public:
 		NONE,
 		GIT,
 	};
-	static void create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir);
+	static void create_vcs_metadata_files(const VCSMetadata p_vcs_metadata_type, const String &p_dir);
 
 	// Proxies to the editor for use
 	bool initialize(const String &p_project_path);

@@ -796,9 +796,11 @@ void ProjectManager::_open_selected_projects_with_migration() {
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
 	project_dialog->set_mode(ProjectDialog::MODE_INSTALL);
-	project_dialog->set_zip_path(p_zip_path);
+	project_dialog->set_origin_path(p_zip_path);
+	project_dialog->set_zip_project_root(p_zip_path);
 	project_dialog->set_zip_title(p_title);
-	project_dialog->show_dialog();
+	project_dialog->set_project_name(p_title);
+	project_dialog->show_dialog(false);
 }
 
 void ProjectManager::_import_project() {
@@ -820,7 +822,7 @@ void ProjectManager::_rename_project() {
 
 	for (const ProjectList::Item &E : selected_list) {
 		project_dialog->set_project_name(E.project_name);
-		project_dialog->set_project_path(E.path);
+		project_dialog->set_origin_path(E.path, true);
 		project_dialog->set_mode(ProjectDialog::MODE_RENAME);
 		project_dialog->show_dialog();
 	}
@@ -842,7 +844,7 @@ void ProjectManager::_duplicate_project_with_action(PostDuplicateAction p_post_a
 
 	project_dialog->set_mode(ProjectDialog::MODE_DUPLICATE);
 	project_dialog->set_project_name(vformat("%s (%s)", project.project_name, p_post_action == POST_DUPLICATE_ACTION_NONE ? "Copy" : project.project_version));
-	project_dialog->set_original_project_path(project.path);
+	project_dialog->set_origin_path(project.path);
 	project_dialog->set_duplicate_can_edit(p_post_action == POST_DUPLICATE_ACTION_NONE);
 	project_dialog->show_dialog(false);
 }
