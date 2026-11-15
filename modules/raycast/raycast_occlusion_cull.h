@@ -65,9 +65,11 @@ public:
 
 	public:
 		unsigned int camera_rays_tile_count = 0;
+		// Single allocation holding both the ray tiles and their validity masks,
+		// both of which must be 64-byte aligned for `rtcIntersect16()`.
 		uint8_t *camera_rays_unaligned_buffer = nullptr;
 		CameraRayTile *camera_rays = nullptr;
-		LocalVector<uint32_t> camera_ray_masks;
+		uint32_t *camera_ray_masks = nullptr;
 		RID scenario_rid;
 
 		virtual void clear() override;
