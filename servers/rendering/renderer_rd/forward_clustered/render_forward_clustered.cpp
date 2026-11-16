@@ -4532,8 +4532,12 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 
 				materials = mesh_storage->mesh_get_surface_count_and_materials(mesh, surface_count);
 				if (materials) {
+					const RID *inst_materials = ginstance->data->surface_materials.ptr();
+					uint32_t surf_mat_count = ginstance->data->surface_materials.size();
+
 					for (uint32_t j = 0; j < surface_count; j++) {
-						_geometry_instance_add_surface(ginstance, j, materials[j], mesh);
+						RID material = (j < surf_mat_count && inst_materials[j].is_valid()) ? inst_materials[j] : materials[j];
+						_geometry_instance_add_surface(ginstance, j, material, mesh);
 					}
 				}
 
