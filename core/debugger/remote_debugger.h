@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
@@ -118,3 +120,5 @@ public:
 	explicit RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer);
 	~RemoteDebugger();
 };
+
+#endif // DEBUG_ENABLED

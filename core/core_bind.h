@@ -647,6 +647,7 @@ public:
 	Engine() { singleton = this; }
 };
 
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
@@ -677,7 +678,9 @@ public:
 	void debug(bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	void script_debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 
+#ifdef DEBUG_ENABLED
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
+#endif
 
 	void line_poll();
 
@@ -696,6 +699,7 @@ public:
 	EngineDebugger() { singleton = this; }
 	~EngineDebugger();
 };
+#endif // defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 
 class WeakRef : public RefCounted {
 	GDCLASS(WeakRef, RefCounted);

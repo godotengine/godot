@@ -897,7 +897,9 @@ void Main::test_cleanup() {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 	OS::get_singleton()->finalize();
 
 	memdelete(packed_data);
@@ -3065,7 +3067,9 @@ error:
 		OS::get_singleton()->remove_lock_file();
 	}
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 
 	memdelete(performance);
 	performance = nullptr;
@@ -5148,7 +5152,9 @@ bool Main::iteration() {
 
 	process_ticks = OS::get_singleton()->get_ticks_usec() - process_begin;
 	process_max = MAX(process_ticks, process_max);
+#ifdef DEBUG_ENABLED
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
+#endif
 
 	GodotProfileZoneGrouped(_profile_zone, "GDExtensionManager::frame");
 	GDExtensionManager::get_singleton()->frame();
@@ -5161,9 +5167,11 @@ bool Main::iteration() {
 	GodotProfileZoneGrouped(_profile_zone, "AudioServer::update");
 	AudioServer::get_singleton()->update();
 
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, process_ticks, physics_process_ticks, physics_step);
 	}
+#endif
 
 	frames++;
 	Engine::get_singleton()->_process_frames++;
@@ -5376,7 +5384,9 @@ void Main::cleanup(bool p_force) {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
 
+#ifdef DEBUG_ENABLED
 	EngineDebugger::deinitialize();
+#endif
 
 #ifndef XR_DISABLED
 	memdelete(xr_server);
