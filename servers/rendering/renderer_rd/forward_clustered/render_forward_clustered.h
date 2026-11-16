@@ -571,6 +571,12 @@ private:
 
 		GeometryInstanceSurfaceDataCache() :
 				compilation_dirty_element(this), compilation_all_element(this) {}
+
+		// Returns whether the draw state encoded in the sort keys of the two surfaces is identical, so that
+		// consecutive elements using them can be merged into a single instanced draw call.
+		_FORCE_INLINE_ bool can_repeat_with(const GeometryInstanceSurfaceDataCache &p_other) const {
+			return sort.sort_key1 == p_other.sort.sort_key1 && sort.sort_key2 == p_other.sort.sort_key2 && uses_lightmap_specular == p_other.uses_lightmap_specular;
+		}
 	};
 
 	class GeometryInstanceForwardClustered : public RenderGeometryInstanceBase {
