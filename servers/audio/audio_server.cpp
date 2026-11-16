@@ -1709,8 +1709,9 @@ Error AudioServer::set_input_device_active(bool p_is_active) {
 		}
 
 		input_buffer_ofs = 0;
-		input_device_active = true;
-		return AudioDriver::get_singleton()->input_start();
+		const Error err = AudioDriver::get_singleton()->input_start();
+		input_device_active = err == OK;
+		return err;
 	} else {
 		input_device_active = false;
 		return AudioDriver::get_singleton()->input_stop();

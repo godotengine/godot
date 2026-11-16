@@ -54,6 +54,7 @@
 #include "core/os/thread_safe.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
+#include "servers/audio/audio_server.h"
 #include "servers/camera/camera_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -716,7 +717,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_filePickerCallback(JN
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jclass clazz, jstring p_permission, jboolean p_result) {
 	String permission = jstring_to_string(p_permission, env);
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
-		AudioDriver::get_singleton()->input_start();
+		AudioServer::get_singleton()->set_input_device_active(true);
 	}
 
 	if (os_android->get_main_loop()) {
