@@ -321,7 +321,13 @@ void DisplayServerAppleEmbedded::perform_event(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerAppleEmbedded::touches_canceled(int p_idx) {
-	touch_press(p_idx, -1, -1, false, false, false);
+	Ref<InputEventScreenTouch> ev;
+	ev.instantiate();
+
+	ev->set_index(p_idx);
+	ev->set_canceled(true);
+	ev->set_position(Vector2(-1, -1));
+	perform_event(ev);
 }
 
 // MARK: Keyboard
