@@ -618,6 +618,8 @@ public:
 	void drop_pending_ticks();
 	Dictionary snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const;
 	Array snapshot_split_plain(const Dictionary &p_values) const;
+	int64_t snapshot_get_container_id(const Variant &p_value) const;
+	bool snapshot_is_plain_leaf(const Variant &p_value) const;
 	int64_t snapshot_get_random_state() const;
 	Dictionary snapshot_get_clock() const;
 	void snapshot_set_clock(const Dictionary &p_clock);

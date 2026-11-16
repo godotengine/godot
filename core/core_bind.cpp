@@ -2082,18 +2082,61 @@ Array Engine::snapshot_split_plain(const Dictionary &p_values) const {
 	Array others;
 	for (const KeyValue<Variant, Variant> &kv : p_values) {
 		const Variant::Type t = kv.value.get_type();
-		if (!_snapshot_is_plain(kv.value, 0)) {
+		// Arrays and Dictionaries are shared by reference, so a save encodes
+		// them one by one to keep who shares which.
+		if (t == Variant::ARRAY || t == Variant::DICTIONARY || !_snapshot_is_plain(kv.value, 0)) {
 			others.push_back(kv.key);
-			values[kv.key] = kv.value;
-		} else {
-			// A copy, so the save does not change with the live container.
-			values[kv.key] = t == Variant::ARRAY || t == Variant::DICTIONARY ? kv.value.duplicate(true) : kv.value;
 		}
+		values[kv.key] = kv.value;
 	}
 	Array out;
 	out.push_back(values);
 	out.push_back(others);
 	return out;
+}
+
+// komm64: identifies an Array or Dictionary itself, not its contents: the
+// same for every variable that shares it, while it lives. 0 for other values.
+int64_t Engine::snapshot_get_container_id(const Variant &p_value) const {
+	switch (p_value.get_type()) {
+		case Variant::ARRAY:
+			return int64_t(uintptr_t(Array(p_value).id()));
+		case Variant::DICTIONARY:
+			return int64_t(uintptr_t(Dictionary(p_value).id()));
+		default:
+			return 0;
+	}
+}
+
+// An Array or Dictionary that holds only plain values and no Arrays or
+// Dictionaries: a save copies it whole.
+bool Engine::snapshot_is_plain_leaf(const Variant &p_value) const {
+	const auto leaf = [](const Variant &v) {
+		const Variant::Type t = v.get_type();
+		return t != Variant::ARRAY && t != Variant::DICTIONARY && _snapshot_is_plain(v, 0);
+	};
+	switch (p_value.get_type()) {
+		case Variant::ARRAY: {
+			const Array a = p_value;
+			for (const Variant &v : a) {
+				if (!leaf(v)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		case Variant::DICTIONARY: {
+			const Dictionary d = p_value;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				if (kv.key == Variant("__ref") || !leaf(kv.key) || !leaf(kv.value)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		default:
+			return false;
+	}
 }
 
 Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const {
@@ -2309,6 +2352,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drop_pending_ticks"), &Engine::drop_pending_ticks);
 	ClassDB::bind_method(D_METHOD("snapshot_collect_rids", "roots", "skip"), &Engine::snapshot_collect_rids);
 	ClassDB::bind_method(D_METHOD("snapshot_split_plain", "values"), &Engine::snapshot_split_plain);
+	ClassDB::bind_method(D_METHOD("snapshot_get_container_id", "value"), &Engine::snapshot_get_container_id);
+	ClassDB::bind_method(D_METHOD("snapshot_is_plain_leaf", "value"), &Engine::snapshot_is_plain_leaf);
 	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
 	ClassDB::bind_method(D_METHOD("snapshot_get_clock"), &Engine::snapshot_get_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_clock", "clock"), &Engine::snapshot_set_clock);

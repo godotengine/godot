@@ -315,10 +315,17 @@
 				Returns every valid [RID] reachable from [param roots], as [code]{rid: true}[/code]. Walks [Array]s, [Dictionary]s and the stored and script-variable properties of [Node]s, [Resource]s and scripted objects, and also reads [RID] properties of any usage (such as [member Texture2DRD.texture_rd_rid]). Objects in [param skip] are not entered, nor are [Image] and [ImageTexture]. For finding out which [RenderingDevice] objects game state still refers to.
 			</description>
 		</method>
-\t\t<method name="snapshot_get_clock" qualifiers="const">
+		<method name="snapshot_get_clock" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
 				Returns the clocks as scripts see them: [code]ticks_usec[/code] ([method Time.get_ticks_usec]), [code]process_frames[/code], [code]physics_frames[/code] and [code]frames_drawn[/code]. Pass it to [method snapshot_set_clock] to make them go on from there, for example after loading a save.
+			</description>
+		</method>
+		<method name="snapshot_get_container_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns a number that identifies the [Array] or [Dictionary] [param value] itself rather than its contents: it is the same for every variable that shares it, for as long as it exists. Returns [code]0[/code] for any other value. For saving which containers a game shares.
 			</description>
 		</method>
 		<method name="snapshot_get_random_state" qualifiers="const">
@@ -327,7 +334,14 @@
 				Returns the state of the global random number generator that [method @GlobalScope.randi], [method @GlobalScope.randf] and the other global random functions use. Pass it to [method snapshot_set_random_state] to continue the same sequence, for example after loading a save.
 			</description>
 		</method>
-\t\t<method name="snapshot_set_clock">
+		<method name="snapshot_is_plain_leaf" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns [code]true[/code] if [param value] is an [Array] or [Dictionary] that holds no [Array], [Dictionary], [Object], [Callable], [Signal] or [RID], and no [code]"__ref"[/code] key: a save can copy it whole.
+			</description>
+		</method>
+		<method name="snapshot_set_clock">
 			<return type="void" />
 			<param index="0" name="clock" type="Dictionary" />
 			<description>
@@ -345,7 +359,7 @@
 			<return type="Array" />
 			<param index="0" name="values" type="Dictionary" />
 			<description>
-				Returns [code][values, others][/code]: [code]values[/code] is [param values] in the same order with its plain [Array]s and [Dictionary]s deep-copied, and [code]others[/code] lists the keys whose values are not plain. A plain value is one a save can store as it is: no [Object], [Callable], [Signal] or [RID] anywhere inside, and no [Dictionary] with a [code]"__ref"[/code] key. A save then encodes only the values under [code]others[/code].
+				Returns [code][values, others][/code]: [code]values[/code] is [param values] in the same order, and [code]others[/code] lists the keys whose values a save must encode: [Array]s and [Dictionary]s (shared by reference, so a save keeps who shares which) and values with an [Object], [Callable], [Signal] or [RID]. The other values a save can store as they are.
 			</description>
 		</method>
 		<method name="unregister_script_language">

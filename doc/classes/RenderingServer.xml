@@ -3780,13 +3780,13 @@
 				Sets the [param radiance_size] of the sky specified by the [param sky] RID (in pixels). Equivalent to [member Sky.radiance_size].
 			</description>
 		</method>
-\t\t<method name="snapshot_get_shader_time" qualifiers="const">
+		<method name="snapshot_get_shader_time" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the time shaders read as [code]TIME[/code].
 			</description>
 		</method>
-\t\t<method name="snapshot_set_shader_time">
+		<method name="snapshot_set_shader_time">
 			<return type="void" />
 			<param index="0" name="time" type="float" />
 			<description>
