@@ -95,16 +95,11 @@ layout(set = 0, binding = 0) uniform sampler2D source_ssil;
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
 layout(set = 2, binding = 0) uniform sampler2D depth_buffer;
-layout(rgba8, set = 2, binding = 1) uniform restrict readonly image2D normal_buffer;
 
 layout(push_constant, std430) uniform Params {
 	float edge_sharpness;
 	int blur_dir;
 	vec2 half_screen_pixel_size;
-
-	ivec2 full_screen_size;
-	float pad1;
-	float pad2;
 }
 params;
 
@@ -115,19 +110,16 @@ vec4 bilateral_blur(ivec2 p_pos, vec2 p_uv) {
 	vec4 result = vec4(0.0);
 
 	float center_depth = textureLod(depth_buffer, p_uv, 0.0).r;
-	vec3 center_normal = imageLoad(normal_buffer, p_pos).rgb;
 	float clamped_sharpness = clamp(0.02 + params.edge_sharpness, 0.0, 1.0);
 
 	for (int i = 0; i < SAMPLE_COUNT; ++i) {
 		vec2 sample_uv = p_uv + ((blur_offset * OFFSETS[i]) * params.half_screen_pixel_size);
-		ivec2 sample_pos = ivec2(sample_uv * vec2(params.full_screen_size));
 
 		float sample_depth = textureLod(depth_buffer, sample_uv, 0.0).r;
-		vec3 sample_normal = imageLoad(normal_buffer, sample_pos).rgb;
 		float depth_diff = abs(sample_depth - center_depth) / max(center_depth, 0.001);
-		float normal_diff = dot(center_normal, sample_normal);
 
-		if (depth_diff <= clamped_sharpness && normal_diff >= clamped_sharpness) {
+		// 0.3 is a hardcoded threshold
+		if (depth_diff <= clamped_sharpness) {
 			vec4 sample_color = textureLod(source_ssil, sample_uv, 0.0);
 			float weight = (WEIGHTS[i]);
 			weight_total += weight;

@@ -680,13 +680,10 @@ void SSEffects::ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers
 		RD::get_singleton()->texture_clear(final, Color(0, 0, 0, 0), 0, 1, 0, view_count);
 	}
 
-	// the first three are not used for what the name entails, they are all used as blur pongs.
-	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_DEINTERLEAVED, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? half_size : size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_DEINTERLEAVED_PONG, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? size : half_size, view_count);
-	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_IMPORTANCE_MAP, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? size : half_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_EDGES, RD::DATA_FORMAT_R8_UNORM, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, full_size, view_count);
 	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_RAW, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, size, view_count);
-	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_BLURRED_PONG, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, half_size, view_count);
+	p_render_buffers->create_texture(RB_SCOPE_SSIL, RB_BLURRED_PONG, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT, RD::TEXTURE_SAMPLES_1, ssil_half_size ? size : half_size, view_count);
 }
 
 void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_reprojection, const SSILSettings &p_settings) {
@@ -699,10 +696,8 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 	RID last_frame = p_render_buffers->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, p_view, 0, 1, 6);
 	RID dest_img = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_RAW, p_view, 0, 1, 1);
-	RID blurred_horiz_qr = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_BLURRED_PONG, p_view, 0, 1, 1);
-	RID blurred_vert_qr = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_DEINTERLEAVED, p_view, 0, 1, 1);
 	RID blurred_horiz_hr = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_DEINTERLEAVED_PONG, p_view, 0, 1, 1);
-	RID blurred_vert_hr = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_IMPORTANCE_MAP, p_view, 0, 1, 1);
+	RID blurred_vert_hr = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_BLURRED_PONG, p_view, 0, 1, 1);
 	RID edges = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_EDGES, p_view, 0, 1, 1);
 	RID final = p_render_buffers->get_texture_slice(RB_SCOPE_SSIL, RB_FINAL, p_view, 0, 1, 1);
 	RID depth_texture_view = p_render_buffers->get_texture_slice(RB_SCOPE_SSDS, RB_LINEAR_DEPTH, p_view, ssil_half_size ? 1 : 0, 1, 4);
@@ -818,12 +813,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 		RID buffers_uniform_set;
 		{
-			RD::Uniform u_normal_buffer_blur;
-			u_normal_buffer_blur.uniform_type = RD::UNIFORM_TYPE_IMAGE;
-			u_normal_buffer_blur.binding = 1;
-			u_normal_buffer_blur.append_id(p_normal_buffer);
-
-			buffers_uniform_set = uniform_set_cache->get_cache(blur_shader, 2, u_depth_texture_view, u_normal_buffer_blur);
+			buffers_uniform_set = uniform_set_cache->get_cache(blur_shader, 2, u_depth_texture_view);
 		}
 
 		RID horiz_dest_uniform_set;
@@ -872,9 +862,6 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		}
 
 		ssil.blur_push_constant.edge_sharpness = 1.0 - p_settings.sharpness;
-
-		ssil.blur_push_constant.full_screen_size[0] = p_settings.full_screen_size.x;
-		ssil.blur_push_constant.full_screen_size[1] = p_settings.full_screen_size.y;
 
 		ssil.blur_push_constant.blur_dir = 0;
 
