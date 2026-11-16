@@ -491,6 +491,7 @@ class DisplayServerWindows : public DisplayServer {
 	int restore_mouse_trails = 0;
 
 	bool use_raw_input = false;
+	bool disable_bulk_raw_input = false;
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 
