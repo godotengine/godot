@@ -2757,6 +2757,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					if (!ao_texture->get_path().is_empty()) {
 						common_paths.insert(ao_texture->get_path());
 					}
+					has_ao = !ao_image->is_compressed();
+					if (!has_ao) {
+						ERR_PRINT("glTF: Failed to decompress AO texture");
+					}
 				}
 				Ref<Image> roughness_image;
 				if (has_roughness) {
@@ -2765,6 +2769,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					roughness_image = _duplicate_and_decompress_image(roughness_texture->get_image());
 					if (!roughness_texture->get_path().is_empty()) {
 						common_paths.insert(roughness_texture->get_path());
+					}
+					has_roughness = !roughness_image->is_compressed();
+					if (!has_roughness) {
+						ERR_PRINT("glTF: Failed to decompress roughness texture");
 					}
 				}
 				Ref<Image> metallness_image;
@@ -2775,6 +2783,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					if (!metallic_texture->get_path().is_empty()) {
 						common_paths.insert(metallic_texture->get_path());
 					}
+					has_metalness = !metallness_image->is_compressed();
+					if (!has_metalness) {
+						ERR_PRINT("glTF: Failed to decompress metalness texture");
+					}
 				}
 				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
 				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
@@ -2782,13 +2794,13 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					width = albedo_texture->get_width();
 				}
 				orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
-				if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
+				if (has_ao && ao_image->get_size() != Vector2(width, height)) {
 					ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 				}
-				if (roughness_image.is_valid() && roughness_image->get_size() != Vector2(width, height)) {
+				if (has_roughness && roughness_image->get_size() != Vector2(width, height)) {
 					roughness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 				}
-				if (metallness_image.is_valid() && metallness_image->get_size() != Vector2(width, height)) {
+				if (has_metalness && metallness_image->get_size() != Vector2(width, height)) {
 					metallness_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 				}
 				for (int32_t h = 0; h < height; h++) {
@@ -2879,19 +2891,23 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = _duplicate_and_decompress_image(normal_texture->get_image());
-					img->convert(Image::FORMAT_RGBA8);
-					for (int32_t y = 0; y < img->get_height(); y++) {
-						for (int32_t x = 0; x < img->get_width(); x++) {
-							Color c = img->get_pixel(x, y);
-							Vector2 red_green = Vector2(c.r, c.g);
-							red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
-							float blue = 1.0f - red_green.dot(red_green);
-							blue = MAX(0.0f, blue);
-							c.b = Math::sqrt(blue);
-							img->set_pixel(x, y, c);
+					if (!img->is_compressed()) {
+						img->convert(Image::FORMAT_RGBA8);
+						for (int32_t y = 0; y < img->get_height(); y++) {
+							for (int32_t x = 0; x < img->get_width(); x++) {
+								Color c = img->get_pixel(x, y);
+								Vector2 red_green = Vector2(c.r, c.g);
+								red_green = red_green * Vector2(2.0f, 2.0f) - Vector2(1.0f, 1.0f);
+								float blue = 1.0f - red_green.dot(red_green);
+								blue = MAX(0.0f, blue);
+								c.b = Math::sqrt(blue);
+								img->set_pixel(x, y, c);
+							}
 						}
+						tex->set_image(img);
+					} else {
+						ERR_PRINT("glTF: Failed to decompress normal texture");
 					}
-					tex->set_image(img);
 				}
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
