@@ -517,7 +517,7 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 }
 
 BodyPair2DSW::~BodyPair2DSW() {
-	if (collided) {
+	if (get_wake_on_delete() && collided) {
 		A->set_active(true, true);
 		B->set_active(true, true);
 	}

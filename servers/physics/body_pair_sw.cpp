@@ -476,7 +476,7 @@ BodyPairSW::BodyPairSW(BodySW *p_A, int p_shape_A, BodySW *p_B, int p_shape_B) :
 }
 
 BodyPairSW::~BodyPairSW() {
-	if (collided) {
+	if (get_wake_on_delete() && collided) {
 		A->set_active(true, true);
 		B->set_active(true, true);
 	}

@@ -41,7 +41,7 @@ class ConstraintSW : public RID_Data {
 	ConstraintSW *island_list_next;
 	int priority;
 	bool disabled_collisions_between_bodies;
-
+	bool wake_on_delete = false;
 	RID self;
 
 protected:
@@ -54,6 +54,9 @@ protected:
 	}
 
 public:
+	_FORCE_INLINE_ void set_wake_on_delete(bool p_wake_on_delete) { wake_on_delete = p_wake_on_delete; }
+	_FORCE_INLINE_ bool get_wake_on_delete() { return wake_on_delete; }
+
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
 

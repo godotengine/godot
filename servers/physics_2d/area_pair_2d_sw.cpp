@@ -83,7 +83,9 @@ AreaPair2DSW::~AreaPair2DSW() {
 	if (colliding) {
 		if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED) {
 			body->remove_area(area);
-			body->set_active(true, true);
+			if (get_wake_on_delete()) {
+				body->set_active(true, true);
+			}
 		}
 		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);
