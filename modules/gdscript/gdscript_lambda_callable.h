@@ -61,6 +61,10 @@ public:
 	int get_argument_count(bool &r_is_valid) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
+	GDScriptFunction *get_function() const { return function; }
+	const Vector<Variant> &get_captures() const { return captures; }
+	static const GDScriptLambdaCallable *from_callable(const Callable &p_callable);
+
 	GDScriptLambdaCallable(GDScriptLambdaCallable &) = delete;
 	GDScriptLambdaCallable(const GDScriptLambdaCallable &) = delete;
 	GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures);
@@ -89,6 +93,10 @@ public:
 	StringName get_method() const override;
 	int get_argument_count(bool &r_is_valid) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+
+	GDScriptFunction *get_function() const { return function; }
+	const Vector<Variant> &get_captures() const { return captures; }
+	static const GDScriptLambdaSelfCallable *from_callable(const Callable &p_callable);
 
 	GDScriptLambdaSelfCallable(GDScriptLambdaSelfCallable &) = delete;
 	GDScriptLambdaSelfCallable(const GDScriptLambdaSelfCallable &) = delete;

@@ -209,6 +209,9 @@ private:
 
 	void _save_orphaned_subclasses();
 
+	Vector<GDScriptFunction *> _snapshot_lambda_roots() const;
+	static bool _snapshot_find_lambda(const GDScriptFunction *p_func, const GDScriptFunction *p_target, PackedInt32Array &r_path);
+
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
@@ -247,6 +250,8 @@ public:
 	bool has_class(const GDScript *p_script);
 	GDScript *get_root_script();
 	bool is_root_script() const { return _owner == nullptr; }
+	static Dictionary snapshot_get_lambda(const Callable &p_callable);
+	static Callable snapshot_make_lambda(const Dictionary &p_info);
 	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }

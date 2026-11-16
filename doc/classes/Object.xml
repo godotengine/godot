@@ -998,6 +998,12 @@
 				Returns the functions of this object's script that are suspended in an [code]await[/code], each as a [Dictionary] with [code]function[/code] ([StringName]), [code]source[/code] (the script path) and [code]line[/code] ([int]). A saved state does not hold them.
 			</description>
 		</method>
+		<method name="snapshot_get_connections" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns every outgoing signal connection of this object as [code]{signal: StringName, callable: Callable, flags: int}[/code], including connections the engine makes. One call instead of [method get_signal_list] and [method get_signal_connection_list] for each signal, for saving an object's state.
+			</description>
+		</method>
 		<method name="snapshot_get_properties" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" />

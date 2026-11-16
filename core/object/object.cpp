@@ -672,6 +672,20 @@ Dictionary Object::snapshot_get_properties(BitField<PropertyUsageFlags> p_usage,
 	return out;
 }
 
+TypedArray<Dictionary> Object::snapshot_get_connections() const {
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+	TypedArray<Dictionary> out;
+	for (const Connection &c : conns) {
+		Dictionary d;
+		d["signal"] = c.signal.get_name();
+		d["callable"] = c.callable;
+		d["flags"] = c.flags;
+		out.push_back(d);
+	}
+	return out;
+}
+
 void Object::snapshot_cancel_pending_awaits() {
 	if (script_instance) {
 		script_instance->cancel_pending_awaits();
@@ -1919,6 +1933,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_pending_awaits"), &Object::snapshot_get_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_get_properties", "usage", "exclude_usage"), &Object::snapshot_get_properties, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("snapshot_get_connections"), &Object::snapshot_get_connections);
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
 

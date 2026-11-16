@@ -2003,6 +2003,63 @@ void Engine::drop_pending_ticks() {
 // any usage (Texture2DRD's texture_rd_rid). Objects in p_skip are not entered.
 // Image and ImageTexture are not entered: reading ImageTexture's image would
 // fetch it from the GPU, and neither holds a RID as a property.
+// A value a save can store as it is: no object, callable, signal or RID inside,
+// and no dictionary with a "__ref" key, which a save uses for its references.
+static bool _snapshot_is_plain(const Variant &p_value, int p_depth) {
+	switch (p_value.get_type()) {
+		case Variant::OBJECT:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::RID:
+			return false;
+		case Variant::ARRAY: {
+			if (p_depth > 64) {
+				return false;
+			}
+			const Array a = p_value;
+			for (const Variant &v : a) {
+				if (!_snapshot_is_plain(v, p_depth + 1)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		case Variant::DICTIONARY: {
+			if (p_depth > 64) {
+				return false;
+			}
+			const Dictionary d = p_value;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				if (kv.key == Variant("__ref") || !_snapshot_is_plain(kv.key, p_depth + 1) || !_snapshot_is_plain(kv.value, p_depth + 1)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		default:
+			return true;
+	}
+}
+
+Array Engine::snapshot_split_plain(const Dictionary &p_values) const {
+	Dictionary values;
+	Array others;
+	for (const KeyValue<Variant, Variant> &kv : p_values) {
+		const Variant::Type t = kv.value.get_type();
+		if (!_snapshot_is_plain(kv.value, 0)) {
+			others.push_back(kv.key);
+			values[kv.key] = kv.value;
+		} else {
+			// A copy, so the save does not change with the live container.
+			values[kv.key] = t == Variant::ARRAY || t == Variant::DICTIONARY ? kv.value.duplicate(true) : kv.value;
+		}
+	}
+	Array out;
+	out.push_back(values);
+	out.push_back(others);
+	return out;
+}
+
 Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const {
 	Dictionary out;
 	HashSet<ObjectID> seen;
@@ -2215,6 +2272,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_drawing_step"), &Engine::is_drawing_step);
 	ClassDB::bind_method(D_METHOD("drop_pending_ticks"), &Engine::drop_pending_ticks);
 	ClassDB::bind_method(D_METHOD("snapshot_collect_rids", "roots", "skip"), &Engine::snapshot_collect_rids);
+	ClassDB::bind_method(D_METHOD("snapshot_split_plain", "values"), &Engine::snapshot_split_plain);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);

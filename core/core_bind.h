@@ -611,6 +611,7 @@ public:
 	bool is_drawing_step() const;
 	void drop_pending_ticks();
 	Dictionary snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const;
+	Array snapshot_split_plain(const Dictionary &p_values) const;
 
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;

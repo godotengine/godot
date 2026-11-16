@@ -150,6 +150,11 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 	}
 }
 
+const GDScriptLambdaCallable *GDScriptLambdaCallable::from_callable(const Callable &p_callable) {
+	const CallableCustom *custom = p_callable.is_custom() ? p_callable.get_custom() : nullptr;
+	return custom != nullptr && custom->get_compare_equal_func() == compare_equal ? static_cast<const GDScriptLambdaCallable *>(custom) : nullptr;
+}
+
 GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :
 		function(p_function) {
 	ERR_FAIL_COND(p_script.is_null());
@@ -280,6 +285,11 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 	} else {
 		r_return_value = function->call(static_cast<GDScriptInstance *>(object->get_script_instance()), p_arguments, p_argcount, r_call_error);
 	}
+}
+
+const GDScriptLambdaSelfCallable *GDScriptLambdaSelfCallable::from_callable(const Callable &p_callable) {
+	const CallableCustom *custom = p_callable.is_custom() ? p_callable.get_custom() : nullptr;
+	return custom != nullptr && custom->get_compare_equal_func() == compare_equal ? static_cast<const GDScriptLambdaSelfCallable *>(custom) : nullptr;
 }
 
 GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) :

@@ -33,6 +33,7 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
+#include "gdscript_lambda_callable.h"
 #include "gdscript_parser.h"
 #include "gdscript_rpc_callable.h"
 #include "gdscript_tokenizer_buffer.h"
@@ -1076,6 +1077,146 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_get_lambda", "callable"), &GDScript::snapshot_get_lambda);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_make_lambda", "info"), &GDScript::snapshot_make_lambda);
+}
+
+// The functions whose lambdas a script's lambdas are named under: the implicit
+// initializers and the member functions, as hot reload matches them.
+Vector<GDScriptFunction *> GDScript::_snapshot_lambda_roots() const {
+	Vector<GDScriptFunction *> out;
+	GDScriptFunction *const specials[] = { implicit_initializer, implicit_ready, static_initializer };
+	for (GDScriptFunction *f : specials) {
+		if (f != nullptr) {
+			out.push_back(f);
+		}
+	}
+	for (const KeyValue<StringName, GDScriptFunction *> &kv : member_functions) {
+		out.push_back(kv.value);
+	}
+	return out;
+}
+
+bool GDScript::_snapshot_find_lambda(const GDScriptFunction *p_func, const GDScriptFunction *p_target, PackedInt32Array &r_path) {
+	for (int i = 0; i < p_func->lambdas.size(); i++) {
+		r_path.push_back(i);
+		if (p_func->lambdas[i] == p_target || _snapshot_find_lambda(p_func->lambdas[i], p_target, r_path)) {
+			return true;
+		}
+		r_path.resize(r_path.size() - 1);
+	}
+	return false;
+}
+
+// Where a lambda is written (root script path, inner class names, enclosing
+// function, index of each nested lambda) and what it captured, or {} for
+// anything but a GDScript lambda. snapshot_make_lambda() makes it again.
+Dictionary GDScript::snapshot_get_lambda(const Callable &p_callable) {
+	GDScriptFunction *func = nullptr;
+	Vector<Variant> captures;
+	Variant self;
+	if (const GDScriptLambdaCallable *l = GDScriptLambdaCallable::from_callable(p_callable)) {
+		func = l->get_function();
+		captures = l->get_captures();
+	} else if (const GDScriptLambdaSelfCallable *ls = GDScriptLambdaSelfCallable::from_callable(p_callable)) {
+		func = ls->get_function();
+		captures = ls->get_captures();
+		self = ObjectDB::get_instance(ls->get_object());
+	}
+	if (func == nullptr || func->get_script() == nullptr) {
+		return Dictionary();
+	}
+	GDScript *script = func->get_script();
+	for (const GDScriptFunction *root : script->_snapshot_lambda_roots()) {
+		PackedInt32Array path;
+		if (!_snapshot_find_lambda(root, func, path)) {
+			continue;
+		}
+		PackedStringArray classes;
+		GDScript *s = script;
+		while (s->_owner != nullptr) {
+			for (const KeyValue<StringName, Ref<GDScript>> &kv : s->_owner->subclasses) {
+				if (kv.value.ptr() == s) {
+					classes.insert(0, kv.key);
+					break;
+				}
+			}
+			s = s->_owner;
+		}
+		Array caps;
+		for (const Variant &v : captures) {
+			caps.push_back(v);
+		}
+		Dictionary out;
+		out["script"] = s->get_path();
+		out["class"] = classes;
+		out["function"] = root->get_name();
+		out["index"] = path;
+		out["captures"] = caps;
+		out["self"] = self;
+		return out;
+	}
+	return Dictionary();
+}
+
+// The lambda snapshot_get_lambda() described, with its captures and self, or
+// an invalid Callable when the script no longer has a lambda there that takes
+// as many captures.
+Callable GDScript::snapshot_make_lambda(const Dictionary &p_info) {
+	const String path = p_info.get("script", String());
+	Ref<GDScript> root;
+	if (ResourceLoader::exists(path)) {
+		root = ResourceLoader::load(path);
+	}
+	ERR_FAIL_COND_V_MSG(root.is_null(), Callable(), "No script at '" + path + "'.");
+	GDScript *s = root.ptr();
+	const PackedStringArray classes = p_info.get("class", PackedStringArray());
+	for (const String &name : classes) {
+		const Ref<GDScript> *sub = s->subclasses.getptr(name);
+		if (sub == nullptr) {
+			return Callable();
+		}
+		s = sub->ptr();
+	}
+	const StringName fname = p_info.get("function", StringName());
+	GDScriptFunction *func = nullptr;
+	for (GDScriptFunction *f : s->_snapshot_lambda_roots()) {
+		if (f->get_name() == fname) {
+			func = f;
+			break;
+		}
+	}
+	const PackedInt32Array index = p_info.get("index", PackedInt32Array());
+	if (func == nullptr || index.is_empty()) {
+		return Callable();
+	}
+	for (int i : index) {
+		if (i < 0 || i >= func->lambdas.size()) {
+			return Callable();
+		}
+		func = func->lambdas[i];
+	}
+	const LambdaInfo *info = func->get_script() != nullptr ? func->get_script()->lambda_info.getptr(func) : nullptr;
+	const Array caps = p_info.get("captures", Array());
+	if (info == nullptr || info->capture_count != caps.size()) {
+		return Callable();
+	}
+	Vector<Variant> captures;
+	for (const Variant &v : caps) {
+		captures.push_back(v);
+	}
+	if (!info->use_self) {
+		return Callable(memnew(GDScriptLambdaCallable(Ref<GDScript>(func->get_script()), func, captures)));
+	}
+	Object *self = p_info.get("self", Variant()).get_validated_object();
+	if (self == nullptr) {
+		return Callable();
+	}
+	RefCounted *rc = Object::cast_to<RefCounted>(self);
+	if (rc != nullptr) {
+		return Callable(memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(rc), func, captures)));
+	}
+	return Callable(memnew(GDScriptLambdaSelfCallable(self, func, captures)));
 }
 
 void GDScript::set_path_cache(const String &p_path) {

@@ -23,5 +23,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="snapshot_get_lambda" qualifiers="static">
+			<return type="Dictionary" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Returns where the GDScript lambda [param callable] is written and what it captured, or an empty [Dictionary] for any other [Callable]: [code]script[/code] (the path of the file), [code]class[/code] (the inner class names leading to it), [code]function[/code] (the function it is written in), [code]index[/code] (the index of the lambda in that function, then in each lambda it is nested in), [code]captures[/code] and [code]self[/code] (the object it runs on, or [code]null[/code]). A lambda is named as hot reload names it, so the description stays valid while that function's lambdas keep their order. For saving a game's connections and stored callables.
+			</description>
+		</method>
+		<method name="snapshot_make_lambda" qualifiers="static">
+			<return type="Callable" />
+			<param index="0" name="info" type="Dictionary" />
+			<description>
+				Makes the lambda that [method snapshot_get_lambda] described, with the captures and [code]self[/code] in [param info]. Returns an invalid [Callable] if the script no longer has a lambda there that takes as many captures and uses [code]self[/code] the same way.
+			</description>
+		</method>
 	</methods>
 </class>
