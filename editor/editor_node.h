@@ -889,6 +889,8 @@ public:
 	void set_edited_scene_root(Node *p_scene, bool p_auto_add);
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
+	void soft_reload_edited_scene();
+
 	String get_preview_locale() const;
 	bool is_pseudolocalization_enabled() const;
 	void set_preview_locale(const String &p_locale, bool p_pseudolocalization);

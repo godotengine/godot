@@ -4907,6 +4907,34 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 	}
 }
 
+void EditorNode::soft_reload_edited_scene() {
+	int idx = editor_data.get_edited_scene();
+	const String scene_path = editor_data.get_scene_path(idx);
+
+	editor_data.save_edited_scene_state(editor_selection, &editor_history, _get_main_scene_state());
+	editor_selection->clear();
+
+	if (!scene_path.is_empty() && editor_data.get_edited_scene_root(idx)) {
+		editor_folding.save_scene_folding(editor_data.get_edited_scene_root(idx), scene_path);
+	}
+
+	editor_data.reload_scene_from_memory(idx, true);
+	InspectorDock::get_inspector_singleton()->update_tree();
+
+	if (!scene_path.is_empty()) {
+		editor_folding.load_scene_folding(editor_data.get_edited_scene_root(idx), scene_path);
+	}
+
+	const Dictionary state = editor_data.restore_edited_scene_state(editor_selection, &editor_history);
+	_set_main_scene_state(state);
+
+	// Stop the inspector history from thinking there's a previous object.
+	editor_history.cleanup_history();
+	InspectorDock::get_singleton()->update(nullptr);
+
+	SceneTreeDock::get_singleton()->get_tree_editor()->clear_cache();
+}
+
 void EditorNode::setup_built_in_resource(const Ref<Resource> &p_resource, const String &p_owner_path) {
 	String resource_class;
 	const Ref<MissingResource> &missing_resource = p_resource;
