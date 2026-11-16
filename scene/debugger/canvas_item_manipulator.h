@@ -145,6 +145,8 @@ private:
 	Point2 view_offset;
 	Viewport *viewport = nullptr;
 
+	Array pre_selection;
+	Array last_selection;
 	Point2 box_selecting_to;
 	Point2 drag_start_origin;
 
@@ -244,7 +246,7 @@ public:
 
 	void get_canvas_items_at_pos(const Point2 &p_pos, Vector<DebuggerHelpers::SelectResult> &r_items, bool p_allow_locked = false);
 	void find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void find_canvas_items_overlap_rect(const Rect2 &p_rect, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
 	Input::CursorShape get_cursor_shape() const { return cursor_shape; }
 
