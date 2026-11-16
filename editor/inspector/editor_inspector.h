@@ -979,6 +979,9 @@ public:
 	void set_scroll_offset(int p_offset);
 	int get_scroll_offset() const;
 
+	void set_scroll_cache(ObjectID p_id, int p_offset);
+	void remove_scroll_cache(ObjectID p_id);
+
 	void set_property_prefix(const String &p_prefix);
 	String get_property_prefix() const;
 
