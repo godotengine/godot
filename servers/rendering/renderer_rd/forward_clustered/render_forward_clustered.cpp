@@ -1216,7 +1216,13 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				}
 			}
 
-			surf->sort.depth_layer = depth_layer;
+			// "depth_layer" is only a draw order hint, but since it is part of the sort key, elements with
+			// different layers cannot be merged into the same instanced draw call. In shadow passes the
+			// projection is the shadow camera: each directional shadow cascade covers a small depth range
+			// quantized to 16 layers, so instances of the same mesh often land in different layers and get
+			// split into many tiny draw calls instead of one instanced draw per used LOD. Shadow passes
+			// therefore don't use depth layers.
+			surf->sort.depth_layer = (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) ? 0 : depth_layer;
 
 			surf = surf->next;
 		}
