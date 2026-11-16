@@ -36,6 +36,10 @@
 #include "scene/theme/theme_db.h"
 
 void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
+	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
+
 	Ref<InputEventScreenTouch> touch = p_event;
 	if (touch.is_valid()) {
 		if (touch->is_pressed()) {
@@ -70,6 +74,33 @@ void VirtualJoystick::gui_input(const Ref<InputEvent> &p_event) {
 	if (drag.is_valid() && drag->get_index() == touch_index) {
 		has_moved = true;
 		_update_joystick(drag->get_position());
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		if (mb->is_pressed() && has_point(mb->get_position())) {
+			Rect2 base_rect = Rect2(joystick_pos - Vector2(0.5, 0.5) * joystick_size, Vector2(joystick_size, joystick_size));
+			if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING || (base_rect.has_point(mb->get_position()) && joystick_mode == JOYSTICK_FIXED)) {
+				if (joystick_mode == JOYSTICK_DYNAMIC || joystick_mode == JOYSTICK_FOLLOWING) {
+					joystick_pos = mb->get_position();
+				}
+
+				emit_signal(SceneStringName(pressed));
+
+				is_pressed = true;
+				_update_joystick(mb->get_position());
+			}
+		} else {
+			is_pressed = false;
+			emit_signal(SNAME("released"), input_vector);
+			_reset();
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && is_pressed) {
+		has_moved = true;
+		_update_joystick(mm->get_position());
 	}
 }
 
