@@ -224,6 +224,19 @@
 	[self.godotLoadingOverlay removeFromSuperview];
 	self.godotLoadingOverlay = nil;
 
+#if defined(VISIONOS_ENABLED)
+	UIInterfaceOrientation orientation = self.view.window.windowScene.effectiveGeometry.interfaceOrientation;
+#else
+	UIInterfaceOrientation orientation = self.view.window.windowScene.interfaceOrientation;
+#endif
+	int out = DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED;
+	if (UIInterfaceOrientationIsPortrait(orientation)) {
+		out = DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT;
+	} else if (UIInterfaceOrientationIsLandscape(orientation)) {
+		out = DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE;
+	}
+	DisplayServerAppleEmbedded::get_singleton()->emit_signal(SNAME("orientation_changed"), out);
+
 	return YES;
 }
 
