@@ -278,7 +278,7 @@ void AudioDriverWeb::unregister_sample(const Ref<AudioSample> &p_sample) {
 	godot_audio_sample_unregister_stream(itos(p_sample->stream->get_instance_id()).utf8().get_data());
 }
 
-void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	ERR_FAIL_COND_MSG(p_playback->stream.is_null(), "Parameter p_playback->stream is null.");
 
@@ -302,7 +302,8 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 			AudioServer::get_singleton()->get_bus_index(p_playback->bus),
 			p_playback->offset,
 			p_playback->pitch_scale,
-			volume_ptrw);
+			volume_ptrw,
+			p_paused);
 }
 
 void AudioDriverWeb::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {

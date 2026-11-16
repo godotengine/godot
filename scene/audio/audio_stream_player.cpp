@@ -112,7 +112,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale, !can_process());
 	internal->ensure_playback_limit();
 
 	// Sample handling.
@@ -122,7 +122,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 		sample_playback->volume_vector = _get_volume_vector();
 		sample_playback->bus = get_bus();
 
-		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+		AudioServer::get_singleton()->start_sample_playback(sample_playback, !can_process());
 	}
 }
 

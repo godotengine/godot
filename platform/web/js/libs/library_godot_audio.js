@@ -899,8 +899,8 @@ const _GodotAudioSampleDriver = {
 	},
 
 	godot_audio_sample_start__proxy: 'sync',
-	godot_audio_sample_start__sig: 'viiiifi',
-	godot_audio_sample_start: function (p_playback, p_stream, p_bus, p_offset, p_pitch_scale, p_volume) {
+	godot_audio_sample_start__sig: 'viiiifii',
+	godot_audio_sample_start: function (p_playback, p_stream, p_bus, p_offset, p_pitch_scale, p_volume, p_paused) {
 		if (!GodotAudio.sample_driver) {
 			return;
 		}
@@ -915,6 +915,7 @@ const _GodotAudioSampleDriver = {
 		playback.setVolumes([p_bus], volume);
 		playback.setPitchScale(p_pitch_scale);
 		playback.start(p_offset);
+		playback.pause(Boolean(p_paused));
 	},
 
 	godot_audio_sample_stop__proxy: 'sync',
