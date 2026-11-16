@@ -122,6 +122,7 @@ public:
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
+	virtual void set_total_time(double p_time) override { time_total = p_time; }
 	_ALWAYS_INLINE_ bool can_create_resources_async() const { return false; }
 
 	static RasterizerGLES3 *get_singleton() { return singleton; }

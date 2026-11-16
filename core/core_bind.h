@@ -587,6 +587,12 @@ public:
 	void set_max_fps(int p_fps);
 	int get_max_fps() const;
 
+	// komm64: what scripts see of the frame counters is shifted as the
+	// ticks are (snapshot_set_clock).
+	int64_t snapshot_process_offset = 0;
+	int64_t snapshot_physics_offset = 0;
+	int64_t snapshot_drawn_offset = 0;
+
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
@@ -613,6 +619,8 @@ public:
 	Dictionary snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const;
 	Array snapshot_split_plain(const Dictionary &p_values) const;
 	int64_t snapshot_get_random_state() const;
+	Dictionary snapshot_get_clock() const;
+	void snapshot_set_clock(const Dictionary &p_clock);
 	void snapshot_set_random_state(int64_t p_state);
 
 	bool has_singleton(const StringName &p_name) const;

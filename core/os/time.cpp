@@ -389,6 +389,18 @@ uint64_t Time::get_ticks_usec() const {
 	return OS::get_singleton()->get_ticks_usec();
 }
 
+uint64_t Time::_script_get_ticks_usec() const {
+	return uint64_t(MAX(int64_t(0), int64_t(OS::get_singleton()->get_ticks_usec()) + snapshot_ticks_offset_usec));
+}
+
+uint64_t Time::_script_get_ticks_msec() const {
+	return _script_get_ticks_usec() / 1000;
+}
+
+uint64_t Time::snapshot_get_real_ticks_usec() const {
+	return OS::get_singleton()->get_ticks_usec();
+}
+
 void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_unix_time", "unix_time_val"), &Time::get_datetime_dict_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_date_dict_from_unix_time", "unix_time_val"), &Time::get_date_dict_from_unix_time);
@@ -410,8 +422,9 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_string_from_system", "utc"), &Time::get_time_string_from_system, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_time_zone_from_system"), &Time::get_time_zone_from_system);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_system"), &Time::get_unix_time_from_system);
-	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &Time::get_ticks_msec);
-	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &Time::get_ticks_usec);
+	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &Time::_script_get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &Time::_script_get_ticks_usec);
+	ClassDB::bind_method(D_METHOD("snapshot_get_real_ticks_usec"), &Time::snapshot_get_real_ticks_usec);
 
 	BIND_ENUM_CONSTANT(MONTH_JANUARY);
 	BIND_ENUM_CONSTANT(MONTH_FEBRUARY);

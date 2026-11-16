@@ -1032,6 +1032,8 @@ public:
 	virtual Size2i get_maximum_viewport_size() const = 0;
 
 	RenderingDevice *get_rendering_device() const;
+	virtual double snapshot_get_shader_time() const = 0; // komm64
+	virtual void snapshot_set_shader_time(double p_time) = 0;
 	RenderingDevice *create_local_rendering_device() const;
 
 	bool is_render_loop_enabled() const;

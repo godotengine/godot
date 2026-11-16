@@ -77,6 +77,13 @@ public:
 	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
 
+	// komm64: scripts see the ticks plus this offset, so a loaded save's
+	// clock goes on from where it was. Engine code reads the real ticks.
+	int64_t snapshot_ticks_offset_usec = 0;
+	uint64_t _script_get_ticks_msec() const;
+	uint64_t _script_get_ticks_usec() const;
+	uint64_t snapshot_get_real_ticks_usec() const;
+
 	Time();
 	virtual ~Time();
 };

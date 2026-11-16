@@ -1063,6 +1063,13 @@
 				Returns the arguments of the call that created [param rid], with its current contents where that call takes initial data. Calling the method named in the entry from [method snapshot_get_records] with these arguments makes an equal resource.
 			</description>
 		</method>
+		<method name="snapshot_get_dependencies">
+			<return type="Dictionary" />
+			<param index="0" name="rids" type="Dictionary" />
+			<description>
+				Returns [param rids] (a [Dictionary] with [RID] keys) together with every [RID] that the creation arguments of the resources among them refer to, and so on, as [code]{rid: true}[/code]. For finding out which resources the objects a game holds still depend on.
+			</description>
+		</method>
 		<method name="snapshot_get_records">
 			<return type="Dictionary[]" />
 			<description>

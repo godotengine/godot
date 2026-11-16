@@ -315,10 +315,23 @@
 				Returns every valid [RID] reachable from [param roots], as [code]{rid: true}[/code]. Walks [Array]s, [Dictionary]s and the stored and script-variable properties of [Node]s, [Resource]s and scripted objects, and also reads [RID] properties of any usage (such as [member Texture2DRD.texture_rd_rid]). Objects in [param skip] are not entered, nor are [Image] and [ImageTexture]. For finding out which [RenderingDevice] objects game state still refers to.
 			</description>
 		</method>
+\t\t<method name="snapshot_get_clock" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the clocks as scripts see them: [code]ticks_usec[/code] ([method Time.get_ticks_usec]), [code]process_frames[/code], [code]physics_frames[/code] and [code]frames_drawn[/code]. Pass it to [method snapshot_set_clock] to make them go on from there, for example after loading a save.
+			</description>
+		</method>
 		<method name="snapshot_get_random_state" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the state of the global random number generator that [method @GlobalScope.randi], [method @GlobalScope.randf] and the other global random functions use. Pass it to [method snapshot_set_random_state] to continue the same sequence, for example after loading a save.
+			</description>
+		</method>
+\t\t<method name="snapshot_set_clock">
+			<return type="void" />
+			<param index="0" name="clock" type="Dictionary" />
+			<description>
+				Makes the clocks scripts see read [param clock] now, as [method snapshot_get_clock] returned it, and go on from there. Only what scripts read is shifted ([method Time.get_ticks_msec], [method Time.get_ticks_usec], [method get_process_frames], [method get_physics_frames], [method get_frames_drawn]); the engine keeps its own clocks. [method Time.snapshot_get_real_ticks_usec] is never shifted.
 			</description>
 		</method>
 		<method name="snapshot_set_random_state">

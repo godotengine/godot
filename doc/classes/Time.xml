@@ -184,6 +184,12 @@
 				[b]Note:[/b] Unlike other methods that use integer timestamps, this method returns the timestamp as a [float] for sub-second precision.
 			</description>
 		</method>
+\t\t<method name="snapshot_get_real_ticks_usec" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the microseconds since the engine started, never shifted by [method Engine.snapshot_set_clock]. [method get_ticks_usec] is the game's clock, which a loaded save sets back; code that runs beside the game (tools, transports, profilers) measures intervals with this one.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="MONTH_JANUARY" value="1" enum="Month">

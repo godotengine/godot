@@ -381,6 +381,23 @@ bool RenderingServerDefault::has_os_feature(const String &p_feature) const {
 	}
 }
 
+// komm64: the TIME shaders read.
+double RenderingServerDefault::snapshot_get_shader_time() const {
+	return RSG::rasterizer->get_total_time();
+}
+
+void RenderingServerDefault::_snapshot_set_shader_time(double p_time) {
+	RSG::rasterizer->set_total_time(p_time);
+}
+
+void RenderingServerDefault::snapshot_set_shader_time(double p_time) {
+	if (Thread::get_caller_id() != server_thread) {
+		command_queue.push(this, &RenderingServerDefault::_snapshot_set_shader_time, p_time);
+	} else {
+		_snapshot_set_shader_time(p_time);
+	}
+}
+
 void RenderingServerDefault::set_debug_generate_wireframes(bool p_generate) {
 	RSG::utilities->set_debug_generate_wireframes(p_generate);
 }

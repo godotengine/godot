@@ -571,6 +571,7 @@ public:
 	TypedArray<Dictionary> snapshot_get_records();
 	Array snapshot_get_content(RID p_rid);
 	RID snapshot_get_texture_base(RID p_texture);
+	Dictionary snapshot_get_dependencies(const Dictionary &p_rids);
 
 
 private:

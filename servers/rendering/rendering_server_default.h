@@ -1243,6 +1243,9 @@ public:
 	virtual void sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
 	virtual void set_print_gpu_profile(bool p_enable) override;
+	virtual double snapshot_get_shader_time() const override;
+	virtual void snapshot_set_shader_time(double p_time) override;
+	void _snapshot_set_shader_time(double p_time);
 
 	virtual Size2i get_maximum_viewport_size() const override;
 

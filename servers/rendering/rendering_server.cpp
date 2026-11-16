@@ -3574,6 +3574,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_sync"), &RenderingServer::sync);
 	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &RenderingServer::draw, DEFVAL(true), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("get_rendering_device"), &RenderingServer::get_rendering_device);
+	ClassDB::bind_method(D_METHOD("snapshot_get_shader_time"), &RenderingServer::snapshot_get_shader_time);
+	ClassDB::bind_method(D_METHOD("snapshot_set_shader_time", "time"), &RenderingServer::snapshot_set_shader_time);
 	ClassDB::bind_method(D_METHOD("create_local_rendering_device"), &RenderingServer::create_local_rendering_device);
 
 	ClassDB::bind_method(D_METHOD("is_on_render_thread"), &RenderingServer::is_on_render_thread);

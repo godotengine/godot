@@ -9239,6 +9239,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free_rid);
 	ClassDB::bind_method(D_METHOD("snapshot_get_records"), &RenderingDevice::snapshot_get_records);
 	ClassDB::bind_method(D_METHOD("snapshot_get_content", "rid"), &RenderingDevice::snapshot_get_content);
+	ClassDB::bind_method(D_METHOD("snapshot_get_dependencies", "rids"), &RenderingDevice::snapshot_get_dependencies);
 	ClassDB::bind_method(D_METHOD("snapshot_get_texture_base", "texture"), &RenderingDevice::snapshot_get_texture_base);
 
 	ClassDB::bind_method(D_METHOD("capture_timestamp", "name"), &RenderingDevice::capture_timestamp);
@@ -10083,6 +10084,58 @@ Array RenderingDevice::snapshot_get_content(RID p_rid) {
 		args[2] = buffer_get_data(p_rid);
 	}
 	return args;
+}
+
+static void _snapshot_collect_arg_rids(const Variant &p_value, Dictionary &r_out, LocalVector<RID> &r_queue, int p_depth) {
+	if (p_depth > 64) {
+		return;
+	}
+	switch (p_value.get_type()) {
+		case Variant::RID: {
+			const RID rid = p_value;
+			if (rid.is_valid() && !r_out.has(rid)) {
+				r_out[rid] = true;
+				r_queue.push_back(rid);
+			}
+		} break;
+		case Variant::ARRAY: {
+			const Array a = p_value;
+			for (const Variant &v : a) {
+				_snapshot_collect_arg_rids(v, r_out, r_queue, p_depth + 1);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			const Dictionary d = p_value;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_snapshot_collect_arg_rids(kv.value, r_out, r_queue, p_depth + 1);
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
+// komm64: the RIDs in `p_rids` (as {rid: true}) and everything the creation
+// arguments of the recorded ones refer to, transitively.
+Dictionary RenderingDevice::snapshot_get_dependencies(const Dictionary &p_rids) {
+	_THREAD_SAFE_METHOD_
+
+	Dictionary out = p_rids.duplicate();
+	LocalVector<RID> queue;
+	for (const KeyValue<Variant, Variant> &kv : p_rids) {
+		if (kv.key.get_type() == Variant::RID) {
+			queue.push_back(kv.key);
+		}
+	}
+	while (!queue.is_empty()) {
+		const RID rid = queue[queue.size() - 1];
+		queue.resize(queue.size() - 1);
+		const SnapshotRecord *record = snapshot_records.getptr(rid);
+		if (record != nullptr) {
+			_snapshot_collect_arg_rids(record->args, out, queue, 0);
+		}
+	}
+	return out;
 }
 
 // The texture a shared view looks into, or `p_texture` when it is not a view.
