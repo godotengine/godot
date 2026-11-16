@@ -66,7 +66,9 @@ public:
 		for (int i = 0; i < get_body_count(); i++) {
 			GodotBody2D *body = get_body_ptr()[i];
 			if (body) {
-				body->set_active(true, true);
+				if (get_wake_on_delete()) {
+					body->set_active(true, true);
+				}
 				body->remove_constraint(this, i);
 			}
 		}

@@ -111,7 +111,9 @@ GodotAreaPair3D::~GodotAreaPair3D() {
 		if (body_has_attached_area) {
 			body_has_attached_area = false;
 			body->remove_area(area);
-			body->set_active(true, true);
+			if (get_wake_on_delete()) {
+				body->set_active(true, true);
+			}
 		}
 		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);

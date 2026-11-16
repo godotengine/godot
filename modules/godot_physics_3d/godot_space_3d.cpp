@@ -1067,6 +1067,7 @@ void GodotSpace3D::_broadphase_unpair(GodotCollisionObject3D *A, int p_subindex_
 	GodotSpace3D *self = static_cast<GodotSpace3D *>(p_self);
 	self->collision_pairs--;
 	GodotConstraint3D *c = static_cast<GodotConstraint3D *>(p_data);
+	c->set_wake_on_delete(self->get_wake_on_unpair());
 	memdelete(c);
 }
 

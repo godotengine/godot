@@ -108,7 +108,7 @@ private:
 	real_t body_time_to_sleep = 0.0;
 
 	bool locked = false;
-
+	bool wake_on_unpair = true;
 	real_t last_step = 0.001;
 
 	int island_count = 0;
@@ -125,6 +125,8 @@ private:
 	int _cull_aabb_for_body(GodotBody3D *p_body, const AABB &p_aabb);
 
 public:
+	_FORCE_INLINE_ void set_wake_on_unpair(bool p_wake_on_unpair) { wake_on_unpair = p_wake_on_unpair; }
+	_FORCE_INLINE_ bool get_wake_on_unpair() const { return wake_on_unpair; }
 	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
 	_FORCE_INLINE_ RID get_self() const { return self; }
 

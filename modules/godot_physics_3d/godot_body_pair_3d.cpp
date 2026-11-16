@@ -628,7 +628,7 @@ GodotBodyPair3D::GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p
 }
 
 GodotBodyPair3D::~GodotBodyPair3D() {
-	if (collided) {
+	if (get_wake_on_delete() && collided) {
 		if (collide_A) {
 			A->set_active(true, true);
 		}
@@ -1022,7 +1022,7 @@ GodotBodySoftBodyPair3D::GodotBodySoftBodyPair3D(GodotBody3D *p_A, int p_shape_A
 }
 
 GodotBodySoftBodyPair3D::~GodotBodySoftBodyPair3D() {
-	if (collided && body_collides) {
+	if (get_wake_on_delete() && collided && body_collides) {
 		body->set_active(true, true);
 	}
 

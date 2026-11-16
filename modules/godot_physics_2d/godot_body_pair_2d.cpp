@@ -633,7 +633,7 @@ GodotBodyPair2D::GodotBodyPair2D(GodotBody2D *p_A, int p_shape_A, GodotBody2D *p
 }
 
 GodotBodyPair2D::~GodotBodyPair2D() {
-	if (collided) {
+	if (get_wake_on_delete() && collided) {
 		if (collide_A) {
 			A->set_active(true, true);
 		}
