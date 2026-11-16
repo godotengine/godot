@@ -1195,10 +1195,152 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		_update_cursor();
 	}
 
+	_update_auto_scroll(p_event);
+
 	// Grab focus
 	if (!viewport->has_focus() && (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field())) {
 		callable_mp((Control *)viewport, &Control::grab_focus).call_deferred(false);
 	}
+}
+
+void CanvasItemEditor::_update_transform() {
+	transform = Transform2D();
+	transform.scale_basis(Size2(zoom, zoom));
+	transform.columns[2] = -view_offset * zoom;
+	EditorNode::get_singleton()->get_scene_root()->set_global_canvas_transform(transform);
+}
+
+Rect2 CanvasItemEditor::_get_auto_scroll_rect() const {
+	Rect2 rect = Rect2(Point2(), viewport->get_size());
+
+	if (ci_manipulator->is_showing_rulers()) {
+		const real_t ruler_width = ci_manipulator->get_ruler_width();
+		rect.position += Point2(ruler_width, ruler_width);
+		rect.size -= Size2(ruler_width, ruler_width);
+	}
+
+	if (v_scroll->is_visible()) {
+		const real_t v_scroll_width = v_scroll->get_combined_minimum_size().width;
+		if (is_layout_rtl()) {
+			rect.position.x += v_scroll_width;
+		}
+		rect.size.width -= v_scroll_width;
+	}
+
+	if (h_scroll->is_visible()) {
+		rect.size.height -= h_scroll->get_combined_minimum_size().height;
+	}
+
+	return rect;
+}
+
+bool CanvasItemEditor::_can_auto_scroll() const {
+	if (!auto_scroll_enabled || pan_pressed || ci_manipulator->get_tool() == CanvasItemManipulator::TOOL_PAN) {
+		return false;
+	}
+
+	switch (ci_manipulator->get_drag_type()) {
+		case CanvasItemManipulator::DRAG_NONE:
+			return ci_manipulator->is_ruler_tool_active() || !EditorNode::get_singleton()->get_editor_plugins_over()->is_empty();
+		case CanvasItemManipulator::DRAG_QUEUED:
+		case CanvasItemManipulator::DRAG_ROTATE:
+		case CanvasItemManipulator::DRAG_V_GUIDE:
+		case CanvasItemManipulator::DRAG_H_GUIDE:
+		case CanvasItemManipulator::DRAG_DOUBLE_GUIDE:
+		case CanvasItemManipulator::DRAG_KEY_MOVE:
+			return false;
+		default:
+			return true;
+	}
+}
+
+void CanvasItemEditor::_update_auto_scroll(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT)) {
+		if (!mb->is_pressed()) {
+			_stop_auto_scroll();
+		} else if (!auto_scroll_drag_started) {
+			auto_scroll_drag_started = _get_auto_scroll_rect().has_point(mb->get_position());
+		}
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_null() || !auto_scroll_drag_started) {
+		return;
+	}
+
+	if (!mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && !mm->get_button_mask().has_flag(MouseButtonMask::RIGHT)) {
+		_stop_auto_scroll();
+		return;
+	}
+
+	auto_scroll_last_motion = mm;
+	if (!is_processing_internal() && !_get_auto_scroll_rect().has_point(mm->get_position()) && _can_auto_scroll()) {
+		set_process_internal(true);
+	}
+}
+
+void CanvasItemEditor::_process_auto_scroll(double p_delta) {
+	if (auto_scroll_last_motion.is_null() || !_can_auto_scroll()) {
+		set_process_internal(false);
+		return;
+	}
+
+	const BitField<MouseButtonMask> mouse_mask = Input::get_singleton()->get_mouse_button_mask();
+	if (!mouse_mask.has_flag(MouseButtonMask::LEFT) && !mouse_mask.has_flag(MouseButtonMask::RIGHT)) {
+		_stop_auto_scroll();
+		return;
+	}
+
+	const Rect2 rect = _get_auto_scroll_rect();
+	const Point2 mouse_pos = viewport->get_local_mouse_position();
+
+	Vector2 overshoot;
+	for (int i = 0; i < 2; i++) {
+		if (mouse_pos[i] < rect.position[i]) {
+			overshoot[i] = mouse_pos[i] - rect.position[i];
+		} else if (mouse_pos[i] > rect.get_end()[i]) {
+			overshoot[i] = mouse_pos[i] - rect.get_end()[i];
+		}
+	}
+
+	if (overshoot.is_zero_approx()) {
+		set_process_internal(false);
+		return;
+	}
+
+	constexpr real_t BASE_SPEED = 200.0;
+	constexpr real_t SPEED_PER_PIXEL = 10.0;
+	constexpr real_t MAX_DISTANCE = 100.0;
+
+	Vector2 velocity;
+	for (int i = 0; i < 2; i++) {
+		if (overshoot[i] != 0) {
+			const real_t distance = MIN(Math::abs(overshoot[i]) / EDSCALE, MAX_DISTANCE);
+			velocity[i] = SIGN(overshoot[i]) * (BASE_SPEED + distance * SPEED_PER_PIXEL) * EDSCALE;
+		}
+	}
+
+	view_offset += velocity * p_delta / zoom;
+	ci_manipulator->set_view_offset(view_offset);
+	_update_transform();
+	update_viewport();
+
+	Ref<InputEventMouseMotion> motion = auto_scroll_last_motion->duplicate();
+	motion->set_global_position(motion->get_global_position() + (mouse_pos - motion->get_position()));
+	motion->set_position(mouse_pos);
+	motion->set_relative(Vector2());
+	motion->set_relative_screen_position(Vector2());
+	motion->set_velocity(Vector2());
+	motion->set_screen_velocity(Vector2());
+	_gui_input_viewport(motion);
+}
+
+void CanvasItemEditor::_stop_auto_scroll() {
+	auto_scroll_drag_started = false;
+	auto_scroll_last_motion.unref();
+	set_process_internal(false);
 }
 
 void CanvasItemEditor::_update_cursor() {
@@ -2506,11 +2648,7 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 }
 
 void CanvasItemEditor::_draw_viewport() {
-	// Update the transform
-	transform = Transform2D();
-	transform.scale_basis(Size2(zoom, zoom));
-	transform.columns[2] = -view_offset * zoom;
-	EditorNode::get_singleton()->get_scene_root()->set_global_canvas_transform(transform);
+	_update_transform();
 
 	_draw_grid();
 	_draw_ruler_tool();
@@ -2588,6 +2726,11 @@ void CanvasItemEditor::_update_editor_settings() {
 	locked_selection_rectangle_color = EDITOR_GET("editors/2d/locked_selection_rectangle_color");
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
+
+	auto_scroll_enabled = EDITOR_GET("editors/2d/auto_scroll_when_dragging");
+	if (!auto_scroll_enabled) {
+		_stop_auto_scroll();
+	}
 
 	simple_panning = EDITOR_GET("editors/panning/simple_panning");
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), simple_panning);
@@ -2737,14 +2880,20 @@ void CanvasItemEditor::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			_process_auto_scroll(get_process_delta_time());
+		} break;
+
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_stop_auto_scroll();
 			if (ci_manipulator->get_drag_type() != CanvasItemManipulator::DRAG_NONE) {
 				ci_manipulator->commit_drag();
 			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_stop_auto_scroll();
 			if (is_visible_in_tree()) {
 				set_process(true);
 				RenderingServer::get_singleton()->viewport_set_disable_2d(EditorNode::get_singleton()->get_scene_root()->get_viewport_rid(), false);

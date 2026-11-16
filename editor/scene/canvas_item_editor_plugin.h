@@ -198,6 +198,10 @@ private:
 	Point2 node_create_position;
 	bool simple_panning = false;
 
+	bool auto_scroll_enabled = true;
+	bool auto_scroll_drag_started = false;
+	Ref<InputEventMouseMotion> auto_scroll_last_motion;
+
 	MenuOption last_option = SNAP_USE;
 
 private:
@@ -404,6 +408,13 @@ private:
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _update_cursor();
+
+	void _update_transform();
+	Rect2 _get_auto_scroll_rect() const;
+	bool _can_auto_scroll() const;
+	void _update_auto_scroll(const Ref<InputEvent> &p_event);
+	void _process_auto_scroll(double p_delta);
+	void _stop_auto_scroll();
 	void _update_lock_and_group_button();
 
 	void _selection_changed();

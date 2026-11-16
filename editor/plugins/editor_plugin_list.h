@@ -50,4 +50,5 @@ public:
 
 	void add_plugin(EditorPlugin *p_plugin);
 	void remove_plugin(EditorPlugin *p_plugin);
+	bool is_empty() const { return plugins_list.is_empty(); }
 };
