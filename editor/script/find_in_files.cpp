@@ -960,6 +960,8 @@ void FindInFilesContainer::create_rename_control(const String &p_symbol, const E
 	search_control->set_replace_text(p_symbol);
 	search_control->set_block_signals(false);
 
+	_update_current_title();
+
 	new_panel->set_symbol_rename(p_lookup);
 	new_panel->start_search();
 }
