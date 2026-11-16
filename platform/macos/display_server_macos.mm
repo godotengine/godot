@@ -457,47 +457,41 @@ void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) 
 }
 
 void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	if (!in_dispatch_input_event) {
-		in_dispatch_input_event = true;
-
-		{
-			List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
-			if (E && Object::cast_to<InputEventKey>(*p_event)) {
-				// Redirect keyboard input to active popup.
-				if (windows.has(E->get())) {
-					Callable callable = windows[E->get()].input_event_callback;
-					if (callable.is_valid()) {
-						callable.call(p_event);
-					}
-				}
-				in_dispatch_input_event = false;
-				return;
-			}
-		}
-
-		Ref<InputEventFromWindow> event_from_window = p_event;
-		if (event_from_window.is_valid() && event_from_window->get_window_id() != DisplayServerEnums::INVALID_WINDOW_ID) {
-			// Send to a window.
-			if (windows.has(event_from_window->get_window_id())) {
-				Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+	{
+		List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
+		if (E && Object::cast_to<InputEventKey>(*p_event)) {
+			// Redirect keyboard input to active popup.
+			if (windows.has(E->get())) {
+				Callable callable = windows[E->get()].input_event_callback;
 				if (callable.is_valid()) {
 					callable.call(p_event);
 				}
 			}
-		} else {
-			// Send to all windows. Copy all pending callbacks, since callback can erase window.
-			Vector<Callable> cbs;
-			for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-				Callable callable = E.value.input_event_callback;
-				if (callable.is_valid()) {
-					cbs.push_back(callable);
-				}
-			}
-			for (const Callable &cb : cbs) {
-				cb.call(p_event);
+			return;
+		}
+	}
+
+	Ref<InputEventFromWindow> event_from_window = p_event;
+	if (event_from_window.is_valid() && event_from_window->get_window_id() != DisplayServerEnums::INVALID_WINDOW_ID) {
+		// Send to a window.
+		if (windows.has(event_from_window->get_window_id())) {
+			Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
+			if (callable.is_valid()) {
+				callable.call(p_event);
 			}
 		}
-		in_dispatch_input_event = false;
+	} else {
+		// Send to all windows. Copy all pending callbacks, since callback can erase window.
+		Vector<Callable> cbs;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+			Callable callable = E.value.input_event_callback;
+			if (callable.is_valid()) {
+				cbs.push_back(callable);
+			}
+		}
+		for (const Callable &cb : cbs) {
+			cb.call(p_event);
+		}
 	}
 }
 

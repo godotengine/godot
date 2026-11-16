@@ -181,7 +181,6 @@ private:
 	const HDROutput &_get_hdr_output(DisplayServerEnums::WindowID p_window) const override;
 
 	bool drop_events = false;
-	bool in_dispatch_input_event = false;
 
 	DisplayServerEnums::WindowID window_mouseover_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	DisplayServerEnums::WindowID last_focused_window = DisplayServerEnums::INVALID_WINDOW_ID;
