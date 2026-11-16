@@ -750,8 +750,8 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 
 		if (input) {
 			// Reset audio input to keep synchronization.
-			input_position = 0;
-			input_size = 0;
+			input_position.set(0);
+			input_size.set(0);
 		}
 	}
 }

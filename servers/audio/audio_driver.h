@@ -52,8 +52,10 @@ class AudioDriver {
 
 protected:
 	Vector<int32_t> input_buffer;
-	unsigned int input_position = 0;
-	unsigned int input_size = 0;
+	// Fixed buffer access avoids triggering Vector copy-on-write from the input thread.
+	int32_t *input_buffer_data = nullptr;
+	SafeNumeric<unsigned int> input_position{ 0 };
+	SafeNumeric<unsigned int> input_size{ 0 };
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
@@ -117,9 +119,10 @@ public:
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
-	unsigned int get_input_position() { return input_position; }
-	unsigned int get_input_size() { return input_size; }
+	const int32_t *get_input_buffer_data() { return input_buffer_data; }
+	int get_input_buffer_size() { return input_buffer.size(); }
+	unsigned int get_input_position() { return input_position.get(); }
+	unsigned int get_input_size() { return input_size.get(); }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time.get(); }

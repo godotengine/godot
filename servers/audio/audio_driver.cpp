@@ -91,25 +91,32 @@ double AudioDriver::get_time_to_next_mix() {
 
 void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 	const int input_buffer_channels = 2;
-	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
-	input_position = 0;
-	input_size = 0;
+	if (input_buffer_data == nullptr) {
+		input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
+		input_buffer_data = input_buffer.ptrw();
+	}
+	input_position.set(0);
+	input_size.set(0);
 }
 
 void AudioDriver::input_buffer_write(int32_t sample) {
-	if ((int)input_position < input_buffer.size()) {
-		input_buffer.write[input_position++] = sample;
-		if ((int)input_position >= input_buffer.size()) {
-			input_position = 0;
+	unsigned int v_input_position = input_position.get();
+	if ((int)v_input_position < input_buffer.size()) {
+		input_buffer_data[v_input_position++] = sample;
+		if ((int)v_input_position >= input_buffer.size()) {
+			v_input_position = 0;
 		}
-		if ((int)input_size < input_buffer.size()) {
-			input_size++;
+		input_position.set(v_input_position);
+		unsigned int v_input_size = input_size.get();
+		if ((int)v_input_size < input_buffer.size()) {
+			v_input_size++;
+			input_size.set(v_input_size);
 		}
 	} else {
 		// This protection was added in GH-26505 due to a "possible crash".
 		// This cannot have happened unless two non-locked threads entered function simultaneously, which was possible when multiple calls to
 		// `AudioDriver::input_start()` did not raise an error condition.
-		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
+		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(v_input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
 
