@@ -168,12 +168,16 @@ void AndroidInputHandler::_release_all_touch() {
 	touch.clear();
 }
 
-void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points) {
+void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_release_previous_touch) {
 	switch (p_event) {
 		case AMOTION_EVENT_ACTION_DOWN: { //gesture begin
 			// Release any remaining touches or mouse event
 			_release_mouse_event_info();
-			_release_all_touch();
+			if (p_release_previous_touch) {
+				_release_all_touch();
+			} else {
+				touch.clear();
+			}
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {

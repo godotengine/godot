@@ -110,9 +110,6 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 			return
 		}
 
-		// Cancel the previous down event
-		inputHandler.handleMotionEvent(event, MotionEvent.ACTION_CANCEL)
-
 		inputHandler.handleTouchEvent(event, event.action, false, true)
 		longPressInProgress = true
 
