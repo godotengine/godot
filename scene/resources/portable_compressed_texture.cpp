@@ -112,8 +112,9 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
-			ERR_FAIL_NULL(Image::basis_universal_unpacker_ptr);
+			ERR_FAIL_NULL_MSG(Image::basis_universal_unpacker_ptr, "Basis Universal support is disabled in this build.");
 			image = Image::basis_universal_unpacker_ptr(data, data_size);
+			ERR_FAIL_COND(image.is_null());
 			format = image->get_format();
 		} break;
 		case COMPRESSION_MODE_S3TC:
@@ -193,6 +194,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
 #ifdef TOOLS_ENABLED
 			ERR_FAIL_COND(p_image->is_compressed());
+			ERR_FAIL_NULL_MSG(Image::basis_universal_unpacker, "Basis Universal support is disabled in this build.");
 			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
 			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc, basisu_params);
