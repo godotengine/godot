@@ -431,6 +431,8 @@ public:
 	void unload_current_scene();
 
 	RequiredResult<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
+	TypedArray<Dictionary> snapshot_get_timers() const; // komm64
+	void snapshot_remove_timer(const Ref<SceneTreeTimer> &p_timer);
 	RequiredResult<Tween> create_tween();
 	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();

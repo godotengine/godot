@@ -247,6 +247,19 @@
 				[b]Note:[/b] [method set_multiplayer] should be called [i]before[/i] the child nodes are ready at the given [param root_path]. If multiplayer nodes like [MultiplayerSpawner] or [MultiplayerSynchronizer] are added to the tree before the custom multiplayer API is set, they will not work.
 			</description>
 		</method>
+		<method name="snapshot_get_timers" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the running timers that [method create_timer] made, in the order they are processed: [code]timer[/code], [code]time_left[/code], [code]process_always[/code], [code]process_in_physics[/code] and [code]ignore_time_scale[/code]. For saving a game.
+			</description>
+		</method>
+		<method name="snapshot_remove_timer">
+			<return type="void" />
+			<param index="0" name="timer" type="SceneTreeTimer" />
+			<description>
+				Stops [param timer] without emitting its [signal SceneTreeTimer.timeout]. For loading a game.
+			</description>
+		</method>
 		<method name="unload_current_scene">
 			<return type="void" />
 			<description>

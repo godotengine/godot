@@ -23,6 +23,20 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="snapshot_cancel_static_awaits" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="keep" type="PackedStringArray" />
+			<description>
+				Drops the calls suspended in an [code]await[/code] that run on no object (static functions and lambdas without [code]self[/code]) in every script except those whose file is in [param keep], so none of them resumes on a loaded game.
+			</description>
+		</method>
+		<method name="snapshot_get_awaits" qualifiers="static">
+			<return type="Dictionary[]" />
+			<param index="0" name="owner" type="Object" />
+			<description>
+				Returns the calls of [param owner] that are suspended in an [code]await[/code], or, when [param owner] is a [GDScript], its static calls. Each entry names the function as [method snapshot_get_lambda] does ([code]index[/code] is empty for a function that is not a lambda), and holds [code]hash[/code] (identifies the compiled code), [code]ip[/code], [code]line[/code], [code]defarg[/code], [code]stack[/code] (the call's local and temporary values), [code]awaiting[/code] (the [Signal] it waits for), [code]state[/code] (the suspended call itself) and [code]completed[/code] (the earlier call of the same chain whose [code]completed[/code] signal it emits when it ends, or [code]null[/code] for its own). For saving a game while functions wait in an [code]await[/code].
+			</description>
+		</method>
 		<method name="snapshot_get_lambda" qualifiers="static">
 			<return type="Dictionary" />
 			<param index="0" name="callable" type="Callable" />
@@ -30,11 +44,32 @@
 				Returns where the GDScript lambda [param callable] is written and what it captured, or an empty [Dictionary] for any other [Callable]: [code]script[/code] (the path of the file), [code]class[/code] (the inner class names leading to it), [code]function[/code] (the function it is written in), [code]index[/code] (the index of the lambda in that function, then in each lambda it is nested in), [code]captures[/code] and [code]self[/code] (the object it runs on, or [code]null[/code]). A lambda is named as hot reload names it, so the description stays valid while that function's lambdas keep their order. For saving a game's connections and stored callables.
 			</description>
 		</method>
+		<method name="snapshot_make_await" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="info" type="Dictionary" />
+			<description>
+				Makes again a suspended call that [method snapshot_get_awaits] described, run by [code]owner[/code] in [param info] ([code]null[/code] for a static function or a lambda without [code]self[/code]) and emitting [code]completed[/code] of the call in [code]completed[/code], if any. Its stack starts empty: fill it with [method snapshot_set_await_stack]. It waits for nothing until its [code]_signal_callback[/code] method, bound to the call, is connected to a signal with [constant Object.CONNECT_ONE_SHOT]. Returns [code]null[/code] if the script's code changed since, or [code]owner[/code] does not run that script.
+			</description>
+		</method>
+		<method name="snapshot_make_await_token" qualifiers="static">
+			<return type="Variant" />
+			<description>
+				Returns a suspended-call object that runs nothing and only emits [code]completed[/code]. It stands for the first call of a chain that has already resumed, so the calls waiting for that chain resume when its restored last call ends.
+			</description>
+		</method>
 		<method name="snapshot_make_lambda" qualifiers="static">
 			<return type="Callable" />
 			<param index="0" name="info" type="Dictionary" />
 			<description>
 				Makes the lambda that [method snapshot_get_lambda] described, with the captures and [code]self[/code] in [param info]. Returns an invalid [Callable] if the script no longer has a lambda there that takes as many captures and uses [code]self[/code] the same way.
+			</description>
+		</method>
+		<method name="snapshot_set_await_stack" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="state" type="Object" />
+			<param index="1" name="stack" type="Array" />
+			<description>
+				Puts [param stack], as [method snapshot_get_awaits] returned it, into a call [method snapshot_make_await] made. Returns [code]false[/code] if the size does not match.
 			</description>
 		</method>
 	</methods>

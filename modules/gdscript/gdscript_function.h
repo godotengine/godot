@@ -502,6 +502,7 @@ public:
 class GDScriptFunctionState : public RefCounted {
 	GDCLASS(GDScriptFunctionState, RefCounted);
 	friend class GDScriptFunction;
+	friend class GDScript; // komm64: snapshots of suspended calls
 	GDScriptFunction *function = nullptr;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);

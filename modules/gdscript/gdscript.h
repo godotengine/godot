@@ -211,6 +211,9 @@ private:
 
 	Vector<GDScriptFunction *> _snapshot_lambda_roots() const;
 	static bool _snapshot_find_lambda(const GDScriptFunction *p_func, const GDScriptFunction *p_target, PackedInt32Array &r_path);
+	static Dictionary _snapshot_locate(GDScriptFunction *p_func);
+	static GDScriptFunction *_snapshot_resolve(const Dictionary &p_info);
+	static int64_t _snapshot_code_hash(const GDScriptFunction *p_func);
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
@@ -252,6 +255,11 @@ public:
 	bool is_root_script() const { return _owner == nullptr; }
 	static Dictionary snapshot_get_lambda(const Callable &p_callable);
 	static Callable snapshot_make_lambda(const Dictionary &p_info);
+	static TypedArray<Dictionary> snapshot_get_awaits(Object *p_owner);
+	static Variant snapshot_make_await(const Dictionary &p_info);
+	static bool snapshot_set_await_stack(Object *p_state, const Array &p_stack);
+	static Variant snapshot_make_await_token();
+	static void snapshot_cancel_static_awaits(const PackedStringArray &p_keep);
 	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }

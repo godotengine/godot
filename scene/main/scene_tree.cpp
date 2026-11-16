@@ -1777,6 +1777,28 @@ RequiredResult<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool 
 	return stt;
 }
 
+// komm64: the running timers in processing order, with what create_timer()
+// was given for each.
+TypedArray<Dictionary> SceneTree::snapshot_get_timers() const {
+	TypedArray<Dictionary> out;
+	for (const Ref<SceneTreeTimer> &t : timers) {
+		Dictionary d;
+		d["timer"] = t;
+		d["time_left"] = t->get_time_left();
+		d["process_always"] = t->is_process_always();
+		d["process_in_physics"] = t->is_process_in_physics();
+		d["ignore_time_scale"] = t->is_ignoring_time_scale();
+		out.push_back(d);
+	}
+	return out;
+}
+
+// Stops a timer without firing it.
+void SceneTree::snapshot_remove_timer(const Ref<SceneTreeTimer> &p_timer) {
+	_THREAD_SAFE_METHOD_
+	timers.erase(p_timer);
+}
+
 RequiredResult<Tween> SceneTree::create_tween() {
 	_THREAD_SAFE_METHOD_
 	Ref<Tween> tween;
@@ -1913,6 +1935,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always", "process_in_physics", "ignore_time_scale"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("snapshot_get_timers"), &SceneTree::snapshot_get_timers);
+	ClassDB::bind_method(D_METHOD("snapshot_remove_timer", "timer"), &SceneTree::snapshot_remove_timer);
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 

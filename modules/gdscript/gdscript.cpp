@@ -1079,6 +1079,11 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_get_lambda", "callable"), &GDScript::snapshot_get_lambda);
 	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_make_lambda", "info"), &GDScript::snapshot_make_lambda);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_get_awaits", "owner"), &GDScript::snapshot_get_awaits);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_make_await", "info"), &GDScript::snapshot_make_await);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_set_await_stack", "state", "stack"), &GDScript::snapshot_set_await_stack);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_make_await_token"), &GDScript::snapshot_make_await_token);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_cancel_static_awaits", "keep"), &GDScript::snapshot_cancel_static_awaits);
 }
 
 // The functions whose lambdas a script's lambdas are named under: the implicit
@@ -1108,28 +1113,17 @@ bool GDScript::_snapshot_find_lambda(const GDScriptFunction *p_func, const GDScr
 	return false;
 }
 
-// Where a lambda is written (root script path, inner class names, enclosing
-// function, index of each nested lambda) and what it captured, or {} for
-// anything but a GDScript lambda. snapshot_make_lambda() makes it again.
-Dictionary GDScript::snapshot_get_lambda(const Callable &p_callable) {
-	GDScriptFunction *func = nullptr;
-	Vector<Variant> captures;
-	Variant self;
-	if (const GDScriptLambdaCallable *l = GDScriptLambdaCallable::from_callable(p_callable)) {
-		func = l->get_function();
-		captures = l->get_captures();
-	} else if (const GDScriptLambdaSelfCallable *ls = GDScriptLambdaSelfCallable::from_callable(p_callable)) {
-		func = ls->get_function();
-		captures = ls->get_captures();
-		self = ObjectDB::get_instance(ls->get_object());
-	}
-	if (func == nullptr || func->get_script() == nullptr) {
+// Where a function is written: root script path, inner class names, the
+// function at the class level and, for a lambda, the index of each nested
+// lambda (empty for the function itself). {} if it cannot be named.
+Dictionary GDScript::_snapshot_locate(GDScriptFunction *p_func) {
+	GDScript *script = p_func != nullptr ? p_func->get_script() : nullptr;
+	if (script == nullptr) {
 		return Dictionary();
 	}
-	GDScript *script = func->get_script();
 	for (const GDScriptFunction *root : script->_snapshot_lambda_roots()) {
 		PackedInt32Array path;
-		if (!_snapshot_find_lambda(root, func, path)) {
+		if (root != p_func && !_snapshot_find_lambda(root, p_func, path)) {
 			continue;
 		}
 		PackedStringArray classes;
@@ -1143,38 +1137,31 @@ Dictionary GDScript::snapshot_get_lambda(const Callable &p_callable) {
 			}
 			s = s->_owner;
 		}
-		Array caps;
-		for (const Variant &v : captures) {
-			caps.push_back(v);
-		}
 		Dictionary out;
 		out["script"] = s->get_path();
 		out["class"] = classes;
 		out["function"] = root->get_name();
 		out["index"] = path;
-		out["captures"] = caps;
-		out["self"] = self;
 		return out;
 	}
 	return Dictionary();
 }
 
-// The lambda snapshot_get_lambda() described, with its captures and self, or
-// an invalid Callable when the script no longer has a lambda there that takes
-// as many captures.
-Callable GDScript::snapshot_make_lambda(const Dictionary &p_info) {
+// The function _snapshot_locate() named, or null when the script no longer
+// has one there.
+GDScriptFunction *GDScript::_snapshot_resolve(const Dictionary &p_info) {
 	const String path = p_info.get("script", String());
 	Ref<GDScript> root;
 	if (ResourceLoader::exists(path)) {
 		root = ResourceLoader::load(path);
 	}
-	ERR_FAIL_COND_V_MSG(root.is_null(), Callable(), "No script at '" + path + "'.");
+	ERR_FAIL_COND_V_MSG(root.is_null(), nullptr, "No script at '" + path + "'.");
 	GDScript *s = root.ptr();
 	const PackedStringArray classes = p_info.get("class", PackedStringArray());
 	for (const String &name : classes) {
 		const Ref<GDScript> *sub = s->subclasses.getptr(name);
 		if (sub == nullptr) {
-			return Callable();
+			return nullptr;
 		}
 		s = sub->ptr();
 	}
@@ -1186,15 +1173,64 @@ Callable GDScript::snapshot_make_lambda(const Dictionary &p_info) {
 			break;
 		}
 	}
-	const PackedInt32Array index = p_info.get("index", PackedInt32Array());
-	if (func == nullptr || index.is_empty()) {
-		return Callable();
+	if (func == nullptr) {
+		return nullptr;
 	}
+	const PackedInt32Array index = p_info.get("index", PackedInt32Array());
 	for (int i : index) {
 		if (i < 0 || i >= func->lambdas.size()) {
-			return Callable();
+			return nullptr;
 		}
 		func = func->lambdas[i];
+	}
+	return func;
+}
+
+// Identifies the compiled code: a suspended call is only resumed in the code
+// it stopped in.
+int64_t GDScript::_snapshot_code_hash(const GDScriptFunction *p_func) {
+	uint32_t h = hash_murmur3_one_32(p_func->_stack_size);
+	h = hash_murmur3_one_32(p_func->_instruction_args_size, h);
+	if (p_func->_code_size > 0) {
+		h = hash_murmur3_buffer(p_func->_code_ptr, p_func->_code_size * sizeof(int), h);
+	}
+	return h;
+}
+
+// Where a lambda is written (as _snapshot_locate()) and what it captured, or
+// {} for anything but a GDScript lambda. snapshot_make_lambda() makes it again.
+Dictionary GDScript::snapshot_get_lambda(const Callable &p_callable) {
+	GDScriptFunction *func = nullptr;
+	Vector<Variant> captures;
+	Variant self;
+	if (const GDScriptLambdaCallable *l = GDScriptLambdaCallable::from_callable(p_callable)) {
+		func = l->get_function();
+		captures = l->get_captures();
+	} else if (const GDScriptLambdaSelfCallable *ls = GDScriptLambdaSelfCallable::from_callable(p_callable)) {
+		func = ls->get_function();
+		captures = ls->get_captures();
+		self = ObjectDB::get_instance(ls->get_object());
+	}
+	Dictionary out = _snapshot_locate(func);
+	if (out.is_empty() || PackedInt32Array(out["index"]).is_empty()) {
+		return Dictionary();
+	}
+	Array caps;
+	for (const Variant &v : captures) {
+		caps.push_back(v);
+	}
+	out["captures"] = caps;
+	out["self"] = self;
+	return out;
+}
+
+// The lambda snapshot_get_lambda() described, with its captures and self, or
+// an invalid Callable when the script no longer has a lambda there that takes
+// as many captures.
+Callable GDScript::snapshot_make_lambda(const Dictionary &p_info) {
+	GDScriptFunction *func = _snapshot_resolve(p_info);
+	if (func == nullptr || PackedInt32Array(p_info.get("index", PackedInt32Array())).is_empty()) {
+		return Callable();
 	}
 	const LambdaInfo *info = func->get_script() != nullptr ? func->get_script()->lambda_info.getptr(func) : nullptr;
 	const Array caps = p_info.get("captures", Array());
@@ -1217,6 +1253,175 @@ Callable GDScript::snapshot_make_lambda(const Dictionary &p_info) {
 		return Callable(memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(rc), func, captures)));
 	}
 	return Callable(memnew(GDScriptLambdaSelfCallable(self, func, captures)));
+}
+
+// The calls of `owner` (an object, or a GDScript for its static functions)
+// suspended in an await: where each one stopped (the function as
+// _snapshot_locate() names it, its code hash, ip, line, defarg), its stack,
+// the signal it waits for, the state object itself, and the state whose
+// "completed" it emits when it ends (null for its own).
+TypedArray<Dictionary> GDScript::snapshot_get_awaits(Object *p_owner) {
+	TypedArray<Dictionary> out;
+	ERR_FAIL_NULL_V(p_owner, out);
+	GDScript *as_script = Object::cast_to<GDScript>(p_owner);
+	const SelfList<GDScriptFunctionState>::List *list = nullptr;
+	if (as_script != nullptr) {
+		list = &as_script->pending_func_states;
+	} else {
+		ScriptInstance *si = p_owner->get_script_instance();
+		if (si == nullptr || si->get_language() != GDScriptLanguage::get_singleton()) {
+			return out;
+		}
+		list = &static_cast<GDScriptInstance *>(si)->pending_func_states;
+	}
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	for (const SelfList<GDScriptFunctionState> *E = list->first(); E; E = E->next()) {
+		GDScriptFunctionState *st = E->self();
+		if (st->function == nullptr || (as_script != nullptr && st->state.instance != nullptr)) {
+			continue;
+		}
+		Dictionary d = _snapshot_locate(st->function);
+		if (d.is_empty()) {
+			continue;
+		}
+		d["hash"] = _snapshot_code_hash(st->function);
+		d["ip"] = st->state.ip;
+		d["line"] = st->state.line;
+		d["defarg"] = st->state.defarg;
+		Array stack;
+		const Variant *v = (const Variant *)st->state.stack.ptr();
+		for (int i = GDScriptFunction::FIXED_ADDRESSES_MAX; i < st->state.stack_size; i++) {
+			stack.push_back(v[i]);
+		}
+		d["stack"] = stack;
+		d["state"] = st;
+		Signal awaiting;
+		List<Object::Connection> conns;
+		st->get_signals_connected_to_this(&conns);
+		for (const Object::Connection &c : conns) {
+			if (c.callable.get_method() == SNAME("_signal_callback")) {
+				awaiting = c.signal;
+				break;
+			}
+		}
+		d["awaiting"] = awaiting;
+		Object *first = st->state.completed.get_object();
+		d["completed"] = first != st ? Variant(first) : Variant();
+		out.push_back(d);
+	}
+	return out;
+}
+
+// A suspended call as snapshot_get_awaits() described it, run by "owner"
+// (null for a static function or a lambda without self), with an empty stack
+// (snapshot_set_await_stack() fills it) and not yet waiting for anything:
+// connect the awaited signal to its "_signal_callback", bound to the state,
+// one-shot. Null when the code changed since, or the owner does not run that
+// script.
+Variant GDScript::snapshot_make_await(const Dictionary &p_info) {
+	GDScriptFunction *func = _snapshot_resolve(p_info);
+	if (func == nullptr || (int64_t)p_info.get("hash", 0) != _snapshot_code_hash(func)) {
+		return Variant();
+	}
+	const int ip = p_info.get("ip", -1);
+	if (ip < 2 || ip + 1 >= func->_code_size || func->_code_ptr[ip] != GDScriptFunction::OPCODE_AWAIT_RESUME || func->_code_ptr[ip - 2] != GDScriptFunction::OPCODE_AWAIT) {
+		return Variant();
+	}
+	GDScriptInstance *instance = nullptr;
+	Object *owner = p_info.get("owner", Variant()).get_validated_object();
+	if (owner != nullptr) {
+		ScriptInstance *si = owner->get_script_instance();
+		if (si == nullptr || si->get_language() != GDScriptLanguage::get_singleton()) {
+			return Variant();
+		}
+		instance = static_cast<GDScriptInstance *>(si);
+		if (instance->script.ptr() != func->get_script() && !instance->script->inherits_script(Ref<Script>(func->get_script()))) {
+			return Variant();
+		}
+	}
+	Ref<GDScriptFunctionState> gdfs;
+	gdfs.instantiate();
+	const int alloca_size = sizeof(Variant *) * GDScriptFunction::FIXED_ADDRESSES_MAX + sizeof(Variant *) * func->_instruction_args_size + sizeof(Variant) * func->_stack_size;
+	gdfs->state.stack.resize(alloca_size);
+	for (int i = GDScriptFunction::FIXED_ADDRESSES_MAX; i < func->_stack_size; i++) {
+		memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant);
+	}
+	gdfs->state.stack_size = func->_stack_size;
+	gdfs->state.ip = ip;
+	gdfs->state.line = p_info.get("line", 0);
+	gdfs->state.defarg = p_info.get("defarg", 0);
+	gdfs->state.script = func->_script;
+	gdfs->state.instance = instance;
+#ifdef DEBUG_ENABLED
+	gdfs->state.function_name = func->get_name();
+	gdfs->state.script_path = func->_script->get_script_path();
+#endif
+	gdfs->function = func;
+	GDScriptFunctionState *first = Object::cast_to<GDScriptFunctionState>(p_info.get("completed", Variant()).get_validated_object());
+	if (first != nullptr) {
+		gdfs->state.completed = Signal(first, SNAME("completed"));
+		gdfs->first_state = Ref<GDScriptFunctionState>(first);
+	} else {
+		gdfs->state.completed = Signal(gdfs.ptr(), SNAME("completed"));
+	}
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+		func->_script->pending_func_states.add(&gdfs->scripts_list);
+		if (instance != nullptr) {
+			instance->pending_func_states.add(&gdfs->instances_list);
+		}
+	}
+	return gdfs;
+}
+
+// Puts the saved stack into a state snapshot_make_await() made. False if the
+// size does not match.
+bool GDScript::snapshot_set_await_stack(Object *p_state, const Array &p_stack) {
+	GDScriptFunctionState *st = Object::cast_to<GDScriptFunctionState>(p_state);
+	ERR_FAIL_NULL_V(st, false);
+	if (st->function == nullptr || p_stack.size() != st->state.stack_size - GDScriptFunction::FIXED_ADDRESSES_MAX) {
+		return false;
+	}
+	Variant *v = (Variant *)st->state.stack.ptrw();
+	for (int i = 0; i < p_stack.size(); i++) {
+		v[i + GDScriptFunction::FIXED_ADDRESSES_MAX] = p_stack[i];
+	}
+	return true;
+}
+
+// Drops the calls suspended in an await that run on no object (static
+// functions, lambdas without self) in every script except those whose file is
+// in `keep`, so none resumes on a loaded game.
+void GDScript::snapshot_cancel_static_awaits(const PackedStringArray &p_keep) {
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+	// Held while dropping them: a dropped stack may hold the last reference
+	// to another dropped call.
+	Vector<Ref<GDScriptFunctionState>> dropped;
+	for (SelfList<GDScript> *E = GDScriptLanguage::get_singleton()->script_list.first(); E; E = E->next()) {
+		GDScript *s = E->self();
+		if (p_keep.has(s->get_root_script()->get_path())) {
+			continue;
+		}
+		for (SelfList<GDScriptFunctionState> *F = s->pending_func_states.first(); F; F = F->next()) {
+			if (F->self()->state.instance == nullptr) {
+				dropped.push_back(Ref<GDScriptFunctionState>(F->self()));
+			}
+		}
+	}
+	for (Ref<GDScriptFunctionState> &state : dropped) {
+		state->scripts_list.remove_from_list();
+		state->_clear_connections();
+		state->_clear_stack();
+	}
+}
+
+// A state that only emits "completed": stands for the first call of a chain
+// that has already resumed, so the callers waiting for it resume when the
+// restored rest of the chain ends.
+Variant GDScript::snapshot_make_await_token() {
+	Ref<GDScriptFunctionState> gdfs;
+	gdfs.instantiate();
+	return gdfs;
 }
 
 void GDScript::set_path_cache(const String &p_path) {
