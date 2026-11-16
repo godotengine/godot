@@ -9104,7 +9104,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
 	ClassDB::bind_method(D_METHOD("texture_create_from_extension", "type", "format", "samples", "usage_flags", "image", "width", "height", "depth", "layers", "mipmaps"), &RenderingDevice::texture_create_from_extension, DEFVAL(1));
 
-	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data"), &RenderingDevice::texture_update);
+	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data"), &RenderingDevice::_texture_update_bind);
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
 	ClassDB::bind_method(D_METHOD("texture_get_data_async", "texture", "layer", "callback"), &RenderingDevice::texture_get_data_async);
 
@@ -9162,7 +9162,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("buffer_copy", "src_buffer", "dst_buffer", "src_offset", "dst_offset", "size"), &RenderingDevice::buffer_copy);
 	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data"), &RenderingDevice::_buffer_update_bind);
-	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes"), &RenderingDevice::buffer_clear);
+	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes"), &RenderingDevice::_buffer_clear_bind);
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer", "offset_bytes", "size_bytes"), &RenderingDevice::buffer_get_data, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("buffer_get_data_async", "buffer", "callback", "offset_bytes", "size_bytes"), &RenderingDevice::buffer_get_data_async, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("buffer_get_device_address", "buffer"), &RenderingDevice::buffer_get_device_address);
@@ -10000,6 +10000,65 @@ int64_t RenderingDevice::_snapshot_record_format(int64_t p_id, const String &p_m
 	return p_id;
 }
 
+// komm64: what a script writes into a resource it made is kept in its record
+// (a record holds the creation data, then each write on top), so the record
+// makes the resource again with what the CPU last wrote. What the GPU writes
+// is only in snapshot_get_content.
+void RenderingDevice::_snapshot_buffer_write(RID p_buffer, uint32_t p_offset, uint32_t p_size, const uint8_t *p_data) {
+	_THREAD_SAFE_METHOD_
+	SnapshotRecord *record = snapshot_records.getptr(p_buffer);
+	Buffer *buffer = _get_buffer_from_owner(p_buffer);
+	if (record == nullptr || buffer == nullptr || !record->method.ends_with("buffer_create")) {
+		return;
+	}
+	const int index = (record->method == "index_buffer_create" || record->method == "texture_buffer_create") ? 2 : 1;
+	Vector<uint8_t> bytes = record->args[index];
+	const int64_t old_size = bytes.size();
+	if (old_size != int64_t(buffer->size)) {
+		bytes.resize(buffer->size);
+		if (int64_t(buffer->size) > old_size) {
+			memset(bytes.ptrw() + old_size, 0, buffer->size - old_size);
+		}
+	}
+	ERR_FAIL_COND(uint64_t(p_offset) + p_size > uint64_t(bytes.size()));
+	if (p_data) {
+		memcpy(bytes.ptrw() + p_offset, p_data, p_size);
+	} else {
+		memset(bytes.ptrw() + p_offset, 0, p_size);
+	}
+	Array args = record->args.duplicate();
+	args[index] = bytes;
+	record->args = args;
+}
+
+void RenderingDevice::_snapshot_texture_write(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data) {
+	_THREAD_SAFE_METHOD_
+	SnapshotRecord *record = snapshot_records.getptr(p_texture);
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	if (record == nullptr || texture == nullptr || record->method != "texture_create" || record->args.size() < 3) {
+		return;
+	}
+	const uint32_t layer_count = _texture_layer_count(texture);
+	Array layers = Array(record->args[2]).duplicate();
+	if (uint32_t(layers.size()) != layer_count) {
+		// Layers never written stay zero, as the creation without data left them.
+		Vector<uint8_t> zero;
+		zero.resize(p_data.size());
+		memset(zero.ptrw(), 0, zero.size());
+		layers.resize(layer_count);
+		for (uint32_t i = 0; i < layer_count; i++) {
+			const PackedByteArray existing = layers[i];
+			if (existing.is_empty()) {
+				layers[i] = zero;
+			}
+		}
+	}
+	layers[p_layer] = p_data;
+	Array args = record->args.duplicate();
+	args[2] = layers;
+	record->args = args;
+}
+
 // The creation arguments of `p_rid`, with its current contents where the call
 // takes initial data: calling the method with these makes an equal resource.
 Array RenderingDevice::snapshot_get_content(RID p_rid) {
@@ -10066,19 +10125,19 @@ TypedArray<Dictionary> RenderingDevice::snapshot_get_records() {
 }
 
 RID RenderingDevice::_vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
-	return _snapshot_record(vertex_buffer_create(p_size_bytes, p_data, p_creation_bits), "vertex_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_creation_bits)));
+	return _snapshot_record(vertex_buffer_create(p_size_bytes, p_data, p_creation_bits), "vertex_buffer_create", varray(p_size_bytes, p_data, int64_t(p_creation_bits)));
 }
 
 RID RenderingDevice::_index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
-	return _snapshot_record(index_buffer_create(p_index_count, p_format, p_data, p_use_restart_indices, p_creation_bits), "index_buffer_create", varray(p_index_count, p_format, Vector<uint8_t>(), p_use_restart_indices, int64_t(p_creation_bits)));
+	return _snapshot_record(index_buffer_create(p_index_count, p_format, p_data, p_use_restart_indices, p_creation_bits), "index_buffer_create", varray(p_index_count, p_format, p_data, p_use_restart_indices, int64_t(p_creation_bits)));
 }
 
 RID RenderingDevice::_uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
-	return _snapshot_record(uniform_buffer_create(p_size_bytes, p_data, p_creation_bits), "uniform_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_creation_bits)));
+	return _snapshot_record(uniform_buffer_create(p_size_bytes, p_data, p_creation_bits), "uniform_buffer_create", varray(p_size_bytes, p_data, int64_t(p_creation_bits)));
 }
 
 RID RenderingDevice::_storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
-	return _snapshot_record(storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits), "storage_buffer_create", varray(p_size_bytes, Vector<uint8_t>(), int64_t(p_usage), int64_t(p_creation_bits)));
+	return _snapshot_record(storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits), "storage_buffer_create", varray(p_size_bytes, p_data, int64_t(p_usage), int64_t(p_creation_bits)));
 }
 
 RID RenderingDevice::_texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
@@ -10119,7 +10178,7 @@ RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const
 	if (format.samples == TEXTURE_SAMPLES_1 && !(format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT)) {
 		format.usage_bits |= TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT;
 	}
-	return _snapshot_record(texture_create(format, p_view->base, data), "texture_create", varray(p_format, p_view, Array()));
+	return _snapshot_record(texture_create(format, p_view->base, data), "texture_create", varray(p_format, p_view, p_data.duplicate()));
 }
 
 RID RenderingDevice::_texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture) {
@@ -10303,7 +10362,27 @@ RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms
 }
 
 Error RenderingDevice::_buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data) {
-	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr());
+	Error err = buffer_update(p_buffer, p_offset, p_size, p_data.ptr());
+	if (err == OK) {
+		_snapshot_buffer_write(p_buffer, p_offset, p_size, p_data.ptr());
+	}
+	return err;
+}
+
+Error RenderingDevice::_buffer_clear_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
+	Error err = buffer_clear(p_buffer, p_offset, p_size);
+	if (err == OK) {
+		_snapshot_buffer_write(p_buffer, p_offset, p_size, nullptr);
+	}
+	return err;
+}
+
+Error RenderingDevice::_texture_update_bind(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data) {
+	Error err = texture_update(p_texture, p_layer, p_data);
+	if (err == OK) {
+		_snapshot_texture_write(snapshot_get_texture_base(p_texture), p_layer, p_data);
+	}
+	return err;
 }
 
 RID RenderingDevice::_blas_create(const TypedArray<RDAccelerationStructureGeometry> &p_geometries, BitField<AccelerationStructureFlagBits> p_flags) {

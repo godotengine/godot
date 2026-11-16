@@ -33,6 +33,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -1996,6 +1997,82 @@ void Engine::drop_pending_ticks() {
 	::Engine::get_singleton()->drop_pending_ticks();
 }
 
+// komm64: every valid RID reachable from p_roots, as {RID: true}. Walks
+// Arrays, Dictionaries and the saved properties (storage and script
+// variables) of Nodes, Resources and scripted objects, plus RID properties of
+// any usage (Texture2DRD's texture_rd_rid). Objects in p_skip are not entered.
+// Image and ImageTexture are not entered: reading ImageTexture's image would
+// fetch it from the GPU, and neither holds a RID as a property.
+Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const {
+	Dictionary out;
+	HashSet<ObjectID> seen;
+	for (const Variant &v : p_skip) {
+		Object *obj = v.get_validated_object();
+		if (obj) {
+			seen.insert(obj->get_instance_id());
+		}
+	}
+	LocalVector<Variant> stack;
+	for (const Variant &v : p_roots) {
+		stack.push_back(v);
+	}
+	const uint32_t walked = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_SCRIPT_VARIABLE;
+	while (!stack.is_empty()) {
+		Variant v = stack[stack.size() - 1];
+		stack.resize(stack.size() - 1);
+		switch (v.get_type()) {
+			case Variant::RID: {
+				RID rid = v;
+				if (rid.is_valid()) {
+					out[rid] = true;
+				}
+			} break;
+			case Variant::ARRAY: {
+				Array a = v;
+				for (const Variant &e : a) {
+					stack.push_back(e);
+				}
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = v;
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					stack.push_back(kv.key);
+					stack.push_back(kv.value);
+				}
+			} break;
+			case Variant::OBJECT: {
+				Object *obj = v.get_validated_object();
+				if (!obj || seen.has(obj->get_instance_id())) {
+					break;
+				}
+				seen.insert(obj->get_instance_id());
+				if (obj->is_class("Image") || obj->is_class("ImageTexture")) {
+					break;
+				}
+				if (!(obj->is_class("Node") || obj->is_class("Resource") || !obj->get_script().is_null())) {
+					break;
+				}
+				List<PropertyInfo> plist;
+				obj->get_property_list(&plist);
+				for (const PropertyInfo &pi : plist) {
+					bool any_rid = pi.type == Variant::RID;
+					bool holder = (pi.usage & walked) && (pi.type == Variant::RID || pi.type == Variant::ARRAY || pi.type == Variant::DICTIONARY || pi.type == Variant::OBJECT || pi.type == Variant::NIL);
+					if ((any_rid || holder) && pi.name != CoreStringName(script)) {
+						bool valid = false;
+						Variant value = obj->get(pi.name, &valid);
+						if (valid) {
+							stack.push_back(value);
+						}
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+	}
+	return out;
+}
+
 bool Engine::has_singleton(const StringName &p_name) const {
 	return ::Engine::get_singleton()->has_singleton(p_name);
 }
@@ -2137,6 +2214,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_in_physics_frame"), &Engine::is_in_physics_frame);
 	ClassDB::bind_method(D_METHOD("is_drawing_step"), &Engine::is_drawing_step);
 	ClassDB::bind_method(D_METHOD("drop_pending_ticks"), &Engine::drop_pending_ticks);
+	ClassDB::bind_method(D_METHOD("snapshot_collect_rids", "roots", "skip"), &Engine::snapshot_collect_rids);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);

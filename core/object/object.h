@@ -700,6 +700,9 @@ public:
 	// komm64: the script's functions suspended in an await, for snapshots.
 	Array snapshot_get_pending_awaits() const;
 	void snapshot_cancel_pending_awaits();
+	// komm64: the properties whose usage has a bit of p_usage and none of
+	// p_exclude_usage, as {name: value} in property list order, for snapshots.
+	Dictionary snapshot_get_properties(BitField<PropertyUsageFlags> p_usage, BitField<PropertyUsageFlags> p_exclude_usage = 0) const;
 	int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);

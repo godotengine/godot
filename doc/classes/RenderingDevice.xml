@@ -1066,7 +1066,7 @@
 		<method name="snapshot_get_records">
 			<return type="Dictionary[]" />
 			<description>
-				Returns every resource and format created on this device through the script API that still exists, oldest first, so that dependencies come before the resources that use them. Each entry has [code]seq[/code], [code]method[/code], [code]args[/code] and either [code]rid[/code] or, for a framebuffer or vertex format, [code]format_id[/code]. Arguments are plain data: an RD argument object is a [Dictionary] of its properties with its class in [code]__class[/code].
+				Returns every resource and format created on this device through the script API that still exists, oldest first, so that dependencies come before the resources that use them. Each entry has [code]seq[/code], [code]method[/code], [code]args[/code] and either [code]rid[/code] or, for a framebuffer or vertex format, [code]format_id[/code]. Arguments are plain data: an RD argument object is a [Dictionary] of its properties with its class in [code]__class[/code]. The initial data of a buffer or texture holds what scripts wrote into it: the creation data with each [method buffer_update], [method buffer_clear] and [method texture_update] on top. What the GPU wrote is only in [method snapshot_get_content].
 			</description>
 		</method>
 		<method name="snapshot_get_texture_base">

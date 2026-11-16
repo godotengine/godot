@@ -307,6 +307,14 @@
 				Registers the given [Object] [param instance] as a singleton, available globally under [param name]. Useful for plugins.
 			</description>
 		</method>
+		<method name="snapshot_collect_rids" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="roots" type="Array" />
+			<param index="1" name="skip" type="Array" />
+			<description>
+				Returns every valid [RID] reachable from [param roots], as [code]{rid: true}[/code]. Walks [Array]s, [Dictionary]s and the stored and script-variable properties of [Node]s, [Resource]s and scripted objects, and also reads [RID] properties of any usage (such as [member Texture2DRD.texture_rd_rid]). Objects in [param skip] are not entered, nor are [Image] and [ImageTexture]. For finding out which [RenderingDevice] objects game state still refers to.
+			</description>
+		</method>
 		<method name="unregister_script_language">
 			<return type="int" enum="Error" />
 			<param index="0" name="language" type="ScriptLanguage" />

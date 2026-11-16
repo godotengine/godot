@@ -656,6 +656,22 @@ Array Object::snapshot_get_pending_awaits() const {
 	return script_instance ? script_instance->get_pending_awaits() : Array();
 }
 
+Dictionary Object::snapshot_get_properties(BitField<PropertyUsageFlags> p_usage, BitField<PropertyUsageFlags> p_exclude_usage) const {
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+	Dictionary out;
+	for (const PropertyInfo &pi : plist) {
+		if ((pi.usage & p_usage) && !(pi.usage & p_exclude_usage)) {
+			bool valid = false;
+			Variant value = get(pi.name, &valid);
+			if (valid) {
+				out[pi.name] = value;
+			}
+		}
+	}
+	return out;
+}
+
 void Object::snapshot_cancel_pending_awaits() {
 	if (script_instance) {
 		script_instance->cancel_pending_awaits();
@@ -1902,6 +1918,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
 	ClassDB::bind_method(D_METHOD("snapshot_get_pending_awaits"), &Object::snapshot_get_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
+	ClassDB::bind_method(D_METHOD("snapshot_get_properties", "usage", "exclude_usage"), &Object::snapshot_get_properties, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
 

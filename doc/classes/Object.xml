@@ -998,6 +998,14 @@
 				Returns the functions of this object's script that are suspended in an [code]await[/code], each as a [Dictionary] with [code]function[/code] ([StringName]), [code]source[/code] (the script path) and [code]line[/code] ([int]). A saved state does not hold them.
 			</description>
 		</method>
+		<method name="snapshot_get_properties" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" />
+			<param index="1" name="exclude_usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" default="0" />
+			<description>
+				Returns the properties whose usage has a bit of [param usage] and none of [param exclude_usage], as [code]{name: value}[/code] in [method get_property_list] order. One call instead of [method get_property_list] and [method get] for each property, for saving an object's state.
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>

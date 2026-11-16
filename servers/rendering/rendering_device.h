@@ -558,6 +558,8 @@ private:
 	uint64_t snapshot_seq = 0;
 
 	RID _snapshot_record(RID p_rid, const String &p_method, const Vector<Variant> &p_args);
+	void _snapshot_buffer_write(RID p_buffer, uint32_t p_offset, uint32_t p_size, const uint8_t *p_data);
+	void _snapshot_texture_write(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 	int64_t _snapshot_record_format(int64_t p_id, const String &p_method, const Vector<Variant> &p_args);
 	RID _framebuffer_create_empty(const Size2i &p_size, TextureSamples p_samples, int64_t p_format_check);
 	int64_t _framebuffer_format_create_empty(TextureSamples p_samples);
@@ -2023,6 +2025,8 @@ private:
 	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
 	Error _buffer_update_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data);
+	Error _buffer_clear_bind(RID p_buffer, uint32_t p_offset, uint32_t p_size);
+	Error _texture_update_bind(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
 
 	RID _blas_create(const TypedArray<RDAccelerationStructureGeometry> &p_geometries, BitField<AccelerationStructureFlagBits> p_flags);
 	Error _tlas_build(RID p_tlas, const TypedArray<RDAccelerationStructureInstance> &p_instances);
