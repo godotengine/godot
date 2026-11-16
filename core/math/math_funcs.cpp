@@ -50,6 +50,14 @@ void Math::randomize() {
 	default_rand.randomize();
 }
 
+uint64_t Math::get_random_state() {
+	return default_rand.get_state();
+}
+
+void Math::set_random_state(uint64_t p_state) {
+	default_rand.set_state(p_state);
+}
+
 uint32_t Math::rand() {
 	return default_rand.rand();
 }

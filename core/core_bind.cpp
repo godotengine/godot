@@ -2041,6 +2041,14 @@ static bool _snapshot_is_plain(const Variant &p_value, int p_depth) {
 	}
 }
 
+int64_t Engine::snapshot_get_random_state() const {
+	return (int64_t)Math::get_random_state();
+}
+
+void Engine::snapshot_set_random_state(int64_t p_state) {
+	Math::set_random_state((uint64_t)p_state);
+}
+
 Array Engine::snapshot_split_plain(const Dictionary &p_values) const {
 	Dictionary values;
 	Array others;
@@ -2273,6 +2281,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("drop_pending_ticks"), &Engine::drop_pending_ticks);
 	ClassDB::bind_method(D_METHOD("snapshot_collect_rids", "roots", "skip"), &Engine::snapshot_collect_rids);
 	ClassDB::bind_method(D_METHOD("snapshot_split_plain", "values"), &Engine::snapshot_split_plain);
+	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_random_state", "state"), &Engine::snapshot_set_random_state);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);

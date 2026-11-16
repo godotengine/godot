@@ -315,6 +315,19 @@
 				Returns every valid [RID] reachable from [param roots], as [code]{rid: true}[/code]. Walks [Array]s, [Dictionary]s and the stored and script-variable properties of [Node]s, [Resource]s and scripted objects, and also reads [RID] properties of any usage (such as [member Texture2DRD.texture_rd_rid]). Objects in [param skip] are not entered, nor are [Image] and [ImageTexture]. For finding out which [RenderingDevice] objects game state still refers to.
 			</description>
 		</method>
+		<method name="snapshot_get_random_state" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the state of the global random number generator that [method @GlobalScope.randi], [method @GlobalScope.randf] and the other global random functions use. Pass it to [method snapshot_set_random_state] to continue the same sequence, for example after loading a save.
+			</description>
+		</method>
+		<method name="snapshot_set_random_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" />
+			<description>
+				Sets the state of the global random number generator, as returned by [method snapshot_get_random_state].
+			</description>
+		</method>
 		<method name="snapshot_split_plain" qualifiers="const">
 			<return type="Array" />
 			<param index="0" name="values" type="Dictionary" />
