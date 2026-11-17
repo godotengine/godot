@@ -1,4 +1,4 @@
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 vec3 sample_environment(vec3 ray_direction_view) {
 	if (params.sky_mode == SCREEN_PROBE_SKY_COLOR) {
 		return max(params.sky_color.rgb * params.sky_energy, vec3(0.0));
@@ -28,13 +28,63 @@ vec3 sample_environment(vec3 ray_direction_view) {
 }
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
+
+#ifdef MODE_SPECULAR_TRACE
+bool detail_trace_geometric_normal(ivec2 pixel, vec3 center_view, vec3 shading_normal_view, bool shading_normal_valid, out vec3 r_normal_view) {
+	vec3 left_view;
+	vec3 right_view;
+	vec3 up_view;
+	vec3 down_view;
+	bool left_valid = detail_trace_load_view_position(pixel + ivec2(-1, 0), left_view);
+	bool right_valid = detail_trace_load_view_position(pixel + ivec2(1, 0), right_view);
+	bool up_valid = detail_trace_load_view_position(pixel + ivec2(0, -1), up_view);
+	bool down_valid = detail_trace_load_view_position(pixel + ivec2(0, 1), down_view);
+
+	vec3 horizontal_derivative = vec3(0.0);
+	vec3 vertical_derivative = vec3(0.0);
+	bool horizontal_valid = left_valid || right_valid;
+	bool vertical_valid = up_valid || down_valid;
+	if (horizontal_valid) {
+		bool use_left = left_valid && (!right_valid || abs(left_view.z - center_view.z) <= abs(right_view.z - center_view.z));
+		horizontal_derivative = use_left ? center_view - left_view : right_view - center_view;
+	}
+	if (vertical_valid) {
+		bool use_up = up_valid && (!down_valid || abs(up_view.z - center_view.z) <= abs(down_view.z - center_view.z));
+		vertical_derivative = use_up ? center_view - up_view : down_view - center_view;
+	}
+
+	vec3 geometric_normal = cross(vertical_derivative, horizontal_derivative);
+	float length_squared = dot(geometric_normal, geometric_normal);
+	if (horizontal_valid && vertical_valid && length_squared > 1e-12 && !any(isnan(geometric_normal)) && !any(isinf(geometric_normal))) {
+		geometric_normal *= inversesqrt(length_squared);
+		if (shading_normal_valid) {
+			geometric_normal *= dot(geometric_normal, shading_normal_view) < 0.0 ? -1.0 : 1.0;
+		} else if (dot(geometric_normal, center_view) > 0.0) {
+			geometric_normal = -geometric_normal;
+		}
+		r_normal_view = geometric_normal;
+		return true;
+	}
+	if (shading_normal_valid) {
+		r_normal_view = shading_normal_view;
+		return true;
+	}
+	r_normal_view = vec3(0.0, 0.0, 1.0);
+	return false;
+}
+
+#endif
 
 bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distance_limit, out vec3 r_endpoint_view, out vec3 r_endpoint_normal_view) {
 	r_endpoint_view = vec3(0.0);
 	r_endpoint_normal_view = vec3(0.0, 0.0, 1.0);
 
+#ifdef MODE_SPECULAR_TRACE
+	float max_distance = min(SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE, distance_limit);
+#else
 	float max_distance = min(SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE, distance_limit);
+#endif
 	if ((params.flags & SCREEN_PROBE_FLAG_DETAIL_TRACE) == 0u || !(max_distance > 0.0) || params.detail_trace_mip_count == 0u || any(lessThanEqual(params.screen_size, ivec2(0)))) {
 		return false;
 	}
@@ -84,9 +134,16 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 	float trace_t = max(min(start_cell_t.x, start_cell_t.y), 0.0);
 	int max_mip = int(params.detail_trace_mip_count) - 1;
 	uint detail_trace_quality = (params.flags & SCREEN_PROBE_DETAIL_TRACE_QUALITY_MASK) >> SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT;
+#ifdef MODE_SPECULAR_TRACE
+	int mip_level = min(2, max_mip);
+	int iterations_remaining = detail_trace_quality == 1u ? 32 : (detail_trace_quality == 2u ? 16 : 50);
+	float receiver_exclusion = max(0.01, abs(origin_view.z) / detail_size.y);
+	const float candidate_normal_threshold = -0.01;
+#else
 	int mip_level = min(1, max_mip);
 	int iterations_remaining = detail_trace_quality == 1u ? 16 : (detail_trace_quality == 2u ? 8 : 24);
 	float receiver_exclusion = max(0.002, abs(origin_view.z) * 1.5 / detail_size.y);
+#endif
 
 	while (mip_level >= 0 && iterations_remaining > 0 && trace_t < trace_t_max) {
 		vec3 current_screen = screen_start + screen_direction * trace_t;
@@ -106,7 +163,11 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 		}
 
 		if (possible_hit && mip_level == 0) {
+#ifdef MODE_SPECULAR_TRACE
+			float candidate_t = facing_camera ? trace_t : max(trace_t, depth_t);
+#else
 			float candidate_t = clamp(depth_t, trace_t, max(trace_t, cell_exit_t - 1e-7));
+#endif
 			vec3 candidate_screen = screen_start + screen_direction * candidate_t;
 			ivec2 candidate_pixel = ivec2(floor(candidate_screen.xy * detail_size));
 			bool candidate_valid = all(greaterThanEqual(candidate_pixel, ivec2(1))) && all(lessThan(candidate_pixel, params.screen_size - ivec2(1)));
@@ -122,16 +183,24 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 				}
 				if (candidate_valid) {
 					float candidate_distance = dot(candidate_view - origin_view, ray_direction_view);
+#ifdef MODE_SPECULAR_TRACE
+					float thickness = clamp(abs(candidate_view.z) * 0.004, 0.04, 0.25);
+#else
 					float thickness = clamp(abs(candidate_view.z) * 0.0015, 0.025, 0.10);
+#endif
 					vec3 ray_closest_view = origin_view + ray_direction_view * candidate_distance;
 					vec3 ray_error = candidate_view - ray_closest_view;
 					candidate_valid = candidate_distance > receiver_exclusion && candidate_distance <= max_distance && dot(ray_error, ray_error) <= thickness * thickness;
 					if (candidate_valid) {
 						vec3 shading_normal_view;
 						bool shading_normal_valid = decode_normal(texelFetch(sampler2D(detail_normal_roughness_buffer, linear_sampler), candidate_pixel, 0).xyz, shading_normal_view);
+#ifdef MODE_SPECULAR_TRACE
+						candidate_valid = detail_trace_geometric_normal(candidate_pixel, candidate_view, shading_normal_view, shading_normal_valid, candidate_normal_view) && dot(ray_direction_view, candidate_normal_view) < candidate_normal_threshold;
+#else
 						candidate_normal_view = shading_normal_view;
 						candidate_valid = shading_normal_valid && abs(dot(ray_direction_view, candidate_normal_view)) > 0.05 &&
 								abs(dot(candidate_view - origin_view, candidate_normal_view)) > receiver_exclusion;
+#endif
 					}
 					if (candidate_valid) {
 						vec3 candidate_ray_view = compute_view_position(candidate_screen);
@@ -168,7 +237,7 @@ bool trace_screen_detail(vec3 origin_view, vec3 ray_direction_view, float distan
 
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 
 uvec2 load_voxel_cascade(ivec3 position) {
 	return imageLoad(hddagi_voxel_cascades, position).rg;
@@ -332,10 +401,11 @@ bool query_endpoint_radiance(vec3 camera_relative_endpoint, vec3 endpoint_normal
 }
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 
-bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, out vec3 r_radiance, out float r_hit_distance) {
+bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origin_normal, vec3 ray_direction_view, out vec3 r_radiance, out float r_hit_distance, out float r_hit_cell_size) {
 	r_hit_distance = 0.0;
+	r_hit_cell_size = 0.0;
 	r_radiance = vec3(0.0);
 	vec2 origin_uv = (vec2(origin_position) + 0.5) / vec2(params.screen_size);
 	vec3 origin_view = compute_view_position(vec3(origin_uv, origin_depth));
@@ -393,6 +463,9 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 	ivec3 hit_face;
 	int hit_cascade;
 	bool exclude_receiver_cell = params.normal_bias >= 0.0 && dot(ray_direction_view, origin_normal) > 1e-4;
+#ifdef MODE_SPECULAR_TRACE
+	exclude_receiver_cell = exclude_receiver_cell && (params.flags & SCREEN_PROBE_FLAG_DETAIL_TRACE) != 0u;
+#endif
 	float hit_time;
 	if (!trace_ray_hdda(ray_position, ray_direction, cascade, exclude_receiver_cell, hit_cell, hit_face, hit_cascade, hit_time)) {
 		return false;
@@ -436,6 +509,15 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 			disoccluded = true;
 		}
 	}
+
+#ifdef MODE_SPECULAR_TRACE
+	if (reconnectable_endpoint && hit_time > 0.0) {
+		vec3 endpoint = ray_position + ray_direction * hit_time;
+		endpoint.y /= hddagi.y_mult;
+		r_hit_distance = min(length(endpoint - camera_basis * origin_view), 65504.0);
+		r_hit_cell_size = 1.0 / hddagi.cascades[hit_cascade].to_cell;
+	}
+#endif
 
 	hit_cell += hit_face;
 	ivec3 read_cell = (hit_cell + hddagi.cascades[hit_cascade].region_world_offset * HDDAGI_REGION_SIZE) & (hddagi.grid_size - 1);

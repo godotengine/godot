@@ -4,6 +4,10 @@
 
 #VERSION_DEFINES
 
+#if defined(SVGF_SPECULAR) || defined(MODE_SPECULAR_SPATIAL)
+#include "hddagi_specular_surface_inc.glsl"
+#endif
+
 #ifdef ATROUS_STEP_SIZE
 #if ATROUS_STEP_SIZE <= 2
 #define ATROUS_SHARED
@@ -46,10 +50,19 @@ layout(set = 0, binding = 6) uniform texture2D previous_normal_roughness_input;
 layout(set = 0, binding = 7) uniform texture2D previous_view_z_input;
 layout(set = 0, binding = 8) uniform sampler nearest_sampler;
 layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image2D current_signal_output;
+#ifdef SVGF_SPECULAR
+layout(rg16f, set = 0, binding = 10) uniform restrict writeonly image2D current_moments_output;
+#else
 layout(rgba16f, set = 0, binding = 10) uniform restrict writeonly image2D current_moments_output;
+#endif
 layout(rgba8, set = 0, binding = 11) uniform restrict writeonly image2D current_normal_roughness_output;
 
 const int TEMPORAL_NEIGHBORHOOD_RADIUS = 2;
+#ifdef SVGF_SPECULAR
+const int TEMPORAL_NEIGHBORHOOD_SHARED_SIZE = 12;
+const int TEMPORAL_NEIGHBORHOOD_SHARED_COUNT = TEMPORAL_NEIGHBORHOOD_SHARED_SIZE * TEMPORAL_NEIGHBORHOOD_SHARED_SIZE;
+shared vec4 temporal_neighborhood_ycocg[TEMPORAL_NEIGHBORHOOD_SHARED_SIZE][TEMPORAL_NEIGHBORHOOD_SHARED_SIZE];
+#endif
 
 #endif
 
@@ -165,12 +178,6 @@ bool svgf_reconstruct_view(mat4 inv_projection, vec2 uv, float view_z, bool orth
 	return svgf_finite_vec3(r_view_position);
 }
 
-bool svgf_decode_surface_metadata(vec2 packed_metadata, out vec2 r_surface_uv_offset, out bool r_dynamic) {
-	r_dynamic = packed_metadata.y > 1.0;
-	r_surface_uv_offset = vec2(packed_metadata.x, r_dynamic ? packed_metadata.y - 2.0 : packed_metadata.y);
-	return svgf_finite_vec2(r_surface_uv_offset) && all(lessThanEqual(abs(r_surface_uv_offset), vec2(1.0)));
-}
-
 #endif
 
 #ifdef MODE_TEMPORAL
@@ -184,7 +191,8 @@ bool svgf_history_tap_valid(ivec2 tap_pos, ivec2 size, bool current_dynamic, vec
 	if (any(lessThan(tap_pos, ivec2(0))) || any(greaterThanEqual(tap_pos, size))) {
 		return false;
 	}
-	float previous_view_z = abs(texelFetch(sampler2D(previous_view_z_input, nearest_sampler), tap_pos, 0).r);
+	float packed_view_z = texelFetch(sampler2D(previous_view_z_input, nearest_sampler), tap_pos, 0).r;
+	float previous_view_z = abs(packed_view_z);
 	vec4 previous_encoded_normal = texelFetch(sampler2D(previous_normal_roughness_input, nearest_sampler), tap_pos, 0);
 	vec3 previous_normal = svgf_decode_normal(previous_encoded_normal);
 	r_normal_agreement = dot(current_normal, previous_normal);
@@ -201,10 +209,20 @@ bool svgf_history_tap_valid(ivec2 tap_pos, ivec2 size, bool current_dynamic, vec
 	}
 	vec4 previous_moments = texelFetch(sampler2D(previous_moments_input, nearest_sampler), tap_pos, 0);
 	r_moments = previous_moments.xy;
+#ifdef SVGF_SPECULAR
+	if (current_dynamic && packed_view_z < 0.0) {
+#else
 	if (current_dynamic) {
+#endif
 		return true;
 	}
 	vec2 tap_uv = (vec2(tap_pos) + 0.5) / vec2(size);
+#ifdef SVGF_SPECULAR
+	if ((params.control.x & 4u) == 0u) {
+		ivec2 screen_size = textureSize(sampler2D(motion_input, nearest_sampler), 0);
+		tap_uv = (vec2(specular_surface_pixel(tap_pos, size, screen_size, packed_view_z)) + 0.5) / vec2(screen_size);
+	}
+#endif
 	vec3 previous_position;
 	if (!svgf_reconstruct_view(frame_data.previous_inv_projection, tap_uv, previous_view_z, (params.control.w & 2u) != 0u, previous_position)) {
 		return false;
@@ -218,12 +236,19 @@ bool svgf_temporal_neighborhood(vec3 center_signal, out vec3 r_center, out vec3 
 	vec3 sample_sum = center_ycocg;
 	vec3 sample_square_sum = center_ycocg * center_ycocg;
 	float sample_count = 1.0;
+#ifdef SVGF_SPECULAR
+	ivec2 shared_center = ivec2(gl_LocalInvocationID.xy) + ivec2(TEMPORAL_NEIGHBORHOOD_RADIUS);
+#else
 	ivec2 size = textureSize(sampler2D(current_signal_input, nearest_sampler), 0);
+#endif
 	for (int y = -TEMPORAL_NEIGHBORHOOD_RADIUS; y <= TEMPORAL_NEIGHBORHOOD_RADIUS; y++) {
 		for (int x = -TEMPORAL_NEIGHBORHOOD_RADIUS; x <= TEMPORAL_NEIGHBORHOOD_RADIUS; x++) {
 			if ((x == 0 && y == 0) || (abs(x) == TEMPORAL_NEIGHBORHOOD_RADIUS && abs(y) == TEMPORAL_NEIGHBORHOOD_RADIUS)) {
 				continue;
 			}
+#ifdef SVGF_SPECULAR
+			vec4 packed_sample = temporal_neighborhood_ycocg[shared_center.y + y][shared_center.x + x];
+#else
 			ivec2 tap = ivec2(gl_GlobalInvocationID.xy) + ivec2(x, y);
 			if (any(lessThan(tap, ivec2(0))) || any(greaterThanEqual(tap, size))) {
 				continue;
@@ -234,6 +259,7 @@ bool svgf_temporal_neighborhood(vec3 center_signal, out vec3 r_center, out vec3 
 				continue;
 			}
 			vec4 packed_sample = vec4(svgf_rgb_to_ycocg(signal.rgb * DIFFUSE_SIGNAL_SCALE), 1.0);
+#endif
 			sample_sum += packed_sample.xyz;
 			sample_square_sum += packed_sample.xyz * packed_sample.xyz;
 			sample_count += packed_sample.w;
@@ -250,6 +276,7 @@ bool svgf_temporal_neighborhood(vec3 center_signal, out vec3 r_center, out vec3 
 	return svgf_finite_vec3(r_center) && svgf_finite_vec3(r_extent);
 }
 
+#ifndef SVGF_SPECULAR
 void svgf_temporal_main() {
 	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 size = imageSize(current_signal_output);
@@ -377,6 +404,7 @@ void svgf_temporal_main() {
 	imageStore(current_normal_roughness_output, pixel, current_encoded_normal);
 }
 
+#endif // !SVGF_SPECULAR
 #endif // MODE_TEMPORAL
 
 #ifdef MODE_HISTORY_FIX
@@ -454,7 +482,7 @@ void svgf_history_fix_main() {
 
 #endif
 
-#if defined(MODE_ATROUS)
+#if defined(MODE_ATROUS) || defined(MODE_SPECULAR_SPATIAL)
 float svgf_variance_from_moments(vec2 moments, float history_length) {
 	if (!svgf_finite_vec2(moments)) {
 		return 0.0;
@@ -746,8 +774,18 @@ void svgf_atrous_main() {
 
 #endif
 
+#if defined(SVGF_SPECULAR) || defined(MODE_SPECULAR_RECONSTRUCT) || defined(MODE_SPECULAR_SPATIAL)
+#include "hddagi_screen_probe_svgf_specular_inc.glsl"
+#endif
+
 void main() {
-#if defined(MODE_TEMPORAL)
+#ifdef SVGF_SPECULAR
+	svgf_specular_temporal_main();
+#elif defined(MODE_SPECULAR_RECONSTRUCT)
+	svgf_specular_reconstruct_main();
+#elif defined(MODE_SPECULAR_SPATIAL)
+	svgf_specular_spatial_main();
+#elif defined(MODE_TEMPORAL)
 	svgf_temporal_main();
 #elif defined(MODE_HISTORY_FIX)
 	svgf_history_fix_main();

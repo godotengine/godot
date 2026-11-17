@@ -58,6 +58,7 @@
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
+#define RB_LAST_FRAME_DEPTH SNAME("last_frame_depth")
 #define RB_LAST_FRAME SNAME("last_frame")
 #define RB_DEINTERLEAVED SNAME("deinterleaved")
 #define RB_DEINTERLEAVED_PONG SNAME("deinterleaved_pong")
@@ -90,7 +91,7 @@ public:
 
 	/* Last Frame */
 
-	void allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
+	bool allocate_last_frame_buffer(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr, bool p_use_hddagi_screen_radiance);
 	void copy_internal_texture_to_last_frame(Ref<RenderSceneBuffersRD> p_render_buffers, CopyEffects &p_copy_effects);
 
 	/* SS Downsampler */

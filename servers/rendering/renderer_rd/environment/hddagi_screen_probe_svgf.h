@@ -53,6 +53,9 @@ public:
 		Size2i size;
 		Quality quality = QUALITY_HIGH;
 		bool history_valid = false;
+		bool specular = false;
+		bool specular_full_resolution = false;
+		bool lights_changed = false;
 	};
 
 	struct Resources {

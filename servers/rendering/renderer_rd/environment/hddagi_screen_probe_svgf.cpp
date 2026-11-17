@@ -49,6 +49,9 @@ enum SVGFMode {
 	SVGF_MODE_ATROUS_DIFFUSE_2,
 	SVGF_MODE_ATROUS_DIFFUSE_3,
 	SVGF_MODE_ATROUS_DIFFUSE_4,
+	SVGF_MODE_SPECULAR_RECONSTRUCT,
+	SVGF_MODE_SPECULAR_TEMPORAL,
+	SVGF_MODE_SPECULAR_SPATIAL,
 	SVGF_MODE_MAX,
 };
 
@@ -71,8 +74,12 @@ struct SVGFDenoisePreset {
 };
 
 static constexpr SVGFDenoisePreset SVGF_DIFFUSE_PRESET = { 500000.0f, 0.9f, 0.005f, 2.0f, 8.0f, 0.005f, 4.0e-5f };
+static constexpr SVGFDenoisePreset SVGF_SPECULAR_PRESET = { 65504.0f, 0.95f, 0.0025f, 2.5f, 12.0f, 0.003f, 4.0e-5f };
 
 static constexpr uint32_t SVGF_CONTROL_HISTORY_VALID = 1u << 0;
+static constexpr uint32_t SVGF_CONTROL_SPECULAR_FULL_RESOLUTION = 1u << 2;
+static constexpr uint32_t SVGF_CONTROL_UNFILTERED_MIRROR = 1u << 3;
+static constexpr uint32_t SVGF_CONTROL_LIGHTS_CHANGED = 1u << 4;
 
 struct alignas(16) SVGFFrameData {
 	float current_inv_projection[16] = {};
@@ -101,6 +108,7 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		RID frame_data_buffer;
 		uint32_t history_slot = 0;
 		bool history_initialized = false;
+		bool previous_lights_changed = false;
 	};
 
 	HddagiScreenProbeSvgfShaderRD shader;
@@ -110,7 +118,7 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 	bool shader_initialized = false;
 	Error shader_status = ERR_CANT_CREATE;
 
-	Error initialize_shader() {
+	Error initialize_shader(bool p_specular) {
 		if (shader_initialized) {
 			return shader_status;
 		}
@@ -125,12 +133,21 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		for (uint32_t iteration = 0; iteration < MAX_ATROUS_ITERATION_COUNT; iteration++) {
 			modes.push_back(vformat("\n#define MODE_ATROUS\n#define ATROUS_STEP_SIZE %d\n", 1u << iteration));
 		}
+		modes.push_back("\n#define MODE_SPECULAR_RECONSTRUCT\n");
+		modes.push_back("\n#define MODE_TEMPORAL\n#define SVGF_SPECULAR\n");
+		modes.push_back("\n#define MODE_SPECULAR_SPATIAL\n");
 		shader.initialize(modes);
+		for (uint32_t mode = 0; mode < SVGF_MODE_MAX; mode++) {
+			shader.set_variant_enabled(mode, (mode >= SVGF_MODE_SPECULAR_RECONSTRUCT) == p_specular);
+		}
 		shader_version = shader.version_create();
 		shader_initialized = true;
 		ERR_FAIL_COND_V_MSG(shader_version.is_null(), ERR_CANT_CREATE, "Failed to create the HDDAGI screen-probe SVGF shader version.");
 
 		for (uint32_t mode = 0; mode < SVGF_MODE_MAX; mode++) {
+			if ((mode >= SVGF_MODE_SPECULAR_RECONSTRUCT) != p_specular) {
+				continue;
+			}
 			const RID mode_shader = shader.version_get_shader(shader_version, mode);
 			if (mode_shader.is_null()) {
 				return ERR_CANT_CREATE;
@@ -204,13 +221,15 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			view.history_moments[slot] = create_texture(p_frame.size, RD::DATA_FORMAT_R16G16_SFLOAT, vformat("HDDAGI SVGF View %d History Moments %d", p_view_id, slot));
 			view.history_normal_roughness[slot] = create_texture(p_frame.size, RD::DATA_FORMAT_R8G8B8A8_UNORM, vformat("HDDAGI SVGF View %d History Normal Roughness %d", p_view_id, slot));
 		}
-		view.filter_scratch = create_texture(p_frame.size, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, vformat("HDDAGI SVGF View %d Filter Scratch", p_view_id));
+		if (!p_frame.specular) {
+			view.filter_scratch = create_texture(p_frame.size, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, vformat("HDDAGI SVGF View %d Filter Scratch", p_view_id));
+		}
 		view.frame_data_buffer = rd->uniform_buffer_create(sizeof(SVGFFrameData));
 		if (view.frame_data_buffer.is_valid()) {
 			rd->set_resource_name(view.frame_data_buffer, vformat("HDDAGI SVGF View %d Frame Data", p_view_id));
 		}
 
-		bool resources_valid = view.filter_scratch.is_valid() && view.frame_data_buffer.is_valid();
+		bool resources_valid = (p_frame.specular || view.filter_scratch.is_valid()) && view.frame_data_buffer.is_valid();
 		for (uint32_t slot = 0; slot < 2; slot++) {
 			resources_valid = resources_valid && view.history_signal[slot].is_valid() && view.history_moments[slot].is_valid() &&
 					view.history_normal_roughness[slot].is_valid();
@@ -227,7 +246,7 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		ERR_FAIL_COND_V_MSG(!p_resources.is_valid(), ERR_INVALID_PARAMETER, "The HDDAGI screen-probe SVGF resources are incomplete or alias each other.");
 		ERR_FAIL_COND_V(p_view_id >= RendererSceneRender::MAX_RENDER_VIEWS, ERR_INVALID_PARAMETER);
 
-		Error error = initialize_shader();
+		Error error = initialize_shader(p_frame.specular);
 		if (error != OK) {
 			return error;
 		}
@@ -259,23 +278,24 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 
 		RenderingDevice *rd = RenderingDevice::get_singleton();
 		ERR_FAIL_NULL_V(rd, ERR_UNAVAILABLE);
-		RENDER_TIMESTAMP("HDDAGI SVGF Scene Upload Begin");
+		RENDER_TIMESTAMP(p_frame.specular ? "HDDAGI GGX Scene Upload Begin" : "HDDAGI SVGF Scene Upload Begin");
 		error = rd->buffer_update(view.frame_data_buffer, 0, sizeof(frame_data), &frame_data);
 		if (error != OK) {
 			return error;
 		}
-		RENDER_TIMESTAMP("HDDAGI SVGF Scene Upload End");
+		RENDER_TIMESTAMP(p_frame.specular ? "HDDAGI GGX Scene Upload End" : "HDDAGI SVGF Scene Upload End");
 
 		// SubViewports can skip global frames, so advance history after successful local submissions.
 		const uint32_t previous_slot = view.history_slot;
 		const uint32_t current_slot = previous_slot ^ 1u;
 		const bool history_valid = p_frame.history_valid && view.history_initialized;
-		const uint32_t iteration_count = HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality);
+		const uint32_t iteration_count = p_frame.specular ? 1u : HDDAGIScreenProbeSVGF::get_atrous_iteration_count(p_frame.quality);
 
 		SVGFPushConstant push_constant = {};
-		push_constant.control[0] = history_valid ? SVGF_CONTROL_HISTORY_VALID : 0u;
+		const bool unfiltered_mirror = p_frame.specular && (p_frame.specular_full_resolution || (p_frame.taa_jitter == Vector2() && p_frame.previous_taa_jitter == Vector2()));
+		push_constant.control[0] = (history_valid ? SVGF_CONTROL_HISTORY_VALID : 0u) | (p_frame.specular_full_resolution ? SVGF_CONTROL_SPECULAR_FULL_RESOLUTION : 0u) | (unfiltered_mirror ? SVGF_CONTROL_UNFILTERED_MIRROR : 0u) | ((p_frame.lights_changed || view.previous_lights_changed) ? SVGF_CONTROL_LIGHTS_CHANGED : 0u);
 		push_constant.control[3] = (p_frame.projection.is_orthogonal() ? 1u : 0u) | (p_frame.previous_projection.is_orthogonal() ? 2u : 0u);
-		const SVGFDenoisePreset &preset = SVGF_DIFFUSE_PRESET;
+		const SVGFDenoisePreset &preset = p_frame.specular ? SVGF_SPECULAR_PRESET : SVGF_DIFFUSE_PRESET;
 		push_constant.tuning[0] = preset.view_z_limit;
 		push_constant.tuning[1] = preset.normal_threshold;
 		push_constant.tuning[2] = preset.depth_tolerance;
@@ -283,20 +303,36 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		push_constant.atrous[0] = preset.normal_power;
 		push_constant.atrous[1] = preset.plane_threshold_scale;
 		push_constant.atrous[2] = preset.variance_floor;
-		const int64_t max_history_frames = GLOBAL_GET_CACHED(int64_t, "rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames");
+		const int64_t max_history_frames = p_frame.specular
+				? GLOBAL_GET_CACHED(int64_t, "rendering/global_illumination/hddagi/screen_probe_specular_max_history_frames")
+				: GLOBAL_GET_CACHED(int64_t, "rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames");
 		push_constant.atrous[3] = float(CLAMP(max_history_frames, 1, 255));
 
 		const RID nearest_sampler = RendererRD::MaterialStorage::get_singleton()->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 		UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 		ERR_FAIL_NULL_V(uniform_set_cache, ERR_UNAVAILABLE);
-		const SVGFMode temporal_mode = SVGF_MODE_TEMPORAL;
+		const SVGFMode temporal_mode = p_frame.specular ? SVGF_MODE_SPECULAR_TEMPORAL : SVGF_MODE_TEMPORAL;
 		const RID temporal_shader = shader.version_get_shader(shader_version, temporal_mode);
+		const bool specular_reconstruction = p_frame.specular && p_frame.quality != HDDAGIScreenProbeSVGF::QUALITY_LOW;
+		RID specular_reconstruct_set;
+		RID temporal_signal_input = p_resources.radiance_hit_distance;
+		if (specular_reconstruction) {
+			const RID specular_reconstruct_shader = shader.version_get_shader(shader_version, SVGF_MODE_SPECULAR_RECONSTRUCT);
+			specular_reconstruct_set = uniform_set_cache->get_cache(
+					specular_reconstruct_shader, 0,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_resources.radiance_hit_distance),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.normal_roughness),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_resources.view_z),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 3, nearest_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, p_resources.output_radiance_hit_distance));
+			temporal_signal_input = p_resources.output_radiance_hit_distance;
+		}
 
-		const RID temporal_signal_destination = view.filter_scratch;
-		const RID temporal_moments_destination = p_resources.output_radiance_hit_distance;
+		const RID temporal_signal_destination = p_frame.specular ? view.history_signal[current_slot] : view.filter_scratch;
+		const RID temporal_moments_destination = p_frame.specular ? view.history_moments[current_slot] : p_resources.output_radiance_hit_distance;
 		const RID temporal_set = uniform_set_cache->get_cache(
 				temporal_shader, 0,
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_resources.radiance_hit_distance),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, temporal_signal_input),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, p_resources.normal_roughness),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, p_resources.view_z),
 				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.motion_vectors),
@@ -313,40 +349,52 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view.frame_data_buffer));
 		RID history_fix_set;
 		RID history_fix_frame_data_set;
-		const RID history_fix_shader = shader.version_get_shader(shader_version, SVGF_MODE_HISTORY_FIX);
-		history_fix_set = uniform_set_cache->get_cache(
-				history_fix_shader, 0,
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, temporal_signal_destination),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, temporal_moments_destination),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view.history_normal_roughness[current_slot]),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.view_z),
-				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, view.history_signal[current_slot]),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, view.history_moments[current_slot]));
-		history_fix_frame_data_set = uniform_set_cache->get_cache(
-				history_fix_shader, 1,
-				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view.frame_data_buffer));
+		if (!p_frame.specular) {
+			const RID history_fix_shader = shader.version_get_shader(shader_version, SVGF_MODE_HISTORY_FIX);
+			history_fix_set = uniform_set_cache->get_cache(
+					history_fix_shader, 0,
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, temporal_signal_destination),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, temporal_moments_destination),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view.history_normal_roughness[current_slot]),
+					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.view_z),
+					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, view.history_signal[current_slot]),
+					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, view.history_moments[current_slot]));
+			history_fix_frame_data_set = uniform_set_cache->get_cache(
+					history_fix_shader, 1,
+					RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, view.frame_data_buffer));
+		}
 
 		RID atrous_sets[MAX_ATROUS_ITERATION_COUNT];
 		RID signal_source = view.history_signal[current_slot];
 		const bool first_iteration_writes_output = (iteration_count & 1u) != 0u;
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
-			const uint32_t atrous_mode = SVGF_MODE_ATROUS_DIFFUSE_0 + iteration;
+			const uint32_t atrous_mode = p_frame.specular ? uint32_t(SVGF_MODE_SPECULAR_SPATIAL) : SVGF_MODE_ATROUS_DIFFUSE_0 + iteration;
 			const RID atrous_shader = shader.version_get_shader(shader_version, atrous_mode);
 			const bool write_output = ((iteration & 1u) == 0u) == first_iteration_writes_output;
 			const RID signal_destination = write_output ? p_resources.output_radiance_hit_distance : view.filter_scratch;
-			atrous_sets[iteration] = uniform_set_cache->get_cache(
-					atrous_shader, 0,
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, signal_source),
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, view.history_moments[current_slot]),
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view.history_normal_roughness[current_slot]),
-					RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.view_z),
-					RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
-					RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, signal_destination));
+			auto get_spatial_set = [&](auto... p_extra_guides) {
+				return uniform_set_cache->get_cache(
+						atrous_shader, 0,
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, signal_source),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, view.history_moments[current_slot]),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 2, view.history_normal_roughness[current_slot]),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_resources.view_z),
+						RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, nearest_sampler),
+						RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, signal_destination), p_extra_guides...);
+			};
+			if (p_frame.specular) {
+				atrous_sets[iteration] = get_spatial_set(
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 6, p_resources.radiance_hit_distance),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 7, p_resources.normal_roughness),
+						RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 8, p_resources.motion_vectors));
+			} else {
+				atrous_sets[iteration] = get_spatial_set();
+			}
 			signal_source = signal_destination;
 		}
 
-		if (!temporal_set.is_valid() || !temporal_frame_data_set.is_valid() || !history_fix_set.is_valid() || !history_fix_frame_data_set.is_valid()) {
+		if (!temporal_set.is_valid() || !temporal_frame_data_set.is_valid() || (specular_reconstruction && !specular_reconstruct_set.is_valid()) || (!p_frame.specular && (!history_fix_set.is_valid() || !history_fix_frame_data_set.is_valid()))) {
 			return ERR_CANT_CREATE;
 		}
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
@@ -358,7 +406,16 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		rd->draw_command_begin_label("HDDAGI Screen Probe SVGF");
 		RD::ComputeListID compute_list = rd->compute_list_begin();
 
-		RENDER_TIMESTAMP("HDDAGI SVGF Temporal");
+		if (specular_reconstruction) {
+			push_constant.control[2] = uint32_t(p_frame.quality) << 2u;
+			RENDER_TIMESTAMP("HDDAGI GGX Reconstruction");
+			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_SPECULAR_RECONSTRUCT]);
+			rd->compute_list_bind_uniform_set(compute_list, specular_reconstruct_set, 0);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+		}
+		RENDER_TIMESTAMP(p_frame.specular ? "HDDAGI GGX Temporal" : "HDDAGI SVGF Temporal");
 		rd->compute_list_bind_compute_pipeline(compute_list, pipelines[temporal_mode]);
 		rd->compute_list_bind_uniform_set(compute_list, temporal_set, 0);
 		rd->compute_list_bind_uniform_set(compute_list, temporal_frame_data_set, 1);
@@ -366,25 +423,27 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 		rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
 		rd->compute_list_add_barrier(compute_list);
 
-		RENDER_TIMESTAMP("HDDAGI SVGF History Fix");
-		push_constant.control[1] = HISTORY_FIX_BASE_PIXEL_STRIDE;
-		push_constant.control[2] = HISTORY_FIX_FRAME_COUNT;
-		rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_HISTORY_FIX]);
-		rd->compute_list_bind_uniform_set(compute_list, history_fix_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, history_fix_frame_data_set, 1);
-		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
-		rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
-		rd->compute_list_add_barrier(compute_list);
+		if (!p_frame.specular) {
+			RENDER_TIMESTAMP("HDDAGI SVGF History Fix");
+			push_constant.control[1] = HISTORY_FIX_BASE_PIXEL_STRIDE;
+			push_constant.control[2] = HISTORY_FIX_FRAME_COUNT;
+			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[SVGF_MODE_HISTORY_FIX]);
+			rd->compute_list_bind_uniform_set(compute_list, history_fix_set, 0);
+			rd->compute_list_bind_uniform_set(compute_list, history_fix_frame_data_set, 1);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch_threads(compute_list, p_frame.size.x, p_frame.size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+		}
 
 		for (uint32_t iteration = 0; iteration < iteration_count; iteration++) {
-			RENDER_TIMESTAMP("HDDAGI SVGF A-Trous Step " + itos(uint64_t(1) << iteration));
+			RENDER_TIMESTAMP(p_frame.specular ? String("HDDAGI GGX Spatial") : "HDDAGI SVGF A-Trous Step " + itos(uint64_t(1) << iteration));
 			push_constant.control[1] = 1u << iteration;
-			push_constant.control[2] = (iteration == 0u ? 1u : 0u) | (iteration + 1u == iteration_count ? 2u : 0u);
-			const uint32_t atrous_mode = SVGF_MODE_ATROUS_DIFFUSE_0 + iteration;
+			push_constant.control[2] = (iteration == 0u ? 1u : 0u) | (iteration + 1u == iteration_count ? 2u : 0u) | (p_frame.specular ? uint32_t(p_frame.quality) << 2u : 0u);
+			const uint32_t atrous_mode = p_frame.specular ? uint32_t(SVGF_MODE_SPECULAR_SPATIAL) : SVGF_MODE_ATROUS_DIFFUSE_0 + iteration;
 			rd->compute_list_bind_compute_pipeline(compute_list, pipelines[atrous_mode]);
 			rd->compute_list_bind_uniform_set(compute_list, atrous_sets[iteration], 0);
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
-			if (iteration < SHARED_ATROUS_ITERATION_COUNT) {
+			if (!p_frame.specular && iteration < SHARED_ATROUS_ITERATION_COUNT) {
 				const uint32_t tile_width = DIFFUSE_ATROUS_GROUP_SIZE_X << iteration;
 				const uint32_t tile_height = DIFFUSE_ATROUS_GROUP_SIZE_Y << iteration;
 				rd->compute_list_dispatch_threads(compute_list, Math::division_round_up(uint32_t(p_frame.size.x), tile_width) * tile_width,
@@ -397,10 +456,11 @@ struct HDDAGIScreenProbeSVGF::Implementation {
 			}
 		}
 		rd->compute_list_end();
-		RENDER_TIMESTAMP("HDDAGI SVGF End");
+		RENDER_TIMESTAMP(p_frame.specular ? "HDDAGI GGX Denoise End" : "HDDAGI SVGF End");
 
 		rd->draw_command_end_label();
 
+		view.previous_lights_changed = p_frame.lights_changed;
 		view.history_initialized = true;
 		view.history_slot = current_slot;
 		return OK;

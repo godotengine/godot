@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 #define HDDAGI_DATA_BINDING 4
 #define HDDAGI_PAGE_BINDING 6
 #elif defined(MODE_RESOLVE)
@@ -29,6 +29,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 const uint SCREEN_PROBE_FLAG_DETAIL_TRACE = 1u << 0u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_MOTION_VALID = 1u << 5u;
+const uint SCREEN_PROBE_FLAG_SPECULAR_SCREEN_RADIANCE_VALID = 1u << 4u;
 const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT = 7u;
 const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_MASK = 3u << SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT;
 const uint SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER = 1u << 9u;
@@ -40,6 +41,8 @@ const float SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_RETIRE_COVERAGE = 0.06;
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
 const float SCREEN_PROBE_DETAIL_TRACE_MAX_DISTANCE = 2.0;
+
+const float SCREEN_PROBE_SPECULAR_DETAIL_TRACE_MAX_DISTANCE = 50.0;
 
 const int HDDAGI_REGION_SIZE = 8;
 const float TAU = 6.283185307179586;
@@ -72,6 +75,11 @@ layout(push_constant, std430) uniform Params {
 	uint detail_trace_mip_count;
 
 	vec4 sky_color;
+
+#if defined(MODE_SPECULAR_TRACE) || defined(MODE_SPECULAR_APPLY)
+	vec4 specular_tuning;
+	vec4 specular_eye_offset_exposure;
+#endif
 }
 params;
 
@@ -101,6 +109,16 @@ struct ScreenProbeSceneData {
 	vec4 receiver_camera_offset; // Camera relative to the receiver history origin; w resets the history.
 };
 
+#ifdef MODE_SPECULAR_APPLY
+
+layout(set = 0, binding = 0) uniform texture2D specular_radiance_input;
+layout(set = 0, binding = 1) uniform sampler specular_nearest_sampler;
+layout(r32ui, set = 0, binding = 2) uniform coherent uimage2D reflection_output;
+layout(set = 0, binding = 3) uniform texture2D specular_normal_roughness_input;
+
+layout(rg8, set = 0, binding = 4) uniform restrict image2D reflection_blend;
+#endif
+
 #ifdef MODE_SURFACE
 
 layout(set = 0, binding = 0) uniform texture2D depth_buffer;
@@ -110,7 +128,7 @@ layout(rgba32ui, set = 0, binding = 3) uniform restrict writeonly uimage2D scree
 
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_RESOLVE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE) || defined(MODE_RESOLVE)
 #ifdef MODE_RESOLVE
 layout(set = 0, binding = 20, std140)
 #else
@@ -135,7 +153,7 @@ layout(set = 0, binding = 7, std140)
 hddagi;
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 
 #ifdef MODE_DIRECTIONAL_TRACE
 layout(rgba32ui, set = 0, binding = 0) uniform restrict readonly uimage2D screen_probe_surface_input;
@@ -149,6 +167,14 @@ layout(set = 0, binding = 9, std140) uniform SceneDataBuffer {
 };
 layout(set = 0, binding = 10) uniform texture2D detail_hiz_buffer;
 layout(set = 0, binding = 11) uniform texture2D detail_normal_roughness_buffer;
+#ifdef MODE_SPECULAR_TRACE
+layout(set = 0, binding = 12) uniform texture2D specular_depth_buffer;
+layout(set = 0, binding = 13) uniform texture2D specular_velocity_buffer;
+layout(rgba8, set = 0, binding = 14) uniform restrict writeonly image2D specular_normal_roughness_output;
+layout(r32f, set = 0, binding = 15) uniform restrict writeonly image2D specular_view_z_output;
+layout(set = 0, binding = 16) uniform texture2D specular_screen_radiance_buffer;
+layout(set = 0, binding = 17) uniform texture2D specular_previous_depth_buffer;
+#else
 layout(set = 0, binding = 12) uniform texture2D directional_previous_radiance_input;
 layout(rgba32ui, set = 0, binding = 13) uniform restrict readonly uimage2D directional_previous_surface_input;
 layout(r8ui, set = 0, binding = 14) uniform restrict readonly uimage2D directional_previous_history_age_input;
@@ -166,10 +192,11 @@ layout(rgba32ui, set = 0, binding = 29) uniform restrict uimage2D receiver_geome
 #ifdef MODE_DIRECTIONAL_TRACE_IMPORTANCE
 layout(set = 0, binding = 27) uniform texture2DArray directional_world_radiance;
 #endif
+#endif
 
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 #ifdef USE_RADIANCE_OCTMAP_ARRAY
 layout(set = 1, binding = 0) uniform texture2DArray sky_radiance;
 #else
@@ -480,7 +507,7 @@ vec3 directional_receiver_normal(uint metadata) {
 
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_IRRADIANCE) || defined(MODE_RESOLVE) || defined(MODE_ADAPTIVE_PLACEMENT)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_IRRADIANCE) || defined(MODE_SPECULAR_TRACE) || defined(MODE_RESOLVE) || defined(MODE_ADAPTIVE_PLACEMENT)
 vec3 compute_view_position(vec3 screen_position) {
 	vec4 position = vec4(screen_position.xy * 2.0 - 1.0, screen_position.z, 1.0);
 	position = scene_data.inv_projection[params.view_index] * position;
@@ -498,7 +525,7 @@ bool decode_normal(vec3 encoded, out vec3 r_normal) {
 	return true;
 }
 
-#if defined(MODE_DIRECTIONAL_TRACE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_SPECULAR_TRACE)
 bool detail_trace_project(vec3 view_position, out vec3 r_screen_position) {
 	vec4 clip = scene_data.projection[params.view_index] * vec4(view_position, 1.0);
 	if (!(clip.w > 1e-6) || any(isnan(clip)) || any(isinf(clip))) {
@@ -626,6 +653,10 @@ void screen_probe_surface_main() {
 #endif
 
 #include "hddagi_screen_probe_trace_inc.glsl"
+
+#if defined(MODE_SPECULAR_TRACE) || defined(MODE_SPECULAR_APPLY)
+#include "hddagi_screen_probe_specular_inc.glsl"
+#endif
 
 #ifdef MODE_DIRECTIONAL_TRACE
 shared ivec2 directional_history_base;
@@ -890,7 +921,8 @@ vec4 directional_trace_world_direction(ivec2 origin_position, float origin_depth
 	vec3 ray_direction_view = normalize(transpose(mat3(scene_data.cam_transform)) * ray_direction_world);
 	vec3 incident_radiance;
 	float unused_hit_distance;
-	if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction_view, incident_radiance, unused_hit_distance)) {
+	float unused_cell_size;
+	if (!trace_hddagi_radiance(origin_position, origin_depth, origin_normal, ray_direction_view, incident_radiance, unused_hit_distance, unused_cell_size)) {
 		incident_radiance = sample_environment(ray_direction_view);
 	}
 	return vec4(directional_clamp_radiance(incident_radiance * hddagi.energy), 0.0);
@@ -1898,6 +1930,10 @@ void main() {
 	directional_adaptive_spawn_main();
 #elif defined(MODE_DIRECTIONAL_TRACE)
 	directional_trace_main();
+#elif defined(MODE_SPECULAR_TRACE)
+	specular_trace_main();
+#elif defined(MODE_SPECULAR_APPLY)
+	specular_apply_main();
 #elif defined(MODE_DIRECTIONAL_IRRADIANCE)
 	directional_irradiance_main();
 #elif defined(MODE_RESOLVE)

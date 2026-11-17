@@ -820,6 +820,10 @@ uint32_t RenderForwardClustered::_setup_environment(const RenderDataRD *p_render
 					rb_data = rd->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 					ss_flags |= (rb_data.is_valid() && !rb_data->ss_effects_data.ssr.half_size) ? SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR : 0;
 				}
+				if (rd->has_custom_data(RB_SCOPE_GI)) {
+					Ref<RendererRD::GI::RenderBuffersGI> rbgi = rd->get_custom_data(RB_SCOPE_GI);
+					ss_flags |= (rbgi.is_valid() && rbgi->hddagi_specular_reflection_valid) ? SCREEN_SPACE_EFFECTS_FLAGS_HDDAGI_UNIFIED_SPECULAR : 0;
+				}
 			}
 		}
 		scene_state.ubo.ss_effects_flags = ss_flags;
@@ -1615,13 +1619,6 @@ void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_bu
 	}
 }
 
-void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr) {
-	ERR_FAIL_NULL(ss_effects);
-	ERR_FAIL_COND(p_render_buffers.is_null());
-
-	ss_effects->copy_internal_texture_to_last_frame(p_render_buffers, *copy_effects);
-}
-
 void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_depth_pre_pass_completed, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_hddagi, bool p_use_hddagi_screen_probes, bool p_use_gi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
@@ -1725,14 +1722,23 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	uint32_t depth_pyramid_mip_count = 0;
 	bool depth_pyramid_is_built = false;
 	const bool screen_probe_detail_trace_requested = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_detail_trace");
-	if (rb_data.is_valid() && ss_effects != nullptr) {
-		if (p_use_ssil || p_use_ssr) {
-			ss_effects->allocate_last_frame_buffer(rb, p_use_ssil, p_use_ssr);
-		} else {
-			rb->clear_context(RB_SCOPE_SSLF);
+	const bool specular_requested = p_use_hddagi_screen_probes && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
+	RID previous_screen_color_views[RendererSceneRender::MAX_RENDER_VIEWS] = {};
+	RID previous_screen_depth_views[RendererSceneRender::MAX_RENDER_VIEWS] = {};
+	bool previous_screen_color_valid = false;
+	if (rb_data.is_valid() && ss_effects != nullptr && (p_use_ssil || p_use_ssr || specular_requested)) {
+		const bool history_preserved = ss_effects->allocate_last_frame_buffer(rb, p_use_ssil, p_use_ssr, specular_requested);
+		rb_data->ss_effects_data.last_frame_valid = rb_data->ss_effects_data.last_frame_valid && history_preserved;
+		previous_screen_color_valid = specular_requested && rb_data->ss_effects_data.last_frame_valid &&
+				rb->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME) && rb->has_texture(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH);
+		for (uint32_t v = 0; v < rb->get_view_count() && previous_screen_color_valid; v++) {
+			previous_screen_color_views[v] = rb->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME, v, 0);
+			previous_screen_depth_views[v] = rb->get_texture_slice(RB_SCOPE_SSLF, RB_LAST_FRAME_DEPTH, v, 0);
+			previous_screen_color_valid = previous_screen_color_views[v].is_valid() && previous_screen_depth_views[v].is_valid() &&
+					RD::get_singleton()->texture_size(previous_screen_color_views[v]) == rb->get_internal_size() && RD::get_singleton()->texture_size(previous_screen_depth_views[v]) == rb->get_internal_size();
 		}
 	}
-	if (p_depth_pre_pass_completed && p_use_hddagi_screen_probes && rb_data.is_valid() && ss_effects != nullptr && copy_effects != nullptr && screen_probe_detail_trace_requested) {
+	if (p_depth_pre_pass_completed && p_use_hddagi_screen_probes && rb_data.is_valid() && ss_effects != nullptr && copy_effects != nullptr && (screen_probe_detail_trace_requested || specular_requested)) {
 		RENDER_TIMESTAMP("Prepare Shared Hi-Z for HDDAGI Screen Probes");
 		if (ss_effects->screen_space_depth_pyramid_allocate(rb, rb_data->ss_effects_data.depth_pyramid) && ss_effects->screen_space_depth_pyramid_build(rb, rb_data->ss_effects_data.depth_pyramid, *copy_effects)) {
 			depth_pyramid_is_built = true;
@@ -1766,7 +1772,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 		}
 
-		gi.process_hddagi_screen_probes(p_render_data, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built && screen_probe_detail_trace_requested, gi_size, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment));
+		gi.process_hddagi_screen_probes(p_render_data, p_normal_roughness_slices, depth_pyramid_is_built ? depth_pyramid_views : nullptr, previous_screen_color_views, previous_screen_depth_views, previous_screen_color_valid, depth_pyramid_size, depth_pyramid_mip_count, depth_pyramid_is_built && screen_probe_detail_trace_requested, gi_size, exposure_normalization, ibl_exposure_normalization, environment_get_hddagi_screen_probe_normal_bias(p_render_data->environment));
 	} else if (!p_render_data->reflection_probe.is_valid()) {
 		gi.disable_hddagi_screen_probes(rb);
 	}
@@ -2009,6 +2015,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_sscs = false;
 	bool using_hddagi = false;
 	bool using_hddagi_screen_probes = false;
+	bool using_hddagi_specular = false;
 	bool using_voxelgi = false;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = !is_reflection_probe && p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
@@ -2063,6 +2070,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 		}
 		using_hddagi_screen_probes = using_hddagi && (environment_get_hddagi_screen_probes_enabled(p_render_data->environment));
+		using_hddagi_specular = using_hddagi_screen_probes && GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_specular_reflections");
 
 		if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/contact_shadow/enabled")) {
 			using_sscs = true;
@@ -2660,9 +2668,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for Screen-Space Lighting");
-	if (using_ssil || using_ssr) {
-		RENDER_TIMESTAMP("Copy Final Framebuffer (SSIL/SSR)");
-		_copy_framebuffer_to_ss_effects(rb, using_ssil, using_ssr);
+	if (rb_data.is_valid() && (using_ssil || using_ssr || using_hddagi_specular)) {
+		RENDER_TIMESTAMP(using_hddagi_specular ? "Copy Final Framebuffer for Screen-Space Lighting" : "Copy Final Framebuffer (SSIL/SSR)");
+		ss_effects->copy_internal_texture_to_last_frame(rb, *copy_effects);
+		rb_data->ss_effects_data.last_frame_valid = true;
+	} else if (rb_data.is_valid() && rb_data->ss_effects_data.last_frame_valid) {
+		rb->clear_context(RB_SCOPE_SSLF);
+		rb_data->ss_effects_data.last_frame_valid = false;
 	}
 	RD::get_singleton()->draw_command_end_label();
 

@@ -3147,6 +3147,12 @@
 		<member name="rendering/global_illumination/hddagi/screen_probe_spacing" type="int" setter="" getter="" default="16">
 			Distance between diffuse screen probes in GI buffer pixels. Higher values trace fewer probes and can reduce indirect lighting detail. Enabling [member rendering/global_illumination/gi/use_half_resolution] increases the distance between probes on screen. Diffuse resolve and denoising run at the viewport's internal 3D resolution.
 		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_specular_max_history_frames" type="int" setter="" getter="" default="64">
+			Maximum effective frame count for per-pixel SVGF accumulation of GGX reflections, from 1 to 255.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_specular_reflections" type="bool" setter="" getter="" default="false">
+			Uses GGX-sampled reflections with SVGF when HDDAGI screen probes are enabled. Rays that miss use the HDDAGI voxels or the sky. Reflections fade to the environment or legacy HDDAGI reflection between roughness 0.30 and 0.40.
+		</member>
 		<member name="rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter" type="bool" setter="" getter="" default="true">
 			Offsets Directional Gather screen probes using an eight-frame sampling sequence.
 		</member>

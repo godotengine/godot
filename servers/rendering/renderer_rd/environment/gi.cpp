@@ -3217,6 +3217,8 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_SPECULAR_TRACE\n");
+		screen_probe_modes.push_back("\n#define MODE_SPECULAR_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_MARK\n");
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_SPAWN\n");
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_ADAPTIVE\n");
@@ -3584,6 +3586,8 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 
 void GI::RenderBuffersGI::free_data() {
 	screen_probe_svgf.clear();
+	screen_probe_specular_svgf.clear();
+	hddagi_specular_reflection_valid = false;
 
 	if (screen_probe_scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free_rid(screen_probe_scene_data_ubo);

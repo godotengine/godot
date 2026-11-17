@@ -2234,6 +2234,8 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		//process ssr
+		bool hddagi_unified_specular = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_HDDAGI_UNIFIED_SPECULAR) &&
+				!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI);
 		if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR)) {
 			bool resolve_ssr = bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR);
 
@@ -2261,6 +2263,10 @@ void fragment_shader(in SceneData scene_data) {
 
 			// Apply fade when approaching 0.7 roughness to smoothen the harsh cutoff in the main SSR trace pass.
 			ssr *= smoothstep(0.0, 1.0, 1.0 - clamp((roughness - 0.6) / (0.7 - 0.6), 0.0, 1.0));
+			if (hddagi_unified_specular) {
+				const float unified_specular_authority = 1.0 - smoothstep(0.30, 0.40, roughness);
+				ssr *= 1.0 - hddagi_reflection_coverage * unified_specular_authority;
+			}
 
 			// Alpha is premultiplied.
 			indirect_specular_light = indirect_specular_light * (1.0 - ssr.a) + ssr.rgb;

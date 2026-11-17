@@ -3849,6 +3849,8 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality", PROPERTY_HINT_ENUM, "Performance (Fast):2,Balanced (Average):1,High (Slow):0"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames", PROPERTY_HINT_RANGE, "1,255,1"), 64);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_importance_sampling", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_specular_max_history_frames", PROPERTY_HINT_RANGE, "1,255,1"), 64);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_specular_reflections", false);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter", true);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/probe_ray_count", 1);
