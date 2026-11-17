@@ -2744,6 +2744,11 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		return true;
 	}
 
+	if (old_quadrant != SHADOW_INVALID) {
+		// No better slot was found, so the light keeps its slot; update its version to avoid redrawing every frame.
+		shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = p_light_version;
+	}
+
 	return should_redraw;
 }
 
