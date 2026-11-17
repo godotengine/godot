@@ -223,11 +223,11 @@ StringName::StringName(const StringName &p_name) {
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!Table::configured);
-
 	if (!p_name || p_name[0] == 0) {
 		return; //empty, ignore
 	}
+
+	ERR_FAIL_COND(!Table::configured);
 
 	const uint32_t hash = String::hash(p_name);
 	const uint32_t idx = hash & Table::TABLE_MASK;
@@ -280,11 +280,11 @@ StringName::StringName(const char *p_name, bool p_static) {
 StringName::StringName(const String &p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!Table::configured);
-
 	if (p_name.is_empty()) {
 		return;
 	}
+
+	ERR_FAIL_COND(!Table::configured);
 
 	const uint32_t hash = p_name.hash();
 	const uint32_t idx = hash & Table::TABLE_MASK;
