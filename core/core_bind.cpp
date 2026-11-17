@@ -2108,6 +2108,18 @@ int64_t Engine::snapshot_get_container_id(const Variant &p_value) const {
 	}
 }
 
+// komm64: the instance ids of every live object that has a script. For
+// finding out which objects of a game outlive what should have let go of them.
+PackedInt64Array Engine::snapshot_get_scripted_objects() const {
+	PackedInt64Array ids;
+	ObjectDB::debug_objects([](Object *p_obj, void *p_ids) {
+		if (p_obj->get_script_instance() != nullptr) {
+			((PackedInt64Array *)p_ids)->push_back(int64_t(p_obj->get_instance_id()));
+		}
+	}, &ids);
+	return ids;
+}
+
 // An Array or Dictionary that holds only plain values and no Arrays or
 // Dictionaries: a save copies it whole.
 bool Engine::snapshot_is_plain_leaf(const Variant &p_value) const {
@@ -2353,6 +2365,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_collect_rids", "roots", "skip"), &Engine::snapshot_collect_rids);
 	ClassDB::bind_method(D_METHOD("snapshot_split_plain", "values"), &Engine::snapshot_split_plain);
 	ClassDB::bind_method(D_METHOD("snapshot_get_container_id", "value"), &Engine::snapshot_get_container_id);
+	ClassDB::bind_method(D_METHOD("snapshot_get_scripted_objects"), &Engine::snapshot_get_scripted_objects);
 	ClassDB::bind_method(D_METHOD("snapshot_is_plain_leaf", "value"), &Engine::snapshot_is_plain_leaf);
 	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
 	ClassDB::bind_method(D_METHOD("snapshot_get_clock"), &Engine::snapshot_get_clock);

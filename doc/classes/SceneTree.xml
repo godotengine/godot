@@ -260,6 +260,13 @@
 				Stops [param timer] without emitting its [signal SceneTreeTimer.timeout]. For loading a game.
 			</description>
 		</method>
+		<method name="snapshot_remove_tween">
+			<return type="void" />
+			<param index="0" name="tween" type="Tween" />
+			<description>
+				Stops [param tween] and lets go of it at once, together with what its tweeners hold (such as the objects their callbacks run on). [method Tween.kill] lets go of them only on the next process step. For loading a game.
+			</description>
+		</method>
 		<method name="unload_current_scene">
 			<return type="void" />
 			<description>

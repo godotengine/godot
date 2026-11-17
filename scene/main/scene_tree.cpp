@@ -1799,6 +1799,17 @@ void SceneTree::snapshot_remove_timer(const Ref<SceneTreeTimer> &p_timer) {
 	timers.erase(p_timer);
 }
 
+// komm64: stops a Tween and lets go of it now, with what its tweeners hold
+// (the objects of their callbacks), instead of on the next process step as
+// kill() does.
+void SceneTree::snapshot_remove_tween(const Ref<Tween> &p_tween) {
+	ERR_FAIL_COND(p_tween.is_null());
+	_THREAD_SAFE_METHOD_
+	p_tween->kill();
+	p_tween->clear();
+	tweens.erase(p_tween);
+}
+
 RequiredResult<Tween> SceneTree::create_tween() {
 	_THREAD_SAFE_METHOD_
 	Ref<Tween> tween;
@@ -1937,6 +1948,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always", "process_in_physics", "ignore_time_scale"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("snapshot_get_timers"), &SceneTree::snapshot_get_timers);
 	ClassDB::bind_method(D_METHOD("snapshot_remove_timer", "timer"), &SceneTree::snapshot_remove_timer);
+	ClassDB::bind_method(D_METHOD("snapshot_remove_tween", "tween"), &SceneTree::snapshot_remove_tween);
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
 

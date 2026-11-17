@@ -334,6 +334,12 @@
 				Returns the state of the global random number generator that [method @GlobalScope.randi], [method @GlobalScope.randf] and the other global random functions use. Pass it to [method snapshot_set_random_state] to continue the same sequence, for example after loading a save.
 			</description>
 		</method>
+		<method name="snapshot_get_scripted_objects" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns the instance ids of every live object that has a script. For finding out which objects of a game outlive what should have let go of them, for example after loading a save.
+			</description>
+		</method>
 		<method name="snapshot_is_plain_leaf" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
