@@ -152,19 +152,29 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	const int probe_size = CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_spacing"), 16, 32);
 	const Size2i probe_atlas_size((p_gi_size.x + probe_size - 1) / probe_size, (p_gi_size.y + probe_size - 1) / probe_size);
 	const uint64_t maximum_texture_size = rd->limit_get(RD::LIMIT_MAX_TEXTURE_SIZE_2D);
-	const Size2i directional_atlas_size = probe_atlas_size * SCREEN_PROBE_DIRECTIONAL_SIZE;
-	const Size2i irradiance_atlas_size = probe_atlas_size * (SCREEN_PROBE_DIRECTIONAL_SIZE + 2);
+	const uint32_t adaptive_capacity = uint32_t(probe_atlas_size.x * probe_atlas_size.y) / 2;
+	const int adaptive_rows = (adaptive_capacity + probe_atlas_size.x - 1) / probe_atlas_size.x;
+	const bool adaptive = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_directional_adaptive") &&
+			adaptive_capacity > 0 && uint64_t(probe_atlas_size.y + adaptive_rows) * (SCREEN_PROBE_DIRECTIONAL_SIZE + 2) <= maximum_texture_size;
+	const Size2i physical_probe_size(probe_atlas_size.x, probe_atlas_size.y + (adaptive ? adaptive_rows : 0));
+	const Size2i directional_atlas_size = physical_probe_size * SCREEN_PROBE_DIRECTIONAL_SIZE;
+	const Size2i irradiance_atlas_size = physical_probe_size * (SCREEN_PROBE_DIRECTIONAL_SIZE + 2);
 	if (uint64_t(irradiance_atlas_size.x) > maximum_texture_size || uint64_t(irradiance_atlas_size.y) > maximum_texture_size) {
 		disable_hddagi_screen_probes(render_buffers);
 		WARN_PRINT_ONCE("HDDAGI Directional Gather exceeds the RenderingDevice texture size limit.");
 		return;
 	}
+	const uint32_t candidate_count = CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_candidate_count"), 1, 8);
+	const int trace_variant = (adaptive ? HDDAGIShader::DIRECTIONAL_TRACE_ADAPTIVE : 0) |
+			(candidate_count > 1 ? HDDAGIShader::DIRECTIONAL_TRACE_MULTISAMPLE : 0);
+	const int uniform_trace_mode = int(HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE) + trace_variant;
+	const int importance_trace_mode = uniform_trace_mode + HDDAGIShader::DIRECTIONAL_TRACE_IMPORTANCE;
 	const bool importance_requested = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_importance_sampling");
-	const bool importance_sampling = importance_requested && hddagi->get_lightprobe_specular_texture().is_valid() && probe_pipelines[HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE_IMPORTANCE].is_valid();
+	const bool importance_sampling = importance_requested && hddagi->get_lightprobe_specular_texture().is_valid() && probe_pipelines[importance_trace_mode].is_valid();
 	if (importance_requested && !importance_sampling) {
 		WARN_PRINT_ONCE("HDDAGI importance sampling is unavailable; using uniform directional sampling.");
 	}
-	const int directional_trace_mode = importance_sampling ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE_IMPORTANCE : HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE;
+	const int directional_trace_mode = importance_sampling ? importance_trace_mode : uniform_trace_mode;
 	const Size2i resolve_size = internal_size;
 	const uint32_t detail_trace_quality = uint32_t(CLAMP(GLOBAL_GET_CACHED(int, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality"), 0, 2));
 	const uint32_t detail_trace_quality_flags = detail_trace_quality << HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE_QUALITY_SHIFT;
@@ -283,6 +293,8 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	uint32_t configuration = hash_murmur3_one_32(SCREEN_PROBE_CONFIG_SEED);
 
 	configuration = hash_murmur3_one_32(probe_size, configuration);
+	configuration = hash_murmur3_one_32(adaptive, configuration);
+	configuration = hash_murmur3_one_32(candidate_count, configuration);
 	configuration = hash_murmur3_one_32(uniform_placement_jitter ? 1u : 0u, configuration);
 	configuration = hash_murmur3_one_32(detail_trace ? 1u : 0u, configuration);
 	configuration = hash_murmur3_one_32(detail_trace_quality, configuration);
@@ -295,18 +307,25 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	const ScreenProbeTexture directional_textures[] = {
 		{ RB_TEX_HDDAGI_SCREEN_PROBE_RECEIVER_LUMINANCE, RD::DATA_FORMAT_R16G16_SFLOAT, receiver_size, view_count },
 		{ RB_TEX_HDDAGI_SCREEN_PROBE_RECEIVER_GEOMETRY, RD::DATA_FORMAT_R32G32B32A32_UINT, receiver_size, view_count },
-		{ RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE, RD::DATA_FORMAT_R32G32B32A32_UINT, probe_atlas_size, history_layers },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_SURFACE, RD::DATA_FORMAT_R32G32B32A32_UINT, physical_probe_size, history_layers },
 		{ RB_TEX_HDDAGI_SCREEN_PROBE_RESOLVED_RADIANCE, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, resolve_size, view_count },
 		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_RADIANCE, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, directional_atlas_size, history_layers },
-		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE, RD::DATA_FORMAT_R8_UINT, probe_atlas_size, history_layers },
-		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_LIGHTING_RESPONSE, RD::DATA_FORMAT_R8_UNORM, probe_atlas_size, history_layers },
-		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_LIGHTING_STATISTICS, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, probe_atlas_size, history_layers },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_HISTORY_AGE, RD::DATA_FORMAT_R8_UINT, physical_probe_size, history_layers },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_LIGHTING_RESPONSE, RD::DATA_FORMAT_R8_UNORM, physical_probe_size, history_layers },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_LIGHTING_STATISTICS, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, physical_probe_size, history_layers },
 		{ RB_TEX_HDDAGI_SCREEN_PROBE_DIRECTIONAL_IRRADIANCE, RD::DATA_FORMAT_R16G16B16A16_SFLOAT, irradiance_atlas_size, view_count },
 	};
-	const bool resources_recreated = !screen_probe_textures_match(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, directional_textures);
+	const ScreenProbeTexture adaptive_textures[] = {
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_MARK, RD::DATA_FORMAT_R8_UINT, probe_atlas_size, view_count },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_TILES, RD::DATA_FORMAT_R32G32_UINT, probe_atlas_size, history_layers },
+		{ RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_COUNTER, RD::DATA_FORMAT_R32_UINT, Size2i(1, 1), view_count },
+	};
+	const bool resources_recreated = !screen_probe_textures_match(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, directional_textures) ||
+			(adaptive && !screen_probe_textures_match(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, adaptive_textures));
 	if (resources_recreated) {
 		render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBES);
-		if (!create_screen_probe_textures(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, directional_textures)) {
+		if (!create_screen_probe_textures(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, directional_textures) ||
+				(adaptive && !create_screen_probe_textures(render_buffers, RB_SCOPE_HDDAGI_SCREEN_PROBES, adaptive_textures))) {
 			disable_hddagi_screen_probes(render_buffers);
 			WARN_PRINT_ONCE("HDDAGI Directional Gather textures could not be allocated.");
 			return;
@@ -343,7 +362,7 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 		}
 	}
 
-	const HDDAGIShader::ScreenProbeMode svgf_resolve_mode = HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF;
+	const HDDAGIShader::ScreenProbeMode svgf_resolve_mode = adaptive ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF_ADAPTIVE : HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF;
 	const HDDAGIShader::ScreenProbeMode svgf_apply_mode = HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF;
 	bool svgf_active = all_views_have_velocity && probe_pipelines[svgf_resolve_mode].is_valid() && probe_pipelines[svgf_apply_mode].is_valid();
 	bool svgf_resources_recreated = false;
@@ -431,6 +450,7 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	push_constant.screen_size[0] = internal_size.x;
 	push_constant.screen_size[1] = internal_size.y;
 	push_constant.probe_size = probe_size;
+	push_constant.candidate_count = candidate_count;
 	push_constant.frame_index = history_sequence;
 	push_constant.flags = (detail_trace ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DETAIL_TRACE) : 0u) |
 			(history_valid ? uint32_t(HDDAGIShader::ScreenProbePushConstant::FLAG_DIRECTIONAL_HISTORY_VALID) : 0u) |
@@ -445,6 +465,8 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	}
 
 	RID surface_sets[RendererSceneRender::MAX_RENDER_VIEWS];
+	RID adaptive_mark_sets[RendererSceneRender::MAX_RENDER_VIEWS];
+	RID adaptive_spawn_sets[RendererSceneRender::MAX_RENDER_VIEWS];
 	RID directional_trace_sets[RendererSceneRender::MAX_RENDER_VIEWS];
 	RID directional_trace_sky_sets[RendererSceneRender::MAX_RENDER_VIEWS];
 	RID directional_irradiance_sets[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -454,7 +476,7 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	RID svgf_apply_sets[RendererSceneRender::MAX_RENDER_VIEWS];
 	uint32_t view_flags[RendererSceneRender::MAX_RENDER_VIEWS] = {};
 	const HDDAGIShader::ScreenProbeMode directional_irradiance_mode = HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_IRRADIANCE;
-	const HDDAGIShader::ScreenProbeMode resolve_mode = HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE;
+	const HDDAGIShader::ScreenProbeMode resolve_mode = adaptive ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_ADAPTIVE : HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE;
 	bool svgf_sets_valid = true;
 	RD::TextureView packed_ambient_view;
 	packed_ambient_view.format_override = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
@@ -501,6 +523,29 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 			return;
 		}
 
+		RID adaptive_tiles;
+		RID previous_adaptive_tiles;
+		if (adaptive) {
+			const RID mark = render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_MARK, v, 0);
+			const RID counter = render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_COUNTER, v, 0);
+			adaptive_tiles = render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_TILES, surface_layer, 0);
+			previous_adaptive_tiles = render_buffers->get_texture_slice(RB_SCOPE_HDDAGI_SCREEN_PROBES, RB_TEX_HDDAGI_SCREEN_PROBE_ADAPTIVE_TILES, previous_surface_layer, 0);
+			LocalVector<RD::Uniform> placement_uniforms = {
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, depth),
+				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 1, normal_roughness),
+				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 2, nearest_sampler),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 3, surface),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 4, mark),
+				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 6, counter),
+				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 7, rbgi->screen_probe_scene_data_ubo),
+			};
+			adaptive_mark_sets[v] = uniform_set_cache->get_cache_vec(probe_shaders[HDDAGIShader::SCREEN_PROBE_MODE_ADAPTIVE_MARK], 0, placement_uniforms);
+			placement_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, adaptive_tiles));
+			placement_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 8, previous_surface));
+			placement_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 9, previous_adaptive_tiles));
+			adaptive_spawn_sets[v] = uniform_set_cache->get_cache_vec(probe_shaders[HDDAGIShader::SCREEN_PROBE_MODE_ADAPTIVE_SPAWN], 0, placement_uniforms);
+		}
+
 		LocalVector<RD::Uniform> directional_trace_uniforms = {
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 0, surface),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, directional_radiance),
@@ -525,6 +570,9 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 28, receiver_luminance),
 			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 29, receiver_geometry),
 		};
+		if (adaptive) {
+			directional_trace_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 16, previous_adaptive_tiles));
+		}
 		if (importance_sampling) {
 			directional_trace_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 27, hddagi->get_lightprobe_specular_texture()));
 		}
@@ -558,6 +606,9 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 18, hddagi->voxel_data));
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 19, hddagi->voxel_page_table));
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 20, hddagi_ubo));
+		if (adaptive) {
+			resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 13, adaptive_tiles));
+		}
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 14, directional_lighting_response));
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 15, receiver_luminance));
 		resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 16, receiver_geometry));
@@ -580,6 +631,9 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 			svgf_sets_valid = svgf_sets_valid && rd->uniform_set_is_valid(svgf_resolve_sets[v]) && rd->uniform_set_is_valid(svgf_apply_sets[v]);
 		}
 
+		if (adaptive) {
+			sets_valid = sets_valid && rd->uniform_set_is_valid(adaptive_mark_sets[v]) && rd->uniform_set_is_valid(adaptive_spawn_sets[v]);
+		}
 		sets_valid = sets_valid && rd->uniform_set_is_valid(directional_trace_sets[v]) && rd->uniform_set_is_valid(directional_trace_sky_sets[v]) && rd->uniform_set_is_valid(directional_irradiance_sets[v]);
 
 		if (!sets_valid) {
@@ -607,6 +661,21 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 		rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
 		rd->compute_list_dispatch(compute_list, probe_atlas_size.x, probe_atlas_size.y, 1);
 		rd->compute_list_add_barrier(compute_list);
+
+		if (adaptive) {
+			RENDER_TIMESTAMP("HDDAGI Directional Adaptive Probe Mark");
+			rd->compute_list_bind_compute_pipeline(compute_list, probe_pipelines[HDDAGIShader::SCREEN_PROBE_MODE_ADAPTIVE_MARK]);
+			rd->compute_list_bind_uniform_set(compute_list, adaptive_mark_sets[v], 0);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch(compute_list, probe_atlas_size.x, probe_atlas_size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+			RENDER_TIMESTAMP("HDDAGI Directional Adaptive Probe Spawn");
+			rd->compute_list_bind_compute_pipeline(compute_list, probe_pipelines[HDDAGIShader::SCREEN_PROBE_MODE_ADAPTIVE_SPAWN]);
+			rd->compute_list_bind_uniform_set(compute_list, adaptive_spawn_sets[v], 0);
+			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+			rd->compute_list_dispatch(compute_list, probe_atlas_size.x, probe_atlas_size.y, 1);
+			rd->compute_list_add_barrier(compute_list);
+		}
 
 		RENDER_TIMESTAMP("HDDAGI Directional Screen Probe Trace");
 		rd->compute_list_bind_compute_pipeline(compute_list, probe_pipelines[directional_trace_mode]);

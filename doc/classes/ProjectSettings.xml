@@ -3123,6 +3123,9 @@
 		<member name="rendering/global_illumination/hddagi/reflection_quality" type="int" setter="" getter="" default="0">
 			Controls the legacy HDDAGI receiver reflections independently of diffuse GI. [code]0[/code] traces glossy reflections and uses probes for rough surfaces. [code]1[/code] uses world probes for all roughness values, reducing cost and sharp detail. [code]2[/code] disables this reflection contribution, allowing other environment reflection sources to remain visible.
 		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_candidate_count" type="int" setter="" getter="" default="1">
+			Scales the ray budget for diffuse screen probes. Uniform sampling traces this many rays per direction. Importance sampling distributes the budget across directions based on their contribution. Higher values can reduce noise at a higher GPU cost.
+		</member>
 		<member name="rendering/global_illumination/hddagi/screen_probe_denoiser_quality" type="int" setter="" getter="" default="2">
 			Controls SVGF quality for screen probe diffuse lighting and GGX reflections. Higher values reduce noise at higher GPU cost.
 		</member>
@@ -3134,6 +3137,9 @@
 		</member>
 		<member name="rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames" type="int" setter="" getter="" default="64">
 			Maximum effective frame count for per-pixel SVGF accumulation of Directional Gather diffuse lighting, from 1 to 255. Higher values reduce noise in stable lighting and respond more slowly to changes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_directional_adaptive" type="bool" setter="" getter="" default="false">
+			Places additional diffuse screen probes on surfaces poorly covered by the regular grid, such as geometry edges. This increases GPU time and memory usage.
 		</member>
 		<member name="rendering/global_illumination/hddagi/screen_probe_importance_sampling" type="bool" setter="" getter="" default="false">
 			Uses incoming radiance to importance sample high-contrast Directional Gather probes.

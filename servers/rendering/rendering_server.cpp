@@ -3841,7 +3841,9 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/global_illumination/hddagi/fast_light_updates", true);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/world_probe_history_mode", PROPERTY_HINT_ENUM, "Ring,Exponential Moving Average"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/world_probe_light_response", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.25f);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_candidate_count", PROPERTY_HINT_RANGE, "1,8,1"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_spacing", PROPERTY_HINT_RANGE, "16,32,1"), 16);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_directional_adaptive", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser_quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow)"), 2);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_detail_trace", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality", PROPERTY_HINT_ENUM, "Performance (Fast):2,Balanced (Average):1,High (Slow):0"), 0);

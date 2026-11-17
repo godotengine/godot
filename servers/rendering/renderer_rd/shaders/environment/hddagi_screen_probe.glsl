@@ -19,7 +19,12 @@
 #include "hddagi_radiance_inc.glsl"
 #include "hddagi_voxel_metadata_inc.glsl"
 
+#if defined(MODE_DIRECTIONAL_ADAPTIVE_MARK) || defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
+#define MODE_ADAPTIVE_PLACEMENT
+layout(local_size_x = 8, local_size_y = 1, local_size_z = 1) in;
+#else
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+#endif
 
 const uint SCREEN_PROBE_FLAG_DETAIL_TRACE = 1u << 0u;
 const uint SCREEN_PROBE_FLAG_DIRECTIONAL_HISTORY_VALID = 1u << 3u;
@@ -27,6 +32,10 @@ const uint SCREEN_PROBE_FLAG_DIRECTIONAL_MOTION_VALID = 1u << 5u;
 const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT = 7u;
 const uint SCREEN_PROBE_DETAIL_TRACE_QUALITY_MASK = 3u << SCREEN_PROBE_DETAIL_TRACE_QUALITY_SHIFT;
 const uint SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER = 1u << 9u;
+const uint SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_CANDIDATE_COUNT = 8u;
+const uint SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_MAX_PER_TILE = 8u;
+const float SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_SPAWN_COVERAGE = 0.01;
+const float SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_RETIRE_COVERAGE = 0.06;
 
 const uint SCREEN_PROBE_SKY_COLOR = 1u;
 const uint SCREEN_PROBE_SKY_TEXTURE = 2u;
@@ -57,7 +66,7 @@ layout(push_constant, std430) uniform Params {
 	float history_depth_tolerance;
 	float history_normal_threshold;
 
-	uint pad;
+	uint candidate_count;
 	uint sky_mode;
 	float sky_energy;
 	uint detail_trace_mip_count;
@@ -144,6 +153,9 @@ layout(set = 0, binding = 12) uniform texture2D directional_previous_radiance_in
 layout(rgba32ui, set = 0, binding = 13) uniform restrict readonly uimage2D directional_previous_surface_input;
 layout(r8ui, set = 0, binding = 14) uniform restrict readonly uimage2D directional_previous_history_age_input;
 layout(r8ui, set = 0, binding = 15) uniform restrict writeonly uimage2D directional_history_age_output;
+#ifdef MODE_ADAPTIVE
+layout(rg32ui, set = 0, binding = 16) uniform restrict readonly uimage2D directional_previous_adaptive_tile_data_input;
+#endif
 layout(set = 0, binding = 17) uniform texture2D velocity_buffer;
 layout(set = 0, binding = 23) uniform texture2D directional_previous_lighting_response_input;
 layout(r8, set = 0, binding = 24) uniform restrict writeonly image2D directional_lighting_response_output;
@@ -193,6 +205,9 @@ layout(set = 0, binding = 7, std140) uniform SceneDataBuffer {
 	ScreenProbeSceneData scene_data;
 };
 layout(set = 0, binding = 8) uniform texture2D directional_base_ambient_input;
+#ifdef MODE_ADAPTIVE
+layout(set = 0, binding = 13) uniform utexture2D directional_adaptive_tile_data_input;
+#endif
 layout(set = 0, binding = 14) uniform texture2D directional_resolve_lighting_response_input;
 layout(rg16f, set = 0, binding = 15) uniform restrict readonly image2D receiver_luminance;
 layout(rgba32ui, set = 0, binding = 16) uniform restrict readonly uimage2D receiver_geometry;
@@ -209,6 +224,29 @@ layout(set = 0, binding = 0) uniform texture2D resolved_radiance_input;
 layout(set = 0, binding = 1) uniform sampler nearest_sampler;
 layout(r32ui, set = 0, binding = 2) uniform restrict writeonly uimage2D ambient_output;
 layout(set = 0, binding = 3) uniform texture2D base_ambient_input;
+#endif
+
+#ifdef MODE_ADAPTIVE_PLACEMENT
+
+layout(set = 0, binding = 0) uniform texture2D depth_buffer;
+layout(set = 0, binding = 1) uniform texture2D normal_roughness_buffer;
+layout(set = 0, binding = 2) uniform sampler surface_sampler;
+layout(rgba32ui, set = 0, binding = 3) uniform coherent uimage2D adaptive_probe_surface;
+#ifdef MODE_DIRECTIONAL_ADAPTIVE_MARK
+layout(r8ui, set = 0, binding = 4) uniform restrict writeonly uimage2D adaptive_candidate_mark_output;
+#else
+layout(r8ui, set = 0, binding = 4) uniform restrict readonly uimage2D adaptive_candidate_mark_input;
+#endif
+layout(r32ui, set = 0, binding = 6) uniform coherent uimage2D adaptive_probe_counter;
+layout(set = 0, binding = 7, std140) uniform AdaptiveSceneDataBuffer {
+	ScreenProbeSceneData scene_data;
+};
+#ifdef MODE_DIRECTIONAL_ADAPTIVE_SPAWN
+layout(rg32ui, set = 0, binding = 5) uniform restrict writeonly uimage2D adaptive_tile_data_output;
+layout(rgba32ui, set = 0, binding = 8) uniform restrict readonly uimage2D adaptive_previous_probe_surface;
+layout(rg32ui, set = 0, binding = 9) uniform restrict readonly uimage2D adaptive_previous_tile_data_input;
+#endif
+
 #endif
 
 uint hash_uvec3(uvec3 value) {
@@ -300,10 +338,12 @@ vec2 directional_bucket_jitter(ivec2 probe_position, ivec2 bucket) {
 	return sample_temporally_permuted_r2_sequence(sample_key, params.frame_index, 0xf68b5852u);
 }
 
+#ifndef MODE_MULTISAMPLE
 vec3 directional_jittered_bucket_to_world(ivec2 probe_position, ivec2 direction_texel) {
 	vec2 jitter = directional_bucket_jitter(probe_position, direction_texel);
 	return directional_square_to_sphere((vec2(direction_texel) + jitter) / float(SCREEN_PROBE_DIRECTIONAL_TILE_SIZE));
 }
+#endif
 
 vec2 directional_sphere_to_square(vec3 direction) {
 	float direction_length_squared = dot(direction, direction);
@@ -328,7 +368,7 @@ vec2 directional_sphere_to_square(vec3 direction) {
 
 #endif
 
-#if defined(MODE_SURFACE) || defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_RESOLVE)
+#if defined(MODE_SURFACE) || defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_RESOLVE) || defined(MODE_ADAPTIVE_PLACEMENT)
 
 float screen_probe_uniform_axis_anchor(int probe_index, int gi_extent, int screen_extent, int probe_extent, float sample_offset) {
 	int safe_probe_extent = max(probe_extent, 1);
@@ -440,7 +480,7 @@ vec3 directional_receiver_normal(uint metadata) {
 
 #endif
 
-#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_IRRADIANCE) || defined(MODE_RESOLVE)
+#if defined(MODE_DIRECTIONAL_TRACE) || defined(MODE_DIRECTIONAL_IRRADIANCE) || defined(MODE_RESOLVE) || defined(MODE_ADAPTIVE_PLACEMENT)
 vec3 compute_view_position(vec3 screen_position) {
 	vec4 position = vec4(screen_position.xy * 2.0 - 1.0, screen_position.z, 1.0);
 	position = scene_data.inv_projection[params.view_index] * position;
@@ -506,7 +546,7 @@ bool surface_is_dynamic(uint packed) {
 	return (packed & 0x80000000u) != 0u;
 }
 
-#if defined(MODE_SURFACE) || defined(MODE_RESOLVE)
+#if defined(MODE_SURFACE) || defined(MODE_RESOLVE) || defined(MODE_ADAPTIVE_PLACEMENT)
 bool load_surface(ivec2 screen_position, out float r_depth, out vec3 r_normal, out bool r_dynamic) {
 	r_depth = texelFetch(sampler2D(depth_buffer, surface_sampler), screen_position, 0).r;
 	if (!(r_depth > 0.0)) {
@@ -518,13 +558,23 @@ bool load_surface(ivec2 screen_position, out float r_depth, out vec3 r_normal, o
 }
 #endif
 
-#if defined(MODE_SURFACE)
+#if defined(MODE_SURFACE) || defined(MODE_ADAPTIVE_PLACEMENT)
 void screen_probe_tile_bounds(ivec2 tile, out ivec2 r_begin, out ivec2 r_end) {
 	ivec2 gi_begin = tile * params.probe_size;
 	ivec2 gi_end = min(gi_begin + ivec2(params.probe_size), params.gi_size);
 	r_begin = (gi_begin * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
 	r_end = (gi_end * params.screen_size + params.gi_size - ivec2(1)) / params.gi_size;
 }
+#endif
+
+#if defined(MODE_ADAPTIVE) || defined(MODE_ADAPTIVE_PLACEMENT)
+ivec2 directional_adaptive_probe_position(ivec2 base_count, uint slot) {
+	return ivec2(slot % uint(base_count.x), slot / uint(base_count.x)) + ivec2(0, base_count.y);
+}
+#endif
+
+#ifdef MODE_ADAPTIVE_PLACEMENT
+#include "hddagi_screen_probe_adaptive_inc.glsl"
 #endif
 
 #ifdef MODE_SURFACE
@@ -636,6 +686,10 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 
 	ivec2 base_probe_count = directional_base_probe_count();
 	bool use_surface_uv = (params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u;
+#ifdef MODE_ADAPTIVE
+	bool adaptive_probe = probe_position.y >= base_probe_count.y;
+	use_surface_uv = use_surface_uv || adaptive_probe;
+#endif
 	vec3 previous_receiver_view = (scene_data.previous_cam_inv_transform * vec4(current_world, 1.0)).xyz;
 	vec4 previous_clip = scene_data.previous_projection[params.view_index] * vec4(previous_receiver_view, 1.0);
 	if (!(previous_clip.w > 1e-6) || !directional_finite(previous_clip)) {
@@ -674,6 +728,93 @@ bool directional_select_history(ivec2 probe_position, ivec2 current_screen_posit
 	float normal_threshold = max(params.history_normal_threshold, 0.8);
 	vec2 previous_screen_position_expected = previous_grid_uv * vec2(params.screen_size) - 0.5;
 	vec2 probe_screen_extent = max(vec2(params.probe_size) * vec2(params.screen_size) / vec2(params.gi_size), vec2(1.0));
+#ifdef MODE_ADAPTIVE
+	if (adaptive_probe) {
+		float best_score = -1.0;
+		const float adaptive_relative_plane_tolerance = 0.01;
+		const float adaptive_relative_view_z_tolerance = 0.015;
+		const float adaptive_screen_footprint_limit = 0.75;
+		float adaptive_normal_threshold = max(params.history_normal_threshold, 0.9);
+		uint best_age = 0u;
+		uint best_slot = 0xffffffffu;
+
+		for (int y = 0; y < 2; y++) {
+			for (int x = 0; x < 2; x++) {
+				ivec2 owner_tile = search_base + ivec2(x, y);
+				if (any(lessThan(owner_tile, ivec2(0))) || any(greaterThanEqual(owner_tile, base_probe_count))) {
+					continue;
+				}
+				uvec2 tile = imageLoad(directional_previous_adaptive_tile_data_input, owner_tile).rg;
+				for (uint i = 0u; i < tile.y; i++) {
+					uint slot = tile.x + i;
+					ivec2 previous_probe = directional_adaptive_probe_position(base_probe_count, slot);
+					uint candidate_age = imageLoad(directional_previous_history_age_input, previous_probe).r;
+					if (candidate_age == 0u) {
+						continue;
+					}
+
+					uvec4 previous_packed = imageLoad(directional_previous_surface_input, previous_probe);
+					vec2 screen_axis_distance = abs(vec2(previous_packed.xy) - previous_screen_position_expected) / probe_screen_extent;
+					float screen_distance = max(screen_axis_distance.x, screen_axis_distance.y);
+					if (screen_distance > adaptive_screen_footprint_limit) {
+						continue;
+					}
+
+					vec3 previous_world;
+					vec3 previous_normal_world;
+					bool previous_dynamic;
+					if (!directional_previous_surface_world(previous_packed, previous_cam_transform, previous_world, previous_normal_world, previous_dynamic) || previous_dynamic != current_dynamic) {
+						continue;
+					}
+					vec3 candidate_previous_view = (scene_data.previous_cam_inv_transform * vec4(previous_world, 1.0)).xyz;
+					float view_z_distance = abs(candidate_previous_view.z - previous_receiver_view.z);
+					float relative_view_z = view_z_distance / max(abs(previous_receiver_view.z), 1e-3);
+					float normal_similarity = dot(current_normal_world, previous_normal_world);
+					float screen_score = 1.0 - clamp(screen_distance / adaptive_screen_footprint_limit, 0.0, 1.0);
+					float score;
+					if (current_dynamic) {
+						float dynamic_view_z_tolerance = 0.02 + 0.02 * max(abs(candidate_previous_view.z), abs(previous_receiver_view.z));
+						if (isnan(view_z_distance) || isinf(view_z_distance) || view_z_distance > dynamic_view_z_tolerance || normal_similarity < adaptive_normal_threshold) {
+							continue;
+						}
+						float view_z_score = 1.0 - clamp(view_z_distance / dynamic_view_z_tolerance, 0.0, 1.0);
+						float normal_score = clamp((normal_similarity - adaptive_normal_threshold) / max(1.0 - adaptive_normal_threshold, 1e-4), 0.0, 1.0);
+						score = (0.25 + 0.75 * view_z_score) * (0.25 + 0.75 * normal_score) * (0.25 + 0.75 * screen_score);
+					} else {
+						vec3 receiver_delta = previous_world - current_world;
+						float current_plane_distance = abs(dot(receiver_delta, current_normal_world)) / current_scene_depth;
+						float previous_plane_distance = abs(dot(receiver_delta, previous_normal_world)) / current_scene_depth;
+						if (isnan(relative_view_z) || isinf(relative_view_z) || relative_view_z > adaptive_relative_view_z_tolerance ||
+								isnan(current_plane_distance) || isinf(current_plane_distance) || isnan(previous_plane_distance) || isinf(previous_plane_distance) ||
+								current_plane_distance > adaptive_relative_plane_tolerance || previous_plane_distance > adaptive_relative_plane_tolerance ||
+								normal_similarity < adaptive_normal_threshold) {
+							continue;
+						}
+						float plane_score = 1.0 - clamp(max(current_plane_distance, previous_plane_distance) / adaptive_relative_plane_tolerance, 0.0, 1.0);
+						float normal_score = clamp((normal_similarity - adaptive_normal_threshold) / max(1.0 - adaptive_normal_threshold, 1e-4), 0.0, 1.0);
+						score = (0.25 + 0.75 * plane_score) * (0.25 + 0.75 * normal_score) * (0.25 + 0.75 * screen_score);
+					}
+					if (score < 0.1) {
+						continue;
+					}
+					bool age_wins = abs(score - best_score) <= 1e-8 && candidate_age > best_age;
+					bool index_wins = abs(score - best_score) <= 1e-8 && candidate_age == best_age && slot < best_slot;
+					if (score > best_score + 1e-8 || age_wins || index_wins) {
+						best_score = score;
+						best_age = candidate_age;
+						best_slot = slot;
+						r_previous_base = previous_probe;
+						r_previous_weights = vec4(1.0, 0.0, 0.0, 0.0);
+						r_previous_age = min(candidate_age, SCREEN_PROBE_DIRECTIONAL_HISTORY_MAX_AGE);
+					}
+				}
+			}
+		}
+		if (best_score >= 0.0) {
+			return true;
+		}
+	}
+#endif
 	float history_weight_sum = 0.0;
 	float history_age_sum = 0.0;
 
@@ -755,6 +896,21 @@ vec4 directional_trace_world_direction(ivec2 origin_position, float origin_depth
 	return vec4(directional_clamp_radiance(incident_radiance * hddagi.energy), 0.0);
 }
 
+#ifdef MODE_MULTISAMPLE
+vec3 directional_sample_direction(ivec2 bucket, vec2 rotation, uint index, uint count) {
+	vec2 offset = vec2(float(index) / float(count), float(bitfieldReverse(index)) * (1.0 / 4294967296.0));
+	return directional_square_to_sphere((vec2(bucket) + fract(rotation + offset)) / float(SCREEN_PROBE_DIRECTIONAL_TILE_SIZE));
+}
+
+vec4 directional_trace_samples(ivec2 bucket, vec2 rotation, uint sample_count, ivec2 origin_position, float origin_depth, vec3 origin_normal) {
+	vec3 radiance = vec3(0.0);
+	for (uint i = 0u; i < sample_count; i++) {
+		radiance += directional_trace_world_direction(origin_position, origin_depth, origin_normal, directional_sample_direction(bucket, rotation, i, sample_count)).rgb;
+	}
+	return vec4(radiance / float(sample_count), 0.0);
+}
+#endif
+
 vec4 directional_apply_stable_history(vec4 current_sample, vec4 previous_sample, bool sample_history_valid) {
 	if (sample_history_valid) {
 		float history_weight = 1.0 / float(directional_history_age + 1u);
@@ -795,6 +951,11 @@ bool directional_load_previous_radiance(ivec2 direction_texel, out vec4 r_previo
 }
 
 bool directional_uses_receiver_history(ivec2 probe) {
+#ifdef MODE_ADAPTIVE
+	if (probe.y >= directional_base_probe_count().y) {
+		return false;
+	}
+#endif
 	return (params.flags & SCREEN_PROBE_FLAG_UNIFORM_PLACEMENT_JITTER) != 0u;
 }
 
@@ -968,6 +1129,10 @@ vec4 directional_trace_importance(ivec2 probe_position, ivec2 sample_key, ivec2 
 	vec3 direction_center = directional_bucket_to_world(direction_texel);
 	bool young = directional_history_age < DIRECTIONAL_GUIDE_HISTORY_AGE;
 	uint ray_count = young ? uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT) : DIRECTIONAL_HISTORY_RAY_COUNT;
+#ifdef MODE_MULTISAMPLE
+	// Cover every direction once, then distribute the remaining rays using the guide.
+	ray_count = ray_count * params.candidate_count - uint(SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT);
+#endif
 	if (young) {
 		float world_luminance = directional_world_guide_luminance(origin_position, origin_depth, normal_world, direction_center);
 		lighting = mix(world_luminance, lighting, float(directional_history_age) * 0.2);
@@ -1014,17 +1179,29 @@ vec4 directional_trace_importance(ivec2 probe_position, ivec2 sample_key, ivec2 
 		uint stratum = 2u * (quadrant.x ^ quadrant.y) + quadrant.y;
 		float shift = fract(directional_importance_random(block, 0x49209f47u).x + float(stratum) * 0.25);
 		directional_importance_end[lane] = lane + 1u == SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT ? ray_count : min(uint(float(ray_count) * cumulative + shift), ray_count);
+#ifndef MODE_MULTISAMPLE
 		float pdf = uniform_pdf + mix(directional_importance_average, lighting, 0.8) * cosine * directional_importance_scale;
 		directional_importance_guide[lane].x = min(float(ray_count) * pdf, 1.0);
+#endif
 	}
 	barrier();
 	if (directional_importance_scale == 0.0) {
+#ifdef MODE_MULTISAMPLE
+		return directional_trace_samples(direction_texel, directional_bucket_jitter(sample_key, direction_texel), params.candidate_count, origin_position, origin_depth, origin_normal);
+#else
 		return directional_trace_world_direction(origin_position, origin_depth, origin_normal, directional_jittered_bucket_to_world(sample_key, direction_texel));
+#endif
 	}
 	uint first = lane > 0u ? directional_importance_end[lane - 1u] : 0u;
 	uint end = directional_importance_end[lane];
 	vec3 radiance = vec3(0.0);
 	uint batch_count = 1u;
+#ifdef MODE_MULTISAMPLE
+	first += lane;
+	end += lane + 1u;
+	ray_count += SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT;
+	batch_count = (ray_count + SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT - 1u) / SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT;
+#endif
 	for (uint batch_index = 0u; batch_index < batch_count; batch_index++) {
 		uint batch = batch_index * SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT;
 		uint batch_end = min(end, batch + SCREEN_PROBE_DIRECTIONAL_SAMPLE_COUNT);
@@ -1037,10 +1214,15 @@ vec4 directional_trace_importance(ivec2 probe_position, ivec2 sample_key, ivec2 
 			uint begin_sample = bin > 0u ? directional_importance_end[bin - 1u] : 0u;
 			uint count = directional_importance_end[bin] - begin_sample;
 			ivec2 bucket = ivec2(bin & 7u, bin >> 3u);
+#ifdef MODE_MULTISAMPLE
+			uint rank = batch + lane - (begin_sample + bin);
+			vec3 direction = directional_sample_direction(bucket, directional_bucket_jitter(sample_key, bucket), rank, count + 1u);
+#else
 			uint rank = lane - begin_sample;
 			vec2 rotation = fract(directional_importance_random(block * 32u + uvec2(bucket), 0xb6e1389du) + vec2(quadrant) * 0.5);
 			vec2 jitter = fract(vec2((float(rank) + 0.5) / float(count), float(bitfieldReverse(rank)) * (1.0 / 4294967296.0)) + rotation);
 			vec3 direction = directional_square_to_sphere((vec2(bucket) + jitter) / float(SCREEN_PROBE_DIRECTIONAL_TILE_SIZE));
+#endif
 			directional_importance_samples[lane] = directional_trace_world_direction(origin_position, origin_depth, origin_normal, direction).rgb;
 		}
 		barrier();
@@ -1048,12 +1230,16 @@ vec4 directional_trace_importance(ivec2 probe_position, ivec2 sample_key, ivec2 
 			radiance += directional_importance_samples[i - batch];
 		}
 	}
+#ifdef MODE_MULTISAMPLE
+	return vec4(radiance / float(end - first), 0.0);
+#else
 	if (first == end) {
 		return vec4(0.0);
 	}
 	// Systematic rounding visits a bin with probability min(1, N*p).
 	float inclusion = directional_importance_guide[lane].x;
 	return vec4(radiance / (float(end - first) * inclusion), 0.0);
+#endif
 }
 
 #endif // MODE_DIRECTIONAL_TRACE_IMPORTANCE
@@ -1122,13 +1308,22 @@ void directional_trace_main() {
 	barrier();
 
 	ivec2 sample_key = probe_position;
+#ifdef MODE_ADAPTIVE
+	if (probe_position.y >= directional_base_probe_count().y) {
+		sample_key = origin_position;
+	}
+#endif
 #ifdef MODE_DIRECTIONAL_TRACE_IMPORTANCE
 	vec4 previous_sample = vec4(0.0);
 	bool sample_history_valid = directional_load_previous_radiance(direction_texel, previous_sample);
 	vec4 directional_sample = directional_trace_importance(probe_position, sample_key, direction_texel, origin_position, origin_depth, origin_normal, previous_sample);
 #else
+#ifdef MODE_MULTISAMPLE
+	vec4 directional_sample = directional_trace_samples(direction_texel, directional_bucket_jitter(sample_key, direction_texel), params.candidate_count, origin_position, origin_depth, origin_normal);
+#else
 	vec3 direction = directional_jittered_bucket_to_world(sample_key, direction_texel);
 	vec4 directional_sample = directional_trace_world_direction(origin_position, origin_depth, origin_normal, direction);
+#endif
 	vec4 previous_sample = vec4(0.0);
 	bool sample_history_valid = directional_load_previous_radiance(direction_texel, previous_sample);
 #endif
@@ -1602,6 +1797,25 @@ void screen_probe_resolve_main() {
 			bilinear_weight_sum += bilinear_weight;
 			ivec2 probe_screen_position;
 			float weight = bilinear_weight * directional_receiver_weight(probe_position, pixel_view_position, pixel_normal, pixel_dynamic, probe_screen_position);
+#ifdef MODE_ADAPTIVE
+			if (weight < SCREEN_PROBE_DIRECTIONAL_ADAPTIVE_SPAWN_COVERAGE) {
+				uvec2 tile = texelFetch(usampler2D(directional_adaptive_tile_data_input, surface_sampler), probe_position, 0).rg;
+				vec2 extent = vec2(params.probe_size) * vec2(params.screen_size) / vec2(params.gi_size);
+				for (uint i = 0u; i < tile.y; i++) {
+					ivec2 extra_probe = directional_adaptive_probe_position(probe_count, tile.x + i);
+					float receiver_weight = directional_receiver_weight(extra_probe, pixel_view_position, pixel_normal, pixel_dynamic, probe_screen_position);
+					if (receiver_weight <= 0.0) {
+						continue;
+					}
+					vec2 distance_in_tiles = abs(vec2(probe_screen_position - screen_position)) / extent;
+					float extra_weight = receiver_weight * (1.0 - clamp(min(distance_in_tiles.x, distance_in_tiles.y), 0.0, 1.0));
+					if (extra_weight > weight) {
+						probe_position = extra_probe;
+						weight = extra_weight;
+					}
+				}
+			}
+#endif
 			if (!(weight > 0.0) || isnan(weight) || isinf(weight)) {
 				continue;
 			}
@@ -1678,6 +1892,10 @@ void screen_probe_apply_main() {
 void main() {
 #ifdef MODE_SURFACE
 	screen_probe_surface_main();
+#elif defined(MODE_DIRECTIONAL_ADAPTIVE_MARK)
+	directional_adaptive_mark_main();
+#elif defined(MODE_DIRECTIONAL_ADAPTIVE_SPAWN)
+	directional_adaptive_spawn_main();
 #elif defined(MODE_DIRECTIONAL_TRACE)
 	directional_trace_main();
 #elif defined(MODE_DIRECTIONAL_IRRADIANCE)

@@ -3199,13 +3199,28 @@ void GI::init(SkyRD *p_sky) {
 	{
 		Vector<String> screen_probe_modes;
 		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
-		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_TRACE\n");
-		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_TRACE\n#define MODE_DIRECTIONAL_TRACE_IMPORTANCE\n");
+		for (int i = 0; i < HDDAGIShader::DIRECTIONAL_TRACE_VARIANT_COUNT; i++) {
+			String defines = "\n#define MODE_DIRECTIONAL_TRACE\n";
+			if (i & HDDAGIShader::DIRECTIONAL_TRACE_IMPORTANCE) {
+				defines += "#define MODE_DIRECTIONAL_TRACE_IMPORTANCE\n";
+			}
+			if (i & HDDAGIShader::DIRECTIONAL_TRACE_ADAPTIVE) {
+				defines += "#define MODE_ADAPTIVE\n";
+			}
+			if (i & HDDAGIShader::DIRECTIONAL_TRACE_MULTISAMPLE) {
+				defines += "#define MODE_MULTISAMPLE\n";
+			}
+			screen_probe_modes.push_back(defines);
+		}
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_IRRADIANCE\n");
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n");
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_MARK\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_SPAWN\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_ADAPTIVE\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n#define MODE_ADAPTIVE\n");
 		DEV_ASSERT(screen_probe_modes.size() == HDDAGIShader::SCREEN_PROBE_MODE_MAX);
 
 		String screen_probe_defines;
@@ -3218,6 +3233,7 @@ void GI::init(SkyRD *p_sky) {
 		if (!HDDAGIScreenProbeSVGF::is_supported()) {
 			const HDDAGIShader::ScreenProbeMode svgf_modes[] = {
 				HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF,
+				HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF_ADAPTIVE,
 				HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF,
 			};
 			for (HDDAGIShader::ScreenProbeMode mode : svgf_modes) {
