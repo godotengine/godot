@@ -839,6 +839,22 @@ bool TextServer::shaped_text_has_visible_chars(const RID &p_shaped) const {
 	return false;
 }
 
+// Spaces before a break opportunity hang past the line end (CSS Text 3
+// "hanging" white space): they never push the word before them onto the next
+// line. A space run without a break after it (NBSP) is ordinary content.
+static bool _is_hanging_space(const Glyph *p_gl, int p_size, int p_index) {
+	for (int i = p_index; i < p_size;) {
+		if ((p_gl[i].flags & TextServer::GRAPHEME_IS_SPACE) != TextServer::GRAPHEME_IS_SPACE || (p_gl[i].flags & TextServer::GRAPHEME_IS_BREAK_HARD) == TextServer::GRAPHEME_IS_BREAK_HARD) {
+			return false;
+		}
+		if ((p_gl[i].flags & TextServer::GRAPHEME_IS_BREAK_SOFT) == TextServer::GRAPHEME_IS_BREAK_SOFT) {
+			return true;
+		}
+		i += MAX(1, (int)p_gl[i].count);
+	}
+	return false;
+}
+
 PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped, const PackedFloat32Array &p_width, int64_t p_start, bool p_once, BitField<TextServer::LineBreakFlag> p_break_flags) const {
 	PackedInt32Array lines;
 
@@ -902,7 +918,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 			for (int j = i; j < l_size && l_gl[i].end == l_gl[j].end && l_gl[i].start == l_gl[j].start; j++) {
 				adv += l_gl[j].advance * l_gl[j].repeat;
 			}
-			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
+			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0) && !_is_hanging_space(l_gl, l_size, i)) {
 				int cur_safe_brk = last_safe_break;
 				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
@@ -1085,7 +1101,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 			for (int j = i; j < l_size && l_gl[i].end == l_gl[j].end && l_gl[i].start == l_gl[j].start; j++) {
 				adv += l_gl[j].advance * l_gl[j].repeat;
 			}
-			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
+			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0) && !_is_hanging_space(l_gl, l_size, i)) {
 				int cur_safe_brk = last_safe_break;
 				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
