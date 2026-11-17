@@ -311,7 +311,7 @@ VkAllocationCallbacks *RenderingContextDriverVulkan::get_allocation_callbacks(Vk
 			driver_memory_tracker[header->type][header->allocation_scope].sub(header->size);
 			driver_memory_tracker[header->type][header->allocation_scope].add(size);
 
-			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, header->size + alignment, alignment));
+			uint8_t *ret = reinterpret_cast<uint8_t *>(Memory::realloc_aligned_static(header, size + alignment, MIN(header->size, size) + alignment, alignment));
 			if (ret == nullptr) {
 				return nullptr;
 			}
