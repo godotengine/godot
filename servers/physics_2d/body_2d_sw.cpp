@@ -250,6 +250,7 @@ Physics2DServer::BodyMode Body2DSW::get_mode() const {
 void Body2DSW::_shapes_changed() {
 	_update_inertia();
 	wakeup();
+	wakeup_neighbours();
 }
 
 void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_variant) {
@@ -257,6 +258,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 		case Physics2DServer::BODY_STATE_TRANSFORM: {
 			if (mode == Physics2DServer::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
+				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -266,6 +268,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant &p_va
 			} else if (mode == Physics2DServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
+				wakeup_neighbours();
 			} else {
 				Transform2D t = p_variant;
 				t.orthonormalize();
@@ -348,6 +351,7 @@ Variant Body2DSW::get_state(Physics2DServer::BodyState p_state) const {
 
 void Body2DSW::set_space(Space2DSW *p_space) {
 	if (get_space()) {
+		wakeup_neighbours();
 		if (inertia_update_list.in_list()) {
 			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
 		}
@@ -558,6 +562,28 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	}
 
 	//_update_inertia_tensor();
+}
+
+void Body2DSW::wakeup_neighbours() {
+	for (Map<Constraint2DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
+		const Constraint2DSW *c = E->key();
+		Body2DSW **n = c->get_body_ptr();
+		int bc = c->get_body_count();
+
+		for (int i = 0; i < bc; i++) {
+			if (i == E->get()) {
+				continue;
+			}
+			Body2DSW *b = n[i];
+			if (b->mode != Physics2DServer::BODY_MODE_RIGID) {
+				continue;
+			}
+
+			if (!b->is_active()) {
+				b->set_active(true);
+			}
+		}
+	}
 }
 
 void Body2DSW::call_queries() {

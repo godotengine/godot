@@ -295,6 +295,7 @@ public:
 	}
 
 	void call_queries();
+	void wakeup_neighbours();
 
 	bool sleep_test(real_t p_step);
 

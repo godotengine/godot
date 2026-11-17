@@ -287,6 +287,7 @@ PhysicsServer::BodyMode BodySW::get_mode() const {
 void BodySW::_shapes_changed() {
 	_update_inertia();
 	wakeup();
+	wakeup_neighbours();
 }
 
 void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
@@ -294,6 +295,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 		case PhysicsServer::BODY_STATE_TRANSFORM: {
 			if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
+				//wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -304,6 +306,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_varian
 			} else if (mode == PhysicsServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
+				wakeup_neighbours();
 			} else {
 				Transform t = p_variant;
 				t.orthonormalize();
