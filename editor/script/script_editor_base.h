@@ -290,6 +290,8 @@ protected:
 
 	virtual void _breakpoint_toggled(int p_row) = 0;
 
+	void _notification(int p_what);
+
 public:
 	virtual bool show_members_overview() override { return true; }
 
