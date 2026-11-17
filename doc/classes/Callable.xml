@@ -95,14 +95,14 @@
 			<description>
 				Returns a copy of this [Callable] with arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
 				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
-				[b]Note:[/b] While bind does return a copy, this does not matter for [method Signal.connect] and [method Signal.disconnect] because callables are matched by object and method name, but not their bound arguments. Thus you can still disconnect using the callable's original reference.
+				[b]Note:[/b] While bind does return a copy, this does not matter for [method Signal.connect] and [method Signal.disconnect] and arguments are ignored for comparison. Thus you can still disconnect using the callable's original reference.
 			</description>
 		</method>
 		<method name="bindv">
 			<return type="Callable" />
 			<param index="0" name="arguments" type="Array" />
 			<description>
-				Returns a copy of this [Callable] with arguments from an array bound. See also [method bind]
+				Returns a copy of this [Callable] with arguments from an array bound. See also [method bind].
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
