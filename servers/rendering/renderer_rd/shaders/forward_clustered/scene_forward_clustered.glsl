@@ -878,6 +878,10 @@ void main() {
 #include "../half_inc.glsl"
 #include "scene_forward_clustered_inc.glsl"
 
+#ifdef MODE_RENDER_SDF
+#include "../environment/hddagi_voxel_metadata_inc.glsl"
+#endif
+
 /* Varyings */
 
 #if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
@@ -1681,6 +1685,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 indirect_specular_light = vec3(0.0, 0.0, 0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
+	float hddagi_reflection_coverage = 1.0;
 #ifndef MODE_UNSHADED
 	// Used in regular draw pass and when drawing SDFs for HDDAGI and materials for VoxelGI.
 	emission *= scene_data.emissive_exposure_normalization;
@@ -1940,7 +1945,7 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #else
 
-	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) { //has lightmap capture
+	if (sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI) && hddagi.max_cascades > 0) {
 		vec3 cam_vertex = mat3(inv_view_matrix) * vertex;
 		vec3 cam_normal = mat3(inv_view_matrix) * indirect_normal;
 		vec3 cam_reflection = mat3(inv_view_matrix) * reflect(-view, indirect_normal);
@@ -2024,12 +2029,17 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2DArray(ambient_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
 		vec4 buffer_reflection = textureLod(sampler2DArray(reflection_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0);
+		vec2 buffer_blend = textureLod(sampler2DArray(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), vec3(coord, ViewIndex), 0.0).rg;
 #else // USE_MULTIVIEW
 		vec4 buffer_ambient = textureLod(sampler2D(ambient_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
 		vec4 buffer_reflection = textureLod(sampler2D(reflection_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0);
+		vec2 buffer_blend = textureLod(sampler2D(ambient_reflection_blend_buffer, SAMPLER_LINEAR_CLAMP), coord, 0.0).rg;
 #endif // USE_MULTIVIEW
 
+		buffer_ambient.a = buffer_blend.r;
+		buffer_reflection.a = buffer_blend.g;
 		ambient_light = mix(ambient_light, buffer_ambient.rgb, buffer_ambient.a);
+		hddagi_reflection_coverage = buffer_reflection.a;
 		indirect_specular_light = mix(indirect_specular_light, buffer_reflection.rgb, buffer_reflection.a);
 	}
 #endif // !USE_LIGHTMAP
@@ -2192,6 +2202,9 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		float specular_occlusion = area / (M_TAU * (1.0 - cos_a_s));
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #else // BENT_NORMAL_MAP_USED
 		float specular_occlusion = (ambient_light.r * 0.3 + ambient_light.g * 0.59 + ambient_light.b * 0.11) * 2.0; // Luminance of ambient light.
@@ -2201,6 +2214,9 @@ void fragment_shader(in SceneData scene_data) {
 		// 10.0 is a magic number, it gives the intended effect in most scenarios.
 		// Low enough for occlusion, high enough for reaction to lights and shadows.
 		specular_occlusion = max(min(reflective_f * specular_occlusion * 10.0, 1.0), specular_occlusion);
+		if (!sc_use_forward_gi() && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_HDDAGI)) {
+			specular_occlusion = mix(1.0, specular_occlusion, hddagi_reflection_coverage);
+		}
 		indirect_specular_light *= specular_occlusion;
 #endif // BENT_NORMAL_MAP_USED
 #endif // SPECULAR_OCCLUSION_DISABLED
@@ -2951,7 +2967,6 @@ void fragment_shader(in SceneData scene_data) {
 
 		// Compute normal bits. Lower 6 are inclusive axis facings, upper 26 are exclusive normal directions.
 		const int facing_direction_count = 26;
-		const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
 
 		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
 		vec3 cam_geom_normal = mat3(inv_view_matrix) * normalize(geometric_normal);
@@ -2963,7 +2978,7 @@ void fragment_shader(in SceneData scene_data) {
 		const float exclusive_threshold = 0.7;
 		const float inclusive_threshold = 0.001;
 		for (int i = 0; i < facing_direction_count; i++) {
-			float dp = dot(cam_geom_normal, facing_directions[i]);
+			float dp = dot(cam_geom_normal, hddagi_surface_normal(uint(i)));
 
 			if (i < 6 && dp > inclusive_threshold) {
 				bit_normal |= uint(1 << i);
@@ -2980,16 +2995,8 @@ void fragment_shader(in SceneData scene_data) {
 		imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal);
 #endif
 
-		const vec3 aniso_dir[6] = vec3[](
-				vec3(-1, 0, 0),
-				vec3(1, 0, 0),
-				vec3(0, -1, 0),
-				vec3(0, 1, 0),
-				vec3(0, 0, -1),
-				vec3(0, 0, 1));
-
 		for (int i = 0; i < 6; i++) {
-			float d = dot(cam_normal, aniso_dir[i]);
+			float d = dot(cam_normal, vec3(hddagi_axis_direction(uint(i))));
 			if (d > 0.0) {
 				uint albedo16 = 0;
 				albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 0;
@@ -3006,7 +3013,7 @@ void fragment_shader(in SceneData scene_data) {
 			vec3 light_total = vec3(0);
 
 			for (int i = 0; i < 6; i++) {
-				float strength = max(0.0, dot(cam_normal, aniso_dir[i]));
+				float strength = max(0.0, dot(cam_normal, vec3(hddagi_axis_direction(uint(i)))));
 				vec3 light = emission * strength;
 				light_total += light;
 				lumas[i] = max(light.r, max(light.g, light.b));

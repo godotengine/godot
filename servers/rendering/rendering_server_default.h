@@ -893,7 +893,9 @@ public:
 	FUNC2(environment_set_volumetric_fog_volume_size, int, int)
 	FUNC1(environment_set_volumetric_fog_filter_active, bool)
 
-	FUNC15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	FUNC14(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, bool, bool)
+	FUNC2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
+	FUNC2(environment_set_hddagi_cascade_forward_offset, RID, float)
 	FUNC1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)
 	FUNC1(environment_set_hddagi_frames_to_update_light, RSE::EnvironmentHDDAGIFramesToUpdateLight)
 	FUNC1(environment_set_hddagi_inactive_probe_frames, RSE::EnvironmentHDDAGIInactiveProbeFrames)
@@ -1251,8 +1253,6 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate) override;
 
 	virtual bool is_low_end() const override;
-
-	virtual void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override;
 
 	virtual void set_print_gpu_profile(bool p_enable) override;
 

@@ -8,6 +8,8 @@
 #extension GL_EXT_samplerless_texture_functions : enable
 #endif
 
+#include "hddagi_voxel_metadata_inc.glsl"
+
 #define square(m) ((m) * (m))
 
 #define GROUP_SIZE 8
@@ -22,6 +24,7 @@ layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) i
 layout(constant_id = 0) const bool sc_half_res = false;
 layout(constant_id = 1) const bool sc_use_full_projection_matrix = false;
 layout(constant_id = 2) const bool sc_use_vrs = false;
+layout(constant_id = 3) const bool sc_half_reflections = false;
 
 #define HDDAGI_MAX_CASCADES 8
 
@@ -38,7 +41,6 @@ layout(set = 0, binding = 6) uniform texture3D occlusion[2];
 layout(set = 0, binding = 7) uniform sampler linear_sampler;
 layout(set = 0, binding = 8) uniform sampler linear_sampler_with_mipmaps;
 
-layout(r8ui, set = 0, binding = 9) uniform restrict readonly uimage3D voxel_disocclusion;
 layout(r32ui, set = 0, binding = 10) uniform restrict readonly uimage3D voxel_neighbours;
 
 struct ProbeCascadeData {
@@ -48,7 +50,7 @@ struct ProbeCascadeData {
 	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 
-	vec3 pad;
+	vec3 blend_position;
 	float exposure_normalization;
 
 	uvec4 pad2;
@@ -68,7 +70,7 @@ layout(set = 0, binding = 15, std140) uniform HDDAGI {
 	float reflection_bias;
 
 	ivec3 probe_axis_size;
-	float esm_strength;
+	uint pad;
 
 	uvec4 pad3;
 
@@ -116,6 +118,8 @@ layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffe
 #endif
 layout(r32ui, set = 0, binding = 20) uniform restrict writeonly uimage2D ambient_buffer;
 layout(r32ui, set = 0, binding = 21) uniform restrict writeonly uimage2D reflection_buffer;
+layout(set = 0, binding = 23) uniform texture2DArray probe_geometry_proximity;
+layout(set = 0, binding = 24) uniform texture3D occlusion_correction[2];
 layout(rg8, set = 0, binding = 22) uniform restrict writeonly image2D blend_buffer;
 
 layout(push_constant, std430) uniform Params {
@@ -128,14 +132,15 @@ layout(push_constant, std430) uniform Params {
 
 	float z_near;
 	float z_far;
+	uint world_gi_flags;
 	uint pad;
-	float occlusion_bias;
 }
 params;
 
 shared vec3 group_positions[GROUP_SIZE * GROUP_SIZE];
 shared vec4 group_reflections[GROUP_SIZE * GROUP_SIZE];
 shared vec3 group_normals[GROUP_SIZE * GROUP_SIZE];
+shared float group_roughness[GROUP_SIZE * GROUP_SIZE];
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;
@@ -235,6 +240,7 @@ ivec2 probe_to_tex(ivec3 local_probe, int p_cascade) {
 }
 
 #define ROUGHNESS_TO_REFLECTION_TRESHOOLD 0.25
+#define ROUGHNESS_TO_REFLECTION_FULL_BLUR 0.40
 
 bool bayer_dither(float value) {
 #if DITHER_SIZE == 3
@@ -318,242 +324,8 @@ vec3 vogel_hemisphere(int i, int n, float f) {
 	return vec3(x, y, z);
 }
 
-bool trace_ray_hdda(vec3 ray_pos, vec3 ray_dir, int p_cascade, out ivec3 r_cell, out ivec3 r_side, out int r_cascade) {
-	const int LEVEL_CASCADE = -1;
-	const int LEVEL_REGION = 0;
-	const int LEVEL_BLOCK = 1;
-	const int LEVEL_VOXEL = 2;
-	const int MAX_LEVEL = 3;
-
-	//#define HQ_RAY
-
-#ifdef HQ_RAY
-	const int fp_bits = 16;
-#else
-	const int fp_bits = 10;
-#endif
-	const int fp_block_bits = fp_bits + 2;
-	const int fp_region_bits = fp_block_bits + 1;
-	const int fp_cascade_bits = fp_region_bits + 4;
-
-	bvec3 limit_dir = greaterThan(ray_dir, vec3(0.0));
-	ivec3 step = mix(ivec3(0), ivec3(1), limit_dir);
-	ivec3 ray_sign = ivec3(sign(ray_dir));
-
-	ivec3 ray_dir_fp = ivec3(ray_dir * float(1 << fp_bits));
-
-#ifdef HQ_RAY
-	const float limit = 1.0 / 65535.0;
-#else
-	const float limit = 1.0 / 127.0;
-#endif
-	bvec3 ray_zero = lessThan(abs(ray_dir), vec3(limit));
-	ivec3 inv_ray_dir_fp = ivec3(float(1 << fp_bits) / ray_dir);
-
-	const ivec3 level_masks[MAX_LEVEL] = ivec3[](
-			ivec3(1 << fp_region_bits) - ivec3(1),
-			ivec3(1 << fp_block_bits) - ivec3(1),
-			ivec3(1 << fp_bits) - ivec3(1));
-
-	ivec3 region_offset_mask = (ivec3(hddagi.grid_size) / REGION_SIZE) - ivec3(1);
-
-	ivec3 limits[MAX_LEVEL];
-
-	limits[LEVEL_REGION] = ((ivec3(hddagi.grid_size) << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
-	ivec3 scroll_limit;
-
-	// Initialize to cascade
-	int level = LEVEL_CASCADE;
-	int cascade = p_cascade - 1;
-
-	ivec3 cascade_base;
-	ivec3 region_base;
-	uvec2 block;
-	bool hit = false;
-	ivec3 pos;
-
-	while (true) {
-		// This loop is written so there is only one single main iteration.
-		// This ensures that different compute threads working on different
-		// levels can still run together without blocking each other.
-
-		if (level == LEVEL_VOXEL) {
-			// The first level should be (in a worst case scenario) the most used
-			// so it needs to appear first. The rest of the levels go from more to least used order.
-
-			ivec3 block_local = (pos & level_masks[LEVEL_BLOCK]) >> fp_bits;
-			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
-			if (block_index < 32) {
-				// Low 32 bits.
-				if (bool(block.x & uint(1 << block_index))) {
-					hit = true;
-					break;
-				}
-			} else {
-				// High 32 bits.
-				block_index -= 32;
-				if (bool(block.y & uint(1 << block_index))) {
-					hit = true;
-					break;
-				}
-			}
-		} else if (level == LEVEL_BLOCK) {
-			ivec3 block_local = (pos & level_masks[LEVEL_REGION]) >> fp_block_bits;
-			block = imageLoad(voxel_cascades, region_base + block_local).rg;
-			if (block != uvec2(0)) {
-				// Have voxels inside
-				level = LEVEL_VOXEL;
-				limits[LEVEL_VOXEL] = pos - (pos & level_masks[LEVEL_BLOCK]) + step * (level_masks[LEVEL_BLOCK] + ivec3(1));
-				continue;
-			}
-		} else if (level == LEVEL_REGION) {
-			ivec3 region = pos >> fp_region_bits;
-			region = (hddagi.cascades[cascade].region_world_offset + region) & region_offset_mask; // Scroll to world
-			region += cascade_base;
-			bool region_used = imageLoad(voxel_region_cascades, region).r > 0;
-
-			if (region_used) {
-				// The region has contents.
-				region_base = (region << 1);
-				level = LEVEL_BLOCK;
-				limits[LEVEL_BLOCK] = pos - (pos & level_masks[LEVEL_REGION]) + step * (level_masks[LEVEL_REGION] + ivec3(1));
-				continue;
-			}
-		} else if (level == LEVEL_CASCADE) {
-			// Return to global
-			if (cascade >= p_cascade) {
-				ray_pos = vec3(pos) / float(1 << fp_bits);
-				ray_pos /= hddagi.cascades[cascade].to_cell;
-				ray_pos += hddagi.cascades[cascade].position;
-			}
-
-			cascade++;
-			if (cascade == hddagi.max_cascades) {
-				break;
-			}
-
-			ray_pos -= hddagi.cascades[cascade].position;
-			ray_pos *= hddagi.cascades[cascade].to_cell;
-			pos = ivec3(ray_pos * float(1 << fp_bits));
-			if (any(lessThan(pos, ivec3(0))) || any(greaterThanEqual(pos, ivec3(hddagi.grid_size) << fp_bits))) {
-				// Outside this cascade, go to next.
-				continue;
-			}
-
-			cascade_base = ivec3(0, int(hddagi.grid_size.y / REGION_SIZE) * cascade, 0);
-			level = LEVEL_REGION;
-
-			// Put a limit so the jump to the next level is not so strong
-
-			{
-				vec3 box = (vec3(hddagi.grid_size * step) - ray_pos) / ray_dir;
-				vec3 axis = vec3(1, 0, 0);
-				float m = box.x;
-				if (box.y < m) {
-					m = box.y;
-					axis = vec3(0, 1, 0);
-				}
-
-				if (box.z < m) {
-					axis = vec3(0, 0, 1);
-				}
-
-				vec3 half_size = vec3(hddagi.grid_size) / 2.0;
-				vec3 inner_pos = -hddagi.cascades[cascade].position * hddagi.cascades[cascade].to_cell - half_size;
-
-				float inner_dir = dot(axis, inner_pos);
-				float blend = abs(inner_dir) / float(REGION_SIZE * 0.5);
-
-				scroll_limit = limits[LEVEL_REGION];
-				if (bayer_dither(blend)) {
-					scroll_limit += (ivec3(axis * sign(inner_dir)) * REGION_SIZE) << fp_bits;
-				}
-			}
-
-			continue;
-		}
-
-		// Fixed point, multi-level DDA.
-
-		ivec3 mask = level_masks[level];
-		ivec3 box = mask * step;
-		ivec3 pos_diff = box - (pos & mask);
-#ifdef HQ_RAY
-		ivec3 mul_res = mul64(pos_diff, inv_ray_dir_fp, fp_bits);
-#else
-		ivec3 mul_res = (pos_diff * inv_ray_dir_fp) >> fp_bits;
-#endif
-		ivec3 tv = mix(mul_res, ivec3(0x7FFFFFFF), ray_zero);
-		int t = min(tv.x, min(tv.y, tv.z));
-
-		// The general idea here is that we _always_ need to increment to the closest next cell
-		// (this is a DDA after all), so adv_box forces this increment for the minimum axis.
-
-		ivec3 adv_box = pos_diff + ray_sign;
-#ifdef HQ_RAY
-		ivec3 adv_t = mul64(ray_dir_fp, ivec3(t), fp_bits);
-#else
-		ivec3 adv_t = (ray_dir_fp * t) >> fp_bits;
-#endif
-		pos += mix(adv_t, adv_box, equal(ivec3(t), tv));
-
-		{ // Test against scroll limit.
-			bvec3 limit = lessThan(pos, scroll_limit);
-			bvec3 eq = equal(limit, limit_dir);
-			if (!all(eq)) {
-				// Hit scroll limit, clamp limit and go to next cascade.
-				level = LEVEL_CASCADE;
-				pos = mix(scroll_limit, pos, eq);
-				continue;
-			}
-		}
-
-		while (true) {
-			bvec3 limit = lessThan(pos, limits[level]);
-			bool inside = all(equal(limit, limit_dir));
-			if (inside) {
-				break;
-			}
-			level -= 1;
-			if (level == LEVEL_CASCADE) {
-				break;
-			}
-		}
-	}
-
-	if (hit) {
-		ivec3 mask = level_masks[LEVEL_VOXEL];
-		ivec3 box = mask * (step ^ ivec3(1));
-		ivec3 pos_diff = box - (pos & mask);
-#ifdef HQ_RAY
-		ivec3 mul_res = mul64(pos_diff, -inv_ray_dir_fp, fp_bits);
-#else
-		ivec3 mul_res = (pos_diff * -inv_ray_dir_fp);
-#endif
-
-		ivec3 tv = mix(mul_res, ivec3(0x7FFFFFFF), ray_zero);
-
-		int m;
-		if (tv.x < tv.y) {
-			r_side = ivec3(1, 0, 0);
-			m = tv.x;
-		} else {
-			r_side = ivec3(0, 1, 0);
-			m = tv.y;
-		}
-		if (tv.z < m) {
-			r_side = ivec3(0, 0, 1);
-		}
-
-		r_side *= -ray_sign;
-
-		r_cell = pos >> fp_bits;
-
-		r_cascade = cascade;
-	}
-
-	return hit;
-}
+#define HDDAGI_TRACE_REFLECTION
+#include "hddagi_trace_inc.glsl"
 
 void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, float roughness, bool dynamic_object, out vec3 diffuse_light, out vec3 specular_light) {
 	vec3 posf = cascade_pos;
@@ -578,10 +350,39 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	occ_total_size.y *= hddagi.max_cascades;
 	vec3 occ_posf = (vec3(occ_pos) + pos_fract) / vec3(occ_total_size);
 
-	vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf);
-	vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf);
-
-	float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+	vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf.yxz);
+	vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf.yxz);
+	// Only the receiver weights use the seam correction. Keep the original
+	// visibility field for probe feedback, tracing and surface lighting.
+	vec3 local = mod(posf, float(PROBE_CELLS));
+	ivec3 correction_size = hddagi.grid_size / 2 + 2;
+	correction_size.y *= hddagi.max_cascades;
+	vec3 correction_pos = (vec3(occ_pos) + pos_fract - vec3(1.0)) * 0.5 + vec3(1.0);
+	correction_pos += hddagi_occlusion_cache_warp(local) - local * 0.5;
+	correction_pos.y += float(cascade);
+	vec4 correction_0 = texture(sampler3D(occlusion_correction[0], linear_sampler), (correction_pos / vec3(correction_size)).yxz);
+	vec4 correction_1 = texture(sampler3D(occlusion_correction[1], linear_sampler), (correction_pos / vec3(correction_size)).yxz);
+	vec4 blend_0 = vec4(0.0);
+	vec4 blend_1 = vec4(0.0);
+	vec4 safe_0 = vec4(1.0);
+	vec4 safe_1 = vec4(1.0);
+	for (int axis = 0; axis < 3; axis++) {
+		float distance_to_seam = min(local[axis], float(PROBE_CELLS) - local[axis]);
+		float strength = 1.0 - smoothstep(2.5, 3.5, distance_to_seam);
+		int seam = int(floor(posf[axis] / float(PROBE_CELLS) + 0.5));
+		int seam_parity = (seam + hddagi.cascades[cascade].region_world_offset[axis]) & 1;
+		vec4 shared_0 = vec4(equal((ivec4(0, 1, 2, 3) >> axis) & 1, ivec4(seam_parity)));
+		vec4 shared_1 = vec4(equal((ivec4(4, 5, 6, 7) >> axis) & 1, ivec4(seam_parity)));
+		blend_0 = max(blend_0, shared_0 * strength);
+		blend_1 = max(blend_1, shared_1 * strength);
+		// A non-shared channel names a different probe across this face.
+		// Exclude it while the half-resolution footprint crosses the face.
+		float safe = smoothstep(1.0, 1.5, distance_to_seam);
+		safe_0 *= mix(vec4(safe), vec4(1.0), shared_0);
+		safe_1 *= mix(vec4(safe), vec4(1.0), shared_1);
+	}
+	occ_0 = clamp(occ_0 + correction_0 * blend_0 * safe_0, 0.0, 1.0);
+	occ_1 = clamp(occ_1 + correction_1 * blend_1 * safe_1, 0.0, 1.0);
 
 	vec4 accum_light = vec4(0.0);
 
@@ -589,7 +390,26 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	vec2 light_uv = octahedron_encode(vec3(cam_normal)) * float(LIGHTPROBE_OCT_SIZE);
 	vec2 light_uv_spec = octahedron_encode(vec3(cam_specular_normal)) * float(LIGHTPROBE_OCT_SIZE);
 
+	uint valid_probes = 255u;
+	if ((params.world_gi_flags & 8u) != 0u) {
+		valid_probes = 0u;
+		for (int i = 0; i < 8; i++) {
+			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1));
+			float proximity = texelFetch(sampler2DArray(probe_geometry_proximity, linear_sampler), ivec3(probe_to_tex(probe, cascade), cascade), 0).r;
+			if (proximity < 0.7 || proximity > 0.8) {
+				valid_probes |= 1u << uint(i);
+			}
+		}
+		// No valid interpolation neighbourhood: keep the original gather rather
+		// than introducing a black hole at coarse voxel resolution.
+		if (valid_probes == 0u) {
+			valid_probes = 255u;
+		}
+	}
 	for (int i = 0; i < 8; i++) {
+		if ((valid_probes & (1u << uint(i))) == 0u) {
+			continue;
+		}
 		ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
 
 		vec3 probe_pos = vec3(probe * PROBE_CELLS);
@@ -617,7 +437,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 			weight_index |= 4;
 		}
 
-		weight *= max(params.occlusion_bias, occ_weights[weight_index]);
+		weight *= hddagi_occlusion_weight(occ_0, occ_1, int(weight_index));
 
 		vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
 
@@ -636,7 +456,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		tex_uv *= light_probe_tex_to_uv;
 
 		vec3 probe_ref_light;
-		if (roughness < 0.99 && roughness > 0.00) {
+		if (roughness < 0.99 && (params.world_gi_flags & 3u) != 2u) {
 			probe_ref_light = texture(sampler2DArray(lightprobe_specular, linear_sampler), vec3(tex_uv, float(cascade))).rgb;
 		} else {
 			probe_ref_light = vec3(0.0);
@@ -649,18 +469,18 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 			probe_ref_full_light = vec3(0.0);
 		}
 
-		probe_ref_light = mix(probe_ref_light, probe_ref_full_light, smoothstep(ROUGHNESS_TO_REFLECTION_TRESHOOLD, 1.0, roughness));
+		probe_ref_light = mix(probe_ref_light, probe_ref_full_light, smoothstep(ROUGHNESS_TO_REFLECTION_TRESHOOLD, ROUGHNESS_TO_REFLECTION_FULL_BLUR, roughness));
 
 		specular_accum += probe_ref_light * weight;
 
 		weight_accum += weight;
 	}
 
-	diffuse_light = diffuse_accum / weight_accum;
-	specular_light = specular_accum / weight_accum;
+	diffuse_light = diffuse_accum / max(weight_accum, 1e-6);
+	specular_light = specular_accum / max(weight_accum, 1e-6);
 }
 
-void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, bool dynamic_object, out vec4 ambient_light, out vec4 reflection_light) {
+void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, bool dynamic_object, bool trace_reflection, out vec4 ambient_light, out vec4 reflection_light) {
 	//make vertex orientation the world one, but still align to camera
 	vertex.y *= hddagi.y_mult;
 	normal.y *= hddagi.y_mult;
@@ -711,7 +531,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 			//process blend
 			vec3 blend_from = ((vec3(hddagi.probe_axis_size) - 1) / 2.0);
 
-			vec3 inner_pos = cam_pos * hddagi.cascades[cascade].to_probe;
+			vec3 inner_pos = (cam_pos - hddagi.cascades[cascade].blend_position) * hddagi.cascades[cascade].to_probe;
 
 			vec3 inner_dist = blend_from - abs(inner_pos);
 
@@ -761,7 +581,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 		ambient_light.rgb = diffuse;
 		ambient_light.a = 1.0 - blend;
 
-		if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+		if (trace_reflection && (params.world_gi_flags & 3u) == 0u && roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
 			ivec3 hit_cell;
 			ivec3 hit_face;
 			int hit_cascade;
@@ -787,7 +607,9 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 			n.z = -n.z;
 			n = normal_mat * n;
 
-			if (trace_ray_hdda(ray_pos, n, cascade, hit_cell, hit_face, hit_cascade)) {
+			bool static_hit = trace_ray_hdda(ray_pos, n, cascade, hit_cell, hit_face, hit_cascade);
+
+			if (static_hit) {
 				bool valid = true;
 				bool disoccluded = false;
 				if (hit_cascade == cascade) {
@@ -795,7 +617,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 						// self hit the start cell, ouch, load the disocclusion
 
 						ivec3 read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-						uint disocc = imageLoad(voxel_disocclusion, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r;
+						uint disocc = hddagi_unpack_disocclusion(imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r);
 
 						if (disocc == 0) {
 							// Can happen.. guess.
@@ -813,10 +635,9 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 
 							vec3 local = fract(start_cell) - 0.5; // create local cell.
 
-							const vec3 axes[5] = vec3[](vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1), vec3(1, 0, 0), vec3(0, 1, 0));
 							// Find the closest axis to push.
-							vec3 ax_a = axes[ni + 1];
-							vec3 ax_b = axes[ni + 2];
+							vec3 ax_a = vec3(ni == 2, ni == 0, ni == 1);
+							vec3 ax_b = vec3(ni == 1, ni == 2, ni == 0);
 
 							vec3 advance;
 							if (abs(dot(ax_a, local)) > abs(dot(ax_b, local))) {
@@ -829,26 +650,18 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 							hit_cell += ivec3(advance);
 
 							read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-							disocc = imageLoad(voxel_disocclusion, read_cell).r;
+							disocc = hddagi_unpack_disocclusion(imageLoad(voxel_neighbours, read_cell + ivec3(0, hddagi.grid_size.y * hit_cascade, 0)).r);
 						}
 
 						// find best disocclusion direction.
 
 						vec3 local = fract(start_cell) - 0.5; // create local cell.
 
-						const vec3 aniso_dir[6] = vec3[](
-								vec3(-1, 0, 0),
-								vec3(1, 0, 0),
-								vec3(0, -1, 0),
-								vec3(0, 1, 0),
-								vec3(0, 0, -1),
-								vec3(0, 0, 1));
-
 						int best_axis = 0;
 						float best_d = -20;
 						for (int i = 0; i < 6; i++) {
 							if (bool(disocc & (1 << i))) {
-								float d = dot(local, aniso_dir[i]);
+								float d = dot(local, vec3(hddagi_axis_direction(uint(i))));
 								if (d > best_d) {
 									best_axis = i;
 									best_d = d;
@@ -856,7 +669,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 							}
 						}
 
-						hit_face = ivec3(aniso_dir[best_axis]);
+						hit_face = hddagi_axis_direction(uint(best_axis));
 
 						/*
 						if (disocc == 0) {
@@ -864,7 +677,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 						} else {
 							light.rgb = vec3(0,1,0);
 						}
-						light.rgb = aniso_dir[best_axis] * 0.5 + 0.5;
+						light.rgb = vec3(hddagi_axis_direction(uint(best_axis))) * 0.5 + 0.5;
 						light.a = 1;
 						valid=false;*/
 						disoccluded = true;
@@ -877,22 +690,19 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 					light.a = 1;
 
 					if (!disoccluded) {
-						// filter using the neighbours!
-						uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r;
+						uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r & HDDAGI_LIGHT_CELL_NEIGHBOUR_MASK;
 						vec3 cascade_ofs = hddagi.cascades[hit_cascade].position;
 						float to_cell = hddagi.cascades[hit_cascade].to_cell;
 						float cascade_cell_size = 1.0 / to_cell;
-
-						const ivec3 facing_directions[26] = ivec3[](ivec3(-1, 0, 0), ivec3(1, 0, 0), ivec3(0, -1, 0), ivec3(0, 1, 0), ivec3(0, 0, -1), ivec3(0, 0, 1), ivec3(-1, -1, -1), ivec3(-1, -1, 0), ivec3(-1, -1, 1), ivec3(-1, 0, -1), ivec3(-1, 0, 1), ivec3(-1, 1, -1), ivec3(-1, 1, 0), ivec3(-1, 1, 1), ivec3(0, -1, -1), ivec3(0, -1, 1), ivec3(0, 1, -1), ivec3(0, 1, 1), ivec3(1, -1, -1), ivec3(1, -1, 0), ivec3(1, -1, 1), ivec3(1, 0, -1), ivec3(1, 0, 1), ivec3(1, 1, -1), ivec3(1, 1, 0), ivec3(1, 1, 1));
 						vec3 light_cell_pos = (vec3(hit_cell) + 0.5) * cascade_cell_size + cascade_ofs;
 						vec4 light_accum = vec4(light.rgb, 1.0) * max(0.0, 1.0 - point_to_ray_distance(light_cell_pos, ray_pos, ray_dir) * to_cell);
 						while (neighbour_bits != 0) {
 							uint msb = findLSB(neighbour_bits);
-							vec3 rel = vec3(facing_directions[msb]);
+							vec3 rel = vec3(hddagi_light_neighbour_direction(msb));
 							vec3 neighbour_pos = light_cell_pos + rel * cascade_cell_size;
 							float w = max(0.0, 1.0 - point_to_ray_distance(neighbour_pos, ray_pos, ray_dir) * to_cell);
 							if (w > 0.0) {
-								ivec3 neighbour_cell = hit_cell + facing_directions[msb];
+								ivec3 neighbour_cell = hit_cell + hddagi_light_neighbour_direction(msb);
 								read_cell = (neighbour_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
 								vec3 neighbour_light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0), 0).rgb;
 								light_accum += vec4(neighbour_light, 1.0) * w;
@@ -1051,14 +861,17 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	out_blend += blend;
 }
 
-void process_gi(ivec2 pos, vec3 view_vertex, vec3 view_normal, float roughness, bool dynamic_object, inout vec4 ambient_light, inout vec4 reflection_light) {
+void process_gi(ivec2 pos, vec3 view_vertex, vec3 view_normal, float roughness, bool dynamic_object, bool trace_reflection, inout vec4 ambient_light, inout vec4 reflection_light) {
 	//valid normal, can do GI
 	vec3 view = -normalize(mat3(scene_data.cam_transform) * (view_vertex - scene_data.eye_offset[gl_GlobalInvocationID.z].xyz));
 	vec3 vertex = mat3(scene_data.cam_transform) * view_vertex;
 	vec3 normal = normalize(mat3(scene_data.cam_transform) * view_normal);
 	vec3 reflection = normalize(reflect(-view, normal));
 #ifdef USE_HDDAGI
-	hddagi_process(vertex, normal, reflection, roughness, dynamic_object, ambient_light, reflection_light);
+	hddagi_process(vertex, normal, reflection, roughness, dynamic_object, trace_reflection, ambient_light, reflection_light);
+	if ((params.world_gi_flags & 3u) == 2u) {
+		reflection_light = vec4(0.0);
+	}
 #endif
 
 #ifdef USE_VOXEL_GI_INSTANCES
@@ -1141,37 +954,54 @@ void main() {
 
 	vec4 ambient_light = vec4(0.0);
 	vec4 reflection_light = vec4(0.0);
-	float roughness;
-
+	float roughness = 1.0;
+	vec3 vertex = vec3(0.0);
+	vec3 normal = vec3(0.0);
+	bool found_vertex = false;
+	bool dynamic_object = false;
+	bool reuse_reflection = false;
+	uint group_pos = gl_LocalInvocationID.y * GROUP_SIZE + gl_LocalInvocationID.x;
+	uint reflection_source = (gl_LocalInvocationID.y & ~1u) * GROUP_SIZE + (gl_LocalInvocationID.x & ~1u);
 	if (thread_active) {
-		vec3 vertex;
-		vec3 normal;
-
-		bool found_vertex = false;
-
 		vertex = reconstruct_position(pos);
 		vec4 normal_roughness = fetch_normal_and_roughness(pos);
 		found_vertex = length(normal_roughness.xyz) > 0.5;
 		normal = normal_roughness.xyz;
 		roughness = normal_roughness.w;
-		bool dynamic_object = roughness > 0.5;
+		dynamic_object = roughness > 0.5;
 		if (dynamic_object) {
 			roughness = 1.0 - roughness;
 		}
 		roughness /= (127.0 / 255.0);
-		if (found_vertex) {
-			process_gi(pos, vertex, normal, roughness, dynamic_object, ambient_light, reflection_light);
-		}
-
-#ifdef USE_HDDAGI
-
-		// If using reflections, blend the 4 adjacent pixels to get rid of dither
-		uint group_pos = gl_LocalInvocationID.y * GROUP_SIZE + gl_LocalInvocationID.x;
-		group_positions[group_pos] = vertex;
-		group_normals[group_pos] = normal;
-		group_reflections[group_pos] = reflection_light;
-#endif
 	}
+#ifdef USE_HDDAGI
+	group_positions[group_pos] = vertex;
+	group_normals[group_pos] = normal;
+	group_roughness[group_pos] = thread_active && found_vertex ? roughness : -1.0;
+	if (sc_half_reflections) {
+		memoryBarrierShared();
+		barrier();
+		// Reuse one trace only on a continuous 2x2 surface. Mirrors, silhouettes,
+		// roughness boundaries, VRS and mixed VoxelGI keep full-rate tracing.
+		float source_roughness = group_roughness[reflection_source];
+		reuse_reflection = source_roughness > 0.02 && source_roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD;
+		for (uint y = 0u; y < 2u; y++) {
+			for (uint x = 0u; x < 2u; x++) {
+				uint other = reflection_source + y * GROUP_SIZE + x;
+				vec3 delta = group_positions[other] - group_positions[reflection_source];
+				reuse_reflection = reuse_reflection && group_roughness[other] >= 0.0 && abs(group_roughness[other] - source_roughness) < 0.015;
+				reuse_reflection = reuse_reflection && dot(group_normals[other], group_normals[reflection_source]) > 0.995;
+				reuse_reflection = reuse_reflection && abs(delta.z) < max(0.02, abs(group_positions[reflection_source].z) * 0.01);
+			}
+		}
+	}
+#endif
+	if (thread_active && found_vertex) {
+		process_gi(pos, vertex, normal, roughness, dynamic_object, !reuse_reflection || group_pos == reflection_source, ambient_light, reflection_light);
+	}
+#ifdef USE_HDDAGI
+	group_reflections[group_pos] = reflection_light;
+#endif
 
 	memoryBarrierShared();
 	barrier();
@@ -1179,7 +1009,9 @@ void main() {
 #ifdef USE_HDDAGI
 
 	if (thread_active) {
-		if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+		if (reuse_reflection) {
+			reflection_light = group_reflections[reflection_source];
+		} else if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
 			uvec2 local_group_pos_base = gl_LocalInvocationID.xy - (gl_LocalInvocationID.xy % DITHER_SIZE);
 			uint local_group_pos = local_group_pos_base.y * GROUP_SIZE + local_group_pos_base.x;
 
@@ -1187,9 +1019,11 @@ void main() {
 			vec3 normals[DITHER_SIZE * DITHER_SIZE];
 
 			vec4 average = vec4(0.0);
+			bool block_valid = true;
 			for (int i = 0; i < DITHER_SIZE; i++) {
 				for (int j = 0; j < DITHER_SIZE; j++) {
 					uint src_pos = local_group_pos + i * GROUP_SIZE + j;
+					block_valid = block_valid && group_roughness[src_pos] >= 0.0;
 					normals[i * DITHER_SIZE + j] = group_normals[src_pos];
 					positions[i * DITHER_SIZE + j] = group_positions[src_pos];
 					average += group_reflections[src_pos];
@@ -1210,7 +1044,7 @@ void main() {
 			const float same_plane_threshold = 0.9659258262890683; // 15 degrees tolerance
 
 			float weight = 1.0;
-			for (int i = 0; i < subgroup_count; i++) {
+			for (int i = 0; i < subgroup_count && block_valid; i++) {
 				uvec4 sg = subgroups[i];
 				// Weight positions in plane.
 				vec3 p[4] = vec3[](positions[sg.x], positions[sg.y], positions[sg.z], positions[sg.w]);
@@ -1223,7 +1057,9 @@ void main() {
 				weight *= max(0.0, smoothstep(same_plane_threshold, 1, length((n[0] + n[1] + n[2] + n[3]) / 4.0)));
 			}
 
-			reflection_light = mix(reflection_light, average, weight);
+			if (block_valid) {
+				reflection_light = mix(reflection_light, average, weight);
+			}
 		}
 	}
 #endif

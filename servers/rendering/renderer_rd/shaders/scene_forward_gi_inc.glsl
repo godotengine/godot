@@ -152,8 +152,8 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	ivec3 occ_total_size = hddagi.grid_size + ivec3(2);
 	occ_total_size.y *= hddagi.max_cascades;
 	vec3 occ_posf = (vec3(occ_pos) + pos_fract) / vec3(occ_total_size);
-	vec4 occ_0 = texture(sampler3D(hddagi_occlusion[0], SAMPLER_LINEAR_CLAMP), occ_posf);
-	vec4 occ_1 = texture(sampler3D(hddagi_occlusion[1], SAMPLER_LINEAR_CLAMP), occ_posf);
+	vec4 occ_0 = texture(sampler3D(hddagi_occlusion[0], SAMPLER_LINEAR_CLAMP), occ_posf.yxz);
+	vec4 occ_1 = texture(sampler3D(hddagi_occlusion[1], SAMPLER_LINEAR_CLAMP), occ_posf.yxz);
 	float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
 	vec2 light_probe_tex_to_uv = 1.0 / vec2((LIGHTPROBE_OCT_SIZE + 2) * hddagi.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE + 2) * hddagi.probe_axis_size.y * hddagi.probe_axis_size.z);
 	vec2 light_uv = octahedron_encode(vec3(cam_normal)) * float(LIGHTPROBE_OCT_SIZE);
@@ -174,7 +174,7 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		if (probe_occ.z != 0) {
 			weight_index |= 4;
 		}
-		weight *= max(0.2, occ_weights[weight_index]);
+		weight *= occ_weights[weight_index];
 		vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
 		weight *= trilinear.x * trilinear.y * trilinear.z;
 		ivec2 tex_pos = probe_to_tex(probe, cascade);
@@ -189,8 +189,8 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		specular_accum += probe_ref_light * weight;
 		weight_accum += weight;
 	}
-	diffuse_light = diffuse_accum / weight_accum;
-	specular_light = specular_accum / weight_accum;
+	diffuse_light = diffuse_accum / max(weight_accum, 1e-6);
+	specular_light = specular_accum / max(weight_accum, 1e-6);
 }
 
 void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, out vec4 ambient_light, out vec4 reflection_light) {
@@ -218,7 +218,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 		vec3 diffuse, specular;
 		sdfvoxel_gi_process(cascade, cascade_pos, cam_pos, cam_normal, reflection, roughness, diffuse, specular);
 		vec3 blend_from = ((vec3(hddagi.probe_axis_size) - 1) / 2.0);
-		vec3 inner_pos = cam_pos * hddagi.cascades[cascade].to_probe;
+		vec3 inner_pos = (cam_pos - hddagi.cascades[cascade].blend_position) * hddagi.cascades[cascade].to_probe;
 		vec3 inner_dist = blend_from - abs(inner_pos);
 		float min_d = min(inner_dist.x, min(inner_dist.y, inner_dist.z));
 		blend = clamp(1.0 - smoothstep(0.5, 2.5, min_d), 0, 1);

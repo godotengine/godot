@@ -41,6 +41,7 @@
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_direct_light.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_filter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_integrate.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/environment/hddagi_light_cull.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/hddagi_preprocess.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/voxel_gi_debug.glsl.gen.h"
@@ -275,13 +276,15 @@ private:
 
 	/* HDDAGI */
 
+	static Color get_solid_background_radiance(RID p_environment, RSE::EnvironmentBG p_background);
+
 	struct HDDAGIShader {
 		enum HDDAGIPreprocessShaderVersion {
 			PRE_PROCESS_REGION_STORE,
 			PRE_PROCESS_LIGHT_STORE,
 			PRE_PROCESS_LIGHT_SCROLL,
 			PRE_PROCESS_OCCLUSION,
-			PRE_PROCESS_OCCLUSION_STORE,
+			PRE_PROCESS_OCCLUSION_FILTER,
 			PRE_PROCESS_LIGHTPROBE_SCROLL,
 			PRE_PROCESS_LIGHTPROBE_NEIGHBOURS,
 			PRE_PROCESS_LIGHTPROBE_GEOMETRY_PROXIMITY,
@@ -310,6 +313,9 @@ private:
 
 			uint32_t upper_region_world_pos[3];
 			int occlusion_offset;
+
+			uint32_t history_mode;
+			uint32_t pad[3];
 		};
 
 		HddagiPreprocessShaderRD preprocess;
@@ -321,14 +327,18 @@ private:
 			float grid_size[3];
 			uint32_t max_cascades;
 
-			uint32_t screen_size;
-			float esm_strength;
+			float ray_origin[3];
 			float y_mult;
-			float z_near;
-
-			float inv_projection[3][4];
-			float cam_basis[3][3];
-			float cam_origin[3];
+			float ray_direction[3];
+			uint32_t pad;
+			float ray_x[3];
+			uint32_t pad2;
+			float ray_y[3];
+			uint32_t pad3;
+			float origin_x[3];
+			uint32_t pad4;
+			float origin_y[3];
+			uint32_t pad5;
 		};
 
 		HddagiDebugShaderRD debug;
@@ -339,9 +349,7 @@ private:
 		enum ProbeDebugMode {
 			PROBE_DEBUG_PROBES,
 			PROBE_DEBUG_PROBES_MULTIVIEW,
-			PROBE_DEBUG_OCCLUSION,
-			PROBE_DEBUG_OCCLUSION_MULTIVIEW,
-			PROBE_DEBUG_MAX
+			PROBE_DEBUG_MAX,
 		};
 
 		struct DebugProbesSceneData {
@@ -359,8 +367,7 @@ private:
 
 			int32_t oct_size;
 			float y_mult;
-			int32_t probe_debug_index;
-			uint32_t pad;
+			uint32_t pad[2];
 
 			int32_t probe_axis_size[3];
 			uint32_t pad2;
@@ -408,6 +415,8 @@ private:
 
 			int32_t probe_axis_size[3];
 			uint32_t dirty_dynamic_update;
+			uint32_t use_light_regions;
+			uint32_t pad[3];
 		};
 
 		enum {
@@ -415,6 +424,18 @@ private:
 			DIRECT_LIGHT_MODE_DYNAMIC,
 			DIRECT_LIGHT_MODE_MAX
 		};
+		struct LightCullPushConstant {
+			float offset[3];
+			float region_size;
+			int32_t region_count[3];
+			uint32_t light_count;
+			float y_mult;
+			uint32_t pad[3];
+		};
+		HddagiLightCullShaderRD light_cull;
+		RID light_cull_shader;
+		RID light_cull_version;
+		RID light_cull_pipeline;
 		HddagiDirectLightShaderRD direct_light;
 		RID direct_light_shader;
 		RID direct_light_shader_version[DIRECT_LIGHT_MODE_MAX];
@@ -445,7 +466,9 @@ private:
 			int32_t world_offset[3];
 			uint32_t sky_flags;
 
-			int32_t scroll[3];
+			uint32_t history_mode;
+			float history_response;
+			uint32_t pad;
 			float sky_energy;
 
 			float sky_color_or_orientation[3];
@@ -469,6 +492,7 @@ private:
 		RID integrate_shader_version[INTEGRATE_MODE_MAX];
 		RID integrate_pipeline[INTEGRATE_MODE_MAX];
 		RID integrate_default_sky_uniform_set;
+		RID integrate_lookup_buffer;
 
 	} hddagi_shader;
 
@@ -613,15 +637,23 @@ public:
 			//cascade blocks are full-size for volume (128^3), half size for albedo/emission
 			float cell_size;
 			Vector3i position;
+			Vector3 blend_position;
 
 			static const Vector3i DIRTY_ALL;
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
 
 			RID light_process_buffer;
+			RID light_source_emission_buffer;
 			RID light_process_dispatch_buffer;
 			RID light_process_dispatch_buffer_copy;
 
 			RID light_position_bufer;
+			RID light_region_buffer;
+			Vector<uint8_t> previous_dynamic_lights;
+			Vector3i light_region_position;
+			bool light_regions_valid = false;
+			bool use_light_regions = false;
+			bool dynamic_light_changed = false;
 
 			bool static_lights_dirty = true;
 			bool dynamic_lights_dirty = true;
@@ -644,20 +676,20 @@ public:
 		// access to our containers
 		GI *gi = nullptr;
 
-		RID render_albedo; //x6, anisotropic
+		RID render_albedo; // Six anisotropic directions.
 		RID render_aniso_normals;
 		RID render_emission;
 		RID render_emission_aniso;
 
 		RID voxel_bits_tex;
 		RID voxel_region_tex;
-		RID voxel_disocclusion_tex;
 		RID voxel_light_tex;
 		RID voxel_light_tex_data;
 		RID voxel_light_neighbour_data;
 		RID region_version_data;
 
 		RID light_process_buffer_render;
+		RID light_source_emission_buffer_render;
 		RID light_process_dispatch_buffer_render;
 
 		RID lightprobe_specular_tex;
@@ -674,12 +706,13 @@ public:
 		RID lightprobe_neighbour_visibility_map;
 		RID lightprobe_geometry_proximity_map;
 		RID lightprobe_camera_visibility_map;
-		RID lightprobe_process_frame; // 28 bits is frame, upper 4 bits is frames remaining to do full updates (for having updated light when scrolling).
+		RID lightprobe_process_frame; // Lower 28 bits: frame index. Upper 4 bits: full updates remaining after scrolling.
 
 		Vector<RID> lightprobe_camera_buffers;
 
 		RID occlusion_data[2];
 		RID occlusion_tex[2];
+		RID occlusion_correction[2];
 
 		LocalVector<Cascade> cascades;
 
@@ -689,6 +722,7 @@ public:
 
 		uint32_t update_frame = 0;
 		uint32_t frames_to_converge = 6;
+		bool probe_history_ema = false;
 
 		bool using_probe_filter = true;
 		bool using_reflection_filter = true;
@@ -698,38 +732,36 @@ public:
 		float min_cell_size = 0;
 
 		RID cascades_ubo;
+		RID debug_probes_scene_data_ubo;
 
-		bool uses_occlusion = false;
 		float bounce_feedback = 0.5;
 		bool reads_sky = true;
 		float energy = 1.0;
 		float normal_bias = 1.1;
 		float reflection_bias = 2.0;
 		float probe_bias = 1.1;
-		float occlusion_bias = 0.1;
-		RSE::EnvironmentHDDAGICascadeFormat cascade_format = RSE::ENV_HDDAGI_CASCADE_FORMAT_16x8x16;
+		RSE::EnvironmentHDDAGICascadeFormat cascade_format = RSE::ENV_HDDAGI_CASCADE_FORMAT_16X8X16;
 
 		float y_mult = 1.0;
 
 		uint32_t version = 0;
 		uint32_t render_pass = 0;
 
-		int32_t cascade_dynamic_light_count[HDDAGI::MAX_CASCADES]; //used dynamically
-
-		RID debug_probes_scene_data_ubo;
+		int32_t cascade_dynamic_light_count[HDDAGI::MAX_CASCADES]; // Dynamic light count per cascade.
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 		~HDDAGI();
 
-		void create(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size, GI *p_gi);
-		void update(RID p_env, const Vector3 &p_world_position);
+		void create(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size, GI *p_gi);
+		void update(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset);
 		void update_light();
-		void update_probes(RID p_env, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform);
-		void store_probes();
+		void update_probes(RID p_env, RID p_camera_attributes, RendererRD::SkyRD::Sky *p_sky, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_cam_transform);
 		int get_pending_region_count() const;
 		int get_pending_region_data(int p_region, Vector3i &r_local_offset, Vector3i &r_local_size, AABB &r_bounds, Vector3i &r_scroll, Vector3i &r_region_world) const;
 		void update_cascades();
+		void debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform);
+		void debug_probes(RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms);
 
 		RID get_lightprobe_diffuse_texture() {
 			if (using_probe_filter) {
@@ -748,9 +780,6 @@ public:
 			return ret;
 		}
 
-		void debug_draw(uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, int p_width, int p_height, RID p_render_target, RID p_texture, const Vector<RID> &p_texture_views);
-		void debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms);
-
 		void pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_render_data);
 		void render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_region, const PagedArray<RenderGeometryInstance *> &p_instances, float p_exposure_normalization);
 		void render_static_lights(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_cascade_count, const uint32_t *p_cascade_indices, const PagedArray<RID> *p_positional_light_cull_result);
@@ -761,10 +790,6 @@ public:
 	RSE::EnvironmentHDDAGIInactiveProbeFrames inactive_probe_frames = RSE::ENV_HDDAGI_INACTIVE_PROBE_8_FRAMES;
 
 	float hddagi_solid_cell_ratio = 0.5;
-	Vector3 hddagi_debug_probe_pos;
-	Vector3 hddagi_debug_probe_dir;
-	bool hddagi_debug_probe_enabled = false;
-	Vector3i hddagi_debug_probe_index;
 	uint32_t hddagi_current_version = 0;
 
 	/* HDDAGI UPDATE */
@@ -784,7 +809,7 @@ public:
 		float reflection_bias;
 
 		int32_t probe_axis_size[3];
-		float esm_strength;
+		uint32_t pad;
 
 		uint32_t pad3[4];
 
@@ -795,7 +820,7 @@ public:
 			int32_t region_world_offset[3];
 			float to_cell; // 1/bounds * grid_size
 
-			uint32_t pad[3];
+			float blend_position[3];
 			float exposure_normalization;
 
 			uint32_t pad2[4];
@@ -839,14 +864,13 @@ public:
 
 		float z_near;
 		float z_far;
+		uint32_t world_gi_flags;
 		uint32_t pad;
-		float occlusion_bias;
 	};
 
 	RID hddagi_ubo;
 	RID default_hddagi_voxel_bits_texture;
 	RID default_hddagi_voxel_region_texture;
-	RID default_hddagi_voxel_disocclusion_texture;
 	RID default_hddagi_voxel_neighbours_texture;
 
 	enum Mode {
@@ -862,7 +886,8 @@ public:
 		SHADER_SPECIALIZATION_HALF_RES = 1 << 0,
 		SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
 		SHADER_SPECIALIZATION_USE_VRS = 1 << 2,
-		SHADER_SPECIALIZATION_VARIATIONS = 8,
+		SHADER_SPECIALIZATION_HALF_REFLECTIONS = 1 << 3,
+		SHADER_SPECIALIZATION_VARIATIONS = 16,
 	};
 
 	RID default_voxel_gi_buffer;
@@ -905,10 +930,10 @@ public:
 	void init(RendererRD::SkyRD *p_sky);
 	void free();
 
-	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_position, uint32_t p_requested_history_size);
+	Ref<HDDAGI> create_hddagi(RID p_env, const Vector3 &p_world_anchor, const Vector3 &p_planar_world_forward, float p_cascade_forward_offset, uint32_t p_requested_history_size);
 
 	void setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBuffersRD> p_render_buffers, const Transform3D &p_transform, const PagedArray<RID> &p_voxel_gi_instances, uint32_t &r_voxel_gi_instances_used);
-	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
+	void process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_hddagi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances);
 
 	RID voxel_gi_instance_create(RID p_base);
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform);

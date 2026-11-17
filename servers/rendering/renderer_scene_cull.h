@@ -1113,9 +1113,8 @@ public:
 		uint32_t shadow_count;
 
 		struct HDDAGI {
-			//have arrays here because HDDAGI functions expects this, plus regions can have areas
-			AABB region_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
-			uint32_t region_cascade[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; //max 3 regions per cascade
+			AABB region_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; // Up to three regions per cascade.
+			uint32_t region_cascade[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; // Up to three regions per cascade.
 			uint32_t region_count = 0;
 
 			uint32_t cascade_light_index[HDDAGI_MAX_CASCADES];
@@ -1351,12 +1350,13 @@ public:
 
 	// HDDAGI
 
-	PASS15(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, float, bool, bool)
+	PASS14(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, bool, bool)
+	PASS2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
+	PASS2(environment_set_hddagi_cascade_forward_offset, RID, float)
 
 	PASS1RC(bool, environment_get_hddagi_enabled, RID)
 	PASS1RC(int, environment_get_hddagi_cascades, RID)
 	PASS1RC(float, environment_get_hddagi_min_cell_size, RID)
-	PASS1RC(bool, environment_get_hddagi_use_occlusion, RID)
 	PASS1RC(float, environment_get_hddagi_bounce_feedback, RID)
 	PASS1RC(bool, environment_get_hddagi_read_sky_light, RID)
 	PASS1RC(float, environment_get_hddagi_energy, RID)
@@ -1385,8 +1385,6 @@ public:
 
 	PASS1(positional_soft_shadow_filter_set_quality, RSE::ShadowQuality)
 	PASS1(directional_soft_shadow_filter_set_quality, RSE::ShadowQuality)
-
-	PASS2(hddagi_set_debug_probe_select, const Vector3 &, const Vector3 &)
 
 	/* Render Buffers */
 

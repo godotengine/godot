@@ -81,11 +81,11 @@ void RenderingServer::sdfgi_reset() {
 void RenderingServer::environment_set_sdfgi(RID p_env, bool p_enable, int p_cascades, float p_min_cell_size, RSE::EnvironmentSDFGIYScale p_y_scale, bool p_use_occlusion, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_probe_bias) {
 	ERR_FAIL_INDEX(int(p_y_scale), int(RSE::ENV_SDFGI_Y_SCALE_100_PERCENT) + 1);
 	static constexpr RSE::EnvironmentHDDAGICascadeFormat cascade_formats[3] = {
-		RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT,
-		RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT,
-		RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16,
+		RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT,
+		RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT,
+		RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16,
 	};
-	environment_set_hddagi(p_env, p_enable, p_cascades, cascade_formats[p_y_scale], p_min_cell_size, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias, p_probe_bias, p_probe_bias, true, true);
+	environment_set_hddagi(p_env, p_enable, p_cascades, cascade_formats[p_y_scale], p_min_cell_size, p_use_occlusion, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_probe_bias, p_probe_bias, true, true);
 }
 
 void RenderingServer::environment_set_sdfgi_ray_count(RSE::EnvironmentSDFGIRayCount p_ray_count) {
@@ -109,10 +109,6 @@ void RenderingServer::environment_set_sdfgi_frames_to_converge(RSE::EnvironmentS
 void RenderingServer::environment_set_sdfgi_frames_to_update_light(RSE::EnvironmentSDFGIFramesToUpdateLight p_update) {
 	ERR_FAIL_INDEX(int(p_update), int(RSE::ENV_SDFGI_UPDATE_LIGHT_MAX));
 	environment_set_hddagi_frames_to_update_light(RSE::EnvironmentHDDAGIFramesToUpdateLight(p_update));
-}
-
-void RenderingServer::sdfgi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-	hddagi_set_debug_probe_select(p_position, p_dir);
 }
 
 void RenderingServer::_bind_compatibility_methods() {

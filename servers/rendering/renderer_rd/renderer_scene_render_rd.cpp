@@ -225,18 +225,6 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
-void RendererSceneRenderRD::_debug_hddagi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
-	ERR_FAIL_COND(p_render_buffers.is_null());
-
-	if (!p_render_buffers->has_custom_data(RB_SCOPE_HDDAGI)) {
-		return; //nothing to debug
-	}
-
-	Ref<RendererRD::GI::HDDAGI> hddagi = p_render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
-
-	hddagi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
-}
-
 ////////////////////////////////
 Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	Ref<RenderSceneBuffersRD> rb;
@@ -1012,6 +1000,7 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW:
 		case RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME:
 		case RSE::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
+		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
 		case RSE::VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS:
@@ -1030,7 +1019,6 @@ bool RendererSceneRenderRD::_debug_draw_can_use_effects(RSE::ViewportDebugDraw p
 		case RSE::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSAO:
 		case RSE::VIEWPORT_DEBUG_DRAW_SSIL:
-		case RSE::VIEWPORT_DEBUG_DRAW_HDDAGI:
 		case RSE::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
 		case RSE::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
 			can_use_effects = true;
@@ -1357,7 +1345,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 		}
 
 		Ref<RendererRD::GI::HDDAGI> hddagi = p_render_data->render_buffers->get_custom_data(RB_SCOPE_HDDAGI);
-		hddagi->update_probes(p_render_data->environment, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)), p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
+		hddagi->update_probes(p_render_data->environment, p_render_data->camera_attributes, sky.sky_owner.get_or_null(environment_get_sky(p_render_data->environment)), p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform);
 	}
 }
 
@@ -1494,10 +1482,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.lightmaps = &empty;
 	}
 
-	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED ||
-			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
-			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING ||
-			get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING || get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
 		render_data.decals = &empty;
 	}
 
@@ -1761,11 +1746,6 @@ PackedByteArray RendererSceneRenderRD::bake_render_area_light_atlas(const TypedA
 	data = RD::get_singleton()->texture_get_data(area_light_atlas_texture, 0);
 	RD::get_singleton()->free_rid(area_light_atlas_texture);
 	return data;
-}
-
-void RendererSceneRenderRD::hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-	gi.hddagi_debug_probe_pos = p_position;
-	gi.hddagi_debug_probe_dir = p_dir;
 }
 
 RendererSceneRenderRD *RendererSceneRenderRD::singleton = nullptr;

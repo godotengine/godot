@@ -157,7 +157,6 @@ void main() {
 		specular_accum /= total_weight;
 	}
 
-	//imageStore(dst_specular_buffer,pos,uvec4(rgbe_encode(specular_accum.rgb)));
 	imageStore(dst_specular_buffer, pos, uvec4(rgbe_encode(specular_accum.rgb)));
 	uint blend = uint(clamp(specular_accum.a * 0xF, 0, 0xF)) | (uint(clamp(diffuse_blend * 0xF, 0, 0xF)) << 4);
 	imageStore(dst_blend_buffer, pos, vec4(diffuse_blend, specular_accum.a, 0, 0));

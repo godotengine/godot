@@ -1670,7 +1670,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 
 		uint32_t max_hddagi_cascade = RSG::light_storage->light_get_max_hddagi_cascade(p_instance->base);
 		if (light->max_hddagi_cascade != max_hddagi_cascade) {
-			light->max_hddagi_cascade = max_hddagi_cascade; //should most likely make hddagi dirty in scenario
+			light->max_hddagi_cascade = max_hddagi_cascade;
 		}
 		light->cull_mask = RSG::light_storage->light_get_cull_mask(p_instance->base);
 	} else if (p_instance->base_type == RSE::INSTANCE_REFLECTION_PROBE) {
@@ -3338,8 +3338,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	scene_render->set_scene_pass(render_pass);
 
 	if (p_reflection_probe.is_null()) {
-		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
-		scene_render->hddagi_update(p_render_buffers, p_environment, camera_position); //update conditions for HDDAGI (whether its used or not)
+		// No rendering happens here; this only updates HDDAGI coverage and requests dirty regions.
+		scene_render->hddagi_update(p_render_buffers, p_environment, p_camera_data->main_transform);
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");
@@ -3416,7 +3416,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 	}
 
-	{ //hddagi
+	{ // HDDAGI.
 		cull.hddagi.region_count = 0;
 
 		if (p_reflection_probe.is_null()) {
@@ -3671,8 +3671,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 	}
-
-	//render HDDAGI
 
 	{
 		// Q: Should this whole block be skipped if we're rendering our reflection probe?

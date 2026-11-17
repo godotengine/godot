@@ -540,8 +540,24 @@ float RendererSceneRender::environment_get_ssil_normal_rejection(RID p_env) cons
 
 // HDDAGI
 
-void RendererSceneRender::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) {
-	environment_storage.environment_set_hddagi(p_env, p_enable, p_cascades, p_cascade_format, p_min_cell_size, p_filter_probes, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_reflection_bias, p_probe_bias, p_occlusion_bias, p_filter_reflection, p_filter_ambient);
+void RendererSceneRender::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient) {
+	environment_storage.environment_set_hddagi(p_env, p_enable, p_cascades, p_cascade_format, p_min_cell_size, p_filter_probes, p_bounce_feedback, p_read_sky, p_energy, p_normal_bias, p_reflection_bias, p_probe_bias, p_filter_reflection, p_filter_ambient);
+}
+
+void RendererSceneRender::environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset) {
+	environment_storage.environment_set_hddagi_camera_local_anchor_offset(p_env, p_offset);
+}
+
+void RendererSceneRender::environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset) {
+	environment_storage.environment_set_hddagi_cascade_forward_offset(p_env, p_offset);
+}
+
+Vector3 RendererSceneRender::environment_get_hddagi_camera_local_anchor_offset(RID p_env) const {
+	return environment_storage.environment_get_hddagi_camera_local_anchor_offset(p_env);
+}
+
+float RendererSceneRender::environment_get_hddagi_cascade_forward_offset(RID p_env) const {
+	return environment_storage.environment_get_hddagi_cascade_forward_offset(p_env);
 }
 
 bool RendererSceneRender::environment_get_hddagi_enabled(RID p_env) const {
@@ -554,10 +570,6 @@ int RendererSceneRender::environment_get_hddagi_cascades(RID p_env) const {
 
 float RendererSceneRender::environment_get_hddagi_min_cell_size(RID p_env) const {
 	return environment_storage.environment_get_hddagi_min_cell_size(p_env);
-}
-
-bool RendererSceneRender::environment_get_hddagi_use_occlusion(RID p_env) const {
-	return environment_storage.environment_get_hddagi_use_occlusion(p_env);
 }
 
 float RendererSceneRender::environment_get_hddagi_bounce_feedback(RID p_env) const {
@@ -590,10 +602,6 @@ float RendererSceneRender::environment_get_hddagi_reflection_bias(RID p_env) con
 
 float RendererSceneRender::environment_get_hddagi_probe_bias(RID p_env) const {
 	return environment_storage.environment_get_hddagi_probe_bias(p_env);
-}
-
-float RendererSceneRender::environment_get_hddagi_occlusion_bias(RID p_env) const {
-	return environment_storage.environment_get_hddagi_occlusion_bias(p_env);
 }
 
 bool RendererSceneRender::environment_get_hddagi_filter_reflection(RID p_env) const {

@@ -4650,9 +4650,6 @@ void RasterizerSceneGLES3::update() {
 	_update_dirty_skys();
 }
 
-void RasterizerSceneGLES3::hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) {
-}
-
 void RasterizerSceneGLES3::decals_set_filter(RSE::DecalFilter p_filter) {
 	decals_filter = p_filter;
 }

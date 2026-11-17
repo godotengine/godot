@@ -1578,7 +1578,7 @@ void RenderForwardClustered::_copy_framebuffer_to_ss_effects(Ref<RenderSceneBuff
 	ss_effects->copy_internal_texture_to_last_frame(p_render_buffers, *copy_effects);
 }
 
-void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_gi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices) {
+void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_hddagi, bool p_use_gi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices) {
 	// Render shadows while GI is rendering, due to how barriers are handled, this should happen at the same time
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
@@ -1592,11 +1592,6 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	}
 
 	RENDER_TIMESTAMP("Setup Shadows");
-
-	if (rb.is_valid() && p_use_gi && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
-		Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-		hddagi->store_probes();
-	}
 
 	Size2i viewport_size = Size2i(1, 1);
 	if (rb.is_valid()) {
@@ -1678,7 +1673,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	}
 
 	if (render_gi) {
-		gi.process_gi(rb, p_normal_roughness_slices, p_voxel_gi_buffer_slices, p_render_data->environment, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances);
+		gi.process_gi(rb, p_use_hddagi, p_normal_roughness_slices, p_voxel_gi_buffer_slices, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances);
 	}
 
 	if (render_shadows) {
@@ -1955,7 +1950,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		if (p_render_data->environment.is_valid()) {
 			if (environment_get_hddagi_enabled(p_render_data->environment) && get_debug_draw_mode() != RSE::VIEWPORT_DEBUG_DRAW_UNSHADED) {
-				using_hddagi = true;
+				using_hddagi = rb->has_custom_data(RB_SCOPE_HDDAGI);
 			}
 			if (environment_get_ssr_enabled(p_render_data->environment)) {
 				if (!p_render_data->transparent_bg) {
@@ -2272,7 +2267,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			}
 		}
 	}
-	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_ssr, using_sscs, using_hddagi || using_voxelgi, normal_roughness_views, voxel_gi_views);
+	_pre_opaque_render(p_render_data, using_ssao, using_ssil, using_ssr, using_sscs, using_hddagi, using_hddagi || using_voxelgi, normal_roughness_views, voxel_gi_views);
 
 	if (current_cluster_builder) {
 		base_specialization.cluster_has_area_light = current_cluster_builder->get_cluster_count_by_type(ClusterBuilderRD::ELEMENT_TYPE_AREA_LIGHT) != 0;
@@ -2375,14 +2370,18 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RD::get_singleton()->draw_list_end();
 	}
 
-	if (debug_hddagi_probes) {
-		Projection dc;
-		dc.set_depth_correction(true);
-		Projection cms[RendererSceneRender::MAX_RENDER_VIEWS];
+	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI_PROBES && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
+		Projection correction;
+		correction.set_depth_correction(true);
+		correction.add_jitter_offset(p_render_data->scene_data->taa_jitter);
+		Projection cameras[RendererSceneRender::MAX_RENDER_VIEWS];
 		for (uint32_t v = 0; v < p_render_data->scene_data->view_count; v++) {
-			cms[v] = (dc * p_render_data->scene_data->view_projection[v]) * Projection(p_render_data->scene_data->cam_transform.affine_inverse());
+			Transform3D view_transform = p_render_data->scene_data->cam_transform;
+			view_transform.origin += view_transform.basis.xform(p_render_data->scene_data->view_eye_offset[v]);
+			cameras[v] = correction * p_render_data->scene_data->view_projection[v] * Projection(view_transform.affine_inverse());
 		}
-		_debug_hddagi_probes(rb, color_only_framebuffer, p_render_data->scene_data->view_count, cms);
+		Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
+		hddagi->debug_probes(color_only_framebuffer, p_render_data->scene_data->view_count, cameras);
 	}
 
 	if (draw_sky || draw_sky_fog_only) {
@@ -2654,19 +2653,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	if (rb_data.is_valid()) {
 		_render_buffers_debug_draw(p_render_data);
-
 		if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_HDDAGI && rb->has_custom_data(RB_SCOPE_HDDAGI)) {
 			Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-			Vector<RID> view_rids;
-
-			// HDDAGI renders at internal resolution, need to check if our debug correctly supports outputting upscaled.
-			Size2i size = rb->get_internal_size();
-			RID source_texture = rb->get_internal_texture();
-			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-				view_rids.push_back(rb->get_internal_texture(v));
-			}
-
-			hddagi->debug_draw(p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, size.x, size.y, rb->get_render_target(), source_texture, view_rids);
+			hddagi->debug_draw(rb, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform);
 		}
 	}
 }
@@ -3910,6 +3899,15 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 #endif // MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		RD::Uniform u;
+		u.binding = 40;
+		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		RID blend = rb.is_valid() && rb->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) ? rb->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT_REFLECTION_BLEND) : RID();
+		RID texture = blend.is_valid() ? blend : texture_storage->texture_rd_get_default(is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+		u.append_id(texture);
+		uniforms.push_back(u);
+	}
 
 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.get_default_shader_rd(is_multiview), RENDER_PASS_UNIFORM_SET, uniforms);
 }
@@ -4180,7 +4178,7 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
 
-void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
+void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) {
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 	Ref<RendererRD::GI::HDDAGI> hddagi;
@@ -4210,19 +4208,30 @@ void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_rend
 	static const uint32_t history_frames_to_converge[RSE::ENV_HDDAGI_CONVERGE_MAX] = { 6, 12, 18, 24, 32 };
 	uint32_t requested_history_size = history_frames_to_converge[gi.hddagi_frames_to_converge];
 
-	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || requested_history_size != hddagi->frames_to_converge || hddagi->uses_occlusion != environment_get_hddagi_use_occlusion(p_environment) || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment))) {
+	if (hddagi.is_valid() && (hddagi->num_cascades != environment_get_hddagi_cascades(p_environment) || hddagi->min_cell_size != environment_get_hddagi_min_cell_size(p_environment) || requested_history_size != hddagi->frames_to_converge || hddagi->cascade_format != environment_get_hddagi_cascade_format(p_environment))) {
 		//configuration changed, erase
 		hddagi.unref();
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);
 	}
 
+	const Basis &camera_basis = p_camera_transform.basis;
+	const Vector3 world_anchor = p_camera_transform.origin + camera_basis.xform(environment_get_hddagi_camera_local_anchor_offset(p_environment));
+	const float cascade_forward_offset = environment_get_hddagi_cascade_forward_offset(p_environment);
+	Vector3 planar_world_forward = -camera_basis.get_column(2);
+	planar_world_forward.y = 0.0f;
+	if (!planar_world_forward.is_zero_approx()) {
+		planar_world_forward.normalize();
+	} else {
+		planar_world_forward = Vector3();
+	}
+
 	if (hddagi.is_null()) {
 		// re-create
-		hddagi = gi.create_hddagi(p_environment, p_world_position, requested_history_size);
+		hddagi = gi.create_hddagi(p_environment, world_anchor, planar_world_forward, cascade_forward_offset, requested_history_size);
 		rb->set_custom_data(RB_SCOPE_HDDAGI, hddagi);
 	} else {
 		//check for updates
-		hddagi->update(p_environment, p_world_position);
+		hddagi->update(p_environment, world_anchor, planar_world_forward, cascade_forward_offset);
 	}
 
 	hddagi->update_cascades();

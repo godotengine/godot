@@ -3098,6 +3098,9 @@
 			If [code]true[/code], renders [VoxelGI] and Dynamic GI ([member Environment.dynamic_gi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or Dynamic GI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
 			[b]Note:[/b] This property is only read when the project starts. To set half-resolution GI at run-time, call [method RenderingServer.gi_set_use_half_resolution] instead.
 		</member>
+		<member name="rendering/global_illumination/hddagi/fast_light_updates" type="bool" setter="" getter="" default="true">
+			Updates all surface lighting cells in a cascade when its dynamic light parameters change, including light removal. Static frames retain the cadence configured by [member rendering/global_illumination/hddagi/frames_to_update_lights]. Continuous light animation can increase the surface-lighting cost. Does not invalidate probe geometry hit caches.
+		</member>
 		<member name="rendering/global_illumination/hddagi/frames_to_converge" type="int" setter="" getter="" default="1">
 			The number of frames used to converge Dynamic GI (HDDAGI). Higher values improve quality and reduce noise, but increase latency and memory usage when lighting changes.
 			[b]Note:[/b] This property is only read when the project starts. To control Dynamic GI convergence speed at runtime, call [method RenderingServer.environment_set_hddagi_frames_to_converge] instead.
@@ -3110,6 +3113,24 @@
 			The number of frames over which dynamic lights are updated in Dynamic GI (HDDAGI). Higher values reduce GPU work, but indirect lighting from dynamic lights responds more slowly.
 			[b]Note:[/b] This only affects [Light3D] nodes whose [member Light3D.light_bake_mode] is [constant Light3D.BAKE_DYNAMIC] (which is the default). Consider making non-moving lights use the [constant Light3D.BAKE_STATIC] bake mode to improve performance.
 			[b]Note:[/b] This property is only read when the project starts. To control Dynamic GI light update speed at runtime, call [method RenderingServer.environment_set_hddagi_frames_to_update_light] instead.
+		</member>
+		<member name="rendering/global_illumination/hddagi/light_region_culling" type="bool" setter="" getter="" default="true">
+			Culls dynamic lights per voxel region when a cascade contains at least eight lights. The mask is rebuilt when the cascade moves or its dynamic light data changes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/reflection_half_resolution" type="bool" setter="" getter="" default="false">
+			Shares legacy HDDAGI reflection traces across continuous 2×2 surface blocks at the current GI resolution. Mirrors, silhouettes and roughness boundaries keep individual traces. Applies to full-trace reflection quality without VRS or mixed VoxelGI.
+		</member>
+		<member name="rendering/global_illumination/hddagi/reflection_quality" type="int" setter="" getter="" default="0">
+			Controls the legacy HDDAGI receiver reflections independently of diffuse GI. [code]0[/code] traces glossy reflections and uses probes for rough surfaces. [code]1[/code] uses world probes for all roughness values, reducing cost and sharp detail. [code]2[/code] disables this reflection contribution, allowing other environment reflection sources to remain visible.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_history_mode" type="int" setter="" getter="" default="0">
+			Selects a finite moving average (0) or an exponential moving average (1) for world-probe radiance. Exponential mode uses less memory and weights new samples by [code]2 / (history_size + 1)[/code]. Both modes retain the geometry hit cache. Changing this setting requires restarting the renderer.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_light_response" type="float" setter="" getter="" default="0.25">
+			Minimum weight given to a new radiance sample when lighting at a cached ray endpoint changes. Applies to the finite moving average in [member rendering/global_illumination/hddagi/world_probe_history_mode]. Set to 0 to disable the faster response.
+		</member>
+		<member name="rendering/global_illumination/hddagi/world_probe_validity" type="bool" setter="" getter="" default="false">
+			Skips opaque world probes whose eight adjacent voxels are solid and renormalizes the interpolation weights. If all candidates are rejected, uses the original interpolation.
 		</member>
 		<member name="rendering/global_illumination/voxel_gi/quality" type="int" setter="" getter="" default="0">
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.

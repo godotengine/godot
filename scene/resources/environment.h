@@ -71,10 +71,10 @@ public:
 	};
 
 	enum DynamicGICascadeFormat {
-		DYNAMIC_GI_CASCADE_FORMAT_16x8x16,
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16,
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT,
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT,
+		DYNAMIC_GI_CASCADE_FORMAT_16X8X16,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT,
 	};
 
 #ifndef DISABLE_DEPRECATED
@@ -162,13 +162,15 @@ private:
 	bool dynamic_gi_enabled = false;
 	int dynamic_gi_cascades = 4;
 	float dynamic_gi_min_cell_size = 0.2;
-	DynamicGICascadeFormat dynamic_gi_cascade_format = DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT;
+	DynamicGICascadeFormat dynamic_gi_cascade_format = DYNAMIC_GI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT;
 	bool dynamic_gi_use_occlusion = false;
 	float dynamic_gi_bounce_feedback = 0.5;
 	bool dynamic_gi_read_sky_light = true;
 	float dynamic_gi_energy = 1.0;
 	float dynamic_gi_normal_bias = 1.1;
 	float dynamic_gi_probe_bias = 1.1;
+	Vector3 dynamic_gi_camera_local_anchor_offset;
+	float dynamic_gi_cascade_forward_offset = 0.0;
 	void _update_dynamic_gi();
 
 	// Glow
@@ -357,6 +359,10 @@ public:
 	float get_dynamic_gi_normal_bias() const;
 	void set_dynamic_gi_probe_bias(float p_bias);
 	float get_dynamic_gi_probe_bias() const;
+	void set_dynamic_gi_camera_local_anchor_offset(const Vector3 &p_offset);
+	Vector3 get_dynamic_gi_camera_local_anchor_offset() const;
+	void set_dynamic_gi_cascade_forward_offset(float p_offset);
+	float get_dynamic_gi_cascade_forward_offset() const;
 
 #ifndef DISABLE_DEPRECATED
 	void set_sdfgi_enabled(bool p_enabled);

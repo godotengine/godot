@@ -746,10 +746,6 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Vector3 pos = get_ray_pos(p_pos);
 	Vector2 shrinked_pos = p_pos;
 
-	if (viewport->get_debug_draw() == Viewport::DEBUG_DRAW_HDDAGI_PROBES) {
-		RS::get_singleton()->hddagi_set_debug_probe_select(pos, ray);
-	}
-
 	HashSet<Ref<EditorNode3DGizmo>> found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -7032,10 +7028,10 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Emission"), VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
 	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Dynamic GI Cascades"), VIEW_DISPLAY_DEBUG_HDDAGI, SupportedRenderingMethods::FORWARD_PLUS,
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("HDDAGI Voxels"), VIEW_DISPLAY_DEBUG_HDDAGI, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires Dynamic GI to be enabled in Environment to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Dynamic GI Probes"), VIEW_DISPLAY_DEBUG_HDDAGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Left-click a Dynamic GI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires Dynamic GI to be enabled in Environment to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("HDDAGI Probes"), VIEW_DISPLAY_DEBUG_HDDAGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Displays the closest cascade of HDDAGI world-space irradiance probes."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));

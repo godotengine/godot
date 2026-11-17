@@ -110,7 +110,7 @@ public:
 
 	/* HDDAGI UPDATE */
 
-	void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
+	void hddagi_update(const Ref<RenderSceneBuffers> &, RID, const Transform3D &) override {}
 	int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override { return 0; }
 	AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return AABB(); }
 	uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return 0; }
@@ -182,7 +182,6 @@ public:
 
 	bool free(RID p_rid) override;
 	void update() override {}
-	void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) override {}
 
 	virtual void decals_set_filter(RSE::DecalFilter p_filter) override {}
 	virtual void light_projectors_set_filter(RSE::LightProjectorFilter p_filter) override {}

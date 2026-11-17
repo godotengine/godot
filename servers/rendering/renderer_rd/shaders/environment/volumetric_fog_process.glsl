@@ -113,7 +113,7 @@ struct ProbeCascadeData {
 	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 
-	vec3 pad;
+	vec3 blend_position;
 	float exposure_normalization;
 
 	uvec4 pad2;
@@ -129,7 +129,7 @@ layout(set = 1, binding = 0, std140) uniform HDDAGI {
 	float reflection_bias;
 
 	ivec3 probe_axis_size;
-	float esm_strength;
+	uint pad;
 
 	uvec4 pad3;
 
@@ -761,8 +761,8 @@ void main() {
 				occ_total_size.y *= hddagi.max_cascades;
 				vec3 occ_posf = (vec3(occ_pos) + pos_fract) / vec3(occ_total_size);
 
-				vec4 occ_0 = texture(sampler3D(hddagi_occlusion[0], linear_sampler), occ_posf);
-				vec4 occ_1 = texture(sampler3D(hddagi_occlusion[1], linear_sampler), occ_posf);
+				vec4 occ_0 = texture(sampler3D(hddagi_occlusion[0], linear_sampler), occ_posf.yxz);
+				vec4 occ_1 = texture(sampler3D(hddagi_occlusion[1], linear_sampler), occ_posf.yxz);
 
 				float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
 

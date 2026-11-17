@@ -411,8 +411,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		max_val = max_val.abs().max(min_val.abs());
 		max_val2 = max_val2.abs().max(min_val2.abs());
 
-		if (min_val.x >= 0.0 && min_val2.x >= 0.0 && max_val.x <= 1.0 && max_val2.x <= 1.0 &&
-				min_val.y >= 0.0 && min_val2.y >= 0.0 && max_val.y <= 1.0 && max_val2.y <= 1.0) {
+		if (min_val.x >= 0.0 && min_val2.x >= 0.0 && max_val.x <= 1.0 && max_val2.x <= 1.0 && min_val.y >= 0.0 && min_val2.y >= 0.0 && max_val.y <= 1.0 && max_val2.y <= 1.0) {
 			// When all channels are in the 0-1 range, we will compress to 16-bit without scaling to
 			// preserve the bits as best as possible.
 			r_uv_scale = Vector4(0.0, 0.0, 0.0, 0.0);
@@ -2236,8 +2235,7 @@ void RenderingServer::fix_surface_compatibility(RenderingServerTypes::SurfaceDat
 void RenderingServer::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
-		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" ||
-				pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
+		if (pf == "global_shader_parameter_set" || pf == "global_shader_parameter_set_override" || pf == "global_shader_parameter_get" || pf == "global_shader_parameter_get_type" || pf == "global_shader_parameter_remove") {
 			for (const StringName &E : global_shader_parameter_get_list()) {
 				r_options->push_back(E.string().quote());
 			}
@@ -3091,7 +3089,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "power", "detail", "horizon", "sharpness", "light_affect", "ao_channel_affect"), &RenderingServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
-	ClassDB::bind_method(D_METHOD("environment_set_hddagi", "env", "enable", "cascades", "cascade_format", "min_cell_size", "filter_probes", "bounce_feedback", "read_sky", "energy", "normal_bias", "reflection_bias", "probe_bias", "occlusion_bias", "filter_reflection", "filter_ambient"), &RenderingServer::environment_set_hddagi);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi", "env", "enable", "cascades", "cascade_format", "min_cell_size", "filter_probes", "bounce_feedback", "read_sky", "energy", "normal_bias", "reflection_bias", "probe_bias", "filter_reflection", "filter_ambient"), &RenderingServer::environment_set_hddagi);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_camera_local_anchor_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_camera_local_anchor_offset);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_cascade_forward_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_cascade_forward_offset);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
 
 	ClassDB::bind_method(D_METHOD("environment_glow_set_use_bicubic_upscale", "enable"), &RenderingServer::environment_glow_set_use_bicubic_upscale);
@@ -3160,10 +3160,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_HIGH);
 	BIND_ENUM_CONSTANT(RSE::ENV_SSIL_QUALITY_ULTRA);
 
-	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x8x16);
-	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16);
-	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
-	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16X8X16);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT);
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CASCADE_FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(RSE::ENV_HDDAGI_CONVERGE_IN_6_FRAMES);
@@ -3830,9 +3830,16 @@ void RenderingServer::init() {
 	}
 #endif
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_converge", PROPERTY_HINT_ENUM, "6 (Less Latency/Mem usage & Low Quality),12,18,24,32 (More Latency / Mem Usage & High Quality)"), 1);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_lights", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8,16 (Slower)"), 2);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_inactive_probes", PROPERTY_HINT_ENUM, "1 (Faster),2,4,8 (Slower)"), 3);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_converge", PROPERTY_HINT_ENUM, "6 (Low Memory),12,18,24,32 (High Memory)"), 1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_lights", PROPERTY_HINT_ENUM, "16 (Fast):4,8 (Fast):3,4 (Average):2,2 (Slow):1,1 (Slow):0"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/frames_to_update_inactive_probes", PROPERTY_HINT_ENUM, "8 (Fast):3,4 (Fast):2,2 (Average):1,1 (Slow):0"), 3);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/reflection_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest):2,Probe Only (Fast):1,Full Trace (Slow):0"), 0);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/reflection_half_resolution", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/world_probe_validity", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/light_region_culling", true);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/fast_light_updates", true);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/world_probe_history_mode", PROPERTY_HINT_ENUM, "Ring,Exponential Moving Average"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/world_probe_light_response", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.25f);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/frames_to_converge", 5);

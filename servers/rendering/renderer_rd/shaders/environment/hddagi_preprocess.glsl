@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "hddagi_voxel_metadata_inc.glsl"
+
 #define REGION_SIZE 8
 
 #define square(m) ((m) * (m))
@@ -17,7 +19,6 @@ layout(rg32ui, set = 0, binding = 2) uniform restrict writeonly uimage3D dst_vox
 layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage3D dst_region_bits;
 layout(r16ui, set = 0, binding = 4) uniform restrict writeonly uimage3D region_version;
 
-shared uint solid_bit_count;
 shared uint region_bits[((REGION_SIZE / 4) * (REGION_SIZE / 4) * (REGION_SIZE / 4)) * 2];
 
 #endif
@@ -33,8 +34,6 @@ layout(r32ui, set = 0, binding = 4) uniform restrict readonly uimage3D src_norma
 
 layout(set = 0, binding = 8) uniform texture3D occlusion[2];
 layout(set = 0, binding = 9) uniform sampler linear_sampler;
-
-layout(r8ui, set = 0, binding = 10) uniform restrict writeonly uimage3D dst_disocclusion;
 
 layout(r32ui, set = 0, binding = 11) uniform restrict writeonly uimage3D voxel_neighbours;
 layout(r32ui, set = 0, binding = 12) uniform restrict uimage3D light_tex;
@@ -56,10 +55,10 @@ void set_normal_facing(ivec3 p_pos, uint p_facing) {
 #if defined(MODE_LIGHT_STORE) || defined(MODE_LIGHT_SCROLL)
 
 struct ProcessVoxel {
-	uint position; // xyz 10 bit packed - then 2 extra bits for dynamic and static pending
+	uint position; // xyz 7 bits each, plus dynamic and static pending flags
 	uint albedo_normal; // 0 - 16, 17 - 31 normal in octahedral format
 	uint emission; // RGBE emission
-	uint occlusion; // cached 4 bits occlusion for each 8 neighbouring probes
+	uint occlusion; // cached 4 bits occlusion for each 8 neighboring probes
 };
 
 #endif
@@ -81,6 +80,11 @@ layout(set = 0, binding = 6, std430) restrict buffer writeonly ProcessVoxels {
 	ProcessVoxel data[];
 }
 dst_process_voxels;
+
+layout(set = 0, binding = 13, std430) restrict writeonly buffer SourceEmission {
+	uint data[];
+}
+dst_source_emission;
 
 shared uint store_position_count;
 shared uint store_from_index;
@@ -106,6 +110,20 @@ layout(set = 0, binding = 8, std430) restrict buffer readonly SrcProcessVoxels {
 }
 src_process_voxels;
 
+layout(set = 0, binding = 14, std430) restrict readonly buffer PreviousSourceEmission {
+	uint data[];
+}
+src_source_emission;
+
+#endif
+
+#ifdef MODE_OCCLUSION_FILTER
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(set = 0, binding = 1) uniform texture3D occlusion[2];
+layout(set = 0, binding = 2) uniform sampler linear_sampler;
+layout(r32ui, set = 0, binding = 3) uniform restrict readonly uimage3D voxel_neighbours;
+layout(rgba8_snorm, set = 0, binding = 4) uniform restrict writeonly image3D dst_correction_0;
+layout(rgba8_snorm, set = 0, binding = 5) uniform restrict writeonly image3D dst_correction_1;
 #endif
 
 // Some occlusion defines
@@ -152,22 +170,13 @@ uint get_bit_normal(ivec3 p_pos) {
 	return bit_normals[occ_pos];
 }
 
-ivec3 offset_to_pos(int p_offset) {
-	return ivec3(p_offset % REGION_SIZE, (p_offset / REGION_SIZE) % REGION_SIZE, p_offset / (REGION_SIZE * REGION_SIZE));
+const int PROBE_LOOKUP_DATA_SIZE = LIGHTPROBE_OCT_SIZE == 4 ? 164 : (LIGHTPROBE_OCT_SIZE == 5 ? 424 : 712);
+layout(set = 0, binding = 5, std430) restrict readonly buffer OcclusionLookup {
+	uint probe_lookup_data[PROBE_LOOKUP_DATA_SIZE];
+	uvec2 group_size_offset[11];
+	uint group_pos[256];
 }
-
-const uvec2 group_size_offset[11] = uvec2[](uvec2(1, 0), uvec2(3, 1), uvec2(6, 4), uvec2(10, 10), uvec2(15, 20), uvec2(21, 35), uvec2(28, 56), uvec2(36, 84), uvec2(42, 120), uvec2(46, 162), uvec2(48, 208));
-const uint group_pos[256] = uint[](0,
-		65536, 256, 1,
-		131072, 65792, 512, 65537, 257, 2,
-		196608, 131328, 66048, 768, 131073, 65793, 513, 65538, 258, 3,
-		262144, 196864, 131584, 66304, 1024, 196609, 131329, 66049, 769, 131074, 65794, 514, 65539, 259, 4,
-		327680, 262400, 197120, 131840, 66560, 1280, 262145, 196865, 131585, 66305, 1025, 196610, 131330, 66050, 770, 131075, 65795, 515, 65540, 260, 5,
-		393216, 327936, 262656, 197376, 132096, 66816, 1536, 327681, 262401, 197121, 131841, 66561, 1281, 262146, 196866, 131586, 66306, 1026, 196611, 131331, 66051, 771, 131076, 65796, 516, 65541, 261, 6,
-		458752, 393472, 328192, 262912, 197632, 132352, 67072, 1792, 393217, 327937, 262657, 197377, 132097, 66817, 1537, 327682, 262402, 197122, 131842, 66562, 1282, 262147, 196867, 131587, 66307, 1027, 196612, 131332, 66052, 772, 131077, 65797, 517, 65542, 262, 7,
-		459008, 393728, 328448, 263168, 197888, 132608, 67328, 458753, 393473, 328193, 262913, 197633, 132353, 67073, 1793, 393218, 327938, 262658, 197378, 132098, 66818, 1538, 327683, 262403, 197123, 131843, 66563, 1283, 262148, 196868, 131588, 66308, 1028, 196613, 131333, 66053, 773, 131078, 65798, 518, 65543, 263,
-		459264, 393984, 328704, 263424, 198144, 132864, 459009, 393729, 328449, 263169, 197889, 132609, 67329, 458754, 393474, 328194, 262914, 197634, 132354, 67074, 1794, 393219, 327939, 262659, 197379, 132099, 66819, 1539, 327684, 262404, 197124, 131844, 66564, 1284, 262149, 196869, 131589, 66309, 1029, 196614, 131334, 66054, 774, 131079, 65799, 519,
-		459520, 394240, 328960, 263680, 198400, 459265, 393985, 328705, 263425, 198145, 132865, 459010, 393730, 328450, 263170, 197890, 132610, 67330, 458755, 393475, 328195, 262915, 197635, 132355, 67075, 1795, 393220, 327940, 262660, 197380, 132100, 66820, 1540, 327685, 262405, 197125, 131845, 66565, 1285, 262150, 196870, 131590, 66310, 1030, 196615, 131335, 66055, 775);
+occlusion_lookup;
 #endif
 
 #ifdef MODE_LIGHTPROBE_NEIGHBOURS
@@ -194,6 +203,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(r8ui, set = 0, binding = 1) uniform restrict readonly uimage3D src_region_bits;
 layout(r8, set = 0, binding = 2) uniform restrict writeonly image2DArray dst_probe_geometry_proximity;
+layout(rg32ui, set = 0, binding = 3) uniform restrict readonly uimage3D src_voxel_bits;
 
 #endif
 
@@ -236,6 +246,11 @@ layout(push_constant, std430) uniform Params {
 
 	ivec3 upper_region_world_pos;
 	int occlusion_offset;
+
+	uint history_mode;
+	uint pad0;
+	uint pad1;
+	uint pad2;
 }
 params;
 
@@ -315,7 +330,115 @@ ivec2 probe_to_texp(ivec3 local_probe) {
 	return cell.xy + ivec2(0, cell.z * int(params.probe_axis_size.y));
 }
 
+#ifdef MODE_LIGHT_STORE
+#include "hddagi_surface_inc.glsl"
+#endif
+
+#ifdef MODE_OCCLUSION_FILTER
+float hddagi_occlusion_filter_path(vec3 midpoint, int axis, int cascade) {
+	ivec3 base = ivec3(floor(midpoint - 0.5));
+	vec3 fraction = fract(midpoint - 0.5);
+	float weight = 0.0;
+	for (int corner = 0; corner < 8; corner++) {
+		ivec3 offset = (ivec3(corner) >> ivec3(0, 1, 2)) & 1;
+		ivec3 cell = base + offset;
+		if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, params.grid_size)) || cell[axis] < 1 || cell[axis] >= params.grid_size[axis] - 1) {
+			continue;
+		}
+		cell = (cell + params.region_world_pos * PROBE_CELLS) & (params.grid_size - 1);
+		cell.y += cascade * params.grid_size.y;
+		uint paths = imageLoad(voxel_neighbours, cell).r;
+		vec3 w = mix(vec3(1.0) - fraction, fraction, bvec3(offset));
+		weight += float((paths >> (HDDAGI_OCCLUSION_PATH_SHIFT + uint(axis))) & 1u) * w.x * w.y * w.z;
+	}
+	return weight;
+}
+
+void hddagi_occlusion_filter(vec3 posf, int cascade, inout vec4 occ_0, inout vec4 occ_1) {
+	ivec3 posi = ivec3(floor(posf));
+	vec4 accum_0 = occ_0 * 0.25;
+	vec4 accum_1 = occ_1 * 0.25;
+	vec4 total_0 = vec4(0.25);
+	vec4 total_1 = vec4(0.25);
+	vec3 local = mod(posf, float(PROBE_CELLS));
+	ivec3 total_size = params.grid_size + 2;
+	total_size.y *= params.cascade_count;
+	for (int axis = 0; axis < 3; axis++) {
+		float distance_to_seam = min(local[axis], float(PROBE_CELLS) - local[axis]);
+		float strength = 1.0 - smoothstep(0.5, 2.5, distance_to_seam);
+		if (strength <= 0.0) {
+			continue;
+		}
+		int seam = int(floor(posf[axis] / float(PROBE_CELLS) + 0.5));
+		// Only channels naming the same physical probe on both sides may blend.
+		int parity = (seam + params.region_world_pos[axis]) & 1;
+		vec4 mask_0 = vec4(equal((ivec4(0, 1, 2, 3) >> axis) & 1, ivec4(parity))) * strength;
+		vec4 mask_1 = vec4(equal((ivec4(4, 5, 6, 7) >> axis) & 1, ivec4(parity))) * strength;
+		vec4 samples_0[2];
+		vec4 samples_1[2];
+		for (int sample_index = 0; sample_index < 2; sample_index++) {
+			ivec3 step = ivec3(0);
+			step[axis] = sample_index * 2 - 1;
+			ivec3 sample_cell = (posi + step * 2 + params.region_world_pos * PROBE_CELLS) & (params.grid_size - 1);
+			sample_cell += 1;
+			sample_cell.y += (params.grid_size.y + 2) * cascade;
+			vec3 uv = (vec3(sample_cell) + fract(posf)) / vec3(total_size);
+			samples_0[sample_index] = texture(sampler3D(occlusion[0], linear_sampler), uv.yxz);
+			samples_1[sample_index] = texture(sampler3D(occlusion[1], linear_sampler), uv.yxz);
+		}
+		mask_0 *= smoothstep(vec4(0.25), vec4(0.75), abs(samples_0[1] - samples_0[0]));
+		mask_1 *= smoothstep(vec4(0.25), vec4(0.75), abs(samples_1[1] - samples_1[0]));
+		if (all(equal(mask_0, vec4(0.0))) && all(equal(mask_1, vec4(0.0)))) {
+			continue;
+		}
+		for (int side = -1; side <= 1; side += 2) {
+			ivec3 step = ivec3(0);
+			step[axis] = side;
+			float path_weight = hddagi_occlusion_filter_path(posf + vec3(step), axis, cascade);
+			if (path_weight <= 0.0) {
+				continue;
+			}
+			accum_0 += samples_0[(side + 1) / 2] * mask_0 * path_weight;
+			accum_1 += samples_1[(side + 1) / 2] * mask_1 * path_weight;
+			total_0 += mask_0 * path_weight;
+			total_1 += mask_1 * path_weight;
+		}
+	}
+	occ_0 = accum_0 / total_0;
+	occ_1 = accum_1 / total_1;
+}
+
+#endif
+
 void main() {
+#ifdef MODE_OCCLUSION_FILTER
+	ivec3 texel = ivec3(gl_GlobalInvocationID);
+	ivec3 half_grid = params.grid_size / 2;
+	ivec3 output_size = half_grid + 2;
+	if (any(greaterThanEqual(texel, output_size))) {
+		return;
+	}
+	ivec3 world_cell = (texel - 1) & (half_grid - 1);
+	ivec3 local_cell = (world_cell - params.region_world_pos * (PROBE_CELLS / 2)) & (half_grid - 1);
+	vec3 posf = hddagi_occlusion_cache_sample_position(local_cell);
+	ivec3 occ_pos = (ivec3(posf) + params.region_world_pos * PROBE_CELLS) & (params.grid_size - 1);
+	occ_pos += 1;
+	occ_pos.y += (params.grid_size.y + 2) * params.cascade;
+	ivec3 source_size = params.grid_size + 2;
+	source_size.y *= params.cascade_count;
+	vec3 uv = (vec3(occ_pos) + fract(posf)) / vec3(source_size);
+	vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), uv.yxz);
+	vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), uv.yxz);
+	vec4 original_0 = occ_0;
+	vec4 original_1 = occ_1;
+	hddagi_occlusion_filter(posf, params.cascade, occ_0, occ_1);
+	texel.y += output_size.y * params.cascade;
+	// Cache only the correction. Downsampling absolute visibility also blurs
+	// walls away from probe seams and can reintroduce light leaks.
+	imageStore(dst_correction_0, texel.yxz, occ_0 - original_0);
+	imageStore(dst_correction_1, texel.yxz, occ_1 - original_1);
+#endif
+
 #ifdef MODE_REGION_STORE
 
 	ivec3 region_mask = (params.grid_size / REGION_SIZE) - 1;
@@ -326,10 +449,6 @@ void main() {
 	uint subregion_ofs = subregion.z * 4 + subregion.y * 2 + subregion.x;
 	ivec3 subregion_pos = region_pos % 4;
 	uint subregion_bit = subregion_pos.z * 16 + subregion_pos.y * 4 + subregion_pos.x;
-
-	if (region_pos == ivec3(0)) {
-		solid_bit_count = 0;
-	}
 
 	if (subregion_pos == ivec3(0)) {
 		region_bits[subregion_ofs * 2 + 0] = 0;
@@ -342,7 +461,6 @@ void main() {
 	uint p = imageLoad(src_normal_bits, src_pos).r;
 
 	if (p != 0) {
-		atomicAdd(solid_bit_count, 1);
 		if (subregion_bit < 32) {
 			atomicOr(region_bits[subregion_ofs * 2 + 0], 1 << subregion_bit);
 		} else {
@@ -364,7 +482,13 @@ void main() {
 
 	if (region_pos == ivec3(0)) {
 		dst_region.y += params.cascade * (params.grid_size.y / REGION_SIZE);
-		imageStore(dst_region_bits, dst_region, uvec4(solid_bit_count > 0 ? 1 : 0));
+		uint block_mask = 0u;
+		for (uint i = 0u; i < 8u; i++) {
+			if ((region_bits[i * 2u] | region_bits[i * 2u + 1u]) != 0u) {
+				block_mask |= 1u << i;
+			}
+		}
+		imageStore(dst_region_bits, dst_region, uvec4(block_mask));
 
 		imageStore(region_version, dst_region, uvec4(params.region_version));
 
@@ -427,7 +551,10 @@ void main() {
 			thread_active = false;
 		} else if (index == 0) {
 			store_from_index = atomicAdd(dispatch_data.total_count, store_position_count);
-			uint group_count = (store_from_index + store_position_count - 1) / 64 + 1;
+			if (store_from_index + store_position_count > uint(params.maximum_light_cells)) {
+				atomicMin(dispatch_data.total_count, uint(params.maximum_light_cells));
+			}
+			uint group_count = (min(store_from_index + store_position_count, uint(params.maximum_light_cells)) + 63u) / 64u;
 			atomicMax(dispatch_data.x, group_count);
 		}
 	}
@@ -445,6 +572,7 @@ void main() {
 		dst_process_voxels.data[index].position = uint(dst_pos.x | (dst_pos.y << 7) | (dst_pos.z << 14)) | src_pending_bits;
 		dst_process_voxels.data[index].albedo_normal = src_process_voxels.data[src_index].albedo_normal;
 		dst_process_voxels.data[index].emission = src_process_voxels.data[src_index].emission;
+		dst_source_emission.data[index] = src_source_emission.data[src_index];
 		dst_process_voxels.data[index].occlusion = src_process_voxels.data[src_index].occlusion;
 	}
 #endif
@@ -490,6 +618,7 @@ void main() {
 	uint occlusionu = 0;
 	bool voxels_found = false;
 	ivec3 base_dst_pos;
+	uint neighbour_voxels = 0u;
 
 	if (thread_active) {
 		uint solid = get_normal_facing(local);
@@ -503,164 +632,15 @@ void main() {
 			}
 		}
 
-		//opposite to aniso dir
-		const ivec3 offsets[6] = ivec3[](
-				ivec3(1, 0, 0),
-				ivec3(-1, 0, 0),
-				ivec3(0, 1, 0),
-				ivec3(0, -1, 0),
-				ivec3(0, 0, 1),
-				ivec3(0, 0, -1));
-
-		const vec3 aniso_dir[6] = vec3[](
-				vec3(-1, 0, 0),
-				vec3(1, 0, 0),
-				vec3(0, -1, 0),
-				vec3(0, 1, 0),
-				vec3(0, 0, -1),
-				vec3(0, 0, 1));
-
-		// aniso dir in bitform
-		const uint aniso_mask[6] = uint[](
-				(1 << 0),
-				(1 << 1),
-				(1 << 2),
-				(1 << 3),
-				(1 << 4),
-				(1 << 5));
-
-		const uint aniso_offset_mask[6] = uint[](
-				(1 << 1),
-				(1 << 0),
-				(1 << 3),
-				(1 << 2),
-				(1 << 5),
-				(1 << 4));
-
-		uint disocclusion = 0;
-
-		const int facing_direction_count = 26;
-		const vec3 facing_directions[26] = vec3[](vec3(-1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 0.0, 1.0), vec3(-0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, -0.7071067811865475, 0.0), vec3(-0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(-0.7071067811865475, 0.0, -0.7071067811865475), vec3(-0.7071067811865475, 0.0, 0.7071067811865475), vec3(-0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(-0.7071067811865475, 0.7071067811865475, 0.0), vec3(-0.5773502691896258, 0.5773502691896258, 0.5773502691896258), vec3(0.0, -0.7071067811865475, -0.7071067811865475), vec3(0.0, -0.7071067811865475, 0.7071067811865475), vec3(0.0, 0.7071067811865475, -0.7071067811865475), vec3(0.0, 0.7071067811865475, 0.7071067811865475), vec3(0.5773502691896258, -0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, -0.7071067811865475, 0.0), vec3(0.5773502691896258, -0.5773502691896258, 0.5773502691896258), vec3(0.7071067811865475, 0.0, -0.7071067811865475), vec3(0.7071067811865475, 0.0, 0.7071067811865475), vec3(0.5773502691896258, 0.5773502691896258, -0.5773502691896258), vec3(0.7071067811865475, 0.7071067811865475, 0.0), vec3(0.5773502691896258, 0.5773502691896258, 0.5773502691896258));
-
-		bool use_for_filter = false;
-
-		for (int i = 0; i < 6; i++) {
-			uint n = get_normal_facing(local + offsets[i]);
-			if (n == 0) {
-				disocclusion |= aniso_offset_mask[i];
-			} else if (solid == 0) {
-				use_for_filter = true;
-			}
-
-			if (solid != 0 || !bool(n & aniso_mask[i])) {
-				// Not solid, continue.
-				continue;
-			}
-
-			voxels_found = true;
-
-			for (int j = 0; j < facing_direction_count; j++) {
-				if (bool(n & uint((1 << (j + 6))))) {
-					normal_accum += facing_directions[j];
-				}
-			}
-
-			ivec3 ofs = pos + offsets[i];
-			//normal_accum += aniso_dir[i];
-
-			ivec3 albedo_ofs = ofs >> 1;
-			albedo_ofs.z *= 6;
-			albedo_ofs.z += i;
-
-			uint a = imageLoad(src_albedo, albedo_ofs).r;
-			albedo_accum += vec4(vec3((ivec3(a) >> ivec3(0, 5, 11)) & ivec3(0x1f, 0x3f, 0x1f)) / vec3(31.0, 63.0, 31.0), 1.0);
-
-			uint rgbe = imageLoad(src_emission, ofs >> 1).r;
-
-			vec3 emission = rgbe_decode(rgbe);
-
-			uint rgbe_aniso = imageLoad(src_emission_aniso, ofs >> 1).r;
-			float strength = ((rgbe_aniso >> (i * 5)) & 0x1F) / float(0x1F);
-			emission_accum += vec4(emission * strength, 1.0);
-		}
-
+		voxels_found = hddagi_build_surface(pos, local, albedo_accum, emission_accum, normal_accum, neighbour_voxels);
 		base_dst_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - 1);
-		ivec3 dst_pos = base_dst_pos + params.grid_size.y * params.cascade;
-		imageStore(dst_disocclusion, dst_pos, uvec4(disocclusion));
-
-		if (solid != 0) {
+		ivec3 dst_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
+		imageStore(voxel_neighbours, dst_pos, uvec4(neighbour_voxels));
+		if (!voxels_found) {
+			imageStore(light_tex, dst_pos, uvec4(0));
+		}
+		if (solid != 0u) {
 			thread_active = false; // No further use for this, this is a solid voxel.
-		} else if (use_for_filter) {
-			uint neighbour_voxels = 0;
-
-			for (int i = 0; i < facing_direction_count; i++) {
-				ivec3 neighbour = ivec3(sign(facing_directions[i]));
-				ivec3 neighbour_pos = local + neighbour;
-				uint n = get_normal_facing(neighbour_pos);
-				if (n == 0) {
-					continue; // Nothing here
-				}
-
-				for (int j = 0; j < 6; j++) {
-					//if (!bool(n&(1<<j))) {
-					//	continue; // Nothing here either.
-					//}
-					ivec3 neighbour_neighbour = neighbour_pos + ivec3(aniso_dir[j]);
-					ivec3 nn_rel = neighbour_neighbour - local;
-
-					if (any(lessThan(nn_rel, -ivec3(1))) || any(greaterThan(nn_rel, +ivec3(1)))) {
-						continue; // Too far away, ignore.
-					}
-
-					if (nn_rel == ivec3(0)) {
-						continue; // Point to itself, ignore.
-					}
-
-					uint q = get_normal_facing(local + nn_rel);
-					if (q != 0) {
-						continue; // Points to a solid block (can happen), Ignore.
-					}
-
-					ivec3 nn_rel_abs = abs(nn_rel);
-
-					int nn_steps = nn_rel_abs.x + nn_rel_abs.y + nn_rel_abs.z;
-					if (nn_steps == 3) {
-						continue;
-					}
-					if (nn_steps > 1) {
-						// must make sure we are not occluded towards this
-						ivec3 test_dirs[3] = ivec3[](ivec3(nn_rel.x, 0, 0), ivec3(0, nn_rel.y, 0), ivec3(0, 0, nn_rel.z));
-						int occlusions = 0;
-						for (int k = 0; k < 3; k++) {
-							if (test_dirs[k] == ivec3(0)) {
-								continue; // Direction not used
-							}
-
-							q = get_normal_facing(local + test_dirs[k]);
-							if (q != 0) {
-								occlusions++;
-							}
-						}
-
-						if (occlusions >= 2) {
-							continue; // Occluded from here, ignore. May be unoccluded from another neighbour.
-						}
-					}
-
-					const uint reverse_map[27] = uint[](6, 14, 18, 9, 4, 21, 11, 16, 23, 7, 2, 19, 0, 0, 1, 12, 3, 24, 8, 15, 20, 10, 5, 22, 13, 17, 25);
-					ivec3 abs_pos = nn_rel + ivec3(1);
-					// All good, this is a valid neighbour!
-					neighbour_voxels |= 1 << reverse_map[abs_pos.z * 3 * 3 + abs_pos.y * 3 + abs_pos.x];
-				}
-			}
-
-			ivec3 store_pos = (pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
-			store_pos.y += params.grid_size.y * params.cascade;
-			imageStore(voxel_neighbours, store_pos, uvec4(neighbour_voxels));
-			if (!voxels_found) {
-				// Light voxels won't be stored here, but still ensure this is black to avoid light leaking from outside.
-				imageStore(light_tex, store_pos, uvec4(0));
-			}
 		}
 	}
 
@@ -683,7 +663,10 @@ void main() {
 			// global increment only once per group, to reduce pressure
 			if (thread_active && index == 0) {
 				store_from_index = atomicAdd(dispatch_data.total_count, store_position_count);
-				uint group_count = (store_from_index + store_position_count - 1) / 64 + 1;
+				if (store_from_index + store_position_count > uint(params.maximum_light_cells)) {
+					atomicMin(dispatch_data.total_count, uint(params.maximum_light_cells));
+				}
+				uint group_count = (min(store_from_index + store_position_count, uint(params.maximum_light_cells)) + 63u) / 64u;
 				atomicMax(dispatch_data.x, group_count);
 			}
 		}
@@ -700,8 +683,8 @@ void main() {
 		ivec3 occ_pos = base_dst_pos + ivec3(1);
 		occ_pos.y += (params.grid_size.y + 2) * params.cascade;
 
-		vec4 occ_0 = texelFetch(sampler3D(occlusion[0], linear_sampler), occ_pos, 0);
-		vec4 occ_1 = texelFetch(sampler3D(occlusion[1], linear_sampler), occ_pos, 0);
+		vec4 occ_0 = texelFetch(sampler3D(occlusion[0], linear_sampler), occ_pos.yxz, 0);
+		vec4 occ_1 = texelFetch(sampler3D(occlusion[1], linear_sampler), occ_pos.yxz, 0);
 
 		if (bool(base_probe.x & 1)) {
 			occ_0.xyzw = occ_0.yxwz;
@@ -725,12 +708,10 @@ void main() {
 			occ_1 /= total_weight;
 		}
 
-		float weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
-
 		for (int i = 0; i < 8; i++) {
 			float w;
 			if (total_weight > 0.0) {
-				w = weights[i];
+				w = hddagi_occlusion_weight(occ_0, occ_1, i);
 				w *= 15.0;
 			} else {
 				w = 0;
@@ -741,29 +722,22 @@ void main() {
 		index += store_from_index;
 
 		if (index < params.maximum_light_cells) {
-			normal_accum = normalize(normal_accum);
-			albedo_accum.rgb /= albedo_accum.a;
+			ivec3 metadata_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
+			imageStore(voxel_neighbours, metadata_pos, uvec4(neighbour_voxels | HDDAGI_LIGHT_CELL_VALID_BIT));
 			emission_accum.rgb /= emission_accum.a;
-
 			dst_process_voxels.data[index].position = uint(pos.x | (pos.y << 7) | (pos.z << 14)) | PROCESS_STATIC_PENDING_BIT | PROCESS_DYNAMIC_PENDING_BIT;
-
-			uint albedo_norm = 0;
-			albedo_norm |= clamp(uint(albedo_accum.r * 31.0), 0, 31) << 0;
-			albedo_norm |= clamp(uint(albedo_accum.g * 63.0), 0, 63) << 5;
-			albedo_norm |= clamp(uint(albedo_accum.b * 31.0), 0, 31) << 11;
-
-			vec2 octa_normal = octahedron_encode(normal_accum);
-			uvec2 octa_unormal = clamp(uvec2(octa_normal * 255), uvec2(0), uvec2(255));
-			albedo_norm |= (octa_unormal.x << 16) | (octa_unormal.y << 24);
+			uint albedo_norm = hddagi_pack_surface_albedo(albedo_accum, normal_accum);
 
 			dst_process_voxels.data[index].albedo_normal = albedo_norm;
 			dst_process_voxels.data[index].emission = rgbe_encode(emission_accum.rgb);
+			dst_source_emission.data[index] = rgbe_encode(emission_accum.rgb);
 
 			dst_process_voxels.data[index].occlusion = occlusionu;
+		} else {
+			ivec3 metadata_pos = base_dst_pos + ivec3(0, params.grid_size.y * params.cascade, 0);
+			imageStore(light_tex, metadata_pos, uvec4(0));
 		}
 	}
-
-	// Compute probe neighbours
 
 #endif
 
@@ -794,20 +768,12 @@ void main() {
 	ivec3 occ_tex_size = params.grid_size + ivec3(2);
 	occ_tex_size.y *= params.cascade_count;
 	for (int i = 0; i < 6; i++) {
-		const vec3 aniso_dir[6] = vec3[](
-				vec3(-1, 0, 0),
-				vec3(1, 0, 0),
-				vec3(0, -1, 0),
-				vec3(0, 1, 0),
-				vec3(0, 0, -1),
-				vec3(0, 0, 1));
-
-		ivec3 dir = ivec3(aniso_dir[i]);
+		ivec3 dir = hddagi_axis_direction(uint(i));
 		ivec3 probe_next = probe + dir;
 		if (any(lessThan(probe_next, ivec3(0))) || any(greaterThanEqual(probe_next, params.probe_axis_size))) {
 			continue; // Outside range
 		}
-		vec3 test_pos = vec3(probe * REGION_SIZE) + aniso_dir[i] * (REGION_SIZE - 1);
+		vec3 test_pos = vec3(probe * REGION_SIZE) + vec3(hddagi_axis_direction(uint(i))) * (REGION_SIZE - 1);
 
 		ivec3 occ_pos = ivec3(test_pos);
 		occ_pos = (occ_pos + params.region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
@@ -815,11 +781,10 @@ void main() {
 		occ_pos.y += (int(params.grid_size.y) + 2) * params.cascade;
 		vec3 occ_posf = vec3(occ_pos) + fract(test_pos);
 		occ_posf /= vec3(occ_tex_size);
-		vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf);
-		vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf);
-		float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+		vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf.yxz);
+		vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf.yxz);
 
-		float visibility = occ_weights[occlusion_layer];
+		float visibility = hddagi_occlusion_weight(occ_0, occ_1, int(occlusion_layer));
 
 		neighbour_visibility |= uint(clamp(visibility * 0xF, 0, 0xF)) << (i * 4);
 	}
@@ -842,7 +807,7 @@ void main() {
 	bool found_geometry = false;
 	for (int i = 0; i < 8; i++) {
 		// Check all 8 regions around
-		ivec3 offset = ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1)) * ivec3(2) - ivec3(1);
+		ivec3 offset = ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1)) - ivec3(1);
 		ivec3 region = probe + offset;
 		if (any(lessThan(region, ivec3(0)))) {
 			continue;
@@ -860,8 +825,24 @@ void main() {
 		}
 	}
 
+	// Only mark a probe buried when all eight incident voxels are solid.
+	bool buried = found_geometry;
+	for (int i = 0; i < 8 && buried; i++) {
+		ivec3 cell = probe * REGION_SIZE + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1)) - ivec3(1);
+		if (any(lessThan(cell, ivec3(0))) || any(greaterThanEqual(cell, params.grid_size))) {
+			buried = false;
+			break;
+		}
+		cell = (cell + params.region_world_pos * REGION_SIZE) & (params.grid_size - 1);
+		ivec3 block = (cell >> 2) + ivec3(0, params.cascade * (params.grid_size.y >> 2), 0);
+		uvec2 bits = imageLoad(src_voxel_bits, block).rg;
+		ivec3 local = cell & 3;
+		uint bit = uint(local.x + local.y * 4 + local.z * 16);
+		buried = (bits[bit >> 5u] & (1u << (bit & 31u))) != 0u;
+	}
 	ivec2 tex_pos = probe_to_tex(probe);
-	imageStore(dst_probe_geometry_proximity, ivec3(tex_pos, params.cascade), vec4(found_geometry ? 1.0 : 0.0));
+	// 0: empty neighbourhood; 1: geometry nearby; 0.75: buried probe (still near geometry).
+	imageStore(dst_probe_geometry_proximity, ivec3(tex_pos, params.cascade), vec4(buried ? 0.75 : (found_geometry ? 1.0 : 0.0)));
 
 #endif
 
@@ -944,8 +925,8 @@ void main() {
 		bool shrink = step >= OCC_HALF_STEPS;
 		int occ_step = shrink ? OCC_HALF_STEPS - (step - OCC_HALF_STEPS) - 1 : step;
 
-		if (invocation_idx < group_size_offset[occ_step].x) {
-			uint pv = group_pos[group_size_offset[occ_step].y + invocation_idx];
+		if (invocation_idx < occlusion_lookup.group_size_offset[occ_step].x) {
+			uint pv = occlusion_lookup.group_pos[occlusion_lookup.group_size_offset[occ_step].y + invocation_idx];
 
 			// Position in the occlusion volume.
 			// This is an optimized version of the algorithm.
@@ -1235,80 +1216,80 @@ void main() {
 			enc_occlusion |= uint(clamp(occ * 0xF, 0, 0xF)) << (i * 4);
 		}
 
-		imageStore(dst_occlusion, store_pos, uvec4(enc_occlusion));
+		imageStore(dst_occlusion, store_pos.yxz, uvec4(enc_occlusion));
 
 		// Store wrap faces
 		if (cascade_pos.x == 1) {
-			imageStore(dst_occlusion, store_pos + ivec3(params.grid_size.x, 0, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(params.grid_size.x, 0, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.y == 1) {
-			imageStore(dst_occlusion, store_pos + ivec3(0, params.grid_size.y, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(0, params.grid_size.y, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.z == 1) {
-			imageStore(dst_occlusion, store_pos + ivec3(0, 0, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(0, 0, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.x == params.grid_size.x) {
-			imageStore(dst_occlusion, store_pos - ivec3(params.grid_size.x, 0, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(params.grid_size.x, 0, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.y == params.grid_size.y) {
-			imageStore(dst_occlusion, store_pos - ivec3(0, params.grid_size.y, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(0, params.grid_size.y, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.z == params.grid_size.z) {
-			imageStore(dst_occlusion, store_pos - ivec3(0, 0, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(0, 0, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		// Store wrap edges
 		if (cascade_pos.xy == ivec2(1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(params.grid_size.xy, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(params.grid_size.xy, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xz == ivec2(1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(params.grid_size.x, 0, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(params.grid_size.x, 0, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.yz == ivec2(1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(0, params.grid_size.yz), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(0, params.grid_size.yz)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xy == params.grid_size.xy) {
-			imageStore(dst_occlusion, store_pos - ivec3(params.grid_size.xy, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(params.grid_size.xy, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xz == params.grid_size.xz) {
-			imageStore(dst_occlusion, store_pos - ivec3(params.grid_size.x, 0, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(params.grid_size.x, 0, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.yz == params.grid_size.yz) {
-			imageStore(dst_occlusion, store_pos - ivec3(0, params.grid_size.yz), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos - ivec3(0, params.grid_size.yz)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xy == ivec2(1, params.grid_size.y)) {
-			imageStore(dst_occlusion, store_pos + ivec3(params.grid_size.x, -params.grid_size.y, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(params.grid_size.x, -params.grid_size.y, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xy == ivec2(params.grid_size.x, 1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(-params.grid_size.x, params.grid_size.y, 0), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(-params.grid_size.x, params.grid_size.y, 0)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xz == ivec2(1, params.grid_size.z)) {
-			imageStore(dst_occlusion, store_pos + ivec3(params.grid_size.x, 0, -params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(params.grid_size.x, 0, -params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.xz == ivec2(params.grid_size.x, 1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(-params.grid_size.x, 0, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(-params.grid_size.x, 0, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.yz == ivec2(1, params.grid_size.z)) {
-			imageStore(dst_occlusion, store_pos + ivec3(0, params.grid_size.y, -params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(0, params.grid_size.y, -params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		if (cascade_pos.yz == ivec2(params.grid_size.y, 1)) {
-			imageStore(dst_occlusion, store_pos + ivec3(0, -params.grid_size.y, params.grid_size.z), uvec4(enc_occlusion));
+			imageStore(dst_occlusion, (store_pos + ivec3(0, -params.grid_size.y, params.grid_size.z)).yxz, uvec4(enc_occlusion));
 		}
 
 		// Store wrap vertices
@@ -1317,7 +1298,7 @@ void main() {
 			ivec3 test_pos = mix(ivec3(1), params.grid_size, bits);
 			ivec3 store_offset = mix(+params.grid_size, -params.grid_size, bits);
 			if (cascade_pos == test_pos) {
-				imageStore(dst_occlusion, store_pos + store_offset, uvec4(enc_occlusion));
+				imageStore(dst_occlusion, (store_pos + store_offset).yxz, uvec4(enc_occlusion));
 			}
 		}
 	}
@@ -1349,10 +1330,11 @@ void main() {
 			occ_pos = (occ_pos + params.upper_region_world_pos * REGION_SIZE) & (params.grid_size - ivec3(1));
 			occ_pos += ivec3(1);
 			occ_pos.y += (int(params.grid_size.y) + 2) * upper_cascade;
-			vec3 occ_posf = vec3(occ_pos) + fract(posf);
-			vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf);
-			vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf);
-			float occ_weights[8] = float[](occ_0.x, occ_0.y, occ_0.z, occ_0.w, occ_1.x, occ_1.y, occ_1.z, occ_1.w);
+			ivec3 occ_tex_size = params.grid_size + ivec3(2);
+			occ_tex_size.y *= params.cascade_count;
+			vec3 occ_posf = (vec3(occ_pos) + fract(posf)) / vec3(occ_tex_size);
+			vec4 occ_0 = texture(sampler3D(occlusion[0], linear_sampler), occ_posf.yxz);
+			vec4 occ_1 = texture(sampler3D(occlusion[1], linear_sampler), occ_posf.yxz);
 			float occlusion_total = 0.0;
 
 			for (int i = 0; i < 8; i++) {
@@ -1374,7 +1356,7 @@ void main() {
 					weight_index |= 4;
 				}
 
-				float weight = occ_weights[weight_index];
+				float weight = hddagi_occlusion_weight(occ_0, occ_1, int(weight_index));
 
 				weight = max(0.000001, weight); // make sure not zero (only trilinear can be zero)
 
@@ -1468,18 +1450,24 @@ void main() {
 		ivec3 history_pos = ivec3(probe_tex_pos, params.cascade * params.ray_hit_cache_frames + i);
 		// Completely invalidate cache frame.
 		imageStore(ray_hit_cache, history_pos, uvec4(0));
-		imageStore(lightprobe_moving_average_history, history_pos, uvec4(specular_rgbe));
+		if (params.history_mode == 0u) {
+			imageStore(lightprobe_moving_average_history, history_pos, uvec4(specular_rgbe));
+		}
 	}
 
-	uvec3 moving_average = rgbe_decode_fp(specular_rgbe, FP_BITS);
-	moving_average *= params.ray_hit_cache_frames;
+	if (params.history_mode == 0u) {
+		uvec3 moving_average = rgbe_decode_fp(specular_rgbe, FP_BITS);
+		moving_average *= params.ray_hit_cache_frames;
 
-	ivec3 ma_pos = ivec3(probe_tex_pos, params.cascade);
-	ma_pos.x *= 3;
+		ivec3 ma_pos = ivec3(probe_tex_pos, params.cascade);
+		ma_pos.x *= 3;
 
-	imageStore(lightprobe_moving_average, ma_pos + ivec3(0, 0, 0), uvec4(moving_average.r));
-	imageStore(lightprobe_moving_average, ma_pos + ivec3(1, 0, 0), uvec4(moving_average.g));
-	imageStore(lightprobe_moving_average, ma_pos + ivec3(2, 0, 0), uvec4(moving_average.b));
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(0, 0, 0), uvec4(moving_average.r));
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(1, 0, 0), uvec4(moving_average.g));
+		imageStore(lightprobe_moving_average, ma_pos + ivec3(2, 0, 0), uvec4(moving_average.b));
+	} else {
+		imageStore(lightprobe_moving_average_history, ivec3(probe_tex_pos, params.cascade), uvec4(specular_rgbe));
+	}
 
 #endif
 }

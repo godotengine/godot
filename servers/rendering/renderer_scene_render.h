@@ -67,7 +67,7 @@ public:
 
 	/* HDDAGI UPDATE */
 
-	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) = 0;
+	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) = 0;
 	virtual int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const = 0;
 	virtual AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
 	virtual uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
@@ -237,11 +237,14 @@ public:
 	virtual void environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) = 0;
 
 	// HDDAGI
-	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset);
+	void environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset);
+	Vector3 environment_get_hddagi_camera_local_anchor_offset(RID p_env) const;
+	float environment_get_hddagi_cascade_forward_offset(RID p_env) const;
 	bool environment_get_hddagi_enabled(RID p_env) const;
 	int environment_get_hddagi_cascades(RID p_env) const;
 	float environment_get_hddagi_min_cell_size(RID p_env) const;
-	bool environment_get_hddagi_use_occlusion(RID p_env) const;
 	float environment_get_hddagi_bounce_feedback(RID p_env) const;
 	bool environment_get_hddagi_read_sky_light(RID p_env) const;
 	float environment_get_hddagi_energy(RID p_env) const;
@@ -250,7 +253,6 @@ public:
 	bool environment_get_hddagi_filter_probes(RID p_env) const;
 	float environment_get_hddagi_reflection_bias(RID p_env) const;
 	float environment_get_hddagi_probe_bias(RID p_env) const;
-	float environment_get_hddagi_occlusion_bias(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
 
@@ -350,8 +352,6 @@ public:
 	virtual PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) = 0;
 
 	virtual bool free(RID p_rid) = 0;
-
-	virtual void hddagi_set_debug_probe_select(const Vector3 &p_position, const Vector3 &p_dir) = 0;
 
 	virtual void decals_set_filter(RSE::DecalFilter p_filter) = 0;
 	virtual void light_projectors_set_filter(RSE::LightProjectorFilter p_filter) = 0;

@@ -502,7 +502,7 @@ float Environment::get_dynamic_gi_min_cell_size() const {
 void Environment::set_dynamic_gi_max_distance(float p_distance) {
 	p_distance /= 64.0;
 	for (int i = 0; i < dynamic_gi_cascades; i++) {
-		p_distance *= 0.5; //halve for each cascade
+		p_distance *= 0.5; // Halve the cell size for each cascade.
 	}
 	dynamic_gi_min_cell_size = p_distance;
 	_update_dynamic_gi();
@@ -589,6 +589,24 @@ float Environment::get_dynamic_gi_probe_bias() const {
 	return dynamic_gi_probe_bias;
 }
 
+void Environment::set_dynamic_gi_camera_local_anchor_offset(const Vector3 &p_offset) {
+	dynamic_gi_camera_local_anchor_offset = p_offset;
+	_update_dynamic_gi();
+}
+
+Vector3 Environment::get_dynamic_gi_camera_local_anchor_offset() const {
+	return dynamic_gi_camera_local_anchor_offset;
+}
+
+void Environment::set_dynamic_gi_cascade_forward_offset(float p_offset) {
+	dynamic_gi_cascade_forward_offset = CLAMP(p_offset, 0.0f, 0.3f);
+	_update_dynamic_gi();
+}
+
+float Environment::get_dynamic_gi_cascade_forward_offset() const {
+	return dynamic_gi_cascade_forward_offset;
+}
+
 void Environment::_update_dynamic_gi() {
 	RS::get_singleton()->environment_set_hddagi(
 			environment,
@@ -603,9 +621,10 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_normal_bias,
 			dynamic_gi_probe_bias,
 			dynamic_gi_probe_bias,
-			dynamic_gi_probe_bias,
 			true,
 			true);
+	RS::get_singleton()->environment_set_hddagi_camera_local_anchor_offset(environment, dynamic_gi_camera_local_anchor_offset);
+	RS::get_singleton()->environment_set_hddagi_cascade_forward_offset(environment, dynamic_gi_cascade_forward_offset);
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -652,19 +671,19 @@ float Environment::get_sdfgi_cascade0_distance() const {
 void Environment::set_sdfgi_y_scale(SDFGIYScale p_y_scale) {
 	ERR_FAIL_INDEX(int(p_y_scale), 3);
 	static constexpr DynamicGICascadeFormat cascade_formats[3] = {
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT,
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT,
-		DYNAMIC_GI_CASCADE_FORMAT_16x16x16,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT,
+		DYNAMIC_GI_CASCADE_FORMAT_16X16X16,
 	};
 	set_dynamic_gi_cascade_format(cascade_formats[p_y_scale]);
 }
 
 Environment::SDFGIYScale Environment::get_sdfgi_y_scale() const {
 	switch (get_dynamic_gi_cascade_format()) {
-		case DYNAMIC_GI_CASCADE_FORMAT_16x8x16:
-		case DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT:
+		case DYNAMIC_GI_CASCADE_FORMAT_16X8X16:
+		case DYNAMIC_GI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT:
 			return SDFGI_Y_SCALE_50_PERCENT;
-		case DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT:
+		case DYNAMIC_GI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT:
 			return SDFGI_Y_SCALE_75_PERCENT;
 		default:
 			return SDFGI_Y_SCALE_100_PERCENT;
@@ -1530,6 +1549,10 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_normal_bias"), &Environment::get_dynamic_gi_normal_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_probe_bias", "bias"), &Environment::set_dynamic_gi_probe_bias);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_probe_bias"), &Environment::get_dynamic_gi_probe_bias);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_camera_local_anchor_offset", "offset"), &Environment::set_dynamic_gi_camera_local_anchor_offset);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_camera_local_anchor_offset"), &Environment::get_dynamic_gi_camera_local_anchor_offset);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_cascade_forward_offset", "offset"), &Environment::set_dynamic_gi_cascade_forward_offset);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_cascade_forward_offset"), &Environment::get_dynamic_gi_cascade_forward_offset);
 
 	ADD_GROUP("DynamicGI", "dynamic_gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_dynamic_gi_enabled", "is_dynamic_gi_enabled");
@@ -1546,6 +1569,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_energy"), "set_dynamic_gi_energy", "get_dynamic_gi_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "dynamic_gi_camera_local_anchor_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_dynamic_gi_camera_local_anchor_offset", "get_dynamic_gi_camera_local_anchor_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_cascade_forward_offset", PROPERTY_HINT_RANGE, "0,0.3,0.01"), "set_dynamic_gi_cascade_forward_offset", "get_dynamic_gi_cascade_forward_offset");
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_sdfgi_enabled", "enabled"), &Environment::set_sdfgi_enabled);
@@ -1786,10 +1811,11 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(FOG_MODE_EXPONENTIAL);
 	BIND_ENUM_CONSTANT(FOG_MODE_DEPTH);
 
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x8x16);
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16);
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_75_PERCENT_HEIGHT);
-	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16x16x16_50_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16X8X16);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16X16X16);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16X16X16_75_PERCENT_HEIGHT);
+	BIND_ENUM_CONSTANT(DYNAMIC_GI_CASCADE_FORMAT_16X16X16_50_PERCENT_HEIGHT);
+
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_50_PERCENT);
 	BIND_ENUM_CONSTANT(SDFGI_Y_SCALE_75_PERCENT);

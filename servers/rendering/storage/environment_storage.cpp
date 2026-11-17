@@ -814,7 +814,7 @@ float RendererEnvironmentStorage::environment_get_ssil_normal_rejection(RID p_en
 
 // HDDAGI
 
-void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, float p_occlusion_bias, bool p_filter_reflection, bool p_filter_ambient) {
+void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	ERR_FAIL_INDEX(int(p_cascade_format), int(RSE::ENV_HDDAGI_CASCADE_FORMAT_MAX));
@@ -834,9 +834,32 @@ void RendererEnvironmentStorage::environment_set_hddagi(RID p_env, bool p_enable
 	env->hddagi_normal_bias = p_normal_bias;
 	env->hddagi_reflection_bias = p_reflection_bias;
 	env->hddagi_probe_bias = p_probe_bias;
-	env->hddagi_occlusion_bias = p_occlusion_bias;
 	env->hddagi_filter_reflection = p_filter_reflection;
 	env->hddagi_filter_ambient = p_filter_ambient;
+}
+
+void RendererEnvironmentStorage::environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->hddagi_camera_local_anchor_offset = p_offset;
+}
+
+void RendererEnvironmentStorage::environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->hddagi_cascade_forward_offset = CLAMP(p_offset, 0.0f, 0.3f);
+}
+
+Vector3 RendererEnvironmentStorage::environment_get_hddagi_camera_local_anchor_offset(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, Vector3());
+	return env->hddagi_camera_local_anchor_offset;
+}
+
+float RendererEnvironmentStorage::environment_get_hddagi_cascade_forward_offset(RID p_env) const {
+	const Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0f);
+	return env->hddagi_cascade_forward_offset;
 }
 
 bool RendererEnvironmentStorage::environment_get_hddagi_enabled(RID p_env) const {
@@ -855,12 +878,6 @@ float RendererEnvironmentStorage::environment_get_hddagi_min_cell_size(RID p_env
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0.2);
 	return env->hddagi_min_cell_size;
-}
-
-bool RendererEnvironmentStorage::environment_get_hddagi_use_occlusion(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, false);
-	return env->hddagi_filter_probes;
 }
 
 float RendererEnvironmentStorage::environment_get_hddagi_bounce_feedback(RID p_env) const {
@@ -895,7 +912,7 @@ float RendererEnvironmentStorage::environment_get_hddagi_probe_bias(RID p_env) c
 
 RSE::EnvironmentHDDAGICascadeFormat RendererEnvironmentStorage::environment_get_hddagi_cascade_format(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, RSE::ENV_HDDAGI_CASCADE_FORMAT_16x16x16);
+	ERR_FAIL_NULL_V(env, RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16);
 	return env->hddagi_cascade_format;
 }
 
@@ -909,12 +926,6 @@ float RendererEnvironmentStorage::environment_get_hddagi_reflection_bias(RID p_e
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, 0);
 	return env->hddagi_reflection_bias;
-}
-
-float RendererEnvironmentStorage::environment_get_hddagi_occlusion_bias(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0);
-	return env->hddagi_occlusion_bias;
 }
 
 bool RendererEnvironmentStorage::environment_get_hddagi_filter_reflection(RID p_env) const {

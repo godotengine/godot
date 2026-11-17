@@ -277,7 +277,7 @@ struct HDDAGIProbeCascadeData {
 	ivec3 region_world_offset;
 	float to_cell; // 1/bounds * grid_size
 
-	vec3 pad;
+	vec3 blend_position;
 	float exposure_normalization;
 
 	uvec4 pad2;
@@ -293,7 +293,7 @@ layout(set = 0, binding = 14, std140) uniform HDDAGI {
 	float reflection_bias;
 
 	ivec3 probe_axis_size;
-	float esm_strength;
+	uint pad;
 
 	uvec4 pad3;
 
@@ -439,6 +439,7 @@ layout(set = 1, binding = 26) uniform texture2DArray normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2DArray ao_buffer;
 layout(set = 1, binding = 28) uniform texture2DArray ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2DArray reflection_buffer;
+layout(set = 1, binding = 40) uniform texture2DArray ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2DArray
 #else // USE_MULTIVIEW
 layout(set = 1, binding = 24) uniform texture2D depth_buffer;
@@ -447,6 +448,7 @@ layout(set = 1, binding = 26) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 27) uniform texture2D ao_buffer;
 layout(set = 1, binding = 28) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 29) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 40) uniform texture2D ambient_reflection_blend_buffer;
 #define multiviewSampler sampler2D
 #endif
 layout(set = 1, binding = 30) uniform texture2DArray hddagi_lightprobe_specular;
