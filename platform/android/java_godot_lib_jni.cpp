@@ -440,7 +440,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JN
 		points.push_back(tp);
 	}
 
-	input_handler->process_touch_event(ev, pointer, points);
+	input_handler->process_touch_event(ev, pointer, points, !p_long_press);
 }
 
 // Called on the UI thread
