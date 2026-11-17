@@ -201,6 +201,8 @@ Error AudioDriverWeb::input_stop() {
 	godot_audio_input_stop();
 	lock();
 	input_buffer.clear();
+	input_position = 0;
+	input_size = 0;
 	unlock();
 	return OK;
 }
