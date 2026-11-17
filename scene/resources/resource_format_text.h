@@ -43,9 +43,14 @@ public:
 		// Version 2: Changed names for Basis, AABB, Vectors, etc.
 		// Version 3: New string ID for ext/subresources, breaks forward compat.
 		// Version 4: PackedByteArray can be base64 encoded, and PackedVector4Array was added.
-		FORMAT_VERSION = 4,
+		// Version 5: Added support for serializing embedded PackedScenes as node tags and embedded metadata.
+		FORMAT_VERSION = 5,
 		// For compat, save as version 3 if not using PackedVector4Array or no big PackedByteArray.
 		FORMAT_VERSION_COMPAT = 3,
+		// For resources, or scenes without embedded metadata or other embedded PackedScenes, save as version 4.
+		FORMAT_VERSION_HAS_NEW_VARIANTS = 4,
+		// For scenes with embedded metadata or other embedded PackedScenes, save as version 5.
+		FORMAT_VERSION_WITH_SCENE_EMBED = 5,
 	};
 
 private:
@@ -189,7 +194,7 @@ class ResourceFormatSaverTextInstance {
 	List<Ref<Resource>> saved_resources;
 	HashMap<Ref<Resource>, String> external_resources;
 	HashMap<Ref<Resource>, String> internal_resources;
-	bool use_compat = true;
+	int save_format_version = ResourceLoaderText::FORMAT_VERSION_COMPAT;
 
 	struct ResourceSort {
 		Ref<Resource> resource;
@@ -199,6 +204,8 @@ class ResourceFormatSaverTextInstance {
 		}
 	};
 
+	_ALWAYS_INLINE_ bool use_compat() const { return save_format_version <= ResourceLoaderText::FORMAT_VERSION_COMPAT; }
+	bool get_serializable_resource_property_value(const Ref<Resource> &p_resource, const PropertyInfo &p_property, bool p_is_scene, const Dictionary &p_missing_resource_properties, Variant &r_value) const;
 	void _find_resources(const Variant &p_variant, bool p_main = false);
 	void _parse_nodes(const Ref<PackedScene> &curr_scene, const Ref<FileAccess> &p_file);
 

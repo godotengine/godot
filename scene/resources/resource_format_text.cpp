@@ -1615,6 +1615,55 @@ String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res
 	}
 }
 
+bool ResourceFormatSaverTextInstance::get_serializable_resource_property_value(const Ref<Resource> &p_res, const PropertyInfo &p_pi, bool p_is_scene, const Dictionary &p_missing_resource_properties, Variant &r_value) const {
+	if (skip_editor && p_pi.name.begins_with("__editor")) {
+		return false;
+	}
+
+	if (p_pi.name == META_PROPERTY_MISSING_RESOURCES) {
+		return false;
+	}
+
+	if (p_is_scene && p_pi.name == "_bundled") {
+		return false;
+	}
+
+	if (p_pi.usage & PROPERTY_USAGE_STORAGE || p_missing_resource_properties.has(p_pi.name)) {
+		if (p_pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+			NonPersistentKey npk;
+			npk.base = p_res;
+			npk.property = p_pi.name;
+			if (non_persistent_map.has(npk)) {
+				r_value = non_persistent_map[npk];
+			}
+		} else {
+			r_value = p_res->get(p_pi.name);
+		}
+
+		if (p_pi.type == Variant::OBJECT && p_missing_resource_properties.has(p_pi.name)) {
+			// Was this missing resource overridden? If so do not save the old value.
+			Ref<Resource> ures = r_value;
+			if (ures.is_null()) {
+				r_value = p_missing_resource_properties[p_pi.name];
+			}
+		}
+
+		bool is_script = p_pi.name == "script";
+		Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(p_res.ptr(), p_pi.name);
+
+		if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, r_value, default_value))) {
+			return false;
+		}
+
+		if (p_pi.type == Variant::OBJECT && r_value.is_zero() && !(p_pi.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
+			return false;
+		}
+
+		return true;
+	}
+	return false;
+}
+
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
 	switch (p_variant.get_type()) {
 		case Variant::OBJECT: {
@@ -1679,6 +1728,27 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 
 			saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
 
+			// If we're saving this resource as a scene, and if it has metadata or other embedded PackedScenes, upgrade the format version.
+			if (save_format_version < ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED && packed_scene.is_valid()) {
+				if (Ref<PackedScene>(res).is_valid()) {
+					// Embedded PackedScene
+					if (!p_main) {
+						save_format_version = ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED;
+					} else if (res->get_class() != "PackedScene" || res->get_script_instance() != nullptr) {
+						// Main scene is a derived class of PackedScene or has a script instance (checking here to avoid the more expensive checks in the else block)
+						save_format_version = ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED;
+					} else { // Main scene, check if it has serialized non-'_bundled' properties.
+						Dictionary missing_resource_properties = res->get_meta(META_MISSING_RESOURCES, Dictionary());
+						for (const PropertyInfo &pi : property_list) {
+							Variant value;
+							if (get_serializable_resource_property_value(res, pi, true, missing_resource_properties, value)) {
+								save_format_version = ResourceLoaderText::FORMAT_VERSION_WITH_SCENE_EMBED;
+								break;
+							}
+						}
+					}
+				}
+			}
 		} break;
 		case Variant::ARRAY: {
 			Array varray = p_variant;
@@ -1701,12 +1771,14 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			// Balance between compatibility and performance.
-			if (use_compat && p_variant.operator PackedByteArray().size() > 64) {
-				use_compat = false;
+			if (save_format_version < ResourceLoaderText::FORMAT_VERSION_HAS_NEW_VARIANTS && p_variant.operator PackedByteArray().size() > 64) {
+				save_format_version = ResourceLoaderText::FORMAT_VERSION_HAS_NEW_VARIANTS;
 			}
 		} break;
 		case Variant::PACKED_VECTOR4_ARRAY: {
-			use_compat = false;
+			if (save_format_version < ResourceLoaderText::FORMAT_VERSION_HAS_NEW_VARIANTS) {
+				save_format_version = ResourceLoaderText::FORMAT_VERSION_HAS_NEW_VARIANTS;
+			}
 		} break;
 		default: {
 		}
@@ -1790,14 +1862,14 @@ void ResourceFormatSaverTextInstance::_parse_nodes(const Ref<PackedScene> &curr_
 		if (!instance_placeholder.is_empty()) {
 			String vars;
 			p_file->store_string(" instance_placeholder=");
-			VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat);
+			VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat());
 			p_file->store_string(vars);
 		}
 
 		if (instance.is_valid()) {
 			String vars;
 			p_file->store_string(" instance=");
-			VariantWriter::write_to_string(instance, vars, true, _write_resources, this, use_compat);
+			VariantWriter::write_to_string(instance, vars, true, _write_resources, this, use_compat());
 			p_file->store_string(vars);
 		}
 
@@ -1805,7 +1877,7 @@ void ResourceFormatSaverTextInstance::_parse_nodes(const Ref<PackedScene> &curr_
 
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
 			String vars;
-			VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, true, _write_resources, this, use_compat);
+			VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, true, _write_resources, this, use_compat());
 
 			p_file->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 		}
@@ -1853,7 +1925,7 @@ void ResourceFormatSaverTextInstance::_parse_nodes(const Ref<PackedScene> &curr_
 		p_file->store_string(connstr);
 		if (binds.size()) {
 			String vars;
-			VariantWriter::write_to_string(binds, vars, true, _write_resources, this, use_compat);
+			VariantWriter::write_to_string(binds, vars, true, _write_resources, this, use_compat());
 			p_file->store_string(" binds= " + vars);
 		}
 
@@ -1892,7 +1964,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	}
 
 	// Save resources.
-	use_compat = true; // _find_resources() changes this.
+	save_format_version = ResourceLoaderText::FORMAT_VERSION_COMPAT; // _find_resources() changes this.
 	_find_resources(p_resource, true);
 
 	if (packed_scene.is_valid()) {
@@ -1920,7 +1992,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			}
 		}
 
-		title += "format=" + itos(use_compat ? ResourceLoaderText::FORMAT_VERSION_COMPAT : ResourceLoaderText::FORMAT_VERSION) + "";
+		title += "format=" + itos(save_format_version) + "";
 
 		ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(local_path, true);
 
@@ -2066,52 +2138,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		res->get_property_list(&property_list);
 		for (const PropertyInfo &pi : property_list) {
 			String name = pi.name;
-			if (skip_editor && name.begins_with("__editor")) {
-				continue;
-			}
-
-			if (name == META_PROPERTY_MISSING_RESOURCES) {
-				continue;
-			}
-
-			if (is_scene && name == "_bundled") {
-				continue;
-			}
-
-			if (pi.usage & PROPERTY_USAGE_STORAGE || missing_resource_properties.has(pi.name)) {
-				Variant value;
-				if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
-					NonPersistentKey npk;
-					npk.base = res;
-					npk.property = name;
-					if (non_persistent_map.has(npk)) {
-						value = non_persistent_map[npk];
-					}
-				} else {
-					value = res->get(name);
-				}
-
-				if (pi.type == Variant::OBJECT && missing_resource_properties.has(pi.name)) {
-					// Was this missing resource overridden? If so do not save the old value.
-					Ref<Resource> ures = value;
-					if (ures.is_null()) {
-						value = missing_resource_properties[pi.name];
-					}
-				}
-
-				bool is_script = name == CoreStringName(script);
-				Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(res.ptr(), name);
-
-				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
-					continue;
-				}
-
-				if (pi.type == Variant::OBJECT && value.is_zero() && !(pi.usage & PROPERTY_USAGE_STORE_IF_NULL)) {
-					continue;
-				}
-
+			Variant value;
+			if (get_serializable_resource_property_value(res, pi, is_scene, missing_resource_properties, value)) {
 				String vars;
-				VariantWriter::write_to_string(value, vars, true, _write_resources, this, use_compat);
+				VariantWriter::write_to_string(value, vars, true, _write_resources, this, use_compat());
 
 				// This is here to avoid a change in all old scenes that didn't have have metadata support
 				// The scenes only need to have a resource tag if they have metadata
