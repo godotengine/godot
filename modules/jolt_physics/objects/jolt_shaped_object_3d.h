@@ -32,6 +32,7 @@
 
 #include "jolt_object_3d.h"
 
+#include "core/templates/local_vector.h"
 #include "core/templates/self_list.h"
 
 #include <Jolt/Jolt.h>

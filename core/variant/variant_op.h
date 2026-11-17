@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/math/math_funcs.h"
-#include "core/variant/container_type_validate.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"

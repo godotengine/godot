@@ -50,7 +50,7 @@
 #include "modules/svg/image_loader_svg.h"
 
 #ifdef WINDOWS_ENABLED
-#include "shlobj.h"
+#include <shlobj.h>
 
 // Converts long path to Windows UNC format.
 static String fix_path(const String &p_path) {

@@ -37,7 +37,6 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
-#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
