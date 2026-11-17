@@ -547,7 +547,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 		explore_button->set_mouse_filter(MOUSE_FILTER_PASS);
-		explore_button->set_tooltip_text(TTRC("Open in file manager"));
+		explore_button->set_tooltip_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
 		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));

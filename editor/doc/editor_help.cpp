@@ -4271,7 +4271,7 @@ void EditorHelpBit::_update_labels() {
 		} else {
 			content->push_meta("open-file:" + help_data.resource_path, RichTextLabel::META_UNDERLINE_ON_HOVER);
 			content->add_image(get_editor_theme_icon(SNAME("Filesystem")));
-			content->add_text(nbsp + TTR("Open in File Manager"));
+			content->add_text(nbsp + OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
 			content->pop(); // meta
 		}
 	}
