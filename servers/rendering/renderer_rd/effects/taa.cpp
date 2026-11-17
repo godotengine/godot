@@ -92,7 +92,6 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 
 	uint32_t view_count = p_render_buffers->get_view_count();
 	Size2i internal_size = p_render_buffers->get_internal_size();
-	Size2i target_size = p_render_buffers->get_target_size();
 
 	bool just_allocated = false;
 	if (!p_render_buffers->has_texture(SNAME("taa"), SNAME("history"))) {
@@ -101,7 +100,7 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("history"), p_format, usage_bits);
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("temp"), p_format, usage_bits);
 
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity"), RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
+		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity"), RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT);
 
 		just_allocated = true;
 	}
@@ -123,7 +122,9 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 		}
 
 		copy_effects->copy_to_rect(internal_texture, taa_history, Rect2(0, 0, internal_size.x, internal_size.y));
-		copy_effects->copy_to_rect(velocity_buffer, taa_prev_velocity, Rect2(0, 0, target_size.x, target_size.y));
+		// Both velocity images are RG16F at the internal resolution. The generic
+		// copy shader writes RGBA16F and is not compatible with these image views.
+		RD::get_singleton()->texture_copy(velocity_buffer, taa_prev_velocity, Vector3(), Vector3(), Vector3(internal_size.x, internal_size.y, 1), 0, 0, 0, 0);
 	}
 
 	RD::get_singleton()->draw_command_end_label();
