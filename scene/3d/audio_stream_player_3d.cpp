@@ -661,7 +661,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 		sample_playback->offset = p_from_pos;
 		sample_playback->bus = _get_actual_bus();
 
-		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+		AudioServer::get_singleton()->start_sample_playback(sample_playback, !can_process());
 	}
 }
 

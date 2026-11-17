@@ -1041,16 +1041,16 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale, bool p_paused) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volume_db_vector;
 
-	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
+	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale, 0, 0, p_paused);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz, bool p_paused) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
@@ -1086,7 +1086,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		frame = AudioFrame(0, 0);
 	}
 
-	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
+	playback_node->state.store(p_paused ? AudioStreamPlaybackListNode::PAUSED : AudioStreamPlaybackListNode::PLAYING);
 
 	playback_list.insert(playback_node);
 	playback_stream_count.increment();
@@ -1832,9 +1832,9 @@ void AudioServer::unregister_sample(const Ref<AudioSample> &p_sample) {
 	AudioDriver::get_singleton()->unregister_sample(p_sample);
 }
 
-void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
-	AudioDriver::get_singleton()->start_sample_playback(p_playback);
+	AudioDriver::get_singleton()->start_sample_playback(p_playback, p_paused);
 	sample_playback_list.ordered_insert(p_playback);
 }
 

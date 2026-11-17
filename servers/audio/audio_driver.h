@@ -132,7 +132,7 @@ public:
 	}
 	virtual void register_sample(const Ref<AudioSample> &p_sample) {}
 	virtual void unregister_sample(const Ref<AudioSample> &p_sample) {}
-	virtual void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
+	virtual void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused = false);
 	virtual void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {}
 	virtual void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {}
 	virtual bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) { return false; }
