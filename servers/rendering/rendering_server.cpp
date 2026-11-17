@@ -3090,6 +3090,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect", "fog_mode"), &RenderingServer::environment_set_fog, DEFVAL(RSE::ENV_FOG_MODE_EXPONENTIAL));
 	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "curve", "begin", "end"), &RenderingServer::environment_set_fog_depth);
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi", "env", "enable", "cascades", "cascade_format", "min_cell_size", "filter_probes", "bounce_feedback", "read_sky", "energy", "normal_bias", "reflection_bias", "probe_bias", "filter_reflection", "filter_ambient"), &RenderingServer::environment_set_hddagi);
+	ClassDB::bind_method(D_METHOD("environment_set_hddagi_screen_probes", "env", "enable", "normal_bias"), &RenderingServer::environment_set_hddagi_screen_probes);
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi_camera_local_anchor_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_camera_local_anchor_offset);
 	ClassDB::bind_method(D_METHOD("environment_set_hddagi_cascade_forward_offset", "env", "offset"), &RenderingServer::environment_set_hddagi_cascade_forward_offset);
 	ClassDB::bind_method(D_METHOD("environment_set_volumetric_fog", "env", "enable", "density", "albedo", "emission", "emission_energy", "anisotropy", "length", "detail_spread", "gi_inject", "temporal_reprojection", "temporal_reprojection_amount", "ambient_inject", "sky_affect"), &RenderingServer::environment_set_volumetric_fog);
@@ -3840,6 +3841,13 @@ void RenderingServer::init() {
 	GLOBAL_DEF("rendering/global_illumination/hddagi/fast_light_updates", true);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/world_probe_history_mode", PROPERTY_HINT_ENUM, "Ring,Exponential Moving Average"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/world_probe_light_response", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.25f);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_spacing", PROPERTY_HINT_RANGE, "16,32,1"), 16);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_denoiser_quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow)"), 2);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_detail_trace", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_detail_trace_quality", PROPERTY_HINT_ENUM, "Performance (Fast):2,Balanced (Average):1,High (Slow):0"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames", PROPERTY_HINT_RANGE, "1,255,1"), 64);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_importance_sampling", false);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter", true);
 #ifndef DISABLE_DEPRECATED
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/probe_ray_count", 1);
 	GLOBAL_DEF_INTERNAL("rendering/global_illumination/sdfgi/frames_to_converge", 5);

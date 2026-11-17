@@ -124,6 +124,7 @@ public:
 #ifndef XR_DISABLED
 	virtual bool is_xr_camera(RID p_camera) const;
 #endif
+	virtual RID camera_get_environment(RID p_camera, RID p_scenario);
 
 	/* OCCLUDER API */
 
@@ -1351,6 +1352,7 @@ public:
 	// HDDAGI
 
 	PASS14(environment_set_hddagi, RID, bool, int, RSE::EnvironmentHDDAGICascadeFormat, float, bool, float, bool, float, float, float, float, bool, bool)
+	PASS3(environment_set_hddagi_screen_probes, RID, bool, float)
 	PASS2(environment_set_hddagi_camera_local_anchor_offset, RID, const Vector3 &)
 	PASS2(environment_set_hddagi_cascade_forward_offset, RID, float)
 
@@ -1362,6 +1364,7 @@ public:
 	PASS1RC(float, environment_get_hddagi_energy, RID)
 	PASS1RC(float, environment_get_hddagi_normal_bias, RID)
 	PASS1RC(float, environment_get_hddagi_probe_bias, RID)
+	PASS1RC(bool, environment_get_hddagi_screen_probes_enabled, RID)
 
 	PASS1(environment_set_hddagi_frames_to_converge, RSE::EnvironmentHDDAGIFramesToConverge)
 	PASS1(environment_set_hddagi_frames_to_update_light, RSE::EnvironmentHDDAGIFramesToUpdateLight)

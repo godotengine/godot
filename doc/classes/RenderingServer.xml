@@ -1465,6 +1465,15 @@
 				Sets the number of frames over which inactive Dynamic GI probes are processed. Inactive probes are not connected to geometry and are not visible to the camera. Equivalent to [member ProjectSettings.rendering/global_illumination/hddagi/frames_to_update_inactive_probes].
 			</description>
 		</method>
+		<method name="environment_set_hddagi_screen_probes">
+			<return type="void" />
+			<param index="0" name="env" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="normal_bias" type="float" />
+			<description>
+				Configures Directional Gather screen probes for the environment.
+			</description>
+		</method>
 		<method name="environment_set_sdfgi" deprecated="Use [method environment_set_hddagi] instead.">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />

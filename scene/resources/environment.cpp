@@ -589,6 +589,24 @@ float Environment::get_dynamic_gi_probe_bias() const {
 	return dynamic_gi_probe_bias;
 }
 
+void Environment::set_dynamic_gi_screen_probes_enabled(bool p_enabled) {
+	dynamic_gi_screen_probes_enabled = p_enabled;
+	_update_dynamic_gi();
+}
+
+bool Environment::is_dynamic_gi_screen_probes_enabled() const {
+	return dynamic_gi_screen_probes_enabled;
+}
+
+void Environment::set_dynamic_gi_screen_probe_normal_bias(float p_bias) {
+	dynamic_gi_screen_probe_normal_bias = CLAMP(p_bias, -8.0f, 8.0f);
+	_update_dynamic_gi();
+}
+
+float Environment::get_dynamic_gi_screen_probe_normal_bias() const {
+	return dynamic_gi_screen_probe_normal_bias;
+}
+
 void Environment::set_dynamic_gi_camera_local_anchor_offset(const Vector3 &p_offset) {
 	dynamic_gi_camera_local_anchor_offset = p_offset;
 	_update_dynamic_gi();
@@ -623,6 +641,10 @@ void Environment::_update_dynamic_gi() {
 			dynamic_gi_probe_bias,
 			true,
 			true);
+	RS::get_singleton()->environment_set_hddagi_screen_probes(
+			environment,
+			dynamic_gi_screen_probes_enabled,
+			dynamic_gi_screen_probe_normal_bias);
 	RS::get_singleton()->environment_set_hddagi_camera_local_anchor_offset(environment, dynamic_gi_camera_local_anchor_offset);
 	RS::get_singleton()->environment_set_hddagi_cascade_forward_offset(environment, dynamic_gi_cascade_forward_offset);
 }
@@ -1549,6 +1571,10 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_normal_bias"), &Environment::get_dynamic_gi_normal_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_probe_bias", "bias"), &Environment::set_dynamic_gi_probe_bias);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_probe_bias"), &Environment::get_dynamic_gi_probe_bias);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probes_enabled", "enabled"), &Environment::set_dynamic_gi_screen_probes_enabled);
+	ClassDB::bind_method(D_METHOD("is_dynamic_gi_screen_probes_enabled"), &Environment::is_dynamic_gi_screen_probes_enabled);
+	ClassDB::bind_method(D_METHOD("set_dynamic_gi_screen_probe_normal_bias", "bias"), &Environment::set_dynamic_gi_screen_probe_normal_bias);
+	ClassDB::bind_method(D_METHOD("get_dynamic_gi_screen_probe_normal_bias"), &Environment::get_dynamic_gi_screen_probe_normal_bias);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_camera_local_anchor_offset", "offset"), &Environment::set_dynamic_gi_camera_local_anchor_offset);
 	ClassDB::bind_method(D_METHOD("get_dynamic_gi_camera_local_anchor_offset"), &Environment::get_dynamic_gi_camera_local_anchor_offset);
 	ClassDB::bind_method(D_METHOD("set_dynamic_gi_cascade_forward_offset", "offset"), &Environment::set_dynamic_gi_cascade_forward_offset);
@@ -1569,6 +1595,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_energy"), "set_dynamic_gi_energy", "get_dynamic_gi_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_normal_bias"), "set_dynamic_gi_normal_bias", "get_dynamic_gi_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_probe_bias"), "set_dynamic_gi_probe_bias", "get_dynamic_gi_probe_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dynamic_gi_screen_probes_enabled"), "set_dynamic_gi_screen_probes_enabled", "is_dynamic_gi_screen_probes_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_screen_probe_normal_bias", PROPERTY_HINT_RANGE, "-8,8,0.01"), "set_dynamic_gi_screen_probe_normal_bias", "get_dynamic_gi_screen_probe_normal_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "dynamic_gi_camera_local_anchor_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_dynamic_gi_camera_local_anchor_offset", "get_dynamic_gi_camera_local_anchor_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dynamic_gi_cascade_forward_offset", PROPERTY_HINT_RANGE, "0,0.3,0.01"), "set_dynamic_gi_cascade_forward_offset", "get_dynamic_gi_cascade_forward_offset");
 

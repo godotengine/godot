@@ -190,6 +190,10 @@ bool RendererSceneCull::is_xr_camera(RID p_camera) const {
 }
 #endif
 
+RID RendererSceneCull::camera_get_environment(RID p_camera, RID p_scenario) {
+	return _render_get_environment(p_camera, p_scenario);
+}
+
 /* OCCLUDER API */
 
 RID RendererSceneCull::occluder_allocate() {

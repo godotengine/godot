@@ -114,6 +114,7 @@ public:
 			RendererRD::SSEffects::SSAORenderBuffers ssao;
 			RendererRD::SSEffects::SSRRenderBuffers ssr;
 			RendererRD::SSEffects::SSCSRenderBuffers sscs;
+			RendererRD::SSEffects::ScreenSpaceDepthPyramidRenderBuffers depth_pyramid;
 		} ss_effects_data;
 
 		enum DepthFrameBufferType {
@@ -153,7 +154,7 @@ public:
 
 		RID get_color_only_fb();
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
-		RID get_depth_fb(DepthFrameBufferType p_type = DEPTH_FB);
+		RID get_depth_fb(DepthFrameBufferType p_type = DEPTH_FB, bool p_motion_vectors = false);
 		RID get_specular_only_fb();
 		RID get_velocity_only_fb();
 
@@ -794,10 +795,10 @@ private:
 	/* Render Scene */
 	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
 	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
-	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform);
+	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_slices, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_transform, bool p_depth_pyramid_is_built);
 	void _process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<int> &p_contact_shadows, const RenderShadowData *p_render_shadows, float p_taa_frame_count);
 	void _copy_framebuffer_to_ss_effects(Ref<RenderSceneBuffersRD> p_render_buffers, bool p_use_ssil, bool p_use_ssr);
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_hddagi, bool p_use_gi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_depth_pre_pass_completed, bool p_use_ssao, bool p_use_ssil, bool p_use_ssr, bool p_use_sscs, bool p_use_hddagi, bool p_use_hddagi_screen_probes, bool p_use_gi, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices);
 	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
 
 	/* Debug */

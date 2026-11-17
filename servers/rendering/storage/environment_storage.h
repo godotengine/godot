@@ -173,6 +173,8 @@ private:
 		float hddagi_probe_bias = 1.1;
 		bool hddagi_filter_reflection = true;
 		bool hddagi_filter_ambient = true;
+		bool hddagi_screen_probes_enabled = false;
+		float hddagi_screen_probe_normal_bias = 1.1;
 		Vector3 hddagi_camera_local_anchor_offset;
 		float hddagi_cascade_forward_offset = 0.0;
 		RSE::EnvironmentHDDAGICascadeFormat hddagi_cascade_format = RSE::ENV_HDDAGI_CASCADE_FORMAT_16X16X16;
@@ -318,6 +320,7 @@ public:
 
 	// HDDAGI
 	void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient);
+	void environment_set_hddagi_screen_probes(RID p_env, bool p_enable, float p_normal_bias);
 	void environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset);
 	void environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset);
 	Vector3 environment_get_hddagi_camera_local_anchor_offset(RID p_env) const;
@@ -335,6 +338,8 @@ public:
 	float environment_get_hddagi_probe_bias(RID p_env) const;
 	bool environment_get_hddagi_filter_reflection(RID p_env) const;
 	bool environment_get_hddagi_filter_ambient(RID p_env) const;
+	bool environment_get_hddagi_screen_probes_enabled(RID p_env) const;
+	float environment_get_hddagi_screen_probe_normal_bias(RID p_env) const;
 
 	// Adjustment
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction);

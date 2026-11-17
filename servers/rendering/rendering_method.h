@@ -65,6 +65,7 @@ public:
 #ifndef XR_DISABLED
 	virtual bool is_xr_camera(RID p_camera) const = 0;
 #endif
+	virtual RID camera_get_environment(RID p_camera, RID p_scenario) = 0;
 
 	virtual RID occluder_allocate() = 0;
 	virtual void occluder_initialize(RID p_occluder) = 0;
@@ -302,6 +303,7 @@ public:
 
 	// HDDAGI
 	virtual void environment_set_hddagi(RID p_env, bool p_enable, int p_cascades, RSE::EnvironmentHDDAGICascadeFormat p_cascade_format, float p_min_cell_size, bool p_filter_probes, float p_bounce_feedback, bool p_read_sky, float p_energy, float p_normal_bias, float p_reflection_bias, float p_probe_bias, bool p_filter_reflection, bool p_filter_ambient) = 0;
+	virtual void environment_set_hddagi_screen_probes(RID p_env, bool p_enable, float p_normal_bias) = 0;
 	virtual void environment_set_hddagi_camera_local_anchor_offset(RID p_env, const Vector3 &p_offset) = 0;
 	virtual void environment_set_hddagi_cascade_forward_offset(RID p_env, float p_offset) = 0;
 
@@ -313,6 +315,7 @@ public:
 	virtual float environment_get_hddagi_energy(RID p_env) const = 0;
 	virtual float environment_get_hddagi_normal_bias(RID p_env) const = 0;
 	virtual float environment_get_hddagi_probe_bias(RID p_env) const = 0;
+	virtual bool environment_get_hddagi_screen_probes_enabled(RID p_env) const = 0;
 
 	virtual void environment_set_hddagi_frames_to_converge(RSE::EnvironmentHDDAGIFramesToConverge p_ray_count) = 0;
 	virtual void environment_set_hddagi_frames_to_update_light(RSE::EnvironmentHDDAGIFramesToUpdateLight p_frames) = 0;

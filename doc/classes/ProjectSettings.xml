@@ -3123,6 +3123,27 @@
 		<member name="rendering/global_illumination/hddagi/reflection_quality" type="int" setter="" getter="" default="0">
 			Controls the legacy HDDAGI receiver reflections independently of diffuse GI. [code]0[/code] traces glossy reflections and uses probes for rough surfaces. [code]1[/code] uses world probes for all roughness values, reducing cost and sharp detail. [code]2[/code] disables this reflection contribution, allowing other environment reflection sources to remain visible.
 		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_denoiser_quality" type="int" setter="" getter="" default="2">
+			Controls SVGF quality for screen probe diffuse lighting and GGX reflections. Higher values reduce noise at higher GPU cost.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_detail_trace" type="bool" setter="" getter="" default="false">
+			Uses visible screen-space geometry for short-range detail tracing.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_detail_trace_quality" type="int" setter="" getter="" default="0">
+			Quality of screen-space detail tracing.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames" type="int" setter="" getter="" default="64">
+			Maximum effective frame count for per-pixel SVGF accumulation of Directional Gather diffuse lighting, from 1 to 255. Higher values reduce noise in stable lighting and respond more slowly to changes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_importance_sampling" type="bool" setter="" getter="" default="false">
+			Uses incoming radiance to importance sample high-contrast Directional Gather probes.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_spacing" type="int" setter="" getter="" default="16">
+			Distance between diffuse screen probes in GI buffer pixels. Higher values trace fewer probes and can reduce indirect lighting detail. Enabling [member rendering/global_illumination/gi/use_half_resolution] increases the distance between probes on screen. Diffuse resolve and denoising run at the viewport's internal 3D resolution.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter" type="bool" setter="" getter="" default="true">
+			Offsets Directional Gather screen probes using an eight-frame sampling sequence.
+		</member>
 		<member name="rendering/global_illumination/hddagi/world_probe_history_mode" type="int" setter="" getter="" default="0">
 			Selects a finite moving average (0) or an exponential moving average (1) for world-probe radiance. Exponential mode uses less memory and weights new samples by [code]2 / (history_size + 1)[/code]. Both modes retain the geometry hit cache. Changing this setting requires restarting the renderer.
 		</member>

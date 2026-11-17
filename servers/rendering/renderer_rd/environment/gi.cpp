@@ -3030,6 +3030,8 @@ GI::~GI() {
 }
 
 void GI::init(SkyRD *p_sky) {
+	sky = p_sky;
+
 	/* GI */
 
 	{
@@ -3192,6 +3194,57 @@ void GI::init(SkyRD *p_sky) {
 				uniforms,
 				hddagi_shader.integrate.version_get_shader(hddagi_shader.integrate_shader, 0),
 				1);
+	}
+
+	{
+		Vector<String> screen_probe_modes;
+		screen_probe_modes.push_back("\n#define MODE_SURFACE\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_TRACE\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_TRACE\n#define MODE_DIRECTIONAL_TRACE_IMPORTANCE\n");
+		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_IRRADIANCE\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n");
+		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		DEV_ASSERT(screen_probe_modes.size() == HDDAGIShader::SCREEN_PROBE_MODE_MAX);
+
+		String screen_probe_defines;
+		if (p_sky->sky_use_octmap_array) {
+			screen_probe_defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
+		}
+		screen_probe_defines += "\n#define LIGHTPROBE_OCT_SIZE " + itos(HDDAGI::LIGHTPROBE_OCT_SIZE) + "\n";
+
+		hddagi_shader.screen_probe.initialize(screen_probe_modes, screen_probe_defines);
+		if (!HDDAGIScreenProbeSVGF::is_supported()) {
+			const HDDAGIShader::ScreenProbeMode svgf_modes[] = {
+				HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF,
+				HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF,
+			};
+			for (HDDAGIShader::ScreenProbeMode mode : svgf_modes) {
+				hddagi_shader.screen_probe.set_variant_enabled(mode, false);
+			}
+		}
+		hddagi_shader.screen_probe_shader = hddagi_shader.screen_probe.version_create();
+		for (int i = 0; i < HDDAGIShader::SCREEN_PROBE_MODE_MAX; i++) {
+			if (!hddagi_shader.screen_probe.is_variant_enabled(i)) {
+				continue;
+			}
+			hddagi_shader.screen_probe_shader_version[i] = hddagi_shader.screen_probe.version_get_shader(hddagi_shader.screen_probe_shader, i);
+			if (hddagi_shader.screen_probe_shader_version[i].is_valid()) {
+				hddagi_shader.screen_probe_pipeline[i] = RD::get_singleton()->compute_pipeline_create(hddagi_shader.screen_probe_shader_version[i]);
+			}
+		}
+		const HDDAGIShader::ScreenProbeMode required_modes[] = {
+			HDDAGIShader::SCREEN_PROBE_MODE_SURFACE,
+			HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_TRACE,
+			HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_IRRADIANCE,
+			HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE,
+			HDDAGIShader::SCREEN_PROBE_MODE_APPLY,
+		};
+		hddagi_shader.screen_probe_available = true;
+		for (HDDAGIShader::ScreenProbeMode mode : required_modes) {
+			hddagi_shader.screen_probe_available = hddagi_shader.screen_probe_available && hddagi_shader.screen_probe_pipeline[mode].is_valid();
+		}
 	}
 
 	//GK
@@ -3384,6 +3437,9 @@ void GI::free() {
 	if (hddagi_shader.light_cull_shader.is_valid()) {
 		hddagi_shader.light_cull.version_free(hddagi_shader.light_cull_shader);
 	}
+	if (hddagi_shader.screen_probe_shader.is_valid()) {
+		hddagi_shader.screen_probe.version_free(hddagi_shader.screen_probe_shader);
+	}
 	if (hddagi_shader.debug_probes_shader.is_valid()) {
 		hddagi_shader.debug_probes.version_free(hddagi_shader.debug_probes_shader);
 	}
@@ -3511,6 +3567,13 @@ RID GI::RenderBuffersGI::get_voxel_gi_buffer() {
 }
 
 void GI::RenderBuffersGI::free_data() {
+	screen_probe_svgf.clear();
+
+	if (screen_probe_scene_data_ubo.is_valid()) {
+		RD::get_singleton()->free_rid(screen_probe_scene_data_ubo);
+		screen_probe_scene_data_ubo = RID();
+	}
+
 	if (scene_data_ubo.is_valid()) {
 		RD::get_singleton()->free_rid(scene_data_ubo);
 		scene_data_ubo = RID();
