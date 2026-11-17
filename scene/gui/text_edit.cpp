@@ -1023,7 +1023,7 @@ void TextEdit::_notification(int p_what) {
 
 			int xmargin_end = size.width - Math::floor(style->get_margin(SIDE_RIGHT));
 			if (draw_minimap) {
-				xmargin_end -= minimap_width;
+				xmargin_end -= minimap_width + minimap_margin;
 			}
 			if (!editable) {
 				draw_caret = is_drawing_caret_when_editable_disabled();
@@ -1215,6 +1215,7 @@ void TextEdit::_notification(int p_what) {
 				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 				int tab_size = text.get_tab_size();
 				int ofs_y = style->get_margin(SIDE_TOP);
+				int minimap_begin_x = xmargin_end + minimap_margin;
 
 				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
@@ -1243,9 +1244,9 @@ void TextEdit::_notification(int p_what) {
 				}
 
 				if (rtl) {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_begin_x - minimap_width, viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
 				} else {
-					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
+					RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_begin_x, viewport_offset_y + ofs_y, minimap_width, viewport_height), viewport_color);
 				}
 
 				for (int i = 0; i < minimap_draw_amount; i++) {
@@ -1308,22 +1309,22 @@ void TextEdit::_notification(int p_what) {
 
 						if (highlight_current_line && highlighted_lines.has(Pair<int, int>(minimap_line, line_wrap_index))) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_begin_x - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_begin_x, i * minimap_line_height + ofs_y, minimap_width, 2), theme_cache.current_line_color);
 							}
 						} else if (line_background_color.a > 0) {
 							if (rtl) {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - (xmargin_end + 2) - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(size.width - minimap_begin_x - minimap_width, i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
 							} else {
-								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2((xmargin_end + 2), i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
+								RS::get_singleton()->canvas_item_add_rect(text_ci, Rect2(minimap_begin_x, i * minimap_line_height + ofs_y, minimap_width, 2), line_background_color);
 							}
 						}
 
 						Color next_color = current_color;
 						int characters = 0;
 						int tab_alignment = 0;
-						int xpos = xmargin_end + 2 + indent_px;
+						int xpos = minimap_begin_x + indent_px;
 						for (int j = 0; j < str.length(); j++) {
 							bool next_is_whitespace = false;
 							bool next_is_tab = false;
@@ -1357,7 +1358,7 @@ void TextEdit::_notification(int p_what) {
 									}
 									break;
 								}
-								bool out_of_bounds = xpos + minimap_char_size.x * characters >= xmargin_end + minimap_width;
+								bool out_of_bounds = xpos + minimap_char_size.x * characters >= minimap_begin_x + minimap_width;
 								if (out_of_bounds) {
 									break;
 								}
@@ -1390,7 +1391,7 @@ void TextEdit::_notification(int p_what) {
 								j += 1;
 							}
 
-							if (xpos >= xmargin_end + minimap_width) {
+							if (xpos >= minimap_begin_x + minimap_width) {
 								// Out of bounds.
 								break;
 							}
@@ -9375,7 +9376,7 @@ bool TextEdit::_selection_contains(int p_caret, int p_line, int p_column, bool p
 void TextEdit::_update_wrap_at_column(bool p_force) {
 	int new_wrap_at = get_size().width - _get_current_stylebox()->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
-		new_wrap_at -= minimap_width;
+		new_wrap_at -= minimap_width + minimap_margin;
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		new_wrap_at -= v_scroll->get_bound_minimum_size().width;
@@ -9447,7 +9448,7 @@ void TextEdit::_update_scrollbars() {
 	int total_width = (draw_placeholder ? placeholder_max_width : text.get_max_width()) + gutters_width + gutter_padding;
 
 	if (draw_minimap) {
-		total_width += minimap_width;
+		total_width += minimap_width + minimap_margin;
 	}
 
 	content_size_cache = Vector2i(total_width + 10, MAX(total_rows, 1) * get_line_height());
@@ -9676,7 +9677,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 
 	int visible_width = get_size().width - _get_current_stylebox()->get_minimum_size().width - gutters_width - gutter_padding;
 	if (draw_minimap) {
-		visible_width -= minimap_width;
+		visible_width -= minimap_width + minimap_margin;
 	}
 	if (v_scroll->is_visible_in_tree()) {
 		visible_width -= v_scroll->get_bound_minimum_size().width;
