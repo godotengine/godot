@@ -1229,7 +1229,7 @@ void OpenXRInterface::handle_hand_tracking(const String &p_path, OpenXRHandTrack
 					transform.origin = hand_tracking_ext->get_hand_joint_position(p_hand, XR_HAND_JOINT_PALM_EXT);
 				}
 
-				XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_location_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
+				XrSpaceVelocityFlags velocity_flags = hand_tracking_ext->get_hand_joint_velocity_flags(p_hand, XR_HAND_JOINT_PALM_EXT);
 				if (velocity_flags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
 					linear_velocity = hand_tracking_ext->get_hand_joint_linear_velocity(p_hand, XR_HAND_JOINT_PALM_EXT);
 				}
