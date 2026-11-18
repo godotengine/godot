@@ -573,6 +573,139 @@ int mbedtls_ct_memcmp_partial(const void *a,
 
 #endif
 
+/* The code below provides countermeasures for Spectre v1 countermeasures,
+ * i.e. defenses against timing-based side channels in speculatively
+ * executed code. It is currently possible to disable these countermeasures
+ * by configuring the library with -DMBEDTLS_SPECTRE_V1_COUNTERMEASURES=0,
+ * however this is not officially supported and may be removed without
+ * notice.
+ * */
+#if defined(MBEDTLS_SPECTRE_V1_COUNTERMEASURES)
+#  if !(MBEDTLS_SPECTRE_V1_COUNTERMEASURES)
+#  undef MBEDTLS_SPECTRE_V1_COUNTERMEASURES
+#  endif
+#else
+#  define MBEDTLS_SPECTRE_V1_COUNTERMEASURES
+#endif
+
+#if defined(MBEDTLS_SPECTRE_V1_COUNTERMEASURES)
+
+/** Use this macro on the condition of if statements where wrongly executing
+ * one of the branches speculatively may leak sensitive data.
+ *
+ * \note            This macro alone has no useful effect. It is a
+ *                  complement for e.g. #MBEDTLS_CT_NULLIFY_IF_SPECULATING.
+ *
+ * This is part of a countermeasure against Spectre v1 attacks.
+ *
+ * \param value     An integral-valued expression.
+ *                  It will be executed exactly once.
+ * \return          The value of \p value.
+ */
+#define MBEDTLS_CT_SPEC_RISKY_BOOL(value) \
+    mbedtls_ct_compiler_opaque(value)
+
+static inline uintptr_t mbedtls_ct_nullify_if_speculating(uintptr_t value,
+                                                          mbedtls_ct_uint_t cond);
+
+/** Mask under speculative execution.
+ *
+ * Use this macro in a branch whose condition is \p cond.
+ * If the branch is being executed speculatively, set \p ptr to \c NULL.
+ * (Note: this sets the pointer variable. The pointer is not dereferenced.)
+ * If the branch is being executed normally, leave \p ptr unchanged.
+ *
+ * On processors that do not perform speculative execution, this is always
+ * a no-op (except for possible side effects of the given expressions).
+ *
+ * The behavior is unspecified when not in a branch whose condition is \p cond.
+ *
+ * This macro is intended to prevent potential Spectre v1 (Spectre-PHT)
+ * side channels, where the speculative execution of a branch can leak
+ * sensitive data through the address of a memory access.
+ *
+ * \note        Compilers may optimize \p cond in a way that makes
+ *              this countermeasure ineffective on its own. To prevent
+ *              this, use #MBEDTLS_CT_SPEC_RISKY_BOOL on the if condition.
+ *
+ * Usage example:
+ * ```
+ * if (MBEDTLS_CT_SPEC_RISKY_BOOL(key.is_public)) {
+ *     MBEDTLS_CT_NULLIFY_IF_SPECULATING(key_buffer, key.is_public);
+ *     parse_public_key_in_variable_time(key_buffer, key_buffer_length);
+ * } else {
+ *     parse_private_key_in_constant_time(key_buffer, key_buffer_length);
+ * }
+ * ```
+ *
+ * \param ptr   A pointer lvalue.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ * \param cond  An expression with integral value.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ *              This expression should be compiled to code that does
+ *              not use branches or other conditional instructions,
+ *              otherwise the calculation of \p cond here may
+ *              reintroduce a Spectre v1 gadget. To avoid this,
+ *              use another macro such as
+ *              #MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ or
+ *              #MBEDTLS_CT_NULLIFY_IF_SPECULATING_NE if applicable.
+ */
+#define MBEDTLS_CT_NULLIFY_IF_SPECULATING(ptr, cond)    \
+    ((ptr) = (void *) mbedtls_ct_nullify_if_speculating((uintptr_t) (ptr), cond))
+
+#else /* MBEDTLS_SPECTRE_V1_COUNTERMEASURES */
+
+#define MBEDTLS_CT_SPEC_RISKY_BOOL(value) (value)
+
+#define MBEDTLS_CT_NULLIFY_IF_SPECULATING(ptr, cond) \
+    (void) (ptr)
+
+#endif /* MBEDTLS_SPECTRE_V1_COUNTERMEASURES */
+
+/** Mask under speculative execution of an equality condition.
+ *
+ * This is functionally equivalent to
+ * #MBEDTLS_CT_NULLIFY_IF_SPECULATING(\p ptr, (\p lhs) == (\p rhs))
+ * but it protects against the equality being compiled to code using
+ * a conditional instruction that may introduce a further Spectre v1
+ * gadget.
+ *
+ * \param ptr   A pointer lvalue.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ * \param lhs   An expression with an integral value.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ * \param rhs   An expression with an integral value.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ */
+#define MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ptr, lhs, rhs) \
+    MBEDTLS_CT_NULLIFY_IF_SPECULATING(ptr, mbedtls_ct_uint_eq(lhs, rhs))
+
+/** Mask under speculative execution of a negated equality condition.
+ *
+ * This is functionally equivalent to
+ * #MBEDTLS_CT_NULLIFY_IF_SPECULATING(\p ptr, (\p lhs) != (\p rhs))
+ * but it protects against the equality being compiled to code using
+ * a conditional instruction that may introduce a further Spectre v1
+ * gadget.
+ *
+ * \param ptr   A pointer lvalue.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ * \param lhs   An expression with an integral value.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ * \param rhs   An expression with an integral value.
+ *              It may be evaluated zero, one or multiple times, hence
+ *              this expression should not have any side effects.
+ */
+#define MBEDTLS_CT_NULLIFY_IF_SPECULATING_NE(ptr, lhs, rhs) \
+    MBEDTLS_CT_NULLIFY_IF_SPECULATING(ptr, mbedtls_ct_uint_ne(lhs, rhs))
+
 /* Include the implementation of static inline functions above. */
 #include "constant_time_impl.h"
 

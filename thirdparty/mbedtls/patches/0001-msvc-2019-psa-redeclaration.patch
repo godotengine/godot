@@ -1,18 +1,5 @@
-diff --git a/thirdparty/README.md b/thirdparty/README.md
-index 49c24897ca..48aab56b70 100644
---- a/thirdparty/README.md
-+++ b/thirdparty/README.md
-@@ -654,7 +654,7 @@ File extracted from upstream source:
- ## mbedtls
- 
- - Upstream: https://github.com/Mbed-TLS/mbedtls
--- Version: 3.6.4 (c765c831e5c2a0971410692f92f7a81d6ec65ec2, 2025)
-+- Version: 3.6.5 (e185d7fd85499c8ce5ca2a54f5cf8fe7dbe3f8df, 2025)
- - License: Apache 2.0
- 
- File extracted from upstream release tarball:
 diff --git a/thirdparty/mbedtls/include/psa/crypto.h b/thirdparty/mbedtls/include/psa/crypto.h
-index 2fe9f35ec3..ed7da26276 100644
+index c100b6cb10..7c62995f21 100644
 --- a/thirdparty/mbedtls/include/psa/crypto.h
 +++ b/thirdparty/mbedtls/include/psa/crypto.h
 @@ -119,7 +119,9 @@ psa_status_t psa_crypto_init(void);
@@ -65,7 +52,7 @@ index 2fe9f35ec3..ed7da26276 100644
  
  /** Set the key for a multipart symmetric encryption operation.
   *
-@@ -2241,7 +2251,9 @@ typedef struct psa_aead_operation_s psa_aead_operation_t;
+@@ -2249,7 +2259,9 @@ typedef struct psa_aead_operation_s psa_aead_operation_t;
  
  /** Return an initial value for an AEAD operation object.
   */
@@ -75,7 +62,7 @@ index 2fe9f35ec3..ed7da26276 100644
  
  /** Set the key for a multipart authenticated encryption operation.
   *
-@@ -3228,7 +3240,9 @@ typedef struct psa_key_derivation_s psa_key_derivation_operation_t;
+@@ -3249,7 +3261,9 @@ typedef struct psa_key_derivation_s psa_key_derivation_operation_t;
  
  /** Return an initial value for a key derivation operation object.
   */
@@ -86,10 +73,10 @@ index 2fe9f35ec3..ed7da26276 100644
  /** Set up a key derivation operation.
   *
 diff --git a/thirdparty/mbedtls/include/psa/crypto_extra.h b/thirdparty/mbedtls/include/psa/crypto_extra.h
-index a710397a77..7a9811bb65 100644
+index 8b7274ec0c..731cd554e2 100644
 --- a/thirdparty/mbedtls/include/psa/crypto_extra.h
 +++ b/thirdparty/mbedtls/include/psa/crypto_extra.h
-@@ -1191,7 +1191,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
+@@ -1359,7 +1359,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
  
  /** Return an initial value for a PAKE cipher suite object.
   */
@@ -99,7 +86,7 @@ index a710397a77..7a9811bb65 100644
  
  /** Retrieve the PAKE algorithm from a PAKE cipher suite.
   *
-@@ -1330,7 +1332,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
+@@ -1498,7 +1500,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
  
  /** Return an initial value for a PAKE operation object.
   */

@@ -319,7 +319,8 @@ int mbedtls_cipher_setkey(mbedtls_cipher_context_t *ctx,
 #endif
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-    if (ctx->psa_enabled == 1) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(ctx->psa_enabled)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING(ctx, ctx->psa_enabled);
         mbedtls_cipher_context_psa * const cipher_psa =
             (mbedtls_cipher_context_psa *) ctx->cipher_ctx;
 
@@ -445,7 +446,11 @@ int mbedtls_cipher_set_iv(mbedtls_cipher_context_t *ctx,
     }
 
 #if defined(MBEDTLS_CHACHA20_C)
-    if (((mbedtls_cipher_type_t) ctx->cipher_info->type) == MBEDTLS_CIPHER_CHACHA20) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(ctx->cipher_info->type ==
+                                   MBEDTLS_CIPHER_CHACHA20)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             ctx->cipher_info->type,
+                                             MBEDTLS_CIPHER_CHACHA20);
         /* Even though the actual_iv_size is overwritten with a correct value
          * of 12 from the cipher info, return an error to indicate that
          * the input iv_len is wrong. */
@@ -468,7 +473,11 @@ int mbedtls_cipher_set_iv(mbedtls_cipher_context_t *ctx,
 #endif
 
 #if defined(MBEDTLS_GCM_C)
-    if (MBEDTLS_MODE_GCM == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode)) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_MODE_GCM ==
+                                   ctx->cipher_info->mode)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_MODE_GCM,
+                                             ctx->cipher_info->mode);
         return mbedtls_gcm_starts((mbedtls_gcm_context *) ctx->cipher_ctx,
                                   ctx->operation,
                                   iv, iv_len);
@@ -476,7 +485,11 @@ int mbedtls_cipher_set_iv(mbedtls_cipher_context_t *ctx,
 #endif
 
 #if defined(MBEDTLS_CCM_C)
-    if (MBEDTLS_MODE_CCM_STAR_NO_TAG == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode)) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_MODE_CCM_STAR_NO_TAG ==
+                                   ctx->cipher_info->mode)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_MODE_CCM_STAR_NO_TAG,
+                                             ctx->cipher_info->mode);
         int set_lengths_result;
         int ccm_star_mode;
 
@@ -546,14 +559,22 @@ int mbedtls_cipher_update_ad(mbedtls_cipher_context_t *ctx,
 #endif /* MBEDTLS_USE_PSA_CRYPTO && !MBEDTLS_DEPRECATED_REMOVED */
 
 #if defined(MBEDTLS_GCM_C)
-    if (MBEDTLS_MODE_GCM == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode)) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_MODE_GCM ==
+                                   ctx->cipher_info->mode)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_MODE_GCM,
+                                             ctx->cipher_info->mode);
         return mbedtls_gcm_update_ad((mbedtls_gcm_context *) ctx->cipher_ctx,
                                      ad, ad_len);
     }
 #endif
 
 #if defined(MBEDTLS_CHACHAPOLY_C)
-    if (MBEDTLS_CIPHER_CHACHA20_POLY1305 == ((mbedtls_cipher_type_t) ctx->cipher_info->type)) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_CIPHER_CHACHA20_POLY1305 ==
+                                   ctx->cipher_info->type)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_CIPHER_CHACHA20_POLY1305,
+                                             ctx->cipher_info->type);
         int result;
         mbedtls_chachapoly_mode_t mode;
 
@@ -619,7 +640,11 @@ int mbedtls_cipher_update(mbedtls_cipher_context_t *ctx, const unsigned char *in
     }
 
 #if defined(MBEDTLS_GCM_C)
-    if (((mbedtls_cipher_mode_t) ctx->cipher_info->mode) == MBEDTLS_MODE_GCM) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_MODE_GCM ==
+                                   ctx->cipher_info->mode)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_MODE_GCM,
+                                             ctx->cipher_info->mode);
         return mbedtls_gcm_update((mbedtls_gcm_context *) ctx->cipher_ctx,
                                   input, ilen,
                                   output, ilen, olen);
@@ -627,7 +652,11 @@ int mbedtls_cipher_update(mbedtls_cipher_context_t *ctx, const unsigned char *in
 #endif
 
 #if defined(MBEDTLS_CCM_C)
-    if (((mbedtls_cipher_mode_t) ctx->cipher_info->mode) == MBEDTLS_MODE_CCM_STAR_NO_TAG) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_MODE_CCM_STAR_NO_TAG ==
+                                   ctx->cipher_info->mode)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_MODE_CCM_STAR_NO_TAG,
+                                             ctx->cipher_info->mode);
         return mbedtls_ccm_update((mbedtls_ccm_context *) ctx->cipher_ctx,
                                   input, ilen,
                                   output, ilen, olen);
@@ -635,11 +664,18 @@ int mbedtls_cipher_update(mbedtls_cipher_context_t *ctx, const unsigned char *in
 #endif
 
 #if defined(MBEDTLS_CHACHAPOLY_C)
-    if (((mbedtls_cipher_type_t) ctx->cipher_info->type) == MBEDTLS_CIPHER_CHACHA20_POLY1305) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(MBEDTLS_CIPHER_CHACHA20_POLY1305 ==
+                                   ctx->cipher_info->type)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                             MBEDTLS_CIPHER_CHACHA20_POLY1305,
+                                             ctx->cipher_info->type);
         *olen = ilen;
         return mbedtls_chachapoly_update((mbedtls_chachapoly_context *) ctx->cipher_ctx,
                                          ilen, input, output);
     }
+    MBEDTLS_CT_NULLIFY_IF_SPECULATING_NE(ctx,
+                                         MBEDTLS_CIPHER_CHACHA20_POLY1305,
+                                         ctx->cipher_info->type);
 #endif
 
     if (input == output &&
@@ -1341,7 +1377,8 @@ int mbedtls_cipher_crypt(mbedtls_cipher_context_t *ctx,
     size_t finish_olen;
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-    if (ctx->psa_enabled == 1) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(ctx->psa_enabled)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING(ctx, ctx->psa_enabled);
         /* As in the non-PSA case, we don't check that
          * a key has been set. If not, the key slot will
          * still be in its default state of 0, which is
@@ -1439,7 +1476,8 @@ static int mbedtls_cipher_aead_encrypt(mbedtls_cipher_context_t *ctx,
                                        unsigned char *tag, size_t tag_len)
 {
 #if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-    if (ctx->psa_enabled == 1) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(ctx->psa_enabled)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING(ctx, ctx->psa_enabled);
         /* As in the non-PSA case, we don't check that
          * a key has been set. If not, the key slot will
          * still be in its default state of 0, which is
@@ -1516,7 +1554,8 @@ static int mbedtls_cipher_aead_decrypt(mbedtls_cipher_context_t *ctx,
                                        const unsigned char *tag, size_t tag_len)
 {
 #if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-    if (ctx->psa_enabled == 1) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(ctx->psa_enabled)) {
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING(ctx, ctx->psa_enabled);
         /* As in the non-PSA case, we don't check that
          * a key has been set. If not, the key slot will
          * still be in its default state of 0, which is
@@ -1608,6 +1647,24 @@ static int mbedtls_cipher_aead_decrypt(mbedtls_cipher_context_t *ctx,
 #endif /* MBEDTLS_CIPHER_MODE_AEAD */
 
 #if defined(MBEDTLS_CIPHER_MODE_AEAD) || defined(MBEDTLS_NIST_KW_C)
+#if defined(MBEDTLS_NIST_KW_C)
+static int mbedtls_cipher_context_is_kw(const mbedtls_cipher_context_t *ctx)
+{
+#if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
+    if (ctx->psa_enabled) {
+        return 0;
+    }
+#endif
+    switch (ctx->cipher_info->mode) {
+        case MBEDTLS_MODE_KW:
+        case MBEDTLS_MODE_KWP:
+            return 1;
+        default:
+            return 0;
+    }
+}
+#endif /* MBEDTLS_NIST_KW_C */
+
 /*
  * Packet-oriented encryption for AEAD/NIST_KW: public function.
  */
@@ -1619,15 +1676,20 @@ int mbedtls_cipher_auth_encrypt_ext(mbedtls_cipher_context_t *ctx,
                                     size_t *olen, size_t tag_len)
 {
 #if defined(MBEDTLS_NIST_KW_C)
-    if (
-#if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-        ctx->psa_enabled == 0 &&
-#endif
-        (MBEDTLS_MODE_KW == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode) ||
-         MBEDTLS_MODE_KWP == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode))) {
+    if (mbedtls_cipher_context_is_kw(ctx)) {
         mbedtls_nist_kw_mode_t mode =
             (MBEDTLS_MODE_KW == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode)) ?
             MBEDTLS_KW_MODE_KW : MBEDTLS_KW_MODE_KWP;
+        if (MBEDTLS_CT_SPEC_RISKY_BOOL(mode == MBEDTLS_KW_MODE_KW)) {
+            MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                                 ctx->cipher_info->mode,
+                                                 MBEDTLS_MODE_KW);
+        }
+        if (MBEDTLS_CT_SPEC_RISKY_BOOL(mode == MBEDTLS_KW_MODE_KWP)) {
+            MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                                 ctx->cipher_info->mode,
+                                                 MBEDTLS_MODE_KWP);
+        }
 
         /* There is no iv, tag or ad associated with KW and KWP,
          * so these length should be 0 as documented. */
@@ -1670,15 +1732,20 @@ int mbedtls_cipher_auth_decrypt_ext(mbedtls_cipher_context_t *ctx,
                                     size_t *olen, size_t tag_len)
 {
 #if defined(MBEDTLS_NIST_KW_C)
-    if (
-#if defined(MBEDTLS_USE_PSA_CRYPTO) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-        ctx->psa_enabled == 0 &&
-#endif
-        (MBEDTLS_MODE_KW == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode) ||
-         MBEDTLS_MODE_KWP == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode))) {
+    if (mbedtls_cipher_context_is_kw(ctx)) {
         mbedtls_nist_kw_mode_t mode =
             (MBEDTLS_MODE_KW == ((mbedtls_cipher_mode_t) ctx->cipher_info->mode)) ?
             MBEDTLS_KW_MODE_KW : MBEDTLS_KW_MODE_KWP;
+        if (MBEDTLS_CT_SPEC_RISKY_BOOL(mode == MBEDTLS_KW_MODE_KW)) {
+            MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                                 ctx->cipher_info->mode,
+                                                 MBEDTLS_MODE_KW);
+        }
+        if (MBEDTLS_CT_SPEC_RISKY_BOOL(mode == MBEDTLS_KW_MODE_KWP)) {
+            MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(ctx,
+                                                 ctx->cipher_info->mode,
+                                                 MBEDTLS_MODE_KWP);
+        }
 
         /* There is no iv, tag or ad associated with KW and KWP,
          * so these length should be 0 as documented. */
