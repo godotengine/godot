@@ -1335,7 +1335,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				} break;
 				case TreeItem::CELL_MODE_CUSTOM: {
-					if (p_item->cells[i].custom_draw_obj) {
+					if (p_item->cells[i].custom_draw_obj.is_valid()) {
 						Object *cdo = ObjectDB::get_instance(p_item->cells[i].custom_draw_obj);
 						if (cdo) {
 							cdo->call(p_item->cells[i].custom_draw_callback, p_item, Rect2(item_rect));
