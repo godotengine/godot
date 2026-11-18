@@ -60,6 +60,9 @@ bool FileAccessPackedByteArray::eof_reached() const {
 
 uint64_t FileAccessPackedByteArray::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_NULL_V(p_dst, -1);
+	if (!p_length) {
+		return 0;
+	}
 
 	uint64_t left = data.size() - pos;
 	uint64_t read = MIN(p_length, left);

@@ -153,9 +153,11 @@ bool LipO::_create_file(const String &p_output_path, const Vector<Ref<FileAccess
 				fa->store_buffer(step, br);
 			}
 		}
-		uint64_t br = p_files[i]->get_buffer(step, remain);
-		if (br > 0) {
-			fa->store_buffer(step, br);
+		if (remain > 0) {
+			uint64_t br = p_files[i]->get_buffer(step, remain);
+			if (br > 0) {
+				fa->store_buffer(step, br);
+			}
 		}
 	}
 	return true;
@@ -278,9 +280,11 @@ bool LipO::extract_arch(int p_index, const String &p_path) {
 			fb->store_buffer(step, br);
 		}
 	}
-	uint64_t br = fa->get_buffer(step, remain);
-	if (br > 0) {
-		fb->store_buffer(step, br);
+	if (remain > 0) {
+		uint64_t br = fa->get_buffer(step, remain);
+		if (br > 0) {
+			fb->store_buffer(step, br);
+		}
 	}
 	return true;
 }
