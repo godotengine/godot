@@ -249,6 +249,7 @@
 /modules/websocket/**/SCsub                   @godotengine/network @godotengine/buildsystem
 /modules/websocket/doc_classes/               @godotengine/network @godotengine/documentation
 /modules/websocket/editor/                    @godotengine/network @godotengine/editor
+/modules/websocket/tests/                     @godotengine/network @godotengine/tests
 
 ## Physics
 /modules/godot_physics_2d/                    @godotengine/physics
