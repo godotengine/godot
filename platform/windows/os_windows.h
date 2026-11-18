@@ -435,7 +435,7 @@ protected:
 	bool was_maximized;
 
 public:
-	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProc(HWND p_window, UINT p_umsg, WPARAM p_wparam, LPARAM p_lparam);
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
 
