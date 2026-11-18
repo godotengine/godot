@@ -72,7 +72,7 @@
  * YMMV.
  */
 /* Helper macro to set the values of the higher bits in unused low positions */
-#define H(b63, b31, b15) (b63 << 6 | b31 << 5 | b15 << 4)
+#define H(b63, b31, b15) (((b63) << 6) | ((b31) << 5) | ((b15) << 4))
 static const uint8_t iota_r_packed[24] = {
     H(0, 0, 0) | 0x01, H(0, 0, 1) | 0x82, H(1, 0, 1) | 0x8a, H(1, 1, 1) | 0x00,
     H(0, 0, 1) | 0x8b, H(0, 1, 0) | 0x01, H(1, 1, 1) | 0x81, H(1, 0, 1) | 0x09,

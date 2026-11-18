@@ -1090,10 +1090,10 @@ typedef uint32_t psa_pake_primitive_t;
  *         Return 0 if the requested primitive can't be encoded as
  *         ::psa_pake_primitive_t.
  */
-#define PSA_PAKE_PRIMITIVE(pake_type, pake_family, pake_bits) \
-    ((pake_bits & 0xFFFF) != pake_bits) ? 0 :                 \
-    ((psa_pake_primitive_t) (((pake_type) << 24 |             \
-                              (pake_family) << 16) | (pake_bits)))
+#define PSA_PAKE_PRIMITIVE(pake_type, pake_family, pake_bits)              \
+    ((((pake_bits) & 0xFFFF) != (pake_bits)) ? 0 :                         \
+     ((psa_pake_primitive_t) ((((pake_type) << 24) |                       \
+                               ((pake_family) << 16)) | (pake_bits))))
 
 /** The key share being sent to or received from the peer.
  *
@@ -1170,12 +1170,12 @@ typedef uint32_t psa_pake_primitive_t;
  *                      return 0.
  */
 #define PSA_PAKE_OUTPUT_SIZE(alg, primitive, output_step)               \
-    (alg == PSA_ALG_JPAKE &&                                           \
-     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
-                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
+    ((alg) == PSA_ALG_JPAKE &&                                          \
+     (primitive) == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,     \
+                                       PSA_ECC_FAMILY_SECP_R1, 256) ?    \
      (                                                                 \
-         output_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                   \
-         output_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                   \
+         (output_step) == PSA_PAKE_STEP_KEY_SHARE ? 65 :                \
+         (output_step) == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                \
          32                                                              \
      ) :                                                               \
      0)
@@ -1200,12 +1200,12 @@ typedef uint32_t psa_pake_primitive_t;
  *                      the parameters are incompatible, return 0.
  */
 #define PSA_PAKE_INPUT_SIZE(alg, primitive, input_step)                 \
-    (alg == PSA_ALG_JPAKE &&                                           \
-     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
-                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
+    ((alg) == PSA_ALG_JPAKE &&                                          \
+     (primitive) == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,     \
+                                       PSA_ECC_FAMILY_SECP_R1, 256) ?    \
      (                                                                 \
-         input_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                    \
-         input_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                    \
+         (input_step) == PSA_PAKE_STEP_KEY_SHARE ? 65 :                 \
+         (input_step) == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                 \
          32                                                              \
      ) :                                                               \
      0)
@@ -1359,7 +1359,9 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
 
 /** Return an initial value for a PAKE cipher suite object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_cipher_suite_t psa_pake_cipher_suite_init(void);
+#endif
 
 /** Retrieve the PAKE algorithm from a PAKE cipher suite.
  *
@@ -1498,7 +1500,9 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
 
 /** Return an initial value for a PAKE operation object.
  */
+#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_operation_t psa_pake_operation_init(void);
+#endif
 
 /** Get the length of the password in bytes from given inputs.
  *
