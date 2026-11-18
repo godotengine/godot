@@ -1142,6 +1142,7 @@ public:
 	FUNC2(global_shader_parameter_set_override, const StringName &, const Variant &)
 	FUNC1RC(RSE::GlobalShaderParameterType, global_shader_parameter_get_type, const StringName &)
 	FUNC1RC(Variant, global_shader_parameter_get, const StringName &)
+	FUNC0RC(Dictionary, snapshot_get_global_shader_parameters)
 
 	FUNC1(global_shader_parameters_load_settings, bool)
 	FUNC0(global_shader_parameters_clear)

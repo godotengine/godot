@@ -51,6 +51,7 @@ void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RSE:
 	ERR_FAIL_COND(global_shader_variables.has(p_name));
 
 	global_shader_variables[p_name] = p_type;
+	global_shader_values[p_name] = p_value;
 }
 
 void MaterialStorage::global_shader_parameter_remove(const StringName &p_name) {
@@ -59,6 +60,19 @@ void MaterialStorage::global_shader_parameter_remove(const StringName &p_name) {
 	}
 
 	global_shader_variables.erase(p_name);
+	global_shader_values.erase(p_name);
+}
+
+Dictionary MaterialStorage::snapshot_get_global_shader_parameters() const {
+	Dictionary out;
+	for (const KeyValue<StringName, RS::GlobalShaderParameterType> &E : global_shader_variables) {
+		const Variant *v = global_shader_values.getptr(E.key);
+		Dictionary entry;
+		entry["type"] = E.value;
+		entry["value"] = v ? *v : Variant();
+		out[E.key] = entry;
+	}
+	return out;
 }
 
 Vector<StringName> MaterialStorage::global_shader_parameter_get_list() const {

@@ -446,6 +446,7 @@ public:
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) override;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const override;
+	virtual Dictionary snapshot_get_global_shader_parameters() const override;
 	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const override;
 	RSE::GlobalShaderParameterType global_shader_parameter_get_type_internal(const StringName &p_name) const;
 

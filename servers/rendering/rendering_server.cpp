@@ -3470,6 +3470,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set", "name", "value"), &RenderingServer::global_shader_parameter_set);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set_override", "name", "value"), &RenderingServer::global_shader_parameter_set_override);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get", "name"), &RenderingServer::global_shader_parameter_get);
+	ClassDB::bind_method(D_METHOD("snapshot_get_global_shader_parameters"), &RenderingServer::snapshot_get_global_shader_parameters);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_type", "name"), &RenderingServer::global_shader_parameter_get_type);
 
 	BIND_ENUM_CONSTANT(RSE::GLOBAL_VAR_TYPE_BOOL);

@@ -46,6 +46,7 @@ public:
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
 	virtual Variant global_shader_parameter_get(const StringName &p_name) const = 0;
+	virtual Dictionary snapshot_get_global_shader_parameters() const = 0; // komm64: name -> value, outside the editor too
 	virtual RSE::GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
 
 	virtual void global_shader_parameters_load_settings(bool p_load_textures = true) = 0;

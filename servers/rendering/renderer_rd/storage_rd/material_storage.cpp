@@ -1945,6 +1945,19 @@ Variant MaterialStorage::global_shader_parameter_get(const StringName &p_name) c
 	return global_shader_uniforms.variables[p_name].value;
 }
 
+// komm64: every global shader parameter's type and value, by name. Unlike
+// global_shader_parameter_get, works outside the editor: a save reads it once.
+Dictionary MaterialStorage::snapshot_get_global_shader_parameters() const {
+	Dictionary out;
+	for (const KeyValue<StringName, GlobalShaderUniforms::Variable> &E : global_shader_uniforms.variables) {
+		Dictionary entry;
+		entry["type"] = E.value.type;
+		entry["value"] = E.value.value;
+		out[E.key] = entry;
+	}
+	return out;
+}
+
 RSE::GlobalShaderParameterType MaterialStorage::global_shader_parameter_get_type_internal(const StringName &p_name) const {
 	if (!global_shader_uniforms.variables.has(p_name)) {
 		return RSE::GLOBAL_VAR_TYPE_MAX;

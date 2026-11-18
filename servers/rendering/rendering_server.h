@@ -936,6 +936,7 @@ public:
 	virtual void global_shader_parameter_add(const StringName &p_name, RSE::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_remove(const StringName &p_name) = 0;
 	virtual Vector<StringName> global_shader_parameter_get_list() const = 0;
+	virtual Dictionary snapshot_get_global_shader_parameters() const = 0; // komm64
 
 	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
