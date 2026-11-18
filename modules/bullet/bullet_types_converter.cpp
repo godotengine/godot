@@ -69,12 +69,14 @@ void G_TO_B(Vector3 const &inVal, btVector3 &outVal) {
 	outVal[0] = inVal[0];
 	outVal[1] = inVal[1];
 	outVal[2] = inVal[2];
+	outVal[3] = btScalar(0.0);
 }
 
 void INVERT_G_TO_B(Vector3 const &inVal, btVector3 &outVal) {
 	outVal[0] = inVal[0] != 0. ? 1. / inVal[0] : 0.;
 	outVal[1] = inVal[1] != 0. ? 1. / inVal[1] : 0.;
 	outVal[2] = inVal[2] != 0. ? 1. / inVal[2] : 0.;
+	outVal[3] = btScalar(0.0);
 }
 
 void G_TO_B(Basis const &inVal, btMatrix3x3 &outVal) {
