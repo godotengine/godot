@@ -118,36 +118,37 @@ void EditorExportPlatformPC::check_export_template_debugsymbols(const String &p_
 
 bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
-	bool valid = false;
 
-	// Look for export templates (first official, and if defined custom templates).
+	// Look for export templates (first custom if defined, and officials otherwise)
+	bool dvalid = true;
+	bool rvalid = true;
 	String arch = p_preset->get("binary_format/architecture");
-	String dtemplate_path = find_export_template(get_template_file_name("debug", arch), &err);
-	String rtemplate_path = find_export_template(get_template_file_name("release", arch), &err);
-	bool dvalid = dtemplate_path != "";
-	bool rvalid = rtemplate_path != "";
+	String dtemplate_path = p_preset->get("custom_template/debug");
+	String rtemplate_path = p_preset->get("custom_template/release");
+	dtemplate_path = dtemplate_path.strip_edges();
+	rtemplate_path = rtemplate_path.strip_edges();
 
-	String dcustom_template_path = p_preset->get("custom_template/debug");
-	dcustom_template_path = dcustom_template_path.strip_edges();
-	if (dcustom_template_path != "") {
-		dtemplate_path = dcustom_template_path;
-		dvalid = FileAccess::exists(dcustom_template_path);
+	if (dtemplate_path.is_empty()) {
+		dtemplate_path = find_export_template(get_template_file_name("debug", arch), &err);
+		dvalid = !dtemplate_path.is_empty();
+	} else {
+		dvalid = FileAccess::exists(dtemplate_path);
 		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
-	String rcustom_template_path = p_preset->get("custom_template/release");
-	rcustom_template_path = rcustom_template_path.strip_edges();
-	if (rcustom_template_path != "") {
-		rtemplate_path = rcustom_template_path;
-		rvalid = FileAccess::exists(rcustom_template_path);
+	if (rtemplate_path.is_empty()) {
+		rtemplate_path = find_export_template(get_template_file_name("release", arch), &err);
+		rvalid = !rtemplate_path.is_empty();
+	} else {
+		rvalid = FileAccess::exists(rtemplate_path);
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
-	// Warn if the debug symbols for the effectively used  files are not found.
+	// Warn if the debug symbols for the relevant export template are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
 	if (debug_symbol_mode > 0) {
 		if (dvalid) {
@@ -158,7 +159,7 @@ bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExpo
 		}
 	}
 
-	valid = dvalid || rvalid;
+	bool valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
 	bool uses_s3tc_bptc = p_preset->get("texture_format/s3tc_bptc");
