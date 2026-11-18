@@ -98,4 +98,8 @@ static OPUS_INLINE opus_int32 silk_NSQ_noise_shape_feedback_loop_c(const opus_in
 #include "arm/NSQ_neon.h"
 #endif
 
+#if defined(__mips)
+#include "mips/NSQ_mips.h"
+#endif
+
 #endif /* SILK_NSQ_H */

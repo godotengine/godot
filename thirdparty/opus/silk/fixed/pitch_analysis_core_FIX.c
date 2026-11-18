@@ -80,7 +80,7 @@ static void silk_P_Ana_calc_energy_st3(
 /*      FIXED POINT CORE PITCH ANALYSIS FUNCTION             */
 /*************************************************************/
 opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 voiced, 1 unvoiced                      */
-    const opus_int16            *frame,             /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
+    const opus_int16            *frame_unscaled,    /* I    Signal of length PE_FRAME_LENGTH_MS*Fs_kHz                  */
     opus_int                    *pitch_out,         /* O    4 pitch lag values                                          */
     opus_int16                  *lagIndex,          /* O    Lag Index                                                   */
     opus_int8                   *contourIndex,      /* O    Pitch contour Index                                         */
@@ -94,16 +94,17 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     int                         arch                /* I    Run-time architecture                                       */
 )
 {
-    VARDECL( opus_int16, frame_8kHz );
+    VARDECL( opus_int16, frame_8kHz_buf );
     VARDECL( opus_int16, frame_4kHz );
+    VARDECL( opus_int16, frame_scaled );
     opus_int32 filt_state[ 6 ];
-    const opus_int16 *input_frame_ptr;
+    const opus_int16 *frame, *frame_8kHz;
     opus_int   i, k, d, j;
     VARDECL( opus_int16, C );
     VARDECL( opus_int32, xcorr32 );
     const opus_int16 *target_ptr, *basis_ptr;
-    opus_int32 cross_corr, normalizer, energy, shift, energy_basis, energy_target;
-    opus_int   d_srch[ PE_D_SRCH_LENGTH ], Cmax, length_d_srch, length_d_comp;
+    opus_int32 cross_corr, normalizer, energy, energy_basis, energy_target;
+    opus_int   d_srch[ PE_D_SRCH_LENGTH ], Cmax, length_d_srch, length_d_comp, shift;
     VARDECL( opus_int16, d_comp );
     opus_int32 sum, threshold, lag_counter;
     opus_int   CBimax, CBimax_new, CBimax_old, lag, start_lag, end_lag, lag_new;
@@ -119,12 +120,13 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     opus_int32 delta_lag_log2_sqr_Q7, lag_log2_Q7, prevLag_log2_Q7, prev_lag_bias_Q13;
     const opus_int8 *Lag_CB_ptr;
     SAVE_STACK;
+
     /* Check for valid sampling frequency */
-    silk_assert( Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16 );
+    celt_assert( Fs_kHz == 8 || Fs_kHz == 12 || Fs_kHz == 16 );
 
     /* Check for valid complexity setting */
-    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     silk_assert( search_thres1_Q16 >= 0 && search_thres1_Q16 <= (1<<16) );
     silk_assert( search_thres2_Q13 >= 0 && search_thres2_Q13 <= (1<<13) );
@@ -137,17 +139,33 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     min_lag           = PE_MIN_LAG_MS * Fs_kHz;
     max_lag           = PE_MAX_LAG_MS * Fs_kHz - 1;
 
+    /* Downscale input if necessary */
+    silk_sum_sqr_shift( &energy, &shift, frame_unscaled, frame_length );
+    shift += 3 - silk_CLZ32( energy );        /* at least two bits headroom */
+    ALLOC( frame_scaled, frame_length, opus_int16 );
+    if( shift > 0 ) {
+        shift = silk_RSHIFT( shift + 1, 1 );
+        for( i = 0; i < frame_length; i++ ) {
+            frame_scaled[ i ] = silk_RSHIFT( frame_unscaled[ i ], shift );
+        }
+        frame = frame_scaled;
+    } else {
+        frame = frame_unscaled;
+    }
+
+    ALLOC( frame_8kHz_buf, ( Fs_kHz == 8 ) ? 1 : frame_length_8kHz, opus_int16 );
     /* Resample from input sampled at Fs_kHz to 8 kHz */
-    ALLOC( frame_8kHz, frame_length_8kHz, opus_int16 );
     if( Fs_kHz == 16 ) {
         silk_memset( filt_state, 0, 2 * sizeof( opus_int32 ) );
-        silk_resampler_down2( filt_state, frame_8kHz, frame, frame_length );
+        silk_resampler_down2( filt_state, frame_8kHz_buf, frame, frame_length );
+        frame_8kHz = frame_8kHz_buf;
     } else if( Fs_kHz == 12 ) {
         silk_memset( filt_state, 0, 6 * sizeof( opus_int32 ) );
-        silk_resampler_down2_3( filt_state, frame_8kHz, frame, frame_length );
+        silk_resampler_down2_3( filt_state, frame_8kHz_buf, frame, frame_length );
+        frame_8kHz = frame_8kHz_buf;
     } else {
-        silk_assert( Fs_kHz == 8 );
-        silk_memcpy( frame_8kHz, frame, frame_length_8kHz * sizeof(opus_int16) );
+        celt_assert( Fs_kHz == 8 );
+        frame_8kHz = frame;
     }
 
     /* Decimate again to 4 kHz */
@@ -160,19 +178,6 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
         frame_4kHz[ i ] = silk_ADD_SAT16( frame_4kHz[ i ], frame_4kHz[ i - 1 ] );
     }
 
-    /*******************************************************************************
-    ** Scale 4 kHz signal down to prevent correlations measures from overflowing
-    ** find scaling as max scaling for each 8kHz(?) subframe
-    *******************************************************************************/
-
-    /* Inner product is calculated with different lengths, so scale for the worst case */
-    silk_sum_sqr_shift( &energy, &shift, frame_4kHz, frame_length_4kHz );
-    if( shift > 0 ) {
-        shift = silk_RSHIFT( shift, 1 );
-        for( i = 0; i < frame_length_4kHz; i++ ) {
-            frame_4kHz[ i ] = silk_RSHIFT( frame_4kHz[ i ], shift );
-        }
-    }
 
     /******************************************************************************
     * FIRST STAGE, operating in 4 khz
@@ -183,14 +188,14 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     target_ptr = &frame_4kHz[ silk_LSHIFT( SF_LENGTH_4KHZ, 2 ) ];
     for( k = 0; k < nb_subfr >> 1; k++ ) {
         /* Check that we are within range of the array */
-        silk_assert( target_ptr >= frame_4kHz );
-        silk_assert( target_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
+        celt_assert( target_ptr >= frame_4kHz );
+        celt_assert( target_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
 
         basis_ptr = target_ptr - MIN_LAG_4KHZ;
 
         /* Check that we are within range of the array */
-        silk_assert( basis_ptr >= frame_4kHz );
-        silk_assert( basis_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
+        celt_assert( basis_ptr >= frame_4kHz );
+        celt_assert( basis_ptr + SF_LENGTH_8KHZ <= frame_4kHz + frame_length_4kHz );
 
         celt_pitch_xcorr( target_ptr, target_ptr - MAX_LAG_4KHZ, xcorr32, SF_LENGTH_8KHZ, MAX_LAG_4KHZ - MIN_LAG_4KHZ + 1, arch );
 
@@ -244,7 +249,7 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
 
     /* Sort */
     length_d_srch = silk_ADD_LSHIFT32( 4, complexity, 1 );
-    silk_assert( 3 * length_d_srch <= PE_D_SRCH_LENGTH );
+    celt_assert( 3 * length_d_srch <= PE_D_SRCH_LENGTH );
     silk_insertion_sort_decreasing_int16( C, d_srch, CSTRIDE_4KHZ,
                                           length_d_srch );
 
@@ -269,7 +274,7 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
             break;
         }
     }
-    silk_assert( length_d_srch > 0 );
+    celt_assert( length_d_srch > 0 );
 
     ALLOC( d_comp, D_COMP_STRIDE, opus_int16 );
     for( i = D_COMP_MIN; i < D_COMP_MAX; i++ ) {
@@ -311,18 +316,6 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     ** SECOND STAGE, operating at 8 kHz, on lag sections with high correlation
     *************************************************************************************/
 
-    /******************************************************************************
-    ** Scale signal down to avoid correlations measures from overflowing
-    *******************************************************************************/
-    /* find scaling as max scaling for each subframe */
-    silk_sum_sqr_shift( &energy, &shift, frame_8kHz, frame_length_8kHz );
-    if( shift > 0 ) {
-        shift = silk_RSHIFT( shift, 1 );
-        for( i = 0; i < frame_length_8kHz; i++ ) {
-            frame_8kHz[ i ] = silk_RSHIFT( frame_8kHz[ i ], shift );
-        }
-    }
-
     /*********************************************************************************
     * Find energy of each subframe projected onto its history, for a range of delays
     *********************************************************************************/
@@ -332,8 +325,8 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     for( k = 0; k < nb_subfr; k++ ) {
 
         /* Check that we are within range of the array */
-        silk_assert( target_ptr >= frame_8kHz );
-        silk_assert( target_ptr + SF_LENGTH_8KHZ <= frame_8kHz + frame_length_8kHz );
+        celt_assert( target_ptr >= frame_8kHz );
+        celt_assert( target_ptr + SF_LENGTH_8KHZ <= frame_8kHz + frame_length_8kHz );
 
         energy_target = silk_ADD32( silk_inner_prod_aligned( target_ptr, target_ptr, SF_LENGTH_8KHZ, arch ), 1 );
         for( j = 0; j < length_d_comp; j++ ) {
@@ -462,24 +455,6 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
     silk_assert( *LTPCorr_Q15 >= 0 );
 
     if( Fs_kHz > 8 ) {
-        VARDECL( opus_int16, scratch_mem );
-        /***************************************************************************/
-        /* Scale input signal down to avoid correlations measures from overflowing */
-        /***************************************************************************/
-        /* find scaling as max scaling for each subframe */
-        silk_sum_sqr_shift( &energy, &shift, frame, frame_length );
-        ALLOC( scratch_mem, shift > 0 ? frame_length : ALLOC_NONE, opus_int16 );
-        if( shift > 0 ) {
-            /* Move signal to scratch mem because the input signal should be unchanged */
-            shift = silk_RSHIFT( shift, 1 );
-            for( i = 0; i < frame_length; i++ ) {
-                scratch_mem[ i ] = silk_RSHIFT( frame[ i ], shift );
-            }
-            input_frame_ptr = scratch_mem;
-        } else {
-            input_frame_ptr = frame;
-        }
-
         /* Search in original signal */
 
         CBimax_old = CBimax;
@@ -519,14 +494,14 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
         /* Calculate the correlations and energies needed in stage 3 */
         ALLOC( energies_st3, nb_subfr * nb_cbk_search, silk_pe_stage3_vals );
         ALLOC( cross_corr_st3, nb_subfr * nb_cbk_search, silk_pe_stage3_vals );
-        silk_P_Ana_calc_corr_st3(  cross_corr_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity, arch );
-        silk_P_Ana_calc_energy_st3( energies_st3, input_frame_ptr, start_lag, sf_length, nb_subfr, complexity, arch );
+        silk_P_Ana_calc_corr_st3(  cross_corr_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
+        silk_P_Ana_calc_energy_st3( energies_st3, frame, start_lag, sf_length, nb_subfr, complexity, arch );
 
         lag_counter = 0;
         silk_assert( lag == silk_SAT16( lag ) );
         contour_bias_Q15 = silk_DIV32_16( SILK_FIX_CONST( PE_FLATCONTOUR_BIAS, 15 ), lag );
 
-        target_ptr = &input_frame_ptr[ PE_LTP_MEM_LENGTH_MS * Fs_kHz ];
+        target_ptr = &frame[ PE_LTP_MEM_LENGTH_MS * Fs_kHz ];
         energy_target = silk_ADD32( silk_inner_prod_aligned( target_ptr, target_ptr, nb_subfr * sf_length, arch ), 1 );
         for( d = start_lag; d <= end_lag; d++ ) {
             for( j = 0; j < nb_cbk_search; j++ ) {
@@ -575,7 +550,7 @@ opus_int silk_pitch_analysis_core(                  /* O    Voicing estimate: 0 
         *lagIndex = (opus_int16)( lag - MIN_LAG_8KHZ );
         *contourIndex = (opus_int8)CBimax;
     }
-    silk_assert( *lagIndex >= 0 );
+    celt_assert( *lagIndex >= 0 );
     /* return as voiced */
     RESTORE_STACK;
     return 0;
@@ -612,8 +587,8 @@ static void silk_P_Ana_calc_corr_st3(
     const opus_int8 *Lag_range_ptr, *Lag_CB_ptr;
     SAVE_STACK;
 
-    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     if( nb_subfr == PE_MAX_NB_SUBFR ) {
         Lag_range_ptr = &silk_Lag_range_stage3[ complexity ][ 0 ][ 0 ];
@@ -621,7 +596,7 @@ static void silk_P_Ana_calc_corr_st3(
         nb_cbk_search = silk_nb_cbk_searchs_stage3[ complexity ];
         cbk_size      = PE_NB_CBKS_STAGE3_MAX;
     } else {
-        silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
+        celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
         Lag_range_ptr = &silk_Lag_range_stage3_10_ms[ 0 ][ 0 ];
         Lag_CB_ptr    = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
         nb_cbk_search = PE_NB_CBKS_STAGE3_10MS;
@@ -637,7 +612,7 @@ static void silk_P_Ana_calc_corr_st3(
         /* Calculate the correlations for each subframe */
         lag_low  = matrix_ptr( Lag_range_ptr, k, 0, 2 );
         lag_high = matrix_ptr( Lag_range_ptr, k, 1, 2 );
-        silk_assert(lag_high-lag_low+1 <= SCRATCH_SIZE);
+        celt_assert(lag_high-lag_low+1 <= SCRATCH_SIZE);
         celt_pitch_xcorr( target_ptr, target_ptr - start_lag - lag_high, xcorr32, sf_length, lag_high - lag_low + 1, arch );
         for( j = lag_low; j <= lag_high; j++ ) {
             silk_assert( lag_counter < SCRATCH_SIZE );
@@ -684,8 +659,8 @@ static void silk_P_Ana_calc_energy_st3(
     const opus_int8 *Lag_range_ptr, *Lag_CB_ptr;
     SAVE_STACK;
 
-    silk_assert( complexity >= SILK_PE_MIN_COMPLEX );
-    silk_assert( complexity <= SILK_PE_MAX_COMPLEX );
+    celt_assert( complexity >= SILK_PE_MIN_COMPLEX );
+    celt_assert( complexity <= SILK_PE_MAX_COMPLEX );
 
     if( nb_subfr == PE_MAX_NB_SUBFR ) {
         Lag_range_ptr = &silk_Lag_range_stage3[ complexity ][ 0 ][ 0 ];
@@ -693,7 +668,7 @@ static void silk_P_Ana_calc_energy_st3(
         nb_cbk_search = silk_nb_cbk_searchs_stage3[ complexity ];
         cbk_size      = PE_NB_CBKS_STAGE3_MAX;
     } else {
-        silk_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
+        celt_assert( nb_subfr == PE_MAX_NB_SUBFR >> 1);
         Lag_range_ptr = &silk_Lag_range_stage3_10_ms[ 0 ][ 0 ];
         Lag_CB_ptr    = &silk_CB_lags_stage3_10_ms[ 0 ][ 0 ];
         nb_cbk_search = PE_NB_CBKS_STAGE3_10MS;

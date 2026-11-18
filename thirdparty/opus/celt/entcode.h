@@ -82,7 +82,7 @@ struct ec_ctx{
      In the encoder: the low end of the current range.*/
    opus_uint32    val;
    /*In the decoder: the saved normalization factor from ec_decode().
-     In the encoder: the number of oustanding carry propagating symbols.*/
+     In the encoder: the number of outstanding carry propagating symbols.*/
    opus_uint32    ext;
    /*A buffered input/output symbol, awaiting carry propagation.*/
    int            rem;
@@ -122,7 +122,7 @@ opus_uint32 ec_tell_frac(ec_ctx *_this);
 
 /* Tested exhaustively for all n and for 1<=d<=256 */
 static OPUS_INLINE opus_uint32 celt_udiv(opus_uint32 n, opus_uint32 d) {
-   celt_assert(d>0);
+   celt_sig_assert(d>0);
 #ifdef USE_SMALL_DIV_TABLE
    if (d>256)
       return n/d;
@@ -138,7 +138,7 @@ static OPUS_INLINE opus_uint32 celt_udiv(opus_uint32 n, opus_uint32 d) {
 }
 
 static OPUS_INLINE opus_int32 celt_sudiv(opus_int32 n, opus_int32 d) {
-   celt_assert(d>0);
+   celt_sig_assert(d>0);
 #ifdef USE_SMALL_DIV_TABLE
    if (n<0)
       return -(opus_int32)celt_udiv(-n, d);

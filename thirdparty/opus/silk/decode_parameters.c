@@ -52,7 +52,7 @@ void silk_decode_parameters(
     silk_NLSF_decode( pNLSF_Q15, psDec->indices.NLSFIndices, psDec->psNLSF_CB );
 
     /* Convert NLSF parameters to AR prediction filter coefficients */
-    silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 1 ], pNLSF_Q15, psDec->LPC_order );
+    silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 1 ], pNLSF_Q15, psDec->LPC_order, psDec->arch );
 
     /* If just reset, e.g., because internal Fs changed, do not allow interpolation */
     /* improves the case of packet loss in the first frame after a switch           */
@@ -69,7 +69,7 @@ void silk_decode_parameters(
         }
 
         /* Convert NLSF parameters to AR prediction filter coefficients */
-        silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 0 ], pNLSF0_Q15, psDec->LPC_order );
+        silk_NLSF2A( psDecCtrl->PredCoef_Q12[ 0 ], pNLSF0_Q15, psDec->LPC_order, psDec->arch );
     } else {
         /* Copy LPC coefficients for first half from second half */
         silk_memcpy( psDecCtrl->PredCoef_Q12[ 0 ], psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order * sizeof( opus_int16 ) );

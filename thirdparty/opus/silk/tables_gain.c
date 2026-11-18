@@ -31,10 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "tables.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 const opus_uint8 silk_gain_iCDF[ 3 ][ N_LEVELS_QGAIN / 8 ] =
 {
@@ -57,7 +53,3 @@ const opus_uint8 silk_delta_gain_iCDF[ MAX_DELTA_GAIN_QUANT - MIN_DELTA_GAIN_QUA
          8,      7,      6,      5,      4,      3,      2,      1,
          0
 };
-
-#ifdef __cplusplus
-}
-#endif

@@ -50,24 +50,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "resampler_private.h"
 
 /* Tables with delay compensation values to equalize total delay for different modes */
-static const opus_int8 delay_matrix_enc[ 5 ][ 3 ] = {
+static const opus_int8 delay_matrix_enc[ 6 ][ 3 ] = {
 /* in  \ out  8  12  16 */
 /*  8 */   {  6,  0,  3 },
 /* 12 */   {  0,  7,  3 },
 /* 16 */   {  0,  1, 10 },
 /* 24 */   {  0,  2,  6 },
-/* 48 */   { 18, 10, 12 }
+/* 48 */   { 18, 10, 12 },
+/* 96 */   {  0,  0,  44 }
 };
 
-static const opus_int8 delay_matrix_dec[ 3 ][ 5 ] = {
-/* in  \ out  8  12  16  24  48 */
-/*  8 */   {  4,  0,  2,  0,  0 },
-/* 12 */   {  0,  9,  4,  7,  4 },
-/* 16 */   {  0,  3, 12,  7,  7 }
+static const opus_int8 delay_matrix_dec[ 3 ][ 6 ] = {
+/* in  \ out  8  12  16  24  48  96*/
+/*  8 */   {  4,  0,  2,  0,  0,  0 },
+/* 12 */   {  0,  9,  4,  7,  4,  4 },
+/* 16 */   {  0,  3, 12,  7,  7,  7 }
 };
 
 /* Simple way to make [8000, 12000, 16000, 24000, 48000] to [0, 1, 2, 3, 4] */
-#define rateID(R) ( ( ( ((R)>>12) - ((R)>16000) ) >> ((R)>24000) ) - 1 )
+#define rateID(R) IMIN(5, ( ( ( ((R)>>12) - ((R)>16000) ) >> ((R)>24000) ) - 1 ))
 
 #define USE_silk_resampler_copy                     (0)
 #define USE_silk_resampler_private_up2_HQ_wrapper   (1)
@@ -89,16 +90,24 @@ opus_int silk_resampler_init(
 
     /* Input checking */
     if( forEnc ) {
-        if( ( Fs_Hz_in  != 8000 && Fs_Hz_in  != 12000 && Fs_Hz_in  != 16000 && Fs_Hz_in  != 24000 && Fs_Hz_in  != 48000 ) ||
+        if( ( Fs_Hz_in  != 8000 && Fs_Hz_in  != 12000 && Fs_Hz_in  != 16000 && Fs_Hz_in  != 24000 && Fs_Hz_in  != 48000
+#ifdef ENABLE_QEXT
+                  && Fs_Hz_in != 96000
+#endif
+              ) ||
             ( Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 ) ) {
-            silk_assert( 0 );
+            celt_assert( 0 );
             return -1;
         }
         S->inputDelay = delay_matrix_enc[ rateID( Fs_Hz_in ) ][ rateID( Fs_Hz_out ) ];
     } else {
         if( ( Fs_Hz_in  != 8000 && Fs_Hz_in  != 12000 && Fs_Hz_in  != 16000 ) ||
-            ( Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000 ) ) {
-            silk_assert( 0 );
+            ( Fs_Hz_out != 8000 && Fs_Hz_out != 12000 && Fs_Hz_out != 16000 && Fs_Hz_out != 24000 && Fs_Hz_out != 48000
+#ifdef ENABLE_QEXT
+                  && Fs_Hz_out != 96000
+#endif
+                  ) ) {
+            celt_assert( 0 );
             return -1;
         }
         S->inputDelay = delay_matrix_dec[ rateID( Fs_Hz_in ) ][ rateID( Fs_Hz_out ) ];
@@ -151,7 +160,7 @@ opus_int silk_resampler_init(
             S->Coefs = silk_Resampler_1_6_COEFS;
         } else {
             /* None available */
-            silk_assert( 0 );
+            celt_assert( 0 );
             return -1;
         }
     } else {
@@ -181,9 +190,9 @@ opus_int silk_resampler(
     opus_int nSamples;
 
     /* Need at least 1 ms of input data */
-    silk_assert( inLen >= S->Fs_in_kHz );
+    celt_assert( inLen >= S->Fs_in_kHz );
     /* Delay can't exceed the 1 ms of buffering */
-    silk_assert( S->inputDelay <= S->Fs_in_kHz );
+    celt_assert( S->inputDelay <= S->Fs_in_kHz );
 
     nSamples = S->Fs_in_kHz - S->inputDelay;
 

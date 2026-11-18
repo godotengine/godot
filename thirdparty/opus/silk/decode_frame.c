@@ -33,6 +33,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "stack_alloc.h"
 #include "PLC.h"
 
+#ifdef ENABLE_OSCE
+#include "osce.h"
+#endif
+
 /****************/
 /* Decode frame */
 /****************/
@@ -43,6 +47,12 @@ opus_int silk_decode_frame(
     opus_int32                  *pN,                            /* O    Pointer to size of output frame             */
     opus_int                    lostFlag,                       /* I    0: no loss, 1 loss, 2 decode fec            */
     opus_int                    condCoding,                     /* I    The type of conditional coding to use       */
+#ifdef ENABLE_DEEP_PLC
+    LPCNetPLCState              *lpcnet,
+#endif
+#ifdef ENABLE_OSCE
+    OSCEModel                   *osce_model,
+#endif
     int                         arch                            /* I    Run-time architecture                       */
 )
 {
@@ -55,12 +65,16 @@ opus_int silk_decode_frame(
     psDecCtrl->LTP_scale_Q14 = 0;
 
     /* Safety checks */
-    silk_assert( L > 0 && L <= MAX_FRAME_LENGTH );
+    celt_assert( L > 0 && L <= MAX_FRAME_LENGTH );
 
     if(   lostFlag == FLAG_DECODE_NORMAL ||
         ( lostFlag == FLAG_DECODE_LBRR && psDec->LBRR_flags[ psDec->nFramesDecoded ] == 1 ) )
     {
         VARDECL( opus_int16, pulses );
+#ifdef ENABLE_OSCE
+        opus_int32  ec_start;
+        ec_start = ec_tell(psRangeDec);
+#endif
         ALLOC( pulses, (L + SHELL_CODEC_FRAME_LENGTH - 1) &
                        ~(SHELL_CODEC_FRAME_LENGTH - 1), opus_int16 );
         /*********************************************/
@@ -84,29 +98,55 @@ opus_int silk_decode_frame(
         /********************************************************/
         silk_decode_core( psDec, psDecCtrl, pOut, pulses, arch );
 
+        /*************************/
+        /* Update output buffer. */
+        /*************************/
+        celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
+        mv_len = psDec->ltp_mem_length - psDec->frame_length;
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
+
+#ifdef ENABLE_OSCE
+        /********************************************************/
+        /* Run SILK enhancer                                    */
+        /********************************************************/
+        osce_enhance_frame( osce_model, psDec, psDecCtrl, pOut, ec_tell(psRangeDec) - ec_start, arch );
+#endif
+
         /********************************************************/
         /* Update PLC state                                     */
         /********************************************************/
-        silk_PLC( psDec, psDecCtrl, pOut, 0, arch );
+        silk_PLC( psDec, psDecCtrl, pOut, 0,
+#ifdef ENABLE_DEEP_PLC
+            lpcnet,
+#endif
+            arch );
 
         psDec->lossCnt = 0;
         psDec->prevSignalType = psDec->indices.signalType;
-        silk_assert( psDec->prevSignalType >= 0 && psDec->prevSignalType <= 2 );
+        celt_assert( psDec->prevSignalType >= 0 && psDec->prevSignalType <= 2 );
 
         /* A frame has been decoded without errors */
         psDec->first_frame_after_reset = 0;
     } else {
         /* Handle packet loss by extrapolation */
-        silk_PLC( psDec, psDecCtrl, pOut, 1, arch );
-    }
+        silk_PLC( psDec, psDecCtrl, pOut, 1,
+#ifdef ENABLE_DEEP_PLC
+            lpcnet,
+#endif
+            arch );
 
-    /*************************/
-    /* Update output buffer. */
-    /*************************/
-    silk_assert( psDec->ltp_mem_length >= psDec->frame_length );
-    mv_len = psDec->ltp_mem_length - psDec->frame_length;
-    silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
-    silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
+#ifdef ENABLE_OSCE
+        osce_reset( &psDec->osce, psDec->osce.method );
+#endif
+        /*************************/
+        /* Update output buffer. */
+        /*************************/
+        celt_assert( psDec->ltp_mem_length >= psDec->frame_length );
+        mv_len = psDec->ltp_mem_length - psDec->frame_length;
+        silk_memmove( psDec->outBuf, &psDec->outBuf[ psDec->frame_length ], mv_len * sizeof(opus_int16) );
+        silk_memcpy( &psDec->outBuf[ mv_len ], pOut, psDec->frame_length * sizeof( opus_int16 ) );
+    }
 
     /************************************************/
     /* Comfort noise generation / estimation        */

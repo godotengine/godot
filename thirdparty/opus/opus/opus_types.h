@@ -33,14 +33,29 @@
 #ifndef OPUS_TYPES_H
 #define OPUS_TYPES_H
 
-/* Use the real stdint.h if it's there (taken from Paul Hsieh's pstdint.h) */
-#if (defined(__STDC__) && __STDC__ && __STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && (defined(_STDINT_H) || defined(_STDINT_H_)) || defined (HAVE_STDINT_H))
-#include <stdint.h>
+#define opus_int         int                     /* used for counters etc; at least 16 bits */
+#define opus_int64       long long
+#define opus_int8        signed char
 
+#define opus_uint        unsigned int            /* used for counters etc; at least 16 bits */
+#define opus_uint64      unsigned long long
+#define opus_uint8       unsigned char
+
+/* Use the real stdint.h if it's there (taken from Paul Hsieh's pstdint.h) */
+#if (defined(__STDC__) && __STDC__ && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (defined(__GNUC__) && (defined(_STDINT_H) || defined(_STDINT_H_)) || defined (HAVE_STDINT_H))
+#include <stdint.h>
+#  undef opus_int64
+#  undef opus_int8
+#  undef opus_uint64
+#  undef opus_uint8
+   typedef int8_t opus_int8;
+   typedef uint8_t opus_uint8;
    typedef int16_t opus_int16;
    typedef uint16_t opus_uint16;
    typedef int32_t opus_int32;
    typedef uint32_t opus_uint32;
+   typedef int64_t opus_int64;
+   typedef uint64_t opus_uint64;
 #elif defined(_WIN32)
 
 #  if defined(__CYGWIN__)
@@ -147,13 +162,5 @@
    typedef unsigned int opus_uint32;
 
 #endif
-
-#define opus_int         int                     /* used for counters etc; at least 16 bits */
-#define opus_int64       long long
-#define opus_int8        signed char
-
-#define opus_uint        unsigned int            /* used for counters etc; at least 16 bits */
-#define opus_uint64      unsigned long long
-#define opus_uint8       unsigned char
 
 #endif  /* OPUS_TYPES_H */

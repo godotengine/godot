@@ -47,10 +47,10 @@ opus_int32 silk_residual_energy16_covar_FIX(
     const opus_int32 *pRow;
 
     /* Safety checks */
-    silk_assert( D >=  0 );
-    silk_assert( D <= 16 );
-    silk_assert( cQ >  0 );
-    silk_assert( cQ < 16 );
+    celt_assert( D >=  0 );
+    celt_assert( D <= 16 );
+    celt_assert( cQ >  0 );
+    celt_assert( cQ < 16 );
 
     lshifts = 16 - cQ;
     Qxtra = lshifts;

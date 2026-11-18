@@ -38,6 +38,7 @@
 
 #include "entcode.h"
 #include "rate.h"
+#include "quant_bands.h"
 
 static const unsigned char LOG2_FRAC_TABLE[24]={
    0,
@@ -47,7 +48,7 @@ static const unsigned char LOG2_FRAC_TABLE[24]={
   32,33,34,34,35,36,36,37,37
 };
 
-#ifdef CUSTOM_MODES
+#if defined(CUSTOM_MODES)
 
 /*Determines if V(N,K) fits in a 32-bit unsigned integer.
   N and K are themselves limited to 15 bits.*/
@@ -189,7 +190,7 @@ void compute_pulse_cache(CELTMode *m, int LM)
                   /* Offset the number of qtheta bits by log2(N)/2
                       + QTHETA_OFFSET compared to their "fair share" of
                       total/N */
-                  offset = ((m->logN[j]+((LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
+                  offset = ((m->logN[j]+(opus_int32)((opus_uint32)(LM0+k)<<BITRES))>>1)-QTHETA_OFFSET;
                   /* The number of qtheta bits we'll allocate if the remainder
                       is to be max_bits.
                      The average measured cost for theta is 0.89701 times qb,
@@ -323,7 +324,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
          In the first case, we'd be coding a bit to signal we're going to waste
           all the other bits.
          In the second case, we'd be coding a bit to redistribute all the bits
-          we just signaled should be cocentrated in this band. */
+          we just signaled should be concentrated in this band. */
       if (j<=skip_start)
       {
          /* Give the bit we reserved to end skipping back. */
@@ -348,12 +349,19 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
             /*This if() block is the only part of the allocation function that
                is not a mandatory part of the bitstream: any bands we choose to
                skip here must be explicitly signaled.*/
-            /*Choose a threshold with some hysteresis to keep bands from
-               fluctuating in and out.*/
+            int depth_threshold;
+            /*We choose a threshold with some hysteresis to keep bands from
+               fluctuating in and out, but we try not to fold below a certain point. */
+            if (codedBands > 17)
+               depth_threshold = j<prev ? 7 : 9;
+            else
+               depth_threshold = 0;
 #ifdef FUZZING
+            (void)signalBandwidth;
+            (void)depth_threshold;
             if ((rand()&0x1) == 0)
 #else
-            if (codedBands<=start+2 || (band_bits > ((j<prev?7:9)*band_width<<LM<<BITRES)>>4 && j<=signalBandwidth))
+            if (codedBands<=start+2 || (band_bits > (depth_threshold*band_width<<LM<<BITRES)>>4 && j<=signalBandwidth))
 #endif
             {
                ec_enc_bit_logp(ec, 1, 1);
@@ -524,7 +532,7 @@ static OPUS_INLINE int interp_bits2pulses(const CELTMode *m, int start, int end,
    return codedBands;
 }
 
-int compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
+int clt_compute_allocation(const CELTMode *m, int start, int end, const int *offsets, const int *cap, int alloc_trim, int *intensity, int *dual_stereo,
       opus_int32 total, opus_int32 *balance, int *pulses, int *ebits, int *fine_priority, int C, int LM, ec_ctx *ec, int encode, int prev, int signalBandwidth)
 {
    int lo, hi, len, j;
@@ -636,4 +644,233 @@ int compute_allocation(const CELTMode *m, int start, int end, const int *offsets
    RESTORE_STACK;
    return codedBands;
 }
+#ifdef ENABLE_QEXT
 
+static const unsigned char last_zero[3] = {64, 50, 0};
+static const unsigned char last_cap[3] = {110, 60, 0};
+static const unsigned char last_other[4] = {120, 112, 70, 0};
+
+static void ec_enc_depth(ec_enc *enc, opus_int32 depth, opus_int32 cap, opus_int32 *last) {
+   int sym = 3;
+   if (depth==*last) sym = 2;
+   if (depth==cap) sym = 1;
+   if (depth==0) sym = 0;
+   if (*last == 0) {
+      ec_enc_icdf(enc, IMIN(sym, 2), last_zero, 7);
+   } else if (*last == cap) {
+      ec_enc_icdf(enc, IMIN(sym, 2), last_cap, 7);
+   } else {
+      ec_enc_icdf(enc, sym, last_other, 7);
+   }
+   /* We accept some redundancy if depth==last (for last different from 0 and cap). */
+   if (sym == 3) ec_enc_uint(enc, depth-1, cap);
+   *last = depth;
+}
+
+static int ec_dec_depth(ec_dec *dec, opus_int32 cap, opus_int32 *last) {
+   int depth, sym;
+   if (*last == 0) {
+      sym = ec_dec_icdf(dec, last_zero, 7);
+      if (sym==2) sym=3;
+   } else if (*last == cap) {
+      sym = ec_dec_icdf(dec, last_cap, 7);
+      if (sym==2) sym=3;
+   } else {
+      sym = ec_dec_icdf(dec, last_other, 7);
+   }
+   if (sym==0) depth=0;
+   else if (sym==1) depth=cap;
+   else if (sym==2) depth=*last;
+   else depth = 1 + ec_dec_uint(dec, cap);
+   *last = depth;
+   return depth;
+}
+
+#define MSWAP16(a,b) do {opus_val16 tmp = a;a=b;b=tmp;} while(0)
+static opus_val16 median_of_5_val16(const opus_val16 *x)
+{
+   opus_val16 t0, t1, t2, t3, t4;
+   t2 = x[2];
+   if (x[0] > x[1])
+   {
+      t0 = x[1];
+      t1 = x[0];
+   } else {
+      t0 = x[0];
+      t1 = x[1];
+   }
+   if (x[3] > x[4])
+   {
+      t3 = x[4];
+      t4 = x[3];
+   } else {
+      t3 = x[3];
+      t4 = x[4];
+   }
+   if (t0 > t3)
+   {
+      MSWAP16(t0, t3);
+      MSWAP16(t1, t4);
+   }
+   if (t2 > t1)
+   {
+      if (t1 < t3)
+         return MIN16(t2, t3);
+      else
+         return MIN16(t4, t1);
+   } else {
+      if (t2 < t3)
+         return MIN16(t1, t3);
+      else
+         return MIN16(t2, t4);
+   }
+}
+
+void clt_compute_extra_allocation(const CELTMode *m, const CELTMode *qext_mode, int start, int end, int qext_end, const celt_glog *bandLogE, const celt_glog *qext_bandLogE,
+      opus_int32 total, int *extra_pulses, int *extra_equant, int C, int LM, ec_ctx *ec, int encode, opus_val16 tone_freq, opus_val32 toneishness)
+{
+   int i;
+   opus_int32 last=0;
+   opus_val32 sum;
+   opus_val32 fill;
+   int iter;
+   int tot_bands;
+   int tot_samples;
+   VARDECL(int, depth);
+   VARDECL(opus_int32, cap);
+#ifdef FUZZING
+   float depth_std;
+#endif
+   SAVE_STACK;
+#ifdef FUZZING
+   depth_std = -10.f*log(1e-8+(float)rand()/(float)RAND_MAX);
+   depth_std = FMAX(0, FMIN(48, depth_std));
+#endif
+   if (qext_mode != NULL) {
+      celt_assert(end==m->nbEBands);
+      tot_bands = end + qext_end;
+      tot_samples = qext_mode->eBands[qext_end]*C<<LM;
+   } else {
+      tot_bands = end;
+      tot_samples = (m->eBands[end]-m->eBands[start])*C<<LM;
+   }
+   ALLOC(cap, tot_bands, opus_int32);
+   for (i=start;i<end;i++) cap[i] = 12;
+   if (qext_mode != NULL) {
+      for (i=0;i<qext_end;i++) cap[end+i] = 14;
+   }
+   if (total <= 0) {
+      for (i=start;i<m->nbEBands+qext_end;i++) {
+         extra_pulses[i] = extra_equant[i] = 0;
+      }
+      RESTORE_STACK;
+      return;
+   }
+   ALLOC(depth, tot_bands, int);
+   if (encode) {
+      VARDECL(opus_val16, flatE);
+      VARDECL(int, Ncoef);
+      VARDECL(opus_val16, min);
+      VARDECL(opus_val16, follower);
+
+      ALLOC(flatE, tot_bands, opus_val16);
+      ALLOC(min, tot_bands, opus_val16);
+      ALLOC(Ncoef, tot_bands, int);
+      for (i=start;i<end;i++) {
+         Ncoef[i] = (m->eBands[i+1]-m->eBands[i])*C<<LM;
+      }
+      /* Remove the effect of band width, eMeans and pre-emphasis to compute the real (flat) spectrum. */
+      for (i=start;i<end;i++) {
+         flatE[i] = PSHR32(bandLogE[i] - GCONST(0.0625f)*m->logN[i] + SHL32(eMeans[i],DB_SHIFT-4) - GCONST(.0062f)*(i+5)*(i+5), DB_SHIFT-10);
+         min[i] = 0;
+      }
+      if (C==2) {
+         for (i=start;i<end;i++) {
+            flatE[i] = MAXG(flatE[i], PSHR32(bandLogE[m->nbEBands+i] - GCONST(0.0625f)*m->logN[i] + SHL32(eMeans[i],DB_SHIFT-4) - GCONST(.0062f)*(i+5)*(i+5), DB_SHIFT-10));
+         }
+      }
+      flatE[end-1] += QCONST16(2.f, 10);
+      if (qext_mode != NULL) {
+         opus_val16 min_depth = 0;
+         /* If we have enough bits, give at least 1 bit of depth to all higher bands. */
+         if (total >= 3*C*(qext_mode->eBands[qext_end]-qext_mode->eBands[start])<<LM<<BITRES && (toneishness < QCONST32(.98f, 29) || tone_freq > 1.33f))
+            min_depth = QCONST16(1.f, 10);
+         for (i=0;i<qext_end;i++) {
+            Ncoef[end+i] = (qext_mode->eBands[i+1]-qext_mode->eBands[i])*C<<LM;
+            min[end+i] = min_depth;
+         }
+         for (i=0;i<qext_end;i++) {
+            flatE[end+i] = PSHR32(qext_bandLogE[i] - GCONST(0.0625f)*qext_mode->logN[i] + SHL32(eMeans[i],DB_SHIFT-4) - GCONST(.0062f)*(end+i+5)*(end+i+5), DB_SHIFT-10);
+         }
+         if (C==2) {
+            for (i=0;i<qext_end;i++) {
+               flatE[end+i] = MAXG(flatE[end+i], PSHR32(qext_bandLogE[NB_QEXT_BANDS+i] - GCONST(0.0625f)*qext_mode->logN[i] + SHL32(eMeans[i],DB_SHIFT-4) - GCONST(.0062f)*(end+i+5)*(end+i+5), DB_SHIFT-10));
+            }
+         }
+      }
+      ALLOC(follower, tot_bands, opus_val16);
+      for (i=start+2;i<tot_bands-2;i++) {
+         follower[i] = median_of_5_val16(&flatE[i-2]);
+      }
+      follower[start] = follower[start+1] = follower[start+2];
+      follower[tot_bands-1] = follower[tot_bands-2] = follower[tot_bands-3];
+      for (i=start+1;i<tot_bands;i++) {
+         follower[i] = MAX16(follower[i], follower[i-1]-QCONST16(1.f, 10));
+      }
+      for (i=tot_bands-2;i>=start;i--) {
+         follower[i] = MAX16(follower[i], follower[i+1]-QCONST16(1.f, 10));
+      }
+      for (i=start;i<tot_bands;i++) flatE[i] -= MULT16_16_Q15(Q15ONE-PSHR32(toneishness, 14), follower[i]);
+      if (qext_mode != NULL) {
+         for (i=0;i<qext_end;i++) flatE[end+i] = flatE[end+i] + QCONST16(3.f, 10) + QCONST16(.2f, 10)*i;
+      }
+      /* Approximate fill level assuming all bands contribute fully. */
+      sum = 0;
+      for (i=start;i<tot_bands;i++) {
+         sum += MULT16_16(Ncoef[i], flatE[i]);
+      }
+      total >>= BITRES;
+      fill = (SHL32(total, 10) + sum)/tot_samples;
+      /* Iteratively refine the fill level considering the depth min and cap. */
+      for (iter=0;iter<10;iter++) {
+         sum = 0;
+         for (i=start;i<tot_bands;i++)
+            sum += Ncoef[i] * MIN32(SHL32(cap[i], 10), MAX32(min[i], flatE[i]-fill));
+         fill -= (SHL32(total, 10) - sum)/tot_samples;
+      }
+      for (i=start;i<tot_bands;i++) {
+#ifdef FIXED_POINT
+         depth[i] = PSHR32(MIN32(SHL32(cap[i], 10), MAX32(min[i], flatE[i]-fill)), 10-2);
+#else
+         depth[i] = (int)floor(.5+4*MIN32(SHL32(cap[i], 10), MAX32(min[i], flatE[i]-fill)));
+#endif
+#ifdef FUZZING
+         depth[i] = (int)-depth_std*log(1e-8+(float)rand()/(float)RAND_MAX);
+         depth[i] = IMAX(0, IMIN(cap[i]<<2, depth[i]));
+#endif
+         if (ec_tell_frac(ec) + 80 < ec->storage*8<<BITRES)
+            ec_enc_depth(ec, depth[i], 4*cap[i], &last);
+         else
+            depth[i] = 0;
+      }
+   } else {
+      for (i=start;i<tot_bands;i++) {
+         if (ec_tell_frac(ec) + 80 < ec->storage*8<<BITRES)
+            depth[i] = ec_dec_depth(ec, 4*cap[i], &last);
+         else
+            depth[i] = 0;
+      }
+   }
+   for (i=start;i<end;i++) {
+      extra_equant[i] = (depth[i]+3)>>2;
+      extra_pulses[i] = ((((m->eBands[i+1]-m->eBands[i])<<LM)-1)*C * depth[i] * (1<<BITRES) + 2)>>2;
+   }
+   if (qext_mode) {
+      for (i=0;i<qext_end;i++) {
+         extra_equant[end+i] = (depth[end+i]+3)>>2;
+         extra_pulses[end+i] = ((((qext_mode->eBands[i+1]-qext_mode->eBands[i])<<LM)-1)*C * depth[end+i] * (1<<BITRES) + 2)>>2;
+      }
+   }
+   RESTORE_STACK;
+}
+#endif

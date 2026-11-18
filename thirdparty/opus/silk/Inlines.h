@@ -32,10 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SILK_FIX_INLINES_H
 #define SILK_FIX_INLINES_H
 
-#ifdef  __cplusplus
-extern "C"
-{
-#endif
 
 /* count leading zeros of opus_int64 */
 static OPUS_INLINE opus_int32 silk_CLZ64( opus_int64 in )
@@ -180,9 +176,5 @@ static OPUS_INLINE opus_int32 silk_INVERSE32_varQ(   /* O    returns a good appr
         }
     }
 }
-
-#ifdef  __cplusplus
-}
-#endif
 
 #endif /* SILK_FIX_INLINES_H */

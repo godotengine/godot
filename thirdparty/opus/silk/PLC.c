@@ -33,6 +33,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "stack_alloc.h"
 #include "PLC.h"
 
+#ifdef ENABLE_DEEP_PLC
+#include "lpcnet.h"
+#endif
+
 #define NB_ATT 2
 static const opus_int16 HARM_ATT_Q15[NB_ATT]              = { 32440, 31130 }; /* 0.99, 0.95 */
 static const opus_int16 PLC_RAND_ATTENUATE_V_Q15[NB_ATT]  = { 31130, 26214 }; /* 0.95, 0.8 */
@@ -47,6 +51,9 @@ static OPUS_INLINE void silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     opus_int16                          frame[],            /* O LPC residual signal    */
+#ifdef ENABLE_DEEP_PLC
+    LPCNetPLCState                      *lpcnet,
+#endif
     int                                 arch                /* I  Run-time architecture */
 );
 
@@ -67,6 +74,9 @@ void silk_PLC(
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     opus_int16                          frame[],            /* I/O  signal              */
     opus_int                            lost,               /* I Loss flag              */
+#ifdef ENABLE_DEEP_PLC
+    LPCNetPLCState                      *lpcnet,
+#endif
     int                                 arch                /* I Run-time architecture  */
 )
 {
@@ -80,7 +90,11 @@ void silk_PLC(
         /****************************/
         /* Generate Signal          */
         /****************************/
-        silk_PLC_conceal( psDec, psDecCtrl, frame, arch );
+        silk_PLC_conceal( psDec, psDecCtrl, frame,
+#ifdef ENABLE_DEEP_PLC
+            lpcnet,
+#endif
+            arch );
 
         psDec->lossCnt++;
     } else {
@@ -88,6 +102,14 @@ void silk_PLC(
         /* Update state             */
         /****************************/
         silk_PLC_update( psDec, psDecCtrl );
+#ifdef ENABLE_DEEP_PLC
+        if ( lpcnet != NULL && psDec->sPLC.fs_kHz == 16 ) {
+            int k;
+            for( k = 0; k < psDec->nb_subfr; k += 2 ) {
+                lpcnet_plc_update( lpcnet, frame + k * psDec->subfr_length );
+            }
+        }
+#endif
     }
 }
 
@@ -156,7 +178,7 @@ static OPUS_INLINE void silk_PLC_update(
         silk_memset( psPLC->LTPCoef_Q14, 0, LTP_ORDER * sizeof( opus_int16 ));
     }
 
-    /* Save LPC coeficients */
+    /* Save LPC coefficients */
     silk_memcpy( psPLC->prevLPC_Q12, psDecCtrl->PredCoef_Q12[ 1 ], psDec->LPC_order * sizeof( opus_int16 ) );
     psPLC->prevLTP_scale_Q14 = psDecCtrl->LTP_scale_Q14;
 
@@ -195,6 +217,9 @@ static OPUS_INLINE void silk_PLC_conceal(
     silk_decoder_state                  *psDec,             /* I/O Decoder state        */
     silk_decoder_control                *psDecCtrl,         /* I/O Decoder control      */
     opus_int16                          frame[],            /* O LPC residual signal    */
+#ifdef ENABLE_DEEP_PLC
+    LPCNetPLCState                      *lpcnet,
+#endif
     int                                 arch                /* I Run-time architecture  */
 )
 {
@@ -257,7 +282,7 @@ static OPUS_INLINE void silk_PLC_conceal(
     /* LPC concealment. Apply BWE to previous LPC */
     silk_bwexpander( psPLC->prevLPC_Q12, psDec->LPC_order, SILK_FIX_CONST( BWE_COEF, 16 ) );
 
-    /* Preload LPC coeficients to array on stack. Gives small performance gain */
+    /* Preload LPC coefficients to array on stack. Gives small performance gain */
     silk_memcpy( A_Q12, psPLC->prevLPC_Q12, psDec->LPC_order * sizeof( opus_int16 ) );
 
     /* First Lost frame */
@@ -275,7 +300,7 @@ static OPUS_INLINE void silk_PLC_conceal(
             /* Reduce random noise for unvoiced frames with high LPC gain */
             opus_int32 invGain_Q30, down_scale_Q30;
 
-            invGain_Q30 = silk_LPC_inverse_pred_gain( psPLC->prevLPC_Q12, psDec->LPC_order );
+            invGain_Q30 = silk_LPC_inverse_pred_gain( psPLC->prevLPC_Q12, psDec->LPC_order, arch );
 
             down_scale_Q30 = silk_min_32( silk_RSHIFT( (opus_int32)1 << 30, LOG2_INV_LPC_GAIN_HIGH_THRES ), invGain_Q30 );
             down_scale_Q30 = silk_max_32( silk_RSHIFT( (opus_int32)1 << 30, LOG2_INV_LPC_GAIN_LOW_THRES ), down_scale_Q30 );
@@ -291,7 +316,7 @@ static OPUS_INLINE void silk_PLC_conceal(
 
     /* Rewhiten LTP state */
     idx = psDec->ltp_mem_length - lag - psDec->LPC_order - LTP_ORDER / 2;
-    silk_assert( idx > 0 );
+    celt_assert( idx > 0 );
     silk_LPC_analysis_filter( &sLTP[ idx ], &psDec->outBuf[ idx ], A_Q12, psDec->ltp_mem_length - idx, psDec->LPC_order, arch );
     /* Scale LTP state */
     inv_gain_Q30 = silk_INVERSE32_varQ( psPLC->prevGain_Q16[ 1 ], 46 );
@@ -345,7 +370,7 @@ static OPUS_INLINE void silk_PLC_conceal(
     /* Copy LPC state */
     silk_memcpy( sLPC_Q14_ptr, psDec->sLPC_Q14_buf, MAX_LPC_ORDER * sizeof( opus_int32 ) );
 
-    silk_assert( psDec->LPC_order >= 10 ); /* check that unrolling works */
+    celt_assert( psDec->LPC_order >= 10 ); /* check that unrolling works */
     for( i = 0; i < psDec->frame_length; i++ ) {
         /* partly unrolled */
         /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
@@ -371,6 +396,24 @@ static OPUS_INLINE void silk_PLC_conceal(
         /* Scale with Gain */
         frame[ i ] = (opus_int16)silk_SAT16( silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( sLPC_Q14_ptr[ MAX_LPC_ORDER + i ], prevGain_Q10[ 1 ] ), 8 ) ) );
     }
+#ifdef ENABLE_DEEP_PLC
+    if ( lpcnet != NULL && lpcnet->loaded && psDec->sPLC.fs_kHz == 16 ) {
+        int run_deep_plc = psDec->sPLC.enable_deep_plc || lpcnet->fec_fill_pos != 0;
+        if( run_deep_plc ) {
+            for( k = 0; k < psDec->nb_subfr; k += 2 ) {
+                lpcnet_plc_conceal( lpcnet, frame + k * psDec->subfr_length );
+            }
+            /* We *should* be able to copy only from psDec->frame_length-MAX_LPC_ORDER, i.e. the last MAX_LPC_ORDER samples. */
+            for( i = 0; i < psDec->frame_length; i++ ) {
+                sLPC_Q14_ptr[ MAX_LPC_ORDER + i ] = (int)floor(.5 + frame[ i ] * (float)(1 << 24) / prevGain_Q10[ 1 ] );
+            }
+        } else {
+          for( k = 0; k < psDec->nb_subfr; k += 2 ) {
+              lpcnet_plc_update( lpcnet, frame + k * psDec->subfr_length );
+          }
+        }
+    }
+#endif
 
     /* Save LPC state */
     silk_memcpy( psDec->sLPC_Q14_buf, &sLPC_Q14_ptr[ psDec->frame_length ], MAX_LPC_ORDER * sizeof( opus_int32 ) );
@@ -431,12 +474,16 @@ void silk_PLC_glue_frames(
                 slope_Q16 = silk_DIV32_16( ( (opus_int32)1 << 16 ) - gain_Q16, length );
                 /* Make slope 4x steeper to avoid missing onsets after DTX */
                 slope_Q16 = silk_LSHIFT( slope_Q16, 2 );
-
-                for( i = 0; i < length; i++ ) {
-                    frame[ i ] = silk_SMULWB( gain_Q16, frame[ i ] );
-                    gain_Q16 += slope_Q16;
-                    if( gain_Q16 > (opus_int32)1 << 16 ) {
-                        break;
+#ifdef ENABLE_DEEP_PLC
+                if ( psDec->sPLC.fs_kHz != 16 )
+#endif
+                {
+                    for( i = 0; i < length; i++ ) {
+                        frame[ i ] = silk_SMULWB( gain_Q16, frame[ i ] );
+                        gain_Q16 += slope_Q16;
+                        if( gain_Q16 > (opus_int32)1 << 16 ) {
+                            break;
+                        }
                     }
                 }
             }

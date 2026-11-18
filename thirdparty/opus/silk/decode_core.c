@@ -58,7 +58,13 @@ void silk_decode_core(
     ALLOC( sLTP, psDec->ltp_mem_length, opus_int16 );
     ALLOC( sLTP_Q15, psDec->ltp_mem_length + psDec->frame_length, opus_int32 );
     ALLOC( res_Q14, psDec->subfr_length, opus_int32 );
+    /* Work around a clang bug (verified with clang 6.0 through clang 20.1.0) that causes the last
+       memset to be flagged as an invalid read by valgrind (not caught by asan). */
+#if defined(__clang__) && defined(VAR_ARRAYS)
+    ALLOC( sLPC_Q14, MAX_SUB_FRAME_LENGTH + MAX_LPC_ORDER, opus_int32 );
+#else
     ALLOC( sLPC_Q14, psDec->subfr_length + MAX_LPC_ORDER, opus_int32 );
+#endif
 
     offset_Q10 = silk_Quantization_Offsets_Q10[ psDec->indices.signalType >> 1 ][ psDec->indices.quantOffsetType ];
 
@@ -98,7 +104,7 @@ void silk_decode_core(
         pres_Q14 = res_Q14;
         A_Q12 = psDecCtrl->PredCoef_Q12[ k >> 1 ];
 
-        /* Preload LPC coeficients to array on stack. Gives small performance gain */
+        /* Preload LPC coefficients to array on stack. Gives small performance gain */
         silk_memcpy( A_Q12_tmp, A_Q12, psDec->LPC_order * sizeof( opus_int16 ) );
         B_Q14        = &psDecCtrl->LTPCoef_Q14[ k * LTP_ORDER ];
         signalType   = psDec->indices.signalType;
@@ -141,7 +147,7 @@ void silk_decode_core(
             if( k == 0 || ( k == 2 && NLSF_interpolation_flag ) ) {
                 /* Rewhiten with new A coefs */
                 start_idx = psDec->ltp_mem_length - lag - psDec->LPC_order - LTP_ORDER / 2;
-                silk_assert( start_idx > 0 );
+                celt_assert( start_idx > 0 );
 
                 if( k == 2 ) {
                     silk_memcpy( &psDec->outBuf[ psDec->ltp_mem_length ], xq, 2 * psDec->subfr_length * sizeof( opus_int16 ) );
@@ -196,7 +202,7 @@ void silk_decode_core(
 
         for( i = 0; i < psDec->subfr_length; i++ ) {
             /* Short-term prediction */
-            silk_assert( psDec->LPC_order == 10 || psDec->LPC_order == 16 );
+            celt_assert( psDec->LPC_order == 10 || psDec->LPC_order == 16 );
             /* Avoids introducing a bias because silk_SMLAWB() always rounds to -inf */
             LPC_pred_Q10 = silk_RSHIFT( psDec->LPC_order, 1 );
             LPC_pred_Q10 = silk_SMLAWB( LPC_pred_Q10, sLPC_Q14[ MAX_LPC_ORDER + i -  1 ], A_Q12_tmp[ 0 ] );
@@ -224,8 +230,6 @@ void silk_decode_core(
             /* Scale with gain */
             pxq[ i ] = (opus_int16)silk_SAT16( silk_RSHIFT_ROUND( silk_SMULWW( sLPC_Q14[ MAX_LPC_ORDER + i ], Gain_Q10 ), 8 ) );
         }
-
-        /* DEBUG_STORE_DATA( dec.pcm, pxq, psDec->subfr_length * sizeof( opus_int16 ) ) */
 
         /* Update LPC filter state */
         silk_memcpy( sLPC_Q14, &sLPC_Q14[ psDec->subfr_length ], MAX_LPC_ORDER * sizeof( opus_int32 ) );
