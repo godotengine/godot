@@ -306,7 +306,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
-void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, Image::CompressProfile p_compress_profile, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::BPTCFormat p_bptc_format) {
+void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, Image::CompressProfile p_compress_profile, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::BPTCFormat p_bptc_format, bool p_zstd_supercompress) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") || !Image::_webp_mem_loader_func; // WebP module disabled or png is forced.
@@ -358,7 +358,16 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_16(image->get_height());
 			f->store_32(image->get_mipmap_count());
 			f->store_32(image->get_format());
-			f->store_buffer(image->get_data());
+			if (p_zstd_supercompress) {
+				Vector<uint8_t> compressed;
+				const int64_t image_data_size = image->get_data().size();
+				compressed.resize(Compression::get_max_compressed_buffer_size(image_data_size, Compression::MODE_ZSTD));
+				const int compressed_size = Compression::compress(compressed.ptrw(), image->ptr(), image_data_size, Compression::MODE_ZSTD);
+				f->store_32(compressed_size);
+				f->store_buffer(compressed.ptr(), compressed_size);
+			} else {
+				f->store_buffer(image->get_data());
+			}
 
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
@@ -367,7 +376,16 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
-			f->store_buffer(p_image->get_data());
+			if (p_zstd_supercompress) {
+				Vector<uint8_t> compressed;
+				const int64_t image_data_size = p_image->get_data().size();
+				compressed.resize(Compression::get_max_compressed_buffer_size(image_data_size, Compression::MODE_ZSTD));
+				const int compressed_size = Compression::compress(compressed.ptrw(), p_image->ptr(), image_data_size, Compression::MODE_ZSTD);
+				f->store_32(compressed_size);
+				f->store_buffer(compressed.ptr(), compressed_size);
+			} else {
+				f->store_buffer(p_image->get_data());
+			}
 
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
@@ -386,7 +404,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage, bool p_zstd_supercompress) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -415,6 +433,9 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	}
 	if (p_detect_normal) {
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
+	}
+	if (p_zstd_supercompress) {
+		flags |= CompressedTexture2D::FORMAT_BIT_SUPERCOMPRESSED;
 	}
 
 	f->store_32(flags);
@@ -459,7 +480,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		used_channels = image->detect_used_channels(comp_source);
 	}
 
-	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_vram_compression_profile, p_lossy_quality, p_basisu_params, Image::BPTC_DETECT);
+	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_vram_compression_profile, p_lossy_quality, p_basisu_params, Image::BPTC_DETECT, p_zstd_supercompress);
 }
 
 void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {
@@ -909,6 +930,13 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	bool detect_normal = normal == 0;
 	bool force_normal = normal == 1;
 	bool srgb_friendly_pack = pack_channels == 0;
+	bool zstd_supercompress = false;
+
+	if (compress_mode == COMPRESS_VRAM_COMPRESSED || compress_mode == COMPRESS_VRAM_UNCOMPRESSED) {
+		// Never compress lossless or lossy-compressed textures, as this would perform double compression
+		// (which is slower for no size benefit).
+		zstd_supercompress = GLOBAL_GET("rendering/textures/vram_compression/use_zstd_compression");
+	}
 
 	Array formats_imported;
 
@@ -953,8 +981,11 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		}
 
 		if (force_uncompressed) {
+			// The Zstd compression project setting is still obeyed, even for VRAM Uncompressed format.
+			// This means the image will be compressed using Zstandard instead of PNG/WebP.
+			// This is the fastest to (de)compress at the cost of a worse compression ratio.
 			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_AUTOMATIC /* This is ignored. */,
-					mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+					mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, zstd_supercompress);
 		} else {
 			if (can_s3tc_bptc) {
 				Image::CompressMode image_compress_mode;
@@ -969,7 +1000,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, image_compress_profile, mipmaps,
-						detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+						detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, zstd_supercompress);
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -986,19 +1017,19 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, image_compress_profile, mipmaps, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, zstd_supercompress);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
 		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_AUTOMATIC /* This is ignored. */,
-				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, zstd_supercompress);
 	}
 
 	if (editor_image.is_valid()) {
 		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */, Image::COMPRESS_PROFILE_AUTOMATIC /* This is ignored. */,
-				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
+				mipmaps, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold, zstd_supercompress);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;

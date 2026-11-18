@@ -58,12 +58,7 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 	r_width = f->get_32();
 	r_height = f->get_32();
 
-#ifdef TOOLS_ENABLED
-	// df is only used in editor builds at the moment.
 	uint32_t df = f->get_32(); //data format
-#else
-	f->get_32();
-#endif
 
 	//skip reserved
 	mipmap_limit = int(f->get_32());
@@ -86,7 +81,9 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 
 #endif
 
-	image = load_image_from_file(f);
+	const bool supercompressed = df & FORMAT_BIT_SUPERCOMPRESSED;
+
+	image = load_image_from_file(f, supercompressed);
 
 	if (image.is_null() || image->is_empty()) {
 		return ERR_CANT_OPEN;
@@ -306,7 +303,7 @@ void CompressedTexture2D::reload_from_file() {
 	load(path);
 }
 
-Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
+Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, bool p_supercompressed) {
 	uint32_t data_format = f->get_32();
 	uint32_t w = f->get_16();
 	uint32_t h = f->get_16();
@@ -408,7 +405,14 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 		int64_t size = Image::get_image_data_size(w, h, format, mipmaps > 0);
 		Vector<uint8_t> data;
 		data.resize(size);
-		f->get_buffer(data.ptrw(), size);
+
+		if (p_supercompressed) {
+			int compressed_size = f->get_32();
+			Vector<uint8_t> compressed_data = f->get_buffer(compressed_size);
+			Compression::decompress(data.ptrw(), data.size(), compressed_data.ptr(), compressed_size, Compression::MODE_ZSTD);
+		} else {
+			f->get_buffer(data.ptrw(), size);
+		}
 
 		return Image::create_from_data(w, h, mipmaps > 0, format, data);
 	}
@@ -459,7 +463,7 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 
 	r_depth = f->get_32(); //depth
 	f->get_32(); //ignored (mode)
-	f->get_32(); // ignored (data format)
+	uint32_t df = f->get_32(); // Data format.
 
 	f->get_32(); //ignored
 	int mipmap_count = f->get_32();
@@ -470,8 +474,10 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 
 	r_data.clear();
 
+	const bool supercompressed = df & CompressedTexture2D::FORMAT_BIT_SUPERCOMPRESSED;
+
 	for (int i = 0; i < (r_depth + mipmap_count); i++) {
-		Ref<Image> image = CompressedTexture2D::load_image_from_file(f);
+		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, supercompressed);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {
 			r_format = image->get_format();
@@ -616,7 +622,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 	uint32_t type = f->get_32(); //layer count
 	ERR_FAIL_COND_V((int)type != layered_type, ERR_INVALID_DATA);
 
-	/* uint32_t df = */ f->get_32(); //data format (currently unused)
+	uint32_t df = f->get_32(); // Data format.
 	mipmap_limit = int(f->get_32());
 	//reserved
 	f->get_32();
@@ -624,9 +630,10 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 	f->get_32();
 
 	images.resize(layer_count);
+	const bool supercompressed = df & CompressedTexture2D::FORMAT_BIT_SUPERCOMPRESSED;
 
 	for (uint32_t i = 0; i < layer_count; i++) {
-		Ref<Image> image = CompressedTexture2D::load_image_from_file(f);
+		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, supercompressed);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		images.write[i] = image;
 	}

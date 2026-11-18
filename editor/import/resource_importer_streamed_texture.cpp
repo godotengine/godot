@@ -30,6 +30,7 @@
 
 #include "resource_importer_streamed_texture.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "editor/file_system/editor_file_system.h"
@@ -134,6 +135,10 @@ Error ResourceImporterStreamedTexture::import(ResourceUID::ID p_source_id, const
 
 	if (detect_roughness) {
 		save_flags |= StreamedTexture2D::FORMAT_BIT_DETECT_ROUGHNESS;
+	}
+
+	if (GLOBAL_GET("rendering/textures/vram_compression/use_zstd_compression")) {
+		save_flags |= StreamedTexture2D::FORMAT_BIT_SUPERCOMPRESSED;
 	}
 
 	if (force_normal) {
