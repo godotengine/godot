@@ -23,7 +23,9 @@ def modules_enabled_builder(target, source, env):
 
 
 modules_enabled = env.CommandNoCache(
-    "modules_enabled.gen.h", env.Value(env.module_list), env.Run(modules_enabled_builder)
+    ".generated/%s/%s/modules/modules_enabled.gen.h" % (env["platform"], env["target"]),
+    env.Value(env.module_list),
+    env.Run(modules_enabled_builder),
 )
 
 
@@ -92,7 +94,11 @@ if env["tests"]:
             for header in source:
                 file.write('#include "{}"\n'.format(os.path.normpath(header.path).replace("\\", "/")))
 
-    env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_tests_builder))
+    modules_enabled = env.CommandNoCache(
+        ".generated/%s/%s/modules/modules_tests.gen.h" % (env["platform"], env["target"]),
+        test_headers,
+        env.Run(modules_tests_builder),
+    )
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side
