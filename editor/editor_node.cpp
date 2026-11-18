@@ -1130,7 +1130,7 @@ void EditorNode::_notification(int p_what) {
 			} else {
 				EditorFileSystem::get_singleton()->scan_changes();
 			}
-			_scan_external_changes();
+			callable_mp(this, &EditorNode::_scan_external_changes).call_deferred();
 
 			GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
 			callable_mp(gdextension_manager, &GDExtensionManager::reload_extensions).call_deferred();
@@ -1624,7 +1624,46 @@ void EditorNode::_remove_lock_file() {
 	OS::get_singleton()->remove_lock_file();
 }
 
+ConfirmationDialog *EditorNode::_create_disk_changed_dialog() {
+	ConfirmationDialog *dialog = memnew(ConfirmationDialog);
+	dialog->set_title(TTR("Files have been modified outside Godot"));
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	dialog->add_child(vbc);
+
+	Label *dl = memnew(Label);
+	dl->set_text(TTR("The following files are newer on disk:"));
+	vbc->add_child(dl);
+
+	disk_changed_list = memnew(Tree);
+	disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk:"));
+	vbc->add_child(disk_changed_list);
+	disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	Label *what_action_label = memnew(Label);
+	what_action_label->set_text(TTR("What action should be taken?"));
+	vbc->add_child(what_action_label);
+
+	dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_modified_scenes));
+	dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_project_settings));
+	dialog->set_ok_button_text(TTR("Reload from disk"));
+
+	dialog->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
+	dialog->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
+
+	dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorNode::_restore_disk_changed_dialog_parent), CONNECT_DEFERRED);
+	gui_base->add_child(dialog);
+	disk_changed = dialog->get_instance_id();
+	return dialog;
+}
+
 void EditorNode::_scan_external_changes() {
+	// A temporary modal may have been freed together with the dialog.
+	ConfirmationDialog *dialog = ObjectDB::get_instance<ConfirmationDialog>(disk_changed);
+	if (!dialog) {
+		dialog = _create_disk_changed_dialog();
+	}
+
 	disk_changed_list->clear();
 	TreeItem *r = disk_changed_list->create_item();
 	disk_changed_list->set_hide_root(true);
@@ -1662,8 +1701,18 @@ void EditorNode::_scan_external_changes() {
 		disk_changed_project = true;
 	}
 
-	if (need_reload) {
-		callable_mp((Window *)disk_changed, &Window::popup_centered_ratio).call_deferred(0.3);
+	if (need_reload && !dialog->is_visible()) {
+		Window *window = get_last_exclusive_window();
+		Node *popup_parent = window == get_window() ? static_cast<Node *>(gui_base) : window;
+		dialog->reparent(popup_parent);
+		dialog->popup_centered_ratio(0.3);
+	}
+}
+
+void EditorNode::_restore_disk_changed_dialog_parent() {
+	ConfirmationDialog *dialog = ObjectDB::get_instance<ConfirmationDialog>(disk_changed);
+	if (dialog && !dialog->is_visible() && gui_base->is_inside_tree()) {
+		dialog->reparent(gui_base);
 	}
 }
 
@@ -1674,7 +1723,9 @@ void EditorNode::_resave_externally_modified_scenes(String p_str) {
 		ProjectSettings::get_singleton()->save();
 	}
 
-	disk_changed->hide();
+	if (ConfirmationDialog *dialog = ObjectDB::get_instance<ConfirmationDialog>(disk_changed)) {
+		dialog->hide();
+	}
 }
 
 void EditorNode::_reload_modified_scenes() {
@@ -1703,7 +1754,9 @@ void EditorNode::_reload_modified_scenes() {
 
 	_set_current_scene(current_idx);
 	scene_tabs->update_scene_tabs();
-	disk_changed->hide();
+	if (ConfirmationDialog *dialog = ObjectDB::get_instance<ConfirmationDialog>(disk_changed)) {
+		dialog->hide();
+	}
 }
 
 void EditorNode::_reload_project_settings() {
@@ -9541,36 +9594,6 @@ EditorNode::EditorNode() {
 	add_child(audio_preview_gen);
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(debug_menu)));
-
-	disk_changed = memnew(ConfirmationDialog);
-	{
-		disk_changed->set_title(TTR("Files have been modified outside Godot"));
-
-		VBoxContainer *vbc = memnew(VBoxContainer);
-		disk_changed->add_child(vbc);
-
-		Label *dl = memnew(Label);
-		dl->set_text(TTR("The following files are newer on disk:"));
-		vbc->add_child(dl);
-
-		disk_changed_list = memnew(Tree);
-		disk_changed_list->set_accessibility_name(TTRC("The following files are newer on disk:"));
-		vbc->add_child(disk_changed_list);
-		disk_changed_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-		Label *what_action_label = memnew(Label);
-		what_action_label->set_text(TTR("What action should be taken?"));
-		vbc->add_child(what_action_label);
-
-		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_modified_scenes));
-		disk_changed->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_reload_project_settings));
-		disk_changed->set_ok_button_text(TTR("Reload from disk"));
-
-		disk_changed->add_button(TTR("Ignore external changes"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
-		disk_changed->connect("custom_action", callable_mp(this, &EditorNode::_resave_externally_modified_scenes));
-	}
-
-	gui_base->add_child(disk_changed);
 
 	project_data_missing = memnew(ConfirmationDialog);
 	project_data_missing->set_flag(Window::FLAG_RESIZE_DISABLED, true);
