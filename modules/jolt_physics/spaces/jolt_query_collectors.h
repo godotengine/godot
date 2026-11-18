@@ -33,7 +33,6 @@
 #include "core/math/vector3.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Core/STLLocalAllocator.h>
 #include <Jolt/Physics/Collision/InternalEdgeRemovingCollector.h>
 #include <Jolt/Physics/Collision/Shape/Shape.h>

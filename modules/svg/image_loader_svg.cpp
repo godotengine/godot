@@ -33,7 +33,6 @@
 #include "core/variant/variant.h"
 
 #include <thorvg.h>
-
 #include <memory>
 
 HashMap<Color, Color> ImageLoaderSVG::forced_color_map = HashMap<Color, Color>();

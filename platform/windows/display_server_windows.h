@@ -56,7 +56,6 @@
 #endif // GLES3_ENABLED
 
 #include <windows.h>
-
 #include <io.h>
 #include <shobjidl.h>
 #include <windowsx.h>

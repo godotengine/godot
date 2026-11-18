@@ -36,7 +36,6 @@
 #include <thirdparty/offset_allocator/offsetAllocator.hpp>
 
 #include <Metal/Metal.hpp>
-
 #include <atomic>
 
 /// Opaque allocation handle. POOL entries reference a pool block plus the

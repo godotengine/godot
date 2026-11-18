@@ -29,9 +29,7 @@
 /**************************************************************************/
 
 #include <windows.h>
-
 #include <shlwapi.h>
-
 #include <cstdlib>
 #include <cwchar>
 

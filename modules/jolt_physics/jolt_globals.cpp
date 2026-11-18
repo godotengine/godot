@@ -41,10 +41,8 @@
 #endif
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
-
 #include <cstdarg>
 
 void *jolt_alloc(size_t p_size) {

@@ -42,7 +42,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
-
 #include <cerrno>
 #include <cwchar>
 

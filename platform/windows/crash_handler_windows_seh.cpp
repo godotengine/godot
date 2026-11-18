@@ -42,7 +42,6 @@
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
 #include <psapi.h>
-
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>

@@ -37,7 +37,6 @@
 #import <AppKit/NSWorkspace.h>
 #import <Foundation/Foundation.h>
 #include <sys/mount.h>
-
 #include <cerrno>
 
 String DirAccessMacOS::get_filesystem_type() const {

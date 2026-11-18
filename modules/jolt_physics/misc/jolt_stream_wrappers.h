@@ -35,7 +35,6 @@
 #include "core/io/file_access.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Core/StreamIn.h>
 #include <Jolt/Core/StreamOut.h>
 

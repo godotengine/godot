@@ -1,4 +1,3 @@
-
 layout(set = 0, binding = 0) uniform BakeParameters {
 	vec3 world_size;
 	float bias;

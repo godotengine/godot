@@ -53,7 +53,6 @@
 #endif // NAVIGATION_3D_DISABLED
 
 #include <manifold/manifold.h>
-
 #include <cfloat> // FLT_EPSILON
 
 #ifndef NAVIGATION_3D_DISABLED

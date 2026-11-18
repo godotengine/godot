@@ -42,7 +42,6 @@
 #endif
 
 #include <CoreFoundation/CoreFoundation.h>
-
 #include <memory>
 #include <optional>
 

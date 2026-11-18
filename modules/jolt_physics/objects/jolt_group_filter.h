@@ -31,7 +31,6 @@
 #pragma once
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Physics/Collision/CollisionGroup.h>
 #include <Jolt/Physics/Collision/GroupFilter.h>
 

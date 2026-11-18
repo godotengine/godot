@@ -37,7 +37,6 @@
 #include "core/templates/vector.h"
 
 #import <CoreMIDI/CoreMIDI.h>
-
 #include <cstdio>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
