@@ -1101,7 +1101,13 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 			if (ref_transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
-			if (p_state_machine->transitions[i].from == current && (_check_advance_condition(p_process_state, p_instance, anodesm, ref_transition) || bypass)) {
+			if (p_state_machine->transitions[i].from != current) {
+				continue;
+			}
+			if (!next_request && current != SceneStringName(Start) && ref_transition->get_switch_mode() == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END && !Animation::is_less_or_equal_approx(current_nti.get_remain(ref_transition->is_loop_broken_at_end()), ref_transition->get_xfade_time())) {
+				continue;
+			}
+			if (_check_advance_condition(p_process_state, p_instance, anodesm, ref_transition) || bypass) {
 				if (ref_transition->get_priority() <= priority_best) {
 					priority_best = ref_transition->get_priority();
 					auto_advance_to = i;
