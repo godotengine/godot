@@ -42,7 +42,7 @@ Error StreamPeerTCP::_poll_connection() {
 		return OK;
 	} else if (err == ERR_BUSY) {
 		// Check for connect timeout
-		if (OS::get_singleton()->get_ticks_msec() > timeout) {
+		if (OS::get_singleton()->get_ticks_msec_raw() > timeout) {
 			disconnect_from_host();
 			status = STATUS_ERROR;
 			return ERR_CONNECTION_ERROR;
@@ -60,7 +60,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
 
-	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
+	timeout = OS::get_singleton()->get_ticks_msec_raw() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	status = STATUS_CONNECTING;
 
 	peer_host = p_host;
@@ -80,7 +80,7 @@ Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, uint16_t p_port) 
 
 	_sock->set_blocking_enabled(false);
 
-	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
+	timeout = OS::get_singleton()->get_ticks_msec_raw() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	err = _sock->connect_to_host(p_host, p_port);
 
 	if (err == OK) {
