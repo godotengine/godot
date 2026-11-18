@@ -1515,11 +1515,51 @@ String Expression::get_error_text() const {
 	return error_str;
 }
 
+// komm64: the parsed text and the error state, for savestate systems. The
+// parse tree is made again from the text; it is unused while an error is set.
+Dictionary Expression::snapshot_get_state() const {
+	Dictionary state;
+	state["expression"] = expression;
+	PackedStringArray names;
+	for (const String &name : input_names) {
+		names.push_back(name);
+	}
+	state["input_names"] = names;
+	state["error_set"] = error_set;
+	state["error_text"] = error_str;
+	state["execution_error"] = execution_error;
+	return state;
+}
+
+// komm64: restores a state produced by snapshot_get_state().
+Error Expression::snapshot_set_state(const Dictionary &p_state) {
+	const String text = p_state.get("expression", String());
+	const PackedStringArray names = p_state.get("input_names", PackedStringArray());
+	const bool saved_error = p_state.get("error_set", true);
+	if (saved_error) {
+		if (nodes) {
+			memdelete(nodes);
+			nodes = nullptr;
+		}
+		root = nullptr;
+		expression = text;
+		input_names = names;
+	} else {
+		ERR_FAIL_COND_V(parse(text, names) != OK, ERR_INVALID_DATA);
+	}
+	error_set = saved_error;
+	error_str = p_state.get("error_text", String());
+	execution_error = p_state.get("execution_error", false);
+	return OK;
+}
+
 void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error", "const_calls_only"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &Expression::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &Expression::snapshot_set_state);
 }
 
 Expression::~Expression() {

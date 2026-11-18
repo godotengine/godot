@@ -246,6 +246,112 @@ void AStar3D::clear() {
 	points.clear();
 }
 
+// komm64: the graph as plain values for savestate systems. Points and their
+// connections are listed in the order the maps hold them, and the capacity is
+// kept, so ids, connection lists and get_point_capacity() read back the same.
+Dictionary AStar3D::snapshot_get_state() const {
+	PackedInt64Array ids;
+	PackedVector3Array positions;
+	PackedFloat64Array weight_scales;
+	PackedByteArray enabled;
+	Array neighbors;
+	Array unlinked;
+	for (const KeyValue<int64_t, Point *> &kv : points) {
+		const Point *p = kv.value;
+		ids.push_back(p->id);
+		positions.push_back(p->pos);
+		weight_scales.push_back(p->weight_scale);
+		enabled.push_back(p->enabled);
+		PackedInt64Array to;
+		for (const KeyValue<int64_t, Point *> &n : p->neighbors) {
+			to.push_back(n.key);
+		}
+		neighbors.push_back(to);
+		PackedInt64Array from;
+		for (const KeyValue<int64_t, Point *> &n : p->unlinked_neighbours) {
+			from.push_back(n.key);
+		}
+		unlinked.push_back(from);
+	}
+	Dictionary state;
+	state["last_free_id"] = last_free_id;
+	state["capacity"] = (int64_t)points.get_capacity();
+	state["ids"] = ids;
+	state["positions"] = positions;
+	state["weight_scales"] = weight_scales;
+	state["enabled"] = enabled;
+	state["neighbors"] = neighbors;
+	state["unlinked"] = unlinked;
+	return state;
+}
+
+// komm64: replaces the graph with one produced by snapshot_get_state().
+Error AStar3D::snapshot_set_state(const Dictionary &p_state) {
+	const PackedInt64Array ids = p_state.get("ids", PackedInt64Array());
+	const PackedVector3Array positions = p_state.get("positions", PackedVector3Array());
+	const PackedFloat64Array weight_scales = p_state.get("weight_scales", PackedFloat64Array());
+	const PackedByteArray enabled = p_state.get("enabled", PackedByteArray());
+	const Array neighbors = p_state.get("neighbors", Array());
+	const Array unlinked = p_state.get("unlinked", Array());
+	const int64_t count = ids.size();
+	ERR_FAIL_COND_V(positions.size() != count || weight_scales.size() != count || enabled.size() != count || neighbors.size() != count || unlinked.size() != count, ERR_INVALID_DATA);
+
+	clear();
+	points.reset();
+	const int64_t capacity = p_state.get("capacity", 0);
+	if (capacity > 0) {
+		points.reserve(capacity);
+	}
+	Error err = OK;
+	for (int64_t i = 0; i < count; i++) {
+		if (ids[i] < 0 || points.has(ids[i])) {
+			err = ERR_INVALID_DATA;
+			break;
+		}
+		Point *pt = memnew(Point);
+		pt->id = ids[i];
+		pt->pos = positions[i];
+		pt->weight_scale = weight_scales[i];
+		pt->enabled = enabled[i];
+		points.insert_new(pt->id, pt);
+	}
+	for (int64_t i = 0; i < count && err == OK; i++) {
+		Point *a = points[ids[i]];
+		const PackedInt64Array to = neighbors[i];
+		for (int64_t id : to) {
+			Point **b = points.getptr(id);
+			if (!b || id == a->id) {
+				err = ERR_INVALID_DATA;
+				break;
+			}
+			a->neighbors.insert(id, *b);
+			// The segment of a pair has a direction bit per way it is linked.
+			Segment s(a->id, id);
+			HashSet<Segment, Segment>::Iterator element = segments.find(s);
+			if (element) {
+				s.direction |= element->direction;
+				segments.remove(element);
+			}
+			segments.insert(s);
+		}
+		const PackedInt64Array from = unlinked[i];
+		for (int64_t id : from) {
+			Point **b = points.getptr(id);
+			if (!b) {
+				err = ERR_INVALID_DATA;
+				break;
+			}
+			a->unlinked_neighbours.insert(id, *b);
+		}
+	}
+	if (err != OK) {
+		clear();
+		ERR_FAIL_V(err);
+	}
+	last_free_id = p_state.get("last_free_id", 0);
+	return OK;
+}
+
 int64_t AStar3D::get_point_count() const {
 	return points.size();
 }
@@ -572,6 +678,8 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar3D::get_point_capacity);
 	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar3D::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar3D::clear);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AStar3D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AStar3D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar3D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar3D::get_closest_position_in_segment);
@@ -671,6 +779,14 @@ int64_t AStar2D::get_point_capacity() const {
 
 void AStar2D::clear() {
 	astar.clear();
+}
+
+Dictionary AStar2D::snapshot_get_state() const {
+	return astar.snapshot_get_state();
+}
+
+Error AStar2D::snapshot_set_state(const Dictionary &p_state) {
+	return astar.snapshot_set_state(p_state);
 }
 
 void AStar2D::reserve_space(int64_t p_num_nodes) {
@@ -927,6 +1043,8 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar2D::get_point_capacity);
 	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar2D::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar2D::clear);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AStar2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AStar2D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position", "include_disabled"), &AStar2D::get_closest_point, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_closest_position_in_segment", "to_position"), &AStar2D::get_closest_position_in_segment);

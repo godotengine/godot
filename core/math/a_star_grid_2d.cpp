@@ -605,6 +605,54 @@ void AStarGrid2D::clear() {
 	region = Rect2i();
 }
 
+// komm64: the built grid's cells as plain values for savestate systems. The
+// stored properties are not included. A grid that is dirty has nothing to read
+// until update() builds it again from the properties.
+Dictionary AStarGrid2D::snapshot_get_state() const {
+	Dictionary state;
+	state["dirty"] = dirty;
+	if (dirty) {
+		return state;
+	}
+	PackedByteArray solid;
+	PackedFloat64Array weight_scales;
+	for (const LocalVector<Point> &line : points) {
+		for (const Point &p : line) {
+			solid.push_back(_get_solid_unchecked(p.id));
+			weight_scales.push_back(p.weight_scale);
+		}
+	}
+	state["solid"] = solid;
+	state["weight_scales"] = weight_scales;
+	return state;
+}
+
+// komm64: builds the grid from the properties already set and gives its cells
+// the state produced by snapshot_get_state().
+Error AStarGrid2D::snapshot_set_state(const Dictionary &p_state) {
+	dirty = true;
+	if ((bool)p_state.get("dirty", true)) {
+		return OK;
+	}
+	update();
+	const PackedByteArray solid = p_state.get("solid", PackedByteArray());
+	const PackedFloat64Array weight_scales = p_state.get("weight_scales", PackedFloat64Array());
+	int64_t count = 0;
+	for (const LocalVector<Point> &line : points) {
+		count += line.size();
+	}
+	ERR_FAIL_COND_V(solid.size() != count || weight_scales.size() != count, ERR_INVALID_DATA);
+	int64_t i = 0;
+	for (LocalVector<Point> &line : points) {
+		for (Point &p : line) {
+			_set_solid_unchecked(p.id, solid[i]);
+			p.weight_scale = weight_scales[i];
+			i++;
+		}
+	}
+	return OK;
+}
+
 Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, Vector2(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point %s out of bounds %s.", p_id, region));
@@ -754,6 +802,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fill_solid_region", "region", "solid"), &AStarGrid2D::fill_solid_region, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("fill_weight_scale_region", "region", "weight_scale"), &AStarGrid2D::fill_weight_scale_region);
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AStarGrid2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AStarGrid2D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_data_in_region", "region"), &AStarGrid2D::get_point_data_in_region);

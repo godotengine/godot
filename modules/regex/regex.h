@@ -100,6 +100,8 @@ public:
 
 	bool is_valid() const;
 	String get_pattern() const;
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
 	int get_group_count() const;
 	PackedStringArray get_names() const;
 

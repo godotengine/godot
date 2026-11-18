@@ -159,6 +159,9 @@ public:
 	void reserve_space(int64_t p_num_nodes);
 	void clear();
 
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	int64_t get_closest_point(const Vector3 &p_point, bool p_include_disabled = false) const;
 	Vector3 get_closest_position_in_segment(const Vector3 &p_point) const;
 
@@ -217,6 +220,9 @@ public:
 	int64_t get_point_capacity() const;
 	void reserve_space(int64_t p_num_nodes);
 	void clear();
+
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
 
 	int64_t get_closest_point(const Vector2 &p_point, bool p_include_disabled = false) const;
 	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;

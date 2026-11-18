@@ -220,6 +220,9 @@ public:
 
 	void clear();
 
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	Vector2 get_point_position(const Vector2i &p_id) const;
 	TypedArray<Dictionary> get_point_data_in_region(const Rect2i &p_region) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to, bool p_allow_partial_path = false);

@@ -356,6 +356,19 @@
 				Sets the [param weight_scale] for the point with the given [param id]. The [param weight_scale] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the graph as plain values for savestate systems: the points with their positions, weight scales, disabled flags and connections, in the order the graph holds them, and the capacity and next free id. [member neighbor_filter_enabled] is not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Replaces the graph with one produced by [method snapshot_get_state]. Returns [constant ERR_INVALID_DATA] and leaves the graph empty if the state does not describe a valid graph.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="neighbor_filter_enabled" type="bool" setter="set_neighbor_filter_enabled" getter="is_neighbor_filter_enabled" default="false">

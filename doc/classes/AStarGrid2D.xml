@@ -164,6 +164,19 @@
 				[b]Note:[/b] Calling [method update] is not needed after the call of this function.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the built grid's cells (solid flags and weight scales) as plain values for savestate systems, or only that the grid is dirty. Stored properties such as [member region] are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores cells produced by [method snapshot_get_state]: builds the grid from the properties already set and gives its cells the saved solid flags and weight scales, or marks the grid dirty if it was dirty. Returns [constant ERR_INVALID_DATA] if the cells do not match the grid's [member region].
+			</description>
+		</method>
 		<method name="update">
 			<return type="void" />
 			<description>

@@ -368,6 +368,25 @@ String RegEx::get_pattern() const {
 	return pattern;
 }
 
+// komm64: the pattern and whether it compiled, for savestate systems.
+Dictionary RegEx::snapshot_get_state() const {
+	Dictionary state;
+	state["pattern"] = pattern;
+	state["valid"] = is_valid();
+	return state;
+}
+
+// komm64: compiles the saved pattern again, or keeps it uncompiled as saved.
+Error RegEx::snapshot_set_state(const Dictionary &p_state) {
+	const String saved = p_state.get("pattern", String());
+	if ((bool)p_state.get("valid", false)) {
+		return compile(saved, false);
+	}
+	clear();
+	pattern = saved;
+	return OK;
+}
+
 int RegEx::get_group_count() const {
 	ERR_FAIL_COND_V(!is_valid(), 0);
 
@@ -427,6 +446,8 @@ void RegEx::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_valid"), &RegEx::is_valid);
 	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &RegEx::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &RegEx::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("get_group_count"), &RegEx::get_group_count);
 	ClassDB::bind_method(D_METHOD("get_names"), &RegEx::get_names);
 }

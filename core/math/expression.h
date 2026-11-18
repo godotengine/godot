@@ -255,5 +255,8 @@ public:
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	~Expression();
 };

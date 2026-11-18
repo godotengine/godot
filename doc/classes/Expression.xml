@@ -84,5 +84,18 @@
 				You can optionally specify names of variables that may appear in the expression with [param input_names], so that you can bind them when it gets executed.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the parsed expression text, its input names and the error state ([method has_execute_failed], [method get_error_text]) as plain values for savestate systems.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state], parsing the saved text again. Returns [constant ERR_INVALID_DATA] if text that parsed when saved no longer parses.
+			</description>
+		</method>
 	</methods>
 </class>

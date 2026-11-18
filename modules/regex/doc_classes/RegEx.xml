@@ -114,6 +114,19 @@
 				The region to search within can be specified with [param offset] and [param end]. This is useful when searching for another match in the same [param subject] by calling this method again after a previous success. Note that setting these parameters differs from passing over a shortened string. For example, the start anchor [code]^[/code] is not affected by [param offset], and the character before [param offset] will be checked for the word boundary [code]\b[/code].
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the pattern and whether it compiled, as plain values for savestate systems.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state]: compiles the saved pattern again, or keeps it uncompiled. Returns the compile error if a pattern that compiled when saved no longer does.
+			</description>
+		</method>
 		<method name="sub" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="subject" type="String" />
