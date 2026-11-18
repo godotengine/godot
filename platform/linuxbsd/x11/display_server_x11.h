@@ -285,6 +285,8 @@ class DisplayServerX11 : public DisplayServer {
 	Rect2i _screen_get_rect(int p_screen) const;
 
 	void _get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
+
+	bool _is_text_suppressed(unsigned int p_x11_state);
 	void _flush_mouse_motion();
 
 	DisplayServerEnums::MouseMode mouse_mode = DisplayServerEnums::MOUSE_MODE_VISIBLE;
