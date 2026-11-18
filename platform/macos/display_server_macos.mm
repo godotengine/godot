@@ -4000,7 +4000,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 	}
 
 	DisplayServerEnums::WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
-	ERR_FAIL_COND(main_window == DisplayServerEnums::INVALID_WINDOW_ID);
+	if (main_window == DisplayServerEnums::INVALID_WINDOW_ID) {
+		r_error = ERR_CANT_CREATE;
+		ERR_FAIL_MSG("Could not create main window.");
+	}
 	for (int i = 0; i < DisplayServerEnums::WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(DisplayServerEnums::WindowFlags(i), true, main_window);
