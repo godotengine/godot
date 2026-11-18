@@ -69,7 +69,7 @@ struct FrameParams {
 	uint frame;
 	float amount_ratio;
 	uint skeleton_bone_count;
-	uint pad1;
+	uint emission_points_count;
 
 	uint random_seed;
 	uint attractor_count;
@@ -164,13 +164,14 @@ layout(set = 1, binding = 4, std430) buffer restrict readonly SkeletonData {
 }
 bone_transforms;
 
+layout(set = 1, binding = 5) uniform texture2D skinned_emission_texture;
+
 /* SET 2: COLLIDER/ATTRACTOR TEXTURES */
 
 #define MAX_3D_TEXTURES 7
 
 layout(set = 2, binding = 0) uniform texture3D sdf_vec_textures[MAX_3D_TEXTURES];
 layout(set = 2, binding = 1) uniform texture2D height_field_texture;
-//layout(set = 2, binding = 3) uniform texture2D skinned_emission_texture;
 
 /* SET 3: MATERIAL */
 
@@ -252,42 +253,48 @@ mat4 get_bone_transform(uint idx) {
 	return t;
 }
 
-/*
-void get_skinned_position(out vec3 position, uint point, uint point_count, sampler2D skin_texture, sampler2D emission_texture){
-
+void get_skinned_position(uint point, uint point_count, out vec3 position) {
 	int tex_size = 2048;
-	ivec2 uv = ivec2(int(point) % tex_size, int(point)/tex_size);
-	point *= 2;
-	ivec2 uvp1 = ivec2(int(point) % tex_size, int(point)/tex_size);
-	ivec2 uvp2 = ivec2(int(point + 1u) % tex_size, int(point + 1u)/tex_size);
-	vec4 pos = texelFetch(emission_texture, uv, 0);
-	vec4 bones1 = texelFetch(skin_texture, uvp1, 0);
-	vec4 bones2 = texelFetch(skin_texture, uvp2, 0);
+	int rows = int(point_count) / 2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count) / tex_size);
+
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point) / tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u) / tex_size + rows * 2);
+	vec4 pos = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), point_uv, 0);
+	pos.w = 1.0;
+	vec4 bones1 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv, 0);
+	vec4 bones2 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv2, 0);
 	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
 	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
 	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
 	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
-	pos = (bones) * pos;
-	position = pos;
+	pos = (bones)*pos;
+	position = pos.xyz;
 }
 
+/*
 void get_skinned_position_and_normal(out vec3 position, out vec3 normal, uint point, uint point_count, sampler2D skin_texture, sampler2D emission_texture, sampler2D normal_texture){
 
 	int tex_size = 2048;
-	ivec2 uv = ivec2(int(point) % tex_size, int(point)/tex_size);
-	point *= 2;
-	ivec2 uvp1 = ivec2(int(point) % tex_size, int(point)/tex_size);
-	ivec2 uvp2 = ivec2(int(point + 1u) % tex_size, int(point + 1u)/tex_size);
-	vec4 pos = texelFetch(emission_texture, uv, 0);
-	vec4 norm = texelFetch(normal_texture, )
-	vec4 bones1 = texelFetch(skin_texture, uvp1, 0);
-	vec4 bones2 = texelFetch(skin_texture, uvp2, 0);
+	int rows = int(point_count)/2048 + 1;
+	ivec2 point_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count)/tex_size);
+	ivec2 normal_uv = ivec2(int(point % point_count) % tex_size, int(point % point_count)/tex_size + rows)
+	ivec2 bones_uv = ivec2(int(point * 2u) % tex_size, int(point)/tex_size + rows * 2);
+	ivec2 bones_uv2 = ivec2(int(point * 2u + 1u) % tex_size, int(point + 1u)/tex_size + rows * 2);
+	vec4 pos = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), point_uv, 0);
+	pos.w = 1.0;
+	vec4 nor = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), normal_uv, 0);
+	nor.w = 0.0;
+	vec4 bones1 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv, 0);
+	vec4 bones2 = texelFetch(sampler2D(skinned_emission_texture, SAMPLER_NEAREST_REPEAT), bones_uv2, 0);
 	mat4 bones = get_bone_transform(uint(bones1.x)) * bones1.y;
 	bones += get_bone_transform(uint(bones1.z)) * bones1.w;
 	bones += get_bone_transform(uint(bones2.x)) * bones2.y;
 	bones += get_bone_transform(uint(bones2.z)) * bones2.w;
-	pos = (bones) * pos;
-	position = pos;
+	pos = bones * pos;
+	nor = bones * nor;
+	position = pos.xyz;
+	normal = nor.xyz;
 }
 */
 

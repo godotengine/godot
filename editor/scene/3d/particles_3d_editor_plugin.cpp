@@ -408,6 +408,7 @@ Node *GPUParticles3DEditorPlugin::_convert_particles() {
 }
 
 bool GPUParticles3DEditorPlugin::_can_generate_points() const {
+	return true;
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(edited_node);
 	Ref<ParticleProcessMaterial> mat = particles->get_process_material();
 	if (mat.is_null()) {
@@ -459,7 +460,7 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
 	Ref<ParticleProcessMaterial> mat = particles->get_process_material();
-	ERR_FAIL_COND(mat.is_null());
+	//ERR_FAIL_COND(mat.is_null());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Emission Points"));
@@ -484,12 +485,12 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 			}
 		}
 
-		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
-		undo_redo->add_do_property(matptr, "emission_normal_texture", ImageTexture::create_from_image(image2));
-		undo_redo->add_undo_property(matptr, "emission_normal_texture", matptr->get_emission_normal_texture());
+		//Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
+		//undo_redo->add_do_property(matptr, "emission_normal_texture", ImageTexture::create_from_image(image2));
+		//undo_redo->add_undo_property(matptr, "emission_normal_texture", matptr->get_emission_normal_texture());
 	} else {
-		undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
-		undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
+		//undo_redo->add_do_property(matptr, "emission_shape", ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
+		//undo_redo->add_undo_property(matptr, "emission_shape", matptr->get_emission_shape());
 	}
 	Vector<uint8_t> point_img3;
 	// account for points, normals and skinning.
@@ -544,13 +545,8 @@ void GPUParticles3DEditorPlugin::_generate_emission_points() {
 	Ref<Image> image3 = memnew(Image(w, h, false, Image::FORMAT_RGBAF, point_img3));
 	// TODO
 	// Add emission texture to the node instead
-	particles->set_emission_texture(ImageTexture::create_from_image(image3), point_count);
-	undo_redo->add_do_property(matptr, "emission_skin_texture", ImageTexture::create_from_image(image3));
-	undo_redo->add_undo_property(matptr, "emission_skin_texture", matptr->get_emission_skin_texture());
-	undo_redo->add_do_property(matptr, "emission_point_count", point_count);
-	undo_redo->add_undo_property(matptr, "emission_point_count", matptr->get_emission_point_count());
-	undo_redo->add_do_property(matptr, "emission_point_texture", tex);
-	undo_redo->add_undo_property(matptr, "emission_point_texture", matptr->get_emission_point_texture());
+	particles->set_emission_texture(ImageTexture::create_from_image(image3));
+	particles->set_emission_point_count(point_count);
 	undo_redo->commit_action();
 }
 

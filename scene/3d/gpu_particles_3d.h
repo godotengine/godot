@@ -202,7 +202,7 @@ public:
 	NodePath get_skeletal_mesh() const;
 	void set_emission_texture(const Ref<Texture2D> &p_emission_texture);
 	Ref<Texture2D> get_emission_texture() const;
-	void set_emission_texture_points_count(int p_emission_texture_points_count);
+	void set_emission_point_count(int p_points_count);
 	int get_emission_texture_points_count() const;
 
 	void restart(bool p_keep_seed = false);

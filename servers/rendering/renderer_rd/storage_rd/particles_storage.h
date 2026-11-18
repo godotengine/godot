@@ -127,7 +127,7 @@ private:
 		uint32_t frame;
 		float amount_ratio;
 		uint32_t skeleton_bone_count;
-		uint32_t pad1;
+		uint32_t emission_texture_points_count;
 
 		uint32_t random_seed;
 		uint32_t attractor_count;
@@ -266,7 +266,9 @@ private:
 		RID unused_skeleton_storage_buffer;
 
 		RID skeleton;
+		int skeleton_bone_count;
 		RID emission_texture;
+		int emission_texture_points_count;
 
 		HashSet<RID> collisions;
 
