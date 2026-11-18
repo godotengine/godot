@@ -32,6 +32,7 @@
 
 #include "jolt_shaped_object_3d.h"
 
+#include "core/variant/variant.h"
 #include "servers/physics_3d/physics_server_3d_enums.h"
 
 class JoltBody3D;
