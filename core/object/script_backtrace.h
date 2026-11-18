@@ -52,6 +52,7 @@ class ScriptBacktrace : public RefCounted {
 
 	LocalVector<StackFrame> stack_frames;
 	LocalVector<StackVariable> global_variables;
+	LocalVector<StackVariable> static_variables;
 	String language_name;
 
 	static void _store_variables(const List<String> &p_names, const List<Variant> &p_values, LocalVector<StackVariable> &r_variables);
@@ -70,6 +71,10 @@ public:
 	String get_frame_function(int p_index) const;
 	String get_frame_file(int p_index) const;
 	int get_frame_line(int p_index) const;
+
+	int get_static_variable_count() const { return static_variables.size(); }
+	String get_static_variable_name(int p_variable_index) const;
+	Variant get_static_variable_value(int p_variable_index) const;
 
 	int get_global_variable_count() const { return global_variables.size(); }
 	String get_global_variable_name(int p_variable_index) const;

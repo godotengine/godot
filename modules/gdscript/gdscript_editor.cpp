@@ -433,6 +433,44 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 	return _get_stack_level(p_level)->instance;
 }
 
+void GDScriptLanguage::debug_get_static_variables(List<String> *r_names, List<Variant> *r_values) {
+	HashMap<Ref<GDScript>, StringName> autoload_names;
+	const HashMap<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
+	const Variant *gl_array = GDScriptLanguage::get_singleton()->get_global_array();
+	for (const KeyValue<StringName, int> &KV : name_idx) {
+		const Variant &var = gl_array[KV.value];
+		bool freed = false;
+		const Object *obj = var.get_validated_object_with_check(freed);
+		if (obj) {
+			const Ref<GDScript> autoload_script = obj->get_script();
+			autoload_names[autoload_script] = KV.key;
+		}
+	}
+
+	List<Ref<GDScript>> static_scripts;
+	GDScriptCache::get_static_scripts(&static_scripts);
+	for (const Ref<GDScript> &script : static_scripts) {
+		const HashMap<StringName, GDScript::MemberInfo> &mi = script->debug_get_static_member_indices();
+
+		String script_name;
+		if (autoload_names.has(script)) {
+			script_name = autoload_names[script];
+		} else {
+			script_name = script->get_global_name();
+		}
+
+		if (script_name.is_empty()) {
+			script_name = script->get_path();
+		}
+
+		for (const KeyValue<StringName, GDScript::MemberInfo> &E : mi) {
+			String full_name = vformat("%s/%s", script_name, E.key);
+			r_names->push_back(full_name);
+			r_values->push_back(script->get(E.key));
+		}
+	}
+}
+
 void GDScriptLanguage::debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems, int p_max_depth) {
 	const HashMap<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
 	const Variant *gl_array = GDScriptLanguage::get_singleton()->get_global_array();
