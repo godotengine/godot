@@ -5000,7 +5000,8 @@ void EditorInspector::update_tree() {
 				Resource *res = Object::cast_to<Resource>(object);
 				if (res) {
 					// Grab the script of this resource to get the evaluated script class.
-					if (Script *scr = res->get_script(); scr != nullptr) {
+					Script *scr = res->get_script();
+					if (scr != nullptr) {
 						Vector<DocData::ClassDoc> docs = scr->get_documentation();
 						if (!docs.is_empty()) {
 							// The documentation of a GDScript's main class is at the end of the array.
