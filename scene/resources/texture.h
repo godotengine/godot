@@ -486,6 +486,8 @@ public:
 	};
 
 private:
+	mutable Vector<Ref<Image>> *layer_images;
+
 	String path_to_file;
 	bool is_3d;
 	RID texture;
@@ -505,6 +507,10 @@ protected:
 	static void _bind_methods();
 
 public:
+
+	virtual void before_save() const override;
+	virtual void after_save() const override;
+
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 
