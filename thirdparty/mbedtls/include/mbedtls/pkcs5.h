@@ -38,6 +38,15 @@
 extern "C" {
 #endif
 
+/* Add a default value for MBEDTLS_PK_DECRYPT_MAX_ITERATIONS in case
+ * it's not defined in the user configuration file.
+ * This value is chosen to be valid for almost any real use case and at the
+ * same time be computationally acceptable in terms of execution time.
+ */
+#if !defined(MBEDTLS_PK_DECRYPT_MAX_ITERATIONS)
+#define MBEDTLS_PK_DECRYPT_MAX_ITERATIONS         10000000
+#endif
+
 #if defined(MBEDTLS_ASN1_PARSE_C) && defined(MBEDTLS_CIPHER_C)
 
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)

@@ -361,11 +361,12 @@ static int ssl_tls13_parse_certificate_verify(mbedtls_ssl_context *ssl,
     }
 #endif /* MBEDTLS_X509_RSASSA_PSS_SUPPORT */
 
-    if ((ret = mbedtls_pk_verify_ext(sig_alg, options,
-                                     &ssl->session_negotiate->peer_cert->pk,
-                                     md_alg, verify_hash, verify_hash_len,
-                                     p, signature_len)) == 0) {
-        return 0;
+    ret = mbedtls_pk_verify_ext(sig_alg, options,
+                                &ssl->session_negotiate->peer_cert->pk,
+                                md_alg, verify_hash, verify_hash_len,
+                                p, signature_len);
+    if (ret == 0) {
+        return ret;
     }
     MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_pk_verify_ext", ret);
 
@@ -1526,6 +1527,8 @@ int mbedtls_ssl_tls13_read_public_xxdhe_share(mbedtls_ssl_context *ssl,
     }
     memcpy(handshake->xxdh_psa_peerkey, p, peerkey_len);
     handshake->xxdh_psa_peerkey_len = peerkey_len;
+    handshake->tls13_key_exchange_inputs |=
+        MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PEER;
 
     return 0;
 }
@@ -1642,6 +1645,8 @@ int mbedtls_ssl_tls13_generate_and_write_xxdh_key_exchange(
         return ret;
     }
 
+    handshake->tls13_key_exchange_inputs |=
+        MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_INPUT_EPHEMERAL_PRIVATE;
     *out_len = own_pubkey_len;
 
     return 0;

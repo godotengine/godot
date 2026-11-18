@@ -311,7 +311,6 @@ int mbedtls_x509_crl_parse_der(mbedtls_x509_crl *chain,
         crl->next = mbedtls_calloc(1, sizeof(mbedtls_x509_crl));
 
         if (crl->next == NULL) {
-            mbedtls_x509_crl_free(crl);
             return MBEDTLS_ERR_X509_ALLOC_FAILED;
         }
 

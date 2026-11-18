@@ -71,9 +71,21 @@ psa_status_t mbedtls_psa_rsa_load_representation(
     mbedtls_rsa_init(*p_rsa);
 
     /* Parse the data. */
-    if (PSA_KEY_TYPE_IS_KEY_PAIR(type)) {
+    if (MBEDTLS_CT_SPEC_RISKY_BOOL(PSA_KEY_TYPE_IS_KEY_PAIR(type))) {
+        /* Avoid potentially leaking information through the timing of the
+         * parsing of the key material if this function was called
+         * speculatively and the key is actually of a different type. */
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(data,
+                                             type,
+                                             PSA_KEY_TYPE_RSA_KEY_PAIR);
         status = mbedtls_to_psa_error(mbedtls_rsa_parse_key(*p_rsa, data, data_length));
     } else {
+        /* Avoid potentially leaking information through the timing of the
+         * parsing of the key material if this function was called
+         * speculatively and the key is actually of a different type. */
+        MBEDTLS_CT_NULLIFY_IF_SPECULATING_EQ(data,
+                                             type,
+                                             PSA_KEY_TYPE_RSA_PUBLIC_KEY);
         status = mbedtls_to_psa_error(mbedtls_rsa_parse_pubkey(*p_rsa, data, data_length));
     }
     if (status != PSA_SUCCESS) {
