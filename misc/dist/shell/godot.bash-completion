@@ -170,7 +170,7 @@ _complete_godot_bash() {
   elif [[ $prev == "--xr-mode" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "default off on" -- "$cur"))
+    COMPREPLY=($(compgen -W "default off on headless" -- "$cur"))
   elif [[ $prev == "--accessibility" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207

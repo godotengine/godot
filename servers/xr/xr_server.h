@@ -60,6 +60,7 @@ public:
 		XRMODE_DEFAULT, /* Default behavior, means we check project settings */
 		XRMODE_OFF, /* Ignore project settings, disable OpenXR, disable shaders */
 		XRMODE_ON, /* Ignore project settings, enable OpenXR, enable shaders, run editor in VR (if applicable) */
+		XRMODE_HEADLESS, /* Ignore project settings, enable OpenXR, disable shaders, enable headless XR mode (no graphics) */
 	};
 
 	enum TrackerType {

@@ -66,7 +66,7 @@ _arguments \
   '--position[request window position]:position in X,Y format' \
   '--screen[request window screen]:screen number' \
   '--single-window[use a single window (no separate subwindows)]' \
-  '--xr-mode[select Extended Reality (XR) mode]:Extended Reality (XR) mode:(default off on)' \
+  '--xr-mode[select Extended Reality (XR) mode]:Extended Reality (XR) mode:(default off on headless)' \
   '--wid[request parented to window]:window ID' \
   '--accessibility[select accessibility mode]:accessibility mode:(auto always disabled)' \
   '--accessibility-driver[select accessibility driver]:accessibility driver name:(accesskit dummy)' \

@@ -305,16 +305,20 @@ OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
-	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-		if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
-			// For now, don't start OpenXR when the editor starts up. In the future, this may change
-			// if we want to integrate more XR features into the editor experience.
+	switch (XRServer::get_xr_mode()) {
+		case XRServer::XRMODE_DEFAULT:
+			if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
+				// For now, don't start OpenXR when the editor starts up. In the future, this may change
+				// if we want to integrate more XR features into the editor experience.
+				return false;
+			} else {
+				return GLOBAL_GET("xr/openxr/enabled");
+			}
+		case XRServer::XRMODE_ON:
+		case XRServer::XRMODE_HEADLESS:
+			return true;
+		default:
 			return false;
-		} else {
-			return GLOBAL_GET("xr/openxr/enabled");
-		}
-	} else {
-		return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 	}
 }
 
@@ -1756,10 +1760,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		return false;
 	}
 
-	if (true) {
-		// TODO: This is hardcoded to assume we want a "headless" session.
-		//       Obviously we'd want to do this only when actually requested.
-		//       Such as from a project setting or "--xr-mode headless" arg.
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_HEADLESS) {
 		graphics_extension = memnew(OpenXRHeadlessExtension);
 		register_extension_wrapper(graphics_extension);
 	} else if (p_rendering_driver == "vulkan") {
