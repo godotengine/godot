@@ -505,6 +505,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		return _get_default_variant_for_data_type(return_type);
 	}
 
+	// komm64: a call into a suspended script does not run (see
+	// GDScript::snapshot_set_suspended). A call waiting in an await goes on, and
+	// a static initializer runs as on any first load.
+	if (unlikely(GDScript::snapshot_suspended) && !p_state && _script && this != _script->get_static_initializer() && GDScript::snapshot_blocks(_script->get_path())) {
+		r_err.error = Callable::CallError::CALL_OK;
+		return _get_default_variant_for_data_type(return_type);
+	}
+
 	r_err.error = Callable::CallError::CALL_OK;
 
 	static thread_local int call_depth = 0;

@@ -260,6 +260,15 @@ public:
 	static bool snapshot_set_await_stack(Object *p_state, const Array &p_stack);
 	static Variant snapshot_make_await_token();
 	static void snapshot_cancel_static_awaits(const PackedStringArray &p_keep);
+
+	// komm64: while suspended, no script outside `snapshot_allowed_dir` runs:
+	// see snapshot_set_suspended().
+	static bool snapshot_suspended;
+	static String snapshot_allowed_dir;
+	static void snapshot_set_suspended(bool p_suspended, const String &p_allowed_dir);
+	_FORCE_INLINE_ static bool snapshot_blocks(const String &p_path) {
+		return unlikely(snapshot_suspended) && !(p_path.begins_with(snapshot_allowed_dir) && !snapshot_allowed_dir.is_empty());
+	}
 	String get_fully_qualified_name() const { return fully_qualified_name; }
 	const HashMap<StringName, Ref<GDScript>> &get_subclasses() const { return subclasses; }
 	const HashMap<StringName, Variant> &get_constants() const { return constants; }

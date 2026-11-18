@@ -174,7 +174,16 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		instances.add(&instance->script_instance_list);
 	}
 
-	_super_implicit_constructor(this, instance, r_error);
+	if (snapshot_blocks(path)) {
+		// Suspended: only what the initializers set before anything else.
+		for (const KeyValue<StringName, MemberInfo> &E : member_indices) {
+			if (E.value.data_type.has_type()) {
+				instance->members.write[E.value.index] = GDScriptFunction::_get_default_variant_for_data_type(E.value.data_type);
+			}
+		}
+	} else {
+		_super_implicit_constructor(this, instance, r_error);
+	}
 	if (r_error.error != Callable::CallError::CALL_OK) {
 		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
@@ -974,7 +983,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 		{
 			HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 			if (E) {
-				if (likely(top->valid) && E->value.getter) {
+				if (likely(top->valid) && E->value.getter && !snapshot_blocks(top->path)) {
 					Callable::CallError ce;
 					const Variant ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
 					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
@@ -1032,7 +1041,7 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 					return false;
 				}
 			}
-			if (likely(top->valid) && member->setter) {
+			if (likely(top->valid) && member->setter && !snapshot_blocks(top->path)) {
 				const Variant *args = &value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
@@ -1084,6 +1093,7 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_set_await_stack", "state", "stack"), &GDScript::snapshot_set_await_stack);
 	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_make_await_token"), &GDScript::snapshot_make_await_token);
 	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_cancel_static_awaits", "keep"), &GDScript::snapshot_cancel_static_awaits);
+	ClassDB::bind_static_method("GDScript", D_METHOD("snapshot_set_suspended", "suspended", "allowed_dir"), &GDScript::snapshot_set_suspended, DEFVAL(String()));
 }
 
 // The functions whose lambdas a script's lambdas are named under: the implicit
@@ -1387,6 +1397,23 @@ bool GDScript::snapshot_set_await_stack(Object *p_state, const Array &p_stack) {
 		v[i + GDScriptFunction::FIXED_ADDRESSES_MAX] = p_stack[i];
 	}
 	return true;
+}
+
+bool GDScript::snapshot_suspended = false;
+String GDScript::snapshot_allowed_dir;
+
+// komm64: while suspended, no GDScript code runs except that of scripts whose
+// path begins with `p_allowed_dir` (a savestate system's own): calls to other
+// scripts' functions, lambdas, notifications and signal handlers return the
+// default value without running, setters and getters write and read the member
+// directly, and a new instance gets its members' type defaults without running
+// their initializers or _init(). Static initializers of scripts loaded meanwhile
+// still run, as on any first load, and functions waiting in an await go on
+// when their signal comes. A savestate system builds a saved world this way
+// without the game's code reacting to it.
+void GDScript::snapshot_set_suspended(bool p_suspended, const String &p_allowed_dir) {
+	snapshot_suspended = p_suspended;
+	snapshot_allowed_dir = p_suspended ? p_allowed_dir : String();
 }
 
 // Drops the calls suspended in an await that run on no object (static
@@ -1893,7 +1920,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					return false;
 				}
 			}
-			if (likely(script->valid) && member->setter) {
+			if (likely(script->valid) && member->setter && !GDScript::snapshot_blocks(script->path)) {
 				const Variant *args = &value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
@@ -1920,7 +1947,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 						return false;
 					}
 				}
-				if (likely(sptr->valid) && member->setter) {
+				if (likely(sptr->valid) && member->setter && !GDScript::snapshot_blocks(sptr->path)) {
 					const Variant *args = &value;
 					Callable::CallError err;
 					callp(member->setter, &args, 1, err);
@@ -1956,7 +1983,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	{
 		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
 		if (E) {
-			if (likely(script->valid) && E->value.getter) {
+			if (likely(script->valid) && E->value.getter && !GDScript::snapshot_blocks(script->path)) {
 				Callable::CallError err;
 				const Variant ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
 				r_ret = (err.error == Callable::CallError::CALL_OK) ? ret : Variant();
@@ -1980,7 +2007,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		{
 			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
-				if (likely(sptr->valid) && E->value.getter) {
+				if (likely(sptr->valid) && E->value.getter && !GDScript::snapshot_blocks(sptr->path)) {
 					Callable::CallError ce;
 					const Variant ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
 					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();

@@ -72,5 +72,13 @@
 				Puts [param stack], as [method snapshot_get_awaits] returned it, into a call [method snapshot_make_await] made. Returns [code]false[/code] if the size does not match.
 			</description>
 		</method>
+		<method name="snapshot_set_suspended" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="suspended" type="bool" />
+			<param index="1" name="allowed_dir" type="String" default="&quot;&quot;" />
+			<description>
+				While [param suspended] is [code]true[/code], no GDScript code runs except that of scripts whose path begins with [param allowed_dir] (a savestate system's own folder; if it is empty, none runs). Calls to other scripts' functions, lambdas, notifications and signal handlers return the default value without running; setters and getters write and read the member directly; a new instance gets its members' type defaults without running their initializers or [code]_init()[/code]. Static initializers of scripts loaded meanwhile still run, as on any first load, and functions waiting in an [code]await[/code] go on when their signal comes. A savestate system builds a saved world this way without the game's code reacting to it.
+			</description>
+		</method>
 	</methods>
 </class>
