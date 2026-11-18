@@ -539,7 +539,7 @@ int mbedtls_ssl_tls13_populate_transform(mbedtls_ssl_transform *transform,
  * \returns    A negative error code on failure.
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
-int mbedtls_ssl_tls13_key_schedule_stage_early(mbedtls_ssl_context *ssl);
+int mbedtls_ssl_tls13_compute_early_secret(mbedtls_ssl_context *ssl);
 
 /**
  * \brief Compute TLS 1.3 resumption master secret.
@@ -585,6 +585,17 @@ int mbedtls_ssl_tls13_calculate_verify_data(mbedtls_ssl_context *ssl,
 
 #if defined(MBEDTLS_SSL_EARLY_DATA)
 /**
+ * \brief Derive the early secret for 0-RTT data protection
+ *
+ * The selected handshake's early secret is derived by
+ * mbedtls_ssl_tls13_compute_early_secret() after ServerHello has selected the
+ * key exchange if not already done by this function.
+ */
+MBEDTLS_CHECK_RETURN_CRITICAL
+int mbedtls_ssl_tls13_compute_early_secret_for_early_data(
+    mbedtls_ssl_context *ssl);
+
+/**
  * \brief Compute TLS 1.3 early transform
  *
  * \param ssl  The SSL context to operate on.
@@ -593,8 +604,8 @@ int mbedtls_ssl_tls13_calculate_verify_data(mbedtls_ssl_context *ssl,
  * \returns    A negative error code on failure.
  *
  * \warning    The function does not compute the early master secret. Call
- *             mbedtls_ssl_tls13_key_schedule_stage_early() before to
- *             call this function to generate the early master secret.
+ *             mbedtls_ssl_tls13_compute_early_secret_for_early_data() before
+ *             this function to generate it.
  * \note       For a client/server endpoint, the function computes only the
  *             encryption/decryption part of the transform as the decryption/
  *             encryption part is not defined by the specification (no early

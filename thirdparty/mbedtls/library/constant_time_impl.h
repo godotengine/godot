@@ -538,4 +538,14 @@ static inline mbedtls_ct_condition_t mbedtls_ct_bool_not(mbedtls_ct_condition_t 
     #pragma GCC diagnostic pop
 #endif
 
+#if defined(MBEDTLS_SPECTRE_V1_COUNTERMEASURES)
+static inline uintptr_t mbedtls_ct_nullify_if_speculating(uintptr_t value,
+                                                          mbedtls_ct_uint_t cond)
+{
+    MBEDTLS_STATIC_ASSERT(sizeof(uintptr_t) <= sizeof(mbedtls_ct_condition_t),
+                          "mbedtls_ct_condition_t smaller than uintptr_t is not supported");
+    return value & mbedtls_ct_bool(cond);
+}
+#endif /* MBEDTLS_SPECTRE_V1_COUNTERMEASURES */
+
 #endif /* MBEDTLS_CONSTANT_TIME_IMPL_H */

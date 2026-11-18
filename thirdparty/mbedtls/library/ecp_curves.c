@@ -5012,14 +5012,14 @@ int mbedtls_ecp_mod_p192_raw(mbedtls_mpi_uint *Np, size_t Nn)
 
 #if defined(MBEDTLS_HAVE_INT32)  /* 32 bit */
 
-#define MAX32       X_limbs
+#define MAX32       (X_limbs)
 #define A(j)        X[j]
 #define STORE32     X[i] = (mbedtls_mpi_uint) cur;
 #define STORE0      X[i] = 0;
 
 #else /* 64 bit */
 
-#define MAX32   X_limbs * 2
+#define MAX32   (X_limbs * 2)
 #define A(j)                                                \
     (j) % 2 ?                                               \
     (uint32_t) (X[(j) / 2] >> 32) :                         \

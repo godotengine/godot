@@ -153,7 +153,7 @@ static inline mbedtls_ecp_group_id mbedtls_pk_get_ec_group_id(const mbedtls_pk_c
 #endif /* MBEDTLS_ECP_HAVE_CURVE25519 || MBEDTLS_ECP_DP_CURVE448 */
 
 #define MBEDTLS_PK_IS_RFC8410_GROUP_ID(id)  \
-    ((id == MBEDTLS_ECP_DP_CURVE25519) || (id == MBEDTLS_ECP_DP_CURVE448))
+    (((id) == MBEDTLS_ECP_DP_CURVE25519) || ((id) == MBEDTLS_ECP_DP_CURVE448))
 
 static inline int mbedtls_pk_is_rfc8410(const mbedtls_pk_context *pk)
 {

@@ -118,7 +118,7 @@ int mbedtls_sha3_update(mbedtls_sha3_context *ctx,
  * \param output   The SHA-3 checksum result.
  *                 This must be a writable buffer of length \c olen bytes.
  * \param olen     Defines the length of output buffer (in bytes). For SHA-3 224, SHA-3 256,
- *                 SHA-3 384 and SHA-3 512 \c olen must equal to 28, 32, 48 and 64,
+ *                 SHA-3 384 and SHA-3 512 \c olen must be at least 28, 32, 48 and 64,
  *                 respectively.
  *
  * \return         \c 0 on success.
@@ -144,7 +144,7 @@ int mbedtls_sha3_finish(mbedtls_sha3_context *ctx,
  * \param output   The SHA-3 checksum result.
  *                 This must be a writable buffer of length \c olen bytes.
  * \param olen     Defines the length of output buffer (in bytes). For SHA-3 224, SHA-3 256,
- *                 SHA-3 384 and SHA-3 512 \c olen must equal to 28, 32, 48 and 64,
+ *                 SHA-3 384 and SHA-3 512 \c olen must be at least 28, 32, 48 and 64,
  *                 respectively.
  *
  * \return         \c 0 on success.

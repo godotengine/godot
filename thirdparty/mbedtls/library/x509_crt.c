@@ -266,17 +266,22 @@ static int x509_memcasecmp(const void *s1, const void *s2, size_t len)
 
 /*
  * Return 0 if name matches wildcard, -1 otherwise
+ *
+ * Follow RFC 9525: the wildcard can only be the entirety of the leftmost label.
+ * (Note: RFC 6125 was more lenient, but too complex for our own good.)
  */
-static int x509_check_wildcard(const char *cn, const mbedtls_x509_buf *name)
+static int x509_check_dns_wildcard(const char *cn, size_t cn_len,
+                                   const mbedtls_x509_buf *name)
 {
     size_t i;
-    size_t cn_idx = 0, cn_len = strlen(cn);
+    size_t cn_idx = 0;
 
     /* We can't have a match if there is no wildcard to match */
     if (name->len < 3 || name->p[0] != '*' || name->p[1] != '.') {
         return -1;
     }
 
+    /* Find the first dot. This ensures the wildcard only matches one label. */
     for (i = 0; i < cn_len; ++i) {
         if (cn[i] == '.') {
             cn_idx = i;
@@ -519,17 +524,19 @@ static int x509_get_basic_constraints(unsigned char **p,
     }
 
     if ((ret = mbedtls_asn1_get_bool(p, end, ca_istrue)) != 0) {
-        /* If the SEQUENCE starts with an INTEGER and not a BOOLEAN,
-         * according to RFC 5280, it's syntactically valid, but it's
-         * something that a CA MUST NOT produce. So we reject it.
+        /* cA is DEFAULT FALSE. If it is absent, the first element must
+         * be pathLenConstraint. Keep cA false and let the INTEGER parser
+         * below validate the element.
          *
          * Note: historically, from XySSL 0.9 to Mbed TLS 3.6.6/4.1.0,
          * `SEQUENCE { INTEGER n }` was interpreted as cA=FALSE if n == 0
          * and cA=TRUE if n != 0. This was dangerous since
          * `SEQUENCE { INTEGER n }` should be parsed as cA=FALSE
-         * according to RFC 5280, so we stopped doing it.
+         * according to RFC 5280.
          */
-        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        if (ret != MBEDTLS_ERR_ASN1_UNEXPECTED_TAG) {
+            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+        }
     }
     /* `SEQUENCE { BOOLEAN FALSE }` is not DER since default-value fields
      * must be omitted in DER. But it seems harmless, and Mbed TLS has
@@ -637,6 +644,11 @@ static int x509_get_authority_key_id(unsigned char **p,
     if (*p + len != end) {
         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS,
                                  MBEDTLS_ERR_ASN1_LENGTH_MISMATCH);
+    }
+
+    /* All fields are OPTIONAL, so an empty SEQUENCE is valid. */
+    if (*p == end) {
+        return 0;
     }
 
     ret = mbedtls_asn1_get_tag(p, end, &len,
@@ -2890,56 +2902,20 @@ size_t mbedtls_x509_crt_parse_cn_inet_pton(const char *cn, void *dst)
 }
 
 /*
- * Check for CN match
+ * Check for DNS hostname match
  */
-static int x509_crt_check_cn(const mbedtls_x509_buf *name,
-                             const char *cn, size_t cn_len)
+static int x509_crt_check_dns_name(const mbedtls_x509_buf *name,
+                                   const char *cn, size_t cn_len)
 {
-    /* try exact match */
+    /* try exact match, case-insensitive (RFC 6125 or 9525) */
     if (name->len == cn_len &&
         x509_memcasecmp(cn, name->p, cn_len) == 0) {
         return 0;
     }
 
     /* try wildcard match */
-    if (x509_check_wildcard(cn, name) == 0) {
+    if (x509_check_dns_wildcard(cn, cn_len, name) == 0) {
         return 0;
-    }
-
-    return -1;
-}
-
-static int x509_crt_check_san_ip(const mbedtls_x509_sequence *san,
-                                 const char *cn, size_t cn_len)
-{
-    uint32_t ip[4];
-    cn_len = mbedtls_x509_crt_parse_cn_inet_pton(cn, ip);
-    if (cn_len == 0) {
-        return -1;
-    }
-
-    for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        const unsigned char san_type = (unsigned char) cur->buf.tag &
-                                       MBEDTLS_ASN1_TAG_VALUE_MASK;
-        if (san_type == MBEDTLS_X509_SAN_IP_ADDRESS &&
-            cur->buf.len == cn_len && memcmp(cur->buf.p, ip, cn_len) == 0) {
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
-static int x509_crt_check_san_uri(const mbedtls_x509_sequence *san,
-                                  const char *cn, size_t cn_len)
-{
-    for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        const unsigned char san_type = (unsigned char) cur->buf.tag &
-                                       MBEDTLS_ASN1_TAG_VALUE_MASK;
-        if (san_type == MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER &&
-            cur->buf.len == cn_len && memcmp(cur->buf.p, cn, cn_len) == 0) {
-            return 0;
-        }
     }
 
     return -1;
@@ -2947,43 +2923,155 @@ static int x509_crt_check_san_uri(const mbedtls_x509_sequence *san,
 
 /*
  * Check for SAN match, see RFC 5280 Section 4.2.1.6
+ *
+ * If cn_type is IP, then cn must contain the binary representation of the
+ * address, and cn_len the number of bytes (4 for IPv4, 16 for IPv6).
+ * Otherwise, cn is what was passed by the user.
  */
 static int x509_crt_check_san(const mbedtls_x509_sequence *san,
-                              const char *cn, size_t cn_len)
+                              const char *cn, size_t cn_len, int cn_type)
 {
-    int san_ip = 0;
-    int san_uri = 0;
-    /* Prioritize DNS name over other subtypes due to popularity */
     for (const mbedtls_x509_sequence *cur = san; cur != NULL; cur = cur->next) {
-        switch ((unsigned char) cur->buf.tag & MBEDTLS_ASN1_TAG_VALUE_MASK) {
+        /* Only consider SAN entries of the expected type */
+        int san_type = cur->buf.tag & MBEDTLS_ASN1_TAG_VALUE_MASK;
+        if (san_type != cn_type) {
+            continue;
+        }
+
+        /* Check according to type */
+        switch (cn_type) {
             case MBEDTLS_X509_SAN_DNS_NAME:
-                if (x509_crt_check_cn(&cur->buf, cn, cn_len) == 0) {
+                /* DNS: special rules */
+                if (x509_crt_check_dns_name(&cur->buf, cn, cn_len) == 0) {
                     return 0;
                 }
                 break;
             case MBEDTLS_X509_SAN_IP_ADDRESS:
-                san_ip = 1;
-                break;
             case MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER:
-                san_uri = 1;
+                /* IP: exact match according to RFC 9525 */
+                /* URL: exact match for now according to our documentation */
+                if (cur->buf.len == cn_len &&
+                    memcmp(cur->buf.p, cn, cn_len) == 0) {
+                    return 0;
+                }
                 break;
             /* (We may handle other types here later.) */
             default: /* Unrecognized type */
                 break;
         }
     }
-    if (san_ip) {
-        if (x509_crt_check_san_ip(san, cn, cn_len) == 0) {
-            return 0;
-        }
+
+    return -1;
+}
+
+/* Return 1 if the cn superficially looks like a URI, 0 if it doesn't.
+ *
+ * RFC 5280 4.2.1.6 URIs are as specified by RFC 3986, whose App. A says:
+ * URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
+ * scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+ *
+ * For now, look for the presence of a colon, and that the scheme is non-empty
+ * and consists only of allowed characters.
+ */
+static int x509_cn_looks_like_uri(const char *cn)
+{
+    const char *end = strchr(cn, ':');
+    if (end == NULL || end == cn) {
+        return 0;
     }
-    if (san_uri) {
-        if (x509_crt_check_san_uri(san, cn, cn_len) == 0) {
+
+    for (const char *p = cn; p < end; p++) {
+        if (!((*p >= 'a' && *p <= 'z') ||
+              (*p >= 'A' && *p <= 'Z') ||
+              (*p >= '0' && *p <= '9') ||
+              *p == '+' || *p == '-' || *p == '.')) {
             return 0;
         }
     }
 
-    return -1;
+    return 1;
+}
+
+/* Return 1 if the cn superficially looks like a DNS, 0 if it doesn't.
+ *
+ * RFC 5280 4.2.1.6 says DNS names are as specified by Section 3.5 of
+ * RFC1034 and as modified by Section 2.1 of RFC1123, in particular they
+ * consist entirely of ASCII letters, digits, hyphen, and dot.
+ *
+ * In compatibility mode (only used in CN matching), also allow:
+ * - underscore as it might be used in private host names;
+ * - non-ASCII as people might not be using Punycode as they should;
+ * and both have always "worked" historically.
+ *
+ * For now, accept any non-empty string that only consists of the allowed
+ * characters.
+ */
+static int x509_cn_looks_like_dns(const char *cn, int compat_mode)
+{
+    if (*cn == '\0') {
+        return 0;
+    }
+
+    for (const char *p = cn; *p != '\0'; p++) {
+        /* ASCII letters, digits, hyphen and dot always acceptable */
+        if ((*p >= 'a' && *p <= 'z') ||
+            (*p >= 'A' && *p <= 'Z') ||
+            (*p >= '0' && *p <= '9') ||
+            *p == '-' || *p == '.') {
+            continue;
+        }
+
+        /* In compat mode, also accept underscore and non-ASCII */
+        if (compat_mode == 1 && (*p == '_' || (unsigned char) *p >= 0x80)) {
+            continue;
+        }
+
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Infer the type of CN (as MBEDTLS_X509_SAN_xxx macro) based on its value.
+ * Currently supported: IP (v4 or v6), URI, DNS (default).
+ *
+ * This takes advantage of the fact that the sets of permissible values for
+ * these types are almost disjoint (except IPv6 and URI intersect slightly,
+ * and there we choose to give IPv6 precedence). (Also, a dotted-quad IPv4 looks
+ * like a DNS name for the level of sanity checking we do, but can't be a valid
+ * FQDN as there is no purely-numeric TLD.)
+ *
+ * If the type is found to be IP, also return the IP as bytes.
+ * Otherwise, the values of ip and ip_len upon return are unspecified.
+ *
+ * Parameters:
+ * cn[in] must be a NUL-terminated string.
+ * ip[out] must point to a 4-byte-aligned 16-byte buffer
+ * iplen[out] must point to a size_t
+ *
+ * Return the type as a MBEDTLS_X509_SAN_XXX value if CN is one of the supported
+ * types, otherwise MBEDTLS_X509_SAN_NONE.
+ */
+static int x509_crt_infer_name_type(const char *cn, void *ip, size_t *ip_len)
+{
+    /* Check IP first, this avoids mistaking an IPv4 address for a DNS name,
+     * and is how we chose to resolve possible IPv6 vs URI ambiguities.
+     * It is also the only format for which we have an actual parser */
+    *ip_len = mbedtls_x509_crt_parse_cn_inet_pton(cn, ip);
+    if (*ip_len != 0) {
+        return MBEDTLS_X509_SAN_IP_ADDRESS;
+    }
+
+    if (x509_cn_looks_like_uri(cn)) {
+        return MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER;
+    }
+
+    if (x509_cn_looks_like_dns(cn, 0)) {
+        return MBEDTLS_X509_SAN_DNS_NAME;
+    }
+
+    return MBEDTLS_X509_SAN_NONE;
 }
 
 /*
@@ -2993,21 +3081,44 @@ static void x509_crt_verify_name(const mbedtls_x509_crt *crt,
                                  const char *cn,
                                  uint32_t *flags)
 {
-    const mbedtls_x509_name *name;
+    /* 16 bytes is enough for both IPv6 and IPv4. We also want the array
+     * 4-byte-aligned as the system's inet_pton() may require it. */
+    uint32_t ip[4];
+    size_t ip_len;
+
+    int name_type = x509_crt_infer_name_type(cn, ip, &ip_len);
     size_t cn_len = strlen(cn);
 
     if (crt->ext_types & MBEDTLS_X509_EXT_SUBJECT_ALT_NAME) {
-        if (x509_crt_check_san(&crt->subject_alt_names, cn, cn_len) == 0) {
+        if (name_type == MBEDTLS_X509_SAN_IP_ADDRESS) {
+            if (x509_crt_check_san(&crt->subject_alt_names,
+                                   (const char *) ip, ip_len, name_type) == 0) {
+                return;
+            }
+        } else if (x509_crt_check_san(&crt->subject_alt_names,
+                                      cn, cn_len, name_type) == 0) {
             return;
         }
-    } else {
+    } else if (name_type == MBEDTLS_X509_SAN_DNS_NAME ||
+               name_type == MBEDTLS_X509_SAN_NONE) {
+        const mbedtls_x509_name *name;
         for (name = &crt->subject; name != NULL; name = name->next) {
-            if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_CN, &name->oid) == 0 &&
-                x509_crt_check_cn(&name->val, cn, cn_len) == 0) {
+            if (MBEDTLS_OID_CMP(MBEDTLS_OID_AT_CN, &name->oid) != 0) {
+                continue;
+            }
+
+            /* Legacy path: be more lax in what we match using DNS rules */
+            if (x509_cn_looks_like_dns(cn, 1) &&
+                x509_crt_check_dns_name(&name->val, cn, cn_len) == 0) {
+                return;
+            }
+
+            /* Final compat fallback: exact byte match */
+            if (name->val.len == cn_len &&
+                memcmp(name->val.p, cn, cn_len) == 0) {
                 return;
             }
         }
-
     }
 
     *flags |= MBEDTLS_X509_BADCERT_CN_MISMATCH;

@@ -258,7 +258,7 @@ typedef struct {
 #define MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE  (MBEDTLS_X509_MAX_INTERMEDIATE_CA + 2)
 
 /**
- * Verification chain as built by \c mbedtls_crt_verify_chain()
+ * Verification chain as built by \c mbedtls_x509_crt_verify_chain()
  */
 typedef struct {
     mbedtls_x509_crt_verify_chain_item MBEDTLS_PRIVATE(items)[MBEDTLS_X509_MAX_VERIFY_CHAIN_SIZE];
@@ -600,7 +600,47 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
 /**
  * \brief          Verify a chain of certificates.
  *
- *                 The verify callback is a user-supplied callback that
+ * \note           The \p cn represents the reference identifier (historically,
+ *                 the Common Name component of the certificate's Subject). It
+ *                 should be either a DNS name, a URI or an IP address. (If the
+ *                 string can be interpreted either as a URI or an IP address,
+ *                 it will be considered an IP address.)
+ *
+ *                 DNS names must be provided in the "preferred name syntax", as
+ *                 specified by Section 3.5 of RFC 1034 and as modified by
+ *                 Section 2.1 of RFC 1123. Internationalized domain names must
+ *                 be in ASCII Compatible Encoding (ACE) format as specified in
+ *                 Section 4 of RFC 3490 (also known as Punycode).
+ *
+ *                 The provided DNS name will be matched against Subject
+ *                 Alternative Name (SAN) entries of type dNSName if the SAN
+ *                 extension is present; otherwise against CN components of the
+ *                 Subject. (This behaviour was present in RFC 6125, removed in
+ *                 RFC 9525, but we preserve it for improved compatibility.)
+ *
+ *                 DNS name matching is case-insensitive. If the certificate
+ *                 contains a wildcard, it is matched according to RFC 9525:
+ *                 a single wildcard is allowed and it must be the entire
+ *                 content of the leftmost label.
+ *
+ *                 IP addresses must be provided in dotted-quad format for IPv4,
+ *                 and for IPv6 in the textual representation defined by RFC
+ *                 4291 section 2.2. They will be converted to binary and
+ *                 matched against iPAddress entries in the SAN extension. The
+ *                 match must be exact (RFC 9525).
+ *
+ *                 URIs must not be relative and must follow RFC 3986. They will
+ *                 be matched against uniformResourceIdentifier entries in the
+ *                 SAN extension. Support for this type is limited: no kind of
+ *                 parsing or normalization is performed, and only exact
+ *                 byte-for-byte matches will yield a positive result.
+ *
+ *                 As a compatibility measure, if the name passed does not look
+ *                 like a valid IP, URI or DNS, it is treated as a free string
+ *                 intended to match one of the CN components of the Subject.
+ *                 The match must then be byte-for-byte.
+ *
+ * \note           The \p f_vrfy callback is a user-supplied callback that
  *                 can clear / modify / add flags for a certificate. If set,
  *                 the verification callback is called for each
  *                 certificate in the chain (from the trust-ca down to the
@@ -641,20 +681,19 @@ int mbedtls_x509_crt_verify_info(char *buf, size_t size, const char *prefix,
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
- * \param cn       The expected Common Name. This will be checked to be
- *                 present in the certificate's subjectAltNames extension or,
- *                 if this extension is absent, as a CN component in its
- *                 Subject name. DNS names and IP addresses are fully
- *                 supported, while the URI subtype is partially supported:
- *                 only exact matching, without any normalization procedures
- *                 described in 7.4 of RFC5280, will result in a positive
- *                 URI verification.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
+ * \param cn       The expected Common Name or reference identifier.
  *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note above for expected formats and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
- * \param f_vrfy   The verification callback to use. See the documentation
- *                 of mbedtls_x509_crt_verify() for more information.
+ * \param f_vrfy   The verification callback to use. See note above
+ *                 for more information.
  * \param p_vrfy   The context to be passed to \p f_vrfy.
  *
  * \return         \c 0 if the chain is valid with respect to the
@@ -688,9 +727,16 @@ int mbedtls_x509_crt_verify(mbedtls_x509_crt *crt,
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
  * \param profile  The security profile to use for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -717,18 +763,25 @@ int mbedtls_x509_crt_verify_with_profile(mbedtls_x509_crt *crt,
                                          void *p_vrfy);
 
 /**
- * \brief          Restartable version of \c mbedtls_crt_verify_with_profile()
+ * \brief          Restartable version of \c mbedtls_x509_crt_verify_with_profile()
  *
- * \note           Performs the same job as \c mbedtls_crt_verify_with_profile()
+ * \note           Performs the same job as \c mbedtls_x509_crt_verify_with_profile()
  *                 but can return early and restart according to the limit
  *                 set with \c mbedtls_ecp_set_max_ops() to reduce blocking.
  *
  * \param crt      The certificate chain to be verified.
  * \param trust_ca The list of trusted CAs.
  * \param ca_crl   The list of CRLs for trusted CAs.
+ *                 See the warning on mbedtls_x509_crt_is_revoked() regarding
+ *                 CA name matching in CRL.
  * \param profile  The security profile to use for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -738,7 +791,7 @@ int mbedtls_x509_crt_verify_with_profile(mbedtls_x509_crt *crt,
  * \param rs_ctx   The restart context to use. This may be set to \c NULL
  *                 to disable restartable ECC.
  *
- * \return         See \c mbedtls_crt_verify_with_profile(), or
+ * \return         See \c mbedtls_x509_crt_verify_with_profile(), or
  * \return         #MBEDTLS_ERR_ECP_IN_PROGRESS if maximum number of
  *                 operations was reached: see \c mbedtls_ecp_set_max_ops().
  */
@@ -797,8 +850,13 @@ typedef int (*mbedtls_x509_crt_ca_cb_t)(void *p_ctx,
  *                 ::mbedtls_x509_crt_ca_cb_t for more information.
  * \param p_ca_cb  The opaque context to be passed to \p f_ca_cb.
  * \param profile  The security profile for the verification.
- * \param cn       The expected Common Name. This may be \c NULL if the
- *                 CN need not be verified.
+ * \param cn       The expected Common Name or reference identifier.
+ *                 This may be \c NULL if the CN need not be verified.
+ *                 Otherwise, must be a DNS hostname, an IP address, or a URI.
+ *                 See note on mbedtls_x509_crt_verify() for expected formats
+ *                 and matching rules.
+ *                 If this input is not in the expected format or not one of the
+ *                 supported types, the behaviour is unspecified.
  * \param flags    The address at which to store the result of the verification.
  *                 If the verification couldn't be completed, the flag value is
  *                 set to (uint32_t) -1.
@@ -806,7 +864,7 @@ typedef int (*mbedtls_x509_crt_ca_cb_t)(void *p_ctx,
  *                 of mbedtls_x509_crt_verify() for more information.
  * \param p_vrfy   The context to be passed to \p f_vrfy.
  *
- * \return         See \c mbedtls_crt_verify_with_profile().
+ * \return         See \c mbedtls_x509_crt_verify_with_profile().
  */
 int mbedtls_x509_crt_verify_with_ca_cb(mbedtls_x509_crt *crt,
                                        mbedtls_x509_crt_ca_cb_t f_ca_cb,
@@ -862,6 +920,20 @@ int mbedtls_x509_crt_check_extended_key_usage(const mbedtls_x509_crt *crt,
 #if defined(MBEDTLS_X509_CRL_PARSE_C)
 /**
  * \brief          Verify the certificate revocation status
+ *
+ * \warning        A certificate is only considerd to be revoked if its
+ *                 issuer name matches an entry in the CRL. Mbed TLS
+ *                 does not fully normalize the names before comparing
+ *                 them. It ignores the ASN.1 type (e.g. a PrintableString
+ *                 can match an UTF8String), and it compares ASCII characters
+ *                 case-insensitively, but no other normalization is done.
+ *                 Thus, for example, the following do not match:
+ *                 - `AUTORITÉ` vs `autorité`
+ *                   (case insensitivity is restricted to ASCII letters);
+ *                 - `"autorite\u0301"` vs `"autorit\u00e9"`
+ *                   (no Unicode canonicalization);
+ *                 - `two__words` vs `two_words` where `_` is a space
+ *                   (no space folding).
  *
  * \param crt      a certificate to be verified
  * \param crl      the CRL to verify against
