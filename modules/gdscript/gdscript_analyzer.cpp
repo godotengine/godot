@@ -31,6 +31,8 @@
 #include "gdscript_analyzer.h"
 
 #include "gdscript.h"
+#include "gdscript_constants.h"
+#include "gdscript_parser.h"
 #include "gdscript_utility_callable.h"
 #include "gdscript_utility_functions.h"
 
@@ -44,8 +46,6 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/container_type_validate.h"
 #include "scene/main/node.h"
-
-#include "modules/gdscript/gdscript_parser.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -4702,8 +4702,8 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		return;
 	}
 
-	if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
-		Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
+	if (GDScriptConstants::is_constant(name)) {
+		Variant constant = GDScriptConstants::get_constant_value(GDScriptConstants::get_constant_index(name));
 		p_identifier->type_constraint = type_from_variant(constant, p_identifier);
 		p_identifier->is_constant = true;
 		p_identifier->reduced_value = constant;
