@@ -116,37 +116,33 @@ void EditorExportPlatformPC::check_export_template_debugsymbols(const String &p_
 	}
 }
 
+String EditorExportPlatformPC::get_export_template_to_use(const Ref<EditorExportPreset> &p_preset, const String &p_target, String *r_err) const {
+	String arch = p_preset->get("binary_format/architecture");
+	String custom_template_path = p_preset->get("custom_template/" + p_target);
+	custom_template_path = custom_template_path.strip_edges();
+
+	if (custom_template_path.is_empty()) {
+		return find_export_template(get_template_file_name(p_target, arch), r_err);
+	} else {
+		if (FileAccess::exists(custom_template_path)) {
+			return custom_template_path;
+		} else {
+			if (r_err) {
+				*r_err += vformat(TTR("Custom %s template not found."), p_target) + "\n";
+			}
+			return String();
+		}
+	}
+}
+
 bool EditorExportPlatformPC::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 
 	// Look for export templates (first custom if defined, and officials otherwise)
-	bool dvalid = true;
-	bool rvalid = true;
-	String arch = p_preset->get("binary_format/architecture");
-	String dtemplate_path = p_preset->get("custom_template/debug");
-	String rtemplate_path = p_preset->get("custom_template/release");
-	dtemplate_path = dtemplate_path.strip_edges();
-	rtemplate_path = rtemplate_path.strip_edges();
-
-	if (dtemplate_path.is_empty()) {
-		dtemplate_path = find_export_template(get_template_file_name("debug", arch), &err);
-		dvalid = !dtemplate_path.is_empty();
-	} else {
-		dvalid = FileAccess::exists(dtemplate_path);
-		if (!dvalid) {
-			err += TTR("Custom debug template not found.") + "\n";
-		}
-	}
-
-	if (rtemplate_path.is_empty()) {
-		rtemplate_path = find_export_template(get_template_file_name("release", arch), &err);
-		rvalid = !rtemplate_path.is_empty();
-	} else {
-		rvalid = FileAccess::exists(rtemplate_path);
-		if (!rvalid) {
-			err += TTR("Custom release template not found.") + "\n";
-		}
-	}
+	String dtemplate_path = get_export_template_to_use(p_preset, "debug", &err);
+	String rtemplate_path = get_export_template_to_use(p_preset, "release", &err);
+	bool dvalid = !dtemplate_path.is_empty();
+	bool rvalid = !rtemplate_path.is_empty();
 
 	// Warn if the debug symbols for the relevant export template are not found.
 	int debug_symbol_mode = p_preset->get("debug/export_debug_symbols");
@@ -306,18 +302,8 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_BAD_PATH;
 	}
 
-	String custom_debug = p_preset->get("custom_template/debug");
-	String custom_release = p_preset->get("custom_template/release");
-
-	String template_path = p_debug ? custom_debug : custom_release;
-
-	template_path = template_path.strip_edges();
-
+	String template_path = get_export_template_to_use(p_preset, p_debug ? "debug" : "release");
 	if (template_path.is_empty()) {
-		template_path = find_export_template(get_template_file_name(p_debug ? "debug" : "release", p_preset->get("binary_format/architecture")));
-	}
-
-	if (!template_path.is_empty() && !FileAccess::exists(template_path)) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), vformat(TTR("Template file not found: \"%s\"."), template_path));
 		return ERR_FILE_NOT_FOUND;
 	}
