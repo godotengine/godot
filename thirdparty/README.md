@@ -701,7 +701,7 @@ Patches:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 4.1.1 (0a8fda272a5a0abef3b47c91bed37185d5a726b1, 2026)
+- Version: 4.1.2 (8808d31cdffb1a2c82645a531a96a0f26dd3e8c3, 2026)
 - License: Apache 2.0
 
 Update instructions:

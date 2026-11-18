@@ -20,10 +20,6 @@
 #include "psa_crypto_pake.h"
 #include "psa_crypto_rsa.h"
 
-#if defined(TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED)
-#include "psa_crypto_mldsa.h"
-#endif
-
 #include "mbedtls/platform.h"
 #include "mbedtls/constant_time.h"
 /* END-common headers */

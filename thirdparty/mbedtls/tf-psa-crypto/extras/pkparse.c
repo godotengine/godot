@@ -796,7 +796,8 @@ MBEDTLS_STATIC_TESTABLE int mbedtls_pk_parse_key_pkcs8_unencrypted_der(
 
 #if defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY)
     if (pk_alg == MBEDTLS_PK_RSA) {
-        if ((ret = mbedtls_pk_rsa_set_key(pk, p, len)) != 0) {
+        if (((ret = mbedtls_pk_rsa_set_key(pk, p, len)) != 0) ||
+            ((ret = mbedtls_pk_set_pubkey_from_prv(pk)) != 0)) {
             mbedtls_pk_free(pk);
             return ret;
         }

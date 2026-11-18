@@ -217,6 +217,10 @@ int mbedtls_md5_update(mbedtls_md5_context *ctx,
         ctx->total[1]++;
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
+    ctx->total[1] += (uint32_t) (ilen >> 32);
+#endif
+
     if (left && ilen >= fill) {
         memcpy((void *) (ctx->buffer + left), input, fill);
         if ((ret = mbedtls_internal_md5_process(ctx, ctx->buffer)) != 0) {
