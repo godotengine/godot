@@ -32,14 +32,9 @@
 
 @class ViewController;
 
-// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented again,
-// so it can't be done with compilation time branching.
-//#if defined(GLES3_ENABLED)
-//@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-//#endif
-//#if defined(VULKAN_ENABLED)
-@interface AppDelegate : NSObject <UIApplicationDelegate>
-//#endif
+@interface AppDelegate : NSObject <UIApplicationDelegate, UIWindowSceneDelegate>
+
++ (AppDelegate *)getSingleton;
 
 @property(strong, nonatomic) UIWindow *window;
 @property(strong, class, readonly, nonatomic) ViewController *viewController;
