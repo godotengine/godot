@@ -60,8 +60,10 @@ public:
 private:
 	static OpenXRHeadlessExtension *singleton;
 
-// This is defined on supported platforms.
+// These are defined on supported platforms.
 #ifdef XR_USE_TIMESPEC
 	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec *), timespecTime, (XrTime *), time);
+#elif defined(XR_USE_PLATFORM_WIN32)
+	EXT_PROTO_XRRESULT_FUNC3(xrConvertWin32PerformanceCounterToTimeKHR, (XrInstance), instance, (const LARGE_INTEGER *), performanceCounter, (XrTime *), time);
 #endif
 };

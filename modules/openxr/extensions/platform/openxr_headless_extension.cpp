@@ -42,9 +42,11 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 
 	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = nullptr;
 
-// This is defined on supported platforms.
+// These are defined on supported platforms.
 #ifdef XR_USE_TIMESPEC
 	request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = nullptr;
+#elif defined(XR_USE_PLATFORM_WIN32)
+	request_extensions[XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME] = nullptr;
 #endif
 
 	return request_extensions;
@@ -53,6 +55,8 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
 #ifdef XR_USE_TIMESPEC
 	EXT_INIT_XR_FUNC(xrConvertTimespecTimeToTimeKHR);
+#elif defined(XR_USE_PLATFORM_WIN32)
+	EXT_INIT_XR_FUNC(xrConvertWin32PerformanceCounterToTimeKHR);
 #endif
 }
 
@@ -66,5 +70,9 @@ void OpenXRHeadlessExtension::post_wait_frame(XrFrameWaitInfo *frame_wait_info, 
 	timespec time;
 	clock_gettime(CLOCK_MONOTONIC, &time);
 	xrConvertTimespecTimeToTimeKHR(instance, &time, &frame_state->predictedDisplayTime);
+#elif defined(XR_USE_PLATFORM_WIN32)
+	LARGE_INTEGER ticks;
+	QueryPerformanceCounter(&ticks);
+	xrConvertWin32PerformanceCounterToTimeKHR(instance, &ticks, &frame_state->predictedDisplayTime);
 #endif
 }
