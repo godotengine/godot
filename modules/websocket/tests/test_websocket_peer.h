@@ -59,6 +59,14 @@ inline bool wait_for_condition(std::function<bool()> f_test) {
 	return false;
 }
 
+struct ScopedCleanup {
+	const std::function<void()> run;
+
+	~ScopedCleanup() {
+		run();
+	}
+};
+
 TEST_CASE("[WebSocketPeer] Interleaved Ping preserves fragmented message bytes") {
 	Ref<TCPServer> server;
 	server.instantiate();
@@ -83,6 +91,17 @@ TEST_CASE("[WebSocketPeer] Interleaved Ping preserves fragmented message bytes")
 
 	Ref<WebSocketPeer> server_peer(WebSocketPeer::create());
 	REQUIRE(server_peer.is_valid());
+
+	ScopedCleanup cleanup{ [&]() {
+		connection->disconnect_from_host();
+		wait_for_condition([&]() {
+			client->poll();
+			server_peer->poll();
+			return client->get_ready_state() == WebSocketPeer::STATE_CLOSED &&
+					server_peer->get_ready_state() == WebSocketPeer::STATE_CLOSED;
+		});
+	} };
+
 	REQUIRE_EQ(server_peer->accept_stream(connection), OK);
 
 	REQUIRE(wait_for_condition([&]() {
