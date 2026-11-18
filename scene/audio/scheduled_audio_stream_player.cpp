@@ -32,40 +32,25 @@
 
 #include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 
 /*
 TODOs:
 - implement 2d/3d
 */
 
-void ScheduledAudioStreamPlayer::_mix_callback(void *p_schedule_params) {
-	ERR_FAIL_NULL(p_schedule_params);
-	ScheduleOnMixParams *params = static_cast<ScheduleOnMixParams *>(p_schedule_params);
-	ERR_FAIL_NULL(params->self);
-	params->self->_schedule_relative_playback(params);
-	AudioServer::get_singleton()->remove_mix_callback(_mix_callback, p_schedule_params);
-	delete params;
-}
-
-// Called on the audio thread
-void ScheduledAudioStreamPlayer::_schedule_relative_playback(ScheduleOnMixParams *p_params) {
-	Ref<AudioStreamPlayback> base_playback = p_params->base_playback;
-	Ref<AudioStreamPlayback> new_playback = p_params->new_playback;
-	ERR_FAIL_COND(base_playback.is_null() || new_playback.is_null());
-
-	// Now that we are on the audio thread, we can safely calculate the delay
-	// relative to the other playback.
-	double delay = p_params->rel_time - base_playback->get_playback_position() + AudioServer::get_singleton()->get_playback_delay(base_playback);
-	AudioServer::get_singleton()->set_playback_delay(new_playback, delay);
-}
-
 Ref<AudioStreamPlayback> ScheduledAudioStreamPlayer::play_delayed(double p_delay, double p_from_pos) {
 	Ref<AudioStreamPlayback> stream_playback = internal->play_basic();
 	if (stream_playback.is_null()) {
 		return stream_playback;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale, p_delay);
+
+	if (!stream_playback->set_delay(p_delay)) {
+		WARN_PRINT_ED("AudioStream type does not support scheduled playback. Playing immediately.");
+	}
+
+	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
 	internal->ensure_playback_limit();
 
 	// Sample handling.
@@ -86,36 +71,43 @@ Ref<AudioStreamPlayback> ScheduledAudioStreamPlayer::play_delayed(double p_delay
 Ref<AudioStreamPlayback> ScheduledAudioStreamPlayer::play_relative(Ref<AudioStreamPlayback> p_playback, double p_rel_time, double p_from_pos) {
 	if (p_playback.is_null() || (!AudioServer::get_singleton()->is_playback_active(p_playback) && !AudioServer::get_singleton()->is_playback_paused(p_playback))) {
 		WARN_PRINT_ED("Could not schedule relative playback as base playback was invalid. Playing relative to current time.");
-		play_delayed(p_rel_time, p_from_pos);
+		play_delayed(p_rel_time);
 		return get_stream_playback();
 	}
 
-	// Start it with a large delay. This will be fixed in the mix callback.
+	// Start playback with big delay
 	Ref<AudioStreamPlayback> new_playback = play_delayed(100, p_from_pos);
-	if (new_playback.is_null() || (new_playback->get_is_sample() && new_playback->get_sample_playback().is_valid())) {
-		return new_playback;
+
+	// Calculate real delay with lock to ensure mixing is not happening
+	AudioServer::get_singleton()->lock();
+	double delay;
+	if (p_rel_time < p_playback->get_playback_position()) {
+		WARN_PRINT_ED(vformat("Sound was scheduled for relative time %.4f, which has already passed. Playing immediately.", p_rel_time));
+		delay = 0;
+	} else {
+		delay = p_rel_time - p_playback->get_playback_position() + p_playback->get_delay();
 	}
+	new_playback->set_delay(delay);
+	AudioServer::get_singleton()->unlock();
 
-	ScheduleOnMixParams *params = new ScheduleOnMixParams();
-	params->self = this;
-	params->base_playback = p_playback;
-	params->new_playback = new_playback;
-	params->rel_time = p_rel_time;
+	return new_playback;
+}
 
-	// Schedule the new playback to have its delay calculated in the audio
-	// thread.
-	//
-	// FIXME: Mix callbacks are run in reverse-order of how they are added due
-	// to the implementation of SafeList. This causes issues if trying to
-	// "chain" the playbacks together. For example:
-	// 1. Schedule playback A with delay 1
-	// 2. Schedule playback B relative to A
-	// 3. Schedule playback C relative to B
-	// The actual order of delay calculations is A (on main thread), C (2nd
-	// added callback), then B (1st added callback), which will cause the B
-	// delay to be calculated incorrectly. The AudioServer needs to ensure the
-	// callbacks are called in forward-order.
-	AudioServer::get_singleton()->add_mix_callback(_mix_callback, params);
+Ref<AudioStreamPlayback> ScheduledAudioStreamPlayer::play_absolute(double p_abs_time, double p_from_pos) {
+	// Start playback with big delay
+	Ref<AudioStreamPlayback> new_playback = play_delayed(100, p_from_pos);
+
+	// Calculate real delay with lock to ensure mixing is not happening
+	AudioServer::get_singleton()->lock();
+	double delay;
+	if (p_abs_time < AudioServer::get_singleton()->get_absolute_time()) {
+		WARN_PRINT_ED(vformat("Sound was scheduled for absolute time %.4f, which has already passed. Playing immediately.", p_abs_time));
+		delay = 0;
+	} else {
+		delay = p_abs_time - AudioServer::get_singleton()->get_absolute_time();
+	}
+	new_playback->set_delay(delay);
+	AudioServer::get_singleton()->unlock();
 
 	return new_playback;
 }
@@ -124,21 +116,68 @@ void ScheduledAudioStreamPlayer::set_delay(Ref<AudioStreamPlayback> p_playback, 
 	if (p_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->set_playback_delay(p_playback, p_delay);
+	if (!p_playback->set_delay(p_delay)) {
+		WARN_PRINT_ED("AudioStreamPlayback type does not support scheduled playback.");
+	}
 }
 
 void ScheduledAudioStreamPlayer::set_stop_position(Ref<AudioStreamPlayback> p_playback, double p_stop_position) {
 	if (p_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->set_playback_stop_position(p_playback, p_stop_position);
+	if (p_stop_position < p_playback->get_playback_position()) {
+		WARN_PRINT_ED(vformat("Sound was scheduled to stop at relative time %.4f, which has already passed. Stopping immediately.", p_stop_position));
+	}
+	if (!p_playback->set_end_position(p_stop_position)) {
+		WARN_PRINT_ED("AudioStreamPlayback type does not support scheduled playback.");
+	}
+}
+
+void ScheduledAudioStreamPlayer::set_start_time_absolute(Ref<AudioStreamPlayback> p_playback, double p_abs_time) {
+	if (p_playback.is_null()) {
+		return;
+	}
+
+	// Calculate delay with lock to ensure mixing is not happening
+	AudioServer::get_singleton()->lock();
+	double delay;
+	if (p_abs_time < AudioServer::get_singleton()->get_absolute_time()) {
+		WARN_PRINT_ED(vformat("Sound was scheduled for absolute time %.4f, which has already passed. Playing immediately.", p_abs_time));
+		delay = 0;
+	} else {
+		delay = p_abs_time - AudioServer::get_singleton()->get_absolute_time();
+	}
+	if (!p_playback->set_delay(delay)) {
+		WARN_PRINT_ED("AudioStreamPlayback type does not support scheduled playback.");
+	}
+	AudioServer::get_singleton()->unlock();
+}
+
+void ScheduledAudioStreamPlayer::set_end_time_absolute(Ref<AudioStreamPlayback> p_playback, double p_abs_time) {
+	if (p_playback.is_null()) {
+		return;
+	}
+
+	// Calculate delay with lock to ensure mixing is not happening
+	AudioServer::get_singleton()->lock();
+	double stop_position;
+	if (p_abs_time < AudioServer::get_singleton()->get_absolute_time()) {
+		WARN_PRINT_ED(vformat("Sound was scheduled to stop at absolute time %.4f, which has already passed. Stopping immediately.", p_abs_time));
+		stop_position = 0;
+	} else {
+		stop_position = p_abs_time - AudioServer::get_singleton()->get_absolute_time() - p_playback->get_delay();
+	}
+	if (!p_playback->set_end_position(stop_position)) {
+		WARN_PRINT_ED("AudioStreamPlayback type does not support scheduled playback.");
+	}
+	AudioServer::get_singleton()->unlock();
 }
 
 bool ScheduledAudioStreamPlayer::is_playback_scheduled(Ref<AudioStreamPlayback> p_playback) {
 	if (p_playback.is_null()) {
 		return false;
 	}
-	return AudioServer::get_singleton()->is_playback_scheduled(p_playback);
+	return p_playback->get_delay() > 0;
 }
 
 void ScheduledAudioStreamPlayer::cancel_scheduled_playback(Ref<AudioStreamPlayback> p_playback) {
@@ -154,8 +193,11 @@ void ScheduledAudioStreamPlayer::cancel_scheduled_playback(Ref<AudioStreamPlayba
 void ScheduledAudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("play_delayed", "delay", "from_position"), &ScheduledAudioStreamPlayer::play_delayed, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("play_relative", "playback", "relative_time", "from_position"), &ScheduledAudioStreamPlayer::play_relative, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("play_absolute", "absolute_time", "from_position"), &ScheduledAudioStreamPlayer::play_absolute, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("set_delay", "playback", "delay"), &ScheduledAudioStreamPlayer::set_delay);
 	ClassDB::bind_method(D_METHOD("set_stop_position", "playback", "stop_position"), &ScheduledAudioStreamPlayer::set_stop_position);
+	ClassDB::bind_method(D_METHOD("set_start_time_absolute", "playback", "absolute_time"), &ScheduledAudioStreamPlayer::set_start_time_absolute);
+	ClassDB::bind_method(D_METHOD("set_end_time_absolute", "playback", "absolute_time"), &ScheduledAudioStreamPlayer::set_end_time_absolute);
 	ClassDB::bind_method(D_METHOD("is_playback_scheduled", "playback"), &ScheduledAudioStreamPlayer::is_playback_scheduled);
 	ClassDB::bind_method(D_METHOD("cancel_scheduled_playback", "playback"), &ScheduledAudioStreamPlayer::cancel_scheduled_playback);
 }

@@ -46,6 +46,26 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 
 	int todo = p_frames;
 
+	// Scheduling handling (late start / early end)
+	if (delay_frames > 0) {
+		uint32_t silence_frames = MIN(delay_frames, uint32_t(todo));
+		for (uint32_t i = 0; i < silence_frames; i++) {
+			p_buffer[i] = AudioFrame(0, 0);
+		}
+		todo -= silence_frames;
+		delay_frames -= silence_frames;
+	}
+	if (frames_mixed + todo > end_frame) {
+		if (frames_mixed > end_frame) {
+			p_frames = 0;
+			todo = 0;
+		} else {
+			int new_todo = int(end_frame) - frames_mixed;
+			p_frames -= todo - new_todo;
+			todo = new_todo;
+		}
+	}
+
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : vorbis_stream->loop;
 
@@ -375,6 +395,22 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 			}
 		}
 	}
+}
+
+bool AudioStreamPlaybackOggVorbis::set_delay(double p_delay) {
+	p_delay = CLAMP(p_delay, 0.0, 3600.0);
+	delay_frames = uint64_t(p_delay * vorbis_data->get_sampling_rate());
+	return true;
+}
+
+double AudioStreamPlaybackOggVorbis::get_delay() const {
+	return double(delay_frames) / vorbis_data->get_sampling_rate();
+}
+
+bool AudioStreamPlaybackOggVorbis::set_end_position(double p_end_position) {
+	p_end_position = CLAMP(p_end_position, 0.0, vorbis_stream->get_length());
+	end_frame = uint64_t(p_end_position * vorbis_data->get_sampling_rate());
+	return true;
 }
 
 void AudioStreamPlaybackOggVorbis::set_is_sample(bool p_is_sample) {

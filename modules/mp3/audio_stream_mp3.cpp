@@ -47,6 +47,26 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	int todo = p_frames;
 
+	// Scheduling handling (late start / early end)
+	if (delay_frames > 0) {
+		uint32_t silence_frames = MIN(delay_frames, uint32_t(todo));
+		for (uint32_t i = 0; i < silence_frames; i++) {
+			p_buffer[i] = AudioFrame(0, 0);
+		}
+		todo -= silence_frames;
+		delay_frames -= silence_frames;
+	}
+	if (frames_mixed + todo > end_frame) {
+		if (frames_mixed > end_frame) {
+			p_frames = 0;
+			todo = 0;
+		} else {
+			int new_todo = int(end_frame) - frames_mixed;
+			p_frames -= todo - new_todo;
+			todo = new_todo;
+		}
+	}
+
 	int frames_mixed_this_step = p_frames;
 
 	int beat_length_frames = -1;
@@ -142,6 +162,22 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
 	drmp3_seek_to_pcm_frame(&mp3d, (uint64_t)frames_mixed);
+}
+
+bool AudioStreamPlaybackMP3::set_delay(double p_delay) {
+	p_delay = CLAMP(p_delay, 0.0, 3600.0);
+	delay_frames = uint64_t(mp3_stream->sample_rate * p_delay);
+	return true;
+}
+
+double AudioStreamPlaybackMP3::get_delay() const {
+	return double(delay_frames) / mp3_stream->sample_rate;
+}
+
+bool AudioStreamPlaybackMP3::set_end_position(double p_end_position) {
+	p_end_position = CLAMP(p_end_position, 0.0, mp3_stream->get_length());
+	end_frame = uint64_t(p_end_position * mp3_stream->sample_rate);
+	return true;
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {

@@ -92,6 +92,22 @@ void AudioStreamPlaybackWAV::seek(double p_time) {
 	offset = int64_t(p_time * base->mix_rate);
 }
 
+bool AudioStreamPlaybackWAV::set_delay(double p_delay) {
+	p_delay = CLAMP(p_delay, 0.0, 3600.0);
+	delay_frames = uint64_t(p_delay * base->mix_rate);
+	return true;
+}
+
+double AudioStreamPlaybackWAV::get_delay() const {
+	return double(delay_frames) / base->mix_rate;
+}
+
+bool AudioStreamPlaybackWAV::set_end_position(double p_end_position) {
+	p_end_position = CLAMP(p_end_position, 0.0, base->get_length());
+	end_frame = uint64_t(p_end_position * base->mix_rate);
+	return true;
+}
+
 template <typename Depth, bool is_stereo, bool is_ima_adpcm, bool is_qoa>
 void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_dst, int64_t &p_offset, int8_t &p_increment, uint32_t p_amount, IMA_ADPCM_State *p_ima_adpcm, QOA_State *p_qoa) {
 	// this function will be compiled branchless by any decent compiler
@@ -252,6 +268,26 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	int32_t todo = p_frames;
 
+	// Scheduling handling (late start / early end)
+	if (delay_frames > 0) {
+		uint32_t silence_frames = MIN(delay_frames, uint32_t(todo));
+		for (uint32_t i = 0; i < silence_frames; i++) {
+			p_buffer[i] = AudioFrame(0, 0);
+		}
+		todo -= silence_frames;
+		delay_frames -= silence_frames;
+	}
+	if (frames_mixed + todo > end_frame) {
+		if (frames_mixed > end_frame) {
+			p_frames = 0;
+			todo = 0;
+		} else {
+			int new_todo = int(end_frame) - frames_mixed;
+			p_frames -= todo - new_todo;
+			todo = new_todo;
+		}
+	}
+
 	if (base->loop_mode == AudioStreamWAV::LOOP_BACKWARD) {
 		sign = -1;
 	}
@@ -266,7 +302,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	/* audio data */
 
 	const uint8_t *data = base->data.ptr();
-	AudioFrame *dst_buff = p_buffer;
+	AudioFrame *dst_buff = p_buffer + (p_frames - todo);
 
 	if (format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		if (loop_format != AudioStreamWAV::LOOP_DISABLED) {
@@ -352,6 +388,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		}
 
 		todo -= target;
+		frames_mixed += target;
 
 		switch (base->format) {
 			case AudioStreamWAV::FORMAT_8_BITS: {

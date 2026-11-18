@@ -35,26 +35,19 @@
 class ScheduledAudioStreamPlayer : public AudioStreamPlayer {
 	GDCLASS(ScheduledAudioStreamPlayer, AudioStreamPlayer);
 
-private:
-	struct ScheduleOnMixParams {
-		ScheduledAudioStreamPlayer *self;
-		Ref<AudioStreamPlayback> base_playback;
-		Ref<AudioStreamPlayback> new_playback;
-		double rel_time;
-	};
-
 protected:
-	void _schedule_relative_playback(ScheduleOnMixParams *p_params);
-
-	static void _mix_callback(void *p_schedule_params);
 	static void _bind_methods();
 
 public:
 	Ref<AudioStreamPlayback> play_delayed(double p_delay, double p_from_pos = 0.0);
 	Ref<AudioStreamPlayback> play_relative(Ref<AudioStreamPlayback> p_playback, double p_rel_time, double p_from_pos = 0.0);
+	Ref<AudioStreamPlayback> play_absolute(double p_abs_time, double p_from_pos = 0.0);
 
 	void set_delay(Ref<AudioStreamPlayback> p_playback, double p_delay);
 	void set_stop_position(Ref<AudioStreamPlayback> p_playback, double p_stop_position);
+
+	void set_start_time_absolute(Ref<AudioStreamPlayback> p_playback, double p_abs_time);
+	void set_end_time_absolute(Ref<AudioStreamPlayback> p_playback, double p_abs_time);
 
 	bool is_playback_scheduled(Ref<AudioStreamPlayback> p_playback);
 

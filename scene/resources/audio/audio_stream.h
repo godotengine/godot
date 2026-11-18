@@ -101,6 +101,10 @@ public:
 	virtual double get_playback_position() const;
 	virtual void seek(double p_time);
 
+	virtual bool set_delay(double p_delay) { return false; }
+	virtual double get_delay() const { return 0.0; }
+	virtual bool set_end_position(double p_end_position) { return false; }
+
 	virtual void tag_used_streams();
 
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value);
