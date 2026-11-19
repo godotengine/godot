@@ -42,6 +42,7 @@ class WorldEnvironment : public Node {
 	Ref<CameraAttributes> camera_attributes;
 	Ref<Compositor> compositor;
 
+	void _update_warnings(const String &p_group);
 	void _update_current_environment();
 	void _update_current_camera_attributes();
 	void _update_current_compositor();

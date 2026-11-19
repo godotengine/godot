@@ -7364,6 +7364,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_caret_blink_enabled", "enable"), &TextEdit::set_caret_blink_enabled);
 	ClassDB::bind_method(D_METHOD("is_caret_blink_enabled"), &TextEdit::is_caret_blink_enabled);
 
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &TextEdit::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &TextEdit::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &TextEdit::set_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &TextEdit::get_caret_blink_interval);
 
@@ -8322,6 +8324,24 @@ void TextEdit::_caret_changed(int p_caret) {
 void TextEdit::_emit_caret_changed() {
 	emit_signal(SNAME("caret_changed"));
 	caret_pos_dirty = false;
+}
+
+// komm64: where the caret is in its blink. Focus coming back with a load starts
+// it over; set back after that, it blinks on from where it was.
+Dictionary TextEdit::snapshot_get_state() const {
+	Dictionary state;
+	state["draw_caret"] = draw_caret;
+	state["caret_blink_timer"] = caret_blink_timer->snapshot_get_state();
+	return state;
+}
+
+Error TextEdit::snapshot_set_state(const Dictionary &p_state) {
+	draw_caret = p_state.get("draw_caret", draw_caret);
+	if (p_state.has("caret_blink_timer")) {
+		caret_blink_timer->snapshot_set_state(p_state["caret_blink_timer"]);
+	}
+	queue_redraw();
+	return OK;
 }
 
 void TextEdit::_reset_caret_blink_timer() {

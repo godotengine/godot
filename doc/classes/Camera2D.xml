@@ -97,6 +97,19 @@
 				Sets the camera limit for the specified [enum Side]. See also [member limit_bottom], [member limit_top], [member limit_left], and [member limit_right].
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of this camera for savestate systems: where it is on its way to with smoothing and drag, and the view it last gave its viewport. Stored properties are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state], after the camera has entered the tree: instead of snapping to its target, it goes on smoothly from where it was, and its viewport shows what it showed.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="anchor_mode" type="int" setter="set_anchor_mode" getter="get_anchor_mode" enum="Camera2D.AnchorMode" default="1">

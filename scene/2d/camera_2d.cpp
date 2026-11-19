@@ -37,6 +37,43 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 
+// komm64: where the camera is on its way to (smoothing, drag) and the view it
+// last gave its viewport. Entering the tree snaps a camera to its target; set
+// back after that, it goes on smoothly from where it was, and the frame drawn
+// right after shows what was shown.
+Dictionary Camera2D::snapshot_get_state() const {
+	Dictionary state;
+	state["camera_pos"] = camera_pos;
+	state["smoothed_camera_pos"] = smoothed_camera_pos;
+	state["first"] = first;
+	state["camera_angle"] = camera_angle;
+	state["camera_screen_center"] = camera_screen_center;
+	state["drag_horizontal_offset_changed"] = drag_horizontal_offset_changed;
+	state["drag_vertical_offset_changed"] = drag_vertical_offset_changed;
+	state["xform_curr"] = _interpolation_data.xform_curr;
+	state["xform_prev"] = _interpolation_data.xform_prev;
+	if (is_inside_tree() && viewport && is_current()) {
+		state["canvas_transform"] = viewport->get_canvas_transform();
+	}
+	return state;
+}
+
+Error Camera2D::snapshot_set_state(const Dictionary &p_state) {
+	camera_pos = p_state.get("camera_pos", camera_pos);
+	smoothed_camera_pos = p_state.get("smoothed_camera_pos", smoothed_camera_pos);
+	first = p_state.get("first", first);
+	camera_angle = p_state.get("camera_angle", camera_angle);
+	camera_screen_center = p_state.get("camera_screen_center", camera_screen_center);
+	drag_horizontal_offset_changed = p_state.get("drag_horizontal_offset_changed", false);
+	drag_vertical_offset_changed = p_state.get("drag_vertical_offset_changed", false);
+	_interpolation_data.xform_curr = p_state.get("xform_curr", _interpolation_data.xform_curr);
+	_interpolation_data.xform_prev = p_state.get("xform_prev", _interpolation_data.xform_prev);
+	if (p_state.has("canvas_transform") && is_inside_tree() && viewport && is_current()) {
+		viewport->set_canvas_transform(p_state["canvas_transform"]);
+	}
+	return OK;
+}
+
 void Camera2D::_update_scroll() {
 	if (!is_inside_tree() || !viewport) {
 		return;
@@ -879,6 +916,8 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &Camera2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &Camera2D::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &Camera2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &Camera2D::get_offset);
 

@@ -875,6 +875,10 @@ void GraphEdit::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			update_warped_panning();
+			// komm64: a size given before entering the tree sends no resize, and
+			// the scrollbars would stay unlaid out until something else changes.
+			// Deferred: they get their theme after this.
+			callable_mp(this, &GraphEdit::_update_scrollbars).call_deferred();
 		} break;
 	}
 }

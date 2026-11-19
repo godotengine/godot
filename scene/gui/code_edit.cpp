@@ -3637,7 +3637,8 @@ void CodeEdit::_add_delimiter(const String &p_start_key, const String &p_end_key
 	int at = 0;
 	for (int i = 0; i < delimiters.size(); i++) {
 		ERR_FAIL_COND_MSG(delimiters[i].start_key == p_start_key, "delimiter with start key '" + p_start_key + "' already exists.");
-		if (p_start_key.length() < delimiters[i].start_key.length()) {
+		// After those as long, so setting what get returns keeps the order.
+		if (p_start_key.length() <= delimiters[i].start_key.length()) {
 			at++;
 		} else {
 			break;

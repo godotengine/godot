@@ -252,6 +252,19 @@
 				Selects the whole [String].
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of this control for savestate systems: where the caret is in its blink. Stored properties are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state], after focus has been given back: the caret blinks on from where it was instead of starting over.
+			</description>
+		</method>
 		<method name="unedit">
 			<return type="void" />
 			<description>

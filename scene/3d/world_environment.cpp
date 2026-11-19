@@ -75,6 +75,16 @@ void WorldEnvironment::_notification(int p_what) {
 	}
 }
 
+// komm64: only the editor shows the warnings; a running game is not left a
+// deferred call for them each time what its world uses changes.
+void WorldEnvironment::_update_warnings(const String &p_group) {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, p_group + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	}
+#endif
+}
+
 void WorldEnvironment::_update_current_environment() {
 	WorldEnvironment *first = Object::cast_to<WorldEnvironment>(get_tree()->get_first_node_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id())));
 
@@ -83,7 +93,7 @@ void WorldEnvironment::_update_current_environment() {
 	} else {
 		get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
 	}
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	_update_warnings("_world_environment_");
 }
 
 void WorldEnvironment::_update_current_camera_attributes() {
@@ -94,7 +104,7 @@ void WorldEnvironment::_update_current_camera_attributes() {
 		get_viewport()->find_world_3d()->set_camera_attributes(Ref<CameraAttributes>());
 	}
 
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_camera_attributes_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	_update_warnings("_world_camera_attributes_");
 }
 
 void WorldEnvironment::_update_current_compositor() {
@@ -105,7 +115,7 @@ void WorldEnvironment::_update_current_compositor() {
 		get_viewport()->find_world_3d()->set_compositor(Ref<Compositor>());
 	}
 
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, "_world_compositor_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), "update_configuration_warnings");
+	_update_warnings("_world_compositor_");
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {

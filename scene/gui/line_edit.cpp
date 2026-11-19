@@ -2065,6 +2065,22 @@ void LineEdit::set_caret_blink_interval(const float p_interval) {
 	caret_blink_interval = p_interval;
 }
 
+// komm64: where the caret is in its blink. Focus coming back with a load starts
+// it over; set back after that, it blinks on from where it was.
+Dictionary LineEdit::snapshot_get_state() const {
+	Dictionary state;
+	state["draw_caret"] = draw_caret;
+	state["caret_blink_timer"] = caret_blink_timer;
+	return state;
+}
+
+Error LineEdit::snapshot_set_state(const Dictionary &p_state) {
+	draw_caret = p_state.get("draw_caret", draw_caret);
+	caret_blink_timer = p_state.get("caret_blink_timer", caret_blink_timer);
+	queue_redraw();
+	return OK;
+}
+
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
@@ -3390,6 +3406,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_caret_mid_grapheme_enabled"), &LineEdit::is_caret_mid_grapheme_enabled);
 	ClassDB::bind_method(D_METHOD("set_caret_force_displayed", "enabled"), &LineEdit::set_caret_force_displayed);
 	ClassDB::bind_method(D_METHOD("is_caret_force_displayed"), &LineEdit::is_caret_force_displayed);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &LineEdit::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &LineEdit::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &LineEdit::set_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &LineEdit::get_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
