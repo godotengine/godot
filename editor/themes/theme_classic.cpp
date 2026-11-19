@@ -2095,7 +2095,7 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
 			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
 			style_button_group->set_corner_radius_all(p_config.corner_radius);
-			style_button_group->set_bg_color(p_config.dark_color_1.lerp(p_config.mono_color, 0.15));
+			style_button_group->set_bg_color(p_config.dark_color_1.lerp(p_config.mono_color, 0.0));
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
 		}
