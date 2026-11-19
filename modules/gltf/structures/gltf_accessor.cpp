@@ -1708,8 +1708,15 @@ GLTFAccessorIndex GLTFAccessor::encode_new_sparse_accessor_from_vec3s(const Ref<
 
 Ref<GLTFAccessor> GLTFAccessor::from_dictionary(const Dictionary &p_dict) {
 	// See https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/accessor.schema.json
+	ERR_FAIL_COND_V_MSG(!p_dict.has("componentType"), Ref<GLTFAccessor>(), "Failed to parse glTF accessor, missing required field 'componentType'.");
+	ERR_FAIL_COND_V_MSG(!p_dict.has("count"), Ref<GLTFAccessor>(), "Failed to parse glTF accessor, missing required field 'count'.");
+	ERR_FAIL_COND_V_MSG(!p_dict.has("type"), Ref<GLTFAccessor>(), "Failed to parse glTF accessor, missing required field 'type'.");
 	Ref<GLTFAccessor> accessor;
 	accessor.instantiate();
+	if (p_dict.has("count")) {
+		accessor->count = p_dict["count"];
+	}
+	ERR_FAIL_COND_V_MSG(accessor->count <= 0, Ref<GLTFAccessor>(), "glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor. Accessor count must be greater than 0.");
 	if (p_dict.has("bufferView")) {
 		// bufferView is optional. If not present, the accessor is considered to be zero-initialized.
 		accessor->buffer_view = p_dict["bufferView"];
@@ -1719,12 +1726,6 @@ Ref<GLTFAccessor> GLTFAccessor::from_dictionary(const Dictionary &p_dict) {
 	}
 	if (p_dict.has("componentType")) {
 		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)p_dict["componentType"];
-	}
-	if (p_dict.has("count")) {
-		accessor->count = p_dict["count"];
-	}
-	if (accessor->count <= 0) {
-		ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor. Accessor count must be greater than 0.");
 	}
 	if (p_dict.has("max")) {
 		accessor->max = p_dict["max"];
@@ -1738,20 +1739,20 @@ Ref<GLTFAccessor> GLTFAccessor::from_dictionary(const Dictionary &p_dict) {
 	if (p_dict.has("sparse")) {
 		// See https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/accessor.sparse.schema.json
 		const Dictionary &sparse_dict = p_dict["sparse"];
-		ERR_FAIL_COND_V(!sparse_dict.has("count"), accessor);
+		ERR_FAIL_COND_V(!sparse_dict.has("count"), Ref<GLTFAccessor>());
 		accessor->sparse_count = sparse_dict["count"];
-		ERR_FAIL_COND_V(!sparse_dict.has("indices"), accessor);
+		ERR_FAIL_COND_V(!sparse_dict.has("indices"), Ref<GLTFAccessor>());
 		const Dictionary &sparse_indices_dict = sparse_dict["indices"];
-		ERR_FAIL_COND_V(!sparse_indices_dict.has("bufferView"), accessor);
+		ERR_FAIL_COND_V(!sparse_indices_dict.has("bufferView"), Ref<GLTFAccessor>());
 		accessor->sparse_indices_buffer_view = sparse_indices_dict["bufferView"];
-		ERR_FAIL_COND_V(!sparse_indices_dict.has("componentType"), accessor);
+		ERR_FAIL_COND_V(!sparse_indices_dict.has("componentType"), Ref<GLTFAccessor>());
 		accessor->sparse_indices_component_type = (GLTFAccessor::GLTFComponentType)(int32_t)sparse_indices_dict["componentType"];
 		if (sparse_indices_dict.has("byteOffset")) {
 			accessor->sparse_indices_byte_offset = sparse_indices_dict["byteOffset"];
 		}
-		ERR_FAIL_COND_V(!sparse_dict.has("values"), accessor);
+		ERR_FAIL_COND_V(!sparse_dict.has("values"), Ref<GLTFAccessor>());
 		const Dictionary &sparse_values_dict = sparse_dict["values"];
-		ERR_FAIL_COND_V(!sparse_values_dict.has("bufferView"), accessor);
+		ERR_FAIL_COND_V(!sparse_values_dict.has("bufferView"), Ref<GLTFAccessor>());
 		accessor->sparse_values_buffer_view = sparse_values_dict["bufferView"];
 		if (sparse_values_dict.has("byteOffset")) {
 			accessor->sparse_values_byte_offset = sparse_values_dict["byteOffset"];

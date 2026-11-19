@@ -186,6 +186,8 @@ GLTFBufferViewIndex GLTFBufferView::write_new_buffer_view_into_state(const Ref<G
 
 Ref<GLTFBufferView> GLTFBufferView::from_dictionary(const Dictionary &p_dict) {
 	// See https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/schema/bufferView.schema.json
+	ERR_FAIL_COND_V_MSG(!p_dict.has("buffer"), Ref<GLTFBufferView>(), "Failed to parse glTF buffer view, missing required field 'buffer'.");
+	ERR_FAIL_COND_V_MSG(!p_dict.has("byteLength"), Ref<GLTFBufferView>(), "Failed to parse glTF buffer view, missing required field 'byteLength'.");
 	Ref<GLTFBufferView> buffer_view;
 	buffer_view.instantiate();
 	if (p_dict.has("buffer")) {
@@ -198,10 +200,9 @@ Ref<GLTFBufferView> GLTFBufferView::from_dictionary(const Dictionary &p_dict) {
 		buffer_view->set_byte_offset(p_dict["byteOffset"]);
 	}
 	if (p_dict.has("byteStride")) {
-		buffer_view->byte_stride = p_dict["byteStride"];
-		if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
-			ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
-		}
+		const int64_t declared_byte_stride = p_dict["byteStride"];
+		ERR_FAIL_COND_V_MSG(declared_byte_stride < 4 || declared_byte_stride > 252 || declared_byte_stride % 4 != 0, Ref<GLTFBufferView>(), "glTF import: Invalid byte stride " + itos(declared_byte_stride) + " for buffer view. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
+		buffer_view->byte_stride = declared_byte_stride;
 	}
 	if (p_dict.has("target")) {
 		const int target = p_dict["target"];
