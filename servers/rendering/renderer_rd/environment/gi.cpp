@@ -3217,6 +3217,8 @@ void GI::init(SkyRD *p_sky) {
 		screen_probe_modes.push_back("\n#define MODE_RESOLVE\n#define MODE_SVGF_PREPARE\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SHORT_RANGE_AO\n");
+		screen_probe_modes.push_back("\n#define MODE_APPLY\n#define MODE_SVGF_APPLY\n#define MODE_SHORT_RANGE_AO\n");
 		screen_probe_modes.push_back("\n#define MODE_SPECULAR_TRACE\n");
 		screen_probe_modes.push_back("\n#define MODE_SPECULAR_APPLY\n");
 		screen_probe_modes.push_back("\n#define MODE_DIRECTIONAL_ADAPTIVE_MARK\n");
@@ -3237,6 +3239,7 @@ void GI::init(SkyRD *p_sky) {
 				HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF,
 				HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF_ADAPTIVE,
 				HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF,
+				HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF_AO,
 			};
 			for (HDDAGIShader::ScreenProbeMode mode : svgf_modes) {
 				hddagi_shader.screen_probe.set_variant_enabled(mode, false);

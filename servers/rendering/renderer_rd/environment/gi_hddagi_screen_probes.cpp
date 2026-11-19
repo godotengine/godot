@@ -87,15 +87,6 @@ void clear_screen_probe_svgf(const Ref<RenderSceneBuffersRD> &p_render_buffers, 
 	p_render_buffers->clear_context(RB_SCOPE_HDDAGI_SCREEN_PROBE_DENOISER);
 }
 
-RID get_screen_probe_apply_uniform_set(RID p_shader, RID p_radiance, RID p_sampler, RID p_ambient_output, RID p_base_ambient) {
-	return UniformSetCacheRD::get_singleton()->get_cache(
-			p_shader, 0,
-			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_radiance),
-			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, p_sampler),
-			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, p_ambient_output),
-			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, p_base_ambient));
-}
-
 RID get_specular_apply_set(RID p_shader, RID p_signal, RID p_sampler, RID p_reflection, RID p_normal_roughness, RID p_blend) {
 	return UniformSetCacheRD::get_singleton()->get_cache(p_shader, 0,
 			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, p_signal),
@@ -381,7 +372,10 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 	}
 
 	const HDDAGIShader::ScreenProbeMode svgf_resolve_mode = adaptive ? HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF_ADAPTIVE : HDDAGIShader::SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF;
-	const HDDAGIShader::ScreenProbeMode svgf_apply_mode = HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF;
+	const float ao_intensity = CLAMP(GLOBAL_GET_CACHED(float, "rendering/global_illumination/hddagi/screen_probe_short_range_ao_intensity"), 0.0f, 1.0f);
+	const bool short_range_ao = GLOBAL_GET_CACHED(bool, "rendering/global_illumination/hddagi/screen_probe_short_range_ao") && ao_intensity > 0.0f &&
+			!(scene_render->environment_get_ssao_enabled(p_render_data->environment) && scene_render->environment_get_ssao_intensity(p_render_data->environment) > 0.0f);
+	const HDDAGIShader::ScreenProbeMode svgf_apply_mode = short_range_ao ? HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF_AO : HDDAGIShader::SCREEN_PROBE_MODE_APPLY_SVGF;
 	bool svgf_active = all_views_have_velocity && probe_pipelines[svgf_resolve_mode].is_valid() && probe_pipelines[svgf_apply_mode].is_valid();
 	bool svgf_resources_recreated = false;
 	RID resolved_radiance[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -442,7 +436,7 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 			hddagi->screen_probe_history_gi_size == p_gi_size && hddagi->screen_probe_history_screen_size == internal_size &&
 			hddagi->screen_probe_history_view_count == view_count && hddagi->screen_probe_history_configuration == configuration;
 	const bool camera_history_valid = hddagi->screen_probe_history_initialized && !camera_cut;
-	const HDDAGIShader::ScreenProbeMode raw_apply_mode = HDDAGIShader::SCREEN_PROBE_MODE_APPLY;
+	const HDDAGIShader::ScreenProbeMode raw_apply_mode = short_range_ao ? HDDAGIShader::SCREEN_PROBE_MODE_APPLY_AO : HDDAGIShader::SCREEN_PROBE_MODE_APPLY;
 	const bool history_valid = history_configuration_valid && camera_history_valid;
 	const bool svgf_history_valid = svgf_active && history_valid && !svgf_resources_recreated;
 	const bool specular_history_valid = history_valid && !specular_resources_recreated;
@@ -453,6 +447,11 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 
 	RENDER_TIMESTAMP("HDDAGI Directional Screen Probe Begin");
 	ScreenProbeSceneData scene_data = {};
+	if (short_range_ao) {
+		scene_data.short_range_ao[0] = CLAMP(GLOBAL_GET_CACHED(float, "rendering/global_illumination/hddagi/screen_probe_short_range_ao_radius"), 0.01f, 1.0f);
+		scene_data.short_range_ao[1] = ao_intensity;
+		scene_data.short_range_ao[2] = render_buffers->get_use_taa() || RSE::scaling_3d_mode_type(render_buffers->get_scaling_3d_mode()) == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
+	}
 	const real_t receiver_radius = hddagi->cascades[0].cell_size * 4096.0;
 	const bool reset_receivers = !history_valid || camera->cam_transform.origin.distance_squared_to(hddagi->screen_probe_receiver_origin) > receiver_radius * receiver_radius;
 	if (reset_receivers) {
@@ -683,9 +682,21 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 			resolve_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 11, svgf_view_z[v]));
 			svgf_resolve_sets[v] = uniform_set_cache->get_cache_vec(probe_shaders[svgf_resolve_mode], 0, resolve_uniforms);
 		}
-		apply_sets[v] = get_screen_probe_apply_uniform_set(probe_shaders[raw_apply_mode], resolved_radiance[v], nearest_sampler, ambient_output, base_ambient);
+		LocalVector<RD::Uniform> apply_uniforms = {
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, resolved_radiance[v]),
+			RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 1, nearest_sampler),
+			RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, ambient_output),
+			RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, base_ambient),
+		};
+		if (short_range_ao) {
+			apply_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 4, depth));
+			apply_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 5, normal_roughness));
+			apply_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 6, rbgi->screen_probe_scene_data_ubo));
+		}
+		apply_sets[v] = uniform_set_cache->get_cache_vec(probe_shaders[raw_apply_mode], 0, apply_uniforms);
 		if (svgf_active) {
-			svgf_apply_sets[v] = get_screen_probe_apply_uniform_set(probe_shaders[svgf_apply_mode], svgf_output[v], nearest_sampler, ambient_output, base_ambient);
+			apply_uniforms[0] = RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 0, svgf_output[v]);
+			svgf_apply_sets[v] = uniform_set_cache->get_cache_vec(probe_shaders[svgf_apply_mode], 0, apply_uniforms);
 		}
 
 		if (specular_reflections) {

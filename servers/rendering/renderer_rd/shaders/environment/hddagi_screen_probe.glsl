@@ -107,6 +107,7 @@ struct ScreenProbeSceneData {
 	mat4 previous_projection[2];
 	mat4 previous_cam_transform;
 	vec4 receiver_camera_offset; // Camera relative to the receiver history origin; w resets the history.
+	vec4 short_range_ao; // Radius, intensity and temporal sampling flag.
 };
 
 #ifdef MODE_SPECULAR_APPLY
@@ -251,6 +252,13 @@ layout(set = 0, binding = 0) uniform texture2D resolved_radiance_input;
 layout(set = 0, binding = 1) uniform sampler nearest_sampler;
 layout(r32ui, set = 0, binding = 2) uniform restrict writeonly uimage2D ambient_output;
 layout(set = 0, binding = 3) uniform texture2D base_ambient_input;
+#ifdef MODE_SHORT_RANGE_AO
+layout(set = 0, binding = 4) uniform texture2D ao_depth;
+layout(set = 0, binding = 5) uniform texture2D ao_normal_roughness;
+layout(set = 0, binding = 6, std140) uniform SceneDataBuffer {
+	ScreenProbeSceneData scene_data;
+};
+#endif
 #endif
 
 #ifdef MODE_ADAPTIVE_PLACEMENT
@@ -1892,6 +1900,10 @@ void screen_probe_resolve_main() {
 
 #ifdef MODE_APPLY
 
+#ifdef MODE_SHORT_RANGE_AO
+#include "hddagi_screen_probe_short_range_ao_inc.glsl"
+#endif
+
 void screen_probe_apply_main() {
 	ivec2 output_position = ivec2(gl_GlobalInvocationID.xy);
 	ivec2 output_size = imageSize(ambient_output);
@@ -1916,6 +1928,11 @@ void screen_probe_apply_main() {
 		}
 	}
 
+#ifdef MODE_SHORT_RANGE_AO
+	if (any(greaterThan(diffuse_irradiance_over_pi, vec3(0.0)))) {
+		diffuse_irradiance_over_pi *= screen_probe_short_range_visibility(output_position);
+	}
+#endif
 	imageStore(ambient_output, output_position, uvec4(rgbe_encode(diffuse_irradiance_over_pi)));
 }
 

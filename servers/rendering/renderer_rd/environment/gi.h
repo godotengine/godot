@@ -541,6 +541,8 @@ private:
 			SCREEN_PROBE_MODE_DIRECTIONAL_RESOLVE_SVGF,
 			SCREEN_PROBE_MODE_APPLY,
 			SCREEN_PROBE_MODE_APPLY_SVGF,
+			SCREEN_PROBE_MODE_APPLY_AO,
+			SCREEN_PROBE_MODE_APPLY_SVGF_AO,
 			SCREEN_PROBE_MODE_SPECULAR_TRACE,
 			SCREEN_PROBE_MODE_SPECULAR_APPLY,
 			SCREEN_PROBE_MODE_ADAPTIVE_MARK,
@@ -998,6 +1000,7 @@ public:
 		float previous_projection[2][16];
 		float previous_cam_transform[16];
 		float receiver_camera_offset[4];
+		float short_range_ao[4];
 	};
 
 	struct PushConstant {

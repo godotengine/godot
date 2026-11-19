@@ -3850,6 +3850,9 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_diffuse_max_history_frames", PROPERTY_HINT_RANGE, "1,255,1"), 64);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_importance_sampling", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/global_illumination/hddagi/screen_probe_specular_max_history_frames", PROPERTY_HINT_RANGE, "1,255,1"), 64);
+	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_short_range_ao", false);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/screen_probe_short_range_ao_radius", PROPERTY_HINT_RANGE, "0.01,1,0.01,suffix:m"), 0.3f);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/global_illumination/hddagi/screen_probe_short_range_ao_intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.6f);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_specular_reflections", false);
 	GLOBAL_DEF("rendering/global_illumination/hddagi/screen_probe_uniform_placement_jitter", true);
 #ifndef DISABLE_DEPRECATED

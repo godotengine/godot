@@ -3144,6 +3144,15 @@
 		<member name="rendering/global_illumination/hddagi/screen_probe_importance_sampling" type="bool" setter="" getter="" default="false">
 			Uses incoming radiance to importance sample high-contrast Directional Gather probes.
 		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao" type="bool" setter="" getter="" default="false">
+			Adds contact occlusion from nearby visible geometry to screen-probe indirect diffuse lighting after denoising. An active [member Environment.ssao_enabled] with positive intensity takes precedence.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao_intensity" type="float" setter="" getter="" default="0.6">
+			Strength of [member rendering/global_illumination/hddagi/screen_probe_short_range_ao]. A value of [code]0.0[/code] disables the effect.
+		</member>
+		<member name="rendering/global_illumination/hddagi/screen_probe_short_range_ao_radius" type="float" setter="" getter="" default="0.3">
+			Maximum distance in meters at which visible surfaces contribute to [member rendering/global_illumination/hddagi/screen_probe_short_range_ao].
+		</member>
 		<member name="rendering/global_illumination/hddagi/screen_probe_spacing" type="int" setter="" getter="" default="16">
 			Distance between diffuse screen probes in GI buffer pixels. Higher values trace fewer probes and can reduce indirect lighting detail. Enabling [member rendering/global_illumination/gi/use_half_resolution] increases the distance between probes on screen. Diffuse resolve and denoising run at the viewport's internal 3D resolution.
 		</member>
