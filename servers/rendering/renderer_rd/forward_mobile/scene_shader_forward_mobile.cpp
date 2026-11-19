@@ -389,15 +389,17 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 
 	RD::PipelineColorBlendState blend_state;
 	if (uses_alpha || uses_blend_alpha) {
-		// These flags should only go through if we have some form of MSAA.
-		if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
-			multisample_state.enable_alpha_to_coverage = true;
-		} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
-			multisample_state.enable_alpha_to_coverage = true;
-			multisample_state.enable_alpha_to_one = true;
-		}
-
 		if (p_pipeline_key.version == SHADER_VERSION_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS || p_pipeline_key.version == SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW || p_pipeline_key.version == SHADER_VERSION_MOTION_VECTORS_MULTIVIEW) {
+			// These flags should only go through if we have some form of MSAA. Color passes only, as in Forward+: the shadow
+			// and depth versions write no color, so the alpha the coverage would come from is undefined
+			// (VUID-VkGraphicsPipelineCreateInfo-alphaToCoverageEnable-08891).
+			if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
+				multisample_state.enable_alpha_to_coverage = true;
+			} else if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE) {
+				multisample_state.enable_alpha_to_coverage = true;
+				multisample_state.enable_alpha_to_one = true;
+			}
+
 			blend_state = blend_state_blend;
 			if (depth_draw == DEPTH_DRAW_OPAQUE && !uses_alpha_clip) {
 				// Alpha does not write to depth.
