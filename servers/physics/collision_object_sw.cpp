@@ -227,7 +227,7 @@ void CollisionObjectSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 void CollisionObjectSW::_set_space(SpaceSW *p_space) {
 	if (space) {
 		space->remove_object(this);
-
+		space->set_wake_on_unpair(false);
 		for (int i = 0; i < shapes.size(); i++) {
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
@@ -235,6 +235,7 @@ void CollisionObjectSW::_set_space(SpaceSW *p_space) {
 				s.bpid = 0;
 			}
 		}
+		space->set_wake_on_unpair(true);
 	}
 
 	space = p_space;

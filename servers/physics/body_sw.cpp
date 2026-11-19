@@ -152,7 +152,7 @@ void BodySW::update_inertias() {
 	_update_transform_dependant();
 }
 
-void BodySW::set_active(bool p_active) {
+void BodySW::set_active(bool p_active, bool reset_timer) {
 	if (active == p_active) {
 		return;
 	}
@@ -168,21 +168,20 @@ void BodySW::set_active(bool p_active) {
 		}
 		if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
-		}
 
-		//still_time=0;
-	}
-	/*
-	if (!space)
-		return;
+			if (reset_timer) {
+				// `reset_timer` should be set upon removal of a constraint, or the change of some fundamental forces
+				// that the engine itself takes responsibility for and applies every frame (like gravity or constant force).
+				// `still_time = 0.0` will provide some time to test whether gravity or constant force might destabilize the system.
+				still_time = 0.0;
+			}
 
-	for(int i=0;i<get_shape_count();i++) {
-		Shape &s=shapes[i];
-		if (s.bpid>0) {
-			get_space()->get_broadphase()->set_active(s.bpid,active);
+			// Ensure at least one frame to allow a sleeping body to potentially move again before being put back to sleep.
+			if (still_time > get_space()->get_body_time_to_sleep()) {
+				still_time = get_space()->get_body_time_to_sleep();
+			}
 		}
 	}
-*/
 }
 
 void BodySW::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
@@ -731,9 +730,9 @@ bool BodySW::sleep_test(real_t p_step) {
 	}
 
 	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
 		still_time = 0; //maybe this should be set to 0 on set_active?
 		return false;
