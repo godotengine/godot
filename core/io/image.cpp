@@ -2770,7 +2770,9 @@ Error Image::load(const String &p_path) {
 		WARN_PRINT(vformat("Loaded resource as image file, this will not work on export: '%s'. Instead, import the image file as an Image resource and load it normally as a resource.", path));
 	}
 #endif
-	return ImageLoader::load_image(path, this);
+	Error err = ImageLoader::load_image(path, this);
+	snapshot_set_read_from(err == OK ? path : String(), SNAME("load"));
+	return err;
 }
 
 Ref<Image> Image::load_from_file(const String &p_path) {
@@ -2786,6 +2788,7 @@ Ref<Image> Image::load_from_file(const String &p_path) {
 	if (err != OK) {
 		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Failed to load image. Error %d", err));
 	}
+	image->snapshot_set_read_from(path, SNAME("load"));
 	return image;
 }
 

@@ -165,10 +165,13 @@ Dictionary Timer::snapshot_get_state() const {
 }
 
 Error Timer::snapshot_set_state(const Dictionary &p_state) {
+	// Only the countdown: start() would set wait_time to it, and stop() clears autostart.
 	if (p_state.get("running", false)) {
-		start(p_state.get("time_left", -1.0));
+		time_left = p_state.get("time_left", wait_time);
+		_set_process(true);
 	} else {
-		stop();
+		time_left = -1;
+		_set_process(false);
 	}
 	return OK;
 }

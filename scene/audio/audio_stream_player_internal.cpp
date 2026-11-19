@@ -338,6 +338,14 @@ Dictionary AudioStreamPlayerInternal::snapshot_get_state() {
 	state["playing"] = is_playing() || get_stream_paused();
 	state["position"] = get_playback_position();
 	state["stream_paused"] = get_stream_paused();
+	// A playback that ended in the mix and is not yet reaped: finished is still to come.
+	bool finishing = false;
+	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+			finishing = true;
+		}
+	}
+	state["finishing"] = finishing;
 	return state;
 }
 
@@ -347,6 +355,15 @@ Error AudioStreamPlayerInternal::snapshot_set_state(const Dictionary &p_state) {
 		set_stream_paused(p_state.get("stream_paused", false));
 	} else {
 		stop_callable.call();
+	}
+	if (p_state.get("finishing", false) && stream.is_valid()) {
+		// An ended playback, reaped by the next process(), which emits finished.
+		Ref<AudioStreamPlayback> ended = stream->instantiate_playback();
+		if (ended.is_valid()) {
+			stream_playbacks.push_back(ended);
+			active.set();
+			_set_process(true);
+		}
 	}
 	return OK;
 }

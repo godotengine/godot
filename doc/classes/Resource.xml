@@ -153,7 +153,13 @@
 		<method name="snapshot_get_origin" qualifiers="const">
 			<return type="String" />
 			<description>
-				komm64: The path of the file this resource was duplicated from, directly or through copies of copies, or an empty [String] if it is not such a copy. A snapshot saves a copy as this path and the properties that differ from the file, and rebuilds it by duplicating the file again.
+				komm64: The path of the file this resource was duplicated from, directly or through copies of copies, or read from by one of its own methods (see [method snapshot_get_origin_method]); an empty [String] otherwise. A snapshot saves such a resource as this path and the properties that differ from what the file gives, and rebuilds it from the file again.
+			</description>
+		</method>
+		<method name="snapshot_get_origin_method" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				komm64: The method that read this resource's contents from [method snapshot_get_origin], such as [code]load_dynamic_font[/code] for a [FontFile] or [code]load[/code] for an [Image]; empty if the resource is a copy of that file. Only a file under [code]res://[/code] is kept: one elsewhere can change or go away, so a resource read from it has no origin.
 			</description>
 		</method>
 		<method name="take_over_path">

@@ -1476,7 +1476,9 @@ static const char32_t _oem_to_unicode[][129] = {
 };
 
 Error FontFile::load_bitmap_font(const String &p_path) {
-	return _load_bitmap_font(p_path, nullptr);
+	Error err = _load_bitmap_font(p_path, nullptr);
+	snapshot_set_read_from(err == OK ? p_path : String(), SNAME("load_bitmap_font"));
+	return err;
 }
 
 Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_files) {
@@ -2096,6 +2098,7 @@ Error FontFile::load_dynamic_font(const String &p_path) {
 
 	Vector<uint8_t> font_data = FileAccess::get_file_as_bytes(p_path);
 	set_data(font_data);
+	snapshot_set_read_from(p_path, SNAME("load_dynamic_font"));
 
 	return OK;
 }

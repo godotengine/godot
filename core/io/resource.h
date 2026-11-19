@@ -89,8 +89,10 @@ private:
 	friend class SceneState;
 	Node *local_scene = nullptr;
 	// komm64: the file this resource was duplicated from, directly or through
-	// copies of copies; empty for anything else. Snapshots rebuild a copy from it.
+	// copies of copies, or read from by its own method (snapshot_origin_method);
+	// empty for anything else. Snapshots rebuild a copy from it.
 	String snapshot_origin;
+	StringName snapshot_origin_method;
 
 	SelfList<Resource> remapped_list;
 
@@ -156,6 +158,9 @@ public:
 
 	Ref<Resource> duplicate(bool p_deep = false) const;
 	String snapshot_get_origin() const { return snapshot_origin; }
+	StringName snapshot_get_origin_method() const { return snapshot_origin_method; }
+	// komm64: called by a method that reads this resource's contents from a file.
+	void snapshot_set_read_from(const String &p_path, const StringName &p_method);
 	Ref<Resource> duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
 	Ref<Resource> _duplicate_from_variant(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 	static void _teardown_duplicate_from_variant();

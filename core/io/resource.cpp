@@ -30,6 +30,7 @@
 
 #include "resource.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
@@ -401,6 +402,7 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 	}
 	// A file's copy remembers the file; a copy of a copy, the same file.
 	r->snapshot_origin = is_built_in() ? snapshot_origin : get_path();
+	r->snapshot_origin_method = is_built_in() ? snapshot_origin_method : StringName();
 
 	// Duplicate script first, so the scripted properties are considered.
 	BEFORE_USER_CODE
@@ -513,6 +515,18 @@ void Resource::configure_for_local_scene(Node *p_for_scene, DuplicateRemapCacheT
 				}
 			}
 		}
+	}
+}
+
+void Resource::snapshot_set_read_from(const String &p_path, const StringName &p_method) {
+	// Only a file of the game itself: one elsewhere can change or go away.
+	const String path = p_path.is_empty() ? String() : ProjectSettings::get_singleton()->localize_path(p_path);
+	if (path.begins_with("res://")) {
+		snapshot_origin = path;
+		snapshot_origin_method = p_method;
+	} else {
+		snapshot_origin = String();
+		snapshot_origin_method = StringName();
 	}
 }
 
@@ -759,6 +773,7 @@ void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("snapshot_get_origin"), &Resource::snapshot_get_origin);
+	ClassDB::bind_method(D_METHOD("snapshot_get_origin_method"), &Resource::snapshot_get_origin_method);
 	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::_duplicate_deep_bind, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 
 	// TODO: Once we can break compatibility, change the binding to "copy_from". For now, we have to avoid clashing with the method from `Image`.
