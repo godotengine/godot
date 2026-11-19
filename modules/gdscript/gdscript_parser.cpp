@@ -4826,6 +4826,7 @@ bool GDScriptParser::_export_annotations(AST::AnnotationNode *p_annotation, AST:
 				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 				return false;
 		}
+
 		if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
 			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
 			return false;
@@ -4896,6 +4897,7 @@ bool GDScriptParser::_export_annotations(AST::AnnotationNode *p_annotation, AST:
 					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 					return false;
 			}
+
 			if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
 				push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
 				return false;

@@ -72,6 +72,10 @@ bool GDScriptAST::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target, 
 	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target, p_class);
 }
 
+bool GDScriptAST::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
+	return (info->target_kind & p_target_kinds) > 0;
+}
+
 GDScriptAST::DataType GDScriptAST::SuiteNode::Local::get_datatype() const {
 	switch (type) {
 		case CONSTANT:
@@ -345,10 +349,6 @@ bool GDScriptAST::DataType::can_reference(const GDScriptAST::DataType &p_other) 
 	}
 
 	return true;
-}
-
-bool GDScriptAST::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
-	return (info->target_kind & p_target_kinds) > 0;
 }
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/

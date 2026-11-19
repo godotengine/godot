@@ -48,6 +48,8 @@ class GDScriptParser;
 
 class GDScriptAST {
 public:
+	struct AnnotationInfo;
+
 	// Forward-declare all parser nodes, to avoid ordering issues.
 	struct AnnotationNode;
 	struct ArrayNode;
@@ -93,24 +95,6 @@ public:
 	struct WhileNode;
 
 	typedef bool (GDScriptParser::*AnnotationAction)(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
-
-	struct AnnotationInfo {
-		enum TargetKind {
-			NONE = 0,
-			SCRIPT = 1 << 0,
-			CLASS = 1 << 1,
-			VARIABLE = 1 << 2,
-			CONSTANT = 1 << 3,
-			SIGNAL = 1 << 4,
-			FUNCTION = 1 << 5,
-			STATEMENT = 1 << 6,
-			STANDALONE = 1 << 7,
-			CLASS_LEVEL = CLASS | VARIABLE | CONSTANT | SIGNAL | FUNCTION,
-		};
-		uint32_t target_kind = 0; // Flags.
-		AnnotationAction apply = nullptr;
-		MethodInfo info;
-	};
 
 	class DataType {
 	public:
@@ -1322,6 +1306,23 @@ public:
 		}
 	};
 
+	struct AnnotationInfo {
+		enum TargetKind {
+			NONE = 0,
+			SCRIPT = 1 << 0,
+			CLASS = 1 << 1,
+			VARIABLE = 1 << 2,
+			CONSTANT = 1 << 3,
+			SIGNAL = 1 << 4,
+			FUNCTION = 1 << 5,
+			STATEMENT = 1 << 6,
+			STANDALONE = 1 << 7,
+			CLASS_LEVEL = CLASS | VARIABLE | CONSTANT | SIGNAL | FUNCTION,
+		};
+		uint32_t target_kind = 0; // Flags.
+		AnnotationAction apply = nullptr;
+		MethodInfo info;
+	};
 }; //class GDScriptAST
 
 #ifdef DEBUG_ENABLED
