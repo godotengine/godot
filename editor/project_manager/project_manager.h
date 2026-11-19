@@ -76,9 +76,11 @@ class ProjectManager : public Control {
 	// Main layout.
 
 	Ref<Theme> theme;
+	bool theme_preview_active = false;
 
 	void _update_size_limits();
-	void _update_theme(bool p_skip_creation = false);
+	void _apply_theme(const Ref<Theme> &p_theme);
+	void _preview_theme(const String &p_preset);
 	void _titlebar_resized();
 
 	MarginContainer *root_container = nullptr;
