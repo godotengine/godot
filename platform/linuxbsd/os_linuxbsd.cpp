@@ -88,6 +88,10 @@
 #include <sys/sysctl.h>
 #endif
 
+#ifdef __linux__
+#include <sched.h>
+#endif
+
 #ifdef FONTCONFIG_ENABLED
 #ifdef SOWRAP_ENABLED
 #include "fontconfig-so_wrap.h"
@@ -189,6 +193,19 @@ void OS_LinuxBSD::initialize_joypads() {
 	}
 #endif
 }
+
+#ifdef __linux__
+int OS_LinuxBSD::get_default_thread_pool_size() const {
+	cpu_set_t set;
+	if (sched_getaffinity(0, sizeof(cpu_set_t), &set) == 0) {
+		int count = CPU_COUNT(&set);
+		if (count > 0) {
+			return count;
+		}
+	}
+	return get_processor_count();
+}
+#endif
 
 String OS_LinuxBSD::get_unique_id() const {
 	static String machine_id;
