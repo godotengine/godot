@@ -3521,6 +3521,18 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 		}
 
 		// Positional Shadows
+
+		struct Light_inst_coverage_bind {
+			float coverage_s;
+			uint32_t original_idx; // for successful logging via RENDER_TIMESTAMP
+			Instance *ins_s;
+		};
+
+		LocalVector<Light_inst_coverage_bind> lights_to_sort;
+
+		lights_to_sort.clear();
+		lights_to_sort.reserve(scene_cull_result.lights.size());
+
 		for (uint32_t i = 0; i < (uint32_t)scene_cull_result.lights.size(); i++) {
 			Instance *ins = scene_cull_result.lights[i];
 
@@ -3568,6 +3580,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
+						lights_to_sort.push_back({ coverage, i, ins });
 					} break;
 					case RSE::LIGHT_SPOT: {
 						float radius = RSG::light_storage->light_get_param(ins->base, RSE::LIGHT_PARAM_RANGE);
@@ -3596,7 +3609,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
-
+						lights_to_sort.push_back({ coverage, i, ins });
 					} break;
 					case RSE::LIGHT_AREA: {
 						float diagonal = RSG::light_storage->light_area_get_size(ins->base).length();
@@ -3621,15 +3634,28 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 						float screen_diameter = points[0].distance_to(points[1]) * 2;
 						coverage = screen_diameter / (vp_half_extents.x + vp_half_extents.y);
+						lights_to_sort.push_back({ coverage, i, ins });
 					} break;
 					default: {
 						ERR_PRINT("Invalid Light Type");
 					}
 				}
 			}
+		}
 
+		struct coverage_comparator {
+			_FORCE_INLINE_ bool operator()(const Light_inst_coverage_bind &a, const Light_inst_coverage_bind &b) const {
+				return (a.coverage_s > b.coverage_s);
+			}
+		};
+
+		lights_to_sort.sort_custom<coverage_comparator>();
+
+		for (uint32_t i = 0; i < lights_to_sort.size(); i++) {
 			// We can detect whether multiple cameras are hitting this light, whether or not the shadow is dirty,
 			// so that we can turn off tighter caster culling.
+			Instance *ins = lights_to_sort[i].ins_s;
+			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 			light->detect_light_intersects_multiple_cameras(Engine::get_singleton()->get_frames_drawn());
 
 			if (light->is_shadow_dirty()) {
