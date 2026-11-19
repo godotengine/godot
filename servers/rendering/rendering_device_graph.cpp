@@ -440,6 +440,13 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		ResourceUsage new_resource_usage = p_resource_usages[i];
 		bool write_usage = _is_write_usage(new_resource_usage);
 		BitField<RDD::BarrierAccessBits> new_usage_access = _usage_to_access_bits(new_resource_usage);
+		if (new_resource_usage == RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE && (resource_tracker->texture_usage & RDD::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT) && r_command->self_stages.has_flag(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)) {
+			// A render pass writes its depth resolve attachment in the color attachment output stage with color attachment
+			// write access, "whether the attachments are color or depth/stencil attachments" (vkspec, Render Pass, resolve
+			// operations), so the barrier before it, and the next one after it, must cover that access too
+			// (SYNC-HAZARD-WRITE-AFTER-WRITE against the layout transition otherwise).
+			new_usage_access.set_flag(RDD::BARRIER_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+		}
 		bool is_resource_a_slice = resource_tracker->parent != nullptr;
 		if (is_resource_a_slice) {
 			// This resource depends on a parent resource.
