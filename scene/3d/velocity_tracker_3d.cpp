@@ -31,7 +31,6 @@
 #include "velocity_tracker_3d.h"
 
 #include "core/config/engine.h"
-#include "core/object/class_db.h"
 
 void VelocityTracker3D::set_track_physics_step(bool p_track_physics_step) {
 	physics_step = p_track_physics_step;
@@ -116,16 +115,6 @@ void VelocityTracker3D::reset(const Vector3 &p_new_pos) {
 
 	position_history.write[0] = ph;
 	position_history_len = 1;
-}
-
-void VelocityTracker3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_track_physics_step", "enable"), &VelocityTracker3D::set_track_physics_step);
-	ClassDB::bind_method(D_METHOD("is_tracking_physics_step"), &VelocityTracker3D::is_tracking_physics_step);
-	ClassDB::bind_method(D_METHOD("update_position", "position"), &VelocityTracker3D::update_position);
-	ClassDB::bind_method(D_METHOD("get_tracked_linear_velocity"), &VelocityTracker3D::get_tracked_linear_velocity);
-	ClassDB::bind_method(D_METHOD("reset", "position"), &VelocityTracker3D::reset);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "track_physics_step"), "set_track_physics_step", "is_tracking_physics_step");
 }
 
 VelocityTracker3D::VelocityTracker3D() {

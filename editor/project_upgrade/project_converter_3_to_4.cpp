@@ -39,10 +39,9 @@
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
 #include "core/os/time.h"
+#include "core/string/regex.h"
 #include "core/templates/list.h"
 #include "editor/project_upgrade/renames_map_3_to_4.h"
-
-#include "modules/regex/regex.h"
 
 // Find "OS.set_property(x)", capturing x into $1.
 static String make_regex_gds_os_property_set(const String &name_set) {
@@ -1108,7 +1107,6 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 // Validate in all arrays if names don't do cyclic renames "Node" -> "Node2D" | "Node2D" -> "2DNode"
 bool ProjectConverter3To4::test_array_names() {
 	bool valid = true;
-	Vector<String> names = Vector<String>();
 
 	// Validate if all classes are valid.
 	{

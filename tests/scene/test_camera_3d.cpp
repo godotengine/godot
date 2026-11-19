@@ -255,6 +255,26 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(Math::SQRT3 * 0.5f, -Math::SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 * 0.5f, -1.0f)));
 			CHECK(test_camera->project_position(Vector2(300, 150), test_camera->get_far()).is_equal_approx(Vector3(Math::SQRT3, -Math::SQRT3 * 0.5f, -1.0f) * test_camera->get_far()));
+
+			SUBCASE("Singularities at focal plane") {
+				Vector2 center = Vector2(200, 100);
+
+				// Division-by-zero at camera origin (0, 0, 0)
+				Vector2 origin_result = test_camera->unproject_position(Vector3(0.0f, 0.0f, 0.0f));
+				CHECK(origin_result == center);
+
+				// Point offset on focal plane: offset Up (+Y 3D) and Right (+X 3D)
+				// Maps to: Right (+2D X) and Up (-2D Y)
+				Vector2 right_up_result = test_camera->unproject_position(Vector3(0.1f, 0.1f, 0.0f));
+				CHECK(right_up_result.x > (center.x + 90000.0f));
+				CHECK(right_up_result.y < (center.y - 90000.0f));
+
+				// Point offset on focal plane: offset Down (-Y 3D) and Left (-X 3D)
+				// Maps to: Left (-2D X) and Down (+2D Y)
+				Vector2 left_down_result = test_camera->unproject_position(Vector3(-0.1f, -0.1f, 0.0f));
+				CHECK(left_down_result.x < (center.x - 90000.0f));
+				CHECK(left_down_result.y > (center.y + 90000.0f));
+			}
 		}
 	}
 

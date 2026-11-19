@@ -246,6 +246,14 @@ static bool appendMeshlet(meshopt_Meshlet& meshlet, unsigned int a, unsigned int
 	short& bv = used[b];
 	short& cv = used[c];
 
+#ifdef MESHOPTIMIZER_CLUSTERIZER_INDEXLIMIT
+	// to ensure that after adding up to 2 new vertices, the existing vertex is within span limit (32), we need to reset vertex indices that are out of range
+	const int span_limit = 32 - 2;
+	av = (av + span_limit < int(meshlet.vertex_count)) ? -1 : av;
+	bv = (bv + span_limit < int(meshlet.vertex_count)) ? -1 : bv;
+	cv = (cv + span_limit < int(meshlet.vertex_count)) ? -1 : cv;
+#endif
+
 	bool result = false;
 
 	int used_extra = (av < 0) + (bv < 0) + (cv < 0);
@@ -694,7 +702,7 @@ static float boxMerge(BVHBoxT& box, const BVHBox& other)
 	}
 
 	float sx = box.max[0] - box.min[0], sy = box.max[1] - box.min[1], sz = box.max[2] - box.min[2];
-	return sx * sy + sx * sz + sy * sz;
+	return sx * sy + sy * sz + sz * sx;
 }
 #endif
 
@@ -842,7 +850,7 @@ static void bvhPackTail(unsigned char* boundary, const unsigned int* order, size
 
 static bool bvhDivisible(size_t count, size_t min, size_t max)
 {
-	// count is representable as a sum of values in [min..max] if if it in range of [k*min..k*min+k*(max-min)]
+	// count is representable as a sum of values in [min..max] if it is in range of [k*min..k*min+k*(max-min)]
 	// equivalent to ceil(count / max) <= floor(count / min), but the form below allows using idiv (see nv_cluster_builder)
 	// we avoid expensive integer divisions in the common case where min is <= max/2
 	return min * 2 <= max ? count >= min : count % min <= (count / min) * (max - min);
@@ -855,6 +863,15 @@ static void bvhComputeArea(float* areas, const BVHBox* boxes, const unsigned int
 
 	for (size_t i = 0; i < count; ++i)
 	{
+#ifdef SIMD_SSE
+		// prefetch boxes ahead to reduce the stalls from cache misses; the loop is not load-limited so these do not hurt even on smaller inputs
+		if (i + 16 < count)
+		{
+			_mm_prefetch(reinterpret_cast<const char*>(&boxes[order[i + 16]]), _MM_HINT_T0);
+			_mm_prefetch(reinterpret_cast<const char*>(&boxes[order[count - 1 - i - 16]]), _MM_HINT_T0);
+		}
+#endif
+
 		float larea = boxMerge(accuml, boxes[order[i]]);
 		float rarea = boxMerge(accumr, boxes[order[count - 1 - i]]);
 
@@ -1265,6 +1282,8 @@ size_t meshopt_buildMeshletsSpatial(struct meshopt_Meshlet* meshlets, unsigned i
 
 	assert(max_vertices >= 3 && max_vertices <= 256);
 	assert(min_triangles >= 1 && min_triangles <= max_triangles && max_triangles <= 512);
+
+	assert(fill_weight >= 0);
 
 	if (index_count == 0)
 		return 0;

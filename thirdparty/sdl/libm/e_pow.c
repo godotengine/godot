@@ -64,10 +64,6 @@
 #pragma warning ( disable : 4756 )
 #endif
 
-#ifdef __WATCOMC__ /* Watcom defines huge=__huge */
-#undef huge
-#endif
-
 static const double
 bp[] = {1.0, 1.5,},
 dp_h[] = { 0.0, 5.84962487220764160156e-01,}, /* 0x3FE2B803, 0x40000000 */

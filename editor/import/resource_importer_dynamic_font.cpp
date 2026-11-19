@@ -191,6 +191,11 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_oversampling(oversampling);
 	font->set_fallbacks(fallbacks);
 
+	RID frid = font->_get_rid();
+	if (!TS->font_validate(frid)) {
+		return FAILED;
+	}
+
 	if (subpixel_positioning == 4 || hinting == 3 || hinting == 4) /* Dected Pixel Fonts */ {
 		Array rids = font->get_rids();
 		if (!rids.is_empty()) {
@@ -271,7 +276,6 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 		int face_index = preload_config.has("variation_face_index") ? preload_config["variation_face_index"].operator int() : 0;
 		Transform2D transform = preload_config.has("variation_transform") ? preload_config["variation_transform"].operator Transform2D() : Transform2D();
 		Vector2i size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
-		String name = preload_config.has("name") ? preload_config["name"].operator String() : vformat("Configuration %d", i);
 
 		RID conf_rid = font->find_variation(variation, face_index, embolden, transform);
 

@@ -54,6 +54,12 @@ public:
 		SCROLL_HINT_MODE_ALL,
 		SCROLL_HINT_MODE_TOP_AND_LEFT,
 		SCROLL_HINT_MODE_BOTTOM_AND_RIGHT,
+		SCROLL_HINT_MODE_TOP_AND_BOTTOM,
+		SCROLL_HINT_MODE_LEFT_AND_RIGHT,
+		SCROLL_HINT_MODE_TOP,
+		SCROLL_HINT_MODE_BOTTOM,
+		SCROLL_HINT_MODE_LEFT,
+		SCROLL_HINT_MODE_RIGHT,
 	};
 
 private:
@@ -92,6 +98,9 @@ private:
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
 
+	bool following = false;
+	Vector2 scroll_diff;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -102,6 +111,10 @@ private:
 		Color scroll_hint_vertical_color;
 		Color scroll_hint_horizontal_color;
 
+		int scrollbar_margin_left = -1;
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
 	} theme_cache;
@@ -118,6 +131,8 @@ private:
 	bool child_has_focus();
 
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
+	Rect2 _get_local_visible_rect() const;
 
 protected:
 	Size2 get_minimum_size() const override;

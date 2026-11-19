@@ -245,6 +245,7 @@ class SpriteFramesEditor : public EditorDock {
 	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);
 
 	void _update_anim_loop_button();
+	void _update_anim_speed_spin();
 
 	StringName _find_next_animation();
 	String _generate_unique_animation_name(const String &p_base_name) const;

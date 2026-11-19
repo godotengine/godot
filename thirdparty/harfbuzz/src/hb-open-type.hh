@@ -197,17 +197,12 @@ struct HBUINT32VAR
     else if (b0 < 0xF0)
       return ((b0 & 0x0F) << 24) | (v[1] << 16) | (v[2] << 8) | v[3];
     else
-      return (v[1] << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
+      return (uint32_t (v[1]) << 24) | (v[2] << 16) | (v[3] << 8) | v[4];
   }
 
-  static bool serialize (hb_serialize_context_t *c, uint32_t v)
+  static unsigned serialize_unsafe (unsigned char *buf, uint32_t v)
   {
     unsigned len = get_size (v);
-
-    unsigned char *buf = c->allocate_size<unsigned char> (len, false);
-    if (unlikely (!buf))
-      return false;
-
     unsigned char *p = buf + len;
     for (unsigned i = 0; i < len; i++)
     {
@@ -218,6 +213,17 @@ struct HBUINT32VAR
     if (len > 1)
       buf[0] |= ((1 << (len - 1)) - 1) << (9 - len);
 
+    return len;
+  }
+
+  static bool serialize (hb_serialize_context_t *c, uint32_t v)
+  {
+    unsigned len = get_size (v);
+    unsigned char *buf = c->allocate_size<unsigned char> (len, false);
+    if (unlikely (!buf))
+      return false;
+
+    serialize_unsafe (buf, v);
     return true;
   }
 
@@ -564,7 +570,7 @@ struct UnsizedArrayOf
   }
 
   static size_t get_size (unsigned int len)
-  { return len * Type::static_size; }
+  { return hb_unsigned_mul_saturate (len, Type::static_size); }
 
   template <typename T> operator T * () { return arrayZ; }
   template <typename T> operator const T * () const { return arrayZ; }
@@ -726,7 +732,7 @@ struct ArrayOf
   }
 
   size_t get_size () const
-  { return len.static_size + len * Type::static_size; }
+  { return hb_unsigned_mul_add_saturate (len, Type::static_size, len.static_size); }
 
   explicit operator bool () const { return len; }
 
@@ -910,7 +916,7 @@ struct HeadlessArrayOf
     return arrayZ[i-1];
   }
   size_t get_size () const
-  { return lenP1.static_size + get_length () * Type::static_size; }
+  { return hb_unsigned_mul_add_saturate (get_length (), Type::static_size, lenP1.static_size); }
 
   unsigned get_length () const { return lenP1 ? lenP1 - 1 : 0; }
 
@@ -1004,7 +1010,7 @@ struct ArrayOfM1
     return arrayZ[i];
   }
   size_t get_size () const
-  { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
+  { return hb_unsigned_mul_add_saturate (lenM1 + 1, Type::static_size, lenM1.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1198,7 +1204,7 @@ struct VarSizedBinSearchArrayOf
   unsigned int get_length () const
   { return header.nUnits - last_is_terminator (); }
   size_t get_size () const
-  { return header.static_size + header.nUnits * header.unitSize; }
+  { return hb_unsigned_mul_add_saturate (header.nUnits, header.unitSize, header.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1464,7 +1470,8 @@ struct CFFIndex
   size_t get_size () const
   {
     if (count)
-      return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
+      return hb_unsigned_add_saturate (min_size, offSize.static_size,
+				       offset_array_size (), offset_at (count) - 1);
     return min_size;  /* empty CFFIndex contains count only */
   }
 
@@ -1813,6 +1820,33 @@ struct TupleValues
     return true;
   }
 
+  static bool skip (const unsigned char *&p /* IN/OUT */,
+		    const unsigned char *end,
+		    unsigned count)
+  {
+    unsigned seen = 0;
+    while (seen < count)
+    {
+      if (unlikely (p >= end)) return false;
+      unsigned control = *p++;
+      unsigned run_count = (control & VALUE_RUN_COUNT_MASK) + 1;
+      if (unlikely (run_count > count - seen)) return false;
+
+      unsigned width = 0;
+      switch (control & VALUES_SIZE_MASK)
+      {
+	case VALUES_ARE_ZEROS: break;
+	case VALUES_ARE_BYTES: width = HBINT8::static_size; break;
+	case VALUES_ARE_WORDS: width = HBINT16::static_size; break;
+	case VALUES_ARE_LONGS: width = HBINT32::static_size; break;
+      }
+      if (unlikely (unsigned (end - p) < run_count * width)) return false;
+      p += run_count * width;
+      seen += run_count;
+    }
+    return true;
+  }
+
   struct iter_t : hb_iter_with_fallback_t<iter_t, int>
   {
     iter_t (const unsigned char *p_, unsigned len_)
@@ -1974,11 +2008,11 @@ struct TupleValues
     }
 
     private:
-    template <bool scaled>
-    void _add_to (hb_array_t<float> out, float scale = 1.0f)
+    template <bool scaled, typename T>
+    void _add_to (hb_array_t<T> out, T scale = T (1))
     {
       unsigned n = out.length;
-      float *arrayZ = out.arrayZ;
+      T *arrayZ = out.arrayZ;
 
       for (unsigned i = 0; i < n;)
       {
@@ -2046,7 +2080,8 @@ struct TupleValues
     }
 
     public:
-    void add_to (hb_array_t<float> out, float scale = 1.0f)
+    template <typename T>
+    void add_to (hb_array_t<T> out, float scale = 1.0f)
     {
 #ifndef HB_OPTIMIZE_SIZE
       // The following branch is supposed to speed things up by avoiding
@@ -2056,7 +2091,7 @@ struct TupleValues
         _add_to<false> (out);
       else
 #endif
-        _add_to<true> (out, scale);
+        _add_to<true> (out, (T) scale);
     }
   };
 };

@@ -299,6 +299,7 @@ enum VertexKind
 	Kind_Border,   // not on an attribute seam, has exactly two open edges
 	Kind_Seam,     // on an attribute seam with exactly two attribute seam edges
 	Kind_Complex,  // none of the above; these vertices can move as long as all wedges move to the target vertex
+	Kind_Fringe,   // complex vertex on a geometric border; can only move to another fringe vertex
 	Kind_Locked,   // none of the above; these vertices can't move
 
 	Kind_Count
@@ -307,14 +308,16 @@ enum VertexKind
 // manifold vertices can collapse onto anything
 // border/seam vertices can collapse onto border/seam respectively, or locked
 // complex vertices can collapse onto complex/locked
+// fringe vertices can only collapse onto fringe vertices; border, manifold and complex vertices can collapse onto them
 // a rule of thumb is that collapsing kind A into kind B preserves the kind B in the target vertex
 // for example, while we could collapse Complex into Manifold, this would mean the target vertex isn't Manifold anymore
 const unsigned char kCanCollapse[Kind_Count][Kind_Count] = {
-    {1, 1, 1, 1, 1},
-    {0, 1, 0, 0, 1},
-    {0, 0, 1, 0, 1},
-    {0, 0, 0, 1, 1},
-    {0, 0, 0, 0, 0},
+    {1, 1, 1, 1, 1, 1},
+    {0, 1, 0, 0, 1, 1},
+    {0, 0, 1, 0, 0, 1},
+    {0, 0, 0, 1, 1, 1},
+    {0, 0, 0, 0, 1, 0},
+    {0, 0, 0, 0, 0, 0},
 };
 
 // if a vertex is manifold or seam, adjoining edges are guaranteed to have an opposite edge
@@ -323,11 +326,12 @@ const unsigned char kCanCollapse[Kind_Count][Kind_Count] = {
 // while many complex collapses have the opposite edge, since complex vertices collapse to the
 // same wedge, keeping opposite edges separate improves the quality by considering both targets
 const unsigned char kHasOpposite[Kind_Count][Kind_Count] = {
-    {1, 1, 1, 1, 1},
-    {1, 0, 1, 0, 0},
-    {1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0},
-    {1, 0, 1, 0, 0},
+    {1, 1, 1, 1, 1, 1},
+    {1, 0, 1, 0, 0, 0},
+    {1, 1, 1, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0},
+    {1, 0, 0, 0, 0, 0},
+    {1, 0, 1, 0, 0, 0},
 };
 
 static bool hasEdge(const EdgeAdjacency& adjacency, unsigned int a, unsigned int b)
@@ -399,10 +403,6 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 		}
 	}
 
-#if TRACE
-	size_t stats[4] = {};
-#endif
-
 	for (size_t i = 0; i < vertex_count; ++i)
 	{
 		if (remap[i] == i)
@@ -433,7 +433,6 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 				else
 				{
 					result[i] = Kind_Locked;
-					TRACESTATS(0);
 				}
 			}
 			else if (wedge[wedge[i]] == i)
@@ -445,29 +444,21 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 
 				// seam should have one open half-edge for each vertex, and the edges need to "connect" - point to the same vertex post-remap
 				if (openiv != ~0u && openiv != i && openov != ~0u && openov != i &&
-				    openiw != ~0u && openiw != w && openow != ~0u && openow != w)
+				    openiw != ~0u && openiw != w && openow != ~0u && openow != w &&
+				    remap[openiv] == remap[openow] && remap[openov] == remap[openiw] && remap[openiv] != remap[openov])
 				{
-					if (remap[openiv] == remap[openow] && remap[openov] == remap[openiw] && remap[openiv] != remap[openov])
-					{
-						result[i] = Kind_Seam;
-					}
-					else
-					{
-						result[i] = Kind_Locked;
-						TRACESTATS(1);
-					}
+					result[i] = Kind_Seam;
 				}
 				else
 				{
+					// mismatched seam endpoints or disconnected seam; we don't have classification available
 					result[i] = Kind_Locked;
-					TRACESTATS(2);
 				}
 			}
 			else
 			{
 				// more than one vertex maps to this one; we don't have classification available
 				result[i] = Kind_Locked;
-				TRACESTATS(3);
 			}
 		}
 		else
@@ -489,10 +480,10 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 					continue;
 				}
 
-				bool protect = false;
+				unsigned int v = unsigned(i);
 
 				// vertex_lock may protect any wedge, not just the primary vertex, so we switch to complex only if no wedges are protected
-				unsigned int v = unsigned(i);
+				bool protect = false;
 				do
 				{
 					unsigned int rv = sparse_remap ? sparse_remap[v] : v;
@@ -500,18 +491,20 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 					v = wedge[v];
 				} while (v != i);
 
-				// protect if any adjoining edge doesn't have an opposite edge (indicating vertex is on the border)
+				// check if any adjoining edge doesn't have an opposite edge (indicating vertex is on the border)
+				bool border = false;
 				do
 				{
 					const EdgeAdjacency::Edge* edges = &adjacency.data[adjacency.offsets[v]];
 					size_t count = adjacency.offsets[v + 1] - adjacency.offsets[v];
 
 					for (size_t j = 0; j < count; ++j)
-						protect |= !hasEdge(adjacency, edges[j].next, v, remap, wedge);
+						border |= !hasEdge(adjacency, edges[j].next, v, remap, wedge);
 					v = wedge[v];
 				} while (v != i);
 
-				result[i] = protect ? result[i] : int(Kind_Complex);
+				// border vertices with attribute discontinuities can only collapse along the border, so they need a separate tagging
+				result[i] = protect ? result[i] : (unsigned char)(border ? Kind_Fringe : Kind_Complex);
 			}
 
 	if (vertex_lock)
@@ -532,13 +525,8 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 
 	if (options & meshopt_SimplifyLockBorder)
 		for (size_t i = 0; i < vertex_count; ++i)
-			if (result[i] == Kind_Border)
+			if (result[i] == Kind_Border || result[i] == Kind_Fringe)
 				result[i] = Kind_Locked;
-
-#if TRACE
-	printf("locked: many open edges %d, disconnected seam %d, many seam edges %d, many wedges %d\n",
-	    int(stats[0]), int(stats[1]), int(stats[2]), int(stats[3]));
-#endif
 }
 
 struct Vector3
@@ -749,28 +737,15 @@ static void quadricAdd(QuadricGrad* G, const QuadricGrad* R, size_t attribute_co
 
 static float quadricEval(const Quadric& Q, const Vector3& v)
 {
-	float rx = Q.b0;
-	float ry = Q.b1;
-	float rz = Q.b2;
-
-	rx += Q.a10 * v.y;
-	ry += Q.a21 * v.z;
-	rz += Q.a20 * v.x;
-
-	rx *= 2;
-	ry *= 2;
-	rz *= 2;
+	float rx = (Q.b0 + Q.a10 * v.y) * 2.f;
+	float ry = (Q.b1 + Q.a21 * v.z) * 2.f;
+	float rz = (Q.b2 + Q.a20 * v.x) * 2.f;
 
 	rx += Q.a00 * v.x;
 	ry += Q.a11 * v.y;
 	rz += Q.a22 * v.z;
 
-	float r = Q.c;
-	r += rx * v.x;
-	r += ry * v.y;
-	r += rz * v.z;
-
-	return r;
+	return Q.c + rx * v.x + ry * v.y + rz * v.z;
 }
 
 static float quadricError(const Quadric& Q, const Vector3& v)
@@ -781,7 +756,7 @@ static float quadricError(const Quadric& Q, const Vector3& v)
 	return fabsf(r) * s;
 }
 
-static float quadricError(const Quadric& Q, const QuadricGrad* G, size_t attribute_count, const Vector3& v, const float* va)
+static float quadricError(const Quadric& Q, const QuadricGrad* G, size_t attribute_count, const Vector3& v, const float* va, bool clamped)
 {
 	float r = quadricEval(Q, v);
 
@@ -795,7 +770,9 @@ static float quadricError(const Quadric& Q, const QuadricGrad* G, size_t attribu
 	}
 
 	// note: unlike position error, we do not normalize by Q.w to retain edge scaling as described in quadricFromAttributes
-	return fabsf(r);
+	// we do support clamping, with the error limited to the cumulative weight (= area), which makes perceptual error map to position error more closely
+	float e = fabsf(r);
+	return clamped ? (e < Q.w ? e : Q.w) : e;
 }
 
 static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, float w)
@@ -941,7 +918,7 @@ static void quadricFromAttributes(Quadric& Q, QuadricGrad* G, const Vector3& p0,
 
 		Q.c += w * (gw * gw);
 
-		// the only remaining sum components are ones that depend on attr; these will be addded during error evaluation, see quadricError
+		// the only remaining sum components are ones that depend on attr; these will be added during error evaluation, see quadricError
 		G[k].gx = w * gx;
 		G[k].gy = w * gy;
 		G[k].gz = w * gz;
@@ -1119,26 +1096,36 @@ static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 			unsigned char k0 = vertex_kind[i0];
 			unsigned char k1 = vertex_kind[i1];
 
-			// check that either i0 or i1 are border/seam and are on the same edge loop
-			// note that we need to add the error even for edged that connect e.g. border & locked
-			// if we don't do that, the adjacent border->border edge won't have correct errors for corners
-			if (k0 != Kind_Border && k0 != Kind_Seam && k1 != Kind_Border && k1 != Kind_Seam)
+			// early out: manifold vertices never lie on a border
+			if (k0 == Kind_Manifold || k1 == Kind_Manifold)
 				continue;
 
+			// one of the vertices must be border/seam/fringe; additional checks help validate the border
+			if (k0 != Kind_Border && k0 != Kind_Seam && k0 != Kind_Fringe && k1 != Kind_Border && k1 != Kind_Seam && k1 != Kind_Fringe)
+				continue;
+
+			// if i0/i1 are border/seam we check if they are on the same edge loop
+			// note that we need to add the error even for edges that connect e.g. border & locked
+			// if we don't do that, the adjacent border->border edge won't have correct errors for corners
 			if ((k0 == Kind_Border || k0 == Kind_Seam) && loop[i0] != i1)
 				continue;
 
 			if ((k1 == Kind_Border || k1 == Kind_Seam) && loopback[i1] != i0)
 				continue;
 
+			// fringe vertices don't have proper edge loops, so we need to add edge quadrics to fringe-fringe or fringe-locked edges
+			// note that border-fringe edges are still processed, guarded by the loop check above
+			if ((k0 == Kind_Fringe || k1 == Kind_Fringe) && (k0 == Kind_Complex || k1 == Kind_Complex))
+				continue;
+
 			unsigned int i2 = indices[i + next[e + 1]];
 
 			// we try hard to maintain border edge geometry; seam edges can move more freely
-			// due to topological restrictions on collapses, seam quadrics slightly improves collapse structure but aren't critical
+			// due to topological restrictions on collapses, seam quadrics slightly improve collapse structure but aren't critical
 			const float kEdgeWeightSeam = 0.5f; // applied twice due to opposite edges
 			const float kEdgeWeightBorder = 10.f;
 
-			float edgeWeight = (k0 == Kind_Border || k1 == Kind_Border) ? kEdgeWeightBorder : kEdgeWeightSeam;
+			float edgeWeight = (k0 == Kind_Seam || k1 == Kind_Seam) ? kEdgeWeightSeam : kEdgeWeightBorder;
 
 			Quadric Q;
 			quadricFromTriangleEdge(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], edgeWeight);
@@ -1154,6 +1141,68 @@ static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
 			quadricAdd(vertex_quadrics[remap[i1]], Q);
 		}
 	}
+}
+
+static unsigned int oppositeVertex(const EdgeAdjacency& adjacency, unsigned int a, unsigned int b, const unsigned int* remap, const unsigned int* wedge)
+{
+	unsigned int v = a;
+	unsigned int r = ~0u;
+
+	do
+	{
+		unsigned int count = adjacency.offsets[v + 1] - adjacency.offsets[v];
+		const EdgeAdjacency::Edge* edges = adjacency.data + adjacency.offsets[v];
+
+		for (size_t i = 0; i < count; ++i)
+			if (remap[edges[i].next] == remap[b])
+				r = (r == ~0u) ? edges[i].prev : a;
+
+		v = wedge[v];
+	} while (v != a);
+
+	// we only return the opposite vertex if it's unique
+	return r == a ? ~0u : r;
+}
+
+static void fillFoldQuadrics(Quadric* vertex_quadrics, const EdgeAdjacency& adjacency, const Vector3* vertex_positions, size_t vertex_count, const unsigned int* remap, const unsigned int* wedge)
+{
+	for (size_t i0 = 0; i0 < vertex_count; ++i0)
+		for (unsigned int i = adjacency.offsets[i0]; i < adjacency.offsets[i0 + 1]; ++i)
+		{
+			unsigned int i1 = adjacency.data[i].next;
+			unsigned int i2 = adjacency.data[i].prev;
+
+			// since we only process paired edges each edge should occur twice; skip redundant edges
+			if (remap[i1] > remap[i0])
+				continue;
+
+			unsigned int i3 = oppositeVertex(adjacency, i1, unsigned(i0), remap, wedge);
+
+			if (i3 == ~0u)
+				continue;
+
+			Vector3 p10 = {vertex_positions[i1].x - vertex_positions[i0].x, vertex_positions[i1].y - vertex_positions[i0].y, vertex_positions[i1].z - vertex_positions[i0].z};
+			Vector3 p20 = {vertex_positions[i2].x - vertex_positions[i0].x, vertex_positions[i2].y - vertex_positions[i0].y, vertex_positions[i2].z - vertex_positions[i0].z};
+			Vector3 p30 = {vertex_positions[i3].x - vertex_positions[i0].x, vertex_positions[i3].y - vertex_positions[i0].y, vertex_positions[i3].z - vertex_positions[i0].z};
+
+			Vector3 normal = {p10.y * p20.z - p10.z * p20.y, p10.z * p20.x - p10.x * p20.z, p10.x * p20.y - p10.y * p20.x};
+			Vector3 opposite = {p30.y * p10.z - p30.z * p10.y, p30.z * p10.x - p30.x * p10.z, p30.x * p10.y - p30.y * p10.x};
+			float nl = sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+			float ol = sqrtf(opposite.x * opposite.x + opposite.y * opposite.y + opposite.z * opposite.z);
+
+			// identify folds by checking dihedral angle against a somewhat arbitrary ~30 degree cutoff
+			if (normal.x * opposite.x + normal.y * opposite.y + normal.z * opposite.z >= -0.85f * nl * ol)
+				continue;
+
+			// use both triangles for symmetry since we won't visit this edge again
+			Quadric Q, QO;
+			quadricFromTriangleEdge(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], 1.f);
+			quadricFromTriangleEdge(QO, vertex_positions[i0], vertex_positions[i1], vertex_positions[i3], 1.f);
+			quadricAdd(Q, QO);
+
+			quadricAdd(vertex_quadrics[remap[i0]], Q);
+			quadricAdd(vertex_quadrics[remap[i1]], Q);
+		}
 }
 
 static void fillAttributeQuadrics(Quadric* attribute_quadrics, QuadricGrad* attribute_gradients, const unsigned int* indices, size_t index_count, const Vector3* vertex_positions, const float* vertex_attributes, size_t attribute_count)
@@ -1219,13 +1268,7 @@ static bool hasTriangleFlips(const EdgeAdjacency& adjacency, const Vector3* vert
 
 		// early-out when at least one triangle flips due to a collapse
 		if (hasTriangleFlip(vertex_positions[a], vertex_positions[b], v0, v1))
-		{
-#if TRACE >= 2
-			printf("edge block %d -> %d: flip welded %d %d %d\n", i0, i1, a, i0, b);
-#endif
-
 			return true;
-		}
 	}
 
 	return false;
@@ -1371,7 +1414,7 @@ static size_t pickEdgeCollapses(Collapse* collapses, size_t collapse_capacity, c
 	return collapse_count;
 }
 
-static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const float* vertex_attributes, const Quadric* vertex_quadrics, const Quadric* attribute_quadrics, const QuadricGrad* attribute_gradients, size_t attribute_count, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const unsigned int* loop, const unsigned int* loopback)
+static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const Vector3* vertex_positions, const float* vertex_attributes, const Quadric* vertex_quadrics, const Quadric* attribute_quadrics, const QuadricGrad* attribute_gradients, size_t attribute_count, const unsigned int* remap, const unsigned int* wedge, const unsigned char* vertex_kind, const unsigned int* loop, const unsigned int* loopback, bool clamped)
 {
 	for (size_t i = 0; i < collapse_count; ++i)
 	{
@@ -1384,14 +1427,10 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 		float ei = quadricError(vertex_quadrics[remap[i0]], vertex_positions[i1]);
 		float ej = bidi ? quadricError(vertex_quadrics[remap[i1]], vertex_positions[i0]) : FLT_MAX;
 
-#if TRACE >= 3
-		float di = ei, dj = ej;
-#endif
-
 		if (attribute_count)
 		{
-			ei += quadricError(attribute_quadrics[i0], &attribute_gradients[i0 * attribute_count], attribute_count, vertex_positions[i1], &vertex_attributes[i1 * attribute_count]);
-			ej += bidi ? quadricError(attribute_quadrics[i1], &attribute_gradients[i1 * attribute_count], attribute_count, vertex_positions[i0], &vertex_attributes[i0 * attribute_count]) : 0;
+			ei += quadricError(attribute_quadrics[i0], &attribute_gradients[i0 * attribute_count], attribute_count, vertex_positions[i1], &vertex_attributes[i1 * attribute_count], clamped);
+			ej += bidi ? quadricError(attribute_quadrics[i1], &attribute_gradients[i1 * attribute_count], attribute_count, vertex_positions[i0], &vertex_attributes[i0 * attribute_count], clamped) : 0;
 
 			// seam edges need to aggregate attribute errors between primary and secondary edges, as attribute quadrics are separate
 			if (vertex_kind[i0] == Kind_Seam)
@@ -1406,26 +1445,26 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 				// note: this should never happen due to the assertion above, but when disabled if we ever hit this case we'll get a memory safety issue; for now play it safe
 				s1 = (s1 != ~0u) ? s1 : wedge[i1];
 
-				ei += quadricError(attribute_quadrics[s0], &attribute_gradients[s0 * attribute_count], attribute_count, vertex_positions[s1], &vertex_attributes[s1 * attribute_count]);
-				ej += bidi ? quadricError(attribute_quadrics[s1], &attribute_gradients[s1 * attribute_count], attribute_count, vertex_positions[s0], &vertex_attributes[s0 * attribute_count]) : 0;
+				ei += quadricError(attribute_quadrics[s0], &attribute_gradients[s0 * attribute_count], attribute_count, vertex_positions[s1], &vertex_attributes[s1 * attribute_count], clamped);
+				ej += bidi ? quadricError(attribute_quadrics[s1], &attribute_gradients[s1 * attribute_count], attribute_count, vertex_positions[s0], &vertex_attributes[s0 * attribute_count], clamped) : 0;
 			}
 			else
 			{
 				// complex edges can have multiple wedges, so we need to aggregate errors for all wedges based on the selected target
-				if (vertex_kind[i0] == Kind_Complex)
+				if (vertex_kind[i0] == Kind_Complex || vertex_kind[i0] == Kind_Fringe)
 					for (unsigned int v = wedge[i0]; v != i0; v = wedge[v])
 					{
 						unsigned int t = getComplexTarget(v, i1, remap, loop, loopback);
 
-						ei += quadricError(attribute_quadrics[v], &attribute_gradients[v * attribute_count], attribute_count, vertex_positions[t], &vertex_attributes[t * attribute_count]);
+						ei += quadricError(attribute_quadrics[v], &attribute_gradients[v * attribute_count], attribute_count, vertex_positions[t], &vertex_attributes[t * attribute_count], clamped);
 					}
 
-				if (vertex_kind[i1] == Kind_Complex && bidi)
+				if ((vertex_kind[i1] == Kind_Complex || vertex_kind[i1] == Kind_Fringe) && bidi)
 					for (unsigned int v = wedge[i1]; v != i1; v = wedge[v])
 					{
 						unsigned int t = getComplexTarget(v, i0, remap, loop, loopback);
 
-						ej += quadricError(attribute_quadrics[v], &attribute_gradients[v * attribute_count], attribute_count, vertex_positions[t], &vertex_attributes[t * attribute_count]);
+						ej += quadricError(attribute_quadrics[v], &attribute_gradients[v * attribute_count], attribute_count, vertex_positions[t], &vertex_attributes[t * attribute_count], clamped);
 					}
 			}
 		}
@@ -1436,16 +1475,6 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const 
 		c.v0 = rev ? i1 : i0;
 		c.v1 = rev ? i0 : i1;
 		c.error = ej < ei ? ej : ei;
-
-#if TRACE >= 3
-		if (bidi)
-			printf("edge eval %d -> %d: error %f (pos %f, attr %f); reverse %f (pos %f, attr %f)\n",
-			    rev ? i1 : i0, rev ? i0 : i1,
-			    sqrtf(rev ? ej : ei), sqrtf(rev ? dj : di), sqrtf(rev ? ej - dj : ei - di),
-			    sqrtf(rev ? ei : ej), sqrtf(rev ? di : dj), sqrtf(rev ? ei - di : ej - dj));
-		else
-			printf("edge eval %d -> %d: error %f (pos %f, attr %f)\n", i0, i1, sqrtf(c.error), sqrtf(di), sqrtf(ei - di));
-#endif
 	}
 }
 
@@ -1527,7 +1556,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 		}
 
 		// we limit the error in each pass based on the error of optimal last collapse; since many collapses will be locked
-		// as they will share vertices with other successfull collapses, we need to increase the acceptable error by some factor
+		// as they will share vertices with other successful collapses, we need to increase the acceptable error by some factor
 		float error_goal = edge_collapse_goal < collapse_count ? 1.5f * collapses[collapse_order[edge_collapse_goal]].error : FLT_MAX;
 
 		// on average, each collapse is expected to lock 6 other collapses; to avoid degenerate passes on meshes with odd
@@ -1564,25 +1593,16 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 			continue;
 		}
 
-#if TRACE >= 2
-		printf("edge commit %d -> %d: kind %d->%d, error %f\n", i0, i1, vertex_kind[i0], vertex_kind[i1], sqrtf(c.error));
-#endif
-
 		assert(collapse_remap[r0] == r0);
 		assert(collapse_remap[r1] == r1);
 
-		if (kind == Kind_Complex)
+		if (kind == Kind_Complex || kind == Kind_Fringe)
 		{
-			// remap all vertices in the complex to the target vertex
-			unsigned int v = i0;
+			collapse_remap[i0] = i1;
 
-			do
-			{
-				unsigned int t = getComplexTarget(v, i1, remap, loop, loopback);
-
-				collapse_remap[v] = t;
-				v = wedge[v];
-			} while (v != i0);
+			// remap all vertices in the complex to the target vertex, using the same ranking that we used to evaluate the collapses
+			for (unsigned int v = wedge[i0]; v != i0; v = wedge[v])
+				collapse_remap[v] = getComplexTarget(v, i1, remap, loop, loopback);
 		}
 		else if (kind == Kind_Seam)
 		{
@@ -1616,6 +1636,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char* 
 		collapse_locked[r1] = 1;
 
 		// border edges collapse 1 triangle, other edges collapse 2 or more
+		// fringe edges often collapse 1 but may also collapse 2 because they don't respect loops, so we conservatively assume 2
 		triangle_collapses += (kind == Kind_Border) ? 1 : 2;
 		edge_collapses++;
 
@@ -1685,7 +1706,7 @@ static void solvePositions(Vector3* vertex_positions, size_t vertex_count, const
 
 		// moving vertices on an attribute discontinuity may result in extrapolating UV outside of the chart bounds
 		// moving vertices on a border requires a stronger edge quadric to preserve the border geometry
-		if (vertex_kind[i] == Kind_Locked || vertex_kind[i] == Kind_Seam || vertex_kind[i] == Kind_Border)
+		if (vertex_kind[i] != Kind_Manifold && vertex_kind[i] != Kind_Complex)
 			continue;
 
 		if (remap[i] != i)
@@ -1777,7 +1798,7 @@ static void solveAttributes(Vector3* vertex_positions, float* vertex_attributes,
 			unsigned int shared = ~0u;
 
 			// for complex vertices, preserve attribute continuity and use highest weight wedge if values were shared
-			if (vertex_kind[i] == Kind_Complex)
+			if (vertex_kind[i] == Kind_Complex || vertex_kind[i] == Kind_Fringe)
 			{
 				shared = unsigned(i);
 
@@ -1975,15 +1996,9 @@ static void measureComponents(float* component_errors, size_t component_count, c
 	}
 
 	// we've used the output buffer as scratch space, so we need to move the results to proper indices
+	// note: we keep the squared error to make it match quadric error metric
 	for (size_t i = 0; i < component_count; ++i)
-	{
-#if TRACE >= 2
-		printf("component %d: center %f %f %f, error %e\n", int(i),
-		    component_errors[i * 4 + 0], component_errors[i * 4 + 1], component_errors[i * 4 + 2], sqrtf(component_errors[i * 4 + 3]));
-#endif
-		// note: we keep the squared error to make it match quadric error metric
 		component_errors[i] = component_errors[i * 4 + 3];
-	}
 }
 
 static size_t pruneComponents(unsigned int* indices, size_t index_count, const unsigned int* components, const float* component_errors, size_t component_count, float error_cutoff, float& nexterror)
@@ -2029,7 +2044,7 @@ struct CellHasher
 
 	size_t hash(unsigned int i) const
 	{
-		unsigned int h = vertex_ids[i];
+		unsigned int h = vertex_ids ? vertex_ids[i] : unsigned(i);
 
 		// MurmurHash2 finalizer
 		h ^= h >> 13;
@@ -2040,26 +2055,7 @@ struct CellHasher
 
 	bool equal(unsigned int lhs, unsigned int rhs) const
 	{
-		return vertex_ids[lhs] == vertex_ids[rhs];
-	}
-};
-
-struct IdHasher
-{
-	size_t hash(unsigned int id) const
-	{
-		unsigned int h = id;
-
-		// MurmurHash2 finalizer
-		h ^= h >> 13;
-		h *= 0x5bd1e995;
-		h ^= h >> 15;
-		return h;
-	}
-
-	bool equal(unsigned int lhs, unsigned int rhs) const
-	{
-		return lhs == rhs;
+		return vertex_ids ? vertex_ids[lhs] == vertex_ids[rhs] : lhs == rhs;
 	}
 };
 
@@ -2148,7 +2144,7 @@ static size_t fillVertexCells(unsigned int* table, size_t table_size, unsigned i
 
 static size_t countVertexCells(unsigned int* table, size_t table_size, const unsigned int* vertex_ids, size_t vertex_count)
 {
-	IdHasher hasher;
+	CellHasher hasher = {NULL};
 
 	memset(table, -1, table_size * sizeof(unsigned int));
 
@@ -2396,8 +2392,8 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 	for (size_t i = 0; i < vertex_count; ++i)
 		kinds[vertex_kind[i]] += remap[i] == i;
 
-	printf("kinds: manifold %d, border %d, seam %d, complex %d, locked %d\n",
-	    int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Locked]));
+	printf("kinds: manifold %d, border %d, seam %d, complex %d, fringe %d, locked %d\n",
+	    int(kinds[Kind_Manifold]), int(kinds[Kind_Border]), int(kinds[Kind_Seam]), int(kinds[Kind_Complex]), int(kinds[Kind_Fringe]), int(kinds[Kind_Locked]));
 #endif
 
 	Vector3* vertex_positions = allocator.allocate<Vector3>(vertex_count);
@@ -2445,6 +2441,9 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 	fillFaceQuadrics(vertex_quadrics, volume_gradients, result, index_count, vertex_positions, remap);
 	fillVertexQuadrics(vertex_quadrics, vertex_positions, vertex_count, remap, vertex_lock, sparse_remap, options);
 	fillEdgeQuadrics(vertex_quadrics, result, index_count, vertex_positions, remap, vertex_kind, loop, loopback);
+
+	if (options & meshopt_SimplifyPreserveFolds)
+		fillFoldQuadrics(vertex_quadrics, adjacency, vertex_positions, vertex_count, remap, wedge);
 
 	if (attribute_count)
 		fillAttributeQuadrics(attribute_quadrics, attribute_gradients, result, index_count, vertex_positions, vertex_attributes, attribute_count);
@@ -2503,10 +2502,10 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 			break;
 
 #if TRACE
-		printf("pass %d:%c", int(pass_count++), TRACE >= 2 ? '\n' : ' ');
+		printf("pass %d: ", int(pass_count++));
 #endif
 
-		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap, wedge, vertex_kind, loop, loopback);
+		rankEdgeCollapses(edge_collapses, edge_collapse_count, vertex_positions, vertex_attributes, vertex_quadrics, attribute_quadrics, attribute_gradients, attribute_count, remap, wedge, vertex_kind, loop, loopback, (options & meshopt_SimplifyErrorClamped) != 0);
 
 		sortEdgeCollapses(collapse_order, edge_collapses, edge_collapse_count);
 
@@ -2652,6 +2651,7 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
+	assert(target_error >= 0);
 
 	// we expect to get ~2 triangles/vertex in the output
 	size_t target_cell_count = target_index_count / 6;
@@ -2850,7 +2850,7 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 	size_t min_vertices = 0;
 	size_t max_vertices = vertex_count;
 
-	// instead of starting in the middle, let's guess as to what the answer might be! triangle count usually grows as a square of grid size...
+	// instead of starting in the middle, let's guess as to what the answer might be! surface point count usually grows as a square of grid size...
 	int next_grid_size = int(sqrtf(float(target_cell_count)) + 0.5f);
 
 	for (int pass = 0; pass < 10 + kInterpolationPasses; ++pass)

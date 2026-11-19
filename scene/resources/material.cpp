@@ -36,11 +36,14 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
+
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For texture_streaming.
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
@@ -427,7 +430,7 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		Variant *v = param_cache.getptr(p_param);
 		if (!v) {
 			// Never assigned, also update the remap cache.
-			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
+			remap_cache["shader_parameter/" + p_param.string()] = p_param;
 			param_cache.insert(p_param, p_value);
 		} else {
 			*v = p_value;
@@ -736,6 +739,11 @@ void BaseMaterial3D::_update_shader() {
 		texfilter_height_str += ", repeat_disable";
 	}
 
+	bool animation_enabled = features[FEATURE_PARTICLES_ANIMATION];
+#ifndef DISABLE_DEPRECATED
+	animation_enabled = animation_enabled || billboard_mode == BILLBOARD_PARTICLES;
+#endif
+
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = vformat(
 			"// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s %s.\n\n",
@@ -1024,7 +1032,7 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (animation_enabled) {
 		code += R"(
 uniform int particles_anim_h_frames : hint_range(1, 128);
 uniform int particles_anim_v_frames : hint_range(1, 128);
@@ -1304,25 +1312,30 @@ void vertex() {)";
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
 			}
-			// Set modelview normal and handle animation.
+			// Set modelview normal.
 			code += R"(
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
-
-	float h_frames = float(particles_anim_h_frames);
-	float v_frames = float(particles_anim_v_frames);
-	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
-	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
-	if (!particles_anim_loop) {
-		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
-	} else {
-		particle_frame = mod(particle_frame, particle_total_frames);
-	}
-	UV /= vec2(h_frames, v_frames);
-	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
 )";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
+	}
+
+	// Handle animation.
+	if (animation_enabled) {
+		code += R"(
+		float h_frames = float(particles_anim_h_frames);
+		float v_frames = float(particles_anim_v_frames);
+		float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
+		float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
+		if (!particles_anim_loop) {
+			particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
+		} else {
+			particle_frame = mod(particle_frame, particle_total_frames);
+		}
+		UV /= vec2(h_frames, v_frames);
+		UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
+)";
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -1792,8 +1805,8 @@ void fragment() {)";
 	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
 
 	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
-	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
-	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * ndc;
+	vec4 refraction_ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * refraction_ndc;
 	refraction_view_pos.xyz /= refraction_view_pos.w;
 
 	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
@@ -1818,14 +1831,16 @@ void fragment() {)";
 	}
 
 	if (proximity_fade_enabled) {
-		code += R"(
+		// Invert proximity fade direction if using inverted depth. Otherwise, the material is never visible with proximity fade enabled.
+		code += vformat(R"(
 	// Proximity Fade: Enabled
 	float proximity_depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
-	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
-	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * ndc;
+	vec4 proximity_ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
+	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * proximity_ndc;
 	proximity_view_pos.xyz /= proximity_view_pos.w;
-	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z + proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
-)";
+	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z %s proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
+)",
+				depth_test == DEPTH_TEST_INVERTED ? "-" : "+");
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
@@ -2032,6 +2047,39 @@ void fragment() {)";
 		code += R"(	vec3 detail_norm = mix(NORMAL_MAP, detail_norm_tex.rgb, detail_tex.a);
 	NORMAL_MAP = mix(NORMAL_MAP, detail_norm, detail_mask_tex.r);
 	ALBEDO.rgb = mix(ALBEDO.rgb, detail, detail_mask_tex.r);
+)";
+	}
+
+	bool streaming_enabled = false;
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	streaming_enabled = GLOBAL_GET_CACHED(bool, "rendering/textures/streaming/enabled");
+#endif
+	if (streaming_enabled && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += R"(
+	// Texture streaming feedback for triplanar.
+	// Keep in sync with visual shader.
+	{
+		vec3 pos_ddx = dFdx(uv1_triplanar_pos);
+		vec3 pos_ddy = dFdy(uv1_triplanar_pos);
+		vec2 uv_ddx;
+		vec2 uv_ddy;
+		if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
+			uv_ddx = pos_ddx.zy;
+			uv_ddy = pos_ddy.zy;
+		} else if (uv1_power_normal.y >= uv1_power_normal.z) {
+			uv_ddx = pos_ddx.xz;
+			uv_ddy = pos_ddy.xz;
+		} else {
+			uv_ddx = pos_ddx.xy;
+			uv_ddy = pos_ddy.xy;
+		}
+
+		float uv_ddx_sq = dot(uv_ddx, uv_ddx);
+		float uv_ddy_sq = dot(uv_ddy, uv_ddy);
+		const float MAX_ANISOTROPY = 16.0;
+		float footprint_sq = max(min(uv_ddx_sq, uv_ddy_sq), max(uv_ddx_sq, uv_ddy_sq) / (MAX_ANISOTROPY * MAX_ANISOTROPY));
+		STREAMING_LOD = 0.5 * log2(max(footprint_sq, 1e-30)) + 12.0;
+	}
 )";
 	}
 
@@ -2549,9 +2597,16 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+#ifndef DISABLE_DEPRECATED
+	if (billboard_mode == BILLBOARD_PARTICLES) {
+		if (p_property.name == "particles_anim_enabled") {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if (p_property.name.begins_with("particles_anim_")) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
 	}
+#endif
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
@@ -3712,6 +3767,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particles_anim_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_PARTICLES_ANIMATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
@@ -3809,6 +3865,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_BENT_NORMAL_MAPPING);
+	BIND_ENUM_CONSTANT(FEATURE_PARTICLES_ANIMATION);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);

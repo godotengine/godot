@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ struct SDL_Haptic
     struct haptic_hwdata *hwdata;   // Driver dependent
     int ref_count;                  // Count for multiple opens
 
-    int rumble_id;                  // ID of rumble effect for simple rumble API.
+    SDL_HapticEffectID rumble_id;   // ID of rumble effect for simple rumble API.
     SDL_HapticEffect rumble_effect; // Rumble effect.
     struct SDL_Haptic *next;        // pointer to next haptic we have allocated
 };

@@ -35,6 +35,11 @@ uniform sampler2D source2; // texunit:-2
 
 uniform sampler2D source3; // texunit:-3
 
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-4
+
+#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
+#define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
+
 #define OUTPUT0_SRGB uint(1)
 #define OUTPUT1_SRGB uint(2)
 #define OUTPUT2_SRGB uint(4)
@@ -72,8 +77,6 @@ layout(std140) uniform MaterialUniforms{ //ubo:0
 #GLOBALS
 
 vec3 linear_to_srgb(vec3 color) {
-	// If going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }

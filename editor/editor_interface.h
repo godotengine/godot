@@ -37,6 +37,7 @@
 class Control;
 class CreateDialog;
 class EditorCommandPalette;
+class EditorDock;
 class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
@@ -46,6 +47,7 @@ class EditorSelection;
 class EditorSettings;
 class EditorToaster;
 class EditorUndoRedoManager;
+class ScenePaint2DEditor;
 class FileSystemDock;
 class Mesh;
 class Node;
@@ -95,6 +97,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
+	bool is_exiting() const;
 	void restart_editor(bool p_save = true);
 
 	// Editor tools.
@@ -107,6 +110,7 @@ public:
 	Ref<EditorSettings> get_editor_settings() const;
 	EditorToaster *get_editor_toaster() const;
 	EditorUndoRedoManager *get_editor_undo_redo() const;
+	ScenePaint2DEditor *get_scene_paint_2d() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
@@ -119,12 +123,17 @@ public:
 	Ref<Theme> get_editor_theme() const;
 
 	Control *get_base_control() const;
+#ifndef DISABLE_DEPRECATED
 	VBoxContainer *get_editor_main_screen() const;
+#endif
 	ScriptEditor *get_script_editor() const;
 	SubViewport *get_editor_viewport_2d() const;
 	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_main_screen_editor(const String &p_name);
+#endif
+	EditorDock *get_dock_by_name(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
 	bool is_multi_window_enabled() const;

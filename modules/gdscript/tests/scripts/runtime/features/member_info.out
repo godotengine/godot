@@ -1,4 +1,16 @@
 GDTEST_OK
+func _init() -> void # hint=NONE hint_string="" usage=DEFAULT class_name=&""
+static func _static_init() -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+func _init(_param: int = 2) -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+static func _static_init() -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+func _init(_param: int = 1) -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+---
+func _init() -> void # hint=NONE hint_string="" usage=DEFAULT class_name=&""
+static func _static_init() -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+func _init(_param: int = 3) -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+static func _static_init() -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+func _init(_param: int = 1) -> void # hint=NONE hint_string="" usage=NONE class_name=&""
+===
 static var test_static_var_untyped: Variant
 static var test_static_var_weak_null: Variant
 static var test_static_var_weak_int: Variant

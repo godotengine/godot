@@ -120,9 +120,9 @@ void GodotArea3D::set_area_monitor_callback(const Callable &p_callback) {
 	}
 }
 
-void GodotArea3D::_set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode &r_mode, PhysicsServer3D::AreaSpaceOverrideMode p_new_mode) {
-	bool do_override = p_new_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	if (do_override == (r_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)) {
+void GodotArea3D::_set_space_override_mode(PS3DE::AreaSpaceOverrideMode &r_mode, PS3DE::AreaSpaceOverrideMode p_new_mode) {
+	bool do_override = p_new_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	if (do_override == (r_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED)) {
 		return;
 	}
 	_unregister_shapes();
@@ -130,84 +130,84 @@ void GodotArea3D::_set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMod
 	_shape_changed();
 }
 
-void GodotArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
+void GodotArea3D::set_param(PS3DE::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
-			_set_space_override_mode(gravity_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+			_set_space_override_mode(gravity_override_mode, (PS3DE::AreaSpaceOverrideMode)(int)p_value);
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY:
+		case PS3DE::AREA_PARAM_GRAVITY:
 			gravity = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR:
 			gravity_vector = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT:
 			gravity_is_point = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			gravity_point_unit_distance = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
-			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(linear_damping_override_mode, (PS3DE::AreaSpaceOverrideMode)(int)p_value);
 			break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
+		case PS3DE::AREA_PARAM_LINEAR_DAMP:
 			linear_damp = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
-			_set_space_override_mode(angular_damping_override_mode, (PhysicsServer3D::AreaSpaceOverrideMode)(int)p_value);
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+			_set_space_override_mode(angular_damping_override_mode, (PS3DE::AreaSpaceOverrideMode)(int)p_value);
 			break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP:
 			angular_damp = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_PRIORITY:
+		case PS3DE::AREA_PARAM_PRIORITY:
 			priority = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE:
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE:
 			ERR_FAIL_COND_MSG(wind_force_magnitude < 0, "Wind force magnitude must be a non-negative real number, but a negative number was specified.");
 			wind_force_magnitude = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE:
+		case PS3DE::AREA_PARAM_WIND_SOURCE:
 			wind_source = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION:
+		case PS3DE::AREA_PARAM_WIND_DIRECTION:
 			wind_direction = p_value;
 			break;
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR:
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR:
 			ERR_FAIL_COND_MSG(wind_attenuation_factor < 0, "Wind attenuation factor must be a non-negative real number, but a negative number was specified.");
 			wind_attenuation_factor = p_value;
 			break;
 	}
 }
 
-Variant GodotArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
+Variant GodotArea3D::get_param(PS3DE::AreaParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE:
 			return gravity_override_mode;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY:
+		case PS3DE::AREA_PARAM_GRAVITY:
 			return gravity;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR:
 			return gravity_vector;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT:
 			return gravity_is_point;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE:
 			return gravity_point_unit_distance;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			return linear_damping_override_mode;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
+		case PS3DE::AREA_PARAM_LINEAR_DAMP:
 			return linear_damp;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE:
 			return angular_damping_override_mode;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP:
 			return angular_damp;
-		case PhysicsServer3D::AREA_PARAM_PRIORITY:
+		case PS3DE::AREA_PARAM_PRIORITY:
 			return priority;
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE:
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE:
 			return wind_force_magnitude;
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE:
+		case PS3DE::AREA_PARAM_WIND_SOURCE:
 			return wind_source;
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION:
+		case PS3DE::AREA_PARAM_WIND_DIRECTION:
 			return wind_direction;
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR:
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR:
 			return wind_attenuation_factor;
 	}
 
@@ -250,7 +250,7 @@ void GodotArea3D::call_queries() {
 					continue;
 				}
 
-				res[0] = E->value.state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
+				res[0] = E->value.state > 0 ? PS3DE::AREA_BODY_ADDED : PS3DE::AREA_BODY_REMOVED;
 				res[1] = E->key.rid;
 				res[2] = E->key.instance_id;
 				res[3] = E->key.body_shape;
@@ -292,7 +292,7 @@ void GodotArea3D::call_queries() {
 					continue;
 				}
 
-				res[0] = E->value.state > 0 ? PhysicsServer3D::AREA_BODY_ADDED : PhysicsServer3D::AREA_BODY_REMOVED;
+				res[0] = E->value.state > 0 ? PS3DE::AREA_BODY_ADDED : PS3DE::AREA_BODY_REMOVED;
 				res[1] = E->key.rid;
 				res[2] = E->key.instance_id;
 				res[3] = E->key.body_shape;

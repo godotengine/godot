@@ -361,6 +361,8 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 	stream_buffer->put_u32(width);
 
 	DDSFormat dds_format = _image_format_to_dds_format(image->get_format());
+	ERR_FAIL_COND_V_MSG(dds_format == DDS_MAX, Vector<uint8_t>(), vformat("DDS: Cannot save image with format %s.", Image::get_format_name(image->get_format())));
+
 	const DDSFormatInfo &info = dds_format_info[dds_format];
 
 	uint32_t depth = 1; // Default depth for 2D textures

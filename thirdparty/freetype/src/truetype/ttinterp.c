@@ -1104,7 +1104,7 @@
   /* documentation is in freetype.h */
 
   static __inline FT_Int32
-  TT_MulFixi14_i386( FT_Int32  a,
+  TT_MulFix14_i386( FT_Int32  a,
                      FT_Int32  b )
   {
     FT_Int32  result;
@@ -1499,7 +1499,9 @@
    *
    * @Note:
    *   See `ttinterp.h' for details on backward compatibility mode.
-   *   `Touches' the point.
+   *   `Touches' the point.  When both freedom and projection vectors
+   *   are aligned along the axes, the moves are handled by simplified
+   *   versions of this function; more complex moves are handled here.
    */
   static void
   Direct_Move( TT_ExecContext  exc,
@@ -1514,10 +1516,10 @@
     if ( v != 0 )
     {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      /* Exception to the post-IUP curfew: Allow the x component of */
-      /* diagonal moves, but only post-IUP.  DejaVu tries to adjust */
-      /* diagonal stems like on `Z' and `z' post-IUP.               */
-      if ( !exc->backward_compatibility )
+      /* See `ttinterp.h' for details on backward compatibility mode.   */
+      /* Exception for horizontal projection is made for Comic Sans MS. */
+      if ( !exc->backward_compatibility ||
+           exc->GS.projVector.y == 0    )
 #endif
         zone->cur[point].x = ADD_LONG( zone->cur[point].x,
                                        FT_MulFix( distance, v ) );
@@ -1529,8 +1531,10 @@
     if ( v != 0 )
     {
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-      /* See `ttinterp.h' for details on backward compatibility mode. */
-      if ( exc->backward_compatibility != 0x7 )
+      /* See `ttinterp.h' for details on backward compatibility mode.   */
+      /* Exception for horizontal projection is made for Comic Sans MS. */
+      if ( exc->backward_compatibility != 0x7 ||
+           exc->GS.projVector.y == 0          )
 #endif
         zone->cur[point].y = ADD_LONG( zone->cur[point].y,
                                        FT_MulFix( distance, v ) );
@@ -1659,6 +1663,27 @@
 
     zone->org[point].y = ADD_LONG( zone->org[point].y, distance );
   }
+
+
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+
+  static void
+  Update_Native_ClearType_X_State( TT_ExecContext  exc )
+  {
+    /* `backward_compatibility' is also zero in v35, the CVT program, */
+    /* monochrome rendering, and tricky-font execution.               */
+    exc->native_cleartype_x = FT_BOOL(
+      !exc->backward_compatibility        &&
+      exc->GS.projVector.y == 0           &&
+      exc->GS.freeVector.y == 0           &&
+      SUBPIXEL_HINTING_MINIMAL            &&
+      exc->iniRange == tt_coderange_glyph &&
+      exc->mode != FT_RENDER_MODE_MONO    &&
+      !FT_IS_TRICKY( (FT_Face)exc->face ) );
+  }
+
+#endif /* TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL */
+
 
   /**************************************************************************
    *
@@ -2250,9 +2275,12 @@
       exc->moveVector.x = exc->GS.freeVector.x * 4;
       exc->moveVector.y = exc->GS.freeVector.y * 4;
     }
-    else if ( -0x400L < F_dot_P && F_dot_P < 0x400L )
+    else if ( -0x1555L < F_dot_P && F_dot_P < 0x1555L )
     {
-      /* prohibitively orthogonal */
+      /* prohibitively near-orthogonal; the empirical limit avoids */
+      /* bad rendering in Palatino without negative consequences   */
+      FT_TRACE3(( "F_dot_P = %.2f, too small for valid movement.\n",
+                   F_dot_P / 16384.));
       exc->moveVector.x = 0;
       exc->moveVector.y = 0;
     }
@@ -2291,6 +2319,12 @@
       exc->func_dualproj = (TT_Project_Func)Project_y;
     else
       exc->func_dualproj = (TT_Project_Func)Dual_Project;
+
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+    /* Projection/freedom-vector changes can enter or leave the */
+    /* native ClearType direction.                              */
+    Update_Native_ClearType_X_State( exc );
+#endif
 
     /* Disable cached aspect ratio */
     exc->tt_metrics.ratio = 0;
@@ -2841,7 +2875,13 @@
         ARRAY_BOUND_ERROR;
     }
     else
+    {
+      Modify_CVT_Check( exc );
+      if ( exc->error )
+        return;
+
       exc->cvt[I] = FT_MulFix( args[1], exc->tt_metrics.scale );
+    }
   }
 
 
@@ -2908,8 +2948,19 @@
   Ins_ROUND( TT_ExecContext  exc,
              FT_Long*        args )
   {
-    args[0] = exc->func_round( exc, args[0],
-                               exc->GS.compensation[exc->opcode & 3] );
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+    /*
+     * Native ClearType applies ROUND to the 1/16-pixel virtual
+     * grid in the ClearType direction.  Approximate this in v40
+     * by leaving the result unrounded.
+     */
+    if ( exc->native_cleartype_x )
+      args[0] = Round_None( exc, args[0],
+                            exc->GS.compensation[exc->opcode & 3] );
+    else
+#endif
+      args[0] = exc->func_round( exc, args[0],
+                                 exc->GS.compensation[exc->opcode & 3] );
   }
 
 
@@ -4722,7 +4773,13 @@
       /* compatibility hacks and lets them program points to the grid like */
       /* it's 1996.  They might sign a waiver for just one glyph, though.  */
       if ( SUBPIXEL_HINTING_MINIMAL )
+      {
         exc->backward_compatibility = ( L & 4 ) ^ 4;
+
+        /* A glyph can temporarily switch between backward-compatible */
+        /* and native ClearType, so update the native-X state too.    */
+        Update_Native_ClearType_X_State( exc );
+      }
 #endif
     }
     else if ( exc->pedantic_hinting )
@@ -4923,37 +4980,38 @@
   Compute_Point_Displacement( TT_ExecContext  exc,
                               FT_F26Dot6*     x,
                               FT_F26Dot6*     y,
-                              TT_GlyphZone    zone,
-                              FT_UShort*      refp )
+                              FT_Vector*      cur,
+                              FT_UInt*        refp )
   {
-    TT_GlyphZoneRec  zp;
-    FT_UShort        p;
-    FT_F26Dot6       d;
+    TT_GlyphZone  zp;
+    FT_UShort     p;
+    FT_F26Dot6    d;
 
 
     if ( exc->opcode & 1 )
     {
-      zp = exc->zp0;
+      zp = &exc->zp0;
       p  = exc->GS.rp1;
     }
     else
     {
-      zp = exc->zp1;
+      zp = &exc->zp1;
       p  = exc->GS.rp2;
     }
 
-    if ( BOUNDS( p, zp.n_points ) )
+    if ( BOUNDS( p, zp->n_points ) )
     {
       if ( exc->pedantic_hinting )
         exc->error = FT_THROW( Invalid_Reference );
-      *refp = 0;
       return FAILURE;
     }
 
-    *zone = zp;
-    *refp = p;
+    /* return reference if zones match */
+    if ( refp )
+      *refp = cur == zp->cur ? p
+                             : ~0U;  /* nan */
 
-    d = PROJECT( zp.cur + p, zp.org + p );
+    d = PROJECT( zp->cur + p, zp->org + p );
 
     *x = FT_MulFix( d, exc->moveVector.x );
     *y = FT_MulFix( d, exc->moveVector.y );
@@ -4965,10 +5023,9 @@
   /* See `ttinterp.h' for details on backward compatibility mode. */
   static void
   Move_Zp2_Point( TT_ExecContext  exc,
-                  FT_UShort       point,
+                  FT_UInt         point,
                   FT_F26Dot6      dx,
-                  FT_F26Dot6      dy,
-                  FT_Bool         touch )
+                  FT_F26Dot6      dy )
   {
     if ( exc->GS.freeVector.x != 0 )
     {
@@ -4978,8 +5035,7 @@
 #endif
         exc->zp2.cur[point].x = ADD_LONG( exc->zp2.cur[point].x, dx );
 
-      if ( touch )
-        exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_X;
+      exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_X;
     }
 
     if ( exc->GS.freeVector.y != 0 )
@@ -4990,8 +5046,7 @@
 #endif
         exc->zp2.cur[point].y = ADD_LONG( exc->zp2.cur[point].y, dy );
 
-      if ( touch )
-        exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_Y;
+      exc->zp2.tags[point] |= FT_CURVE_TAG_TOUCH_Y;
     }
   }
 
@@ -5007,11 +5062,9 @@
            FT_Long*        args )
   {
     FT_Long          loop = exc->GS.loop;
-    TT_GlyphZoneRec  zp;
-    FT_UShort        refp;
 
     FT_F26Dot6       dx, dy;
-    FT_UShort        point;
+    FT_UInt          point;
 
 
     if ( exc->new_top < loop )
@@ -5023,12 +5076,12 @@
 
     exc->new_top -= loop;
 
-    if ( Compute_Point_Displacement( exc, &dx, &dy, &zp, &refp ) )
+    if ( Compute_Point_Displacement( exc, &dx, &dy, NULL, NULL ) )
       return;
 
     while ( loop-- )
     {
-      point = (FT_UShort)*(--args);
+      point = (FT_UInt)*(--args);
 
       if ( BOUNDS( point, exc->zp2.n_points ) )
       {
@@ -5039,7 +5092,7 @@
         }
       }
       else
-        Move_Zp2_Point( exc, point, dx, dy, TRUE );
+        Move_Zp2_Point( exc, point, dx, dy );
     }
 
   Fail:
@@ -5061,12 +5114,10 @@
   Ins_SHC( TT_ExecContext  exc,
            FT_Long*        args )
   {
-    TT_GlyphZoneRec  zp;
-    FT_UShort        refp;
+    FT_UInt          refp, start, limit, i;
     FT_F26Dot6       dx, dy;
 
     FT_UShort        contour, bounds;
-    FT_UShort        start, limit, i;
 
 
     contour = (FT_UShort)args[0];
@@ -5079,7 +5130,7 @@
       return;
     }
 
-    if ( Compute_Point_Displacement( exc, &dx, &dy, &zp, &refp ) )
+    if ( Compute_Point_Displacement( exc, &dx, &dy, exc->zp2.cur, &refp ) )
       return;
 
     if ( contour == 0 )
@@ -5095,8 +5146,8 @@
 
     for ( i = start; i < limit; i++ )
     {
-      if ( zp.cur != exc->zp2.cur || refp != i )
-        Move_Zp2_Point( exc, i, dx, dy, TRUE );
+      if ( refp != i )
+        Move_Zp2_Point( exc, i, dx, dy );
     }
   }
 
@@ -5111,40 +5162,59 @@
   Ins_SHZ( TT_ExecContext  exc,
            FT_Long*        args )
   {
-    TT_GlyphZoneRec  zp;
-    FT_UShort        refp;
-    FT_F26Dot6       dx,
-                     dy;
-
-    FT_UShort        limit, i;
+    FT_Vector*       cur;
+    FT_UInt          refp, i, limit;
+    FT_F26Dot6       dx, dy;
 
 
-    if ( BOUNDS( args[0], 2 ) )
+    /* XXX: UNDOCUMENTED! SHZ doesn't move the phantom points, */
+    /*      which must be subtracted.                          */
+    switch ( (FT_Int)args[0] )
     {
+    case 0:
+      cur   = exc->twilight.cur;
+      limit = exc->twilight.n_points;
+      break;
+
+    case 1:
+      cur   = exc->pts.cur;
+      limit = exc->pts.n_points > 4U ? exc->pts.n_points - 4U : 0;
+      break;
+
+    default:
       if ( exc->pedantic_hinting )
         exc->error = FT_THROW( Invalid_Reference );
       return;
     }
 
-    if ( Compute_Point_Displacement( exc, &dx, &dy, &zp, &refp ) )
+    if ( Compute_Point_Displacement( exc, &dx, &dy, cur, &refp ) )
       return;
 
-    /* XXX: UNDOCUMENTED! SHZ doesn't move the phantom points.     */
-    /*      Twilight zone has no real contours, so use `n_points'. */
-    /*      Normal zone's `n_points' includes phantoms, so must    */
-    /*      use end of last contour.                               */
-    if ( exc->GS.gep2 == 0 )
-      limit = exc->zp2.n_points;
-    else if ( exc->GS.gep2 == 1 && exc->zp2.n_contours > 0 )
-      limit = exc->zp2.contours[exc->zp2.n_contours - 1] + 1;
-    else
-      limit = 0;
-
-    /* XXX: UNDOCUMENTED! SHZ doesn't touch the points */
-    for ( i = 0; i < limit; i++ )
+    /* XXX: UNDOCUMENTED! SHZ doesn't touch the points. */
+    if ( dx )
     {
-      if ( zp.cur != exc->zp2.cur || refp != i )
-        Move_Zp2_Point( exc, i, dx, dy, FALSE );
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* See `ttinterp.h' for details on backward compatibility mode. */
+      if ( !exc->backward_compatibility )
+#endif
+        for ( i = 0; i < limit; i++ )
+        {
+          if ( refp != i )
+            cur[i].x = ADD_LONG( cur[i].x, dx );
+        }
+    }
+
+    if ( dy )
+    {
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* See `ttinterp.h' for details on backward compatibility mode. */
+      if ( exc->backward_compatibility != 0x7 )
+#endif
+        for ( i = 0; i < limit; i++ )
+        {
+          if ( refp != i )
+            cur[i].y = ADD_LONG( cur[i].y, dy );
+        }
     }
   }
 
@@ -5161,7 +5231,7 @@
   {
     FT_Long     loop = exc->GS.loop;
     FT_F26Dot6  dx, dy;
-    FT_UShort   point;
+    FT_UInt     point;
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
     FT_Bool     in_twilight = FT_BOOL( exc->GS.gep0 == 0 ||
                                        exc->GS.gep1 == 0 ||
@@ -5183,7 +5253,7 @@
 
     while ( loop-- )
     {
-      point = (FT_UShort)*(--args);
+      point = (FT_UInt)*(--args);
 
       if ( BOUNDS( point, exc->zp2.n_points ) )
       {
@@ -5206,11 +5276,11 @@
              ( exc->backward_compatibility != 0x7                     &&
                ( ( exc->is_composite && exc->GS.freeVector.y != 0 ) ||
                  ( exc->zp2.tags[point] & FT_CURVE_TAG_TOUCH_Y )    ) ) )
-          Move_Zp2_Point( exc, point, 0, dy, TRUE );
+          Move_Zp2_Point( exc, point, 0, dy );
       }
       else
 #endif
-        Move_Zp2_Point( exc, point, dx, dy, TRUE );
+        Move_Zp2_Point( exc, point, dx, dy );
     }
 
   Fail:
@@ -5293,7 +5363,12 @@
     if ( ( exc->opcode & 1 ) != 0 )
     {
       cur_dist = FAST_PROJECT( &exc->zp0.cur[point] );
-      distance = SUB_LONG( exc->func_round( exc, cur_dist, 0 ), cur_dist );
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      if ( exc->native_cleartype_x )
+        distance = 0;
+      else
+#endif
+        distance = SUB_LONG( exc->func_round( exc, cur_dist, 0 ), cur_dist );
     }
     else
       distance = 0;
@@ -5371,6 +5446,13 @@
       FT_F26Dot6  delta;
 
 
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* Native ClearType reduces CVT cut-in to 1/16 in the */
+      /* ClearType direction.                               */
+      if ( exc->native_cleartype_x )
+        control_value_cutin >>= 4;
+#endif
+
       delta = SUB_LONG( distance, org_dist );
       if ( delta < 0 )
         delta = NEG_LONG( delta );
@@ -5378,7 +5460,10 @@
       if ( delta > control_value_cutin )
         distance = org_dist;
 
-      distance = exc->func_round( exc, distance, 0 );
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      if ( !exc->native_cleartype_x )
+#endif
+        distance = exc->func_round( exc, distance, 0 );
     }
 
     exc->func_move( exc, &exc->zp0, point, SUB_LONG( distance, org_dist ) );
@@ -5472,7 +5557,14 @@
     compensation = exc->GS.compensation[exc->opcode & 3];
 
     if ( ( exc->opcode & 4 ) != 0 )
-      distance = exc->func_round( exc, org_dist, compensation );
+    {
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      if ( exc->native_cleartype_x )
+        distance = Round_None( exc, org_dist, compensation );
+      else
+#endif
+        distance = exc->func_round( exc, org_dist, compensation );
+    }
     else
       distance = Round_None( exc, org_dist, compensation );
 
@@ -5482,6 +5574,13 @@
     {
       FT_F26Dot6  minimum_distance = exc->GS.minimum_distance;
 
+
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* Native ClearType reduces minimum distance to 1/2 in the */
+      /* ClearType direction.                                    */
+      if ( exc->native_cleartype_x )
+        minimum_distance >>= 1;
+#endif
 
       if ( org_dist >= 0 )
       {
@@ -5605,6 +5704,13 @@
         FT_F26Dot6  control_value_cutin = exc->GS.control_value_cutin;
 
 
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+        /* Native ClearType reduces CVT cut-in to 1/16 in the */
+        /* ClearType direction.                               */
+        if ( exc->native_cleartype_x )
+          control_value_cutin >>= 4;
+#endif
+
         /* XXX: According to Greg Hitchcock, the following wording is */
         /*      the right one:                                        */
         /*                                                            */
@@ -5625,7 +5731,12 @@
           cvt_dist = org_dist;
       }
 
-      distance = exc->func_round( exc, cvt_dist, compensation );
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      if ( exc->native_cleartype_x )
+        distance = Round_None( exc, cvt_dist, compensation );
+      else
+#endif
+        distance = exc->func_round( exc, cvt_dist, compensation );
     }
     else
       distance = Round_None( exc, cvt_dist, compensation );
@@ -5636,6 +5747,13 @@
     {
       FT_F26Dot6  minimum_distance = exc->GS.minimum_distance;
 
+
+#ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* Native ClearType reduces minimum distance to 1/2 in the */
+      /* ClearType direction.                                    */
+      if ( exc->native_cleartype_x )
+        minimum_distance >>= 1;
+#endif
 
       if ( org_dist >= 0 )
       {
@@ -6191,14 +6309,14 @@
     IUP_WorkerRec  V;
     FT_Byte        mask;
 
-    FT_UInt   first_point;   /* first point of contour        */
-    FT_UInt   end_point;     /* end point (last+1) of contour */
+    FT_UInt  first_point;   /* first point of contour        */
+    FT_UInt  end_point;     /* end point (last+1) of contour */
 
-    FT_UInt   first_touched; /* first touched point in contour   */
-    FT_UInt   cur_touched;   /* current touched point in contour */
+    FT_UInt  first_touched; /* first touched point in contour   */
+    FT_UInt  cur_touched;   /* current touched point in contour */
 
-    FT_UInt   point;         /* current point   */
-    FT_Short  contour;       /* current contour */
+    FT_UInt  point;         /* current point   */
+    FT_UInt  contour;       /* current contour */
 
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
@@ -6566,11 +6684,23 @@
        * Selector Bit:  11
        * Return Bit(s): 18
        *
-       * The only smoothing method FreeType supports unless someone sets
-       * FT_LOAD_TARGET_MONO.
+       * Report the smoothing mode selected by the DirectWrite-style
+       * ClearType policy for this face and PPEM.
        */
-      if ( ( args[0] & 2048 ) != 0 && exc->mode != FT_RENDER_MODE_MONO )
-        K |= 1 << 18;
+      if ( ( args[0] & 2048 ) != 0          &&
+           exc->mode != FT_RENDER_MODE_MONO )
+      {
+        FT_Bool  symmetric_smoothing;
+
+
+        tt_face_get_cleartype_policy( exc->face,
+                                      exc->metrics.y_ppem,
+                                      &symmetric_smoothing,
+                                      NULL );
+
+        if ( symmetric_smoothing )
+          K |= 1 << 18;
+      }
 
       /*********************************
        * CLEARTYPE HINTING AND
@@ -7339,56 +7469,11 @@
       }
 
       if ( exc->error )
-      {
-        switch ( exc->error )
-        {
-        case FT_ERR( Invalid_Opcode ):
-          {
-            TT_DefRecord*  def   = exc->IDefs;
-            TT_DefRecord*  limit = FT_OFFSET( def, exc->numIDefs );
-
-
-            /* looking for redefined instructions */
-            for ( ; def < limit; def++ )
-            {
-              if ( def->active && exc->opcode == (FT_Byte)def->opc )
-              {
-                TT_CallRec*  callrec;
-
-
-                if ( exc->callTop >= exc->callSize )
-                {
-                  exc->error = FT_THROW( Invalid_Reference );
-                  goto LErrorLabel_;
-                }
-
-                callrec = &exc->callStack[exc->callTop];
-
-                callrec->Caller_Range = exc->curRange;
-                callrec->Caller_IP    = exc->IP + 1;
-                callrec->Cur_Count    = 1;
-                callrec->Def          = def;
-
-                if ( Ins_Goto_CodeRange( exc,
-                                         def->range,
-                                         def->start ) == FAILURE )
-                  goto LErrorLabel_;
-
-                goto LSuiteLabel_;
-              }
-            }
-          }
-          FALL_THROUGH;
-
-        default:
-          goto LErrorLabel_;
-        }
-      }
+        goto LErrorLabel_;
 
       exc->top = exc->new_top;
       exc->IP += exc->length;
 
-    LSuiteLabel_:
       if ( exc->IP >= exc->codeSize )
       {
         if ( exc->callTop > 0 )

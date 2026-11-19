@@ -2020,7 +2020,7 @@ else
     else
       {
       *errorcodeptr = ERR64;
-      goto ESCAPE_FAILED_FORWARD;
+      if (ptr < ptrend) goto ESCAPE_FAILED_FORWARD;
       }
     break;
 
@@ -2107,7 +2107,7 @@ else
         else
           {
           *errorcodeptr = ERR67;
-          goto ESCAPE_FAILED_FORWARD;
+          if (ptr < ptrend) goto ESCAPE_FAILED_FORWARD;
           }
         }   /* End of \x{} processing */
 
@@ -6195,7 +6195,8 @@ for (;; pptr++)
 
     if (meta < META_ASTERISK || meta > META_MINMAX_QUERY)
       {
-      if (OFLOW_MAX - *lengthptr < (PCRE2_SIZE)(code - orig_code))
+      if (*lengthptr > OFLOW_MAX ||
+          OFLOW_MAX - *lengthptr < (PCRE2_SIZE)(code - orig_code))
         {
         *errorcodeptr = ERR20;   /* Integer overflow */
         cb->erroroffset = 0;
@@ -8066,6 +8067,13 @@ for (;; pptr++)
         tempcode += GET(tempcode, 1);
         break;
 #endif
+
+        case OP_REF:
+        case OP_REFI:
+        case OP_DNREF:
+        case OP_DNREFI:
+        tempcode += PRIV(OP_lengths)[*tempcode];
+        break;
         }
 
       /* If tempcode is equal to code (which points to the end of the repeated
@@ -8795,7 +8803,8 @@ for (;;)
     *reqcuflagsptr = reqcuflags;
     if (lengthptr != NULL)
       {
-      if (OFLOW_MAX - *lengthptr < length)
+      if (*lengthptr > MAX_PATTERN_SIZE ||
+          MAX_PATTERN_SIZE - *lengthptr < length)
         {
         *errorcodeptr = ERR20;
         return 0;
@@ -8818,6 +8827,19 @@ for (;;)
     {
     code = *codeptr + 1 + LINK_SIZE + skipunits;
     length += 1 + LINK_SIZE;
+
+    /* Move the accumulated length into *lengthptr, providing the next call to
+    compile_branch with as much space in &length and &code as the first did. */
+
+    if (*lengthptr > MAX_PATTERN_SIZE ||
+        MAX_PATTERN_SIZE - *lengthptr < length)
+      {
+      *errorcodeptr = ERR20;
+      cb->erroroffset = 0;
+      return 0;
+      }
+    *lengthptr += length;
+    length = 0;
     }
   else
     {
@@ -9363,10 +9385,10 @@ return c;
 
 /* This function is called to skip parts of the parsed pattern when finding the
 length of a lookbehind branch. It is called after (*ACCEPT) and (*FAIL) to find
-the end of the branch, it is called to skip over an internal lookaround or
-(DEFINE) group, and it is also called to skip to the end of a class, during
-which it will never encounter nested groups (but there's no need to have
-special code for that).
+the end of the branch; it is called to skip over an internal lookaround or
+(DEFINE) group; and it is also called to skip to the end of a class, during
+which it will never encounter nested groups (however extended classes can
+themselves be nested, with their own class-nesting level).
 
 When called to find the end of a branch or group, pptr must point to the first
 meta code inside the branch, not the branch-starting code. In other cases it
@@ -9387,6 +9409,7 @@ static uint32_t *
 parsed_skip(uint32_t *pptr, uint32_t skiptype)
 {
 uint32_t nestlevel = 0;
+uint32_t class_nestlevel = 0;
 
 for (;; pptr++)
   {
@@ -9426,11 +9449,18 @@ for (;; pptr++)
     pptr += pptr[1];
     break;
 
-    /* These are the "active" items in this loop. */
+    /* These are the active items for tracking class nesting. */
+
+    case META_CLASS:
+    case META_CLASS_NOT:
+    if (skiptype == PSKIP_CLASS) class_nestlevel++;
+    break;
 
     case META_CLASS_END:
-    if (skiptype == PSKIP_CLASS) return pptr;
+    if (skiptype == PSKIP_CLASS && --class_nestlevel == 0) return pptr;
     break;
+
+    /* These are the "active" items for tracking ALT/KET nesting. */
 
     case META_ATOMIC:
     case META_CAPTURE:
@@ -10160,6 +10190,11 @@ for (; *pptr != META_END; pptr++)
     case META_COMMIT:
     case META_DOLLAR:
     case META_DOT:
+    case META_ECLASS_AND:
+    case META_ECLASS_NOT:
+    case META_ECLASS_OR:
+    case META_ECLASS_SUB:
+    case META_ECLASS_XOR:
     case META_FAIL:
     case META_PLUS:
     case META_PLUS_PLUS:
@@ -10831,7 +10866,8 @@ if (errorcode != 0) goto HAD_CB_ERROR;  /* Offset is in cb.erroroffset */
 #if defined SUPPORT_WIDE_CHARS
 PCRE2_ASSERT((cb.char_lists_size & 0x3) == 0);
 if (length > MAX_PATTERN_SIZE ||
-    MAX_PATTERN_SIZE - length < (cb.char_lists_size / sizeof(PCRE2_UCHAR)))
+    BYTES2CU(cb.char_lists_size) > MAX_PATTERN_SIZE ||
+    MAX_PATTERN_SIZE - length < BYTES2CU(cb.char_lists_size))
 #else
 if (length > MAX_PATTERN_SIZE)
 #endif
@@ -10856,10 +10892,35 @@ if (cb.char_lists_size != 0)
   /* Align to 32 bit first. This ensures the
   allocated area will also be 32 bit aligned. */
   re_blocksize = (PCRE2_SIZE)CLIST_ALIGN_TO(re_blocksize, sizeof(uint32_t));
+#else
+  /* Already 32 bit aligned. */
 #endif
+
+  /* We have bounded the length and BYTES2CU(char_lists_size) to
+  MAX_PATTERN_SIZE units, however (with 32-bit code units) char_lists_size
+  in bytes could still be extremely close to (or greater than) SIZE_MAX, so
+  we require another overflow check. */
+
+  if (cb.char_lists_size > PCRE2_SIZE_MAX - re_blocksize)
+    {
+    errorcode = ERR20;
+    cb.erroroffset = 0;
+    goto HAD_CB_ERROR;
+    }
+
   re_blocksize += cb.char_lists_size;
   }
 #endif
+
+if (length > BYTES2CU(PCRE2_SIZE_MAX - re_blocksize))
+  {
+  /* Given the current value of 2^30 for MAX_PATTERN_SIZE, this block is only
+  reachable when both PCRE2_CODE_UNIT_WIDTH >= 16 and sizeof(size_t) is
+  32 bits. */
+  errorcode = ERR20;
+  cb.erroroffset = 0;
+  goto HAD_CB_ERROR;
+  }
 
 re_blocksize += CU2BYTES(length);
 
@@ -10870,7 +10931,15 @@ if (re_blocksize > ccontext->max_pattern_compiled_length)
   goto HAD_CB_ERROR;
   }
 
+if (sizeof(pcre2_real_code) > PCRE2_SIZE_MAX - re_blocksize)
+  {
+  errorcode = ERR20;
+  cb.erroroffset = 0;
+  goto HAD_CB_ERROR;
+  }
+
 re_blocksize += sizeof(pcre2_real_code);
+
 re = (pcre2_real_code *)
   ccontext->memctl.malloc(re_blocksize, ccontext->memctl.memory_data);
 if (re == NULL)

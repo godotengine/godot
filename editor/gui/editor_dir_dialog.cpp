@@ -135,13 +135,16 @@ void EditorDirDialog::_notification(int p_what) {
 				}
 
 				tree->deselect_all();
+
+				TreeItem *item = tree->get_root();
 				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/", false);
 				if (parts.is_empty()) {
+					item->select(0);
+					tree->ensure_cursor_is_visible();
 					break;
 				}
 
 				int i = 0;
-				TreeItem *item = tree->get_root();
 				while (i < parts.size()) {
 					const String &folder = parts[i];
 					for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {

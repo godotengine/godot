@@ -132,7 +132,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Can clear even if not editable.
 			text_edit->set_editable(false);
 
-			Array lines_edited_clear_args = { { 1, 0 } };
+			Array lines_edited_clear_args = { { 0, 0 } };
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
@@ -1210,8 +1210,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_changed");
 		SIGNAL_WATCH(text_edit, "lines_edited_from");
 		SIGNAL_WATCH(text_edit, "caret_changed");
-
-		Array lines_edited_args = { { 0, 0 }, { 0, 0 } };
 
 		SUBCASE("[TextEdit] select all") {
 			// Select when there is no text does not select.

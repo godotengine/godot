@@ -58,7 +58,7 @@
     <ItemGroup>
       <SymbolFiles Include="$(NativeBinary).dsym\**\*.*"/>
     </ItemGroup>
-    <Copy SourceFiles="@(SymbolFiles)" DestinationFolder="$(PublishDir)$(TargetName).framework.dSYM"/>
+    <Copy SourceFiles="@(SymbolFiles)" DestinationFolder="$(PublishDir)$(TargetName).framework.dSYM\%(RecursiveDir)"/>
   </Target>
 
 </Project>

@@ -42,6 +42,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/run/game_view_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
@@ -78,7 +79,7 @@ void EditorSceneTabs::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_scene_tabs_resized();
+			_update_tab_titles();
 		} break;
 	}
 }
@@ -108,7 +109,7 @@ void EditorSceneTabs::_scene_tab_hovered(int p_tab) {
 	// Currently the tab previews are displayed under the running game process when embed.
 	// Right now, the easiest technique to fix that is to prevent displaying the tab preview
 	// when the user is in the Game View.
-	if (EditorNode::get_singleton()->get_editor_main_screen()->get_selected_index() == EditorMainScreen::EDITOR_GAME && EditorRunBar::get_singleton()->is_playing()) {
+	if (EditorNode::get_singleton()->get_editor_main_screen()->get_current_tab_control() == GameView::get_dock() && EditorRunBar::get_singleton()->is_playing()) {
 		return;
 	}
 
@@ -132,7 +133,8 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseButton> mb = p_input;
 
 	if (mb.is_valid()) {
-		if (scene_tabs->get_hovered_tab() < 0 && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		int tab_idx = scene_tabs->get_tab_idx_at_point(mb->get_position());
+		if (tab_idx < 0 && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 			int tab_buttons = 0;
 			if (scene_tabs->get_offset_buttons_visible()) {
 				tab_buttons = get_theme_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + get_theme_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
@@ -143,7 +145,7 @@ void EditorSceneTabs::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// Context menu.
-			_update_context_menu();
+			_update_context_menu(tab_idx);
 
 			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
 			scene_tabs_context_menu->reset_size();
@@ -168,7 +170,7 @@ void EditorSceneTabs::_reposition_active_tab(int p_to_index) {
 	update_scene_tabs();
 }
 
-void EditorSceneTabs::_update_context_menu() {
+void EditorSceneTabs::_update_context_menu(int p_index) {
 #define DISABLE_LAST_OPTION_IF(m_condition) \
 	if (m_condition) { \
 		scene_tabs_context_menu->set_item_disabled(-1, true); \
@@ -177,7 +179,7 @@ void EditorSceneTabs::_update_context_menu() {
 	scene_tabs_context_menu->clear();
 	scene_tabs_context_menu->reset_size();
 
-	int tab_id = scene_tabs->get_hovered_tab();
+	int tab_id = p_index;
 	bool no_root_node = !EditorNode::get_editor_data().get_edited_scene_root(tab_id);
 
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), EditorNode::SCENE_NEW_SCENE);
@@ -222,9 +224,6 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(EditorNode::get_editor_data().get_edited_scene_count() == tab_id + 1);
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
 		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
-
-		const PackedStringArray paths = { EditorNode::get_editor_data().get_scene_path(tab_id) };
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths);
 	} else {
 		scene_tabs_context_menu->add_separator();
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/reopen_closed_scene"), EditorNode::SCENE_OPEN_PREV);
@@ -232,10 +231,17 @@ void EditorSceneTabs::_update_context_menu() {
 		DISABLE_LAST_OPTION_IF(!EditorNode::get_singleton()->has_previous_closed_scenes());
 		scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/close_all_scenes"), EditorNode::SCENE_CLOSE_ALL);
 		scene_tabs_context_menu->set_item_text(-1, TTRC("Close All Tabs"));
-
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, {});
 	}
 #undef DISABLE_LAST_OPTION_IF
+
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS)) {
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, _get_context_data(tab_id));
+
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray paths = tab_id >= 0 ? PackedStringArray{ EditorNode::get_editor_data().get_scene_path(tab_id) } : PackedStringArray();
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(scene_tabs_context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, paths, tab_id >= 0 ? paths[0] : String(), 500);
+#endif
+	}
 
 	last_hovered_tab = tab_id;
 }
@@ -246,7 +252,7 @@ int EditorSceneTabs::get_option_tab() const {
 
 void EditorSceneTabs::_custom_menu_option(int p_option) {
 	if (p_option >= EditorContextMenuPlugin::BASE_ID) {
-		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+		EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_option);
 	}
 }
 
@@ -395,6 +401,12 @@ void EditorSceneTabs::_tab_preview_done(const String &p_path, const Ref<Texture2
 	}
 }
 
+Dictionary EditorSceneTabs::_get_context_data(int p_current_tab) {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["selected_scene"] = (p_current_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(p_current_tab) : String());
+	return context_data;
+}
+
 void EditorSceneTabs::_global_menu_scene(const Variant &p_tag) {
 	int idx = (int)p_tag;
 	scene_tabs->set_current_tab(idx);
@@ -410,18 +422,32 @@ void EditorSceneTabs::_global_menu_new_window(const Variant &p_tag) {
 
 void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	if (!p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
 
-	Ref<InputEventKey> k = p_event;
-	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
-		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
-			next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
-			set_current_tab(next_tab);
-		}
-		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
-			next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
-			set_current_tab(next_tab);
+	if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
+		int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
+		next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
+		set_current_tab(next_tab);
+		accept_event();
+	} else if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
+		int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
+		next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
+		set_current_tab(next_tab);
+		accept_event();
+	} else {
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TABS, p_event);
+		if (custom_callback.is_valid()) {
+#ifndef DISABLE_DEPRECATED
+			if (p_event->get_meta("_legacy_shortcut", false)) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, last_hovered_tab >= 0 ? EditorNode::get_editor_data().get_scene_path(last_hovered_tab) : String());
+				accept_event();
+				return;
+			}
+#endif
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, EditorSceneTabs::_get_context_data(get_current_tab()));
+			accept_event();
 		}
 	}
 }

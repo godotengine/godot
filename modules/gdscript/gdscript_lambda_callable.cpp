@@ -59,7 +59,7 @@ String GDScriptLambdaCallable::get_as_text() const {
 		return "<invalid lambda>";
 	}
 	if (function->get_name() != StringName()) {
-		return function->get_name().operator String() + "(lambda)";
+		return function->get_name().string() + "(lambda)";
 	}
 	return "(anonymous lambda)";
 }
@@ -183,7 +183,7 @@ String GDScriptLambdaSelfCallable::get_as_text() const {
 		return "<invalid self lambda>";
 	}
 	if (function->get_name() != StringName()) {
-		return function->get_name().operator String() + "(self lambda)";
+		return function->get_name().string() + "(self lambda)";
 	}
 	return "(anonymous self lambda)";
 }

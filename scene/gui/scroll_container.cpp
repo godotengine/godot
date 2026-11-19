@@ -52,7 +52,12 @@ Size2 ScrollContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 		}
 
 		Size2 child_min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
-		largest_child_min_size = largest_child_min_size.max(child_min_size);
+		Size2 child_max_size = c->get_custom_maximum_size();
+
+		real_t width = (child_max_size.width >= 0 && c->get_h_size_flags().has_flag(SIZE_MAXIMIZE)) ? child_max_size.width : child_min_size.width;
+		real_t height = (child_max_size.height >= 0 && c->get_v_size_flags().has_flag(SIZE_MAXIMIZE)) ? child_max_size.height : child_min_size.height;
+
+		largest_child_min_size = largest_child_min_size.max(Size2(width, height));
 	}
 
 	Size2 min_size;
@@ -171,6 +176,16 @@ Rect2 ScrollContainer::_get_margins() const {
 	return Rect2(left_margin, top_margin, right_margin, bottom_margin);
 }
 
+Rect2 ScrollContainer::_get_local_visible_rect() const {
+	const float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
+	const float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+
+	Point2 origin = Point2(is_layout_rtl() ? side_margin : 0.0f, 0.0f);
+	Size2 size = Size2(get_size().x - side_margin, get_size().y - bottom_margin);
+
+	return Rect2(origin, size);
+}
+
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -179,9 +194,11 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	bool h_scroll_enabled = horizontal_scroll_mode != SCROLL_MODE_DISABLED;
 	bool v_scroll_enabled = vertical_scroll_mode != SCROLL_MODE_DISABLED;
 
+	int event_device_id = p_gui_input->get_device();
+
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (mb->is_pressed()) {
 			bool scroll_value_modified = false;
 			bool swap_axes = scroll_horizontal_by_default != mb->is_shift_pressed();
@@ -233,17 +250,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				return;
 			}
 		}
+		return;
+	}
 
-		bool is_touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
-		if (!is_touchscreen_available) {
-			return;
-		}
-
-		if (mb->get_button_index() != MouseButton::LEFT) {
-			return;
-		}
-
-		if (mb->is_pressed()) {
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (touch->is_pressed()) {
 			if (drag_touching) {
 				_cancel_drag();
 			}
@@ -261,7 +273,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		} else {
 			if (drag_touching) {
-				if (drag_speed == Vector2()) {
+				if (touch->is_canceled() || drag_speed == Vector2()) {
 					_cancel_drag();
 				} else {
 					drag_touching_deaccel = true;
@@ -271,11 +283,11 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	Ref<InputEventMouseMotion> mm = p_gui_input;
+	Ref<InputEventScreenDrag> drag = p_gui_input;
 
-	if (mm.is_valid()) {
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (drag_touching && !drag_touching_deaccel) {
-			Vector2 motion = mm->get_relative();
+			Vector2 motion = drag->get_relative();
 			drag_accum -= motion;
 
 			if (beyond_deadzone || (h_scroll_enabled && Math::abs(drag_accum.x) > deadzone) || (v_scroll_enabled && Math::abs(drag_accum.y) > deadzone)) {
@@ -311,10 +323,10 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
 		if (h_scroll_enabled) {
-			h_scroll->scroll(h_scroll->get_page() * pan_gesture->get_delta().x / ScrollBar::PAGE_DIVISOR);
+			h_scroll->scroll(pan_gesture->get_delta().x);
 		}
 		if (v_scroll_enabled) {
-			v_scroll->scroll(v_scroll->get_page() * pan_gesture->get_delta().y / ScrollBar::PAGE_DIVISOR);
+			v_scroll->scroll(pan_gesture->get_delta().y);
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
@@ -334,25 +346,41 @@ void ScrollContainer::_update_scrollbar_position() {
 	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_bound_minimum_size() : Size2();
 	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_bound_minimum_size() : Size2();
 
-	int lmar = is_layout_rtl() ? margins.size.x : margins.position.x;
-	int rmar = is_layout_rtl() ? margins.position.x : margins.size.x;
+	int left_margin = 0;
+	if (theme_cache.scrollbar_margin_left < 0) {
+		left_margin = is_layout_rtl() ? margins.size.x : margins.position.x;
+	} else {
+		left_margin = theme_cache.scrollbar_margin_left;
+	}
 
-	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, lmar);
-	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar - vmin.width);
-	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - margins.size.y);
-	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -margins.size.y);
+	int right_margin = 0;
+	if (theme_cache.scrollbar_margin_right < 0) {
+		right_margin = is_layout_rtl() ? margins.position.x : margins.size.x;
+	} else {
+		right_margin = theme_cache.scrollbar_margin_right;
+	}
 
-	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width - rmar);
-	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar);
-	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, margins.position.y);
-	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - margins.size.y);
+	int top_margin = theme_cache.scrollbar_margin_top < 0 ? margins.position.y : theme_cache.scrollbar_margin_top;
+	int bottom_margin = theme_cache.scrollbar_margin_bottom < 0 ? theme_cache.panel_style->get_margin(SIDE_BOTTOM) : theme_cache.scrollbar_margin_bottom;
+
+	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, left_margin);
+	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin - vmin.width);
+	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - bottom_margin);
+	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bottom_margin);
+
+	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width - right_margin);
+	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin);
+	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, top_margin);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - bottom_margin);
 
 	_updating_scrollbars = false;
 }
 
 void ScrollContainer::_gui_focus_changed(Control *p_control) {
 	if (follow_focus && is_ancestor_of(p_control)) {
+		following = true;
 		ensure_control_visible(p_control);
+		following = false;
 	}
 	if (draw_focus_border) {
 		const bool _should_draw_focus_border = has_focus(true) || child_has_focus();
@@ -365,20 +393,92 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 void ScrollContainer::ensure_control_visible(Control *p_control) {
 	ERR_FAIL_COND_MSG(!is_ancestor_of(p_control), "Must be an ancestor of the control.");
 
-	// Just eliminate the rotation of this ScrollContainer.
-	Transform2D other_in_this = get_global_transform().affine_inverse() * p_control->get_global_transform();
+	// The less scroll the better. We can assume that only the final visible area is transformed.
+	// This can reduce the amount of unnecessary scrolling caused by invisible parts.
 
-	Size2 size = get_size();
-	Rect2 other_rect = other_in_this.xform(Rect2(Point2(), p_control->get_size()));
+	scroll_diff = Vector2(); // Clear the cache.
 
-	float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
-	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+	Control *target = p_control;
+	Transform2D target_in_sc;
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - (is_layout_rtl() ? side_margin : 0.0f), 0.0f), other_rect.position.x + other_rect.size.x - size.x + (!is_layout_rtl() ? side_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y, 0.0f), other_rect.position.y + other_rect.size.y - size.y + bottom_margin));
+	// The rect of the visible area of p_control.
+	Rect2 target_rect_local = Rect2(Point2(), p_control->get_size());
 
-	set_h_scroll(get_h_scroll() + diff.x);
-	set_v_scroll(get_v_scroll() + diff.y);
+	CanvasItem *parent_item = p_control->get_parent_item();
+	while (parent_item) {
+		ScrollContainer *sc = Object::cast_to<ScrollContainer>(parent_item);
+		parent_item = parent_item->get_parent_item();
+
+		if (!sc) {
+			continue;
+		}
+
+		// The transformation of the target in sc.
+		target_in_sc = (sc->get_global_transform().affine_inverse() * target->get_global_transform()) * target_in_sc;
+
+		if (sc == this) {
+			break;
+		}
+
+		target = sc;
+
+		if (following) {
+			// For nested cases, the inner ScrollContainer will first call this method, but the control will not be transformed immediately.
+			// Here we need to take into account the transform that will be applied by the inner ScrollContainer scrolling.
+			target_in_sc = target_in_sc.translated(-sc->scroll_diff);
+		}
+
+		const Rect2 rect = sc->_get_local_visible_rect();
+		target_rect_local = target_rect_local.intersection_transformed(target_in_sc.affine_inverse(), rect);
+
+		if (!target_rect_local.has_area()) {
+			ERR_FAIL_MSG("Unable to make the control visible because it is obscured by the inner ScrollContainer.");
+		}
+	}
+
+	// Calculates the amount to scroll in this ScrollContainer.
+
+	const Rect2 visible_rect = _get_local_visible_rect();
+	const Rect2 target_rect = target_in_sc.xform(target_rect_local);
+
+	Vector2 begin_diff = target_rect.position - visible_rect.position;
+	Vector2 end_diff = target_rect.get_end() - visible_rect.get_end();
+
+	for (int axis = 0; axis < 2; axis++) {
+		if (visible_rect.size[axis] > target_rect.size[axis]) {
+			scroll_diff[axis] = (begin_diff[axis] <= 0.0f) ? begin_diff[axis] : ((end_diff[axis] <= 0.0f) ? 0.0f : end_diff[axis]);
+		} else {
+			scroll_diff[axis] = (begin_diff[axis] >= 0.0f) ? begin_diff[axis] : ((end_diff[axis] >= 0.0f) ? 0.0f : end_diff[axis]);
+		}
+	}
+
+	// In skewed or rotated case, check if more scrolling is needed.
+	if ((Math::is_zero_approx(target_in_sc.columns[0][1]) || Math::is_zero_approx(target_in_sc.columns[1][0])) &&
+			((Math::is_zero_approx(target_in_sc.columns[0][0]) || Math::is_zero_approx(target_in_sc.columns[1][1])))) {
+		// Check for intersection after scrolling is applied.
+		Transform2D t_scrolled = target_in_sc.translated(-scroll_diff).affine_inverse();
+		Rect2 rect_scrolled = t_scrolled.xform(visible_rect);
+		if (!target_rect_local.intersects(rect_scrolled)) {
+			// Pan the ScrollContainer to make part of the control visible.
+			begin_diff = rect_scrolled.position - target_rect_local.position;
+			end_diff = rect_scrolled.get_end() - target_rect_local.get_end();
+
+			for (int axis = 0; axis < 2; axis++) {
+				if (target_rect_local.size[axis] > rect_scrolled.size[axis]) {
+					scroll_diff[axis] = (begin_diff[axis] <= 0.0f) ? begin_diff[axis] : ((end_diff[axis] <= 0.0f) ? 0.0f : end_diff[axis]);
+				} else {
+					scroll_diff[axis] = (begin_diff[axis] >= 0.0f) ? begin_diff[axis] : ((end_diff[axis] >= 0.0f) ? 0.0f : end_diff[axis]);
+				}
+			}
+
+			t_scrolled = t_scrolled.translated(-scroll_diff).affine_inverse();
+
+			scroll_diff = target_rect.position - t_scrolled.xform(target_rect_local).position;
+		}
+	}
+
+	set_h_scroll(get_h_scroll() + scroll_diff.x);
+	set_v_scroll(get_v_scroll() + scroll_diff.y);
 }
 
 void ScrollContainer::_reposition_children() {
@@ -390,17 +490,29 @@ void ScrollContainer::_reposition_children() {
 	size -= margins.position + margins.size;
 	Point2 ofs = margins.position;
 
-	bool rtl = is_layout_rtl();
-	bool reserve_vscroll = _is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE;
-
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
-		size.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+		int height = h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+		if (theme_cache.scrollbar_margin_bottom >= 0) {
+			int scroll_margin = theme_cache.scrollbar_margin_bottom + height;
+			if (scroll_margin > margins.size.height) {
+				height = scroll_margin - margins.size.height;
+			}
+		}
+
+		size.height -= height;
 	}
 
-	if (reserve_vscroll) {
-		int width = v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
-		size.x -= width;
-		if (rtl) {
+	if (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE) {
+		int width = v_scroll->get_minimum_size().width + theme_cache.scrollbar_h_separation;
+		if (theme_cache.scrollbar_margin_right >= 0) {
+			int scroll_margin = theme_cache.scrollbar_margin_right + width;
+			if (scroll_margin > margins.size.width) {
+				width = scroll_margin - margins.size.width;
+			}
+		}
+
+		size.width -= width;
+		if (is_layout_rtl()) {
 			ofs.x += width;
 		}
 	}
@@ -533,7 +645,11 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (scroll_on_drag_hover && is_visible_in_tree()) {
-				set_process_internal(true);
+				const Dictionary drag_data = get_viewport()->gui_get_drag_data();
+				// Enable scrolling, unless dragging a tab.
+				if (drag_data.get("type", "").operator String() != "tab") {
+					set_process_internal(true);
+				}
 			}
 		} break;
 
@@ -666,50 +782,77 @@ void ScrollContainer::_update_scroll_hints() {
 
 	float v_scroll_value = v_scroll->get_value();
 	bool v_scroll_below_max = v_scroll_value < (largest_child_min_size.height - scroll_size.height - 1);
-	bool show_vertical_hints = v_scroll_value > 1 || v_scroll_below_max;
+	bool is_v_scrolled = v_scroll_value > 1 || v_scroll_below_max;
 
 	float h_scroll_value = h_scroll->get_value();
 	bool h_scroll_below_max = h_scroll_value < (largest_child_min_size.width - scroll_size.width - 1);
-	bool show_horizontal_hints = h_scroll_value > 1 || h_scroll_below_max;
+	bool is_h_scrolled = h_scroll_value > 1 || h_scroll_below_max;
+
+	bool show_top_left = false;
+	bool show_bottom_right = false;
 
 	bool rtl = is_layout_rtl();
-	if (show_vertical_hints) {
-		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_vertical);
-		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_vertical_color);
-		scroll_hint_top_left->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT) && v_scroll_value > 1);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_BEGIN, theme_cache.scroll_hint_vertical->get_height());
 
-		scroll_hint_bottom_right->set_flip_h(false);
-		scroll_hint_bottom_right->set_flip_v(true);
-		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_vertical);
-		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_vertical_color);
-		scroll_hint_bottom_right->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT) && v_scroll_below_max);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -theme_cache.scroll_hint_vertical->get_height());
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
-	} else {
-		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_horizontal);
-		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_horizontal_color);
-		scroll_hint_top_left->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT)) && h_scroll_value > 1);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? (size.x - theme_cache.scroll_hint_horizontal->get_width()) : 0);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_BEGIN, rtl ? size.x : theme_cache.scroll_hint_horizontal->get_width());
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
-		scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+	if (is_v_scrolled && scroll_hint_mode != SCROLL_HINT_MODE_RIGHT && scroll_hint_mode != SCROLL_HINT_MODE_LEFT && scroll_hint_mode != SCROLL_HINT_MODE_LEFT_AND_RIGHT) {
+		if (v_scroll_value > 1) {
+			show_top_left = (!h_scroll->is_visible() && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT)) ||
+					scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_BOTTOM || scroll_hint_mode == SCROLL_HINT_MODE_TOP;
+		}
+		if (show_top_left) {
+			scroll_hint_top_left->set_texture(theme_cache.scroll_hint_vertical);
+			scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_vertical_color);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_BEGIN, theme_cache.scroll_hint_vertical->get_height());
+		}
 
-		scroll_hint_bottom_right->set_flip_h(true);
-		scroll_hint_bottom_right->set_flip_v(false);
-		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_horizontal);
-		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_horizontal_color);
-		scroll_hint_bottom_right->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT : scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT)) && h_scroll_below_max);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, rtl ? -size.x : -theme_cache.scroll_hint_horizontal->get_width());
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? (-size.x + theme_cache.scroll_hint_horizontal->get_width()) : 0);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
-		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		if (v_scroll_below_max) {
+			show_bottom_right = (!h_scroll->is_visible() && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT)) ||
+					scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_BOTTOM || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM;
+		}
+		if (show_bottom_right) {
+			scroll_hint_bottom_right->set_flip_h(false);
+			scroll_hint_bottom_right->set_flip_v(true);
+			scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_vertical);
+			scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_vertical_color);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -theme_cache.scroll_hint_vertical->get_height());
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		}
+	} else if (is_h_scrolled) {
+		if (h_scroll_value > 1) {
+			show_top_left = (!v_scroll->is_visible() && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT))) ||
+					scroll_hint_mode == SCROLL_HINT_MODE_LEFT_AND_RIGHT || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_RIGHT : scroll_hint_mode == SCROLL_HINT_MODE_LEFT);
+		}
+		if (show_top_left) {
+			scroll_hint_top_left->set_texture(theme_cache.scroll_hint_horizontal);
+			scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_horizontal_color);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? (size.x - theme_cache.scroll_hint_horizontal->get_width()) : 0);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_BEGIN, rtl ? size.x : theme_cache.scroll_hint_horizontal->get_width());
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+			scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		}
+
+		if (h_scroll_below_max) {
+			show_bottom_right = (!v_scroll->is_visible() && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT : scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT))) ||
+					scroll_hint_mode == SCROLL_HINT_MODE_LEFT_AND_RIGHT || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_LEFT : scroll_hint_mode == SCROLL_HINT_MODE_RIGHT);
+		}
+		if (show_bottom_right) {
+			scroll_hint_bottom_right->set_flip_h(true);
+			scroll_hint_bottom_right->set_flip_v(false);
+			scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_horizontal);
+			scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_horizontal_color);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, rtl ? -size.x : -theme_cache.scroll_hint_horizontal->get_width());
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? (-size.x + theme_cache.scroll_hint_horizontal->get_width()) : 0);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+			scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+		}
 	}
+
+	scroll_hint_top_left->set_visible(show_top_left);
+	scroll_hint_bottom_right->set_visible(show_bottom_right);
 }
 
 void ScrollContainer::_scroll_moved(float) {
@@ -921,7 +1064,7 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
 
 	ADD_GROUP("Scroll Hint", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,All,Top and Left,Bottom and Right"), "set_scroll_hint_mode", "get_scroll_hint_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,All,Top and Left,Bottom and Right,Top and Bottom,Left and Right,Top,Bottom,Left,Right"), "set_scroll_hint_mode", "get_scroll_hint_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 
 	BIND_ENUM_CONSTANT(SCROLL_MODE_DISABLED);
@@ -935,7 +1078,17 @@ void ScrollContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_ALL);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP_AND_LEFT);
 	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM_AND_RIGHT);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP_AND_BOTTOM);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_LEFT_AND_RIGHT);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_LEFT);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_RIGHT);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_margin_bottom);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_v_separation);
 

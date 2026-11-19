@@ -32,6 +32,8 @@
 
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 #ifndef DISABLE_DEPRECATED
 #include "servers/physics_2d/physics_server_2d_extension.h"
@@ -80,14 +82,14 @@ bool CharacterBody2D::move_and_slide() {
 	on_wall = false;
 
 	if (!current_platform_velocity.is_zero_approx()) {
-		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		PS2DT::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
 			parameters.exclude_objects.insert(platform_object_id);
 		}
 
-		PhysicsServer2D::MotionResult floor_result;
+		PS2DT::MotionResult floor_result;
 		if (move_and_collide(parameters, floor_result, false, false)) {
 			motion_results.push_back(floor_result);
 			_set_collision_direction(floor_result);
@@ -139,12 +141,12 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector2 last_travel;
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
-		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		PS2DT::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		Vector2 prev_position = parameters.from.columns[2];
 
-		PhysicsServer2D::MotionResult result;
+		PS2DT::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
 
 		last_motion = result.travel;
@@ -156,7 +158,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			// If we hit a ceiling platform, we set the vertical velocity to at least the platform one.
 			if (on_ceiling && result.collider_velocity != Vector2() && result.collider_velocity.dot(up_direction) < 0) {
 				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
-				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (result.collision_normal + up_direction).length() < 0.01) {
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (result.collision_normal + up_direction).length() < 0.01f) {
 					apply_ceiling_velocity = true;
 					Vector2 ceiling_vertical_velocity = up_direction * up_direction.dot(result.collider_velocity);
 					Vector2 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
@@ -166,7 +168,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				}
 			}
 
-			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01) {
+			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01f) {
 				Transform2D gt = get_global_transform();
 				if (result.travel.length() <= margin + CMP_EPSILON) {
 					gt.columns[2] -= result.travel;
@@ -296,10 +298,10 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
-		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		PS2DT::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
-		PhysicsServer2D::MotionResult result;
+		PS2DT::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
 
 		last_motion = result.travel;
@@ -347,11 +349,11 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	PS2DT::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
-	PhysicsServer2D::MotionResult result;
+	PS2DT::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
 		if ((result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) ||
 				(p_wall_as_floor && result.get_angle(-up_direction) > floor_max_angle + FLOOR_ANGLE_THRESHOLD)) {
@@ -391,11 +393,11 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
-	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	PS2DT::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
-	PhysicsServer2D::MotionResult result;
+	PS2DT::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
 		if (result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) {
 			return true;
@@ -405,7 +407,7 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	return false;
 }
 
-void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResult &p_result) {
+void CharacterBody2D::_set_collision_direction(const PS2DT::MotionResult &p_result) {
 	if (motion_mode == MOTION_MODE_GROUNDED && p_result.get_angle(up_direction) <= floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 		on_floor = true;
 		floor_normal = p_result.collision_normal;
@@ -422,7 +424,7 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 	}
 }
 
-void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
+void CharacterBody2D::_set_platform_data(const PS2DT::MotionResult &p_result) {
 	PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(p_result.collider);
 	if (bs == nullptr) {
 		return;
@@ -509,8 +511,8 @@ int CharacterBody2D::get_slide_collision_count() const {
 	return motion_results.size();
 }
 
-PhysicsServer2D::MotionResult CharacterBody2D::get_slide_collision(int p_bounce) const {
-	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), PhysicsServer2D::MotionResult());
+PS2DT::MotionResult CharacterBody2D::get_slide_collision(int p_bounce) const {
+	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), PS2DT::MotionResult());
 	return motion_results[p_bounce];
 }
 
@@ -768,5 +770,5 @@ void CharacterBody2D::_bind_methods() {
 }
 
 CharacterBody2D::CharacterBody2D() :
-		PhysicsBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
+		PhysicsBody2D(PS2DE::BODY_MODE_KINEMATIC) {
 }

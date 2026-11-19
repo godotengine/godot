@@ -1,9 +1,9 @@
-.TH GODOT "6" "January 2020" "godot 4.0" "Games"
+.TH GODOT "6" "November 2026" "godot 4.8" "Games"
 .SH NAME
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
 .B godot
-[\fI\,options\/\fR] [path to scene or 'project.godot' file]
+[\fI\,options\/\fR] [path to "project.godot" file]
 .SH DESCRIPTION
 Godot Engine is an advanced, feature\-packed, multi\-platform 2D and 3D game
 engine.
@@ -21,9 +21,15 @@ Display the version string.
 \fB\-v\fR, \fB\-\-verbose\fR
 Use verbose stdout mode.
 .TP
-\fB\-\-quiet\fR
+\fB\-q\fR, \fB\-\-quiet\fR
 Quiet mode, silences stdout messages. Errors are still displayed.
+.TP
+\fB\-\-no\-header\fR
+Do not print engine version and rendering driver/method header on startup.
 .SS "Run options:"
+.TP
+\fB\-\-\fR, \fB++\fR
+Separator for user\-provided arguments. Following arguments are not used by the engine, but can be read from \fIOS.get_cmdline_user_args()\fR.
 .TP
 \fB\-e\fR, \fB\-\-editor\fR
 Start the editor instead of running the scene.
@@ -31,20 +37,38 @@ Start the editor instead of running the scene.
 \fB\-p\fR, \fB\-\-project\-manager\fR
 Start the project manager, even if a project is auto\-detected.
 .TP
-\fB\-q\fR, \fB\-\-quit\fR
+\fB\-\-recovery\-mode\fR
+Start the editor in recovery mode, which disables features that can typically cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.
+.TP
+\fB\-\-debug\-server\fR <uri>
+Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)
+.TP
+\fB\-\-dap\-port\fR <port>
+Use the specified port for the GDScript Debug Adapter Protocol. Recommended port range [1024, 49151].
+.TP
+\fB\-\-lsp\-port\fR <port>
+Use the specified port for the GDScript Language Server Protocol. Recommended port range [1024, 49151].
+.TP
+\fB\-\-quit\fR
 Quit after the first iteration.
+.TP
+\fB\-\-quit\-after\fR <int>
+Quit after the given number of iterations. Set to 0 to disable.
 .TP
 \fB\-l\fR, \fB\-\-language\fR <locale>
 Use a specific locale (<locale> being a two\-letter code).
 .TP
 \fB\-\-path\fR <directory>
-Path to a project (<directory> must contain a 'project.godot' file).
+Path to a project (<directory> must contain a "project.godot" file).
+.TP
+\fB\-\-scene\fR <path>
+Path or UID of a scene in the project that should be started.
 .TP
 \fB\-\-main\-pack\fR <file>
 Path to a pack (.pck) file to load.
 .TP
 \fB\-\-render\-thread\fR <mode>
-Render thread mode ('unsafe', 'safe', 'separate').
+Render thread mode ("unsafe" [deprecated], "safe", "separate").
 .TP
 \fB\-\-remote\-fs\fR <address>
 Remote filesystem (<host/IP>[:<port>] address).
@@ -53,13 +77,47 @@ Remote filesystem (<host/IP>[:<port>] address).
 Password for remote filesystem.
 .TP
 \fB\-\-audio\-driver\fR <driver>
-Audio driver ('PulseAudio', 'ALSA', 'Dummy').
+Audio driver ["PulseAudio", "ALSA", "Dummy"].
+.TP
+\fB\-\-display\-driver\fR <driver>
+Display driver (and rendering driver) ["x11" ("vulkan", "opengl3", "opengl3_es", "dummy"), "wayland" ("vulkan", "opengl3", "opengl3_es", "dummy"), "headless" ("dummy")].
 .TP
 \fB\-\-audio\-output\-latency\fR <ms>
-Override audio output latency in milliseconds (default is 15 ms). Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.
+Override audio output latency in milliseconds (default is 15 ms).
+.br
+Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.
 .TP
-\fB\-\-video\-driver\fR <driver>
-Video driver ('Vulkan', 'GLES2').
+\fB\-\-rendering\-method\fR <renderer>
+Renderer name. Requires driver support.
+.TP
+\fB\-\-rendering\-driver\fR <driver>
+Rendering driver (depends on display driver).
+.TP
+\fB\-\-gpu\-index\fR <device_index>
+Use a specific GPU (only available on the Forward+/Mobile renderers; run with \fB\-\-verbose\fR to get a list of available devices).
+.TP
+\fB\-\-text\-driver\fR <driver>
+Text driver (used for font rendering, bidirectional support and shaping).
+.TP
+\fB\-\-tablet\-driver\fR <driver>
+Pen tablet input driver.
+.TP
+\fB\-\-headless\fR
+Enable headless mode (\fB\-\-display\-driver\fR headless \fB\-\-audio\-driver\fR Dummy). Useful for servers and with \fB\-\-script\fR.
+.TP
+\fB\-\-log\-file\fR <file>
+Write output/error log to the specified path instead of the default location defined by the project.
+.br
+<file> path should be absolute or relative to the project directory.
+.TP
+\fB\-\-write\-movie\fR <file>
+Write a video to the specified path (usually with .avi or .png extension).
+.br
+\fB\-\-fixed\-fps\fR is forced when enabled, but it can be used to change movie FPS.
+.br
+\fB\-\-disable\-vsync\fR can speed up movie writing but makes interaction more difficult.
+.br
+\fB\-\-quit\-after\fR can be used to specify the number of frames to write.
 .SS "Display options:"
 .TP
 \fB\-f\fR, \fB\-\-fullscreen\fR
@@ -80,39 +138,96 @@ Request window resolution.
 \fB\-\-position\fR <X>,<Y>
 Request window position.
 .TP
-\fB\-\-low\-dpi\fR
-Force low\-DPI mode (macOS and Windows only).
+\fB\-\-screen\fR <N>
+Request window screen.
 .TP
-\fB\-\-no\-window\fR
-Disable window creation (Windows only). Useful together with \fB\-\-script\fR.
+\fB\-\-single\-window\fR
+Use a single window (no separate subwindows).
+.TP
+\fB\-\-xr\-mode\fR <mode>
+Select XR (Extended Reality) mode ["default", "off", "on"].
+.TP
+\fB\-\-wid\fR <window_id>
+Request parented to window.
+.TP
+\fB\-\-accessibility\fR <mode>
+Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].
+.TP
+\fB\-\-accessibility\-driver\fR <driver>
+Select accessibility driver ['accesskit', 'dummy'].
 .SS "Debug options:"
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
 Debug (local stdout debugger).
 .TP
-\fB\-b\fR, \fB\-\-breakpoints\fR
-Breakpoint list as source::line comma\-separated pairs, no spaces (use %20 instead).
+\fB\-b\fR, \fB\-\-breakpoints\fR <list>
+Breakpoint list as source:line comma\-separated pairs, no spaces (use %20 instead).
+.TP
+\fB\-\-skip\-breakpoints\fR
+If debugger is connected, skips all breakpoints.
+.TP
+\fB\-\-ignore\-error\-breaks\fR
+If debugger is connected, prevents sending error breakpoints.
 .TP
 \fB\-\-profiling\fR
 Enable profiling in the script debugger.
 .TP
-\fB\-\-remote\-debug\fR <address>
-Remote debug (<host/IP>:<port> address).
+\fB\-\-gpu\-profile\fR
+Show a GPU profile of the tasks that took the most time during frame rendering.
+.TP
+\fB\-\-gpu\-validation\fR
+Enable graphics API validation layers for debugging.
+.TP
+\fB\-\-gpu\-abort\fR
+Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.
+.TP
+\fB\-\-generate\-spirv\-debug\-info\fR
+Generate SPIR\-V debug information (Vulkan only). This allows source\-level shader debugging with RenderDoc.
+.TP
+\fB\-\-clear\-shader\-cache\fR
+Clear the shader_cache directory at launch, so it's re\-generated.
+.TP
+\fB\-\-extra\-gpu\-memory\-tracking\fR
+Enables additional memory tracking (see class reference for \fIRenderingDevice.get_driver_and_device_memory_report()\fR and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967
+.TP
+\fB\-\-accurate\-breadcrumbs\fR
+Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.
+.TP
+\fB\-\-remote\-debug\fR <uri>
+Remote debug (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007).
 .TP
 \fB\-\-debug\-collisions\fR
-Show collisions shapes when running the scene.
+Show collision shapes when running the scene.
+.TP
+\fB\-\-debug\-paths\fR
+Show path lines when running the scene.
 .TP
 \fB\-\-debug\-navigation\fR
 Show navigation polygons when running the scene.
+.TP
+\fB\-\-debug\-avoidance\fR
+Show navigation avoidance debug visuals when running the scene.
+.TP
+\fB\-\-debug\-stringnames\fR
+Print all StringName allocations to stdout when the engine quits.
+.TP
+\fB\-\-debug\-canvas\-item\-redraw\fR
+Display a rectangle each time a canvas item requests a redraw (useful to troubleshoot low processor mode).
+.TP
+\fB\-\-debug\-mute\-audio\fR
+Mute all audio output when running the scene.
 .TP
 \fB\-\-max\-fps\fR <fps>
 Set a maximum number of frames per second rendered (can be used to limit power usage). A value of 0 results in unlimited framerate.
 .TP
 \fB\-\-frame\-delay\fR <ms>
-Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use --max-fps instead.
+Simulate high CPU load (delay each frame by <ms> milliseconds). Do not use as a FPS limiter; use \fB\-\-max\-fps\fR instead.
 .TP
 \fB\-\-time\-scale\fR <scale>
 Force time scale (higher values are faster, 1.0 is normal speed).
+.TP
+\fB\-\-disable\-vsync\fR
+Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver\-level V\-Sync enforcement.
 .TP
 \fB\-\-disable\-render\-loop\fR
 Disable render loop so rendering only occurs when called explicitly from script.
@@ -123,50 +238,99 @@ Disable crash handler when supported by the platform code.
 \fB\-\-fixed\-fps\fR <fps>
 Force a fixed number of frames per second. This setting disables real\-time synchronization.
 .TP
+\fB\-\-delta\-smoothing\fR <enable>
+Enable or disable frame delta smoothing ["enable", "disable"].
+.TP
 \fB\-\-print\-fps\fR
 Print the frames per second to the stdout.
+.TP
+\fB\-\-single\-threaded\-scene\fR
+Force scene tree to run in single\-threaded mode. Sub\-thread groups are disabled and run on the main thread.
+.TP
+\fB\-\-editor\-pseudolocalization\fR
+Enable pseudolocalization for the editor and the project manager.
 .SS "Standalone tools:"
 .TP
 \fB\-s\fR, \fB\-\-script\fR <script>
 Run a script.
 .TP
+\fB\-\-main\-loop\fR <main_loop_name>
+Run a MainLoop specified by its global class name.
+.TP
 \fB\-\-check\-only\fR
-Only parse for errors and quit (use with --script).
+Only parse for errors and quit (use with \fB\-\-script\fR).
+.TP
+\fB\-\-import\fR
+Starts the editor, waits for any resources to be imported, and then quits.
 .TP
 \fB\-\-export\-release\fR <preset> <path>
-Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.
+Export the project in release mode using the given preset and output path. The preset name should match one defined in "export_presets.cfg".
 .br
-<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').
+<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. "builds/game.exe").
 .br
 The target directory must exist.
 .TP
 \fB\-\-export\-debug\fR <preset> <path>
-Export the project in debug mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.
-.br
-<path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').
-.br
-The target directory must exist.
+Export the project in debug mode using the given preset and output path. See \fB\-\-export\-release\fR description for other considerations.
 .TP
 \fB\-\-export\-pack\fR <preset> <path>
 Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.
 .TP
-\fB\-\-doctool\fR <path>
-Dump the engine API reference to the given <path> in XML format, merging if existing files are found.
+\fB\-\-export\-patch\fR <preset> <path>
+Export pack with changed files only. See \fB\-\-export\-pack\fR description for other considerations.
+.TP
+\fB\-\-patches\fR <paths>
+List of patches to use with \fB\-\-export\-patch\fR. The list is comma\-separated.
+.TP
+\fB\-\-install\-android\-build\-template\fR
+Install the Android build template. Used in conjunction with \fB\-\-export\-release\fR or \fB\-\-export\-debug\fR.
+.TP
+\fB\-\-convert\-3to4\fR [max_file_kb] [max_line_size]
+Converts project from Godot 3.x to Godot 4.x.
+.TP
+\fB\-\-validate\-conversion\-3to4\fR [max_file_kb] [max_line_size]
+Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.
+.TP
+\fB\-\-doctool\fR [path]
+Dump the engine API reference to the given <path> (defaults to current directory) in XML format, merging if existing files are found.
 .TP
 \fB\-\-no\-docbase\fR
 Disallow dumping the base types (used with \fB\-\-doctool\fR).
 .TP
+\fB\-\-gdextension\-docs\fR
+Rather than dumping the engine API, generate API reference from all the GDExtensions loaded in the current project (used with \fB\-\-doctool\fR).
+.TP
+\fB\-\-gdscript\-docs\fR <path>
+Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with \fB\-\-doctool\fR).
+.TP
 \fB\-\-build\-solutions\fR
-Build the scripting solutions (e.g. for C# projects). Implies \-\-editor and requires a valid project to edit.
+Build the scripting solutions (e.g. for C# projects). Implies \fB\-\-editor\fR and requires a valid project to edit.
 .TP
 \fB\-\-dump\-gdextension\-interface\fR
-Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.
+Generate a GDExtension header file "gdextension_interface.h" in the current folder. This file is the base file required to implement a GDExtension.
+.TP
+\fB\-\-dump\-gdextension\-interface\-json\fR
+Generate a JSON dump of the GDExtension interface named "gdextension_interface.json" in the current folder.
 .TP
 \fB\-\-dump\-extension\-api\fR
-Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.
+Generate a JSON dump of the Godot API for GDExtension bindings named "extension_api.json" in the current folder.
 .TP
-\fB\-\-test\fR <test>
-Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'ordered_hash_map', 'astar').
+\fB\-\-dump\-extension\-api\-with\-docs\fR
+Generate JSON dump of the Godot API like the previous option, but including documentation.
+.TP
+\fB\-\-validate\-extension\-api\fR <path>
+Validate an extension API file dumped (with one of the two previous options) from a previous version of the engine to ensure API compatibility.
+.br
+If incompatibilities or errors are detected, the exit code will be non\-zero.
+.TP
+\fB\-\-benchmark\fR
+Benchmark the run time and print it to console.
+.TP
+\fB\-\-benchmark\-file\fR <path>
+Benchmark the run time and save it to a given file in JSON format. The path should be absolute.
+.TP
+\fB\-\-test\fR [\fB\-\-help\fR]
+Run unit tests. Use --test --help for more information. Only available in builds compiled with the \fBtests=yes\fR SCons option.
 .SH FILES
 XDG_DATA_CONFIG/godot/ or ~/.config/godot/
 .RS

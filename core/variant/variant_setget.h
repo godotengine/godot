@@ -38,31 +38,31 @@
 
 #define SETGET_STRUCT(m_base_type, m_member_type, m_member) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_member; \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_member; \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_member; \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_member; \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_member, r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<m_member_type>::get(value); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_member = VariantInternalAccessor<m_member_type>::get(p_value); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<m_member_type>::get(value); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_member = VariantInternalAccessor<m_member_type>::get(p_value); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_member = PtrToArg<m_member_type>::convert(member); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_member = PtrToArg<m_member_type>::convert(p_member); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -71,34 +71,34 @@
 
 #define SETGET_NUMBER_STRUCT(m_base_type, m_member_type, m_member) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_member; \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_member; \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_member; \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_member; \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_member, member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_member, r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<double>::get(value); \
-				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<int64_t>::get(value); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == Variant::FLOAT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_member = VariantInternalAccessor<double>::get(p_value); \
+				r_valid = true; \
+			} else if (p_value->get_type() == Variant::INT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_member = VariantInternalAccessor<int64_t>::get(p_value); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_member = VariantInternalAccessor<m_member_type>::get(value); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_member = VariantInternalAccessor<m_member_type>::get(p_value); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_member = PtrToArg<m_member_type>::convert(member); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_member = PtrToArg<m_member_type>::convert(p_member); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -107,31 +107,31 @@
 
 #define SETGET_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_custom; \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_custom; \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_custom; \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_custom; \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_custom, r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<m_member_type>::get(value); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_custom = VariantInternalAccessor<m_member_type>::get(p_value); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<m_member_type>::get(value); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_custom = VariantInternalAccessor<m_member_type>::get(p_value); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_custom = PtrToArg<m_member_type>::convert(member); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_custom = PtrToArg<m_member_type>::convert(p_member); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -140,34 +140,34 @@
 
 #define SETGET_NUMBER_STRUCT_CUSTOM(m_base_type, m_member_type, m_member, m_custom) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_custom; \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_custom; \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_custom; \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_custom; \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_custom, member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_custom, r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<double>::get(value); \
-				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<int64_t>::get(value); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == Variant::FLOAT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_custom = VariantInternalAccessor<double>::get(p_value); \
+				r_valid = true; \
+			} else if (p_value->get_type() == Variant::INT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_custom = VariantInternalAccessor<int64_t>::get(p_value); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_custom = VariantInternalAccessor<m_member_type>::get(value); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_custom = VariantInternalAccessor<m_member_type>::get(p_value); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_custom = PtrToArg<m_member_type>::convert(member); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_custom = PtrToArg<m_member_type>::convert(p_member); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -176,31 +176,31 @@
 
 #define SETGET_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(); \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(); \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(); \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(); \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_getter(), r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<m_member_type>::get(value)); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_setter(VariantInternalAccessor<m_member_type>::get(p_value)); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<m_member_type>::get(value)); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_setter(VariantInternalAccessor<m_member_type>::get(p_value)); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_setter(PtrToArg<m_member_type>::convert(member)); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_setter(PtrToArg<m_member_type>::convert(p_member)); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -209,34 +209,34 @@
 
 #define SETGET_NUMBER_STRUCT_FUNC(m_base_type, m_member_type, m_member, m_setter, m_getter) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(); \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(); \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(); \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(); \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(), member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_getter(), r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == Variant::FLOAT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<double>::get(value)); \
-				valid = true; \
-			} else if (value->get_type() == Variant::INT) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<int64_t>::get(value)); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == Variant::FLOAT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_setter(VariantInternalAccessor<double>::get(p_value)); \
+				r_valid = true; \
+			} else if (p_value->get_type() == Variant::INT) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_setter(VariantInternalAccessor<int64_t>::get(p_value)); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_setter(VariantInternalAccessor<m_member_type>::get(value)); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_setter(VariantInternalAccessor<m_member_type>::get(p_value)); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_setter(PtrToArg<m_member_type>::convert(member)); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_setter(PtrToArg<m_member_type>::convert(p_member)); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \
@@ -245,31 +245,31 @@
 
 #define SETGET_STRUCT_FUNC_INDEX(m_base_type, m_member_type, m_member, m_setter, m_getter, m_index) \
 	struct VariantSetGet_##m_base_type##_##m_member { \
-		static void get(const Variant *base, Variant *member) { \
-			VariantTypeAdjust<m_member_type>::adjust(member); \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(m_index); \
+		static void get(const Variant *p_base, Variant *r_member) { \
+			VariantTypeAdjust<m_member_type>::adjust(r_member); \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(m_index); \
 		} \
-		static inline void validated_get(const Variant *base, Variant *member) { \
-			VariantInternalAccessor<m_member_type>::get(member) = VariantInternalAccessor<m_base_type>::get(base).m_getter(m_index); \
+		static inline void validated_get(const Variant *p_base, Variant *r_member) { \
+			VariantInternalAccessor<m_member_type>::get(r_member) = VariantInternalAccessor<m_base_type>::get(p_base).m_getter(m_index); \
 		} \
-		static void ptr_get(const void *base, void *member) { \
-			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(base).m_getter(m_index), member); \
+		static void ptr_get(const void *p_base, void *r_member) { \
+			PtrToArg<m_member_type>::encode(PtrToArg<m_base_type>::convert(p_base).m_getter(m_index), r_member); \
 		} \
-		static void set(Variant *base, const Variant *value, bool &valid) { \
-			if (value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
-				VariantInternalAccessor<m_base_type>::get(base).m_setter(m_index, VariantInternalAccessor<m_member_type>::get(value)); \
-				valid = true; \
+		static void set(Variant *r_base, const Variant *p_value, bool &r_valid) { \
+			if (p_value->get_type() == GetTypeInfo<m_member_type>::VARIANT_TYPE) { \
+				VariantInternalAccessor<m_base_type>::get(r_base).m_setter(m_index, VariantInternalAccessor<m_member_type>::get(p_value)); \
+				r_valid = true; \
 			} else { \
-				valid = false; \
+				r_valid = false; \
 			} \
 		} \
-		static inline void validated_set(Variant *base, const Variant *value) { \
-			VariantInternalAccessor<m_base_type>::get(base).m_setter(m_index, VariantInternalAccessor<m_member_type>::get(value)); \
+		static inline void validated_set(Variant *r_base, const Variant *p_value) { \
+			VariantInternalAccessor<m_base_type>::get(r_base).m_setter(m_index, VariantInternalAccessor<m_member_type>::get(p_value)); \
 		} \
-		static void ptr_set(void *base, const void *member) { \
-			m_base_type b = PtrToArg<m_base_type>::convert(base); \
-			b.m_setter(m_index, PtrToArg<m_member_type>::convert(member)); \
-			PtrToArg<m_base_type>::encode(b, base); \
+		static void ptr_set(void *r_base, const void *p_member) { \
+			m_base_type b = PtrToArg<m_base_type>::convert(r_base); \
+			b.m_setter(m_index, PtrToArg<m_member_type>::convert(p_member)); \
+			PtrToArg<m_base_type>::encode(b, r_base); \
 		} \
 		static Variant::Type get_type() { \
 			return GetTypeInfo<m_member_type>::VARIANT_TYPE; \

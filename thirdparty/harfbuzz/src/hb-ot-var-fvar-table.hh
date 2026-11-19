@@ -43,7 +43,7 @@ static bool axis_coord_pinned_or_within_axis_range (const hb_array_t<const F16DO
                                                     unsigned axis_index,
                                                     Triple axis_limit)
 {
-  double axis_coord = static_cast<double>(coords[axis_index].to_float ());
+  float axis_coord = coords[axis_index].to_float ();
   if (axis_limit.is_point ())
   {
     if (axis_limit.minimum != axis_coord)
@@ -107,8 +107,9 @@ struct InstanceRecord
         if (!axis_coord_pinned_or_within_axis_range (coords, i, *axis_limit))
           return_trace (false);
 
-        //skip pinned axis
-        if (axis_limit->is_point ())
+        //skip axes dropped from fvar (pinned; or self-contained under avar2,
+        //where other pinned axes stay in fvar as hidden)
+        if (axis_limit->is_point () && !c->plan->axes_index_map.has (i))
           continue;
       }
 
@@ -179,6 +180,8 @@ struct AxisRecord
 
   hb_tag_t get_axis_tag () const { return axisTag; }
 
+  bool is_hidden () const { return flags & AXIS_FLAG_HIDDEN; }
+
   float normalize_axis_value (float v) const
   {
     float min_value, default_value, max_value;
@@ -219,10 +222,7 @@ struct AxisRecord
   {
     float min, default_, max;
     get_coordinates (min, default_, max);
-    return TripleDistances (
-      static_cast<double>(min),
-      static_cast<double>(default_),
-      static_cast<double>(max));
+    return TripleDistances (min, default_, max);
   }
 
   bool subset (hb_subset_context_t *c) const
@@ -235,9 +235,21 @@ struct AxisRecord
     Triple *axis_limit;
     if (user_axes_location.has (axisTag, &axis_limit))
     {
-      out->minValue.set_float (axis_limit->minimum);
-      out->defaultValue.set_float (axis_limit->middle);
-      out->maxValue.set_float (axis_limit->maximum);
+      if (c->plan->has_avar2 && axis_limit->is_point ())
+      {
+        /* Pinned axis in avar2 mode: keep in fvar as hidden with
+         * min=default=max=pinned_value. */
+        out->minValue.set_float (axis_limit->middle);
+        out->defaultValue.set_float (axis_limit->middle);
+        out->maxValue.set_float (axis_limit->middle);
+        out->flags = out->flags | (HBUINT16) AXIS_FLAG_HIDDEN;
+      }
+      else
+      {
+        out->minValue.set_float (axis_limit->minimum);
+        out->defaultValue.set_float (axis_limit->middle);
+        out->maxValue.set_float (axis_limit->maximum);
+      }
     }
     return_trace (true);
   }
@@ -285,7 +297,7 @@ struct fvar
 				    unsigned int     *axes_count /* IN/OUT */,
 				    hb_ot_var_axis_t *axes_array /* OUT */) const
   {
-    if (axes_count)
+    if (axes_count && axes_array)
     {
       hb_array_t<const AxisRecord> arr = get_axes ().sub_array (start_offset, axes_count);
       for (unsigned i = 0; i < arr.length; ++i)
@@ -299,7 +311,7 @@ struct fvar
 			       unsigned int          *axes_count /* IN/OUT */,
 			       hb_ot_var_axis_info_t *axes_array /* OUT */) const
   {
-    if (axes_count)
+    if (axes_count && axes_array)
     {
       hb_array_t<const AxisRecord> arr = get_axes ().sub_array (start_offset, axes_count);
       for (unsigned i = 0; i < arr.length; ++i)
@@ -360,7 +372,7 @@ struct fvar
       return 0;
     }
 
-    if (coords_length && *coords_length)
+    if (coords_length && *coords_length && coords)
     {
       hb_array_t<const F16DOT16> instanceCoords = instance->get_coordinates (axisCount)
 							 .sub_array (0, coords_length);

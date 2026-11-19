@@ -220,6 +220,12 @@ void OpenXRFrameSynthesisExtension::on_main_swapchains_created() {
 	// Set up our frame synthesis info.
 	render_state.frame_synthesis_info.resize(view_count);
 
+	// Y direction is undefined so we allow users to flip it for conflicting implementations.
+	float y_scale = 1.0;
+	if (GLOBAL_GET("xr/openxr/extensions/frame_synthesis/flip_y")) {
+		y_scale = -1.0;
+	}
+
 	uint32_t index = 0;
 	for (XrFrameSynthesisInfoEXT &frame_synthesis_info : render_state.frame_synthesis_info) {
 		frame_synthesis_info.type = XR_TYPE_FRAME_SYNTHESIS_INFO_EXT;
@@ -234,8 +240,7 @@ void OpenXRFrameSynthesisExtension::on_main_swapchains_created() {
 		frame_synthesis_info.motionVectorSubImage.imageRect.extent.width = width;
 		frame_synthesis_info.motionVectorSubImage.imageRect.extent.height = height;
 
-		// Q: this should be 1.0, -1.0, 1.0. We output OpenGL NDC, frame synthesis expects Vulkan NDC, but might be a problem on runtime I'm testing.
-		frame_synthesis_info.motionVectorScale = { 1.0, 1.0, 1.0, 0.0 };
+		frame_synthesis_info.motionVectorScale = { 1.0, y_scale, 1.0, 0.0 };
 		frame_synthesis_info.motionVectorOffset = { 0.0, 0.0, 0.0, 0.0 };
 		frame_synthesis_info.appSpaceDeltaPose = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 0.0 } };
 

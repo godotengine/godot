@@ -76,6 +76,11 @@ static sljit_s32 load_immediate(struct sljit_compiler *compiler, sljit_s32 dst_r
 	if (imm <= 0x7fffffffl && imm >= S32_MIN)
 		return load_immediate32(compiler, dst_r, imm);
 
+	if (RISCV_HAS_BITMANIP_A(93) && (sljit_uw)imm <= 0xffffffff) {
+		FAIL_IF(load_immediate(compiler, dst_r, (sljit_s32)imm, tmp_r));
+		return push_inst(compiler, ADD_UW | RD(dst_r) | RS1(dst_r) | RS2(TMP_ZERO));
+	}
+
 	/* Shifted small immediates. */
 
 	high = imm;

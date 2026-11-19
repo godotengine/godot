@@ -680,6 +680,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_generic_6dof_joint_get_angular_target_rotation" qualifiers="virtual required const">
+			<return type="Quaternion" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_generic_6dof_joint_get_flag" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
@@ -693,6 +699,13 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
+			<description>
+			</description>
+		</method>
+		<method name="_generic_6dof_joint_set_angular_target_rotation" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="target_rotation" type="Quaternion" />
 			<description>
 			</description>
 		</method>

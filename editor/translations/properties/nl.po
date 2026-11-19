@@ -1,0 +1,7061 @@
+# Dutch translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# aelspire <aelspire@gmail.com>, 2017.
+# Aram Nap <xyphex.aram@gmail.com>, 2017.
+# Arjan219 <arjannugteren1@gmail.com>, 2017-2018, 2020.
+# Christophe Swolfs <swolfschristophe@gmail.com>, 2017.
+# Cornee Traas <corneetraas@hotmail.com>, 2017.
+# Daeran Wereld <daeran@gmail.com>, 2017.
+# Dzejkop <jakubtrad@gmail.com>, 2017.
+# Ferdinand de Coninck <ferdinand.deconinck@gmail.com>, 2018.
+# frank <frankvprive@gmail.com>, 2018.
+# Johannes Smit <smitjohannes96@gmail.com>, 2018.
+# Jorn Theunissen <jorn-theunissen@hotmail.com>, 2018.
+# Maikel <maikel_martens_1@hotmail.com>, 2017.
+# millenniumproof <millenniumproof@gmail.com>, 2018.
+# nee <lespam@protonmail.com>, 2018.
+# Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017-2018.
+# Robin Arys <robinarys@hotmail.com>, 2017.
+# Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
+# Uxilo <jmolendijk93@gmail.com>, 2017-2018.
+# Willem <studiebolmail@gmail.com>, 2018.
+# Wout Standaert <wout@blobkat.com>, 2017.
+# Zatherz <zatherz@linux.pl>, 2017.
+# Tahar Meijs <tntmeijs@gmail.com>, 2018.
+# Laurent Windels <laurentwindels@yahoo.com>, 2018.
+# rxadmin <r.van.eeghem@gmail.com>, 2018.
+# Peter Goelst <muis24@gmail.com>, 2019.
+# Wouter Buckens <wou.buc@gmail.com>, 2019.
+# Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019, 2020, 2021.
+# jef dered <themen098s@vivaldi.net>, 2019.
+# Alex H. <sandertjeh13@hotmail.com>, 2019.
+# edouardgr <edouard.gruyters@gmail.com>, 2019.
+# Jimmy De  Smet <J773@telenet.be>, 2019.
+# Bastiaan van der Plaat <bastiaan.v.d.plaat@gmail.com>, 2019.
+# Hector Peeters <hector.peeters@gmail.com>, 2019.
+# Shawn Gyina <gyina.shawn@gmail.com>, 2019.
+# ebbe <ebbesteenhoudt@gmail.com>, 2019.
+# Tirrin <lensenjoe@gmail.com>, 2019.
+# Filip Van Raemdonck <arrawn@gmail.com>, 2019.
+# Julian <jdhoogvorst@gmail.com>, 2019, 2020.
+# kitfka <philipthuijs@gmail.com>, 2020.
+# Mike van Leeuwen <mkvanleeuwen@gmail.com>, 2020.
+# marnicq van loon <marnicqvanloon@gmail.com>, 2020.
+# T-rex08 <ipadtriceratops@gmail.com>, 2021.
+# Dwarffish <hoogvlietjohan@gmail.com>, 2021.
+# Arthur de Roos <arthur.de.roos@gmail.com>, 2021.
+# Vancha March <tjipkevdh@gmail.com>, 2021.
+# Hugo van de Kuilen <hugo.vandekuilen1234567890@gmail.com>, 2021.
+# tobeqz <vanveenjorik+tobeqz@gmail.com>, 2021.
+# Edgar <Edgar@anotherfoxguy.com>, 2021.
+# Daan van Luijk <daanvl@outlook.be>, 2021.
+# Dani Verschoor <daniverschoor@outlook.com>, 2021.
+# naan <xlightfox@hotmail.com>, 2021.
+# Tim Visee <tim+weblate@visee.me>, 2022.
+# Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
+# Rémi Verschelde <remi@godotengine.org>, 2022.
+# Wouter <mysticaldev@hotmail.com>, 2022.
+# voylin <0voylin0@gmail.com>, 2022.
+# Gert-dev <qnyasgjhapqyuhoibr@kiabws.com>, 2022.
+# Nnn <irri2020@outlook.com>, 2022.
+# Tristan Gerritsen <github-usadson@thewoosh.org>, 2023.
+# Raymon Zutekouw <me@raymon.dev>, 2023.
+# Nicolai Van der Storm <nicolai@nvds.be>, 2023.
+# Bert Heymans <bert.heymans@gmail.com>, 2023.
+# Gert-dev <Gert-dev@users.noreply.hosted.weblate.org>, 2023.
+# Tom Teck <Wangtsinkai@msn.com>, 2024.
+# Philip Goto <philip.goto@gmail.com>, 2024, 2025, 2026.
+# Leroy <Leroyvanraaij@gmail.com>, 2024.
+# NicolasDed <nicolas-dedoyard@outlook.com>, 2024.
+# Johan Aantjes <mail@johanaantjes.nl>, 2024, 2025.
+# Ozan <22008306@student.hhs.nl>, 2025.
+# Sven Slootweg <admin@cryto.net>, 2025.
+# Tom Everaert <everaert_tom@hotmail.com>, 2025.
+# Daniel koezema <koezema0903@gmail.com>, 2025.
+# pim wagemans <pimwagemans09@gmail.com>, 2026.
+# Flying Piano <flyingpiano27@gmail.com>, 2026.
+# Belosceani <29642596+Belosceani@users.noreply.github.com>, 2026.
+# Luka van der Plas <lukavdplas@users.noreply.hosted.weblate.org>, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-11-10 04:56+0000\n"
+"Last-Translator: Luka van der Plas "
+"<lukavdplas@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/nl/>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
+
+msgid "Application"
+msgstr "Applicatie"
+
+msgid "Config"
+msgstr "Configuratie"
+
+msgid "Name"
+msgstr "Naam"
+
+msgid "Name Localized"
+msgstr "Naam (vertaald)"
+
+msgid "Description"
+msgstr "Beschrijving"
+
+msgid "Version"
+msgstr "Versie"
+
+msgid "Run"
+msgstr "Uitvoeren"
+
+msgid "Main Scene"
+msgstr "Startscène"
+
+msgid "Disable stdout"
+msgstr "Stdout uitschakelen"
+
+msgid "Disable stderr"
+msgstr "Stderr uitschakelen"
+
+msgid "Print Header"
+msgstr "Header afdrukken"
+
+msgid "Enable Alt Space Menu"
+msgstr "Alt-spatiemenu inschakelen"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "Verborgen projectgegevensmap gebruiken"
+
+msgid "Use Custom User Dir"
+msgstr "Aangepaste gebruikersmap gebruiken"
+
+msgid "Custom User Dir Name"
+msgstr "Aangepaste gebruikersmapnaam"
+
+msgid "Project Settings Override"
+msgstr "Projectinstellingen overschrijven"
+
+msgid "Disable Project Settings Override"
+msgstr "Overschrijven van projectinstelingen uitschakelen"
+
+msgid "Main Loop Type"
+msgstr "Hoofdlustype"
+
+msgid "Auto Accept Quit"
+msgstr "Afsluiten automatisch accepteren"
+
+msgid "Quit on Go Back"
+msgstr "Afsluiten bij teruggaan"
+
+msgid "Accessibility"
+msgstr "Toegankelijkheid"
+
+msgid "General"
+msgstr "Algemeen"
+
+msgid "Accessibility Support"
+msgstr "Toegankelijkheidsondersteuning"
+
+msgid "Updates per Second"
+msgstr "Updates per seconde"
+
+msgid "Accessibility Driver"
+msgstr "Toegankelijkheidsstuurprogramma"
+
+msgid "Display"
+msgstr "Scherm"
+
+msgid "Window"
+msgstr "Venster"
+
+msgid "Size"
+msgstr "Grootte"
+
+msgid "Viewport Width"
+msgstr "Breedte Beeldvenster"
+
+msgid "Viewport Height"
+msgstr "Hoogte Beeldvenster"
+
+msgid "Mode"
+msgstr "Modus"
+
+msgid "Initial Position Type"
+msgstr "Type van initiële positie"
+
+msgid "Initial Position"
+msgstr "Beginpositie"
+
+msgid "Initial Screen"
+msgstr "Beginbeeldscherm"
+
+msgid "Resizable"
+msgstr "Schaalbaar"
+
+msgid "Borderless"
+msgstr "Randloos"
+
+msgid "Always on Top"
+msgstr "Altijd bovenaan"
+
+msgid "Transparent"
+msgstr "Doorzichtig"
+
+msgid "Extend to Title"
+msgstr "Uitbreiden naar titel"
+
+msgid "No Focus"
+msgstr "Geen focus"
+
+msgid "Sharp Corners"
+msgstr "Scherpe hoeken"
+
+msgid "Minimize Disabled"
+msgstr "Minimaliseren uitschakelen"
+
+msgid "Maximize Disabled"
+msgstr "Maximaliseren uitschakelen"
+
+msgid "Window Width Override"
+msgstr "Vensterbreedte overschrijven"
+
+msgid "Window Height Override"
+msgstr "Vensterhoogte overschrijven"
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "HDR-uitvoer aanvragen"
+
+msgid "Energy Saving"
+msgstr "Energiebesparing"
+
+msgid "Keep Screen On"
+msgstr "Scherm aanhouden"
+
+msgid "Animation"
+msgstr "Animatie"
+
+msgid "Warnings"
+msgstr "Waarschuwingen"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Ongeldige SkeletonModifier-nodepaden controleren"
+
+msgid "Check Invalid Track Paths"
+msgstr "Ongeldige spoorpaden controleren"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "Typeconflicten van hoekinterpolatie controleren"
+
+msgid "Compatibility"
+msgstr "Compatibiliteit"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Ouderskelet als standaard in MeshInstance3D"
+
+msgid "Audio"
+msgstr "Audio"
+
+msgid "Buses"
+msgstr "Bussen"
+
+msgid "Default Bus Layout"
+msgstr "Standaardbuslay-out"
+
+msgid "Default Playback Type"
+msgstr "Standaardafspeeltype"
+
+msgid "Text to Speech"
+msgstr "Tekst naar spraak"
+
+msgid "2D Panning Strength"
+msgstr "2D-panningsterkte"
+
+msgid "3D Panning Strength"
+msgstr "3D-panningsterkte"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "Sessiecategorie"
+
+msgid "Mix with Others"
+msgstr "Met andere mixen"
+
+msgid "Subwindows"
+msgstr "Subvensters"
+
+msgid "Embed Subwindows"
+msgstr "Subvensters embedden"
+
+msgid "Frame Pacing"
+msgstr "Framepacing"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Framepacing inschakelen"
+
+msgid "Swappy Mode"
+msgstr "Swappy-modus"
+
+msgid "Physics"
+msgstr "Physics"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Op losse thread uitvoeren"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Stretch"
+msgstr "Uitrekken"
+
+msgid "Aspect"
+msgstr "Aspect"
+
+msgid "Scale"
+msgstr "Schaal"
+
+msgid "Scale Mode"
+msgstr "Schaalmodus"
+
+msgid "Debug"
+msgstr "Foutopsporing"
+
+msgid "Settings"
+msgstr "Instellingen"
+
+msgid "Profiler"
+msgstr "Profiler"
+
+msgid "Max Functions"
+msgstr "Maximum functieaantal"
+
+msgid "Max Timestamp Query Elements"
+msgstr "Maximum Tijdstempel Vraag-Elementen"
+
+msgid "Compression"
+msgstr "Compressie"
+
+msgid "Formats"
+msgstr "Formaten"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Lange­afstands­koppeling"
+
+msgid "Compression Level"
+msgstr "Compressieniveau"
+
+msgid "Window Log Size"
+msgstr "Venster­logboek­grootte"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "Crashhandler"
+
+msgid "Message"
+msgstr "Bericht"
+
+msgid "Rendering"
+msgstr "Renderen"
+
+msgid "Occlusion Culling"
+msgstr "Occlusieculling"
+
+msgid "BVH Build Quality"
+msgstr "BVH-bouwkwaliteit"
+
+msgid "Jitter Projection"
+msgstr "Jitterprojectie"
+
+msgid "Internationalization"
+msgstr "Internationalisatie"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Lay-outrichting van rechts naar links forceren"
+
+msgid "Root Node Layout Direction"
+msgstr "Lay-outrichting wortelnode"
+
+msgid "Root Node Auto Translate"
+msgstr "Automatische vertaling wortelnode"
+
+msgid "GUI"
+msgstr "Gebruikersinterface"
+
+msgid "Timers"
+msgstr "Timers"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Incrementeel Zoeken Maximale Interval Msec"
+
+msgid "Tooltip Delay (sec)"
+msgstr "Tooltipvertraging (sec)"
+
+msgid "Common"
+msgstr "Algemeen"
+
+msgid "Drag Threshold"
+msgstr "Sleepdrempelwaarde"
+
+msgid "Snap Controls to Pixels"
+msgstr "Besturingselementen op pixels uitlijnen"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Focustoestand tonen bij muisgebeurtenis"
+
+msgid "Fonts"
+msgstr "Lettertypen"
+
+msgid "Dynamic Fonts"
+msgstr "Dynamische lettertypen"
+
+msgid "Use Oversampling"
+msgstr "Oversampling gebruiken"
+
+msgid "Rendering Device"
+msgstr "Renderingapparaat"
+
+msgid "V-Sync"
+msgstr "Verticale synchronisatie"
+
+msgid "Frame Queue Size"
+msgstr "Framewachtrijgrootte"
+
+msgid "Swapchain Image Count"
+msgstr "Aantal swapchainafbeeldingen"
+
+msgid "Staging Buffer"
+msgstr "Stagingbuffer"
+
+msgid "Block Size (KB)"
+msgstr "Blokgrootte (KB)"
+
+msgid "Max Size (MB)"
+msgstr "Maximale grootte (MB)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Regiogrootte voor texture-upload in px"
+
+msgid "Texture Download Region Size Px"
+msgstr "Regiogrootte voor texture-download in px"
+
+msgid "Pipeline Cache"
+msgstr "Pijplijnbuffer"
+
+msgid "Enable"
+msgstr "Inschakelen"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Grootte van opgeslagen fragment (MB)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Max descriptors per pool"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "Max brondescriptors"
+
+msgid "Max Sampler Descriptors"
+msgstr "Max samplerdescriptors"
+
+msgid "Agility SDK Version"
+msgstr "Agility SDK-versie"
+
+msgid "Textures"
+msgstr "Textures"
+
+msgid "Canvas Textures"
+msgstr "Canvastextures"
+
+msgid "Default Texture Filter"
+msgstr "Standaardtexturefilter"
+
+msgid "Default Texture Repeat"
+msgstr "Standaardtextureherhaling"
+
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "Omgevingslicht gebruiken"
+
+msgid "Input Devices"
+msgstr "Invoerapparaten"
+
+msgid "Pointing"
+msgstr "Aanwijzen"
+
+msgid "Enable Long Press as Right Click"
+msgstr "Lang indrukken als rechtsklik inschakelen"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "Pannen en schalen met gebaren inschakelen"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "Scrolrichting voor rotatie-invoer"
+
+msgid "Override Volume Buttons"
+msgstr "Volumeknoppen overschrijven"
+
+msgid "Disable Scroll Deadzone"
+msgstr "Scrolldeadzone uitschakelen"
+
+msgid "Navigation"
+msgstr "Navigatie"
+
+msgid "World"
+msgstr "Wereld"
+
+msgid "Map Use Async Iterations"
+msgstr "Asynchrone iteraties voor map gebruiken"
+
+msgid "Region Use Async Iterations"
+msgstr "Asynchrone iteraties voor regio gebruiken"
+
+msgid "Avoidance"
+msgstr "Ontwijking"
+
+msgid "Thread Model"
+msgstr "Threadmodel"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Meerdere threads voor ontwijking gebruiken"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Threads met hoge prioriteit voor ontwijking gebruiken"
+
+msgid "Pathfinding"
+msgstr "Routebepaling"
+
+msgid "Max Threads"
+msgstr "Max threads"
+
+msgid "Baking"
+msgstr "Bakken"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Crashpreventiecontroles gebruiken"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Meerdere threads voor bakken gebruiken"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Threads met hoge prioriteit voor bakken gebruiken"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "NavMesh-randvoegfouten"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "NavMesh-celgrootteverschil"
+
+msgid "Editor Overrides"
+msgstr "Editoroverschrijvingen"
+
+msgid "Low Processor Usage Mode"
+msgstr "Lage energieverbruiksmodus processor"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "Slaapstand lage processorbelasting (µs)"
+
+msgid "Delta Smoothing"
+msgstr "Delta-afvlakking"
+
+msgid "Print Error Messages"
+msgstr "Foutmeldingen tonen"
+
+msgid "Print to stdout"
+msgstr "Afdrukken naar stdout"
+
+msgid "Physics Ticks per Second"
+msgstr "Physicsstappen per seconde"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Max physicsstappen per frame"
+
+msgid "Max FPS"
+msgstr "Max FPS"
+
+msgid "Time Scale"
+msgstr "Tijdschaal"
+
+msgid "Physics Jitter Fix"
+msgstr "Physicsjittercorrectie"
+
+msgid "Mouse Mode"
+msgstr "Muismodus"
+
+msgid "Use Accumulated Input"
+msgstr "Geaccumuleerde invoer gebruiken"
+
+msgid "Emulate Mouse From Touch"
+msgstr "Muis emuleren vanuit aanraking"
+
+msgid "Emulate Touch From Mouse"
+msgstr "Aanraking emuleren vanuit muis"
+
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Joypad negeren bij applicatie zonder focus"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Verouderd gedrag voor 'zojuist ingedrukt'"
+
+msgid "Sensors"
+msgstr "Sensoren"
+
+msgid "Enable Accelerometer"
+msgstr "Versnellingsmeter inschakelen"
+
+msgid "Enable Gravity"
+msgstr "Zwaartekracht inschakelen"
+
+msgid "Enable Gyroscope"
+msgstr "Gyroscoop inschakelen"
+
+msgid "Enable Magnetometer"
+msgstr "Magnetometer inschakelen"
+
+msgid "Joypads"
+msgstr "Joypads"
+
+msgid "Device"
+msgstr "Apparaat"
+
+msgid "Window ID"
+msgstr "Venster-ID"
+
+msgid "Command or Control Autoremap"
+msgstr "Command of Control automatisch vertalen"
+
+msgid "Alt Pressed"
+msgstr "Alt ingedrukt"
+
+msgid "Shift Pressed"
+msgstr "Shift ingedrukt"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl ingedrukt"
+
+msgid "Meta Pressed"
+msgstr "Meta ingedrukt"
+
+msgid "Pressed"
+msgstr "Ingedrukt"
+
+msgid "Keycode"
+msgstr "Toetscode"
+
+msgid "Physical Keycode"
+msgstr "Fysieke toetscode"
+
+msgid "Key Label"
+msgstr "Toetslabel"
+
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Location"
+msgstr "Locatie"
+
+msgid "Echo"
+msgstr "Echo"
+
+msgid "Button Mask"
+msgstr "Knopmasker"
+
+msgid "Position"
+msgstr "Positie"
+
+msgid "Global Position"
+msgstr "Globale positie"
+
+msgid "Factor"
+msgstr "Factor"
+
+msgid "Button Index"
+msgstr "Knopindex"
+
+msgid "Canceled"
+msgstr "Geannuleerd"
+
+msgid "Double Click"
+msgstr "Dubbelklik"
+
+msgid "Tilt"
+msgstr "Kantelen"
+
+msgid "Pressure"
+msgstr "Druk"
+
+msgid "Pen Inverted"
+msgstr "Pen omgekeerd"
+
+msgid "Relative"
+msgstr "Relatief"
+
+msgid "Screen Relative"
+msgstr "Relatief aan scherm"
+
+msgid "Velocity"
+msgstr "Snelheid"
+
+msgid "Screen Velocity"
+msgstr "Schermsnelheid"
+
+msgid "Axis"
+msgstr "As"
+
+msgid "Axis Value"
+msgstr "Aswaarde"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Double Tap"
+msgstr "Dubbelklik"
+
+msgid "Action"
+msgstr "Actie"
+
+msgid "Strength"
+msgstr "Kracht"
+
+msgid "Event Index"
+msgstr "Gebeurtenisindex"
+
+msgid "Delta"
+msgstr "Delta"
+
+msgid "Channel"
+msgstr "Kanaal"
+
+msgid "Pitch"
+msgstr "Toonhoogte"
+
+msgid "Instrument"
+msgstr "Instrument"
+
+msgid "Controller Number"
+msgstr "Controllernummer"
+
+msgid "Controller Value"
+msgstr "Controllerwaarde"
+
+msgid "Shortcut"
+msgstr "Sneltoets"
+
+msgid "Events"
+msgstr "Gebeurtenissen"
+
+msgid "Include Navigational"
+msgstr "Navigatie-items opnemen"
+
+msgid "Include Hidden"
+msgstr "Verborgen items opnemen"
+
+msgid "Big Endian"
+msgstr "Big-endian"
+
+msgid "Blocking Mode Enabled"
+msgstr "Blokkerende modus ingeschakeld"
+
+msgid "Connection"
+msgstr "Verbinding"
+
+msgid "Read Chunk Size"
+msgstr "Leesblokgrootte"
+
+msgid "Data"
+msgstr "Gegevens"
+
+msgid "Object ID"
+msgstr "Object-ID"
+
+msgid "Encode Buffer Max Size"
+msgstr "Max buffergrootte voor codering"
+
+msgid "Input Buffer Max Size"
+msgstr "Max invoerbuffergrootte"
+
+msgid "Output Buffer Max Size"
+msgstr "Max uitvoerbuffergrootte"
+
+msgid "Stream Peer"
+msgstr "Streampeer"
+
+msgid "Resource"
+msgstr "Bron"
+
+msgid "Local to Scene"
+msgstr "Lokaal aan scène"
+
+msgid "Path"
+msgstr "Pad"
+
+msgid "Data Array"
+msgstr "Gegevensreeks"
+
+msgid "Max Pending Connections"
+msgstr "Max wachtende verbindingen"
+
+msgid "Neighbor Filter Enabled"
+msgstr "Buurfilter ingeschakeld"
+
+msgid "Region"
+msgstr "Gebied"
+
+msgid "Offset"
+msgstr "Offset"
+
+msgid "Cell Size"
+msgstr "Celgrootte"
+
+msgid "Cell Shape"
+msgstr "Celvorm"
+
+msgid "Jumping Enabled"
+msgstr "Springen ingeschakeld"
+
+msgid "Default Compute Heuristic"
+msgstr "Standaard berekeningsheuristiek"
+
+msgid "Default Estimate Heuristic"
+msgstr "Standaard schattingsheuristiek"
+
+msgid "Diagonal Mode"
+msgstr "Diagonale modus"
+
+msgid "Seed"
+msgstr "Zaad"
+
+msgid "State"
+msgstr "Staat"
+
+msgid "Memory"
+msgstr "Geheugen"
+
+msgid "Limits"
+msgstr "Limieten"
+
+msgid "Message Queue"
+msgstr "Berichtenwachtrij"
+
+msgid "Max Steps"
+msgstr "Max stappen"
+
+msgid "Network"
+msgstr "Netwerk"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "Time-out voor verbinding (seconden)"
+
+msgid "Unix"
+msgstr "Unix"
+
+msgid "Packet Peer Stream"
+msgstr "Packetpeer-stream"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Max buffer (macht van 2)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Certificate Bundle Override"
+msgstr "Certificaatbundel overschrijven"
+
+msgid "Threading"
+msgstr "Threading"
+
+msgid "Worker Pool"
+msgstr "Workerpool"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Verhouding threads met lage prioriteit"
+
+msgid "Target"
+msgstr "Doel"
+
+msgid "Start Offset"
+msgstr "Beginoffset"
+
+msgid "Names"
+msgstr "Namen"
+
+msgid "Locale"
+msgstr "Taal"
+
+msgid "Plural Rules Override"
+msgstr "Meervoudsregels overschrijven"
+
+msgid "Test"
+msgstr "Testen"
+
+msgid "Fallback"
+msgstr "Terugval"
+
+msgid "Pseudolocalization"
+msgstr "Pseudo­lokalisatie"
+
+msgid "Use Pseudolocalization"
+msgstr "Pseudo­lokalisatie gebruiken"
+
+msgid "Replace with Accents"
+msgstr "Met accenten vervangen"
+
+msgid "Double Vowels"
+msgstr "Dubbele klinkers"
+
+msgid "Fake BiDi"
+msgstr "Nep-BiDi"
+
+msgid "Override"
+msgstr "Overschrijven"
+
+msgid "Expansion Ratio"
+msgstr "Uitbreidingsverhouding"
+
+msgid "Prefix"
+msgstr "Voorvoegsel"
+
+msgid "Suffix"
+msgstr "Achtervoegsel"
+
+msgid "Skip Placeholders"
+msgstr "Tijdelijke aanduidingen overslaan"
+
+msgid "Rotation"
+msgstr "Rotatie"
+
+msgid "Value"
+msgstr "Waarde"
+
+msgid "Arg Count"
+msgstr "Aantal argumenten"
+
+msgid "Args"
+msgstr "Argumenten"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "In Handle"
+msgstr "Ingaand handvat"
+
+msgid "Out Handle"
+msgstr "Uitgaand handvat"
+
+msgid "Handle Mode"
+msgstr "Handvatmodus"
+
+msgid "Stream"
+msgstr "Stream"
+
+msgid "End Offset"
+msgstr "Eindoffset"
+
+msgid "Easing"
+msgstr "Versoepeling"
+
+msgid "Debug Adapter"
+msgstr "Debug-adapter"
+
+msgid "Remote Port"
+msgstr "Externe poort"
+
+msgid "Request Timeout"
+msgstr "Time-out voor verzoek"
+
+msgid "Sync Breakpoints"
+msgstr "Breekpunten synchroniseren"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Global"
+msgstr "Globaal"
+
+msgid "Closable"
+msgstr "Sluitbaar"
+
+msgid "Icon Name"
+msgstr "Icoonnaam"
+
+msgid "Dock Icon"
+msgstr "Paneelicoon"
+
+msgid "Force Show Icon"
+msgstr "Iconen tonen forceren"
+
+msgid "Title Color"
+msgstr "Titelkleur"
+
+msgid "Dock Shortcut"
+msgstr "Paneelsneltoets"
+
+msgid "Available Layouts"
+msgstr "Beschikbare lay-outs"
+
+msgid "Distraction Free Mode"
+msgstr "Afleidingsvrije modus"
+
+msgid "Movie Maker Enabled"
+msgstr "Filmmaker ingeschakeld"
+
+msgid "Custom Template"
+msgstr "Aangepast sjabloon"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Architectures"
+msgstr "Architecturen"
+
+msgid "App Store Team ID"
+msgstr "App Store-team-ID"
+
+msgid "Export Method Debug"
+msgstr "Exportmethode (debug)"
+
+msgid "Code Sign Identity Debug"
+msgstr "Code-ondertekeningsidentiteit (debug)"
+
+msgid "Code Sign Identity Release"
+msgstr "Code-ondertekeningsidentiteit (release)"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Provisioningprofiel-UUID (debug)"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Provisioningprofiel-UUID (release)"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Provisioningprofiel-specificatie (debug)"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "Provisioningprofiel-specificatie (release)"
+
+msgid "Export Method Release"
+msgstr "Exportmethode (release)"
+
+msgid "Bundle Identifier"
+msgstr "Bundle-identifier"
+
+msgid "Signature"
+msgstr "Handtekening"
+
+msgid "Short Version"
+msgstr "Korte versie"
+
+msgid "Additional Plist Content"
+msgstr "Extra plist-inhoud"
+
+msgid "Icon Interpolation"
+msgstr "Pictograminterpolatie"
+
+msgid "Export Project Only"
+msgstr "Alleen project exporteren"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Oude exportbestanden onvoorwaardelijk verwijderen"
+
+msgid "Modules"
+msgstr "Modules"
+
+msgid "Camera"
+msgstr "Camera"
+
+msgid "Plugins"
+msgstr "Plug-ins"
+
+msgid "Entitlements"
+msgstr "Rechten"
+
+msgid "Increased Memory Limit"
+msgstr "Verhoogde geheugenlimiet"
+
+msgid "Game Center"
+msgstr "Game Center"
+
+msgid "Push Notifications"
+msgstr "Pushmeldingen"
+
+msgid "Additional"
+msgstr "Extra"
+
+msgid "Capabilities"
+msgstr "Mogelijkheden"
+
+msgid "Access Wi-Fi"
+msgstr "Toegang tot wifi"
+
+msgid "Shader Baker"
+msgstr "Shaderbakker"
+
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+msgid "User Data"
+msgstr "Gebruikersgegevens"
+
+msgid "Accessible From Files App"
+msgstr "Toegankelijk vanuit Bestanden-app"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Toegankelijk via iTunes-deling"
+
+msgid "Privacy"
+msgstr "Privacy"
+
+msgid "Tracking Enabled"
+msgstr "Tracking ingeschakeld"
+
+msgid "Tracking Domains"
+msgstr "Trackingdomeinen"
+
+msgid "Icons"
+msgstr "Iconen"
+
+msgid "Icon 1024 X 1024"
+msgstr "Pictogram 1024×1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Pictogram 1024×1024 (donker)"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Pictogram 1024×1024 (getint)"
+
+msgid "Export Console Wrapper"
+msgstr "Consolewrapper exporteren"
+
+msgid "Binary Format"
+msgstr "Binair formaat"
+
+msgid "Embed PCK"
+msgstr "PCK insluiten"
+
+msgid "Texture Format"
+msgstr "Textuurformaat"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
+msgid "Export Path"
+msgstr "Pad exporteren"
+
+msgid "Label"
+msgstr "Label"
+
+msgid "Read Only"
+msgstr "Alleen lezen"
+
+msgid "Flat"
+msgstr "Plat"
+
+msgid "Hide Slider"
+msgstr "Schuifregelaar verbergen"
+
+msgid "Editing Integer"
+msgstr "Geheel getal bewerken"
+
+msgid "Zoom"
+msgstr "Zoom"
+
+msgid "Retarget"
+msgstr "Opnieuw richten"
+
+msgid "Bone Renamer"
+msgstr "Bot hernoemen"
+
+msgid "Rename Bones"
+msgstr "Botten hernoemen"
+
+msgid "Unique Node"
+msgstr "Uniek Knooppunt"
+
+msgid "Make Unique"
+msgstr "Uniek maken"
+
+msgid "Skeleton Name"
+msgstr "Skelet­naam"
+
+msgid "Rest Fixer"
+msgstr "Rustpositie-hersteller"
+
+msgid "Apply Node Transforms"
+msgstr "Knooptransformaties toepassen"
+
+msgid "Normalize Position Tracks"
+msgstr "Positiesporen normaliseren"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "Alle botposities na import resetten"
+
+msgid "Retarget Method"
+msgstr "Herrichtingsmethode"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Globale rustpositie behouden voor restanten"
+
+msgid "Use Global Pose"
+msgstr "Globale positie gebruiken"
+
+msgid "Original Skeleton Name"
+msgstr "Oorspronkelijke skelet­naam"
+
+msgid "Fix Silhouette"
+msgstr "Silhouet herstellen"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Threshold"
+msgstr "Drempelwaarde"
+
+msgid "Base Height Adjustment"
+msgstr "Aanpassing basishoogte"
+
+msgid "Remove Tracks"
+msgstr "Sporen verwijderen"
+
+msgid "Except Bone Transform"
+msgstr "Behalve bottransformatie"
+
+msgid "Unimportant Positions"
+msgstr "Onbelangrijke posities"
+
+msgid "Unmapped Bones"
+msgstr "Niet-toegewezen botten"
+
+msgid "Generate Tangents"
+msgstr "Raaklijnen genereren"
+
+msgid "Generate LODs"
+msgstr "LOD's genereren"
+
+msgid "Generate Shadow Mesh"
+msgstr "Schaduwmesh genereren"
+
+msgid "Generate Lightmap UV2"
+msgstr "Lightmap UV2 genereren"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "Texelgrootte lightmap UV2 genereren"
+
+msgid "Scale Mesh"
+msgstr "Mesh schalen"
+
+msgid "Offset Mesh"
+msgstr "Mesh verschuiven"
+
+msgid "Force Disable Mesh Compression"
+msgstr "Meshcompressie geforceerd uitschakelen"
+
+msgid "Node"
+msgstr "Node"
+
+msgid "Node Type"
+msgstr "Knooptype"
+
+msgid "Script"
+msgstr "Script"
+
+msgid "Import"
+msgstr "Importeren"
+
+msgid "Skip Import"
+msgstr "Import overslaan"
+
+msgid "Generate"
+msgstr "Genereren"
+
+msgid "NavMesh"
+msgstr "NavMesh"
+
+msgid "Body Type"
+msgstr "Lichaamtype"
+
+msgid "Shape Type"
+msgstr "Vormtype"
+
+msgid "Physics Material Override"
+msgstr "Fysicamateriaal overschrijven"
+
+msgid "Layer"
+msgstr "Laag"
+
+msgid "Mask"
+msgstr "Masker"
+
+msgid "Mesh Instance"
+msgstr "Mesh-instantie"
+
+msgid "Layers"
+msgstr "Lagen"
+
+msgid "Visibility Range Begin"
+msgstr "Begin zichtbaarheidsbereik"
+
+msgid "Visibility Range Begin Margin"
+msgstr "Marge begin zichtbaarheidsbereik"
+
+msgid "Visibility Range End"
+msgstr "Eind zichtbaarheidsbereik"
+
+msgid "Visibility Range End Margin"
+msgstr "Marge eind zichtbaarheidsbereik"
+
+msgid "Visibility Range Fade Mode"
+msgstr "Vervagingsmodus zichtbaarheidsbereik"
+
+msgid "Cast Shadow"
+msgstr "Schaduw werpen"
+
+msgid "Decomposition"
+msgstr "Decompositie"
+
+msgid "Advanced"
+msgstr "Geavanceerd"
+
+msgid "Precision"
+msgstr "Precisie"
+
+msgid "Max Concavity"
+msgstr "Max concaviteit"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Knipbias symmetrievlakken"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Knipbias rotatieassen"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Min volume per convexe romp"
+
+msgid "Resolution"
+msgstr "Resolutie"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Max aantal hoekpunten per convexe romp"
+
+msgid "Plane Downsampling"
+msgstr "Vlak-downsampling"
+
+msgid "Convexhull Downsampling"
+msgstr "Convexe-romp-downsampling"
+
+msgid "Normalize Mesh"
+msgstr "Mesh normaliseren"
+
+msgid "Convexhull Approximation"
+msgstr "Convexe-rompbenadering"
+
+msgid "Max Convex Hulls"
+msgstr "Max convexe rompen"
+
+msgid "Height"
+msgstr "Hoogte"
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "Occluder"
+msgstr "Occluder"
+
+msgid "Save to File"
+msgstr "In bestand opslaan"
+
+msgid "Shadow Meshes"
+msgstr "Schaduwmeshes"
+
+msgid "Lightmap UV"
+msgstr "Lightmap-UV"
+
+msgid "LODs"
+msgstr "LOD's"
+
+msgid "Use External"
+msgstr "Externe gebruiken"
+
+msgid "Loop Mode"
+msgstr "Lusmodus"
+
+msgid "Keep Custom Tracks"
+msgstr "Zelfgedefineerde sporen behouden"
+
+msgid "Amount"
+msgstr "Hoeveelheid"
+
+msgid "Optimizer"
+msgstr "Optimalisator"
+
+msgid "Max Velocity Error"
+msgstr "Max.-snelheidsfout"
+
+msgid "Max Angular Error"
+msgstr "Max.-hoekfout"
+
+msgid "Max Precision Error"
+msgstr "Max.-precisiefout"
+
+msgid "Page Size"
+msgstr "Paginagrootte"
+
+msgid "Import Tracks"
+msgstr "Sporen importeren"
+
+msgid "Rest Pose"
+msgstr "Rustpose"
+
+msgid "Load Pose"
+msgstr "Laadpose"
+
+msgid "External Animation Library"
+msgstr "Externe animatiebibliotheek"
+
+msgid "Selected Animation"
+msgstr "Geselecteerde animatie"
+
+msgid "Selected Timestamp"
+msgstr "Geselecteerde tijdstempel"
+
+msgid "Nodes"
+msgstr "Nodes"
+
+msgid "Root Type"
+msgstr "Worteltype"
+
+msgid "Root Name"
+msgstr "Wortelnaam"
+
+msgid "Root Script"
+msgstr "Wortelscript"
+
+msgid "Mesh Library"
+msgstr "Meshbibilotheek"
+
+msgid "Use Node Names as Mesh Names"
+msgstr "Nodenamen als meshnamen gebruiken"
+
+msgid "Deduplicate Surfaces"
+msgstr "Oppervlaktes dedupliceren"
+
+msgid "Apply Root Scale"
+msgstr "Wortelschaal gebruiken"
+
+msgid "Root Scale"
+msgstr "Wortelschaal"
+
+msgid "Import as Skeleton Bones"
+msgstr "Importeren als Skeletbotten"
+
+msgid "Use Name Suffixes"
+msgstr "Naamachtervoegsels gebruiken"
+
+msgid "Use Node Type Suffixes"
+msgstr "Naamtypeachtervoegsels gebruiken"
+
+msgid "Meshes"
+msgstr "Meshes"
+
+msgid "Create Shadow Meshes"
+msgstr "Shadowmeshes aanmaken"
+
+msgid "Light Baking"
+msgstr "Lichtbakken"
+
+msgid "Lightmap Texel Size"
+msgstr "Lightmap-texelgrootte"
+
+msgid "Force Disable Compression"
+msgstr "Compressie uitschakelen forceren"
+
+msgid "FPS"
+msgstr "FPS"
+
+msgid "Remove Immutable Tracks"
+msgstr "Onveranderbare sporen verwijderen"
+
+msgid "Import Rest as Reset"
+msgstr "Rust als Reset Importeren"
+
+msgid "Import Script"
+msgstr "Script importeren"
+
+msgid "Materials"
+msgstr "Materialen"
+
+msgid "Extract"
+msgstr "Extraheren"
+
+msgid "Extract Format"
+msgstr "Extraheerformaat"
+
+msgid "Extract Path"
+msgstr "Extraheerpad"
+
+msgid "Antialiasing"
+msgstr "Anti-alias"
+
+msgid "Generate Mipmaps"
+msgstr "Mipmaps Genereren"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "Ingebedde Bitmaps Uitschakelen"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Multichannel Signed Distance Field"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF Pixelbereik"
+
+msgid "MSDF Size"
+msgstr "MSDF Grootte"
+
+msgid "Allow System Fallback"
+msgstr "Systeemterugval Toestaan"
+
+msgid "Subpixel Positioning"
+msgstr "Subpixel-positionering"
+
+msgid "Metadata Overrides"
+msgstr "Metadata-overschrijvingen"
+
+msgid "Language Support"
+msgstr "Taalondersteuning"
+
+msgid "Script Support"
+msgstr "Scriptondersteuning"
+
+msgid "OpenType Features"
+msgstr "OpenType-functionaliteiten"
+
+msgid "Fallbacks"
+msgstr "Terugvalwaardes"
+
+msgid "Compress"
+msgstr "Comprimeren"
+
+msgid "Language"
+msgstr "Taal"
+
+msgid "Outline Size"
+msgstr "Omlijningsgrootte"
+
+msgid "Variation"
+msgstr "Variant"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Embolden"
+msgstr "Vet maken"
+
+msgid "Face Index"
+msgstr "Lettertypeindex"
+
+msgid "Transform"
+msgstr "Transformatie"
+
+msgid "Create From"
+msgstr "Maken van"
+
+msgid "Scaling Mode"
+msgstr "Schaal­modus"
+
+msgid "Delimiter"
+msgstr "Scheidingsteken"
+
+msgid "Character Ranges"
+msgstr "Tekenbereiken"
+
+msgid "Kerning Pairs"
+msgstr "Kerning-paren"
+
+msgid "Columns"
+msgstr "Kolommen"
+
+msgid "Rows"
+msgstr "Rijen"
+
+msgid "Image Margin"
+msgstr "Afbeeldingsmarge"
+
+msgid "Character Margin"
+msgstr "Tekenmarge"
+
+msgid "Ascent"
+msgstr "Bovenhoogte"
+
+msgid "Descent"
+msgstr "Onderhoogte"
+
+msgid "High Quality"
+msgstr "Hoge kwaliteit"
+
+msgid "Lossy Quality"
+msgstr "Kwaliteit met verlies"
+
+msgid "UASTC Level"
+msgstr "UASTC-niveau"
+
+msgid "RDO Quality Loss"
+msgstr "RDO-kwaliteitsverlies"
+
+msgid "HDR Compression"
+msgstr "HDR-compressie"
+
+msgid "Channel Pack"
+msgstr "Kanaalpakket"
+
+msgid "Mipmaps"
+msgstr "Mipmaps"
+
+msgid "Limit"
+msgstr "Limiet"
+
+msgid "Horizontal"
+msgstr "Horizontaal"
+
+msgid "Vertical"
+msgstr "Verticaal"
+
+msgid "Arrangement"
+msgstr "Schikking"
+
+msgid "Layout"
+msgstr "Indeling"
+
+msgid "Normal Map"
+msgstr "Normaalkaart"
+
+msgid "Roughness"
+msgstr "Ruwheid"
+
+msgid "Src Normal"
+msgstr "Bron normaal"
+
+msgid "Base Scale"
+msgstr "Basisschaal"
+
+msgid "Saturation"
+msgstr "Verzadiging"
+
+msgid "Color Map"
+msgstr "Kleurenkaart"
+
+msgid "Fix Alpha Border"
+msgstr "Alfarand herstellen"
+
+msgid "Premult Alpha"
+msgstr "Alfa voorvermenigvuldigen"
+
+msgid "Process"
+msgstr "Verwerken"
+
+msgid "Channel Remap"
+msgstr "Kanaal opnieuw toewijzen"
+
+msgid "Red"
+msgstr "Rood"
+
+msgid "Green"
+msgstr "Groen"
+
+msgid "Blue"
+msgstr "Blauw"
+
+msgid "Alpha"
+msgstr "Alfa"
+
+msgid "Normal Map Invert Y"
+msgstr "Normaalkaart Y omkeren"
+
+msgid "HDR as sRGB"
+msgstr "HDR als sRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDR-belichting begrenzen"
+
+msgid "Size Limit"
+msgstr "Groottelimiet"
+
+msgid "Detect 3D"
+msgstr "3D detecteren"
+
+msgid "Compress To"
+msgstr "Comprimeren naar"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "Bewerker"
+
+msgid "Scale with Editor Scale"
+msgstr "Schalen volgens editorschaal"
+
+msgid "Convert Colors with Editor Theme"
+msgstr "Kleuren converteren volgens editorthema"
+
+msgid "Atlas File"
+msgstr "Atlasbestand"
+
+msgid "Import Mode"
+msgstr "Importmodus"
+
+msgid "Crop to Region"
+msgstr "Bijsnijden naar gebied"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Alfarand van gebied trimmen"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "Forceren"
+
+msgid "8 Bit"
+msgstr "8-bit"
+
+msgid "Mono"
+msgstr "Mono"
+
+msgid "Max Rate"
+msgstr "Maximale frequentie"
+
+msgid "Max Rate Hz"
+msgstr "Maximale frequentie (Hz)"
+
+msgid "Edit"
+msgstr "Bewerken"
+
+msgid "Trim"
+msgstr "Trimmen"
+
+msgid "Normalize"
+msgstr "Normaliseren"
+
+msgid "Loop Begin"
+msgstr "Begin lus"
+
+msgid "Loop End"
+msgstr "Einde lus"
+
+msgid "Draw Label"
+msgstr "Label tekenen"
+
+msgid "Draw Background"
+msgstr "Achtergrond tekenen"
+
+msgid "Checkable"
+msgstr "Aanvinkbaar"
+
+msgid "Checked"
+msgstr "Aangevinkt"
+
+msgid "Draw Warning"
+msgstr "Waarschuwing tekenen"
+
+msgid "Keying"
+msgstr "Sleutels maken"
+
+msgid "Deletable"
+msgstr "Verwijderbaar"
+
+msgid "Selectable"
+msgstr "Selecteerbaar"
+
+msgid "Use Folding"
+msgstr "Inklappen gebruiken"
+
+msgid "Name Split Ratio"
+msgstr "Naamscheidingsverhouding"
+
+msgid "Base Type"
+msgstr "Basistype"
+
+msgid "Edited Resource"
+msgstr "Bewerkte bron"
+
+msgid "Editable"
+msgstr "Bewerkbaar"
+
+msgid "Toggle Mode"
+msgstr "Modus wisselen"
+
+msgid "Script Owner"
+msgstr "Scripteigenaar"
+
+msgid "Main Run Args"
+msgstr "Hoofduitvoerargumenten"
+
+msgid "Templates Search Path"
+msgstr "Zoekpad voor sjablonen"
+
+msgid "Naming"
+msgstr "Naamgeving"
+
+msgid "Default Signal Callback Name"
+msgstr "Standaard naam signaaltruggeroep"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Standaard naam signaaltruggeroep naar zelf"
+
+msgid "Scene Name Casing"
+msgstr "Hoofdlettergebruik scènenaam"
+
+msgid "Script Name Casing"
+msgstr "Hoofdlettergebruik scriptnaam"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Ontbrekende geïmporteerde bestanden opnieuw importeren"
+
+msgid "Use Multiple Threads"
+msgstr "Meerdere threads gebruiken"
+
+msgid "Atlas Max Width"
+msgstr "Max. atlasbreedte"
+
+msgid "Export"
+msgstr "Exporteren"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Textbronnen naar binair converteren"
+
+msgid "Version Control"
+msgstr "Versie­beheer"
+
+msgid "Plugin Name"
+msgstr "Plug-innaam"
+
+msgid "Autoload on Startup"
+msgstr "Autoload bij opstarten"
+
+msgid "Current Group Idx"
+msgstr "Huidige groepindex"
+
+msgid "Current Bone Idx"
+msgstr "Huidige bottenindex"
+
+msgid "Editors"
+msgstr "Bewerkers"
+
+msgid "3D Gizmos"
+msgstr "3D-gizmo's"
+
+msgid "Gizmo Colors"
+msgstr "Gizmokleuren"
+
+msgid "Particles Emission Shape"
+msgstr "Emissievorm Partikels"
+
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Mesh Transform"
+msgstr "Meshtransformatie"
+
+msgid "Navigation Mesh"
+msgstr "Navigatiemesh"
+
+msgid "Navigation Mesh Transform"
+msgstr "Navigatiemesh-transformatie"
+
+msgid "Navigation Layers"
+msgstr "Navigatielagen"
+
+msgid "Preview"
+msgstr "Voorbeeld"
+
+msgid "Interface"
+msgstr "Interface"
+
+msgid "Localization"
+msgstr "Lokalisatie"
+
+msgid "Editor Language"
+msgstr "Editortaal"
+
+msgid "Asset Store"
+msgstr "Asset-winkel"
+
+msgid "Use Threads"
+msgstr "Threads gebruiken"
+
+msgid "Available URLs"
+msgstr "Beschikbare URL's"
+
+msgid "Localize Settings"
+msgstr "Instellingen vertalen"
+
+msgid "Docks"
+msgstr "Panelen"
+
+msgid "Dock Tab Style"
+msgstr "Paneeltabbladstijl"
+
+msgid "Bottom Dock Tab Style"
+msgstr "Onderste paneeltabbladstijl"
+
+msgid "UI Layout Direction"
+msgstr "UI-lay-outrichting"
+
+msgid "Appearance"
+msgstr "Uiterlijk"
+
+msgid "Display Scale"
+msgstr "Weergave­schaal"
+
+msgid "Custom Display Scale"
+msgstr "Aangepaste weergave­schaal"
+
+msgid "Editor Screen"
+msgstr "Bewerkers­scherm"
+
+msgid "Input"
+msgstr "Invoer"
+
+msgid "Tablet Driver"
+msgstr "Tabletstuurprogramma"
+
+msgid "Project Manager Screen"
+msgstr "Projectbeheerdersscherm"
+
+msgid "Check for Updates"
+msgstr "Op updates controleren"
+
+msgid "Use Embedded Menu"
+msgstr "Geëmbed menu gebruiken"
+
+msgid "Main Font Size"
+msgstr "Hoofdlettergrootte"
+
+msgid "Code Font Size"
+msgstr "Broncodelettergrootte"
+
+msgid "Main Font Custom OpenType Features"
+msgstr "Aangepaste OpenType-functionaliteit voor hoofdlettertype"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Contextuele Ligaturen voor CodeLettertype"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Aangepaste OpenType-functionaliteit voor Codelettertype"
+
+msgid "Font Allow MSDF"
+msgstr "Lettertype MSDF Toestaan"
+
+msgid "Main Font"
+msgstr "Hoofdlettertype"
+
+msgid "Main Font Bold"
+msgstr "Hoofdlettertype vet"
+
+msgid "Code Font"
+msgstr "Broncodelettertype"
+
+msgid "Behavior"
+msgstr "Gedrag"
+
+msgid "Separate Distraction Mode"
+msgstr "Losse afleidingsvrijemodus"
+
+msgid "Automatically Open Screenshots"
+msgstr "Schermafdrukken automatisch openen"
+
+msgid "Single Window Mode"
+msgstr "Enkelvenstermodus"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Extra Toetsen Muis Navigeren Geschiedenis"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Lage Processormodus Slaaptijd (µs)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Lage Processormodus Slaaptijd Ongefocust (µs)"
+
+msgid "Import Resources When Unfocused"
+msgstr "Bronnen Importeren Wanneer Niet Gefocust"
+
+msgid "Update Continuously"
+msgstr "Continu Bijwerken"
+
+msgid "Collapse Main Menu"
+msgstr "Hoofdmenu Inklappen"
+
+msgid "Scene Tree"
+msgstr "Scèneboom"
+
+msgid "Derive Script Globals by Name"
+msgstr "Script-globalen Afleiden van Naam"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Vragen Voor Intrekken Unieke Naam"
+
+msgid "Inspector"
+msgstr "Infopaneel"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Low-level OpenType Functionaliteiten Tonen"
+
+msgid "Theme"
+msgstr "Thema"
+
+msgid "Icon and Font Color"
+msgstr "Icoon- en Lettertypekleur"
+
+msgid "Contrast"
+msgstr "Contrast"
+
+msgid "Draw Extra Borders"
+msgstr "Extra Randen Tekenen"
+
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Monospace Lettertype Gebruiken voor Editorsymbolen"
+
+msgid "Touchscreen"
+msgstr "Touchscreen"
+
+msgid "Enable Touch Optimizations"
+msgstr "Touch-optimalisaties Aanzetten"
+
+msgid "Touch Actions Panel"
+msgstr "Touch-actiespaneel"
+
+msgid "Scene Tabs"
+msgstr "Scène­tabbladen"
+
+msgid "Auto Select Current Scene File"
+msgstr "Huidige Scènebestand Automatisch Selecteren"
+
+msgid "Multi Window"
+msgstr "Meerdere vensters"
+
+msgid "FileSystem"
+msgstr "Bestands­systeem"
+
+msgid "External Programs"
+msgstr "Externe apps"
+
+msgid "Directories"
+msgstr "Mappen"
+
+msgid "Autoscan Project Path"
+msgstr "Pad voor Automatisch Projecten Vinden"
+
+msgid "Default Project Path"
+msgstr "Standaard Projectpad"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "Waarschuwen bij Opslaan van Grote Tekstbronnen"
+
+msgid "Port"
+msgstr "Poort"
+
+msgid "Password"
+msgstr "Wachtwoord"
+
+msgid "Show Hidden Files"
+msgstr "Verborgen bestanden tonen"
+
+msgid "Display Mode"
+msgstr "Weergavemodus"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "Open Aanmaak-dialoogvenster Volledig Vergroot"
+
+msgid "Center Node on Reparent"
+msgstr "Knoop Centreren bij Hertoewijzen Ouder"
+
+msgid "Hide Filtered Out Parents"
+msgstr "Gefilterde Ouders Verbergen"
+
+msgid "Accessibility Warnings"
+msgstr "Toegankelijkheidswaarschuwingen"
+
+msgid "Always Show Folders"
+msgstr "Mappen Altijd Weergeven"
+
+msgid "Automatically Open Created Scripts"
+msgstr "Aangemaakte Scripts Automatisch Openen"
+
+msgid "Ask Before Moving Files"
+msgstr "Vragen Voor Bestanden Verplaatsen"
+
+msgid "Auto Refresh Interval"
+msgstr "Auto-verversingsinterval"
+
+msgid "Text Editor"
+msgstr "Tekst­bewerker"
+
+msgid "Color Theme"
+msgstr "Kleurenthema"
+
+msgid "Highlighting"
+msgstr "Markering"
+
+msgid "Comment Markers"
+msgstr "Commentaarmarkering"
+
+msgid "Critical List"
+msgstr "Lijst Kritiek"
+
+msgid "Warning List"
+msgstr "Lijst Waarschuwingen"
+
+msgid "Notice List"
+msgstr "Lijst Meldingen"
+
+msgid "Caret"
+msgstr "Invoercursor"
+
+msgid "Caret Blink"
+msgstr "Knipperen Cursor"
+
+msgid "Caret Blink Interval"
+msgstr "Knipperinterval Cursor"
+
+msgid "Highlight Current Line"
+msgstr "Huidige Regel Markeren"
+
+msgid "Highlight All Occurrences"
+msgstr "Alle Voorkomens Markeren"
+
+msgid "Guidelines"
+msgstr "Richt­lijnen"
+
+msgid "Show Line Length Guidelines"
+msgstr "Richtlijnen Regellengte Tonen"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "Zachte Kolom Voor Richtlijn Regellengte"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "Harde Kolom Voor Richtlijn Regellengte"
+
+msgid "Gutters"
+msgstr "Goten"
+
+msgid "Show Line Numbers"
+msgstr "Regelnummers Tonen"
+
+msgid "Show Info Gutter"
+msgstr "Infomarge Tonen"
+
+msgid "Minimap"
+msgstr "Minikaart"
+
+msgid "Show Minimap"
+msgstr "Toon Minikaart"
+
+msgid "Minimap Width"
+msgstr "Minikaart Breedte"
+
+msgid "Lines"
+msgstr "Regels"
+
+msgid "Code Folding"
+msgstr "Code Inklappen"
+
+msgid "Word Wrap"
+msgstr "Regelafbreking"
+
+msgid "Autowrap Mode"
+msgstr "Automatische Regelafbrekingsmodus"
+
+msgid "Whitespace"
+msgstr "Wit­ruimte"
+
+msgid "Draw Tabs"
+msgstr "Tabs Tekenen"
+
+msgid "Draw Spaces"
+msgstr "Spaties Tekenen"
+
+msgid "Line Spacing"
+msgstr "Regelafstand"
+
+msgid "Empty Selection Clipboard"
+msgstr "Klembord Lege Selectie"
+
+msgid "Move Caret on Right Click"
+msgstr "Cursor Verplaatsen bij Klik met Rechtermuisknop"
+
+msgid "Scroll Past End of File"
+msgstr "Scrollen voorbij Einde van Bestand"
+
+msgid "Smooth Scrolling"
+msgstr "Vloeiend Scrollen"
+
+msgid "V Scroll Speed"
+msgstr "Verticale Scrollsnelheid"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "In Scripteditor Blijven als Knoop Wordt Geselecteerd"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "Scripten Openen Als Signaal Wordt Verbonden met Bestaande Methode"
+
+msgid "Use Default Word Separators"
+msgstr "Standaard Woordscheidingstekens Gebruiken"
+
+msgid "Use Custom Word Separators"
+msgstr "Aangepaste Woordscheidingstekens Gebruiken"
+
+msgid "Custom Word Separators"
+msgstr "Aangepaste Woordscheidingstekens"
+
+msgid "Indent"
+msgstr "Inspringen"
+
+msgid "Auto Indent"
+msgstr "Automatisch inspringen"
+
+msgid "Indent Wrapped Lines"
+msgstr "Afgebroken Regels Indenteren"
+
+msgid "Files"
+msgstr "Bestanden"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "Navolgende witruimte weghalen bij opslaan"
+
+msgid "Trim Final Newlines on Save"
+msgstr "Eind-witregels weghalen bij opslaan"
+
+msgid "Autosave Interval Secs"
+msgstr "Interval Automatisch Opslaan (Seconden)"
+
+msgid "Restore Scripts on Load"
+msgstr "Scripts Herstellen Bij Laden"
+
+msgid "Convert Indent on Save"
+msgstr "Insprong Omzetten bij Opslaan"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "Scripts Automatisch Herladen bij Externe Wijziging"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "Scripts Automatisch Herladen en Parseren bij Opslaan"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "Dominant Script Openen bij Scènewissel"
+
+msgid "Enable Tooltips"
+msgstr "Tooltips inschakelen"
+
+msgid "Documentation"
+msgstr "Documentatie"
+
+msgid "Script List"
+msgstr "Script­lijst"
+
+msgid "Show Members Overview"
+msgstr "Overzicht Variabelen Tonen"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "Variabelenoverzicht Alfabetisch Sorteren"
+
+msgid "Script Temperature Enabled"
+msgstr "Scripttemperatuur Actief"
+
+msgid "Script Temperature History Size"
+msgstr "Geschiedenisgrootte Scripttemperatuur"
+
+msgid "Highlight Scene Scripts"
+msgstr "Scènescripts Markeren"
+
+msgid "Group Help Pages"
+msgstr "Hulppagina's Groeperen"
+
+msgid "Sort Scripts By"
+msgstr "Scripts Sorteren Op"
+
+msgid "List Script Names As"
+msgstr "Scripts Aanduiden Met"
+
+msgid "External"
+msgstr "Extern"
+
+msgid "Exec Path"
+msgstr "Uitvoeringspad"
+
+msgid "Exec Flags"
+msgstr "Uitvoeringsparameters"
+
+msgid "Completion"
+msgstr "Aanvulling"
+
+msgid "Idle Parse Delay"
+msgstr "Wachttijd Parseren"
+
+msgid "Idle Parse Delay with Errors Found"
+msgstr "Wachttijd Parseren met Gevonden Fouten"
+
+msgid "Auto Brace Complete"
+msgstr "Automatisch Haakjes Sluiten"
+
+msgid "Code Complete Enabled"
+msgstr "Code-aanvulling Ingeschakeld"
+
+msgid "Code Complete Delay"
+msgstr "Vertraging Code-aanvulling"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "Aanroephint-tooltip Plaatsen Onder Huidige Regel"
+
+msgid "Complete File Paths"
+msgstr "Bestandspaden Aanvullen"
+
+msgid "Add Type Hints"
+msgstr "Typehints Toevoegen"
+
+msgid "Use Single Quotes"
+msgstr "Enkele Aanhalingstekens Gebruiken"
+
+msgid "Colorize Suggestions"
+msgstr "Suggesties Inkleuren"
+
+msgid "Use External Editor"
+msgstr "Gebruik Externe Editor"
+
+msgid "Help"
+msgstr "Hulp"
+
+msgid "Show Help Index"
+msgstr "Hulpindex Tonen"
+
+msgid "Help Font Size"
+msgstr "Hulp Lettergrootte"
+
+msgid "Help Source Font Size"
+msgstr "Hulp Lettergrootte Bron"
+
+msgid "Help Title Font Size"
+msgstr "Hulp Lettergrootte Titel"
+
+msgid "Class Reference Examples"
+msgstr "Voorbeelden Klassereferentie"
+
+msgid "Sort Functions Alphabetically"
+msgstr "Functies Alfabetisch Sorteren"
+
+msgid "Grid Map"
+msgstr "Raster­kaart"
+
+msgid "Pick Distance"
+msgstr "Selecteerafstand"
+
+msgid "Preview Size"
+msgstr "Voorvertoningsgrootte"
+
+msgid "Primary Grid Color"
+msgstr "Primaire Rasterkleur"
+
+msgid "Secondary Grid Color"
+msgstr "Secundaire Rasterkleur"
+
+msgid "Instantiated"
+msgstr "Geïnstantieerd"
+
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Decal"
+msgstr "Decal"
+
+msgid "Particles"
+msgstr "Partikels"
+
+msgid "Particle Attractor"
+msgstr "Partikelattractor"
+
+msgid "Particle Collision"
+msgstr "Partikelbotsing"
+
+msgid "Path Tilt"
+msgstr "Pad­kanteling"
+
+msgid "Skeleton"
+msgstr "Skelet"
+
+msgid "Selected Bone"
+msgstr "Geselecteerd Bot"
+
+msgid "Gizmo Settings"
+msgstr "Gizmo-instellingen"
+
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Botsingsvormen Alleen Tonen Indien Geselecteerd"
+
+msgid "Primary Grid Steps"
+msgstr "Primaire Rasterstappen"
+
+msgid "Grid Size"
+msgstr "Rastergrootte"
+
+msgid "Grid XZ Plane"
+msgstr "Raster XZ-vlak"
+
+msgid "Grid XY Plane"
+msgstr "Raster XY-vlak"
+
+msgid "Grid YZ Plane"
+msgstr "Raster YZ-vlak"
+
+msgid "Default FOV"
+msgstr "Standaard Gezichtsveld"
+
+msgid "Default Z Near"
+msgstr "Standaard Z-dichtbij"
+
+msgid "Default Z Far"
+msgstr "Standaard Z-ver"
+
+msgid "Invert X Axis"
+msgstr "X-as Omkeren"
+
+msgid "Invert Y Axis"
+msgstr "Y-as Omkeren"
+
+msgid "Navigation Scheme"
+msgstr "Navigatiestelsel"
+
+msgid "Orbit Mouse Button"
+msgstr "Muisknop Baan"
+
+msgid "Pan Mouse Button"
+msgstr "Muisknop Pannen"
+
+msgid "Zoom Mouse Button"
+msgstr "Muisknop Zoomen"
+
+msgid "Zoom Style"
+msgstr "Zoomstijl"
+
+msgid "Emulate Numpad"
+msgstr "Numpad Emuleren"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "3-toetsenmuis Emuleren"
+
+msgid "Warped Mouse Panning"
+msgstr "Vervormd Muispannen"
+
+msgid "Navigation Feel"
+msgstr "Navigatiegevoel"
+
+msgid "Orbit Sensitivity"
+msgstr "Baangevoeligheid"
+
+msgid "Translation Sensitivity"
+msgstr "Translatiegevoeligheid"
+
+msgid "Orbit Inertia"
+msgstr "Baaninertie"
+
+msgid "Translation Inertia"
+msgstr "Translatie-inertie"
+
+msgid "Zoom Inertia"
+msgstr "Zoominertie"
+
+msgid "Angle Snap Threshold"
+msgstr "Drempelwaarde Hoekuitlijning"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "Gizmo Beeldvensterrotatie Tonen"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "Gizmo Beeldvensternavigatie Tonen"
+
+msgid "Freelook"
+msgstr "Vrijekijk"
+
+msgid "Freelook Navigation Scheme"
+msgstr "Navigatiestelsel Vrijekijk"
+
+msgid "Freelook Sensitivity"
+msgstr "Gevoeligheid Vrijekijk"
+
+msgid "Freelook Inertia"
+msgstr "Inertie Vrijekijk"
+
+msgid "Freelook Base Speed"
+msgstr "Basissnelheid Vrijekijk"
+
+msgid "Freelook Invert Y Axis"
+msgstr "Vrijekijk Y-as Omkeren"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Grootte Manipulatiegizmo"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Dekking Manipulatiegizmo"
+
+msgid "Show Gizmo During Rotation"
+msgstr "Gizmo Tonen Tijdens Rotatie"
+
+msgid "Grid Color"
+msgstr "Rasterkleur"
+
+msgid "Selection Rectangle Color"
+msgstr "Kleur Selectierechthoek"
+
+msgid "Locked Selection Rectangle Color"
+msgstr "Kleur Vergrendelde Selectierechthoek"
+
+msgid "Bone Width"
+msgstr "Botbreedte"
+
+msgid "Bone Color 1"
+msgstr "Botkleur 1"
+
+msgid "Bone Color 2"
+msgstr "Botkleur 2"
+
+msgid "Viewport Border Color"
+msgstr "Kleur Rand Beeldvenster"
+
+msgid "Ruler Width"
+msgstr "Meetlatbreedte"
+
+msgid "Handle Colors"
+msgstr "Handvatkleuren"
+
+msgid "Unset"
+msgstr "Niet ingesteld"
+
+msgid "Set"
+msgstr "Ingesteld"
+
+msgid "Missing"
+msgstr "Ontbrekend"
+
+msgid "Error"
+msgstr "Fout"
+
+msgid "Panning"
+msgstr "Pannen"
+
+msgid "2D Editor Panning Scheme"
+msgstr "Panmodus 2D-editor"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Pandmodus Subeditors"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Panmodus Animatie-editors"
+
+msgid "Simple Panning"
+msgstr "Eenvoudig Pannen"
+
+msgid "2D Editor Pan Speed"
+msgstr "Pansnelheid 2D-editor"
+
+msgid "Tiles Editor"
+msgstr "Tegel-editor"
+
+msgid "Display Grid"
+msgstr "Raster Tonen"
+
+msgid "Highlight Selected Layer"
+msgstr "Geselecteerde Laag Markeren"
+
+msgid "Polygon Editor"
+msgstr "Polygooneditor"
+
+msgid "Point Grab Radius"
+msgstr "Puntgrijpstraal"
+
+msgid "Default Animation Step"
+msgstr "Standaard Animatiestapgrootte"
+
+msgid "Default FPS Mode"
+msgstr "Standaard FPS-modus"
+
+msgid "Default FPS Compatibility"
+msgstr "Standaard FPS-compatibiliteit"
+
+msgid "Autorename Animation Tracks"
+msgstr "Animatiesporen Automatisch Hernoemen"
+
+msgid "Confirm Insert Track"
+msgstr "Spoor Invoegen Bevestigen"
+
+msgid "Default Create Bezier Tracks"
+msgstr "Standaard Beziersporen Aanmaken"
+
+msgid "Default Create Reset Tracks"
+msgstr "Standaard Resetsporen Aanmaken"
+
+msgid "Insert at Current Time"
+msgstr "Invoegen op Huidig Tijdstip"
+
+msgid "Onion Layers Past Color"
+msgstr "Uienlagenkleur Verleden"
+
+msgid "Onion Layers Future Color"
+msgstr "Uienlagenkleur Toekomst"
+
+msgid "Shader Editor"
+msgstr "Shader-bewerker"
+
+msgid "Restore Shaders on Load"
+msgstr "Shaders Herstellen bij Laden"
+
+msgid "Minimap Opacity"
+msgstr "Minikaart Dekking"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
+msgid "Window Placement"
+msgstr "Venster­plaatsing"
+
+msgid "Rect"
+msgstr "Rechthoek"
+
+msgid "Rect Custom Position"
+msgstr "Rechthoek Aangepaste Positie"
+
+msgid "Screen"
+msgstr "Beeldscherm"
+
+msgid "Game Embed Mode"
+msgstr "Game-embedmodus"
+
+msgid "Auto Save"
+msgstr "Automatisch opslaan"
+
+msgid "Bottom Panel"
+msgstr "Onderpaneel"
+
+msgid "Action on Play"
+msgstr "Actie bij Afspelen"
+
+msgid "Action on Stop"
+msgstr "Actie bij Stoppen"
+
+msgid "Output"
+msgstr "Uitvoer"
+
+msgid "Font Size"
+msgstr "Lettergrootte"
+
+msgid "Always Clear Output on Play"
+msgstr "Altijd Uitvoer Wissen bij Afspelen"
+
+msgid "Max Lines"
+msgstr "Max Regels"
+
+msgid "Platforms"
+msgstr "Platforms"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
+msgid "Prefer Wayland"
+msgstr "Wayland Gebruiken bij Voorkeur"
+
+msgid "Network Mode"
+msgstr "Netwerkmodus"
+
+msgid "HTTP Proxy"
+msgstr "HTTP-proxy"
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Editor TLS Certificates"
+msgstr "Editor TLS-certificaten"
+
+msgid "Enable TLS V 1"
+msgstr "TLS V 1 Inschakelen"
+
+msgid "Remote Host"
+msgstr "Remote Host"
+
+msgid "Language Server"
+msgstr "Taal­server"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Systeemiconen Tonen in Editor"
+
+msgid "Use Thread"
+msgstr "Thread gebruiken"
+
+msgid "Poll Limit (µsec)"
+msgstr "Poll-limiet (µsec)"
+
+msgid "Debugger"
+msgstr "Fout­opsporing"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Automatisch Schakelen naar Stacktrace"
+
+msgid "Max Node Selection"
+msgstr "Max Knoopselectie"
+
+msgid "Profiler Frame History Size"
+msgstr "Grootte Framegeschiedenis Profiler"
+
+msgid "Profiler Target FPS"
+msgstr "Doel-FPS Profiler"
+
+msgid "Profile Native Calls"
+msgstr "Systeemaanroepen Profileren"
+
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+msgid "SSH Public Key Path"
+msgstr "Pad naar Public SSH-key"
+
+msgid "SSH Private Key Path"
+msgstr "Pad naar Private SSH-key"
+
+msgid "Buffering"
+msgstr "Bufferen"
+
+msgid "Project Manager"
+msgstr "Projectbeheer"
+
+msgid "Sorting Order"
+msgstr "Sorteervolgorde"
+
+msgid "Directory Naming Convention"
+msgstr "Naamgeving Mappen"
+
+msgid "Default Renderer"
+msgstr "Standaardrenderer"
+
+msgid "Scalar Color"
+msgstr "Kleur Scalaire"
+
+msgid "Vector2 Color"
+msgstr "Kleur Vector2"
+
+msgid "Vector 3 Color"
+msgstr "Kleur Vector3"
+
+msgid "Vector 4 Color"
+msgstr "Kleur Vector4"
+
+msgid "Boolean Color"
+msgstr "Kleur Booleaanse"
+
+msgid "Transform Color"
+msgstr "Kleur Transformatie"
+
+msgid "Category Colors"
+msgstr "Categoriekleuren"
+
+msgid "Output Color"
+msgstr "Kleur Uitvoer"
+
+msgid "Color Color"
+msgstr "Kleur Kleur"
+
+msgid "Conditional Color"
+msgstr "Kleur Conditionele"
+
+msgid "Input Color"
+msgstr "Kleur Invoer"
+
+msgid "Textures Color"
+msgstr "Kleur Textures"
+
+msgid "Vector Color"
+msgstr "Kleur Vector"
+
+msgid "Particle Color"
+msgstr "Partikelkleur"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "FPS Printen"
+
+msgid "Print GPU Profile"
+msgstr "GPU-profiel Printen"
+
+msgid "Physics Interpolation"
+msgstr "Physics-interpolatie"
+
+msgid "Enable Warnings"
+msgstr "Waarschuwingen Inschakelen"
+
+msgid "Max Chars per Second"
+msgstr "Max Karakters per Seconde"
+
+msgid "Max Queued Messages"
+msgstr "Max Berichten in Wachtrij"
+
+msgid "Max Errors per Second"
+msgstr "Max Foutmeldingen per Seconde"
+
+msgid "Max Warnings per Second"
+msgstr "Max Waarschuwingen per Seconde"
+
+msgid "File Logging"
+msgstr "Loggen in Bestand"
+
+msgid "Enable File Logging"
+msgstr "Bestand Loggen Inschakelen"
+
+msgid "Log Path"
+msgstr "Logpad"
+
+msgid "Max Log Files"
+msgstr "Max Logbestanden"
+
+msgid "Driver"
+msgstr "Stuurprogramma"
+
+msgid "Fallback to Vulkan"
+msgstr "Terugvallen op Vulkan"
+
+msgid "Fallback to D3D12"
+msgstr "Terugvallen op D3D12"
+
+msgid "Fallback to OpenGL 3"
+msgstr "Terugvallen op OpenGL 3"
+
+msgid "GL Compatibility"
+msgstr "GL-compatibiliteit"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Threaded Optimalisatie Uitzetten"
+
+msgid "Fallback to Angle"
+msgstr "Terugvallen op Angle"
+
+msgid "Fallback to GLES"
+msgstr "Terugvallen op GLES"
+
+msgid "Renderer"
+msgstr "Renderer"
+
+msgid "Rendering Method"
+msgstr "Rendermethode"
+
+msgid "DPI"
+msgstr "DPI"
+
+msgid "Allow hiDPI"
+msgstr "hiDPI Toestaan"
+
+msgid "Per Pixel Transparency"
+msgstr "Per-pixel-transparantie"
+
+msgid "Allowed"
+msgstr "Toegestaan"
+
+msgid "Load Shell Environment"
+msgstr "Shell-omgeving Laden"
+
+msgid "Threads"
+msgstr "Threads"
+
+msgid "Display Server"
+msgstr "Weergaveserver"
+
+msgid "Orientation"
+msgstr "Oriëntatie"
+
+msgid "Output Latency"
+msgstr "Uitvoervertraging"
+
+msgid "Frame Delay Msec"
+msgstr "Frame-wachttijd msec"
+
+msgid "Allow High Refresh Rate"
+msgstr "Hoge Verversingssnelheid Toestaan"
+
+msgid "Hide Status Bar"
+msgstr "Statusbalk Verbergen"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "View Configuration"
+msgstr "Weergaveconfiguratie"
+
+msgid "Reference Space"
+msgstr "Referentieruimte"
+
+msgid "Environment Blend Mode"
+msgstr "Mengmodus Omgeving"
+
+msgid "Frame Synthesis"
+msgstr "Framesynthese"
+
+msgid "Boot Splash"
+msgstr "Opstartscherm"
+
+msgid "Environment"
+msgstr "Omgeving"
+
+msgid "Default Clear Color"
+msgstr "Standaard Leegtekleur"
+
+msgid "Icon"
+msgstr "Icoon"
+
+msgid "macOS Native Icon"
+msgstr "Systeemicoon macOS"
+
+msgid "Windows Native Icon"
+msgstr "Systeemicoon Windows"
+
+msgid "Mouse Cursor"
+msgstr "Muisaanwijzer"
+
+msgid "Custom Image"
+msgstr "Aangepaste Afbeelding"
+
+msgid "Custom Image Hotspot"
+msgstr "Hotspot Aangepaste Afbeelding"
+
+msgid "Image"
+msgstr "Afbeelding"
+
+msgid "Project"
+msgstr "Project"
+
+msgid "Assembly Reload Attempts"
+msgstr "Assembly Herlaadpogingen"
+
+msgid "Time"
+msgstr "Tijd"
+
+msgid "Physics Process"
+msgstr "Physics-proces"
+
+msgid "Navigation Process"
+msgstr "Navigatieproces"
+
+msgid "Static"
+msgstr "Statisch"
+
+msgid "Static Max"
+msgstr "Statisch Max"
+
+msgid "Msg Buf Max"
+msgstr "Melding Buf Max"
+
+msgid "Objects"
+msgstr "Objecten"
+
+msgid "Orphan Nodes"
+msgstr "Verweesde Knopen"
+
+msgid "Total Objects Drawn"
+msgstr "Totaal Aantal Objecten Getekend"
+
+msgid "Total Primitives Drawn"
+msgstr "Totaal Aantal Primitieven Getekend"
+
+msgid "Total Draw Calls"
+msgstr "Totaal Tekenaanroepen"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Texture Mem"
+msgstr "Texturegeheugen"
+
+msgid "Buffer Mem"
+msgstr "Buffergeheugen"
+
+msgid "Active Objects"
+msgstr "Actieve Objecten"
+
+msgid "Collision Pairs"
+msgstr "Botsingsparen"
+
+msgid "Islands"
+msgstr "Eilanden"
+
+msgid "Regions"
+msgstr "Regio's"
+
+msgid "Polygons"
+msgstr "Polygonen"
+
+msgid "Obstacles"
+msgstr "Obstakels"
+
+msgid "Operation"
+msgstr "Handeling"
+
+msgid "Collision"
+msgstr "Botsing"
+
+msgid "Cone"
+msgstr "Kegel"
+
+msgid "Depth"
+msgstr "Diepte"
+
+msgid "Path Simplify Angle"
+msgstr "Pad Hoeken Versimpelen"
+
+msgid "Path Local"
+msgstr "Pad Lokaal"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "Geometrie-hulpknopen Toestaan"
+
+msgid "Naming Version"
+msgstr "Naamgevingsversie"
+
+msgid "GDScript"
+msgstr "GDScript"
+
+msgid "Always Track Call Stacks"
+msgstr "Call Stacks Altijd Bijhouden"
+
+msgid "Always Track Local Variables"
+msgstr "Lokale Variabelen Altijd Bijhouden"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "Hernoemd in Godot 4 Hint"
+
+msgid "Unassigned Variable"
+msgstr "Niet-toegewezen Variabele"
+
+msgid "Unused Variable"
+msgstr "Niet-toegewezen Variabele"
+
+msgid "Unused Local Constant"
+msgstr "Ongebruikte Lokale Constante"
+
+msgid "Unused Parameter"
+msgstr "Ongebruikte Parameter"
+
+msgid "Unused Signal"
+msgstr "Ongebruikt Signaal"
+
+msgid "Shadowed Variable"
+msgstr "Overschaduwde Variabele"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Overschaduwde Variabele Basisklasse"
+
+msgid "Unreachable Code"
+msgstr "Onbereikbare Code"
+
+msgid "Unreachable Pattern"
+msgstr "Onbereikbaar Patroon"
+
+msgid "Standalone Expression"
+msgstr "Alleenstaande Expressie"
+
+msgid "Untyped Declaration"
+msgstr "Ongetypeerde Declaratie"
+
+msgid "Inferred Declaration"
+msgstr "Afgeleide Declaratie"
+
+msgid "Unsafe Property Access"
+msgstr "Onveilige Eigenschap-aanroep"
+
+msgid "Unsafe Method Access"
+msgstr "Onveilige Methode-aanroep"
+
+msgid "Unsafe Cast"
+msgstr "Onveilige Omvorming"
+
+msgid "Unsafe Call Argument"
+msgstr "Onveilige Aanroepargument"
+
+msgid "Unsafe Void Return"
+msgstr "Onveilige Lege Return"
+
+msgid "Static Called On Instance"
+msgstr "Statische Methode Aangeroepen Op Instantie"
+
+msgid "Missing Tool"
+msgstr "Ontbrekende Tool"
+
+msgid "Redundant Await"
+msgstr "Overbodige Await"
+
+msgid "Missing Await"
+msgstr "Ontbrekende Await"
+
+msgid "Assert Always True"
+msgstr "Assert Altijd True"
+
+msgid "Assert Always False"
+msgstr "Assert Altijd False"
+
+msgid "Integer Division"
+msgstr "Integer-deling"
+
+msgid "Narrowing Conversion"
+msgstr "Vernauwende Conversie"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int Als Enum Zonder Omvorming"
+
+msgid "Int As Enum Without Match"
+msgstr "Int Als Enum Zonder Match"
+
+msgid "Enum Variable Without Default"
+msgstr "Enum-variabele Zonder Standaardwaarde"
+
+msgid "Empty File"
+msgstr "Leeg Bestand"
+
+msgid "Deprecated Keyword"
+msgstr "Verouderd Sleutelwoord"
+
+msgid "Inference On Variant"
+msgstr "Inferentie Op Variant"
+
+msgid "Native Method Override"
+msgstr "Overschrijving van Ingebouwde Methode"
+
+msgid "Onready With Export"
+msgstr "Onready met Export"
+
+msgid "Copyright"
+msgstr "Auteursrecht"
+
+msgid "Color"
+msgstr "Kleur"
+
+msgid "Intensity"
+msgstr "Intensiteit"
+
+msgid "Light Type"
+msgstr "Lichttype"
+
+msgid "Range"
+msgstr "Bereik"
+
+msgid "Inner Cone Angle"
+msgstr "Binnenste Kegelhoek"
+
+msgid "Outer Cone Angle"
+msgstr "Buitenste Kegelhoek"
+
+msgid "Diffuse Img"
+msgstr "Diffusie-afb"
+
+msgid "Diffuse Factor"
+msgstr "Diffusiefactor"
+
+msgid "Gloss Factor"
+msgstr "Gloss-factor"
+
+msgid "Spec Gloss Img"
+msgstr "Spec Glos Afb"
+
+msgid "Mass"
+msgstr "Massa"
+
+msgid "Linear Velocity"
+msgstr "Lineaire Snelheid"
+
+msgid "Angular Velocity"
+msgstr "Draaisnelheid"
+
+msgid "Center of Mass"
+msgstr "Zwaartepunt"
+
+msgid "Inertia Diagonal"
+msgstr "Inertiediagonaal"
+
+msgid "Inertia Orientation"
+msgstr "Inertie-oriëntatie"
+
+msgid "Inertia Tensor"
+msgstr "Inertietensor"
+
+msgid "Root Node Mode"
+msgstr "Wortelnodemodus"
+
+msgid "Json"
+msgstr "JSON"
+
+msgid "Buffers"
+msgstr "Buffers"
+
+msgid "Scene Name"
+msgstr "Scènenaam"
+
+msgid "Base Path"
+msgstr "Basispad"
+
+msgid "Filename"
+msgstr "Bestandsnaam"
+
+msgid "Root Nodes"
+msgstr "Wortelknopen"
+
+msgid "Images"
+msgstr "Afbeeldingen"
+
+msgid "Cameras"
+msgstr "Camera's"
+
+msgid "Lights"
+msgstr "Lichten"
+
+msgid "Unique Names"
+msgstr "Unieke Namen"
+
+msgid "Unique Animation Names"
+msgstr "Unieke Animatienamen"
+
+msgid "Skeletons"
+msgstr "Skeletten"
+
+msgid "Create Animations"
+msgstr "Animaties Aanmaken"
+
+msgid "Animations"
+msgstr "Animaties"
+
+msgid "Normalized"
+msgstr "Genormaliseerd"
+
+msgid "Count"
+msgstr "Aantal"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Loop"
+msgstr "Lus"
+
+msgid "Perspective"
+msgstr "Perspectief"
+
+msgid "Depth Far"
+msgstr "Diepte Ver"
+
+msgid "Children"
+msgstr "Kinderen"
+
+msgid "Light"
+msgstr "Licht"
+
+msgid "Visible"
+msgstr "Zichtbaar"
+
+msgid "glTF to Godot Expression"
+msgstr "GlTF naar Godot-expressie"
+
+msgid "Godot to glTF Expression"
+msgstr "Godot naar glTF-expressie"
+
+msgid "Node Paths"
+msgstr "Knooppaden"
+
+msgid "Object Model Type"
+msgstr "Object Modeltype"
+
+msgid "Variant Type"
+msgstr "Varianttype"
+
+msgid "Sampler"
+msgstr "Sampler"
+
+msgid "Priority"
+msgstr "Prioriteit"
+
+msgid "Bounce Velocity Threshold"
+msgstr "Snelheidsgrenswaarde Stuiteren"
+
+msgid "Sleep Time Threshold"
+msgstr "Tijdgrenswaarde Sluimeren"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "Grenswaarde Continue CD Beweging"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "Cache Contact Lichaamstweetallen Actief"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "Afstand-grenswaarde Cache Contact Lichaamstweetallen"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "Hoek-grenswaarde Cache Contact Lichaamstweetallen"
+
+msgid "Collisions"
+msgstr "Botsingen"
+
+msgid "World Node"
+msgstr "Wereldknoop"
+
+msgid "World Boundary Shape Size"
+msgstr "Grootte Wereldgrensvorm"
+
+msgid "Max Bodies"
+msgstr "Max Lichamen"
+
+msgid "Max Body Pairs"
+msgstr "Max Lichaamstweetallen"
+
+msgid "Bake Quality"
+msgstr "Bakkwaliteit"
+
+msgid "Low Quality Ray Count"
+msgstr "Stralenaantal Lage Kwaliteit"
+
+msgid "Medium Quality Ray Count"
+msgstr "Stralenaantal Middenkwaliteit"
+
+msgid "High Quality Ray Count"
+msgstr "Stralenaantal Hoge Kwaliteit"
+
+msgid "Ultra Quality Ray Count"
+msgstr "Stralenaantal Ultra Kwaliteit"
+
+msgid "Bake Performance"
+msgstr "Bakprestaties"
+
+msgid "Region Size"
+msgstr "Regiogrootte"
+
+msgid "Eye Height"
+msgstr "Ooghoogte"
+
+msgid "Allow Object Decoding"
+msgstr "Object Decoding Toestaan"
+
+msgid "Refuse New Connections"
+msgstr "Nieuwe Verbindingen Weigeren"
+
+msgid "Frequency"
+msgstr "Frequentie"
+
+msgid "Octaves"
+msgstr "Octaven"
+
+msgid "Width"
+msgstr "Breedte"
+
+msgid "Noise"
+msgstr "Ruis"
+
+msgid "Seamless"
+msgstr "Naadloos"
+
+msgid "In 3D Space"
+msgstr "In 3D Ruimte"
+
+msgid "As Normal Map"
+msgstr "Als Normaalkaart"
+
+msgid "Localized Name"
+msgstr "Gelokaliseerde Naam"
+
+msgid "Action Type"
+msgstr "Actietype"
+
+msgid "Toplevel Paths"
+msgstr "Topniveau Paden"
+
+msgid "Interaction Profiles"
+msgstr "Interactieprofielen"
+
+msgid "Actions"
+msgstr "Acties"
+
+msgid "Duration"
+msgstr "Duur"
+
+msgid "Interaction Profile Path"
+msgstr "Pad Interactieprofiel"
+
+msgid "Input Path"
+msgstr "Invoerpad"
+
+msgid "Threshold Released"
+msgstr "Grenswaarde Loslaten"
+
+msgid "Center Region"
+msgstr "Centrumregio"
+
+msgid "On Threshold"
+msgstr "Grenswaarde Aan"
+
+msgid "Off Threshold"
+msgstr "Grenswaarde Uit"
+
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Next"
+msgstr "Volgende"
+
+msgid "Use Android Surface"
+msgstr "Android Surface Gebruiken"
+
+msgid "Sort Order"
+msgstr "Sorteervolgorde"
+
+msgid "Hand"
+msgstr "Hand"
+
+msgid "Motion Range"
+msgstr "Bewegingsbereik"
+
+msgid "Hand Skeleton"
+msgstr "Handskelet"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Margins"
+msgstr "Marges"
+
+msgid "Separation"
+msgstr "Scheiding"
+
+msgid "Texture Region Size"
+msgstr "Textureregiogrootte"
+
+msgid "Atlas Coords"
+msgstr "Atlascoördinaten"
+
+msgid "Size in Atlas"
+msgstr "Grootte in Atlas"
+
+msgid "Alternative ID"
+msgstr "Alternatieve ID"
+
+msgid "Speed"
+msgstr "Snelheid"
+
+msgid "Frames Count"
+msgstr "Frameaantal"
+
+msgid "Rendering Quadrant Size"
+msgstr "Grootte Renderkwadrant"
+
+msgid "Collision Visibility Mode"
+msgstr "Zichtbaarheidsmodus Botsingen"
+
+msgid "Y Sort Origin"
+msgstr "Oorsprong Y-sorteren"
+
+msgid "X Draw Order Reversed"
+msgstr "X-tekenvolgorde Omgekeerd"
+
+msgid "Collision Enabled"
+msgstr "Botsing Ingeschakeld"
+
+msgid "Use Kinematic Bodies"
+msgstr "Kinematische Lichamen Gebruiken"
+
+msgid "Right Side"
+msgstr "Rechterzijde"
+
+msgid "Right Corner"
+msgstr "Rechterhoek"
+
+msgid "Bottom Right Side"
+msgstr "Rechtsonderzijde"
+
+msgid "Bottom Right Corner"
+msgstr "Rechtsonderhoek"
+
+msgid "Bottom Side"
+msgstr "Onderzijde"
+
+msgid "Bottom Corner"
+msgstr "Onderhoek"
+
+msgid "Bottom Left Side"
+msgstr "Linksonderzijde"
+
+msgid "Bottom Left Corner"
+msgstr "Linksonderhoek"
+
+msgid "Left Side"
+msgstr "Linkerzijde"
+
+msgid "Left Corner"
+msgstr "Linkerhoek"
+
+msgid "Top Left Side"
+msgstr "Linkerbovenzijde"
+
+msgid "Top Left Corner"
+msgstr "Linkerbovenhoek"
+
+msgid "Top Side"
+msgstr "Bovenzijde"
+
+msgid "Top Corner"
+msgstr "Bovenhoek"
+
+msgid "Top Right Side"
+msgstr "Rechterbovenzijde"
+
+msgid "Top Right Corner"
+msgstr "Rechterbovenhoek"
+
+msgid "Terrains"
+msgstr "Terreinen"
+
+msgid "Custom Data"
+msgstr "Zelfgedefinieerde Data"
+
+msgid "Tile Shape"
+msgstr "Tegelvorm"
+
+msgid "Tile Layout"
+msgstr "Tegellay-out"
+
+msgid "Tile Offset Axis"
+msgstr "As Tegelverschuiving"
+
+msgid "Tile Size"
+msgstr "Tegelgrootte"
+
+msgid "UV Clipping"
+msgstr "UV Bijsnijden"
+
+msgid "Physics Layers"
+msgstr "Physicslagen"
+
+msgid "Terrain Sets"
+msgstr "Terreinsets"
+
+msgid "Custom Data Layers"
+msgstr "Zelfgedefinieerde Datalagen"
+
+msgid "Scenes"
+msgstr "Scènes"
+
+msgid "Scene"
+msgstr "Scène"
+
+msgid "Display Placeholder"
+msgstr "Plaatsvervanger Tonen"
+
+msgid "Polygons Count"
+msgstr "Aantal Polygonen"
+
+msgid "Points"
+msgstr "Punten"
+
+msgid "One Way"
+msgstr "Eénrichting"
+
+msgid "One Way Margin"
+msgstr "Eénrichtingsmarge"
+
+msgid "Terrains Peering Bit"
+msgstr "Terreinovergangsstukken"
+
+msgid "Flip H"
+msgstr "H Spiegelen"
+
+msgid "Flip V"
+msgstr "V Spiegelen"
+
+msgid "Transpose"
+msgstr "Transponeer"
+
+msgid "Texture Origin"
+msgstr "Texture-oorsprong"
+
+msgid "Modulate"
+msgstr "Moduleren"
+
+msgid "Z Index"
+msgstr "Z-index"
+
+msgid "Terrain Set"
+msgstr "Terreinset"
+
+msgid "Terrain"
+msgstr "Terrein"
+
+msgid "Miscellaneous"
+msgstr "Overig"
+
+msgid "Probability"
+msgstr "Waarschijnlijkheid"
+
+msgid "Description URL"
+msgstr "Beschrijving URL"
+
+msgid "Reference"
+msgstr "Referentie"
+
+msgid "Expression"
+msgstr "Expressie"
+
+msgid "Group"
+msgstr "Groep"
+
+msgid "Op Type"
+msgstr "Op-type"
+
+msgid "Constant"
+msgstr "Constante"
+
+msgid "Source"
+msgstr "Bron"
+
+msgid "Operator"
+msgstr "Operator"
+
+msgid "Function"
+msgstr "Functie"
+
+msgid "Hint"
+msgstr "Hint"
+
+msgid "Step"
+msgstr "Stap"
+
+msgid "Default Value Enabled"
+msgstr "Standaardwaarde Actief"
+
+msgid "Default Value"
+msgstr "Standaardwaarde"
+
+msgid "Enum Names"
+msgstr "Enumnamen"
+
+msgid "Color Default"
+msgstr "Standaardwaarde Kleur"
+
+msgid "Texture Filter"
+msgstr "Texture-filter"
+
+msgid "Texture Repeat"
+msgstr "Texture-herhaling"
+
+msgid "Texture Source"
+msgstr "Texture-bron"
+
+msgid "Condition"
+msgstr "Conditie"
+
+msgid "Keep Scale"
+msgstr "Schaal Behouden"
+
+msgid "Mode 2D"
+msgstr "Modus 2D"
+
+msgid "Use All Surfaces"
+msgstr "Alle Oppervlaktes Gebruiken"
+
+msgid "Surface Index"
+msgstr "Oppervlakte-index"
+
+msgid "Degrees Mode"
+msgstr "Gradenmodus"
+
+msgid "WebRTC"
+msgstr "WebRTC"
+
+msgid "Max Channel in Buffer (KB)"
+msgstr "Max Kanalen in Buffer (KB)"
+
+msgid "Write Mode"
+msgstr "Schrijfmodus"
+
+msgid "Supported Protocols"
+msgstr "Ondersteunde Protocollen"
+
+msgid "Handshake Headers"
+msgstr "Handshake-headers"
+
+msgid "Inbound Buffer Size"
+msgstr "Inkomende Buffergrootte"
+
+msgid "Outbound Buffer Size"
+msgstr "Uitgaande Buffergrootte"
+
+msgid "Handshake Timeout"
+msgstr "Handshake-time-out"
+
+msgid "Max Queued Packets"
+msgstr "Max Packets in Wachtrij"
+
+msgid "Heartbeat Interval"
+msgstr "Heartbeat-interval"
+
+msgid "Session Mode"
+msgstr "Sessiemodus"
+
+msgid "Required Features"
+msgstr "Vereiste Functionaliteiten"
+
+msgid "Optional Features"
+msgstr "Optionele Functionaliteiten"
+
+msgid "Enabled Features"
+msgstr "Ingeschakelde Functionaliteiten"
+
+msgid "Install Exported APK"
+msgstr "Installeer Geëxporteerde APK"
+
+msgid "Java SDK Path"
+msgstr "Pad Java-SDK"
+
+msgid "Android SDK Path"
+msgstr "Pad Android-SDK"
+
+msgid "Shutdown ADB on Exit"
+msgstr "ADB Afsluiten bij Verlaten"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Wi-Fi Gebruiken voor Debuggen op Afstand"
+
+msgid "Disable Godot Boot Splash"
+msgstr "Godot Opstartscherm Uitzetten"
+
+msgid "Background Color"
+msgstr "Achtergrondkleur"
+
+msgid "Branding Image"
+msgstr "Merkafbeelding"
+
+msgid "Launcher Icons"
+msgstr "Starticonen"
+
+msgid "Main 192 X 192"
+msgstr "Hoofd 192 X 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "Adaptieve Voorgrond 432 X 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "Adaptieve Achtergrond 432 X 432"
+
+msgid "Adaptive Monochrome 432 X 432"
+msgstr "Adaptief Monochroom 432 X 432"
+
+msgid "Gradle Build"
+msgstr "Gradle-build"
+
+msgid "Use Gradle Build"
+msgstr "Gradle-build Gebruiken"
+
+msgid "Gradle Build Directory"
+msgstr "Gradle-buildmap"
+
+msgid "Compress Native Libraries"
+msgstr "Systeembibliotheken Comprimeren"
+
+msgid "Export Format"
+msgstr "Exporteerformaat"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Unique Name"
+msgstr "Unieke Naam"
+
+msgid "Signed"
+msgstr "Gesigneerd"
+
+msgid "App Category"
+msgstr "Appcategorie"
+
+msgid "Retain Data on Uninstall"
+msgstr "Data Behouden bij Deïnstallatie"
+
+msgid "Exclude From Recents"
+msgstr "Uitsluiten van Recent Gebruikt"
+
+msgid "Show in Android TV"
+msgstr "Tonen in Android TV"
+
+msgid "Show in App Library"
+msgstr "Tonen in App-bibliotheek"
+
+msgid "Graphics"
+msgstr "Graphics"
+
+msgid "XR Features"
+msgstr "XR-Functionaliteiten"
+
+msgid "XR Mode"
+msgstr "XR-modus"
+
+msgid "Gesture"
+msgstr "Gebaren"
+
+msgid "Immersive Mode"
+msgstr "Immersiemodus"
+
+msgid "Support Small"
+msgstr "Klein Ondersteunen"
+
+msgid "Support Normal"
+msgstr "Normaal Ondersteunen"
+
+msgid "Support Large"
+msgstr "Groot Ondersteunen"
+
+msgid "Support Xlarge"
+msgstr "Extra Groot Ondersteunen"
+
+msgid "User Data Backup"
+msgstr "Back-up Gebruikersgegevens"
+
+msgid "Allow"
+msgstr "Toestaan"
+
+msgid "Command Line"
+msgstr "Opdrachtprompt"
+
+msgid "Extra Args"
+msgstr "Extra Argumenten"
+
+msgid "Permissions"
+msgstr "Toestemmingen"
+
+msgid "Custom Permissions"
+msgstr "Aangepaste Toestemmingen"
+
+msgid "iOS Deploy"
+msgstr "iOS Publicatie"
+
+msgid "Targeted Device Family"
+msgstr "Doel-toestelfamilie"
+
+msgid "Min iOS Version"
+msgstr "Min iOS-versie"
+
+msgid "Image Scale Mode"
+msgstr "Afbeeldingsschaalmodus"
+
+msgid "Custom Image @2x"
+msgstr "Aangepaste Afbeelding @2x"
+
+msgid "Custom Image @3x"
+msgstr "Aangepaste Afbeelding @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Aangepaste Achtergrondkleur Gebruiken"
+
+msgid "Custom BG Color"
+msgstr "Aangepaste Achtergrondkleur"
+
+msgid "Performance Gaming Tier"
+msgstr "Prestatieniveau voor games"
+
+msgid "Performance A 12"
+msgstr "Prestaties A12"
+
+msgid "Settings 58 X 58"
+msgstr "Instellingen 58 X 58"
+
+msgid "Settings 87 X 87"
+msgstr "Instellingen 87 X 87"
+
+msgid "Notification 40 X 40"
+msgstr "Melding 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "Melding 60 X 60"
+
+msgid "Notification 76 X 76"
+msgstr "Melding 76 X 76"
+
+msgid "Notification 114 X 114"
+msgstr "Melding 114 X 114"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iOS 128 X 128"
+msgstr "iOS 128 X 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 X 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 X 136"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "Architecture"
+msgstr "Architectuur"
+
+msgid "Extra Args SSH"
+msgstr "Extra Argumenten SSH"
+
+msgid "Extra Args SCP"
+msgstr "Extra Argumenten SCP"
+
+msgid "Run Script"
+msgstr "Script uitvoeren"
+
+msgid "Cleanup Script"
+msgstr "Script opschonen"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
+
+msgid "actool"
+msgstr "actool"
+
+msgid "Distribution Type"
+msgstr "Distributietype"
+
+msgid "Liquid Glass Icon"
+msgstr "Liquid Glass-icoon"
+
+msgid "Copyright Localized"
+msgstr "Copyright Gelokaliseerd"
+
+msgid "Min macOS Version x86 64"
+msgstr "Min macOS-versie x86 64"
+
+msgid "Min macOS Version arm64"
+msgstr "Min macOS-versie arm64"
+
+msgid "High Res"
+msgstr "Hoge Resolutie"
+
+msgid "Xcode"
+msgstr "Xcode"
+
+msgid "Platform Build"
+msgstr "Platform-build"
+
+msgid "SDK Version"
+msgstr "SDK-versie"
+
+msgid "SDK Build"
+msgstr "SDK-build"
+
+msgid "SDK Name"
+msgstr "SDK-naam"
+
+msgid "Xcode Version"
+msgstr "Xcode-versie"
+
+msgid "Xcode Build"
+msgstr "Xcode-build"
+
+msgid "Codesign"
+msgstr "Codesign"
+
+msgid "Installer Identity"
+msgstr "Installeridentiteit"
+
+msgid "Apple Team ID"
+msgstr "Apple Team-ID"
+
+msgid "Identity"
+msgstr "Identiteit"
+
+msgid "Certificate File"
+msgstr "Certificaatbestand"
+
+msgid "Certificate Password"
+msgstr "Wachtwoord Certificaat"
+
+msgid "Provisioning Profile"
+msgstr "Provisioning-profiel"
+
+msgid "Custom File"
+msgstr "Aangepast Bestand"
+
+msgid "Allow JIT Code Execution"
+msgstr "JIT Code Uitvoeren Toestaan"
+
+msgid "Allow Dyld Environment Variables"
+msgstr "Dyld-omgevingsvariabelen Toestaan"
+
+msgid "Disable Library Validation"
+msgstr "Library-validatie Uitschakelen"
+
+msgid "Audio Input"
+msgstr "Audio-invoer"
+
+msgid "Address Book"
+msgstr "Adresboek"
+
+msgid "Calendars"
+msgstr "Agenda's"
+
+msgid "Photos Library"
+msgstr "Fotobibliotheek"
+
+msgid "Debugging"
+msgstr "Fout­opsporing"
+
+msgid "Network Server"
+msgstr "Netwerk Server"
+
+msgid "Network Client"
+msgstr "Netwerk Client"
+
+msgid "Device USB"
+msgstr "Toestel USB"
+
+msgid "Device Bluetooth"
+msgstr "Toestel Bluetooth"
+
+msgid "Files Downloads"
+msgstr "Bestanden Downloads"
+
+msgid "Files Pictures"
+msgstr "Bestanden Afbeeldingen"
+
+msgid "Files Music"
+msgstr "Bestanden Muziek"
+
+msgid "Files Movies"
+msgstr "Bestanden Video's"
+
+msgid "Files User Selected"
+msgstr "Bestanden Geselecteerd door Gebruiker"
+
+msgid "Helper Executables"
+msgstr "Hulpuitvoerbestanden"
+
+msgid "Custom Options"
+msgstr "Aangepaste Opties"
+
+msgid "Notarization"
+msgstr "Notarisatie"
+
+msgid "Apple ID Name"
+msgstr "Apple ID-naam"
+
+msgid "Apple ID Password"
+msgstr "Apple ID-wachtwoord"
+
+msgid "API UUID"
+msgstr "API-UUID"
+
+msgid "API Key"
+msgstr "API-key"
+
+msgid "API Key ID"
+msgstr "API-key-ID"
+
+msgid "Microphone Usage Description"
+msgstr "Omschrijving microfoongebruik"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Omschrijving microfoongebruik (gelokaliseerd)"
+
+msgid "Camera Usage Description"
+msgstr "Omschrijving cameragebruik"
+
+msgid "Camera Usage Description Localized"
+msgstr "Omschrijving cameragebruik (gelokaliseerd)"
+
+msgid "Location Usage Description"
+msgstr "Beschrijving Gebruik Locatie"
+
+msgid "Location Usage Description Localized"
+msgstr "Gelokaliseerde Beschrijving Gebruik Locatie"
+
+msgid "Address Book Usage Description"
+msgstr "Beschrijving Gebruik Adresboek"
+
+msgid "Address Book Usage Description Localized"
+msgstr "Gelokaliseerde Beschrijving Gebruik Adresbroek"
+
+msgid "Calendar Usage Description"
+msgstr "Beschrijving Gebruik Kalender"
+
+msgid "Calendar Usage Description Localized"
+msgstr "Gelokaliseerde Beschrijving Gebruik Kalender"
+
+msgid "Photos Library Usage Description"
+msgstr "Beschrijving Gebruik Fotobibliotheek"
+
+msgid "Photos Library Usage Description Localized"
+msgstr "Gelokaliseerde Beschrijving Gebruik Fotobibliotheek"
+
+msgid "Desktop Folder Usage Description"
+msgstr "Beschrijving Gebruik Bureaubladmap"
+
+msgid "Desktop Folder Usage Description Localized"
+msgstr "Gelokaliseerde Beschrijving Gebruik Bureaubladmap"
+
+msgid "Downloads Folder Usage Description"
+msgstr "Beschrijving Gebruik Downloadmap"
+
+msgid "Network Volumes Usage Description"
+msgstr "Beschrijving Gebruik Netwerkvolumes"
+
+msgid "Removable Volumes Usage Description"
+msgstr "Beschrijving Gebruik Verwijderbare Volumes"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "HTTP Host"
+msgstr "HTTP-host"
+
+msgid "HTTP Port"
+msgstr "HTTP-poort"
+
+msgid "Use TLS"
+msgstr "TLS Gebruiken"
+
+msgid "TLS Key"
+msgstr "TLS-key"
+
+msgid "TLS Certificate"
+msgstr "TLS-certificaat"
+
+msgid "Variant"
+msgstr "Variant"
+
+msgid "Thread Support"
+msgstr "Thread-ondersteuning"
+
+msgid "VRAM Texture Compression"
+msgstr "VRAM-texturecompressie"
+
+msgid "For Desktop"
+msgstr "Voor Dekstop"
+
+msgid "For Mobile"
+msgstr "Voor Mobiel"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Export Icon"
+msgstr "Exporteericoon"
+
+msgid "Custom HTML Shell"
+msgstr "Aangepaste HTML-shell"
+
+msgid "Head Include"
+msgstr "Invoegen in Head"
+
+msgid "Focus Canvas on Start"
+msgstr "Focus op Canvas bij Opstarten"
+
+msgid "Experimental Virtual Keyboard"
+msgstr "Experimenteel Virtueel Toetsenbord"
+
+msgid "Progressive Web App"
+msgstr "Progressive Web App"
+
+msgid "Offline Page"
+msgstr "Offline Pagina"
+
+msgid "Icon 144 X 144"
+msgstr "Icoon 144 X 144"
+
+msgid "Icon 180 X 180"
+msgstr "Icoon 180 X 180"
+
+msgid "Icon 512 X 512"
+msgstr "Icoon 512 X 512"
+
+msgid "Emscripten Pool Size"
+msgstr "Emscriptem Poolgrootte"
+
+msgid "File Version"
+msgstr "Bestandsversie"
+
+msgid "Product Version"
+msgstr "Productversie"
+
+msgid "Company Name"
+msgstr "Bedrijfsnaam"
+
+msgid "Product Name"
+msgstr "Productnaam"
+
+msgid "File Description"
+msgstr "Beschrijving Bestand"
+
+msgid "Trademarks"
+msgstr "Handelsmerken"
+
+msgid "Frame"
+msgstr "Frame"
+
+msgid "Speed Scale"
+msgstr "Snelheidsschaal"
+
+msgid "Centered"
+msgstr "Gecentreerd"
+
+msgid "Current"
+msgstr "Huidig"
+
+msgid "Volume dB"
+msgstr "Volume dB"
+
+msgid "Pitch Scale"
+msgstr "Toonhoogteschaal"
+
+msgid "Autoplay"
+msgstr "Automatisch Afspelen"
+
+msgid "Stream Paused"
+msgstr "Stream Gepauzeerd"
+
+msgid "Max Distance"
+msgstr "Max Afstand"
+
+msgid "Max Polyphony"
+msgstr "Max Polyfonie"
+
+msgid "Panning Strength"
+msgstr "Panning-sterkte"
+
+msgid "Area Mask"
+msgstr "Oppervlaktemasker"
+
+msgid "Playback Type"
+msgstr "Afspeelmodus"
+
+msgid "Copy Mode"
+msgstr "Kopieermodus"
+
+msgid "Anchor Mode"
+msgstr "Ankermodus"
+
+msgid "Ignore Rotation"
+msgstr "Rotatie Negeren"
+
+msgid "Custom Viewport"
+msgstr "Aangepast Beeldvenster"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Top"
+msgstr "Boven"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "Bottom"
+msgstr "Onder"
+
+msgid "Drag"
+msgstr "Slepen"
+
+msgid "Left Margin"
+msgstr "Marge Links"
+
+msgid "Top Margin"
+msgstr "Marge Boven"
+
+msgid "Right Margin"
+msgstr "Marge Rechts"
+
+msgid "Bottom Margin"
+msgstr "Marge Onder"
+
+msgid "Draw Screen"
+msgstr "Scherm Tekenen"
+
+msgid "Draw Limits"
+msgstr "Limieten Tekenen"
+
+msgid "Draw Drag Margin"
+msgstr "Sleepmarge Tekenen"
+
+msgid "Tweaks"
+msgstr "Aanpassingen"
+
+msgid "Clear Margin"
+msgstr "Marge Wissen"
+
+msgid "Use Mipmaps"
+msgstr "Mipmaps Gebruiken"
+
+msgid "Lifetime"
+msgstr "Levensduur"
+
+msgid "One Shot"
+msgstr "Eenmalig"
+
+msgid "Preprocess"
+msgstr "Voorverwerking"
+
+msgid "Explosiveness"
+msgstr "Explosiviteit"
+
+msgid "Randomness"
+msgstr "Willekeurigheid"
+
+msgid "Use Fixed Seed"
+msgstr "Vaste Seed Gebruiken"
+
+msgid "Lifetime Randomness"
+msgstr "Willekeurigheid Levensduur"
+
+msgid "Fixed FPS"
+msgstr "Vaste FPS"
+
+msgid "Drawing"
+msgstr "Tekenen"
+
+msgid "Local Coords"
+msgstr "Lokale Coördinaten"
+
+msgid "Draw Order"
+msgstr "Tekenvolgorde"
+
+msgid "Emission Shape"
+msgstr "Emissievorm"
+
+msgid "Shape"
+msgstr "Vorm"
+
+msgid "Sphere Radius"
+msgstr "Bolradius"
+
+msgid "Normals"
+msgstr "Normalen"
+
+msgid "Colors"
+msgstr "Kleuren"
+
+msgid "Align Y"
+msgstr "Y Uitlijnen"
+
+msgid "Direction"
+msgstr "Richting"
+
+msgid "Spread"
+msgstr "Spreiding"
+
+msgid "Gravity"
+msgstr "Zwaartekracht"
+
+msgid "Initial Velocity"
+msgstr "Beginsnelheid"
+
+msgid "Velocity Min"
+msgstr "Min Snelheid"
+
+msgid "Velocity Max"
+msgstr "Max Snelheid"
+
+msgid "Velocity Curve"
+msgstr "Snelheidscurve"
+
+msgid "Orbit Velocity"
+msgstr "Baansnelheid"
+
+msgid "Linear Accel"
+msgstr "Lineaire Versnelling"
+
+msgid "Accel Min"
+msgstr "Min Versnelling"
+
+msgid "Accel Max"
+msgstr "Max Versnelling"
+
+msgid "Accel Curve"
+msgstr "Versnellingscurve"
+
+msgid "Radial Accel"
+msgstr "Radiale Versnelling"
+
+msgid "Tangential Accel"
+msgstr "Tangentiële Versnelling"
+
+msgid "Damping"
+msgstr "Demping"
+
+msgid "Damping Min"
+msgstr "Min Demping"
+
+msgid "Damping Max"
+msgstr "Max Demping"
+
+msgid "Damping Curve"
+msgstr "Dempingscurve"
+
+msgid "Angle"
+msgstr "Hoek"
+
+msgid "Angle Min"
+msgstr "Hoek Min"
+
+msgid "Angle Max"
+msgstr "Hoek Max"
+
+msgid "Angle Curve"
+msgstr "Hoekcurve"
+
+msgid "Split Scale"
+msgstr "Schaal Splitsen"
+
+msgid "Scale Curve X"
+msgstr "Schaalcurve X"
+
+msgid "Scale Curve Y"
+msgstr "Schaalcurve Y"
+
+msgid "Hue Variation"
+msgstr "Tintvariatie"
+
+msgid "Variation Min"
+msgstr "Variatie Min"
+
+msgid "Variation Max"
+msgstr "Variatie Max"
+
+msgid "Variation Curve"
+msgstr "Variatiecurve"
+
+msgid "Speed Min"
+msgstr "Snelheid Min"
+
+msgid "Speed Max"
+msgstr "Snelheid Max"
+
+msgid "Speed Curve"
+msgstr "Snelheidscurve"
+
+msgid "Interp to End"
+msgstr "Interp tot Einde"
+
+msgid "Interpolate"
+msgstr "Interpoleren"
+
+msgid "Base Size"
+msgstr "Basisgrootte"
+
+msgid "Visibility Rect"
+msgstr "Zichtbaarheidsrechthoek"
+
+msgid "Trails"
+msgstr "Sporen"
+
+msgid "Editor Only"
+msgstr "Alleen Editor"
+
+msgid "Energy"
+msgstr "Energie"
+
+msgid "Blend Mode"
+msgstr "Mengmodus"
+
+msgid "Z Min"
+msgstr "Z Min"
+
+msgid "Z Max"
+msgstr "Z Max"
+
+msgid "Layer Min"
+msgstr "Laag Min"
+
+msgid "Layer Max"
+msgstr "Laag Max"
+
+msgid "Item Cull Mask"
+msgstr "Objectselectiemasker"
+
+msgid "Shadow"
+msgstr "Schaduw"
+
+msgid "Filter Smooth"
+msgstr "Filter Verzachting"
+
+msgid "Texture Scale"
+msgstr "Textureschaal"
+
+msgid "Closed"
+msgstr "Gesloten"
+
+msgid "SDF Collision"
+msgstr "SDF-Botsing"
+
+msgid "Occluder Light Mask"
+msgstr "Bedekking Lichtmasker"
+
+msgid "Width Curve"
+msgstr "Breedtecurve"
+
+msgid "Default Color"
+msgstr "Standaardkleur"
+
+msgid "Fill"
+msgstr "Vullen"
+
+msgid "Gradient"
+msgstr "Gradiënt"
+
+msgid "Capping"
+msgstr "Uiteindes"
+
+msgid "Joint Mode"
+msgstr "Gewrichtsmodus"
+
+msgid "Border"
+msgstr "Rand"
+
+msgid "Sharp Limit"
+msgstr "Scherptelimiet"
+
+msgid "Round Precision"
+msgstr "Afrondprecisie"
+
+msgid "Antialiased"
+msgstr "Anti-alias"
+
+msgid "Multimesh"
+msgstr "Multimesh"
+
+msgid "Target Desired Distance"
+msgstr "Gewenste Doelafstand"
+
+msgid "Simplify Epsilon"
+msgstr "Epsilon Vereenvoudigen"
+
+msgid "Path Return Max Length"
+msgstr "Pad Terug Max Lengte"
+
+msgid "Path Return Max Radius"
+msgstr "Pad Terug Max Straal"
+
+msgid "Path Search Max Polygons"
+msgstr "Pad Max Polygonen Doorzoeken"
+
+msgid "Max Neighbors"
+msgstr "Max Buren"
+
+msgid "Skew"
+msgstr "Schuintrekken"
+
+msgid "Scroll Offset"
+msgstr "Scrollverschuiving"
+
+msgid "Repeat"
+msgstr "Herhalen"
+
+msgid "End"
+msgstr "Einde"
+
+msgid "Ignore Camera Scroll"
+msgstr "Camerascroll Negeren"
+
+msgid "Scroll"
+msgstr "Scrollen"
+
+msgid "Limit Begin"
+msgstr "Begin Limiet"
+
+msgid "Limit End"
+msgstr "Einde Limiet"
+
+msgid "Ignore Camera Zoom"
+msgstr "Camerazoom Negeren"
+
+msgid "Cubic Interp"
+msgstr "Kubische Interp"
+
+msgid "Point"
+msgstr "Punt"
+
+msgid "Stop on Slope"
+msgstr "Stoppen op Helling"
+
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+msgid "Length"
+msgstr "Lengte"
+
+msgid "Rest Length"
+msgstr "Restlengte"
+
+msgid "Stiffness"
+msgstr "Stijfheid"
+
+msgid "Softness"
+msgstr "Zachtheid"
+
+msgid "Follow Bone When Simulating"
+msgstr "Bot Volgen Tijdens Simuleren"
+
+msgid "Exclude Parent"
+msgstr "Ouder Uitsluiten"
+
+msgid "Hit From Inside"
+msgstr "Raken Van Binnen"
+
+msgid "Collide With"
+msgstr "Botsen Met"
+
+msgid "Areas"
+msgstr "Gebieden"
+
+msgid "Bodies"
+msgstr "Lichamen"
+
+msgid "Gravity Scale"
+msgstr "Zwaartekrachtschaal"
+
+msgid "Max Contacts Reported"
+msgstr "Max Contacten Gerapporteerd"
+
+msgid "Linear"
+msgstr "Lineair"
+
+msgid "Damp"
+msgstr "Demping"
+
+msgid "Bitmask"
+msgstr "Bitmasker"
+
+msgid "UV"
+msgstr "UV"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Auto Calculate Length and Angle"
+msgstr "Lengte en Hoek Automatisch Berekenen"
+
+msgid "Editor Settings"
+msgstr "Editor-instellingen"
+
+msgid "Hframes"
+msgstr "H-frames"
+
+msgid "Vframes"
+msgstr "V-frames"
+
+msgid "Unit Size"
+msgstr "Eenheidsgrootte"
+
+msgid "Max dB"
+msgstr "Max dB"
+
+msgid "Keep Aspect"
+msgstr "Verhouding Behouden"
+
+msgid "Attributes"
+msgstr "Eigenschappen"
+
+msgid "Far"
+msgstr "Verte"
+
+msgid "Flatness"
+msgstr "Platheid"
+
+msgid "Albedo"
+msgstr "Albedo"
+
+msgid "Distance Fade"
+msgstr "Afstandsvervaging"
+
+msgid "Thickness"
+msgstr "Dikte"
+
+msgid "Layer Mask"
+msgstr "Laagmasker"
+
+msgid "Visibility Range"
+msgstr "Zichtbaarheidsbereik"
+
+msgid "Max Iterations"
+msgstr "Max Iteraties"
+
+msgid "Min Distance"
+msgstr "Min Afstand"
+
+msgid "Deterministic"
+msgstr "Deterministisch"
+
+msgid "Pixel Size"
+msgstr "Pixelgrootte"
+
+msgid "Billboard"
+msgstr "Billboard"
+
+msgid "Shaded"
+msgstr "Geschaduwd"
+
+msgid "Double Sided"
+msgstr "Tweezijdig"
+
+msgid "No Depth Test"
+msgstr "Geen Dieptetest"
+
+msgid "Fixed Size"
+msgstr "Vaste Grootte"
+
+msgid "Alpha Cut"
+msgstr "Alfa Snijden"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "Alpha Antialias-modus"
+
+msgid "Render Priority"
+msgstr "Renderprioriteit"
+
+msgid "Outline Render Priority"
+msgstr "Renderprioriteit Omlijning"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Outline Modulate"
+msgstr "Omlijning Modulatie"
+
+msgid "Font"
+msgstr "Lettertype"
+
+msgid "Horizontal Alignment"
+msgstr "Horizontale Uitlijning"
+
+msgid "Vertical Alignment"
+msgstr "Verticale Uitlijning"
+
+msgid "Uppercase"
+msgstr "Hoofdletters"
+
+msgid "Text Direction"
+msgstr "Tekstrichting"
+
+msgid "Intensity Lumens"
+msgstr "Intensiteit Lumen"
+
+msgid "Intensity Lux"
+msgstr "Intensiteit Lux"
+
+msgid "Temperature"
+msgstr "Temperatuur"
+
+msgid "Indirect Energy"
+msgstr "Indirecte Energie"
+
+msgid "Volumetric Fog Energy"
+msgstr "Energie Volumetrische Mist"
+
+msgid "Negative"
+msgstr "Negatief"
+
+msgid "Opacity"
+msgstr "Dekking"
+
+msgid "Blur"
+msgstr "Vervagen"
+
+msgid "Sky Mode"
+msgstr "Luchtmodus"
+
+msgid "Omni"
+msgstr "Omni"
+
+msgid "Shadow Mode"
+msgstr "Schaduwmodus"
+
+msgid "Spot"
+msgstr "Schijnwerper"
+
+msgid "Area"
+msgstr "Gebied"
+
+msgid "Normalize Energy"
+msgstr "Energie Normaliseren"
+
+msgid "Lightmap Textures"
+msgstr "Textures Lightmap"
+
+msgid "Shadowmask Textures"
+msgstr "Textures Schaduwmasker"
+
+msgid "Light Texture"
+msgstr "Texture Licht"
+
+msgid "Quality"
+msgstr "Kwaliteit"
+
+msgid "Bounces"
+msgstr "Weerkaatsingen"
+
+msgid "Texel Scale"
+msgstr "Texelschaal"
+
+msgid "Max Texture Size"
+msgstr "Max Texturegrootte"
+
+msgid "Custom Sky"
+msgstr "Aangepaste Lucht"
+
+msgid "Custom Color"
+msgstr "Aangepaste Kleur"
+
+msgid "Custom Energy"
+msgstr "Aangepaste Energie"
+
+msgid "Camera Attributes"
+msgstr "Camera-attributen"
+
+msgid "Exclude"
+msgstr "Uitsluiten"
+
+msgid "Forward Axis"
+msgstr "Voorwaartse as"
+
+msgid "Primary Damp Threshold"
+msgstr "Grenswaarde Primaire Demping"
+
+msgid "Visibility"
+msgstr "Zichtbaarheid"
+
+msgid "Visibility Parent"
+msgstr "Zichtbaarheid Ouder"
+
+msgid "Use Model Front"
+msgstr "Voorzijde Model Gebruiken"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Equilibrium Point"
+msgstr "Evenwichtspunt"
+
+msgid "Bounce"
+msgstr "Stuitering"
+
+msgid "Linear X"
+msgstr "Lineair X"
+
+msgid "Linear Y"
+msgstr "Lineair Y"
+
+msgid "Linear Z"
+msgstr "Lineair Z"
+
+msgid "Total Mass"
+msgstr "Totale Massa"
+
+msgid "Linear Stiffness"
+msgstr "Lineaire Stijfheid"
+
+msgid "Pressure Coefficient"
+msgstr "Drukcoëfficient"
+
+msgid "Damping Coefficient"
+msgstr "Dempingscoëfficient"
+
+msgid "Engine Force"
+msgstr "Motor­kracht"
+
+msgid "Brake"
+msgstr "Remmen"
+
+msgid "Steering"
+msgstr "Sturen"
+
+msgid "VehicleBody3D Motion"
+msgstr "Beweging VehicleBody3D"
+
+msgid "Wheel"
+msgstr "Wiel"
+
+msgid "Roll Influence"
+msgstr "Rolinvloed"
+
+msgid "Travel"
+msgstr "Verplaats"
+
+msgid "Color Energy"
+msgstr "Kleurenergie"
+
+msgid "Show Rest Only"
+msgstr "Alleen Rust Tonen"
+
+msgid "Deprecated"
+msgstr "Verouderd"
+
+msgid "Active"
+msgstr "Actief"
+
+msgid "Max Length"
+msgstr "Max Lengte"
+
+msgid "Geometry"
+msgstr "Geometrie"
+
+msgid "Transparency"
+msgstr "Transparantie"
+
+msgid "Use Two Bounces"
+msgstr "Twee Weerkaatsingen Gebruiken"
+
+msgid "Play Mode"
+msgstr "Afspeelmodus"
+
+msgid "Sync"
+msgstr "Synchroniseren"
+
+msgid "Delay"
+msgstr "Vertraging"
+
+msgid "Allow Transition to Self"
+msgstr "Overgang naar Zelf Toestaan"
+
+msgid "Request"
+msgstr "Verzoek"
+
+msgid "Root Node"
+msgstr "Wortelnode"
+
+msgid "Root Motion"
+msgstr "Kernbeweging"
+
+msgid "Track"
+msgstr "Spoor"
+
+msgid "Local"
+msgstr "Lokaal"
+
+msgid "Callback Mode"
+msgstr "Terugkoppelingsmodus"
+
+msgid "Method"
+msgstr "Methode"
+
+msgid "Discrete"
+msgstr "Discreet"
+
+msgid "Reset"
+msgstr "Resetten"
+
+msgid "Tree Root"
+msgstr "Boomwortel"
+
+msgid "Animation Path"
+msgstr "Animatiepad"
+
+msgid "Alignment"
+msgstr "Uitlijning"
+
+msgid "Keep Pressed Outside"
+msgstr "Buiten Ingedrukt Houden"
+
+msgid "Button Group"
+msgstr "Knoppen Groep"
+
+msgid "Allow Unpress"
+msgstr "Onindrukken Toestaan"
+
+msgid "Text Behavior"
+msgstr "Tekstgedrag"
+
+msgid "Text Overrun Behavior"
+msgstr "Gedrag Tekstoverloop"
+
+msgid "Clip Text"
+msgstr "Tekst Afkappen"
+
+msgid "Icon Behavior"
+msgstr "Icoongedrag"
+
+msgid "Icon Alignment"
+msgstr "Uitlijning Icoon"
+
+msgid "Vertical Icon Alignment"
+msgstr "Verticale Uitlijning Icoon"
+
+msgid "Use Top Left"
+msgstr "Linksboven Gebruiken"
+
+msgid "Symbol Lookup on Click"
+msgstr "Symbool Opzoeken bij Klik"
+
+msgid "Line Length Guidelines"
+msgstr "Richtlijnen Regellengte"
+
+msgid "Comments"
+msgstr "Commentaar"
+
+msgid "Code Completion"
+msgstr "Code-aanvulling"
+
+msgid "Prefixes"
+msgstr "Voorvoegsels"
+
+msgid "Indentation"
+msgstr "Inspringing"
+
+msgid "Use Spaces"
+msgstr "Spaties Gebruiken"
+
+msgid "Automatic"
+msgstr "Automatisch"
+
+msgid "Automatic Prefixes"
+msgstr "Automatische Voorvoegsels"
+
+msgid "Auto Brace Completion"
+msgstr "Automatisch Haakjes Sluiten"
+
+msgid "Edit Alpha"
+msgstr "Alfa Bewerken"
+
+msgid "Edit Intensity"
+msgstr "Intensiteit Bewerken"
+
+msgid "Color Mode"
+msgstr "Kleurmodus"
+
+msgid "Deferred Mode"
+msgstr "Uitgestelde Modus"
+
+msgid "Can Add Swatches"
+msgstr "Kan Kleurstalen Toevoegen"
+
+msgid "Customization"
+msgstr "Aanpassingen"
+
+msgid "Sampler Visible"
+msgstr "Pipet Zichtbaar"
+
+msgid "Color Modes Visible"
+msgstr "Kleurmodi Zichtbaar"
+
+msgid "Sliders Visible"
+msgstr "Schuifbalken Zichtbaar"
+
+msgid "Hex Visible"
+msgstr "Hex Zichtbaar"
+
+msgid "Accessibility Region"
+msgstr "Toegankelijkheidsregio"
+
+msgid "Theme Overrides"
+msgstr "Thema-overschrijvingen"
+
+msgid "Constants"
+msgstr "Constanten"
+
+msgid "Styles"
+msgstr "Stijlen"
+
+msgid "Custom Minimum Size"
+msgstr "Aangepaste Minimumgrootte"
+
+msgid "Custom Maximum Size"
+msgstr "Aangepaste Maximumgrootte"
+
+msgid "Anchors Preset"
+msgstr "Ankervoorinstelling"
+
+msgid "Anchor Points"
+msgstr "Ankerpunten"
+
+msgid "Anchor Offsets"
+msgstr "Ankerverschuivingen"
+
+msgid "Grow Direction"
+msgstr "Groeirichting"
+
+msgid "Pivot Offset"
+msgstr "Draaipuntverschuiving"
+
+msgid "Pivot"
+msgstr "Draaipunt"
+
+msgid "Visual Only"
+msgstr "Alleen Visueel"
+
+msgid "Localize Numeral System"
+msgstr "Numeriek Systeem Lokaliseren"
+
+msgid "Focus"
+msgstr "Focus"
+
+msgid "Neighbor Left"
+msgstr "Buur Links"
+
+msgid "Neighbor Top"
+msgstr "Buur Boven"
+
+msgid "Neighbor Right"
+msgstr "Buur Rechts"
+
+msgid "Neighbor Bottom"
+msgstr "Buur Onder"
+
+msgid "Previous"
+msgstr "Vorige"
+
+msgid "Behavior Recursive"
+msgstr "Recursief Gedrag"
+
+msgid "Mouse"
+msgstr "Muis"
+
+msgid "Force Pass Scroll Events"
+msgstr "Doorgeven Scroll-events Forceren"
+
+msgid "Default Cursor Shape"
+msgstr "Standaard Cursorvorm"
+
+msgid "Shortcut Context"
+msgstr "Sneltoetscontext"
+
+msgid "Controls Nodes"
+msgstr "Bestuurt Knopen"
+
+msgid "Described by Nodes"
+msgstr "Beschreven door Knopen"
+
+msgid "Labeled by Nodes"
+msgstr "Gelabeld door Knopen"
+
+msgid "Type Variation"
+msgstr "Typevariatie"
+
+msgid "OK Button Text"
+msgstr "Tekst OK-knop"
+
+msgid "Dialog"
+msgstr "Dialoog"
+
+msgid "Hide on OK"
+msgstr "Verbergen bij OK"
+
+msgid "Close on Escape"
+msgstr "Sluiten bij Escape"
+
+msgid "Autowrap"
+msgstr "Automatische Regelafbreking"
+
+msgid "Cancel Button Text"
+msgstr "Tekst Annuleren-knop"
+
+msgid "File Mode"
+msgstr "Bestandsmodus"
+
+msgid "Access"
+msgstr "Toegang"
+
+msgid "Filters"
+msgstr "Filters"
+
+msgid "Filename Filter"
+msgstr "Bestandsnaam Filter"
+
+msgid "Use Native Dialog"
+msgstr "Gebruik Platformeigen Dialoog"
+
+msgid "Options"
+msgstr "Opties"
+
+msgid "File Sort Options Enabled"
+msgstr "Sorteeropties Bestanden Ingeschakeld"
+
+msgid "Folder Creation Enabled"
+msgstr "Map Aanmaken Ingeschakeld"
+
+msgid "Favorites Enabled"
+msgstr "Favorieten Ingeschakeld"
+
+msgid "Recent List Enabled"
+msgstr "Lijst Recente Ingeschakeld"
+
+msgid "Deleting Enabled"
+msgstr "Verwijderen Ingeschakeld"
+
+msgid "Title Alignment"
+msgstr "Titel Uitlijning"
+
+msgid "Title Position"
+msgstr "Titel Positie"
+
+msgid "Title Text Overrun Behavior"
+msgstr "Titel Gedrag Tekstoverloop"
+
+msgid "Title Text Direction"
+msgstr "Titel Tekstrichting"
+
+msgid "Allow Folding All"
+msgstr "Alles Inklappen Toestaan"
+
+msgid "Show Grid"
+msgstr "Raster Tonen"
+
+msgid "Connections"
+msgstr "Verbindingen"
+
+msgid "Zoom Min"
+msgstr "Zoom Min"
+
+msgid "Zoom Max"
+msgstr "Zoom Max"
+
+msgid "Zoom Step"
+msgstr "Zoom Stapgrootte"
+
+msgid "Toolbar Menu"
+msgstr "Werkbalkmenu"
+
+msgid "Draggable"
+msgstr "Sleepbaar"
+
+msgid "Selected"
+msgstr "Geselecteerd"
+
+msgid "Drag Margin"
+msgstr "Sleepmarge"
+
+msgid "Ignore Invalid Connection Type"
+msgstr "Ongeldig Verbindingstype Negeren"
+
+msgid "Select Mode"
+msgstr "Selecteermodus"
+
+msgid "Allow Reselect"
+msgstr "Herselectie Toestaan"
+
+msgid "Allow RMB Select"
+msgstr "Selectie met Rechtermuisknop Toestaan"
+
+msgid "Allow Search"
+msgstr "Zoeken Toestaan"
+
+msgid "Max Text Lines"
+msgstr "Max Tekstregels"
+
+msgid "Auto Width"
+msgstr "Automatische Breedte"
+
+msgid "Auto Height"
+msgstr "Automatische Hoogte"
+
+msgid "Items"
+msgstr "Items"
+
+msgid "Max Columns"
+msgstr "Max Kolommen"
+
+msgid "Same Column Width"
+msgstr "Zelfde Kolombreedte"
+
+msgid "Fixed Column Width"
+msgstr "Vaste Kolombreedte"
+
+msgid "Icon Mode"
+msgstr "Pictogrammen Modus"
+
+msgid "Fixed Icon Size"
+msgstr "Vaste Icoongrootte"
+
+msgid "Label Settings"
+msgstr "Labelinstellingen"
+
+msgid "Displayed Text"
+msgstr "Getoonde tekst"
+
+msgid "Lines Skipped"
+msgstr "Regels Overgeslagen"
+
+msgid "Max Lines Visible"
+msgstr "Max Regels Zichtbaar"
+
+msgid "Visible Characters"
+msgstr "Zichtbare Tekens"
+
+msgid "Visible Characters Behavior"
+msgstr "Gedrag Zichtbare Tekens"
+
+msgid "Visible Ratio"
+msgstr "Zichtbaar Verhouding"
+
+msgid "Placeholder Text"
+msgstr "Plaatshoudertekst"
+
+msgid "Expand to Text Length"
+msgstr "Uitbreiden naar Tekstlengte"
+
+msgid "Context Menu Enabled"
+msgstr "Contextmenu Ingeschakeld"
+
+msgid "Emoji Menu Enabled"
+msgstr "Emoji-menu Ingeschakeld"
+
+msgid "Backspace Deletes Composite Character Enabled"
+msgstr "Backspace Verwijdert Samengesteld Karakter Actief"
+
+msgid "Clear Button Enabled"
+msgstr "Wisknop Ingeschakeld"
+
+msgid "Shortcut Keys Enabled"
+msgstr "Sneltoetsen Ingeschakeld"
+
+msgid "Middle Mouse Paste Enabled"
+msgstr "Plakken met Middelste Muisknop Ingeschakeld"
+
+msgid "Selecting Enabled"
+msgstr "Selecteren Ingeschakeld"
+
+msgid "Deselect on Focus Loss Enabled"
+msgstr "Deselecteren bij Focusverlies Ingeschakeld"
+
+msgid "Drag and Drop Selection Enabled"
+msgstr "Selectie Slepen Ingeschakeld"
+
+msgid "Select All on Focus"
+msgstr "Selecteer Alles bij Focus"
+
+msgid "Virtual Keyboard"
+msgstr "Virtueel Toetsenbord"
+
+msgid "Show on Focus"
+msgstr "Weergeven bij Focus"
+
+msgid "Blink"
+msgstr "Knipperen"
+
+msgid "Blink Interval"
+msgstr "Knipperinterval"
+
+msgid "Column"
+msgstr "Kolom"
+
+msgid "Mid Grapheme"
+msgstr "Mid Grafeem"
+
+msgid "Secret"
+msgstr "Geheim"
+
+msgid "Character"
+msgstr "Teken"
+
+msgid "Right Icon"
+msgstr "Rechtericoon"
+
+msgid "Icon Expand Mode"
+msgstr "Uitbreidingsmodus Icoon"
+
+msgid "Right Icon Scale"
+msgstr "Schaal Rechtericoon"
+
+msgid "Underline"
+msgstr "Onderstrepen"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Start Index"
+msgstr "Startindex"
+
+msgid "Prefer Global Menu"
+msgstr "Voorkeur voor Globaal Menu"
+
+msgid "Fit to Longest Item"
+msgstr "Aan Langste Item Aanpassen"
+
+msgid "Search Bar"
+msgstr "Zoekbalk"
+
+msgid "Submenu Popup Delay"
+msgstr "Vertraging Popup Submenu"
+
+msgid "System Menu ID"
+msgstr "Systeemmenu-ID"
+
+msgid "Fill Mode"
+msgstr "Vulmodus"
+
+msgid "Show Percentage"
+msgstr "Percentage Tonen"
+
+msgid "Min Value"
+msgstr "Min Waarde"
+
+msgid "Max Value"
+msgstr "Max Waarde"
+
+msgid "Page"
+msgstr "Pagina"
+
+msgid "Exp Edit"
+msgstr "Exp Bewerken"
+
+msgid "Rounded"
+msgstr "Afgerond"
+
+msgid "Allow Greater"
+msgstr "Groter Toestaan"
+
+msgid "Allow Lesser"
+msgstr "Lager Toestaan"
+
+msgid "Border Width"
+msgstr "Randbreedte"
+
+msgid "Outline"
+msgstr "Omlijning"
+
+msgid "Relative Index"
+msgstr "Relatieve Index"
+
+msgid "Fit Content"
+msgstr "Passen op Inhoud"
+
+msgid "Scroll Active"
+msgstr "Scroll Actief"
+
+msgid "Tab Size"
+msgstr "Tabgrootte"
+
+msgid "Markup"
+msgstr "Opmaak"
+
+msgid "Custom Effects"
+msgstr "Aangepaste Effecten"
+
+msgid "Meta Underlined"
+msgstr "Meta Onderstreept"
+
+msgid "Hint Underlined"
+msgstr "Hint Onderstreept"
+
+msgid "Progress Bar Delay"
+msgstr "Voortgangsbalk Vertraging"
+
+msgid "Text Selection"
+msgstr "Tekstselectie"
+
+msgid "Custom Step"
+msgstr "Aangepaste Stapgrootte"
+
+msgid "Follow Focus"
+msgstr "Focus Volgen"
+
+msgid "Draw Focus Border"
+msgstr "Focusomlijning Tekenen"
+
+msgid "Scrollbar"
+msgstr "Scrollbalk"
+
+msgid "Scroll Horizontal"
+msgstr "Horizontaal Scrollen"
+
+msgid "Scroll Vertical"
+msgstr "Verticaal Scrollen"
+
+msgid "Scroll Horizontal Custom Step"
+msgstr "Horizontaal Scrollen Aangepaste Stapgrootte"
+
+msgid "Scroll Vertical Custom Step"
+msgstr "Verticaal Scrollen Aangepaste Stapgrootte"
+
+msgid "Horizontal Scroll Mode"
+msgstr "Horizontale Scrollmodus"
+
+msgid "Vertical Scroll Mode"
+msgstr "Verticale Scrollmodus"
+
+msgid "Scroll Horizontal by Default"
+msgstr "Standaard Horizontaal Scrollen"
+
+msgid "Scroll Hint"
+msgstr "Scrollhint"
+
+msgid "Scrollable"
+msgstr "Scrollbaar"
+
+msgid "Format"
+msgstr "Formaat"
+
+msgid "Collapsed"
+msgstr "Ingeklapt"
+
+msgid "Dragging Enabled"
+msgstr "Slepen Ingeschakeld"
+
+msgid "Drag Area"
+msgstr "Sleepgebied"
+
+msgid "Margin Begin"
+msgstr "Marge Begin"
+
+msgid "Margin End"
+msgstr "Marge Einde"
+
+msgid "Highlight in Editor"
+msgstr "Markeren in Editor"
+
+msgid "Current Tab"
+msgstr "Huidige Tabblad"
+
+msgid "Tab Alignment"
+msgstr "Tabbladuitlijning"
+
+msgid "Clip Tabs"
+msgstr "Tabbladen Afkappen"
+
+msgid "Close with Middle Mouse"
+msgstr "Sluiten met Middelste Muisknop"
+
+msgid "Max Tab Width"
+msgstr "Max Tabbreedte"
+
+msgid "Scrolling Enabled"
+msgstr "Scrollen Actief"
+
+msgid "Deselect Enabled"
+msgstr "Deselecteren Ingeschakeld"
+
+msgid "Tabs"
+msgstr "Tabbladen"
+
+msgid "Use Hidden Tabs for Min Size"
+msgstr "Verborgen Tabs voor Min Grootte Gebruiken"
+
+msgid "Past End of File"
+msgstr "Voorbij Einde Bestand"
+
+msgid "Multiple"
+msgstr "Meerdere"
+
+msgid "Word Separators"
+msgstr "Woordscheidingstekens"
+
+msgid "Syntax Highlighter"
+msgstr "Syntax Markeren"
+
+msgid "Visual Whitespace"
+msgstr "Visuele Witruimte"
+
+msgid "Spaces"
+msgstr "Spaties"
+
+msgid "Text Edit Idle Detect (sec)"
+msgstr "Tekstbewerking Inactief Detectie (sec)"
+
+msgid "Text Edit Undo Stack Max Size"
+msgstr "Tekstbewerking Ongedaan Maken Max Stackgrootte"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normaal"
+
+msgid "Click Mask"
+msgstr "Klikmasker"
+
+msgid "Ignore Texture Size"
+msgstr "Texturegrootte Negeren"
+
+msgid "Under"
+msgstr "Onder"
+
+msgid "Over"
+msgstr "Boven"
+
+msgid "Tint"
+msgstr "Tint"
+
+msgid "Expand Mode"
+msgstr "Uitbreidingsmodus"
+
+msgid "Custom Minimum Height"
+msgstr "Aangepaste Minimumhoogte"
+
+msgid "Column Titles Visible"
+msgstr "Kolomtitels Zichtbaar"
+
+msgid "Hide Root"
+msgstr "Wortel verbergen"
+
+msgid "Paused"
+msgstr "Gepauseerd"
+
+msgid "Joystick Mode"
+msgstr "Joystickmodus"
+
+msgid "Joystick Size"
+msgstr "Joystickgrootte"
+
+msgid "Show Behind Parent"
+msgstr "Achter Ouder Weergeven"
+
+msgid "Ordering"
+msgstr "Volgorde"
+
+msgid "Z as Relative"
+msgstr "Z als Relatief"
+
+msgid "Y Sort Enabled"
+msgstr "Y-sorteren Ingeschakeld"
+
+msgid "Use Parent Material"
+msgstr "Materiaal Ouder Gebruiken"
+
+msgid "Diffuse"
+msgstr "Diffuus"
+
+msgid "NormalMap"
+msgstr "NormalMap"
+
+msgid "Shininess"
+msgstr "Glans"
+
+msgid "Download File"
+msgstr "Bestand Downloaden"
+
+msgid "Accept Gzip"
+msgstr "Gzip Accepteren"
+
+msgid "Max Redirects"
+msgstr "Max Doorwijzingen"
+
+msgid "Node Name Num Separator"
+msgstr "Knoopnaam Num Scheidingsteken"
+
+msgid "Node Name Casing"
+msgstr "Knoopnaam Hoofdlettergebruik"
+
+msgid "Owner"
+msgstr "Eigenaar"
+
+msgid "Group Order"
+msgstr "Groepvolgorde"
+
+msgid "Edited Scene Root"
+msgstr "Bewerkte scènewortel"
+
+msgid "Shape Color"
+msgstr "Vormkleur"
+
+msgid "Geometry Color"
+msgstr "Geometriekleur"
+
+msgid "Viewport"
+msgstr "Viewport"
+
+msgid "Anti Aliasing"
+msgstr "Anti-alias"
+
+msgid "Snap"
+msgstr "Uitlijnen"
+
+msgid "Lights and Shadows"
+msgstr "Lichten en Schaduwen"
+
+msgid "SDF"
+msgstr "SDF"
+
+msgid "Default Environment"
+msgstr "Standaardomgeving"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Wait Time"
+msgstr "Wachttijd"
+
+msgid "Autostart"
+msgstr "Automatisch Starten"
+
+msgid "Ignore Time Scale"
+msgstr "Tijdsschaal Negeren"
+
+msgid "Disable 3D"
+msgstr "3D Uitschakelen"
+
+msgid "Use XR"
+msgstr "XR gebruiken"
+
+msgid "Own World 3D"
+msgstr "Eigen Wereld 3D"
+
+msgid "Use Debanding"
+msgstr "Debanding Gebruiken"
+
+msgid "Audio Listener"
+msgstr "Audio Luisteraar"
+
+msgid "Enable 2D"
+msgstr "2D Inschakelen"
+
+msgid "Enable 3D"
+msgstr "3D Inschakelen"
+
+msgid "16 Bits"
+msgstr "16-Bits"
+
+msgid "Quad 1"
+msgstr "Quad 1"
+
+msgid "Quad 2"
+msgstr "Quad 2"
+
+msgid "Quad 3"
+msgstr "Quad 3"
+
+msgid "Current Screen"
+msgstr "Huidig scherm"
+
+msgid "Exclusive"
+msgstr "Exclusief"
+
+msgid "Unfocusable"
+msgstr "Niet Focusbaar"
+
+msgid "Popup Window"
+msgstr "Pop-upvenster"
+
+msgid "Mouse Passthrough"
+msgstr "Muisinvoer Doorgeven"
+
+msgid "Min Size"
+msgstr "Min Grootte"
+
+msgid "Max Size"
+msgstr "Max Grootte"
+
+msgid "Keep Title Visible"
+msgstr "Titel Zichtbaar Houden"
+
+msgid "HDR Output"
+msgstr "HDR-uitvoer"
+
+msgid "Requested"
+msgstr "Aangevraagd"
+
+msgid "Swap Cancel OK"
+msgstr "Annuleren OK Omdraaien"
+
+msgid "Layer Names"
+msgstr "Laagnamen"
+
+msgid "2D Physics"
+msgstr "2D-physics"
+
+msgid "2D Navigation"
+msgstr "2D-navigatie"
+
+msgid "3D Physics"
+msgstr "3D-physics"
+
+msgid "3D Navigation"
+msgstr "3D-navigatie"
+
+msgid "Segments"
+msgstr "Segmenten"
+
+msgid "A"
+msgstr "A"
+
+msgid "B"
+msgstr "B"
+
+msgid "Use Gravity"
+msgstr "Zwaartekracht Gebruiken"
+
+msgid "Distance"
+msgstr "Afstand"
+
+msgid "Density"
+msgstr "Dichtheid"
+
+msgid "Add UV2"
+msgstr "UV2 Toevoegen"
+
+msgid "Is Hemisphere"
+msgstr "Is Halfrond"
+
+msgid "Sky"
+msgstr "Lucht"
+
+msgid "Ground"
+msgstr "Grond"
+
+msgid "Bottom Color"
+msgstr "Kleur Onderkant"
+
+msgid "Sun"
+msgstr "Zon"
+
+msgid "Panorama"
+msgstr "Panorama"
+
+msgid "Coefficient"
+msgstr "Coëfficient"
+
+msgid "Eccentricity"
+msgstr "Eccentriciteit"
+
+msgid "Night Sky"
+msgstr "Nachtlucht"
+
+msgid "Fallback Environment"
+msgstr "Terugval-omgeving"
+
+msgid "Plane"
+msgstr "Vlak"
+
+msgid "Frames"
+msgstr "Frames"
+
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "Buffer Length"
+msgstr "Bufferlengte"
+
+msgid "Playback Mode"
+msgstr "Afspeelmodus"
+
+msgid "Stereo"
+msgstr "Stereo"
+
+msgid "Exposure"
+msgstr "Lichtblootstelling"
+
+msgid "Sensitivity"
+msgstr "Gevoeligheid"
+
+msgid "Auto Exposure"
+msgstr "Automatische Belichting"
+
+msgid "DOF Blur"
+msgstr "DOF-Vervaging"
+
+msgid "Far Enabled"
+msgstr "Ver Ingeschakeld"
+
+msgid "Far Distance"
+msgstr "Ver-afstand"
+
+msgid "Far Transition"
+msgstr "Ver-overgang"
+
+msgid "Near Enabled"
+msgstr "Dichtbij Ingeschakeld"
+
+msgid "Near Distance"
+msgstr "Dichtbij-afstand"
+
+msgid "Near Transition"
+msgstr "Dichtbij-overgang"
+
+msgid "Min Sensitivity"
+msgstr "Min Gevoeligheid"
+
+msgid "Max Sensitivity"
+msgstr "Max Gevoeligheid"
+
+msgid "Focus Distance"
+msgstr "Focusafstand"
+
+msgid "Aperture"
+msgstr "Diafragma"
+
+msgid "Shutter Speed"
+msgstr "Ontsluitingstijd"
+
+msgid "Which Feed"
+msgstr "Welke Feed"
+
+msgid "Camera Is Active"
+msgstr "Camera Is Actief"
+
+msgid "Light Mode"
+msgstr "Lichtmodus"
+
+msgid "Particles Animation"
+msgstr "Partikelanimatie"
+
+msgid "Particles Anim H Frames"
+msgstr "Partikelsanim H Frames"
+
+msgid "Particles Anim V Frames"
+msgstr "Partikelsanim V Frames"
+
+msgid "Particles Anim Loop"
+msgstr "Partikelsanim Lus"
+
+msgid "Needs Motion Vectors"
+msgstr "Heeft Bewegingsvectoren Nodig"
+
+msgid "Min Domain"
+msgstr "Min Domein"
+
+msgid "Max Domain"
+msgstr "Max Domein"
+
+msgid "Background"
+msgstr "Achtergrond"
+
+msgid "Canvas Max Layer"
+msgstr "Max Canvaslaag"
+
+msgid "Ambient Light"
+msgstr "Omgevingslicht"
+
+msgid "Sky Contribution"
+msgstr "Luchtbijdrage"
+
+msgid "White"
+msgstr "Wit"
+
+msgid "Depth Tolerance"
+msgstr "Dieptetolerantie"
+
+msgid "Detail"
+msgstr "Details"
+
+msgid "Horizon"
+msgstr "Horizon"
+
+msgid "Sharpness"
+msgstr "Scherpte"
+
+msgid "Y Scale"
+msgstr "Y-schaal"
+
+msgid "Glow"
+msgstr "Gloed"
+
+msgid "Levels"
+msgstr "Niveaus"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
+
+msgid "Mix"
+msgstr "Mengen"
+
+msgid "HDR Threshold"
+msgstr "HDR-grenswaarde"
+
+msgid "HDR Scale"
+msgstr "HDR-schaal"
+
+msgid "Fog"
+msgstr "Mist"
+
+msgid "Light Color"
+msgstr "Lichtkleur"
+
+msgid "Light Energy"
+msgstr "Lichtenergie"
+
+msgid "Sun Scatter"
+msgstr "Zonstrooiing"
+
+msgid "Depth Curve"
+msgstr "Dieptecurve"
+
+msgid "Depth Begin"
+msgstr "Diepte Begin"
+
+msgid "Depth End"
+msgstr "Diepte Einde"
+
+msgid "Anisotropy"
+msgstr "Anisotropie"
+
+msgid "Adjustments"
+msgstr "Aanpassingen"
+
+msgid "Brightness"
+msgstr "Helderheid"
+
+msgid "Color Correction"
+msgstr "Kleurcorrectie"
+
+msgid "Base Font"
+msgstr "Basislettertype"
+
+msgid "Features"
+msgstr "Functionaliteiten"
+
+msgid "Extra Spacing"
+msgstr "Extra Tussenruimte"
+
+msgid "Space"
+msgstr "Spatie"
+
+msgid "Palette"
+msgstr "Palet"
+
+msgid "Custom Colors"
+msgstr "Aangepaste Kleuren"
+
+msgid "Font Names"
+msgstr "Lettertypenamen"
+
+msgid "Font Italic"
+msgstr "Lettertype Cursief"
+
+msgid "Font Weight"
+msgstr "Lettertype Gewicht"
+
+msgid "Interpolation"
+msgstr "Interpolatie"
+
+msgid "Color Space"
+msgstr "Kleurruimte"
+
+msgid "Use HDR"
+msgstr "HDR Gebruiken"
+
+msgid "To"
+msgstr "Naar"
+
+msgid "Stacked Effects"
+msgstr "Gestapelde Effecten"
+
+msgid "Stacked Outlines"
+msgstr "Gestapelde Omlijningen"
+
+msgid "Stacked Shadows"
+msgstr "Gestapelde Schaduwen"
+
+msgid "Shader"
+msgstr "Shader"
+
+msgid "Diffuse Mode"
+msgstr "Diffusiemodus"
+
+msgid "Specular Mode"
+msgstr "Speculaire Modus"
+
+msgid "Disable Ambient Light"
+msgstr "Omgevingslicht Uitschakelen"
+
+msgid "Disable Fog"
+msgstr "Mist Uitschakelen"
+
+msgid "Vertex Color"
+msgstr "Vertexkleur"
+
+msgid "Use as Albedo"
+msgstr "Als Albedo Gebruiken"
+
+msgid "Is sRGB"
+msgstr "Is sRGB"
+
+msgid "Texture Force sRGB"
+msgstr "Texture Forceer sRGB"
+
+msgid "Texture MSDF"
+msgstr "Texture MSDF"
+
+msgid "ORM"
+msgstr "ORM"
+
+msgid "On UV2"
+msgstr "Op UV2"
+
+msgid "Deep Parallax"
+msgstr "Diepe Parallax"
+
+msgid "Min Layers"
+msgstr "Min Lagen"
+
+msgid "Max Layers"
+msgstr "Max Lagen"
+
+msgid "UV Layer"
+msgstr "UV-laag"
+
+msgid "UV1"
+msgstr "UV1"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "Shadows"
+msgstr "Schaduwen"
+
+msgid "Particles Anim"
+msgstr "Partikelsanim"
+
+msgid "H Frames"
+msgstr "H Frames"
+
+msgid "V Frames"
+msgstr "V Frames"
+
+msgid "Use Point Size"
+msgstr "Puntgrootte Gebruiken"
+
+msgid "Point Size"
+msgstr "Puntgrootte"
+
+msgid "Use Particle Trails"
+msgstr "Partikelsporen gebruiken"
+
+msgid "Compare"
+msgstr "Vergelijken"
+
+msgid "Outline Thickness"
+msgstr "Dikte Omlijning"
+
+msgid "Convex Hull Downsampling"
+msgstr "Convex Omhulsel Downsampling"
+
+msgid "Convex Hull Approximation"
+msgstr "Convex Omhulsel Benadering"
+
+msgid "Shadow Mesh"
+msgstr "Schaduwmesh"
+
+msgid "Base Texture"
+msgstr "Basistexture"
+
+msgid "Image Size"
+msgstr "Afbeeldingsgrootte"
+
+msgid "Use Colors"
+msgstr "Kleuren Gebruiken"
+
+msgid "Use Custom Data"
+msgstr "Aangepaste Data Gebruiken"
+
+msgid "Instance Count"
+msgstr "Aantal Instanties"
+
+msgid "Visible Instance Count"
+msgstr "Aantal Zichtbare Instanties"
+
+msgid "Max Climb"
+msgstr "Max Klimmen"
+
+msgid "Max Slope"
+msgstr "Max Helling"
+
+msgid "Max Error"
+msgstr "Max Afwijking"
+
+msgid "Vertices per Polygon"
+msgstr "Vertices per Polygon"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Low Hanging Obstacles"
+msgstr "Laaghangende Obstakels"
+
+msgid "Spawn"
+msgstr "Spawn"
+
+msgid "Emission Point Texture"
+msgstr "Texture Emissiepunt"
+
+msgid "Emission Color Texture"
+msgstr "Texture Emissiekleur"
+
+msgid "Rotation 3D"
+msgstr "Rotatie 3D"
+
+msgid "Rotation 3D Min"
+msgstr "Rotatie 3D Min"
+
+msgid "Rotation 3D Max"
+msgstr "Rotatie 3D Max"
+
+msgid "Animated Velocity"
+msgstr "Geanimeerde Snelheid"
+
+msgid "Velocity Limit"
+msgstr "Snelheidslimiet"
+
+msgid "Accelerations"
+msgstr "Versnellingen"
+
+msgid "Use Scale 3D"
+msgstr "Schaal 3D Gebruiken"
+
+msgid "Scale 3D Min"
+msgstr "Schaal 3D Min"
+
+msgid "Scale 3D Max"
+msgstr "Schaal 3D Max"
+
+msgid "Scale Curve"
+msgstr "Schaalcurve"
+
+msgid "Color Curves"
+msgstr "Kleurcurves"
+
+msgid "Alpha Curve"
+msgstr "Alfacurve"
+
+msgid "Turbulence"
+msgstr "Turbulentie"
+
+msgid "Noise Strength"
+msgstr "Ruissterkte"
+
+msgid "Noise Scale"
+msgstr "Ruisschaal"
+
+msgid "Noise Speed"
+msgstr "Ruissnelheid"
+
+msgid "Absorbent"
+msgstr "Absorberend"
+
+msgid "Keep Compressed Buffer"
+msgstr "Gecomprimeerde Buffer Houden"
+
+msgid "Group Size"
+msgstr "Groepgrootte"
+
+msgid "Bone Size"
+msgstr "Botgrootte"
+
+msgid "Sky Material"
+msgstr "Luchtmateriaal"
+
+msgid "Process Mode"
+msgstr "Verwerkingsmodus"
+
+msgid "Content Margins"
+msgstr "Inhoudsmarges"
+
+msgid "Blend"
+msgstr "Vochtigheid vermenging ruis"
+
+msgid "Top Left"
+msgstr "Linksboven"
+
+msgid "Top Right"
+msgstr "Rechtsboves"
+
+msgid "Bottom Right"
+msgstr "Rechtsonder"
+
+msgid "Bottom Left"
+msgstr "Linksonder"
+
+msgid "Corner Detail"
+msgstr "Hoekdetail"
+
+msgid "Expand Margins"
+msgstr "Uitbreiding Marges"
+
+msgid "Grow Begin"
+msgstr "Groei Begin"
+
+msgid "Grow End"
+msgstr "Groei Einde"
+
+msgid "Texture Margins"
+msgstr "Texture-marges"
+
+msgid "Sub-Region"
+msgstr "Subregio"
+
+msgid "Number Color"
+msgstr "Kleur Getal"
+
+msgid "Symbol Color"
+msgstr "Kleur Symbool"
+
+msgid "Function Color"
+msgstr "Kleur Functie"
+
+msgid "Keyword Colors"
+msgstr "Sleutelwoordkleuren"
+
+msgid "Color Regions"
+msgstr "Kleurregio's"
+
+msgid "Default Base Scale"
+msgstr "Standaard Basisschaal"
+
+msgid "Default Font"
+msgstr "Standaardlettertype"
+
+msgid "Default Font Size"
+msgstr "Standaardlettertype Grootte"
+
+msgid "File"
+msgstr "Bestand"
+
+msgid "Font Pressed Color"
+msgstr "Letterkleur Ingedrukt"
+
+msgid "Font Focus Color"
+msgstr "Letterkleur Focus"
+
+msgid "Font Disabled Color"
+msgstr "Letterkleur Inactief"
+
+msgid "Font Outline Color"
+msgstr "Kleur Letteromlijning"
+
+msgid "Icon Normal Color"
+msgstr "Icoonkleur Normaal"
+
+msgid "Icon Pressed Color"
+msgstr "Icoonkleur Ingedrukt"
+
+msgid "Icon Focus Color"
+msgstr "Icoonkleur Focus"
+
+msgid "Icon Disabled Color"
+msgstr "Icoonkleur Inactief"
+
+msgid "H Separation"
+msgstr "H Tussenruimte"
+
+msgid "Icon Max Width"
+msgstr "Icoon Max Breedte"
+
+msgid "Align to Largest Stylebox"
+msgstr "Uitlijnen met Grootste Stylebox"
+
+msgid "Underline Spacing"
+msgstr "Tussenruimte Onderstreping"
+
+msgid "Normal Mirrored"
+msgstr "Normaal Gespiegeld"
+
+msgid "Pressed Mirrored"
+msgstr "Ingedrukt Gespiegeld"
+
+msgid "Disabled Mirrored"
+msgstr "Inactief Gespiegeld"
+
+msgid "Arrow"
+msgstr "Pijl"
+
+msgid "Arrow Margin"
+msgstr "Marge Pijl"
+
+msgid "Modulate Arrow"
+msgstr "Pijl Moduleren"
+
+msgid "Checked Disabled"
+msgstr "Aangevinkt Inactief"
+
+msgid "Unchecked"
+msgstr "Niet Aangevinkt"
+
+msgid "Unchecked Disabled"
+msgstr "Niet Aangevinkt Inactief"
+
+msgid "Radio Checked"
+msgstr "Radio Aangevinkt"
+
+msgid "Radio Checked Disabled"
+msgstr "Radio Aangevinkt Inactief"
+
+msgid "Radio Unchecked"
+msgstr "Radio Niet Aangevinkt"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radio Niet Aangetikt Inactief"
+
+msgid "Check V Offset"
+msgstr "Selectievakje V Verschuiving"
+
+msgid "Checkbox Checked Color"
+msgstr "Kleur Selectievakje Aangevinkt"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Kleur Selectievakje Niet Aangevinkt"
+
+msgid "Checked Mirrored"
+msgstr "Aangevinkt Gespiegeld"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Aangevinkt Inactief Gespiegeld"
+
+msgid "Unchecked Mirrored"
+msgstr "Niet Aangevinkt Gespiegeld"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Niet Aangevinkt Uitgeschakeld Gespiegeld"
+
+msgid "Button Checked Color"
+msgstr "Kleur Knop Aangevinkt"
+
+msgid "Button Unchecked Color"
+msgstr "Kleur Knop Niet Aangevinkt"
+
+msgid "Font Shadow Color"
+msgstr "Kleur Letterschaduw"
+
+msgid "Shadow Offset X"
+msgstr "Schaduwverschuiving X"
+
+msgid "Shadow Offset Y"
+msgstr "Schaduwverschuiving Y"
+
+msgid "Shadow Outline Size"
+msgstr "Schaduw Omlijningsgrootte"
+
+msgid "Font Selected Color"
+msgstr "Letterkleur Geselecteerd"
+
+msgid "Font Uneditable Color"
+msgstr "Letterkleur Niet Bewerkbaar"
+
+msgid "Font Placeholder Color"
+msgstr "Letterkleur Plaatshouder"
+
+msgid "Caret Color"
+msgstr "Cursorkleur"
+
+msgid "Selection Color"
+msgstr "Kleur Selectie"
+
+msgid "Clear Button Color"
+msgstr "Kleur Wisknop"
+
+msgid "Clear Button Color Pressed"
+msgstr "Kleur Wisknop Ingedrukt"
+
+msgid "Minimum Character Width"
+msgstr "Minimale Tekenbreedte"
+
+msgid "Caret Width"
+msgstr "Cursorbreedte"
+
+msgid "Clear"
+msgstr "Wissen"
+
+msgid "Tab"
+msgstr "Tabblad"
+
+msgid "Font Readonly Color"
+msgstr "Letterkleur Alleen-lezen"
+
+msgid "Current Line Color"
+msgstr "Kleur Huidige Regel"
+
+msgid "Caret Background Color"
+msgstr "Kleur Cursorachtergrond"
+
+msgid "Word Highlighted Color"
+msgstr "Kleur Gemarkeerd Woord"
+
+msgid "Search Result Color"
+msgstr "Kleur Zoekresultaat"
+
+msgid "Search Result Border Color"
+msgstr "Kleur Zoekresultaat Rand"
+
+msgid "Wrap Offset"
+msgstr "Regelafbreking Marge"
+
+msgid "Breakpoint"
+msgstr "Breekpunt"
+
+msgid "Bookmark"
+msgstr "Bladwijzer"
+
+msgid "Executing Line"
+msgstr "Uitvoerende Regel"
+
+msgid "Can Fold"
+msgstr "Opvouwbaar"
+
+msgid "Can Fold Code Region"
+msgstr "Opvouwbare Coderegio"
+
+msgid "Folded Code Region"
+msgstr "Opgevouwen Coderegio"
+
+msgid "Folded EOL Icon"
+msgstr "Ingeklapt EOL-icoon"
+
+msgid "Completion Color BG"
+msgstr "Kleur Aanvulling AG"
+
+msgid "Completion Background Color"
+msgstr "Kleur Aanvulling Achtergrond"
+
+msgid "Completion Selected Color"
+msgstr "Kleur Aanvulling Geselecteerd"
+
+msgid "Completion Existing Color"
+msgstr "Kleur Aanvulling Bestaand"
+
+msgid "Completion Scroll Color"
+msgstr "Kleur Aanvulling Scroll"
+
+msgid "Bookmark Color"
+msgstr "Kleur Bladwijzer"
+
+msgid "Breakpoint Color"
+msgstr "Kleur Breekpunt"
+
+msgid "Executing Line Color"
+msgstr "Kleur Uitvoerende Regel"
+
+msgid "Code Folding Color"
+msgstr "Kleur Code Opvouwen"
+
+msgid "Folded Code Region Color"
+msgstr "Kleur Opgevouwen Coderegio"
+
+msgid "Line Number Color"
+msgstr "Kleur Regelnummer"
+
+msgid "Line Length Guideline Color"
+msgstr "Kleur Richtlijn Regellengte"
+
+msgid "Completion Max Width"
+msgstr "Aanvulling Max Breedte"
+
+msgid "Increment Pressed"
+msgstr "Verhogen Ingedrukt"
+
+msgid "Decrement"
+msgstr "Verlagen"
+
+msgid "Decrement Pressed"
+msgstr "Verlagen Ingedrukt"
+
+msgid "Slider"
+msgstr "Schuifbalk"
+
+msgid "Updown"
+msgstr "Omhoog-omlaag"
+
+msgid "Up"
+msgstr "Omhoog"
+
+msgid "Up Pressed"
+msgstr "Omhoog Ingedrukt"
+
+msgid "Down"
+msgstr "Omlaag"
+
+msgid "Down Pressed"
+msgstr "Omlaag Ingedrukt"
+
+msgid "Up Background"
+msgstr "Omhoog Achtergrond"
+
+msgid "Up Background Pressed"
+msgstr "Omhoog Achtergrond Ingedrukt"
+
+msgid "Down Background"
+msgstr "Omlaag Achtergrond"
+
+msgid "Down Background Pressed"
+msgstr "Omlaag Achtergrond Ingedrukt"
+
+msgid "Buttons Width"
+msgstr "Breedte Knoppen"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Min Knopbreedte Instellen op basis van Iconen"
+
+msgid "Scroll Hint Vertical"
+msgstr "Scrollhint Verticaal"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Scrollhint Horizontaal"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Kleur Scrollhint Verticaal"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Kleur Scrollhint Horizontaal"
+
+msgid "Normal Joystick"
+msgstr "Normale Joystick"
+
+msgid "Pressed Joystick"
+msgstr "Ingedrukte Joystick"
+
+msgid "Title Font"
+msgstr "Lettertype Titel"
+
+msgid "Title Font Size"
+msgstr "Lettergrootte Titel"
+
+msgid "Title Outline Modulate"
+msgstr "Omlijningsmodulatie Titel"
+
+msgid "Title Outline Size"
+msgstr "Omlijningsgrootte Titel"
+
+msgid "Title Height"
+msgstr "Hoogte Titel"
+
+msgid "Close"
+msgstr "Sluiten"
+
+msgid "Close Pressed"
+msgstr "Sluiten Ingedrukt"
+
+msgid "Close H Offset"
+msgstr "Sluiten H Verschuiving"
+
+msgid "Close V Offset"
+msgstr "Sluiten V Verschuiving"
+
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Parent Folder"
+msgstr "Boven­liggende map"
+
+msgid "Back Folder"
+msgstr "Vorige map"
+
+msgid "Forward Folder"
+msgstr "Volgende map"
+
+msgid "Reload"
+msgstr "Herladen"
+
+msgid "Favorite"
+msgstr "Favoriet"
+
+msgid "Toggle Filename Filter"
+msgstr "Bestandsnaamfilter in-/uitschakelen"
+
+msgid "Folder"
+msgstr "Map"
+
+msgid "Thumbnail Mode"
+msgstr "Miniatuurmodus"
+
+msgid "List Mode"
+msgstr "Lijstmodus"
+
+msgid "Create Folder"
+msgstr "Map aanmaken"
+
+msgid "Favorite Up"
+msgstr "Favoriet Omhoog"
+
+msgid "Favorite Down"
+msgstr "Favoriet Omlaag"
+
+msgid "File Thumbnail"
+msgstr "Bestandsminiatuur"
+
+msgid "Folder Thumbnail"
+msgstr "Mapminiatuur"
+
+msgid "Menu Copy Path"
+msgstr "Menu Kopieerpad"
+
+msgid "Menu Delete"
+msgstr "Menu Verwijderen"
+
+msgid "Menu New Folder"
+msgstr "Menu nieuwe map"
+
+msgid "Menu Refresh"
+msgstr "Menu Verversen"
+
+msgid "Menu Show in File Manager"
+msgstr "Menu Toon in Bestandsverkenner"
+
+msgid "Folder Icon Color"
+msgstr "Kleur Mapicoon"
+
+msgid "File Icon Color"
+msgstr "Kleur Bestandsicoon"
+
+msgid "Submenu"
+msgstr "Submenu"
+
+msgid "Search"
+msgstr "Zoeken"
+
+msgid "Gutter Compact"
+msgstr "Goot Compact"
+
+msgid "Panel Selected"
+msgstr "Paneel Geselecteerd"
+
+msgid "Panel Focus"
+msgstr "Paneel Focus"
+
+msgid "Titlebar"
+msgstr "Titelbalk"
+
+msgid "Titlebar Selected"
+msgstr "Titelbalk Geselecteerd"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Cursor Unfocused"
+msgstr "Cursor Niet Gefocust"
+
+msgid "Title Button Normal"
+msgstr "Titelknop Normaal"
+
+msgid "Title Button Pressed"
+msgstr "Titelknop Ingedrukt"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Slepen Uitvouwen Wacht Msec"
+
+msgid "Label Width"
+msgstr "Labelbreedte"
+
+msgid "Bold Italics Font"
+msgstr "Vet Cursief Lettertype"
+
+msgid "Table Odd Row BG"
+msgstr "Tabel Oneven Rij AG"
+
+msgid "Table Even Row BG"
+msgstr "Tabel Even Rij AG"
+
+msgid "Table Border"
+msgstr "Tabelrand"
+
+msgid "Strikethrough Alpha"
+msgstr "Doorstrepen Alpha"
+
+msgid "Margin Left"
+msgstr "Marge Links"
+
+msgid "Margin Top"
+msgstr "Marge Boven"
+
+msgid "Margin Right"
+msgstr "Marge Rechts"
+
+msgid "Margin Bottom"
+msgstr "Marge Onder"
+
+msgid "Autohide"
+msgstr "Automatisch Verbergen"
+
+msgid "Zoom Out"
+msgstr "Uitzoomen"
+
+msgid "Zoom In"
+msgstr "Inzoomen"
+
+msgid "Menu Panel"
+msgstr "Menupaneel"
+
+msgid "Activity"
+msgstr "Activiteit"
+
+msgid "Collapsed Font Color"
+msgstr "Ingeklapt Lettertypekleur"
+
+msgid "Custom"
+msgstr "Zelfgedefinieerd"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "Video Vertragingscompensatie (ms)"
+
+msgid "Voice Count"
+msgstr "Stemmenaantal"
+
+msgid "Voice"
+msgstr "Stem"
+
+msgid "Delay (ms)"
+msgstr "Vertraging (ms)"
+
+msgid "Level dB"
+msgstr "Niveau dB"
+
+msgid "Threshold dB"
+msgstr "Grenswaarde dB"
+
+msgid "Range Min Hz"
+msgstr "Bereik Min Hz"
+
+msgid "Range Max Hz"
+msgstr "Bereik Max Hz"
+
+msgid "Msec"
+msgstr "Msec"
+
+msgid "Room Size"
+msgstr "Kamergrootte"
+
+msgid "Audio Quality"
+msgstr "Audiokwaliteit"
+
+msgid "Keyframe Interval"
+msgstr "Sleutelframe-interval"
+
+msgid "Obstacles Radius Color"
+msgstr "Kleur Straal Obstakels"
+
+msgid "Inverse Mass"
+msgstr "Massa Omkeren"
+
+msgid "Time Before Sleep"
+msgstr "Tijd Voor Sluimeren"
+
+msgid "Contact Max Allowed Penetration"
+msgstr "Contact Max Toegestane Penetratie"
+
+msgid "Vertex"
+msgstr "Vertex"
+
+msgid "Fragment"
+msgstr "Fragment"
+
+msgid "Syntax"
+msgstr "Syntax"
+
+msgid "IDs"
+msgstr "ID's"
+
+msgid "Lossless Compression"
+msgstr "Verliesvrije Compressie"
+
+msgid "WebP Compression"
+msgstr "WebP-compressie"
+
+msgid "Compression Method"
+msgstr "Compressie­methode"
+
+msgid "Use Physical Light Units"
+msgstr "Fysieke Lichteenheden Gebruiken"
+
+msgid "Soft Shadow Filter Quality"
+msgstr "Zachte Schaduwfilterkwaliteit"
+
+msgid "Sky Reflections"
+msgstr "Luchtreflecties"
+
+msgid "Reflection Atlas"
+msgstr "Reflectieatlas"
+
+msgid "Reflection Size"
+msgstr "Reflectiegrootte"
+
+msgid "Reflection Count"
+msgstr "Reflectieaantal"
+
+msgid "Use Half Resolution"
+msgstr "Halve Resolutie Gebruiken"
+
+msgid "Overrides"
+msgstr "Overschrijvers"
+
+msgid "Depth of Field"
+msgstr "Scherptediepte"
+
+msgid "Depth of Field Bokeh Shape"
+msgstr "Scherptediepte Bokehvorm"
+
+msgid "Depth of Field Bokeh Quality"
+msgstr "Scherptediepte Bokehkwaliteit"
+
+msgid "Half Size"
+msgstr "Halve Grootte"
+
+msgid "Decals"
+msgstr "Decals"
+
+msgid "Occlusion Rays per Thread"
+msgstr "Occlusiestralen per Thread"
+
+msgid "Texel Size"
+msgstr "Texelgrootte"
+
+msgid "Frames to Update Lights"
+msgstr "Frames om Lichten bij te Werken"
+
+msgid "Update Iterations per Frame"
+msgstr "Iteraties Bijwerken per Frame"
+
+msgid "Max Clustered Elements"
+msgstr "Max Geclusterde Elementen"
+
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Max Renderable Elements"
+msgstr "Max Renderbare Elementen"
+
+msgid "Max Renderable Lights"
+msgstr "Max Renderbare Lichten"
+
+msgid "Max Lights per Object"
+msgstr "Max Lichten per Object"
+
+msgid "Shaders"
+msgstr "Shaders"
+
+msgid "Shader Language"
+msgstr "Shadertaal"
+
+msgid "Treat Warnings as Errors"
+msgstr "Waarschuwingen als Errors Behandelen"
+
+msgid "Shadows Disabled"
+msgstr "Schaduwen Uitgeschakeld"
+
+msgid "Ambient Light Disabled"
+msgstr "Omgevingslicht Uitgeschakeld"
+
+msgid "Vertex Lighting"
+msgstr "Vertexbelichting"
+
+msgid "Particle Trails"
+msgstr "Partikelsporen"
+
+msgid "Fog Disabled"
+msgstr "Mist Uitgeschakeld"
+
+msgid "Read"
+msgstr "Lezen"
+
+msgid "Write"
+msgstr "Schrijven"
+
+msgid "Light Only"
+msgstr "Alleen Licht"
+
+msgid "Keep Data"
+msgstr "Data Behouden"
+
+msgid "Unused Constant"
+msgstr "Ongebruikte Constante"
+
+msgid "Unused Function"
+msgstr "Ongebruikte Functie"
+
+msgid "Unused Struct"
+msgstr "Ongebruikte Struct"
+
+msgid "Unused Uniform"
+msgstr "Ongebruikte Uniform"
+
+msgid "Unused Local Variable"
+msgstr "Ongebruikte Lokale Variabele"
+
+msgid "Device Limit Exceeded"
+msgstr "Toestelimiet Overschreden"
+
+msgid "Internal Size"
+msgstr "Interne Grootte"
+
+msgid "Target Size"
+msgstr "Doelgrootte"
+
+msgid "Default Font Antialiasing"
+msgstr "Standaardlettertype Antialiasen"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "Standaardlettertype Subpixel-positionering"
+
+msgid "Default Font Generate Mipmaps"
+msgstr "Standaardlettertype Mipmaps Genereren"
+
+msgid "Is Primary"
+msgstr "Is Primair"
+
+msgid "Play Area Mode"
+msgstr "Speelgebiedmodus"
+
+msgid "AR"
+msgstr "AR"
+
+msgid "Is Anchor Detection Enabled"
+msgstr "Is Ankerdetectie Actief"

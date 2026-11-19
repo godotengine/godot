@@ -30,11 +30,12 @@
 
 #include "wayland_thread.h"
 
+#ifdef WAYLAND_ENABLED
+
 #include "core/config/engine.h"
 #include "core/io/image.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/os.h"
-
-#ifdef WAYLAND_ENABLED
 
 #ifdef __FreeBSD__
 #include <dev/evdev/input-event-codes.h>
@@ -326,35 +327,37 @@ void WaylandThread::_seat_state_handle_xkb_keycode(SeatState *p_ss, xkb_keycode_
 	ERR_FAIL_NULL(wayland_thread);
 
 	Key last_key = Key::NONE;
-	xkb_compose_status compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
-
-	if (p_pressed) {
-		xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
-		xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+	xkb_compose_status compose_status = XKB_COMPOSE_NOTHING;
+	if (p_ss->xkb_compose_state) {
 		compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
+		if (p_pressed) {
+			xkb_keysym_t keysym = xkb_state_key_get_one_sym(p_ss->xkb_state, p_xkb_keycode);
+			xkb_compose_feed_result compose_result = xkb_compose_state_feed(p_ss->xkb_compose_state, keysym);
+			compose_status = xkb_compose_state_get_status(p_ss->xkb_compose_state);
 
-		if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
-			// We need to generate multiple key events to report the composed result, One
-			// per character.
-			char str_xkb[256] = {};
-			int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
+			if (compose_result == XKB_COMPOSE_FEED_ACCEPTED && compose_status == XKB_COMPOSE_COMPOSED) {
+				// We need to generate multiple key events to report the composed result, One
+				// per character.
+				char str_xkb[256] = {};
+				int str_xkb_size = xkb_compose_state_get_utf8(p_ss->xkb_compose_state, str_xkb, 255);
 
-			String decoded_str = String::utf8(str_xkb, str_xkb_size);
-			for (int i = 0; i < decoded_str.length(); ++i) {
-				Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
-				if (k.is_null()) {
-					continue;
+				String decoded_str = String::utf8(str_xkb, str_xkb_size);
+				for (int i = 0; i < decoded_str.length(); ++i) {
+					Ref<InputEventKey> k = _seat_state_get_key_event(p_ss, p_xkb_keycode, p_pressed);
+					if (k.is_null()) {
+						continue;
+					}
+
+					k->set_unicode(decoded_str[i]);
+					k->set_echo(p_echo);
+
+					Ref<InputEventMessage> msg;
+					msg.instantiate();
+					msg->event = k;
+					wayland_thread->push_message(msg);
+
+					last_key = k->get_keycode();
 				}
-
-				k->set_unicode(decoded_str[i]);
-				k->set_echo(p_echo);
-
-				Ref<InputEventMessage> msg;
-				msg.instantiate();
-				msg->event = k;
-				wayland_thread->push_message(msg);
-
-				last_key = k->get_keycode();
 			}
 		}
 	}
@@ -401,7 +404,6 @@ void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
 	seat_state_unlock_pointer(new_state);
 
 	wl_seat_current = p_seat;
-	pointer_set_constraint(pointer_constraint);
 }
 
 void WaylandThread::_window_hover(DisplayServerEnums::WindowID p_window_id) {
@@ -1170,9 +1172,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 				TabletToolState *state = wp_tablet_tool_get_state(tool);
-				if (state) {
-					memdelete(state);
-				}
+				memdelete(state);
 
 				zwp_tablet_tool_v2_destroy(tool);
 			}
@@ -1237,9 +1237,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 					for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 						TabletToolState *state = wp_tablet_tool_get_state(tool);
-						if (state) {
-							memdelete(state);
-						}
+						memdelete(state);
 
 						zwp_tablet_tool_v2_destroy(tool);
 					}
@@ -2110,6 +2108,19 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	}
 
 	if (ws != nullptr) {
+		if (hover_changed && pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			// We update the constraint only on enter.
+
+			wayland_thread->seat_state_unlock_pointer(ss);
+			if (wayland_thread->pointer_constraint == PointerConstraint::LOCKED) {
+				wayland_thread->seat_state_lock_pointer(ss, ws->wl_surface);
+				// Godot always expects a centered pointer when locked.
+				wayland_thread->seat_state_set_hint(ss, ws->rect.size.x / 2, ws->rect.size.y / 2);
+			} else if (wayland_thread->pointer_constraint == PointerConstraint::CONFINED) {
+				wayland_thread->seat_state_confine_pointer(ss, ws->wl_surface);
+			}
+		}
+
 		double scale = window_state_get_scale_factor(ws);
 
 		wayland_thread->_set_current_seat(ss->wl_seat);
@@ -2396,7 +2407,11 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	ss->xkb_compose_table = xkb_compose_table_new_from_locale(ss->xkb_context, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
 
 	xkb_compose_state_unref(ss->xkb_compose_state);
-	ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	if (ss->xkb_compose_table) {
+		ss->xkb_compose_state = xkb_compose_state_new(ss->xkb_compose_table, XKB_COMPOSE_STATE_NO_FLAGS);
+	} else {
+		ss->xkb_compose_state = nullptr;
+	}
 
 	xkb_state_update_mask(ss->xkb_state, ss->mods_depressed, ss->mods_latched, ss->mods_locked, 0, 0, ss->current_layout_index);
 }
@@ -2871,6 +2886,28 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
+void WaylandThread::_zwp_locked_pointer_v1_on_locked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->pointer_locked = true;
+
+	// Maybe by the time we lock the legacy constraint warp has already been
+	// committed. Let's give it a shot.
+	if (ss->constraint_warp_committed) {
+		PointerConstraint old_constraint = ss->wayland_thread->pointer_constraint;
+		ss->wayland_thread->pointer_set_constraint(PointerConstraint::NONE);
+		ss->wayland_thread->pointer_set_constraint(old_constraint);
+
+		ss->pointer_locked = false;
+		ss->constraint_warping = false;
+		ss->constraint_warp_committed = false;
+	}
+}
+
+void WaylandThread::_zwp_locked_pointer_v1_on_unlocked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1) {
+}
+
 void WaylandThread::_wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent) {
 	ColorManagementState *cms = (ColorManagementState *)data;
 	ERR_FAIL_NULL(cms);
@@ -3228,9 +3265,7 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 	if (E && E->get()) {
 		struct zwp_tablet_tool_v2 *tool = E->get();
 		TabletToolState *state = wp_tablet_tool_get_state(tool);
-		if (state) {
-			memdelete(state);
-		}
+		memdelete(state);
 
 		zwp_tablet_tool_v2_destroy(tool);
 		ss->tablet_tools.erase(E);
@@ -3681,6 +3716,8 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
+	ws->pending_xdg_activation_token = nullptr;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
@@ -4113,10 +4150,13 @@ void WaylandThread::seat_state_unlock_pointer(SeatState *p_ss) {
 		zwp_confined_pointer_v1_destroy(p_ss->wp_confined_pointer);
 		p_ss->wp_confined_pointer = nullptr;
 	}
+
+	p_ss->pointer_locked = false;
 }
 
-void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
+void WaylandThread::seat_state_lock_pointer(SeatState *p_ss, struct wl_surface *p_surface) {
 	ERR_FAIL_NULL(p_ss);
+	ERR_FAIL_NULL(p_surface);
 
 	if (p_ss->wl_pointer == nullptr) {
 		WARN_PRINT("Can't lock - no pointer?");
@@ -4128,15 +4168,12 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 		return;
 	}
 
-	if (p_ss->wp_locked_pointer == nullptr) {
-		struct wl_surface *locked_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
-		if (locked_surface == nullptr) {
-			locked_surface = window_get_wl_surface(DisplayServerEnums::MAIN_WINDOW_ID);
-		}
-		ERR_FAIL_NULL(locked_surface);
+	p_ss->pointer_locked = false;
 
-		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-	}
+	// We always set a listener that tracks the locking status. This is useful as
+	// this constraint might be reused for the legacy warp hack.
+	p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, p_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+	zwp_locked_pointer_v1_add_listener(p_ss->wp_locked_pointer, &zwp_locked_pointer_v1_listener, p_ss);
 }
 
 void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
@@ -4162,8 +4199,9 @@ void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
 	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
 }
 
-void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
+void WaylandThread::seat_state_confine_pointer(SeatState *p_ss, struct wl_surface *p_surface) {
 	ERR_FAIL_NULL(p_ss);
+	ERR_FAIL_NULL(p_surface);
 
 	if (p_ss->wl_pointer == nullptr) {
 		return;
@@ -4174,10 +4212,7 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	}
 
 	if (p_ss->wp_confined_pointer == nullptr) {
-		struct wl_surface *confined_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
-		ERR_FAIL_NULL(confined_surface);
-
-		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, p_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -4419,6 +4454,9 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
+
+	p_rect.size = p_rect.size.maxi(1);
+
 	// We manually scaled based on the parent. If we don't set the relevant fields,
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
@@ -4531,6 +4569,10 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	if (ws.frame_callback) {
 		wl_callback_destroy(ws.frame_callback);
+	}
+
+	if (ws.pending_xdg_activation_token) {
+		xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
 	}
 
 	if (ws.xdg_surface) {
@@ -4972,6 +5014,37 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 	}
 }
 
+void WaylandThread::window_set_input_region(DisplayServerEnums::WindowID p_window_id, bool p_empty_region, const Vector<Vector2> &p_region) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	wl_region *region = nullptr;
+	if (p_empty_region) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+	} else if (!p_region.is_empty()) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+
+		double win_scale = window_state_get_scale_factor(&ws);
+		Size2i scaled_size = scale_vector2i(ws.rect.size, win_scale);
+		for (int x = 0; x < scaled_size.x; x++) {
+			for (int y = 0; y < scaled_size.y; y++) {
+				Vector2 point = Vector2(x, y);
+				if (Geometry2D::is_point_in_polygon(point, p_region)) {
+					// Convert region points to window logical scale.
+					point = scale_vector2i(point, 1.0 / win_scale);
+					wl_region_add(region, point.x, point.y, 1, 1);
+				}
+			}
+		}
+	}
+
+	wl_surface_set_input_region(ws.wl_surface, region);
+
+	if (region) {
+		wl_region_destroy(region);
+	}
+}
+
 void WaylandThread::window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
@@ -5198,15 +5271,52 @@ DisplayServerEnums::WindowMode WaylandThread::window_get_mode(DisplayServerEnums
 	return ws.mode;
 }
 
-void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id) {
+/**
+ * Request attention for the given window from wayland.
+ * Since wayland does not offer an explicit way to specify whether or not the window should be pinged or brought
+ * to the top we can only hint it to. Wayland compositors generally make the decision based on the completeness and
+ * validity of the activation token that was passed. So when we want weak focus we pass a token with minimal information
+ * and when we want strong focus we pass a token with additional information
+ */
+void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id, bool p_hint_strong_focus) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	uint32_t last_serial = MAX(MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial), ss->pointer_enter_serial);
+
+	// Try to find a reasonable requesting surface
+	WindowState *focused_window = nullptr;
+	if (ss) {
+		if (ss->focused_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->focused_id);
+		}
+		DisplayServerEnums::WindowID pointed_window_id = pointer_get_pointed_window_id();
+		if (!focused_window && pointed_window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(pointed_window_id);
+		}
+		if (!focused_window && ss->dnd_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			focused_window = window_get_state(ss->dnd_id);
+		}
+	}
 
 	if (registry.xdg_activation) {
+		if (ws.pending_xdg_activation_token) {
+			xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
+			ws.pending_xdg_activation_token = nullptr;
+		}
+
 		// Window attention requests are done through the XDG activation protocol.
-		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &ws);
-		xdg_activation_token_v1_commit(xdg_activation_token);
+		ws.pending_xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
+		// Set additional data on activation token when we want strong attention
+		if (p_hint_strong_focus) {
+			xdg_activation_token_v1_set_serial(ws.pending_xdg_activation_token, last_serial, wl_seat_current);
+			if (focused_window) {
+				xdg_activation_token_v1_set_surface(ws.pending_xdg_activation_token, focused_window->wl_surface);
+			}
+		}
+		xdg_activation_token_v1_add_listener(ws.pending_xdg_activation_token, &xdg_activation_token_listener, &ws);
+		xdg_activation_token_v1_commit(ws.pending_xdg_activation_token);
 	}
 }
 
@@ -5378,19 +5488,22 @@ DisplayServerEnums::WindowID WaylandThread::pointer_get_last_pointed_window_id()
 }
 
 void WaylandThread::pointer_set_constraint(PointerConstraint p_constraint) {
+	pointer_constraint = p_constraint;
+
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	ERR_FAIL_NULL(ss);
 
-	if (ss) {
+	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
+	if (ws) {
 		seat_state_unlock_pointer(ss);
-
-		if (p_constraint == PointerConstraint::LOCKED) {
-			seat_state_lock_pointer(ss);
-		} else if (p_constraint == PointerConstraint::CONFINED) {
-			seat_state_confine_pointer(ss);
+		if (pointer_constraint == PointerConstraint::LOCKED) {
+			seat_state_lock_pointer(ss, ws->wl_surface);
+			// Godot always expects a centered pointer when locked.
+			seat_state_set_hint(ss, ws->rect.size.x / 2, ws->rect.size.y / 2);
+		} else if (pointer_constraint == PointerConstraint::CONFINED) {
+			seat_state_confine_pointer(ss, ws->wl_surface);
 		}
 	}
-
-	pointer_constraint = p_constraint;
 }
 
 void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
@@ -5406,7 +5519,7 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int hint_x = Math::round(p_hint.x / window_state_get_scale_factor(ws));
@@ -5418,19 +5531,6 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 }
 
 void WaylandThread::pointer_warp(const Point2i &p_to) {
-	// NOTE: This is for compositors that don't support the pointer-warp protocol.
-	// It's hacked together and not guaranteed to work.
-	if (registry.wp_pointer_warp == nullptr) {
-		PointerConstraint old_constraint = pointer_get_constraint();
-
-		pointer_set_constraint(PointerConstraint::LOCKED);
-		pointer_set_hint(p_to);
-
-		pointer_set_constraint(old_constraint);
-
-		return;
-	}
-
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (!ss) {
 		return;
@@ -5441,9 +5541,38 @@ void WaylandThread::pointer_warp(const Point2i &p_to) {
 		return;
 	}
 
+	// NOTE: This is for compositors that don't support the pointer-warp protocol.
+	// It's hacked together and not guaranteed to work.
+	if (registry.wp_pointer_warp == nullptr) {
+		if (ss->constraint_warping) {
+			return;
+		}
+
+		if (!ss->wp_locked_pointer) {
+			seat_state_unlock_pointer(ss);
+			seat_state_lock_pointer(ss, ws->wl_surface);
+		}
+
+		pointer_set_hint(p_to);
+
+		ss->constraint_warping = true;
+		ss->constraint_warp_committed = false;
+
+		if (!ss->wp_locked_pointer) {
+			seat_state_unlock_pointer(ss);
+			seat_state_lock_pointer(ss, ws->wl_surface);
+		}
+
+		pointer_set_hint(p_to);
+
+		// Gotta wait a frame... Not ideal but, y'know.
+
+		return;
+	}
+
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int wl_pos_x = Math::round(p_to.x / window_state_get_scale_factor(ws));
@@ -5506,7 +5635,8 @@ Error WaylandThread::init() {
 
 	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
 		print_verbose("Initializing Wayland embedder.");
-		Error embedder_status = embedder.init();
+		bool embedder_debug = OS::get_singleton()->get_environment("GODOT_WAYLAND_EMBEDDER_DEBUG") == "1";
+		Error embedder_status = embedder.init(embedder_debug);
 		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
 		embedder_socket_path = embedder.get_socket_path();
@@ -5748,7 +5878,10 @@ void WaylandThread::window_set_ime_position(const Point2i &p_pos, DisplayServerE
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->wp_text_input && ss->ime_enabled) {
-		ss->ime_rect = Rect2i(p_pos, Size2i(1, 10));
+		WindowState *ws = window_get_state(p_window_id);
+		double scale = ws ? window_state_get_scale_factor(ws) : 1.0;
+		Point2i logical_pos = scale_vector2i(p_pos, 1.0 / scale);
+		ss->ime_rect = Rect2i(logical_pos, Size2i(1, 10));
 		zwp_text_input_v3_set_cursor_rectangle(ss->wp_text_input, ss->ime_rect.position.x, ss->ime_rect.position.y, ss->ime_rect.size.x, ss->ime_rect.size.y);
 		zwp_text_input_v3_commit(ss->wp_text_input);
 	}
@@ -6131,6 +6264,32 @@ bool WaylandThread::window_is_suspended(DisplayServerEnums::WindowID p_window_id
 
 bool WaylandThread::is_fifo_available() const {
 	return registry.wp_fifo_manager_name != 0;
+}
+
+void WaylandThread::main_loop_callback() {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		seat_state_echo_keys(ss);
+
+		// We need to wait a commit before "finalizing" the "legacy warp" hack. This
+		// callback is called *after* a commit, but we don't know when the warp
+		// request has been made, so we first wait one commit, then "finalize" on the
+		// next. Additionally, we also wait for the pointer to be locked, as otherwise
+		// it's not guaranteed for the position hint to even be acknowledged, AFAICT.
+		if (ss->constraint_warping && ss->pointer_locked) {
+			if (ss->constraint_warp_committed) {
+				PointerConstraint old_constraint = pointer_constraint;
+				pointer_set_constraint(PointerConstraint::NONE);
+				pointer_set_constraint(old_constraint);
+
+				ss->constraint_warping = false;
+				ss->constraint_warp_committed = false;
+			} else {
+				ss->constraint_warp_committed = true;
+			}
+		}
+	}
 }
 
 bool WaylandThread::is_suspended() const {

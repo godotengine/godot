@@ -573,6 +573,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 		return VK_FALSE;
 	}
 
+	// Suppress warning about incompatible drivers (-9), even though this should arguably be the loader's responsibility.
+	// This was generating noise on Linux when Mesa Dozen is provided.
+	if (strstr(p_callback_data->pMessage, "Received return code -9 from call to vkCreateInstance in ICD") != nullptr && strstr(p_callback_data->pMessage, "Skipping this driver") != nullptr) {
+		return VK_FALSE;
+	}
+
 	if (p_callback_data->pMessageIdName && strstr(p_callback_data->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
 		return VK_FALSE;
 	}
@@ -597,6 +603,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 	if (p_callback_data->objectCount > 0) {
 		objects_string = "\n\tObjects - " + String::num_int64(p_callback_data->objectCount);
 		for (uint32_t object = 0; object < p_callback_data->objectCount; ++object) {
+			if (p_callback_data->pObjects[object].sType != VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT) {
+				continue;
+			}
 			objects_string +=
 					"\n\t\tObject[" + String::num_int64(object) + "]" +
 					" - " + string_VkObjectType(p_callback_data->pObjects[object].objectType) +
@@ -635,6 +644,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 			objects_string + labels_string);
 
 	// Convert VK severity to our own log macros.
+	// Note: Which severity we receive depends on what's set in VkDebugUtilsMessengerCreateInfoEXT,
+	// we don't enable everything by default.
 	switch (p_message_severity) {
 		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
 			print_verbose(error_message);

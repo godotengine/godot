@@ -43,6 +43,7 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/button.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/material.h"
@@ -508,10 +509,9 @@ void Polygon3DEditor::edit(Node *p_node) {
 		wip_active = false;
 		edited_point = -1;
 		if (imgeom->get_parent()) {
-			imgeom->reparent(p_node, false);
-		} else {
-			p_node->add_child(imgeom);
+			imgeom->get_parent()->remove_child(imgeom);
 		}
+		p_node->add_child(imgeom, false, Node::INTERNAL_MODE_FRONT);
 		_polygon_draw();
 		set_process(true);
 		prev_depth = -1;

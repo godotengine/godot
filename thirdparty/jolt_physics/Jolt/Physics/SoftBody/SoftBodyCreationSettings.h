@@ -8,7 +8,7 @@
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/CollisionGroup.h>
 #include <Jolt/ObjectStream/SerializableObject.h>
-#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 
 JPH_NAMESPACE_BEGIN
 

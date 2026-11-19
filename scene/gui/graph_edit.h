@@ -196,6 +196,7 @@ private:
 
 	bool snapping_enabled = true;
 	int snapping_distance = 20;
+	float snapping_distance_scale = 1;
 	bool show_grid = true;
 	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
@@ -509,6 +510,9 @@ public:
 
 	void set_snapping_distance(int p_snapping_distance);
 	int get_snapping_distance() const;
+
+	void set_snapping_distance_scale(float p_snapping_distance_scale);
+	float get_snapping_distance_scale() const;
 
 	void set_show_grid(bool p_enable);
 	bool is_showing_grid() const;

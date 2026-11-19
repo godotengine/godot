@@ -59,6 +59,7 @@ class GameViewDebuggerMacOS : public GameViewDebugger {
 	bool _msg_joy_start(const Array &p_args);
 	bool _msg_joy_stop(const Array &p_args);
 	bool _msg_warp_mouse(const Array &p_args);
+	bool _msg_alert(const Array &p_args);
 
 public:
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;

@@ -82,7 +82,7 @@ public:
 		disable_collisions_between_bodies(p_joint->is_disabled_collisions_between_bodies());
 	}
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
+	virtual PS3DE::JointType get_type() const { return PS3DE::JOINT_TYPE_MAX; }
 	_FORCE_INLINE_ GodotJoint3D(GodotBody3D **p_body_ptr = nullptr, int p_body_count = 0) :
 			GodotConstraint3D(p_body_ptr, p_body_count) {
 	}

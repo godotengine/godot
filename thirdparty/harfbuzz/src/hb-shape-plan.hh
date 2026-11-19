@@ -31,7 +31,6 @@
 #include "hb-shaper.hh"
 #include "hb-ot-shape.hh"
 
-
 struct hb_shape_plan_key_t
 {
   hb_segment_properties_t  props;
@@ -55,7 +54,14 @@ struct hb_shape_plan_key_t
 			 unsigned int                   num_coords,
 			 const char * const            *shaper_list);
 
-  HB_INTERNAL void fini () { hb_free ((void *) user_features); user_features = nullptr; }
+  HB_INTERNAL void fini ()
+  {
+    hb_free ((void *) user_features);
+    user_features = nullptr;
+#ifndef HB_NO_OT_SHAPE
+    ot.fini ();
+#endif
+  }
 
   HB_INTERNAL bool user_features_match (const hb_shape_plan_key_t *other);
 
@@ -64,12 +70,15 @@ struct hb_shape_plan_key_t
 
 struct hb_shape_plan_t
 {
-  ~hb_shape_plan_t () { key.fini (); }
+  HB_INTERNAL ~hb_shape_plan_t ();
   hb_object_header_t header;
   hb_face_t *face_unsafe; /* We don't carry a reference to face. */
   hb_shape_plan_key_t key;
 #ifndef HB_NO_OT_SHAPE
   hb_ot_shape_plan_t ot;
+#endif
+#ifdef HAVE_HARFRUST
+  hb_atomic_t<void *> harfrust_data;
 #endif
 };
 

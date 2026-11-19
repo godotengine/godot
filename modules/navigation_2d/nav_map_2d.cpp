@@ -675,8 +675,8 @@ void NavMap2D::_sync_dirty_map_update_requests() {
 
 	// Sync NavRegions.
 	RWLockWrite write_lock_regions(sync_dirty_requests.regions.rwlock);
-	for (SelfList<NavRegion2D> *element = sync_dirty_requests.regions.list.first(); element; element = element->next()) {
-		bool requires_map_update = element->self()->sync();
+	for (NavRegion2D &region : sync_dirty_requests.regions.list) {
+		bool requires_map_update = region.sync();
 		if (requires_map_update) {
 			iteration_dirty = true;
 		}
@@ -685,8 +685,8 @@ void NavMap2D::_sync_dirty_map_update_requests() {
 
 	// Sync NavLinks.
 	RWLockWrite write_lock_links(sync_dirty_requests.links.rwlock);
-	for (SelfList<NavLink2D> *element = sync_dirty_requests.links.list.first(); element; element = element->next()) {
-		bool requires_map_update = element->self()->sync();
+	for (NavLink2D &link : sync_dirty_requests.links.list) {
+		bool requires_map_update = link.sync();
 		if (requires_map_update) {
 			iteration_dirty = true;
 		}
@@ -699,8 +699,8 @@ void NavMap2D::_sync_dirty_avoidance_update_requests() {
 	if (!agents_dirty) {
 		agents_dirty = sync_dirty_requests.agents.list.first();
 	}
-	for (SelfList<NavAgent2D> *element = sync_dirty_requests.agents.list.first(); element; element = element->next()) {
-		element->self()->sync();
+	for (NavAgent2D &agent : sync_dirty_requests.agents.list) {
+		agent.sync();
 	}
 	sync_dirty_requests.agents.list.clear();
 
@@ -708,8 +708,8 @@ void NavMap2D::_sync_dirty_avoidance_update_requests() {
 	if (!obstacles_dirty) {
 		obstacles_dirty = sync_dirty_requests.obstacles.list.first();
 	}
-	for (SelfList<NavObstacle2D> *element = sync_dirty_requests.obstacles.list.first(); element; element = element->next()) {
-		element->self()->sync();
+	for (NavObstacle2D &obstacle : sync_dirty_requests.obstacles.list) {
+		obstacle.sync();
 	}
 	sync_dirty_requests.obstacles.list.clear();
 }
@@ -733,8 +733,8 @@ void NavMap2D::remove_region_async_thread_join_request(SelfList<NavRegion2D> *p_
 void NavMap2D::_sync_async_tasks() {
 	// Sync NavRegions that run async thread tasks.
 	RWLockWrite write_lock_regions(async_dirty_requests.regions.rwlock);
-	for (SelfList<NavRegion2D> *element = async_dirty_requests.regions.list.first(); element; element = element->next()) {
-		element->self()->sync_async_tasks();
+	for (NavRegion2D &region : async_dirty_requests.regions.list) {
+		region.sync_async_tasks();
 	}
 }
 

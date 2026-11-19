@@ -54,30 +54,30 @@ class SortArray {
 public:
 	Comparator compare;
 
-	inline int64_t median_of_3_index(const T *p_ptr, int64_t a_index, int64_t b_index, int64_t c_index) const {
-		const T &a = p_ptr[a_index];
-		const T &b = p_ptr[b_index];
-		const T &c = p_ptr[c_index];
+	inline int64_t median_of_3_index(const T *p_ptr, int64_t p_a_index, int64_t p_b_index, int64_t p_c_index) const {
+		const T &a = p_ptr[p_a_index];
+		const T &b = p_ptr[p_b_index];
+		const T &c = p_ptr[p_c_index];
 		if (compare(a, b)) {
 			if (compare(b, c)) {
-				return b_index;
+				return p_b_index;
 			} else if (compare(a, c)) {
-				return c_index;
+				return p_c_index;
 			} else {
-				return a_index;
+				return p_a_index;
 			}
 		} else if (compare(a, c)) {
-			return a_index;
+			return p_a_index;
 		} else if (compare(b, c)) {
-			return c_index;
+			return p_c_index;
 		} else {
-			return b_index;
+			return p_b_index;
 		}
 	}
 
-	inline int64_t bitlog(int64_t n) const {
+	inline int64_t bitlog(int64_t p_n) const {
 		int64_t k;
-		for (k = 0; n != 1; n >>= 1) {
+		for (k = 0; p_n != 1; p_n >>= 1) {
 			++k;
 		}
 		return k;
@@ -222,8 +222,8 @@ public:
 	inline void introselect(int64_t p_first, int64_t p_nth, int64_t p_last, T *p_array, int64_t p_max_depth) const {
 		while (p_last - p_first > 3) {
 			if (p_max_depth == 0) {
-				partial_select(p_first, p_nth + 1, p_last, p_array);
-				SWAP(p_first, p_nth);
+				partial_select(p_first, p_last, p_nth + 1, p_array);
+				SWAP(p_array[p_first], p_array[p_nth]);
 				return;
 			}
 

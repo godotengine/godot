@@ -36,6 +36,8 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 class AudioListener2D;
+class AudioStream;
+class AudioStreamPlayer;
 class Camera2D;
 class CanvasItem;
 class CanvasLayer;
@@ -630,9 +632,9 @@ public:
 
 	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
-	void push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #ifndef DISABLE_DEPRECATED
-	void push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords = false);
+	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
 	void notify_mouse_entered();
 	void notify_mouse_exited();
@@ -700,6 +702,8 @@ public:
 
 	Control *gui_find_control(const Point2 &p_global);
 
+	void play_theme_sound(const Ref<AudioStream> &p_stream);
+
 	void set_sdf_oversize(SDFOversize p_sdf_oversize);
 	SDFOversize get_sdf_oversize() const;
 
@@ -749,9 +753,9 @@ public:
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	bool is_visible_subviewport() const;
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
@@ -781,6 +785,7 @@ private:
 	};
 #endif // DEBUG_ENABLED
 
+#ifndef _2D_DISABLED
 	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
 	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
 	AudioListener2D *audio_listener_2d = nullptr;
@@ -811,6 +816,7 @@ private:
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 public:
 	AudioListener2D *get_audio_listener_2d() const;

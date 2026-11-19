@@ -142,7 +142,7 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Removes an element from the array by index.
+				Removes an element from the array by index. If [param index] is out-of-bounds or negative, this method fails.
 			</description>
 		</method>
 		<method name="resize">

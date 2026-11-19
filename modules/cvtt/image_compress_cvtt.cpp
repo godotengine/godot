@@ -148,12 +148,12 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels, Image::
 		return; //do not compress, already compressed
 	}
 
-	int w = p_image->get_width();
-	int h = p_image->get_height();
+	int w = (p_image->get_width() + 3) & ~0x03;
+	int h = (p_image->get_height() + 3) & ~0x03;
 
-	if (w % 4 != 0 || h % 4 != 0) {
-		w = w <= 2 ? w : (w + 3) & ~3;
-		h = h <= 2 ? h : (h + 3) & ~3;
+	if (p_image->get_width() != w || p_image->get_height() != h) {
+		// Align the image to 4x4 texels.
+		p_image->resize(w, h, Image::INTERPOLATE_NEAREST);
 	}
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
@@ -199,7 +199,6 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels, Image::
 	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
-	int shift = Image::get_format_pixel_rshift(target_format);
 
 	uint8_t *wb = data.ptrw();
 
@@ -282,7 +281,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels, Image::
 			out_bytes += 16 * (bw / 4);
 		}
 
-		dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
+		dst_ofs += Image::get_format_pixels_shifted(target_format, MAX(4, bw) * MAX(4, bh));
 	}
 
 	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();

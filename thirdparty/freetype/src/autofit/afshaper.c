@@ -45,12 +45,16 @@
    *    that actually do the mapping job.  Please check the OpenType
    *    specification for more details on features and lookups.
    *
-   * 2. Create glyph ID sets from the corresponding lookup sets.
+   * 2. Create glyph ID sets from the corresponding lookup sets.  For
+   *    default coverage, start with glyphs already assigned to the style
+   *    and compute their substitution closure.
    *
    * 3. The glyph set corresponding to AF_COVERAGE_DEFAULT is computed
-   *    with all lookups specific to the OpenType script activated.  It
-   *    relies on the order of AF_DEFINE_STYLE_CLASS entries so that
-   *    special coverages (like `oldstyle figures') don't get overwritten.
+   *    with all lookups specific to the OpenType script activated.  Only
+   *    reachable glyphs are added, since a lookup can be shared by several
+   *    scripts.  It relies on the order of AF_DEFINE_STYLE_CLASS entries
+   *    so that special coverages (like `oldstyle figures') don't get
+   *    overwritten.
    *
    */
 
@@ -198,14 +202,34 @@
       count++;
 #endif
 
-      /* get output coverage of GSUB feature */
-      hb( ot_layout_lookup_collect_glyphs )( face,
-                                             HB_OT_TAG_GSUB,
-                                             idx,
-                                             NULL,
-                                             NULL,
-                                             NULL,
-                                             gsub_glyphs );
+      if ( style_class->coverage != AF_COVERAGE_DEFAULT )
+      {
+        /* get output coverage of GSUB feature */
+        hb( ot_layout_lookup_collect_glyphs )( face,
+                                               HB_OT_TAG_GSUB,
+                                               idx,
+                                               NULL,
+                                               NULL,
+                                               NULL,
+                                               gsub_glyphs );
+      }
+    }
+
+    if ( style_class->coverage == AF_COVERAGE_DEFAULT )
+    {
+      FT_UInt  i;
+
+
+      /* A script's lookups can also substitute glyphs of other scripts. */
+      /* Seed the closure with this style's glyphs so that their         */
+      /* substitutes inherit the same style.                             */
+      for ( i = 0; i < globals->glyph_count; i++ )
+        if ( ( gstyles[i] & AF_STYLE_MASK ) == style_class->style )
+          hb( set_add )( gsub_glyphs, i );
+
+      hb( ot_layout_lookups_substitute_closure )( face,
+                                                  gsub_lookups,
+                                                  gsub_glyphs );
     }
 
 #ifdef FT_DEBUG_LEVEL_TRACE

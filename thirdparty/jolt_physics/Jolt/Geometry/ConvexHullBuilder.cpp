@@ -402,7 +402,7 @@ ConvexHullBuilder::EResult ConvexHullBuilder::Initialize(int inMaxVertices, floa
 		}
 
 	// Check if the hull is coplanar
-	if (Square(max_dist) <= 25.0f * coplanar_tolerance_sq)
+	if (Square(max_dist) <= Square(cCoplanarSlopFactor) * coplanar_tolerance_sq)
 	{
 		// First project all points in 2D space
 		Vec3 base1 = initial_plane_normal.GetNormalizedPerpendicular();
@@ -1330,7 +1330,7 @@ void ConvexHullBuilder::DetermineMaxError(Face *&outFaceWithMaxError, float &out
 			float normal_len = f->mNormal.Length();
 			JPH_ASSERT(normal_len > 0.0f);
 			float plane_dist = f->mNormal.Dot(v - f->mCentroid) / normal_len;
-			if (plane_dist > -outCoplanarDistance)
+			if (plane_dist > -cCoplanarSlopFactor * outCoplanarDistance)
 			{
 				// Check distance to the edges of this face
 				float edge_dist_sq = GetDistanceToEdgeSq(v, f);
@@ -1351,7 +1351,7 @@ void ConvexHullBuilder::DetermineMaxError(Face *&outFaceWithMaxError, float &out
 		}
 
 		// If the minimum distance to an edge is further than our current max error, we use that as max error
-		float min_edge_dist = sqrt(min_edge_dist_sq);
+		float min_edge_dist = Sqrt(min_edge_dist_sq);
 		if (min_edge_dist_face != nullptr && min_edge_dist > max_error)
 		{
 			max_error = min_edge_dist;

@@ -142,7 +142,7 @@ Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, con
 
 #ifdef TOOLS_ENABLED
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
-		CSharpLanguage::get_singleton()->reload_tool_script(p_resource, false);
+		CSharpLanguage::get_singleton()->reload_tool_script(p_resource);
 	}
 #endif
 

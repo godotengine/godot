@@ -71,17 +71,21 @@ class OptimizedTranslation : public Translation {
 		Elem elem[1];
 	};
 
-	_FORCE_INLINE_ uint32_t hash(uint32_t d, const char *p_str) const {
-		if (d == 0) {
-			d = 0x1000193;
+	_FORCE_INLINE_ uint32_t hash(uint32_t p_d, const char *p_str) const {
+		if (p_d == 0) {
+			p_d = 0x1000193;
 		}
 		while (*p_str) {
-			d = (d * 0x1000193) ^ static_cast<uint8_t>(*p_str);
+			p_d = (p_d * 0x1000193) ^ static_cast<uint8_t>(*p_str);
 			p_str++;
 		}
 
-		return d;
+		return p_d;
 	}
+
+	// Helpers to guard against corrupted resources.
+	const Bucket *_get_bucket(uint32_t p_offset) const;
+	String _get_string(const Bucket::Elem &p_elem) const;
 
 	virtual Vector<String> _get_message_list() const override;
 

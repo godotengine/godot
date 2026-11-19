@@ -197,14 +197,14 @@ public:
 	/// Unlock all bodies. This should only be done during PhysicsSystem::Update().
 	void							UnlockAllBodies() const;
 
-	/// Function to update body's layer (should only be called by the BodyInterface since it also requires updating the broadphase)
-	inline void						SetBodyObjectLayerInternal(Body &ioBody, ObjectLayer inLayer) const { ioBody.mObjectLayer = inLayer; ioBody.mBroadPhaseLayer = mBroadPhaseLayerInterface->GetBroadPhaseLayer(inLayer); }
-
 	/// Set the Body::EFlags::InvalidateContactCache flag for the specified body. This means that the collision cache is invalid for any body pair involving that body until the next physics step.
 	void							InvalidateContactCacheForBody(Body &ioBody);
 
 	/// Reset the Body::EFlags::InvalidateContactCache flag for all bodies. All contact pairs in the contact cache will now by valid again.
 	void							ValidateContactCacheForAllBodies();
+
+	/// Return the BroadPhaseLayerInterface that this class has been initialized with
+	const BroadPhaseLayerInterface &GetBroadPhaseLayerInterface() const			{ return *mBroadPhaseLayerInterface; }
 
 	/// Saving state for replay
 	void							SaveState(StateRecorder &inStream, const StateRecorderFilter *inFilter) const;

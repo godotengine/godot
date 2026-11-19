@@ -61,6 +61,9 @@ Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter
 	if (p_parameter == current_length || p_parameter == current_position || p_parameter == current_delta) {
 		return 0.0;
 	}
+	if (p_parameter == observer) {
+		return Ref<AnimationNodeObserver>();
+	}
 	GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret);
 	return ret;
 }
@@ -103,7 +106,7 @@ void AnimationNode::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 }
 
 void AnimationNode::blend_animation(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const StringName &p_animation, AnimationMixer::PlaybackInfo &p_playback_info) {
-	p_playback_info.track_weights = &p_instance.track_weights;
+	p_playback_info.track_weights = Vector<real_t>(p_instance.track_weights);
 	p_process_state.tree->make_animation_instance(p_animation, p_playback_info);
 }
 

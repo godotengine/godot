@@ -270,7 +270,7 @@ HistoryDock::HistoryDock() {
 	global_history_checkbox->connect(SceneStringName(toggled), callable_mp(this, &HistoryDock::refresh_history).unbind(1));
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vb->add_child(mc);
 

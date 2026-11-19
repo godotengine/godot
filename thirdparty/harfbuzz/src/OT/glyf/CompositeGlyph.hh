@@ -33,12 +33,12 @@ struct CompositeGlyphRecord
   };
 
   public:
-  size_t get_size () const
+  size_t get_size (bool extended) const
   {
     unsigned int size = min_size;
     /* glyphIndex is 24bit instead of 16bit */
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT) size += HBGlyphID24::static_size - HBGlyphID16::static_size;
+    if (extended && (flags & GID_IS_24BIT)) size += HBGlyphID24::static_size - HBGlyphID16::static_size;
 #endif
     /* arg1 and 2 are int16 */
     if (flags & ARG_1_AND_2_ARE_WORDS) size += 4;
@@ -66,11 +66,11 @@ struct CompositeGlyphRecord
   bool has_more ()          const { return   flags & MORE_COMPONENTS; }
   bool is_use_my_metrics () const { return   flags & USE_MY_METRICS; }
   bool is_anchored ()       const { return !(flags & ARGS_ARE_XY_VALUES); }
-  void get_anchor_points (unsigned int &point1, unsigned int &point2) const
+  void get_anchor_points (unsigned int &point1, unsigned int &point2, bool extended) const
   {
     const auto *p = &StructAfter<const HBUINT8> (flags);
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT)
+    if (extended && (flags & GID_IS_24BIT))
       p += HBGlyphID24::static_size;
     else
 #endif
@@ -138,28 +138,29 @@ struct CompositeGlyphRecord
     }
   }
 
-  bool get_points (contour_point_vector_t &points) const
+  bool get_points (contour_point_vector_t &points, bool extended) const
   {
     float matrix[4];
     contour_point_t trans;
-    get_transformation (matrix, trans);
+    get_transformation (matrix, trans, extended);
     if (unlikely (!points.alloc (points.length + 1 + 4))) return false; // For phantom points
     points.push (trans);
     return true;
   }
 
   unsigned compile_with_point (const contour_point_t &point,
-                               char *out) const
+                               char *out,
+			       bool extended) const
   {
     const HBINT8 *p = &StructAfter<const HBINT8> (flags);
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT)
+    if (extended && (flags & GID_IS_24BIT))
       p += HBGlyphID24::static_size;
     else
 #endif
       p += HBGlyphID16::static_size;
 
-    unsigned len = get_size ();
+    unsigned len = get_size (extended);
     unsigned len_before_val = (const char *)p - (const char *)this;
     if (flags & ARG_1_AND_2_ARE_WORDS)
     {
@@ -213,14 +214,14 @@ struct CompositeGlyphRecord
   { return (flags & (SCALED_COMPONENT_OFFSET | UNSCALED_COMPONENT_OFFSET)) == SCALED_COMPONENT_OFFSET; }
 
   public:
-  bool get_transformation (float (&matrix)[4], contour_point_t &trans) const
+  bool get_transformation (float (&matrix)[4], contour_point_t &trans, bool extended) const
   {
     matrix[0] = matrix[3] = 1.f;
     matrix[1] = matrix[2] = 0.f;
 
     const auto *p = &StructAfter<const HBINT8> (flags);
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT)
+    if (extended && (flags & GID_IS_24BIT))
       p += HBGlyphID24::static_size;
     else
 #endif
@@ -268,19 +269,19 @@ struct CompositeGlyphRecord
     return tx || ty;
   }
 
-  hb_codepoint_t get_gid () const
+  hb_codepoint_t get_gid (bool extended) const
   {
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT)
+    if (extended && (flags & GID_IS_24BIT))
       return StructAfter<const HBGlyphID24> (flags);
     else
 #endif
       return StructAfter<const HBGlyphID16> (flags);
   }
-  void set_gid (hb_codepoint_t gid)
+  void set_gid (hb_codepoint_t gid, bool extended)
   {
 #ifndef HB_NO_BEYOND_64K
-    if (flags & GID_IS_24BIT)
+    if (extended && (flags & GID_IS_24BIT))
       StructAfter<HBGlyphID24> (flags) = gid;
     else
 #endif
@@ -291,19 +292,19 @@ struct CompositeGlyphRecord
 #ifndef HB_NO_BEYOND_64K
   void lower_gid_24_to_16 ()
   {
-    hb_codepoint_t gid = get_gid ();
+    hb_codepoint_t gid = get_gid (true);
     if (!(flags & GID_IS_24BIT) || gid > 0xFFFFu)
       return;
 
     /* Lower the flag and move the rest of the struct down. */
 
-    unsigned size = get_size ();
+    unsigned size = get_size (true);
     char *end = (char *) this + size;
     char *p = &StructAfter<char> (flags);
     p += HBGlyphID24::static_size;
 
     flags = flags & ~GID_IS_24BIT;
-    set_gid (gid);
+    set_gid (gid, true);
 
     memmove (p - HBGlyphID24::static_size + HBGlyphID16::static_size, p, end - p);
   }
@@ -322,11 +323,12 @@ struct CompositeGlyph
 {
   const GlyphHeader &header;
   hb_bytes_t bytes;
-  CompositeGlyph (const GlyphHeader &header_, hb_bytes_t bytes_) :
-    header (header_), bytes (bytes_) {}
+  bool extended;
+  CompositeGlyph (const GlyphHeader &header_, hb_bytes_t bytes_, bool extended_) :
+    header (header_), bytes (bytes_), extended (extended_) {}
 
   composite_iter_t iter () const
-  { return composite_iter_t (bytes, &StructAfter<CompositeGlyphRecord, GlyphHeader> (header)); }
+  { return composite_iter_t (bytes, &StructAfter<CompositeGlyphRecord, GlyphHeader> (header), extended); }
 
   unsigned int instructions_length (hb_bytes_t bytes) const
   {
@@ -338,7 +340,7 @@ struct CompositeGlyph
     if (unlikely (!last)) return 0;
 
     if (last->has_instructions ())
-      start = (char *) last - &bytes + last->get_size ();
+      start = (char *) last - &bytes + last->get_size (extended);
     if (unlikely (start > end)) return 0;
     return end - start;
   }
@@ -386,7 +388,7 @@ struct CompositeGlyph
     if (unlikely (!o)) return false;
 
     const CompositeGlyphRecord *c = reinterpret_cast<const CompositeGlyphRecord *> (source_bytes.arrayZ + GlyphHeader::static_size);
-    auto it = composite_iter_t (hb_bytes_t ((const char *)c, source_len), c);
+    auto it = composite_iter_t (hb_bytes_t ((const char *)c, source_len), c, extended);
 
     char *p = o;
     unsigned i = 0, source_comp_len = 0;
@@ -398,7 +400,7 @@ struct CompositeGlyph
         return false;
       }
 
-      unsigned comp_len = component.get_size ();
+      unsigned comp_len = component.get_size (extended);
       if (component.is_anchored ())
       {
         hb_memcpy (p, &component, comp_len);
@@ -406,7 +408,7 @@ struct CompositeGlyph
       }
       else
       {
-        unsigned new_len = component.compile_with_point (points_with_deltas[i], p);
+        unsigned new_len = component.compile_with_point (points_with_deltas[i], p, extended);
         p += new_len;
       }
       i++;

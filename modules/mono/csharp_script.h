@@ -39,8 +39,24 @@
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
 #include "editor/plugins/editor_plugin.h"
 #endif
+
+namespace godotsharp {
+struct MethodTrampoline {
+	void *function_pointer;
+};
+struct PropertyGetterTrampoline {
+	void *function_pointer;
+};
+struct PropertySetterTrampoline {
+	void *function_pointer;
+};
+struct RaiseSignalTrampoline {
+	void *function_pointer;
+};
+} //namespace godotsharp
 
 class CSharpScript;
 class CSharpInstance;
@@ -184,8 +200,44 @@ private:
 		MethodInfo method_info;
 	};
 
+	/// Only includes event signals declared in this exact script, not inherited ones.
 	Vector<EventSignalInfo> event_signals;
+	/// Only includes methods declared in this exact script, not inherited ones.
 	Vector<CSharpMethodInfo> methods;
+
+	struct PropertyTrampolines {
+		godotsharp::PropertyGetterTrampoline getter;
+		godotsharp::PropertySetterTrampoline setter;
+	};
+
+	struct MethodKey {
+		StringName name;
+		int32_t arg_count;
+
+		bool operator==(const MethodKey &p_other) const {
+			return name == p_other.name && arg_count == p_other.arg_count;
+		}
+
+		uint32_t hash() const {
+			const uint32_t hash = name.hash();
+			return hash_murmur3_one_32(arg_count, hash);
+		}
+	};
+
+	using SignalKey = MethodKey;
+
+	/// Only includes methods declared in this exact script, not inherited ones.
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> static_method_trampolines;
+
+	/// Also includes methods declared in inherited scripts.
+	AHashMap<MethodKey, godotsharp::MethodTrampoline> method_trampolines;
+	/// Also includes properties declared in inherited scripts.
+	AHashMap<StringName, PropertyTrampolines> property_trampolines;
+	/// Also includes event signals declared in inherited scripts.
+	AHashMap<SignalKey, godotsharp::RaiseSignalTrampoline> raise_signal_trampolines;
+	bool should_fallback_to_legacy_trampolines = true;
+
+	bool _has_method_mapping_to_proxy_include_base(const StringName &p_name) const;
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
@@ -215,10 +267,17 @@ private:
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
+	static void GD_CLR_STDCALL _try_add_method_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static);
+	static void GD_CLR_STDCALL _try_add_property_tramp(CSharpScript *p_scr, const StringName *p_name, godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline);
+	static void GD_CLR_STDCALL _try_add_raise_signal_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline);
+
 	// Do not use unless you know what you are doing
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
 	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+
+	static bool _callp_static(const CSharpScript *p_script, const StringName &p_method,
+			const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &r_ret);
 
 protected:
 	static void _bind_methods();
@@ -260,12 +319,12 @@ public:
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
 	void update_exports() override;
 
-	void get_members(HashSet<StringName> *p_members) override;
+	void get_members(HashSet<StringName> *r_members) override;
 
 	bool is_tool() const override {
 		return type_info.is_tool;
 	}
-	bool is_valid() const override {
+	bool is_script_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {
@@ -332,6 +391,10 @@ class CSharpInstance : public ScriptInstance {
 	// Do not use unless you know what you are doing
 	static CSharpInstance *create_for_managed_type(Object *p_owner, CSharpScript *p_script, const MonoGCHandleData &p_gchandle);
 
+	Variant _callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
+
+	void _call_notification(int p_notification, bool p_reversed = false) const;
+
 public:
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
 
@@ -341,17 +404,19 @@ public:
 
 	bool set(const StringName &p_name, const Variant &p_value) override;
 	bool get(const StringName &p_name, Variant &r_ret) const override;
-	void get_property_list(List<PropertyInfo> *p_properties) const override;
+	void get_property_list(List<PropertyInfo> *r_properties) const override;
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override;
 	virtual void validate_property(PropertyInfo &p_property) const override;
 
 	bool property_can_revert(const StringName &p_name) const override;
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
 
-	void get_method_list(List<MethodInfo> *p_list) const override;
+	void get_method_list(List<MethodInfo> *r_list) const override;
 	bool has_method(const StringName &p_method) const override;
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+
+	void raise_event_signal(const StringName &p_event_signal_name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const;
 
 	void mono_object_disposed(GCHandleIntPtr p_gchandle_to_free);
 
@@ -370,11 +435,10 @@ public:
 	const Variant get_rpc_config() const override;
 
 	void notification(int p_notification, bool p_reversed = false) override;
-	void _call_notification(int p_notification, bool p_reversed = false);
 
 	String to_string(bool *r_valid) override;
 
-	Ref<Script> get_script() const override;
+	Script *get_script() const override;
 
 	ScriptLanguage *get_language() override;
 
@@ -432,6 +496,7 @@ class CSharpLanguage : public ScriptLanguage {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
+	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
 #endif
@@ -479,7 +544,7 @@ public:
 
 #ifdef GD_MONO_HOT_RELOAD
 	bool is_assembly_reloading_needed();
-	void reload_assemblies(bool p_soft_reload);
+	void reload_assemblies();
 #endif
 
 	_FORCE_INLINE_ ManagedCallableMiddleman *get_managed_callable_middleman() const {
@@ -497,6 +562,10 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+#endif
+
 	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
 	Vector<String> get_comment_delimiters() const override;
@@ -505,19 +574,11 @@ public:
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
-	/* TODO */ bool validate(const String &p_script, const String &p_path, List<String> *r_functions,
-			List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override {
-		return true;
-	}
 	String validate_path(const String &p_path) const override;
 	bool supports_builtin_mode() const override;
-	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
-		return -1;
-	}
 	String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
 	virtual bool can_make_function() const override { return false; }
-	virtual String _get_indentation() const;
-	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
+	String _get_indentation() const;
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
 	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
@@ -531,9 +592,9 @@ public:
 	int debug_get_stack_level_line(int p_level) const override;
 	String debug_get_stack_level_function(int p_level) const override;
 	String debug_get_stack_level_source(int p_level) const override;
-	/* TODO */ void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
-	/* TODO */ void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
-	/* TODO */ void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) override {}
+	/* TODO */ void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems, int p_max_depth) override {}
+	/* TODO */ void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems, int p_max_depth) override {}
+	/* TODO */ void debug_get_globals(List<String> *r_locals, List<Variant> *r_values, int p_max_subitems, int p_max_depth) override {}
 	/* TODO */ String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) override {
 		return "";
 	}
@@ -543,25 +604,22 @@ public:
 	/* TODO */ void profiling_start() override {}
 	/* TODO */ void profiling_stop() override {}
 	/* TODO */ void profiling_set_save_native_calls(bool p_enable) override {}
-	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+	/* TODO */ int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) override {
 		return 0;
 	}
-	/* TODO */ int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+	/* TODO */ int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) override {
 		return 0;
 	}
 
 	void frame() override;
 
-	/* TODO? */ void get_public_functions(List<MethodInfo> *p_functions) const override {}
-	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {}
-	/* TODO? */ void get_public_annotations(List<MethodInfo> *p_annotations) const override {}
+	/* TODO? */ void get_public_functions(List<MethodInfo> *r_functions) const override {}
+	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *r_constants) const override {}
+	/* TODO? */ void get_public_annotations(List<MethodInfo> *r_annotations) const override {}
 
 	void reload_all_scripts() override;
-	void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
-	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
-
-	/* LOADER FUNCTIONS */
-	void get_recognized_extensions(List<String> *p_extensions) const override;
+	void reload_scripts(const Array &p_scripts) override;
+	void reload_tool_script(const Ref<Script> &p_script) override;
 
 #ifdef TOOLS_ENABLED
 	Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) override;

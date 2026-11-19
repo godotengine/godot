@@ -619,7 +619,6 @@ Error FileAccessWindows::_set_extended_attribute(const String &p_file, const Str
 	file += ":" + p_attribute_name;
 	const Char16String &file_utf16 = file.utf16();
 
-	PackedByteArray data;
 	HANDLE h = CreateFileW((LPCWSTR)file_utf16.get_data(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (h == INVALID_HANDLE_VALUE) {
 		return FAILED;

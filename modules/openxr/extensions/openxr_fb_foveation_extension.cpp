@@ -31,7 +31,6 @@
 #include "openxr_fb_foveation_extension.h"
 
 #include "../openxr_platform_inc.h"
-#include "openxr_eye_gaze_interaction.h"
 
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
@@ -153,7 +152,7 @@ void *OpenXRFBFoveationExtension::set_system_properties_and_get_next_pointer(voi
 
 void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) {
 	void *next = p_next_pointer;
-	if (is_enabled() && foveation_level > 0) {
+	if (is_enabled()) {
 		swapchain_create_info_foveation_fb.next = next;
 		next = &swapchain_create_info_foveation_fb;
 
@@ -163,7 +162,7 @@ void *OpenXRFBFoveationExtension::set_swapchain_create_info_and_get_next_pointer
 			if (meta_foveation_eye_tracked_ext && meta_foveation_eye_tracked_properties.supportsFoveationEyeTracked) {
 				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM;
 			}
-			if (foveation_with_subsampled_images_enabled && foveation_with_subsampled_images_active) {
+			if (is_foveation_with_subsampled_images_enabled() && foveation_with_subsampled_images_active) {
 				meta_vulkan_swapchain_create_info.additionalCreateFlags |= VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT;
 			}
 
@@ -210,7 +209,7 @@ void OpenXRFBFoveationExtension::get_fragment_density_offsets(LocalVector<Vector
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!is_foveation_eye_tracked_enabled() || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
+	if (foveation_level == 0 || !is_foveation_eye_tracked_enabled()) {
 		return;
 	}
 

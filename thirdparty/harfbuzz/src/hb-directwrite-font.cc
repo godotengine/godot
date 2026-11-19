@@ -38,6 +38,22 @@
 
 #define MAX_GLYPHS 256u
 
+static hb_position_t
+hb_directwrite_scale_x (hb_font_t *font, int64_t value)
+{
+  if (value >= INT16_MIN && value <= INT16_MAX)
+    return font->em_scale_x ((int16_t) value);
+  return font->em_scalef_x ((float) value);
+}
+
+static hb_position_t
+hb_directwrite_scale_y (hb_font_t *font, int64_t value)
+{
+  if (value >= INT16_MIN && value <= INT16_MAX)
+    return font->em_scale_y ((int16_t) value);
+  return font->em_scalef_y ((float) value);
+}
+
 static unsigned int
 hb_directwrite_get_nominal_glyphs (hb_font_t *font,
 				   void *font_data HB_UNUSED,
@@ -91,9 +107,9 @@ hb_directwrite_get_font_h_extents (hb_font_t *font,
   DWRITE_FONT_METRICS dw_metrics;
   dw_face->GetMetrics (&dw_metrics);
 
-  metrics->ascender = font->em_scale_y (dw_metrics.ascent);
-  metrics->descender = -font->em_scale_y (dw_metrics.descent);
-  metrics->line_gap = font->em_scale_y (dw_metrics.lineGap);
+  metrics->ascender = hb_directwrite_scale_y (font, dw_metrics.ascent);
+  metrics->descender = hb_saturate_neg (hb_directwrite_scale_y (font, dw_metrics.descent));
+  metrics->line_gap = hb_directwrite_scale_y (font, dw_metrics.lineGap);
 
   return true;
 }
@@ -134,7 +150,7 @@ hb_directwrite_get_glyph_h_advances (hb_font_t* font,
     {
       // https://github.com/harfbuzz/harfbuzz/issues/5319
       auto advance = gids[j] < num_glyphs ? advances[j] : 0;
-      *first_advance = font->em_scale_x (advance);
+      *first_advance = hb_directwrite_scale_x (font, advance);
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
 
@@ -176,7 +192,7 @@ hb_directwrite_get_glyph_v_advances (hb_font_t* font,
     dw_face1->GetDesignGlyphAdvances (n, gids, advances, true);
     for (unsigned j = 0; j < n; j++)
     {
-      *first_advance = -font->em_scale_y (advances[j]);
+      *first_advance = hb_saturate_neg (hb_directwrite_scale_y (font, advances[j]));
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
 
@@ -200,8 +216,8 @@ hb_directwrite_get_glyph_v_origin (hb_font_t *font,
   if (FAILED (dw_face->GetDesignGlyphMetrics (&gid, 1, &metrics)))
     return false;
 
-  *x = font->em_scale_x (metrics.advanceWidth / 2);
-  *y = font->em_scale_y (metrics.verticalOriginY); // Untested
+  *x = hb_directwrite_scale_x (font, metrics.advanceWidth / 2);
+  *y = hb_directwrite_scale_y (font, metrics.verticalOriginY); // Untested
 
   return true;
 }
@@ -222,10 +238,15 @@ hb_directwrite_get_glyph_extents (hb_font_t *font,
   if (FAILED (dw_face->GetDesignGlyphMetrics (&gid, 1, &metrics)))
     return false;
 
-  extents->x_bearing = font->em_scale_x (metrics.leftSideBearing);
-  extents->y_bearing = font->em_scale_y (metrics.verticalOriginY - metrics.topSideBearing);
-  extents->width = font->em_scale_x (metrics.advanceWidth - metrics.rightSideBearing) - extents->x_bearing;
-  extents->height = font->em_scale_y (metrics.verticalOriginY - metrics.advanceHeight + metrics.bottomSideBearing) - extents->y_bearing; // Magic
+  int64_t right = (int64_t) metrics.advanceWidth - metrics.rightSideBearing;
+  int64_t top = (int64_t) metrics.verticalOriginY - metrics.topSideBearing;
+  int64_t bottom = (int64_t) metrics.verticalOriginY - metrics.advanceHeight + metrics.bottomSideBearing;
+
+  extents->x_bearing = hb_directwrite_scale_x (font, metrics.leftSideBearing);
+  extents->y_bearing = hb_directwrite_scale_y (font, top);
+  extents->width = hb_saturate_sub (hb_directwrite_scale_x (font, right), extents->x_bearing);
+  extents->height = hb_saturate_sub (hb_directwrite_scale_y (font, bottom),
+				     extents->y_bearing); // Magic
 
   return true;
 }
@@ -244,8 +265,6 @@ public:
 	       void *draw_data)
     : font (font), drawing ({draw_funcs, draw_data}) {}
 
-  virtual ~GeometrySink() {}
-
   HRESULT STDMETHODCALLTYPE Close() override { return S_OK; }
   void STDMETHODCALLTYPE SetFillMode(D2D1_FILL_MODE) override {}
   void STDMETHODCALLTYPE SetSegmentFlags(D2D1_PATH_SEGMENT) override {}
@@ -256,21 +275,21 @@ public:
 
   void STDMETHODCALLTYPE BeginFigure(D2D1_POINT_2F startPoint, D2D1_FIGURE_BEGIN) override
   {
-    drawing.move_to (font->em_scalef_x (startPoint.x), -font->em_scalef_y (startPoint.y));
+    drawing.move_to (font->em_scalef_x (startPoint.x), -(float) font->em_scalef_y (startPoint.y));
   }
 
   void STDMETHODCALLTYPE AddBeziers(const D2D1_BEZIER_SEGMENT *beziers, UINT beziersCount) override
   {
     for (unsigned i = 0; i < beziersCount; ++i)
-      drawing.cubic_to (font->em_scalef_x (beziers[i].point1.x), -font->em_scalef_y (beziers[i].point1.y),
-			font->em_scalef_x (beziers[i].point2.x), -font->em_scalef_y (beziers[i].point2.y),
-			font->em_scalef_x (beziers[i].point3.x), -font->em_scalef_y (beziers[i].point3.y));
+      drawing.cubic_to (font->em_scalef_x (beziers[i].point1.x), -(float) font->em_scalef_y (beziers[i].point1.y),
+			font->em_scalef_x (beziers[i].point2.x), -(float) font->em_scalef_y (beziers[i].point2.y),
+			font->em_scalef_x (beziers[i].point3.x), -(float) font->em_scalef_y (beziers[i].point3.y));
   }
 
   void STDMETHODCALLTYPE AddLines(const D2D1_POINT_2F *points, UINT pointsCount) override
   {
     for (unsigned i = 0; i < pointsCount; ++i)
-      drawing.line_to (font->em_scalef_x (points[i].x), -font->em_scalef_y (points[i].y));
+      drawing.line_to (font->em_scalef_x (points[i].x), -(float) font->em_scalef_y (points[i].y));
   }
 
   void STDMETHODCALLTYPE EndFigure(D2D1_FIGURE_END) override

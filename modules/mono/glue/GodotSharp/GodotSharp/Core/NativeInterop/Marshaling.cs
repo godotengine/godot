@@ -16,6 +16,20 @@ namespace Godot.NativeInterop
 {
     public static class Marshaling
     {
+        public static ulong RefCountOffset { get; set; }
+        public static ulong CapacityOffset { get; set; } = RefCountOffset + (ulong)IntPtr.Size;
+        public static ulong SizeOffset { get; set; } = CapacityOffset + (ulong)IntPtr.Size;
+        public static ulong DataOffset { get; set; } = SizeOffset + (ulong)IntPtr.Size;
+
+        public static void Initialize()
+        {
+            NativeFuncs.godotsharp_initialize_marshaling_information(out ulong refCountOffset, out ulong capacityOffset, out ulong sizeOffset, out ulong dataOffset);
+            RefCountOffset = refCountOffset;
+            CapacityOffset = capacityOffset;
+            SizeOffset = sizeOffset;
+            DataOffset = dataOffset;
+        }
+
         internal static Variant.Type ConvertManagedTypeToVariantType(Type type, out bool r_nil_is_variant)
         {
             r_nil_is_variant = false;

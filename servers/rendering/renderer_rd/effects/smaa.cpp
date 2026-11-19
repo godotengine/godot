@@ -110,7 +110,7 @@ SMAA::SMAA() {
 		tf.height = SEARCHTEX_HEIGHT;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		smaa.search_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(search_tex_png).get_data() });
+		smaa.search_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(search_tex_png, sizeof(search_tex_png)).get_data() });
 	}
 
 	{
@@ -121,7 +121,7 @@ SMAA::SMAA() {
 		tf.height = AREATEX_HEIGHT;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		smaa.area_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(area_tex_png).get_data() });
+		smaa.area_tex = RD::get_singleton()->texture_create(tf, RD::TextureView(), Vector<Vector<unsigned char>>{ Image(area_tex_png, sizeof(area_tex_png)).get_data() });
 	}
 
 	{
@@ -146,7 +146,9 @@ SMAA::~SMAA() {
 }
 
 void SMAA::allocate_render_targets(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	Size2i full_size = p_render_buffers->get_internal_size();
+	RSE::ViewportScaling3DType scaling_type = RSE::scaling_3d_mode_type(p_render_buffers->get_scaling_3d_mode());
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
+	Size2i full_size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 
 	// As we're not clearing these, and render buffers will return the cached texture if it already exists,
 	// we don't first check has_texture here.
@@ -166,7 +168,9 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 	memset(&smaa.weight_push_constant, 0, sizeof(SMAAWeightPushConstant));
 	memset(&smaa.blend_push_constant, 0, sizeof(SMAABlendPushConstant));
 
-	Size2i size = p_render_buffers->get_internal_size();
+	RSE::ViewportScaling3DType scaling_type = RSE::scaling_3d_mode_type(p_render_buffers->get_scaling_3d_mode());
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
+	Size2i size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 	Size2 inv_size = Size2(1.0f / (float)size.x, 1.0f / (float)size.y);
 
 	smaa.edge_push_constant.inv_size[0] = inv_size.x;

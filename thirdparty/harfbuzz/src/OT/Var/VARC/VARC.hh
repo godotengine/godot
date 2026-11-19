@@ -10,6 +10,8 @@
 
 #include "coord-setter.hh"
 
+struct hb_depend_data_builder_t;
+
 namespace OT {
 
 //namespace Var {
@@ -24,7 +26,7 @@ namespace OT {
 struct hb_varc_scratch_t
 {
   hb_vector_t<unsigned> axisIndices;
-  hb_vector_t<float> axisValues;
+  hb_vector_t<double> axisValues;
   hb_glyf_scratch_t glyf_scratch;
 };
 
@@ -36,8 +38,13 @@ struct hb_varc_context_t
   mutable hb_decycler_t decycler;
   mutable signed edges_left;
   mutable signed depth_left;
+  /* Renderer-owned live budget, shared by VARC record processing and
+   * every leaf loaded from glyf/CFF/CFF2. */
+  int64_t &budget;
   hb_varc_scratch_t &scratch;
 };
+
+struct VARC;
 
 struct VarComponent
 {
@@ -61,6 +68,28 @@ struct VarComponent
     RESERVED_MASK		= ~((1u << 15) - 1),
   };
 
+  struct record_t
+  {
+    uint32_t flags;
+    hb_codepoint_t gid;
+    unsigned gid_offset;
+    unsigned gid_size;
+    unsigned condition_index;
+    unsigned condition_offset;
+    unsigned condition_size;
+    unsigned axis_indices_index;
+    unsigned axis_indices_offset;
+    unsigned axis_indices_size;
+    uint32_t axis_values_var_idx;
+    unsigned axis_values_var_offset;
+    unsigned axis_values_var_size;
+    uint32_t transform_var_idx;
+    unsigned transform_var_offset;
+    unsigned transform_var_size;
+    hb_transform_decomposed_t<> transform;
+    unsigned size;
+  };
+
   HB_INTERNAL hb_ubytes_t
   get_path_at (const hb_varc_context_t &c,
 	       hb_codepoint_t parent_gid,
@@ -68,6 +97,13 @@ struct VarComponent
 	       hb_transform_t<> transform,
 	       hb_ubytes_t record,
 	       hb_scalar_cache_t *cache = nullptr) const;
+
+  HB_INTERNAL static bool decompile_record (const VARC &varc,
+					    hb_ubytes_t record,
+					    hb_vector_t<unsigned> *axis_indices,
+					    hb_vector_t<double> *axis_values,
+					    record_t *decoded /* OUT */,
+					    int64_t *budget = nullptr);
 };
 
 struct VarCompositeGlyph
@@ -108,18 +144,24 @@ struct VARC
 	       hb_codepoint_t parent_gid = HB_CODEPOINT_INVALID,
 	       hb_scalar_cache_t *parent_cache = nullptr) const;
 
+  HB_INTERNAL bool closure_glyphs (hb_set_t *glyphset) const;
+  HB_INTERNAL void depend (hb_depend_data_builder_t *depend_data) const;
+  HB_INTERNAL bool subset (hb_subset_context_t *c) const;
+
   bool
   get_path (hb_font_t *font,
 	    hb_codepoint_t gid,
 	    hb_draw_session_t &draw_session,
 	    hb_varc_scratch_t &scratch) const
   {
+    int64_t &budget = draw_session.get_budget ();
     hb_varc_context_t c {font,
 			 &draw_session,
 			 nullptr,
 			 hb_decycler_t {},
 			 HB_MAX_GRAPH_EDGE_COUNT,
 			 HB_MAX_NESTING_LEVEL,
+			 budget,
 			 scratch};
 
     return get_path_at (c, gid,
@@ -132,12 +174,14 @@ struct VARC
 	       hb_extents_t<> *extents,
 	       hb_varc_scratch_t &scratch) const
   {
+    int64_t budget = HB_BUDGET_GLYPH;
     hb_varc_context_t c {font,
 			 nullptr,
 			 extents,
 			 hb_decycler_t {},
 			 HB_MAX_GRAPH_EDGE_COUNT,
 			 HB_MAX_NESTING_LEVEL,
+			 budget,
 			 scratch};
 
     return get_path_at (c, gid,
@@ -177,6 +221,8 @@ struct VARC
       table.destroy ();
     }
 
+    bool has_data () const { return table->has_data (); }
+
     bool
     get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session) const
     {
@@ -187,6 +233,19 @@ struct VARC
       bool ret = table->get_path (font, gid, draw_session, *scratch);
       release_scratch (scratch);
       return ret;
+    }
+
+    bool closure_glyphs (hb_set_t *glyphset) const
+    {
+      if (table->has_data ())
+	return table->closure_glyphs (glyphset);
+      return true;
+    }
+
+    void depend (hb_depend_data_builder_t *depend_data) const
+    {
+      if (table->has_data ())
+	table->depend (depend_data);
     }
 
     bool

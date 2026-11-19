@@ -4,7 +4,7 @@
 		A visual shader node that forces to emit a particle from a sub-emitter.
 	</brief_description>
 	<description>
-		This node internally calls [code]emit_subparticle[/code] shader method. It will emit a particle from the configured sub-emitter and also allows to customize how its emitted. Requires a sub-emitter assigned to the particles node with this shader.
+		This node calls the internal [code]emit_subparticle[/code] method. It will emit a particle from the configured sub-emitter and also allows to customize how it's emitted. Requires a sub-emitter assigned to the particles node that is using this shader.
 	</description>
 	<tutorials>
 	</tutorials>

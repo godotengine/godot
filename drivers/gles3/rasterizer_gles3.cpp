@@ -465,7 +465,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 		copy_effects->copy_to_rect(screenrect, linear_to_srgb);
 	}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(target, 0);
 }
 
 // is this p_screen useless in a multi window environment?

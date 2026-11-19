@@ -64,9 +64,6 @@ String VisualShaderNodeSDFToScreenUV::generate_code(Shader::Mode p_mode, VisualS
 	return "		" + p_output_vars[0] + " = sdf_to_screen_uv(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
 }
 
-VisualShaderNodeSDFToScreenUV::VisualShaderNodeSDFToScreenUV() {
-}
-
 // VisualShaderNodeScreenUVToSDF
 
 String VisualShaderNodeScreenUVToSDF::get_caption() const {
@@ -108,9 +105,6 @@ String VisualShaderNodeScreenUVToSDF::generate_code(Shader::Mode p_mode, VisualS
 	return "		" + p_output_vars[0] + " = screen_uv_to_sdf(" + (p_input_vars[0].is_empty() ? "SCREEN_UV" : p_input_vars[0]) + ");\n";
 }
 
-VisualShaderNodeScreenUVToSDF::VisualShaderNodeScreenUVToSDF() {
-}
-
 // VisualShaderNodeTextureSDF
 
 String VisualShaderNodeTextureSDF::get_caption() const {
@@ -145,9 +139,6 @@ String VisualShaderNodeTextureSDF::generate_code(Shader::Mode p_mode, VisualShad
 	return "		" + p_output_vars[0] + " = texture_sdf(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
 }
 
-VisualShaderNodeTextureSDF::VisualShaderNodeTextureSDF() {
-}
-
 // VisualShaderNodeTextureSDFNormal
 
 String VisualShaderNodeTextureSDFNormal::get_caption() const {
@@ -180,9 +171,6 @@ String VisualShaderNodeTextureSDFNormal::get_output_port_name(int p_port) const 
 
 String VisualShaderNodeTextureSDFNormal::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "		" + p_output_vars[0] + " = texture_sdf_normal(" + (p_input_vars[0].is_empty() ? "vec2(0.0)" : p_input_vars[0]) + ");\n";
-}
-
-VisualShaderNodeTextureSDFNormal::VisualShaderNodeTextureSDFNormal() {
 }
 
 // VisualShaderNodeSDFRaymarch

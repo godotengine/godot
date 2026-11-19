@@ -30,13 +30,16 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
+#include "core/os/rw_lock.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
-#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+#include "scene/resources/material.h"
 
 class Node;
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+class NavigationPathQueryParameters3D;
+class NavigationPathQueryResult3D;
 
 struct NavMeshGeometryParser3D {
 	RID self;
@@ -517,65 +520,6 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
 #endif // DEBUG_ENABLED
-};
-
-/// Manager used for the server singleton registration
-class NavigationServer3DManager : public Object {
-	GDCLASS(NavigationServer3DManager, Object);
-
-	static inline NavigationServer3DManager *singleton = nullptr;
-
-	struct ClassInfo {
-		String name;
-		Callable create_callback;
-
-		ClassInfo() {}
-
-		ClassInfo(const String &p_name, const Callable &p_create_callback) :
-				name(p_name),
-				create_callback(p_create_callback) {}
-
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
-
-		void operator=(const ClassInfo &p_ci) {
-			name = p_ci.name;
-			create_callback = p_ci.create_callback;
-		}
-	};
-
-	Vector<ClassInfo> navigation_servers;
-	int default_server_id = -1;
-	int default_server_priority = -1;
-
-	void on_servers_changed();
-
-protected:
-	static void _bind_methods();
-
-public:
-	static const String setting_property_name;
-
-	static NavigationServer3DManager *get_singleton();
-
-	void register_server(const String &p_name, const Callable &p_create_callback);
-	void set_default_server(const String &p_name, int p_priority = 0);
-	int find_server_id(const String &p_name);
-	int get_servers_count();
-	String get_server_name(int p_id);
-	NavigationServer3D *new_default_server();
-	NavigationServer3D *new_server(const String &p_name);
-
-	NavigationServer3DManager();
-	~NavigationServer3DManager();
-
-	static void initialize_server();
-	static void finalize_server();
-
-	static void initialize_server_manager();
-	static void finalize_server_manager();
-	static NavigationServer3D *create_dummy_server_callback();
 };
 
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);

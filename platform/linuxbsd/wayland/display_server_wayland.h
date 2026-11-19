@@ -81,6 +81,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		bool emulate_vsync = false;
 
+		Vector<Vector2> mpass_region;
+
 #ifdef GLES3_ENABLED
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
@@ -237,6 +239,7 @@ public:
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
 
@@ -355,6 +358,7 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) override;
+	virtual void cursor_clear_custom_image_cache() override;
 
 	virtual bool get_swap_cancel_ok() override;
 

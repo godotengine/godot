@@ -130,7 +130,7 @@ void DistanceConstraint::CalculateConstraintProperties(float inDeltaTime)
 
 	if (mMinDistance == mMaxDistance)
 	{
-		mAxisConstraint.CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMinDistance, mLimitsSpringSettings);
+		mAxisConstraint.CalculateConstraintPropertiesWithSettingsForLimit(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMinDistance, mLimitsSpringSettings);
 
 		// Single distance, allow constraint forces in both directions
 		mMinLambda = -FLT_MAX;
@@ -138,7 +138,7 @@ void DistanceConstraint::CalculateConstraintProperties(float inDeltaTime)
 	}
 	else if (delta_len <= mMinDistance)
 	{
-		mAxisConstraint.CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMinDistance, mLimitsSpringSettings);
+		mAxisConstraint.CalculateConstraintPropertiesWithSettingsForLimit(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMinDistance, mLimitsSpringSettings);
 
 		// Allow constraint forces to make distance bigger only
 		mMinLambda = 0;
@@ -146,7 +146,7 @@ void DistanceConstraint::CalculateConstraintProperties(float inDeltaTime)
 	}
 	else if (delta_len >= mMaxDistance)
 	{
-		mAxisConstraint.CalculateConstraintPropertiesWithSettings(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMaxDistance, mLimitsSpringSettings);
+		mAxisConstraint.CalculateConstraintPropertiesWithSettingsForLimit(inDeltaTime, *mBody1, r1_plus_u, *mBody2, r2, mWorldSpaceNormal, 0.0f, delta_len - mMaxDistance, mLimitsSpringSettings);
 
 		// Allow constraint forces to make distance smaller only
 		mMinLambda = -FLT_MAX;

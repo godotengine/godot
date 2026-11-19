@@ -38,4 +38,13 @@ public class ScriptPropertyDefValGeneratorTests
             "ExportedComplexStrings_ScriptPropertyDefVal.generated.cs"
         );
     }
+
+    [Fact]
+    public async Task Inheritance()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+            new string[] { "Inheritance.cs" },
+            new string[] { "InheritanceBase_ScriptPropertyDefVal.generated.cs", "InheritanceChild_ScriptPropertyDefVal.generated.cs" }
+        );
+    }
 }

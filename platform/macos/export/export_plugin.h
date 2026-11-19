@@ -84,8 +84,15 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon);
 	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
+	Error _unzip_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_zip_path, const String &p_app_name, const String &p_arch, bool p_debug, const Vector<String> &p_exec_ids, Vector<String> *r_symb_ids);
+	Error _copy_debugsymbols_recursively(Ref<DirAccess> &p_da, const String &p_path, const String &p_src_path, const String &p_app_name, const String &p_arch, bool p_debug);
+	bool _copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, const String &p_arch, bool p_debug, const Vector<String> &p_exec_ids, Vector<String> *r_symb_ids, Error &r_err);
+
 	Error _export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path);
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
+	Error _copy_dir_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, String p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_dir_and_validate_arch_impl(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links);
+	Error _copy_and_validate_arch(const Ref<EditorExportPreset> &p_preset, const Ref<DirAccess> &p_dir_access, const String &p_from, const String &p_to, int p_chmod_flags = -1);
 	void _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true, bool p_set_id = false);
 	void _code_sign_directory(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, const String &p_helper_ent_path, bool p_should_error_on_non_code = true);
 	Error _copy_and_sign_files(Ref<DirAccess> &dir_access, const String &p_src_path, const String &p_in_app_path,
@@ -129,6 +136,7 @@ protected:
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
+	bool check_export_template_debugsymbols(const String &p_symbols_path, const String &p_arch, bool p_debug) const;
 
 public:
 	virtual String get_name() const override {
@@ -144,6 +152,7 @@ public:
 	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
+	String get_template_file_name(const String &p_target, const String &p_arch) const;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

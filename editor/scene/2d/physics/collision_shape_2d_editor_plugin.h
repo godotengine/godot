@@ -66,6 +66,7 @@ class CollisionShape2DEditor : public Control {
 	Vector<Point2> handles;
 
 	int shape_type = -1;
+	int hover_handle = -1;
 	int edit_handle = -1;
 	bool pressed = false;
 	real_t grab_threshold = 8;
@@ -81,6 +82,7 @@ class CollisionShape2DEditor : public Control {
 	void set_handle(int idx, Point2 &p_point);
 	void commit_handle(int idx, Variant &p_org);
 
+	void _update_hover(const Vector2 &p_mouse_pos);
 	void _shape_changed();
 
 protected:

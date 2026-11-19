@@ -1,5 +1,0 @@
-GH-119563
----------
-Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/OptimizedTranslation/methods/generate': return_value
-
-Return value changed from "void" to "bool". Compatibility method registered.

@@ -105,7 +105,7 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && pressed) {
-		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
+		Vector2 point = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
 		point = node->get_screen_transform().affine_inverse().xform(point);
 
 		node->set("target_position", point);
@@ -138,8 +138,14 @@ void Cast2DEditor::edit(Node2D *p_node) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
 	}
 
+	if (node) {
+		node->disconnect(SceneStringName(draw), callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw));
+	}
+
 	if (Object::cast_to<RayCast2D>(p_node) || Object::cast_to<ShapeCast2D>(p_node)) {
 		node = p_node;
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw));
 	} else {
 		node = nullptr;
 	}

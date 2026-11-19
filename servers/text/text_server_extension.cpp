@@ -35,6 +35,7 @@
 void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_has_feature, "feature");
 	GDVIRTUAL_BIND(_get_name);
+	GDVIRTUAL_BIND(_get_short_name);
 	GDVIRTUAL_BIND(_get_features);
 
 	GDVIRTUAL_BIND(_free_rid, "rid");
@@ -59,6 +60,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_data, "font_rid", "data");
 	GDVIRTUAL_BIND(_font_set_data_ptr, "font_rid", "data_ptr", "data_size");
+	GDVIRTUAL_BIND(_font_validate, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_face_index, "font_rid", "face_index");
 	GDVIRTUAL_BIND(_font_get_face_index, "font_rid");
@@ -414,6 +416,16 @@ String TextServerExtension::get_name() const {
 	return ret;
 }
 
+String TextServerExtension::get_short_name() const {
+	String ret = "unknown";
+	GDVIRTUAL_CALL(_get_short_name, ret);
+	if (ret == "unknown") {
+		// Fall back to a simplified version of the full name if not overridden.
+		ret = get_name().to_lower().replace_char(' ', '_');
+	}
+	return ret;
+}
+
 int64_t TextServerExtension::get_features() const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_get_features, ret);
@@ -510,6 +522,12 @@ void TextServerExtension::font_set_data(const RID &p_font_rid, const PackedByteA
 
 void TextServerExtension::font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) {
 	GDVIRTUAL_CALL(_font_set_data_ptr, p_font_rid, p_data_ptr, p_data_size);
+}
+
+bool TextServerExtension::font_validate(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_validate, p_font_rid, ret);
+	return ret;
 }
 
 void TextServerExtension::font_set_face_index(const RID &p_font_rid, int64_t p_index) {
@@ -1460,13 +1478,13 @@ bool TextServerExtension::shaped_text_is_ready(const RID &p_shaped) const {
 }
 
 const Glyph *TextServerExtension::shaped_text_get_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_sort_logical(const RID &p_shaped) {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, ret);
 	return ret;
 }
@@ -1520,7 +1538,7 @@ int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped) c
 }
 
 const Glyph *TextServerExtension::shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret);
 	return ret;
 }

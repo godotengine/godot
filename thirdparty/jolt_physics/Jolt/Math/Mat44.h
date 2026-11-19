@@ -236,7 +236,7 @@ private:
 	Vec4						mCol[4];												///< Column
 };
 
-static_assert(std::is_trivial<Mat44>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Mat44>() && std::is_trivially_copyable<Mat44>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

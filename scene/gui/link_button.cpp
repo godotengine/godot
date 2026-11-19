@@ -36,6 +36,10 @@
 #include "servers/display/accessibility_server.h"
 
 void LinkButton::_shape() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
 	Ref<Font> font = theme_cache.font;
 	int font_size = theme_cache.font_size;
 

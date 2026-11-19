@@ -72,13 +72,6 @@ ScriptEditorBase *TextEditor::create_editor(const Ref<Resource> &p_resource) {
 	return nullptr;
 }
 
-Control *TextEditor::get_edit_menu() {
-	if (!edit_menus) {
-		edit_menus = memnew(EditMenus);
-	}
-	return edit_menus;
-}
-
 void TextEditor::register_editor() {
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }

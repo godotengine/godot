@@ -42,9 +42,12 @@ void EditorTranslationPreviewMenu::_prepare() {
 
 	add_radio_check_item(TTRC("None"));
 	set_item_metadata(-1, "");
-	if (current_preview_locale.is_empty()) {
+	if (current_preview_locale.is_empty() || current_preview_locale == TranslationServer::get_singleton()->get_fallback_locale()) {
 		set_item_checked(-1, true);
 	}
+
+	add_check_item(TTRC("Pseudolocalization"), MENU_ID_PSEUDOLOCALIZATION);
+	set_item_checked(-1, EditorNode::get_singleton()->is_pseudolocalization_enabled());
 
 	add_separator();
 
@@ -68,10 +71,25 @@ void EditorTranslationPreviewMenu::_prepare() {
 }
 
 void EditorTranslationPreviewMenu::_pressed(int p_index) {
-	for (int i = 0; i < get_item_count(); i++) {
-		set_item_checked(i, i == p_index);
+	const String locale = get_item_metadata(p_index);
+
+	int pseudo_index = get_item_index(MENU_ID_PSEUDOLOCALIZATION);
+	if (p_index == pseudo_index) {
+		bool pseudo_enabled = !is_item_checked(pseudo_index);
+		set_item_checked(pseudo_index, pseudo_enabled);
+
+		const String preview_locale = EditorNode::get_singleton()->get_preview_locale();
+		EditorNode::get_singleton()->set_preview_locale(
+				preview_locale == TranslationServer::get_singleton()->get_fallback_locale() ? String() : preview_locale,
+				pseudo_enabled);
+	} else {
+		for (int i = 0; i < get_item_count(); i++) {
+			if (i != pseudo_index) {
+				set_item_checked(i, i == p_index);
+			}
+		}
+		EditorNode::get_singleton()->set_preview_locale(locale, EditorNode::get_singleton()->is_pseudolocalization_enabled());
 	}
-	EditorNode::get_singleton()->set_preview_locale(get_item_metadata(p_index));
 }
 
 void EditorTranslationPreviewMenu::_notification(int p_what) {

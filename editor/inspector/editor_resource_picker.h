@@ -141,6 +141,8 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
+	void make_passthrough(bool p_passthrough);
+
 	bool is_resource_allowed(const Ref<Resource> &p_resource);
 	void set_edited_resource(Ref<Resource> p_resource);
 	void set_edited_resource_no_check(Ref<Resource> p_resource);

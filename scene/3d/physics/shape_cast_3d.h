@@ -33,6 +33,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/material.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 
 class CollisionObject3D;
 
@@ -65,10 +66,11 @@ class ShapeCast3D : public Node3D {
 	void _update_debug_shape_material(bool p_check_collision = false);
 	void _update_debug_shape_vertices();
 	void _clear_debug_shape();
+	void _physics_debug_changed();
 
 	// Result
 	int max_results = 32;
-	Vector<PhysicsDirectSpaceState3D::ShapeRestInfo> result;
+	Vector<PS3DT::ShapeRestInfo> result;
 	bool collided = false;
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;
@@ -136,10 +138,12 @@ public:
 	bool is_colliding() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(RequiredParam<const CollisionObject3D> rp_node);
+	void add_exception(RequiredParam<const CollisionObject3D> p_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
+	void remove_exception(RequiredParam<const CollisionObject3D> p_node);
 	void clear_exceptions();
 
 	virtual PackedStringArray get_configuration_warnings() const override;
+
+	ShapeCast3D();
 };

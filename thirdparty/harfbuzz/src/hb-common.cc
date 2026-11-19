@@ -433,14 +433,8 @@ hb_script_from_iso15924_tag (hb_tag_t tag)
   /* Be lenient, adjust case (one capital letter followed by three small letters) */
   tag = (tag & 0xDFDFDFDFu) | 0x00202020u;
 
-  switch (tag) {
-
-    /* These graduated from the 'Q' private-area codes, but
-     * the old code is still aliased by Unicode, and the Qaai
-     * one in use by ICU. */
-    case HB_TAG('Q','a','a','i'): return HB_SCRIPT_INHERITED;
-    case HB_TAG('Q','a','a','c'): return HB_SCRIPT_COPTIC;
-
+  switch (tag)
+  {
     /* Script variants from https://unicode.org/iso15924/ */
     case HB_TAG('A','r','a','n'): return HB_SCRIPT_ARABIC;
     case HB_TAG('C','y','r','s'): return HB_SCRIPT_CYRILLIC;

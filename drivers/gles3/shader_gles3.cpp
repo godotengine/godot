@@ -32,6 +32,7 @@
 
 #ifdef GLES3_ENABLED
 
+#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/string/string_builder.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
@@ -100,6 +101,14 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 			text = String();
 		}
 	}
+}
+
+CharString ShaderGLES3::_decompress_code(const uint8_t *p_compressed, int p_compressed_size, int p_size) {
+	CharString code;
+	code.resize_uninitialized(p_size);
+	const int64_t ret = Compression::decompress((uint8_t *)code.ptrw(), p_size, p_compressed, p_compressed_size, Compression::MODE_DEFLATE);
+	ERR_FAIL_COND_V_MSG(ret != p_size, CharString(), "Embedded shader code is corrupt.");
+	return code;
 }
 
 void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
@@ -200,15 +209,19 @@ void ShaderGLES3::_build_variant_code(StringBuilder &builder, uint32_t p_variant
 	// Insert multiview extension loading, because it needs to appear before
 	// any non-preprocessor code (like the "precision highp..." lines below).
 	builder.append("#ifdef USE_MULTIVIEW\n");
-	builder.append("#if defined(GL_OVR_multiview2)\n");
-	builder.append("#extension GL_OVR_multiview2 : require\n");
-	builder.append("#elif defined(GL_OVR_multiview)\n");
-	builder.append("#extension GL_OVR_multiview : require\n");
-	builder.append("#endif\n");
-	if (p_stage_type == StageType::STAGE_TYPE_VERTEX) {
-		builder.append("layout(num_views=2) in;\n");
+	if (GLES3::Config::get_singleton()->multiview_supported) {
+		builder.append("#if defined(GL_OVR_multiview2)\n");
+		builder.append("#extension GL_OVR_multiview2 : require\n");
+		builder.append("#elif defined(GL_OVR_multiview)\n");
+		builder.append("#extension GL_OVR_multiview : require\n");
+		builder.append("#endif\n");
+		if (p_stage_type == StageType::STAGE_TYPE_VERTEX) {
+			builder.append("layout(num_views=2) in;\n");
+		}
+		builder.append("#define ViewIndex gl_ViewID_OVR\n");
+	} else {
+		builder.append("#define EMULATE_MULTIVIEW\n");
 	}
-	builder.append("#define ViewIndex gl_ViewID_OVR\n");
 	builder.append("#define MAX_VIEWS 2\n");
 	builder.append("#else\n");
 	builder.append("#define ViewIndex uint(0)\n");

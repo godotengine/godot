@@ -32,28 +32,28 @@
  * This should be safe.
  */
 
-constexpr static double EPSILON = 1.0 / (1 << 14);
-constexpr static double MAX_F2DOT14 = double (0x7FFF) / (1 << 14);
+constexpr static float EPSILON = 1.f / (1 << 14);
+constexpr static float MAX_F2DOT14 = float (0x7FFF) / (1 << 14);
 
 static inline Triple _reverse_negate(const Triple &v)
 { return {-v.maximum, -v.middle, -v.minimum}; }
 
 
-static inline double supportScalar (double coord, const Triple &tent)
+static inline float supportScalar (float coord, const Triple &tent)
 {
   /* Copied from VarRegionAxis::evaluate() */
-  double start = tent.minimum, peak = tent.middle, end = tent.maximum;
+  float start = tent.minimum, peak = tent.middle, end = tent.maximum;
 
   if (unlikely (start > peak || peak > end))
-    return 1.;
+    return 1.f;
   if (unlikely (start < 0 && end > 0 && peak != 0))
-    return 1.;
+    return 1.f;
 
   if (peak == 0 || coord == peak)
-    return 1.;
+    return 1.f;
 
   if (coord <= start || end <= coord)
-    return 0.;
+    return 0.f;
 
   /* Interpolate */
   if (coord < peak)
@@ -66,12 +66,12 @@ static inline void
 _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative = false)
 {
   out.reset();
-  double axisMin = axisLimit.minimum;
-  double axisDef = axisLimit.middle;
-  double axisMax = axisLimit.maximum;
-  double lower = tent.minimum;
-  double peak  = tent.middle;
-  double upper = tent.maximum;
+  float axisMin = axisLimit.minimum;
+  float axisDef = axisLimit.middle;
+  float axisMax = axisLimit.maximum;
+  float lower = tent.minimum;
+  float peak  = tent.middle;
+  float upper = tent.maximum;
 
   // Mirror the problem such that axisDef <= peak
   if (axisDef > peak)
@@ -129,7 +129,7 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
    */
   if (axisMax < peak)
   {
-    double mult = supportScalar (axisMax, tent);
+    float mult = supportScalar (axisMax, tent);
     tent = Triple{lower, axisMax, axisMax};
 
     _solve (tent, axisLimit, out);
@@ -142,13 +142,13 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
 
   // lower <= axisDef <= peak <= axisMax
 
-  double gain = supportScalar (axisDef, tent);
+  float gain = supportScalar (axisDef, tent);
   out.push(hb_pair (gain, Triple{}));
 
   // First, the positive side
 
   // outGain is the scalar of axisMax at the tent.
-  double outGain = supportScalar (axisMax, tent);
+  float outGain = supportScalar (axisMax, tent);
 
   /* Case 3a: Gain is more than outGain. The tent down-slope crosses
    * the axis into negative. We have to split it into multiples.
@@ -172,10 +172,10 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
     // Note that this is the branch taken if both gain and outGain are 0.
 
     // Crossing point on the axis.
-    double crossing = peak + (1 - gain) * (upper - peak);
+    float crossing = peak + (1 - gain) * (upper - peak);
 
     Triple loc{hb_max (lower, axisDef), peak, crossing};
-    double scalar = 1.0;
+    float scalar = 1.f;
 
     // The part before the crossing point.
     out.push (hb_pair (scalar - gain, loc));
@@ -190,7 +190,7 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
     if (upper >= axisMax)
     {
       Triple loc {crossing, axisMax, axisMax};
-      double scalar = outGain;
+      float scalar = outGain;
 
       out.push (hb_pair (scalar - gain, loc));
     }
@@ -220,11 +220,11 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
 
       // Downslope.
       Triple loc1 {crossing, upper, axisMax};
-      double scalar1 = 0.0;
+      float scalar1 = 0.f;
 
       // Eternity justify.
       Triple loc2 {upper, axisMax, axisMax};
-      double scalar2 = 0.0;
+      float scalar2 = 0.f;
 
       out.push (hb_pair (scalar1 - gain, loc1));
       out.push (hb_pair (scalar2 - gain, loc2));
@@ -253,7 +253,7 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
      *                    |      |  newUpper
      *              axisDef      axisMax
      */
-    double newUpper = peak + (1 - gain) * (upper - peak);
+    float newUpper = peak + (1 - gain) * (upper - peak);
     assert (axisMax <= newUpper);  // Because outGain > gain
     /* Disabled because ots doesn't like us:
      * https://github.com/fonttools/fonttools/issues/3350 */
@@ -269,7 +269,7 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
       }
 
       Triple loc {hb_max (axisDef, lower), peak, upper};
-      double scalar = 1.0;
+      float scalar = 1.f;
 
       out.push (hb_pair (scalar - gain, loc));
     }
@@ -293,10 +293,10 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
     else
     {
       Triple loc1 {hb_max (axisDef, lower), peak, axisMax};
-      double scalar1 = 1.0;
+      float scalar1 = 1.f;
 
       Triple loc2 {peak, axisMax, axisMax};
-      double scalar2 = outGain;
+      float scalar2 = outGain;
 
       out.push (hb_pair (scalar1 - gain, loc1));
       // Don't add a dirac delta!
@@ -324,7 +324,7 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
   if (lower <= axisMin)
   {
     Triple loc {axisMin, axisMin, axisDef};
-    double scalar = supportScalar (axisMin, tent);
+    float scalar = supportScalar (axisMin, tent);
 
     out.push (hb_pair (scalar - gain, loc));
   }
@@ -352,11 +352,11 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
 
     // Downslope.
     Triple loc1 {axisMin, lower, axisDef};
-    double scalar1 = 0.0;
+    float scalar1 = 0.f;
 
     // Eternity justify.
     Triple loc2 {axisMin, axisMin, lower};
-    double scalar2 = 0.0;
+    float scalar2 = 0.f;
 
     out.push (hb_pair (scalar1 - gain, loc1));
     out.push (hb_pair (scalar2 - gain, loc2));
@@ -366,48 +366,48 @@ _solve (Triple tent, Triple axisLimit, rebase_tent_result_t &out, bool negative 
 static inline TripleDistances _reverse_triple_distances (const TripleDistances &v)
 { return TripleDistances (v.positive, v.negative); }
 
-double renormalizeValue (double v, const Triple &triple,
+float renormalizeValue (float v, const Triple &triple,
                          const TripleDistances &triple_distances, bool extrapolate)
 {
-  double lower = triple.minimum, def = triple.middle, upper = triple.maximum;
+  float lower = triple.minimum, def = triple.middle, upper = triple.maximum;
   if (unlikely (!(lower <= def && def <= upper)))
-    return hb_clamp (v, -1.0, +1.0);
+    return hb_clamp (v, -1.f, +1.f);
 
   if (!extrapolate)
     v = hb_clamp (v, lower, upper);
 
   if (v == def)
-    return 0.0;
+    return 0.f;
 
-  if (def < 0.0)
+  if (def < 0.f)
     return -renormalizeValue (-v, _reverse_negate (triple),
                               _reverse_triple_distances (triple_distances), extrapolate);
 
   /* default >= 0 and v != default */
   if (v > def)
   {
-    double positive_range = upper - def;
+    float positive_range = upper - def;
     if (unlikely (!positive_range))
-      return +1.0;
+      return +1.f;
     return (v - def) / positive_range;
   }
 
   /* v < def */
-  if (lower >= 0.0)
+  if (lower >= 0.f)
   {
-    double negative_range = def - lower;
+    float negative_range = def - lower;
     if (unlikely (!negative_range))
-      return -1.0;
+      return -1.f;
     return (v - def) / negative_range;
   }
 
   /* lower < 0 and v < default */
-  double total_distance = triple_distances.negative * (-lower) + triple_distances.positive * def;
+  float total_distance = triple_distances.negative * (-lower) + triple_distances.positive * def;
   if (unlikely (!total_distance))
-    return 0.0;
+    return 0.f;
 
-  double v_distance;
-  if (v >= 0.0)
+  float v_distance;
+  if (v >= 0.f)
     v_distance = (def - v) * triple_distances.positive;
   else
     v_distance = (-v) * triple_distances.negative + triple_distances.positive * def;
@@ -420,15 +420,15 @@ rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distance
 	     rebase_tent_result_t &out,
 	     rebase_tent_result_t &scratch)
 {
-  if (unlikely (!(-1.0 <= axisLimit.minimum &&
+  if (unlikely (!(-1.f <= axisLimit.minimum &&
                   axisLimit.minimum <= axisLimit.middle &&
                   axisLimit.middle <= axisLimit.maximum &&
-                  axisLimit.maximum <= +1.0) ||
-                !(-2.0 <= tent.minimum &&
+                  axisLimit.maximum <= +1.f) ||
+                !(-2.f <= tent.minimum &&
                   tent.minimum <= tent.middle &&
                   tent.middle <= tent.maximum &&
-                  tent.maximum <= +2.0) ||
-                tent.middle == 0.0))
+                  tent.maximum <= +2.f) ||
+                tent.middle == 0.f))
   {
     out.reset ();
     return;
@@ -437,7 +437,7 @@ rebase_tent (Triple tent, Triple axisLimit, TripleDistances axis_triple_distance
   rebase_tent_result_t &sols = scratch;
   _solve (tent, axisLimit, sols);
 
-  auto n = [&axisLimit, &axis_triple_distances] (double v) { return renormalizeValue (v, axisLimit, axis_triple_distances); };
+  auto n = [&axisLimit, &axis_triple_distances] (float v) { return renormalizeValue (v, axisLimit, axis_triple_distances); };
 
   out.reset();
   for (auto &p : sols)

@@ -65,6 +65,7 @@ class RayCast3D : public Node3D {
 	void _update_debug_shape_material(bool p_check_collision = false);
 	void _update_debug_shape_vertices();
 	void _clear_debug_shape();
+	void _physics_debug_changed();
 
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
@@ -129,9 +130,9 @@ public:
 	int get_collision_face_index() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(RequiredParam<const CollisionObject3D> rp_node);
+	void add_exception(RequiredParam<const CollisionObject3D> p_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
+	void remove_exception(RequiredParam<const CollisionObject3D> p_node);
 	void clear_exceptions();
 
 	RayCast3D();

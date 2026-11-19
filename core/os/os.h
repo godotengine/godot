@@ -116,12 +116,16 @@ private:
 	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
 	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
+	Vector<String> _read_elf_debug_id(const Ref<FileAccess> &p_f) const;
+	Vector<String> _read_pe_debug_id(const Ref<FileAccess> &p_f) const;
+	Vector<String> _read_macho_debug_id(const Ref<FileAccess> &p_f) const;
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
 	friend class Main;
 	// Needed by tests to setup command-line args.
-	friend int test_main(int argc, char *argv[]);
+	friend int test_main(int p_argc, char *p_argv[]);
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	bool _separate_thread_render = false;
@@ -212,7 +216,7 @@ public:
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }
 	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return Vector<String>(); }
 	virtual String get_executable_path() const;
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool p_read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) = 0;
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
@@ -247,6 +251,8 @@ public:
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 
+	Vector<String> get_debug_build_id(const String &p_path) const;
+
 	void ensure_user_data_dir();
 
 	// NOTE: MainLoop is forward-declared in OS and should be included to use this.
@@ -270,7 +276,7 @@ public:
 		String name;
 	};
 
-	virtual DateTime get_datetime(bool utc = false) const = 0;
+	virtual DateTime get_datetime(bool p_utc = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 
@@ -308,6 +314,7 @@ public:
 	bool is_separate_thread_rendering_enabled() const { return _separate_thread_render; }
 
 	virtual String get_locale() const;
+	virtual Vector<String> get_preferred_locales() const { return Vector<String>{ get_locale() }; }
 	String get_locale_language() const;
 
 	virtual uint64_t get_embedded_pck_offset() const;
