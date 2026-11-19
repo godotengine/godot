@@ -1030,6 +1030,13 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
+		<method name="snapshot_set_name">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Sets [member name] like setting it does, but keeps a name the engine gave, which contains [code]@[/code] (as [method add_child] names a node whose name a sibling already has). Savestate systems use it to bring a node back at the path it had.
+			</description>
+		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>

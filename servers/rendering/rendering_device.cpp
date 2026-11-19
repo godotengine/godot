@@ -10226,10 +10226,11 @@ RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const
 		ERR_FAIL_COND_V(byte_slice.is_empty(), RID());
 		data.push_back(byte_slice);
 	}
-	// Everything a script creates must be able to come back from a snapshot.
+	// Everything a script creates must be able to come back from a snapshot,
+	// and a target saved without its contents comes back cleared (texture_clear).
 	TextureFormat format = p_format->base;
 	if (format.samples == TEXTURE_SAMPLES_1 && !(format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT)) {
-		format.usage_bits |= TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT;
+		format.usage_bits |= TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT | TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	}
 	return _snapshot_record(texture_create(format, p_view->base, data), "texture_create", varray(p_format, p_view, p_data.duplicate()));
 }

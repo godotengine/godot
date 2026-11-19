@@ -243,6 +243,8 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
 		}
 	}
+
+	Control::list_unlisted_theme_overrides(p_list, theme_icon_override, theme_style_override, theme_font_override, theme_font_size_override, theme_color_override, theme_constant_override);
 }
 
 void Window::_validate_property(PropertyInfo &p_property) const {

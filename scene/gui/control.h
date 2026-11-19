@@ -50,6 +50,9 @@ class Control : public CanvasItem {
 #endif // TOOLS_ENABLED
 
 public:
+	// Lists the overrides whose names are not theme items of the class (a script's own names), so they are stored like the others.
+	static void list_unlisted_theme_overrides(List<PropertyInfo> *p_list, const Theme::ThemeIconMap &p_icons, const Theme::ThemeStyleMap &p_styles, const Theme::ThemeFontMap &p_fonts, const Theme::ThemeFontSizeMap &p_font_sizes, const Theme::ThemeColorMap &p_colors, const Theme::ThemeConstantMap &p_constants);
+
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::CONTROL;
 
 	enum Anchor {

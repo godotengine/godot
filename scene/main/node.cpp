@@ -1473,6 +1473,16 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 }
 
 void Node::set_name(const StringName &p_name) {
+	_set_name(p_name, false);
+}
+
+// The name as it was, also one the engine gave (with '@', from add_child() of a
+// node whose name was taken), so a snapshot comes back at the same paths.
+void Node::snapshot_set_name(const StringName &p_name) {
+	_set_name(p_name, true);
+}
+
+void Node::_set_name(const StringName &p_name, bool p_allow_internal) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
 	ERR_FAIL_COND(p_name.is_empty());
 
@@ -1483,11 +1493,12 @@ void Node::set_name(const StringName &p_name) {
 
 	{
 		const String input_name_str = String(p_name);
-		const String validated_node_name_string = input_name_str.validate_node_name();
-		if (input_name_str == validated_node_name_string) {
+		// '@' only marks names the engine gives; the rest is validated as usual.
+		const String checked = p_allow_internal ? input_name_str.replace("@", "") : input_name_str;
+		if (checked == checked.validate_node_name()) {
 			data.name = p_name;
 		} else {
-			data.name = StringName(validated_node_name_string);
+			data.name = StringName(input_name_str.validate_node_name());
 		}
 	}
 
@@ -3797,6 +3808,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
+	ClassDB::bind_method(D_METHOD("snapshot_set_name", "name"), &Node::snapshot_set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);

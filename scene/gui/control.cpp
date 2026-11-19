@@ -484,6 +484,36 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 			} break;
 		}
 	}
+
+	list_unlisted_theme_overrides(p_list, data.theme_icon_override, data.theme_style_override, data.theme_font_override, data.theme_font_size_override, data.theme_color_override, data.theme_constant_override);
+}
+
+template <typename M>
+static void _list_unlisted_overrides(List<PropertyInfo> *p_list, const HashSet<String> &p_listed, const String &p_prefix, Variant::Type p_type, const M &p_map) {
+	for (const auto &E : p_map) {
+		const String name = p_prefix + String(E.key);
+		if (!p_listed.has(name)) {
+			p_list->push_back(PropertyInfo(p_type, name, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		}
+	}
+}
+
+void Control::list_unlisted_theme_overrides(List<PropertyInfo> *p_list, const Theme::ThemeIconMap &p_icons, const Theme::ThemeStyleMap &p_styles, const Theme::ThemeFontMap &p_fonts, const Theme::ThemeFontSizeMap &p_font_sizes, const Theme::ThemeColorMap &p_colors, const Theme::ThemeConstantMap &p_constants) {
+	if (p_icons.is_empty() && p_styles.is_empty() && p_fonts.is_empty() && p_font_sizes.is_empty() && p_colors.is_empty() && p_constants.is_empty()) {
+		return;
+	}
+	HashSet<String> listed;
+	for (const PropertyInfo &E : *p_list) {
+		if (E.name.begins_with("theme_override_")) {
+			listed.insert(E.name);
+		}
+	}
+	_list_unlisted_overrides(p_list, listed, "theme_override_icons/", Variant::OBJECT, p_icons);
+	_list_unlisted_overrides(p_list, listed, "theme_override_styles/", Variant::OBJECT, p_styles);
+	_list_unlisted_overrides(p_list, listed, "theme_override_fonts/", Variant::OBJECT, p_fonts);
+	_list_unlisted_overrides(p_list, listed, "theme_override_font_sizes/", Variant::INT, p_font_sizes);
+	_list_unlisted_overrides(p_list, listed, "theme_override_colors/", Variant::COLOR, p_colors);
+	_list_unlisted_overrides(p_list, listed, "theme_override_constants/", Variant::INT, p_constants);
 }
 
 void Control::_validate_property(PropertyInfo &p_property) const {

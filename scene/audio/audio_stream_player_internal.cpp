@@ -334,7 +334,8 @@ bool AudioStreamPlayerInternal::has_stream_playback() {
 
 Dictionary AudioStreamPlayerInternal::snapshot_get_state() {
 	Dictionary state;
-	state["playing"] = is_playing();
+	// A paused playback (stream_paused, or the tree paused) is still playing: it resumes where it stopped.
+	state["playing"] = is_playing() || get_stream_paused();
 	state["position"] = get_playback_position();
 	state["stream_paused"] = get_stream_paused();
 	return state;
