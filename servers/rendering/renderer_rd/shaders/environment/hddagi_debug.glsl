@@ -13,9 +13,10 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
-layout(set = 0, binding = 3) uniform texture3D light_cascades;
+#define HDDAGI_DATA_BINDING 3
+#define HDDAGI_PAGE_BINDING 5
+#include "hddagi_voxel_pages_inc.glsl"
 layout(set = 0, binding = 4) uniform sampler linear_sampler;
-layout(r32ui, set = 0, binding = 5) uniform restrict readonly uimage3D voxel_neighbours;
 
 struct CascadeData {
 	vec3 offset;
@@ -85,9 +86,9 @@ void main() {
 		hit_cell += hit_face;
 		ivec3 read_cell = (hit_cell + cascades.data[hit_cascade].region_world_offset * REGION_SIZE) & (ivec3(params.grid_size) - 1);
 		ivec3 cascade_offset = ivec3(0, int(params.grid_size.y) * hit_cascade, 0);
-		light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + cascade_offset, 0).rgb;
+		light = hddagi_read_light(read_cell + cascade_offset);
 
-		uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + cascade_offset).r & HDDAGI_LIGHT_CELL_NEIGHBOUR_MASK;
+		uint neighbour_bits = hddagi_read_neighbours(read_cell + cascade_offset) & HDDAGI_LIGHT_CELL_NEIGHBOUR_MASK;
 		float to_cell = cascades.data[hit_cascade].to_cell;
 		vec3 light_cell_pos = (vec3(hit_cell) + 0.5) / to_cell + cascades.data[hit_cascade].offset;
 		vec4 light_accum = vec4(light, 1.0) * max(0.0, 1.0 - point_to_ray_distance(light_cell_pos, ray_pos, ray_dir) * to_cell);
@@ -98,7 +99,7 @@ void main() {
 			float weight = max(0.0, 1.0 - point_to_ray_distance(neighbour_pos, ray_pos, ray_dir) * to_cell);
 			if (weight > 0.0) {
 				read_cell = (hit_cell + offset + cascades.data[hit_cascade].region_world_offset * REGION_SIZE) & (ivec3(params.grid_size) - 1);
-				vec3 neighbour_light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + cascade_offset, 0).rgb;
+				vec3 neighbour_light = hddagi_read_light(read_cell + cascade_offset);
 				light_accum += vec4(neighbour_light, 1.0) * weight;
 			}
 			neighbour_bits &= ~(1u << index);

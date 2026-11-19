@@ -8,6 +8,7 @@
 #extension GL_EXT_samplerless_texture_functions : enable
 #endif
 
+#include "hddagi_radiance_inc.glsl"
 #include "hddagi_voxel_metadata_inc.glsl"
 
 #define square(m) ((m) * (m))
@@ -25,6 +26,7 @@ layout(constant_id = 0) const bool sc_half_res = false;
 layout(constant_id = 1) const bool sc_use_full_projection_matrix = false;
 layout(constant_id = 2) const bool sc_use_vrs = false;
 layout(constant_id = 3) const bool sc_half_reflections = false;
+layout(constant_id = 4) const bool sc_diffuse_only = false;
 
 #define HDDAGI_MAX_CASCADES 8
 
@@ -32,7 +34,9 @@ layout(constant_id = 3) const bool sc_half_reflections = false;
 
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
-layout(set = 0, binding = 3) uniform texture3D light_cascades;
+#define HDDAGI_DATA_BINDING 3
+#define HDDAGI_PAGE_BINDING 10
+#include "hddagi_voxel_pages_inc.glsl"
 
 layout(set = 0, binding = 4) uniform texture2DArray lightprobe_specular;
 layout(set = 0, binding = 5) uniform texture2DArray lightprobe_diffuse;
@@ -40,8 +44,6 @@ layout(set = 0, binding = 6) uniform texture3D occlusion[2];
 
 layout(set = 0, binding = 7) uniform sampler linear_sampler;
 layout(set = 0, binding = 8) uniform sampler linear_sampler_with_mipmaps;
-
-layout(r32ui, set = 0, binding = 10) uniform restrict readonly uimage3D voxel_neighbours;
 
 struct ProbeCascadeData {
 	vec3 position;
@@ -169,21 +171,6 @@ vec4 blend_color(vec4 src, vec4 dst) {
 	return res;
 }
 
-uint rgbe_encode(vec3 rgb) {
-	const float rgbe_max = uintBitsToFloat(0x477F8000);
-	const float rgbe_min = uintBitsToFloat(0x37800000);
-
-	rgb = clamp(rgb, 0, rgbe_max);
-
-	float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
-
-	float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-
-	uvec3 urgb = floatBitsToUint(rgb + bias);
-	uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-	return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
-}
-
 vec3 reconstruct_position(ivec2 screen_pos) {
 	if (sc_use_full_projection_matrix) {
 		vec4 pos;
@@ -227,15 +214,9 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 #define OCC_DISTANCE_MAX 16.0
 #define REGION_SIZE 8
 
-ivec3 modi(ivec3 value, ivec3 p_y) {
-	// GLSL Specification says:
-	// "Results are undefined if one or both operands are negative."
-	// So..
-	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
-}
-
-ivec2 probe_to_tex(ivec3 local_probe, int p_cascade) {
-	ivec3 cell = modi(hddagi.cascades[p_cascade].region_world_offset + local_probe, hddagi.probe_axis_size);
+ivec2 probe_to_tex(ivec3 wrapped_base, ivec3 offset) {
+	ivec3 cell = wrapped_base + offset;
+	cell = mix(cell, cell - hddagi.probe_axis_size, greaterThanEqual(cell, hddagi.probe_axis_size));
 	return cell.xy + ivec2(0, cell.z * int(hddagi.probe_axis_size.y));
 }
 
@@ -286,23 +267,6 @@ float dist_to_box(vec3 min_bound, vec3 max_bound, bvec3 step, vec3 pos, vec3 inv
 	return min(box.x, min(box.y, box.z));
 }
 
-float point_to_ray_distance(vec3 point, vec3 ray_origin, vec3 ray_direction) {
-	// Normalize the ray direction
-	vec3 dir_normalized = normalize(ray_direction);
-
-	// Compute the vector from the ray origin to the point
-	vec3 vec_to_point = point - ray_origin;
-
-	// Project the vector to point onto the ray direction
-	float t = dot(vec_to_point, dir_normalized);
-
-	// Calculate the projection point on the ray
-	vec3 projection = ray_origin + t * dir_normalized;
-
-	// Return the distance between the point and its projection on the ray
-	return length(point - projection);
-}
-
 //find arbitrary tangent and bitangent, then build a matrix
 mat3 create_basis_from_normal(vec3 normal) {
 	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
@@ -336,6 +300,10 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 
 	ivec3 posi = ivec3(posf);
 	ivec3 base_probe = posi / PROBE_CELLS;
+	ivec3 world_probe = hddagi.cascades[cascade].region_world_offset + base_probe;
+	ivec3 wrapped_base = hddagi_wrap_probe(world_probe, hddagi.probe_axis_size);
+	ivec3 parity = world_probe & 1;
+	int base_channel = parity.x | (parity.y << 1) | (parity.z << 2);
 
 	vec3 diffuse_accum = vec3(0.0);
 	vec3 specular_accum = vec3(0.0);
@@ -384,8 +352,6 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	occ_0 = clamp(occ_0 + correction_0 * blend_0 * safe_0, 0.0, 1.0);
 	occ_1 = clamp(occ_1 + correction_1 * blend_1 * safe_1, 0.0, 1.0);
 
-	vec4 accum_light = vec4(0.0);
-
 	vec2 light_probe_tex_to_uv = 1.0 / vec2((LIGHTPROBE_OCT_SIZE + 2) * hddagi.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE + 2) * hddagi.probe_axis_size.y * hddagi.probe_axis_size.z);
 	vec2 light_uv = octahedron_encode(vec3(cam_normal)) * float(LIGHTPROBE_OCT_SIZE);
 	vec2 light_uv_spec = octahedron_encode(vec3(cam_specular_normal)) * float(LIGHTPROBE_OCT_SIZE);
@@ -394,8 +360,8 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 	if ((params.world_gi_flags & 8u) != 0u) {
 		valid_probes = 0u;
 		for (int i = 0; i < 8; i++) {
-			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1));
-			float proximity = texelFetch(sampler2DArray(probe_geometry_proximity, linear_sampler), ivec3(probe_to_tex(probe, cascade), cascade), 0).r;
+			ivec3 offset = (ivec3(i) >> ivec3(0, 1, 2)) & 1;
+			float proximity = texelFetch(sampler2DArray(probe_geometry_proximity, linear_sampler), ivec3(probe_to_tex(wrapped_base, offset), cascade), 0).r;
 			if (proximity < 0.7 || proximity > 0.8) {
 				valid_probes |= 1u << uint(i);
 			}
@@ -410,13 +376,13 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		if ((valid_probes & (1u << uint(i))) == 0u) {
 			continue;
 		}
-		ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
+		ivec3 offset = (ivec3(i) >> ivec3(0, 1, 2)) & 1;
+		ivec3 probe = base_probe + offset;
 
 		vec3 probe_pos = vec3(probe * PROBE_CELLS);
 
 		vec3 probe_to_pos = posf - probe_pos;
 		vec3 n = normalize(probe_to_pos);
-		float d = length(probe_to_pos);
 
 		float weight = 1.0;
 		//weight *= pow(max(0.0001, (dot(-n, cam_normal) + 1.0) * 0.5),2.0) + 0.2;
@@ -424,26 +390,13 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 			weight *= max(0.005, (dot(-n, cam_normal)));
 		}
 
-		ivec3 probe_occ = (hddagi.cascades[cascade].region_world_offset + probe) & ivec3(1);
-
-		uint weight_index = 0;
-		if (probe_occ.x != 0) {
-			weight_index |= 1;
-		}
-		if (probe_occ.y != 0) {
-			weight_index |= 2;
-		}
-		if (probe_occ.z != 0) {
-			weight_index |= 4;
-		}
-
-		weight *= hddagi_occlusion_weight(occ_0, occ_1, int(weight_index));
+		weight *= hddagi_occlusion_weight(occ_0, occ_1, base_channel ^ i);
 
 		vec3 trilinear = vec3(1.0) - abs(probe_to_pos / float(PROBE_CELLS));
 
 		weight *= trilinear.x * trilinear.y * trilinear.z;
 
-		ivec2 tex_pos = probe_to_tex(probe, cascade);
+		ivec2 tex_pos = probe_to_tex(wrapped_base, offset);
 		vec2 base_tex_uv = vec2(ivec2(tex_pos * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1)));
 		vec2 tex_uv = base_tex_uv + light_uv;
 		tex_uv *= light_probe_tex_to_uv;
@@ -456,14 +409,14 @@ void sdfvoxel_gi_process(int cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_n
 		tex_uv *= light_probe_tex_to_uv;
 
 		vec3 probe_ref_light;
-		if (roughness < 0.99 && (params.world_gi_flags & 3u) != 2u) {
+		if (roughness < ROUGHNESS_TO_REFLECTION_FULL_BLUR && (params.world_gi_flags & 3u) != 2u) {
 			probe_ref_light = texture(sampler2DArray(lightprobe_specular, linear_sampler), vec3(tex_uv, float(cascade))).rgb;
 		} else {
 			probe_ref_light = vec3(0.0);
 		}
 
 		vec3 probe_ref_full_light;
-		if (roughness > ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+		if (roughness > ROUGHNESS_TO_REFLECTION_TRESHOOLD && (params.world_gi_flags & 3u) != 2u) {
 			probe_ref_full_light = texture(sampler2DArray(lightprobe_diffuse, linear_sampler), vec3(tex_uv, float(cascade))).rgb;
 		} else {
 			probe_ref_full_light = vec3(0.0);
@@ -617,7 +570,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 						// self hit the start cell, ouch, load the disocclusion
 
 						ivec3 read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-						uint disocc = hddagi_unpack_disocclusion(imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r);
+						uint disocc = hddagi_unpack_disocclusion(hddagi_read_neighbours(read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)));
 
 						if (disocc == 0) {
 							// Can happen.. guess.
@@ -650,7 +603,7 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 							hit_cell += ivec3(advance);
 
 							read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-							disocc = hddagi_unpack_disocclusion(imageLoad(voxel_neighbours, read_cell + ivec3(0, hddagi.grid_size.y * hit_cascade, 0)).r);
+							disocc = hddagi_unpack_disocclusion(hddagi_read_neighbours(read_cell + ivec3(0, hddagi.grid_size.y * hit_cascade, 0)));
 						}
 
 						// find best disocclusion direction.
@@ -686,29 +639,24 @@ void hddagi_process(vec3 vertex, vec3 normal, vec3 reflection, float roughness, 
 				if (valid) {
 					hit_cell += hit_face;
 					ivec3 read_cell = (hit_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-					light.rgb = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0), 0).rgb;
+					light.rgb = hddagi_read_light(read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0));
 					light.a = 1;
 
 					if (!disoccluded) {
-						uint neighbour_bits = imageLoad(voxel_neighbours, read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)).r & HDDAGI_LIGHT_CELL_NEIGHBOUR_MASK;
-						vec3 cascade_ofs = hddagi.cascades[hit_cascade].position;
-						float to_cell = hddagi.cascades[hit_cascade].to_cell;
-						float cascade_cell_size = 1.0 / to_cell;
-						vec3 light_cell_pos = (vec3(hit_cell) + 0.5) * cascade_cell_size + cascade_ofs;
-						vec4 light_accum = vec4(light.rgb, 1.0) * max(0.0, 1.0 - point_to_ray_distance(light_cell_pos, ray_pos, ray_dir) * to_cell);
-						while (neighbour_bits != 0) {
-							uint msb = findLSB(neighbour_bits);
-							vec3 rel = vec3(hddagi_light_neighbour_direction(msb));
-							vec3 neighbour_pos = light_cell_pos + rel * cascade_cell_size;
-							float w = max(0.0, 1.0 - point_to_ray_distance(neighbour_pos, ray_pos, ray_dir) * to_cell);
+						uint neighbour_bits = hddagi_read_neighbours(read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0)) & HDDAGI_LIGHT_CELL_NEIGHBOUR_MASK;
+						vec3 cell_delta = vec3(hit_cell) + 0.5 - (ray_pos - hddagi.cascades[hit_cascade].position) * hddagi.cascades[hit_cascade].to_cell;
+						vec3 direction = normalize(ray_dir);
+						vec4 light_accum = vec4(light.rgb, 1.0) * hddagi_light_ray_weight(cell_delta, direction);
+						while (neighbour_bits != 0u) {
+							ivec3 offset = hddagi_light_neighbour_direction(findLSB(neighbour_bits));
+							float w = hddagi_light_ray_weight(cell_delta + vec3(offset), direction);
 							if (w > 0.0) {
-								ivec3 neighbour_cell = hit_cell + hddagi_light_neighbour_direction(msb);
-								read_cell = (neighbour_cell + (hddagi.cascades[hit_cascade].region_world_offset * REGION_SIZE)) & (ivec3(hddagi.grid_size) - 1);
-								vec3 neighbour_light = texelFetch(sampler3D(light_cascades, linear_sampler), read_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0), 0).rgb;
+								ivec3 neighbour_cell = (read_cell + offset) & (hddagi.grid_size - 1);
+								vec3 neighbour_light = hddagi_read_light(neighbour_cell + ivec3(0, (hddagi.grid_size.y * hit_cascade), 0));
 								light_accum += vec4(neighbour_light, 1.0) * w;
 							}
 
-							neighbour_bits &= ~(1 << msb);
+							neighbour_bits &= neighbour_bits - 1u;
 						}
 
 						if (light_accum.a > 0.0) {
@@ -869,7 +817,7 @@ void process_gi(ivec2 pos, vec3 view_vertex, vec3 view_normal, float roughness, 
 	vec3 reflection = normalize(reflect(-view, normal));
 #ifdef USE_HDDAGI
 	hddagi_process(vertex, normal, reflection, roughness, dynamic_object, trace_reflection, ambient_light, reflection_light);
-	if ((params.world_gi_flags & 3u) == 2u) {
+	if (sc_diffuse_only || (params.world_gi_flags & 3u) == 2u) {
 		reflection_light = vec4(0.0);
 	}
 #endif
@@ -1003,12 +951,14 @@ void main() {
 	group_reflections[group_pos] = reflection_light;
 #endif
 
-	memoryBarrierShared();
-	barrier();
+	if (!sc_diffuse_only) {
+		memoryBarrierShared();
+		barrier();
+	}
 
 #ifdef USE_HDDAGI
 
-	if (thread_active) {
+	if (!sc_diffuse_only && thread_active) {
 		if (reuse_reflection) {
 			reflection_light = group_reflections[reflection_source];
 		} else if (roughness < ROUGHNESS_TO_REFLECTION_TRESHOOLD) {

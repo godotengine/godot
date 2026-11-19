@@ -5,6 +5,7 @@
 #VERSION_DEFINES
 
 #include "../oct_inc.glsl"
+#include "hddagi_radiance_inc.glsl"
 #include "hddagi_voxel_metadata_inc.glsl"
 
 #ifndef MOLTENVK_USED
@@ -33,7 +34,9 @@ layout(local_size_x = LIGHTPROBE_OCT_SIZE, local_size_y = LIGHTPROBE_OCT_SIZE, l
 layout(rg32ui, set = 0, binding = 1) uniform restrict readonly uimage3D voxel_cascades;
 layout(r8ui, set = 0, binding = 2) uniform restrict readonly uimage3D voxel_region_cascades;
 
-layout(set = 0, binding = 3) uniform texture3D light_cascades;
+#define HDDAGI_DATA_BINDING 3
+#define HDDAGI_PAGE_BINDING 18
+#include "hddagi_voxel_pages_inc.glsl"
 layout(set = 0, binding = 4) uniform sampler linear_sampler;
 layout(r32ui, set = 0, binding = 5) uniform restrict uimage2DArray lightprobe_texture_data;
 layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage2DArray lightprobe_diffuse_data;
@@ -157,26 +160,6 @@ vec3 octahedron_decode(vec2 f) {
 	return normalize(n);
 }
 
-uint rgbe_encode(vec3 rgb) {
-	const float rgbe_max = uintBitsToFloat(0x477F8000);
-	const float rgbe_min = uintBitsToFloat(0x37800000);
-
-	rgb = clamp(rgb, 0, rgbe_max);
-
-	float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
-
-	float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-
-	uvec3 urgb = floatBitsToUint(rgb + bias);
-	uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-	return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
-}
-
-vec3 rgbe_decode(uint p_rgbe) {
-	vec4 rgbef = vec4((uvec4(p_rgbe) >> uvec4(0, 9, 18, 27)) & uvec4(0x1FF, 0x1FF, 0x1FF, 0x1F));
-	return rgbef.rgb * pow(2.0, rgbef.a - 15.0 - 9.0);
-}
-
 #define FP_BITS 14
 #define FP_MAX ((1 << 22) - 1)
 
@@ -219,17 +202,36 @@ probe_lookup;
 shared uvec3 neighbours_accum[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared vec3 neighbors[LIGHTPROBE_OCT_SIZE * LIGHTPROBE_OCT_SIZE];
 shared uvec3 ambient_accum;
-shared int probe_history_index;
 
 // MODE_PROCESS
 #endif
 
-ivec3 modi(ivec3 value, ivec3 p_y) {
-	// GLSL Specification says:
-	// "Results are undefined if one or both operands are negative."
-	// Use nonnegative operands to define wrapping for negative coordinates.
-	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
+#if defined(MODE_PROCESS) || defined(MODE_FILTER)
+void store_probe_texel(ivec3 pos, uvec2 light) {
+#ifdef MODE_PROCESS
+	imageStore(lightprobe_texture_data, pos, uvec4(light.y));
+	imageStore(lightprobe_diffuse_data, pos, uvec4(light.x));
+#else
+	imageStore(lightprobe_dst_diffuse_data, pos, uvec4(light.x));
+#endif
 }
+
+void store_probe_tile(ivec3 origin, ivec2 texel, uvec2 light) {
+	const int last = LIGHTPROBE_OCT_SIZE - 1;
+	store_probe_texel(origin + ivec3(texel, 0), light);
+	bvec2 edge = equal(min(texel, last - texel), ivec2(0));
+	ivec2 border = mix(ivec2(-1), ivec2(LIGHTPROBE_OCT_SIZE), greaterThan(texel, ivec2(0)));
+	if (edge.x) {
+		store_probe_texel(origin + ivec3(border.x, last - texel.y, 0), light);
+	}
+	if (edge.y) {
+		store_probe_texel(origin + ivec3(last - texel.x, border.y, 0), light);
+	}
+	if (all(edge)) {
+		store_probe_texel(origin + ivec3(last - border, 0), light);
+	}
+}
+#endif
 
 #define FRAME_MASK 0x0FFFFFFF
 #define FORCE_UPDATE_MASK 0xF0000000
@@ -242,9 +244,6 @@ void main() {
 	ivec2 local_pos = ivec2(gl_LocalInvocationID.xy);
 	uint probe_index = gl_LocalInvocationID.x + gl_LocalInvocationID.y * LIGHTPROBE_OCT_SIZE;
 
-	// clear
-	neighbours_accum[probe_index] = uvec3(0);
-
 	ivec3 probe_cell;
 	probe_cell.x = pos.x;
 	probe_cell.y = pos.y % params.probe_axis_size.y;
@@ -252,65 +251,24 @@ void main() {
 
 	ivec3 probe_world_pos = params.world_offset + probe_cell;
 
-	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
+	ivec3 probe_scroll_pos = hddagi_wrap_probe(probe_world_pos, params.probe_axis_size);
 	ivec3 probe_texture_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
 
-	if (probe_index == 0) {
+	uint frame = imageLoad(lightprobe_update_frames, probe_texture_pos).r;
+	uint forced_update = frame >> FORCE_UPDATE_SHIFT;
+	ivec3 parity = probe_world_pos & 1;
+	int frame_offset = parity.x | (parity.y << 1) | (parity.z << 2);
+	bool scheduled = (params.global_frame + frame_offset) % params.inactive_update_frames == 0;
+	if (forced_update == 0u && !scheduled &&
+			(imageLoad(lightprobe_geometry_proximity, probe_texture_pos).r <= 0.5 || imageLoad(lightprobe_camera_visibility, probe_texture_pos).r <= 0.5)) {
+		return;
+	}
+	int probe_history_index = int(frame & FRAME_MASK) % params.history_size;
+	neighbours_accum[probe_index] = uvec3(0);
+	if (probe_index == 0u) {
 		probe_lighting_changed = 0u;
-		// Determine whether it should process the probe.
-
-		bool process = false;
-
-		// Fetch frame.
-		uint frame = imageLoad(lightprobe_update_frames, probe_texture_pos).r;
-		uint forced_update = frame >> FORCE_UPDATE_SHIFT;
-		if (forced_update > 0) {
-			// Check whether it must force the update
-			process = true;
-			forced_update--;
-			frame = (frame & FRAME_MASK) | (forced_update << FORCE_UPDATE_SHIFT);
-		}
-
-		bool geom_proximity = imageLoad(lightprobe_geometry_proximity, probe_texture_pos).r > 0.5;
-		if (geom_proximity) {
-			bool camera_visible = imageLoad(lightprobe_camera_visibility, probe_texture_pos).r > 0.5;
-			process = process || camera_visible;
-		}
-
-		if (!process) {
-			int frame_offset = 0;
-			if ((probe_world_pos.x & 1) != 0) {
-				frame_offset |= 1;
-			}
-			if ((probe_world_pos.y & 1) != 0) {
-				frame_offset |= 2;
-			}
-			if ((probe_world_pos.z & 1) != 0) {
-				frame_offset |= 4;
-			}
-
-			if (((params.global_frame + frame_offset) % params.inactive_update_frames) == 0) {
-				// Process every params.inactive_update_frames.
-				process = true;
-			}
-		}
-
-		if (process) {
-			uint local_frame = frame & FRAME_MASK;
-			probe_history_index = int(local_frame) % params.history_size;
-			frame = ((local_frame + 1) & FRAME_MASK) | (frame & FORCE_UPDATE_MASK);
-			// Store it back.
-			imageStore(lightprobe_update_frames, probe_texture_pos, uvec4(frame));
-
-		} else {
-			probe_history_index = -1; // No processing.
-		}
-
 		ambient_accum = uvec3(0);
 	}
-
-	memoryBarrierShared();
-	barrier();
 
 	vec3 light;
 	ivec3 cache_texture_pos;
@@ -323,10 +281,6 @@ void main() {
 	bool cache_valid;
 	vec3 cache_invalidated_debug;
 	uint cache_entry;
-
-	if (probe_history_index < 0) {
-		return; // All threads return, so no barrier will be executed.
-	}
 
 	float probe_cell_size = float(params.grid_size.x) / float(params.probe_axis_size.x - 1) / cascades.data[params.cascade].to_cell;
 
@@ -388,7 +342,7 @@ void main() {
 	if (hit) {
 		ivec3 spos = hit_cell;
 		spos.y += hit_cascade * params.grid_size.y;
-		light = texelFetch(sampler3D(light_cascades, linear_sampler), spos, 0).rgb;
+		light = hddagi_read_light(spos);
 	} else if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
 		// Reconstruct sky orientation as a quaternion and rotate the ray before sampling.
 		float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
@@ -548,10 +502,12 @@ void main() {
 	barrier();
 
 	// Compute specular, diffuse, ambient
-	if (probe_index == 0 && probe_lighting_changed != 0u) {
-		uint frame = imageLoad(lightprobe_update_frames, probe_texture_pos).r;
-		frame = (frame & FRAME_MASK) | (max(frame >> FORCE_UPDATE_SHIFT, 2u) << FORCE_UPDATE_SHIFT);
-		imageStore(lightprobe_update_frames, probe_texture_pos, uvec4(frame));
+	if (probe_index == 0u) {
+		uint remaining = forced_update > 0u ? forced_update - 1u : 0u;
+		if (probe_lighting_changed != 0u) {
+			remaining = max(remaining, 2u);
+		}
+		imageStore(lightprobe_update_frames, probe_texture_pos, uvec4(((frame + 1u) & FRAME_MASK) | (remaining << FORCE_UPDATE_SHIFT)));
 	}
 
 	vec3 diffuse_light = vec3(0);
@@ -565,54 +521,7 @@ void main() {
 	}
 
 	ivec3 store_texture_pos = ivec3(probe_texture_pos.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_texture_pos.z);
-	ivec3 probe_read_pos = store_texture_pos + ivec3(local_pos, 0);
-
-	//if (cache_invalidated_debug!=vec3(0.0)) {
-	//	diffuse_light = cache_invalidated_debug;
-	//}
-
-	// Store in octahedral map
-
-	ivec3 copy_to[4] = ivec3[](ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2));
-	copy_to[0] = probe_read_pos;
-
-	if (local_pos == ivec2(0, 0)) {
-		copy_to[1] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, -1, 0);
-		copy_to[2] = store_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE - 1, 0);
-		copy_to[3] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE, 0);
-	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, 0)) {
-		copy_to[1] = store_texture_pos + ivec3(0, -1, 0);
-		copy_to[2] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE - 1, 0);
-		copy_to[3] = store_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE, 0);
-	} else if (local_pos == ivec2(0, LIGHTPROBE_OCT_SIZE - 1)) {
-		copy_to[1] = store_texture_pos + ivec3(-1, 0, 0);
-		copy_to[2] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE, 0);
-		copy_to[3] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, -1, 0);
-	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE - 1)) {
-		copy_to[1] = store_texture_pos + ivec3(0, LIGHTPROBE_OCT_SIZE, 0);
-		copy_to[2] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, 0, 0);
-		copy_to[3] = store_texture_pos + ivec3(-1, -1, 0);
-	} else if (local_pos.y == 0) {
-		copy_to[1] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y - 1, 0);
-	} else if (local_pos.x == 0) {
-		copy_to[1] = store_texture_pos + ivec3(local_pos.x - 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
-	} else if (local_pos.y == LIGHTPROBE_OCT_SIZE - 1) {
-		copy_to[1] = store_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y + 1, 0);
-	} else if (local_pos.x == LIGHTPROBE_OCT_SIZE - 1) {
-		copy_to[1] = store_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
-	}
-
-	uint light_rgbe = rgbe_encode(specular_light);
-	uint diffuse_rgbe = rgbe_encode(diffuse_light);
-
-	for (int i = 0; i < 4; i++) {
-		if (copy_to[i] == ivec3(-2, -2, -2)) {
-			continue;
-		}
-		imageStore(lightprobe_texture_data, copy_to[i], uvec4(light_rgbe));
-		imageStore(lightprobe_diffuse_data, copy_to[i], uvec4(diffuse_rgbe));
-		// also to diffuse
-	}
+	store_probe_tile(store_texture_pos, local_pos, uvec2(rgbe_encode(diffuse_light), rgbe_encode(specular_light)));
 
 	if (params.store_ambient_texture && probe_index == 0) {
 		vec3 ambient_light = vec3(ambient_accum) / float(1 << FP_BITS);
@@ -634,7 +543,7 @@ void main() {
 
 	ivec3 probe_world_pos = params.world_offset + probe_cell;
 
-	ivec3 probe_scroll_pos = modi(probe_world_pos, params.probe_axis_size);
+	ivec3 probe_scroll_pos = hddagi_wrap_probe(probe_world_pos, params.probe_axis_size);
 	ivec3 probe_base_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
 
 	bool geom_proximity = imageLoad(lightprobe_geometry_proximity, probe_base_pos).r > 0.5;
@@ -664,7 +573,7 @@ void main() {
 			}
 
 			ivec3 probe_world_pos2 = params.world_offset + neighbour_probe;
-			ivec3 probe_scroll_pos2 = modi(probe_world_pos2, params.probe_axis_size);
+			ivec3 probe_scroll_pos2 = hddagi_wrap_probe(probe_world_pos2, params.probe_axis_size);
 			ivec3 probe_base_pos2 = ivec3((probe_scroll_pos2.xy + ivec2(0, probe_scroll_pos2.z * params.probe_axis_size.y)), params.cascade);
 
 			ivec3 probe_texture_pos2 = ivec3(probe_base_pos2.xy * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1), probe_base_pos2.z);
@@ -679,43 +588,7 @@ void main() {
 		light.rgb /= light.a;
 	}
 
-	ivec3 copy_to[4] = ivec3[](ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2), ivec3(-2, -2, -2));
-	copy_to[0] = probe_read_pos;
-
-	if (local_pos == ivec2(0, 0)) {
-		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, -1, 0);
-		copy_to[2] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE - 1, 0);
-		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE, 0);
-	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, 0)) {
-		copy_to[1] = probe_texture_pos + ivec3(0, -1, 0);
-		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, LIGHTPROBE_OCT_SIZE - 1, 0);
-		copy_to[3] = probe_texture_pos + ivec3(-1, LIGHTPROBE_OCT_SIZE, 0);
-	} else if (local_pos == ivec2(0, LIGHTPROBE_OCT_SIZE - 1)) {
-		copy_to[1] = probe_texture_pos + ivec3(-1, 0, 0);
-		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE, 0);
-		copy_to[3] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, -1, 0);
-	} else if (local_pos == ivec2(LIGHTPROBE_OCT_SIZE - 1, LIGHTPROBE_OCT_SIZE - 1)) {
-		copy_to[1] = probe_texture_pos + ivec3(0, LIGHTPROBE_OCT_SIZE, 0);
-		copy_to[2] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE, 0, 0);
-		copy_to[3] = probe_texture_pos + ivec3(-1, -1, 0);
-	} else if (local_pos.y == 0) {
-		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y - 1, 0);
-	} else if (local_pos.x == 0) {
-		copy_to[1] = probe_texture_pos + ivec3(local_pos.x - 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
-	} else if (local_pos.y == LIGHTPROBE_OCT_SIZE - 1) {
-		copy_to[1] = probe_texture_pos + ivec3(LIGHTPROBE_OCT_SIZE - local_pos.x - 1, local_pos.y + 1, 0);
-	} else if (local_pos.x == LIGHTPROBE_OCT_SIZE - 1) {
-		copy_to[1] = probe_texture_pos + ivec3(local_pos.x + 1, LIGHTPROBE_OCT_SIZE - local_pos.y - 1, 0);
-	}
-
-	uint light_rgbe = rgbe_encode(light.rgb);
-
-	for (int i = 0; i < 4; i++) {
-		if (copy_to[i] == ivec3(-2, -2, -2)) {
-			continue;
-		}
-		imageStore(lightprobe_dst_diffuse_data, copy_to[i], uvec4(light_rgbe));
-	}
+	store_probe_tile(probe_texture_pos, local_pos, uvec2(rgbe_encode(light.rgb), 0u));
 
 #endif
 
@@ -755,7 +628,7 @@ void main() {
 
 	for (int i = 0; i < 8; i++) {
 		ivec3 probe = params.world_offset + region + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1));
-		ivec3 probe_scroll_pos = modi(probe, params.probe_axis_size);
+		ivec3 probe_scroll_pos = hddagi_wrap_probe(probe, params.probe_axis_size);
 		ivec3 probe_pos = ivec3((probe_scroll_pos.xy + ivec2(0, probe_scroll_pos.z * params.probe_axis_size.y)), params.cascade);
 
 		imageStore(lightprobe_camera_visibility, probe_pos, vec4(1.0));

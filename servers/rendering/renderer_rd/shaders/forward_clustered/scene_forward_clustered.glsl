@@ -879,6 +879,7 @@ void main() {
 #include "scene_forward_clustered_inc.glsl"
 
 #ifdef MODE_RENDER_SDF
+#include "../environment/hddagi_emission_inc.glsl"
 #include "../environment/hddagi_voxel_metadata_inc.glsl"
 #endif
 
@@ -2995,13 +2996,12 @@ void fragment_shader(in SceneData scene_data) {
 		imageAtomicOr(geom_normal_bits, igrid_pos, bit_normal);
 #endif
 
+		vec3 diffuse_albedo = clamp(albedo * (1.0 - metallic), 0.0, 1.0);
+		uvec3 channels = uvec3(round(diffuse_albedo * vec3(31.0, 63.0, 31.0)));
+		uint albedo16 = channels.r | (channels.g << 5u) | (channels.b << 11u);
 		for (int i = 0; i < 6; i++) {
 			float d = dot(cam_normal, vec3(hddagi_axis_direction(uint(i))));
 			if (d > 0.0) {
-				uint albedo16 = 0;
-				albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 0;
-				albedo16 |= clamp(uint(albedo.g * 63.0), 0, 63) << 5;
-				albedo16 |= clamp(uint(albedo.b * 31.0), 0, 31) << 11;
 				ivec3 store_pos = igrid_pos >> 1;
 				store_pos.z = store_pos.z * 6 + i;
 				imageStore(albedo_volume_grid, store_pos, uvec4(albedo16));
@@ -3009,41 +3009,7 @@ void fragment_shader(in SceneData scene_data) {
 		}
 
 		if (length(emission) > 0.001) {
-			float lumas[6];
-			vec3 light_total = vec3(0);
-
-			for (int i = 0; i < 6; i++) {
-				float strength = max(0.0, dot(cam_normal, vec3(hddagi_axis_direction(uint(i)))));
-				vec3 light = emission * strength;
-				light_total += light;
-				lumas[i] = max(light.r, max(light.g, light.b));
-			}
-
-			float luma_total = max(light_total.r, max(light_total.g, light_total.b));
-
-			uint light_aniso = 0;
-
-			for (int i = 0; i < 6; i++) {
-				light_aniso |= min(31, uint((lumas[i] / luma_total) * 31.0)) << (i * 5);
-			}
-
-			uint light_rgbe;
-			{
-				vec3 rgb = light_total.rgb;
-
-				const float rgbe_max = uintBitsToFloat(0x477F8000);
-				const float rgbe_min = uintBitsToFloat(0x37800000);
-
-				rgb = clamp(rgb, 0, rgbe_max);
-				float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
-				float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-				uvec3 urgb = floatBitsToUint(rgb + bias);
-				uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-				light_rgbe = e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
-			}
-
-			imageStore(emission_grid, igrid_pos >> 1, uvec4(light_rgbe));
-			imageStore(emission_aniso_grid, igrid_pos >> 1, uvec4(light_aniso));
+			hddagi_store_emission(igrid_pos >> 1, rgbe_encode(emission), -cam_normal, cam_normal);
 		}
 	}
 

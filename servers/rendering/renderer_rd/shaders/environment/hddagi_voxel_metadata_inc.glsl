@@ -15,9 +15,12 @@ ivec3 hddagi_axis_direction(uint index) {
 	return ivec3(axis == 0u ? direction : 0, axis == 1u ? direction : 0, axis == 2u ? direction : 0);
 }
 
+const uvec3 HDDAGI_SURFACE_POSITIVE = uvec3(0x3fc0002u, 0x3833808u, 0x252a520u);
+const uvec3 HDDAGI_SURFACE_NEGATIVE = uvec3(0x3fc1u, 0x1cc1c4u, 0xa54a50u);
+
 ivec3 hddagi_surface_direction(uint index) {
-	uvec3 positive = (uvec3(0x3fc0002u, 0x3833808u, 0x252a520u) >> uvec3(index)) & uvec3(1u);
-	uvec3 negative = (uvec3(0x3fc1u, 0x1cc1c4u, 0xa54a50u) >> uvec3(index)) & uvec3(1u);
+	uvec3 positive = (HDDAGI_SURFACE_POSITIVE >> uvec3(index)) & uvec3(1u);
+	uvec3 negative = (HDDAGI_SURFACE_NEGATIVE >> uvec3(index)) & uvec3(1u);
 	return ivec3(positive) - ivec3(negative);
 }
 
@@ -31,6 +34,16 @@ ivec3 hddagi_light_neighbour_direction(uint index) {
 	uvec3 positive = (uvec3(0x3c002u, 0x23208u, 0x12920u) >> uvec3(index)) & uvec3(1u);
 	uvec3 negative = (uvec3(0x3c1u, 0x4c44u, 0x9490u) >> uvec3(index)) & uvec3(1u);
 	return ivec3(positive) - ivec3(negative);
+}
+
+float hddagi_light_ray_weight(vec3 cell_delta, vec3 ray_direction) {
+	return max(0.0, 1.0 - length(cell_delta - ray_direction * dot(cell_delta, ray_direction)));
+}
+
+ivec3 hddagi_wrap_probe(ivec3 position, ivec3 size) {
+	ivec3 sign_mask = position >> 31;
+	ivec3 remainder = ivec3(uvec3(position ^ sign_mask) % uvec3(size));
+	return mix(remainder, size - 1 - remainder, lessThan(position, ivec3(0)));
 }
 
 float hddagi_occlusion_weight(vec4 first, vec4 second, int index) {

@@ -934,6 +934,8 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 
 				if (RSG::light_storage->light_get_type(instance->base) == RSE::LIGHT_DIRECTIONAL) {
 					light->D = scenario->directional_lights.push_back(instance);
+				} else if (instance->visible && light->bake_mode == RSE::LIGHT_BAKE_DYNAMIC) {
+					scenario->dynamic_lights.push_back(light->instance);
 				}
 			} break;
 			case RSE::INSTANCE_VOXEL_GI: {

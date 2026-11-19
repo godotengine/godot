@@ -311,13 +311,16 @@ private:
 			int32_t probe_axis_size[3];
 			uint32_t ray_hit_cache_frames;
 
-			uint32_t upper_region_world_pos[3];
+			int32_t upper_region_world_pos[3];
 			int occlusion_offset;
 
 			uint32_t history_mode;
-			uint32_t pad[3];
+			uint32_t pad0;
+			int32_t upper_cascade;
+			uint32_t pad;
 		};
 
+		bool packed_occlusion = true;
 		HddagiPreprocessShaderRD preprocess;
 		RID preprocess_shader;
 		RID preprocess_shader_version[PRE_PROCESS_MAX];
@@ -643,6 +646,8 @@ public:
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
 
 			RID light_process_buffer;
+			uint32_t light_capacity = 1;
+			uint32_t voxel_page_count = 0;
 			RID light_source_emission_buffer;
 			RID light_process_dispatch_buffer;
 			RID light_process_dispatch_buffer_copy;
@@ -683,9 +688,15 @@ public:
 
 		RID voxel_bits_tex;
 		RID voxel_region_tex;
-		RID voxel_light_tex;
-		RID voxel_light_tex_data;
-		RID voxel_light_neighbour_data;
+		RID voxel_page_table;
+		RID voxel_data;
+		Vector<uint32_t> voxel_pages;
+		LocalVector<uint32_t> free_voxel_pages;
+		uint32_t voxel_page_count = 0;
+		uint32_t voxel_page_capacity = 1;
+		uint32_t light_capacity_render = 1;
+
+		void update_voxel_pages(int p_cascade, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const Vector3i &p_region_offset, const PagedArray<RenderGeometryInstance *> &p_instances);
 		RID region_version_data;
 
 		RID light_process_buffer_render;
@@ -871,7 +882,6 @@ public:
 	RID hddagi_ubo;
 	RID default_hddagi_voxel_bits_texture;
 	RID default_hddagi_voxel_region_texture;
-	RID default_hddagi_voxel_neighbours_texture;
 
 	enum Mode {
 		MODE_VOXEL_GI,
@@ -887,7 +897,8 @@ public:
 		SHADER_SPECIALIZATION_USE_FULL_PROJECTION_MATRIX = 1 << 1,
 		SHADER_SPECIALIZATION_USE_VRS = 1 << 2,
 		SHADER_SPECIALIZATION_HALF_REFLECTIONS = 1 << 3,
-		SHADER_SPECIALIZATION_VARIATIONS = 16,
+		SHADER_SPECIALIZATION_DIFFUSE_ONLY = 1 << 4,
+		SHADER_SPECIALIZATION_VARIATIONS = 32,
 	};
 
 	RID default_voxel_gi_buffer;

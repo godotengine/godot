@@ -29,10 +29,17 @@ bool hddagi_build_surface(ivec3 pos, ivec3 local, out vec4 albedo_accum, out vec
 
 		voxels_found = true;
 
-		for (int j = 0; j < facing_direction_count; j++) {
-			if (bool(n & uint((1 << (j + 6))))) {
-				normal_accum += hddagi_surface_normal(uint(j));
+		uint normals = n >> 6u;
+		if ((n & (1u << uint(i ^ 1))) != 0u) {
+			uvec3 side = (i & 1) != 0 ? HDDAGI_SURFACE_POSITIVE : HDDAGI_SURFACE_NEGATIVE;
+			normals &= i < 2 ? side.x : (i < 4 ? side.y : side.z);
+			if (normals == 0u) {
+				normals = 1u << uint(i);
 			}
+		}
+		while (normals != 0u) {
+			normal_accum += hddagi_surface_normal(uint(findLSB(normals)));
+			normals &= normals - 1u;
 		}
 
 		ivec3 ofs = pos + hddagi_axis_direction(uint(i ^ 1));

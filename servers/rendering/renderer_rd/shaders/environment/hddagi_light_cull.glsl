@@ -37,6 +37,8 @@ void main() {
 	ivec3 region = ivec3(int(index) % params.region_count.x, (int(index) / params.region_count.x) % params.region_count.y, int(index) / (params.region_count.x * params.region_count.y));
 	vec3 lower = params.offset + vec3(region) * params.region_size;
 	vec3 upper = lower + vec3(params.region_size);
+	lower.y /= params.y_mult;
+	upper.y /= params.y_mult;
 	uint mask = 0u;
 	for (uint bit = 0u; bit < 32u && word * 32u + bit < params.light_count; bit++) {
 		Light light = lights.data[word * 32u + bit];
@@ -45,8 +47,6 @@ void main() {
 			vec3 delta = max(max(lower - light.position, light.position - upper), vec3(0.0));
 			float radius = light.radius;
 			if (light.type == 3u) {
-				// Area lighting evaluates distance in unstretched world space.
-				delta.y /= params.y_mult;
 				radius += 0.5 * length(vec2(length(light.area_width.xyz), length(light.area_height.xyz)));
 			}
 			intersects = dot(delta, delta) <= radius * radius;

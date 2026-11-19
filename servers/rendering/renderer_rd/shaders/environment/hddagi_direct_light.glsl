@@ -37,7 +37,12 @@ layout(set = 0, binding = 5, std430) restrict buffer ProcessVoxels {
 }
 process_voxels;
 
-layout(r32ui, set = 0, binding = 6) uniform restrict writeonly uimage3D dst_light;
+#define HDDAGI_DATA_BINDING 6
+#define HDDAGI_PAGE_BINDING 14
+#define HDDAGI_WRITE_VOXELS
+#include "hddagi_radiance_inc.glsl"
+#include "hddagi_voxel_metadata_inc.glsl"
+#include "hddagi_voxel_pages_inc.glsl"
 
 #ifdef MODE_PROCESS_STATIC
 layout(set = 0, binding = 11, std430) restrict readonly buffer SourceEmission {
@@ -150,7 +155,6 @@ void compute_area_light(uint index, vec3 position, vec3 normal, out float attenu
 	vec3 area_width_normalized = normalize(area_width);
 	vec3 area_height_normalized = normalize(area_height);
 	vec3 light_center = lights.data[index].position;
-	light_center.y /= params.y_mult;
 	vec3 light_to_position = position - light_center;
 	vec2 position_on_light = vec2(dot(light_to_position, area_width_normalized), dot(light_to_position, area_height_normalized));
 	vec2 half_size = vec2(length(area_width), length(area_height)) * 0.5;
@@ -186,40 +190,14 @@ void compute_area_light(uint index, vec3 position, vec3 normal, out float attenu
 #define HDDAGI_TRACE_OCCLUSION
 #include "hddagi_trace_inc.glsl"
 
-uint rgbe_encode(vec3 rgb) {
-	const float rgbe_max = uintBitsToFloat(0x477F8000);
-	const float rgbe_min = uintBitsToFloat(0x37800000);
-
-	rgb = clamp(rgb, 0, rgbe_max);
-
-	float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
-
-	float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-
-	uvec3 urgb = floatBitsToUint(rgb + bias);
-	uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-	return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
-}
-
-vec3 rgbe_decode(uint p_rgbe) {
-	vec4 rgbef = vec4((uvec4(p_rgbe) >> uvec4(0, 9, 18, 27)) & uvec4(0x1FF, 0x1FF, 0x1FF, 0x1F));
-	return rgbef.rgb * pow(2.0, rgbef.a - 15.0 - 9.0);
-}
-
-ivec3 modi(ivec3 value, ivec3 p_y) {
-	// GLSL Specification says:
-	// "Results are undefined if one or both operands are negative."
-	// So..
-	return mix(value % p_y, p_y - ((abs(value) - ivec3(1)) % p_y) - 1, lessThan(sign(value), ivec3(0)));
-}
-
-ivec2 probe_to_tex(ivec3 local_probe, int cascade) {
-	ivec3 cell = modi(cascades.data[cascade].region_world_offset + local_probe, params.probe_axis_size);
-	return cell.xy + ivec2(0, cell.z * int(params.probe_axis_size.y));
-}
-
 void main() {
 	uint voxel_index = uint(gl_GlobalInvocationID.x);
+#ifndef MODE_PROCESS_STATIC
+	uint phase_mask = params.process_increment - 1u;
+	if (!params.dirty_dynamic_update) {
+		voxel_index = voxel_index * params.process_increment + ((0u - params.process_offset) & phase_mask);
+	}
+#endif
 
 	if (voxel_index >= dispatch_data.total_count) {
 		return;
@@ -232,18 +210,10 @@ void main() {
 	}
 #else
 
-	//used for skipping voxels every N frames
-	if (params.process_increment > 1) {
-		if (((voxel_index + params.process_offset) % params.process_increment) != 0) {
-			if (params.dirty_dynamic_update && bool(process_voxels.data[voxel_index].position & PROCESS_DYNAMIC_PENDING_BIT)) {
-				//saved	because it still needs dynamic update
-			} else {
-				return;
-			}
-		}
-	}
-
 	if (params.dirty_dynamic_update) {
+		if (((voxel_index + params.process_offset) & phase_mask) != 0u && (process_voxels.data[voxel_index].position & PROCESS_DYNAMIC_PENDING_BIT) == 0u) {
+			return;
+		}
 		process_voxels.data[voxel_index].position &= ~uint(PROCESS_DYNAMIC_PENDING_BIT);
 	}
 #endif
@@ -252,9 +222,9 @@ void main() {
 
 	ivec3 positioni = ivec3((uvec3(process_voxels.data[voxel_index].position) >> uvec3(0, 7, 14)) & uvec3(0x7F));
 
-	vec3 position = vec3(positioni) + vec3(0.5);
-	position /= cascades.data[params.cascade].to_cell;
-	position += cascades.data[params.cascade].offset;
+	vec3 grid_position = (vec3(positioni) + 0.5) / cascades.data[params.cascade].to_cell + cascades.data[params.cascade].offset;
+	vec3 world_position = grid_position;
+	world_position.y /= params.y_mult;
 
 	uint voxel_albedo = process_voxels.data[voxel_index].albedo_normal;
 
@@ -280,28 +250,33 @@ void main() {
 
 	if (params.bounce_feedback > 0.001) {
 		vec3 feedback = albedo * params.bounce_feedback;
-		ivec3 base_probe = positioni / params.probe_cell_size;
+		ivec3 base_probe = hddagi_wrap_probe(cascades.data[cascade].region_world_offset + positioni / params.probe_cell_size, params.probe_axis_size);
+		ivec3 next_probe = base_probe + 1;
+		next_probe = mix(next_probe, ivec3(0), equal(next_probe, params.probe_axis_size));
+		vec3 probe_fraction = fract((vec3(positioni) + 0.5) / float(params.probe_cell_size));
 		vec2 probe_tex_to_uv = 1.0 / vec2((LIGHTPROBE_OCT_SIZE + 2) * params.probe_axis_size.x, (LIGHTPROBE_OCT_SIZE + 2) * params.probe_axis_size.y * params.probe_axis_size.z);
 
+		float weight_sum = 0.0;
 		for (int i = 0; i < 8; i++) {
-			float weight = float((occlusionu >> (i * 4)) & 0xF) / float(0xF); //precached occlusion
-			if (weight == 0.0) {
-				// Do not waste time.
-				continue;
-			}
-			ivec3 probe = base_probe + ((ivec3(i) >> ivec3(0, 1, 2)) & ivec3(1, 1, 1));
-			vec3 probe_position = vec3(probe * params.probe_cell_size) / cascades.data[cascade].to_cell + cascades.data[cascade].offset;
+			float weight = float((occlusionu >> (i * 4)) & 0xF);
 			if (weight == 0.0) {
 				continue;
 			}
-			ivec2 tex_pos = probe_to_tex(probe, cascade);
+			ivec3 corner = (ivec3(i) >> ivec3(0, 1, 2)) & 1;
+			vec3 to_probe = vec3(corner) - probe_fraction;
+			vec3 trilinear = 1.0 - abs(to_probe);
+			to_probe.y /= params.y_mult;
+			weight *= trilinear.x * trilinear.y * trilinear.z * max(0.005, dot(normal, normalize(to_probe)));
+			ivec3 probe = mix(base_probe, next_probe, bvec3(corner));
+			ivec2 tex_pos = probe.xy + ivec2(0, probe.z * params.probe_axis_size.y);
 			vec2 tex_uv = vec2(ivec2(tex_pos * (LIGHTPROBE_OCT_SIZE + 2) + ivec2(1))) + normal_oct * float(LIGHTPROBE_OCT_SIZE);
 			tex_uv *= probe_tex_to_uv;
 			vec3 light = texture(sampler2DArray(lightprobe_texture, linear_sampler), vec3(tex_uv, float(params.cascade))).rgb;
 			light_accum += light * weight;
+			weight_sum += weight;
 		}
 
-		light_accum *= feedback;
+		light_accum *= feedback / max(weight_sum, 1e-8);
 	}
 #endif
 
@@ -338,36 +313,23 @@ void main() {
 				direction = -lights.data[i].direction;
 				attenuation *= max(0.0, dot(normal, direction));
 			} break;
-			case LIGHT_TYPE_OMNI: {
-				vec3 light_position = lights.data[i].position;
-				vec3 rel_vec = light_position - position;
-				direction = normalize(rel_vec);
-				light_distance = length(rel_vec);
-				rel_vec.y /= params.y_mult;
-				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
-				attenuation *= max(0.0, dot(normal, direction));
-
-			} break;
+			case LIGHT_TYPE_OMNI:
 			case LIGHT_TYPE_SPOT: {
-				vec3 light_position = lights.data[i].position;
-				vec3 rel_vec = light_position - position;
-				direction = normalize(rel_vec);
-
-				light_distance = length(rel_vec);
-				rel_vec.y /= params.y_mult;
+				vec3 to_light = lights.data[i].position - world_position;
+				light_distance = length(to_light);
+				direction = to_light / max(light_distance, 1e-6);
 				attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[i].radius, lights.data[i].attenuation);
 				attenuation *= max(0.0, dot(normal, direction));
 
-				float cos_spot_angle = lights.data[i].cos_spot_angle;
-				float cos_angle = dot(-direction, lights.data[i].direction);
-
-				if (cos_angle < cos_spot_angle) {
-					continue;
+				if (lights.data[i].type == LIGHT_TYPE_SPOT) {
+					float cos_spot_angle = lights.data[i].cos_spot_angle;
+					float cos_angle = dot(-direction, lights.data[i].direction);
+					if (cos_angle <= cos_spot_angle) {
+						continue;
+					}
+					float spot_rim = max(0.0001, (1.0 - cos_angle) / (1.0 - cos_spot_angle));
+					attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 				}
-
-				float scos = max(cos_angle, cos_spot_angle);
-				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
-				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
 			} break;
 			case LIGHT_TYPE_AREA: {
 				vec3 area_width = lights.data[i].area_width.xyz;
@@ -375,23 +337,10 @@ void main() {
 				if (dot(area_width, area_width) < 1e-7 || dot(area_height, area_height) < 1e-7) {
 					continue;
 				}
-				vec3 world_position = position;
-				world_position.y /= params.y_mult;
-				vec3 world_light_position = lights.data[i].position;
-				world_light_position.y /= params.y_mult;
-				if (dot(lights.data[i].direction, world_position - world_light_position) <= 0.0) {
+				if (dot(lights.data[i].direction, world_position - lights.data[i].position) <= 0.0) {
 					continue;
 				}
-
-				vec3 lighting_direction;
-				float world_light_distance;
-				compute_area_light(i, world_position, normal, attenuation, lighting_direction, world_light_distance, texture_color);
-
-				vec3 trace_direction = lighting_direction;
-				trace_direction.y *= params.y_mult;
-				float trace_scale = length(trace_direction);
-				direction = trace_direction / max(trace_scale, 0.000001);
-				light_distance = world_light_distance * trace_scale;
+				compute_area_light(i, world_position, normal, attenuation, direction, light_distance, texture_color);
 			} break;
 			default: {
 				continue;
@@ -405,7 +354,9 @@ void main() {
 		bool hit = false;
 
 		if (lights.data[i].has_shadow) {
-			hit = trace_ray_hdda(position, direction, light_distance, max(cascade, 0));
+			vec3 trace_direction = direction * vec3(1.0, params.y_mult, 1.0);
+			float trace_scale = length(trace_direction);
+			hit = trace_ray_hdda(grid_position, trace_direction / trace_scale, light_distance * trace_scale, cascade);
 		}
 
 		if (!hit) {
@@ -423,7 +374,7 @@ void main() {
 	// Store to light texture
 	positioni = (positioni + cascades.data[params.cascade].region_world_offset * REGION_SIZE) & (params.grid_size - 1);
 	positioni.y += int(params.cascade) * params.grid_size.y;
-	imageStore(dst_light, positioni, uvec4(rgbe_encode(light_accum.rgb)));
+	hddagi_voxel_data.cells[hddagi_voxel_index(positioni)].x = rgbe_encode(light_accum.rgb);
 
 #endif
 }

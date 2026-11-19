@@ -69,11 +69,7 @@ const int fp_bits = 10;
 
 	ivec3 region_offset_mask = (grid_size / REGION_SIZE) - ivec3(1);
 
-	ivec3 region_limit;
-	ivec3 block_limit;
-	ivec3 voxel_limit;
-
-	region_limit = ((grid_size << fp_bits) - ivec3(1)) * step; // Region limit does not change, so initialize now.
+	ivec3 region_limit = ((grid_size << fp_bits) - ivec3(1)) * step;
 
 	int level = LEVEL_CASCADE;
 	int cascade = p_cascade - 1;
@@ -94,45 +90,7 @@ const int fp_bits = 10;
 #endif
 
 	while (true) {
-		// Traverse all levels in one loop so lanes at different levels can advance together.
-
-		if (level == LEVEL_VOXEL) {
-			ivec3 block_local = (pos & ivec3(block_mask)) >> fp_bits;
-			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
-			if (block_index < 32) {
-				if (bool(block.x & uint(1 << block_index))) {
-					hit = true;
-					break;
-				}
-			} else {
-				block_index -= 32;
-				if (bool(block.y & uint(1 << block_index))) {
-					hit = true;
-					break;
-				}
-			}
-		} else if (level == LEVEL_BLOCK) {
-			ivec3 block_local = (pos & ivec3(region_mask)) >> fp_block_bits;
-			uint block_index = uint(block_local.z * 4 + block_local.y * 2 + block_local.x);
-			if (bool(region_blocks & (1u << block_index))) {
-				block = imageLoad(voxel_cascades, region_base + block_local).rg;
-				level = LEVEL_VOXEL;
-				voxel_limit = pos - (pos & ivec3(block_mask)) + step * (ivec3(block_mask) + ivec3(1));
-				continue;
-			}
-		} else if (level == LEVEL_REGION) {
-			ivec3 region = pos >> fp_region_bits;
-			region = (hddagi_trace_region_offset(cascade) + region) & region_offset_mask; // Scroll to world
-			region += cascade_base;
-			region_blocks = imageLoad(voxel_region_cascades, region).r;
-
-			if (region_blocks != 0u) {
-				region_base = (region << 1);
-				level = LEVEL_BLOCK;
-				block_limit = pos - (pos & ivec3(region_mask)) + step * (ivec3(region_mask) + ivec3(1));
-				continue;
-			}
-		} else if (level == LEVEL_CASCADE) {
+		if (level == LEVEL_CASCADE) {
 			if (cascade >= p_cascade) {
 				ray_pos = vec3(pos) / float(1 << fp_bits);
 				ray_pos /= hddagi_trace_to_cell(cascade);
@@ -198,7 +156,34 @@ const int fp_bits = 10;
 				}
 			}
 #endif
-			continue;
+		}
+		if (level == LEVEL_REGION) {
+			ivec3 region = pos >> fp_region_bits;
+			region = (hddagi_trace_region_offset(cascade) + region) & region_offset_mask; // Scroll to world
+			region += cascade_base;
+			region_blocks = imageLoad(voxel_region_cascades, region).r;
+
+			if (region_blocks != 0u) {
+				region_base = (region << 1);
+				level = LEVEL_BLOCK;
+			}
+		}
+		if (level == LEVEL_BLOCK) {
+			ivec3 block_local = (pos & ivec3(region_mask)) >> fp_block_bits;
+			uint block_index = uint(block_local.z * 4 + block_local.y * 2 + block_local.x);
+			if (bool(region_blocks & (1u << block_index))) {
+				block = imageLoad(voxel_cascades, region_base + block_local).rg;
+				level = LEVEL_VOXEL;
+			}
+		}
+		if (level == LEVEL_VOXEL) {
+			ivec3 block_local = (pos & ivec3(block_mask)) >> fp_bits;
+			uint block_index = uint(block_local.z * 16 + block_local.y * 4 + block_local.x);
+			uint occupied = block_index < 32u ? block.x : block.y;
+			if ((occupied & (1u << (block_index & 31u))) != 0u) {
+				hit = true;
+				break;
+			}
 		}
 
 		ivec3 mask = ivec3(level == LEVEL_REGION ? region_mask : (level == LEVEL_BLOCK ? block_mask : voxel_mask));
@@ -223,6 +208,7 @@ const int fp_bits = 10;
 #else
 		ivec3 adv_t = (ray_dir_fp * t) >> fp_bits;
 #endif
+		ivec3 previous_position = pos;
 		pos += mix(adv_t, adv_box, equal(ivec3(t), tv));
 
 #ifdef HDDAGI_TRACE_OCCLUSION
@@ -246,16 +232,12 @@ const int fp_bits = 10;
 		}
 
 #endif
-		while (true) {
-			bvec3 limit = lessThan(pos, (level == LEVEL_REGION ? region_limit : (level == LEVEL_BLOCK ? block_limit : voxel_limit)));
-			bool inside = all(equal(limit, limit_dir));
-			if (inside) {
-				break;
-			}
-			level -= 1;
-			if (level == LEVEL_CASCADE) {
-				break;
-			}
+		// The highest changed coordinate bit determines which parent cell was crossed.
+		ivec3 changed = pos ^ previous_position;
+		uint crossed = uint(changed.x | changed.y | changed.z);
+		level = min(level, crossed > uint(region_mask) ? LEVEL_REGION : (crossed > uint(block_mask) ? LEVEL_BLOCK : LEVEL_VOXEL));
+		if (level == LEVEL_REGION && any(notEqual(lessThan(pos, region_limit), limit_dir))) {
+			level = LEVEL_CASCADE;
 		}
 	}
 

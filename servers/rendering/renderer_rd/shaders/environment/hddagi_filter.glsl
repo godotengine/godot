@@ -4,6 +4,8 @@
 
 #VERSION_DEFINES
 
+#include "hddagi_radiance_inc.glsl"
+
 #define WG_SIZE 8
 
 layout(local_size_x = WG_SIZE, local_size_y = WG_SIZE, local_size_z = 1) in;
@@ -95,23 +97,11 @@ vec4 fetch_normal_and_roughness(ivec2 pos) {
 	return normal_roughness;
 }
 
-uint rgbe_encode(vec3 rgb) {
-	const float rgbe_max = uintBitsToFloat(0x477F8000);
-	const float rgbe_min = uintBitsToFloat(0x37800000);
-
-	rgb = clamp(rgb, 0, rgbe_max);
-
-	float max_channel = max(max(rgbe_min, rgb.r), max(rgb.g, rgb.b));
-
-	float bias = uintBitsToFloat((floatBitsToUint(max_channel) + 0x07804000) & 0x7F800000);
-
-	uvec3 urgb = floatBitsToUint(rgb + bias);
-	uint e = (floatBitsToUint(bias) << 4) + 0x10000000;
-	return e | (urgb.b << 18) | (urgb.g << 9) | (urgb.r & 0x1FF);
-}
-
 void main() {
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+	if (any(greaterThanEqual(pos, imageSize(dst_specular_buffer)))) {
+		return;
+	}
 
 	ivec2 depth_pos = pos;
 	if (sc_half_res) {
@@ -120,8 +110,17 @@ void main() {
 
 	vec4 normal_roughness = fetch_normal_and_roughness(depth_pos);
 
-	if (normal_roughness.rgb == vec3(0.0) || normal_roughness.a >= ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
-		return; // No need to do anything.
+	if (normal_roughness.rgb == vec3(0.0)) {
+		return;
+	}
+	if (normal_roughness.a >= ROUGHNESS_TO_REFLECTION_TRESHOOLD) {
+		// The vertical filter can sample this unfiltered neighbor.
+		if (params.filter_dir.x != 0 && normal_roughness.a < ROUGHNESS_TO_REFLECTION_TRESHOOLD + 0.25) {
+			vec3 reflection = texelFetch(sampler2D(specular_buffer, linear_sampler), pos, 0).rgb;
+			imageStore(dst_specular_buffer, pos, uvec4(rgbe_encode(reflection)));
+			imageStore(dst_blend_buffer, pos, texelFetch(sampler2D(blend_buffer, linear_sampler), pos, 0));
+		}
+		return;
 	}
 
 	float depth = reconstruct_position(depth_pos).z;

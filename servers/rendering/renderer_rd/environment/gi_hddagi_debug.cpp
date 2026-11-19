@@ -50,9 +50,9 @@ void GI::HDDAGI::debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, const Pr
 				gi->hddagi_shader.debug_shader_version, 0,
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 1, voxel_bits_tex),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 2, voxel_region_tex),
-				RD::Uniform(RD::UNIFORM_TYPE_TEXTURE, 3, voxel_light_tex),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 3, voxel_data),
 				RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, 4, sampler),
-				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 5, voxel_light_neighbour_data),
+				RD::Uniform(RD::UNIFORM_TYPE_STORAGE_BUFFER, 5, voxel_page_table),
 				RD::Uniform(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 6, cascades_ubo),
 				RD::Uniform(RD::UNIFORM_TYPE_IMAGE, 7, p_render_buffers->get_internal_texture(v)));
 
