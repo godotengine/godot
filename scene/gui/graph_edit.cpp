@@ -980,7 +980,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 		}
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
-		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			pos = pos.snappedf(snapping_distance * snapping_distance_scale);
 		}
 
