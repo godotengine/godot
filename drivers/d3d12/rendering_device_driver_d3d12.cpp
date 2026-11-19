@@ -85,7 +85,7 @@ static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
 
 const RenderingDeviceDriverD3D12::D3D12Format RenderingDeviceDriverD3D12::RD_TO_D3D12_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	/* DATA_FORMAT_R4G4_UNORM_PACK8 */ {},
-	/* DATA_FORMAT_R4G4B4A4_UNORM_PACK16 */ { DXGI_FORMAT_B4G4R4A4_UNORM, DXGI_FORMAT_B4G4R4A4_UNORM, D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(1, 2, 3, 0) },
+	/* DATA_FORMAT_R4G4B4A4_UNORM_PACK16 */ { DXGI_FORMAT_B4G4R4A4_UNORM, DXGI_FORMAT_B4G4R4A4_UNORM, D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(3, 0, 1, 2) },
 	/* DATA_FORMAT_B4G4R4A4_UNORM_PACK16 */ { DXGI_FORMAT_B4G4R4A4_UNORM, DXGI_FORMAT_B4G4R4A4_UNORM, D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(3, 2, 1, 0) },
 	/* DATA_FORMAT_R5G6B5_UNORM_PACK16 */ { DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G6R5_UNORM },
 	/* DATA_FORMAT_B5G6R5_UNORM_PACK16 */ { DXGI_FORMAT_B5G6R5_UNORM, DXGI_FORMAT_B5G6R5_UNORM, D3D12_ENCODE_SHADER_4_COMPONENT_MAPPING(2, 1, 0, 3) },
@@ -1992,19 +1992,18 @@ BitField<RDD::TextureUsageBits> RenderingDeviceDriverD3D12::texture_get_usages_s
 	return supported;
 }
 
-bool RenderingDeviceDriverD3D12::texture_can_make_shared_with_format(TextureID p_texture, DataFormat p_format, bool &r_raw_reinterpretation) {
+bool RenderingDeviceDriverD3D12::texture_can_make_shared_with_format(DataFormat p_base_format, DataFormat p_format, bool &r_raw_reinterpretation) {
 	r_raw_reinterpretation = false;
 
 	if (format_capabilities.relaxed_casting_supported) {
 		// Relaxed casting is supported, there should be no need to check for format family compatibility.
 		return true;
 	} else {
-		TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-		if (tex_info->format == DATA_FORMAT_R16_UINT && p_format == DATA_FORMAT_R4G4B4A4_UNORM_PACK16) {
+		if (p_base_format == DATA_FORMAT_R16_UINT && p_format == DATA_FORMAT_R4G4B4A4_UNORM_PACK16) {
 			// Specific cases that require buffer reinterpretation.
 			r_raw_reinterpretation = true;
 			return false;
-		} else if (RD_TO_D3D12_FORMAT[tex_info->format].family != RD_TO_D3D12_FORMAT[p_format].family) {
+		} else if (RD_TO_D3D12_FORMAT[p_base_format].family != RD_TO_D3D12_FORMAT[p_format].family) {
 			// Format family is different but copying resources directly is possible.
 			return false;
 		} else {
