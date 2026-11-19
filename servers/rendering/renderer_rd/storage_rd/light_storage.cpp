@@ -2686,7 +2686,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	}
 
 	uint32_t quad_size = shadow_atlas->size >> 1;
-	int desired_fit = (p_coverage > 1.0f) ? (int)quad_size : MIN(quad_size / shadow_atlas->smallest_subdiv, next_power_of_2(uint32_t(quad_size * p_coverage)));
+	int desired_fit = (p_coverage > 1.0f) ? (int)quad_size : MIN(quad_size / shadow_atlas->smallest_subdiv, Math::next_power_of_2(uint32_t(quad_size * p_coverage)));
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
