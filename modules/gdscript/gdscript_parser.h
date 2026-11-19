@@ -117,7 +117,7 @@ public:
 	};
 
 private:
-	friend class GDScriptAST::AnnotationNode;
+	friend struct GDScriptAST::AnnotationNode;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptParserRef;
 	friend class GDScriptLinter;
