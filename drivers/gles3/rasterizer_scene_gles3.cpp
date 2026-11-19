@@ -1365,6 +1365,16 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 		// This has to be done after _setup_lights was called this frame
 
 		if (p_pass_mode == PASS_MODE_COLOR) {
+			inst->uses_lightmap = false;
+			if (inst->lightmap_instance.is_valid()) {
+				for (uint32_t j = 0; j < p_render_data->lightmaps->size(); j++) {
+					if ((*p_render_data->lightmaps)[j] == inst->lightmap_instance) {
+						inst->uses_lightmap = true;
+						break;
+					}
+				}
+			}
+
 			inst->light_passes.clear();
 			inst->spot_light_gl_cache.clear();
 			inst->omni_light_gl_cache.clear();
@@ -2500,6 +2510,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.instances = &p_instances;
 		render_data.lights = &p_lights;
 		render_data.reflection_probes = &p_reflection_probes;
+		render_data.lightmaps = &p_lightmaps;
 		render_data.environment = p_environment;
 		render_data.camera_attributes = p_camera_attributes;
 		render_data.shadow_atlas = p_shadow_atlas;
@@ -3466,7 +3477,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					}
 				} else if (pass > 0) {
 					uint32_t shadow_id = MAX_DIRECTIONAL_LIGHTS - 1 - (pass - int32_t(inst->light_passes.size()));
-					if (inst->lightmap_instance.is_valid() && scene_state.directional_lights[shadow_id].bake_mode == RSE::LIGHT_BAKE_STATIC) {
+					if (inst->uses_lightmap && scene_state.directional_lights[shadow_id].bake_mode == RSE::LIGHT_BAKE_STATIC) {
 						// Skip shadows for static lights on meshes with a lightmap.
 						continue;
 					}
@@ -3561,7 +3572,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			GLuint vertex_array_gl = 0;
 			GLuint index_array_gl = 0;
 			uint64_t vertex_input_mask = shader->vertex_input_mask;
-			if (inst->lightmap_instance.is_valid() || p_pass_mode == PASS_MODE_MATERIAL) {
+			if (((p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) && inst->uses_lightmap) || p_pass_mode == PASS_MODE_MATERIAL) {
 				vertex_input_mask |= 1 << RSE::ARRAY_TEX_UV2;
 			}
 
@@ -3659,7 +3670,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
 						}
 
-						if (inst->lightmap_instance.is_valid()) {
+						if (inst->uses_lightmap) {
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
 
 							GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
@@ -3697,7 +3708,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					bool disable_lightmaps = true;
 
 					// Additive directional passes may use shadowmasks, so enable lightmaps for them.
-					if (pass >= int32_t(inst->light_passes.size()) && inst->lightmap_instance.is_valid()) {
+					if (pass >= int32_t(inst->light_passes.size()) && inst->uses_lightmap) {
 						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
 						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
 
@@ -3744,7 +3755,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							// Disable additive lighting when masks are not overlapping.
 							spec_constants &= ~SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
 						}
-						if (pass == 0 && inst->lightmap_instance.is_valid() && scene_state.directional_lights[shadow_id].bake_mode == RSE::LIGHT_BAKE_STATIC) {
+						if (pass == 0 && inst->uses_lightmap && scene_state.directional_lights[shadow_id].bake_mode == RSE::LIGHT_BAKE_STATIC) {
 							// Disable additive lighting with a static light and a lightmap.
 							spec_constants &= ~SceneShaderGLES3::USE_ADDITIVE_LIGHTING;
 						}
@@ -3825,7 +3836,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 3);
 						glBindTexture(GL_TEXTURE_2D, tex);
 
-						if (inst->lightmap_instance.is_valid()) {
+						if (inst->uses_lightmap) {
 							// Use shadowmasks for directional light passes.
 							GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
 							GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
@@ -3876,7 +3887,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						glUniform1uiv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::AREA_LIGHT_INDICES, shader->version, instance_variant, spec_constants), inst->area_light_gl_cache.size(), inst->area_light_gl_cache.ptr());
 					}
 
-					if (inst->lightmap_instance.is_valid()) {
+					if (inst->uses_lightmap) {
 						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
 						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
 
