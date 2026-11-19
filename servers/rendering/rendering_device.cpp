@@ -2243,39 +2243,39 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			const uint8_t *read_ptr_mipmap = read_ptr + mipmap_offset;
 			tight_mip_size = image_total - mipmap_offset;
 
-			for (uint32_t z = 0; z < depth; z++) {
-				if (required_align > 0) {
-					uint32_t align_offset = staging_local_offset % required_align;
-					if (align_offset != 0) {
-						staging_local_offset += required_align - align_offset;
-					}
+			if (required_align > 0) {
+				uint32_t align_offset = staging_local_offset % required_align;
+				if (align_offset != 0) {
+					staging_local_offset += required_align - align_offset;
 				}
-
-				uint32_t pitch = get_compressed_image_format_pixels_shifted(texture->format, width * pixel_size * block_w);
-				uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
-				pitch = STEPIFY(pitch, pitch_step);
-				uint32_t to_allocate = get_compressed_image_format_pixels_shifted(texture->format, pitch * height);
-
-				if (copy_pass) {
-					const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
-					uint64_t staging_buffer_offset = staging_worker_offset + staging_local_offset;
-					uint8_t *write_ptr_mipmap_layer = write_ptr + staging_buffer_offset;
-					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr_mipmap_layer, 0, 0, width, width, height, block_w, block_h, pitch, pixel_size, block_size);
-
-					RDD::BufferTextureCopyRegion copy_region;
-					copy_region.buffer_offset = staging_buffer_offset;
-					copy_region.row_pitch = pitch;
-					copy_region.texture_subresource.aspect = texture->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
-					copy_region.texture_subresource.mipmap = mm_i;
-					copy_region.texture_subresource.layer = p_layer;
-					copy_region.texture_offset = Vector3i(0, 0, z);
-					copy_region.texture_region_size = Vector3i(logic_width, logic_height, 1);
-					driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, p_dst_layout, copy_region);
-				}
-
-				staging_local_offset += to_allocate;
 			}
 
+			uint32_t pitch = get_compressed_image_format_pixels_shifted(texture->format, width * pixel_size * block_w);
+			uint32_t pitch_step = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP);
+			pitch = STEPIFY(pitch, pitch_step);
+			uint32_t depth_pitch = get_compressed_image_format_pixels_shifted(texture->format, pitch * height);
+			uint32_t to_allocate = depth_pitch * depth;
+
+			if (copy_pass) {
+				for (uint32_t z = 0; z < depth; z++) {
+					const uint8_t *read_ptr_mipmap_layer = read_ptr_mipmap + (tight_mip_size / depth) * z;
+					uint64_t staging_buffer_offset = staging_worker_offset + staging_local_offset + depth_pitch * z;
+					uint8_t *write_ptr_mipmap_layer = write_ptr + staging_buffer_offset;
+					_copy_region_block_or_regular(read_ptr_mipmap_layer, write_ptr_mipmap_layer, 0, 0, width, width, height, block_w, block_h, pitch, pixel_size, block_size);
+				}
+
+				RDD::BufferTextureCopyRegion copy_region;
+				copy_region.buffer_offset = staging_worker_offset + staging_local_offset;
+				copy_region.row_pitch = pitch;
+				copy_region.texture_subresource.aspect = texture->read_aspect_flags.has_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT) ? RDD::TEXTURE_ASPECT_DEPTH : RDD::TEXTURE_ASPECT_COLOR;
+				copy_region.texture_subresource.mipmap = mm_i;
+				copy_region.texture_subresource.layer = p_layer;
+				copy_region.texture_offset = Vector3i(0, 0, 0);
+				copy_region.texture_region_size = Vector3i(logic_width, logic_height, depth);
+				driver->command_copy_buffer_to_texture(transfer_worker->command_buffer, transfer_worker->staging_buffer, texture->driver_id, p_dst_layout, copy_region);
+			}
+
+			staging_local_offset += to_allocate;
 			mipmap_offset = image_total;
 			logic_width = MAX(1u, logic_width >> 1);
 			logic_height = MAX(1u, logic_height >> 1);
