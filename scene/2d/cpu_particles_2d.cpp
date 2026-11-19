@@ -316,6 +316,50 @@ PackedStringArray CPUParticles2D::get_configuration_warnings() const {
 	return warnings;
 }
 
+// komm64: the simulation as it stands: each particle, where the emission
+// cycle is, and what the next step starts from.
+Dictionary CPUParticles2D::snapshot_get_state() const {
+	PackedByteArray bytes;
+	bytes.resize(particles.size() * sizeof(Particle));
+	if (bytes.size()) {
+		memcpy(bytes.ptrw(), particles.ptr(), bytes.size());
+	}
+	Dictionary state;
+	state["particles"] = bytes;
+	state["active"] = active;
+	state["time"] = time;
+	state["frame_remainder"] = frame_remainder;
+	state["cycle"] = cycle;
+	state["seed"] = seed; // not stored unless fixed: a restart draws it
+	state["requested_process_time"] = _requested_process_time;
+	state["inv_emission_transform"] = inv_emission_transform;
+	state["redraw"] = do_redraw;
+	return state;
+}
+
+// komm64: sets them back after the stored properties, without restarting. A
+// state of another amount is left out: the particles start again.
+Error CPUParticles2D::snapshot_set_state(const Dictionary &p_state) {
+	const PackedByteArray bytes = p_state.get("particles", PackedByteArray());
+	if (bytes.size() != particles.size() * int(sizeof(Particle))) {
+		return OK;
+	}
+	if (bytes.size()) {
+		memcpy(particles.ptrw(), bytes.ptr(), bytes.size());
+	}
+	active = p_state.get("active", false);
+	time = p_state.get("time", 0.0);
+	frame_remainder = p_state.get("frame_remainder", 0.0);
+	cycle = p_state.get("cycle", 0);
+	seed = uint32_t(p_state.get("seed", seed));
+	_requested_process_time = p_state.get("requested_process_time", 0.0);
+	inv_emission_transform = p_state.get("inv_emission_transform", inv_emission_transform);
+	set_process_internal(active || emitting);
+	_update_particle_data_buffer();
+	_set_do_redraw(p_state.get("redraw", false));
+	return OK;
+}
+
 void CPUParticles2D::restart(bool p_keep_seed) {
 	time = 0;
 	frame_remainder = 0;
@@ -1298,7 +1342,7 @@ void CPUParticles2D::_update_render_thread() {
 void CPUParticles2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			set_process_internal(emitting);
+			set_process_internal(emitting || active);
 
 			_refresh_interpolation_state();
 
@@ -1526,6 +1570,8 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture"), &CPUParticles2D::get_texture);
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &CPUParticles2D::restart, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &CPUParticles2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &CPUParticles2D::snapshot_set_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1000000,1,exp"), "set_amount", "get_amount"); // FIXME: Evaluate support for `exp` in integer properties, or remove this.

@@ -551,6 +551,120 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 	particles->restart_request = true;
 }
 
+// komm64: the simulation as it stands: the particles, the history trails
+// draw from, and where the emission cycle is. Empty before the first step.
+Dictionary ParticlesStorage::snapshot_get_particles_state(RID p_particles) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL_V(particles, Dictionary());
+	Dictionary state;
+	if (particles->particle_buffer.is_null() || particles->clear || particles->restart_request) {
+		return state;
+	}
+	RD *rd = RD::get_singleton();
+	state["particles"] = rd->buffer_get_data(particles->particle_buffer);
+	if (particles->frame_params_buffer.is_valid()) {
+		state["frame_params"] = rd->buffer_get_data(particles->frame_params_buffer);
+	}
+	PackedByteArray history;
+	history.resize(particles->frame_history.size() * sizeof(ParticlesFrameParams));
+	if (history.size()) {
+		memcpy(history.ptrw(), particles->frame_history.ptr(), history.size());
+	}
+	state["frame_history"] = history;
+	PackedByteArray trail;
+	trail.resize(particles->trail_params.size() * sizeof(ParticlesFrameParams));
+	if (trail.size()) {
+		memcpy(trail.ptrw(), particles->trail_params.ptr(), trail.size());
+	}
+	state["trail_params"] = trail;
+	state["inactive"] = particles->inactive;
+	state["inactive_time"] = particles->inactive_time;
+	state["phase"] = particles->phase;
+	state["prev_phase"] = particles->prev_phase;
+	state["prev_ticks"] = int64_t(particles->prev_ticks);
+	state["cycle_number"] = int64_t(particles->cycle_number);
+	state["frame_counter"] = int64_t(particles->frame_counter);
+	state["random_seed"] = int64_t(particles->random_seed);
+	state["frame_remainder"] = particles->frame_remainder;
+	state["interp_to_end"] = particles->interp_to_end;
+	state["emitter_velocity"] = particles->emitter_velocity;
+	// Asked to step on the next update (drawn last frame).
+	state["requested"] = particles->dirty;
+	// What the last 2D draw told it to collide with: the next step uses it.
+	if (particles->has_sdf_collision) {
+		Dictionary sdf;
+		sdf["transform"] = particles->sdf_collision_transform;
+		sdf["to_screen"] = particles->sdf_collision_to_screen;
+		state["sdf_collision"] = sdf;
+	}
+	return state;
+}
+
+// komm64: sets back what snapshot_get_particles_state() returned, after the
+// particles' settings. A state that does not fit them (another amount, other
+// trails) is left out: the particles start again.
+void ParticlesStorage::snapshot_set_particles_state(RID p_particles, const Dictionary &p_state) {
+	Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL(particles);
+	const PackedByteArray data = p_state.get("particles", PackedByteArray());
+	if (data.is_empty()) {
+		return;
+	}
+	_particles_update_buffers(particles);
+	int total_amount = particles->amount;
+	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
+		total_amount *= particles->trail_bind_poses.size();
+	}
+	const uint32_t size = (sizeof(ParticleData) + particles->userdata_count * sizeof(float) * 4) * total_amount;
+	const PackedByteArray history = p_state.get("frame_history", PackedByteArray());
+	const PackedByteArray trail = p_state.get("trail_params", PackedByteArray());
+	const PackedByteArray frame_params = p_state.get("frame_params", PackedByteArray());
+	if (particles->particle_buffer.is_null() || uint32_t(data.size()) != size || history.size() % sizeof(ParticlesFrameParams) || trail.size() % sizeof(ParticlesFrameParams) || frame_params.size() != trail.size()) {
+		return;
+	}
+	RD *rd = RD::get_singleton();
+	rd->buffer_update(particles->particle_buffer, 0, size, data.ptr());
+	particles->frame_history.resize(history.size() / sizeof(ParticlesFrameParams));
+	if (history.size()) {
+		memcpy(particles->frame_history.ptr(), history.ptr(), history.size());
+	}
+	if (particles->trail_params.size() != trail.size() / sizeof(ParticlesFrameParams) || particles->frame_params_buffer.is_null()) {
+		particles->trail_params.resize(trail.size() / sizeof(ParticlesFrameParams));
+		if (particles->frame_params_buffer.is_valid()) {
+			rd->free_rid(particles->frame_params_buffer);
+		}
+		particles->frame_params_buffer = rd->storage_buffer_create(frame_params.size());
+	}
+	if (trail.size()) {
+		memcpy(particles->trail_params.ptr(), trail.ptr(), trail.size());
+		rd->buffer_update(particles->frame_params_buffer, 0, frame_params.size(), frame_params.ptr());
+	}
+	particles->inactive = p_state.get("inactive", false);
+	particles->inactive_time = p_state.get("inactive_time", 0.0);
+	particles->phase = p_state.get("phase", 0.0);
+	particles->prev_phase = p_state.get("prev_phase", 0.0);
+	particles->prev_ticks = int64_t(p_state.get("prev_ticks", 0));
+	particles->cycle_number = int64_t(p_state.get("cycle_number", 0));
+	particles->frame_counter = int64_t(p_state.get("frame_counter", 0));
+	particles->random_seed = int64_t(p_state.get("random_seed", particles->random_seed));
+	particles->frame_remainder = p_state.get("frame_remainder", 0.0);
+	particles->interp_to_end = p_state.get("interp_to_end", 0.0);
+	particles->emitter_velocity = p_state.get("emitter_velocity", Vector3());
+	particles->clear = false;
+	particles->restart_request = false;
+	// The SDF is the render target's it is drawn to, which the caller names
+	// ("render_target"): not saved, it is the same viewport's after a load.
+	const Dictionary sdf = p_state.get("sdf_collision", Dictionary());
+	const RID render_target = p_state.get("render_target", RID());
+	TextureStorage *texture_storage = TextureStorage::get_singleton();
+	if (!sdf.is_empty() && render_target.is_valid() && texture_storage->render_target_is_sdf_enabled(render_target)) {
+		particles_set_canvas_sdf_collision(p_particles, true, sdf.get("transform", Transform2D()), sdf.get("to_screen", Rect2()), texture_storage->render_target_get_sdf_texture(render_target));
+	}
+	if (p_state.get("requested", false)) {
+		particles_request_process(p_particles);
+	}
+}
+
 void ParticlesStorage::particles_set_seed(RID p_particles, uint32_t p_seed) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);

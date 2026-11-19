@@ -478,6 +478,28 @@ void AnimatedSprite2D::_res_changed() {
 	notify_property_list_changed();
 }
 
+Dictionary AnimatedSprite2D::snapshot_get_state() const {
+	Dictionary state;
+	state["playing"] = playing;
+	state["custom_speed_scale"] = custom_speed_scale;
+	state["frame"] = frame;
+	state["frame_progress"] = frame_progress;
+	return state;
+}
+
+Error AnimatedSprite2D::snapshot_set_state(const Dictionary &p_state) {
+	// Set as they were, without frame_changed: no game code runs during a restore.
+	playing = p_state.get("playing", false);
+	custom_speed_scale = p_state.get("custom_speed_scale", 1.0);
+	frame = p_state.get("frame", 0);
+	frame_progress = p_state.get("frame_progress", 0.0);
+	_calc_frame_speed_scale();
+	set_process_internal(playing);
+	notify_property_list_changed();
+	queue_redraw();
+	return OK;
+}
+
 bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
@@ -652,6 +674,8 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_autoplay"), &AnimatedSprite2D::get_autoplay);
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AnimatedSprite2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AnimatedSprite2D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_speed", "from_end"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name"), &AnimatedSprite2D::play_backwards, DEFVAL(StringName()));

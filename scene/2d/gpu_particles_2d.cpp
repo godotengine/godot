@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
@@ -503,6 +504,42 @@ float GPUParticles2D::get_amount_ratio() const {
 	return amount_ratio;
 }
 
+// komm64: where a one-shot cycle is, the emitter's last place and velocity,
+// and the simulation the RenderingServer keeps for it.
+Dictionary GPUParticles2D::snapshot_get_state() const {
+	Dictionary state;
+	state["active"] = active;
+	state["signal_canceled"] = signal_canceled;
+	state["time"] = time;
+	state["seed"] = seed; // not stored unless fixed: a restart draws it
+	state["emission_time"] = emission_time;
+	state["active_time"] = active_time;
+	state["previous_position"] = previous_position;
+	state["previous_velocity"] = previous_velocity;
+	state["particles"] = RS::get_singleton()->snapshot_get_particles_state(particles);
+	return state;
+}
+
+// komm64: sets them back after the stored properties, without restarting.
+Error GPUParticles2D::snapshot_set_state(const Dictionary &p_state) {
+	active = p_state.get("active", active);
+	signal_canceled = p_state.get("signal_canceled", signal_canceled);
+	time = p_state.get("time", time);
+	seed = uint32_t(p_state.get("seed", seed)); // the simulation's own comes with it below
+	emission_time = p_state.get("emission_time", emission_time);
+	active_time = p_state.get("active_time", active_time);
+	previous_position = p_state.get("previous_position", previous_position);
+	previous_velocity = p_state.get("previous_velocity", previous_velocity);
+	RS::get_singleton()->particles_set_emitter_velocity(particles, previous_velocity);
+	Dictionary simulation = Dictionary(p_state.get("particles", Dictionary())).duplicate();
+	if (is_inside_tree()) {
+		// What it collides with is drawn in its viewport.
+		simulation["render_target"] = RS::get_singleton()->viewport_get_render_target(get_viewport()->get_viewport_rid());
+	}
+	RS::get_singleton()->snapshot_set_particles_state(particles, simulation);
+	return OK;
+}
+
 void GPUParticles2D::restart(bool p_keep_seed) {
 	if (!p_keep_seed && !use_fixed_seed) {
 		set_seed(Math::rand());
@@ -919,6 +956,8 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capture_rect"), &GPUParticles2D::capture_rect);
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &GPUParticles2D::restart, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &GPUParticles2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &GPUParticles2D::snapshot_set_state);
 
 	ClassDB::bind_method(D_METHOD("set_sub_emitter", "path"), &GPUParticles2D::set_sub_emitter);
 	ClassDB::bind_method(D_METHOD("get_sub_emitter"), &GPUParticles2D::get_sub_emitter);

@@ -254,6 +254,8 @@ Error CallQueue::flush() {
 
 		//pre-advance so this function is reentrant
 		offset += advance;
+		flush_page = i;
+		flush_offset = offset;
 
 		Object *target = message->callable.get_object();
 
@@ -299,8 +301,98 @@ Error CallQueue::flush() {
 	pages_used = 1;
 
 	flushing = false;
+	flush_page = 0;
+	flush_offset = 0;
 	UNLOCK_MUTEX;
 	return OK;
+}
+
+// komm64: the calls still to run, in order, each [callable, arguments]. A
+// queued notification is a call of `notification`, a queued set one of `set`.
+// Calls whose object is gone, which would not run, are left out.
+Array CallQueue::snapshot_get_calls() const {
+	CallQueue *self = const_cast<CallQueue *>(this);
+	Array out;
+	self->mutex.lock();
+	uint32_t i = flushing ? flush_page : 0;
+	uint32_t offset = flushing ? flush_offset : 0;
+	while (i < pages_used) {
+		if (offset >= page_bytes[i]) {
+			i++;
+			offset = 0;
+			continue;
+		}
+		const Message *message = (const Message *)&pages[i]->data[offset];
+		const int type = message->type & FLAG_MASK;
+		offset += sizeof(Message) + (type != TYPE_NOTIFICATION ? sizeof(Variant) * message->args : 0);
+		const ObjectID id = message->callable.get_object_id();
+		if (!(message->type & FLAG_NULL_IS_OK) && ObjectDB::get_instance(id) == nullptr) {
+			continue;
+		}
+		const Variant *args = (const Variant *)(message + 1);
+		Array call;
+		switch (type) {
+			case TYPE_CALL: {
+				Array a;
+				for (int k = 0; k < message->args; k++) {
+					a.push_back(args[k]);
+				}
+				call = { message->callable, a };
+			} break;
+			case TYPE_NOTIFICATION: {
+				call = { Callable(id, CoreStringName(notification)), Array{ message->notification } };
+			} break;
+			case TYPE_SET: {
+				call = { Callable(id, SNAME("set")), Array{ message->callable.get_method(), args[0] } };
+			} break;
+		}
+		out.push_back(call);
+	}
+	self->mutex.unlock();
+	return out;
+}
+
+// komm64: replaces the calls still to run with `p_calls`, as
+// snapshot_get_calls() returns them. A running flush goes on with them.
+void CallQueue::snapshot_set_calls(const Array &p_calls) {
+	mutex.lock();
+	if (!pages.is_empty()) {
+		uint32_t i = flushing ? flush_page : 0;
+		uint32_t offset = flushing ? flush_offset : 0;
+		const uint32_t keep_page = i;
+		const uint32_t keep_offset = offset;
+		while (i < pages_used) {
+			if (offset >= page_bytes[i]) {
+				i++;
+				offset = 0;
+				continue;
+			}
+			Message *message = (Message *)&pages[i]->data[offset];
+			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
+				Variant *args = (Variant *)(message + 1);
+				for (int k = 0; k < message->args; k++) {
+					args[k].~Variant();
+				}
+				offset += sizeof(Variant) * message->args;
+			}
+			offset += sizeof(Message);
+			message->~Message();
+		}
+		page_bytes[keep_page] = keep_offset;
+		pages_used = keep_page + 1;
+	}
+	mutex.unlock();
+	for (const Variant &v : p_calls) {
+		const Array call = v;
+		ERR_CONTINUE(call.size() != 2 || call[0].get_type() != Variant::CALLABLE || call[1].get_type() != Variant::ARRAY);
+		const Array args = call[1];
+		Vector<const Variant *> argptrs;
+		argptrs.resize(args.size());
+		for (int k = 0; k < args.size(); k++) {
+			argptrs.write[k] = &args[k];
+		}
+		push_callablep(call[0], argptrs.ptrw(), args.size());
+	}
 }
 
 void CallQueue::clear() {

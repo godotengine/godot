@@ -1216,7 +1216,86 @@ Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachinePlayback::_get
 	return group_end_transition;
 }
 
+static Dictionary _snapshot_nti(const AnimationNode::NodeTimeInfo &p_nti) {
+	Dictionary d;
+	d["length"] = p_nti.length;
+	d["position"] = p_nti.position;
+	d["delta"] = p_nti.delta;
+	d["loop_mode"] = int(p_nti.loop_mode);
+	d["will_end"] = p_nti.will_end;
+	d["is_infinity"] = p_nti.is_infinity;
+	return d;
+}
+
+static AnimationNode::NodeTimeInfo _snapshot_nti_from(const Dictionary &p_d) {
+	AnimationNode::NodeTimeInfo nti;
+	nti.length = p_d.get("length", 0.0);
+	nti.position = p_d.get("position", 0.0);
+	nti.delta = p_d.get("delta", 0.0);
+	nti.loop_mode = Animation::LoopMode(int(p_d.get("loop_mode", 0)));
+	nti.will_end = p_d.get("will_end", false);
+	nti.is_infinity = p_d.get("is_infinity", false);
+	return nti;
+}
+
+Dictionary AnimationNodeStateMachinePlayback::snapshot_get_state() const {
+	Dictionary state;
+	state["current"] = current;
+	state["current_nti"] = _snapshot_nti(current_nti);
+	state["current_curve"] = current_curve;
+	state["group_start_transition"] = group_start_transition;
+	state["group_end_transition"] = group_end_transition;
+	state["fading_from"] = fading_from;
+	state["fading_from_nti"] = _snapshot_nti(fadeing_from_nti);
+	state["fading_time"] = fading_time;
+	state["fading_pos"] = fading_pos;
+	Array p;
+	for (const StringName &state_name : path) {
+		p.push_back(state_name);
+	}
+	state["path"] = p;
+	state["playing"] = playing;
+	state["start_request"] = start_request;
+	state["travel_request"] = travel_request;
+	state["reset_request"] = reset_request;
+	state["reset_request_on_teleport"] = reset_request_on_teleport;
+	state["reset_request_for_fading_from"] = _reset_request_for_fading_from;
+	state["next_request"] = next_request;
+	state["stop_request"] = stop_request;
+	state["teleport_request"] = teleport_request;
+	return state;
+}
+
+Error AnimationNodeStateMachinePlayback::snapshot_set_state(const Dictionary &p_state) {
+	current = p_state.get("current", SceneStringName(Start));
+	current_nti = _snapshot_nti_from(p_state.get("current_nti", Dictionary()));
+	current_curve = p_state.get("current_curve", Ref<Curve>());
+	group_start_transition = p_state.get("group_start_transition", Ref<AnimationNodeStateMachineTransition>());
+	group_end_transition = p_state.get("group_end_transition", Ref<AnimationNodeStateMachineTransition>());
+	fading_from = p_state.get("fading_from", StringName());
+	fadeing_from_nti = _snapshot_nti_from(p_state.get("fading_from_nti", Dictionary()));
+	fading_time = p_state.get("fading_time", 0.0);
+	fading_pos = p_state.get("fading_pos", 0.0);
+	path.clear();
+	const Array p = p_state.get("path", Array());
+	for (const Variant &state_name : p) {
+		path.push_back(state_name);
+	}
+	playing = p_state.get("playing", false);
+	start_request = p_state.get("start_request", StringName());
+	travel_request = p_state.get("travel_request", StringName());
+	reset_request = p_state.get("reset_request", false);
+	reset_request_on_teleport = p_state.get("reset_request_on_teleport", false);
+	_reset_request_for_fading_from = p_state.get("reset_request_for_fading_from", false);
+	next_request = p_state.get("next_request", false);
+	stop_request = p_state.get("stop_request", false);
+	teleport_request = p_state.get("teleport_request", false);
+	return OK;
+}
+
 void AnimationNodeStateMachinePlayback::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &AnimationNodeStateMachinePlayback::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &AnimationNodeStateMachinePlayback::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("travel", "to_node", "reset_on_teleport"), &AnimationNodeStateMachinePlayback::travel, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("start", "node", "reset"), &AnimationNodeStateMachinePlayback::start, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("next"), &AnimationNodeStateMachinePlayback::next);

@@ -147,6 +147,7 @@ private:
 
 	HashMap<StringName, SceneTreeGroup> group_map;
 	bool _quit = false;
+	LocalVector<Callable> snapshot_frame_end_calls; // komm64
 
 	// Static so we can get directly instead of via SceneTree pointer.
 	static bool _physics_interpolation_enabled;
@@ -432,6 +433,7 @@ public:
 
 	RequiredResult<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
 	TypedArray<Dictionary> snapshot_get_timers() const; // komm64
+	void snapshot_call_at_frame_end(const Callable &p_callable);
 	void snapshot_remove_timer(const Ref<SceneTreeTimer> &p_timer);
 	void snapshot_remove_tween(const Ref<Tween> &p_tween);
 	RequiredResult<Tween> create_tween();

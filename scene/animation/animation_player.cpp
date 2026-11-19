@@ -741,21 +741,44 @@ Dictionary AnimationPlayer::snapshot_get_state() const {
 		state["animation"] = anim;
 		state["position"] = get_current_animation_position();
 		state["custom_speed"] = playback.current.speed_scale;
+		state["start_time"] = playback.current.start_time;
+		state["end_time"] = playback.current.end_time;
+		// Just started (its first key not processed yet), or sought and not processed since.
+		state["started"] = playback.started;
+		state["seeked"] = playback.seeked;
 	}
 	return state;
 }
 
+// komm64: puts the player where it was, without applying a track or emitting a
+// signal: what the tracks wrote is restored with the rest of a save, and no
+// game code runs during a restore. It goes on from there on its next process.
 Error AnimationPlayer::snapshot_set_state(const Dictionary &p_state) {
+	Playback &c = playback;
+	c.blend.clear();
+	playback_queue.clear();
 	const StringName anim = p_state.get("animation", StringName());
-	if (anim == StringName() || !has_animation(anim)) {
-		stop();
+	if (anim == StringName() || !animation_set.has(anim)) {
+		c.current.from = nullptr;
+		c.assigned = StringName();
+		c.current.pos = 0;
+		c.current.speed_scale = 1;
+		c.started = false;
+		c.seeked = false;
+		playing = false;
+		_set_process(false);
 		return OK;
 	}
-	play(anim, 0, p_state.get("custom_speed", 1.0));
-	seek(p_state.get("position", 0.0), true);
-	if (!(bool)p_state.get("playing", false)) {
-		pause();
-	}
+	c.current.from = &animation_set[anim];
+	c.assigned = anim;
+	c.current.pos = p_state.get("position", 0.0);
+	c.current.speed_scale = p_state.get("custom_speed", 1.0);
+	c.current.start_time = p_state.get("start_time", -1.0);
+	c.current.end_time = p_state.get("end_time", -1.0);
+	c.started = p_state.get("started", false);
+	c.seeked = p_state.get("seeked", false);
+	playing = p_state.get("playing", false);
+	_set_process(playing);
 	return OK;
 }
 

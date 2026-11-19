@@ -783,6 +783,10 @@ public:
 
 	static void print_orphan_nodes();
 	static TypedArray<int> get_orphan_node_ids();
+	// komm64: nodes out of the tree with no parent (tops of orphan subtrees), in any build.
+	static PackedInt64Array snapshot_get_orphan_roots();
+	static int64_t snapshot_get_name_counter();
+	static void snapshot_set_name_counter(int64_t p_counter);
 
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);

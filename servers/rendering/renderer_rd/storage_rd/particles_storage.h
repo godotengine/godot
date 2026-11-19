@@ -480,6 +480,8 @@ public:
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;
 
 	virtual void particles_restart(RID p_particles) override;
+	virtual Dictionary snapshot_get_particles_state(RID p_particles) override; // komm64
+	virtual void snapshot_set_particles_state(RID p_particles, const Dictionary &p_state) override;
 	virtual void particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) override;
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) override;

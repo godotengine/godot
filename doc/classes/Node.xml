@@ -1030,11 +1030,30 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
+		<method name="snapshot_get_name_counter" qualifiers="static">
+			<return type="int" />
+			<description>
+				Returns the counter behind the names the engine gives nodes added without a unique name, such as [code]@Label@27[/code]. Pass it to [method snapshot_set_name_counter] to make the nodes added from then on get the names they got after it was read, for example after loading a save.
+			</description>
+		</method>
+		<method name="snapshot_get_orphan_roots" qualifiers="static">
+			<return type="PackedInt64Array" />
+			<description>
+				komm64: Returns the instance IDs of the nodes that are outside the scene tree and have no parent, the tops of orphan subtrees. Unlike [method get_orphan_node_ids], it works in release builds too. A savestate system frees those of the replaced game on load.
+			</description>
+		</method>
 		<method name="snapshot_set_name">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Sets [member name] like setting it does, but keeps a name the engine gave, which contains [code]@[/code] (as [method add_child] names a node whose name a sibling already has). Savestate systems use it to bring a node back at the path it had.
+			</description>
+		</method>
+		<method name="snapshot_set_name_counter" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="counter" type="int" />
+			<description>
+				Sets the counter [method snapshot_get_name_counter] returns. A name it gives that a sibling already has is skipped.
 			</description>
 		</method>
 		<method name="update_configuration_warnings">

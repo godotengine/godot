@@ -245,6 +245,10 @@ public:
 
 	void set_position(const Vector3 &p_position);
 
+	// komm64: subclasses with more state add theirs to Node3D's.
+	virtual Dictionary snapshot_get_state() const;
+	virtual Error snapshot_set_state(const Dictionary &p_state);
+
 	void set_rotation_edit_mode(RotationEditMode p_mode);
 	RotationEditMode get_rotation_edit_mode() const;
 

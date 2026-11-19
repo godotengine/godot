@@ -279,7 +279,9 @@ float AudioStreamPlayer2D::get_playback_position() {
 }
 
 Dictionary AudioStreamPlayer2D::snapshot_get_state() {
-	return internal->snapshot_get_state();
+	// play() starts the playback on the next physics frame.
+	const bool starting = setplayback.is_valid() && setplay.get() >= 0;
+	return internal->snapshot_get_state(starting ? setplayback : Ref<AudioStreamPlayback>(), starting ? setplay.get() : 0.0);
 }
 
 Error AudioStreamPlayer2D::snapshot_set_state(const Dictionary &p_state) {

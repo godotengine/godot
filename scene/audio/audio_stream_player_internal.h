@@ -107,7 +107,8 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	Dictionary snapshot_get_state();
+	// p_starting: a playback play() made that starts on the next physics frame (2D / 3D players), from p_start_from.
+	Dictionary snapshot_get_state(const Ref<AudioStreamPlayback> &p_starting = Ref<AudioStreamPlayback>(), float p_start_from = 0.0);
 	Error snapshot_set_state(const Dictionary &p_state);
 
 	void set_playback_type(AudioServer::PlaybackType p_playback_type);

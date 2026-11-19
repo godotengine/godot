@@ -75,6 +75,10 @@ private:
 	uint32_t max_pages = 0;
 	uint32_t pages_used = 0;
 	bool flushing = false;
+	// komm64: where a running flush goes on (the next message), so the calls
+	// still to run can be read and replaced from inside one.
+	uint32_t flush_page = 0;
+	uint32_t flush_offset = 0;
 
 #ifdef DEV_ENABLED
 	bool is_current_thread_override = false;
@@ -136,6 +140,8 @@ public:
 
 	Error flush();
 	void clear();
+	Array snapshot_get_calls() const; // komm64
+	void snapshot_set_calls(const Array &p_calls); // komm64
 	void statistics();
 
 	bool has_messages() const;

@@ -357,6 +357,9 @@ public:
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;
 
 	virtual void particles_restart(RID p_particles) override;
+	// komm64: not kept on this renderer; a load restarts the particles.
+	virtual Dictionary snapshot_get_particles_state(RID p_particles) override { return Dictionary(); }
+	virtual void snapshot_set_particles_state(RID p_particles, const Dictionary &p_state) override {}
 
 	virtual void particles_set_draw_order(RID p_particles, RSE::ParticlesDrawOrder p_order) override;
 

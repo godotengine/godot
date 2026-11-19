@@ -252,6 +252,19 @@
 				Allows this node to be rendered. Equivalent to setting [member visible] to [code]true[/code]. This is the opposite of [method hide].
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of this node for savestate systems: what it keeps beyond its stored properties. For a [Node3D], the rotation and scale it keeps beside [member transform] when they were set themselves (with [member rotation], [member scale] or an animation) rather than read back from the transform; empty otherwise. Classes with more state add theirs: the playback of an [AudioStreamPlayer3D], where an [AnimatedSprite3D] is in its animation, the simulation of [GPUParticles3D] and [CPUParticles3D].
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state], after the stored properties, without side effects (no restart, no signal): the next change of [member rotation] or [member scale] builds on the same values as before the save, and players and particles go on from where they were.
+			</description>
+		</method>
 		<method name="to_global" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="local_point" type="Vector3" />

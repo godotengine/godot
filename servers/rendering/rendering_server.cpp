@@ -2737,6 +2737,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_is_inactive", "particles"), &RenderingServer::particles_is_inactive);
 	ClassDB::bind_method(D_METHOD("particles_request_process", "particles"), &RenderingServer::particles_request_process);
 	ClassDB::bind_method(D_METHOD("particles_restart", "particles"), &RenderingServer::particles_restart);
+	ClassDB::bind_method(D_METHOD("snapshot_get_particles_state", "particles"), &RenderingServer::snapshot_get_particles_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_particles_state", "particles", "state"), &RenderingServer::snapshot_set_particles_state);
 
 	ClassDB::bind_method(D_METHOD("particles_set_subemitter", "particles", "subemitter_particles"), &RenderingServer::particles_set_subemitter);
 	ClassDB::bind_method(D_METHOD("particles_emit", "particles", "transform", "velocity", "color", "custom", "emit_flags"), &RenderingServer::particles_emit);

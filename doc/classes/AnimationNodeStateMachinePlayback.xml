@@ -88,6 +88,19 @@
 				If there is a next path by travel or auto advance, immediately transitions from the current state to the next state.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns where the state machine is (its current and fading states and their time), its travel path and the requests not processed yet. Used to save a running game.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Sets back what [method snapshot_get_state] returned, without emitting a signal.
+			</description>
+		</method>
 		<method name="start">
 			<return type="void" />
 			<param index="0" name="node" type="StringName" />

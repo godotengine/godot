@@ -1352,6 +1352,29 @@ void AnimatedSprite3D::_res_changed() {
 	notify_property_list_changed();
 }
 
+Dictionary AnimatedSprite3D::snapshot_get_state() const {
+	Dictionary state = Node3D::snapshot_get_state();
+	state["playing"] = playing;
+	state["custom_speed_scale"] = custom_speed_scale;
+	state["frame"] = frame;
+	state["frame_progress"] = frame_progress;
+	return state;
+}
+
+Error AnimatedSprite3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	// Set as they were, without frame_changed: no game code runs during a restore.
+	playing = p_state.get("playing", false);
+	custom_speed_scale = p_state.get("custom_speed_scale", 1.0);
+	frame = p_state.get("frame", 0);
+	frame_progress = p_state.get("frame_progress", 0.0);
+	_calc_frame_speed_scale();
+	set_process_internal(playing);
+	notify_property_list_changed();
+	_queue_redraw();
+	return OK;
+}
+
 bool AnimatedSprite3D::is_playing() const {
 	return playing;
 }

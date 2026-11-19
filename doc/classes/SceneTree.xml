@@ -247,6 +247,13 @@
 				[b]Note:[/b] [method set_multiplayer] should be called [i]before[/i] the child nodes are ready at the given [param root_path]. If multiplayer nodes like [MultiplayerSpawner] or [MultiplayerSynchronizer] are added to the tree before the custom multiplayer API is set, they will not work.
 			</description>
 		</method>
+		<method name="snapshot_call_at_frame_end">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Calls [param callable] once, at the end of this frame's process step: after [method Node._process], deferred calls, timers and [Tween]s, and before nodes queued for deletion are freed and the frame is drawn. What it calls sees the world as the next frame starts from it. Calls it adds from there run in the same frame. Called during the drawing of a frame, it runs at the end of the next frame's process step.
+			</description>
+		</method>
 		<method name="snapshot_get_timers" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>

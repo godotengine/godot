@@ -465,6 +465,8 @@ public:
 	virtual bool particles_is_inactive(RID p_particles) = 0;
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
+	virtual Dictionary snapshot_get_particles_state(RID p_particles) = 0; // komm64
+	virtual void snapshot_set_particles_state(RID p_particles, const Dictionary &p_state) = 0;
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 

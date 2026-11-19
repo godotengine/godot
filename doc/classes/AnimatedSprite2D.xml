@@ -66,6 +66,19 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				komm64: Returns what [method play] and [method pause] hold outside properties ([code]playing[/code], [code]custom_speed_scale[/code]) with [member frame] and [member frame_progress], for savestate systems. [member frame] is not stored as a property while playing.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				komm64: Restores a state from [method snapshot_get_state] as it was, without emitting [signal frame_changed].
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>

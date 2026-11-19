@@ -194,6 +194,8 @@ public:
 	void emit_particle(const Transform2D &p_transform, const Vector2 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	void restart(bool p_keep_seed = false);
+	Dictionary snapshot_get_state() const; // komm64
+	Error snapshot_set_state(const Dictionary &p_state);
 	Rect2 capture_rect() const;
 	void convert_from_particles(Node *p_particles);
 

@@ -439,6 +439,38 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+// komm64: where a one-shot cycle is, the emitter's last place and velocity,
+// and the simulation the RenderingServer keeps for it.
+Dictionary GPUParticles3D::snapshot_get_state() const {
+	Dictionary state = Node3D::snapshot_get_state();
+	state["active"] = active;
+	state["signal_canceled"] = signal_canceled;
+	state["time"] = time;
+	state["seed"] = seed; // not stored unless fixed: a restart draws it
+	state["emission_time"] = emission_time;
+	state["active_time"] = active_time;
+	state["previous_position"] = previous_position;
+	state["previous_velocity"] = previous_velocity;
+	state["particles"] = RS::get_singleton()->snapshot_get_particles_state(particles);
+	return state;
+}
+
+// komm64: sets them back after the stored properties, without restarting.
+Error GPUParticles3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	active = p_state.get("active", active);
+	signal_canceled = p_state.get("signal_canceled", signal_canceled);
+	time = p_state.get("time", time);
+	seed = uint32_t(p_state.get("seed", seed)); // the simulation's own comes with it below
+	emission_time = p_state.get("emission_time", emission_time);
+	active_time = p_state.get("active_time", active_time);
+	previous_position = p_state.get("previous_position", previous_position);
+	previous_velocity = p_state.get("previous_velocity", previous_velocity);
+	RS::get_singleton()->particles_set_emitter_velocity(particles, previous_velocity);
+	RS::get_singleton()->snapshot_set_particles_state(particles, p_state.get("particles", Dictionary()));
+	return OK;
+}
+
 void GPUParticles3D::restart(bool p_keep_seed) {
 	if (!p_keep_seed && !use_fixed_seed) {
 		set_seed(Math::rand());

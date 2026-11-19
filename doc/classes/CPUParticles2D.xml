@@ -95,6 +95,19 @@
 				Enables or disables the given particle flag.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of these particles for savestate systems: each particle, where the emission cycle is, and what the next step starts from. Stored properties are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state], after the stored properties, without restarting: the particles go on from where they were. A state saved with another [member amount] is ignored.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="amount" type="int" setter="set_amount" getter="get_amount" default="8">

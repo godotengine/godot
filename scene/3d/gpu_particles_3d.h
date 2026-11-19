@@ -195,6 +195,8 @@ public:
 	RSE::ParticlesTransformAlignAxis get_transform_align_axis() const;
 
 	void restart(bool p_keep_seed = false);
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
 
 	void set_use_fixed_seed(bool p_use_fixed_seed);
 	bool get_use_fixed_seed() const;

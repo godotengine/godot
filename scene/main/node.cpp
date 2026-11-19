@@ -1544,6 +1544,18 @@ void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
 }
 
+// komm64: the counter behind engine-made names ("@Label@27"). A save holds it
+// and a load sets it back, so the nodes made after a load get the names they
+// got after the save.
+int64_t Node::snapshot_get_name_counter() {
+	return node_hrcr_count.get();
+}
+
+void Node::snapshot_set_name_counter(int64_t p_counter) {
+	ERR_FAIL_COND(p_counter < 1 || p_counter > UINT32_MAX);
+	node_hrcr_count.init(uint32_t(p_counter));
+}
+
 #ifdef TOOLS_ENABLED
 String Node::validate_child_name(Node *p_child) {
 	StringName name = p_child->data.name;
@@ -1595,7 +1607,9 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			unique = !existing || *existing == p_child;
 		}
 
-		if (!unique) {
+		// komm64: a counter set back by snapshot_set_name_counter() may give a
+		// name a sibling already has; the next number is taken then.
+		while (!unique) {
 			ERR_FAIL_COND(!node_hrcr_count.ref());
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
@@ -1620,6 +1634,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 				c /= 10;
 			}
 			p_child->data.name = String(str);
+			unique = !data.children.has(p_child->data.name);
 		}
 	}
 }
@@ -3486,6 +3501,17 @@ void Node::print_orphan_nodes() {
 	_print_orphan_nodes_map.clear();
 #endif
 }
+PackedInt64Array Node::snapshot_get_orphan_roots() {
+	PackedInt64Array ids;
+	ObjectDB::debug_objects([](Object *p_obj, void *p_ids) {
+		const Node *n = Object::cast_to<Node>(p_obj);
+		if (n && !n->is_inside_tree() && !n->get_parent()) {
+			((PackedInt64Array *)p_ids)->push_back(int64_t(n->get_instance_id()));
+		}
+	}, &ids);
+	return ids;
+}
+
 TypedArray<int> Node::get_orphan_node_ids() {
 	TypedArray<int> ret;
 #ifdef DEBUG_ENABLED
@@ -3805,6 +3831,9 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
+	ClassDB::bind_static_method("Node", D_METHOD("snapshot_get_orphan_roots"), &Node::snapshot_get_orphan_roots);
+	ClassDB::bind_static_method("Node", D_METHOD("snapshot_get_name_counter"), &Node::snapshot_get_name_counter);
+	ClassDB::bind_static_method("Node", D_METHOD("snapshot_set_name_counter", "counter"), &Node::snapshot_set_name_counter);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);

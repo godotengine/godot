@@ -25,6 +25,25 @@
 				Sets the process notification in which to update animations.
 			</description>
 		</method>
+		<method name="snapshot_get_own_objects" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the objects this tree makes for itself and hands out through its parameters (each state machine's [AnimationNodeStateMachinePlayback]), keyed by parameter. [method snapshot_set_state] keeps them, so a savestate system can save what holds one as a reference to the tree's parameter instead of a copy.
+			</description>
+		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns every parameter, read-only ones included, with each state machine playback given as its own [method AnimationNodeStateMachinePlayback.snapshot_get_state]. Used to save a running game.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Sets back what [method snapshot_get_state] returned. The playback objects stay the same objects and get their state in place. No animation is applied and no signal is emitted.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="advance_expression_base_node" type="NodePath" setter="set_advance_expression_base_node" getter="get_advance_expression_base_node" default="NodePath(&quot;.&quot;)">

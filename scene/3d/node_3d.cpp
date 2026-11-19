@@ -103,6 +103,32 @@ void Node3D::_update_rotation_and_scale() const {
 	_clear_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE);
 }
 
+// komm64: the rotation and scale the node keeps beside its transform, when
+// they were set themselves (by set_rotation(), an animation) and are not just
+// read back from the transform: the next set_rotation() builds on them, and
+// read back they can be off in the last bit.
+Dictionary Node3D::snapshot_get_state() const {
+	Dictionary state;
+	if (!_test_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE)) {
+		Dictionary kept;
+		kept["euler_rotation"] = data.euler_rotation;
+		kept["scale"] = data.scale;
+		state["node_3d"] = kept;
+	}
+	return state;
+}
+
+// komm64: sets them back after the stored transform, which they make.
+Error Node3D::snapshot_set_state(const Dictionary &p_state) {
+	const Dictionary kept = p_state.get("node_3d", Dictionary());
+	if (!kept.is_empty()) {
+		data.euler_rotation = kept.get("euler_rotation", data.euler_rotation);
+		data.scale = kept.get("scale", data.scale);
+		_clear_dirty_bits(DIRTY_EULER_ROTATION_AND_SCALE);
+	}
+	return OK;
+}
+
 void Node3D::_propagate_transform_changed_deferred() {
 	if (is_inside_tree() && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
@@ -1430,6 +1456,8 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 }
 
 void Node3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &Node3D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &Node3D::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node3D::set_position);

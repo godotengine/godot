@@ -24,7 +24,7 @@
 				Returns [code]true[/code] if the timer is stopped or has not started.
 			</description>
 		</method>
-		<method name="snapshot_get_state">
+		<method name="snapshot_get_state" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
 				Returns the runtime state of this timer ([code]running[/code] and [code]time_left[/code]) for savestate systems. Stored properties such as [member wait_time] are not included.
@@ -34,7 +34,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="Dictionary" />
 			<description>
-				Restores a runtime state produced by [method snapshot_get_state]: restarts the timer with the saved remaining time, or stops it.
+				Restores a runtime state produced by [method snapshot_get_state]: sets the remaining time and runs the timer, or stops it, leaving [member wait_time] and [member autostart] as they are.
 			</description>
 		</method>
 		<method name="start">

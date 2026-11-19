@@ -42,6 +42,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -2042,6 +2043,15 @@ static bool _snapshot_is_plain(const Variant &p_value, int p_depth) {
 	}
 }
 
+// komm64: the main thread's deferred calls still to run.
+Array Engine::snapshot_get_deferred_calls() const {
+	return MessageQueue::get_main_singleton()->snapshot_get_calls();
+}
+
+void Engine::snapshot_set_deferred_calls(const Array &p_calls) {
+	MessageQueue::get_main_singleton()->snapshot_set_calls(p_calls);
+}
+
 int64_t Engine::snapshot_get_random_state() const {
 	return (int64_t)Math::get_random_state();
 }
@@ -2368,6 +2378,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_scripted_objects"), &Engine::snapshot_get_scripted_objects);
 	ClassDB::bind_method(D_METHOD("snapshot_is_plain_leaf", "value"), &Engine::snapshot_is_plain_leaf);
 	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
+	ClassDB::bind_method(D_METHOD("snapshot_get_deferred_calls"), &Engine::snapshot_get_deferred_calls);
+	ClassDB::bind_method(D_METHOD("snapshot_set_deferred_calls", "calls"), &Engine::snapshot_set_deferred_calls);
 	ClassDB::bind_method(D_METHOD("snapshot_get_clock"), &Engine::snapshot_get_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_clock", "clock"), &Engine::snapshot_set_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_random_state", "state"), &Engine::snapshot_set_random_state);

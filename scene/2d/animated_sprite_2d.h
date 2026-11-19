@@ -95,6 +95,10 @@ public:
 	void pause();
 	void stop();
 
+	// komm64: what play() / pause() hold outside properties (frame loses storage while playing).
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_name);

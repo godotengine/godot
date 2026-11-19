@@ -351,5 +351,10 @@ public:
 	void clear_path();
 	void push_path(const StringName &p_state);
 
+	// komm64: where the state machine is and what it was asked to do, without
+	// the transitions and curves (they belong to the state machine resource).
+	Dictionary snapshot_get_state() const;
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	AnimationNodeStateMachinePlayback();
 };

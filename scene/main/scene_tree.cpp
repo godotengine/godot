@@ -731,6 +731,18 @@ bool SceneTree::process(double p_time) {
 
 	flush_transform_notifications(); // Additional transforms after timers update.
 
+	// komm64: the frame's game code has run; what is called here sees the
+	// world as the next frame starts from it. Calls made from these run too.
+	while (!snapshot_frame_end_calls.is_empty()) {
+		LocalVector<Callable> calls = snapshot_frame_end_calls;
+		snapshot_frame_end_calls.clear();
+		for (const Callable &c : calls) {
+			c.call();
+		}
+		// What they moved is where it is before the frame is drawn.
+		flush_transform_notifications();
+	}
+
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 
@@ -1779,6 +1791,12 @@ RequiredResult<SceneTreeTimer> SceneTree::create_timer(double p_delay_sec, bool 
 
 // komm64: the running timers in processing order, with what create_timer()
 // was given for each.
+// komm64: calls `p_callable` at the end of this frame's process step, after
+// timers and Tweens, before nodes queued for deletion are freed.
+void SceneTree::snapshot_call_at_frame_end(const Callable &p_callable) {
+	snapshot_frame_end_calls.push_back(p_callable);
+}
+
 TypedArray<Dictionary> SceneTree::snapshot_get_timers() const {
 	TypedArray<Dictionary> out;
 	for (const Ref<SceneTreeTimer> &t : timers) {
@@ -1947,6 +1965,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always", "process_in_physics", "ignore_time_scale"), &SceneTree::create_timer, DEFVAL(true), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("snapshot_get_timers"), &SceneTree::snapshot_get_timers);
+	ClassDB::bind_method(D_METHOD("snapshot_call_at_frame_end", "callable"), &SceneTree::snapshot_call_at_frame_end);
 	ClassDB::bind_method(D_METHOD("snapshot_remove_timer", "timer"), &SceneTree::snapshot_remove_timer);
 	ClassDB::bind_method(D_METHOD("snapshot_remove_tween", "tween"), &SceneTree::snapshot_remove_tween);
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);

@@ -328,6 +328,12 @@
 				Returns a number that identifies the [Array] or [Dictionary] [param value] itself rather than its contents: it is the same for every variable that shares it, for as long as it exists. Returns [code]0[/code] for any other value. For saving which containers a game shares.
 			</description>
 		</method>
+		<method name="snapshot_get_deferred_calls" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the main thread's deferred calls that are still to run (made with [method Object.call_deferred], [method Callable.call_deferred], [method Object.set_deferred], deferred signal connections and the engine's own), in the order they will run. Each is an [Array] of the [Callable] and an [Array] of its arguments; a deferred set is a call of [code]set[/code], a deferred notification one of [code]notification[/code]. Calls whose object is gone, which would not run, are left out. Read from inside a deferred call, it holds the calls after that one.
+			</description>
+		</method>
 		<method name="snapshot_get_random_state" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -352,6 +358,13 @@
 			<param index="0" name="clock" type="Dictionary" />
 			<description>
 				Makes the clocks scripts see read [param clock] now, as [method snapshot_get_clock] returned it, and go on from there. Only what scripts read is shifted ([method Time.get_ticks_msec], [method Time.get_ticks_usec], [method get_process_frames], [method get_physics_frames], [method get_frames_drawn]); the engine keeps its own clocks. [method Time.snapshot_get_real_ticks_usec] is never shifted.
+			</description>
+		</method>
+		<method name="snapshot_set_deferred_calls">
+			<return type="void" />
+			<param index="0" name="calls" type="Array" />
+			<description>
+				Replaces the main thread's deferred calls that are still to run with [param calls], given as [method snapshot_get_deferred_calls] returns them. For example to bring back the calls a game had made when it was saved.
 			</description>
 		</method>
 		<method name="snapshot_set_random_state">

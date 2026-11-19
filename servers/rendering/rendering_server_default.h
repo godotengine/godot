@@ -639,6 +639,8 @@ public:
 
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
+	FUNC1R(Dictionary, snapshot_get_particles_state, RID)
+	FUNC2(snapshot_set_particles_state, RID, const Dictionary &)
 	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)

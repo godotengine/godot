@@ -622,6 +622,8 @@ public:
 	PackedInt64Array snapshot_get_scripted_objects() const;
 	bool snapshot_is_plain_leaf(const Variant &p_value) const;
 	int64_t snapshot_get_random_state() const;
+	Array snapshot_get_deferred_calls() const;
+	void snapshot_set_deferred_calls(const Array &p_calls);
 	Dictionary snapshot_get_clock() const;
 	void snapshot_set_clock(const Dictionary &p_clock);
 	void snapshot_set_random_state(int64_t p_state);

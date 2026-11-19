@@ -332,16 +332,16 @@ bool AudioStreamPlayerInternal::has_stream_playback() {
 	return !stream_playbacks.is_empty();
 }
 
-Dictionary AudioStreamPlayerInternal::snapshot_get_state() {
+Dictionary AudioStreamPlayerInternal::snapshot_get_state(const Ref<AudioStreamPlayback> &p_starting, float p_start_from) {
 	Dictionary state;
 	// A paused playback (stream_paused, or the tree paused) is still playing: it resumes where it stopped.
-	state["playing"] = is_playing() || get_stream_paused();
-	state["position"] = get_playback_position();
+	state["playing"] = p_starting.is_valid() || is_playing() || get_stream_paused();
+	state["position"] = p_starting.is_valid() ? p_start_from : get_playback_position();
 	state["stream_paused"] = get_stream_paused();
 	// A playback that ended in the mix and is not yet reaped: finished is still to come.
 	bool finishing = false;
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		if (playback.is_valid() && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
+		if (playback.is_valid() && playback != p_starting && !AudioServer::get_singleton()->is_playback_active(playback) && !AudioServer::get_singleton()->is_playback_paused(playback)) {
 			finishing = true;
 		}
 	}

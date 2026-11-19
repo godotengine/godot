@@ -283,14 +283,14 @@
 		<method name="snapshot_get_state" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the runtime playback state ([code]playing[/code], [code]animation[/code], [code]position[/code], [code]custom_speed[/code]) for savestate systems. Stored properties such as [member AnimationMixer.speed_scale] are not included.
+				Returns the runtime playback state ([code]playing[/code], [code]animation[/code], [code]position[/code], [code]custom_speed[/code], the section's [code]start_time[/code] and [code]end_time[/code], and whether it has just [code]started[/code] or been [code]seeked[/code] and not processed since) for savestate systems. Stored properties such as [member AnimationMixer.speed_scale] are not included. A blend in progress and queued animations are not included.
 			</description>
 		</method>
 		<method name="snapshot_set_state">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="Dictionary" />
 			<description>
-				Restores a playback state produced by [method snapshot_get_state]: plays the saved animation from the saved position (paused if it was not playing), or stops.
+				Restores a playback state produced by [method snapshot_get_state]: puts the player on the saved animation at the saved position, playing or not, without applying a track or emitting a signal. The values the tracks wrote are not touched; the player goes on from there on its next process.
 			</description>
 		</method>
 		<method name="stop">

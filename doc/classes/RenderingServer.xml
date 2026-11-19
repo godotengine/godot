@@ -3786,10 +3786,26 @@
 				Returns every global shader parameter, by name, as [code]{"type": GlobalShaderParameterType, "value": value}[/code], including those added at runtime. Unlike [method global_shader_parameter_get], it works outside the editor, for a save to read the values once. Part of the k64 snapshot API.
 			</description>
 		</method>
+		<method name="snapshot_get_particles_state">
+			<return type="Dictionary" />
+			<param index="0" name="particles" type="RID" />
+			<description>
+				Returns what the simulation of [param particles] holds: the particles themselves, the history their trails are drawn from, and where the emission cycle is. Pass it to [method snapshot_set_particles_state] to go on from there, for example after loading a save. Empty before the particles have been processed, and on the Compatibility renderer, where it is not kept.
+			</description>
+		</method>
 		<method name="snapshot_get_shader_time" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the time shaders read as [code]TIME[/code].
+			</description>
+		</method>
+		<method name="snapshot_set_particles_state">
+			<return type="void" />
+			<param index="0" name="particles" type="RID" />
+			<param index="1" name="state" type="Dictionary" />
+			<description>
+				Sets back what [method snapshot_get_particles_state] returned, after the particles' settings are set. A state that does not fit them (another amount, other trails) is left out, and the particles start again.
+				2D particles that collide with the canvas SDF also need [code]"render_target"[/code] in [param state]: the render target of the viewport they are drawn in ([method viewport_get_render_target]), whose SDF they collide with. It is not part of the saved state.
 			</description>
 		</method>
 		<method name="snapshot_set_shader_time">
