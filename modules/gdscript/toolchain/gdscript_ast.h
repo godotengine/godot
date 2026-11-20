@@ -77,7 +77,6 @@ public:
 	struct LiteralNode;
 	struct MatchNode;
 	struct MatchBranchNode;
-	struct Node;
 	struct ParameterNode;
 	struct PassNode;
 	struct PatternNode;
@@ -93,8 +92,6 @@ public:
 	struct UnaryOpNode;
 	struct VariableNode;
 	struct WhileNode;
-
-	typedef bool (GDScriptParser::*AnnotationAction)(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 
 	class DataType {
 	public:
@@ -360,6 +357,7 @@ public:
 		ExpressionNode() {}
 	};
 
+	typedef bool (GDScriptParser::*AnnotationAction)(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 	struct AnnotationNode : public Node {
 		StringName name;
 		LocalVector<ExpressionNode *> arguments;
