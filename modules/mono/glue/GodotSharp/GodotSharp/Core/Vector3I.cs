@@ -12,7 +12,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct Vector3I : IEquatable<Vector3I>
+    public partial struct Vector3I : IEquatable<Vector3I>
     {
         /// <summary>
         /// Enumerated index values for the axes.
