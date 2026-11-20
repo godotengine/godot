@@ -738,6 +738,13 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 							bones.write[index] = 0; // TODO: What should this be padded with?
 							weights.write[index] = 0.0f;
 						}
+
+						// Keep unweighted vertices in place using the neutral bone, whose bind is
+						// appended after the skin clusters and does not follow any animated bones.
+						if (!(total_weight > 0.0f)) {
+							bones.write[vertex_i * num_skin_weights] = int(fbx_skin->clusters.count);
+							weights.write[vertex_i * num_skin_weights] = 1.0f;
+						}
 					}
 					array[Mesh::ARRAY_BONES] = bones;
 					array[Mesh::ARRAY_WEIGHTS] = weights;
@@ -2218,6 +2225,10 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state) {
 	}
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
+	/* ADD NEUTRAL BONES */
+	err = _add_neutral_bones(p_state);
+	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
 	/* CREATE SKELETONS */
 	err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes, p_state->skeleton3d_to_fbx_skeleton, p_state->skeletons, p_state->scene_nodes, _naming_version);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
@@ -2389,6 +2400,82 @@ String FBXDocument::_get_texture_path(const String &p_base_dir, const String &p_
 		}
 	}
 	return String();
+}
+
+Error FBXDocument::_add_neutral_bones(Ref<FBXState> p_state) {
+	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> neutral_bones;
+	for (const ufbx_skin_deformer *fbx_skin : p_state->scene->skin_deformers) {
+		const GLTFSkinIndex skin_i = p_state->original_skin_indices[fbx_skin->typed_id];
+		if (skin_i < 0) {
+			continue;
+		}
+
+		bool needs_neutral_bone = false;
+		const int num_skin_weights = fbx_skin->max_weights_per_vertex > 4 ? 8 : 4;
+		for (const ufbx_skin_vertex &vertex : fbx_skin->vertices) {
+			float total_weight = 0.0f;
+			const int num_weights = MIN(int(vertex.num_weights), num_skin_weights);
+			for (int i = 0; i < num_weights; i++) {
+				total_weight += float(fbx_skin->weights[vertex.weight_begin + i].weight);
+			}
+			if (!(total_weight > 0.0f)) {
+				needs_neutral_bone = true;
+				break;
+			}
+		}
+		if (!needs_neutral_bone) {
+			continue;
+		}
+
+		Ref<GLTFSkin> skin = p_state->skins[skin_i];
+		ERR_FAIL_INDEX_V(skin->skeleton, p_state->skeletons.size(), ERR_PARSE_ERROR);
+		Ref<GLTFSkeleton> skeleton = p_state->skeletons[skin->skeleton];
+		GLTFNodeIndex neutral_node_i;
+		if (neutral_bones.has(skin->skeleton)) {
+			neutral_node_i = neutral_bones[skin->skeleton];
+		} else {
+			ERR_FAIL_COND_V(skeleton->roots.is_empty(), ERR_PARSE_ERROR);
+			const GLTFNodeIndex root_i = skeleton->roots[0];
+			Ref<GLTFNode> neutral_node;
+			neutral_node.instantiate();
+			neutral_node->set_name("NeutralBone");
+			neutral_node->joint = true;
+			neutral_node->skeleton = skin->skeleton;
+			neutral_node->parent = p_state->nodes[root_i]->parent;
+			neutral_node->height = p_state->nodes[root_i]->height;
+			neutral_node->set_additional_data("GODOT_rest_transform", Transform3D());
+
+			neutral_node_i = p_state->nodes.size();
+			p_state->nodes.push_back(neutral_node);
+			skeleton->joints.push_back(neutral_node_i);
+			skeleton->roots.push_back(neutral_node_i);
+			if (neutral_node->parent >= 0) {
+				p_state->nodes[neutral_node->parent]->children.push_back(neutral_node_i);
+			}
+			if (p_state->root_nodes.has(root_i)) {
+				p_state->root_nodes.push_back(neutral_node_i);
+			}
+			neutral_bones.insert(skin->skeleton, neutral_node_i);
+		}
+
+		// Calculate the bind transform in the neutral bone's space
+		Transform3D skeleton_to_world;
+		GLTFNodeIndex parent_i = p_state->nodes[neutral_node_i]->parent;
+		while (parent_i >= 0) {
+			skeleton_to_world = p_state->nodes[parent_i]->transform * skeleton_to_world;
+			parent_i = p_state->nodes[parent_i]->parent;
+		}
+		const ufbx_skin_cluster *cluster = fbx_skin->clusters[0];
+		const ufbx_matrix geometry_to_world = ufbx_matrix_mul(&cluster->bind_to_world, &cluster->geometry_to_bone);
+		const Transform3D neutral_bind = skeleton_to_world.affine_inverse() * _as_xform(geometry_to_world);
+
+		skin->joints.push_back(neutral_node_i);
+		skin->joints_original.push_back(neutral_node_i);
+		skin->inverse_binds.push_back(neutral_bind);
+		ERR_FAIL_COND_V(SkinTool::_expand_skin(p_state->nodes, skin), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(SkinTool::_verify_skin(p_state->nodes, skin), ERR_PARSE_ERROR);
+	}
+	return OK;
 }
 
 Error FBXDocument::_parse_skins(Ref<FBXState> p_state) {
