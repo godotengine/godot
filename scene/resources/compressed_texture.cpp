@@ -75,7 +75,7 @@ Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r
 #ifdef TOOLS_ENABLED
 
 	r_request_3d = request_3d_callback && df & FORMAT_BIT_DETECT_3D;
-	r_request_roughness = request_roughness_callback && df & FORMAT_BIT_DETECT_ROUGNESS;
+	r_request_roughness = request_roughness_callback && df & FORMAT_BIT_DETECT_ROUGHNESS;
 	r_request_normal = request_normal_callback && df & FORMAT_BIT_DETECT_NORMAL;
 
 #else
@@ -390,6 +390,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 		}
 
 	} else if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+		ERR_FAIL_NULL_V_MSG(Image::basis_universal_unpacker, Ref<Image>(), "Basis Universal support is disabled in this build.");
 		uint32_t size = f->get_32();
 		Vector<uint8_t> pv;
 		pv.resize(size);

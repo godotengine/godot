@@ -411,7 +411,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_3D;
 	}
 	if (p_detect_roughness) {
-		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_ROUGNESS;
+		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_ROUGHNESS;
 	}
 	if (p_detect_normal) {
 		flags |= CompressedTexture2D::FORMAT_BIT_DETECT_NORMAL;
