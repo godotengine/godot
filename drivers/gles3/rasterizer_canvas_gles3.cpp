@@ -2282,7 +2282,8 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RSE::CanvasItemT
 	RSE::CanvasItemTextureRepeat repeat = ct->texture_repeat != RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT ? ct->texture_repeat : p_base_repeat;
 	ERR_FAIL_COND(repeat == RSE::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT);
 
-	GLES3::Texture *texture = texture_storage->get_texture(ct->diffuse);
+	GLES3::Texture *main_texture = texture_storage->get_texture(ct->diffuse);
+	GLES3::Texture *light_texture = texture_storage->get_light_texture();
 
 	if (!texture) {
 		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
@@ -2291,8 +2292,10 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RSE::CanvasItemT
 	} else {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->tex_id);
-		texture->gl_set_filter(filter);
-		texture->gl_set_repeat(repeat);
+		main_texture->gl_set_filter(filter);
+		main_texture->gl_set_repeat(repeat);
+		light_texture->gl_set_filter(filter);
+		light_texture->gl_set_repeat(repeat);
 		if (texture->render_target) {
 			texture->render_target->used_in_frame = true;
 		}
