@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+env_opus = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+if env["builtin_libopus"]:
+    env_opus.Append(
+        CPPDEFINES=[
+            "HAVE_CONFIG_H",
+        ]
+    )
+
+    env_opus.Prepend(
+        CPPPATH=[
+            "#thirdparty/libopus/",
+            "#thirdparty/libopus/opus/",
+            "#thirdparty/libopus/src/",
+            "#thirdparty/libopus/celt/",
+            "#thirdparty/libopus/silk/",
+            "#thirdparty/libopus/silk/fixed/",
+            "#thirdparty/libopus/silk/float/",
+            "#thirdparty/libopusfile/",
+            "#thirdparty/libopusfile/opus/",
+            "#thirdparty/libopusfile/src/",
+            "#thirdparty/libopus/celt/x86/",
+            "#thirdparty/libopus/silk/x86/",
+            "#thirdparty/libopus/silk/fixed/x86/",
+            "#thirdparty/libopus/silk/float/x86/",
+            "#thirdparty/libopus/celt/arm/",
+            "#thirdparty/libopus/silk/arm/",
+            "#thirdparty/libopus/silk/fixed/arm/",
+        ]
+    )
+
+    # also requires libogg
+    if env["builtin_libogg"]:
+        env_opus.Prepend(CPPPATH=["#thirdparty/libogg"])
+
+    env_thirdparty = env_opus.Clone()
+    env_thirdparty.disable_warnings()
+
+    thirdparty_sources = (
+        Glob("#thirdparty/libopus/src/*.c")
+        + Glob("#thirdparty/libopus/celt/*.c")
+        + Glob("#thirdparty/libopus/silk/*.c")
+        + Glob("#thirdparty/libopus/silk/float/*.c")
+        + Glob("#thirdparty/libopusfile/src/*.c")
+    )
+
+    # Remove /fp:strict flag
+    if env_thirdparty["CCFLAGS"]:
+        if "/fp:strict" in env_thirdparty["CCFLAGS"]:
+            env_thirdparty["CCFLAGS"].remove("/fp:strict")
+            # Add /fp:precise flag
+            env_thirdparty.Append(CCFLAGS=["/fp:precise"])
+
+    # Add architecture-specific optimizations (see https://github.com/godotengine/godot-cpp/blob/master/tools/godotcpp.py#L182)
+    if env_thirdparty["platform"] == "windows" and env_thirdparty["arch"] in ["arm32", "arm64"]:
+        # Skip optimizations on Windows ARM64, because `arm_neon.h` is not provided on setup-mingw (https://github.com/egor-tensin/setup-mingw)
+        pass
+    elif env_thirdparty["arch"] == "x86_32":
+        env_thirdparty.Append(CPPDEFINES=["OPUS_X32_OPT"])
+        thirdparty_sources += [
+            # "#thirdparty/libopus/celt/x86/celt_lpc_sse4_1.c", # SSE4.1 is disabled for x32
+            # "#thirdparty/libopus/celt/x86/pitch_avx.c", # AVX2 is disabled for x32
+            "#thirdparty/libopus/celt/x86/pitch_sse.c",
+            "#thirdparty/libopus/celt/x86/pitch_sse2.c",
+            # "#thirdparty/libopus/celt/x86/pitch_sse4_1.c", # SSE4.1 is disabled for x32
+            "#thirdparty/libopus/celt/x86/vq_sse2.c",
+            "#thirdparty/libopus/celt/x86/x86_celt_map.c",
+            "#thirdparty/libopus/celt/x86/x86cpu.c",
+            # "#thirdparty/libopus/silk/x86/NSQ_del_dec_avx2.c", # AVX2 is disabled for x32
+            # "#thirdparty/libopus/silk/x86/NSQ_del_dec_sse4_1.c", # SSE4.1 is disabled for x32
+            # "#thirdparty/libopus/silk/x86/NSQ_sse4_1.c", # SSE4.1 is disabled for x32
+            # "#thirdparty/libopus/silk/x86/VAD_sse4_1.c", # SSE4.1 is disabled for x32
+            # "#thirdparty/libopus/silk/x86/VQ_WMat_EC_sse4_1.c", # SSE4.1 is disabled for x32
+            "#thirdparty/libopus/silk/x86/x86_silk_map.c",
+            # "#thirdparty/libopus/silk/float/x86/inner_product_FLP_avx2.c", # AVX2 is disabled for x32
+        ]
+    elif env_thirdparty["arch"] == "x86_64":
+        env_thirdparty.Append(CPPDEFINES=["OPUS_X64_OPT"])
+        thirdparty_sources += [
+            "#thirdparty/libopus/celt/x86/celt_lpc_sse4_1.c",
+            # "#thirdparty/libopus/celt/x86/pitch_avx.c", # AVX2 is disabled for x64
+            "#thirdparty/libopus/celt/x86/pitch_sse.c",
+            "#thirdparty/libopus/celt/x86/pitch_sse2.c",
+            "#thirdparty/libopus/celt/x86/pitch_sse4_1.c",
+            "#thirdparty/libopus/celt/x86/vq_sse2.c",
+            "#thirdparty/libopus/celt/x86/x86_celt_map.c",
+            "#thirdparty/libopus/celt/x86/x86cpu.c",
+            # "#thirdparty/libopus/silk/x86/NSQ_del_dec_avx2.c", # AVX2 is disabled for x64
+            "#thirdparty/libopus/silk/x86/NSQ_del_dec_sse4_1.c",
+            "#thirdparty/libopus/silk/x86/NSQ_sse4_1.c",
+            "#thirdparty/libopus/silk/x86/VAD_sse4_1.c",
+            "#thirdparty/libopus/silk/x86/VQ_WMat_EC_sse4_1.c",
+            "#thirdparty/libopus/silk/x86/x86_silk_map.c",
+            # "#thirdparty/libopus/silk/float/x86/inner_product_FLP_avx2.c", # AVX2 is disabled for x64
+        ]
+    elif env_thirdparty["arch"] == "arm32":
+        env_thirdparty.Append(CPPDEFINES=["OPUS_ARM32_OPT"])
+        # sources += []
+    elif env_thirdparty["arch"] == "arm64":
+        env_thirdparty.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
+        thirdparty_sources += [
+            "#thirdparty/libopus/celt/arm/arm_celt_map.c",
+            "#thirdparty/libopus/celt/arm/armcpu.c",
+            "#thirdparty/libopus/celt/arm/celt_neon_intr.c",
+            "#thirdparty/libopus/celt/arm/pitch_neon_intr.c",
+            "#thirdparty/libopus/silk/arm/arm_silk_map.c",
+            "#thirdparty/libopus/silk/arm/biquad_alt_neon_intr.c",
+            "#thirdparty/libopus/silk/arm/LPC_inv_pred_gain_neon_intr.c",
+            "#thirdparty/libopus/silk/arm/NSQ_del_dec_neon_intr.c",
+            "#thirdparty/libopus/silk/arm/NSQ_neon.c",
+        ]
+
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
+
+module_obj = []
+
+env_opus.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
