@@ -61,6 +61,8 @@ public:
 		REMAP_UNUSED,
 		REMAP_0,
 		REMAP_1,
+		REMAP_LUMINANCE_LINEAR,
+		REMAP_LUMINANCE_SRGB,
 	};
 
 protected:
