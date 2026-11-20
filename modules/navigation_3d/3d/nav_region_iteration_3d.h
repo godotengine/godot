@@ -32,6 +32,7 @@
 
 #include "../nav_utils_3d.h"
 #include "nav_base_iteration_3d.h"
+#include "nav_polygon_bvh_3d.h"
 
 #include "core/math/aabb.h"
 
@@ -76,6 +77,7 @@ public:
 	Transform3D transform;
 	real_t surface_area = 0.0;
 	AABB bounds;
+	NavPolygonBVH3D polygon_bvh;
 	LocalVector<Nav3D::ConnectableEdge> external_edges;
 
 	const Transform3D &get_transform() const { return transform; }
