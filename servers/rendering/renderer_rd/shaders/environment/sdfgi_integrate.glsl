@@ -51,7 +51,6 @@ layout(set = 1, binding = 1) uniform sampler linear_sampler_mipmaps;
 
 #define HISTORY_BITS 10
 
-#define SKY_FLAGS_MODE_COLOR 0x01
 #define SKY_FLAGS_MODE_SKY 0x02
 #define SKY_FLAGS_ORIENTATION_SIGN 0x04
 
@@ -76,6 +75,9 @@ layout(push_constant, std430) uniform Params {
 
 	vec3 sky_color_or_orientation;
 	float y_mult;
+
+	vec3 ambient_color;
+	float ambient_color_sky_mix;
 
 	vec2 sky_irradiance_border_size;
 	bool store_ambient_texture;
@@ -115,6 +117,21 @@ vec3 octahedron_encode(vec2 f) {
 	return normalize(n);
 }
 
+// The sky seen along a ray, rotated by the sky's orientation. The second mipmap, because we don't
+// usually throw a lot of rays, so this compensates.
+vec3 sky_light_get(vec3 p_dir) {
+	// Reconstruct sky orientation as quaternion and rotate the direction before sampling.
+	float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
+	vec4 sky_quat = vec4(params.sky_color_or_orientation, sky_sign * sqrt(1.0 - dot(params.sky_color_or_orientation, params.sky_color_or_orientation)));
+	vec3 sky_dir = cross(sky_quat.xyz, p_dir);
+	sky_dir = p_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+	return textureLod(sampler2DArray(sky_irradiance, linear_sampler_mipmaps), vec3(vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 0.0), 2.0).rgb * params.sky_energy;
+#else
+	return textureLod(sampler2D(sky_irradiance, linear_sampler_mipmaps), vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 2.0).rgb * params.sky_energy;
+#endif
+}
+
 uint rgbe_encode(vec3 color) {
 	const float pow2to9 = 512.0f;
 	const float B = 15.0f;
@@ -149,6 +166,8 @@ struct SH {
 #else
 	float c[28];
 #endif
+	// The rays that reached the sky: the store pass reflects the sky there, not the ambient light.
+	float escape[SH_SIZE];
 };
 
 shared SH sh_accum[64]; //8x8
@@ -175,6 +194,9 @@ void main() {
 
 	for (uint i = 0; i < SH_SIZE * 3; i++) {
 		sh_accum[probe_index].c[i] = 0.0;
+	}
+	for (uint i = 0; i < SH_SIZE; i++) {
+		sh_accum[probe_index].escape[i] = 0.0;
 	}
 
 	// quickly ensure each probe has a different "offset" for the vogel function, based on integer world position
@@ -268,27 +290,14 @@ void main() {
 				}
 			}
 
-		} else if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
-			// Reconstruct sky orientation as quaternion and rotate ray_dir before sampling.
-			float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
-			vec4 sky_quat = vec4(params.sky_color_or_orientation, sky_sign * sqrt(1.0 - dot(params.sky_color_or_orientation, params.sky_color_or_orientation)));
-			vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
-			sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
-#ifdef USE_RADIANCE_OCTMAP_ARRAY
-			light.rgb = textureLod(sampler2DArray(sky_irradiance, linear_sampler_mipmaps), vec3(vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
-#else
-			light.rgb = textureLod(sampler2D(sky_irradiance, linear_sampler_mipmaps), vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
-#endif
-			light.rgb *= params.sky_energy;
-			light.a = 0.0;
-
-		} else if (bool(params.sky_flags & SKY_FLAGS_MODE_COLOR)) {
-			light.rgb = params.sky_color_or_orientation;
-			light.rgb *= params.sky_energy;
-			light.a = 0.0;
 		} else {
-			light = vec4(0, 0, 0, 0);
+			light = vec4(params.ambient_color, 0.0);
+
+			if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
+				light.rgb = mix(light.rgb, sky_light_get(ray_dir), params.ambient_color_sky_mix);
+			}
 		}
+		float escape = hit ? 0.0 : 1.0;
 
 		vec3 ray_dir2 = ray_dir * ray_dir;
 
@@ -298,6 +307,7 @@ void main() {
 		sh_accum[probe_index].c[m_idx * 3 + 0] += l.r; \
 		sh_accum[probe_index].c[m_idx * 3 + 1] += l.g; \
 		sh_accum[probe_index].c[m_idx * 3 + 2] += l.b; \
+		sh_accum[probe_index].escape[m_idx] += escape * (m_value); \
 	}
 		SH_ACCUM(0, 0.282095); //l0
 		SH_ACCUM(1, 0.488603 * ray_dir.y); //l1n1
@@ -325,7 +335,7 @@ void main() {
 		ivec3 prev_pos = ivec3(pos.x, pos.y * SH_SIZE + i, int(params.history_index));
 		ivec2 average_pos = prev_pos.xy;
 
-		vec4 value = vec4(sh_accum[probe_index].c[i * 3 + 0], sh_accum[probe_index].c[i * 3 + 1], sh_accum[probe_index].c[i * 3 + 2], 1.0) * 4.0 / float(params.ray_count);
+		vec4 value = vec4(sh_accum[probe_index].c[i * 3 + 0], sh_accum[probe_index].c[i * 3 + 1], sh_accum[probe_index].c[i * 3 + 2], sh_accum[probe_index].escape[i]) * 4.0 / float(params.ray_count);
 
 		ivec4 ivalue = clamp(ivec4(value * float(1 << HISTORY_BITS)), -32768, 32767); //clamp to 16 bits, so higher values don't break average
 
@@ -411,6 +421,7 @@ void main() {
 
 	vec3 irradiance = vec3(0.0);
 	vec3 radiance = vec3(0.0);
+	float escape_radiance = 0.0;
 
 	for (uint i = 0; i < SH_SIZE; i++) {
 		// store in history texture
@@ -423,6 +434,13 @@ void main() {
 
 		irradiance += m * l_mult[i];
 		radiance += m;
+		escape_radiance += sh.a * c[i] * 4.0;
+	}
+
+	if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
+		// The ambient color is diffuse light only, as in the forward pass: where the rays reached
+		// the sky, the radiance (reflections) takes the sky itself back instead of the ambient mix.
+		radiance = max(vec3(0.0), radiance - (1.0 - params.ambient_color_sky_mix) * escape_radiance * (params.ambient_color - sky_light_get(normal)));
 	}
 
 	//encode RGBE9995 for the final texture

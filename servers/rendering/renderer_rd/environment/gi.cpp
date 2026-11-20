@@ -1335,24 +1335,38 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 	RID sky_uniform_set = gi->sdfgi_shader.integrate_default_sky_uniform_set;
 	push_constant.sky_flags = 0;
 	push_constant.y_mult = y_mult;
+	push_constant.ambient_color[0] = 0.0f;
+	push_constant.ambient_color[1] = 0.0f;
+	push_constant.ambient_color[2] = 0.0f;
+	push_constant.ambient_color_sky_mix = 0.0f;
+
+	auto set_ambient_color = [&](const Color &p_color, float p_energy, float p_sky_mix) {
+		Color color = p_color.srgb_to_linear();
+		push_constant.ambient_color[0] = color.r * p_energy;
+		push_constant.ambient_color[1] = color.g * p_energy;
+		push_constant.ambient_color[2] = color.b * p_energy;
+		push_constant.ambient_color_sky_mix = p_sky_mix;
+	};
 
 	if (reads_sky && p_env.is_valid()) {
-		push_constant.sky_energy = RendererSceneRenderRD::get_singleton()->environment_get_bg_energy_multiplier(p_env);
+		RendererSceneRenderRD *scene_render = RendererSceneRenderRD::get_singleton();
+		const RSE::EnvironmentBG background = scene_render->environment_get_background(p_env);
+		const RSE::EnvironmentAmbientSource ambient_source = scene_render->environment_get_ambient_source(p_env);
+		const float bg_energy = scene_render->environment_get_bg_energy_multiplier(p_env);
+		const bool use_sky = (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && background == RSE::ENV_BG_SKY) || ambient_source == RSE::ENV_AMBIENT_SOURCE_SKY;
 
-		if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_CLEAR_COLOR) {
-			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
-			Color c = RSG::texture_storage->get_default_clear_color().srgb_to_linear();
-			push_constant.sky_color_or_orientation[0] = c.r;
-			push_constant.sky_color_or_orientation[1] = c.g;
-			push_constant.sky_color_or_orientation[2] = c.b;
-		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_COLOR) {
-			push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_COLOR;
-			Color c = RendererSceneRenderRD::get_singleton()->environment_get_bg_color(p_env);
-			push_constant.sky_color_or_orientation[0] = c.r;
-			push_constant.sky_color_or_orientation[1] = c.g;
-			push_constant.sky_color_or_orientation[2] = c.b;
+		// Same ambient light as the forward pass (RenderSceneDataRD::update_ubo()): none when the
+		// ambient light is disabled or comes from a background that has no color.
+		if (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR)) {
+			const Color color = background == RSE::ENV_BG_CLEAR_COLOR ? RSG::texture_storage->get_default_clear_color() : scene_render->environment_get_bg_color(p_env);
+			set_ambient_color(color, bg_energy, 0.0f);
+		} else if (use_sky || ambient_source == RSE::ENV_AMBIENT_SOURCE_COLOR) {
+			set_ambient_color(scene_render->environment_get_ambient_light(p_env), scene_render->environment_get_ambient_light_energy(p_env), use_sky ? scene_render->environment_get_ambient_sky_contribution(p_env) : 0.0f);
+		}
 
-		} else if (RendererSceneRenderRD::get_singleton()->environment_get_background(p_env) == RSE::ENV_BG_SKY) {
+		if (use_sky) {
+			push_constant.sky_energy = bg_energy;
+
 			if (p_sky && p_sky->radiance.is_valid()) {
 				if (integrate_sky_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(integrate_sky_uniform_set)) {
 					Vector<RD::Uniform> uniforms;
@@ -1379,7 +1393,7 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 				push_constant.sky_flags |= SDFGIShader::IntegratePushConstant::SKY_FLAGS_MODE_SKY;
 
 				// Encode sky orientation as quaternion in existing push constants.
-				const Basis sky_basis = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+				const Basis sky_basis = scene_render->environment_get_sky_orientation(p_env);
 				const Quaternion sky_quaternion = sky_basis.get_quaternion().inverse();
 				push_constant.sky_color_or_orientation[0] = sky_quaternion.x;
 				push_constant.sky_color_or_orientation[1] = sky_quaternion.y;
@@ -1389,6 +1403,9 @@ void GI::SDFGI::update_probes(RID p_env, SkyRD::Sky *p_sky) {
 			}
 		}
 	}
+
+	probe_sky_uniform_set = sky_uniform_set;
+	probe_sky_push_constant = push_constant;
 
 	render_pass++;
 
@@ -1431,8 +1448,22 @@ void GI::SDFGI::store_probes() {
 	push_constant.image_size[1] = probe_axis_count;
 	push_constant.store_ambient_texture = false;
 
-	push_constant.sky_flags = 0;
+	// The reflections take the sky the probes were integrated with where their rays reached it, as
+	// the ambient light is diffuse only.
+	push_constant.sky_flags = probe_sky_push_constant.sky_flags;
+	push_constant.sky_energy = probe_sky_push_constant.sky_energy;
 	push_constant.y_mult = y_mult;
+	for (int i = 0; i < 3; i++) {
+		push_constant.sky_color_or_orientation[i] = probe_sky_push_constant.sky_color_or_orientation[i];
+		push_constant.ambient_color[i] = probe_sky_push_constant.ambient_color[i];
+	}
+	push_constant.ambient_color_sky_mix = probe_sky_push_constant.ambient_color_sky_mix;
+	push_constant.sky_irradiance_border_size[0] = probe_sky_push_constant.sky_irradiance_border_size[0];
+	push_constant.sky_irradiance_border_size[1] = probe_sky_push_constant.sky_irradiance_border_size[1];
+	const RID sky_uniform_set = probe_sky_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(probe_sky_uniform_set) ? probe_sky_uniform_set : gi->sdfgi_shader.integrate_default_sky_uniform_set;
+	if (sky_uniform_set != probe_sky_uniform_set) {
+		push_constant.sky_flags = 0;
+	}
 
 	// Then store values into the lightprobe texture. Separating these steps has a small performance hit, but it allows for multiple bounces
 	RENDER_TIMESTAMP("Average SDFGI Probes");
@@ -1447,7 +1478,7 @@ void GI::SDFGI::store_probes() {
 	for (uint32_t i = 0; i < cascades.size(); i++) {
 		push_constant.cascade = i;
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, cascades[i].integrate_uniform_set, 0);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi->sdfgi_shader.integrate_default_sky_uniform_set, 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, sky_uniform_set, 1);
 		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SDFGIShader::IntegratePushConstant));
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, probe_axis_count * probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, probe_axis_count * SDFGI::LIGHTPROBE_OCT_SIZE, 1);
 	}
@@ -2161,6 +2192,12 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 				ipush_constant.sky_color_or_orientation[1] = 0;
 				ipush_constant.sky_color_or_orientation[2] = 0;
 				ipush_constant.y_mult = y_mult;
+				ipush_constant.ambient_color[0] = 0;
+				ipush_constant.ambient_color[1] = 0;
+				ipush_constant.ambient_color[2] = 0;
+				ipush_constant.ambient_color_sky_mix = 0;
+				ipush_constant.sky_irradiance_border_size[0] = 0;
+				ipush_constant.sky_irradiance_border_size[1] = 0;
 				ipush_constant.store_ambient_texture = false;
 
 				ipush_constant.image_size[0] = probe_axis_count * probe_axis_count;
