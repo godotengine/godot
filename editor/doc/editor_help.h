@@ -115,6 +115,8 @@ class EditorHelp : public VBoxContainer {
 	inline static DocTools *ext_doc = nullptr;
 
 	class EditorHelpDocOwner : public Object {
+		GDSOFTCLASS(EditorHelpDocOwner, Object);
+
 	public:
 		void generate_doc(bool p_use_cache, bool p_use_script_cache) { EditorHelp::generate_doc(p_use_cache, p_use_script_cache); }
 		void _gen_extensions_docs() { EditorHelp::_gen_extensions_docs(); }
