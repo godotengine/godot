@@ -1582,7 +1582,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 }
 #ifndef MODE_RENDER_DEPTH
 
-#ifndef USE_VERTEX_LIGHTING
+#if !defined(USE_VERTEX_LIGHTING) || defined(USE_SH_LIGHTMAP)
 #if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(USE_ADDITIVE_LIGHTING) || defined(USE_SH_LIGHTMAP)
 
 float D_GGX(float cos_theta_m, float alpha) {
@@ -2038,7 +2038,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 #endif // !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
 
 #endif // !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT)
-#endif // !USE_VERTEX_LIGHTING
+#endif // !USE_VERTEX_LIGHTING || USE_SH_LIGHTMAP
 
 vec4 fog_process(vec3 vertex) {
 	vec3 fog_color = scene_data_block.data.fog_light_color;
