@@ -115,6 +115,10 @@ open class GodotEditor : BaseGodotEditor() {
 	}
 
 	private fun isInFullSpace(): Boolean {
+		if (godot?.isXrRuntime == false) {
+			return false
+		}
+
 		val scene = session?.scene ?: return false
 		return scene.spatialCapabilities.contains(SpatialCapability.EMBED_ACTIVITY)
 	}
