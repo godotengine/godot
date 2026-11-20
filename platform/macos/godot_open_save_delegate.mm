@@ -66,6 +66,7 @@
 			continue;
 		}
 		const String &name = item["name"];
+		const String &opt_id = (item.has("id")) ? item["id"].operator String() : name;
 		const Vector<String> &values = item["values"];
 		int default_idx = item["default"];
 
@@ -78,7 +79,7 @@
 		NSView *popup = nullptr;
 		if (values.is_empty()) {
 			NSButton *popup_check = [NSButton checkboxWithTitle:@"" target:self action:@selector(popupCheckAction:)];
-			int tag = [self setDefaultBool:name value:(bool)default_idx];
+			int tag = [self setDefaultBool:opt_id value:(bool)default_idx];
 			popup_check.state = (default_idx) ? NSControlStateValueOn : NSControlStateValueOff;
 			popup_check.tag = tag;
 			popup = popup_check;
@@ -87,7 +88,7 @@
 			for (int i = 0; i < values.size(); i++) {
 				[popup_list addItemWithTitle:[NSString stringWithUTF8String:values[i].utf8().get_data()]];
 			}
-			int tag = [self setDefaultInt:name value:default_idx];
+			int tag = [self setDefaultInt:opt_id value:default_idx];
 			[popup_list selectItemAtIndex:default_idx];
 			popup_list.tag = tag;
 			popup_list.target = self;

@@ -52,7 +52,9 @@ class FileDialog : public ConfirmationDialog {
 
 	struct Option {
 		String name;
+		String xl_name;
 		Vector<String> values;
+		Vector<String> xl_values;
 		int default_idx = 0;
 	};
 
@@ -369,6 +371,7 @@ private:
 
 	TypedArray<Dictionary> _get_options() const;
 	void _update_option_controls();
+	void _update_option_translations();
 	void _option_changed_checkbox_toggled(bool p_pressed, const String &p_name);
 	void _option_changed_item_selected(int p_idx, const String &p_name);
 

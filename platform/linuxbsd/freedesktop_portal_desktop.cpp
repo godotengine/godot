@@ -231,6 +231,7 @@ void FreeDesktopPortalDesktop::append_dbus_dict_options(DBusMessageIter *p_iter,
 			continue;
 		}
 		const String &name = item["name"];
+		const String &opt_id = (item.has("id")) ? item["id"].operator String() : name;
 		const Vector<String> &options = item["values"];
 		int default_idx = item["default"];
 
@@ -240,7 +241,7 @@ void FreeDesktopPortalDesktop::append_dbus_dict_options(DBusMessageIter *p_iter,
 		dbus_message_iter_open_container(&arr_iter, DBUS_TYPE_STRUCT, nullptr, &struct_iter);
 		append_dbus_string(&struct_iter, "option_" + itos(i)); // ID.
 		append_dbus_string(&struct_iter, name); // User visible name.
-		r_ids["option_" + itos(i)] = name;
+		r_ids["option_" + itos(i)] = opt_id;
 
 		dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(ss)", &array_iter);
 		for (int j = 0; j < options.size(); j++) {
