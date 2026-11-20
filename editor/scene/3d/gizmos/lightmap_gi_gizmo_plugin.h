@@ -31,11 +31,17 @@
 #pragma once
 
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
+#include "scene/3d/lightmap_gi.h"
 
 class LightmapGIGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(LightmapGIGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	float probe_size = 0.4f;
+
+	LightmapGI *_find_lightmap_node_for(Node3D *p_node);
+
+protected:
+	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -44,4 +50,17 @@ public:
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
 	LightmapGIGizmoPlugin();
+};
+
+class LightmapGIGizmo : public EditorNode3DGizmo {
+	GDCLASS(LightmapGIGizmo, EditorNode3DGizmo);
+
+private:
+	LightmapGI *lightmap_node = nullptr;
+
+public:
+	LightmapGI *get_lightmap_node() const;
+	void set_lightmap_node(LightmapGI *p_lightmap = nullptr);
+	void transform() override;
+	LightmapGIGizmo(LightmapGI *p_lightmap = nullptr);
 };
