@@ -456,7 +456,7 @@ void ProjectListItemControl::set_project_title_autowrap() {
 
 void ProjectListItemControl::resize_project_title(const int p_title_size) {
 	bool autowrap = project_title->get_autowrap_mode() != TextServer::AUTOWRAP_OFF;
-	if (autowrap && p_title_size > title_fullsize_cache + tag_size_cache) {
+	if (autowrap && p_title_size >= title_fullsize_cache + tag_size_cache) {
 		project_title->set_custom_maximum_size(Vector2(-1, -1));
 		project_title->set_custom_minimum_size(Vector2(0, 0));
 		project_title->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
