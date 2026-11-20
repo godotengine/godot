@@ -145,6 +145,8 @@ namespace Godot
                 NativePtr = IntPtr.Zero;
             }
 
+            GC.KeepAlive(this); // Don't collect during manual dispose call.
+
             if (_weakReferenceToSelf != null)
             {
                 DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
@@ -158,6 +160,7 @@ namespace Godot
         public override string ToString()
         {
             NativeFuncs.godotsharp_object_to_string(GetPtr(this), out godot_string str);
+            GC.KeepAlive(this);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
         }
@@ -296,6 +299,8 @@ namespace Godot
             var typeSelf = (godot_string_name)type.NativeValue;
             var methodSelf = (godot_string_name)method.NativeValue;
             IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
+            GC.KeepAlive(type);
+            GC.KeepAlive(method);
 
             if (methodBind == IntPtr.Zero)
                 throw new NativeMethodBindNotFoundException(type + "." + method);
@@ -308,6 +313,8 @@ namespace Godot
             var typeSelf = (godot_string_name)type.NativeValue;
             var methodSelf = (godot_string_name)method.NativeValue;
             IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method_with_compatibility(typeSelf, methodSelf, hash);
+            GC.KeepAlive(type);
+            GC.KeepAlive(method);
 
             if (methodBind == IntPtr.Zero)
                 throw new NativeMethodBindNotFoundException(type + "." + method);
@@ -320,6 +327,7 @@ namespace Godot
             // for some reason the '??' operator doesn't support 'delegate*'
             var typeSelf = (godot_string_name)type.NativeValue;
             var nativeConstructor = NativeFuncs.godotsharp_get_class_constructor(typeSelf);
+            GC.KeepAlive(type);
 
             if (nativeConstructor == null)
                 throw new NativeConstructorNotFoundException(type);

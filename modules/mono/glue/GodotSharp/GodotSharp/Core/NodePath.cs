@@ -67,6 +67,8 @@ namespace Godot
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
+            GC.KeepAlive(this); // Don't collect during manual dispose call.
+
             if (_weakReferenceToSelf != null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
@@ -152,6 +154,7 @@ namespace Godot
 
             var src = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_as_string(out godot_string dest, src);
+            GC.KeepAlive(this);
             using (dest)
                 return Marshaling.ConvertStringToManaged(dest);
         }
@@ -176,6 +179,7 @@ namespace Godot
             godot_node_path propertyPath = default;
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_as_property_path(self, ref propertyPath);
+            GC.KeepAlive(this);
             return CreateTakingOwnershipOfDisposableValue(propertyPath);
         }
 
@@ -193,6 +197,7 @@ namespace Godot
         {
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_concatenated_names(self, out godot_string names);
+            GC.KeepAlive(this);
             using (names)
                 return Marshaling.ConvertStringToManaged(names);
         }
@@ -212,6 +217,7 @@ namespace Godot
         {
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_concatenated_subnames(self, out godot_string subNames);
+            GC.KeepAlive(this);
             using (subNames)
                 return Marshaling.ConvertStringToManaged(subNames);
         }
@@ -233,6 +239,7 @@ namespace Godot
         {
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_name(self, idx, out godot_string name);
+            GC.KeepAlive(this);
             using (name)
                 return Marshaling.ConvertStringToManaged(name);
         }
@@ -246,7 +253,9 @@ namespace Godot
         public int GetNameCount()
         {
             var self = (godot_node_path)NativeValue;
-            return NativeFuncs.godotsharp_node_path_get_name_count(self);
+            var ret = NativeFuncs.godotsharp_node_path_get_name_count(self);
+            GC.KeepAlive(this);
+            return ret;
         }
 
         /// <summary>
@@ -258,6 +267,7 @@ namespace Godot
         {
             var self = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_get_subname(self, idx, out godot_string subName);
+            GC.KeepAlive(this);
             using (subName)
                 return Marshaling.ConvertStringToManaged(subName);
         }
@@ -271,7 +281,9 @@ namespace Godot
         public int GetSubNameCount()
         {
             var self = (godot_node_path)NativeValue;
-            return NativeFuncs.godotsharp_node_path_get_subname_count(self);
+            var ret = NativeFuncs.godotsharp_node_path_get_subname_count(self);
+            GC.KeepAlive(this);
+            return ret;
         }
 
         /// <summary>
@@ -284,7 +296,9 @@ namespace Godot
         public bool IsAbsolute()
         {
             var self = (godot_node_path)NativeValue;
-            return NativeFuncs.godotsharp_node_path_is_absolute(self).ToBool();
+            var ret = NativeFuncs.godotsharp_node_path_is_absolute(self).ToBool();
+            GC.KeepAlive(this);
+            return ret;
         }
 
         /// <summary>
@@ -311,7 +325,10 @@ namespace Godot
                 return false;
             var self = (godot_node_path)NativeValue;
             var otherNative = (godot_node_path)other.NativeValue;
-            return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
+            var ret = NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
+            GC.KeepAlive(this);
+            GC.KeepAlive(other);
+            return ret;
         }
 
         public override bool Equals([NotNullWhen(true)] object? obj)
@@ -322,7 +339,9 @@ namespace Godot
         public override int GetHashCode()
         {
             var self = (godot_node_path)NativeValue;
-            return NativeFuncs.godotsharp_node_path_hash(self);
+            var ret = NativeFuncs.godotsharp_node_path_hash(self);
+            GC.KeepAlive(this);
+            return ret;
         }
     }
 }

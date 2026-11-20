@@ -57,6 +57,7 @@ namespace Godot
         public static Variant Convert(Variant what, Variant.Type type)
         {
             NativeFuncs.godotsharp_convert((godot_variant)what.NativeVar, (int)type, out godot_variant ret);
+            GC.KeepAlive(what.Disposer);
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
@@ -72,7 +73,9 @@ namespace Godot
         /// <returns>Hash of the variable passed.</returns>
         public static int Hash(Variant var)
         {
-            return NativeFuncs.godotsharp_hash((godot_variant)var.NativeVar);
+            var ret = NativeFuncs.godotsharp_hash((godot_variant)var.NativeVar);
+            GC.KeepAlive(var.Disposer);
+            return ret;
         }
 
         /// <summary>
@@ -633,6 +636,7 @@ namespace Godot
         public static byte[] VarToBytes(Variant var)
         {
             NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.False, out var varBytes);
+            GC.KeepAlive(var.Disposer);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
@@ -646,6 +650,7 @@ namespace Godot
         public static byte[] VarToBytesWithObjects(Variant var)
         {
             NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, godot_bool.True, out var varBytes);
+            GC.KeepAlive(var.Disposer);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
@@ -670,6 +675,7 @@ namespace Godot
         public static string VarToStr(Variant var)
         {
             NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, out godot_string ret);
+            GC.KeepAlive(var.Disposer);
             using (ret)
                 return Marshaling.ConvertStringToManaged(ret);
         }
