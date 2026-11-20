@@ -1104,6 +1104,23 @@ void main() {
 	}
 #endif
 
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_RENDER_MOTION_VECTORS)
+	if (sc_wireframe_overlay()) {
+#ifdef MODE_MULTIPLE_RENDER_TARGETS
+		diffuse_buffer = vec4(scene_data_block.data.wireframe_color.rgb, 0.0);
+		specular_buffer = vec4(0.0);
+#else
+		vec3 wireframe_color = scene_data_block.data.wireframe_color.rgb / float(sc_luminance_multiplier());
+		frag_color = vec4(wireframe_color, 1.0);
+#endif
+
+#ifdef DEPTH_USED
+		gl_FragDepth = gl_FragCoord.z;
+#endif
+		return;
+	}
+#endif
+
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
