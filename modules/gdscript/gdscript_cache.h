@@ -127,6 +127,7 @@ public:
 	static Error finish_compiling(const String &p_owner);
 	static void add_static_script(Ref<GDScript> p_script);
 	static void remove_static_script(const String &p_fqcn);
+	static void get_static_scripts(List<Ref<GDScript>> *r_scripts);
 
 	static void clear();
 

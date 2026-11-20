@@ -513,6 +513,9 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		case 3:
 			type = "Evaluated/";
 			break;
+		case 4:
+			type = "Static Members/";
+			break;
 		default:
 			type = "Unknown/";
 	}

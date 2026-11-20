@@ -1114,9 +1114,9 @@ void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
 		stackframe.line = stack_info["line"];
 		stackframe.column = 0;
 
-		// Information for "Locals", "Members" and "Globals" variables respectively
+		// Information for "Locals", "Members", "Globals", "Evaluated" and "Static" variables respectively
 		Vector<int> scope_ids;
-		for (int j = 0; j < 3; j++) {
+		for (int j = 0; j < 5; j++) {
 			scope_ids.push_back(variable_id++);
 		}
 
@@ -1148,8 +1148,8 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	ERR_FAIL_COND(!scope_list.has(_current_frame));
 	Vector<int> scope_ids = scope_list.find(_current_frame)->value;
 
-	ERR_FAIL_COND(scope_ids.size() != 3);
-	ERR_FAIL_INDEX(stack_var.type, 4);
+	ERR_FAIL_COND(scope_ids.size() != 5);
+	ERR_FAIL_INDEX(stack_var.type, 5);
 	int var_id = scope_ids.get(stack_var.type);
 
 	DAP::Variable variable;

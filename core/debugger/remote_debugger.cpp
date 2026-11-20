@@ -521,11 +521,17 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() };
+				List<String> static_names;
+				List<Variant> static_vals;
+				script_lang->debug_get_static_variables(&static_names, &static_vals);
+				ERR_FAIL_COND(static_names.size() != static_vals.size());
+
+				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() + static_vals.size() };
 				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);
 				_send_stack_vars(globals, globals_vals, 2);
+				_send_stack_vars(static_names, static_vals, 4);
 
 			} else if (command == "reload_scripts") {
 				script_paths_to_reload = data;

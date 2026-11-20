@@ -59,6 +59,10 @@ void ScriptBacktrace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frame_file", "index"), &ScriptBacktrace::get_frame_file);
 	ClassDB::bind_method(D_METHOD("get_frame_line", "index"), &ScriptBacktrace::get_frame_line);
 
+	ClassDB::bind_method(D_METHOD("get_static_variable_count"), &ScriptBacktrace::get_static_variable_count);
+	ClassDB::bind_method(D_METHOD("get_static_variable_name", "variable_index"), &ScriptBacktrace::get_static_variable_name);
+	ClassDB::bind_method(D_METHOD("get_static_variable_value", "variable_index"), &ScriptBacktrace::get_static_variable_value);
+
 	ClassDB::bind_method(D_METHOD("get_global_variable_count"), &ScriptBacktrace::get_global_variable_count);
 	ClassDB::bind_method(D_METHOD("get_global_variable_name", "variable_index"), &ScriptBacktrace::get_global_variable_name);
 	ClassDB::bind_method(D_METHOD("get_global_variable_value", "variable_index"), &ScriptBacktrace::get_global_variable_value);
@@ -85,6 +89,11 @@ ScriptBacktrace::ScriptBacktrace(ScriptLanguage *p_language, bool p_include_vari
 		List<Variant> globals_values;
 		p_language->debug_get_globals(&globals_names, &globals_values);
 		_store_variables(globals_names, globals_values, global_variables);
+
+		List<String> statics_names;
+		List<Variant> statics_values;
+		p_language->debug_get_static_variables(&statics_names, &statics_values);
+		_store_variables(statics_names, statics_values, static_variables);
 	}
 
 	for (int i = 0; i < stack_infos.size(); i++) {
@@ -124,6 +133,16 @@ String ScriptBacktrace::get_frame_file(int p_index) const {
 int ScriptBacktrace::get_frame_line(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, (int)stack_frames.size(), -1);
 	return stack_frames[p_index].line;
+}
+
+String ScriptBacktrace::get_static_variable_name(int p_variable_index) const {
+	ERR_FAIL_INDEX_V(p_variable_index, (int)static_variables.size(), String());
+	return static_variables[p_variable_index].name;
+}
+
+Variant ScriptBacktrace::get_static_variable_value(int p_variable_index) const {
+	ERR_FAIL_INDEX_V(p_variable_index, (int)static_variables.size(), String());
+	return static_variables[p_variable_index].value;
 }
 
 String ScriptBacktrace::get_global_variable_name(int p_variable_index) const {

@@ -124,6 +124,28 @@
 				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
 			</description>
 		</method>
+		<method name="get_static_variable_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of static variables in the backtrace.
+				[b]Note:[/b] This will be non-zero only if the [code]include_variables[/code] parameter was [code]true[/code] when capturing the backtrace with [method Engine.capture_script_backtraces].
+			</description>
+		</method>
+		<method name="get_static_variable_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="variable_index" type="int" />
+			<description>
+				Returns the name of the static variable at the specified index.
+			</description>
+		</method>
+		<method name="get_static_variable_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="variable_index" type="int" />
+			<description>
+				Returns the value of the static variable at the specified index.
+				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
 		<method name="is_empty" qualifiers="const">
 			<return type="bool" />
 			<description>

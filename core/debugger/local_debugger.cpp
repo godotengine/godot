@@ -207,7 +207,11 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			List<Variant> values;
 			script_lang->debug_get_globals(&globals, &values);
 			print_variables(globals, values, variable_prefix);
-
+		} else if (line == "sv" || line == "static vars") {
+			List<String> static_vars;
+			List<Variant> values;
+			script_lang->debug_get_static_variables(&static_vars, &values);
+			print_variables(static_vars, values, variable_prefix);
 		} else if (line == "mv" || line == "members") {
 			List<String> members;
 			List<Variant> values;
@@ -316,6 +320,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_line("\tlv,locals\t\t Show local variables for current frame.");
 			print_line("\tmv,members\t\t Show member variables for \"this\" in frame.");
 			print_line("\tgv,globals\t\t Show global variables.");
+			print_line("\tsv,static vars\t\t Show static variables.");
 			print_line("\tp,print <expr>\t\t Execute and print variable in expression.");
 			print_line("\ts,step\t\t\t Step to next line.");
 			print_line("\tn,next\t\t\t Next line.");
