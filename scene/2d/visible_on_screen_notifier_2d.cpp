@@ -126,6 +126,24 @@ void VisibleOnScreenNotifier2D::_notification(int p_what) {
 	}
 }
 
+// komm64: whether it is on screen. Set back by a savestate load, so a
+// notifier that was on screen sends no screen_entered again, and sends
+// screen_exited if it is not drawn in the next frame.
+Dictionary VisibleOnScreenNotifier2D::snapshot_get_state() const {
+	Dictionary state;
+	state["on_screen"] = on_screen;
+	return state;
+}
+
+Error VisibleOnScreenNotifier2D::snapshot_set_state(const Dictionary &p_state) {
+	bool was_on_screen = p_state.get("on_screen", false);
+	if (was_on_screen && is_inside_tree() && !on_screen) {
+		on_screen = true;
+		RS::get_singleton()->canvas_item_snapshot_set_notifier_visible(get_canvas_item());
+	}
+	return OK;
+}
+
 bool VisibleOnScreenNotifier2D::is_on_screen() const {
 	return on_screen;
 }
@@ -136,6 +154,8 @@ void VisibleOnScreenNotifier2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_rect", "show_rect"), &VisibleOnScreenNotifier2D::set_show_rect);
 	ClassDB::bind_method(D_METHOD("is_showing_rect"), &VisibleOnScreenNotifier2D::is_showing_rect);
 	ClassDB::bind_method(D_METHOD("is_on_screen"), &VisibleOnScreenNotifier2D::is_on_screen);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &VisibleOnScreenNotifier2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &VisibleOnScreenNotifier2D::snapshot_set_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect", PROPERTY_HINT_NONE, "suffix:px"), "set_rect", "get_rect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rect"), "set_show_rect", "is_showing_rect");

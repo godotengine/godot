@@ -102,6 +102,7 @@ public:
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
 
 	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
+	virtual void instance_snapshot_set_notifier_visible(RID p_instance) = 0; // komm64
 
 	// don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;

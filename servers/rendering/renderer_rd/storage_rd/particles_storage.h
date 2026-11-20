@@ -216,6 +216,7 @@ private:
 		RID particles_sort_uniform_set;
 
 		bool dirty = false;
+		bool snapshot_held = false; // komm64: asks to step are let go of until the next update
 		SelfList<Particles> update_list;
 
 		RID sub_emitter;
@@ -348,6 +349,7 @@ private:
 	} particles_shader;
 
 	SelfList<Particles>::List particle_update_list;
+	LocalVector<RID> snapshot_held; // komm64
 
 	mutable RID_Owner<Particles, true> particles_owner;
 

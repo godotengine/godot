@@ -2020,6 +2020,19 @@ void RendererCanvasCull::canvas_item_get_instance_shader_parameter_list(RID p_it
 	item->instance_uniforms.get_property_list(*p_parameters);
 }
 
+// komm64: see RendererSceneCull::instance_snapshot_set_notifier_visible.
+void RendererCanvasCull::canvas_item_snapshot_set_notifier_visible(RID p_item) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+	ERR_FAIL_NULL(canvas_item->visibility_notifier);
+	Item::VisibilityNotifierData *vnd = canvas_item->visibility_notifier;
+	if (!vnd->visible_element.in_list()) {
+		visibility_notifier_list.add(&vnd->visible_element);
+	}
+	vnd->just_visible = false;
+	vnd->visible_in_frame = RSG::rasterizer->get_frame_number();
+}
+
 void RendererCanvasCull::canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callable, const Callable &p_exit_callable) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

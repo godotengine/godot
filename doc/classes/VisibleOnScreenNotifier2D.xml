@@ -19,6 +19,19 @@
 				[b]Note:[/b] It takes one frame for the [VisibleOnScreenNotifier2D]'s visibility to be determined once added to the scene tree, so this method will always return [code]false[/code] right after it is instantiated, before the draw pass.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the state a savestate system saves with this notifier: whether it is on screen.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Sets back a state from [method snapshot_get_state]. A notifier that was on screen sends no [signal screen_entered] again, and sends [signal screen_exited] if it is not drawn in the next frame. Must be inside the tree.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="rect" type="Rect2" setter="set_rect" getter="get_rect" default="Rect2(-10, -10, 20, 20)">

@@ -694,6 +694,13 @@
 				Sets the [CanvasItem]'s Z index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
+		<method name="canvas_item_snapshot_set_notifier_visible">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<description>
+				Counts the visibility notifier of the canvas item [param item] as seen already: no enter callback is called for it, and the exit callback is if it is not drawn in the next frame. Used by savestate systems.
+			</description>
+		</method>
 		<method name="canvas_item_transform_physics_interpolation">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -2070,6 +2077,13 @@
 			<param index="1" name="visible" type="bool" />
 			<description>
 				Sets whether an instance is drawn or not. Equivalent to [member Node3D.visible].
+			</description>
+		</method>
+		<method name="instance_snapshot_set_notifier_visible">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<description>
+				Counts the visibility notifier [param instance] as seen already: no enter callback is called for it, and the exit callback is if it is not drawn in the next frame. Used by savestate systems.
 			</description>
 		</method>
 		<method name="instance_teleport">

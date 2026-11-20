@@ -54,6 +54,9 @@ public:
 	virtual AABB get_aabb() const override;
 	bool is_on_screen() const;
 
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	VisibleOnScreenNotifier3D();
 	~VisibleOnScreenNotifier3D();
 };

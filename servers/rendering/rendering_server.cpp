@@ -3234,6 +3234,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("instance_set_extra_visibility_margin", "instance", "margin"), &RenderingServer::instance_set_extra_visibility_margin);
 	ClassDB::bind_method(D_METHOD("instance_set_visibility_parent", "instance", "parent"), &RenderingServer::instance_set_visibility_parent);
 	ClassDB::bind_method(D_METHOD("instance_set_ignore_culling", "instance", "enabled"), &RenderingServer::instance_set_ignore_culling);
+	ClassDB::bind_method(D_METHOD("instance_snapshot_set_notifier_visible", "instance"), &RenderingServer::instance_snapshot_set_notifier_visible);
 
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_flag", "instance", "flag", "enabled"), &RenderingServer::instance_geometry_set_flag);
 	ClassDB::bind_method(D_METHOD("instance_geometry_set_cast_shadows_setting", "instance", "shadow_casting_setting"), &RenderingServer::instance_geometry_set_cast_shadows_setting);
@@ -3373,6 +3374,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_get_instance_shader_parameter_list", "instance"), &RenderingServer::_canvas_item_get_instance_shader_parameter_list);
 
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visibility_notifier", "item", "enable", "area", "enter_callable", "exit_callable"), &RenderingServer::canvas_item_set_visibility_notifier);
+	ClassDB::bind_method(D_METHOD("canvas_item_snapshot_set_notifier_visible", "item"), &RenderingServer::canvas_item_snapshot_set_notifier_visible);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_canvas_group_mode", "item", "mode", "clear_margin", "fit_empty", "fit_margin", "blur_mipmaps"), &RenderingServer::canvas_item_set_canvas_group_mode, DEFVAL(5.0), DEFVAL(false), DEFVAL(0.0), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &RenderingServer::debug_canvas_item_get_rect);

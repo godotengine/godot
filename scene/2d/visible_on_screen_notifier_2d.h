@@ -75,6 +75,9 @@ public:
 
 	bool is_on_screen() const;
 
+	Dictionary snapshot_get_state() const; // komm64
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	VisibleOnScreenNotifier2D();
 };
 

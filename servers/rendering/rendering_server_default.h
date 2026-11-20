@@ -958,6 +958,7 @@ public:
 	FUNC2(instance_set_visibility_parent, RID, RID)
 
 	FUNC2(instance_set_ignore_culling, RID, bool)
+	FUNC1(instance_snapshot_set_notifier_visible, RID)
 
 	// don't use these in a game!
 	FUNC2RC(Vector<ObjectID>, instances_cull_aabb, const AABB &, RID)
@@ -1068,6 +1069,7 @@ public:
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
+	FUNC1(canvas_item_snapshot_set_notifier_visible, RID)
 
 	FUNC6(canvas_item_set_canvas_group_mode, RID, RSE::CanvasGroupMode, float, bool, float, bool)
 

@@ -69,6 +69,25 @@ AABB VisibleOnScreenNotifier3D::get_aabb() const {
 	return aabb;
 }
 
+// komm64: whether it is on screen. Set back by a savestate load, so a
+// notifier that was on screen sends no screen_entered again, and sends
+// screen_exited if it is not drawn in the next frame.
+Dictionary VisibleOnScreenNotifier3D::snapshot_get_state() const {
+	Dictionary state = Node3D::snapshot_get_state();
+	state["on_screen"] = on_screen;
+	return state;
+}
+
+Error VisibleOnScreenNotifier3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	bool was_on_screen = p_state.get("on_screen", false);
+	if (was_on_screen && is_inside_tree() && !on_screen) {
+		on_screen = true;
+		RS::get_singleton()->instance_snapshot_set_notifier_visible(get_instance());
+	}
+	return OK;
+}
+
 bool VisibleOnScreenNotifier3D::is_on_screen() const {
 	return on_screen;
 }

@@ -1030,6 +1030,12 @@
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
 			</description>
 		</method>
+		<method name="snapshot_get_entered" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns when this node last entered the scene tree, counted over all nodes (0 if it never has). The engine keeps some orders by when nodes entered the tree: viewports are drawn in the order they became active, for one. Savestate systems make the saved nodes again in this order.
+			</description>
+		</method>
 		<method name="snapshot_get_name_counter" qualifiers="static">
 			<return type="int" />
 			<description>

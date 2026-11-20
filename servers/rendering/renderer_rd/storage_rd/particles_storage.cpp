@@ -662,6 +662,17 @@ void ParticlesStorage::snapshot_set_particles_state(RID p_particles, const Dicti
 	}
 	if (p_state.get("requested", false)) {
 		particles_request_process(p_particles);
+	} else {
+		// Not to step on the next update: a request the caller's own setup
+		// made (setting its properties again, drawing the remade node) is not
+		// the saved game's. Ones made until that update are let go of too;
+		// a draw after it (seen on screen) asks for the step after.
+		particles->dirty = false;
+		particles->update_list.remove_from_list();
+		if (!particles->snapshot_held) {
+			particles->snapshot_held = true;
+			snapshot_held.push_back(p_particles);
+		}
 	}
 }
 
@@ -759,6 +770,9 @@ void ParticlesStorage::particles_request_process(RID p_particles) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
+	if (particles->snapshot_held) {
+		return;
+	}
 	if (!particles->dirty) {
 		particles->dirty = true;
 
@@ -1554,6 +1568,13 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	}
 }
 void ParticlesStorage::update_particles() {
+	for (const RID &held : snapshot_held) {
+		Particles *particles = particles_owner.get_or_null(held);
+		if (particles) {
+			particles->snapshot_held = false;
+		}
+	}
+	snapshot_held.clear();
 	if (!particle_update_list.first()) {
 		return;
 	}

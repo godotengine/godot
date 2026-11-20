@@ -1153,6 +1153,23 @@ void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, rea
 	_instance_queue_update(instance, true, false);
 }
 
+// komm64: a visibility notifier made again by a savestate load that was on
+// screen at the save counts as seen already: no enter is sent for it, and an
+// exit is if it is not drawn in the next frame.
+void RendererSceneCull::instance_snapshot_set_notifier_visible(RID p_instance) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(instance);
+	ERR_FAIL_COND(instance->base_type != RS::INSTANCE_VISIBLITY_NOTIFIER || !instance->base_data);
+	InstanceVisibilityNotifierData *vnd = static_cast<InstanceVisibilityNotifierData *>(instance->base_data);
+	visible_notifier_list_lock.lock();
+	if (!vnd->list_element.in_list()) {
+		visible_notifier_list.add(&vnd->list_element);
+	}
+	visible_notifier_list_lock.unlock();
+	vnd->just_visible = false;
+	vnd->visible_in_frame = RSG::rasterizer->get_frame_number();
+}
+
 void RendererSceneCull::instance_set_ignore_culling(RID p_instance, bool p_enabled) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);

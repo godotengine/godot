@@ -141,6 +141,7 @@ public:
 
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> total_node_count;
+	static uint64_t entered_count; // komm64
 #endif
 	enum {
 		UNIQUE_SCENE_ID_UNASSIGNED = 0
@@ -216,6 +217,7 @@ private:
 		mutable int external_children_count_cache = 0;
 		mutable int index = -1; // relative to front, normal or back.
 		int32_t depth = -1;
+		uint64_t entered = 0; // komm64: when it last entered the tree, of all nodes
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
 		SceneTree *tree = nullptr;
@@ -786,6 +788,7 @@ public:
 	// komm64: nodes out of the tree with no parent (tops of orphan subtrees), in any build.
 	static PackedInt64Array snapshot_get_orphan_roots();
 	static int64_t snapshot_get_name_counter();
+	int64_t snapshot_get_entered() const;
 	static void snapshot_set_name_counter(int64_t p_counter);
 
 #ifdef TOOLS_ENABLED

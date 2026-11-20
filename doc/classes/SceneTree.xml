@@ -254,6 +254,12 @@
 				Calls [param callable] once, at the end of this frame's process step: after [method Node._process], deferred calls, timers and [Tween]s, and before nodes queued for deletion are freed and the frame is drawn. What it calls sees the world as the next frame starts from it. Calls it adds from there run in the same frame. Called during the drawing of a frame, it runs at the end of the next frame's process step.
 			</description>
 		</method>
+		<method name="snapshot_flush_transform_notifications">
+			<return type="void" />
+			<description>
+				Sends the transform-changed notifications queued since the last time they were sent, now. A savestate load calls it before it sets the saved state back, so what the notifications change is overwritten by the saved state rather than changing it in the next frame.
+			</description>
+		</method>
 		<method name="snapshot_get_timers" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>

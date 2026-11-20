@@ -342,6 +342,8 @@ void Node::_propagate_ready() {
 void Node::_propagate_enter_tree() {
 	// this needs to happen to all children before any enter_tree
 
+	data.entered = ++entered_count; // komm64
+
 	if (data.parent) {
 		data.tree = data.parent->data.tree;
 		data.depth = data.parent->data.depth + 1;
@@ -1542,6 +1544,15 @@ static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
+}
+
+// komm64: when this node last entered the tree, counted over all nodes. The
+// engine keeps some orders by it (viewports are drawn in the order they
+// became active); a savestate system makes the saved nodes in this order.
+uint64_t Node::entered_count = 0;
+
+int64_t Node::snapshot_get_entered() const {
+	return int64_t(data.entered);
 }
 
 // komm64: the counter behind engine-made names ("@Label@27"). A save holds it
@@ -3833,6 +3844,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_static_method("Node", D_METHOD("get_orphan_node_ids"), &Node::get_orphan_node_ids);
 	ClassDB::bind_static_method("Node", D_METHOD("snapshot_get_orphan_roots"), &Node::snapshot_get_orphan_roots);
 	ClassDB::bind_static_method("Node", D_METHOD("snapshot_get_name_counter"), &Node::snapshot_get_name_counter);
+	ClassDB::bind_method(D_METHOD("snapshot_get_entered"), &Node::snapshot_get_entered);
 	ClassDB::bind_static_method("Node", D_METHOD("snapshot_set_name_counter", "counter"), &Node::snapshot_set_name_counter);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 

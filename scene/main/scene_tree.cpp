@@ -1967,6 +1967,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_timers"), &SceneTree::snapshot_get_timers);
 	ClassDB::bind_method(D_METHOD("snapshot_call_at_frame_end", "callable"), &SceneTree::snapshot_call_at_frame_end);
 	ClassDB::bind_method(D_METHOD("snapshot_remove_timer", "timer"), &SceneTree::snapshot_remove_timer);
+	// komm64: a savestate load sends the transform notifications its own
+	// changes queued before it sets the saved state back.
+	ClassDB::bind_method(D_METHOD("snapshot_flush_transform_notifications"), &SceneTree::flush_transform_notifications);
 	ClassDB::bind_method(D_METHOD("snapshot_remove_tween", "tween"), &SceneTree::snapshot_remove_tween);
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);

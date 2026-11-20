@@ -749,6 +749,7 @@ public:
 	virtual void instance_set_visibility_parent(RID p_instance, RID p_parent_instance) = 0;
 
 	virtual void instance_set_ignore_culling(RID p_instance, bool p_enabled) = 0;
+	virtual void instance_snapshot_set_notifier_visible(RID p_instance) = 0; // komm64
 
 	// Don't use these in a game!
 	virtual Vector<ObjectID> instances_cull_aabb(const AABB &p_aabb, RID p_scenario = RID()) const = 0;
@@ -863,6 +864,7 @@ public:
 	virtual void canvas_item_get_instance_shader_parameter_list(RID p_item, List<PropertyInfo> *p_parameters) const = 0;
 
 	virtual void canvas_item_set_visibility_notifier(RID p_item, bool p_enable, const Rect2 &p_area, const Callable &p_enter_callbable, const Callable &p_exit_callable) = 0;
+	virtual void canvas_item_snapshot_set_notifier_visible(RID p_item) = 0; // komm64
 
 	virtual void canvas_item_set_canvas_group_mode(RID p_item, RSE::CanvasGroupMode p_mode, float p_clear_margin = 5.0, bool p_fit_empty = false, float p_fit_margin = 0.0, bool p_blur_mipmaps = false) = 0;
 
