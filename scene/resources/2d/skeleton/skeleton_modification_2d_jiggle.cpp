@@ -191,9 +191,8 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 	jiggle_data_chain.write[p_joint_idx].acceleration = jiggle_data_chain[p_joint_idx].force / jiggle_data_chain[p_joint_idx].mass;
 	jiggle_data_chain.write[p_joint_idx].velocity += jiggle_data_chain[p_joint_idx].acceleration * (1 - jiggle_data_chain[p_joint_idx].damping);
 
+	// Keep the simulated position in world space so it can lag behind a moving bone.
 	jiggle_data_chain.write[p_joint_idx].dynamic_position += jiggle_data_chain[p_joint_idx].velocity + jiggle_data_chain[p_joint_idx].force;
-	jiggle_data_chain.write[p_joint_idx].dynamic_position += operation_bone_trans.get_origin() - jiggle_data_chain[p_joint_idx].last_position;
-	jiggle_data_chain.write[p_joint_idx].last_position = operation_bone_trans.get_origin();
 
 	// Collision detection/response
 	if (use_colliders) {
@@ -587,7 +586,6 @@ void SkeletonModification2DJiggle::reset() {
 		if (bone) {
 			Vector2 bone_pos = bone->get_global_position();
 			jiggle_data_chain.write[i].dynamic_position = bone_pos;
-			jiggle_data_chain.write[i].last_position = bone_pos;
 			jiggle_data_chain.write[i].last_noncollision_position = bone_pos;
 			jiggle_data_chain.write[i].velocity = Vector2(0, 0);
 			jiggle_data_chain.write[i].acceleration = Vector2(0, 0);

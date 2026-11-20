@@ -56,7 +56,6 @@ private:
 		Vector2 force = Vector2(0, 0);
 		Vector2 acceleration = Vector2(0, 0);
 		Vector2 velocity = Vector2(0, 0);
-		Vector2 last_position = Vector2(0, 0);
 		Vector2 dynamic_position = Vector2(0, 0);
 
 		Vector2 last_noncollision_position = Vector2(0, 0);
