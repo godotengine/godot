@@ -90,6 +90,7 @@ public:
 
 	virtual Error open(Family p_family, Type p_sock_type, IP::Type &r_ip_type) override;
 	virtual void close() override;
+	virtual void shutdown(ShutdownType p_flag) override;
 	virtual Error bind(Address p_addr) override;
 	virtual Error listen(int p_max_pending) override;
 	virtual Error connect_to_host(Address p_addr) override;
