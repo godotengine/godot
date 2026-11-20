@@ -7258,6 +7258,19 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(2) == 2);
 		CHECK(text_edit->get_caret_column(2) == 4);
 
+		// Does not select after caret deselection.
+		text_edit->remove_secondary_carets();
+		text_edit->deselect();
+		text_edit->select(0, 0, 0, 1);
+		text_edit->deselect();
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 2);
+		CHECK_FALSE(text_edit->has_selection());
+		CHECK(text_edit->get_caret_line(0) == 0);
+		CHECK(text_edit->get_caret_column(0) == 1);
+		CHECK(text_edit->get_caret_line(1) == 1);
+		CHECK(text_edit->get_caret_column(1) == 1);
+
 		text_edit->set_text("\tthis is\nsome\n\ttest text");
 		MessageQueue::get_singleton()->flush();
 
