@@ -1395,6 +1395,7 @@ void TextureStorage::texture_remap_proxies(RID p_from_texture, RID p_to_texture)
 void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
 	ERR_FAIL_COND_MSG(!tex_blit_shader.initialized, "Texture Blit shader & materials not yet initialized.");
 	ERR_FAIL_COND_MSG(p_textures.size() == 0 || p_source_textures.size() == 0, "Blit Rect texture output and source arrays must contain at least 1 texture.");
+	ERR_FAIL_COND_MSG(p_to_mipmap < 0, "Cannot target a negative MipMap level.");
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
 	TexBlitMaterialData *m = static_cast<TexBlitMaterialData *>(material_storage->material_get_data(p_material, RSE::SHADER_TEXTURE_BLIT));
