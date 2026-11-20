@@ -1037,6 +1037,9 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 
 	viewport->use_xr = p_use_xr;
 
+	// XR targets get a swapchain override every frame, so they need no color buffer of their own.
+	RSG::texture_storage->render_target_set_expect_override(viewport->render_target, p_use_xr);
+
 	// Re-configure the 3D render buffers when disabling XR. They'll get
 	// re-configured when enabling XR in draw_viewports().
 	if (!p_use_xr) {

@@ -4494,6 +4494,21 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 	}
 
+	// XR replaces the color buffer with a swapchain override every frame, so skip it.
+	// Anything that needs it with no override present creates it on first use.
+	if (!rt->expect_override) {
+		_ensure_render_target_color(rt);
+	}
+}
+
+void TextureStorage::_ensure_render_target_color(RenderTarget *rt) {
+	if (rt->color.is_valid() || rt->overridden.color.is_valid()) {
+		return;
+	}
+	if (rt->size.width == 0 || rt->size.height == 0) {
+		return;
+	}
+
 	RD::TextureFormat rd_color_attachment_format;
 	RD::TextureView rd_view;
 	{ //attempt register
@@ -4517,7 +4532,6 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		}
 	}
 
-	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
 	rt->color = RD::get_singleton()->texture_create(rd_color_attachment_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
 
@@ -4677,6 +4691,15 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	ERR_FAIL_NULL_V(rt, RID());
 
 	return rt->texture;
+}
+
+void TextureStorage::render_target_set_expect_override(RID p_render_target, bool p_expect) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	// Any color buffer allocated before the hint arrived is freed by the next
+	// _update_render_target (XR resizes the target when the session starts).
+	rt->expect_override = p_expect;
 }
 
 void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) {
@@ -4868,6 +4891,7 @@ void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
 	if (!rt->msaa_needs_resolve) {
 		return;
 	}
+	_ensure_render_target_color(rt);
 	RD::get_singleton()->draw_list_begin(rt->get_framebuffer());
 	RD::get_singleton()->draw_list_end();
 	rt->msaa_needs_resolve = false;
@@ -4910,6 +4934,7 @@ RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RID());
 
+	_ensure_render_target_color(rt);
 	return rt->get_framebuffer();
 }
 
@@ -4920,6 +4945,7 @@ RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
 	if (rt->overridden.color.is_valid()) {
 		return rt->overridden.color;
 	} else {
+		_ensure_render_target_color(rt);
 		return rt->color;
 	}
 }
@@ -4928,6 +4954,7 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL_V(rt, RID());
 
+	_ensure_render_target_color(rt);
 	if (rt->view_count == 1) {
 		return rt->color;
 	} else {
@@ -4997,6 +5024,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	if (!rt->clear_requested) {
 		return;
 	}
+	_ensure_render_target_color(rt);
 	Vector<Color> clear_colors;
 	clear_colors.push_back(rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color);
 	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::DRAW_CLEAR_COLOR_0, clear_colors);
@@ -5299,6 +5327,7 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
+	_ensure_render_target_color(rt);
 	if (!rt->backbuffer.is_valid()) {
 		_create_render_target_backbuffer(rt);
 	}
