@@ -38,6 +38,7 @@ class EditorFileSystemDirectory;
 class ProjectUpgradeTool : public Object {
 	GDCLASS(ProjectUpgradeTool, Object);
 
+	bool is_running = false;
 	ConfirmationDialog *upgrade_dialog = nullptr;
 
 	void _add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_scenes, Vector<String> &r_resave_resources);
@@ -56,6 +57,7 @@ protected:
 
 public:
 	void popup_dialog();
+	bool is_upgrade_running() const { return is_running; }
 	void prepare_upgrade();
 	void begin_upgrade();
 	void finish_upgrade();
