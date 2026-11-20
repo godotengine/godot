@@ -27,15 +27,15 @@
 /**
  * @brief Structure containing packed percentile metadata.
  *
- * Note that percentile tables do not exist for 3D textures, so no zdim is stored.
+ * Note that percentile tables do not exist for 3D textures, so no dim_z is stored.
  */
 struct packed_percentile_table
 {
 	/** The block X dimension. */
-	uint8_t xdim;
+	uint8_t dim_x;
 
 	/** The block Y dimension. */
-	uint8_t ydim;
+	uint8_t dim_y;
 
 	/** The number of packed items in the 1 and 2 plane data. */
 	uint16_t item_count[2];
@@ -1101,16 +1101,16 @@ static const packed_percentile_table block_pcd_12x12 {
 /**
  * @brief Fetch the packed percentile table for the given 2D block size.
  *
- * @param xdim The block x size.
- * @param ydim The block y size.
+ * @param dim_x The block x size.
+ * @param dim_y The block y size.
  *
  * @return The packed table.
  */
 static const packed_percentile_table *get_packed_table(
-	int xdim,
-	int ydim
+	int dim_x,
+	int dim_y
 ) {
-	int idx = (ydim << 8) | xdim;
+	int idx = (dim_y << 8) | dim_x;
 	switch (idx)
 	{
 #if ASTCENC_BLOCK_MAX_TEXELS >= (4 * 4)
@@ -1163,11 +1163,11 @@ static const packed_percentile_table *get_packed_table(
 
 /* See header for documentation. */
 const float *get_2d_percentile_table(
-	unsigned int xdim,
-	unsigned int ydim
+	unsigned int dim_x,
+	unsigned int dim_y
 ) {
 	float* unpacked_table = new float[WEIGHTS_MAX_BLOCK_MODES];
-	const packed_percentile_table *apt = get_packed_table(xdim, ydim);
+	const packed_percentile_table *apt = get_packed_table(dim_x, dim_y);
 
 	// Set the default percentile
 	for (unsigned int i = 0; i < WEIGHTS_MAX_BLOCK_MODES; i++)
@@ -1199,10 +1199,10 @@ const float *get_2d_percentile_table(
 
 /* See header for documentation. */
 bool is_legal_2d_block_size(
-	unsigned int xdim,
-	unsigned int ydim
+	unsigned int dim_x,
+	unsigned int dim_y
 ) {
-	unsigned int idx = (xdim << 8) | ydim;
+	unsigned int idx = (dim_x << 8) | dim_y;
 	switch (idx)
 	{
 		case 0x0404:
@@ -1227,11 +1227,11 @@ bool is_legal_2d_block_size(
 
 /* See header for documentation. */
 bool is_legal_3d_block_size(
-	unsigned int xdim,
-	unsigned int ydim,
-	unsigned int zdim
+	unsigned int dim_x,
+	unsigned int dim_y,
+	unsigned int dim_z
 ) {
-	unsigned int idx = (xdim << 16) | (ydim << 8) | zdim;
+	unsigned int idx = (dim_x << 16) | (dim_y << 8) | dim_z;
 	switch (idx)
 	{
 		case 0x030303:

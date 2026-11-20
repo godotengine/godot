@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2021 Arm Limited
+// Copyright 2011-2021,2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -30,69 +30,19 @@ typedef uint16_t sf16;
 typedef uint32_t sf32;
 
 /******************************************
-  helper functions and their lookup tables
+  helper functions
  ******************************************/
-/* count leading zeros functions. Only used when the input is nonzero. */
 
-#if defined(__GNUC__) && (defined(__i386) || defined(__amd64))
-#elif defined(__arm__) && defined(__ARMCC_VERSION)
-#elif defined(__arm__) && defined(__GNUC__)
-#else
-	/* table used for the slow default versions. */
-	static const uint8_t clz_table[256] =
-	{
-		8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
-		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	};
-#endif
-
-/*
-   32-bit count-leading-zeros function: use the Assembly instruction whenever possible. */
+/* Idiomatic count-leading zeros, generates native instruction on modern compilers. */
 static uint32_t clz32(uint32_t inp)
 {
-	#if defined(__GNUC__) && (defined(__i386) || defined(__amd64))
-		uint32_t bsr;
-		__asm__("bsrl %1, %0": "=r"(bsr):"r"(inp | 1));
-		return 31 - bsr;
-	#else
-		#if defined(__arm__) && defined(__ARMCC_VERSION)
-			return __clz(inp);			/* armcc builtin */
-		#else
-			#if defined(__arm__) && defined(__GNUC__)
-				uint32_t lz;
-				__asm__("clz %0, %1": "=r"(lz):"r"(inp));
-				return lz;
-			#else
-				/* slow default version */
-				uint32_t summa = 24;
-				if (inp >= UINT32_C(0x10000))
-				{
-					inp >>= 16;
-					summa -= 16;
-				}
-				if (inp >= UINT32_C(0x100))
-				{
-					inp >>= 8;
-					summa -= 8;
-				}
-				return summa + clz_table[inp];
-			#endif
-		#endif
-	#endif
+    uint32_t count = 32;
+    while (inp)
+    {
+        inp >>= 1;
+        count--;
+    }
+    return count;
 }
 
 /* the five rounding modes that IEEE-754r defines */
@@ -395,17 +345,14 @@ static sf16 sf32_to_sf16(sf32 inp, roundmode rmode)
 /* convert from soft-float to native-float */
 float sf16_to_float(uint16_t p)
 {
-	if32 i;
-	i.u = sf16_to_sf32(p);
-	return i.f;
+	return astc::uint_as_float(sf16_to_sf32(p));
 }
 
 /* convert from native-float to soft-float */
 uint16_t float_to_sf16(float p)
 {
-	if32 i;
-	i.f = p;
-	return sf32_to_sf16(i.u, SF_NEARESTEVEN);
+	unsigned int ip = astc::float_as_uint(p);
+	return sf32_to_sf16(ip, SF_NEARESTEVEN);
 }
 
 #endif

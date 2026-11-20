@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -163,24 +163,22 @@ void unpack_weights(
  */
 static float error_color_nan()
 {
-	if32 v;
-	v.u = 0xFFFFE000U;
-	return v.f;
+	return astc::uint_as_float(0xFFFFE000u);
 }
 
 /* See header for documentation. */
 void decompress_symbolic_block(
 	astcenc_profile decode_mode,
 	const block_size_descriptor& bsd,
-	int xpos,
-	int ypos,
-	int zpos,
+	size_t pos_x,
+	size_t pos_y,
+	size_t pos_z,
 	const symbolic_compressed_block& scb,
 	image_block& blk
 ) {
-	blk.xpos = xpos;
-	blk.ypos = ypos;
-	blk.zpos = zpos;
+	blk.pos_x = pos_x;
+	blk.pos_y = pos_y;
+	blk.pos_z = pos_z;
 
 	blk.data_min = vfloat4::zero();
 	blk.data_mean = vfloat4::zero();
@@ -218,7 +216,7 @@ void decompress_symbolic_block(
 			vmask4 u8_mask = get_u8_component_mask(decode_mode, blk);
 
 			// The real decoder would just use the top 8 bits, but we rescale
-			// in to a 16-bit value that rounds correctly.
+			// into a 16-bit value that rounds correctly.
 			vint4 colori_u8 = asr<8>(colori) * 257;
 			colori = select(colori, colori_u8, u8_mask);
 

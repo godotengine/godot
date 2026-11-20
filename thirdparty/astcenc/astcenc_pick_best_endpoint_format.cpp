@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2025 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -51,13 +51,13 @@
  * @brief Compute the errors of the endpoint line options for one partition.
  *
  * Uncorrelated data assumes storing completely independent RGBA channels for each endpoint. Same
- * chroma data assumes storing RGBA endpoints which pass though the origin (LDR only). RGBL data
+ * chroma data assumes storing RGBA endpoints which pass through the origin (LDR only). RGBL data
  * assumes storing RGB + lumashift (HDR only). Luminance error assumes storing RGB channels as a
  * single value.
  *
  *
  * @param      pi                The partition info data.
- * @param      partition_index   The partition index to compule the error for.
+ * @param      partition_index   The partition index to compute the error for.
  * @param      blk               The image block.
  * @param      uncor_pline       The endpoint line assuming uncorrelated endpoints.
  * @param[out] uncor_err         The computed error for the uncorrelated endpoint line.
@@ -154,7 +154,7 @@ static void compute_error_squared_rgb_single_partition(
 
 		haccumulate(uncor_errv, error, mask);
 
-		// Compute same chroma error - no "amod", its always zero
+		// Compute same chroma error - no "amod", it's always zero
 		param = data_r * samec_bs0
 		      + data_g * samec_bs1
 		      + data_b * samec_bs2;
@@ -184,7 +184,7 @@ static void compute_error_squared_rgb_single_partition(
 
 		haccumulate(rgbl_errv, error, mask);
 
-		// Compute luma error - no "amod", its always zero
+		// Compute luma error - no "amod", it's always zero
 		param = data_r * l_bs0
 		      + data_g * l_bs1
 		      + data_b * l_bs2;
@@ -263,14 +263,14 @@ static void compute_encoding_choice_errors(
 		uncor_rgb_plines.amod = uncor_rgb_lines.a - uncor_rgb_lines.b * dot3(uncor_rgb_lines.a, uncor_rgb_lines.b);
 		uncor_rgb_plines.bs   = uncor_rgb_lines.b;
 
-		// Same chroma always goes though zero, so this is simpler than the others
+		// Same chroma always goes through zero, so this is simpler than the others
 		samec_rgb_plines.amod = vfloat4::zero();
 		samec_rgb_plines.bs   = samec_rgb_lines.b;
 
 		rgb_luma_plines.amod = rgb_luma_lines.a - rgb_luma_lines.b * dot3(rgb_luma_lines.a, rgb_luma_lines.b);
 		rgb_luma_plines.bs   = rgb_luma_lines.b;
 
-		// Luminance always goes though zero, so this is simpler than the others
+		// Luminance always goes through zero, so this is simpler than the others
 		luminance_plines.amod = vfloat4::zero();
 		luminance_plines.bs   = unit3();
 
@@ -404,9 +404,15 @@ static void compute_color_error_for_every_integer_count_and_quant_level(
 		// Estimate of color-component spread in low endpoint color
 		float df = hmax_s(abs(pdif));
 
-		int b = static_cast<int>(bf);
-		int c = static_cast<int>(cf);
-		int d = static_cast<int>(df);
+		// Endpoint colors can fall well outside the input range, and an HDR
+		// input may contain very large or non-finite values, so these spreads
+		// are not bounded by the int range. Clamp before the narrowing cast to
+		// avoid undefined behavior; the values are only used in the threshold
+		// comparisons below and the largest threshold is 32768, so saturating
+		// at 65536 leaves every comparison result unchanged.
+		int b = static_cast<int>(astc::clamp(bf, 0.0f, 65536.0f));
+		int c = static_cast<int>(astc::clamp(cf, 0.0f, 65536.0f));
+		int d = static_cast<int>(astc::clamp(df, 0.0f, 65536.0f));
 
 		// Determine which one of the 6 submodes is likely to be used in case of an RGBO-mode
 		int rgbo_mode = 5;		// 7 bits per component

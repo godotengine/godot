@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2025 Arm Limited
+// Copyright 2011-2026 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -26,6 +26,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cmath>
+#include <cstring>
 
 #ifndef ASTCENC_POPCNT
   #if defined(__POPCNT__)
@@ -122,14 +123,6 @@
   have an option based on SSE intrinsics and therefore provide an obvious route
   to future vectorization.
 ============================================================================ */
-
-// Union for manipulation of float bit patterns
-typedef union
-{
-	uint32_t u;
-	int32_t s;
-	float f;
-} if32;
 
 // These are namespaced to avoid colliding with C standard library functions.
 namespace astc
@@ -265,7 +258,7 @@ static inline T max(T p, T q, T r, T s)
 }
 
 /**
- * @brief Clamp a value value between @c mn and @c mx.
+ * @brief Clamp a value between @c mn and @c mx.
  *
  * For floats, NaNs are turned into @c mn.
  *
@@ -279,7 +272,7 @@ template<typename T>
 inline T clamp(T v, T mn, T mx)
 {
 	// Do not reorder; correct NaN handling relies on the fact that comparison
-	// with NaN returns false and will fall-though to the "min" value.
+	// with NaN returns false and will fall-through to the "min" value.
 	if (v > mx) return mx;
 	if (v > mn) return v;
 	return mn;
@@ -359,9 +352,10 @@ static inline int flt2int_rd(float v)
  */
 static inline int float_as_int(float v)
 {
-	union { int a; float b; } u;
-	u.b = v;
-	return u.a;
+	// Future: Can use std:bit_cast with C++20
+	int iv;
+	std::memcpy(&iv, &v, sizeof(float));
+	return iv;
 }
 
 /**
@@ -373,9 +367,70 @@ static inline int float_as_int(float v)
  */
 static inline float int_as_float(int v)
 {
-	union { int a; float b; } u;
-	u.a = v;
-	return u.b;
+	// Future: Can use std:bit_cast with C++20
+	float fv;
+	std::memcpy(&fv, &v, sizeof(int));
+	return fv;
+}
+
+/**
+ * @brief SP float bit-interpreted as an unsigned integer.
+ *
+ * @param v   The value to bitcast.
+ *
+ * @return The converted value.
+ */
+static inline unsigned int float_as_uint(float v)
+{
+	// Future: Can use std:bit_cast with C++20
+	unsigned int iv;
+	std::memcpy(&iv, &v, sizeof(float));
+	return iv;
+}
+
+/**
+ * @brief Unsigned integer bit-interpreted as an SP float.
+ *
+ * @param v   The value to bitcast.
+ *
+ * @return The converted value.
+ */
+static inline float uint_as_float(unsigned int v)
+{
+	// Future: Can use std:bit_cast with C++20
+	float fv;
+	std::memcpy(&fv, &v, sizeof(unsigned int));
+	return fv;
+}
+
+/**
+ * @brief Signed int bit-interpreted as an unsigned integer.
+ *
+ * @param v   The value to bitcast.
+ *
+ * @return The converted value.
+ */
+static inline unsigned int int_as_uint(int v)
+{
+	// Future: Can use std:bit_cast with C++20
+	unsigned int uv;
+	std::memcpy(&uv, &v, sizeof(int));
+	return uv;
+}
+
+/**
+ * @brief Unsigned integer bit-interpreted as a signed integer.
+ *
+ * @param v   The value to bitcast.
+ *
+ * @return The converted value.
+ */
+static inline int uint_as_int(unsigned int v)
+{
+	// Future: Can use std:bit_cast with C++20
+	int sv;
+	std::memcpy(&sv, &v, sizeof(unsigned int));
+	return sv;
 }
 
 /**
@@ -412,11 +467,66 @@ static inline float sqrt(float v)
  */
 static inline float frexp(float v, int* expo)
 {
-	if32 p;
-	p.f = v;
-	*expo = ((p.u >> 23) & 0xFF) - 126;
-	p.u = (p.u & 0x807fffff) | 0x3f000000;
-	return p.f;
+	unsigned int iv = astc::float_as_uint(v);
+	*expo = ((iv >> 23) & 0xFF) - 126;
+	iv = (iv & 0x807fffff) | 0x3f000000;
+	return astc::uint_as_float(iv);
+}
+
+/**
+ * @brief Compute the product of two sizes.
+ *
+ * This function is implemented to indicate if overflow has occurred, which may
+ * occur when input values are not trusted. Implementation is obviously slower
+ * than one that does not do this, so don't use for values we know cannot
+ * overflow.
+ *
+ * Overflow signaling is sticky, so calling code can check at the end of a
+ * sequence of multiplies.
+ *
+ * @param         val_a      The first value to multiply.
+ * @param         val_b      The second value to multiply.
+ * @param[in,out] overflow   Did previous or this calculation overflow?
+ *
+ * @return The multiplication result, which may have overflowed.
+ */
+static inline size_t mul_safe(
+	size_t val_a,
+	size_t val_b,
+	bool& overflow
+) {
+	size_t result = val_a * val_b;
+	overflow = overflow || ((val_b != 0) && ((result / val_b) != val_a));
+	return result;
+}
+
+/**
+ * @brief Get the number of blocks along a single axis.
+ *
+ * This function is implemented so that intermediate values will not overflow,
+ * which may occur when input values are not trusted. Implementation is
+ * obviously slower than one that does not do this, so don't use for values
+ * we know cannot overflow.
+ *
+ * @param dim_axis    The axis dimension, in pixels.
+ * @param dim_block   The block dimension, in pixels.
+ *
+ * @return The number of blocks needed in this dimension.
+ */
+static inline size_t get_block_count_safe(
+	size_t dim_axis,
+	size_t dim_block
+) {
+	// Compute number of whole blocks
+	size_t blocks = dim_axis / dim_block;
+
+	// Add in any residual partial block
+	if (dim_axis != (dim_block * blocks))
+	{
+		blocks++;
+	}
+
+	return blocks;
 }
 
 /**
@@ -435,7 +545,7 @@ void rand_init(uint64_t state[2]);
 /**
  * @brief Return the next random number from the generator.
  *
- * This RNG is an implementation of the "xoroshoro-128+ 1.0" PRNG, based on the
+ * This RNG is an implementation of the "xoroshiro-128+ 1.0" PRNG, based on the
  * public-domain implementation given by David Blackman & Sebastiano Vigna at
  * http://vigna.di.unimi.it/xorshift/xoroshiro128plus.c
  *
