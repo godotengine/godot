@@ -33,6 +33,7 @@
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
 #include "gdscript_compiler.h"
+#include "gdscript_constants.h"
 #include "gdscript_helper.h"
 #include "gdscript_linter.h"
 #include "gdscript_parser.h"
@@ -2154,10 +2155,9 @@ void GDScriptLanguage::init() {
 		_add_global(StringName(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
 	}
 
-	_add_global(StringName("PI"), Math::PI);
-	_add_global(StringName("TAU"), Math::TAU);
-	_add_global(StringName("INF"), Math::INF);
-	_add_global(StringName("NAN"), Math::NaN);
+	for (int i = 0; i < GDScriptConstants::get_constant_count(); i++) {
+		_add_global(StringName(GDScriptConstants::get_constant_name(i)), GDScriptConstants::get_constant_value(i));
+	}
 
 	// Populate native classes.
 

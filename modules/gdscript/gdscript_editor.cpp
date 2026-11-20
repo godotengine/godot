@@ -30,6 +30,7 @@
 
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
+#include "gdscript_constants.h"
 #include "gdscript_linter.h"
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
@@ -532,25 +533,10 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *r_functions) const
 }
 
 void GDScriptLanguage::get_public_constants(List<Pair<String, Variant>> *r_constants) const {
-	Pair<String, Variant> pi;
-	pi.first = "PI";
-	pi.second = Math::PI;
-	r_constants->push_back(pi);
-
-	Pair<String, Variant> tau;
-	tau.first = "TAU";
-	tau.second = Math::TAU;
-	r_constants->push_back(tau);
-
-	Pair<String, Variant> infinity;
-	infinity.first = "INF";
-	infinity.second = Math::INF;
-	r_constants->push_back(infinity);
-
-	Pair<String, Variant> nan;
-	nan.first = "NAN";
-	nan.second = Math::NaN;
-	r_constants->push_back(nan);
+	for (int i = 0; i < GDScriptConstants::get_constant_count(); i++) {
+		r_constants->push_back(
+				Pair<String, Variant>(GDScriptConstants::get_constant_name(i), GDScriptConstants::get_constant_value(i)));
+	}
 }
 
 void GDScriptLanguage::get_public_annotations(List<MethodInfo> *r_annotations) const {
@@ -1735,7 +1721,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	_find_built_in_variants(r_result);
 
 	static const char *_keywords[] = {
-		"true", "false", "PI", "TAU", "INF", "NAN", "null", "self", "super",
+		"true", "false", "null", "self", "super",
 		"break", "breakpoint", "continue", "pass", "return",
 		nullptr
 	};
@@ -1745,6 +1731,11 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		EditorLanguage::CompletionOption option(*kw, EditorLanguage::CompletionKind::KEYWORD);
 		r_result.insert(option.display, option);
 		kw++;
+	}
+
+	for (int i = 0; i < GDScriptConstants::get_constant_count(); i++) {
+		EditorLanguage::CompletionOption option(GDScriptConstants::get_constant_name(i), EditorLanguage::CompletionKind::KEYWORD);
+		r_result.insert(option.display, option);
 	}
 
 	static const char *_keywords_with_space[] = {
@@ -4610,7 +4601,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					}
 				}
 
-				if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
+				if (GDScriptConstants::is_constant(p_symbol)) {
 					r_result.type = LookupResult::Type::CLASS_CONSTANT;
 					r_result.class_name = "@GDScript";
 					r_result.class_member = p_symbol;
