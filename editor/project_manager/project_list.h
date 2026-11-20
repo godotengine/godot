@@ -240,6 +240,14 @@ private:
 	VBoxContainer *project_list_vbox = nullptr;
 	PopupMenu *project_context_menu = nullptr;
 
+	// Project Directory
+
+	bool multi_dir = false;
+	String _current_dir;
+	const String active = "active";
+
+	void _update_dir_list(const String &p_dir);
+
 	// Projects scan.
 
 	struct ScanData {
@@ -308,11 +316,13 @@ public:
 	// Initialization & loading.
 
 	void save_config();
+	void reload_config();
 
 	// Project list updates.
 
 	void load_project_list();
 	void update_project_list();
+	void update_directory_projects(const String &p_dir);
 	void sort_projects();
 	int get_project_count() const;
 
@@ -322,6 +332,8 @@ public:
 	// Project list items.
 
 	void add_project(const String &dir_path, bool favorite);
+	void import_project(const String &p_dir_path);
+	void create_project_item(const String &p_dir_path, bool p_select = false);
 	void set_project_version(const String &p_project_path, int version);
 	int refresh_project(const String &dir_path);
 	void ensure_project_visible(int p_index);
