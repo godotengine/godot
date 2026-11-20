@@ -79,6 +79,7 @@ layout(push_constant, std430) uniform Params {
 #if defined(MODE_SPECULAR_TRACE) || defined(MODE_SPECULAR_APPLY)
 	vec4 specular_tuning;
 	vec4 specular_eye_offset_exposure;
+	vec4 specular_rigid_bounds;
 #endif
 }
 params;

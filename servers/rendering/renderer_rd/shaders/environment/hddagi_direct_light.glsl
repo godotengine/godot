@@ -108,7 +108,7 @@ layout(push_constant, std430) uniform Params {
 	ivec3 probe_axis_size;
 	bool dirty_dynamic_update;
 	uint use_light_regions;
-	uint pad0;
+	bool refresh_static;
 	uint pad1;
 	uint pad2;
 }
@@ -205,7 +205,7 @@ void main() {
 
 #ifdef MODE_PROCESS_STATIC
 	// Discard if not marked for static update
-	if (!bool(process_voxels.data[voxel_index].position & PROCESS_STATIC_PENDING_BIT)) {
+	if (!params.refresh_static && !bool(process_voxels.data[voxel_index].position & PROCESS_STATIC_PENDING_BIT)) {
 		return;
 	}
 #else
@@ -233,9 +233,6 @@ void main() {
 	vec3 normal = octahedron_decode(normal_oct);
 #ifdef MODE_PROCESS_STATIC
 	vec3 emission = rgbe_decode(source_emission.data[voxel_index]);
-	if (!bool(process_voxels.data[voxel_index].position & PROCESS_STATIC_PENDING_BIT) && true) {
-		return;
-	}
 #else
 	vec3 emission = rgbe_decode(process_voxels.data[voxel_index].emission);
 #endif

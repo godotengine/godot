@@ -3315,7 +3315,7 @@ void RenderForwardClustered::_render_uv2(const PagedArray<RenderGeometryInstance
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
+void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization, const Transform3D *p_capture_frame) {
 	RENDER_TIMESTAMP("Render HDDAGI");
 
 	RD::get_singleton()->draw_command_begin_label("Render HDDAGI Voxel");
@@ -3377,6 +3377,11 @@ void RenderForwardClustered::_render_hddagi(Ref<RenderSceneBuffersRD> p_render_b
 		to_bounds.origin = p_bounds.position;
 		to_bounds.basis.scale(p_bounds.size);
 
+		scene_state.ubo.sdf_capture_axis = p_capture_frame ? i + 1 : 0;
+		if (p_capture_frame) {
+			scene_data.cam_transform = *p_capture_frame * scene_data.cam_transform;
+			to_bounds = *p_capture_frame * to_bounds;
+		}
 		RendererRD::MaterialStorage::store_transform(to_bounds.affine_inverse() * scene_data.cam_transform, scene_state.ubo.sdf_to_bounds);
 
 		scene_data.emissive_exposure_normalization = p_exposure_normalization;
@@ -4315,7 +4320,7 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
 
-void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) {
+void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform, const HDDAGIRigidInstances &p_rigid_instances, uint32_t p_visible_layers) {
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 	Ref<RendererRD::GI::HDDAGI> hddagi;
@@ -4371,6 +4376,7 @@ void RenderForwardClustered::hddagi_update(const Ref<RenderSceneBuffers> &p_rend
 		hddagi->update(p_environment, world_anchor, planar_world_forward, cascade_forward_offset);
 	}
 
+	hddagi->update_rigid_instances(p_rigid_instances, p_visible_layers);
 	hddagi->update_cascades();
 }
 
@@ -4383,55 +4389,37 @@ int RenderForwardClustered::hddagi_get_pending_region_count(const Ref<RenderScen
 	}
 	Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
 
-	int dirty_count = 0;
-	for (const RendererRD::GI::HDDAGI::Cascade &c : hddagi->cascades) {
-		if (c.dirty_regions == RendererRD::GI::HDDAGI::Cascade::DIRTY_ALL) {
-			dirty_count++;
-		} else {
-			for (int j = 0; j < 3; j++) {
-				if (c.dirty_regions[j] != 0) {
-					dirty_count++;
-				}
-			}
-		}
-	}
-
-	return dirty_count;
+	return hddagi->get_pending_region_count();
 }
 
-AABB RenderForwardClustered::hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
-	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
-	ERR_FAIL_COND_V(rb.is_null(), AABB());
-	Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
-	ERR_FAIL_COND_V(hddagi.is_null(), AABB());
-
-	Vector3i scroll;
-	Vector3i region_world;
-	int c = hddagi->get_pending_region_data(p_region, from, size, bounds, scroll, region_world);
-	ERR_FAIL_COND_V(c == -1, AABB());
-	return bounds;
-}
-
-uint32_t RenderForwardClustered::hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
+uint32_t RenderForwardClustered::hddagi_get_pending_region(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region, AABB &r_bounds, AABB &r_light_bounds) const {
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND_V(rb.is_null(), -1);
 	Ref<RendererRD::GI::HDDAGI> hddagi = rb->get_custom_data(RB_SCOPE_HDDAGI);
 	ERR_FAIL_COND_V(hddagi.is_null(), -1);
 
-	Vector3i scroll;
-	Vector3i region_world;
-	return hddagi->get_pending_region_data(p_region, from, size, bounds, scroll, region_world);
+	Vector3i from, size, scroll, region_world;
+	int level = hddagi->get_pending_region_data(p_region, from, size, r_bounds, scroll, region_world);
+	ERR_FAIL_COND_V(level < 0, -1);
+	r_light_bounds = r_bounds;
+	if (scroll == Vector3i()) {
+		const auto &cascade = hddagi->cascades[level];
+		const Vector3 cell = Vector3(1, 1.0 / hddagi->y_mult, 1) * cascade.cell_size;
+		r_light_bounds = AABB(Vector3(cascade.position - hddagi->cascade_size / 2) * cell, Vector3(hddagi->cascade_size) * cell);
+		Vector3i halo(2, 2, 2);
+		Vector3i lo = (from - halo).max(Vector3i());
+		Vector3i hi = (from + size + halo).min(hddagi->cascade_size);
+		Vector3i patch_from, patch_end;
+		RendererRD::HDDAGIRigidCache::get_patch_extent(lo, hi - lo, hddagi->cascade_size, patch_from, patch_end);
+		r_bounds.position += Vector3(patch_from - from) * cell;
+		r_bounds.size = Vector3(patch_end - patch_from) * cell;
+		r_bounds.grow_by(CMP_EPSILON * cell[cell.max_axis_index()]);
+	}
+	return level;
 }
 
 void RenderForwardClustered::GeometryInstanceForwardClustered::_mark_dirty() {
+	surface_revision++;
 	if (dirty_list_element.in_list()) {
 		return;
 	}

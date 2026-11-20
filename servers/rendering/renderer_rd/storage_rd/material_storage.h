@@ -300,6 +300,7 @@ private:
 		HashMap<StringName, Variant> params;
 		int32_t priority = 0;
 		RID next_pass;
+		uint64_t revision = 0;
 		SelfList<Material> update_element;
 
 		Dependency dependency;
@@ -312,6 +313,7 @@ private:
 	mutable RID_Owner<Material, true> material_owner;
 	Material *get_material(RID p_rid) { return material_owner.get_or_null(p_rid); }
 
+	uint64_t material_revision = 0;
 	SelfList<Material>::List material_update_list;
 	Mutex material_update_list_mutex;
 
@@ -319,6 +321,19 @@ private:
 
 public:
 	static MaterialStorage *get_singleton();
+	uint64_t get_material_revision() const { return material_revision; }
+	uint64_t material_get_revision(RID p_material) const {
+		uint64_t revision = 0;
+		while (p_material.is_valid()) {
+			const Material *material = material_owner.get_or_null(p_material);
+			if (!material) {
+				break;
+			}
+			revision = MAX(revision, material->revision);
+			p_material = material->next_pass;
+		}
+		return revision;
+	}
 
 	MaterialStorage();
 	virtual ~MaterialStorage();

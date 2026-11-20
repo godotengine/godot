@@ -2975,8 +2975,19 @@ void fragment_shader(in SceneData scene_data) {
 		// Compute normal bits. Lower 6 are inclusive axis facings, upper 26 are exclusive normal directions.
 		const int facing_direction_count = 26;
 
-		vec3 cam_normal = mat3(inv_view_matrix) * normalize(normal_interp);
-		vec3 cam_geom_normal = mat3(inv_view_matrix) * normalize(geometric_normal);
+		vec3 cam_normal = normalize(normal_interp);
+		vec3 cam_geom_normal = geometric_normal;
+		uint axis = implementation_data.sdf_capture_axis;
+		if (axis == 0u) {
+			cam_normal = mat3(inv_view_matrix) * cam_normal;
+			cam_geom_normal = mat3(inv_view_matrix) * cam_geom_normal;
+		} else if (axis == 1u) {
+			cam_normal = cam_normal.zxy;
+			cam_geom_normal = cam_geom_normal.zxy;
+		} else if (axis == 2u) {
+			cam_normal = cam_normal.yzx;
+			cam_geom_normal = cam_geom_normal.yzx;
+		}
 		if (gl_FrontFacing) {
 			cam_geom_normal = -cam_geom_normal;
 		}

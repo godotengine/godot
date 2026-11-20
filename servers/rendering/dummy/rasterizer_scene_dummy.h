@@ -110,10 +110,9 @@ public:
 
 	/* HDDAGI UPDATE */
 
-	void hddagi_update(const Ref<RenderSceneBuffers> &, RID, const Transform3D &) override {}
+	void hddagi_update(const Ref<RenderSceneBuffers> &, RID, const Transform3D &, const HDDAGIRigidInstances &, uint32_t) override {}
 	int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override { return 0; }
-	AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return AABB(); }
-	uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override { return 0; }
+	uint32_t hddagi_get_pending_region(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region, AABB &r_bounds, AABB &r_light_bounds) const override { return 0; }
 
 	/* SKY API */
 

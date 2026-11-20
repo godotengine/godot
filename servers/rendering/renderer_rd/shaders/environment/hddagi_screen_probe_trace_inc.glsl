@@ -268,6 +268,20 @@ bool load_probe_surface(ivec2 probe_position, out ivec2 r_screen_position, out f
 }
 #endif
 
+#ifdef MODE_SPECULAR_TRACE
+bool specular_ray_in_front_of_depth(vec3 view_position, float tolerance) {
+	vec4 clip = scene_data.projection[params.view_index] * vec4(view_position, 1.0);
+	if (clip.w <= 0.0 || clip.z < 0.0 || clip.z > clip.w || any(greaterThanEqual(abs(clip.xy), vec2(clip.w)))) {
+		return false;
+	}
+	ivec2 pixel = ivec2((clip.xy / clip.w * 0.5 + 0.5) * vec2(params.screen_size));
+	float depth = texelFetch(sampler2D(specular_depth_buffer, linear_sampler), pixel, 0).r;
+	float ray_depth = clip.z / clip.w;
+	float depth_per_meter = abs(scene_data.projection[params.view_index][2][2] - ray_depth * scene_data.projection[params.view_index][2][3]) / clip.w;
+	return ray_depth > depth + depth_per_meter * tolerance;
+}
+#endif
+
 bool trace_ray_hdda(vec3 ray_origin, vec3 ray_direction, int first_cascade, bool exclude_initial_cell, out ivec3 r_cell, out ivec3 r_side, out int r_cascade, out float r_time) {
 	ivec3 grid_size = hddagi.grid_size;
 	ivec3 forward = ivec3(greaterThan(ray_direction, vec3(0.0)));
@@ -457,6 +471,23 @@ bool trace_hddagi_radiance(ivec2 origin_position, float origin_depth, vec3 origi
 	}
 	vec3 ray_bias = hddagi_normal / dominant_normal;
 	start_cell += ray_bias * params.normal_bias;
+#ifdef MODE_SPECULAR_TRACE
+	vec3 rigid_offset = camera_basis * origin_view - params.specular_rigid_bounds.xyz;
+	if (params.specular_rigid_bounds.w > 0.0 && dot(rigid_offset, rigid_offset) <= params.specular_rigid_bounds.w && dot(origin_normal, ray_direction_view) > 0.0) {
+		float cell_size = 1.0 / hddagi.cascades[cascade].to_cell;
+		float step_size = cell_size / length(trace_direction_world * vec3(1.0, hddagi.y_mult, 1.0));
+		vec3 step_view = ray_direction_view * step_size;
+		float along = dot(ray_bias * params.normal_bias, ray_direction);
+		// Skip conservative receiver voxels only while the reflected segment is visibly in front of the depth buffer.
+		vec3 advanced = start_cell + ray_direction * 2.0;
+		if (all(greaterThanEqual(advanced, vec3(0.0))) && all(lessThan(advanced, vec3(hddagi.grid_size))) &&
+				specular_ray_in_front_of_depth(origin_view + step_view * (along + 0.5), 0.06 * step_size) &&
+				specular_ray_in_front_of_depth(origin_view + step_view * (along + 1.0), 0.06 * step_size) &&
+				specular_ray_in_front_of_depth(origin_view + step_view * (along + 2.0), 0.06 * step_size)) {
+			start_cell = advanced;
+		}
+	}
+#endif
 	ray_position = start_cell / hddagi.cascades[cascade].to_cell + hddagi.cascades[cascade].position;
 
 	ivec3 hit_cell;

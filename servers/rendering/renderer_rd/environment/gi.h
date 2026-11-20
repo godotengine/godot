@@ -34,6 +34,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/environment/renderer_gi.h"
 #include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/renderer_rd/environment/hddagi_rigid_cache.h"
 #include "servers/rendering/renderer_rd/environment/hddagi_screen_probe_svgf.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/shaders/environment/gi.glsl.gen.h"
@@ -344,7 +345,7 @@ private:
 			int occlusion_offset;
 
 			uint32_t history_mode;
-			uint32_t pad0;
+			uint32_t rigid_region;
 			int32_t upper_cascade;
 			uint32_t pad;
 		};
@@ -448,7 +449,8 @@ private:
 			int32_t probe_axis_size[3];
 			uint32_t dirty_dynamic_update;
 			uint32_t use_light_regions;
-			uint32_t pad[3];
+			uint32_t refresh_static;
+			uint32_t pad[2];
 		};
 
 		enum {
@@ -594,6 +596,7 @@ private:
 
 			float tuning[4];
 			float eye_offset_exposure[4];
+			float rigid_bounds[4];
 		};
 
 		HddagiScreenProbeShaderRD screen_probe;
@@ -754,6 +757,18 @@ public:
 			static const Vector3i DIRTY_ALL;
 			Vector3i dirty_regions; //(0,0,0 is not dirty, negative is refresh from the end, DIRTY_ALL is refresh all.
 
+			struct RigidRegion {
+				Vector3i from;
+				Vector3i end;
+			};
+			LocalVector<RigidRegion> pending_rigid_regions;
+			AABB pending_rigid_bounds;
+			LocalVector<RigidRegion> rigid_regions;
+			HDDAGIRigidCache::StaticPatch rigid_patches[HDDAGIRigidCache::PATCH_COUNT];
+			RID rigid_prefix;
+			Vector3i rigid_prefix_from;
+			Vector3i rigid_prefix_size;
+
 			RID light_process_buffer;
 			uint32_t light_capacity = 1;
 			uint32_t voxel_page_count = 0;
@@ -785,6 +800,12 @@ public:
 			float baked_exposure_normalization = 1.0;
 		};
 
+		struct CascadeBuffer {
+			Cascade::UBO cascades[MAX_CASCADES];
+			float rigid_min[4];
+			float rigid_max[4];
+		};
+
 		Vector3i cascade_size;
 
 		// access to our containers
@@ -806,6 +827,16 @@ public:
 		uint32_t light_capacity_render = 1;
 
 		void update_voxel_pages(int p_cascade, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const Vector3i &p_region_offset, const PagedArray<RenderGeometryInstance *> &p_instances);
+		RendererSceneRender::HDDAGIRigidInstances rigid_instances;
+		HDDAGIRigidCache rigid_cache;
+		AABB rigid_bounds;
+		AABB rigid_change_bounds;
+		AABB previous_rigid_change_bounds;
+		uint32_t rigid_cache_age = 0;
+		uint32_t next_rigid_cascade = 1;
+		void resize_light_staging(uint32_t p_capacity);
+		void clear_rigid_patches(Cascade &r_cascade);
+		void update_rigid_instances(const RendererSceneRender::HDDAGIRigidInstances &p_instances, uint32_t p_visible_layers);
 		RID region_version_data;
 
 		RID light_process_buffer_render;
@@ -841,6 +872,7 @@ public:
 		uint32_t sampling_cache_buffer_cascade_size = 0;
 
 		uint32_t update_frame = 0;
+		uint32_t probe_frame = 0;
 		uint32_t frames_to_converge = 6;
 		bool probe_history_ema = false;
 

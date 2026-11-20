@@ -47,6 +47,7 @@ public:
 	enum {
 		MAX_DIRECTIONAL_LIGHTS = 8,
 		MAX_DIRECTIONAL_LIGHT_CASCADES = 4,
+		MAX_HDDAGI_RIGID_REGIONS = 4,
 		MAX_RENDER_VIEWS = 2
 	};
 
@@ -67,10 +68,17 @@ public:
 
 	/* HDDAGI UPDATE */
 
-	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform) = 0;
+	struct HDDAGIRigidInstance {
+		RenderGeometryInstance *geometry;
+		AABB bounds;
+		uint64_t version;
+		uint32_t layers;
+	};
+	using HDDAGIRigidInstances = HashMap<RID, HDDAGIRigidInstance>;
+
+	virtual void hddagi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Transform3D &p_camera_transform, const HDDAGIRigidInstances &p_rigid_instances, uint32_t p_visible_layers) = 0;
 	virtual int hddagi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const = 0;
-	virtual AABB hddagi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
-	virtual uint32_t hddagi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const = 0;
+	virtual uint32_t hddagi_get_pending_region(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region, AABB &r_bounds, AABB &r_light_bounds) const = 0;
 
 	/* SKY API */
 

@@ -143,9 +143,9 @@ layout(rgba8_snorm, set = 0, binding = 5) uniform restrict writeonly image3D dst
 
 #ifdef MODE_OCCLUSION
 
-#define REGION_THREADS (REGION_SIZE * REGION_SIZE)
-
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+#define OCC_PLANE (PROBE_CELLS * PROBE_CELLS)
+#define OCC_VOLUME (OCC_PLANE * PROBE_CELLS)
+layout(local_size_x = 4 * OCC_PLANE, local_size_y = 1, local_size_z = 1) in;
 
 layout(r32ui, set = 0, binding = 3) uniform restrict readonly uimage3D src_normal_bits;
 #ifdef HDDAGI_RGBA8_OCCLUSION
@@ -154,38 +154,8 @@ layout(rgba8, set = 0, binding = 4) uniform restrict writeonly image3D dst_occlu
 layout(r16ui, set = 0, binding = 4) uniform restrict writeonly uimage3D dst_occlusion;
 #endif
 
-shared float occlusion[REGION_SIZE * REGION_SIZE * REGION_SIZE * 4]; // 4096
-shared uint bit_normals[REGION_SIZE * REGION_SIZE * REGION_SIZE]; // 2048
-shared uint solid_cell_list[REGION_SIZE * REGION_SIZE * REGION_SIZE]; // 2048
-shared uint solid_cell_count;
-
-void set_occlusion(ivec3 p_pos, int p_layer, float p_occlusion) {
-	int occ_pos = p_pos.z * (REGION_SIZE * REGION_SIZE) + p_pos.y * REGION_SIZE + p_pos.x;
-	occlusion[occ_pos * 4 + p_layer] = p_occlusion;
-}
-
-float get_occlusion(ivec3 p_pos, int p_layer) {
-	int occ_pos = p_pos.z * (REGION_SIZE * REGION_SIZE) + p_pos.y * REGION_SIZE + p_pos.x;
-	return occlusion[occ_pos * 4 + p_layer];
-}
-
-void set_bit_normal(ivec3 p_pos, uint p_normal) {
-	int occ_pos = p_pos.z * (REGION_SIZE * REGION_SIZE) + p_pos.y * REGION_SIZE + p_pos.x;
-	bit_normals[occ_pos] = p_normal;
-}
-
-uint get_bit_normal(ivec3 p_pos) {
-	int occ_pos = p_pos.z * (REGION_SIZE * REGION_SIZE) + p_pos.y * REGION_SIZE + p_pos.x;
-	return bit_normals[occ_pos];
-}
-
-const int PROBE_LOOKUP_DATA_SIZE = LIGHTPROBE_OCT_SIZE == 4 ? 164 : (LIGHTPROBE_OCT_SIZE == 5 ? 424 : 712);
-layout(set = 0, binding = 5, std430) restrict readonly buffer OcclusionLookup {
-	uint probe_lookup_data[PROBE_LOOKUP_DATA_SIZE];
-	uvec2 group_size_offset[11];
-	uint group_pos[256];
-}
-occlusion_lookup;
+shared float occlusion[OCC_VOLUME * 4];
+shared uint bit_normals[OCC_VOLUME];
 #endif
 
 #ifdef MODE_LIGHTPROBE_NEIGHBOURS
@@ -257,7 +227,7 @@ layout(push_constant, std430) uniform Params {
 	int occlusion_offset;
 
 	uint history_mode;
-	uint pad0;
+	uint rigid_region;
 	int upper_cascade;
 	uint pad2;
 }
@@ -404,7 +374,7 @@ void main() {
 	}
 	ivec3 world_cell = (texel - 1) & (half_grid - 1);
 	ivec3 local_cell = (world_cell - params.region_world_pos * (PROBE_CELLS / 2)) & (half_grid - 1);
-	bool partial_update = any(notEqual(params.scroll, ivec3(0)));
+	bool partial_update = params.rigid_region != 0u || any(notEqual(params.scroll, ivec3(0)));
 	if (partial_update) {
 		local_cell = ivec3(gl_GlobalInvocationID) + params.offset;
 		if (any(greaterThanEqual(local_cell, params.limit))) {
@@ -526,6 +496,9 @@ void main() {
 	if (thread_active) {
 		src_pos = (ivec3(src_process_voxels.data[src_index].position) >> ivec3(0, 7, 14)) & ivec3(0x7F);
 		inside_area = all(greaterThanEqual(src_pos, params.offset)) && all(lessThan(src_pos, params.limit));
+		if (params.rigid_region != 0u) {
+			inside_area = !inside_area;
+		}
 
 		if (!inside_area) {
 			ivec3 light_pos = src_pos + params.scroll;
@@ -766,6 +739,12 @@ void main() {
 #ifdef MODE_LIGHTPROBE_GEOMETRY_PROXIMITY
 
 	ivec3 probe = ivec3(gl_GlobalInvocationID.xyz);
+	if (params.rigid_region != 0u) {
+		probe += params.offset / REGION_SIZE;
+		if (any(greaterThan(probe, params.limit / REGION_SIZE))) {
+			return;
+		}
+	}
 
 	if (any(greaterThanEqual(probe, params.probe_axis_size))) {
 		return;
@@ -838,331 +817,89 @@ void main() {
 
 #ifdef MODE_OCCLUSION
 
-	// when x+y+z = step you do what you have to do.
-	// read from x-1, y-1, z-1
-	// If the main base voxel is occluded, we should try to see if it passes through?
-
-	int invocation_idx = int(gl_LocalInvocationID.x);
-	ivec3 workgroup = ivec3(gl_WorkGroupID.xyz);
-
-	if (invocation_idx == 0) {
-		solid_cell_count = 0;
+	int thread = int(gl_LocalInvocationIndex);
+	int corner = thread / OCC_PLANE;
+	int lane = thread % OCC_PLANE;
+	int x = lane % PROBE_CELLS;
+	int y = lane / PROBE_CELLS;
+	ivec3 workgroup = ivec3(gl_WorkGroupID);
+	ivec3 region = params.region_world_pos + params.offset / REGION_SIZE + workgroup;
+	ivec3 sign_bits = ((ivec3(corner + params.occlusion_offset) >> ivec3(0, 1, 2)) + region) & 1;
+	ivec3 flip = (1 - sign_bits) * (PROBE_CELLS - 1);
+	int mirror = flip.x + PROBE_CELLS * flip.y + OCC_PLANE * flip.z;
+	int base = corner * OCC_VOLUME;
+	ivec3 origin = params.offset + workgroup * PROBE_CELLS;
+	for (int p = thread; p < OCC_VOLUME; p += 4 * OCC_PLANE) {
+		bit_normals[p] = imageLoad(src_normal_bits, origin + ivec3(p % PROBE_CELLS, p / PROBE_CELLS % PROBE_CELLS, p / OCC_PLANE)).r;
 	}
-
-	groupMemoryBarrier();
 	barrier();
 
-	//ivec3 local_pos = ivec3(invocation_idx % PROBE_CELLS, (invocation_idx % (PROBE_CELLS * PROBE_CELLS)) / PROBE_CELLS, invocation_idx / (PROBE_CELLS * PROBE_CELLS));
-	int cells_load_total = PROBE_CELLS * PROBE_CELLS * PROBE_CELLS;
-	int group_total = 64;
-
-	{
-		int load_from = invocation_idx * cells_load_total / group_total;
-		int load_to = (invocation_idx + 1) * cells_load_total / group_total;
-
-		for (int i = load_from; i < load_to; i++) {
-			ivec3 load_pos;
-
-			load_pos.z = i / (PROBE_CELLS * PROBE_CELLS);
-			load_pos.y = (i / PROBE_CELLS) % PROBE_CELLS;
-			load_pos.x = i % PROBE_CELLS;
-
-			ivec3 tex_load_pos = load_pos + ivec3(workgroup.xyz * PROBE_CELLS) + params.offset;
-			uint n = imageLoad(src_normal_bits, tex_load_pos).r;
-			set_bit_normal(load_pos, n);
-
-			if (n != 0) {
-				uint index = atomicAdd(solid_cell_count, 1);
-				solid_cell_list[index] = uint(load_pos.x | (load_pos.y << 7) | (load_pos.z << 14));
-			}
-		}
-	}
-
-	groupMemoryBarrier();
-	barrier();
-
-	//process occlusion
-
-#define OCC_STEPS (PROBE_CELLS * 3 - 2)
-#define OCC_HALF_STEPS (OCC_STEPS / 2)
-
-	int probe_offset = params.occlusion_offset;
-
-	ivec3 base_world_region = params.region_world_pos + (params.offset / REGION_SIZE) + workgroup;
-
-	for (int step = 0; step < OCC_STEPS; step++) {
-		bool shrink = step >= OCC_HALF_STEPS;
-		int occ_step = shrink ? OCC_HALF_STEPS - (step - OCC_HALF_STEPS) - 1 : step;
-
-		if (invocation_idx < occlusion_lookup.group_size_offset[occ_step].x) {
-			uint pv = occlusion_lookup.group_pos[occlusion_lookup.group_size_offset[occ_step].y + invocation_idx];
-
-			// Position in the occlusion volume.
-			// This is an optimized version of the algorithm.
-			// The idea is that you only process when x+y+z == step.
-			// As such, this is what proc_abs represents (unpacks).
-
-			ivec3 proc_abs = (ivec3(int(pv)) >> ivec3(0, 8, 16)) & ivec3(0xFF);
-
-			if (shrink) {
-				proc_abs = ivec3(PROBE_CELLS) - proc_abs - ivec3(1);
-			}
-
-			for (int i = 0; i < 4; i++) {
-				// Bits to indicate where the probe starts and the direction it spreads to.
-				ivec3 bits = (((ivec3(i + probe_offset) >> ivec3(0, 1, 2)) + base_world_region) & ivec3(1, 1, 1));
-				ivec3 proc_sign = bits * 2 - 1;
-
-				// Offset depends on the direction we go (probe we scan).
-				ivec3 offset = ivec3(PROBE_CELLS - 1) * (ivec3(1) - bits) + proc_abs * proc_sign;
-
-				float occ;
-
-				uint facing = get_bit_normal(offset);
-
-				if (facing != 0) { //solid
-					occ = 0.0;
-				} else if (step == 0) {
-					occ = 1.0;
-				} else {
-					ivec3 read_dir = -proc_sign;
-
-					float avg = 0.0;
-					occ = 0.0;
-
-					ivec3 read_x = offset + ivec3(read_dir.x, 0, 0);
-					ivec3 read_y = offset + ivec3(0, read_dir.y, 0);
-					ivec3 read_z = offset + ivec3(0, 0, read_dir.z);
-
-					if (all(greaterThanEqual(read_x, ivec3(0))) && all(lessThan(read_x, ivec3(PROBE_CELLS)))) {
-						uint facing_x = get_bit_normal(read_x);
-						if (facing_x == 0) {
-							occ += get_occlusion(read_x, i);
-						}
-						avg += 1.0;
-					}
-
-					if (all(greaterThanEqual(read_y, ivec3(0))) && all(lessThan(read_y, ivec3(PROBE_CELLS)))) {
-						uint facing_y = get_bit_normal(read_y);
-						if (facing_y == 0) {
-							occ += get_occlusion(read_y, i);
-						}
-						avg += 1.0;
-					}
-
-					if (all(greaterThanEqual(read_z, ivec3(0))) && all(lessThan(read_z, ivec3(PROBE_CELLS)))) {
-						uint facing_z = get_bit_normal(read_z);
-						if (facing_z == 0) {
-							occ += get_occlusion(read_z, i);
-						}
-						avg += 1.0;
-					}
-
-					if (avg > 0.0) {
-						occ /= avg;
-					}
+	// Each plane of lanes sweeps one corner in the same coordinate order.
+	for (int step = 0; step <= 3 * (PROBE_CELLS - 1); step++) {
+		int z = step - x - y;
+		if (z >= 0 && z < PROBE_CELLS) {
+			int p = lane + z * OCC_PLANE;
+			float weight = 0.0;
+			if (bit_normals[p ^ mirror] == 0u) {
+				float sum = 0.0;
+				if (x > 0) {
+					sum += occlusion[base + p - 1];
 				}
-
-				set_occlusion(offset, i, occ);
+				if (y > 0) {
+					sum += occlusion[base + p - PROBE_CELLS];
+				}
+				if (z > 0) {
+					sum += occlusion[base + p - OCC_PLANE];
+				}
+				weight = step == 0 ? 1.0 : sum / float(int(x > 0) + int(y > 0) + int(z > 0));
 			}
+			occlusion[base + p] = weight;
 		}
-
-		groupMemoryBarrier();
 		barrier();
 	}
 
-	//bias solid voxels away
-
-	int cell_from = invocation_idx * int(solid_cell_count) / group_total;
-	int cell_to = (invocation_idx + 1) * int(solid_cell_count) / group_total;
-
-	for (int cell_i = cell_from; cell_i < cell_to; cell_i++) {
-		ivec3 offset = (ivec3(solid_cell_list[cell_i]) >> ivec3(0, 7, 14)) & (0x7F);
-
-		uint facing = get_bit_normal(offset);
-
-		for (int i = 0; i < 4; i++) {
-			ivec3 bits = (((ivec3(i + probe_offset) >> ivec3(0, 1, 2)) + base_world_region) & ivec3(1, 1, 1));
-			ivec3 proc_sign = bits * 2 - 1;
-			ivec3 read_dir = -proc_sign;
-
-			//only work on solids
-
-			float avg = 0.0;
-			float occ = 0.0;
-
-			ivec3 read_dir_x = ivec3(read_dir.x, 0, 0);
-			ivec3 read_dir_y = ivec3(0, read_dir.y, 0);
-			ivec3 read_dir_z = ivec3(0, 0, read_dir.z);
-			//solid
-
-			uvec3 facing_neg = (uvec3(facing) >> uvec3(0, 2, 4)) & uvec3(1, 1, 1);
-			uvec3 facing_pos = (uvec3(facing) >> uvec3(1, 3, 5)) & uvec3(1, 1, 1);
-
-			bvec3 read_valid = bvec3(mix(facing_neg, facing_pos, greaterThan(read_dir, ivec3(0))));
-
-			read_valid = mix(read_valid, bvec3(false), lessThan(offset + read_dir, ivec3(0)));
-			read_valid = mix(read_valid, bvec3(false), greaterThanEqual(offset + read_dir, ivec3(PROBE_CELLS)));
-
-			//sides
-			if (read_valid.x) {
-				ivec3 read_offset = offset + read_dir_x;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
+	uvec3 toward = uvec3(1u, 4u, 16u) << uvec3(1 - sign_bits);
+	uvec3 away = uvec3(1u, 4u, 16u) << uvec3(sign_bits);
+	float result[PROBE_CELLS];
+	for (int z = 0; z < PROBE_CELLS; z++) {
+		int p = lane + z * OCC_PLANE;
+		uint facing = bit_normals[p ^ mirror];
+		int axes = int(x > 0) | (int(y > 0) << 1) | (int(z > 0) << 2);
+		float value = occlusion[base + p];
+		if (facing != 0u) {
+			axes &= int((facing & toward.x) != 0u) | (int((facing & toward.y) != 0u) << 1) | (int((facing & toward.z) != 0u) << 2);
+			float sum = 0.0;
+			int count = 0;
+			for (int subset = 1; subset < 8; subset++) {
+				if ((axes & subset) == subset) {
+					int delta = (subset & 1) + ((subset >> 1) & 1) * PROBE_CELLS + ((subset >> 2) & 1) * OCC_PLANE;
+					if (bit_normals[(p - delta) ^ mirror] == 0u) {
+						sum += occlusion[base + p - delta];
+						count++;
+					}
 				}
 			}
-
-			if (read_valid.y) {
-				ivec3 read_offset = offset + read_dir_y;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
+			value = sum / float(max(count, 1));
+		} else {
+			uint nx = x > 0 ? bit_normals[(p - 1) ^ mirror] : 0u;
+			uint ny = y > 0 ? bit_normals[(p - PROBE_CELLS) ^ mirror] : 0u;
+			uint nz = z > 0 ? bit_normals[(p - OCC_PLANE) ^ mirror] : 0u;
+			int count = int(nx != 0u) + int(ny != 0u) + int(nz != 0u);
+			int visible = int((nx & away.x) != 0u) + int((ny & away.y) != 0u) + int((nz & away.z) != 0u);
+			if (count != 0) {
+				value *= float(visible) / float(count);
 			}
-
-			if (read_valid.z) {
-				ivec3 read_offset = offset + read_dir_z;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
-			}
-
-			//adjacents
-
-			if (all(read_valid.yz)) {
-				ivec3 read_offset = offset + read_dir_y + read_dir_z;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
-			}
-
-			if (all(read_valid.xz)) {
-				ivec3 read_offset = offset + read_dir_x + read_dir_z;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
-			}
-
-			if (all(read_valid.xy)) {
-				ivec3 read_offset = offset + read_dir_x + read_dir_y;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
-			}
-
-			//diagonal
-
-			if (all(read_valid)) {
-				ivec3 read_offset = offset + read_dir;
-				uint f = get_bit_normal(read_offset);
-				if (f == 0) {
-					occ += get_occlusion(read_offset, i);
-					avg += 1.0;
-				}
-			}
-
-			if (avg > 0.0) {
-				occ /= avg;
-			}
-
-			set_occlusion(offset, i, occ);
 		}
+		result[z] = value;
 	}
 
-	groupMemoryBarrier();
 	barrier();
-
-	// Darken backfaces
-	cell_from = invocation_idx * cells_load_total / group_total;
-	cell_to = (invocation_idx + 1) * cells_load_total / group_total;
-
-	for (int cell_i = cell_from; cell_i < cell_to; cell_i++) {
-		ivec3 offset;
-		offset.z = cell_i / (PROBE_CELLS * PROBE_CELLS);
-		offset.y = (cell_i / PROBE_CELLS) % PROBE_CELLS;
-		offset.x = cell_i % PROBE_CELLS;
-
-		uint facing = get_bit_normal(offset);
-
-		if (facing != 0) {
-			continue;
-		}
-
-		for (int i = 0; i < 4; i++) {
-			ivec3 bits = (((ivec3(i + probe_offset) >> ivec3(0, 1, 2)) + base_world_region) & ivec3(1, 1, 1));
-			ivec3 proc_sign = bits * 2 - 1;
-			ivec3 read_dir = -proc_sign;
-
-			ivec3 read_dir_x = ivec3(read_dir.x, 0, 0);
-			ivec3 read_dir_y = ivec3(0, read_dir.y, 0);
-			ivec3 read_dir_z = ivec3(0, 0, read_dir.z);
-
-			//solid, positive axis is odd bits, negative even.
-			uvec3 read_mask = mix(uvec3(2, 8, 32), uvec3(1, 4, 16), greaterThan(read_dir, ivec3(0))); //match positive with negative normals
-
-			bvec3 read_valid = bvec3(true);
-			read_valid = mix(read_valid, bvec3(false), lessThan(offset + read_dir, ivec3(0)));
-			read_valid = mix(read_valid, bvec3(false), greaterThanEqual(offset + read_dir, ivec3(PROBE_CELLS)));
-
-			float visible = 0.0;
-			float occlude_total = 0.0;
-
-			if (read_valid.x) {
-				uint x_mask = get_bit_normal(offset + read_dir_x);
-				if (x_mask != 0) {
-					occlude_total += 1.0;
-					if (bool(x_mask & read_mask.x)) {
-						visible += 1.0;
-					}
-				}
-			}
-
-			if (read_valid.y) {
-				uint y_mask = get_bit_normal(offset + read_dir_y);
-				if (y_mask != 0) {
-					occlude_total += 1.0;
-					if (bool(y_mask & read_mask.y)) {
-						visible += 1.0;
-					}
-				}
-			}
-
-			if (read_valid.z) {
-				uint z_mask = get_bit_normal(offset + read_dir_z);
-				if (z_mask != 0) {
-					occlude_total += 1.0;
-					if (bool(z_mask & read_mask.z)) {
-						visible += 1.0;
-					}
-				}
-			}
-
-			if (occlude_total > 0.0) {
-				float occ = get_occlusion(offset, i);
-				occ *= visible / occlude_total;
-				set_occlusion(offset, i, occ);
-			}
-		}
+	for (int z = 0; z < PROBE_CELLS; z++) {
+		occlusion[base + ((lane + z * OCC_PLANE) ^ mirror)] = result[z];
 	}
-
-	// Store in occlusion texture
-
-	groupMemoryBarrier();
 	barrier();
-
-	cell_from = invocation_idx * cells_load_total / group_total;
-	cell_to = (invocation_idx + 1) * cells_load_total / group_total;
+	int cell_from = thread * (PROBE_CELLS / 4);
+	int cell_to = cell_from + PROBE_CELLS / 4;
 
 	for (int cell_i = cell_from; cell_i < cell_to; cell_i++) {
 		ivec3 cell_pos;
@@ -1181,7 +918,7 @@ void main() {
 		uint enc_occlusion = 0; // 16 bits RGBA4444
 
 		for (int i = 0; i < 4; i++) {
-			float occ = get_occlusion(cell_pos, i);
+			float occ = occlusion[i * OCC_VOLUME + cell_i];
 			enc_occlusion |= uint(clamp(occ * 0xF, 0, 0xF)) << (i * 4);
 		}
 

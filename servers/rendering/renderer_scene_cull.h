@@ -55,7 +55,7 @@ public:
 
 	enum {
 		HDDAGI_MAX_CASCADES = 8,
-		HDDAGI_MAX_REGIONS_PER_CASCADE = 3,
+		HDDAGI_MAX_REGIONS_PER_CASCADE = 3 + RendererSceneRender::MAX_HDDAGI_RIGID_REGIONS,
 		MAX_INSTANCE_PAIRS = 32,
 		MAX_UPDATE_SHADOWS = 512
 	};
@@ -284,6 +284,7 @@ public:
 			FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN = (1 << 22),
 			FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY = (1 << 23),
 			FLAG_IGNORE_ALL_CULLING = (1 << 24),
+			FLAG_HDDAGI_RIGID = (1 << 25),
 		};
 
 		uint32_t flags = 0;
@@ -356,6 +357,7 @@ public:
 		SelfList<Instance>::List instances;
 
 		LocalVector<RID> dynamic_lights;
+		RendererSceneRender::HDDAGIRigidInstances hddagi_rigid_instances;
 
 		PagedArray<InstanceBounds> instance_aabbs;
 		PagedArray<InstanceData> instance_data;
@@ -436,6 +438,7 @@ public:
 		bool visible : 1;
 		bool baked_light : 1; // This flag is only to know if it actually did use baked light.
 		bool dynamic_gi : 1; // Same as above for dynamic objects.
+		bool hddagi_rigid : 1;
 		bool redraw_if_visible : 1;
 
 		Instance *lightmap = nullptr;
@@ -577,6 +580,7 @@ public:
 			layer_mask = 1;
 			baked_light = true;
 			dynamic_gi = false;
+			hddagi_rigid = false;
 			redraw_if_visible = false;
 
 			lightmap_slice_index = 0;
@@ -1114,10 +1118,11 @@ public:
 		uint32_t shadow_count;
 
 		struct HDDAGI {
-			AABB region_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; // Up to three regions per cascade.
-			uint32_t region_cascade[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE]; // Up to three regions per cascade.
+			AABB region_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE];
+			uint32_t region_cascade[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE];
 			uint32_t region_count = 0;
 
+			AABB region_light_aabb[HDDAGI_MAX_CASCADES * HDDAGI_MAX_REGIONS_PER_CASCADE];
 			uint32_t cascade_light_index[HDDAGI_MAX_CASCADES];
 			uint32_t cascade_light_count = 0;
 

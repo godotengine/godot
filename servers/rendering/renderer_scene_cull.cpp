@@ -1325,6 +1325,13 @@ void RendererSceneCull::instance_geometry_set_flag(RID p_instance, RSE::Instance
 			}
 
 		} break;
+		case RSE::INSTANCE_FLAG_HDDAGI_RIGID: {
+			if (instance->hddagi_rigid != p_enabled) {
+				_unpair_instance(instance);
+				instance->hddagi_rigid = p_enabled;
+				_instance_queue_update(instance, true);
+			}
+		} break;
 		case RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE: {
 			instance->redraw_if_visible = p_enabled;
 
@@ -1606,6 +1613,9 @@ void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, c
 	ERR_FAIL_NULL(instance);
 
 	instance->instance_uniforms.set(instance->self, p_parameter, p_value);
+	if (instance->base_data && ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK)) {
+		static_cast<InstanceGeometryData *>(instance->base_data)->geometry_instance->surface_revision++;
+	}
 }
 
 Variant RendererSceneCull::instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const {
@@ -1775,8 +1785,15 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 
 	// note: we had to remove is equal approx check here, it meant that det == 0.000004 won't work, which is the case for some of our scenes.
 	if (p_instance->scenario == nullptr || !p_instance->visible || instance_xform->basis.determinant() == 0) {
+		if (p_instance->hddagi_rigid && p_instance->scenario) {
+			p_instance->scenario->hddagi_rigid_instances.erase(p_instance->self);
+		}
 		p_instance->prev_transformed_aabb = p_instance->transformed_aabb;
 		return;
+	}
+
+	if (p_instance->hddagi_rigid && p_instance->base_type == RSE::INSTANCE_MESH) {
+		p_instance->scenario->hddagi_rigid_instances.insert(p_instance->self, { static_cast<InstanceGeometryData *>(p_instance->base_data)->geometry_instance, new_aabb, p_instance->version, p_instance->layer_mask });
 	}
 
 	//quantize to improve moving object performance
@@ -1868,6 +1885,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 			idata.flags |= InstanceData::FLAG_REDRAW_IF_VISIBLE;
 		}
 		// dirty flags should not be set here, since no pairing has happened
+		if (p_instance->hddagi_rigid && p_instance->base_type == RSE::INSTANCE_MESH) {
+			idata.flags |= InstanceData::FLAG_HDDAGI_RIGID;
+		}
 		if (p_instance->baked_light) {
 			idata.flags |= InstanceData::FLAG_USES_BAKED_LIGHT;
 		}
@@ -1952,6 +1972,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 }
 
 void RendererSceneCull::_unpair_instance(Instance *p_instance) {
+	if (p_instance->hddagi_rigid && p_instance->scenario) {
+		p_instance->scenario->hddagi_rigid_instances.erase(p_instance->self);
+	}
 	if (!p_instance->indexer_id.is_valid()) {
 		return; //nothing to do
 	}
@@ -2926,9 +2949,6 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
 
-	uint32_t hddagi_last_light_index = 0xFFFFFFFF;
-	uint32_t hddagi_last_light_cascade = 0xFFFFFFFF;
-
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
 	// Minimize allocations when picking the most relevant lights per mesh.
@@ -3296,21 +3316,23 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #undef VIS_CHECK
 #undef OCCLUSION_CULLED
 
-		for (uint32_t j = 0; j < cull_data.cull->hddagi.region_count; j++) {
-			if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->hddagi.region_aabb[j])) {
-				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
-
-				if (base_type == RSE::INSTANCE_LIGHT) {
-					InstanceLightData *instance_light = (InstanceLightData *)idata.instance->base_data;
-					if (instance_light->bake_mode == RSE::LIGHT_BAKE_STATIC && cull_data.cull->hddagi.region_cascade[j] <= instance_light->max_hddagi_cascade) {
-						if (hddagi_last_light_index != i || hddagi_last_light_cascade != cull_data.cull->hddagi.region_cascade[j]) {
-							hddagi_last_light_index = i;
-							hddagi_last_light_cascade = cull_data.cull->hddagi.region_cascade[j];
-							cull_result.hddagi_cascade_lights[hddagi_last_light_cascade].push_back(instance_light->instance);
+		if (cull_data.cull->hddagi.region_count > 0) {
+			uint32_t type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
+			if (type == RSE::INSTANCE_LIGHT) {
+				const InstanceLightData *light = static_cast<const InstanceLightData *>(idata.instance->base_data);
+				if (light->bake_mode == RSE::LIGHT_BAKE_STATIC) {
+					uint32_t last_cascade = UINT32_MAX;
+					for (uint32_t j = 0; j < cull_data.cull->hddagi.region_count; j++) {
+						uint32_t cascade = cull_data.cull->hddagi.region_cascade[j];
+						if (cascade != last_cascade && cascade <= light->max_hddagi_cascade && cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->hddagi.region_light_aabb[j])) {
+							last_cascade = cascade;
+							cull_result.hddagi_cascade_lights[cascade].push_back(light->instance);
 						}
 					}
-				} else if ((1 << base_type) & RSE::INSTANCE_GEOMETRY_MASK) {
-					if ((idata.flags & InstanceData::FLAG_USES_BAKED_LIGHT) && (cull_data.visible_layers & idata.layer_mask)) {
+				}
+			} else if ((idata.flags & (InstanceData::FLAG_USES_BAKED_LIGHT | InstanceData::FLAG_HDDAGI_RIGID)) && ((1 << type) & RSE::INSTANCE_GEOMETRY_MASK) && (cull_data.visible_layers & idata.layer_mask)) {
+				for (uint32_t j = 0; j < cull_data.cull->hddagi.region_count; j++) {
+					if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->hddagi.region_aabb[j])) {
 						cull_result.hddagi_region_geometry_instances[j].push_back(idata.instance_geometry);
 						mesh_visible = true;
 					}
@@ -3345,7 +3367,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	if (p_reflection_probe.is_null()) {
 		// No rendering happens here; this only updates HDDAGI coverage and requests dirty regions.
-		scene_render->hddagi_update(p_render_buffers, p_environment, p_camera_data->main_transform);
+		scene_render->hddagi_update(p_render_buffers, p_environment, p_camera_data->main_transform, scenario->hddagi_rigid_instances, p_visible_layers);
 	}
 
 	RENDER_TIMESTAMP("Update Visibility Dependencies");
@@ -3432,8 +3454,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			uint32_t pending_region_count = scene_render->hddagi_get_pending_region_count(p_render_buffers);
 
 			for (uint32_t i = 0; i < pending_region_count; i++) {
-				cull.hddagi.region_aabb[i] = scene_render->hddagi_get_pending_region_bounds(p_render_buffers, i);
-				uint32_t region_cascade = scene_render->hddagi_get_pending_region_cascade(p_render_buffers, i);
+				uint32_t region_cascade = scene_render->hddagi_get_pending_region(p_render_buffers, i, cull.hddagi.region_aabb[i], cull.hddagi.region_light_aabb[i]);
 				cull.hddagi.region_cascade[i] = region_cascade;
 
 				if (region_cascade != prev_cascade) {

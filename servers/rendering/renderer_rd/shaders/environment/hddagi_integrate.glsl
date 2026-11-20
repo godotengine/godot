@@ -72,6 +72,8 @@ struct CascadeData {
 
 layout(set = 0, binding = 13, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
+	vec4 rigid_min;
+	vec4 rigid_max;
 }
 cascades;
 
@@ -324,6 +326,25 @@ void main() {
 			if (region_version != version) {
 				cache_valid = false;
 				cache_invalidated_debug = (hit_cascade == params.cascade) ? vec3(0.0, 4.00, 0.0) : vec3(4.0, 0, 0.0);
+			}
+		}
+	}
+
+	if (cache_valid && cascades.rigid_min.w != 0.0) {
+		vec3 inv_dir = mix(vec3(-1.0), vec3(1.0), greaterThanEqual(ray_dir, vec3(0.0))) / max(abs(ray_dir), vec3(1e-8));
+		vec3 t0 = (cascades.rigid_min.xyz - ray_pos) * inv_dir;
+		vec3 t1 = (cascades.rigid_max.xyz - ray_pos) * inv_dir;
+		vec3 near_t = min(t0, t1);
+		vec3 far_t = max(t0, t1);
+		float entry = max(0.0, max(near_t.x, max(near_t.y, near_t.z)));
+		if (entry <= min(far_t.x, min(far_t.y, far_t.z))) {
+			if (hit) {
+				ivec3 local_cell = (hit_cell - cascades.data[hit_cascade].region_world_offset * REGION_SIZE) & (params.grid_size - 1);
+				float cell_size = 1.0 / cascades.data[hit_cascade].to_cell;
+				vec3 endpoint = cascades.data[hit_cascade].offset + (vec3(local_cell) + 0.5) * cell_size;
+				cache_valid = dot(endpoint - ray_pos, ray_dir) + 2.0 * cell_size < entry;
+			} else {
+				cache_valid = false;
 			}
 		}
 	}

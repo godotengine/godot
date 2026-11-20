@@ -6107,7 +6107,10 @@
 		<constant name="INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING" value="3" enum="InstanceFlags">
 			Always draw, even if the instance would be culled by occlusion culling. Does not affect view frustum culling.
 		</constant>
-		<constant name="INSTANCE_FLAG_MAX" value="4" enum="InstanceFlags">
+		<constant name="INSTANCE_FLAG_HDDAGI_RIGID" value="4" enum="InstanceFlags">
+			Updates the mesh in HDDAGI when the instance moves. See [constant GeometryInstance3D.GI_MODE_RIGID].
+		</constant>
+		<constant name="INSTANCE_FLAG_MAX" value="5" enum="InstanceFlags">
 			Represents the size of the [enum InstanceFlags] enum.
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">

@@ -509,6 +509,13 @@ void GI::process_hddagi_screen_probes(const RenderDataRD *p_render_data, const R
 		push_constant.sky_color[i] = screen_probe_sky_color[i];
 	}
 	HDDAGIShader::ScreenProbeSpecularPushConstant specular_push_constant = {};
+	if (specular_reflections && hddagi->rigid_bounds.has_surface()) {
+		Vector3 center = hddagi->rigid_bounds.get_center() - camera->cam_transform.origin;
+		specular_push_constant.rigid_bounds[0] = center.x;
+		specular_push_constant.rigid_bounds[1] = center.y;
+		specular_push_constant.rigid_bounds[2] = center.z;
+		specular_push_constant.rigid_bounds[3] = hddagi->rigid_bounds.size.length_squared() * 0.25f;
+	}
 	specular_push_constant.base = push_constant;
 	specular_push_constant.base.detail_trace_mip_count = hiz_available ? MIN(p_hiz_mip_count, 16u) : 0u;
 	specular_push_constant.tuning[0] = SCREEN_PROBE_SPECULAR_FULL_AUTHORITY_ROUGHNESS;
