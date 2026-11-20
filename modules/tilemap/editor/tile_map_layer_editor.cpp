@@ -4156,6 +4156,7 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 
 void TileMapLayerEditor::_tile_map_layer_changed() {
 	tile_map_layer_changed_needs_update = true;
+	invalid_cells_cache_dirty = true;
 }
 
 void TileMapLayerEditor::_tab_changed(int p_tab_id) {
@@ -4333,6 +4334,40 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	custom_overlay->queue_redraw();
 }
 
+void TileMapLayerEditor::_update_invalid_cells_cache(const TileMapLayer *p_layer) {
+	invalid_cells.clear();
+	Ref<TileSet> tile_set = p_layer->get_tile_set();
+	TypedArray<Vector2i> used_cells = p_layer->get_used_cells();
+	for (int i = 0; i < used_cells.size(); i++) {
+		Vector2i coords = used_cells[i];
+		int tile_source_id = p_layer->get_cell_source_id(coords);
+		if (tile_source_id < 0) {
+			continue;
+		}
+		Vector2i tile_atlas_coords = p_layer->get_cell_atlas_coords(coords);
+		int tile_alternative_tile = p_layer->get_cell_alternative_tile(coords);
+		TileSetSource *source = nullptr;
+		if (tile_set->has_source(tile_source_id)) {
+			source = *tile_set->get_source(tile_source_id);
+		}
+		if (source && source->has_tile(tile_atlas_coords) && source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
+			continue;
+		}
+
+		// Preserve the warning color generated from the tile's identifier.
+		Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
+		uint32_t hash = RandomPCG(to_hash.hash()).rand();
+		Color color = Color::from_hsv(
+				(float)((hash >> 24) & 0xFF) / 256.0,
+				Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
+				Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+				0.8);
+		invalid_cells.push_back({ coords, color });
+	}
+	invalid_cells_revision = p_layer->get_cell_data_revision();
+	invalid_cells_cache_dirty = false;
+}
+
 void TileMapLayerEditor::_draw_overlay() {
 	const TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer || !edited_layer->is_visible_in_tree()) {
@@ -4352,47 +4387,38 @@ void TileMapLayerEditor::_draw_overlay() {
 	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
 	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 	if (scale_fading > 0) {
+		if (invalid_cells_cache_dirty || invalid_cells_revision != edited_layer->get_cell_data_revision()) {
+			_update_invalid_cells_cache(edited_layer);
+		}
+
+		// Include partially visible tiles when culling the warning overlay.
+		Rect2 visible_rect = xform_inv.xform(Rect2(Vector2(), custom_overlay->get_size()));
+		visible_rect.position -= Vector2(tile_shape_size) / 2;
+		visible_rect.size += Vector2(tile_shape_size);
+
 		// Draw tiles with invalid IDs in the grid.
-		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
-		for (int i = 0; i < used_cells.size(); i++) {
-			Vector2i coords = used_cells[i];
-			int tile_source_id = edited_layer->get_cell_source_id(coords);
-			if (tile_source_id >= 0) {
-				Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
-				int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
-
-				TileSetSource *source = nullptr;
-				if (tile_set->has_source(tile_source_id)) {
-					source = *tile_set->get_source(tile_source_id);
-				}
-
-				if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
-					// Generate a random color from the hashed identifier of the tiles.
-					Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
-					uint32_t hash = RandomPCG(to_hash.hash()).rand();
-
-					Color color;
-					color = color.from_hsv(
-							(float)((hash >> 24) & 0xFF) / 256.0,
-							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
-							0.8 * scale_fading);
-
-					// Display the warning pattern.
-					Transform2D tile_xform;
-					tile_xform.set_origin(tile_set->map_to_local(coords));
-					tile_xform.set_scale(tile_shape_size);
-					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
-
-					// Draw the warning icon.
-					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
-					Vector2 icon_size;
-					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
-					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
-					Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-					custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
-				}
+		for (const InvalidCell &cell : invalid_cells) {
+			Vector2 tile_center = tile_set->map_to_local(cell.coords);
+			if (!visible_rect.has_point(tile_center)) {
+				continue;
 			}
+
+			Color color = cell.color;
+			color.a *= scale_fading;
+
+			// Display the warning pattern.
+			Transform2D tile_xform;
+			tile_xform.set_origin(tile_center);
+			tile_xform.set_scale(tile_shape_size);
+			tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
+
+			// Draw the warning icon.
+			Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
+			Vector2 icon_size;
+			icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
+			icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
+			Rect2 rect = Rect2(xform.xform(tile_center) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
+			custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
 		}
 
 		// Fading on the border.
@@ -4474,6 +4500,7 @@ void TileMapLayerEditor::edit(Object *p_edited) {
 	}
 
 	// Update the edited layer.
+	invalid_cells.clear();
 	TileMapLayer *new_layer = Object::cast_to<TileMapLayer>(p_edited);
 	if (new_layer) {
 		// Change the edited object.
