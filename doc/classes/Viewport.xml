@@ -672,7 +672,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 			Objects are displayed without lighting information and their textures replaced by normal mapping.
-			[b]Note:[/b] Only supported when using the Forward+ rendering method.
+			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_VOXEL_GI_ALBEDO" value="6" enum="DebugDraw">
 			Objects are displayed with only the albedo value from [VoxelGI]s. Requires at least one visible [VoxelGI] node that has been baked to have a visible effect.

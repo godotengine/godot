@@ -2451,6 +2451,11 @@ void main() {
 		// to 10-bit quantization.
 		frag_color.rgb += (dither.rgb - 0.5) / 1023.0;
 	}
+#ifndef UBERSHADER
+	if (sc_debug_draw_normal_buffer()) {
+		frag_color = hvec4(hvec3((normal * 0.5 + 0.5) / sc_luminance_multiplier()), alpha);
+	}
+#endif // !UBERSHADER
 
 #endif //MODE_MULTIPLE_RENDER_TARGETS
 
