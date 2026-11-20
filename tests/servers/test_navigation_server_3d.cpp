@@ -48,6 +48,8 @@ TEST_FORCE_LINK(test_navigation_server_3d)
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "tests/signal_watcher.h"
 
+#include <cfloat> // FLT_MAX
+
 namespace TestNavigationServer3D {
 
 // TODO: Find a more generic way to create `Callable` mocks.
@@ -851,6 +853,220 @@ TEST_SUITE("[Navigation3D]") {
 		source_path.write[6] = Vector3(2.0, 2.0, 5.0);
 		Vector<Vector3> simplified_path = NavigationServer3D::get_singleton()->simplify_path(source_path, simplify_epsilon);
 		CHECK_EQ(simplified_path.size(), 4);
+	}
+
+	TEST_CASE("[NavigationServer3D] Dijkstra pathfinding should prefer a lower-cost detour") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
+
+		LocalVector<RID> regions;
+
+		const auto add_rect_region = [&](const Rect2 &p_rect, real_t p_travel_cost) {
+			Ref<NavigationMesh> navigation_mesh;
+			navigation_mesh.instantiate();
+
+			Vector<Vector3> vertices;
+			vertices.push_back(Vector3(p_rect.position.x, 0.0, p_rect.position.y));
+			vertices.push_back(Vector3(p_rect.position.x + p_rect.size.x, 0.0, p_rect.position.y));
+			vertices.push_back(Vector3(p_rect.position.x + p_rect.size.x, 0.0, p_rect.position.y + p_rect.size.y));
+			vertices.push_back(Vector3(p_rect.position.x, 0.0, p_rect.position.y + p_rect.size.y));
+			navigation_mesh->set_vertices(vertices);
+
+			Vector<int> polygon;
+			polygon.push_back(0);
+			polygon.push_back(1);
+			polygon.push_back(2);
+			polygon.push_back(3);
+			navigation_mesh->add_polygon(polygon);
+
+			RID region = navigation_server->region_create();
+			navigation_server->region_set_map(region, map);
+			navigation_server->region_set_use_async_iterations(region, false);
+			navigation_server->region_set_travel_cost(region, p_travel_cost);
+			navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+			regions.push_back(region);
+		};
+
+		// The start region has zero travel cost, so reaching the far detour entrance is cheap.
+		add_rect_region(Rect2(0.0, 0.0, 10.0, 1010.0), 0.0);
+
+		// The direct corridor is geometrically close to the target, but costs more overall.
+		for (int i = 1; i <= 10; i++) {
+			add_rect_region(Rect2(i * 10.0, 0.0, 10.0, 10.0), 1.0);
+		}
+
+		// The detour starts far away from the target, misleading A*, but has a lower accumulated cost.
+		add_rect_region(Rect2(0.0, 1010.0, 10.0, 10.0), 1.0);
+		add_rect_region(Rect2(5.0, 1020.0, 105.0, 10.0), 0.0);
+		add_rect_region(Rect2(100.0, 10.0, 10.0, 1010.0), 0.0);
+
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+
+		const auto query_path = [&](NavigationPathQueryParameters3D::PathfindingAlgorithm p_pathfinding_algorithm) {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(5.0, 0.0, 5.0));
+			query_parameters->set_target_position(Vector3(105.0, 0.0, 5.0));
+			query_parameters->set_pathfinding_algorithm(p_pathfinding_algorithm);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_EDGECENTERED);
+
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			return query_result->get_path();
+		};
+
+		PackedVector3Array astar_path = query_path(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_ASTAR);
+		PackedVector3Array dijkstra_path = query_path(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+
+		REQUIRE_NE(astar_path.size(), 0);
+		REQUIRE_NE(dijkstra_path.size(), 0);
+
+		real_t astar_max_z = -FLT_MAX;
+		for (int i = 0; i < astar_path.size(); i++) {
+			astar_max_z = MAX(astar_max_z, astar_path[i].z);
+		}
+
+		real_t dijkstra_max_z = -FLT_MAX;
+		for (int i = 0; i < dijkstra_path.size(); i++) {
+			dijkstra_max_z = MAX(dijkstra_max_z, dijkstra_path[i].z);
+		}
+
+		CHECK_LT(astar_max_z, 100.0);
+		CHECK_GT(dijkstra_max_z, 1000.0);
+
+		for (RID region : regions) {
+			navigation_server->free_rid(region);
+		}
+		navigation_server->free_rid(map);
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+	}
+
+	TEST_CASE("[NavigationServer3D] Server should handle Dijkstra pathfinding algorithm") {
+		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
+
+		SUBCASE("Enum should be accessible and allow set/get") {
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+			CHECK_EQ(query_parameters->get_pathfinding_algorithm(), NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+		}
+
+		SUBCASE("Dijkstra path query should return valid path on simple map") {
+			Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+			Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+			Array arr;
+			arr.resize(RSE::ARRAY_MAX);
+			BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+			source_geometry->add_mesh_array(arr, Transform3D());
+			navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+			CHECK_NE(navigation_mesh->get_polygon_count(), 0);
+			CHECK_NE(navigation_mesh->get_vertices().size(), 0);
+
+			RID map = navigation_server->map_create();
+			RID region = navigation_server->region_create();
+			navigation_server->map_set_active(map, true);
+			navigation_server->map_set_use_async_iterations(map, false);
+			navigation_server->region_set_use_async_iterations(region, false);
+			navigation_server->region_set_map(region, map);
+			navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+			navigation_server->physics_process(0.0);
+
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(0, 0, 0));
+			query_parameters->set_target_position(Vector3(10, 0, 10));
+			query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+
+			navigation_server->free_rid(region);
+			navigation_server->free_rid(map);
+			navigation_server->physics_process(0.0);
+		}
+
+		SUBCASE("Dijkstra path query should respect path_search_max_polygons") {
+			Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+			Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+			Array arr;
+			arr.resize(RSE::ARRAY_MAX);
+			BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+			source_geometry->add_mesh_array(arr, Transform3D());
+			navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+			CHECK_NE(navigation_mesh->get_polygon_count(), 0);
+			CHECK_NE(navigation_mesh->get_vertices().size(), 0);
+
+			RID map = navigation_server->map_create();
+			RID region = navigation_server->region_create();
+			navigation_server->map_set_active(map, true);
+			navigation_server->map_set_use_async_iterations(map, false);
+			navigation_server->region_set_use_async_iterations(region, false);
+			navigation_server->region_set_map(region, map);
+			navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+			navigation_server->physics_process(0.0);
+
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(0, 0, 0));
+			query_parameters->set_target_position(Vector3(10, 0, 10));
+			query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			query_parameters->set_path_search_max_polygons(1);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			// With max polygons set to 1 the search will be severely limited.
+			// The path may be shorter or empty depending on polygon count.
+			CHECK_LE(query_result->get_path().size(), 2);
+
+			navigation_server->free_rid(region);
+			navigation_server->free_rid(map);
+			navigation_server->physics_process(0.0);
+		}
+
+		SUBCASE("Dijkstra path query should respect path_search_max_distance") {
+			Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+			Ref<NavigationMeshSourceGeometryData3D> source_geometry = memnew(NavigationMeshSourceGeometryData3D);
+
+			Array arr;
+			arr.resize(RSE::ARRAY_MAX);
+			BoxMesh::create_mesh_array(arr, Vector3(10.0, 0.001, 10.0));
+			source_geometry->add_mesh_array(arr, Transform3D());
+			navigation_server->bake_from_source_geometry_data(navigation_mesh, source_geometry, Callable());
+			CHECK_NE(navigation_mesh->get_polygon_count(), 0);
+			CHECK_NE(navigation_mesh->get_vertices().size(), 0);
+
+			RID map = navigation_server->map_create();
+			RID region = navigation_server->region_create();
+			navigation_server->map_set_active(map, true);
+			navigation_server->map_set_use_async_iterations(map, false);
+			navigation_server->region_set_use_async_iterations(region, false);
+			navigation_server->region_set_map(region, map);
+			navigation_server->region_set_navigation_mesh(region, navigation_mesh);
+			navigation_server->physics_process(0.0);
+
+			Ref<NavigationPathQueryParameters3D> query_parameters = memnew(NavigationPathQueryParameters3D);
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(0, 0, 0));
+			query_parameters->set_target_position(Vector3(10, 0, 10));
+			query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PATHFINDING_ALGORITHM_DIJKSTRA);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+			query_parameters->set_path_search_max_distance(0.1);
+			Ref<NavigationPathQueryResult3D> query_result = memnew(NavigationPathQueryResult3D);
+			navigation_server->query_path(query_parameters, query_result);
+			// With very small max distance, the search will be very limited.
+			CHECK_LE(query_result->get_path().size(), 2);
+
+			navigation_server->free_rid(region);
+			navigation_server->free_rid(map);
+			navigation_server->physics_process(0.0);
+		}
 	}
 }
 
