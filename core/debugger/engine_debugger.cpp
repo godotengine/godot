@@ -97,11 +97,10 @@ bool EngineDebugger::has_capture(const StringName &p_name) {
 	return captures.has(p_name);
 }
 
-Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured) {
-	r_captured = false;
-	ERR_FAIL_COND_V_MSG(!captures.has(p_name), ERR_UNCONFIGURED, vformat("Capture not registered: '%s'.", p_name));
+bool EngineDebugger::capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(!captures.has(p_name), false, vformat("Capture not registered: '%s'.", p_name));
 	const Capture &cap = captures[p_name];
-	return cap.capture(cap.data, p_msg, p_args, r_captured);
+	return cap.capture(cap.data, p_msg, p_args);
 }
 
 void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {

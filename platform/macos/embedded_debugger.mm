@@ -80,26 +80,24 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["ds_state"] = &EmbeddedDebugger::_msg_ds_state;
 }
 
-Error EmbeddedDebugger::_msg_window_size(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'window_size' message.");
+void EmbeddedDebugger::_msg_window_size(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'window_size' message.");
 	Size2i size = p_args[0];
 	ds->_window_set_size(size);
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_mouse_set_mode(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'mouse_set_mode' message.");
+void EmbeddedDebugger::_msg_mouse_set_mode(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'mouse_set_mode' message.");
 	DisplayServerEnums::MouseMode mode = p_args[0];
 	ds->mouse_set_mode(mode);
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_event(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'event' message.");
+void EmbeddedDebugger::_msg_event(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'event' message.");
 	Input *input = Input::get_singleton();
 	if (!input) {
 		// Ignore if we've received an event before the process has initialized.
-		return OK;
+		return;
 	}
 
 	PackedByteArray data = p_args[0];
@@ -142,57 +140,48 @@ Error EmbeddedDebugger::_msg_event(const Array &p_args) {
 	if (event.is_valid()) {
 		input->parse_input_event(event);
 	}
-
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_win_event(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'win_event' message.");
+void EmbeddedDebugger::_msg_win_event(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'win_event' message.");
 	DisplayServerEnums::WindowEvent win_event = p_args[0];
 	ds->send_window_event_by_id(win_event, DisplayServerEnums::MAIN_WINDOW_ID);
 	if (win_event == DisplayServerEnums::WindowEvent::WINDOW_EVENT_MOUSE_EXIT) {
 		Input::get_singleton()->release_pressed_events();
 	}
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_ime_update(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 2, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'ime_update' message.");
+void EmbeddedDebugger::_msg_ime_update(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 2, "Invalid number of arguments for 'ime_update' message.");
 	String ime_text = p_args[0];
 	Vector2i ime_selection = p_args[1];
 	ds->update_im_text(ime_selection, ime_text);
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_notification(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'notification' message.");
+void EmbeddedDebugger::_msg_notification(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'notification' message.");
 	int notification = p_args[0];
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(notification);
 	}
-	return OK;
 }
 
-Error EmbeddedDebugger::_msg_ds_state(const Array &p_args) {
-	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'ds_state' message.");
+void EmbeddedDebugger::_msg_ds_state(const Array &p_args) {
+	ERR_FAIL_COND_MSG(p_args.size() != 1, "Invalid number of arguments for 'ds_state' message.");
 	PackedByteArray data = p_args[0];
 	DisplayServerMacOSEmbeddedState state;
 	state.deserialize(data);
 	ds->set_state(state);
-	return OK;
 }
 
-Error EmbeddedDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
+bool EmbeddedDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args) {
 	EmbeddedDebugger *self = static_cast<EmbeddedDebugger *>(p_user);
-	r_captured = true;
 
 	ParseMessageFunc *fn_ptr = parse_message_handlers.getptr(p_msg);
 	if (fn_ptr) {
-		return (self->**fn_ptr)(p_args);
-	} else {
-		// Any other messages with this prefix should be ignored.
-		WARN_PRINT("Unknown message: " + p_msg);
-		return ERR_SKIP;
+		(self->**fn_ptr)(p_args);
+		return true;
 	}
+	return false;
 }
 #endif
