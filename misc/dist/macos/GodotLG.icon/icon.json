@@ -1,4 +1,7 @@
 {
+  "features" : [
+    "specular-location"
+  ],
   "fill-specializations" : [
     {
       "value" : {
@@ -23,20 +26,34 @@
       ],
       "layers" : [
         {
+          "blend-mode" : "normal",
+          "fill" : "none",
+          "glass" : true,
+          "hidden" : false,
           "image-name" : "layer_2.svg",
           "name" : "layer_2"
         },
         {
+          "blend-mode" : "normal",
           "fill" : {
             "automatic-gradient" : "srgb:0.00000,0.50588,1.00000,1.00000"
           },
+          "glass" : true,
           "image-name" : "layer_1.svg",
           "name" : "layer_1"
         },
         {
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            }
+          ],
           "fill" : {
             "automatic-gradient" : "extended-gray:1.00000,1.00000"
           },
+          "glass" : false,
+          "hidden" : false,
           "image-name" : "layer_0.svg",
           "name" : "layer_0"
         }
@@ -57,11 +74,16 @@
           0
         ]
       },
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : false,
+        "strength" : 0.090078125
+      },
       "shadow" : {
         "kind" : "layer-color",
         "opacity" : 0.5
       },
-      "specular" : true,
+      "specular" : "inside",
       "translucency" : {
         "enabled" : true,
         "value" : 0.2
