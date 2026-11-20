@@ -11,9 +11,6 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<members>
-		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material used to render the sphere.
-		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="12">
 			Number of vertical slices for the sphere.
 		</member>
