@@ -43,15 +43,72 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/image_texture.h"
+
+void CurveSettings::set_curve(Ref<Curve> p_curve) {
+	curve = p_curve;
+	notify_property_list_changed();
+}
+
+Ref<Curve> CurveSettings::get_curve() {
+	return curve;
+}
+
+void CurveSettings::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (curve.is_valid()) {
+		List<PropertyInfo> unfiltered;
+		curve->get_property_list(&unfiltered);
+		for (const PropertyInfo &info : unfiltered) {
+			if (info.name.begins_with("min_") || info.name.begins_with("max_")) {
+				p_list->push_back(info);
+			}
+		}
+	}
+}
+
+bool CurveSettings::_get(const StringName &p_name, Variant &r_ret) const {
+	if (curve.is_valid()) {
+		bool valid;
+		Variant tmp = curve->get(p_name, &valid);
+		if (valid) {
+			r_ret = tmp;
+		}
+		return valid;
+	}
+	return false;
+}
+
+bool CurveSettings::_set(const StringName &p_name, const Variant &p_value) {
+	bool ret = false;
+	if (curve.is_valid()) {
+		curve->set(p_name, p_value, &ret);
+	}
+	return ret;
+}
 
 CurveEdit::CurveEdit() {
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &CurveEdit::_pan_callback), callable_mp(this, &CurveEdit::_zoom_callback));
+	vscroll = memnew(VScrollBar);
+	vscroll->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
+	vscroll->set_step(0.001);
+	add_child(vscroll);
+
+	hscroll = memnew(HScrollBar);
+	hscroll->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_WIDE);
+	hscroll->set_step(0.001);
+	add_child(hscroll);
+
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &CurveEdit::_scroll_changed));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &CurveEdit::_scroll_changed));
 }
 
 void CurveEdit::_bind_methods() {
@@ -110,7 +167,7 @@ void CurveEdit::set_snap_count(int p_snap_count) {
 }
 
 Size2 CurveEdit::get_minimum_size() const {
-	return Vector2(64, MAX(135, get_size().x * ASPECT_RATIO)) * EDSCALE;
+	return Vector2(64, MAX(135, aspect_ratio_enforced ? get_size().x * ASPECT_RATIO : 0)) * EDSCALE;
 }
 
 void CurveEdit::_notification(int p_what) {
@@ -138,12 +195,22 @@ void CurveEdit::_notification(int p_what) {
 				grabbing = GRAB_NONE;
 			}
 		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+			panner->release_pan_key();
+		} break;
+		case NOTIFICATION_RESIZED: {
+			_update_scrollbars();
+		} break;
 	}
 }
 
 void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 	if (curve.is_null()) {
+		return;
+	}
+
+	if (panner->gui_input(p_event, get_global_rect())) {
 		return;
 	}
 
@@ -409,6 +476,23 @@ void CurveEdit::use_preset(int p_preset_id) {
 	undo_redo->commit_action();
 }
 
+void CurveEdit::zoom_in() {
+	_zoom_on_position(draw_zoom * 1.5, get_size() / 2.0);
+	_update_scrollbars();
+}
+
+void CurveEdit::zoom_out() {
+	_zoom_on_position(draw_zoom / 1.5, get_size() / 2.0);
+	_update_scrollbars();
+}
+
+void CurveEdit::fit_to_view() {
+	draw_zoom = 1.0f;
+	draw_ofs = Vector2();
+	_update_scrollbars();
+	queue_redraw();
+}
+
 void CurveEdit::_curve_changed() {
 	queue_redraw();
 	// Point count can change in case of undo.
@@ -657,6 +741,96 @@ void CurveEdit::set_selected_index(int p_index) {
 	}
 }
 
+void CurveEdit::set_is_popped_out(bool p_popped_out) {
+	aspect_ratio_enforced = !p_popped_out;
+	set_v_size_flags(p_popped_out ? SIZE_EXPAND_FILL : SIZE_SHRINK_BEGIN);
+	line_width = p_popped_out ? LINE_WIDTH_POPOUT : LINE_WIDTH_EMBEDDED;
+}
+
+void CurveEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+	draw_ofs -= p_scroll_vec / draw_zoom;
+	_clamp_draw_ofs();
+	_update_scrollbars();
+	queue_redraw();
+}
+
+void CurveEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	_zoom_on_position(draw_zoom * p_zoom_factor, p_origin);
+	_update_scrollbars();
+	queue_redraw();
+}
+
+void CurveEdit::_zoom_on_position(float p_zoom, Point2 p_position) {
+	p_zoom = CLAMP(p_zoom, min_draw_zoom, max_draw_zoom);
+	if (p_zoom == draw_zoom) {
+		return;
+	}
+
+	float prev_zoom = draw_zoom;
+	draw_zoom = p_zoom;
+	Point2 ofs = p_position;
+	ofs = ofs / prev_zoom - ofs / draw_zoom;
+	draw_ofs = (draw_ofs + ofs).round();
+
+	_clamp_draw_ofs();
+	queue_redraw();
+}
+
+void CurveEdit::_clamp_draw_ofs() {
+	Size2 view_size = _get_inner_view_size();
+	Size2 range = view_size * (draw_zoom - 1.0f) / draw_zoom;
+	draw_ofs = draw_ofs.clamp(Vector2(), range.maxf(0.0f));
+}
+
+void CurveEdit::_scroll_changed(float p_value) {
+	if (updating_scroll) {
+		return;
+	}
+
+	if (hscroll->is_visible()) {
+		draw_ofs.x = hscroll->get_value() / draw_zoom;
+	}
+	if (vscroll->is_visible()) {
+		draw_ofs.y = vscroll->get_value() / draw_zoom;
+	}
+
+	queue_redraw();
+}
+
+Size2 CurveEdit::_get_inner_view_size() const {
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+	const real_t margin = font->get_height(font_size) + 2 * EDSCALE;
+	return (get_size() - Size2(margin, margin) * 2).maxf(0.0f);
+}
+
+void CurveEdit::_update_scrollbars() {
+	Size2 view_size = _get_inner_view_size();
+	Size2 scaled_size = view_size * draw_zoom;
+
+	updating_scroll = true;
+
+	hscroll->set_max(scaled_size.x);
+	hscroll->set_page(view_size.x);
+	hscroll->set_value(draw_ofs.x * draw_zoom);
+
+	vscroll->set_max(scaled_size.y);
+	vscroll->set_page(view_size.y);
+	vscroll->set_value(draw_ofs.y * draw_zoom);
+
+	hscroll->set_visible(scaled_size.x > view_size.x);
+	vscroll->set_visible(scaled_size.y > view_size.y);
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
+	updating_scroll = false;
+}
+
 void CurveEdit::update_view_transform() {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -679,6 +853,8 @@ void CurveEdit::update_view_transform() {
 
 	Transform2D view_trans;
 	view_trans.translate_local(view_margin);
+	view_trans.scale(Vector2(draw_zoom, draw_zoom));
+	view_trans.translate_local(-draw_ofs);
 
 	_world_to_view = view_trans * world_trans;
 }
@@ -729,7 +905,7 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 	const real_t max_x = curve->get_max_domain();
 	if (curve->get_point_count() <= 1) { // Draw single line through entire plot.
 		real_t y = curve->sample(0);
-		draw_line(get_view_pos(Vector2(min_x, y)) + Vector2(0.5, 0), get_view_pos(Vector2(max_x, y)) - Vector2(1.5, 0), p_line_color, LINE_WIDTH, true);
+		draw_line(get_view_pos(Vector2(min_x, y)) + Vector2(0.5, 0), get_view_pos(Vector2(max_x, y)) - Vector2(1.5, 0), p_line_color, line_width, true);
 		return;
 	}
 
@@ -740,8 +916,8 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 	const float world_step_size = p_step / _world_to_view.get_scale().x;
 
 	// Edge lines.
-	draw_line(get_view_pos(Vector2(min_x, first_point.y)) + Vector2(0.5, 0), get_view_pos(first_point), p_edge_line_color, LINE_WIDTH, true);
-	draw_line(get_view_pos(last_point), get_view_pos(Vector2(max_x, last_point.y)) - Vector2(1.5, 0), p_edge_line_color, LINE_WIDTH, true);
+	draw_line(get_view_pos(Vector2(min_x, first_point.y)) + Vector2(0.5, 0), get_view_pos(first_point), p_edge_line_color, line_width, true);
+	draw_line(get_view_pos(last_point), get_view_pos(Vector2(max_x, last_point.y)) - Vector2(1.5, 0), p_edge_line_color, line_width, true);
 
 	// Draw section by section, so that we get maximum precision near points.
 	// It's an accurate representation, but slower than using the baked one.
@@ -758,11 +934,11 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 			float x = j * world_step_size;
 			pos.x = a.x + x;
 			pos.y = curve->sample_local_nocheck(i - 1, x);
-			draw_line(get_view_pos(prev_pos), get_view_pos(pos), p_line_color, LINE_WIDTH, true);
+			draw_line(get_view_pos(prev_pos), get_view_pos(pos), p_line_color, line_width, true);
 			prev_pos = pos;
 		}
 
-		draw_line(get_view_pos(prev_pos), get_view_pos(b), p_line_color, LINE_WIDTH, true);
+		draw_line(get_view_pos(prev_pos), get_view_pos(b), p_line_color, line_width, true);
 	}
 }
 
@@ -950,6 +1126,26 @@ void CurveEditor::_set_snap_count(int p_snap_count) {
 	curve_editor_rect->set_snap_count(CLAMP(p_snap_count, 2, 100));
 }
 
+void CurveEditor::_popout_editor() {
+	AcceptDialog *dlg = memnew(AcceptDialog);
+	// Cannot make dlg child of this node because inspector is rebuilt when curve changes
+	get_tree()->get_root()->add_child(dlg);
+	dlg->set_exclusive(true);
+	dlg->set_flag(Window::FLAG_MAXIMIZE_DISABLED, false);
+	dlg->set_title(TTRC("Curve Editor"));
+	dlg->popup_centered_ratio(0.8);
+
+	CurveEditor *editor = memnew(CurveEditor);
+	dlg->add_child(editor);
+	editor->set_popout_button_visible(false);
+	editor->set_curve(curve_editor_rect->get_curve());
+	editor->set_anchors_preset(PRESET_FULL_RECT);
+	editor->set_curve_settings_visible(true);
+	editor->curve_editor_rect->set_is_popped_out(true);
+
+	dlg->connect(SceneStringName(visibility_changed), callable_mp(static_cast<Node *>(dlg), &Node::queue_free));
+}
+
 void CurveEditor::_on_preset_item_selected(int p_preset_id) {
 	curve_editor_rect->use_preset(p_preset_id);
 }
@@ -958,11 +1154,63 @@ void CurveEditor::set_curve(const Ref<Curve> &p_curve) {
 	curve_editor_rect->set_curve(p_curve);
 }
 
+void CurveEditor::set_popout_button_visible(bool p_visible) {
+	popout_button->set_visible(p_visible);
+}
+
+static void _show_curve_settings(Button *p_button, Popup *p_popup) {
+	Point2i window_offset = p_popup->is_embedded() ? Point2i() : p_button->get_window()->get_position();
+	p_popup->set_position(window_offset + p_button->get_global_position() + Vector2(0, p_button->get_size().y));
+	p_popup->popup();
+}
+
+void CurveEditor::set_curve_settings_visible(bool p_visible) {
+	bool btn_visible = curve_settings_btn != nullptr;
+	if (p_visible == btn_visible) {
+		return;
+	}
+	if (p_visible) {
+		curve_settings_btn = memnew(Button);
+		curve_settings_btn->set_text(TTRC("Curve Settings"));
+		curve_settings_btn->set_button_icon(get_editor_theme_icon(SNAME("Curve")));
+
+		Popup *popup = memnew(Popup);
+		popup->set_wrap_controls(true);
+		popup->set_min_size(Size2i(300, 0));
+		curve_settings_btn->add_child(popup);
+
+		EditorInspector *inspector = memnew(EditorInspector);
+		inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+		inspector->set_anchors_preset(PRESET_FULL_RECT);
+		popup->add_child(inspector);
+
+		Node *toolbar = presets_button->get_parent();
+		toolbar->add_child(curve_settings_btn);
+
+		Ref<CurveSettings> settings = memnew(CurveSettings);
+		settings->set_curve(curve_editor_rect->get_curve());
+		inspector->edit(settings.ptr());
+		curve_settings_btn->set_meta(SceneStringName(hidden), settings); // Keep object alive.
+
+		curve_settings_btn->connect(SceneStringName(pressed), callable_mp_static(&_show_curve_settings).bind(curve_settings_btn, popup));
+	} else {
+		curve_settings_btn->queue_free();
+		curve_settings_btn = nullptr;
+	}
+}
+
 void CurveEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			spacing = Math::round(BASE_SPACING * get_theme_default_base_scale());
+			zoom_out_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			popout_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
+			if (curve_settings_btn) {
+				curve_settings_btn->set_button_icon(get_editor_theme_icon(SNAME("Curve")));
+			}
 			PopupMenu *p = presets_button->get_popup();
 			p->clear();
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveConstant")), TTR("Constant"), CurveEdit::PRESET_CONSTANT);
@@ -989,6 +1237,28 @@ CurveEditor::CurveEditor() {
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);
 
+	curve_editor_rect = memnew(CurveEdit);
+
+	zoom_out_button = memnew(Button);
+	zoom_out_button->set_tooltip_text(TTR("Zoom Out"));
+	zoom_out_button->set_flat(true);
+	toolbar->add_child(zoom_out_button);
+	zoom_out_button->connect(SceneStringName(pressed), callable_mp(curve_editor_rect, &CurveEdit::zoom_out));
+
+	zoom_reset_button = memnew(Button);
+	zoom_reset_button->set_tooltip_text(TTR("Zoom Reset"));
+	zoom_reset_button->set_flat(true);
+	toolbar->add_child(zoom_reset_button);
+	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(curve_editor_rect, &CurveEdit::fit_to_view));
+
+	zoom_in_button = memnew(Button);
+	zoom_in_button->set_tooltip_text(TTR("Zoom In"));
+	zoom_in_button->set_flat(true);
+	toolbar->add_child(zoom_in_button);
+	zoom_in_button->connect(SceneStringName(pressed), callable_mp(curve_editor_rect, &CurveEdit::zoom_in));
+
+	toolbar->add_child(memnew(VSeparator));
+
 	snap_button = memnew(Button);
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
@@ -1013,7 +1283,11 @@ CurveEditor::CurveEditor() {
 	toolbar->add_child(presets_button);
 	presets_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CurveEditor::_on_preset_item_selected));
 
-	curve_editor_rect = memnew(CurveEdit);
+	popout_button = memnew(Button);
+	popout_button->set_tooltip_text(TTRC("Popout this Editor"));
+	popout_button->connect(SceneStringName(pressed), callable_mp(this, &CurveEditor::_popout_editor));
+	toolbar->add_child(popout_button);
+
 	add_child(curve_editor_rect);
 
 	// Some empty space below. Not a part of the curve editor so it can't draw in it.
