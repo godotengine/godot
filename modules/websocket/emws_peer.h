@@ -36,6 +36,7 @@
 #include "websocket_peer.h"
 
 #include "core/io/packet_peer.h"
+#include "core/os/mutex.h"
 #include "core/templates/ring_buffer.h"
 
 #include <emscripten.h>
@@ -60,6 +61,7 @@ private:
 	State ready_state = STATE_CLOSED;
 	Vector<uint8_t> packet_buffer;
 	PacketBuffer<uint8_t> in_buffer;
+	Mutex mutex;
 	uint8_t was_string = 0;
 	int close_code = -1;
 	String close_reason;
