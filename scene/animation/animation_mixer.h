@@ -45,6 +45,7 @@ class AnimationMixer : public Node {
 #ifdef TOOLS_ENABLED
 	bool editing = false;
 	bool dummy = false;
+	static bool editor_audio_muted;
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
@@ -480,6 +481,9 @@ public:
 
 	void set_dummy(bool p_dummy);
 	bool is_dummy() const;
+
+	static void set_editor_audio_muted(bool p_muted);
+	static _FORCE_INLINE_ bool is_editor_audio_muted() { return editor_audio_muted; }
 #endif // TOOLS_ENABLED
 
 	AnimationMixer();
