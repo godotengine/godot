@@ -143,9 +143,9 @@ public:
 		// Store the X/Y/Z position individually as doubles, as Vector3 is 32-bit in single-precision builds.
 		// We want to always use doubles, so that freelook and panning behavior stays correct
 		// when far away from the origin.
-		double pos_x;
-		double pos_y;
-		double pos_z;
+		double pos_x = 0.0;
+		double pos_y = 0.0;
+		double pos_z = 0.0;
 
 		real_t x_rot;
 		real_t y_rot;
@@ -155,9 +155,9 @@ public:
 		real_t unsnapped_y_rot;
 
 		// Used for freelook.
-		double eye_pos_x;
-		double eye_pos_y;
-		double eye_pos_z;
+		double eye_pos_x = 0.0;
+		double eye_pos_y = 0.0;
+		double eye_pos_z = 0.0;
 
 		// TODO: These variables are not related to cursor manipulation, and specific
 		// to Node3DEditorPlugin. So remove them in the future.
