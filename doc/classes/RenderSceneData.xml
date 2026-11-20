@@ -10,10 +10,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_cam_projection" qualifiers="const">
+		<method name="get_aspect" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the X:Y aspect ratio of camera projection used to render this frame.
+			</description>
+		</method>
+		<method name="get_cam_projection" qualifiers="const" deprecated="Use [method RenderSceneData.get_transformed_projection_data] instead.">
 			<return type="Projection" />
 			<description>
-				Returns the camera projection used to render this frame.
+				Returns the camera projection used to render this frame. This is a transformed projection and is only suitable for copying to the GPU.
 				[b]Note:[/b] If more than one view is rendered, this will return a combined projection.
 			</description>
 		</method>
@@ -22,6 +28,29 @@
 			<description>
 				Returns the camera transform used to render this frame.
 				[b]Note:[/b] If more than one view is rendered, this will return a centered transform.
+			</description>
+		</method>
+		<method name="get_far_plane_half_extents" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the dimensions of the far clipping plane of the projection used to render this frame, divided by two.
+				[b]Note:[/b] If more than one view is rendered, this will return centered dimensions.
+			</description>
+		</method>
+		<method name="get_pixels_per_meter" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="for_pixel_width" type="int" />
+			<description>
+				Returns [param for_pixel_width] divided by the viewport's width measured in meters on the near plane, after this view's projection is applied.
+				[b]Note:[/b] If more than one view is rendered, this will return centered dimensions.
+			</description>
+		</method>
+		<method name="get_transformed_projection_data" qualifiers="const">
+			<return type="PackedFloat32Array" />
+			<description>
+				Returns the camera projection data used to render this frame. This is transformed projection data and is only suitable for copying to the GPU.
+				To access the near and far distances, use [method get_z_near] and [method get_z_far].
+				[b]Note:[/b] If more than one view is rendered, this will return combined projection data.
 			</description>
 		</method>
 		<method name="get_uniform_buffer" qualifiers="const">
@@ -49,6 +78,27 @@
 			<description>
 				Returns the view projection per view used to render this frame.
 				[b]Note:[/b] If a single view is rendered, this returns the camera projection. If more than one view is rendered, this will return a projection for the given view including the eye offset.
+			</description>
+		</method>
+		<method name="get_viewport_half_extents" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the dimensions of the viewport plane used to render this frame, divided by two.
+				[b]Note:[/b] If more than one view is rendered, this will return centered dimensions.
+			</description>
+		</method>
+		<method name="get_z_far" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the distance beyond which positions are clipped, used to render this frame.
+				[b]Note:[/b] If more than one view is rendered, this will return combined distance.
+			</description>
+		</method>
+		<method name="get_z_near" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the distance before which positions are clipped, used to render this frame.
+				[b]Note:[/b] If more than one view is rendered, this will return combined distance.
 			</description>
 		</method>
 	</methods>
