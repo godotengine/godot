@@ -54,9 +54,9 @@ Dependency::~Dependency() {
 #ifdef DEBUG_ENABLED
 	if (instances.size()) {
 		WARN_PRINT("Leaked instance dependency: Bug - did not call instance_notify_deleted when freeing.");
-		for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
-			E.key->dependencies.erase(this);
-		}
 	}
 #endif
+	for (const KeyValue<DependencyTracker *, uint32_t> &E : instances) {
+		E.key->dependencies.erase(this);
+	}
 }
