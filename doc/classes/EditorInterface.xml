@@ -228,6 +228,12 @@
 				Returns the editor's [EditorResourcePreview] instance.
 			</description>
 		</method>
+		<method name="get_run_instances_dialog" qualifiers="const">
+			<return type="RunInstancesDialog" />
+			<description>
+				Returns the editor's [RunInstancesDialog] instance.
+			</description>
+		</method>
 		<method name="get_scene_paint_2d" qualifiers="const">
 			<return type="ScenePaint2DEditor" />
 			<description>
