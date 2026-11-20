@@ -100,6 +100,9 @@ void TranslationServer::init_locale_info() {
 		for (const String &s : scripts) {
 			set.insert(s);
 		}
+		if (!scripts.is_empty()) {
+			language_script_default[language_script_list[idx][0]] = scripts[0];
+		}
 		idx++;
 	}
 
@@ -241,6 +244,9 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 				}
 			}
 		}
+		if (script.is_empty() && language_script_default.has(language)) {
+			script = language_script_default[language];
+		}
 		if (!script.is_empty() && country.is_empty()) {
 			// Add conntry code based on script for some ambiguous cases.
 			for (int i = 0; i < p_server.locale_script_info.size(); i++) {
@@ -316,6 +322,16 @@ String TranslationServer::get_percent_sign(const String &p_locale) const {
 
 String TranslationServer::standardize_locale(const String &p_locale, bool p_add_defaults) const {
 	return Locale(*this, p_locale, p_add_defaults).operator String();
+}
+
+Dictionary TranslationServer::standardize_locale_dict(const String &p_locale, bool p_add_defaults) const {
+	Dictionary ret;
+	Locale l = Locale(*this, p_locale, p_add_defaults);
+	ret["language"] = l.language;
+	ret["script"] = l.script;
+	ret["country"] = l.country;
+	ret["variant"] = l.variant;
+	return ret;
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
