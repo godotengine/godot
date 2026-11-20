@@ -433,7 +433,7 @@ half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_
 	if (blocker_count > 0.0) {
 		//blockers found, do soft shadow
 		blocker_average /= blocker_count;
-		float penumbra = (-pssm_coord.z + blocker_average) / (1.0 - blocker_average);
+		float penumbra = clamp((blocker_average - pssm_coord.z) / max(1.0 - pssm_coord.z, 1e-5), 0.0, 1.0);
 		tex_scale *= penumbra;
 
 		float s = 0.0;
