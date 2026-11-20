@@ -50,6 +50,7 @@ public:
 		MODE_INSTALL,
 		MODE_RENAME,
 		MODE_DUPLICATE,
+		MODE_RELOCATE,
 	};
 
 private:
