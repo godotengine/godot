@@ -446,6 +446,17 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        public static unsafe int ConvertNativePackedByteArrayToSystemArray(in godot_packed_byte_array p_array, Span<byte> bytes)
+        {
+            byte* buffer = p_array.Buffer;
+            int size = p_array.Size;
+            if (size == 0)
+                return 0;
+            fixed (byte* dest = bytes)
+                Buffer.MemoryCopy(buffer, dest, size, size);
+            return size;
+        }
+
         public static godot_packed_byte_array ConvertSystemArrayToNativePackedByteArray(scoped Span<byte> p_array)
         {
             return ConvertSystemArrayToNativePackedByteArray((ReadOnlySpan<byte>)p_array);
