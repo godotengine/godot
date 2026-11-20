@@ -656,7 +656,7 @@ void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::
 	for (int i = 0; i < p_brush->faces.size(); i++) {
 		int mat = p_brush->faces[i].material;
 		ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
-		int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+		int idx = mat == -1 ? (int)r_face_count.size() - 1 : mat;
 
 		Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
 
@@ -733,7 +733,7 @@ void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::
 
 			int mat = p_brush->faces[i].material;
 			ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
-			int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+			int idx = mat == -1 ? (int)r_face_count.size() - 1 : mat;
 
 			int last = r_surfaces[idx].last_added;
 
@@ -775,7 +775,7 @@ void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::S
 	for (int i = 0; i < p_brush->faces.size(); i++) {
 		int mat = p_brush->faces[i].material;
 		ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
-		int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+		int idx = mat == -1 ? (int)r_face_count.size() - 1 : mat;
 
 		if (p_brush->faces[i].smooth) {
 			Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
@@ -827,7 +827,7 @@ void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::S
 
 			int mat = p_brush->faces[i].material;
 			ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
-			int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+			int idx = mat == -1 ? (int)r_face_count.size() - 1 : mat;
 
 			int last = r_surfaces[idx].last_added;
 
