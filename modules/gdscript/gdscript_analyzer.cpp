@@ -3885,8 +3885,8 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		if (op_type.is_variant() || !op_type.is_hard_type()) {
 			mark_node_unsafe(p_cast);
 #ifdef DEBUG_ENABLED
-			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
-#endif // DEBUG_ENABLED
+			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, "Variant", cast_type.to_string());
+#endif
 		} else {
 			bool valid = false;
 			if (op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
@@ -3895,7 +3895,28 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 			} else if (op_type.kind == GDScriptParser::DataType::ENUM && cast_type.builtin_type == Variant::INT) {
 				valid = true;
 			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
-				valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
+				if (cast_type.builtin_type == Variant::ARRAY && cast_type.has_container_element_type(0)) {
+					const bool same_element_type = op_type.get_container_element_type_or_variant(0).is_same_exact(cast_type.get_container_element_type(0));
+					valid = (op_type.builtin_type == Variant::ARRAY) && (!op_type.has_container_element_type(0) || same_element_type);
+#ifdef DEBUG_ENABLED
+					if (!op_type.has_container_element_type(0)) {
+						mark_node_unsafe(p_cast);
+						parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, op_type.to_string_strict(), cast_type.to_string());
+					}
+#endif
+				} else if (cast_type.builtin_type == Variant::DICTIONARY && cast_type.has_container_element_types()) {
+					const bool same_key_type = op_type.get_container_element_type_or_variant(0).is_same_exact(cast_type.get_container_element_type_or_variant(0));
+					const bool same_value_type = op_type.get_container_element_type_or_variant(1).is_same_exact(cast_type.get_container_element_type_or_variant(1));
+					valid = (op_type.builtin_type == Variant::DICTIONARY) && (!op_type.has_container_element_types() || (same_key_type && same_value_type));
+#ifdef DEBUG_ENABLED
+					if (!op_type.has_container_element_types()) {
+						mark_node_unsafe(p_cast);
+						parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, op_type.to_string_strict(), cast_type.to_string());
+					}
+#endif
+				} else {
+					valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
+				}
 			} else if (op_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
 			}
