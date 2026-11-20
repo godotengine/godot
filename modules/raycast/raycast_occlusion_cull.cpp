@@ -49,8 +49,8 @@ void RaycastOcclusionCull::RaycastHZBuffer::clear() {
 		memfree(camera_rays_unaligned_buffer);
 		camera_rays_unaligned_buffer = nullptr;
 		camera_rays = nullptr;
+		camera_ray_masks = nullptr;
 	}
-	camera_ray_masks.clear();
 	camera_rays_tile_count = 0;
 	tile_grid_size = Size2i();
 }
@@ -74,12 +74,16 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 		memfree(camera_rays_unaligned_buffer);
 	}
 
-	const int alignment = 64; // Embree requires ray packets to be 64-aligned
-	camera_rays_unaligned_buffer = (uint8_t *)memalloc(camera_rays_tile_count * sizeof(CameraRayTile) + alignment);
+	// Embree requires ray packets and their valid masks to be 64-aligned.
+	const int alignment = 64;
+	static_assert(sizeof(CameraRayTile) % alignment == 0, "`camera_rays_unaligned_buffer` must stay 64-aligned.");
+	const size_t rays_size = camera_rays_tile_count * sizeof(CameraRayTile);
+	const size_t masks_size = camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t);
+	camera_rays_unaligned_buffer = (uint8_t *)memalloc(rays_size + masks_size + alignment);
 	camera_rays = (CameraRayTile *)(camera_rays_unaligned_buffer + alignment - (((uint64_t)camera_rays_unaligned_buffer) % alignment));
 
-	camera_ray_masks.resize(camera_rays_tile_count * TILE_RAYS);
-	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
+	camera_ray_masks = (uint32_t *)((uint8_t *)camera_rays + rays_size);
+	memset(camera_ray_masks, ~0, masks_size);
 }
 
 void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Vector3 &p_near_bottom_left, const Vector2 &p_near_extents, real_t p_z_far, bool p_cam_orthogonal) {
@@ -614,7 +618,7 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 
 	buffer.update_camera_rays(p_cam_transform, near_bottom_left, vp_rect.get_size(), p_cam_projection.get_z_far(), p_cam_orthogonal);
 
-	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
+	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks, buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);
 	buffer.update_mips();
 }
