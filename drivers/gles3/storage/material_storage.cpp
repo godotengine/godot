@@ -1359,6 +1359,10 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["VIEW_RIGHT"] = "uint(1)";
 		actions.renames["EYE_OFFSET"] = "eye_offset";
 
+		actions.renames["VIEW_TO_MODEL"] = "VIEW_TO_MODEL";
+		actions.renames["VIEW_TO_WORLD"] = "VIEW_TO_WORLD";
+		actions.renames["WORLD_TO_VIEW"] = "WORLD_TO_VIEW";
+
 		//for light
 		actions.renames["VIEW"] = "view";
 		actions.renames["SPECULAR_AMOUNT"] = "specular_amount";
