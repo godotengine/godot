@@ -63,10 +63,10 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 	struct WindowData {
 		// Adapter.
 #ifdef WINDOWS_ENABLED
-		accesskit_windows_subclassing_adapter *adapter = nullptr;
+		accesskit_windows_adapter *adapter = nullptr;
 #endif
 #ifdef MACOS_ENABLED
-		accesskit_macos_subclassing_adapter *adapter = nullptr;
+		accesskit_macos_adapter *adapter = nullptr;
 #endif
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter *adapter = nullptr;
@@ -76,7 +76,7 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 		jobject host = nullptr;
 #endif
 #ifdef APPLE_EMBEDDED_ENABLED
-		accesskit_ios_subclassing_adapter *adapter = nullptr;
+		accesskit_ios_adapter *adapter = nullptr;
 #endif
 
 		RID root_id;
@@ -199,10 +199,13 @@ public:
 	void update_set_background_color(const RID &p_id, const Color &p_color) override;
 	void update_set_foreground_color(const RID &p_id, const Color &p_color) override;
 
+	bool native_is_accessibility_element(DisplayServerEnums::WindowID p_window_id) override;
+	void native_did_view_appear(DisplayServerEnums::WindowID p_window_id) override;
 	void *native_create_node_info(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id) override;
 	void *native_find_focus(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_focus_type) override;
 	bool native_perform_action(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_view_id, int p_action, void *p_arguments) override;
-	bool native_on_hover(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y) override;
+	bool native_process_message(DisplayServerEnums::WindowID p_window_id, int64_t p_wparam, int64_t p_lparam, int64_t *r_ret) override;
+	void *native_hit_test(DisplayServerEnums::WindowID p_window_id, void *p_host, int p_action, float p_x, float p_y, bool *r_has_events) override;
 
 	static void register_create_func();
 

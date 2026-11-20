@@ -181,15 +181,6 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
-	GDTView *godot_view = GDTAppDelegateService.viewController.godotView;
-	if (godot_view && AccessibilityServer::get_singleton()) {
-		if (!AccessibilityServer::get_singleton()->window_create(DisplayServerEnums::MAIN_WINDOW_ID, (__bridge void *)godot_view)) {
-			if (OS::get_singleton()->is_stdout_verbose()) {
-				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
-			}
-		}
-	}
-
 	r_error = OK;
 }
 
