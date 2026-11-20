@@ -45,6 +45,7 @@ class Parallax2D : public Node2D {
 	int repeat_times = 1;
 	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
 	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
+	Size2 limit_scale = Size2(0, 0);
 	Point2 autoscroll;
 	bool follow_viewport = true;
 	bool ignore_camera_scroll = false;
@@ -86,6 +87,9 @@ public:
 
 	void set_limit_end(const Point2 &p_offset);
 	Point2 get_limit_end() const;
+
+	void set_limit_scale(const Size2 &p_scale);
+	Size2 get_limit_scale() const;
 
 	void set_follow_viewport(bool p_follow);
 	bool get_follow_viewport();
