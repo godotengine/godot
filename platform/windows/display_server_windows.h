@@ -493,7 +493,6 @@ class DisplayServerWindows : public DisplayServer {
 	bool use_raw_input = false;
 	bool disable_bulk_raw_input = false;
 	bool drop_events = false;
-	bool in_dispatch_input_event = false;
 
 	WNDCLASSEXW wc;
 	HBRUSH window_bkg_brush = nullptr;
