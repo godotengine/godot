@@ -4135,27 +4135,35 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			SEND_GUI_ACTION("ui_page_down");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_page_up");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_up");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_down");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_KEY_EVENT(Key::T);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_left");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_right");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
+			MessageQueue::get_singleton()->flush();
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
 			caret_pos.y += code_edit->get_line_height();
 			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
