@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationMeshTracking" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for mesh tracking.
+	</brief_description>
+	<description>
+		Configuration header for mesh tracking. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context with mesh tracking capabilities.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_next">
+			<return type="void" />
+			<param index="0" name="next" type="OpenXRStructureBase" />
+			<description>
+				This allows us to add an additional structure to our configuration such as [OpenXRSpatialContextWaterTightMeshConfig] provided they are applicable to this capability.
+			</description>
+		</method>
+		<method name="get_supports_mesh_3d_normals">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if we can obtain normals data for our mesh.
+			</description>
+		</method>
+	</methods>
+</class>

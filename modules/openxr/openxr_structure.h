@@ -63,6 +63,7 @@ public:
 
 	void set_next(const Ref<OpenXRStructureBase> p_next);
 	Ref<OpenXRStructureBase> get_next() const;
+	bool has_structure_type(XrStructureType p_structure_type);
 
 	GDVIRTUAL1R(uint64_t, _get_header, uint64_t);
 
@@ -74,4 +75,5 @@ private:
 
 	uint64_t _get_headergd(uint64_t p_next);
 	uint64_t _get_structure_type();
+	bool _has_structure_type(uint64_t p_structure_type);
 };

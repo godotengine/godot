@@ -37,22 +37,57 @@
 
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/typed_dictionary.h"
 
 // Spatial entity extension
+class OpenXrSpatialFilterArchetype : public OpenXRStructureBase {
+	GDCLASS(OpenXrSpatialFilterArchetype, OpenXRStructureBase);
+
+public:
+	virtual void *get_header(void *p_next) override;
+	virtual XrStructureType get_structure_type() override;
+
+	XrSpatialArchetypeIdEXT get_archetype_id() const;
+	void set_archetype_id(XrSpatialArchetypeIdEXT p_id);
+
+protected:
+	static void _bind_methods();
+
+	uint64_t _get_archetype_id() const;
+	void _set_archetype_id(uint64_t p_id);
+
+private:
+	XrSpatialFilterArchetypeEXT filter = { XR_TYPE_SPATIAL_FILTER_ARCHETYPE_EXT, nullptr, 0 };
+};
+
 class OpenXRSpatialEntityExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRSpatialEntityExtension, OpenXRExtensionWrapper);
 
 public:
-	enum Capability {
+	enum Capability { // mirror XrSpatialCapabilityEXT
 		CAPABILITY_PLANE_TRACKING = XR_SPATIAL_CAPABILITY_PLANE_TRACKING_EXT,
 		CAPABILITY_MARKER_TRACKING_QR_CODE = XR_SPATIAL_CAPABILITY_MARKER_TRACKING_QR_CODE_EXT,
 		CAPABILITY_MARKER_TRACKING_MICRO_QR_CODE = XR_SPATIAL_CAPABILITY_MARKER_TRACKING_MICRO_QR_CODE_EXT,
 		CAPABILITY_MARKER_TRACKING_ARUCO_MARKER = XR_SPATIAL_CAPABILITY_MARKER_TRACKING_ARUCO_MARKER_EXT,
 		CAPABILITY_MARKER_TRACKING_APRIL_TAG = XR_SPATIAL_CAPABILITY_MARKER_TRACKING_APRIL_TAG_EXT,
 		CAPABILITY_ANCHOR = XR_SPATIAL_CAPABILITY_ANCHOR_EXT,
+		CAPABILITY_IMAGE_TRACKING = XR_SPATIAL_CAPABILITY_IMAGE_TRACKING_EXT,
+		CAPABILITY_OBJECT_TRACKING_ANDROID = XR_SPATIAL_CAPABILITY_OBJECT_TRACKING_ANDROID,
+		CAPABILITY_DEPTH_RAYCAST_ANDROID = XR_SPATIAL_CAPABILITY_DEPTH_RAYCAST_ANDROID,
 	};
 
-	enum ComponentType {
+	enum CapabilityFeature { // mirror XrSpatialCapabilityFeatureEXT
+		CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS = XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_FIXED_SIZE_MARKERS_EXT,
+		CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS = XR_SPATIAL_CAPABILITY_FEATURE_MARKER_TRACKING_STATIC_MARKERS_EXT,
+		CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID = XR_SPATIAL_CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID,
+		CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID = XR_SPATIAL_CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID,
+		CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID = XR_SPATIAL_CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID,
+		CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES = XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES_EXT,
+		CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES = XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES_EXT,
+		CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES = XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES_EXT,
+	};
+
+	enum ComponentType { // mirror XrSpatialComponentTypeEXT
 		COMPONENT_TYPE_BOUNDED_2D = XR_SPATIAL_COMPONENT_TYPE_BOUNDED_2D_EXT,
 		COMPONENT_TYPE_BOUNDED_3D = XR_SPATIAL_COMPONENT_TYPE_BOUNDED_3D_EXT,
 		COMPONENT_TYPE_PARENT = XR_SPATIAL_COMPONENT_TYPE_PARENT_EXT,
@@ -64,6 +99,10 @@ public:
 		COMPONENT_TYPE_MARKER = XR_SPATIAL_COMPONENT_TYPE_MARKER_EXT,
 		COMPONENT_TYPE_ANCHOR = XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT,
 		COMPONENT_TYPE_PERSISTENCE = XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT,
+		COMPONENT_TYPE_IMAGE_2D = XR_SPATIAL_COMPONENT_TYPE_IMAGE_2D_EXT,
+		COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID = XR_SPATIAL_COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID,
+		COMPONENT_TYPE_RAYCAST_RESULT_ANDROID = XR_SPATIAL_COMPONENT_TYPE_RAYCAST_RESULT_ANDROID,
+		COMPONENT_TYPE_SUBSUMED_BY_ANDROID = XR_SPATIAL_COMPONENT_TYPE_SUBSUMED_BY_ANDROID,
 	};
 
 	enum TrackingState {
@@ -73,6 +112,11 @@ public:
 		TRACKING_NOT_ACTIVE = 0,
 		TRACKING_SETTING_UP = 1,
 		TRACKING_ENABLED = 2,
+	};
+
+	struct Archetype {
+		XrSpatialArchetypeIdEXT archetype_id = 0;
+		LocalVector<XrSpatialComponentTypeEXT> component_types;
 	};
 
 	static OpenXRSpatialEntityExtension *get_singleton();
@@ -89,8 +133,10 @@ public:
 	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 	bool get_active() const;
+	bool supports_archetypes() const;
 	bool supports_capability(XrSpatialCapabilityEXT p_capability);
 	bool supports_component_type(XrSpatialCapabilityEXT p_capability, XrSpatialComponentTypeEXT p_component_type);
+	bool supports_capability_feature(XrSpatialCapabilityEXT p_capability, XrSpatialCapabilityFeatureEXT p_component_feature);
 
 	// Spatial contexts
 	Ref<OpenXRFutureResult> create_spatial_context(const TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> &p_capability_configurations, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback = Callable(), const Callable &p_failure_callback = Callable());
@@ -110,6 +156,7 @@ public:
 	XrSpatialSnapshotEXT get_spatial_snapshot_handle(RID p_spatial_snapshot) const;
 	RID get_spatial_snapshot_context(RID p_spatial_snapshot) const;
 
+	LocalVector<Archetype> get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next = Ref<OpenXRStructureBase>());
 	bool query_snapshot(RID p_spatial_snapshot, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next);
 
 	// Buffers from snapshot
@@ -144,6 +191,7 @@ private:
 	static OpenXRSpatialEntityExtension *singleton;
 
 	bool spatial_entity_ext = false;
+	bool archetypes_ext = false;
 
 	// Capabilities
 	struct SpatialEntityCapabality {
@@ -156,6 +204,7 @@ private:
 
 	bool _supports_capability(Capability p_capability);
 	bool _supports_component_type(Capability p_capability, ComponentType p_component_type);
+	bool _supports_capability_feature(Capability p_capability, CapabilityFeature p_component_feature);
 
 	// Spatial context
 	struct SpatialContextData {
@@ -181,6 +230,7 @@ private:
 	mutable RID_Owner<SpatialSnapshotData> spatial_snapshot_owner;
 
 	uint64_t _get_spatial_snapshot_handle(RID p_spatial_snapshot) const;
+	TypedDictionary<uint64_t, TypedArray<ComponentType>> _get_snapshot_archetypes(RID p_spatial_snapshot, Ref<OpenXRStructureBase> p_next);
 
 	// Buffers from snapshot
 	String _get_string(RID p_spatial_snapshot, uint64_t p_buffer_id) const;
@@ -227,8 +277,13 @@ private:
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferFloatEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (float *), buffer);
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferVector2fEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (XrVector2f *), buffer);
 	EXT_PROTO_XRRESULT_FUNC5(xrGetSpatialBufferVector3fEXT, (XrSpatialSnapshotEXT), snapshot, (const XrSpatialBufferGetInfoEXT *), info, (uint32_t), buffer_capacity_input, (uint32_t *), buffer_count_output, (XrVector3f *), buffer);
+
+	// Archetypes
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSpatialArchetypesEXT, (XrSpatialSnapshotEXT), snapshot, (uint32_t), archetype_capacity_input, (uint32_t *), archetype_count_output, (XrSpatialArchetypeIdEXT *), archetypes);
+	EXT_PROTO_XRRESULT_FUNC5(xrEnumerateSpatialArchetypeComponentTypesEXT, (XrSpatialSnapshotEXT), snapshot, (XrSpatialArchetypeIdEXT), archetype, (uint32_t), component_type_capacity_input, (uint32_t *), component_type_count_output, (XrSpatialComponentTypeEXT *), component_types);
 };
 
 VARIANT_ENUM_CAST(OpenXRSpatialEntityExtension::Capability);
+VARIANT_ENUM_CAST(OpenXRSpatialEntityExtension::CapabilityFeature);
 VARIANT_ENUM_CAST(OpenXRSpatialEntityExtension::ComponentType);
 VARIANT_ENUM_CAST(OpenXRSpatialEntityExtension::TrackingState);
