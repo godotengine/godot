@@ -47,6 +47,7 @@
 #include "core/string/string_builder.h"
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
+#include "editor/doc/doc_images.gen.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -58,9 +59,11 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/line_edit.h"
+#include "scene/resources/dpi_texture.h"
 #include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -980,6 +983,14 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 	}
 
 #undef HANDLE_DOC
+}
+
+String EditorHelp::get_image_code(const String &p_name) {
+	if (images.has(p_name)) {
+		return images[p_name];
+	} else {
+		return String();
+	}
 }
 
 void EditorHelp::_update_doc() {
@@ -2614,7 +2625,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			tag_stack.pop_front();
 			pos = brk_end + 1;
-			if (tag == "/img") {
+			if (tag == "/img" || tag == "/svg") {
 				// Nothing to do.
 			} else if (tag == "/url") {
 				p_rt->pop(); // meta
@@ -2942,7 +2953,8 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
-		} else if (tag.begins_with("img")) {
+		} else if (tag.begins_with("img") || tag.begins_with("svg")) {
+			bool is_svg = tag.begins_with("svg");
 			int width = 0;
 			int height = 0;
 			bool size_in_percent = false;
@@ -2977,11 +2989,39 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 				end = bbcode.length();
 			}
 
-			String image_path = bbcode.substr(brk_end + 1, end - brk_end - 1);
-			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent ? RichTextLabel::IMAGE_UNIT_PERCENT : RichTextLabel::IMAGE_UNIT_PIXEL);
+			if (is_svg) {
+				String image_name = bbcode.substr(brk_end + 1, end - brk_end - 1);
+				String image_code = EditorHelp::get_image_code(image_name);
+				if (!image_code.is_empty()) {
+					Ref<DPITexture> tx = DPITexture::create_from_string(image_code);
+					Dictionary color_conversion_map;
+					if (!EditorThemeManager::is_dark_icon_and_font()) {
+						for (KeyValue<Color, Color> &E : EditorColorMap::get_color_conversion_map()) {
+							color_conversion_map[E.key] = E.value;
+						}
+					}
+					tx->set_color_map(color_conversion_map);
+					float scale = 1.0;
+					if (width != 0.0) {
+						scale = MAX(scale, (float)tx->get_width() / (float)width);
+					}
+					if (height != 0.0) {
+						scale = MAX(scale, (float)tx->get_height() / (float)height);
+					}
+					tx->set_base_scale(scale * EDSCALE);
+					p_rt->add_image(tx, width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent ? RichTextLabel::IMAGE_UNIT_PERCENT : RichTextLabel::IMAGE_UNIT_PIXEL);
+				}
+			} else {
+				String image_path = bbcode.substr(brk_end + 1, end - brk_end - 1);
+				p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent ? RichTextLabel::IMAGE_UNIT_PERCENT : RichTextLabel::IMAGE_UNIT_PIXEL);
+			}
 
 			pos = end;
-			tag_stack.push_front("img");
+			if (is_svg) {
+				tag_stack.push_front("svg");
+			} else {
+				tag_stack.push_front("img");
+			}
 		} else if (tag.begins_with("color=")) {
 			String col = tag.substr(6);
 			Color color = Color::from_string(col, Color());
@@ -3008,7 +3048,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 	// Close unclosed tags.
 	for (const String &tag : tag_stack) {
-		if (tag != "img") {
+		if (tag != "img" && tag != "svg") {
 			p_rt->pop();
 		}
 	}
@@ -3512,6 +3552,11 @@ void EditorHelp::init_gdext_pointers() {
 EditorHelp::EditorHelp() {
 	set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 
+	if (images.is_empty()) {
+		for (int i = 0; i < editor_doc_images_count; i++) {
+			images[String::utf8(editor_doc_images_names[i])] = String::utf8(editor_doc_images_sources[i]);
+		}
+	}
 	class_desc = memnew(RichTextLabel);
 	class_desc->set_tab_size(8);
 	class_desc->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
@@ -4679,6 +4724,16 @@ String EditorHelpBit::get_as_plain_text(const String &p_symbol, const String &p_
 			output.append("(Image: ");
 			output.append(image);
 			output.append(")");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag == "svg") {
+			int end = bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+
+			output.append("(Image: Embedded)");
 
 			pos = end;
 			tag_stack.push_front(tag);

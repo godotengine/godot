@@ -64,6 +64,34 @@ inline constexpr const unsigned char _doc_data_compressed[] = {{
 """)
 
 
+def make_editor_images_action(target, source, env):
+    icons_names = []
+    icons_raw = []
+
+    for idx, svg in enumerate(source):
+        path = str(svg)
+        with open(path, encoding="utf-8", newline="\n") as file:
+            icons_raw.append(methods.to_raw_cstring(file.read()))
+
+        name = os.path.splitext(os.path.basename(path))[0]
+        icons_names.append(f'"{name}"')
+
+    icons_names_str = ",\n\t".join(icons_names)
+    icons_raw_str = ",\n\t".join(icons_raw)
+
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write(f"""\
+inline constexpr int editor_doc_images_count = {len(icons_names)};
+inline constexpr const char *editor_doc_images_sources[] = {{
+	{icons_raw_str}
+}};
+
+inline constexpr const char *editor_doc_images_names[] = {{
+	{icons_names_str}
+}};
+""")
+
+
 def make_translations(target, source, env):
     target_h, target_cpp = str(target[0]), str(target[1])
 

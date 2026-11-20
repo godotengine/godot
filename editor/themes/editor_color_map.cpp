@@ -54,6 +54,10 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
 	add_conversion_color_pair("#010101", "#010101"); // Forced dark color
 
+	// Help images.
+	add_conversion_color_pair("#000001", "#fffffe"); // Foreground black
+	add_conversion_color_pair("#003e7b", "#99c4ff"); // Foreground blue
+
 	// Keep pure RGB colors as is, but list them for explicitness.
 	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
 	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
