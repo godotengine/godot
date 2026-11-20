@@ -137,6 +137,7 @@ private:
 		bool notify_transform : 1;
 
 		bool visible : 1;
+		bool parent_visible_in_tree : 1;
 		bool disable_scale : 1;
 
 		// Scene tree interpolation.
