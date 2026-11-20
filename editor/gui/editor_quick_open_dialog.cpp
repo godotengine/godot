@@ -755,7 +755,8 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 	}
 
 	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(file_path);
-	if (item.preview.is_valid()) {
+	p_candidate.has_preview = item.preview.is_valid();
+	if (p_candidate.has_preview) {
 		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
 		p_candidate.thumbnail = *file_type_icons.getptr(actual_type);
@@ -1451,14 +1452,12 @@ void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_cand
 		}
 	}
 
-	bool uses_icon = p_candidate.thumbnail->get_width() < (32 * EDSCALE);
-
-	if (uses_icon || p_candidate.thumbnail->get_height() <= thumbnail->get_custom_minimum_size().y) {
-		thumbnail->set_expand_mode(TextureRect::EXPAND_KEEP_SIZE);
-		thumbnail->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
+	if (p_candidate.has_preview) {
+		thumbnail->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		thumbnail->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	} else {
-		thumbnail->set_expand_mode(TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL);
-		thumbnail->set_stretch_mode(TextureRect::StretchMode::STRETCH_SCALE);
+		thumbnail->set_expand_mode(TextureRect::EXPAND_KEEP_SIZE);
+		thumbnail->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	}
 }
 
