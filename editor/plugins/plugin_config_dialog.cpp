@@ -83,7 +83,7 @@ void PluginConfigDialog::_create_script_for_plugin(const String &p_plugin_path, 
 	ERR_FAIL_COND(language == nullptr);
 	String ext = language->get_extension();
 	String script_name = script_edit->get_text().is_empty() ? _get_subfolder() : script_edit->get_text();
-	if (script_name.get_extension() != ext) {
+	if (!script_name.has_extension(ext)) {
 		script_name += "." + ext;
 	}
 	String script_path = p_plugin_path.path_join(script_name);
@@ -111,35 +111,45 @@ void PluginConfigDialog::_on_required_text_changed() {
 	if (name_edit->get_text().is_empty()) {
 		validation_panel->set_message(MSG_ID_PLUGIN, TTRC("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
 	}
+
 	if (subfolder_edit->is_visible()) {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
 			validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder name is not a valid folder name."), EditorValidationPanel::MSG_ERROR);
 		} else {
-			String path = "res://addons/" + _get_subfolder();
-			if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
-				validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
+			String subfolder_name = _get_subfolder();
+			if (subfolder_name.begins_with(".")) {
+				validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder name cannot start with \".\", as it will make it a hidden folder on some systems."), EditorValidationPanel::MSG_ERROR);
+			} else {
+				String path = "res://addons/" + subfolder_name;
+				if (!_edit_mode && DirAccess::exists(path)) { // Only show this error if in "create" mode.
+					validation_panel->set_message(MSG_ID_SUBFOLDER, TTRC("Subfolder cannot be one which already exists."), EditorValidationPanel::MSG_ERROR);
+				}
 			}
 		}
 	} else {
 		validation_panel->set_message(MSG_ID_SUBFOLDER, "", EditorValidationPanel::MSG_OK);
 	}
+
 	// Language and script validation.
 	int lang_idx = script_option_edit->get_selected();
 	ScriptLanguage *language = ScriptServer::get_language(lang_idx);
 	if (language == nullptr) {
 		return;
 	}
+
+	String script_name = script_edit->get_text();
 	String ext = language->get_extension();
-	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
+	if ((!script_name.get_extension().is_empty() && !script_name.has_extension(ext)) || script_name.ends_with(".")) {
 		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
 	}
+
 	if (language->get_name() == "GDScript") {
 		validation_panel->set_message(MSG_ID_ENABLE_WARNINGS, TTRC("Consider enabling GDScript warnings for this plugin by adding an entry for it to the project setting Debug > GDScript > Warnings > Directory Rules."), EditorValidationPanel::MSG_INFO);
 	}
 }
 
 String PluginConfigDialog::_get_subfolder() {
-	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().replace_char(' ', '_').to_lower() : subfolder_edit->get_text();
+	return subfolder_edit->get_text().is_empty() ? name_edit->get_text().validate_filename().replace_char(' ', '_').to_lower() : subfolder_edit->get_text();
 }
 
 String PluginConfigDialog::_to_absolute_plugin_path(const String &p_plugin_name) {
