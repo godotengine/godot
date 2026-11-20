@@ -68,6 +68,7 @@ class TemplateDownloader : public HTTPRequest {
 	String filename;
 	String target_directory;
 	String partial_download_path;
+	String full_download_path;
 
 	Step current_step = Step::WAITING;
 	int file_size = 0;
@@ -87,9 +88,11 @@ class TemplateDownloader : public HTTPRequest {
 	int64_t _get_fragment_download_size() const;
 	int64_t _get_partial_download_size() const;
 	void _clear_partial_download();
+	void _clear_full_download();
 	Error _request_file_fragment();
 	bool _retry_file_fragment(const String &p_reason);
 	void _download_completed();
+	void _file_download_completed();
 
 	static constexpr int MAX_DOWNLOAD_RETRIES = 3;
 
@@ -99,6 +102,7 @@ protected:
 
 public:
 	Error download_template(const String &p_file_name, const String &p_source);
+	Error download_file(const String &p_file_name, const String &p_source);
 	void cancel_download();
 
 	bool is_downloading() const { return current_step != Step::WAITING; }
@@ -178,6 +182,7 @@ class ExportTemplateManager : public AcceptDialog {
 		String name;
 		String description;
 		PackedStringArray file_list;
+		PackedStringArray debug_symbols;
 	};
 
 	struct FileMetadata {
@@ -188,7 +193,14 @@ class ExportTemplateManager : public AcceptDialog {
 		bool is_missing = false;
 	};
 
-	bool mirrors_empty = true;
+	struct MirrorInfo {
+		String template_url;
+		HashMap<String, String> debug_symbol_urls;
+	};
+
+	LocalVector<MirrorInfo> available_mirrors;
+
+	bool show_debug_symbols = true;
 
 	HashMap<PlatformID, PlatformInfo> platform_map;
 	HashMap<TemplateID, TemplateInfo> template_data;
@@ -226,7 +238,7 @@ class ExportTemplateManager : public AcceptDialog {
 	void _request_mirrors();
 	void _mirrors_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 	void _set_empty_mirror_list();
-	String _get_current_mirror_url() const;
+	const MirrorInfo &_get_current_mirror_info() const;
 	void _update_online_mode();
 	bool _is_online() const;
 	void _force_online_mode();
@@ -234,12 +246,14 @@ class ExportTemplateManager : public AcceptDialog {
 	void _delete_all();
 	void _delete_confirmed();
 	void _delete_file(const TreeItem *p_item);
+	void _uncheck_debug_symbols(TreeItem *p_item);
 	void _tpz_file_selected(const String &p_file);
 
 	void _initialize_template_data();
 	void _update_version_list();
 	void _update_template_tree();
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
+	void _add_template(TemplateID p_id, TreeItem *p_parent, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_sole_template, bool p_is_current_version, bool p_debug_symbols);
 	void _update_install_button();
 	bool _can_download_templates();
 
@@ -248,6 +262,7 @@ class ExportTemplateManager : public AcceptDialog {
 	String _get_template_folder_path(const String &p_version) const;
 	Ref<Texture2D> _get_platform_icon(const String &p_platform_name);
 
+	void _debug_symbols_toggled(bool p_enable);
 	void _version_selected();
 	void _tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 	void _tree_item_edited();
