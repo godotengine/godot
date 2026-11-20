@@ -475,12 +475,6 @@ public:
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
 
-	operator Vector<::RID>() const;
-	operator Vector<Plane>() const;
-	operator Vector<Face3>() const;
-	operator Vector<Variant>() const;
-	operator Vector<StringName>() const;
-
 	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
 	template <typename T>
@@ -884,6 +878,17 @@ public:
 		}
 	}
 };
+
+template <>
+Vector<::RID> Variant::to<Vector<::RID>>() const;
+template <>
+Vector<Plane> Variant::to<Vector<Plane>>() const;
+template <>
+Vector<Face3> Variant::to<Vector<Face3>>() const;
+template <>
+Vector<Variant> Variant::to<Vector<Variant>>() const;
+template <>
+Vector<StringName> Variant::to<Vector<StringName>>() const;
 
 template <>
 IPAddress Variant::to<IPAddress>() const;
