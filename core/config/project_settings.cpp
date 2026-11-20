@@ -1720,6 +1720,7 @@ ProjectSettings::ProjectSettings() {
 	// so that the values can be overridden from project.godot or project.binary.
 
 	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
+	_version = last_version + 1;
 	singleton = this;
 
 #ifdef TOOLS_ENABLED
@@ -1948,6 +1949,7 @@ ProjectSettings::ProjectSettings(const String &p_path) {
 
 ProjectSettings::~ProjectSettings() {
 	if (singleton == this) {
+		last_version = _version;
 		singleton = nullptr;
 	}
 }
