@@ -451,6 +451,23 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RSE::SHADER_PARTICLES].functions["process"].stage_functions["emit_subparticle"] = emit_vertex_func;
 	}
 
+	{
+		ShaderLanguage::StageFunctionInfo get_bone_transform_vertex_func;
+		get_bone_transform_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("index", ShaderLanguage::TYPE_UINT));
+		get_bone_transform_vertex_func.return_type = ShaderLanguage::TYPE_MAT4;
+		shader_modes[RSE::SHADER_PARTICLES].functions["start"].stage_functions["get_bone_transform"] = get_bone_transform_vertex_func;
+		shader_modes[RSE::SHADER_PARTICLES].functions["process"].stage_functions["get_bone_transform"] = get_bone_transform_vertex_func;
+	}
+	{
+		ShaderLanguage::StageFunctionInfo get_skinned_position_vertex_func;
+		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("point", ShaderLanguage::TYPE_UINT));
+		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("point_count", ShaderLanguage::TYPE_UINT));
+		get_skinned_position_vertex_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("out_position", ShaderLanguage::TYPE_VEC3));
+		get_skinned_position_vertex_func.return_type = ShaderLanguage::TYPE_VOID;
+		shader_modes[RSE::SHADER_PARTICLES].functions["start"].stage_functions["get_skinned_position"] = get_skinned_position_vertex_func;
+		shader_modes[RSE::SHADER_PARTICLES].functions["process"].stage_functions["get_skinned_position"] = get_skinned_position_vertex_func;
+	}
+
 	// particles render modes
 	{
 		shader_modes[RSE::SHADER_PARTICLES].modes.push_back({ PNAME("collision_use_scale") });
