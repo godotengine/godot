@@ -389,6 +389,7 @@ class WaylandEmbedder {
 		&wl_subsurface_interface,
 		&wl_surface_interface,
 		&wl_touch_interface,
+		&wl_fixes_interface,
 
 		// xdg-shell
 		&xdg_wm_base_interface,
