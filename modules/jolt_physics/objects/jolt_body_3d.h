@@ -205,7 +205,20 @@ public:
 	void set_max_contacts_reported(int p_count);
 
 	int get_contact_count() const { return contact_count; }
+	const LocalVector<JoltJoint3D *> &get_joints() const { return joints; } // komm64
 	const Contact &get_contact(int p_index) { return contacts[p_index]; }
+
+	// For a space's snapshot: what the last step left for the game to read
+	// (its gravity, damping and contacts), set back.
+	void snapshot_set_step(const Vector3 &p_gravity, float p_linear_damp, float p_angular_damp, const LocalVector<Contact> &p_contacts) {
+		gravity = p_gravity;
+		total_linear_damp = p_linear_damp;
+		total_angular_damp = p_angular_damp;
+		contact_count = MIN((int)p_contacts.size(), (int)contacts.size());
+		for (int i = 0; i < contact_count; i++) {
+			contacts[i] = p_contacts[i];
+		}
+	}
 	virtual bool reports_contacts() const override { return !contacts.is_empty(); }
 
 	bool reports_all_kinematic_contacts() const;

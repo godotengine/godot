@@ -258,34 +258,16 @@ PackedVector3Array JoltPhysicsServer3D::space_get_contacts(RID p_space) const {
 #endif
 }
 
-// The space's areas and rigid bodies, by RID.
-static bool _snapshot_objects(const JoltPhysicsServer3D *p_server, const TypedArray<RID> &p_rids, LocalVector<JoltObject3D *> &r_objects) {
-	for (int i = 0; i < p_rids.size(); i++) {
-		const RID rid = p_rids[i];
-		JoltObject3D *object = p_server->get_body(rid);
-		if (object == nullptr) {
-			object = p_server->get_area(rid);
-		}
-		ERR_FAIL_NULL_V_MSG(object, false, "Physics snapshot: not an area or a rigid body.");
-		r_objects.push_back(object);
-	}
-	return true;
-}
-
-PackedByteArray JoltPhysicsServer3D::space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) {
+Dictionary JoltPhysicsServer3D::space_snapshot_get_state(RID p_space) {
 	JoltSpace3D *space = space_owner.get_or_null(p_space);
-	ERR_FAIL_NULL_V(space, PackedByteArray());
-	LocalVector<JoltObject3D *> objects;
-	ERR_FAIL_COND_V(!_snapshot_objects(this, p_objects, objects), PackedByteArray());
-	return space->snapshot_get_state(objects);
+	ERR_FAIL_NULL_V(space, Dictionary());
+	return space->snapshot_get_state();
 }
 
-bool JoltPhysicsServer3D::space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) {
+bool JoltPhysicsServer3D::space_snapshot_set_state(RID p_space, const PackedInt64Array &p_owners, const PackedByteArray &p_state) {
 	JoltSpace3D *space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_V(space, false);
-	LocalVector<JoltObject3D *> objects;
-	ERR_FAIL_COND_V(!_snapshot_objects(this, p_objects, objects), false);
-	return space->snapshot_set_state(objects, p_state);
+	return space->snapshot_set_state(p_owners, p_state);
 }
 
 int JoltPhysicsServer3D::space_get_contact_count(RID p_space) const {

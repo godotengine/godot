@@ -721,8 +721,8 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("space_is_active", "space"), &PhysicsServer3D::space_is_active);
 	ClassDB::bind_method(D_METHOD("space_set_param", "space", "param", "value"), &PhysicsServer3D::space_set_param);
 	ClassDB::bind_method(D_METHOD("space_get_param", "space", "param"), &PhysicsServer3D::space_get_param);
-	ClassDB::bind_method(D_METHOD("space_snapshot_get_state", "space", "objects"), &PhysicsServer3D::space_snapshot_get_state);
-	ClassDB::bind_method(D_METHOD("space_snapshot_set_state", "space", "objects", "state"), &PhysicsServer3D::space_snapshot_set_state);
+	ClassDB::bind_method(D_METHOD("space_snapshot_get_state", "space"), &PhysicsServer3D::space_snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("space_snapshot_set_state", "space", "owners", "state"), &PhysicsServer3D::space_snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("space_get_direct_state", "space"), &PhysicsServer3D::space_get_direct_state);
 
 	ClassDB::bind_method(D_METHOD("area_create"), &PhysicsServer3D::area_create);

@@ -206,11 +206,21 @@ public:
 	/// Reset the Body::EFlags::InvalidateContactCache flag for all bodies. All contact pairs in the contact cache will now by valid again.
 	void							ValidateContactCacheForAllBodies();
 
+	/// komm64: every body's contact cache valid again (for a restored state). Unlike ValidateContactCacheForAllBodies,
+	/// a body made again under an id that was invalidated is fine.
+	void							ResetContactCacheInvalidation();
+
 	/// Saving state for replay
 	void							SaveState(StateRecorder &inStream, const StateRecorderFilter *inFilter) const;
 
 	/// Restoring state for replay. Returns false if failed.
 	bool							RestoreState(StateRecorder &inStream);
+
+	/// Save the state of the body IDs: which indices are free, in the order they are given out again, and each index's sequence number
+	void							SaveBodyIDState(StateRecorder &inStream) const;
+
+	/// Restore the state of the body IDs; the same indices must be in use as when it was saved
+	bool							RestoreBodyIDState(StateRecorder &inStream);
 
 	/// Save the state of a single body for replay
 	void							SaveBodyState(const Body &inBody, StateRecorder &inStream) const;

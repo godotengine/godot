@@ -527,6 +527,7 @@ Patches:
 - `0004-backport-upstream-commit-e0a6a9a16.patch` (GH-115327)
 - `0005-backport-upstream-commit-449b645.patch` (GH-117194)
 - `0006-backport-upstream-commit-63765d1.patch` (GH-118393)
+- `0007-komm64-body-id-state.patch` (komm64: save and restore which body IDs are given out next, for snapshots)
 
 
 ## libbacktrace

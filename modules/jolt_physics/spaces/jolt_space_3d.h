@@ -76,7 +76,10 @@ class JoltSpace3D {
 	JoltPhysicsDirectSpaceState3D *direct_state = nullptr;
 	JoltArea3D *default_area = nullptr;
 
-	JPH::BodyID snapshot_body_id; // the id the next body made gets, while a snapshot is set
+	// While a snapshot is set: the object being put back, and the id its body
+	// gets each time it is made (it may be made again while it is put back).
+	const JoltObject3D *snapshot_object = nullptr;
+	JPH::BodyID snapshot_body_id;
 
 	float last_step = 0.0f;
 
@@ -143,8 +146,9 @@ public:
 	void remove_object(const JPH::BodyID &p_jolt_id);
 	void flush_pending_objects();
 
-	PackedByteArray snapshot_get_state(const LocalVector<JoltObject3D *> &p_objects);
-	bool snapshot_set_state(const LocalVector<JoltObject3D *> &p_objects, const PackedByteArray &p_state);
+	LocalVector<JoltObject3D *> snapshot_objects();
+	Dictionary snapshot_get_state();
+	bool snapshot_set_state(const PackedInt64Array &p_owners, const PackedByteArray &p_state);
 
 	void set_is_object_sleeping(const JPH::BodyID &p_jolt_id, bool p_enable);
 

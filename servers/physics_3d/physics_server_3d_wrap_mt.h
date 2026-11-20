@@ -134,14 +134,14 @@ public:
 		return physics_server_3d->space_get_contact_count(p_space);
 	}
 
-	virtual PackedByteArray space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) override {
-		ERR_FAIL_COND_V_MSG(create_thread, PackedByteArray(), "Physics snapshots need physics/3d/run_on_separate_thread off.");
-		return physics_server_3d->space_snapshot_get_state(p_space, p_objects);
+	virtual Dictionary space_snapshot_get_state(RID p_space) override {
+		ERR_FAIL_COND_V_MSG(create_thread, Dictionary(), "Physics snapshots need physics/3d/run_on_separate_thread off.");
+		return physics_server_3d->space_snapshot_get_state(p_space);
 	}
 
-	virtual bool space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) override {
+	virtual bool space_snapshot_set_state(RID p_space, const PackedInt64Array &p_owners, const PackedByteArray &p_state) override {
 		ERR_FAIL_COND_V_MSG(create_thread, false, "Physics snapshots need physics/3d/run_on_separate_thread off.");
-		return physics_server_3d->space_snapshot_set_state(p_space, p_objects, p_state);
+		return physics_server_3d->space_snapshot_set_state(p_space, p_owners, p_state);
 	}
 
 	/* AREA API */

@@ -312,11 +312,15 @@ public:
 	virtual int space_get_contact_count(RID p_space) const = 0;
 
 	// The engine's own state of a space (sleep, contacts, solver warm start),
-	// for engines that can hand it out; empty from the others. The given
-	// objects are the space's areas and bodies: setting the state gives each
-	// one the engine identity it had when the state was taken, by position.
-	virtual PackedByteArray space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) { return PackedByteArray(); }
-	virtual bool space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) { return false; }
+	// for engines that can hand it out; empty from the others.
+	// {"owners": PackedInt64Array, "state": PackedByteArray}: "owners" holds,
+	// for each area and body of the space in the order they were made, the
+	// instance id of the object it is attached to. Setting the state takes
+	// those owners as they are now (the same objects, or the ones made again
+	// in their place), and gives each owner's k-th area or body, in the order
+	// they were made, the identity its k-th one had.
+	virtual Dictionary space_snapshot_get_state(RID p_space) { return Dictionary(); }
+	virtual bool space_snapshot_set_state(RID p_space, const PackedInt64Array &p_owners, const PackedByteArray &p_state) { return false; }
 
 	//missing space parameters
 

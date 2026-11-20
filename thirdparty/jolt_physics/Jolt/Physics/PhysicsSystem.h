@@ -167,6 +167,13 @@ public:
 	/// Restoring state for replay. Returns false if failed.
 	bool						RestoreState(StateRecorder &inStream, const StateRecorderFilter *inFilter = nullptr);
 
+	/// Save / restore the state of the body IDs (see BodyManager::SaveBodyIDState): which are given out next
+	void						SaveBodyIDState(StateRecorder &inStream) const					{ mBodyManager.SaveBodyIDState(inStream); }
+	bool						RestoreBodyIDState(StateRecorder &inStream)						{ return mBodyManager.RestoreBodyIDState(inStream); }
+
+	/// komm64: every body's contact cache valid again, as after a step (the state does not hold which ones a change since invalidated)
+	void						ResetContactCacheInvalidation()								{ mBodyManager.ResetContactCacheInvalidation(); }
+
 	/// Saving state of a single body.
 	void						SaveBodyState(const Body &inBody, StateRecorder &inStream) const;
 

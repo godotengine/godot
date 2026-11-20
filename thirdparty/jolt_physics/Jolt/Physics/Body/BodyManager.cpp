@@ -401,6 +401,72 @@ bool BodyManager::AddBodyWithCustomID(Body *ioBody, const BodyID &inBodyID)
 	return true;
 }
 
+void BodyManager::SaveBodyIDState(StateRecorder &inStream) const
+{
+	UniqueLock lock(mBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::BodiesList));
+
+	uint32 size = uint32(mBodies.size());
+	inStream.Write(size);
+	for (uint32 i = 0; i < size; ++i)
+		inStream.Write(mBodySequenceNumbers[i]);
+
+	Array<uint32> free_list;
+	for (uintptr_t start = mBodyIDFreeListStart; start != cBodyIDFreeListEnd; start = uintptr_t(mBodies[start >> cFreedBodyIndexShift]))
+		free_list.push_back(uint32(start >> cFreedBodyIndexShift));
+	inStream.Write(uint32(free_list.size()));
+	for (uint32 idx : free_list)
+		inStream.Write(idx);
+}
+
+bool BodyManager::RestoreBodyIDState(StateRecorder &inStream)
+{
+	uint32 size = 0;
+	inStream.Read(size);
+	if (size > mBodies.capacity())
+		return false;
+	Array<uint8> sequence_numbers(size, 0);
+	for (uint8 &seq_no : sequence_numbers)
+		inStream.Read(seq_no);
+	uint32 free_count = 0;
+	inStream.Read(free_count);
+	if (free_count > size)
+		return false;
+	Array<uint32> free_list(free_count, 0);
+	Array<bool> is_free(size, false);
+	for (uint32 &idx : free_list)
+	{
+		inStream.Read(idx);
+		if (idx >= size || is_free[idx])
+			return false;
+		is_free[idx] = true;
+	}
+
+	UniqueLock lock(mBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::BodiesList));
+
+	// The indices in use must be the ones saved
+	for (uint32 i = 0; i < uint32(mBodies.size()); ++i)
+		if (sIsValidBodyPointer(mBodies[i]) != (i < size && !is_free[i]))
+			return false;
+	for (uint32 i = uint32(mBodies.size()); i < size; ++i)
+		if (!is_free[i])
+			return false;
+
+	mBodies.resize(size);
+	uintptr_t next = cBodyIDFreeListEnd;
+	for (uint32 k = free_count; k > 0; --k)
+	{
+		uint32 idx = free_list[k - 1];
+		mBodies[idx] = (Body *)next;
+		next = (uintptr_t(idx) << cFreedBodyIndexShift) | cIsFreedBody;
+	}
+	mBodyIDFreeListStart = next;
+
+	// Indices never used have sequence number 0
+	for (uint32 i = 0; i < uint32(mBodySequenceNumbers.size()); ++i)
+		mBodySequenceNumbers[i] = i < size? sequence_numbers[i] : 0;
+	return true;
+}
+
 Body *BodyManager::RemoveBodyInternal(const BodyID &inBodyID)
 {
 	// Get body
@@ -1139,6 +1205,19 @@ void BodyManager::InvalidateContactCacheForBody(Body &ioBody)
 		lock_guard lock(mBodiesCacheInvalidMutex);
 		mBodiesCacheInvalid.push_back(ioBody.GetID());
 	}
+}
+
+void BodyManager::ResetContactCacheInvalidation()
+{
+	lock_guard lock(mBodiesCacheInvalidMutex);
+
+	for (const BodyID &b : mBodiesCacheInvalid)
+	{
+		Body *body = TryGetBody(b);
+		if (body != nullptr && body->IsCollisionCacheInvalid())
+			body->ValidateContactCacheInternal();
+	}
+	mBodiesCacheInvalid.clear();
 }
 
 void BodyManager::ValidateContactCacheForAllBodies()

@@ -82,6 +82,8 @@ public:
 	JoltSpace3D *get_space() const;
 
 	JPH::Constraint *get_jolt_ref() const { return jolt_ref; }
+	JoltBody3D *get_body_a() const { return body_a; } // komm64
+	JoltBody3D *get_body_b() const { return body_b; }
 
 	bool is_enabled() const { return enabled; }
 	void set_enabled(bool p_enabled);
