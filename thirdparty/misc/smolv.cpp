@@ -1121,7 +1121,7 @@ static_assert(_SMOLV_ARRAY_SIZE(kSpirvOpData) == kKnownOpsCount, "kSpirvOpData t
 // Instruction encoding depends on the table that describes the various SPIR-V opcodes.
 // Whenever we change or expand the table, we need to bump up the SMOL-V version, and make
 // sure that we can still decode files encoded by an older version.
-static int smolv_GetKnownOpsCount(int version)
+static inline int smolv_GetKnownOpsCount(int version)
 {
 	if (version == 0)
 		return SpvOpModuleProcessed+1;
@@ -1130,35 +1130,35 @@ static int smolv_GetKnownOpsCount(int version)
 	return 0;
 }
 
-static bool smolv_OpHasResult(SpvOp op, int opsCount)
+static inline bool smolv_OpHasResult(SpvOp op, int opsCount)
 {
 	if (op < 0 || op >= opsCount)
 		return false;
 	return kSpirvOpData[op].hasResult != 0;
 }
 
-static bool smolv_OpHasType(SpvOp op, int opsCount)
+static inline bool smolv_OpHasType(SpvOp op, int opsCount)
 {
 	if (op < 0 || op >= opsCount)
 		return false;
 	return kSpirvOpData[op].hasType != 0;
 }
 
-static int smolv_OpDeltaFromResult(SpvOp op, int opsCount)
+static inline int smolv_OpDeltaFromResult(SpvOp op, int opsCount)
 {
 	if (op < 0 || op >= opsCount)
 		return 0;
 	return kSpirvOpData[op].deltaFromResult;
 }
 
-static bool smolv_OpVarRest(SpvOp op, int opsCount)
+static inline bool smolv_OpVarRest(SpvOp op, int opsCount)
 {
 	if (op < 0 || op >= opsCount)
 		return false;
 	return kSpirvOpData[op].varrest != 0;
 }
 
-static bool smolv_OpDebugInfo(SpvOp op, int opsCount)
+static inline bool smolv_OpDebugInfo(SpvOp op, int opsCount)
 {
 	return
 		op == SpvOpSourceContinued ||
@@ -1173,7 +1173,7 @@ static bool smolv_OpDebugInfo(SpvOp op, int opsCount)
 }
 
 
-static int smolv_DecorationExtraOps(int dec)
+static inline int smolv_DecorationExtraOps(int dec)
 {
 	if (dec == 0 || (dec >= 2 && dec <= 5)) // RelaxedPrecision, Block..ColMajor
 		return 0;
@@ -1186,7 +1186,7 @@ static int smolv_DecorationExtraOps(int dec)
 // --------------------------------------------------------------------------------------------
 
 
-static bool smolv_CheckGenericHeader(const uint32_t* words, size_t wordCount, uint32_t expectedMagic, uint32_t versionMask)
+static inline bool smolv_CheckGenericHeader(const uint32_t* words, size_t wordCount, uint32_t expectedMagic, uint32_t versionMask)
 {
 	if (!words)
 		return false;
@@ -1208,13 +1208,13 @@ static const int kSmolHeaderMagic = 0x534D4F4C; // "SMOL"
 
 static const int kSmolCurrEncodingVersion = 1;
 
-static bool smolv_CheckSpirVHeader(const uint32_t* words, size_t wordCount)
+static inline bool smolv_CheckSpirVHeader(const uint32_t* words, size_t wordCount)
 {
 	//@TODO: if SPIR-V header magic was reversed, that means the file got written
 	// in a "big endian" order. Need to byteswap all words then.
 	return smolv_CheckGenericHeader(words, wordCount, kSpirVHeaderMagic, 0xFFFFFFFF);
 }
-static bool smolv_CheckSmolHeader(const uint8_t* bytes, size_t byteCount)
+static inline bool smolv_CheckSmolHeader(const uint8_t* bytes, size_t byteCount)
 {
 	if (!smolv_CheckGenericHeader((const uint32_t*)bytes, byteCount/4, kSmolHeaderMagic, 0x00FFFFFF))
 		return false;
@@ -1228,7 +1228,7 @@ static bool smolv_CheckSmolHeader(const uint8_t* bytes, size_t byteCount)
 }
 
 
-static void smolv_Write4(smolv::ByteArray& arr, uint32_t v)
+static inline void smolv_Write4(smolv::ByteArray& arr, uint32_t v)
 {
 	arr.push_back(v & 0xFF);
 	arr.push_back((v >> 8) & 0xFF);
@@ -1236,14 +1236,23 @@ static void smolv_Write4(smolv::ByteArray& arr, uint32_t v)
 	arr.push_back(v >> 24);
 }
 
-static void smolv_Write4(uint8_t*& buf, uint32_t v)
+static inline void smolv_Write4(uint8_t*& buf, uint32_t v)
 {
 	memcpy(buf, &v, 4);
 	buf += 4;
 }
 
+static inline bool smolv_Write4Safe(uint8_t*& buf, const uint8_t* bufEnd, uint32_t v)
+{
+	if (bufEnd - buf < 4)
+		return false;
+	memcpy(buf, &v, 4);
+	buf += 4;
+	return true;
+}
 
-static bool smolv_Read4(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outv)
+
+static inline bool smolv_Read4(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outv)
 {
 	if (data + 4 > dataEnd)
 		return false;
@@ -1260,7 +1269,7 @@ static bool smolv_Read4(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& 
 // - other 7 bits are the actual value payload.
 // Takes 1-5 bytes to encode an integer (values between 0 and 127 take one byte, etc.).
 
-static void smolv_WriteVarint(smolv::ByteArray& arr, uint32_t v)
+static inline void smolv_WriteVarint(smolv::ByteArray& arr, uint32_t v)
 {
 	while (v > 127)
 	{
@@ -1270,7 +1279,7 @@ static void smolv_WriteVarint(smolv::ByteArray& arr, uint32_t v)
 	arr.push_back(v & 127);
 }
 
-static bool smolv_ReadVarint(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outVal)
+static inline bool smolv_ReadVarint(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outVal)
 {
 	uint32_t v = 0;
 	uint32_t shift = 0;
@@ -1287,12 +1296,12 @@ static bool smolv_ReadVarint(const uint8_t*& data, const uint8_t* dataEnd, uint3
 	return true; //@TODO: report failures
 }
 
-static uint32_t smolv_ZigEncode(int32_t i)
+static inline uint32_t smolv_ZigEncode(int32_t i)
 {
 	return (uint32_t(i) << 1) ^ (i >> 31);
 }
 
-static int32_t smolv_ZigDecode(uint32_t u)
+static inline int32_t smolv_ZigDecode(uint32_t u)
 {
 	 return (u & 1) ? ((u >> 1) ^ ~0) : (u >> 1);
 }
@@ -1302,7 +1311,7 @@ static int32_t smolv_ZigDecode(uint32_t u)
 // more compact varint encoding. This basically swaps rarely used op values that are < 16 with the
 // ones that are common.
 
-static SpvOp smolv_RemapOp(SpvOp op)
+static inline SpvOp smolv_RemapOp(SpvOp op)
 {
 #	define _SMOLV_SWAP_OP(op1,op2) if (op==op1) return op2; if (op==op2) return op1
 	_SMOLV_SWAP_OP(SpvOpDecorate,SpvOpNop); // 0: 24%
@@ -1331,7 +1340,7 @@ static SpvOp smolv_RemapOp(SpvOp op)
 // instructions they are guaranteed to be some other minimum length. Adjust the length before encoding,
 // and after decoding accordingly.
 
-static uint32_t smolv_EncodeLen(SpvOp op, uint32_t len)
+static inline uint32_t smolv_EncodeLen(SpvOp op, uint32_t len)
 {
 	len--;
 	if (op == SpvOpVectorShuffle)			len -= 4;
@@ -1342,7 +1351,7 @@ static uint32_t smolv_EncodeLen(SpvOp op, uint32_t len)
 	return len;
 }
 
-static uint32_t smolv_DecodeLen(SpvOp op, uint32_t len)
+static inline uint32_t smolv_DecodeLen(SpvOp op, uint32_t len)
 {
 	len++;
 	if (op == SpvOpVectorShuffle)			len += 4;
@@ -1358,7 +1367,7 @@ static uint32_t smolv_DecodeLen(SpvOp op, uint32_t len)
 // 0x LLLL OOOO is how SPIR-V encodes it (L=length, O=op), we shuffle into:
 // 0x LLLO OOLO, so that common case (op<16, len<8) is encoded into one byte.
 
-static bool smolv_WriteLengthOp(smolv::ByteArray& arr, uint32_t len, SpvOp op)
+static inline bool smolv_WriteLengthOp(smolv::ByteArray& arr, uint32_t len, SpvOp op)
 {
 	len = smolv_EncodeLen(op, len);
 	// SPIR-V length field is 16 bits; if we get a larger value that means something
@@ -1372,7 +1381,7 @@ static bool smolv_WriteLengthOp(smolv::ByteArray& arr, uint32_t len, SpvOp op)
 	return true;
 }
 
-static bool smolv_ReadLengthOp(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outLen, SpvOp& outOp)
+static inline bool smolv_ReadLengthOp(const uint8_t*& data, const uint8_t* dataEnd, uint32_t& outLen, SpvOp& outOp)
 {
 	uint32_t val;
 	if (!smolv_ReadVarint(data, dataEnd, val))
@@ -1619,16 +1628,19 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 	const uint8_t* bytesEnd = bytes + smolvSize;
 
 	uint8_t* outSpirv = (uint8_t*)spirvOutputBuffer;
-	
+	// bound writes by neededBufferSize bytes; if passed buffer was smaller
+	// then we already return above.
+	const uint8_t* outSpirvEnd = (const uint8_t*)spirvOutputBuffer + neededBufferSize;
+
 	uint32_t val;
 	int smolVersion = 0;
 
 	// header
-	smolv_Write4(outSpirv, kSpirVHeaderMagic); bytes += 4;
-	smolv_Read4(bytes, bytesEnd, val); smolVersion = val >> 24; val &= 0x00FFFFFF; smolv_Write4(outSpirv, val); // version
-	smolv_Read4(bytes, bytesEnd, val); smolv_Write4(outSpirv, val); // generator
-	smolv_Read4(bytes, bytesEnd, val); smolv_Write4(outSpirv, val); // bound
-	smolv_Read4(bytes, bytesEnd, val); smolv_Write4(outSpirv, val); // schema
+	if (!smolv_Write4Safe(outSpirv, outSpirvEnd, kSpirVHeaderMagic)) return false; bytes += 4;
+	if (!smolv_Read4(bytes, bytesEnd, val)) return false; smolVersion = val >> 24; val &= 0x00FFFFFF; if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false; // version
+	if (!smolv_Read4(bytes, bytesEnd, val)) return false; if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false; // generator
+	if (!smolv_Read4(bytes, bytesEnd, val)) return false; if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false; // bound
+	if (!smolv_Read4(bytes, bytesEnd, val)) return false; if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false; // schema
 	bytes += 4; // decode buffer size
 	
 	// there are two SMOL-V encoding versions, both not indicating anything in their header version field:
@@ -1651,7 +1663,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 		const bool wasSwizzle = (op == SpvOpVectorShuffleCompact);
 		if (wasSwizzle)
 			op = SpvOpVectorShuffle;
-		smolv_Write4(outSpirv, (instrLen << 16) | op);
+		if (!smolv_Write4Safe(outSpirv, outSpirvEnd, (instrLen << 16) | op)) return false;
 
 		size_t ioffs = 1;
 
@@ -1659,7 +1671,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 		if (smolv_OpHasType(op, knownOpsCount))
 		{
 			if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
-			smolv_Write4(outSpirv, val);
+			if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 			ioffs++;
 		}
 		// read result as delta+varint, if we have it
@@ -1667,7 +1679,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 		{
 			if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
 			val = prevResult + smolv_ZigDecode(val);
-			smolv_Write4(outSpirv, val);
+			if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 			prevResult = val;
 			ioffs++;
 		}
@@ -1678,7 +1690,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 			if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
 			// "before zero" version did not use zig encoding for the value
 			val = prevDecorate + (beforeZeroVersion ? val : smolv_ZigDecode(val));
-			smolv_Write4(outSpirv, val);
+			if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 			prevDecorate = val;
 			ioffs++;
 		}
@@ -1715,11 +1727,11 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 				// write SPIR-V op+length (unless it's first member decoration, in which case it was written before)
 				if (m != 0)
 				{
-					smolv_Write4(outSpirv, (memberLen << 16) | op);
-					smolv_Write4(outSpirv, prevDecorate);
+					if (!smolv_Write4Safe(outSpirv, outSpirvEnd, (memberLen << 16) | op)) return false;
+					if (!smolv_Write4Safe(outSpirv, outSpirvEnd, prevDecorate)) return false;
 				}
-				smolv_Write4(outSpirv, memberIndex);
-				smolv_Write4(outSpirv, memberDec);
+				if (!smolv_Write4Safe(outSpirv, outSpirvEnd, memberIndex)) return false;
+				if (!smolv_Write4Safe(outSpirv, outSpirvEnd, memberDec)) return false;
 				// Special case for Offset decorations
 				if (memberDec == 35) // Offset
 				{
@@ -1727,7 +1739,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 						return false;
 					if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
 					val += prevOffset;
-					smolv_Write4(outSpirv, val);
+					if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 					prevOffset = val;
 				}
 				else
@@ -1735,7 +1747,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 					for (uint32_t i = 4; i < memberLen; ++i)
 					{
 						if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
-						smolv_Write4(outSpirv, val);
+						if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 					}
 				}
 			}
@@ -1757,16 +1769,17 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 			if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
 			if (zigDecodeVals)
 				val = smolv_ZigDecode(val);
-			smolv_Write4(outSpirv, prevResult - val);
+			if (!smolv_Write4Safe(outSpirv, outSpirvEnd, prevResult - val)) return false;
 		}
 
 		if (wasSwizzle && instrLen <= 9)
 		{
+			if (bytes >= bytesEnd) return false;
 			uint32_t swizzle = *bytes++;
-			if (instrLen > 5) smolv_Write4(outSpirv, (swizzle >> 6) & 3);
-			if (instrLen > 6) smolv_Write4(outSpirv, (swizzle >> 4) & 3);
-			if (instrLen > 7) smolv_Write4(outSpirv, (swizzle >> 2) & 3);
-			if (instrLen > 8) smolv_Write4(outSpirv, swizzle & 3);
+			if (instrLen > 5) { if (!smolv_Write4Safe(outSpirv, outSpirvEnd, (swizzle >> 6) & 3)) return false; }
+			if (instrLen > 6) { if (!smolv_Write4Safe(outSpirv, outSpirvEnd, (swizzle >> 4) & 3)) return false; }
+			if (instrLen > 7) { if (!smolv_Write4Safe(outSpirv, outSpirvEnd, (swizzle >> 2) & 3)) return false; }
+			if (instrLen > 8) { if (!smolv_Write4Safe(outSpirv, outSpirvEnd, swizzle & 3)) return false; }
 		}
 		else if (smolv_OpVarRest(op, knownOpsCount))
 		{
@@ -1774,7 +1787,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 			for (; ioffs < instrLen; ++ioffs)
 			{
 				if (!smolv_ReadVarint(bytes, bytesEnd, val)) return false;
-				smolv_Write4(outSpirv, val);
+				if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 			}
 		}
 		else
@@ -1783,7 +1796,7 @@ bool smolv::Decode(const void* smolvData, size_t smolvSize, void* spirvOutputBuf
 			for (; ioffs < instrLen; ++ioffs)
 			{
 				if (!smolv_Read4(bytes, bytesEnd, val)) return false;
-				smolv_Write4(outSpirv, val);
+				if (!smolv_Write4Safe(outSpirv, outSpirvEnd, val)) return false;
 			}
 		}
 	}
