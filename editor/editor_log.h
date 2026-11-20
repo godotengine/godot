@@ -95,7 +95,6 @@ private:
 			toggle_button->set_text(itos(message_count));
 			toggle_button->set_accessibility_name(p_name);
 			toggle_button->set_tooltip_text(p_tooltip);
-			toggle_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 			toggle_button->set_theme_type_variation("EditorLogFilterButton");
 			// When toggled call the callback and pass the MessageType this button is for.
 			toggle_button->connect(SceneStringName(toggled), p_toggled_callback.bind(type));
