@@ -866,20 +866,21 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("resizer", "GraphFrame", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphFrame", control_font_color);
 
-	// GraphFrame's title Label
+	// GraphFrame's title LineEdit
 
-	theme->set_type_variation("GraphFrameTitleLabel", "Label");
-
-	theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLabel", memnew(StyleBoxEmpty));
-	theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLabel", 22);
-	theme->set_color(SceneStringName(font_color), "GraphFrameTitleLabel", Color(1, 1, 1));
-	theme->set_color("font_shadow_color", "GraphFrameTitleLabel", Color(0, 0, 0, 0));
-	theme->set_color("font_outline_color", "GraphFrameTitleLabel", Color(1, 1, 1));
-	theme->set_constant("shadow_offset_x", "GraphFrameTitleLabel", 1 * scale);
-	theme->set_constant("shadow_offset_y", "GraphFrameTitleLabel", 1 * scale);
-	theme->set_constant("outline_size", "GraphFrameTitleLabel", 0);
-	theme->set_constant("shadow_outline_size", "GraphFrameTitleLabel", 1 * scale);
-	theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * scale);
+	theme->set_type_variation("GraphFrameTitleLineEdit", "LineEdit");
+	theme->set_stylebox(CoreStringName(normal), "GraphFrameTitleLineEdit", memnew(StyleBoxEmpty));
+	theme->set_stylebox("read_only", "GraphFrameTitleLineEdit", memnew(StyleBoxEmpty));
+	theme->set_font_size(SceneStringName(font_size), "GraphFrameTitleLineEdit", 22);
+	theme->set_color(SceneStringName(font_color), "GraphFrameTitleLineEdit", Color(1, 1, 1));
+	theme->set_color("font_uneditable_color", "GraphFrameTitleLineEdit", Color(1, 1, 1));
+	theme->set_color("font_shadow_color", "GraphFrameTitleLineEdit", Color(0, 0, 0, 0));
+	theme->set_color("font_outline_color", "GraphFrameTitleLineEdit", Color(1, 1, 1));
+	theme->set_constant("shadow_offset_x", "GraphFrameTitleLineEdit", 1 * scale);
+	theme->set_constant("shadow_offset_y", "GraphFrameTitleLineEdit", 1 * scale);
+	theme->set_constant("outline_size", "GraphFrameTitleLineEdit", 0);
+	theme->set_constant("shadow_outline_size", "GraphFrameTitleLineEdit", 1 * scale);
+	theme->set_constant("line_spacing", "GraphFrameTitleLineEdit", 3 * scale);
 
 	// Tree
 

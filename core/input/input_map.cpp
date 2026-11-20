@@ -381,6 +381,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_cut",                                        TTRC("Cut") },
 	{ "ui_copy",                                       TTRC("Copy") },
 	{ "ui_paste",                                      TTRC("Paste") },
+	{ "ui_paste_unformatted",                          TTRC("Paste Unformatted") },
 	{ "ui_focus_mode",                                 TTRC("Toggle Tab Focus Mode") },
 	{ "ui_undo",                                       TTRC("Undo") },
 	{ "ui_redo",                                       TTRC("Redo") },
@@ -551,6 +552,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::V | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::INSERT | KeyModifierMask::SHIFT));
 	default_builtin_cache.insert("ui_paste", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::V | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_paste_unformatted", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::Z | KeyModifierMask::CMD_OR_CTRL));
