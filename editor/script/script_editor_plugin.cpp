@@ -2609,6 +2609,8 @@ bool DocumentEditorContainer::edit(const Ref<Resource> &p_resource, int p_line, 
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 		// Syntax highlighting.
 		bool highlighter_set = false;
+		// If not null then it is a shader text edtor.
+		bool is_shader_editor = Object::cast_to<ShaderTextEditor>(teb) != nullptr;
 		for (int i = 0; i < syntax_highlighters.size(); i++) {
 			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
 			if (highlighter.is_null()) {
@@ -2630,15 +2632,16 @@ bool DocumentEditorContainer::edit(const Ref<Resource> &p_resource, int p_line, 
 				continue;
 			}
 
-			if (languages.has(p_resource->get_path().get_extension())) {
-				teb->set_syntax_highlighter(highlighter);
-				highlighter_set = true;
+			// Shader resources always default to the shader highlighter, regardless of their path.
+			if (is_shader_editor) {
+				if (languages.has("gdshader")) {
+					teb->set_syntax_highlighter(highlighter);
+					highlighter_set = true;
+				}
 				continue;
 			}
 
-			// For built-in shaders, which do not use file extensions in their path.
-			ShaderTextEditor *ste = Object::cast_to<ShaderTextEditor>(teb);
-			if (ste && languages.has("gdshader")) {
+			if (languages.has(p_resource->get_path().get_extension())) {
 				teb->set_syntax_highlighter(highlighter);
 				highlighter_set = true;
 			}
