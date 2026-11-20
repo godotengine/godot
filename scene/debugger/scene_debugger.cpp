@@ -785,6 +785,8 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *copy = node->duplicate();
 #endif // TOOLS_ENABLED
 
+	ERR_FAIL_NULL(copy);
+
 	// Handle Unique Nodes.
 	for (int i = 0; i < copy->get_child_count(false); i++) {
 		_set_node_owner_recursive(copy->get_child(i, false), copy);
