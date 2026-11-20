@@ -49,6 +49,9 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+	if (is_layout_rtl()) {
+		p_scroll_vec.x = -p_scroll_vec.x;
+	}
 	panning += p_scroll_vec;
 	_update_zoom_and_panning(true);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
@@ -124,6 +127,25 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vec
 		alternative_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
 
+	// Ensure that tiles are positioned correctly in both LTR and RTL layouts.
+	bool is_rtl = is_layout_rtl();
+	if (is_rtl) {
+		float end = base_tiles_control_size.x * zoom;
+		float start = end - base_tiles_control_size.x;
+		base_tiles_drawing_root->set_offset(SIDE_RIGHT, end);
+		base_tiles_drawing_root->set_offset(SIDE_LEFT, start);
+
+		end = alternative_tiles_control_size.x * zoom;
+		start = end - alternative_tiles_control_size.x;
+		alternative_tiles_drawing_root->set_offset(SIDE_RIGHT, end);
+		alternative_tiles_drawing_root->set_offset(SIDE_LEFT, start);
+	} else {
+		base_tiles_drawing_root->set_offset(SIDE_RIGHT, base_tiles_control_size.x);
+		base_tiles_drawing_root->set_offset(SIDE_LEFT, 0);
+		alternative_tiles_drawing_root->set_offset(SIDE_RIGHT, alternative_tiles_control_size.x);
+		alternative_tiles_drawing_root->set_offset(SIDE_LEFT, 0);
+	}
+
 	// Update the margin container's margins.
 	const char *constants[] = { "margin_left", "margin_top", "margin_right", "margin_bottom" };
 	for (int i = 0; i < 4; i++) {
@@ -137,6 +159,9 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vec
 	// Zoom on the position.
 	if (p_zoom_on_mouse_pos) {
 		Vector2 relative_mpos = p_mouse_pos - get_size() / 2;
+		if (is_rtl) {
+			relative_mpos.x = -relative_mpos.x;
+		}
 		panning = (panning - relative_mpos) * zoom / previous_zoom + relative_mpos;
 	} else {
 		// Center of panel.
