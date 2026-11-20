@@ -4,7 +4,7 @@
 		A control used for visual representation of a percentage.
 	</brief_description>
 	<description>
-		A control used for visual representation of a percentage. Shows the fill percentage in the center. Can also be used to show indeterminate progress. For more fill modes, use [TextureProgressBar] instead.
+		A control used for visual representation of a percentage. Can show a progress label. Can also be used to show indeterminate progress. For more fill modes, use [TextureProgressBar] instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,7 +18,16 @@
 		<member name="indeterminate" type="bool" setter="set_indeterminate" getter="is_indeterminate" default="false">
 			When set to [code]true[/code], the progress bar indicates that something is happening with an animation, but does not show the fill percentage or value.
 		</member>
-		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true">
+		<member name="format" type="String" setter="set_format" getter="get_format" default="%d%%">
+			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, no text will be displayed. If the format string is invalid, the [ProgressBar] will display [code]Invalid[/code], with the error message available as a configuration warning.
+			The following format strings can be used as examples:
+			- [code]"%d%%"[/code] displays as a whole number with a percent sign (e.g. [code]65%[/code]).
+			- [code]"%f"[/code] displays as a floating point number (e.g. [code]65.000000[/code]).
+			- [code]"%0.2f%%"[/code] displays as a percentage, with 2 decimal places of precision (e.g. [code]21.37%[/code]).
+			- [code]"%s"[/code] displays the current value (e.g. [code]65[/code] assuming [member value] is 65. This is diffrent from the percentage shown above).
+			- [code]"%s/%s"[/code] displays the current value and maximum value separated by a slash (e.g. [code]65/100[/code] assuming [member value] is 65 and [member max_value] is 100).
+		</member>
+		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true" deprecated="Use [member format] instead.">
 			If [code]true[/code], the fill percentage is displayed on the bar.
 		</member>
 	</members>
@@ -48,10 +57,10 @@
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
-			Font used to draw the fill percentage if [member show_percentage] is [code]true[/code].
+			Font used to draw the progress label if [member format] is not empty.
 		</theme_item>
 		<theme_item name="font_size" data_type="font_size" type="int">
-			Font size used to draw the fill percentage if [member show_percentage] is [code]true[/code].
+			Font size used to draw the progress label if [member format] is not empty.
 		</theme_item>
 		<theme_item name="background" data_type="style" type="StyleBox">
 			The style of the background.
