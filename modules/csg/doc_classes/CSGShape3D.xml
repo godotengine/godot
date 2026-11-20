@@ -72,6 +72,12 @@
 				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="snapshot_get_bodies" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns the physics body this root shape made when [member use_collision] is on; empty otherwise. For savestate systems, to tell a collision or a stored [RID] that names it.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="autosmooth" type="bool" setter="set_autosmooth" getter="is_autosmooth" default="false">

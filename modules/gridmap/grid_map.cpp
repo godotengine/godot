@@ -1282,6 +1282,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("snapshot_get_bodies"), &GridMap::snapshot_get_bodies);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
 	ClassDB::bind_method(D_METHOD("get_used_octants"), &GridMap::get_used_octants);
@@ -1340,6 +1341,26 @@ void GridMap::set_cell_scale(float p_scale) {
 
 float GridMap::get_cell_scale() const {
 	return cell_scale;
+}
+
+// komm64: the physics bodies the map made (one per octant), in the order of
+// their octants' coordinates: the same cells give the same list. An octant
+// left with no cells is not in it: the next update takes it away.
+TypedArray<RID> GridMap::snapshot_get_bodies() const {
+	LocalVector<uint64_t> keys;
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		if (E.value->static_body.is_valid() && !E.value->cells.is_empty()) {
+			keys.push_back(E.key.key);
+		}
+	}
+	keys.sort();
+	TypedArray<RID> bodies;
+	for (uint64_t k : keys) {
+		OctantKey key;
+		key.key = k;
+		bodies.push_back(octant_map[key]->static_body);
+	}
+	return bodies;
 }
 
 TypedArray<Vector3i> GridMap::get_used_cells() const {

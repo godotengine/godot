@@ -180,6 +180,7 @@ public:
 	bool is_calculating_tangents() const;
 
 	bool is_root_shape() const;
+	TypedArray<RID> snapshot_get_bodies() const; // komm64
 
 	Ref<ArrayMesh> bake_static_mesh();
 #ifndef PHYSICS_3D_DISABLED

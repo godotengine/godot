@@ -230,6 +230,12 @@
 				Sets the [RID] of the navigation map this GridMap node should use for its cell baked navigation meshes.
 			</description>
 		</method>
+		<method name="snapshot_get_bodies" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns the physics bodies this map made for its cells (one per octant), in the order of the octants' coordinates: a map with the same cells returns them in the same order. For savestate systems, to tell which of them a collision or a stored [RID] names.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
