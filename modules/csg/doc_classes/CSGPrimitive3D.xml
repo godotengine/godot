@@ -14,5 +14,8 @@
 		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
 			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
 		</member>
+		<member name="uv_match_size" type="bool" setter="set_uv_match_size" getter="get_uv_match_size" default="false">
+			If set, will scale UVs to match face dimensions, making materials repeat instead of stretch. Has no effect on [CSGMesh3D].
+		</member>
 	</members>
 </class>
