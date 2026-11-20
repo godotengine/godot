@@ -1969,6 +1969,20 @@ TEST_CASE("[String] xml_unescape") {
 	CHECK(input.xml_unescape() == input);
 }
 
+TEST_CASE("[String] bbcode_escape") {
+	String s = String();
+	CHECK(s.bbcode_escape() == s);
+
+	s = "[[[]]]";
+	CHECK(s.bbcode_escape() == "[lb][lb][lb][rb][rb][rb]");
+
+	s = "[lb]";
+	CHECK(s.bbcode_escape() == "[lb]lb[rb]");
+
+	s = "[i]hello world[/i]";
+	CHECK(s.bbcode_escape() == "[lb]i[rb]hello world[lb]/i[rb]");
+}
+
 TEST_CASE("[String] Strip escapes") {
 	String s = "\t\tTest Test\r\n Test";
 	CHECK(s.strip_escapes() == "Test Test Test");
