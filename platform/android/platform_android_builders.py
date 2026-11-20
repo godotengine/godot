@@ -5,6 +5,7 @@ import sys
 
 
 def generate_android_binaries(target, source, env):
+    env = source[0]
     gradle_process = []
 
     if sys.platform.startswith("win"):

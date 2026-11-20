@@ -1,12 +1,13 @@
 """Functions used to generate source files during build time"""
 
+import hashlib
 import os.path
 
 import methods
 
 
 def doc_data_class_path_builder(target, source, env):
-    paths = dict(sorted(source[0].read().items()))
+    paths = dict(sorted(source[0].items()))
     data = "\n".join([f'\t{{"{key}", "{value}"}},' for key, value in paths.items()])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
@@ -26,7 +27,7 @@ inline constexpr _DocDataClassPath _doc_data_class_paths[{len(paths) + 1}] = {{
 
 
 def register_exporters_builder(target, source, env):
-    platforms = source[0].read()
+    platforms = source[0]
     exp_inc = "\n".join([f'#include "platform/{p}/export/export.h"' for p in platforms])
     exp_reg = "\n\t".join([f"register_{p}_exporter();" for p in platforms])
     exp_type = "\n\t".join([f"register_{p}_exporter_types();" for p in platforms])
@@ -55,7 +56,7 @@ def make_doc_header(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(f"""\
-inline constexpr const char *_doc_data_hash = "{hash(buffer)}";
+inline constexpr const char *_doc_data_hash = "{hashlib.md5(buffer).hexdigest()}";
 inline constexpr int _doc_data_compressed_size = {len(buffer)};
 inline constexpr int _doc_data_uncompressed_size = {decomp_size};
 inline constexpr const unsigned char _doc_data_compressed[] = {{
@@ -68,7 +69,9 @@ def make_translations(target, source, env):
     target_h, target_cpp = str(target[0]), str(target[1])
 
     category = os.path.basename(target_h).split("_")[0]
-    sorted_paths = sorted([src.abspath for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
+    sorted_paths = sorted(
+        [os.path.abspath(src) for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0]
+    )
 
     xl_names = []
 

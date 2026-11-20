@@ -232,7 +232,6 @@ public:
 
 
 def build_rd_headers(target, source, env):
-    env.NoCache(target)
     for src in source:
         build_rd_header(f"{src}.gen.h", str(src))
 
@@ -271,6 +270,5 @@ static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] 
 
 
 def build_raw_headers(target, source, env):
-    env.NoCache(target)
     for src in source:
         build_raw_header(f"{src}.gen.h", str(src))

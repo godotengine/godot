@@ -22,7 +22,7 @@ inline constexpr const char *_{platform}_{src_name}_svg = {methods.to_raw_cstrin
 
 
 def register_platform_apis_builder(target, source, env):
-    platforms = source[0].read()
+    platforms = source[0]
     api_inc = "\n".join([f'#include "{p}/api/api.h"' for p in platforms])
     api_reg = "\n\t".join([f"register_{p}_api();" for p in platforms])
     api_unreg = "\n\t".join([f"unregister_{p}_api();" for p in platforms])

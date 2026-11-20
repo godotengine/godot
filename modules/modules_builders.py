@@ -6,14 +6,14 @@ import methods
 
 
 def modules_enabled_builder(target, source, env):
-    modules = sorted(source[0].read())
+    modules = sorted(source[0])
     with methods.generated_wrapper(str(target[0])) as file:
         for module in modules:
             file.write(f"#define MODULE_{module.upper()}_ENABLED\n")
 
 
 def register_module_types_builder(target, source, env):
-    modules = source[0].read()
+    modules = source[0]
     mod_inc = "\n".join([f'#include "{value}/register_types.h"' for value in modules.values()])
     mod_init = "\n".join([
         f"""\
@@ -52,7 +52,7 @@ void uninitialize_modules(ModuleInitializationLevel p_level) {{
 
 
 def modules_tests_builder(target, source, env):
-    headers = sorted([os.path.relpath(src.path, methods.base_folder).replace("\\", "/") for src in source])
+    headers = sorted([os.path.relpath(src, methods.base_folder).replace("\\", "/") for src in source])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write("// IWYU pragma: begin_keep.\n")
         for header in headers:
