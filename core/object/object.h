@@ -580,7 +580,7 @@ protected:
 	}
 
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	static void autorelease_gdtype(GDType **r_type);
 
@@ -619,6 +619,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_class_bind_compat_118582(const String &p_name) const;
+	Variant _call_deferred_bind_compat_125169(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 #endif
 
 public: // Should be protected, but bug in clang++.
