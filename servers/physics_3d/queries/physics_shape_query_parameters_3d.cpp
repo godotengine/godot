@@ -106,3 +106,7 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
 }
+
+PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsShapeQueryParameters3D);
+}

@@ -243,3 +243,7 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_OWNERS);
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_ALL);
 }
+
+NavigationPathQueryParameters3D::NavigationPathQueryParameters3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryParameters3D);
+}
