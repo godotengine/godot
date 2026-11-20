@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/3d/voxel_gi.h"
 #include "scene/main/scene_tree.h"
 
 void VoxelGIEditorPlugin::_bake() {
@@ -169,6 +170,14 @@ void VoxelGIEditorPlugin::bake_func_end() {
 void VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake(const String &p_path) {
 	probe_file->hide();
 	if (voxel_gi) {
+		Callable bake_func_begin = callable_mp_static(VoxelGIEditorPlugin::bake_func_begin);
+		Callable bake_func_step = callable_mp_static(VoxelGIEditorPlugin::bake_func_step);
+		Callable bake_func_end = callable_mp_static(VoxelGIEditorPlugin::bake_func_end);
+
+		voxel_gi->connect(VoxelGI::BAKE_BEGIN_NAME, bake_func_begin);
+		voxel_gi->connect(VoxelGI::BAKE_STEP_NAME, bake_func_step);
+		voxel_gi->connect(VoxelGI::BAKE_END_NAME, bake_func_end);
+
 		voxel_gi->bake();
 		// Ensure the VoxelGIData is always saved to an external resource.
 		// This avoids bloating the scene file with large binary data,
@@ -177,6 +186,10 @@ void VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake(const String &p_path) {
 		ERR_FAIL_COND(voxel_gi_data.is_null());
 		voxel_gi_data->set_path(p_path);
 		ResourceSaver::save(voxel_gi_data, p_path, ResourceSaver::FLAG_CHANGE_PATH);
+
+		voxel_gi->disconnect(VoxelGI::BAKE_BEGIN_NAME, bake_func_begin);
+		voxel_gi->disconnect(VoxelGI::BAKE_STEP_NAME, bake_func_step);
+		voxel_gi->disconnect(VoxelGI::BAKE_END_NAME, bake_func_end);
 	}
 }
 
@@ -201,8 +214,4 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	probe_file->connect("file_selected", callable_mp(this, &VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake));
 	EditorInterface::get_singleton()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for VoxelGI Data File"));
-
-	VoxelGI::bake_begin_function = bake_func_begin;
-	VoxelGI::bake_step_function = bake_func_step;
-	VoxelGI::bake_end_function = bake_func_end;
 }
