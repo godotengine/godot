@@ -93,6 +93,7 @@ private:
 
 	VersionType _get_version_type(const String &p_string, int *r_index = nullptr) const;
 	String _extract_sub_string(const String &p_line) const;
+	String _get_http_result_enum_string(int p_int_constant) const;
 
 protected:
 	void _notification(int p_what);
