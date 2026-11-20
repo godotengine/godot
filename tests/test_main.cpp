@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_saver.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
@@ -247,6 +248,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 				EditorSettings::create();
 			}
 #endif // TOOLS_ENABLED
+
+			ResourceSaver::set_get_resource_id_for_path(&TestUtils::get_test_id_for_path);
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				ResourceUID::get_singleton()->enable_reverse_cache();
+			}
 
 			return;
 		}
