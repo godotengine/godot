@@ -113,6 +113,7 @@ public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	ID play_stream(const Ref<AudioStream> &p_stream, float p_from_offset = 0, float p_volume_db = 0, float p_pitch_scale = 1.0, AuSE::PlaybackType p_playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT, const StringName &p_bus = SceneStringName(Master));
+	double get_stream_playback_position(ID p_stream_id) const;
 	void set_stream_volume(ID p_stream_id, float p_volume_db);
 	void set_stream_pitch_scale(ID p_stream_id, float p_pitch_scale);
 	bool is_stream_playing(ID p_stream_id) const;
