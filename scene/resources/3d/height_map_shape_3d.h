@@ -61,6 +61,12 @@ public:
 
 	void update_map_data_from_image(const Ref<Image> &p_image, real_t p_height_min, real_t p_height_max);
 
+	real_t get_height(int x, int y) const;
+	real_t get_heightv(const Point2i &p_point) const;
+
+	real_t sample_height(float x, float y) const;
+	real_t sample_heightv(const Point2 &p_point) const;
+
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
