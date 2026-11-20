@@ -33,7 +33,7 @@ def main():
     file_path = os.path.normpath(os.path.join(args.path, f"test_{name_snake_case}.cpp"))
 
     # Ensure the directory exists.
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    os.makedirs(os.path.dirname(file_path) or ".", exist_ok=True)
 
     print(file_path)
     if os.path.isfile(file_path):
