@@ -22,7 +22,7 @@
 			<param index="0" name="class" type="StringName" />
 			<param index="1" name="method" type="StringName" />
 			<description>
-				Calls a static method on a class.
+				Calls a static method on a built-in or GDExtension class. For custom script classes you should reference the [code]class_name[/code] and the static method.
 			</description>
 		</method>
 		<method name="class_exists" qualifiers="const">
