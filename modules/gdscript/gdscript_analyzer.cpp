@@ -1993,6 +1993,9 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	}
 
 #ifdef DEBUG_ENABLED
+	if (function_name == SNAME("new")) {
+		parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, "GDScript");
+	}
 	String function_visible_name = function_name;
 	if (function_name == StringName()) {
 		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
