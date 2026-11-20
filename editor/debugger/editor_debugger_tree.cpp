@@ -51,6 +51,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_allow_rmb_select(true);
 	set_select_mode(SELECT_MULTI);
+	set_process_shortcut_input(true);
 
 	// Popup
 	item_menu = memnew(PopupMenu);
@@ -89,6 +90,7 @@ void EditorDebuggerTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("objects_selected", PropertyInfo(Variant::ARRAY, "object_ids"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("delete_node", PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("open"));
 }
 
@@ -191,6 +193,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("Save Branch as Scene..."), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CopyNodePath")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("Collapse")), TTR("Expand/Collapse Branch"), ITEM_MENU_EXPAND_COLLAPSE);
+	item_menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Remove")), ED_GET_SHORTCUT("scene_tree/delete"), ITEM_MENU_DELETE_NODE);
 	item_menu->set_position(get_screen_position() + get_local_mouse_position());
 	item_menu->reset_size();
 	item_menu->popup();
@@ -477,6 +480,19 @@ Variant EditorDebuggerTree::get_drag_data(const Point2 &p_point) {
 	return vformat("\"%s\"", path);
 }
 
+void EditorDebuggerTree::shortcut_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+	if (!has_focus() || !p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+	if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
+		if (!inspected_object_ids.is_empty()) {
+			emit_signal(SNAME("delete_node"), debugger_id);
+		}
+		accept_event();
+	}
+}
+
 void EditorDebuggerTree::set_new_session() {
 	new_session = true;
 	selection_cache.clear();
@@ -538,7 +554,10 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			s_item->set_collapsed_recursive(!collapsed);
 
 			ensure_cursor_is_visible();
-		}
+		} break;
+		case ITEM_MENU_DELETE_NODE: {
+			emit_signal(SNAME("delete_node"), debugger_id);
+		} break;
 	}
 }
 
