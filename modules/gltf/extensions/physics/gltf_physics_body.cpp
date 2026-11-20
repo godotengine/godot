@@ -254,6 +254,18 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary &p_dictionary) {
 	Ref<GLTFPhysicsBody> physics_body;
 	physics_body.instantiate();
+	const Error err = physics_body->read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return Ref<GLTFPhysicsBody>(); // Don't print again, `read_from_dictionary` should already print its own error.
+	}
+	return physics_body;
+}
+
+Error GLTFPhysicsBody::read_from_dictionary(const Dictionary &p_dictionary) {
+	const Error err = GLTFItem::read_from_dictionary(p_dictionary);
+	if (err != OK) {
+		return err; // Don't print again, the source should have already printed.
+	}
 	Dictionary motion;
 	if (p_dictionary.has("motion")) {
 		motion = p_dictionary["motion"];
@@ -271,73 +283,73 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary &p_dictio
 		// "dynamic" as "rigid", and "kinematic" as "animatable", in the GLTFPhysicsBody code.
 		String body_type_string = motion["type"];
 		if (body_type_string == "static") {
-			physics_body->body_type = PhysicsBodyType::STATIC;
+			body_type = PhysicsBodyType::STATIC;
 		} else if (body_type_string == "kinematic") {
-			physics_body->body_type = PhysicsBodyType::ANIMATABLE;
+			body_type = PhysicsBodyType::ANIMATABLE;
 		} else if (body_type_string == "dynamic") {
-			physics_body->body_type = PhysicsBodyType::RIGID;
+			body_type = PhysicsBodyType::RIGID;
 #ifndef DISABLE_DEPRECATED
 		} else if (body_type_string == "character") {
-			physics_body->body_type = PhysicsBodyType::CHARACTER;
+			body_type = PhysicsBodyType::CHARACTER;
 		} else if (body_type_string == "rigid") {
-			physics_body->body_type = PhysicsBodyType::RIGID;
+			body_type = PhysicsBodyType::RIGID;
 		} else if (body_type_string == "vehicle") {
-			physics_body->body_type = PhysicsBodyType::VEHICLE;
+			body_type = PhysicsBodyType::VEHICLE;
 		} else if (body_type_string == "trigger") {
-			physics_body->body_type = PhysicsBodyType::TRIGGER;
+			body_type = PhysicsBodyType::TRIGGER;
 #endif // DISABLE_DEPRECATED
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The body type in the glTF file \"" + body_type_string + "\" was not recognized.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The body type in the glTF file \"" + body_type_string + "\" was not recognized.");
 		}
 	}
 	if (motion.has("mass")) {
-		physics_body->mass = motion["mass"];
+		mass = motion["mass"];
 	}
 	if (motion.has("linearVelocity")) {
 		const Array &arr = motion["linearVelocity"];
 		if (arr.size() == 3) {
-			physics_body->set_linear_velocity(Vector3(arr[0], arr[1], arr[2]));
+			linear_velocity = Vector3(arr[0], arr[1], arr[2]);
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The linear velocity vector must have exactly 3 numbers.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The linear velocity vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("angularVelocity")) {
 		const Array &arr = motion["angularVelocity"];
 		if (arr.size() == 3) {
-			physics_body->set_angular_velocity(Vector3(arr[0], arr[1], arr[2]));
+			angular_velocity = Vector3(arr[0], arr[1], arr[2]);
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The angular velocity vector must have exactly 3 numbers.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The angular velocity vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("centerOfMass")) {
 		const Array &arr = motion["centerOfMass"];
 		if (arr.size() == 3) {
-			physics_body->set_center_of_mass(Vector3(arr[0], arr[1], arr[2]));
+			center_of_mass = Vector3(arr[0], arr[1], arr[2]);
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The center of mass vector must have exactly 3 numbers.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The center of mass vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("inertiaDiagonal")) {
 		const Array &arr = motion["inertiaDiagonal"];
 		if (arr.size() == 3) {
-			physics_body->set_inertia_diagonal(Vector3(arr[0], arr[1], arr[2]));
+			inertia_diagonal = Vector3(arr[0], arr[1], arr[2]);
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The inertia diagonal vector must have exactly 3 numbers.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The inertia diagonal vector must have exactly 3 numbers.");
 		}
 	}
 	if (motion.has("inertiaOrientation")) {
 		const Array &arr = motion["inertiaOrientation"];
 		if (arr.size() == 4) {
-			physics_body->set_inertia_orientation(Quaternion(arr[0], arr[1], arr[2], arr[3]));
+			inertia_orientation = Quaternion(arr[0], arr[1], arr[2], arr[3]);
 		} else {
-			ERR_PRINT("Error parsing glTF physics body: The inertia orientation quaternion must have exactly 4 numbers.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Error parsing glTF physics body: The inertia orientation quaternion must have exactly 4 numbers.");
 		}
 	}
-	return physics_body;
+	return OK;
 }
 
-Dictionary GLTFPhysicsBody::to_dictionary() const {
-	Dictionary ret;
+Dictionary GLTFPhysicsBody::write_to_dictionary() const {
+	Dictionary ret = GLTFItem::write_to_dictionary();
 	if (body_type == PhysicsBodyType::TRIGGER) {
 		// The equivalent of a Godot Area3D node in glTF is a node that
 		// defines that it is a trigger, but does not have a shape.
@@ -402,5 +414,6 @@ Dictionary GLTFPhysicsBody::to_dictionary() const {
 		motion["inertiaDiagonal"] = inertia_array;
 	}
 	ret["motion"] = motion;
+	ret.sort();
 	return ret;
 }
