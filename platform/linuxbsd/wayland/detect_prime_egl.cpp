@@ -89,6 +89,8 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 	eglBindAPI(EGL_OPENGL_API);
 
 	EGLint attribs[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		1,
 		EGL_BLUE_SIZE,
@@ -101,7 +103,13 @@ void DetectPrimeEGL::create_context(EGLenum p_platform_enum) {
 	};
 
 	EGLint config_count = 0;
+	// Try desktop GL.
 	eglChooseConfig(egl_display, attribs, &egl_config, 1, &config_count);
+	if (config_count == 0) {
+		// Try GLES3.
+		attribs[1] = EGL_OPENGL_ES3_BIT;
+		eglChooseConfig(egl_display, attribs, &egl_config, 1, &config_count);
+	}
 
 	EGLint context_attribs[] = {
 		EGL_CONTEXT_MAJOR_VERSION, 3,
