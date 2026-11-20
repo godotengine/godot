@@ -220,6 +220,11 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 			bmp_header.bmp_file_header.bmp_file_padding = f->get_32();
 			bmp_header.bmp_file_header.bmp_file_offset = f->get_32();
 
+			if (bmp_header.bmp_file_header.bmp_file_size != f->get_length()) {
+				WARN_PRINT(vformat("BMP file %s has incorrect file size in header", f->get_path()));
+				bmp_header.bmp_file_header.bmp_file_size = f->get_length();
+			}
+
 			// Info Header
 			bmp_header.bmp_info_header.bmp_header_size = f->get_32();
 			ERR_FAIL_COND_V_MSG(bmp_header.bmp_info_header.bmp_header_size < BITMAP_INFO_HEADER_MIN_SIZE, ERR_FILE_CORRUPT,
