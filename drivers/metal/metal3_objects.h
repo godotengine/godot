@@ -643,7 +643,7 @@ public:
 	void begin_label(const char *p_label_name, const Color &p_color) override;
 	void end_label() override;
 
-	MDCommandBuffer(MTL::CommandQueue *p_queue, ::RenderingDeviceDriverMetal *p_device_driver);
+	MDCommandBuffer(MTL::CommandQueue *p_queue, ::RenderingDeviceDriverMetal *p_device_driver, MDLevelFences *p_level_fences = nullptr);
 	MDCommandBuffer() = default;
 };
 

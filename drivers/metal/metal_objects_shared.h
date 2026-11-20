@@ -574,6 +574,66 @@ struct RenderStateBase {
 	BitField<DirtyFlag> dirty = DIRTY_NONE;
 };
 
+/// Alternating fences between render graph levels.
+/// Every encoder in level k waits on fences[(k + 1) & 1] and updates fences[k & 1].
+/// Command buffers recorded in order share one, so levels stay ordered across them.
+class MDLevelFences {
+	MTL::Fence *_fences[2] = { nullptr, nullptr };
+	uint32_t _level = 0;
+	// true when a fence was updated in the prior level and therefore must be
+	// waited in the current level.
+	bool _updated[2] = { false, false };
+	bool _level_dirty = false;
+
+public:
+	void create(MTL::Device *p_device);
+	~MDLevelFences();
+
+	/// Returns the fence an encoder in the current level must wait on, or nullptr.
+	/// Pass true for p_current_level when the encoder continues the one just closed.
+	MTL::Fence *to_wait(bool p_current_level) const {
+		uint32_t i = (p_current_level ? _level : _level + 1) & 1;
+		return _updated[i] ? _fences[i] : nullptr;
+	}
+
+	/// Returns the fence an encoder in the current level must update.
+	MTL::Fence *to_update() {
+		uint32_t i = _level & 1;
+		_updated[i] = true;
+		_level_dirty = true;
+		return _fences[i];
+	}
+
+	/// Closes the current level and opens the next one.
+	void advance() {
+		// Must stay a no-op on a clean level: external_pass() relies on the
+		// next level still waiting F_prev when nothing here updated F_cur.
+		if (_level_dirty) {
+			_level_dirty = false;
+			_level++;
+		}
+	}
+
+	/// Returns the single fence an external pass must both wait on and update.
+	/// No encoder may be open, as _level_dirty only reflects closed encoders.
+	MTL::Fence *external_pass() {
+		if (_level_dirty) {
+			// An encoder in this level already waited F_prev and updated F_cur, so
+			// waiting F_cur transitively covers the prior level, and updating F_cur
+			// is what the next level waits on.
+			return to_update();
+		}
+		// Nothing in this level has updated F_cur yet, so the pass joins the prior
+		// level from the fence's point of view: it waits F_prev and updates F_prev.
+		// Any later encoder in this level waits F_prev and so orders after the
+		// pass; if the level stays clean, the next level is still this one and
+		// waits F_prev too.
+		uint32_t i = (_level + 1) & 1;
+		_updated[i] = true;
+		return _fences[i];
+	}
+};
+
 /// Abstract base class for Metal command buffers, shared between MTL3 and MTL4 implementations.
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDCommandBufferBase {
 	LocalVector<CFTypeRef> _retained_resources;
@@ -604,17 +664,9 @@ protected:
 
 #pragma mark - Level Fences
 
-	// Alternating fences between render graph levels.
-	// Every encoder in level k waits on _fences[(k + 1) & 1]
-	// and updates _fences[k & 1]. _fence_level is used for k.
-	//
-	// Unused for hazard tracking
-	NS::SharedPtr<MTL::Fence> _fences[2];
-	uint32_t _fence_level = 0;
-	// true when a fence was updated in the prior level and therefore must be
-	// waited in the current level.
-	bool _fence_updated[2] = { false, false };
-	bool _fence_level_dirty = false;
+	// nullptr for hazard tracking, and for command buffers that record
+	// concurrently, which are ordered by semaphores.
+	MDLevelFences *_level_fences = nullptr;
 	// true when the next encoder continues the encoder just closed and must
 	// therefore wait F_cur rather than F_prev. Metal does not order encoders, so
 	// subpasses split across encoders require an explicit dependency.
@@ -625,7 +677,6 @@ protected:
 	bool _fence_wait_issued = false;
 #endif
 
-	void _create_level_fences(MTL::Device *p_device);
 	MTL::Fence *_fence_to_wait();
 	MTL::Fence *_fence_to_update();
 
