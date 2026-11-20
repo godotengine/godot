@@ -83,7 +83,6 @@ public:
 
 	void initialize() override {}
 	void begin_frame(double frame_step) override {
-		frame++;
 		delta = frame_step;
 		time += frame_step;
 	}

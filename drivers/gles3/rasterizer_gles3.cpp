@@ -99,7 +99,6 @@ bool RasterizerGLES3::screen_flipped_y = false;
 #endif
 
 void RasterizerGLES3::begin_frame(double frame_step) {
-	frame++;
 	delta = frame_step;
 
 	time_total += frame_step;
@@ -119,6 +118,7 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
 	utils->capture_timestamps_end();
+	frame++;
 }
 
 void RasterizerGLES3::gl_end_frame(bool p_swap_buffers) {
