@@ -348,7 +348,9 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 	const StringName *r = _instance_uniform_get_remap(p_name);
 	if (r) {
-		r_ret = get_instance_shader_parameter(*r);
+		// The server only keeps the RID of a resource value, so return the resource itself.
+		const Variant *stored = instance_shader_parameters.getptr(*r);
+		r_ret = (stored && stored->get_type() == Variant::OBJECT) ? *stored : get_instance_shader_parameter(*r);
 		return true;
 	}
 
@@ -370,8 +372,27 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); //do not save if not changed
 		}
 
-		pi.name = "instance_shader_parameters/" + pi.name;
-		p_list->push_back(pi);
+		PropertyInfo pi_out = pi;
+		pi_out.name = "instance_shader_parameters/" + pi.name;
+		p_list->push_back(pi_out);
+	}
+
+	// Params with no live shader description still hold an authored value; emit
+	// them storage-only so a save cannot drop them.
+	for (const KeyValue<StringName, Variant> &E : instance_shader_parameters) {
+		bool exposed = false;
+		for (const PropertyInfo &pi : pinfo) {
+			if (pi.name == E.key) {
+				exposed = true;
+				break;
+			}
+		}
+
+		if (exposed) {
+			continue;
+		}
+
+		p_list->push_back(PropertyInfo(E.value.get_type(), "instance_shader_parameters/" + E.key, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 	}
 }
 
