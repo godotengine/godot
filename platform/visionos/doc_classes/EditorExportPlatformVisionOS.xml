@@ -50,6 +50,9 @@
 		<member name="application/immersion_style" type="int" setter="" getter="">
 			Initial immersion style, only applicable if you have chosen the [code]Immersive[/code] app role. It can be [code]Full[/code] for a VR experience; [code]Mixed[/code] for a mixed reality experience where the rendered content is displayed along with the real environment; or [code]Progressive[/code] for a portal style experience where the user controls the immersion level. Change it at runtime with [member VisionOSXRInterface.immersion_style].
 		</member>
+		<member name="application/liquid_glass_icon" type="String" setter="" getter="">
+			Liquid Glass icon source file. Use [url=https://developer.apple.com/icon-composer/]Icon Composer[/url] to create Liquid Glass icons.
+		</member>
 		<member name="application/min_visionos_version" type="String" setter="" getter="">
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
