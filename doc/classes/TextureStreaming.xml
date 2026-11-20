@@ -27,13 +27,13 @@
 	</methods>
 	<members>
 		<member name="max_lod_override" type="int" setter="set_max_lod_override" getter="get_max_lod_override" default="-1">
-			Overrides the maximum LOD (mipmap level) that can be loaded for streamed textures at runtime. Lower values allow higher resolution textures. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). Values outside that range clear the override and use the default from [member ProjectSettings.rendering/textures/streaming/max_lod]; when no override is active this property returns [code]-1[/code].
+			Overrides, at runtime, the lowest-quality LOD (mipmap level) that streamed textures can be reduced to. Higher values allow more VRAM savings. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). Values outside that range clear the override and use the default from [member ProjectSettings.rendering/textures/streaming/max_lod]; when no override is active this property returns [code]-1[/code].
 		</member>
 		<member name="memory_budget_mb_override" type="int" setter="set_memory_budget_mb_override" getter="get_memory_budget_mb_override" default="4294967295">
 			Overrides the memory budget for streamed textures at runtime (in megabytes). When the budget is exceeded, the system reduces texture resolution to stay within the limit. A value of [code]UINT32_MAX[/code] ([code]4294967295[/code], the maximum unsigned 32-bit integer) disables the override and uses the default from [member ProjectSettings.rendering/textures/streaming/memory_budget_mb].
 		</member>
 		<member name="min_lod_override" type="int" setter="set_min_lod_override" getter="get_min_lod_override" default="-1">
-			Overrides the minimum LOD (mipmap level) that textures start at when loaded. Higher values result in lower initial resolution. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). Values outside that range clear the override and use the default from [member ProjectSettings.rendering/textures/streaming/min_lod]; when no override is active this property returns [code]-1[/code].
+			Overrides, at runtime, the highest-quality LOD (mipmap level) that streamed textures are allowed to load. Higher values limit their resolution. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution). Values outside that range clear the override and use the default from [member ProjectSettings.rendering/textures/streaming/min_lod]; when no override is active this property returns [code]-1[/code].
 		</member>
 	</members>
 	<signals>

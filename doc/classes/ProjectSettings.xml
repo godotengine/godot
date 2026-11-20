@@ -3549,7 +3549,7 @@
 			Set to [code]0[/code] to disable inactivity decay entirely, keeping textures at their last requested resolution indefinitely.
 		</member>
 		<member name="rendering/textures/streaming/max_lod" type="int" setter="" getter="" default="3">
-			The maximum LOD (mipmap level) that streamed textures can load. Lower values allow higher resolution textures but use more VRAM. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+			The lowest-quality LOD (mipmap level) that streamed textures can be reduced to, either when they are no longer visible or when the memory budget is exceeded. Streamed textures also start at this LOD when first loaded. Higher values allow more VRAM savings. A value of [code]0[/code] prevents textures from ever being reduced, which disables the VRAM savings of texture streaming. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
 		</member>
 		<member name="rendering/textures/streaming/max_ops_per_second" type="int" setter="" getter="" default="200">
 			The maximum number of texture streaming operations (loading/unloading mipmaps) per second. Higher values allow faster adaptation to scene changes but may impact performance.
@@ -3561,7 +3561,7 @@
 			The maximum VRAM (in megabytes) allocated for streamed textures. If exceeded, the system reduces the resolution of less important textures to stay within budget.
 		</member>
 		<member name="rendering/textures/streaming/min_lod" type="int" setter="" getter="" default="0">
-			The minimum LOD (mipmap level) that streamed textures start at when loaded. Higher values result in lower initial resolution and faster loading. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
+			The highest-quality LOD (mipmap level) that streamed textures are allowed to load. A value of [code]0[/code] allows full resolution. Higher values permanently limit the resolution of streamed textures and reduce VRAM usage. Valid values are [code]0[/code] (full resolution) to [code]13[/code] (lowest resolution).
 		</member>
 		<member name="rendering/textures/vram_compression/cache_gpu_compressor" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the GPU texture compressor will cache the local RenderingDevice and its resources (shaders and pipelines), making subsequent imports faster at the cost of increased memory usage.

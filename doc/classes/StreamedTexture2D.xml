@@ -24,10 +24,10 @@
 			The [StreamedTexture2D]'s file path to a [code].stex[/code] file.
 		</member>
 		<member name="max_lod_override" type="int" setter="set_max_lod_override" getter="get_max_lod_override" default="0">
-			Overrides the maximum LOD (mipmap level) that can be loaded for this specific texture. Lower values allow higher resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/max_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+			Overrides the lowest-quality LOD (mipmap level) that this texture can be reduced to by texture streaming. Higher values allow more VRAM savings. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/max_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
 		</member>
 		<member name="min_lod_override" type="int" setter="set_min_lod_override" getter="get_min_lod_override" default="0">
-			Overrides the minimum LOD (mipmap level) this texture starts at when loaded. Higher values result in lower initial resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/min_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
+			Overrides the highest-quality LOD (mipmap level) that this texture is allowed to load. Higher values limit its resolution. A value of [code]0[/code] uses the global setting from [member ProjectSettings.rendering/textures/streaming/min_lod]. Values [code]1[/code] to [code]14[/code] correspond to LOD levels [code]0[/code] to [code]13[/code].
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 	</members>
