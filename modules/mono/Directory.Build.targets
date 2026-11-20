@@ -7,10 +7,6 @@
   </PropertyGroup>
   <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack"
     Condition=" '$(_HasNuGetPackage)' == 'true' ">
-    <PropertyGroup>
-      <GodotSourceRootPath>$(MSBuildThisFileDirectory)\..\..\</GodotSourceRootPath>
-      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
-    </PropertyGroup>
     <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
     <Copy Condition=" '$(_HasSymbolsNuGetPackage)' == 'true' " SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).snupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
   </Target>
