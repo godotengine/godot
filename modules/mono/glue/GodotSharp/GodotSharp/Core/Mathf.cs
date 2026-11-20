@@ -35,13 +35,6 @@ namespace Godot
         /// </summary>
         public const real_t NaN = real_t.NaN;
 
-        // 0.0174532924f and 0.0174532925199433
-        private const float DegToRadConstF = (float)0.0174532925199432957692369077M;
-        private const double DegToRadConstD = (double)0.0174532925199432957692369077M;
-        // 57.29578f and 57.2957795130823
-        private const float RadToDegConstF = (float)57.295779513082320876798154814M;
-        private const double RadToDegConstD = (double)57.295779513082320876798154814M;
-
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
         /// </summary>
@@ -758,7 +751,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static float DegToRad(float deg)
         {
-            return deg * DegToRadConstF;
+            return float.DegreesToRadians(deg);
         }
 
         /// <summary>
@@ -768,7 +761,7 @@ namespace Godot
         /// <returns>The same angle expressed in radians.</returns>
         public static double DegToRad(double deg)
         {
-            return deg * DegToRadConstD;
+            return double.DegreesToRadians(deg);
         }
 
         /// <summary>
@@ -1149,7 +1142,7 @@ namespace Godot
         /// <returns>The resulting value of the interpolation.</returns>
         public static float Lerp(float from, float to, float weight)
         {
-            return from + ((to - from) * weight);
+            return float.Lerp(from, to, weight);
         }
 
         /// <summary>
@@ -1162,7 +1155,7 @@ namespace Godot
         /// <returns>The resulting value of the interpolation.</returns>
         public static double Lerp(double from, double to, double weight)
         {
-            return from + ((to - from) * weight);
+            return double.Lerp(from, to, weight);
         }
 
         /// <summary>
@@ -1464,7 +1457,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RadToDeg(float rad)
         {
-            return rad * RadToDegConstF;
+            return float.RadiansToDegrees(rad);
         }
 
         /// <summary>
@@ -1475,7 +1468,7 @@ namespace Godot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double RadToDeg(double rad)
         {
-            return rad * RadToDegConstD;
+            return double.RadiansToDegrees(rad);
         }
 
         /// <summary>
