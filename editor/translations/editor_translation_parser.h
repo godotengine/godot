@@ -40,6 +40,7 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
+	GDVIRTUAL0(_begin_parse)
 	GDVIRTUAL1R(TypedArray<PackedStringArray>, _parse_file, String)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 	GDVIRTUAL1RC(TypedArray<PackedStringArray>, _customize_strings, TypedArray<PackedStringArray>)
@@ -49,6 +50,7 @@ protected:
 #endif
 
 public:
+	void begin_parse();
 	virtual Error parse_file(const String &p_path, Vector<Vector<String>> *r_translations);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 	void customize_strings(Vector<Vector<String>> &r_strings) const;
@@ -71,6 +73,7 @@ public:
 	void get_recognized_extensions(List<String> *r_extensions) const;
 	bool can_parse(const String &p_extension) const;
 	Ref<EditorTranslationParserPlugin> get_parser(const String &p_extension) const;
+	void begin_parse();
 	void customize_strings(Vector<Vector<String>> &r_strings) const;
 	void add_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);

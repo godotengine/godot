@@ -104,6 +104,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_begin_parse" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called before parsing any files for a translation template generation.
+			</description>
+		</method>
 		<method name="_customize_strings" qualifiers="virtual const">
 			<return type="PackedStringArray[]" />
 			<param index="0" name="strings" type="PackedStringArray[]" />
