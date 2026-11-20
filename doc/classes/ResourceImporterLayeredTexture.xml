@@ -63,9 +63,6 @@
 			The downside of mipmaps is that they increase memory usage by roughly 33% (for [Texture2DArray], [Cubemap] and [CubemapArray]) or 14% (for [Texture3D]).
 			It's recommended to enable mipmaps in 3D. However, in 2D, this should only be enabled if your project visibly benefits from having mipmaps enabled. If the camera never zooms out significantly, there won't be a benefit to enabling mipmaps but memory usage will increase.
 		</member>
-		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
-			Unimplemented. This currently has no effect when changed.
-		</member>
 		<member name="slices/arrangement" type="int" setter="" getter="" default="1">
 			Controls how the cubemap's texture is internally laid out. When using high-resolution cubemaps, [b]2×3[/b] and [b]3×2[/b] are less prone to exceeding hardware texture size limits compared to [b]1×6[/b] and [b]6×1[/b].
 		</member>
