@@ -3740,8 +3740,11 @@ void TileMapLayerEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (custom_overlay) {
-				custom_overlay->set_visible(is_visible_in_tree());
+			if (tile_grid_overlay) {
+				tile_grid_overlay->set_visible(is_visible_in_tree());
+			}
+			if (tile_warning_overlay) {
+				tile_warning_overlay->set_visible(is_visible_in_tree());
 			}
 			if (is_visible()) {
 				// Fix: Don't change the tool if we are in scene paint mode.
@@ -3769,8 +3772,9 @@ void TileMapLayerEditor::_notification(int p_what) {
 				tabs_plugins[tabs_bar->get_current_tab()]->tile_set_changed();
 
 				const TileMapLayer *edited_layer = _get_edited_layer();
-				if (edited_layer && custom_overlay) {
-					custom_overlay->set_texture_filter(edited_layer->get_texture_filter_in_tree());
+				if (edited_layer && tile_grid_overlay) {
+					tile_grid_overlay->set_texture_filter(edited_layer->get_texture_filter_in_tree());
+					tile_grid_overlay->set_texture_repeat(edited_layer->get_texture_repeat_in_tree());
 				}
 
 				CanvasItemEditor::get_singleton()->update_viewport();
@@ -4321,19 +4325,32 @@ bool TileMapLayerEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event
 }
 
 void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	if (!custom_overlay) {
-		custom_overlay = memnew(Control);
-		custom_overlay->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-		custom_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-		custom_overlay->set_clip_contents(true);
-		custom_overlay->set_draw_behind_parent(true);
-		p_overlay->add_child(custom_overlay);
-		custom_overlay->connect(SceneStringName(draw), callable_mp(this, &TileMapLayerEditor::_draw_overlay));
+	if (!tile_warning_overlay) {
+		tile_warning_overlay = memnew(Control);
+		tile_warning_overlay->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		tile_warning_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		tile_warning_overlay->set_draw_behind_parent(true);
+		tile_warning_overlay->set_texture_filter(CanvasItem::TEXTURE_FILTER_LINEAR);
+		tile_warning_overlay->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
+		p_overlay->add_child(tile_warning_overlay);
+		tile_warning_overlay->connect(SceneStringName(draw), callable_mp(this, &TileMapLayerEditor::_draw_tile_warning_overlay));
 	}
-	custom_overlay->queue_redraw();
+
+	if (!tile_grid_overlay) {
+		tile_grid_overlay = memnew(Control);
+		tile_grid_overlay->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		tile_grid_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		tile_grid_overlay->set_clip_contents(true);
+		tile_grid_overlay->set_draw_behind_parent(true);
+		p_overlay->add_child(tile_grid_overlay);
+		tile_grid_overlay->connect(SceneStringName(draw), callable_mp(this, &TileMapLayerEditor::_draw_tile_grid_overlay));
+	}
+
+	tile_grid_overlay->queue_redraw();
+	tile_warning_overlay->queue_redraw();
 }
 
-void TileMapLayerEditor::_draw_overlay() {
+void TileMapLayerEditor::_draw_tile_grid_overlay() {
 	const TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer || !edited_layer->is_visible_in_tree()) {
 		return;
@@ -4352,54 +4369,11 @@ void TileMapLayerEditor::_draw_overlay() {
 	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
 	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 	if (scale_fading > 0) {
-		// Draw tiles with invalid IDs in the grid.
-		TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
-		for (int i = 0; i < used_cells.size(); i++) {
-			Vector2i coords = used_cells[i];
-			int tile_source_id = edited_layer->get_cell_source_id(coords);
-			if (tile_source_id >= 0) {
-				Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
-				int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
-
-				TileSetSource *source = nullptr;
-				if (tile_set->has_source(tile_source_id)) {
-					source = *tile_set->get_source(tile_source_id);
-				}
-
-				if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
-					// Generate a random color from the hashed identifier of the tiles.
-					Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
-					uint32_t hash = RandomPCG(to_hash.hash()).rand();
-
-					Color color;
-					color = color.from_hsv(
-							(float)((hash >> 24) & 0xFF) / 256.0,
-							Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
-							Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
-							0.8 * scale_fading);
-
-					// Display the warning pattern.
-					Transform2D tile_xform;
-					tile_xform.set_origin(tile_set->map_to_local(coords));
-					tile_xform.set_scale(tile_shape_size);
-					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, true, warning_pattern_texture);
-
-					// Draw the warning icon.
-					Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
-					Vector2 icon_size;
-					icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
-					icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
-					Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
-					custom_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
-				}
-			}
-		}
-
 		// Fading on the border.
 		const int fading = 5;
 
 		// Determine the drawn area.
-		Size2 screen_size = custom_overlay->get_size();
+		Size2 screen_size = tile_grid_overlay->get_size();
 		Rect2i screen_rect;
 		screen_rect.position = tile_set->local_to_map(xform_inv.xform(Vector2()));
 		screen_rect.expand_to(tile_set->local_to_map(xform_inv.xform(Vector2(0, screen_size.height))));
@@ -4441,7 +4415,7 @@ void TileMapLayerEditor::_draw_overlay() {
 					tile_xform.set_scale(tile_shape_size);
 					Color color = grid_color;
 					color.a = color.a * opacity * scale_fading;
-					tile_set->draw_tile_shape(custom_overlay, xform * tile_xform, color, false);
+					tile_set->draw_tile_shape(tile_grid_overlay, xform * tile_xform, color, false);
 				}
 			}
 		}
@@ -4450,13 +4424,80 @@ void TileMapLayerEditor::_draw_overlay() {
 		/*Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 		for (int x = displayed_rect.position.x; x < (displayed_rect.position.x + displayed_rect.size.x); x++) {
 			for (int y = displayed_rect.position.y; y < (displayed_rect.position.y + displayed_rect.size.y); y++) {
-				custom_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
+				tile_grid_overlay->draw_string(font, xform.xform(tile_set->map_to_local(Vector2(x, y))) + Vector2i(-tile_shape_size.x / 2, 0), vformat("%s", Vector2(x, y)));
 			}
 		}*/
 	}
 
 	// Draw the plugins.
-	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(custom_overlay);
+	tabs_plugins[tabs_bar->get_current_tab()]->forward_canvas_draw_over_viewport(tile_grid_overlay);
+}
+
+void TileMapLayerEditor::_draw_tile_warning_overlay() {
+	const TileMapLayer *edited_layer = _get_edited_layer();
+	if (!edited_layer || !edited_layer->is_visible_in_tree()) {
+		return;
+	}
+
+	Ref<TileSet> tile_set = edited_layer->get_tile_set();
+	if (tile_set.is_null()) {
+		return;
+	}
+
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
+	Vector2i tile_shape_size = tile_set->get_tile_size();
+
+	// Fade the overlay out when size too small.
+	Vector2 hint_distance = xform.get_scale() * tile_shape_size;
+	float scale_fading = MIN(1, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
+	if (scale_fading <= 0) {
+		return;
+	}
+
+	// Draw tiles with invalid IDs in the grid.
+	TypedArray<Vector2i> used_cells = edited_layer->get_used_cells();
+	for (int i = 0; i < used_cells.size(); i++) {
+		Vector2i coords = used_cells[i];
+		int tile_source_id = edited_layer->get_cell_source_id(coords);
+		if (tile_source_id < 0) {
+			continue;
+		}
+
+		Vector2i tile_atlas_coords = edited_layer->get_cell_atlas_coords(coords);
+		int tile_alternative_tile = edited_layer->get_cell_alternative_tile(coords);
+
+		TileSetSource *source = nullptr;
+		if (tile_set->has_source(tile_source_id)) {
+			source = *tile_set->get_source(tile_source_id);
+		}
+
+		if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
+			// Generate a random color from the hashed identifier of the tiles.
+			Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
+			uint32_t hash = RandomPCG(to_hash.hash()).rand();
+
+			Color color;
+			color = color.from_hsv(
+					(float)((hash >> 24) & 0xFF) / 256.0,
+					Math::lerp(0.5, 1.0, (float)((hash >> 16) & 0xFF) / 256.0),
+					Math::lerp(0.5, 1.0, (float)((hash >> 8) & 0xFF) / 256.0),
+					0.8 * scale_fading);
+
+			// Display the warning pattern.
+			Transform2D tile_xform;
+			tile_xform.set_origin(tile_set->map_to_local(coords));
+			tile_xform.set_scale(tile_shape_size);
+			tile_set->draw_tile_shape(tile_warning_overlay, xform * tile_xform, color, true, warning_pattern_texture);
+
+			// Draw the warning icon.
+			Vector2::Axis min_axis = missing_tile_texture->get_size().min_axis_index();
+			Vector2 icon_size;
+			icon_size[min_axis] = tile_set->get_tile_size()[min_axis] / 3;
+			icon_size[(min_axis + 1) % 2] = (icon_size[min_axis] * missing_tile_texture->get_size()[(min_axis + 1) % 2] / missing_tile_texture->get_size()[min_axis]);
+			Rect2 rect = Rect2(xform.xform(tile_set->map_to_local(coords)) - (icon_size * xform.get_scale() / 2), icon_size * xform.get_scale());
+			tile_warning_overlay->draw_texture_rect(missing_tile_texture, rect, false, Color(1, 1, 1, scale_fading));
+		}
+	}
 }
 
 void TileMapLayerEditor::edit(Object *p_edited) {
