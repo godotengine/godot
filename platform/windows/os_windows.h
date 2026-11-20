@@ -42,7 +42,6 @@
 #endif
 
 #include <windows.h>
-
 #include <dwrite.h>
 #include <dwrite_2.h>
 #include <io.h>

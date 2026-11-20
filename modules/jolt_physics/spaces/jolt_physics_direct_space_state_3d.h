@@ -33,7 +33,6 @@
 #include "servers/physics_3d/physics_server_3d.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Physics/Body/Body.h>
 #include <Jolt/Physics/Body/BodyFilter.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>

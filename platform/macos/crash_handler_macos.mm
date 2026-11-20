@@ -41,7 +41,6 @@
 #include "main/main.h"
 
 #include <unistd.h>
-
 #include <cstdio>
 
 #if defined(DEBUG_ENABLED)

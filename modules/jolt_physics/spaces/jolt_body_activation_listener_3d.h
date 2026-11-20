@@ -31,7 +31,6 @@
 #pragma once
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
 class JoltBodyActivationListener3D final

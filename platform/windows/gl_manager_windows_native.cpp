@@ -39,7 +39,6 @@
 #include <thirdparty/misc/nvapi_minimal.h>
 
 #include <dwmapi.h>
-
 #include <cstdio>
 #include <cstdlib>
 

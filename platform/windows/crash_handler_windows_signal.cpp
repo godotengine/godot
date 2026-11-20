@@ -44,7 +44,6 @@
 
 #include <cxxabi.h>
 #include <psapi.h>
-
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>

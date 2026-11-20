@@ -38,7 +38,6 @@
 #include "servers/audio/audio_driver.h"
 
 #include <windows.h>
-
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 

@@ -67,7 +67,6 @@
 #include <objc/runtime.h>
 #include <os/log.h>
 #include <os/signpost.h>
-
 #include <algorithm>
 
 #ifndef MTLGPUAddress

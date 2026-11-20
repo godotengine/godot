@@ -36,7 +36,6 @@
 #include "servers/audio/audio_driver.h"
 
 #include <windows.h>
-
 #include <wrl/client.h>
 #include <xaudio2.h>
 

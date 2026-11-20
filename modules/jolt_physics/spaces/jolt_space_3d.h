@@ -38,7 +38,6 @@
 #include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Core/JobSystem.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/Body/BodyInterface.h>

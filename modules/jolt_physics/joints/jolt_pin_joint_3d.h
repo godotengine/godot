@@ -33,7 +33,6 @@
 #include "jolt_joint_3d.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Physics/Constraints/SliderConstraint.h>
 
 class JoltPinJoint3D final : public JoltJoint3D {

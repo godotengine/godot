@@ -34,10 +34,8 @@
 #include "core/templates/hash_map.h"
 
 #include <Jolt/Jolt.h>
-
 #include <Jolt/Core/FixedSizeFreeList.h>
 #include <Jolt/Core/JobSystemWithBarrier.h>
-
 #include <atomic>
 
 class JoltJobSystem final : public JPH::JobSystemWithBarrier {
