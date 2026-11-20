@@ -477,12 +477,16 @@ void OpenXRSpatialContainerExtension::destroy_spatial_container() {
 			rendering_mechanism->on_spatial_container_closed(spatial_container_data);
 		}
 
-		ERR_FAIL_NULL(OpenXRAPI::get_singleton());
-		OpenXRAPI::get_singleton()->set_custom_play_space(XR_NULL_HANDLE);
+		OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+		if (openxr_api) {
+			openxr_api->set_custom_play_space(XR_NULL_HANDLE);
+		}
 
 		print_verbose("OpenXR: Destroying spatial container...");
 		XrResult result = xrDestroySpatialContainerEXT(spatial_container_data.spatial_container_handle);
-		ERR_FAIL_COND_MSG(XR_FAILED(result), "Failed to destroy spatial container.");
+		if (XR_FAILED(result)) {
+			ERR_PRINT("Failed to destroy spatial container.");
+		}
 
 		spatial_container_data.spatial_container_handle = XR_NULL_HANDLE;
 		spatial_container_data.space_handle = XR_NULL_HANDLE;
