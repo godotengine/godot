@@ -43,6 +43,7 @@ class ProjectSettings : public Object {
 	friend class TestProjectSettingsInternalsAccessor;
 
 	bool is_changed = false;
+	bool block_changed = false;
 
 	// Starting version from 1 ensures that all callers can reset their tested version to 0,
 	// and will always detect the initial project settings as a "change".
@@ -179,6 +180,7 @@ public:
 	String globalize_path(const String &p_path) const;
 
 	void set_initial_value(const String &p_name, const Variant &p_value);
+	void initialize_setting(const String &p_name, const Variant &p_value);
 	void set_as_basic(const String &p_name, bool p_basic);
 	void set_as_internal(const String &p_name, bool p_internal);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
