@@ -788,6 +788,11 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	} else {
 		error_count++;
 	}
+
+	// Send to Output panel.
+	EditorLog::MessageType msg_type = oe.warning ? EditorLog::MSG_TYPE_WARNING : EditorLog::MSG_TYPE_ERROR;
+	EditorNode::get_log()->add_message(error_title, msg_type);
+	emit_signal(SceneStringName(output), error_title, msg_type);
 }
 
 void ScriptEditorDebugger::_msg_servers_function_signature(uint64_t p_thread_id, const Array &p_data) {
