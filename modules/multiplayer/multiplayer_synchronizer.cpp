@@ -269,9 +269,9 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visibility_for", "peer"), &MultiplayerSynchronizer::get_visibility_for);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, SceneReplicationConfig::get_class_static()), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, SceneReplicationConfig::get_class_static(), PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
 
@@ -329,7 +329,11 @@ double MultiplayerSynchronizer::get_delta_interval() const {
 }
 
 void MultiplayerSynchronizer::set_replication_config(Ref<SceneReplicationConfig> p_config) {
+	if (replication_config == p_config) {
+		return;
+	}
 	replication_config = p_config;
+	notify_property_list_changed();
 }
 
 Ref<SceneReplicationConfig> MultiplayerSynchronizer::get_replication_config() {
@@ -356,6 +360,7 @@ void MultiplayerSynchronizer::set_root_path(const NodePath &p_path) {
 	root_path = p_path;
 	_start();
 	update_configuration_warnings();
+	notify_property_list_changed();
 }
 
 NodePath MultiplayerSynchronizer::get_root_path() const {
