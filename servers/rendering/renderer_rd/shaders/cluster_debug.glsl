@@ -42,15 +42,20 @@ const vec3 usage_gradient[33] = vec3[]( // 1 (none) + 32
 		vec3(1.00, 0.63, 0.70));
 layout(push_constant, std430) uniform Params {
 	uvec2 screen_size;
-	uvec2 cluster_screen_size;
+	uvec2 screen_size_in_tiles;
 
-	uint cluster_shift;
+	uint tile_shift;
 	uint cluster_type;
 	float z_near;
 	float z_far;
 
 	bool orthogonal;
-	uint max_cluster_element_count_div_32;
+	uint bitmasks_per_tile_count;
+	uint z_bin_offset;
+	uint z_bin_count;
+
+	float z_bin_scale;
+	uint pad0;
 	uint pad1;
 	uint pad2;
 }
@@ -71,37 +76,36 @@ void main() {
 		return;
 	}
 
-	uvec2 cluster_pos = screen_pos >> params.cluster_shift;
+	uvec2 tile_pos = screen_pos >> params.tile_shift;
 
-	uint offset = cluster_pos.y * params.cluster_screen_size.x + cluster_pos.x;
-	offset += params.cluster_screen_size.x * params.cluster_screen_size.y * params.cluster_type;
-	offset *= (params.max_cluster_element_count_div_32 + 32);
+	uint tile_offset = tile_pos.y * params.screen_size_in_tiles.x + tile_pos.x;
+	tile_offset += params.screen_size_in_tiles.x * params.screen_size_in_tiles.y * params.cluster_type;
+	tile_offset *= params.bitmasks_per_tile_count;
 
 	//depth buffers generally can't be accessed via image API
 	float depth = texelFetch(sampler2D(depth_buffer, depth_buffer_sampler), ivec2(screen_pos), 0).r * 2.0 - 1.0;
 
 	if (params.orthogonal) {
-		depth = ((depth + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+		depth = -(depth * (params.z_far - params.z_near) - (params.z_far + params.z_near)) / 2.0;
 	} else {
-		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - depth * (params.z_far - params.z_near));
+		depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + depth * (params.z_far - params.z_near));
 	}
-	depth /= params.z_far;
 
-	uint slice = uint(clamp(floor(depth * 32.0), 0.0, 31.0));
-	uint slice_minmax = cluster_data.data[offset + params.max_cluster_element_count_div_32 + slice];
-	uint item_min = slice_minmax & 0xFFFF;
-	uint item_max = slice_minmax >> 16;
+	uint z_bin = uint(clamp((depth - params.z_near) * params.z_bin_scale, 0.0, float(params.z_bin_count - 1)));
+	uint z_bin_minmax = cluster_data.data[params.z_bin_offset + params.cluster_type * params.z_bin_count + z_bin];
+	uint item_min = z_bin_minmax & 0xFFFF;
+	uint item_max = z_bin_minmax >> 16;
 
 	uint item_count = 0;
-	for (uint i = 0; i < params.max_cluster_element_count_div_32; i++) {
-		uint slice_bits = cluster_data.data[offset + i];
-		while (slice_bits != 0) {
-			uint bit = findLSB(slice_bits);
+	for (uint i = 0; i < params.bitmasks_per_tile_count; i++) {
+		uint tile_bits = cluster_data.data[tile_offset + i];
+		while (tile_bits != 0) {
+			uint bit = findLSB(tile_bits);
 			uint item = i * 32 + bit;
 			if ((item >= item_min && item < item_max)) {
 				item_count++;
 			}
-			slice_bits &= ~(1 << bit);
+			tile_bits &= ~(1 << bit);
 		}
 	}
 
@@ -109,7 +113,7 @@ void main() {
 
 	vec3 color = usage_gradient[item_count];
 
-	color = mix(color * 1.2, color * 0.3, float(slice) / 31.0);
+	color = mix(color * 1.2, color * 0.3, float(z_bin) / float(params.z_bin_count));
 
 	imageStore(screen_buffer, ivec2(screen_pos), vec4(color, 1.0));
 }

@@ -327,10 +327,15 @@ layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
 scene_data_block;
 
 struct ImplementationData {
-	uint cluster_shift;
-	uint cluster_width;
-	uint cluster_type_size;
-	uint max_cluster_element_count_div_32;
+	uint tile_shift;
+	uint tiles_per_row;
+	uint bitmasks_per_type_count;
+	uint bitmasks_per_tile_count;
+
+	uint cluster_z_bin_offset;
+	uint cluster_z_bin_count;
+	float cluster_z_bin_scale;
+	uint pad0;
 
 	uint ss_effects_flags;
 	float ssao_light_affect;
