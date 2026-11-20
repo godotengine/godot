@@ -204,6 +204,10 @@
 /modules/jpg/                                 @godotengine/asset-pipeline
 /modules/jpg/**/*.py                          @godotengine/asset-pipeline @godotengine/buildsystem
 /modules/jpg/**/SCsub                         @godotengine/asset-pipeline @godotengine/buildsystem
+/modules/jxl/                                 @godotengine/asset-pipeline
+/modules/jxl/**/*.py                          @godotengine/asset-pipeline @godotengine/buildsystem
+/modules/jxl/**/SCsub                         @godotengine/asset-pipeline @godotengine/buildsystem
+/modules/jxl/tests/                           @godotengine/asset-pipeline @godotengine/tests
 /modules/ktx/                                 @godotengine/asset-pipeline
 /modules/ktx/**/*.py                          @godotengine/asset-pipeline @godotengine/buildsystem
 /modules/ktx/**/SCsub                         @godotengine/asset-pipeline @godotengine/buildsystem

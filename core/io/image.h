@@ -55,6 +55,9 @@ typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size
 typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 
+typedef Error (*SaveJXLFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
+typedef Vector<uint8_t> (*SaveJXLBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
+
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
 typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
 
@@ -224,11 +227,13 @@ public:
 	static inline SaveJPGFunc save_jpg_func = nullptr;
 	static inline SaveEXRFunc save_exr_func = nullptr;
 	static inline SaveWebPFunc save_webp_func = nullptr;
+	static inline SaveJXLFunc save_jxl_func = nullptr;
 	static inline SaveDDSFunc save_dds_func = nullptr;
 	static inline SavePNGBufferFunc save_png_buffer_func = nullptr;
 	static inline SaveEXRBufferFunc save_exr_buffer_func = nullptr;
 	static inline SaveJPGBufferFunc save_jpg_buffer_func = nullptr;
 	static inline SaveWebPBufferFunc save_webp_buffer_func = nullptr;
+	static inline SaveJXLBufferFunc save_jxl_buffer_func = nullptr;
 	static inline SaveDDSBufferFunc save_dds_buffer_func = nullptr;
 
 	// External loader function pointers.
@@ -236,6 +241,7 @@ public:
 	static inline ImageMemLoadFunc _png_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _png_mem_unpacker_func = nullptr;
 	static inline ImageMemLoadFunc _jpg_mem_loader_func = nullptr;
+	static inline ImageMemLoadFunc _jxl_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _webp_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _tga_mem_loader_func = nullptr;
 	static inline ImageMemLoadFunc _bmp_mem_loader_func = nullptr;
@@ -404,6 +410,8 @@ public:
 	Error save_exr(const String &p_path, bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
+	Error save_jxl(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
+	Vector<uint8_t> save_jxl_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
 	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
 	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
@@ -464,6 +472,7 @@ public:
 
 	Error load_png_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const Vector<uint8_t> &p_array);
+	Error load_jxl_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_tga_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_bmp_from_buffer(const Vector<uint8_t> &p_array);
