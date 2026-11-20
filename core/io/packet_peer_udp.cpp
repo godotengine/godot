@@ -116,11 +116,11 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
 	uint32_t size = 0;
 	uint8_t ipv6[16] = {};
-	rb.read(ipv6, 16, true);
+	rb.read(ipv6, 16);
 	packet_ip.set_ipv6(ipv6);
-	rb.read((uint8_t *)&packet_port, 4, true);
-	rb.read((uint8_t *)&size, 4, true);
-	rb.read(packet_buffer, size, true);
+	rb.read((uint8_t *)&packet_port, 4);
+	rb.read((uint8_t *)&size, 4);
+	rb.read(packet_buffer, size);
 	--queue_count;
 	*r_buffer = packet_buffer;
 	r_buffer_size = size;
