@@ -56,8 +56,6 @@ public:
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual Vector2 _edit_get_minimum_size() const override { return Vector2(); }
-
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 
 	virtual Rect2 _edit_get_rect() const override;
