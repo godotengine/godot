@@ -29,6 +29,7 @@
 #include <openxr/openxr.h>
 
 #include <algorithm>
+#include <cinttypes>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -428,20 +429,43 @@ static void ReadLayerDataFilesInRegistry(const std::string &registry_location, s
             return false;
         }
 
-        wchar_t name_w[1024]{};
         LONG rtn_value;
-        DWORD name_size = 1023;
-        DWORD value;
-        DWORD value_size = sizeof(value);
         DWORD key_index = 0;
-        while (ERROR_SUCCESS ==
-               (rtn_value = RegEnumValueW(hkey, key_index++, name_w, &name_size, NULL, NULL, (LPBYTE)&value, &value_size))) {
-            if (value_size == sizeof(value) && value == 0) {
-                const std::string filename = wide_to_utf8(name_w);
-                AddFilesInPath(filename, false, manifest_files);
+
+        for (;;) {
+            wchar_t name_w[1024]{};
+            DWORD name_size = 1023;
+            DWORD type;
+            DWORD value;
+            DWORD value_size = sizeof(value);
+
+            rtn_value = RegEnumValueW(hkey, key_index++, name_w, &name_size, NULL, &type, (LPBYTE)&value, &value_size);
+
+            // Break if there are no more keys
+            if (rtn_value == ERROR_NO_MORE_ITEMS) {
+                break;
             }
-            // Reset some items for the next loop
-            name_size = 1023;
+
+            // Break for any other unexpected error
+            if (rtn_value != ERROR_SUCCESS && rtn_value != ERROR_MORE_DATA) {
+                LoaderLogger::LogInfoMessage(
+                    "", "ReadLayerDataFilesInRegistry - Unexpected error from RegEnumValueW (" + DescribeError(rtn_value) + ")");
+                break;
+            }
+
+            const std::string filename = wide_to_utf8(name_w);
+
+            // Handle valid DWORD keys
+            if (rtn_value == ERROR_SUCCESS && type == REG_DWORD && value_size == sizeof(value)) {
+                if (value == 0) {
+                    AddFilesInPath(filename, false, manifest_files);
+                } else {
+                    LoaderLogger::LogInfoMessage("", "ReadLayerDataFilesInRegistry - skipping disabled API layer " + filename);
+                }
+            } else {
+                // Log invalid keys
+                LoaderLogger::LogInfoMessage("", "ReadLayerDataFilesInRegistry - skipping invalid registry key " + filename);
+            }
         }
 
         RegCloseKey(hkey);
@@ -476,7 +500,8 @@ bool ManifestFile::IsValidJson(const Json::Value &root_node, JsonVersion &versio
         return false;
     }
     std::string file_format = root_node["file_format_version"].asString();
-    const int num_fields = sscanf(file_format.c_str(), "%u.%u.%u", &version.major, &version.minor, &version.patch);
+    const int num_fields =
+        sscanf(file_format.c_str(), "%" SCNu32 ".%" SCNu32 ".%" SCNu32, &version.major, &version.minor, &version.patch);
 
     // Only version 1.0.0 is defined currently.  Eventually we may have more version, but
     // some of the versions may only be valid for layers or runtimes specifically.
@@ -854,7 +879,7 @@ void ApiLayerManifestFile::CreateIfValid(ManifestFileType type, const std::strin
     std::string layer_name = layer_root_node["name"].asString();
     std::string api_version_string = layer_root_node["api_version"].asString();
     JsonVersion api_version = {};
-    const int num_fields = sscanf(api_version_string.c_str(), "%u.%u", &api_version.major, &api_version.minor);
+    const int num_fields = sscanf(api_version_string.c_str(), "%" SCNu32 ".%" SCNu32, &api_version.major, &api_version.minor);
     api_version.patch = 0;
 
     if ((num_fields != 2) || (api_version.major == 0 && api_version.minor == 0) ||
