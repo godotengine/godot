@@ -1847,6 +1847,9 @@ void FileSystemDock::_file_removed(const String &p_file) {
 	while (!da->dir_exists(current_path)) {
 		current_path = current_path.get_base_dir();
 	}
+	if (current_path != "res://") {
+		current_path = current_path + "/";
+	}
 
 	current_path_line_edit->set_text(current_path);
 }
@@ -1859,6 +1862,9 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	while (!da->dir_exists(current_path)) {
 		current_path = current_path.get_base_dir();
+	}
+	if (current_path != "res://") {
+		current_path = current_path + "/";
 	}
 
 	// Remove assigned folder color for all subfolders.
