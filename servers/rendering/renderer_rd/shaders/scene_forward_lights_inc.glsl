@@ -1338,6 +1338,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 
 		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
 
+		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
 		if (reflections.data[ref_index].box_project) { //box project
 
 			vec3 nrdir = normalize(local_ref_vec);
@@ -1345,16 +1346,21 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
 			vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+			float distance_to_hit_point = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 
-			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-			vec3 posonbox = local_pos + nrdir * fa;
+			vec3 posonbox = local_pos + nrdir * distance_to_hit_point;
 			local_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+
+			float fresnel = 1.0 - max(dot(vec3(normal), -normalize(vertex)), 0.0);
+			float bp_roughness = (distance_to_hit_point * (2.0 - fresnel * 2.0)) / (length(local_pos) + 1e-7f) * roughness;
+			bp_roughness = clamp(bp_roughness, 0.0, float(roughness));
+			bp_roughness = mix(bp_roughness, float(roughness), float(roughness * roughness));
+			roughness_lod = sqrt(bp_roughness) * MAX_ROUGHNESS_LOD;
 		}
 
 		hvec4 reflection;
 		half reflection_blend = max(half(0.0), blend - reflection_accum.a);
 
-		float roughness_lod = sqrt(roughness) * MAX_ROUGHNESS_LOD;
 		vec2 reflection_uv = vec3_to_oct_with_border(local_ref_vec, border_size);
 		reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(reflection_uv, reflections.data[ref_index].index), roughness_lod).rgb) * REFLECTION_MULTIPLIER;
 		reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
