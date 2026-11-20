@@ -103,6 +103,16 @@ public:
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
 
+class Yuv420ToRgbBufferDecoder : public BufferDecoder {
+private:
+	Vector<uint8_t> image_data;
+	bool u_plane_first = true;
+
+public:
+	Yuv420ToRgbBufferDecoder(CameraFeed *p_camera_feed, bool p_u_plane_first);
+	virtual void decode(StreamingBuffer p_buffer) override;
+};
+
 class JpegBufferDecoder : public BufferDecoder {
 private:
 	Vector<uint8_t> image_data;
