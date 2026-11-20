@@ -1,0 +1,10 @@
+GH-114544
+--------------
+
+Validate extension JSON: API was removed: classes/MenuButton/methods/show_popup
+Validate extension JSON: API was removed: classes/MenuButton/methods/set_switch_on_hover
+Validate extension JSON: API was removed: classes/MenuButton/methods/is_switch_on_hover
+Validate extension JSON: API was removed: classes/OptionButton/methods/show_popup
+Validate extension JSON: API was removed: classes/MenuButton/properties/switch_on_hover
+
+The properties/methods were moved to a common base class PopupButton.
