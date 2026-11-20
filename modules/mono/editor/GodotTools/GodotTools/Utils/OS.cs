@@ -218,7 +218,7 @@ namespace GodotTools.Utils
                 .FirstOrDefault(path =>
                 {
                     using godot_string pathIn = Marshaling.ConvertStringToNative(path);
-                    return File.Exists(path) && Internal.godot_icall_Utils_OS_UnixFileHasExecutableAccess(pathIn);
+                    return File.Exists(path) && Internal.godot_icall_Utils_OS_UnixFileHasExecutableAccess(pathIn).ToBool();
                 });
         }
 

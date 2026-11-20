@@ -64,6 +64,13 @@ public class UnmanagedCallbacksGenerator : ISourceGenerator
             }
 
             var data = new CallbacksData(symbol, funcStructType);
+
+            foreach (var method in data.Methods)
+            {
+                if (IsIllegalReturnType(method.ReturnType))
+                    Common.ReportBadReturnTypeInteropMethod(context, method);
+            }
+
             GenerateInteropMethodImplementations(context, data);
             GenerateUnmanagedCallbacksStruct(context, data);
         }
@@ -127,8 +134,7 @@ using Godot.NativeInterop;
 
         if (isInnerClass)
         {
-            var containingType = symbol.ContainingType;
-            AppendPartialContainingTypeDeclarations(containingType);
+            AppendPartialContainingTypeDeclarations(symbol.ContainingType);
 
             void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
             {
@@ -232,24 +238,28 @@ using Godot.NativeInterop;
             source.Append("        ");
 
             if (!callback.ReturnsVoid)
-            {
-                if (methodSourceAfterCall.Length != 0)
-                    source.Append($"{callback.ReturnType.FullQualifiedNameIncludeGlobal()} ret = ");
-                else
-                    source.Append("return ");
-            }
+                source.Append($"{callback.ReturnType.FullQualifiedNameIncludeGlobal()} ret = ");
+
+            if (!ShouldPassReturnThrough(callback.ReturnType))
+                source.Append("default;\n        "); // This indents the line below it.
 
             source.Append($"_unmanagedCallbacks.{callback.Name}(");
             source.Append(methodCallArguments);
+
+            if (!ShouldPassReturnThrough(callback.ReturnType))
+            {
+                if (methodCallArguments.Length != 0)
+                    source.Append(", ");
+
+                source.Append("&ret");
+            }
+
             source.Append(");\n");
 
-            if (methodSourceAfterCall.Length != 0)
-            {
-                source.Append(methodSourceAfterCall);
+            source.Append(methodSourceAfterCall);
 
-                if (!callback.ReturnsVoid)
-                    source.Append("        return ret;\n");
-            }
+            if (!callback.ReturnsVoid)
+                source.Append("        return ret;\n");
 
             source.Append("    }\n\n");
         }
@@ -306,8 +316,7 @@ using Godot.NativeInterop;
 
         if (isInnerClass)
         {
-            var containingType = symbol.ContainingType;
-            AppendPartialContainingTypeDeclarations(containingType);
+            AppendPartialContainingTypeDeclarations(symbol.ContainingType);
 
             void AppendPartialContainingTypeDeclarations(INamedTypeSymbol? containingType)
             {
@@ -360,6 +369,13 @@ using Godot.NativeInterop;
             }
 
             source.Append(callback.ReturnType.FullQualifiedNameIncludeGlobal());
+
+            // Anything returning types that can't be passed through the interop layer
+            // are rewritten to return void, use return pointers and convert it back
+            // to value returns in the generated managed code.
+            if (!ShouldPassReturnThrough(callback.ReturnType))
+                source.Append("*, void");
+
             source.Append($"> {callback.Name};\n");
         }
 
@@ -391,6 +407,28 @@ using Godot.NativeInterop;
 
     private static bool IsByRefParameter(IParameterSymbol parameter) =>
         parameter.RefKind is RefKind.In or RefKind.Out or RefKind.Ref;
+
+    private static bool ShouldPassReturnThrough(ITypeSymbol type) =>
+        (type.SpecialType is SpecialType.System_Void or SpecialType.System_Byte
+             or SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_UInt16
+             or SpecialType.System_Int32 or SpecialType.System_UInt32 or SpecialType.System_Int64
+             or SpecialType.System_UInt64 or SpecialType.System_IntPtr or SpecialType.System_UIntPtr
+             or SpecialType.System_Single or SpecialType.System_Double
+         || type.TypeKind is TypeKind.Enum or TypeKind.Pointer or TypeKind.FunctionPointer)
+        // Fall back to not using return pointers to avoid spamming unrelated errors.
+        // The diagnostic is an error anyway, so the resulting code will never run.
+        || IsIllegalReturnType(type);
+
+    private static bool IsIllegalReturnType(ITypeSymbol type) =>
+        // 'char' and 'bool' are weird: they aren't blittable, even though
+        // they look like they should be.
+        // This makes passing them across the interop layer difficult, since
+        // they don't map cleanly to any C++ type (even though they are technically "unmanaged").
+        // If you hit this error, you probably meant to use `godot_bool` instead of `bool` or
+        // `byte` for C++ `char`.
+        // The `!IsUnmanagedType` check is just a sanity check: you can't take the address of those types.
+        type.SpecialType is SpecialType.System_Char or SpecialType.System_Boolean
+        || !type.IsUnmanagedType;
 
     private static StringBuilder AppendRefKind(StringBuilder source, RefKind refKind, ScopedKind scopedKind)
     {

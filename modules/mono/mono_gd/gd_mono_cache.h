@@ -31,7 +31,6 @@
 #pragma once
 
 #include "../csharp_script.h"
-#include "../interop_types.h"
 #include "../mono_gc_handle.h"
 
 #include "core/object/object.h"
@@ -53,19 +52,21 @@ namespace GDMonoCache {
 #endif
 #endif
 
+// View of a C# struct,
+// only lives as a pointer and never destroyed in unmanaged code.
 struct godotsharp_property_info {
-	godot_string_name name; // Not owned
-	godot_string hint_string;
+	StringName name;
+	String hint_string;
 	Variant::Type type;
 	PropertyHint hint;
 	PropertyUsageFlags usage;
-	godot_string_name *class_name; // Not owned
+	StringName class_name;
 	bool exported;
 };
 
 struct godotsharp_property_def_val_pair {
-	godot_string_name name; // Not owned
-	godot_variant value;
+	StringName name;
+	Variant value;
 };
 
 struct ManagedCallbacks {
