@@ -54,42 +54,8 @@ WorkerThreadPool *WorkerThreadPool::singleton = nullptr;
 thread_local WorkerThreadPool::UnlockableLocks WorkerThreadPool::unlockable_locks[MAX_UNLOCKABLE_LOCKS];
 #endif
 
-void WorkerThreadPool::_process_task(Task *p_task) {
-#ifdef THREADS_ENABLED
-	int pool_thread_index = thread_ids[Thread::get_caller_id()];
-	ThreadData &curr_thread = threads[pool_thread_index];
-	Task *prev_task = nullptr; // In case this is recursively called.
-
-	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
-	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
-
-	{
-		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
-		set_current_thread_safe_for_nodes(false);
-		MessageQueue::set_thread_singleton_override(nullptr);
-
-		// Since the WorkerThreadPool is started before the script server,
-		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
-		// Therefore, we do it late at the first opportunity, so in case the task
-		// about to be run uses scripting, guarantees are held.
-		ScriptServer::thread_enter();
-
-		task_mutex.lock();
-		p_task->pool_thread_index = pool_thread_index;
-		prev_task = curr_thread.current_task;
-		curr_thread.current_task = p_task;
-		curr_thread.has_pump_task = p_task->is_pump_task;
-		if (p_task->pending_notify_yield_over) {
-			curr_thread.yield_is_over = true;
-		}
-		task_mutex.unlock();
-	}
-#endif
-
-#ifdef THREADS_ENABLED
-	bool low_priority = p_task->low_priority;
-#endif
-
+// This procedure locks task_mutex before returning. Be sure to unlock it again in the calling function.
+void WorkerThreadPool::_process_task_st(Task *p_task) {
 	if (p_task->group) {
 		// Handling a group
 		bool do_post = false;
@@ -161,25 +127,61 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 			}
 		}
 	}
+}
 
+void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
+	int pool_thread_index = thread_ids[Thread::get_caller_id()];
+	ThreadData &curr_thread = threads[pool_thread_index];
+	Task *prev_task = nullptr; // In case this is recursively called.
+
+	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
+	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
+
 	{
-		curr_thread.current_task = prev_task;
-		if (low_priority) {
-			low_priority_threads_used--;
+		// Tasks must start with these at default values. They are free to set-and-forget otherwise.
+		set_current_thread_safe_for_nodes(false);
+		MessageQueue::set_thread_singleton_override(nullptr);
 
-			if (_try_promote_low_priority_task()) {
-				if (prev_task) { // Otherwise, this thread will catch it.
-					_notify_threads(&curr_thread, 1, 0);
-				}
-			}
+		// Since the WorkerThreadPool is started before the script server,
+		// its pre-created threads can't have ScriptServer::thread_enter() called on them early.
+		// Therefore, we do it late at the first opportunity, so in case the task
+		// about to be run uses scripting, guarantees are held.
+		ScriptServer::thread_enter();
+
+		task_mutex.lock();
+		p_task->pool_thread_index = pool_thread_index;
+		prev_task = curr_thread.current_task;
+		curr_thread.current_task = p_task;
+		curr_thread.has_pump_task = p_task->is_pump_task;
+		if (p_task->pending_notify_yield_over) {
+			curr_thread.yield_is_over = true;
 		}
-
 		task_mutex.unlock();
 	}
 
+	bool low_priority = p_task->low_priority;
+
+	_process_task_st(p_task);
+
+	curr_thread.current_task = prev_task;
+	if (low_priority) {
+		low_priority_threads_used--;
+
+		if (_try_promote_low_priority_task()) {
+			if (prev_task) { // Otherwise, this thread will catch it.
+				_notify_threads(&curr_thread, 1, 0);
+			}
+		}
+	}
+
+	task_mutex.unlock();
+
 	set_current_thread_safe_for_nodes(safe_for_nodes_backup);
 	MessageQueue::set_thread_singleton_override(call_queue_backup);
+#else
+	_process_task_st(p_task);
+	task_mutex.unlock();
 #endif
 }
 
@@ -231,7 +233,8 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
-			_process_task(p_tasks[i]);
+			_process_task_st(p_tasks[i]);
+			task_mutex.unlock(); // _process_task_st locks the mutex before it returns
 		}
 		p_lock.temp_relock();
 		return;
@@ -363,7 +366,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	if (p_pump_task) {
 		pump_task_count++;
 		int thread_count = get_thread_count();
-		if (pump_task_count >= thread_count) {
+		while (pump_task_count >= thread_count) {
 			print_verbose(vformat("A greater number of dedicated threads were requested (%d) than threads available (%d). Please increase the number of available worker task threads. Recovering this session by spawning more worker task threads.", pump_task_count + 1, thread_count)); // +1 because we want to keep a Thread without any pump tasks free.
 
 			// Re-sizing implies relocation, which is not supported for this array.
@@ -373,6 +376,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 			threads[thread_count].pool = this;
 			threads[thread_count].thread.start(&WorkerThreadPool::_thread_function, &threads[thread_count]);
 			thread_ids.insert(threads[thread_count].thread.get_id(), thread_count);
+			thread_count++;
 		}
 	}
 #endif
