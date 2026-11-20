@@ -87,6 +87,7 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
+	bool temperature_enabled = false;
 	bool allow_contact_shadows = true;
 	// bind helpers
 
@@ -151,6 +152,8 @@ public:
 
 	void set_temperature(const float p_temperature);
 	float get_temperature() const;
+	void set_temperature_enabled(bool p_enabled);
+	bool is_temperature_enabled() const;
 	Color get_correlated_color() const;
 
 	virtual AABB get_aabb() const override;
