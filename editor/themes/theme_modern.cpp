@@ -2634,10 +2634,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		style_animation_track_focus->set_border_width_all(2);
 		style_animation_track_focus->set_border_color(p_config.surface_high_color);
 		style_animation_track_focus->set_draw_center(false);
+		Ref<StyleBoxFlat> style_animation_track_selected = EditorThemeManager::make_flat_stylebox(Color(0, 0, 1, 0.1), 0, 0, 0, 0, 0);
 
 		p_theme->set_stylebox("odd", "AnimationTrackEdit", style_animation_track_odd);
 		p_theme->set_stylebox(SceneStringName(hover), "AnimationTrackEdit", style_animation_track_hover);
+
 		p_theme->set_stylebox("focus", "AnimationTrackEdit", style_animation_track_focus);
+		p_theme->set_stylebox("selected_track", "AnimationTrackEdit", style_animation_track_selected);
 
 		p_theme->set_color("h_line_color", "AnimationTrackEdit", Color(1, 1, 1, 0));
 
