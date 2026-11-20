@@ -2860,6 +2860,14 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
 
+	/* CULLING VOLUME API */
+
+	ClassDB::bind_method(D_METHOD("culling_volume_create"), &RenderingServer::culling_volume_create);
+	ClassDB::bind_method(D_METHOD("culling_volume_set_mask", "culling_volume", "mask"), &RenderingServer::culling_volume_set_mask);
+	ClassDB::bind_method(D_METHOD("culling_volume_set_plane", "culling_volume", "plane"), &RenderingServer::culling_volume_set_plane);
+	ClassDB::bind_method(D_METHOD("culling_volume_set_sphere", "culling_volume", "origin", "radius"), &RenderingServer::culling_volume_set_sphere);
+	ClassDB::bind_method(D_METHOD("culling_volume_set_cylinder", "culling_volume", "origin", "axis", "radius"), &RenderingServer::culling_volume_set_cylinder);
+
 	/* VIEWPORT */
 
 	ClassDB::bind_method(D_METHOD("viewport_create"), &RenderingServer::viewport_create);
@@ -2927,6 +2935,9 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_update_mode", "viewport", "mode"), &RenderingServer::viewport_set_vrs_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vrs_texture", "viewport", "texture"), &RenderingServer::viewport_set_vrs_texture);
+
+	ClassDB::bind_method(D_METHOD("viewport_add_culling_volume", "viewport", "culling_volume"), &RenderingServer::viewport_add_culling_volume);
+	ClassDB::bind_method(D_METHOD("viewport_remove_culling_volume", "viewport", "culling_volume"), &RenderingServer::viewport_remove_culling_volume);
 
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR);
 	BIND_ENUM_CONSTANT(RSE::VIEWPORT_SCALING_3D_MODE_FSR);

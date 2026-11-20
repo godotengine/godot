@@ -1145,6 +1145,49 @@
 				[b]Note:[/b] When using the OpenGL rendering driver or when running in headless mode, this function always returns [code]null[/code].
 			</description>
 		</method>
+		<method name="culling_volume_create">
+			<return type="RID" />
+			<description>
+				Creates a culling volume and adds it to the RenderingServer. It can be accessed with the RID that is returned.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+			</description>
+		</method>
+		<method name="culling_volume_set_cylinder">
+			<return type="void" />
+			<param index="0" name="culling_volume" type="RID" />
+			<param index="1" name="origin" type="Vector3" />
+			<param index="2" name="axis" type="Vector3" />
+			<param index="3" name="radius" type="float" />
+			<description>
+				Configures the culling volume as a cylindrical volume. Any geometry outside of this cylinder will be culled. Parameters are in world space.
+				[b]Node:[/b] The [param axis] defines the orientation of the cylinder, if not aligned to the X, Y, or Z-axis it is possible for geometry whose AABB is larger than the cross section of the cylinder to be culled while visible.
+			</description>
+		</method>
+		<method name="culling_volume_set_mask">
+			<return type="void" />
+			<param index="0" name="culling_volume" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+				Geometry will only be culled by this culling volume when one of its layers is within this layer mask.
+			</description>
+		</method>
+		<method name="culling_volume_set_plane">
+			<return type="void" />
+			<param index="0" name="culling_volume" type="RID" />
+			<param index="1" name="plane" type="Plane" />
+			<description>
+				Configures the culling volume as a plane. Any geometry in the direction of the normal will be culled. Parameters are in world space.
+			</description>
+		</method>
+		<method name="culling_volume_set_sphere">
+			<return type="void" />
+			<param index="0" name="culling_volume" type="RID" />
+			<param index="1" name="origin" type="Vector3" />
+			<param index="2" name="radius" type="float" />
+			<description>
+				Configure the culling volume as a sphere. Any geometry outside of the sphere will be culled. Parameters are in world space.
+			</description>
+		</method>
 		<method name="debug_canvas_item_get_rect">
 			<return type="Rect2" />
 			<param index="0" name="item" type="RID" />
@@ -4119,6 +4162,14 @@
 				Sets the size at which the texture should be [i]displayed[/i] in 2D, ignoring its original size. This does not rescale the texture data itself, only how it is drawn in 2D. Set [param width] and [param height] to 0 to disable the size override.
 			</description>
 		</method>
+		<method name="viewport_add_culling_volume">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="culling_volume" type="RID" />
+			<description>
+				Adds a culling volume to this viewport.
+			</description>
+		</method>
 		<method name="viewport_attach_camera">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4228,6 +4279,14 @@
 			<param index="1" name="canvas" type="RID" />
 			<description>
 				Detaches a viewport from a canvas.
+			</description>
+		</method>
+		<method name="viewport_remove_culling_volume">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="culling_volume" type="RID" />
+			<description>
+				Removes a culling volume from this viewport.
 			</description>
 		</method>
 		<method name="viewport_set_active">
