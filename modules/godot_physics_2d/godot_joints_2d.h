@@ -52,6 +52,8 @@ public:
 	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias = p_bias; }
 	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
 
+	virtual void refresh_pair(GodotCollisionObject2D *p_source) override {}
+
 	virtual bool setup(real_t p_step) override { return false; }
 	virtual bool pre_solve(real_t p_step) override { return false; }
 	virtual void solve(real_t p_step) override {}
