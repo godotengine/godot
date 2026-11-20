@@ -2271,3 +2271,9 @@ ResourceFormatSaverText *ResourceFormatSaverText::singleton = nullptr;
 ResourceFormatSaverText::ResourceFormatSaverText() {
 	singleton = this;
 }
+
+ResourceFormatSaverText::~ResourceFormatSaverText() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
