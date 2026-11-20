@@ -169,7 +169,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 						int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
 
 						TVG_NodeCache node_cache = TVG_NodeCache();
-						node_cache.document_offset = parser->get_node_offset(),
+						node_cache.document_offset = parser->get_node_offset();
 						node_cache.body_offset = (uint64_t)cache.xml_body.length();
 						cache.node_caches[gl_idx].push_back(node_cache);
 
