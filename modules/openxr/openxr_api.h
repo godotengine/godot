@@ -148,6 +148,7 @@ private:
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
+	XrResult last_wait_frame_error = XR_SUCCESS;
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
 	Size2i main_swapchain_size;
@@ -366,6 +367,7 @@ private:
 
 	// convenience
 	void copy_string_to_char_buffer(const String &p_string, char *p_buffer, int p_buffer_len);
+	void report_frame_loop_error(XrResult &r_last_error, XrResult p_result, const char *p_what);
 
 	// Render state, Only accessible in rendering thread
 	struct RenderState {
@@ -377,6 +379,8 @@ private:
 		XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
+		XrResult last_begin_frame_error = XR_SUCCESS;
+		XrResult last_end_frame_error = XR_SUCCESS;
 		Rect2i render_region;
 		Size2i render_region_maximum;
 
