@@ -1176,6 +1176,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 						frame_progress = 0.0;
 						_queue_redraw();
 						emit_signal(SceneStringName(frame_changed));
+
+						speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
+						abs_speed = Math::abs(speed);
+
+						if (speed == 0) {
+							return; // Do nothing.
+						}
 					}
 					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
 					frame_progress += to_process * abs_speed;
@@ -1206,6 +1213,13 @@ void AnimatedSprite3D::_notification(int p_what) {
 						frame_progress = 1.0;
 						_queue_redraw();
 						emit_signal(SceneStringName(frame_changed));
+
+						speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
+						abs_speed = Math::abs(speed);
+
+						if (speed == 0) {
+							return; // Do nothing.
+						}
 					}
 					double to_process = MIN(frame_progress / abs_speed, remaining);
 					frame_progress -= to_process * abs_speed;
