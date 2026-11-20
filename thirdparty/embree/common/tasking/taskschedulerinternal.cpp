@@ -8,8 +8,6 @@
 
 namespace embree
 {
-  RTC_NAMESPACE_BEGIN
-  
   static MutexSys g_mutex;
   size_t TaskScheduler::g_numThreads = 0;
   __thread TaskScheduler* TaskScheduler::g_instance = nullptr;
@@ -399,6 +397,4 @@ namespace embree
   dll_export void TaskScheduler::removeScheduler(const Ref<TaskScheduler>& scheduler) {
     threadPool->remove(scheduler);
   }
-
-  RTC_NAMESPACE_END
 }

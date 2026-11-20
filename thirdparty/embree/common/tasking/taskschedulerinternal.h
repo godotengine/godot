@@ -19,11 +19,6 @@
 
 namespace embree
 {
-
-  /* The tasking system exports some symbols to be used by the tutorials. Thus we 
-     hide is also in the API namespace when requested. */
-  RTC_NAMESPACE_BEGIN
-
   struct TaskScheduler : public RefCount
   {
     ALIGNED_STRUCT_(64);
@@ -376,10 +371,4 @@ namespace embree
     static __thread Thread* thread_local_thread;
     static ThreadPool* threadPool;
   };
-
-  RTC_NAMESPACE_END
-
-#if defined(RTC_NAMESPACE)
-    using RTC_NAMESPACE::TaskScheduler;
-#endif
 }
