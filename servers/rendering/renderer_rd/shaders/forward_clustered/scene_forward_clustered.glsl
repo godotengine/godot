@@ -1203,6 +1203,7 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	vec3 energy_compensation = vec3(1.0);
 	vec4 fog = vec4(0.0, 0.0, 0.0, 1.0);
+	float global_fog_influence = 1.;
 #if defined(CUSTOM_RADIANCE_USED)
 	vec4 custom_radiance = vec4(0.0);
 #endif
@@ -1529,7 +1530,6 @@ void fragment_shader(in SceneData scene_data) {
 	fog.rgb *= fog.a;
 	fog.a = 1.0 - fog.a;
 #endif //!CUSTOM_FOG_USED
-
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);
 
@@ -3169,8 +3169,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifndef FOG_DISABLED
-	diffuse_buffer.rgb = diffuse_buffer.rgb * fog.a + fog.rgb;
-	specular_buffer.rgb = specular_buffer.rgb * fog.a;
+	diffuse_buffer.rgb = mix(diffuse_buffer.rgb, diffuse_buffer.rgb * fog.a + fog.rgb, global_fog_influence);
+	specular_buffer.rgb = mix(specular_buffer.rgb, specular_buffer.rgb * fog.a + fog.rgb, global_fog_influence);
 #endif //!FOG_DISABLED
 
 #else //MODE_SEPARATE_SPECULAR
@@ -3185,7 +3185,7 @@ void fragment_shader(in SceneData scene_data) {
 #endif //USE_NO_SHADING
 
 #ifndef FOG_DISABLED
-	frag_color.rgb = frag_color.rgb * fog.a + fog.rgb;
+	frag_color.rgb = mix(frag_color.rgb, frag_color.rgb * fog.a + fog.rgb, global_fog_influence);
 #endif //!FOG_DISABLED
 
 #if defined(PREMUL_ALPHA_USED) && !defined(MODE_RENDER_DEPTH)
