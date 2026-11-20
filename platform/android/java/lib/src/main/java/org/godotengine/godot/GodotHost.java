@@ -30,12 +30,10 @@
 
 package org.godotengine.godot;
 
-import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 
 import android.app.Activity;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Collections;
@@ -43,11 +41,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} engine.
+ * Implemented by components (e.g. Activity, Fragment) that host the {@link Godot} engine.
  */
 public interface GodotHost {
 	/**
-	 * Provides a set of command line parameters to setup the {@link Godot} engine.
+	 * Provides a set of command line parameters to set up the {@link Godot} engine.
 	 */
 	default List<String> getCommandLine() {
 		return Collections.emptyList();
@@ -115,31 +113,6 @@ public interface GodotHost {
 	}
 
 	/**
-	 * Signs the given Android apk
-	 *
-	 * @param inputPath Path to the apk that should be signed
-	 * @param outputPath Path for the signed output apk; can be the same as inputPath
-	 * @param keystorePath Path to the keystore to use for signing the apk
-	 * @param keystoreUser Keystore user credential
-	 * @param keystorePassword Keystore password credential
-	 *
-	 * @return {@link Error#OK} if signing is successful
-	 */
-	default Error signApk(@NonNull String inputPath, @NonNull String outputPath, @NonNull String keystorePath, @NonNull String keystoreUser, @NonNull String keystorePassword) {
-		return Error.ERR_UNAVAILABLE;
-	}
-
-	/**
-	 * Verifies the given Android apk is signed
-	 *
-	 * @param apkPath Path to the apk that should be verified
-	 * @return {@link Error#OK} if verification was successful
-	 */
-	default Error verifyApk(@NonNull String apkPath) {
-		return Error.ERR_UNAVAILABLE;
-	}
-
-	/**
 	 * Returns whether the given feature tag is supported.
 	 *
 	 * @see <a href="https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html">Feature tags</a>
@@ -147,21 +120,6 @@ public interface GodotHost {
 	default boolean supportsFeature(String featureTag) {
 		return false;
 	}
-
-	/**
-	 * Invoked on the render thread when an editor workspace has been selected.
-	 */
-	default void onEditorWorkspaceSelected(String workspace) {}
-
-	/**
-	 * Invoked on the render thread to request showing the editor game dock.
-	 */
-	default void showEditorGameDock() {}
-
-	/**
-	 * Triggered when the editor's distraction-free mode changes.
-	 */
-	default void onDistractionFreeModeChanged(Boolean enabled) {}
 
 	/**
 	 * Runs the specified action on a host provided thread.
@@ -175,14 +133,5 @@ public interface GodotHost {
 		if (activity != null) {
 			activity.runOnUiThread(action);
 		}
-	}
-
-	/**
-	 * Gets the build provider, if available.
-	 *
-	 * @return the build provider, if available; otherwise, null.
-	 */
-	default @Nullable BuildProvider getBuildProvider() {
-		return null;
 	}
 }
