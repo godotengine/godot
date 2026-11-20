@@ -388,7 +388,8 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	multisample_state.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_pipeline_key.framebuffer_format_id, 0);
 
 	RD::PipelineColorBlendState blend_state;
-	if (uses_alpha || uses_blend_alpha) {
+	// Alpha scissor writes ALPHA but sorts opaque; only surfaces in the alpha pass blend.
+	if ((uses_alpha || uses_blend_alpha) && uses_alpha_pass()) {
 		// These flags should only go through if we have some form of MSAA.
 		if (alpha_antialiasing_mode == ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE) {
 			multisample_state.enable_alpha_to_coverage = true;
