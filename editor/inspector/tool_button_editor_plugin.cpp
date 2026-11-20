@@ -33,6 +33,8 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/themes/editor_scale.h"
+#include "scene/gui/margin_container.h"
 
 void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, const StringName &p_property) {
 	Object *object = p_object.get_validated_object();
@@ -93,7 +95,11 @@ bool EditorInspectorToolButtonPlugin::parse_property(Object *p_object, const Var
 	}
 	action_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorToolButtonPlugin::_call_action).bind(p_object, p_path));
 
-	add_custom_control(action_button);
+	// Add 4px of spacing above the button.
+	MarginContainer *margin = memnew(MarginContainer);
+	margin->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	margin->add_child(action_button);
+	add_custom_control(margin);
 	return true;
 }
 
