@@ -32,6 +32,7 @@
 
 #include "scene/2d/physics/kinematic_collision_2d.h"
 #include "scene/2d/physics/physics_body_2d.h"
+#include "scene/2d/physics/rigid_body_2d.h"
 
 class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);
@@ -47,6 +48,7 @@ public:
 		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
+	bool move_and_push();
 	void apply_floor_snap();
 
 	const Vector2 &get_velocity() const;
@@ -109,6 +111,9 @@ public:
 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
 	PlatformOnLeave get_platform_on_leave() const;
 
+	void set_collision_push_multiplier(real_t p_multiplier);
+	real_t get_collision_push_multiplier() const;
+
 	CharacterBody2D();
 
 private:
@@ -125,6 +130,7 @@ private:
 	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
 	real_t floor_snap_length = 1;
 	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
+	real_t collision_push_multiplier = 1.0;
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t platform_floor_layers = UINT32_MAX;
 	uint32_t platform_wall_layers = 0;
