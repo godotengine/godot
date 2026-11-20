@@ -18,6 +18,7 @@ def get_doc_classes():
         "GLTFDocument",
         "GLTFDocumentExtension",
         "GLTFDocumentExtensionConvertImporterMesh",
+        "GLTFItem",
         "GLTFLight",
         "GLTFMesh",
         "GLTFNode",

@@ -591,7 +591,7 @@ Array _get_or_create_state_shapes_in_state(const Ref<GLTFState> &p_state) {
 GLTFShapeIndex _export_node_shape(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsShape> &p_physics_shape) {
 	Array state_shapes = _get_or_create_state_shapes_in_state(p_state);
 	GLTFShapeIndex size = state_shapes.size();
-	Dictionary shape_dict = p_physics_shape->to_dictionary();
+	Dictionary shape_dict = p_physics_shape->write_to_dictionary();
 	for (GLTFShapeIndex i = 0; i < size; i++) {
 		Dictionary other = state_shapes[i];
 		if (other == shape_dict) {
@@ -713,7 +713,7 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 	Dictionary physics_body_ext;
 	Ref<GLTFPhysicsBody> physics_body = p_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
 	if (physics_body.is_valid()) {
-		physics_body_ext = physics_body->to_dictionary();
+		physics_body_ext = physics_body->write_to_dictionary();
 		Variant compound_trigger_nodes = p_gltf_node->get_additional_data(StringName("GLTFPhysicsCompoundTriggerNodes"));
 		if (compound_trigger_nodes.is_array()) {
 			Dictionary trigger_property = physics_body_ext.get_or_add("trigger", {});
