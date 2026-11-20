@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamSynchronized" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Stream that can be fitted with sub-streams, which will be played in-sync.
+		Stores multiple sub-[AudioStream]s, which will be played in-sync.
 	</brief_description>
 	<description>
-		This is a stream that can be fitted with sub-streams, which will be played in-sync. The streams begin at exactly the same time when play is pressed, and will end when the last of them ends. If one of the sub-streams loops, then playback will continue.
+		[AudioStreamSynchronized] can hold multiple streams and play them at the same time.
+		[b]Note:[/b] A stream looping will not affect other streams.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -14,14 +15,14 @@
 			<return type="AudioStream" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Get one of the synchronized streams, by index.
+				Returns the [AudioStream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="get_sync_stream_volume" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Get the volume of one of the synchronized streams, by index.
+				Returns the volume, in decibels, of the stream of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_sync_stream">
@@ -29,7 +30,7 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
-				Set one of the synchronized streams, by index.
+				Sets the [param audio_stream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_sync_stream_volume">
@@ -37,18 +38,18 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="volume_db" type="float" />
 			<description>
-				Set the volume of one of the synchronized streams, by index.
+				Sets the volume, in decibels, of the stream of the given [param stream_index].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="stream_count" type="int" setter="set_stream_count" getter="get_stream_count" default="0">
-			Set the total amount of streams that will be played back synchronized.
+			Number of streams that will be played back in-sync.
 		</member>
 	</members>
 	<constants>
 		<constant name="MAX_STREAMS" value="32">
-			Maximum amount of streams that can be synchronized.
+			Maximum number of streams that can be in-sync.
 		</constant>
 	</constants>
 </class>
