@@ -2984,7 +2984,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		VectorView<BufferBarrier> p_buffer_barriers,
 		VectorView<TextureBarrier> p_texture_barriers,
 		VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) {
-	VkMemoryBarrier *vk_memory_barriers = ALLOCA_ARRAY(VkMemoryBarrier, p_memory_barriers.size());
+	thread_local LocalVector<VkMemoryBarrier> vk_memory_barriers;
+	vk_memory_barriers.resize_uninitialized(p_memory_barriers.size());
 	for (uint32_t i = 0; i < p_memory_barriers.size(); i++) {
 		vk_memory_barriers[i] = {};
 		vk_memory_barriers[i].sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2992,7 +2993,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		vk_memory_barriers[i].dstAccessMask = _rd_to_vk_access_flags(p_memory_barriers[i].dst_access) & ~VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 	}
 
-	VkBufferMemoryBarrier *vk_buffer_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_buffer_barriers.size());
+	thread_local LocalVector<VkBufferMemoryBarrier> vk_buffer_barriers;
+	vk_buffer_barriers.resize_uninitialized(p_buffer_barriers.size());
 	for (uint32_t i = 0; i < p_buffer_barriers.size(); i++) {
 		vk_buffer_barriers[i] = {};
 		vk_buffer_barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -3005,7 +3007,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 		vk_buffer_barriers[i].size = p_buffer_barriers[i].size;
 	}
 
-	VkImageMemoryBarrier *vk_image_barriers = ALLOCA_ARRAY(VkImageMemoryBarrier, p_texture_barriers.size());
+	thread_local LocalVector<VkImageMemoryBarrier> vk_image_barriers;
+	vk_image_barriers.resize_uninitialized(p_texture_barriers.size());
 	for (uint32_t i = 0; i < p_texture_barriers.size(); i++) {
 		const TextureInfo *tex_info = (const TextureInfo *)p_texture_barriers[i].texture.id;
 		vk_image_barriers[i] = {};
@@ -3029,7 +3032,8 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 	VkPipelineStageFlags accel_src_stages = src_stage_flags;
 	VkPipelineStageFlags accel_dst_stages = dst_stage_flags;
 
-	VkBufferMemoryBarrier *vk_accel_barriers = ALLOCA_ARRAY(VkBufferMemoryBarrier, p_acceleration_structure_barriers.size());
+	thread_local LocalVector<VkBufferMemoryBarrier> vk_accel_barriers;
+	vk_accel_barriers.resize_uninitialized(p_acceleration_structure_barriers.size());
 	for (uint32_t i = 0; i < p_acceleration_structure_barriers.size(); i++) {
 		VkAccessFlags src_access = _rd_to_vk_access_flags(p_acceleration_structure_barriers[i].src_access);
 		VkAccessFlags dst_access = _rd_to_vk_access_flags(p_acceleration_structure_barriers[i].dst_access);
@@ -3089,18 +3093,18 @@ void RenderingDeviceDriverVulkan::command_pipeline_barrier(
 			src_stage_flags,
 			dst_stage_flags,
 			0,
-			p_memory_barriers.size(), vk_memory_barriers,
-			p_buffer_barriers.size(), vk_buffer_barriers,
-			p_texture_barriers.size(), vk_image_barriers);
+			vk_memory_barriers.size(), vk_memory_barriers.is_empty() ? nullptr : vk_memory_barriers.ptr(),
+			vk_buffer_barriers.size(), vk_buffer_barriers.is_empty() ? nullptr : vk_buffer_barriers.ptr(),
+			vk_image_barriers.size(), vk_image_barriers.is_empty() ? nullptr : vk_image_barriers.ptr());
 
-	if (p_acceleration_structure_barriers.size() > 0) {
+	if (!vk_accel_barriers.is_empty()) {
 		vkCmdPipelineBarrier(
 				command_buffer->vk_command_buffer,
 				accel_src_stages,
 				accel_dst_stages,
 				0,
 				0, nullptr,
-				p_acceleration_structure_barriers.size(), vk_accel_barriers,
+				vk_accel_barriers.size(), vk_accel_barriers.ptr(),
 				0, nullptr);
 	}
 }
