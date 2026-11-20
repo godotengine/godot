@@ -166,8 +166,6 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 14) out vec2 point_coord_interp;
 #endif
 
-invariant gl_Position;
-
 #GLOBALS
 
 #define scene_data scene_data_block.data
