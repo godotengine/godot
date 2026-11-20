@@ -74,6 +74,34 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	return pi;
 }
 
+PropertyInfo::PropertyInfo(const Variant::Type p_type, const String &p_name, const PropertyHint p_hint,
+		const String &p_hint_string, const uint32_t p_usage, const StringName &p_class_name) :
+		type(p_type),
+		name(p_name),
+		hint(p_hint),
+		hint_string(p_hint_string),
+		usage(p_usage) {
+	if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		class_name = hint_string;
+	} else {
+		class_name = p_class_name;
+	}
+}
+
+PropertyInfo::PropertyInfo(const Variant::Type p_type, const char *p_name, const PropertyHint p_hint,
+		const char *p_hint_string, const uint32_t p_usage, const char *p_class_name) :
+		type(p_type),
+		name(p_name),
+		hint(p_hint),
+		hint_string(p_hint_string),
+		usage(p_usage) {
+	if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		class_name = hint_string;
+	} else if (p_class_name) {
+		class_name = StringName(p_class_name);
+	}
+}
+
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	TypedArray<Dictionary> va;
 	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
