@@ -218,7 +218,7 @@ bool CanvasItemManipulator::_gui_input_scale(const Ref<InputEvent> &p_event) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() &&
 				((tool == TOOL_SELECT && b->is_alt_pressed() && b->is_command_or_control_pressed()) || tool == TOOL_SCALE)) {
 			Array selection;
-			bool has_locked_items = get_selection_callback.call(selection);
+			bool has_locked_items = get_selection_callback.call(selection, true);
 
 			drag_selection.clear();
 			// Remove unmovable nodes.
@@ -426,7 +426,7 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 		if ((b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT && tool == TOOL_EDIT_PIVOT) ||
 				(k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == Key::V && tool == TOOL_SELECT && (k->get_modifiers_mask().is_empty() || move_temp_pivot))) {
 			Array selection;
-			get_selection_callback.call(selection);
+			get_selection_callback.call(selection, true);
 
 			drag_selection.clear();
 			// Filters the selection with nodes that allow setting the pivot.
@@ -536,7 +536,7 @@ bool CanvasItemManipulator::_gui_input_resize(const Ref<InputEvent> &p_event) {
 	// Drag resize handles.
 	if (drag_type == DRAG_NONE && b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 		Array selection;
-		get_selection_callback.call(selection);
+		get_selection_callback.call(selection, true);
 
 		if (selection.size() == 1) {
 			CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
@@ -721,7 +721,7 @@ bool CanvasItemManipulator::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			if ((b->is_command_or_control_pressed() && !b->is_alt_pressed() && tool == TOOL_SELECT) || tool == TOOL_ROTATE) {
 				Array selection;
-				bool has_locked_items = get_selection_callback.call(selection);
+				bool has_locked_items = get_selection_callback.call(selection, true);
 
 				drag_selection.clear();
 				// Remove unmovable nodes.
@@ -825,7 +825,7 @@ bool CanvasItemManipulator::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE && b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() &&
 			((tool == TOOL_SELECT && b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE)) {
 		Array selection;
-		bool has_locked_items = get_selection_callback.call(selection);
+		bool has_locked_items = get_selection_callback.call(selection, true);
 
 		drag_selection.clear();
 		// Remove unmovable nodes.
@@ -939,7 +939,7 @@ bool CanvasItemManipulator::_gui_input_move(const Ref<InputEvent> &p_event) {
 		if (!k->is_echo()) {
 			// Start moving the canvas items with the keyboard, if they are movable.
 			Array selection;
-			get_selection_callback.call(selection);
+			get_selection_callback.call(selection, true);
 
 			drag_selection.clear();
 			// Remove unmovable nodes.
@@ -1034,7 +1034,7 @@ bool CanvasItemManipulator::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 			Array selection;
-			get_selection_callback.call(selection);
+			get_selection_callback.call(selection, true);
 
 			if (selection.size() == 1) {
 				Control *control = Object::cast_to<Control>(selection.front());
@@ -1240,7 +1240,7 @@ bool CanvasItemManipulator::_gui_input_open_scene_on_double_click(const Ref<Inpu
 	// Open a sub-scene on double-click.
 	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && b->is_double_click() && tool == TOOL_SELECT) {
 		Array selection;
-		get_selection_callback.call(selection);
+		get_selection_callback.call(selection, true);
 		if (selection.size() == 1) {
 			CanvasItem *ci = Object::cast_to<CanvasItem>(selection.front());
 			if (ci->is_instance() && ci != find_items_start_callback.call()) {
@@ -1258,7 +1258,7 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 	Ref<InputEventKey> k = p_event;
 
-	if (drag_type == DRAG_NONE || (drag_type == DRAG_BOX_SELECTION && b.is_valid() && !b->is_pressed())) {
+	if (drag_type == DRAG_NONE) {
 		// Popup the selection menu list.
 		if (b.is_valid() && b->is_pressed() &&
 				((b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed()) ||
@@ -1290,87 +1290,104 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 			return true;
 		}
 
-		// Single item selection.
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
+		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::LEFT && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE)) {
 			Point2 pos = Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position());
-			// Allow selecting on release when performed very small box selection (necessary when Shift is pressed, see below).
-			if (b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && pos.distance_to(drag_from) <= DRAG_THRESHOLD * scale)) {
-				Vector<DebuggerHelpers::SelectResult> items;
-				get_canvas_items_at_pos(pos, items);
-
-				CanvasItem *ci = nullptr;
-
-				// Retrieve the canvas items.
-				if (!items.is_empty()) {
-					items.sort(); // Sorts items according the their z-index.
-					ci = Object::cast_to<CanvasItem>(items[0].item);
-				}
-
-				// Shift also allows forcing box selection when item was clicked.
-				if (!ci || (b->is_shift_pressed() && b->is_pressed())) {
-					// Start a box selection.
-					if (!b->is_shift_pressed()) {
-						// Clear the selection if not additive.
-						emit_signal("clear_selection_requested", true);
-					}
-
-					if (b->is_pressed()) {
-						drag_from = pos;
-						drag_type = DRAG_BOX_SELECTION;
-						box_selecting_to = drag_from;
-						return true;
-					}
-				} else {
-					bool selected = point_selected_callback.call(ci, b->is_shift_pressed());
-					// Start dragging.
-					if (selected && (tool == TOOL_SELECT || tool == TOOL_MOVE) && b->is_pressed()) {
-						// Drag the node(s) if requested.
-						drag_type = DRAG_QUEUED;
+			drag_from = pos;
+			drag_type = DRAG_QUEUED;
 #ifdef TOOLS_ENABLED
-						drag_start_origin = pos;
+			drag_start_origin = pos;
 #endif
-					} else if (!b->is_pressed()) {
-						reset_drag();
-					}
-
-					return true; // Selected the item.
-				}
-			}
+			return true;
 		}
 	}
 
 	if (drag_type == DRAG_QUEUED) {
+		// If you press the left button and move the cursor less than the threshold value before releasing it,
+		// it is equivalent to performing a click operation.
 		if (b.is_valid() && !b->is_pressed()) {
+			Point2 pos = Transform2D(global_transform_callback.call()).affine_inverse().xform(b->get_position());
+			Vector<DebuggerHelpers::SelectResult> items;
+			get_canvas_items_at_pos(pos, items);
+
+			// Retrieve the canvas items.
+			if (!items.is_empty()) {
+				items.sort(); // Sorts items according the their z-index.
+				int64_t selete_index = 0;
+
+				Array selection;
+				get_selection_callback.call(selection, false);
+				while (selete_index < items.size() && selection.find(items[selete_index].item) == -1) {
+					selete_index++;
+				}
+				if (selete_index < items.size()) {
+					selete_index++;
+				}
+				CanvasItem *ci = Object::cast_to<CanvasItem>(items[selete_index % items.size()].item);
+				point_selected_callback.call(ci, b->is_shift_pressed());
+			}
 			reset_drag();
 			return true;
 		}
 
-#ifdef TOOLS_ENABLED
 		if (m.is_valid()) {
 			Point2 pos = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
-			bool movement_threshold_passed = drag_start_origin.distance_to(pos) > (8 * MAX(1, scale)) / zoom;
-			if (m.is_valid() && movement_threshold_passed) {
+			if (pos.distance_to(drag_from) > DRAG_THRESHOLD * scale) {
+				Vector<DebuggerHelpers::SelectResult> items;
+				get_canvas_items_at_pos(pos, items);
 				Array selection;
-				get_selection_callback.call(selection);
+				get_selection_callback.call(selection, false);
 
-				drag_selection.clear();
-				for (const Variant &var : selection) {
-					const Node *node = Object::cast_to<Node>(var);
-					if (is_node_movable(node, true)) {
-						drag_selection.push_back(var);
+				bool is_hit_selected_item = false;
+				for (const DebuggerHelpers::SelectResult &item : items) {
+					if (selection.find(item.item) != -1) {
+						is_hit_selected_item = true;
+						break;
 					}
 				}
 
-				if (!selection.is_empty()) {
-					drag_type = DRAG_MOVE;
-					drag_from = drag_start_origin;
-					emit_signal("save_canvas_state_requested", drag_selection, false);
+				bool is_hit_item = is_hit_selected_item;
+				if (!is_hit_selected_item && !items.is_empty() && !m->is_shift_pressed()) {
+					items.sort();
+					CanvasItem *ci = Object::cast_to<CanvasItem>(items[0].item);
+					point_selected_callback.call(ci, m->is_shift_pressed());
+					is_hit_item = true;
 				}
 
-				return true;
+				if (!is_hit_item || m->is_shift_pressed()) {
+					pre_selection.clear();
+					last_selection.clear();
+					for (const Variant &var : selection) {
+						pre_selection.push_back(var);
+						last_selection.push_back(var);
+					}
+					drag_type = DRAG_BOX_SELECTION;
+					box_selecting_to = pos;
+				} else {
+#ifdef TOOLS_ENABLED
+					bool movement_threshold_passed = drag_start_origin.distance_to(pos) > (8 * MAX(1, scale)) / zoom;
+					if (movement_threshold_passed) {
+						selection.clear();
+						get_selection_callback.call(selection, true);
+						drag_selection.clear();
+						for (const Variant &var : selection) {
+							const Node *node = Object::cast_to<Node>(var);
+							if (is_node_movable(node, true)) {
+								drag_selection.push_back(var);
+							}
+						}
+
+						if (!selection.is_empty()) {
+							drag_type = DRAG_MOVE;
+							drag_from = drag_start_origin;
+							emit_signal("save_canvas_state_requested", drag_selection, false);
+						}
+
+						return true;
+					}
+#endif
+				}
 			}
 		}
-#endif
 	}
 
 	if (drag_type == DRAG_BOX_SELECTION) {
@@ -1385,22 +1402,46 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 		Rect2 area(bsfrom, bsto - bsfrom);
 
-		// Confirm box selection.
-		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
+		if (m.is_valid() || (k.is_valid() && k->get_keycode() == Key::SHIFT)) {
+			bool is_shift_pressed = m.is_valid() ? m->is_shift_pressed() : k->is_pressed();
 			Node *start = Object::cast_to<Node>(find_items_start_callback.call());
 			if (start) {
 				Vector<DebuggerHelpers::SelectResult> items;
-				find_canvas_items_in_rect(area, start, items);
+				find_canvas_items_overlap_rect(area, start, items);
+				Array nodes;
+				for (const DebuggerHelpers::SelectResult &item : items) {
+					nodes.append(item.item);
+				}
 
-				if (!items.is_empty()) {
-					Array nodes;
-					for (const DebuggerHelpers::SelectResult &item : items) {
-						nodes.append(item.item);
+				if (is_shift_pressed) {
+					Array intersection;
+					for (int i = 0; i < nodes.size(); i++) {
+						if (pre_selection.find(nodes[i]) != -1) {
+							intersection.push_back(nodes[i]);
+							nodes.remove_at(i);
+							i--;
+						}
 					}
-					emit_signal("box_selected", nodes);
+					for (int i = 0; i < pre_selection.size(); i++) {
+						if (intersection.find(pre_selection[i]) == -1) {
+							nodes.push_back(pre_selection[i]);
+						}
+					}
+				}
+
+				if (nodes != last_selection) {
+					emit_signal("clear_selection_requested", true);
+					if (!nodes.is_empty()) {
+						emit_signal("box_selected", nodes);
+					}
+					last_selection = nodes;
 				}
 			}
+		}
 
+		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
+			pre_selection.clear();
+			last_selection.clear();
 			reset_drag();
 			emit_signal("box_selection_updated", Rect2());
 			return true;
@@ -1408,6 +1449,10 @@ bool CanvasItemManipulator::_gui_input_select(const Ref<InputEvent> &p_event) {
 
 		// Cancel box selection.
 		if (b.is_valid() && b->is_pressed() && b->get_button_index() == MouseButton::RIGHT) {
+			emit_signal("clear_selection_requested", true);
+			emit_signal("box_selected", pre_selection);
+			pre_selection.clear();
+			last_selection.clear();
 			reset_drag();
 			emit_signal("box_selection_updated", Rect2());
 			return true;
@@ -1878,7 +1923,7 @@ bool CanvasItemManipulator::reset_temp_pivot() {
 
 void CanvasItemManipulator::center_temp_pivot_on_selection() {
 	Array selection;
-	get_selection_callback.call(selection);
+	get_selection_callback.call(selection, true);
 
 	if (!selection.is_empty()) {
 		Vector2 center;
@@ -2151,7 +2196,7 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 	}
 }
 
-void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
+void CanvasItemManipulator::find_canvas_items_overlap_rect(const Rect2 &p_rect, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
 	if (!p_node) {
 		return;
 	}
@@ -2204,12 +2249,12 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
 			if (ci) {
 				if (!ci->is_set_as_top_level()) {
-					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
+					find_canvas_items_overlap_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), xform);
 				} else {
-					find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), xform);
+					find_canvas_items_overlap_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), xform);
 				}
 			} else {
-				find_canvas_items_in_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), xform);
+				find_canvas_items_overlap_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), xform);
 			}
 		}
 	}
@@ -2232,10 +2277,10 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	bool selected = false;
 	if (ci->_edit_use_rect()) {
 		Rect2 ci_rect = xform.xform(ci->_edit_get_rect());
-		if (p_rect.has_point(ci_rect.position) &&
-				p_rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
-				p_rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
-				p_rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
+		if (!(p_rect.position.x > ci_rect.position.x + ci_rect.size.width ||
+					p_rect.position.y > ci_rect.position.y + ci_rect.size.height ||
+					p_rect.position.x + p_rect.size.width < ci_rect.position.x ||
+					p_rect.position.y + p_rect.size.height < ci_rect.position.y)) {
 			selected = true;
 		}
 	} else if (p_rect.has_point(xform.xform(Point2()))) {

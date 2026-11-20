@@ -318,7 +318,7 @@ private:
 
 	CanvasItem *ref_item = nullptr;
 
-	bool _get_selection_callback(Array r_selection);
+	bool _get_selection_callback(Array r_selection, bool p_only_top);
 	void _box_selection_updated(const Rect2 &p_rect);
 
 	void _box_selected(const Array &p_selection);

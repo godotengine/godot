@@ -536,9 +536,9 @@ Vector2 CanvasItemEditor::_position_to_anchor(const Control *p_control, Vector2 
 	return output;
 }
 
-bool CanvasItemEditor::_get_selection_callback(Array r_selection) {
+bool CanvasItemEditor::_get_selection_callback(Array r_selection, bool p_only_top) {
 	bool has_locked_items = false;
-	List<CanvasItem *> selection = _get_edited_canvas_items(false, true, &has_locked_items);
+	List<CanvasItem *> selection = _get_edited_canvas_items(false, p_only_top, &has_locked_items);
 	for (const CanvasItem *ci : selection) {
 		r_selection.append(ci);
 	}
