@@ -2760,8 +2760,7 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
-		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window)) : Vector2i();
-		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left + off.x, rect.bottom - rect.top - off.y, TRUE);
+		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left , rect.bottom - rect.top, TRUE);
 	}
 }
 
