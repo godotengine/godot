@@ -189,12 +189,19 @@ double Range::_calc_value(double p_val, double p_step) const {
 	}
 
 	if (p_step > 0) {
+		double snapped_val;
 		if (Math::abs(shared->min) > p_step * 1e14) {
 			// Min is too big to use for snapping offset, so snap without it.
-			p_val = _snapped_r128(p_val, p_step);
+			snapped_val = _snapped_r128(p_val, p_step);
 		} else {
 			// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
-			p_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
+			snapped_val = _snapped_r128(p_val - shared->min, p_step) + shared->min;
+		}
+		// Only use the snapped value if it is different enough from the original value.
+		// Otherwise, prefer the user's input to avoid precision issues due to snapping.
+		// Use a stricter tolerance than the auto-calculated one in `Math::is_equal_approx()`.
+		if (!Math::is_equal_approx(p_val, snapped_val, 1e-14)) {
+			p_val = snapped_val;
 		}
 	}
 
