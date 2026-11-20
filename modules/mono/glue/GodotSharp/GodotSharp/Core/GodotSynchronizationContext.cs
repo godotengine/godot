@@ -7,7 +7,7 @@ namespace Godot
 {
     public sealed class GodotSynchronizationContext : SynchronizationContext, IDisposable
     {
-        private readonly BlockingCollection<(SendOrPostCallback Callback, object State)> _queue = new();
+        private readonly ConcurrentQueue<(SendOrPostCallback Callback, object State)> _queue = new();
 
         public override void Send(SendOrPostCallback d, object state)
         {
@@ -21,7 +21,7 @@ namespace Godot
 
             var source = new TaskCompletionSource();
 
-            _queue.Add((st =>
+            _queue.Enqueue((st =>
             {
                 try
                 {
@@ -38,7 +38,7 @@ namespace Godot
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            _queue.Add((d, state));
+            _queue.Enqueue((d, state));
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Godot
         /// </summary>
         public void ExecutePendingContinuations()
         {
-            while (_queue.TryTake(out var workItem))
+            while (_queue.TryDequeue(out var workItem))
             {
                 workItem.Callback(workItem.State);
             }
@@ -54,7 +54,6 @@ namespace Godot
 
         public void Dispose()
         {
-            _queue.Dispose();
         }
     }
 }
