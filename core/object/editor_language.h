@@ -96,6 +96,7 @@ public:
 		Variant default_value;
 		int location = CompletionLocation::OTHER;
 		String theme_color_name;
+		bool deprecated = false;
 
 		CompletionOption() = default;
 
