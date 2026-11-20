@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2025 D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2009-2026 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -96,10 +96,7 @@ DLLEXPORT int GET_NAME(tj3Compress, BITS_IN_JSAMPLE)
   if ((row_pointer = (_JSAMPROW *)malloc(sizeof(_JSAMPROW) * height)) == NULL)
     THROW("Memory allocation failure");
 
-  if (setjmp(this->jerr.setjmp_buffer)) {
-    /* If we get here, the JPEG code has signaled an error. */
-    retval = -1;  goto bailout;
-  }
+  CATCH_LIBJPEG(this);
 
   cinfo->image_width = width;
   cinfo->image_height = height;
@@ -176,10 +173,7 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
 
   dinfo->mem->max_memory_to_use = (long)this->maxMemory * 1048576L;
 
-  if (setjmp(this->jerr.setjmp_buffer)) {
-    /* If we get here, the JPEG code has signaled an error. */
-    retval = -1;  goto bailout;
-  }
+  CATCH_LIBJPEG(this);
 
   if (dinfo->global_state <= DSTATE_INHEADER) {
     jpeg_mem_src_tj(dinfo, jpegBuf, jpegSize);
@@ -230,10 +224,7 @@ DLLEXPORT int GET_NAME(tj3Decompress, BITS_IN_JSAMPLE)
   if ((row_pointer =
        (_JSAMPROW *)malloc(sizeof(_JSAMPROW) * croppedHeight)) == NULL)
     THROW("Memory allocation failure");
-  if (setjmp(this->jerr.setjmp_buffer)) {
-    /* If we get here, the JPEG code has signaled an error. */
-    retval = -1;  goto bailout;
-  }
+  CATCH_LIBJPEG(this);
   for (i = 0; i < (int)croppedHeight; i++) {
     if (this->bottomUp)
       row_pointer[i] = &dstBuf[(croppedHeight - i - 1) * (size_t)pitch];
