@@ -82,7 +82,18 @@ public:
 		}
 		_queued -= 1;
 
+#ifdef WEB_ENABLED
+		if (_payload.data_left() < (int)p.size) {
+			_queued += 1;
+			_read_pos -= 1;
+			if (_read_pos < 0) {
+				_read_pos = _packets.size() - 1;
+			}
+			return OK;
+		}
+#else
 		ERR_FAIL_COND_V(_payload.data_left() < (int)p.size, ERR_BUG);
+#endif
 		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;
