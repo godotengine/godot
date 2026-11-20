@@ -1040,7 +1040,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		if (shader_data->uses_time && p_render_data->scene_data->time - sky->prev_time > 0.00001) {
 			sky->prev_time = p_render_data->scene_data->time;
 			sky->reflection.dirty = true;
-			RenderingServerDefault::redraw_request();
+			RenderingServerDefault::redraw_request(false);
 		}
 
 		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
