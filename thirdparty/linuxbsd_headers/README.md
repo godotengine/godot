@@ -44,6 +44,13 @@ includes the `DBUS_ERROR_APPARMOR_SECURITY_CONTEXT_UNKNOWN` define from Ubuntu's
 - License: MIT
 
 
+## pipewire
+
+- Upstream: https://gitlab.freedesktop.org/pipewire/pipewire/
+- Version: 1.0.0
+- License: MIT
+
+
 ## pulse
 
 - Upstream: http://pulseaudio.org/
