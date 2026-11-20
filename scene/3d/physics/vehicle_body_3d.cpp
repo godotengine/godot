@@ -1062,5 +1062,5 @@ void VehicleBody3D::_bind_methods() {
 
 VehicleBody3D::VehicleBody3D() {
 	exclude.insert(get_rid());
-	set_mass(40);
+	set_mass(1000);
 }
