@@ -215,7 +215,7 @@ void GodotCollisionObject3D::_set_space(GodotSpace3D *p_space) {
 
 	if (old_space) {
 		old_space->remove_object(this);
-
+		old_space->set_wake_on_unpair(false);
 		for (int i = 0; i < shapes.size(); i++) {
 			Shape &s = shapes.write[i];
 			if (s.bpid) {
@@ -223,6 +223,7 @@ void GodotCollisionObject3D::_set_space(GodotSpace3D *p_space) {
 				s.bpid = 0;
 			}
 		}
+		old_space->set_wake_on_unpair(true);
 	}
 
 	if (space) {
