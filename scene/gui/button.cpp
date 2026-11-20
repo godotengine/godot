@@ -93,6 +93,12 @@ void Button::_update_theme_item_cache() {
 	} else {
 		_update_style_margins(theme_cache.disabled);
 	}
+	if (rtl && has_theme_stylebox(SNAME("disabled_pressed_mirrored"))) {
+		_update_style_margins(theme_cache.disabled_pressed_mirrored);
+	} else {
+		_update_style_margins(theme_cache.disabled_pressed);
+	}
+
 	theme_cache.max_style_size = theme_cache.max_style_size.max(Vector2(theme_cache.style_margin_left + theme_cache.style_margin_right, theme_cache.style_margin_top + theme_cache.style_margin_bottom));
 }
 
@@ -106,14 +112,31 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 
 	switch (get_draw_mode()) {
 		case DRAW_NORMAL: {
-			if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
-				stylebox = theme_cache.normal_mirrored;
+			if (is_pressed() || is_pressing()) {
+				if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
+					stylebox = theme_cache.hover_pressed_mirrored;
+				} else {
+					stylebox = theme_cache.hover_pressed;
+				}
 			} else {
-				stylebox = theme_cache.normal;
+				if (rtl && has_theme_stylebox(SNAME("normal_mirrored"))) {
+					stylebox = theme_cache.normal_mirrored;
+				} else {
+					stylebox = theme_cache.normal;
+				}
 			}
 		} break;
 
 		case DRAW_HOVER_PRESSED: {
+			if (is_pressed() && is_pressing() && is_hovered()) {
+				if (rtl && has_theme_stylebox(SNAME("pressed_mirrored"))) {
+					stylebox = theme_cache.pressed_mirrored;
+				} else {
+					stylebox = theme_cache.pressed;
+				}
+				break;
+			}
+
 			// Edge case for CheckButton and CheckBox.
 			if (has_theme_stylebox("hover_pressed")) {
 				if (rtl && has_theme_stylebox(SNAME("hover_pressed_mirrored"))) {
@@ -142,10 +165,99 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 		} break;
 
 		case DRAW_DISABLED: {
+			if (is_pressed()) {
+				if (rtl && has_theme_stylebox(SNAME("disabled_pressed_mirrored"))) {
+					stylebox = theme_cache.disabled_pressed_mirrored;
+					break;
+				} else if (has_theme_stylebox(SNAME("disabled_pressed"))) {
+					stylebox = theme_cache.disabled_pressed;
+					break;
+				}
+			}
+
 			if (rtl && has_theme_stylebox(SNAME("disabled_mirrored"))) {
 				stylebox = theme_cache.disabled_mirrored;
 			} else {
 				stylebox = theme_cache.disabled;
+			}
+		} break;
+	}
+
+	return stylebox;
+}
+
+Ref<StyleBox> Button::_get_current_stylebox_focus() const {
+	Ref<StyleBox> stylebox = theme_cache.focus;
+	const bool rtl = is_layout_rtl();
+	if (rtl && has_theme_stylebox(SNAME("focus_mirrored"))) {
+		stylebox = theme_cache.focus_mirrored;
+	}
+
+	switch (get_draw_mode()) {
+		case DRAW_NORMAL: {
+			if (is_pressed() || is_pressing()) {
+				if (is_hovered()) {
+					if (rtl && has_theme_stylebox(SNAME("focus_hover_mirrored"))) {
+						stylebox = theme_cache.focus_hover_mirrored;
+					} else {
+						stylebox = theme_cache.focus_hover;
+					}
+				} else {
+					if (rtl && has_theme_stylebox(SNAME("focus_pressed_mirrored"))) {
+						stylebox = theme_cache.focus_pressed_mirrored;
+					} else {
+						stylebox = theme_cache.focus_pressed;
+					}
+				}
+			} else {
+				if (rtl && has_theme_stylebox(SNAME("focus_mirrored"))) {
+					stylebox = theme_cache.focus_mirrored;
+				} else {
+					stylebox = theme_cache.focus;
+				}
+			}
+		} break;
+
+		case DRAW_HOVER_PRESSED: {
+			if (rtl && has_theme_stylebox(SNAME("focus_hover_pressed_mirrored"))) {
+				stylebox = theme_cache.focus_hover_pressed_mirrored;
+			} else {
+				stylebox = theme_cache.focus_hover_pressed;
+			}
+			break;
+		}
+			[[fallthrough]];
+		case DRAW_PRESSED: {
+			if (rtl && has_theme_stylebox(SNAME("focus_pressed_mirrored"))) {
+				stylebox = theme_cache.focus_pressed_mirrored;
+			} else {
+				stylebox = theme_cache.focus_pressed;
+			}
+		} break;
+
+		case DRAW_HOVER: {
+			if (rtl && has_theme_stylebox(SNAME("focus_hover_mirrored"))) {
+				stylebox = theme_cache.focus_hover_mirrored;
+			} else {
+				stylebox = theme_cache.focus_hover;
+			}
+		} break;
+
+		case DRAW_DISABLED: {
+			if (is_pressed()) {
+				if (rtl && has_theme_stylebox(SNAME("focus_disabled_pressed_mirrored"))) {
+					stylebox = theme_cache.focus_disabled_pressed_mirrored;
+					break;
+				} else if (has_theme_stylebox(SNAME("focus_disabled_pressed"))) {
+					stylebox = theme_cache.focus_disabled_pressed;
+					break;
+				}
+			}
+
+			if (rtl && has_theme_stylebox(SNAME("focus_disabled_mirrored"))) {
+				stylebox = theme_cache.focus_disabled_mirrored;
+			} else {
+				stylebox = theme_cache.focus_disabled;
 			}
 		} break;
 	}
@@ -226,7 +338,8 @@ void Button::_notification(int p_what) {
 			}
 
 			if (has_focus(true)) {
-				theme_cache.focus->draw(ci, Rect2(Point2(), size));
+				Ref<StyleBox> focusStyle = _get_current_stylebox_focus();
+				focusStyle->draw(ci, Rect2(Point2(), size));
 			}
 
 			Ref<Texture2D> _icon = icon;
@@ -245,7 +358,7 @@ void Button::_notification(int p_what) {
 
 			Size2 drawable_size_remained = size;
 
-			{ // The size after the stelybox is stripped.
+			{ // The size after the stylebox is stripped.
 				drawable_size_remained.width -= style_margin_left + style_margin_right;
 				drawable_size_remained.height -= style_margin_top + style_margin_bottom;
 			}
@@ -845,7 +958,20 @@ void Button::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_pressed_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled_pressed_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled_pressed_mirrored);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_focus_color);
