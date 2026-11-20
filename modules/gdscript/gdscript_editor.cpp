@@ -54,6 +54,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/gdscript_code_actions.h"
 #include "editor/settings/editor_settings.h"
 #endif
 
@@ -173,6 +174,8 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
+	const LocalVector<String> lines = LocalVector<String>(p_script.split("\n"));
+
 	Error err = parser.parse(p_script, p_path, false);
 	if (err == OK) {
 		err = analyzer.analyze();
@@ -193,6 +196,7 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			w.end_column = warn.end_column;
 			w.string_code = warn.get_name();
 			w.message = warn.get_message();
+			w.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(warn.code_actions, lines);
 			r_warnings->push_back(w);
 		}
 	}
@@ -206,6 +210,7 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 				e.end_line = pe.end_line;
 				e.end_column = pe.end_column;
 				e.message = pe.message;
+				e.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
 				r_errors->push_back(e);
 			}
 
@@ -225,6 +230,7 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 					e.end_line = pe.end_line;
 					e.end_column = pe.end_column;
 					e.message = pe.message;
+					e.code_actions = GDScriptCodeActions::make_code_action_ranges_zero_based(pe.code_actions, lines);
 					r_errors->push_back(e);
 				}
 			}
