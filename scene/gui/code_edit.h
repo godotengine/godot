@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"
 
 class CodeEdit : public TextEdit {
@@ -214,21 +213,17 @@ private:
 		Color font_color;
 		Ref<Resource> icon;
 		Variant default_value;
+		// Subsequence matches. Pair is index in display, then length of this subsequence.
 		Vector<Pair<int, int>> matches;
-		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
 		int location = LOCATION_OTHER;
 
-		TypedArray<int> get_option_characteristics(const String &p_base);
-		void clear_characteristics();
-		TypedArray<int> get_option_cached_characteristics() const;
-
-	private:
-		TypedArray<int> charac;
+		int difference_to_base_string = -1;
+		void set_base_string(const String &p_base);
 	};
 
 	// The custom comparer which will sort completion options.
 	struct CodeCompletionOptionCompare {
-		_FORCE_INLINE_ bool operator()(const CodeCompletionOption &l, const CodeCompletionOption &r) const;
+		_FORCE_INLINE_ bool operator()(const CodeCompletionOption &p_left, const CodeCompletionOption &p_right) const;
 	};
 
 	bool code_completion_enabled = false;
@@ -239,8 +234,8 @@ private:
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
-	Vector<CodeCompletionOption> code_completion_options;
-	Vector<RID> code_completion_ac_items;
+	LocalVector<CodeCompletionOption> code_completion_options;
+	LocalVector<RID> code_completion_ac_items;
 	RID code_completion_ac_scroll_element;
 	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
@@ -252,8 +247,8 @@ private:
 	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
-	List<CodeCompletionOption> code_completion_option_submitted;
-	List<CodeCompletionOption> code_completion_option_sources;
+	LocalVector<CodeCompletionOption> code_completion_option_submitted;
+	LocalVector<CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 	String code_completion_line;
 	int code_completion_caret_line = 0;
@@ -261,7 +256,7 @@ private:
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
-	bool _should_reset_selected_option_for_new_options(const Vector<CodeCompletionOption> &p_new_options);
+	bool _should_reset_selected_option_for_new_options(const LocalVector<CodeCompletionOption> &p_new_options) const;
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;

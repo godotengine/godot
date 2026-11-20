@@ -38,8 +38,6 @@
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
-template <typename T>
-class TypedArray;
 
 #ifdef TOOLS_ENABLED
 class EditorLanguage;
