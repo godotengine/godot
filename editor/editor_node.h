@@ -447,7 +447,7 @@ private:
 	Tree *disk_changed_list = nullptr;
 	HashSet<String> disk_changed_scenes;
 	bool disk_changed_project = false;
-	ConfirmationDialog *disk_changed = nullptr;
+	ObjectID disk_changed;
 	ConfirmationDialog *project_data_missing = nullptr;
 
 	bool scene_distraction_free = false;
@@ -706,7 +706,9 @@ private:
 	void _update_update_spinner();
 
 	void _resources_changed(const Vector<String> &p_resources);
+	ConfirmationDialog *_create_disk_changed_dialog();
 	void _scan_external_changes();
+	void _restore_disk_changed_dialog_parent();
 	void _reload_modified_scenes();
 	void _reload_project_settings();
 	void _resave_externally_modified_scenes(String p_str);
