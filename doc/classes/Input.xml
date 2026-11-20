@@ -155,6 +155,14 @@
 				Returns the current value of the joypad axis at index [param axis].
 			</description>
 		</method>
+		<method name="get_joy_device_type" qualifiers="const" experimental="">
+			<return type="int" enum="JoyDeviceType" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's device type (i.e. if it's a gamepad, a racing wheel controller, a dance pad, etc.).
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
 		<method name="get_joy_gravity" qualifiers="const" experimental="">
 			<return type="Vector3" />
 			<param index="0" name="device" type="int" />
@@ -205,6 +213,22 @@
 				[b]Note:[/b] The returned dictionary is always empty on Android and Web.
 			</description>
 		</method>
+		<method name="get_joy_model" qualifiers="const" experimental="">
+			<return type="int" enum="JoyModel" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's model type (i.e. if it's an Xbox 360 controller, a DualShock 4, a Nintendo Switch Pro Controller, etc.).
+				[b]Note:[/b] The returned value may change for joypads if their specific models were previously missing and in the future more specific models for them are added.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="get_joy_model_scheme" qualifiers="const" experimental="">
+			<return type="int" enum="JoyScheme" />
+			<param index="0" name="model" type="int" enum="JoyModel" />
+			<description>
+				Returns the joypad model's scheme layout (i.e. if a joypad with this model has Xbox-style, PlayStation-style, or Nintendo-style face button layout).
+			</description>
+		</method>
 		<method name="get_joy_motion_sensors_calibration" qualifiers="const" experimental="">
 			<return type="Dictionary" />
 			<param index="0" name="device" type="int" />
@@ -236,6 +260,16 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the number of touchpads on the specified joypad, if it has any. Otherwise, the method returns [code]0[/code].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
+		<method name="get_joy_scheme" qualifiers="const" experimental="">
+			<return type="int" enum="JoyScheme" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns the joypad's scheme layout (i.e. if this controller has Xbox-style, PlayStation-style, or Nintendo-style face button layout).
+				[b]Note:[/b] The returned value may change for joypads if their specific models were previously missing and in the future more specific models for them are added.
+				[b]Note:[/b] This method is a shortcut for calling [code]Input.get_joy_model_scheme(Input.get_joy_model(device))[/code].
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>

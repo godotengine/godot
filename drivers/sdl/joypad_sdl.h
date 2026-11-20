@@ -65,6 +65,9 @@ private:
 
 		virtual int get_joy_num_touchpads() const override;
 
+		virtual JoyModel get_joy_model() const override;
+		virtual JoyDeviceType get_joy_device_type() const override;
+
 		SDL_Joystick *get_sdl_joystick() const;
 		SDL_Gamepad *get_sdl_gamepad() const;
 	};
