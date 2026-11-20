@@ -345,6 +345,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	Ref<Theme> edited_theme;
 	String edited_type;
+	String base_type_before_edit;
 	bool updating = false;
 
 	struct LeadingStylebox {
@@ -376,6 +377,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	LineEdit *type_variation_edit = nullptr;
 	Button *type_variation_button = nullptr;
+	Label *type_variation_invalid = nullptr;
 	Label *type_variation_locked = nullptr;
 
 	enum TypeDialogMode {
@@ -429,7 +431,9 @@ class ThemeTypeEditor : public MarginContainer {
 	void _unpin_leading_stylebox();
 	void _update_stylebox_from_leading();
 
-	void _type_variation_changed(const String p_value);
+	void _type_variation_changed(const String &p_value);
+	String _get_base_type_error();
+	void _on_variation_editing_toggled(bool p_toggled_on);
 	void _add_type_variation_cbk();
 
 	void _add_type_dialog_selected(const String p_type_name);

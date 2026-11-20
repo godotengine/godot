@@ -30,6 +30,7 @@
 
 #include "theme_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -3020,13 +3021,13 @@ void ThemeTypeEditor::_update_type_items() {
 	if (edited_type.is_empty() || ClassDB::class_exists(edited_type)) {
 		type_variation_edit->set_editable(false);
 		type_variation_edit->set_text("");
-		type_variation_button->hide();
+		type_variation_button->set_disabled(true);
 		type_variation_locked->set_visible(!edited_type.is_empty());
 	} else {
 		type_variation_edit->set_editable(true);
 		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
 		_add_focusable(type_variation_edit);
-		type_variation_button->show();
+		type_variation_button->set_disabled(false);
 		type_variation_locked->hide();
 	}
 }
@@ -3665,31 +3666,79 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	edited_theme->_unfreeze_and_propagate_changes();
 }
 
-void ThemeTypeEditor::_type_variation_changed(const String p_value) {
-	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-
-	if (p_value == edited_type) {
-		type_variation_edit->unedit();
-		type_variation_edit->set_text(edited_theme->get_type_variation_base(edited_type));
-		EditorNode::get_singleton()->show_warning(TTR("A type cannot be set as a variation of itself."));
+void ThemeTypeEditor::_type_variation_changed(const String &p_value) {
+	if (p_value.is_empty() && !type_variation_edit->is_editing()) {
+		// User cleared the variation.
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		ur->create_action(TTR("Clear Variation Base Type"));
+		ur->add_do_method(*edited_theme, "clear_type_variation", edited_type);
+		ur->add_undo_method(*edited_theme, "set_type_variation", edited_type, edited_theme->get_type_variation_base(edited_type));
+		ur->commit_action();
 		return;
 	}
 
-	ur->create_action(TTR("Set Theme Type Variation"));
-
-	if (p_value.is_empty()) {
-		ur->add_do_method(*edited_theme, "clear_type_variation", edited_type);
+	const String error = _get_base_type_error();
+	if (error.is_empty()) {
+		type_variation_edit->set_modulate(Color(1, 1, 1));
+		type_variation_invalid->hide();
 	} else {
-		ur->add_do_method(*edited_theme, "set_type_variation", edited_type, StringName(p_value));
+		type_variation_edit->set_modulate(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		type_variation_invalid->show();
+		type_variation_invalid->set_text(error);
+		return;
+	}
+}
+
+String ThemeTypeEditor::_get_base_type_error() {
+	const String &base_type = type_variation_edit->get_text();
+	if (base_type.is_empty()) {
+		// Empty base type means it should be cleared.
+		return String();
+	}
+	if (base_type == edited_type) {
+		return TTRC("The type cannot be set as a variation of itself.");
+	}
+	if (!Theme::is_valid_type_name(base_type)) {
+		return TTRC("The type must be a valid identifier.");
+	}
+	return String();
+}
+
+void ThemeTypeEditor::_on_variation_editing_toggled(bool p_toggled_on) {
+	if (p_toggled_on) {
+		base_type_before_edit = type_variation_edit->get_text();
+		return;
+	}
+	bool apply_changes;
+	if (!_get_base_type_error().is_empty()) {
+		type_variation_edit->set_modulate(Color(1, 1, 1));
+		type_variation_invalid->hide();
+		apply_changes = false;
+	} else {
+		apply_changes = !Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"));
 	}
 
-	if (edited_theme->get_type_variation_base(edited_type) == "") {
+	if (!apply_changes) {
+		type_variation_edit->set_text(base_type_before_edit);
+		return;
+	}
+
+	const String &base_type = type_variation_edit->get_text();
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Theme Type Variation"));
+	if (base_type.is_empty()) {
+		ur->add_do_method(*edited_theme, "clear_type_variation", edited_type);
+	} else {
+		ur->add_do_method(*edited_theme, "set_type_variation", edited_type, StringName(base_type));
+	}
+	if (edited_theme->get_type_variation_base(edited_type).is_empty()) {
 		ur->add_undo_method(*edited_theme, "clear_type_variation", edited_type);
 	} else {
 		ur->add_undo_method(*edited_theme, "set_type_variation", edited_type, edited_theme->get_type_variation_base(edited_type));
 	}
-
 	ur->commit_action();
+	_update_type_items();
 }
 
 void ThemeTypeEditor::_add_type_variation_cbk() {
@@ -3704,7 +3753,8 @@ void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name) {
 	if (add_type_mode == ADD_THEME_TYPE) {
 		select_type(p_type_name);
 	} else if (add_type_mode == ADD_VARIATION_BASE) {
-		_type_variation_changed(p_type_name);
+		type_variation_edit->set_text(p_type_name);
+		_on_variation_editing_toggled(false);
 	}
 }
 
@@ -3728,6 +3778,7 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(7, get_editor_theme_icon(SNAME("Tools")));
 
 			type_variation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			type_variation_invalid->add_theme_color_override("font_color", get_theme_color("error_color", EditorStringName(Editor)));
 		} break;
 	}
 }
@@ -3897,16 +3948,25 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_hb->add_child(type_variation_label);
 	type_variation_label->set_text(TTRC("Base Type"));
 	type_variation_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
 	type_variation_edit = memnew(LineEdit);
 	type_variation_hb->add_child(type_variation_edit);
 	type_variation_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	type_variation_edit->set_clear_button_enabled(true);
 	type_variation_edit->connect(SceneStringName(text_changed), callable_mp(this, &ThemeTypeEditor::_type_variation_changed));
-	type_variation_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ThemeTypeEditor::_update_type_items));
+	type_variation_edit->connect("editing_toggled", callable_mp(this, &ThemeTypeEditor::_on_variation_editing_toggled));
 	type_variation_edit->set_accessibility_name(TTRC("Base Type"));
+
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
 	type_variation_button->set_tooltip_text(TTRC("Select the variation base type from a list of available types."));
 	type_variation_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk));
+
+	type_variation_invalid = memnew(Label);
+	type_variation_vb->add_child(type_variation_invalid);
+	type_variation_invalid->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	type_variation_invalid->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+	type_variation_invalid->hide();
 
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
