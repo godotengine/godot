@@ -42,6 +42,9 @@ class AudioStreamOggVorbis;
 class AudioStreamPlaybackOggVorbis : public AudioStreamPlaybackResampled {
 	GDCLASS(AudioStreamPlaybackOggVorbis, AudioStreamPlaybackResampled);
 
+	uint64_t delay_frames = 0;
+	uint64_t end_frame = std::numeric_limits<uint64_t>::max();
+
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	bool looping_override = false;
@@ -97,6 +100,10 @@ public:
 
 	virtual double get_playback_position() const override;
 	virtual void seek(double p_time) override;
+
+	virtual bool set_delay(double p_delay) override;
+	virtual double get_delay() const override;
+	virtual bool set_end_position(double p_end_position) override;
 
 	virtual void tag_used_streams() override;
 

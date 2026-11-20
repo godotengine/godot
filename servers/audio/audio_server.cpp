@@ -452,6 +452,7 @@ void AudioServer::_mix_step() {
 
 	mix_frames += buffer_size;
 	to_mix = buffer_size;
+	absolute_time += double(buffer_size) / get_mix_rate();
 }
 
 void AudioServer::_mix_step_for_channel(AudioFrame *p_out_buf, AudioFrame *p_source_buf, AudioFrame p_vol_start, AudioFrame p_vol_final, float p_attenuation_filter_cutoff_hz, float p_highshelf_gain, AudioFilterSW::Processor *p_processor_l, AudioFilterSW::Processor *p_processor_r) {
@@ -1303,6 +1304,10 @@ uint64_t AudioServer::get_mixed_frames() const {
 	return mix_frames;
 }
 
+double AudioServer::get_absolute_time() const {
+	return absolute_time;
+}
+
 String AudioServer::get_driver_name() const {
 	return AudioDriver::get_singleton()->get_name();
 }
@@ -1934,6 +1939,7 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
+	ClassDB::bind_method(D_METHOD("get_absolute_time"), &AudioServer::get_absolute_time);
 
 	ClassDB::bind_method(D_METHOD("get_input_device_list"), &AudioServer::get_input_device_list);
 	ClassDB::bind_method(D_METHOD("get_input_device"), &AudioServer::get_input_device);

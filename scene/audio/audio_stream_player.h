@@ -48,15 +48,16 @@ public:
 		MIX_TARGET_CENTER
 	};
 
-private:
+protected:
 	AudioStreamPlayerInternal *internal = nullptr;
 
+	Vector<AudioFrame> _get_volume_vector();
+
+private:
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
-
-	Vector<AudioFrame> _get_volume_vector();
 
 protected:
 	void _notification(int p_what);
