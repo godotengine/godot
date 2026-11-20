@@ -93,6 +93,14 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 	return valid_annotations.has(p_annotation_name);
 }
 
+bool GDScriptParser::apply_annotation(AST::AnnotationNode *p_annotation, AST::Node *p_target, AST::ClassNode *p_class) {
+	if (p_annotation->is_applied) {
+		return true;
+	}
+	p_annotation->is_applied = true;
+	return (this->*(valid_annotations[p_annotation->name].apply))(p_annotation, p_target, p_class);
+}
+
 #ifdef DEBUG_ENABLED
 void GDScriptParser::update_project_settings() {
 	is_project_ignoring_warnings = !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize();
@@ -736,7 +744,7 @@ void GDScriptParser::parse_program() {
 					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@static_unload")) {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
-						annotation->apply(this, head, nullptr);
+						apply_annotation(annotation, head, nullptr);
 					}
 					head->annotations.push_back(annotation);
 				} else if (annotation->applies_to(AST::AnnotationInfo::STANDALONE)) {
@@ -751,7 +759,7 @@ void GDScriptParser::parse_program() {
 						break;
 					} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 						// Some annotations need to be resolved and applied in the parser.
-						annotation->apply(this, nullptr, nullptr);
+						apply_annotation(annotation, nullptr, nullptr);
 					} else {
 						push_error(R"(Unexpected standalone annotation.)");
 					}
@@ -823,7 +831,7 @@ void GDScriptParser::parse_program() {
 		if (annotation->name == SNAME("@abstract")) {
 			// Some annotations need to be resolved and applied in the parser.
 			// The root class is not in any class, so `head->outer == nullptr`.
-			annotation->apply(this, head, nullptr);
+			apply_annotation(annotation, head, nullptr);
 		}
 	}
 
@@ -1174,7 +1182,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 							current_class->add_member_group(annotation);
 						} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 							// Some annotations need to be resolved and applied in the parser.
-							annotation->apply(this, nullptr, nullptr);
+							apply_annotation(annotation, nullptr, nullptr);
 						} else {
 							push_error(R"(Unexpected standalone annotation.)");
 						}
@@ -2147,7 +2155,7 @@ AST::Node *GDScriptParser::parse_statement() {
 					}
 					if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 						// Some annotations need to be resolved and applied in the parser.
-						annotation->apply(this, nullptr, nullptr);
+						apply_annotation(annotation, nullptr, nullptr);
 					} else {
 						push_error(R"(Unexpected standalone annotation.)");
 					}

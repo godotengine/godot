@@ -117,7 +117,6 @@ public:
 	};
 
 private:
-	friend struct GDScriptAST::AnnotationNode;
 	friend class GDScriptAnalyzer;
 	friend class GDScriptParserRef;
 	friend class GDScriptLinter;
@@ -422,6 +421,7 @@ public:
 	CompletionContext get_completion_context() const { return completion_context; }
 	void get_annotation_list(List<MethodInfo> *r_annotations) const;
 	bool annotation_exists(const String &p_annotation_name) const;
+	bool apply_annotation(GDScriptAST::AnnotationNode *p_annotation, GDScriptAST::Node *p_target, GDScriptAST::ClassNode *p_class);
 
 	const List<ParserError> &get_errors() const { return errors; }
 	const List<String> get_dependencies() const {

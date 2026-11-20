@@ -32,7 +32,6 @@
 
 #include "../gdscript.h"
 #include "../gdscript_cache.h"
-#include "../gdscript_parser.h"
 
 #include "core/object/class_db.h"
 
@@ -62,14 +61,6 @@ const GDScriptAST::SuiteNode::Local &GDScriptAST::SuiteNode::get_local(const Str
 		return parent_block->get_local(p_name);
 	}
 	return empty;
-}
-
-bool GDScriptAST::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class) {
-	if (is_applied) {
-		return true;
-	}
-	is_applied = true;
-	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target, p_class);
 }
 
 bool GDScriptAST::AnnotationNode::applies_to(uint32_t p_target_kinds) const {

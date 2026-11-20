@@ -655,7 +655,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(AST::ClassNode *p_class, const
 	// Apply annotations.
 	for (AST::AnnotationNode *&E : p_class->annotations) {
 		resolve_annotation(E);
-		E->apply(parser, p_class, p_class->outer);
+		parser->apply_annotation(E, p_class, p_class->outer);
 	}
 
 	parser->current_class = previous_class;
@@ -1066,7 +1066,7 @@ void GDScriptAnalyzer::resolve_class_member(AST::ClassNode *p_class, uint32_t p_
 			for (AST::AnnotationNode *&E : member_node->annotations) {
 				if (E->name == SNAME("@warning_ignore")) {
 					resolve_annotation(E);
-					E->apply(parser, member.variable, p_class);
+					parser->apply_annotation(E, member.variable, p_class);
 				}
 			}
 		}
@@ -1086,7 +1086,7 @@ void GDScriptAnalyzer::resolve_class_member(AST::ClassNode *p_class, uint32_t p_
 				for (AST::AnnotationNode *&E : member.variable->annotations) {
 					if (E->name != SNAME("@warning_ignore")) {
 						resolve_annotation(E);
-						E->apply(parser, member.variable, p_class);
+						parser->apply_annotation(E, member.variable, p_class);
 					}
 				}
 
@@ -1143,7 +1143,7 @@ void GDScriptAnalyzer::resolve_class_member(AST::ClassNode *p_class, uint32_t p_
 				// Apply annotations.
 				for (AST::AnnotationNode *&E : member.constant->annotations) {
 					resolve_annotation(E);
-					E->apply(parser, member.constant, p_class);
+					parser->apply_annotation(E, member.constant, p_class);
 				}
 			} break;
 			case AST::ClassNode::Member::SIGNAL: {
@@ -1172,7 +1172,7 @@ void GDScriptAnalyzer::resolve_class_member(AST::ClassNode *p_class, uint32_t p_
 				// Apply annotations.
 				for (AST::AnnotationNode *&E : member.signal->annotations) {
 					resolve_annotation(E);
-					E->apply(parser, member.signal, p_class);
+					parser->apply_annotation(E, member.signal, p_class);
 				}
 			} break;
 			case AST::ClassNode::Member::ENUM: {
@@ -1225,13 +1225,13 @@ void GDScriptAnalyzer::resolve_class_member(AST::ClassNode *p_class, uint32_t p_
 				// Apply annotations.
 				for (AST::AnnotationNode *&E : member.m_enum->annotations) {
 					resolve_annotation(E);
-					E->apply(parser, member.m_enum, p_class);
+					parser->apply_annotation(E, member.m_enum, p_class);
 				}
 			} break;
 			case AST::ClassNode::Member::FUNCTION:
 				for (AST::AnnotationNode *&E : member.function->annotations) {
 					resolve_annotation(E);
-					E->apply(parser, member.function, p_class);
+					parser->apply_annotation(E, member.function, p_class);
 				}
 				resolve_function_signature(member.function, p_source);
 				break;
@@ -1435,7 +1435,7 @@ void GDScriptAnalyzer::resolve_class_body(AST::ClassNode *p_class, const AST::No
 			// Apply annotations.
 			for (AST::AnnotationNode *&E : member.function->annotations) {
 				resolve_annotation(E);
-				E->apply(parser, member.function, p_class);
+				parser->apply_annotation(E, member.function, p_class);
 			}
 			resolve_function_body(member.function);
 		} else if (member.type == AST::ClassNode::Member::VARIABLE && member.variable->property != AST::VariableNode::PROP_NONE) {
@@ -1457,7 +1457,7 @@ void GDScriptAnalyzer::resolve_class_body(AST::ClassNode *p_class, const AST::No
 		} else if (member.type == AST::ClassNode::Member::GROUP) {
 			// Apply annotation (`@export_{category,group,subgroup}`).
 			resolve_annotation(member.annotation);
-			member.annotation->apply(parser, nullptr, p_class);
+			parser->apply_annotation(member.annotation, nullptr, p_class);
 		}
 	}
 
@@ -2080,7 +2080,7 @@ void GDScriptAnalyzer::resolve_suite(AST::SuiteNode *p_suite, bool p_is_root) {
 		// Apply annotations.
 		for (AST::AnnotationNode *&E : stmt->annotations) {
 			resolve_annotation(E);
-			E->apply(parser, stmt, nullptr); // TODO: Provide `p_class`.
+			parser->apply_annotation(E, stmt, nullptr); // TODO: Provide `p_class`.
 		}
 
 		resolve_node(stmt, p_is_root);
@@ -2487,7 +2487,7 @@ void GDScriptAnalyzer::resolve_match_branch(AST::MatchBranchNode *p_match_branch
 	// Apply annotations.
 	for (AST::AnnotationNode *&E : p_match_branch->annotations) {
 		resolve_annotation(E);
-		E->apply(parser, p_match_branch, nullptr); // TODO: Provide `p_class`.
+		parser->apply_annotation(E, p_match_branch, nullptr); // TODO: Provide `p_class`.
 	}
 
 	for (AST::PatternNode *pattern : p_match_branch->patterns) {

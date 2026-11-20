@@ -47,9 +47,10 @@
 class GDScriptParser;
 
 class GDScriptAST {
-public:
+private:
 	struct AnnotationInfo;
 
+public:
 	// Forward-declare all parser nodes, to avoid ordering issues.
 	struct AnnotationNode;
 	struct ArrayNode;
@@ -369,7 +370,6 @@ public:
 		bool is_resolved = false;
 		bool is_applied = false;
 
-		bool apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class);
 		bool applies_to(uint32_t p_target_kinds) const;
 
 		AnnotationNode() {
@@ -1304,6 +1304,8 @@ public:
 		}
 	};
 
+private:
+	friend class GDScriptParser;
 	struct AnnotationInfo {
 		enum TargetKind {
 			NONE = 0,
