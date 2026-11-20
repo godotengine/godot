@@ -919,32 +919,29 @@ void RenderingDeviceGraph::_run_compute_list_command(RDD::CommandBufferID p_comm
 	}
 }
 
-void RenderingDeviceGraph::_get_draw_list_render_pass_and_framebuffer(const RecordedDrawListCommand *p_draw_list_command, RDD::RenderPassID &r_render_pass, RDD::FramebufferID &r_framebuffer) {
-	DEV_ASSERT(p_draw_list_command->trackers_count <= 21 && "Max number of attachments that can be encoded into the key.");
+void RenderingDeviceGraph::_get_draw_list_render_pass_and_framebuffer(const RDD::AttachmentLoadOp *p_load_ops, const RDD::AttachmentStoreOp *p_store_ops, uint32_t p_attachment_count, FramebufferCache *p_framebuffer_cache, RDD::RenderPassID &r_render_pass, RDD::FramebufferID &r_framebuffer) {
+	DEV_ASSERT(p_attachment_count <= 21 && "Max number of attachments that can be encoded into the key.");
 
 	// Build a unique key from the load and store ops for each attachment.
-	const RDD::AttachmentLoadOp *load_ops = p_draw_list_command->load_ops();
-	const RDD::AttachmentStoreOp *store_ops = p_draw_list_command->store_ops();
 	uint64_t key = 0;
-	for (uint32_t i = 0; i < p_draw_list_command->trackers_count; i++) {
-		key |= uint64_t(load_ops[i]) << (i * 3);
-		key |= uint64_t(store_ops[i]) << (i * 3 + 2);
+	for (uint32_t i = 0; i < p_attachment_count; i++) {
+		key |= uint64_t(p_load_ops[i]) << (i * 3);
+		key |= uint64_t(p_store_ops[i]) << (i * 3 + 2);
 	}
 
 	// Check the storage map if the render pass and the framebuffer needs to be created.
-	FramebufferCache *framebuffer_cache = p_draw_list_command->framebuffer_cache;
-	HashMap<uint64_t, FramebufferStorage>::Iterator it = framebuffer_cache->storage_map.find(key);
-	if (it == framebuffer_cache->storage_map.end()) {
+	HashMap<uint64_t, FramebufferStorage>::Iterator it = p_framebuffer_cache->storage_map.find(key);
+	if (it == p_framebuffer_cache->storage_map.end()) {
 		FramebufferStorage storage;
-		VectorView<RDD::AttachmentLoadOp> load_ops_view(load_ops, p_draw_list_command->trackers_count);
-		VectorView<RDD::AttachmentStoreOp> store_ops_view(store_ops, p_draw_list_command->trackers_count);
-		storage.render_pass = render_pass_creation_function(driver, load_ops_view, store_ops_view, framebuffer_cache->render_pass_creation_user_data);
+		VectorView<RDD::AttachmentLoadOp> load_ops_view(p_load_ops, p_attachment_count);
+		VectorView<RDD::AttachmentStoreOp> store_ops_view(p_store_ops, p_attachment_count);
+		storage.render_pass = render_pass_creation_function(driver, load_ops_view, store_ops_view, p_framebuffer_cache->render_pass_creation_user_data);
 		ERR_FAIL_COND(!storage.render_pass);
 
-		storage.framebuffer = driver->framebuffer_create(storage.render_pass, framebuffer_cache->textures, framebuffer_cache->width, framebuffer_cache->height);
+		storage.framebuffer = driver->framebuffer_create(storage.render_pass, p_framebuffer_cache->textures, p_framebuffer_cache->width, p_framebuffer_cache->height);
 		ERR_FAIL_COND(!storage.framebuffer);
 
-		it = framebuffer_cache->storage_map.insert(key, storage);
+		it = p_framebuffer_cache->storage_map.insert(key, storage);
 	}
 
 	r_render_pass = it->value.render_pass;
@@ -1019,6 +1016,7 @@ void RenderingDeviceGraph::_run_draw_list_command(RDD::CommandBufferID p_command
 			} break;
 			case DrawListInstruction::TYPE_EXECUTE_COMMANDS: {
 				const DrawListExecuteCommandsInstruction *execute_commands_instruction = reinterpret_cast<const DrawListExecuteCommandsInstruction *>(instruction);
+				WorkerThreadPool::get_singleton()->wait_for_task_completion(execute_commands_instruction->task);
 				driver->command_buffer_execute_secondary(p_command_buffer, execute_commands_instruction->command_buffer);
 				instruction_data_cursor += sizeof(DrawListExecuteCommandsInstruction);
 			} break;
@@ -1093,22 +1091,34 @@ void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_
 #endif
 
 	workarounds_state.bound_any_draw_list_pipeline = false;
+
+	if (driver_scissor_and_viewport_in_secondary_command_buffers) {
+		// If the driver supports viewport and scissor commands in secondary command buffers, we always embed the viewport and scissor set in the draw list commands.
+		_add_draw_list_set_viewport(p_region);
+		_add_draw_list_set_scissor(p_region);
+	}
+}
+
+void RenderingDeviceGraph::_add_draw_list_set_scissor(Rect2i p_rect) {
+	DrawListSetScissorInstruction *instruction = reinterpret_cast<DrawListSetScissorInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetScissorInstruction)));
+	instruction->type = DrawListInstruction::TYPE_SET_SCISSOR;
+	instruction->rect = p_rect;
+}
+
+void RenderingDeviceGraph::_add_draw_list_set_viewport(Rect2i p_rect) {
+	DrawListSetViewportInstruction *instruction = reinterpret_cast<DrawListSetViewportInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetViewportInstruction)));
+	instruction->type = DrawListInstruction::TYPE_SET_VIEWPORT;
+	instruction->rect = p_rect;
 }
 
 void RenderingDeviceGraph::_run_secondary_command_buffer_task(const SecondaryCommandBuffer *p_secondary) {
-	driver->command_buffer_begin_secondary(p_secondary->command_buffer, p_secondary->render_pass, 0, p_secondary->framebuffer);
+	if (command_pool_reset_enabled) {
+		driver->command_pool_reset(p_secondary->command_pool);
+	}
+
+	driver->command_buffer_begin_secondary(p_secondary->command_buffer, p_secondary->render_pass, 0);
 	_run_draw_list_command(p_secondary->command_buffer, p_secondary->instruction_data.ptr(), p_secondary->instruction_data.size());
 	driver->command_buffer_end(p_secondary->command_buffer);
-}
-
-void RenderingDeviceGraph::_wait_for_secondary_command_buffer_tasks() {
-	for (uint32_t i = 0; i < frames[frame].secondary_command_buffers_used; i++) {
-		WorkerThreadPool::TaskID &task = frames[frame].secondary_command_buffers[i].task;
-		if (task != WorkerThreadPool::INVALID_TASK_ID) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(task);
-			task = WorkerThreadPool::INVALID_TASK_ID;
-		}
-	}
 }
 
 void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level) {
@@ -1213,7 +1223,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				RDD::RenderPassID render_pass;
 				RDD::FramebufferID framebuffer;
 				if (draw_list_command->framebuffer_cache != nullptr) {
-					_get_draw_list_render_pass_and_framebuffer(draw_list_command, render_pass, framebuffer);
+					_get_draw_list_render_pass_and_framebuffer(draw_list_command->load_ops(), draw_list_command->store_ops(), draw_list_command->trackers_count, draw_list_command->framebuffer_cache, render_pass, framebuffer);
 				} else {
 					render_pass = draw_list_command->render_pass;
 					framebuffer = draw_list_command->framebuffer;
@@ -1221,6 +1231,13 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 
 				if (framebuffer && render_pass) {
 					driver->command_begin_render_pass(r_command_buffer, render_pass, framebuffer, draw_list_command->command_buffer_type, draw_list_command->region, clear_values);
+
+					if (!driver_scissor_and_viewport_in_secondary_command_buffers) {
+						// If the driver doesn't support viewport and scissor commands in secondary command buffers, we always run the viewport and scissor commands in the primary command buffer.
+						driver->command_render_set_viewport(r_command_buffer, draw_list_command->region);
+						driver->command_render_set_scissor(r_command_buffer, draw_list_command->region);
+					}
+
 					_run_draw_list_command(r_command_buffer, draw_list_command->instruction_data(), draw_list_command->instruction_data_size);
 					driver->command_end_render_pass(r_command_buffer);
 				}
@@ -1754,7 +1771,7 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, bool p_command_pool_reset_enabled) {
 	DEV_ASSERT(p_driver != nullptr);
 	DEV_ASSERT(p_render_pass_creation_function != nullptr);
 	DEV_ASSERT(p_frame_count > 0);
@@ -1764,34 +1781,22 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction 
 	render_pass_creation_function = p_render_pass_creation_function;
 	frames.resize(p_frame_count);
 
-	for (uint32_t i = 0; i < p_frame_count; i++) {
-		frames[i].secondary_command_buffers.resize(p_secondary_command_buffers_per_frame);
-
-		for (uint32_t j = 0; j < p_secondary_command_buffers_per_frame; j++) {
-			SecondaryCommandBuffer &secondary = frames[i].secondary_command_buffers[j];
-			secondary.command_pool = driver->command_pool_create(p_secondary_command_queue_family, RDD::COMMAND_BUFFER_TYPE_SECONDARY);
-			secondary.command_buffer = driver->command_buffer_create(secondary.command_pool);
-			secondary.task = WorkerThreadPool::INVALID_TASK_ID;
-		}
-	}
+	secondary_command_queue_family = p_secondary_command_queue_family;
+	command_pool_reset_enabled = p_command_pool_reset_enabled;
 
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
 	driver_buffer_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE);
 	driver_texture_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE);
 	driver_buffers_require_transitions = driver->api_trait_get(RDD::API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS);
 	driver_textures_require_layout_transitions = driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS);
+	driver_uses_secondary_command_buffers = driver->api_trait_get(RDD::API_TRAIT_CAN_USE_SECONDARY_COMMAND_BUFFERS);
+	driver_scissor_and_viewport_in_secondary_command_buffers = driver->api_trait_get(RDD::API_TRAIT_SCISSOR_AND_VIEWPORT_IN_SECONDARY_COMMAND_BUFFERS);
 }
 
 void RenderingDeviceGraph::finalize() {
-	if (!frames.is_empty()) {
-		_wait_for_secondary_command_buffer_tasks();
-	}
-
 	for (Frame &f : frames) {
-		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {
-			if (secondary.command_pool.id != 0) {
-				driver->command_pool_free(secondary.command_pool);
-			}
+		for (SecondaryCommandBuffer *secondary : f.secondary_command_buffers) {
+			driver->command_pool_free(secondary->command_pool);
 		}
 	}
 
@@ -2237,24 +2242,6 @@ void RenderingDeviceGraph::add_draw_list_bind_vertex_buffers(Span<RDD::BufferID>
 	}
 }
 
-void RenderingDeviceGraph::add_draw_list_clear_attachments(VectorView<RDD::AttachmentClear> p_attachments_clear, VectorView<Rect2i> p_attachments_clear_rect) {
-	uint32_t instruction_size = sizeof(DrawListClearAttachmentsInstruction) + sizeof(RDD::AttachmentClear) * p_attachments_clear.size() + sizeof(Rect2i) * p_attachments_clear_rect.size();
-	DrawListClearAttachmentsInstruction *instruction = reinterpret_cast<DrawListClearAttachmentsInstruction *>(_allocate_draw_list_instruction(instruction_size));
-	instruction->type = DrawListInstruction::TYPE_CLEAR_ATTACHMENTS;
-	instruction->attachments_clear_count = p_attachments_clear.size();
-	instruction->attachments_clear_rect_count = p_attachments_clear_rect.size();
-
-	RDD::AttachmentClear *attachments_clear = instruction->attachments_clear();
-	Rect2i *attachments_clear_rect = instruction->attachments_clear_rect();
-	for (uint32_t i = 0; i < instruction->attachments_clear_count; i++) {
-		attachments_clear[i] = p_attachments_clear[i];
-	}
-
-	for (uint32_t i = 0; i < instruction->attachments_clear_rect_count; i++) {
-		attachments_clear_rect[i] = p_attachments_clear_rect[i];
-	}
-}
-
 void RenderingDeviceGraph::add_draw_list_draw(uint32_t p_vertex_count, uint32_t p_instance_count) {
 	DrawListDrawInstruction *instruction = reinterpret_cast<DrawListDrawInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListDrawInstruction)));
 	instruction->type = DrawListInstruction::TYPE_DRAW;
@@ -2290,10 +2277,11 @@ void RenderingDeviceGraph::add_draw_list_draw_indexed_indirect(RDD::BufferID p_b
 	draw_instruction_list.stages.set_flag(RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT);
 }
 
-void RenderingDeviceGraph::add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer) {
+void RenderingDeviceGraph::add_draw_list_execute_commands(RDD::CommandBufferID p_command_buffer, WorkerThreadPool::TaskID p_task) {
 	DrawListExecuteCommandsInstruction *instruction = reinterpret_cast<DrawListExecuteCommandsInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListExecuteCommandsInstruction)));
 	instruction->type = DrawListInstruction::TYPE_EXECUTE_COMMANDS;
 	instruction->command_buffer = p_command_buffer;
+	instruction->task = p_task;
 }
 
 void RenderingDeviceGraph::add_draw_list_next_subpass(RDD::CommandBufferType p_command_buffer_type) {
@@ -2324,15 +2312,13 @@ void RenderingDeviceGraph::add_draw_list_set_push_constant(RDD::ShaderID p_shade
 }
 
 void RenderingDeviceGraph::add_draw_list_set_scissor(Rect2i p_rect) {
-	DrawListSetScissorInstruction *instruction = reinterpret_cast<DrawListSetScissorInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetScissorInstruction)));
-	instruction->type = DrawListInstruction::TYPE_SET_SCISSOR;
-	instruction->rect = p_rect;
+	_add_draw_list_set_scissor(p_rect);
+	draw_instruction_list.changes_scissor_or_viewport = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_set_viewport(Rect2i p_rect) {
-	DrawListSetViewportInstruction *instruction = reinterpret_cast<DrawListSetViewportInstruction *>(_allocate_draw_list_instruction(sizeof(DrawListSetViewportInstruction)));
-	instruction->type = DrawListInstruction::TYPE_SET_VIEWPORT;
-	instruction->rect = p_rect;
+	_add_draw_list_set_viewport(p_rect);
+	draw_instruction_list.changes_scissor_or_viewport = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -2368,7 +2354,62 @@ void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_
 }
 
 void RenderingDeviceGraph::add_draw_list_end() {
+	RDD::CommandBufferType command_buffer_type = RDD::COMMAND_BUFFER_TYPE_PRIMARY;
 	FramebufferCache *framebuffer_cache = draw_instruction_list.framebuffer_cache;
+	// Arbitrary size threshold to evaluate if it'd be best to record the draw list on the background as a secondary buffer.
+	const uint32_t instruction_data_threshold_for_secondary = 16384;
+	const bool allowed_to_use_secondaries = driver_uses_secondary_command_buffers && (driver_scissor_and_viewport_in_secondary_command_buffers || !draw_instruction_list.changes_scissor_or_viewport);
+	const bool big_enough_for_secondaries = draw_instruction_list.data.size() > instruction_data_threshold_for_secondary;
+	if (allowed_to_use_secondaries && big_enough_for_secondaries) {
+		Frame &f = frames[frame];
+		RDD::RenderPassID render_pass;
+		RDD::FramebufferID framebuffer;
+		if (framebuffer_cache != nullptr) {
+			thread_local LocalVector<RDD::AttachmentLoadOp> load_ops;
+			thread_local LocalVector<RDD::AttachmentStoreOp> store_ops;
+			uint32_t attachment_count = framebuffer_cache->trackers.size();
+			load_ops.resize(attachment_count);
+			store_ops.resize(attachment_count);
+
+			// We only need a compatible render pass. The load/store operations do not matter.
+			for (uint32_t i = 0; i < attachment_count; i++) {
+				load_ops[i] = RDD::ATTACHMENT_LOAD_OP_DONT_CARE;
+				store_ops[i] = RDD::ATTACHMENT_STORE_OP_DONT_CARE;
+			}
+
+			_get_draw_list_render_pass_and_framebuffer(load_ops.ptr(), store_ops.ptr(), attachment_count, framebuffer_cache, render_pass, framebuffer);
+		} else {
+			render_pass = draw_instruction_list.render_pass;
+			framebuffer = draw_instruction_list.framebuffer;
+		}
+
+		SecondaryCommandBuffer *secondary;
+		if (f.secondary_command_buffers.size() <= f.secondary_command_buffers_used) {
+			// Create a secondary command buffer if not enough are available.
+			secondary = memnew(SecondaryCommandBuffer);
+			secondary->command_pool = driver->command_pool_create(secondary_command_queue_family, RDD::COMMAND_BUFFER_TYPE_SECONDARY);
+			secondary->command_buffer = driver->command_buffer_create(secondary->command_pool);
+			f.secondary_command_buffers.push_back(secondary);
+		} else {
+			secondary = f.secondary_command_buffers[f.secondary_command_buffers_used];
+		}
+
+		secondary->render_pass = render_pass;
+		f.secondary_command_buffers_used++;
+
+		// Move the current instruction list data into another array that will be used by the secondary command buffer worker.
+		SWAP(secondary->instruction_data, draw_instruction_list.data);
+
+		// Run a background task for recording the secondary command buffer.
+		WorkerThreadPool::TaskID task = WorkerThreadPool::get_singleton()->add_template_task(this, &RenderingDeviceGraph::_run_secondary_command_buffer_task, secondary, true);
+
+		// Clear the instruction list and add a single command for executing the secondary command buffer instead.
+		draw_instruction_list.data.clear();
+		add_draw_list_execute_commands(secondary->command_buffer, task);
+
+		command_buffer_type = RDD::COMMAND_BUFFER_TYPE_SECONDARY;
+	}
+
 	int32_t command_index;
 	uint32_t clear_values_size = sizeof(RDD::RenderPassClearValue) * draw_instruction_list.attachment_clear_values.size();
 	uint32_t trackers_count = framebuffer_cache != nullptr ? framebuffer_cache->trackers.size() : 0;
@@ -2382,7 +2423,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	command->render_pass = draw_instruction_list.render_pass;
 	command->framebuffer = draw_instruction_list.framebuffer;
 	command->instruction_data_size = instruction_data_size;
-	command->command_buffer_type = RDD::COMMAND_BUFFER_TYPE_PRIMARY;
+	command->command_buffer_type = command_buffer_type;
 	command->region = draw_instruction_list.region;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	command->breadcrumb = draw_instruction_list.breadcrumb;
@@ -2746,8 +2787,6 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			commands_sorted[i].index = i;
 		}
 	}
-
-	_wait_for_secondary_command_buffer_tasks();
 
 	if (command_count > 0) {
 		int32_t current_label_index = -1;
