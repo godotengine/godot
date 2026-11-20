@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/image.h"
 #include "core/io/resource_importer.h"
 #include "servers/rendering/rendering_server_enums.h"
 
@@ -39,6 +40,20 @@ class ResourceImporterStreamedTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterStreamedTexture, ResourceImporter);
 
 	static ResourceImporterStreamedTexture *singleton;
+
+	enum ChannelRemap {
+		REMAP_R,
+		REMAP_G,
+		REMAP_B,
+		REMAP_A,
+		REMAP_INV_R,
+		REMAP_INV_G,
+		REMAP_INV_B,
+		REMAP_INV_A,
+		REMAP_UNUSED,
+		REMAP_0,
+		REMAP_1,
+	};
 
 	enum {
 		MAKE_ROUGHNESS_FLAG = 1,
@@ -56,6 +71,9 @@ class ResourceImporterStreamedTexture : public ResourceImporter {
 
 	static void _texture_reimport_roughness(const Ref<StreamedTexture2D> &p_tex, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_channel);
 	static void _texture_reimport_normal(const Ref<StreamedTexture2D> &p_tex);
+
+	static inline void _remap_channels(Ref<Image> &r_image, ChannelRemap p_options[4]);
+	static inline void _clamp_hdr_exposure(Ref<Image> &r_image);
 
 public:
 	static ResourceImporterStreamedTexture *get_singleton() { return singleton; }
