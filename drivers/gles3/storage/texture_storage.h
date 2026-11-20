@@ -210,6 +210,7 @@ struct Texture {
 
 	bool redraw_if_visible = false;
 
+#ifdef TOOLS_ENABLED
 	RenderingServerTypes::TextureDetectCallback detect_3d_callback = nullptr;
 	void *detect_3d_callback_ud = nullptr;
 
@@ -218,6 +219,7 @@ struct Texture {
 
 	RenderingServerTypes::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
 	void *detect_roughness_callback_ud = nullptr;
+#endif
 
 	CanvasTexture *canvas_texture = nullptr;
 
@@ -243,12 +245,14 @@ struct Texture {
 		render_target = o.render_target;
 		is_render_target = o.is_render_target;
 		redraw_if_visible = o.redraw_if_visible;
+#ifdef TOOLS_ENABLED
 		detect_3d_callback = o.detect_3d_callback;
 		detect_3d_callback_ud = o.detect_3d_callback_ud;
 		detect_normal_callback = o.detect_normal_callback;
 		detect_normal_callback_ud = o.detect_normal_callback_ud;
 		detect_roughness_callback = o.detect_roughness_callback;
 		detect_roughness_callback_ud = o.detect_roughness_callback_ud;
+#endif
 	}
 
 	// texture state
@@ -707,10 +711,12 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
 	virtual String texture_get_path(RID p_texture) const override;
 
+#ifdef TOOLS_ENABLED
 	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 	void texture_set_detect_srgb_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata);
 	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
+#endif
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) override;
 
