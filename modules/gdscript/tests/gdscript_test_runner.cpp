@@ -36,6 +36,7 @@
 #include "../gdscript_linter.h"
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer_buffer.h"
+#include "../toolchain/compilation_unit.h"
 
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
@@ -552,7 +553,8 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	// Test type-checking.
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 
 #ifdef DEBUG_ENABLED

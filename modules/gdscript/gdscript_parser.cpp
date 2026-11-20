@@ -869,25 +869,6 @@ void GDScriptParser::parse_program() {
 	clear_unused_annotations();
 }
 
-Ref<GDScriptParserRef> GDScriptParser::get_depended_parser_for(const String &p_path) {
-	Ref<GDScriptParserRef> ref;
-	if (depended_parsers.has(p_path)) {
-		ref = depended_parsers[p_path];
-	} else {
-		Error err = OK;
-		ref = GDScriptCache::get_parser(p_path, GDScriptParserRef::EMPTY, err, script_path);
-		if (ref.is_valid()) {
-			depended_parsers[p_path] = ref;
-		}
-	}
-
-	return ref;
-}
-
-const HashMap<String, Ref<GDScriptParserRef>> &GDScriptParser::get_depended_parsers() {
-	return depended_parsers;
-}
-
 GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_name) const {
 	String first = p_qualified_name.get_slice("::", 0);
 
@@ -926,9 +907,9 @@ GDScriptParser::ClassNode *GDScriptParser::find_class(const String &p_qualified_
 }
 
 bool GDScriptParser::has_class(const GDScriptParser::ClassNode *p_class) const {
-	if (head->fqcn.is_empty() && p_class->fqcn.get_slice("::", 0).is_empty()) {
+	if (head && head->fqcn.is_empty() && p_class->fqcn.get_slice("::", 0).is_empty()) {
 		return p_class == head;
-	} else if (p_class->fqcn.begins_with(head->fqcn)) {
+	} else if (head && p_class->fqcn.begins_with(head->fqcn)) {
 		return find_class(p_class->fqcn.trim_prefix(head->fqcn)) == p_class;
 	}
 

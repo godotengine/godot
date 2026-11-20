@@ -966,7 +966,7 @@ void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	lines = p_code.split("\n");
 
 	parse_result = GDScriptParser::parse(p_code, p_path, false);
-	GDScriptAnalyzer analyzer(this);
+	GDScriptAnalyzer analyzer(unit, this);
 
 	if (parse_result == OK) {
 		parse_result = analyzer.analyze();
