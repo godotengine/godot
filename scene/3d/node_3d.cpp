@@ -164,6 +164,7 @@ void Node3D::_notification(int p_what) {
 				data.index_in_parent = UINT32_MAX;
 				ERR_PRINT("Node3D ENTER_TREE detected without EXIT_TREE, recovering.");
 			}
+			_update_visible_in_tree();
 
 			if (data.top_level && !Engine::get_singleton()->is_editor_hint()) {
 				if (data.parent) {
@@ -236,6 +237,7 @@ void Node3D::_notification(int p_what) {
 
 			data.parent = nullptr;
 			_update_visibility_parent(true);
+			_update_visible_in_tree();
 			_disable_client_physics_interpolation();
 		} break;
 
@@ -527,6 +529,9 @@ Transform3D Node3D::_get_global_transform_interpolated(real_t p_interpolation_fr
 // Invisible nodes - get_global_transform_interpolated is expensive, try to avoid.
 Transform3D Node3D::get_global_transform_interpolated() {
 #if 1
+	// Needs a thread guard because it is checking visible in tree.
+	ERR_READ_THREAD_GUARD_V(Transform3D());
+
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
@@ -534,87 +539,71 @@ Transform3D Node3D::get_global_transform_interpolated() {
 		// Note that with SceneTreeFTI, we may want to calculate interpolated transform for a node
 		// with physics interpolation set to OFF, if it has a parent that is ON.
 
-		// Cheap case.
-		// We already pre-cache the visible_in_tree for VisualInstances, but NOT for Node3Ds, so we have to
-		// deal with non-VIs the slow way.
-		if (Object::cast_to<VisualInstance3D>(this) && _is_vi_visible() && data.fti_global_xform_interp_set) {
-			return data.global_transform_interpolated;
+		// Simplest case - the node is visible, and has not been marked dirty by a set_transform
+		// during the frame.
+		if (is_visible_in_tree() && !(_test_dirty_bits(Node3D::DIRTY_GLOBAL_INTERPOLATED_TRANSFORM))) {
+			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
 		}
 
-		// Find out if visible in tree.
-		// If not visible in tree, find the FIRST ancestor that is visible in tree.
-		const Node3D *visible_parent = nullptr;
-		const Node3D *s = this;
-		bool visible = true;
-		bool visible_in_tree = true;
+		if (unlikely(_get_scene_tree_depth() < 1)) {
+			// This should not happen unless there a problem has been introduced in the scene tree depth code.
+			// Print a non-spammy error and return something reasonable.
+			ERR_PRINT_ONCE("depth is < 1.");
+			return get_global_transform();
+		}
 
+		// If we got here we are either invisible (invisible node interpolated xforms are not calculated normally
+		// by SceneTreeFTI), or the cached xform is invalid.
+		// We must therefore calculate the chain on the fly, in order to find the interpolated transform.
+		const Node3D *s = this;
+		const Node3D *first_valid = nullptr;
+
+		// Reserve enough room on the stack to store the entire chain to the root node
+		// (it probably won't all be needed, but we don't know this in advance).
+		const Node3D **parents = (const Node3D **)alloca((sizeof(const Node3D *) * _get_scene_tree_depth()));
+		int32_t num_parents = 0;
+
+		// We start calculating the chain from the first visible node that is not dirty (from a set_transform()
+		// during the frame).
 		while (s) {
-			if (!s->data.visible) {
-				visible_in_tree = false;
-				visible = false;
-			} else {
-				if (!visible) {
-					visible_parent = s;
-					visible = true;
-				}
+			if (s->data.visible_in_tree && !(s->_test_dirty_bits(Node3D::DIRTY_GLOBAL_INTERPOLATED_TRANSFORM))) {
+				first_valid = s;
+				break;
 			}
+
+			parents[num_parents++] = s;
 			s = s->data.parent;
 		}
 
-		// Simplest case, we can return the interpolated xform calculated by SceneTreeFTI.
-		if (visible_in_tree) {
-			return data.fti_global_xform_interp_set ? data.global_transform_interpolated : get_global_transform();
-		} else if (visible_parent) {
-			// INVISIBLE case. Not visible, but there is a visible ancestor somewhere in the chain.
-			if (_get_scene_tree_depth() < 1) {
-				// This should not happen unless there a problem has been introduced in the scene tree depth code.
-				// Print a non-spammy error and return something reasonable.
-				ERR_PRINT_ONCE("depth is < 1.");
-				return get_global_transform();
-			}
+		// Now calculate the interpolated chain forwards.
+		float interpolation_fraction = Engine::get_singleton()->get_physics_interpolation_fraction();
 
-			// The interpolated xform is not already calculated for invisible nodes, but we can calculate this
-			// manually on demand if there is a visible parent.
-			// First create the chain (backwards), from the node up to first visible parent.
-			const Node3D **parents = (const Node3D **)alloca((sizeof(const Node3D *) * _get_scene_tree_depth()));
-			int32_t num_parents = 0;
+		// Seed the xform with the visible parent.
+		Transform3D xform;
+		Transform3D local_interp;
 
-			s = this;
-			while (s) {
-				if (s == visible_parent) {
-					// Finished.
-					break;
-				}
-
-				parents[num_parents++] = s;
-				s = s->data.parent;
-			}
-
-			// Now calculate the interpolated chain forwards.
-			float interpolation_fraction = Engine::get_singleton()->get_physics_interpolation_fraction();
-
-			// Seed the xform with the visible parent.
-			Transform3D xform = visible_parent->data.fti_global_xform_interp_set ? visible_parent->data.global_transform_interpolated : visible_parent->get_global_transform();
-			Transform3D local_interp;
-
-			// Backwards through the list is forwards through the chain through the tree.
-			for (int32_t n = num_parents - 1; n >= 0; n--) {
-				s = parents[n];
-
-				if (s->is_physics_interpolated()) {
-					// Make sure to call `get_transform()` rather than using local_transform directly, because
-					// local_transform may be dirty and need updating from rotation / scale.
-					TransformInterpolator::interpolate_transform_3d(s->data.local_transform_prev, s->get_transform(), local_interp, interpolation_fraction);
-				} else {
-					local_interp = s->get_transform();
-				}
-				xform *= local_interp;
-			}
-
-			// We could save this in case of multiple calls,
-			// but probably not necessary.
-			return xform;
+		// If first_valid is NULL, we are calculating from the root, in which case we can leave the parent xform as identity.
+		if (first_valid) {
+			xform = first_valid->data.fti_global_xform_interp_set ? first_valid->data.global_transform_interpolated : first_valid->get_global_transform();
 		}
+
+		// Backwards through the list is forwards through the chain through the tree, from the root to the leaves.
+		for (int32_t n = num_parents - 1; n >= 0; n--) {
+			s = parents[n];
+
+			if (s->is_physics_interpolated()) {
+				// Make sure to call `get_transform()` rather than using local_transform directly, because
+				// local_transform may be dirty and need updating from rotation / scale.
+				TransformInterpolator::interpolate_transform_3d(s->data.local_transform_prev, s->get_transform(), local_interp, interpolation_fraction);
+			} else {
+				local_interp = s->get_transform();
+			}
+			xform *= local_interp;
+		}
+
+		// We could save this in case of multiple calls,
+		// but probably not necessary.
+		return xform;
 	}
 
 	return get_global_transform();
@@ -1079,6 +1068,35 @@ Ref<World3D> Node3D::get_world_3d() const {
 	return data.viewport->find_world_3d();
 }
 
+void Node3D::_update_visible_in_tree() {
+	Node3D *parent = get_parent_node_3d();
+
+	bool propagate_visible = parent ? parent->data.visible_in_tree : true;
+
+	// Only propagate visible when entering tree if we are visible.
+	propagate_visible &= is_visible();
+
+	_propagate_visible_in_tree(propagate_visible);
+}
+
+void Node3D::_propagate_visible_in_tree(bool p_visible_in_tree) {
+	// If any node is invisible, the propagation changes to invisible below.
+	p_visible_in_tree &= is_visible();
+
+	// No change.
+	if (data.visible_in_tree == p_visible_in_tree) {
+		return;
+	}
+
+	data.visible_in_tree = p_visible_in_tree;
+
+	for (uint32_t n = 0; n < data.node3d_children.size(); n++) {
+		Node3D *s = data.node3d_children[n];
+		DEV_ASSERT(s);
+		s->_propagate_visible_in_tree(p_visible_in_tree);
+	}
+}
+
 void Node3D::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringName(visibility_changed));
@@ -1117,9 +1135,19 @@ void Node3D::set_visible(bool p_visible) {
 
 	data.visible = p_visible;
 
+	// This is effectively `get_parent_node_3d()` without the thread guard,
+	// as we know we are running on the main thread.
+	Node3D *parent = data.top_level ? nullptr : Object::cast_to<Node3D>(get_parent());
+
+	bool parent_visible = parent ? parent->data.visible_in_tree : true;
+	if (parent_visible) {
+		_propagate_visible_in_tree(p_visible);
+	}
+
 	if (!is_inside_tree()) {
 		return;
 	}
+
 	_propagate_visibility_changed();
 }
 
@@ -1128,7 +1156,7 @@ bool Node3D::is_visible() const {
 	return data.visible;
 }
 
-bool Node3D::is_visible_in_tree() const {
+bool Node3D::_is_visible_in_tree_reference() const {
 	ERR_READ_THREAD_GUARD_V(false); // Since visibility can only be changed from main thread, this is safe to call.
 	const Node3D *s = this;
 
@@ -1553,6 +1581,7 @@ Node3D::Node3D() :
 	data.notify_transform = false;
 
 	data.visible = true;
+	data.visible_in_tree = true;
 	data.disable_scale = false;
 	data.vi_visible = true;
 
