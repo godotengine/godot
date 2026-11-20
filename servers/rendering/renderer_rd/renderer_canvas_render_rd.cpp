@@ -1582,6 +1582,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 
 	Error err = canvas_singleton->shader.compiler.compile(RSE::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	if (err != OK) {
+		pipeline_hash_map.clear_pipelines();
 		if (version.is_valid()) {
 			canvas_singleton->shader.canvas_shader.version_free(version);
 			version = RID();
