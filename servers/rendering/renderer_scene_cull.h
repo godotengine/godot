@@ -1399,6 +1399,7 @@ public:
 
 	PASS1(decals_set_filter, RSE::DecalFilter)
 	PASS1(light_projectors_set_filter, RSE::LightProjectorFilter)
+	PASS1(base_material_3d_set_default_filter, RSE::MaterialFilter)
 	PASS1(lightmaps_set_bicubic_filter, bool)
 	PASS1(material_set_use_debanding, bool)
 
