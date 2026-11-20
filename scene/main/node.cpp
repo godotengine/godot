@@ -3931,6 +3931,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unique_name_in_owner", "enable"), &Node::set_unique_name_in_owner);
 	ClassDB::bind_method(D_METHOD("is_unique_name_in_owner"), &Node::is_unique_name_in_owner);
 
+	ClassDB::bind_method(D_METHOD("set_unique_scene_id", "unique_id"), &Node::set_unique_scene_id);
+	ClassDB::bind_method(D_METHOD("get_unique_scene_id"), &Node::get_unique_scene_id);
+
 	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
 
