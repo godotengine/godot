@@ -141,8 +141,8 @@ public:
 
 #ifdef DEBUG_ENABLED
 	static SafeNumeric<uint64_t> total_node_count;
-	static uint64_t entered_count; // komm64
 #endif
+	static uint64_t entered_count; // komm64
 	enum {
 		UNIQUE_SCENE_ID_UNASSIGNED = 0
 	};
