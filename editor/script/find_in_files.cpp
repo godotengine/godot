@@ -561,6 +561,7 @@ void FindInFilesSearchPanel::_update_finder() {
 	finder->set_match_case(match_case_checkbox->is_pressed());
 	finder->set_whole_words(whole_words_checkbox->is_pressed());
 	finder->set_folder(folder_line_edit->get_text().strip_edges());
+	finder->set_filter(get_filter());
 	finder->set_includes(includes_line_edit->get_text());
 	finder->set_excludes(excludes_line_edit->get_text());
 }
