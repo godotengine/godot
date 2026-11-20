@@ -82,6 +82,12 @@ env.modules_sources += thirdparty_obj
 
 # Godot source files
 
+# The glue includes the vendored basisu_containers.h, whose `{ p; }` no-op
+# statements trip -Wunused-value. The thirdparty sources above already build
+# with warnings disabled. use_llvm covers clang-cl, which sets env.msvc.
+if not env.msvc or env.get("use_llvm", False):
+    env_basisu.Append(CCFLAGS=["-Wno-unused-value"])
+
 module_obj = []
 
 env_basisu.add_source_files(module_obj, "*.cpp")
