@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "winrt_defines.h"
-
 #include "core/typedefs.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
