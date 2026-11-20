@@ -80,6 +80,9 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_outline"), &CharFXTransform::is_outline);
 	ClassDB::bind_method(D_METHOD("set_outline", "outline"), &CharFXTransform::set_outline);
 
+	ClassDB::bind_method(D_METHOD("is_shadow"), &CharFXTransform::is_shadow);
+	ClassDB::bind_method(D_METHOD("set_shadow", "shadow"), &CharFXTransform::set_shadow);
+
 	ClassDB::bind_method(D_METHOD("get_offset"), &CharFXTransform::get_offset);
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &CharFXTransform::set_offset);
 
@@ -104,11 +107,21 @@ void CharFXTransform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_font"), &CharFXTransform::get_font);
 	ClassDB::bind_method(D_METHOD("set_font", "font"), &CharFXTransform::set_font);
 
+	ClassDB::bind_method(D_METHOD("get_font_size"), &CharFXTransform::get_font_size);
+	ClassDB::bind_method(D_METHOD("set_font_size", "font_size"), &CharFXTransform::set_font_size);
+
+	ClassDB::bind_method(D_METHOD("get_outline_size"), &CharFXTransform::get_outline_size);
+	ClassDB::bind_method(D_METHOD("set_outline_size", "outline_size"), &CharFXTransform::set_outline_size);
+
+	ClassDB::bind_method(D_METHOD("get_shadow_offset"), &CharFXTransform::get_shadow_offset);
+	ClassDB::bind_method(D_METHOD("set_shadow_offset", "shadow_offset"), &CharFXTransform::set_shadow_offset);
+
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "range"), "set_range", "get_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "elapsed_time"), "set_elapsed_time", "get_elapsed_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visibility", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "outline"), "set_outline", "is_outline");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow"), "set_shadow", "is_shadow");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "env"), "set_environment", "get_environment");
@@ -117,4 +130,7 @@ void CharFXTransform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "glyph_flags"), "set_glyph_flags", "get_glyph_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "relative_index"), "set_relative_index", "get_relative_index");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size"), "set_font_size", "get_font_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size"), "set_outline_size", "get_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset"), "set_shadow_offset", "get_shadow_offset");
 }
