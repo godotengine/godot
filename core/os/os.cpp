@@ -66,6 +66,29 @@ bool OS::prefer_meta_over_ctrl() {
 #endif
 }
 
+void OS::set_wall_clock_time_scale(double p_scale) {
+	MutexLock lock(_wall_clock.mutex);
+	_wall_clock.current_time_scale = p_scale;
+}
+
+uint64_t OS::get_ticks_usec() const {
+	MutexLock lock(_wall_clock.mutex);
+
+	uint64_t raw_tick = get_raw_ticks_usec();
+
+	// The number of raw ticks since the last measurement.
+	uint64_t raw_diff = raw_tick - _wall_clock.prev_measured_raw_tick;
+
+	// Translate the raw_diff to a time scaled difference.
+	uint64_t fluid_diff = (uint64_t)((double)raw_diff * _wall_clock.current_time_scale);
+
+	// Add the previous reference time.
+	_wall_clock.prev_measured_fluid_tick += fluid_diff;
+	_wall_clock.prev_measured_raw_tick = raw_tick;
+
+	return _wall_clock.prev_measured_fluid_tick;
+}
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
 }
