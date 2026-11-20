@@ -45,6 +45,7 @@ import android.os.Bundle
 import android.os.Debug
 import android.os.Environment
 import android.os.Process
+import android.system.Os
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -97,6 +98,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val EXTRA_GAME_MENU_STATE = "game_menu_state"
 		internal const val EXTRA_IS_GAME_EMBEDDED = "is_game_embedded"
 		internal const val EXTRA_IS_GAME_RUNNING = "is_game_running"
+		private const val EXTRA_EDITOR_ENV_VARIABLES = "editor_env_variables"
 
 		// Benchmarking extras.
 		private const val EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT = "load_empty_benchmark_project"
@@ -414,6 +416,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
+		// Apply the passed on environment variables.
+		val envVariables = intent.getBundleExtra(EXTRA_EDITOR_ENV_VARIABLES)
+		if (envVariables != null && !envVariables.isEmpty) {
+			for (env in envVariables.keySet()) {
+				Os.setenv(env, envVariables.getString(env), true)
+			}
+		}
+
 		when (intent.action) {
 			Intent.ACTION_VIEW -> {
 				val rootDir = Environment.getExternalStorageDirectory().canonicalPath
@@ -769,11 +779,22 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			ActivityOptions.makeScaleUpAnimation(sourceView, startX, startY, 0, 0)
 		}
 
+		// Retrieve the environment variables.
+		val envVariables = Bundle().apply {
+			val customFeatures = Os.getenv("GODOT_EDITOR_CUSTOM_FEATURES")
+			if (!customFeatures.isNullOrEmpty()) {
+				putString("GODOT_EDITOR_CUSTOM_FEATURES", customFeatures)
+			}
+		}
+
 		val newInstance = getNewGodotInstanceIntent(editorWindowInfo, args)
 		newInstance.apply {
 			putExtra(EXTRA_EDITOR_HINT, godot?.isEditorHint() == true)
 			putExtra(EXTRA_PROJECT_MANAGER_HINT, godot?.isProjectManagerHint() == true)
 			putExtra(EXTRA_GAME_MENU_STATE, gameMenuState)
+
+			// Environment variables are process specific, so we need to pass them to the new process we're starting.
+			putExtra(EXTRA_EDITOR_ENV_VARIABLES, envVariables)
 		}
 
 		if (editorWindowInfo.windowClassName == javaClass.name) {
