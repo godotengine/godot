@@ -70,6 +70,7 @@ public:
 	virtual int get_buffered_amount() const = 0;
 
 	virtual Error poll() = 0;
+	virtual void clear_buffer() = 0;
 	virtual void close() = 0;
 
 	WebRTCDataChannel();
