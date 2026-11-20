@@ -330,10 +330,18 @@ static void *eckey_rs_alloc(mbedtls_pk_rs_op_t op_type)
     rs_ctx->pub_id = MBEDTLS_SVC_KEY_ID_INIT;
     if (op_type == MBEDTLS_PK_RS_OP_VERIFY) {
         rs_ctx->op = mbedtls_calloc(1, sizeof(psa_verify_hash_interruptible_operation_t));
+        if (rs_ctx->op == NULL) {
+            mbedtls_free(rs_ctx);
+            return NULL;
+        }
         psa_verify_hash_interruptible_operation_t *op = rs_ctx->op;
         *op = psa_verify_hash_interruptible_operation_init();
     } else {
         rs_ctx->op = mbedtls_calloc(1, sizeof(psa_sign_hash_interruptible_operation_t));
+        if (rs_ctx->op == NULL) {
+            mbedtls_free(rs_ctx);
+            return NULL;
+        }
         psa_sign_hash_interruptible_operation_t *op = rs_ctx->op;
         *op = psa_sign_hash_interruptible_operation_init();
     }

@@ -509,7 +509,7 @@ FN_OID_GET_OID_BY_ATTR2(mbedtls_x509_oid_get_oid_by_sig_alg,
 
 #endif /* MBEDTLS_X509_USE_C || MBEDTLS_X509_CRT_WRITE_C || MBEDTLS_X509_CSR_WRITE_C */
 
-#if defined(MBEDTLS_X509_OID_HAVE_GET_MD_ALG)
+#if defined(MBEDTLS_X509_CRT_PARSE_C)
 /*
  * For digestAlgorithm
  */
@@ -598,6 +598,6 @@ static const oid_md_alg_t oid_md_alg[] =
 FN_OID_TYPED_FROM_ASN1(oid_md_alg_t, md_alg, oid_md_alg)
 FN_OID_GET_ATTR1(mbedtls_x509_oid_get_md_alg, oid_md_alg_t, md_alg, mbedtls_md_type_t, md_alg)
 
-#endif /* MBEDTLS_X509_OID_HAVE_GET_MD_ALG */
+#endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 #endif /* some X.509 is enabled */

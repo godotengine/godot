@@ -157,14 +157,6 @@ static inline struct psa_cipher_operation_s psa_cipher_operation_init(void)
  * algorithms. */
 #include "psa/crypto_driver_contexts_composites.h"
 
-/* Include context definitions from the PQCP driver.
- * (There are none yet at the time of writing, that will come with multipart
- * ML-DSA sign/verify).
- */
-#if defined(TF_PSA_CRYPTO_PQCP_MLDSA_ENABLED)
-#include "tf-psa-crypto/private/crypto_struct_pqcp.h"
-#endif
-
 struct psa_mac_operation_s {
 #if defined(MBEDTLS_PSA_CRYPTO_CLIENT) && !defined(MBEDTLS_PSA_CRYPTO_C)
     mbedtls_psa_client_handle_t handle;

@@ -287,7 +287,7 @@ static int oid_parse_number(unsigned int *num, const char **p, const char *bound
 
     while (*p < bound && **p >= '0' && **p <= '9') {
         ret = 0;
-        if (*num > (UINT_MAX / 10)) {
+        if (*num > (UINT_MAX - (unsigned int) (**p - '0')) / 10) {
             return MBEDTLS_ERR_ASN1_INVALID_DATA;
         }
         *num *= 10;

@@ -64,6 +64,34 @@ void mbedtls_pem_init(mbedtls_pem_context *ctx);
  * \brief       Read a buffer for PEM information and store the resulting
  *              data into the specified context buffers.
  *
+ * \warning     PEM decryption is inherently prone to oracle attacks.
+ *              If an adversary can submit arbitrary ciphertexts and
+ *              can observe whether they are accepted or rejected,
+ *              the adversary may be able to decrypt ciphertexts without
+ *              knowing the password. Furthermore, this function is
+ *              not constant-time, which improves the adversary's
+ *              efficiency. (Note also that subsequent processing after
+ *              decryption is likely to improve the adversary's efficiency
+ *              as well.)
+ *              Therefore, PEM decryption should only be used in
+ *              environments where the ciphertext comes from a trusted
+ *              source (for example, a storage medium that may be stolen
+ *              but is not at risk of silent modifications by an attacker).
+ *
+ * \warning     PEM encryption uses an obsolete password protection
+ *              mechanism that makes brute force attack fast.
+ *              Therefore, the password used for encryption should be
+ *              a sufficiently long, randomly generated string.
+ *
+ * \note        To encrypt private keys, we recommend PKCS8 encryption, which
+ *              is supported by TF-PSA-Crypto's PK module, is a
+ *              significant improvement on the weaknesses of PEM encryption,
+ *              and works equally well with PEM and binary (DER) encoding.
+ *
+ * \deprecated  Encrypted PEM (with a non-null password) is deprecated, and
+ *              should only be used to access legacy data in environemnts
+ *              where it is safe.
+ *
  * \param ctx       context to use
  * \param header    header string to seek and expect
  * \param footer    footer string to seek and expect
@@ -75,10 +103,6 @@ void mbedtls_pem_init(mbedtls_pem_context *ctx);
  *                  #PSA_ERROR_INVALID_ARGUMENT or
  *                  #MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT, use_len is
  *                  the length to skip.
- *
- * \note            Attempts to check password correctness by verifying if
- *                  the decrypted text starts with an ASN.1 sequence of
- *                  appropriate length
  *
  * \note            \c mbedtls_pem_free must be called on PEM context before
  *                  the PEM context can be reused in another call to
