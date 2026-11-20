@@ -154,6 +154,12 @@ public:
 		LAYOUT_MODE_UNCONTROLLED,
 	};
 
+	enum HiddenLayoutMode {
+		HIDDEN_LAYOUT_INHERITED,
+		HIDDEN_LAYOUT_DISABLED,
+		HIDDEN_LAYOUT_ENABLED,
+	};
+
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
 		LAYOUT_DIRECTION_APPLICATION_LOCALE,
@@ -227,6 +233,9 @@ private:
 
 		LayoutMode stored_layout_mode = LayoutMode::LAYOUT_MODE_POSITION;
 		bool stored_use_custom_anchors = false;
+
+		HiddenLayoutMode hidden_layout_mode = HiddenLayoutMode::HIDDEN_LAYOUT_INHERITED;
+		bool parent_hidden_layout_mode_enabled = false;
 
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
@@ -381,6 +390,9 @@ private:
 	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
+
+	void _update_hidden_layout_recursive();
+	void _propagate_hidden_layout_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
 
 	void _update_maximum_size_cache() const;
 	void _update_maximum_size();
@@ -575,6 +587,10 @@ public:
 	void set_offset(Side p_side, real_t p_value);
 	real_t get_offset(Side p_side) const;
 	void set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, bool p_push_opposite_anchor = true);
+
+	void set_hidden_layout_mode(HiddenLayoutMode p_hidden_layout_mode);
+	HiddenLayoutMode get_hidden_layout_mode() const;
+	bool is_hidden_layout_enabled() const;
 
 	// TODO: Rename to set_begin/end_offsets ?
 	void set_begin(const Point2 &p_point);
@@ -903,6 +919,7 @@ VARIANT_ENUM_CAST(Control::MouseFilter);
 VARIANT_ENUM_CAST(Control::GrowDirection);
 VARIANT_ENUM_CAST(Control::Anchor);
 VARIANT_ENUM_CAST(Control::LayoutMode);
+VARIANT_ENUM_CAST(Control::HiddenLayoutMode);
 VARIANT_ENUM_CAST(Control::LayoutDirection);
 VARIANT_ENUM_CAST(Control::TextDirection);
 
