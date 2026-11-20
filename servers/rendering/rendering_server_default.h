@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/worker_thread_pool.h"
-#include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
 #include "core/templates/hash_map.h"
 #include "servers/rendering/renderer_canvas_cull.h"
@@ -409,6 +408,7 @@ public:
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
 
 	FUNC2RC(RenderingServerTypes::SurfaceData, mesh_get_surface, RID, int)
+	FUNC1RC(LocalVector<RenderingServerTypes::SurfaceData>, mesh_get_surfaces, RID)
 
 	FUNC1RC(int, mesh_get_surface_count, RID)
 

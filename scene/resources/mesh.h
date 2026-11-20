@@ -74,6 +74,7 @@ protected:
 	GDVIRTUAL1RC_REQUIRED(int, _surface_get_array_len, int)
 	GDVIRTUAL1RC_REQUIRED(int, _surface_get_array_index_len, int)
 	GDVIRTUAL1RC_REQUIRED(Array, _surface_get_arrays, int)
+	GDVIRTUAL0RC_REQUIRED(Array, _all_surfaces_get_arrays)
 	GDVIRTUAL1RC_REQUIRED(TypedArray<Array>, _surface_get_blend_shape_arrays, int)
 	GDVIRTUAL1RC_REQUIRED(Dictionary, _surface_get_lods, int)
 	GDVIRTUAL1RC_REQUIRED(uint32_t, _surface_get_format, int)
@@ -173,6 +174,7 @@ public:
 	virtual int surface_get_array_len(int p_idx) const;
 	virtual int surface_get_array_index_len(int p_idx) const;
 	virtual Array surface_get_arrays(int p_surface) const;
+	virtual Array all_surfaces_get_arrays() const;
 	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const;
 	virtual Dictionary surface_get_lods(int p_surface) const;
 	virtual BitField<ArrayFormat> surface_get_format(int p_idx) const;
@@ -349,6 +351,7 @@ public:
 	void add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RenderingServerTypes::SurfaceData::LOD> &p_lods = Vector<RenderingServerTypes::SurfaceData::LOD>(), const Vector4 p_uv_scale = Vector4());
 
 	Array surface_get_arrays(int p_surface) const override;
+	Array all_surfaces_get_arrays() const override;
 	TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	Dictionary surface_get_lods(int p_surface) const override;
 

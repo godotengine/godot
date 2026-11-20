@@ -66,6 +66,7 @@ public:
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
+	virtual LocalVector<RenderingServerTypes::SurfaceData> mesh_get_surfaces(RID p_mesh) const;
 
 	virtual RID mesh_surface_get_vertex_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;
 	virtual RID mesh_surface_get_attribute_buffer_rd_rid(RID p_mesh, int p_surface) const = 0;

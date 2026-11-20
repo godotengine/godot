@@ -546,3 +546,16 @@ void RendererMeshStorage::update_interpolation_frame(bool p_process) {
 		}
 	}
 }
+
+LocalVector<RenderingServerTypes::SurfaceData> RendererMeshStorage::mesh_get_surfaces(RID p_mesh) const {
+	LocalVector<RenderingServerTypes::SurfaceData> ret;
+	int surface_count = mesh_get_surface_count(p_mesh);
+
+	ret.reserve(surface_count);
+
+	for (int index = 0; index < surface_count; index++) {
+		ret.push_back(mesh_get_surface(p_mesh, index));
+	}
+
+	return ret;
+}

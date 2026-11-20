@@ -231,6 +231,12 @@ Array Mesh::surface_get_arrays(int p_surface) const {
 	return ret;
 }
 
+Array Mesh::all_surfaces_get_arrays() const {
+	Array ret;
+	GDVIRTUAL_CALL(_all_surfaces_get_arrays, ret);
+	return ret;
+}
+
 TypedArray<Array> Mesh::surface_get_blend_shape_arrays(int p_surface) const {
 	TypedArray<Array> ret;
 	GDVIRTUAL_CALL(_surface_get_blend_shape_arrays, p_surface, ret);
@@ -823,6 +829,7 @@ void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &Mesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);
+	ClassDB::bind_method(D_METHOD("all_surfaces_get_arrays"), &Mesh::all_surfaces_get_arrays);
 	ClassDB::bind_method(D_METHOD("surface_get_blend_shape_arrays", "surf_idx"), &Mesh::surface_get_blend_shape_arrays);
 	ClassDB::bind_method(D_METHOD("surface_set_material", "surf_idx", "material"), &Mesh::surface_set_material);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
@@ -910,6 +917,7 @@ void Mesh::_bind_methods() {
 	GDVIRTUAL_BIND(_surface_get_array_len, "index")
 	GDVIRTUAL_BIND(_surface_get_array_index_len, "index")
 	GDVIRTUAL_BIND(_surface_get_arrays, "index")
+	GDVIRTUAL_BIND(_all_surfaces_get_arrays)
 	GDVIRTUAL_BIND(_surface_get_blend_shape_arrays, "index")
 	GDVIRTUAL_BIND(_surface_get_lods, "index")
 	GDVIRTUAL_BIND(_surface_get_format, "index")
@@ -1544,8 +1552,10 @@ Array ArrayMesh::_get_surfaces() const {
 	}
 
 	Array ret;
+	LocalVector<RenderingServerTypes::SurfaceData> surface_data_list = RS::get_singleton()->mesh_get_surfaces(mesh);
+
 	for (int i = 0; i < surfaces.size(); i++) {
-		RenderingServerTypes::SurfaceData surface = RS::get_singleton()->mesh_get_surface(mesh, i);
+		RenderingServerTypes::SurfaceData surface = surface_data_list[i];
 		Dictionary data;
 		data["format"] = surface.format;
 		data["primitive"] = surface.primitive;
@@ -1871,6 +1881,10 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 Array ArrayMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return RenderingServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
+}
+
+Array ArrayMesh::all_surfaces_get_arrays() const {
+	return RenderingServer::get_singleton()->mesh_all_surfaces_get_arrays(mesh);
 }
 
 TypedArray<Array> ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
