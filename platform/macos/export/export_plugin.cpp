@@ -2514,8 +2514,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name.get_base_dir(), pkg_name, "universal", p_debug, exec_debug_ids, &symb_debug_ids, err);
 			}
 		}
-		print_line("Executable debug IDs: ", exec_debug_ids);
-		print_line("Symbols debug IDs: ", symb_debug_ids);
+		print_verbose(vformat("Executable debug IDs: %s", exec_debug_ids));
+		print_verbose(vformat("Symbols debug IDs: %s", symb_debug_ids));
 		int id_match = 0;
 		for (const String &E : exec_debug_ids) {
 			if (symb_debug_ids.has(E)) {
