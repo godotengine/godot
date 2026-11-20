@@ -384,7 +384,7 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
-ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const String &p_path) {
+LSPParseResult *GDScriptLanguageProtocol::LSPeer::parse_script(const String &p_path) {
 	remove_cached_parser(p_path);
 
 	String content;
@@ -405,7 +405,7 @@ ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const Strin
 		content = document->text;
 	}
 
-	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+	LSPParseResult *parser = memnew(LSPParseResult);
 	parse_results[p_path] = parser;
 
 	parser->parse(content, p_path);
@@ -427,7 +427,7 @@ void GDScriptLanguageProtocol::LSPeer::clear_stale_parsers() {
 }
 
 void GDScriptLanguageProtocol::LSPeer::remove_cached_parser(const String &p_path) {
-	HashMap<String, ExtendGDScriptParser *>::Iterator cached = parse_results.find(p_path);
+	HashMap<String, LSPParseResult *>::Iterator cached = parse_results.find(p_path);
 	if (cached) {
 		memdelete(cached->value);
 		parse_results.remove(cached);
@@ -436,10 +436,10 @@ void GDScriptLanguageProtocol::LSPeer::remove_cached_parser(const String &p_path
 	stale_parsers.erase(p_path);
 }
 
-ExtendGDScriptParser *GDScriptLanguageProtocol::get_parse_result(const String &p_path) {
+LSPParseResult *GDScriptLanguageProtocol::get_parse_result(const String &p_path) {
 	LSP_CLIENT_V(nullptr);
 
-	ExtendGDScriptParser **cached_parser = client->parse_results.getptr(p_path);
+	LSPParseResult **cached_parser = client->parse_results.getptr(p_path);
 	if (cached_parser == nullptr) {
 		return client->parse_script(p_path);
 	}
@@ -608,7 +608,7 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 
 	String path = workspace->get_file_path(p_doc_pos.textDocument.uri);
 
-	const ExtendGDScriptParser *parser = get_parse_result(path);
+	const LSPParseResult *parser = get_parse_result(path);
 	if (!parser) {
 		return;
 	}
@@ -623,8 +623,8 @@ void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPo
 		}
 	}
 
-	for (const KeyValue<String, ExtendGDScriptParser *> &E : client->parse_results) {
-		const ExtendGDScriptParser *scr = E.value;
+	for (const KeyValue<String, LSPParseResult *> &E : client->parse_results) {
+		const LSPParseResult *scr = E.value;
 		const ClassMembers &members = scr->get_members();
 		if (const LSP::DocumentSymbol *const *symbol = members.getptr(symbol_name)) {
 			r_list.push_back(*symbol);
