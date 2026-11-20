@@ -30,15 +30,12 @@
 
 #include "core/variant/container_type_validate.h"
 
+#include "core/variant/variant_utility.h"
+
 const Variant *ContainerTypeValidate::_internal_convert_variant(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation, bool p_output_errors) const {
 	if (Variant::can_convert_strict(p_variant.get_type(), variant_type)) {
-		const Variant *converted_from = &p_variant;
-		Callable::CallError call_error;
-		Variant::construct(variant_type, r_tmp_variant, &converted_from, 1, call_error);
-
-		if (call_error.error == Callable::CallError::CALL_OK) {
-			return &r_tmp_variant;
-		}
+		r_tmp_variant = VariantUtilityFunctions::type_convert(p_variant, variant_type);
+		return &r_tmp_variant;
 	}
 
 	if (p_output_errors) {
