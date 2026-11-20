@@ -3313,6 +3313,8 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	Error err = GDScriptCache::finish_compiling(main_script->path);
 	if (err) {
 		_set_error(R"(Failed to compile depended scripts.)", nullptr);
+		// The root class may compile correctly, but it isn't a valid script if any depended scripts do not compile. E.g., GH-111536.
+		p_script->valid = false;
 	}
 	return err;
 }
