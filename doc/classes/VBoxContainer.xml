@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A variant of [BoxContainer] that can only arrange its child controls vertically. Child controls are rearranged automatically when their minimum size changes.
+		This class inherits its properties, methods, and signals from [BoxContainer].
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
