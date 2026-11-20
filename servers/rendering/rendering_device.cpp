@@ -3546,8 +3546,12 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 	_THREAD_SAFE_METHOD_
 
 	// Copy capabilities do not affect a render pass; textures may have more than a script asked for.
+	// An unused attachment's flags are a marker, not capabilities: they stay as they are.
 	Vector<AttachmentFormat> attachments = p_attachments;
 	for (AttachmentFormat &attachment : attachments) {
+		if (attachment.usage_flags == AttachmentFormat::UNUSED_ATTACHMENT) {
+			continue;
+		}
 		attachment.usage_flags &= ~(TEXTURE_USAGE_CAN_COPY_FROM_BIT | TEXTURE_USAGE_CAN_COPY_TO_BIT | TEXTURE_USAGE_CAN_UPDATE_BIT);
 	}
 
