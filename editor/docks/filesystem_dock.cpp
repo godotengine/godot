@@ -1822,10 +1822,15 @@ void FileSystemDock::_update_favorites_after_move(const HashMap<String, String> 
 void FileSystemDock::_make_scene_confirm() {
 	const String scene_path = make_scene_dialog->get_scene_path();
 
-	int idx = EditorNode::get_singleton()->new_scene();
-	EditorNode::get_editor_data().set_scene_path(idx, scene_path);
-	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
-	EditorNode::get_singleton()->save_scene_if_open(scene_path);
+	if (make_scene_dialog->is_inheriting_scene()) {
+		make_scene_dialog->create_scene_root();
+		EditorNode::get_singleton()->save_scene_to_path(scene_path);
+	} else {
+		int idx = EditorNode::get_singleton()->new_scene();
+		EditorNode::get_editor_data().set_scene_path(idx, scene_path);
+		EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
+		EditorNode::get_singleton()->save_scene_if_open(scene_path);
+	}
 }
 
 void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
