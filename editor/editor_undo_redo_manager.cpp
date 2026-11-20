@@ -338,7 +338,7 @@ bool EditorUndoRedoManager::redo() {
 	double global_timestamp = Math::INF;
 
 	// Pick the history with lowest last action timestamp (either global or current scene).
-	{
+	if (EditorNode::get_singleton()->is_focus_in_global_settings_context()) {
 		History &history = get_or_create_history(GLOBAL_HISTORY);
 		if (!history.redo_stack.is_empty()) {
 			selected_history = history.id;
@@ -511,7 +511,7 @@ EditorUndoRedoManager::History *EditorUndoRedoManager::_get_newest_undo() {
 	double global_timestamp = 0;
 
 	// Pick the history with greatest last action timestamp (either global or current scene).
-	{
+	if (EditorNode::get_singleton()->is_focus_in_global_settings_context()) {
 		History &history = get_or_create_history(GLOBAL_HISTORY);
 		if (!history.undo_stack.is_empty()) {
 			selected_history = &history;
