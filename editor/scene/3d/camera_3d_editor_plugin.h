@@ -32,6 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/texture/texture_editor_plugin.h"
+#include "scene/gui/aspect_ratio_container.h"
 
 class SubViewport;
 
