@@ -1344,6 +1344,10 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	type->gdtype->add_property(p_pinfo, p_setter, p_getter, p_index);
 }
 
+void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinfo, const char *p_setter, const char *p_getter, int p_index) {
+	add_property(p_class, p_pinfo, StringName(p_setter), StringName(p_getter), p_index);
+}
+
 void ClassDB::set_property_default_value(const StringName &p_class, const StringName &p_name, const Variant &p_default) {
 	if (!default_values.has(p_class)) {
 		default_values[p_class] = HashMap<StringName, Variant>();
