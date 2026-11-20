@@ -256,14 +256,25 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_generate_mipmaps", "font_rid", "generate_mipmaps"), &TextServer::font_set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("font_get_generate_mipmaps", "font_rid"), &TextServer::font_get_generate_mipmaps);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("font_set_multichannel_signed_distance_field", "font_rid", "msdf"), &TextServer::font_set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("font_is_multichannel_signed_distance_field", "font_rid"), &TextServer::font_is_multichannel_signed_distance_field);
+#endif
+
+	ClassDB::bind_method(D_METHOD("font_set_render_mode", "font_rid", "mode"), &TextServer::font_set_render_mode);
+	ClassDB::bind_method(D_METHOD("font_get_render_mode", "font_rid"), &TextServer::font_get_render_mode);
+	ClassDB::bind_method(D_METHOD("font_has_color_paint", "font_rid"), &TextServer::font_has_color_paint);
 
 	ClassDB::bind_method(D_METHOD("font_set_msdf_pixel_range", "font_rid", "msdf_pixel_range"), &TextServer::font_set_msdf_pixel_range);
 	ClassDB::bind_method(D_METHOD("font_get_msdf_pixel_range", "font_rid"), &TextServer::font_get_msdf_pixel_range);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("font_set_msdf_size", "font_rid", "msdf_size"), &TextServer::font_set_msdf_size);
 	ClassDB::bind_method(D_METHOD("font_get_msdf_size", "font_rid"), &TextServer::font_get_msdf_size);
+#endif
+
+	ClassDB::bind_method(D_METHOD("font_set_source_size", "font_rid", "source_size"), &TextServer::font_set_source_size);
+	ClassDB::bind_method(D_METHOD("font_get_source_size", "font_rid"), &TextServer::font_get_source_size);
 
 	ClassDB::bind_method(D_METHOD("font_set_fixed_size", "font_rid", "fixed_size"), &TextServer::font_set_fixed_size);
 	ClassDB::bind_method(D_METHOD("font_get_fixed_size", "font_rid"), &TextServer::font_get_fixed_size);
@@ -361,6 +372,9 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_uv_rect", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_uv_rect);
 	ClassDB::bind_method(D_METHOD("font_set_glyph_uv_rect", "font_rid", "size", "glyph", "uv_rect"), &TextServer::font_set_glyph_uv_rect);
+
+	ClassDB::bind_method(D_METHOD("font_get_glyph_data_offset", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_data_offset);
+	ClassDB::bind_method(D_METHOD("font_set_glyph_data_offset", "font_rid", "size", "glyph", "data_offset"), &TextServer::font_set_glyph_data_offset);
 
 	ClassDB::bind_method(D_METHOD("font_get_glyph_texture_idx", "font_rid", "size", "glyph"), &TextServer::font_get_glyph_texture_idx);
 	ClassDB::bind_method(D_METHOD("font_set_glyph_texture_idx", "font_rid", "size", "glyph", "texture_idx"), &TextServer::font_set_glyph_texture_idx);
@@ -554,6 +568,12 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FONT_ANTIALIASING_GRAY);
 	BIND_ENUM_CONSTANT(FONT_ANTIALIASING_LCD);
 
+	/* Font Render */
+	BIND_ENUM_CONSTANT(FONT_RENDER_RASTER);
+	BIND_ENUM_CONSTANT(FONT_RENDER_MSDF);
+	BIND_ENUM_CONSTANT(FONT_RENDER_HB_SLUG);
+
+	/* Font Subpixel */
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_NONE);
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_HRGB);
 	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_HBGR);
@@ -671,6 +691,8 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
 	BIND_ENUM_CONSTANT(FEATURE_UNICODE_IDENTIFIERS);
 	BIND_ENUM_CONSTANT(FEATURE_UNICODE_SECURITY);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_SLUG);
+	BIND_ENUM_CONSTANT(FEATURE_FONT_SHADER_CODE);
 
 	/* FT Contour Point Types */
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
@@ -2396,7 +2418,7 @@ TextServer::TextServer() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::HINTING_LIGHT);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::SUBPIXEL_POSITIONING_AUTO);
 
-	GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_render_mode", PROPERTY_HINT_ENUM, "Raster,MSDF,HarfBuzz/SLUG", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::FONT_RENDER_RASTER);
 	GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
