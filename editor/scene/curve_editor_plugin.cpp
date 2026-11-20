@@ -729,7 +729,7 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 	const real_t max_x = curve->get_max_domain();
 	if (curve->get_point_count() <= 1) { // Draw single line through entire plot.
 		real_t y = curve->sample(0);
-		draw_line(get_view_pos(Vector2(min_x, y)) + Vector2(0.5, 0), get_view_pos(Vector2(max_x, y)) - Vector2(1.5, 0), p_line_color, LINE_WIDTH, true);
+		draw_line(get_view_pos(Vector2(min_x, y)) + Vector2(0.5, 0), get_view_pos(Vector2(max_x, y)) - Vector2(1.5, 0), p_line_color, LINE_WIDTH * EDSCALE, true);
 		return;
 	}
 
@@ -740,8 +740,8 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 	const float world_step_size = p_step / _world_to_view.get_scale().x;
 
 	// Edge lines.
-	draw_line(get_view_pos(Vector2(min_x, first_point.y)) + Vector2(0.5, 0), get_view_pos(first_point), p_edge_line_color, LINE_WIDTH, true);
-	draw_line(get_view_pos(last_point), get_view_pos(Vector2(max_x, last_point.y)) - Vector2(1.5, 0), p_edge_line_color, LINE_WIDTH, true);
+	draw_line(get_view_pos(Vector2(min_x, first_point.y)) + Vector2(0.5, 0), get_view_pos(first_point), p_edge_line_color, LINE_WIDTH * EDSCALE, true);
+	draw_line(get_view_pos(last_point), get_view_pos(Vector2(max_x, last_point.y)) - Vector2(1.5, 0), p_edge_line_color, LINE_WIDTH * EDSCALE, true);
 
 	// Draw section by section, so that we get maximum precision near points.
 	// It's an accurate representation, but slower than using the baked one.
@@ -758,11 +758,11 @@ void CurveEdit::plot_curve_accurate(float p_step, const Color &p_line_color, con
 			float x = j * world_step_size;
 			pos.x = a.x + x;
 			pos.y = curve->sample_local_nocheck(i - 1, x);
-			draw_line(get_view_pos(prev_pos), get_view_pos(pos), p_line_color, LINE_WIDTH, true);
+			draw_line(get_view_pos(prev_pos), get_view_pos(pos), p_line_color, LINE_WIDTH * EDSCALE, true);
 			prev_pos = pos;
 		}
 
-		draw_line(get_view_pos(prev_pos), get_view_pos(b), p_line_color, LINE_WIDTH, true);
+		draw_line(get_view_pos(prev_pos), get_view_pos(b), p_line_color, LINE_WIDTH * EDSCALE, true);
 	}
 }
 
@@ -827,7 +827,15 @@ void CurveEdit::_redraw() {
 
 	// Draw curve in view coordinates. Curve world-to-view point conversion happens in plot_curve_accurate().
 
-	const Color line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	// Use an opaque color for line drawing, so that antialiasing doesn't reveal line polygons.
+	Color line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	if (get_theme_constant("dark_theme", EditorStringName(Editor))) {
+		line_color = line_color.darkened(line_color.a * 0.5);
+	} else {
+		line_color = line_color.lightened(line_color.a * 0.5);
+	}
+	line_color.a = 1.0;
+
 	const Color edge_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.75);
 
 	plot_curve_accurate(STEP_SIZE, line_color, edge_line_color);
@@ -863,7 +871,7 @@ void CurveEdit::_redraw() {
 				Vector2 control_pos = get_tangent_view_pos(selected_index, TANGENT_LEFT);
 				Color left_tangent_color = (selected_tangent_index == TANGENT_LEFT) ? selected_tangent_color : tangent_color;
 
-				draw_line(get_view_pos(point_pos), control_pos, left_tangent_color, 0.5 * EDSCALE, true);
+				draw_line(get_view_pos(point_pos), control_pos, left_tangent_color, EDSCALE, true);
 				// Square for linear mode, circle otherwise.
 				if (curve->get_point_left_mode(selected_index) == Curve::TANGENT_FREE) {
 					draw_circle(control_pos, tangent_radius, left_tangent_color);
@@ -880,7 +888,7 @@ void CurveEdit::_redraw() {
 				Vector2 control_pos = get_tangent_view_pos(selected_index, TANGENT_RIGHT);
 				Color right_tangent_color = (selected_tangent_index == TANGENT_RIGHT) ? selected_tangent_color : tangent_color;
 
-				draw_line(get_view_pos(point_pos), control_pos, right_tangent_color, 0.5 * EDSCALE, true);
+				draw_line(get_view_pos(point_pos), control_pos, right_tangent_color, EDSCALE, true);
 				// Square for linear mode, circle otherwise.
 				if (curve->get_point_right_mode(selected_index) == Curve::TANGENT_FREE) {
 					draw_circle(control_pos, tangent_radius, right_tangent_color);
@@ -1073,6 +1081,10 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	float v = (curve->sample_baked(curve->get_min_domain()) - curve->get_min_value()) / curve->get_value_range();
 	int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height() - 1);
 	im.set_pixel(0, y, line_color);
+	if (EDSCALE >= 1.5 - CMP_EPSILON) {
+		// Draw a second pixel to make the line thicker (and therefore more visible) on hiDPI displays.
+		im.set_pixel(0, y + 1, line_color);
+	}
 
 	// Plot a line towards the next point.
 	int prev_y = y;
@@ -1084,6 +1096,10 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 		Vector<Point2i> points = Geometry2D::bresenham_line(Point2i(x - 1, prev_y), Point2i(x, y));
 		for (Point2i point : points) {
 			im.set_pixelv(point, line_color);
+			if (EDSCALE >= 1.5 - CMP_EPSILON) {
+				// Draw a second pixel to make the line thicker (and therefore more visible) on hiDPI displays.
+				im.set_pixelv((point + Point2i(1, 1)).clamp(Point2i(), Point2i(im.get_width() - 1, im.get_height() - 1)), line_color);
+			}
 		}
 		prev_y = y;
 	}
