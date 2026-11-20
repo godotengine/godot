@@ -269,7 +269,7 @@ TEST_CASE("[Object] Script property setter") {
 	object.set(CoreStringName(script), script, &valid);
 	CHECK(valid);
 	CHECK_MESSAGE(
-			object.get_script() == script,
+			object.get_script_bind() == script,
 			"The object script should be equal to the assigned one.");
 }
 

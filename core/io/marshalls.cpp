@@ -1743,8 +1743,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bo
 						Variant value;
 
 						if (E.name == CoreStringName(script)) {
-							Ref<Script> script = obj->get_script();
-							if (script.is_valid()) {
+							Script *script = obj->get_script();
+							if (script != nullptr) {
 								String path = script->get_path();
 								ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script.");
 								value = path;
