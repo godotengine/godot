@@ -52,6 +52,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 	GDVIRTUAL1RC(bool, _propagate_input_event, RequiredParam<InputEvent>);
+	GDVIRTUAL0RC(Transform2D, _get_child_viewport_transform)
 
 public:
 	void set_stretch(bool p_enable);
@@ -66,6 +67,9 @@ public:
 
 	void set_mouse_target(bool p_enable);
 	bool is_mouse_target_enabled();
+
+	// Transform from a child SubViewport's coordinates to this container's local coordinates.
+	virtual Transform2D get_child_viewport_transform() const;
 
 	virtual Size2 get_minimum_size() const override;
 
