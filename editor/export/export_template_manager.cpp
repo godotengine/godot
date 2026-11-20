@@ -134,7 +134,7 @@ void ExportTemplateManager::_mirrors_request_completed(int p_result, int p_respo
 			mirrors_available = true;
 		}
 		// Hard-coded for translation. Should match the up-to-date list of mirrors.
-		// TTR("Official Releases mirror")
+		/* TTR("Official Releases mirror") */
 	}
 	if (!mirrors_available) {
 		_set_empty_mirror_list();
