@@ -873,7 +873,7 @@ static int _vm_get_variant(const Variant &p_variant, HashMap<Variant, int> &vari
 	return idx;
 }
 
-Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved) {
+Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, HashMap<StringName, int> &name_map, HashMap<Variant, int> &variant_map, HashMap<Node *, int> &node_map, HashMap<Node *, int> &nodepath_map, HashSet<int32_t> &ids_saved, RandomPCG &p_id_rng) {
 	// this function handles all the work related to properly packing scenes, be it
 	// instantiated or inherited.
 	// given the complexity of this process, an attempt will be made to properly
@@ -1187,7 +1187,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 			// to expect them to be resolved.
 
 			while (true) {
-				uint32_t data = ResourceUID::get_singleton()->create_id();
+				// Use a generator seeded from the scene path (see pack()) so that
+				// re-exporting an unchanged scene produces identical output.
+				uint32_t data = p_id_rng.rand();
 				unique_scene_id = data & 0x7FFFFFFF; // keep positive.
 
 				if (unique_scene_id == Node::UNIQUE_SCENE_ID_UNASSIGNED) {
@@ -1212,7 +1214,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		RETURN_IF_ERROR(_parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved));
+		RETURN_IF_ERROR(_parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved, p_id_rng));
 	}
 
 	return OK;
@@ -1431,6 +1433,15 @@ Error SceneState::pack(Node *p_scene) {
 	HashMap<Node *, int> nodepath_map;
 	HashSet<int32_t> ids_saved;
 
+	// Node unique IDs are generated for nodes that have none (e.g. scenes saved before
+	// unique IDs existed). Seed the generator from the scene path so the output is
+	// deterministic: packing the same unchanged scene always yields the same IDs.
+	String id_seed_source = scene->get_scene_file_path();
+	if (id_seed_source.is_empty()) {
+		id_seed_source = scene->get_name();
+	}
+	RandomPCG id_rng(id_seed_source.hash());
+
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
 		String scene_path = scene->get_scene_inherited_state()->get_path();
@@ -1441,7 +1452,7 @@ Error SceneState::pack(Node *p_scene) {
 	}
 
 	// Instanced, only direct sub-scenes are supported of course.
-	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map, ids_saved);
+	Error err = _parse_node(scene, scene, -1, name_map, variant_map, node_map, nodepath_map, ids_saved, id_rng);
 	if (err) {
 		clear();
 		ERR_FAIL_V(err);

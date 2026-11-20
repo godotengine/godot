@@ -282,4 +282,42 @@ TEST_CASE("[PackedScene] Recreate State") {
 	memdelete(scene);
 }
 
+static Node *_create_scene_without_unique_ids() {
+	Node *root = memnew(Node);
+	root->set_name("DeterministicScene");
+	for (int i = 0; i < 4; i++) {
+		Node *child = memnew(Node);
+		child->set_name("Child" + itos(i));
+		root->add_child(child);
+	}
+	return root;
+}
+
+TEST_CASE("[PackedScene] Generated unique IDs are deterministic") {
+	// Nodes without a unique ID get one generated on pack. Packing an identical,
+	// unchanged scene must produce identical IDs so that exports are reproducible.
+	Node *scene_a = _create_scene_without_unique_ids();
+	Node *scene_b = _create_scene_without_unique_ids();
+
+	Ref<PackedScene> packed_a;
+	packed_a.instantiate();
+	CHECK(packed_a->pack(scene_a) == OK);
+
+	Ref<PackedScene> packed_b;
+	packed_b.instantiate();
+	CHECK(packed_b->pack(scene_b) == OK);
+
+	Ref<SceneState> state_a = packed_a->get_state();
+	Ref<SceneState> state_b = packed_b->get_state();
+	REQUIRE(state_a->get_node_count() == 5);
+	REQUIRE(state_b->get_node_count() == 5);
+	for (int i = 0; i < state_a->get_node_count(); i++) {
+		CHECK(state_a->get_node_unique_id(i) != Node::UNIQUE_SCENE_ID_UNASSIGNED);
+		CHECK(state_a->get_node_unique_id(i) == state_b->get_node_unique_id(i));
+	}
+
+	memdelete(scene_a);
+	memdelete(scene_b);
+}
+
 } // namespace TestPackedScene
