@@ -249,6 +249,7 @@ public:
 	void remove_joint(JoltJoint3D *p_joint);
 
 	void call_queries();
+	SelfList<JoltBody3D> *get_call_queries_element() { return &call_queries_element; }
 
 	virtual void pre_step(float p_step) override;
 

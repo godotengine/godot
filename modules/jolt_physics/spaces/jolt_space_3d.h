@@ -76,6 +76,8 @@ class JoltSpace3D {
 	JoltPhysicsDirectSpaceState3D *direct_state = nullptr;
 	JoltArea3D *default_area = nullptr;
 
+	JPH::BodyID snapshot_body_id; // the id the next body made gets, while a snapshot is set
+
 	float last_step = 0.0f;
 
 	uint16_t default_area_changed_count = 0;
@@ -140,6 +142,9 @@ public:
 	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);
 	void remove_object(const JPH::BodyID &p_jolt_id);
 	void flush_pending_objects();
+
+	PackedByteArray snapshot_get_state(const LocalVector<JoltObject3D *> &p_objects);
+	bool snapshot_set_state(const LocalVector<JoltObject3D *> &p_objects, const PackedByteArray &p_state);
 
 	void set_is_object_sleeping(const JPH::BodyID &p_jolt_id, bool p_enable);
 

@@ -121,6 +121,16 @@ public:
 	JPH::Body *get_jolt_body() const { return jolt_body; }
 	JPH::BodyID get_jolt_id() const { return jolt_body->GetID(); }
 
+	// For a space's snapshot: out of the space, then back in it (made again).
+	void snapshot_take_out() {
+		_space_changing();
+		_remove_from_space();
+	}
+	void snapshot_put_back() {
+		_add_to_space();
+		_space_changed();
+	}
+
 	JoltSpace3D *get_space() const { return space; }
 	void set_space(JoltSpace3D *p_space);
 	bool in_space() const { return space != nullptr && jolt_body != nullptr; }

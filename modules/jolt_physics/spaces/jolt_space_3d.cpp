@@ -43,6 +43,7 @@
 #include "jolt_physics_direct_space_state_3d.h"
 
 #include "core/io/file_access.h"
+#include "core/templates/hash_map.h"
 #include "core/os/time.h"
 #include "core/string/print_string.h"
 #include "core/variant/variant_utility.h"
@@ -50,6 +51,10 @@
 #include <Jolt/Physics/Collision/CollideShapeVsShapePerLeaf.h>
 #include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 #include <Jolt/Physics/PhysicsScene.h>
+#include "Jolt/Physics/Collision/CollideShapeVsShapePerLeaf.h"
+#include "Jolt/Physics/Collision/CollisionCollectorImpl.h"
+#include "Jolt/Physics/PhysicsScene.h"
+#include "Jolt/Physics/StateRecorderImpl.h"
 
 namespace {
 
@@ -386,7 +391,8 @@ JoltPhysicsDirectSpaceState3D *JoltSpace3D::get_direct_state() {
 
 JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping) {
 	JPH::BodyInterface &body_iface = get_body_iface();
-	JPH::Body *jolt_body = body_iface.CreateBody(p_settings);
+	JPH::Body *jolt_body = snapshot_body_id.IsInvalid() ? body_iface.CreateBody(p_settings) : body_iface.CreateBodyWithID(snapshot_body_id, p_settings);
+	snapshot_body_id = JPH::BodyID();
 	if (unlikely(jolt_body == nullptr)) {
 		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
 							   "Consider increasing maximum number of bodies in project settings. "
@@ -602,3 +608,109 @@ void JoltSpace3D::set_max_debug_contacts(int p_count) {
 }
 
 #endif
+
+// The state: the default area's and the objects' body ids, the objects whose
+// queries (state sync, area events) are due at the next sync, in their order,
+// then Jolt's own state of the system (bodies and contacts; not constraints:
+// joints are made again in their own order, and start without their warm
+// start).
+PackedByteArray JoltSpace3D::snapshot_get_state(const LocalVector<JoltObject3D *> &p_objects) {
+	flush_pending_objects();
+	JPH::StateRecorderImpl recorder;
+	const uint32_t count = p_objects.size();
+	recorder.Write(count);
+	recorder.Write(default_area != nullptr && default_area->in_space() ? default_area->get_jolt_id() : JPH::BodyID());
+	HashMap<const JoltObject3D *, uint32_t> index;
+	for (uint32_t i = 0; i < count; i++) {
+		recorder.Write(p_objects[i]->in_space() ? p_objects[i]->get_jolt_id() : JPH::BodyID());
+		index[p_objects[i]] = i;
+	}
+	LocalVector<uint32_t> queued;
+	for (SelfList<JoltBody3D> *e = body_call_queries_list.first(); e != nullptr; e = e->next()) {
+		if (const uint32_t *i = index.getptr(e->self())) {
+			queued.push_back(*i);
+		}
+	}
+	for (SelfList<JoltArea3D> *e = area_call_queries_list.first(); e != nullptr; e = e->next()) {
+		if (const uint32_t *i = index.getptr(e->self())) {
+			queued.push_back(*i);
+		}
+	}
+	recorder.Write(queued.size());
+	for (uint32_t i : queued) {
+		recorder.Write(i);
+	}
+	physics_system->SaveState(recorder, JPH::EStateRecorderState(uint8_t(JPH::EStateRecorderState::Global) | uint8_t(JPH::EStateRecorderState::Bodies) | uint8_t(JPH::EStateRecorderState::Contacts)));
+	const std::string data = recorder.GetData();
+	PackedByteArray out;
+	out.resize(data.size());
+	memcpy(out.ptrw(), data.data(), data.size());
+	return out;
+}
+
+// Each object first gets the body id it had (made again with it where it has
+// another), then Jolt's state is set. Fails, before Jolt's state is touched,
+// unless the objects and the default area are the ones saved.
+bool JoltSpace3D::snapshot_set_state(const LocalVector<JoltObject3D *> &p_objects, const PackedByteArray &p_state) {
+	flush_pending_objects();
+	JPH::StateRecorderImpl recorder;
+	recorder.WriteBytes(p_state.ptr(), p_state.size());
+	uint32_t count = 0;
+	recorder.Read(count);
+	ERR_FAIL_COND_V_MSG(count != p_objects.size(), false, vformat("Physics snapshot holds %d objects, %d given.", count, p_objects.size()));
+	JPH::BodyID area_id;
+	recorder.Read(area_id);
+	const JPH::BodyID current_area_id = default_area != nullptr && default_area->in_space() ? default_area->get_jolt_id() : JPH::BodyID();
+	ERR_FAIL_COND_V_MSG(area_id != current_area_id, false, "Physics snapshot of another space (its default area differs).");
+	LocalVector<JPH::BodyID> ids;
+	ids.resize(count);
+	for (uint32_t i = 0; i < count; i++) {
+		recorder.Read(ids[i]);
+		ERR_FAIL_COND_V_MSG(ids[i].IsInvalid() == p_objects[i]->in_space(), false, "Physics snapshot: an object is in the space in one and not the other.");
+	}
+	uint32_t queued_count = 0;
+	recorder.Read(queued_count);
+	LocalVector<uint32_t> queued;
+	queued.resize(queued_count);
+	for (uint32_t &i : queued) {
+		recorder.Read(i);
+		ERR_FAIL_COND_V_MSG(i >= count, false, "Physics snapshot: broken queue.");
+	}
+	// Out first, all of them: an id one wants back may be another one's now.
+	LocalVector<uint32_t> moved;
+	for (uint32_t i = 0; i < count; i++) {
+		if (!ids[i].IsInvalid() && p_objects[i]->get_jolt_id() != ids[i]) {
+			p_objects[i]->snapshot_take_out();
+			moved.push_back(i);
+		}
+	}
+	for (uint32_t i : moved) {
+		snapshot_body_id = ids[i];
+		p_objects[i]->snapshot_put_back();
+		snapshot_body_id = JPH::BodyID();
+	}
+	flush_pending_objects();
+	for (uint32_t i = 0; i < count; i++) {
+		ERR_FAIL_COND_V_MSG(!ids[i].IsInvalid() && p_objects[i]->get_jolt_id() != ids[i], false, "Physics snapshot: a body could not get its saved id back.");
+	}
+	if (!physics_system->RestoreState(recorder)) {
+		return false;
+	}
+	// The queries due at the next sync: those, in that order.
+	for (JoltObject3D *object : p_objects) {
+		if (JoltBody3D *body = object->as_body()) {
+			dequeue_call_queries(body->get_call_queries_element());
+		} else if (JoltArea3D *area = object->as_area()) {
+			dequeue_call_queries(area->get_call_queries_element());
+		}
+	}
+	for (int64_t k = int64_t(queued.size()) - 1; k >= 0; k--) { // each goes first: the last one first
+		const uint32_t i = queued[k];
+		if (JoltBody3D *body = p_objects[i]->as_body()) {
+			enqueue_call_queries(body->get_call_queries_element());
+		} else if (JoltArea3D *area = p_objects[i]->as_area()) {
+			enqueue_call_queries(area->get_call_queries_element());
+		}
+	}
+	return true;
+}

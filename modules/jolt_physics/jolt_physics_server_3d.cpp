@@ -39,6 +39,8 @@
 #include "objects/jolt_area_3d.h"
 #include "objects/jolt_body_3d.h"
 #include "objects/jolt_soft_body_3d.h"
+#include "core/variant/typed_array.h"
+#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
 #include "shapes/jolt_box_shape_3d.h"
 #include "shapes/jolt_capsule_shape_3d.h"
 #include "shapes/jolt_concave_polygon_shape_3d.h"
@@ -254,6 +256,36 @@ PackedVector3Array JoltPhysicsServer3D::space_get_contacts(RID p_space) const {
 #else
 	return PackedVector3Array();
 #endif
+}
+
+// The space's areas and rigid bodies, by RID.
+static bool _snapshot_objects(const JoltPhysicsServer3D *p_server, const TypedArray<RID> &p_rids, LocalVector<JoltObject3D *> &r_objects) {
+	for (int i = 0; i < p_rids.size(); i++) {
+		const RID rid = p_rids[i];
+		JoltObject3D *object = p_server->get_body(rid);
+		if (object == nullptr) {
+			object = p_server->get_area(rid);
+		}
+		ERR_FAIL_NULL_V_MSG(object, false, "Physics snapshot: not an area or a rigid body.");
+		r_objects.push_back(object);
+	}
+	return true;
+}
+
+PackedByteArray JoltPhysicsServer3D::space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) {
+	JoltSpace3D *space = space_owner.get_or_null(p_space);
+	ERR_FAIL_NULL_V(space, PackedByteArray());
+	LocalVector<JoltObject3D *> objects;
+	ERR_FAIL_COND_V(!_snapshot_objects(this, p_objects, objects), PackedByteArray());
+	return space->snapshot_get_state(objects);
+}
+
+bool JoltPhysicsServer3D::space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) {
+	JoltSpace3D *space = space_owner.get_or_null(p_space);
+	ERR_FAIL_NULL_V(space, false);
+	LocalVector<JoltObject3D *> objects;
+	ERR_FAIL_COND_V(!_snapshot_objects(this, p_objects, objects), false);
+	return space->snapshot_set_state(objects, p_state);
 }
 
 int JoltPhysicsServer3D::space_get_contact_count(RID p_space) const {

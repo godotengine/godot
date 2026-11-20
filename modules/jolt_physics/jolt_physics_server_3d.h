@@ -164,6 +164,9 @@ public:
 	virtual PackedVector3Array space_get_contacts(RID p_space) const override;
 	virtual int space_get_contact_count(RID p_space) const override;
 
+	virtual PackedByteArray space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) override;
+	virtual bool space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) override;
+
 	virtual RID area_create() override;
 
 	virtual void area_set_space(RID p_area, RID p_space) override;

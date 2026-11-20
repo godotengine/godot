@@ -311,6 +311,13 @@ public:
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const = 0;
 	virtual int space_get_contact_count(RID p_space) const = 0;
 
+	// The engine's own state of a space (sleep, contacts, solver warm start),
+	// for engines that can hand it out; empty from the others. The given
+	// objects are the space's areas and bodies: setting the state gives each
+	// one the engine identity it had when the state was taken, by position.
+	virtual PackedByteArray space_snapshot_get_state(RID p_space, const TypedArray<RID> &p_objects) { return PackedByteArray(); }
+	virtual bool space_snapshot_set_state(RID p_space, const TypedArray<RID> &p_objects, const PackedByteArray &p_state) { return false; }
+
 	//missing space parameters
 
 	/* AREA API */
