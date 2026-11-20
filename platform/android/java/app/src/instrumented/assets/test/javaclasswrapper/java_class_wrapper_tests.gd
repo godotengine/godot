@@ -18,6 +18,8 @@ func run_tests():
 
 	__exec_test(test_big_integers)
 
+	__exec_test(test_nullable_strings)
+
 	__exec_test(test_callable)
 
 	__exec_test(test_interface_callable_proxy)
@@ -163,6 +165,23 @@ func test_big_integers() -> bool:
 	assert_equal(TestClass.testArgLong(4242424242), "4242424242")
 	assert_equal(TestClass.testArgLong(-4242424242), "-4242424242")
 	assert_equal(TestClass.testDictionary({a = 4242424242, b = -4242424242}), "{a=4242424242, b=-4242424242}")
+	return true
+
+func test_nullable_strings() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+
+	# Ensure actual strings work.
+	assert_equal(TestClass.testArgStringNullable("ActualString"), "String: ActualString")
+	assert_equal(TestClass.testArgCharSequenceNullable("ActualString"), "CharSequence: ActualString")
+
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
+	# Now, check if null can be passed in.
+	assert_equal(TestClass.testArgStringNullable(null), "String: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgCharSequenceNullable(null), "CharSequence: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
 	return true
 
 func test_callable() -> bool:
