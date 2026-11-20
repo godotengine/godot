@@ -326,10 +326,9 @@ public:
 	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
 	// (or at least shouldn't) alter the execution behavior in any way.
 	//
-	// When a GPU crashes and Godot was built in dev or debug mode; Godot will dump what commands
-	// were being executed and what tag they were marked with.
-	// This makes narrowing down the cause of a crash easier. Note that a GPU can be executing
-	// multiple commands at the same time. It is also useful to identify data hazards.
+	// When a GPU crashes, Godot will dump what commands were being executed and what tag they were
+	// marked with. This makes narrowing down the cause of a crash easier. Note that a GPU can be
+	// executing multiple commands at the same time. It is also useful to identify data hazards.
 	//
 	// For example if each LIGHTMAPPER_PASS must be executed in sequential order, but dumps
 	// indicated that pass (LIGHTMAPPER_PASS | 5) was being executed at the same time as
@@ -359,6 +358,8 @@ public:
 		// Other
 		DEBUG_PASS = 12u << 16u,
 	};
+
+	static void print_breadcrumb_buffer_info(uint32_t p_last_breadcrumb_id, const uint32_t *p_breadcrumb_buffer_data, uint32_t p_breadcrumb_buffer_entry_count);
 
 	enum CompareOperator {
 		COMPARE_OP_NEVER,
