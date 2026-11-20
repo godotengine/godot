@@ -30,6 +30,7 @@ namespace GodotTools.Build
         private PopupMenu _problemsContextMenu;
 #nullable enable
 
+        // Keep in sync with editor/settings/editor_settings.cpp.
         public enum ProblemsLayout { List, Tree }
         private ProblemsLayout _layout = ProblemsLayout.Tree;
 
