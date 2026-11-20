@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/slider.h"
@@ -56,14 +57,16 @@ class MultiMeshEditor : public Control {
 
 	LineEdit *surface_source = nullptr;
 	LineEdit *mesh_source = nullptr;
+	Button *surface_source_button = nullptr;
+	Button *mesh_source_button = nullptr;
 
 	SceneTreeDialog *std = nullptr;
 
 	ConfirmationDialog *populate_dialog = nullptr;
 	OptionButton *populate_axis = nullptr;
-	HSlider *populate_rotate_random = nullptr;
-	HSlider *populate_tilt_random = nullptr;
-	SpinBox *populate_scale_random = nullptr;
+	EditorSpinSlider *populate_rotate_random = nullptr;
+	EditorSpinSlider *populate_tilt_random = nullptr;
+	EditorSpinSlider *populate_scale_random = nullptr;
 	SpinBox *populate_scale = nullptr;
 	SpinBox *populate_amount = nullptr;
 
@@ -78,6 +81,7 @@ class MultiMeshEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
+	void _notification(int p_what);
 
 public:
 	void edit(MultiMeshInstance3D *p_multimesh);
