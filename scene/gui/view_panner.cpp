@@ -226,7 +226,7 @@ void ViewPanner::set_scroll_speed(int p_scroll_speed) {
 }
 
 void ViewPanner::set_scroll_zoom_factor(float p_scroll_zoom_factor) {
-	ERR_FAIL_COND(p_scroll_zoom_factor <= 1.0);
+	ERR_FAIL_COND(p_scroll_zoom_factor < 1.0);
 	scroll_zoom_factor = p_scroll_zoom_factor;
 }
 
