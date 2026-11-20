@@ -67,6 +67,7 @@ public:
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;
 	virtual bool light_get_allow_contact_shadows(RID p_light) const = 0;
+	virtual void light_set_extra_cull_margin(RID p_light, float p_margin) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) = 0;
 
