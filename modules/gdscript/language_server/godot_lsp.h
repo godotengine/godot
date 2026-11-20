@@ -1575,6 +1575,76 @@ struct SignatureHelp {
 	}
 };
 
+struct ColorInformation {
+	/**
+	 * The range in the document where this color appears.
+	 */
+	Range range;
+
+	/**
+	 * The actual color value for this color range.
+	 */
+	Color color;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+
+		Dictionary color_dict;
+		color_dict["red"] = color.r;
+		color_dict["green"] = color.g;
+		color_dict["blue"] = color.b;
+		color_dict["alpha"] = color.a;
+
+		dict["color"] = color_dict;
+		return dict;
+	}
+};
+
+struct ColorPresentationParams {
+	/**
+	 * The text document.
+	 */
+	TextDocumentIdentifier textDocument;
+
+	/**
+	 * The color information to request presentations for.
+	 */
+	Color color;
+
+	/**
+	 * The range where the color would be inserted. Serves as a context.
+	 */
+	Range range;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		textDocument.load(p_params["textDocument"]);
+
+		const Dictionary c = p_params["color"];
+		color.r = c["red"];
+		color.g = c["green"];
+		color.b = c["blue"];
+		color.a = c["alpha"];
+
+		range.load(p_params["range"]);
+	}
+};
+
+struct ColorPresentation {
+	/**
+	 * The label of this color presentation. It will be shown on the color
+	 * picker header. By default this is also the text that is inserted when
+	 * selecting this color presentation.
+	 */
+	String label;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["label"] = label;
+		return dict;
+	}
+};
+
 /**
  * A pattern to describe in which file operation requests or notifications
  * the server is interested in.
@@ -1749,6 +1819,13 @@ struct ServerCapabilities {
 	bool codeActionProvider = false;
 
 	/**
+	 * The server provides color provider support.
+	 *
+	 * @since 3.6.0
+	 */
+	bool colorProvider = true;
+
+	/**
 	 * The server provides document formatting.
 	 */
 	bool documentFormattingProvider = false;
@@ -1811,6 +1888,7 @@ struct ServerCapabilities {
 		dict["documentFormattingProvider"] = documentFormattingProvider;
 		dict["documentRangeFormattingProvider"] = documentRangeFormattingProvider;
 		dict["declarationProvider"] = declarationProvider;
+		dict["colorProvider"] = colorProvider;
 		return dict;
 	}
 };

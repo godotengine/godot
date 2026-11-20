@@ -71,6 +71,8 @@ public:
 	Array definition(const Dictionary &p_params);
 	Variant declaration(const Dictionary &p_params);
 	Variant signatureHelp(const Dictionary &p_params);
+	Array documentColor(const Dictionary &p_params);
+	Array colorPresentation(const Dictionary &p_params);
 
 	GDScriptTextDocument();
 };
