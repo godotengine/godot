@@ -33,13 +33,19 @@
 		<method name="_get_shader_rid" qualifiers="virtual required const">
 			<return type="RID" />
 			<description>
-				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools. Used to access the RID of the [Material]'s [Shader].
+				Only exposed for the purpose of overriding. To retrieve the value, call [method get_shader_rid]. Used internally by various editor tools. Used to access the RID of the [Material]'s [Shader].
 			</description>
 		</method>
 		<method name="create_placeholder" qualifiers="const">
 			<return type="Resource" />
 			<description>
 				Creates a placeholder version of this resource ([PlaceholderMaterial]).
+			</description>
+		</method>
+		<method name="get_shader_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the shader ID for use with [RenderingServer].
 			</description>
 		</method>
 		<method name="inspect_native_shader_code">
