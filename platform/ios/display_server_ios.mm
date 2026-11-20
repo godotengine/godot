@@ -137,6 +137,50 @@ float DisplayServerIOS::screen_get_scale(int p_screen) const {
 	return [UIScreen mainScreen].scale;
 }
 
+TypedArray<Rect2> DisplayServerIOS::get_display_cutouts(int p_screen, bool p_inactive) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
+
+	TypedArray<Rect2> ret;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
+	if (@available(iOS 27.1, *)) {
+		NSArray<UIViewReservedRegion *> *cutouts = [GDTAppDelegateService.viewController.godotView reservedRegionsOfKind:[UIViewReservedRegionKind occlusionRegionKind] options:(p_inactive) ? UIViewReservedRegionQueryOptionsIncludeInactive : UIViewReservedRegionQueryOptionsNone];
+		double scale = GDTAppDelegateService.viewController.godotView.contentScaleFactor;
+		for (NSUInteger i = 0; i < [cutouts count]; i++) {
+			UIViewReservedRegion *region = [cutouts objectAtIndex:i];
+			if (region.active && p_inactive) {
+				continue;
+			}
+			ret.push_back(Rect2(region.frame.origin.x * scale, region.frame.origin.y * scale, region.frame.size.width * scale, region.frame.size.height * scale));
+		}
+	}
+#endif
+	return ret;
+}
+
+TypedArray<Rect2> DisplayServerIOS::get_display_divisions(int p_screen, bool p_inactive) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
+
+	TypedArray<Rect2> ret;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270100
+	if (@available(iOS 27.1, *)) {
+		NSArray<UIViewReservedRegion *> *cutouts = [GDTAppDelegateService.viewController.godotView reservedRegionsOfKind:[UIViewReservedRegionKind divisionRegionKind] options:(p_inactive) ? UIViewReservedRegionQueryOptionsIncludeInactive : UIViewReservedRegionQueryOptionsNone];
+		double scale = GDTAppDelegateService.viewController.godotView.contentScaleFactor;
+		for (NSUInteger i = 0; i < [cutouts count]; i++) {
+			UIViewReservedRegion *region = [cutouts objectAtIndex:i];
+			if (region.active && p_inactive) {
+				continue;
+			}
+			ret.push_back(Rect2(region.frame.origin.x * scale, region.frame.origin.y * scale, region.frame.size.width * scale, region.frame.size.height * scale));
+		}
+	}
+#endif
+	return ret;
+}
+
 bool DisplayServerIOS::_screen_hdr_is_supported() const {
 	if (@available(iOS 16.0, *)) {
 		return [UIScreen mainScreen].potentialEDRHeadroom > 1.0;
