@@ -9,11 +9,41 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="is_stream_playing" qualifiers="const">
+		<method name="get_stream_pitch_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="stream" type="int" />
+			<description>
+				Returns a stream's pitch scale. The [param stream] argument is an integer ID returned by [method play_stream].
+				[b]Note:[/b] Returns [code]0.0[/code] if [param stream] is invalid. To not be confused with a pitch scale of the same value, check if the ID is valid first using [method is_id_valid].
+			</description>
+		</method>
+		<method name="get_stream_playback_position" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="stream" type="int" />
+			<description>
+				Returns the current progress along a stream, in seconds. The [param stream] argument is an integer ID returned by [method play_stream].
+			</description>
+		</method>
+		<method name="get_stream_volume" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="stream" type="int" />
+			<description>
+				Returns a stream's volume (in dB). The [param stream] argument is an integer ID returned by [method play_stream].
+				[b]Note:[/b] Returns [code]0.0[/code] if [param stream] is invalid. To not be confused with a volume level of the same value, check if the ID is valid first using [method is_id_valid].
+			</description>
+		</method>
+		<method name="is_id_valid" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="stream" type="int" />
 			<description>
-				Returns [code]true[/code] if the stream associated with the given integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid.
+				Returns [code]true[/code] if the stream associated with the given integer ID is valid. See [method play_stream] and [constant INVALID_ID].
+			</description>
+		</method>
+		<method name="is_stream_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="stream" type="int" />
+			<description>
+				Returns [code]true[/code] is a stream is currently paused. See [method set_stream_paused]. The [param stream] argument is an integer ID returned by [method play_stream].
 			</description>
 		</method>
 		<method name="play_stream">
@@ -31,12 +61,28 @@
 				This function returns [constant INVALID_ID] if the amount of streams currently playing equals [member AudioStreamPolyphonic.polyphony]. If you need a higher amount of maximum polyphony, raise this value.
 			</description>
 		</method>
+		<method name="seek_stream">
+			<return type="void" />
+			<param index="0" name="stream" type="int" />
+			<param index="1" name="time" type="float" />
+			<description>
+				Seeks a stream at the given playback position, in seconds. The [param stream] argument is an integer ID returned by [method play_stream].
+			</description>
+		</method>
+		<method name="set_stream_paused">
+			<return type="void" />
+			<param index="0" name="stream" type="int" />
+			<param index="1" name="pause" type="bool" />
+			<description>
+				Pauses a stream if [param pause] is set to [code]true[/code]. If [code]false[/code], the stream will resume. The [param stream] argument is an integer ID returned by [method play_stream].
+			</description>
+		</method>
 		<method name="set_stream_pitch_scale">
 			<return type="void" />
 			<param index="0" name="stream" type="int" />
 			<param index="1" name="pitch_scale" type="float" />
 			<description>
-				Change the stream pitch scale. The [param stream] argument is an integer ID returned by [method play_stream].
+				Change a stream's pitch scale. The [param stream] argument is an integer ID returned by [method play_stream].
 			</description>
 		</method>
 		<method name="set_stream_volume">
@@ -44,7 +90,7 @@
 			<param index="0" name="stream" type="int" />
 			<param index="1" name="volume_db" type="float" />
 			<description>
-				Change the stream volume (in db). The [param stream] argument is an integer ID returned by [method play_stream].
+				Change a stream's volume (in dB). The [param stream] argument is an integer ID returned by [method play_stream].
 			</description>
 		</method>
 		<method name="stop_stream">
