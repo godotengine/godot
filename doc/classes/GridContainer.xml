@@ -9,7 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
-		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
+		<link title="Operating System Testing Demo">https://store.godotengine.org/asset/godot-foundation/operating-system-testing-demo/</link>
 	</tutorials>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">

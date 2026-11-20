@@ -15,7 +15,7 @@
 		[b]Note:[/b] Timers are affected by [member Engine.time_scale] unless [member ignore_time_scale] is [code]true[/code]. The higher the time scale, the sooner timers will end. How often a timer processes may depend on the framerate or [member Engine.physics_ticks_per_second].
 	</description>
 	<tutorials>
-		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Dodge The Creeps Demo">https://store.godotengine.org/asset/godot-foundation/dodge-the-creeps-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="is_stopped" qualifiers="const">
