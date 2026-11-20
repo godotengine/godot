@@ -1512,6 +1512,9 @@ void SplitContainer::_update_all_nested_descendents(Control *p_control, Control 
 }
 
 void SplitContainer::set_split_offset(int p_offset, int p_index) {
+	if (p_index < 0) {
+		p_index += split_offsets.size();
+	}
 	ERR_FAIL_INDEX(p_index, split_offsets.size());
 	if (split_offsets[p_index] == p_offset) {
 		return;
@@ -1522,6 +1525,9 @@ void SplitContainer::set_split_offset(int p_offset, int p_index) {
 }
 
 int SplitContainer::get_split_offset(int p_index) const {
+	if (p_index < 0) {
+		p_index += split_offsets.size();
+	}
 	ERR_FAIL_INDEX_V(p_index, split_offsets.size(), 0);
 	return split_offsets[p_index];
 }
