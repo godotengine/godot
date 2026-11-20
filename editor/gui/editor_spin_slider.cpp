@@ -262,9 +262,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		float scale_x = get_global_transform_with_canvas().get_scale().x;
-		ERR_FAIL_COND(Math::is_zero_approx(scale_x));
-		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range) / scale_x;
+		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
 		queue_redraw();
 	}
