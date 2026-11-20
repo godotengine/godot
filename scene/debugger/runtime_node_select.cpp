@@ -416,7 +416,7 @@ Transform2D RuntimeNodeSelect::_global_transform_callback() const {
 
 Point2 RuntimeNodeSelect::_local_mouse_pos_callback() const {
 	Window *root = SceneTree::get_singleton()->get_root();
-	return root->get_screen_transform().xform(root->get_mouse_position());
+	return root->get_canvas_transform().xform(root->get_mouse_position());
 }
 
 void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
