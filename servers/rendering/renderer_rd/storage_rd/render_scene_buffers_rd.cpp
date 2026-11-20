@@ -833,7 +833,7 @@ RSE::ViewportMSAA RenderSceneBuffersRD::get_nearest_supported_msaa(RSE::Viewport
 	tf.samples = msaa_to_samples(p_msaa);
 	RD::TextureSamples samples = RD::get_singleton()->texture_get_nearest_supported_samples(tf);
 	if (samples != tf.samples && is_print_verbose_enabled()) {
-		print_verbose(vformat("MSAA %dx is not supported by the current hardware. Falling back to %dx.", 1 << tf.samples, 1 << samples));
+		PRINT_VERBOSE(vformat("MSAA %dx is not supported by the current hardware. Falling back to %dx.", 1 << tf.samples, 1 << samples));
 	}
 	return samples_to_msaa(samples);
 }
