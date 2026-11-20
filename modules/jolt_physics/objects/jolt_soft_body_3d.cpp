@@ -218,9 +218,9 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	const float inverse_stiffness = dt * dt * (1.0f / stiffness_coefficient - 1.0f) * w1_plus_w2;
 
 	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
-	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
+	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = vertex_attrib.mBendCompliance = inverse_stiffness;
 
-	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::Distance);
 	float multiplier = 1.0f - shrinking_factor;
 	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
 		e.mRestLength *= multiplier;
