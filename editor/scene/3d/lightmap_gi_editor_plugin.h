@@ -35,6 +35,11 @@
 struct EditorProgress;
 class EditorFileDialog;
 class LightmapGI;
+class MeshInstance3D;
+class PopupPanel;
+class Shader;
+class ShaderMaterial;
+class SpinBox;
 
 class LightmapGIEditorPlugin : public EditorPlugin {
 	GDCLASS(LightmapGIEditorPlugin, EditorPlugin);
@@ -42,6 +47,40 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 	LightmapGI *lightmap = nullptr;
 
 	Button *bake = nullptr;
+	Button *preview = nullptr;
+	Button *close_preview = nullptr;
+	Button *preview_options = nullptr;
+	PopupPanel *preview_options_popup = nullptr;
+	SpinBox *target_density_spinbox = nullptr;
+	Ref<Shader> preview_shader;
+	ObjectID preview_lightmap_id;
+	bool plugin_visible = false;
+	float target_density = 1.0f;
+	bool median_calculation_pending = false;
+
+	struct DensitySample {
+		float density = 0.0f;
+		float world_area = 0.0f;
+
+		bool operator<(const DensitySample &p_other) const {
+			return density < p_other.density;
+		}
+	};
+
+	struct PreviewInstance {
+		RID instance;
+		Ref<ShaderMaterial> material;
+		ObjectID source_id;
+		Size2 base_lightmap_size;
+		Transform3D last_render_transform;
+		Size2i last_render_lightmap_size;
+		float last_target_density = 0.0f;
+		float last_saturation_multiplier = 0.0f;
+		bool last_visible = true;
+		bool render_state_initialized = false;
+	};
+
+	Vector<PreviewInstance> preview_instances;
 
 	EditorFileDialog *file_dialog = nullptr;
 	static EditorProgress *tmp_progress;
@@ -50,15 +89,28 @@ class LightmapGIEditorPlugin : public EditorPlugin {
 
 	void _bake_select_file(const String &p_file);
 	void _bake();
+	void _preview_pressed();
+	void _close_preview_pressed();
+	void _update_preview_button(bool p_preview_active);
+	void _preview_options_pressed();
+	void _target_density_changed(double p_value);
+	void _load_target_density();
+	void _create_preview();
+	void _clear_preview();
+	void _find_preview_meshes(Node *p_node, Vector<MeshInstance3D *> &r_meshes) const;
+	void _calculate_scene_median(float p_global_scale);
 
 protected:
 	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	virtual String get_plugin_name() const override { return "LightmapGI"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+	virtual void edited_scene_changed() override;
 
 	LightmapGIEditorPlugin();
+	~LightmapGIEditorPlugin();
 };
