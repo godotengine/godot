@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
+#include "../gdscript.h"
+#include "../toolchain/gdscript_ast.h"
 
 class GDScriptDocGen {
-	using GDP = GDScriptParser;
+	using GDP = GDScriptAST;
 	using DataType = GDP::DataType;
 
 	static HashMap<String, String> singletons; // Script path to singleton name.

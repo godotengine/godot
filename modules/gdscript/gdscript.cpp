@@ -38,6 +38,7 @@
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+#include "toolchain/gdscript_ast.h"
 
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
@@ -526,15 +527,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 		Error err = parser.parse(source, path, false);
 
 		if (err == OK && analyzer.analyze() == OK) {
-			const GDScriptParser::ClassNode *c = parser.get_tree();
+			const GDScriptAST::ClassNode *c = parser.get_tree();
 
 			if (base_cache.is_valid()) {
 				base_cache->inheriters_cache.erase(get_instance_id());
 				base_cache = Ref<GDScript>();
 			}
 
-			GDScriptParser::DataType base_type = parser.get_tree()->base_type;
-			if (base_type.kind == GDScriptParser::DataType::CLASS) {
+			GDScriptAST::DataType base_type = parser.get_tree()->base_type;
+			if (base_type.kind == GDScriptAST::DataType::CLASS) {
 				Ref<GDScript> bf = GDScriptCache::get_full_script(base_type.script_path, err, path);
 				if (err == OK) {
 					bf = Ref<GDScript>(bf->find_class(base_type.class_type->fqcn));
@@ -551,9 +552,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 			members_cache.push_back(get_class_category());
 
-			for (const GDScriptParser::ClassNode::Member &member : c->members) {
+			for (const GDScriptAST::ClassNode::Member &member : c->members) {
 				switch (member.type) {
-					case GDScriptParser::ClassNode::Member::VARIABLE: {
+					case GDScriptAST::ClassNode::Member::VARIABLE: {
 						if (!member.variable->exported) {
 							continue;
 						}
@@ -562,10 +563,10 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						Variant default_value = analyzer.make_variable_default_value(member.variable);
 						member_default_values_cache[member.variable->identifier->name] = default_value;
 					} break;
-					case GDScriptParser::ClassNode::Member::SIGNAL: {
+					case GDScriptAST::ClassNode::Member::SIGNAL: {
 						_signals[member.signal->identifier->name] = member.signal->method_info;
 					} break;
-					case GDScriptParser::ClassNode::Member::GROUP: {
+					case GDScriptAST::ClassNode::Member::GROUP: {
 						members_cache.push_back(member.annotation->export_info);
 					} break;
 					default:
@@ -2771,7 +2772,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 	GDScriptParser parser;
 	err = parser.parse(source, p_path, false, false);
 
-	const GDScriptParser::ClassNode *c = parser.get_tree();
+	const GDScriptAST::ClassNode *c = parser.get_tree();
 	if (!c) {
 		return String(); // No class parsed.
 	}
@@ -2791,7 +2792,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 	 */
 
 	if (r_base_type) {
-		const GDScriptParser::ClassNode *subclass = c;
+		const GDScriptAST::ClassNode *subclass = c;
 		String path = p_path;
 		GDScriptParser subparser;
 		while (subclass) {
@@ -2807,7 +2808,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 						subclass = nullptr;
 						break;
 					} else {
-						Vector<GDScriptParser::IdentifierNode *> extend_classes = subclass->extends;
+						Vector<GDScriptAST::IdentifierNode *> extend_classes = subclass->extends;
 
 						Ref<FileAccess> subfile = FileAccess::open(subpath, FileAccess::READ);
 						if (subfile.is_null()) {
@@ -2828,11 +2829,11 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 						while (extend_classes.size() > 0) {
 							bool found = false;
 							for (uint32_t i = 0; i < subclass->members.size(); i++) {
-								if (subclass->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
+								if (subclass->members[i].type != GDScriptAST::ClassNode::Member::CLASS) {
 									continue;
 								}
 
-								const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
+								const GDScriptAST::ClassNode *inner_class = subclass->members[i].m_class;
 								if (inner_class->identifier->name == extend_classes[0]->name) {
 									extend_classes.remove_at(0);
 									found = true;

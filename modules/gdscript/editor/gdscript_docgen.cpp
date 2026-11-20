@@ -30,8 +30,6 @@
 
 #include "gdscript_docgen.h"
 
-#include "../gdscript.h"
-
 #include "core/config/project_settings.h"
 #include "core/doc_data.h"
 

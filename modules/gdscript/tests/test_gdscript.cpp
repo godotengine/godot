@@ -36,6 +36,7 @@
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../gdscript_tokenizer_buffer.h"
+#include "../toolchain/gdscript_ast.h"
 #include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
@@ -200,8 +201,8 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	}
 
 #ifdef TOOLS_ENABLED
-	GDScriptParser::TreePrinter printer;
-	printer.print_tree(parser);
+	TreePrinter printer;
+	printer.print_tree(parser.get_tree(), parser.is_tool());
 #endif
 }
 
