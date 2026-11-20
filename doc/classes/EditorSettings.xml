@@ -1643,6 +1643,9 @@
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
 		</member>
+		<member name="text_editor/help/docs_base_url" type="String" setter="" getter="">
+			The base URL of the online documentation to open when using "Online Docs" and external documentation links in the editor help. The default is the official documentation URL for the engine's version and language. Change this if you want to use a mirror or locally-hosted documentation. Must be a valid URL including the protocol, such as [code]https://docs.godotengine.org/en/stable[/code] or [code]file:///C:/path/to/docs/_build/html[/code].
+		</member>
 		<member name="text_editor/help/help_font_size" type="int" setter="" getter="">
 			The font size to use for the editor help (built-in class reference).
 		</member>

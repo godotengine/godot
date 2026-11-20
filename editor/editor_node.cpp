@@ -4028,7 +4028,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			command_palette->open_popup();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open(GODOT_VERSION_DOCS_URL "/");
+			OS::get_singleton()->shell_open(EditorHelp::get_docs_url());
 		} break;
 		case HELP_FORUM: {
 			OS::get_singleton()->shell_open("https://forum.godotengine.org/");
