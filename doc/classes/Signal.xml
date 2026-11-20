@@ -206,6 +206,13 @@
 				Emits this signal. All [Callable]s connected to this signal will be triggered. This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 			</description>
 		</method>
+		<method name="emitv" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="arguments" type="Array" />
+			<description>
+				Emits this signal. All [Callable]s connected to this signal will be triggered. Unlike [method emit], this method expects all arguments to be contained inside the [param arguments] [Array].
+			</description>
+		</method>
 		<method name="get_connections" qualifiers="const">
 			<return type="Array" />
 			<description>
