@@ -52,6 +52,8 @@ class ShapeCast2D : public Node2D {
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;
 
+	Color debug_shape_colliding_custom_color = Color(1.0, 0.01, 0);
+
 	// Result
 	int max_results = 32;
 	Vector<PS2DT::ShapeRestInfo> result;
@@ -96,6 +98,9 @@ public:
 
 	void set_exclude_parent_body(bool p_exclude_parent_body);
 	bool get_exclude_parent_body() const;
+
+	const Color &get_debug_shape_colliding_custom_color() const;
+	void set_debug_shape_colliding_custom_color(const Color &p_color);
 
 	void force_shapecast_update();
 	bool is_colliding() const;
