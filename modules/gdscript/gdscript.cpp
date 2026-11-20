@@ -2553,7 +2553,9 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 
 			Ref<SceneState> state = scene->get_state();
 			Ref<GDScript> fresh = state->get_sub_resource(scr->get_path());
-			ERR_CONTINUE(fresh.is_null());
+			if (fresh.is_null()) {
+				continue;
+			}
 
 			scr->set_source_code(fresh->get_source_code());
 		} else {
