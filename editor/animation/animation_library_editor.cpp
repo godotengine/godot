@@ -1012,6 +1012,7 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	tree->set_hide_root(true);
 	tree->set_hide_folding(false);
 	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	tree->set_select_mode(Tree::SELECT_ROW);
 	mc->add_child(tree);
 	tree->connect("item_edited", callable_mp(this, &AnimationLibraryEditor::_item_renamed));
 	tree->connect("button_clicked", callable_mp(this, &AnimationLibraryEditor::_button_pressed));
