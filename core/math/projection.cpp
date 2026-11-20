@@ -517,6 +517,7 @@ real_t Projection::get_z_far() const {
 	// NOTE: This assumes z-facing near and far planes, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - near and far planes are z-facing (i.e. columns[0][2] and [1][2] == 0)
+	// To handle matrices with oblique (tilted) planes, see get_frustum_depth_range()
 	return (columns[3][3] - columns[3][2]) / (columns[2][3] - columns[2][2]);
 }
 
@@ -524,7 +525,46 @@ real_t Projection::get_z_near() const {
 	// NOTE: This assumes z-facing near and far planes, i.e. that :
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - near and far planes are z-facing (i.e. columns[0][2] and [1][2] == 0)
+	// To handle matrices with oblique (tilted) planes, see get_frustum_depth_range()
 	return (columns[3][3] + columns[3][2]) / (columns[2][3] + columns[2][2]);
+}
+
+Vector2 Projection::get_frustum_depth_range() const {
+	// Returns (near, far) such that
+	// near is the nearest visible depth of the frustum, and
+	// far is the distance at which the far plane begins to clip
+	// the frustum. Written to handle perspective projections with
+	// non-z-facing near/far planes
+	if (is_orthogonal() || (columns[0][2] == 0 && columns[1][2] == 0)) {
+		return Vector2(get_z_near(), get_z_far());
+	}
+
+	real_t depths[2] = { -1, -1 };
+	for (int p = 0; p < 2; p++) {
+		const real_t sign = p == 0 ? 1 : -1;
+		const Vector4 plane(
+				columns[0][3] + sign * columns[0][2],
+				columns[1][3] + sign * columns[1][2],
+				columns[2][3] + sign * columns[2][2],
+				columns[3][3] + sign * columns[3][2]);
+		for (int i = 0; i < 4; i++) {
+			const real_t x = (((i & 1) ? 1 : -1) + columns[2][0]) / columns[0][0];
+			const real_t y = (((i & 2) ? 1 : -1) + columns[2][1]) / columns[1][1];
+			const real_t slope = plane.x * x + plane.y * y - plane.z;
+			if (slope == 0) {
+				continue;
+			}
+			const real_t depth = -plane.w / slope;
+			if (depth > 0 && (depths[p] < 0 || depth < depths[p])) {
+				depths[p] = depth;
+			}
+		}
+	}
+
+	if (depths[0] <= 0 || depths[1] <= depths[0]) {
+		return Vector2(get_z_near(), get_z_far());
+	}
+	return Vector2(depths[0], depths[1]);
 }
 
 Vector2 Projection::get_viewport_half_extents() const {
