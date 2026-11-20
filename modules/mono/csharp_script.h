@@ -39,6 +39,8 @@
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
+#include "./editor/csharp_editor_language.h"
+
 #include "core/object/editor_language.h"
 #include "editor/plugins/editor_plugin.h"
 #endif
@@ -496,7 +498,6 @@ class CSharpLanguage : public ScriptLanguage {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
-	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
 #endif
@@ -563,14 +564,9 @@ public:
 
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
-	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+	virtual EditorLanguage *get_editor_language() const override { return CSharpEditorLanguage::get_singleton(); }
 #endif
 
-	Vector<String> get_reserved_words() const override;
-	bool is_control_flow_keyword(const String &p_keyword) const override;
-	Vector<String> get_comment_delimiters() const override;
-	Vector<String> get_doc_comment_delimiters() const override;
-	Vector<String> get_string_delimiters() const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -580,7 +576,6 @@ public:
 	virtual bool can_make_function() const override { return false; }
 	String _get_indentation() const;
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
-	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;

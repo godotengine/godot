@@ -232,6 +232,22 @@ public:
 	 */
 	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
 
+	virtual const Vector<String> get_reserved_words() const { return Vector<String>(); }
+	virtual bool is_control_flow_keyword(const String &p_string) const { return false; }
+	virtual const Vector<String> get_comment_delimiters() const { return Vector<String>(); }
+	virtual const Vector<String> get_doc_comment_delimiters() const { return Vector<String>(); }
+	virtual const Vector<String> get_string_delimiters() const { return Vector<String>(); }
+
+	// Keep in sync with `ScriptLanguage::ScriptNameCasing`.
+	enum class NameCasing {
+		AUTO,
+		PASCAL_CASE,
+		SNAKE_CASE,
+		KEBAB_CASE,
+		CAMEL_CASE,
+	};
+	virtual NameCasing get_preferred_file_name_casing() const { return NameCasing::SNAKE_CASE; }
+
 	virtual ~EditorLanguage() = default;
 };
 

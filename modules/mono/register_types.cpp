@@ -37,6 +37,10 @@
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 
+#ifdef TOOLS_ENABLED
+#include "./editor/csharp_editor_language.h"
+#endif
+
 CSharpLanguage *script_language_cs = nullptr;
 Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
 Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
@@ -44,6 +48,12 @@ Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
 MonoBind::GodotSharp *_godotsharp = nullptr;
 
 void initialize_mono_module(ModuleInitializationLevel p_level) {
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		memnew(CSharpEditorLanguage);
+	}
+#endif
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -65,6 +75,12 @@ void initialize_mono_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_mono_module(ModuleInitializationLevel p_level) {
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		memdelete(CSharpEditorLanguage::get_singleton());
+	}
+#endif
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

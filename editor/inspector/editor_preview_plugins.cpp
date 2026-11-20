@@ -504,7 +504,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate_from_path(const String &p_pat
 	}
 
 	ScriptLanguage *lang = ScriptServer::get_language_for_extension(p_path.get_extension());
-	return _generate_from_source_code(lang, code, p_size, p_metadata);
+	return _generate_from_source_code(lang ? lang->get_editor_language() : nullptr, code, p_size, p_metadata);
 }
 
 Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
@@ -514,10 +514,10 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 	}
 
 	String code = scr->get_source_code().strip_edges();
-	return _generate_from_source_code(scr->get_language(), code, p_size, p_metadata);
+	return _generate_from_source_code(scr->get_language()->get_editor_language(), code, p_size, p_metadata);
 }
 
-Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const ScriptLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const {
+Ref<Texture2D> EditorScriptPreviewPlugin::_generate_from_source_code(const EditorLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const {
 	if (p_source_code.is_empty()) {
 		return Ref<Texture2D>();
 	}
