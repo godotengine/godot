@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -33,11 +34,13 @@ namespace Godot
         /// <summary>
         /// The vector's X component. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
+        [JsonInclude]
         public int X;
 
         /// <summary>
         /// The vector's Y component. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
+        [JsonInclude]
         public int Y;
 
         /// <summary>
@@ -50,6 +53,7 @@ namespace Godot
         /// <c>[0]</c> is equivalent to <see cref="X"/>,
         /// <c>[1]</c> is equivalent to <see cref="Y"/>.
         /// </value>
+        [JsonIgnore]
         public int this[int index]
         {
             readonly get
