@@ -45,6 +45,13 @@
 				Returns the root bone name of the bone chain.
 			</description>
 		</method>
+		<method name="get_rotation_diff" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="bone_index" type="int" />
+			<description>
+				Returns the angle in radians between the target rotation and current rotation of a bone.
+			</description>
+		</method>
 		<method name="reset">
 			<return type="void" />
 			<description>

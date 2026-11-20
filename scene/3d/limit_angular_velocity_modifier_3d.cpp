@@ -270,6 +270,8 @@ void LimitAngularVelocityModifier3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("reset"), &LimitAngularVelocityModifier3D::reset);
 
+	ClassDB::bind_method(D_METHOD("get_rotation_diff", "bone_index"), &LimitAngularVelocityModifier3D::get_rotation_diff);
+
 	ClassDB::bind_method(D_METHOD("_get_joint_count"), &LimitAngularVelocityModifier3D::_get_joint_count);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_angular_velocity", PROPERTY_HINT_RANGE, "0,720,or_greater,radians_as_degrees,suffix:" + String(U"°") + "/s"), "set_max_angular_velocity", "get_max_angular_velocity");
@@ -381,15 +383,15 @@ void LimitAngularVelocityModifier3D::_update_joints() {
 				continue;
 			}
 			BoneRot br;
-			br.first = b;
-			br.second = sk->get_bone_pose_rotation(b);
+			br.index = b;
+			br.rotation = sk->get_bone_pose_rotation(b);
 			bones.push_back(br);
 		}
 	} else {
 		for (const BoneJoint &E : joints) {
 			BoneRot br;
-			br.first = E.bone;
-			br.second = sk->get_bone_pose_rotation(E.bone);
+			br.index = E.bone;
+			br.rotation = sk->get_bone_pose_rotation(E.bone);
 			bones.push_back(br);
 		}
 	}
@@ -412,25 +414,35 @@ void LimitAngularVelocityModifier3D::_process_modification(double p_delta) {
 		// so it ignores the pose resulting from the previous modifier's modification.
 		// This causes unintended initialization when `active` is set to true, so it must be initialized here.
 		for (uint32_t i = 0; i < bones.size(); i++) {
-			bones[i].second = skeleton->get_bone_pose_rotation(bones[i].first);
+			bones[i].rotation = skeleton->get_bone_pose_rotation(bones[i].index);
 		}
 		init_needed = false;
 	}
 
 	double limit_in_frame = max_angular_velocity * p_delta;
 	for (uint32_t i = 0; i < bones.size(); i++) {
-		int bn = bones[i].first;
+		int bn = bones[i].index;
 		Quaternion dest = skeleton->get_bone_pose_rotation(bn);
-		double diff = bones[i].second.angle_to(dest);
+		double diff = bones[i].rotation.angle_to(dest);
+		bones[i].rotation_diff = diff;
 		if (!Math::is_zero_approx(diff)) {
-			bones[i].second = bones[i].second.slerp(dest, MIN(1.0, limit_in_frame / diff));
+			bones[i].rotation = bones[i].rotation.slerp(dest, MIN(1.0, limit_in_frame / diff));
 		}
-		skeleton->set_bone_pose_rotation(bn, bones[i].second);
+		skeleton->set_bone_pose_rotation(bn, bones[i].rotation);
 	}
 }
 
 void LimitAngularVelocityModifier3D::reset() {
 	init_needed = true;
+}
+
+double LimitAngularVelocityModifier3D::get_rotation_diff(int p_bone_index) const {
+	for (const BoneRot &E : bones) {
+		if (E.index == p_bone_index) {
+			return E.rotation_diff;
+		}
+	}
+	return 0.0;
 }
 
 LimitAngularVelocityModifier3D::~LimitAngularVelocityModifier3D() {
