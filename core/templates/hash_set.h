@@ -290,9 +290,8 @@ public:
 		_keys[key_idx].~TKey();
 		_size--;
 		if (key_idx < _size) {
-			// Not the last key, move the last one here to keep keys contiguous.
-			memnew_placement(&_keys[key_idx], TKey(_keys[_size]));
-			_keys[_size].~TKey();
+			// Not the last key, trivially relocate (see GH-100509) the last one here to keep keys contiguous.
+			memcpy((void *)&_keys[key_idx], (const void *)&_keys[_size], sizeof(TKey));
 			_key_idx_to_hash_idx[key_idx] = _key_idx_to_hash_idx[_size];
 			_hash_idx_to_key_idx[_key_idx_to_hash_idx[_size]] = key_idx;
 		}
