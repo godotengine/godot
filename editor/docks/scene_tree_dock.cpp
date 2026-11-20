@@ -1397,24 +1397,25 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			ItemCheckState editable_state = _is_editable_children(selection);
-			ItemCheckState placeholder_state = _is_placeholder(selection);
-			bool editable = editable_state != STATE_UNCHECKED;
-			bool placeholder = placeholder_state == STATE_CHECKED;
-			// Fire confirmation dialog when children are editable.
-			if (editable && !placeholder) {
+			if (editable_state != STATE_UNCHECKED) {
+				// Fire confirmation dialog when children are editable.
 				placeholder_editable_instance_remove_dialog->popup_centered();
 			} else {
-				placeholder = !placeholder;
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				undo_redo->create_action(TTR("Toggle Load as Placeholder"));
+
+				ItemCheckState placeholder_state = _is_placeholder(selection);
+				bool placeholder = placeholder_state == STATE_CHECKED;
 				for (Node *node : selection) {
 					if (node) {
-						node->set_scene_instance_load_placeholder(placeholder);
-
-						if (placeholder && node->is_editable_instance(node)) {
-							EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
-						}
+						undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", !placeholder);
+						undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", node->get_scene_instance_load_placeholder());
 					}
 				}
-				scene_tree->update_tree();
+
+				undo_redo->add_do_method(scene_tree, "update_tree");
+				undo_redo->add_undo_method(scene_tree, "update_tree");
+				undo_redo->commit_action();
 			}
 		} break;
 		case TOOL_SCENE_MAKE_LOCAL: {
@@ -2772,18 +2773,31 @@ void SceneTreeDock::_toggle_editable_children_from_selection(bool p_reload) {
 }
 
 void SceneTreeDock::_toggle_placeholder_from_selection(bool p_reload) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	List<Node *> selection = editor_selection->get_full_selected_node_list();
-	ItemCheckState placeholder_state = _is_placeholder(selection);
-	bool placeholder = placeholder_state != STATE_CHECKED;
 
-	for (Node *node : selection) {
-		if (node) {
-			node->set_scene_instance_load_placeholder(placeholder);
+	if (p_reload) {
+		for (Node *node : selection) {
+			if (node) {
+				node->set_scene_instance_load_placeholder(true);
+			}
+		}
+	} else {
+		// Explicit context is needed to workaround a bug with nesting actions in the undo manager.
+		undo_redo->create_action(TTR("Toggle Load as Placeholder"), UndoRedo::MERGE_DISABLE, edited_scene);
+
+		for (Node *node : selection) {
+			if (node) {
+				undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", true);
+				undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", node->get_scene_instance_load_placeholder());
+			}
 		}
 	}
 
-	if (placeholder) {
-		_toggle_editable_children(selection, STATE_CHECKED, p_reload);
+	_toggle_editable_children(selection, STATE_CHECKED, p_reload);
+
+	if (!p_reload) {
+		undo_redo->commit_action();
 	}
 }
 
@@ -2832,12 +2846,11 @@ void SceneTreeDock::_reparent_nodes_to_paths_with_name(Node *p_root, const Array
 }
 
 void SceneTreeDock::_toggle_editable_children(List<Node *> &p_nodes, ItemCheckState p_current_state, bool p_reload) {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 	bool is_indeterminate = p_current_state == STATE_INDETERMINATE;
 	ItemCheckState editable_state = is_indeterminate ? _is_editable_children(p_nodes) : p_current_state;
 	bool editable = editable_state != STATE_CHECKED;
 
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (editable || !p_reload) {
 		undo_redo->create_action(TTR("Toggle Editable Children"));
 	}
@@ -2848,21 +2861,21 @@ void SceneTreeDock::_toggle_editable_children(List<Node *> &p_nodes, ItemCheckSt
 		}
 
 		if (editable) {
-			undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", node, true);
-			undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", node, false);
+			undo_redo->add_do_method(edited_scene, "set_editable_instance", node, true);
+			undo_redo->add_undo_method(edited_scene, "set_editable_instance", node, edited_scene->is_editable_instance(node));
 
 			undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", false);
 			undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", node->get_scene_instance_load_placeholder());
 
 			undo_redo->add_do_method(Node3DEditor::get_singleton(), "update_all_gizmos", node);
 			undo_redo->add_undo_method(Node3DEditor::get_singleton(), "update_all_gizmos", node);
-		} else {
+		} else if (edited_scene->is_editable_instance(node)) {
 			if (p_reload) {
 				// No need for undo, as the history will be cleared with the scene reloaded.
-				EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
+				edited_scene->set_editable_instance(node, false);
 			} else {
-				undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", node, false);
-				undo_redo->add_undo_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", node, true);
+				undo_redo->add_do_method(edited_scene, "set_editable_instance", node, false);
+				undo_redo->add_undo_method(edited_scene, "set_editable_instance", node, true);
 			}
 
 			List<Node *> owned;
