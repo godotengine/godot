@@ -772,6 +772,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, Array p_bone_transf
 
 			int simplify_options = SurfaceTool::SIMPLIFY_SPARSE; // Does not change appearance, but speeds up subsequent iterations.
 
+			// Limit excessive attribute errors in areas with high attribute variance.
+			simplify_options |= SurfaceTool::SIMPLIFY_ERROR_CLAMPED;
+
 			// Lock geometric boundary in case the mesh is composed of multiple material subsets.
 			simplify_options |= SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
