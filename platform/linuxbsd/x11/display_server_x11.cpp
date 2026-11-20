@@ -5451,6 +5451,8 @@ void DisplayServerX11::process_events() {
 
 					} else if (mb->get_button_index() < MouseButton::WHEEL_UP || mb->get_button_index() > MouseButton::WHEEL_RIGHT) {
 						last_click_button_index = mb->get_button_index();
+					} else {
+						last_click_button_index = MouseButton::NONE;
 					}
 
 					if (!mb->is_double_click()) {
