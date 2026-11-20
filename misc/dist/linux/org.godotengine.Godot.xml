@@ -1,36 +1,52 @@
 <?xml version="1.0"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="application/x-godot-project">
-    <comment>Godot Engine project</comment>
+  <mime-type type="application/vnd.godot.project.binary">
+    <comment>Godot Engine project, binary encoded</comment>
+    <icon name="x-godot-project"/>
+    <glob pattern="project.binary"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.godot.project.text">
+    <comment>Godot Engine project, text encoded</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-godot-project"/>
     <glob pattern="project.godot"/>
   </mime-type>
 
-  <mime-type type="application/x-godot-resource">
-    <comment>Godot Engine resource</comment>
+  <mime-type type="application/vnd.godot.resource.binary">
+    <comment>Godot Engine resource, binary encoded</comment>
     <icon name="x-godot-resource"/>
     <glob pattern="*.res"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.godot.resource.text">
+    <comment>Godot Engine resource, text encoded</comment>
+    <icon name="x-godot-resource"/>
     <glob pattern="*.tres"/>
   </mime-type>
 
-  <mime-type type="application/x-godot-scene">
-    <comment>Godot Engine scene</comment>
+  <mime-type type="model/vnd.godot.scene.binary">
+    <comment>Godot Engine scene, binary encoded</comment>
     <icon name="x-godot-scene"/>
     <glob pattern="*.scn"/>
-    <glob pattern="*.tscn"/>
     <glob pattern="*.escn"/>
   </mime-type>
 
-  <mime-type type="application/x-godot-shader">
-    <comment>Godot Engine shader</comment>
+  <mime-type type="model/vnd.godot.scene.text">
+    <comment>Godot Engine scene, text encoded</comment>
+    <icon name="x-godot-scene"/>
+    <glob pattern="*.tscn"/>
+  </mime-type>
+
+  <mime-type type="text/vnd.godot.gdshader">
+    <comment>Godot Engine GDShader shader</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-godot-shader"/>
     <glob pattern="*.gdshader"/>
   </mime-type>
 
-  <mime-type type="application/x-gdscript">
-    <comment>GDScript script</comment>
+  <mime-type type="text/vnd.godot.gdscript">
+    <comment>Godot Engine GDScript script</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-gdscript"/>
     <glob pattern="*.gd"/>
