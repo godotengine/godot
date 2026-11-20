@@ -1441,6 +1441,11 @@ void EditorAudioBuses::_drop_at_index(int p_bus, int p_index) {
 }
 
 void EditorAudioBuses::_server_save() {
+	if (!EditorNode::get_singleton()->is_editor_ready()) {
+		// UIDs might be not initialized before first import, so don't save yet.
+		return;
+	}
+
 	Ref<AudioBusLayout> state = AudioServer::get_singleton()->generate_bus_layout();
 	if (edited_path.is_empty()) {
 		ResourceSaver::save(state, "res://default_bus_layout.tres");
