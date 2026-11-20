@@ -991,18 +991,22 @@ void OS_LinuxBSD::run() {
 	while (true) {
 		GodotProfileFrameMark;
 		GodotProfileZone("OS_LinuxBSD::run");
-		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef SDL_ENABLED
-		if (joypad_sdl) {
-			joypad_sdl->process_events();
-		}
-#endif
+		process_events();
 		if (Main::iteration()) {
 			break;
 		}
 	}
 
 	main_loop->finalize();
+}
+
+void OS_LinuxBSD::process_events() {
+	DisplayServer::get_singleton()->process_events(); // get rid of pending events
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 }
 
 void OS_LinuxBSD::disable_crash_handler() {
