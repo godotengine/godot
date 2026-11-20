@@ -18,6 +18,9 @@ func run_tests():
 
 	__exec_test(test_big_integers)
 
+	__exec_test(test_nullable_boxed_primitives)
+	__exec_test(test_nullable_arrays)
+
 	__exec_test(test_callable)
 
 	__exec_test(test_interface_callable_proxy)
@@ -163,6 +166,90 @@ func test_big_integers() -> bool:
 	assert_equal(TestClass.testArgLong(4242424242), "4242424242")
 	assert_equal(TestClass.testArgLong(-4242424242), "-4242424242")
 	assert_equal(TestClass.testDictionary({a = 4242424242, b = -4242424242}), "{a=4242424242, b=-4242424242}")
+	return true
+
+func test_nullable_boxed_primitives() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+
+	# Ensure actual values work.
+	assert_equal(TestClass.testArgBooleanNullable(true), "Boolean: true")
+	assert_equal(TestClass.testArgByteNullable(42), "Byte: 42")
+	assert_equal(TestClass.testArgCharNullable(65), "Char: A")
+	assert_equal(TestClass.testArgShortNullable(42), "Short: 42")
+	assert_equal(TestClass.testArgIntNullable(42), "Int: 42")
+	assert_equal(TestClass.testArgLongNullable(4242424242), "Long: 4242424242")
+	assert_equal(TestClass.testArgFloatNullable(1.5), "Float: 1.5")
+	assert_equal(TestClass.testArgDoubleNullable(1.5), "Double: 1.5")
+
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
+	# Now, check if null can be passed in.
+	assert_equal(TestClass.testArgBooleanNullable(null), "Boolean: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgByteNullable(null), "Byte: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgCharNullable(null), "Char: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgShortNullable(null), "Short: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgIntNullable(null), "Int: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgLongNullable(null), "Long: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgFloatNullable(null), "Float: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgDoubleNullable(null), "Double: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
+	return true
+
+func test_nullable_arrays() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	var TestClass2: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass2')
+
+	# Ensure actual arrays work.
+	assert_equal(TestClass.testArgBoolArrayNullable([true, false, true]), "BoolArray: [true, false, true]")
+	assert_equal(TestClass.testArgByteArrayNullable(PackedByteArray([1, 2, 3])), "ByteArray: [1, 2, 3]")
+	assert_equal(TestClass.testArgCharArrayNullable("abc".to_utf16_buffer()), "CharArray: abc")
+	assert_equal(TestClass.testArgShortArrayNullable(PackedInt32Array([27, 28, 29])), "ShortArray: [27, 28, 29]")
+	assert_equal(TestClass.testArgIntArrayNullable(PackedInt32Array([7, 8, 9])), "IntArray: [7, 8, 9]")
+	assert_equal(TestClass.testArgLongArrayNullable(PackedInt64Array([17, 18, 19])), "LongArray: [17, 18, 19]")
+	assert_equal(TestClass.testArgFloatArrayNullable(PackedFloat32Array([17.1, 18.2, 19.3])), "FloatArray: [17.1, 18.2, 19.3]")
+	assert_equal(TestClass.testArgDoubleArrayNullable(PackedFloat64Array([37.1, 38.2, 39.3])), "DoubleArray: [37.1, 38.2, 39.3]")
+	assert_equal(TestClass.testArgStringArrayNullable(PackedStringArray(["abc", "def"])), "StringArray: [abc, def]")
+	assert_equal(TestClass.testArgCharSequenceArrayNullable(PackedStringArray(["abc", "def"])), "CharSequenceArray: [abc, def]")
+	var objects: Array[Object] = [
+		TestClass2.TestClass2(27),
+		TestClass2.TestClass2(135),
+	]
+	assert_equal(TestClass.testArgObjectArrayNullable(objects), "ObjectArray: [27, 135]")
+
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
+	# Now, check if null can be passed in.
+	assert_equal(TestClass.testArgBoolArrayNullable(null), "BoolArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgByteArrayNullable(null), "ByteArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgCharArrayNullable(null), "CharArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgShortArrayNullable(null), "ShortArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgIntArrayNullable(null), "IntArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgLongArrayNullable(null), "LongArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgFloatArrayNullable(null), "FloatArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgDoubleArrayNullable(null), "DoubleArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgStringArrayNullable(null), "StringArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgCharSequenceArrayNullable(null), "CharSequenceArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+	assert_equal(TestClass.testArgObjectArrayNullable(null), "ObjectArray: null")
+	assert_equal(JavaClassWrapper.get_exception(), null)
+
 	return true
 
 func test_callable() -> bool:
