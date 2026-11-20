@@ -1563,6 +1563,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &li
 }
 
 void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_lines, const RegExContainer &reg_container, bool builtin) {
+	bool previous_line_is_continuation = false;
 	for (SourceLine &source_line : source_lines) {
 		if (source_line.is_comment) {
 			continue;
@@ -1570,8 +1571,10 @@ void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceLine> &source_
 
 		String &line = source_line.line;
 		if (uint64_t(line.length()) <= maximum_line_length) {
-			process_gdscript_line(line, reg_container, builtin);
+			process_gdscript_line(line, reg_container, builtin, previous_line_is_continuation);
 		}
+
+		previous_line_is_continuation = line.strip_edges(false, true).ends_with("\\");
 	}
 }
 
@@ -1580,14 +1583,17 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 
 	Vector<String> found_renames;
 
+	bool previous_line_is_continuation = false;
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			String old_line = line;
-			process_gdscript_line(line, reg_container, builtin);
+			process_gdscript_line(line, reg_container, builtin, previous_line_is_continuation);
 			if (old_line != line) {
 				found_renames.append(simple_line_formatter(current_line, old_line, line));
 			}
 		}
+
+		previous_line_is_continuation = line.strip_edges(false, true).ends_with("\\");
 	}
 
 	return found_renames;
@@ -1610,7 +1616,7 @@ bool ProjectConverter3To4::contains_function_call(const String &line, const Stri
 }
 
 // TODO, this function should run only on all ".gd" files and also on lines in ".tscn" files which are parts of built-in Scripts.
-void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin) {
+void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin, bool is_continuation_line) {
 	// In this and other functions, reg.sub() is used only after checking lines with str.contains().
 	// With longer lines, doing so can sometimes be significantly faster.
 
@@ -1630,7 +1636,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- \t.func() -> \tsuper.func()       Object
-	if (line.contains_char('(') && line.contains_char('.')) {
+	if (!is_continuation_line && line.contains_char('(') && line.contains_char('.')) {
 		line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this broke String text e.g. "Chosen .gitignore" -> "Chosen super.gitignore"
 	}
 
