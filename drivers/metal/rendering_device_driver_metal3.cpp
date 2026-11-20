@@ -267,7 +267,8 @@ void RenderingDeviceDriverMetal::command_queue_free(CommandQueueID p_cmd_queue) 
 
 RDD::CommandPoolID RenderingDeviceDriverMetal::command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) {
 	DEV_ASSERT(p_cmd_buffer_type == COMMAND_BUFFER_TYPE_PRIMARY);
-	return CommandPoolID(reinterpret_cast<uint64_t>(device_queue.get()));
+	// There is one queue, so the pool only records the family.
+	return CommandPoolID(p_cmd_queue_family.id);
 }
 
 bool RenderingDeviceDriverMetal::command_pool_reset(CommandPoolID p_cmd_pool) {
@@ -324,8 +325,10 @@ void RenderingDeviceDriverMetal::command_timestamp_write(CommandBufferID p_cmd_b
 #pragma mark - Command Buffers
 
 RDD::CommandBufferID RenderingDeviceDriverMetal::command_buffer_create(CommandPoolID p_cmd_pool) {
-	MTL::CommandQueue *queue = reinterpret_cast<MTL::CommandQueue *>(p_cmd_pool.id);
-	MDCommandBuffer *obj = memnew(MDCommandBuffer(queue, this));
+	// Transfer workers record concurrently and are ordered by semaphores, so they use no level fences.
+	bool use_level_fences = sync_mode != HazardTracking && p_cmd_pool.id == COMMAND_QUEUE_FAMILY_GRAPHICS_BIT;
+	MDLevelFences *level_fences = use_level_fences ? &main_level_fences : nullptr;
+	MDCommandBuffer *obj = memnew(MDCommandBuffer(device_queue.get(), this, level_fences));
 	command_buffers.push_back(obj);
 	return CommandBufferID(obj);
 }
