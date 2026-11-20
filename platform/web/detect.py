@@ -13,10 +13,10 @@ from emscripten_helpers import (
     get_template_zip_path,
     run_closure_compiler,
 )
+from platform_methods import validate_arch
 from SCons.Util import WhereIs
 
 from methods import get_compiler_version, print_error, print_info, print_warning
-from platform_methods import validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment

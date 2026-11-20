@@ -61,6 +61,7 @@
 /drivers/gl_context/                          @godotengine/rendering
 /drivers/gl_context/**/SCsub                  @godotengine/rendering @godotengine/buildsystem
 /drivers/gles3/                               @godotengine/rendering
+/drivers/gles3/**/*.py                        @godotengine/rendering @godotengine/buildsystem
 /drivers/gles3/**/SCsub                       @godotengine/rendering @godotengine/buildsystem
 /drivers/metal/                               @godotengine/rendering
 /drivers/metal/**/SCsub                       @godotengine/rendering @godotengine/buildsystem
