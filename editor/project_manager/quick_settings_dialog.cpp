@@ -30,6 +30,7 @@
 
 #include "quick_settings_dialog.h"
 
+#include "core/input/input_event.h"
 #include "core/object/callable_mp.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
@@ -42,6 +43,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/timer.h"
 #include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {
@@ -207,6 +209,34 @@ void QuickSettingsDialog::_theme_selected(int p_id) {
 	custom_theme_label->set_visible(selected_theme == "Custom");
 }
 
+void QuickSettingsDialog::_theme_popup_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseMotion> motion = p_event;
+	if (motion.is_valid()) {
+		_queue_theme_preview(theme_option_button->get_popup()->get_focused_item());
+	}
+}
+
+void QuickSettingsDialog::_queue_theme_preview(int p_index) {
+	if (theme_preview_index == p_index) {
+		return;
+	}
+	theme_preview_index = p_index;
+	theme_preview_timer->start();
+}
+
+void QuickSettingsDialog::_preview_theme() {
+	if (theme_option_button->get_popup()->is_visible()) {
+		const bool preview = theme_preview_index >= 0 && theme_preview_index != theme_option_button->get_selected();
+		emit_signal(SNAME("theme_preview_changed"), preview ? editor_themes[theme_preview_index] : String());
+	}
+}
+
+void QuickSettingsDialog::_end_theme_preview() {
+	theme_preview_timer->stop();
+	theme_preview_index = -1;
+	emit_signal(SNAME("theme_preview_changed"), String());
+}
+
 void QuickSettingsDialog::_scale_selected(int p_id) {
 	_set_setting_value("interface/editor/appearance/display_scale", p_id, true);
 }
@@ -286,6 +316,7 @@ void QuickSettingsDialog::_notification(int p_what) {
 
 void QuickSettingsDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("restart_required"));
+	ADD_SIGNAL(MethodInfo("theme_preview_changed", PropertyInfo(Variant::STRING, "preset")));
 }
 
 QuickSettingsDialog::QuickSettingsDialog() {
@@ -340,9 +371,21 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 		// Theme options.
 		{
+			theme_preview_timer = memnew(Timer);
+			theme_preview_timer->set_one_shot(true);
+			theme_preview_timer->set_wait_time(0.1);
+			theme_preview_timer->connect("timeout", callable_mp(this, &QuickSettingsDialog::_preview_theme));
+			add_child(theme_preview_timer);
+
 			theme_option_button = memnew(OptionButton);
 			theme_option_button->set_fit_to_longest_item(false);
 			theme_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_theme_selected));
+			theme_option_button->connect(SNAME("item_focused"), callable_mp(this, &QuickSettingsDialog::_queue_theme_preview));
+			PopupMenu *theme_popup = theme_option_button->get_popup();
+			theme_popup->connect(SceneStringName(window_input), callable_mp(this, &QuickSettingsDialog::_theme_popup_input));
+			theme_popup->connect(SceneStringName(mouse_exited), callable_mp(this, &QuickSettingsDialog::_queue_theme_preview).bind(-1));
+			// PopupMenu hides before emitting item_selected. Give the selection handler time to apply the preset.
+			theme_popup->connect(SNAME("popup_hide"), callable_mp(this, &QuickSettingsDialog::_end_theme_preview), CONNECT_DEFERRED);
 
 			for (int i = 0; i < editor_themes.size(); i++) {
 				const String &theme_value = editor_themes[i];

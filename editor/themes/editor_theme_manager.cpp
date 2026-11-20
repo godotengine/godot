@@ -166,11 +166,16 @@ Ref<StyleBoxLine> EditorThemeManager::make_line_stylebox(Color p_color, int p_th
 
 // Theme generation and population routines.
 
-Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &p_old_theme) {
+Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &p_old_theme, const String &p_preview_preset) {
 	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
 
+	const bool is_preview = !p_preview_preset.is_empty();
 	Ref<EditorTheme> theme = memnew(EditorTheme);
-	ThemeConfiguration config = _create_theme_config();
+	if (is_preview) {
+		// Keep the current fonts and styles for the script and visual shader editors.
+		theme->merge_with(p_old_theme);
+	}
+	ThemeConfiguration config = _create_theme_config(p_preview_preset);
 	theme->set_generated_hash(config.hash());
 	theme->set_generated_fonts_hash(config.hash_fonts());
 	theme->set_generated_icons_hash(config.hash_icons());
@@ -189,7 +194,9 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Icons");
 
 		// External functions, see editor_icons.cpp.
-		editor_configure_icons(config.dark_icon_and_font);
+		if (!is_preview) {
+			editor_configure_icons(config.dark_icon_and_font);
+		}
 
 		// If settings are comparable to the old theme, then just copy existing icons over.
 		// Otherwise, regenerate them.
@@ -206,7 +213,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	}
 
 	// Register fonts.
-	{
+	if (!is_preview) {
 		OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Register Fonts");
 
 		// TODO: Check if existing font definitions from the old theme are usable and copy them.
@@ -230,20 +237,23 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 		ThemeClassic::populate_editor_styles(theme, config);
 	}
 
-	_populate_text_editor_styles(theme, config);
-	_populate_visual_shader_styles(theme, config);
+	if (!is_preview) {
+		_populate_text_editor_styles(theme, config);
+		_populate_visual_shader_styles(theme, config);
+	}
 
 	OS::get_singleton()->benchmark_end_measure(get_benchmark_key(), "Create Base Theme");
 	return theme;
 }
 
-EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config() {
+EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const String &p_preview_preset) {
 	ThemeConfiguration config;
+	const bool update_settings = p_preview_preset.is_empty();
 
 	// Basic properties.
 
 	config.style = EDITOR_GET("interface/theme/style");
-	config.preset = EDITOR_GET("interface/theme/color_preset");
+	config.preset = update_settings ? String(EDITOR_GET("interface/theme/color_preset")) : p_preview_preset;
 	config.spacing_preset = EDITOR_GET("interface/theme/spacing_preset");
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
@@ -280,12 +290,14 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.corner_radius = config.default_corner_radius;
 		}
 
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_initial_value("interface/theme/corner_radius", config.corner_radius);
+		if (update_settings) {
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
+			EditorSettings::get_singleton()->set_initial_value("interface/theme/corner_radius", config.corner_radius);
 
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
-		EditorSettings::get_singleton()->set_manually("interface/theme/corner_radius", config.corner_radius);
+			// Enforce values in case they were adjusted or overridden.
+			EditorSettings::get_singleton()->set_manually("interface/theme/draw_relationship_lines", config.draw_relationship_lines);
+			EditorSettings::get_singleton()->set_manually("interface/theme/corner_radius", config.corner_radius);
+		}
 	}
 
 	// Handle color preset.
@@ -368,11 +380,13 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.draw_extra_borders = preset_draw_extra_borders;
 			config.icon_saturation = preset_icon_saturation;
 
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
+			if (update_settings) {
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", config.accent_color);
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", config.base_color);
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
+			}
 		}
 
 		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
@@ -380,13 +394,15 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.preset = "Custom";
 		}
 
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", config.preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
-		EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
-		EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
-		EditorSettings::get_singleton()->set_manually("interface/theme/icon_saturation", config.icon_saturation);
+		if (update_settings) {
+			// Enforce values in case they were adjusted or overridden.
+			EditorSettings::get_singleton()->set_manually("interface/theme/color_preset", config.preset);
+			EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", config.accent_color);
+			EditorSettings::get_singleton()->set_manually("interface/theme/base_color", config.base_color);
+			EditorSettings::get_singleton()->set_manually("interface/theme/contrast", config.contrast);
+			EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", config.draw_extra_borders);
+			EditorSettings::get_singleton()->set_manually("interface/theme/icon_saturation", config.icon_saturation);
+		}
 	}
 
 	// Handle theme spacing preset.
@@ -414,20 +430,24 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			config.extra_spacing = preset_extra_spacing;
 			config.dialogs_buttons_min_size = preset_dialogs_buttons_min_size;
 
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
-			EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
+			if (update_settings) {
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/base_spacing", config.base_spacing);
+				EditorSettings::get_singleton()->set_initial_value("interface/theme/additional_spacing", config.extra_spacing);
+			}
 		}
 
-		// Enforce values in case they were adjusted or overridden.
-		EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", config.spacing_preset);
-		EditorSettings::get_singleton()->set_manually("interface/theme/base_spacing", config.base_spacing);
-		EditorSettings::get_singleton()->set_manually("interface/theme/additional_spacing", config.extra_spacing);
+		if (update_settings) {
+			// Enforce values in case they were adjusted or overridden.
+			EditorSettings::get_singleton()->set_manually("interface/theme/spacing_preset", config.spacing_preset);
+			EditorSettings::get_singleton()->set_manually("interface/theme/base_spacing", config.base_spacing);
+			EditorSettings::get_singleton()->set_manually("interface/theme/additional_spacing", config.extra_spacing);
+		}
 	}
 
 	// Generated properties.
 
-	config.dark_theme = is_dark_theme();
-	config.dark_icon_and_font = is_dark_icon_and_font();
+	config.dark_theme = config.base_color.get_luminance() < 0.5;
+	config.dark_icon_and_font = _is_dark_icon_and_font(config.dark_theme);
 
 	config.base_margin = config.base_spacing;
 	config.increased_margin = config.base_spacing + config.extra_spacing * 0.75;
@@ -686,10 +706,10 @@ void EditorThemeManager::_reset_dirty_flag() {
 
 // Public interface for theme generation.
 
-Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_old_theme) {
+Ref<EditorTheme> EditorThemeManager::generate_theme(const Ref<EditorTheme> &p_old_theme, const String &p_preview_preset) {
 	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Generate Theme");
 
-	Ref<EditorTheme> theme = _create_base_theme(p_old_theme);
+	Ref<EditorTheme> theme = _create_base_theme(p_old_theme, p_preview_preset);
 
 	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Merge Custom Theme");
 
@@ -746,13 +766,17 @@ bool EditorThemeManager::is_dark_theme() {
 	return base_color.get_luminance() < 0.5;
 }
 
-bool EditorThemeManager::is_dark_icon_and_font() {
+bool EditorThemeManager::_is_dark_icon_and_font(bool p_dark_theme) {
 	int icon_font_color_setting = EDITOR_GET("interface/theme/icon_and_font_color");
 	if (icon_font_color_setting == ColorMode::AUTO_COLOR) {
-		return is_dark_theme();
+		return p_dark_theme;
 	}
 
 	return icon_font_color_setting == ColorMode::LIGHT_COLOR;
+}
+
+bool EditorThemeManager::is_dark_icon_and_font() {
+	return _is_dark_icon_and_font(is_dark_theme());
 }
 
 void EditorThemeManager::initialize() {
