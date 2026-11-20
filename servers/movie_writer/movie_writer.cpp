@@ -232,7 +232,9 @@ void MovieWriter::add_frame() {
 	}
 
 	if (RenderingServer::get_singleton()->viewport_is_using_hdr_2d(main_vp_rid)) {
-		vp_tex->linear_to_srgb();
+		if (RenderingServer::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+			vp_tex->linear_to_srgb();
+		}
 		vp_tex->convert(Image::FORMAT_RGBA8);
 	}
 
