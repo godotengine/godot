@@ -489,6 +489,11 @@ real_t EditorInterface::get_node_3d_scale_snap() const {
 	return Node3DEditor::get_singleton()->get_scale_snap();
 }
 
+void EditorInterface::set_viewport_3d_camera_focus_point(int p_idx, const Vector3 &p_point, const real_t &p_distance) {
+	Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(p_idx);
+	viewport->focus_point(p_point, p_distance, true);
+}
+
 void EditorInterface::popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect) {
 	p_dialog->popup_exclusive(EditorNode::get_singleton(), p_screen_rect);
 }
@@ -910,6 +915,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);
 	ClassDB::bind_method(D_METHOD("get_node_3d_rotate_snap"), &EditorInterface::get_node_3d_rotate_snap);
 	ClassDB::bind_method(D_METHOD("get_node_3d_scale_snap"), &EditorInterface::get_node_3d_scale_snap);
+
+	ClassDB::bind_method(D_METHOD("set_viewport_3d_camera_focus_point", "idx", "global_position", "distance"), &EditorInterface::set_viewport_3d_camera_focus_point);
 
 	ClassDB::bind_method(D_METHOD("popup_dialog", "dialog", "rect"), &EditorInterface::popup_dialog, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));

@@ -539,6 +539,16 @@
 				Sets the enabled status of a plugin. The plugin name is the same as its directory name.
 			</description>
 		</method>
+		<method name="set_viewport_3d_camera_focus_point">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="global_position" type="Vector3" />
+			<param index="2" name="distance" type="float" />
+			<description>
+				Sets the focus point of the specified viewport camera to the given point in global space with the given distance (in meters). Setting the distance to a value less than zero will preserve the distance from the last focus. This will also clear the follow target, if applicable.
+				This function works similarly to that of focusing a node with the shortcut.
+			</description>
+		</method>
 		<method name="stop_playing_scene">
 			<return type="void" />
 			<description>

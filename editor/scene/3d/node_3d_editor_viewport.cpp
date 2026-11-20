@@ -5428,9 +5428,7 @@ void Node3DEditorViewport::focus_selection() {
 		center /= count;
 	}
 
-	view_3d_controller->cursor.pos_x = center.x;
-	view_3d_controller->cursor.pos_y = center.y;
-	view_3d_controller->cursor.pos_z = center.z;
+	focus_point(center);
 }
 
 void Node3DEditorViewport::focus_aabb() {
@@ -5495,12 +5493,21 @@ void Node3DEditorViewport::focus_aabb() {
 		required_distance *= 1.2f;
 		required_distance = CLAMP(required_distance, get_znear() * 2.0f, get_zfar() * 0.8f);
 
-		view_3d_controller->cursor.pos_x = center.x;
-		view_3d_controller->cursor.pos_y = center.y;
-		view_3d_controller->cursor.pos_z = center.z;
-		view_3d_controller->cursor.distance = required_distance;
+		focus_point(center, required_distance);
 	} else {
 		focus_selection();
+	}
+}
+
+void Node3DEditorViewport::focus_point(const Vector3 &p_point, const real_t &p_distance, const bool &p_clear_follow) {
+	if (p_clear_follow) {
+		_disable_follow_mode();
+	}
+	view_3d_controller->cursor.pos_x = p_point.x;
+	view_3d_controller->cursor.pos_y = p_point.y;
+	view_3d_controller->cursor.pos_z = p_point.z;
+	if (p_distance >= 0) {
+		view_3d_controller->cursor.distance = p_distance;
 	}
 }
 
