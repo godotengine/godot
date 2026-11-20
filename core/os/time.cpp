@@ -319,6 +319,65 @@ String Time::get_offset_string_from_offset_minutes(int64_t p_offset_minutes) con
 	return vformat("%s%02d:%02d", sign, offset_hours, offset_minutes);
 }
 
+double Time::_take_time_unit(double *p_seconds, double p_sec_time_unit) const {
+	double count_within_this_time = Math::floor(*p_seconds / p_sec_time_unit);
+	*p_seconds = *p_seconds - count_within_this_time * p_sec_time_unit;
+	return count_within_this_time;
+}
+
+// These values line up with the std::chrono::duration helper types,
+// according to https://en.cppreference.com/w/cpp/chrono/duration.html.
+// A month having 4.348125 weeks in it is... strange, I admit. But according
+// to cppreference.com, using this definition for the length of a month brings it
+// to 1/12 of a 365.2425-day year.
+#define SEC_PER_MILLISECOND 0.001
+#define SEC_PER_MINUTE 60.0
+#define SEC_PER_HOUR (SEC_PER_MINUTE * 60.0) // 3,600 secs
+#define SEC_PER_DAY (SEC_PER_HOUR * 24.0) // 86,400 secs
+#define SEC_PER_WEEK (SEC_PER_DAY * 7.0) // 604,800 secs
+#define SEC_PER_MONTH (SEC_PER_WEEK * 4.348125) // 2,629,746 secs
+#define SEC_PER_YEAR (SEC_PER_MONTH * 12.0) // 31,556,952 secs
+
+Dictionary Time::get_duration_dict_from_duration(double p_duration_seconds, BitField<DurationComponent> p_components) const {
+	Dictionary component_dict;
+
+	if (p_components.has_flag(DURATION_YEARS)) {
+		component_dict[StringName("years")] = _take_time_unit(&p_duration_seconds, SEC_PER_YEAR);
+	}
+
+	if (p_components.has_flag(DURATION_MONTHS)) {
+		component_dict[StringName("months")] = _take_time_unit(&p_duration_seconds, SEC_PER_MONTH);
+	}
+
+	if (p_components.has_flag(DURATION_WEEKS)) {
+		component_dict[StringName("weeks")] = _take_time_unit(&p_duration_seconds, SEC_PER_WEEK);
+	}
+
+	if (p_components.has_flag(DURATION_DAYS)) {
+		component_dict[StringName("days")] = _take_time_unit(&p_duration_seconds, SEC_PER_DAY);
+	}
+
+	if (p_components.has_flag(DURATION_HOURS)) {
+		component_dict[StringName("hours")] = _take_time_unit(&p_duration_seconds, SEC_PER_HOUR);
+	}
+
+	if (p_components.has_flag(DURATION_MINUTES)) {
+		component_dict[StringName("minutes")] = _take_time_unit(&p_duration_seconds, SEC_PER_MINUTE);
+	}
+
+	if (p_components.has_flag(DURATION_SECONDS)) {
+		component_dict[StringName("seconds")] = _take_time_unit(&p_duration_seconds, 1.0);
+	}
+
+	if (p_components.has_flag(DURATION_MILLISECONDS)) {
+		component_dict[StringName("milliseconds")] = _take_time_unit(&p_duration_seconds, SEC_PER_MILLISECOND);
+	}
+
+	component_dict[StringName("remaining_seconds")] = p_duration_seconds;
+
+	return component_dict;
+}
+
 Dictionary Time::get_datetime_dict_from_system(bool p_utc) const {
 	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary datetime;
@@ -401,6 +460,7 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_dict", "datetime"), &Time::get_unix_time_from_datetime_dict);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime_string", "datetime"), &Time::get_unix_time_from_datetime_string);
 	ClassDB::bind_method(D_METHOD("get_offset_string_from_offset_minutes", "offset_minutes"), &Time::get_offset_string_from_offset_minutes);
+	ClassDB::bind_method(D_METHOD("get_duration_dict_from_duration", "duration_seconds", "components"), &Time::get_duration_dict_from_duration, DEFVAL(DURATION_ALL));
 
 	ClassDB::bind_method(D_METHOD("get_datetime_dict_from_system", "utc"), &Time::get_datetime_dict_from_system, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_date_dict_from_system", "utc"), &Time::get_date_dict_from_system, DEFVAL(false));
@@ -433,6 +493,16 @@ void Time::_bind_methods() {
 	BIND_ENUM_CONSTANT(WEEKDAY_THURSDAY);
 	BIND_ENUM_CONSTANT(WEEKDAY_FRIDAY);
 	BIND_ENUM_CONSTANT(WEEKDAY_SATURDAY);
+
+	BIND_BITFIELD_FLAG(DURATION_MILLISECONDS);
+	BIND_BITFIELD_FLAG(DURATION_SECONDS);
+	BIND_BITFIELD_FLAG(DURATION_MINUTES);
+	BIND_BITFIELD_FLAG(DURATION_HOURS);
+	BIND_BITFIELD_FLAG(DURATION_DAYS);
+	BIND_BITFIELD_FLAG(DURATION_WEEKS);
+	BIND_BITFIELD_FLAG(DURATION_MONTHS);
+	BIND_BITFIELD_FLAG(DURATION_YEARS);
+	BIND_BITFIELD_FLAG(DURATION_ALL);
 }
 
 Time::Time() {

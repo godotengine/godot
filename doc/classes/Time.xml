@@ -98,6 +98,18 @@
 				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
 			</description>
 		</method>
+		<method name="get_duration_dict_from_duration" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="duration_seconds" type="float" />
+			<param index="1" name="components" type="int" enum="DurationComponent" is_bitfield="true" default="255" />
+			<description>
+				Converts the given [param duration_seconds] into a dictionary with the time duration components provided in the bitfield [param components] as whole numbers.
+				For each component specified, the Dictionary will have a key ([code]years[/code], [code]months[/code], [code]weeks[/code], [code]days[/code], [code]hours[/code], [code]minutes[/code], [code]seconds[/code], and [code]milliseconds[/code]) and the corresponding value will be the whole number of that component that fits into the provided duration.
+				After isolating the specified time components from the duration, the remaining seconds are provided as the value for the key [code]remaining_seconds[/code].
+				[b]Warning:[/b] While milliseconds, seconds, minutes, hours, days, and weeks are well-defined, larger units such as months and years are not due to phenomena such as leap days. This method uses [i]approximate[/i] definitions for these units; 1 month is defined as 1/12 of a year, and 1 year is defined as 365.2425 days. See [enum DurationComponent] for how each duration unit is defined.
+				If your use case requires extremely precise duration measurements on large scales, consider using a dedicated external library instead of this method.
+			</description>
+		</method>
 		<method name="get_offset_string_from_offset_minutes" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="offset_minutes" type="int" />
@@ -242,6 +254,36 @@
 		</constant>
 		<constant name="WEEKDAY_SATURDAY" value="6" enum="Weekday">
 			The day of the week Saturday, represented numerically as [code]6[/code].
+		</constant>
+		<constant name="DURATION_MILLISECONDS" value="1" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 0.001 seconds.
+		</constant>
+		<constant name="DURATION_SECONDS" value="2" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 1 second.
+		</constant>
+		<constant name="DURATION_MINUTES" value="4" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 60 seconds.
+		</constant>
+		<constant name="DURATION_HOURS" value="8" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 3,600 seconds (60 minutes).
+		</constant>
+		<constant name="DURATION_DAYS" value="16" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 86,400 seconds (24 hours).
+		</constant>
+		<constant name="DURATION_WEEKS" value="32" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 604,800 seconds (7 days).
+		</constant>
+		<constant name="DURATION_MONTHS" value="64" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 2,629,746 seconds (4.348125 weeks, or 1/12 of a year).
+			[b]Warning:[/b] A month does not technically have a fixed length due to phenomena such as leap days. As such, consider output from [method get_duration_dict_from_duration] including months to be an [i]approximation[/i]. If you need a more exact value, consider using a dedicated external library.
+		</constant>
+		<constant name="DURATION_YEARS" value="128" enum="DurationComponent" is_bitfield="true">
+			A duration unit used for [method get_duration_dict_from_duration], equal to 31,556,952 seconds (365.2425 days, or 12 months).
+			[b]Warning:[/b] A year does not technically have a fixed length due to phenomena such as leap days. As such, consider output from [method get_duration_dict_from_duration] including years to be an [i]approximation[/i]. If you need a more exact value, consider using a dedicated external library.
+		</constant>
+		<constant name="DURATION_ALL" value="255" enum="DurationComponent" is_bitfield="true">
+			Specifies all duration units to be used for [method get_duration_dict_from_duration]. This includes milliseconds, seconds, minutes, hours, days, weeks, months, and years.
+			[b]Warning:[/b] Years and months do not technically have a fixed length due to phenomena such as leap days. As such, consider output from [method get_duration_dict_from_duration] including months and years to be an [i]approximation[/i]. If you need a more exact value, consider using a dedicated external library.
 		</constant>
 	</constants>
 </class>
