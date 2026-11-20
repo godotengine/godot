@@ -1668,6 +1668,18 @@ void RendererViewport::viewport_set_vrs_mode(RID p_viewport, RSE::ViewportVRSMod
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
 
+	// No interface can ever supply the density map this run, so do not allocate a VRS
+	// attachment nobody writes.
+	if (p_mode == RSE::VIEWPORT_VRS_XR) {
+		bool xr_possible = false;
+#ifndef XR_DISABLED
+		xr_possible = XRServer::get_xr_mode() != XRServer::XRMODE_OFF;
+#endif // XR_DISABLED
+		if (!xr_possible) {
+			p_mode = RSE::VIEWPORT_VRS_DISABLED;
+		}
+	}
+
 	RSG::texture_storage->render_target_set_vrs_mode(viewport->render_target, p_mode);
 	_configure_3d_render_buffers(viewport);
 }
