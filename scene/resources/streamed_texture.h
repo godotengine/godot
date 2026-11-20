@@ -72,6 +72,7 @@ class StreamedTexture2D : public Texture2D {
 	enum FormatBits {
 		FORMAT_BIT_DETECT_NORMAL = 1 << 0,
 		FORMAT_BIT_DETECT_ROUGHNESS = 1 << 1,
+		FORMAT_BIT_SUPERCOMPRESSED = 1 << 28,
 	};
 
 	static Error _parse_header(const String &p_path, StreamedTextureFileHeader &r_header, Ref<FileAccess> &r_file);

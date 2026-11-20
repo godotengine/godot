@@ -269,10 +269,12 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	f->store_8('T');
 	f->store_8('L');
 
+	const bool zstd_supercompress = GLOBAL_GET("rendering/textures/vram_compression/use_zstd_compression");
+
 	f->store_32(CompressedTextureLayered::FORMAT_VERSION);
 	f->store_32(p_images.size()); // For 2d layers or 3d depth.
 	f->store_32(mode);
-	f->store_32(0);
+	f->store_32(zstd_supercompress ? CompressedTextureLayered::FORMAT_BIT_SUPERCOMPRESSED : 0);
 
 	f->store_32(0);
 	f->store_32(mipmap_images.size()); // Adjust the amount of mipmaps.
@@ -284,11 +286,11 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 	}
 
 	for (int i = 0; i < p_images.size(); i++) {
-		ResourceImporterTexture::save_to_ctex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_vram_compression_profile, p_lossy, p_basisu_params, p_bptc_format);
+		ResourceImporterTexture::save_to_ctex_format(f, p_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_vram_compression_profile, p_lossy, p_basisu_params, p_bptc_format, zstd_supercompress);
 	}
 
 	for (int i = 0; i < mipmap_images.size(); i++) {
-		ResourceImporterTexture::save_to_ctex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_vram_compression_profile, p_lossy, p_basisu_params, p_bptc_format);
+		ResourceImporterTexture::save_to_ctex_format(f, mipmap_images[i], ResourceImporterTexture::CompressMode(p_compress_mode), used_channels, p_vram_compression, p_vram_compression_profile, p_lossy, p_basisu_params, p_bptc_format, zstd_supercompress);
 	}
 }
 

@@ -3502,7 +3502,6 @@
 		</member>
 		<member name="rendering/textures/basis_universal/zstd_supercompression" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables Zstandard supercompression to reduce file size when importing textures as Basis Universal.
-			[b]Note:[/b] Basis Universal textures need to be compressed to gain the benefit of smaller file sizes, otherwise they are as large as VRAM-compressed textures.
 		</member>
 		<member name="rendering/textures/basis_universal/zstd_supercompression_level" type="int" setter="" getter="" default="6">
 			Specify the compression level for Basis Universal Zstandard supercompression, ranging from [code]1[/code] to [code]22[/code].
@@ -3580,6 +3579,9 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm (DXT1-5) for lower quality textures and the BPTC algorithm (BC6H and BC7) for high quality textures. This algorithm is only supported on PC desktop platforms and consoles.
 			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
+		</member>
+		<member name="rendering/textures/vram_compression/use_zstd_compression" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], applies Zstandard compression on top of any other compression when importing images as VRAM Compressed or VRAM Uncompressed, to further reduce file sizes at the cost of slightly longer import times.
 		</member>
 		<member name="rendering/textures/webp_compression/compression_method" type="int" setter="" getter="" default="2">
 			The default compression method for WebP. Affects both lossy and lossless WebP. A higher value results in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression method. Supported values are 0 to 6. Note that compression methods above 4 are very slow and offer very little savings.

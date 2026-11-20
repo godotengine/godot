@@ -56,6 +56,7 @@ public:
 		//FORMAT_BIT_DETECT_SRGB = 1 << 25,
 		FORMAT_BIT_DETECT_NORMAL = 1 << 26,
 		FORMAT_BIT_DETECT_ROUGNESS = 1 << 27,
+		FORMAT_BIT_SUPERCOMPRESSED = 1 << 28,
 	};
 
 private:
@@ -78,7 +79,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file);
+	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, bool p_supercompressed);
 
 	typedef void (*TextureFormatRequestCallback)(const Ref<CompressedTexture2D> &);
 	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<CompressedTexture2D> &, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_roughness_channel);
@@ -128,6 +129,7 @@ public:
 
 	enum FormatBits {
 		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
+		FORMAT_BIT_SUPERCOMPRESSED = 1 << 28,
 	};
 
 private:
