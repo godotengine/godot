@@ -101,5 +101,8 @@ public:
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
 
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	PhysicalBoneSimulator3D();
 };

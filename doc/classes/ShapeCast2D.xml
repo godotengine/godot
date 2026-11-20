@@ -128,6 +128,19 @@
 				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of this node for savestate systems: what its last cast found (read by [method is_colliding] and the like until the next) and the [RID]s it leaves out (its parent body's and those given to [method add_exception] or [method add_exception_rid]). Stored properties are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state]: until its next cast, the node reports what it found then.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">

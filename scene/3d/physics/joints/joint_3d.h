@@ -57,6 +57,15 @@ protected:
 
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) = 0;
 
+	// komm64: where the joint and its bodies were when it was made, which its
+	// frames on the bodies come from; _configure_joint() reads them from here.
+	Transform3D made_transform;
+	ObjectID made_body_ids[2];
+	Transform3D made_body_transforms[2];
+	bool remake_as_made = false;
+	Transform3D _made_transform() const { return made_transform; }
+	Transform3D _made_body_transform(const PhysicsBody3D *p_body) const;
+
 	static void _bind_methods();
 
 	_FORCE_INLINE_ bool is_configured() const { return configured; }
@@ -77,6 +86,9 @@ public:
 	bool get_exclude_nodes_from_collision() const;
 
 	RID get_rid() const { return joint; }
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	Joint3D();
 	~Joint3D();
 };

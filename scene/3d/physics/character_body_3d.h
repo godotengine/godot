@@ -111,6 +111,9 @@ public:
 	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
 	PlatformOnLeave get_platform_on_leave() const;
 
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	CharacterBody3D();
 
 private:

@@ -395,5 +395,40 @@ void PhysicalBoneSimulator3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("physical_bones_remove_collision_exception", "exception"), &PhysicalBoneSimulator3D::physical_bones_remove_collision_exception);
 }
 
+// komm64: whether the bones are being simulated, and the pose of each bone it
+// poses the skeleton with (a bone's body sets it when it moves, so one asleep
+// keeps it); each bone keeps its own part.
+Dictionary PhysicalBoneSimulator3D::snapshot_get_state() const {
+	Dictionary state = SkeletonModifier3D::snapshot_get_state();
+	Dictionary sim;
+	sim["simulating"] = simulating;
+	Array poses;
+	for (const SimulatedBone &bone : bones) {
+		poses.push_back(bone.global_pose);
+	}
+	sim["poses"] = poses;
+	state["physical_bone_simulator_3d"] = sim;
+	return state;
+}
+
+Error PhysicalBoneSimulator3D::snapshot_set_state(const Dictionary &p_state) {
+	SkeletonModifier3D::snapshot_set_state(p_state);
+	const Dictionary sim = p_state.get("physical_bone_simulator_3d", Dictionary());
+	if (sim.has("simulating")) {
+		simulating = sim["simulating"];
+	}
+	const Array poses = sim.get("poses", Array());
+	Skeleton3D *skeleton = get_skeleton();
+	if (!poses.is_empty() && skeleton && skeleton->get_bone_count() == poses.size()) {
+		if (bones.size() != uint32_t(poses.size())) {
+			_bone_list_changed();
+		}
+		for (uint32_t i = 0; i < bones.size() && i < uint32_t(poses.size()); i++) {
+			bones[i].global_pose = poses[i];
+		}
+	}
+	return OK;
+}
+
 PhysicalBoneSimulator3D::PhysicalBoneSimulator3D() {
 }

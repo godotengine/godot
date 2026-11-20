@@ -119,5 +119,8 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	Dictionary snapshot_get_state() const; // komm64
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	ShapeCast2D();
 };

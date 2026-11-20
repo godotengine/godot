@@ -40,6 +40,114 @@
 // So, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
+// komm64: what the last move_and_slide() left, which the next one and the
+// is_on_floor() / get_slide_collision() family read: the floor, wall and
+// ceiling it touched, the platform it stands on, its last motion and the
+// collisions of each slide. A collider is kept as its object; its RID too,
+// when it is not the object's own (a GridMap's octant body).
+static Variant _snapshot_object(ObjectID p_id) {
+	return p_id.is_valid() ? Variant(ObjectDB::get_instance(p_id)) : Variant();
+}
+
+static bool _snapshot_rid_is_own(ObjectID p_id, const RID &p_rid) {
+	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(ObjectDB::get_instance(p_id));
+	return !p_rid.is_valid() || (co != nullptr && co->get_rid() == p_rid);
+}
+
+static ObjectID _snapshot_object_id(const Dictionary &p_from, const String &p_object) {
+	const Object *o = p_from.get(p_object, Variant());
+	return o ? o->get_instance_id() : ObjectID();
+}
+
+static RID _snapshot_rid(const Dictionary &p_from, const String &p_object, const String &p_rid) {
+	if (p_from.has(p_rid)) {
+		return p_from[p_rid];
+	}
+	const CollisionObject2D *co = Object::cast_to<CollisionObject2D>(p_from.get(p_object, Variant()));
+	return co ? co->get_rid() : RID();
+}
+
+Dictionary CharacterBody2D::snapshot_get_state() const {
+	Dictionary c;
+	c["floor"] = on_floor;
+	c["wall"] = on_wall;
+	c["ceiling"] = on_ceiling;
+	c["floor_normal"] = floor_normal;
+	c["wall_normal"] = wall_normal;
+	c["last_motion"] = last_motion;
+	c["platform_velocity"] = platform_velocity;
+	c["previous_position"] = previous_position;
+	c["real_velocity"] = real_velocity;
+	c["platform_layer"] = platform_layer;
+	c["platform"] = _snapshot_object(platform_object_id);
+	if (!_snapshot_rid_is_own(platform_object_id, platform_rid)) {
+		c["platform_rid"] = platform_rid;
+	}
+	Array results;
+	for (const PhysicsServer2D::MotionResult &r : motion_results) {
+		Dictionary rd;
+		rd["travel"] = r.travel;
+		rd["remainder"] = r.remainder;
+		rd["collision_point"] = r.collision_point;
+		rd["collision_normal"] = r.collision_normal;
+		rd["collider_velocity"] = r.collider_velocity;
+		rd["collision_depth"] = r.collision_depth;
+		rd["collision_safe_fraction"] = r.collision_safe_fraction;
+		rd["collision_unsafe_fraction"] = r.collision_unsafe_fraction;
+		rd["collision_local_shape"] = r.collision_local_shape;
+		rd["collider_shape"] = r.collider_shape;
+		rd["collider"] = _snapshot_object(r.collider_id);
+		if (!_snapshot_rid_is_own(r.collider_id, r.collider)) {
+			rd["collider_rid"] = r.collider;
+		}
+		results.push_back(rd);
+	}
+	c["motion_results"] = results;
+	Dictionary state;
+	state["character_body_2d"] = c;
+	return state;
+}
+
+Error CharacterBody2D::snapshot_set_state(const Dictionary &p_state) {
+	const Dictionary c = p_state.get("character_body_2d", Dictionary());
+	if (c.is_empty()) {
+		return OK;
+	}
+	on_floor = c.get("floor", false);
+	on_wall = c.get("wall", false);
+	on_ceiling = c.get("ceiling", false);
+	floor_normal = c.get("floor_normal", Vector2());
+	wall_normal = c.get("wall_normal", Vector2());
+	last_motion = c.get("last_motion", Vector2());
+	platform_velocity = c.get("platform_velocity", Vector2());
+	previous_position = c.get("previous_position", Vector2());
+	real_velocity = c.get("real_velocity", Vector2());
+	platform_layer = c.get("platform_layer", 0);
+	platform_object_id = _snapshot_object_id(c, "platform");
+	platform_rid = _snapshot_rid(c, "platform", "platform_rid");
+	motion_results.clear();
+	const Array results = c.get("motion_results", Array());
+	for (const Variant &v : results) {
+		const Dictionary rd = v;
+		PhysicsServer2D::MotionResult r;
+		r.travel = rd.get("travel", Vector2());
+		r.remainder = rd.get("remainder", Vector2());
+		r.collision_point = rd.get("collision_point", Vector2());
+		r.collision_normal = rd.get("collision_normal", Vector2());
+		r.collider_velocity = rd.get("collider_velocity", Vector2());
+		r.collision_depth = rd.get("collision_depth", 0.0);
+		r.collision_safe_fraction = rd.get("collision_safe_fraction", 0.0);
+		r.collision_unsafe_fraction = rd.get("collision_unsafe_fraction", 0.0);
+		r.collision_local_shape = rd.get("collision_local_shape", 0);
+		r.collider_shape = rd.get("collider_shape", 0);
+		r.collider_id = _snapshot_object_id(rd, "collider");
+		r.collider = _snapshot_rid(rd, "collider", "collider_rid");
+		motion_results.push_back(r);
+	}
+	slide_colliders.clear();
+	return OK;
+}
+
 bool CharacterBody2D::move_and_slide() {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
 	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
@@ -684,6 +792,8 @@ void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
 
 void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_slide"), &CharacterBody2D::move_and_slide);
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &CharacterBody2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &CharacterBody2D::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("apply_floor_snap"), &CharacterBody2D::apply_floor_snap);
 
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &CharacterBody2D::set_velocity);

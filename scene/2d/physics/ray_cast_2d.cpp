@@ -319,7 +319,53 @@ bool RayCast2D::is_hit_from_inside_enabled() const {
 	return hit_from_inside;
 }
 
+// komm64: what the last cast found (read by is_colliding() and the like until
+// the next) and the RIDs it leaves out (its parent body's, add_exception()'s).
+Dictionary RayCast2D::snapshot_get_state() const {
+	Dictionary state;
+	state["collided"] = collided;
+	state["against"] = against.is_valid() ? Variant(ObjectDB::get_instance(against)) : Variant();
+	state["against_rid"] = against_rid;
+	state["against_shape"] = against_shape;
+	state["collision_point"] = collision_point;
+	state["collision_normal"] = collision_normal;
+	Array excluded;
+	for (const RID &rid : exclude) {
+		excluded.push_back(rid);
+	}
+	state["exclude"] = excluded;
+	Dictionary out;
+	out["ray_cast_2d"] = state;
+	return out;
+}
+
+Error RayCast2D::snapshot_set_state(const Dictionary &p_state) {
+	const Dictionary state = p_state.get("ray_cast_2d", Dictionary());
+	if (state.is_empty()) {
+		return OK;
+	}
+	collided = state.get("collided", false);
+	const Object *object = state.get("against", Variant());
+	against = object ? object->get_instance_id() : ObjectID();
+	against_rid = state.get("against_rid", RID());
+	against_shape = state.get("against_shape", 0);
+	collision_point = state.get("collision_point", Vector2());
+	collision_normal = state.get("collision_normal", Vector2());
+	if (state.has("exclude")) {
+		exclude.clear();
+		const Array excluded = state["exclude"];
+		for (const Variant &rid : excluded) {
+			if (rid.get_type() == Variant::RID && RID(rid).is_valid()) {
+				exclude.insert(rid);
+			}
+		}
+	}
+	return OK;
+}
+
 void RayCast2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &RayCast2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &RayCast2D::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast2D::is_enabled);
 

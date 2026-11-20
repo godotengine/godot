@@ -98,15 +98,15 @@ bool HingeJoint3D::get_flag(Flag p_flag) const {
 }
 
 void HingeJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
-	Transform3D gt = get_global_transform();
-	Transform3D ainv = body_a->get_global_transform().affine_inverse();
+	Transform3D gt = _made_transform();
+	Transform3D ainv = _made_body_transform(body_a).affine_inverse();
 
 	Transform3D local_a = ainv * gt;
 	local_a.orthonormalize();
 	Transform3D local_b = gt;
 
 	if (body_b) {
-		Transform3D binv = body_b->get_global_transform().affine_inverse();
+		Transform3D binv = _made_body_transform(body_b).affine_inverse();
 		local_b = binv * gt;
 	}
 

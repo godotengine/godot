@@ -53,6 +53,51 @@ void Joint3D::_body_exit_tree() {
 	update_configuration_warnings();
 }
 
+Transform3D Joint3D::_made_body_transform(const PhysicsBody3D *p_body) const {
+	if (p_body->get_instance_id() == made_body_ids[0]) {
+		return made_body_transforms[0];
+	}
+	if (p_body->get_instance_id() == made_body_ids[1]) {
+		return made_body_transforms[1];
+	}
+	return p_body->get_global_transform();
+}
+
+// komm64: where the joint and its bodies were when it was made. Made again
+// after a load, the joint is made as it was then, not where they are now.
+Dictionary Joint3D::snapshot_get_state() const {
+	Dictionary state = Node3D::snapshot_get_state();
+	if (configured) {
+		Dictionary made;
+		made["transform"] = made_transform;
+		made["body_a"] = made_body_ids[0].is_valid() ? Variant(ObjectDB::get_instance(made_body_ids[0])) : Variant();
+		made["body_a_transform"] = made_body_transforms[0];
+		made["body_b"] = made_body_ids[1].is_valid() ? Variant(ObjectDB::get_instance(made_body_ids[1])) : Variant();
+		made["body_b_transform"] = made_body_transforms[1];
+		state["joint_3d"] = made;
+	}
+	return state;
+}
+
+Error Joint3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	const Dictionary made = p_state.get("joint_3d", Dictionary());
+	if (made.is_empty()) {
+		return OK;
+	}
+	const Object *a = made.get("body_a", Variant());
+	const Object *b = made.get("body_b", Variant());
+	made_transform = made.get("transform", Transform3D());
+	made_body_ids[0] = a ? a->get_instance_id() : ObjectID();
+	made_body_transforms[0] = made.get("body_a_transform", Transform3D());
+	made_body_ids[1] = b ? b->get_instance_id() : ObjectID();
+	made_body_transforms[1] = made.get("body_b_transform", Transform3D());
+	remake_as_made = true;
+	_update_joint();
+	remake_as_made = false;
+	return OK;
+}
+
 void Joint3D::_update_joint(bool p_only_free) {
 	if (ba.is_valid() && bb.is_valid()) {
 		PhysicsServer3D::get_singleton()->body_remove_collision_exception(ba, bb);
@@ -99,11 +144,16 @@ void Joint3D::_update_joint(bool p_only_free) {
 
 	configured = true;
 
-	if (body_a) {
-		_configure_joint(joint, body_a, body_b);
-	} else if (body_b) {
-		_configure_joint(joint, body_b, nullptr);
+	PhysicsBody3D *first = body_a ? body_a : body_b;
+	PhysicsBody3D *second = body_a ? body_b : nullptr;
+	if (!remake_as_made) {
+		made_transform = get_global_transform();
+		made_body_ids[0] = first->get_instance_id();
+		made_body_transforms[0] = first->get_global_transform();
+		made_body_ids[1] = second ? second->get_instance_id() : ObjectID();
+		made_body_transforms[1] = second ? second->get_global_transform() : Transform3D();
 	}
+	_configure_joint(joint, first, second);
 
 	PhysicsServer3D::get_singleton()->joint_set_solver_priority(joint, solver_priority);
 

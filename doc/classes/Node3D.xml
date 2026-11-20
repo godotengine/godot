@@ -255,7 +255,7 @@
 		<method name="snapshot_get_state" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the runtime state of this node for savestate systems: what it keeps beyond its stored properties. For a [Node3D], the rotation and scale it keeps beside [member transform] when they were set themselves (with [member rotation], [member scale] or an animation) rather than read back from the transform; empty otherwise. Classes with more state add theirs: the playback of an [AudioStreamPlayer3D], where an [AnimatedSprite3D] is in its animation, the simulation of [GPUParticles3D] and [CPUParticles3D].
+				Returns the runtime state of this node for savestate systems: what it keeps beyond its stored properties. For a [Node3D], the rotation and scale it keeps beside [member transform] when they were set themselves (with [member rotation], [member scale] or an animation) rather than read back from the transform; empty otherwise. Classes with more state add theirs: the playback of an [AudioStreamPlayer3D], where an [AnimatedSprite3D] is in its animation, the simulation of [GPUParticles3D] and [CPUParticles3D], what the last cast of a [RayCast3D] or [ShapeCast3D] found, where a [Joint3D] and its bodies were when it was made (its frames on them) whether a [PhysicalBoneSimulator3D] and its [PhysicalBone3D]s are simulated and a bone's joint frame on its parent bone, what the last [method CharacterBody3D.move_and_slide] of a [CharacterBody3D] left (the floor, wall and ceiling it touched, its platform, its last motion and slide collisions).
 			</description>
 		</method>
 		<method name="snapshot_set_state">

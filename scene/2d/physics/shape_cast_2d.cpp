@@ -413,7 +413,72 @@ PackedStringArray ShapeCast2D::get_configuration_warnings() const {
 	return warnings;
 }
 
+// komm64: what the last cast found (read by is_colliding() and the like until
+// the next) and the RIDs it leaves out (its parent body's, add_exception()'s).
+Dictionary ShapeCast2D::snapshot_get_state() const {
+	Dictionary state;
+	state["collided"] = collided;
+	state["collision_safe_fraction"] = collision_safe_fraction;
+	state["collision_unsafe_fraction"] = collision_unsafe_fraction;
+	Array results;
+	for (const PhysicsDirectSpaceState2D::ShapeRestInfo &r : result) {
+		Dictionary rd;
+		rd["point"] = r.point;
+		rd["normal"] = r.normal;
+		rd["rid"] = r.rid;
+		rd["collider"] = r.collider_id.is_valid() ? Variant(ObjectDB::get_instance(r.collider_id)) : Variant();
+		rd["shape"] = r.shape;
+		rd["linear_velocity"] = r.linear_velocity;
+		results.push_back(rd);
+	}
+	state["result"] = results;
+	Array excluded;
+	for (const RID &rid : exclude) {
+		excluded.push_back(rid);
+	}
+	state["exclude"] = excluded;
+	Dictionary out;
+	out["shape_cast_2d"] = state;
+	return out;
+}
+
+Error ShapeCast2D::snapshot_set_state(const Dictionary &p_state) {
+	const Dictionary state = p_state.get("shape_cast_2d", Dictionary());
+	if (state.is_empty()) {
+		return OK;
+	}
+	collided = state.get("collided", false);
+	collision_safe_fraction = state.get("collision_safe_fraction", 1.0);
+	collision_unsafe_fraction = state.get("collision_unsafe_fraction", 1.0);
+	result.clear();
+	const Array results = state.get("result", Array());
+	for (const Variant &v : results) {
+		const Dictionary rd = v;
+		PhysicsDirectSpaceState2D::ShapeRestInfo r;
+		r.point = rd.get("point", Vector2());
+		r.normal = rd.get("normal", Vector2());
+		r.rid = rd.get("rid", RID());
+		const Object *object = rd.get("collider", Variant());
+		r.collider_id = object ? object->get_instance_id() : ObjectID();
+		r.shape = rd.get("shape", 0);
+		r.linear_velocity = rd.get("linear_velocity", Vector2());
+		result.push_back(r);
+	}
+	if (state.has("exclude")) {
+		exclude.clear();
+		const Array excluded = state["exclude"];
+		for (const Variant &rid : excluded) {
+			if (rid.get_type() == Variant::RID && RID(rid).is_valid()) {
+				exclude.insert(rid);
+			}
+		}
+	}
+	return OK;
+}
+
 void ShapeCast2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &ShapeCast2D::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &ShapeCast2D::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &ShapeCast2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &ShapeCast2D::is_enabled);
 

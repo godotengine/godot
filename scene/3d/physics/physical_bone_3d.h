@@ -212,6 +212,12 @@ private:
 
 	void _update_simulator_path();
 
+	// komm64: the joint's frame on the parent bone, from where the two were
+	// when it was made.
+	Transform3D made_local_a;
+	bool made = false;
+	bool remake_as_made = false;
+
 public:
 	void _on_bone_parent_changed();
 
@@ -291,6 +297,9 @@ public:
 	void reset_physics_simulation_state();
 	void reset_to_rest_position();
 
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	PhysicalBone3D();
 	~PhysicalBone3D();
 
@@ -298,7 +307,7 @@ private:
 	void update_bone_id();
 	void update_offset();
 
-	void _start_physics_simulation();
+	void _start_physics_simulation(bool p_from_rest = true);
 	void _stop_physics_simulation();
 };
 

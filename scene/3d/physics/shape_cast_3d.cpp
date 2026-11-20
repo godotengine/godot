@@ -105,6 +105,70 @@ void ShapeCast3D::_notification(int p_what) {
 	}
 }
 
+// komm64: what the last cast found (read by is_colliding() and the like until
+// the next) and the RIDs it leaves out (its parent body's, add_exception()'s).
+Dictionary ShapeCast3D::snapshot_get_state() const {
+	Dictionary state;
+	state["collided"] = collided;
+	state["collision_safe_fraction"] = collision_safe_fraction;
+	state["collision_unsafe_fraction"] = collision_unsafe_fraction;
+	Array results;
+	for (const PhysicsDirectSpaceState3D::ShapeRestInfo &r : result) {
+		Dictionary rd;
+		rd["point"] = r.point;
+		rd["normal"] = r.normal;
+		rd["rid"] = r.rid;
+		rd["collider"] = r.collider_id.is_valid() ? Variant(ObjectDB::get_instance(r.collider_id)) : Variant();
+		rd["shape"] = r.shape;
+		rd["linear_velocity"] = r.linear_velocity;
+		results.push_back(rd);
+	}
+	state["result"] = results;
+	Array excluded;
+	for (const RID &rid : exclude) {
+		excluded.push_back(rid);
+	}
+	state["exclude"] = excluded;
+	Dictionary out = Node3D::snapshot_get_state();
+	out["shape_cast_3d"] = state;
+	return out;
+}
+
+Error ShapeCast3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	const Dictionary state = p_state.get("shape_cast_3d", Dictionary());
+	if (state.is_empty()) {
+		return OK;
+	}
+	collided = state.get("collided", false);
+	collision_safe_fraction = state.get("collision_safe_fraction", 1.0);
+	collision_unsafe_fraction = state.get("collision_unsafe_fraction", 1.0);
+	result.clear();
+	const Array results = state.get("result", Array());
+	for (const Variant &v : results) {
+		const Dictionary rd = v;
+		PhysicsDirectSpaceState3D::ShapeRestInfo r;
+		r.point = rd.get("point", Vector3());
+		r.normal = rd.get("normal", Vector3());
+		r.rid = rd.get("rid", RID());
+		const Object *object = rd.get("collider", Variant());
+		r.collider_id = object ? object->get_instance_id() : ObjectID();
+		r.shape = rd.get("shape", 0);
+		r.linear_velocity = rd.get("linear_velocity", Vector3());
+		result.push_back(r);
+	}
+	if (state.has("exclude")) {
+		exclude.clear();
+		const Array excluded = state["exclude"];
+		for (const Variant &rid : excluded) {
+			if (rid.get_type() == Variant::RID && RID(rid).is_valid()) {
+				exclude.insert(rid);
+			}
+		}
+	}
+	return OK;
+}
+
 void ShapeCast3D::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &ShapeCast3D::resource_changed);

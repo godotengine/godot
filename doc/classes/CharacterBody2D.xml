@@ -148,6 +148,19 @@
 				Returns [code]true[/code] if the body collided, otherwise, returns [code]false[/code].
 			</description>
 		</method>
+		<method name="snapshot_get_state" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns the runtime state of this body for savestate systems: what the last [method move_and_slide] left, which the next one and [method is_on_floor], [method get_floor_normal], [method get_slide_collision] and the like read (the floor, wall and ceiling it touched, the platform it stands on, its last motion and each slide's collision). Stored properties are not included.
+			</description>
+		</method>
+		<method name="snapshot_set_state">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="Dictionary" />
+			<description>
+				Restores a state produced by [method snapshot_get_state]: the body goes on as if its last [method move_and_slide] had just happened.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">

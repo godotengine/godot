@@ -40,6 +40,138 @@
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
+// komm64: what the last move_and_slide() left, which the next one and the
+// is_on_floor() / get_slide_collision() family read: the floor, wall and
+// ceiling it touched, the platform it stands on, its last motion and the
+// collisions of each slide. A collider is kept as its object; its RID too,
+// when it is not the object's own (a GridMap's octant body).
+static Variant _snapshot_object(ObjectID p_id) {
+	return p_id.is_valid() ? Variant(ObjectDB::get_instance(p_id)) : Variant();
+}
+
+static bool _snapshot_rid_is_own(ObjectID p_id, const RID &p_rid) {
+	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(p_id));
+	return !p_rid.is_valid() || (co != nullptr && co->get_rid() == p_rid);
+}
+
+static ObjectID _snapshot_object_id(const Dictionary &p_from, const String &p_object) {
+	const Object *o = p_from.get(p_object, Variant());
+	return o ? o->get_instance_id() : ObjectID();
+}
+
+static RID _snapshot_rid(const Dictionary &p_from, const String &p_object, const String &p_rid) {
+	if (p_from.has(p_rid)) {
+		return p_from[p_rid];
+	}
+	const CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_from.get(p_object, Variant()));
+	return co ? co->get_rid() : RID();
+}
+
+Dictionary CharacterBody3D::snapshot_get_state() const {
+	Dictionary state = Node3D::snapshot_get_state();
+	Dictionary c;
+	c["floor"] = collision_state.floor;
+	c["wall"] = collision_state.wall;
+	c["ceiling"] = collision_state.ceiling;
+	c["floor_normal"] = floor_normal;
+	c["wall_normal"] = wall_normal;
+	c["ceiling_normal"] = ceiling_normal;
+	c["last_motion"] = last_motion;
+	c["platform_velocity"] = platform_velocity;
+	c["platform_angular_velocity"] = platform_angular_velocity;
+	c["platform_ceiling_velocity"] = platform_ceiling_velocity;
+	c["previous_position"] = previous_position;
+	c["real_velocity"] = real_velocity;
+	c["platform_layer"] = platform_layer;
+	c["platform"] = _snapshot_object(platform_object_id);
+	if (!_snapshot_rid_is_own(platform_object_id, platform_rid)) {
+		c["platform_rid"] = platform_rid;
+	}
+	Array results;
+	for (const PhysicsServer3D::MotionResult &r : motion_results) {
+		Dictionary rd;
+		rd["travel"] = r.travel;
+		rd["remainder"] = r.remainder;
+		rd["collision_depth"] = r.collision_depth;
+		rd["collision_safe_fraction"] = r.collision_safe_fraction;
+		rd["collision_unsafe_fraction"] = r.collision_unsafe_fraction;
+		Array collisions;
+		for (int i = 0; i < r.collision_count; i++) {
+			const PhysicsServer3D::MotionCollision &k = r.collisions[i];
+			Dictionary kd;
+			kd["position"] = k.position;
+			kd["normal"] = k.normal;
+			kd["collider_velocity"] = k.collider_velocity;
+			kd["collider_angular_velocity"] = k.collider_angular_velocity;
+			kd["depth"] = k.depth;
+			kd["local_shape"] = k.local_shape;
+			kd["collider_shape"] = k.collider_shape;
+			kd["collider"] = _snapshot_object(k.collider_id);
+			if (!_snapshot_rid_is_own(k.collider_id, k.collider)) {
+				kd["collider_rid"] = k.collider;
+			}
+			collisions.push_back(kd);
+		}
+		rd["collisions"] = collisions;
+		results.push_back(rd);
+	}
+	c["motion_results"] = results;
+	state["character_body_3d"] = c;
+	return state;
+}
+
+Error CharacterBody3D::snapshot_set_state(const Dictionary &p_state) {
+	Node3D::snapshot_set_state(p_state);
+	const Dictionary c = p_state.get("character_body_3d", Dictionary());
+	if (c.is_empty()) {
+		return OK;
+	}
+	collision_state.floor = c.get("floor", false);
+	collision_state.wall = c.get("wall", false);
+	collision_state.ceiling = c.get("ceiling", false);
+	floor_normal = c.get("floor_normal", Vector3());
+	wall_normal = c.get("wall_normal", Vector3());
+	ceiling_normal = c.get("ceiling_normal", Vector3());
+	last_motion = c.get("last_motion", Vector3());
+	platform_velocity = c.get("platform_velocity", Vector3());
+	platform_angular_velocity = c.get("platform_angular_velocity", Vector3());
+	platform_ceiling_velocity = c.get("platform_ceiling_velocity", Vector3());
+	previous_position = c.get("previous_position", Vector3());
+	real_velocity = c.get("real_velocity", Vector3());
+	platform_layer = c.get("platform_layer", 0);
+	platform_object_id = _snapshot_object_id(c, "platform");
+	platform_rid = _snapshot_rid(c, "platform", "platform_rid");
+	motion_results.clear();
+	const Array results = c.get("motion_results", Array());
+	for (const Variant &v : results) {
+		const Dictionary rd = v;
+		PhysicsServer3D::MotionResult r;
+		r.travel = rd.get("travel", Vector3());
+		r.remainder = rd.get("remainder", Vector3());
+		r.collision_depth = rd.get("collision_depth", 0.0);
+		r.collision_safe_fraction = rd.get("collision_safe_fraction", 0.0);
+		r.collision_unsafe_fraction = rd.get("collision_unsafe_fraction", 0.0);
+		const Array collisions = rd.get("collisions", Array());
+		r.collision_count = MIN(collisions.size(), PhysicsServer3D::MotionResult::MAX_COLLISIONS);
+		for (int i = 0; i < r.collision_count; i++) {
+			const Dictionary kd = collisions[i];
+			PhysicsServer3D::MotionCollision &k = r.collisions[i];
+			k.position = kd.get("position", Vector3());
+			k.normal = kd.get("normal", Vector3());
+			k.collider_velocity = kd.get("collider_velocity", Vector3());
+			k.collider_angular_velocity = kd.get("collider_angular_velocity", Vector3());
+			k.depth = kd.get("depth", 0.0);
+			k.local_shape = kd.get("local_shape", 0);
+			k.collider_shape = kd.get("collider_shape", 0);
+			k.collider_id = _snapshot_object_id(kd, "collider");
+			k.collider = _snapshot_rid(kd, "collider", "collider_rid");
+		}
+		motion_results.push_back(r);
+	}
+	slide_colliders.clear();
+	return OK;
+}
+
 bool CharacterBody3D::move_and_slide() {
 	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
 	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();

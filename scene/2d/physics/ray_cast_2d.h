@@ -102,5 +102,8 @@ public:
 	void remove_exception(RequiredParam<const CollisionObject2D> rp_node);
 	void clear_exceptions();
 
+	Dictionary snapshot_get_state() const; // komm64
+	Error snapshot_set_state(const Dictionary &p_state);
+
 	RayCast2D();
 };

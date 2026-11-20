@@ -134,5 +134,8 @@ public:
 	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void clear_exceptions();
 
+	Dictionary snapshot_get_state() const override; // komm64
+	Error snapshot_set_state(const Dictionary &p_state) override;
+
 	RayCast3D();
 };
