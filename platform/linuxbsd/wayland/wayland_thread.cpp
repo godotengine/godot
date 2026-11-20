@@ -2370,6 +2370,9 @@ void WaylandThread::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *
 void WaylandThread::_wl_pointer_on_axis_relative_direction(void *data, struct wl_pointer *wl_pointer, uint32_t axis, uint32_t direction) {
 }
 
+void WaylandThread::_wl_pointer_on_warp(void *data, struct wl_pointer *wl_pointer, wl_fixed_t surface_x, wl_fixed_t surface_y) {
+}
+
 void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	ERR_FAIL_COND_MSG(format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1, "Unsupported keymap format announced from the Wayland compositor.");
 
@@ -3705,6 +3708,15 @@ void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 
 	ss->ime_text = String();
 	ss->ime_text_commit = String();
 	ss->ime_cursor = Vector2i();
+}
+
+void WaylandThread::_wp_text_input_on_action(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t action, uint32_t serial) {
+}
+
+void WaylandThread::_wp_text_input_on_language(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *language) {
+}
+
+void WaylandThread::_wp_text_input_on_preedit_hint(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t start, uint32_t end, uint32_t hint) {
 }
 
 void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {

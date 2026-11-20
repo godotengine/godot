@@ -107,7 +107,7 @@
         'done' event, without any preceding 'icon_size' events.
       </description>
       <arg name="size" type="int"
-	   summary="the edge size of the square icon in surface-local coordinates, e.g. 64"/>
+           summary="the edge size of the square icon in surface-local coordinates, e.g. 64"/>
     </event>
 
     <event name="done">
@@ -132,10 +132,10 @@
     <enum name="error">
       <entry name="invalid_buffer"
              summary="the provided buffer does not satisfy requirements"
-	     value="1"/>
+             value="1"/>
       <entry name="immutable"
              summary="the icon has already been assigned to a toplevel and must not be changed"
-	     value="2"/>
+             value="2"/>
       <entry name="no_buffer"
              summary="the provided buffer has been destroyed before the toplevel icon"
              value="3"/>
@@ -163,7 +163,7 @@
         fall back to using pixel buffer data instead.
 
         If this request is made after the icon has been assigned to a toplevel
-        via 'set_icon', a 'immutable' error must be raised.
+        via 'set_icon', an 'immutable' error must be raised.
 
         [1]: https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
       </description>
@@ -195,11 +195,11 @@
         request is sent. The wl_buffer.release event is unused.
 
         If this request is made after the icon has been assigned to a toplevel
-        via 'set_icon', a 'immutable' error must be raised.
+        via 'set_icon', an 'immutable' error must be raised.
       </description>
       <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="scale" type="int"
-	   summary="the scaling factor of the icon, e.g. 1"/>
+           summary="the scaling factor of the icon, e.g. 1"/>
     </request>
   </interface>
 </protocol>

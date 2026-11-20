@@ -75,16 +75,15 @@
 
     <request name="get_xdg_surface">
       <description summary="create a shell surface from a surface">
-	This creates an xdg_surface for the given surface. While xdg_surface
-	itself is not a role, the corresponding surface may only be assigned
-	a role extending xdg_surface, such as xdg_toplevel or xdg_popup. It is
-	illegal to create an xdg_surface for a wl_surface which already has an
-	assigned role and this will result in a role error.
-
 	This creates an xdg_surface for the given surface. An xdg_surface is
 	used as basis to define a role to a given surface, such as xdg_toplevel
 	or xdg_popup. It also manages functionality shared between xdg_surface
 	based surface roles.
+
+	While xdg_surface itself is not a role, the corresponding surface may
+	only be assigned a role extending xdg_surface, such as xdg_toplevel or
+	xdg_popup. It is illegal to create an xdg_surface for a wl_surface which
+	already has an assigned role and this will result in a role error.
 
 	See the documentation of xdg_surface for more details about what an
 	xdg_surface is and how it is used.
@@ -201,14 +200,14 @@
     <request name="set_anchor">
       <description summary="set anchor rectangle anchor">
 	Defines the anchor point for the anchor rectangle. The specified anchor
-	is used derive an anchor point that the child surface will be
+	is used to derive an anchor point that the child surface will be
 	positioned relative to. If a corner anchor is set (e.g. 'top_left' or
 	'bottom_right'), the anchor point will be at the specified corner;
 	otherwise, the derived anchor point will be centered on the specified
 	edge, or in the center of the anchor rectangle if no edge is specified.
       </description>
       <arg name="anchor" type="uint" enum="anchor"
-	   summary="anchor"/>
+	   summary="anchor point"/>
     </request>
 
     <enum name="gravity">
@@ -380,7 +379,7 @@
     </request>
 
     <request name="set_parent_size" since="3">
-      <description summary="">
+      <description summary="set parent size">
 	Set the parent window geometry the compositor should use when
 	positioning the popup. The compositor may use this information to
 	determine the future state the popup should be constrained using. If
@@ -505,8 +504,8 @@
 	xdg_popup is and how it is used.
       </description>
       <arg name="id" type="new_id" interface="xdg_popup"/>
-      <arg name="parent" type="object" interface="xdg_surface" allow-null="true"/>
-      <arg name="positioner" type="object" interface="xdg_positioner"/>
+      <arg name="parent" type="object" interface="xdg_surface" allow-null="true" summary="parent surface for this popup"/>
+      <arg name="positioner" type="object" interface="xdg_positioner" summary="positioner for this popup"/>
     </request>
 
     <request name="set_window_geometry">
@@ -552,10 +551,10 @@
 	greater than zero. Setting an invalid size will raise an
 	invalid_size error.
       </description>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="x" type="int" summary="x coordinate of the top-left corner of the window inside this surface"/>
+      <arg name="y" type="int" summary="y coordinate of the top-left corner of the window inside this surface"/>
+      <arg name="width" type="int" summary="width of the window"/>
+      <arg name="height" type="int" summary="height of the window"/>
     </request>
 
     <request name="ack_configure">
@@ -628,7 +627,7 @@
       id, and well as trigger user interactive operations such as interactive
       resize and move.
 
-      A xdg_toplevel by default is responsible for providing the full intended
+      An xdg_toplevel by default is responsible for providing the full intended
       visual representation of the toplevel, which depending on the window
       state, may mean things like a title bar, window controls and drop shadow.
 
@@ -684,7 +683,7 @@
 	descendants, and the parent must be different from the child toplevel,
 	otherwise the invalid_parent protocol error is raised.
       </description>
-      <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true"/>
+      <arg name="parent" type="object" interface="xdg_toplevel" allow-null="true" summary="parent surface for this surface"/>
     </request>
 
     <request name="set_title">
@@ -697,7 +696,7 @@
 
 	The string must be encoded in UTF-8.
       </description>
-      <arg name="title" type="string"/>
+      <arg name="title" type="string" summary="title of the surface"/>
     </request>
 
     <request name="set_app_id">
@@ -726,7 +725,7 @@
 
 	[0] https://standards.freedesktop.org/desktop-entry-spec/
       </description>
-      <arg name="app_id" type="string"/>
+      <arg name="app_id" type="string" summary="application identifier surface belongs to"/>
     </request>
 
     <request name="show_window_menu">
@@ -981,11 +980,11 @@
 	a surface is illegal and will result in an invalid_size error.
 
 	The width and height must be greater than or equal to zero. Using
-	strictly negative values for width or height will result in a
+	strictly negative values for width or height will result in an
 	invalid_size error.
       </description>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="width" type="int" summary="maximum width of the window"/>
+      <arg name="height" type="int" summary="maximum height of the window"/>
     </request>
 
     <request name="set_min_size">
@@ -1021,11 +1020,11 @@
 	a surface is illegal and will result in an invalid_size error.
 
 	The width and height must be greater than or equal to zero. Using
-	strictly negative values for width and height will result in a
+	strictly negative values for width and height will result in an
 	invalid_size error.
       </description>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="width" type="int" summary="minimum width of the window"/>
+      <arg name="height" type="int" summary="minimum height of the window"/>
     </request>
 
     <request name="set_maximized">
@@ -1095,7 +1094,7 @@
 
 	If the surface doesn't cover the whole output, the compositor will
 	position the surface in the center of the output and compensate with
-	with border fill covering the rest of the output. The content of the
+	border fill covering the rest of the output. The content of the
 	border fill is undefined, but should be assumed to be in some way that
 	attempts to blend into the surrounding area (e.g. solid black).
 
@@ -1104,7 +1103,7 @@
 	up of subsurfaces, popups or similarly coupled surfaces) are not
 	visible below the fullscreened surface.
       </description>
-      <arg name="output" type="object" interface="wl_output" allow-null="true"/>
+      <arg name="output" type="object" interface="wl_output" allow-null="true" summary="preferred output to place surface on"/>
     </request>
 
     <request name="unset_fullscreen">
@@ -1161,12 +1160,15 @@
 	arguments should be interpreted, and possibly how it should be
 	drawn.
 
+	The states are sent as an array of 32-bit unsigned integers in
+	native endianness. State values are defined in the state enum.
+
 	Clients must send an ack_configure in response to this event. See
 	xdg_surface.configure and xdg_surface.ack_configure for details.
       </description>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="states" type="array"/>
+      <arg name="width" type="int" summary="suggested width of window"/>
+      <arg name="height" type="int" summary="suggested height of window"/>
+      <arg name="states" type="array" summary="suggested states of the window"/>
     </event>
 
     <event name="close">
@@ -1202,8 +1204,8 @@
 	xdg_toplevel.configure_bounds will be sent, followed by
 	xdg_toplevel.configure and xdg_surface.configure.
       </description>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+      <arg name="width" type="int" summary="suggested maximum width of surface"/>
+      <arg name="height" type="int" summary="suggested maximum height of surface"/>
     </event>
 
     <!-- Version 5 additions -->
@@ -1236,7 +1238,7 @@
 	xdg_surface.configure for details.
 
 	The capabilities are sent as an array of 32-bit unsigned integers in
-	native endianness.
+	native endianness. Capability values are defined in the wm_capabilities enum.
       </description>
       <arg name="capabilities" type="array" summary="array of 32-bit capabilities"/>
     </event>
