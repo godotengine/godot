@@ -22,4 +22,6 @@ if env["opengl3"] and env["platform"] != "macos":
 if env["d3d12"]:
     env_openxr.add_source_files(module_obj, "platform/openxr_d3d12_extension.cpp")
 
+env_openxr.add_source_files(module_obj, "platform/openxr_headless_extension.cpp")
+
 env.modules_sources += module_obj

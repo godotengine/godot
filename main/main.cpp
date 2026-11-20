@@ -588,7 +588,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--screen <N>", "Request window screen.\n");
 	print_help_option("--single-window", "Use a single window (no separate subwindows).\n");
 #ifndef XR_DISABLED
-	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
+	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\", \"headless\"].\n");
 #endif // XR_DISABLED
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
 	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
@@ -1975,6 +1975,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					XRServer::set_xr_mode(XRServer::XRMODE_OFF);
 				} else if (xr_mode == "on") {
 					XRServer::set_xr_mode(XRServer::XRMODE_ON);
+				} else if (xr_mode == "headless") {
+					XRServer::set_xr_mode(XRServer::XRMODE_HEADLESS);
 				} else {
 					OS::get_singleton()->print("Unknown --xr-mode argument \"%s\", aborting.\n", xr_mode.ascii().get_data());
 					goto error;

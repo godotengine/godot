@@ -89,7 +89,7 @@ complete -c godot -l resolution -d "Request window resolution" -x
 complete -c godot -l position -d "Request window position" -x
 complete -c godot -l screen -d "Request window screen" -x
 complete -c godot -l single-window -d "Use a single window (no separate subwindows)"
-complete -c godot -l xr-mode -d "Select Extended Reality (XR) mode" -x -a "default off on"
+complete -c godot -l xr-mode -d "Select Extended Reality (XR) mode" -x -a "default off on headless"
 complete -c godot -l wid -d "Request parented to window" -x
 complete -c godot -l accessibility -d "Select accessibility mode" -x -a "auto always disabled"
 complete -c godot -l accessibility-driver -d "Select accessibility driver" -x -a "accesskit dummy"
