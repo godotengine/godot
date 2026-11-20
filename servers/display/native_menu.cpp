@@ -92,6 +92,7 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_state", "rid", "idx"), &NativeMenu::get_item_state);
 	ClassDB::bind_method(D_METHOD("get_item_max_states", "rid", "idx"), &NativeMenu::get_item_max_states);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "rid", "idx"), &NativeMenu::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon_template", "rid", "idx"), &NativeMenu::get_item_icon_template);
 	ClassDB::bind_method(D_METHOD("get_item_indentation_level", "rid", "idx"), &NativeMenu::get_item_indentation_level);
 
 	ClassDB::bind_method(D_METHOD("set_item_checked", "rid", "idx", "checked"), &NativeMenu::set_item_checked);
@@ -111,6 +112,7 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_state", "rid", "idx", "state"), &NativeMenu::set_item_state);
 	ClassDB::bind_method(D_METHOD("set_item_max_states", "rid", "idx", "max_states"), &NativeMenu::set_item_max_states);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "rid", "idx", "icon"), &NativeMenu::set_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon_template", "rid", "idx", "template"), &NativeMenu::set_item_icon_template);
 	ClassDB::bind_method(D_METHOD("set_item_indentation_level", "rid", "idx", "level"), &NativeMenu::set_item_indentation_level);
 	ClassDB::bind_method(D_METHOD("set_item_index", "rid", "idx", "target_idx"), &NativeMenu::set_item_index);
 
@@ -380,6 +382,11 @@ Ref<Texture2D> NativeMenu::get_item_icon(const RID &p_rid, int p_idx) const {
 	return Ref<Texture2D>();
 }
 
+bool NativeMenu::get_item_icon_template(const RID &p_rid, int p_idx) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return false;
+}
+
 int NativeMenu::get_item_indentation_level(const RID &p_rid, int p_idx) const {
 	WARN_PRINT("Global menus are not supported on this platform.");
 	return 0;
@@ -450,6 +457,10 @@ void NativeMenu::set_item_max_states(const RID &p_rid, int p_idx, int p_max_stat
 }
 
 void NativeMenu::set_item_icon(const RID &p_rid, int p_idx, const Ref<Texture2D> &p_icon) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+void NativeMenu::set_item_icon_template(const RID &p_rid, int p_idx, bool p_template) {
 	WARN_PRINT("Global menus are not supported on this platform.");
 }
 

@@ -1052,6 +1052,26 @@ Ref<Texture2D> NativeMenuMacOS::get_item_icon(const RID &p_rid, int p_idx) const
 	return Ref<Texture2D>();
 }
 
+bool NativeMenuMacOS::get_item_icon_template(const RID &p_rid, int p_idx) const {
+	ERR_FAIL_COND_V(p_idx < 0, false);
+
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, false);
+
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND_V(p_idx >= item_start + item_count, false);
+	const NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		if (obj) {
+			return obj->icon_template;
+		}
+	}
+	return false;
+}
+
 int NativeMenuMacOS::get_item_indentation_level(const RID &p_rid, int p_idx) const {
 	ERR_FAIL_COND_V(p_idx < 0, 0);
 
@@ -1414,6 +1434,7 @@ void NativeMenuMacOS::set_item_icon(const RID &p_rid, int p_idx, const Ref<Textu
 				obj->img->decompress();
 			}
 			NSImage *image = ds->_convert_to_nsimg(obj->img);
+			[image setTemplate:obj->icon_template];
 			[image setSize:NSMakeSize(16, 16)];
 			[menu_item setImage:image];
 #if (__MAC_OS_X_VERSION_MAX_ALLOWED < 270000)
@@ -1430,6 +1451,42 @@ void NativeMenuMacOS::set_item_icon(const RID &p_rid, int p_idx, const Ref<Textu
 			[menu_item setImage:nil];
 		}
 		_update_align(md);
+	}
+}
+
+void NativeMenuMacOS::set_item_icon_template(const RID &p_rid, int p_idx, bool p_template) {
+	ERR_FAIL_COND(p_idx < 0);
+
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL(md);
+	int item_start = _get_system_menu_start(md->menu);
+	int item_count = _get_system_menu_count(md->menu);
+	p_idx += item_start;
+	ERR_FAIL_COND(p_idx >= item_start + item_count);
+	NSMenuItem *menu_item = [md->menu itemAtIndex:p_idx];
+	if (menu_item) {
+		GodotMenuItem *obj = [menu_item representedObject];
+		ERR_FAIL_NULL(obj);
+		DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+		if (obj->icon_template != p_template) {
+			obj->icon_template = p_template;
+			if (ds && obj->img.is_valid()) {
+				NSImage *image = ds->_convert_to_nsimg(obj->img);
+				[image setTemplate:obj->icon_template];
+				[image setSize:NSMakeSize(16, 16)];
+				[menu_item setImage:image];
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED < 270000)
+				if ([menu_item respondsToSelector:@selector(preferredImageVisibility)]) {
+					[menu_item setValue:@(1) forKey:@"preferredImageVisibility"];
+				}
+#else
+				if (@available(macOS 27.0, *)) {
+					menu_item.preferredImageVisibility = NSMenuItemImageVisibilityVisible;
+				}
+#endif
+			}
+			_update_align(md);
+		}
 	}
 }
 

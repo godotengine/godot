@@ -140,6 +140,7 @@ RID PopupMenu::bind_global_menu() {
 			nmenu->set_item_disabled(global_menu, index, item.disabled);
 			nmenu->set_item_max_states(global_menu, index, item.max_states);
 			nmenu->set_item_icon(global_menu, index, item.icon);
+			nmenu->set_item_icon_template(global_menu, index, item.icon_template);
 			nmenu->set_item_state(global_menu, index, item.state);
 			nmenu->set_item_indentation_level(global_menu, index, item.indent);
 			nmenu->set_item_tooltip(global_menu, index, item.tooltip);
@@ -2325,6 +2326,27 @@ void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_icon_template(int p_idx, bool p_template) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].icon_template == p_template) {
+		return;
+	}
+
+	items.write[p_idx].icon_template = p_template;
+
+	if (global_menu.is_valid()) {
+		NativeMenu::get_singleton()->set_item_icon_template(global_menu, p_idx, items[p_idx].icon_template);
+	}
+
+	control->queue_redraw();
+	child_controls_changed();
+	_menu_changed();
+}
+
 void PopupMenu::set_item_icon_max_width(int p_idx, int p_width) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -2631,6 +2653,11 @@ int PopupMenu::get_item_idx_from_text(const String &text) const {
 Ref<Texture2D> PopupMenu::get_item_icon(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 	return items[p_idx].icon;
+}
+
+bool PopupMenu::get_item_icon_template(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+	return items[p_idx].icon_template;
 }
 
 int PopupMenu::get_item_icon_max_width(int p_idx) const {
@@ -3543,6 +3570,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_language", "index", "language"), &PopupMenu::set_item_language);
 	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "index", "mode"), &PopupMenu::set_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "index", "icon"), &PopupMenu::set_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon_template", "index", "template"), &PopupMenu::set_item_icon_template);
 	ClassDB::bind_method(D_METHOD("set_item_icon_max_width", "index", "width"), &PopupMenu::set_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "index", "modulate"), &PopupMenu::set_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "index", "checked"), &PopupMenu::set_item_checked);
@@ -3572,6 +3600,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_language", "index"), &PopupMenu::get_item_language);
 	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "index"), &PopupMenu::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "index"), &PopupMenu::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon_template", "index"), &PopupMenu::get_item_icon_template);
 	ClassDB::bind_method(D_METHOD("get_item_icon_max_width", "index"), &PopupMenu::get_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "index"), &PopupMenu::get_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "index"), &PopupMenu::is_item_checked);
@@ -3721,6 +3750,7 @@ void PopupMenu::_bind_methods() {
 	base_property_helper.set_array_length_getter(&PopupMenu::get_item_count);
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "text"), defaults.text, &PopupMenu::set_item_text, &PopupMenu::get_item_text);
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), defaults.icon, &PopupMenu::set_item_icon, &PopupMenu::get_item_icon);
+	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "icon_template"), defaults.icon_template, &PopupMenu::set_item_icon_template, &PopupMenu::get_item_icon_template);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"), defaults.checkable_type, &PopupMenu::_set_item_checkable_type, &PopupMenu::_get_item_checkable_type);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "checked"), defaults.checked, &PopupMenu::set_item_checked, &PopupMenu::is_item_checked);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "indeterminate"), defaults.indeterminate, &PopupMenu::set_item_indeterminate, &PopupMenu::is_item_indeterminate);

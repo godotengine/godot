@@ -1269,6 +1269,10 @@ void DisplayServer::status_indicator_set_icon(DisplayServerEnums::IndicatorID p_
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+void DisplayServer::status_indicator_set_icon_template(DisplayServerEnums::IndicatorID p_id, bool p_template) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
 void DisplayServer::status_indicator_set_tooltip(DisplayServerEnums::IndicatorID p_id, const String &p_tooltip) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
@@ -1717,6 +1721,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_icon_template", "id", "template"), &DisplayServer::status_indicator_set_icon_template);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_menu", "id", "menu_rid"), &DisplayServer::status_indicator_set_menu);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
