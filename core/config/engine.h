@@ -88,6 +88,22 @@ private:
 	bool _drawing_step = true;
 	bool _drop_pending_ticks = false;
 
+public:
+	// komm64: where the main loop's timer is between physics ticks (its
+	// accumulated time and the step counts it evens the ticks out with), for
+	// snapshot_get_clock(); Main sets the hooks.
+	struct SnapshotTimer {
+		static const int CONTROL_STEPS = 12;
+		double time_accum = 0;
+		double time_deficit = 0;
+		int accumulated_physics_steps[CONTROL_STEPS] = {};
+		int typical_physics_steps[CONTROL_STEPS] = {};
+	};
+	void (*snapshot_get_timer)(SnapshotTimer &r_timer) = nullptr;
+	void (*snapshot_set_timer)(const SnapshotTimer &p_timer) = nullptr;
+
+private:
+
 	List<Singleton> singletons;
 	HashMap<StringName, Object *> singleton_ptrs;
 

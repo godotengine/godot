@@ -140,6 +140,8 @@ public:
 	// komm64: count only p_keep_usec of the time since the last frame, so a
 	// stall (a load, a save) is not game time.
 	void drop_elapsed(uint64_t p_keep_usec);
+	void snapshot_get(Engine::SnapshotTimer &r_timer) const; // komm64
+	void snapshot_set(const Engine::SnapshotTimer &p_timer);
 	//set fixed fps
 	void set_fixed_fps(int p_fixed_fps);
 

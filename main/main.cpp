@@ -4051,6 +4051,8 @@ int Main::start() {
 #endif // TOOLS_ENABLED
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
+	Engine::get_singleton()->snapshot_get_timer = [](Engine::SnapshotTimer &r_timer) { main_timer_sync.snapshot_get(r_timer); };
+	Engine::get_singleton()->snapshot_set_timer = [](const Engine::SnapshotTimer &p_timer) { main_timer_sync.snapshot_set(p_timer); };
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {

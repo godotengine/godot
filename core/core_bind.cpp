@@ -2067,6 +2067,22 @@ Dictionary Engine::snapshot_get_clock() const {
 	out["process_frames"] = int64_t(get_process_frames());
 	out["physics_frames"] = int64_t(get_physics_frames());
 	out["frames_drawn"] = int64_t(const_cast<Engine *>(this)->get_frames_drawn());
+	if (::Engine::get_singleton()->snapshot_get_timer != nullptr) {
+		::Engine::SnapshotTimer timer;
+		::Engine::get_singleton()->snapshot_get_timer(timer);
+		PackedInt32Array accumulated;
+		PackedInt32Array typical;
+		for (int i = 0; i < ::Engine::SnapshotTimer::CONTROL_STEPS; i++) {
+			accumulated.push_back(timer.accumulated_physics_steps[i]);
+			typical.push_back(timer.typical_physics_steps[i]);
+		}
+		Dictionary phase;
+		phase["time_accum"] = timer.time_accum;
+		phase["time_deficit"] = timer.time_deficit;
+		phase["accumulated_physics_steps"] = accumulated;
+		phase["typical_physics_steps"] = typical;
+		out["physics_phase"] = phase;
+	}
 	return out;
 }
 
@@ -2084,6 +2100,20 @@ void Engine::snapshot_set_clock(const Dictionary &p_clock) {
 	}
 	if (p_clock.has("frames_drawn")) {
 		snapshot_drawn_offset = int64_t(p_clock["frames_drawn"]) - int64_t(::Engine::get_singleton()->get_frames_drawn());
+	}
+	// Where the next physics tick falls between frames: as at the save.
+	const Dictionary phase = p_clock.get("physics_phase", Dictionary());
+	if (!phase.is_empty() && ::Engine::get_singleton()->snapshot_set_timer != nullptr) {
+		::Engine::SnapshotTimer timer;
+		timer.time_accum = phase.get("time_accum", 0.0);
+		timer.time_deficit = phase.get("time_deficit", 0.0);
+		const PackedInt32Array accumulated = phase.get("accumulated_physics_steps", PackedInt32Array());
+		const PackedInt32Array typical = phase.get("typical_physics_steps", PackedInt32Array());
+		for (int i = 0; i < ::Engine::SnapshotTimer::CONTROL_STEPS; i++) {
+			timer.accumulated_physics_steps[i] = i < accumulated.size() ? accumulated[i] : 0;
+			timer.typical_physics_steps[i] = i < typical.size() ? typical[i] : 0;
+		}
+		::Engine::get_singleton()->snapshot_set_timer(timer);
 	}
 }
 

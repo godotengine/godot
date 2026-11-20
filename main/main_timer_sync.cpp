@@ -531,6 +531,25 @@ void MainTimerSync::set_cpu_ticks_usec(uint64_t p_cpu_ticks_usec) {
 	current_cpu_ticks_usec = p_cpu_ticks_usec;
 }
 
+void MainTimerSync::snapshot_get(Engine::SnapshotTimer &r_timer) const {
+	static_assert(Engine::SnapshotTimer::CONTROL_STEPS == CONTROL_STEPS);
+	r_timer.time_accum = time_accum;
+	r_timer.time_deficit = time_deficit;
+	for (int i = 0; i < CONTROL_STEPS; i++) {
+		r_timer.accumulated_physics_steps[i] = accumulated_physics_steps[i];
+		r_timer.typical_physics_steps[i] = typical_physics_steps[i];
+	}
+}
+
+void MainTimerSync::snapshot_set(const Engine::SnapshotTimer &p_timer) {
+	time_accum = p_timer.time_accum;
+	time_deficit = p_timer.time_deficit;
+	for (int i = 0; i < CONTROL_STEPS; i++) {
+		accumulated_physics_steps[i] = p_timer.accumulated_physics_steps[i];
+		typical_physics_steps[i] = p_timer.typical_physics_steps[i];
+	}
+}
+
 void MainTimerSync::drop_elapsed(uint64_t p_keep_usec) {
 	const uint64_t elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
 	if (elapsed > p_keep_usec) {

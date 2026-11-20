@@ -318,7 +318,7 @@
 		<method name="snapshot_get_clock" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns the clocks as scripts see them: [code]ticks_usec[/code] ([method Time.get_ticks_usec]), [code]process_frames[/code], [code]physics_frames[/code] and [code]frames_drawn[/code]. Pass it to [method snapshot_set_clock] to make them go on from there, for example after loading a save.
+				Returns the clocks as scripts see them: [code]ticks_usec[/code] ([method Time.get_ticks_usec]), [code]process_frames[/code], [code]physics_frames[/code] and [code]frames_drawn[/code], and [code]physics_phase[/code]: where the main loop is between physics ticks (the time it has accumulated toward the next tick, and the tick counts of recent frames it evens them out with), which decides on which frames the next ticks fall. Pass it to [method snapshot_set_clock] to make them go on from there, for example after loading a save.
 			</description>
 		</method>
 		<method name="snapshot_get_container_id" qualifiers="const">
