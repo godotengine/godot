@@ -41,8 +41,7 @@
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/debugger/script_editor_debugger.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/inspector/editor_inspector.h"
@@ -59,32 +58,35 @@
 const int SNAPSHOT_CHUNK_SIZE = 6 << 20;
 
 void ObjectDBProfilerPanel::_request_object_snapshot() {
+	ERR_FAIL_COND(session.is_null());
 	take_snapshot->set_disabled(true);
 	take_snapshot->set_text(TTRC("Generating Snapshot"));
 	// Pause the game while the snapshot is taken so the state of the game isn't modified as we capture the snapshot.
-	if (EditorDebuggerNode::get_singleton()->get_current_debugger()->is_breaked()) {
+	if (session->is_breaked()) {
 		requested_break_for_snapshot = false;
 		_begin_object_snapshot();
 	} else {
 		awaiting_debug_break = true;
 		requested_break_for_snapshot = true; // We only need to resume the game if we are the ones who paused it.
-		EditorDebuggerNode::get_singleton()->debug_break();
+		session->send_message("break", Array());
 	}
 }
 
-void ObjectDBProfilerPanel::_on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump) {
-	if (p_reallydid && awaiting_debug_break) {
+void ObjectDBProfilerPanel::_on_debug_breaked(bool p_can_debug) {
+	if (awaiting_debug_break) {
 		awaiting_debug_break = false;
 		_begin_object_snapshot();
 	}
 }
 
 void ObjectDBProfilerPanel::_begin_object_snapshot() {
+	ERR_FAIL_COND(session.is_null());
 	Array args = { next_request_id++, SnapshotCollector::get_godot_version_string() };
-	EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_prepare_snapshot", args);
+	session->send_message("snapshot:request_prepare_snapshot", args);
 }
 
 bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const Array &p_data, int p_index) {
+	ERR_FAIL_COND_V(session.is_null(), false);
 	if (p_message == "snapshot:snapshot_prepared") {
 		int request_id = p_data[0];
 		int total_size = p_data[1];
@@ -92,7 +94,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		partial_snapshots[request_id].total_size = total_size;
 		Array args = { request_id, 0, SNAPSHOT_CHUNK_SIZE };
 		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (0/%s MiB)"), _to_mb(total_size)));
-		EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
+		session->send_message("snapshot:request_snapshot_chunk", args);
 		return true;
 	}
 	if (p_message == "snapshot:snapshot_chunk") {
@@ -102,7 +104,7 @@ bool ObjectDBProfilerPanel::handle_debug_message(const String &p_message, const 
 		take_snapshot->set_text(vformat(TTR("Receiving Snapshot (%s/%s MiB)"), _to_mb(chunk.data.size()), _to_mb(chunk.total_size)));
 		if (chunk.data.size() != chunk.total_size) {
 			Array args = { request_id, chunk.data.size(), chunk.data.size() + SNAPSHOT_CHUNK_SIZE };
-			EditorDebuggerNode::get_singleton()->get_current_debugger()->send_message("snapshot:request_snapshot_chunk", args);
+			session->send_message("snapshot:request_snapshot_chunk", args);
 			return true;
 		}
 
@@ -145,7 +147,7 @@ void ObjectDBProfilerPanel::receive_snapshot(int request_id) {
 	}
 	partial_snapshots.erase(request_id);
 	if (requested_break_for_snapshot) {
-		EditorDebuggerNode::get_singleton()->debug_continue();
+		session->send_message("continue", Array());
 	}
 	take_snapshot->set_disabled(false);
 	take_snapshot->set_text("Take ObjectDB Snapshot");
@@ -261,9 +263,19 @@ void ObjectDBProfilerPanel::clear_snapshot(bool p_update_view_tabs) {
 	}
 }
 
+void ObjectDBProfilerPanel::set_session(const Ref<EditorDebuggerSession> &p_session) {
+	session = p_session;
+	session->connect("breaked", callable_mp(this, &ObjectDBProfilerPanel::_on_debug_breaked));
+}
+
 void ObjectDBProfilerPanel::set_enabled(bool p_enabled) {
 	take_snapshot->set_text(TTRC("Take ObjectDB Snapshot"));
 	take_snapshot->set_disabled(!p_enabled);
+	if (!p_enabled) {
+		awaiting_debug_break = false;
+		requested_break_for_snapshot = false;
+		partial_snapshots.clear();
+	}
 }
 
 void ObjectDBProfilerPanel::_snapshot_rmb(const Vector2 &p_pos, MouseButton p_button) {
@@ -350,8 +362,6 @@ ObjectDBProfilerPanel::ObjectDBProfilerPanel() {
 	set_name(TTRC("ObjectDB Profiler"));
 
 	snapshot_cache = LRUCache<String, Ref<GameStateSnapshot>>(SNAPSHOT_CACHE_MAX_SIZE);
-
-	EditorDebuggerNode::get_singleton()->get_current_debugger()->connect("breaked", callable_mp(this, &ObjectDBProfilerPanel::_on_debug_breaked));
 
 	HSplitContainer *root_container = memnew(HSplitContainer);
 	root_container->set_anchors_preset(Control::LayoutPreset::PRESET_FULL_RECT);

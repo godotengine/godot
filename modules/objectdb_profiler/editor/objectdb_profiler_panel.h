@@ -36,6 +36,7 @@
 #include "core/io/dir_access.h"
 #include "core/templates/lru.h"
 
+class EditorDebuggerSession;
 class TabContainer;
 class Tree;
 
@@ -57,6 +58,8 @@ protected:
 		Vector<uint8_t> data;
 	};
 
+	Ref<EditorDebuggerSession> session;
+
 	int next_request_id = 0;
 	bool awaiting_debug_break = false;
 	bool requested_break_for_snapshot = false;
@@ -75,7 +78,7 @@ protected:
 
 	void _request_object_snapshot();
 	void _begin_object_snapshot();
-	void _on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump);
+	void _on_debug_breaked(bool p_can_debug);
 	void _show_selected_snapshot();
 	void _on_snapshot_deselected();
 	Ref<DirAccess> _get_and_create_snapshot_storage_dir();
@@ -96,6 +99,7 @@ public:
 	void show_snapshot(const String &p_snapshot_file_name, const String &p_snapshot_diff_file_name);
 	void clear_snapshot(bool p_update_view_tabs = true);
 	Ref<GameStateSnapshot> get_snapshot(const String &p_snapshot_file_name);
+	void set_session(const Ref<EditorDebuggerSession> &p_session);
 	void set_enabled(bool p_enabled);
 	void add_view(SnapshotView *p_to_add);
 
