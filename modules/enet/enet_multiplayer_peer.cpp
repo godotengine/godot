@@ -193,38 +193,46 @@ void ENetMultiplayerPeer::poll() {
 			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
 		} break;
 		case MODE_SERVER: {
-			ENetConnection::Event event;
-			ENetConnection::EventType ret = hosts[0]->service(0, event);
+			// A connection or disconnection event interrupts the host service
+			// before the remaining incoming packets are received (a timeout
+			// even before any is). Keep servicing in that case, or each of
+			// those events would delay everything else by one poll.
+			bool interrupted = false;
 			do {
-				if (ret == ENetConnection::EVENT_CONNECT) {
-					if (is_refusing_new_connections()) {
-						event.peer->reset();
-						continue;
+				ENetConnection::Event event;
+				ENetConnection::EventType ret = hosts[0]->service(0, event);
+				interrupted = ret == ENetConnection::EVENT_CONNECT || ret == ENetConnection::EVENT_DISCONNECT;
+				do {
+					if (ret == ENetConnection::EVENT_CONNECT) {
+						if (is_refusing_new_connections()) {
+							event.peer->reset();
+							continue;
+						}
+						// Client joined with invalid ID, probably trying to exploit us.
+						if (event.data < 2 || peers.has((int)event.data)) {
+							event.peer->reset();
+							continue;
+						}
+						int id = event.data;
+						event.peer->set_meta(SNAME("_net_id"), id);
+						peers[id] = event.peer;
+						emit_signal(SNAME("peer_connected"), id);
+					} else if (ret == ENetConnection::EVENT_DISCONNECT) {
+						int id = event.peer->get_meta(SNAME("_net_id"));
+						if (!peers.has(id)) {
+							// Never fully connected.
+							continue;
+						}
+						emit_signal(SNAME("peer_disconnected"), id);
+						peers.erase(id);
+					} else if (ret == ENetConnection::EVENT_RECEIVE) {
+						int32_t source = event.peer->get_meta(SNAME("_net_id"));
+						_store_packet(source, event);
+					} else if (ret != ENetConnection::EVENT_NONE) {
+						close(); // Error
 					}
-					// Client joined with invalid ID, probably trying to exploit us.
-					if (event.data < 2 || peers.has((int)event.data)) {
-						event.peer->reset();
-						continue;
-					}
-					int id = event.data;
-					event.peer->set_meta(SNAME("_net_id"), id);
-					peers[id] = event.peer;
-					emit_signal(SNAME("peer_connected"), id);
-				} else if (ret == ENetConnection::EVENT_DISCONNECT) {
-					int id = event.peer->get_meta(SNAME("_net_id"));
-					if (!peers.has(id)) {
-						// Never fully connected.
-						continue;
-					}
-					emit_signal(SNAME("peer_disconnected"), id);
-					peers.erase(id);
-				} else if (ret == ENetConnection::EVENT_RECEIVE) {
-					int32_t source = event.peer->get_meta(SNAME("_net_id"));
-					_store_packet(source, event);
-				} else if (ret != ENetConnection::EVENT_NONE) {
-					close(); // Error
-				}
-			} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
+				} while (hosts.has(0) && hosts[0]->check_events(ret, event) > 0);
+			} while (interrupted && hosts.has(0));
 		} break;
 		case MODE_MESH: {
 			HashSet<int> to_drop;
