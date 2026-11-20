@@ -110,14 +110,25 @@ void AudioEffectRecordInstance::init() {
 	recording_data.clear(); //Clear data completely and reset length
 	is_recording = true;
 
+#ifdef THREADS_ENABLED
 	io_thread.start(_thread_callback, this);
+#else
+	AudioServer::get_singleton()->add_update_callback(_update, this);
+#endif
 }
 
 void AudioEffectRecordInstance::finish() {
 	is_recording = false;
+
+#ifdef THREADS_ENABLED
 	if (io_thread.is_started()) {
 		io_thread.wait_to_finish();
 	}
+#else
+	AudioServer::get_singleton()->remove_update_callback(_update, this);
+#endif
+
+	_update_buffer();
 }
 
 Ref<AudioEffectInstance> AudioEffectRecord::instantiate() {
@@ -175,9 +186,7 @@ void AudioEffectRecord::set_recording_active(bool p_record) {
 		ensure_thread_stopped();
 		current_instance->init();
 	} else {
-		if (current_instance.is_valid()) {
-			current_instance->is_recording = false;
-		}
+		ensure_thread_stopped();
 	}
 }
 
