@@ -342,8 +342,13 @@ public:
 	void remove_mix_callback(AudioCallback p_callback, void *p_userdata);
 	void set_mix_callback_state(AudioCallback p_callback, void *p_userdata, bool p_is_playing);
 
+#ifndef DISABLE_DEPRECATED
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;
+#endif // DISABLE_DEPRECATED
+
+	// Stopgap, see AudioBusLayout::set_server_bus_layout().
+	void _set_server_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 
 	PackedStringArray get_output_device_list();
 	String get_output_device();

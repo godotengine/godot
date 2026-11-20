@@ -44,6 +44,8 @@
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/tree.h"
 
+class AudioBusLayout;
+class CheckButton;
 class EditorAudioBuses;
 class EditorFileDialog;
 class Gradient;
@@ -176,6 +178,9 @@ class EditorAudioBusDrop : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+public:
+	Ref<AudioBusLayout> bus_layout;
 };
 
 class EditorAudioBuses : public EditorDock {
@@ -201,8 +206,7 @@ class EditorAudioBuses : public EditorDock {
 	Button *add = nullptr;
 	MenuButton *menu = nullptr;
 
-	Timer *save_timer = nullptr;
-	String edited_path;
+	Ref<AudioBusLayout> edited_bus_layout;
 
 	void _update_file_label();
 	void _update_file_label_size();
@@ -219,7 +223,6 @@ class EditorAudioBuses : public EditorDock {
 	void _request_drop_end();
 	void _drop_at_index(int p_bus, int p_index);
 
-	void _server_save();
 	void _file_moved(const String &p_old_path, const String &p_new_path);
 
 	void _select_layout();
@@ -241,7 +244,8 @@ protected:
 	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
-	void open_layout(const String &p_path);
+	void open_layout(const Ref<AudioBusLayout> &p_layout);
+	const Ref<AudioBusLayout> &get_edited_layout() { return edited_bus_layout; }
 
 	static EditorAudioBuses *register_editor();
 
@@ -311,7 +315,6 @@ public:
 	virtual String get_plugin_name() const override { return "SampleLibrary"; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
-	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
 };

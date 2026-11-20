@@ -34,6 +34,7 @@
 #include "core/string/ustring.h"
 
 class Array;
+class AudioBusLayout;
 class InputEvent;
 class Node;
 class Shortcut;
@@ -141,6 +142,9 @@ public:
 class LiveEditor {
 private:
 	friend class SceneDebugger;
+
+	Ref<AudioBusLayout> default_bus_layout;
+
 	HashMap<int, NodePath> live_edit_node_path_cache;
 	HashMap<int, String> live_edit_resource_cache;
 
@@ -171,10 +175,7 @@ private:
 	void _duplicate_node_func(const NodePath &p_at, const String &p_new_name);
 	void _reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
-	LiveEditor() {
-		singleton = this;
-		live_edit_root = NodePath("/root");
-	}
+	LiveEditor();
 
 	inline static LiveEditor *singleton = nullptr;
 

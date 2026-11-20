@@ -37,8 +37,6 @@ class AudioEffect;
 class AudioBusLayout : public Resource {
 	GDCLASS(AudioBusLayout, Resource);
 
-	friend class AudioServer;
-
 	struct Bus {
 		StringName name;
 		bool solo = false;
@@ -65,6 +63,39 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	static void _bind_methods();
+
 public:
+	void add_bus(int p_at_pos = -1);
+	void remove_bus(int p_bus);
+	void move_bus(int p_bus, int p_to_index);
+	int get_bus_count() const;
+	int get_bus_effect_count(int p_bus) const;
+
+	void set_bus_name(int p_bus, const String &p_name);
+	void set_bus_send(int p_bus, const StringName &p_send);
+	void set_bus_mute(int p_bus, bool p_mute);
+	void set_bus_solo(int p_bus, bool p_solo);
+	void set_bus_bypass_effects(int p_bus, bool p_enabled);
+	void set_bus_volume_db(int p_bus, float p_volume_db);
+
+	String get_bus_name(int p_bus) const;
+	StringName get_bus_send(int p_bus) const;
+	bool is_bus_mute(int p_bus) const;
+	bool is_bus_solo(int p_bus) const;
+	bool is_bus_bypassing_effects(int p_bus) const;
+	float get_bus_volume_db(int p_bus) const;
+
+	void add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, int p_at_pos = -1);
+	void remove_bus_effect(int p_bus, int p_effect);
+
+	void set_bus_effect_enabled(int p_bus, int p_effect, bool p_enabled);
+
+	Ref<AudioEffect> get_bus_effect(int p_bus, int p_effect);
+	bool is_bus_effect_enabled(int p_bus, int p_effect) const;
+
+	void generate_from_server_bus_layout();
+	void set_server_bus_layout();
+
 	AudioBusLayout();
 };

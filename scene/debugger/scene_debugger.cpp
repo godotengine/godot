@@ -31,6 +31,7 @@
 #include "scene_debugger.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger.h"
@@ -52,6 +53,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/audio//audio_bus_layout.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_device.h"
@@ -1440,6 +1442,16 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		if (p_at_pos >= 0) {
 			nto->move_child(nfrom, p_at_pos);
 		}
+	}
+}
+LiveEditor::LiveEditor() {
+	singleton = this;
+	live_edit_root = NodePath("/root");
+
+	const String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
+	if (ResourceLoader::exists(layout_path)) {
+		// The layout has to be loaded somewhere to enable live editing.
+		default_bus_layout = ResourceLoader::load(layout_path);
 	}
 }
 #endif // DEBUG_ENABLED
