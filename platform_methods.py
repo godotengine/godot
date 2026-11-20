@@ -365,7 +365,7 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     if env["accesskit"]:
         ak_sdk_path = env.get("accesskit_sdk_path")
         if ak_sdk_path:
-            ak_xcf = os.path.join(ak_sdk_path, "lib", "ios", "AccessKit.xcframework")
+            ak_xcf = os.path.join(ak_sdk_path, "lib", platform, "AccessKit.xcframework")
             if os.path.isdir(ak_xcf):
                 shutil.copytree(ak_xcf, app_dir + "/AccessKit.xcframework")
 
