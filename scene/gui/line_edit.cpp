@@ -700,6 +700,33 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
+	if (editing && p_event->is_action_pressed("ui_text_submit", false)) {
+		emit_signal(SceneStringName(text_submitted), text);
+
+		if (editing && !keep_editing_on_text_submit) {
+			unedit();
+			play_theme_sound(theme_cache.text_submitted_sound);
+			emit_signal(SNAME("editing_toggled"), false);
+			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
+				DisplayServer::get_singleton()->virtual_keyboard_hide();
+			}
+		}
+
+		accept_event();
+		return;
+	}
+
+	if (p_event->is_action("ui_cancel")) {
+		if (editing) {
+			unedit();
+			emit_signal(SNAME("editing_toggled"), false);
+		}
+
+		accept_event();
+		return;
+	}
+
 	// Open context menu.
 	if (context_menu_enabled) {
 		if (p_event->is_action("ui_menu", true)) {
@@ -950,33 +977,6 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	last_key_is_echo = k->is_echo();
-
-	// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
-	if (k->is_action_pressed("ui_text_submit")) {
-		emit_signal(SceneStringName(text_submitted), text);
-
-		if (editing && !keep_editing_on_text_submit) {
-			unedit();
-			play_theme_sound(theme_cache.text_submitted_sound);
-			emit_signal(SNAME("editing_toggled"), false);
-			if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
-				DisplayServer::get_singleton()->virtual_keyboard_hide();
-			}
-		}
-
-		accept_event();
-		return;
-	}
-
-	if (k->is_action("ui_cancel")) {
-		if (editing) {
-			unedit();
-			emit_signal(SNAME("editing_toggled"), false);
-		}
-
-		accept_event();
-		return;
-	}
 
 	if (is_shortcut_keys_enabled()) {
 		if (k->is_action("ui_paste", true)) {
