@@ -74,30 +74,33 @@ void ScalableContainer::_notification(int p_what) {
 	}
 }
 
-static void _get_occupied_area(Node *p_node, Rect2 *r_rect) {
+static void _get_occupied_area(Node *p_node, Rect2 *r_rect, const Vector2 &p_parent_pos) {
+	Vector2 position = p_parent_pos;
 	if (Control *c = Object::cast_to<Control>(p_node)) {
-		r_rect->expand_to(c->get_rect().position + c->get_bound_minimum_size());
+		Rect2 rect = c->get_rect();
+		position += rect.position;
+		r_rect->expand_to(position + rect.size);
 	}
 	for (Node *child : p_node->iterate_children<false>()) {
-		_get_occupied_area(child, r_rect);
+		_get_occupied_area(child, r_rect, position);
 	}
 }
 
 Size2 ScalableContainer::get_minimum_size() const {
 	// Custom content could have a non Container root.
 	// This custom iteration intends to more reliably calculate the space occupied by the scene.
-	Rect2 rect;
-	rect.position = get_rect().position;
 	for (Node *child : iterate_children()) {
-		_get_occupied_area(child, &rect);
+		if (child->get_name() == "CustomThemePreview") {
+			Rect2 rect;
+			_get_occupied_area(child->get_child(0, false), &rect, Vector2());
+			Size2 size = rect.size;
+			size.width += get_margin_size(SIDE_RIGHT);
+			size.height += get_margin_size(SIDE_BOTTOM);
+
+			return size * EDSCALE;
+		}
 	}
-
-	Size2 size = rect.size;
-	// Left and Top margin are already considered, add Bottom and Right margins.
-	size.width += get_margin_size(SIDE_RIGHT);
-	size.height += get_margin_size(SIDE_BOTTOM);
-
-	return size * EDSCALE;
+	return MarginContainer::get_minimum_size() * EDSCALE;
 }
 
 ScalableContainer::ScalableContainer() {
@@ -278,7 +281,6 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
 	preview_root->set_clip_contents(true);
-	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -500,14 +502,39 @@ void SceneThemeEditorPreview::_reload_scene() {
 	}
 
 	Node *instance = loaded_scene->instantiate();
-	if (!instance || !Object::cast_to<Control>(instance)) {
+	Control *control_instance = Object::cast_to<Control>(instance);
+	if (!control_instance) {
 		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
+		if (instance) {
+			memdelete(instance);
+		}
 		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
+	_add_custom_scene_to_view(control_instance);
 
-	preview_content->add_child(instance);
 	emit_signal(SNAME("scene_reloaded"));
+}
+
+void SceneThemeEditorPreview::_add_custom_scene_to_view(Control *p_control_instance) {
+	ERR_FAIL_NULL(p_control_instance);
+	Control *pivot = memnew(Control);
+	pivot->set_name("CustomThemePreview");
+	Size2i default_size;
+	default_size.x = ProjectSettings::get_singleton()->get_setting("display/window/size/viewport_width");
+	default_size.y = ProjectSettings::get_singleton()->get_setting("display/window/size/viewport_height");
+	pivot->set_custom_minimum_size(default_size);
+	pivot->set_custom_maximum_size(default_size);
+	preview_content->add_child(pivot);
+	pivot->add_child(p_control_instance);
+	{
+		// Allow the canvas to shrink.
+		Rect2 rect;
+		_get_occupied_area(p_control_instance, &rect, Vector2());
+		Size2 size = rect.size;
+		size = size.min(default_size);
+		pivot->set_custom_minimum_size(size);
+	}
 }
 
 void SceneThemeEditorPreview::_notification(int p_what) {
@@ -537,13 +564,15 @@ bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {
 		return false;
 	}
 
-	if (!Object::cast_to<Control>(instance)) {
+	Control *control_instance = Object::cast_to<Control>(instance);
+	if (!control_instance) {
 		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
 		memdelete(instance);
 		return false;
 	}
 
-	preview_content->add_child(instance);
+	_add_custom_scene_to_view(control_instance);
+
 	return true;
 }
 
