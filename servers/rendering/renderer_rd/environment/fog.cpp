@@ -1162,9 +1162,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		params.screen_size[1] = p_settings.rb_size.y;
 	}
 
-	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_settings.env);
-	sky_transform = sky_transform.inverse() * p_cam_transform.basis;
-	RendererRD::MaterialStorage::store_transform_3x3(sky_transform, params.radiance_inverse_xform);
+	RendererRD::MaterialStorage::store_transform_3x3(p_cam_transform.basis, params.radiance_inverse_xform);
 
 	RD::get_singleton()->draw_command_begin_label("Render Volumetric Fog");
 
