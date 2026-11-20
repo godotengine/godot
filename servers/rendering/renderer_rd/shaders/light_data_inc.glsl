@@ -73,7 +73,7 @@ struct DirectionalLightData {
 	float fade_from;
 	float fade_to;
 	uint sscs_index;
-	uint pad;
+	float projector_not_repeat;
 	uint bake_mode;
 	float volumetric_fog_energy;
 	vec4 shadow_bias;
@@ -90,4 +90,7 @@ struct DirectionalLightData {
 	vec2 uv_scale2;
 	vec2 uv_scale3;
 	vec2 uv_scale4;
+	vec4 projector_matrix_line_x;
+	vec4 projector_matrix_line_y;
+	vec4 projector_rect; //projector rect in srgb decal atlas
 };
