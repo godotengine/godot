@@ -74,6 +74,34 @@ PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	return pi;
 }
 
+String PropertyInfo::serialize_hint_type(Variant::Type p_type, PropertyHint p_hint, const String &p_hint_string) {
+	String str = itos(p_type);
+	if (p_hint) {
+		str += "/" + itos(p_hint);
+	}
+	return str + ":" + p_hint_string;
+}
+
+String PropertyInfo::serialize_hint_type() {
+	return serialize_hint_type(type, hint, hint_string);
+}
+
+bool PropertyInfo::try_parse_hint_type_string(const String &p_string, Variant::Type &r_type, PropertyHint &r_hint, String &r_hint_string) {
+	int subtype_separator = p_string.find_char(':');
+	if (subtype_separator < 0) {
+		return false;
+	}
+	String subtype_string = p_string.substr(0, subtype_separator);
+	int slash_pos = subtype_string.find_char('/');
+	if (slash_pos >= 0) {
+		r_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
+		subtype_string = subtype_string.substr(0, slash_pos);
+	}
+	r_hint_string = p_string.substr(subtype_separator + 1);
+	r_type = Variant::Type(subtype_string.to_int());
+	return true;
+}
+
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	TypedArray<Dictionary> va;
 	for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
