@@ -1066,6 +1066,9 @@ void RendererSceneCull::instance_set_surface_override_material(RID p_instance, i
 	if (instance->base_type == RSE::INSTANCE_MESH) {
 		//may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
 		instance->materials.resize(MAX(p_surface + 1, RSG::mesh_storage->mesh_get_surface_count(instance->base)));
+	} else if (instance->base_type == RSE::INSTANCE_MULTIMESH) {
+		RID mesh = RSG::mesh_storage->multimesh_get_mesh(instance->base);
+		instance->materials.resize(MAX(p_surface + 1, RSG::mesh_storage->mesh_get_surface_count(mesh)));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
@@ -4207,6 +4210,12 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) const {
 			_instance_update_mesh_instance(p_instance);
 		}
 
+		if (p_instance->base_type == RSE::INSTANCE_MULTIMESH) {
+			RID mesh = RSG::mesh_storage->multimesh_get_mesh(p_instance->base);
+			int new_mat_count = mesh.is_valid() ? RSG::mesh_storage->mesh_get_surface_count(mesh) : 0;
+			p_instance->materials.resize(new_mat_count);
+		}
+
 		if (p_instance->base_type == RSE::INSTANCE_PARTICLES) {
 			// update the process material dependency
 
@@ -4273,7 +4282,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) const {
 
 						int sc = RSG::mesh_storage->mesh_get_surface_count(mesh);
 						for (int i = 0; i < sc; i++) {
-							RID mat = RSG::mesh_storage->mesh_surface_get_material(mesh, i);
+							RID mat = p_instance->materials[i].is_valid() ? p_instance->materials[i] : RSG::mesh_storage->mesh_surface_get_material(mesh, i);
 
 							if (!mat.is_valid()) {
 								cast_shadows = true;
