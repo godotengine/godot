@@ -1890,7 +1890,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 	int px = (-get_value() + play_position_pos) * scale + get_name_limit();
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
-		int h = editor->box_selection_container->get_global_position().y - get_global_position().y;
+		int h = editor->overlay_container->get_global_position().y - get_global_position().y;
 		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
 		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
@@ -2354,21 +2354,31 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				// Pre-calculate the actual order of the keys. This is needed as a move might be happening
 				// which might cause the keys to be in a different order than their current indices.
-				Vector<Pair<float, int>> sorted_keys;
+				LocalVector<Pair<float, int>> sorted_keys;
 
 				for (int i = 0; i < animation->track_get_key_count(track); i++) {
-					float time_offset = animation->track_get_key_time(track, i) - timeline->get_value();
+					float key_time = animation->track_get_key_time(track, i);
+
 					if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
-						time_offset += editor->get_moving_selection_offset();
+						key_time += editor->get_moving_selection_offset();
 					}
 
-					float screen_pos = time_offset * scale + limit;
+					if (editor->is_key_selected(track, i) && editor->is_scaling_selection()) {
+						const float drag = editor->get_scaling_selection().drag;
+						const float pivot = editor->get_scaling_selection().pivot;
+						const float drag_start = editor->get_scaling_selection().drag_start;
+						const float scale_factor = (drag - pivot) / (drag_start - pivot);
+						key_time = editor->scale_time(key_time, pivot, scale_factor);
+						key_time = MAX(0.0f, key_time);
+					}
+
+					float screen_pos = (key_time - timeline->get_value()) * scale + limit;
 					sorted_keys.push_back(Pair<float, int>(screen_pos, i));
 				}
 
 				sorted_keys.sort();
 
-				for (int i = 0; i < sorted_keys.size(); i++) {
+				for (size_t i = 0; i < sorted_keys.size(); i++) {
 					float offset = sorted_keys[i].first;
 					int original_index = sorted_keys[i].second;
 					bool selected = editor->is_key_selected(track, original_index);
@@ -2901,6 +2911,12 @@ Control::CursorShape AnimationTrackEdit::get_cursor_shape(const Point2 &p_pos) c
 	if (command_or_control_pressed && animation->track_get_type(track) == Animation::TYPE_METHOD && hovering_key_idx != -1) {
 		return Control::CURSOR_POINTING_HAND;
 	}
+
+	const bool pos_over_scaling_handle = editor->get_scale_handle_at_position(get_global_position() + p_pos) != AnimationTrackEditor::SCALE_HANDLE_NONE;
+	if (!editor->is_moving_selection() && (pos_over_scaling_handle || editor->is_scaling_selection())) {
+		return Control::CURSOR_HSIZE;
+	}
+
 	return get_default_cursor_shape();
 }
 
@@ -3266,7 +3282,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (!moving_selection && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	if (!moving_selection && !editor->is_scaling_selection() && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		Point2 pos = mb->get_position();
 		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
 			// Can do something with menu too! show insert key.
@@ -3312,13 +3328,18 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && moving_selection_attempt) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			moving_selection_attempt = false;
-			if (moving_selection && moving_selection_effective) {
-				if (std::abs(editor->get_moving_selection_offset()) > CMP_EPSILON) {
-					emit_signal(SNAME("move_selection_commit"));
-				}
-			} else if (select_single_attempt != -1) {
+			const bool effective_move = moving_selection && moving_selection_effective;
+
+			if (effective_move && std::abs(editor->get_moving_selection_offset()) > CMP_EPSILON) {
+				emit_signal(SNAME("move_selection_commit"));
+			} else if (moving_selection) {
+				emit_signal(SNAME("move_selection_cancel"));
+			}
+
+			if (!effective_move && select_single_attempt != -1) {
 				emit_signal(SNAME("select_key"), select_single_attempt, true);
 			}
+
 			moving_selection = false;
 			select_single_attempt = -1;
 		}
@@ -3406,7 +3427,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggregate, bool p_deselectable) {
-	if (!animation->track_is_compressed(track)) { // Selecting compressed keyframes for editing is not possible.
+	if (!animation->track_is_compressed(track) && editor->get_scale_handle_at_position(get_global_position() + p_pos) == AnimationTrackEditor::SCALE_HANDLE_NONE) { // Selecting compressed keyframes for editing is not possible.
 		float scale = timeline->get_zoom_scale();
 		int limit = timeline->get_name_limit();
 		int limit_end = get_size().width - timeline->get_buttons_width();
@@ -4087,7 +4108,14 @@ AnimationTrackEditGroup::AnimationTrackEditGroup() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
-//////////////////////////////////////
+Control::CursorShape AnimationTrackEditGroup::get_cursor_shape(const Point2 &p_pos) const {
+	const bool pos_over_scaling_handle = editor->get_scale_handle_at_position(get_global_position() + p_pos) != AnimationTrackEditor::SCALE_HANDLE_NONE;
+	if (!editor->is_moving_selection() && (pos_over_scaling_handle || editor->is_scaling_selection())) {
+		return Control::CURSOR_HSIZE;
+	}
+
+	return get_default_cursor_shape();
+}
 
 void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
 	if (track_edit_plugins.has(p_plugin)) {
@@ -4199,6 +4227,10 @@ Ref<Animation> AnimationTrackEditor::get_current_animation() const {
 	return animation;
 }
 
+Control *AnimationTrackEditor::get_scale_control() const {
+	return scale_control;
+}
+
 void AnimationTrackEditor::_root_removed() {
 	root = nullptr;
 }
@@ -4295,10 +4327,15 @@ void AnimationTrackEditor::cleanup() {
 
 void AnimationTrackEditor::_name_limit_changed() {
 	_redraw_tracks();
+	_update_scale_control();
 }
 
 void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_timeline_only) {
 	emit_signal(SNAME("timeline_changed"), p_new_pos, p_timeline_only, false);
+}
+
+void AnimationTrackEditor::_zoom_changed() {
+	_update_scale_control();
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
@@ -5442,6 +5479,8 @@ void AnimationTrackEditor::_update_tracks() {
 		}
 
 	} else {
+		// Sort a copy so track_edits still contains the correct track order.
+		Vector<AnimationTrackEdit *> sorted_track_edits = track_edits;
 		if (use_alphabetic_sorting) {
 			struct TrackAlphaCompare {
 				bool operator()(const AnimationTrackEdit *p_lhs, const AnimationTrackEdit *p_rhs) const {
@@ -5451,10 +5490,10 @@ void AnimationTrackEditor::_update_tracks() {
 				}
 			};
 
-			track_edits.sort_custom<TrackAlphaCompare>();
+			sorted_track_edits.sort_custom<TrackAlphaCompare>();
 		}
 
-		for (AnimationTrackEdit *track_edit : track_edits) {
+		for (AnimationTrackEdit *track_edit : sorted_track_edits) {
 			track_vbox->add_child(track_edit);
 		}
 	}
@@ -5692,6 +5731,10 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 			_update_nearest_fps_label();
 		} break;
+
+		case NOTIFICATION_RESIZED: {
+			_update_scale_control();
+		}
 	}
 }
 
@@ -6227,7 +6270,117 @@ void AnimationTrackEditor::_move_selection_begin() {
 
 void AnimationTrackEditor::_move_selection(float p_offset) {
 	moving_selection_offset = p_offset;
+	scale_control->queue_redraw();
 	_redraw_tracks();
+}
+
+void AnimationTrackEditor::_scale_selection_begin(float p_pivot, float p_drag_start) {
+	scaling_selection.pivot = p_pivot;
+	scaling_selection.drag = p_drag_start;
+	scaling_selection.drag_start = p_drag_start;
+	scaling_selection.dragging = true;
+}
+
+void AnimationTrackEditor::_scale_selection(float p_drag_time) {
+	scaling_selection.drag = p_drag_time;
+	_redraw_tracks();
+}
+
+void AnimationTrackEditor::_scale_selection_cancel() {
+	scaling_selection.dragging = false;
+	scaling_selection.drag = scaling_selection.drag_start;
+	_update_scale_control();
+	_redraw_tracks();
+}
+
+bool AnimationTrackEditor::_scale_selection_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && scaling_selection.dragging) {
+		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			float original_length = scaling_selection.drag_start - scaling_selection.pivot;
+			if (Math::is_zero_approx(original_length)) {
+				_scale_selection_cancel();
+				return true;
+			}
+
+			float scaled_length = scaling_selection.drag - scaling_selection.pivot;
+			float scale_factor = scaled_length / original_length;
+			_scale_selection_commit(scaling_selection.pivot, scale_factor);
+			return true;
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+			_scale_selection_cancel();
+			return true;
+		}
+	}
+
+	const bool left_mouse_pressed = mb.is_valid() &&
+			mb->is_pressed() &&
+			mb->get_button_index() == MouseButton::LEFT;
+
+	if (left_mouse_pressed && scale_control->is_visible_in_tree()) {
+		Point2 global_pos = scroll->get_global_transform().xform(mb->get_position());
+		ScaleHandle sh = get_scale_handle_at_position(global_pos);
+		if (sh == SCALE_HANDLE_LEFT) {
+			_scale_selection_begin(selection_right_time, selection_left_time);
+			return true;
+		} else if (sh == SCALE_HANDLE_RIGHT) {
+			_scale_selection_begin(selection_left_time, selection_right_time);
+			return true;
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+
+	if (mm.is_valid() && scaling_selection.dragging) {
+		static const int HALF_SCALE_HANDLE_WIDTH = Math::round(12 * EDSCALE);
+
+		float raw_drag_time = _overlay_pixel_to_time(mm->get_position().x);
+		float scale_dir_offset = CLAMP((raw_drag_time - scaling_selection.pivot) * timeline->get_zoom_scale(), -HALF_SCALE_HANDLE_WIDTH, HALF_SCALE_HANDLE_WIDTH);
+		float new_time = _overlay_pixel_to_time(mm->get_position().x - scale_dir_offset);
+		new_time = MAX(0.0f, new_time); // Don't allow scaling into negative time
+		float snapped_time = snap_time(new_time);
+
+		// We only snap, if drag is closer to a snapped time than to the start time.
+		// This allows you to reset back to the spot you started from and you always snap the direction you expect.
+		const bool closest_to_drag_start = Math::abs(new_time - scaling_selection.drag_start) < Math::abs(new_time - snapped_time);
+		float applied_time = closest_to_drag_start ? scaling_selection.drag_start : snapped_time;
+
+		_scale_selection(applied_time);
+		float pivot_x = Math::round(_overlay_time_to_pixel(scaling_selection.pivot));
+		Rect2 new_control = Rect2(pivot_x, scale_control->get_begin().y, 0.0, scale_control->get_size().y);
+		float snapped_pixel_x = Math::round(_overlay_time_to_pixel(applied_time));
+		new_control = new_control.expand(Point2(snapped_pixel_x, scale_control->get_begin().y));
+		scale_control->set_rect(new_control);
+
+		return true;
+	}
+	return false;
+}
+
+int AnimationTrackEditor::_get_timeline_margin_left() const {
+	return timeline_mc->get_theme_constant(SNAME("margin_left"), SNAME("AnimationTrackMargins"));
+}
+
+int AnimationTrackEditor::_get_timeline_content_left() const {
+	return timeline->get_name_limit() + _get_timeline_margin_left();
+}
+
+int AnimationTrackEditor::_get_timeline_content_right() const {
+	// Convert the timeline's local right boundary to overlay coordinates.
+	return timeline->get_size().width - timeline->get_buttons_width() + _get_timeline_margin_left();
+}
+
+float AnimationTrackEditor::_overlay_time_to_pixel(float p_time) const {
+	float offset = p_time - timeline->get_value();
+	return offset * timeline->get_zoom_scale() + _get_timeline_content_left();
+}
+
+float AnimationTrackEditor::_overlay_pixel_to_time(float p_x) const {
+	float offset = (p_x - _get_timeline_content_left()) / timeline->get_zoom_scale();
+	return offset + timeline->get_value();
 }
 
 struct _AnimMoveRestore {
@@ -6263,6 +6416,7 @@ void AnimationTrackEditor::_clear_key_edit() {
 
 void AnimationTrackEditor::_clear_selection(bool p_update) {
 	selection.clear();
+	scale_control->hide();
 
 	if (p_update) {
 		_redraw_tracks();
@@ -6286,6 +6440,7 @@ void AnimationTrackEditor::_update_key_edit_callback() {
 	update_key_edit_pending = false;
 
 	_clear_key_edit();
+	scale_control->hide();
 	if (animation.is_null()) {
 		return;
 	}
@@ -6345,8 +6500,56 @@ void AnimationTrackEditor::_update_key_edit_callback() {
 		multi_key_edit->use_fps = timeline->is_using_fps();
 		multi_key_edit->root_path = root;
 
+		_queue_update_scale_control();
+
 		EditorNode::get_singleton()->push_item(multi_key_edit);
 	}
+}
+
+void AnimationTrackEditor::_queue_update_scale_control() {
+	if (!scale_control_update_pending) {
+		scale_control_update_pending = true;
+		callable_mp(this, &AnimationTrackEditor::_update_scale_control_callback).call_deferred();
+	}
+}
+
+void AnimationTrackEditor::_update_scale_control_callback() {
+	scale_control_update_pending = false;
+	scale_control->set_visible(_update_scale_control());
+}
+
+bool AnimationTrackEditor::_update_scale_control() {
+	if (read_only || selection.size() <= 1) {
+		return false;
+	}
+	Rect2 bounds = Rect2();
+	bool first_key = true;
+
+	selection_left_time = 1e20f;
+	selection_right_time = -1e20f;
+	for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+		int track = E.key.track;
+		int key_id = E.key.key;
+		Rect2 key_rect = Rect2();
+		key_rect.size.height = track_edits[track]->get_size().height;
+		float key_time = animation->track_get_key_time(track, key_id);
+		selection_left_time = MIN(key_time, selection_left_time);
+		selection_right_time = MAX(key_time, selection_right_time);
+		key_rect.position.x = Math::round(_overlay_time_to_pixel(key_time));
+		key_rect.position.y = track_edits[track]->get_global_position().y - scroll->get_global_position().y;
+
+		if (first_key) {
+			bounds = key_rect;
+			first_key = false;
+		} else {
+			bounds = bounds.merge(key_rect);
+		}
+	}
+
+	scale_control->set_rect(bounds);
+	scale_control->queue_redraw();
+
+	return !Math::is_zero_approx(bounds.size.x);
 }
 
 void AnimationTrackEditor::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
@@ -6381,7 +6584,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Animation Move Keys"));
 
-	List<_AnimMoveRestore> to_restore;
+	LocalVector<_AnimMoveRestore> to_restore;
 
 	float motion = moving_selection_offset;
 	// 1 - remove the keys.
@@ -6475,6 +6678,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 
 void AnimationTrackEditor::_move_selection_cancel() {
 	moving_selection = false;
+	scale_control->queue_redraw();
 	_redraw_tracks();
 }
 
@@ -6486,18 +6690,102 @@ float AnimationTrackEditor::get_moving_selection_offset() const {
 	return moving_selection_offset;
 }
 
+bool AnimationTrackEditor::is_scaling_selection() const {
+	return scaling_selection.dragging;
+}
+
+AnimationTrackEditor::ScaleHandle AnimationTrackEditor::get_scale_handle_at_position(const Point2 &p_global_pos) const {
+	if (!get_scale_control()->is_visible()) {
+		return SCALE_HANDLE_NONE;
+	}
+	static const int SCALE_HANDLE_WIDTH = 24;
+	static const int KEY_ICON_HALF_WIDTH = 5;
+
+	Vector2 local_pos = overlay_container->get_global_transform().xform_inv(p_global_pos);
+	Rect2 scale_rect = scale_control->get_rect();
+
+	Rect2 left_edge = Rect2(
+			scale_rect.position - Vector2(Math::round(SCALE_HANDLE_WIDTH * EDSCALE), 0),
+			Vector2(Math::round((SCALE_HANDLE_WIDTH - KEY_ICON_HALF_WIDTH) * EDSCALE), scale_rect.size.y));
+	Rect2 right_edge = Rect2(
+			scale_rect.position + Vector2(scale_rect.size.x + Math::round(KEY_ICON_HALF_WIDTH * EDSCALE), 0),
+			Vector2(Math::round((SCALE_HANDLE_WIDTH - KEY_ICON_HALF_WIDTH) * EDSCALE), scale_rect.size.y));
+
+	if (left_edge.has_point(local_pos)) {
+		return SCALE_HANDLE_LEFT;
+	} else if (right_edge.has_point(local_pos)) {
+		return SCALE_HANDLE_RIGHT;
+	}
+
+	return SCALE_HANDLE_NONE;
+}
+
+const AnimationTrackEditor::ScalingSelection &AnimationTrackEditor::get_scaling_selection() const {
+	return scaling_selection;
+}
+
+float AnimationTrackEditor::scale_time(float p_time, float p_pivot, float p_scale_factor) const {
+	return (p_time - p_pivot) * p_scale_factor + p_pivot;
+}
+
 void AnimationTrackEditor::_box_selection_draw() {
 	const Rect2 selection_rect = Rect2(Point2(), box_selection->get_size());
 	box_selection->draw_rect(selection_rect, get_theme_color(SNAME("box_selection_fill_color"), EditorStringName(Editor)));
 	box_selection->draw_rect(selection_rect, get_theme_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor)), false, Math::round(EDSCALE));
 }
 
+void AnimationTrackEditor::_scale_control_draw() {
+	static const int HALF_SCALE_HANDLE_WIDTH = 12;
+	static const int SCALE_HANDLE_LINE_WIDTH = 3;
+
+	Rect2 scale_rect = Rect2(Point2(), scale_control->get_size());
+	scale_rect = scale_rect.grow_individual(HALF_SCALE_HANDLE_WIDTH * EDSCALE, 0, HALF_SCALE_HANDLE_WIDTH * EDSCALE, 0);
+
+	Point2 move_offset = moving_selection ? Point2(moving_selection_offset * timeline->get_zoom_scale(), 0) : Point2();
+
+	int left_limit = _get_timeline_content_left();
+	int right_limit = _get_timeline_content_right();
+
+	float left_line_x = scale_control->get_position().x + move_offset.x;
+	float right_line_x = left_line_x + scale_control->get_size().x;
+
+	Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+	float line_width = Math::round(SCALE_HANDLE_LINE_WIDTH * EDSCALE);
+
+	if (left_line_x >= left_limit && left_line_x <= right_limit) {
+		Point2 line_start = scale_rect.position + move_offset;
+		Point2 line_end = line_start + Point2(0, scale_rect.size.y);
+		scale_control->draw_line(line_start, line_end, accent_color, line_width);
+	}
+
+	if (right_line_x >= left_limit && right_line_x <= right_limit) {
+		Point2 line_start = scale_rect.position + move_offset + Point2(scale_rect.size.x, 0);
+		Point2 line_end = line_start + Point2(0, scale_rect.size.y);
+		scale_control->draw_line(line_start, line_end, accent_color, line_width);
+	}
+
+	Rect2 overlay_rect = Rect2(scale_control->get_position() + move_offset, scale_control->get_size());
+	Rect2 visible_region = Rect2(left_limit, overlay_rect.position.y, right_limit - left_limit, overlay_rect.size.y);
+	overlay_rect = overlay_rect.intersection(visible_region);
+
+	if (overlay_rect.has_area()) {
+		Rect2 local_clipped_rect = Rect2(overlay_rect.position - scale_control->get_position(), overlay_rect.size);
+		Color overlay_color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+		overlay_color.a = 0.1;
+		scale_control->draw_rect(local_clipped_rect, overlay_color);
+	}
+}
+
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
-	if (!box_selecting) {
+	if (!box_selecting && !scaling_selection.dragging) {
 		if (panner->gui_input(p_event, scroll->get_global_rect())) {
 			scroll->accept_event();
 			return;
 		}
+	}
+
+	if (_scale_selection_gui_input(p_event)) {
+		return;
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -6525,7 +6813,6 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 			} else if (!mb->is_command_or_control_pressed() && !mb->is_shift_pressed()) {
 				_clear_selection(true); // Clear it.
 			}
-
 			box_selection->hide();
 			box_selecting = false;
 		}
@@ -6582,9 +6869,8 @@ void AnimationTrackEditor::_toggle_bezier_edit() {
 }
 
 void AnimationTrackEditor::_scroll_changed(const Vector2 &p_val) {
+	const Vector2 scroll_difference = p_val - prev_scroll_position;
 	if (box_selecting) {
-		const Vector2 scroll_difference = p_val - prev_scroll_position;
-
 		Vector2 from = box_selecting_from - scroll_difference;
 		Vector2 to = box_selecting_to;
 
@@ -6603,6 +6889,12 @@ void AnimationTrackEditor::_scroll_changed(const Vector2 &p_val) {
 		box_select_rect = rect;
 	}
 
+	if (scale_control->is_visible()) {
+		Rect2 offset_scale_rect = Rect2(scale_control->get_rect().position - scroll_difference, scale_control->get_rect().size);
+		scale_control->set_rect(offset_scale_rect);
+		scale_control->queue_redraw();
+	}
+
 	prev_scroll_position = p_val;
 }
 
@@ -6611,7 +6903,7 @@ void AnimationTrackEditor::_v_scroll_changed(float p_val) {
 }
 
 void AnimationTrackEditor::_h_scroll_changed(float p_val) {
-	_scroll_changed(Vector2(p_val, prev_scroll_position.y));
+	_scroll_changed(Vector2(p_val * timeline->get_zoom_scale(), prev_scroll_position.y));
 }
 
 void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
@@ -6634,7 +6926,7 @@ void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin,
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
 	bezier_mc->hide();
-	box_selection_container->show();
+	overlay_container->show();
 	bezier_edit_icon->set_pressed(false);
 	auto_fit->show();
 	auto_fit_bezier->hide();
@@ -6644,7 +6936,7 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 	_clear_selection(); // Bezier probably wants to use a separate selection mode.
 	bezier_edit->set_root(root);
 	bezier_edit->set_animation_and_track(animation, p_for_track, read_only);
-	box_selection_container->hide();
+	overlay_container->hide();
 	bezier_mc->show();
 	auto_fit->hide();
 	auto_fit_bezier->show();
@@ -7228,117 +7520,23 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				return;
 			}
 
-			float from_t = 1e20;
-			float to_t = -1e20;
-			float len = -1e20;
-			float pivot = 0;
-
+			float from_t = 1e20f;
+			float to_t = -1e20f;
 			for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
-				float t = animation->track_get_key_time(E.key.track, E.key.key);
-				if (t < from_t) {
-					from_t = t;
-				}
-				if (t > to_t) {
-					to_t = t;
-				}
+				float time = animation->track_get_key_time(E.key.track, E.key.key);
+				from_t = MIN(from_t, time);
+				to_t = MAX(to_t, time);
 			}
 
-			len = to_t - from_t;
-			if (scale_from_cursor) {
-				pivot = timeline->get_play_position();
-			} else {
-				pivot = from_t;
+			float scale_factor = scale->get_value();
+			float pivot = scale_from_cursor ? timeline->get_play_position() : from_t;
+			float time_offset = 0.0f;
+
+			if (scale_factor < 0 && !scale_from_cursor) {
+				time_offset = (to_t - from_t) * Math::abs(scale_factor);
 			}
 
-			float s = scale->get_value();
-			ERR_FAIL_COND_MSG(s == 0, "Can't scale to 0.");
-
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Animation Scale Keys"));
-
-			List<_AnimMoveRestore> to_restore;
-
-			// 1 - Remove the keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
-			}
-			// 2 - Remove overlapped keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newtime = (E->get().pos - from_t) * s + from_t;
-				int idx = animation->track_find_key(E->key().track, newtime, Animation::FIND_MODE_APPROX);
-				if (idx == -1) {
-					continue;
-				}
-				SelectedKey sk;
-				sk.key = idx;
-				sk.track = E->key().track;
-				if (selection.has(sk)) {
-					continue; // Already in selection, don't save.
-				}
-
-				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
-				_AnimMoveRestore amr;
-
-				amr.key = animation->track_get_key_value(E->key().track, idx);
-				amr.track = E->key().track;
-				amr.time = newtime;
-				amr.transition = animation->track_get_key_transition(E->key().track, idx);
-				if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-					amr.handle_mode = animation->bezier_track_get_key_handle_mode(E->key().track, idx);
-				}
-
-				to_restore.push_back(amr);
-			}
-
-#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + pivot
-			// 3 - Move the keys (re insert them).
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = NEW_POS(E->get().pos);
-				undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-				if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-					undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, newpos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
-				}
-			}
-
-			// 4 - (Undo) Remove inserted keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float newpos = NEW_POS(E->get().pos);
-				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
-			}
-
-			// 5 - (Undo) Reinsert keys.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
-				if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-					undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, E->get().pos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
-				}
-			}
-
-			// 6 - (Undo) Reinsert overlapped keys.
-			for (_AnimMoveRestore &amr : to_restore) {
-				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
-				if (animation->track_get_type(amr.track) == Animation::TYPE_BEZIER) {
-					undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), amr.track, amr.time, amr.handle_mode);
-				}
-			}
-
-			undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
-			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
-
-			// 7 - Reselect.
-			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-				float oldpos = E->get().pos;
-				float newpos = NEW_POS(oldpos);
-				if (newpos >= 0) {
-					undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
-				}
-				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
-			}
-#undef NEW_POS
-
-			undo_redo->add_do_method(this, "_redraw_tracks");
-			undo_redo->add_undo_method(this, "_redraw_tracks");
-			undo_redo->commit_action();
+			_scale_selection_commit(pivot, scale_factor, time_offset);
 		} break;
 
 		case EDIT_SET_START_OFFSET: {
@@ -7946,6 +8144,16 @@ void AnimationTrackEditor::_view_group_toggle() {
 	_update_tracks();
 	view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 	bezier_edit->set_filtered(selected_filter->is_pressed());
+	if (selection.size() > 1) {
+		callable_mp(this, &AnimationTrackEditor::_update_scale_control).call_deferred();
+	}
+}
+
+void AnimationTrackEditor::_alphabetical_sorting_toggle() {
+	_update_tracks();
+	if (selection.size() > 1) {
+		callable_mp(this, &AnimationTrackEditor::_update_scale_control).call_deferred();
+	}
 }
 
 bool AnimationTrackEditor::is_grouping_tracks() {
@@ -8043,7 +8251,7 @@ float AnimationTrackEditor::get_snap_unit() {
 }
 
 void AnimationTrackEditor::_update_timeline_margins() {
-	int margin_left = timeline_mc->get_theme_constant(SNAME("margin_left"), SNAME("AnimationTrackMargins"));
+	int margin_left = _get_timeline_margin_left();
 	int margin_right = timeline_mc->get_theme_constant(SNAME("margin_right"), SNAME("AnimationTrackMargins"));
 
 	// Prevent the timeline cursor from misaligning with the tracks on the right-to-left layout.
@@ -8139,6 +8347,123 @@ void AnimationTrackEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("keying_changed"));
 	ADD_SIGNAL(MethodInfo("animation_len_changed", PropertyInfo(Variant::FLOAT, "len")));
 	ADD_SIGNAL(MethodInfo("animation_step_changed", PropertyInfo(Variant::FLOAT, "step")));
+}
+
+void AnimationTrackEditor::_scale_selection_commit(float p_pivot, float p_scale_factor, float p_time_offset) {
+	scaling_selection.dragging = false;
+
+	if (selection.is_empty()) {
+		return;
+	}
+
+	if (Math::is_equal_approx(p_scale_factor, 1.0f) && Math::is_zero_approx(p_time_offset)) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Animation Scale Keys"));
+
+	LocalVector<_AnimMoveRestore> to_restore;
+
+	// 1 - Remove the keys
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
+	}
+
+	// 2 - Remove overlapped keys
+	LocalVector<Pair<int, int>> overlaps;
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newtime = _get_scaled_key_time(E->get().pos, p_pivot, p_scale_factor, p_time_offset);
+		int idx = animation->track_find_key(E->key().track, newtime, Animation::FIND_MODE_APPROX);
+		if (idx == -1) {
+			continue;
+		}
+		Pair<int, int> overlap(E->key().track, idx);
+		if (overlaps.has(overlap)) {
+			continue;
+		}
+		SelectedKey sk;
+		sk.key = idx;
+		sk.track = E->key().track;
+		if (selection.has(sk)) {
+			continue;
+		}
+		overlaps.push_back(overlap);
+
+		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newtime);
+		_AnimMoveRestore amr;
+		amr.key = animation->track_get_key_value(E->key().track, idx);
+		amr.track = E->key().track;
+		amr.time = newtime;
+		amr.transition = animation->track_get_key_transition(E->key().track, idx);
+		if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
+			amr.handle_mode = animation->bezier_track_get_key_handle_mode(E->key().track, idx);
+		}
+		to_restore.push_back(amr);
+	}
+
+	// 3 - Move the keys (reinsert them)
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newpos = _get_scaled_key_time(E->get().pos, p_pivot, p_scale_factor, p_time_offset);
+		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos,
+				animation->track_get_key_value(E->key().track, E->key().key),
+				animation->track_get_key_transition(E->key().track, E->key().key));
+		if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
+			undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, newpos,
+					animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
+		}
+	}
+
+	// 4 - (Undo) Remove inserted keys
+	LocalVector<Pair<int, float>> insertions;
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float newpos = _get_scaled_key_time(E->get().pos, p_pivot, p_scale_factor, p_time_offset);
+		Pair<int, float> insertion(E->key().track, newpos);
+		if (insertions.has(insertion)) {
+			continue;
+		}
+		insertions.push_back(insertion);
+		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->key().track, newpos);
+	}
+
+	// 5 - (Undo) Reinsert keys
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos,
+				animation->track_get_key_value(E->key().track, E->key().key),
+				animation->track_get_key_transition(E->key().track, E->key().key));
+		if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
+			undo_redo->add_undo_method(
+					this,
+					"_bezier_track_set_key_handle_mode_at_time",
+					animation.ptr(), E->key().track, E->get().pos,
+					animation->bezier_track_get_key_handle_mode(E->key().track,
+							E->key().key));
+		}
+	}
+
+	// 6 - (Undo) Reinsert overlapped keys
+	for (_AnimMoveRestore &amr : to_restore) {
+		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
+		if (animation->track_get_type(amr.track) == Animation::TYPE_BEZIER) {
+			undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time",
+					animation.ptr(), amr.track, amr.time, amr.handle_mode);
+		}
+	}
+
+	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+
+	// 7 - Reselect
+	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
+		float oldpos = E->get().pos;
+		float newpos = _get_scaled_key_time(E->get().pos, p_pivot, p_scale_factor, p_time_offset);
+		undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
+		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
+	}
+
+	undo_redo->add_do_method(this, "_redraw_tracks");
+	undo_redo->add_undo_method(this, "_redraw_tracks");
+	undo_redo->commit_action();
 }
 
 void AnimationTrackEditor::_pick_track_filter_text_changed(const String &p_newtext) {
@@ -8248,16 +8573,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("track_added", callable_mp(this, &AnimationTrackEditor::_add_track));
 	timeline->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_timeline_value_changed));
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
+	timeline->connect("zoom_changed", callable_mp(this, &AnimationTrackEditor::_zoom_changed));
 	timeline->connect("filter_changed", callable_mp(this, &AnimationTrackEditor::_update_tracks));
 
 	panner.instantiate();
 	panner->set_scroll_zoom_factor(AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN);
 	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
 
-	box_selection_container = memnew(Control);
-	box_selection_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	box_selection_container->set_clip_contents(true);
-	timeline_vbox->add_child(box_selection_container);
+	overlay_container = memnew(Control);
+	overlay_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	overlay_container->set_clip_contents(true);
+	timeline_vbox->add_child(overlay_container);
 
 	bezier_mc = memnew(MarginContainer);
 	bezier_mc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -8285,7 +8611,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	scroll = memnew(ScrollContainer);
 	scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
-	box_selection_container->add_child(scroll);
+	overlay_container->add_child(scroll);
 	scroll->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 
 	scroll->set_focus_mode(FOCUS_CLICK);
@@ -8296,7 +8622,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scroll->connect(SceneStringName(theme_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_margins), CONNECT_DEFERRED);
 	scroll->get_v_scroll_bar()->connect(SceneStringName(visibility_changed), callable_mp(this, &AnimationTrackEditor::_update_timeline_margins));
 	scroll->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_v_scroll_changed));
-	scroll->get_h_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 
 	timeline_vbox->set_custom_minimum_size(Size2(0, 150) * EDSCALE);
 
@@ -8304,6 +8629,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	hscroll->share(timeline);
 	hscroll->hide();
 	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_scroll));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_h_scroll_changed));
 	timeline_vbox->add_child(hscroll);
 	timeline->set_hscroll(hscroll);
 
@@ -8391,7 +8717,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	alphabetic_sorting = memnew(Button);
 	alphabetic_sorting->set_flat(true);
-	alphabetic_sorting->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_update_tracks));
+	alphabetic_sorting->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_alphabetical_sorting_toggle));
 	alphabetic_sorting->set_toggle_mode(true);
 	alphabetic_sorting->set_tooltip_text(TTRC("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
 
@@ -8591,10 +8917,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	ichb->add_child(insert_confirm_reset);
 
 	box_selection = memnew(Control);
-	box_selection_container->add_child(box_selection);
+	overlay_container->add_child(box_selection);
 	box_selection->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	box_selection->hide();
 	box_selection->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_box_selection_draw));
+
+	scale_control = memnew(Control);
+	overlay_container->add_child(scale_control);
+	scale_control->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scale_control->hide();
+	scale_control->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEditor::_scale_control_draw));
 
 	// Default Plugins.
 
