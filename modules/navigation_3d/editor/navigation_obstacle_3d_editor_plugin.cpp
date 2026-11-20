@@ -268,11 +268,7 @@ void NavigationObstacle3DEditorPlugin::edit(Object *p_object) {
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	if (obstacle_node) {
-		if (obstacle_node->get_vertices().is_empty()) {
-			set_mode(MODE_CREATE);
-		} else {
-			set_mode(MODE_EDIT);
-		}
+		set_mode(MODE_EDIT);
 		wip_vertices.clear();
 		wip_active = false;
 		edited_point = -1;
