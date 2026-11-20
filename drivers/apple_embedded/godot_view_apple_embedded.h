@@ -44,7 +44,7 @@ class String;
 
 @end
 
-@interface GDTView : UIView
+@interface GDTView : UIView <UIGestureRecognizerDelegate>
 
 @property(weak, nonatomic) GDTViewRenderer *renderer;
 @property(weak, nonatomic) id<GDTViewDelegate> delegate;
@@ -58,6 +58,12 @@ class String;
 
 @property(assign, nonatomic) float preferredFrameRate;
 
+@property(strong, nonatomic) UIPinchGestureRecognizer *pinchGesture;
+@property(strong, nonatomic) UIPanGestureRecognizer *panGesture;
+
+@property(assign, nonatomic) float pinchZoomFactor;
+@property(assign, nonatomic) CGPoint panTranslation;
+
 // Can be extended by subclasses
 - (void)godot_commonInit;
 
@@ -66,6 +72,9 @@ class String;
 
 - (void)startRendering;
 - (void)stopRendering;
+
+- (void)handlePinch:(UIPinchGestureRecognizer *)gesture;
+- (void)handlePan:(UIPanGestureRecognizer *)gesture;
 
 @end
 
