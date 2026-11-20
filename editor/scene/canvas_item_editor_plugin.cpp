@@ -441,16 +441,16 @@ Dictionary CanvasItemEditor::_get_context_data() {
 bool CanvasItemEditor::_select_click_on_item(const Variant &p_node, bool p_append) {
 	Node *node = Object::cast_to<Node>(p_node);
 	bool still_selected = true;
-	const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
+	const List<Node *> &full_node_list = editor_selection->get_full_selected_node_list();
 
-	if (p_append && !top_node_list.is_empty()) {
+	if (p_append && !full_node_list.is_empty()) {
 		if (editor_selection->is_selected(node)) {
 			// Already in the selection, remove it from the selected nodes
 			editor_selection->remove_node(node);
 			still_selected = false;
 
-			if (top_node_list.size() == 1) {
-				EditorNode::get_singleton()->push_item(top_node_list.front()->get());
+			if (full_node_list.size() == 1) {
+				EditorNode::get_singleton()->push_item(full_node_list.front()->get());
 			}
 		} else {
 			// Add the item to the selection
