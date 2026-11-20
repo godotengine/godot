@@ -810,6 +810,63 @@ int Object::get_method_argument_count(const StringName &p_method, bool *r_is_val
 	return 0;
 }
 
+Dictionary Object::_get_method_info_bind(const StringName &p_name) const {
+	bool valid = false;
+	MethodInfo mi = get_method_info(p_name, &valid);
+	if (valid) {
+		return mi.operator Dictionary();
+	}
+	return Dictionary();
+}
+
+MethodInfo Object::get_method_info(const StringName &p_method, bool *r_is_valid) const {
+	MethodInfo mi;
+	if (p_method == CoreStringName(free_)) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return mi;
+	}
+
+	if (script_instance) {
+		bool valid = false;
+		mi = script_instance->get_method_info(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return mi;
+		}
+	}
+
+	{
+		bool valid = ClassDB::get_method_info(get_class_name(), p_method, &mi);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return mi;
+		}
+	}
+
+	const Script *scr = Object::cast_to<Script>(this);
+	while (scr != nullptr) {
+		mi = scr->get_method_info(p_method);
+		if (!(mi == MethodInfo())) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return mi;
+		}
+		scr = scr->get_base_script().ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return mi;
+}
+
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 	if (r_valid) {
 		*r_valid = false;
@@ -1962,6 +2019,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_method", "method"), &Object::has_method);
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
+	ClassDB::bind_method(D_METHOD("get_method_info", "method"), &Object::_get_method_info_bind);
 
 	ClassDB::bind_method(D_METHOD("has_signal", "signal"), &Object::has_signal);
 	ClassDB::bind_method(D_METHOD("get_signal_list"), &Object::_get_signal_list);

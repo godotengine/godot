@@ -98,6 +98,12 @@ public:
 		}
 		return 0;
 	}
+	MethodInfo get_method_info(const StringName &p_method, bool *r_is_valid = nullptr) const override {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return MethodInfo();
+	}
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 		return Variant();
 	}
