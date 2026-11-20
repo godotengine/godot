@@ -58,6 +58,14 @@ MovieWriter *MovieWriter::find_writer_for_file(const String &p_file) {
 	return nullptr;
 }
 
+void MovieWriter::reset() {
+	for (uint32_t i = 0; i < writer_count; i++) {
+		writers[i] = nullptr;
+	}
+
+	writer_count = 0;
+}
+
 uint32_t MovieWriter::get_audio_mix_rate() const {
 	uint32_t ret = 48000;
 	GDVIRTUAL_CALL(_get_audio_mix_rate, ret);

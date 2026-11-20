@@ -400,8 +400,10 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
-	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+	shader_types = nullptr;
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
+		writer_pngwav = nullptr;
 	}
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
