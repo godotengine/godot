@@ -48,6 +48,7 @@
 
 class EditorFileDialog;
 class EditorInspector;
+class MeshUvViewer;
 class SceneImportSettingsData;
 class Timer;
 
@@ -98,6 +99,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Ref<ArrayMesh> selection_mesh;
 	MeshInstance3D *node_selected = nullptr;
 
+	MeshUvViewer *uv_view = nullptr;
 	MeshInstance3D *mesh_preview = nullptr;
 	Ref<SphereMesh> material_preview;
 
