@@ -35,7 +35,9 @@
 #include "scene/main/canvas_item.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
+#include "servers/rendering/renderer_canvas_cull.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void CanvasLayer::set_layer(int p_xform) {
 	layer = p_xform;
@@ -92,15 +94,21 @@ Transform2D CanvasLayer::get_transform() const {
 }
 
 Transform2D CanvasLayer::get_final_transform() const {
-	if (is_following_viewport()) {
-		Transform2D follow;
-		follow.scale(Vector2(get_follow_viewport_scale(), get_follow_viewport_scale()));
-		if (vp) {
-			follow = vp->get_canvas_transform() * follow;
-		}
-		return follow * transform;
+	if (!is_following_viewport() || !vp) {
+		return transform;
 	}
-	return transform;
+
+	float vp_scale = get_follow_viewport_scale();
+	if (vp_scale == 1.0 || RSG::canvas->disable_scale) {
+		return vp->get_canvas_transform() * transform;
+	}
+
+	Transform2D xform_pivot;
+	xform_pivot.set_origin(Size2(vp->size) * 0.5);
+	Transform2D xform_scale;
+	xform_scale.scale(Vector2(vp_scale, vp_scale));
+
+	return xform_pivot * xform_scale * xform_pivot.affine_inverse() * (vp->get_canvas_transform() * transform);
 }
 
 void CanvasLayer::_update_xform() {

@@ -37,6 +37,8 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "servers/rendering/renderer_canvas_cull.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #ifdef TOOLS_ENABLED
 #include "scene/2d/node_2d.h"
@@ -2087,9 +2089,7 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 
 	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 	if (cl) {
-		if (editor_mode) {
-			xform *= cl->get_transform();
-		}
+		xform *= cl->get_final_transform();
 	} else {
 		Viewport *vp = Object::cast_to<Viewport>(p_node);
 		if (vp) {
@@ -2131,9 +2131,9 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 		return;
 	}
 
-	// Cameras don't affect `CanvasLayer`s.
+	// Cameras don't affect `CanvasLayer`s if they're following the viewport.
 	// Only check at runtime, as cameras aren't active in the editor.
-	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+	if (!editor_mode && (!ci->get_canvas_layer_node() || !ci->get_canvas_layer_node()->is_following_viewport() || RSG::canvas->disable_scale)) {
 		xform *= SceneTree::get_singleton()->get_root()->get_canvas_transform();
 	}
 
@@ -2160,9 +2160,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
 
 	if (cl) {
-		if (editor_mode) {
-			xform = cl->get_transform();
-		}
+		xform = cl->get_final_transform();
 	} else {
 		Viewport *vp = Object::cast_to<Viewport>(p_node);
 		if (vp) {
@@ -2218,9 +2216,9 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		return;
 	}
 
-	// Cameras don't affect `CanvasLayer`s.
+	// Cameras don't affect `CanvasLayer`s if they're following the viewport.
 	// Only check at runtime, as cameras aren't active in the editor.
-	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+	if (!editor_mode && (!ci->get_canvas_layer_node() || !ci->get_canvas_layer_node()->is_following_viewport() || RSG::canvas->disable_scale)) {
 		xform *= SceneTree::get_singleton()->get_root()->get_canvas_transform();
 	}
 
