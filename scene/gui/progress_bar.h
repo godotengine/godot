@@ -48,6 +48,10 @@ class ProgressBar : public Range {
 		Color font_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		int percentage_margin_left = 0;
+		int percentage_margin_top = 0;
+		int percentage_margin_right = 0;
+		int percentage_margin_bottom = 0;
 	} theme_cache;
 
 protected:
@@ -67,11 +71,25 @@ public:
 		FILL_MODE_MAX
 	};
 
+	enum PercentageDisplayLocation {
+		PERCENTAGE_DISPLAY_BAR,
+		PERCENTAGE_DISPLAY_FILL
+	};
+
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
 
+	void set_percentage_display_location(PercentageDisplayLocation p_location);
+	PercentageDisplayLocation get_percentage_display_location() const;
+
 	void set_show_percentage(bool p_visible);
 	bool is_percentage_shown() const;
+
+	void set_percentage_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_percentage_horizontal_alignment() const;
+
+	void set_percentage_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_percentage_vertical_alignment() const;
 
 	void set_indeterminate(bool p_indeterminate);
 	bool is_indeterminate() const;
@@ -86,6 +104,12 @@ private:
 	float _indeterminate_fill_progress = 0;
 
 	FillMode mode = FILL_BEGIN_TO_END;
+
+	PercentageDisplayLocation percentage_display_location = PERCENTAGE_DISPLAY_BAR;
+
+	HorizontalAlignment percentage_horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
+	VerticalAlignment percentage_vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);
+VARIANT_ENUM_CAST(ProgressBar::PercentageDisplayLocation);
