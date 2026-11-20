@@ -1,0 +1,8 @@
+Validate extension JSON: Error: Field 'classes/SplitContainer/properties/split_offset': getter changed value in new API, from "get_split_offset" to &"get_split_offset_first".
+Validate extension JSON: Error: Field 'classes/SplitContainer/properties/split_offset': setter changed value in new API, from "set_split_offset" to &"set_split_offset_first".
+Validate extension JSON: Error: Field 'classes/SplitContainer/methods/set_split_offset/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/SplitContainer/methods/get_split_offset': arguments
+
+The `split_offset` getter and setter were changed to use new names to free `set_split_offset` and `get_split_offset`.
+Added optional argument to `set_split_offset` and `get_split_offset`.
+Compatibility methods registered.
