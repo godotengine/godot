@@ -56,6 +56,7 @@ void AnimationLibraryEditor::set_animation_mixer(Object *p_mixer) {
 
 void AnimationLibraryEditor::_add_library() {
 	add_library_name->set_text("");
+	add_library_dialog->set_title(TTRC("Library Name:"));
 	add_library_dialog->popup_centered();
 	add_library_name->grab_focus();
 	adding_animation = false;
@@ -547,6 +548,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 		switch (p_id) {
 			case LIB_BUTTON_ADD: {
 				add_library_name->set_text("");
+				add_library_dialog->set_title(TTRC("Animation Name:"));
 				add_library_dialog->popup_centered();
 				add_library_name->grab_focus();
 				adding_animation = true;
@@ -969,7 +971,6 @@ AnimationLibraryEditor::AnimationLibraryEditor() {
 	file_dialog->connect("files_selected", callable_mp(this, &AnimationLibraryEditor::_load_files));
 
 	add_library_dialog = memnew(ConfirmationDialog);
-	add_library_dialog->set_title(TTRC("Library Name:"));
 
 	VBoxContainer *dialog_vb = memnew(VBoxContainer);
 	add_library_name = memnew(LineEdit);
