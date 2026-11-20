@@ -1,0 +1,136 @@
+/*!\page usage Usage
+
+    The vpx multi-format codec SDK provides a unified interface amongst its
+    supported codecs. This abstraction allows applications using this SDK to
+    easily support multiple video formats with minimal code duplication or
+    "special casing." This section describes the interface common to all codecs.
+    For codec-specific details, see the \ref codecs page.
+
+    The following sections are common to all codecs:
+    - \ref usage_types
+    - \ref usage_features
+    - \ref usage_init
+    - \ref usage_errors
+
+    For more information on decoder and encoder specific usage, see the
+    following pages:
+    \if decoder
+    \li \subpage usage_decode
+    \endif
+    \if encoder
+    \li \subpage usage_encode
+    \endif
+
+    \section usage_types Important Data Types
+    There are two important data structures to consider in this interface.
+
+    \subsection usage_ctxs Contexts
+    A context is a storage area allocated by the calling application that the
+    codec may write into to store details about a single instance of that codec.
+    Most of the context is implementation specific, and thus opaque to the
+    application. The context structure as seen by the application is of fixed
+    size, and thus can be allocated with automatic storage or dynamically
+    on the heap.
+
+    Most operations require an initialized codec context. Codec context
+    instances are codec specific. That is, the codec to be used for the encoded
+    video must be known at initialization time. See #vpx_codec_ctx_t for further
+    information.
+
+    \subsection usage_ifaces Interfaces
+    A codec interface is an opaque structure that controls how function calls
+    into the generic interface are dispatched to their codec-specific
+    implementations. Applications \ref MUSTNOT attempt to examine or override
+    this storage, as it contains internal implementation details likely to
+    change from release to release.
+
+    Each supported codec will expose an interface structure to the application
+    as an <code>extern</code> reference to a structure of the incomplete type
+    #vpx_codec_iface_t.
+
+    \section usage_features Features
+    Several "features" are defined that are optionally implemented by codec
+    algorithms. Indeed, the same algorithm may support different features on
+    different platforms. The purpose of defining these features is that when
+    they are implemented, they conform to a common interface. The features, or
+    capabilities, of an algorithm can be queried from it's interface by using
+    the vpx_codec_get_caps() method. Attempts to invoke features not supported
+    by an algorithm will generally result in #VPX_CODEC_INCAPABLE.
+
+    \if decoder
+    Currently defined decoder features include:
+    - \ref usage_cb
+    - \ref usage_postproc
+    \endif
+
+    \section usage_init Initialization
+    To initialize a codec instance, the address of the codec context
+    and interface structures are passed to an initialization function. Depending
+    on the \ref usage_features that the codec supports, the codec could be
+    initialized in different modes.
+
+    To prevent cases of confusion where the ABI of the library changes,
+    the ABI is versioned. The ABI version number must be passed at
+    initialization time to ensure the application is using a header file that
+    matches the library. The current ABI version number is stored in the
+    preprocessor macros #VPX_CODEC_ABI_VERSION, #VPX_ENCODER_ABI_VERSION, and
+    #VPX_DECODER_ABI_VERSION. For convenience, each initialization function has
+    a wrapper macro that inserts the correct version number. These macros are
+    named like the initialization methods, but without the _ver suffix.
+
+
+    The available initialization methods are:
+    \if encoder
+    \li #vpx_codec_enc_init (calls vpx_codec_enc_init_ver())
+    \li #vpx_codec_enc_init_multi (calls vpx_codec_enc_init_multi_ver())
+    \endif
+    \if decoder
+    \li #vpx_codec_dec_init (calls vpx_codec_dec_init_ver())
+    \endif
+
+
+    \section usage_errors Error Handling
+    Almost all codec functions return an error status of type #vpx_codec_err_t.
+    The semantics of how each error condition should be processed is clearly
+    defined in the definitions of each enumerated value. Error values can be
+    converted into ASCII strings with the vpx_codec_error() and
+    vpx_codec_err_to_string() methods. The difference between these two methods is
+    that vpx_codec_error() returns the error state from an initialized context,
+    whereas vpx_codec_err_to_string() can be used in cases where an error occurs
+    outside any context. The enumerated value returned from the last call can be
+    retrieved from the <code>err</code> member of the decoder context as well.
+    Finally, more detailed error information may be able to be obtained by using
+    the vpx_codec_error_detail() method. Not all errors produce detailed error
+    information.
+
+    In addition to error information, the codec library's build configuration
+    is available at runtime on some platforms. This information can be returned
+    by calling vpx_codec_build_config(), and is formatted as a base64 coded string
+    (comprised of characters in the set [a-z_a-Z0-9+/]). This information is not
+    useful to an application at runtime, but may be of use to vpx for support.
+
+
+    \section usage_deadline Deadline
+    Both the encoding and decoding functions have a <code>deadline</code>
+    parameter. This parameter indicates the amount of time, in microseconds
+    (us), that the application wants the codec to spend processing before
+    returning. This is a soft deadline -- that is, the semantics of the
+    requested operation take precedence over meeting the deadline. If, for
+    example, an application sets a <code>deadline</code> of 1000us, and the
+    frame takes 2000us to decode, the call to vpx_codec_decode() will return
+    after 2000us. In this case the deadline is not met, but the semantics of the
+    function are preserved. If, for the same frame, an application instead sets
+    a <code>deadline</code> of 5000us, the decoder will see that it has 3000us
+    remaining in its time slice when decoding completes. It could then choose to
+    run a set of \ref usage_postproc filters, and perhaps would return after
+    4000us (instead of the allocated 5000us). In this case the deadline is met,
+    and the semantics of the call are preserved, as before.
+
+    The special value <code>0</code> is reserved to represent an infinite
+    deadline. In this case, the codec will perform as much processing as
+    possible to yield the highest quality frame.
+
+    By convention, the value <code>1</code> is used to mean "return as fast as
+    possible."
+
+*/
