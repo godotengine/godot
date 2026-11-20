@@ -60,7 +60,6 @@ protected:
 
 	void _notification(int p_what);
 
-	bool need_show_lifetime_dialog(SpinBox *p_seconds);
 	virtual void _menu_callback(int p_idx);
 
 	virtual void _add_menu_options(PopupMenu *p_menu) {}

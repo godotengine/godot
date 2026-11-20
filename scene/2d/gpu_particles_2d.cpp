@@ -760,6 +760,7 @@ void GPUParticles2D::_notification(int p_what) {
 			set_process_internal(true);
 			set_physics_process_internal(true);
 			previous_position = get_global_position();
+
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -815,6 +816,13 @@ void GPUParticles2D::_notification(int p_what) {
 				previous_velocity = velocity;
 			}
 			previous_position = get_global_position();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			// Make sure particles are updated before rendering occurs if they were active before.
+			if (is_visible_in_tree() && !RS::get_singleton()->particles_is_inactive(particles)) {
+				RS::get_singleton()->particles_request_process(particles);
+			}
 		} break;
 	}
 }
