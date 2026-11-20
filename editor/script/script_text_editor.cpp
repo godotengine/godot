@@ -2013,6 +2013,7 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 	if (type == "files" || type == "files_and_dirs" || type == "resource") {
 		Array files = p_info.get("files", Array());
 		text = TPL(files.size(), TTR("Drop file path."), TTR("Drop file paths.")) +
+				"\n" + TPL(files.size(), TTR("Hold Shift: Drop file UID."), TTR("Hold Shift: Drop file UIDs.")) +
 				"\n" + vformat(TPL(files.size(), TTR("Hold %s: Add const preload by %s."), TTR("Hold %s: Add const preloads by %s.")), ctrl_name, default_drop_option) +
 				"\n" + vformat(TPL(files.size(), TTR("Hold %s+Shift: Add const preload by %s."), TTR("Hold %s+Shift: Add const preloads by %s.")), ctrl_name, alternate_drop_option) +
 				"\n" + vformat(TPL(files.size(), TTR("Hold %s: Add @export var pointing to the resource."), TTR("Hold %s: Add @export vars pointing to the resources.")), alt_name);
@@ -2202,7 +2203,14 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					parts.append(_get_dropped_resource_as_exported_member(resource, obj_ids));
 				}
 			} else {
-				parts.append(_quote_drop_data(path));
+				String drop_path = path;
+				if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+					ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(path);
+					if (id != ResourceUID::INVALID_ID) {
+						drop_path = ResourceUID::get_singleton()->id_to_text(id);
+					}
+				}
+				parts.append(_quote_drop_data(drop_path));
 			}
 		}
 		String join_string;
