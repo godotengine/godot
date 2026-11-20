@@ -535,6 +535,7 @@
 				# ratio is now 0.75.
 				[/codeblock]
 				See also [method lerp], which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
+				[b]Note:[/b] The passed values should be finite, and [param from] and [param to] should not be equal.
 			</description>
 		</method>
 		<method name="is_equal_approx" keywords="roughly">
