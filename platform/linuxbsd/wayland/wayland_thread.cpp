@@ -4074,10 +4074,24 @@ void WaylandThread::window_state_update_size(WindowState *p_ws, int p_width, int
 
 #ifdef LIBDECOR_ENABLED
 	if (p_ws->libdecor_frame) {
+		bool configuring = p_ws->pending_libdecor_configuration != nullptr;
+
 		struct libdecor_state *state = libdecor_state_new(p_width, p_height);
 		libdecor_frame_commit(p_ws->libdecor_frame, state, p_ws->pending_libdecor_configuration);
 		libdecor_state_free(state);
 		p_ws->pending_libdecor_configuration = nullptr;
+
+		if (configuring) {
+			p_ws->libdecor_configured = true;
+		}
+
+		if (p_ws->libdecor_configured && p_ws->libdecor_visibility_deferred) {
+			p_ws->libdecor_visibility_deferred = false;
+			if (libdecor_frame_is_visible(p_ws->libdecor_frame) != p_ws->libdecor_visibility_target) {
+				print_verbose(vformat("Setting deferred libdecor frame visibility to %s", p_ws->libdecor_visibility_target));
+				libdecor_frame_set_visibility(p_ws->libdecor_frame, p_ws->libdecor_visibility_target);
+			}
+		}
 	}
 #endif
 
@@ -5063,6 +5077,14 @@ void WaylandThread::window_set_borderless(DisplayServerEnums::WindowID p_window_
 	if (ws.libdecor_frame) {
 		bool visible_current = libdecor_frame_is_visible(ws.libdecor_frame);
 		bool visible_target = !p_borderless;
+
+		if (!ws.libdecor_configured) {
+			// See `WindowState::libdecor_configured`.
+			print_verbose(vformat("Deferring libdecor frame visibility (%s) until the first configure", visible_target));
+			ws.libdecor_visibility_deferred = true;
+			ws.libdecor_visibility_target = visible_target;
+			return;
+		}
 
 		// NOTE: We have to do this otherwise we trip on a libdecor bug where it's
 		// possible to destroy the frame more than once, by setting the visibility

@@ -377,6 +377,15 @@ public:
 		// rid of this cleanly once we have our own CSDs.
 		struct libdecor_frame *libdecor_frame = nullptr;
 		struct libdecor_configuration *pending_libdecor_configuration = nullptr;
+		// Changing the libdecor frame visibility before the first configure is
+		// unreliable: libdecor < 0.2.3 commits the frame with a 0x0 content
+		// size (strict compositors reject it with xdg_surface.invalid_size),
+		// and libdecor does not yet know the compositor's decoration mode, so
+		// a hidden frame keeps its server-side decorations. Defer it until we
+		// committed the first configuration.
+		bool libdecor_configured = false;
+		bool libdecor_visibility_deferred = false;
+		bool libdecor_visibility_target = true;
 #endif
 
 		RegistryState *registry;
