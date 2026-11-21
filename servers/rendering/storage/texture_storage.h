@@ -178,6 +178,8 @@ public:
 	virtual void render_target_disable_clear_request(RID p_render_target) = 0;
 	virtual void render_target_do_clear_request(RID p_render_target) = 0;
 	virtual Error render_target_write_image(RID p_render_target, const Ref<Image> &p_image) = 0;
+	// komm64: the render target as it holds it, at its full precision.
+	virtual Ref<Image> render_target_read_image(RID p_render_target) { return texture_2d_get(render_target_get_texture(p_render_target)); }
 
 	virtual void render_target_set_sdf_size_and_scale(RID p_render_target, RSE::ViewportSDFOversize p_size, RSE::ViewportSDFScale p_scale) = 0;
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const = 0;

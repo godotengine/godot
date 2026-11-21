@@ -763,6 +763,7 @@ public:
 	FUNC1RC(RID, viewport_get_texture, RID)
 	FUNC2R(Error, viewport_snapshot_clear_render_target, RID, const Color &)
 	FUNC2R(Error, viewport_snapshot_write_render_target, RID, const Ref<Image> &)
+	FUNC1R(Ref<Image>, viewport_snapshot_read_render_target, RID)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
 	FUNC2(viewport_set_environment_mode, RID, RSE::ViewportEnvironmentMode)

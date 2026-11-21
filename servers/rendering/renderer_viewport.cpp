@@ -1277,6 +1277,16 @@ Error RendererViewport::viewport_snapshot_write_render_target(RID p_viewport, co
 	return RSG::texture_storage->render_target_write_image(viewport->render_target, p_image);
 }
 
+Ref<Image> RendererViewport::viewport_snapshot_read_render_target(RID p_viewport) {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_NULL_V(viewport, Ref<Image>());
+	if (viewport->render_target.is_null()) {
+		return Ref<Image>();
+	}
+
+	return RSG::texture_storage->render_target_read_image(viewport->render_target);
+}
+
 RID RendererViewport::viewport_get_occluder_debug_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL_V(viewport, RID());

@@ -3337,6 +3337,35 @@ Error TextureStorage::render_target_write_image(RID p_render_target, const Ref<I
 			return err;
 		}
 	}
+	if (rt->color_internal_format == GL_RGB10_A2) {
+		// komm64: 10 bits per color, written as they were read
+		// (render_target_read_image), not through 8 bits.
+		if (image->get_format() != Image::FORMAT_RGBAF) {
+			if (image == p_image) {
+				image = image->duplicate();
+			}
+			image->convert(Image::FORMAT_RGBAF);
+		}
+		const int count = image->get_width() * image->get_height();
+		const float *src = reinterpret_cast<const float *>(image->ptr());
+		Vector<uint32_t> packed;
+		packed.resize(count);
+		uint32_t *dst = packed.ptrw();
+		for (int i = 0; i < count; i++) {
+			const uint32_t r = uint32_t(Math::round(CLAMP(src[i * 4 + 0], 0.0f, 1.0f) * 1023.0f));
+			const uint32_t g = uint32_t(Math::round(CLAMP(src[i * 4 + 1], 0.0f, 1.0f) * 1023.0f));
+			const uint32_t b = uint32_t(Math::round(CLAMP(src[i * 4 + 2], 0.0f, 1.0f) * 1023.0f));
+			const uint32_t a = uint32_t(Math::round(CLAMP(src[i * 4 + 3], 0.0f, 1.0f) * 3.0f));
+			dst[i] = r | (g << 10) | (b << 20) | (a << 30);
+		}
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(texture->target, rt->color);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		glTexSubImage2D(texture->target, 0, 0, 0, image->get_width(), image->get_height(), GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, packed.ptr());
+		glBindTexture(texture->target, 0);
+		rt->clear_requested = false;
+		return OK;
+	}
 	if (image->get_format() != rt->image_format) {
 		if (image == p_image) {
 			image = image->duplicate();
@@ -3366,6 +3395,36 @@ Error TextureStorage::render_target_write_image(RID p_render_target, const Ref<I
 
 	rt->clear_requested = false;
 	return OK;
+}
+
+Ref<Image> TextureStorage::render_target_read_image(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Ref<Image>());
+	if (rt->color_internal_format != GL_RGB10_A2 || rt->size.width <= 0 || rt->size.height <= 0 || rt->color == 0 || rt->direct_to_screen || rt->overridden.color.is_valid() || rt->view_count != 1) {
+		return texture_2d_get(rt->texture);
+	}
+	// komm64: all 10 bits of each color; through texture_2d_get() they
+	// would be rounded to the 8 of its image.
+	const int count = rt->size.width * rt->size.height;
+	Vector<uint32_t> packed;
+	packed.resize(count);
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+	glReadPixels(0, 0, rt->size.width, rt->size.height, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, packed.ptrw());
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	Vector<uint8_t> data;
+	data.resize(count * 4 * sizeof(uint16_t));
+	uint16_t *dst = reinterpret_cast<uint16_t *>(data.ptrw());
+	const uint32_t *src = packed.ptr();
+	for (int i = 0; i < count; i++) {
+		const uint32_t v = src[i];
+		dst[i * 4 + 0] = Math::make_half_float(float(v & 1023) / 1023.0f);
+		dst[i * 4 + 1] = Math::make_half_float(float((v >> 10) & 1023) / 1023.0f);
+		dst[i * 4 + 2] = Math::make_half_float(float((v >> 20) & 1023) / 1023.0f);
+		dst[i * 4 + 3] = Math::make_half_float(float(v >> 30) / 3.0f);
+	}
+	return Image::create_from_data(rt->size.width, rt->size.height, false, Image::FORMAT_RGBAH, data);
 }
 
 GLuint TextureStorage::render_target_get_fbo(RID p_render_target) const {

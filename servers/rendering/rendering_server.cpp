@@ -2875,6 +2875,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
 	ClassDB::bind_method(D_METHOD("viewport_snapshot_clear_render_target", "viewport", "color"), &RenderingServer::viewport_snapshot_clear_render_target);
 	ClassDB::bind_method(D_METHOD("viewport_snapshot_write_render_target", "viewport", "image"), &RenderingServer::viewport_snapshot_write_render_target);
+	ClassDB::bind_method(D_METHOD("viewport_snapshot_read_render_target", "viewport"), &RenderingServer::viewport_snapshot_read_render_target);
 	ClassDB::bind_method(D_METHOD("viewport_set_disable_3d", "viewport", "disable"), &RenderingServer::viewport_set_disable_3d);
 	ClassDB::bind_method(D_METHOD("viewport_set_disable_2d", "viewport", "disable"), &RenderingServer::viewport_set_disable_2d);
 	ClassDB::bind_method(D_METHOD("viewport_set_environment_mode", "viewport", "mode"), &RenderingServer::viewport_set_environment_mode);

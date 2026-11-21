@@ -573,6 +573,7 @@ public:
 	Ref<ViewportTexture> get_texture() const;
 	Error snapshot_clear_render_target(const Color &p_color = Color(0, 0, 0, 0));
 	Error snapshot_write_render_target(const Ref<Image> &p_image);
+	Ref<Image> snapshot_read_render_target();
 
 	void set_positional_shadow_atlas_size(int p_size);
 	int get_positional_shadow_atlas_size() const;

@@ -4586,6 +4586,13 @@
 				Returns the viewport's clear mode as the server holds it now, for savestate systems. A [constant VIEWPORT_CLEAR_ONLY_NEXT_FRAME] viewport reports [constant VIEWPORT_CLEAR_NEVER] once it has cleared.
 			</description>
 		</method>
+		<method name="viewport_snapshot_read_render_target">
+			<return type="Image" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the viewport's render target as it holds it, at its full precision, for savestate systems: an opaque render target of the Compatibility renderer (10 bits per color) comes back as [constant Image.FORMAT_RGBAH]. [method viewport_snapshot_write_render_target] takes it back unchanged.
+			</description>
+		</method>
 		<method name="viewport_snapshot_write_render_target">
 			<return type="int" enum="Error" />
 			<param index="0" name="viewport" type="RID" />

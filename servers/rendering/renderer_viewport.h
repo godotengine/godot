@@ -250,6 +250,7 @@ public:
 	RID viewport_get_texture(RID p_viewport) const;
 	Error viewport_snapshot_clear_render_target(RID p_viewport, const Color &p_color);
 	Error viewport_snapshot_write_render_target(RID p_viewport, const Ref<Image> &p_image);
+	Ref<Image> viewport_snapshot_read_render_target(RID p_viewport);
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
 	void viewport_set_prev_camera_data(RID p_viewport, const RendererSceneRender::CameraData *p_camera_data);

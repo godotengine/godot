@@ -150,6 +150,12 @@
 				Returns [constant OK] on success. Unsupported renderers, invalid render targets, or unavailable render-target storage return an error.
 			</description>
 		</method>
+		<method name="snapshot_read_render_target">
+			<return type="Image" />
+			<description>
+				Returns the render target as it holds it, at its full precision, for snapshot/save systems ([method ViewportTexture.get_image] gives 8 bits per channel). An opaque render target of the Compatibility renderer (10 bits per color) comes back as [constant Image.FORMAT_RGBAH]. [method snapshot_write_render_target] takes it back unchanged.
+			</description>
+		</method>
 		<method name="snapshot_write_render_target">
 			<return type="int" enum="Error" />
 			<param index="0" name="image" type="Image" />
