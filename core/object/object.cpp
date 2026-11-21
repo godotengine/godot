@@ -673,6 +673,19 @@ Dictionary Object::snapshot_get_properties(BitField<PropertyUsageFlags> p_usage,
 	return out;
 }
 
+// komm64: only the signals added with add_user_signal(), without walking the
+// class's and the script's signals as get_signal_list() does.
+TypedArray<Dictionary> Object::snapshot_get_user_signals() const {
+	ObjectSignalLock signal_lock(this);
+	TypedArray<Dictionary> out;
+	for (const KeyValue<StringName, SignalData> &E : signal_map) {
+		if (!E.value.user.name.is_empty()) {
+			out.push_back(Dictionary(E.value.user));
+		}
+	}
+	return out;
+}
+
 TypedArray<Dictionary> Object::snapshot_get_connections() const {
 	List<Connection> conns;
 	get_all_signal_connections(&conns);
@@ -1935,6 +1948,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_get_properties", "usage", "exclude_usage"), &Object::snapshot_get_properties, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("snapshot_get_connections"), &Object::snapshot_get_connections);
+	ClassDB::bind_method(D_METHOD("snapshot_get_user_signals"), &Object::snapshot_get_user_signals);
 
 	ClassDB::bind_method(D_METHOD("get_method_argument_count", "method"), &Object::_get_method_argument_count_bind);
 

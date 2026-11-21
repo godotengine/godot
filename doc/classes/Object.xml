@@ -1004,6 +1004,12 @@
 				Returns every outgoing signal connection of this object as [code]{signal: StringName, callable: Callable, flags: int}[/code], including connections the engine makes. One call instead of [method get_signal_list] and [method get_signal_connection_list] for each signal, for saving an object's state.
 			</description>
 		</method>
+		<method name="snapshot_get_user_signals" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns the signals added to this object with [method add_user_signal], in the format of [method get_signal_list]. Unlike filtering [method get_signal_list] with [method has_user_signal], it does not list the class's and the script's signals, so it is cheap to call on every object when saving state.
+			</description>
+		</method>
 		<method name="snapshot_get_properties" qualifiers="const">
 			<return type="Dictionary" />
 			<param index="0" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" />
