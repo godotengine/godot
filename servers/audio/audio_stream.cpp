@@ -165,10 +165,13 @@ void AudioStreamPlaybackResampled::begin_resample() {
 
 bool AudioStreamPlaybackResampled::snapshot_get_buffer(double &r_start, uint64_t &r_mix_offset) {
 	const float rate = get_stream_sampling_rate();
-	if (rate <= 0 || internal_buffer_end != (unsigned int)-1) {
+	if (rate <= 0) {
 		return false;
 	}
-	r_start = get_playback_position() - double(INTERNAL_BUFFER_LEN) / rate;
+	// The buffer holds what the last read gave: all of it, or the stream's
+	// last frames (its tail) before silence.
+	const int frames = internal_buffer_end == (unsigned int)-1 ? INTERNAL_BUFFER_LEN : int(internal_buffer_end);
+	r_start = get_playback_position() - double(frames) / rate;
 	r_mix_offset = mix_offset;
 	return r_start >= 0;
 }
@@ -176,11 +179,16 @@ bool AudioStreamPlaybackResampled::snapshot_get_buffer(double &r_start, uint64_t
 // komm64: reads the buffer again from p_start, at the frame it was saved at
 // (half a frame on, as seeks truncate seconds to a frame), and the read point
 // in it.
+// A read that comes up short is the tail again, silence after it.
 void AudioStreamPlaybackResampled::snapshot_set_buffer(double p_start, uint64_t p_mix_offset) {
 	const float rate = get_stream_sampling_rate();
 	if (rate > 0) {
 		seek(p_start + 0.5 / rate);
-		begin_resample();
+		for (int i = 0; i < CUBIC_INTERP_HISTORY; i++) {
+			internal_buffer[i] = AudioFrame(0.0, 0.0);
+		}
+		const int frames = _mix_internal(internal_buffer + CUBIC_INTERP_HISTORY, INTERNAL_BUFFER_LEN);
+		internal_buffer_end = frames == INTERNAL_BUFFER_LEN ? (unsigned int)-1 : (unsigned int)frames;
 	}
 	mix_offset = p_mix_offset;
 }
