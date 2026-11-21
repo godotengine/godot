@@ -1869,6 +1869,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 			RD::AttachmentFormat af_depth;
 			af_depth.format = RD::DATA_FORMAT_D32_SFLOAT;
 			af_depth.usage_flags = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			af_depth.is_discardable = true; // Matches state.shadow_depth_texture.
 
 			attachments.push_back(af_depth);
 

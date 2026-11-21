@@ -12,6 +12,10 @@
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="36">
 			The attachment's data format.
 		</member>
+		<member name="is_discardable" type="bool" setter="set_is_discardable" getter="get_is_discardable" default="false">
+			If [code]true[/code], the texture used for this attachment is discardable (see [member RDTextureFormat.is_discardable] and [method RenderingDevice.texture_set_discardable]). A framebuffer's format takes this value from each of its textures when the framebuffer is created, so set it to match those textures to describe the same format (see [method RenderingDevice.framebuffer_get_format]).
+			[RenderingDevice] creates the pipelines for this format against a render pass that discards the attachment's contents instead of storing them, as draw lists do by default for a discardable texture. Some drivers disable optimizations such as fragment density maps on pipelines created for a render pass that stores a multisample attachment.
+		</member>
 		<member name="samples" type="int" setter="set_samples" getter="get_samples" enum="RenderingDevice.TextureSamples" default="0">
 			The number of samples used when sampling the attachment.
 		</member>

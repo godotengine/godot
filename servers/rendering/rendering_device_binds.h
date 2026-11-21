@@ -137,11 +137,13 @@ public:
 	RD_SETGET(RD::DataFormat, format)
 	RD_SETGET(RD::TextureSamples, samples)
 	RD_SETGET(uint32_t, usage_flags)
+	RD_SETGET(bool, is_discardable)
 protected:
 	static void _bind_methods() {
 		RD_BIND(Variant::INT, RDAttachmentFormat, format);
 		RD_BIND(Variant::INT, RDAttachmentFormat, samples);
 		RD_BIND(Variant::INT, RDAttachmentFormat, usage_flags);
+		RD_BIND(Variant::BOOL, RDAttachmentFormat, is_discardable);
 	}
 };
 

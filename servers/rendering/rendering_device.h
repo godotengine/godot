@@ -535,10 +535,12 @@ public:
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
+		bool is_discardable; // Same as the texture's TextureFormat::is_discardable.
 		AttachmentFormat() {
 			format = DATA_FORMAT_R8G8B8A8_UNORM;
 			samples = TEXTURE_SAMPLES_1;
 			usage_flags = 0;
+			is_discardable = false;
 		}
 	};
 
@@ -672,6 +674,9 @@ private:
 				}
 				if (a.usage_flags != b.usage_flags) {
 					return a.usage_flags < b.usage_flags;
+				}
+				if (a.is_discardable != b.is_discardable) {
+					return a.is_discardable < b.is_discardable;
 				}
 			}
 

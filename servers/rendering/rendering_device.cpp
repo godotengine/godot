@@ -3616,7 +3616,10 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 	LocalVector<RDD::AttachmentStoreOp> store_ops;
 	for (int64_t i = 0; i < p_attachments.size(); i++) {
 		load_ops.push_back(RDD::ATTACHMENT_LOAD_OP_CLEAR);
-		store_ops.push_back(RDD::ATTACHMENT_STORE_OP_STORE);
+		// Store ops don't affect render pass compatibility, but match what draw lists do by default (DONT_CARE for discardable
+		// attachments): some drivers (e.g. Mesa turnip) disable the fragment density map on a pass that stores a multisample
+		// attachment, and on every pipeline created against that pass.
+		store_ops.push_back(p_attachments[i].is_discardable ? RDD::ATTACHMENT_STORE_OP_DONT_CARE : RDD::ATTACHMENT_STORE_OP_STORE);
 	}
 
 	RDD::RenderPassID render_pass = _render_pass_create(driver, p_attachments, p_passes, load_ops, store_ops, p_view_count, vrs_method, p_vrs_attachment, vrs_texel_size, &samples); // Actions don't matter for this use case.
@@ -3637,7 +3640,7 @@ RenderingDevice::FramebufferFormatID RenderingDevice::framebuffer_format_create_
 #if PRINT_FRAMEBUFFER_FORMAT
 	print_line("FRAMEBUFFER FORMAT:", id, "ATTACHMENTS:", p_attachments.size(), "PASSES:", p_passes.size());
 	for (RD::AttachmentFormat attachment : p_attachments) {
-		print_line("FORMAT:", attachment.format, "SAMPLES:", attachment.samples, "USAGE FLAGS:", attachment.usage_flags);
+		print_line("FORMAT:", attachment.format, "SAMPLES:", attachment.samples, "USAGE FLAGS:", attachment.usage_flags, "DISCARDABLE:", attachment.is_discardable);
 	}
 #endif
 
@@ -3798,6 +3801,7 @@ RID RenderingDevice::framebuffer_create_multipass(const Vector<RID> &p_texture_a
 			af.format = texture->format;
 			af.samples = texture->samples;
 			af.usage_flags = texture->usage_flags;
+			af.is_discardable = texture->is_discardable;
 
 			_texture_make_mutable(texture, p_texture_attachments[i]);
 

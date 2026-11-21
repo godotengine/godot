@@ -3287,13 +3287,17 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	attachment.samples = p_samples;
 	attachment.format = p_color_format;
 	attachment.usage_flags = RenderSceneBuffersRD::get_color_usage_bits(false, multisampling, p_can_be_storage);
+	attachment.is_discardable = multisampling; // The MSAA buffers are discardable (RenderSceneBuffersRD::configure).
 	attachments.push_back(attachment);
 
 	// Depth attachment.
 	attachment.samples = p_samples;
 	attachment.format = RenderSceneBuffersRD::get_depth_format(false, multisampling, p_can_be_storage);
 	attachment.usage_flags = RenderSceneBuffersRD::get_depth_usage_bits(false, multisampling, p_can_be_storage);
+	attachment.is_discardable = multisampling;
 	attachments.push_back(attachment);
+
+	attachment.is_discardable = false;
 
 	if (p_vrs) {
 		// VRS attachment.
@@ -3333,6 +3337,7 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 		} else {
 			attachment.samples = p_target_samples;
 			attachment.usage_flags = RendererRD::TextureStorage::render_target_get_color_usage_bits(true);
+			attachment.is_discardable = true; // The render target's MSAA color is discardable (TextureStorage::_update_render_target).
 		}
 
 		attachments.push_back(attachment);

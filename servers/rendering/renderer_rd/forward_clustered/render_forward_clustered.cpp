@@ -4666,11 +4666,13 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	// Color attachment.
 	attachment.format = p_color_format;
 	attachment.usage_flags = RenderSceneBuffersRD::get_color_usage_bits(false, multisampling, p_can_be_storage);
+	attachment.is_discardable = multisampling; // The MSAA color, velocity and depth are discardable, the MSAA specular is not.
 	attachments.push_back(attachment);
 
 	if (p_specular) {
 		attachment.format = RenderForwardClustered::RenderBufferDataForwardClustered::get_specular_format();
 		attachment.usage_flags = RenderForwardClustered::RenderBufferDataForwardClustered::get_specular_usage_bits(false, multisampling, p_can_be_storage);
+		attachment.is_discardable = false;
 		attachments.push_back(attachment);
 	} else {
 		attachments.push_back(unused_attachment);
@@ -4679,6 +4681,7 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	if (p_velocity) {
 		attachment.format = RenderSceneBuffersRD::get_velocity_format();
 		attachment.usage_flags = RenderSceneBuffersRD::get_velocity_usage_bits(false, multisampling, p_can_be_storage);
+		attachment.is_discardable = multisampling;
 		attachments.push_back(attachment);
 	} else {
 		attachments.push_back(unused_attachment);
@@ -4687,6 +4690,7 @@ static RD::FramebufferFormatID _get_color_framebuffer_format_for_pipeline(RD::Da
 	// Depth attachment.
 	attachment.format = RenderSceneBuffersRD::get_depth_format(false, multisampling, p_can_be_storage);
 	attachment.usage_flags = RenderSceneBuffersRD::get_depth_usage_bits(false, multisampling, p_can_be_storage);
+	attachment.is_discardable = multisampling;
 	attachments.push_back(attachment);
 
 	thread_local Vector<RD::FramebufferPass> passes;
@@ -4729,7 +4733,10 @@ static RD::FramebufferFormatID _get_depth_framebuffer_format_for_pipeline(bool p
 
 	attachment.format = RenderSceneBuffersRD::get_depth_format(false, multisampling, p_can_be_storage);
 	attachment.usage_flags = RenderSceneBuffersRD::get_depth_usage_bits(false, multisampling, p_can_be_storage);
+	attachment.is_discardable = multisampling; // The MSAA depth is discardable, the MSAA normal-roughness and VoxelGI are not.
 	attachments.push_back(attachment);
+
+	attachment.is_discardable = false;
 
 	if (p_normal_roughness) {
 		attachment.format = RenderForwardClustered::RenderBufferDataForwardClustered::get_normal_roughness_format();
