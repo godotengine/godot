@@ -951,6 +951,7 @@ public:
 	// komm64: puts the free slots of p_ids last among the free slots, so
 	// objects made in between take other slots first.
 	static void snapshot_reserve_ids(const Vector<int64_t> &p_ids);
+	static ObjectID snapshot_get_id_holder(int64_t p_id);
 
 	template <typename T>
 	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {

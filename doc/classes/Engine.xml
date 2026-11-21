@@ -341,6 +341,13 @@
 				Returns the main thread's deferred calls that are still to run (made with [method Object.call_deferred], [method Callable.call_deferred], [method Object.set_deferred], deferred signal connections and the engine's own), in the order they will run. Each is an [Array] of the [Callable] and an [Array] of its arguments; a deferred set is a call of [code]set[/code], a deferred notification one of [code]notification[/code]. Calls whose object is gone, which would not run, are left out. Read from inside a deferred call, it holds the calls after that one.
 			</description>
 		</method>
+		<method name="snapshot_get_id_holder" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the instance id of the object that holds the slot of [param id] now, whatever its own id, or [code]0[/code] if the slot is free. For savestate systems, to find what keeps an id from the object a load makes again.
+			</description>
+		</method>
 		<method name="snapshot_get_random_state" qualifiers="const">
 			<return type="int" />
 			<description>

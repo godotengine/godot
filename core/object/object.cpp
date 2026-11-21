@@ -2577,6 +2577,19 @@ bool ObjectDB::_snapshot_take_slot(uint32_t p_slot) {
 	return false;
 }
 
+// komm64: the object in the slot of p_id now, whatever its validator: what
+// keeps an id from the object a load makes again.
+ObjectID ObjectDB::snapshot_get_id_holder(int64_t p_id) {
+	const uint32_t slot = uint64_t(p_id) & OBJECTDB_SLOT_MAX_COUNT_MASK;
+	ObjectID holder;
+	spin_lock.lock();
+	if (slot < slot_max && object_slots[slot].object != nullptr) {
+		holder = object_slots[slot].object->get_instance_id();
+	}
+	spin_lock.unlock();
+	return holder;
+}
+
 void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
 	spin_lock.lock();
 	HashSet<uint32_t> reserved;
