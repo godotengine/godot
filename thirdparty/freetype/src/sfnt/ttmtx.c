@@ -81,13 +81,15 @@
 
     if ( vertical )
     {
-      tag           = TTAG_vmtx;
+      tag           = face->vert_metrics_is_extended ? TTAG_VMTX
+                                                     : TTAG_vmtx;
       ptable_offset = &face->vert_metrics_offset;
       ptable_size   = &face->vert_metrics_size;
     }
     else
     {
-      tag           = TTAG_hmtx;
+      tag           = face->horz_metrics_is_extended ? TTAG_HMTX
+                                                     : TTAG_hmtx;
       ptable_offset = &face->horz_metrics_offset;
       ptable_size   = &face->horz_metrics_size;
     }
@@ -132,13 +134,17 @@
   {
     FT_Error        error;
     TT_HoriHeader*  header;
+    FT_UInt32*      metrics_count;
+    FT_Bool*        is_extended;
+    FT_ULong        lower_tag;
+    FT_ULong        upper_tag;
 
     static const FT_Frame_Field  metrics_header_fields[] =
     {
 #undef  FT_STRUCTURE
 #define FT_STRUCTURE  TT_HoriHeader
 
-      FT_FRAME_START( 36 ),
+      FT_FRAME_START( 34 ),
         FT_FRAME_ULONG ( Version ),
         FT_FRAME_SHORT ( Ascender ),
         FT_FRAME_SHORT ( Descender ),
@@ -155,7 +161,6 @@
         FT_FRAME_SHORT ( Reserved[2] ),
         FT_FRAME_SHORT ( Reserved[3] ),
         FT_FRAME_SHORT ( metric_Data_Format ),
-        FT_FRAME_USHORT( number_Of_HMetrics ),
       FT_FRAME_END
     };
 
@@ -165,27 +170,71 @@
       void  *v = &face->vertical;
 
 
-      error = face->goto_table( face, TTAG_vhea, stream, 0 );
-      if ( error )
-        goto Fail;
-
-      header = (TT_HoriHeader*)v;
+      header        = (TT_HoriHeader*)v;
+      metrics_count = &face->vert_metrics_count;
+      is_extended   = &face->vert_metrics_is_extended;
+      lower_tag     = TTAG_vhea;
+      upper_tag     = TTAG_VHEA;
     }
     else
     {
-      error = face->goto_table( face, TTAG_hhea, stream, 0 );
+      header        = &face->horizontal;
+      metrics_count = &face->horz_metrics_count;
+      is_extended   = &face->horz_metrics_is_extended;
+      lower_tag     = TTAG_hhea;
+      upper_tag     = TTAG_HHEA;
+    }
+
+    *metrics_count = 0;
+    *is_extended   = FALSE;
+
+    if ( face->is_extended_glyf )
+    {
+      error = face->goto_table( face, upper_tag, stream, 0 );
       if ( error )
         goto Fail;
 
-      header = &face->horizontal;
+      *is_extended = TRUE;
+    }
+    else
+    {
+      error = face->goto_table( face, lower_tag, stream, 0 );
+      if ( FT_ERR_EQ( error, Table_Missing ) )
+      {
+        error = face->goto_table( face, upper_tag, stream, 0 );
+        if ( !error )
+          *is_extended = TRUE;
+      }
+      if ( error )
+        goto Fail;
     }
 
     if ( FT_STREAM_READ_FIELDS( metrics_header_fields, header ) )
       goto Fail;
 
+    if ( *is_extended )
+    {
+      if ( FT_READ_ULONG( *metrics_count ) )
+        goto Fail;
+    }
+    else
+    {
+      FT_UShort  count;
+
+
+      if ( FT_READ_USHORT( count ) )
+        goto Fail;
+
+      *metrics_count = count;
+    }
+
+    header->number_Of_HMetrics = *metrics_count > 0xFFFFU
+                                   ? 0xFFFFU
+                                   : (FT_UShort)*metrics_count;
+
     FT_TRACE3(( "Ascender:          %5d\n", header->Ascender ));
     FT_TRACE3(( "Descender:         %5d\n", header->Descender ));
-    FT_TRACE3(( "number_Of_Metrics: %5u\n", header->number_Of_HMetrics ));
+    FT_TRACE3(( "number_Of_Metrics: %5lu\n", (FT_ULong)*metrics_count ));
 
     header->long_metrics  = NULL;
     header->short_metrics = NULL;
@@ -231,11 +280,10 @@
                        FT_Short   *abearing,
                        FT_UShort  *aadvance )
   {
-    FT_Error        error;
-    FT_Stream       stream = face->root.stream;
-    TT_HoriHeader*  header;
-    FT_ULong        table_pos, table_size, table_end;
-    FT_UShort       k;
+    FT_Error   error;
+    FT_Stream  stream = face->root.stream;
+    FT_ULong   table_pos, table_size, table_end;
+    FT_UInt32  k;
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
     FT_Service_MetricsVariations  var =
@@ -245,23 +293,18 @@
 
     if ( vertical )
     {
-      void*  v = &face->vertical;
-
-
-      header     = (TT_HoriHeader*)v;
       table_pos  = face->vert_metrics_offset;
       table_size = face->vert_metrics_size;
+      k          = face->vert_metrics_count;
     }
     else
     {
-      header     = &face->horizontal;
       table_pos  = face->horz_metrics_offset;
       table_size = face->horz_metrics_size;
+      k          = face->horz_metrics_count;
     }
 
     table_end = table_pos + table_size;
-
-    k = header->number_Of_HMetrics;
 
     if ( k > 0 )
     {
@@ -306,7 +349,9 @@
     }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-    if ( var && FT_IS_VARIATION( &face->root ) )
+    if ( var                                     &&
+         ( FT_IS_VARIATION( &face->root )      ||
+           FT_IS_NAMED_INSTANCE( &face->root ) ) )
     {
       FT_Face  f = FT_FACE( face );
       FT_Int   a = (FT_Int)*aadvance;

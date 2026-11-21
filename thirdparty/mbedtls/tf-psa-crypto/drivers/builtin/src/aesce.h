@@ -46,6 +46,9 @@ int mbedtls_aesce_has_support_impl(void);
 #define MBEDTLS_AESCE_HAS_SUPPORT() (mbedtls_aesce_has_support_result == -1 ? \
                                      mbedtls_aesce_has_support_impl() : \
                                      mbedtls_aesce_has_support_result)
+/* Access the variable directly. This means fewer branches and
+ * therefore fewer concerns about wrong speculation here. */
+#define MBEDTLS_AESCE_HAS_SUPPORT_RECHECK mbedtls_aesce_has_support_result
 
 #else /* defined(__linux__) && !defined(MBEDTLS_AES_USE_HARDWARE_ONLY) */
 
@@ -55,6 +58,10 @@ int mbedtls_aesce_has_support_impl(void);
 #define MBEDTLS_AESCE_HAS_SUPPORT() 1
 
 #endif /* defined(__linux__) && !defined(MBEDTLS_AES_USE_HARDWARE_ONLY) */
+
+#if !defined(MBEDTLS_AESCE_HAS_SUPPORT_RECHECK)
+#define MBEDTLS_AESCE_HAS_SUPPORT_RECHECK MBEDTLS_AESCE_HAS_SUPPORT()
+#endif
 
 /**
  * \brief          Internal AES-ECB block encryption and decryption

@@ -32,6 +32,8 @@
 
 #include "jolt_object_3d.h"
 
+#include "core/templates/hash_set.h"
+#include "core/templates/local_vector.h"
 #include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>

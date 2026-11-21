@@ -620,6 +620,8 @@ private:
 public:
 	static TextureStreaming *get_singleton();
 
+	static void register_project_settings();
+
 	// Feedback Buffer API
 	uint32_t feedback_buffer_material_index(RID p_material);
 	RID feedback_buffer_get_uniform_rid();

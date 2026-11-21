@@ -8,11 +8,12 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
-struct SinglePosFormat1 : ValueBase
+template <typename Types>
+struct SinglePosFormat1_3 : ValueBase
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  Offset16To<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of subtable */
   ValueFormat   valueFormat;            /* Defines the types of data in the
@@ -21,7 +22,7 @@ struct SinglePosFormat1 : ValueBase
                                          * value(s)--applied to all glyphs in
                                          * the Coverage table */
   public:
-  DEFINE_SIZE_ARRAY (6, values);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + ValueFormat::static_size, values);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -99,20 +100,16 @@ struct SinglePosFormat1 : ValueBase
     unsigned int index = (this+coverage).get_coverage  (gid);
     if (likely (index == NOT_COVERED)) return false;
 
-    /* This is ugly... */
-    hb_buffer_t buffer {};
-    buffer.props.direction = direction;
-    OT::hb_ot_apply_context_t c (1, font, &buffer, table_blob);
-
-    valueFormat.apply_value (&c, this, values, pos);
+    valueFormat.position_single (font, table_blob, direction, this,
+                                 values, pos);
     return true;
   }
 
   template<typename Iterator,
-      typename SrcLookup,
       hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
-                  const SrcLookup *src,
+                  const ValueBase *src,
+                  ValueFormat src_format,
                   Iterator it,
                   ValueFormat newFormat,
                   const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map)
@@ -124,7 +121,7 @@ struct SinglePosFormat1 : ValueBase
 
     for (const hb_array_t<const Value>& _ : + it | hb_map (hb_second))
     {
-      src->get_value_format ().copy_values (c, newFormat, src,  &_, layout_variation_idx_delta_map);
+      src_format.copy_values (c, newFormat, src,  &_, layout_variation_idx_delta_map);
       // Only serialize the first entry in the iterator, the rest are assumed to
       // be the same.
       break;
@@ -178,7 +175,7 @@ struct SinglePosFormat1 : ValueBase
     ;
 
     bool ret = bool (it);
-    SinglePos_serialize (c->serializer, this, it, &c->plan->layout_variation_idx_delta_map, new_format);
+    SinglePos_serialize (c->serializer, this, valueFormat, it, &c->plan->layout_variation_idx_delta_map, new_format);
     return_trace (ret);
   }
 };

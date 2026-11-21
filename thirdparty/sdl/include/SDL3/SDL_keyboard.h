@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -146,6 +146,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Note: This function doesn't take into account whether shift has been
  * pressed or not.
  *
+ * Note that this function is "thread safe," in that calling it from two
+ * threads at once will return the same array and that it won't be reallocated
+ * or free'd without warning, as more events arrive, the contents of this
+ * array may change without warning or any sort of thread synchronization. For
+ * apps that need precision, it is better to use the key events in the SDL
+ * event queue.
+ *
  * \param numkeys if non-NULL, receives the length of the returned array.
  * \returns a pointer to an array of key states.
  *
@@ -174,8 +181,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
 /**
  * Get the current key modifier state for the keyboard.
  *
- * \returns an OR'd combination of the modifier keys for the keyboard. See
- *          SDL_Keymod for details.
+ * \returns an OR'd combination of the modifier keys for the keyboard.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

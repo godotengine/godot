@@ -56,9 +56,15 @@ void EditorZoomWidget::_update_zoom_label() {
 	zoom_reset->set_text(zoom_text);
 }
 
-void EditorZoomWidget::_button_zoom_minus() {
-	set_zoom_by_increments(-6, Input::get_singleton()->is_key_pressed(Key::ALT));
+void EditorZoomWidget::_button_zoom_by(int p_direction) {
+	bool by_integer = Input::get_singleton()->is_key_pressed(Key::ALT);
+	// Integer mode steps one scaling factor at a time.
+	set_zoom_by_increments(p_direction * (by_integer ? 1 : 6), by_integer);
 	emit_signal(SNAME("zoom_changed"), zoom);
+}
+
+void EditorZoomWidget::_button_zoom_minus() {
+	_button_zoom_by(-1);
 }
 
 void EditorZoomWidget::_button_zoom_reset() {
@@ -67,8 +73,7 @@ void EditorZoomWidget::_button_zoom_reset() {
 }
 
 void EditorZoomWidget::_button_zoom_plus() {
-	set_zoom_by_increments(6, Input::get_singleton()->is_key_pressed(Key::ALT));
-	emit_signal(SNAME("zoom_changed"), zoom);
+	_button_zoom_by(1);
 }
 
 float EditorZoomWidget::get_zoom() {
@@ -108,9 +113,15 @@ void EditorZoomWidget::setup_zoom_limits(float p_min, float p_max) {
 
 void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_integer_only) {
 	// Remove editor scale from the index computation.
-	const float zoom_noscale = zoom / MAX(1, EDSCALE);
+	float zoom_noscale = zoom / MAX(1, EDSCALE);
 
 	if (p_integer_only) {
+		// At certain editor scales, the unscaled value can be very close to an integer value, but not exactly an integer value.
+		// Since this would break the logic below, we need to snap the value to an integer.
+		if (Math::is_equal_approx(zoom_noscale, Math::round(zoom_noscale))) {
+			zoom_noscale = Math::round(zoom_noscale);
+		}
+
 		// Only visit integer scaling factors above 100%, and fractions with an integer denominator below 100%
 		// (1/2 = 50%, 1/3 = 33.33%, 1/4 = 25%, …).
 		// This is useful when working on pixel art projects to avoid distortion.

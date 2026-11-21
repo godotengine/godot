@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -286,6 +286,7 @@ typedef enum SDL_Scancode
     SDL_SCANCODE_CLEARAGAIN = 162,
     SDL_SCANCODE_CRSEL = 163,
     SDL_SCANCODE_EXSEL = 164,
+    SDL_SCANCODE_FRONT = 165,   /**< Front (Sun keyboards) */
 
     SDL_SCANCODE_KP_00 = 176,
     SDL_SCANCODE_KP_000 = 177,

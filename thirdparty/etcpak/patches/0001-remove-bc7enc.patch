@@ -1,5 +1,5 @@
 diff --git a/thirdparty/etcpak/ProcessDxtc.cpp b/thirdparty/etcpak/ProcessDxtc.cpp
-index 5373b75cdc..e1bc6a5cb6 100644
+index 23a3326a89..ad456ae398 100644
 --- a/thirdparty/etcpak/ProcessDxtc.cpp
 +++ b/thirdparty/etcpak/ProcessDxtc.cpp
 @@ -1,4 +1,3 @@
@@ -7,7 +7,7 @@ index 5373b75cdc..e1bc6a5cb6 100644
  #include "Dither.hpp"
  #include "ForceInline.hpp"
  #include "ProcessDxtc.hpp"
-@@ -1085,29 +1084,3 @@ void CompressBc5( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t wi
+@@ -1092,29 +1091,3 @@ void CompressBc5( const uint32_t* src, uint64_t* dst, uint32_t blocks, size_t wi
  #endif
      } while( --blocks );
  }

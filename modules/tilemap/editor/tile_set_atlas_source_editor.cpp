@@ -628,14 +628,27 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	tile_inspector->edit(nullptr);
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
+			tile_inspector->show();
 			if (tile_proxy_object.is_null() || tile_proxy_object->is_different(tile_set_atlas_source, selection)) {
+				Ref<AtlasTileProxyObject> old_proxy_object = tile_proxy_object;
 				tile_proxy_object.instantiate(this);
+
+				// Preserve unfolded inspector sections and scroll.
+				if (old_proxy_object.is_valid()) {
+					for (const String &unfolded : old_proxy_object->editor_get_section_folding()) {
+						tile_proxy_object->editor_set_section_unfold(unfolded, true, true);
+					}
+
+					tile_inspector->set_scroll_cache(tile_proxy_object->get_instance_id(), tile_inspector->get_scroll_offset());
+					tile_inspector->remove_scroll_cache(old_proxy_object->get_instance_id());
+				}
 				tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 			}
 			tile_proxy_object->edit(tile_set_atlas_source, selection);
 			tile_inspector->edit(tile_proxy_object.ptr());
+		} else {
+			tile_inspector->hide();
 		}
-		tile_inspector->set_visible(!selection.is_empty());
 		tile_inspector_no_tile_selected_label->set_visible(selection.is_empty());
 	} else {
 		tile_inspector->hide();
@@ -863,7 +876,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	for (KeyValue<String, TileDataEditor *> &E : tile_data_editors) {
 		// Tile Data Editor.
 		TileDataEditor *tile_data_editor = E.value;
-		if (!tile_data_editor->is_inside_tree()) {
+		if (!tile_data_editor->get_parent()) {
 			tile_data_painting_editor_container->add_child(tile_data_editor);
 		}
 		tile_data_editor->set_tile_set(tile_set);
@@ -1010,10 +1023,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	} else {
 		if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 			help_label->set_visible(true);
-			help_label->set_text(TTR("Hold Ctrl to create multiple tiles.") + "\n" + TTR("Hold Shift to create big tiles."));
+			help_label->set_text(vformat(TTR("Hold %s to create multiple tiles.") + "\n" + TTR("Hold %s to create big tiles."), keycode_get_string(Key::CMD_OR_CTRL), keycode_get_string(Key::SHIFT)));
 		} else if (tools_button_group->get_pressed_button() == tool_select_button) {
 			help_label->set_visible(true);
-			help_label->set_text(TTR("Hold Shift to select multiple regions."));
+			help_label->set_text(vformat(TTR("Hold %s to select multiple regions."), keycode_get_string(Key::SHIFT)));
 		} else {
 			help_label->set_visible(false);
 		}
@@ -1492,7 +1505,7 @@ void TileSetAtlasSourceEditor::_end_dragging() {
 				}
 			}
 
-			undo_redo->create_action(TTR("Remove tiles"));
+			undo_redo->create_action(TTR("Remove tiles"), UndoRedo::MERGE_DISABLE, tile_set_atlas_source);
 			undo_redo->add_do_method(this, "_set_selection_from_array", Array());
 			for (const Vector2i &E : to_delete) {
 				Vector2i coords = E;

@@ -129,6 +129,8 @@ struct [[nodiscard]] Rect2 {
 
 	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = nullptr, Point2 *r_normal = nullptr) const;
 
+	bool intersects_ray(const Point2 &p_from, const Vector2 &p_dir, Point2 *r_pos = nullptr) const;
+
 	inline bool encloses(const Rect2 &p_rect) const {
 #ifdef MATH_CHECKS
 		if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {

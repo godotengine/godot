@@ -310,8 +310,12 @@
       woff_offset += woff.privLength;
     }
 
-    if ( sfnt_offset != woff.totalSfntSize ||
-         woff_offset != woff.length        )
+    /* Reject unrealistic size or compression factor */
+    if ( sfnt_offset > 0x4000000UL          ||
+         ( sfnt_offset >> 6 ) > woff_offset ||
+         sfnt_offset != woff.totalSfntSize  ||
+         woff_offset != woff.length         )
+
     {
       FT_ERROR(( "woff_font_open: invalid `sfnt' table structure\n" ));
       error = FT_THROW( Invalid_Table );

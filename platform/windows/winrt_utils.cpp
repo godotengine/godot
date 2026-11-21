@@ -274,11 +274,11 @@ HRESULT WinRTUtils::activation_factory(const String &p_class_name, REFIID p_iid,
 	name->set_string(p_class_name);
 
 	HRESULT res = GD_RoGetActivationFactory(name->get_ptr(), p_iid, p_factory);
-	if (res == (HRESULT)0x800401F0 && !mta_cookie) {
+	if (res == (HRESULT)0x800401F0 /*CoInitialize has not been called*/ && !mta_cookie) {
 		ERR_FAIL_COND_V(FAILED(GD_CoIncrementMTAUsage(&mta_cookie)), E_ABORT);
 		res = GD_RoGetActivationFactory(name->get_ptr(), p_iid, p_factory);
 	}
-	if (res == (HRESULT)0x80004001 || res == (HRESULT)0x80004002) {
+	if (res == (HRESULT)0x80004001 /*Not implemented*/ || res == (HRESULT)0x80004002 /*No such interface supported*/ || res == (HRESULT)0x80040154 /*Class not registered*/) {
 		print_verbose(vformat("RoGetActivationFactory(%s) not supported.", p_class_name));
 		return res;
 	}

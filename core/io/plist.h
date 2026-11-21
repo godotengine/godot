@@ -87,7 +87,11 @@ public:
 class PListNode : public RefCounted {
 	GDSOFTCLASS(PListNode, RefCounted);
 
-	static int _asn1_size_len(uint8_t p_len_octets);
+	static int _asn1_size_len(size_t p_size);
+	static void _store_asn1_size(PackedByteArray &p_stream, size_t p_size);
+	static uint8_t _get_len_octets(size_t p_size);
+
+	size_t _get_asn1_size() const;
 
 public:
 	PList::PLNodeType data_type = PList::PLNodeType::PL_NODE_TYPE_NIL;
@@ -116,9 +120,6 @@ public:
 
 	bool push_subnode(const Ref<PListNode> &p_node, const String &p_key = "");
 
-	size_t get_asn1_size(uint8_t p_len_octets) const;
-
-	void store_asn1_size(PackedByteArray &p_stream, uint8_t p_len_octets) const;
-	bool store_asn1(PackedByteArray &p_stream, uint8_t p_len_octets) const;
+	bool store_asn1(PackedByteArray &p_stream) const;
 	void store_text(String &p_stream, uint8_t p_indent) const;
 };

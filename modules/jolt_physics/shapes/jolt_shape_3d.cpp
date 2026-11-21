@@ -32,8 +32,7 @@
 
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_shaped_object_3d.h"
-#include "jolt_custom_double_sided_shape.h"
-#include "jolt_custom_user_data_shape.h"
+#include "jolt_custom_instance_overrides_shape.h"
 
 #include <Jolt/Physics/Collision/Shape/MutableCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
@@ -158,22 +157,16 @@ JPH::ShapeRefC JoltShape3D::with_center_of_mass(const JPH::Shape *p_shape, const
 	return with_center_of_mass_offset(p_shape, center_of_mass_offset);
 }
 
-JPH::ShapeRefC JoltShape3D::with_user_data(const JPH::Shape *p_shape, uint64_t p_user_data) {
-	JoltCustomUserDataShapeSettings shape_settings(p_shape);
-	shape_settings.mUserData = (JPH::uint64)p_user_data;
-
-	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to override user data. It returned the following error: '%s'.", to_godot(shape_result.GetError())));
-
-	return shape_result.Get();
-}
-
-JPH::ShapeRefC JoltShape3D::with_double_sided(const JPH::Shape *p_shape, bool p_back_face_collision) {
+JPH::ShapeRefC JoltShape3D::with_instance_overrides(const JPH::Shape *p_shape, uint64_t p_user_data, bool p_object_has_back_face_collision, bool p_shape_has_back_face_collision) {
 	ERR_FAIL_NULL_V(p_shape, nullptr);
 
-	const JoltCustomDoubleSidedShapeSettings shape_settings(p_shape, p_back_face_collision);
+	JoltCustomInstanceOverridesShapeSettings shape_settings(p_shape);
+	shape_settings.mUserData = (JPH::uint64)p_user_data;
+	shape_settings.object_back_face_collision = p_object_has_back_face_collision;
+	shape_settings.shape_back_face_collision = p_shape_has_back_face_collision;
+
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to make shape double-sided. It returned the following error: '%s'.", to_godot(shape_result.GetError())));
+	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to set instance overrides on shape. It returned the following error: '%s'.", to_godot(shape_result.GetError())));
 
 	return shape_result.Get();
 }
@@ -186,8 +179,7 @@ JPH::ShapeRefC JoltShape3D::without_custom_shapes(const JPH::Shape *p_shape) {
 			return new JPH::SphereShape(0.1f);
 		}
 
-		case JoltCustomShapeSubType::OVERRIDE_USER_DATA:
-		case JoltCustomShapeSubType::DOUBLE_SIDED: {
+		case JoltCustomShapeSubType::INSTANCE_OVERRIDES: {
 			const JPH::DecoratedShape *shape = static_cast<const JPH::DecoratedShape *>(p_shape);
 
 			// Replace unsupported decorator shapes with the inner shape.

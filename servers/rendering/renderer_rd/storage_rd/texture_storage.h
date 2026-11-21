@@ -47,7 +47,7 @@ class MaterialStorage;
 
 class TextureStorage : public RendererTextureStorage {
 public:
-	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
+	const int BLIT_TEXTURE_SAMPLERS_BINDING_FIRST_INDEX = 5;
 
 	enum DefaultRDTexture {
 		DEFAULT_RD_TEXTURE_WHITE,
@@ -298,6 +298,7 @@ private:
 			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
+			bool drawn = false;
 		};
 
 		struct SortItem {
@@ -318,6 +319,7 @@ private:
 
 		HashMap<RID, Texture> textures;
 		bool dirty = true;
+		bool draw_dirty = false;
 		int mipmaps = 5;
 
 		RID texture;
@@ -737,7 +739,9 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
+	void decal_atlas_mark_draw_on_texture(RID p_texture);
 	void decal_atlas_remove_texture(RID p_texture);
+	void decal_atlas_redraw_textures();
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
@@ -937,6 +941,7 @@ public:
 
 	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
 	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
+	static RSE::ViewportMSAA render_target_get_nearest_supported_msaa(RSE::ViewportMSAA p_msaa, bool p_use_hdr);
 
 	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override;
 };

@@ -187,6 +187,8 @@ EGLsizeiANDROID EGLManager::_get_cache(const void *p_key, EGLsizeiANDROID p_key_
 
 Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	EGLint attribs[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		1,
 		EGL_BLUE_SIZE,
@@ -199,9 +201,11 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 	};
 
 	EGLint attribs_layered[] = {
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
 		EGL_RED_SIZE,
 		8,
-		EGL_GREEN_SIZE,
+		EGL_BLUE_SIZE,
 		8,
 		EGL_GREEN_SIZE,
 		8,
@@ -214,10 +218,21 @@ Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
 
 	EGLint config_count = 0;
 
+	// Try desktop GL.
 	if (OS::get_singleton()->is_layered_allowed()) {
 		eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
 	} else {
 		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+	}
+	if (config_count == 0) {
+		// Try GLES3.
+		if (OS::get_singleton()->is_layered_allowed()) {
+			attribs_layered[1] = EGL_OPENGL_ES3_BIT;
+			eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
+		} else {
+			attribs[1] = EGL_OPENGL_ES3_BIT;
+			eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+		}
 	}
 
 	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);

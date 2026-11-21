@@ -287,7 +287,8 @@ bool RenderingLightCuller::add_light_camera_planes_directional(LightCullPlanes &
 	const LocalVector<uint8_t> &entry = _calculated_LUT[lookup];
 
 	// each edge forms a plane
-	int n_edges = entry.size() - 1;
+	DEV_ASSERT(entry.size() > 0);
+	int n_edges = (int)entry.size() - 1;
 #else
 	uint8_t *entry = &data.LUT_entries[lookup][0];
 	int n_edges = data.LUT_entry_sizes[lookup] - 1;

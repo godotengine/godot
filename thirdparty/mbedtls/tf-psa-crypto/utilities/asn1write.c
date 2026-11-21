@@ -403,7 +403,6 @@ int mbedtls_asn1_write_integer(unsigned char **p,
                                size_t integer_length)
 {
 
-    int asn1_frame_size = 0;
     unsigned int number_of_leading_zeros = 0;
     size_t output_buffer_size = (*p-start);
     const unsigned char *integer_start = NULL;
@@ -454,12 +453,6 @@ int mbedtls_asn1_write_integer(unsigned char **p,
         }
     }
 
-    asn1_frame_size =
-        mbedtls_asn1_write_len_and_tag(p, start, integer_length, MBEDTLS_ASN1_INTEGER);
-    if (asn1_frame_size < 0) {
-        return asn1_frame_size;//TC4 mbedtls_asn1_write_len_and_tag failed.
-    }
-
-    return asn1_frame_size;
+    return mbedtls_asn1_write_len_and_tag(p, start, integer_length, MBEDTLS_ASN1_INTEGER);
 }
 #endif /* MBEDTLS_ASN1_WRITE_C */

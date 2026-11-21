@@ -385,11 +385,6 @@ struct hb_buffer_t
   }
   /* Advance idx without copying to output. */
   void skip_glyph () { idx++; }
-  void reset_masks (hb_mask_t mask)
-  {
-    for (unsigned int j = 0; j < len; j++)
-      info[j].mask = mask;
-  }
   void add_masks (hb_mask_t mask)
   {
     for (unsigned int j = 0; j < len; j++)

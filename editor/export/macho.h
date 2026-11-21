@@ -117,6 +117,14 @@ public:
 		PLATFORM_VISIONOSSIMULATOR = 12,
 	};
 
+	enum CPUType {
+		CPU_TYPE_64BIT = 0x01000000,
+		CPU_TYPE_X86 = 0x00000007,
+		CPU_TYPE_ARM = 0x0000000C,
+		CPU_TYPE_PPC = 0x00000012,
+		CPU_TYPE_RISCV = 0x00000018,
+	};
+
 	struct LoadCommandHeader {
 		uint32_t cmd;
 		uint32_t cmdsize;
@@ -199,9 +207,22 @@ private:
 
 public:
 	static bool is_macho(const String &p_path);
+	static bool is_macho(const PackedByteArray &p_buffer);
+	static bool is_macho(const Ref<FileAccess> &p_fb);
+
 	static uint32_t get_filetype(const String &p_path);
+	static uint32_t get_filetype(const PackedByteArray &p_buffer);
+	static uint32_t get_filetype(const Ref<FileAccess> &p_fb);
+
+	static uint32_t get_cputype(const String &p_path);
+	static uint32_t get_cputype(const PackedByteArray &p_buffer);
+	static uint32_t get_cputype(const Ref<FileAccess> &p_fb);
+
+	static String arch_name(uint32_t p_arch);
 
 	bool open_file(const String &p_path);
+	bool open_buffer(const PackedByteArray &p_buffer);
+	bool open_file(const Ref<FileAccess> &p_fb);
 
 	uint64_t get_exe_base();
 	uint64_t get_exe_limit();

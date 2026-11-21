@@ -283,9 +283,10 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
 			Vector<AudioFrame> volume_vector;
-			if (setplay.get() > 0 || (internal->active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
+			if (setplay.get() >= 0 || (internal->active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
 				force_update_panning = false;
 				volume_vector = _update_panning();
+				last_mix_count = AudioServer::get_singleton()->get_mix_count();
 			}
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
@@ -331,11 +332,10 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
 
 	for (int i = 0; i < areas; i++) {
-		if (!sr[i].collider) {
+		if (!sr[i].collider_id.is_valid()) {
 			continue;
 		}
-
-		Area3D *tarea = Object::cast_to<Area3D>(sr[i].collider);
+		Area3D *tarea = ObjectDB::get_instance<Area3D>(sr[i].collider_id);
 		if (!tarea) {
 			continue;
 		}
@@ -662,7 +662,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 		sample_playback->offset = p_from_pos;
 		sample_playback->bus = _get_actual_bus();
 
-		AudioServer::get_singleton()->start_sample_playback(sample_playback);
+		AudioServer::get_singleton()->start_sample_playback(sample_playback, !can_process());
 	}
 }
 
@@ -707,10 +707,6 @@ bool AudioStreamPlayer3D::is_autoplay_enabled() const {
 
 void AudioStreamPlayer3D::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
-}
-
-void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
-	internal->validate_property(p_property);
 }
 
 void AudioStreamPlayer3D::set_max_distance(float p_metres) {
@@ -948,7 +944,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 	ADD_GROUP("Emission Angle", "emission_angle");

@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_flow_container)
 #include "scene/gui/flow_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "tests/scene/mock_control.h"
 
 namespace TestFlowContainer {
 
@@ -240,6 +241,37 @@ TEST_CASE("[SceneTree][FlowContainer] HFlowContainer") {
 		CHECK_MESSAGE(
 				child_control_2->get_position().is_equal_approx(Point2(35, 0)),
 				"Second child control starts after the first child control's stretched width.");
+
+		memdelete(child_control_2);
+		memdelete(child_control_1);
+	}
+
+	SUBCASE("Desired size children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		child_control_1->set_desired_size(Size2(60, 20));
+		child_control_2->set_desired_size(Size2(40, 30));
+		hflow_container->set_size(Size2());
+		hflow_container->set_custom_maximum_size(Size2(100, 100));
+		hflow_container->set_propagate_maximum_size(false);
+		hflow_container->add_child(child_control_1);
+		hflow_container->add_child(child_control_2);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hflow_container->get_size().is_equal_approx(Size2(60, 50)),
+				"HFlowContainer expands to fit desired child sizes while respecting its maximum size.");
+		CHECK_MESSAGE(
+				hflow_container->get_line_count() == 2,
+				"HFlowContainer wraps desired-size children when their combined width does not fit.");
+		CHECK_MESSAGE(
+				(child_control_1->get_position().is_equal_approx(Point2(0, 0)) &&
+						child_control_2->get_position().is_equal_approx(Point2(0, 20))),
+				"Desired-size children are placed on consecutive wrapped lines.");
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(60, 20)) &&
+						child_control_2->get_size().is_equal_approx(Size2(40, 30))),
+				"Desired-size children keep their desired dimensions on separate lines.");
 
 		memdelete(child_control_2);
 		memdelete(child_control_1);
@@ -505,6 +537,37 @@ TEST_CASE("[SceneTree][FlowContainer] VFlowContainer") {
 		CHECK_MESSAGE(
 				child_control_2->get_position().is_equal_approx(Point2(0, 35)),
 				"Second child control starts after the first child control's stretched height.");
+
+		memdelete(child_control_2);
+		memdelete(child_control_1);
+	}
+
+	SUBCASE("Desired size children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		child_control_1->set_desired_size(Size2(20, 60));
+		child_control_2->set_desired_size(Size2(30, 40));
+		vflow_container->set_size(Size2());
+		vflow_container->set_custom_maximum_size(Size2(100, 100));
+		vflow_container->set_propagate_maximum_size(false);
+		vflow_container->add_child(child_control_1);
+		vflow_container->add_child(child_control_2);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vflow_container->get_size().is_equal_approx(Size2(50, 60)),
+				"VFlowContainer expands to fit desired child sizes while respecting its maximum size.");
+		CHECK_MESSAGE(
+				vflow_container->get_line_count() == 2,
+				"VFlowContainer wraps desired-size children when their combined height does not fit.");
+		CHECK_MESSAGE(
+				(child_control_1->get_position().is_equal_approx(Point2(0, 0)) &&
+						child_control_2->get_position().is_equal_approx(Point2(20, 0))),
+				"Desired-size children are placed in consecutive wrapped columns.");
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(20, 60)) &&
+						child_control_2->get_size().is_equal_approx(Size2(30, 40))),
+				"Desired-size children keep their desired dimensions in separate columns.");
 
 		memdelete(child_control_2);
 		memdelete(child_control_1);

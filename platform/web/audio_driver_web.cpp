@@ -253,13 +253,22 @@ void AudioDriverWeb::register_sample(const Ref<AudioSample> &p_sample) {
 		data_ptrw[i + frames_total] = frames[i].right;
 	}
 
+	// Adjust loop start/end to match mix rate.
+	const int sample_rate = p_sample->sample_rate;
+	int loop_begin = p_sample->loop_begin;
+	int loop_end = p_sample->loop_end;
+	if (sample_rate != mix_rate) {
+		loop_begin = Math::round(loop_begin * (float(mix_rate) / sample_rate));
+		loop_end = Math::round(loop_end * (float(mix_rate) / sample_rate));
+	}
+
 	godot_audio_sample_register_stream(
 			itos(p_sample->stream->get_instance_id()).utf8().get_data(),
 			data_ptrw,
 			frames_total,
 			loop_mode.utf8().get_data(),
-			p_sample->loop_begin,
-			p_sample->loop_end);
+			loop_begin,
+			loop_end);
 }
 
 void AudioDriverWeb::unregister_sample(const Ref<AudioSample> &p_sample) {
@@ -269,7 +278,7 @@ void AudioDriverWeb::unregister_sample(const Ref<AudioSample> &p_sample) {
 	godot_audio_sample_unregister_stream(itos(p_sample->stream->get_instance_id()).utf8().get_data());
 }
 
-void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	ERR_FAIL_COND_MSG(p_playback->stream.is_null(), "Parameter p_playback->stream is null.");
 
@@ -293,7 +302,8 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 			AudioServer::get_singleton()->get_bus_index(p_playback->bus),
 			p_playback->offset,
 			p_playback->pitch_scale,
-			volume_ptrw);
+			volume_ptrw,
+			p_paused);
 }
 
 void AudioDriverWeb::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
@@ -446,8 +456,10 @@ void AudioDriverWorklet::unlock() {
 }
 
 void AudioDriverWorklet::finish_driver() {
-	quit = true; // Ask thread to quit.
-	thread.wait_to_finish();
+	if (thread.is_started()) {
+		quit = true; // Ask thread to quit.
+		thread.wait_to_finish();
+	}
 }
 
 #else // No threads.

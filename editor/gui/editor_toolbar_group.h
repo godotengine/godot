@@ -45,4 +45,7 @@ public:
 	static HBoxContainer *create(Control *p_parent);
 
 	HBoxContainer *get_hbox() const { return hbox; }
+
+protected:
+	void _notification(int p_what);
 };

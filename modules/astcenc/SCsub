@@ -40,6 +40,7 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 env_astcenc.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_astcenc.Clone()
+env_thirdparty.force_optimization_on_debug()
 env_thirdparty.disable_warnings()
 
 # Build the encoder only for editor builds

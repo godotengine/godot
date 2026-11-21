@@ -26,13 +26,14 @@
 # Кристиан Николов <kris.nikolov07@gmail.com>, 2025, 2026.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
 # Antoan Ignatov <antoan.a.ignatov@gmail.com>, 2026.
+# Repa <youme.ytv@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-17 08:09+0000\n"
-"Last-Translator: Antoan Ignatov <antoan.a.ignatov@gmail.com>\n"
+"PO-Revision-Date: 2026-07-17 12:17+0000\n"
+"Last-Translator: Repa <youme.ytv@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/bg/>\n"
 "Language: bg\n"
@@ -40,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "Application"
 msgstr "Апликация"
@@ -831,6 +832,21 @@ msgstr "Пуул с Работници"
 msgid "Low Priority Thread Ratio"
 msgstr "Съотношение за Нишките с Нисък Приоритет"
 
+msgid "Start Offset"
+msgstr "Начално Отместване"
+
+msgid "Max Results"
+msgstr "Макс. Резултати"
+
+msgid "Subject"
+msgstr "Тема"
+
+msgid "Names"
+msgstr "Имена"
+
+msgid "Strings"
+msgstr "Текстови Низове"
+
 msgid "Locale"
 msgstr "Локал"
 
@@ -899,9 +915,6 @@ msgstr "Режим на Дръжката"
 
 msgid "Stream"
 msgstr "Поток"
-
-msgid "Start Offset"
-msgstr "Начално Отместване"
 
 msgid "End Offset"
 msgstr "Крайно Отместване"
@@ -1047,12 +1060,6 @@ msgstr "Възможности"
 msgid "Access Wi-Fi"
 msgstr "Достъпи Безжичната Мрежа"
 
-msgid "Performance Gaming Tier"
-msgstr "Ниво на Производителност в Игри"
-
-msgid "Performance A 12"
-msgstr "Производство на А 12"
-
 msgid "Shader Baker"
 msgstr "Запичане на Шейдъри"
 
@@ -1070,24 +1077,6 @@ msgstr "Достъпен от iTunes Споделяне"
 
 msgid "Privacy"
 msgstr "Поверителност"
-
-msgid "Camera Usage Description"
-msgstr "Потребителско Описание на Камерата"
-
-msgid "Camera Usage Description Localized"
-msgstr "Локализирано Потребителско Описание на Камерата"
-
-msgid "Microphone Usage Description"
-msgstr "Потребителско Описание на Микрофона"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Локализирано Потребителско Описание на Микрофона"
-
-msgid "Photolibrary Usage Description"
-msgstr "Потребителско Описание на Галерията"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Локализирано Потребителско Описание на Галерията"
 
 msgid "Tracking Enabled"
 msgstr "Включено Проследяване"
@@ -1659,6 +1648,15 @@ msgstr "Подредба"
 msgid "Layout"
 msgstr "Разположение"
 
+msgid "Normal Map"
+msgstr "Карта на Нормалите"
+
+msgid "Roughness"
+msgstr "Грубост"
+
+msgid "Src Normal"
+msgstr "Src Нормал"
+
 msgid "Base Scale"
 msgstr "Основен Мащаб"
 
@@ -1673,15 +1671,6 @@ msgstr "Поправи Алфа Границата"
 
 msgid "Premult Alpha"
 msgstr "Premult Алфа"
-
-msgid "Normal Map"
-msgstr "Карта на Нормалите"
-
-msgid "Roughness"
-msgstr "Грубост"
-
-msgid "Src Normal"
-msgstr "Src Нормал"
 
 msgid "Process"
 msgstr "Процес"
@@ -1857,42 +1846,6 @@ msgstr "Име на Приставката"
 
 msgid "Autoload on Startup"
 msgstr "Автоматично Зареждане при Стартиране"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "Текстура"
-
-msgid "Margins"
-msgstr "Маржове"
-
-msgid "Separation"
-msgstr "Разделение"
-
-msgid "Texture Region Size"
-msgstr "Размер на Регион на Текстура"
-
-msgid "Use Texture Padding"
-msgstr "Използвай Текстурно Подплатяване"
-
-msgid "Atlas Coords"
-msgstr "Атлас Координати"
-
-msgid "Size in Atlas"
-msgstr "Размер в Атлас"
-
-msgid "Alternative ID"
-msgstr "Алтернативно ID"
-
-msgid "Speed"
-msgstr "Скорост"
-
-msgid "Frames Count"
-msgstr "Брой Кадри"
-
-msgid "Duration"
-msgstr "Продължителност"
 
 msgid "Current Group Idx"
 msgstr "Idx на Текущата Група"
@@ -2071,11 +2024,11 @@ msgstr "Продължително Обновяване"
 msgid "Collapse Main Menu"
 msgstr "Сгъване на Главното Меню"
 
-msgid "Derive Script Globals by Name"
-msgstr "Извличане на Глобални Променливи от Скрипт по Име"
-
 msgid "Scene Tree"
 msgstr "Дърво на Сцената"
+
+msgid "Derive Script Globals by Name"
+msgstr "Извличане на Глобални Променливи от Скрипт по Име"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "Попитай Преди да Отмениш Уникалното Име"
@@ -2301,9 +2254,6 @@ msgstr "Размер на Миниатюрата"
 
 msgid "Quick Open Dialog"
 msgstr "Диалогов Прозорец „Бързо Отваряне“"
-
-msgid "Max Results"
-msgstr "Макс. Резултати"
 
 msgid "Instant Preview"
 msgstr "Незабавен Преглед"
@@ -2557,11 +2507,11 @@ msgstr "Отвори Доминиращ Скрипт при Промяна на 
 msgid "Drop Preload Resources as UID"
 msgstr "Изтрий Предварително Заредени Ресурси Като UID"
 
-msgid "Documentation"
-msgstr "Документация"
-
 msgid "Enable Tooltips"
 msgstr "Включи Подсказки"
+
+msgid "Documentation"
+msgstr "Документация"
 
 msgid "Script List"
 msgstr "Лист от Скриптове"
@@ -3451,12 +3401,6 @@ msgstr "Включи Проследяване на Равнина"
 msgid "Enable Builtin Plane Detection"
 msgstr "Включи Вградено Проследяване на Равнина"
 
-msgid "Enable Marker Tracking"
-msgstr "Включи Проследяване на Маркери"
-
-msgid "Enable Builtin Marker Tracking"
-msgstr "Включи Вградено Проследяване на Маркери"
-
 msgid "Aruco Dict"
 msgstr "Aruco Речник"
 
@@ -3507,9 +3451,6 @@ msgstr "Икона на Windows"
 
 msgid "Text Driver"
 msgstr "Текстов Драйвер"
-
-msgid "Search in File Extensions"
-msgstr "Търси във Файловите Добавки"
 
 msgid "Mouse Cursor"
 msgstr "Курсор на Мишката"
@@ -4627,6 +4568,9 @@ msgstr "Тип Действие"
 msgid "Toplevel Paths"
 msgstr "Най-високо Ниво Пътища"
 
+msgid "Duration"
+msgstr "Продължителност"
+
 msgid "Binding Path"
 msgstr "Свързващ Път"
 
@@ -4798,14 +4742,47 @@ msgstr "Тракер"
 msgid "Make Local to Pose"
 msgstr "Направи Локален за Позата"
 
-msgid "Subject"
-msgstr "Тема"
+msgid "ID"
+msgstr "ID"
 
-msgid "Names"
-msgstr "Имена"
+msgid "Texture"
+msgstr "Текстура"
 
-msgid "Strings"
-msgstr "Текстови Низове"
+msgid "Margins"
+msgstr "Маржове"
+
+msgid "Separation"
+msgstr "Разделение"
+
+msgid "Texture Region Size"
+msgstr "Размер на Регион на Текстура"
+
+msgid "Use Texture Padding"
+msgstr "Използвай Текстурно Подплатяване"
+
+msgid "Atlas Coords"
+msgstr "Атлас Координати"
+
+msgid "Size in Atlas"
+msgstr "Размер в Атлас"
+
+msgid "Alternative ID"
+msgstr "Алтернативно ID"
+
+msgid "Speed"
+msgstr "Скорост"
+
+msgid "Frames Count"
+msgstr "Брой Кадри"
+
+msgid "Tile Offset Axis"
+msgstr "Осове Отместване на Плочка"
+
+msgid "Points"
+msgstr "Точки"
+
+msgid "Z Index"
+msgstr "Индекс по Z"
 
 msgid "Discover Multicast If"
 msgstr "Открий Multicast If"
@@ -5143,6 +5120,12 @@ msgstr "Използвай Персонализиран Цвят за Задни
 msgid "Custom BG Color"
 msgstr "Персонализиран Цвят за Задния Фон"
 
+msgid "Performance Gaming Tier"
+msgstr "Ниво на Производителност в Игри"
+
+msgid "Performance A 12"
+msgstr "Производство на А 12"
+
 msgid "Settings 58 X 58"
 msgstr "Настройки 58 X 58"
 
@@ -5260,6 +5243,18 @@ msgstr "USB Устройство"
 msgid "Device Bluetooth"
 msgstr "Bluetooth Устройство"
 
+msgid "Microphone Usage Description"
+msgstr "Потребителско Описание на Микрофона"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Локализирано Потребителско Описание на Микрофона"
+
+msgid "Camera Usage Description"
+msgstr "Потребителско Описание на Камерата"
+
+msgid "Camera Usage Description Localized"
+msgstr "Локализирано Потребителско Описание на Камерата"
+
 msgid "Variant"
 msgstr "Вариант"
 
@@ -5307,9 +5302,6 @@ msgstr "Форма на излъчването"
 
 msgid "Sphere Radius"
 msgstr "Радиус на сферата"
-
-msgid "Points"
-msgstr "Точки"
 
 msgid "Colors"
 msgstr "Цветове"
@@ -5698,9 +5690,6 @@ msgstr "Хоризонтално Превъртане Включено"
 msgid "Scroll Vertical Enabled"
 msgstr "Вертикално Превъртане Включено"
 
-msgid "Z Index"
-msgstr "Индекс по Z"
-
 msgid "Timeout"
 msgstr "Таймаут"
 
@@ -5794,14 +5783,8 @@ msgstr "Съвет за Nodepath"
 msgid "Default Joint Settings"
 msgstr "Стандартни Настройки на Ставите"
 
-msgid "Tile Offset Axis"
-msgstr "Осове Отместване на Плочка"
-
 msgid "Edge Fade"
 msgstr "Избледняване на Ръб"
-
-msgid "Item"
-msgstr "Елемент"
 
 msgid "Top Color"
 msgstr "Цвят отгоре"
@@ -5820,6 +5803,9 @@ msgstr "Резервна Среда"
 
 msgid "Atlas"
 msgstr "Атлас"
+
+msgid "Random Volume Offset dB"
+msgstr "Случайно Отместване на Силата на Звука в dB"
 
 msgid "Frustum"
 msgstr "Отрязване"
@@ -6085,6 +6071,18 @@ msgstr "Намек за Вертикално Превъртане"
 msgid "Scroll Hint Horizontal"
 msgstr "Намек за Хоризонтално Превъртане"
 
+msgid "Scrollbar Margin Left"
+msgstr "Марж Отляво на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Top"
+msgstr "Марж Отгоре на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Right"
+msgstr "Марж Отдясно на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Марж Отдолу на Плъзгащата Лента"
+
 msgid "Close"
 msgstr "Затваряне"
 
@@ -6142,18 +6140,6 @@ msgstr "Граница на Превъртане"
 msgid "Scroll Speed"
 msgstr "Скорот на Превъртане"
 
-msgid "Scrollbar Margin Left"
-msgstr "Марж Отляво на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Top"
-msgstr "Марж Отгоре на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Right"
-msgstr "Марж Отдясно на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Марж Отдолу на Плъзгащата Лента"
-
 msgid "Scrollbar H Separation"
 msgstr "Хоризонтално Разделение на Плъзгащата Лента"
 
@@ -6201,9 +6187,6 @@ msgstr "Резервни стойности"
 
 msgid "Channel Disable Threshold dB"
 msgstr "Праг за Изключване на Канал в dB"
-
-msgid "Random Volume Offset dB"
-msgstr "Случайно Отместване на Силата на Звука в dB"
 
 msgid "Release (ms)"
 msgstr "Освобождаване (ms)"
@@ -6318,6 +6301,12 @@ msgstr "Дебъгване на Времето за Прерисуване"
 
 msgid "Debug Redraw Color"
 msgstr "Дебъгване на Прерисуване на Цвят"
+
+msgid "Bytecode"
+msgstr "Байткод"
+
+msgid "IDs"
+msgstr "Идентификатори"
 
 msgid "Import S3TC BPTC"
 msgstr "Импортирай S3TC BPTC"

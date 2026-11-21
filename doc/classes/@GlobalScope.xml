@@ -327,7 +327,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate_angle] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">
@@ -2341,13 +2341,13 @@
 			Z key.
 		</constant>
 		<constant name="KEY_BRACKETLEFT" value="91" enum="Key" keywords="open square bracket">
-			Left bracket ([code][lb][/code]) key.
+			Left bracket ([code skip-lint][[/code]) key.
 		</constant>
 		<constant name="KEY_BACKSLASH" value="92" enum="Key">
 			Backslash ([code]\[/code]) key.
 		</constant>
 		<constant name="KEY_BRACKETRIGHT" value="93" enum="Key" keywords="close square bracket">
-			Right bracket ([code][rb][/code]) key.
+			Right bracket ([code]][/code]) key.
 		</constant>
 		<constant name="KEY_ASCIICIRCUM" value="94" enum="Key" keywords="caret">
 			Caret ([code]^[/code]) key.
@@ -3010,7 +3010,10 @@
 		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
 			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_AUDIO_BUS" value="45" enum="PropertyHint">
+			Hints that a [String] or [StringName] property is the name of an audio bus. This allows the selection of predefined bus names registered with the audio server.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">

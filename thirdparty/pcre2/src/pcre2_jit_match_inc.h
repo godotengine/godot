@@ -117,6 +117,7 @@ jit_arguments arguments;
 int rc;
 int index = 0;
 
+/* The same check is performed by jit_check_exec(). */
 if ((options & PCRE2_PARTIAL_HARD) != 0)
   index = 2;
 else if ((options & PCRE2_PARTIAL_SOFT) != 0)
@@ -124,6 +125,16 @@ else if ((options & PCRE2_PARTIAL_SOFT) != 0)
 
 if (functions == NULL || functions->executable_funcs[index] == NULL)
   return match_data->rc = PCRE2_ERROR_JIT_BADOPTION;
+
+/* If the match data block was previously used with PCRE2_COPY_MATCHED_SUBJECT,
+free the memory that was obtained. */
+
+if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
+  {
+  match_data->memctl.free((void *)match_data->subject,
+    match_data->memctl.memory_data);
+  match_data->flags &= ~PCRE2_MD_COPIED_SUBJECT;
+  }
 
 /* Sanity checks should be handled by pcre2_match. */
 arguments.str = subject + start_offset;

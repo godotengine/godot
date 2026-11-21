@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A control that displays a texture, for example an icon inside a GUI. The texture's placement can be controlled with the [member stretch_mode] property. It can scale, tile, or stay centered inside its bounding rectangle.
+		By default, the minimum size of [TextureRect] is equal to the assigned [member texture]'s size. If you want it to be smaller, set [member expand_mode] to [constant EXPAND_IGNORE_SIZE].
 	</description>
 	<tutorials>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>

@@ -102,6 +102,7 @@ private:
 
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
+	bool forced_focus = false;
 
 	DockContextPopup *dock_context_popup = nullptr;
 	PopupMenu *docks_menu = nullptr;
@@ -155,6 +156,7 @@ public:
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void force_focus_dock(EditorDock *p_dock); // Ignore can_switch_dock().
 	void make_dock_floating(EditorDock *p_dock);
 
 	void set_docks_visible(bool p_show);

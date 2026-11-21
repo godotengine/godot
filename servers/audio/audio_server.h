@@ -193,6 +193,7 @@ private:
 	struct CallbackItem {
 		AudioCallback callback;
 		void *userdata = nullptr;
+		bool is_playing = false;
 	};
 
 	SafeList<CallbackItem *> update_callback_list;
@@ -286,9 +287,9 @@ public:
 	float get_playback_speed_scale() const;
 
 	// Convenience method.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time = 0, float p_pitch_scale = 1, bool p_paused = false);
 	// Expose all parameters.
-	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0);
+	void start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time = 0, float p_pitch_scale = 1, float p_highshelf_gain = 0, float p_attenuation_cutoff_hz = 0, bool p_paused = false);
 	void stop_playback_stream(Ref<AudioStreamPlayback> p_playback);
 
 	void set_playback_bus_exclusive(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volumes);
@@ -339,6 +340,7 @@ public:
 
 	void add_mix_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_mix_callback(AudioCallback p_callback, void *p_userdata);
+	void set_mix_callback_state(AudioCallback p_callback, void *p_userdata, bool p_is_playing);
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;
@@ -368,7 +370,7 @@ public:
 	void unregister_stream_as_sample(const Ref<AudioStream> &p_stream);
 	void register_sample(const Ref<AudioSample> &p_sample);
 	void unregister_sample(const Ref<AudioSample> &p_sample);
-	void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
+	void start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused = false);
 	void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback);
 	void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused);
 	bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback);

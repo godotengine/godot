@@ -107,20 +107,6 @@ int mbedtls_x509_oid_get_oid_by_sig_alg(mbedtls_pk_sigalg_t pk_alg, mbedtls_md_t
                                         const char **oid, size_t *olen);
 #endif /* MBEDTLS_X509_CRT_WRITE_C || MBEDTLS_X509_CSR_WRITE_C */
 
-#if (defined(MBEDTLS_X509_USE_C) && defined(MBEDTLS_X509_RSASSA_PSS_SUPPORT)) || \
-    defined(MBEDTLS_PKCS7_C)
-#define MBEDTLS_X509_OID_HAVE_GET_MD_ALG
-/**
- * \brief          Translate hash algorithm OID into md_type
- *
- * \param oid      OID to use
- * \param md_alg   place to store message digest algorithm
- *
- * \return         0 if successful, or MBEDTLS_ERR_X509_UNKNOWN_OID
- */
-int mbedtls_x509_oid_get_md_alg(const mbedtls_asn1_buf *oid, mbedtls_md_type_t *md_alg);
-#endif /* MBEDTLS_X509_OID_HAVE_GET_MD_ALG */
-
 #if defined(MBEDTLS_X509_CRT_PARSE_C) && !defined(MBEDTLS_X509_REMOVE_INFO)
 /**
  * \brief          Translate Extended Key Usage OID into description

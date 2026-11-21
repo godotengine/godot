@@ -1,5 +1,3 @@
-GH-90747
---------
 Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layers
 Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layers
 Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/avoidance_layers

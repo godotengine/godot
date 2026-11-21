@@ -49,6 +49,7 @@ bool
 hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
 			     unsigned int fdCount,
 			     const FDSelect &src, /* IN */
+			     unsigned int src_num_glyphs,
 			     unsigned int &subset_fd_count /* OUT */,
 			     unsigned int &subset_fdselect_size /* OUT */,
 			     unsigned int &subset_fdselect_format /* OUT */,
@@ -83,7 +84,13 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
 	/* fonttools retains FDSelect & font dicts for missing glyphs. do the same */
 	old_glyph = gid;
       }
-      auto fd_range = src.get_fd_range (old_glyph);
+      /* FDSelect may only cover the CharStrings glyphs; see subset_get_fd (). */
+      hb_pair_t<unsigned, hb_codepoint_t> fd_range =
+	likely (old_glyph < src_num_glyphs) ?
+	src.get_fd_range (old_glyph) :
+	hb_pair_t<unsigned, hb_codepoint_t> {0, HB_CODEPOINT_INVALID};
+      if (old_glyph < src_num_glyphs)
+	fd_range.second = hb_min (fd_range.second, src_num_glyphs);
       unsigned fd = fd_range.first;
 
       if (fd != prev_fd)

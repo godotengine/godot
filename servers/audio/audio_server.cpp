@@ -720,6 +720,7 @@ void AudioServer::add_bus(int p_at_pos) {
 	bus_map[attempt] = bus;
 
 	if (p_at_pos == -1) {
+		p_at_pos = buses.size();
 		buses.push_back(bus);
 	} else {
 		buses.insert(p_at_pos, bus);
@@ -1040,16 +1041,16 @@ float AudioServer::get_playback_speed_scale() const {
 	return playback_speed_scale;
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const StringName &p_bus, Vector<AudioFrame> p_volume_db_vector, float p_start_time, float p_pitch_scale, bool p_paused) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	HashMap<StringName, Vector<AudioFrame>> map;
 	map[p_bus] = p_volume_db_vector;
 
-	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale);
+	start_playback_stream(p_playback, map, p_start_time, p_pitch_scale, 0, 0, p_paused);
 }
 
-void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz) {
+void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes, float p_start_time, float p_pitch_scale, float p_highshelf_gain, float p_attenuation_cutoff_hz, bool p_paused) {
 	ERR_FAIL_COND(p_playback.is_null());
 
 	AudioStreamPlaybackListNode *playback_node = new AudioStreamPlaybackListNode();
@@ -1085,7 +1086,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 		frame = AudioFrame(0, 0);
 	}
 
-	playback_node->state.store(AudioStreamPlaybackListNode::PLAYING);
+	playback_node->state.store(p_paused ? AudioStreamPlaybackListNode::PAUSED : AudioStreamPlaybackListNode::PLAYING);
 
 	playback_list.insert(playback_node);
 	playback_stream_count.increment();
@@ -1427,8 +1428,15 @@ void AudioServer::update() {
 		ci->callback(ci->userdata);
 	}
 
+	int playing_mix_callbacks = 0;
+	for (CallbackItem *ci : mix_callback_list) {
+		if (ci->is_playing) {
+			playing_mix_callbacks++;
+		}
+	}
+
 	if (AudioDriver::get_singleton()->can_output_device_sleep()) {
-		if (playback_stream_count.get() == 0) {
+		if (playback_stream_count.get() == 0 && playing_mix_callbacks == 0) {
 			uint64_t now_msec = OS::get_singleton()->get_ticks_msec();
 			if (playback_stream_idle_since_msec == 0) {
 				playback_stream_idle_since_msec = now_msec;
@@ -1547,6 +1555,14 @@ void AudioServer::add_mix_callback(AudioCallback p_callback, void *p_userdata) {
 	ci->callback = p_callback;
 	ci->userdata = p_userdata;
 	mix_callback_list.insert(ci);
+}
+
+void AudioServer::set_mix_callback_state(AudioCallback p_callback, void *p_userdata, bool p_is_playing) {
+	for (CallbackItem *ci : mix_callback_list) {
+		if (ci->callback == p_callback && ci->userdata == p_userdata) {
+			ci->is_playing = p_is_playing;
+		}
+	}
 }
 
 void AudioServer::remove_mix_callback(AudioCallback p_callback, void *p_userdata) {
@@ -1693,8 +1709,9 @@ Error AudioServer::set_input_device_active(bool p_is_active) {
 		}
 
 		input_buffer_ofs = 0;
-		input_device_active = true;
-		return AudioDriver::get_singleton()->input_start();
+		const Error err = AudioDriver::get_singleton()->input_start();
+		input_device_active = err == OK;
+		return err;
 	} else {
 		input_device_active = false;
 		return AudioDriver::get_singleton()->input_stop();
@@ -1815,9 +1832,9 @@ void AudioServer::unregister_sample(const Ref<AudioSample> &p_sample) {
 	AudioDriver::get_singleton()->unregister_sample(p_sample);
 }
 
-void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
-	AudioDriver::get_singleton()->start_sample_playback(p_playback);
+	AudioDriver::get_singleton()->start_sample_playback(p_playback, p_paused);
 	sample_playback_list.ordered_insert(p_playback);
 }
 

@@ -741,7 +741,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_show_settings();
-			anim_speed->set_suffix(TTR("FPS"));
+			anim_speed->set_format("%s FPS");
 
 			// Similar to `_update_library_impl()`, but only updates text for "empty" items.
 			if (frames.is_valid()) {
@@ -1624,6 +1624,12 @@ void SpriteFramesEditor::_update_anim_loop_button() {
 		return;
 	}
 
+	if (!frames->has_animation(edited_anim)) {
+		anim_loop->set_disabled(true);
+		return;
+	}
+	anim_loop->set_disabled(false);
+
 	SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(edited_anim);
 	anim_loop->set_pressed_no_signal(loop != SpriteFrames::LOOP_NONE);
 
@@ -1637,6 +1643,17 @@ void SpriteFramesEditor::_update_anim_loop_button() {
 		} break;
 	}
 }
+
+void SpriteFramesEditor::_update_anim_speed_spin() {
+	if (!frames->has_animation(edited_anim)) {
+		anim_speed->set_editable(false);
+		return;
+	}
+	anim_speed->set_editable(true);
+
+	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+}
+
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (!p_skip_selector) {
 		animations_dirty = true;
@@ -1673,6 +1690,8 @@ void SpriteFramesEditor::_update_library_impl() {
 			missing_anim_label->show();
 			anim_frames_vb->hide();
 			updating = false;
+			_update_anim_loop_button();
+			_update_anim_speed_spin();
 			return;
 		}
 		missing_anim_label->hide();
@@ -1790,7 +1809,7 @@ void SpriteFramesEditor::_update_library_impl() {
 		}
 	}
 
-	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
+	_update_anim_speed_spin();
 	_update_anim_loop_button();
 	updating = false;
 }
@@ -2237,7 +2256,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
-	anim_speed->set_suffix(TTR("FPS"));
+	anim_speed->set_format(TTR("%s FPS"));
 	anim_speed->set_min(0);
 	anim_speed->set_max(120);
 	anim_speed->set_step(0.01);
@@ -2398,7 +2417,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc_frame_duration->add_child(label);
 
 	frame_duration = memnew(SpinBox);
-	frame_duration->set_prefix(String::utf8("×"));
+	frame_duration->set_format(U"×%s");
 	frame_duration->set_min(SPRITE_FRAME_MINIMUM_DURATION); // Avoid zero div.
 	frame_duration->set_max(10);
 	frame_duration->set_step(0.01);
@@ -2680,7 +2699,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_x->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_x->set_min(1);
 	split_sheet_size_x->set_step(1);
-	split_sheet_size_x->set_suffix("px");
+	split_sheet_size_x->set_format("%s px");
 	split_sheet_size_x->set_select_all_on_focus(true);
 	split_sheet_size_x->set_accessibility_name(TTRC("X Size"));
 	split_sheet_size_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
@@ -2689,7 +2708,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_size_y->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_sheet_size_y->set_min(1);
 	split_sheet_size_y->set_step(1);
-	split_sheet_size_y->set_suffix("px");
+	split_sheet_size_y->set_format("%s px");
 	split_sheet_size_y->set_select_all_on_focus(true);
 	split_sheet_size_y->set_accessibility_name(TTRC("Y Size"));
 	split_sheet_size_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_SIZE));
@@ -2710,7 +2729,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_x = memnew(SpinBox);
 	split_sheet_sep_x->set_min(0);
 	split_sheet_sep_x->set_step(1);
-	split_sheet_sep_x->set_suffix("px");
+	split_sheet_sep_x->set_format("%s px");
 	split_sheet_sep_x->set_select_all_on_focus(true);
 	split_sheet_sep_x->set_accessibility_name(TTRC("X Separation"));
 	split_sheet_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2718,7 +2737,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_sep_y = memnew(SpinBox);
 	split_sheet_sep_y->set_min(0);
 	split_sheet_sep_y->set_step(1);
-	split_sheet_sep_y->set_suffix("px");
+	split_sheet_sep_y->set_format("%s px");
 	split_sheet_sep_y->set_select_all_on_focus(true);
 	split_sheet_sep_y->set_accessibility_name(TTRC("Y Separation"));
 	split_sheet_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2739,7 +2758,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_x = memnew(SpinBox);
 	split_sheet_offset_x->set_min(0);
 	split_sheet_offset_x->set_step(1);
-	split_sheet_offset_x->set_suffix("px");
+	split_sheet_offset_x->set_format("%s px");
 	split_sheet_offset_x->set_select_all_on_focus(true);
 	split_sheet_offset_x->set_accessibility_name(TTRC("X Offset"));
 	split_sheet_offset_x->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));
@@ -2747,7 +2766,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_offset_y = memnew(SpinBox);
 	split_sheet_offset_y->set_min(0);
 	split_sheet_offset_y->set_step(1);
-	split_sheet_offset_y->set_suffix("px");
+	split_sheet_offset_y->set_format("%s px");
 	split_sheet_offset_y->set_select_all_on_focus(true);
 	split_sheet_offset_y->set_accessibility_name(TTRC("Y Offset"));
 	split_sheet_offset_y->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_sheet_spin_changed).bind(PARAM_USE_CURRENT));

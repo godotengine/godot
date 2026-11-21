@@ -1,5 +1,3 @@
-GH-86629
---------
 Validate extension JSON: Error: Field 'classes/Animation/methods/position_track_interpolate/arguments': size changed value in new API, from 2 to 3.
 Validate extension JSON: Error: Field 'classes/Animation/methods/rotation_track_interpolate/arguments': size changed value in new API, from 2 to 3.
 Validate extension JSON: Error: Field 'classes/Animation/methods/scale_track_interpolate/arguments': size changed value in new API, from 2 to 3.

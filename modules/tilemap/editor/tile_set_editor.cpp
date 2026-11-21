@@ -105,6 +105,8 @@ void TileSetEditor::_load_texture_files(const Vector<String> &p_paths) {
 	int source_id = TileSet::INVALID_SOURCE;
 	Vector<Ref<TileSetAtlasSource>> atlases;
 
+	const String owner_path = tile_set->get_path().get_slice("::", 0);
+
 	for (const String &p_path : p_paths) {
 		Ref<Texture2D> texture = ResourceLoader::load(p_path);
 
@@ -118,6 +120,11 @@ void TileSetEditor::_load_texture_files(const Vector<String> &p_paths) {
 
 		// Actually create the new source.
 		Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+
+		if (!owner_path.is_empty()) {
+			EditorNode::setup_built_in_resource(atlas_source, owner_path);
+		}
+
 		atlas_source->set_texture(texture);
 		atlas_source->set_texture_region_size(tile_set->get_tile_size());
 

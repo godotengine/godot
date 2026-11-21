@@ -30,6 +30,56 @@
 
 #include <math.h>
 
+/**
+ * SECTION:hb-raster
+ * @title: hb-raster
+ * @short_description: Glyph rasterization
+ * @include: hb-raster.h
+ *
+ * Functions for rasterizing glyph outlines into pixel buffers.
+ *
+ * #hb_raster_draw_t rasterizes outline geometry and always outputs
+ * @HB_RASTER_FORMAT_A8. Typical flow:
+ *
+ * |[<!-- language="plain" -->
+ * hb_raster_draw_t *draw = hb_raster_draw_create_or_fail ();
+ * hb_raster_draw_set_scale_factor (draw, 64.f, 64.f);
+ * hb_raster_draw_set_transform (draw, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f);
+ * hb_glyph_extents_t glyph_extents;
+ * hb_font_get_glyph_extents (font, gid, &glyph_extents);
+ * hb_raster_draw_set_glyph_extents (draw, &glyph_extents);
+ * hb_raster_draw_glyph (draw, font, gid);
+ * hb_raster_image_t *mask = hb_raster_draw_render (draw);
+ * hb_raster_extents_t image_extents;
+ * hb_raster_image_get_extents (mask, &image_extents);
+ * ]|
+ *
+ * #hb_raster_paint_t renders color paint graphs and always outputs
+ * @HB_RASTER_FORMAT_BGRA32. Typical flow:
+ *
+ * |[<!-- language="plain" -->
+ * hb_raster_paint_t *paint = hb_raster_paint_create_or_fail ();
+ * hb_raster_paint_set_scale_factor (paint, 64.f, 64.f);
+ * hb_raster_paint_set_transform (paint, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f);
+ * hb_raster_paint_set_foreground (paint, foreground);
+ * hb_glyph_extents_t glyph_extents;
+ * hb_font_get_glyph_extents (font, gid, &glyph_extents);
+ * hb_raster_paint_set_glyph_extents (paint, &glyph_extents);
+ * hb_raster_paint_glyph (paint, font, gid);
+ * hb_raster_image_t *img = hb_raster_paint_render (paint);
+ * hb_raster_extents_t image_extents;
+ * hb_raster_image_get_extents (img, &image_extents);
+ * ]|
+ *
+ * In both modes, set extents explicitly (or via glyph extents) before
+ * rendering to avoid implicit allocations and to get deterministic bounds.
+ * When caching individual glyph images for later composition, position each
+ * image using the `x_origin` and `y_origin` members returned by
+ * hb_raster_image_get_extents().  These are the pixel-space left and bottom
+ * edges after raster-bound rounding; do not reconstruct them from glyph
+ * bearings and image dimensions.
+ **/
+
 #ifdef HAVE_PNG
 #include <png.h>
 #endif
@@ -579,7 +629,8 @@ hb_raster_image_t::deserialize_from_png (hb_blob_t *blob)
   }
 
   size_t rgba_size = (size_t) rowbytes * (size_t) h;
-  if (h && rgba_size / (size_t) h != (size_t) rowbytes)
+  if ((h && rgba_size / (size_t) h != (size_t) rowbytes) ||
+      rgba_size > HB_RASTER_MAX_BUFFER_SIZE)
   {
     png_destroy_read_struct (&png, &info, nullptr);
     hb_raster_png_read_blob_fini (reader);

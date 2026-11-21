@@ -180,7 +180,7 @@ PackedStringArray AudioDriver::get_input_device_list() {
 	return list;
 }
 
-void AudioDriver::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
+void AudioDriver::start_sample_playback(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
 	if (p_playback.is_valid()) {
 		if (p_playback->stream.is_valid()) {
 			WARN_PRINT_ED(vformat(R"(Trying to play stream (%s) as a sample (%s), but the driver doesn't support sample playback.)", p_playback->get_instance_id(), p_playback->stream->get_instance_id()));

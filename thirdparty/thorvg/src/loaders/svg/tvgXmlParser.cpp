@@ -68,75 +68,52 @@ static const char* _xmlFindWhiteSpace(const char* itr, const char* itrEnd)
     return itr;
 }
 
-
-static const char* _xmlSkipXmlEntities(const char* itr, const char* itrEnd)
+struct XmlEntity
 {
-    auto p = itr;
-    while (itr < itrEnd && *itr == '&') {
-        for (int i = 0; i < NUMBER_OF_XML_ENTITIES; ++i) {
-            if (strncmp(itr, xmlEntity[i], xmlEntityLength[i]) == 0) {
-                itr += xmlEntityLength[i];
-                break;
-            }
+    const char* name;
+    uint8_t length;
+    char decoded;
+};
+
+static constexpr XmlEntity xmlEntities[] = {
+    {"&#10;", 5, '\n'},
+    {"&#035;", 6, '#'},
+    {"&#039;", 6, '\''},
+    {"&quot;", 6, '"'},
+    {"&nbsp;", 6, ' '},
+    {"&apos;", 6, '\''},
+    {"&amp;", 5, '&'},
+    {"&lt;", 4, '<'},
+    {"&gt;", 4, '>'},
+};
+
+static const XmlEntity* _xmlFindEntity(const char* itr, const char* itrEnd)
+{
+    for (auto& entity : xmlEntities) {
+        if (itrEnd - itr >= entity.length && !memcmp(itr, entity.name, entity.length)) return &entity;
+    }
+    return nullptr;
+}
+
+static unsigned _xmlDecodeEntities(const char* itr, const char* itrEnd, char* decoded)
+{
+    auto dst = decoded;
+    while (itr < itrEnd) {
+        auto entity = (*itr == '&') ? _xmlFindEntity(itr, itrEnd) : nullptr;
+        if (!entity) *dst++ = *itr++;
+        else {
+            *dst++ = entity->decoded;
+            itr += entity->length;
         }
-        if (itr == p) break;
-        p = itr;
     }
-    return itr;
+    *dst = '\0';
+    return dst - decoded;
 }
-
-
-static const char* _xmlUnskipXmlEntities(const char* itr, const char* itrStart)
-{
-    auto p = itr;
-    while (itr > itrStart && *(itr - 1) == ';') {
-        for (int i = 0; i < NUMBER_OF_XML_ENTITIES; ++i) {
-            if (itr - xmlEntityLength[i] > itrStart &&
-                strncmp(itr - xmlEntityLength[i], xmlEntity[i], xmlEntityLength[i]) == 0) {
-                itr -= xmlEntityLength[i];
-                break;
-            }
-        }
-        if (itr == p) break;
-        p = itr;
-    }
-    return itr;
-}
-
-
-static const char* _skipWhiteSpacesAndXmlEntities(const char* itr, const char* itrEnd)
-{
-    itr = svgUtilSkipWhiteSpace(itr, itrEnd);
-    auto p = itr;
-    while (true) {
-        if (p != (itr = _xmlSkipXmlEntities(itr, itrEnd))) p = itr;
-        else break;
-        if (p != (itr = svgUtilSkipWhiteSpace(itr, itrEnd))) p = itr;
-        else break;
-    }
-    return itr;
-}
-
-
-static const char* _unskipWhiteSpacesAndXmlEntities(const char* itr, const char* itrStart)
-{
-    itr = svgUtilUnskipWhiteSpace(itr, itrStart);
-    auto p = itr;
-    while (true) {
-        if (p != (itr = _xmlUnskipXmlEntities(itr, itrStart))) p = itr;
-        else break;
-        if (p != (itr = svgUtilUnskipWhiteSpace(itr, itrStart))) p = itr;
-        else break;
-    }
-    return itr;
-}
-
 
 static const char* _xmlFindStartTag(const char* itr, const char* itrEnd)
 {
     return (const char*)memchr(itr, '<', itrEnd - itr);
 }
-
 
 static const char* _xmlFindEndTag(const char* itr, const char* itrEnd)
 {
@@ -240,6 +217,7 @@ const char* xmlNodeTypeToString(TVG_UNUSED SvgNodeType type)
         "Symbol",
         "Filter",
         "GaussianBlur",
+        "Pattern",
         "Unknown",
     };
     return TYPE_NAMES[(int) type];
@@ -268,13 +246,15 @@ bool isIgnoreUnsupportedLogElements(TVG_UNUSED const char* tagName)
 
 bool xmlParseAttributes(const char* buf, unsigned bufLength, xmlAttributeCb func, const void* data)
 {
+    if (!buf || !func) return false;
+
     const char *itr = buf, *itrEnd = buf + bufLength;
     char* tmpBuf = tvg::malloc<char>(bufLength + 1);
 
-    if (!buf || !func || !tmpBuf) goto error;
+    if (!tmpBuf) return false;
 
     while (itr < itrEnd) {
-        const char* p = _skipWhiteSpacesAndXmlEntities(itr, itrEnd);
+        const char* p = svgUtilSkipWhiteSpace(itr, itrEnd);
         const char *key, *keyEnd, *value, *valueEnd;
         char* tval;
 
@@ -296,39 +276,36 @@ bool xmlParseAttributes(const char* buf, unsigned bufLength, xmlAttributeCb func
             if (!value) goto error;
             value++;
         }
-        keyEnd = _xmlUnskipXmlEntities(keyEnd, key);
-
-        value = _skipWhiteSpacesAndXmlEntities(value, itrEnd);
+        value = svgUtilSkipWhiteSpace(value, itrEnd);
         if (value == itrEnd) goto error;
 
         if ((*value == '"') || (*value == '\'')) {
-            valueEnd = (const char*)memchr(value + 1, *value, itrEnd - value);
+            valueEnd = (const char*)memchr(value + 1, *value, itrEnd - value - 1);
             if (!valueEnd) goto error;
             value++;
         } else {
             valueEnd = _xmlFindWhiteSpace(value, itrEnd);
         }
 
-        itr = valueEnd + 1;
+        itr = (valueEnd < itrEnd) ? valueEnd + 1 : valueEnd;
 
-        value = _skipWhiteSpacesAndXmlEntities(value, itrEnd);
-        valueEnd = _unskipWhiteSpacesAndXmlEntities(valueEnd, value);
+        value = svgUtilSkipWhiteSpace(value, valueEnd);
+        if (value < valueEnd) valueEnd = svgUtilUnskipWhiteSpace(valueEnd, value);
 
         memcpy(tmpBuf, key, keyEnd - key);
         tmpBuf[keyEnd - key] = '\0';
 
         tval = tmpBuf + (keyEnd - key) + 1;
-        int i = 0;
-        while (value < valueEnd) {
-            value = _xmlSkipXmlEntities(value, valueEnd);
-            tval[i++] = *value;
-            value++;
+        auto decodedLength = _xmlDecodeEntities(value, valueEnd, tval);
+        if (decodedLength) {
+            auto decodedEnd = svgUtilUnskipWhiteSpace(tval + decodedLength, tval);
+            *const_cast<char*>(decodedEnd) = '\0';
+            tval = const_cast<char*>(svgUtilSkipWhiteSpace(tval, decodedEnd));
         }
-        tval[i] = '\0';
 
         if (!func((void*)data, tmpBuf, tval)) {
             if (_unsupported(tmpBuf, tval)) {
-                TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgLoaderData*)data)->svgParse->node->type), ((SvgLoaderData*)data)->svgParse->node->id ? ((SvgLoaderData*)data)->svgParse->node->id : "NO_ID", tmpBuf, tval ? tval : "NONE");
+                TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgParserContext*)data)->parser->node->type), ((SvgParserContext*)data)->parser->node->id ? ((SvgParserContext*)data)->parser->node->id : "NO_ID", tmpBuf, tval ? tval : "NONE");
             }
         }
     }
@@ -395,8 +372,8 @@ bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const
                 }
 
                 if (strip && (type != XMLType::CData)) {
-                    start = _skipWhiteSpacesAndXmlEntities(start, end);
-                    end = _unskipWhiteSpacesAndXmlEntities(end, start);
+                    start = svgUtilSkipWhiteSpace(start, end);
+                    end = svgUtilUnskipWhiteSpace(end, start);
                 }
 
                 if (!func((void*)data, type, start, (unsigned int)(end - start))) return false;
@@ -408,10 +385,10 @@ bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const
         } else {
             const char *p, *end;
 
-            if (strip && ((SvgLoaderData*)data)->openedTag != OpenedTagType::Text) {
+            if (strip && ((SvgParserContext*)data)->openedTag != OpenedTagType::Text) {
                 p = itr;
-                p = _skipWhiteSpacesAndXmlEntities(p, itrEnd);
-                if (p) {
+                p = svgUtilSkipWhiteSpace(p, itrEnd);
+                if (p != itr) {
                     if (!func((void*)data, XMLType::Ignored, itr, (unsigned int)(p - itr))) return false;
                     itr = p;
                 }
@@ -421,9 +398,19 @@ bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const
             if (!p) p = itrEnd;
 
             end = p;
-            if (strip && ((SvgLoaderData*)data)->openedTag != OpenedTagType::Text) end = _unskipWhiteSpacesAndXmlEntities(end, itr);
+            if (strip && ((SvgParserContext*)data)->openedTag != OpenedTagType::Text) end = svgUtilUnskipWhiteSpace(end, itr);
 
-            if (itr != end && !func((void*)data, XMLType::Data, itr, (unsigned int)(end - itr))) return false;
+            if (itr != end) {
+                auto length = (unsigned int)(end - itr);
+                if (memchr(itr, '&', length)) {
+                    auto decoded = tvg::malloc<char>(length + 1);
+                    if (!decoded) return false;
+                    auto decodedLength = _xmlDecodeEntities(itr, end, decoded);
+                    auto result = func((void*)data, XMLType::Data, decoded, decodedLength);
+                    tvg::free(decoded);
+                    if (!result) return false;
+                } else if (!func((void*)data, XMLType::Data, itr, length)) return false;
+            }
 
             if (strip && (end < p) && !func((void*)data, XMLType::Ignored, end, (unsigned int)(p - end))) return false;
 
@@ -447,35 +434,37 @@ bool xmlParseW3CAttribute(const char* buf, unsigned bufLength, xmlAttributeCb fu
     auto val = vmem;
 
     do {
-        auto sep = (char*)strchr(buf, ':');
-        auto next = (char*)strchr(buf, ';');
+        auto sep = (const char*)memchr(buf, ':', end - buf);
+        auto next = (const char*)memchr(buf, ';', end - buf);
+        if (!sep) sep = end;
+        if (!next) next = end;
+        auto src = buf;
+        while (sep - src >= 3 && memcmp(src, "src", 3)) ++src;
+        if (sep - src < 3) src = sep;
 
-        if (auto src = strstr(buf, "src")) {//src tag from css font-face contains extra semicolon
-            if (src < sep) {
-                if (next + 1 < end) next = (char*)strchr(next + 1, ';');
-                else break;
-            }
+        if (sep < end && next < end && src < sep) {  // src tag from css font-face contains extra semicolon
+            if (next + 1 < end) {
+                next = (const char*)memchr(next + 1, ';', end - next - 1);
+                if (!next) next = end;
+            } else break;
         }
-
-        if (sep >= end) next = sep = nullptr;
-        if (next >= end) next = nullptr;
 
         key[0] = '\0';
         val[0] = '\0';
 
-        if (sep != nullptr && next == nullptr) {
+        if (sep < end && next >= end) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
             memcpy(val, sep + 1, end - sep - 1);
             val[end - sep - 1] = '\0';
-        } else if (sep != nullptr && sep < next) {
+        } else if (sep < end && sep < next) {
             memcpy(key, buf, sep - buf);
             key[sep - buf] = '\0';
 
             memcpy(val, sep + 1, next - sep - 1);
             val[next - sep - 1] = '\0';
-        } else if (next) {
+        } else if (next < end) {
             memcpy(key, buf, next - buf);
             key[next - buf] = '\0';
         }
@@ -487,11 +476,11 @@ bool xmlParseW3CAttribute(const char* buf, unsigned bufLength, xmlAttributeCb fu
 
             if (!func((void*)data, key, val)) {
                 if (!_unsupported(key, val)) {
-                    TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgLoaderData*)data)->svgParse->node->type), ((SvgLoaderData*)data)->svgParse->node->id ? ((SvgLoaderData*)data)->svgParse->node->id : "NO_ID", key, val ? val : "NONE");
+                    TVGLOG("SVG", "Unsupported attributes used [Elements type: %s][Id : %s][Attribute: %s][Value: %s]", xmlNodeTypeToString(((SvgParserContext*)data)->parser->node->type), ((SvgParserContext*)data)->parser->node->id ? ((SvgParserContext*)data)->parser->node->id : "NO_ID", key, val ? val : "NONE");
                 }
             }
         }
-        if (!next) break;
+        if (next >= end) break;
         buf = next + 1;
     } while (true);
 
@@ -552,11 +541,9 @@ const char* xmlFindAttributesTag(const char* buf, unsigned bufLength)
             //User skip tagname and already gave it the attributes.
             if (*itr == '=') return buf;
         } else {
-            itr = _xmlUnskipXmlEntities(itr, buf);
-            if (itr == itrEnd) return nullptr;
             return itr;
         }
     }
 
-    return nullptr;
+    return itrEnd;
 }

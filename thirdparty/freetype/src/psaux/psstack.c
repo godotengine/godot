@@ -211,7 +211,7 @@
                      CF2_UInt   idx,
                      CF2_Fixed  val )
   {
-    if ( idx > cf2_stack_count( stack ) )
+    if ( idx >= cf2_stack_count( stack ) )
     {
       CF2_SET_ERROR( stack->error, Stack_Overflow );
       return;
@@ -245,6 +245,7 @@
     CF2_StackNumber  last = { { 0 }, CF2_NumberInt };
 
     CF2_Int  start_idx, idx, i;
+    CF2_Int  offset;
 
 
     if ( count < 2 )
@@ -255,6 +256,8 @@
       CF2_SET_ERROR( stack->error, Stack_Overflow );
       return;
     }
+
+    offset = (CF2_Int)cf2_stack_count( stack ) - count;
 
     /* before C99 it is implementation-defined whether    */
     /* the result of `%' is negative if the first operand */
@@ -303,7 +306,7 @@
       {
         start_idx++;
         idx  = start_idx;
-        last = stack->buffer[idx];
+        last = stack->buffer[idx + offset];
       }
 
       idx += shift;
@@ -312,9 +315,9 @@
       else if ( idx < 0 )
         idx += count;
 
-      tmp                = stack->buffer[idx];
-      stack->buffer[idx] = last;
-      last               = tmp;
+      tmp                         = stack->buffer[idx + offset];
+      stack->buffer[idx + offset] = last;
+      last                        = tmp;
     }
   }
 

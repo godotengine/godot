@@ -60,6 +60,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_data, "font_rid", "data");
 	GDVIRTUAL_BIND(_font_set_data_ptr, "font_rid", "data_ptr", "data_size");
+	GDVIRTUAL_BIND(_font_validate, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_face_index, "font_rid", "face_index");
 	GDVIRTUAL_BIND(_font_get_face_index, "font_rid");
@@ -521,6 +522,12 @@ void TextServerExtension::font_set_data(const RID &p_font_rid, const PackedByteA
 
 void TextServerExtension::font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) {
 	GDVIRTUAL_CALL(_font_set_data_ptr, p_font_rid, p_data_ptr, p_data_size);
+}
+
+bool TextServerExtension::font_validate(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_validate, p_font_rid, ret);
+	return ret;
 }
 
 void TextServerExtension::font_set_face_index(const RID &p_font_rid, int64_t p_index) {

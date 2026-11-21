@@ -2180,7 +2180,13 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
 	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
 	const int mesh_inst_count = mesh_instances.size();
-	AHashMap<Ref<Mesh>, StringName> unique_meshes;
+
+	struct MeshData {
+		Vector<MeshLibrary::ShapeData> shapes;
+		Ref<NavigationMesh> nav_mesh;
+		String category;
+	};
+	AHashMap<Ref<Mesh>, MeshData> unique_meshes;
 
 	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
 	const bool create_categories_from_hierarchy = p_options.has("mesh_library/create_categories_from_hierarchy") && p_options["mesh_library/create_categories_from_hierarchy"];
@@ -2188,38 +2194,68 @@ Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_
 	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
 		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
 		Ref<Mesh> mesh = mesh_inst->get_mesh();
-		if (mesh.is_valid()) {
-			if (unique_meshes.has(mesh)) {
+		if (mesh.is_null() || unique_meshes.has(mesh)) {
+			continue;
+		}
+
+		if (use_node_names_as_mesh_names) {
+			mesh->set_name(mesh_inst->get_name());
+		}
+
+		MeshData mesh_data;
+		for (const Node *node : mesh_inst->iterate_children()) {
+			// Shapes
+			const StaticBody3D *body = Object::cast_to<StaticBody3D>(node);
+			if (body) {
+				for (const Node *node2 : body->iterate_children()) {
+					const CollisionShape3D *collision = Object::cast_to<CollisionShape3D>(node2);
+					Ref<Shape3D> shape = collision->get_shape();
+					if (shape.is_valid()) {
+						MeshLibrary::ShapeData shape_data;
+						shape_data.shape = shape;
+						shape_data.local_transform = collision->get_transform();
+						mesh_data.shapes.push_back(shape_data);
+					}
+				}
 				continue;
 			}
 
-			if (use_node_names_as_mesh_names) {
-				mesh->set_name(mesh_inst->get_name());
-			}
-
-			String category;
-			if (create_categories_from_hierarchy) {
-				Node *parent = mesh_inst->get_parent();
-				while (parent) {
-					category = category.path_join(parent->get_name());
-					parent = parent->get_parent();
+			// Navigation Mesh
+			const NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(node);
+			if (region) {
+				Ref<NavigationMesh> nav = region->get_navigation_mesh();
+				if (nav.is_valid() && mesh_data.nav_mesh.is_null()) {
+					mesh_data.nav_mesh = nav;
 				}
 			}
-
-			unique_meshes.insert(mesh, category);
 		}
+
+		// Category
+		String category;
+		if (create_categories_from_hierarchy) {
+			Node *parent = mesh_inst->get_parent();
+			while (parent) {
+				category = category.path_join(parent->get_name());
+				parent = parent->get_parent();
+			}
+		}
+		mesh_data.category = category;
+
+		unique_meshes.insert(mesh, mesh_data);
 	}
 
 	Ref<MeshLibrary> mesh_library;
 	mesh_library.instantiate();
-	for (KeyValue<Ref<Mesh>, StringName> kv : unique_meshes) {
+	for (KeyValue<Ref<Mesh>, MeshData> kv : unique_meshes) {
 		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
 		const String mesh_name = kv.key->get_name();
 		const int id = mesh_library->get_last_unused_item_id();
 		mesh_library->create_item(id);
 		mesh_library->set_item_name(id, mesh_name);
 		mesh_library->set_item_mesh(id, kv.key);
-		mesh_library->set_item_category(id, kv.value);
+		mesh_library->set_item_shapes(id, kv.value.shapes);
+		mesh_library->set_item_navigation_mesh(id, kv.value.nav_mesh);
+		mesh_library->set_item_category(id, kv.value.category);
 	}
 
 	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);
@@ -2318,7 +2354,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres,*.mesh"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/shadow_meshes", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lightmap_uv", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
@@ -2327,13 +2363,13 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.res,*.tres,*.material"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.anim,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres,*.anim"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
@@ -2842,22 +2878,25 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					importer_mesh->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
 
 					if (!lightmap_cache.is_empty()) {
-						if (r_lightmap_caches.is_empty()) {
-							r_lightmap_caches.push_back(lightmap_cache);
-						} else {
-							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
+						// MD5 is stored at the beginning of the cache data
+						const String new_md5 = String::md5(lightmap_cache.ptr());
 
-							for (int i = 0; i < r_lightmap_caches.size(); i++) {
-								String md5 = String::md5(r_lightmap_caches[i].ptr());
-								if (new_md5 < md5) {
-									r_lightmap_caches.insert(i, lightmap_cache);
-									break;
-								}
-
-								if (new_md5 == md5) {
-									break;
-								}
+						bool handled = false;
+						for (int i = 0; i < r_lightmap_caches.size(); i++) {
+							String md5 = String::md5(r_lightmap_caches[i].ptr());
+							if (new_md5 < md5) {
+								r_lightmap_caches.insert(i, lightmap_cache);
+								handled = true;
+								break;
 							}
+
+							if (new_md5 == md5) {
+								handled = true;
+								break;
+							}
+						}
+						if (!handled) {
+							r_lightmap_caches.push_back(lightmap_cache);
 						}
 					}
 				}

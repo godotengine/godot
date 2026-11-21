@@ -49,7 +49,7 @@ void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(WebRTCPeerConnectionExtension);
 
 	GDREGISTER_ABSTRACT_CLASS(WebRTCDataChannel);
-	GDREGISTER_CLASS(WebRTCDataChannelExtension);
+	GDREGISTER_VIRTUAL_CLASS(WebRTCDataChannelExtension);
 
 	GDREGISTER_CLASS(WebRTCMultiplayerPeer);
 }

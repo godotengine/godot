@@ -49,6 +49,9 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+	if (is_layout_rtl()) {
+		p_scroll_vec.x = -p_scroll_vec.x;
+	}
 	panning += p_scroll_vec;
 	_update_zoom_and_panning(true);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
@@ -124,6 +127,25 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vec
 		alternative_tiles_drawing_root->set_scale(Vector2(1, 1));
 	}
 
+	// Ensure that tiles are positioned correctly in both LTR and RTL layouts.
+	bool is_rtl = is_layout_rtl();
+	if (is_rtl) {
+		float end = base_tiles_control_size.x * zoom;
+		float start = end - base_tiles_control_size.x;
+		base_tiles_drawing_root->set_offset(SIDE_RIGHT, end);
+		base_tiles_drawing_root->set_offset(SIDE_LEFT, start);
+
+		end = alternative_tiles_control_size.x * zoom;
+		start = end - alternative_tiles_control_size.x;
+		alternative_tiles_drawing_root->set_offset(SIDE_RIGHT, end);
+		alternative_tiles_drawing_root->set_offset(SIDE_LEFT, start);
+	} else {
+		base_tiles_drawing_root->set_offset(SIDE_RIGHT, base_tiles_control_size.x);
+		base_tiles_drawing_root->set_offset(SIDE_LEFT, 0);
+		alternative_tiles_drawing_root->set_offset(SIDE_RIGHT, alternative_tiles_control_size.x);
+		alternative_tiles_drawing_root->set_offset(SIDE_LEFT, 0);
+	}
+
 	// Update the margin container's margins.
 	const char *constants[] = { "margin_left", "margin_top", "margin_right", "margin_bottom" };
 	for (int i = 0; i < 4; i++) {
@@ -137,6 +159,9 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos, const Vec
 	// Zoom on the position.
 	if (p_zoom_on_mouse_pos) {
 		Vector2 relative_mpos = p_mouse_pos - get_size() / 2;
+		if (is_rtl) {
+			relative_mpos.x = -relative_mpos.x;
+		}
 		panning = (panning - relative_mpos) * zoom / previous_zoom + relative_mpos;
 	} else {
 		// Center of panel.
@@ -342,23 +367,58 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-		// Draw each tile texture region.
+		int num_squares_h = texture->get_height() / texture_region_size.height;
+		int num_squares_w = texture->get_width() / texture_region_size.width;
+
+		// Square 8 pts (4 lines 2 pts e/a)
+		Vector<Point2> points;
+		points.reserve(num_squares_h * num_squares_w * 8);
+
+		Vector<Color> colors;
+		colors.reserve(num_squares_h * num_squares_w * 4);
+
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+				Vector2i region_size;
+				Color tile_color;
+
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					if (base_tile_coords == Vector2i(x, y)) {
-						// Draw existing tile.
+						tile_color = Color(1.0, 1.0, 1.0, 0.8);
+
 						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
-						Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
-						base_tiles_texture_grid->draw_rect(Rect2i(origin, region_size), Color(1.0, 1.0, 1.0, 0.8), false);
+						region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
 					}
 				} else {
-					// Draw the grid.
-					base_tiles_texture_grid->draw_rect(Rect2i(origin, texture_region_size), Color(0.7, 0.7, 0.7, 0.1), false);
+					tile_color = Color(0.7, 0.7, 0.7, 0.1);
+					region_size = texture_region_size;
+				}
+
+				for (int c = 0; c < 4; c++) {
+					colors.push_back(tile_color);
+				}
+
+				Vector2i corners[4] = {
+					origin,
+					origin + Vector2i{ region_size.x, 0 },
+					origin + region_size,
+					origin + Vector2i{ 0, region_size.y }
+				};
+
+				for (int i = 0; i < 4; i++) {
+					points.push_back(corners[i]);
+					points.push_back(corners[(i + 1) % 4]);
 				}
 			}
+		}
+
+		if (!points.is_empty()) {
+			RenderingServer::get_singleton()->canvas_item_add_multiline(
+					base_tiles_texture_grid->get_canvas_item(),
+					points,
+					colors);
 		}
 	}
 }

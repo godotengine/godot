@@ -603,6 +603,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderingContextDriverVulkan::_debug_messenger_ca
 	if (p_callback_data->objectCount > 0) {
 		objects_string = "\n\tObjects - " + String::num_int64(p_callback_data->objectCount);
 		for (uint32_t object = 0; object < p_callback_data->objectCount; ++object) {
+			if (p_callback_data->pObjects[object].sType != VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT) {
+				continue;
+			}
 			objects_string +=
 					"\n\t\tObject[" + String::num_int64(object) + "]" +
 					" - " + string_VkObjectType(p_callback_data->pObjects[object].objectType) +

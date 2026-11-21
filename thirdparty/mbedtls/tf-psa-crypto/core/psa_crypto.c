@@ -7998,24 +7998,27 @@ psa_status_t psa_key_agreement(mbedtls_svc_key_id_t private_key,
                                mbedtls_svc_key_id_t *key)
 {
     psa_status_t status;
-    uint8_t shared_secret[PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE];
+    uint8_t shared_secret[PSA_RAW_KEY_AGREEMENT_OUTPUT_MAX_SIZE] = { 0 };
     size_t shared_secret_len;
 
     *key = MBEDTLS_SVC_KEY_ID_INIT;
 
     status = validate_key_agreement_params(attributes, alg);
     if (status != PSA_SUCCESS) {
-        return status;
+        goto exit;
     }
 
     status = psa_raw_key_agreement(alg, private_key, peer_key, peer_key_length, shared_secret,
                                    sizeof(shared_secret), &shared_secret_len);
 
     if (status != PSA_SUCCESS) {
-        return status;
+        goto exit;
     }
 
     status = psa_import_key(attributes, shared_secret, shared_secret_len, key);
+
+exit:
+    mbedtls_platform_zeroize(shared_secret, sizeof(shared_secret));
 
     return status;
 }

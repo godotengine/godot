@@ -30,12 +30,16 @@
 
 #pragma once
 
+#include "core/os/process_id.h"
 #include "scene/gui/dialogs.h"
 #include "scene/main/http_request.h"
 
 class Label;
 class ProgressBar;
 class RichTextLabel;
+
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_USER = "androiddebugkey";
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD = "android";
 
 class AndroidSDKManager : public AcceptDialog {
 	GDCLASS(AndroidSDKManager, AcceptDialog)
@@ -67,7 +71,7 @@ class AndroidSDKManager : public AcceptDialog {
 	Error _extract_java_sdk(const String &p_file, const String &p_target_path);
 	void _java_sdk_installed();
 
-	void _show_setup_dialog(SetupStatus p_status);
+	void _show_setup_dialog(SetupStatus p_status, bool p_clear_output = true, bool p_reset_size = true);
 	void _hide_setup_dialog(SetupStatus p_status);
 
 	bool _is_online();
@@ -76,6 +80,7 @@ class AndroidSDKManager : public AcceptDialog {
 	static bool _is_android_sdk_setup(const String &p_android_sdk_path, String *r_error = nullptr);
 	static bool _is_java_sdk_setup(const String &p_java_sdk_path, String *r_error = nullptr);
 
+	static String _get_keytool_path(const String &p_java_sdk_path);
 	static String _get_java_path(const String &p_java_sdk_path);
 	static String _get_adb_path(const String &p_android_sdk_path);
 
@@ -83,8 +88,8 @@ class AndroidSDKManager : public AcceptDialog {
 
 	Callable on_setup_completed;
 	Callable on_setup_cancelled;
-	Dictionary setup_process_data;
-	uint64_t install_android_sdk_time;
+	ProcessID setup_android_pid = -1;
+	int index_sdk_package_being_installed = 0;
 	Label *setup_label = nullptr;
 	RichTextLabel *execute_outputs = nullptr;
 	ProgressBar *setup_progress_bar = nullptr;
@@ -108,9 +113,12 @@ public:
 	/// Returns true if the Java SDK is set up.
 	static bool is_java_sdk_setup(String *r_error = nullptr);
 
+	static String get_keytool_path();
 	static String get_java_path();
 	static String get_adb_path();
 	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
+
+	static void create_editor_debug_keystore_if_needed();
 
 	AndroidSDKManager();
 };

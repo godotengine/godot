@@ -121,7 +121,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 	random_tile_toggle->set_visible(!using_select);
 	bucket_contiguous_checkbox->set_visible(!using_select && pressed_tool == bucket_tool_button);
 	scatter_controls_container->set_visible(!using_select && random_tile_toggle->is_pressed());
-	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemManipulator::TOOL_SELECT);
 }
 
 void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
@@ -556,7 +556,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		return false;
 	}
 
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		_stop_dragging();
 		return false;
 	}
@@ -840,7 +840,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	}
 
 	// Handle the preview of the tiles to be placed.
-	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemEditor::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
+	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemManipulator::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
 		HashMap<Vector2i, TileMapCell> preview;
 		Rect2i drawn_grid_rect;
 
@@ -2502,9 +2502,44 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	EditorSettings::get_singleton()->connect("_translation_changed", callable_mp(this, &TileMapLayerEditorTilesPlugin::_update_translation));
 }
 
+void TileMapLayerEditorTerrainsPlugin::_prune_last_selected_terrain_cache() {
+	LocalVector<ObjectID> stale_ids;
+	for (const KeyValue<ObjectID, Vector2i> &E : last_selected_terrain_by_layer) {
+		if (ObjectDB::get_instance(E.key) == nullptr) {
+			stale_ids.push_back(E.key);
+		}
+	}
+	for (const ObjectID &id : stale_ids) {
+		last_selected_terrain_by_layer.erase(id);
+	}
+}
+
+void TileMapLayerEditorTerrainsPlugin::_restore_terrain_selection() {
+	const Vector2i *cached = last_selected_terrain_by_layer.getptr(edited_tile_map_layer_id);
+	if (!cached) {
+		return;
+	}
+
+	// Attempt to select a cached terrain.
+	for (TreeItem *item = terrains_tree->get_root()->get_first_child(); item; item = item->get_next_in_tree()) {
+		Dictionary metadata_dict = item->get_metadata(0);
+		if (metadata_dict.has("terrain_set") && metadata_dict.has("terrain_id")) {
+			int terrain_set = metadata_dict["terrain_set"];
+			int terrain_id = metadata_dict["terrain_id"];
+			if (terrain_set == cached->x && terrain_id == cached->y) {
+				// Terrain matches the cached value, select it.
+				item->select(0);
+				break;
+			}
+		}
+	}
+}
+
 void TileMapLayerEditorTerrainsPlugin::tile_set_changed() {
 	_update_terrains_cache();
 	_update_terrains_tree();
+	_prune_last_selected_terrain_cache();
+	_restore_terrain_selection();
 	_update_tiles_list();
 }
 
@@ -3000,7 +3035,7 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 		return false;
 	}
 
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		return false;
 	}
 
@@ -3392,6 +3427,7 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 		Dictionary metadata_dict = selected_tree_item->get_metadata(0);
 		int sel_terrain_set = metadata_dict["terrain_set"];
 		int sel_terrain_id = metadata_dict["terrain_id"];
+		last_selected_terrain_by_layer[edited_tile_map_layer_id] = Vector2i(sel_terrain_set, sel_terrain_id);
 		ERR_FAIL_INDEX(sel_terrain_set, tile_set->get_terrain_sets_count());
 		ERR_FAIL_INDEX(sel_terrain_id, tile_set->get_terrains_count(sel_terrain_set));
 
@@ -3709,8 +3745,8 @@ void TileMapLayerEditor::_notification(int p_what) {
 			}
 			if (is_visible()) {
 				// Fix: Don't change the tool if we are in scene paint mode.
-				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SCENE_PAINT) {
-					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SCENE_PAINT) {
+					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemManipulator::TOOL_SELECT);
 				}
 			}
 		} break;

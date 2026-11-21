@@ -158,6 +158,10 @@ int mbedtls_pkcs5_pbes2_ext(const mbedtls_asn1_buf *pbe_params, int mode,
         return ret;
     }
 
+    if ((size_t) iterations > MBEDTLS_PK_DECRYPT_MAX_ITERATIONS) {
+        return MBEDTLS_ERR_PKCS5_BAD_INPUT_DATA;
+    }
+
     if ((ret = mbedtls_asn1_get_alg(&p, end, &enc_scheme_oid,
                                     &enc_scheme_params)) != 0) {
         return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_PKCS5_INVALID_FORMAT, ret);

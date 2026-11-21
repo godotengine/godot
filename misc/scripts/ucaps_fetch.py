@@ -4,8 +4,6 @@
 # the Unicode Character Database to the `ucaps.h` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
-from __future__ import annotations
-
 import os
 import sys
 from typing import Final
@@ -16,7 +14,7 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
+URL: Final[str] = "https://www.unicode.org/Public/18.0.0/ucd/UnicodeData.txt"
 
 
 lower_to_upper: list[tuple[str, str]] = []
@@ -66,7 +64,7 @@ def generate_ucaps_fetch() -> None:
     source += make_cap_table("caps_table", "LTU_LEN", lower_to_upper)
     source += make_cap_table("reverse_caps_table", "UTL_LEN", upper_to_lower)
 
-    source += """static int _find_upper(int p_char) {
+    source += """inline int _find_upper(int p_char) {
 \tint low = 0;
 \tint high = LTU_LEN - 1;
 \tint middle;
@@ -86,7 +84,7 @@ def generate_ucaps_fetch() -> None:
 \treturn p_char;
 }
 
-static int _find_lower(int p_char) {
+inline int _find_lower(int p_char) {
 \tint low = 0;
 \tint high = UTL_LEN - 1;
 \tint middle;

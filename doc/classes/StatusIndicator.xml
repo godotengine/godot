@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StatusIndicator" inherits="Node" api_type="core" keywords="tray" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Application status indicator (aka notification area icon).
-		[b]Note:[/b] Status indicator is implemented on macOS and Windows.
+		Application status indicator (also known as notification area icon, or tray icon).
 	</brief_description>
 	<description>
+		Displays an icon in the system tray when visible. The icon and tooltip can be customized, and the indicator also supports custom menu.
+		[b]Note:[/b] Status indicator is implemented on macOS and Windows.
 	</description>
 	<tutorials>
 	</tutorials>

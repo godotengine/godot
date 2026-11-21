@@ -85,7 +85,7 @@ TEST_CASE("[SceneTree][ImageTexture] set_size_override") {
 TEST_CASE("[SceneTree][ImageTexture] is_pixel_opaque") {
 	Ref<Image> image = memnew(Image(8, 8, false, Image::FORMAT_RGBA8));
 	image->set_pixel(0, 0, Color(0.0, 0.0, 0.0, 0.0)); // not opaque
-	image->set_pixel(0, 1, Color(0.0, 0.0, 0.0, 0.1)); // not opaque
+	image->set_pixel(0, 1, Color(0.0, 0.0, 0.0, 0.09)); // not opaque
 	image->set_pixel(0, 2, Color(0.0, 0.0, 0.0, 0.5)); // opaque
 	image->set_pixel(0, 3, Color(0.0, 0.0, 0.0, 0.9)); // opaque
 	image->set_pixel(0, 4, Color(0.0, 0.0, 0.0, 1.0)); // opaque

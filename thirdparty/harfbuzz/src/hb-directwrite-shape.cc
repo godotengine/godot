@@ -130,7 +130,6 @@ public:
     assert (refCount >= 0);
     if (refCount)
       return refCount;
-    delete this;
     return 0;
   }
 
@@ -164,14 +163,14 @@ public:
   {
     mRefCount.init ();
   }
-  virtual ~TextAnalysis ()
+  ~TextAnalysis ()
   {
-    // delete runs, except mRunHead which is part of the TextAnalysis object
+    // free runs, except mRunHead which is part of the TextAnalysis object
     for (Run *run = mRunHead.nextRun; run;)
     {
       Run *origRun = run;
       run = run->nextRun;
-      delete origRun;
+      hb_free (origRun);
     }
   }
 
@@ -266,10 +265,13 @@ public:
 		     DWRITE_SCRIPT_ANALYSIS const* scriptAnalysis)
   {
     SetCurrentRun (textPosition);
-    SplitCurrentRun (textPosition);
+    if (unlikely (!SplitCurrentRun (textPosition)))
+      return E_OUTOFMEMORY;
     while (textLength > 0)
     {
       Run *run = FetchNextRun (&textLength);
+      if (unlikely (!run))
+        return E_OUTOFMEMORY;
       run->mScript = *scriptAnalysis;
     }
 
@@ -302,7 +304,10 @@ protected:
     // Split the tail if needed (the length remaining is less than the
     // current run's size).
     if (*textLength < mCurrentRun->mTextLength)
-      SplitCurrentRun (mCurrentRun->mTextStart + *textLength);
+    {
+      if (unlikely (!SplitCurrentRun (mCurrentRun->mTextStart + *textLength)))
+        return nullptr;
+    }
     else
       // Just advance the current run.
       mCurrentRun = mCurrentRun->nextRun;
@@ -331,22 +336,24 @@ protected:
     assert (0); // We should always be able to find the text position in one of our runs
   }
 
-  void SplitCurrentRun (uint32_t splitPosition)
+  bool SplitCurrentRun (uint32_t splitPosition)
   {
     if (!mCurrentRun)
     {
       assert (0); // SplitCurrentRun called without current run
       // Shouldn't be calling this when no current run is set!
-      return;
+      return false;
     }
     // Split the current run.
     if (splitPosition <= mCurrentRun->mTextStart)
     {
       // No need to split, already the start of a run
       // or before it. Usually the first.
-      return;
+      return true;
     }
-    Run *newRun = new Run;
+    Run *newRun = (Run *) hb_malloc (sizeof (Run));
+    if (unlikely (!newRun))
+      return false;
 
     *newRun = *mCurrentRun;
 
@@ -360,6 +367,7 @@ protected:
     newRun->mTextLength -= splitPoint;
     mCurrentRun->mTextLength = splitPoint;
     mCurrentRun = newRun;
+    return true;
   }
 
 protected:
@@ -430,6 +438,7 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
   }
 
   ALLOCATE_ARRAY (WORD, log_clusters, chars_len);
+#undef ALLOCATE_ARRAY
   /* Need log_clusters to assign features. */
   chars_len = 0;
   for (unsigned int i = 0; i < buffer->len; i++)
@@ -503,15 +512,19 @@ _hb_directwrite_shape (hb_shape_plan_t    *shape_plan,
     }
   }
 
-  uint16_t* clusterMap;
-  clusterMap = new uint16_t[textLength];
-  DWRITE_SHAPING_TEXT_PROPERTIES* textProperties;
-  textProperties = new DWRITE_SHAPING_TEXT_PROPERTIES[textLength];
+  hb_vector_t<uint16_t> clusterMap;
+  hb_vector_t<DWRITE_SHAPING_TEXT_PROPERTIES> textProperties;
+  if (unlikely (!clusterMap.resize_exact (textLength) ||
+                !textProperties.resize_exact (textLength)))
+    FAIL ("Failed to allocate shaping text data.");
+
+  hb_vector_t<uint16_t> glyphIndices;
+  hb_vector_t<DWRITE_SHAPING_GLYPH_PROPERTIES> glyphProperties;
 
 retry_getglyphs:
-  uint16_t* glyphIndices = new uint16_t[maxGlyphCount];
-  DWRITE_SHAPING_GLYPH_PROPERTIES* glyphProperties;
-  glyphProperties = new DWRITE_SHAPING_GLYPH_PROPERTIES[maxGlyphCount];
+  if (unlikely (!glyphIndices.resize_exact (maxGlyphCount) ||
+                !glyphProperties.resize_exact (maxGlyphCount)))
+    FAIL ("Failed to allocate shaping glyph data.");
 
   hr = analyzer->GetGlyphs (textString,
 			    chars_len,
@@ -525,17 +538,14 @@ retry_getglyphs:
 			    range_char_counts.arrayZ,
 			    range_features.length,
 			    maxGlyphCount,
-			    clusterMap,
-			    textProperties,
-			    glyphIndices,
-			    glyphProperties,
+			    clusterMap.arrayZ,
+			    textProperties.arrayZ,
+			    glyphIndices.arrayZ,
+			    glyphProperties.arrayZ,
 			    &glyphCount);
 
   if (unlikely (hr == HRESULT_FROM_WIN32 (ERROR_INSUFFICIENT_BUFFER)))
   {
-    delete [] glyphIndices;
-    delete [] glyphProperties;
-
     maxGlyphCount *= 2;
 
     goto retry_getglyphs;
@@ -543,20 +553,12 @@ retry_getglyphs:
   if (FAILED (hr))
     FAIL ("Analyzer failed to get glyphs.");
 
-  float* glyphAdvances = new float[maxGlyphCount];
-  DWRITE_GLYPH_OFFSET* glyphOffsets = new DWRITE_GLYPH_OFFSET[maxGlyphCount];
+  hb_vector_t<float> glyphAdvances;
+  hb_vector_t<DWRITE_GLYPH_OFFSET> glyphOffsets;
+  if (unlikely (!glyphAdvances.resize_exact (maxGlyphCount) ||
+                !glyphOffsets.resize_exact (maxGlyphCount)))
+    FAIL ("Failed to allocate glyph positioning data.");
 
-  /* The -2 in the following is to compensate for possible
-   * alignment needed after the WORD array.  sizeof (WORD) == 2. */
-  unsigned int glyphs_size = (scratch_size * sizeof (int) - 2)
-			     / (sizeof (WORD) +
-				sizeof (DWRITE_SHAPING_GLYPH_PROPERTIES) +
-				sizeof (int) +
-				sizeof (DWRITE_GLYPH_OFFSET) +
-				sizeof (uint32_t));
-  ALLOCATE_ARRAY (uint32_t, vis_clusters, glyphs_size);
-
-#undef ALLOCATE_ARRAY
 
   unsigned fontEmSize = font->face->get_upem ();
 
@@ -564,11 +566,11 @@ retry_getglyphs:
   float y_mult = font->y_multf;
 
   hr = analyzer->GetGlyphPlacements (textString,
-				     clusterMap,
-				     textProperties,
+				     clusterMap.arrayZ,
+				     textProperties.arrayZ,
 				     chars_len,
-				     glyphIndices,
-				     glyphProperties,
+				     glyphIndices.arrayZ,
+				     glyphProperties.arrayZ,
 				     glyphCount,
 				     fontFace,
 				     fontEmSize,
@@ -579,8 +581,8 @@ retry_getglyphs:
 				     (const DWRITE_TYPOGRAPHIC_FEATURES**) range_features.arrayZ,
 				     range_char_counts.arrayZ,
 				     range_features.length,
-				     glyphAdvances,
-				     glyphOffsets);
+				     glyphAdvances.arrayZ,
+				     glyphOffsets.arrayZ);
 
   if (FAILED (hr))
     FAIL ("Analyzer failed to get glyph placements.");
@@ -589,17 +591,24 @@ retry_getglyphs:
    * very, *very*, carefully! */
 
   /* Calculate visual-clusters.  That's what we ship. */
+  hb_vector_t<uint32_t> vis_clusters;
+  if (unlikely (!vis_clusters.resize_exact (glyphCount)))
+    FAIL ("Failed to allocate visual clusters.");
+
   for (unsigned int i = 0; i < glyphCount; i++)
     vis_clusters[i] = (uint32_t) -1;
   for (unsigned int i = 0; i < buffer->len; i++)
   {
-    uint32_t *p =
-      &vis_clusters[log_clusters[buffer->info[i].utf16_index ()]];
-    *p = hb_min (*p, buffer->info[i].cluster);
+    unsigned int c = clusterMap[buffer->info[i].utf16_index ()];
+    if (likely (c < glyphCount))
+      vis_clusters[c] = hb_min (vis_clusters[c], buffer->info[i].cluster);
   }
   for (unsigned int i = 1; i < glyphCount; i++)
     if (vis_clusters[i] == (uint32_t) -1)
       vis_clusters[i] = vis_clusters[i - 1];
+  for (int i = (int) glyphCount - 2; i >= 0; i--)
+    if (vis_clusters[i] == (uint32_t) -1)
+      vis_clusters[i] = vis_clusters[i + 1];
 
 #undef utf16_index
 
@@ -618,9 +627,9 @@ retry_getglyphs:
     info->cluster = vis_clusters[i];
 
     /* The rest is crap.  Let's store position info there for now. */
-    info->mask = glyphAdvances[i];
-    info->var1.i32 = glyphOffsets[i].advanceOffset;
-    info->var2.i32 = glyphOffsets[i].ascenderOffset;
+    info->mask = (hb_mask_t) hb_clamp_to<int32_t> (glyphAdvances[i]);
+    info->var1.i32 = hb_clamp_to<int32_t> (glyphOffsets[i].advanceOffset);
+    info->var2.i32 = hb_clamp_to<int32_t> (glyphOffsets[i].ascenderOffset);
   }
 
   /* Set glyph positions */
@@ -631,22 +640,16 @@ retry_getglyphs:
     hb_glyph_position_t *pos = &buffer->pos[i];
 
     /* TODO vertical */
-    pos->x_advance = round (x_mult * (int32_t) info->mask);
-    pos->x_offset = round (x_mult * (isRightToLeft ? -info->var1.i32 : info->var1.i32));
-    pos->y_offset = round (y_mult * info->var2.i32);
+    pos->x_advance = hb_clamp_to<hb_position_t> (round (x_mult * (int32_t) info->mask));
+    double x_offset = isRightToLeft ? -(double) info->var1.i32 : info->var1.i32;
+    pos->x_offset = hb_clamp_to<hb_position_t> (round ((double) x_mult * x_offset));
+    pos->y_offset = hb_clamp_to<hb_position_t> (round (y_mult * info->var2.i32));
   }
 
   if (isRightToLeft) hb_buffer_reverse (buffer);
 
   buffer->clear_glyph_flags ();
   buffer->unsafe_to_break ();
-
-  delete [] clusterMap;
-  delete [] glyphIndices;
-  delete [] textProperties;
-  delete [] glyphProperties;
-  delete [] glyphAdvances;
-  delete [] glyphOffsets;
 
   /* Wow, done! */
   return true;

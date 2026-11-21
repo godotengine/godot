@@ -36,9 +36,16 @@
 #include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_tracker", "tracker_name"), &XRCamera3D::set_tracker);
+	ClassDB::bind_method(D_METHOD("get_tracker"), &XRCamera3D::get_tracker);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
+}
 
 void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
@@ -47,21 +54,103 @@ void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
 	// Hide properties that are managed by XRInterface or otherwise not applicable for XRCamera3D.
 	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "tracker") {
+		// Set to our default head tracker.
+		String hint_string = "head";
+		p_property.hint_string = hint_string;
 	}
+}
+
+void XRCamera3D::set_tracker(const StringName &p_tracker_name) {
+	if (tracker.is_valid() && tracker->get_tracker_name() == p_tracker_name) {
+		// didn't change
+		return;
+	}
+
+	// just in case
+	_unbind_tracker();
+
+	// copy the name
+	tracker_name = p_tracker_name;
+	pose_name = SceneStringName(default_);
+
+	// see if it's already available
+	_bind_tracker();
+
+	update_configuration_warnings();
+	notify_property_list_changed();
+}
+
+StringName XRCamera3D::get_tracker() const {
+	return tracker_name;
+}
+
+void XRCamera3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_current()) {
+				_update_projections();
+			}
+		} break;
+	}
+}
+
+void XRCamera3D::_update_camera_mode() {
+	// Ignore this here, we are setting our projection matrices later.
+}
+
+void XRCamera3D::fti_update_servers_property() {
+	// Skip the logic in Camera3D.
+	Node3D::fti_update_servers_property();
+}
+
+void XRCamera3D::_update_projections() {
+	if (tracker.is_null()) {
+		return;
+	}
+
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL(xr_server);
+	Viewport *vp = get_viewport();
+	ERR_FAIL_NULL(vp);
+
+	if (xr_server->is_camera_locked_to_origin() && is_current()) {
+		set_transform(Transform3D());
+	}
+
+	Size2 viewport_size = vp->get_visible_rect().size;
+
+	rendering_server->camera_set_xr_projections(
+			get_camera(),
+			xr_server->get_camera_projections(tracker_name, viewport_size.aspect(), get_near(), get_far()),
+			xr_server->get_camera_offsets(tracker_name));
+
+	return;
 }
 
 void XRCamera3D::_bind_tracker() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	tracker = xr_server->get_tracker(tracker_name);
-	if (tracker.is_valid()) {
-		tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+	Ref<XRTracker> new_tracker = xr_server->get_tracker(tracker_name);
+	if (new_tracker.is_null()) {
+		// Fail silently, tracker does not yet exist.
+		return;
+	} else if (tracker == new_tracker) {
+		// Already bound?
+		return;
+	}
 
-		Ref<XRPose> pose = tracker->get_pose(pose_name);
-		if (pose.is_valid()) {
-			set_transform(pose->get_adjusted_transform());
-		}
+	// Assign our new tracker
+	tracker = new_tracker;
+	tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+
+	// Update our initial pose
+	Ref<XRPose> pose = tracker->get_pose(pose_name);
+	if (pose.is_valid()) {
+		set_transform(pose->get_adjusted_transform());
 	}
 }
 
@@ -74,6 +163,8 @@ void XRCamera3D::_unbind_tracker() {
 
 void XRCamera3D::_changed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
+		// Rebind it.
+		_unbind_tracker();
 		_bind_tracker();
 	}
 }
@@ -85,6 +176,11 @@ void XRCamera3D::_removed_tracker(const StringName &p_tracker_name, int p_tracke
 }
 
 void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
+	XRServer *xr_server = XRServer::get_singleton();
+	if (unlikely(xr_server && xr_server->is_camera_locked_to_origin() && is_current())) {
+		return;
+	}
+
 	if (p_pose->get_name() == pose_name) {
 		set_transform(p_pose->get_adjusted_transform());
 	}
@@ -105,6 +201,11 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+
+		// Warn if process mode is not set to always
+		if (get_process_mode() != PROCESS_MODE_ALWAYS) {
+			warnings.push_back(RTR("XRCamera3Ds process mode must be set to always to ensure camera tracking is active even when your game is paused."));
+		}
 	}
 
 	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
@@ -132,7 +233,9 @@ Vector3 XRCamera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	Vector3 ray;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	TypedArray<Projection> cms = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far());
+	ERR_FAIL_COND_V(cms.is_empty(), Vector3());
+	Projection cm = cms.front();
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -get_near()).normalized();
 
@@ -155,7 +258,9 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	TypedArray<Projection> cms = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far());
+	ERR_FAIL_COND_V(cms.is_empty(), Point2());
+	Projection cm = cms.front();
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -185,7 +290,9 @@ Vector3 XRCamera3D::project_position(const Point2 &p_point, real_t p_z_depth) co
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
 	// Just use the first view, if multiple views are supported this function has no good result
-	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	TypedArray<Projection> cms = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far());
+	ERR_FAIL_COND_V(cms.is_empty(), Vector3());
+	Projection cm = cms.front();
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -214,13 +321,21 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	// TODO Just use the first view for now, this is mostly for debugging so we may look into using our combined projection here.
-	Projection cm = xr_interface->get_projection_for_view(0, viewport_size.aspect(), get_near(), get_far());
+	TypedArray<Projection> cms = xr_interface->get_camera_projections(XR_TRACKER_HEAD, viewport_size.aspect(), get_near(), get_far());
+	ERR_FAIL_COND_V(cms.is_empty(), Vector<Plane>());
+	Projection cm = cms.front();
 	return cm.get_projection_planes(get_camera_transform());
 }
 
 XRCamera3D::XRCamera3D() {
 	// XRCamera3D gets its transform updated every render frame and shouldn't be interpolated.
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
+
+	// Run internal process at runtime.
+	set_desired_process_modes(!Engine::get_singleton()->is_editor_hint(), false);
+
+	// Even when paused, we must run our internal process.
+	set_process_mode(PROCESS_MODE_ALWAYS);
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);

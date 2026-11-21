@@ -116,6 +116,10 @@ private:
 	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
 	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
+	Vector<String> _read_elf_debug_id(const Ref<FileAccess> &p_f) const;
+	Vector<String> _read_pe_debug_id(const Ref<FileAccess> &p_f) const;
+	Vector<String> _read_macho_debug_id(const Ref<FileAccess> &p_f) const;
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -246,6 +250,8 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+
+	Vector<String> get_debug_build_id(const String &p_path) const;
 
 	void ensure_user_data_dir();
 

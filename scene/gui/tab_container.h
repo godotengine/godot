@@ -41,6 +41,8 @@ class Popup;
 class TabContainer : public Container {
 	GDCLASS(TabContainer, Container);
 
+	static constexpr int INVALID_CURRENT_TAB = -2;
+
 public:
 	enum TabPosition {
 		POSITION_TOP,
@@ -62,8 +64,7 @@ private:
 	bool theme_changing = false;
 	Vector<Control *> children_removing;
 	bool drag_to_rearrange_enabled = false;
-	// Set the default setup current tab to be an invalid index.
-	int setup_current_tab = -2;
+	int setup_current_tab = INVALID_CURRENT_TAB;
 	bool updating_visibility = false;
 
 	struct ThemeCache {
@@ -105,6 +106,13 @@ private:
 		Color icon_unselected_color;
 		Color icon_disabled_color;
 
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+
 		Ref<Font> tab_font;
 		int tab_font_size;
 	} theme_cache;
@@ -125,7 +133,7 @@ private:
 	HashMap<Node *, RID> tab_panels;
 
 	bool _is_tab_bar_owned() const;
-	int _get_tab_height() const;
+	int _get_internal_container_height() const;
 	Control *_as_tab_control(Node *p_child) const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();

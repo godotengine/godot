@@ -190,11 +190,6 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 		r_img->resize(width, height, Image::INTERPOLATE_NEAREST);
 	}
 
-	// Multiple-of-4 should be guaranteed by above.
-	// However, power-of-two 3d textures will create Nx2 and Nx1 mipmap levels,
-	// which are individually compressed Image objects that violate the above rule.
-	// Hence, we allow Nx1 and Nx2 images through without forcing to multiple-of-4.
-
 	// Create the buffer for compressed image data.
 	Vector<uint8_t> dest_data;
 	dest_data.resize(Image::get_image_data_size(width, height, target_format, has_mipmaps));
@@ -258,7 +253,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 
 		switch (p_compress_type) {
 			case EtcpakType::ETCPAK_TYPE_ETC1:
-				CompressEtc1RgbDither(src_mip_read, dest_mip_write, blocks, dest_mip_w);
+				CompressEtc1Rgb(src_mip_read, dest_mip_write, blocks, dest_mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_ETC2:
@@ -279,7 +274,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_DXT1:
-				CompressBc1Dither(src_mip_read, dest_mip_write, blocks, dest_mip_w);
+				CompressBc1(src_mip_read, dest_mip_write, blocks, dest_mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_DXT5:
