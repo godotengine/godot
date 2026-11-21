@@ -367,6 +367,20 @@
 				Replaces the main thread's deferred calls that are still to run with [param calls], given as [method snapshot_get_deferred_calls] returns them. For example to bring back the calls a game had made when it was saved.
 			</description>
 		</method>
+		<method name="snapshot_reserve_ids">
+			<return type="void" />
+			<param index="0" name="ids" type="PackedInt64Array" />
+			<description>
+				Puts the free slots of the instance ids in [param ids] last among the free slots, so that objects made before [method snapshot_set_next_ids] hands those ids out take other slots first. A slot an object holds is left as it is.
+			</description>
+		</method>
+		<method name="snapshot_set_next_ids">
+			<return type="void" />
+			<param index="0" name="ids" type="PackedInt64Array" />
+			<description>
+				Gives the objects made next on the calling thread the instance ids in [param ids]: the first object made gets the first id, and so on ([code]0[/code] leaves that object's id to the engine). An object whose wanted id's slot another object holds gets another id. Once every id was given, ids are given as usual again; an empty array stops it at once. For example to make a saved scene again with the ids its objects had when it was saved.
+			</description>
+		</method>
 		<method name="snapshot_set_random_state">
 			<return type="void" />
 			<param index="0" name="state" type="int" />

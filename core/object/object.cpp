@@ -38,6 +38,7 @@
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 #include "core/variant/typed_array.h"
@@ -2492,8 +2493,98 @@ int ObjectDB::get_object_count() {
 	return slot_count;
 }
 
+LocalVector<uint64_t> ObjectDB::snapshot_ids;
+uint32_t ObjectDB::snapshot_ids_next = 0;
+uint64_t ObjectDB::snapshot_ids_thread = 0;
+
+void ObjectDB::snapshot_set_next_ids(const Vector<int64_t> &p_ids) {
+	spin_lock.lock();
+	snapshot_ids.clear();
+	for (int64_t id : p_ids) {
+		snapshot_ids.push_back(uint64_t(id));
+	}
+	snapshot_ids_next = 0;
+	snapshot_ids_thread = Thread::get_caller_id();
+	spin_lock.unlock();
+}
+
+// Grows the slots to hold p_slot (spin_lock held).
+bool ObjectDB::_snapshot_grow_to(uint32_t p_slot) {
+	while (p_slot >= slot_max) {
+		ERR_FAIL_COND_V(slot_max == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS), false);
+		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
+		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
+		for (uint32_t i = slot_max; i < new_slot_max; i++) {
+			object_slots[i].object = nullptr;
+			object_slots[i].is_ref_counted = false;
+			object_slots[i].next_free = i;
+			object_slots[i].validator = 0;
+		}
+		slot_max = new_slot_max;
+	}
+	return true;
+}
+
+// Makes p_slot the next free slot add_instance() takes (spin_lock held).
+// False when an object holds it: that object keeps its id, and the new
+// object gets another one.
+bool ObjectDB::_snapshot_take_slot(uint32_t p_slot) {
+	if (!_snapshot_grow_to(p_slot)) {
+		return false;
+	}
+	if (object_slots[p_slot].object != nullptr) {
+		return false;
+	}
+	// Free: bring it to the front of the free slots (reserved slots are last).
+	for (uint32_t i = slot_max; i-- > slot_count;) {
+		if (object_slots[i].next_free == p_slot) {
+			object_slots[i].next_free = object_slots[slot_count].next_free;
+			object_slots[slot_count].next_free = p_slot;
+			return true;
+		}
+	}
+	return false;
+}
+
+void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
+	spin_lock.lock();
+	HashSet<uint32_t> reserved;
+	for (int64_t id : p_ids) {
+		uint32_t slot = uint64_t(id) & OBJECTDB_SLOT_MAX_COUNT_MASK;
+		if (_snapshot_grow_to(slot) && object_slots[slot].object == nullptr) {
+			reserved.insert(slot);
+		}
+	}
+	// Free slots in order, the reserved ones last.
+	LocalVector<uint32_t> others;
+	LocalVector<uint32_t> last;
+	for (uint32_t i = slot_count; i < slot_max; i++) {
+		uint32_t slot = object_slots[i].next_free;
+		(reserved.has(slot) ? last : others).push_back(slot);
+	}
+	uint32_t at = slot_count;
+	for (uint32_t slot : others) {
+		object_slots[at++].next_free = slot;
+	}
+	for (uint32_t slot : last) {
+		object_slots[at++].next_free = slot;
+	}
+	spin_lock.unlock();
+}
+
 ObjectID ObjectDB::add_instance(Object *p_object) {
 	spin_lock.lock();
+	uint64_t wanted = 0;
+	if (unlikely(!snapshot_ids.is_empty()) && snapshot_ids_thread == Thread::get_caller_id()) {
+		if (snapshot_ids_next < snapshot_ids.size()) {
+			wanted = snapshot_ids[snapshot_ids_next++];
+		} else {
+			snapshot_ids.clear();
+		}
+		if (wanted != 0 && (((wanted >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK) == 0 || !_snapshot_take_slot(wanted & OBJECTDB_SLOT_MAX_COUNT_MASK))) {
+			wanted = 0;
+		}
+	}
 	if (unlikely(slot_count == slot_max)) {
 		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
 
@@ -2515,13 +2606,19 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	}
 	object_slots[slot].object = p_object;
 	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
-	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
-	if (unlikely(validator_counter == 0)) {
-		validator_counter = 1;
+	uint64_t validator;
+	if (wanted != 0) {
+		validator = (wanted >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
+	} else {
+		validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
+		if (unlikely(validator_counter == 0)) {
+			validator_counter = 1;
+		}
+		validator = validator_counter;
 	}
-	object_slots[slot].validator = validator_counter;
+	object_slots[slot].validator = validator;
 
-	uint64_t id = validator_counter;
+	uint64_t id = validator;
 	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
 	id |= uint64_t(slot);
 

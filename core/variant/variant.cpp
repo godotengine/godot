@@ -1073,7 +1073,9 @@ bool Variant::is_null() const {
 
 void Variant::ObjData::ref(const ObjData &p_from) {
 	// Mirrors Ref::ref in refcounted.h
-	if (p_from.id == id) {
+	// komm64: the pointer too, the id of a freed object can name the one a
+	// snapshot load made in its place (see get_validated_object()).
+	if (p_from.id == id && p_from.obj == obj) {
 		return;
 	}
 
@@ -1711,7 +1713,7 @@ String Variant::stringify(int recursion_count) const {
 		}
 		case OBJECT: {
 			if (_get_obj().obj) {
-				if (!_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
+				if (!_get_obj().id.is_ref_counted() && get_validated_object() == nullptr) {
 					return "<Freed Object>";
 				}
 
@@ -2007,7 +2009,7 @@ Variant::operator ::RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
-			ERR_FAIL_NULL_V_MSG(ObjectDB::get_instance(_get_obj().id), ::RID(), "Invalid pointer (object was freed).");
+			ERR_FAIL_NULL_V_MSG(get_validated_object(), ::RID(), "Invalid pointer (object was freed).");
 		}
 #endif
 		Callable::CallError ce;
@@ -2029,9 +2031,15 @@ Variant::operator Object *() const {
 	}
 }
 
+// komm64: an id is valid for this Variant only while it still names the object
+// the Variant was given: a snapshot load gives a freed object's id to the
+// object made again in its place (ObjectDB::snapshot_set_next_ids).
 Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const {
 	if (type == OBJECT) {
 		Object *instance = ObjectDB::get_instance(_get_obj().id);
+		if (instance != _get_obj().obj) {
+			instance = nullptr;
+		}
 		r_previously_freed = !instance && _get_obj().id != ObjectID();
 		return instance;
 	} else {
@@ -2042,7 +2050,8 @@ Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const
 
 Object *Variant::get_validated_object() const {
 	if (type == OBJECT) {
-		return ObjectDB::get_instance(_get_obj().id);
+		Object *instance = ObjectDB::get_instance(_get_obj().id);
+		return instance == _get_obj().obj ? instance : nullptr;
 	} else {
 		return nullptr;
 	}

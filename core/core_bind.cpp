@@ -2052,6 +2052,14 @@ void Engine::snapshot_set_deferred_calls(const Array &p_calls) {
 	MessageQueue::get_main_singleton()->snapshot_set_calls(p_calls);
 }
 
+void Engine::snapshot_set_next_ids(const PackedInt64Array &p_ids) {
+	ObjectDB::snapshot_set_next_ids(p_ids);
+}
+
+void Engine::snapshot_reserve_ids(const PackedInt64Array &p_ids) {
+	ObjectDB::snapshot_reserve_ids(p_ids);
+}
+
 int64_t Engine::snapshot_get_random_state() const {
 	return (int64_t)Math::get_random_state();
 }
@@ -2410,6 +2418,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
 	ClassDB::bind_method(D_METHOD("snapshot_get_deferred_calls"), &Engine::snapshot_get_deferred_calls);
 	ClassDB::bind_method(D_METHOD("snapshot_set_deferred_calls", "calls"), &Engine::snapshot_set_deferred_calls);
+	ClassDB::bind_method(D_METHOD("snapshot_set_next_ids", "ids"), &Engine::snapshot_set_next_ids);
+	ClassDB::bind_method(D_METHOD("snapshot_reserve_ids", "ids"), &Engine::snapshot_reserve_ids);
 	ClassDB::bind_method(D_METHOD("snapshot_get_clock"), &Engine::snapshot_get_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_clock", "clock"), &Engine::snapshot_set_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_random_state", "state"), &Engine::snapshot_set_random_state);

@@ -40,6 +40,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
 
@@ -906,6 +907,13 @@ class ObjectDB {
 	static ObjectID add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
 
+	// komm64: ids a snapshot gives the objects made next on one thread.
+	static LocalVector<uint64_t> snapshot_ids;
+	static uint32_t snapshot_ids_next;
+	static uint64_t snapshot_ids_thread; // Thread::ID
+	static bool _snapshot_grow_to(uint32_t p_slot);
+	static bool _snapshot_take_slot(uint32_t p_slot);
+
 	friend void register_core_types();
 	static void setup();
 
@@ -933,6 +941,13 @@ public:
 
 		return object;
 	}
+
+	// komm64: the k-th object made from now on this thread gets p_ids[k]
+	// (0: any id); one whose slot an object holds gets another id.
+	static void snapshot_set_next_ids(const Vector<int64_t> &p_ids);
+	// komm64: puts the free slots of p_ids last among the free slots, so
+	// objects made in between take other slots first.
+	static void snapshot_reserve_ids(const Vector<int64_t> &p_ids);
 
 	template <typename T>
 	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {
