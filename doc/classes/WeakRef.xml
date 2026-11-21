@@ -15,5 +15,12 @@
 				Returns the [Object] this weakref is referring to. Returns [code]null[/code] if that object no longer exists.
 			</description>
 		</method>
+		<method name="snapshot_set_ref">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Points this [WeakRef] at [param object] ([code]null[/code]: at nothing), for savestate systems that make a held [WeakRef] again and the object it pointed at after it.
+			</description>
+		</method>
 	</methods>
 </class>

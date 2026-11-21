@@ -161,4 +161,7 @@ void WeakRef::set_ref(const Ref<RefCounted> &p_ref) {
 
 void WeakRef::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
+	// komm64: points it at p_object, for savestate systems that make a held
+	// WeakRef again: what it pointed at is made again after it.
+	ClassDB::bind_method(D_METHOD("snapshot_set_ref", "object"), &WeakRef::set_obj);
 }

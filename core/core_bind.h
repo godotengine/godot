@@ -625,9 +625,6 @@ public:
 	Array snapshot_get_deferred_calls() const;
 	Array snapshot_get_callable_value(const Callable &p_callable) const;
 	void snapshot_set_deferred_calls(const Array &p_calls);
-	void snapshot_set_next_ids(const PackedInt64Array &p_ids);
-	void snapshot_reserve_ids(const PackedInt64Array &p_ids);
-	int64_t snapshot_get_id_holder(int64_t p_id) const;
 	Dictionary snapshot_get_clock() const;
 	void snapshot_set_clock(const Dictionary &p_clock);
 	void snapshot_set_random_state(int64_t p_state);

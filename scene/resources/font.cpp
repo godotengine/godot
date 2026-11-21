@@ -49,7 +49,6 @@
 /*************************************************************************/
 
 void Font::_bind_methods() {
-	ClassDB::bind_static_method("Font", D_METHOD("snapshot_clear_caches"), &Font::snapshot_clear_caches);
 	ClassDB::bind_method(D_METHOD("set_fallbacks", "fallbacks"), &Font::set_fallbacks);
 	ClassDB::bind_method(D_METHOD("get_fallbacks"), &Font::get_fallbacks);
 
@@ -138,27 +137,6 @@ void Font::_invalidate_rids() {
 	cache_wrap.clear();
 
 	emit_changed();
-}
-
-// komm64: lets go of every font's shaped text, for savestate systems: a load
-// keeps the fonts, and what their caches made in the replaced game must not
-// live on into the loaded one (it holds object ids the load makes again).
-// The text is shaped again when drawn, the same.
-void Font::snapshot_clear_caches() {
-	LocalVector<ObjectID> fonts;
-	ObjectDB::debug_objects([](Object *p_obj, void *p_user) {
-		if (Object::cast_to<Font>(p_obj) != nullptr) {
-			static_cast<LocalVector<ObjectID> *>(p_user)->push_back(p_obj->get_instance_id());
-		}
-	},
-			&fonts);
-	for (const ObjectID &id : fonts) {
-		Ref<Font> font = Object::cast_to<Font>(ObjectDB::get_instance(id));
-		if (font.is_valid()) {
-			font->cache.clear();
-			font->cache_wrap.clear();
-		}
-	}
 }
 
 bool Font::_is_cyclic(const Ref<Font> &p_f, int p_depth) const {

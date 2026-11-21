@@ -38,7 +38,6 @@
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
-#include "core/os/thread.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 #include "core/variant/typed_array.h"
@@ -2507,137 +2506,20 @@ int ObjectDB::get_object_count() {
 	return slot_count;
 }
 
-LocalVector<uint64_t> ObjectDB::snapshot_ids;
-uint32_t ObjectDB::snapshot_ids_next = 0;
-uint64_t ObjectDB::snapshot_ids_thread = 0;
-uint32_t ObjectDB::snapshot_reserved = 0;
-HashSet<uint32_t> ObjectDB::snapshot_reserved_slots;
-
-void ObjectDB::snapshot_set_next_ids(const Vector<int64_t> &p_ids) {
-	spin_lock.lock();
-	snapshot_ids.clear();
-	for (int64_t id : p_ids) {
-		snapshot_ids.push_back(uint64_t(id));
-	}
-	snapshot_ids_next = 0;
-	snapshot_ids_thread = Thread::get_caller_id();
-	spin_lock.unlock();
-}
-
-// Grows the slots to hold p_slot (spin_lock held).
-// Doubles the slots (spin_lock held). Among the free slots the new ones go
-// before the reserved ones, which stay last.
-void ObjectDB::_grow() {
-	uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-	object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-	for (uint32_t k = 0; k < snapshot_reserved; k++) {
-		object_slots[new_slot_max - 1 - k].next_free = object_slots[slot_max - 1 - k].next_free;
-	}
-	for (uint32_t i = slot_max; i < new_slot_max; i++) {
-		object_slots[i].object = nullptr;
-		object_slots[i].is_ref_counted = false;
-		object_slots[i].validator = 0;
-		object_slots[i - snapshot_reserved].next_free = i;
-	}
-	slot_max = new_slot_max;
-}
-
-bool ObjectDB::_snapshot_grow_to(uint32_t p_slot) {
-	while (p_slot >= slot_max) {
-		ERR_FAIL_COND_V(slot_max == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS), false);
-		_grow();
-	}
-	return true;
-}
-
-// Makes p_slot the next free slot add_instance() takes (spin_lock held).
-// False when an object holds it: that object keeps its id, and the new
-// object gets another one.
-bool ObjectDB::_snapshot_take_slot(uint32_t p_slot) {
-	if (!_snapshot_grow_to(p_slot)) {
-		return false;
-	}
-	if (object_slots[p_slot].object != nullptr) {
-		return false;
-	}
-	for (uint32_t i = slot_max; i-- > slot_count;) {
-		if (object_slots[i].next_free == p_slot) {
-			uint32_t first_reserved = slot_max - snapshot_reserved;
-			if (i >= first_reserved) {
-				// No longer reserved: the reserved ones start one later.
-				object_slots[i].next_free = object_slots[first_reserved].next_free;
-				object_slots[first_reserved].next_free = p_slot;
-				i = first_reserved;
-				snapshot_reserved--;
-			}
-			object_slots[i].next_free = object_slots[slot_count].next_free;
-			object_slots[slot_count].next_free = p_slot;
-			return true;
-		}
-	}
-	return false;
-}
-
-// komm64: the object in the slot of p_id now, whatever its validator: what
-// keeps an id from the object a load makes again.
-ObjectID ObjectDB::snapshot_get_id_holder(int64_t p_id) {
-	const uint32_t slot = uint64_t(p_id) & OBJECTDB_SLOT_MAX_COUNT_MASK;
-	ObjectID holder;
-	spin_lock.lock();
-	if (slot < slot_max && object_slots[slot].object != nullptr) {
-		holder = object_slots[slot].object->get_instance_id();
-	}
-	spin_lock.unlock();
-	return holder;
-}
-
-void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
-	spin_lock.lock();
-	// Held until the next call: a reserved slot freed meanwhile (the object
-	// in it is let go of) goes last too.
-	snapshot_reserved_slots.clear();
-	for (int64_t id : p_ids) {
-		uint32_t slot = uint64_t(id) & OBJECTDB_SLOT_MAX_COUNT_MASK;
-		if (_snapshot_grow_to(slot)) {
-			snapshot_reserved_slots.insert(slot);
-		}
-	}
-	// Free slots in order, the reserved ones last: only an object given one
-	// of their ids takes one, the others take new slots once theirs run out.
-	LocalVector<uint32_t> others;
-	LocalVector<uint32_t> last;
-	for (uint32_t i = slot_count; i < slot_max; i++) {
-		uint32_t slot = object_slots[i].next_free;
-		(snapshot_reserved_slots.has(slot) ? last : others).push_back(slot);
-	}
-	uint32_t at = slot_count;
-	for (uint32_t slot : others) {
-		object_slots[at++].next_free = slot;
-	}
-	for (uint32_t slot : last) {
-		object_slots[at++].next_free = slot;
-	}
-	snapshot_reserved = last.size();
-	spin_lock.unlock();
-}
-
 ObjectID ObjectDB::add_instance(Object *p_object) {
 	spin_lock.lock();
-	uint64_t wanted = 0;
-	if (unlikely(!snapshot_ids.is_empty()) && snapshot_ids_thread == Thread::get_caller_id()) {
-		if (snapshot_ids_next < snapshot_ids.size()) {
-			wanted = snapshot_ids[snapshot_ids_next++];
-		} else {
-			snapshot_ids.clear();
+	if (unlikely(slot_count == slot_max)) {
+		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
+
+		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
+		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
+		for (uint32_t i = slot_max; i < new_slot_max; i++) {
+			object_slots[i].object = nullptr;
+			object_slots[i].is_ref_counted = false;
+			object_slots[i].next_free = i;
+			object_slots[i].validator = 0;
 		}
-		if (wanted != 0 && (((wanted >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK) == 0 || !_snapshot_take_slot(wanted & OBJECTDB_SLOT_MAX_COUNT_MASK))) {
-			wanted = 0;
-		}
-	}
-	// komm64: an object not given a reserved id leaves those slots alone.
-	if (unlikely(slot_count + (wanted != 0 ? 0 : snapshot_reserved) == slot_max)) {
-		CRASH_COND(slot_max == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-		_grow();
+		slot_max = new_slot_max;
 	}
 
 	uint32_t slot = object_slots[slot_count].next_free;
@@ -2647,19 +2529,13 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 	}
 	object_slots[slot].object = p_object;
 	object_slots[slot].is_ref_counted = p_object->is_ref_counted();
-	uint64_t validator;
-	if (wanted != 0) {
-		validator = (wanted >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-	} else {
-		validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
-		if (unlikely(validator_counter == 0)) {
-			validator_counter = 1;
-		}
-		validator = validator_counter;
+	validator_counter = (validator_counter + 1) & OBJECTDB_VALIDATOR_MASK;
+	if (unlikely(validator_counter == 0)) {
+		validator_counter = 1;
 	}
-	object_slots[slot].validator = validator;
+	object_slots[slot].validator = validator_counter;
 
-	uint64_t id = validator;
+	uint64_t id = validator_counter;
 	id <<= OBJECTDB_SLOT_MAX_COUNT_BITS;
 	id |= uint64_t(slot);
 
@@ -2698,16 +2574,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 	//decrease slot count
 	slot_count--;
 	//set the free slot properly
-	if (unlikely(!snapshot_reserved_slots.is_empty()) && snapshot_reserved_slots.has(slot)) {
-		// komm64: a reserved slot goes first among the reserved ones, after
-		// the other free slots.
-		uint32_t first_reserved = slot_max - snapshot_reserved;
-		object_slots[slot_count].next_free = object_slots[first_reserved - 1].next_free;
-		object_slots[first_reserved - 1].next_free = slot;
-		snapshot_reserved++;
-	} else {
-		object_slots[slot_count].next_free = slot;
-	}
+	object_slots[slot_count].next_free = slot;
 	//invalidate, so checks against it fail
 	object_slots[slot].validator = 0;
 	object_slots[slot].is_ref_counted = false;
