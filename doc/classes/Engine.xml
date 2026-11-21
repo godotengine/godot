@@ -385,7 +385,7 @@
 			<return type="void" />
 			<param index="0" name="ids" type="PackedInt64Array" />
 			<description>
-				Keeps the free slots of the instance ids in [param ids] for those ids: only an object [method snapshot_set_next_ids] gives one of them takes one, other objects take other slots. A slot an object holds is left as it is. Replaces the slots kept before; an empty array keeps none.
+				Keeps the free slots of the instance ids in [param ids] for those ids: only an object [method snapshot_set_next_ids] gives one of them takes one, other objects take other slots. A slot an object holds is kept once that object is freed, until the next call. Replaces the slots kept before; an empty array keeps none.
 			</description>
 		</method>
 		<method name="snapshot_set_next_ids">

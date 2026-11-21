@@ -913,6 +913,7 @@ class ObjectDB {
 	static uint32_t snapshot_ids_next;
 	static uint64_t snapshot_ids_thread; // Thread::ID
 	static uint32_t snapshot_reserved; // free slots kept last, for the ids asked for
+	static HashSet<uint32_t> snapshot_reserved_slots; // the slots of the ids asked for: freed, they go last too
 	static void _grow();
 	static bool _snapshot_grow_to(uint32_t p_slot);
 	static bool _snapshot_take_slot(uint32_t p_slot);

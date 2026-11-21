@@ -84,6 +84,9 @@ class Font : public Resource {
 	mutable LRUCache<ShapedTextKey, Ref<TextLine>, ShapedTextKeyHasher> cache;
 	mutable LRUCache<ShapedTextKey, Ref<TextParagraph>, ShapedTextKeyHasher> cache_wrap;
 
+public:
+	static void snapshot_clear_caches();
+
 protected:
 	// Output.
 	mutable TypedArray<RID> rids;

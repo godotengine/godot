@@ -362,6 +362,12 @@
 				Sets LRU cache capacity for [code]draw_*[/code] methods.
 			</description>
 		</method>
+		<method name="snapshot_clear_caches" qualifiers="static">
+			<return type="void" />
+			<description>
+				Empties the shaped-text caches of every font, for savestate systems: what they made before a load does not live on into the loaded game. Text is shaped again, the same, the next time it is drawn.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="fallbacks" type="Font[]" setter="set_fallbacks" getter="get_fallbacks" default="[]">

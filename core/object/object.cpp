@@ -2511,6 +2511,7 @@ LocalVector<uint64_t> ObjectDB::snapshot_ids;
 uint32_t ObjectDB::snapshot_ids_next = 0;
 uint64_t ObjectDB::snapshot_ids_thread = 0;
 uint32_t ObjectDB::snapshot_reserved = 0;
+HashSet<uint32_t> ObjectDB::snapshot_reserved_slots;
 
 void ObjectDB::snapshot_set_next_ids(const Vector<int64_t> &p_ids) {
 	spin_lock.lock();
@@ -2592,11 +2593,13 @@ ObjectID ObjectDB::snapshot_get_id_holder(int64_t p_id) {
 
 void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
 	spin_lock.lock();
-	HashSet<uint32_t> reserved;
+	// Held until the next call: a reserved slot freed meanwhile (the object
+	// in it is let go of) goes last too.
+	snapshot_reserved_slots.clear();
 	for (int64_t id : p_ids) {
 		uint32_t slot = uint64_t(id) & OBJECTDB_SLOT_MAX_COUNT_MASK;
-		if (_snapshot_grow_to(slot) && object_slots[slot].object == nullptr) {
-			reserved.insert(slot);
+		if (_snapshot_grow_to(slot)) {
+			snapshot_reserved_slots.insert(slot);
 		}
 	}
 	// Free slots in order, the reserved ones last: only an object given one
@@ -2605,7 +2608,7 @@ void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
 	LocalVector<uint32_t> last;
 	for (uint32_t i = slot_count; i < slot_max; i++) {
 		uint32_t slot = object_slots[i].next_free;
-		(reserved.has(slot) ? last : others).push_back(slot);
+		(snapshot_reserved_slots.has(slot) ? last : others).push_back(slot);
 	}
 	uint32_t at = slot_count;
 	for (uint32_t slot : others) {
@@ -2695,7 +2698,16 @@ void ObjectDB::remove_instance(Object *p_object) {
 	//decrease slot count
 	slot_count--;
 	//set the free slot properly
-	object_slots[slot_count].next_free = slot;
+	if (unlikely(!snapshot_reserved_slots.is_empty()) && snapshot_reserved_slots.has(slot)) {
+		// komm64: a reserved slot goes first among the reserved ones, after
+		// the other free slots.
+		uint32_t first_reserved = slot_max - snapshot_reserved;
+		object_slots[slot_count].next_free = object_slots[first_reserved - 1].next_free;
+		object_slots[first_reserved - 1].next_free = slot;
+		snapshot_reserved++;
+	} else {
+		object_slots[slot_count].next_free = slot;
+	}
 	//invalidate, so checks against it fail
 	object_slots[slot].validator = 0;
 	object_slots[slot].is_ref_counted = false;
