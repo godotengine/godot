@@ -245,5 +245,5 @@ struct is_zero_constructible<Ref<T>> : std::true_type {};
 
 template <typename T>
 Ref<T> ObjectDB::get_ref(ObjectID p_instance_id) {
-	return Ref<T>(get_instance(p_instance_id));
+	return Ref<T>(get_instance<T>(p_instance_id));
 }
