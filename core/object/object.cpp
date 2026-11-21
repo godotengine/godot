@@ -2496,6 +2496,7 @@ int ObjectDB::get_object_count() {
 LocalVector<uint64_t> ObjectDB::snapshot_ids;
 uint32_t ObjectDB::snapshot_ids_next = 0;
 uint64_t ObjectDB::snapshot_ids_thread = 0;
+uint32_t ObjectDB::snapshot_reserved = 0;
 
 void ObjectDB::snapshot_set_next_ids(const Vector<int64_t> &p_ids) {
 	spin_lock.lock();
@@ -2509,18 +2510,27 @@ void ObjectDB::snapshot_set_next_ids(const Vector<int64_t> &p_ids) {
 }
 
 // Grows the slots to hold p_slot (spin_lock held).
+// Doubles the slots (spin_lock held). Among the free slots the new ones go
+// before the reserved ones, which stay last.
+void ObjectDB::_grow() {
+	uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
+	object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
+	for (uint32_t k = 0; k < snapshot_reserved; k++) {
+		object_slots[new_slot_max - 1 - k].next_free = object_slots[slot_max - 1 - k].next_free;
+	}
+	for (uint32_t i = slot_max; i < new_slot_max; i++) {
+		object_slots[i].object = nullptr;
+		object_slots[i].is_ref_counted = false;
+		object_slots[i].validator = 0;
+		object_slots[i - snapshot_reserved].next_free = i;
+	}
+	slot_max = new_slot_max;
+}
+
 bool ObjectDB::_snapshot_grow_to(uint32_t p_slot) {
 	while (p_slot >= slot_max) {
 		ERR_FAIL_COND_V(slot_max == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS), false);
-		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-		for (uint32_t i = slot_max; i < new_slot_max; i++) {
-			object_slots[i].object = nullptr;
-			object_slots[i].is_ref_counted = false;
-			object_slots[i].next_free = i;
-			object_slots[i].validator = 0;
-		}
-		slot_max = new_slot_max;
+		_grow();
 	}
 	return true;
 }
@@ -2535,9 +2545,16 @@ bool ObjectDB::_snapshot_take_slot(uint32_t p_slot) {
 	if (object_slots[p_slot].object != nullptr) {
 		return false;
 	}
-	// Free: bring it to the front of the free slots (reserved slots are last).
 	for (uint32_t i = slot_max; i-- > slot_count;) {
 		if (object_slots[i].next_free == p_slot) {
+			uint32_t first_reserved = slot_max - snapshot_reserved;
+			if (i >= first_reserved) {
+				// No longer reserved: the reserved ones start one later.
+				object_slots[i].next_free = object_slots[first_reserved].next_free;
+				object_slots[first_reserved].next_free = p_slot;
+				i = first_reserved;
+				snapshot_reserved--;
+			}
 			object_slots[i].next_free = object_slots[slot_count].next_free;
 			object_slots[slot_count].next_free = p_slot;
 			return true;
@@ -2555,7 +2572,8 @@ void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
 			reserved.insert(slot);
 		}
 	}
-	// Free slots in order, the reserved ones last.
+	// Free slots in order, the reserved ones last: only an object given one
+	// of their ids takes one, the others take new slots once theirs run out.
 	LocalVector<uint32_t> others;
 	LocalVector<uint32_t> last;
 	for (uint32_t i = slot_count; i < slot_max; i++) {
@@ -2569,6 +2587,7 @@ void ObjectDB::snapshot_reserve_ids(const Vector<int64_t> &p_ids) {
 	for (uint32_t slot : last) {
 		object_slots[at++].next_free = slot;
 	}
+	snapshot_reserved = last.size();
 	spin_lock.unlock();
 }
 
@@ -2585,18 +2604,10 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 			wanted = 0;
 		}
 	}
-	if (unlikely(slot_count == slot_max)) {
-		CRASH_COND(slot_count == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
-
-		uint32_t new_slot_max = slot_max > 0 ? slot_max * 2 : 1;
-		object_slots = (ObjectSlot *)memrealloc(object_slots, sizeof(ObjectSlot) * new_slot_max);
-		for (uint32_t i = slot_max; i < new_slot_max; i++) {
-			object_slots[i].object = nullptr;
-			object_slots[i].is_ref_counted = false;
-			object_slots[i].next_free = i;
-			object_slots[i].validator = 0;
-		}
-		slot_max = new_slot_max;
+	// komm64: an object not given a reserved id leaves those slots alone.
+	if (unlikely(slot_count + (wanted != 0 ? 0 : snapshot_reserved) == slot_max)) {
+		CRASH_COND(slot_max == (1 << OBJECTDB_SLOT_MAX_COUNT_BITS));
+		_grow();
 	}
 
 	uint32_t slot = object_slots[slot_count].next_free;

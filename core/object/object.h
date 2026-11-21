@@ -911,6 +911,8 @@ class ObjectDB {
 	static LocalVector<uint64_t> snapshot_ids;
 	static uint32_t snapshot_ids_next;
 	static uint64_t snapshot_ids_thread; // Thread::ID
+	static uint32_t snapshot_reserved; // free slots kept last, for the ids asked for
+	static void _grow();
 	static bool _snapshot_grow_to(uint32_t p_slot);
 	static bool _snapshot_take_slot(uint32_t p_slot);
 
