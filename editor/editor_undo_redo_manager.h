@@ -95,25 +95,13 @@ public:
 	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
 	template <typename... VarArgs>
-	void add_do_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-
-		add_do_methodp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void add_do_method(Object *p_object, const StringName &p_method, const VarArgs &...p_args) {
+		add_do_methodp(p_object, p_method, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 
 	template <typename... VarArgs>
-	void add_undo_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-
-		add_undo_methodp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	void add_undo_method(Object *p_object, const StringName &p_method, const VarArgs &...p_args) {
+		add_undo_methodp(p_object, p_method, make_ptr_pack<Variant>(Variant(p_args)...).ptr(), sizeof...(p_args));
 	}
 
 	void _add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);

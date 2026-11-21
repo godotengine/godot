@@ -54,6 +54,8 @@
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
+const int ProjectSettings::CONFIG_VERSION;
+
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
