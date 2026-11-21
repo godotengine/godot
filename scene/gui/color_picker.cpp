@@ -136,6 +136,10 @@ void ColorPicker::_notification(int p_what) {
 			btn_shape->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 			btn_mode->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
+#ifdef TOOLS_ENABLED
+			theme_cache.palette_quick_load = get_theme_icon(SNAME("LoadQuick"), SNAME("EditorIcons"));
+#endif
+
 			{
 				int i = 0;
 				for (ColorPickerShape *shape : shapes) {
@@ -1671,25 +1675,25 @@ void ColorPicker::_update_menu_items() {
 	options_menu->clear();
 	options_menu->reset_size();
 
-	options_menu->add_icon_item(get_theme_icon(SNAME("save"), SNAME("FileDialog")), ETR("Save"), static_cast<int>(MenuOption::MENU_SAVE));
+	options_menu->add_icon_item(theme_cache.palette_save, ETR("Save"), static_cast<int>(MenuOption::MENU_SAVE));
 	options_menu->set_item_tooltip(-1, ETR("Save the current color palette to reuse later."));
 	options_menu->set_item_disabled(-1, presets.is_empty());
 
-	options_menu->add_icon_item(get_theme_icon(SNAME("save"), SNAME("FileDialog")), ETR("Save As"), static_cast<int>(MenuOption::MENU_SAVE_AS));
+	options_menu->add_icon_item(theme_cache.palette_save, ETR("Save As"), static_cast<int>(MenuOption::MENU_SAVE_AS));
 	options_menu->set_item_tooltip(-1, ETR("Save the current color palette as a new to reuse later."));
 	options_menu->set_item_disabled(-1, palette_path.is_empty());
 
-	options_menu->add_icon_item(get_theme_icon(SNAME("load"), SNAME("FileDialog")), ETR("Load"), static_cast<int>(MenuOption::MENU_LOAD));
+	options_menu->add_icon_item(theme_cache.palette_load, ETR("Load"), static_cast<int>(MenuOption::MENU_LOAD));
 	options_menu->set_item_tooltip(-1, ETR("Load existing color palette."));
 
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		options_menu->add_icon_item(get_theme_icon(SNAME("load"), SNAME("FileDialog")), TTRC("Quick Load"), static_cast<int>(MenuOption::MENU_QUICKLOAD));
+		options_menu->add_icon_item(theme_cache.palette_quick_load, TTRC("Quick Load"), static_cast<int>(MenuOption::MENU_QUICKLOAD));
 		options_menu->set_item_tooltip(-1, TTRC("Load existing color palette."));
 	}
 #endif // TOOLS_ENABLED
 
-	options_menu->add_icon_item(get_theme_icon(SNAME("clear"), SNAME("FileDialog")), ETR("Clear"), static_cast<int>(MenuOption::MENU_CLEAR));
+	options_menu->add_icon_item(theme_cache.palette_clear, ETR("Clear"), static_cast<int>(MenuOption::MENU_CLEAR));
 	options_menu->set_item_tooltip(-1, ETR("Clear the currently loaded color palettes in the picker."));
 	options_menu->set_item_disabled(-1, presets.is_empty());
 }
@@ -2083,6 +2087,9 @@ void ColorPicker::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_copy);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, palette_save);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, palette_load);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, palette_clear);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
