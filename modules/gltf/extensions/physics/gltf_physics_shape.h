@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "../../gltf_defines.h"
+#include "../../structures/gltf_item.h"
 
 #include "scene/3d/physics/collision_shape_3d.h"
 
@@ -40,8 +40,8 @@ class ImporterMesh;
 // and the OMI_physics_shape extension.
 // https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_physics_shape
 
-class GLTFPhysicsShape : public Resource {
-	GDCLASS(GLTFPhysicsShape, Resource)
+class GLTFPhysicsShape : public GLTFItem {
+	GDCLASS(GLTFPhysicsShape, GLTFItem)
 
 protected:
 	static void _bind_methods();
@@ -86,5 +86,9 @@ public:
 	Ref<Shape3D> to_resource(bool p_cache_shapes = false);
 
 	static Ref<GLTFPhysicsShape> from_dictionary(const Dictionary &p_dictionary);
-	Dictionary to_dictionary() const;
+	virtual Error read_from_dictionary(const Dictionary &p_dictionary) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };

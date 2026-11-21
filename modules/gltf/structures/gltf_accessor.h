@@ -30,11 +30,10 @@
 
 #pragma once
 
-#include "../gltf_defines.h"
 #include "gltf_buffer_view.h"
 
-class GLTFAccessor : public Resource {
-	GDCLASS(GLTFAccessor, Resource);
+class GLTFAccessor : public GLTFItem {
+	GDCLASS(GLTFAccessor, GLTFItem);
 	friend class GLTFDocument;
 
 public:
@@ -214,7 +213,11 @@ public:
 
 	// Dictionary conversion.
 	static Ref<GLTFAccessor> from_dictionary(const Dictionary &p_dict);
-	Dictionary to_dictionary() const;
+	virtual Error read_from_dictionary(const Dictionary &p_dict) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };
 
 VARIANT_ENUM_CAST(GLTFAccessor::GLTFAccessorType);

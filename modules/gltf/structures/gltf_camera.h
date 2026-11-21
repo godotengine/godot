@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/io/resource.h"
+#include "gltf_item.h"
 
 class Camera3D;
 class GLTFObjectModelProperty;
@@ -38,8 +38,8 @@ class GLTFObjectModelProperty;
 // Reference and test file:
 // https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_015_SimpleCameras.md
 
-class GLTFCamera : public Resource {
-	GDCLASS(GLTFCamera, Resource);
+class GLTFCamera : public GLTFItem {
+	GDCLASS(GLTFCamera, GLTFItem);
 
 private:
 	// glTF has no default camera values, they should always be specified in
@@ -71,5 +71,9 @@ public:
 	Camera3D *to_node() const;
 
 	static Ref<GLTFCamera> from_dictionary(const Dictionary &p_dictionary);
-	virtual Dictionary to_dictionary() const;
+	virtual Error read_from_dictionary(const Dictionary &p_dictionary) override;
+	virtual Dictionary write_to_dictionary() const override;
+#ifndef DISABLE_DEPRECATED
+	virtual Dictionary to_dictionary() const { return write_to_dictionary(); }
+#endif // DISABLE_DEPRECATED
 };

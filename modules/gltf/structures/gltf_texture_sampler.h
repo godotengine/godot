@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "gltf_item.h"
+
 #include "scene/resources/material.h"
 
-class GLTFTextureSampler : public Resource {
-	GDCLASS(GLTFTextureSampler, Resource);
+class GLTFTextureSampler : public GLTFItem {
+	GDCLASS(GLTFTextureSampler, GLTFItem);
 
 public:
 	enum FilterMode {

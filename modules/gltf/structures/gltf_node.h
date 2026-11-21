@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "../gltf_defines.h"
+#include "gltf_item.h"
 
-#include "core/io/resource.h"
-
-class GLTFNode : public Resource {
-	GDCLASS(GLTFNode, Resource);
+class GLTFNode : public GLTFItem {
+	GDCLASS(GLTFNode, GLTFItem);
 	friend class GLTFDocument;
 	friend class SkinTool;
 	friend class FBXDocument;
@@ -53,7 +51,6 @@ private:
 	bool visible = true;
 	Vector<int> children;
 	GLTFLightIndex light = -1;
-	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
@@ -104,10 +101,6 @@ public:
 
 	bool get_visible();
 	void set_visible(bool p_visible);
-
-	Variant get_additional_data(const StringName &p_extension_name);
-	bool has_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
 };

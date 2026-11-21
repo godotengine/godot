@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "../gltf_defines.h"
+#include "gltf_item.h"
 
-#include "core/io/resource.h"
-
-class GLTFTexture : public Resource {
-	GDCLASS(GLTFTexture, Resource);
+class GLTFTexture : public GLTFItem {
+	GDCLASS(GLTFTexture, GLTFItem);
 
 private:
 	GLTFImageIndex src_image = -1;
