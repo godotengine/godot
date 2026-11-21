@@ -1316,6 +1316,22 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	playback_list.insert(playback_node);
 }
 
+// komm64: lets go now of the playbacks that were stopped (their players
+// freed or stopped) and wait for the mixer to fade them out and drop them.
+// Their objects die now, not a mix or two later: a savestate load replacing
+// the game cuts their tails off, and the ids they held are free again.
+void AudioServer::snapshot_drop_ended_playbacks() {
+	lock();
+	for (AudioStreamPlaybackListNode *playback : playback_list) {
+		const AudioStreamPlaybackListNode::PlaybackState state = playback->state.load();
+		if (state == AudioStreamPlaybackListNode::AWAITING_DELETION || state == AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION) {
+			_delete_stream_playback_list_node(playback);
+		}
+	}
+	playback_list.maybe_cleanup();
+	unlock();
+}
+
 void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 	ERR_FAIL_COND(p_playback.is_null());
 
@@ -2113,6 +2129,7 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_speed_scale", "scale"), &AudioServer::set_playback_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_playback_speed_scale"), &AudioServer::get_playback_speed_scale);
 
+	ClassDB::bind_method(D_METHOD("snapshot_drop_ended_playbacks"), &AudioServer::snapshot_drop_ended_playbacks);
 	ClassDB::bind_method(D_METHOD("lock"), &AudioServer::lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &AudioServer::unlock);
 

@@ -1139,6 +1139,17 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	sorted_active_viewports_dirty = true;
 }
 
+// komm64: the active viewports in the order they became active. Viewports
+// that share a parent are drawn in this order: one that samples another's
+// texture sees this frame's drawing only if the other comes first.
+TypedArray<RID> RendererViewport::viewport_snapshot_get_active_order() const {
+	TypedArray<RID> out;
+	for (const Viewport *viewport : active_viewports) {
+		out.push_back(viewport->self);
+	}
+	return out;
+}
+
 void RendererViewport::viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);

@@ -741,6 +741,7 @@ public:
 	FUNC4(viewport_set_size, RID, int, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
+	FUNC0RC(TypedArray<RID>, viewport_snapshot_get_active_order)
 	FUNC2(viewport_set_parent_viewport, RID, RID)
 
 	FUNC2(viewport_set_clear_mode, RID, RSE::ViewportClearMode)

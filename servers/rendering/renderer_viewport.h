@@ -230,6 +230,7 @@ public:
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);
 
 	void viewport_set_active(RID p_viewport, bool p_active);
+	TypedArray<RID> viewport_snapshot_get_active_order() const; // komm64
 	void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport);
 
 	void viewport_set_scaling_3d_mode(RID p_viewport, RSE::ViewportScaling3DMode p_mode);

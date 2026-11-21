@@ -359,6 +359,12 @@
 				If [param active] is [code]false[/code], stops the input stream if it is running.
 			</description>
 		</method>
+		<method name="snapshot_drop_ended_playbacks">
+			<return type="void" />
+			<description>
+				Lets go at once of the playbacks that were stopped and wait for the mixer to fade them out and drop them, for savestate systems: their objects are freed now instead of a mix later.
+			</description>
+		</method>
 		<method name="swap_bus_effects">
 			<return type="void" />
 			<param index="0" name="bus_idx" type="int" />

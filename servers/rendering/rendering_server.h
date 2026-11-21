@@ -543,6 +543,7 @@ public:
 
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height, int p_view_count = 1) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
+	virtual TypedArray<RID> viewport_snapshot_get_active_order() const = 0; // komm64
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
 	virtual void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask) = 0;
 

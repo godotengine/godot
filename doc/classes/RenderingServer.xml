@@ -4573,6 +4573,12 @@
 				Clears the viewport render target immediately without changing viewport update or clear modes. Intended for snapshot/save systems.
 			</description>
 		</method>
+		<method name="viewport_snapshot_get_active_order" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns the active viewports in the order they became active, for savestate systems. Viewports that share a parent are drawn in this order.
+			</description>
+		</method>
 		<method name="viewport_snapshot_get_clear_mode" qualifiers="const">
 			<return type="int" enum="RenderingServer.ViewportClearMode" />
 			<param index="0" name="viewport" type="RID" />
