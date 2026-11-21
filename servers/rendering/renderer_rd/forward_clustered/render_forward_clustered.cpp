@@ -1863,9 +1863,15 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		SCALE_NONE,
 		SCALE_FSR2,
 		SCALE_MFX,
+		SCALE_CUSTOM,
 	} scale_type = SCALE_NONE;
 
 	switch (rb->get_scaling_3d_mode()) {
+		case RSE::VIEWPORT_SCALING_3D_MODE_CUSTOM:
+			if (_has_compositor_effect(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_UPSCALE, p_render_data)) {
+				scale_type = SCALE_CUSTOM;
+			}
+			break;
 		case RSE::VIEWPORT_SCALING_3D_MODE_FSR2:
 			scale_type = SCALE_FSR2;
 			break;
@@ -1880,6 +1886,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			break;
 	}
 
+	rb->reset_custom_upscale();
 	bool using_upscaling = scale_type != SCALE_NONE;
 
 	// check if we need motion vectors
@@ -2563,7 +2570,9 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	if (rb_data.is_valid() && (using_upscaling || using_taa)) {
-		if (scale_type == SCALE_FSR2) {
+		if (scale_type == SCALE_CUSTOM) {
+			_process_compositor_effects(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_UPSCALE, p_render_data);
+		} else if (scale_type == SCALE_FSR2) {
 			rb_data->ensure_fsr2(fsr2_effect);
 
 			RID exposure;

@@ -182,6 +182,7 @@ private:
 	void update_samplers();
 
 protected:
+	bool custom_upscale_ready = false;
 	static void _bind_methods();
 
 public:
@@ -308,6 +309,9 @@ public:
 
 	// Upscaled.
 	void ensure_upscaled();
+	void reset_custom_upscale() { custom_upscale_ready = false; }
+	void commit_custom_upscale() { custom_upscale_ready = true; }
+	bool is_custom_upscale_ready() const { return custom_upscale_ready; }
 
 	_FORCE_INLINE_ bool has_upscaled_texture() const {
 		return has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_UPSCALED);

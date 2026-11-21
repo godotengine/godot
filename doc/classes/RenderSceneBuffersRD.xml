@@ -12,6 +12,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="commit_custom_upscale">
+			<return type="void" />
+			<description>
+				Call from the custom upscale callback after scheduling a write to every view of the target-sized HDR texture obtained with [code]get_texture(&amp;"render_buffers", &amp;"color_upscaled")[/code]. Forward+ then uses this texture for post-processing in the current frame. Omit this call if the upscaler cannot produce a frame.
+			</description>
+		</method>
 		<method name="clear_context">
 			<return type="void" />
 			<param index="0" name="context" type="StringName" />

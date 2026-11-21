@@ -49,6 +49,7 @@ RenderSceneBuffersRD::~RenderSceneBuffersRD() {
 }
 
 void RenderSceneBuffersRD::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("commit_custom_upscale"), &RenderSceneBuffersRD::commit_custom_upscale);
 	ClassDB::bind_method(D_METHOD("has_texture", "context", "name"), &RenderSceneBuffersRD::has_texture);
 	ClassDB::bind_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique", "discardable"), &RenderSceneBuffersRD::create_texture);
 	ClassDB::bind_method(D_METHOD("create_texture_from_format", "context", "name", "format", "view", "unique"), &RenderSceneBuffersRD::_create_texture_from_format);
