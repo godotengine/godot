@@ -56,6 +56,19 @@ CallableCustom::CompareLessFunc VariantCallable::get_compare_less_func() const {
 	return compare_less;
 }
 
+bool VariantCallable::snapshot_get(const Callable &p_callable, Variant &r_variant, StringName &r_method) {
+	// Through bound arguments to the callable they are bound to.
+	const Callable *base = p_callable.get_base_comparator();
+	const CallableCustom *custom = base->is_custom() ? base->get_custom() : nullptr;
+	if (custom == nullptr || custom->get_compare_equal_func() != compare_equal) {
+		return false;
+	}
+	const VariantCallable *vc = static_cast<const VariantCallable *>(custom);
+	r_variant = vc->variant;
+	r_method = vc->method;
+	return true;
+}
+
 bool VariantCallable::is_valid() const {
 	return Variant::has_builtin_method(variant.get_type(), method);
 }

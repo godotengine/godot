@@ -52,5 +52,10 @@ public:
 	int get_argument_count(bool &r_is_valid) const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
+	// komm64: the value and method of a callable on a value's own method
+	// (Signal.emit, Array.append, Callable.create()), also with bound
+	// arguments; false for any other.
+	static bool snapshot_get(const Callable &p_callable, Variant &r_variant, StringName &r_method);
+
 	VariantCallable(const Variant &p_variant, const StringName &p_method);
 };

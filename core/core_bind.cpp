@@ -50,6 +50,7 @@
 #include "core/os/thread_safe.h"
 #include "core/os/time.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant_callable.h"
 
 namespace CoreBind {
 
@@ -2043,6 +2044,18 @@ static bool _snapshot_is_plain(const Variant &p_value, int p_depth) {
 	}
 }
 
+// komm64: [value, method] of a callable on a value's own method, else [].
+Array Engine::snapshot_get_callable_value(const Callable &p_callable) const {
+	Variant value;
+	StringName method;
+	Array out;
+	if (VariantCallable::snapshot_get(p_callable, value, method)) {
+		out.push_back(value);
+		out.push_back(method);
+	}
+	return out;
+}
+
 // komm64: the main thread's deferred calls still to run.
 Array Engine::snapshot_get_deferred_calls() const {
 	return MessageQueue::get_main_singleton()->snapshot_get_calls();
@@ -2417,6 +2430,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_is_plain_leaf", "value"), &Engine::snapshot_is_plain_leaf);
 	ClassDB::bind_method(D_METHOD("snapshot_get_random_state"), &Engine::snapshot_get_random_state);
 	ClassDB::bind_method(D_METHOD("snapshot_get_deferred_calls"), &Engine::snapshot_get_deferred_calls);
+	ClassDB::bind_method(D_METHOD("snapshot_get_callable_value", "callable"), &Engine::snapshot_get_callable_value);
 	ClassDB::bind_method(D_METHOD("snapshot_set_deferred_calls", "calls"), &Engine::snapshot_set_deferred_calls);
 	ClassDB::bind_method(D_METHOD("snapshot_set_next_ids", "ids"), &Engine::snapshot_set_next_ids);
 	ClassDB::bind_method(D_METHOD("snapshot_reserve_ids", "ids"), &Engine::snapshot_reserve_ids);

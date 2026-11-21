@@ -328,6 +328,13 @@
 				Returns a number that identifies the [Array] or [Dictionary] [param value] itself rather than its contents: it is the same for every variable that shares it, for as long as it exists. Returns [code]0[/code] for any other value. For saving which containers a game shares.
 			</description>
 		</method>
+		<method name="snapshot_get_callable_value" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Returns [code][value, method][/code] for a [Callable] that calls a method of a value itself, such as [code]my_signal.emit[/code], [code]my_array.append[/code] or one [method Callable.create] made, also with arguments bound to it (which [method Callable.get_bound_arguments] returns); an empty array for any other. [method Callable.create] with the two makes it again. For saving such a callable, whose [method Callable.get_object] is [code]null[/code].
+			</description>
+		</method>
 		<method name="snapshot_get_deferred_calls" qualifiers="const">
 			<return type="Array" />
 			<description>
