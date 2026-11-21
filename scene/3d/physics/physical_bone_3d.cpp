@@ -114,7 +114,7 @@ bool PhysicalBone3D::PinJointData::_set(const StringName &p_name, const Variant 
 		return true;
 	}
 
-	bool is_valid_pin = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PS3DE::JOINT_TYPE_PIN;
+	bool is_valid_pin = j.is_valid();
 	if ("joint_constraints/bias" == p_name) {
 		bias = p_value;
 		if (is_valid_pin) {
@@ -171,7 +171,7 @@ bool PhysicalBone3D::ConeJointData::_set(const StringName &p_name, const Variant
 		return true;
 	}
 
-	bool is_valid_cone = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PS3DE::JOINT_TYPE_CONE_TWIST;
+	bool is_valid_cone = j.is_valid();
 	if ("joint_constraints/swing_span" == p_name) {
 		swing_span = Math::deg_to_rad(real_t(p_value));
 		if (is_valid_cone) {
@@ -246,7 +246,7 @@ bool PhysicalBone3D::HingeJointData::_set(const StringName &p_name, const Varian
 		return true;
 	}
 
-	bool is_valid_hinge = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PS3DE::JOINT_TYPE_HINGE;
+	bool is_valid_hinge = j.is_valid();
 	if ("joint_constraints/angular_limit_enabled" == p_name) {
 		angular_limit_enabled = p_value;
 		if (is_valid_hinge) {
@@ -330,7 +330,7 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 		return true;
 	}
 
-	bool is_valid_slider = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PS3DE::JOINT_TYPE_SLIDER;
+	bool is_valid_slider = j.is_valid();
 	if ("joint_constraints/linear_limit_upper" == p_name) {
 		linear_limit_upper = p_value;
 		if (is_valid_slider) {
@@ -472,7 +472,7 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 	}
 
 	String var_name = path.get_slicec('/', 2);
-	bool is_valid_6dof = j.is_valid() && PhysicsServer3D::get_singleton()->joint_get_type(j) == PS3DE::JOINT_TYPE_6DOF;
+	bool is_valid_6dof = j.is_valid();
 	if ("linear_limit_enabled" == var_name) {
 		axis_data[axis].linear_limit_enabled = p_value;
 		if (is_valid_6dof) {
@@ -717,7 +717,8 @@ bool PhysicalBone3D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	if (joint_data) {
-		if (joint_data->_set(p_name, p_value, joint)) {
+		RID made_joint = made_joint_type == joint_data->get_joint_type() ? joint : RID();
+		if (joint_data->_set(p_name, p_value, made_joint)) {
 #ifdef TOOLS_ENABLED
 			update_gizmos();
 #endif
@@ -754,6 +755,11 @@ void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+void PhysicalBone3D::_clear_joint() {
+	PhysicsServer3D::get_singleton()->joint_clear(joint);
+	made_joint_type = JOINT_TYPE_NONE;
+}
+
 void PhysicalBone3D::_notification(int p_what) {
 	switch (p_what) {
 		// We need to wait until the bone has finished being added to the tree
@@ -779,7 +785,7 @@ void PhysicalBone3D::_notification(int p_what) {
 					bone_id = -1;
 				}
 			}
-			PhysicsServer3D::get_singleton()->joint_clear(joint);
+			_clear_joint();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -950,13 +956,13 @@ void PhysicalBone3D::_fix_joint_offset() {
 void PhysicalBone3D::_reload_joint() {
 	PhysicalBoneSimulator3D *simulator = get_simulator();
 	if (!simulator || !simulator->get_skeleton()) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+		_clear_joint();
 		return;
 	}
 
 	PhysicalBone3D *body_a = simulator->get_physical_bone_parent(bone_id);
 	if (!body_a) {
-		PhysicsServer3D::get_singleton()->joint_clear(joint);
+		_clear_joint();
 		return;
 	}
 
@@ -1038,8 +1044,10 @@ void PhysicalBone3D::_reload_joint() {
 
 		} break;
 		case JOINT_TYPE_NONE: {
+			_clear_joint();
 		} break;
 	}
+	made_joint_type = get_joint_type();
 }
 
 void PhysicalBone3D::_on_bone_parent_changed() {
