@@ -163,6 +163,16 @@ void AudioStreamPlaybackResampled::begin_resample() {
 	mix_offset = 0;
 }
 
+bool AudioStreamPlaybackResampled::snapshot_get_buffer(double &r_start, uint64_t &r_mix_offset) {
+	const float rate = get_stream_sampling_rate();
+	if (rate <= 0 || internal_buffer_end != (unsigned int)-1) {
+		return false;
+	}
+	r_start = get_playback_position() - double(INTERNAL_BUFFER_LEN) / rate;
+	r_mix_offset = mix_offset;
+	return r_start >= 0;
+}
+
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
 	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);

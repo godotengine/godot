@@ -151,6 +151,12 @@ protected:
 public:
 	virtual int mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
+	// komm64: where in the stream the frames read ahead into the buffer begin
+	// (a start() there reads the same frames again), and the read point in
+	// them; false near the stream's end or a loop, where they do not follow on.
+	bool snapshot_get_buffer(double &r_start, uint64_t &r_mix_offset);
+	void snapshot_set_mix_offset(uint64_t p_mix_offset) { mix_offset = p_mix_offset; }
+
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
 

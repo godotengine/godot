@@ -1640,7 +1640,10 @@ void SceneTree::_flush_delete_queue() {
 
 	while (delete_queue.size()) {
 		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
-		if (obj) {
+		// komm64: only the object queued. One freed before the queue ran may
+		// have left its id to a new object (a snapshot load keeps the saved
+		// objects' ids), which is not queued.
+		if (obj && obj->is_queued_for_deletion()) {
 			memdelete(obj);
 		}
 		delete_queue.pop_front();
