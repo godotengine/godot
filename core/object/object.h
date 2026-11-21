@@ -719,8 +719,11 @@ public:
 			argptrs[i] = &args[i];
 		}
 		Callable::CallError cerr;
-		const Variant ret = callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
-		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
+		Variant ret = callp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args), cerr);
+		if (cerr.error == Callable::CallError::CALL_OK) {
+			return ret;
+		}
+		return Variant();
 	}
 
 	// Depending on the boolean, we call either the virtual function _notification_backward or _notification_forward.
