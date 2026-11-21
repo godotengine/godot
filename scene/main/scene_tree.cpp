@@ -732,8 +732,11 @@ bool SceneTree::process(double p_time) {
 	flush_transform_notifications(); // Additional transforms after timers update.
 
 	// komm64: the frame's game code has run; what is called here sees the
-	// world as the next frame starts from it. Calls made from these run too.
+	// world as the next frame starts from it, without what was queued for
+	// deletion (by the frame, or by the calls before). Calls made from these
+	// run too.
 	while (!snapshot_frame_end_calls.is_empty()) {
+		_flush_delete_queue();
 		LocalVector<Callable> calls = snapshot_frame_end_calls;
 		snapshot_frame_end_calls.clear();
 		for (const Callable &c : calls) {

@@ -251,7 +251,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Calls [param callable] once, at the end of this frame's process step: after [method Node._process], deferred calls, timers and [Tween]s, and before nodes queued for deletion are freed and the frame is drawn. What it calls sees the world as the next frame starts from it. Calls it adds from there run in the same frame. Called during the drawing of a frame, it runs at the end of the next frame's process step.
+				Calls [param callable] once, at the end of this frame's process step: after [method Node._process], deferred calls, timers and [Tween]s, and before the frame is drawn. Nodes queued for deletion are freed first: what it calls sees the world as the next frame starts from it. Calls it adds from there run in the same frame. Called during the drawing of a frame, it runs at the end of the next frame's process step.
 			</description>
 		</method>
 		<method name="snapshot_flush_transform_notifications">
