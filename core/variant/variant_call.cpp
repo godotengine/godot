@@ -2049,6 +2049,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(get_file, sarray(), varray());
 	bind_string_method(xml_escape, sarray("escape_quotes"), varray(false));
 	bind_string_method(xml_unescape, sarray(), varray());
+	bind_string_method(bbcode_escape, sarray(), varray());
 	bind_string_method(uri_encode, sarray(), varray());
 	bind_string_method(uri_decode, sarray(), varray());
 	bind_string_method(uri_file_decode, sarray(), varray());

@@ -4669,6 +4669,49 @@ String String::xml_unescape() const {
 	return str;
 }
 
+String String::bbcode_escape() const {
+	const int src_len = length();
+	if (src_len == 0) {
+		return *this;
+	}
+
+	const char32_t *src = ptr();
+	int64_t escaped_len = src_len;
+	for (int i = 0; i < src_len; ++i) {
+		const char32_t c = src[i];
+		if (c == '[' || c == ']') {
+			escaped_len += 3;
+		}
+	}
+
+	if (escaped_len == src_len) {
+		return *this;
+	}
+
+	ERR_FAIL_COND_V_MSG(escaped_len + 1 > INT32_MAX, String(), "Escaped string is too long.");
+
+	String escaped;
+	const Error err = escaped.resize_uninitialized(escaped_len + 1);
+	ERR_FAIL_COND_V_MSG(err != OK, String(), "Failed to allocate escaped string.");
+
+	char32_t *dst = escaped.ptrw();
+	int dst_i = 0;
+	for (int i = 0; i < src_len; ++i) {
+		const char32_t c = src[i];
+		if (c == '[' || c == ']') {
+			dst[dst_i++] = '[';
+			dst[dst_i++] = (c == '[') ? 'l' : 'r';
+			dst[dst_i++] = 'b';
+			dst[dst_i++] = ']';
+		} else {
+			dst[dst_i++] = c;
+		}
+	}
+	dst[dst_i] = 0;
+
+	return escaped;
+}
+
 String String::pad_decimals(int p_digits) const {
 	String s = *this;
 	int c = s.find_char('.');
