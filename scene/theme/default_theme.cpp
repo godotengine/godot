@@ -712,8 +712,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// File Dialog
 
 	theme->set_constant("thumbnail_size", "FileDialog", 64);
-	theme->set_icon("load", "FileDialog", icons["load"]);
-	theme->set_icon("save", "FileDialog", icons["save"]);
 	theme->set_icon("clear", "FileDialog", icons["clear"]);
 	theme->set_icon("parent_folder", "FileDialog", icons["folder_up"]);
 	theme->set_icon("back_folder", "FileDialog", icons["arrow_left"]);
