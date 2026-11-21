@@ -483,17 +483,19 @@ static Ref<Tweener> _create_tweener_from_snapshot(const Dictionary &p_state, Twe
 	if (type == "property") {
 		Variant target_variant = p_state.get("target", Variant());
 		Object *target_object = target_variant;
-		if (target_object == nullptr) {
-			r_error = ERR_INVALID_DATA;
-			return Ref<Tweener>();
-		}
 		NodePath property_path = p_state.get("property", NodePath());
 		Vector<StringName> property = property_path.get_as_property_path().get_subnames();
 		Variant final_val = p_state.get("base_final_val", p_state.get("final_val", Variant()));
 		double duration = p_state.get("duration", 0.0);
 
+		// A target freed since the save: the tweener finishes when it steps,
+		// as it does when its target is freed while it runs.
+		Object *gone = target_object == nullptr ? memnew(Object) : nullptr;
 		Ref<PropertyTweener> property_tweener;
-		property_tweener.instantiate(target_object, property, final_val, duration);
+		property_tweener.instantiate(gone ? gone : target_object, property, final_val, duration);
+		if (gone) {
+			memdelete(gone);
+		}
 		tweener = property_tweener;
 	} else if (type == "interval") {
 		double duration = p_state.get("duration", 0.0);
@@ -502,11 +504,7 @@ static Ref<Tweener> _create_tweener_from_snapshot(const Dictionary &p_state, Twe
 		interval_tweener.instantiate(duration);
 		tweener = interval_tweener;
 	} else if (type == "callback" || type == "method") {
-		Callable callback = p_state.get("callback", Callable());
-		if (!callback.is_valid()) {
-			r_error = ERR_INVALID_DATA;
-			return Ref<Tweener>();
-		}
+		Callable callback = p_state.get("callback", Callable()); // invalid if its object is gone: it finishes when it steps
 		if (type == "callback") {
 			Ref<CallbackTweener> callback_tweener;
 			callback_tweener.instantiate(callback);
@@ -926,12 +924,7 @@ Dictionary PropertyTweener::snapshot_get_state() const {
 	state["type"] = "property";
 
 	Object *target_instance = ObjectDB::get_instance(target);
-	if (target_instance == nullptr) {
-		state["supported"] = false;
-		state["reason"] = "missing_property_target";
-		return state;
-	}
-	state["target"] = target_instance;
+	state["target"] = target_instance; // null once freed: the tweener finishes when it steps
 	if (custom_method.is_valid()) {
 		state["custom_interpolator"] = custom_method;
 	}
@@ -956,11 +949,10 @@ Error PropertyTweener::snapshot_set_state(const Dictionary &p_state) {
 	ERR_FAIL_COND_V(err != OK, err);
 
 	Variant target_variant = p_state.get("target", Variant());
-	Object *target_instance = target_variant;
-	ERR_FAIL_NULL_V_MSG(target_instance, ERR_INVALID_DATA, "PropertyTweener snapshot target is missing.");
+	Object *target_instance = target_variant; // null if freed since the save
 
 	NodePath property_path = p_state.get("property", NodePath());
-	target = target_instance->get_instance_id();
+	target = target_instance ? target_instance->get_instance_id() : ObjectID();
 	property = property_path.get_as_property_path().get_subnames();
 	initial_val = p_state.get("initial_val", Variant());
 	base_final_val = p_state.get("base_final_val", Variant());
@@ -975,7 +967,7 @@ Error PropertyTweener::snapshot_set_state(const Dictionary &p_state) {
 	relative = p_state.get("relative", false);
 	custom_method = p_state.get("custom_interpolator", Callable());
 	ref_copy.unref();
-	if (target_instance->is_ref_counted()) {
+	if (target_instance && target_instance->is_ref_counted()) {
 		ref_copy.reference_ptr(Object::cast_to<RefCounted>(target_instance));
 	}
 	return OK;

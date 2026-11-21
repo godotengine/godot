@@ -240,6 +240,7 @@ public:
 
 	void viewport_set_update_mode(RID p_viewport, RSE::ViewportUpdateMode p_mode);
 	RSE::ViewportUpdateMode viewport_get_update_mode(RID p_viewport) const;
+	RSE::ViewportClearMode viewport_snapshot_get_clear_mode(RID p_viewport) const; // komm64
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
 	void viewport_set_clear_mode(RID p_viewport, RSE::ViewportClearMode p_clear_mode);

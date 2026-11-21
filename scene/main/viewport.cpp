@@ -5695,6 +5695,27 @@ bool SubViewport::is_size_2d_override_stretch_enabled() const {
 	return size_2d_override_stretch;
 }
 
+// komm64: what the rendering server has left of a one-time update or clear.
+// An UPDATE_ONCE viewport that has drawn and a CLEAR_MODE_ONCE one that has
+// cleared still report ONCE; made again with those properties, the next frame
+// would draw or clear again.
+Dictionary SubViewport::snapshot_get_state() const {
+	Dictionary state;
+	state["update_mode"] = int(RS::get_singleton()->viewport_get_update_mode(get_viewport_rid()));
+	state["clear_mode"] = int(RS::get_singleton()->viewport_snapshot_get_clear_mode(get_viewport_rid()));
+	return state;
+}
+
+Error SubViewport::snapshot_set_state(const Dictionary &p_state) {
+	if (p_state.has("update_mode")) {
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::ViewportUpdateMode(int(p_state["update_mode"])));
+	}
+	if (p_state.has("clear_mode")) {
+		RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::ViewportClearMode(int(p_state["clear_mode"])));
+	}
+	return OK;
+}
+
 void SubViewport::set_update_mode(UpdateMode p_mode) {
 	ERR_MAIN_THREAD_GUARD;
 	update_mode = p_mode;
@@ -5804,6 +5825,9 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_view_count", "view_count"), &SubViewport::set_view_count);
 	ClassDB::bind_method(D_METHOD("get_view_count"), &SubViewport::get_view_count);
 
+
+	ClassDB::bind_method(D_METHOD("snapshot_get_state"), &SubViewport::snapshot_get_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_state", "state"), &SubViewport::snapshot_set_state);
 	ClassDB::bind_method(D_METHOD("set_update_mode", "mode"), &SubViewport::set_update_mode);
 	ClassDB::bind_method(D_METHOD("get_update_mode"), &SubViewport::get_update_mode);
 

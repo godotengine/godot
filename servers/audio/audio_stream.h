@@ -155,7 +155,7 @@ public:
 	// (a start() there reads the same frames again), and the read point in
 	// them; false near the stream's end or a loop, where they do not follow on.
 	bool snapshot_get_buffer(double &r_start, uint64_t &r_mix_offset);
-	void snapshot_set_mix_offset(uint64_t p_mix_offset) { mix_offset = p_mix_offset; }
+	void snapshot_set_buffer(double p_start, uint64_t p_mix_offset); // komm64
 
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };

@@ -173,6 +173,18 @@ bool AudioStreamPlaybackResampled::snapshot_get_buffer(double &r_start, uint64_t
 	return r_start >= 0;
 }
 
+// komm64: reads the buffer again from p_start, at the frame it was saved at
+// (half a frame on, as seeks truncate seconds to a frame), and the read point
+// in it.
+void AudioStreamPlaybackResampled::snapshot_set_buffer(double p_start, uint64_t p_mix_offset) {
+	const float rate = get_stream_sampling_rate();
+	if (rate > 0) {
+		seek(p_start + 0.5 / rate);
+		begin_resample();
+	}
+	mix_offset = p_mix_offset;
+}
+
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
 	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);

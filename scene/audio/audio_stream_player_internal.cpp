@@ -366,7 +366,7 @@ Error AudioStreamPlayerInternal::snapshot_set_state(const Dictionary &p_state) {
 		if (p_state.has("mix_offset") && !stream_playbacks.is_empty()) {
 			AudioStreamPlaybackResampled *resampled = Object::cast_to<AudioStreamPlaybackResampled>(stream_playbacks[stream_playbacks.size() - 1].ptr());
 			if (resampled != nullptr) {
-				resampled->snapshot_set_mix_offset(uint64_t(int64_t(p_state["mix_offset"])));
+				resampled->snapshot_set_buffer(double(p_state.get("position", 0.0)), uint64_t(int64_t(p_state["mix_offset"])));
 			}
 		}
 		set_stream_paused(p_state.get("stream_paused", false));

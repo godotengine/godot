@@ -4196,22 +4196,6 @@
 				Returns the viewport's last rendered frame.
 			</description>
 		</method>
-		<method name="viewport_snapshot_clear_render_target">
-			<return type="int" enum="Error" />
-			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="color" type="Color" />
-			<description>
-				Clears the viewport render target immediately without changing viewport update or clear modes. Intended for snapshot/save systems.
-			</description>
-		</method>
-		<method name="viewport_snapshot_write_render_target">
-			<return type="int" enum="Error" />
-			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="image" type="Image" />
-			<description>
-				Writes [param image] directly into the viewport render target when supported. The image must match the current render-target size.
-			</description>
-		</method>
 		<method name="viewport_get_update_mode" qualifiers="const">
 			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
 			<param index="0" name="viewport" type="RID" />
@@ -4579,6 +4563,29 @@
 			<description>
 				Sets the update mode for Variable Rate Shading (VRS) for the viewport. VRS requires the input texture to be converted to the format usable by the VRS method supported by the hardware. The update mode defines how often this happens. If the GPU does not support VRS, or VRS is not enabled, this property is ignored.
 				If set to [constant RenderingServer.VIEWPORT_VRS_UPDATE_ONCE], the input texture is copied once and the mode is changed to [constant RenderingServer.VIEWPORT_VRS_UPDATE_DISABLED].
+			</description>
+		</method>
+		<method name="viewport_snapshot_clear_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="color" type="Color" />
+			<description>
+				Clears the viewport render target immediately without changing viewport update or clear modes. Intended for snapshot/save systems.
+			</description>
+		</method>
+		<method name="viewport_snapshot_get_clear_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportClearMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the viewport's clear mode as the server holds it now, for savestate systems. A [constant VIEWPORT_CLEAR_ONLY_NEXT_FRAME] viewport reports [constant VIEWPORT_CLEAR_NEVER] once it has cleared.
+			</description>
+		</method>
+		<method name="viewport_snapshot_write_render_target">
+			<return type="int" enum="Error" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="image" type="Image" />
+			<description>
+				Writes [param image] directly into the viewport render target when supported. The image must match the current render-target size.
 			</description>
 		</method>
 		<method name="visibility_notifier_create">
