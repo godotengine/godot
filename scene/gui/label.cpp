@@ -307,6 +307,9 @@ void Label::_shape_internal() const {
 
 	if (xl_text.length() == 0) {
 		minsize = Size2(1, get_line_height());
+		for (Paragraph &para : paragraphs) {
+			para.lines_dirty = false;
+		}
 		return;
 	}
 
