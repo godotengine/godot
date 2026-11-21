@@ -160,16 +160,9 @@ int main(int argc, char *argv[]) {
 	ResumeThread(pi.hThread);
 	CloseHandle(pi.hThread);
 
-	// Wait until main process and all of its children are finished.
-	DWORD completion_code = 0;
-	ULONG_PTR completion_key = 0;
-	LPOVERLAPPED overlapped = nullptr;
-
-	while (GetQueuedCompletionStatus(io_port_handle, &completion_code, &completion_key, &overlapped, INFINITE)) {
-		if ((HANDLE)completion_key == job_handle && completion_code == JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO) {
-			break;
-		}
-	}
+	// Wait until main process is finished.
+	// Children processes like the .NET build server need to survive the main process, so we don't want to wait for it.
+	WaitForSingleObject(pi.hProcess, INFINITE);
 
 	CloseHandle(job_handle);
 	CloseHandle(io_port_handle);
