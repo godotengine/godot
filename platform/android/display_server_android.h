@@ -72,6 +72,7 @@ class DisplayServerAndroid : public DisplayServer {
 	DisplayServerEnums::MouseMode mouse_mode_override = DisplayServerEnums::MouseMode::MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;
 	void _mouse_update_mode();
+	void _reset_window();
 
 	bool keep_screen_on;
 	bool swap_buffers_flag;

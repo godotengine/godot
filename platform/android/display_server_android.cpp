@@ -38,9 +38,11 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_event.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
+#include "servers/rendering/rendering_server.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -763,6 +765,19 @@ void DisplayServerAndroid::free_vulkan_global_context() {
 #endif
 
 void DisplayServerAndroid::reset_window() {
+	// With the separate thread model the rendering device lives on the render thread, which may be recording a frame
+	// into its render graph right now: free and recreate the swap chain there and wait for it, rather than under it
+	// from this thread (RenderingDeviceGraph::end then indexed past its sorted commands).
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (rs && !rs->is_on_render_thread()) {
+		rs->call_on_render_thread(callable_mp(this, &DisplayServerAndroid::_reset_window));
+		rs->sync();
+		return;
+	}
+	_reset_window();
+}
+
+void DisplayServerAndroid::_reset_window() {
 #if defined(RD_ENABLED)
 	if (rendering_context_global) {
 		if (rendering_device) {
