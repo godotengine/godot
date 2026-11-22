@@ -4008,7 +4008,32 @@ void TextEdit::_update_theme_item_cache() {
 	selection_handle_radius = 10.0 * theme_cache.base_scale;
 }
 
+void TextEdit::_font_changed() {
+	text.mark_font_dirty();
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	_update_caches();
+	_update_wrap_at_column(true);
+	queue_redraw();
+}
+
 void TextEdit::_update_caches(bool p_invalidate_all) {
+	if (observed_font != theme_cache.font) {
+		if (observed_font.is_valid()) {
+			observed_font->disconnect_changed(
+					callable_mp(this, &TextEdit::_font_changed));
+		}
+
+		observed_font = theme_cache.font;
+
+		if (observed_font.is_valid()) {
+			observed_font->connect_changed(
+					callable_mp(this, &TextEdit::_font_changed));
+		}
+	}
 	/* Text properties. */
 	TextServer::Direction dir;
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -10201,5 +10226,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 }
 
 TextEdit::~TextEdit() {
+	if (observed_font.is_valid()) {
+		observed_font->disconnect_changed(
+				callable_mp(this, &TextEdit::_font_changed));
+	}
 	RS::get_singleton()->free_rid(text_ci);
 }
