@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRStationaryReferenceSpaceExtension" inherits="OpenXRExtensionWrapper" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Wraps the [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_EXT_stationary_reference_space]XR_EXT_stationary_reference_space[/url] extension.
+	</brief_description>
+	<description>
+		This extension provides the [code]STATIONARY[/code] reference space. Unlike the [code]LOCAL[/code] reference space, the runtime is allowed to redefine the origin of the [code]STATIONARY[/code] space at any time it is determined necessary, without emitting a reference space change event.
+		When the returned identifier from [method get_generation_id] changes, the origin of the space has been redefined.
+		You can select this reference space through the [member ProjectSettings.xr/openxr/reference_space] project setting.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_generation_id" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current generation ID of the [code]STATIONARY[/code] reference space as a UUID string, or an empty string on failure. This value changes whenever the runtime redefines the origin of the space.
+			</description>
+		</method>
+		<method name="is_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this extension is available.
+			</description>
+		</method>
+	</methods>
+</class>
