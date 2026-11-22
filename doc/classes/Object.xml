@@ -36,7 +36,7 @@
 			<description>
 				Override this method to customize the behavior of [method get]. Should return the given [param property]'s value, or [code]null[/code] if the [param property] should be handled normally.
 				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
-				[b]Note:[/b] This method is not called when getting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
+				[b]Note:[/b] This method is not called when getting properties declared in the script, including those marked with [annotation @GDScript.@export]. In GDScript, it can be called for native properties inherited from the engine class before their built-in getter runs. Return [code]null[/code] to let the built-in getter handle them normally.
 				[codeblocks]
 				[gdscript]
 				func _get(property):
@@ -300,7 +300,7 @@
 			<description>
 				Override this method to customize the behavior of [method set]. Should set the [param property] to [param value] and return [code]true[/code], or [code]false[/code] if the [param property] should be handled normally. The [i]exact[/i] way to set the [param property] is up to this method's implementation.
 				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
-				[b]Note:[/b] This method is not called when setting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
+				[b]Note:[/b] This method is not called when setting properties declared in the script, including those marked with [annotation @GDScript.@export]. In GDScript, it can be called for native properties inherited from the engine class before their built-in setter runs. Return [code]false[/code] to let the built-in setter handle them normally.
 				[codeblocks]
 				[gdscript]
 				var internal_data = {}
