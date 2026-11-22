@@ -31,6 +31,7 @@
 #pragma once
 
 #include <cstdint>
+#include "core/config/engine.h"
 
 struct MainFrameTime {
 	double process_step; // delta time to advance during process()

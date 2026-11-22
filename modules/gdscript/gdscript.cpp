@@ -1370,7 +1370,6 @@ Variant GDScript::snapshot_make_await(const Dictionary &p_info) {
 	GDScriptFunctionState *first = Object::cast_to<GDScriptFunctionState>(p_info.get("completed", Variant()).get_validated_object());
 	if (first != nullptr) {
 		gdfs->state.completed = Signal(first, SNAME("completed"));
-		gdfs->first_state = Ref<GDScriptFunctionState>(first);
 	} else {
 		gdfs->state.completed = Signal(gdfs.ptr(), SNAME("completed"));
 	}

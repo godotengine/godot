@@ -337,14 +337,6 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	function = nullptr; // Cleaned up.
 	state.result = Variant();
 
-	if (completed) {
-		_clear_stack();
-	} else {
-		// komm64: the call awaited again; the VM already released this stack
-		// (the new state holds a copy), so the destructor must not.
-		state.stack_size = 0;
-	}
-
 	return ret;
 }
 
@@ -389,7 +381,4 @@ GDScriptFunctionState::~GDScriptFunctionState() {
 		instances_list.remove_from_list();
 		_clear_stack();
 	}
-	// komm64: a cancelled call can lose its last reference while its
-	// connections are cleared, before its stack is; release the values it held.
-	_clear_stack();
 }

@@ -773,7 +773,7 @@ Dictionary JoltSpace3D::snapshot_get_state() {
 		if (body == nullptr) {
 			continue;
 		}
-		_snapshot_write(recorder, body->get_gravity());
+		_snapshot_write(recorder, body->get_total_gravity());
 		recorder.Write(body->get_total_linear_damp());
 		recorder.Write(body->get_total_angular_damp());
 		const uint32_t contact_count = body->get_contact_count();

@@ -211,7 +211,7 @@ public:
 	// For a space's snapshot: what the last step left for the game to read
 	// (its gravity, damping and contacts), set back.
 	void snapshot_set_step(const Vector3 &p_gravity, float p_linear_damp, float p_angular_damp, const LocalVector<Contact> &p_contacts) {
-		gravity = p_gravity;
+		total_gravity = p_gravity;
 		total_linear_damp = p_linear_damp;
 		total_angular_damp = p_angular_damp;
 		contact_count = MIN((int)p_contacts.size(), (int)contacts.size());

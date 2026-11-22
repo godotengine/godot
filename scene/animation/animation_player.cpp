@@ -759,7 +759,9 @@ Error AnimationPlayer::snapshot_set_state(const Dictionary &p_state) {
 	playback_queue.clear();
 	const StringName anim = p_state.get("animation", StringName());
 	if (anim == StringName() || !animation_set.has(anim)) {
-		c.current.from = nullptr;
+		c.current.is_enabled = false;
+		c.current.animation_name = String();
+		c.current.animation_length = 0.0;
 		c.assigned = StringName();
 		c.current.pos = 0;
 		c.current.speed_scale = 1;
@@ -769,7 +771,9 @@ Error AnimationPlayer::snapshot_set_state(const Dictionary &p_state) {
 		_set_process(false);
 		return OK;
 	}
-	c.current.from = &animation_set[anim];
+	c.current.is_enabled = true;
+	c.current.animation_name = anim;
+	c.current.animation_length = animation_set[anim].animation->get_length();
 	c.assigned = anim;
 	c.current.pos = p_state.get("position", 0.0);
 	c.current.speed_scale = p_state.get("custom_speed", 1.0);

@@ -331,7 +331,8 @@ Dictionary CPUParticles2D::snapshot_get_state() const {
 	state["frame_remainder"] = frame_remainder;
 	state["cycle"] = cycle;
 	state["seed"] = seed; // not stored unless fixed: a restart draws it
-	state["requested_process_time"] = _requested_process_time;
+	state["requested_process_time"] = _request_process_time;
+	state["requested_process_time_residual"] = _request_process_time_residual;
 	state["inv_emission_transform"] = inv_emission_transform;
 	state["redraw"] = do_redraw;
 	return state;
@@ -352,7 +353,8 @@ Error CPUParticles2D::snapshot_set_state(const Dictionary &p_state) {
 	frame_remainder = p_state.get("frame_remainder", 0.0);
 	cycle = p_state.get("cycle", 0);
 	seed = uint32_t(p_state.get("seed", seed));
-	_requested_process_time = p_state.get("requested_process_time", 0.0);
+	_request_process_time = p_state.get("requested_process_time", 0.0);
+	_request_process_time_residual = p_state.get("requested_process_time_residual", 0.0);
 	inv_emission_transform = p_state.get("inv_emission_transform", inv_emission_transform);
 	set_process_internal(active || emitting);
 	_update_particle_data_buffer();

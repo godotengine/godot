@@ -737,7 +737,7 @@ bool SceneTree::process(double p_time) {
 	// run too.
 	while (!snapshot_frame_end_calls.is_empty()) {
 		_flush_delete_queue();
-		LocalVector<Callable> calls = snapshot_frame_end_calls;
+		LocalVector<Callable> calls(snapshot_frame_end_calls);
 		snapshot_frame_end_calls.clear();
 		for (const Callable &c : calls) {
 			c.call();
