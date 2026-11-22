@@ -5714,10 +5714,10 @@ Dictionary SubViewport::snapshot_get_state() const {
 
 Error SubViewport::snapshot_set_state(const Dictionary &p_state) {
 	if (p_state.has("update_mode")) {
-		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::ViewportUpdateMode(int(p_state["update_mode"])));
+		RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::ViewportUpdateMode(int(p_state["update_mode"])));
 	}
 	if (p_state.has("clear_mode")) {
-		RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::ViewportClearMode(int(p_state["clear_mode"])));
+		RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RSE::ViewportClearMode(int(p_state["clear_mode"])));
 	}
 	return OK;
 }
@@ -5744,7 +5744,7 @@ void SubViewport::force_clear_now() {
 	if (!is_inside_tree()) {
 		return;
 	}
-	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME);
+	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RSE::VIEWPORT_CLEAR_ONLY_NEXT_FRAME);
 }
 
 SubViewport::ClearMode SubViewport::get_clear_mode() const {

@@ -65,7 +65,7 @@ void MaterialStorage::global_shader_parameter_remove(const StringName &p_name) {
 
 Dictionary MaterialStorage::snapshot_get_global_shader_parameters() const {
 	Dictionary out;
-	for (const KeyValue<StringName, RS::GlobalShaderParameterType> &E : global_shader_variables) {
+	for (const KeyValue<StringName, RSE::GlobalShaderParameterType> &E : global_shader_variables) {
 		const Variant *v = global_shader_values.getptr(E.key);
 		Dictionary entry;
 		entry["type"] = E.value;

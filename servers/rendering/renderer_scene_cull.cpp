@@ -1159,7 +1159,7 @@ void RendererSceneCull::instance_set_extra_visibility_margin(RID p_instance, rea
 void RendererSceneCull::instance_snapshot_set_notifier_visible(RID p_instance) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
-	ERR_FAIL_COND(instance->base_type != RS::INSTANCE_VISIBLITY_NOTIFIER || !instance->base_data);
+	ERR_FAIL_COND(instance->base_type != RSE::INSTANCE_VISIBLITY_NOTIFIER || !instance->base_data);
 	InstanceVisibilityNotifierData *vnd = static_cast<InstanceVisibilityNotifierData *>(instance->base_data);
 	visible_notifier_list_lock.lock();
 	if (!vnd->list_element.in_list()) {

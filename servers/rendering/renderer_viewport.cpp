@@ -1230,9 +1230,9 @@ RSE::ViewportUpdateMode RendererViewport::viewport_get_update_mode(RID p_viewpor
 
 // komm64: the clear mode as the server holds it now. A CLEAR_ONLY_NEXT_FRAME
 // viewport goes to CLEAR_NEVER once it has cleared.
-RS::ViewportClearMode RendererViewport::viewport_snapshot_get_clear_mode(RID p_viewport) const {
+RSE::ViewportClearMode RendererViewport::viewport_snapshot_get_clear_mode(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
-	ERR_FAIL_NULL_V(viewport, RS::VIEWPORT_CLEAR_ALWAYS);
+	ERR_FAIL_NULL_V(viewport, RSE::VIEWPORT_CLEAR_ALWAYS);
 
 	return viewport->clear_mode;
 }
