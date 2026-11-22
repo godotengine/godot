@@ -8,7 +8,7 @@ name: komm64 Linux Templates
 #
 # Trigger:
 #   - workflow_dispatch with `ref`: build any branch/tag/commit (artifact only)
-#   - tag push (v*-komm64*, except webgpu): build and attach to the Release
+#   - tag push (v*-komm64*): build and attach to the Release
 
 on:
   workflow_dispatch:
@@ -20,7 +20,6 @@ on:
   push:
     tags:
       - 'v*-komm64*'
-      - '!v*-komm64-webgpu*'
 
 permissions:
   contents: write
