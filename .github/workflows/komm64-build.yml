@@ -159,11 +159,13 @@ jobs:
           # __FILE__ in error macros (#54): X:\...\foo.h or X:/.../foo.cpp.
           # Upstream's prebuilt godot-nir-static carries its own public CI path
           # (same in official binaries), so it is not a leak of this machine.
+          # The Windows SDK's C++/WinRT headers (used since 4.7) embed their
+          # install path, the same on every machine.
           import glob, re, sys
           pattern = re.compile(rb"(?<![A-Za-z])[A-Za-z]:[\\/][^\x00\n]{0,160}?\.(?:h|hpp|c|cpp|inc)\b")
           hits = 0
           for f in sorted(glob.glob("out/*.exe")):
-              found = [s for s in pattern.findall(open(f, "rb").read()) if b"godot-nir-static" not in s]
+              found = [s for s in pattern.findall(open(f, "rb").read()) if b"godot-nir-static" not in s and b"Windows Kits" not in s]
               print(f"{f}: {len(found)} build-path strings")
               for s in found[:5]:
                   print("   ", s.decode(errors="replace"))
