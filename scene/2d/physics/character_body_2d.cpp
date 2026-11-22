@@ -758,7 +758,7 @@ void CharacterBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_floor_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_floor_layers", "get_platform_floor_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "platform_wall_layers", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_platform_wall_layers", "get_platform_wall_layers");
 
-	ADD_GROUP("Collision", "");
+	ADD_GROUP("Character Collision", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001,suffix:px"), "set_safe_margin", "get_safe_margin");
 
 	BIND_ENUM_CONSTANT(MOTION_MODE_GROUNDED);
