@@ -3109,6 +3109,49 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 	return p_type == "GDScript";
 }
 
+// komm64: a lambda's captures and self, the stacks of the calls an object (or
+// a GDScript, for its static functions) has suspended in an await, and the
+// scripts a GDScript uses.
+void GDScriptLanguage::snapshot_get_held(const Variant &p_value, Vector<Variant> &r_held) const {
+	if (p_value.get_type() == Variant::CALLABLE) {
+		const Callable c = p_value;
+		if (const GDScriptLambdaCallable *l = GDScriptLambdaCallable::from_callable(c)) {
+			r_held.append_array(l->get_captures());
+		} else if (const GDScriptLambdaSelfCallable *ls = GDScriptLambdaSelfCallable::from_callable(c)) {
+			r_held.append_array(ls->get_captures());
+			r_held.push_back(ObjectDB::get_instance(ls->get_object()));
+		}
+		return;
+	}
+	Object *obj = p_value.get_validated_object();
+	if (obj == nullptr) {
+		return;
+	}
+	if (const GDScript *script = Object::cast_to<GDScript>(obj)) {
+		// Its base, inner classes and the scripts in its constants, whose
+		// static variables a game uses through it. Other constants (preloaded
+		// scenes, textures) are files, not state.
+		if (script->base.is_valid()) {
+			r_held.push_back(script->base);
+		}
+		for (const KeyValue<StringName, Ref<GDScript>> &E : script->subclasses) {
+			r_held.push_back(E.value);
+		}
+		for (const KeyValue<StringName, Variant> &E : script->constants) {
+			if (Object::cast_to<Script>(E.value.get_validated_object()) != nullptr) {
+				r_held.push_back(E.value);
+			}
+		}
+	}
+	const TypedArray<Dictionary> awaits = GDScript::snapshot_get_awaits(obj);
+	for (const Variant &d : awaits) {
+		const Array stack = Dictionary(d).get("stack", Array());
+		for (const Variant &v : stack) {
+			r_held.push_back(v);
+		}
+	}
+}
+
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
 	LocalVector<String> r_vec;
 	return _get_global_class_name(p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_vec);

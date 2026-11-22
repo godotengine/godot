@@ -49,6 +49,7 @@
 #include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/os/time.h"
+#include "core/variant/callable_bind.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_callable.h"
 
@@ -2207,9 +2208,24 @@ bool Engine::snapshot_is_plain_leaf(const Variant &p_value) const {
 	}
 }
 
+// What the script languages say a Callable or an object holds where its
+// properties do not show it (see ScriptLanguage::snapshot_get_held()).
+static void _snapshot_push_held(const Variant &p_value, LocalVector<Variant> &r_stack) {
+	Vector<Variant> held;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptServer::get_language(i)->snapshot_get_held(p_value, held);
+	}
+	for (const Variant &e : held) {
+		r_stack.push_back(e);
+	}
+}
+
 Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_skip) const {
 	Dictionary out;
 	HashSet<ObjectID> seen;
+	// Arrays and Dictionaries are walked once: they may be shared, and a
+	// lambda's captures can close a cycle through them.
+	HashSet<const void *> containers_seen;
 	for (const Variant &v : p_skip) {
 		Object *obj = v.get_validated_object();
 		if (obj) {
@@ -2233,16 +2249,47 @@ Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_sk
 			} break;
 			case Variant::ARRAY: {
 				Array a = v;
+				if (containers_seen.has(a.id())) {
+					break;
+				}
+				containers_seen.insert(a.id());
 				for (const Variant &e : a) {
 					stack.push_back(e);
 				}
 			} break;
 			case Variant::DICTIONARY: {
 				Dictionary d = v;
+				if (containers_seen.has(d.id())) {
+					break;
+				}
+				containers_seen.insert(d.id());
 				for (const KeyValue<Variant, Variant> &kv : d) {
 					stack.push_back(kv.key);
 					stack.push_back(kv.value);
 				}
+			} break;
+			case Variant::CALLABLE: {
+				// Its object, what is bound to it, and what a script's lambda
+				// captured.
+				const Callable c = v;
+				if (c.is_custom()) {
+					if (CallableCustomBind *b = dynamic_cast<CallableCustomBind *>(c.get_custom())) {
+						stack.push_back(b->get_callable());
+						for (const Variant &e : b->get_binds()) {
+							stack.push_back(e);
+						}
+						break;
+					}
+					if (CallableCustomUnbind *u = dynamic_cast<CallableCustomUnbind *>(c.get_custom())) {
+						stack.push_back(u->get_callable());
+						break;
+					}
+				}
+				stack.push_back(c.get_object());
+				_snapshot_push_held(v, stack);
+			} break;
+			case Variant::SIGNAL: {
+				stack.push_back(Signal(v).get_object());
 			} break;
 			case Variant::OBJECT: {
 				Object *obj = v.get_validated_object();
@@ -2256,12 +2303,15 @@ Dictionary Engine::snapshot_collect_rids(const Array &p_roots, const Array &p_sk
 				if (!(obj->is_class("Node") || obj->is_class("Resource") || !obj->get_script().is_null())) {
 					break;
 				}
+				// The calls it has suspended in an await (a script's own: its
+				// static functions'). Its script holds its static variables.
+				_snapshot_push_held(v, stack);
 				List<PropertyInfo> plist;
 				obj->get_property_list(&plist);
 				for (const PropertyInfo &pi : plist) {
 					bool any_rid = pi.type == Variant::RID;
-					bool holder = (pi.usage & walked) && (pi.type == Variant::RID || pi.type == Variant::ARRAY || pi.type == Variant::DICTIONARY || pi.type == Variant::OBJECT || pi.type == Variant::NIL);
-					if ((any_rid || holder) && pi.name != CoreStringName(script)) {
+					bool holder = (pi.usage & walked) && (pi.type == Variant::RID || pi.type == Variant::ARRAY || pi.type == Variant::DICTIONARY || pi.type == Variant::OBJECT || pi.type == Variant::CALLABLE || pi.type == Variant::SIGNAL || pi.type == Variant::NIL);
+					if (any_rid || holder) {
 						bool valid = false;
 						Variant value = obj->get(pi.name, &valid);
 						if (valid) {

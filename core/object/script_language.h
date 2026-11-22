@@ -468,6 +468,12 @@ public:
 	virtual bool handles_global_class_type(const String &p_type) const { return false; }
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const { return String(); }
 
+	// komm64: the values a Callable, an object or a script of this language
+	// holds where reflection does not see them: a lambda's captures and self,
+	// the stacks of calls suspended in an await. Engine::snapshot_collect_rids()
+	// walks them.
+	virtual void snapshot_get_held(const Variant &p_value, Vector<Variant> &r_held) const {}
+
 	virtual ~ScriptLanguage() {}
 };
 
