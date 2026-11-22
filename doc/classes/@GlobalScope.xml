@@ -2856,13 +2856,13 @@
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. By default the file will be stored as UID whenever available. You can use [ResourceUID] methods to convert it back to path. For storing a raw path, use [constant PROPERTY_HINT_FILE_PATH].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The property hint string supports comma-separated wildcard filters, such as [code]"*.png,*.jpg"[/code]. Unlike this hint string, the GDScript [code]@export_file[/code] annotation requires a separate argument for each filter. By default the file will be stored as UID whenever available. You can use [ResourceUID] methods to convert it back to path. For storing a raw path, use [constant PROPERTY_HINT_FILE_PATH].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
-			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The property hint string supports comma-separated wildcard filters, such as [code]"*.png,*.jpg"[/code]. Unlike this hint string, the GDScript [code]@export_global_file[/code] annotation requires a separate argument for each filter.
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
 			Hints that a [String] property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
