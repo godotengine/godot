@@ -33,6 +33,7 @@ on:
   push:
     branches:
       - '4.6'
+      - '4.7'
       - 'komm64/**'
     tags:
       - 'v*-komm64*'
