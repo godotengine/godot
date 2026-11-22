@@ -62,6 +62,14 @@ String DisplayServerIOS::get_name() const {
 	return "iOS";
 }
 
+int DisplayServerIOS::accessibility_should_reduce_animation() const {
+	// UIKit settings are read on its main thread.
+	if (![NSThread isMainThread]) {
+		return -1;
+	}
+	return UIAccessibilityIsReduceMotionEnabled() ? 1 : 0;
+}
+
 int DisplayServerIOS::screen_get_dpi(int p_screen) const {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
