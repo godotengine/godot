@@ -489,7 +489,9 @@ float SkeletonModification2DJiggle::get_jiggle_joint_damping(int p_joint_idx) co
 void SkeletonModification2DJiggle::set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity) {
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[p_joint_idx].use_gravity = p_use_gravity;
-	notify_property_list_changed();
+	if (jiggle_data_chain[p_joint_idx].override_defaults) {
+		notify_property_list_changed();
+	}
 }
 
 bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int p_joint_idx) const {
