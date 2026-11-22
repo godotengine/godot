@@ -1076,6 +1076,11 @@ void Window::set_visible(bool p_visible) {
 
 	visible = p_visible;
 
+	// Release modal ownership before removing the window restores focus to its parent.
+	if (!visible && transient_parent) {
+		_set_transient_exclusive_child(true);
+	}
+
 	// Stop any queued resizing, as the window will be resized right now.
 	updating_child_controls = false;
 

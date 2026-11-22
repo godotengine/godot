@@ -60,6 +60,22 @@ public:
 	bool mouse_over = false;
 };
 
+class FocusRecordingWindow : public Window {
+	GDCLASS(FocusRecordingWindow, Window);
+
+protected:
+	void _notification(int p_what) {
+		if (p_what == NOTIFICATION_WM_WINDOW_FOCUS_IN) {
+			focus_in_count++;
+			exclusive_child_on_focus_in = get_exclusive_child();
+		}
+	}
+
+public:
+	int focus_in_count = 0;
+	Window *exclusive_child_on_focus_in = nullptr;
+};
+
 TEST_CASE("[SceneTree][Window]") {
 	Window *root = SceneTree::get_singleton()->get_root();
 
@@ -90,6 +106,28 @@ TEST_CASE("[SceneTree][Window]") {
 
 		memdelete(c);
 		memdelete(w);
+	}
+
+	SUBCASE("Hiding an exclusive child releases its parent before focus returns to the parent") {
+		FocusRecordingWindow *parent = memnew(FocusRecordingWindow);
+		root->add_child(parent);
+		Window *child = memnew(Window);
+		child->set_visible(false);
+		child->set_transient(true);
+		child->set_exclusive(true);
+		parent->add_child(child);
+		child->show();
+		CHECK(parent->get_exclusive_child() == child);
+
+		parent->focus_in_count = 0;
+		child->hide();
+		CHECK(parent->focus_in_count == 1);
+		// With accessibility enabled, the parent focuses its exclusive child on focus in (GH-121238).
+		CHECK(parent->exclusive_child_on_focus_in == nullptr);
+		CHECK(parent->get_exclusive_child() == nullptr);
+
+		memdelete(child);
+		memdelete(parent);
 	}
 }
 
