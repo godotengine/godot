@@ -536,6 +536,8 @@ void mbedtls_mpi_core_montmul(mbedtls_mpi_uint *X,
  *                the square of the Montgomery constant:
  *                2^{2*n*biL} mod N.
  * \param[in]  N  Little-endian presentation of the modulus, which must be odd.
+ *                It must not have leading zero limbs, i.e. `N->n`
+ *                must be the number of significant limbs of the modulus.
  *
  * \return        0 if successful.
  * \return        #MBEDTLS_ERR_MPI_ALLOC_FAILED if there is not enough space

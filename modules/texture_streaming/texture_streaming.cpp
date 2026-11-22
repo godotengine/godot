@@ -221,9 +221,7 @@ RID TextureStreaming::material_set_textures(RID p_feedback_rid, const Vector<RID
 	return p_feedback_rid;
 }
 
-TextureStreaming::TextureStreaming() {
-	singleton = this;
-
+void TextureStreaming::register_project_settings() {
 	// Global settings
 	GLOBAL_DEF_RST("rendering/textures/streaming/enabled", false);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "rendering/textures/streaming/memory_budget_enabled"), false);
@@ -237,6 +235,10 @@ TextureStreaming::TextureStreaming() {
 	// Inactivity decay: time per mip level of decay in milliseconds.
 	// The first decay happens after one rate period. Set to 0 to disable decay.
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/streaming/inactivity_decay_rate_ms", PROPERTY_HINT_RANGE, "0,60000,100,or_greater"), 5000);
+}
+
+TextureStreaming::TextureStreaming() {
+	singleton = this;
 
 	// Load initial settings.
 	setting_streaming_is_enabled = GLOBAL_GET("rendering/textures/streaming/enabled");

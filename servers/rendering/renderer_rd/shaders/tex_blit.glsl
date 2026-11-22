@@ -54,6 +54,11 @@ layout(set = 0, binding = 2) uniform texture2D source2;
 
 layout(set = 0, binding = 3) uniform texture2D source3;
 
+layout(set = 0, binding = 4, std430) restrict readonly buffer GlobalShaderUniformData {
+	vec4 data[];
+}
+global_shader_uniforms;
+
 layout(location = 0) in vec2 uv;
 
 layout (location = 0) out vec4 out_color0;

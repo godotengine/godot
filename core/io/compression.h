@@ -33,15 +33,13 @@
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 
-#include <zlib.h>
-
 class Compression {
 public:
-	static inline int zlib_level = Z_DEFAULT_COMPRESSION;
-	static inline int gzip_level = Z_DEFAULT_COMPRESSION;
+	static inline int zlib_level = -1; // Z_DEFAULT_COMPRESSION.
+	static inline int gzip_level = -1; // Z_DEFAULT_COMPRESSION.
 	static inline int zstd_level = 3;
 	static inline bool zstd_long_distance_matching = false;
-	static inline int zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT
+	static inline int zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT.
 	static inline int gzip_chunk = 16384;
 
 	enum Mode : int32_t {

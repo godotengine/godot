@@ -642,6 +642,10 @@ int mbedtls_sha256_update(mbedtls_sha256_context *ctx,
         ctx->total[1]++;
     }
 
+#if SIZE_MAX > 0xFFFFFFFF
+    ctx->total[1] += (uint32_t) (ilen >> 32);
+#endif
+
     if (left && ilen >= fill) {
         memcpy((void *) (ctx->buffer + left), input, fill);
 

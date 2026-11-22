@@ -320,9 +320,9 @@
 				[codeblocks]
 				[gdscript]
 				var my_basis = Basis(
-				    Vector3(1, 1, 1),
-				    Vector3(2, 2, 2),
-				    Vector3(3, 3, 3)
+					Vector3(1, 1, 1),
+					Vector3(2, 2, 2),
+					Vector3(3, 3, 3)
 				)
 				my_basis = my_basis.scaled_local(Vector3(0, 2, -2))
 
@@ -332,9 +332,9 @@
 				[/gdscript]
 				[csharp]
 				var myBasis = new Basis(
-				    new Vector3(1.0f, 1.0f, 1.0f),
-				    new Vector3(2.0f, 2.0f, 2.0f),
-				    new Vector3(3.0f, 3.0f, 3.0f)
+					new Vector3(1.0f, 1.0f, 1.0f),
+					new Vector3(2.0f, 2.0f, 2.0f),
+					new Vector3(3.0f, 3.0f, 3.0f)
 				);
 				myBasis = myBasis.ScaledLocal(new Vector3(0.0f, 2.0f, -2.0f));
 

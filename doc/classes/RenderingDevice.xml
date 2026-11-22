@@ -540,7 +540,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the timestamp in GPU time for the rendering step specified by [param index] (in microseconds since the engine started). See also [method get_captured_timestamp_cpu_time] and [method capture_timestamp].
+				Returns the timestamp in GPU time for the rendering step specified by [param index] (in nanoseconds since the engine started). See also [method get_captured_timestamp_cpu_time] and [method capture_timestamp].
 			</description>
 		</method>
 		<method name="get_captured_timestamp_name" qualifiers="const">
@@ -1220,6 +1220,13 @@
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
 				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+			</description>
+		</method>
+		<method name="texture_get_nearest_supported_samples">
+			<return type="int" enum="RenderingDevice.TextureSamples" />
+			<param index="0" name="format" type="RDTextureFormat" />
+			<description>
+				Returns the sample count that [method texture_create] will use for [param format]. This is [member RDTextureFormat.samples] if the driver supports that sample count for the format and usage, otherwise the nearest lower supported sample count. Use this to know the actual sample count in advance, for example when choosing a matching sample count for shaders or pipelines.
 			</description>
 		</method>
 		<method name="texture_is_discardable">
@@ -2374,7 +2381,7 @@
 			rd = RenderingServer.get_rendering_device()
 
 			if rd.has_feature(RenderingDevice.SUPPORTS_RAYTRACING_PIPELINE):
-			    storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
+				storage_buffer = rd.storage_buffer_create(bytes.size(), bytes, RenderingDevice.BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT)
 			[/gdscript]
 			[/codeblocks]
 		</constant>

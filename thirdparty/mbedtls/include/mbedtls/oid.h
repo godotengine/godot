@@ -265,6 +265,10 @@
  *   ecdsa-with-SHA2(3) 4 } */
 #define MBEDTLS_OID_ECDSA_SHA512            MBEDTLS_OID_ANSI_X9_62_SIG_SHA2 "\x04"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(MBEDTLS_X509_USE_C)
 /**
  * \brief           Translate an ASN.1 OID into its numeric representation
@@ -300,5 +304,9 @@ int mbedtls_oid_get_numeric_string(char *buf, size_t size, const mbedtls_asn1_bu
  */
 int mbedtls_oid_from_numeric_string(mbedtls_asn1_buf *oid, const char *oid_str, size_t size);
 #endif /* MBEDTLS_X509_CREATE_C */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* oid.h */

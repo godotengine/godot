@@ -220,16 +220,32 @@ inline unsigned int OpCode_Size (op_code_t op) { return Is_OpCode_ESC (op) ? 2: 
 struct number_t
 {
   void set_int (int v)       { value = v; }
-  int to_int () const        { return value; }
+  bool to_int (int *v) const
+  {
+    if (unlikely (!(value >= INT_MIN && value <= INT_MAX)))
+    {
+      *v = 0;
+      return false;
+    }
+    *v = (int) value;
+    return true;
+  }
+  int to_int () const
+  {
+    int v;
+    if (likely (to_int (&v))) return v;
+    return value < 0 ? INT_MIN : value > 0 ? INT_MAX : 0;
+  }
 
   void set_fixed (int32_t v) { value = v / 65536.0; }
-  int32_t to_fixed () const  { return value * 65536.0; }
+  int32_t to_fixed () const
+  { return (int32_t) hb_clamp (value * 65536.0, (double) INT32_MIN, (double) INT32_MAX); }
 
   void set_real (double v)   { value = v; }
   double to_real () const    { return value; }
 
   bool in_int_range () const
-  { return ((double) (int16_t) to_int () == value); }
+  { return value >= INT16_MIN && value <= INT16_MAX && (double) (int16_t) value == value; }
 
   bool operator >  (const number_t &n) const { return value > n.to_real (); }
   bool operator <  (const number_t &n) const { return n > *this; }
@@ -446,7 +462,13 @@ struct arg_stack_t : cff_stack_t<ARG, 513>
 
   ARG& pop_num () { return this->pop (); }
 
-  int pop_int ()  { return this->pop ().to_int (); }
+  int pop_int ()
+  {
+    int v;
+    if (unlikely (!this->pop ().to_int (&v)))
+      S::set_error ();
+    return v;
+  }
 
   unsigned int pop_uint ()
   {
@@ -461,7 +483,7 @@ struct arg_stack_t : cff_stack_t<ARG, 513>
 
   void push_longint_from_substr (byte_str_ref_t& str_ref)
   {
-    push_int ((str_ref[0] << 24) | (str_ref[1] << 16) | (str_ref[2] << 8) | (str_ref[3]));
+    push_int ((int) ((uint32_t (str_ref[0]) << 24) | (str_ref[1] << 16) | (str_ref[2] << 8) | (str_ref[3])));
     str_ref.inc (4);
   }
 
@@ -481,15 +503,15 @@ struct arg_stack_t : cff_stack_t<ARG, 513>
 /* an operator prefixed by its operands in a byte string */
 struct op_str_t
 {
-  /* This used to have a hb_ubytes_t. Using a pointer and length
-   * in a particular order, saves 8 bytes in this struct and more
-   * in our parsed_cs_op_t subclass. */
+  /* Borrow the encoded bytes. DICT entries with accumulated blends can
+   * exceed the length of an individual charstring token. */
 
   const unsigned char *ptr = nullptr;
 
   op_code_t  op = OpCode_Invalid;
 
-  uint8_t length = 0;
+  /* DICT entries can contain many blends before their final operator. */
+  unsigned length = 0;
 };
 
 /* base of OP_SERIALIZER */

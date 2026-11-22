@@ -76,6 +76,7 @@ struct hb_outline_t
 
   hb_vector_t<hb_outline_point_t> points;
   hb_vector_t<unsigned> contours;
+  int64_t *budget_remaining = nullptr;
 };
 
 HB_INTERNAL hb_draw_funcs_t *

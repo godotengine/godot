@@ -58,6 +58,7 @@ void BoxContainer::_resort() {
 	float stretch_ratio_total = 0.0;
 	int desired_extra_space = 0;
 	HashMap<Control *, _MinSizeCache> min_size_cache;
+	const int cross_axis = vertical ? 0 : 1;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
@@ -65,9 +66,12 @@ void BoxContainer::_resort() {
 			continue;
 		}
 
-		if (propagating_max_size) {
-			c->set_parent_maximum_size_cache(combined_max_size);
+		Rect2 child_rect = c->get_rect();
+		if (child_rect.size[cross_axis] > new_size[cross_axis]) {
+			child_rect.size[cross_axis] = new_size[cross_axis];
+			fit_child_in_rect(c, child_rect);
 		}
+
 		Size2i min_size = c->get_bound_minimum_size().ceil();
 		Size2i desired_size = c->get_bound_desired_size().ceil();
 		Size2i max_size = c->get_combined_maximum_size().floor();
@@ -144,6 +148,7 @@ void BoxContainer::_resort() {
 				if (msc.will_stretch) {
 					// Increase the minimum size to reflect the desired size allocation, so that the SIZE_EXPAND allocation does not shrink them back down.
 					msc.min_size += desired_size_increase;
+					combined_min += desired_size_increase;
 				} else {
 					// If the Control isn't stretchable
 					stretch_space -= desired_size_increase;
@@ -270,7 +275,6 @@ void BoxContainer::_resort() {
 		delta = +1;
 	}
 
-	int accumulated_size = 0;
 	for (int i = start; i != end; i += delta) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -305,17 +309,8 @@ void BoxContainer::_resort() {
 			rect = Rect2(from, 0, size, new_size.height);
 		}
 
-		if (propagating_max_size) {
-			if (vertical) {
-				c->set_parent_maximum_size_cache(Size2(combined_max_size.width, MAX(combined_max_size.height - accumulated_size, 0)));
-			} else {
-				c->set_parent_maximum_size_cache(Size2(MAX(combined_max_size.width - accumulated_size, 0), combined_max_size.height));
-			}
-		}
-
 		fit_child_in_rect(c, rect);
 
-		accumulated_size += size + theme_cache.separation;
 		ofs = to;
 		idx++;
 	}

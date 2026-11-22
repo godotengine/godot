@@ -1,4 +1,4 @@
-/* Thirdparty code presumably from http://wss.co.uk/pinknoise/yuv2rgb/ */
+/* Thirdparty code from http://wss.co.uk/pinknoise/yuv2rgb/ (yuv2rgb003.zip) */
 
 /*
 This YUV2RGB code is Copyright (C) 2008-11 Robin Watts

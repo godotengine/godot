@@ -82,7 +82,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 	private val gameViewSourceRectHint = Rect()
 	private val commandLineParams = ArrayList<String>()
 
-	// The bounds of what the aspect ratio can be are between 2.39:1 and 1:2.39 (inclusive).
+	// The bounds of what the aspect ratio can be, are between 2.39:1 and 1:2.39 (inclusive).
 	// If aspect ratio does not fall between these values, app will crash.
 	private val minPiPRatio = Rational(100, 239)
 	private val maxPiPRatio = Rational(239, 100)
@@ -94,12 +94,19 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 		private set
 
 	/**
+	 * Flag to control whether the launch intent should be sanitized.
+	 */
+	protected open fun shouldSanitizeLaunchIntent(): Boolean {
+		return true
+	}
+
+	/**
 	 * Strip out the command line parameters from intent targeting exported activities.
 	 */
 	protected fun sanitizeLaunchIntent(launchIntent: Intent = intent): Intent {
 		val targetComponent = launchIntent.component ?: componentName
 		val activityInfo = packageManager.getActivityInfo(targetComponent, 0)
-		if (activityInfo.exported) {
+		if (activityInfo.exported && shouldSanitizeLaunchIntent()) {
 			launchIntent.removeExtra(EXTRA_COMMAND_LINE_PARAMS)
 		}
 
@@ -113,7 +120,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost, PictureInPicturePr
 	protected fun retrieveCommandLineParamsFromLaunchIntent(launchIntent: Intent = intent): Array<String> {
 		val targetComponent = launchIntent.component ?: componentName
 		val activityInfo = packageManager.getActivityInfo(targetComponent, 0)
-		if (!activityInfo.exported) {
+		if (!activityInfo.exported || !shouldSanitizeLaunchIntent()) {
 			val params = launchIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 			return params ?: emptyArray()
 		}

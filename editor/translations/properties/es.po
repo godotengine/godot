@@ -107,7 +107,7 @@
 # Marcelo Gallardo <marcelogallardotoledo@gmail.com>, 2024.
 # José Artigas <squander@users.noreply.hosted.weblate.org>, 2024.
 # Zgtale <zgtale1@hotmail.com>, 2024.
-# Juan Matias Olmos <ma7as@protonmail.com>, 2024.
+# Juan Matias Olmos <ma7as@protonmail.com>, 2024, 2026.
 # simomi 073 <arcemoyanomanuel@gmail.com>, 2024.
 # José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 # AnyMan <romopua@gmail.com>, 2025.
@@ -118,13 +118,24 @@
 # Kevin <kevmed39@protonmail.com>, 2025.
 # Eric Lael Vasquez Carreño <clvasquezer@gmail.com>, 2026.
 # Juan José Arcila Valderrama <sedmirnel124@gmail.com>, 2026.
+# Segundo <segudlq@gmail.com>, 2026.
+# Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
+# Gino Tombesi <ginotombesi@gmail.com>, 2026.
+# Bruno Soria <soriabrunoissac@gmail.com>, 2026.
+# Libre <6n0n1m0s@proton.me>, 2026.
+# Manuel Lobato <mlobdev@gmail.com>, 2026.
+# "M. Campos" <visual.design.90@gmail.com>, 2026.
+# León Álvarez <leoncitopersico@hotmail.com>, 2026.
+# Samuel Ordás Antoñanzas <samuelordant@gmail.com>, 2026.
+# Samuel Ordás Antoñanzas <samuelordant@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-03-30 14:09+0000\n"
-"Last-Translator: Juan José Arcila Valderrama <sedmirnel124@gmail.com>\n"
+"PO-Revision-Date: 2026-11-12 15:47+0000\n"
+"Last-Translator: Samuel Ordás Antoñanzas "
+"<samuelordant@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -132,7 +143,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -156,7 +167,7 @@ msgid "Run"
 msgstr "Ejecutar"
 
 msgid "Main Scene"
-msgstr "Escena Principal"
+msgstr "Escena principal"
 
 msgid "Disable stdout"
 msgstr "Desactivar stdout"
@@ -165,7 +176,7 @@ msgid "Disable stderr"
 msgstr "Desactivar stderr"
 
 msgid "Print Header"
-msgstr "Imprimir Encabezado"
+msgstr "Imprimir encabezado"
 
 msgid "Enable Alt Space Menu"
 msgstr "Activar el Menú Alt Espacio"
@@ -174,16 +185,16 @@ msgid "Use Hidden Project Data Directory"
 msgstr "Usar Directorio de Datos Ocultos del Proyecto"
 
 msgid "Use Custom User Dir"
-msgstr "Usar Directorio de Usuario Personalizado"
+msgstr "Usar directorio de usuario personalizado"
 
 msgid "Custom User Dir Name"
-msgstr "Nombre de Directorio de Usuario Personalizado"
+msgstr "Nombre de directorio de usuario personalizado"
 
 msgid "Project Settings Override"
-msgstr "Anular Configuración del Proyecto"
+msgstr "Sobrescribir Configuración del Proyecto"
 
 msgid "Disable Project Settings Override"
-msgstr "Desactivar Sobrescritura de Anulación de Configuración del Proyecto"
+msgstr "Desactivar Sobrescritura de Sobrescritura de Configuración del Proyecto"
 
 msgid "Main Loop Type"
 msgstr "Tipo de Loop Principal"
@@ -205,6 +216,9 @@ msgstr "Soporte para accesibilidad"
 
 msgid "Updates per Second"
 msgstr "Actualizaciones por segundo"
+
+msgid "Accessibility Driver"
+msgstr "Controlador de accesibilidad"
 
 msgid "Display"
 msgstr "Visualización"
@@ -266,6 +280,12 @@ msgstr "Sobreescribir Ancho de Ventana"
 msgid "Window Height Override"
 msgstr "Sobreescribir Altura de Ventana"
 
+msgid "HDR"
+msgstr "Alto Rango Dinámico (HDR)"
+
+msgid "Request HDR Output"
+msgstr "Tiempo de espera de solicitud HDR"
+
 msgid "Energy Saving"
 msgstr "Ahorro de Energía"
 
@@ -277,6 +297,9 @@ msgstr "Animación"
 
 msgid "Warnings"
 msgstr "Advertencias"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Verificar rutas no válidas de nodos modificadores del esqueleto"
 
 msgid "Check Invalid Track Paths"
 msgstr "Comprobar Trazados No Válidos"
@@ -552,7 +575,7 @@ msgid "Rotary Input Scroll Axis"
 msgstr "Eje Scroll Entrada Rotatoria"
 
 msgid "Override Volume Buttons"
-msgstr "Anular Botones de Volumen"
+msgstr "Sobrescribir Botones de Volumen"
 
 msgid "Disable Scroll Deadzone"
 msgstr "Desactivar Zona Muerta del Scroll"
@@ -650,6 +673,9 @@ msgstr "Emular Ratón con Toque"
 msgid "Emulate Touch From Mouse"
 msgstr "Emular Toque con Ratón"
 
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Ignorar el joypad cuando la aplicación no tenga el foco"
+
 msgid "Legacy Just Pressed Behavior"
 msgstr "Comportamiento de Pulsación Reciente Heredado"
 
@@ -667,6 +693,9 @@ msgstr "Activar Giróscopo"
 
 msgid "Enable Magnetometer"
 msgstr "Activar Magnetómetro"
+
+msgid "Joypads"
+msgstr "Joypads"
 
 msgid "Device"
 msgstr "Dispositivo"
@@ -830,6 +859,9 @@ msgstr "Límite del Búfer de Entrada"
 msgid "Output Buffer Max Size"
 msgstr "Límite del Búfer de Salida"
 
+msgid "Stream Peer"
+msgstr "Stream Pausado"
+
 msgid "Resource"
 msgstr "Recursos"
 
@@ -912,7 +944,7 @@ msgid "TLS"
 msgstr "TLS"
 
 msgid "Certificate Bundle Override"
-msgstr "Anulación de Conjunto de Certificados"
+msgstr "Sobrescritura de Conjunto de Certificados"
 
 msgid "Threading"
 msgstr "Multihilado"
@@ -922,6 +954,24 @@ msgstr "Grupo de Trabajadores"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Proporción de Hilos de Baja Prioridad"
+
+msgid "Target"
+msgstr "Objetivo"
+
+msgid "Start Offset"
+msgstr "Desplazamiento de Inicio"
+
+msgid "Max Results"
+msgstr "Máximo Resultados"
+
+msgid "Subject"
+msgstr "Asunto"
+
+msgid "Names"
+msgstr "Nombres"
+
+msgid "Strings"
+msgstr "Strings"
 
 msgid "Locale"
 msgstr "Configuración Regional"
@@ -951,7 +1001,7 @@ msgid "Fake BiDi"
 msgstr "Falso BiDi"
 
 msgid "Override"
-msgstr "Anular"
+msgstr "Sobrescribir"
 
 msgid "Expansion Ratio"
 msgstr "Tasa de Expansión"
@@ -991,9 +1041,6 @@ msgstr "Modo de Manejo"
 
 msgid "Stream"
 msgstr "Stream"
-
-msgid "Start Offset"
-msgstr "Desplazamiento de Inicio"
 
 msgid "End Offset"
 msgstr "Desplazamiento de Fin"
@@ -1053,7 +1100,7 @@ msgid "Distraction Free Mode"
 msgstr "Modo Sin Distracciones"
 
 msgid "Movie Maker Enabled"
-msgstr "Activar el Creador de Peliculas"
+msgstr "Creación de películas activado"
 
 msgid "Custom Template"
 msgstr "Plantilla Personalizada"
@@ -1112,6 +1159,9 @@ msgstr "Exportar proyecto solamente"
 msgid "Delete Old Export Files Unconditionally"
 msgstr "Eliminar Archivos de Exportación Obsoletos Incondicionalmente"
 
+msgid "Modules"
+msgstr "Modulos"
+
 msgid "Camera"
 msgstr "Cámara"
 
@@ -1139,12 +1189,6 @@ msgstr "Capacidades"
 msgid "Access Wi-Fi"
 msgstr "Acceso Wi-Fi"
 
-msgid "Performance Gaming Tier"
-msgstr "Nivel de Rendimiento para Juegos"
-
-msgid "Performance A 12"
-msgstr "Rendimiento A 12"
-
 msgid "Shader Baker"
 msgstr "Bakeador de Shaders"
 
@@ -1152,7 +1196,7 @@ msgid "Enabled"
 msgstr "Activado"
 
 msgid "User Data"
-msgstr "Datos de Usuario"
+msgstr "Datos de usuario"
 
 msgid "Accessible From Files App"
 msgstr "Accesible desde la Aplicación de Archivos"
@@ -1162,24 +1206,6 @@ msgstr "Accesible desde iTunes Sharing"
 
 msgid "Privacy"
 msgstr "Privacidad"
-
-msgid "Camera Usage Description"
-msgstr "Descripción del Uso de la Cámara"
-
-msgid "Camera Usage Description Localized"
-msgstr "Descripción de Uso de la Cámara Localizada"
-
-msgid "Microphone Usage Description"
-msgstr "Descripción del Uso del Micrófono"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Descripción de Uso del Micrófono Localizada"
-
-msgid "Photolibrary Usage Description"
-msgstr "Descripción del Uso de la Fotolibrería"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Descripción de Uso de la Librería de Fotos Localizada"
 
 msgid "Tracking Enabled"
 msgstr "Seguimiento Activado"
@@ -1237,6 +1263,9 @@ msgstr "Ocultar Deslizador"
 
 msgid "Editing Integer"
 msgstr "Edición de Entero"
+
+msgid "Deferred Drag Mode"
+msgstr "Modo de arrastre diferido"
 
 msgid "Zoom"
 msgstr "Zoom"
@@ -1416,7 +1445,7 @@ msgid "Resolution"
 msgstr "Resolución"
 
 msgid "Max Num Vertices per Convex Hull"
-msgstr "Número Máximo de Vertices por Envoltura Convexa"
+msgstr "Número máximo de vértices por envoltura convexa"
 
 msgid "Plane Downsampling"
 msgstr "Reducción de Muestreo de Planos"
@@ -1449,7 +1478,7 @@ msgid "Occluder"
 msgstr "Oclusor"
 
 msgid "Simplification Distance"
-msgstr "Distancia de Simplificación"
+msgstr "Distancia de simplificación"
 
 msgid "Save to File"
 msgstr "Guardar en Archivo"
@@ -1530,7 +1559,16 @@ msgid "Root Script"
 msgstr "Script Raíz"
 
 msgid "Mesh Library"
-msgstr "Librería de Mesh"
+msgstr "Biblioteca de mallas"
+
+msgid "Use Node Names as Mesh Names"
+msgstr "Usar Nombres de Nodos como Nombres de Malla"
+
+msgid "Array Mesh"
+msgstr "Array de Mallas"
+
+msgid "Deduplicate Surfaces"
+msgstr "Desduplicar Superficies"
 
 msgid "Apply Root Scale"
 msgstr "Aplicar Escala de Raíz"
@@ -1638,7 +1676,7 @@ msgid "Oversampling"
 msgstr "Sobremuestreo"
 
 msgid "Metadata Overrides"
-msgstr "Sustitucion de Metadatos"
+msgstr "Sobrescritura de Metadatos"
 
 msgid "Language Support"
 msgstr "Soporte de Lenguaje"
@@ -1737,7 +1775,7 @@ msgid "Mipmaps"
 msgstr "Mipmaps"
 
 msgid "Limit"
-msgstr "Limite"
+msgstr "Limit"
 
 msgid "Horizontal"
 msgstr "Horizontal"
@@ -1750,6 +1788,15 @@ msgstr "Organización"
 
 msgid "Layout"
 msgstr "Layout"
+
+msgid "Normal Map"
+msgstr "Mapa de Normales"
+
+msgid "Roughness"
+msgstr "Aspereza"
+
+msgid "Src Normal"
+msgstr "Normal Fuente"
 
 msgid "Base Scale"
 msgstr "Escala Base"
@@ -1765,15 +1812,6 @@ msgstr "Corregir Borde Alfa"
 
 msgid "Premult Alpha"
 msgstr "Alfa Premultiplicado"
-
-msgid "Normal Map"
-msgstr "Mapa de Normales"
-
-msgid "Roughness"
-msgstr "Aspereza"
-
-msgid "Src Normal"
-msgstr "Normal Fuente"
 
 msgid "Process"
 msgstr "Proceso"
@@ -1899,11 +1937,17 @@ msgstr "Ratio de División Nombre"
 msgid "Base Type"
 msgstr "Tipo Base"
 
+msgid "Edited Resource"
+msgstr "Recurso editado"
+
 msgid "Editable"
 msgstr "Editable"
 
 msgid "Toggle Mode"
 msgstr "Cambiar Modo"
+
+msgid "Script Owner"
+msgstr "Dueño del script"
 
 msgid "Main Run Args"
 msgstr "Argumentos de la Ejecución Principal"
@@ -1949,42 +1993,6 @@ msgstr "Nombre del Plugin"
 
 msgid "Autoload on Startup"
 msgstr "Carga Automática al Iniciar"
-
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "Textura"
-
-msgid "Margins"
-msgstr "Margenes"
-
-msgid "Separation"
-msgstr "Separación"
-
-msgid "Texture Region Size"
-msgstr "Tamaño de Región de Textura"
-
-msgid "Use Texture Padding"
-msgstr "Usar Relleno de Textura"
-
-msgid "Atlas Coords"
-msgstr "Coordenadas del Atlas"
-
-msgid "Size in Atlas"
-msgstr "Tamaño en Atlas"
-
-msgid "Alternative ID"
-msgstr "ID Alternativo"
-
-msgid "Speed"
-msgstr "Velocidad"
-
-msgid "Frames Count"
-msgstr "Conteo de Fotogramas"
-
-msgid "Duration"
-msgstr "Duración"
 
 msgid "Current Group Idx"
 msgstr "Grupo Actual Idx"
@@ -2036,6 +2044,9 @@ msgstr "Localización"
 
 msgid "Editor Language"
 msgstr "Idioma del Editor"
+
+msgid "Asset Store"
+msgstr "Tienda de assets"
 
 msgid "Use Threads"
 msgstr "Usar Hilos"
@@ -2143,7 +2154,7 @@ msgid "Separate Distraction Mode"
 msgstr "Modo de Distracción Separado"
 
 msgid "Automatically Open Screenshots"
-msgstr "Abrir Capturas De Pantalla Automáticamente"
+msgstr "Abrir capturas de pantalla automáticamente"
 
 msgid "Single Window Mode"
 msgstr "Modo de Ventana Única"
@@ -2184,11 +2195,14 @@ msgstr "Actualizar Continuamente"
 msgid "Collapse Main Menu"
 msgstr "Minimizar Menú Principal"
 
-msgid "Derive Script Globals by Name"
-msgstr "Derivar Script Globales por Nombre"
+msgid "Show Renderer Selector"
+msgstr "Mostrar selector de renderizado"
 
 msgid "Scene Tree"
-msgstr "Árbol de Escenas"
+msgstr "Árbol de escenas"
+
+msgid "Derive Script Globals by Name"
+msgstr "Derivar Script Globales por Nombre"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "Avisar Antes de Revocar Nombre Único"
@@ -2238,6 +2252,9 @@ msgstr "Recursos Abiertos en el Inspector Actual"
 msgid "Resources to Open in New Inspector"
 msgstr "Recursos Para Abrir En el Nuevo Inspector"
 
+msgid "Property Descriptions"
+msgstr "Descripciones de Propiedad"
+
 msgid "Default Color Picker Mode"
 msgstr "Modo Predeterminado del Selector de Color"
 
@@ -2269,10 +2286,10 @@ msgid "Base Color"
 msgstr "Color Base"
 
 msgid "Accent Color"
-msgstr "Color de Acento"
+msgstr "Color de acento"
 
 msgid "Use System Accent Color"
-msgstr "Usar Color de Acento del Sistema"
+msgstr "Usar color de acento del sistema"
 
 msgid "Contrast"
 msgstr "Contraste"
@@ -2301,6 +2318,9 @@ msgstr "Espaciado Base"
 msgid "Additional Spacing"
 msgstr "Espacio Adicional"
 
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Usa la fuente Monospace para el editor de símbolos"
+
 msgid "Custom Theme"
 msgstr "Tema Personalizado"
 
@@ -2309,6 +2329,9 @@ msgstr "Pantalla tactil"
 
 msgid "Enable Touch Optimizations"
 msgstr "Activar Optimizaciones Táctiles"
+
+msgid "Haptic on Long Press"
+msgstr "Háptico al mantener presionado"
 
 msgid "Scale Gizmo Handles"
 msgstr "Escalar las Asas del Gizmo"
@@ -2415,9 +2438,6 @@ msgstr "Tamaño de las Miniaturas"
 msgid "Quick Open Dialog"
 msgstr "Diálogo Abrir Rápido"
 
-msgid "Max Results"
-msgstr "Máximo Resultados"
-
 msgid "Instant Preview"
 msgstr "Vista Previa Instantánea"
 
@@ -2431,7 +2451,7 @@ msgid "Max Fuzzy Misses"
 msgstr "Máximo Errores Difusos"
 
 msgid "Include Addons"
-msgstr "Incluir Addons"
+msgstr "Incluir complementos"
 
 msgid "Default Display Mode"
 msgstr "Modo Predeterminado de Visualización"
@@ -2473,7 +2493,7 @@ msgid "Auto Expand to Selected"
 msgstr "Auto Expandir a Seleccionado"
 
 msgid "Center Node on Reparent"
-msgstr "Centrar Nodo al Reemparentar"
+msgstr "Centrar nodo al reemparentar"
 
 msgid "Hide Filtered Out Parents"
 msgstr "Ocultar Padres Filtrados"
@@ -2489,6 +2509,12 @@ msgstr "Extensiones de Archivos de Texto"
 
 msgid "Other File Extensions"
 msgstr "Otras Extensiones de Archivo"
+
+msgid "Automatically Open Created Scripts"
+msgstr "Abrir Scripts creados automáticamente"
+
+msgid "Ask Before Moving Files"
+msgstr "Preguntar antes de mover archivos"
 
 msgid "Property Editor"
 msgstr "Editor de Propiedades"
@@ -2573,6 +2599,12 @@ msgstr "Mostrar Minimapa"
 
 msgid "Minimap Width"
 msgstr "Ancho del Minimapa"
+
+msgid "Drag and Drop Info"
+msgstr "Información de arrastrar y soltar"
+
+msgid "Show Drag and Drop Info"
+msgstr "Mostrar información de arrastrar y soltar"
 
 msgid "Lines"
 msgstr "Líneas"
@@ -2670,11 +2702,11 @@ msgstr "Abrir el Script Dominante en el Cambio de Escena"
 msgid "Drop Preload Resources as UID"
 msgstr "Eliminar Recursos de Precarga como UID"
 
-msgid "Documentation"
-msgstr "Documentación"
-
 msgid "Enable Tooltips"
 msgstr "Activar Tooltips"
+
+msgid "Documentation"
+msgstr "Documentación"
 
 msgid "Script List"
 msgstr "Lista de Scripts"
@@ -2886,6 +2918,9 @@ msgstr "Tamaño del Disco de Inclinación de Path3D"
 msgid "Lightmap GI Probe Size"
 msgstr "Tamaño de Sonda de GI de Lightmap"
 
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Mostrar formas de colisión solo cuando se seleccione"
+
 msgid "Primary Grid Steps"
 msgstr "Pasos Primarios de Cuadrícula"
 
@@ -2994,6 +3029,9 @@ msgstr "Velocidad Base de Vista Libre"
 msgid "Freelook Activation Modifier"
 msgstr "Modificador de Activación de Vista Libre"
 
+msgid "Freelook Invert Y Axis"
+msgstr "Invertir Eje Y en vista libre"
+
 msgid "Freelook Speed Zoom Link"
 msgstr "Velocidad de Zoom de Vista Libre"
 
@@ -3006,6 +3044,9 @@ msgstr "Opacidad del Gizmo Manipulador"
 msgid "Show Gizmo During Rotation"
 msgstr "Mostrar Gizmo Durante la Rotación"
 
+msgid "View Plane Rotation Gizmo Scale"
+msgstr "Vista del Plano de Escala de Rotación Gizmo"
+
 msgid "Grid Color"
 msgstr "Color de Cuadrícula"
 
@@ -3014,6 +3055,12 @@ msgstr "Color de Guías"
 
 msgid "Smart Snapping Line Color"
 msgstr "Color de Línea de Snapping Inteligente"
+
+msgid "Selection Rectangle Color"
+msgstr "Selección de color del rectángulo"
+
+msgid "Locked Selection Rectangle Color"
+msgstr "Color de Selección Rectángulo Bloqueada"
 
 msgid "Bone Width"
 msgstr "Anchura de Hueso"
@@ -3109,7 +3156,7 @@ msgid "Auto Bake Delay"
 msgstr "Retraso de Bake Automático"
 
 msgid "Default Animation Step"
-msgstr "Paso de Animación Predeterminado"
+msgstr "Paso de animación predeterminado"
 
 msgid "Default FPS Mode"
 msgstr "Modo Predeterminado de FPS"
@@ -3124,7 +3171,7 @@ msgid "Confirm Insert Track"
 msgstr "Confirmar Inserción de Pista"
 
 msgid "Default Create Bezier Tracks"
-msgstr "Crear Pistas Bézier Predeterminadas"
+msgstr "Crear pistas de Bézier predeterminadas"
 
 msgid "Default Create Reset Tracks"
 msgstr "Crear Pistas de Reinicio Predeterminado"
@@ -3137,6 +3184,33 @@ msgstr "Color de Capas de Cebolla Pasadas"
 
 msgid "Onion Layers Future Color"
 msgstr "Color de Capas de Cebolla Futuras"
+
+msgid "Audio Buses"
+msgstr "Buses de audio"
+
+msgid "Active Max dB Color"
+msgstr "Activar Color de dB máximo"
+
+msgid "Active Min dB Color"
+msgstr "Color de dB Activo Min"
+
+msgid "Active Normalized dB Color"
+msgstr "Activar dB color normalizado"
+
+msgid "Inactive Max dB Color"
+msgstr "Color de dB Máx Inactivo"
+
+msgid "Inactive Min dB Color"
+msgstr "Desactivar mínimo dB color"
+
+msgid "Inactive Normalized dB Color"
+msgstr "Color dB Normalizado Inactivo"
+
+msgid "Tint over Color"
+msgstr "Tinte sobre Color"
+
+msgid "Tint Under Color"
+msgstr "Tinte bajo Color"
 
 msgid "Shader Editor"
 msgstr "Editor de Shader"
@@ -3259,10 +3333,10 @@ msgid "Debugger"
 msgstr "Depurador"
 
 msgid "Auto Switch to Remote Scene Tree"
-msgstr "Cambio Automático al Árbol de Escenas Remoto"
+msgstr "Cambio automático al árbol de escenas remoto"
 
 msgid "Auto Switch to Stack Trace"
-msgstr "Cambio Automático a la Traza de Pila"
+msgstr "Cambio automático a la traza de pila"
 
 msgid "Max Node Selection"
 msgstr "Selección Máxima de Nodos"
@@ -3277,7 +3351,7 @@ msgid "Profiler Target FPS"
 msgstr "FPS Objetivo del Profiler"
 
 msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
+msgstr "Intervalo de refresco del árbol de escenas remoto"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Intervalo de Refresco de la Inspección Remota"
@@ -3385,7 +3459,7 @@ msgid "Verbose stdout"
 msgstr "Stdout Extendido"
 
 msgid "Physics Interpolation"
-msgstr "Interpolación de Física"
+msgstr "Interpolación de física"
 
 msgid "Enable Warnings"
 msgstr "Activar Advertencias"
@@ -3525,6 +3599,12 @@ msgstr "Nivel de Foveación"
 msgid "Foveation Dynamic"
 msgstr "Foveación Dinámica"
 
+msgid "Foveation Eye Tracked"
+msgstr "Seguimiento ocular foveativo"
+
+msgid "Foveation with Subsampled Images"
+msgstr "Foveación con imágenes submuestreadas"
+
 msgid "Submit Depth Buffer"
 msgstr "Enviar Búfer de Profundidad"
 
@@ -3573,12 +3653,6 @@ msgstr "Activar Seguimiento de Planos"
 msgid "Enable Builtin Plane Detection"
 msgstr "Activar Detección de Planos Incorporada"
 
-msgid "Enable Marker Tracking"
-msgstr "Activar Seguimiento de Marcadores"
-
-msgid "Enable Builtin Marker Tracking"
-msgstr "Activar Seguimiento de Marcadores Incorporado"
-
 msgid "Aruco Dict"
 msgstr "Diccionario Aruco"
 
@@ -3590,6 +3664,9 @@ msgstr "Interacción por Mirada"
 
 msgid "Render Model"
 msgstr "Modelo de Renderizado"
+
+msgid "User Presence"
+msgstr "Presencia del usuario"
 
 msgid "Binding Modifiers"
 msgstr "Modificadores de Enlace"
@@ -3630,9 +3707,6 @@ msgstr "Ícono Nativo de Windows"
 msgid "Text Driver"
 msgstr "Controlador de Texto"
 
-msgid "Search in File Extensions"
-msgstr "Buscar en Extensiones de Archivos"
-
 msgid "Mouse Cursor"
 msgstr "Cursor del Mouse"
 
@@ -3655,7 +3729,7 @@ msgid "Use Filter"
 msgstr "Usar Filtro"
 
 msgid "Image"
-msgstr "imagen"
+msgstr "Imagen"
 
 msgid "Minimum Display Time"
 msgstr "Tiempo Mínimo de Visualización"
@@ -3763,34 +3837,34 @@ msgid "Edges"
 msgstr "Aristas"
 
 msgid "Edges Merged"
-msgstr "Bordes Combinados"
+msgstr "Aristas combinadas"
 
 msgid "Edges Connected"
-msgstr "Bordes Conectados"
+msgstr "Aristas conectadas"
 
 msgid "Edges Free"
-msgstr "Bordes Libres"
+msgstr "Aristas libres"
 
 msgid "Obstacles"
 msgstr "Obstáculos"
 
 msgid "Pipeline"
-msgstr "Pipeline"
+msgstr "Conducto"
 
 msgid "Compilations Canvas"
-msgstr "Compilaciones de Canvas"
+msgstr "Compilaciones de canvas"
 
 msgid "Compilations Mesh"
-msgstr "Compilaciones de Malla"
+msgstr "Compilaciones de malla"
 
 msgid "Compilations Surface"
-msgstr "Compilaciones de Superficie"
+msgstr "Compilaciones de superficie"
 
 msgid "Compilations Draw"
-msgstr "Compilaciones de Dibujo"
+msgstr "Compilaciones de dibujo"
 
 msgid "Compilations Specialization"
-msgstr "Compilaciones de Especialización"
+msgstr "Compilaciones de especialización"
 
 msgid "Navigation 2D"
 msgstr "Navegación 2D"
@@ -3799,16 +3873,22 @@ msgid "Navigation 3D"
 msgstr "Navegación 3D"
 
 msgid "Basis Universal"
-msgstr "Basis Universal"
+msgstr "Basis universal"
 
 msgid "RDO Dict Size"
-msgstr "Tamaño de Diccionario RDO"
+msgstr "Tam. Dicc. RDO"
 
 msgid "Zstd Supercompression"
-msgstr "Supercompresión Zstd"
+msgstr "Super‐compresión Zstd"
 
 msgid "Zstd Supercompression Level"
-msgstr "Nivel de Supercompresión Zstd"
+msgstr "Nivel de super‐compresión Zstd"
+
+msgid "Autosmooth"
+msgstr "Auto‐suavizado"
+
+msgid "Smoothing Angle"
+msgstr "Ángulo de suavizado"
 
 msgid "Operation"
 msgstr "Operación"
@@ -3820,25 +3900,25 @@ msgid "Collision"
 msgstr "Colisión"
 
 msgid "Use Collision"
-msgstr "Usar Colisión"
+msgstr "Usar colisión"
 
 msgid "Collision Layer"
-msgstr "Capa de Colisión"
+msgstr "Capa de colisión"
 
 msgid "Collision Mask"
-msgstr "Máscara de Colisión"
+msgstr "Máscara de colisión"
 
 msgid "Collision Priority"
-msgstr "Prioridad de Colisión"
+msgstr "Prioridad de colisión"
 
 msgid "Flip Faces"
-msgstr "Voltear Caras"
+msgstr "Voltear caras"
 
 msgid "Material"
 msgstr "Material"
 
 msgid "Radial Segments"
-msgstr "Segmentos Radiales"
+msgstr "Segmentos radiales"
 
 msgid "Rings"
 msgstr "Anillos"
@@ -3853,13 +3933,13 @@ msgid "Cone"
 msgstr "Cono"
 
 msgid "Inner Radius"
-msgstr "Radio Interior"
+msgstr "Radio interior"
 
 msgid "Outer Radius"
-msgstr "Radio Exterior"
+msgstr "Radio exterior"
 
 msgid "Ring Sides"
-msgstr "Lados del Anillo"
+msgstr "Lados del anillo"
 
 msgid "Polygon"
 msgstr "Polígono"
@@ -3868,52 +3948,52 @@ msgid "Depth"
 msgstr "Profundidad"
 
 msgid "Spin Degrees"
-msgstr "Grados de Giro"
+msgstr "Grados de giro"
 
 msgid "Spin Sides"
-msgstr "Lados de Giro"
+msgstr "Lados de giro"
 
 msgid "Path Node"
-msgstr "Ruta del Nodo"
+msgstr "Ruta del nodo"
 
 msgid "Path Interval Type"
-msgstr "Tipo de Intervalo de Ruta"
+msgstr "Tipo de intervalo de ruta"
 
 msgid "Path Interval"
-msgstr "Intervalo de Ruta"
+msgstr "Intervalo de ruta"
 
 msgid "Path Simplify Angle"
-msgstr "Simplificar Ángulo de Ruta"
+msgstr "Simplificar ángulo de ruta"
 
 msgid "Path Rotation"
-msgstr "Rotación de Trayectoria"
+msgstr "Rotación de trayectoria"
 
 msgid "Path Rotation Accurate"
-msgstr "Rotación Precisa de Ruta"
+msgstr "Rotación precisa de trayectoria"
 
 msgid "Path Local"
-msgstr "Ruta Local"
+msgstr "Ruta local"
 
 msgid "Path Continuous U"
-msgstr "Ruta Continua U"
+msgstr "Ruta continua U"
 
 msgid "Path U Distance"
-msgstr "Distancia de la Ruta U"
+msgstr "Distancia de ruta U"
 
 msgid "Path Joined"
-msgstr "Ruta Unida"
+msgstr "Ruta unida"
 
 msgid "Importer"
 msgstr "Importador"
 
 msgid "Allow Geometry Helper Nodes"
-msgstr "Permitir Nodos Auxiliares de Geometría"
+msgstr "Permitir nodos auxiliares de geometría"
 
 msgid "Embedded Image Handling"
-msgstr "Manejo de Imágenes Embebidas"
+msgstr "Manejo de imágenes embebidas"
 
 msgid "Naming Version"
-msgstr "Versión de Nomenclatura"
+msgstr "Versión de nomenclatura"
 
 msgid "FBX2glTF"
 msgstr "FBX2glTF"
@@ -3979,7 +4059,7 @@ msgid "Incompatible Ternary"
 msgstr "Ternario Incompatible"
 
 msgid "Untyped Declaration"
-msgstr "Declaración Sin Tipo"
+msgstr "Declaración sin tipo"
 
 msgid "Inferred Declaration"
 msgstr "Declaración Inferida"
@@ -4056,11 +4136,14 @@ msgstr "Uso Local Confuso"
 msgid "Confusable Capture Reassignment"
 msgstr "Reasignación de Captura Confusa"
 
+msgid "Confusable Temporary Modification"
+msgstr "Modificación Temporal Confusa"
+
 msgid "Inference On Variant"
 msgstr "Inferencia en Variante"
 
 msgid "Native Method Override"
-msgstr "Anulación de Método Nativo"
+msgstr "Sobrescritura de Método Nativo"
 
 msgid "Get Node Default Without Onready"
 msgstr "Obtener Nodo Por Defecto Sin Onready"
@@ -4076,6 +4159,9 @@ msgstr "Bakear FPS"
 
 msgid "glTF"
 msgstr "glTF"
+
+msgid "Texture Map Mode"
+msgstr "Modo de Mapaeado de Textura"
 
 msgid "Color"
 msgstr "Color"
@@ -4609,10 +4695,10 @@ msgid "BPM"
 msgstr "BPM"
 
 msgid "Beat Count"
-msgstr "Conteo de Tiempos"
+msgstr "Número de pulsos"
 
 msgid "Bar Beats"
-msgstr "Compases y Tiempos"
+msgstr "Pulsos por compás"
 
 msgid "Loop Offset"
 msgstr "Desplazamiento de Bucle"
@@ -4631,6 +4717,9 @@ msgstr "Intervalo de Replicación"
 
 msgid "Delta Interval"
 msgstr "Intervalo Delta"
+
+msgid "Replication Config"
+msgstr "Replication de configuración"
 
 msgid "Visibility Update Mode"
 msgstr "Modo de Actualización de Visibilidad"
@@ -4749,11 +4838,26 @@ msgstr "Tipo de Acción"
 msgid "Toplevel Paths"
 msgstr "Rutas de Alto nivel"
 
+msgid "Action Sets"
+msgstr "Conjuntos de Acción"
+
+msgid "Interaction Profiles"
+msgstr "Perfiles de Interacción"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "Duration"
+msgstr "Duración"
+
 msgid "Binding Path"
 msgstr "Ruta de Enlace"
 
 msgid "Interaction Profile Path"
 msgstr "Interacción con la Ruta del Perfil"
+
+msgid "Bindings"
+msgstr "Vinculaciones"
 
 msgid "Runtime Paths"
 msgstr "Rutas en Tiempo de Ejecución"
@@ -4848,6 +4952,9 @@ msgstr "Mezcla Alpha"
 msgid "Enable Hole Punch"
 msgstr "Activar Perforación"
 
+msgid "Eye Visibility"
+msgstr "Visibilidad Óptica"
+
 msgid "Swapchain State"
 msgstr "Estado del Swapchain"
 
@@ -4920,14 +5027,206 @@ msgstr "Rastreador"
 msgid "Make Local to Pose"
 msgstr "Hacer Local a Pose"
 
-msgid "Subject"
-msgstr "Asunto"
+msgid "ID"
+msgstr "ID"
 
-msgid "Names"
-msgstr "Nombres"
+msgid "Texture"
+msgstr "Textura"
 
-msgid "Strings"
-msgstr "Strings"
+msgid "Margins"
+msgstr "Margenes"
+
+msgid "Separation"
+msgstr "Separación"
+
+msgid "Texture Region Size"
+msgstr "Tamaño de Región de Textura"
+
+msgid "Use Texture Padding"
+msgstr "Usar Relleno de Textura"
+
+msgid "Atlas Coords"
+msgstr "Coordenadas del Atlas"
+
+msgid "Size in Atlas"
+msgstr "Tamaño en Atlas"
+
+msgid "Alternative ID"
+msgstr "ID Alternativo"
+
+msgid "Speed"
+msgstr "Velocidad"
+
+msgid "Frames Count"
+msgstr "Conteo de Fotogramas"
+
+msgid "Tile Set"
+msgstr "Tile Set"
+
+msgid "Rendering Quadrant Size"
+msgstr "Tamaño del Cuadrante de Renderizado"
+
+msgid "Collision Animatable"
+msgstr "Animable en Colisiones"
+
+msgid "Collision Visibility Mode"
+msgstr "Modo de Visibilidad de Colisión"
+
+msgid "Navigation Visibility Mode"
+msgstr "Modo de Visibilidad de Navegación"
+
+msgid "Occlusion Enabled"
+msgstr "Oclusión Activada"
+
+msgid "Y Sort Origin"
+msgstr "Origen de Ordenación Y"
+
+msgid "X Draw Order Reversed"
+msgstr "Orden de Dibujo en X Invertido"
+
+msgid "Collision Enabled"
+msgstr "Colisión Activada"
+
+msgid "Use Kinematic Bodies"
+msgstr "Usar Cuerpos Cinemáticos"
+
+msgid "Physics Quadrant Size"
+msgstr "Tamaño de Cuadrante de Física"
+
+msgid "Right Side"
+msgstr "Lado Derecho"
+
+msgid "Right Corner"
+msgstr "Esquina Derecha"
+
+msgid "Bottom Right Side"
+msgstr "Lado Inferior Derecho"
+
+msgid "Bottom Right Corner"
+msgstr "Esquina Inferior Derecha"
+
+msgid "Bottom Side"
+msgstr "Lado Inferior"
+
+msgid "Bottom Corner"
+msgstr "Esquina Inferior"
+
+msgid "Bottom Left Side"
+msgstr "Lado Inferior Izquierdo"
+
+msgid "Bottom Left Corner"
+msgstr "Esquina Inferior Izquierda"
+
+msgid "Left Side"
+msgstr "Lado Izquierdo"
+
+msgid "Left Corner"
+msgstr "Esquina Izquierda"
+
+msgid "Top Left Side"
+msgstr "Lado Superior Izquierdo"
+
+msgid "Top Left Corner"
+msgstr "Esquina Superior Izquierda"
+
+msgid "Top Side"
+msgstr "Lado Superior"
+
+msgid "Top Corner"
+msgstr "Esquina Superior"
+
+msgid "Top Right Side"
+msgstr "Lado Superior Derecho"
+
+msgid "Top Right Corner"
+msgstr "Esquina Superior Derecha"
+
+msgid "Terrains"
+msgstr "Terrenos"
+
+msgid "Custom Data"
+msgstr "Datos Personalizados"
+
+msgid "Tile Shape"
+msgstr "Forma del Azulejo"
+
+msgid "Tile Layout"
+msgstr "Distribución de Azulejo"
+
+msgid "Tile Offset Axis"
+msgstr "Eje de Desplazamiento de Azulejo"
+
+msgid "Tile Size"
+msgstr "Tamaño de Azulejo"
+
+msgid "UV Clipping"
+msgstr "Recorte de UV"
+
+msgid "Occlusion Layers"
+msgstr "Capas de Oclusión"
+
+msgid "Physics Layers"
+msgstr "Capas Físicas"
+
+msgid "Terrain Sets"
+msgstr "Conjuntos de Terrenos"
+
+msgid "Custom Data Layers"
+msgstr "Capas de Datos Personalizados"
+
+msgid "Scenes"
+msgstr "Escenas"
+
+msgid "Scene"
+msgstr "Escena"
+
+msgid "Display Placeholder"
+msgstr "Mostrar Marcador"
+
+msgid "Polygons Count"
+msgstr "Conteo de Polígonos"
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "One Way"
+msgstr "Único Sentido"
+
+msgid "One Way Margin"
+msgstr "Margen de Unico Sentido"
+
+msgid "Terrains Peering Bit"
+msgstr "Bit de Emparejamiento de Terrenos"
+
+msgid "Flip H"
+msgstr "Voltear H"
+
+msgid "Flip V"
+msgstr "Voltear V"
+
+msgid "Transpose"
+msgstr "Transponer"
+
+msgid "Texture Origin"
+msgstr "Origen de Textura"
+
+msgid "Modulate"
+msgstr "Modular"
+
+msgid "Z Index"
+msgstr "Índice Z"
+
+msgid "Terrain Set"
+msgstr "Conjunto de Terreno"
+
+msgid "Terrain"
+msgstr "Terreno"
+
+msgid "Miscellaneous"
+msgstr "Misceláneo"
+
+msgid "Probability"
+msgstr "Probabilidad"
 
 msgid "Discover Multicast If"
 msgstr "Descubrir Multicast si"
@@ -4966,16 +5265,16 @@ msgid "Flags"
 msgstr "Marcadores"
 
 msgid "Stencil"
-msgstr "Plantilla"
+msgstr "Esténcil"
 
 msgid "Reference"
 msgstr "Referencia"
 
 msgid "Stencil Modes"
-msgstr "Modos de Plantilla"
+msgstr "Modos de esténcil"
 
 msgid "Stencil Flags"
-msgstr "Indicadores de Plantilla"
+msgstr "Indicadores de esténcil"
 
 msgid "Input Name"
 msgstr "Nombre de Entrada"
@@ -4990,10 +5289,10 @@ msgid "Instance Index"
 msgstr "Índice de Instancia"
 
 msgid "Tint Color Enabled"
-msgstr "Color de Tinte Activado"
+msgstr "Color de tinte activado"
 
 msgid "Tint Color"
-msgstr "Color de Tinte"
+msgstr "Color de tinte"
 
 msgid "Autoshrink"
 msgstr "Autoreducir"
@@ -5006,6 +5305,9 @@ msgstr "Nombre de la Varying"
 
 msgid "Varying Type"
 msgstr "Tipo de Varying"
+
+msgid "Group"
+msgstr "Grupo"
 
 msgid "Op Type"
 msgstr "Tipo de Operación"
@@ -5107,7 +5409,7 @@ msgid "Max Queued Packets"
 msgstr "Paquetes Máximos en Cola"
 
 msgid "Heartbeat Interval"
-msgstr "Intervalo de Pulso"
+msgstr "Intervalo de latido"
 
 msgid "Session Mode"
 msgstr "Modo de Sesión"
@@ -5178,8 +5480,17 @@ msgstr "Usar Wi-Fi para depuración remota"
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Host Remoto usando Wi-fi"
 
+msgid "Splash Screen"
+msgstr "Pantalla de Presentación"
+
+msgid "Disable Godot Boot Splash"
+msgstr "Desactivar la Pantalla de Inicio de Godot"
+
 msgid "Background Color"
 msgstr "Color de Fondo"
+
+msgid "Branding Image"
+msgstr "Imagen de Marca"
 
 msgid "Launcher Icons"
 msgstr "Ícono del Launcher"
@@ -5263,7 +5574,7 @@ msgid "Show in Android TV"
 msgstr "Mostrar en Android TV"
 
 msgid "Show in App Library"
-msgstr "Mostrar en la librería de Aplicaciones"
+msgstr "Mostrar en la biblioteca de aplicaciones"
 
 msgid "Show as Launcher App"
 msgstr "Mostrar como Aplicación de Lanzador"
@@ -5349,6 +5660,12 @@ msgstr "Usar Color de PF Personalizado"
 msgid "Custom BG Color"
 msgstr "Color de PF Personalizado"
 
+msgid "Performance Gaming Tier"
+msgstr "Nivel de Rendimiento para Juegos"
+
+msgid "Performance A 12"
+msgstr "Rendimiento A 12"
+
 msgid "Settings 58 X 58"
 msgstr "Configuración 58 X 58"
 
@@ -5359,7 +5676,7 @@ msgid "Notification 40 X 40"
 msgstr "Notificación 40 X 40"
 
 msgid "Notification 60 X 60"
-msgstr "Notificacion 60 X 60"
+msgstr "Notificación 60 X 60"
 
 msgid "Notification 76 X 76"
 msgstr "Notificación 76 X 76"
@@ -5395,7 +5712,7 @@ msgid "iOS 136 X 136"
 msgstr "iOS 136 X 136"
 
 msgid "App Store 1024 X 1024"
-msgstr "App Store 1024 X 1024"
+msgstr "App Store 1024 × 1024"
 
 msgid "Architecture"
 msgstr "Arquitectura"
@@ -5431,7 +5748,7 @@ msgid "Liquid Glass Icon"
 msgstr "Icono de Liquid Glass"
 
 msgid "Copyright Localized"
-msgstr "Derechos de Autor Localizados"
+msgstr "Derechos de autor localizados"
 
 msgid "Min macOS Version x86 64"
 msgstr "Versión Mínima de macOS x86 64"
@@ -5512,7 +5829,7 @@ msgid "Calendars"
 msgstr "Calendarios"
 
 msgid "Photos Library"
-msgstr "Librería de Fotos"
+msgstr "Biblioteca de fotos"
 
 msgid "Apple Events"
 msgstr "Eventos de Apple"
@@ -5574,6 +5891,18 @@ msgstr "Clave de la API"
 msgid "API Key ID"
 msgstr "ID de la Clave de la API"
 
+msgid "Microphone Usage Description"
+msgstr "Descripción del Uso del Micrófono"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Descripción de Uso del Micrófono Localizada"
+
+msgid "Camera Usage Description"
+msgstr "Descripción del Uso de la Cámara"
+
+msgid "Camera Usage Description Localized"
+msgstr "Descripción de Uso de la Cámara Localizada"
+
 msgid "Location Usage Description"
 msgstr "Ubicación de la Descripción de Uso"
 
@@ -5593,10 +5922,10 @@ msgid "Calendar Usage Description Localized"
 msgstr "Descripción de Uso del Calendario Localizada"
 
 msgid "Photos Library Usage Description"
-msgstr "Descripción de Uso de la Librería de Fotos"
+msgstr "Descripción de uso de la biblioteca de fotos"
 
 msgid "Photos Library Usage Description Localized"
-msgstr "Descripción de Uso de la Librería de Fotos Localizada"
+msgstr "Descripción de uso de la biblioteca de fotos localizada"
 
 msgid "Desktop Folder Usage Description"
 msgstr "Descripción de Uso de la Carpeta de Escritorio"
@@ -5674,13 +6003,13 @@ msgid "Export Icon"
 msgstr "Ícono de Exportación"
 
 msgid "Custom HTML Shell"
-msgstr "HTML Shell Personalizado"
+msgstr "Plantilla HTML personalizada"
 
 msgid "Head Include"
 msgstr "Incluyendo Cabecera"
 
 msgid "Canvas Resize Policy"
-msgstr "Política de Redimensionamiento del Canvas"
+msgstr "Política de redimensionamiento del canvas"
 
 msgid "Focus Canvas on Start"
 msgstr "Enfocar Canvas al Inicio"
@@ -5695,7 +6024,7 @@ msgid "Ensure Cross Origin Isolation Headers"
 msgstr "Asegurar Headers de Aislamiento de Origen Cruzado"
 
 msgid "Offline Page"
-msgstr "Página Offline"
+msgstr "Página sin conexión"
 
 msgid "Icon 144 X 144"
 msgstr "Ícono 144 X 144"
@@ -5775,12 +6104,6 @@ msgstr "Escala de Velocidad"
 msgid "Centered"
 msgstr "Centrado"
 
-msgid "Flip H"
-msgstr "Voltear H"
-
-msgid "Flip V"
-msgstr "Voltear V"
-
 msgid "Current"
 msgstr "Actual"
 
@@ -5828,6 +6151,9 @@ msgstr "Modo de Anclaje"
 
 msgid "Ignore Rotation"
 msgstr "Ignorar Rotación"
+
+msgid "Custom Viewport"
+msgstr "Viewport Personalizado"
 
 msgid "Process Callback"
 msgstr "Procesar Callback"
@@ -5951,9 +6277,6 @@ msgstr "Radio de la Esfera"
 
 msgid "Rect Extents"
 msgstr "Extensión del Rect"
-
-msgid "Points"
-msgstr "Puntos"
 
 msgid "Normals"
 msgstr "Normales"
@@ -6184,7 +6507,7 @@ msgid "Capping"
 msgstr "Tapado"
 
 msgid "Joint Mode"
-msgstr "Modo de Unión"
+msgstr "Modo de unión"
 
 msgid "Begin Cap Mode"
 msgstr "Iniciar Modo Cap"
@@ -6403,7 +6726,7 @@ msgid "Monitorable"
 msgstr "Monitorizable"
 
 msgid "Space Override"
-msgstr "Anulación de Espacio"
+msgstr "Sobrescritura de Espacio"
 
 msgid "Point"
 msgstr "Punto"
@@ -6433,7 +6756,7 @@ msgid "Slide on Ceiling"
 msgstr "Deslizamiento en Techo"
 
 msgid "Wall Min Slide Angle"
-msgstr "Angulo Mínimo de Deslizamiento en Muro"
+msgstr "Ángulo mínimo de deslizamiento en muro"
 
 msgid "Floor"
 msgstr "Suelo"
@@ -6703,39 +7026,6 @@ msgstr "Coordenadas del Marco"
 msgid "Filter Clip Enabled"
 msgstr "Filtrado de Clips Activado"
 
-msgid "Tile Set"
-msgstr "Tile Set"
-
-msgid "Rendering Quadrant Size"
-msgstr "Tamaño del Cuadrante de Renderizado"
-
-msgid "Collision Animatable"
-msgstr "Animable en Colisiones"
-
-msgid "Collision Visibility Mode"
-msgstr "Modo de Visibilidad de Colisión"
-
-msgid "Navigation Visibility Mode"
-msgstr "Modo de Visibilidad de Navegación"
-
-msgid "Occlusion Enabled"
-msgstr "Oclusión Activada"
-
-msgid "Y Sort Origin"
-msgstr "Origen de Ordenación Y"
-
-msgid "X Draw Order Reversed"
-msgstr "Orden de Dibujo en X Invertido"
-
-msgid "Collision Enabled"
-msgstr "Colisión Activada"
-
-msgid "Use Kinematic Bodies"
-msgstr "Usar Cuerpos Cinemáticos"
-
-msgid "Physics Quadrant Size"
-msgstr "Tamaño de Cuadrante de Física"
-
 msgid "Show Rect"
 msgstr "Mostrar Rect"
 
@@ -6788,7 +7078,7 @@ msgid "Bone Idx"
 msgstr "Hueso Idx"
 
 msgid "Override Pose"
-msgstr "Anulación de Pose"
+msgstr "Sobrescritura de Pose"
 
 msgid "Use External Skeleton"
 msgstr "Usar Esqueleto Externo"
@@ -6858,7 +7148,7 @@ msgid "Normal"
 msgstr "Normal"
 
 msgid "Orm"
-msgstr "Orm"
+msgstr "ORM"
 
 msgid "Emission"
 msgstr "Emisión"
@@ -6869,11 +7159,8 @@ msgstr "Parámetros"
 msgid "Emission Energy"
 msgstr "Energia de Emisión"
 
-msgid "Modulate"
-msgstr "Modular"
-
 msgid "Albedo Mix"
-msgstr "Mezcla Albedo"
+msgstr "Mezcla de albedo"
 
 msgid "Normal Fade"
 msgstr "Fundido de Normales"
@@ -6891,7 +7178,13 @@ msgid "Distance Fade"
 msgstr "Fade al Distanciarse"
 
 msgid "Transform Align"
-msgstr "Transformacion de Alineamiento"
+msgstr "Transformación de alineamiento"
+
+msgid "Transform Align Axis"
+msgstr "Alinear Ejes de Transformación"
+
+msgid "Transform Align Channel Filter"
+msgstr "Filtro de canales de alineación de transformación"
 
 msgid "Draw Passes"
 msgstr "Pases de Dibujo"
@@ -7017,10 +7310,10 @@ msgid "Text Direction"
 msgstr "Dirección de Texto"
 
 msgid "Structured Text BiDi Override"
-msgstr "Anulación BiDi de Texto Estructurado"
+msgstr "Sobrescritura BiDi de Texto Estructurado"
 
 msgid "Structured Text BiDi Override Options"
-msgstr "Opciones de Anulación BiDi de Texto Estructurado"
+msgstr "Opciones de Sobrescritura BiDi de Texto Estructurado"
 
 msgid "Intensity Lumens"
 msgstr "Lumens de Intensidad"
@@ -7070,6 +7363,9 @@ msgstr "Blur"
 msgid "Caster Mask"
 msgstr "Máscara de Caster"
 
+msgid "Sky Mode"
+msgstr "Modo del Cielo"
+
 msgid "Directional Shadow"
 msgstr "Sombra Direccional"
 
@@ -7091,9 +7387,6 @@ msgstr "Inicio de Fundido"
 msgid "Pancake Size"
 msgstr "Tamaño del Pancake"
 
-msgid "Sky Mode"
-msgstr "Modo del Cielo"
-
 msgid "Omni"
 msgstr "Omni"
 
@@ -7106,11 +7399,20 @@ msgstr "Ubicar"
 msgid "Angle Attenuation"
 msgstr "Atenuación del Ángulo"
 
+msgid "Area"
+msgstr "Área"
+
+msgid "Normalize Energy"
+msgstr "Normalizar Energía"
+
 msgid "Lightmap Textures"
 msgstr "Texturas de Lightmap"
 
 msgid "Shadowmask Textures"
 msgstr "Texturas de Shadowmask"
+
+msgid "Light Texture"
+msgstr "Textura de Luz"
 
 msgid "Quality"
 msgstr "Calidad"
@@ -7257,7 +7559,7 @@ msgid "Secondary Negative Damp Threshold"
 msgstr "Umbral de Amortiguación Secundario Negativo"
 
 msgid "Surface Material Override"
-msgstr "Anulación de Material de Superficie"
+msgstr "Sobrescritura de Material de Superficie"
 
 msgid "Path Height Offset"
 msgstr "Desplazamiento de Altura de Ruta"
@@ -7667,11 +7969,8 @@ msgstr "Hueso Raíz"
 msgid "Tip Bone"
 msgstr "Punta del Hueso"
 
-msgid "Target"
-msgstr "Objetivo"
-
 msgid "Override Tip Basis"
-msgstr "Anular Base de la Punta"
+msgstr "Sobrescribe Base de la Punta"
 
 msgid "Use Magnet"
 msgstr "Usar Imán"
@@ -7697,8 +7996,8 @@ msgstr "Interior"
 msgid "External Force"
 msgstr "Fuerza Externa"
 
-msgid "Track Physics Step"
-msgstr "Paso de Física de Pistas"
+msgid "Max Length"
+msgstr "Máxima Longitud"
 
 msgid "Sorting"
 msgstr "Ordenar"
@@ -7707,7 +8006,7 @@ msgid "Geometry"
 msgstr "Geometría"
 
 msgid "Material Override"
-msgstr "Material de Anulación"
+msgstr "Material de Sobrescritura"
 
 msgid "Material Overlay"
 msgstr "Material de Superposición"
@@ -7827,7 +8126,7 @@ msgid "Xfade Curve"
 msgstr "Curva Xfade"
 
 msgid "Allow Transition to Self"
-msgstr "Permitir Transición a Si Mismo"
+msgstr "Permitir transición a sí mismo"
 
 msgid "Input Count"
 msgstr "Conteo de Entradas"
@@ -7848,10 +8147,10 @@ msgid "Sub Amount"
 msgstr "Sub Cantidad"
 
 msgid "Seek Request"
-msgstr "Solicitud de Busqueda"
+msgstr "Solicitud de búsqueda"
 
 msgid "Current Index"
-msgstr "Indice Actual"
+msgstr "Índice actual"
 
 msgid "Current State"
 msgstr "Estado Actual"
@@ -7908,7 +8207,7 @@ msgid "Playback Options"
 msgstr "Opciones de Reproducción"
 
 msgid "Auto Capture"
-msgstr "Captura Automática"
+msgstr "Captura automática"
 
 msgid "Auto Capture Duration"
 msgstr "Duración de Captura Automática"
@@ -8099,8 +8398,11 @@ msgstr "Hexadecimal Visible"
 msgid "Presets Visible"
 msgstr "Preconfiguraciones Visibles"
 
+msgid "Accessibility Region"
+msgstr "Región de Accesibilidad"
+
 msgid "Theme Overrides"
-msgstr "Anulaciones de Tema"
+msgstr "Sobrescrituras de Tema"
 
 msgid "Constants"
 msgstr "Constantes"
@@ -8113,6 +8415,12 @@ msgstr "Estilos"
 
 msgid "Custom Minimum Size"
 msgstr "Tamaño Mínimo Personalizado"
+
+msgid "Custom Maximum Size"
+msgstr "Tamaño Máximo Personalizado"
+
+msgid "Propagate Maximum Size"
+msgstr "Propagar Tamaño Máximo"
 
 msgid "Clip Contents"
 msgstr "Contenidos del Clip"
@@ -8144,11 +8452,29 @@ msgstr "Dimensionamiento del Contenedor"
 msgid "Stretch Ratio"
 msgstr "Relación de Estiramiento"
 
+msgid "Offset Transform"
+msgstr "Transformar Offset"
+
+msgid "Position Ratio"
+msgstr "Relación de Posición"
+
+msgid "Pivot"
+msgstr "Pivote"
+
+msgid "Pivot Ratio"
+msgstr "Relación de Desplazamiento de Pivote"
+
+msgid "Visual Only"
+msgstr "Sólo Visual"
+
 msgid "Localize Numeral System"
 msgstr "Localizar Sistema Numérico"
 
 msgid "Layout Direction"
 msgstr "Dirección del Layout"
+
+msgid "Translation Context"
+msgstr "Contexto de Traslación"
 
 msgid "Tooltip"
 msgstr "Tooltip"
@@ -8468,9 +8794,6 @@ msgstr "Tasa Visible"
 msgid "Placeholder Text"
 msgstr "Texto de Marcador de Posición"
 
-msgid "Max Length"
-msgstr "Máxima Longitud"
-
 msgid "Keep Editing on Text Submit"
 msgstr "Mantener Edición al Enviar Texto"
 
@@ -8575,6 +8898,18 @@ msgstr "Estiramiento de Eje"
 
 msgid "Fit to Longest Item"
 msgstr "Ajustar al Elemento más Largo"
+
+msgid "Search Bar"
+msgstr "Barra de Búsqueda"
+
+msgid "Min Item Count"
+msgstr "Cantidad Mínima de Elementos"
+
+msgid "Fuzzy Search Enabled"
+msgstr "Búsqueda Difusa Activada"
+
+msgid "Fuzzy Search Max Misses"
+msgstr "Máximo de fallos en búsqueda difusa"
 
 msgid "Hide on Item Selection"
 msgstr "Ocultar Al Seleccionar un Elemento"
@@ -8726,6 +9061,9 @@ msgstr "Modo de Scroll Horizontal"
 msgid "Vertical Scroll Mode"
 msgstr "Modo de Scroll Vertical"
 
+msgid "Scroll Horizontal by Default"
+msgstr "Deslizamiento Horizontal por defecto"
+
 msgid "Scroll Deadzone"
 msgstr "Zona Muerta de Scroll"
 
@@ -8756,6 +9094,9 @@ msgstr "Paso de Flecha Personalizado"
 msgid "Custom Arrow Round"
 msgstr "Redondeo de Flecha Personalizado"
 
+msgid "Format"
+msgstr "Formato"
+
 msgid "Split Offsets"
 msgstr "Desplazamientos de División"
 
@@ -8770,6 +9111,9 @@ msgstr "Visibilidad de los Arrastradores"
 
 msgid "Touch Dragger Enabled"
 msgstr "Dragger Táctil Activado"
+
+msgid "Drag Nested Intersections"
+msgstr "Arrastrar Intersecciones Anidadas"
 
 msgid "Drag Area"
 msgstr "Área de Arrastre"
@@ -8971,10 +9315,10 @@ msgid "Auto Tooltip"
 msgstr "Tooltip Automático"
 
 msgid "Scroll Horizontal Enabled"
-msgstr "Scroll Horizontal Activado"
+msgstr "Desplace Horizontal Activado"
 
 msgid "Scroll Vertical Enabled"
-msgstr "Scroll Vertical Activado"
+msgstr "Desplace Vertical Activado"
 
 msgid "Audio Track"
 msgstr "Pista de Audio"
@@ -8986,16 +9330,49 @@ msgid "Expand"
 msgstr "Expandir"
 
 msgid "Buffering Msec"
-msgstr "Milisegundos de Almacenamiento en Búfer"
+msgstr "Msec de Tampón"
+
+msgid "Joystick Mode"
+msgstr "Modo de Joystick"
+
+msgid "Joystick Size"
+msgstr "Tamaño de Joystick"
+
+msgid "Tip Size"
+msgstr "Tamaño de Consejo"
+
+msgid "Deadzone Ratio"
+msgstr "Proporción de Zona Muerta"
+
+msgid "Clampzone Ratio"
+msgstr "Proporción de Zona de Restricción"
+
+msgid "Initial Offset Ratio"
+msgstr "Proporción de Despz. Inicial"
+
+msgid "Action Left"
+msgstr "Acción Izquierda"
+
+msgid "Action Right"
+msgstr "Acción Derecha"
+
+msgid "Action Up"
+msgstr "Acción Arriba"
+
+msgid "Action Down"
+msgstr "Acción Abajo"
 
 msgid "Self Modulate"
 msgstr "Modulación Automática"
 
 msgid "Show Behind Parent"
-msgstr "Mostrar detrás del padre"
+msgstr "Mostrar detrás del antecesor"
 
 msgid "Clip Children"
-msgstr "Recortar contenido de los Hijos"
+msgstr "Recortar herederos"
+
+msgid "Oversampling with Scale"
+msgstr "Sobremuestreo con Escala"
 
 msgid "Light Mask"
 msgstr "Máscara de Luz"
@@ -9004,19 +9381,16 @@ msgid "Visibility Layer"
 msgstr "Capa de Visibilidad"
 
 msgid "Ordering"
-msgstr "Ordenamiento"
-
-msgid "Z Index"
-msgstr "Z Index"
+msgstr "Orden"
 
 msgid "Z as Relative"
-msgstr "Z Como Relativo"
+msgstr "Z como Relativo"
 
 msgid "Y Sort Enabled"
 msgstr "Orden Y Activado"
 
 msgid "Use Parent Material"
-msgstr "Usar el material del padre"
+msgstr "Usar el material del antecesor"
 
 msgid "Diffuse"
 msgstr "Difuso"
@@ -9040,16 +9414,19 @@ msgid "Body Size Limit"
 msgstr "Límite del Tamaño del Cuerpo"
 
 msgid "Max Redirects"
-msgstr "Límite de Redirecciones"
+msgstr "Redirecciones Máx"
 
 msgid "Timeout"
-msgstr "Tiempo de Espera"
+msgstr "Vencimiento"
+
+msgid "Multiplayer Peer"
+msgstr "Compañero Multijugador"
 
 msgid "Transfer Mode"
-msgstr "Modo de Transferencia"
+msgstr "Modo Transferencial"
 
 msgid "Transfer Channel"
-msgstr "Canal de Transferencia"
+msgstr "Canal Transferencial"
 
 msgid "Node Name Num Separator"
 msgstr "Separador de Nombre y Número de Nodo"
@@ -9057,14 +9434,17 @@ msgstr "Separador de Nombre y Número de Nodo"
 msgid "Node Name Casing"
 msgstr "Convención de Nombres de Nodos"
 
+msgid "Owner"
+msgstr "Propietario"
+
+msgid "Multiplayer"
+msgstr "Multijugador"
+
 msgid "Physics Priority"
 msgstr "Prioridad de Física"
 
 msgid "Thread Group"
 msgstr "Grupo de Hilo"
-
-msgid "Group"
-msgstr "Grupo"
 
 msgid "Group Order"
 msgstr "Orden de Grupo"
@@ -9090,11 +9470,20 @@ msgstr "Indicación de Rutas de Depuración"
 msgid "Debug Navigation Hint"
 msgstr "Sugerencia de Depuración de Navegación"
 
+msgid "Edited Scene Root"
+msgstr "Raíz de Escena Editada"
+
+msgid "Current Scene"
+msgstr "Escena Actual"
+
+msgid "Root"
+msgstr "Raíz"
+
 msgid "Multiplayer Poll"
 msgstr "Encuesta Multijugador"
 
 msgid "Shape Color"
-msgstr "Color de la Forma"
+msgstr "Color de Forma"
 
 msgid "Contact Color"
 msgstr "Color de Contacto"
@@ -9142,13 +9531,13 @@ msgid "Threshold Pixels"
 msgstr "Umbral de Pixeles"
 
 msgid "Snap"
-msgstr "Ajuste"
+msgstr "Romper"
 
 msgid "Snap 2D Transforms to Pixel"
-msgstr "Ajustar Transformaciones 2D a Píxeles"
+msgstr "Romper Transformaciones 2D a Píxeles"
 
 msgid "Snap 2D Vertices to Pixel"
-msgstr "Ajustar Vertices 2D a Píxeles"
+msgstr "Ajustar vértices 2D a píxeles"
 
 msgid "VRS"
 msgstr "VRS"
@@ -9216,6 +9605,9 @@ msgstr "Mundo 3D Propio"
 msgid "World 3D"
 msgstr "Mundo 3D"
 
+msgid "World 2D"
+msgstr "Mundo 2D"
+
 msgid "Transparent BG"
 msgstr "PF Transparente"
 
@@ -9259,7 +9651,7 @@ msgid "Variable Rate Shading"
 msgstr "Sombreado de Tasa Variable"
 
 msgid "Canvas Items"
-msgstr "Ítems del Canvas"
+msgstr "Ítemes del Lienzo"
 
 msgid "Audio Listener"
 msgstr "Oyente de Audio"
@@ -9271,13 +9663,13 @@ msgid "Enable 3D"
 msgstr "Activar 3D"
 
 msgid "Object Picking"
-msgstr "Selección de Objetos"
+msgstr "Recogida de Objetos"
 
 msgid "Object Picking Sort"
-msgstr "Orden de Selección de Objetos"
+msgstr "Ordenación de Recogida de Objeto"
 
 msgid "Object Picking First Only"
-msgstr "Selección de Objeto Solo el Primero"
+msgstr "Recogida de Objeto Solo el Primero"
 
 msgid "Disable Input"
 msgstr "Desactivar Entrada"
@@ -9286,7 +9678,7 @@ msgid "Positional Shadow Atlas"
 msgstr "Atlas Posicional de Sombras"
 
 msgid "16 Bits"
-msgstr "16 Bits"
+msgstr "16‐bit"
 
 msgid "Quad 0"
 msgstr "Cuadrángulo 0"
@@ -9304,13 +9696,13 @@ msgid "Canvas Cull Mask"
 msgstr "Máscara de Culling del Canvas"
 
 msgid "Oversampling Override"
-msgstr "Anulación de Sobremuestreo"
+msgstr "Sobrescritura de Sobremuestreo"
 
 msgid "Size 2D Override"
-msgstr "Anulación de Tamaño 2D"
+msgstr "Sobrescritura de Tamaño 2D"
 
 msgid "Size 2D Override Stretch"
-msgstr "Anulación del Tamaño 2D de Estiramiento"
+msgstr "Sobrescritura del Tamaño 2D de Estiramiento"
 
 msgid "View Count"
 msgstr "Contador de Vistas"
@@ -9319,7 +9711,7 @@ msgid "Render Target"
 msgstr "Objetivo de Renderizado"
 
 msgid "Clear Mode"
-msgstr "Modo de Limpieza"
+msgstr "Modo de Vaciado"
 
 msgid "Current Screen"
 msgstr "Pantalla Actual"
@@ -9352,7 +9744,7 @@ msgid "Mouse Passthrough"
 msgstr "Paso de Ratón"
 
 msgid "Exclude From Capture"
-msgstr "Excluir de la Captura"
+msgstr "Excluir desde Captura"
 
 msgid "Popup Wm Hint"
 msgstr "Pista de Ventana Emergente"
@@ -9371,6 +9763,12 @@ msgstr "Mantener Título Visible"
 
 msgid "Content Scale"
 msgstr "Escala de Contenido"
+
+msgid "HDR Output"
+msgstr "Salida de Alto Rango Dinámico (HDR)"
+
+msgid "Requested"
+msgstr "Solicitado"
 
 msgid "Swap Cancel OK"
 msgstr "Intercambiar Aceptar con Cancelar"
@@ -9483,126 +9881,6 @@ msgstr "Invertir Dirección de Curvatura"
 msgid "Modification Count"
 msgstr "Conteo de Modificación"
 
-msgid "Right Side"
-msgstr "Lado Derecho"
-
-msgid "Right Corner"
-msgstr "Esquina Derecha"
-
-msgid "Bottom Right Side"
-msgstr "Lado Inferior Derecho"
-
-msgid "Bottom Right Corner"
-msgstr "Esquina Inferior Derecha"
-
-msgid "Bottom Side"
-msgstr "Lado Inferior"
-
-msgid "Bottom Corner"
-msgstr "Esquina Inferior"
-
-msgid "Bottom Left Side"
-msgstr "Lado Inferior Izquierdo"
-
-msgid "Bottom Left Corner"
-msgstr "Esquina Inferior Izquierda"
-
-msgid "Left Side"
-msgstr "Lado Izquierdo"
-
-msgid "Left Corner"
-msgstr "Esquina Izquierda"
-
-msgid "Top Left Side"
-msgstr "Lado Superior Izquierdo"
-
-msgid "Top Left Corner"
-msgstr "Esquina Superior Izquierda"
-
-msgid "Top Side"
-msgstr "Lado Superior"
-
-msgid "Top Corner"
-msgstr "Esquina Superior"
-
-msgid "Top Right Side"
-msgstr "Lado Superior Derecho"
-
-msgid "Top Right Corner"
-msgstr "Esquina Superior Derecha"
-
-msgid "Terrains"
-msgstr "Terrenos"
-
-msgid "Custom Data"
-msgstr "Datos Personalizados"
-
-msgid "Tile Shape"
-msgstr "Forma del Tile"
-
-msgid "Tile Layout"
-msgstr "Distribución de Tile"
-
-msgid "Tile Offset Axis"
-msgstr "Eje de Desplazamiento de Tile"
-
-msgid "Tile Size"
-msgstr "Tamaño de Tile"
-
-msgid "UV Clipping"
-msgstr "Recorte de UV"
-
-msgid "Occlusion Layers"
-msgstr "Capas de Oclusión"
-
-msgid "Physics Layers"
-msgstr "Capas Físicas"
-
-msgid "Terrain Sets"
-msgstr "Conjuntos de Terrenos"
-
-msgid "Custom Data Layers"
-msgstr "Capas de Datos Personalizados"
-
-msgid "Scenes"
-msgstr "Escenas"
-
-msgid "Scene"
-msgstr "Escena"
-
-msgid "Display Placeholder"
-msgstr "Mostrar Marcador"
-
-msgid "Polygons Count"
-msgstr "Conteo de Polígonos"
-
-msgid "One Way"
-msgstr "Unico Sentido"
-
-msgid "One Way Margin"
-msgstr "Margen de Unico Sentido"
-
-msgid "Terrains Peering Bit"
-msgstr "Bit de Emparejamiento de Terrenos"
-
-msgid "Transpose"
-msgstr "Transponer"
-
-msgid "Texture Origin"
-msgstr "Origen de Textura"
-
-msgid "Terrain Set"
-msgstr "Conjunto de Terreno"
-
-msgid "Terrain"
-msgstr "Terreno"
-
-msgid "Miscellaneous"
-msgstr "Miscelaneo"
-
-msgid "Probability"
-msgstr "Probabilidad"
-
 msgid "Distance"
 msgstr "Distancia"
 
@@ -9629,9 +9907,6 @@ msgstr "Mapa de Profundidad"
 
 msgid "Map Data"
 msgstr "Datos del Mapa"
-
-msgid "Item"
-msgstr "Elemento"
 
 msgid "Add UV2"
 msgstr "Añadir UV2"
@@ -9664,7 +9939,7 @@ msgid "Left to Right"
 msgstr "De Izquierda a Derecha"
 
 msgid "Is Hemisphere"
-msgstr "Es Hemisfera"
+msgstr "Es Hemisferio"
 
 msgid "Ring Segments"
 msgstr "Segmentos en Anillo"
@@ -9750,6 +10025,9 @@ msgstr "Cielo Nocturno"
 msgid "Fallback Environment"
 msgstr "Entorno de Respaldo"
 
+msgid "Direct Space State"
+msgstr "Estado de espacio directo"
+
 msgid "Plane"
 msgstr "Plano"
 
@@ -9765,14 +10043,29 @@ msgstr "Atlas"
 msgid "Filter Clip"
 msgstr "Filtrar Clips"
 
-msgid "Polyphony"
-msgstr "Polifonia"
-
-msgid "Format"
-msgstr "Formato"
+msgid "Mix Rate Mode"
+msgstr "Modo de Tasa de Mezcla"
 
 msgid "Mix Rate"
 msgstr "Tasa de Mezcla"
+
+msgid "Buffer Length"
+msgstr "Longitud de Búfer"
+
+msgid "Polyphony"
+msgstr "Polifonia"
+
+msgid "Playback Mode"
+msgstr "Modo de Reproducción"
+
+msgid "Random Pitch Semitones"
+msgstr "Semitonos de Tono Aleatorio"
+
+msgid "Random Volume Offset dB"
+msgstr "Desplazamiento de Volumen Aleatorio dB"
+
+msgid "Streams"
+msgstr "Flujos"
 
 msgid "Stereo"
 msgstr "Estéreo"
@@ -9874,7 +10167,7 @@ msgid "Access Resolved Depth"
 msgstr "Acceso a Profundidad Calculada"
 
 msgid "Needs Motion Vectors"
-msgstr "Necesita vectores de movimiento"
+msgstr "Necesita Vectores de Movimiento"
 
 msgid "Needs Normal Roughness"
 msgstr "Necesita Normal y Rugosidad"
@@ -10084,10 +10377,10 @@ msgid "Depth Begin"
 msgstr "Inicio de Profundidad"
 
 msgid "Depth End"
-msgstr "Fin de Profundidad"
+msgstr "Final de Profundidad"
 
 msgid "Volumetric Fog"
-msgstr "Niebla Volumetrica"
+msgstr "Niebla Volumétrica"
 
 msgid "GI Inject"
 msgstr "Inyección GI"
@@ -10096,7 +10389,7 @@ msgid "Anisotropy"
 msgstr "Anisotropía"
 
 msgid "Detail Spread"
-msgstr "Dispersion del Detalle"
+msgstr "Dispersión del detalle"
 
 msgid "Ambient Inject"
 msgstr "Inyección Ambiental"
@@ -10117,7 +10410,7 @@ msgid "Base Font"
 msgstr "Fuente Base"
 
 msgid "Features"
-msgstr "Características"
+msgstr "Cualidades"
 
 msgid "Extra Spacing"
 msgstr "Espaciado Adicional"
@@ -10130,6 +10423,12 @@ msgstr "Espacio"
 
 msgid "Baseline"
 msgstr "Línea base"
+
+msgid "Palette"
+msgstr "Paleta"
+
+msgid "Custom Colors"
+msgstr "Colores Personalizados"
 
 msgid "Font Names"
 msgstr "Nombres de Fuentes"
@@ -10342,10 +10641,10 @@ msgid "Z Clip Scale"
 msgstr "Escala de Recorte Z"
 
 msgid "Use FOV Override"
-msgstr "Usar Anulación de Campo de Visión"
+msgstr "Usar Sobrescritura de Campo de Visión"
 
 msgid "FOV Override"
-msgstr "Anulación de Campo de Visión"
+msgstr "Sobrescritura de Campo de Visión"
 
 msgid "Proximity Fade"
 msgstr "Desvanecimiento de Proximidad"
@@ -10381,7 +10680,7 @@ msgid "Base Texture"
 msgstr "Textura Base"
 
 msgid "Image Size"
-msgstr "Tamaño de la Imagen"
+msgstr "Tamaño de Imagen"
 
 msgid "Transform Format"
 msgstr "Formato de Transformación"
@@ -10446,8 +10745,11 @@ msgstr "Desplazamiento de AABB de Baking"
 msgid "Damping as Friction"
 msgstr "Amortiguación como Fricción"
 
+msgid "Inherit Emitter Scale"
+msgstr "Heredar Escalar del Emisor"
+
 msgid "Spawn"
-msgstr "Spawn"
+msgstr "Generación"
 
 msgid "Emission Shape Offset"
 msgstr "Desplazamiento de Forma de Emisión"
@@ -10488,6 +10790,15 @@ msgstr "Radio Interior Anillo de Emisión"
 msgid "Emission Ring Cone Angle"
 msgstr "Ángulo de Cono de Anillo de Emisión"
 
+msgid "Rotation 3D"
+msgstr "Rotación 3D"
+
+msgid "Rotation 3D Min"
+msgstr "Mín Rotación 3D"
+
+msgid "Rotation 3D Max"
+msgstr "Máx Rotación 3D"
+
 msgid "Inherit Velocity Ratio"
 msgstr "Ratio de Herencia de Velocidad"
 
@@ -10509,11 +10820,32 @@ msgstr "Velocidad Radial"
 msgid "Velocity Limit Curve"
 msgstr "Curva de Límite de Velocidad"
 
+msgid "Rotation Velocity 3D"
+msgstr "Vel. de Rotación 3D"
+
+msgid "Rotation Velocity 3D Min"
+msgstr "Vel. Rotación 3D Minima"
+
+msgid "Rotation Velocity 3D Max"
+msgstr "Vel. Rotación 3D Máxima"
+
+msgid "Rotation Velocity 3D Curve"
+msgstr "Curva de Vel. Rotación 3D"
+
 msgid "Accelerations"
-msgstr "Acceleraciones"
+msgstr "Aceleraciones"
 
 msgid "Attractor Interaction"
 msgstr "Interacción con Atractor"
+
+msgid "Use Scale 3D"
+msgstr "Usar Escala 3D"
+
+msgid "Scale 3D Min"
+msgstr "Escala Mín 3D"
+
+msgid "Scale 3D Max"
+msgstr "Escala Máx 3D"
 
 msgid "Scale Curve"
 msgstr "Curva de Escala"
@@ -10573,7 +10905,7 @@ msgid "Absorbent"
 msgstr "Absorbente"
 
 msgid "Size Override"
-msgstr "Anulación de Tamaño"
+msgstr "Sobrescritura de Tamaño"
 
 msgid "Keep Compressed Buffer"
 msgstr "Mantener Búfer Comprimido"
@@ -10639,10 +10971,10 @@ msgid "Symbol Color"
 msgstr "Color del Símbolo"
 
 msgid "Function Color"
-msgstr "Color de la Función"
+msgstr "Color de Función"
 
 msgid "Member Variable Color"
-msgstr "Color de la Variable Miembro"
+msgstr "Color de Variable Miembro"
 
 msgid "Keyword Colors"
 msgstr "Colores de Palabras Clave"
@@ -10678,40 +11010,40 @@ msgid "File"
 msgstr "Archivo"
 
 msgid "Font Pressed Color"
-msgstr "Color de la Fuente al Presionar"
+msgstr "Color de Fuente al Presionar"
 
 msgid "Font Hover Color"
-msgstr "Color de la Fuente al Señalar"
+msgstr "Color de Fuente al Señalar"
 
 msgid "Font Focus Color"
-msgstr "Color de la Fuente al Enfocar"
+msgstr "Color de Fuente al Enfocar"
 
 msgid "Font Hover Pressed Color"
 msgstr "Color de Fuente Señalado y Presionado"
 
 msgid "Font Disabled Color"
-msgstr "Color de la Fuente Desabilitado"
+msgstr "Color de Fuente Deshabilitado"
 
 msgid "Font Outline Color"
-msgstr "Color del Contorno de la Fuente"
+msgstr "Color del Contorno de Fuente"
 
 msgid "Icon Normal Color"
-msgstr "Color De Ícono Normal"
+msgstr "Color de Icono Normal"
 
 msgid "Icon Pressed Color"
-msgstr "Color De Ícono Presionado"
+msgstr "Color de Icono Presionado"
 
 msgid "Icon Hover Color"
-msgstr "Color del Ícono al Señalar"
+msgstr "Color del Icono al Señalar"
 
 msgid "Icon Hover Pressed Color"
-msgstr "Color del Ícono al Presionar"
+msgstr "Color del Icono al Presionar"
 
 msgid "Icon Focus Color"
-msgstr "Color De Ícono al Enfocar"
+msgstr "Color de Icono al Enfocar"
 
 msgid "Icon Disabled Color"
-msgstr "Color de Ícono al Desabilitar"
+msgstr "Color de Icono al Deshabilitar"
 
 msgid "H Separation"
 msgstr "Separación en H"
@@ -10741,7 +11073,7 @@ msgid "Arrow"
 msgstr "Flecha"
 
 msgid "Arrow Margin"
-msgstr "Margen de la Flecha"
+msgstr "Margen de Flecha"
 
 msgid "Modulate Arrow"
 msgstr "Modular Flecha"
@@ -10756,7 +11088,7 @@ msgid "Unchecked"
 msgstr "Sin marcar"
 
 msgid "Unchecked Disabled"
-msgstr "Sin marcar Desactivado"
+msgstr "Sin marcar Deshabilitado"
 
 msgid "Radio Checked"
 msgstr "Radio Marcado"
@@ -10807,7 +11139,7 @@ msgid "Shadow Offset Y"
 msgstr "Desplazamiento Y de Sombra"
 
 msgid "Shadow Outline Size"
-msgstr "Tamaño de Contorno de la Sombra"
+msgstr "Tamaño de Contorno de Sombra"
 
 msgid "Font Selected Color"
 msgstr "Color de Fuente Seleccionado"
@@ -10819,7 +11151,7 @@ msgid "Font Placeholder Color"
 msgstr "Color de Fuente del Marcador de Posición"
 
 msgid "Caret Color"
-msgstr "Color del Caret"
+msgstr "Color de Cursor"
 
 msgid "Selection Color"
 msgstr "Color de Selección"
@@ -10834,10 +11166,10 @@ msgid "Minimum Character Width"
 msgstr "Ancho Mínimo de Caracter"
 
 msgid "Caret Width"
-msgstr "Anchura del Caret"
+msgstr "Anchura del cursor"
 
 msgid "Clear"
-msgstr "Limpiar"
+msgstr "Vaciar"
 
 msgid "Tab"
 msgstr "Tab"
@@ -10849,7 +11181,7 @@ msgid "Current Line Color"
 msgstr "Color de Línea Actual"
 
 msgid "Caret Background Color"
-msgstr "Color de Fondo del Caret"
+msgstr "Color de fondo del cursor"
 
 msgid "Word Highlighted Color"
 msgstr "Color de la Palabra Resaltada"
@@ -10882,7 +11214,7 @@ msgid "Folded Code Region"
 msgstr "Región de Código Plegada"
 
 msgid "Folded EOL Icon"
-msgstr "Ícono de Fin de Línea Plegado"
+msgstr "Icono de Fin de Línea Plegado"
 
 msgid "Completion Color BG"
 msgstr "Color de PF de Completado"
@@ -10909,7 +11241,7 @@ msgid "Breakpoint Color"
 msgstr "Color de Puntos de Interrupción"
 
 msgid "Executing Line Color"
-msgstr "Color de la línea en ejecución"
+msgstr "Color de Línea en Ejecución"
 
 msgid "Code Folding Color"
 msgstr "Color del Código Plegado"
@@ -10939,13 +11271,13 @@ msgid "Scroll Focus"
 msgstr "Enfoque de Scroll"
 
 msgid "Grabber"
-msgstr "Selector"
+msgstr "Agarre"
 
 msgid "Grabber Highlight"
-msgstr "Resaltado de Selector"
+msgstr "Resaltado de Agarre"
 
 msgid "Grabber Pressed"
-msgstr "Selector Pulsado"
+msgstr "Agarre Pulsado"
 
 msgid "Increment"
 msgstr "Incremento"
@@ -10969,22 +11301,22 @@ msgid "Slider"
 msgstr "Deslizador"
 
 msgid "Grabber Area"
-msgstr "Área del Selector"
+msgstr "Área del Agarre"
 
 msgid "Grabber Area Highlight"
-msgstr "Resaltado de Área del Selector"
+msgstr "Resaltado de Área del Agarre"
 
 msgid "Grabber Disabled"
-msgstr "Tirador Desactivado"
+msgstr "Agarre Desactivado"
 
 msgid "Tick"
 msgstr "Marcar"
 
 msgid "Center Grabber"
-msgstr "Selector Central"
+msgstr "Agarre Central"
 
 msgid "Grabber Offset"
-msgstr "Desplazamiento de Tirador"
+msgstr "Desplazamiento de Agarre"
 
 msgid "Tick Offset"
 msgstr "Desplazamiento de Marca"
@@ -11041,28 +11373,28 @@ msgid "Down Background Disabled"
 msgstr "Fondo de Abajo Desactivado"
 
 msgid "Up Icon Modulate"
-msgstr "Modulación del Ícono de Subida"
+msgstr "Modulación del Icono de Subida"
 
 msgid "Up Hover Icon Modulate"
-msgstr "Modulación del Ícono de Arriba al Pasar"
+msgstr "Modulación del Icono de Arriba al Pasar"
 
 msgid "Up Pressed Icon Modulate"
-msgstr "Modulación del Ícono de Subida Presionado"
+msgstr "Modulación del Icono de Subida Presionado"
 
 msgid "Up Disabled Icon Modulate"
-msgstr "Modulación del Ícono de Arriba Desactivado"
+msgstr "Modulación del Icono de Arriba Desactivado"
 
 msgid "Down Icon Modulate"
-msgstr "Modulación del Ícono de Bajada"
+msgstr "Modulación del Icono de Bajada"
 
 msgid "Down Hover Icon Modulate"
-msgstr "Modulación del Ícono de Abajo al Pasar"
+msgstr "Modulación del Icono de Abajo al Pasar"
 
 msgid "Down Pressed Icon Modulate"
-msgstr "Modulación del Ícono de Abajo Presionado"
+msgstr "Modulación del Icono de Abajo Presionado"
 
 msgid "Down Disabled Icon Modulate"
-msgstr "Modulación del Ícono de Abajo Desactivado"
+msgstr "Modulación del Icono de Abajo Desactivado"
 
 msgid "Field and Buttons Separator"
 msgstr "Separador de Campo y Botones"
@@ -11077,10 +11409,10 @@ msgid "Field and Buttons Separation"
 msgstr "Separación entre Campo y Botones"
 
 msgid "Buttons Width"
-msgstr "Ancho de los Botones"
+msgstr "Ancho de Botones"
 
 msgid "Set Min Buttons Width From Icons"
-msgstr "Establecer Ancho Mínimo de Botones a Partir de Íconos"
+msgstr "Establecer Ancho Mínimo de Botones a Partir de Iconos"
 
 msgid "Scroll Hint Vertical"
 msgstr "Sugerencia de Scroll Vertical"
@@ -11093,6 +11425,30 @@ msgstr "Color de Sugerencia de Scroll Vertical"
 
 msgid "Scroll Hint Horizontal Color"
 msgstr "Color de Sugerencia de Scroll Horizontal"
+
+msgid "Scrollbar Margin Left"
+msgstr "Margen Izquierdo de Barra de Scroll"
+
+msgid "Scrollbar Margin Top"
+msgstr "Margen Superior de Barra de Scroll"
+
+msgid "Scrollbar Margin Right"
+msgstr "Margen Derecho de Barra de Scroll"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Margen Inferior de Barra de Scroll"
+
+msgid "Normal Joystick"
+msgstr "Joystick Normal"
+
+msgid "Normal Tip"
+msgstr "Punta Normal"
+
+msgid "Pressed Joystick"
+msgstr "Joystick Presionado"
+
+msgid "Pressed Tip"
+msgstr "Punta Presionada"
 
 msgid "Embedded Border"
 msgstr "Borde Enbebido"
@@ -11187,11 +11543,29 @@ msgstr "Miniatura de Archivo"
 msgid "Folder Thumbnail"
 msgstr "Miniatura de Carpeta"
 
+msgid "Menu Copy Path"
+msgstr "Copiar ruta"
+
+msgid "Menu Delete"
+msgstr "Borrar"
+
+msgid "Menu New Folder"
+msgstr "Nueva Carpeta"
+
+msgid "Menu Refresh"
+msgstr "Actualizar"
+
+msgid "Menu Show in File Manager"
+msgstr "Mostrar en el Administrador de Archivos"
+
+msgid "Menu Open Bundle"
+msgstr "Abrir Paquete"
+
 msgid "Folder Icon Color"
-msgstr "Color de Ícono de Carpeta"
+msgstr "Color de Icono de Carpeta"
 
 msgid "File Icon Color"
-msgstr "Color de Ícono de Archivo"
+msgstr "Color de Icono de Archivo"
 
 msgid "File Disabled Color"
 msgstr "Color de Archivo Desactivado"
@@ -11205,11 +11579,17 @@ msgstr "Separador con Etiqueta a la Izquierda"
 msgid "Labeled Separator Right"
 msgstr "Separador con Etiqueta a la Derecha"
 
+msgid "Indeterminate Disabled"
+msgstr "Indeterminado Desactivado"
+
 msgid "Submenu"
 msgstr "Submenú"
 
 msgid "Submenu Mirrored"
 msgstr "Submenú Reflejado"
+
+msgid "Search"
+msgstr "Búsqueda"
 
 msgid "Font Separator"
 msgstr "Separación de Fuente"
@@ -11228,6 +11608,9 @@ msgstr "Color del Contorno del Separador de Fuentes"
 
 msgid "V Separation"
 msgstr "Separación en V"
+
+msgid "Search Bar Separation"
+msgstr "Separación de Barra de Búsqueda"
 
 msgid "Separator Outline Size"
 msgstr "Tamaño de Contorno del Separador"
@@ -11254,10 +11637,10 @@ msgid "Titlebar Selected"
 msgstr "Barra de Título Seleccionada"
 
 msgid "Slot"
-msgstr "Espacio"
+msgstr "Ranura"
 
 msgid "Slot Selected"
-msgstr "Espacio Seleccionado"
+msgstr "Ranura Seleccionada"
 
 msgid "Resizer"
 msgstr "Reajuste"
@@ -11290,7 +11673,7 @@ msgid "Cursor Unfocused"
 msgstr "Cursor Desenfocado"
 
 msgid "Button Hover"
-msgstr "Botón al Pasar"
+msgstr "Botón al Cubrir"
 
 msgid "Title Button Normal"
 msgstr "Botón del Título Normal"
@@ -11309,9 +11692,6 @@ msgstr "Botón Personalizado Presionado"
 
 msgid "Custom Button Hover"
 msgstr "Botón Personalizado Hover"
-
-msgid "Indeterminate Disabled"
-msgstr "Indeterminado Desactivado"
 
 msgid "Select Arrow"
 msgstr "Seleccionar Flecha"
@@ -11342,6 +11722,9 @@ msgstr "Color de Fuente Seleccionado al Pasar"
 
 msgid "Guide Color"
 msgstr "Guía de Colores"
+
+msgid "Drop on Item Color"
+msgstr "Color al soltar sobre un elemento"
 
 msgid "Drop Position Color"
 msgstr "Posición del Gotero de Color"
@@ -11389,13 +11772,13 @@ msgid "Relationship Line Width"
 msgstr "Relación de Ancho de Linea"
 
 msgid "Parent HL Line Width"
-msgstr "Ancho de Linea HL del Padre"
+msgstr "Ancho de línea HL del padre"
 
 msgid "Children HL Line Width"
 msgstr "Ancho de Línea HL del Hijo"
 
 msgid "Parent HL Line Margin"
-msgstr "Margen de Linea HL del Padre"
+msgstr "Margen de línea HL del padre"
 
 msgid "Draw Guides"
 msgstr "Guías de Dibujo"
@@ -11408,18 +11791,6 @@ msgstr "Borde del Scroll"
 
 msgid "Scroll Speed"
 msgstr "Velocidad del Scroll"
-
-msgid "Scrollbar Margin Left"
-msgstr "Margen Izquierdo de Barra de Scroll"
-
-msgid "Scrollbar Margin Top"
-msgstr "Margen Superior de Barra de Scroll"
-
-msgid "Scrollbar Margin Right"
-msgstr "Margen Derecho de Barra de Scroll"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Margen Inferior de Barra de Scroll"
 
 msgid "Scrollbar H Separation"
 msgstr "Separación H de Barra de Scroll"
@@ -11494,7 +11865,7 @@ msgid "Label Width"
 msgstr "Ancho de Etiqueta"
 
 msgid "Center Slider Grabbers"
-msgstr "Selectores Centrales del Deslizador"
+msgstr "Agarres Centrales del Deslizador"
 
 msgid "Sample Focus"
 msgstr "Enfoque de Muestra"
@@ -11552,6 +11923,9 @@ msgstr "PF del Cursor del Selector"
 
 msgid "Color Script"
 msgstr "Color Script"
+
+msgid "Color Copy"
+msgstr "Copia de Color"
 
 msgid "Color Hue"
 msgstr "Tono del Color"
@@ -11647,10 +12021,10 @@ msgid "Touch Dragger"
 msgstr "Dragger Táctil"
 
 msgid "H Grabber"
-msgstr "Selector H"
+msgstr "Agarre H"
 
 msgid "V Grabber"
-msgstr "Selector V"
+msgstr "Agarre V"
 
 msgid "Margin Left"
 msgstr "Margen Izquierdo"
@@ -11710,13 +12084,13 @@ msgid "Activity"
 msgstr "Actividad"
 
 msgid "Connection Hover Tint Color"
-msgstr "Color de Tinte de Conexión al Pasar el Ratón"
+msgstr "Color de tinte de conexión al pasar el ratón"
 
 msgid "Connection Hover Thickness"
 msgstr "Grosor de la Conexión al Pasar"
 
 msgid "Connection Valid Target Tint Color"
-msgstr "Color de Tinte de Destino Válido de Conexión"
+msgstr "Color de tinte de destino válido de conexión"
 
 msgid "Connection Rim Color"
 msgstr "Color del Borde de Conexión"
@@ -11763,6 +12137,9 @@ msgstr "Fuente Personalizada"
 msgid "Fallback values"
 msgstr "Valores de respaldo"
 
+msgid "Stylebox"
+msgstr "Caja de Estilo"
+
 msgid "Enable Input"
 msgstr "Habilitar Entrada"
 
@@ -11786,21 +12163,6 @@ msgstr "Dispositivos de Entrada"
 
 msgid "Playback Speed Scale"
 msgstr "Escala de Velocidad de Reproducción"
-
-msgid "Playback Mode"
-msgstr "Modo de Reproducción"
-
-msgid "Random Pitch Semitones"
-msgstr "Semitonos de Tono Aleatorio"
-
-msgid "Random Volume Offset dB"
-msgstr "Desplazamiento de Volumen Aleatorio dB"
-
-msgid "Streams"
-msgstr "Flujos"
-
-msgid "Buffer Length"
-msgstr "Longitud de Búfer"
 
 msgid "Voice Count"
 msgstr "Número de Voces"
@@ -11909,9 +12271,6 @@ msgstr "Tiempo de Extracción (ms)"
 
 msgid "Surround"
 msgstr "Envolvente"
-
-msgid "Mix Rate Mode"
-msgstr "Modo de Tasa de Mezcla"
 
 msgid "Feed"
 msgstr "Feed"
@@ -12093,30 +12452,6 @@ msgstr "Gravedad Total"
 msgid "Center of Mass Local"
 msgstr "Centro de Masa Local"
 
-msgid "Collide with Bodies"
-msgstr "Colisionar con Cuerpos"
-
-msgid "Collide with Areas"
-msgstr "Colisionar Con Áreas"
-
-msgid "Canvas Instance ID"
-msgstr "ID de Instancia del Canvas"
-
-msgid "Shape RID"
-msgstr "RID de Forma"
-
-msgid "Collide Separation Ray"
-msgstr "Rayo de Separación de Colisión"
-
-msgid "Exclude Bodies"
-msgstr "Excluir Cuerpos"
-
-msgid "Exclude Objects"
-msgstr "Excluir Objetos"
-
-msgid "Recovery as Collision"
-msgstr "Recuperar como Colisión"
-
 msgid "Default Gravity"
 msgstr "Gravedad Predeterminada"
 
@@ -12159,14 +12494,38 @@ msgstr "Compensación de Restricción Predeterminada"
 msgid "Physics Engine"
 msgstr "Motor de Física"
 
+msgid "Max Collisions"
+msgstr "Colisiónes Máximas"
+
+msgid "Canvas Instance ID"
+msgstr "ID de Instancia del Canvas"
+
+msgid "Collide with Bodies"
+msgstr "Colisionar con Cuerpos"
+
+msgid "Collide with Areas"
+msgstr "Colisionar Con Áreas"
+
+msgid "Shape RID"
+msgstr "RID de Forma"
+
+msgid "Collide Separation Ray"
+msgstr "Rayo de Separación de Colisión"
+
+msgid "Exclude Bodies"
+msgstr "Excluir Cuerpos"
+
+msgid "Exclude Objects"
+msgstr "Excluir Objetos"
+
+msgid "Recovery as Collision"
+msgstr "Recuperar como Colisión"
+
 msgid "Inverse Inertia Tensor"
 msgstr "Tensor de Inercia Inversa"
 
 msgid "Principal Inertia Axes"
 msgstr "Ejes de Inercia Principal"
-
-msgid "Max Collisions"
-msgstr "Colisiónes Máximas"
 
 msgid "Debug Redraw Time"
 msgstr "Tiempo de Redibujo en Depuración"
@@ -12192,6 +12551,21 @@ msgstr "Evaluación de Teselación"
 msgid "Compute"
 msgstr "Computar"
 
+msgid "Raygen"
+msgstr "Raygen"
+
+msgid "Any Hit"
+msgstr "Cualquier Impacto"
+
+msgid "Closest Hit"
+msgstr "Colisión más cercana"
+
+msgid "Miss"
+msgstr "Fallo"
+
+msgid "Intersection"
+msgstr "Intersección"
+
 msgid "Syntax"
 msgstr "Syntaxis"
 
@@ -12212,6 +12586,9 @@ msgstr "ID Constante"
 
 msgid "Sample Masks"
 msgstr "Mascaras de Muestra"
+
+msgid "Specialization Constants"
+msgstr "Constantes de especialización"
 
 msgid "Render Loop Enabled"
 msgstr "Loop de Renderización Activado"
@@ -12274,7 +12651,7 @@ msgid "Shader Compiler"
 msgstr "Compilador de Shader"
 
 msgid "Shader Cache"
-msgstr "Cache de Shader"
+msgstr "Caché de shader"
 
 msgid "Use Zstd Compression"
 msgstr "Usar Compresión Zstd"
@@ -12298,7 +12675,7 @@ msgid "GGX Samples"
 msgstr "Muestras GGX"
 
 msgid "Fast Filter High Quality"
-msgstr "Filtro Rapido de Calidad Alta"
+msgstr "Filtro rápido de calidad alta"
 
 msgid "Reflection Atlas"
 msgstr "Atlas de Reflexion"
@@ -12319,7 +12696,7 @@ msgid "Use Half Resolution"
 msgstr "Usar la Mitad de Resolución"
 
 msgid "Overrides"
-msgstr "Anulaciones"
+msgstr "Sobrescrituras"
 
 msgid "Force Vertex Shading"
 msgstr "Forzar Sombreado de Vértices"
@@ -12435,6 +12812,9 @@ msgstr "Cuadros para Convergencia"
 msgid "Frames to Update Lights"
 msgstr "Cuadros para Actualizar Luces"
 
+msgid "Use Legacy Blending"
+msgstr "Usar mezcla heredada"
+
 msgid "Volume Size"
 msgstr "Tamaño del Volumen"
 
@@ -12451,10 +12831,10 @@ msgid "Threaded Cull Minimum Instances"
 msgstr "Instancias Mínimas de Culling en Hilos"
 
 msgid "Cluster Builder"
-msgstr "Constructor de Clústeres"
+msgstr "Generador de clústeres"
 
 msgid "Max Clustered Elements"
-msgstr "Elementos Máximos Agrupados en Clúster"
+msgstr "Elementos máximos agrupados en clústeres"
 
 msgid "OpenGL"
 msgstr "OpenGL"
@@ -12493,7 +12873,7 @@ msgid "Unshaded"
 msgstr "Sin Sombreado"
 
 msgid "Wireframe"
-msgstr "Wireframe"
+msgstr "Estructura alámbrica"
 
 msgid "Skip Vertex Transform"
 msgstr "Omitir Transformación de Vértices"
@@ -12523,7 +12903,7 @@ msgid "Alpha to Coverage and One"
 msgstr "Alfa a Cobertura y Uno"
 
 msgid "Debug Shadow Splits"
-msgstr "Depurar Separacion de Sombras"
+msgstr "Depurar separación de sombras"
 
 msgid "Fog Disabled"
 msgstr "Niebla Desactivada"

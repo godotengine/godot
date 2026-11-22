@@ -151,6 +151,9 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 	memmove(ref_offsets + 1, ref_offsets, vertex_count * sizeof(unsigned int));
 	ref_offsets[0] = 0;
 
+	unsigned int* slots = allocator.allocate<unsigned int>(cluster_count);
+	memset(slots, -1, cluster_count * sizeof(unsigned int));
+
 	// fill cluster adjacency for each cluster...
 	adjacency.offsets[0] = 0;
 
@@ -174,18 +177,13 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 					continue;
 
 				// if the cluster is already in the list, increment the shared count
-				bool found = false;
-				for (size_t l = 0; l < count; ++l)
-					if (adj[l] == c)
-					{
-						found = true;
-						shd[l]++;
-						break;
-					}
-
-				// .. or append a new cluster
-				if (!found)
+				// we do not need to clear slots across clusters due to adj[slot] confirmation check
+				unsigned int slot = slots[c];
+				if (slot < count && adj[slot] == c)
+					shd[slot]++;
+				else
 				{
+					slots[c] = unsigned(count);
 					adj[count] = c;
 					shd[count] = 1;
 					count++;
@@ -200,6 +198,7 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 	assert(adjacency.offsets[cluster_count] <= total_adjacency);
 
 	// ref_offsets can't be deallocated as it was allocated before adjacency
+	allocator.deallocate(slots);
 	allocator.deallocate(ref_data);
 }
 

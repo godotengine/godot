@@ -270,17 +270,24 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dict
 	ERR_FAIL_COND_V_MSG(!p_dictionary.has("type"), Ref<GLTFPhysicsShape>(), "Failed to parse GLTFPhysicsShape, missing required field 'type'.");
 	Ref<GLTFPhysicsShape> gltf_shape;
 	gltf_shape.instantiate();
-	String shape_type = p_dictionary["type"];
-	if (shape_type == "hull") {
+	String declared_shape_type = p_dictionary["type"];
+	String shape_type;
+	// Compatibility aliases for different iterations of the physics extensions.
+	// Khronos glTF 2.1: convexMesh and mesh. OMI_physics_shape: convex and trimesh. OMI_collider: hull and trimesh.
+	if (declared_shape_type == "hull" || declared_shape_type == "convexMesh") {
 		shape_type = "convex";
+	} else if (declared_shape_type == "mesh") {
+		shape_type = "trimesh";
+	} else {
+		shape_type = declared_shape_type;
 	}
 	gltf_shape->shape_type = shape_type;
 	if (shape_type != "box" && shape_type != "capsule" && shape_type != "cylinder" && shape_type != "sphere" && shape_type != "convex" && shape_type != "trimesh") {
 		ERR_PRINT("GLTFPhysicsShape: Error parsing unknown shape type '" + shape_type + "'. Only box, capsule, cylinder, sphere, convex, and trimesh are supported.");
 	}
 	Dictionary properties;
-	if (p_dictionary.has(shape_type)) {
-		properties = p_dictionary[shape_type];
+	if (p_dictionary.has(declared_shape_type)) {
+		properties = p_dictionary[declared_shape_type];
 	} else {
 		properties = p_dictionary;
 	}
@@ -298,9 +305,12 @@ Ref<GLTFPhysicsShape> GLTFPhysicsShape::from_dictionary(const Dictionary &p_dict
 			ERR_PRINT("GLTFPhysicsShape: Error parsing the size, it must have exactly 3 numbers.");
 		}
 	}
+#ifndef DISABLE_DEPRECATED
+	// "isTrigger" is only present in the deprecated OMI_collider extension.
 	if (properties.has("isTrigger")) {
 		gltf_shape->set_is_trigger(properties["isTrigger"]);
 	}
+#endif // DISABLE_DEPRECATED
 	if (properties.has("mesh")) {
 		gltf_shape->set_mesh_index(properties["mesh"]);
 	}

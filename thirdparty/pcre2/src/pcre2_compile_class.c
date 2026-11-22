@@ -498,7 +498,7 @@ static const uint32_t char_list_starts[] = {
 
 static class_ranges *
 compile_optimize_class(uint32_t *start_ptr, uint32_t options,
-  uint32_t xoptions, compile_block *cb)
+  uint32_t xoptions, int *errorcodeptr, compile_block *cb)
 {
 class_ranges* cranges;
 uint32_t *ptr;
@@ -538,12 +538,23 @@ PCRE2_ASSERT((range_list_size & 0x1) == 0);
 
 total_size = range_list_size +
    ((range_list_size >= 2) ? CHAR_LIST_EXTRA_SIZE : 0);
+if (total_size > (PCRE2_SIZE_MAX - sizeof(class_ranges)) / sizeof(uint32_t))
+  {
+  *errorcodeptr = ERR20;
+  cb->erroroffset = 0;
+  return NULL;
+  }
 
 cranges = cb->cx->memctl.malloc(
   sizeof(class_ranges) + total_size * sizeof(uint32_t),
   cb->cx->memctl.memory_data);
 
-if (cranges == NULL) return NULL;
+if (cranges == NULL)
+  {
+  *errorcodeptr = ERR21;
+  cb->erroroffset = 0;
+  return NULL;
+  }
 
 cranges->header.next = NULL;
 #ifdef PCRE2_DEBUG
@@ -721,9 +732,13 @@ while (TRUE)
   else
     cranges->char_lists_types |= tmp1 << tmp2;
 
-  if (range_start < XCL_CHAR_LIST_LOW_16_START) break;
+  if (range_end < XCL_CHAR_LIST_LOW_16_START || tmp2 == 0)
+    {
+    PCRE2_ASSERT(range_start < XCL_CHAR_LIST_LOW_16_START);
+    break;
+    }
 
-  PCRE2_ASSERT(tmp2 >= XCL_TYPE_BIT_LEN);
+  PCRE2_ASSERT((tmp2 % XCL_TYPE_BIT_LEN) == 0);
   char_list_end = char_list_start - 1;
   char_list_start = *char_list_next++;
   tmp1 = 0;
@@ -1116,13 +1131,10 @@ if (utf)
   {
   if (lengthptr != NULL)
     {
-    cranges = compile_optimize_class(pptr, options, xoptions, cb);
+    cranges = compile_optimize_class(pptr, options, xoptions, errorcodeptr, cb);
 
     if (cranges == NULL)
-      {
-      *errorcodeptr = ERR21;
       return NULL;
-      }
 
     /* Caching the pre-processed character ranges. */
     if (cb->last_data != NULL)
@@ -1755,18 +1767,17 @@ if ((xclass_props & XCLASS_REQUIRED) != 0)
       *lengthptr += 1 + LINK_SIZE;
 #endif
 
-      cb->char_lists_size += char_lists_size;
+      PCRE2_ASSERT(BYTES2CU(cb->char_lists_size) <= MAX_PATTERN_SIZE);
 
-      char_lists_size /= sizeof(PCRE2_UCHAR);
-
-      /* Storage space for character lists is included
-      in the maximum pattern size. */
-      if (*lengthptr > MAX_PATTERN_SIZE ||
-          MAX_PATTERN_SIZE - *lengthptr < char_lists_size)
+      if (char_lists_size > PCRE2_SIZE_MAX - cb->char_lists_size ||
+          BYTES2CU(char_lists_size) > MAX_PATTERN_SIZE ||
+          BYTES2CU(cb->char_lists_size) > MAX_PATTERN_SIZE - BYTES2CU(char_lists_size))
         {
         *errorcodeptr = ERR20;   /* Pattern is too large */
         return NULL;
         }
+
+      cb->char_lists_size += char_lists_size;
       }
     else
       {
@@ -1789,6 +1800,8 @@ if ((xclass_props & XCLASS_REQUIRED) != 0)
       Each list is aligned to 32 bit with an optional unused
       16 bit value at the beginning of the character list. */
 
+      PCRE2_ASSERT(char_lists_size <= PCRE2_SIZE_MAX - cb->char_lists_size);
+
       cb->char_lists_size += char_lists_size;
       data = (uint8_t*)cb->start_code - cb->char_lists_size;
 
@@ -1802,17 +1815,14 @@ if ((xclass_props & XCLASS_REQUIRED) != 0)
       PUT(code, 0, (uint32_t)(char_lists_size >> 1));
       code += LINK_SIZE;
 
-#if defined PCRE2_DEBUG || defined SUPPORT_VALGRIND
+      /* If we added padding to align the list, initialize the bytes to
+      defined values, so the library is valgrind-clean. It could also
+      be a security concern for clients calling into PCRE2 via bindings
+      from a memory-safe language, if pcre2_serialize_encode() exposes
+      uninitialized memory that may contain sensitive information. */
+
       if ((char_lists_size & 0x2) != 0)
-        {
-        /* In debug the unused 16 bit value is set
-        to a fixed value and marked unused. */
-        ((uint16_t*)data)[-1] = 0x5555;
-#ifdef SUPPORT_VALGRIND
-        VALGRIND_MAKE_MEM_NOACCESS(data - 2, 2);
-#endif
-        }
-#endif
+        ((uint16_t*)data)[-1] = 0xdead;
 
       cb->char_lists_size =
         CLIST_ALIGN_TO(char_lists_size, sizeof(uint32_t));

@@ -478,6 +478,7 @@ public:
 	bool texture_is_shared(RID p_texture);
 	bool texture_is_valid(RID p_texture);
 	TextureFormat texture_get_format(RID p_texture);
+	TextureSamples texture_get_nearest_supported_samples(const TextureFormat &p_format);
 	Size2i texture_size(RID p_texture);
 #ifndef DISABLE_DEPRECATED
 	uint64_t texture_get_native_handle(RID p_texture);
@@ -1306,6 +1307,8 @@ public:
 
 	void update_pipeline_cache(bool p_closing = false);
 
+	_FORCE_INLINE_ bool is_pipeline_cache_enabled() const { return pipeline_cache_enabled; }
+
 private:
 	/****************/
 	/**** SCREEN ****/
@@ -1657,6 +1660,7 @@ private:
 			RID pipeline_shader;
 			RDD::ShaderID pipeline_shader_driver_id;
 			uint32_t pipeline_shader_layout_hash = 0;
+			uint32_t pipeline_push_constant_size = 0;
 			uint32_t local_group_size[3] = { 0, 0, 0 };
 			uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 			uint32_t push_constant_size = 0;
@@ -1758,6 +1762,13 @@ private:
 	bool _dependencies_make_mutable(RID p_id, RDG::ResourceTracker *p_resource_tracker);
 
 	RenderingDeviceGraph draw_graph;
+
+#ifdef DEBUG_ENABLED
+	bool draw_graph_reorder_commands = true;
+	bool draw_graph_full_barriers = false;
+
+	void _configure_draw_graph_flags();
+#endif
 
 	/**************************/
 	/**** QUEUE MANAGEMENT ****/
@@ -1999,6 +2010,7 @@ private:
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Ref<RDTextureFormat> _texture_get_format(RID p_rd_texture);
+	TextureSamples _texture_get_nearest_supported_samples(const Ref<RDTextureFormat> &p_format);
 
 	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);
 	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);

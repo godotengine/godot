@@ -1,5 +1,3 @@
-GH-116394
----------
 Validate extension JSON: Error: Field 'classes/Animation/methods/get_length/return_value': meta changed value in new API, from "float" to "double".
 Validate extension JSON: Error: Field 'classes/Animation/methods/set_length/arguments/0': meta changed value in new API, from "float" to "double".
 

@@ -113,7 +113,7 @@ static void decodeFilterQuat(short* data, size_t count)
 
 	for (size_t i = 0; i < count; ++i)
 	{
-		// recover scale from the high byte of the component
+		// recover scale from the high byte/word of the component
 		int sf = data[i * 4 + 3] | 3;
 		float s = float(sf);
 
@@ -1439,8 +1439,13 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 			exp -= (bits - 1);
 
 			// compute renormalized rounded mantissa for each component
-			int mmask = (1 << 24) - 1;
+			const int mmask = (1 << 24) - 1;
+			const int mmax = mmask >> 1;
+
 			int m = int(v[j] * optexp2(-exp) + (v[j] >= 0 ? 0.5f : -0.5f));
+
+			// clamp mantissa so that rounding away from zero doesn't overflow
+			m = m > mmax ? mmax : m;
 
 			d[j] = (m & mmask) | (unsigned(exp) << 24);
 		}

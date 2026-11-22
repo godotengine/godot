@@ -3867,30 +3867,38 @@ void GI::setup_voxel_gi_instances(RenderDataRD *p_render_data, Ref<RenderSceneBu
 
 				RID base_probe = gipi->probe;
 
-				Transform3D to_cell = voxel_gi_get_to_cell_xform(gipi->probe) * gipi->transform.affine_inverse() * to_camera;
+				Transform3D to_cell = voxel_gi_get_to_cell_xform(base_probe);
+				Transform3D to_world_cell = to_cell * gipi->transform.affine_inverse() * to_camera;
 
-				gipd.xform[0] = to_cell.basis.rows[0][0];
-				gipd.xform[1] = to_cell.basis.rows[1][0];
-				gipd.xform[2] = to_cell.basis.rows[2][0];
+				gipd.xform[0] = to_world_cell.basis.rows[0][0];
+				gipd.xform[1] = to_world_cell.basis.rows[1][0];
+				gipd.xform[2] = to_world_cell.basis.rows[2][0];
 				gipd.xform[3] = 0;
-				gipd.xform[4] = to_cell.basis.rows[0][1];
-				gipd.xform[5] = to_cell.basis.rows[1][1];
-				gipd.xform[6] = to_cell.basis.rows[2][1];
+				gipd.xform[4] = to_world_cell.basis.rows[0][1];
+				gipd.xform[5] = to_world_cell.basis.rows[1][1];
+				gipd.xform[6] = to_world_cell.basis.rows[2][1];
 				gipd.xform[7] = 0;
-				gipd.xform[8] = to_cell.basis.rows[0][2];
-				gipd.xform[9] = to_cell.basis.rows[1][2];
-				gipd.xform[10] = to_cell.basis.rows[2][2];
+				gipd.xform[8] = to_world_cell.basis.rows[0][2];
+				gipd.xform[9] = to_world_cell.basis.rows[1][2];
+				gipd.xform[10] = to_world_cell.basis.rows[2][2];
 				gipd.xform[11] = 0;
-				gipd.xform[12] = to_cell.origin.x;
-				gipd.xform[13] = to_cell.origin.y;
-				gipd.xform[14] = to_cell.origin.z;
+				gipd.xform[12] = to_world_cell.origin.x;
+				gipd.xform[13] = to_world_cell.origin.y;
+				gipd.xform[14] = to_world_cell.origin.z;
 				gipd.xform[15] = 1;
 
-				Vector3 bounds = voxel_gi_get_octree_size(base_probe);
+				Vector3 bounds = voxel_gi_get_bounds(base_probe).size;
+				Vector3 cell_bounds = to_cell.basis.xform(bounds);
 
-				gipd.bounds[0] = bounds.x;
-				gipd.bounds[1] = bounds.y;
-				gipd.bounds[2] = bounds.z;
+				gipd.bounds[0] = cell_bounds.x;
+				gipd.bounds[1] = cell_bounds.y;
+				gipd.bounds[2] = cell_bounds.z;
+
+				Vector3 octree_size = voxel_gi_get_octree_size(base_probe);
+
+				gipd.octree_size[0] = octree_size.x;
+				gipd.octree_size[1] = octree_size.y;
+				gipd.octree_size[2] = octree_size.z;
 
 				gipd.dynamic_range = voxel_gi_get_dynamic_range(base_probe) * voxel_gi_get_energy(base_probe);
 				gipd.bias = voxel_gi_get_bias(base_probe);
@@ -3967,7 +3975,7 @@ void GI::RenderBuffersGI::free_data() {
 	}
 }
 
-void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances) {
+void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_normal_roughness_slices, const RID *p_voxel_gi_buffer_slices, RID p_environment, uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets, const Transform3D &p_cam_transform, const PagedArray<RID> &p_voxel_gi_instances) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -4213,7 +4221,7 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 				RD::Uniform u;
 				u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 14;
-				RID buffer = p_voxel_gi_buffer.is_valid() ? p_voxel_gi_buffer : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+				RID buffer = p_voxel_gi_buffer_slices[v].is_valid() ? p_voxel_gi_buffer_slices[v] : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 				u.append_id(buffer);
 				uniforms.push_back(u);
 			}

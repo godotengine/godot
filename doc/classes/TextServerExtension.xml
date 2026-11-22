@@ -1107,6 +1107,13 @@
 				Returns the dictionary of the supported OpenType variation coordinates.
 			</description>
 		</method>
+		<method name="_font_validate" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if the font data is valid.
+			</description>
+		</method>
 		<method name="_format_number" qualifiers="virtual const" deprecated="Use [method TranslationServer.format_number] instead.">
 			<return type="String" />
 			<param index="0" name="number" type="String" />

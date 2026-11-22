@@ -154,6 +154,34 @@ static RD::HitShaderBindingTableRange _encode_hit_sbt_range(uint32_t p_offset, u
 
 #define SECONDARY_COMMAND_BUFFERS_PER_FRAME 0
 
+#ifdef DEBUG_ENABLED
+
+// The settings above can also be overridden at runtime with environment variables for debugging purposes.
+
+void RenderingDevice::_configure_draw_graph_flags() {
+	draw_graph_reorder_commands = (RENDER_GRAPH_REORDER == 1);
+	draw_graph_full_barriers = (RENDER_GRAPH_FULL_BARRIERS == 1);
+
+	String reorder = OS::get_singleton()->get_environment("GODOT_RG_REORDER");
+	String full_barriers = OS::get_singleton()->get_environment("GODOT_RG_FULL_BARRIERS");
+
+	if (!reorder.is_empty()) {
+		draw_graph_reorder_commands = (reorder == "1");
+	}
+	if (!full_barriers.is_empty()) {
+		draw_graph_full_barriers = (full_barriers == "1");
+	}
+
+	if (!draw_graph_reorder_commands) {
+		print_line("RG: Disable reordering");
+	}
+	if (draw_graph_full_barriers) {
+		print_line("RG: Enable full barriers");
+	}
+}
+
+#endif
+
 RenderingDevice *RenderingDevice::singleton = nullptr;
 
 RenderingDevice *RenderingDevice::get_singleton() {
@@ -252,7 +280,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_
 #ifdef MODULE_GLSLANG_ENABLED
 		case ShaderLanguage::SHADER_LANGUAGE_GLSL: {
 			ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
-			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
+			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version(p_stage);
 			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
 		}
 #endif
@@ -936,6 +964,9 @@ Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) 
 
 	block.driver_id = driver->buffer_create(p_staging_buffers.block_size, p_staging_buffers.usage_bits, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	ERR_FAIL_COND_V(!block.driver_id, ERR_CANT_CREATE);
+#if DEV_ENABLED
+	driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, block.driver_id, "Staging");
+#endif
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
@@ -1615,6 +1646,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	}
 
 	ERR_FAIL_INDEX_V(format.samples, TEXTURE_SAMPLES_MAX, RID());
+	ERR_FAIL_COND_V_MSG(format.samples > TEXTURE_SAMPLES_1 && format.texture_type != TEXTURE_TYPE_2D && format.texture_type != TEXTURE_TYPE_2D_ARRAY, RID(),
+			"Multisample textures must be 2D or 2D array.");
 
 	ERR_FAIL_COND_V_MSG(format.usage_bits == 0, RID(), "No usage bits specified (at least one is needed)");
 
@@ -1732,6 +1765,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 
 	Texture texture;
 	format.usage_bits |= forced_usage_bits;
+	format.samples = driver->texture_get_nearest_supported_samples(format);
 	texture.driver_id = driver->texture_create(format, tv);
 	ERR_FAIL_COND_V(!texture.driver_id, RID());
 	texture.type = format.texture_type;
@@ -2075,11 +2109,7 @@ static _ALWAYS_INLINE_ void _copy_region(const uint8_t *__restrict p_src, uint8_
 	for (uint32_t y = p_src_h; y > 0; y--) {
 		const uint8_t *__restrict src = p_src + src_offset;
 		uint8_t *__restrict dst = p_dst + dst_offset;
-		for (uint32_t x = p_src_w * p_unit_size; x > 0; x--) {
-			*dst = *src;
-			src++;
-			dst++;
-		}
+		memcpy(dst, src, size_t(p_src_w) * p_unit_size);
 		src_offset += p_src_full_w * p_unit_size;
 		dst_offset += p_dst_pitch;
 	}
@@ -2188,7 +2218,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			write_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 			ERR_FAIL_NULL_V(write_ptr, ERR_CANT_CREATE);
 
-			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				// Transition the texture to the optimal layout.
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
@@ -2255,7 +2285,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			driver->buffer_unmap(transfer_worker->staging_buffer);
 
 			// If the texture does not have a tracker, it means it must be transitioned to the sampling state.
-			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
 				tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
@@ -2947,6 +2977,12 @@ bool RenderingDevice::texture_is_valid(RID p_texture) {
 	ERR_RENDER_THREAD_GUARD_V(false);
 
 	return texture_owner.owns(p_texture);
+}
+
+RD::TextureSamples RenderingDevice::texture_get_nearest_supported_samples(const TextureFormat &p_format) {
+	ERR_RENDER_THREAD_GUARD_V(TEXTURE_SAMPLES_1);
+
+	return driver->texture_get_nearest_supported_samples(p_format);
 }
 
 RD::TextureFormat RenderingDevice::texture_get_format(RID p_texture) {
@@ -4528,7 +4564,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform.");
+							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -4581,7 +4617,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform.");
+							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					ERR_FAIL_COND_V_MSG(!(texture->usage_flags & TEXTURE_USAGE_SAMPLING_BIT), RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs the TEXTURE_USAGE_SAMPLING_BIT usage flag set in order to be used as uniform.");
@@ -4635,7 +4671,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
-							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture type as the uniform.");
+							"Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
 
 					if (likely(set_uniform.texture_format != RD::DATA_FORMAT_MAX) && unlikely(texture->format != set_uniform.texture_format)) {
 						print_verbose("Image (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same texture format as the uniform (expected: " + String(FORMAT_NAMES[set_uniform.texture_format]) + ", actual: " + String(FORMAT_NAMES[texture->format]) + ").");
@@ -6787,23 +6823,30 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
 		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
-		switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
-				first_invalid_set = 0;
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
-				for (uint32_t i = 0; i < pcount; i++) {
-					if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
-						first_invalid_set = i;
-						break;
-					}
-				}
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
-				if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+		if (pipeline->push_constant_size != compute_list.state.pipeline_push_constant_size) {
+			// All sets must be invalidated as the pipeline layout is not compatible if the push constant range is different.
+			compute_list.state.pipeline_push_constant_size = pipeline->push_constant_size;
+			compute_list.state.push_constant_size = 0;
+			first_invalid_set = 0;
+		} else {
+			switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
 					first_invalid_set = 0;
-				}
-			} break;
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
+					for (uint32_t i = 0; i < pcount; i++) {
+						if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
+							first_invalid_set = i;
+							break;
+						}
+					}
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
+					if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+						first_invalid_set = 0;
+					}
+				} break;
+			}
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
@@ -8333,8 +8376,16 @@ void RenderingDevice::_end_frame() {
 	GodotProfileZoneGrouped(_profile_zone, "_submit_transfer_barriers");
 	_submit_transfer_barriers(command_buffer);
 
+#ifdef DEBUG_ENABLED
+	bool reorder_commands = draw_graph_reorder_commands;
+	bool full_barriers = draw_graph_full_barriers;
+#else
+	constexpr bool reorder_commands = (RENDER_GRAPH_REORDER == 1);
+	constexpr bool full_barriers = (RENDER_GRAPH_FULL_BARRIERS == 1);
+#endif
+
 	GodotProfileZoneGrouped(_profile_zone, "draw_graph.end");
-	draw_graph.end(RENDER_GRAPH_REORDER == 1, RENDER_GRAPH_FULL_BARRIERS == 1, command_buffer, frames[frame].command_buffer_pool);
+	draw_graph.end(reorder_commands, full_barriers, command_buffer, frames[frame].command_buffer_pool);
 	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_end");
 	driver->command_buffer_end(command_buffer);
 	GodotProfileZoneGrouped(_profile_zone, "driver->end_segment");
@@ -8740,6 +8791,11 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->command_buffer_begin(frames[0].command_buffer);
 
 	// Create draw graph and start it initialized as well.
+
+#ifdef DEBUG_ENABLED
+	_configure_draw_graph_flags();
+#endif
+
 	draw_graph.initialize(driver, &_render_pass_create_from_graph, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
 	draw_graph.begin();
 
@@ -8829,6 +8885,8 @@ Vector<uint8_t> RenderingDevice::_load_pipeline_cache() {
 }
 
 void RenderingDevice::update_pipeline_cache(bool p_closing) {
+	ERR_FAIL_COND(!pipeline_cache_enabled);
+
 	_THREAD_SAFE_METHOD_
 
 	{
@@ -9288,6 +9346,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture"), &RenderingDevice::texture_resolve_multisample);
 
 	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingDevice::_texture_get_format);
+	ClassDB::bind_method(D_METHOD("texture_get_nearest_supported_samples", "format"), &RenderingDevice::_texture_get_nearest_supported_samples);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture"), &RenderingDevice::texture_get_native_handle);
 #endif
@@ -10127,6 +10186,11 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type, p_layers);
 }
 
+RD::TextureSamples RenderingDevice::_texture_get_nearest_supported_samples(const Ref<RDTextureFormat> &p_format) {
+	ERR_FAIL_COND_V(p_format.is_null(), TEXTURE_SAMPLES_1);
+	return texture_get_nearest_supported_samples(p_format->base);
+}
+
 Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {
 	Ref<RDTextureFormat> rtf;
 	rtf.instantiate();
@@ -10281,7 +10345,7 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 		}
 		stage_data.push_back(sd);
 	}
-	return shader_create_from_spirv(stage_data);
+	return shader_create_from_spirv(stage_data, p_shader_name);
 }
 
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {

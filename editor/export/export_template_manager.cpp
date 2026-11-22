@@ -134,7 +134,7 @@ void ExportTemplateManager::_mirrors_request_completed(int p_result, int p_respo
 			mirrors_available = true;
 		}
 		// Hard-coded for translation. Should match the up-to-date list of mirrors.
-		// TTR("Official Releases mirror")
+		/* TTR("Official Releases mirror") */
 	}
 	if (!mirrors_available) {
 		_set_empty_mirror_list();
@@ -1597,7 +1597,7 @@ void ExportTemplateManager::popup_manager() {
 		_update_template_tree();
 		_request_mirrors();
 	}
-	popup_centered_clamped(Vector2i(640, 700) * EDSCALE);
+	popup_centered_clamped(Vector2(640, 700) * EDSCALE);
 }
 
 bool ExportTemplateManager::is_downloading() const {

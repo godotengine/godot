@@ -2,7 +2,7 @@
 # Copyright (c) 2014-present Godot Engine contributors.
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
-# BennyBeat <bennybeat@gmail.com>, 2017.
+# BennyBeat <bennybeat@gmail.com>, 2017, 2026.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018, 2020, 2025.
 # Rubén Moreno <ruben.moreno.romero@gmail.com>, 2018.
@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-15 19:03+0000\n"
-"Last-Translator: Júlia Rosell Saldaña <contacte@juliars.cat>\n"
+"PO-Revision-Date: 2026-08-30 06:40+0000\n"
+"Last-Translator: BennyBeat <bennybeat@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ca/>\n"
 "Language: ca\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "Aplicació"
@@ -849,6 +849,24 @@ msgstr "Grup de treballadors"
 msgid "Low Priority Thread Ratio"
 msgstr "Ràtio de fils de baixa prioritat"
 
+msgid "Target"
+msgstr "Objectiu"
+
+msgid "Start Offset"
+msgstr "Desplaçament inicial"
+
+msgid "Max Results"
+msgstr "Resultats màxims"
+
+msgid "Subject"
+msgstr "Subjecte"
+
+msgid "Names"
+msgstr "Noms"
+
+msgid "Strings"
+msgstr "Cadenes"
+
 msgid "Locale"
 msgstr "Idioma"
 
@@ -917,9 +935,6 @@ msgstr "Mode de manipulació"
 
 msgid "Stream"
 msgstr "Flux"
-
-msgid "Start Offset"
-msgstr "Desplaçament inicial"
 
 msgid "End Offset"
 msgstr "Desplaçament final"
@@ -1068,12 +1083,6 @@ msgstr "Capacitats"
 msgid "Access Wi-Fi"
 msgstr "Accés a la Wi-Fi"
 
-msgid "Performance Gaming Tier"
-msgstr "Nivell de jocs de rendiment"
-
-msgid "Performance A 12"
-msgstr "Actuació A 12"
-
 msgid "Shader Baker"
 msgstr "Fornejador d'ombrejat"
 
@@ -1091,24 +1100,6 @@ msgstr "Accessible des de la funció Compartir d'iTunes"
 
 msgid "Privacy"
 msgstr "Privacitat"
-
-msgid "Camera Usage Description"
-msgstr "Descripció de l'ús de la càmera"
-
-msgid "Camera Usage Description Localized"
-msgstr "Descripció de l'ús de la càmera localitzada"
-
-msgid "Microphone Usage Description"
-msgstr "Descripció de l'ús del micròfon"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Descripció d'ús del micròfon Localitzada"
-
-msgid "Photolibrary Usage Description"
-msgstr "Descripció de l'ús de la fototeca"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Descripció d'ús de la fotobiblioteca Localitzada"
 
 msgid "Tracking Enabled"
 msgstr "Seguiment habilitat"
@@ -1692,6 +1683,15 @@ msgstr "Arranjament"
 msgid "Layout"
 msgstr "Disseny"
 
+msgid "Normal Map"
+msgstr "Mapa normal"
+
+msgid "Roughness"
+msgstr "Rugositat"
+
+msgid "Src Normal"
+msgstr "Origen normal"
+
 msgid "Base Scale"
 msgstr "Escalat base"
 
@@ -1706,15 +1706,6 @@ msgstr "Arreglar llindar Alpha"
 
 msgid "Premult Alpha"
 msgstr "Premult Alpha"
-
-msgid "Normal Map"
-msgstr "Mapa normal"
-
-msgid "Roughness"
-msgstr "Rugositat"
-
-msgid "Src Normal"
-msgstr "Origen normal"
 
 msgid "Process"
 msgstr "Processar"
@@ -1896,42 +1887,6 @@ msgstr "Nom del Connector"
 
 msgid "Autoload on Startup"
 msgstr "Autocarregar a l'inici"
-
-msgid "ID"
-msgstr "Identificació"
-
-msgid "Texture"
-msgstr "Textura"
-
-msgid "Margins"
-msgstr "Marges"
-
-msgid "Separation"
-msgstr "Separació"
-
-msgid "Texture Region Size"
-msgstr "Tamany de regió de textura"
-
-msgid "Use Texture Padding"
-msgstr "Utilitza el farciment de textures"
-
-msgid "Atlas Coords"
-msgstr "Coordenades de l'Atlas"
-
-msgid "Size in Atlas"
-msgstr "Mida a Atles"
-
-msgid "Alternative ID"
-msgstr "ID alternatiu"
-
-msgid "Speed"
-msgstr "Velocitat"
-
-msgid "Frames Count"
-msgstr "Comptador de marcs"
-
-msgid "Duration"
-msgstr "Duració"
 
 msgid "Current Group Idx"
 msgstr "Idx del grup actual"
@@ -2137,11 +2092,11 @@ msgstr "Replega el menú principal"
 msgid "Show Renderer Selector"
 msgstr "Mostra el selector del renderitzador"
 
-msgid "Derive Script Globals by Name"
-msgstr "Derivar valors globals de script per nom"
-
 msgid "Scene Tree"
 msgstr "Arbre d'escenes"
+
+msgid "Derive Script Globals by Name"
+msgstr "Derivar valors globals de script per nom"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "Pregunteu abans de revocar el nom únic"
@@ -2376,9 +2331,6 @@ msgstr "Mida de la miniatura"
 
 msgid "Quick Open Dialog"
 msgstr "Diàleg d'apertura ràpida"
-
-msgid "Max Results"
-msgstr "Resultats màxims"
 
 msgid "Instant Preview"
 msgstr "Previsualització instantània"
@@ -2644,11 +2596,11 @@ msgstr "Obriu l'script dominant al canvi d'escena"
 msgid "Drop Preload Resources as UID"
 msgstr "Elimina els recursos de precàrrega com a UID"
 
-msgid "Documentation"
-msgstr "Documentació"
-
 msgid "Enable Tooltips"
 msgstr "Activa les descripcions emergents"
+
+msgid "Documentation"
+msgstr "Documentació"
 
 msgid "Script List"
 msgstr "Llistat d'Scripts"
@@ -3595,12 +3547,6 @@ msgstr "Activa el seguiment de plans"
 msgid "Enable Builtin Plane Detection"
 msgstr "Activa la detecció de pla integrada"
 
-msgid "Enable Marker Tracking"
-msgstr "Activa el seguiment de marcadors"
-
-msgid "Enable Builtin Marker Tracking"
-msgstr "Activa el seguiment de marcadors integrat"
-
 msgid "Aruco Dict"
 msgstr "Dictat d'Aruco"
 
@@ -3654,9 +3600,6 @@ msgstr "Icona nativa de Windows"
 
 msgid "Text Driver"
 msgstr "Controladora de text"
-
-msgid "Search in File Extensions"
-msgstr "Cercar a Extensions de fitxer"
 
 msgid "Mouse Cursor"
 msgstr "Cursor del ratolí"
@@ -4798,6 +4741,9 @@ msgstr "Perfils d'interacció"
 msgid "Actions"
 msgstr "Accions"
 
+msgid "Duration"
+msgstr "Duració"
+
 msgid "Binding Path"
 msgstr "Camí d'enllaç"
 
@@ -4975,14 +4921,206 @@ msgstr "Rastrejador"
 msgid "Make Local to Pose"
 msgstr "Fes local a posició"
 
-msgid "Subject"
-msgstr "Subjecte"
+msgid "ID"
+msgstr "Identificació"
 
-msgid "Names"
-msgstr "Noms"
+msgid "Texture"
+msgstr "Textura"
 
-msgid "Strings"
-msgstr "Cadenes"
+msgid "Margins"
+msgstr "Marges"
+
+msgid "Separation"
+msgstr "Separació"
+
+msgid "Texture Region Size"
+msgstr "Tamany de regió de textura"
+
+msgid "Use Texture Padding"
+msgstr "Utilitza el farciment de textures"
+
+msgid "Atlas Coords"
+msgstr "Coordenades de l'Atlas"
+
+msgid "Size in Atlas"
+msgstr "Mida a Atles"
+
+msgid "Alternative ID"
+msgstr "ID alternatiu"
+
+msgid "Speed"
+msgstr "Velocitat"
+
+msgid "Frames Count"
+msgstr "Comptador de marcs"
+
+msgid "Tile Set"
+msgstr "Conjunt de rajoles"
+
+msgid "Rendering Quadrant Size"
+msgstr "Mida del quadrant de renderització"
+
+msgid "Collision Animatable"
+msgstr "Col·lisió animable"
+
+msgid "Collision Visibility Mode"
+msgstr "Mode de Visibilitat de la Col·lisió"
+
+msgid "Navigation Visibility Mode"
+msgstr "Mode de Visibilitat de la Navegació"
+
+msgid "Occlusion Enabled"
+msgstr "Oclusió activada"
+
+msgid "Y Sort Origin"
+msgstr "Origen d'ordenació Y"
+
+msgid "X Draw Order Reversed"
+msgstr "Ordre de dibuix X revertit"
+
+msgid "Collision Enabled"
+msgstr "Col·lisió activada"
+
+msgid "Use Kinematic Bodies"
+msgstr "Utilitzar cossos cinemàtics"
+
+msgid "Physics Quadrant Size"
+msgstr "Mida de Quadrant de la Física"
+
+msgid "Right Side"
+msgstr "El costat dret"
+
+msgid "Right Corner"
+msgstr "Cantonada dreta"
+
+msgid "Bottom Right Side"
+msgstr "Part inferior dreta"
+
+msgid "Bottom Right Corner"
+msgstr "Cantonada inferior dreta"
+
+msgid "Bottom Side"
+msgstr "Lateral inferior"
+
+msgid "Bottom Corner"
+msgstr "Cantó inferior"
+
+msgid "Bottom Left Side"
+msgstr "Part inferior esquerra"
+
+msgid "Bottom Left Corner"
+msgstr "Cantonada inferior esquerra"
+
+msgid "Left Side"
+msgstr "Costat Esquerre"
+
+msgid "Left Corner"
+msgstr "Canton Esquerre"
+
+msgid "Top Left Side"
+msgstr "Part superior esquerra"
+
+msgid "Top Left Corner"
+msgstr "Cantonada superior esquerra"
+
+msgid "Top Side"
+msgstr "Lateral superior"
+
+msgid "Top Corner"
+msgstr "Cantó superior"
+
+msgid "Top Right Side"
+msgstr "Part superior dreta"
+
+msgid "Top Right Corner"
+msgstr "Cantonada superior dreta"
+
+msgid "Terrains"
+msgstr "Terrenys"
+
+msgid "Custom Data"
+msgstr "Dades personalitzades"
+
+msgid "Tile Shape"
+msgstr "Forma de rajoles"
+
+msgid "Tile Layout"
+msgstr "Disseny de rajoles"
+
+msgid "Tile Offset Axis"
+msgstr "Eix de compensació de rajoles"
+
+msgid "Tile Size"
+msgstr "Mida de rajoles"
+
+msgid "UV Clipping"
+msgstr "UV Retall"
+
+msgid "Occlusion Layers"
+msgstr "Capes d'oclusió"
+
+msgid "Physics Layers"
+msgstr "Capes de Física"
+
+msgid "Terrain Sets"
+msgstr "Conjunts de terreny"
+
+msgid "Custom Data Layers"
+msgstr "Capes de dades personalitzades"
+
+msgid "Scenes"
+msgstr "Escenes"
+
+msgid "Scene"
+msgstr "Escena"
+
+msgid "Display Placeholder"
+msgstr "Mostra marcador de posició"
+
+msgid "Polygons Count"
+msgstr "Recompte de polígons"
+
+msgid "Points"
+msgstr "Punts"
+
+msgid "One Way"
+msgstr "One Way"
+
+msgid "One Way Margin"
+msgstr "Marge unidireccional"
+
+msgid "Terrains Peering Bit"
+msgstr "Terrenys Peering Bit"
+
+msgid "Flip H"
+msgstr "Girar H"
+
+msgid "Flip V"
+msgstr "Girar V"
+
+msgid "Transpose"
+msgstr "Transposar"
+
+msgid "Texture Origin"
+msgstr "Origen de la textura"
+
+msgid "Modulate"
+msgstr "Modular"
+
+msgid "Z Index"
+msgstr "Índex Z"
+
+msgid "Terrain Set"
+msgstr "Conjunt del terreny"
+
+msgid "Terrain"
+msgstr "Terreny"
+
+msgid "Miscellaneous"
+msgstr "Miscel·lània"
+
+msgid "Probability"
+msgstr "Probabilitat"
 
 msgid "Discover Multicast If"
 msgstr "Descobrir Multicast If"
@@ -5061,6 +5199,9 @@ msgstr "Nom variant"
 
 msgid "Varying Type"
 msgstr "Tipus variant"
+
+msgid "Group"
+msgstr "Grup"
 
 msgid "Op Type"
 msgstr "Tipus d'Op"
@@ -5413,6 +5554,12 @@ msgstr "Utilitzar un color de fons de pantalla personalitzat"
 msgid "Custom BG Color"
 msgstr "Color de fons personalitzat"
 
+msgid "Performance Gaming Tier"
+msgstr "Nivell de jocs de rendiment"
+
+msgid "Performance A 12"
+msgstr "Actuació A 12"
+
 msgid "Settings 58 X 58"
 msgstr "Configuracions 58 X 58"
 
@@ -5638,6 +5785,18 @@ msgstr "Clau API"
 msgid "API Key ID"
 msgstr "ID de la clau de l'API"
 
+msgid "Microphone Usage Description"
+msgstr "Descripció de l'ús del micròfon"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Descripció d'ús del micròfon Localitzada"
+
+msgid "Camera Usage Description"
+msgstr "Descripció de l'ús de la càmera"
+
+msgid "Camera Usage Description Localized"
+msgstr "Descripció de l'ús de la càmera localitzada"
+
 msgid "Location Usage Description"
 msgstr "Descripció de l'ús de la ubicació"
 
@@ -5839,12 +5998,6 @@ msgstr "Velocitat d'escalat"
 msgid "Centered"
 msgstr "Centrat"
 
-msgid "Flip H"
-msgstr "Girar H"
-
-msgid "Flip V"
-msgstr "Girar V"
-
 msgid "Current"
 msgstr "Actual"
 
@@ -6018,9 +6171,6 @@ msgstr "Radi d'esfera"
 
 msgid "Rect Extents"
 msgstr "Extensió rectangular"
-
-msgid "Points"
-msgstr "Punts"
 
 msgid "Normals"
 msgstr "Normals"
@@ -6770,39 +6920,6 @@ msgstr "Coordenades del fotograma"
 msgid "Filter Clip Enabled"
 msgstr "Clip de filtre activat"
 
-msgid "Tile Set"
-msgstr "Conjunt de rajoles"
-
-msgid "Rendering Quadrant Size"
-msgstr "Mida del quadrant de renderització"
-
-msgid "Collision Animatable"
-msgstr "Col·lisió animable"
-
-msgid "Collision Visibility Mode"
-msgstr "Mode de Visibilitat de la Col·lisió"
-
-msgid "Navigation Visibility Mode"
-msgstr "Mode de Visibilitat de la Navegació"
-
-msgid "Occlusion Enabled"
-msgstr "Oclusió activada"
-
-msgid "Y Sort Origin"
-msgstr "Origen d'ordenació Y"
-
-msgid "X Draw Order Reversed"
-msgstr "Ordre de dibuix X revertit"
-
-msgid "Collision Enabled"
-msgstr "Col·lisió activada"
-
-msgid "Use Kinematic Bodies"
-msgstr "Utilitzar cossos cinemàtics"
-
-msgid "Physics Quadrant Size"
-msgstr "Mida de Quadrant de la Física"
-
 msgid "Show Rect"
 msgstr "Mostrar rectangle"
 
@@ -6935,9 +7052,6 @@ msgstr "Paràmetres"
 
 msgid "Emission Energy"
 msgstr "Energia d'Emissió"
-
-msgid "Modulate"
-msgstr "Modular"
 
 msgid "Albedo Mix"
 msgstr "Barreja d'Albedo"
@@ -7143,6 +7257,9 @@ msgstr "Entela"
 msgid "Caster Mask"
 msgstr "Emmascarament de llançador"
 
+msgid "Sky Mode"
+msgstr "Mode cel"
+
 msgid "Directional Shadow"
 msgstr "Ombra Direccional"
 
@@ -7163,9 +7280,6 @@ msgstr "Inici d'esvaïment"
 
 msgid "Pancake Size"
 msgstr "Mida del pastís"
-
-msgid "Sky Mode"
-msgstr "Mode cel"
 
 msgid "Omni"
 msgstr "Omni"
@@ -7749,9 +7863,6 @@ msgstr "Ós arrel"
 msgid "Tip Bone"
 msgstr "Os de punta"
 
-msgid "Target"
-msgstr "Objectiu"
-
 msgid "Override Tip Basis"
 msgstr "Anul·lar la base de punta"
 
@@ -7779,8 +7890,8 @@ msgstr "Interior"
 msgid "External Force"
 msgstr "Força externa"
 
-msgid "Track Physics Step"
-msgstr "Pas de física de la pista"
+msgid "Max Length"
+msgstr "Llargada màxima"
 
 msgid "Sorting"
 msgstr "Ordenació"
@@ -8577,9 +8688,6 @@ msgstr "Ràtio de visibilitat"
 msgid "Placeholder Text"
 msgstr "Text de marcador de posició"
 
-msgid "Max Length"
-msgstr "Llargada màxima"
-
 msgid "Keep Editing on Text Submit"
 msgstr "Continueu editant a l'enviament de text"
 
@@ -8880,6 +8988,9 @@ msgstr "Passa de fletxa personalitzada"
 msgid "Custom Arrow Round"
 msgstr "Arrodoniment personalitzat de fletxa"
 
+msgid "Format"
+msgstr "Format"
+
 msgid "Split Offsets"
 msgstr "Dividir offsets"
 
@@ -9166,9 +9277,6 @@ msgstr "Capa de visibilitat"
 msgid "Ordering"
 msgstr "Encàrrec"
 
-msgid "Z Index"
-msgstr "Índex Z"
-
 msgid "Z as Relative"
 msgstr "Z com a relatiu"
 
@@ -9231,9 +9339,6 @@ msgstr "Prioritat de Física"
 
 msgid "Thread Group"
 msgstr "Grup de fils"
-
-msgid "Group"
-msgstr "Grup"
 
 msgid "Group Order"
 msgstr "Ordre de grup"
@@ -9670,126 +9775,6 @@ msgstr "Flip Bend Direcció"
 msgid "Modification Count"
 msgstr "Recompte de modificacions"
 
-msgid "Right Side"
-msgstr "El costat dret"
-
-msgid "Right Corner"
-msgstr "Cantonada dreta"
-
-msgid "Bottom Right Side"
-msgstr "Part inferior dreta"
-
-msgid "Bottom Right Corner"
-msgstr "Cantonada inferior dreta"
-
-msgid "Bottom Side"
-msgstr "Lateral inferior"
-
-msgid "Bottom Corner"
-msgstr "Cantó inferior"
-
-msgid "Bottom Left Side"
-msgstr "Part inferior esquerra"
-
-msgid "Bottom Left Corner"
-msgstr "Cantonada inferior esquerra"
-
-msgid "Left Side"
-msgstr "Costat Esquerre"
-
-msgid "Left Corner"
-msgstr "Canton Esquerre"
-
-msgid "Top Left Side"
-msgstr "Part superior esquerra"
-
-msgid "Top Left Corner"
-msgstr "Cantonada superior esquerra"
-
-msgid "Top Side"
-msgstr "Lateral superior"
-
-msgid "Top Corner"
-msgstr "Cantó superior"
-
-msgid "Top Right Side"
-msgstr "Part superior dreta"
-
-msgid "Top Right Corner"
-msgstr "Cantonada superior dreta"
-
-msgid "Terrains"
-msgstr "Terrenys"
-
-msgid "Custom Data"
-msgstr "Dades personalitzades"
-
-msgid "Tile Shape"
-msgstr "Forma de rajoles"
-
-msgid "Tile Layout"
-msgstr "Disseny de rajoles"
-
-msgid "Tile Offset Axis"
-msgstr "Eix de compensació de rajoles"
-
-msgid "Tile Size"
-msgstr "Mida de rajoles"
-
-msgid "UV Clipping"
-msgstr "UV Retall"
-
-msgid "Occlusion Layers"
-msgstr "Capes d'oclusió"
-
-msgid "Physics Layers"
-msgstr "Capes de Física"
-
-msgid "Terrain Sets"
-msgstr "Conjunts de terreny"
-
-msgid "Custom Data Layers"
-msgstr "Capes de dades personalitzades"
-
-msgid "Scenes"
-msgstr "Escenes"
-
-msgid "Scene"
-msgstr "Escena"
-
-msgid "Display Placeholder"
-msgstr "Mostra marcador de posició"
-
-msgid "Polygons Count"
-msgstr "Recompte de polígons"
-
-msgid "One Way"
-msgstr "One Way"
-
-msgid "One Way Margin"
-msgstr "Marge unidireccional"
-
-msgid "Terrains Peering Bit"
-msgstr "Terrenys Peering Bit"
-
-msgid "Transpose"
-msgstr "Transposar"
-
-msgid "Texture Origin"
-msgstr "Origen de la textura"
-
-msgid "Terrain Set"
-msgstr "Conjunt del terreny"
-
-msgid "Terrain"
-msgstr "Terreny"
-
-msgid "Miscellaneous"
-msgstr "Miscel·lània"
-
-msgid "Probability"
-msgstr "Probabilitat"
-
 msgid "Distance"
 msgstr "Distància"
 
@@ -9816,9 +9801,6 @@ msgstr "Profunditat del mapa"
 
 msgid "Map Data"
 msgstr "Dades del mapa"
-
-msgid "Item"
-msgstr "Item"
 
 msgid "Add UV2"
 msgstr "Afegeix UV2"
@@ -9955,14 +9937,29 @@ msgstr "Atles"
 msgid "Filter Clip"
 msgstr "Clip de filtre"
 
-msgid "Polyphony"
-msgstr "Polifonia"
-
-msgid "Format"
-msgstr "Format"
+msgid "Mix Rate Mode"
+msgstr "Mode de freqüència de mescla"
 
 msgid "Mix Rate"
 msgstr "Taxa de mescla"
+
+msgid "Buffer Length"
+msgstr "Longitud de la memòria intermèdia"
+
+msgid "Polyphony"
+msgstr "Polifonia"
+
+msgid "Playback Mode"
+msgstr "Mode de reproducció"
+
+msgid "Random Pitch Semitones"
+msgstr "Semitons aleatoris del to"
+
+msgid "Random Volume Offset dB"
+msgstr "Desplaçament aleatori del volum (dB)"
+
+msgid "Streams"
+msgstr "Fluxos"
 
 msgid "Stereo"
 msgstr "estèreo"
@@ -11323,6 +11320,18 @@ msgstr "Color de l'indicador de desplaçament vertical"
 msgid "Scroll Hint Horizontal Color"
 msgstr "Color de l'indicador de desplaçament horitzontal"
 
+msgid "Scrollbar Margin Left"
+msgstr "Barra de desplaçament marge esquerra"
+
+msgid "Scrollbar Margin Top"
+msgstr "Barra de desplaçament marge superior"
+
+msgid "Scrollbar Margin Right"
+msgstr "Barra de desplaçament marge dreta"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Barra de desplaçament marge inferior"
+
 msgid "Normal Joystick"
 msgstr "Joystick normal"
 
@@ -11428,6 +11437,24 @@ msgstr "Miniatura de fitxer"
 msgid "Folder Thumbnail"
 msgstr "Miniatura de carpeta"
 
+msgid "Menu Copy Path"
+msgstr "Menú Copia Ruta"
+
+msgid "Menu Delete"
+msgstr "Menú Suprimeix"
+
+msgid "Menu New Folder"
+msgstr "Menú Carpeta Nova"
+
+msgid "Menu Refresh"
+msgstr "Menú Actualitza"
+
+msgid "Menu Show in File Manager"
+msgstr "Menú Mostra a l'Explorador de fitxers"
+
+msgid "Menu Open Bundle"
+msgstr "Menú Obre un paquet"
+
 msgid "Folder Icon Color"
 msgstr "Color de carpeta icona"
 
@@ -11445,6 +11472,9 @@ msgstr "Separador etiquetat esquerre"
 
 msgid "Labeled Separator Right"
 msgstr "Separador etiquetat dret"
+
+msgid "Indeterminate Disabled"
+msgstr "Indeterminat desactivat"
 
 msgid "Submenu"
 msgstr "Submenú"
@@ -11557,9 +11587,6 @@ msgstr "Personalitzat botó premut"
 msgid "Custom Button Hover"
 msgstr "Personalitzat botó en passar-hi el cursor"
 
-msgid "Indeterminate Disabled"
-msgstr "Indeterminat desactivat"
-
 msgid "Select Arrow"
 msgstr "Fletxa de selecció"
 
@@ -11658,18 +11685,6 @@ msgstr "Vora de desplaçament"
 
 msgid "Scroll Speed"
 msgstr "Velocitat de desplaçament"
-
-msgid "Scrollbar Margin Left"
-msgstr "Barra de desplaçament marge esquerra"
-
-msgid "Scrollbar Margin Top"
-msgstr "Barra de desplaçament marge superior"
-
-msgid "Scrollbar Margin Right"
-msgstr "Barra de desplaçament marge dreta"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Barra de desplaçament marge inferior"
 
 msgid "Scrollbar H Separation"
 msgstr "Separació de barra de desplaçament H"
@@ -12043,21 +12058,6 @@ msgstr "Dispositiu d'entrada"
 msgid "Playback Speed Scale"
 msgstr "Escala de velocitat de reproducció"
 
-msgid "Playback Mode"
-msgstr "Mode de reproducció"
-
-msgid "Random Pitch Semitones"
-msgstr "Semitons aleatoris del to"
-
-msgid "Random Volume Offset dB"
-msgstr "Desplaçament aleatori del volum (dB)"
-
-msgid "Streams"
-msgstr "Fluxos"
-
-msgid "Buffer Length"
-msgstr "Longitud de la memòria intermèdia"
-
 msgid "Voice Count"
 msgstr "Nombre de veus"
 
@@ -12165,9 +12165,6 @@ msgstr "Extracció temporal (ms)"
 
 msgid "Surround"
 msgstr "So envoltant"
-
-msgid "Mix Rate Mode"
-msgstr "Mode de freqüència de mescla"
 
 msgid "Feed"
 msgstr "Alimentació"
@@ -12349,30 +12346,6 @@ msgstr "Total gravetat"
 msgid "Center of Mass Local"
 msgstr "Centre de massa local"
 
-msgid "Collide with Bodies"
-msgstr "Col·lideix amb cossos"
-
-msgid "Collide with Areas"
-msgstr "Col·lideix amb àrees"
-
-msgid "Canvas Instance ID"
-msgstr "ID d'instància del canvas"
-
-msgid "Shape RID"
-msgstr "RID de la forma"
-
-msgid "Collide Separation Ray"
-msgstr "Col·lideix separació raig"
-
-msgid "Exclude Bodies"
-msgstr "Exclou els cossos"
-
-msgid "Exclude Objects"
-msgstr "Exclou els objectes"
-
-msgid "Recovery as Collision"
-msgstr "Recuperació com a col·lisió"
-
 msgid "Default Gravity"
 msgstr "Per defecte gravetat"
 
@@ -12415,14 +12388,38 @@ msgstr "Biaix de restricció per defecte"
 msgid "Physics Engine"
 msgstr "Motor de física"
 
+msgid "Max Collisions"
+msgstr "Col·lisions màximes"
+
+msgid "Canvas Instance ID"
+msgstr "ID d'instància del canvas"
+
+msgid "Collide with Bodies"
+msgstr "Col·lideix amb cossos"
+
+msgid "Collide with Areas"
+msgstr "Col·lideix amb àrees"
+
+msgid "Shape RID"
+msgstr "RID de la forma"
+
+msgid "Collide Separation Ray"
+msgstr "Col·lideix separació raig"
+
+msgid "Exclude Bodies"
+msgstr "Exclou els cossos"
+
+msgid "Exclude Objects"
+msgstr "Exclou els objectes"
+
+msgid "Recovery as Collision"
+msgstr "Recuperació com a col·lisió"
+
 msgid "Inverse Inertia Tensor"
 msgstr "Tensor d'inèrcia inversa"
 
 msgid "Principal Inertia Axes"
 msgstr "Principals eixos d'inèrcia"
-
-msgid "Max Collisions"
-msgstr "Col·lisions màximes"
 
 msgid "Debug Redraw Time"
 msgstr "Temps de redibuix de depuració"

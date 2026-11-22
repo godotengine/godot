@@ -107,7 +107,7 @@ void WSLPeer::Resolver::try_next_candidate(const Ref<StreamPeerTCP> &p_tcp) {
 
 	// Keep trying next candidate.
 	while (ip_candidates.size()) {
-		Error err = p_tcp->connect_to_host(ip_candidates.pop_front(), port);
+		Error err = p_tcp->connect_to_host(ip_candidates.pop_front().to<IPAddress>(), port);
 		if (err == OK) {
 			return;
 		} else {
@@ -909,6 +909,8 @@ void WSLPeer::_clear() {
 
 	// Pending packets info.
 	was_string = 0;
+	heartbeat_waiting = false;
+	pending_message.clear();
 	in_buffer.clear();
 	packet_buffer.clear();
 

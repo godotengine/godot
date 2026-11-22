@@ -125,7 +125,8 @@ struct SimpleGlyph
 
   static bool read_flags (const HBUINT8 *&p /* IN/OUT */,
 			  hb_array_t<contour_point_t> points_ /* IN/OUT */,
-			  const HBUINT8 *end)
+			  const HBUINT8 *end,
+			  bool extended)
   {
     auto *points = points_.arrayZ;
     unsigned count = points_.length;
@@ -133,6 +134,8 @@ struct SimpleGlyph
     {
       if (unlikely (p + 1 > end)) return false;
       uint8_t flag = *p++;
+      if (!extended)
+	flag &= ~FLAG_CUBIC;
       points[i++].flag = flag;
       if (flag & FLAG_REPEAT)
       {
@@ -178,7 +181,9 @@ struct SimpleGlyph
   }
 
   bool get_contour_points (contour_point_vector_t &points /* OUT */,
-			   bool phantom_only = false) const
+			   bool extended,
+			   bool phantom_only = false,
+			   int64_t *budget = nullptr) const
   {
     const HBUINT16 *endPtsOfContours = &StructAfter<HBUINT16> (header);
     int num_contours = header.numberOfContours;
@@ -187,6 +192,10 @@ struct SimpleGlyph
     if (unlikely (!bytes.check_range (&endPtsOfContours[num_contours]))) return false;
     unsigned int num_points = endPtsOfContours[num_contours - 1] + 1;
     if (unlikely (num_points < (unsigned) num_contours)) return false;
+
+    /* Charge before allocating and reading, so that glyphs that fail
+     * later (truncated data, composite caps) still pay for this work. */
+    if (budget && unlikely (!hb_budget_spend (*budget, HB_BUDGET_1, num_points))) return false;
 
     unsigned old_length = points.length;
     points.alloc (points.length + num_points + 4); // Allocate for phantom points, to avoid a possible copy
@@ -208,7 +217,7 @@ struct SimpleGlyph
     if (unlikely (p >= end)) return false;
 
     /* Read x & y coordinates */
-    return read_flags (p, points_, end)
+    return read_flags (p, points_, end, extended)
         && read_points (p, points_, end, &contour_point_t::x,
 			FLAG_X_SHORT, FLAG_X_SAME)
 	&& read_points (p, points_, end, &contour_point_t::y,

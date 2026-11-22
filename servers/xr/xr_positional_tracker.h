@@ -41,6 +41,8 @@
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
 
+#define XR_TRACKER_HEAD SNAME("head")
+
 class XRPositionalTracker : public XRTracker {
 	GDCLASS(XRPositionalTracker, XRTracker);
 	_THREAD_SAFE_CLASS_

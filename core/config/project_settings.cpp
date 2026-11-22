@@ -105,8 +105,12 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 	features.append(GODOT_VERSION_FULL_BUILD);
 
 #ifdef RD_ENABLED
+#ifdef FORWARD_RD_ENABLED
 	features.append("Forward Plus");
+#endif // FORWARD_RD_ENABLED
+#ifdef MOBILE_RD_ENABLED
 	features.append("Mobile");
+#endif // MOBILE_RD_ENABLED
 #endif
 
 #ifdef GLES3_ENABLED
@@ -1444,14 +1448,45 @@ bool ProjectSettings::check_changed_settings_in_group(const String &p_setting_pr
 
 void ProjectSettings::refresh_global_class_list() {
 	// This is called after mounting a new PCK file to pick up class changes.
-	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
-	Array script_classes = get_global_class_list();
-	for (int i = 0; i < script_classes.size(); i++) {
-		Dictionary c = script_classes[i];
-		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
+
+	// Reloading here would be wrong for the class list; instead we must merge
+	// the new class list into the old.
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	if (cf->load(get_global_class_list_path()) != OK) {
+#ifndef TOOLS_ENABLED
+		// Script classes can't be recreated in exported project, so print an error.
+		ERR_PRINT("Could not load global script cache.");
+#endif
+		return;
+	}
+
+	Array mounted_global_class_list = cf->get_value("", "list", Array());
+	for (const Variant &new_entry_variant : mounted_global_class_list) {
+		Dictionary new_entry = new_entry_variant;
+		if (!new_entry.has("class") || !new_entry.has("language") || !new_entry.has("path") || !new_entry.has("base") || !new_entry.has("is_abstract") || !new_entry.has("is_tool")) {
 			continue;
 		}
-		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
+		StringName new_class_name = new_entry["class"];
+		String new_class_path = new_entry["path"];
+
+		bool found = false;
+		for (Variant &v : global_class_list) {
+			Dictionary existing_entry = v;
+			if (existing_entry["class"].to<StringName>() == new_class_name) {
+				if (existing_entry["path"] != new_class_path) {
+					WARN_PRINT(vformat("A mounted resource pack moved global class '%s' from path '%s' to '%s'. This is not supported and might lead to issues.", new_entry["class"], existing_entry["path"], new_class_path));
+				}
+				v = new_entry;
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			global_class_list.push_back(new_entry);
+		}
+		ScriptServer::add_global_class(new_entry["class"], new_entry["base"], new_entry["language"], new_entry["path"], new_entry["is_abstract"], new_entry["is_tool"]);
 	}
 }
 
@@ -1710,7 +1745,6 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/run/disable_stderr", false);
 	GLOBAL_DEF("application/run/print_header", true);
 	GLOBAL_DEF("application/run/enable_alt_space_menu", false);
-	GLOBAL_DEF("application/run/use_game_mode", true);
 	GLOBAL_DEF_RST("application/config/use_hidden_project_data_directory", true);
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
@@ -1765,6 +1799,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING_NAME, "audio/buses/gui_theme_bus", PROPERTY_HINT_AUDIO_BUS, ""), StringName("Master"));
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type.web", PROPERTY_HINT_ENUM, "Stream,Sample"), 1);
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
@@ -1833,7 +1868,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Text Input Controls,Always"), 1);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/auto_focus_strategy", PROPERTY_HINT_ENUM, "Legacy,Balloon"), 0);
 
+#ifdef RD_ENABLED
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/swapchain_image_count", PROPERTY_HINT_RANGE, "2,4,1"), 3);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/block_size_kb", PROPERTY_HINT_RANGE, "4,2048,1,or_greater"), 256);
@@ -1854,6 +1891,7 @@ ProjectSettings::ProjectSettings() {
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.618.5, the default value must be 618.
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 618);
+#endif // RD_ENABLED
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1866,6 +1904,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
+	GLOBAL_DEF_BASIC("input_devices/compatibility/windows/disable_raw_event_bulk_processing", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

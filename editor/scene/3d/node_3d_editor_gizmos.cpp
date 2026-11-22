@@ -46,6 +46,7 @@
 
 bool EditorNode3DGizmo::is_editable() const {
 	ERR_FAIL_NULL_V(spatial_node, false);
+	ERR_FAIL_COND_V(!spatial_node->is_inside_tree(), false);
 	Node *edited_root = spatial_node->get_tree()->get_edited_scene_root();
 	if (spatial_node == edited_root) {
 		return true;

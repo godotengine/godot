@@ -561,6 +561,7 @@ public:
 	bool is_class_enum_bitfield(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(const StringName &p_class) const;
+	bool is_class_exposed(const StringName &p_class) const;
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;

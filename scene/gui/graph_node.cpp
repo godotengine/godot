@@ -194,7 +194,6 @@ void GraphNode::_resort() {
 		msc.max_size = max_size.height >= 0 ? int(max_size.height) + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().height : 0) : -1;
 		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
 		msc.final_size = msc.min_size;
-		min_size_cache[child] = msc;
 
 		if (msc.will_stretch) {
 			available_stretch_space += msc.min_size;
@@ -205,6 +204,7 @@ void GraphNode::_resort() {
 			stretch_ratio_total += msc.stretch_ratio;
 		}
 
+		min_size_cache[child] = msc;
 		children_count++;
 	}
 	slot_count = children_count;

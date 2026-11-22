@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -586,7 +586,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define LACKS_STRING_H
 #define LACKS_STRINGS_H
 #define LACKS_SYS_TYPES_H
-// #define LACKS_ERRNO_H // File uses `EINVAL` and `ENOMEM` defines, so include is required. Legacy exclusion?
+#define LACKS_ERRNO_H
 #define LACKS_SCHED_H
 #ifndef MALLOC_FAILURE_ACTION
 #define MALLOC_FAILURE_ACTION
@@ -3042,7 +3042,7 @@ static size_t traverse_and_check(mstate m);
   http://www.usenix.org/events/lisa03/tech/robertson.html The footer
   of an inuse chunk holds the xor of its mstate and a random seed,
   that is checked upon calls to free() and realloc().  This is
-  (probabalistically) unguessable from outside the program, but can be
+  (probabilistically) unguessable from outside the program, but can be
   computed by any code successfully malloc'ing any chunk, so does not
   itself provide protection against code that has already broken
   security through some other means.  Unlike Robertson et al, we
@@ -6419,16 +6419,16 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                 SDL_realloc_func realloc_func,
                                 SDL_free_func free_func)
 {
-    if (!malloc_func) {
+    CHECK_PARAM(!malloc_func) {
         return SDL_InvalidParamError("malloc_func");
     }
-    if (!calloc_func) {
+    CHECK_PARAM(!calloc_func) {
         return SDL_InvalidParamError("calloc_func");
     }
-    if (!realloc_func) {
+    CHECK_PARAM(!realloc_func) {
         return SDL_InvalidParamError("realloc_func");
     }
-    if (!free_func) {
+    CHECK_PARAM(!free_func) {
         return SDL_InvalidParamError("free_func");
     }
 

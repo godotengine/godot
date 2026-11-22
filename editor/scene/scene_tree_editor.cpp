@@ -642,7 +642,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			}
 		}
 		if (num_groups >= 1) {
-			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+			msg_temp += TPL(num_groups, TTR("Node is in this group:"), TTR("Node is in the following groups:")) + "\n";
 
 			List<GroupInfo> groups;
 			p_node->get_groups(&groups);
@@ -799,7 +799,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start).rstrip("\n");
 		}
 	}
 
@@ -1899,7 +1899,7 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 
 	NodePath np = item->get_metadata(0);
 
-	if (!get_scene_node()->has_node(np)) {
+	if (!is_inside_tree() || !get_scene_node() || !get_scene_node()->has_node(np)) {
 		return;
 	}
 
@@ -2037,11 +2037,17 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 }
 
 NodePath SceneTreeEditor::_get_node_path(Node *p_node) const {
-	return get_scene_node()->get_path_to(p_node);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_path_to(p_node);
+	}
+	return NodePath();
 }
 
 Node *SceneTreeEditor::_get_node(const NodePath &p_path) const {
-	return get_scene_node()->get_node(p_path);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_node(p_path);
+	}
+	return nullptr;
 }
 
 bool SceneTreeEditor::_has_drop_selection(TreeItem *p_item, const Point2 &p_point) const {
@@ -2117,8 +2123,8 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 				return _has_drop_selection(item, p_point);
 			}
@@ -2183,8 +2189,19 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
+				// Check if we are setting a built-in script from another scene.
+				if (sr->is_built_in()) {
+					String src_scene = sr->get_path().get_slice("::", 0);
+					Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+					String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+					if (src_scene != current_scene_path) {
+						sr = sr->duplicate();
+						EditorNode::setup_built_in_resource(sr, current_scene_path);
+					}
+				}
+				String sp = sr->get_path();
 				emit_signal(SNAME("script_dropped"), sp, n);
 			}
 		}

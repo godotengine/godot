@@ -7,20 +7,38 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
-struct SinglePosFormat2 : ValueBase
+/* Keep the iterator type independent of the source table width so
+ * the output serializers can share their instantiations. */
+struct single_pos_value_mapper_t
+{
+  const hb_map_t &glyph_map;
+  const hb_array_t<const Value> &values;
+  const unsigned &sub_length;
+
+  hb_pair_t<hb_codepoint_t, hb_array_t<const Value>>
+  operator () (const hb_pair_t<hb_codepoint_t, unsigned> &_) const
+  {
+    return hb_pair (glyph_map[_.first],
+                    values.sub_array (_.second * sub_length, sub_length));
+  }
+};
+
+template <typename Types>
+struct SinglePosFormat2_4 : ValueBase
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
-  Offset16To<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of subtable */
   ValueFormat   valueFormat;            /* Defines the types of data in the
                                          * ValueRecord */
-  HBUINT16      valueCount;             /* Number of ValueRecords */
+  typename Types::HBUINT
+                valueCount;             /* Number of ValueRecords */
   ValueRecord   values;                 /* Array of ValueRecords--positioning
                                          * values applied to glyphs */
   public:
-  DEFINE_SIZE_ARRAY (8, values);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + ValueFormat::static_size + Types::HBUINT::static_size, values);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -103,23 +121,17 @@ struct SinglePosFormat2 : ValueBase
     if (likely (index == NOT_COVERED)) return false;
     if (unlikely (index >= valueCount)) return false;
 
-    /* This is ugly... */
-    hb_buffer_t buffer {};
-    buffer.props.direction = direction;
-    OT::hb_ot_apply_context_t c (1, font, &buffer, table_blob);
-
-    valueFormat.apply_value (&c, this,
-                             &values[index * valueFormat.get_len ()],
-                             pos);
+    valueFormat.position_single (font, table_blob, direction, this,
+                                 &values[index * valueFormat.get_len ()], pos);
     return true;
   }
 
 
   template<typename Iterator,
-      typename SrcLookup,
       hb_requires (hb_is_iterator (Iterator))>
   void serialize (hb_serialize_context_t *c,
-                  const SrcLookup *src,
+                  const ValueBase *src,
+                  ValueFormat src_format,
                   Iterator it,
                   ValueFormat newFormat,
                   const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map)
@@ -132,7 +144,7 @@ struct SinglePosFormat2 : ValueBase
     + it
     | hb_map (hb_second)
     | hb_apply ([&] (hb_array_t<const Value> _)
-    { src->get_value_format ().copy_values (c, newFormat, src, &_, layout_variation_idx_delta_map); })
+    { src_format.copy_values (c, newFormat, src, &_, layout_variation_idx_delta_map); })
     ;
 
     auto glyphs =
@@ -181,17 +193,14 @@ struct SinglePosFormat2 : ValueBase
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     unsigned sub_length = valueFormat.get_len ();
-    auto values_array = values.as_array (valueCount * sub_length);
+    auto values_array = values.as_array ((unsigned) valueCount * sub_length);
 
     auto it =
     + hb_zip (this+coverage, hb_range ((unsigned) valueCount))
     | hb_filter (glyphset, hb_first)
-    | hb_map_retains_sorting ([&] (const hb_pair_t<hb_codepoint_t, unsigned>& _)
-                              {
-                                return hb_pair (glyph_map[_.first],
-                                                values_array.sub_array (_.second * sub_length,
-                                                                        sub_length));
-                              })
+    | hb_map_retains_sorting (single_pos_value_mapper_t {glyph_map,
+                                                       values_array,
+                                                       sub_length})
     ;
 
     unsigned new_format = compute_effective_format (c->plan->source, it,
@@ -200,7 +209,7 @@ struct SinglePosFormat2 : ValueBase
                                                     c->plan->has_gdef_varstore,
                                                     &c->plan->layout_variation_idx_delta_map);
     bool ret = bool (it);
-    SinglePos_serialize (c->serializer, this, it, &c->plan->layout_variation_idx_delta_map, new_format);
+    SinglePos_serialize (c->serializer, this, valueFormat, it, &c->plan->layout_variation_idx_delta_map, new_format);
     return_trace (ret);
   }
 };

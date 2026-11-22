@@ -305,6 +305,10 @@ TEST_CASE("[Vector2] Other methods") {
 			"Vector2 direction_to should work as expected.");
 
 	CHECK_MESSAGE(
+			vector.inverse().is_equal_approx(Vector2(1 / 1.2, 1 / 3.4)),
+			"Vector2 inverse should work as expected.");
+
+	CHECK_MESSAGE(
 			vector.posmod(2).is_equal_approx(Vector2(1.2, 1.4)),
 			"Vector2 posmod should work as expected.");
 	CHECK_MESSAGE(

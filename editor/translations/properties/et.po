@@ -554,6 +554,18 @@ msgstr "Tööliste Hulk"
 msgid "Low Priority Thread Ratio"
 msgstr "Madala Prioriteediga Lõime Suhe"
 
+msgid "Target"
+msgstr "Sihtmärk"
+
+msgid "Start Offset"
+msgstr "Algnihe"
+
+msgid "Names"
+msgstr "Nimed"
+
+msgid "Strings"
+msgstr "Sõned"
+
 msgid "Locale"
 msgstr "Lokaal"
 
@@ -607,9 +619,6 @@ msgstr "Väljas käepide"
 
 msgid "Stream"
 msgstr "Voog"
-
-msgid "Start Offset"
-msgstr "Algnihe"
 
 msgid "End Offset"
 msgstr "Lõpunihe"
@@ -685,18 +694,6 @@ msgstr "Juurdepääsetavad iTunes Sharing kaudu"
 
 msgid "Privacy"
 msgstr "Privaatsus"
-
-msgid "Camera Usage Description"
-msgstr "Kaamera Kasutamise Kirjeldus"
-
-msgid "Camera Usage Description Localized"
-msgstr "Lokaliseeritud Kaamera Kasutamise Kirjeldus"
-
-msgid "Microphone Usage Description"
-msgstr "Mikrofoni Kasutamise Kirjeldus"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Lokaliseeritud Mikrofoni Kasutamise Kirjeldus"
 
 msgid "Icons"
 msgstr "Ikooonid"
@@ -1118,39 +1115,6 @@ msgstr "Versioonihaldus"
 msgid "Plugin Name"
 msgstr "Pistikprogrammi Nimi"
 
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "Tekstuur"
-
-msgid "Separation"
-msgstr "Eraldamine"
-
-msgid "Texture Region Size"
-msgstr "Tekstuuri Piirkonna Suurus"
-
-msgid "Use Texture Padding"
-msgstr "Kasuta Tekstuuripatju"
-
-msgid "Atlas Coords"
-msgstr "Atlase Koordinaadid"
-
-msgid "Size in Atlas"
-msgstr "Suurus Atlases"
-
-msgid "Alternative ID"
-msgstr "Alternatiivne ID"
-
-msgid "Speed"
-msgstr "Kiirus"
-
-msgid "Frames Count"
-msgstr "Kaadrite Arv"
-
-msgid "Duration"
-msgstr "Kestvus"
-
 msgid "Current Group Idx"
 msgstr "Praegune Grupi Idx"
 
@@ -1244,11 +1208,11 @@ msgstr "V-Sync Režiim"
 msgid "Update Continuously"
 msgstr "Värskenda Pidevalt"
 
-msgid "Derive Script Globals by Name"
-msgstr "Tuleta Skripti Globaalid Nime Järgi"
-
 msgid "Scene Tree"
 msgstr "Stseenipuu"
+
+msgid "Derive Script Globals by Name"
+msgstr "Tuleta Skripti Globaalid Nime Järgi"
 
 msgid "Inspector"
 msgstr "Inspektor"
@@ -2309,6 +2273,9 @@ msgstr "Tegevuse Tüüp"
 msgid "Toplevel Paths"
 msgstr "Pealiskihi Teed"
 
+msgid "Duration"
+msgstr "Kestvus"
+
 msgid "Interaction Profile Path"
 msgstr "Interaktsiooniprofiili Tee"
 
@@ -2327,11 +2294,62 @@ msgstr "Liikumisvahemik"
 msgid "Hand Skeleton"
 msgstr "Käe Skelett"
 
-msgid "Names"
-msgstr "Nimed"
+msgid "ID"
+msgstr "ID"
 
-msgid "Strings"
-msgstr "Sõned"
+msgid "Texture"
+msgstr "Tekstuur"
+
+msgid "Separation"
+msgstr "Eraldamine"
+
+msgid "Texture Region Size"
+msgstr "Tekstuuri Piirkonna Suurus"
+
+msgid "Use Texture Padding"
+msgstr "Kasuta Tekstuuripatju"
+
+msgid "Atlas Coords"
+msgstr "Atlase Koordinaadid"
+
+msgid "Size in Atlas"
+msgstr "Suurus Atlases"
+
+msgid "Alternative ID"
+msgstr "Alternatiivne ID"
+
+msgid "Speed"
+msgstr "Kiirus"
+
+msgid "Frames Count"
+msgstr "Kaadrite Arv"
+
+msgid "Y Sort Origin"
+msgstr "Y-Sordi Päritolu"
+
+msgid "Terrains"
+msgstr "Maastikud"
+
+msgid "Custom Data"
+msgstr "Kohandatud Andmed"
+
+msgid "Scene"
+msgstr "Stseen"
+
+msgid "Points"
+msgstr "Punktid"
+
+msgid "Texture Origin"
+msgstr "Tekstuuri Alguspunkt"
+
+msgid "Modulate"
+msgstr "Moduleeri"
+
+msgid "Z Index"
+msgstr "Z Indeks"
+
+msgid "Probability"
+msgstr "Võimalus"
 
 msgid "Discover Local Port"
 msgstr "Avasta Lokaalne Port"
@@ -2627,6 +2645,18 @@ msgstr "API Võti"
 msgid "API Key ID"
 msgstr "API Võtme ID"
 
+msgid "Microphone Usage Description"
+msgstr "Mikrofoni Kasutamise Kirjeldus"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Lokaliseeritud Mikrofoni Kasutamise Kirjeldus"
+
+msgid "Camera Usage Description"
+msgstr "Kaamera Kasutamise Kirjeldus"
+
+msgid "Camera Usage Description Localized"
+msgstr "Lokaliseeritud Kaamera Kasutamise Kirjeldus"
+
 msgid "Location Usage Description"
 msgstr "Asukoha Kasutamise Kirjeldus"
 
@@ -2735,9 +2765,6 @@ msgstr "Kiirgab"
 msgid "Shape"
 msgstr "Kuju"
 
-msgid "Points"
-msgstr "Punktid"
-
 msgid "Colors"
 msgstr "Värvid"
 
@@ -2765,14 +2792,8 @@ msgstr "Uuenda"
 msgid "Editor Settings"
 msgstr "Redaktori sätted"
 
-msgid "Y Sort Origin"
-msgstr "Y-Sordi Päritolu"
-
 msgid "Cull Mask"
 msgstr "Väljalõikamis mask"
-
-msgid "Modulate"
-msgstr "Moduleeri"
 
 msgid "Text"
 msgstr "Tekst"
@@ -2785,9 +2806,6 @@ msgstr "Hägusus"
 
 msgid "Quality"
 msgstr "Kvaliteet"
-
-msgid "Target"
-msgstr "Sihtmärk"
 
 msgid "Pose"
 msgstr "Poos"
@@ -2822,14 +2840,14 @@ msgstr "Filtrid"
 msgid "Select Mode"
 msgstr "Valimisrežiim"
 
+msgid "Format"
+msgstr "Formaat"
+
 msgid "Syntax Highlighter"
 msgstr "Süntaksi Esiletõstja"
 
 msgid "Expand"
 msgstr "Laienda"
-
-msgid "Z Index"
-msgstr "Z Indeks"
 
 msgid "NormalMap"
 msgstr "NormaalKaart"
@@ -2858,24 +2876,6 @@ msgstr "3D Füüsika"
 msgid "B"
 msgstr "B"
 
-msgid "Terrains"
-msgstr "Maastikud"
-
-msgid "Custom Data"
-msgstr "Kohandatud Andmed"
-
-msgid "Scene"
-msgstr "Stseen"
-
-msgid "Texture Origin"
-msgstr "Tekstuuri Alguspunkt"
-
-msgid "Probability"
-msgstr "Võimalus"
-
-msgid "Item"
-msgstr "Üksus"
-
 msgid "Sky"
 msgstr "Taevas"
 
@@ -2887,9 +2887,6 @@ msgstr "Paus"
 
 msgid "Atlas"
 msgstr "Atlas"
-
-msgid "Format"
-msgstr "Formaat"
 
 msgid "Camera Is Active"
 msgstr "Kaamera On Aktiivne"

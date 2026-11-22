@@ -761,6 +761,7 @@ Error AudioDriverPulseAudio::init_input_device() {
 	int error_code = pa_stream_connect_record(pa_rec_str, dev, &attr, flags);
 	if (error_code < 0) {
 		ERR_PRINT("PulseAudio: pa_stream_connect_record error: " + String(pa_strerror(error_code)));
+		finish_input_device();
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 

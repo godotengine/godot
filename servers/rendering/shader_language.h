@@ -31,14 +31,18 @@
 #pragma once
 
 #include "core/object/property_info.h"
-#include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "servers/rendering/shader_warnings.h"
@@ -1280,7 +1284,9 @@ public:
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
-	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
+#ifdef TOOLS_ENABLED
+	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<EditorLanguage::CompletionOption> *r_options, String &r_call_hint);
+#endif
 
 	String get_error_text();
 	Vector<FilePosition> get_include_positions();

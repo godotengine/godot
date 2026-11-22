@@ -27,19 +27,21 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # bruvzg <bruvzg13@proton.me>, 2026.
 # Matty-H <matissegouery@yahoo.fr>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# VeryUsual <72707293+VeryUsual@users.noreply.github.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-05-05 18:11+0000\n"
-"Last-Translator: Matty-H <matissegouery@yahoo.fr>\n"
+"PO-Revision-Date: 2026-10-18 03:51+0000\n"
+"Last-Translator: VeryUsual <72707293+VeryUsual@users.noreply.github.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17.1\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 msgid "OK"
 msgstr "Bone"
@@ -576,6 +578,9 @@ msgstr "Kolorelektilo (ColorPicker): Forigi la antaŭagordon"
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Universala alireblo: Ŝovi kaj demeti per klavaro"
 
+msgid "Toggle Fullscreen"
+msgstr "Baskuli plenekranon"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Nevalida enigo «%d» (ne pasigita) en esprimo"
 
@@ -759,8 +764,8 @@ msgstr "Sinkrona"
 msgid "None"
 msgstr "Nenio"
 
-msgid "Open Editor"
-msgstr "Malfermi la redaktilon"
+msgid "Open"
+msgstr "Malfermi"
 
 msgid "Position"
 msgstr "Pozicio"
@@ -1423,20 +1428,6 @@ msgstr ""
 "agorditajn trakojn, aktivigu \"Konservi En Dosiero\" kaj\n"
 "\"Gardi Agorditajn Trakojn\"."
 
-msgid ""
-"Some AnimationPlayerEditor's options are disabled since this is the dummy "
-"AnimationPlayer for preview.\n"
-"\n"
-"The dummy player is forced active, non-deterministic and doesn't have the "
-"root motion track. Furthermore, the original node is inactive temporary."
-msgstr ""
-"Kelkaj opcioj de la AnimationPlayerEditor estas malaktivigitaj ĉar tio estas "
-"la postiĉa AnimationPlayer por la antaŭrigardo.\n"
-"\n"
-"Tiu postiĉa AnimationPlayer estas forcita \"aktiva\", nedeterminista kaj ne "
-"havas la ĉefa trako de movo. Krome, la origina nodo estas dumtempe "
-"malaktivigita."
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Elektu AnimationPlayer-nodon por krei kaj redakti animaciojn."
 
@@ -1690,6 +1681,9 @@ msgstr "Kontrolo de SHA-256-a haketaĵo eraris"
 msgid "Asset Download Error:"
 msgstr "Eraro de havaĵa elŝuto:"
 
+msgid "Ready to install."
+msgstr "Preta por instalado."
+
 msgid "Downloading (%s / %s)..."
 msgstr "Elŝutas (%s / %s)..."
 
@@ -1713,9 +1707,6 @@ msgstr "Reprovi"
 
 msgid "Download Error"
 msgstr "Elŝuta eraro"
-
-msgid "Template"
-msgstr "Ŝablono"
 
 msgid "All"
 msgstr "Ĉio"
@@ -1852,29 +1843,14 @@ msgstr "Eraris konservi dosieron: %s"
 msgid "Layout:"
 msgstr "Aranĝo:"
 
+msgid "Save As..."
+msgstr "Konservi kiel..."
+
 msgid "Add Bus"
 msgstr "Aldoni Buson"
 
 msgid "Add a new Audio Bus to this layout."
 msgstr "Aldonu novan Aŭdobuson al ĉi tiu aranĝo."
-
-msgid "Load"
-msgstr "Ŝargi"
-
-msgid "Load an existing Bus Layout."
-msgstr "Ŝargi ekzistante busan aranĝon."
-
-msgid "Save this Bus Layout to a file."
-msgstr "Konservi ĉi tiun busan aranĝon al dosiero."
-
-msgid "Load Default"
-msgstr "Ŝargi defaŭlton"
-
-msgid "Load the default Bus Layout."
-msgstr "Ŝargi la defaŭlta busaranĝo."
-
-msgid "Create a new Bus Layout."
-msgstr "Krei nova busaranĝo."
 
 msgid "Step Into"
 msgstr "Paŝi en"
@@ -1891,36 +1867,8 @@ msgstr "Daŭrigi"
 msgid "Deploy with Remote Debug"
 msgstr "Disponigii kun defora sencimigo"
 
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"Kiam ĉi tiu opcio ŝaltus, uzado de unu-alklaka disponigo igos la "
-"komandodosieron provus konekti al la IP-adreso de ĉi tiu komputilo por ke la "
-"rulata projekto eblus sencimigi.\n"
-"Ĉi tiu opcio destiniĝas por fora sencimigado (tipe kun portebla aparato).\n"
-"Vi ne devas ŝalti ĝin por uzi la GDScript-sencimigilon loke."
-
 msgid "Small Deploy with Network Filesystem"
 msgstr "Malgranda disponigo kun reta dosiersistemo"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"Kiam ĉi tiun agordon ŝaltus, uzado de unu-alklaka disponigo por Android nur "
-"eksportos komandodosieron sen la datumoj de projekto.\n"
-"La dosiersistemo proviziĝos el la projekto per la redaktilo per la reto.\n"
-"Per Android, disponigado uzos la USB-kablon por pli rapida rendimento. Ĉi tiu "
-"opcio rapidigas testadon por projektoj kun grandaj havaĵoj."
 
 msgid "Visible Collision Shapes"
 msgstr "Videblaj koliziaj formoj"
@@ -2014,6 +1962,9 @@ msgstr "Alvokoj"
 
 msgid "Main Thread"
 msgstr "Ĉefa fadeno"
+
+msgid "Execution resumed."
+msgstr "La ekzekutado rekomenciĝis."
 
 msgid "Bytes:"
 msgstr "Bajtoj:"
@@ -2178,12 +2129,6 @@ msgstr ""
 
 msgid "Editor"
 msgstr "Redaktilo"
-
-msgid "Scripts"
-msgstr "Kodoj"
-
-msgid "Open"
-msgstr "Malfermi"
 
 msgid "Open in File Manager"
 msgstr "Malfermi en la dosieradministrilon"
@@ -2398,21 +2343,6 @@ msgstr "Redakti dependaĵojn..."
 msgid "Create New"
 msgstr "Krei novan"
 
-msgid "Folder..."
-msgstr "Dosierujon..."
-
-msgid "Scene..."
-msgstr "Scenon..."
-
-msgid "Script..."
-msgstr "Kodon..."
-
-msgid "Resource..."
-msgstr "Rimedon..."
-
-msgid "TextFile..."
-msgstr "Tekstodosieron..."
-
 msgid "Expand Folder"
 msgstr "Malkaŝi rektajn enhavojn"
 
@@ -2452,17 +2382,32 @@ msgstr "Malfermi la dosierujon en komandlinian interfacon"
 msgid "New Folder..."
 msgstr "Krei novan dosierujon..."
 
+msgid "Folder..."
+msgstr "Dosierujon..."
+
 msgid "New Scene..."
 msgstr "Krei novan scenon..."
+
+msgid "Scene..."
+msgstr "Scenon..."
 
 msgid "New Script..."
 msgstr "Krei novan kodon..."
 
+msgid "Script..."
+msgstr "Kodon..."
+
 msgid "New Resource..."
 msgstr "Krei novan rimedon..."
 
+msgid "Resource..."
+msgstr "Rimedon..."
+
 msgid "New TextFile..."
 msgstr "Krei novan tekstodosieron..."
+
+msgid "TextFile..."
+msgstr "Tekstodosieron..."
 
 msgid "Sort Files"
 msgstr "Ordigi la dosierojn"
@@ -2545,11 +2490,11 @@ msgstr "Filtri la dosierojn"
 msgid "Directories"
 msgstr "Dosierujoj"
 
-msgid "Display Mode"
-msgstr "Vidoreĝimo"
-
 msgid "Files"
 msgstr "Dosieroj"
+
+msgid "Display Mode"
+msgstr "Vidoreĝimo"
 
 msgid ""
 "Scanning Files,\n"
@@ -2651,6 +2596,9 @@ msgstr "Defaŭlto"
 msgid "Set as Default for '%s'"
 msgstr "Agordi kiel defaŭlton por '%s'"
 
+msgid "Load Default"
+msgstr "Ŝargi defaŭlton"
+
 msgid "Clear Default for '%s'"
 msgstr "Vakigi defaŭlton por '%s'"
 
@@ -2678,26 +2626,17 @@ msgstr "Inspektilo"
 msgid "Open Inspector Dock"
 msgstr "Malfermi la inspektilan panelon"
 
-msgid "Create a new resource in memory and edit it."
-msgstr "Krei novan rimedon en la memoro kaj redakti ĝin."
-
-msgid "Load an existing resource from disk and edit it."
-msgstr "Ŝargi ekzistantan rimedon el la disko kaj redakti ĝin."
-
 msgid "Save the currently edited resource."
 msgstr "Konservi la redaktatan rimedon."
 
-msgid "Save As..."
-msgstr "Konservi kiel..."
+msgid "Create a new resource in memory and edit it."
+msgstr "Krei novan rimedon en la memoro kaj redakti ĝin."
+
+msgid "Save Resource As..."
+msgstr "Konservi risurcon kiel..."
 
 msgid "Copy Resource"
 msgstr "Kopii la rimedon"
-
-msgid "History of recently edited objects."
-msgstr "Historio de laste redaktitaj objektoj."
-
-msgid "Open documentation for this object."
-msgstr "Malfermi la dokumentaron pri ĉi tiu objekto."
 
 msgid "Open Documentation"
 msgstr "Malfermi dokumentaron"
@@ -2708,18 +2647,8 @@ msgstr "Filtri atributojn"
 msgid "Information"
 msgstr "Informoj"
 
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "Genero de sceno"
-msgstr[1] "Genero de scenoj"
-
 msgid "Error loading audio stream from %s"
 msgstr "Malsukcesis la ŝargo de aŭdaĵo el %s"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "Kreo de aŭdaĵ-ludilo (AudioStreamPlayer)"
-msgstr[1] "Kreo de aŭdaĵ-ludiloj (AudioStreamPlayer)"
 
 msgid "Duplicate Node(s)"
 msgstr "Duobligo de nodo(j)"
@@ -2744,9 +2673,6 @@ msgstr "Ĉu forigi la nodon «%s» kaj ĝiajn idojn?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Ĉu forigi la nodon «%s»?"
-
-msgid "Save New Scene As..."
-msgstr "Konservi novan scenon kiel..."
 
 msgid "Make Local"
 msgstr "Fari ĝin loka (Nuligi kiel scenon)"
@@ -2877,6 +2803,9 @@ msgstr "Fora"
 msgid "Local"
 msgstr "Loka"
 
+msgid "Save New Scene As..."
+msgstr "Konservi novan scenon kiel..."
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Ĉu nuligi la heredon? (Ne malfareble!)"
 
@@ -2940,9 +2869,6 @@ msgid ""
 msgstr ""
 "Ĉi tiun risurcon ne konserveblas ĉar ĝi ne apartenas al la redaktita sceno. "
 "Unikigu ĝin unue."
-
-msgid "Save Resource As..."
-msgstr "Konservi risurcon kiel..."
 
 msgid "Error while saving."
 msgstr "Eraro dum la konservo."
@@ -3034,13 +2960,6 @@ msgstr[1] "Antaŭ %d horoj"
 
 msgid "Open Base Scene"
 msgstr "Malfermi scenon de bazo"
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr ""
-"Radika nodo estas nepra por konservi la scenon. Aldonu ĝin en la arbon el "
-"nodoj."
 
 msgid "Save Scene As..."
 msgstr "Konservi la scenon kiel..."
@@ -3226,9 +3145,6 @@ msgstr "Krei/anstataŭigi versitenajn metadatenojn..."
 msgid "Version Control Settings..."
 msgstr "Versitenaj agordoj..."
 
-msgid "Install Android Build Template..."
-msgstr "Instali Androidan muntadan ŝablonon..."
-
 msgid "Tools"
 msgstr "Iloj"
 
@@ -3342,9 +3258,6 @@ msgstr "Eliri al la projekt-administrilo"
 
 msgid "Take Screenshot"
 msgstr "Ekrankopii"
-
-msgid "Toggle Fullscreen"
-msgstr "Baskuli plenekranon"
 
 msgid "Search Help..."
 msgstr "Priserĉi helpon..."
@@ -3480,6 +3393,9 @@ msgstr "Eksportajn ŝablonojn de Godot"
 
 msgid "Advanced Options"
 msgstr "Specialaj opcioj"
+
+msgid "Scripts"
+msgstr "Kodoj"
 
 msgid "Manage Export Templates"
 msgstr "Mastrumi eksportaj ŝablonoj"
@@ -3695,9 +3611,6 @@ msgstr "Movi"
 
 msgid "No sub-resources found."
 msgstr "Neniu trovita subrimedo."
-
-msgid "Open a list of sub-resources."
-msgstr "Malfermi liston de subrimedoj."
 
 msgid "Search files..."
 msgstr "Serĉi dosierojn..."
@@ -4039,9 +3952,6 @@ msgid "This project was last edited in a different Godot version: "
 msgstr ""
 "Oni redaktis ĉi tiun projekton je la lasta fojo per alia versio de Godot: "
 
-msgid "Unknown version"
-msgstr "Nekonata versio"
-
 msgid "This project uses features unsupported by the current build:"
 msgstr "Ĉi tiu projekto uzas eblojn nedisponeblajn en la nuna versio de Godot:"
 
@@ -4170,9 +4080,6 @@ msgstr "Elektu esplorotan dosierujon"
 msgid "Remove All"
 msgstr "Forpreni ĉiujn"
 
-msgid "Backup project first"
-msgstr "Unue savkopii la projekton"
-
 msgid "Convert Full Project"
 msgstr "Konverti la tutan projekton"
 
@@ -4230,9 +4137,6 @@ msgstr "Stilo"
 msgid "Color Preset"
 msgstr "Koloraro"
 
-msgid "Custom preset can be further configured in the editor."
-msgstr "Vi povos agordi la koloraron en la redaktilo."
-
 msgid "Display Scale"
 msgstr "Dimensioj de la fenestroj"
 
@@ -4260,8 +4164,11 @@ msgstr ""
 "Bonvolu aldoni ruleblan antaŭagordon per la Eksporto menuo aŭ defini "
 "ekzistantan antaŭagordon kiel rulebla."
 
-msgid "Make Game Workspace Floating on Next Play"
-msgstr "Ŝvebigi la ludvidejon antaŭ la sekva ludado"
+msgid "%s+Drag: Rotate selected node around pivot."
+msgstr "%s + Treni: Turni la elektitan nodon ĉirkaŭ ĝian pivoton."
+
+msgid "V: Set selected node's pivot position."
+msgstr "V: Agordi la pivoton de la elektita nodo."
 
 msgid "Game"
 msgstr "Ludo"
@@ -4319,12 +4226,6 @@ msgstr "Defini stirilon"
 
 msgid "Skeleton2D"
 msgstr "Skeleton2D"
-
-msgid "Advanced"
-msgstr "Altnivela"
-
-msgid "Yes"
-msgstr "Jes"
 
 msgid ""
 "Can't determine a save path for lightmap images.\n"
@@ -4394,9 +4295,6 @@ msgstr ""
 msgid "UV Channel Debug"
 msgstr "Sencimigo de UV-kanalo"
 
-msgid "View"
-msgstr "Vido"
-
 msgid "Lock Selected"
 msgstr "Ŝlosi elektiton"
 
@@ -4423,9 +4321,6 @@ msgstr ""
 "Duonferma okulo: Gizmo estas ankaŭ videbla tra maldiafanaj surfacoj (\"iks-"
 "rada\")."
 
-msgid "%s+Drag: Rotate selected node around pivot."
-msgstr "%s + Treni: Turni la elektitan nodon ĉirkaŭ ĝian pivoton."
-
 msgid "Move Mode"
 msgstr "Movada reĝimo"
 
@@ -4447,11 +4342,14 @@ msgstr "Uzi lokan spacon"
 msgid "Use Snap"
 msgstr "Uzi kapton krade"
 
+msgid "Configure Snap..."
+msgstr "Agordi kaptadon..."
+
 msgid "Transform"
 msgstr "Transformo"
 
-msgid "Configure Snap..."
-msgstr "Agordi kaptadon..."
+msgid "View"
+msgstr "Vido"
 
 msgid "Create Emission Points From Node"
 msgstr "Krei emisiajn punktojn el la nodo"
@@ -4506,63 +4404,6 @@ msgstr "Rotacia paŝo:"
 
 msgid "Scale Step:"
 msgstr "Skala paŝo:"
-
-msgid "Move Vertical Guide"
-msgstr "Movi vertikalan gvidilon"
-
-msgid "Create Vertical Guide"
-msgstr "Krei vertikalan gvidilon"
-
-msgid "Remove Vertical Guide"
-msgstr "Forigi vertikalan gvidilon"
-
-msgid "Move Horizontal Guide"
-msgstr "Movi horizontalan gvidilon"
-
-msgid "Create Horizontal Guide"
-msgstr "Krei horizontalan gvidilon"
-
-msgid "Remove Horizontal Guide"
-msgstr "Forigi horizontalan gvidilon"
-
-msgid "Create Horizontal and Vertical Guides"
-msgstr "Krei horizontalajn kaj vertikalajn gvidilojn"
-
-msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "Agordi la deŝovon de la pivoto de CanvasItem \"%s\" al (%d, %d)"
-
-msgid "Rotate %d CanvasItems"
-msgstr "Rotacii %d CanvasItem-ojn"
-
-msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Rotacii CanvasItem \"%s\" al %d gradoj"
-
-msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Movi la ankron de CanvasItem \"%s\""
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Skali Node2D \"%s\" al (%s, %s)"
-
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Regrandigi Control \"%s\" al (%d, %d)"
-
-msgid "Scale %d CanvasItems"
-msgstr "Skali %d CanvasItem-ojn"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Skali CanvasItem \"%s\" al (%s, %s)"
-
-msgid "Move %d CanvasItems"
-msgstr "Movi %d CanvasItem-ojn"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Movi CanvasItem \"%s\" al (%d, %d)"
-
-msgid "%s+Alt+Drag: Scale selected node."
-msgstr "%s + Alt + Treni: Skali la elektitan nodon."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Agordi la pivoton de la elektita nodo."
 
 msgid "Paste Pose"
 msgstr "Alglui pozon"
@@ -4731,6 +4572,9 @@ msgstr "Aldona argumentoj de alvoko:"
 
 msgid "Receiver Method:"
 msgstr "Ricevila metodo:"
+
+msgid "Advanced"
+msgstr "Altnivela"
 
 msgid "Deferred"
 msgstr "Diferita"
@@ -4945,11 +4789,6 @@ msgid_plural "Node has {num} connections."
 msgstr[0] "La nodo havas signalon."
 msgstr[1] "La nodo havas {num} signalojn."
 
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "La nodo estas en la grupo:"
-msgstr[1] "La nodo estas en la grupoj:"
-
 msgid "Click to show signals dock."
 msgstr "Alklaku por vidi la panelon de signaloj."
 
@@ -5016,6 +4855,9 @@ msgstr "Filtri animaciojn"
 msgid "Animation Frames:"
 msgstr "Kadroj de la animacio:"
 
+msgid "Load"
+msgstr "Ŝargi"
+
 msgid "Delete Frame"
 msgstr "Forigi la kadron"
 
@@ -5037,33 +4879,14 @@ msgstr "Skribu vian logikon en la _run() metodo."
 msgid "Find in Files"
 msgstr "Trovi en dosierojn"
 
-msgid "Find:"
-msgstr "Trovi:"
-
-msgid "Folder:"
-msgstr "Dosierujo:"
-
-msgid "Filters:"
-msgstr "Filtriloj:"
-
-msgid ""
-"Include the files with the following extensions. Add or remove them in "
-"ProjectSettings."
-msgstr ""
-"Anigu la dosierojn kun la jenajn sufiksojn. Aldonu aŭ viŝi ilin en Projekto "
-"agordoj."
-
-msgid "Find..."
-msgstr "Trovi..."
-
-msgid "Replace..."
-msgstr "Anstataŭigi..."
-
 msgid "Searching..."
 msgstr "Serĉas..."
 
 msgid "Remove result"
 msgstr "Forigi la rezulton"
+
+msgid "Find:"
+msgstr "Trovi:"
 
 msgid "Path is empty."
 msgstr "La dosierindiko estas malplena."
@@ -5165,6 +4988,9 @@ msgstr "Elekti la patron"
 msgid "Use Template"
 msgstr "Uzi la ŝablonon"
 
+msgid "Template"
+msgstr "Ŝablono"
+
 msgid "Built-in Script:"
 msgstr "Enkonstruita skripto:"
 
@@ -5188,6 +5014,9 @@ msgstr "Iri al"
 
 msgid "Bookmarks"
 msgstr "Paĝosignoj"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Baskuli alfabetan ordigon de la metodolisto."
 
 msgid "Current value: "
 msgstr "Nuna valoro: "
@@ -5225,9 +5054,6 @@ msgstr "Importi fasonon"
 msgid "Save Theme As..."
 msgstr "Konservi fasonon kiel..."
 
-msgid "Make the script editor floating."
-msgstr "Ŝvebigi la kod-redaktilon."
-
 msgid "Open '%s' in Godot online documentation."
 msgstr "Malfermi «%s» en la enreta dokumentaro de Godot."
 
@@ -5240,20 +5066,14 @@ msgstr "Enreta dokumentaro"
 msgid "Open Godot online documentation."
 msgstr "Malfermi enretan dokumentaron de Godot."
 
+msgid "Find..."
+msgstr "Trovi..."
+
 msgid "Find Next"
 msgstr "Trovi la sekvan"
 
 msgid "Find Previous"
 msgstr "Trovi la antaŭan"
-
-msgid "Filter Scripts"
-msgstr "Serĉi kodon"
-
-msgid "Toggle alphabetical sorting of the method list."
-msgstr "Baskuli alfabetan ordigon de la metodolisto."
-
-msgid "Sort"
-msgstr "Ordigi"
 
 msgid "Next Script"
 msgstr "Sekva kodo"
@@ -5261,17 +5081,8 @@ msgstr "Sekva kodo"
 msgid "Previous Script"
 msgstr "Antaŭa kodo"
 
-msgid "Open..."
-msgstr "Malfermi..."
-
 msgid "Save All"
 msgstr "Konservi ĉion"
-
-msgid "Import Theme..."
-msgstr "Importi fasonon..."
-
-msgid "Reload Theme"
-msgstr "Reŝargi fasonon"
 
 msgid "Close All"
 msgstr "Fermu Ĉion"
@@ -5279,14 +5090,20 @@ msgstr "Fermu Ĉion"
 msgid "Close Docs"
 msgstr "Fermi la dokumentaron"
 
+msgid "Import Theme..."
+msgstr "Importi fasonon..."
+
+msgid "Reload Theme"
+msgstr "Reŝargi fasonon"
+
+msgid "Open..."
+msgstr "Malfermi..."
+
 msgid "Go to previous edited document."
 msgstr "Iru al la antaŭa redaktita dokumento."
 
 msgid "Go to next edited document."
 msgstr "Iru al la sekva redaktita dokumento."
-
-msgid "Script Editor"
-msgstr "Skriptredaktilo"
 
 msgid "Reopen Closed Script"
 msgstr "Remalfermu Fermita Skripto"
@@ -5341,6 +5158,9 @@ msgstr "Konverti krommarĝenon al spacoj"
 
 msgid "Convert Indent to Tabs"
 msgstr "Konverti krommarĝenon al taboj"
+
+msgid "Replace..."
+msgstr "Anstataŭigi..."
 
 msgid "Contextual Help"
 msgstr "Kunteksta Helpo"
@@ -5434,6 +5254,9 @@ msgstr "Eksporti la profilon"
 
 msgid "3D Editor"
 msgstr "3D redaktilo"
+
+msgid "Script Editor"
+msgstr "Skriptredaktilo"
 
 msgid "Scene Tree Editing"
 msgstr "Redakto de la arbo el nodoj"
@@ -5615,14 +5438,8 @@ msgstr "Enporti defaŭltojn"
 msgid "N/A"
 msgstr "Neaplikebla"
 
-msgid "Invalid base path."
-msgstr "Malvalida baza dosierindiko."
-
 msgid "Error at line %d:"
 msgstr "Eraro ĉe la linio %d:"
-
-msgid "Resave"
-msgstr "Rekonservi"
 
 msgid "Show All Locales"
 msgstr "Vidigi ĉiajn lokaĵarojn"
@@ -5681,8 +5498,14 @@ msgstr "Elira RPC"
 msgid "Delete Property?"
 msgstr "Forigi atributon?"
 
+msgid "Yes"
+msgstr "Jes"
+
 msgid "Error loading %s: %s."
 msgstr "Eraro dum la ŝargo de %s: %s."
+
+msgid "Polygon %d"
+msgstr "Redakti plurlateron %d"
 
 msgid "Add Node"
 msgstr "Aldoni nodon"
@@ -5698,6 +5521,39 @@ msgstr "Ruli en foliumilo"
 
 msgid "No playback resource set at path: %s."
 msgstr "Ne reproduktada risurcaro al vojo: %s."
+
+msgid "Create Horizontal and Vertical Guides"
+msgstr "Krei horizontalajn kaj vertikalajn gvidilojn"
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "Agordi la deŝovon de la pivoto de CanvasItem \"%s\" al (%d, %d)"
+
+msgid "Rotate %d CanvasItems"
+msgstr "Rotacii %d CanvasItem-ojn"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Rotacii CanvasItem \"%s\" al %d gradoj"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Movi la ankron de CanvasItem \"%s\""
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "Skali Node2D \"%s\" al (%s, %s)"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "Regrandigi Control \"%s\" al (%d, %d)"
+
+msgid "Scale %d CanvasItems"
+msgstr "Skali %d CanvasItem-ojn"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Skali CanvasItem \"%s\" al (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "Movi %d CanvasItem-ojn"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "Movi CanvasItem \"%s\" al (%d, %d)"
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
@@ -5734,6 +5590,9 @@ msgstr "La konstanto '%s' estas deklarita sed neniam uzita."
 
 msgid "The function '%s' is declared but never used."
 msgstr "La funkcio '%s' estas deklarita sed neniam uzita."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "La loka variablo '%s' estas deklarita, sed neniam uzata."
 
 msgid ""
 "The total size of the %s for this shader on this device has been exceeded (%d/"

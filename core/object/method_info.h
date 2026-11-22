@@ -120,4 +120,13 @@ struct MethodInfo {
 		name = p_name;
 		arguments = Vector<PropertyInfo>{ p_params... };
 	}
+
+	// Need to be declared because ~MethodInfo is specified.
+	MethodInfo(const MethodInfo &) = default;
+	MethodInfo(MethodInfo &&) = default;
+	MethodInfo &operator=(const MethodInfo &) = default;
+	MethodInfo &operator=(MethodInfo &&) = default;
+
+	// This is _NO_INLINE_ to save on binary size.
+	_NO_INLINE_ ~MethodInfo() = default;
 };

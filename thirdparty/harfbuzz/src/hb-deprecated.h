@@ -388,6 +388,11 @@ hb_font_get_glyph_shape (hb_font_t *font,
  */
 #define HB_AAT_LAYOUT_FEATURE_TYPE_CURISVE_CONNECTION HB_AAT_LAYOUT_FEATURE_TYPE_CURSIVE_CONNECTION
 
+HB_DEPRECATED_FOR (hb_font_create)
+HB_EXTERN void
+hb_font_set_face (hb_font_t *font,
+		  hb_face_t *face);
+
 #endif
 
 

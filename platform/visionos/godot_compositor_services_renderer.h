@@ -32,7 +32,11 @@
 
 #import "drivers/apple_embedded/godot_renderer.h"
 
+#import "modules/visionos_xr/visionos_definitions.h"
+
 #import <CompositorServices/CompositorServices.h>
+
+@class SpatialEventObjC;
 
 @interface GDTCompositorServicesRenderer : GDTRenderer
 
@@ -44,5 +48,7 @@
 - (void)startRenderLoop;
 - (void)renderFrame;
 - (void)worldRecentered;
+
+- (void)onSpatialEvent:(SpatialEventObjC *)event;
 
 @end

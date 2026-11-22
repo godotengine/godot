@@ -231,6 +231,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
+#include "scene/3d/bone_space_adjuster_3d.h"
 #include "scene/3d/bone_twist_disperser_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/ccd_ik_3d.h"
@@ -252,7 +253,7 @@
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/limit_angular_velocity_modifier_3d.h"
-#include "scene/3d/line_3d.h"
+#include "scene/3d/line_base_3d.h"
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -342,7 +343,6 @@
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "scene/3d/bone_spreader_3d.h"
 #include "scene/3d/physics/animatable_body_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
@@ -466,9 +466,9 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(CompositorEffect);
 
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
-	GDREGISTER_CLASS(MultiplayerPeerExtension);
+	GDREGISTER_VIRTUAL_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerAPI);
-	GDREGISTER_CLASS(MultiplayerAPIExtension);
+	GDREGISTER_VIRTUAL_CLASS(MultiplayerAPIExtension);
 
 	GDREGISTER_CLASS(HTTPRequest);
 	GDREGISTER_CLASS(Timer);
@@ -678,7 +678,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(LightmapProbe);
 	GDREGISTER_ABSTRACT_CLASS(Lightmapper);
 
-	GDREGISTER_CLASS(Line3D);
+	GDREGISTER_ABSTRACT_CLASS(LineBase3D);
 	GDREGISTER_CLASS(Trail3D);
 
 	GDREGISTER_CLASS(GPUParticles3D);
@@ -747,7 +747,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 #endif // PHYSICS_3D_DISABLED
 
-	GDREGISTER_CLASS(BoneSpreader3D);
+	GDREGISTER_CLASS(BoneSpaceAdjuster3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
 #ifndef DISABLE_DEPRECATED
@@ -809,7 +809,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(BlitMaterial);
 
 	// SpriteFrames is needed by both AnimatedSprite2D and AnimatedSprite3D.
+#if !defined(_2D_DISABLED) || !defined(_3D_DISABLED)
 	GDREGISTER_CLASS(SpriteFrames);
+#endif // !defined(_2D_DISABLED) || !defined(_3D_DISABLED)
 
 	/* REGISTER 2D */
 
@@ -956,6 +958,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);
 	GDREGISTER_CLASS(CameraAttributesPhysical);
 	GDREGISTER_CLASS(CameraAttributesPractical);
+	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
@@ -994,13 +997,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimatedTexture);
 #endif
 
-	// These classes are part of renderer_rd
+#ifdef RD_ENABLED
+	// These classes are part of renderer_rd.
 	GDREGISTER_CLASS(Texture2DRD);
 	GDREGISTER_ABSTRACT_CLASS(TextureLayeredRD);
 	GDREGISTER_CLASS(Texture2DArrayRD);
 	GDREGISTER_CLASS(TextureCubemapRD);
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
+#endif // RD_ENABLED
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
@@ -1050,7 +1055,6 @@ void register_scene_types() {
 
 #ifndef _2D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer2D);
-	GDREGISTER_CLASS(Curve2D);
 	GDREGISTER_CLASS(Path2D);
 	GDREGISTER_CLASS(PathFollow2D);
 
@@ -1066,9 +1070,13 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConcavePolygonShape2D);
 #endif // PHYSICS_2D_DISABLED
 
+#endif // _2D_DISABLED
+
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	GDREGISTER_CLASS(NavigationMesh);
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+
+#ifndef _2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
 	GDREGISTER_CLASS(NavigationMeshSourceGeometryData2D);

@@ -2,7 +2,7 @@
 
 import os.path
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+from methods import compress_buffer, format_buffer, generated_wrapper, print_error, to_raw_cstring
 
 
 class RDHeaderStruct:
@@ -176,22 +176,42 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     return header_data
 
 
-def build_rd_header_lines_for_raytracing_stage(lines, stage: str):
-    if lines:
-        return f"""\
-		static const char _{stage}_code[] = {{
-{to_raw_cstring(lines)}
-		}};
-"""
-    else:
-        return f"""\
-		static const char *_{stage}_code = nullptr;
-"""
-
-
 def build_rd_header(filename: str, shader: str) -> None:
     include_file_in_rd_header(shader, header_data := RDHeaderStruct(), 0)
     class_name = os.path.basename(shader).replace(".glsl", "").title().replace("_", "").replace(".", "") + "ShaderRD"
+
+    if (
+        header_data.raygen_lines
+        or header_data.any_hit_lines
+        or header_data.closest_hit_lines
+        or header_data.miss_lines
+        or header_data.intersection_lines
+    ):  # Raytracing
+        setup_function = "setup_raytracing"
+        stages = [
+            header_data.raygen_lines or None,
+            header_data.any_hit_lines or None,
+            header_data.closest_hit_lines or None,
+            header_data.miss_lines or None,
+            header_data.intersection_lines or None,
+        ]
+    elif header_data.compute_lines:  # Compute
+        setup_function = "setup"
+        stages = [None, None, header_data.compute_lines]
+    else:  # Vertex/Fragment
+        setup_function = "setup"
+        stages = [header_data.vertex_lines, header_data.fragment_lines, None]
+
+    # Store the code of all stages in a single compressed buffer, as null-terminated strings.
+    buffer = b""
+    setup_args = []
+    for lines in stages:
+        if lines is None:
+            setup_args.append("nullptr")
+        else:
+            setup_args.append(f"_code.get_data() + {len(buffer)}")
+            buffer += "\n".join(lines).encode() + b"\n\0"
+    compressed = compress_buffer(buffer)
 
     with generated_wrapper(filename) as file:
         file.write(f"""\
@@ -200,47 +220,14 @@ def build_rd_header(filename: str, shader: str) -> None:
 class {class_name} : public ShaderRD {{
 public:
 	{class_name}() {{
-""")
+		static const uint8_t _code_compressed[] = {{
+			{format_buffer(compressed, 3)}
+		}};
+		const CharString _code = _decompress_code(_code_compressed, {len(compressed)}, {len(buffer)});
 
-        if (
-            header_data.raygen_lines
-            or header_data.any_hit_lines
-            or header_data.closest_hit_lines
-            or header_data.miss_lines
-            or header_data.intersection_lines
-        ):
-            file.write(build_rd_header_lines_for_raytracing_stage(header_data.raygen_lines, "raygen"))
-            file.write(build_rd_header_lines_for_raytracing_stage(header_data.any_hit_lines, "any_hit"))
-            file.write(build_rd_header_lines_for_raytracing_stage(header_data.closest_hit_lines, "closest_hit"))
-            file.write(build_rd_header_lines_for_raytracing_stage(header_data.miss_lines, "miss"))
-            file.write(build_rd_header_lines_for_raytracing_stage(header_data.intersection_lines, "intersection"))
-            file.write(f"""\
-		setup_raytracing(_raygen_code, _any_hit_code, _closest_hit_code, _miss_code, _intersection_code, "{class_name}");
-""")
-        elif header_data.compute_lines:
-            file.write(f"""\
-		static const char *_vertex_code = nullptr;
-		static const char *_fragment_code = nullptr;
-		static const char _compute_code[] = {{
-{to_raw_cstring(header_data.compute_lines)}
-		}};
-		setup(_vertex_code, _fragment_code, _compute_code, "{class_name}");
-""")
-        else:
-            file.write(f"""\
-		static const char _vertex_code[] = {{
-{to_raw_cstring(header_data.vertex_lines)}
-		}};
-		static const char _fragment_code[] = {{
-{to_raw_cstring(header_data.fragment_lines)}
-		}};
-		static const char *_compute_code = nullptr;
-		setup(_vertex_code, _fragment_code, _compute_code, "{class_name}");
-""")
-
-        file.write("""\
-	}
-};
+		{setup_function}({", ".join(setup_args)}, "{class_name}");
+	}}
+}};
 """)
 
 

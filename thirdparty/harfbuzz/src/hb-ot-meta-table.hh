@@ -83,7 +83,7 @@ struct meta
 			      unsigned int     *count,
 			      hb_ot_meta_tag_t *entries) const
     {
-      if (count)
+      if (count && entries)
       {
 	+ table->dataMaps.as_array ().sub_array (start_offset, count)
 	| hb_map (&DataMap::get_tag)

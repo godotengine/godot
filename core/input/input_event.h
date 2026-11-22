@@ -374,6 +374,7 @@ class InputEventScreenTouch : public InputEventFromWindow {
 	int index = 0;
 	Vector2 pos;
 	bool double_tap = false;
+	bool long_press = false;
 
 protected:
 	static void _bind_methods();
@@ -390,6 +391,9 @@ public:
 
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
+
+	void set_long_press(bool p_double_tap);
+	bool is_long_press() const;
 
 	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;

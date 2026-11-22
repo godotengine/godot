@@ -431,8 +431,10 @@ class AnimationTrackEdit : public Control {
 		MENU_INTERPOLATION_NEAREST,
 		MENU_INTERPOLATION_LINEAR,
 		MENU_INTERPOLATION_CUBIC,
+		MENU_INTERPOLATION_MAKIMA,
 		MENU_INTERPOLATION_LINEAR_ANGLE,
 		MENU_INTERPOLATION_CUBIC_ANGLE,
+		MENU_INTERPOLATION_MAKIMA_ANGLE,
 		MENU_LOOP_WRAP,
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
@@ -617,7 +619,6 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	MenuButton *edit = nullptr;
 
-	PanelContainer *main_panel = nullptr;
 	HScrollBar *hscroll = nullptr;
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;

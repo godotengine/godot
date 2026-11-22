@@ -28,6 +28,7 @@
 #define HB_VECTOR_BUF_HH
 
 #include "hb.hh"
+#include "hb-limits.hh"
 #include "hb-vector.hh"
 #include <math.h>
 #include <stdio.h>
@@ -36,24 +37,69 @@
 HB_INTERNAL const char *
 hb_vector_decimal_point_get (void);
 
+static const double _hb_vector_buf_pow10[13] = {1., 1e1, 1e2, 1e3, 1e4, 1e5, 1e6,
+						1e7, 1e8, 1e9, 1e10, 1e11, 1e12};
+
 struct hb_vector_buf_t : hb_vector_t<char>
 {
   unsigned precision = 2;
 
+  /* Sticky flag set once the serialized document would exceed
+   * HB_VECTOR_MAX_DOCUMENT_SIZE.  Folded into in_error() so every emission
+   * site that already checks it -- path commands, gradient meshes -- stops
+   * cleanly.  Bounds output that the outline work budget cannot see, most
+   * importantly sweep-gradient meshes and embedded bitmaps. */
+  bool overflowed = false;
+
+  /* Hides (does not override -- the base method is not virtual) the base
+   * in_error(); every emission site uses hb_vector_buf_t directly, so the
+   * cap is seen everywhere.  clear() resets the sticky flag so a context
+   * reused across renders recovers after one over-cap glyph. */
+  bool in_error () const
+  { return hb_vector_t<char>::in_error () || overflowed; }
+
+  void clear ()
+  {
+    overflowed = false;
+    hb_vector_t<char>::clear ();
+  }
+
   unsigned scale_precision () const
   { return precision < 7 ? 7 : precision; }
 
+  bool would_overflow (unsigned add)
+  {
+    if (unlikely (in_error ()))
+      return true;
+    unsigned new_len;
+    if (unlikely (hb_unsigned_add_overflows (length, add, &new_len) ||
+		  new_len > HB_VECTOR_MAX_DOCUMENT_SIZE))
+    {
+      overflowed = true;
+      return true;
+    }
+    return false;
+  }
+
   bool append_len (const char *s, unsigned l)
   {
+    if (unlikely (would_overflow (l)))
+      return false;
     unsigned old_len = length;
-    if (unlikely (!resize_dirty ((int) (old_len + l))))
+    unsigned new_len;
+    if (unlikely (hb_unsigned_add_overflows (old_len, l, &new_len) ||
+		  !resize_dirty ((int) new_len)))
       return false;
     hb_memcpy (arrayZ + old_len, s, l);
     return true;
   }
 
   bool append_c (char ch)
-  { return push_or_fail (ch); }
+  {
+    if (unlikely (would_overflow (1)))
+      return false;
+    return push_or_fail (ch);
+  }
 
   bool append_str (const char *s)
   { return append_len (s, (unsigned) strlen (s)); }
@@ -88,6 +134,48 @@ struct hb_vector_buf_t : hb_vector_t<char>
     if (!(v == v) || !std::isfinite (v))
     {
       append_c ('0');
+      return;
+    }
+
+    /* Fast path: fixed-point decimal via integer math.  @v has a
+     * 24-bit significand and 5^12 has 28 bits, so v*10^p is exact in
+     * a double for p <= 12; rounding it half-to-even therefore
+     * matches snprintf "%.pf" output digit-for-digit, while skipping
+     * the (much slower) printf floating-point formatting and any
+     * locale decimal-point fix-up. */
+    double scaled = (double) v * _hb_vector_buf_pow10[p];
+    if (likely (fabs (scaled) < 9.0e18))
+    {
+      double fl = floor (scaled);
+      double diff = scaled - fl;
+      int64_t n = (int64_t) fl;
+      if (diff > 0.5 || (diff == 0.5 && (n & 1)))
+	n++;
+
+      uint64_t u = (uint64_t) (n < 0 ? -n : n);
+      unsigned frac = p;
+      while (frac && !(u % 10))
+      {
+	u /= 10;
+	frac--;
+      }
+
+      char tmp[24];
+      char *end = tmp + sizeof (tmp);
+      char *s = end;
+      unsigned d = 0;
+      do
+      {
+	*--s = (char) ('0' + (char) (u % 10));
+	u /= 10;
+	if (++d == frac)
+	  *--s = '.';
+      }
+      while (u || d < frac + 1);
+      if (v < 0.f)
+	*--s = '-';
+
+      append_len (s, (unsigned) (end - s));
       return;
     }
 
@@ -153,9 +241,15 @@ struct hb_vector_buf_t : hb_vector_t<char>
 
   bool append_base64 (const uint8_t *data, unsigned len)
   {
-    unsigned out_len = ((len + 2) / 3) * 4;
+    /* Output is 4 bytes per 3 input bytes; compute without overflowing. */
+    unsigned ngroups = len / 3 + (len % 3 != 0);
+    unsigned out_len;
     unsigned old_len = length;
-    if (unlikely (!resize_dirty ((int) (old_len + out_len))))
+    unsigned new_len;
+    if (unlikely (hb_unsigned_mul_overflows (ngroups, 4, &out_len) ||
+		  would_overflow (out_len) ||
+		  hb_unsigned_add_overflows (old_len, out_len, &new_len) ||
+		  !resize_dirty ((int) new_len)))
       return false;
 
     char *dst = arrayZ + old_len;

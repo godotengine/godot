@@ -210,7 +210,7 @@
 # Account Rush Royale#1 <ghhh5238unq1@gmail.com>, 2025.
 # Igor Shapilov <shatiger@yandex.ru>, 2025.
 # Deniil <danpko@ya.ru>, 2025.
-# Deniil <bug@users.noreply.hosted.weblate.org>, 2025.
+# Deniil <bug@users.noreply.hosted.weblate.org>, 2025, 2026.
 # Nuar <rainerhoffman1999@gmail.com>, 2025.
 # penggrin12 <miner.sidor@gmail.com>, 2025.
 # t0pr0k <roman12022006@gmail.com>, 2025.
@@ -236,13 +236,19 @@
 # Rémi Verschelde <remi@godotengine.org>, 2026.
 # Viktor Antonov <vijorich@mail.ru>, 2026.
 # kureca <deviantart189@gmail.com>, 2026.
+# Артур <atter192837@gmail.com>, 2026.
+# DatVex <kinorealme241@gmail.com>, 2026.
+# serge-create <gabitovsergey2@gmail.com>, 2026.
+# SafnerDev <rafik3000@yahoo.com>, 2026.
+# psvmsout-ru <psvmsout-ru@users.noreply.hosted.weblate.org>, 2026.
+# JekSun97 <jeksun97@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-28 22:01+0000\n"
-"Last-Translator: kureca <deviantart189@gmail.com>\n"
+"PO-Revision-Date: 2026-11-08 09:51+0000\n"
+"Last-Translator: Deniil <bug@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -251,7 +257,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.11.2.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -785,6 +791,9 @@ msgstr "ColorPicker: Удалить предустановку"
 msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Доступность: Перетаскивание с клавиатуры"
 
+msgid "Toggle Fullscreen"
+msgstr "Включить или отключить полноэкранный режим"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Некорректный ввод %d (не передан) в выражении"
 
@@ -912,6 +921,9 @@ msgstr "Снять выделение с ключей"
 msgid "Add Animation"
 msgstr "Добавить анимацию"
 
+msgid "No available animations"
+msgstr "Нет доступных анимаций"
+
 msgid "Add %s"
 msgstr "Добавить %s"
 
@@ -1014,8 +1026,8 @@ msgstr ""
 msgid "Blend"
 msgstr "Смешивание"
 
-msgid "Open Editor"
-msgstr "Открыть редактор"
+msgid "Open"
+msgstr "Открыть"
 
 msgid "Index"
 msgstr "Индекс"
@@ -1033,9 +1045,6 @@ msgstr ""
 
 msgid "Position"
 msgstr "Позиция"
-
-msgid "Blend Value"
-msgstr "Значение смешивания"
 
 msgid "Min"
 msgstr "Мин"
@@ -1093,12 +1102,6 @@ msgstr "Шаг сетки по X"
 
 msgid "Grid Y Step"
 msgstr "Шаг сетки по Y"
-
-msgid "Blend X Value"
-msgstr "Значение смешивания по X"
-
-msgid "Blend Y Value"
-msgstr "Значение смешивания по Y"
 
 msgid "Max Y"
 msgstr "Макс. Y"
@@ -1634,12 +1637,6 @@ msgstr "Невозможно перейти из состояния \"Конец
 
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "Переход с \"%s\" в \"%s\" уже существует!"
-
-msgid "Play/Travel to %s"
-msgstr "Проиграть/Переместиться к %s"
-
-msgid "Edit %s"
-msgstr "Редактировать %s"
 
 msgid "Add Node and Transition"
 msgstr "Добавить узел и переход"
@@ -2218,19 +2215,6 @@ msgstr ""
 "пользовательские дорожки, включите опции «Сохранить в файл» и\n"
 "«Сохранять пользовательские дорожки»."
 
-msgid ""
-"Some AnimationPlayerEditor's options are disabled since this is the dummy "
-"AnimationPlayer for preview.\n"
-"\n"
-"The dummy player is forced active, non-deterministic and doesn't have the "
-"root motion track. Furthermore, the original node is inactive temporary."
-msgstr ""
-"Некоторые опции AnimationPlayerEditor были заблокированы, т.к. это «пустышка» "
-"AnimationPlayer для просмотра.\n"
-"\n"
-"Плеер-«пустышка» принудительно активен, недетерминирован и не имеет корневой "
-"дорожки движения. Более того, исходный узел временно неактивен."
-
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayer неактивен. Воспроизведение не будет обработано."
 
@@ -2797,11 +2781,11 @@ msgstr "Войти в сеть"
 msgid "Failed to verify repository."
 msgstr "Не удалось проверить репозиторий."
 
-msgid "Template"
-msgstr "Шаблон"
-
 msgid "All"
 msgstr "Все"
+
+msgid "Repository returned with invalid data."
+msgstr "Репозиторий вернул неверные данные."
 
 msgid "No results for \"%s\"."
 msgstr "Нет результатов для \"%s\"."
@@ -2811,6 +2795,9 @@ msgstr "Нет результатов, совместимых с %s %s."
 
 msgid "Unstable"
 msgstr "Нестабильный"
+
+msgid "Asset Store"
+msgstr "Магазин ассетов"
 
 msgid "Search templates. Use tags by including \"#tagname\"."
 msgstr "Поиск по шаблонам. Используйте теги, добавив \"#tagname\"."
@@ -2839,9 +2826,6 @@ msgstr "Лицензии"
 
 msgid "Assets ZIP File"
 msgstr "ZIP-файл ассетов"
-
-msgid "Asset Store"
-msgstr "Asset Store"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Ошибка при открытии файла ассета «%s» (не в формате ZIP)."
@@ -3043,29 +3027,14 @@ msgstr "Включить или отключить нижнюю панель «�
 msgid "Layout:"
 msgstr "Компоновка:"
 
+msgid "Save As..."
+msgstr "Сохранить как…"
+
 msgid "Add Bus"
 msgstr "Добавить"
 
 msgid "Add a new Audio Bus to this layout."
 msgstr "Добавить новую звуковую шину для этой компоновки."
-
-msgid "Load"
-msgstr "Загрузить"
-
-msgid "Load an existing Bus Layout."
-msgstr "Загрузить существующую компоновку шины."
-
-msgid "Save this Bus Layout to a file."
-msgstr "Сохранить текущую компоновку звуковой шины в файл."
-
-msgid "Load Default"
-msgstr "Загрузить по умолчанию"
-
-msgid "Load the default Bus Layout."
-msgstr "Загрузить макет шины по умолчанию."
-
-msgid "Create a new Bus Layout."
-msgstr "Создать новую компоновку шины."
 
 msgid "Audio Bus Layout"
 msgstr "Компоновка звуковой шины"
@@ -3091,37 +3060,8 @@ msgstr "Отладка с помощью внешнего редактора"
 msgid "Deploy with Remote Debug"
 msgstr "Развёртывание с удалённой отладкой"
 
-msgid ""
-"When this option is enabled, using one-click deploy will make the executable "
-"attempt to connect to this computer's IP so the running project can be "
-"debugged.\n"
-"This option is intended to be used for remote debugging (typically with a "
-"mobile device).\n"
-"You don't need to enable it to use the GDScript debugger locally."
-msgstr ""
-"Когда эта опция включена, при развёртывании одним щелчком мыши исполняемый "
-"файл будет пытаться подключиться к IP-адресу этого компьютера, чтобы можно "
-"было отладить запущенный проект.\n"
-"Этот параметр предназначен для удалённой отладки (обычно с помощью мобильного "
-"устройства).\n"
-"Его не требуется включать, чтобы использовать отладчик GDScript локально."
-
 msgid "Small Deploy with Network Filesystem"
 msgstr "Малое развёртывание с сетевой файловой системой"
-
-msgid ""
-"When this option is enabled, using one-click deploy for Android will only "
-"export an executable without the project data.\n"
-"The filesystem will be provided from the project by the editor over the "
-"network.\n"
-"On Android, deploying will use the USB cable for faster performance. This "
-"option speeds up testing for projects with large assets."
-msgstr ""
-"Когда эта опция включена, при развёртывании одним щелчком мыши будет "
-"экспортироваться только исполняемый файл без данных проекта.\n"
-"Файловая система проекта будет предоставляться редактором через сеть.\n"
-"На Android развёртывание будет быстрее при подключении через USB. Эта опция "
-"ускоряет тестирование проектов с большими ассетами."
 
 msgid "Visible Collision Shapes"
 msgstr "Видимые формы столкновений"
@@ -3811,20 +3751,11 @@ msgstr "Нажмите, чтобы скопировать."
 msgid "Click to open in browser."
 msgstr "Нажмите, чтобы открыть в браузере."
 
-msgid "Toggle Files Panel"
-msgstr "Включить или отключить панель файлов"
-
-msgid "Scripts"
-msgstr "Скрипты"
-
 msgid "No description available."
 msgstr "Описание недоступно."
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Данная аннотация может быть изменена или удалена в будущих версиях."
-
-msgid "Open"
-msgstr "Открыть"
 
 msgid "Open in File Manager"
 msgstr "Открыть в проводнике"
@@ -4183,21 +4114,6 @@ msgstr "Редактировать зависимости…"
 msgid "Create New"
 msgstr "Создать"
 
-msgid "Folder..."
-msgstr "Папка…"
-
-msgid "Scene..."
-msgstr "Сцена…"
-
-msgid "Script..."
-msgstr "Скрипт…"
-
-msgid "Resource..."
-msgstr "Ресурс…"
-
-msgid "TextFile..."
-msgstr "Текстовый файл…"
-
 msgid "Expand Folder"
 msgstr "Развернуть папку"
 
@@ -4237,17 +4153,32 @@ msgstr "Открыть папку в терминале"
 msgid "New Folder..."
 msgstr "Новая папка…"
 
+msgid "Folder..."
+msgstr "Папка…"
+
 msgid "New Scene..."
 msgstr "Новая сцена…"
+
+msgid "Scene..."
+msgstr "Сцена…"
 
 msgid "New Script..."
 msgstr "Новый скрипт…"
 
+msgid "Script..."
+msgstr "Скрипт…"
+
 msgid "New Resource..."
 msgstr "Новый ресурс…"
 
+msgid "Resource..."
+msgstr "Ресурс…"
+
 msgid "New TextFile..."
 msgstr "Новый текстовый файл…"
+
+msgid "TextFile..."
+msgstr "Текстовый файл…"
 
 msgid "Sort Files"
 msgstr "Сортировать файлы"
@@ -4330,11 +4261,11 @@ msgstr "Фильтр файлов"
 msgid "Directories"
 msgstr "Каталоги"
 
-msgid "Display Mode"
-msgstr "Режим отображения"
-
 msgid "Files"
 msgstr "Файлы"
+
+msgid "Display Mode"
+msgstr "Режим отображения"
 
 msgid ""
 "Scanning Files,\n"
@@ -4493,6 +4424,9 @@ msgstr "По умолчанию"
 msgid "Set as Default for '%s'"
 msgstr "Установить по умолчанию для «%s»"
 
+msgid "Load Default"
+msgstr "Загрузить по умолчанию"
+
 msgid "Clear Default for '%s'"
 msgstr "Очистить значение по умолчанию для «%s»"
 
@@ -4543,11 +4477,6 @@ msgstr ""
 "Выберите файл ресурса в файловой системе или в инспекторе, чтобы настроить "
 "параметры импорта."
 
-msgid ""
-"The following resources will be duplicated and embedded within this resource/"
-"object."
-msgstr "Следующие ресурсы будут продублированы и встроены в этот ресурс/объект."
-
 msgid "This object has no resources to duplicate."
 msgstr "У этого объекта нет ресурсов для дублирования."
 
@@ -4559,6 +4488,9 @@ msgstr "Не удалось загрузить ресурс."
 
 msgid "(Current)"
 msgstr "(Текущий)"
+
+msgid "Go to previous edited object in history."
+msgstr "Перейти к предыдущему редактируемому объекту в истории."
 
 msgid "Expand Non-Default"
 msgstr "Развернуть изменённые"
@@ -4590,20 +4522,20 @@ msgstr "Инспектор"
 msgid "Open Inspector Dock"
 msgstr "Открыть док инспектора"
 
-msgid "Create a new resource in memory and edit it."
-msgstr "Создать новый ресурс в памяти и редактировать его."
-
-msgid "Load an existing resource from disk and edit it."
-msgstr "Загрузить существующий ресурс с диска и редактировать его."
+msgid "Go to next edited object in history."
+msgstr "Перейти к следующему редактируемому объекту в истории."
 
 msgid "Save the currently edited resource."
 msgstr "Сохранить текущий редактируемый ресурс."
 
-msgid "Save As..."
-msgstr "Сохранить как…"
-
 msgid "Extra resource options."
 msgstr "Дополнительные параметры ресурса."
+
+msgid "Create a new resource in memory and edit it."
+msgstr "Создать новый ресурс в памяти и редактировать его."
+
+msgid "Save Resource As..."
+msgstr "Сохранить ресурс как…"
 
 msgid "Edit Resource from Clipboard"
 msgstr "Редактировать ресурс из буфера обмена"
@@ -4611,23 +4543,11 @@ msgstr "Редактировать ресурс из буфера обмена"
 msgid "Copy Resource"
 msgstr "Копировать ресурс"
 
-msgid "Make Resource Built-In"
-msgstr "Сделать ресурс встроенным"
-
-msgid "Go to previous edited object in history."
-msgstr "Перейти к предыдущему редактируемому объекту в истории."
-
-msgid "Go to next edited object in history."
-msgstr "Перейти к следующему редактируемому объекту в истории."
-
-msgid "History of recently edited objects."
-msgstr "История недавно отредактированных объектов."
-
-msgid "Open documentation for this object."
-msgstr "Открыть документацию для этого объекта."
-
 msgid "Open Documentation"
 msgstr "Открыть документацию"
+
+msgid "Make Resource Built-In"
+msgstr "Сделать ресурс встроенным"
 
 msgid "Filter Properties"
 msgstr "Фильтр свойств"
@@ -4657,20 +4577,8 @@ msgstr ""
 "Невозможно создать экземпляр сцены «%s», потому что текущая сцена существует "
 "в одном из его узлов."
 
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "Инстанцировать сцену(ы)"
-msgstr[1] "Инстанцировать сцены"
-msgstr[2] "Инстанцировать сцены"
-
 msgid "Error loading audio stream from %s"
 msgstr "Ошибка при загрузке потока аудио из %s"
-
-msgid "Create AudioStreamPlayer"
-msgid_plural "Create AudioStreamPlayers"
-msgstr[0] "Создать узел (узлы) AudioStreamPlayer"
-msgstr[1] "Создать узлы AudioStreamPlayer"
-msgstr[2] "Создать узлы AudioStreamPlayer"
 
 msgid "Replace with Branch Scene"
 msgstr "Заменить на сцену-ветку"
@@ -4767,9 +4675,6 @@ msgstr ""
 "Невозможно сохранить ветку, которая является частью унаследованной сцены.\n"
 "Чтобы сохранить эту ветку в отдельной сцене, откройте исходную сцену, "
 "щёлкните по ветке правой кнопкой мыши и выберите «Сохранить ветку как сцену»."
-
-msgid "Save New Scene As..."
-msgstr "Сохранить новую сцену как…"
 
 msgid ""
 "Disabling \"Editable Children\" will cause all properties of this subscene's "
@@ -5098,6 +5003,9 @@ msgstr "Локальный"
 msgid "Delete Related Animation Tracks"
 msgstr "Удалить связанные дорожки анимации"
 
+msgid "Save New Scene As..."
+msgstr "Сохранить новую сцену как…"
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Очистить наследование? (НЕЛЬЗЯ ОТМЕНИТЬ)"
 
@@ -5172,14 +5080,6 @@ msgstr "Сообщения редактора"
 
 msgid "Toggle visibility of editor messages."
 msgstr "Переключить видимость сообщений редактора."
-
-msgid ""
-"The Android build template is already installed in this project and it won't "
-"be overwritten.\n"
-"Remove the \"%s\" directory manually before attempting this operation again."
-msgstr ""
-"Шаблон сборки Android уже установлен в этом проекте и не будет перезаписан.\n"
-"Перед повторной попыткой выполнить эту операцию вручную удалите каталог «%s»."
 
 msgid ""
 "This will set up your project for gradle Android builds by installing the "
@@ -5259,9 +5159,6 @@ msgid ""
 msgstr ""
 "Этот ресурс нельзя сохранить, потому что он не принадлежит изменённой сцене. "
 "Сначала нужно сделать его уникальным."
-
-msgid "Save Resource As..."
-msgstr "Сохранить ресурс как…"
 
 msgid "Can't open file for writing:"
 msgstr "Невозможно открыть файл для записи:"
@@ -5438,7 +5335,7 @@ msgstr[1] "%d часа назад"
 msgstr[2] "%d часов назад"
 
 msgid "Scene opened: %s."
-msgstr "Открытие сцены: %с."
+msgstr "Открытие сцены: %s."
 
 msgid "Last saved: %s."
 msgstr "Последнее сохранение: %s."
@@ -5462,13 +5359,6 @@ msgid ""
 msgstr ""
 "Текущая сцена не имеет корневого узла, но изменённые внешние ресурсы (%d) и/"
 "или данные модулей всё равно были сохранены."
-
-msgid ""
-"A root node is required to save the scene. You can add a root node using the "
-"Scene tree dock."
-msgstr ""
-"Для сохранения сцены требуется корневой узел. Его можно добавить с помощью "
-"панели дерева сцен."
 
 msgid "Save Scene As..."
 msgstr "Сохранить сцену как…"
@@ -5828,9 +5718,6 @@ msgstr "Настройки управления версиями…"
 msgid "Pack Project as ZIP..."
 msgstr "Упаковать проект в ZIP…"
 
-msgid "Install Android Build Template..."
-msgstr "Установить шаблон сборки Android…"
-
 msgid "Open User Data Folder"
 msgstr "Открыть папку пользовательских данных"
 
@@ -5964,6 +5851,9 @@ msgstr "Настройки проекта"
 msgid "Find in Files..."
 msgstr "Найти в файлах…"
 
+msgid "Replace in Files..."
+msgstr "Заменить в файлах…"
+
 msgid "Export..."
 msgstr "Экспортировать…"
 
@@ -5990,9 +5880,6 @@ msgstr "Палитра команд…"
 
 msgid "Take Screenshot"
 msgstr "Сделать снимок экрана"
-
-msgid "Toggle Fullscreen"
-msgstr "Включить или отключить полноэкранный режим"
 
 msgid "Search Help..."
 msgstr "Поиск в справке…"
@@ -6139,11 +6026,14 @@ msgstr "Выбрать текущую сцену"
 msgid "Open Project Settings"
 msgstr "Открыть настройки проекта"
 
-msgid "Ok"
-msgstr "ОК"
-
 msgid "Warning!"
 msgstr "Предупреждение!"
+
+msgid "Invalid Java SDK path in Editor Settings."
+msgstr "Неверный путь к Java SDK в настройках редактора."
+
+msgid "Invalid Android SDK path in Editor Settings."
+msgstr "Неверный путь к Android SDK в настройках редактора."
 
 msgid "Can't get filesystem access."
 msgstr "Не удалось получить доступ к файловой системе."
@@ -6317,7 +6207,7 @@ msgstr "«Shader Baker» не работает с рендерером Compatibi
 msgid ""
 "The editor is currently using a different renderer than what the target "
 "platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to \"%s\" renderer temporarily to fix this."
+"Switch to the \"%s\" renderer temporarily to fix this."
 msgstr ""
 "Редактор в настоящее время использует другой рендерер, нежели тот, который "
 "будет использовать целевая платформа. \"Shader Baker\" не сможет включать "
@@ -6440,6 +6330,12 @@ msgstr "Модуль камеры включен, но описание испо
 msgid "Invalid additional PList content: "
 msgstr "Недопустимое дополнительное содержимое PList: "
 
+msgid "Export Icons"
+msgstr "Экспортировать значки"
+
+msgid "Could not open a directory at path \"%s\"."
+msgstr "Не удалось открыть каталог по пути «%s»."
+
 msgid "Select device from the list"
 msgstr "Выберите устройство из списка"
 
@@ -6471,16 +6367,6 @@ msgid "\"Shader Baker\" is not supported when using the Compatibility renderer."
 msgstr ""
 "\"Shader Baker\" не поддерживается при использовании рендерера совместимости "
 "(Compatibility)."
-
-msgid ""
-"The editor is currently using a different renderer than what the target "
-"platform will use. \"Shader Baker\" won't be able to include core shaders. "
-"Switch to the \"%s\" renderer temporarily to fix this."
-msgstr ""
-"Редактор в настоящее время использует другой рендерер, нежели тот, который "
-"будет использовать целевая платформа. \"Shader Baker\" не сможет включать "
-"основные шейдеры. Временно переключитесь на рендерер \"%s\", чтобы исправить "
-"это."
 
 msgid ""
 "A texture format must be selected to export the project. Please select at "
@@ -6617,6 +6503,13 @@ msgstr ""
 
 msgid "Web with Extensions"
 msgstr "Веб с расширениями"
+
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Веб-сборка с поддержкой GDExtensions. Полезно только при использовании "
+"GDExtensions, в противном случае увеличивает размер сборки."
 
 msgid "Web Single-Threaded"
 msgstr "Веб однопоточный"
@@ -6782,19 +6675,19 @@ msgid "Offline mode, some functionality is not available."
 msgstr "В оффлайн режиме некоторые функции недоступны."
 
 msgid "Can't resolve the requested address"
-msgstr "Не удается получить запрошенный адрес."
+msgstr "Не удается получить запрошенный адрес"
 
 msgid "Can't connect to the mirror"
-msgstr "Не удаётся подключиться к зеркалу."
+msgstr "Не удаётся подключиться к зеркалу"
 
 msgid "No response from the mirror"
-msgstr "От зеркала нет ответа."
+msgstr "От зеркала нет ответа"
 
 msgid "Request failed"
 msgstr "Запрос не выполнен"
 
 msgid "Request ended up in a redirect loop"
-msgstr "Запрос попал в цикл перенаправления."
+msgstr "Запрос попал в цикл перенаправления"
 
 msgid "Forbidden"
 msgstr "Запрещенный"
@@ -6820,8 +6713,26 @@ msgstr "Не удалось открыть mini-ZIP для записи."
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "Программа для чтения ZIP-архивов не смогла открыть miniZIP файл."
 
+msgid "File does not exist in ZIP archive."
+msgstr "Файл отсутствует в ZIP-архиве."
+
+msgid "Could not open file within ZIP archive."
+msgstr "Не удалось открыть файл внутри ZIP-архива."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Не удалось прочитать информацию о файле из ZIP-архива."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Ошибка IO/zlib при чтении файла из ZIP-архива."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Ошибка CRC при чтении файла из ZIP-архива."
+
 msgid "Mini-ZIP data was empty."
 msgstr "Данные Mini-ZIP были пустыми."
+
+msgid "Failed to open template file for writing."
+msgstr "Не удалось открыть файл шаблона для записи."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -6859,6 +6770,9 @@ msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
 "Для работы функции «Экспортировать всё» у всех предустановок должен быть "
 "определён путь экспорта."
+
+msgid "Advanced settings are always shown when searching."
+msgstr "При поиске всегда отображаются расширенные настройки."
 
 msgid "Hide encryption key"
 msgstr "Скрыть ключ шифрования"
@@ -6904,14 +6818,6 @@ msgstr "Предустановки"
 
 msgid "Add..."
 msgstr "Добавить…"
-
-msgid ""
-"If checked, the preset will be available for use in one-click deploy.\n"
-"Only one preset per platform may be marked as runnable."
-msgstr ""
-"Если этот флажок установлен, предустановка будет доступна для использования "
-"при развертывании одним щелчком мыши.\n"
-"Только одна предустановка на платформу может быть отмечена как активная."
 
 msgid "Advanced Options"
 msgstr "Дополнительные параметры"
@@ -7018,7 +6924,7 @@ msgid "Godot Project Pack"
 msgstr "Пакет проекта Godot"
 
 msgid "Android App Bundle"
-msgstr "Android App Bundle"
+msgstr "Набор приложения Android"
 
 msgid "Android Package"
 msgstr "Пакет Android"
@@ -7073,6 +6979,9 @@ msgstr ""
 
 msgid "More Info..."
 msgstr "Подробнее…"
+
+msgid "Scripts"
+msgstr "Скрипты"
 
 msgid "GDScript Export Mode:"
 msgstr "Режим экспорта GDScript:"
@@ -7590,8 +7499,8 @@ msgstr "Переместить"
 msgid "No sub-resources found."
 msgstr "Вложенные ресурсы не найдены."
 
-msgid "Open a list of sub-resources."
-msgstr "Открыть список вложенных ресурсов."
+msgid "Type: %s"
+msgstr "Тип: %s"
 
 msgid "Search files..."
 msgstr "Поиск файлов…"
@@ -7894,18 +7803,8 @@ msgstr "Импортёр потока аудио: %s"
 msgid "Enable"
 msgstr "Включить"
 
-msgid "Enable looping."
-msgstr "Зациклить."
-
 msgid "Offset:"
 msgstr "Сдвиг:"
-
-msgid ""
-"Loop offset (from beginning). Note that if BPM is set, this setting will be "
-"ignored."
-msgstr ""
-"Сдвиг цикла (от начала). Обратите внимание: если установлен темп (BPM), этот "
-"параметр будет игнорироваться."
 
 msgid "Loop:"
 msgstr "Зациклить:"
@@ -7913,39 +7812,11 @@ msgstr "Зациклить:"
 msgid "BPM:"
 msgstr "Темп:"
 
-msgid ""
-"Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
-"This is required in order to configure beat information."
-msgstr ""
-"Количество ударов на такт (темп), используемое интерактивными потоками.\n"
-"Это нужно для настройки ритма."
-
 msgid "Beat Count:"
 msgstr "Кол-во ударов:"
 
-msgid ""
-"Configure the amount of Beats used for music-aware looping. If zero, it will "
-"be autodetected from the length.\n"
-"It is recommended to set this value (either manually or by clicking on a beat "
-"number in the preview) to ensure looping works properly."
-msgstr ""
-"Параметр количества битов, используемых для зацикливания музыки. Если ноль, "
-"он будет автоматически определён по длине.\n"
-"Рекомендуется установить это значение (вручную или щелчком по номеру доли в "
-"превью), чтобы обеспечить правильную работу цикла."
-
 msgid "Bar Beats:"
 msgstr "Ударов в такте:"
-
-msgid ""
-"Configure the Beats Per Bar. This used for music-aware transitions between "
-"AudioStreams."
-msgstr ""
-"Параметр количества ударов в такте. Это используется для музыкально "
-"основанных переходов между звуковыми потоками AudioStream."
-
-msgid "Music Playback:"
-msgstr "Воспроизведение:"
 
 msgid "Preview:"
 msgstr "Предпросмотр:"
@@ -8262,6 +8133,15 @@ msgstr[0] "(%d изменение)"
 msgstr[1] "(%d изменения)"
 msgstr[2] "(%d изменений)"
 
+msgid "Copy Value"
+msgstr "Копировать значение"
+
+msgid "Paste Value"
+msgstr "Вставить значение"
+
+msgid "Copy Property Path"
+msgstr "Копировать путь к свойству"
+
 msgid "Copy Section Values"
 msgstr "Скопировать значения раздела"
 
@@ -8348,15 +8228,6 @@ msgstr "Откреплено %s"
 
 msgid "Add metadata %s"
 msgstr "Добавить метаданные %s"
-
-msgid "Copy Value"
-msgstr "Копировать значение"
-
-msgid "Paste Value"
-msgstr "Вставить значение"
-
-msgid "Copy Property Path"
-msgstr "Копировать путь к свойству"
 
 msgid "Edit Text:"
 msgstr "Редактировать текст:"
@@ -8446,17 +8317,17 @@ msgstr "Временное значение Эйлера"
 msgid "Temporary Euler %s"
 msgstr "Временные значения Эйлера %s"
 
-msgid "Assign..."
-msgstr "Назначить…"
-
-msgid "Assign Node"
-msgstr "Назначить узел"
-
 msgid "Copy as Text"
 msgstr "Копировать как текст"
 
 msgid "Show Node in Tree"
 msgstr "Показать узел в дереве"
+
+msgid "Assign..."
+msgstr "Назначить…"
+
+msgid "Assign Node"
+msgstr "Назначить узел"
 
 msgid "Node Path"
 msgstr "Копировать путь к узлу"
@@ -8644,9 +8515,6 @@ msgstr "Размер: %s"
 msgid "Invalid file or broken link."
 msgstr "Неверный файл или неработающая ссылка."
 
-msgid "Type: %s"
-msgstr "Тип: %s"
-
 msgid "Dimensions: %d × %d"
 msgstr "Размеры: %d × %d"
 
@@ -8658,9 +8526,6 @@ msgstr "Длина: %0.1fs"
 
 msgid "Length: %0.3fs"
 msgstr "Длина: %0.3fs"
-
-msgid "Advanced settings are always shown when searching."
-msgstr "При поиске всегда отображаются расширенные настройки."
 
 msgid "Event Configured"
 msgstr "Событие Настроено"
@@ -9071,9 +8936,6 @@ msgstr "Открытие этого файла понизит его верси�
 
 msgid "Downgrading projects is not recommended."
 msgstr "Понижение статуса проектов не рекомендуется."
-
-msgid "Unknown version"
-msgstr "Неизвестная версия"
 
 msgid "This project uses an unknown version of Godot."
 msgstr "В этом проекте используется неизвестная версия Godot."
@@ -9489,9 +9351,6 @@ msgstr "Редактировать обычно"
 msgid "Edit in Recovery Mode"
 msgstr "Редактировать в режиме восстановления"
 
-msgid "Backup project first"
-msgstr "Сначала сделать резервную копию проекта"
-
 msgid "Convert Full Project"
 msgstr "Конвертировать весь проект"
 
@@ -9570,9 +9429,6 @@ msgstr "Стиль"
 
 msgid "Color Preset"
 msgstr "Предустановка цвета"
-
-msgid "Custom preset can be further configured in the editor."
-msgstr "Пользовательский пресет можно дополнительно настроить в редакторе."
 
 msgid "Display Scale"
 msgstr "Масштаб отображения"
@@ -9816,9 +9672,6 @@ msgstr "Удалённое развёртывание"
 msgid "Project Run"
 msgstr "Запуск проекта"
 
-msgid "Suspend/Resume Embedded Project"
-msgstr "Приостановить/возобновить встроенный проект"
-
 msgid "Next Frame"
 msgstr "Следующий Кадр"
 
@@ -9833,12 +9686,6 @@ msgstr "Запуск Игры…"
 
 msgid "Game running not embedded."
 msgstr "Игра запущена, но не встроена."
-
-msgid "Press play to start the game."
-msgstr "Нажмите кнопку воспроизведения, чтобы начать игру."
-
-msgid "Embedding is disabled."
-msgstr "Встраивание отключено."
 
 msgid "Game embedding not available on your OS."
 msgstr "Встраивание игры недоступно для вашей ОС."
@@ -9869,9 +9716,6 @@ msgstr "Встраивание игры недоступно, если игра 
 
 msgid "Game embedding not available when the game starts in fullscreen."
 msgstr "Встраивание игры недоступно, если игра запущена в полноэкранном режиме."
-
-msgid "Game embedding not available in single window mode."
-msgstr "Встраивание игры недоступно в режиме одного окна."
 
 msgid "Game embedding not available when the game starts in headless mode."
 msgstr "Встраивание игры недоступно, если игра запущена в режиме headless."
@@ -9945,18 +9789,42 @@ msgstr ""
 "rendering/rendering_device/driver advanced\n"
 "на драйвер, поддерживающий вывод HDR."
 
-msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
-msgstr "%s+Alt+ПКМ: Отобразить список всех узлов в позиции щелчка."
+msgid "%s+Drag: Rotate selected node around pivot."
+msgstr "%s+Перетаскивание: Поворот выбранного узла вокруг точки опоры."
+
+msgid "V: Set selected node's pivot position."
+msgstr "V: задать положение оси выбранного узла."
+
+msgid "Shift: Scale proportionally."
+msgstr "Shift: масштабировать пропорционально."
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "Показать список доступных для выбора узлов в выбранной позиции."
+
+msgid "Click to change object's pivot."
+msgstr "Нажмите для изменения точки вращения объекта."
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: Установить временную точку вращения."
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
+msgstr ""
+"Нажмите эту кнопку, удерживая Shift, чтобы поместить временную точку вращения "
+"в центр выбранных узлов."
+
+msgid ""
+"You can also use Pan View shortcut (Space by default) to pan in any mode."
+msgstr ""
+"Также можно воспользоваться горячей клавишей опции «Панорамировать вид» (по "
+"умолчанию — пробел) для выполнения панорамирования в любом режиме."
+
+msgid "Game"
+msgstr "Игра"
 
 msgid "Suspend"
 msgstr "Приостановить"
-
-msgid ""
-"Force pause at SceneTree level. Stops all processing, but you can still "
-"interact with the project."
-msgstr ""
-"Принудительная пауза на уровне SceneTree. Останавливает всю обработку, но вы "
-"по-прежнему можете взаимодействовать с проектом."
 
 msgid "Change the game speed."
 msgstr "Изменить скорость игры."
@@ -9964,50 +9832,11 @@ msgstr "Изменить скорость игры."
 msgid "Speed State"
 msgstr "Скорость Игры"
 
-msgid "Reset the game speed."
-msgstr "Сбросить скорость игры."
-
-msgid "Reset Speed"
-msgstr "Сбросить скорость"
-
 msgid "Input"
 msgstr "Ввод"
 
-msgid "Allow game input."
-msgstr "Разрешить игровой ввод."
-
-msgid ""
-"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
-"2D camera."
-msgstr ""
-"Отключить игровой ввод и разрешить выбирать Node2D, Control узлы, и управлять "
-"2D-камерой."
-
-msgid ""
-"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
-msgstr ""
-"Отключить игровой ввод и разрешить выбирать Node3D и управлять 3D-камерой."
-
-msgid "Show list of selectable nodes at position clicked."
-msgstr "Показать список доступных для выбора узлов в выбранной позиции."
-
-msgid "Toggle Selection Visibility"
-msgstr "Переключить видимость выделения"
-
-msgid "Selection Options"
-msgstr "Варианты выбора"
-
-msgid "Don't Select Locked Nodes"
-msgstr "Не выбирать заблокированные узлы"
-
-msgid "Select Group Over Children"
-msgstr "Выбирать группу вместо дочерних узлов"
-
 msgid "Override the in-game camera."
 msgstr "Переопределить игровую камеру."
-
-msgid "Camera Override Options"
-msgstr "Параметры переопределения камеры"
 
 msgid "Reset 2D Camera"
 msgstr "Сбросить 2D-камеру"
@@ -10021,29 +9850,17 @@ msgstr "Манипулировать в игре"
 msgid "Manipulate From Editors"
 msgstr "Манипулировать из редактора"
 
-msgid "Game Window Options"
-msgstr "Параметры игрового окна"
+msgid "Don't Select Locked Nodes"
+msgstr "Не выбирать заблокированные узлы"
 
-msgid "Embed Game on Next Play"
-msgstr "Встроить игру в Next Play"
-
-msgid "Make Game Workspace Floating on Next Play"
-msgstr "Сделать игровое рабочее пространство плавающим c Next Play"
+msgid "Select Group Over Children"
+msgstr "Выбирать группу вместо дочерних узлов"
 
 msgid "Embedded Window Sizing"
 msgstr "Изменение размера встроенного окна"
 
 msgid "Fixed Size"
 msgstr "Фиксированный размер"
-
-msgid ""
-"Embedded game size is based on project settings.\n"
-"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
-"desired size."
-msgstr ""
-"Размер встроенной игры зависит от настроек проекта.\n"
-"Режим «Сохранить соотношение сторон» используется, когда игровое рабочее "
-"пространство меньше желаемого размера."
 
 msgid "Keep Aspect Ratio"
 msgstr "Сохраняйте соотношение сторон"
@@ -10054,16 +9871,8 @@ msgstr "Сохраните соотношение сторон встроенн�
 msgid "Stretch to Fit"
 msgstr "Растягивать чтобы соответствовать размеру"
 
-msgid "Embedded game size stretches to fit the Game Workspace."
-msgstr ""
-"Размер встроенной игры растягивается в соответствии с размером игрового "
-"рабочего пространства."
-
 msgid "Game Workspace"
 msgstr "Игровое рабочее пространство"
-
-msgid "Game"
-msgstr "Игра"
 
 msgid "Clear All"
 msgstr "Очистить"
@@ -10491,6 +10300,17 @@ msgid "Editing instance properties"
 msgstr "Редактирование свойств экземпляра"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Отредактированные свойства будут применены ко вновь нарисованным экземплярам. "
+"Они будут храниться локально в текущей сцене."
+
+msgid ""
+"The selected scene could not be found. It may have been moved or deleted."
+msgstr "Выбранная сцена не найдена. Возможно, она была перемещена или удалена."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10499,9 +10319,8 @@ msgstr ""
 "Если эта функция включена, родительский узел рисования не будет изменяться "
 "при выборе других узлов в сцене."
 
-msgid ""
-"The selected scene could not be found. It may have been moved or deleted."
-msgstr "Выбранная сцена не найдена. Возможно, она была перемещена или удалена."
+msgid "Pinned Node: %s"
+msgstr "Закрепленный узел: %s"
 
 msgid "Advanced Settings"
 msgstr "Расширенные настройки"
@@ -10509,8 +10328,25 @@ msgstr "Расширенные настройки"
 msgid "Pin Node"
 msgstr "Закрепить узел"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"При включении этой функции родительский узел рисования не будет изменяться "
+"при выборе других узлов в сцене."
+
 msgid "Scene Picker"
 msgstr "Выбор сцены"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding %s enables picking from the 2D editor's viewport."
+msgstr ""
+"Если эта функция включена, вы можете выбирать сцены в панели FileSystem, "
+"панели Scene (Сцена) или в окне просмотра 2D-редактора.\n"
+"Удерживание клавиши %s позволяет выбирать объекты непосредственно в окне "
+"просмотра 2D-редактора."
 
 msgid "Edit Properties"
 msgstr "Редактировать свойства"
@@ -10529,6 +10365,13 @@ msgstr "Привязка к центру ячейки сетки"
 
 msgid "Allow Overlapping"
 msgstr "Разрешить перекрытие"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold %s while painting to temporarily toggle this option."
+msgstr ""
+"Разрешить рисовать поверх уже закрашенных участков.\n"
+"Удерживайте %s во время рисования, чтобы временно переключить эту настройку."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние узлы Bone2D."
@@ -10625,946 +10468,6 @@ msgstr "Обновить предварительный просмотр"
 
 msgid "Settings:"
 msgstr "Параметры:"
-
-msgid "Merge TileSetAtlasSource"
-msgstr "Объединить TileSetAtlasSource"
-
-msgid "%s (ID: %d)"
-msgstr "%s (ID: %d)"
-
-msgid "Atlas Merging"
-msgstr "Объединение атласов"
-
-msgid "Merge (Keep original Atlases)"
-msgstr "Объединить (сохранить исходные атласы)"
-
-msgid "Merge"
-msgstr "Объединить"
-
-msgid "Next Line After Column"
-msgstr "Следующая строка после столбца"
-
-msgid "Please select two atlases or more."
-msgstr "Выберите два атласа или больше."
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: 0"
-msgstr ""
-"Источник: %d\n"
-"Координаты атласа: %s\n"
-"Альтернатива: 0"
-
-msgid ""
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"Источник: %d\n"
-"Координаты атласа: %s\n"
-"Альтернатива: %d"
-
-msgid "Center View"
-msgstr "Отображение по центру"
-
-msgid ""
-"The selected atlas source has no valid texture. Assign a texture in the "
-"TileSet bottom tab."
-msgstr ""
-"Выбранный источник атласа не содержит допустимую текстуру. Назначьте текстуру "
-"на вкладке TileSet внизу."
-
-msgid "Base Tiles"
-msgstr "Базовые тайлы"
-
-msgid "Alternative Tiles"
-msgstr "Альтернативные тайлы"
-
-msgid "Reset Polygons"
-msgstr "Сбросить полигоны"
-
-msgid "Clear Polygons"
-msgstr "Очистить полигоны"
-
-msgid "Rotate Polygons Right"
-msgstr "Повернуть полигоны вправо"
-
-msgid "Rotate Polygons Left"
-msgstr "Повернуть полигоны влево"
-
-msgid "Flip Polygons Horizontally"
-msgstr "Перевернуть полигоны по горизонтали"
-
-msgid "Flip Polygons Vertically"
-msgstr "Перевернуть полигоны по вертикали"
-
-msgid "Edit Polygons"
-msgstr "Редактировать полигоны"
-
-msgid "Expand editor"
-msgstr "Развернуть редактор"
-
-msgid "Add polygon tool"
-msgstr "Инструмент добавления полигона"
-
-msgid "Edit points tool"
-msgstr "Инструмент изменения точек"
-
-msgid "Delete points tool"
-msgstr "Инструмент удаления точек"
-
-msgid "Advanced"
-msgstr "Дополнительно"
-
-msgid "Reset to default tile shape"
-msgstr "Вернуть форму тайла по умолчанию"
-
-msgid "Rotate Right"
-msgstr "Повернуть вправо"
-
-msgid "Rotate Left"
-msgstr "Повернуть влево"
-
-msgid "Flip Horizontally"
-msgstr "Перевернуть по горизонтали"
-
-msgid "Flip Vertically"
-msgstr "Перевернуть по вертикали"
-
-msgid "Toggle Grid Snap"
-msgstr "Переключить привязку к сетке"
-
-msgid "Disable Snap"
-msgstr "Отключить привязку"
-
-msgid "Half-Pixel Snap"
-msgstr "Полупиксельная привязка"
-
-msgid "Grid Snap"
-msgstr "Привязка к сетке"
-
-msgid "Subdivision"
-msgstr "Подраздел"
-
-msgid "Painting Tiles Property"
-msgstr "Свойство рисования тайлов"
-
-msgid "Painting:"
-msgstr "Рисование:"
-
-msgid "Polygon %d"
-msgstr "Полигон %d"
-
-msgid "One Way"
-msgstr "Односторонняя"
-
-msgid "One Way Margin"
-msgstr "Односторонний отступ"
-
-msgid "Linear Velocity"
-msgstr "Линейная скорость"
-
-msgid "Angular Velocity"
-msgstr "Угловая скорость"
-
-msgid "No terrains"
-msgstr "Нет местностей"
-
-msgid "No terrain"
-msgstr "Нет местности"
-
-msgid "Painting Terrain Set"
-msgstr "Набор для рисования местности"
-
-msgid "Painting Terrain"
-msgstr "Рисование местности"
-
-msgid "Pick"
-msgstr "Выбрать"
-
-msgid "Drawing Rect:"
-msgstr "Рисование прямоугольником:"
-
-msgid "Can't rotate patterns when using non-square tile grid."
-msgstr ""
-"Невозможно поворачивать узоры при использовании плиточной сетки с "
-"неквадратными тайлами."
-
-msgid "Shift: Draw line."
-msgstr "Shift: рисовать линию."
-
-msgid "%s+Shift: Draw rectangle."
-msgstr "%s+Shift: Нарисовать прямоугольник."
-
-msgid "No Texture Atlas Source (ID: %d)"
-msgstr "Нет источника текстурного атласа (ID: %d)"
-
-msgid "Scene Collection Source (ID: %d)"
-msgstr "Источник коллекции сцен (ID: %d)"
-
-msgid "Empty Scene Collection Source (ID: %d)"
-msgstr "Пустой источник коллекции сцен (ID: %d)"
-
-msgid "Unknown Type Source (ID: %d)"
-msgstr "Источник неизвестного типа (ID: %d)"
-
-msgid "Add TileSet pattern"
-msgstr "Добавить узор набора тайлов"
-
-msgid "Remove TileSet patterns"
-msgstr "Удалить узоры набора тайлов"
-
-msgid "Index: %d"
-msgstr "Индекс: %d"
-
-msgid "Tile with Invalid Scene"
-msgstr "Тайл с некорректной сценой"
-
-msgid ""
-"The selected scene collection source has no scenes. Add scenes in the TileSet "
-"bottom tab."
-msgstr ""
-"Выбранный источник сцен не содержит сцен. Добавьте сцены на вкладке TileSet "
-"внизу."
-
-msgid "Delete tiles"
-msgstr "Удалить тайлы"
-
-msgid "Change selection"
-msgstr "Изменить выбор"
-
-msgid "Move tiles"
-msgstr "Переместить тайлы"
-
-msgid "Paint tiles"
-msgstr "Покрасить тайлы"
-
-msgid "Paste tiles"
-msgstr "Вставить тайлы"
-
-msgid "Selection Tool"
-msgstr "Инструмент выделения"
-
-msgid "Paint Tool"
-msgstr "Инструмент рисования"
-
-msgid "Line Tool"
-msgstr "Инструмент Линия"
-
-msgid "Rect Tool"
-msgstr "Инструмент Прямоугольник"
-
-msgid "Bucket Tool"
-msgstr "Инструмент Заливка"
-
-msgid "Alternatively hold %s with other tools to pick tile."
-msgstr "Выбрать тайл также можно путём удержания %s с другими инструментами."
-
-msgid "Alternatively use RMB to erase tiles."
-msgstr "Удалить тайлы также можно щелчком правой кнопки мыши."
-
-msgid "Erase"
-msgstr "Ластик"
-
-msgid "Rotate Tile Left"
-msgstr "Повернуть тайл влево"
-
-msgid "Rotate Tile Right"
-msgstr "Повернуть тайл вправо"
-
-msgid "Flip Tile Horizontally"
-msgstr "Перевернуть тайл по горизонтали"
-
-msgid "Flip Tile Vertically"
-msgstr "Перевернуть тайл по вертикали"
-
-msgid "Contiguous"
-msgstr "Непрерывно"
-
-msgid "Place Random Tile"
-msgstr "Разместить случайный тайл"
-
-msgid ""
-"Modifies the chance of painting nothing instead of a randomly selected tile."
-msgstr ""
-"Изменяет вероятность рисования пустоты вместо случайно выбранного тайла."
-
-msgid "Scattering:"
-msgstr "Рассеяние:"
-
-msgid "Tiles"
-msgstr "Тайлы"
-
-msgid ""
-"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
-"bottom panel to add one."
-msgstr ""
-"TileSet этого TileMap не имеет настроенного источника плиток. Перейдите на "
-"нижнюю панель TileSet, чтобы добавить его."
-
-msgid "Sort sources"
-msgstr "Сортировать источники"
-
-msgid "Sort by ID (Ascending)"
-msgstr "Сортировать по ID (по возрастанию)"
-
-msgid "Sort by ID (Descending)"
-msgstr "Сортировать по ID (по убыванию)"
-
-msgid "Invalid source selected."
-msgstr "Выбран некорректный источник."
-
-msgid "Patterns"
-msgstr "Узоры"
-
-msgid "Drag and drop or paste a TileMap selection here to store a pattern."
-msgstr ""
-"Выполните перетаскивание или вставьте сюда выделение карты тайлов для "
-"сохранения узора."
-
-msgid "Paint terrain"
-msgstr "Рисовать местность"
-
-msgid "Matches Corners and Sides"
-msgstr "Соответствует углам и сторонам"
-
-msgid "Matches Corners Only"
-msgstr "Соответствует только углам"
-
-msgid "Matches Sides Only"
-msgstr "Соответствует только сторонам"
-
-msgid "Terrain Set %d (%s)"
-msgstr "Набор местностей %d (%s)"
-
-msgid ""
-"Connect mode: paints a terrain, then connects it with the surrounding tiles "
-"with the same terrain."
-msgstr ""
-"Режим соединения: рисует местность, затем соединяет её с окружающими тайлами "
-"с той же местностью."
-
-msgid ""
-"Path mode: paints a terrain, then connects it to the previous tile painted "
-"within the same stroke."
-msgstr ""
-"Режим пути: рисует местность, затем соединяет её с предыдущим тайлом, "
-"нарисованным тем же штрихом."
-
-msgid "Terrains"
-msgstr "Местности"
-
-msgid "No Layers"
-msgstr "Нет слоёв"
-
-msgid "Replace Tiles with Proxies"
-msgstr "Заменить тайлы на прокси"
-
-msgid "Extract TileMap layers as individual TileMapLayer nodes"
-msgstr "Извлечь слои TileMap как отдельные узлы TileMapLayer"
-
-msgid "Can't edit multiple layers at once."
-msgstr "Невозможно редактировать сразу несколько слоёв."
-
-msgid "The selected TileMap has no layer to edit."
-msgstr "Выбранная карта тайлов не имеет слоя для редактирования."
-
-msgid "The edited layer is disabled or invisible"
-msgstr "Редактируемый слой отключён или невидим"
-
-msgid ""
-"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
-"Create or load a TileSet resource in the Tile Set property in the inspector."
-msgstr ""
-"Редактируемый узел TileMap или TileMapLayer не имеет ресурса TileSet.\n"
-"Создайте или загрузите ресурс TileSet в свойство «Набор тайлов» в инспекторе."
-
-msgid "TileMap"
-msgstr "Карта тайлов"
-
-msgid "Open TileMap Dock"
-msgstr "Открыть панель TileMap"
-
-msgid "Select Next Tile Map Layer"
-msgstr "Выбрать следующий слой карты тайлов"
-
-msgid "Select Previous Tile Map Layer"
-msgstr "Выбрать предыдущий слой карты тайлов"
-
-msgid "TileMap Layers"
-msgstr "Слои карты тайлов"
-
-msgid "Select previous layer"
-msgstr "Выбрать предыдущий слой"
-
-msgid "Select next layer"
-msgstr "Выбрать следующий слой"
-
-msgid "Select all TileMapLayers in scene"
-msgstr "Выбрать все TileMapLayers (Cлои Карты Тайлов) в сцене"
-
-msgid "Highlight Selected TileMap Layer"
-msgstr "Выделить выбранный слой карты тайлов"
-
-msgid "Toggle grid visibility."
-msgstr "Переключить видимость сетки."
-
-msgid "Advanced settings."
-msgstr "Расширенные настройки."
-
-msgid "Automatically Replace Tiles with Proxies"
-msgstr "Автоматически заменять тайлы на прокси"
-
-msgid "Remove Tile Proxies"
-msgstr "Удалить прокси тайлов"
-
-msgid "Create Alternative-level Tile Proxy"
-msgstr "Создать прокси тайлов уровня альтернативы"
-
-msgid "Create Coords-level Tile Proxy"
-msgstr "Создать прокси тайлов уровня координат"
-
-msgid "Create source-level Tile Proxy"
-msgstr "Создать прокси тайлов уровня источника"
-
-msgid "Delete All Invalid Tile Proxies"
-msgstr "Удалить все некорректные прокси тайлов"
-
-msgid "Delete All Tile Proxies"
-msgstr "Удалить все прокси тайлов"
-
-msgid "Tile Proxies Management"
-msgstr "Управление прокси тайлов"
-
-msgid "Source-level proxies"
-msgstr "Прокси тайлов уровня источника"
-
-msgid "Coords-level proxies"
-msgstr "Прокси тайлов уровня координат"
-
-msgid "Alternative-level proxies"
-msgstr "Прокси тайлов уровня альтернативы"
-
-msgid "Add a new tile proxy:"
-msgstr "Добавить новый прокси тайлов:"
-
-msgid "From Source"
-msgstr "Из источника"
-
-msgid "From Coords"
-msgstr "Из координат"
-
-msgid "From Alternative"
-msgstr "Из альтернативы"
-
-msgid "To Source"
-msgstr "В источник"
-
-msgid "To Coords"
-msgstr "В координаты"
-
-msgid "To Alternative"
-msgstr "В альтернативу"
-
-msgid "Global actions:"
-msgstr "Глобальные действия:"
-
-msgid "Clear Invalid"
-msgstr "Очистить недопустимые"
-
-msgid "Atlas"
-msgstr "Атлас"
-
-msgid "Base Tile"
-msgstr "Базовый тайл"
-
-msgid "Alternative Tile"
-msgstr "Альтернативный тайл"
-
-msgid ""
-"Selected tile:\n"
-"Source: %d\n"
-"Atlas coordinates: %s\n"
-"Alternative: %d"
-msgstr ""
-"Выбранный тайл:\n"
-"Источник: %d\n"
-"Координаты атласа: %s\n"
-"Альтернатива: %d"
-
-msgid "Rendering"
-msgstr "Рендеринг"
-
-msgid "Texture Origin"
-msgstr "Центр текстуры"
-
-msgid "Modulate"
-msgstr "Модуляция"
-
-msgid "Z Index"
-msgstr "Z-индекс"
-
-msgid "Y Sort Origin"
-msgstr "Начало координат для сортировки по Y"
-
-msgid "Occlusion Layer %d"
-msgstr "Слой окклюзии %d"
-
-msgid "Probability"
-msgstr "Вероятность"
-
-msgid "Physics"
-msgstr "Физика"
-
-msgid "Physics Layer %d"
-msgstr "Физический слой %d"
-
-msgid "No physics layers"
-msgstr "Нет слоёв физики"
-
-msgid ""
-"Create and customize physics layers in the inspector of the TileSet resource."
-msgstr "Создайте и настройте слои физики в инспекторе ресурса TileSet."
-
-msgid "Navigation"
-msgstr "Навигация"
-
-msgid "Navigation Layer %d"
-msgstr "Слой навигации %d"
-
-msgid "No navigation layers"
-msgstr "Нет слоёв навигации"
-
-msgid ""
-"Create and customize navigation layers in the inspector of the TileSet "
-"resource."
-msgstr "Создайте и настройте слои навигации в инспекторе ресурса TileSet."
-
-msgid "Custom Data"
-msgstr "Пользовательские данные"
-
-msgid "Custom Data %d"
-msgstr "Пользовательские данные %d"
-
-msgid "No custom data layers"
-msgstr "Нет слоёв пользовательских данных"
-
-msgid ""
-"Create and customize custom data layers in the inspector of the TileSet "
-"resource."
-msgstr ""
-"Создайте и настройте слои пользовательских данных в инспекторе ресурса "
-"TileSet."
-
-msgid "Select a property editor"
-msgstr "Выбрать редактор свойств"
-
-msgid "Hold Ctrl to create multiple tiles."
-msgstr "Удерживайте Ctrl, чтобы создать несколько тайлов."
-
-msgid "Hold Shift to create big tiles."
-msgstr "Удерживайте Shift, чтобы создать большие тайлы."
-
-msgid "Hold Shift to select multiple regions."
-msgstr "Удерживайте Ctrl для выбора нескольких областей."
-
-msgid ""
-"TileSet is in read-only mode. Make the resource unique to edit TileSet "
-"properties."
-msgstr ""
-"Набор тайлов находится в режиме только для чтения. Сделайте ресурс "
-"уникальным, чтобы редактировать свойства набора тайлов."
-
-msgid "Paint properties."
-msgstr "Свойства окрашивания."
-
-msgid "Create tiles"
-msgstr "Создать тайлы"
-
-msgid "Create a tile"
-msgstr "Создать тайл"
-
-msgid "Remove tiles"
-msgstr "Удалить тайлы"
-
-msgid "Move a tile"
-msgstr "Переместить тайл"
-
-msgid "Resize a tile"
-msgstr "Изменить размер тайла"
-
-msgid "Remove tile"
-msgstr "Удалить тайл"
-
-msgid "Create tile alternatives"
-msgstr "Создать альтернативы тайлов"
-
-msgid "Remove Tiles Outside the Texture"
-msgstr "Удалить тайлы вне текстуры"
-
-msgid "Create tiles in non-transparent texture regions"
-msgstr "Создать тайлы в непрозрачных областях текстуры"
-
-msgid "Remove tiles in fully transparent texture regions"
-msgstr "Удалить тайлы в полностью прозрачных областях текстуры"
-
-msgid ""
-"The tile's unique identifier within this TileSet. Each tile stores its source "
-"ID, so changing one may make tiles invalid."
-msgstr ""
-"Уникальный идентификатор тайла в наборе. Каждый тайл хранит свой ID "
-"источника, поэтому его изменение может сделать тайлы невалидными."
-
-msgid ""
-"The human-readable name for the atlas. Use a descriptive name here for "
-"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
-msgstr ""
-"Понятное человеку имя атласа. Используйте понятное описание для лучшей "
-"организации (например, «местность», «декорация» и т.д.)."
-
-msgid "The image from which the tiles will be created."
-msgstr "Изображение, из которого будут созданы тайлы."
-
-msgid ""
-"The margins on the image's edges that should not be selectable as tiles (in "
-"pixels). Increasing this can be useful if you download a tilesheet image that "
-"has margins on the edges (e.g. for attribution)."
-msgstr ""
-"Отступы на границах изображения, которые не должны выбираться как тайлы (в "
-"пикселях). Увеличение этого параметра может быть полезно, если вы скачали "
-"изображение с набором тайлов, у которого есть отступы по краям (например, для "
-"указания авторства)."
-
-msgid ""
-"The separation between each tile on the atlas in pixels. Increasing this can "
-"be useful if the tilesheet image you're using contains guides (such as "
-"outlines between every tile)."
-msgstr ""
-"Промежуток между тайлами в атласе в пикселях. Увеличение этого параметра "
-"имеет смысл, если изображение с набором тайлов, которое вы используете, "
-"содержит направляющие (например, рамку вокруг каждого тайла)."
-
-msgid ""
-"The size of each tile on the atlas in pixels. In most cases, this should "
-"match the tile size defined in the TileMap property (although this is not "
-"strictly necessary)."
-msgstr ""
-"Размер каждого тайла в атласе в пикселях. В большинстве случаев, должен "
-"соответствовать размеру тайла, указанному в свойствах TileMap (хотя это не "
-"является абсолютно необходимым)."
-
-msgid ""
-"If checked, adds a 1-pixel transparent edge around each tile to prevent "
-"texture bleeding when filtering is enabled. It's recommended to leave this "
-"enabled unless you're running into rendering issues due to texture padding."
-msgstr ""
-"Если включено, добавляет прозрачный край толщиной в 1 пиксель вокруг каждого "
-"тайла для предотвращения утечек текстур при включении фильтрации. "
-"Рекомендуется оставить включённым, если у вас нет проблем с отрисовкой из-за "
-"отступа текстур."
-
-msgid ""
-"The position of the tile's top-left corner in the atlas. The position and "
-"size must be within the atlas and can't overlap another tile.\n"
-"Each painted tile has associated atlas coords, so changing this property may "
-"cause your TileMaps to not display properly."
-msgstr ""
-"Позиция верхнего левого угла тайла в атласе. Позиция и размер должны "
-"находиться внутри атласа и не могут пересекать другие тайлы.\n"
-"Каждый рисуемый тайл имеет соответствующие координаты в атласе, поэтому "
-"изменение этого свойства может вызвать неверное отображение вашей TileMap."
-
-msgid "The unit size of the tile."
-msgstr "Типоразмер тайла."
-
-msgid ""
-"Number of columns for the animation grid. If number of columns is lower than "
-"number of frames, the animation will automatically adjust row count."
-msgstr ""
-"Количество колонок в сетке анимации. Если количество колонок меньше числа "
-"кадров, анимация автоматически скорректирует число строк."
-
-msgid "The space (in tiles) between each frame of the animation."
-msgstr "Пространство (в тайлах) между кадрами анимации."
-
-msgid "Animation speed in frames per second."
-msgstr "Скорость анимации в кадрах в секунду."
-
-msgid ""
-"Determines how animation will start. In \"Default\" mode all tiles start "
-"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
-"animation with a random offset."
-msgstr ""
-"Определяет, как запускается анимация. В режиме «По умолчанию» все тайлы "
-"начинают анимироваться с одного кадра. В режиме «Случайное время старта» "
-"каждый тайл начинает анимироваться со случайным смещением."
-
-msgid "If [code]true[/code], the tile is horizontally flipped."
-msgstr "Если [code]true[/code], тайл перевёрнут по горизонтали."
-
-msgid "If [code]true[/code], the tile is vertically flipped."
-msgstr "Если [code]true[/code], тайл перевёрнут по вертикали."
-
-msgid ""
-"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
-"and then flipped vertically. In practice, this means that to rotate a tile by "
-"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
-"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
-"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
-"[b]Flip V[/b] and [b]Transpose[/b]."
-msgstr ""
-"Если [code]true[/code], тайл повёрнут на 90 градусов [i]против часовой "
-"стрелки[/i] и затем перевёрнут по вертикали. На практике это означает, что "
-"для поворота на 90 градусов по часовой стрелке без переворота вам следует "
-"включить [b]Перевернуть H[/b] и [b]Транспонировать[/b]. Для поворота тайна на "
-"180 градусов по часовой стрелке, включите [b]Перевернуть H[/b] и "
-"[b]Перевернуть V[/b]. Для поворота тайла на 270 градусов по часовой стрелке, "
-"включите [b]Перевернуть V[/b] и [b]Транспонировать[/b]."
-
-msgid ""
-"The origin to use for drawing the tile. This can be used to visually offset "
-"the tile compared to the base tile."
-msgstr ""
-"Точка привязки для отрисовки тайла. Может быть использована для визуального "
-"смещения тайла в сравнении с базовым тайлом."
-
-msgid "The color multiplier to use when rendering the tile."
-msgstr "Множитель цвета, используемый при отрисовке тайла."
-
-msgid ""
-"The material to use for this tile. This can be used to apply a different "
-"blend mode or custom shaders to a single tile."
-msgstr ""
-"Материал, используемый для тайла. Это материал можно использовать для "
-"применения другого режима наложения или пользовательских шейдеров к одному "
-"тайлу."
-
-msgid ""
-"The sorting order for this tile. Higher values will make the tile render in "
-"front of others on the same layer. The index is relative to the TileMap's own "
-"Z index."
-msgstr ""
-"Порядок сортировки для этого тайла. Более высокие значения заставят тайл "
-"отображаться перед другими на том же слое. Индекс является относительным к "
-"собственному Z-индексу TileMap."
-
-msgid ""
-"The vertical offset to use for tile sorting based on its Y coordinate (in "
-"pixels). This allows using layers as if they were on different height for top-"
-"down games. Adjusting this can help alleviate issues with sorting certain "
-"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
-"is placed on."
-msgstr ""
-"Вертикальное смещение, используемое для сортировки фрагментов по координате Y "
-"(в пикселях). Это позволяет использовать слои так, как если бы они находились "
-"на разной высоте для игр сверху вниз. Настройка этого параметра может помочь "
-"решить проблемы с сортировкой определенных тайлов. Действует только в том "
-"случае, если для слоя TileMap, на котором размещен тайл, установлено значение "
-"Y Sort Enabled."
-
-msgid ""
-"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
-"will not be used in terrains."
-msgstr ""
-"Индекс набора местностей, которому принадлежит этот тайл. [code]-1[/code] "
-"означает, что он не будет использоваться в местностях."
-
-msgid ""
-"The index of the terrain inside the terrain set this tile belongs to. "
-"[code]-1[/code] means it will not be used in terrains."
-msgstr ""
-"Индекс местности внутри набора местностей, которому принадлежит этот тайл. "
-"[code]-1[/code] означает, что он не будет использоваться в местностях."
-
-msgid ""
-"The relative probability of this tile appearing when painting with \"Place "
-"Random Tile\" enabled."
-msgstr ""
-"Относительная вероятность появления этого тайла при рисовании с включенной "
-"функцией «Разместить случайный тайл»."
-
-msgid ""
-"The current atlas source has tiles outside the texture.\n"
-"You can clear it using \"%s\" option in the 3 dots menu."
-msgstr ""
-"Текущий источник атласа содержит тайлы за пределами текстуры.\n"
-"Вы можете очистить их, используя опцию «%s» в меню трёх точек."
-
-msgid "Setup"
-msgstr "Настройка"
-
-msgid ""
-"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
-"control for rectangle editing)."
-msgstr ""
-"Настройка атласа. Инструмент для добавления/удаления тайлов (используйте "
-"клавишу Shift для создания крупных тайлов, а клавишу Ctrl — для "
-"редактирования прямоугольных областей)."
-
-msgid "Select tiles."
-msgstr "Выделить тайлы."
-
-msgid "Paint"
-msgstr "Окрасить"
-
-msgid ""
-"No tiles selected.\n"
-"Select one or more tiles from the palette to edit its properties."
-msgstr ""
-"Не выбраны тайлы.\n"
-"Выберите один или несколько тайлов из палитры, чтобы изменить их свойства."
-
-msgid "Paint Properties:"
-msgstr "Свойства рисования:"
-
-msgid "Create Tiles in Non-Transparent Texture Regions"
-msgstr "Создать тайлы в непрозрачных областях текстуры"
-
-msgid "Remove Tiles in Fully Transparent Texture Regions"
-msgstr "Удалить тайлы в полностью прозрачных областях текстуры"
-
-msgid "Create an Alternative Tile"
-msgstr "Создать альтернативный тайл"
-
-msgid "Create a Tile"
-msgstr "Создать тайл"
-
-msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
-msgstr "Автоматически создавать тайлы в непрозрачных областях текстуры?"
-
-msgid ""
-"The atlas's texture was modified.\n"
-"Would you like to automatically create tiles in the atlas?"
-msgstr ""
-"Текстура атласа была изменена.\n"
-"Выполнить автоматическое создание тайлов в атласе?"
-
-msgid "Yes"
-msgstr "Да"
-
-msgid "No"
-msgstr "Нет"
-
-msgid "Invalid texture selected."
-msgstr "Выбрана некорректная текстура."
-
-msgid "Add a new atlas source"
-msgstr "Добавить новый источник атласа"
-
-msgid "Remove source"
-msgstr "Удалить источник"
-
-msgid "Add atlas source"
-msgstr "Добавить источник атласа"
-
-msgid "TileSet"
-msgstr "Набор тайлов"
-
-msgid "Open TileSet Dock"
-msgstr "Открыть панель TileSet"
-
-msgid "Tile Sources"
-msgstr "Источник плиток"
-
-msgid "Sort Sources"
-msgstr "Сортировать источники"
-
-msgid "A palette of tiles made from a texture."
-msgstr "Палитра тайлов созданная из текстуры."
-
-msgid "Scenes Collection"
-msgstr "Коллекция сцен"
-
-msgid "A collection of scenes that can be instantiated and placed as tiles."
-msgstr "Коллекция сцен которые могу быть созданы и установлены как тайлы."
-
-msgid "Open Atlas Merging Tool"
-msgstr "Открыть инструмент объединения атласов"
-
-msgid "Manage Tile Proxies"
-msgstr "Управление прокси тайлов"
-
-msgid ""
-"No TileSet source selected. Select or create a TileSet source.\n"
-"You can create a new source by using the Add button on the left or by "
-"dropping a tileset texture onto the source list."
-msgstr ""
-"Источник набора тайлов TileSet не выбран. Выберите или создайте источник "
-"набора тайлов TileSet.\n"
-"Вы можете создать новый источник, используя кнопку «Добавить» слева или "
-"перетаскивая текстуры набора тайлов TileSet в список источника."
-
-msgid "Add new patterns in the TileMap editing mode."
-msgstr "Добавить новые узоры в режиме редактирования карты тайлов."
-
-msgid ""
-"Warning: Modifying a source ID will result in all TileMaps using that source "
-"to reference an invalid source instead. This may result in unexpected data "
-"loss. Change this ID carefully."
-msgstr ""
-"Предупреждение: изменение идентификатора источника приведёт к тому, что все "
-"TileMap, использующие этот источник, будут ссылаться на недопустимый "
-"источник. Это может привести к непредвиденной потере данных. Будьте "
-"внимательны при изменении этого идентификатора."
-
-msgid "Add a Scene Tile"
-msgstr "Добавить тайл-сцену"
-
-msgid "Remove a Scene Tile"
-msgstr "Удалить тайл-сцену"
-
-msgid "Drag and drop scenes here or use the Add button."
-msgstr "Перетащите сюда сцены или воспользуйтесь кнопкой «Добавить»."
-
-msgid ""
-"The human-readable name for the scene collection. Use a descriptive name here "
-"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
-msgstr ""
-"Понятное человеку имя коллекции сцен. Используйте понятное описание для "
-"лучшей организации (например, «препятствия», «украшения» и т. д.)."
-
-msgid ""
-"ID of the scene tile in the collection. Each painted tile has associated ID, "
-"so changing this property may cause your TileMaps to not display properly."
-msgstr ""
-"ID фрагмента сцены в коллекции. У каждого нарисованного тайла есть связанный "
-"ID, поэтому изменение этого свойства может привести к тому, что ваши TileMaps "
-"будут отображаться неправильно."
-
-msgid "Absolute path to the scene associated with this tile."
-msgstr "Абсолютный путь к сцене, связанной с этим тайлом."
-
-msgid ""
-"If [code]true[/code], a placeholder marker will be displayed on top of the "
-"scene's preview. The marker is displayed anyway if the scene has no valid "
-"preview."
-msgstr ""
-"Если [code]true[/code], поверх предварительного просмотра сцены будет "
-"отображаться маркер-заполнитель. Маркер отображается в любом случае, если у "
-"сцены нет допустимого предварительного просмотра."
-
-msgid "Scenes collection properties:"
-msgstr "Свойства коллекции сцен:"
-
-msgid "Tile properties:"
-msgstr "Свойства тайла:"
-
-msgid "Eraser Tool"
-msgstr "Инструмент Ластик"
-
-msgid "Picker Tool"
-msgstr "Инструмент выбора"
-
-msgid ""
-"Source ID: %d\n"
-"Texture path: %s"
-msgstr ""
-"ID источника: %d\n"
-"Путь к текстуре: %s"
-
-msgid "Source ID: %d"
-msgstr "ID источника:"
 
 msgid "Bone Picker:"
 msgstr "Выбор кости:"
@@ -12176,46 +11079,13 @@ msgid "Filter Meshes"
 msgstr "Фильтр сеток"
 
 msgid ""
-"The item's name, shown in the editor. It can also be used to look up the item "
-"later using [method MeshLibrary.find_item_by_name]."
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
 msgstr ""
-"Название элемента отображается в редакторе. Его также можно использовать для "
-"последующего поиска элемента с помощью [method MeshLibrary.find_item_by_name]."
-
-msgid ""
-"The item's mesh. Used by other parts of the engine (e.g. [GridMap], which "
-"displays them in a 3D tile)."
-msgstr ""
-"Сетка элемента. Используется другими частями движка (например, [GridMap], "
-"которая отображает их в виде 3D-плитки)."
-
-msgid "The transform to apply to the item's mesh."
-msgstr "Преобразование, которое будет применено к сетке элемента."
-
-msgid ""
-"The item's collision shapes.\n"
-"The array should consist of [Shape3D] objects, each followed by a "
-"[Transform3D] that will be applied to it. For shapes that should not have a "
-"transform, use [constant Transform3D.IDENTITY]."
-msgstr ""
-"Формы столкновений элемента.\n"
-"Массив должен состоять из объектов [Shape3D], за каждым из которых следует "
-"объект [Transform3D], который будет к нему применен. Для фигур, которые не "
-"должны иметь преобразования, используйте [constant Transform3D.IDENTITY]."
-
-msgid "The item's navigation mesh."
-msgstr "Навигационная сетка элемента."
-
-msgid "The transform to apply to the item's navigation mesh."
-msgstr "Преобразование, применяемое к навигационной сетке элемента."
-
-msgid "The item's navigation layers bitmask."
-msgstr "Битовая маска слоев навигации элемента."
-
-msgid "The texture to use as the item's preview icon in the editor."
-msgstr ""
-"Текстура, используемая в качестве значка предварительного просмотра элемента "
-"в редакторе."
+"В MeshLibrary не найдено элементов.\n"
+"Вы можете добавить их с помощью кнопки «Добавить» слева или импортировать их "
+"из файла сцены через меню «Импорт»."
 
 msgid "Apply without Transforms"
 msgstr "Применить без преобразований"
@@ -12289,14 +11159,523 @@ msgstr "Заполнить"
 msgid "Unnamed Gizmo"
 msgstr "Безымянный гизмо"
 
-msgid "Transform Aborted."
-msgstr "Преобразование прервано."
+msgid ""
+"Hold %s to highlight a vertex on the currently selected node,\n"
+"then drag to move the node and snap it to vertices on neighboring nodes.\n"
+"\n"
+"For nodes without a vertex-based representation,\n"
+"Snap Origin to Vertex is always used instead."
+msgstr ""
+"Удерживайте клавишу %s, чтобы выделить вершину на текущем выбранном узле,\n"
+"затем перетащите узел, чтобы переместить его и привязать к вершинам соседних "
+"узлов.\n"
+"\n"
+"Для узлов, не имеющих представления на основе вершин,\n"
+"вместо этого всегда используется функция «Привязать начало координат к "
+"вершине»."
+
+msgid ""
+"Hold %s to highlight another node's vertex,\n"
+"then click to teleport the selected node to the highlighted vertex."
+msgstr ""
+"Удерживайте клавишу %s, чтобы выделить вершину другого узла,\n"
+"затем щелкните, чтобы телепортировать выбранный узел к выделенной вершине."
+
+msgid ""
+"Snap to vertices of visual meshes.\n"
+"Hold Shift while vertex snapping to temporarily snap to collision shapes "
+"instead."
+msgstr ""
+"Привязка к вершинам визуальных сеток.\n"
+"Удерживайте клавишу Shift во время привязки к вершинам, чтобы временно "
+"привязаться к формам столкновения."
+
+msgid ""
+"Snap to vertices of collision shapes.\n"
+"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
+msgstr ""
+"Привязывайтесь к вершинам форм, вызывающих столкновения.\n"
+"Удерживайте клавишу Shift во время привязки к вершинам, чтобы временно "
+"привязаться к вершинам сетки."
+
+msgid "XForm Dialog"
+msgstr "Диалоговое окно XForm"
+
+msgid "Lock Selected"
+msgstr "Заблокировать выделенное"
+
+msgid "Unlock Selected"
+msgstr "Разблокировать выделенное"
+
+msgid "Group Selected"
+msgstr "Сгруппировать выделенное"
+
+msgid "Ungroup Selected"
+msgstr "Разгруппировать выделенное"
+
+msgid ""
+"Click to toggle between visibility states.\n"
+"\n"
+"Open eye: Gizmo is visible.\n"
+"Closed eye: Gizmo is hidden.\n"
+"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
+msgstr ""
+"Нажмите для переключения между состояниями видимости.\n"
+"\n"
+"Открытый глаз: Гизмо видно.\n"
+"Закрытый глаз: Гизмо не видно.\n"
+"Полуоткрытый глаз: Гизмо также видно сквозь непрозрачные поверхности («x-"
+"ray»)."
+
+msgid "Snap Nodes to Floor"
+msgstr "Привязать узлы к полу"
+
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr "Не удалось найти сплошной пол, к которому можно привязать выделение."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Добавить к сцене предварительный просмотр солнца"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Добавить к сцене предварительный просмотр окружения"
+
+msgid "%s+Drag: Use snap."
+msgstr "%s+Перетаскивание: Использовать привязку."
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr ""
+"ЛКМ+Перетащить: Измерьте расстояние между двумя точками в трехмерном "
+"пространстве."
+
+msgid "Shift+LMB+Drag: Show component measurements."
+msgstr "Shift+ЛКМ+Перетаскивание: Отображение размеров компонента."
+
+msgid ""
+"Scene contains\n"
+"DirectionalLight3D.\n"
+"Preview disabled."
+msgstr ""
+"Сцена содержит\n"
+"DirectionalLight3D.\n"
+"Предварительный просмотр отключён."
+
+msgid "Preview disabled."
+msgstr "Предпросмотр отключён."
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"Сцена содержит\n"
+"WorldEnvironment.\n"
+"Предварительный просмотр отключён."
+
+msgid "Set Preview Sun Direction"
+msgstr "Задать предпросмотр направления солнца"
+
+msgid "Set Preview Sun Altitude"
+msgstr "Задать предпросмотр высоты солнца"
+
+msgid "Set Preview Sun Azimuth"
+msgstr "Задать предпросмотр азимута солнца"
+
+msgid "Set Preview Sun Color"
+msgstr "Задать предпросмотр цвета солнца"
+
+msgid "Set Preview Sun Energy"
+msgstr "Задать предпросмотр энергии солнца"
+
+msgid "Set Preview Sun Max Shadow Distance"
+msgstr "Задать макс. дистанцию теней для солнца предпросмотра"
+
+msgid "Set Preview Environment Sky Color"
+msgstr "Задать предпросмотр цвета неба окружения"
+
+msgid "Set Preview Environment Ground Color"
+msgstr "Задать предпросмотр цвета почвы окружения"
+
+msgid "Set Preview Environment Energy"
+msgstr "Задать предпросмотр энергии окружения"
+
+msgid "Set Preview Environment Ambient Occlusion"
+msgstr "Установить окклюзию окружающей среды предварительного просмотра"
+
+msgid "Set Preview Environment Glow"
+msgstr "Задать предпросмотр свечения окружения"
+
+msgid "Set Preview Environment Tonemap"
+msgstr "Задать предпросмотр карты тональности окружения"
+
+msgid "Set Preview Environment Global Illumination"
+msgstr "Задать предпросмотр глобального освещения окружения"
+
+msgid "Transform Mode"
+msgstr "Режим трансформации"
+
+msgid "Move Mode"
+msgstr "Режим перемещения"
+
+msgid "Rotate Mode"
+msgstr "Режим вращения"
+
+msgid "Scale Mode"
+msgstr "Режим масштабирования"
+
+msgid "Select Mode"
+msgstr "Режим выделения"
+
+msgid "Show List of Selectable Nodes"
+msgstr "Показать список выбираемых узлов"
+
+msgid "Ruler Mode"
+msgstr "Режим измерения"
+
+msgid "Lock selected node, preventing selection and movement."
+msgstr "Заблокировать выбранный узел (запретить его выделение и перемещение)."
+
+msgid "Lock"
+msgstr "Заблокировать"
+
+msgid "Unlock selected node, allowing selection and movement."
+msgstr "Разблокировать выбранный узел (разрешить его выделение и перемещение)."
+
+msgid "Unlock"
+msgstr "Разблокировать"
+
+msgid ""
+"Groups the selected node with its children. This selects the parent when any "
+"child node is clicked in 2D and 3D view."
+msgstr ""
+"Сгруппирует выбранный узел с его дочерними узлами. В этом случае, при клике "
+"на дочерние узлы во вкладках 2D и 3D будет выбираться родитель."
+
+msgid "Group"
+msgstr "Группа"
+
+msgid ""
+"Ungroups the selected node from its children. Child nodes will be individual "
+"items in 2D and 3D view."
+msgstr ""
+"Отменяет группировку выбранного узла с его дочерними узлами. Дочерние узлы "
+"будут самостоятельными объектами во вкладках 2D и 3D."
+
+msgid "Ungroup"
+msgstr "Разгруппировать"
+
+msgid "Use Local Space"
+msgstr "Использовать локальное пространство"
+
+msgid "Use Trackball"
+msgstr "Использовать трекбол"
+
+msgid "Preserve Children Transform"
+msgstr "Сохранить положение дочерних узлов"
+
+msgid ""
+"When enabled, transforming a node will preserve the global transform of its "
+"children.\n"
+"This also applies when editing transform properties in the Inspector."
+msgstr ""
+"При включении этой функции преобразование узла сохранит глобальное "
+"преобразование его дочерних элементов.\n"
+"Это также относится к редактированию свойств преобразования в инспекторе."
+
+msgid "Use Snap"
+msgstr "Использовать привязки"
+
+msgid "Snap Vertex to Vertex"
+msgstr "Привязка вершины к вершине"
+
+msgid "Snap Origin to Vertex"
+msgstr "Привязка начала координат к вершине"
+
+msgid "Snap to Mesh Vertices"
+msgstr "Привязка к вершинам сетки"
+
+msgid "Snap to Collision Vertices"
+msgstr "Привязка к столкновению вершин"
+
+msgid "Configure Snap..."
+msgstr "Настроить привязку…"
+
+msgid ""
+"Toggle preview sunlight.\n"
+"If a DirectionalLight3D node is added to the scene, preview sunlight is "
+"disabled."
+msgstr ""
+"Включить/отключить предварительный просмотр солнечного света.\n"
+"Если в сцену добавлен узел DirectionalLight3D, предварительный просмотр "
+"солнечного света отключён."
+
+msgid "Toggle preview sunlight."
+msgstr "Предварительный просмотр солнечного света."
+
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"Включить/отключить предварительный просмотр окружения.\n"
+"Если в сцену добавлен узел WorldEnvironment, предварительный просмотр "
+"окружения отключён."
+
+msgid "Toggle preview environment."
+msgstr "Включить предпросмотр окружения."
+
+msgid "Edit Sun and Environment settings."
+msgstr "Изменить параметры «Солнца» и «Окружения»."
+
+msgid "Bottom View"
+msgstr "Вид снизу"
+
+msgid "Top View"
+msgstr "Вид сверху"
+
+msgid "Rear View"
+msgstr "Вид сзади"
+
+msgid "Front View"
+msgstr "Вид спереди"
+
+msgid "Left View"
+msgstr "Вид слева"
+
+msgid "Right View"
+msgstr "Вид справа"
+
+msgid "Orbit View Down"
+msgstr "Вид с орбиты вниз"
+
+msgid "Orbit View Left"
+msgstr "Вид с орбиты влево"
+
+msgid "Orbit View Right"
+msgstr "Вид с орбиты вправо"
+
+msgid "Orbit View Up"
+msgstr "Вид с орбиты вверх"
+
+msgid "Orbit View 180"
+msgstr "Вид с орбиты 180"
+
+msgid "Switch Perspective/Orthogonal View"
+msgstr "Переключение перспективного/ортогонального вида"
+
+msgid "Insert Animation Key"
+msgstr "Вставить ключ анимации"
+
+msgid "Focus Origin"
+msgstr "Фокус на начале координат"
+
+msgid "Focus Selection"
+msgstr "Фокус на выбранном"
+
+msgid "Align Transform with View"
+msgstr "Совместить преобразование с видом"
+
+msgid "Align Rotation with View"
+msgstr "Совместить поворот с видом"
+
+msgid "Toggle Freelook"
+msgstr "Переключить свободный вид"
+
+msgid "Decrease Field of View"
+msgstr "Уменьшить поле зрения"
+
+msgid "Increase Field of View"
+msgstr "Увеличить поле зрения"
+
+msgid "Reset Field of View to Default"
+msgstr "Сбросить поле зрения к значению по умолчанию"
+
+msgid "Transform"
+msgstr "Преобразование"
+
+msgid "Snap Object to Floor"
+msgstr "Привязать объект к полу"
+
+msgid "Transform Dialog..."
+msgstr "Окно преобразования…"
 
 msgid "Vertex Snap"
 msgstr "Привязка вершин"
 
-msgid "Vertex Snap Canceled."
-msgstr "Привязка вершин отменена."
+msgid "View"
+msgstr "Вид"
+
+msgid "1 Viewport"
+msgstr "1 окно"
+
+msgid "2 Viewports"
+msgstr "2 окна"
+
+msgid "2 Viewports (Alt)"
+msgstr "2 окна (Alt)"
+
+msgid "3 Viewports"
+msgstr "3 окна"
+
+msgid "3 Viewports (Alt)"
+msgstr "3 окна (Alt)"
+
+msgid "4 Viewports"
+msgstr "4 окна"
+
+msgid "Gizmos"
+msgstr "Гизмо"
+
+msgid "View Origin"
+msgstr "Отображать начало координат"
+
+msgid "View Grid"
+msgstr "Отображать сетку"
+
+msgid "Preview Translation"
+msgstr "Предпросмотр перевода"
+
+msgid "Settings..."
+msgstr "Настройки…"
+
+msgid "Snap Settings"
+msgstr "Параметры привязки"
+
+msgid "Translate Snap"
+msgstr "Привязка перемещения"
+
+msgid "Translate Snap:"
+msgstr "Привязка перемещения:"
+
+msgid "Rotate Snap"
+msgstr "Привязка вращения"
+
+msgid "Rotate Snap:"
+msgstr "Привязка вращения:"
+
+msgid "Scale Snap"
+msgstr "Привязка масштабирования"
+
+msgid "Scale Snap:"
+msgstr "Привязка масштабирования:"
+
+msgid "Viewport Settings"
+msgstr "Параметры окна просмотра"
+
+msgid ""
+"FOV is defined as a vertical value, as the editor camera always uses the Keep "
+"Height aspect mode."
+msgstr ""
+"FOV (угол обзора) определяется по вертикали, так как камера в редакторе "
+"всегда находится в режиме «Сохранять соотношение сторон по вертикали» (keep "
+"height)."
+
+msgid "Perspective VFOV (deg.):"
+msgstr "Перспективное вертикальное поле зрения (град.):"
+
+msgid "View Z-Near:"
+msgstr "Ближняя плоскость отсечения (Z-near) отображения:"
+
+msgid "View Z-Far:"
+msgstr "Дальняя плоскость отсечения (Z-far) отображения:"
+
+msgid "Transform Change"
+msgstr "Изменение преобразования"
+
+msgid "Translate:"
+msgstr "Перемещение:"
+
+msgid "Rotate (deg.):"
+msgstr "Поворот (град.):"
+
+msgid "Scale (ratio):"
+msgstr "Масштаб (соотношение):"
+
+msgid "Transform Type"
+msgstr "Тип преобразования"
+
+msgid "Pre"
+msgstr "До"
+
+msgid "Post"
+msgstr "После"
+
+msgid "Preview Sun"
+msgstr "Предпросмотр солнца"
+
+msgid "Sun Direction"
+msgstr "Направление солнца"
+
+msgid "Angular Altitude"
+msgstr "Угловая высота"
+
+msgid "Azimuth"
+msgstr "Азимут"
+
+msgid "Sun Color"
+msgstr "Цвет солнца"
+
+msgid "Sun Energy"
+msgstr "Энергия солнца"
+
+msgid "Shadow Max Distance"
+msgstr "Максимальное расстояние тени"
+
+msgid "Add Sun to Scene"
+msgstr "Добавить солнце к сцене"
+
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"Добавляет к текущей сцене узел DirectionalLight3D, соответствующий параметрам "
+"предпросмотра солнца.\n"
+"Удерживайте клавишу Shift при щелчке, чтобы также добавить к текущей сцене "
+"предпросмотр окружения."
+
+msgid "Preview Environment"
+msgstr "Предпросмотр окружения"
+
+msgid "Sky Color"
+msgstr "Цвет неба"
+
+msgid "Ground Color"
+msgstr "Цвет земли"
+
+msgid "Sky Energy"
+msgstr "Энергия неба"
+
+msgid "AO"
+msgstr "AO"
+
+msgid "Glow"
+msgstr "Свечение"
+
+msgid "Tonemap"
+msgstr "Карта тональности"
+
+msgid "GI"
+msgstr "GI"
+
+msgid "Post Process"
+msgstr "Постобработка"
+
+msgid "Add Environment to Scene"
+msgstr "Добавить окружение к сцене"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"Добавляет к текущей сцене узел WorldEnvironment, соответствующий параметрам "
+"предпросмотра окружения.\n"
+"Удерживайте клавишу Shift при щелчке, чтобы также добавить к текущей сцене "
+"предпросмотр солнца."
+
+msgid "Transform Aborted."
+msgstr "Преобразование прервано."
 
 msgid "Reset Transform"
 msgstr "Сбросить преобразование"
@@ -12347,7 +11726,7 @@ msgstr ""
 "рендерера Forward+."
 
 msgid "Following %s"
-msgstr "Следовать %s."
+msgstr "Следовать %s"
 
 msgid "X: %s"
 msgstr "X: %s"
@@ -12403,12 +11782,6 @@ msgstr "Вид спереди."
 msgid "Rear View."
 msgstr "Вид сзади."
 
-msgid "Align Transform with View"
-msgstr "Совместить преобразование с видом"
-
-msgid "Align Rotation with View"
-msgstr "Совместить поворот с видом"
-
 msgid "Set Surface %d Override Material"
 msgstr "Задать поверхность %d Переопределить материал"
 
@@ -12417,12 +11790,6 @@ msgstr "Задать переопределение материала"
 
 msgid "Error instantiating scene from %s."
 msgstr "Ошибка при инстанцировании сцены из %s."
-
-msgid "Can't drop the file..."
-msgid_plural "Can't drop the files..."
-msgstr[0] "Не удаётся перетащить файл..."
-msgstr[1] "Не удаётся перетащить файлы..."
-msgstr[2] "Не удаётся перетащить файлы..."
 
 msgid "Circular dependency found at %s."
 msgstr "Циклическая зависимость обнаружена в %s."
@@ -12520,9 +11887,6 @@ msgstr "Модификатор скорости свободного вида"
 
 msgid "Freelook Slow Modifier"
 msgstr "Модификатор замедления свободного вида"
-
-msgid "View"
-msgstr "Вид"
 
 msgid "Perspective"
 msgstr "Перспективный"
@@ -12763,9 +12127,6 @@ msgstr "Гизмо"
 msgid "View Transform Gizmo"
 msgstr "Просмотр преобразования гизмо"
 
-msgid "View Grid"
-msgstr "Отображать сетку"
-
 msgid "View Information"
 msgstr "Информация"
 
@@ -12860,518 +12221,6 @@ msgid ""
 msgstr ""
 "Для дальнейшего увеличения масштаба измените плоскости отсечения камеры (Вид "
 "→ Настройки...)"
-
-msgid ""
-"Hold %s to highlight a vertex on the currently selected node,\n"
-"then drag to move the node and snap it to vertices on neighboring nodes.\n"
-"\n"
-"For nodes without a vertex-based representation,\n"
-"Snap Origin to Vertex is always used instead."
-msgstr ""
-"Удерживайте клавишу %s, чтобы выделить вершину на текущем выбранном узле,\n"
-"затем перетащите узел, чтобы переместить его и привязать к вершинам соседних "
-"узлов.\n"
-"\n"
-"Для узлов, не имеющих представления на основе вершин,\n"
-"вместо этого всегда используется функция «Привязать начало координат к "
-"вершине»."
-
-msgid ""
-"Hold %s to highlight another node's vertex,\n"
-"then click to teleport the selected node to the highlighted vertex."
-msgstr ""
-"Удерживайте клавишу %s, чтобы выделить вершину другого узла,\n"
-"затем щелкните, чтобы телепортировать выбранный узел к выделенной вершине."
-
-msgid ""
-"Snap to vertices of visual meshes.\n"
-"Hold Shift while vertex snapping to temporarily snap to collision shapes "
-"instead."
-msgstr ""
-"Привязка к вершинам визуальных сеток.\n"
-"Удерживайте клавишу Shift во время привязки к вершинам, чтобы временно "
-"привязаться к формам столкновения."
-
-msgid ""
-"Snap to vertices of collision shapes.\n"
-"Hold Shift while vertex snapping to temporarily snap to mesh vertices instead."
-msgstr ""
-"Привязывайтесь к вершинам форм, вызывающих столкновения.\n"
-"Удерживайте клавишу Shift во время привязки к вершинам, чтобы временно "
-"привязаться к вершинам сетки."
-
-msgid "XForm Dialog"
-msgstr "Диалоговое окно XForm"
-
-msgid "Lock Selected"
-msgstr "Заблокировать выделенное"
-
-msgid "Unlock Selected"
-msgstr "Разблокировать выделенное"
-
-msgid "Group Selected"
-msgstr "Сгруппировать выделенное"
-
-msgid "Ungroup Selected"
-msgstr "Разгруппировать выделенное"
-
-msgid ""
-"Click to toggle between visibility states.\n"
-"\n"
-"Open eye: Gizmo is visible.\n"
-"Closed eye: Gizmo is hidden.\n"
-"Half-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."
-msgstr ""
-"Нажмите для переключения между состояниями видимости.\n"
-"\n"
-"Открытый глаз: гизмо видно.\n"
-"Закрытый глаз: гизмо не видно.\n"
-"Полуоткрытый глаз: гизмо также видно сквозь непрозрачные поверхности "
-"(«рентген»)."
-
-msgid "Snap Nodes to Floor"
-msgstr "Привязать узлы к полу"
-
-msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "Не удалось найти сплошной пол, к которому можно привязать выделение."
-
-msgid "Add Preview Sun to Scene"
-msgstr "Добавить к сцене предварительный просмотр солнца"
-
-msgid "Add Preview Environment to Scene"
-msgstr "Добавить к сцене предварительный просмотр окружения"
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+ПКМ: показать список всех узлов в выбранной позиции, включая "
-"заблокированные."
-
-msgid "%s+Drag: Rotate selected node around pivot."
-msgstr "%s+Перетаскивание: Поворот выбранного узла вокруг точки опоры."
-
-msgid "%s+Drag: Use snap."
-msgstr "%s+Перетаскивание: Использовать привязку."
-
-msgid "LMB+Drag: Measure the distance between two points in 3D space."
-msgstr ""
-"ЛКМ+Перетащить: Измерьте расстояние между двумя точками в трехмерном "
-"пространстве."
-
-msgid ""
-"Scene contains\n"
-"DirectionalLight3D.\n"
-"Preview disabled."
-msgstr ""
-"Сцена содержит\n"
-"DirectionalLight3D.\n"
-"Предварительный просмотр отключён."
-
-msgid "Preview disabled."
-msgstr "Предпросмотр отключён."
-
-msgid ""
-"Scene contains\n"
-"WorldEnvironment.\n"
-"Preview disabled."
-msgstr ""
-"Сцена содержит\n"
-"WorldEnvironment.\n"
-"Предварительный просмотр отключён."
-
-msgid "Set Preview Sun Direction"
-msgstr "Задать предпросмотр направления солнца"
-
-msgid "Set Preview Sun Altitude"
-msgstr "Задать предпросмотр высоты солнца"
-
-msgid "Set Preview Sun Azimuth"
-msgstr "Задать предпросмотр азимута солнца"
-
-msgid "Set Preview Sun Color"
-msgstr "Задать предпросмотр цвета солнца"
-
-msgid "Set Preview Sun Energy"
-msgstr "Задать предпросмотр энергии солнца"
-
-msgid "Set Preview Sun Max Shadow Distance"
-msgstr "Задать макс. дистанцию теней для солнца предпросмотра"
-
-msgid "Set Preview Environment Sky Color"
-msgstr "Задать предпросмотр цвета неба окружения"
-
-msgid "Set Preview Environment Ground Color"
-msgstr "Задать предпросмотр цвета почвы окружения"
-
-msgid "Set Preview Environment Energy"
-msgstr "Задать предпросмотр энергии окружения"
-
-msgid "Set Preview Environment Ambient Occlusion"
-msgstr "Установить окклюзию окружающей среды предварительного просмотра"
-
-msgid "Set Preview Environment Glow"
-msgstr "Задать предпросмотр свечения окружения"
-
-msgid "Set Preview Environment Tonemap"
-msgstr "Задать предпросмотр карты тональности окружения"
-
-msgid "Set Preview Environment Global Illumination"
-msgstr "Задать предпросмотр глобального освещения окружения"
-
-msgid "Transform Mode"
-msgstr "Режим трансформации"
-
-msgid "Move Mode"
-msgstr "Режим перемещения"
-
-msgid "Rotate Mode"
-msgstr "Режим вращения"
-
-msgid "Scale Mode"
-msgstr "Режим масштабирования"
-
-msgid "Select Mode"
-msgstr "Режим выделения"
-
-msgid "Show List of Selectable Nodes"
-msgstr "Показать список выбираемых узлов"
-
-msgid "Lock selected node, preventing selection and movement."
-msgstr "Заблокировать выбранный узел (запретить его выделение и перемещение)."
-
-msgid "Lock"
-msgstr "Заблокировать"
-
-msgid "Unlock selected node, allowing selection and movement."
-msgstr "Разблокировать выбранный узел (разрешить его выделение и перемещение)."
-
-msgid "Unlock"
-msgstr "Разблокировать"
-
-msgid ""
-"Groups the selected node with its children. This selects the parent when any "
-"child node is clicked in 2D and 3D view."
-msgstr ""
-"Сгруппирует выбранный узел с его дочерними узлами. В этом случае, при клике "
-"на дочерние узлы во вкладках 2D и 3D будет выбираться родитель."
-
-msgid "Group"
-msgstr "Группа"
-
-msgid ""
-"Ungroups the selected node from its children. Child nodes will be individual "
-"items in 2D and 3D view."
-msgstr ""
-"Отменяет группировку выбранного узла с его дочерними узлами. Дочерние узлы "
-"будут самостоятельными объектами во вкладках 2D и 3D."
-
-msgid "Ungroup"
-msgstr "Разгруппировать"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"ЛКМ+Перетаскивание: Измерение расстояния между двумя точками.\n"
-"Shift+ЛКМ+Перетаскивание: Отображение размеров компонентов."
-
-msgid "Ruler Mode"
-msgstr "Режим измерения"
-
-msgid "Use Local Space"
-msgstr "Использовать локальное пространство"
-
-msgid "Use Snap"
-msgstr "Использовать привязки"
-
-msgid "Use Trackball"
-msgstr "Использовать трекбол"
-
-msgid "Preserve Children Transform"
-msgstr "Сохранить положение дочерних узлов"
-
-msgid ""
-"When enabled, transforming a node will preserve the global transform of its "
-"children.\n"
-"This also applies when editing transform properties in the Inspector."
-msgstr ""
-"При включении этой функции преобразование узла сохранит глобальное "
-"преобразование его дочерних элементов.\n"
-"Это также относится к редактированию свойств преобразования в инспекторе."
-
-msgid ""
-"Toggle preview sunlight.\n"
-"If a DirectionalLight3D node is added to the scene, preview sunlight is "
-"disabled."
-msgstr ""
-"Включить/отключить предварительный просмотр солнечного света.\n"
-"Если в сцену добавлен узел DirectionalLight3D, предварительный просмотр "
-"солнечного света отключён."
-
-msgid "Toggle preview sunlight."
-msgstr "Предварительный просмотр солнечного света."
-
-msgid ""
-"Toggle preview environment.\n"
-"If a WorldEnvironment node is added to the scene, preview environment is "
-"disabled."
-msgstr ""
-"Включить/отключить предварительный просмотр окружения.\n"
-"Если в сцену добавлен узел WorldEnvironment, предварительный просмотр "
-"окружения отключён."
-
-msgid "Toggle preview environment."
-msgstr "Включить предпросмотр окружения."
-
-msgid "Edit Sun and Environment settings."
-msgstr "Изменить параметры «Солнца» и «Окружения»."
-
-msgid "Bottom View"
-msgstr "Вид снизу"
-
-msgid "Top View"
-msgstr "Вид сверху"
-
-msgid "Rear View"
-msgstr "Вид сзади"
-
-msgid "Front View"
-msgstr "Вид спереди"
-
-msgid "Left View"
-msgstr "Вид слева"
-
-msgid "Right View"
-msgstr "Вид справа"
-
-msgid "Orbit View Down"
-msgstr "Вид с орбиты вниз"
-
-msgid "Orbit View Left"
-msgstr "Вид с орбиты влево"
-
-msgid "Orbit View Right"
-msgstr "Вид с орбиты вправо"
-
-msgid "Orbit View Up"
-msgstr "Вид с орбиты вверх"
-
-msgid "Orbit View 180"
-msgstr "Вид с орбиты 180"
-
-msgid "Switch Perspective/Orthogonal View"
-msgstr "Переключение перспективного/ортогонального вида"
-
-msgid "Insert Animation Key"
-msgstr "Вставить ключ анимации"
-
-msgid "Focus Origin"
-msgstr "Фокус на начале координат"
-
-msgid "Focus Selection"
-msgstr "Фокус на выбранном"
-
-msgid "Toggle Freelook"
-msgstr "Переключить свободный вид"
-
-msgid "Decrease Field of View"
-msgstr "Уменьшить поле зрения"
-
-msgid "Increase Field of View"
-msgstr "Увеличить поле зрения"
-
-msgid "Reset Field of View to Default"
-msgstr "Сбросить поле зрения к значению по умолчанию"
-
-msgid "Transform"
-msgstr "Преобразование"
-
-msgid "Snap Object to Floor"
-msgstr "Привязать объект к полу"
-
-msgid "Transform Dialog..."
-msgstr "Окно преобразования…"
-
-msgid "Snap Vertex to Vertex"
-msgstr "Привязка вершины к вершине"
-
-msgid "Snap Origin to Vertex"
-msgstr "Привязка начала координат к вершине"
-
-msgid "Snap to Mesh Vertices"
-msgstr "Привязка к вершинам сетки"
-
-msgid "Snap to Collision Vertices"
-msgstr "Привязка к столкновению вершин"
-
-msgid "Configure Snap..."
-msgstr "Настроить привязку…"
-
-msgid "1 Viewport"
-msgstr "1 окно"
-
-msgid "2 Viewports"
-msgstr "2 окна"
-
-msgid "2 Viewports (Alt)"
-msgstr "2 окна (Alt)"
-
-msgid "3 Viewports"
-msgstr "3 окна"
-
-msgid "3 Viewports (Alt)"
-msgstr "3 окна (Alt)"
-
-msgid "4 Viewports"
-msgstr "4 окна"
-
-msgid "Gizmos"
-msgstr "Гизмо"
-
-msgid "View Origin"
-msgstr "Отображать начало координат"
-
-msgid "Preview Translation"
-msgstr "Предпросмотр перевода"
-
-msgid "Settings..."
-msgstr "Настройки…"
-
-msgid "Snap Settings"
-msgstr "Параметры привязки"
-
-msgid "Translate Snap"
-msgstr "Привязка перемещения"
-
-msgid "Translate Snap:"
-msgstr "Привязка перемещения:"
-
-msgid "Rotate Snap"
-msgstr "Привязка вращения"
-
-msgid "Rotate Snap:"
-msgstr "Привязка вращения:"
-
-msgid "Scale Snap"
-msgstr "Привязка масштабирования"
-
-msgid "Scale Snap:"
-msgstr "Привязка масштабирования:"
-
-msgid "Viewport Settings"
-msgstr "Параметры окна просмотра"
-
-msgid ""
-"FOV is defined as a vertical value, as the editor camera always uses the Keep "
-"Height aspect mode."
-msgstr ""
-"FOV (угол обзора) определяется по вертикали, так как камера в редакторе "
-"всегда находится в режиме «Сохранять соотношение сторон по вертикали» (keep "
-"height)."
-
-msgid "Perspective VFOV (deg.):"
-msgstr "Перспективное вертикальное поле зрения (град.):"
-
-msgid "View Z-Near:"
-msgstr "Ближняя плоскость отсечения (Z-near) отображения:"
-
-msgid "View Z-Far:"
-msgstr "Дальняя плоскость отсечения (Z-far) отображения:"
-
-msgid "Transform Change"
-msgstr "Изменение преобразования"
-
-msgid "Translate:"
-msgstr "Перемещение:"
-
-msgid "Rotate (deg.):"
-msgstr "Поворот (град.):"
-
-msgid "Scale (ratio):"
-msgstr "Масштаб (соотношение):"
-
-msgid "Transform Type"
-msgstr "Тип преобразования"
-
-msgid "Pre"
-msgstr "До"
-
-msgid "Post"
-msgstr "После"
-
-msgid "Preview Sun"
-msgstr "Предпросмотр солнца"
-
-msgid "Sun Direction"
-msgstr "Направление солнца"
-
-msgid "Angular Altitude"
-msgstr "Угловая высота"
-
-msgid "Azimuth"
-msgstr "Азимут"
-
-msgid "Sun Color"
-msgstr "Цвет солнца"
-
-msgid "Sun Energy"
-msgstr "Энергия солнца"
-
-msgid "Shadow Max Distance"
-msgstr "Максимальное расстояние тени"
-
-msgid "Add Sun to Scene"
-msgstr "Добавить солнце к сцене"
-
-msgid ""
-"Adds a DirectionalLight3D node matching the preview sun settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview environment to the current "
-"scene."
-msgstr ""
-"Добавляет к текущей сцене узел DirectionalLight3D, соответствующий параметрам "
-"предпросмотра солнца.\n"
-"Удерживайте клавишу Shift при щелчке, чтобы также добавить к текущей сцене "
-"предпросмотр окружения."
-
-msgid "Preview Environment"
-msgstr "Предпросмотр окружения"
-
-msgid "Sky Color"
-msgstr "Цвет неба"
-
-msgid "Ground Color"
-msgstr "Цвет земли"
-
-msgid "Sky Energy"
-msgstr "Энергия неба"
-
-msgid "AO"
-msgstr "AO"
-
-msgid "Glow"
-msgstr "Свечение"
-
-msgid "Tonemap"
-msgstr "Карта тональности"
-
-msgid "GI"
-msgstr "GI"
-
-msgid "Post Process"
-msgstr "Постобработка"
-
-msgid "Add Environment to Scene"
-msgstr "Добавить окружение к сцене"
-
-msgid ""
-"Adds a WorldEnvironment node matching the preview environment settings to the "
-"current scene.\n"
-"Hold Shift while clicking to also add the preview sun to the current scene."
-msgstr ""
-"Добавляет к текущей сцене узел WorldEnvironment, соответствующий параметрам "
-"предпросмотра окружения.\n"
-"Удерживайте клавишу Shift при щелчке, чтобы также добавить к текущей сцене "
-"предпросмотр солнца."
 
 msgid ""
 "Can't determine a save path for the occluder.\n"
@@ -13689,9 +12538,6 @@ msgstr "Основная линия каждые:"
 msgid "X Primary Step"
 msgstr "Основной шаг по X"
 
-msgid "steps"
-msgstr "шага (шагов)"
-
 msgid "Y Primary Step"
 msgstr "Основной шаг по Y"
 
@@ -13703,44 +12549,6 @@ msgstr "Шаг поворота:"
 
 msgid "Scale Step:"
 msgstr "Шаг шкалы:"
-
-msgid ""
-"Children of a container get their position and size determined only by their "
-"parent."
-msgstr ""
-"Дочерние узлы контейнера получают свое положение и размер, определяемые "
-"только их родителем."
-
-msgid "Move Node(s) to Position"
-msgstr "Переместить узлы в позицию"
-
-msgid "Move Vertical Guide"
-msgstr "Переместить вертикальную направляющую"
-
-msgid "Create Vertical Guide"
-msgstr "Создать вертикальную направляющую"
-
-msgid "Remove Vertical Guide"
-msgstr "Удалить вертикальную направляющую"
-
-msgid "Move Horizontal Guide"
-msgstr "Переместить горизонтальную направляющую"
-
-msgid "Create Horizontal Guide"
-msgstr "Создать горизонтальную направляющую"
-
-msgid "Remove Horizontal Guide"
-msgstr "Удалить горизонтальную направляющую"
-
-msgid "Create Horizontal and Vertical Guides"
-msgstr "Создать горизонтальную и вертикальную направляющие"
-
-msgid ""
-"Can't modify anchor offsets when the parent has a size of 0. Disable the "
-"anchors mode in the toolbar."
-msgstr ""
-"Невозможно изменить смещение привязки, если размер родительского элемента "
-"равен 0. Отключите режим привязки на панели инструментов."
 
 msgid "Add 2D Node Here..."
 msgstr "Добавить сюда 2D-узел..."
@@ -13754,35 +12562,8 @@ msgstr "Вставить узлы здесь"
 msgid "Move Node(s) Here"
 msgstr "Переместить узлы сюда"
 
-msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "Установить смещение оси узла CanvasItem «%s» в значение (%d, %d)"
-
-msgid "Rotate %d CanvasItems"
-msgstr "Повернуть %d узлов CanvasItem"
-
-msgid "Rotate CanvasItem \"%s\" to %d degrees"
-msgstr "Повернуть узел CanvasItem «%s» на %d градусов"
-
-msgid "Move CanvasItem \"%s\" Anchor"
-msgstr "Переместить якорь узла CanvasItem «%s»"
-
-msgid "Scale Node2D \"%s\" to (%s, %s)"
-msgstr "Масштабировать узел Node2D «%s» в (%s, %s)"
-
-msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Изменить размер узла Control «%s» на (%d, %d)"
-
-msgid "Scale %d CanvasItems"
-msgstr "Масштабировать %d узлов CanvasItem"
-
-msgid "Scale CanvasItem \"%s\" to (%s, %s)"
-msgstr "Масштабировать узел CanvasItem «%s» в (%s, %s)"
-
-msgid "Move %d CanvasItems"
-msgstr "Переместить %d узлов CanvasItem"
-
-msgid "Move CanvasItem \"%s\" to (%d, %d)"
-msgstr "Переместить узел CanvasItem «%s» в (%d, %d)"
+msgid "Move Node(s) to Position"
+msgstr "Переместить узлы в позицию"
 
 msgid "px"
 msgstr "пикс"
@@ -13799,39 +12580,8 @@ msgstr "Вращение:"
 msgid "Scaling:"
 msgstr "Масштабирование:"
 
-msgid "Alt+Drag: Move selected node."
-msgstr "Alt+перетаскивание: перемещение выбранного узла."
-
-msgid "%s+Alt+Drag: Scale selected node."
-msgstr "%s+Alt+Перетаскивание: Масштабирование выбранного узла."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: задать положение оси выбранного узла."
-
 msgid "RMB: Add node at position clicked."
 msgstr "ПКМ: добавить узел в выбранной позиции."
-
-msgid "Shift: Scale proportionally."
-msgstr "Shift: масштабировать пропорционально."
-
-msgid "Click to change object's pivot."
-msgstr "Нажмите для изменения точки вращения объекта."
-
-msgid "Shift: Set temporary pivot."
-msgstr "Shift: Установить временную точку вращения."
-
-msgid ""
-"Click this button while holding Shift to put the temporary pivot in the "
-"center of the selected nodes."
-msgstr ""
-"Нажмите эту кнопку, удерживая Shift, чтобы поместить временную точку вращения "
-"в центр выбранных узлов."
-
-msgid ""
-"You can also use Pan View shortcut (Space by default) to pan in any mode."
-msgstr ""
-"Также можно воспользоваться горячей клавишей опции «Панорамировать вид» (по "
-"умолчанию — пробел) для выполнения панорамирования в любом режиме."
 
 msgid "LMB+Drag: Measure the distance between two points in 2D space."
 msgstr ""
@@ -13877,6 +12627,9 @@ msgstr "Масштаб 800%"
 msgid "Zoom to 1600%"
 msgstr "Масштаб 1600%"
 
+msgid "Center View"
+msgstr "Отображение по центру"
+
 msgid "Scene Paint Mode"
 msgstr "Режим рисования сцены"
 
@@ -13888,6 +12641,13 @@ msgstr "Изменить точку вращения"
 
 msgid "Pan Mode"
 msgstr "Режим панорамирования"
+
+msgid ""
+"Groups the selected node with its children. This causes the parent to be "
+"selected when any child node is clicked in 2D and 3D view."
+msgstr ""
+"Группирует выбранный узел с его дочерними узлами. В этом случае, при клике на "
+"любой дочерний узел во вкладке 2D и 3D будет выбран родитель."
 
 msgid "Use Smart Snap"
 msgstr "Использовать умную привязку"
@@ -13930,13 +12690,6 @@ msgstr "Привязка к направляющим"
 
 msgid "Smart Snapping"
 msgstr "Умная привязка"
-
-msgid ""
-"Groups the selected node with its children. This causes the parent to be "
-"selected when any child node is clicked in 2D and 3D view."
-msgstr ""
-"Группирует выбранный узел с его дочерними узлами. В этом случае, при клике на "
-"любой дочерний узел во вкладке 2D и 3D будет выбран родитель."
 
 msgid "Skeleton Options"
 msgstr "Параметры скелета"
@@ -14052,16 +12805,6 @@ msgstr "Инстанцирование: "
 msgid "Dropping a Texture file as a %s node..."
 msgstr "Перетаскивание файла текстуры в качестве узла %s..."
 
-msgid "[b]Hold Alt + Shift:[/b] Add Texture as a different node type."
-msgstr "[b]Удерживайте Alt + Shift:[/b] Добавить текстуру как другой тип узла."
-
-msgid ""
-"All selected CanvasItems are either invisible or locked in some way and can't "
-"be transformed."
-msgstr ""
-"Все выбранные узлы CanvasItem либо являются невидимыми, либо каким-либо "
-"образом заблокированы и не могут быть преобразованы."
-
 msgid "Method in target node must be specified."
 msgstr "Метод в целевом узле должен быть указан."
 
@@ -14125,6 +12868,12 @@ msgstr "Метод-приёмник:"
 
 msgid "Receiver Method"
 msgstr "Метод-получатель"
+
+msgid "Pick"
+msgstr "Выбрать"
+
+msgid "Advanced"
+msgstr "Дополнительно"
 
 msgid "Deferred"
 msgstr "Отложенное"
@@ -14236,6 +12985,9 @@ msgstr "Переход ИЗ"
 
 msgid "Smoothstep"
 msgstr "Сглаженный"
+
+msgid "Toggle Grid Snap"
+msgstr "Переключить привязку к сетке"
 
 msgid "Snap Step"
 msgstr "Привязка к шагу"
@@ -14520,65 +13272,23 @@ msgstr "Переключить сетку предварительного пр�
 msgid "Styleboxes"
 msgstr "Стили"
 
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "{num} цвет"
-msgstr[1] "{num} цвета"
-msgstr[2] "{num} цветов"
-
 msgid "No colors found."
 msgstr "Цвета не найдены."
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "{num} константа"
-msgstr[1] "{num} константы"
-msgstr[2] "{num} констант"
 
 msgid "No constants found."
 msgstr "Константы не найдены."
 
-msgid "1 font"
-msgid_plural "{num} fonts"
-msgstr[0] "{num} шрифт"
-msgstr[1] "{num} шрифта"
-msgstr[2] "{num} шрифтов"
-
 msgid "No fonts found."
 msgstr "Шрифты не найдены."
-
-msgid "1 font size"
-msgid_plural "{num} font sizes"
-msgstr[0] "{num} размер шрифта"
-msgstr[1] "{num} размера шрифта"
-msgstr[2] "{num} размеров шрифта"
 
 msgid "No font sizes found."
 msgstr "Размеры шрифта не найдены."
 
-msgid "1 icon"
-msgid_plural "{num} icons"
-msgstr[0] "{num} значок"
-msgstr[1] "{num} значка"
-msgstr[2] "{num} значков"
-
 msgid "No icons found."
 msgstr "Значки не найдены."
 
-msgid "1 stylebox"
-msgid_plural "{num} styleboxes"
-msgstr[0] "{num} стиль"
-msgstr[1] "{num} стиля"
-msgstr[2] "{num} стилей"
-
 msgid "No styleboxes found."
 msgstr "Стили не найдены."
-
-msgid "{num} currently selected"
-msgid_plural "{num} currently selected"
-msgstr[0] "{num} выбран в данный момент"
-msgstr[1] "{num} выбрано в данный момент"
-msgstr[2] "{num} выбрано в данный момент"
 
 msgid "Nothing was selected for the import."
 msgstr "Для импорта ничего не выбрано."
@@ -15344,12 +14054,6 @@ msgstr[0] "Узел имеет {num} соединение."
 msgstr[1] "Узел имеет {num} соединения."
 msgstr[2] "Узел имеет {num} соединений."
 
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Узел в этой группе:"
-msgstr[1] "Узел в следующих группах:"
-msgstr[2] "Узел в следующих группах:"
-
 msgid "Click to show signals dock."
 msgstr "Нажмите, чтобы показать панель сигналов."
 
@@ -15512,6 +14216,9 @@ msgstr "У этого ресурса нет никаких анимаций."
 msgid "Animation Frames:"
 msgstr "Кадры анимации:"
 
+msgid "Load"
+msgstr "Загрузить"
+
 msgid "Load Sheet"
 msgstr "Загрузить лист"
 
@@ -15668,6 +14375,9 @@ msgstr "Режим привязки:"
 msgid "Pixel Snap"
 msgstr "Пиксельная привязка"
 
+msgid "Grid Snap"
+msgstr "Привязка к сетке"
+
 msgid "Offset X"
 msgstr "Сдвиг по X"
 
@@ -15698,56 +14408,19 @@ msgstr "Редактировать область"
 msgid "Write your logic in the _run() method."
 msgstr "Пишите ваш код в методе _run()."
 
-msgid "Replace in Files"
-msgstr "Заменить в файлах"
-
 msgid "Find in Files"
 msgstr "Найти в файлах"
 
-msgid "Find:"
-msgstr "Найти:"
-
-msgid "Folder:"
-msgstr "Папка:"
-
 msgid "Select Folder"
 msgstr "Выбрать папку"
-
-msgid "Includes:"
-msgstr "Включает:"
-
-msgid "Include the files with the following expressions. Use \",\" to separate."
-msgstr ""
-"Включите файлы со следующими выражениями. Используйте \",\" для разделения."
-
-msgid "example: scripts,scenes/*/test.gd"
-msgstr "пример: scripts,scenes/*/test.gd"
-
-msgid "Excludes:"
-msgstr "Исключает:"
 
 msgid "Exclude the files with the following expressions. Use \",\" to separate."
 msgstr ""
 "Исключить файлы со следующими выражениями. Используйте \",\" для разделения."
 
-msgid "example: res://addons,scenes/test/*.gd"
-msgstr "пример: res://addons,scenes/test/*.gd"
-
-msgid "Filters:"
-msgstr "Фильтры:"
-
-msgid ""
-"Include the files with the following extensions. Add or remove them in "
-"ProjectSettings."
+msgid "Include the files with the following expressions. Use \",\" to separate."
 msgstr ""
-"Включить файлы со следующими расширениями. Добавьте или удалите их в "
-"настройках проекта."
-
-msgid "Find..."
-msgstr "Найти…"
-
-msgid "Replace..."
-msgstr "Заменить…"
+"Включите файлы со следующими выражениями. Используйте \",\" для разделения."
 
 msgid "Searching..."
 msgstr "Поиск…"
@@ -15767,18 +14440,8 @@ msgstr "%d совпадений в %d файле"
 msgid "%d matches in %d files"
 msgstr "%d совпадений в %d файлах"
 
-msgid "Keep Results"
-msgstr "Хранить результаты"
-
-msgid "Keep these results and show subsequent results in a new window"
-msgstr ""
-"Сохраните эти результаты и отобразите последующие результаты в новом окне"
-
-msgid "Replace all (no undo)"
-msgstr "Заменить всё (НЕЛЬЗЯ ОТМЕНИТЬ)"
-
-msgid "Toggle Search Results Bottom Panel"
-msgstr "Включить или отключить нижнюю панель «Результаты поиска»"
+msgid "Find:"
+msgstr "Найти:"
 
 msgid "Path is empty."
 msgstr "Не указан путь."
@@ -15794,9 +14457,6 @@ msgstr "Имя начинается с точки."
 
 msgid "Path is not local."
 msgstr "Путь не локальный."
-
-msgid "Base path is invalid."
-msgstr "Некорректный базовый путь."
 
 msgid "A directory with the same name exists."
 msgstr "Каталог с таким же именем существует."
@@ -15893,6 +14553,9 @@ msgstr "Выбрать родителя"
 msgid "Use Template"
 msgstr "Использовать шаблон"
 
+msgid "Template"
+msgstr "Шаблон"
+
 msgid "Built-in Script:"
 msgstr "Встроенный скрипт:"
 
@@ -15922,6 +14585,21 @@ msgstr "Закладки"
 
 msgid "Emoji & Symbols"
 msgstr "Эмодзи и символы"
+
+msgid "Open File in Inspector"
+msgstr "Открыть файл в инспекторе"
+
+msgid "Inspect Native Shader Code..."
+msgstr "Просмотр кода нативного шейдера…"
+
+msgid "Unsaved file."
+msgstr "Несохранённый файл."
+
+msgid "%s Class Reference"
+msgstr "Ссылка на класс %s"
+
+msgid "Toggle alphabetical sorting of the method list."
+msgstr "Переключить сортировку по алфавиту в списке методов."
 
 msgid "(truncated)"
 msgstr "(усечено)"
@@ -15991,9 +14669,6 @@ msgstr "Импортировать тему"
 msgid "Save Theme As..."
 msgstr "Сохранить тему как…"
 
-msgid "Make the script editor floating."
-msgstr "Сделайте редактор сценариев плавающим."
-
 msgid "Open '%s' in Godot online documentation."
 msgstr "Открыть «%s» в онлайн-документации Godot."
 
@@ -16006,11 +14681,8 @@ msgstr "Онлайн-документация"
 msgid "Open Godot online documentation."
 msgstr "Открыть онлайн-документацию Godot."
 
-msgid "Unsaved file."
-msgstr "Несохранённый файл."
-
-msgid "%s Class Reference"
-msgstr "Ссылка на класс %s"
+msgid "Find..."
+msgstr "Найти…"
 
 msgid "Find Next"
 msgstr "Найти следующее совпадение"
@@ -16018,23 +14690,11 @@ msgstr "Найти следующее совпадение"
 msgid "Find Previous"
 msgstr "Найти предыдущее совпадение"
 
-msgid "Filter Scripts"
-msgstr "Фильтр скриптов"
-
-msgid "Toggle alphabetical sorting of the method list."
-msgstr "Переключить сортировку по алфавиту в списке методов."
-
-msgid "Sort"
-msgstr "Сортировать"
-
 msgid "Next Script"
 msgstr "Следующий скрипт"
 
 msgid "Previous Script"
 msgstr "Предыдущий скрипт"
-
-msgid "Open..."
-msgstr "Открыть…"
 
 msgid "Save All"
 msgstr "Сохранить всё"
@@ -16054,12 +14714,6 @@ msgstr "Предыдущий в журнале"
 msgid "History Next"
 msgstr "Следующий в журнале"
 
-msgid "Import Theme..."
-msgstr "Импортировать тему…"
-
-msgid "Reload Theme"
-msgstr "Перезагрузить тему"
-
 msgid "Close All"
 msgstr "Закрыть всё"
 
@@ -16069,8 +14723,26 @@ msgstr "Закрыть вкладки внизу"
 msgid "Close Docs"
 msgstr "Закрыть документацию"
 
-msgid "Navigate to script list."
-msgstr "Перейти к списку скриптов."
+msgid "Toggle Files Panel"
+msgstr "Включить или отключить панель файлов"
+
+msgid "Import Theme..."
+msgstr "Импортировать тему…"
+
+msgid "Reload Theme"
+msgstr "Перезагрузить тему"
+
+msgid "Open..."
+msgstr "Открыть…"
+
+msgid "New Shader Include..."
+msgstr "Новый файл включения шейдера…"
+
+msgid "Load Shader File..."
+msgstr "Загрузить файл шейдера…"
+
+msgid "Load Shader Include File..."
+msgstr "Загрузить файл включения шейдера…"
 
 msgid "Site Search"
 msgstr "Поиск по сайту"
@@ -16087,23 +14759,11 @@ msgstr "Перейти к следующему редактируемому до
 msgid "Discard"
 msgstr "Сброс"
 
-msgid "Script Editor"
-msgstr "Редактор скриптов"
-
-msgid "There are unsaved changes in the following built-in script(s):"
-msgstr "В данных встроенных скриптах присутствуют несохранённые изменения:"
-
-msgid "Save changes to the following script(s) before quitting?"
-msgstr "Сохранить изменения в следующих скриптах перед выходом?"
-
 msgid "Reopen Closed Script"
 msgstr "Открыть закрытый скрипт"
 
 msgid "Clear Recent Scripts"
 msgstr "Очистить недавние скрипты"
-
-msgid "Replace in Files..."
-msgstr "Заменить в файлах…"
 
 msgid "Uppercase"
 msgstr "ВЕРХНИЙ РЕГИСТР"
@@ -16149,53 +14809,8 @@ msgstr "Путь UID"
 msgid "file path"
 msgstr "путь к файлу"
 
-msgid "Drop file path."
-msgid_plural "Drop file paths."
-msgstr[0] "Перетяните файл"
-msgstr[1] "Перетяните файлы"
-msgstr[2] "Перетяните файлы"
-
-msgid "Hold %s: Add const preload by %s."
-msgid_plural "Hold %s: Add const preloads by %s."
-msgstr[0] "Удерживайте %s: Добавьте константу preload с помощью %s."
-msgstr[1] "Удерживайте %s: Добавьте константы preload с помощью %s."
-msgstr[2] "Удерживайте %s: Добавьте константы preload с помощью %s."
-
-msgid "Hold %s+Shift: Add const preload by %s."
-msgid_plural "Hold %s+Shift: Add const preloads by %s."
-msgstr[0] "Удерживайте %s+Shift: Добавьте константу preload с помощью %s."
-msgstr[1] "Удерживайте %s+Shift: Добавьте константы preload с помощью %s."
-msgstr[2] "Удерживайте %s+Shift: Добавьте константы preload с помощью %s."
-
-msgid "Hold Alt: Add @export var pointing to the resource."
-msgid_plural "Hold Alt: Add @export vars pointing to the resources."
-msgstr[0] "Удерживая Alt, добавьте переменную @export, указывающую на ресурс."
-msgstr[1] "Удерживая Alt, добавьте переменные @export, указывающие на ресурсы."
-msgstr[2] "Удерживая Alt, добавьте переменные @export, указывающие на ресурсы."
-
-msgid "Drop node path."
-msgid_plural "Drop node paths."
-msgstr[0] "Перетяните путь к узлу"
-msgstr[1] "Перетяните путь к узлам"
-msgstr[2] "Перетяните путь к узлам"
-
-msgid "Hold %s: Add @onready var pointing to the node path."
-msgid_plural "Hold %s: Add @onready vars pointing to the node paths."
-msgstr[0] ""
-"Удерживайте %s: Добавьте переменную @onready, указывающую на путь к узлу."
-msgstr[1] ""
-"Удерживайте %s: Добавьте переменные @onready, указывающие на пути к узлам."
-msgstr[2] ""
-"Удерживайте %s: Добавьте переменные @onready, указывающие на пути к узлам."
-
-msgid "Hold Alt: Add @export var pointing to the node."
-msgid_plural "Hold Alt: Add @export vars pointing to the nodes."
-msgstr[0] "Удерживая Alt: добавьте переменную @export, указывающую на узел."
-msgstr[1] "Удерживая Alt: Добавьте переменные @export, указывающие на узлы."
-msgstr[2] "Удерживая Alt: Добавьте переменные @export, указывающие на узлы."
-
 msgid "Drop property path."
-msgstr "Перетяните путь свойства"
+msgstr "Удалить путь к свойству."
 
 msgid ""
 "The resource does not have a valid path because it has not been saved.\n"
@@ -16267,6 +14882,9 @@ msgstr "Преобразовать отступ в табуляцию"
 
 msgid "Auto Indent"
 msgstr "Автоотступ"
+
+msgid "Replace..."
+msgstr "Заменить…"
 
 msgid "Show Tooltip"
 msgstr "Показать всплывающую подсказку"
@@ -16688,9 +15306,6 @@ msgstr "Сбросить отредактированный профиль?"
 msgid "File saving failed."
 msgstr "Не удалось сохранить файл."
 
-msgid "Create a new profile?"
-msgstr "Создать новый профиль?"
-
 msgid ""
 "This will scan all files in the current project to detect used classes.\n"
 "Note that the first scan may take a while, specially in larger projects."
@@ -16727,6 +15342,9 @@ msgstr "Узлы и классы:"
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "Неверный формат файла «%s», импорт прерван."
+
+msgid "Can't load build profile. File '%s' is invalid."
+msgstr "Не удалось загрузить профиль сборки. Файл «%s» недействителен."
 
 msgid "Error saving profile to path: '%s'."
 msgstr "Ошибка сохранения профиля в «%s»."
@@ -16788,6 +15406,9 @@ msgstr "Очистить все фильтры поиска."
 
 msgid "3D Editor"
 msgstr "3D-редактор"
+
+msgid "Script Editor"
+msgstr "Редактор скриптов"
 
 msgid "Scene Tree Editing"
 msgstr "Редактирование дерева сцен"
@@ -17275,9 +15896,6 @@ msgstr "Открыть шейдер / Выбрать место"
 msgid "Invalid shader type selected."
 msgstr "Выбран недопустимый тип шейдера."
 
-msgid "Invalid base path."
-msgstr "Недопустимый базовый путь."
-
 msgid "Invalid extension for selected shader type."
 msgstr "Недопустимое расширение для выбранного типа шейдера."
 
@@ -17309,30 +15927,6 @@ msgstr "Встроенный шейдер:"
 
 msgid "Create Shader"
 msgstr "Создать шейдер"
-
-msgid "Save changes to the following shaders(s) before quitting?"
-msgstr "Сохранить изменения в следующих шейдерах перед выходом?"
-
-msgid "There are unsaved changes in the following built-in shaders(s):"
-msgstr "В данных встроенных шейдерах присутствуют несохранённые изменения:"
-
-msgid "New Shader Include..."
-msgstr "Новый файл включения шейдера…"
-
-msgid "Load Shader File..."
-msgstr "Загрузить файл шейдера…"
-
-msgid "Load Shader Include File..."
-msgstr "Загрузить файл включения шейдера…"
-
-msgid "Open File in Inspector"
-msgstr "Открыть файл в инспекторе"
-
-msgid "Inspect Native Shader Code..."
-msgstr "Просмотр кода нативного шейдера…"
-
-msgid "Copy Shader Path"
-msgstr "Скопировать путь к шейдеру"
 
 msgid "Shader Editor"
 msgstr "Редактор шейдеров"
@@ -17397,14 +15991,14 @@ msgstr ""
 "Предварительный просмотр доступен только для типов данных bool, int, float, "
 "vec2, vec3, vec4."
 
+msgid "Warnings should be fixed to prevent errors."
+msgstr "Для предотвращения ошибок необходимо устранить причины предупреждений."
+
 msgid "Error at line %d:"
 msgstr "Ошибка в строке %d:"
 
 msgid "Error at line %d in include %s:%d:"
 msgstr "Ошибка в строке %d в заключении %s:%d:"
-
-msgid "Warnings should be fixed to prevent errors."
-msgstr "Для предотвращения ошибок необходимо устранить причины предупреждений."
 
 msgid "Toggle Shader Preview"
 msgstr "Переключить предварительный просмотр шейдера"
@@ -17418,9 +16012,6 @@ msgstr "Перейти к предварительному просмотру с
 msgid "Go to Previous Shader Preview"
 msgstr "Перейти к предыдущему предварительному просмотру шейдера"
 
-msgid "Shader Previews"
-msgstr "Предварительный просмотр шейдеров"
-
 msgid "Update Parameters"
 msgstr "Обновить параметры"
 
@@ -17433,16 +16024,6 @@ msgstr ""
 
 msgid "Remove all line shader previews."
 msgstr "Удалите все строки предварительных просмотров шейдеров."
-
-msgid ""
-"This shader has been modified on disk.\n"
-"What action should be taken?"
-msgstr ""
-"Этот шейдер был изменён на диске.\n"
-"Что следует сделать?"
-
-msgid "Resave"
-msgstr "Пересохранить"
 
 msgctxt "Locale"
 msgid "Script:"
@@ -17854,72 +16435,6 @@ msgstr "Изменить внутренний радиус тора"
 msgid "Change Torus Outer Radius"
 msgstr "Изменить внешний радиус тора"
 
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Недопустимый аргумент типа для convert(), используйте константы TYPE_*."
-
-msgid "Expected an integer between 0 and 2^32 - 1."
-msgstr "Ожидалось целое число от 0 до 2^32 - 1."
-
-msgid "Expected a string of length 1 (a character)."
-msgstr "Ожидается строка длиной 1 (символ)."
-
-msgid "Range too big."
-msgstr "Слишком большой диапазон."
-
-msgid "Cannot resize array."
-msgstr "Не удалось изменить размер массива."
-
-msgid "Step argument is zero!"
-msgstr "Аргумент шага равен нулю!"
-
-msgid "Not a script with an instance."
-msgstr "Не скрипт с экземпляром."
-
-msgid "Not based on a script."
-msgstr "Не на основе скрипта."
-
-msgid "Not based on a resource file."
-msgstr "Не основано на файле ресурса."
-
-msgid "Invalid instance dictionary format (missing @path)."
-msgstr "Недопустимый формат словаря экземпляра (отсутствует @path)."
-
-msgid "Invalid instance dictionary format (can't load script at @path)."
-msgstr ""
-"Недопустимый формат словаря экземпляра (невозможно загрузить скрипт из @path)."
-
-msgid "Invalid instance dictionary format (invalid script at @path)."
-msgstr "Недопустимый формат словаря экземпляра (неверный скрипт в @path)."
-
-msgid "Invalid instance dictionary (invalid subclasses)."
-msgstr "Недопустимый словарь экземпляра (неверные подклассы)."
-
-msgid "Cannot instantiate GDScript class."
-msgstr "Не удалось инстанцировать класс GDScript."
-
-msgid "Value of type '%s' can't provide a length."
-msgstr "Значение типа «%s» не может предоставить длину."
-
-msgid ""
-"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in "
-"types."
-msgstr ""
-"Недопустимый аргумент типа для is_instance_of(), используйте константы TYPE_* "
-"для встроенных типов."
-
-msgid "Type argument is a previously freed instance."
-msgstr "Аргумент типа — ранее высвобожденный экземпляр."
-
-msgid ""
-"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a "
-"class or a script."
-msgstr ""
-"Недопустимый аргумент типа для is_instance_of(), должен быть константой "
-"TYPE_*, классом или скриптом."
-
-msgid "Value argument is a previously freed instance."
-msgstr "Значение аргумента - это ранее освобожденный экземпляр класса."
-
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Экспортировать сцену в файл glTF 2.0"
 
@@ -18012,15 +16527,6 @@ msgstr "GridMap: рисование"
 msgid "GridMap Selection"
 msgstr "GridMap: выделение"
 
-msgid ""
-"Change Grid Floor:\n"
-"Previous Plane (%s)\n"
-"Next Plane (%s)"
-msgstr ""
-"Изменить низ сетки:\n"
-"Предыдущая плоскость (%s)\n"
-"Следующая плоскость (%s)"
-
 msgid "GridMap"
 msgstr "GridMap"
 
@@ -18056,6 +16562,12 @@ msgstr "Расстояние выбора:"
 
 msgid "Selection"
 msgstr "Выделение"
+
+msgid "Erase"
+msgstr "Ластик"
+
+msgid "Paint"
+msgstr "Окрасить"
 
 msgid "Cursor Rotate X"
 msgstr "Поворот курсора по X"
@@ -18239,19 +16751,6 @@ msgstr "Имя класса должно быть допустимым иден�
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
-msgid ""
-"Unable to load .NET runtime, no compatible version was found.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"Не удалось загрузить среду выполнения .NET, не найдена совместимая версия.\n"
-"Попытка создать или изменить проект приведёт к сбою.\n"
-"\n"
-"Пожалуйста, установите .NET SDK 8.0 или более поздней версии с сайта https://"
-"get.dot.net и перезапустите Godot."
-
 msgid "Failed to load .NET runtime"
 msgstr "Не удалось загрузить среду выполнения .NET"
 
@@ -18264,19 +16763,6 @@ msgstr ""
 
 msgid ".NET assemblies not found"
 msgstr "Не удалось найти сборки .NET"
-
-msgid ""
-"Unable to load .NET runtime, specifically hostfxr.\n"
-"Attempting to create/edit a project will lead to a crash.\n"
-"\n"
-"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
-"Godot."
-msgstr ""
-"Не удалось загрузить среду выполнения .NET, а именно hostfxr.\n"
-"Попытка создать или изменить проект приведёт к сбою.\n"
-"\n"
-"Пожалуйста, установите .NET SDK 8.0 или более поздней версии с сайта https://"
-"get.dot.net и перезапустите Godot."
 
 msgctxt "Network"
 msgid "Down"
@@ -18706,6 +17192,12 @@ msgid ""
 msgstr ""
 "Возвращалась ли одна и та же ссылка несколькими геттерами исходного объекта?"
 
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
+
 msgid "Sort By %s (Ascending)"
 msgstr "Сортировать по %s (по возрастанию)"
 
@@ -18798,7 +17290,7 @@ msgid "Invalid snapshot name."
 msgstr "Недопустимое имя снимка."
 
 msgid "Snapshot rename failed"
-msgstr "Не удалось переименовать снимок."
+msgstr "Не удалось переименовать снимок"
 
 msgid "ObjectDB Profiler"
 msgstr "Профайлер ObjectDB"
@@ -19031,6 +17523,954 @@ msgstr ""
 msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
 msgstr "Маска видимости OpenXR должна иметь родительский узел XRCamera3D."
 
+msgid "Merge TileSetAtlasSource"
+msgstr "Объединить TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
+msgid "Atlas Merging"
+msgstr "Объединение атласов"
+
+msgid "Merge (Keep original Atlases)"
+msgstr "Объединить (сохранить исходные атласы)"
+
+msgid "Merge"
+msgstr "Объединить"
+
+msgid "Next Line After Column"
+msgstr "Следующая строка после столбца"
+
+msgid "Please select two atlases or more."
+msgstr "Выберите два атласа или больше."
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: 0"
+msgstr ""
+"Источник: %d\n"
+"Координаты атласа: %s\n"
+"Альтернатива: 0"
+
+msgid ""
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Источник: %d\n"
+"Координаты атласа: %s\n"
+"Альтернатива: %d"
+
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"Выбранный источник атласа не содержит допустимую текстуру. Назначьте текстуру "
+"на вкладке TileSet внизу."
+
+msgid "Base Tiles"
+msgstr "Базовые тайлы"
+
+msgid "Alternative Tiles"
+msgstr "Альтернативные тайлы"
+
+msgid "Reset Polygons"
+msgstr "Сбросить полигоны"
+
+msgid "Clear Polygons"
+msgstr "Очистить полигоны"
+
+msgid "Rotate Polygons Right"
+msgstr "Повернуть полигоны вправо"
+
+msgid "Rotate Polygons Left"
+msgstr "Повернуть полигоны влево"
+
+msgid "Flip Polygons Horizontally"
+msgstr "Перевернуть полигоны по горизонтали"
+
+msgid "Flip Polygons Vertically"
+msgstr "Перевернуть полигоны по вертикали"
+
+msgid "Edit Polygons"
+msgstr "Редактировать полигоны"
+
+msgid "Expand editor"
+msgstr "Развернуть редактор"
+
+msgid "Add polygon tool"
+msgstr "Инструмент добавления полигона"
+
+msgid "Edit points tool"
+msgstr "Инструмент изменения точек"
+
+msgid "Delete points tool"
+msgstr "Инструмент удаления точек"
+
+msgid "Reset to default tile shape"
+msgstr "Вернуть форму тайла по умолчанию"
+
+msgid "Rotate Right"
+msgstr "Повернуть вправо"
+
+msgid "Rotate Left"
+msgstr "Повернуть влево"
+
+msgid "Flip Horizontally"
+msgstr "Перевернуть по горизонтали"
+
+msgid "Flip Vertically"
+msgstr "Перевернуть по вертикали"
+
+msgid "Disable Snap"
+msgstr "Отключить привязку"
+
+msgid "Half-Pixel Snap"
+msgstr "Полупиксельная привязка"
+
+msgid "Subdivision"
+msgstr "Подраздел"
+
+msgid "Painting Tiles Property"
+msgstr "Свойство рисования тайлов"
+
+msgid "Painting:"
+msgstr "Рисование:"
+
+msgid "Polygon %d"
+msgstr "Полигон %d"
+
+msgid "One Way"
+msgstr "Односторонняя"
+
+msgid "One Way Margin"
+msgstr "Односторонний отступ"
+
+msgid "Linear Velocity"
+msgstr "Линейная скорость"
+
+msgid "Angular Velocity"
+msgstr "Угловая скорость"
+
+msgid "No terrains"
+msgstr "Нет местностей"
+
+msgid "No terrain"
+msgstr "Нет местности"
+
+msgid "Painting Terrain Set"
+msgstr "Набор для рисования местности"
+
+msgid "Painting Terrain"
+msgstr "Рисование местности"
+
+msgid "Drawing Rect:"
+msgstr "Рисование прямоугольником:"
+
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr ""
+"Невозможно поворачивать узоры при использовании плиточной сетки с "
+"неквадратными тайлами."
+
+msgid "Shift: Draw line."
+msgstr "Shift: рисовать линию."
+
+msgid "%s+Shift: Draw rectangle."
+msgstr "%s+Shift: Нарисовать прямоугольник."
+
+msgid "No Texture Atlas Source (ID: %d)"
+msgstr "Нет источника текстурного атласа (ID: %d)"
+
+msgid "Scene Collection Source (ID: %d)"
+msgstr "Источник коллекции сцен (ID: %d)"
+
+msgid "Empty Scene Collection Source (ID: %d)"
+msgstr "Пустой источник коллекции сцен (ID: %d)"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Источник неизвестного типа (ID: %d)"
+
+msgid "Add TileSet pattern"
+msgstr "Добавить узор набора тайлов"
+
+msgid "Remove TileSet patterns"
+msgstr "Удалить узоры набора тайлов"
+
+msgid "Index: %d"
+msgstr "Индекс: %d"
+
+msgid "Tile with Invalid Scene"
+msgstr "Тайл с некорректной сценой"
+
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"Выбранный источник сцен не содержит сцен. Добавьте сцены на вкладке TileSet "
+"внизу."
+
+msgid "Delete tiles"
+msgstr "Удалить тайлы"
+
+msgid "Change selection"
+msgstr "Изменить выбор"
+
+msgid "Move tiles"
+msgstr "Переместить тайлы"
+
+msgid "Paint tiles"
+msgstr "Покрасить тайлы"
+
+msgid "Paste tiles"
+msgstr "Вставить тайлы"
+
+msgid "Selection Tool"
+msgstr "Инструмент выделения"
+
+msgid "Paint Tool"
+msgstr "Инструмент рисования"
+
+msgid "Line Tool"
+msgstr "Инструмент Линия"
+
+msgid "Rect Tool"
+msgstr "Инструмент Прямоугольник"
+
+msgid "Bucket Tool"
+msgstr "Инструмент Заливка"
+
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "Выбрать тайл также можно путём удержания %s с другими инструментами."
+
+msgid "Alternatively use RMB to erase tiles."
+msgstr "Удалить тайлы также можно щелчком правой кнопки мыши."
+
+msgid "Rotate Tile Left"
+msgstr "Повернуть тайл влево"
+
+msgid "Rotate Tile Right"
+msgstr "Повернуть тайл вправо"
+
+msgid "Flip Tile Horizontally"
+msgstr "Перевернуть тайл по горизонтали"
+
+msgid "Flip Tile Vertically"
+msgstr "Перевернуть тайл по вертикали"
+
+msgid "Contiguous"
+msgstr "Непрерывно"
+
+msgid "Place Random Tile"
+msgstr "Разместить случайный тайл"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr ""
+"Изменяет вероятность рисования пустоты вместо случайно выбранного тайла."
+
+msgid "Scattering:"
+msgstr "Рассеяние:"
+
+msgid "Tiles"
+msgstr "Тайлы"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"TileSet этого TileMap не имеет настроенного источника плиток. Перейдите на "
+"нижнюю панель TileSet, чтобы добавить его."
+
+msgid "Sort sources"
+msgstr "Сортировать источники"
+
+msgid "Sort by ID (Ascending)"
+msgstr "Сортировать по ID (по возрастанию)"
+
+msgid "Sort by ID (Descending)"
+msgstr "Сортировать по ID (по убыванию)"
+
+msgid "Invalid source selected."
+msgstr "Выбран некорректный источник."
+
+msgid "Patterns"
+msgstr "Узоры"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Выполните перетаскивание или вставьте сюда выделение карты тайлов для "
+"сохранения узора."
+
+msgid "Paint terrain"
+msgstr "Рисовать местность"
+
+msgid "Matches Corners and Sides"
+msgstr "Соответствует углам и сторонам"
+
+msgid "Matches Corners Only"
+msgstr "Соответствует только углам"
+
+msgid "Matches Sides Only"
+msgstr "Соответствует только сторонам"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Набор местностей %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Режим соединения: рисует местность, затем соединяет её с окружающими тайлами "
+"с той же местностью."
+
+msgid ""
+"Path mode: paints a terrain, then connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Режим пути: рисует местность, затем соединяет её с предыдущим тайлом, "
+"нарисованным тем же штрихом."
+
+msgid "Terrains"
+msgstr "Местности"
+
+msgid "No Layers"
+msgstr "Нет слоёв"
+
+msgid "Replace Tiles with Proxies"
+msgstr "Заменить тайлы на прокси"
+
+msgid "Extract TileMap layers as individual TileMapLayer nodes"
+msgstr "Извлечь слои TileMap как отдельные узлы TileMapLayer"
+
+msgid "Can't edit multiple layers at once."
+msgstr "Невозможно редактировать сразу несколько слоёв."
+
+msgid "The selected TileMap has no layer to edit."
+msgstr "Выбранная карта тайлов не имеет слоя для редактирования."
+
+msgid "The edited layer is disabled or invisible"
+msgstr "Редактируемый слой отключён или невидим"
+
+msgid ""
+"The edited TileMap or TileMapLayer node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"Редактируемый узел TileMap или TileMapLayer не имеет ресурса TileSet.\n"
+"Создайте или загрузите ресурс TileSet в свойство «Набор тайлов» в инспекторе."
+
+msgid "TileMap"
+msgstr "Карта тайлов"
+
+msgid "Open TileMap Dock"
+msgstr "Открыть панель TileMap"
+
+msgid "Select Next Tile Map Layer"
+msgstr "Выбрать следующий слой карты тайлов"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Выбрать предыдущий слой карты тайлов"
+
+msgid "TileMap Layers"
+msgstr "Слои карты тайлов"
+
+msgid "Select previous layer"
+msgstr "Выбрать предыдущий слой"
+
+msgid "Select next layer"
+msgstr "Выбрать следующий слой"
+
+msgid "Select all TileMapLayers in scene"
+msgstr "Выбрать все TileMapLayers (Cлои Карты Тайлов) в сцене"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Выделить выбранный слой карты тайлов"
+
+msgid "Toggle grid visibility."
+msgstr "Переключить видимость сетки."
+
+msgid "Advanced settings."
+msgstr "Расширенные настройки."
+
+msgid "Automatically Replace Tiles with Proxies"
+msgstr "Автоматически заменять тайлы на прокси"
+
+msgid "Remove Tile Proxies"
+msgstr "Удалить прокси тайлов"
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Создать прокси тайлов уровня альтернативы"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Создать прокси тайлов уровня координат"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Создать прокси тайлов уровня источника"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Удалить все некорректные прокси тайлов"
+
+msgid "Delete All Tile Proxies"
+msgstr "Удалить все прокси тайлов"
+
+msgid "Tile Proxies Management"
+msgstr "Управление прокси тайлов"
+
+msgid "Source-level proxies"
+msgstr "Прокси тайлов уровня источника"
+
+msgid "Coords-level proxies"
+msgstr "Прокси тайлов уровня координат"
+
+msgid "Alternative-level proxies"
+msgstr "Прокси тайлов уровня альтернативы"
+
+msgid "Add a new tile proxy:"
+msgstr "Добавить новый прокси тайлов:"
+
+msgid "From Source"
+msgstr "Из источника"
+
+msgid "From Coords"
+msgstr "Из координат"
+
+msgid "From Alternative"
+msgstr "Из альтернативы"
+
+msgid "To Source"
+msgstr "В источник"
+
+msgid "To Coords"
+msgstr "В координаты"
+
+msgid "To Alternative"
+msgstr "В альтернативу"
+
+msgid "Global actions:"
+msgstr "Глобальные действия:"
+
+msgid "Clear Invalid"
+msgstr "Очистить недопустимые"
+
+msgid "Atlas"
+msgstr "Атлас"
+
+msgid "Base Tile"
+msgstr "Базовый тайл"
+
+msgid "Alternative Tile"
+msgstr "Альтернативный тайл"
+
+msgid ""
+"Selected tile:\n"
+"Source: %d\n"
+"Atlas coordinates: %s\n"
+"Alternative: %d"
+msgstr ""
+"Выбранный тайл:\n"
+"Источник: %d\n"
+"Координаты атласа: %s\n"
+"Альтернатива: %d"
+
+msgid "Rendering"
+msgstr "Рендеринг"
+
+msgid "Occlusion Layer %d"
+msgstr "Слой окклюзии %d"
+
+msgid "Physics"
+msgstr "Физика"
+
+msgid "Physics Layer %d"
+msgstr "Физический слой %d"
+
+msgid "No physics layers"
+msgstr "Нет слоёв физики"
+
+msgid ""
+"Create and customize physics layers in the inspector of the TileSet resource."
+msgstr "Создайте и настройте слои физики в инспекторе ресурса TileSet."
+
+msgid "Navigation"
+msgstr "Навигация"
+
+msgid "Navigation Layer %d"
+msgstr "Слой навигации %d"
+
+msgid "No navigation layers"
+msgstr "Нет слоёв навигации"
+
+msgid ""
+"Create and customize navigation layers in the inspector of the TileSet "
+"resource."
+msgstr "Создайте и настройте слои навигации в инспекторе ресурса TileSet."
+
+msgid "Custom Data"
+msgstr "Пользовательские данные"
+
+msgid "Custom Data %d"
+msgstr "Пользовательские данные %d"
+
+msgid "No custom data layers"
+msgstr "Нет слоёв пользовательских данных"
+
+msgid ""
+"Create and customize custom data layers in the inspector of the TileSet "
+"resource."
+msgstr ""
+"Создайте и настройте слои пользовательских данных в инспекторе ресурса "
+"TileSet."
+
+msgid "Select a property editor"
+msgstr "Выбрать редактор свойств"
+
+msgid "Hold %s to create multiple tiles."
+msgstr "Удерживайте %s, чтобы создать несколько плиток."
+
+msgid "Hold %s to create big tiles."
+msgstr "Удерживайте %s, чтобы создавать крупные плитки."
+
+msgid "Hold %s to select multiple regions."
+msgstr "Удерживайте %s, чтобы выбрать несколько областей."
+
+msgid ""
+"TileSet is in read-only mode. Make the resource unique to edit TileSet "
+"properties."
+msgstr ""
+"Набор тайлов находится в режиме только для чтения. Сделайте ресурс "
+"уникальным, чтобы редактировать свойства набора тайлов."
+
+msgid "Paint properties."
+msgstr "Свойства окрашивания."
+
+msgid "Create tiles"
+msgstr "Создать тайлы"
+
+msgid "Create a tile"
+msgstr "Создать тайл"
+
+msgid "Remove tiles"
+msgstr "Удалить тайлы"
+
+msgid "Move a tile"
+msgstr "Переместить тайл"
+
+msgid "Resize a tile"
+msgstr "Изменить размер тайла"
+
+msgid "Remove tile"
+msgstr "Удалить тайл"
+
+msgid "Create tile alternatives"
+msgstr "Создать альтернативы тайлов"
+
+msgid "Remove Tiles Outside the Texture"
+msgstr "Удалить тайлы вне текстуры"
+
+msgid "Create tiles in non-transparent texture regions"
+msgstr "Создать тайлы в непрозрачных областях текстуры"
+
+msgid "Remove tiles in fully transparent texture regions"
+msgstr "Удалить тайлы в полностью прозрачных областях текстуры"
+
+msgid ""
+"The tile's unique identifier within this TileSet. Each tile stores its source "
+"ID, so changing one may make tiles invalid."
+msgstr ""
+"Уникальный идентификатор тайла в наборе. Каждый тайл хранит свой ID "
+"источника, поэтому его изменение может сделать тайлы невалидными."
+
+msgid ""
+"The human-readable name for the atlas. Use a descriptive name here for "
+"organizational purposes (such as \"terrain\", \"decoration\", etc.)."
+msgstr ""
+"Понятное человеку имя атласа. Используйте понятное описание для лучшей "
+"организации (например, «местность», «декорация» и т.д.)."
+
+msgid "The image from which the tiles will be created."
+msgstr "Изображение, из которого будут созданы тайлы."
+
+msgid ""
+"The margins on the image's edges that should not be selectable as tiles (in "
+"pixels). Increasing this can be useful if you download a tilesheet image that "
+"has margins on the edges (e.g. for attribution)."
+msgstr ""
+"Отступы на границах изображения, которые не должны выбираться как тайлы (в "
+"пикселях). Увеличение этого параметра может быть полезно, если вы скачали "
+"изображение с набором тайлов, у которого есть отступы по краям (например, для "
+"указания авторства)."
+
+msgid ""
+"The separation between each tile on the atlas in pixels. Increasing this can "
+"be useful if the tilesheet image you're using contains guides (such as "
+"outlines between every tile)."
+msgstr ""
+"Промежуток между тайлами в атласе в пикселях. Увеличение этого параметра "
+"имеет смысл, если изображение с набором тайлов, которое вы используете, "
+"содержит направляющие (например, рамку вокруг каждого тайла)."
+
+msgid ""
+"The size of each tile on the atlas in pixels. In most cases, this should "
+"match the tile size defined in the TileMap property (although this is not "
+"strictly necessary)."
+msgstr ""
+"Размер каждого тайла в атласе в пикселях. В большинстве случаев, должен "
+"соответствовать размеру тайла, указанному в свойствах TileMap (хотя это не "
+"является абсолютно необходимым)."
+
+msgid ""
+"If checked, adds a 1-pixel transparent edge around each tile to prevent "
+"texture bleeding when filtering is enabled. It's recommended to leave this "
+"enabled unless you're running into rendering issues due to texture padding."
+msgstr ""
+"Если включено, добавляет прозрачный край толщиной в 1 пиксель вокруг каждого "
+"тайла для предотвращения утечек текстур при включении фильтрации. "
+"Рекомендуется оставить включённым, если у вас нет проблем с отрисовкой из-за "
+"отступа текстур."
+
+msgid ""
+"The position of the tile's top-left corner in the atlas. The position and "
+"size must be within the atlas and can't overlap another tile.\n"
+"Each painted tile has associated atlas coords, so changing this property may "
+"cause your TileMaps to not display properly."
+msgstr ""
+"Позиция верхнего левого угла тайла в атласе. Позиция и размер должны "
+"находиться внутри атласа и не могут пересекать другие тайлы.\n"
+"Каждый рисуемый тайл имеет соответствующие координаты в атласе, поэтому "
+"изменение этого свойства может вызвать неверное отображение вашей TileMap."
+
+msgid "The unit size of the tile."
+msgstr "Типоразмер тайла."
+
+msgid ""
+"Number of columns for the animation grid. If number of columns is lower than "
+"number of frames, the animation will automatically adjust row count."
+msgstr ""
+"Количество колонок в сетке анимации. Если количество колонок меньше числа "
+"кадров, анимация автоматически скорректирует число строк."
+
+msgid "The space (in tiles) between each frame of the animation."
+msgstr "Пространство (в тайлах) между кадрами анимации."
+
+msgid "Animation speed in frames per second."
+msgstr "Скорость анимации в кадрах в секунду."
+
+msgid ""
+"Determines how animation will start. In \"Default\" mode all tiles start "
+"animating at the same frame. In \"Random Start Times\" mode, each tile starts "
+"animation with a random offset."
+msgstr ""
+"Определяет, как запускается анимация. В режиме «По умолчанию» все тайлы "
+"начинают анимироваться с одного кадра. В режиме «Случайное время старта» "
+"каждый тайл начинает анимироваться со случайным смещением."
+
+msgid "If [code]true[/code], the tile is horizontally flipped."
+msgstr "Если [code]true[/code], тайл перевёрнут по горизонтали."
+
+msgid "If [code]true[/code], the tile is vertically flipped."
+msgstr "Если [code]true[/code], тайл перевёрнут по вертикали."
+
+msgid ""
+"If [code]true[/code], the tile is rotated 90 degrees [i]counter-clockwise[/i] "
+"and then flipped vertically. In practice, this means that to rotate a tile by "
+"90 degrees clockwise without flipping it, you should enable [b]Flip H[/b] and "
+"[b]Transpose[/b]. To rotate a tile by 180 degrees clockwise, enable [b]Flip "
+"H[/b] and [b]Flip V[/b]. To rotate a tile by 270 degrees clockwise, enable "
+"[b]Flip V[/b] and [b]Transpose[/b]."
+msgstr ""
+"Если [code]true[/code], тайл повёрнут на 90 градусов [i]против часовой "
+"стрелки[/i] и затем перевёрнут по вертикали. На практике это означает, что "
+"для поворота на 90 градусов по часовой стрелке без переворота вам следует "
+"включить [b]Перевернуть H[/b] и [b]Транспонировать[/b]. Для поворота тайна на "
+"180 градусов по часовой стрелке, включите [b]Перевернуть H[/b] и "
+"[b]Перевернуть V[/b]. Для поворота тайла на 270 градусов по часовой стрелке, "
+"включите [b]Перевернуть V[/b] и [b]Транспонировать[/b]."
+
+msgid ""
+"The origin to use for drawing the tile. This can be used to visually offset "
+"the tile compared to the base tile."
+msgstr ""
+"Точка привязки для отрисовки тайла. Может быть использована для визуального "
+"смещения тайла в сравнении с базовым тайлом."
+
+msgid "The color multiplier to use when rendering the tile."
+msgstr "Множитель цвета, используемый при отрисовке тайла."
+
+msgid ""
+"The material to use for this tile. This can be used to apply a different "
+"blend mode or custom shaders to a single tile."
+msgstr ""
+"Материал, используемый для тайла. Это материал можно использовать для "
+"применения другого режима наложения или пользовательских шейдеров к одному "
+"тайлу."
+
+msgid ""
+"The sorting order for this tile. Higher values will make the tile render in "
+"front of others on the same layer. The index is relative to the TileMap's own "
+"Z index."
+msgstr ""
+"Порядок сортировки для этого тайла. Более высокие значения заставят тайл "
+"отображаться перед другими на том же слое. Индекс является относительным к "
+"собственному Z-индексу TileMap."
+
+msgid ""
+"The vertical offset to use for tile sorting based on its Y coordinate (in "
+"pixels). This allows using layers as if they were on different height for top-"
+"down games. Adjusting this can help alleviate issues with sorting certain "
+"tiles. Only effective if Y Sort Enabled is true on the TileMap layer the tile "
+"is placed on."
+msgstr ""
+"Вертикальное смещение, используемое для сортировки фрагментов по координате Y "
+"(в пикселях). Это позволяет использовать слои так, как если бы они находились "
+"на разной высоте для игр сверху вниз. Настройка этого параметра может помочь "
+"решить проблемы с сортировкой определенных тайлов. Действует только в том "
+"случае, если для слоя TileMap, на котором размещен тайл, установлено значение "
+"Y Sort Enabled."
+
+msgid ""
+"The index of the terrain set this tile belongs to. [code]-1[/code] means it "
+"will not be used in terrains."
+msgstr ""
+"Индекс набора местностей, которому принадлежит этот тайл. [code]-1[/code] "
+"означает, что он не будет использоваться в местностях."
+
+msgid ""
+"The index of the terrain inside the terrain set this tile belongs to. "
+"[code]-1[/code] means it will not be used in terrains."
+msgstr ""
+"Индекс местности внутри набора местностей, которому принадлежит этот тайл. "
+"[code]-1[/code] означает, что он не будет использоваться в местностях."
+
+msgid ""
+"The relative probability of this tile appearing when painting with \"Place "
+"Random Tile\" enabled."
+msgstr ""
+"Относительная вероятность появления этого тайла при рисовании с включенной "
+"функцией «Разместить случайный тайл»."
+
+msgid ""
+"The current atlas source has tiles outside the texture.\n"
+"You can clear it using \"%s\" option in the 3 dots menu."
+msgstr ""
+"Текущий источник атласа содержит тайлы за пределами текстуры.\n"
+"Вы можете очистить их, используя опцию «%s» в меню трёх точек."
+
+msgid "Setup"
+msgstr "Настройка"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr ""
+"Настройка атласа. Инструмент для добавления/удаления тайлов (используйте "
+"клавишу Shift для создания крупных тайлов, а клавишу Ctrl — для "
+"редактирования прямоугольных областей)."
+
+msgid "Select tiles."
+msgstr "Выделить тайлы."
+
+msgid ""
+"No tiles selected.\n"
+"Select one or more tiles from the palette to edit its properties."
+msgstr ""
+"Не выбраны тайлы.\n"
+"Выберите один или несколько тайлов из палитры, чтобы изменить их свойства."
+
+msgid "Paint Properties:"
+msgstr "Свойства рисования:"
+
+msgid "Create Tiles in Non-Transparent Texture Regions"
+msgstr "Создать тайлы в непрозрачных областях текстуры"
+
+msgid "Remove Tiles in Fully Transparent Texture Regions"
+msgstr "Удалить тайлы в полностью прозрачных областях текстуры"
+
+msgid "Create an Alternative Tile"
+msgstr "Создать альтернативный тайл"
+
+msgid "Create a Tile"
+msgstr "Создать тайл"
+
+msgid "Auto Create Tiles in Non-Transparent Texture Regions?"
+msgstr "Автоматически создавать тайлы в непрозрачных областях текстуры?"
+
+msgid ""
+"The atlas's texture was modified.\n"
+"Would you like to automatically create tiles in the atlas?"
+msgstr ""
+"Текстура атласа была изменена.\n"
+"Выполнить автоматическое создание тайлов в атласе?"
+
+msgid "Invalid texture selected."
+msgstr "Выбрана некорректная текстура."
+
+msgid "Add a new atlas source"
+msgstr "Добавить новый источник атласа"
+
+msgid "Remove source"
+msgstr "Удалить источник"
+
+msgid "Add atlas source"
+msgstr "Добавить источник атласа"
+
+msgid "TileSet"
+msgstr "Набор тайлов"
+
+msgid "Open TileSet Dock"
+msgstr "Открыть панель TileSet"
+
+msgid "Tile Sources"
+msgstr "Источник плиток"
+
+msgid "Sort Sources"
+msgstr "Сортировать источники"
+
+msgid "A palette of tiles made from a texture."
+msgstr "Палитра тайлов созданная из текстуры."
+
+msgid "Scenes Collection"
+msgstr "Коллекция сцен"
+
+msgid "A collection of scenes that can be instantiated and placed as tiles."
+msgstr "Коллекция сцен которые могу быть созданы и установлены как тайлы."
+
+msgid "Open Atlas Merging Tool"
+msgstr "Открыть инструмент объединения атласов"
+
+msgid "Manage Tile Proxies"
+msgstr "Управление прокси тайлов"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Источник набора тайлов TileSet не выбран. Выберите или создайте источник "
+"набора тайлов TileSet.\n"
+"Вы можете создать новый источник, используя кнопку «Добавить» слева или "
+"перетаскивая текстуры набора тайлов TileSet в список источника."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "Добавить новые узоры в режиме редактирования карты тайлов."
+
+msgid ""
+"Warning: Modifying a source ID will result in all TileMaps using that source "
+"to reference an invalid source instead. This may result in unexpected data "
+"loss. Change this ID carefully."
+msgstr ""
+"Предупреждение: изменение идентификатора источника приведёт к тому, что все "
+"TileMap, использующие этот источник, будут ссылаться на недопустимый "
+"источник. Это может привести к непредвиденной потере данных. Будьте "
+"внимательны при изменении этого идентификатора."
+
+msgid "Add a Scene Tile"
+msgstr "Добавить тайл-сцену"
+
+msgid "Remove a Scene Tile"
+msgstr "Удалить тайл-сцену"
+
+msgid "Drag and drop scenes here or use the Add button."
+msgstr "Перетащите сюда сцены или воспользуйтесь кнопкой «Добавить»."
+
+msgid ""
+"The human-readable name for the scene collection. Use a descriptive name here "
+"for organizational purposes (such as \"obstacles\", \"decoration\", etc.)."
+msgstr ""
+"Понятное человеку имя коллекции сцен. Используйте понятное описание для "
+"лучшей организации (например, «препятствия», «украшения» и т. д.)."
+
+msgid ""
+"ID of the scene tile in the collection. Each painted tile has associated ID, "
+"so changing this property may cause your TileMaps to not display properly."
+msgstr ""
+"ID фрагмента сцены в коллекции. У каждого нарисованного тайла есть связанный "
+"ID, поэтому изменение этого свойства может привести к тому, что ваши TileMaps "
+"будут отображаться неправильно."
+
+msgid "Absolute path to the scene associated with this tile."
+msgstr "Абсолютный путь к сцене, связанной с этим тайлом."
+
+msgid ""
+"If [code]true[/code], a placeholder marker will be displayed on top of the "
+"scene's preview. The marker is displayed anyway if the scene has no valid "
+"preview."
+msgstr ""
+"Если [code]true[/code], поверх предварительного просмотра сцены будет "
+"отображаться маркер-заполнитель. Маркер отображается в любом случае, если у "
+"сцены нет допустимого предварительного просмотра."
+
+msgid "Scenes collection properties:"
+msgstr "Свойства коллекции сцен:"
+
+msgid "Tile properties:"
+msgstr "Свойства тайла:"
+
+msgid "Eraser Tool"
+msgstr "Инструмент Ластик"
+
+msgid "Picker Tool"
+msgstr "Инструмент выбора"
+
+msgid ""
+"Source ID: %d\n"
+"Texture path: %s"
+msgstr ""
+"ID источника: %d\n"
+"Путь к текстуре: %s"
+
+msgid "Source ID: %d"
+msgstr "Исходный ID: %d"
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"Узел TileMap устарел, поскольку он заменен использованием нескольких узлов "
+"TileMapLayer.\n"
+"Чтобы преобразовать TileMap в набор узлов TileMapLayer, откройте нижнюю "
+"панель TileMap с выбранным этим узлом, щелкните значок панели инструментов в "
+"правом верхнем углу и выберите «Извлечь слои TileMap как отдельные узлы "
+"TileMapLayer»."
+
+msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"Сортируемый по Y слой имеет то же значение Z-индекса, что и не сортируемый по "
+"Y слой.\n"
+"Это может привести к нежелательному поведению программы, так как слой, "
+"который не сортируется по Y, будет отсортирован по Y как целое с тайлами из "
+"сортируемых по Y слоёв."
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr ""
+"Слой карты тайлов обозначен как сортируемый по Y, но сортировка по Y не "
+"включена для самого узла карты тайлов."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"Узел карты тайлов обозначен как сортируемый по Y, но сортировка по Y не "
+"включена ни для одного слоя карты тайлов.\n"
+"Это может привести к нежелательному поведению программы, так как слой, "
+"который не сортируется по Y, будет отсортирован по Y как целое."
+
+msgid ""
+"Isometric TileSet will likely not look as intended without Y-sort enabled for "
+"the TileMap and all of its layers."
+msgstr ""
+"Изометрический набор тайлов, скорее всего, будет выглядеть ожидаемым образом "
+"только при условии включения сортировки по Y для карты тайлов и всех её слоёв."
+
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr ""
 "Число e (2,718282). Представляет собой основание натурального логарифма."
@@ -19056,15 +18496,6 @@ msgstr "Константа Тау (6,283185) или 360 градусов."
 msgid "Sqrt2 constant (1.414214). Square root of 2."
 msgstr "Константа Sqrt2 (1,414214). Квадратный корень из 2."
 
-msgid "Drag and drop nodes here to attach them."
-msgstr "Перетащите сюда узлы, чтобы прикрепить их."
-
-msgid "Add Input"
-msgstr "Добавить вход"
-
-msgid "Add Output"
-msgstr "Добавить выход"
-
 msgid "Int"
 msgstr "Целое"
 
@@ -19079,6 +18510,15 @@ msgstr "Вектор4"
 
 msgid "Sampler"
 msgstr "Сэмплер"
+
+msgid "Drag and drop nodes here to attach them."
+msgstr "Перетащите сюда узлы, чтобы прикрепить их."
+
+msgid "Add Input"
+msgstr "Добавить вход"
+
+msgid "Add Output"
+msgstr "Добавить выход"
 
 msgid "[default]"
 msgstr "[по умолчанию]"
@@ -19553,19 +18993,6 @@ msgstr "Входной параметр «%s» для режима шейдер�
 msgid "'%s' input parameter for vertex shader mode."
 msgstr "Входной параметр «%s» для режима вершинного шейдера."
 
-msgid "'%s' input parameter for start shader mode."
-msgstr "Входной параметр «%s» для режима запуска шейдера."
-
-msgid "'%s' input parameter for process shader mode."
-msgstr "Входной параметр «%s» для режима обработки шейдера."
-
-msgid "'%s' input parameter for start and process shader modes."
-msgstr "Входной параметр «%s» для режимов запуска шейдера и обработки шейдера."
-
-msgid "'%s' input parameter for process and collide shader modes."
-msgstr ""
-"Входной параметр «%s» для режимов обработки шейдера и столкновения шейдера."
-
 msgid ""
 "A node for help to multiply a position input vector by rotation using "
 "specific axis. Intended to work with emitters."
@@ -19935,9 +19362,6 @@ msgstr ""
 msgid "Reconstructs the World Position of the Node from the depth texture."
 msgstr "Восстанавливает мировую позицию узла из глубины текстуры."
 
-msgid "Unpacks the Screen Normal Texture in World Space"
-msgstr "Распаковывает текстуру нормалей экрана в мировое пространство"
-
 msgid "Perform the 2D texture lookup."
 msgstr "Выполнить поиск 2D-текстуры."
 
@@ -20056,13 +19480,6 @@ msgid "Returns a random value between the minimum and maximum input values."
 msgstr ""
 "Возвращает случайное значение между минимальным и максимальным входными "
 "значениями."
-
-msgid ""
-"Builds a rotation matrix from the given axis and angle, multiply the input "
-"vector by it and returns both this vector and a matrix."
-msgstr ""
-"Строит матрицу вращения на основе указанных оси и угла, умножает входной "
-"коэффициент на неё и возвращает как этот вектор, так и матрицу."
 
 msgid "Vector function."
 msgstr "Векторная функция."
@@ -20475,9 +19892,6 @@ msgstr "Символ «%s» не может стоять первым в сег�
 msgid "The package must have at least one '.' separator."
 msgstr "Пакет должен иметь хотя бы один разделитель «.»."
 
-msgid "Error creating keystores directory:"
-msgstr "Ошибка при создании каталога хранилища ключей:"
-
 msgid "Invalid package name:"
 msgstr "Недопустимое имя пакета:"
 
@@ -20617,12 +20031,6 @@ msgid "Custom Android source template not found."
 msgstr "Пользовательский шаблон исходных данных Android не найден."
 
 msgid ""
-"Android build template not installed in the project. Install it from the "
-"Project menu."
-msgstr ""
-"Шаблон сборки Android не установлен в проекте. Установите его в меню проекта."
-
-msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
 "configured OR none of them."
 msgstr ""
@@ -20644,52 +20052,11 @@ msgstr ""
 msgid "Release keystore incorrectly configured in the export preset."
 msgstr "Хранилище ключей выпуска неверно настроено в предустановке экспорта."
 
-msgid "A valid Java SDK path is required in Editor Settings."
-msgstr "Требуется указать верный путь к Java SDK в настройках редактора."
-
-msgid "Invalid Java SDK path in Editor Settings."
-msgstr "Неверный путь к Java SDK в настройках редактора."
-
-msgid "Missing 'bin' directory!"
-msgstr "Каталог «bin» отсутствует!"
-
-msgid "Unable to find 'java' command using the Java SDK path."
-msgstr "Невозможно найти команду «java» по пути к Java SDK."
-
-msgid "Please check the Java SDK directory specified in Editor Settings."
-msgstr "Проверьте каталог Java SDK, указанный в настройках редактора."
-
-msgid "A valid Android SDK path is required in Editor Settings."
-msgstr "Требуется указать верный путь к Android SDK в настройках редактора."
-
-msgid "Invalid Android SDK path in Editor Settings."
-msgstr "Неверный путь к Android SDK в настройках редактора."
-
-msgid "Missing 'platform-tools' directory!"
-msgstr "Каталог «platform-tools» отсутствует!"
-
-msgid "Unable to find Android SDK platform-tools' adb command."
-msgstr "Не удалось найти команду adb в Android SDK platform-tools."
-
-msgid "Please check in the Android SDK directory specified in Editor Settings."
-msgstr "Проверьте каталог Android SDK, указанный в настройках редактора."
-
-msgid "Missing 'build-tools' directory!"
-msgstr "Каталог «build-tools» отсутствует!"
-
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Не удалось найти команду apksigner в Android SDK build-tools."
 
-msgid ""
-"ETC2/ASTC texture compression is required for Android export. In Project "
-"Settings, search for 'ETC2' in the search field, or enable 'Advanced "
-"Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import "
-"ETC2 ASTC'."
-msgstr ""
-"Для экспорта под Android требуется сжатие текстур ETC2/ASTC. В настройках "
-"проекта найдите «ETC2» в поле поиска или включите «Расширенные настройки» и "
-"перейдите в раздел «Рендеринг» > «Текстуры» > «Сжатие VRAM», чтобы включить "
-"параметр «Импорт ETC2 ASTC»."
+msgid "Please check in the Android SDK directory specified in Editor Settings."
+msgstr "Проверьте каталог Android SDK, указанный в настройках редактора."
 
 msgid "\"Use Gradle Build\" is required for transparent background on Android"
 msgstr ""
@@ -20722,9 +20089,6 @@ msgid ""
 msgstr ""
 "Имя проекта не соответствует требованиям к формату имени пакета и будет "
 "обновлено («%s»). При необходимости укажите имя пакета в явном виде."
-
-msgid "AAB signing is not supported"
-msgstr "Подписание AAB не поддерживается"
 
 msgid "Signing debug APK..."
 msgstr "Подписание отладочного APK…"
@@ -20793,13 +20157,6 @@ msgstr "Неверное имя файла! Android APK требует расш�
 
 msgid "Unsupported export format!"
 msgstr "Неподдерживаемый формат экспорта!"
-
-msgid ""
-"Trying to build from a gradle built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Выполняется попытка сборки из шаблона gradle, но для него нет информации о "
-"версии. Выполните переустановку из меню «Проект»."
 
 msgid ""
 "Java SDK path must be configured in Editor Settings at 'export/android/"
@@ -20883,12 +20240,6 @@ msgstr "Не удалось распаковать временный невыр
 
 msgid "Metal renderer require iOS 14+."
 msgstr "Для рендеринга Metal требуется iOS 14+."
-
-msgid "Export Icons"
-msgstr "Экспортировать значки"
-
-msgid "Could not open a directory at path \"%s\"."
-msgstr "Не удалось открыть каталог по пути «%s»."
 
 msgid "Debug Script Export"
 msgstr "Экспорт скрипта отладки"
@@ -21144,6 +20495,9 @@ msgstr "Не удалось подписать каталог %s."
 msgid "Cannot sign file %s."
 msgstr "Не удалось подписать файл %s."
 
+msgid "Could not open \"%s\"."
+msgstr "Не удалось открыть «%s»."
+
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
 msgstr ""
 "Относительные символические ссылки не поддерживаются, экспортируемый «%s» "
@@ -21174,6 +20528,12 @@ msgstr "Не удалось выполнить «hdiutil create» — файл �
 msgid "`hdiutil create` failed."
 msgstr "Не удалось выполнить «hdiutil create»."
 
+msgid "Could not create directory \"%s\"."
+msgstr "Не удалось создать каталог «%s»."
+
+msgid "Could not create directory: \"%s\"."
+msgstr "Не удалось создать каталог: «%s»."
+
 msgid "Exporting for macOS"
 msgstr "Экспорт для macOS"
 
@@ -21185,12 +20545,6 @@ msgstr "Не удалось найти приложение-шаблон для 
 
 msgid "Invalid export format."
 msgstr "Неверный формат экспорта."
-
-msgid "Could not create directory: \"%s\"."
-msgstr "Не удалось создать каталог: «%s»."
-
-msgid "Could not create directory \"%s\"."
-msgstr "Не удалось создать каталог «%s»."
 
 msgid ""
 "Relative symlinks are not supported on this OS, the exported project might be "
@@ -21209,9 +20563,6 @@ msgstr ""
 "Не удалось установить разрешения Unix для исполняемого файла \"%s\". "
 "Используйте команду \"chmod +x\", чтобы установить разрешения после передачи "
 "экспортированного файла .app в macOS или Linux."
-
-msgid "Could not open \"%s\"."
-msgstr "Не удалось открыть «%s»."
 
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
@@ -21744,56 +21095,6 @@ msgstr ""
 "Skeleton2D и установите её."
 
 msgid ""
-"The TileMap node is deprecated as it is superseded by the use of multiple "
-"TileMapLayer nodes.\n"
-"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
-"panel with this node selected, click the toolbox icon in the top-right corner "
-"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
-msgstr ""
-"Узел TileMap устарел, поскольку он заменен использованием нескольких узлов "
-"TileMapLayer.\n"
-"Чтобы преобразовать TileMap в набор узлов TileMapLayer, откройте нижнюю "
-"панель TileMap с выбранным этим узлом, щелкните значок панели инструментов в "
-"правом верхнем углу и выберите «Извлечь слои TileMap как отдельные узлы "
-"TileMapLayer»."
-
-msgid ""
-"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole with tiles from Y-sorted layers."
-msgstr ""
-"Сортируемый по Y слой имеет то же значение Z-индекса, что и не сортируемый по "
-"Y слой.\n"
-"Это может привести к нежелательному поведению программы, так как слой, "
-"который не сортируется по Y, будет отсортирован по Y как целое с тайлами из "
-"сортируемых по Y слоёв."
-
-msgid ""
-"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
-"node itself."
-msgstr ""
-"Слой карты тайлов обозначен как сортируемый по Y, но сортировка по Y не "
-"включена для самого узла карты тайлов."
-
-msgid ""
-"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
-"TileMap's layers.\n"
-"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
-"Y-sorted as a whole."
-msgstr ""
-"Узел карты тайлов обозначен как сортируемый по Y, но сортировка по Y не "
-"включена ни для одного слоя карты тайлов.\n"
-"Это может привести к нежелательному поведению программы, так как слой, "
-"который не сортируется по Y, будет отсортирован по Y как целое."
-
-msgid ""
-"Isometric TileSet will likely not look as intended without Y-sort enabled for "
-"the TileMap and all of its layers."
-msgstr ""
-"Изометрический набор тайлов, скорее всего, будет выглядеть ожидаемым образом "
-"только при условии включения сортировки по Y для карты тайлов и всех её слоёв."
-
-msgid ""
 "Forward axis and primary rotation axis must not be parallel in setting %s."
 msgstr ""
 "Передняя ось и основная ось вращения не могут быть параллельны друг другу в "
@@ -21830,9 +21131,6 @@ msgid ""
 msgstr ""
 "Для анимации CPUParticles3D требуется использовать StandardMaterial3D, в "
 "котором параметр «Режим билборда» установлен в значение «Particle Billboard»."
-
-msgid "Decals are only available when using the Forward+ or Mobile renderer."
-msgstr "Декали доступны только при использовании рендерера Forward+ или Mobile."
 
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
@@ -21876,13 +21174,6 @@ msgstr ""
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Ничего не видно, потому что сетки не были связаны с проходами отрисовки."
-
-msgid ""
-"Particles animation requires the usage of a BaseMaterial3D whose Billboard "
-"Mode is set to \"Particle Billboard\"."
-msgstr ""
-"Для анимации частиц требуется использовать BaseMaterial3D, в котором параметр "
-"«Режим билборда» установлен в значение «Particle Billboard»."
 
 msgid ""
 "Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
@@ -22495,6 +21786,9 @@ msgstr "Применить сброс анимации"
 msgid "No playback resource set at path: %s."
 msgstr "По пути нет ресурсов воспроизведения: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "Ничего не подключено к входу %d."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "Не задан корневой AnimationNode для графа."
 
@@ -22515,6 +21809,60 @@ msgstr ""
 "У узла AnimationTree (или одного из его предков) режим обработки установлен в "
 "значение «Отключено».\n"
 "Измените режим обработки в инспекторе, чтобы разрешить воспроизведение."
+
+msgid "Create Horizontal and Vertical Guides"
+msgstr "Создать горизонтальную и вертикальную направляющие"
+
+msgid ""
+"Can't modify anchor offsets when the parent has a size of 0. Disable the "
+"anchors mode in the toolbar."
+msgstr ""
+"Невозможно изменить смещение привязки, если размер родительского элемента "
+"равен 0. Отключите режим привязки на панели инструментов."
+
+msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
+msgstr "Установить смещение оси узла CanvasItem «%s» в значение (%d, %d)"
+
+msgid "Rotate %d CanvasItems"
+msgstr "Повернуть %d узлов CanvasItem"
+
+msgid "Rotate CanvasItem \"%s\" to %d degrees"
+msgstr "Повернуть узел CanvasItem «%s» на %d градусов"
+
+msgid "Move CanvasItem \"%s\" Anchor"
+msgstr "Переместить якорь узла CanvasItem «%s»"
+
+msgid "Scale Node2D \"%s\" to (%s, %s)"
+msgstr "Масштабировать узел Node2D «%s» в (%s, %s)"
+
+msgid "Resize Control \"%s\" to (%d, %d)"
+msgstr "Изменить размер узла Control «%s» на (%d, %d)"
+
+msgid "Scale %d CanvasItems"
+msgstr "Масштабировать %d узлов CanvasItem"
+
+msgid "Scale CanvasItem \"%s\" to (%s, %s)"
+msgstr "Масштабировать узел CanvasItem «%s» в (%s, %s)"
+
+msgid "Move %d CanvasItems"
+msgstr "Переместить %d узлов CanvasItem"
+
+msgid "Move CanvasItem \"%s\" to (%d, %d)"
+msgstr "Переместить узел CanvasItem «%s» в (%d, %d)"
+
+msgid ""
+"Children of a container get their position and size determined only by their "
+"parent."
+msgstr ""
+"Дочерние узлы контейнера получают свое положение и размер, определяемые "
+"только их родителем."
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Все выбранные узлы CanvasItem либо являются невидимыми, либо каким-либо "
+"образом заблокированы и не могут быть преобразованы."
 
 msgid "Top Orthogonal"
 msgstr "Верхний ортогональный"
@@ -22611,6 +21959,14 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s нельзя перетащить сюда. Используйте %s для отмены."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Для правильной работы текстовых меток с включенным автоматическим переносом "
+"строк необходимо настроить положительную пользовательскую минимальную или "
+"максимальную ширину."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

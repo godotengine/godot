@@ -172,9 +172,10 @@ int smaz_decompress(const char *in, int inlen, char *out, int outlen) {
     char *_out = out;
     int _outlen = outlen;
 
-    while(inlen) {
+    while(inlen > 0) {
         if (*c == 254) {
             /* Verbatim byte */
+            if (inlen < 2) return _outlen+1;
             if (outlen < 1) return _outlen+1;
             *out = *(c+1);
             out++;
@@ -183,7 +184,9 @@ int smaz_decompress(const char *in, int inlen, char *out, int outlen) {
             inlen -= 2;
         } else if (*c == 255) {
             /* Verbatim string */
+            if (inlen < 2) return _outlen+1;
             int len = (*(c+1))+1;
+            if (inlen < 2+len) return _outlen+1;
             if (outlen < len) return _outlen+1;
             memcpy(out,c+2,len);
             out += len;
