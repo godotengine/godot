@@ -59,6 +59,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	int pool_thread_index = thread_ids[Thread::get_caller_id()];
 	ThreadData &curr_thread = threads[pool_thread_index];
 	Task *prev_task = nullptr; // In case this is recursively called.
+	bool prev_has_pump_task = false;
 
 	bool safe_for_nodes_backup = is_current_thread_safe_for_nodes();
 	CallQueue *call_queue_backup = MessageQueue::get_singleton() != MessageQueue::get_main_singleton() ? MessageQueue::get_singleton() : nullptr;
@@ -77,6 +78,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		task_mutex.lock();
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
+		prev_has_pump_task = curr_thread.has_pump_task;
 		curr_thread.current_task = p_task;
 		curr_thread.has_pump_task = p_task->is_pump_task;
 		if (p_task->pending_notify_yield_over) {
@@ -148,6 +150,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		}
 
 		task_mutex.lock();
+		if (p_task->is_pump_task) {
+			pump_task_count--;
+		}
 		p_task->completed = true;
 		p_task->pool_thread_index = -1;
 		if (p_task->waiting_user) {
@@ -165,6 +170,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 #ifdef THREADS_ENABLED
 	{
 		curr_thread.current_task = prev_task;
+		curr_thread.has_pump_task = prev_has_pump_task;
 		if (low_priority) {
 			low_priority_threads_used--;
 
@@ -361,13 +367,12 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 
 #ifdef THREADS_ENABLED
 	if (p_pump_task) {
+		// A pump thread takes no other tasks while it waits, so each pump task gets a thread of its own.
 		pump_task_count++;
-		int thread_count = get_thread_count();
-		if (pump_task_count >= thread_count) {
-			print_verbose(vformat("A greater number of dedicated threads were requested (%d) than threads available (%d). Please increase the number of available worker task threads. Recovering this session by spawning more worker task threads.", pump_task_count + 1, thread_count)); // +1 because we want to keep a Thread without any pump tasks free.
-
+		uint32_t thread_count = threads.size();
+		if (thread_count < base_thread_count + pump_task_count) {
 			// Re-sizing implies relocation, which is not supported for this array.
-			CRASH_COND_MSG(thread_count + 1 > (int)threads.get_capacity(), "Reserve trick for worker thread pool failed. Crashing.");
+			CRASH_COND_MSG(thread_count + 1 > threads.get_capacity(), "Reserve trick for worker thread pool failed. Crashing.");
 			threads.resize_initialized(thread_count + 1);
 			threads[thread_count].index = thread_count;
 			threads[thread_count].pool = this;
@@ -821,10 +826,11 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 	print_verbose(vformat("WorkerThreadPool: %d threads, %d max low-priority.", p_thread_count, max_low_priority_threads));
 
 #ifdef THREADS_ENABLED
-	// Reserve 5 threads in case we need separate threads for 1) 2D physics 2) 3D physics 3) rendering 4) GPU texture compression, 5) all other tasks.
+	// Reserve a thread per pump task on top of the requested ones.
 	// We cannot safely increase the Vector size at runtime, so reserve enough up front, but only launch those needed.
-	threads.reserve(5);
+	threads.reserve(p_thread_count + MAX_PUMP_TASKS);
 #endif
+	base_thread_count = p_thread_count;
 	threads.resize(p_thread_count);
 
 	for (uint32_t i = 0; i < threads.size(); i++) {
