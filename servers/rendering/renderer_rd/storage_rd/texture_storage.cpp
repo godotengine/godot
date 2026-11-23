@@ -960,6 +960,13 @@ RID TextureStorage::texture_allocate() {
 	return texture_owner.allocate_rid();
 }
 
+void TextureStorage::_texture_initialize_rid(RID p_texture, const Texture &p_texture_data) {
+#ifdef DEBUG_ENABLED
+	MutexLock lock(texture_initialize_mutex);
+#endif
+	texture_owner.initialize_rid(p_texture, p_texture_data);
+}
+
 void TextureStorage::texture_free(RID p_texture) {
 	Texture *t = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(t);
@@ -1054,7 +1061,7 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
 
-	texture_owner.initialize_rid(p_texture, texture);
+	_texture_initialize_rid(p_texture, texture);
 }
 
 void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RSE::TextureLayeredType p_layered_type) {
@@ -1166,7 +1173,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
 
-	texture_owner.initialize_rid(p_texture, texture);
+	_texture_initialize_rid(p_texture, texture);
 }
 
 void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
@@ -1293,7 +1300,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
 
-	texture_owner.initialize_rid(p_texture, texture);
+	_texture_initialize_rid(p_texture, texture);
 }
 
 void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
@@ -1315,7 +1322,7 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 	proxy_tex.is_proxy = true;
 	proxy_tex.proxies.clear();
 
-	texture_owner.initialize_rid(p_texture, proxy_tex);
+	_texture_initialize_rid(p_texture, proxy_tex);
 
 	tex->proxies.push_back(p_texture);
 }
@@ -1418,7 +1425,7 @@ void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
 
-	texture_owner.initialize_rid(p_texture, texture);
+	_texture_initialize_rid(p_texture, texture);
 }
 
 // Note: We make some big assumptions about format and usage. If developers need more control,
@@ -2212,7 +2219,17 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, Render
 }
 
 void TextureStorage::texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) {
+#ifdef DEBUG_ENABLED
+	// Worker threads can be creating textures (can_create_resources_async()); under
+	// this lock none is part-way through being copied into its slot.
+	MutexLock lock(texture_initialize_mutex);
+#endif
 	for (const RID &rid : texture_owner.get_owned_list()) {
+		// get_owned_list() also lists slots allocated but not initialized yet, and
+		// get_or_null() would hand back their unbuilt memory. owns() rejects them.
+		if (!texture_owner.owns(rid)) {
+			continue;
+		}
 		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
@@ -2332,7 +2349,7 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	texture.is_render_target = false;
 	texture.is_proxy = false;
 
-	texture_owner.initialize_rid(p_texture, texture);
+	_texture_initialize_rid(p_texture, texture);
 }
 
 RID TextureStorage::texture_get_rd_texture(RID p_texture, bool p_srgb) const {

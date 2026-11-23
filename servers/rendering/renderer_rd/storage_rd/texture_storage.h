@@ -210,6 +210,12 @@ private:
 	// Textures can be created from threads, so this RID_Owner is thread safe.
 	mutable RID_Owner<Texture, true> texture_owner;
 	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); }
+#ifdef DEBUG_ENABLED
+	// Serializes copying a Texture into its slot against texture_debug_usage().
+	// Its only caller is the remote debugger, which release builds don't have.
+	Mutex texture_initialize_mutex;
+#endif
+	void _texture_initialize_rid(RID p_texture, const Texture &p_texture_data);
 
 	struct TextureToRDFormat {
 		RD::DataFormat format;
