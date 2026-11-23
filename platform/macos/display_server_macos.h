@@ -214,7 +214,7 @@ private:
 	List<MenuCall> deferred_menu_calls;
 	DisplayServerEnums::WindowID confinement_window = DisplayServerEnums::INVALID_WINDOW_ID;
 
-	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect);
+	DisplayServerEnums::WindowID _create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect, bool p_borderless, bool p_extend);
 	void _update_window_style(WindowData p_wd, DisplayServerEnums::WindowID p_window);
 
 	void _update_displays_arrangement() const;

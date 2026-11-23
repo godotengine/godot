@@ -105,7 +105,7 @@
 #import <IOKit/hid/IOHIDKeys.h>
 #import <IOKit/hid/IOHIDLib.h>
 
-DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect) {
+DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, const Rect2i &p_rect, bool p_borderless, bool p_extend) {
 	const float scale = screen_get_max_scale();
 
 	DisplayServerEnums::WindowID id = window_id_counter;
@@ -132,10 +132,15 @@ DisplayServerEnums::WindowID DisplayServerMacOS::_create_window(DisplayServerEnu
 		wpos += _get_screens_origin();
 		wpos /= scale;
 
+		NSWindowStyleMask style_mask = p_borderless ? NSWindowStyleMaskBorderless : NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+		if (p_extend) {
+			style_mask |= NSWindowStyleMaskFullSizeContentView;
+		}
+
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
 				initWithContentRect:NSMakeRect(100, 100, MAX(1, p_rect.size.width / scale), MAX(1, p_rect.size.height / scale))
-						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+						  styleMask:style_mask
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_NULL_V_MSG(wd.window_object, DisplayServerEnums::INVALID_WINDOW_ID, "Can't create a window");
@@ -1805,7 +1810,7 @@ Vector<DisplayServerEnums::WindowID> DisplayServerMacOS::get_window_list() const
 DisplayServerEnums::WindowID DisplayServerMacOS::create_sub_window(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
-	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
+	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect, p_flags & DisplayServerEnums::WINDOW_FLAG_BORDERLESS_BIT, p_flags & DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT);
 
 	uint32_t set_flags = p_flags & ((1 << DisplayServerEnums::WINDOW_FLAG_MAX) - 1); // Clear the flags that are not supported by the window.
 	while (set_flags != 0) {
@@ -3999,7 +4004,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, Display
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
-	DisplayServerEnums::WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
+	DisplayServerEnums::WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution), p_flags & DisplayServerEnums::WINDOW_FLAG_BORDERLESS_BIT, p_flags & DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE_BIT);
 	if (main_window == DisplayServerEnums::INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		ERR_FAIL_MSG("Could not create main window.");
