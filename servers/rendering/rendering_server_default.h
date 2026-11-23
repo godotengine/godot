@@ -261,7 +261,7 @@ public:
 
 	FUNC1RC(Image::Format, texture_get_format, RID)
 
-	FUNC1(texture_debug_usage, List<RenderingServerTypes::TextureInfo> *)
+	FUNC1S(texture_debug_usage, List<RenderingServerTypes::TextureInfo> *)
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
@@ -428,7 +428,7 @@ public:
 	FUNC2RC(RID, mesh_surface_get_skin_buffer_rd_rid, RID, int)
 	FUNC2RC(RID, mesh_surface_get_index_buffer_rd_rid, RID, int)
 
-	FUNC1(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
+	FUNC1S(mesh_debug_usage, List<RenderingServerTypes::MeshInfo> *)
 
 	/* MULTIMESH API */
 

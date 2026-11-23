@@ -105,6 +105,24 @@ TEST_CASE("[RID] 'get_local_index'") {
 	CHECK(RID::from_uint64(4'294'967'297).get_local_index() == 1);
 }
 
+TEST_CASE("[RID_Owner] get_owned_list() skips RIDs not initialized yet") {
+	RID_Owner<int, true> owner;
+	RID ready = owner.make_rid(1);
+	RID pending = owner.allocate_rid();
+
+	LocalVector<RID> owned = owner.get_owned_list();
+	CHECK_EQ(owned.size(), 1u);
+	CHECK(owned[0] == ready);
+
+	owner.initialize_rid(pending, 2);
+	owned = owner.get_owned_list();
+	CHECK_EQ(owned.size(), 2u);
+	CHECK_EQ(*owner.get_or_null(pending), 2);
+
+	owner.free(ready);
+	owner.free(pending);
+}
+
 #ifdef THREADS_ENABLED
 // This case would let sanitizers realize data races.
 // Additionally, on purely weakly ordered architectures, it would detect synchronization issues
