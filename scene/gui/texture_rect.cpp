@@ -101,17 +101,11 @@ void TextureRect::_notification(int p_what) {
 				draw_texture_rect_region(texture, Rect2(offset, size), region);
 			} else {
 				// `draw_texture_rect` doesn't support tiling an AtlasTexture.
-				// Workaround using nine patch. Doesn't work properly for non-zero margin, nesting AtlasTextures is fine otherwise.
+				// Workaround using nine patch. Doesn't work properly for non-zero margin.
 				if (tile && Object::cast_to<AtlasTexture>(*texture)) {
 					Rect2 src_rect(Vector2(), texture->get_size());
 					Rect2 dst_rect(offset, size);
-					Ref<AtlasTexture> at = texture;
-					bool anything_to_draw = true;
-					while (anything_to_draw && at.is_valid()) {
-						anything_to_draw = at->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
-						at = at->get_atlas();
-					}
-					if (anything_to_draw) {
+					if (texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect)) {
 						RS::get_singleton()->canvas_item_add_nine_patch(get_canvas_item(), dst_rect, src_rect, texture->get_scaled_rid(), Vector2(), Vector2(), RSE::NINE_PATCH_TILE, RSE::NINE_PATCH_TILE, true);
 					}
 				} else {

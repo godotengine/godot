@@ -32,6 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 
 int AtlasTexture::get_width() const {
 	if (rounded_region.size.width == 0) {
@@ -176,7 +177,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, get_scaled_rid(), src_c, p_modulate, p_transpose, filter_clip);
 	}
 }
 
@@ -189,7 +190,7 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	Rect2 dr;
 	Rect2 src_c;
 	if (get_rect_region(p_rect, p_src_rect, dr, src_c)) {
-		atlas->draw_rect_region(p_canvas_item, dr, src_c, p_modulate, p_transpose, filter_clip);
+		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, get_scaled_rid(), src_c, p_modulate, p_transpose, filter_clip);
 	}
 }
 
@@ -223,7 +224,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 
 	r_rect = Rect2(p_rect.position + ofs * scale, src_clipped.size * scale);
 	r_src_rect = src_clipped;
-	return true;
+	return atlas->get_rect_region(r_rect, r_src_rect, r_rect, r_src_rect);
 }
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
