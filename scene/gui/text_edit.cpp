@@ -4023,8 +4023,7 @@ void TextEdit::_font_changed() {
 void TextEdit::_update_caches(bool p_invalidate_all) {
 	if (observed_font != theme_cache.font) {
 		if (observed_font.is_valid()) {
-			observed_font->disconnect_changed(
-					callable_mp(this, &TextEdit::_font_changed));
+			observed_font->disconnect_changed(callable_mp(this, &TextEdit::_font_changed));
 		}
 
 		observed_font = theme_cache.font;
