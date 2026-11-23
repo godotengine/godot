@@ -2873,6 +2873,9 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SYNC_MODE"); res == U"none") {
 		sync_mode = HazardTracking;
 	}
+	if (OS::get_singleton()->get_processor_name().contains("Virtual")) {
+		sync_mode = HazardTracking;
+	}
 
 #if TARGET_OS_OSX
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
