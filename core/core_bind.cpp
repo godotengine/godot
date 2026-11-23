@@ -41,6 +41,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
@@ -2077,6 +2078,15 @@ void Engine::snapshot_set_random_state(int64_t p_state) {
 	Math::set_random_state((uint64_t)p_state);
 }
 
+// komm64: the --random-seed stream that randomize() draws seeds from.
+int64_t Engine::snapshot_get_seed_stream_state() const {
+	return (int64_t)RandomPCG::get_fixed_seed_stream_state();
+}
+
+void Engine::snapshot_set_seed_stream_state(int64_t p_state) {
+	RandomPCG::set_fixed_seed_stream_state((uint64_t)p_state);
+}
+
 // komm64: the clocks as scripts see them: ticks and frame counters.
 Dictionary Engine::snapshot_get_clock() const {
 	Dictionary out;
@@ -2480,6 +2490,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_clock"), &Engine::snapshot_get_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_clock", "clock"), &Engine::snapshot_set_clock);
 	ClassDB::bind_method(D_METHOD("snapshot_set_random_state", "state"), &Engine::snapshot_set_random_state);
+	ClassDB::bind_method(D_METHOD("snapshot_get_seed_stream_state"), &Engine::snapshot_get_seed_stream_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_seed_stream_state", "state"), &Engine::snapshot_set_seed_stream_state);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);

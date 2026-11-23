@@ -628,6 +628,8 @@ public:
 	Dictionary snapshot_get_clock() const;
 	void snapshot_set_clock(const Dictionary &p_clock);
 	void snapshot_set_random_state(int64_t p_state);
+	int64_t snapshot_get_seed_stream_state() const;
+	void snapshot_set_seed_stream_state(int64_t p_state);
 
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;

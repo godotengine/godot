@@ -31,7 +31,41 @@
 #include "random_pcg.h"
 
 #include "core/os/os.h"
+#include "core/os/spin_lock.h"
 #include "core/templates/vector.h"
+
+namespace {
+// komm64: --random-seed (see random_pcg.h). Its own increment keeps the
+// stream apart from a generator seeded with the same number.
+constexpr uint64_t FIXED_SEED_STREAM_INC = 0x9e3779b97f4a7c15ULL;
+bool fixed_seed_set = false;
+pcg32_random_t fixed_seed_stream = {};
+SpinLock fixed_seed_lock;
+} // namespace
+
+void RandomPCG::set_fixed_seed(uint64_t p_seed) {
+	fixed_seed_lock.lock();
+	pcg32_srandom_r(&fixed_seed_stream, p_seed, FIXED_SEED_STREAM_INC);
+	fixed_seed_set = true;
+	fixed_seed_lock.unlock();
+}
+
+bool RandomPCG::has_fixed_seed() {
+	return fixed_seed_set;
+}
+
+uint64_t RandomPCG::get_fixed_seed_stream_state() {
+	fixed_seed_lock.lock();
+	const uint64_t state = fixed_seed_stream.state;
+	fixed_seed_lock.unlock();
+	return state;
+}
+
+void RandomPCG::set_fixed_seed_stream_state(uint64_t p_state) {
+	fixed_seed_lock.lock();
+	fixed_seed_stream.state = p_state;
+	fixed_seed_lock.unlock();
+}
 
 RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 		pcg(),
@@ -40,6 +74,14 @@ RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 }
 
 void RandomPCG::randomize() {
+	if (fixed_seed_set) {
+		fixed_seed_lock.lock();
+		const uint64_t hi = pcg32_random_r(&fixed_seed_stream);
+		const uint64_t lo = pcg32_random_r(&fixed_seed_stream);
+		fixed_seed_lock.unlock();
+		seed((hi << 32) | lo);
+		return;
+	}
 	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
 }
 

@@ -353,6 +353,13 @@
 				Returns the instance ids of every live object that has a script. For finding out which objects of a game outlive what should have let go of them, for example after loading a save.
 			</description>
 		</method>
+		<method name="snapshot_get_seed_stream_state" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the state of the stream that [code]randomize()[/code] calls take their seeds from when the engine was started with [code]--random-seed[/code]. Pass it to [method snapshot_set_seed_stream_state] after loading a save, so random number generators created afterwards get the same seeds.
+				[b]Note:[/b] seeds are taken in call order, so [code]randomize()[/code] calls on other threads (for example a [RandomNumberGenerator] created during threaded loading) can take them in a different order between launches.
+			</description>
+		</method>
 		<method name="snapshot_is_plain_leaf" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
@@ -379,6 +386,13 @@
 			<param index="0" name="state" type="int" />
 			<description>
 				Sets the state of the global random number generator, as returned by [method snapshot_get_random_state].
+			</description>
+		</method>
+		<method name="snapshot_set_seed_stream_state">
+			<return type="void" />
+			<param index="0" name="state" type="int" />
+			<description>
+				Sets the state of the [code]--random-seed[/code] seed stream, as returned by [method snapshot_get_seed_stream_state].
 			</description>
 		</method>
 		<method name="snapshot_split_plain" qualifiers="const">

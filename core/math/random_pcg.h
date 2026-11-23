@@ -72,6 +72,15 @@ public:
 	_FORCE_INLINE_ uint64_t get_state() const { return pcg.state; }
 
 	void randomize();
+
+	// komm64: --random-seed. Once set, randomize() takes each seed from one
+	// deterministic stream instead of the clock, so a launch with the same
+	// seed sees the same random numbers (the global ones, every
+	// RandomNumberGenerator, and the game's own randomize() calls).
+	static void set_fixed_seed(uint64_t p_seed);
+	static bool has_fixed_seed();
+	static uint64_t get_fixed_seed_stream_state();
+	static void set_fixed_seed_stream_state(uint64_t p_state);
 	_FORCE_INLINE_ uint32_t rand() {
 		return pcg32_random_r(&pcg);
 	}

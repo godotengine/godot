@@ -48,6 +48,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/object/script_language.h"
@@ -686,6 +687,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--disable-render-loop", "Disable render loop so rendering only occurs when called explicitly from script.\n");
 	print_help_option("--disable-crash-handler", "Disable crash handler when supported by the platform code.\n");
 	print_help_option("--fixed-fps <fps>", "Force a fixed number of frames per second. This setting disables real-time synchronization.\n");
+	print_help_option("--random-seed <seed>", "Make random numbers repeat across launches: every randomize() (the startup one, the game's own, each RandomNumberGenerator) takes its seed from a stream started by <seed>.\n");
 	print_help_option("--delta-smoothing <enable>", "Enable or disable frame delta smoothing [\"enable\", \"disable\"].\n");
 	print_help_option("--print-fps", "Print the frames per second to the stdout.\n");
 #ifdef TOOLS_ENABLED
@@ -1954,6 +1956,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (arg == "--disable-render-loop") {
 			disable_render_loop = true;
+		} else if (arg == "--random-seed") {
+			if (N) {
+				RandomPCG::set_fixed_seed((uint64_t)N->get().to_int());
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing random-seed argument, aborting.\n");
+				goto error;
+			}
 		} else if (arg == "--fixed-fps") {
 			if (N) {
 				fixed_fps = N->get().to_int();
