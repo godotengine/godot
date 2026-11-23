@@ -3013,6 +3013,9 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	// Must be resolved before the allocator is created, so use_heaps sees the
 	// final sync_mode.
 	_resolve_sync_mode();
+	if (sync_mode != HazardTracking) {
+		main_level_fences.create(device);
+	}
 
 	// Must be created before _copy_queue_initialize(), which sources its scratch
 	// buffer from the allocator. Barriers mode implies heap suballocation:

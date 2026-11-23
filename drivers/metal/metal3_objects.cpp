@@ -59,14 +59,12 @@
 
 using namespace MTL3;
 
-MDCommandBuffer::MDCommandBuffer(MTL::CommandQueue *p_queue, ::RenderingDeviceDriverMetal *p_device_driver) :
+MDCommandBuffer::MDCommandBuffer(MTL::CommandQueue *p_queue, ::RenderingDeviceDriverMetal *p_device_driver, MDLevelFences *p_level_fences) :
 		_scratch(p_device_driver->get_allocator()), queue(p_queue) {
 	device_driver = p_device_driver;
 	type = MDCommandBufferStateType::None;
 	sync_mode = device_driver->sync_mode;
-	if (sync_mode != RDM::SyncMode::HazardTracking) {
-		_create_level_fences(p_device_driver->get_device());
-	}
+	_level_fences = p_level_fences;
 }
 
 void MDCommandBuffer::_encode_residency(MTL::RenderCommandEncoder *p_enc) {

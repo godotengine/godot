@@ -162,6 +162,9 @@ protected:
 	GODOT_CLANG_WARNING_POP
 
 	SyncMode sync_mode = Barriers;
+	// Shared by the command buffers of the graphics family, which record in order.
+	// Created only when sync_mode uses fences.
+	MDLevelFences main_level_fences;
 	MTL::ResourceOptions base_hazard_tracking = MTL::ResourceHazardTrackingModeTracked;
 
 	/// Textures imported via texture_create_from_extension. They are not heap-backed,
