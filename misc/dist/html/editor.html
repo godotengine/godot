@@ -231,6 +231,14 @@ a:active {
 	font-weight: 700;
 }
 
+.btn.tab-btn.active,
+.btn.tab-btn.active:hover,
+.btn.tab-btn.active + .btn.close-btn {
+	/* Match selected tab colors from the default editor theme. */
+	background-color: #292929;
+	border-color: #292929;
+}
+
 /* Status display */
 
 #status-progress {
@@ -695,6 +703,9 @@ function LoadStatus(document) {
 	function showTab(name) {
 		tabs.forEach(function (elem) {
 			elem.style.display = elem.id === `tab-${name}` ? 'block' : 'none';
+		});
+		['editor', 'game'].forEach(function (tabName) {
+			document.getElementById(`btn-tab-${tabName}`).classList.toggle('active', tabName === name);
 		});
 		if (name === 'editor' || name === 'game') {
 			const instance = name === 'game' ? gameState : editorState;
