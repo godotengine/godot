@@ -10224,9 +10224,5 @@ TextEdit::TextEdit(const String &p_placeholder) {
 }
 
 TextEdit::~TextEdit() {
-	if (observed_font.is_valid()) {
-		observed_font->disconnect_changed(
-				callable_mp(this, &TextEdit::_font_changed));
-	}
 	RS::get_singleton()->free_rid(text_ci);
 }
