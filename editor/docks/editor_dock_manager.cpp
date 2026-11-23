@@ -599,6 +599,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		dock_slots[i]->load_selected_tab(selected_tab_idx);
 	}
 
+	saved_main_hsplit_offsets.clear();
+
 	// Load SplitContainer offsets.
 
 	PackedInt32Array offsets;
@@ -801,11 +803,23 @@ void EditorDockManager::set_docks_visible(bool p_show) {
 	if (docks_visible == p_show) {
 		return;
 	}
+
+	if (!p_show) {
+		saved_main_hsplit_offsets = main_hsplit->get_split_offsets();
+	}
+
 	docks_visible = p_show;
 	for (int i = 0; i < EditorDock::DOCK_SLOT_MAX; i++) {
 		// Show and hide in reverse order due to the SplitContainer prioritizing the last split offset.
 		dock_slots[docks_visible ? i : EditorDock::DOCK_SLOT_MAX - i - 1]->update_visibility();
 	}
+
+	if (p_show) {
+		if (saved_main_hsplit_offsets.size() == main_hsplit->get_split_offsets().size()) {
+			main_hsplit->set_split_offsets(saved_main_hsplit_offsets);
+		}
+	}
+
 	_update_layout();
 }
 
