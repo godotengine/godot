@@ -1369,7 +1369,7 @@ void DisplayServer::unregister_additional_output(Object *p_object) {
 }
 
 void DisplayServer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation")));
+	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, "DisplayServer.SensorOrientation")));
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
@@ -1554,6 +1554,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_ime_active", "active", "window_id"), &DisplayServer::window_set_ime_active, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_set_ime_position", "position", "window_id"), &DisplayServer::window_set_ime_position, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_set_ime_rect", "rect", "window_id"), &DisplayServer::window_set_ime_rect, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_set_vsync_mode", "vsync_mode", "window_id"), &DisplayServer::window_set_vsync_mode, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_vsync_mode", "window_id"), &DisplayServer::window_get_vsync_mode, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
@@ -1776,6 +1777,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_HDR_OUTPUT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_PIP_MODE);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::FEATURE_EMBEDDED);
 
 #ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(DisplayServerEnums::ROLE_UNKNOWN);
@@ -1907,6 +1909,10 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_DEFAULT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_MULTILINE);

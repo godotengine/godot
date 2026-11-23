@@ -672,7 +672,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("parent_hl_line_color", "Tree", parent_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", children_line_color);
 			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
+			p_theme->set_color("drop_position_color", "Tree", p_config.mono_color * Color(1, 1, 1, 1));
 
 			Ref<StyleBoxFlat> style_tree_btn = p_config.base_style->duplicate();
 			style_tree_btn->set_bg_color(p_config.highlight_color);
@@ -778,7 +778,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("guide_color", "ItemList", Color(1, 1, 1, 0));
 			p_theme->set_constant("v_separation", "ItemList", EDSCALE_RND(p_config.forced_even_separation));
 			p_theme->set_constant("h_separation", "ItemList", EDSCALE_RND(p_config.increased_margin + 2));
-			p_theme->set_constant("scroll_bar_h_separation", "ItemList", p_config.separation_margin);
+			p_theme->set_constant("scrollbar_h_separation", "ItemList", p_config.separation_margin);
 			p_theme->set_constant("icon_margin", "ItemList", EDSCALE_RND(p_config.increased_margin + 2));
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
@@ -1955,6 +1955,12 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
 			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
 			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
+
+			p_theme->set_type_variation("CheckBoxNoIconTintNoDim", "CheckBoxNoIconTint");
+			if (!p_config.dark_icon_and_font) {
+				// Overblown white to offset icon dimming.
+				p_theme->set_color("checkbox_unchecked_color", "CheckBoxNoIconTintNoDim", Color(3, 3, 3));
+			}
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).

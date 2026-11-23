@@ -105,10 +105,10 @@
 			[code]&amp;"needs_prefix": bool[/code] - Whether the option needs a "New" prefix (for consistency with native options).
 			[codeblock]
 			func _get_menu_options(data):
-			    if data["needs_prefix"]:
-			        add_context_menu_item("New Image File...", create_image)
-			    else:
-			        add_context_menu_item("Image File...", create_image)
+				if data["needs_prefix"]:
+					add_context_menu_item("New Image File...", create_image)
+				else:
+					add_context_menu_item("Image File...", create_image)
 			[/codeblock]
 		</constant>
 		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR_CODE" value="4" enum="ContextMenuSlot">

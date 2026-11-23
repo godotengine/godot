@@ -44,6 +44,7 @@
 #endif
 
 #if defined(RD_ENABLED)
+#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
 #endif
 
@@ -364,7 +365,8 @@ class DisplayServerWindows : public DisplayServer {
 
 		// IME
 		HIMC im_himc;
-		Vector2 im_position;
+		Vector2i im_position;
+		Rect2i im_rect;
 		bool ime_active = false;
 		bool ime_in_progress = false;
 		bool ime_suppress_next_keyup = false;
@@ -489,6 +491,7 @@ class DisplayServerWindows : public DisplayServer {
 	int restore_mouse_trails = 0;
 
 	bool use_raw_input = false;
+	bool disable_bulk_raw_input = false;
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 
@@ -713,6 +716,7 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void window_set_ime_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual int accessibility_should_increase_contrast() const override;
 	virtual int accessibility_should_reduce_animation() const override;
@@ -747,6 +751,7 @@ public:
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape = DisplayServerEnums::CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) override;
+	virtual void cursor_clear_custom_image_cache() override;
 
 	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) override;
 	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id) override;

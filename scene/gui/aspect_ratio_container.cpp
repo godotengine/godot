@@ -33,6 +33,10 @@
 #include "core/object/class_db.h"
 #include "scene/gui/texture_rect.h"
 
+Size2 AspectRatioContainer::get_minimum_size() const {
+	return Container::_get_minimum_size();
+}
+
 void AspectRatioContainer::set_ratio(float p_ratio) {
 	if (ratio == p_ratio) {
 		return;

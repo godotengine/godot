@@ -1,0 +1,7144 @@
+# Khmer (Central) translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+#
+# Withuse <withuse@gmail.com>, 2021.
+# SeyhaLite <sok123230@gmail.com>, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2026-09-25 13:24+0000\n"
+"Last-Translator: SeyhaLite <sok123230@gmail.com>\n"
+"Language-Team: Khmer (Central) <https://hosted.weblate.org/projects/godot-"
+"engine/godot-properties/km/>\n"
+"Language: km\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.10.dev0\n"
+
+msgid "Application"
+msgstr "កម្មវិធី"
+
+msgid "Config"
+msgstr "ការកំណត់"
+
+msgid "Name"
+msgstr "ឈ្មោះ"
+
+msgid "Name Localized"
+msgstr "ឈ្មោះ តាមភាសា"
+
+msgid "Description"
+msgstr "ការពិពណ៍នា"
+
+msgid "Version"
+msgstr "កំណែ"
+
+msgid "Run"
+msgstr "រត់"
+
+msgid "Main Scene"
+msgstr "Scene គោល"
+
+msgid "Disable stdout"
+msgstr "បិទ stdout"
+
+msgid "Disable stderr"
+msgstr "បិទ stderr"
+
+msgid "Print Header"
+msgstr "បង្ហាញចំណងជើង"
+
+msgid "Enable Alt Space Menu"
+msgstr "បើក Menu ប្រើ Alt+Space"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "ប្រើទិន្នន័យ Project ​ដែលលាក់"
+
+msgid "Use Custom User Dir"
+msgstr "ប្រើ ថតឯកសារ ផ្ទាល់ខ្លួន"
+
+msgid "Custom User Dir Name"
+msgstr "ឈ្មោះ ថត ផ្ទាល់ខ្លួន"
+
+msgid "Project Settings Override"
+msgstr "ជំនួសការកំណត់ Project"
+
+msgid "Disable Project Settings Override"
+msgstr "បិទការជំនួស នៃ Settings Project"
+
+msgid "Main Loop Type"
+msgstr "ប្រភេទ Loop​​ គោល"
+
+msgid "Auto Accept Quit"
+msgstr "យល់ព្រម ការបិទដោយស្វ័យប្រវត្តិ"
+
+msgid "Quit on Go Back"
+msgstr "ចាកចេញ នៅពេលចុច ត្រឡប់"
+
+msgid "Accessibility"
+msgstr "លទ្ធភាពចូលប្រើ"
+
+msgid "General"
+msgstr "ទូទៅ"
+
+msgid "Accessibility Support"
+msgstr "ការគាំទ្រ លទ្ធភាពចូលប្រើ"
+
+msgid "Updates per Second"
+msgstr "ចំនួនដងធ្វើ បច្ចុប្បន្នភាព ក្នុងមួយវិនាទី"
+
+msgid "Accessibility Driver"
+msgstr "Driver លទ្ធភាពចូលប្រើ"
+
+msgid "Display"
+msgstr "ការបង្ហាញ"
+
+msgid "Window"
+msgstr "បង្អួច"
+
+msgid "Size"
+msgstr "ទំហំ"
+
+msgid "Viewport Width"
+msgstr "ទទឹង Viewport"
+
+msgid "Viewport Height"
+msgstr "កម្ពស់ Viewport"
+
+msgid "Mode"
+msgstr "របៀប"
+
+msgid "Initial Position Type"
+msgstr "ប្រភេទ ទីតាំង ដំបូង"
+
+msgid "Initial Position"
+msgstr "ទីតាំងដំបូង"
+
+msgid "Initial Screen"
+msgstr "អេក្រង់ដំបូង"
+
+msgid "Resizable"
+msgstr "អាចផ្លាស់ប្តូរ ទំហំបាន"
+
+msgid "Borderless"
+msgstr "គ្មានស៊ុម"
+
+msgid "Always on Top"
+msgstr "នៅខាង លើជានិច្ច"
+
+msgid "Transparent"
+msgstr "ភាពថ្លា"
+
+msgid "Extend to Title"
+msgstr "ពង្រីកទៅចំណងជើង"
+
+msgid "No Focus"
+msgstr "គ្មាន Focus"
+
+msgid "Sharp Corners"
+msgstr "ជ្រុងមុត"
+
+msgid "Minimize Disabled"
+msgstr "បិទបង្រួមអប្បបរមា"
+
+msgid "Maximize Disabled"
+msgstr "បិទបង្រីកអតិបរមា"
+
+msgid "Window Width Override"
+msgstr "កំណត់ជំនួសទទឹងបង្អួច"
+
+msgid "Window Height Override"
+msgstr "កំណត់ជំនួសកម្ពស់បង្អួច"
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "ស្នើលទ្ធផល HDR"
+
+msgid "Energy Saving"
+msgstr "សន្សំសំចៃថាមពល"
+
+msgid "Keep Screen On"
+msgstr "រក្សាអេក្រង់ឱ្យបើក"
+
+msgid "Animation"
+msgstr "ចលនា"
+
+msgid "Warnings"
+msgstr "ការព្រមាន"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "ពិនិត្យផ្លូវ Node នៃ Skeleton Modifier មិនត្រឹមត្រូវ"
+
+msgid "Check Invalid Track Paths"
+msgstr "ពិនិត្យផ្លូវ Track មិនត្រឹមត្រូវ"
+
+msgid "Check Angle Interpolation Type Conflicting"
+msgstr "ពិនិត្យការប៉ះទង្គិចប្រភេទ Interpolation មុំ"
+
+msgid "Compatibility"
+msgstr "ភាពឆបគ្នា"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Skeleton មេលំនាំដើមក្នុង Mesh Instance 3D"
+
+msgid "Audio"
+msgstr "សំឡេង"
+
+msgid "Buses"
+msgstr "បណ្តាញសំឡេង"
+
+msgid "Default Bus Layout"
+msgstr "ប្លង់បាសសំឡេងដើម"
+
+msgid "Default Playback Type"
+msgstr "ប្រភេទចាក់លំនាំដើម"
+
+msgid "Text to Speech"
+msgstr "អត្ថបទទៅជាសំឡេង"
+
+msgid "2D Panning Strength"
+msgstr "កម្រិត Panning 2D"
+
+msgid "3D Panning Strength"
+msgstr "កម្រិត Panning 3D"
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "Session Category"
+msgstr "ប្រភេទ Session"
+
+msgid "Mix with Others"
+msgstr "លាយជាមួយផ្សេងទៀត"
+
+msgid "Subwindows"
+msgstr "បង្អួចរង"
+
+msgid "Embed Subwindows"
+msgstr "បង្កប់បង្អួចរង"
+
+msgid "Frame Pacing"
+msgstr "ការកំណត់ស៊ុម"
+
+msgid "Android"
+msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "បើកការកំណត់ស៊ុម"
+
+msgid "Swappy Mode"
+msgstr "ម៉ូដ Swappy"
+
+msgid "Physics"
+msgstr "រូបវិទ្យា"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "ដំណើរការលើ Thread ដាច់ដោយឡែក"
+
+msgid "3D"
+msgstr "3D"
+
+msgid "Stretch"
+msgstr "ទាញ"
+
+msgid "Aspect"
+msgstr "សមាមាត្រ"
+
+msgid "Scale"
+msgstr "មាត្រដ្ឋាន"
+
+msgid "Scale Mode"
+msgstr "ម៉ូដមាត្រដ្ឋាន"
+
+msgid "Debug"
+msgstr "បំបាត់កំហុស"
+
+msgid "Settings"
+msgstr "ការកំណត់"
+
+msgid "Profiler"
+msgstr "ឧបករណ៍វិភាគ"
+
+msgid "Max Functions"
+msgstr "អនុគមន៍អតិបរមា"
+
+msgid "Max Timestamp Query Elements"
+msgstr "ធាតុ Query Timestamp អតិបរមា"
+
+msgid "Compression"
+msgstr "ការបង្ហាប់"
+
+msgid "Formats"
+msgstr "ទម្រង់"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "ការផ្គូផ្គងចម្ងាយឆ្ងាយ"
+
+msgid "Compression Level"
+msgstr "កម្រិតបង្ហាប់"
+
+msgid "Window Log Size"
+msgstr "បង្អួចទំហំ Log"
+
+msgid "Zlib"
+msgstr "Zlib Software"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "កម្មវិធីដោះស្រាយការគាំង"
+
+msgid "Message"
+msgstr "សារ"
+
+msgid "Rendering"
+msgstr "Rendering (ការបង្ហាញ)"
+
+msgid "Occlusion Culling"
+msgstr "Occlusion Culling (ការលុបបំបាត់ការស្ទះ)"
+
+msgid "BVH Build Quality"
+msgstr "គុណភាពសាងសង់ BVH"
+
+msgid "Jitter Projection"
+msgstr "ការព្យាករណ៍ Jitter"
+
+msgid "Internationalization"
+msgstr "អន្តរជាតិកម្ម"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "បង្ខំទិស Layout ពីស្តាំទៅឆ្វេង"
+
+msgid "Root Node Layout Direction"
+msgstr "ទិស Layout របស់ Root Node"
+
+msgid "Root Node Auto Translate"
+msgstr "បកប្រែស្វ័យប្រវត្តិ Root Node"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Timers"
+msgstr "Timer"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "ចន្លោះពេលអតិបរមាស្វែងរកជាបន្តបន្ទាប់ (ms)"
+
+msgid "Tooltip Delay (sec)"
+msgstr "ពន្យារពេល Tooltip (វិនាទី)"
+
+msgid "Common"
+msgstr "ទូទៅ"
+
+msgid "Drag Threshold"
+msgstr "កម្រិតអូស"
+
+msgid "Snap Controls to Pixels"
+msgstr "តម្រឹម Control ទៅភិចសែល"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "បង្ហាញស្ថានភាព Focus លើព្រឹត្តិការណ៍ Pointer"
+
+msgid "Fonts"
+msgstr "ពុម្ពអក្សរ"
+
+msgid "Dynamic Fonts"
+msgstr "ពុម្ពអក្សរឌីណាមិក"
+
+msgid "Use Oversampling"
+msgstr "ប្រើ Oversampling"
+
+msgid "Rendering Device"
+msgstr "ឧបករណ៍ Rendering"
+
+msgid "V-Sync"
+msgstr "V-Sync (ធ្វើសមកាលកម្ម)"
+
+msgid "Frame Queue Size"
+msgstr "ទំហំជួរ Frame"
+
+msgid "Swapchain Image Count"
+msgstr "ចំនួនរូបភាព Swapchain"
+
+msgid "Staging Buffer"
+msgstr "Staging Buffer"
+
+msgid "Block Size (KB)"
+msgstr "ទំហំប្លុក (KB)"
+
+msgid "Max Size (MB)"
+msgstr "ទំហំអតិបរមា (MB)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "ទំហំតំបន់ Upload Texture (px)"
+
+msgid "Texture Download Region Size Px"
+msgstr "ទំហំតំបន់ Download Texture (px)"
+
+msgid "Pipeline Cache"
+msgstr "Cache Pipeline"
+
+msgid "Enable"
+msgstr "បើក"
+
+msgid "Save Chunk Size (MB)"
+msgstr "ទំហំ Chunk រក្សាទុក (MB)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Descriptor អតិបរមាក្នុង Pool"
+
+msgid "D3D12"
+msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "Resource Descriptor អតិបរមា"
+
+msgid "Max Sampler Descriptors"
+msgstr "Sampler Descriptor អតិបរមា"
+
+msgid "Agility SDK Version"
+msgstr "កំណែ Agility SDK"
+
+msgid "Textures"
+msgstr "Texture"
+
+msgid "Canvas Textures"
+msgstr "Canvas Texture"
+
+msgid "Default Texture Filter"
+msgstr "Filter Texture លំនាំដើម"
+
+msgid "Default Texture Repeat"
+msgstr "Repeat Texture លំនាំដើម"
+
+msgid "Collada"
+msgstr "Collada"
+
+msgid "Use Ambient"
+msgstr "ប្រើ Ambient"
+
+msgid "Input Devices"
+msgstr "ឧបករណ៍បញ្ចូល"
+
+msgid "Pointing"
+msgstr "ការចង្អុល"
+
+msgid "Enable Long Press as Right Click"
+msgstr "បើកចុចយូរជាការចុចស្តាំ"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "បើក Gesture Pan និង Scale"
+
+msgid "Rotary Input Scroll Axis"
+msgstr "អ័ក្ស Scroll បញ្ចូលរង្វង់"
+
+msgid "Override Volume Buttons"
+msgstr "កំណត់ជំនួសប៊ូតុងកម្រិតសំឡេង"
+
+msgid "Disable Scroll Deadzone"
+msgstr "បិទ Deadzone Scroll"
+
+msgid "Navigation"
+msgstr "ការរុករក"
+
+msgid "World"
+msgstr "ពិភព"
+
+msgid "Map Use Async Iterations"
+msgstr "Map ប្រើ Iteration Async"
+
+msgid "Region Use Async Iterations"
+msgstr "Region ប្រើ Iteration Async"
+
+msgid "Avoidance"
+msgstr "ការជៀសវាង"
+
+msgid "Thread Model"
+msgstr "ម៉ូដែល Thread"
+
+msgid "Avoidance Use Multiple Threads"
+msgstr "Avoidance ប្រើច្រើន Thread"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Avoidance ប្រើ Thread អាទិភាពខ្ពស់"
+
+msgid "Pathfinding"
+msgstr "ការស្វែងរកផ្លូវ"
+
+msgid "Max Threads"
+msgstr "Thread អតិបរមា"
+
+msgid "Baking"
+msgstr "Baking"
+
+msgid "Use Crash Prevention Checks"
+msgstr "ប្រើការពិនិត្យការពារការគាំង"
+
+msgid "Baking Use Multiple Threads"
+msgstr "Baking ប្រើច្រើន Thread"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Baking ប្រើ Thread អាទិភាពខ្ពស់"
+
+msgid "NavMesh Edge Merge Errors"
+msgstr "កំហុស Merge Edge NavMesh"
+
+msgid "NavMesh Cell Size Mismatch"
+msgstr "ទំហំ Cell NavMesh មិនត្រូវគ្នា"
+
+msgid "Editor Overrides"
+msgstr "ការកំណត់ជំនួស Editor"
+
+msgid "Low Processor Usage Mode"
+msgstr "ម៉ូដប្រើប្រាស់ Processor ទាប"
+
+msgid "Low Processor Usage Mode Sleep (µsec)"
+msgstr "ការគេងម៉ូដប្រើប្រាស់ Processor ទាប (µs)"
+
+msgid "Delta Smoothing"
+msgstr "Delta Smoothing"
+
+msgid "Print Error Messages"
+msgstr "Print សារកំហុស"
+
+msgid "Print to stdout"
+msgstr "Prin ទៅ stdout"
+
+msgid "Physics Ticks per Second"
+msgstr "Physics Tick ក្នុងមួយវិនាទី"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Physics Step អតិបរមាក្នុងមួយ Frame"
+
+msgid "Max FPS"
+msgstr "FPS អតិបរមា"
+
+msgid "Time Scale"
+msgstr "មាត្រដ្ឋានពេលវេលា"
+
+msgid "Physics Jitter Fix"
+msgstr "ជួសជុល Jitter Physics"
+
+msgid "Mouse Mode"
+msgstr "ម៉ូដកណ្តុរ"
+
+msgid "Use Accumulated Input"
+msgstr "ប្រើ Input ប្រមូលផ្តុំ"
+
+msgid "Emulate Mouse From Touch"
+msgstr "ក្លែង Mouse ពី Touch"
+
+msgid "Emulate Touch From Mouse"
+msgstr "ក្លែង Touch ពី Mouse"
+
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "មិនអើពើ Joypad ពេលកម្មវិធីមិនមាន Focus"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "ឥរិយាបថ Just Pressed បែប Legacy"
+
+msgid "Sensors"
+msgstr "សេនសឺ"
+
+msgid "Enable Accelerometer"
+msgstr "បើក Accelerometer"
+
+msgid "Enable Gravity"
+msgstr "បើកទំនាញ Gravity"
+
+msgid "Enable Gyroscope"
+msgstr "បើក Gyroscope"
+
+msgid "Enable Magnetometer"
+msgstr "បើក Magnetometer"
+
+msgid "Joypads"
+msgstr "Joypad"
+
+msgid "Device"
+msgstr "ឧបករណ៍"
+
+msgid "Window ID"
+msgstr "ID បង្អួច"
+
+msgid "Command or Control Autoremap"
+msgstr "Command ឬ Control Autoremap"
+
+msgid "Alt Pressed"
+msgstr "បានចុច Alt"
+
+msgid "Shift Pressed"
+msgstr "បានចុច Shift"
+
+msgid "Ctrl Pressed"
+msgstr "បានចុច Ctrl"
+
+msgid "Meta Pressed"
+msgstr "បានចុច Meta"
+
+msgid "Pressed"
+msgstr "បានចុច"
+
+msgid "Keycode"
+msgstr "Keycode"
+
+msgid "Physical Keycode"
+msgstr "Physical Keycode"
+
+msgid "Key Label"
+msgstr "Label គ្រាប់ចុះ"
+
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Location"
+msgstr "ទីតាំង"
+
+msgid "Echo"
+msgstr "Echo"
+
+msgid "Button Mask"
+msgstr "Mask ប៊ូតុង"
+
+msgid "Position"
+msgstr "ទីតាំង"
+
+msgid "Global Position"
+msgstr "ទីតាំងសកល"
+
+msgid "Factor"
+msgstr "កត្តា"
+
+msgid "Button Index"
+msgstr "លិបិក្រមប៊ូតុង"
+
+msgid "Canceled"
+msgstr "បានបោះបង់"
+
+msgid "Double Click"
+msgstr "ចុចពីរដង"
+
+msgid "Tilt"
+msgstr "ការផ្អៀង"
+
+msgid "Pressure"
+msgstr "សម្ពាធ"
+
+msgid "Pen Inverted"
+msgstr "Pen ត្រឡប់"
+
+msgid "Relative"
+msgstr "ធៀប"
+
+msgid "Screen Relative"
+msgstr "ធៀបអេក្រង់"
+
+msgid "Velocity"
+msgstr "ល្បឿន"
+
+msgid "Screen Velocity"
+msgstr "ល្បឿនអេក្រង់"
+
+msgid "Axis"
+msgstr "អ័ក្ស"
+
+msgid "Axis Value"
+msgstr "តម្លៃអ័ក្ស"
+
+msgid "Index"
+msgstr "លិបិក្រម"
+
+msgid "Double Tap"
+msgstr "Tap ពីរដង"
+
+msgid "Action"
+msgstr "សកម្មភាព"
+
+msgid "Strength"
+msgstr "កម្លាំង"
+
+msgid "Event Index"
+msgstr "លិបិក្រមព្រឹត្តិការណ៍"
+
+msgid "Delta"
+msgstr "Delta"
+
+msgid "Channel"
+msgstr "ឆានែល"
+
+msgid "Pitch"
+msgstr "Pitch"
+
+msgid "Instrument"
+msgstr "ឧបករណ៍"
+
+msgid "Controller Number"
+msgstr "លេខ Controller"
+
+msgid "Controller Value"
+msgstr "តម្លៃ Controller"
+
+msgid "Shortcut"
+msgstr "ផ្លូវកាត់"
+
+msgid "Events"
+msgstr "ព្រឹត្តិការណ៍"
+
+msgid "Include Navigational"
+msgstr "រួមបញ្ចូលការរុករក"
+
+msgid "Include Hidden"
+msgstr "រួមបញ្ចូលដែលលាក់"
+
+msgid "Big Endian"
+msgstr "Big Endian"
+
+msgid "Blocking Mode Enabled"
+msgstr "បានបើកម៉ូដ Blocking"
+
+msgid "Connection"
+msgstr "ការតភ្ជាប់"
+
+msgid "Read Chunk Size"
+msgstr "ទំហំ Chunk អាន"
+
+msgid "Data"
+msgstr "ទិន្នន័យ"
+
+msgid "Object ID"
+msgstr "ID វត្ថុ"
+
+msgid "Encode Buffer Max Size"
+msgstr "ទំហំ Encode Buffer អតិបរមា"
+
+msgid "Input Buffer Max Size"
+msgstr "ទំហំ Input Buffer អតិបរមា"
+
+msgid "Output Buffer Max Size"
+msgstr "ទំហំ Output Buffer អតិបរមា"
+
+msgid "Stream Peer"
+msgstr "ម៉ាស៊ីនស្ទ្រីម"
+
+msgid "Resource"
+msgstr "ធនធាន"
+
+msgid "Local to Scene"
+msgstr "Local ទៅ Scene"
+
+msgid "Path"
+msgstr "ផ្លូវ"
+
+msgid "Data Array"
+msgstr "Array ទិន្នន័យ"
+
+msgid "Max Pending Connections"
+msgstr "ការតភ្ជាប់រង់ចាំអតិបរមា"
+
+msgid "Neighbor Filter Enabled"
+msgstr "បានបើក Neighbor Filter"
+
+msgid "Region"
+msgstr "តំបន់"
+
+msgid "Offset"
+msgstr "អុហ្វសិត"
+
+msgid "Cell Size"
+msgstr "ទំហំក្រឡា"
+
+msgid "Cell Shape"
+msgstr "រូបរាងក្រឡា"
+
+msgid "Jumping Enabled"
+msgstr "បានបើក Jumping"
+
+msgid "Default Compute Heuristic"
+msgstr "ហ៊ូរីស្ទិកគណនាលំនាំដើម"
+
+msgid "Default Estimate Heuristic"
+msgstr "ហ៊ូរីស្ទិកប៉ាន់ស្មានលំនាំដើម"
+
+msgid "Diagonal Mode"
+msgstr "ម៉ូដ Diagonal"
+
+msgid "Seed"
+msgstr "Seed"
+
+msgid "State"
+msgstr "ស្ថានភាព"
+
+msgid "Memory"
+msgstr "Memory"
+
+msgid "Limits"
+msgstr "ដែនកំណត់"
+
+msgid "Message Queue"
+msgstr "Message Queue"
+
+msgid "Max Steps"
+msgstr "Step អតិបរមា"
+
+msgid "Network"
+msgstr "បណ្តាញ"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "វិនាទីអស់សុពលភាពការតភ្ជាប់"
+
+msgid "Unix"
+msgstr "Unix"
+
+msgid "Packet Peer Stream"
+msgstr "Packet Peer Stream"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Buffer អតិបរមា (Power of 2)"
+
+msgid "TLS"
+msgstr "TLS"
+
+msgid "Certificate Bundle Override"
+msgstr "ជំនួស Certificate Bundle"
+
+msgid "Threading"
+msgstr "Threading"
+
+msgid "Worker Pool"
+msgstr "Worker Pool"
+
+msgid "Low Priority Thread Ratio"
+msgstr "សមាមាត្រ Thread អាទិភាពទាប"
+
+msgid "Start Offset"
+msgstr "អុហ្វសិតចាប់ផ្តើម"
+
+msgid "Max Results"
+msgstr "លទ្ធផលអតិបរមា"
+
+msgid "Subject"
+msgstr "Subject"
+
+msgid "Names"
+msgstr "Names"
+
+msgid "Strings"
+msgstr "Strings"
+
+msgid "Locale"
+msgstr "Locale"
+
+msgid "Plural Rules Override"
+msgstr "ជំនួស Plural Rules"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Fallback"
+msgstr "Fallback"
+
+msgid "Pseudolocalization"
+msgstr "Pseudolocalization"
+
+msgid "Use Pseudolocalization"
+msgstr "ប្រើ Pseudolocalization"
+
+msgid "Replace with Accents"
+msgstr "ជំនួសដោយ Accents"
+
+msgid "Double Vowels"
+msgstr "Double Vowels"
+
+msgid "Fake BiDi"
+msgstr "Fake BiDi"
+
+msgid "Override"
+msgstr "ជំនួស"
+
+msgid "Expansion Ratio"
+msgstr "សមាមាត្រ Expansion"
+
+msgid "Prefix"
+msgstr "Prefix"
+
+msgid "Suffix"
+msgstr "Suffix"
+
+msgid "Skip Placeholders"
+msgstr "រំលង Placeholders"
+
+msgid "Rotation"
+msgstr "ការបង្វិល"
+
+msgid "Value"
+msgstr "តម្លៃ"
+
+msgid "Arg Count"
+msgstr "ចំនួនអាគុយម៉ង់"
+
+msgid "Args"
+msgstr "Args"
+
+msgid "Type"
+msgstr "ប្រភេទ"
+
+msgid "In Handle"
+msgstr "In Handle"
+
+msgid "Out Handle"
+msgstr "Out Handle"
+
+msgid "Handle Mode"
+msgstr "ម៉ូដ Handle"
+
+msgid "Stream"
+msgstr "Stream"
+
+msgid "End Offset"
+msgstr "អុហ្វសិតបញ្ចប់"
+
+msgid "Easing"
+msgstr "Easing"
+
+msgid "Debug Adapter"
+msgstr "Debug Adapter"
+
+msgid "Remote Port"
+msgstr "Port Remote"
+
+msgid "Request Timeout"
+msgstr "អស់សុពលភាពសំណើ"
+
+msgid "Sync Breakpoints"
+msgstr "Sync Breakpoints"
+
+msgid "Title"
+msgstr "ចំណងជើង"
+
+msgid "Layout Key"
+msgstr "Key Layout"
+
+msgid "Global"
+msgstr "សកល"
+
+msgid "Transient"
+msgstr "បណ្តោះអាសន្ន"
+
+msgid "Closable"
+msgstr "អាចបិទបាន"
+
+msgid "Icon Name"
+msgstr "ឈ្មោះរូបតំណាង"
+
+msgid "Dock Icon"
+msgstr "Icon Dock"
+
+msgid "Force Show Icon"
+msgstr "បង្ខំបង្ហាញ Icon"
+
+msgid "Title Color"
+msgstr "ពណ៌ចំណងជើង"
+
+msgid "Dock Shortcut"
+msgstr "ផ្លូវកាត់ Dock"
+
+msgid "Default Slot"
+msgstr "រន្ធលំនាំដើម"
+
+msgid "Available Layouts"
+msgstr "ប្លង់ដែលមាន"
+
+msgid "Distraction Free Mode"
+msgstr "ម៉ូដ Distraction Free"
+
+msgid "Movie Maker Enabled"
+msgstr "បានបើក Movie Maker"
+
+msgid "Custom Template"
+msgstr "Template ផ្ទាល់ខ្លួន"
+
+msgid "Release"
+msgstr "Release"
+
+msgid "Architectures"
+msgstr "Architectures"
+
+msgid "App Store Team ID"
+msgstr "App Store Team ID"
+
+msgid "Export Method Debug"
+msgstr "Export Method Debug"
+
+msgid "Code Sign Identity Debug"
+msgstr "Code Sign Identity Debug"
+
+msgid "Code Sign Identity Release"
+msgstr "Code Sign Identity Release"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Provisioning Profile UUID Debug"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Provisioning Profile UUID Release"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Provisioning Profile Specifier Debug"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "Provisioning Profile Specifier Release"
+
+msgid "Export Method Release"
+msgstr "Export Method Release"
+
+msgid "Bundle Identifier"
+msgstr "Bundle Identifier"
+
+msgid "Signature"
+msgstr "Signature"
+
+msgid "Short Version"
+msgstr "Short Version"
+
+msgid "Additional Plist Content"
+msgstr "Additional Plist Content"
+
+msgid "Icon Interpolation"
+msgstr "Icon Interpolation"
+
+msgid "Export Project Only"
+msgstr "Export Project Only"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Delete Old Export Files Unconditionally"
+
+msgid "Modules"
+msgstr "Modules"
+
+msgid "Camera"
+msgstr "Camera"
+
+msgid "Plugins"
+msgstr "Plugins"
+
+msgid "Entitlements"
+msgstr "Entitlements"
+
+msgid "Increased Memory Limit"
+msgstr "Increased Memory Limit"
+
+msgid "Game Center"
+msgstr "មជ្ឈមណ្ឌលហ្គេម"
+
+msgid "Push Notifications"
+msgstr "Push Notifications"
+
+msgid "Additional"
+msgstr "Additional"
+
+msgid "Capabilities"
+msgstr "Capabilities"
+
+msgid "Access Wi-Fi"
+msgstr "Access Wi-Fi"
+
+msgid "Shader Baker"
+msgstr "Shader Baker"
+
+msgid "Enabled"
+msgstr "បានបើក"
+
+msgid "User Data"
+msgstr "User Data"
+
+msgid "Accessible From Files App"
+msgstr "Accessible From Files App"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Accessible From iTunes Sharing"
+
+msgid "Privacy"
+msgstr "Privacy"
+
+msgid "Tracking Enabled"
+msgstr "Tracking Enabled"
+
+msgid "Tracking Domains"
+msgstr "Tracking Domains"
+
+msgid "Icons"
+msgstr "Icons"
+
+msgid "Icon 1024 X 1024"
+msgstr "Icon 1024 X 1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Icon 1024 X 1024 Dark"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Icon 1024 X 1024 Tinted"
+
+msgid "Export Console Wrapper"
+msgstr "Export Console Wrapper"
+
+msgid "Binary Format"
+msgstr "Binary Format"
+
+msgid "Embed PCK"
+msgstr "Embed PCK"
+
+msgid "Texture Format"
+msgstr "Texture Format"
+
+msgid "S3TC BPTC"
+msgstr "S3TC BPTC"
+
+msgid "ETC2 ASTC"
+msgstr "ETC2 ASTC"
+
+msgid "Export Path"
+msgstr "Export Path"
+
+msgid "Label"
+msgstr "Label"
+
+msgid "Read Only"
+msgstr "Read Only"
+
+msgid "Flat"
+msgstr "Flat"
+
+msgid "Control State"
+msgstr "Control State"
+
+msgid "Hide Slider"
+msgstr "Hide Slider"
+
+msgid "Editing Integer"
+msgstr "Editing Integer"
+
+msgid "Deferred Drag Mode"
+msgstr "Deferred Drag Mode"
+
+msgid "Zoom"
+msgstr "Zoom"
+
+msgid "Retarget"
+msgstr "Retarget"
+
+msgid "Bone Renamer"
+msgstr "Bone Renamer"
+
+msgid "Rename Bones"
+msgstr "Rename Bones"
+
+msgid "Unique Node"
+msgstr "ថ្នាំងតែមួយគត់"
+
+msgid "Make Unique"
+msgstr "Make Unique"
+
+msgid "Skeleton Name"
+msgstr "ឈ្មោះគ្រោងឆ្អឹង"
+
+msgid "Rest Fixer"
+msgstr "Rest Fixer"
+
+msgid "Apply Node Transforms"
+msgstr "អនុវត្តការបំប្លែងថ្នាំង"
+
+msgid "Normalize Position Tracks"
+msgstr "Normalize Position Tracks"
+
+msgid "Reset All Bone Poses After Import"
+msgstr "Reset All Bone Poses After Import"
+
+msgid "Retarget Method"
+msgstr "Retarget Method"
+
+msgid "Keep Global Rest on Leftovers"
+msgstr "Keep Global Rest on Leftovers"
+
+msgid "Use Global Pose"
+msgstr "ប្រើកាយវិការសកល"
+
+msgid "Original Skeleton Name"
+msgstr "ឈ្មោះគ្រោងឆ្អឹងដើម"
+
+msgid "Fix Silhouette"
+msgstr "Fix Silhouette"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Threshold"
+msgstr "Threshold"
+
+msgid "Base Height Adjustment"
+msgstr "Base Height Adjustment"
+
+msgid "Remove Tracks"
+msgstr "Remove Tracks"
+
+msgid "Except Bone Transform"
+msgstr "លើកលែងការបំប្លែងឆ្អឹង"
+
+msgid "Unimportant Positions"
+msgstr "Unimportant Positions"
+
+msgid "Unmapped Bones"
+msgstr "Unmapped Bones"
+
+msgid "Generate Tangents"
+msgstr "បង្កើតតង់សង់"
+
+msgid "Generate LODs"
+msgstr "បង្កើត LODs"
+
+msgid "Generate Shadow Mesh"
+msgstr "បង្កើតម៉េសស្រមោល"
+
+msgid "Generate Lightmap UV2"
+msgstr "បង្កើត Lightmap UV2"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "Generate Lightmap UV2 Texel Size"
+
+msgid "Scale Mesh"
+msgstr "Scale Mesh"
+
+msgid "Offset Mesh"
+msgstr "Offset Mesh"
+
+msgid "Force Disable Mesh Compression"
+msgstr "បង្ខំឱ្យបិទការបង្ហាប់ម៉េស"
+
+msgid "Node"
+msgstr "Node"
+
+msgid "Node Type"
+msgstr "ប្រភេទថ្នាំង"
+
+msgid "Script"
+msgstr "Script"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Skip Import"
+msgstr "Skip Import"
+
+msgid "Generate"
+msgstr "បង្កើត"
+
+msgid "NavMesh"
+msgstr "NavMesh"
+
+msgid "Body Type"
+msgstr "Body Type"
+
+msgid "Shape Type"
+msgstr "Shape Type"
+
+msgid "Physics Material Override"
+msgstr "Physics Material Override"
+
+msgid "Layer"
+msgstr "Layer"
+
+msgid "Mask"
+msgstr "Mask"
+
+msgid "Mesh Instance"
+msgstr "ម៉េសឧទាហរណ៍"
+
+msgid "Layers"
+msgstr "Layers"
+
+msgid "Visibility Range Begin"
+msgstr "Visibility Range Begin"
+
+msgid "Visibility Range Begin Margin"
+msgstr "Visibility Range Begin Margin"
+
+msgid "Visibility Range End"
+msgstr "Visibility Range End"
+
+msgid "Visibility Range End Margin"
+msgstr "Visibility Range End Margin"
+
+msgid "Visibility Range Fade Mode"
+msgstr "Visibility Range Fade Mode"
+
+msgid "Cast Shadow"
+msgstr "Cast Shadow"
+
+msgid "Decomposition"
+msgstr "ការបំបែក"
+
+msgid "Advanced"
+msgstr "Advanced"
+
+msgid "Precision"
+msgstr "Precision"
+
+msgid "Max Concavity"
+msgstr "Max Concavity"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "Symmetry Planes Clipping Bias"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "Revolution Axes Clipping Bias"
+
+msgid "Min Volume per Convex Hull"
+msgstr "Min Volume per Convex Hull"
+
+msgid "Resolution"
+msgstr "Resolution"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "Max Num Vertices per Convex Hull"
+
+msgid "Plane Downsampling"
+msgstr "Plane Downsampling"
+
+msgid "Convexhull Downsampling"
+msgstr "Convexhull Downsampling"
+
+msgid "Normalize Mesh"
+msgstr "Normalize Mesh"
+
+msgid "Convexhull Approximation"
+msgstr "Convexhull Approximation"
+
+msgid "Max Convex Hulls"
+msgstr "Max Convex Hulls"
+
+msgid "Project Hull Vertices"
+msgstr "Project Hull Vertices"
+
+msgid "Primitive"
+msgstr "Primitive"
+
+msgid "Height"
+msgstr "Height"
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "Occluder"
+msgstr "Occluder"
+
+msgid "Simplification Distance"
+msgstr "Simplification Distance"
+
+msgid "Save to File"
+msgstr "Save to File"
+
+msgid "Shadow Meshes"
+msgstr "Shadow Meshes"
+
+msgid "Lightmap UV"
+msgstr "Lightmap UV"
+
+msgid "LODs"
+msgstr "LODs"
+
+msgid "Normal Merge Angle"
+msgstr "Normal Merge Angle"
+
+msgid "Use External"
+msgstr "Use External"
+
+msgid "Loop Mode"
+msgstr "Loop Mode"
+
+msgid "Keep Custom Tracks"
+msgstr "រក្សាផ្លូវផ្ទាល់ខ្លួន"
+
+msgid "Slices"
+msgstr "Slices"
+
+msgid "Amount"
+msgstr "Amount"
+
+msgid "Optimizer"
+msgstr "Optimizer"
+
+msgid "Max Velocity Error"
+msgstr "កំហុសល្បឿនអតិបរមា"
+
+msgid "Max Angular Error"
+msgstr "កំហុសមុំអតិបរមា"
+
+msgid "Max Precision Error"
+msgstr "កំហុសភាពជាក់លាក់អតិបរមា"
+
+msgid "Page Size"
+msgstr "Page Size"
+
+msgid "Import Tracks"
+msgstr "Import Tracks"
+
+msgid "Rest Pose"
+msgstr "Rest Pose"
+
+msgid "Load Pose"
+msgstr "Load Pose"
+
+msgid "External Animation Library"
+msgstr "External Animation Library"
+
+msgid "Selected Animation"
+msgstr "ចលនាដែលបានជ្រើស"
+
+msgid "Selected Timestamp"
+msgstr "ត្រាពេលវេលាដែលបានជ្រើស"
+
+msgid "Bone Map"
+msgstr "Bone Map"
+
+msgid "Nodes"
+msgstr "Nodes"
+
+msgid "Root Type"
+msgstr "Root Type"
+
+msgid "Root Name"
+msgstr "Root Name"
+
+msgid "Root Script"
+msgstr "ស្គ្រីបឫស"
+
+msgid "Mesh Library"
+msgstr "Mesh Library"
+
+msgid "Use Node Names as Mesh Names"
+msgstr "Use Node Names as Mesh Names"
+
+msgid "Array Mesh"
+msgstr "Array Mesh"
+
+msgid "Deduplicate Surfaces"
+msgstr "លុបផ្ទៃដែលស្ទួន"
+
+msgid "Apply Root Scale"
+msgstr "Apply Root Scale"
+
+msgid "Root Scale"
+msgstr "Root Scale"
+
+msgid "Import as Skeleton Bones"
+msgstr "Import as Skeleton Bones"
+
+msgid "Use Name Suffixes"
+msgstr "Use Name Suffixes"
+
+msgid "Use Node Type Suffixes"
+msgstr "Use Node Type Suffixes"
+
+msgid "Meshes"
+msgstr "Meshes"
+
+msgid "Ensure Tangents"
+msgstr "Ensure Tangents"
+
+msgid "Create Shadow Meshes"
+msgstr "Create Shadow Meshes"
+
+msgid "Light Baking"
+msgstr "Light Baking"
+
+msgid "Lightmap Texel Size"
+msgstr "Lightmap Texel Size"
+
+msgid "Force Disable Compression"
+msgstr "បង្ខំឱ្យបិទការបង្ហាប់"
+
+msgid "Skins"
+msgstr "Skins"
+
+msgid "Use Named Skins"
+msgstr "Use Named Skins"
+
+msgid "FPS"
+msgstr "FPS"
+
+msgid "Trimming"
+msgstr "Trimming"
+
+msgid "Remove Immutable Tracks"
+msgstr "Remove Immutable Tracks"
+
+msgid "Import Rest as Reset"
+msgstr "Import Rest as Reset"
+
+msgid "Import Script"
+msgstr "Import Script"
+
+msgid "Materials"
+msgstr "Materials"
+
+msgid "Extract"
+msgstr "Extract"
+
+msgid "Extract Format"
+msgstr "ទាញយកទម្រង់"
+
+msgid "Extract Path"
+msgstr "Extract Path"
+
+msgid "Antialiasing"
+msgstr "Antialiasing"
+
+msgid "Generate Mipmaps"
+msgstr "បង្កើត Mipmaps"
+
+msgid "Disable Embedded Bitmaps"
+msgstr "Disable Embedded Bitmaps"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "Multichannel Signed Distance Field"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF Pixel Range"
+
+msgid "MSDF Size"
+msgstr "MSDF Size"
+
+msgid "Allow System Fallback"
+msgstr "Allow System Fallback"
+
+msgid "Force Autohinter"
+msgstr "Force Autohinter"
+
+msgid "Modulate Color Glyphs"
+msgstr "Modulate Color Glyphs"
+
+msgid "Hinting"
+msgstr "Hinting"
+
+msgid "Subpixel Positioning"
+msgstr "Subpixel Positioning"
+
+msgid "Keep Rounding Remainders"
+msgstr "Keep Rounding Remainders"
+
+msgid "Oversampling"
+msgstr "Oversampling"
+
+msgid "Metadata Overrides"
+msgstr "Metadata Overrides"
+
+msgid "Language Support"
+msgstr "Language Support"
+
+msgid "Script Support"
+msgstr "Script Support"
+
+msgid "OpenType Features"
+msgstr "OpenType Features"
+
+msgid "Fallbacks"
+msgstr "Fallbacks"
+
+msgid "Compress"
+msgstr "Compress"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Outline Size"
+msgstr "Outline Size"
+
+msgid "Variation"
+msgstr "ការប្រែប្រួល"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Embolden"
+msgstr "Embolden"
+
+msgid "Face Index"
+msgstr "Face Index"
+
+msgid "Transform"
+msgstr "Transform"
+
+msgid "Create From"
+msgstr "Create From"
+
+msgid "Scaling Mode"
+msgstr "របៀបធ្វើមាត្រដ្ឋាន"
+
+msgid "Delimiter"
+msgstr "Delimiter"
+
+msgid "Unescape Keys"
+msgstr "Unescape Keys"
+
+msgid "Unescape Translations"
+msgstr "ដោះការគេចពីការបកប្រែ"
+
+msgid "Character Ranges"
+msgstr "ជួរតួអក្សរ"
+
+msgid "Kerning Pairs"
+msgstr "Kerning Pairs"
+
+msgid "Columns"
+msgstr "Columns"
+
+msgid "Rows"
+msgstr "Rows"
+
+msgid "Image Margin"
+msgstr "Image Margin"
+
+msgid "Character Margin"
+msgstr "Character Margin"
+
+msgid "Ascent"
+msgstr "Ascent"
+
+msgid "Descent"
+msgstr "Descent"
+
+msgid "High Quality"
+msgstr "High Quality"
+
+msgid "Lossy Quality"
+msgstr "Lossy Quality"
+
+msgid "UASTC Level"
+msgstr "UASTC Level"
+
+msgid "RDO Quality Loss"
+msgstr "RDO Quality Loss"
+
+msgid "HDR Compression"
+msgstr "HDR Compression"
+
+msgid "Channel Pack"
+msgstr "កញ្ចប់ឆានែល"
+
+msgid "Mipmaps"
+msgstr "Mipmaps"
+
+msgid "Limit"
+msgstr "Limit"
+
+msgid "Horizontal"
+msgstr "Horizontal"
+
+msgid "Vertical"
+msgstr "Vertical"
+
+msgid "Arrangement"
+msgstr "Arrangement"
+
+msgid "Layout"
+msgstr "Layout"
+
+msgid "Normal Map"
+msgstr "Normal Map"
+
+msgid "Roughness"
+msgstr "Roughness"
+
+msgid "Src Normal"
+msgstr "Src Normal"
+
+msgid "Base Scale"
+msgstr "Base Scale"
+
+msgid "Saturation"
+msgstr "Saturation"
+
+msgid "Color Map"
+msgstr "ផែនទីពណ៌"
+
+msgid "Fix Alpha Border"
+msgstr "Fix Alpha Border"
+
+msgid "Premult Alpha"
+msgstr "Premult Alpha"
+
+msgid "Process"
+msgstr "Process"
+
+msgid "Channel Remap"
+msgstr "គូរផែនទីឆានែលឡើងវិញ"
+
+msgid "Red"
+msgstr "Red"
+
+msgid "Green"
+msgstr "Green"
+
+msgid "Blue"
+msgstr "Blue"
+
+msgid "Alpha"
+msgstr "Alpha"
+
+msgid "Normal Map Invert Y"
+msgstr "Normal Map Invert Y"
+
+msgid "HDR as sRGB"
+msgstr "HDR as sRGB"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDR Clamp Exposure"
+
+msgid "Size Limit"
+msgstr "Size Limit"
+
+msgid "Detect 3D"
+msgstr "Detect 3D"
+
+msgid "Compress To"
+msgstr "Compress To"
+
+msgid "SVG"
+msgstr "SVG"
+
+msgid "Editor"
+msgstr "Editor"
+
+msgid "Scale with Editor Scale"
+msgstr "Scale with Editor Scale"
+
+msgid "Convert Colors with Editor Theme"
+msgstr "Convert Colors with Editor Theme"
+
+msgid "Atlas File"
+msgstr "Atlas File"
+
+msgid "Import Mode"
+msgstr "Import Mode"
+
+msgid "Crop to Region"
+msgstr "Crop to Region"
+
+msgid "Trim Alpha Border From Region"
+msgstr "Trim Alpha Border From Region"
+
+msgctxt "Enforce"
+msgid "Force"
+msgstr "បង្ខំ"
+
+msgid "8 Bit"
+msgstr "8 Bit"
+
+msgid "Mono"
+msgstr "Mono"
+
+msgid "Max Rate"
+msgstr "អត្រាអតិបរមា"
+
+msgid "Max Rate Hz"
+msgstr "អត្រាអតិបរមា Hz"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Trim"
+msgstr "Trim"
+
+msgid "Normalize"
+msgstr "Normalize"
+
+msgid "Loop Begin"
+msgstr "Loop Begin"
+
+msgid "Loop End"
+msgstr "Loop End"
+
+msgid "Draw Label"
+msgstr "Draw Label"
+
+msgid "Draw Background"
+msgstr "Draw Background"
+
+msgid "Checkable"
+msgstr "Checkable"
+
+msgid "Checked"
+msgstr "Checked"
+
+msgid "Draw Warning"
+msgstr "Draw Warning"
+
+msgid "Keying"
+msgstr "Keying"
+
+msgid "Deletable"
+msgstr "Deletable"
+
+msgid "Selectable"
+msgstr "អាចជ្រើសបាន"
+
+msgid "Use Folding"
+msgstr "Use Folding"
+
+msgid "Name Split Ratio"
+msgstr "Name Split Ratio"
+
+msgid "Base Type"
+msgstr "Base Type"
+
+msgid "Edited Resource"
+msgstr "Edited Resource"
+
+msgid "Editable"
+msgstr "Editable"
+
+msgid "Toggle Mode"
+msgstr "Toggle Mode"
+
+msgid "Script Owner"
+msgstr "Script Owner"
+
+msgid "Main Run Args"
+msgstr "Main Run Args"
+
+msgid "Templates Search Path"
+msgstr "Templates Search Path"
+
+msgid "Naming"
+msgstr "Naming"
+
+msgid "Default Signal Callback Name"
+msgstr "Default Signal Callback Name"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Default Signal Callback to Self Name"
+
+msgid "Scene Name Casing"
+msgstr "ការប្រើអក្សរធំតូចឈ្មោះសាក"
+
+msgid "Script Name Casing"
+msgstr "ការប្រើអក្សរធំតូចឈ្មោះស្គ្រីប"
+
+msgid "Reimport Missing Imported Files"
+msgstr "Reimport Missing Imported Files"
+
+msgid "Use Multiple Threads"
+msgstr "Use Multiple Threads"
+
+msgid "Atlas Max Width"
+msgstr "Atlas Max Width"
+
+msgid "Export"
+msgstr "Export"
+
+msgid "Convert Text Resources to Binary"
+msgstr "Convert Text Resources to Binary"
+
+msgid "Version Control"
+msgstr "Version Control"
+
+msgid "Plugin Name"
+msgstr "Plugin Name"
+
+msgid "Autoload on Startup"
+msgstr "Autoload on Startup"
+
+msgid "Current Group Idx"
+msgstr "Current Group Idx"
+
+msgid "Current Bone Idx"
+msgstr "Current Bone Idx"
+
+msgid "Editors"
+msgstr "Editors"
+
+msgid "3D Gizmos"
+msgstr "3D Gizmos"
+
+msgid "Gizmo Colors"
+msgstr "Gizmo Colors"
+
+msgid "Particles Emission Shape"
+msgstr "រូបរាងការបញ្ចេញភាគល្អិត"
+
+msgid "Mesh"
+msgstr "Mesh"
+
+msgid "Mesh Transform"
+msgstr "ការបំប្លែងម៉េស"
+
+msgid "Mesh Cast Shadow"
+msgstr "Mesh Cast Shadow"
+
+msgid "Shapes"
+msgstr "Shapes"
+
+msgid "Navigation Mesh"
+msgstr "ម៉េសរុករក"
+
+msgid "Navigation Mesh Transform"
+msgstr "ការបំប្លែងម៉េសរុករក"
+
+msgid "Navigation Layers"
+msgstr "ស្រទាប់រុករក"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Interface"
+msgstr "Interface"
+
+msgid "Localization"
+msgstr "Localization"
+
+msgid "Editor Language"
+msgstr "Editor Language"
+
+msgid "Asset Store"
+msgstr "Asset Store"
+
+msgid "Use Threads"
+msgstr "Use Threads"
+
+msgid "Available URLs"
+msgstr "Available URLs"
+
+msgid "Localize Settings"
+msgstr "Localize Settings"
+
+msgid "Docks"
+msgstr "Docks"
+
+msgid "Dock Tab Style"
+msgstr "Dock Tab Style"
+
+msgid "Bottom Dock Tab Style"
+msgstr "Bottom Dock Tab Style"
+
+msgid "UI Layout Direction"
+msgstr "UI Layout Direction"
+
+msgid "Appearance"
+msgstr "Appearance"
+
+msgid "Display Scale"
+msgstr "Display Scale"
+
+msgid "Custom Display Scale"
+msgstr "Custom Display Scale"
+
+msgid "Editor Screen"
+msgstr "អេក្រង់កម្មវិធីកែសម្រួល"
+
+msgid "Input"
+msgstr "Input"
+
+msgid "Tablet Driver"
+msgstr "Tablet Driver"
+
+msgid "Project Manager Screen"
+msgstr "Project Manager Screen"
+
+msgid "Check for Updates"
+msgstr "Check for Updates"
+
+msgid "Use Embedded Menu"
+msgstr "Use Embedded Menu"
+
+msgid "Use Native File Dialogs"
+msgstr "Use Native File Dialogs"
+
+msgid "Expand to Title"
+msgstr "Expand to Title"
+
+msgid "Main Font Size"
+msgstr "ទំហំពុម្ពអក្សរសំខាន់"
+
+msgid "Code Font Size"
+msgstr "ទំហំពុម្ពអក្សរកូដ"
+
+msgid "Main Font Custom OpenType Features"
+msgstr "Main Font Custom OpenType Features"
+
+msgid "Code Font Contextual Ligatures"
+msgstr "Code Font Contextual Ligatures"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "Code Font Custom OpenType Features"
+
+msgid "Code Font Custom Variations"
+msgstr "Code Font Custom Variations"
+
+msgid "Font Antialiasing"
+msgstr "ការកាត់បន្ថយភាពរហូតពុម្ពអក្សរ"
+
+msgid "Font Hinting"
+msgstr "ការណែនាំពុម្ពអក្សរ"
+
+msgid "Font Subpixel Positioning"
+msgstr "Font Subpixel Positioning"
+
+msgid "Font Disable Embedded Bitmaps"
+msgstr "Font Disable Embedded Bitmaps"
+
+msgid "Font Allow MSDF"
+msgstr "Font Allow MSDF"
+
+msgid "Main Font"
+msgstr "Main Font"
+
+msgid "Main Font Bold"
+msgstr "Main Font Bold"
+
+msgid "Code Font"
+msgstr "Code Font"
+
+msgid "Dragging Hover Wait Seconds"
+msgstr "Dragging Hover Wait Seconds"
+
+msgid "Behavior"
+msgstr "Behavior"
+
+msgid "Separate Distraction Mode"
+msgstr "Separate Distraction Mode"
+
+msgid "Automatically Open Screenshots"
+msgstr "Automatically Open Screenshots"
+
+msgid "Single Window Mode"
+msgstr "Single Window Mode"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "Mouse Extra Buttons Navigate History"
+
+msgid "Save Each Scene on Quit"
+msgstr "Save Each Scene on Quit"
+
+msgid "Save on Focus Loss"
+msgstr "Save on Focus Loss"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "Accept Dialog Cancel OK Buttons"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "Show Internal Errors in Toast Notifications"
+
+msgid "Show Update Spinner"
+msgstr "Show Update Spinner"
+
+msgid "Low Processor Mode Sleep (µsec)"
+msgstr "Low Processor Mode Sleep (µsec)"
+
+msgid "Unfocused Low Processor Mode Sleep (µsec)"
+msgstr "Unfocused Low Processor Mode Sleep (µsec)"
+
+msgid "Import Resources When Unfocused"
+msgstr "Import Resources When Unfocused"
+
+msgid "V-Sync Mode"
+msgstr "V-Sync Mode"
+
+msgid "Update Continuously"
+msgstr "Update Continuously"
+
+msgid "Collapse Main Menu"
+msgstr "Collapse Main Menu"
+
+msgid "Show Renderer Selector"
+msgstr "Show Renderer Selector"
+
+msgid "Scene Tree"
+msgstr "មែកធាងសាក"
+
+msgid "Derive Script Globals by Name"
+msgstr "Derive Script Globals by Name"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Ask Before Revoking Unique Name"
+
+msgid "Inspector"
+msgstr "Inspector"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Max Array Dictionary Items per Page"
+
+msgid "Show Low Level OpenType Features"
+msgstr "Show Low Level OpenType Features"
+
+msgid "Float Drag Speed"
+msgstr "Float Drag Speed"
+
+msgid "Integer Drag Speed"
+msgstr "Integer Drag Speed"
+
+msgid "Nested Color Mode"
+msgstr "របៀបពណ៌បង្កប់"
+
+msgid "Delimitate All Container and Resources"
+msgstr "Delimitate All Container and Resources"
+
+msgid "Default Property Name Style"
+msgstr "Default Property Name Style"
+
+msgid "Default Float Step"
+msgstr "Default Float Step"
+
+msgid "Disable Folding"
+msgstr "Disable Folding"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "Auto Unfold Foreign Scenes"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "Horizontal Vector2 Editing"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "Horizontal Vector Types Editing"
+
+msgid "Open Resources in Current Inspector"
+msgstr "Open Resources in Current Inspector"
+
+msgid "Resources to Open in New Inspector"
+msgstr "Resources to Open in New Inspector"
+
+msgid "Property Descriptions"
+msgstr "ការពិពណ៌នាលក្ខណៈ"
+
+msgid "Default Color Picker Mode"
+msgstr "របៀបជ្រើសពណ៌លំនាំដើម"
+
+msgid "Default Color Picker Shape"
+msgstr "រូបរាងជ្រើសពណ៌លំនាំដើម"
+
+msgid "Color Picker Show Intensity"
+msgstr "បង្ហាញកម្រិតពន្លឺក្នុងកម្មវិធីជ្រើសពណ៌"
+
+msgid "Theme"
+msgstr "Theme"
+
+msgid "Follow System Theme"
+msgstr "Follow System Theme"
+
+msgid "Style"
+msgstr "Style"
+
+msgid "Color Preset"
+msgstr "ពណ៌កំណត់ជាមុន"
+
+msgid "Spacing Preset"
+msgstr "Spacing Preset"
+
+msgid "Icon and Font Color"
+msgstr "ពណ៌រូបតំណាង និងពុម្ពអក្សរ"
+
+msgid "Base Color"
+msgstr "ពណ៌មូលដ្ឋាន"
+
+msgid "Accent Color"
+msgstr "ពណ៌សង្កត់ធ្ងន់"
+
+msgid "Use System Accent Color"
+msgstr "Use System Accent Color"
+
+msgid "Contrast"
+msgstr "Contrast"
+
+msgid "Draw Extra Borders"
+msgstr "Draw Extra Borders"
+
+msgid "Icon Saturation"
+msgstr "កម្រិតពណ៌រូបតំណាង"
+
+msgid "Draw Relationship Lines"
+msgstr "Draw Relationship Lines"
+
+msgid "Relationship Line Opacity"
+msgstr "Relationship Line Opacity"
+
+msgid "Border Size"
+msgstr "Border Size"
+
+msgid "Corner Radius"
+msgstr "Corner Radius"
+
+msgid "Base Spacing"
+msgstr "Base Spacing"
+
+msgid "Additional Spacing"
+msgstr "Additional Spacing"
+
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Use Monospace Font for Editor Symbols"
+
+msgid "Custom Theme"
+msgstr "Custom Theme"
+
+msgid "Touchscreen"
+msgstr "Touchscreen"
+
+msgid "Enable Touch Optimizations"
+msgstr "Enable Touch Optimizations"
+
+msgid "Haptic on Long Press"
+msgstr "Haptic on Long Press"
+
+msgid "Scale Gizmo Handles"
+msgstr "Scale Gizmo Handles"
+
+msgid "Touch Actions Panel"
+msgstr "Touch Actions Panel"
+
+msgid "Scene Tabs"
+msgstr "Scene Tabs"
+
+msgid "Display Close Button"
+msgstr "Display Close Button"
+
+msgid "Show Thumbnail on Hover"
+msgstr "Show Thumbnail on Hover"
+
+msgid "Maximum Width"
+msgstr "Maximum Width"
+
+msgid "Show Script Button"
+msgstr "Show Script Button"
+
+msgid "Restore Scenes on Load"
+msgstr "Restore Scenes on Load"
+
+msgid "Auto Select Current Scene File"
+msgstr "Auto Select Current Scene File"
+
+msgid "Multi Window"
+msgstr "Multi Window"
+
+msgid "Restore Windows on Load"
+msgstr "Restore Windows on Load"
+
+msgid "Maximize Window"
+msgstr "Maximize Window"
+
+msgid "FileSystem"
+msgstr "FileSystem"
+
+msgid "External Programs"
+msgstr "External Programs"
+
+msgid "Raster Image Editor"
+msgstr "Raster Image Editor"
+
+msgid "Vector Image Editor"
+msgstr "កម្មវិធីកែសម្រួលរូបភាពវ៉ិចទ័រ"
+
+msgid "Audio Editor"
+msgstr "Audio Editor"
+
+msgid "3D Model Editor"
+msgstr "3D Model Editor"
+
+msgid "Terminal Emulator"
+msgstr "Terminal Emulator"
+
+msgid "Terminal Emulator Flags"
+msgstr "Terminal Emulator Flags"
+
+msgid "Directories"
+msgstr "Directories"
+
+msgid "Autoscan Project Path"
+msgstr "Autoscan Project Path"
+
+msgid "Default Project Path"
+msgstr "ផ្លូវគម្រោងលំនាំដើម"
+
+msgid "On Save"
+msgstr "On Save"
+
+msgid "Compress Binary Resources"
+msgstr "Compress Binary Resources"
+
+msgid "Safe Save on Backup then Rename"
+msgstr "Safe Save on Backup then Rename"
+
+msgid "Warn on Saving Large Text Resources"
+msgstr "Warn on Saving Large Text Resources"
+
+msgid "File Server"
+msgstr "File Server"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "File Dialog"
+msgstr "File Dialog"
+
+msgid "Show Hidden Files"
+msgstr "Show Hidden Files"
+
+msgid "Display Mode"
+msgstr "Display Mode"
+
+msgid "Thumbnail Size"
+msgstr "Thumbnail Size"
+
+msgid "Quick Open Dialog"
+msgstr "Quick Open Dialog"
+
+msgid "Instant Preview"
+msgstr "ការមើលជាមុនភ្លាមៗ"
+
+msgid "Show Search Highlight"
+msgstr "Show Search Highlight"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Enable Fuzzy Matching"
+
+msgid "Max Fuzzy Misses"
+msgstr "Max Fuzzy Misses"
+
+msgid "Include Addons"
+msgstr "Include Addons"
+
+msgid "Default Display Mode"
+msgstr "របៀបបង្ហាញលំនាំដើម"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "Blender Path"
+msgstr "Blender Path"
+
+msgid "RPC Port"
+msgstr "RPC Port"
+
+msgid "RPC Server Uptime"
+msgstr "RPC Server Uptime"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2glTF Path"
+
+msgid "Tools"
+msgstr "Tools"
+
+msgid "OIDN"
+msgstr "OIDN"
+
+msgid "OIDN Denoise Path"
+msgstr "OIDN Denoise Path"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "Ask Before Deleting Related Animation Tracks"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "Start Create Dialog Fully Expanded"
+
+msgid "Auto Expand to Selected"
+msgstr "Auto Expand to Selected"
+
+msgid "Center Node on Reparent"
+msgstr "Center Node on Reparent"
+
+msgid "Hide Filtered Out Parents"
+msgstr "Hide Filtered Out Parents"
+
+msgid "Accessibility Warnings"
+msgstr "Accessibility Warnings"
+
+msgid "Always Show Folders"
+msgstr "Always Show Folders"
+
+msgid "TextFile Extensions"
+msgstr "TextFile Extensions"
+
+msgid "Other File Extensions"
+msgstr "Other File Extensions"
+
+msgid "Automatically Open Created Scripts"
+msgstr "Automatically Open Created Scripts"
+
+msgid "Ask Before Moving Files"
+msgstr "Ask Before Moving Files"
+
+msgid "Property Editor"
+msgstr "Property Editor"
+
+msgid "Auto Refresh Interval"
+msgstr "Auto Refresh Interval"
+
+msgid "Subresource Hue Tint"
+msgstr "Subresource Hue Tint"
+
+msgid "Text Editor"
+msgstr "Text Editor"
+
+msgid "Color Theme"
+msgstr "Color Theme"
+
+msgid "Highlighting"
+msgstr "Highlighting"
+
+msgid "Comment Markers"
+msgstr "Comment Markers"
+
+msgid "Critical List"
+msgstr "Critical List"
+
+msgid "Warning List"
+msgstr "Warning List"
+
+msgid "Notice List"
+msgstr "Notice List"
+
+msgid "Enable Inline Color Picker"
+msgstr "Enable Inline Color Picker"
+
+msgid "Caret"
+msgstr "Caret"
+
+msgid "Caret Blink"
+msgstr "Caret Blink"
+
+msgid "Caret Blink Interval"
+msgstr "Caret Blink Interval"
+
+msgid "Highlight Current Line"
+msgstr "Highlight Current Line"
+
+msgid "Highlight All Occurrences"
+msgstr "Highlight All Occurrences"
+
+msgid "Guidelines"
+msgstr "Guidelines"
+
+msgid "Show Line Length Guidelines"
+msgstr "Show Line Length Guidelines"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "Line Length Guideline Soft Column"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "Line Length Guideline Hard Column"
+
+msgid "Gutters"
+msgstr "Gutters"
+
+msgid "Show Line Numbers"
+msgstr "Show Line Numbers"
+
+msgid "Line Numbers Zero Padded"
+msgstr "Line Numbers Zero Padded"
+
+msgid "Highlight Type Safe Lines"
+msgstr "Highlight Type Safe Lines"
+
+msgid "Show Info Gutter"
+msgstr "Show Info Gutter"
+
+msgid "Minimap"
+msgstr "Minimap"
+
+msgid "Show Minimap"
+msgstr "Show Minimap"
+
+msgid "Minimap Width"
+msgstr "Minimap Width"
+
+msgid "Drag and Drop Info"
+msgstr "Drag and Drop Info"
+
+msgid "Show Drag and Drop Info"
+msgstr "Show Drag and Drop Info"
+
+msgid "Lines"
+msgstr "Lines"
+
+msgid "Code Folding"
+msgstr "Code Folding"
+
+msgid "Word Wrap"
+msgstr "Word Wrap"
+
+msgid "Autowrap Mode"
+msgstr "Autowrap Mode"
+
+msgid "Whitespace"
+msgstr "Whitespace"
+
+msgid "Draw Tabs"
+msgstr "Draw Tabs"
+
+msgid "Draw Spaces"
+msgstr "Draw Spaces"
+
+msgid "Line Spacing"
+msgstr "Line Spacing"
+
+msgid "Empty Selection Clipboard"
+msgstr "Empty Selection Clipboard"
+
+msgid "Move Caret on Right Click"
+msgstr "Move Caret on Right Click"
+
+msgid "Scroll Past End of File"
+msgstr "Scroll Past End of File"
+
+msgid "Smooth Scrolling"
+msgstr "Smooth Scrolling"
+
+msgid "V Scroll Speed"
+msgstr "V Scroll Speed"
+
+msgid "Drag and Drop Selection"
+msgstr "Drag and Drop Selection"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "Stay in Script Editor on Node Selected"
+
+msgid "Open Script When Connecting Signal to Existing Method"
+msgstr "Open Script When Connecting Signal to Existing Method"
+
+msgid "Use Default Word Separators"
+msgstr "Use Default Word Separators"
+
+msgid "Use Custom Word Separators"
+msgstr "ប្រើតួបំបែកពាក្យផ្ទាល់ខ្លួន"
+
+msgid "Custom Word Separators"
+msgstr "តួបំបែកពាក្យផ្ទាល់ខ្លួន"
+
+msgid "Indent"
+msgstr "Indent"
+
+msgid "Auto Indent"
+msgstr "Auto Indent"
+
+msgid "Indent Wrapped Lines"
+msgstr "Indent Wrapped Lines"
+
+msgid "Files"
+msgstr "Files"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "Trim Trailing Whitespace on Save"
+
+msgid "Trim Final Newlines on Save"
+msgstr "Trim Final Newlines on Save"
+
+msgid "Autosave Interval Secs"
+msgstr "Autosave Interval Secs"
+
+msgid "Restore Scripts on Load"
+msgstr "Restore Scripts on Load"
+
+msgid "Convert Indent on Save"
+msgstr "Convert Indent on Save"
+
+msgid "Auto Reload Scripts on External Change"
+msgstr "Auto Reload Scripts on External Change"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "Auto Reload and Parse Scripts on Save"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "Open Dominant Script on Scene Change"
+
+msgid "Drop Preload Resources as UID"
+msgstr "Drop Preload Resources as UID"
+
+msgid "Enable Tooltips"
+msgstr "Enable Tooltips"
+
+msgid "Documentation"
+msgstr "ឯកសារ"
+
+msgid "Script List"
+msgstr "Script List"
+
+msgid "Show Members Overview"
+msgstr "Show Members Overview"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "Sort Members Outline Alphabetically"
+
+msgid "Script Temperature Enabled"
+msgstr "Script Temperature Enabled"
+
+msgid "Script Temperature History Size"
+msgstr "Script Temperature History Size"
+
+msgid "Highlight Scene Scripts"
+msgstr "Highlight Scene Scripts"
+
+msgid "Group Help Pages"
+msgstr "Group Help Pages"
+
+msgid "Sort Scripts By"
+msgstr "Sort Scripts By"
+
+msgid "List Script Names As"
+msgstr "List Script Names As"
+
+msgid "External"
+msgstr "External"
+
+msgid "Exec Path"
+msgstr "Exec Path"
+
+msgid "Exec Flags"
+msgstr "Exec Flags"
+
+msgid "Completion"
+msgstr "Completion"
+
+msgid "Idle Parse Delay"
+msgstr "Idle Parse Delay"
+
+msgid "Idle Parse Delay with Errors Found"
+msgstr "Idle Parse Delay with Errors Found"
+
+msgid "Auto Brace Complete"
+msgstr "Auto Brace Complete"
+
+msgid "Code Complete Enabled"
+msgstr "បានបើកការបំពេញកូដ"
+
+msgid "Code Complete Delay"
+msgstr "Code Complete Delay"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "Put Callhint Tooltip Below Current Line"
+
+msgid "Complete File Paths"
+msgstr "Complete File Paths"
+
+msgid "Add Type Hints"
+msgstr "បន្ថែមការណែនាំប្រភេទ"
+
+msgid "Add String Name Literals"
+msgstr "Add String Name Literals"
+
+msgid "Add Node Path Literals"
+msgstr "Add Node Path Literals"
+
+msgid "Use Single Quotes"
+msgstr "Use Single Quotes"
+
+msgid "Colorize Suggestions"
+msgstr "Colorize Suggestions"
+
+msgid "Use External Editor"
+msgstr "Use External Editor"
+
+msgid "Help"
+msgstr "Help"
+
+msgid "Show Help Index"
+msgstr "Show Help Index"
+
+msgid "Help Font Size"
+msgstr "ទំហំពុម្ពអក្សរជំនួយ"
+
+msgid "Help Source Font Size"
+msgstr "ទំហំពុម្ពអក្សរប្រភពជំនួយ"
+
+msgid "Help Title Font Size"
+msgstr "ទំហំពុម្ពអក្សរចំណងជើងជំនួយ"
+
+msgid "Class Reference Examples"
+msgstr "Class Reference Examples"
+
+msgid "Sort Functions Alphabetically"
+msgstr "Sort Functions Alphabetically"
+
+msgid "Grid Map"
+msgstr "Grid Map"
+
+msgid "Pick Distance"
+msgstr "Pick Distance"
+
+msgid "Preview Size"
+msgstr "ទំហំមើលជាមុន"
+
+msgid "Primary Grid Color"
+msgstr "ពណ៌ក្រឡាចត្រង្គបឋម"
+
+msgid "Secondary Grid Color"
+msgstr "ពណ៌ក្រឡាចត្រង្គបន្ទាប់បន្សំ"
+
+msgid "Selection Box Color"
+msgstr "Selection Box Color"
+
+msgid "Active Selection Box Color"
+msgstr "ពណ៌ប្រអប់ជម្រើសសកម្ម"
+
+msgid "Instantiated"
+msgstr "បានបង្កើតឧទាហរណ៍"
+
+msgid "Joint"
+msgstr "Joint"
+
+msgid "AABB"
+msgstr "AABB"
+
+msgid "Stream Player 3D"
+msgstr "Stream Player 3D"
+
+msgid "Decal"
+msgstr "Decal"
+
+msgid "Fog Volume"
+msgstr "Fog Volume"
+
+msgid "Particles"
+msgstr "Particles"
+
+msgid "Particle Attractor"
+msgstr "Particle Attractor"
+
+msgid "Particle Collision"
+msgstr "ការប៉ះទង្គិចភាគល្អិត"
+
+msgid "Joint Body A"
+msgstr "Joint Body A"
+
+msgid "Joint Body B"
+msgstr "Joint Body B"
+
+msgid "Lightmap Lines"
+msgstr "Lightmap Lines"
+
+msgid "Lightprobe Lines"
+msgstr "Lightprobe Lines"
+
+msgid "Reflection Probe"
+msgstr "Reflection Probe"
+
+msgid "Visibility Notifier"
+msgstr "Visibility Notifier"
+
+msgid "Voxel GI"
+msgstr "Voxel GI"
+
+msgid "Path Tilt"
+msgstr "ការផ្អៀងផ្លូវ"
+
+msgid "Skeleton"
+msgstr "Skeleton"
+
+msgid "Selected Bone"
+msgstr "ឆ្អឹងដែលបានជ្រើស"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "GridMap Grid"
+msgstr "GridMap Grid"
+
+msgid "Spring Bone Joint"
+msgstr "សន្លាក់ឆ្អឹងរ៉ឺស័រ"
+
+msgid "Spring Bone Collision"
+msgstr "ការប៉ះទង្គិចឆ្អឹងរ៉ឺស័រ"
+
+msgid "Spring Bone Inside Collision"
+msgstr "Spring Bone Inside Collision"
+
+msgid "IK Chain"
+msgstr "IK Chain"
+
+msgid "Gizmo Settings"
+msgstr "Gizmo Settings"
+
+msgid "Bone Axis Length"
+msgstr "Bone Axis Length"
+
+msgid "Bone Shape"
+msgstr "Bone Shape"
+
+msgid "Path3D Tilt Disk Size"
+msgstr "ទំហំថាសផ្អៀង Path3D"
+
+msgid "Lightmap GI Probe Size"
+msgstr "ទំហំ GI Probe របស់ Lightmap"
+
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Show Collision Shapes Only When Selected"
+
+msgid "Primary Grid Steps"
+msgstr "Primary Grid Steps"
+
+msgid "Grid Size"
+msgstr "ទំហំក្រឡាចត្រង្គ"
+
+msgid "Grid Division Level Max"
+msgstr "Grid Division Level Max"
+
+msgid "Grid Division Level Min"
+msgstr "Grid Division Level Min"
+
+msgid "Grid Division Level Bias"
+msgstr "Grid Division Level Bias"
+
+msgid "Grid XZ Plane"
+msgstr "Grid XZ Plane"
+
+msgid "Grid XY Plane"
+msgstr "Grid XY Plane"
+
+msgid "Grid YZ Plane"
+msgstr "Grid YZ Plane"
+
+msgid "Default FOV"
+msgstr "FOV លំនាំដើម"
+
+msgid "Default Z Near"
+msgstr "Z Near លំនាំដើម"
+
+msgid "Default Z Far"
+msgstr "Z Far លំនាំដើម"
+
+msgid "Invert X Axis"
+msgstr "Invert X Axis"
+
+msgid "Invert Y Axis"
+msgstr "Invert Y Axis"
+
+msgid "Navigation Scheme"
+msgstr "គម្រោងរុករក"
+
+msgid "Orbit Mouse Button"
+msgstr "Orbit Mouse Button"
+
+msgid "Pan Mouse Button"
+msgstr "ប៊ូតុងកណ្តុរ Pan"
+
+msgid "Zoom Mouse Button"
+msgstr "ប៊ូតុងកណ្តុរ Zoom"
+
+msgid "Zoom Style"
+msgstr "Zoom Style"
+
+msgid "Emulate Numpad"
+msgstr "Emulate Numpad"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "Emulate 3 Button Mouse"
+
+msgid "Warped Mouse Panning"
+msgstr "Warped Mouse Panning"
+
+msgid "Navigation Feel"
+msgstr "Navigation Feel"
+
+msgid "Orbit Sensitivity"
+msgstr "Orbit Sensitivity"
+
+msgid "Translation Sensitivity"
+msgstr "កម្រិតរសើបការផ្លាស់ទី"
+
+msgid "Orbit Inertia"
+msgstr "Orbit Inertia"
+
+msgid "Translation Inertia"
+msgstr "Translation Inertia"
+
+msgid "Zoom Inertia"
+msgstr "Zoom Inertia"
+
+msgid "Angle Snap Threshold"
+msgstr "កម្រិតចាប់មុំ"
+
+msgid "Show Viewport Rotation Gizmo"
+msgstr "Show Viewport Rotation Gizmo"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "Show Viewport Navigation Gizmo"
+
+msgid "Freelook"
+msgstr "មើលសេរី"
+
+msgid "Freelook Navigation Scheme"
+msgstr "គម្រោងរុករកមើលសេរី"
+
+msgid "Freelook Sensitivity"
+msgstr "Freelook Sensitivity"
+
+msgid "Freelook Inertia"
+msgstr "Freelook Inertia"
+
+msgid "Freelook Base Speed"
+msgstr "Freelook Base Speed"
+
+msgid "Freelook Activation Modifier"
+msgstr "Freelook Activation Modifier"
+
+msgid "Freelook Invert Y Axis"
+msgstr "Freelook Invert Y Axis"
+
+msgid "Freelook Speed Zoom Link"
+msgstr "Freelook Speed Zoom Link"
+
+msgid "Manipulator Gizmo Size"
+msgstr "Manipulator Gizmo Size"
+
+msgid "Manipulator Gizmo Opacity"
+msgstr "Manipulator Gizmo Opacity"
+
+msgid "Show Gizmo During Rotation"
+msgstr "Show Gizmo During Rotation"
+
+msgid "View Plane Rotation Gizmo Scale"
+msgstr "View Plane Rotation Gizmo Scale"
+
+msgid "Grid Color"
+msgstr "Grid Color"
+
+msgid "Guides Color"
+msgstr "Guides Color"
+
+msgid "Smart Snapping Line Color"
+msgstr "Smart Snapping Line Color"
+
+msgid "Selection Rectangle Color"
+msgstr "ពណ៌ចតុកោណជម្រើស"
+
+msgid "Locked Selection Rectangle Color"
+msgstr "ពណ៌ចតុកោណជម្រើសដែលចាក់សោ"
+
+msgid "Bone Width"
+msgstr "Bone Width"
+
+msgid "Bone Color 1"
+msgstr "Bone Color 1"
+
+msgid "Bone Color 2"
+msgstr "Bone Color 2"
+
+msgid "Bone Selected Color"
+msgstr "ពណ៌ឆ្អឹងដែលបានជ្រើស"
+
+msgid "Bone IK Color"
+msgstr "Bone IK Color"
+
+msgid "Bone Outline Color"
+msgstr "Bone Outline Color"
+
+msgid "Bone Outline Size"
+msgstr "Bone Outline Size"
+
+msgid "Viewport Border Color"
+msgstr "Viewport Border Color"
+
+msgid "Use Integer Zoom by Default"
+msgstr "Use Integer Zoom by Default"
+
+msgid "Zoom Speed Factor"
+msgstr "Zoom Speed Factor"
+
+msgid "Ruler Width"
+msgstr "Ruler Width"
+
+msgid "Auto Resample Delay"
+msgstr "Auto Resample Delay"
+
+msgid "Bone Mapper"
+msgstr "Bone Mapper"
+
+msgid "Handle Colors"
+msgstr "ពណ៌ដៃកាន់"
+
+msgid "Unset"
+msgstr "Unset"
+
+msgid "Set"
+msgstr "Set"
+
+msgid "Missing"
+msgstr "Missing"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Panning"
+msgstr "Panning"
+
+msgid "2D Editor Panning Scheme"
+msgstr "2D Editor Panning Scheme"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Sub Editors Panning Scheme"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Animation Editors Panning Scheme"
+
+msgid "Simple Panning"
+msgstr "Simple Panning"
+
+msgid "2D Editor Pan Speed"
+msgstr "2D Editor Pan Speed"
+
+msgid "Tiles Editor"
+msgstr "Tiles Editor"
+
+msgid "Display Grid"
+msgstr "Display Grid"
+
+msgid "Highlight Selected Layer"
+msgstr "Highlight Selected Layer"
+
+msgid "Polygon Editor"
+msgstr "Polygon Editor"
+
+msgid "Point Grab Radius"
+msgstr "Point Grab Radius"
+
+msgid "Show Previous Outline"
+msgstr "Show Previous Outline"
+
+msgid "Auto Bake Delay"
+msgstr "Auto Bake Delay"
+
+msgid "Default Animation Step"
+msgstr "ជំហានចលនាលំនាំដើម"
+
+msgid "Default FPS Mode"
+msgstr "របៀប FPS លំនាំដើម"
+
+msgid "Default FPS Compatibility"
+msgstr "ភាពឆបគ្នា FPS លំនាំដើម"
+
+msgid "Autorename Animation Tracks"
+msgstr "Autorename Animation Tracks"
+
+msgid "Confirm Insert Track"
+msgstr "Confirm Insert Track"
+
+msgid "Default Create Bezier Tracks"
+msgstr "Default Create Bezier Tracks"
+
+msgid "Default Create Reset Tracks"
+msgstr "Default Create Reset Tracks"
+
+msgid "Insert at Current Time"
+msgstr "Insert at Current Time"
+
+msgid "Onion Layers Past Color"
+msgstr "Onion Layers Past Color"
+
+msgid "Onion Layers Future Color"
+msgstr "Onion Layers Future Color"
+
+msgid "Audio Buses"
+msgstr "Audio Buses"
+
+msgid "Active Max dB Color"
+msgstr "ពណ៌ dB អតិបរមាសកម្ម"
+
+msgid "Active Min dB Color"
+msgstr "ពណ៌ dB អប្បបរមាសកម្ម"
+
+msgid "Active Normalized dB Color"
+msgstr "ពណ៌ dB ដែលបានធ្វើនីយតកម្មសកម្ម"
+
+msgid "Inactive Max dB Color"
+msgstr "ពណ៌ dB អតិបរមាអសកម្ម"
+
+msgid "Inactive Min dB Color"
+msgstr "ពណ៌ dB អប្បបរមាអសកម្ម"
+
+msgid "Inactive Normalized dB Color"
+msgstr "Inactive Normalized dB Color"
+
+msgid "Tint over Color"
+msgstr "ពណ៌ជ្រលក់លើ"
+
+msgid "Tint Under Color"
+msgstr "ពណ៌ជ្រលក់ក្រោម"
+
+msgid "Shader Editor"
+msgstr "Shader Editor"
+
+msgid "Restore Shaders on Load"
+msgstr "Restore Shaders on Load"
+
+msgid "Visual Editors"
+msgstr "Visual Editors"
+
+msgid "Minimap Opacity"
+msgstr "Minimap Opacity"
+
+msgid "Lines Curvature"
+msgstr "Lines Curvature"
+
+msgid "Grid Pattern"
+msgstr "Grid Pattern"
+
+msgid "Visual Shader"
+msgstr "Visual Shader"
+
+msgid "Port Preview Size"
+msgstr "Port Preview Size"
+
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
+msgid "Window Placement"
+msgstr "Window Placement"
+
+msgid "Rect"
+msgstr "Rect"
+
+msgid "Rect Custom Position"
+msgstr "Rect Custom Position"
+
+msgid "Screen"
+msgstr "Screen"
+
+msgid "Android Window"
+msgstr "Android Window"
+
+msgid "Game Embed Mode"
+msgstr "Game Embed Mode"
+
+msgid "Auto Save"
+msgstr "Auto Save"
+
+msgid "Save Before Running"
+msgstr "Save Before Running"
+
+msgid "Bottom Panel"
+msgstr "Bottom Panel"
+
+msgid "Action on Play"
+msgstr "សកម្មភាពពេលចាក់"
+
+msgid "Action on Stop"
+msgstr "សកម្មភាពពេលឈប់"
+
+msgid "Output"
+msgstr "Output"
+
+msgid "Font Size"
+msgstr "Font Size"
+
+msgid "Always Clear Output on Play"
+msgstr "Always Clear Output on Play"
+
+msgid "Max Lines"
+msgstr "បន្ទាត់អតិបរមា"
+
+msgid "Platforms"
+msgstr "វេទិកា"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
+msgid "Prefer Wayland"
+msgstr "Prefer Wayland"
+
+msgid "Network Mode"
+msgstr "Network Mode"
+
+msgid "HTTP Proxy"
+msgstr "HTTP Proxy"
+
+msgid "Host"
+msgstr "Host"
+
+msgid "Editor TLS Certificates"
+msgstr "Editor TLS Certificates"
+
+msgid "Enable TLS V 1"
+msgstr "Enable TLS V 1"
+
+msgid "Remote Host"
+msgstr "Remote Host"
+
+msgid "Language Server"
+msgstr "Language Server"
+
+msgid "Enable Smart Resolve"
+msgstr "Enable Smart Resolve"
+
+msgid "Show Native Symbols in Editor"
+msgstr "Show Native Symbols in Editor"
+
+msgid "Use Thread"
+msgstr "Use Thread"
+
+msgid "Poll Limit (µsec)"
+msgstr "Poll Limit (µsec)"
+
+msgid "Debugger"
+msgstr "Debugger"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Auto Switch to Remote Scene Tree"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Auto Switch to Stack Trace"
+
+msgid "Max Node Selection"
+msgstr "ការជ្រើសថ្នាំងអតិបរមា"
+
+msgid "Profiler Frame History Size"
+msgstr "Profiler Frame History Size"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Profiler Frame Max Functions"
+
+msgid "Profiler Target FPS"
+msgstr "Profiler Target FPS"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Remote Scene Tree Refresh Interval"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Remote Inspect Refresh Interval"
+
+msgid "Profile Native Calls"
+msgstr "Profile Native Calls"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "SSH Public Key Path"
+msgstr "SSH Public Key Path"
+
+msgid "SSH Private Key Path"
+msgstr "SSH Private Key Path"
+
+msgid "Buffering"
+msgstr "Buffering"
+
+msgid "Agile Event Flushing"
+msgstr "Agile Event Flushing"
+
+msgid "Project Manager"
+msgstr "Project Manager"
+
+msgid "Sorting Order"
+msgstr "Sorting Order"
+
+msgid "Directory Naming Convention"
+msgstr "Directory Naming Convention"
+
+msgid "Default Renderer"
+msgstr "កម្មវិធីបង្ហាញលំនាំដើម"
+
+msgid "Connection Colors"
+msgstr "ពណ៌ការតភ្ជាប់"
+
+msgid "Scalar Color"
+msgstr "ពណ៌ស្កាលែ"
+
+msgid "Vector2 Color"
+msgstr "ពណ៌ Vector2"
+
+msgid "Vector 3 Color"
+msgstr "ពណ៌ Vector 3"
+
+msgid "Vector 4 Color"
+msgstr "ពណ៌ Vector 4"
+
+msgid "Boolean Color"
+msgstr "ពណ៌ប៊ូលីន"
+
+msgid "Transform Color"
+msgstr "ពណ៌ការបំប្លែង"
+
+msgid "Sampler Color"
+msgstr "ពណ៌សំណាក"
+
+msgid "Category Colors"
+msgstr "ពណ៌ប្រភេទ"
+
+msgid "Output Color"
+msgstr "ពណ៌លទ្ធផល"
+
+msgid "Color Color"
+msgstr "ពណ៌ Color"
+
+msgid "Conditional Color"
+msgstr "ពណ៌លក្ខខណ្ឌ"
+
+msgid "Input Color"
+msgstr "ពណ៌បញ្ចូល"
+
+msgid "Textures Color"
+msgstr "ពណ៌រូបភាព"
+
+msgid "Utility Color"
+msgstr "ពណ៌ឧបករណ៍ប្រើប្រាស់"
+
+msgid "Vector Color"
+msgstr "ពណ៌វ៉ិចទ័រ"
+
+msgid "Special Color"
+msgstr "ពណ៌ពិសេស"
+
+msgid "Particle Color"
+msgstr "ពណ៌ភាគល្អិត"
+
+msgid "Flush stdout on Print"
+msgstr "Flush stdout on Print"
+
+msgid "Low Processor Mode"
+msgstr "Low Processor Mode"
+
+msgid "stdout"
+msgstr "stdout"
+
+msgid "Print FPS"
+msgstr "Print FPS"
+
+msgid "Print GPU Profile"
+msgstr "Print GPU Profile"
+
+msgid "Verbose stdout"
+msgstr "Verbose stdout"
+
+msgid "Physics Interpolation"
+msgstr "Physics Interpolation"
+
+msgid "Enable Warnings"
+msgstr "Enable Warnings"
+
+msgid "Max Chars per Second"
+msgstr "Max Chars per Second"
+
+msgid "Max Queued Messages"
+msgstr "Max Queued Messages"
+
+msgid "Max Errors per Second"
+msgstr "កំហុសអតិបរមាក្នុងមួយវិនាទី"
+
+msgid "Max Warnings per Second"
+msgstr "Max Warnings per Second"
+
+msgid "File Logging"
+msgstr "File Logging"
+
+msgid "Enable File Logging"
+msgstr "Enable File Logging"
+
+msgid "Log Path"
+msgstr "Log Path"
+
+msgid "Max Log Files"
+msgstr "ឯកសារកំណត់ហេតុអតិបរមា"
+
+msgid "Driver"
+msgstr "Driver"
+
+msgid "Fallback to Vulkan"
+msgstr "Fallback to Vulkan"
+
+msgid "Fallback to D3D12"
+msgstr "Fallback to D3D12"
+
+msgid "Fallback to OpenGL 3"
+msgstr "Fallback to OpenGL 3"
+
+msgid "GL Compatibility"
+msgstr "GL Compatibility"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia Disable Threaded Optimization"
+
+msgid "Fallback to Angle"
+msgstr "Fallback to Angle"
+
+msgid "Fallback to Native"
+msgstr "Fallback to Native"
+
+msgid "Fallback to GLES"
+msgstr "Fallback to GLES"
+
+msgid "Force Angle on Devices"
+msgstr "Force Angle on Devices"
+
+msgid "Renderer"
+msgstr "Renderer"
+
+msgid "Rendering Method"
+msgstr "Rendering Method"
+
+msgid "DPI"
+msgstr "DPI"
+
+msgid "Allow hiDPI"
+msgstr "Allow hiDPI"
+
+msgid "Per Pixel Transparency"
+msgstr "Per Pixel Transparency"
+
+msgid "Allowed"
+msgstr "Allowed"
+
+msgid "Load Shell Environment"
+msgstr "ផ្ទុកបរិស្ថាន Shell"
+
+msgid "Threads"
+msgstr "Threads"
+
+msgid "Display Server"
+msgstr "Display Server"
+
+msgid "Handheld"
+msgstr "Handheld"
+
+msgid "Orientation"
+msgstr "Orientation"
+
+msgid "Output Latency"
+msgstr "Output Latency"
+
+msgid "Frame Delay Msec"
+msgstr "Frame Delay Msec"
+
+msgid "Allow High Refresh Rate"
+msgstr "Allow High Refresh Rate"
+
+msgid "Hide Home Indicator"
+msgstr "Hide Home Indicator"
+
+msgid "Hide Status Bar"
+msgstr "Hide Status Bar"
+
+msgid "Suppress UI Gesture"
+msgstr "Suppress UI Gesture"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "Target API Version"
+msgstr "កំណែ API គោលដៅ"
+
+msgid "Default Action Map"
+msgstr "ផែនទីសកម្មភាពលំនាំដើម"
+
+msgid "Form Factor"
+msgstr "Form Factor"
+
+msgid "View Configuration"
+msgstr "View Configuration"
+
+msgid "Reference Space"
+msgstr "Reference Space"
+
+msgid "Environment Blend Mode"
+msgstr "Environment Blend Mode"
+
+msgid "Foveation Level"
+msgstr "កម្រិត Foveation"
+
+msgid "Foveation Dynamic"
+msgstr "Foveation Dynamic"
+
+msgid "Foveation Eye Tracked"
+msgstr "Foveation តាមដានភ្នែក"
+
+msgid "Foveation with Subsampled Images"
+msgstr "Foveation with Subsampled Images"
+
+msgid "Submit Depth Buffer"
+msgstr "Submit Depth Buffer"
+
+msgid "Startup Alert"
+msgstr "Startup Alert"
+
+msgid "Extensions"
+msgstr "Extensions"
+
+msgid "Debug Utils"
+msgstr "Debug Utils"
+
+msgid "Debug Message Types"
+msgstr "Debug Message Types"
+
+msgid "Frame Synthesis"
+msgstr "Frame Synthesis"
+
+msgid "Hand Tracking"
+msgstr "Hand Tracking"
+
+msgid "Hand Tracking Unobstructed Data Source"
+msgstr "Hand Tracking Unobstructed Data Source"
+
+msgid "Hand Tracking Controller Data Source"
+msgstr "Hand Tracking Controller Data Source"
+
+msgid "Hand Interaction Profile"
+msgstr "Hand Interaction Profile"
+
+msgid "Spatial Entity"
+msgstr "អង្គធាតុលំហ"
+
+msgid "Enable Spatial Anchors"
+msgstr "Enable Spatial Anchors"
+
+msgid "Enable Persistent Anchors"
+msgstr "Enable Persistent Anchors"
+
+msgid "Enable Builtin Anchor Detection"
+msgstr "Enable Builtin Anchor Detection"
+
+msgid "Enable Plane Tracking"
+msgstr "បើកការតាមដានប្លង់"
+
+msgid "Enable Builtin Plane Detection"
+msgstr "Enable Builtin Plane Detection"
+
+msgid "Aruco Dict"
+msgstr "Aruco Dict"
+
+msgid "April Tag Dict"
+msgstr "April Tag Dict"
+
+msgid "Eye Gaze Interaction"
+msgstr "អន្តរកម្មក្រសែភ្នែក"
+
+msgid "Render Model"
+msgstr "Render Model"
+
+msgid "User Presence"
+msgstr "វត្តមានអ្នកប្រើប្រាស់"
+
+msgid "Binding Modifiers"
+msgstr "Binding Modifiers"
+
+msgid "Analog Threshold"
+msgstr "Analog Threshold"
+
+msgid "Dpad Binding"
+msgstr "Dpad Binding"
+
+msgid "Boot Splash"
+msgstr "Boot Splash"
+
+msgid "BG Color"
+msgstr "BG Color"
+
+msgid "Pen Tablet"
+msgstr "Pen Tablet"
+
+msgid "Environment"
+msgstr "Environment"
+
+msgid "Defaults"
+msgstr "លំនាំដើម"
+
+msgid "Default Clear Color"
+msgstr "Default Clear Color"
+
+msgid "Icon"
+msgstr "Icon"
+
+msgid "macOS Native Icon"
+msgstr "macOS Native Icon"
+
+msgid "Windows Native Icon"
+msgstr "Windows Native Icon"
+
+msgid "Text Driver"
+msgstr "Text Driver"
+
+msgid "Mouse Cursor"
+msgstr "Mouse Cursor"
+
+msgid "Custom Image"
+msgstr "រូបភាពផ្ទាល់ខ្លួន"
+
+msgid "Custom Image Hotspot"
+msgstr "Custom Image Hotspot"
+
+msgid "Tooltip Position Offset"
+msgstr "Tooltip Position Offset"
+
+msgid "Show Image"
+msgstr "Show Image"
+
+msgid "Stretch Mode"
+msgstr "Stretch Mode"
+
+msgid "Use Filter"
+msgstr "Use Filter"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Minimum Display Time"
+msgstr "Minimum Display Time"
+
+msgid "Dotnet"
+msgstr "Dotnet"
+
+msgid "Project"
+msgstr "Project"
+
+msgid "Assembly Name"
+msgstr "Assembly Name"
+
+msgid "Solution Directory"
+msgstr "Solution Directory"
+
+msgid "Assembly Reload Attempts"
+msgstr "Assembly Reload Attempts"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "Physics Process"
+msgstr "ដំណើរការរូបវិទ្យា"
+
+msgid "Navigation Process"
+msgstr "ដំណើរការរុករក"
+
+msgid "Static"
+msgstr "Static"
+
+msgid "Static Max"
+msgstr "អតិបរមាស្តាទិច"
+
+msgid "Msg Buf Max"
+msgstr "Msg Buf Max"
+
+msgid "Object"
+msgstr "Object"
+
+msgid "Objects"
+msgstr "Objects"
+
+msgid "Resources"
+msgstr "Resources"
+
+msgid "Orphan Nodes"
+msgstr "Orphan Nodes"
+
+msgid "Raster"
+msgstr "Raster"
+
+msgid "Total Objects Drawn"
+msgstr "Total Objects Drawn"
+
+msgid "Total Primitives Drawn"
+msgstr "Total Primitives Drawn"
+
+msgid "Total Draw Calls"
+msgstr "Total Draw Calls"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Video Mem"
+msgstr "Video Mem"
+
+msgid "Texture Mem"
+msgstr "Mem រូបភាព"
+
+msgid "Buffer Mem"
+msgstr "Buffer Mem"
+
+msgid "Physics 2D"
+msgstr "រូបវិទ្យា 2D"
+
+msgid "Active Objects"
+msgstr "Active Objects"
+
+msgid "Collision Pairs"
+msgstr "គូប៉ះទង្គិច"
+
+msgid "Islands"
+msgstr "Islands"
+
+msgid "Physics 3D"
+msgstr "រូបវិទ្យា 3D"
+
+msgid "Active Maps"
+msgstr "Active Maps"
+
+msgid "Regions"
+msgstr "Regions"
+
+msgid "Agents"
+msgstr "Agents"
+
+msgid "Links"
+msgstr "Links"
+
+msgid "Polygons"
+msgstr "Polygons"
+
+msgid "Edges"
+msgstr "Edges"
+
+msgid "Edges Merged"
+msgstr "Edges Merged"
+
+msgid "Edges Connected"
+msgstr "គែមដែលបានតភ្ជាប់"
+
+msgid "Edges Free"
+msgstr "Edges Free"
+
+msgid "Obstacles"
+msgstr "Obstacles"
+
+msgid "Pipeline"
+msgstr "Pipeline"
+
+msgid "Compilations Canvas"
+msgstr "ការចងក្រង Canvas"
+
+msgid "Compilations Mesh"
+msgstr "ការចងក្រងម៉េស"
+
+msgid "Compilations Surface"
+msgstr "ការចងក្រងផ្ទៃ"
+
+msgid "Compilations Draw"
+msgstr "ការចងក្រងគូរ"
+
+msgid "Compilations Specialization"
+msgstr "Compilations Specialization"
+
+msgid "Navigation 2D"
+msgstr "ការរុករក 2D"
+
+msgid "Navigation 3D"
+msgstr "ការរុករក 3D"
+
+msgid "Basis Universal"
+msgstr "Basis Universal"
+
+msgid "RDO Dict Size"
+msgstr "RDO Dict Size"
+
+msgid "Zstd Supercompression"
+msgstr "Zstd Supercompression"
+
+msgid "Zstd Supercompression Level"
+msgstr "កម្រិតបង្ហាប់ខ្លាំង Zstd"
+
+msgid "Autosmooth"
+msgstr "រលោងស្វ័យប្រវត្តិ"
+
+msgid "Smoothing Angle"
+msgstr "មុំធ្វើឱ្យរលោង"
+
+msgid "Operation"
+msgstr "Operation"
+
+msgid "Calculate Tangents"
+msgstr "Calculate Tangents"
+
+msgid "Collision"
+msgstr "Collision"
+
+msgid "Use Collision"
+msgstr "Use Collision"
+
+msgid "Collision Layer"
+msgstr "Collision Layer"
+
+msgid "Collision Mask"
+msgstr "Collision Mask"
+
+msgid "Collision Priority"
+msgstr "Collision Priority"
+
+msgid "Flip Faces"
+msgstr "Flip Faces"
+
+msgid "Material"
+msgstr "Material"
+
+msgid "Radial Segments"
+msgstr "Radial Segments"
+
+msgid "Rings"
+msgstr "Rings"
+
+msgid "Smooth Faces"
+msgstr "Smooth Faces"
+
+msgid "Sides"
+msgstr "Sides"
+
+msgid "Cone"
+msgstr "Cone"
+
+msgid "Inner Radius"
+msgstr "Inner Radius"
+
+msgid "Outer Radius"
+msgstr "Outer Radius"
+
+msgid "Ring Sides"
+msgstr "Ring Sides"
+
+msgid "Polygon"
+msgstr "Polygon"
+
+msgid "Depth"
+msgstr "Depth"
+
+msgid "Spin Degrees"
+msgstr "Spin Degrees"
+
+msgid "Spin Sides"
+msgstr "Spin Sides"
+
+msgid "Path Node"
+msgstr "Path Node"
+
+msgid "Path Interval Type"
+msgstr "Path Interval Type"
+
+msgid "Path Interval"
+msgstr "Path Interval"
+
+msgid "Path Simplify Angle"
+msgstr "Path Simplify Angle"
+
+msgid "Path Rotation"
+msgstr "Path Rotation"
+
+msgid "Path Rotation Accurate"
+msgstr "Path Rotation Accurate"
+
+msgid "Path Local"
+msgstr "Path Local"
+
+msgid "Path Continuous U"
+msgstr "Path Continuous U"
+
+msgid "Path U Distance"
+msgstr "Path U Distance"
+
+msgid "Path Joined"
+msgstr "Path Joined"
+
+msgid "Importer"
+msgstr "Importer"
+
+msgid "Allow Geometry Helper Nodes"
+msgstr "Allow Geometry Helper Nodes"
+
+msgid "Embedded Image Handling"
+msgstr "Embedded Image Handling"
+
+msgid "Naming Version"
+msgstr "Naming Version"
+
+msgid "FBX2glTF"
+msgstr "FBX2glTF"
+
+msgid "GDScript"
+msgstr "GDScript"
+
+msgid "Max Call Stack"
+msgstr "Max Call Stack"
+
+msgid "Always Track Call Stacks"
+msgstr "Always Track Call Stacks"
+
+msgid "Always Track Local Variables"
+msgstr "Always Track Local Variables"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "Renamed in Godot 4 Hint"
+
+msgid "Unassigned Variable"
+msgstr "Unassigned Variable"
+
+msgid "Unassigned Variable Op Assign"
+msgstr "Unassigned Variable Op Assign"
+
+msgid "Unused Variable"
+msgstr "Unused Variable"
+
+msgid "Unused Local Constant"
+msgstr "Unused Local Constant"
+
+msgid "Unused Private Class Variable"
+msgstr "Unused Private Class Variable"
+
+msgid "Unused Parameter"
+msgstr "Unused Parameter"
+
+msgid "Unused Signal"
+msgstr "Unused Signal"
+
+msgid "Shadowed Variable"
+msgstr "Shadowed Variable"
+
+msgid "Shadowed Variable Base Class"
+msgstr "Shadowed Variable Base Class"
+
+msgid "Shadowed Global Identifier"
+msgstr "Shadowed Global Identifier"
+
+msgid "Unreachable Code"
+msgstr "Unreachable Code"
+
+msgid "Unreachable Pattern"
+msgstr "Unreachable Pattern"
+
+msgid "Standalone Expression"
+msgstr "Standalone Expression"
+
+msgid "Standalone Ternary"
+msgstr "Standalone Ternary"
+
+msgid "Incompatible Ternary"
+msgstr "Incompatible Ternary"
+
+msgid "Untyped Declaration"
+msgstr "ការប្រកាសគ្មានប្រភេទ"
+
+msgid "Inferred Declaration"
+msgstr "ការប្រកាស suy ra"
+
+msgid "Unsafe Property Access"
+msgstr "Unsafe Property Access"
+
+msgid "Unsafe Method Access"
+msgstr "Unsafe Method Access"
+
+msgid "Unsafe Cast"
+msgstr "Unsafe Cast"
+
+msgid "Unsafe Call Argument"
+msgstr "Unsafe Call Argument"
+
+msgid "Unsafe Void Return"
+msgstr "Unsafe Void Return"
+
+msgid "Return Value Discarded"
+msgstr "Return Value Discarded"
+
+msgid "Static Called On Instance"
+msgstr "Static Called On Instance"
+
+msgid "Missing Tool"
+msgstr "Missing Tool"
+
+msgid "Redundant Static Unload"
+msgstr "Redundant Static Unload"
+
+msgid "Redundant Await"
+msgstr "Redundant Await"
+
+msgid "Missing Await"
+msgstr "Missing Await"
+
+msgid "Assert Always True"
+msgstr "Assert Always True"
+
+msgid "Assert Always False"
+msgstr "Assert Always False"
+
+msgid "Integer Division"
+msgstr "Integer Division"
+
+msgid "Narrowing Conversion"
+msgstr "Narrowing Conversion"
+
+msgid "Int As Enum Without Cast"
+msgstr "Int As Enum Without Cast"
+
+msgid "Int As Enum Without Match"
+msgstr "Int As Enum Without Match"
+
+msgid "Enum Variable Without Default"
+msgstr "Enum Variable Without Default"
+
+msgid "Empty File"
+msgstr "Empty File"
+
+msgid "Deprecated Keyword"
+msgstr "Deprecated Keyword"
+
+msgid "Confusable Identifier"
+msgstr "អត្តសញ្ញាណដែលអាចច្រឡំ"
+
+msgid "Confusable Local Declaration"
+msgstr "ការប្រកាសមូលដ្ឋានដែលអាចច្រឡំ"
+
+msgid "Confusable Local Usage"
+msgstr "Confusable Local Usage"
+
+msgid "Confusable Capture Reassignment"
+msgstr "Confusable Capture Reassignment"
+
+msgid "Confusable Temporary Modification"
+msgstr "ការកែប្រែបណ្តោះអាសន្នដែលអាចច្រឡំ"
+
+msgid "Inference On Variant"
+msgstr "Inference On Variant"
+
+msgid "Native Method Override"
+msgstr "Native Method Override"
+
+msgid "Get Node Default Without Onready"
+msgstr "Get Node Default Without Onready"
+
+msgid "Onready With Export"
+msgstr "Onready With Export"
+
+msgid "Copyright"
+msgstr "Copyright"
+
+msgid "Bake FPS"
+msgstr "Bake FPS"
+
+msgid "glTF"
+msgstr "glTF"
+
+msgid "Texture Map Mode"
+msgstr "របៀបផែនទីរូបភាព"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Intensity"
+msgstr "Intensity"
+
+msgid "Light Type"
+msgstr "Light Type"
+
+msgid "Range"
+msgstr "Range"
+
+msgid "Inner Cone Angle"
+msgstr "Inner Cone Angle"
+
+msgid "Outer Cone Angle"
+msgstr "Outer Cone Angle"
+
+msgid "Diffuse Img"
+msgstr "Diffuse Img"
+
+msgid "Diffuse Factor"
+msgstr "Diffuse Factor"
+
+msgid "Gloss Factor"
+msgstr "Gloss Factor"
+
+msgid "Specular Factor"
+msgstr "Specular Factor"
+
+msgid "Spec Gloss Img"
+msgstr "Spec Gloss Img"
+
+msgid "Mass"
+msgstr "Mass"
+
+msgid "Linear Velocity"
+msgstr "Linear Velocity"
+
+msgid "Angular Velocity"
+msgstr "Angular Velocity"
+
+msgid "Center of Mass"
+msgstr "Center of Mass"
+
+msgid "Inertia Diagonal"
+msgstr "Inertia Diagonal"
+
+msgid "Inertia Orientation"
+msgstr "ទិសដៅនិចលភាព"
+
+msgid "Inertia Tensor"
+msgstr "Inertia Tensor"
+
+msgid "Is Trigger"
+msgstr "Is Trigger"
+
+msgid "Mesh Index"
+msgstr "លិបិក្រមម៉េស"
+
+msgid "Importer Mesh"
+msgstr "Importer Mesh"
+
+msgid "Image Format"
+msgstr "Image Format"
+
+msgid "Fallback Image Format"
+msgstr "Fallback Image Format"
+
+msgid "Fallback Image Quality"
+msgstr "Fallback Image Quality"
+
+msgid "Root Node Mode"
+msgstr "Root Node Mode"
+
+msgid "Visibility Mode"
+msgstr "Visibility Mode"
+
+msgid "Json"
+msgstr "Json"
+
+msgid "Major Version"
+msgstr "Major Version"
+
+msgid "Minor Version"
+msgstr "Minor Version"
+
+msgid "GLB Data"
+msgstr "GLB Data"
+
+msgid "Use Named Skin Binds"
+msgstr "Use Named Skin Binds"
+
+msgid "Buffers"
+msgstr "Buffers"
+
+msgid "Buffer Views"
+msgstr "Buffer Views"
+
+msgid "Accessors"
+msgstr "Accessors"
+
+msgid "Scene Name"
+msgstr "ឈ្មោះសាក"
+
+msgid "Base Path"
+msgstr "Base Path"
+
+msgid "Filename"
+msgstr "Filename"
+
+msgid "Root Nodes"
+msgstr "Root Nodes"
+
+msgid "Texture Samplers"
+msgstr "Texture Samplers"
+
+msgid "Images"
+msgstr "Images"
+
+msgid "Cameras"
+msgstr "Cameras"
+
+msgid "Lights"
+msgstr "Lights"
+
+msgid "Unique Names"
+msgstr "Unique Names"
+
+msgid "Unique Animation Names"
+msgstr "Unique Animation Names"
+
+msgid "Skeletons"
+msgstr "Skeletons"
+
+msgid "Create Animations"
+msgstr "បង្កើតចលនា"
+
+msgid "Animations"
+msgstr "Animations"
+
+msgid "Handle Binary Image Mode"
+msgstr "Handle Binary Image Mode"
+
+msgid "Buffer View"
+msgstr "Buffer View"
+
+msgid "Byte Offset"
+msgstr "Byte Offset"
+
+msgid "Component Type"
+msgstr "Component Type"
+
+msgid "Normalized"
+msgstr "Normalized"
+
+msgid "Count"
+msgstr "Count"
+
+msgid "Accessor Type"
+msgstr "ប្រភេទ Accessor"
+
+msgid "Min"
+msgstr "អប្បបរមា"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Sparse Count"
+msgstr "ចំនួន Sparse"
+
+msgid "Sparse Indices Buffer View"
+msgstr "Sparse Indices Buffer View"
+
+msgid "Sparse Indices Byte Offset"
+msgstr "Sparse Indices Byte Offset"
+
+msgid "Sparse Indices Component Type"
+msgstr "Sparse Indices Component Type"
+
+msgid "Sparse Values Buffer View"
+msgstr "Sparse Values Buffer View"
+
+msgid "Sparse Values Byte Offset"
+msgstr "Sparse Values Byte Offset"
+
+msgid "Original Name"
+msgstr "Original Name"
+
+msgid "Loop"
+msgstr "Loop"
+
+msgid "Buffer"
+msgstr "Buffer"
+
+msgid "Byte Length"
+msgstr "Byte Length"
+
+msgid "Byte Stride"
+msgstr "Byte Stride"
+
+msgid "Indices"
+msgstr "Indices"
+
+msgid "Vertex Attributes"
+msgstr "Vertex Attributes"
+
+msgid "Perspective"
+msgstr "Perspective"
+
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Size Mag"
+msgstr "Size Mag"
+
+msgid "Depth Far"
+msgstr "Depth Far"
+
+msgid "Depth Near"
+msgstr "Depth Near"
+
+msgid "Blend Weights"
+msgstr "Blend Weights"
+
+msgid "Instance Materials"
+msgstr "សម្ភារៈឧទាហរណ៍"
+
+msgid "Parent"
+msgstr "Parent"
+
+msgid "Xform"
+msgstr "Xform"
+
+msgid "Skin"
+msgstr "Skin"
+
+msgid "Children"
+msgstr "Children"
+
+msgid "Light"
+msgstr "Light"
+
+msgid "Visible"
+msgstr "Visible"
+
+msgid "glTF to Godot Expression"
+msgstr "glTF to Godot Expression"
+
+msgid "Godot to glTF Expression"
+msgstr "Godot to glTF Expression"
+
+msgid "Node Paths"
+msgstr "Node Paths"
+
+msgid "Object Model Type"
+msgstr "Object Model Type"
+
+msgid "Json Pointers"
+msgstr "ចំណុច Json"
+
+msgid "Variant Type"
+msgstr "ប្រភេទ Variant"
+
+msgid "Joints"
+msgstr "Joints"
+
+msgid "Roots"
+msgstr "Roots"
+
+msgid "Godot Bone Node"
+msgstr "Godot Bone Node"
+
+msgid "Skin Root"
+msgstr "Skin Root"
+
+msgid "Joints Original"
+msgstr "Joints Original"
+
+msgid "Non Joints"
+msgstr "Non Joints"
+
+msgid "Godot Skin"
+msgstr "Godot Skin"
+
+msgid "Src Image"
+msgstr "Src Image"
+
+msgid "Sampler"
+msgstr "Sampler"
+
+msgid "Mag Filter"
+msgstr "Mag Filter"
+
+msgid "Min Filter"
+msgstr "តម្រងអប្បបរមា"
+
+msgid "Wrap S"
+msgstr "Wrap S"
+
+msgid "Wrap T"
+msgstr "Wrap T"
+
+msgid "Physics Material"
+msgstr "Physics Material"
+
+msgid "Cell"
+msgstr "Cell"
+
+msgid "Octant Size"
+msgstr "Octant Size"
+
+msgid "Center X"
+msgstr "Center X"
+
+msgid "Center Y"
+msgstr "Center Y"
+
+msgid "Center Z"
+msgstr "Center Z"
+
+msgid "Priority"
+msgstr "Priority"
+
+msgid "Bake Navigation"
+msgstr "Bake ការរុករក"
+
+msgid "Clip Count"
+msgstr "ចំនួនឃ្លីប"
+
+msgid "Initial Clip"
+msgstr "ឃ្លីបដំបូង"
+
+msgid "Shuffle"
+msgstr "Shuffle"
+
+msgid "Fade Time"
+msgstr "Fade Time"
+
+msgid "Stream Count"
+msgstr "ចំនួនស្ទ្រីម"
+
+msgid "Jolt Physics 3D"
+msgstr "Jolt Physics 3D"
+
+msgid "Simulation"
+msgstr "ការក្លែងធ្វើ (Simulation)"
+
+msgid "Velocity Steps"
+msgstr "ជំហានល្បឿន"
+
+msgid "Position Steps"
+msgstr "ជំហានទីតាំង"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Use Enhanced Internal Edge Removal"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Generate All Kinematic Contacts"
+
+msgid "Penetration Slop"
+msgstr "Slop នៃការជ្រៀតចូល"
+
+msgid "Speculative Contact Distance"
+msgstr "ចម្ងាយប៉ះទង្គិចសន្មត"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Baumgarte Stabilization Factor"
+
+msgid "Soft Body Point Radius"
+msgstr "Soft Body Point Radius"
+
+msgid "Bounce Velocity Threshold"
+msgstr "Bounce Velocity Threshold"
+
+msgid "Allow Sleep"
+msgstr "Allow Sleep"
+
+msgid "Sleep Velocity Threshold"
+msgstr "កម្រិតល្បឿន Sleep"
+
+msgid "Sleep Time Threshold"
+msgstr "Sleep Time Threshold"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "Continuous CD Movement Threshold"
+
+msgid "Continuous CD Max Penetration"
+msgstr "ការជ្រៀតចូលអតិបរមា Continuous CD"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "Body Pair Contact Cache Enabled"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "Body Pair Contact Cache Distance Threshold"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "Body Pair Contact Cache Angle Threshold"
+
+msgid "Queries"
+msgstr "Queries"
+
+msgid "Enable Ray Cast Face Index"
+msgstr "Enable Ray Cast Face Index"
+
+msgid "Motion Queries"
+msgstr "សំណួរចលនា"
+
+msgid "Recovery Iterations"
+msgstr "ការធ្វើឡើងវិញ"
+
+msgid "Recovery Amount"
+msgstr "ចំនួនការធ្វើឡើងវិញ"
+
+msgid "Collisions"
+msgstr "ការប៉ះទង្គិច"
+
+msgid "Collision Margin Fraction"
+msgstr "ប្រភាគគែមប៉ះទង្គិច"
+
+msgid "Active Edge Threshold"
+msgstr "Active Edge Threshold"
+
+msgid "World Node"
+msgstr "World Node"
+
+msgid "Temporary Memory Buffer Size"
+msgstr "Temporary Memory Buffer Size"
+
+msgid "World Boundary Shape Size"
+msgstr "World Boundary Shape Size"
+
+msgid "Max Linear Velocity"
+msgstr "ល្បឿនលីនេអ៊ែរអតិបរមា"
+
+msgid "Max Angular Velocity"
+msgstr "ល្បឿនមុំអតិបរមា"
+
+msgid "Max Bodies"
+msgstr "តួអតិបរមា"
+
+msgid "Max Body Pairs"
+msgstr "Max Body Pairs"
+
+msgid "Max Contact Constraints"
+msgstr "ការរឹតបន្តឹងប៉ះទង្គិចអតិបរមា"
+
+msgid "Lightmapping"
+msgstr "Lightmapping"
+
+msgid "Bake Quality"
+msgstr "Bake Quality"
+
+msgid "Low Quality Ray Count"
+msgstr "Low Quality Ray Count"
+
+msgid "Medium Quality Ray Count"
+msgstr "Medium Quality Ray Count"
+
+msgid "High Quality Ray Count"
+msgstr "High Quality Ray Count"
+
+msgid "Ultra Quality Ray Count"
+msgstr "Ultra Quality Ray Count"
+
+msgid "Bake Performance"
+msgstr "Bake Performance"
+
+msgid "Max Rays per Pass"
+msgstr "កាំរស្មីអតិបរមាក្នុងមួយដំណើរ"
+
+msgid "Region Size"
+msgstr "Region Size"
+
+msgid "Max Transparency Rays"
+msgstr "Max Transparency Rays"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "Low Quality Probe Ray Count"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "Medium Quality Probe Ray Count"
+
+msgid "High Quality Probe Ray Count"
+msgstr "High Quality Probe Ray Count"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "Ultra Quality Probe Ray Count"
+
+msgid "Max Rays per Probe Pass"
+msgstr "Max Rays per Probe Pass"
+
+msgid "Denoising"
+msgstr "Denoising"
+
+msgid "Denoiser"
+msgstr "Denoiser"
+
+msgid "Eye Height"
+msgstr "Eye Height"
+
+msgid "IOD"
+msgstr "IOD"
+
+msgid "Display Width"
+msgstr "Display Width"
+
+msgid "Display to Lens"
+msgstr "Display to Lens"
+
+msgid "Offset Rect"
+msgstr "Offset Rect"
+
+msgid "Oversample"
+msgstr "Oversample"
+
+msgid "K1"
+msgstr "K1"
+
+msgid "K2"
+msgstr "K2"
+
+msgid "Vulkan VRS"
+msgstr "Vulkan VRS"
+
+msgid "Min Radius"
+msgstr "កាំអប្បបរមា"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Beat Count"
+msgstr "ចំនួន Beat"
+
+msgid "Bar Beats"
+msgstr "Bar Beats"
+
+msgid "Loop Offset"
+msgstr "Loop Offset"
+
+msgid "Spawn Path"
+msgstr "Spawn Path"
+
+msgid "Spawn Limit"
+msgstr "Spawn Limit"
+
+msgid "Root Path"
+msgstr "Root Path"
+
+msgid "Replication Interval"
+msgstr "Replication Interval"
+
+msgid "Delta Interval"
+msgstr "Delta Interval"
+
+msgid "Replication Config"
+msgstr "ការកំណត់រចនាសម្ព័ន្ធធ្វើឡើងវិញ"
+
+msgid "Visibility Update Mode"
+msgstr "Visibility Update Mode"
+
+msgid "Public Visibility"
+msgstr "Public Visibility"
+
+msgid "Auth Callback"
+msgstr "Auth Callback"
+
+msgid "Auth Timeout"
+msgstr "អស់សុពលភាព Auth"
+
+msgid "Allow Object Decoding"
+msgstr "Allow Object Decoding"
+
+msgid "Refuse New Connections"
+msgstr "Refuse New Connections"
+
+msgid "Server Relay"
+msgstr "Server Relay"
+
+msgid "Max Sync Packet Size"
+msgstr "Max Sync Packet Size"
+
+msgid "Max Delta Packet Size"
+msgstr "Max Delta Packet Size"
+
+msgid "Noise Type"
+msgstr "Noise Type"
+
+msgid "Frequency"
+msgstr "Frequency"
+
+msgid "Fractal"
+msgstr "Fractal"
+
+msgid "Octaves"
+msgstr "Octaves"
+
+msgid "Lacunarity"
+msgstr "Lacunarity"
+
+msgid "Gain"
+msgstr "Gain"
+
+msgid "Weighted Strength"
+msgstr "Weighted Strength"
+
+msgid "Ping Pong Strength"
+msgstr "Ping Pong Strength"
+
+msgid "Cellular"
+msgstr "Cellular"
+
+msgid "Distance Function"
+msgstr "អនុគមន៍ចម្ងាយ"
+
+msgid "Jitter"
+msgstr "Jitter"
+
+msgid "Return Type"
+msgstr "Return Type"
+
+msgid "Domain Warp"
+msgstr "Domain Warp"
+
+msgid "Amplitude"
+msgstr "Amplitude"
+
+msgid "Fractal Type"
+msgstr "Fractal Type"
+
+msgid "Fractal Octaves"
+msgstr "Fractal Octaves"
+
+msgid "Fractal Lacunarity"
+msgstr "Fractal Lacunarity"
+
+msgid "Fractal Gain"
+msgstr "Fractal Gain"
+
+msgid "Width"
+msgstr "Width"
+
+msgid "Noise"
+msgstr "Noise"
+
+msgid "Color Ramp"
+msgstr "Color Ramp"
+
+msgid "Seamless"
+msgstr "Seamless"
+
+msgid "Invert"
+msgstr "Invert"
+
+msgid "In 3D Space"
+msgstr "In 3D Space"
+
+msgid "As Normal Map"
+msgstr "As Normal Map"
+
+msgid "Seamless Blend Skirt"
+msgstr "Seamless Blend Skirt"
+
+msgid "Bump Strength"
+msgstr "Bump Strength"
+
+msgid "Localized Name"
+msgstr "Localized Name"
+
+msgid "Action Type"
+msgstr "ប្រភេទសកម្មភាព"
+
+msgid "Toplevel Paths"
+msgstr "Toplevel Paths"
+
+msgid "Action Sets"
+msgstr "ស σύνολο សកម្មភាព"
+
+msgid "Interaction Profiles"
+msgstr "ប្រវត្តិរូបអន្តរកម្ម"
+
+msgid "Actions"
+msgstr "សកម្មភាព"
+
+msgid "Duration"
+msgstr "រយៈពេល"
+
+msgid "Binding Path"
+msgstr "Binding Path"
+
+msgid "Interaction Profile Path"
+msgstr "Interaction Profile Path"
+
+msgid "Bindings"
+msgstr "Bindings"
+
+msgid "Runtime Paths"
+msgstr "Runtime Paths"
+
+msgid "Action Set"
+msgstr "សំណុំសកម្មភាព"
+
+msgid "Input Path"
+msgstr "ផ្លូវបញ្ចូល"
+
+msgid "Threshold Released"
+msgstr "Threshold Released"
+
+msgid "Center Region"
+msgstr "Center Region"
+
+msgid "Wedge Angle"
+msgstr "មុំ Wedge"
+
+msgid "Is Sticky"
+msgstr "Is Sticky"
+
+msgid "On Haptic"
+msgstr "On Haptic"
+
+msgid "Off Haptic"
+msgstr "Off Haptic"
+
+msgid "Relax Frame Interval"
+msgstr "Relax Frame Interval"
+
+msgid "On Threshold"
+msgstr "On Threshold"
+
+msgid "Off Threshold"
+msgstr "Off Threshold"
+
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Entity"
+msgstr "Entity"
+
+msgid "Spatial Tracking State"
+msgstr "Spatial Tracking State"
+
+msgid "April Dict"
+msgstr "April Dict"
+
+msgid "Bounds Size"
+msgstr "ទំហំព្រំដែន"
+
+msgid "Marker Type"
+msgstr "ប្រភេទសញ្ញាសម្គាល់"
+
+msgid "Marker ID"
+msgstr "Marker ID"
+
+msgid "Plane Alignment"
+msgstr "Plane Alignment"
+
+msgid "Plane Label"
+msgstr "Plane Label"
+
+msgid "Display Refresh Rate"
+msgstr "Display Refresh Rate"
+
+msgid "Render Target Size Multiplier"
+msgstr "Render Target Size Multiplier"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Layer Viewport"
+msgstr "Layer Viewport"
+
+msgid "Use Android Surface"
+msgstr "Use Android Surface"
+
+msgid "Protected Content"
+msgstr "មាតិកាការពារ"
+
+msgid "Android Surface Size"
+msgstr "Android Surface Size"
+
+msgid "Sort Order"
+msgstr "Sort Order"
+
+msgid "Alpha Blend"
+msgstr "Alpha Blend"
+
+msgid "Enable Hole Punch"
+msgstr "Enable Hole Punch"
+
+msgid "Eye Visibility"
+msgstr "ភាពមើលឃើញភ្នែក"
+
+msgid "Swapchain State"
+msgstr "ស្ថានភាព Swapchain"
+
+msgid "Mipmap Mode"
+msgstr "របៀប Mipmap"
+
+msgid "Horizontal Wrap"
+msgstr "Horizontal Wrap"
+
+msgid "Vertical Wrap"
+msgstr "Vertical Wrap"
+
+msgid "Red Swizzle"
+msgstr "Red Swizzle"
+
+msgid "Green Swizzle"
+msgstr "Green Swizzle"
+
+msgid "Blue Swizzle"
+msgstr "Blue Swizzle"
+
+msgid "Alpha Swizzle"
+msgstr "Alpha Swizzle"
+
+msgid "Max Anisotropy"
+msgstr "Max Anisotropy"
+
+msgid "Border Color"
+msgstr "Border Color"
+
+msgid "Aspect Ratio"
+msgstr "Aspect Ratio"
+
+msgid "Central Angle"
+msgstr "មុំកណ្តាល"
+
+msgid "Fallback Segments"
+msgstr "Fallback Segments"
+
+msgid "Central Horizontal Angle"
+msgstr "Central Horizontal Angle"
+
+msgid "Upper Vertical Angle"
+msgstr "Upper Vertical Angle"
+
+msgid "Lower Vertical Angle"
+msgstr "Lower Vertical Angle"
+
+msgid "Quad Size"
+msgstr "ទំហំ Quad"
+
+msgid "Hand"
+msgstr "Hand"
+
+msgid "Motion Range"
+msgstr "Motion Range"
+
+msgid "Hand Skeleton"
+msgstr "Hand Skeleton"
+
+msgid "Skeleton Rig"
+msgstr "Rig គ្រោងឆ្អឹង"
+
+msgid "Bone Update"
+msgstr "ការធ្វើបច្ចុប្បន្នភាពឆ្អឹង"
+
+msgid "Tracker"
+msgstr "Tracker"
+
+msgid "Make Local to Pose"
+msgstr "ធ្វើឱ្យមូលដ្ឋានទៅ Pose"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Margins"
+msgstr "Margins"
+
+msgid "Separation"
+msgstr "ការបំបែក"
+
+msgid "Texture Region Size"
+msgstr "Texture Region Size"
+
+msgid "Use Texture Padding"
+msgstr "Use Texture Padding"
+
+msgid "Atlas Coords"
+msgstr "Atlas Coords"
+
+msgid "Size in Atlas"
+msgstr "Size in Atlas"
+
+msgid "Alternative ID"
+msgstr "Alternative ID"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Frames Count"
+msgstr "ចំនួន frame"
+
+msgid "Navigation Visibility Mode"
+msgstr "របៀបមើលឃើញការរុករក"
+
+msgid "Occlusion Enabled"
+msgstr "បានបើក Occlusion"
+
+msgid "Collision Enabled"
+msgstr "បានបើកការប៉ះទង្គិច"
+
+msgid "Physics Quadrant Size"
+msgstr "ទំហំ Quadrant រូបវិទ្យា"
+
+msgid "Right Corner"
+msgstr "ជ្រុងស្តាំ"
+
+msgid "Custom Data"
+msgstr "ទិន្នន័យផ្ទាល់ខ្លួន"
+
+msgid "Occlusion Layers"
+msgstr "ស្រទាប់ Occlusion"
+
+msgid "Physics Layers"
+msgstr "ស្រទាប់រូបវិទ្យា"
+
+msgid "Scenes"
+msgstr "សាក"
+
+msgid "Scene"
+msgstr "សាក"
+
+msgid "Polygons Count"
+msgstr "ចំនួនពហុកោណ"
+
+msgid "Flip H"
+msgstr "Flip H"
+
+msgid "Flip V"
+msgstr "Flip V"
+
+msgid "Discover Multicast If"
+msgstr "Discover Multicast If"
+
+msgid "Discover Local Port"
+msgstr "Discover Local Port"
+
+msgid "Discover IPv6"
+msgstr "Discover IPv6"
+
+msgid "Description URL"
+msgstr "Description URL"
+
+msgid "Service Type"
+msgstr "Service Type"
+
+msgid "IGD Control URL"
+msgstr "IGD Control URL"
+
+msgid "IGD Service Type"
+msgstr "IGD Service Type"
+
+msgid "IGD Our Addr"
+msgstr "IGD Our Addr"
+
+msgid "IGD Status"
+msgstr "IGD Status"
+
+msgid "Output Port for Preview"
+msgstr "Output Port for Preview"
+
+msgid "Modes"
+msgstr "Modes"
+
+msgid "Flags"
+msgstr "Flags"
+
+msgid "Stencil"
+msgstr "Stencil"
+
+msgid "Reference"
+msgstr "ឯកសារយោង"
+
+msgid "Stencil Modes"
+msgstr "របៀប Stencil"
+
+msgid "Stencil Flags"
+msgstr "Stencil Flags"
+
+msgid "Input Name"
+msgstr "Input Name"
+
+msgid "Parameter Name"
+msgstr "Parameter Name"
+
+msgid "Qualifier"
+msgstr "Qualifier"
+
+msgid "Instance Index"
+msgstr "លិបិក្រមឧទាហរណ៍"
+
+msgid "Tint Color Enabled"
+msgstr "បានបើកពណ៌ជ្រលក់"
+
+msgid "Tint Color"
+msgstr "ពណ៌ជ្រលក់"
+
+msgid "Autoshrink"
+msgstr "Autoshrink"
+
+msgid "Expression"
+msgstr "Expression"
+
+msgid "Varying Name"
+msgstr "Varying Name"
+
+msgid "Varying Type"
+msgstr "ប្រភេទ Varying"
+
+msgid "Op Type"
+msgstr "Op Type"
+
+msgid "Constant"
+msgstr "Constant"
+
+msgid "Source"
+msgstr "Source"
+
+msgid "Texture Type"
+msgstr "Texture Type"
+
+msgid "Texture Array"
+msgstr "Texture Array"
+
+msgid "Cube Map"
+msgstr "Cube Map"
+
+msgid "Operator"
+msgstr "Operator"
+
+msgid "Function"
+msgstr "Function"
+
+msgid "Hint"
+msgstr "Hint"
+
+msgid "Step"
+msgstr "Step"
+
+msgid "Default Value Enabled"
+msgstr "Default Value Enabled"
+
+msgid "Default Value"
+msgstr "តម្លៃលំនាំដើម"
+
+msgid "Enum Names"
+msgstr "ឈ្មោះ Enum"
+
+msgid "Color Default"
+msgstr "Color Default"
+
+msgid "Texture Filter"
+msgstr "Texture Filter"
+
+msgid "Texture Repeat"
+msgstr "Texture Repeat"
+
+msgid "Texture Source"
+msgstr "Texture Source"
+
+msgid "Condition"
+msgstr "Condition"
+
+msgid "Billboard Type"
+msgstr "Billboard Type"
+
+msgid "Keep Scale"
+msgstr "Keep Scale"
+
+msgid "Mode 2D"
+msgstr "Mode 2D"
+
+msgid "Use All Surfaces"
+msgstr "Use All Surfaces"
+
+msgid "Surface Index"
+msgstr "Surface Index"
+
+msgid "Degrees Mode"
+msgstr "Degrees Mode"
+
+msgid "WebRTC"
+msgstr "WebRTC"
+
+msgid "Max Channel in Buffer (KB)"
+msgstr "Max Channel in Buffer (KB)"
+
+msgid "Write Mode"
+msgstr "Write Mode"
+
+msgid "Supported Protocols"
+msgstr "Supported Protocols"
+
+msgid "Handshake Headers"
+msgstr "Handshake Headers"
+
+msgid "Inbound Buffer Size"
+msgstr "Inbound Buffer Size"
+
+msgid "Outbound Buffer Size"
+msgstr "Outbound Buffer Size"
+
+msgid "Handshake Timeout"
+msgstr "Handshake Timeout"
+
+msgid "Max Queued Packets"
+msgstr "Max Queued Packets"
+
+msgid "Heartbeat Interval"
+msgstr "Heartbeat Interval"
+
+msgid "Session Mode"
+msgstr "Session Mode"
+
+msgid "Required Features"
+msgstr "Required Features"
+
+msgid "Optional Features"
+msgstr "Optional Features"
+
+msgid "Requested Reference Space Types"
+msgstr "Requested Reference Space Types"
+
+msgid "Reference Space Type"
+msgstr "Reference Space Type"
+
+msgid "Enabled Features"
+msgstr "Enabled Features"
+
+msgid "Visibility State"
+msgstr "Visibility State"
+
+msgid "Debug Keystore"
+msgstr "Debug Keystore"
+
+msgid "Debug Keystore User"
+msgstr "Debug Keystore User"
+
+msgid "Debug Keystore Pass"
+msgstr "Debug Keystore Pass"
+
+msgid "Install Exported APK"
+msgstr "Install Exported APK"
+
+msgid "Java SDK Path"
+msgstr "Java SDK Path"
+
+msgid "Android SDK Path"
+msgstr "Android SDK Path"
+
+msgid "scrcpy"
+msgstr "scrcpy"
+
+msgid "Virtual Display"
+msgstr "Virtual Display"
+
+msgid "No Decorations"
+msgstr "គ្មានការតុបតែង"
+
+msgid "Local IME"
+msgstr "Local IME"
+
+msgid "Screen Size"
+msgstr "ទំហំអេក្រង់"
+
+msgid "Force System User"
+msgstr "Force System User"
+
+msgid "Shutdown ADB on Exit"
+msgstr "Shutdown ADB on Exit"
+
+msgid "One Click Deploy Clear Previous Install"
+msgstr "One Click Deploy Clear Previous Install"
+
+msgid "Use Wi-Fi for Remote Debug"
+msgstr "Use Wi-Fi for Remote Debug"
+
+msgid "Wi-Fi Remote Debug Host"
+msgstr "Wi-Fi Remote Debug Host"
+
+msgid "Splash Screen"
+msgstr "Splash Screen"
+
+msgid "Disable Godot Boot Splash"
+msgstr "Disable Godot Boot Splash"
+
+msgid "Background Color"
+msgstr "Background Color"
+
+msgid "Branding Image"
+msgstr "Branding Image"
+
+msgid "Launcher Icons"
+msgstr "Launcher Icons"
+
+msgid "Main 192 X 192"
+msgstr "Main 192 X 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "Adaptive Foreground 432 X 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "Adaptive Background 432 X 432"
+
+msgid "Adaptive Monochrome 432 X 432"
+msgstr "Adaptive Monochrome 432 X 432"
+
+msgid "Gradle Build"
+msgstr "Gradle Build"
+
+msgid "Use Gradle Build"
+msgstr "Use Gradle Build"
+
+msgid "Gradle Build Directory"
+msgstr "Gradle Build Directory"
+
+msgid "Android Source Template"
+msgstr "Android Source Template"
+
+msgid "Compress Native Libraries"
+msgstr "Compress Native Libraries"
+
+msgid "Export Format"
+msgstr "Export Format"
+
+msgid "Min SDK"
+msgstr "Min SDK"
+
+msgid "Target SDK"
+msgstr "Target SDK"
+
+msgid "Custom Theme Attributes"
+msgstr "Custom Theme Attributes"
+
+msgid "Keystore"
+msgstr "Keystore"
+
+msgid "Debug User"
+msgstr "Debug User"
+
+msgid "Debug Password"
+msgstr "Debug Password"
+
+msgid "Release User"
+msgstr "Release User"
+
+msgid "Release Password"
+msgstr "Release Password"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Package"
+msgstr "Package"
+
+msgid "Unique Name"
+msgstr "ឈ្មោះតែមួយគត់"
+
+msgid "Signed"
+msgstr "Signed"
+
+msgid "App Category"
+msgstr "App Category"
+
+msgid "Retain Data on Uninstall"
+msgstr "Retain Data on Uninstall"
+
+msgid "Exclude From Recents"
+msgstr "Exclude From Recents"
+
+msgid "Show in Android TV"
+msgstr "Show in Android TV"
+
+msgid "Show in App Library"
+msgstr "Show in App Library"
+
+msgid "Show as Launcher App"
+msgstr "Show as Launcher App"
+
+msgid "Graphics"
+msgstr "Graphics"
+
+msgid "OpenGL Debug"
+msgstr "OpenGL Debug"
+
+msgid "XR Features"
+msgstr "XR Features"
+
+msgid "XR Mode"
+msgstr "XR Mode"
+
+msgid "Gesture"
+msgstr "Gesture"
+
+msgid "Swipe to Dismiss"
+msgstr "Swipe to Dismiss"
+
+msgid "Immersive Mode"
+msgstr "Immersive Mode"
+
+msgid "Edge to Edge"
+msgstr "Edge to Edge"
+
+msgid "Support Small"
+msgstr "Support Small"
+
+msgid "Support Normal"
+msgstr "Support Normal"
+
+msgid "Support Large"
+msgstr "Support Large"
+
+msgid "Support Xlarge"
+msgstr "Support Xlarge"
+
+msgid "User Data Backup"
+msgstr "User Data Backup"
+
+msgid "Allow"
+msgstr "Allow"
+
+msgid "Command Line"
+msgstr "Command Line"
+
+msgid "Extra Args"
+msgstr "Extra Args"
+
+msgid "Permissions"
+msgstr "Permissions"
+
+msgid "Custom Permissions"
+msgstr "Custom Permissions"
+
+msgid "iOS Deploy"
+msgstr "iOS Deploy"
+
+msgid "Targeted Device Family"
+msgstr "Targeted Device Family"
+
+msgid "Min iOS Version"
+msgstr "Min iOS Version"
+
+msgid "Storyboard"
+msgstr "Storyboard"
+
+msgid "Image Scale Mode"
+msgstr "Image Scale Mode"
+
+msgid "Custom Image @2x"
+msgstr "Custom Image @2x"
+
+msgid "Custom Image @3x"
+msgstr "Custom Image @3x"
+
+msgid "Use Custom BG Color"
+msgstr "Use Custom BG Color"
+
+msgid "Custom BG Color"
+msgstr "Custom BG Color"
+
+msgid "Performance Gaming Tier"
+msgstr "Performance Gaming Tier"
+
+msgid "Performance A 12"
+msgstr "Performance A 12"
+
+msgid "Settings 58 X 58"
+msgstr "Settings 58 X 58"
+
+msgid "Settings 87 X 87"
+msgstr "Settings 87 X 87"
+
+msgid "Notification 40 X 40"
+msgstr "Notification 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "Notification 60 X 60"
+
+msgid "Notification 76 X 76"
+msgstr "Notification 76 X 76"
+
+msgid "Notification 114 X 114"
+msgstr "Notification 114 X 114"
+
+msgid "Spotlight 80 X 80"
+msgstr "Spotlight 80 X 80"
+
+msgid "Spotlight 120 X 120"
+msgstr "Spotlight 120 X 120"
+
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iOS 128 X 128"
+msgstr "iOS 128 X 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 X 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 X 136"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "Architecture"
+msgstr "Architecture"
+
+msgid "SSH Remote Deploy"
+msgstr "SSH Remote Deploy"
+
+msgid "Extra Args SSH"
+msgstr "Extra Args SSH"
+
+msgid "Extra Args SCP"
+msgstr "Extra Args SCP"
+
+msgid "Run Script"
+msgstr "Run Script"
+
+msgid "Cleanup Script"
+msgstr "Cleanup Script"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
+
+msgid "actool"
+msgstr "actool"
+
+msgid "Distribution Type"
+msgstr "ប្រភេទចែកចាយ"
+
+msgid "Liquid Glass Icon"
+msgstr "Liquid Glass Icon"
+
+msgid "Copyright Localized"
+msgstr "Copyright Localized"
+
+msgid "Min macOS Version x86 64"
+msgstr "Min macOS Version x86 64"
+
+msgid "Min macOS Version arm64"
+msgstr "Min macOS Version arm64"
+
+msgid "Export Angle"
+msgstr "មុំនាំចេញ"
+
+msgid "High Res"
+msgstr "High Res"
+
+msgid "Xcode"
+msgstr "Xcode"
+
+msgid "Platform Build"
+msgstr "ការសាងសង់វេទិកា"
+
+msgid "SDK Version"
+msgstr "SDK Version"
+
+msgid "SDK Build"
+msgstr "SDK Build"
+
+msgid "SDK Name"
+msgstr "ឈ្មោះ SDK"
+
+msgid "Xcode Version"
+msgstr "Xcode Version"
+
+msgid "Xcode Build"
+msgstr "Xcode Build"
+
+msgid "Codesign"
+msgstr "Codesign"
+
+msgid "Installer Identity"
+msgstr "អត្តសញ្ញាណកម្មវិធីដំឡើង"
+
+msgid "Apple Team ID"
+msgstr "Apple Team ID"
+
+msgid "Identity"
+msgstr "Identity"
+
+msgid "Certificate File"
+msgstr "Certificate File"
+
+msgid "Certificate Password"
+msgstr "Certificate Password"
+
+msgid "Provisioning Profile"
+msgstr "Provisioning Profile"
+
+msgid "Custom File"
+msgstr "Custom File"
+
+msgid "Allow JIT Code Execution"
+msgstr "Allow JIT Code Execution"
+
+msgid "Allow Unsigned Executable Memory"
+msgstr "Allow Unsigned Executable Memory"
+
+msgid "Allow Dyld Environment Variables"
+msgstr "Allow Dyld Environment Variables"
+
+msgid "Disable Library Validation"
+msgstr "Disable Library Validation"
+
+msgid "Audio Input"
+msgstr "Audio Input"
+
+msgid "Address Book"
+msgstr "Address Book"
+
+msgid "Calendars"
+msgstr "Calendars"
+
+msgid "Photos Library"
+msgstr "Photos Library"
+
+msgid "Apple Events"
+msgstr "Apple Events"
+
+msgid "Debugging"
+msgstr "Debugging"
+
+msgid "App Sandbox"
+msgstr "App Sandbox"
+
+msgid "Network Server"
+msgstr "Network Server"
+
+msgid "Network Client"
+msgstr "Network Client"
+
+msgid "Device USB"
+msgstr "Device USB"
+
+msgid "Device Bluetooth"
+msgstr "Device Bluetooth"
+
+msgid "Files Downloads"
+msgstr "Files Downloads"
+
+msgid "Files Pictures"
+msgstr "Files Pictures"
+
+msgid "Files Music"
+msgstr "Files Music"
+
+msgid "Files Movies"
+msgstr "Files Movies"
+
+msgid "Files User Selected"
+msgstr "Files User Selected"
+
+msgid "Helper Executables"
+msgstr "Helper Executables"
+
+msgid "Custom Options"
+msgstr "ជម្រើសផ្ទាល់ខ្លួន"
+
+msgid "Notarization"
+msgstr "Notarization"
+
+msgid "Apple ID Name"
+msgstr "Apple ID Name"
+
+msgid "Apple ID Password"
+msgstr "Apple ID Password"
+
+msgid "API UUID"
+msgstr "API UUID"
+
+msgid "API Key"
+msgstr "API Key"
+
+msgid "API Key ID"
+msgstr "API Key ID"
+
+msgid "Microphone Usage Description"
+msgstr "Microphone Usage Description"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Microphone Usage Description Localized"
+
+msgid "Camera Usage Description"
+msgstr "Camera Usage Description"
+
+msgid "Camera Usage Description Localized"
+msgstr "Camera Usage Description Localized"
+
+msgid "Location Usage Description"
+msgstr "Location Usage Description"
+
+msgid "Location Usage Description Localized"
+msgstr "Location Usage Description Localized"
+
+msgid "Address Book Usage Description"
+msgstr "Address Book Usage Description"
+
+msgid "Address Book Usage Description Localized"
+msgstr "Address Book Usage Description Localized"
+
+msgid "Calendar Usage Description"
+msgstr "Calendar Usage Description"
+
+msgid "Calendar Usage Description Localized"
+msgstr "Calendar Usage Description Localized"
+
+msgid "Photos Library Usage Description"
+msgstr "Photos Library Usage Description"
+
+msgid "Photos Library Usage Description Localized"
+msgstr "Photos Library Usage Description Localized"
+
+msgid "Desktop Folder Usage Description"
+msgstr "Desktop Folder Usage Description"
+
+msgid "Desktop Folder Usage Description Localized"
+msgstr "Desktop Folder Usage Description Localized"
+
+msgid "Documents Folder Usage Description"
+msgstr "Documents Folder Usage Description"
+
+msgid "Documents Folder Usage Description Localized"
+msgstr "Documents Folder Usage Description Localized"
+
+msgid "Downloads Folder Usage Description"
+msgstr "Downloads Folder Usage Description"
+
+msgid "Downloads Folder Usage Description Localized"
+msgstr "Downloads Folder Usage Description Localized"
+
+msgid "Network Volumes Usage Description"
+msgstr "Network Volumes Usage Description"
+
+msgid "Network Volumes Usage Description Localized"
+msgstr "Network Volumes Usage Description Localized"
+
+msgid "Removable Volumes Usage Description"
+msgstr "Removable Volumes Usage Description"
+
+msgid "Removable Volumes Usage Description Localized"
+msgstr "Removable Volumes Usage Description Localized"
+
+msgid "Min visionOS Version"
+msgstr "Min visionOS Version"
+
+msgid "Web"
+msgstr "Web"
+
+msgid "HTTP Host"
+msgstr "HTTP Host"
+
+msgid "HTTP Port"
+msgstr "HTTP Port"
+
+msgid "Use TLS"
+msgstr "Use TLS"
+
+msgid "TLS Key"
+msgstr "TLS Key"
+
+msgid "TLS Certificate"
+msgstr "TLS Certificate"
+
+msgid "Variant"
+msgstr "Variant"
+
+msgid "Extensions Support"
+msgstr "Extensions Support"
+
+msgid "Thread Support"
+msgstr "Thread Support"
+
+msgid "VRAM Texture Compression"
+msgstr "VRAM Texture Compression"
+
+msgid "For Desktop"
+msgstr "For Desktop"
+
+msgid "For Mobile"
+msgstr "For Mobile"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Export Icon"
+msgstr "Export Icon"
+
+msgid "Custom HTML Shell"
+msgstr "Custom HTML Shell"
+
+msgid "Head Include"
+msgstr "Head Include"
+
+msgid "Canvas Resize Policy"
+msgstr "Canvas Resize Policy"
+
+msgid "Focus Canvas on Start"
+msgstr "Focus Canvas on Start"
+
+msgid "Experimental Virtual Keyboard"
+msgstr "Experimental Virtual Keyboard"
+
+msgid "Progressive Web App"
+msgstr "Progressive Web App"
+
+msgid "Ensure Cross Origin Isolation Headers"
+msgstr "Ensure Cross Origin Isolation Headers"
+
+msgid "Offline Page"
+msgstr "Offline Page"
+
+msgid "Icon 144 X 144"
+msgstr "Icon 144 X 144"
+
+msgid "Icon 180 X 180"
+msgstr "Icon 180 X 180"
+
+msgid "Icon 512 X 512"
+msgstr "Icon 512 X 512"
+
+msgid "Emscripten Pool Size"
+msgstr "Emscripten Pool Size"
+
+msgid "Godot Pool Size"
+msgstr "ទំហំ Pool របស់ Godot"
+
+msgid "Windows"
+msgstr "Windows"
+
+msgid "signtool"
+msgstr "signtool"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "Identity Type"
+msgstr "Identity Type"
+
+msgid "Timestamp"
+msgstr "ត្រាពេលវេលា"
+
+msgid "Timestamp Server URL"
+msgstr "Timestamp Server URL"
+
+msgid "Digest Algorithm"
+msgstr "Digest Algorithm"
+
+msgid "Modify Resources"
+msgstr "Modify Resources"
+
+msgid "Console Wrapper Icon"
+msgstr "Console Wrapper Icon"
+
+msgid "File Version"
+msgstr "File Version"
+
+msgid "Product Version"
+msgstr "Product Version"
+
+msgid "Company Name"
+msgstr "Company Name"
+
+msgid "Product Name"
+msgstr "Product Name"
+
+msgid "File Description"
+msgstr "File Description"
+
+msgid "Trademarks"
+msgstr "Trademarks"
+
+msgid "Export D3D12"
+msgstr "Export D3D12"
+
+msgid "D3D12 Agility SDK Multiarch"
+msgstr "D3D12 Agility SDK Multiarch"
+
+msgid "Sprite Frames"
+msgstr "Frame ស្ព្រាយ"
+
+msgid "Frame"
+msgstr "Frame"
+
+msgid "Speed Scale"
+msgstr "Speed Scale"
+
+msgid "Centered"
+msgstr "Centered"
+
+msgid "Current"
+msgstr "Current"
+
+msgid "Volume dB"
+msgstr "Volume dB"
+
+msgid "Pitch Scale"
+msgstr "Pitch Scale"
+
+msgid "Playing"
+msgstr "Playing"
+
+msgid "Autoplay"
+msgstr "Autoplay"
+
+msgid "Stream Paused"
+msgstr "Stream Paused"
+
+msgid "Max Distance"
+msgstr "Max Distance"
+
+msgid "Attenuation"
+msgstr "Attenuation"
+
+msgid "Max Polyphony"
+msgstr "Max Polyphony"
+
+msgid "Panning Strength"
+msgstr "Panning Strength"
+
+msgid "Bus"
+msgstr "Bus"
+
+msgid "Area Mask"
+msgstr "Area Mask"
+
+msgid "Playback Type"
+msgstr "ប្រភេទការចាក់"
+
+msgid "Copy Mode"
+msgstr "Copy Mode"
+
+msgid "Anchor Mode"
+msgstr "Anchor Mode"
+
+msgid "Ignore Rotation"
+msgstr "Ignore Rotation"
+
+msgid "Custom Viewport"
+msgstr "Viewport ផ្ទាល់ខ្លួន"
+
+msgid "Process Callback"
+msgstr "Process Callback"
+
+msgid "Left"
+msgstr "Left"
+
+msgid "Top"
+msgstr "Top"
+
+msgid "Right"
+msgstr "Right"
+
+msgid "Bottom"
+msgstr "Bottom"
+
+msgid "Smoothed"
+msgstr "Smoothed"
+
+msgid "Position Smoothing"
+msgstr "ការធ្វើឱ្យទីតាំងរលោង"
+
+msgid "Rotation Smoothing"
+msgstr "Rotation Smoothing"
+
+msgid "Drag"
+msgstr "Drag"
+
+msgid "Horizontal Enabled"
+msgstr "Horizontal Enabled"
+
+msgid "Vertical Enabled"
+msgstr "Vertical Enabled"
+
+msgid "Horizontal Offset"
+msgstr "Horizontal Offset"
+
+msgid "Vertical Offset"
+msgstr "Vertical Offset"
+
+msgid "Left Margin"
+msgstr "Left Margin"
+
+msgid "Top Margin"
+msgstr "Top Margin"
+
+msgid "Right Margin"
+msgstr "Right Margin"
+
+msgid "Bottom Margin"
+msgstr "Bottom Margin"
+
+msgid "Draw Screen"
+msgstr "Draw Screen"
+
+msgid "Draw Limits"
+msgstr "Draw Limits"
+
+msgid "Draw Drag Margin"
+msgstr "Draw Drag Margin"
+
+msgid "Tweaks"
+msgstr "Tweaks"
+
+msgid "Fit Margin"
+msgstr "Fit Margin"
+
+msgid "Clear Margin"
+msgstr "Clear Margin"
+
+msgid "Use Mipmaps"
+msgstr "Use Mipmaps"
+
+msgid "Emitting"
+msgstr "Emitting"
+
+msgid "Lifetime"
+msgstr "Lifetime"
+
+msgid "One Shot"
+msgstr "One Shot"
+
+msgid "Preprocess"
+msgstr "Preprocess"
+
+msgid "Explosiveness"
+msgstr "Explosiveness"
+
+msgid "Randomness"
+msgstr "Randomness"
+
+msgid "Use Fixed Seed"
+msgstr "Use Fixed Seed"
+
+msgid "Lifetime Randomness"
+msgstr "Lifetime Randomness"
+
+msgid "Fixed FPS"
+msgstr "បានជុះជុល FPS"
+
+msgid "Scale Amount Min"
+msgstr "ចំនួនមាត្រដ្ឋានអប្បបរមា"
+
+msgid "Scale Amount Max"
+msgstr "ចំនួនមាត្រដ្ឋានអតិបរមា"
+
+msgid "Variation Min"
+msgstr "ការប្រែប្រួលអប្បបរមា"
+
+msgid "Variation Max"
+msgstr "ការប្រែប្រួលអតិបរមា"
+
+msgid "Sections"
+msgstr "ផ្នែក"
+
+msgid "SDF Collision"
+msgstr "ការប៉ះទង្គិច SDF"
+
+msgid "Avoidance Layers"
+msgstr "ស្រទាប់ជៀសវាង"
+
+msgid "Use Custom"
+msgstr "ប្រើផ្ទាល់ខ្លួន"
+
+msgid "Path Custom Color"
+msgstr "ពណ៌ផ្លូវផ្ទាល់ខ្លួន"
+
+msgid "Path Custom Point Size"
+msgstr "ទំហំចំណុចផ្លូវផ្ទាល់ខ្លួន"
+
+msgid "Path Custom Line Width"
+msgstr "ទទឹងបន្ទាត់ផ្លូវផ្ទាល់ខ្លួន"
+
+msgid "Start Position"
+msgstr "ទីតាំងចាប់ផ្តើម"
+
+msgid "End Position"
+msgstr "ទីតាំងបញ្ចប់"
+
+msgid "NavigationPolygon"
+msgstr "NavigationPolygon"
+
+msgid "Affect Navigation Mesh"
+msgstr "ប៉ះពាល់ម៉េសរុករក"
+
+msgid "Carve Navigation Mesh"
+msgstr "ឆ្លាក់ម៉េសរុករក"
+
+msgid "Navigation Polygon"
+msgstr "ពហុកោណរុករក"
+
+msgid "Use Edge Connections"
+msgstr "ប្រើការតភ្ជាប់គែម"
+
+msgid "Scroll Scale"
+msgstr "មាត្រដ្ឋានរំកិល"
+
+msgid "Repeat Size"
+msgstr "ទំហំធ្វើឡើងវិញ"
+
+msgid "Repeat Times"
+msgstr "ចំនួនដងធ្វើឡើងវិញ"
+
+msgid "Screen Offset"
+msgstr "អុហ្វសិតអេក្រង់"
+
+msgid "Mirroring"
+msgstr "ការឆ្លុះ"
+
+msgid "Point Center"
+msgstr "ចំណុចកណ្តាល"
+
+msgid "Max Angle"
+msgstr "មុំអតិបរមា"
+
+msgid "Floor Layers"
+msgstr "ស្រទាប់ជាន់"
+
+msgid "Wall Layers"
+msgstr "ស្រទាប់ជញ្ជាំង"
+
+msgid "Bone 2D Index"
+msgstr "លិបិក្រមឆ្អឹង 2D"
+
+msgid "Target Position"
+msgstr "ទីតាំងគោលដៅ"
+
+msgid "Mass Distribution"
+msgstr "ការចែកចាយម៉ាស"
+
+msgid "Deactivation"
+msgstr "ការបិទសកម្មភាព"
+
+msgid "Freeze"
+msgstr "បង្កក"
+
+msgctxt "Physics"
+msgid "Force"
+msgstr "កម្លាំង"
+
+msgid "Bone Angle"
+msgstr "មុំឆ្អឹង"
+
+msgid "dB"
+msgstr "dB"
+
+msgid "Use External Skeleton"
+msgstr "ប្រើគ្រោងឆ្អឹងខាងក្រៅ"
+
+msgid "External Skeleton"
+msgstr "គ្រោងឆ្អឹងខាងក្រៅ"
+
+msgid "Compositor"
+msgstr "Compositor"
+
+msgid "Ring Cone Angle"
+msgstr "មុំកោន Ring"
+
+msgid "Transform Align"
+msgstr "តម្រង់ជួរការបំប្លែង"
+
+msgid "Transform Align Axis"
+msgstr "អ័ក្សតម្រង់ជួរការបំប្លែង"
+
+msgid "Transform Align Channel Filter"
+msgstr "តម្រងឆានែលតម្រង់ជួរការបំប្លែង"
+
+msgid "Layer Mask"
+msgstr "ម៉ាសស្រទាប់"
+
+msgid "Angular Delta Limit"
+msgstr "ដែនកំណត់ Delta មុំ"
+
+msgid "Temperature"
+msgstr "សីតុណ្ហភាព"
+
+msgid "Transmittance Bias"
+msgstr "Bias នៃការបញ្ជូនពន្លឺ"
+
+msgid "Caster Mask"
+msgstr "ម៉ាស Caster"
+
+msgid "Lightmap Textures"
+msgstr "រូបភាព Lightmap"
+
+msgid "Shadowmask Textures"
+msgstr "រូបភាព Shadowmask"
+
+msgid "Light Texture"
+msgstr "រូបភាពពន្លឺ"
+
+msgid "Texel Scale"
+msgstr "មាត្រដ្ឋាន Texel"
+
+msgid "External Node"
+msgstr "ថ្នាំងខាងក្រៅ"
+
+msgid "Time Based Interpolation"
+msgstr "អន្តរកាលផ្អែកលើពេលវេលា"
+
+msgid "Transition Type"
+msgstr "ប្រភេទអន្តរកាល"
+
+msgid "Ease Type"
+msgstr "ប្រភេទ Ease"
+
+msgid "Path Height Offset"
+msgstr "អុហ្វសិតកម្ពស់ផ្លូវ"
+
+msgid "NavigationMesh"
+msgstr "NavigationMesh"
+
+msgid "Linear Motor"
+msgstr "ម៉ូទ័រលីនេអ៊ែរ"
+
+msgid "Angular Motor"
+msgstr "ម៉ូទ័រមុំ"
+
+msgid "Max Impulse"
+msgstr "Impulse អតិបរមា"
+
+msgid "Joint Constraints"
+msgstr "ការរឹតបន្តឹងសន្លាក់"
+
+msgid "Pinned Points"
+msgstr "ចំណុចដែលបានដាក់ម្ជុល"
+
+msgid "Point Index"
+msgstr "លិបិក្រមចំណុច"
+
+msgid "Use as Traction"
+msgstr "ប្រើជាការទាញ"
+
+msgid "Max Force"
+msgstr "កម្លាំងអតិបរមា"
+
+msgid "Reflection Mask"
+msgstr "ម៉ាសចំណាំងផ្លាត"
+
+msgid "Position Offset"
+msgstr "អុហ្វសិតទីតាំង"
+
+msgid "Rotation Offset"
+msgstr "អុហ្វសិតការបង្វិល"
+
+msgid "External Force"
+msgstr "កម្លាំងខាងក្រៅ"
+
+msgid "Global Illumination"
+msgstr "ពន្លឺសកល"
+
+msgid "Lightmap Texel Scale"
+msgstr "មាត្រដ្ឋាន Texel Lightmap"
+
+msgid "Body Update"
+msgstr "ការធ្វើបច្ចុប្បន្នភាពតួ"
+
+msgid "Use Custom Timeline"
+msgstr "ប្រើ Timeline ផ្ទាល់ខ្លួន"
+
+msgid "Stretch Time Scale"
+msgstr "មាត្រដ្ឋានពេលវេលាយឺត"
+
+msgid "Input Count"
+msgstr "ចំនួនបញ្ចូល"
+
+msgid "Add Amount"
+msgstr "ចំនួនបន្ថែម"
+
+msgid "Blend Amount"
+msgstr "ចំនួនលាយ"
+
+msgid "Sub Amount"
+msgstr "ចំនួនដក"
+
+msgid "Current Index"
+msgstr "លិបិក្រមបច្ចុប្បន្ន"
+
+msgid "Transition Request"
+msgstr "សំណើអន្តរកាល"
+
+msgid "Auto Capture"
+msgstr "ចាប់យកស្វ័យប្រវត្តិ"
+
+msgid "Auto Capture Duration"
+msgstr "រយៈពេលចាប់យកស្វ័យប្រវត្តិ"
+
+msgid "Auto Capture Transition Type"
+msgstr "ប្រភេទអន្តរកាលចាប់យកស្វ័យប្រវត្តិ"
+
+msgid "Icon Behavior"
+msgstr "ឥរិយាបថរូបតំណាង"
+
+msgid "Code Completion"
+msgstr "ការបំពេញកូដ"
+
+msgid "Edit Intensity"
+msgstr "កែសម្រួលកម្រិតពន្លឺ"
+
+msgid "Customization"
+msgstr "ការប្ដូរតាមបំណង"
+
+msgid "Accessibility Region"
+msgstr "តំបន់ភាពងាយស្រួល"
+
+msgid "Constants"
+msgstr "ថេរ"
+
+msgid "Font Sizes"
+msgstr "ទំហំពុម្ពអក្សរ"
+
+msgid "Custom Maximum Size"
+msgstr "ទំហំអតិបរមាផ្ទាល់ខ្លួន"
+
+msgid "Clip Contents"
+msgstr "កាត់មាតិកា"
+
+msgid "Anchor Points"
+msgstr "ចំណុចយុថ្កា"
+
+msgid "Pivot Offset Ratio"
+msgstr "សមាមាត្រអុហ្វសិត Pivot"
+
+msgid "Offset Transform"
+msgstr "ការបំប្លែងអុហ្វសិត"
+
+msgid "Position Ratio"
+msgstr "សមាមាត្រទីតាំង"
+
+msgid "Pivot Ratio"
+msgstr "សមាមាត្រ Pivot"
+
+msgid "Translation Context"
+msgstr "បរិបទការបកប្រែ"
+
+msgid "Auto Translate Mode"
+msgstr "របៀបបកប្រែស្វ័យប្រវត្តិ"
+
+msgid "Type Variation"
+msgstr "ការប្រែប្រួលប្រភេទ"
+
+msgid "Filename Filter"
+msgstr "តម្រងឈ្មោះឯកសារ"
+
+msgid "Options"
+msgstr "ជម្រើស"
+
+msgid "Folder Creation Enabled"
+msgstr "បានបើកការបង្កើតថត"
+
+msgid "Favorites Enabled"
+msgstr "បានបើកការចូលចិត្ត"
+
+msgid "Recent List Enabled"
+msgstr "បានបើកបញ្ជីថ្មីៗ"
+
+msgid "Layout Toggle Enabled"
+msgstr "បានបើកការប្តូរប្លង់"
+
+msgid "Overwrite Warning Enabled"
+msgstr "បានបើកការព្រមានសរសេរជាន់"
+
+msgid "Deleting Enabled"
+msgstr "បានបើកការលុប"
+
+msgid "Title Position"
+msgstr "ទីតាំងចំណងជើង"
+
+msgid "Type Names"
+msgstr "ឈ្មោះប្រភេទ"
+
+msgid "Connection Lines"
+msgstr "បន្ទាត់តភ្ជាប់"
+
+msgid "Connections"
+msgstr "ការតភ្ជាប់"
+
+msgid "Show Zoom Buttons"
+msgstr "បង្ហាញប៊ូតុង Zoom"
+
+msgid "Scaling Menus"
+msgstr "ម៉ឺនុយមាត្រដ្ឋាន"
+
+msgid "Slots Focus Mode"
+msgstr "របៀបផ្តោតរន្ធ"
+
+msgid "Scroll Hint Mode"
+msgstr "របៀបណែនាំរំកិល"
+
+msgid "Paragraph Separator"
+msgstr "តួបំបែកកថាខណ្ឌ"
+
+msgid "Emoji Menu Enabled"
+msgstr "បានបើកម៉ឺនុយ Emoji"
+
+msgid "Select All on Focus"
+msgstr "ជ្រើសទាំងអស់ពេលផ្តោត"
+
+msgid "Show on Focus"
+msgstr "បង្ហាញពេលផ្តោត"
+
+msgid "Character"
+msgstr "តួអក្សរ"
+
+msgid "Right Icon Scale"
+msgstr "មាត្រដ្ឋានរូបតំណាងស្តាំ"
+
+msgid "Start Index"
+msgstr "លិបិក្រមចាប់ផ្តើម"
+
+msgid "Min Item Count"
+msgstr "ចំនួនធាតុអប្បបរមា"
+
+msgid "Min Value"
+msgstr "តម្លៃអប្បបរមា"
+
+msgid "Max Value"
+msgstr "តម្លៃអតិបរមា"
+
+msgid "Glyph Count"
+msgstr "ចំនួន Glyph"
+
+msgid "Fit Content"
+msgstr "សមនឹងមាតិកា"
+
+msgid "Scrollbar"
+msgstr "របាររំកិល"
+
+msgid "Scroll Horizontal"
+msgstr "រំកិលផ្តេក"
+
+msgid "Scroll Vertical"
+msgstr "រំកិលបញ្ឈរ"
+
+msgid "Scroll Horizontal by Default"
+msgstr "រំកិលផ្តេកតាមលំនាំដើម"
+
+msgid "Scroll Hint"
+msgstr "ណែនាំរំកិល"
+
+msgid "Ticks Position"
+msgstr "ទីតាំងសញ្ញា"
+
+msgid "Custom Arrow Round"
+msgstr "ព្រួញមូលផ្ទាល់ខ្លួន"
+
+msgid "Split Offsets"
+msgstr "អុហ្វសិតបំបែក"
+
+msgid "Dragging Enabled"
+msgstr "បានបើកការអូស"
+
+msgid "Touch Dragger Enabled"
+msgstr "បានបើក Touch Dragger"
+
+msgid "Deselect Enabled"
+msgstr "បានបើកការលែងជ្រើស"
+
+msgid "Tabs Position"
+msgstr "ទីតាំង Tabs"
+
+msgid "Fit Content Width"
+msgstr "ទទឹងសមនឹងមាតិកា"
+
+msgid "Word Separators"
+msgstr "តួបំបែកពាក្យ"
+
+msgid "Enable Drag Unfolding"
+msgstr "បើកការអូសពន្លា"
+
+msgid "Auto Tooltip"
+msgstr "Tooltip ស្វ័យប្រវត្តិ"
+
+msgid "Joystick Mode"
+msgstr "របៀប Joystick"
+
+msgid "Joystick Size"
+msgstr "ទំហំ Joystick"
+
+msgid "Tip Size"
+msgstr "ទំហំចុង"
+
+msgid "Initial Offset Ratio"
+msgstr "សមាមាត្រអុហ្វសិតដំបូង"
+
+msgid "Action Left"
+msgstr "សកម្មភាពឆ្វេង"
+
+msgid "Action Right"
+msgstr "សកម្មភាពស្តាំ"
+
+msgid "Action Up"
+msgstr "សកម្មភាពឡើង"
+
+msgid "Action Down"
+msgstr "សកម្មភាពចុះ"
+
+msgid "Timeout"
+msgstr "ពេលផុតកំណត់"
+
+msgid "Physics Priority"
+msgstr "អាទិភាពរូបវិទ្យា"
+
+msgid "Auto Translate"
+msgstr "បកប្រែស្វ័យប្រវត្តិ"
+
+msgid "Edited Scene Root"
+msgstr "ឫសសាកដែលបានកែសម្រួល"
+
+msgid "Current Scene"
+msgstr "សាកបច្ចុប្បន្ន"
+
+msgid "Snap 2D Transforms to Pixel"
+msgstr "ចាប់ការបំប្លែង 2D ទៅភីកសែល"
+
+msgid "Positional Shadow"
+msgstr "ស្រមោលតាមទីតាំង"
+
+msgid "Default Environment"
+msgstr "បរិស្ថានលំនាំដើម"
+
+msgid "Scene Traversal"
+msgstr "ការឆ្លងកាត់សាក"
+
+msgid "Ignore Time Scale"
+msgstr "មិនអើពើមាត្រដ្ឋានពេលវេលា"
+
+msgid "View Count"
+msgstr "ចំនួនទិដ្ឋភាព"
+
+msgid "Transient to Focused"
+msgstr "បណ្តោះអាសន្នទៅផ្តោត"
+
+msgid "Exclude From Capture"
+msgstr "ដកចេញពីការចាប់យក"
+
+msgid "Requested"
+msgstr "បានស្នើសុំ"
+
+msgid "2D Navigation"
+msgstr "ការរុករក 2D"
+
+msgid "3D Navigation"
+msgstr "ការរុករក 3D"
+
+msgid "Partition Type"
+msgstr "ប្រភេទ Partition"
+
+msgid "Parsed Collision Mask"
+msgstr "ម៉ាសប៉ះទង្គិចដែលបានវិភាគ"
+
+msgid "Baking Rect Offset"
+msgstr "អុហ្វសិតចតុកោណ Baking"
+
+msgid "B"
+msgstr "B"
+
+msgid "Bone Index"
+msgstr "លិបិក្រមឆ្អឹង"
+
+msgid "Modification Count"
+msgstr "ចំនួនការកែប្រែ"
+
+msgid "Backface Collision"
+msgstr "ការប៉ះទង្គិចផ្ទៃខាងក្រោយ"
+
+msgid "Section Rings"
+msgstr "Ring ផ្នែក"
+
+msgid "Bind Count"
+msgstr "ចំនួន Bind"
+
+msgid "Mie"
+msgstr "Mie"
+
+msgid "Ground Color"
+msgstr "ពណ៌ដី"
+
+msgid "Mix Rate Mode"
+msgstr "របៀប Mix Rate"
+
+msgid "Far Transition"
+msgstr "អន្តរកាលឆ្ងាយ"
+
+msgid "Near Transition"
+msgstr "អន្តរកាលជិត"
+
+msgid "Min Exposure Value"
+msgstr "តម្លៃ Exposure អប្បបរមា"
+
+msgid "Max Exposure Value"
+msgstr "តម្លៃ Exposure អតិបរមា"
+
+msgid "Access Resolved Color"
+msgstr "ចូលប្រើពណ៌ដែលបានដោះស្រាយ"
+
+msgid "Compositor Effects"
+msgstr "ឥទ្ធិពល Compositor"
+
+msgid "Min Domain"
+msgstr "Domain អប្បបរមា"
+
+msgid "Max Domain"
+msgstr "Domain អតិបរមា"
+
+msgid "Custom FOV"
+msgstr "FOV ផ្ទាល់ខ្លួន"
+
+msgid "Reflected Light"
+msgstr "ពន្លឺចំណាំងផ្លាត"
+
+msgid "Use Occlusion"
+msgstr "ប្រើ Occlusion"
+
+msgid "Min Cell Size"
+msgstr "ទំហំក្រឡាអប្បបរមា"
+
+msgid "Light Color"
+msgstr "ពណ៌ពន្លឺ"
+
+msgid "Custom Colors"
+msgstr "ពណ៌ផ្ទាល់ខ្លួន"
+
+msgid "Font Names"
+msgstr "ឈ្មោះពុម្ពអក្សរ"
+
+msgid "Font Stretch"
+msgstr "ការយឺតពុម្ពអក្សរ"
+
+msgid "Depth Test"
+msgstr "ការសាកល្បងជម្រៅ"
+
+msgid "Disable Specular Occlusion"
+msgstr "បិទ Specular Occlusion"
+
+msgid "Min Layers"
+msgstr "ស្រទាប់អប្បបរមា"
+
+msgid "Max Layers"
+msgstr "ស្រទាប់អតិបរមា"
+
+msgid "Transmittance"
+msgstr "ការបញ្ជូនពន្លឺ"
+
+msgid "Back Lighting"
+msgstr "ពន្លឺខាងក្រោយ"
+
+msgid "Z Clip Scale"
+msgstr "មាត្រដ្ឋាន Z Clip"
+
+msgid "Outline Thickness"
+msgstr "កម្រាស់ Outline"
+
+msgid "Use Colors"
+msgstr "ប្រើពណ៌"
+
+msgid "Use Custom Data"
+msgstr "ប្រើទិន្នន័យផ្ទាល់ខ្លួន"
+
+msgid "Instance Count"
+msgstr "ចំនួនឧទាហរណ៍"
+
+msgid "Cell Height"
+msgstr "កម្ពស់ក្រឡា"
+
+msgid "Max Error"
+msgstr "កំហុសអតិបរមា"
+
+msgid "Inherit Emitter Scale"
+msgstr "ទទួលមរតកមាត្រដ្ឋាន Emitter"
+
+msgid "Emission Shape Offset"
+msgstr "អុហ្វសិតរូបរាងការបញ្ចេញ"
+
+msgid "Emission Point Count"
+msgstr "ចំនួនចំណុចបញ្ចេញ"
+
+msgid "Emission Ring Cone Angle"
+msgstr "មុំកោន Ring បញ្ចេញ"
+
+msgid "Rotation 3D"
+msgstr "ការបង្វិល 3D"
+
+msgid "Rotation 3D Min"
+msgstr "ការបង្វិល 3D អប្បបរមា"
+
+msgid "Rotation 3D Max"
+msgstr "ការបង្វិល 3D អតិបរមា"
+
+msgid "Velocity Pivot"
+msgstr "Pivot ល្បឿន"
+
+msgid "Radial Velocity"
+msgstr "ល្បឿន Radial"
+
+msgid "Rotation Velocity 3D"
+msgstr "ល្បឿនបង្វិល 3D"
+
+msgid "Rotation Velocity 3D Min"
+msgstr "ល្បឿនបង្វិល 3D អប្បបរមា"
+
+msgid "Rotation Velocity 3D Max"
+msgstr "ល្បឿនបង្វិល 3D អតិបរមា"
+
+msgid "Accelerations"
+msgstr "សំទុះ"
+
+msgid "Use Scale 3D"
+msgstr "ប្រើមាត្រដ្ឋាន 3D"
+
+msgid "Scale 3D Min"
+msgstr "មាត្រដ្ឋាន 3D អប្បបរមា"
+
+msgid "Scale 3D Max"
+msgstr "មាត្រដ្ឋាន 3D អតិបរមា"
+
+msgid "Sky Material"
+msgstr "សម្ភារៈ Sky"
+
+msgid "Custom Punctuation"
+msgstr "សញ្ញាវណ្ណយុត្តផ្ទាល់ខ្លួន"
+
+msgid "Default Base Scale"
+msgstr "មាត្រដ្ឋានមូលដ្ឋានលំនាំដើម"
+
+msgid "Default Font Size"
+msgstr "ទំហំពុម្ពអក្សរលំនាំដើម"
+
+msgid "Font Pressed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលចុច"
+
+msgid "Font Hover Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
+
+msgid "Font Focus Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលផ្តោត"
+
+msgid "Font Hover Pressed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ចុច"
+
+msgid "Font Disabled Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលបិទ"
+
+msgid "Font Outline Color"
+msgstr "ពណ៌ Outline ពុម្ពអក្សរ"
+
+msgid "Icon Pressed Color"
+msgstr "ពណ៌រូបតំណាងពេលចុច"
+
+msgid "Icon Hover Color"
+msgstr "ពណ៌រូបតំណាងពេល Hover"
+
+msgid "Icon Hover Pressed Color"
+msgstr "ពណ៌រូបតំណាងពេល Hover ចុច"
+
+msgid "Icon Focus Color"
+msgstr "ពណ៌រូបតំណាងពេលផ្តោត"
+
+msgid "Icon Disabled Color"
+msgstr "ពណ៌រូបតំណាងពេលបិទ"
+
+msgid "H Separation"
+msgstr "ការបំបែក H"
+
+msgid "Hover Mirrored"
+msgstr "Hover ឆ្លុះ"
+
+msgid "Checkbox Checked Color"
+msgstr "ពណ៌ Checkbox ពេលធីក"
+
+msgid "Checkbox Unchecked Color"
+msgstr "ពណ៌ Checkbox ពេលមិនធីក"
+
+msgid "Button Checked Color"
+msgstr "ពណ៌ប៊ូតុងពេលធីក"
+
+msgid "Button Unchecked Color"
+msgstr "ពណ៌ប៊ូតុងពេលមិនធីក"
+
+msgid "Font Shadow Color"
+msgstr "ពណ៌ស្រមោលពុម្ពអក្សរ"
+
+msgid "Font Selected Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេលជ្រើស"
+
+msgid "Font Uneditable Color"
+msgstr "ពណ៌ពុម្ពអក្សរមិនអាចកែបាន"
+
+msgid "Font Placeholder Color"
+msgstr "ពណ៌ Placeholder ពុម្ពអក្សរ"
+
+msgid "Font Readonly Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Read-only"
+
+msgid "Wrap Offset"
+msgstr "អុហ្វសិត Wrap"
+
+msgid "Executing Line"
+msgstr "បន្ទាត់កំពុងដំណើរការ"
+
+msgid "Folded Code Region"
+msgstr "តំបន់កូដដែលបានបត់"
+
+msgid "Completion Color BG"
+msgstr "ពណ៌ BG បំពេញ"
+
+msgid "Folded Code Region Color"
+msgstr "ពណ៌តំបន់កូដដែលបានបត់"
+
+msgid "Completion Lines"
+msgstr "បន្ទាត់បំពេញ"
+
+msgid "Tick Offset"
+msgstr "អុហ្វសិត Tick"
+
+msgid "Up Hover"
+msgstr "Hover ឡើង"
+
+msgid "Up Pressed"
+msgstr "ចុចឡើង"
+
+msgid "Up Disabled"
+msgstr "បិទឡើង"
+
+msgid "Down Hover"
+msgstr "Hover ចុះ"
+
+msgid "Down Pressed"
+msgstr "ចុចចុះ"
+
+msgid "Down Disabled"
+msgstr "បិទចុះ"
+
+msgid "Down Background Disabled"
+msgstr "បិទផ្ទៃខាងក្រោយចុះ"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Modulate រូបតំណាងបិទចុះ"
+
+msgid "Field and Buttons Separator"
+msgstr "តួបំបែក Field និងប៊ូតុង"
+
+msgid "Up Down Buttons Separator"
+msgstr "តួបំបែកប៊ូតុងឡើងចុះ"
+
+msgid "Buttons Vertical Separation"
+msgstr "ការបំបែកបញ្ឈរប៊ូតុង"
+
+msgid "Field and Buttons Separation"
+msgstr "ការបំបែក Field និងប៊ូតុង"
+
+msgid "Scroll Hint Vertical"
+msgstr "ណែនាំរំកិលបញ្ឈរ"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "ពណ៌ណែនាំរំកិលបញ្ឈរ"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "ពណ៌ណែនាំរំកិលផ្តេក"
+
+msgid "Pressed Tip"
+msgstr "ចុងពេលចុច"
+
+msgid "Buttons Separation"
+msgstr "ការបំបែកប៊ូតុង"
+
+msgid "List Mode"
+msgstr "របៀបបញ្ជី"
+
+msgid "Folder Icon Color"
+msgstr "ពណ៌រូបតំណាងថត"
+
+msgid "File Icon Color"
+msgstr "ពណ៌រូបតំណាងឯកសារ"
+
+msgid "Font Separator"
+msgstr "តួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Separator Size"
+msgstr "ទំហំតួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Accelerator Color"
+msgstr "ពណ៌ Accelerator ពុម្ពអក្សរ"
+
+msgid "Font Separator Color"
+msgstr "ពណ៌តួបំបែកពុម្ពអក្សរ"
+
+msgid "Font Separator Outline Color"
+msgstr "ពណ៌ Outline តួបំបែកពុម្ពអក្សរ"
+
+msgid "V Separation"
+msgstr "ការបំបែក V"
+
+msgid "Search Bar Separation"
+msgstr "ការបំបែក Search Bar"
+
+msgid "Panel Selected"
+msgstr "Panel ដែលបានជ្រើស"
+
+msgid "Panel Focus"
+msgstr "Panel ផ្តោត"
+
+msgid "Titlebar Selected"
+msgstr "Titlebar ដែលបានជ្រើស"
+
+msgid "Slot Selected"
+msgstr "រន្ធដែលបានជ្រើស"
+
+msgid "Port H Offset"
+msgstr "អុហ្វសិត Port H"
+
+msgid "Hovered"
+msgstr "បាន Hover"
+
+msgid "Hovered Dimmed"
+msgstr "បាន Hover ស្រអាប់"
+
+msgid "Hovered Selected"
+msgstr "បាន Hover ជ្រើស"
+
+msgid "Hovered Selected Focus"
+msgstr "បាន Hover ជ្រើសផ្តោត"
+
+msgid "Selected Focus"
+msgstr "ជ្រើសផ្តោត"
+
+msgid "Button Hover"
+msgstr "Hover ប៊ូតុង"
+
+msgid "Custom Button"
+msgstr "ប៊ូតុងផ្ទាល់ខ្លួន"
+
+msgid "Custom Button Pressed"
+msgstr "ប៊ូតុងផ្ទាល់ខ្លួនពេលចុច"
+
+msgid "Custom Button Hover"
+msgstr "Hover ប៊ូតុងផ្ទាល់ខ្លួន"
+
+msgid "Title Button Font Size"
+msgstr "ទំហំពុម្ពអក្សរប៊ូតុងចំណងជើង"
+
+msgid "Font Hovered Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ស្រអាប់"
+
+msgid "Font Hovered Selected Color"
+msgstr "ពណ៌ពុម្ពអក្សរពេល Hover ជ្រើស"
+
+msgid "Drop on Item Color"
+msgstr "ពណ៌ Drop លើធាតុ"
+
+msgid "Scroll Hint Color"
+msgstr "ពណ៌ណែនាំរំកិល"
+
+msgid "Check H Separation"
+msgstr "ការបំបែក Check H"
+
+msgid "Icon H Separation"
+msgstr "ការបំបែក Icon H"
+
+msgid "Scrollbar H Separation"
+msgstr "ការបំបែក Scrollbar H"
+
+msgid "Scrollbar V Separation"
+msgstr "ការបំបែក Scrollbar V"
+
+msgid "Tab Selected"
+msgstr "Tab ដែលបានជ្រើស"
+
+msgid "Tab Hovered"
+msgstr "Tab បាន Hover"
+
+msgid "Font Unselected Color"
+msgstr "ពណ៌ពុម្ពអក្សរមិនបានជ្រើស"
+
+msgid "Icon Selected Color"
+msgstr "ពណ៌រូបតំណាងដែលបានជ្រើស"
+
+msgid "Icon Hovered Color"
+msgstr "ពណ៌រូបតំណាងបាន Hover"
+
+msgid "Icon Unselected Color"
+msgstr "ពណ៌រូបតំណាងមិនបានជ្រើស"
+
+msgid "Icon Separation"
+msgstr "ការបំបែករូបតំណាង"
+
+msgid "Sample Focus"
+msgstr "Sample ផ្តោត"
+
+msgid "Menu Option"
+msgstr "ជម្រើសម៉ឺនុយ"
+
+msgid "Color Script"
+msgstr "Color Script"
+
+msgid "Color Copy"
+msgstr "ចម្លងពណ៌"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset Focus"
+msgstr "Preset ផ្តោត"
+
+msgid "Touch Dragger Color"
+msgstr "ពណ៌ Touch Dragger"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "ពណ៌ Touch Dragger ពេលចុច"
+
+msgid "Touch Dragger Hover Color"
+msgstr "ពណ៌ Touch Dragger ពេល Hover"
+
+msgid "Connection Hover Tint Color"
+msgstr "ពណ៌ជ្រលក់ Connection Hover"
+
+msgid "Connection Hover Thickness"
+msgstr "កម្រាស់ Connection Hover"
+
+msgid "Connection Rim Color"
+msgstr "ពណ៌ Rim ការតភ្ជាប់"
+
+msgid "Hover Font Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Hover"
+
+msgid "Collapsed Font Color"
+msgstr "ពណ៌ពុម្ពអក្សរ Collapsed"
+
+msgid "Folded Arrow Mirrored"
+msgstr "ព្រួញបត់ឆ្លុះ"
+
+msgid "Default Theme Scale"
+msgstr "មាត្រដ្ឋាន Theme លំនាំដើម"
+
+msgid "Custom"
+msgstr "ផ្ទាល់ខ្លួន"
+
+msgid "Custom Font"
+msgstr "ពុម្ពអក្សរផ្ទាល់ខ្លួន"
+
+msgid "Bus Count"
+msgstr "ចំនួន Bus"
+
+msgid "Video Quality"
+msgstr "គុណភាពវីដេអូ"
+
+msgid "Audio Quality"
+msgstr "គុណភាពអូឌីយ៉ូ"
+
+msgid "Excluded Regions"
+msgstr "តំបន់ដែលបានដកចេញ"
+
+msgid "Included Regions"
+msgstr "តំបន់ដែលបានរួមបញ្ចូល"
+
+msgid "Path Types"
+msgstr "ប្រភេទផ្លូវ"
+
+msgid "Path Length"
+msgstr "ប្រវែងផ្លូវ"
+
+msgid "Default Cell Size"
+msgstr "ទំហំក្រឡាលំនាំដើម"
+
+msgid "Agent Path Color"
+msgstr "ពណ៌ផ្លូវ Agent"
+
+msgid "Agent Path Point Size"
+msgstr "ទំហំចំណុចផ្លូវ Agent"
+
+msgid "Agents Radius Color"
+msgstr "ពណ៌កាំ Agents"
+
+msgid "Navigation Engine"
+msgstr "ម៉ាស៊ីនរុករក"
+
+msgid "Default Cell Height"
+msgstr "កម្ពស់ក្រឡាលំនាំដើម"
+
+msgid "Default Up"
+msgstr "Up លំនាំដើម"
+
+msgid "Default Linear Damp"
+msgstr "Linear Damp លំនាំដើម"
+
+msgid "Contact Max Separation"
+msgstr "ការបំបែកអតិបរមានៃការប៉ះ"
+
+msgid "Default Contact Bias"
+msgstr "Contact Bias លំនាំដើម"
+
+msgid "Default Constraint Bias"
+msgstr "Constraint Bias លំនាំដើម"
+
+msgid "Max Collisions"
+msgstr "ការប៉ះទង្គិចអតិបរមា"
+
+msgid "Collide Separation Ray"
+msgstr "Ray បំបែកការប៉ះទង្គិច"
+
+msgid "Recovery as Collision"
+msgstr "ការធ្វើឡើងវិញជាការប៉ះទង្គិច"
+
+msgid "Intersection"
+msgstr "ចំណុចប្រសព្វ"
+
+msgid "Base Error"
+msgstr "កំហុសមូលដ្ឋាន"
+
+msgid "Specialization Constants"
+msgstr "ថេរ Specialization"
+
+msgid "Cache GPU Compressor"
+msgstr "Cache GPU Compressor"
+
+msgid "WebP Compression"
+msgstr "ការបង្ហាប់ WebP"
+
+msgid "Roughness Layers"
+msgstr "ស្រទាប់ Roughness"
+
+msgid "Reflection Count"
+msgstr "ចំនួនចំណាំងផ្លាត"
+
+msgid "Specular Occlusion"
+msgstr "Specular Occlusion"
+
+msgid "Default Filters"
+msgstr "តម្រងលំនាំដើម"
+
+msgid "SMAA Edge Detection Threshold"
+msgstr "កម្រិត SMAA Edge Detection"
+
+msgid "Light Projectors"
+msgstr "Light Projectors"
+
+msgid "Probe Ray Count"
+msgstr "ចំនួន Probe Ray"
+
+msgid "Spatial Indexer"
+msgstr "Spatial Indexer"
+
+msgid "Cluster Builder"
+msgstr "Cluster Builder"
+
+msgid "Skip Vertex Transform"
+msgstr "រំលងការបំប្លែង Vertex"
+
+msgid "Vertex Lighting"
+msgstr "ពន្លឺ Vertex"
+
+msgid "Fog Disabled"
+msgstr "បានបិទ Fog"
+
+msgid "Specular Occlusion Disabled"
+msgstr "បានបិទ Specular Occlusion"
+
+msgid "Disable Force"
+msgstr "បិទកម្លាំង"
+
+msgid "Unused Constant"
+msgstr "ថេរ (Constant) មិនបានប្រើ"
+
+msgid "Unused Function"
+msgstr "អនុគមន៍មិនបានប្រើ"
+
+msgid "Magic Position Write"
+msgstr "Magic Position Write"
+
+msgid "Internal Size"
+msgstr "ទំហំផ្ទៃក្នុង"
+
+msgid "Target Size"
+msgstr "ទំហំគោលដៅ"
+
+msgid "Default Font Antialiasing"
+msgstr "Antialiasing ពុម្ពអក្សរលំនាំដើម"
+
+msgid "Default Font Hinting"
+msgstr "Hinting ពុម្ពអក្សរលំនាំដើម"
+
+msgid "Default Font Subpixel Positioning"
+msgstr "ការដាក់ទីតាំង Subpixel ពុម្ពអក្សរលំនាំដើម"
+
+msgid "AR"
+msgstr "AR"

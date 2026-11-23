@@ -162,7 +162,7 @@ void Trail3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			clear();
-			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+			_ensure_frame_pre_draw_connection(false);
 			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -182,7 +182,9 @@ void Trail3D::_notification(int p_what) {
 
 void Trail3D::set_width(float p_width) {
 	width = p_width;
-	_needs_rebuilding = true;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		_ensure_frame_pre_draw_connection(true);
+	}
 }
 
 float Trail3D::get_width() const {
@@ -208,6 +210,7 @@ void Trail3D::set_width_curve(Ref<Curve> p_width_curve) {
 		width_curve->disconnect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	width_curve = p_width_curve;
+	_ensure_frame_pre_draw_connection(true);
 	if (width_curve.is_valid()) {
 		width_curve->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
@@ -219,8 +222,8 @@ Ref<Curve> Trail3D::get_width_curve() const {
 }
 
 void Trail3D::set_color(const Color &p_color) {
-	if (p_color != color) {
-		_needs_rebuilding = true;
+	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		_ensure_frame_pre_draw_connection(true);
 	}
 	color = p_color;
 }
@@ -237,6 +240,7 @@ void Trail3D::set_color_gradient(Ref<Gradient> p_color_gradient) {
 		color_gradient->disconnect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
 	color_gradient = p_color_gradient;
+	_ensure_frame_pre_draw_connection(true);
 	if (color_gradient.is_valid()) {
 		color_gradient->connect_changed(callable_mp(this, &Trail3D::rebuild));
 	}
@@ -305,6 +309,7 @@ void Trail3D::set_tiling_mode(TilingMode p_tiling_mode) {
 		_needs_rebuilding = true;
 	}
 	tiling_mode = p_tiling_mode;
+	_ensure_frame_pre_draw_connection(true);
 	notify_property_list_changed();
 }
 
@@ -317,6 +322,7 @@ void Trail3D::set_tiling_multiplier(float p_tiling_multiplier) {
 		_needs_rebuilding = true;
 	}
 	tiling_multiplier = p_tiling_multiplier;
+	_ensure_frame_pre_draw_connection(true);
 }
 
 float Trail3D::get_tiling_multiplier() const {
@@ -349,7 +355,7 @@ void Trail3D::set_limit_mode(LimitMode p_limit_mode) {
 	}
 	limit_mode = p_limit_mode;
 	if (p_limit_mode == LIMIT_MODE_LIFETIME) {
-		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+		_ensure_frame_pre_draw_connection(false);
 	} else {
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
@@ -395,6 +401,7 @@ void Trail3D::set_pin_uv(bool p_pin_uv) {
 		_needs_rebuilding = true;
 	}
 	pin_uv = p_pin_uv;
+	_ensure_frame_pre_draw_connection(true);
 }
 
 bool Trail3D::get_pin_uv() const {
@@ -532,7 +539,7 @@ void Trail3D::_do_rebuild() {
 		*(uint16_t *)&index_write_buffer[(j + 11) * 2] = idx;
 	}
 
-	Transform3D inv_global_tf = get_global_transform_interpolated().inverse();
+	Transform3D inv_global_tf = get_global_transform_interpolated().affine_inverse();
 
 	real_t length = _calc_current_length();
 
@@ -560,14 +567,14 @@ void Trail3D::_do_rebuild() {
 		real_t length_uv = 0;
 
 		switch (tiling_mode) {
-			case TILING_MODE_LENGTH: {
+			case TILING_MODE_TILE: {
 				if (pin_uv) {
 					length_uv = (dist + tiling_offset) * tiling_multiplier;
 				} else {
 					length_uv = dist * tiling_multiplier;
 				}
 			} break;
-			case TILING_MODE_UNIT: {
+			case TILING_MODE_STRETCH: {
 				length_uv = ratio * tiling_multiplier;
 			} break;
 			default: {
@@ -581,22 +588,26 @@ void Trail3D::_do_rebuild() {
 		}
 
 		Vector3 tangent = tangents[i];
+		Vector3 normal = normals[i];
+		Vector3 curve_binormal = normal.cross(tangent);
+		curve_binormal *= half_width;
+		curve_binormal = inv_global_tf.basis.xform(curve_binormal);
+		real_t curve_width = curve_binormal.length();
 
 		p = inv_global_tf.xform(p);
 		tangent = inv_global_tf.basis.xform(tangent);
+		normal = inv_global_tf.basis.xform(normal);
+
 		min_bounds = min_bounds.min(p - width_bounds);
 		max_bounds = max_bounds.max(p + width_bounds);
 
-		Vector3 normal = normals[i];
-		normal = inv_global_tf.basis.xform(normal);
 		uint32_t vnormal = _encode_normal(normal);
 
-		Vector3 curve_binormal = normal.cross(tangent);
 		// we don't actually add the side offset if we're billboarding
 		real_t is_billboard = alignment == MESH_ALIGNMENT_BILLBOARD ? 0.0 : 1.0;
-		_encode_vertex(p + half_width * curve_binormal * is_billboard, j2, write_vert);
+		_encode_vertex(p + curve_binormal * is_billboard, j2, write_vert);
 		_encode_vertex(p, j1, write_vert);
-		_encode_vertex(p - half_width * curve_binormal * is_billboard, j0, write_vert);
+		_encode_vertex(p - curve_binormal * is_billboard, j0, write_vert);
 
 		_write_normal(vnormal, j2, write_vert);
 		_write_normal(vnormal, j1, write_vert);
@@ -612,11 +623,11 @@ void Trail3D::_do_rebuild() {
 			custom.y = tangent.y;
 			custom.z = tangent.z;
 
-			custom.w = half_width;
+			custom.w = -curve_width;
 			_write_custom(custom, j2, write_attrib);
 			custom.w = 0.;
 			_write_custom(custom, j1, write_attrib);
-			custom.w = -half_width;
+			custom.w = curve_width;
 			_write_custom(custom, j0, write_attrib);
 		}
 
@@ -650,18 +661,35 @@ void Trail3D::_do_rebuild() {
 }
 
 void Trail3D::_process_trail() {
-	if (!is_inside_tree() || !is_ready()) {
+	if (!can_process() || !is_ready()) {
 		return;
 	}
 
-	Transform3D tf = get_global_transform_interpolated();
+	Transform3D tf;
+	if (is_visible_in_tree()) {
+		// TODO
+		// Think about culling rebuild calls for trails when they're offscreen
+		// And instead calculate a rough AABB during process trail, otherwise trail might get wrongly not updated.
+		// Possibly include different culling modes? Though ideally it should just work.
+		tf = get_global_transform_interpolated();
+	} else {
+		tf = get_global_transform();
+	}
 	Vector3 pos = tf.origin;
+	tf.orthonormalize();
 
-	if (!_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) < CMP_EPSILON) {
+	if (!_transform_changed && points.size() == 2 && pos.distance_squared_to(points[1]) <= CMP_EPSILON2) {
+		// When the two last points are close enough, we manually stack them, so their distance will always be less
+		// than CMP_EPSILON2
 		return;
 	}
 
-	Vector3 up = tf.basis.get_column(1);
+	// We currently do not support having different scale at different emission times, since width is a
+	// Property of the whole trail and not of a certain point.
+	// We could support it if instead of storing tangents and normals we stored also binormals with their associated
+	// scale, but this should be first proven with a usecase. Most of "wobbly edges" can be achieved via shader.
+	Vector3 up = tf.basis.get_column(1).normalized();
+	Vector3 fw = tf.basis.get_column(2).normalized();
 	real_t delta = get_process_delta_time();
 	_time += delta;
 	real_t head_velocity = (get_global_position() - _previous_position).length() / MAX(delta, CMP_EPSILON);
@@ -677,16 +705,24 @@ void Trail3D::_process_trail() {
 			}
 		}
 	} else {
+		if (limit_mode == LIMIT_MODE_LIFETIME) {
+			_times.write[0] = _time;
+		}
 		if (emitting) {
 			points.write[0] = pos;
 			normals.write[0] = up;
-			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
-				real_t len = (pos - points[1]).length();
-				Vector3 t = (pos - points[1]) / len;
+			real_t len = (pos - points[1]).length();
+			if (len > 0.) {
+				Vector3 t;
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					t = (pos - points[1]) / len;
+				} else {
+					t = fw;
+				}
 				tangents.write[0] = t;
 				if (points.size() == 2) {
 					tangents.write[1] = t;
-					if (_previous_position.distance_squared_to(points[1]) <= CMP_EPSILON && limit_mode == LIMIT_MODE_LIFETIME) {
+					if (_previous_position.is_same(points[1]) && limit_mode == LIMIT_MODE_LIFETIME) {
 						_times.write[1] = _time - delta;
 						_velocities.write[1] = head_velocity;
 					}
@@ -719,24 +755,32 @@ void Trail3D::_process_trail() {
 	switch (limit_mode) {
 		case LIMIT_MODE_MAX_LENGTH:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
 			break;
 		case LIMIT_MODE_LIFETIME:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
 				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
@@ -764,7 +808,10 @@ void Trail3D::_process_trail() {
 			real_t last_section_length = last_point.distance_to(second_last_point);
 			if (last_section_length > extra_length) {
 				real_t shortened_section_length = last_section_length - extra_length;
-				points.write[last_index] = second_last_point + (last_point - second_last_point) * (shortened_section_length / last_section_length);
+				real_t ratio = (shortened_section_length / last_section_length);
+				points.write[last_index] = second_last_point + (last_point - second_last_point) * ratio;
+				tangents.write[last_index] = tangents[last_index - 1].slerp(tangents[last_index], ratio);
+				normals.write[last_index] = normals[last_index - 1].slerp(normals[last_index], ratio);
 			} else {
 				points.remove_at(last_index);
 				normals.remove_at(last_index);
@@ -775,7 +822,7 @@ void Trail3D::_process_trail() {
 		}
 
 	} else if (limit_mode == LIMIT_MODE_LIFETIME) {
-		// ATTEMPTS: 11
+		// ATTEMPTS: 12
 		// Add +1 to this counter for every failed attempt to improve this code
 		int last_index = _times.size() - 1;
 		real_t second_last_time = _times.get(last_index - 1);
@@ -797,6 +844,9 @@ void Trail3D::_process_trail() {
 
 			if (distance > 0.) {
 				points.write[last_index] += dir / distance * MIN(distance, speed_distance);
+				real_t time_until_touch = speed_distance / _velocities[last_index];
+				tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], MIN(delta / time_until_touch, 1.));
+				normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], MIN(delta / time_until_touch, 1.));
 			}
 			if (speed_distance > distance) {
 				points.remove_at(last_index);
@@ -813,9 +863,14 @@ void Trail3D::_process_trail() {
 			if (points.size() == 2 && _times[0] - _times[1] > lifetime) {
 				if (distance > CMP_EPSILON) {
 					real_t speed_distance = _velocities[1] * delta;
+					real_t time_until_touch = speed_distance / _velocities[last_index];
+					tangents.write[last_index] = tangents[last_index].slerp(tangents[last_index - 1], MIN(delta / time_until_touch, 1.));
+					normals.write[last_index] = normals[last_index].slerp(normals[last_index - 1], MIN(delta / time_until_touch, 1.));
 					points.write[1] += dir / distance * MIN(distance, speed_distance);
 				} else {
 					points.write[1] = points[0];
+					tangents.write[1] = tangents[0];
+					normals.write[1] = normals[0];
 				}
 			}
 		}
@@ -825,12 +880,35 @@ void Trail3D::_process_trail() {
 	rebuild();
 }
 
+void Trail3D::_ensure_frame_pre_draw_connection(bool p_is_one_shot) {
+	if (p_is_one_shot && limit_mode != LIMIT_MODE_MAX_LENGTH) {
+		return;
+	}
+
+	if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		if (_has_one_shot_connection && !p_is_one_shot) {
+			// Disconnect the one shot connect for use the normal one
+			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+		} else {
+			return;
+		}
+	}
+	if (p_is_one_shot) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), ConnectFlags::CONNECT_ONE_SHOT);
+	} else {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail));
+	}
+	_has_one_shot_connection = p_is_one_shot;
+}
+
 void Trail3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "material" && material_mode != MATERIAL_MODE_CUSTOM) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "lifetime" && limit_mode == LIMIT_MODE_MAX_LENGTH) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "max_length" && limit_mode == LIMIT_MODE_LIFETIME) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_STRETCH) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -864,7 +942,7 @@ void Trail3D::_ensure_material() {
 }
 
 PackedStringArray Trail3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Line3D::get_configuration_warnings();
+	PackedStringArray warnings = LineBase3D::get_configuration_warnings();
 	return warnings;
 }
 
@@ -920,14 +998,14 @@ void Trail3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "limit_mode", PROPERTY_HINT_ENUM, "Time,Length"), "set_limit_mode", "get_limit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_length", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_max_length", "get_max_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.0,10,0.1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.0,10,0.001,or_greater"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_width_curve", "get_width_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color", PROPERTY_HINT_NONE), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_gradient", PROPERTY_HINT_RESOURCE_TYPE, Gradient::get_class_static()), "set_color_gradient", "get_color_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mesh_alignment", PROPERTY_HINT_ENUM, "Local,Billboard"), "set_mesh_alignment", "get_mesh_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "material_mode", PROPERTY_HINT_ENUM, "Default,Default Additive,Custom"), "set_material_mode", "get_material_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, ShaderMaterial::get_class_static()), "set_material", "get_material");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "tiling_mode", PROPERTY_HINT_ENUM, "Unit,Length"), "set_tiling_mode", "get_tiling_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tiling_mode", PROPERTY_HINT_ENUM, "Stretch,Tile"), "set_tiling_mode", "get_tiling_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tiling_multiplier"), "set_tiling_multiplier", "get_tiling_multiplier");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pin_uv"), "set_pin_uv", "get_pin_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_section_length", PROPERTY_HINT_RANGE, "0.05,1.0,0.01"), "set_min_section_length", "get_min_section_length");

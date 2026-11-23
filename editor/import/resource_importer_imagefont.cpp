@@ -289,7 +289,7 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 				list.push_back(end);
 			}
 
-			if (start == -1) {
+			if (start < 0 || start > 0x10FFFF || end < 0 || end > 0x10FFFF) {
 				WARN_PRINT(vformat("Invalid range: \"%s\"", range));
 				continue;
 			}

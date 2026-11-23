@@ -120,6 +120,10 @@
 			@"iPad16,4", // iPad Pro 11-inch M4
 			@"iPad16,5", // iPad Pro 13-inch M4
 			@"iPad16,6", // iPad Pro 13-inch M4
+			@"iPad16,8", // iPad Air 11-inch M4
+			@"iPad16,9", // iPad Air 11-inch M4
+			@"iPad16,10", // iPad Air 13-inch M4
+			@"iPad16,11", // iPad Air 13-inch M4
 			@"iPad15,3", // iPad Air M3
 			@"iPad15,4", // iPad Air M3
 			@"iPad15,5", // iPad Air M3
@@ -174,6 +178,8 @@
 			@"iPad14,11", // iPad Air 13-inch M2
 			@"iPad16,1", // iPad mini A17 Pro
 			@"iPad16,2", // iPad mini A17 Pro
+			@"iPad19,1", // iPad mini A20 Pro
+			@"iPad19,2", // iPad mini A20 Pro
 		] : @326,
 		@[
 			@"iPhone7,1", // iPhone 6 Plus
@@ -217,11 +223,23 @@
 			@"iPhone18,3", // iPhone 17
 			@"iPhone18,4", // iPhone Air
 			@"iPhone18,5", // iPhone 17e
+			@"iPhone19,2", // iPhone 18 Pro
+			@"iPhone19,3", // iPhone 18 Pro Max US
+			@"iPhone19,4", // iPhone Duo (External Screen)
+			@"iPhone19,7", // iPhone 18 Pro Max Global
 		] : @460,
 		@[
 			@"iPhone13,1", // iPhone 12 Mini
 			@"iPhone14,4", // iPhone 13 Mini
 		] : @476
+	};
+}
+
++ (NSDictionary *)dpiListInternal {
+	return @{
+		@[
+			@"iPhone19,4", // iPhone Duo (Internal Screen)
+		] : @430,
 	};
 }
 

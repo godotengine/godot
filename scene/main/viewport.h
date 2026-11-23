@@ -36,6 +36,8 @@
 #include "servers/rendering/rendering_server_enums.h"
 
 class AudioListener2D;
+class AudioStream;
+class AudioStreamPlayer;
 class Camera2D;
 class CanvasItem;
 class CanvasLayer;
@@ -700,6 +702,8 @@ public:
 
 	Control *gui_find_control(const Point2 &p_global);
 
+	void play_theme_sound(const Ref<AudioStream> &p_stream);
+
 	void set_sdf_oversize(SDFOversize p_sdf_oversize);
 	SDFOversize get_sdf_oversize() const;
 
@@ -749,9 +753,9 @@ public:
 	void set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable);
 	bool get_canvas_cull_mask_bit(uint32_t p_layer) const;
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	bool is_visible_subviewport() const;
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 

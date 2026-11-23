@@ -93,7 +93,7 @@
 #endif
 
 #if defined(MBEDTLS_X509_RSASSA_PSS_SUPPORT) &&                        \
-    ( !defined(PSA_WANT_KEY_TYPE_RSA_KEY_PAIR_BASIC) || !defined(PSA_WANT_ALG_RSA_OAEP) )
+    ( !defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY) || !defined(PSA_WANT_ALG_RSA_PSS) )
 #error "MBEDTLS_X509_RSASSA_PSS_SUPPORT defined, but not all prerequisites"
 #endif
 
@@ -114,7 +114,7 @@
 #if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED)
 #if !( (defined(PSA_WANT_ALG_ECDH) || defined(PSA_WANT_ALG_FFDH)) && \
        defined(MBEDTLS_X509_CRT_PARSE_C) && \
-       ( defined(PSA_HAVE_ALG_ECDSA_SIGN) || defined(PSA_WANT_ALG_RSA_OAEP) ) )
+       ( defined(PSA_HAVE_ALG_ECDSA_SIGN) || defined(PSA_WANT_ALG_RSA_PSS) ) )
 #error "MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED defined, but not all prerequisites"
 #endif
 #endif

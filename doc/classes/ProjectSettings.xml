@@ -7,7 +7,7 @@
 		Stores variables that can be accessed from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into [ProjectSettings], making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
 		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url].
-		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This file is in the same format as [code]project.godot[/code], and can also be written using [ConfigFile]. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
+		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This file is in the same format as [code]project.godot[/code], and can also be written using [ConfigFile]. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations. Note that this file is only read during runtime, such as in exported builds or when running in the editor. As such, it cannot be used to enable/disable editor-only plugins.
 	</description>
 	<tutorials>
 		<link title="Project Settings">$DOCS_URL/tutorials/editor/project_settings.html</link>
@@ -433,11 +433,6 @@
 		<member name="application/run/print_header" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the engine header is printed in the console on startup. This header describes the current version of the engine, as well as the renderer being used. This behavior can also be disabled on the command line with the [code]--no-header[/code] option.
 		</member>
-		<member name="application/run/use_game_mode" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the engine will request [url=https://github.com/FeralInteractive/gamemode]GameMode[/url] to be activated. This allows optimizing system performance during gameplay, e.g. by using a specific CPU governor or forcing a high GPU power state. The GameMode daemon needs to be installed and running on the system to work (typically available as [code]gamemode[/code] in Linux distribution repositories).
-			[b]Note:[/b] This setting does not affect the editor itself, although it affects projects being run from the editor.
-			[b]Note:[/b] This setting is available only on Linux.
-		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -446,6 +441,10 @@
 		</member>
 		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
+		</member>
+		<member name="audio/buses/gui_theme_bus" type="StringName" setter="" getter="" default="&amp;&quot;Master&quot;">
+			The name of the audio bus to play GUI theme audio in (case-sensitive). All sounds played using [Control] theme items will go through the bus specified in [member audio/buses/gui_theme_bus]. This can be used to put UI sounds in a dedicated audio bus, which allows for adjusting UI volume independently from other sounds in the project.
+			If the specified audio bus doesn't exist, audio will play on the [code]Master[/code] bus instead.
 		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
@@ -476,7 +475,7 @@
 		</member>
 		<member name="audio/general/2d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer2D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer2D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
-			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
@@ -616,6 +615,9 @@
 		</member>
 		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
+		</member>
+		<member name="debug/gdscript/warnings/onready_with_cast" type="int" setter="" getter="" default="1">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when an [code]@onready[/code] initializer uses a cast on a [code]$GetNodeLiteral[/code], because it may unexpectedly assign [code]null[/code].
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
@@ -1195,10 +1197,10 @@
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
 		<member name="editor/naming/scene_name_casing" type="int" setter="" getter="" default="2">
-			When generating scene file names from scene root node, set the type of casing to use in this project. This is mostly an editor setting.
+			When generating scene file names from scene root node, set the type of casing to use in this project. This is mostly an editor setting. Uses the same options as [enum ScriptLanguage.ScriptNameCasing].
 		</member>
 		<member name="editor/naming/script_name_casing" type="int" setter="" getter="" default="0">
-			When generating script file names from the selected node, set the type of casing to use in this project. This is mostly an editor setting.
+			When generating script file names from the selected node, set the type of casing to use in this project. This is mostly an editor setting. See [enum ScriptLanguage.ScriptNameCasing] for possible values.
 		</member>
 		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">
 			The command-line arguments to append to Godot's own command line when running the project. This doesn't affect the editor itself.
@@ -1235,6 +1237,11 @@
 		<member name="filesystem/import/fbx2gltf/enabled.web" type="bool" setter="" getter="" default="false">
 			Override for [member filesystem/import/fbx2gltf/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
+		<member name="gui/common/auto_focus_strategy" type="int" setter="" getter="" default="0">
+			Determines what strategy to use when inferring the top/left/right/bottom [Control] to focus if no neighbor is defined.
+			- [b]Legacy[/b] is the old focus strategy up until Godot 4.8. It shouldn't be used for new projects, as the new default (Balloon) yields more intuitive results.
+			- [b]Balloon[/b] searches for both the closest and most aligned [Control] node in the input direction, akin to an expanding balloon which stops at the first node it finds.
+		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
 		</member>
@@ -1260,6 +1267,10 @@
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
 			Maximum undo/redo history size for [TextEdit] fields.
+		</member>
+		<member name="gui/fonts/compatibility/msdf_legacy_scaling" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], multichannel signed distance field (MSDF) glyph shapes are scaled using the divisor used before Godot 4.8, which was incorrect and made MSDF text render about 6.67% larger than intended.
+			This setting is provided for compatibility with existing projects that relied on the incorrect scaling and would otherwise have their layout shifted by the fix. New projects should leave this disabled.
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 			If set to [code]true[/code] and [member display/window/stretch/mode] is set to [code]"canvas_items"[/code], font and [DPITexture] oversampling is enabled in the main window. Use [member Viewport.oversampling] to control oversampling in other viewports and windows.
@@ -1395,6 +1406,9 @@
 		<member name="input/ui_graph_delete" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to delete a [GraphNode] in a [GraphEdit].
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
+		</member>
+		<member name="input/ui_graph_delete.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete a [GraphNode] in a [GraphEdit].
 		</member>
 		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to duplicate a [GraphNode] in a [GraphEdit].
@@ -1680,6 +1694,10 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
+		<member name="input_devices/compatibility/windows/disable_raw_event_bulk_processing" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables bulk processing of raw input, enable it if you want to process [code]WM_INPUT[/code] messages directly. Enabling this setting will significantly decrease performance with high polling rate devices.
+			[b]Note:[/b] This property is implemented only on Windows.
+		</member>
 		<member name="input_devices/joypads/ignore_joypad_on_unfocused_application" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], joypad input (including motion sensors) and LED light changes will be ignored and joypad vibration will be stopped when the application is not focused.
 		</member>
@@ -1698,8 +1716,9 @@
 		<member name="input_devices/pointing/android/disable_scroll_deadzone" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables the scroll deadzone on Android, allowing even very small scroll movements to be registered. This may increase scroll sensitivity but can also lead to unintended scrolling from slight finger movements.
 		</member>
-		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
+		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false" deprecated="Use [member InputEventScreenTouch.long_press] instead.">
 			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
+			[b]Note:[/b] Some control nodes might ignore this event, use [member InputEventScreenTouch.long_press] instead.
 		</member>
 		<member name="input_devices/pointing/android/enable_pan_and_scale_gestures" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], multi-touch pan and scale gestures are enabled on Android devices.
@@ -1718,6 +1737,10 @@
 		</member>
 		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
+		</member>
+		<member name="input_devices/sensors/enable_device_orientation" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the device orientation sensor is enabled and [method Input.get_device_orientation] returns valid data. This uses hardware-level sensor fusion (rotation vector on Android, [code]CMDeviceMotion.attitude[/code] on iOS) to provide a stable device orientation quaternion without drift.
+			[b]Note:[/b] On Android, this registers [code]TYPE_GAME_ROTATION_VECTOR[/code] (preferred, no magnetometer) or [code]TYPE_ROTATION_VECTOR[/code] (fallback). On iOS, the attitude is read from the already-active [code]CMMotionManager.deviceMotion[/code].
 		</member>
 		<member name="input_devices/sensors/enable_gravity" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the gravity sensor is enabled and [method Input.get_gravity] returns valid data.
@@ -3152,6 +3175,18 @@
 			The framerate-independent update speed when representing dynamic object lighting from [LightmapProbe]s. Higher values make dynamic object lighting update faster. Higher values can prevent fast-moving objects from having "outdated" indirect lighting displayed on them, at the cost of possible flickering when an object moves from a bright area to a shaded area.
 			[b]Note:[/b] This property is only read when the project starts. To adjust the BVH build quality at runtime, use [method RenderingServer.lightmap_set_probe_capture_update_speed].
 		</member>
+		<member name="rendering/lights_and_shadows/contact_shadow/enabled" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], screen-space contact shadows are enabled. These catch small-scale shadows that shadow maps miss, such as foliage, crevices, and the contact points where objects meet surfaces. Contact shadows are also cast by objects that have their [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_OFF], which can be useful for performance reasons.
+			[b]Note:[/b] Only objects visible on screen can cast screen-space contact shadows. Objects outside the viewport, occluded by other geometry, or using the [member GeometryInstance3D.cast_shadow] property set to [constant GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY] will not contribute.
+			[b]Note:[/b] Screen-space contact shadows are only supported in the Forward+ renderer, not Mobile or Compatibility.
+			[b]Note:[/b] Screen-space contact shadows only affect [DirectionalLight3D] nodes that have shadows enabled. The [DirectionalLight3D] node must also have [member Light3D.shadow_contact_shadows_allow] set to [code]true[/code].
+		</member>
+		<member name="rendering/lights_and_shadows/contact_shadow/shadow_length" type="int" setter="" getter="" default="1">
+			Controls the maximum distance contact shadows can be cast from their caster. Higher settings sample further along the shadow ray, at a moderate performance cost. Note that the effective maximum distance depends on the distance between the camera and object, as well as the 3D rendering resolution (determined by the viewport resolution multiplied by [member rendering/scaling_3d/scale]).
+		</member>
+		<member name="rendering/lights_and_shadows/contact_shadow/surface_thickness" type="float" setter="" getter="" default="0.01">
+			The assumed depth thickness of surfaces, as a fraction of the depth range. A larger value widens the depth interval in which an occluder is considered to block light, which can fill in gaps in thin geometry but may also cause shadows to bleed through surfaces if set too high.
+		</member>
 		<member name="rendering/lights_and_shadows/directional_shadow/16_bits" type="bool" setter="" getter="" default="true">
 			Use 16 bits for the directional shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
@@ -3591,6 +3626,9 @@
 		<member name="xr/openxr/binding_modifiers/dpad_binding" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the D-pad binding modifier if supported by the XR runtime.
 		</member>
+		<member name="xr/openxr/create_default_foveated_inset_viewport" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], and [member xr/openxr/view_configuration] is set to [code]Stereo with Foveated Inset[/code], and foveated inset is supported, Godot will add and configure an [OpenXRFoveatedInsetViewport] node for rendering the foveated inset.
+		</member>
 		<member name="xr/openxr/default_action_map" type="String" setter="" getter="" default="&quot;res://openxr_action_map.tres&quot;">
 			Action map configuration to load by default.
 		</member>
@@ -3635,6 +3673,15 @@
 		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] we enable the render model extension if available.
 			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
+		</member>
+		<member name="xr/openxr/extensions/spatial_container/bounds" type="Vector3" setter="" getter="" default="Vector3(0.5, 0.5, 0.5)">
+			Specifies the starting bounds for the main spatial container, in meters.
+		</member>
+		<member name="xr/openxr/extensions/spatial_container/bounds_mode" type="int" setter="" getter="" default="&quot;0&quot;">
+			Specifies the bounds mode, [code]bounded[/code] or [code]immersive[/code], for the main spatial container.
+		</member>
+		<member name="xr/openxr/extensions/spatial_container/enabled" type="bool" setter="" getter="" default="false">
+			Enables the spatial container extension.
 		</member>
 		<member name="xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], we enable the built-in logic for handling anchors. Godot will query (persistent) anchors and manage [OpenXRAnchorTracker] instances for you. If disabled you'll need to create your own spatial and persistence context and perform your own discovery queries.

@@ -255,8 +255,7 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
         if (flags & SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_3_FLAG) {
 #if defined(PSA_WANT_ALG_ECDH)
             if (mbedtls_ssl_tls13_named_group_is_ecdhe(*group_list) &&
-                mbedtls_ssl_get_psa_curve_info_from_tls_id(
-                    *group_list, NULL, NULL) == PSA_SUCCESS) {
+                (mbedtls_ssl_is_tls_id_supported(*group_list))) {
                 propose_group = 1;
             }
 #endif
@@ -271,8 +270,7 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
 #if defined(MBEDTLS_SSL_TLS1_2_SOME_ECC)
         if ((flags & SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_2_FLAG) &&
             mbedtls_ssl_tls12_named_group_is_ecdhe(*group_list) &&
-            (mbedtls_ssl_get_ecp_group_id_from_tls_id(*group_list) !=
-             MBEDTLS_ECP_DP_NONE)) {
+            (mbedtls_ssl_is_tls_id_supported(*group_list))) {
             propose_group = 1;
         }
 #endif /* MBEDTLS_SSL_TLS1_2_SOME_ECC */

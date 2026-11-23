@@ -255,7 +255,8 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {
 			node->add_child(memnew(HSeparator));
 			Button *open_in_editor = memnew(Button);
-			open_in_editor->set_text(TTR("Open Editor"));
+			open_in_editor->set_text(TTR("Open"));
+			open_in_editor->set_tooltip_text(TTR("Open in editor."));
 			open_in_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			node->add_child(open_in_editor);
 			open_in_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);

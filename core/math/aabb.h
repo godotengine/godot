@@ -149,6 +149,10 @@ struct [[nodiscard]] AABB {
 			position(p_pos),
 			size(p_size) {
 	}
+	constexpr AABB(real_t p_pos_x, real_t p_pos_y, real_t p_pos_z, real_t p_size_x, real_t p_size_y, real_t p_size_z) :
+			position(p_pos_x, p_pos_y, p_pos_z),
+			size(p_size_x, p_size_y, p_size_z) {
+	}
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {

@@ -36,12 +36,13 @@
 # Isak Waltin <isak@waltin.se>, 2024, 2025.
 # Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-10 12:02+0000\n"
+"PO-Revision-Date: 2026-08-08 09:57+0000\n"
 "Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.9.dev0\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -812,7 +813,7 @@ msgid "Diagonal Mode"
 msgstr "Diagonalt läge"
 
 msgid "Seed"
-msgstr "Seed"
+msgstr "Slumpfrö"
 
 msgid "State"
 msgstr "Tillstånd"
@@ -861,6 +862,24 @@ msgstr "Arbetspool"
 
 msgid "Low Priority Thread Ratio"
 msgstr "Andel trådar med låg prioritet"
+
+msgid "Target"
+msgstr "Mål"
+
+msgid "Start Offset"
+msgstr "Startförskjutning"
+
+msgid "Max Results"
+msgstr "Maximalt antal resultat"
+
+msgid "Subject"
+msgstr "Ämne"
+
+msgid "Names"
+msgstr "Namn"
+
+msgid "Strings"
+msgstr "Strängar"
 
 msgid "Locale"
 msgstr "Språkområde"
@@ -930,9 +949,6 @@ msgstr "Handtagsläge"
 
 msgid "Stream"
 msgstr "Ström"
-
-msgid "Start Offset"
-msgstr "Startförskjutning"
 
 msgid "End Offset"
 msgstr "Slutförskjutning"
@@ -1058,7 +1074,7 @@ msgid "Camera"
 msgstr "Kamera"
 
 msgid "Plugins"
-msgstr "Plugins"
+msgstr "Insticksmoduler"
 
 msgid "Entitlements"
 msgstr "Rättigheter"
@@ -1081,12 +1097,6 @@ msgstr "Förmågor"
 msgid "Access Wi-Fi"
 msgstr "Åtkomst till Wi‑Fi"
 
-msgid "Performance Gaming Tier"
-msgstr "Prestandanivå för spel"
-
-msgid "Performance A 12"
-msgstr "Prestanda A 12"
-
 msgid "Shader Baker"
 msgstr "Shader‑bakare"
 
@@ -1104,24 +1114,6 @@ msgstr "Tillgänglig via iTunes‑delning"
 
 msgid "Privacy"
 msgstr "Integritet"
-
-msgid "Camera Usage Description"
-msgstr "Beskrivning av kameranvändning"
-
-msgid "Camera Usage Description Localized"
-msgstr "Lokalisering av kameranvändningsbeskrivning"
-
-msgid "Microphone Usage Description"
-msgstr "Beskrivning av mikrofonanvändning"
-
-msgid "Microphone Usage Description Localized"
-msgstr "Lokalisering av mikrofonanvändningsbeskrivning"
-
-msgid "Photolibrary Usage Description"
-msgstr "Beskrivning av fotobiblioteksanvändning"
-
-msgid "Photolibrary Usage Description Localized"
-msgstr "Lokalisering av fotobiblioteksanvändningsbeskrivning"
 
 msgid "Tracking Enabled"
 msgstr "Spårning aktiverad"
@@ -1705,6 +1697,15 @@ msgstr "Arrangemang"
 msgid "Layout"
 msgstr "Layout"
 
+msgid "Normal Map"
+msgstr "Normalkarta"
+
+msgid "Roughness"
+msgstr "Råhet"
+
+msgid "Src Normal"
+msgstr "Normal (källa)"
+
 msgid "Base Scale"
 msgstr "Basskala"
 
@@ -1719,15 +1720,6 @@ msgstr "Åtgärda alpha-kant"
 
 msgid "Premult Alpha"
 msgstr "Premultiplicerad alfa"
-
-msgid "Normal Map"
-msgstr "Normalkarta"
-
-msgid "Roughness"
-msgstr "Roughness"
-
-msgid "Src Normal"
-msgstr "Normal (källa)"
 
 msgid "Process"
 msgstr "Process"
@@ -1910,42 +1902,6 @@ msgstr "Pluginnamn"
 msgid "Autoload on Startup"
 msgstr "Autoladda vid start"
 
-msgid "ID"
-msgstr "ID"
-
-msgid "Texture"
-msgstr "Textur"
-
-msgid "Margins"
-msgstr "Marginaler"
-
-msgid "Separation"
-msgstr "Separation"
-
-msgid "Texture Region Size"
-msgstr "Storlek på texturområde"
-
-msgid "Use Texture Padding"
-msgstr "Använd texturutfyllnad"
-
-msgid "Atlas Coords"
-msgstr "Atlas‑koordinater"
-
-msgid "Size in Atlas"
-msgstr "Storlek i atlas"
-
-msgid "Alternative ID"
-msgstr "Alternativt ID"
-
-msgid "Speed"
-msgstr "Hastighet"
-
-msgid "Frames Count"
-msgstr "Antal bildrutor"
-
-msgid "Duration"
-msgstr "Varaktighet"
-
 msgid "Current Group Idx"
 msgstr "Aktuellt gruppindex"
 
@@ -1989,7 +1945,7 @@ msgid "Preview"
 msgstr "Förhandsgranska"
 
 msgid "Interface"
-msgstr "Interface"
+msgstr "Gränssnitt"
 
 msgid "Localization"
 msgstr "Lokalisering"
@@ -1998,7 +1954,7 @@ msgid "Editor Language"
 msgstr "Editorspråk"
 
 msgid "Asset Store"
-msgstr "Asset Store"
+msgstr "Resursbutik"
 
 msgid "Use Threads"
 msgstr "Använd trådar"
@@ -2150,11 +2106,11 @@ msgstr "Fäll ihop huvudmenyn"
 msgid "Show Renderer Selector"
 msgstr "Visa renderer‑väljare"
 
-msgid "Derive Script Globals by Name"
-msgstr "Härled skript‑globala variabler efter namn"
-
 msgid "Scene Tree"
 msgstr "Scenträd"
+
+msgid "Derive Script Globals by Name"
+msgstr "Härled skript‑globala variabler efter namn"
 
 msgid "Ask Before Revoking Unique Name"
 msgstr "Fråga innan unikt namn återkallas"
@@ -2389,9 +2345,6 @@ msgstr "Miniatyrbild"
 
 msgid "Quick Open Dialog"
 msgstr "Snabböppningsdialog"
-
-msgid "Max Results"
-msgstr "Maximalt antal resultat"
 
 msgid "Instant Preview"
 msgstr "Direktförhandsvisning"
@@ -2657,11 +2610,11 @@ msgstr "Öppna dominerande skript vid scenbyte"
 msgid "Drop Preload Resources as UID"
 msgstr "Släpp förinlästa resurser som UID"
 
-msgid "Documentation"
-msgstr "Dokumentation"
-
 msgid "Enable Tooltips"
 msgstr "Slå på tooltips"
+
+msgid "Documentation"
+msgstr "Dokumentation"
 
 msgid "Script List"
 msgstr "Skriptlista"
@@ -3608,12 +3561,6 @@ msgstr "Aktivera plan‑spårning"
 msgid "Enable Builtin Plane Detection"
 msgstr "Aktivera inbyggd plandetektering"
 
-msgid "Enable Marker Tracking"
-msgstr "Aktivera markörspårning"
-
-msgid "Enable Builtin Marker Tracking"
-msgstr "Aktivera inbyggd markörspårning"
-
 msgid "Aruco Dict"
 msgstr "ArUco‑ordlista"
 
@@ -3667,9 +3614,6 @@ msgstr "Windows‑inbyggd ikon"
 
 msgid "Text Driver"
 msgstr "Textdrivrutin"
-
-msgid "Search in File Extensions"
-msgstr "Filändelser att söka i"
 
 msgid "Mouse Cursor"
 msgstr "Muspekare"
@@ -4116,7 +4060,7 @@ msgid "Onready With Export"
 msgstr "Onready med export"
 
 msgid "Copyright"
-msgstr "Copyright"
+msgstr "Upphovsrätt"
 
 msgid "Bake FPS"
 msgstr "Baka FPS"
@@ -4317,7 +4261,7 @@ msgid "Original Name"
 msgstr "Orginalnamn"
 
 msgid "Loop"
-msgstr "Loop"
+msgstr "Slinga"
 
 msgid "Buffer"
 msgstr "Buffert"
@@ -4811,6 +4755,9 @@ msgstr "Interaktionsprofiler"
 msgid "Actions"
 msgstr "Åtgärder"
 
+msgid "Duration"
+msgstr "Varaktighet"
+
 msgid "Binding Path"
 msgstr "Bindningssökväg"
 
@@ -4988,14 +4935,206 @@ msgstr "Spårare"
 msgid "Make Local to Pose"
 msgstr "Gör lokal till posen"
 
-msgid "Subject"
-msgstr "Ämne"
+msgid "ID"
+msgstr "ID"
 
-msgid "Names"
-msgstr "Namn"
+msgid "Texture"
+msgstr "Textur"
 
-msgid "Strings"
-msgstr "Strängar"
+msgid "Margins"
+msgstr "Marginaler"
+
+msgid "Separation"
+msgstr "Separation"
+
+msgid "Texture Region Size"
+msgstr "Storlek på texturområde"
+
+msgid "Use Texture Padding"
+msgstr "Använd texturutfyllnad"
+
+msgid "Atlas Coords"
+msgstr "Atlas‑koordinater"
+
+msgid "Size in Atlas"
+msgstr "Storlek i atlas"
+
+msgid "Alternative ID"
+msgstr "Alternativt ID"
+
+msgid "Speed"
+msgstr "Hastighet"
+
+msgid "Frames Count"
+msgstr "Antal bildrutor"
+
+msgid "Tile Set"
+msgstr "Tileset"
+
+msgid "Rendering Quadrant Size"
+msgstr "Renderingskvadrantstorlek"
+
+msgid "Collision Animatable"
+msgstr "Kollision animerbar"
+
+msgid "Collision Visibility Mode"
+msgstr "Kollisionssynlighetsläge"
+
+msgid "Navigation Visibility Mode"
+msgstr "Navigeringssynlighetsläge"
+
+msgid "Occlusion Enabled"
+msgstr "Ocklusion aktiverad"
+
+msgid "Y Sort Origin"
+msgstr "Y‑sorteringsursprung"
+
+msgid "X Draw Order Reversed"
+msgstr "X‑ritordning omvänd"
+
+msgid "Collision Enabled"
+msgstr "Kollision aktiverad"
+
+msgid "Use Kinematic Bodies"
+msgstr "Använd kinematiska kroppar"
+
+msgid "Physics Quadrant Size"
+msgstr "Fysik‑kvadrantstorlek"
+
+msgid "Right Side"
+msgstr "Högersida"
+
+msgid "Right Corner"
+msgstr "Högra hörnet"
+
+msgid "Bottom Right Side"
+msgstr "Nedre högersida"
+
+msgid "Bottom Right Corner"
+msgstr "Nedre högra hörnet"
+
+msgid "Bottom Side"
+msgstr "Nedre sida"
+
+msgid "Bottom Corner"
+msgstr "Nedre hörn"
+
+msgid "Bottom Left Side"
+msgstr "Nedre vänstersida"
+
+msgid "Bottom Left Corner"
+msgstr "Nedre vänstra hörnet"
+
+msgid "Left Side"
+msgstr "Vänstersida"
+
+msgid "Left Corner"
+msgstr "Vänstra hörnet"
+
+msgid "Top Left Side"
+msgstr "Övre vänstersida"
+
+msgid "Top Left Corner"
+msgstr "Övre vänstra hörnet"
+
+msgid "Top Side"
+msgstr "Övre sida"
+
+msgid "Top Corner"
+msgstr "Övre hörn"
+
+msgid "Top Right Side"
+msgstr "Övre högersida"
+
+msgid "Top Right Corner"
+msgstr "Övre högra hörnet"
+
+msgid "Terrains"
+msgstr "Teränger"
+
+msgid "Custom Data"
+msgstr "Anpassad data"
+
+msgid "Tile Shape"
+msgstr "Plattformsform / Tile Shape"
+
+msgid "Tile Layout"
+msgstr "Plattformsupplägg / Tile Layout"
+
+msgid "Tile Offset Axis"
+msgstr "Tile Offset‑axel"
+
+msgid "Tile Size"
+msgstr "Tile‑storlek"
+
+msgid "UV Clipping"
+msgstr "UV‑klippning"
+
+msgid "Occlusion Layers"
+msgstr "Ocklusionslager"
+
+msgid "Physics Layers"
+msgstr "Fysiklager"
+
+msgid "Terrain Sets"
+msgstr "Terränguppsättningar"
+
+msgid "Custom Data Layers"
+msgstr "Anpassade datalager"
+
+msgid "Scenes"
+msgstr "Scener"
+
+msgid "Scene"
+msgstr "Scen"
+
+msgid "Display Placeholder"
+msgstr "Visa platshållare"
+
+msgid "Polygons Count"
+msgstr "Antal polygoner"
+
+msgid "Points"
+msgstr "Punkter"
+
+msgid "One Way"
+msgstr "Enkelriktad kollision"
+
+msgid "One Way Margin"
+msgstr "Enkelriktad kollisionsmarginal"
+
+msgid "Terrains Peering Bit"
+msgstr "Terräng‑grannbitsflagga"
+
+msgid "Flip H"
+msgstr "Vänd H"
+
+msgid "Flip V"
+msgstr "Vänd V"
+
+msgid "Transpose"
+msgstr "Transponera"
+
+msgid "Texture Origin"
+msgstr "Texturursprung"
+
+msgid "Modulate"
+msgstr "Modulate"
+
+msgid "Z Index"
+msgstr "Z-index"
+
+msgid "Terrain Set"
+msgstr "Terränguppsättning"
+
+msgid "Terrain"
+msgstr "Terräng"
+
+msgid "Miscellaneous"
+msgstr "Diverse"
+
+msgid "Probability"
+msgstr "Sannolikhet"
 
 msgid "Discover Multicast If"
 msgstr "Upptäck multicast‑gränssnitt"
@@ -5074,6 +5213,9 @@ msgstr "Varying-namn"
 
 msgid "Varying Type"
 msgstr "Varying-typ"
+
+msgid "Group"
+msgstr "Grupp"
 
 msgid "Op Type"
 msgstr "Op-typ"
@@ -5409,7 +5551,7 @@ msgid "Min iOS Version"
 msgstr "Minimal iOS‑version"
 
 msgid "Storyboard"
-msgstr "Storyboard"
+msgstr "Bildmanus"
 
 msgid "Image Scale Mode"
 msgstr "Bildskalningsläge"
@@ -5425,6 +5567,12 @@ msgstr "Använd anpassad bakgrundsfärg"
 
 msgid "Custom BG Color"
 msgstr "Anpassad bakgrundsfärg"
+
+msgid "Performance Gaming Tier"
+msgstr "Prestandanivå för spel"
+
+msgid "Performance A 12"
+msgstr "Prestanda A 12"
 
 msgid "Settings 58 X 58"
 msgstr "Inställningar 58 X 58"
@@ -5651,6 +5799,18 @@ msgstr "API-nyckel"
 msgid "API Key ID"
 msgstr "API‑nyckel‑ID"
 
+msgid "Microphone Usage Description"
+msgstr "Beskrivning av mikrofonanvändning"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Lokalisering av mikrofonanvändningsbeskrivning"
+
+msgid "Camera Usage Description"
+msgstr "Beskrivning av kameranvändning"
+
+msgid "Camera Usage Description Localized"
+msgstr "Lokalisering av kameranvändningsbeskrivning"
+
 msgid "Location Usage Description"
 msgstr "Platsanvändningsbeskrivning"
 
@@ -5852,12 +6012,6 @@ msgstr "Hastighetsskala"
 msgid "Centered"
 msgstr "Centrerad"
 
-msgid "Flip H"
-msgstr "Vänd H"
-
-msgid "Flip V"
-msgstr "Vänd V"
-
 msgid "Current"
 msgstr "Nuvarande"
 
@@ -5871,7 +6025,7 @@ msgid "Playing"
 msgstr "Spelar"
 
 msgid "Autoplay"
-msgstr "Autoplay"
+msgstr "Spela upp automatiskt"
 
 msgid "Stream Paused"
 msgstr "Pausad"
@@ -6031,9 +6185,6 @@ msgstr "Sfärradie"
 
 msgid "Rect Extents"
 msgstr "Rektangelutbredning"
-
-msgid "Points"
-msgstr "Punkter"
 
 msgid "Normals"
 msgstr "Normaler"
@@ -6255,7 +6406,7 @@ msgid "Fill"
 msgstr "Fyll"
 
 msgid "Gradient"
-msgstr "Gradient"
+msgstr "Övertoning"
 
 msgid "Texture Mode"
 msgstr "Texturläge"
@@ -6273,7 +6424,7 @@ msgid "End Cap Mode"
 msgstr "Slutändläge"
 
 msgid "Border"
-msgstr "Border"
+msgstr "Kant"
 
 msgid "Sharp Limit"
 msgstr "Skärpegräns"
@@ -6783,39 +6934,6 @@ msgstr "Ramskoordinater"
 msgid "Filter Clip Enabled"
 msgstr "Filterklipp aktiverad"
 
-msgid "Tile Set"
-msgstr "Tileset"
-
-msgid "Rendering Quadrant Size"
-msgstr "Renderingskvadrantstorlek"
-
-msgid "Collision Animatable"
-msgstr "Kollision animerbar"
-
-msgid "Collision Visibility Mode"
-msgstr "Kollisionssynlighetsläge"
-
-msgid "Navigation Visibility Mode"
-msgstr "Navigeringssynlighetsläge"
-
-msgid "Occlusion Enabled"
-msgstr "Ocklusion aktiverad"
-
-msgid "Y Sort Origin"
-msgstr "Y‑sorteringsursprung"
-
-msgid "X Draw Order Reversed"
-msgstr "X‑ritordning omvänd"
-
-msgid "Collision Enabled"
-msgstr "Kollision aktiverad"
-
-msgid "Use Kinematic Bodies"
-msgstr "Använd kinematiska kroppar"
-
-msgid "Physics Quadrant Size"
-msgstr "Fysik‑kvadrantstorlek"
-
 msgid "Show Rect"
 msgstr "Visa rektangel"
 
@@ -6948,9 +7066,6 @@ msgstr "Parametrar"
 
 msgid "Emission Energy"
 msgstr "Emissionsenergi"
-
-msgid "Modulate"
-msgstr "Modulate"
 
 msgid "Albedo Mix"
 msgstr "Albedoblandning"
@@ -7156,6 +7271,9 @@ msgstr "Oskärpa"
 msgid "Caster Mask"
 msgstr "Skuggkastarmask"
 
+msgid "Sky Mode"
+msgstr "Himläläge"
+
 msgid "Directional Shadow"
 msgstr "Riktad skugga"
 
@@ -7176,9 +7294,6 @@ msgstr "Toningsstart"
 
 msgid "Pancake Size"
 msgstr "Pannkaksstorlek"
-
-msgid "Sky Mode"
-msgstr "Himläläge"
 
 msgid "Omni"
 msgstr "Omni‑ljus"
@@ -7762,9 +7877,6 @@ msgstr "Rotben"
 msgid "Tip Bone"
 msgstr "Spetsben"
 
-msgid "Target"
-msgstr "Mål"
-
 msgid "Override Tip Basis"
 msgstr "Åsidosätt spetsbas"
 
@@ -7792,8 +7904,8 @@ msgstr "Inuti"
 msgid "External Force"
 msgstr "Extern kraft"
 
-msgid "Track Physics Step"
-msgstr "Spåra fysiksteg"
+msgid "Max Length"
+msgstr "Maximal längd"
 
 msgid "Sorting"
 msgstr "Sortering"
@@ -7907,7 +8019,7 @@ msgid "Autorestart"
 msgstr "Automatisk omstart"
 
 msgid "Delay"
-msgstr "Delay"
+msgstr "Fördröjning"
 
 msgid "Random Delay"
 msgstr "Slumpmässig delay"
@@ -8590,9 +8702,6 @@ msgstr "Synlighetsförhållande"
 msgid "Placeholder Text"
 msgstr "Platshållartext"
 
-msgid "Max Length"
-msgstr "Maximal längd"
-
 msgid "Keep Editing on Text Submit"
 msgstr "Fortsätt redigera vid textsändning"
 
@@ -8893,6 +9002,9 @@ msgstr "Anpassat pilar‑steg"
 msgid "Custom Arrow Round"
 msgstr "Anpassad pilrundning"
 
+msgid "Format"
+msgstr "Format"
+
 msgid "Split Offsets"
 msgstr "Delade offsetar"
 
@@ -9179,9 +9291,6 @@ msgstr "Synlighetslager"
 msgid "Ordering"
 msgstr "Ordning"
 
-msgid "Z Index"
-msgstr "Z-index"
-
 msgid "Z as Relative"
 msgstr "Z som relativ"
 
@@ -9244,9 +9353,6 @@ msgstr "Fysikprioritet"
 
 msgid "Thread Group"
 msgstr "Trådgrupp"
-
-msgid "Group"
-msgstr "Grupp"
 
 msgid "Group Order"
 msgstr "Gruppordning"
@@ -9683,126 +9789,6 @@ msgstr "Vänd böjriktning"
 msgid "Modification Count"
 msgstr "Modifieringsantal"
 
-msgid "Right Side"
-msgstr "Högersida"
-
-msgid "Right Corner"
-msgstr "Högra hörnet"
-
-msgid "Bottom Right Side"
-msgstr "Nedre högersida"
-
-msgid "Bottom Right Corner"
-msgstr "Nedre högra hörnet"
-
-msgid "Bottom Side"
-msgstr "Nedre sida"
-
-msgid "Bottom Corner"
-msgstr "Nedre hörn"
-
-msgid "Bottom Left Side"
-msgstr "Nedre vänstersida"
-
-msgid "Bottom Left Corner"
-msgstr "Nedre vänstra hörnet"
-
-msgid "Left Side"
-msgstr "Vänstersida"
-
-msgid "Left Corner"
-msgstr "Vänstra hörnet"
-
-msgid "Top Left Side"
-msgstr "Övre vänstersida"
-
-msgid "Top Left Corner"
-msgstr "Övre vänstra hörnet"
-
-msgid "Top Side"
-msgstr "Övre sida"
-
-msgid "Top Corner"
-msgstr "Övre hörn"
-
-msgid "Top Right Side"
-msgstr "Övre högersida"
-
-msgid "Top Right Corner"
-msgstr "Övre högra hörnet"
-
-msgid "Terrains"
-msgstr "Teränger"
-
-msgid "Custom Data"
-msgstr "Anpassad data"
-
-msgid "Tile Shape"
-msgstr "Plattformsform / Tile Shape"
-
-msgid "Tile Layout"
-msgstr "Plattformsupplägg / Tile Layout"
-
-msgid "Tile Offset Axis"
-msgstr "Tile Offset‑axel"
-
-msgid "Tile Size"
-msgstr "Tile‑storlek"
-
-msgid "UV Clipping"
-msgstr "UV‑klippning"
-
-msgid "Occlusion Layers"
-msgstr "Ocklusionslager"
-
-msgid "Physics Layers"
-msgstr "Fysiklager"
-
-msgid "Terrain Sets"
-msgstr "Terränguppsättningar"
-
-msgid "Custom Data Layers"
-msgstr "Anpassade datalager"
-
-msgid "Scenes"
-msgstr "Scener"
-
-msgid "Scene"
-msgstr "Scen"
-
-msgid "Display Placeholder"
-msgstr "Visa platshållare"
-
-msgid "Polygons Count"
-msgstr "Antal polygoner"
-
-msgid "One Way"
-msgstr "Enkelriktad kollision"
-
-msgid "One Way Margin"
-msgstr "Enkelriktad kollisionsmarginal"
-
-msgid "Terrains Peering Bit"
-msgstr "Terräng‑grannbitsflagga"
-
-msgid "Transpose"
-msgstr "Transponera"
-
-msgid "Texture Origin"
-msgstr "Texturursprung"
-
-msgid "Terrain Set"
-msgstr "Terränguppsättning"
-
-msgid "Terrain"
-msgstr "Terräng"
-
-msgid "Miscellaneous"
-msgstr "Diverse"
-
-msgid "Probability"
-msgstr "Sannolikhet"
-
 msgid "Distance"
 msgstr "Distans"
 
@@ -9829,9 +9815,6 @@ msgstr "Kartdjup"
 
 msgid "Map Data"
 msgstr "Kartdata"
-
-msgid "Item"
-msgstr "Item"
 
 msgid "Add UV2"
 msgstr "Lägg till UV2"
@@ -9960,7 +9943,7 @@ msgid "Frames"
 msgstr "Bildrutor"
 
 msgid "Pause"
-msgstr "Pause"
+msgstr "Paus"
 
 msgid "Atlas"
 msgstr "Atlas"
@@ -9968,14 +9951,29 @@ msgstr "Atlas"
 msgid "Filter Clip"
 msgstr "Filterklipp"
 
-msgid "Polyphony"
-msgstr "Polyfoni"
-
-msgid "Format"
-msgstr "Format"
+msgid "Mix Rate Mode"
+msgstr "Mixningsfrekvensläge"
 
 msgid "Mix Rate"
 msgstr "Mixningsfrekvens"
+
+msgid "Buffer Length"
+msgstr "Buffertlängd"
+
+msgid "Polyphony"
+msgstr "Polyfoni"
+
+msgid "Playback Mode"
+msgstr "Uppspelningsläge"
+
+msgid "Random Pitch Semitones"
+msgstr "Slumpmässig tonhöjd (semitoner)"
+
+msgid "Random Volume Offset dB"
+msgstr "Slumpmässig volymförskjutning (dB)"
+
+msgid "Streams"
+msgstr "Strömmar"
 
 msgid "Stereo"
 msgstr "Stereo"
@@ -10242,7 +10240,7 @@ msgid "Mix"
 msgstr "Blanda"
 
 msgid "Bloom"
-msgstr "Bloom"
+msgstr "Glöd"
 
 msgid "HDR Threshold"
 msgstr "HDR‑tröskel"
@@ -10485,7 +10483,7 @@ msgid "Transmittance"
 msgstr "Transmittans"
 
 msgid "Boost"
-msgstr "Boost"
+msgstr "Förstärkning"
 
 msgid "Back Lighting"
 msgstr "Bakljus"
@@ -10494,7 +10492,7 @@ msgid "Backlight"
 msgstr "Bakljus"
 
 msgid "Refraction"
-msgstr "Refraction"
+msgstr "Ljusbrytning"
 
 msgid "UV Layer"
 msgstr "UV-lager"
@@ -11336,6 +11334,18 @@ msgstr "Färg för vertikal rullningshint"
 msgid "Scroll Hint Horizontal Color"
 msgstr "Färg för horisontell rullningshint"
 
+msgid "Scrollbar Margin Left"
+msgstr "Rullningslistmarginal (vänster)"
+
+msgid "Scrollbar Margin Top"
+msgstr "Rullningslistmarginal (övre)"
+
+msgid "Scrollbar Margin Right"
+msgstr "Rullningslistmarginal (höger)"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Rullningslistmarginal (nedre)"
+
 msgid "Normal Joystick"
 msgstr "Normal joystick"
 
@@ -11441,6 +11451,24 @@ msgstr "Filminiatyr"
 msgid "Folder Thumbnail"
 msgstr "Mappminiatyr"
 
+msgid "Menu Copy Path"
+msgstr "Meny: Kopiera sökväg"
+
+msgid "Menu Delete"
+msgstr "Meny: Ta bort"
+
+msgid "Menu New Folder"
+msgstr "Meny: Ny mapp"
+
+msgid "Menu Refresh"
+msgstr "Meny: Uppdatera"
+
+msgid "Menu Show in File Manager"
+msgstr "Meny: Visa i filhanteraren"
+
+msgid "Menu Open Bundle"
+msgstr "Meny: Öppna paket"
+
 msgid "Folder Icon Color"
 msgstr "Mappikonfärg"
 
@@ -11458,6 +11486,9 @@ msgstr "Märkt avskiljare (vänster)"
 
 msgid "Labeled Separator Right"
 msgstr "Märkt avskiljare (höger)"
+
+msgid "Indeterminate Disabled"
+msgstr "Obestämt (inaktiverad)"
 
 msgid "Submenu"
 msgstr "Undermeny"
@@ -11570,9 +11601,6 @@ msgstr "Anpassad knapp (nedtryckt)"
 msgid "Custom Button Hover"
 msgstr "Anpassad knapp (markerad)"
 
-msgid "Indeterminate Disabled"
-msgstr "Obestämt (inaktiverad)"
-
 msgid "Select Arrow"
 msgstr "Väljpil"
 
@@ -11671,18 +11699,6 @@ msgstr "Rullningskant"
 
 msgid "Scroll Speed"
 msgstr "Rullningshastighet"
-
-msgid "Scrollbar Margin Left"
-msgstr "Rullningslistmarginal (vänster)"
-
-msgid "Scrollbar Margin Top"
-msgstr "Rullningslistmarginal (övre)"
-
-msgid "Scrollbar Margin Right"
-msgstr "Rullningslistmarginal (höger)"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Rullningslistmarginal (nedre)"
 
 msgid "Scrollbar H Separation"
 msgstr "Rullningslist H‑separation"
@@ -12056,21 +12072,6 @@ msgstr "Inenhet för ljud"
 msgid "Playback Speed Scale"
 msgstr "Uppspelningshastighetsskala"
 
-msgid "Playback Mode"
-msgstr "Uppspelningsläge"
-
-msgid "Random Pitch Semitones"
-msgstr "Slumpmässig tonhöjd (semitoner)"
-
-msgid "Random Volume Offset dB"
-msgstr "Slumpmässig volymförskjutning (dB)"
-
-msgid "Streams"
-msgstr "Strömmar"
-
-msgid "Buffer Length"
-msgstr "Buffertlängd"
-
 msgid "Voice Count"
 msgstr "Röstantal"
 
@@ -12177,10 +12178,7 @@ msgid "Time Pullout (ms)"
 msgstr "Tidsförskjutning (ms)"
 
 msgid "Surround"
-msgstr "Surround"
-
-msgid "Mix Rate Mode"
-msgstr "Mixningsfrekvensläge"
+msgstr "Surroundljud"
 
 msgid "Feed"
 msgstr "Återmatning"
@@ -12362,30 +12360,6 @@ msgstr "Total gravitation"
 msgid "Center of Mass Local"
 msgstr "Lokalt masscentrum"
 
-msgid "Collide with Bodies"
-msgstr "Kollidera med kroppar"
-
-msgid "Collide with Areas"
-msgstr "Kollidera med områden"
-
-msgid "Canvas Instance ID"
-msgstr "Canvasinstans‑ID"
-
-msgid "Shape RID"
-msgstr "Form‑RID"
-
-msgid "Collide Separation Ray"
-msgstr "Kollidera med separationsstråle"
-
-msgid "Exclude Bodies"
-msgstr "Uteslut kroppar"
-
-msgid "Exclude Objects"
-msgstr "Uteslut objekt"
-
-msgid "Recovery as Collision"
-msgstr "Återställning som kollision"
-
 msgid "Default Gravity"
 msgstr "Standardgravitation"
 
@@ -12428,14 +12402,38 @@ msgstr "Standardbegränsningsbias"
 msgid "Physics Engine"
 msgstr "Fysikmotor"
 
+msgid "Max Collisions"
+msgstr "Maximalt antal kollisioner"
+
+msgid "Canvas Instance ID"
+msgstr "Canvasinstans‑ID"
+
+msgid "Collide with Bodies"
+msgstr "Kollidera med kroppar"
+
+msgid "Collide with Areas"
+msgstr "Kollidera med områden"
+
+msgid "Shape RID"
+msgstr "Form‑RID"
+
+msgid "Collide Separation Ray"
+msgstr "Kollidera med separationsstråle"
+
+msgid "Exclude Bodies"
+msgstr "Uteslut kroppar"
+
+msgid "Exclude Objects"
+msgstr "Uteslut objekt"
+
+msgid "Recovery as Collision"
+msgstr "Återställning som kollision"
+
 msgid "Inverse Inertia Tensor"
 msgstr "Invers tröghetstensor"
 
 msgid "Principal Inertia Axes"
 msgstr "Huvudsakliga tröghetsaxlar"
-
-msgid "Max Collisions"
-msgstr "Maximalt antal kollisioner"
 
 msgid "Debug Redraw Time"
 msgstr "Felsökningsomritningstid"
@@ -12678,7 +12676,7 @@ msgid "Screen Space Reflection"
 msgstr "Skärmbaserade reflektioner"
 
 msgid "Subsurface Scattering"
-msgstr "Subsurface Scattering"
+msgstr "Spridning under ytan"
 
 msgid "Subsurface Scattering Quality"
 msgstr "Kvalitet för subsurface‑spridning"

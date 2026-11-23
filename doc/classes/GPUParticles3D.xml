@@ -107,6 +107,8 @@
 			The number of draw passes when rendering particles.
 		</member>
 		<member name="draw_skin" type="Skin" setter="set_skin" getter="get_skin">
+			Defines a skin to use with particle trails when [member trail_enabled] is enabled. It will apply this skin to a skinned mesh assigned as a draw pass. This should be left empty if using [RibbonTrailMesh] or [TubeTrailMesh].
+			[b]Note:[/b] Bones will be positioned in the trail in order based on the ID of the bone, no matter their position in the skeleton. Bone [code]0[/code], followed by Bone [code]1[/code], followed by Bone [code]2[/code], etc. When making a skinned mesh for this purpose, care should be taken that the bones are evenly spaced and facing away from the following bone, or the result will look incorrect. This means that if each parent bone points toward its child, that is 180 degrees off from what it should be, and could result in a trail that looks "inside-out."
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
 			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle unless all active particles have finished processing. Use the [signal finished] signal to be notified once all active particles finish processing.
@@ -159,9 +161,9 @@
 			[b]Note:[/b] When [member sub_emitter] is set, the target [GPUParticles3D] node will no longer emit particles on its own.
 		</member>
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
-			If [code]true[/code], enables particle trails using a mesh skinning system. Designed to work with [RibbonTrailMesh] and [TubeTrailMesh].
+			If [code]true[/code], enables particle trails using a mesh skinning system. Designed to work with [RibbonTrailMesh] and [TubeTrailMesh] or with a custom skinned mesh if [member draw_skin] is set.
 			[b]Note:[/b] [member BaseMaterial3D.use_particle_trails] must also be enabled on the particle mesh's material. Otherwise, setting [member trail_enabled] to [code]true[/code] will have no effect.
-			[b]Note:[/b] Unlike [GPUParticles2D], the number of trail sections and subdivisions is set in the [RibbonTrailMesh] or the [TubeTrailMesh]'s properties.
+			[b]Note:[/b] Unlike [GPUParticles2D], the number of trail sections and subdivisions is set in the [RibbonTrailMesh] or the [TubeTrailMesh]'s properties. If [member draw_skin] is set, the number of trail sections will be based on the number of bones in the skin.
 		</member>
 		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
 			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].

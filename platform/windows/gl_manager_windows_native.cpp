@@ -129,20 +129,31 @@ void GLManagerNative_Windows::_nvapi_setup_profile() {
 		return;
 	}
 
-	// Setup NVAPI function pointers
-	NvAPI_Initialize_t NvAPI_Initialize = (NvAPI_Initialize_t)NvAPI_QueryInterface(0x0150E828);
-	NvAPI_GetErrorMessage__ = (NvAPI_GetErrorMessage_t)NvAPI_QueryInterface(0x6C2D048C);
-	NvAPI_DRS_CreateSession_t NvAPI_DRS_CreateSession = (NvAPI_DRS_CreateSession_t)NvAPI_QueryInterface(0x0694D52E);
-	NvAPI_DRS_DestroySession_t NvAPI_DRS_DestroySession = (NvAPI_DRS_DestroySession_t)NvAPI_QueryInterface(0xDAD9CFF8);
-	NvAPI_Unload_t NvAPI_Unload = (NvAPI_Unload_t)NvAPI_QueryInterface(0xD22BDD7E);
-	NvAPI_DRS_LoadSettings_t NvAPI_DRS_LoadSettings = (NvAPI_DRS_LoadSettings_t)NvAPI_QueryInterface(0x375DBD6B);
-	NvAPI_DRS_CreateProfile_t NvAPI_DRS_CreateProfile = (NvAPI_DRS_CreateProfile_t)NvAPI_QueryInterface(0xCC176068);
-	NvAPI_DRS_CreateApplication_t NvAPI_DRS_CreateApplication = (NvAPI_DRS_CreateApplication_t)NvAPI_QueryInterface(0x4347A9DE);
-	NvAPI_DRS_SaveSettings_t NvAPI_DRS_SaveSettings = (NvAPI_DRS_SaveSettings_t)NvAPI_QueryInterface(0xFCBC7E14);
-	NvAPI_DRS_SetSetting_t NvAPI_DRS_SetSetting = (NvAPI_DRS_SetSetting_t)NvAPI_QueryInterface(0x577DD202);
-	NvAPI_DRS_FindProfileByName_t NvAPI_DRS_FindProfileByName = (NvAPI_DRS_FindProfileByName_t)NvAPI_QueryInterface(0x7E4A9A0B);
-	NvAPI_DRS_GetApplicationInfo_t NvAPI_DRS_GetApplicationInfo = (NvAPI_DRS_GetApplicationInfo_t)NvAPI_QueryInterface(0xED1F8C69);
-	NvAPI_DRS_DeleteProfile_t NvAPI_DRS_DeleteProfile = (NvAPI_DRS_DeleteProfile_t)NvAPI_QueryInterface(0x17093206);
+#define NVAPI_QUERY_IFACE_AND_CHECK(t, f, n) \
+	t f = (t)NvAPI_QueryInterface(n); \
+	if (f == nullptr) { \
+		print_verbose(vformat("Error getting NVAPI %s", _STR(f))); \
+		return; \
+	}
+
+	// Setup NVAPI function pointers.
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_Initialize_t, NvAPI_Initialize, 0x0150E828)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_GetErrorMessage_t, NvAPI_GetErrorMessage, 0x6C2D048C)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateSession_t, NvAPI_DRS_CreateSession, 0x0694D52E)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_DestroySession_t, NvAPI_DRS_DestroySession, 0xDAD9CFF8)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_Unload_t, NvAPI_Unload, 0xD22BDD7E)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_LoadSettings_t, NvAPI_DRS_LoadSettings, 0x375DBD6B)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateProfile_t, NvAPI_DRS_CreateProfile, 0xCC176068)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_CreateApplication_t, NvAPI_DRS_CreateApplication, 0x4347A9DE)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_SaveSettings_t, NvAPI_DRS_SaveSettings, 0xFCBC7E14)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_SetSetting_t, NvAPI_DRS_SetSetting, 0x577DD202)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_FindProfileByName_t, NvAPI_DRS_FindProfileByName, 0x7E4A9A0B)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_GetApplicationInfo_t, NvAPI_DRS_GetApplicationInfo, 0xED1F8C69)
+	NVAPI_QUERY_IFACE_AND_CHECK(NvAPI_DRS_DeleteProfile_t, NvAPI_DRS_DeleteProfile, 0x17093206)
+
+#undef NVAPI_QUERY_IFACE_AND_CHECK
+
+	NvAPI_GetErrorMessage__ = NvAPI_GetErrorMessage;
 
 	if (!nvapi_err_check("NVAPI: Init failed", NvAPI_Initialize())) {
 		return;

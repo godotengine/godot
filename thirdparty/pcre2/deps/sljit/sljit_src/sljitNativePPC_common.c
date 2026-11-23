@@ -292,14 +292,14 @@ static const sljit_u8 freg_map[SLJIT_NUMBER_OF_FLOAT_REGISTERS + 3] = {
 #endif /* SLJIT_LITTLE_ENDIAN */
 
 #if (defined SLJIT_INDIRECT_CALL && SLJIT_INDIRECT_CALL)
-SLJIT_API_FUNC_ATTRIBUTE void sljit_set_function_context(void** func_ptr, struct sljit_function_context* context, sljit_uw addr, void* func)
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_function_context(void** func_ptr, struct sljit_function_context* context, sljit_uw addr, void (*func)(void))
 {
 	sljit_uw* ptrs;
 
 	if (func_ptr)
 		*func_ptr = (void*)context;
 
-	ptrs = (sljit_uw*)func;
+	ptrs = (sljit_uw*)(sljit_uw)func;
 	context->addr = addr ? addr : ptrs[0];
 	context->r2 = ptrs[1];
 	context->r11 = ptrs[2];
@@ -749,7 +749,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_generate_code(struct sljit_compiler *compil
 		if (((sljit_sw)code_ptr) & 0x4)
 			code_ptr++;
 #endif /* SLJIT_CONFIG_PPC_64 */
-		sljit_set_function_context(NULL, (struct sljit_function_context*)code_ptr, (sljit_uw)code, (void*)sljit_generate_code);
+		sljit_set_function_context(NULL, (struct sljit_function_context*)code_ptr, (sljit_uw)code, (void (*)(void))sljit_generate_code);
 	}
 #endif /* SLJIT_INDIRECT_CALL */
 
@@ -1422,6 +1422,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 	op = GET_OPCODE(op);
 	switch (op) {
 	case SLJIT_BREAKPOINT:
+		return push_inst(compiler, 0x7fe00008);
 	case SLJIT_NOP:
 		return push_inst(compiler, NOP);
 	case SLJIT_LMUL_UW:
@@ -1733,7 +1734,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op1(struct sljit_compiler *compile
 #define TEST_ADD_IMM(src, srcw) \
 	((src) == SLJIT_IMM && (srcw) <= 0x7fff7fffl && (srcw) >= -0x80000000l)
 #define TEST_UI_IMM(src, srcw) \
-	((src) == SLJIT_IMM && !((srcw) & ~0xffffffff))
+	((src) == SLJIT_IMM && !((srcw) & ~(sljit_sw)0xffffffff))
 
 #define TEST_ADD_FORM1(op) \
 	(GET_FLAG_TYPE(op) == SLJIT_OVERFLOW \
@@ -2141,7 +2142,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *c
 	shift_arg &= (sljit_sw)((sizeof(sljit_sw) * 8) - 1);
 
 	if (src2 == SLJIT_IMM) {
-		src2w = src2w << shift_arg;
+		src2w = (sljit_sw)((sljit_uw)src2w << shift_arg);
 		shift_arg = 0;
 	}
 
@@ -2575,7 +2576,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_aligned_label(struct slj
 static sljit_ins get_bo_bi_flags(struct sljit_compiler *compiler, sljit_s32 type)
 {
 	switch (type) {
-	case SLJIT_NOT_CARRY:
+	case SLJIT_CARRY:
 		if (compiler->status_flags_state & SLJIT_CURRENT_FLAGS_SUB)
 			return (4 << 21) | (2 << 16);
 		SLJIT_FALLTHROUGH
@@ -2584,7 +2585,7 @@ static sljit_ins get_bo_bi_flags(struct sljit_compiler *compiler, sljit_s32 type
 	case SLJIT_ATOMIC_STORED:
 		return (12 << 21) | (2 << 16);
 
-	case SLJIT_CARRY:
+	case SLJIT_NOT_CARRY:
 		if (compiler->status_flags_state & SLJIT_CURRENT_FLAGS_SUB)
 			return (12 << 21) | (2 << 16);
 		SLJIT_FALLTHROUGH
@@ -2675,7 +2676,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_jump(struct sljit_compile
 	type &= 0xff;
 
 	if ((type | 0x1) == SLJIT_NOT_CARRY)
-		PTR_FAIL_IF(push_inst(compiler, ADDE | RC(ALT_SET_FLAGS) | D(TMP_REG2) | A(TMP_ZERO) | B(TMP_ZERO)));
+		PTR_FAIL_IF(push_inst(compiler, ADDME | RC(ALT_SET_FLAGS) | D(TMP_REG2) | A(TMP_ZERO)));
 
 	/* In PPC, we don't need to touch the arguments. */
 	if (type < SLJIT_JUMP)
@@ -3033,7 +3034,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_select(struct sljit_compiler *comp
 	}
 
 	if ((type | 0x1) == SLJIT_NOT_CARRY)
-		FAIL_IF(push_inst(compiler, ADDE | RC(ALT_SET_FLAGS) | D(TMP_REG1) | A(TMP_ZERO) | B(TMP_ZERO)));
+		FAIL_IF(push_inst(compiler, ADDME | RC(ALT_SET_FLAGS) | D(TMP_REG1) | A(TMP_ZERO)));
 
 	size = compiler->size;
 
@@ -3075,7 +3076,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fselect(struct sljit_compiler *com
 	}
 
 	if (((type & ~SLJIT_32) | 0x1) == SLJIT_NOT_CARRY)
-		FAIL_IF(push_inst(compiler, ADDE | RC(ALT_SET_FLAGS) | D(TMP_REG1) | A(TMP_ZERO) | B(TMP_ZERO)));
+		FAIL_IF(push_inst(compiler, ADDME | RC(ALT_SET_FLAGS) | D(TMP_REG1) | A(TMP_ZERO)));
 
 	size = compiler->size;
 

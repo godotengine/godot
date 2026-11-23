@@ -35,6 +35,11 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+@interface NSWindow (_MouseConfinement)
+- (NSRect)mouseConfinementRect;
+- (void)setMouseConfinementRect:(NSRect)mouseConfinementRect;
+@end
+
 @interface GodotWindow : NSWindow {
 	DisplayServerEnums::WindowID window_id;
 	NSTimeInterval anim_duration;

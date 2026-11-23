@@ -24,7 +24,7 @@ struct SubstLookup : Lookup
   bool is_reverse () const
   {
     unsigned int type = get_type ();
-    if (unlikely (type == SubTable::Extension))
+    if (unlikely (type == SubTable::Extension) && hb_barrier ())
       return get_subtable (0).u.extension.is_reverse ();
     return lookup_type_is_reverse (type);
   }
@@ -59,6 +59,12 @@ struct SubstLookup : Lookup
     c->flush ();
 
     return ret;
+  }
+
+  void depend (hb_depend_context_t *c) const
+  {
+    c->set_recurse_func (dispatch_depend_recurse_func);
+    dispatch (c);
   }
 
   hb_closure_lookups_context_t::return_t closure_lookups (hb_closure_lookups_context_t *c, unsigned this_index) const
@@ -137,11 +143,12 @@ struct SubstLookup : Lookup
     return_trace (false);
   }
 
+  template <typename GlyphID>
   bool serialize_alternate (hb_serialize_context_t *c,
                             uint32_t lookup_props,
-                            hb_sorted_array_t<const HBGlyphID16> glyphs,
+                            hb_sorted_array_t<GlyphID> glyphs,
                             hb_array_t<const unsigned int> alternate_len_list,
-                            hb_array_t<const HBGlyphID16> alternate_glyphs_list)
+                            hb_array_t<GlyphID> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Alternate, lookup_props, 1))) return_trace (false);
@@ -159,13 +166,14 @@ struct SubstLookup : Lookup
     return_trace (false);
   }
 
+  template <typename GlyphID>
   bool serialize_ligature (hb_serialize_context_t *c,
                            uint32_t lookup_props,
-                           hb_sorted_array_t<const HBGlyphID16> first_glyphs,
+                           hb_sorted_array_t<GlyphID> first_glyphs,
                            hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
-                           hb_array_t<const HBGlyphID16> ligatures_list,
+                           hb_array_t<GlyphID> ligatures_list,
                            hb_array_t<const unsigned int> component_count_list,
-                           hb_array_t<const HBGlyphID16> component_list /* Starting from second for each ligature */)
+                           hb_array_t<GlyphID> component_list /* Starting from second for each ligature */)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!Lookup::serialize (c, SubTable::Ligature, lookup_props, 1))) return_trace (false);
@@ -189,6 +197,7 @@ struct SubstLookup : Lookup
 
   static inline typename hb_closure_context_t::return_t closure_glyphs_recurse_func (hb_closure_context_t *c, unsigned lookup_index, hb_set_t *covered_seq_indices, unsigned seq_index, unsigned end_index);
 
+
   static inline hb_closure_context_t::return_t dispatch_closure_recurse_func (hb_closure_context_t *c, unsigned lookup_index, hb_set_t *covered_seq_indices, unsigned seq_index, unsigned end_index)
   {
     if (!c->should_visit_lookup (lookup_index))
@@ -202,6 +211,13 @@ struct SubstLookup : Lookup
     //c->flush ();
 
     return ret;
+  }
+
+  static inline hb_depend_context_t::return_t depend_glyphs_recurse_func (hb_depend_context_t *c, unsigned lookup_index, hb_bit_page_t *covered_seq_indices, unsigned seq_index, unsigned end_index);
+
+  static inline hb_depend_context_t::return_t dispatch_depend_recurse_func (hb_depend_context_t *c, unsigned lookup_index, hb_bit_page_t *covered_seq_indices, unsigned seq_index, unsigned end_index)
+  {
+    return depend_glyphs_recurse_func (c, lookup_index, covered_seq_indices, seq_index, end_index);
   }
 
   template <typename context_t, typename ...Ts>

@@ -51,8 +51,7 @@ def detect_arch():
 def validate_arch(arch, platform_name, supported_arches):
     if arch not in supported_arches:
         methods.print_error(
-            'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
-            % (arch, platform_name, ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{arch}" for {platform_name}. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit(255)
 
@@ -63,14 +62,14 @@ def get_build_version(short):
     name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
+    v = f"{version.major}.{version.minor}"
     if version.patch > 0:
-        v += ".%d" % version.patch
+        v += f".{version.patch}"
     status = version.status
     if not short:
         if os.getenv("GODOT_VERSION_STATUS") is not None:
             status = str(os.getenv("GODOT_VERSION_STATUS"))
-        v += ".%s.%s" % (status, name)
+        v += f".{status}.{name}"
     return v
 
 
@@ -94,6 +93,71 @@ def lipo(prefix, suffix):
         subprocess.run(lipo_command)
 
     return target_bin
+
+
+def check_accesskit_version(path, req_ver="0.23.1"):
+    def int_or_zero(i):
+        try:
+            return int(i)
+        except (TypeError, ValueError):
+            return 0
+
+    def ver_parse(a):
+        return [int_or_zero(i) for i in a.split(".")]
+
+    def file_hash(fname):
+        import hashlib
+
+        sha1 = hashlib.sha1()
+        with open(fname, "rb") as f:
+            while True:
+                data = f.read(4096)
+                if not data:
+                    break
+                sha1.update(data)
+        return sha1.hexdigest()
+
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.abspath(os.path.join(caller_script_dir, "..", "..", "bin", "build_deps"))
+        except Exception:  # Give up.
+            deps_folder = ""
+
+    if os.path.abspath(path) == os.path.join(deps_folder, "accesskit"):  # Check auto-downloaded dependency only.
+        verfile = os.path.join(path, "version")
+        if os.path.exists(verfile):
+            with open(verfile) as f:
+                dep_version = f.read()
+        else:
+            # Compatibility, use known hashes to detect version.
+            hash = file_hash(os.path.join(path, "include", "accesskit.h"))
+            if hash == "300e20f908da029fc1e3ffa37bc0d2e06adc4334":
+                dep_version = "0.23.1"
+            elif hash == "02f692f8282c37156092913a3da136825c14d029":
+                dep_version = "0.22.3"
+            else:
+                dep_version = "0.21.3"
+
+        if ver_parse(dep_version) != ver_parse(req_ver):
+            methods.print_warning(
+                f"Incompatible AccessKit version detected. Version required {req_ver}, version found {dep_version}.\n"
+                f"You can install required version by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            return False
+
+    return True
 
 
 def get_mvk_sdk_path(osname):
@@ -297,6 +361,13 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
                 mvk_path + "/ios-arm64_x86_64-simulator", app_dir + "/MoltenVK.xcframework/ios-arm64_x86_64-simulator"
             )
             shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
+
+    if env["accesskit"]:
+        ak_sdk_path = env.get("accesskit_sdk_path")
+        if ak_sdk_path:
+            ak_xcf = os.path.join(ak_sdk_path, "lib", "ios", "AccessKit.xcframework")
+            if os.path.isdir(ak_xcf):
+                shutil.copytree(ak_xcf, app_dir + "/AccessKit.xcframework")
 
     # ZIP Xcode project bundle.
     zip_dir = env.Dir("#bin/" + (app_prefix + extra_suffix).replace(".", "_")).abspath

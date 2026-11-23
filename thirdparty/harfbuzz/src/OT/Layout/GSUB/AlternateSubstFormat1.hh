@@ -13,14 +13,14 @@ struct AlternateSubstFormat1_2
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 1 */
-  typename Types::template OffsetTo<Coverage>
+  typename Types::template LOffsetTo<Coverage>
                 coverage;               /* Offset to Coverage table--from
                                          * beginning of Substitution table */
-  Array16Of<typename Types::template OffsetTo<AlternateSet<Types>>>
+  typename Types::template ArrayOf<typename Types::template OffsetTo<AlternateSet<Types>>>
                 alternateSet;           /* Array of AlternateSet tables
                                          * ordered by Coverage Index */
   public:
-  DEFINE_SIZE_ARRAY (2 + 2 * Types::size, alternateSet);
+  DEFINE_SIZE_ARRAY (2 + Types::LOffset::static_size + Types::HBUINT::static_size, alternateSet);
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -33,6 +33,19 @@ struct AlternateSubstFormat1_2
 
   bool may_have_non_1to1 () const
   { return false; }
+
+  void depend (hb_depend_context_t *c) const
+  {
+    // Filter by parent_active_glyphs like closure does
+    + hb_zip (this+coverage, alternateSet)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<AlternateSet<Types>>&> &_)
+                {
+                  const AlternateSet<Types>& as = this+_.second;
+                  as.depend (c, _.first);
+                })
+    ;
+  }
 
   void closure (hb_closure_context_t *c) const
   {
@@ -92,10 +105,11 @@ struct AlternateSubstFormat1_2
     return_trace ((this+alternateSet[index]).apply (c));
   }
 
+  template <typename GlyphID>
   bool serialize (hb_serialize_context_t *c,
-                  hb_sorted_array_t<const HBGlyphID16> glyphs,
+                  hb_sorted_array_t<GlyphID> glyphs,
                   hb_array_t<const unsigned int> alternate_len_list,
-                  hb_array_t<const HBGlyphID16> alternate_glyphs_list)
+                  hb_array_t<GlyphID> alternate_glyphs_list)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);

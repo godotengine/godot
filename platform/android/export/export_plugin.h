@@ -51,9 +51,6 @@ const String ENV_ANDROID_KEYSTORE_RELEASE_PATH = "GODOT_ANDROID_KEYSTORE_RELEASE
 const String ENV_ANDROID_KEYSTORE_RELEASE_USER = "GODOT_ANDROID_KEYSTORE_RELEASE_USER";
 const String ENV_ANDROID_KEYSTORE_RELEASE_PASS = "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD";
 
-const String DEFAULT_ANDROID_KEYSTORE_DEBUG_USER = "androiddebugkey";
-const String DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD = "android";
-
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions = 0;
@@ -171,11 +168,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
-	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
+	void _clear_tmp_src_dirs(const Ref<EditorExportPreset> &p_preset);
+
+	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir, bool p_give_internet, int p_export_format, bool p_debug);
 
 	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
 
-	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset);
+	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir);
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
 
@@ -189,7 +188,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome, Ref<Image> &splash_icon, Ref<Image> &splash_branding_image);
 
-	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
+	void _copy_icons_to_gradle_project(const String &p_export_src_dir,
 			const Ref<Image> &p_main_image,
 			const Ref<Image> &p_foreground,
 			const Ref<Image> &p_background,
@@ -197,13 +196,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &p_splash_icon,
 			const Ref<Image> &p_splash_branding_image);
 
-	static void _create_editor_debug_keystore_if_needed();
-
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
 	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
+
+	static String _get_export_format_extension(int p_export_format);
 
 protected:
 	void _notification(int p_what);
@@ -246,8 +245,6 @@ public:
 #endif // ANDROID_ENABLED
 
 	virtual Ref<Texture2D> get_run_icon() const override;
-
-	static String get_keytool_path();
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

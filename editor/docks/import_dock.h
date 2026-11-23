@@ -55,6 +55,7 @@ class ImportDock : public EditorDock {
 	Label *label_warning = nullptr;
 	Button *import = nullptr;
 	List<String> need_cleanup;
+	bool dirty = false;
 
 	Control *advanced_spacer = nullptr;
 	Button *advanced = nullptr;

@@ -31,6 +31,7 @@
 #include "ray_cast_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/main/scene_tree.h"
@@ -40,7 +41,7 @@
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || PhysicsServer2D::get_singleton()->debug_is_enabled())) {
 		queue_redraw();
 	}
 }
@@ -168,7 +169,7 @@ void RayCast2D::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				break;
 			}
 			_draw_debug_shape();
@@ -179,10 +180,6 @@ void RayCast2D::_notification(int p_what) {
 				break;
 			}
 			_update_raycast_state();
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -380,4 +377,8 @@ void RayCast2D::_bind_methods() {
 
 RayCast2D::RayCast2D() {
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

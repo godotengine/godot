@@ -227,6 +227,7 @@ public:
 
 	static Ref<EditorTheme> generate_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
 	static bool is_generated_theme_outdated();
+	static void set_theme_outdated();
 
 	static bool is_dark_theme();
 	static bool is_dark_icon_and_font();

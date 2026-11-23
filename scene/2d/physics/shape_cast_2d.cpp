@@ -41,7 +41,7 @@
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || PhysicsServer2D::get_singleton()->debug_is_enabled())) {
 		queue_redraw();
 	}
 }
@@ -225,7 +225,7 @@ void ShapeCast2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 #ifdef TOOLS_ENABLED
 			ERR_FAIL_COND(!is_inside_tree());
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				break;
 			}
 			if (shape.is_null()) {
@@ -282,10 +282,6 @@ void ShapeCast2D::_notification(int p_what) {
 				break;
 			}
 			_update_shapecast_state();
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -488,4 +484,8 @@ void ShapeCast2D::_bind_methods() {
 
 ShapeCast2D::ShapeCast2D() {
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

@@ -41,7 +41,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/io/file_access.h"
-#include "editor/web_tools_editor_plugin.h"
+#include "editor/editor_debugger_server_messageport.h"
+#include "editor/editor_node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h" // SceneTree only forward declares it.
 #endif
@@ -136,7 +137,7 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	os = new OS_Web();
 
 #ifdef TOOLS_ENABLED
-	WebToolsEditorPlugin::initialize();
+	EditorNode::add_init_callback(&EditorDebuggerServerMessagePort::initialize);
 #endif
 
 	// We must override main when testing is enabled

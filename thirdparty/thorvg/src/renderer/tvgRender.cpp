@@ -24,7 +24,42 @@
 #include "tvgRender.h"
 
 /************************************************************************/
-/* RenderMethod Class Implementation                                    */
+/* RenderSurface                                                        */
+/************************************************************************/
+
+RenderSurface::RenderSurface(const RenderSurface* rhs)
+{
+    data = rhs->data;
+    stride = rhs->stride;
+    w = rhs->w;
+    h = rhs->h;
+    cs = rhs->cs;
+    channelSize = rhs->channelSize;
+    premultiplied = rhs->premultiplied;
+    opaque = rhs->opaque;
+}
+
+void RenderSurface::setup(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, uint8_t channelSize, ColorSpace cs)
+{
+    if (cs == ColorSpace::XBGR8888) {
+        cs = ColorSpace::ABGR8888;
+        this->opaque = true;
+    } else if (cs == ColorSpace::XRGB8888) {
+        cs = ColorSpace::ARGB8888;
+        this->opaque = true;
+    }
+
+    this->data = data;
+    this->stride = stride;
+    this->w = w;
+    this->h = h;
+    this->channelSize = channelSize;
+    this->cs = cs;
+    this->premultiplied = (cs == ColorSpace::ABGR8888 || cs == ColorSpace::ARGB8888);
+}
+
+/************************************************************************/
+/* RenderMethod                                                         */
 /************************************************************************/
 
 uint32_t RenderMethod::ref()
@@ -55,8 +90,18 @@ bool RenderMethod::viewport(const RenderRegion& vp)
 
 
 /************************************************************************/
-/* RenderPath Class Implementation                                      */
+/* RenderPath                                                           */
 /************************************************************************/
+
+// used as a temporary buffer
+RenderPath& RenderPath::scratch()
+{
+    static thread_local RenderPath dbuffers[3];  // tripple-buffering
+    static thread_local int idx = 0;
+    if (++idx > 2) idx = 0;
+    dbuffers[(idx)].clear();
+    return dbuffers[(int)idx];
+}
 
 void RenderPath::addCircle(float cx, float cy, float rx, float ry, bool cw)
 {
@@ -190,6 +235,8 @@ bool RenderPath::bounds(const Matrix* m, BBox& box)
 {
     if (cmds.empty() || cmds.first() == PathCommand::CubicTo) return false;
 
+    box.init();
+
     auto pt = pts.begin();
     auto cmd = cmds.begin();
 
@@ -230,177 +277,20 @@ bool RenderPath::bounds(const Matrix* m, BBox& box)
     return true;
 }
 
-
-void RenderPath::optimize(RenderPath& out, const Matrix& matrix, bool& thin) const
-{
-#if defined(THORVG_GL_RASTER_SUPPORT) || defined (THORVG_WG_RASTER_SUPPORT)
-    static constexpr auto PX_TOLERANCE = 0.25f;
-
-    thin = false;
-    if (empty()) return;
-
-    out.cmds.clear();
-    out.pts.clear();
-    out.cmds.reserve(cmds.count);
-    out.pts.reserve(pts.count);
-
-    auto cmds = this->cmds.data;
-    auto cmdCnt = this->cmds.count;
-    auto pts = this->pts.data;
-
-    Point lastOutT{};   // The suffix "T" indicates that the point is transformed.
-    Point subpathStartT{};
-    Point thinLineStart{};
-    Point thinLineVec{};
-    auto drawableSubpathCnt = 0u;
-    auto thinLineVecLen = 0.0f;
-    auto thinCandidate = true;
-    auto thinLineReady = false;
-    auto subpathOpen = false;
-    auto subpathHasSegment = false;
-
-    auto finalizeSubpath = [&]() {
-        if (!subpathHasSegment) return;
-        ++drawableSubpathCnt;
-        if (drawableSubpathCnt > 1) thinCandidate = false;
-        subpathHasSegment = false;
-    };
-
-    //vecLen is guaranteed to be non-zero since closed points are already merged
-    auto point2Line = [](const Point& point, const Point& start, const Point& vec, float vecLen, float& maxDist, float& minT, float& maxT) {
-        Point offset = point - start;
-        auto dist = fabsf(tvg::cross(vec, offset)) / vecLen;
-        if (dist > maxDist) maxDist = dist;
-        auto t = tvg::dot(offset, vec) / (vecLen * vecLen);
-        if (t < minT) minT = t;
-        if (t > maxT) maxT = t;
-    };
-
-    auto validateCubic = [&point2Line](const Point& start, const Point& ctrl1, const Point& ctrl2, const Point& end, float& maxDist, float& minT, float& maxT, float& vecLen) {
-        auto vec = end - start;
-        vecLen = sqrtf(vec.x * vec.x + vec.y * vec.y);
-        maxDist = 0.0f;
-        minT = FLT_MAX;
-        maxT = FLT_MIN;
-        point2Line(ctrl1, start, vec, vecLen, maxDist, minT, maxT);
-        point2Line(ctrl2, start, vec, vecLen, maxDist, minT, maxT);
-    };
-
-    auto checkThinPoint = [&](const Point& ptT) {
-        if (!thinCandidate || !thinLineReady) return;
-        auto dist = fabsf(tvg::cross(thinLineVec, ptT - thinLineStart)) / thinLineVecLen;
-        if (dist > PX_TOLERANCE) thinCandidate = false;
-    };
-
-    auto collectThinSegment = [&](const Point& startT, const Point& endT) {
-        subpathHasSegment = true;
-        if (!thinCandidate) return;
-
-        if (!thinLineReady) {
-            if (!tvg::closed(startT, endT, PX_TOLERANCE)) {
-                thinLineStart = startT;
-                thinLineVec = endT - startT;
-                thinLineVecLen = sqrtf(thinLineVec.x * thinLineVec.x + thinLineVec.y * thinLineVec.y);
-                if (!tvg::zero(thinLineVecLen)) thinLineReady = true;
-            }
-        } else {
-            checkThinPoint(startT);
-            checkThinPoint(endT);
-        }
-    };
-
-    auto addLineCmd = [&](const Point& startT, const Point& ptT) {
-        out.cmds.push(PathCommand::LineTo);
-        out.pts.push(ptT);
-        lastOutT = ptT;
-        collectThinSegment(startT, ptT);
-    };
-
-    auto processCubicTo = [&](const Point* cubicPts, const Point& startT) {
-        auto ctrl1T = cubicPts[0] * matrix;
-        auto ctrl2T = cubicPts[1] * matrix;
-        auto endT = cubicPts[2] * matrix;
-        if (tvg::closed(startT, endT, PX_TOLERANCE)) return;
-        float maxDist, minT, maxT, vecLen;
-        validateCubic(startT, ctrl1T, ctrl2T, endT, maxDist, minT, maxT, vecLen);
-        auto flat = (maxDist <= PX_TOLERANCE);
-        auto tEps = PX_TOLERANCE / vecLen;
-        auto inSpan = (minT >= -tEps) && (maxT <= 1.0f + tEps);
-        if (flat && inSpan) {
-            addLineCmd(startT, endT);
-        } else {
-            out.cmds.push(PathCommand::CubicTo);
-            out.pts.push(ctrl1T);
-            out.pts.push(ctrl2T);
-            out.pts.push(endT);
-            lastOutT = endT;
-            subpathHasSegment = true;
-            thinCandidate = false;
-        }
-    };
-
-    for (uint32_t i = 0; i < cmdCnt; i++) {
-        switch (cmds[i]) {
-            case PathCommand::MoveTo: {
-                finalizeSubpath();
-                auto ptT = (*pts) * matrix;
-                out.cmds.push(PathCommand::MoveTo);
-                out.pts.push(ptT);
-                lastOutT = ptT;
-                subpathStartT = ptT;
-                subpathOpen = true;
-                pts++;
-                break;
-            }
-            case PathCommand::LineTo: {
-                auto startT = lastOutT;
-                auto ptT = (*pts) * matrix;
-                if (tvg::closed(startT, ptT, PX_TOLERANCE)) {
-                    pts++;
-                    break;
-                }
-                addLineCmd(startT, ptT);
-                pts++;
-                break;
-            }
-            case PathCommand::CubicTo: {
-                processCubicTo(pts, lastOutT);
-                pts += 3;
-                break;
-            }
-            case PathCommand::Close: {
-                if (subpathOpen && !tvg::closed(lastOutT, subpathStartT, PX_TOLERANCE)) collectThinSegment(lastOutT, subpathStartT);
-                out.cmds.push(PathCommand::Close);
-                lastOutT = subpathStartT;
-                break;
-            }
-            default: break;
-        }
-    }
-    finalizeSubpath();
-    thin = thinCandidate && thinLineReady && (drawableSubpathCnt == 1);
-#else
-    thin = false;
-    TVGLOG("RENDERER", "RenderPath transformed optimization is disabled");
-#endif
-}
-
-
 /************************************************************************/
-/* RenderRegion Class Implementation                                    */
+/* RenderRegion                                                         */
 /************************************************************************/
-
 
 void RenderRegion::intersect(const RenderRegion& rhs)
 {
-    if (min.x < rhs.min.x) min.x = rhs.min.x;
-    if (min.y < rhs.min.y) min.y = rhs.min.y;
-    if (max.x > rhs.max.x) max.x = rhs.max.x;
-    if (max.y > rhs.max.y) max.y = rhs.max.y;
+    if (xMin < rhs.xMin) xMin = rhs.xMin;
+    if (yMin < rhs.yMin) yMin = rhs.yMin;
+    if (xMax > rhs.xMax) xMax = rhs.xMax;
+    if (yMax > rhs.yMax) yMax = rhs.yMax;
 
     // Not intersected: collapse to zero-area region
-    if (max.x < min.x) max.x = min.x;
-    if (max.y < min.y) max.y = min.y;
+    if (xMax < xMin) xMax = xMin;
+    if (yMax < yMin) yMax = yMin;
 }
 
 #ifdef THORVG_PARTIAL_RENDER_SUPPORT
@@ -421,11 +311,13 @@ void RenderDirtyRegion::init(uint32_t w, uint32_t h)
             auto& partition = partitions[y * cnt + x];
             partition.list[0].reserve(64);
             auto& region = partition.region;
-            region.min = {x * px, y * py};
-            region.max = {region.min.x + px, region.min.y + py};
+            region.xMin = x * px;
+            region.yMin = y * py;
+            region.xMax = region.xMin + px;
+            region.yMax = region.yMin + py;
             //leftovers
-            if (x == cnt -1) region.max.x += lx;
-            if (y == cnt -1) region.max.y += ly;
+            if (x == cnt - 1) region.xMax += lx;
+            if (y == cnt - 1) region.yMax += ly;
         }
     }
 }
@@ -435,7 +327,7 @@ bool RenderDirtyRegion::add(const RenderRegion& bbox)
 {
     for (int idx = 0; idx < PARTITIONING; ++idx) {
         auto& partition = partitions[idx];
-        if (bbox.max.y <= partition.region.min.y) break;
+        if (bbox.yMax <= partition.region.yMin) break;
         if (bbox.intersected(partition.region)) {
             ScopedLock lock(key);
             partition.list[partition.current].push(RenderRegion::intersect(bbox, partition.region));
@@ -479,18 +371,18 @@ void RenderDirtyRegion::subdivide(Array<RenderRegion>& targets, uint32_t idx, Re
     uint32_t cnt = 0;
 
     //subtract top
-    if (rhs.min.y < lhs.min.y) {
-        temp[cnt++] = {{rhs.min.x, rhs.min.y}, {rhs.max.x, lhs.min.y}};
-        rhs.min.y = lhs.min.y;
+    if (rhs.yMin < lhs.yMin) {
+        temp[cnt++] = {rhs.xMin, rhs.yMin, rhs.xMax, lhs.yMin};
+        rhs.yMin = lhs.yMin;
     }
     //subtract bottom
-    if (rhs.max.y > lhs.max.y) {
-        temp[cnt++] = {{rhs.min.x, lhs.max.y}, {rhs.max.x, rhs.max.y}};
-        rhs.max.y = lhs.max.y;
+    if (rhs.yMax > lhs.yMax) {
+        temp[cnt++] = {rhs.xMin, lhs.yMax, rhs.xMax, rhs.yMax};
+        rhs.yMax = lhs.yMax;
     }
     //subtract right
-    if (rhs.max.x > lhs.max.x) {
-        temp[cnt++] = {{lhs.max.x, rhs.min.y}, {rhs.max.x, rhs.max.y}};
+    if (rhs.xMax > lhs.xMax) {
+        temp[cnt++] = {lhs.xMax, rhs.yMin, rhs.xMax, rhs.yMax};
     }
 
     //Please reserve memory enough with targets.reserve()
@@ -509,9 +401,9 @@ void RenderDirtyRegion::subdivide(Array<RenderRegion>& targets, uint32_t idx, Re
     targets.count += (cnt - 1);
 
     //sorting by x coord again, only for the updated region
-    while (dst < targets.end() && dst->min.x < rhs.max.x) ++dst;
+    while (dst < targets.end() && dst->xMin < rhs.xMax) ++dst;
     stable_sort(&targets[idx], dst, [](const RenderRegion& a, const RenderRegion& b) -> bool {
-        return a.min.x < b.min.x;
+        return a.xMin < b.xMin;
     });
 }
 
@@ -535,7 +427,7 @@ void RenderDirtyRegion::commit()
 
         //sorting by x coord. guarantee the stable performance: O(NlogN)
         stable_sort(targets.begin(), targets.end(), [](const RenderRegion& a, const RenderRegion& b) -> bool {
-            return a.min.x < b.min.x;
+            return a.xMin < b.xMin;
         });
 
         //Optimized using sweep-line algorithm: O(NlogN)
@@ -547,7 +439,7 @@ void RenderDirtyRegion::commit()
             for (uint32_t j = i + 1; j < targets.count; ++j) {
                 auto& rhs = targets[j];
                 if (rhs.invalid()) continue;
-                if (lhs.max.x < rhs.min.x) break;   //line sweeping
+                if (lhs.xMax < rhs.xMin) break;  // line sweeping
 
                 //fully overlapped. drop lhs
                 if (rhs.contained(lhs)) {
@@ -560,19 +452,19 @@ void RenderDirtyRegion::commit()
                     continue;
                 }
                 //just merge & expand on x axis
-                if (lhs.min.y == rhs.min.y && lhs.max.y == rhs.max.y) {
-                    if (lhs.max.x >= rhs.min.x) {
-                        lhs.max.x = rhs.max.x;
+                if (lhs.yMin == rhs.yMin && lhs.yMax == rhs.yMax) {
+                    if (lhs.xMax >= rhs.xMin) {
+                        lhs.xMax = rhs.xMax;
                         rhs = {};
                         j = i;   //lhs dirty region has been damaged, try again.
                         continue;
                     }
                 }
                 //just merge & expand on y axis
-                if (lhs.min.x == rhs.min.x && lhs.max.x == rhs.max.x) {
-                    if (lhs.min.y <= rhs.max.y && rhs.min.y <= lhs.max.y) {
-                        rhs.min.y = std::min(lhs.min.y, rhs.min.y);
-                        rhs.max.y = std::max(lhs.max.y, rhs.max.y);
+                if (lhs.xMin == rhs.xMin && lhs.xMax == rhs.xMax) {
+                    if (lhs.yMin <= rhs.yMax && rhs.yMin <= lhs.yMax) {
+                        rhs.yMin = std::min(lhs.yMin, rhs.yMin);
+                        rhs.yMax = std::max(lhs.yMax, rhs.yMax);
                         merged = true;
                         break;
                     }
@@ -592,7 +484,7 @@ void RenderDirtyRegion::commit()
 #endif
 
 /************************************************************************/
-/* RenderTrimPath Class Implementation                                  */
+/* RenderTrimPath                                                       */
 /************************************************************************/
 
 #define EPSILON 1e-4f
@@ -768,8 +660,10 @@ static void _trim(const PathCommand* inCmds, uint32_t inCmdsCnt, const Point* in
     auto trimEnd = end * totalLength;
 
     if (begin >= end) {
+        auto cnt = out.cmds.count;
         _trimPath(inCmds, inCmdsCnt, inPts, inPtsCnt, trimStart, totalLength, out);
-        _trimPath(inCmds, inCmdsCnt, inPts, inPtsCnt, 0.0f, trimEnd, out, connect);
+        //nothing to connect to when the first part is empty
+        _trimPath(inCmds, inCmdsCnt, inPts, inPtsCnt, 0.0f, trimEnd, out, connect && out.cmds.count > cnt);
     } else {
         _trimPath(inCmds, inCmdsCnt, inPts, inPtsCnt, trimStart, trimEnd, out);
     }
@@ -847,215 +741,3 @@ bool RenderTrimPath::trim(const RenderPath& in, RenderPath& out) const
 
     return out.pts.count >= 2;
 }
-
-/************************************************************************/
-/* StrokeDashPath Class Implementation                                  */
-/************************************************************************/
-
-//TODO: use this common function from sw engine
-#if defined(THORVG_GL_RASTER_SUPPORT) || defined(THORVG_WG_RASTER_SUPPORT)
-
-struct StrokeDashPath
-{
-public:
-    StrokeDashPath(RenderStroke::Dash dash) : dash(dash) {}
-    bool gen(const RenderPath& in, RenderPath& out, bool drawPoint, const Matrix* transform = nullptr);
-
-private:
-    void lineTo(RenderPath& out, const Point& pt, bool drawPoint);
-    void cubicTo(RenderPath& out, const Point& pt1, const Point& pt2, const Point& pt3, bool drawPoint);
-    void point(RenderPath& out, const Point& p);
-    Point map(const Point& pt) const { return applyTransform ? pt * (*transform) : pt; }
-    template<typename Segment, typename LengthFn, typename SplitFn, typename DrawFn, typename PointFn>
-    void segment(Segment seg, float len, RenderPath& out, bool allowDot, LengthFn lengthFn, SplitFn splitFn, DrawFn drawFn, PointFn getStartPt, const Point& endPos);
-
-    RenderStroke::Dash dash;
-    float curLen = 0.0f;
-    int32_t curIdx = 0;
-    Point curPos{};
-    bool opGap = false;
-    bool move = true;
-    const Matrix* transform = nullptr;
-    bool applyTransform = false;
-};
-
-
-template<typename Segment, typename LengthFn, typename SplitFn, typename DrawFn, typename PointFn>
-void StrokeDashPath::segment(Segment seg, float len, RenderPath& out, bool allowDot, LengthFn lengthFn, SplitFn splitFn, DrawFn drawFn, PointFn getStartPt, const Point& end)
-{
-    #define MIN_CURR_LEN_THRESHOLD 0.1f
-
-    if (tvg::zero(len)) {
-        out.moveTo(map(curPos));
-    } else if (len <= curLen) {
-        curLen -= len;
-        if (!opGap) {
-            if (move) {
-                out.moveTo(map(curPos));
-                move = false;
-            }
-            drawFn(seg);
-        }
-    } else {
-        Segment left, right;
-        while (len - curLen > DASH_PATTERN_THRESHOLD) {
-            if (curLen > 0.0f) {
-                splitFn(seg, curLen, left, right);
-                len -= curLen;
-                if (!opGap) {
-                    if (move || dash.pattern[curIdx] - curLen < FLOAT_EPSILON) {
-                        out.moveTo(map(getStartPt(left)));
-                        move = false;
-                    }
-                    drawFn(left);
-                }
-            } else {
-                if (allowDot && !opGap) point(out, getStartPt(seg));
-                right = seg;
-            }
-
-            curIdx = (curIdx + 1) % dash.count;
-            curLen = dash.pattern[curIdx];
-            opGap = !opGap;
-            seg = right;
-            curPos = getStartPt(seg);
-            move = true;
-        }
-        curLen -= len;
-        if (!opGap) {
-            if (move) {
-                out.moveTo(map(getStartPt(seg)));
-                move = false;
-            }
-            drawFn(seg);
-        }
-        if (curLen < MIN_CURR_LEN_THRESHOLD) {
-            curIdx = (curIdx + 1) % dash.count;
-            curLen = dash.pattern[curIdx];
-            opGap = !opGap;
-        }
-    }
-    curPos = end;
-}
-
-
-//allowDot: zero length segment with non-butt cap still should be rendered as a point - only the caps are visible
-bool StrokeDashPath::gen(const RenderPath& in, RenderPath& out, bool allowDot, const Matrix* transform)
-{
-    this->transform = transform;
-    this->applyTransform = (transform && !tvg::identity(transform));
-
-    int32_t idx = 0;
-    auto offset = dash.offset;
-    auto gap = false;
-    if (!tvg::zero(dash.offset)) {
-        auto length = (dash.count % 2) ? dash.length * 2 : dash.length;
-        offset = fmodf(offset, length);
-        if (offset < 0) offset += length;
-
-        for (uint32_t i = 0; i < dash.count * (dash.count % 2 + 1); ++i, ++idx) {
-            auto curPattern = dash.pattern[i % dash.count];
-            if (offset < curPattern) break;
-            offset -= curPattern;
-            gap = !gap;
-        }
-        idx = idx % dash.count;
-    }
-
-    auto pts = in.pts.data;
-    Point start{};
-
-    ARRAY_FOREACH(cmd, in.cmds) {
-        switch (*cmd) {
-            case PathCommand::Close: {
-                lineTo(out, start, allowDot);
-                break;
-            }
-            case PathCommand::MoveTo: {
-                // reset the dash state
-                curIdx = idx;
-                curLen = dash.pattern[idx] - offset;
-                opGap = gap;
-                move = true;
-                start = curPos = *pts;
-                pts++;
-                break;
-            }
-            case PathCommand::LineTo: {
-                lineTo(out, *pts, allowDot);
-                pts++;
-                break;
-            }
-            case PathCommand::CubicTo: {
-                cubicTo(out, pts[0], pts[1], pts[2], allowDot);
-                pts += 3;
-                break;
-            }
-            default: break;
-        }
-    }
-    return true;
-}
-
-
-void StrokeDashPath::point(RenderPath& out, const Point& p)
-{
-    if (move || dash.pattern[curIdx] < FLOAT_EPSILON) {
-        out.moveTo(map(p));
-        move = false;
-    }
-    out.lineTo(map(p));
-}
-
-
-void StrokeDashPath::lineTo(RenderPath& out, const Point& to, bool allowDot)
-{
-    Line line = {curPos, to};
-    auto len = length(to - curPos);
-    segment<Line>(line, len, out, allowDot,
-        [](const Line& l) { return length(l.pt2 - l.pt1); },
-        [](const Line& l, float len, Line& left, Line& right) { l.split(len, left, right); },
-        [&](const Line& l) { out.lineTo(map(l.pt2)); },
-        [](const Line& l) { return l.pt1; },
-        to
-    );
-}
-
-
-void StrokeDashPath::cubicTo(RenderPath& out, const Point& cnt1, const Point& cnt2, const Point& end, bool allowDot)
-{
-    Bezier curve = {curPos, cnt1, cnt2, end};
-    auto len = curve.length();
-    segment<Bezier>(curve, len, out, allowDot,
-        [](const Bezier& b) { return b.length(); },
-        [](const Bezier& b, float len, Bezier& left, Bezier& right) { b.split(len, left, right); },
-        [&](const Bezier& b) { out.cubicTo(map(b.ctrl1), map(b.ctrl2), map(b.end)); },
-        [](const Bezier& b) { return b.start; },
-        end
-    );
-}
-
-
-bool RenderShape::strokeDash(RenderPath& out, const Matrix* transform) const
-{
-    if (!stroke || stroke->dash.count == 0 || stroke->dash.length < DASH_PATTERN_THRESHOLD) return false;
-
-    out.cmds.reserve(20 * path.cmds.count);
-    out.pts.reserve(20 * path.pts.count);
-
-    StrokeDashPath dash(stroke->dash);
-    auto allowDot = stroke->cap != StrokeCap::Butt;
-
-    if (trimpath()) {
-        RenderPath tpath;
-        if (stroke->trim.trim(path, tpath)) return dash.gen(tpath, out, allowDot, transform);
-        else return false;
-    }
-    return dash.gen(path, out, allowDot, transform);
-}
-#else
-bool RenderShape::strokeDash(RenderPath& out, const Matrix* transform) const
-{
-    return false;
-}
-#endif

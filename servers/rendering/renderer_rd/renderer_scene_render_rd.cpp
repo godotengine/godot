@@ -567,7 +567,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		double step = RSG::camera_attributes->camera_attributes_get_auto_exposure_adjust_speed(p_render_data->camera_attributes) * time_step;
 		float auto_exposure_min_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_min_sensitivity(p_render_data->camera_attributes);
 		float auto_exposure_max_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_max_sensitivity(p_render_data->camera_attributes);
-		luminance->luminance_reduction(rb->get_internal_texture(), rb->get_internal_size(), luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
+		luminance->luminance_reduction(rb->get_internal_texture(0), rb->get_internal_size(), luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
 
 		// Swap final reduce with prev luminance.
 
@@ -1369,6 +1369,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
+
+	// View count of our render target must match our camera data.
+	ERR_FAIL_COND_MSG(rb->get_view_count() != p_camera_data->view_count, "The current camera doesn't match the view count of the viewport. Please make sure the correct camera is used or is set to current.");
 
 	// setup scene data
 	RenderSceneDataRD scene_data;

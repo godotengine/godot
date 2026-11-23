@@ -37,8 +37,8 @@
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
-class ShaderGraph : public RefCounted {
-	GDCLASS(ShaderGraph, RefCounted);
+class ShaderGraph : public Resource {
+	GDCLASS(ShaderGraph, Resource);
 
 public:
 	// Keep in sync with VisualShader::Type.

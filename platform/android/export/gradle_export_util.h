@@ -59,6 +59,11 @@ static const int APP_CATEGORY_UNDEFINED = 9;
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OPENXR = 1;
 
+// Supported export format
+static const int EXPORT_FORMAT_APK = 0;
+static const int EXPORT_FORMAT_AAB = 1;
+static const int EXPORT_FORMAT_AAR = 2;
+
 struct CustomExportData {
 	EditorExportPlatform::PackData pd;
 	String assets_directory;
@@ -101,7 +106,7 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const EditorExportPlatform::SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames);
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_export_src_dir, const Dictionary &p_appnames);
 
 String bool_to_string(bool v);
 
@@ -111,4 +116,4 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata);
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, int p_export_format, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata);

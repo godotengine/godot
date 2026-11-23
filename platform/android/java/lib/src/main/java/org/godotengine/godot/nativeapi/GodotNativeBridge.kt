@@ -30,15 +30,18 @@
 
 package org.godotengine.godot.nativeapi
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
+import android.provider.Settings.Global
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.accessibility.AccessibilityManager
 import android.util.Log
 import android.util.Rational
 import android.util.TypedValue
@@ -114,6 +117,47 @@ internal class GodotNativeBridge(private val godot: Godot) {
 	}
 
 	private fun forceQuit(instanceId: Int) = godot.forceQuit(instanceId)
+
+	/**
+	 * Returns true if screen reader is active, false otherwise.
+	 */
+	@Keep
+	private fun isScreenReaderActive(): Boolean {
+		val am = godot.context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (am != null && am.isEnabled()) {
+			val serviceInfoList = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_SPOKEN)
+			if (!serviceInfoList.isEmpty()) {
+				return true
+			}
+		}
+		return false
+	}
+
+	/**
+	 * Returns true if high contrast text is enabled, false otherwise.
+	 */
+	@Keep
+	private fun isHighContrastActive(): Boolean {
+		val am = godot.context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA && am != null && am.isEnabled()) {
+			return am.isHighContrastTextEnabled()
+		}
+		return false
+	}
+
+	/**
+	 * Returns true if animation is disabled, false otherwise.
+	 */
+	@Keep
+	private fun isAnimationDisabled(): Boolean {
+		val am = godot.context.getSystemService(Context.ACCESSIBILITY_SERVICE) as? AccessibilityManager
+		if (am != null && am.isEnabled()) {
+			return (Global.getFloat(godot.context.getContentResolver(), Global.ANIMATOR_DURATION_SCALE, 1.0f) == 0f
+                && Global.getFloat(godot.context.getContentResolver(), Global.TRANSITION_ANIMATION_SCALE, 1.0f) == 0f
+                && Global.getFloat(godot.context.getContentResolver(), Global.WINDOW_ANIMATION_SCALE, 1.0f) == 0f)
+		}
+		return false
+	}
 
 	/**
 	 * Returns true if dark mode is supported, false otherwise.
@@ -302,6 +346,10 @@ internal class GodotNativeBridge(private val godot: Godot) {
 
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		godot.primaryHost?.onEditorWorkspaceSelected(workspace)
+	}
+
+	private fun nativeShowEditorGameDock() {
+		godot.primaryHost?.showEditorGameDock()
 	}
 
 	private fun nativeOnDistractionFreeModeChanged(enabled: Boolean) {

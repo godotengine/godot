@@ -154,7 +154,7 @@ class RID_Alloc : public RID_AllocBase {
 		uint32_t free_chunk = free_index / elements_in_chunk;
 		uint32_t free_element = free_index % elements_in_chunk;
 
-		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFF);
+		uint32_t validator = 1 + (uint32_t)(_gen_id() % 0x7FFFFFFE);
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;

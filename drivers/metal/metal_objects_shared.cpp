@@ -265,7 +265,7 @@ fragment void fullscreenNoopFrag(float4 gl_FragCoord [[position]]) {
 		*p_error = err;
 	}
 
-	if (mtlLib.get() == nullptr) {
+	if (!mtlLib) {
 		return {};
 	}
 
@@ -415,14 +415,87 @@ bool MDAttachment::shouldClear(const MDSubpass &p_subpass, bool p_is_stencil) co
 	return (p_is_stencil ? stencilLoadAction : loadAction) == MTL::LoadActionClear;
 }
 
-MDRenderPass::MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses) :
-		attachments(p_attachments), subpasses(p_subpasses) {
+MDRenderPass::MDRenderPass(LocalVector<MDAttachment> &&p_attachments, LocalVector<MDSubpass> &&p_subpasses) :
+		attachments(std::move(p_attachments)), subpasses(std::move(p_subpasses)) {
 	for (MDAttachment &att : attachments) {
 		att.linkToSubpass(*this);
 	}
 }
 
 #pragma mark - Command Buffer Base
+
+MDCommandBufferBase::~MDCommandBufferBase() {
+	release_resources();
+}
+
+void MDLevelFences::create(MTL::Device *p_device) {
+	for (uint32_t i = 0; i < 2; i++) {
+		_fences[i] = p_device->newFence();
+#ifdef DEV_ENABLED
+		_fences[i]->setLabel(i == 0 ? MTLSTR("Level Fence 0") : MTLSTR("Level Fence 1"));
+#endif
+	}
+}
+
+MDLevelFences::~MDLevelFences() {
+	for (MTL::Fence *fence : _fences) {
+		if (fence) {
+			fence->release();
+		}
+	}
+}
+
+MTL::Fence *MDCommandBufferBase::_fence_to_wait() {
+	if (!_level_fences) {
+		return nullptr;
+	}
+	bool current_level = _fence_wait_current_level;
+	_fence_wait_current_level = false;
+#ifdef DEV_ENABLED
+	_fence_wait_issued = true;
+#endif
+	return _level_fences->to_wait(current_level);
+}
+
+MTL::Fence *MDCommandBufferBase::_fence_to_update() {
+	if (!_level_fences) {
+		return nullptr;
+	}
+#ifdef DEV_ENABLED
+	DEV_ASSERT(_fence_wait_issued);
+	_fence_wait_issued = false;
+#endif
+	return _level_fences->to_update();
+}
+
+void MDCommandBufferBase::advance_sync_level() {
+	// No encoder may straddle a level boundary: per-encoder fences are only
+	// sufficient if every encoder in level k closed before level k + 1 opens.
+	DEV_ASSERT(type == MDCommandBufferStateType::None);
+	if (_level_fences) {
+		_level_fences->advance();
+	}
+}
+
+MTL::Fence *MDCommandBufferBase::external_pass_fence() {
+	DEV_ASSERT(type == MDCommandBufferStateType::None);
+	// MetalFX exposes a single fence that it both waits for and updates, which
+	// the alternating pair cannot express directly.
+	return _level_fences ? _level_fences->external_pass() : nullptr;
+}
+
+void MDCommandBufferBase::begin() {
+	_begin();
+}
+
+void MDCommandBufferBase::commit() {
+	_commit();
+	advance_sync_level();
+}
+
+void MDCommandBufferBase::end() {
+	_end();
+}
 
 void MDCommandBufferBase::retain_resource(CFTypeRef p_resource) {
 	CFRetain(p_resource);
@@ -473,7 +546,7 @@ void MDCommandBufferBase::render_set_blend_constants(const Color &p_constants) {
 	RenderStateBase &state = get_render_state_base();
 	if (state.blend_constants != p_constants) {
 		state.blend_constants = p_constants;
-		state.dirty.set_flag(RenderStateBase::DIRTY_BLEND);
+		state.dirty.set_flag(RenderStateBase::DIRTY_RASTER);
 	}
 }
 
@@ -613,18 +686,24 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 		case MDCommandBufferStateType::Render:
 		case MDCommandBufferStateType::Compute: {
 			MDShader *shader = (MDShader *)(p_shader.id);
-			if (shader->push_constants.binding == UINT32_MAX) {
+			push_constant_binding = shader->push_constants.stage_binding;
+			if (!push_constant_binding.is_valid()) {
 				return;
 			}
-			push_constant_binding = shader->push_constants.binding;
 			const void *ptr = p_data.ptr();
-			push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			uint32_t data_len = p_data.size() * sizeof(uint32_t);
+			// Round buffer length up to 16 bytes. SPIRV-Cross's MSL backend pads the
+			// generated push struct to its strictest member alignment (typically vec4 → 16),
+			// so Metal validates the bound buffer length against sizeof(struct), not the
+			// caller's unpadded data size. The trailing bytes are never read by the shader.
+			push_constant_data_len = (data_len + 15u) & ~15u;
 			DEV_ASSERT(push_constant_data_len <= sizeof(push_constant_data));
-			memcpy(push_constant_data, ptr, push_constant_data_len);
+			memcpy(push_constant_data, ptr, data_len);
 			if (push_constant_data_len > 0) {
 				mark_push_constants_dirty();
 			}
 		} break;
+		case MDCommandBufferStateType::InlineRender:
 		case MDCommandBufferStateType::Blit:
 		case MDCommandBufferStateType::None:
 			return;

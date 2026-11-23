@@ -41,7 +41,22 @@ using pixel_t = uint32_t;
 #define DASH_PATTERN_THRESHOLD 0.001f
 
 //TODO: Separate Color & Opacity for more detailed conditional check
-enum RenderUpdateFlag : uint16_t {None = 0, Path = 1, Color = 2, Gradient = 4, Stroke = 8, Transform = 16, Image = 32, GradientStroke = 64, Blend = 128, Clip = 256, All = 0xffff};
+enum RenderUpdateFlag : uint16_t
+{
+    None = 0,
+    Path = 1 << 0,
+    Color = 1 << 1,
+    Gradient = 1 << 2,
+    Stroke = 1 << 3,
+    Transform = 1 << 4,
+    Image = 1 << 5,
+    GradientStroke = 1 << 6,
+    Blend = 1 << 7,
+    Clip = 1 << 8,
+    Children = 1 << 9,  // Force update propagation to child paints
+    All = 0xffff
+};
+
 enum CompositionFlag : uint8_t {Invalid = 0, Opacity = 1, Blending = 2, Masking = 4, PostProcessing = 8};  //Composition Purpose
 
 static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
@@ -52,6 +67,11 @@ static inline void operator|=(RenderUpdateFlag& a, const RenderUpdateFlag b)
 static inline RenderUpdateFlag operator|(const RenderUpdateFlag a, const RenderUpdateFlag b)
 {
     return RenderUpdateFlag(uint16_t(a) | uint16_t(b));
+}
+
+static inline bool operator&(const EngineOption a, const EngineOption b)
+{
+    return (uint8_t(a) & uint8_t(b));
 }
 
 struct RenderSurface
@@ -67,21 +87,11 @@ struct RenderSurface
     ColorSpace cs = ColorSpace::Unknown;
     uint8_t channelSize = 0;
     bool premultiplied = false;         //Alpha-premultiplied
+    bool opaque = false;                // If true, the alpha channel can be ignored.
 
-    RenderSurface()
-    {
-    }
-
-    RenderSurface(const RenderSurface* rhs)
-    {
-        data = rhs->data;
-        stride = rhs->stride;
-        w = rhs->w;
-        h = rhs->h;
-        cs = rhs->cs;
-        channelSize = rhs->channelSize;
-        premultiplied = rhs->premultiplied;
-    }
+    RenderSurface() = default;
+    RenderSurface(const RenderSurface* rhs);
+    void setup(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, uint8_t channelSize, ColorSpace cs);
 };
 
 struct RenderCompositor
@@ -90,63 +100,63 @@ struct RenderCompositor
     uint8_t opacity;
 };
 
-struct RenderRegion
+struct RenderRegion : Region
 {
-    struct {
-        int32_t x, y;
-    } min;
-
-    struct {
-        int32_t x, y;
-    } max;
+    RenderRegion() = default;
+    constexpr RenderRegion(int32_t xMin, int32_t yMin, int32_t xMax, int32_t yMax) : Region{xMin, yMin, xMax, yMax} {}
 
     static constexpr RenderRegion intersect(const RenderRegion& lhs, const RenderRegion& rhs)
     {
-        RenderRegion ret = {{std::max(lhs.min.x, rhs.min.x), std::max(lhs.min.y, rhs.min.y)}, {std::min(lhs.max.x, rhs.max.x), std::min(lhs.max.y, rhs.max.y)}};
+        RenderRegion ret = {std::max(lhs.xMin, rhs.xMin), std::max(lhs.yMin, rhs.yMin), std::min(lhs.xMax, rhs.xMax), std::min(lhs.yMax, rhs.yMax)};
         // Not intersected: collapse to zero-area region
-        if (ret.min.x > ret.max.x) ret.max.x = ret.min.x;
-        if (ret.min.y > ret.max.y) ret.max.y = ret.min.y;
+        if (ret.xMin > ret.xMax) ret.xMax = ret.xMin;
+        if (ret.yMin > ret.yMax) ret.yMax = ret.yMin;
         return ret;
     }
 
     static constexpr RenderRegion add(const RenderRegion& lhs, const RenderRegion& rhs)
     {
-        return {{std::min(lhs.min.x, rhs.min.x), std::min(lhs.min.y, rhs.min.y)}, {std::max(lhs.max.x, rhs.max.x), std::max(lhs.max.y, rhs.max.y)}};
+        return {std::min(lhs.xMin, rhs.xMin), std::min(lhs.yMin, rhs.yMin), std::max(lhs.xMax, rhs.xMax), std::max(lhs.yMax, rhs.yMax)};
     }
 
     void intersect(const RenderRegion& rhs);
 
     void add(const RenderRegion& rhs)
     {
-        if (rhs.min.x < min.x) min.x = rhs.min.x;
-        if (rhs.min.y < min.y) min.y = rhs.min.y;
-        if (rhs.max.x > max.x) max.x = rhs.max.x;
-        if (rhs.max.y > max.y) max.y = rhs.max.y;
+        if (rhs.xMin < xMin) xMin = rhs.xMin;
+        if (rhs.yMin < yMin) yMin = rhs.yMin;
+        if (rhs.xMax > xMax) xMax = rhs.xMax;
+        if (rhs.yMax > yMax) yMax = rhs.yMax;
+    }
+
+    bool inside(const Point& pt) const
+    {
+        return (pt.x >= xMin && pt.x < xMax && pt.y >= yMin && pt.y < yMax);
     }
 
     bool contained(const RenderRegion& rhs) const
     {
-        return (min.x <= rhs.min.x && max.x >= rhs.max.x && min.y <= rhs.min.y && max.y >= rhs.max.y);
+        return (xMin <= rhs.xMin && xMax >= rhs.xMax && yMin <= rhs.yMin && yMax >= rhs.yMax);
     }
 
     bool intersected(const RenderRegion& rhs) const
     {
-        return (rhs.min.x < max.x && rhs.max.x > min.x && rhs.min.y < max.y && rhs.max.y > min.y);
+        return (rhs.xMin < xMax && rhs.xMax > xMin && rhs.yMin < yMax && rhs.yMax > yMin);
     }
 
     bool operator==(const RenderRegion& rhs) const
     {
-        return (min.x == rhs.min.x && min.y == rhs.min.y && max.x == rhs.max.x && max.y == rhs.max.y);
+        return (xMin == rhs.xMin && yMin == rhs.yMin && xMax == rhs.xMax && yMax == rhs.yMax);
     }
 
-    void reset() { min.x = min.y = max.x = max.y = 0; }
-    bool valid() const { return (max.x > min.x && max.y > min.y); }
+    void reset() { xMin = yMin = xMax = yMax = 0; }
+    bool valid() const { return (xMax > xMin && yMax > yMin); }
     bool invalid() const { return !valid(); }
 
-    int32_t sx() const { return min.x; }
-    int32_t sy() const { return min.y; }
-    int32_t sw() const { return max.x - min.x; }
-    int32_t sh() const { return max.y - min.y; }
+    int32_t sx() const { return xMin; }
+    int32_t sy() const { return yMin; }
+    int32_t sw() const { return xMax - xMin; }
+    int32_t sh() const { return yMax - yMin; }
 
     uint32_t x() const { return (uint32_t) sx(); }
     uint32_t y() const { return (uint32_t) sy(); }
@@ -174,7 +184,7 @@ struct RenderRegion
             return on;
         }
 
-        bool deactivated()
+        bool deactivated() const
         {
             return (!support || disabled);
         }
@@ -184,9 +194,18 @@ struct RenderRegion
             return partitions[idx].region;
         }
 
-        const Array<RenderRegion>& get(int idx)
+        const Array<RenderRegion>& get(int idx) const
         {
             return partitions[idx].list[partitions[idx].current];
+        }
+
+        uint32_t count() const
+        {
+            uint32_t count = 0;
+            for (int idx = 0; idx < PARTITIONING; ++idx) {
+                count += get(idx).count;
+            }
+            return count;
         }
 
     private:
@@ -214,10 +233,15 @@ struct RenderRegion
         bool add(TVG_UNUSED const RenderRegion& bbox) { return true; }
         bool add(TVG_UNUSED const RenderRegion& prv, TVG_UNUSED const RenderRegion& cur) { return true; }
         void clear() {}
+        uint32_t count() const { return 0; }
         bool deactivate(TVG_UNUSED bool on) { return true; }
-        bool deactivated() { return true; }
+        bool deactivated() const { return true; }
         const RenderRegion& partition(TVG_UNUSED int idx) { static RenderRegion tmp{}; return tmp; }
-        const Array<RenderRegion>& get(TVG_UNUSED int idx) { static Array<RenderRegion> tmp; return tmp; }
+        const Array<RenderRegion>& get(TVG_UNUSED int idx) const
+        {
+            static Array<RenderRegion> tmp;
+            return tmp;
+        }
     };
 #endif
 
@@ -226,6 +250,13 @@ struct RenderPath
 {
     Array<PathCommand> cmds;
     Array<Point> pts;
+
+    void dismiss()
+    {
+        // If you moved the data manually, destroy the RenderPath instance safely
+        cmds.data = nullptr;
+        pts.data = nullptr;
+    }
 
     bool empty() const
     {
@@ -312,12 +343,11 @@ struct RenderPath
         return curr;
     }
 
-    /* Optimize path in screen space by collapsing zero length lines
-       and removing unnecessary cubic beziers. */
-    void optimize(RenderPath& out, const Matrix& matrix, bool& thin) const;
     bool bounds(const Matrix* m, BBox& box);
     void addCircle(float cx, float cy, float rx, float ry, bool cw);
     void addRect(float x, float y, float w, float h, float rx, float ry, bool cw);
+
+    static RenderPath& scratch();
 };
 
 struct RenderTrimPath
@@ -458,8 +488,6 @@ struct RenderShape
     {
         return stroke ? stroke->miterlimit : 4.0f;
     }
-
-    bool strokeDash(RenderPath& out, const Matrix* transform = nullptr) const;
 };
 
 struct RenderEffect
@@ -491,6 +519,47 @@ struct RenderEffectGaussianBlur : RenderEffect
     }
 };
 
+struct RenderEffectMotionBlur : RenderEffect
+{
+    float distance;
+    float angle;
+    uint8_t quality;
+
+    // computes the transformed blur offset and quality-based sample count
+    bool update(const Matrix& transform, Point& offset, int& samples)
+    {
+        valid = false;
+
+        // transform the local blur vector, without translating it.
+        auto radian = tvg::deg2rad(angle);
+        auto vx = distance * cosf(radian);
+        auto vy = distance * sinf(radian);
+        offset = {transform.e11 * vx + transform.e12 * vy, transform.e21 * vx + transform.e22 * vy};
+
+        // avoid spurious one-pixel expansion at exact cardinal angles.
+        if (fabsf(offset.x) < 0.001f) offset.x = 0.0f;
+        if (fabsf(offset.y) < 0.001f) offset.y = 0.0f;
+        auto length = std::max(fabsf(offset.x), fabsf(offset.y));
+        if (tvg::zero(length)) return false;
+
+        // confirm the samples count; Uniform midpoint samples, including the original position.
+        auto density = 0.25f + quality * 0.0075f;
+        samples = 2 * int(std::min(128.0f, ceilf(length * density * 0.5f))) + 1;
+        valid = true;
+        return true;
+    }
+
+    static RenderEffectMotionBlur* gen(va_list& args)
+    {
+        auto inst = new RenderEffectMotionBlur;
+        inst->distance = std::max(0.0f, float(va_arg(args, double)));
+        inst->angle = fmod((float)va_arg(args, double), 180.0f);
+        inst->quality = std::min(va_arg(args, int), 100);
+        inst->type = SceneEffect::MotionBlur;
+        return inst;
+    }
+};
+
 struct RenderEffectDropShadow : RenderEffect
 {
     uint8_t color[4];  //rgba
@@ -498,6 +567,19 @@ struct RenderEffectDropShadow : RenderEffect
     float distance;
     float sigma;
     uint8_t quality;   //0 ~ 100  (optional)
+
+    bool update(const Matrix& transform, Point& offset)
+    {
+        valid = (color[3] != 0);
+        if (!valid) return false;
+
+        // Transform the offset as a direction, without translation.
+        const auto radian = tvg::deg2rad(90.0f - angle);
+        const auto x = distance * cosf(radian);
+        const auto y = -distance * sinf(radian);
+        offset = {transform.e11 * x + transform.e12 * y, transform.e21 * x + transform.e22 * y};
+        return true;
+    }
 
     static RenderEffectDropShadow* gen(va_list& args)
     {
@@ -596,8 +678,8 @@ public:
     //main features
     virtual ~RenderMethod() {}
     virtual bool preUpdate() = 0;
-    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
-    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) = 0;
+    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
+    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) = 0;
     virtual bool postUpdate() = 0;
     virtual bool preRender() = 0;
     virtual bool renderShape(RenderData data) = 0;
@@ -628,6 +710,8 @@ public:
     //partial rendering
     virtual void damage(RenderData rd, const RenderRegion& region) = 0;
     virtual bool partial(bool disable) = 0;
+    virtual uint32_t dirtyRegions() const = 0;
+    virtual Result dirtyRegions(Region* regions, uint32_t cnt) const = 0;
 };
 
 static inline bool MASK_REGION_MERGING(MaskMethod method)
@@ -655,6 +739,8 @@ static inline bool MASK_REGION_MERGING(MaskMethod method)
 static inline uint8_t CHANNEL_SIZE(ColorSpace cs)
 {
     switch(cs) {
+        case ColorSpace::XBGR8888:
+        case ColorSpace::XRGB8888:
         case ColorSpace::ABGR8888:
         case ColorSpace::ABGR8888S:
         case ColorSpace::ARGB8888:

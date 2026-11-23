@@ -217,4 +217,39 @@ int mbedtls_ecp_modulus_setup(mbedtls_mpi_mod_modulus *N,
 
 #endif /* MBEDTLS_TEST_HOOKS && MBEDTLS_ECP_LIGHT */
 
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_TEST_HOOKS)
+/** Compute s = (e + r * d) / k mod N in ECDSA.
+ *
+ * \param[in] N         Group order.
+ *                      It must not have a leading zero limb.
+ *                      It must be odd.
+ * \param[in] d         Private key.
+ *                      It must be between 1 and N-1.
+ * \param[in] k         The nonce k.
+ *                      It must be between 1 and N-1.
+ *                      `k->n` must be at least as large as `N->n`.
+ * \param[in,out] e     On input, the normalized message hash.
+ *                      It must be between 0 and N-1.
+ *                      Clobbered on output.
+ * \param[in] r         The r value of the signature.
+ *                      It must be between 1 and N-1.
+ * \param[out] s        On output, the s value of the signature.
+ *                      On input, it must be initialized, but the
+ *                      value is not otherwise used.
+ *
+ * \return \c 0 on success, or a negative error code.
+ *
+ * \note This is an internal function. If the assumptions on MPI sizes and
+ *       values are violated, no memory corruption should happen on typical
+ *       platforms, but the function may return 0 with nonsensical output
+ *       that may leak secret data.
+ */
+int mbedtls_ecdsa_compute_s(const mbedtls_mpi *N,
+                            const mbedtls_mpi *d,
+                            const mbedtls_mpi *k,
+                            mbedtls_mpi *e,
+                            const mbedtls_mpi *r,
+                            mbedtls_mpi *s);
+#endif /* MBEDTLS_ECDSA_C && MBEDTLS_TEST_HOOKS */
+
 #endif /* TF_PSA_CRYPTO_ECP_INVASIVE_H */

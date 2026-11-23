@@ -30,6 +30,11 @@
 
 #import "godot_compositor_services_renderer.h"
 
+#import "godot_swift_module-Swift.gen.h"
+
+#include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
+#include "core/templates/vector.h"
 #import "drivers/apple_embedded/os_apple_embedded.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -42,6 +47,22 @@
 extern void apple_embedded_finish();
 
 #if defined(MODULE_VISIONOS_XR_ENABLED)
+
+namespace {
+
+inline Vector3 convert(simd_double3 p_v) {
+	return Vector3(p_v.x, p_v.y, p_v.z);
+}
+
+inline Vector3 xyz(simd_double4 p_v) {
+	return Vector3(p_v.x, p_v.y, p_v.z);
+}
+
+inline Transform3D convert(simd_double4x4 p_v) {
+	return Transform3D(xyz(p_v.columns[0]), xyz(p_v.columns[1]), xyz(p_v.columns[2]), xyz(p_v.columns[3]));
+}
+
+} // namespace
 
 @implementation GDTCompositorServicesRenderer {
 	cp_layer_renderer_t _layer_renderer;
@@ -121,6 +142,32 @@ extern void apple_embedded_finish();
 	Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
 	if (visionos_xr_interface.is_valid()) {
 		visionos_xr_interface->emit_signal_enum(VisionOSXRInterface::VISIONOS_XR_SIGNAL_POSE_RECENTERED);
+	}
+}
+
+- (void)onSpatialEvent:(SpatialEventObjC *)p_event {
+	Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
+	if (visionos_xr_interface.is_valid()) {
+		VisionOSSpatialEvent event;
+
+		// Convert from the ObjC/Swift type to the C++ type.
+		{
+			// Ray
+			event.has_ray = p_event.hasRay;
+			if (p_event.hasRay) {
+				event.ray.set_look_at(convert(p_event.rayOrigin), convert(p_event.rayOrigin + p_event.rayDirection));
+			}
+			// Hand
+			static_assert((int)VisionOSSpatialEvent::Chirality::right == (int)ChiralityRight);
+			event.chirality = (VisionOSSpatialEvent::Chirality)p_event.chirality;
+			event.hand_pose = convert(p_event.handPose);
+			// Phase
+			static_assert((int)VisionOSSpatialEvent::Phase::ended == (int)PhaseEnded);
+			event.phase = (VisionOSSpatialEvent::Phase)p_event.phase;
+		}
+
+		// Send the event to the VisionOSXRInterface.
+		visionos_xr_interface->on_spatial_event(event);
 	}
 }
 

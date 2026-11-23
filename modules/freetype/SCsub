@@ -41,6 +41,7 @@ if env["builtin_freetype"]:
         "src/cid/type1cid.c",
         "src/gxvalid/gxvalid.c",
         "src/gzip/ftgzip.c",
+        "src/hvf/hvf.c",
         "src/lzw/ftlzw.c",
         "src/otvalid/otvalid.c",
         "src/pcf/pcf.c",
@@ -61,6 +62,9 @@ if env["builtin_freetype"]:
 
     if env["brotli"]:
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
+
+    if env.debug_features:
+        env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_ERROR_STRINGS"])
 
     env_freetype.Prepend(CPPPATH=[thirdparty_dir + "/include"])
     # Also needed in main env for scene/

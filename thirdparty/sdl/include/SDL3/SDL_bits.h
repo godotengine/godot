@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,8 +48,7 @@ extern __inline int _SDL_bsr_watcom(Uint32);
 /**
  * Get the index of the most significant (set) bit in a 32-bit number.
  *
- * Result is undefined when called with 0. This operation can also be stated
- * as "count leading zeroes" and "log base 2".
+ * This operation can also be stated as "count leading zeroes" and "log base 2".
  *
  * Note that this is a forced-inline function in a header, and not a public
  * API function available in the SDL library (which is to say, the code is

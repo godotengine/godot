@@ -514,6 +514,7 @@ png_set_quantize(png_structrp png_ptr, png_colorp palette,
        * this function more than once per png_struct.
        */
       png_free(png_ptr, png_ptr->quantize_index);
+      png_ptr->quantize_index = NULL;
       png_ptr->quantize_index = (png_bytep)png_malloc(png_ptr,
           PNG_MAX_PALETTE_LENGTH);
       for (i = 0; i < PNG_MAX_PALETTE_LENGTH; i++)

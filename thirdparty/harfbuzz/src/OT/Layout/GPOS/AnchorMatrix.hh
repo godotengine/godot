@@ -5,14 +5,87 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
+HB_INTERNAL inline
+void collect_ligature_anchor_indexes (unsigned rows,
+                                     unsigned class_count,
+                                     const hb_map_t &klass_mapping,
+                                     hb_sorted_vector_t<unsigned> &indexes)
+{
+  for (unsigned row = 0; row < rows; row++)
+    for (unsigned col = 0; col < class_count; col++)
+      if (klass_mapping.has (col))
+        indexes.push (row * class_count + col);
+}
+
+HB_INTERNAL inline
+void collect_anchor_variation_indices (hb_collect_variation_indices_context_t *c,
+                                      const void *base,
+                                      glyph_data_t offsets,
+                                      hb_array_t<const unsigned> indexes)
+{
+  for (unsigned i : indexes)
+  {
+    unsigned offset = offsets[i];
+    if (offset)
+      StructAtOffset<const Anchor> (base, offset).collect_variation_indices (c);
+  }
+}
+
+HB_INTERNAL inline
+void collect_anchor_indexes (const Coverage &coverage,
+                             unsigned rows,
+                             unsigned class_count,
+                             const hb_set_t &glyphset,
+                             const hb_map_t &klass_mapping,
+                             hb_sorted_vector_t<unsigned> &indexes)
+{
+  for (const auto _ : hb_zip (coverage, hb_range (rows)))
+    if (glyphset.has (_.first))
+      for (unsigned col = 0; col < class_count; col++)
+        if (klass_mapping.has (col))
+          indexes.push (_.second * class_count + col);
+}
+
+HB_INTERNAL inline
+void collect_subset_anchor_indexes (const Coverage &coverage,
+                                    unsigned rows,
+                                    unsigned class_count,
+                                    glyph_data_t offsets,
+                                    const hb_set_t &glyphset,
+                                    const hb_map_t &glyph_map,
+                                    const hb_map_t &klass_mapping,
+                                    hb_sorted_vector_t<hb_codepoint_t> &new_coverage,
+                                    hb_sorted_vector_t<unsigned> &indexes)
+{
+  for (const auto _ : hb_zip (coverage, hb_range (rows)))
+  {
+    if (!glyphset.has (_.first)) continue;
+    unsigned row = _.second;
+    bool non_empty = false;
+    for (unsigned col = 0; col < class_count; col++)
+      if (klass_mapping.has (col) && offsets[row * class_count + col])
+      {
+        non_empty = true;
+        break;
+      }
+    if (!non_empty) continue;
+
+    new_coverage.push (glyph_map.get (_.first));
+    for (unsigned col = 0; col < class_count; col++)
+      if (klass_mapping.has (col))
+        indexes.push (row * class_count + col);
+  }
+}
+
+template <typename Types, typename RowCount=typename Types::HBUINT>
 struct AnchorMatrix
 {
-  HBUINT16      rows;                   /* Number of rows */
-  UnsizedArrayOf<Offset16To<Anchor, AnchorMatrix>>
+  RowCount      rows;                   /* Number of rows */
+  UnsizedArrayOf<typename Types::template OffsetTo<Anchor, AnchorMatrix>>
                 matrixZ;                /* Matrix of offsets to Anchor tables--
                                          * from beginning of AnchorMatrix table */
   public:
-  DEFINE_SIZE_ARRAY (2, matrixZ);
+  DEFINE_SIZE_ARRAY (sizeof (RowCount), matrixZ);
 
   bool sanitize (hb_sanitize_context_t *c, unsigned int cols) const
   {
@@ -45,13 +118,10 @@ struct AnchorMatrix
     return this+offset;
   }
 
-  template <typename Iterator,
-            hb_requires (hb_is_iterator (Iterator))>
   void collect_variation_indices (hb_collect_variation_indices_context_t *c,
-                                  Iterator index_iter) const
+                                  hb_array_t<const unsigned> indexes) const
   {
-    for (unsigned i : index_iter)
-      (this+matrixZ[i]).collect_variation_indices (c);
+    collect_anchor_variation_indices (c, this, matrixZ.arrayZ, indexes);
   }
 
   template <typename Iterator,

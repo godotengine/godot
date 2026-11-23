@@ -18,9 +18,13 @@ enum attach_type_t {
 #define attach_type() var.u8[2] /* attachment type */
 /* Note! if attach_chain() is zero, the value of attach_type() is irrelevant. */
 
-template<typename Iterator, typename SrcLookup>
+struct ValueBase;
+struct ValueFormat;
+
+template<typename Iterator>
 static void SinglePos_serialize (hb_serialize_context_t *c,
-                                 const SrcLookup *src,
+                                 const ValueBase *src,
+                                 ValueFormat src_format,
                                  Iterator it,
                                  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
                                  unsigned new_format);

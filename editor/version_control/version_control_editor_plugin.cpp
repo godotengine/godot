@@ -325,9 +325,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	EditorVCSInterface::get_singleton()->commit(msg, toggle_amend_commit->is_pressed());
 
-	if (version_control_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_HORIZONTAL) {
-		version_control_dock->hide();
-	}
+	version_control_dock->close();
 
 	commit_message->release_focus();
 	commit_button->release_focus();
@@ -704,7 +702,7 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 			diff_line.old_text = line;
 			parsed_diff.push_back(diff_line);
 		} else if (diff_line.old_line_no == -1) {
-			int32_t j = parsed_diff.size() - 1;
+			int32_t j = (int32_t)parsed_diff.size() - 1;
 			while (j >= 0 && parsed_diff[j].new_line_no == -1) {
 				j--;
 			}
@@ -978,6 +976,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock);
 	EditorDockManager::get_singleton()->add_dock(version_control_dock);
+	version_control_dock->close();
 
 	_set_vcs_ui_state(true);
 }
@@ -1553,8 +1552,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_control_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	version_control_dock->set_global(false);
 	version_control_dock->set_transient(true);
+	version_control_dock->set_closable(true);
 	version_control_dock->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	version_commit_dock->connect("opened", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::open_dock).bind(version_control_dock, false));
 	version_commit_dock->connect("closed", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::close_dock).bind(version_control_dock));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

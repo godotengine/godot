@@ -161,7 +161,7 @@ Transform3D SpringBoneCollision3D::get_transform_from_skeleton(const Transform3D
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		Transform3D tr = sk->get_global_transform();
-		gtr = tr.affine_inverse() * p_center * gtr;
+		gtr = p_center * tr.affine_inverse() * gtr;
 	}
 	return gtr;
 }

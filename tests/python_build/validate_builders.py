@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 if __name__ != "__main__":
     raise ImportError(f"{__name__} should not be used as a module.")
 
 import os
 import sys
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 

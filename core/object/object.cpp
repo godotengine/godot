@@ -1087,7 +1087,7 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 }
 
 Variant Object::get_script() const {
-	return script_instance ? Variant(script_instance->get_script()) : Variant();
+	return script_instance ? Variant(Ref<Script>(script_instance->get_script())) : Variant();
 }
 
 bool Object::has_meta(const StringName &p_name) const {
@@ -1770,14 +1770,14 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 }
 
 void Object::initialize_class() {
-	static bool initialized = false;
-	if (likely(initialized)) {
+	static SafeFlag initialized;
+	if (likely(initialized.is_set())) {
 		return;
 	}
 
 	static BinaryMutex __init_mutex;
 	MutexLock lock(__init_mutex);
-	if (initialized) {
+	if (initialized.is_set()) {
 		// Initialized on another thread while we were waiting.
 		return;
 	}
@@ -1785,7 +1785,7 @@ void Object::initialize_class() {
 	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
-	initialized = true;
+	initialized.set();
 }
 
 StringName Object::get_translation_domain() const {
@@ -2064,6 +2064,11 @@ void Object::_bind_methods() {
 	BIND_BITFIELD_FLAG(CONNECT_ONE_SHOT);
 	BIND_BITFIELD_FLAG(CONNECT_REFERENCE_COUNTED);
 	BIND_BITFIELD_FLAG(CONNECT_APPEND_SOURCE_OBJECT);
+}
+
+void Object::_get_property_list_inner(List<PropertyInfo> *p_list, const StringName &p_class_name) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, p_class_name, PROPERTY_HINT_NONE, p_class_name, PROPERTY_USAGE_CATEGORY));
+	_get_property_list_from_classdb(p_class_name, p_list, true, this);
 }
 
 void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
@@ -2638,7 +2643,9 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
-
+	slot_count = 0;
+	slot_max = 0;
 	spin_lock.unlock();
 }

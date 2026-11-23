@@ -186,6 +186,7 @@ void mbedtls_mpi_mod_modulus_init(mbedtls_mpi_mod_modulus *N);
  *
  * \param[out] N    The address of the modulus structure to populate.
  * \param[in] p     The address of the limb array storing the value of \p N.
+ *                  The most significant limb must be nonzero.
  *                  The memory pointed to by \p p will be used by \p N and must
  *                  not be modified in any way until after
  *                  mbedtls_mpi_mod_modulus_free() is called.
@@ -201,6 +202,7 @@ int mbedtls_mpi_mod_modulus_setup(mbedtls_mpi_mod_modulus *N,
  *
  * \param[out] N    The address of the modulus structure to populate.
  * \param[in] p     The address of the limb array storing the value of \p N.
+ *                  The most significant limb must be nonzero.
  *                  The memory pointed to by \p p will be used by \p N and must
  *                  not be modified in any way until after
  *                  mbedtls_mpi_mod_modulus_free() is called.

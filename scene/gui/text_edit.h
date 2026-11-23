@@ -365,7 +365,7 @@ private:
 	bool empty_selection_clipboard_enabled = true;
 
 	// Overridable actions.
-	String cut_copy_line = "";
+	static inline String cut_copy_line = "";
 
 	// Context menu.
 	PopupMenu *menu = nullptr;
@@ -498,7 +498,6 @@ private:
 	void _emit_caret_changed();
 
 	void _show_virtual_keyboard();
-	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
 	int _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
@@ -582,7 +581,7 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	Vector2i content_size_cache;
+	Size2 content_size_cache;
 	bool fit_content_height = false;
 	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
@@ -598,13 +597,13 @@ private:
 	int first_visible_col = 0;
 
 	bool scrolling = false;
-	bool updating_scrolls = false;
 
 	void _update_scrollbars();
-	int _get_control_height() const;
+	double _get_text_area_height() const;
 
 	void _v_scroll_input();
-	void _scroll_moved(double p_to_val);
+	void _h_scroll_moved();
+	void _v_scroll_moved();
 
 	double _get_visible_lines_offset() const;
 	double _get_v_scroll_offset() const;
@@ -648,9 +647,9 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
+	HashMap<int, LocalVector<Pair<int64_t, Color>>> syntax_highlighting_cache;
 
-	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
+	bool _update_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
 	void _syntax_highlighter_changed();
 
@@ -697,6 +696,12 @@ private:
 #ifndef DISABLE_DEPRECATED
 		Color background_color = Color(1, 1, 1);
 #endif // DISABLE_DEPRECATED
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -707,6 +712,9 @@ private:
 	bool draw_control_chars = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
+
+	// Used to avoid spamming `caret_move_rejected_sound` when key repeat is enabled.
+	bool last_key_is_echo = false;
 
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
@@ -741,9 +749,12 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	void _play_caret_moved_sound(const Vector<Vector3i> &p_previous_caret_positions_and_selections);
+	bool _has_any_caret_moved(const Vector<Vector3i> &p_previous_caret_positions_and_selections) const;
 	bool _clear_carets_and_selection();
 
 protected:
+	void _reset_caret_blink_timer();
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -1154,6 +1165,7 @@ public:
 	// Visible lines.
 	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
 	int get_first_visible_line() const;
+	int get_first_visible_line_wrap_index() const;
 
 	void set_line_as_center_visible(int p_line, int p_wrap_index = 0);
 

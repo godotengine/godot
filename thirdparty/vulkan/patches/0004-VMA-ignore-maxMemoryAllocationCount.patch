@@ -1,0 +1,38 @@
+diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
+index c5b78fa384219dd326aa0aa804702c14478e055b..c854099c692e2c2d8bde52c848414e8c12fdd059 100644
+--- a/thirdparty/vulkan/vk_mem_alloc.h
++++ b/thirdparty/vulkan/vk_mem_alloc.h
+@@ -479,6 +479,8 @@ typedef enum VmaAllocatorCreateFlagBits
+     */
+     VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT = 0x00000200,
+ 
++    VMA_ALLOCATOR_CREATE_IGNORE_MAX_MEMORY_ALLOCATION_COUNT_BIT = 0x00000400,
++
+     VMA_ALLOCATOR_CREATE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+ } VmaAllocatorCreateFlagBits;
+ /// See #VmaAllocatorCreateFlagBits.
+@@ -10308,6 +10310,7 @@ public:
+     bool m_UseKhrMaintenance4;
+     bool m_UseKhrMaintenance5;
+     bool m_UseKhrExternalMemoryWin32;
++    bool m_IgnoreMaxMemoryAllocationCount;
+     const VkDevice m_hDevice;
+     const VkInstance m_hInstance;
+     const bool m_AllocationCallbacksSpecified;
+@@ -12991,6 +12994,7 @@ VmaAllocator_T::VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo) :
+     m_UseKhrMaintenance4((pCreateInfo->flags & VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT) != 0),
+     m_UseKhrMaintenance5((pCreateInfo->flags & VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT) != 0),
+     m_UseKhrExternalMemoryWin32((pCreateInfo->flags & VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT) != 0),
++    m_IgnoreMaxMemoryAllocationCount((pCreateInfo->flags & VMA_ALLOCATOR_CREATE_IGNORE_MAX_MEMORY_ALLOCATION_COUNT_BIT) != 0),
+     m_hDevice(pCreateInfo->device),
+     m_hInstance(pCreateInfo->instance),
+     m_AllocationCallbacksSpecified(pCreateInfo->pAllocationCallbacks != VMA_NULL),
+@@ -14490,7 +14494,7 @@ VkResult VmaAllocator_T::AllocateVulkanMemory(const VkMemoryAllocateInfo* pAlloc
+     AtomicTransactionalIncrement<VMA_ATOMIC_UINT32> deviceMemoryCountIncrement;
+     const uint64_t prevDeviceMemoryCount = deviceMemoryCountIncrement.Increment(&m_DeviceMemoryCount);
+ #if VMA_DEBUG_DONT_EXCEED_MAX_MEMORY_ALLOCATION_COUNT
+-    if(prevDeviceMemoryCount >= m_PhysicalDeviceProperties.limits.maxMemoryAllocationCount)
++    if(!m_IgnoreMaxMemoryAllocationCount && prevDeviceMemoryCount >= m_PhysicalDeviceProperties.limits.maxMemoryAllocationCount)
+     {
+         return VK_ERROR_TOO_MANY_OBJECTS;
+     }

@@ -90,12 +90,16 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge)
 	_set_window_color = p_env->GetMethodID(godot_native_bridge_class, "setWindowColor", "(Ljava/lang/String;)V");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_native_bridge_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
 	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_native_bridge_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
+	_show_editor_game_dock = p_env->GetMethodID(godot_native_bridge_class, "nativeShowEditorGameDock", "()V");
 	_get_activity = p_env->GetMethodID(godot_native_bridge_class, "getActivity", "()Landroid/app/Activity;");
 	_build_env_connect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
 	_build_env_disconnect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvDisconnect", "()V");
 	_build_env_execute = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
 	_build_env_cancel = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCancel", "(I)V");
 	_build_env_clean_project = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
+	_is_screen_reader_active = p_env->GetMethodID(godot_native_bridge_class, "isScreenReaderActive", "()Z");
+	_is_high_contrast_active = p_env->GetMethodID(godot_native_bridge_class, "isHighContrastActive", "()Z");
+	_is_animation_disabled = p_env->GetMethodID(godot_native_bridge_class, "isAnimationDisabled", "()Z");
 
 	// PiP mode method ids.
 	_is_pip_mode_supported = p_env->GetMethodID(godot_native_bridge_class, "nativeIsPiPModeSupported", "()Z");
@@ -532,6 +536,36 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 	}
 }
 
+bool GodotJavaWrapper::is_screen_reader_active() {
+	if (_is_screen_reader_active) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_screen_reader_active);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_animation_disabled() {
+	if (_is_animation_disabled) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_animation_disabled);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_high_contrast_active() {
+	if (_is_high_contrast_active) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_high_contrast_active);
+	} else {
+		return false;
+	}
+}
+
 bool GodotJavaWrapper::check_internal_feature_support(const String &p_feature) const {
 	if (_check_internal_feature_support) {
 		JNIEnv *env = get_jni_env();
@@ -629,6 +663,15 @@ void GodotJavaWrapper::on_distraction_free_mode_changed(bool p_enabled) {
 		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(godot_native_bridge, _on_distraction_free_mode_changed, p_enabled);
+	}
+}
+
+void GodotJavaWrapper::show_editor_game_dock() {
+	if (_show_editor_game_dock) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_native_bridge, _show_editor_game_dock);
 	}
 }
 

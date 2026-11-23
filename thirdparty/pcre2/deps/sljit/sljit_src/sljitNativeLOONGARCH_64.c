@@ -70,9 +70,9 @@ LoongArch instructions are 32 bits wide, belonging to 9 basic instruction format
 | 1RI21        | Opcode + I21L + Rj + I21H   |
 | I26          | Opcode + I26L + I26H        |
 
-Rd is the destination register operand, while Rj, Rk and Ra (“a” stands for “additional”) are the source register operands.
+Rd is the destination register operand, while Rj, Rk and Ra ("a" stands for "additional") are the source register operands.
 I8/I12/I14/I16/I21/I26 are immediate operands of respective width. The longer I21 and I26 are stored in separate higher and
-lower parts in the instruction word, denoted by the “L” and “H” suffixes. */
+lower parts in the instruction word, denoted by the "L" and "H" suffixes. */
 
 #define RD(rd) ((sljit_ins)reg_map[rd])
 #define RJ(rj) ((sljit_ins)reg_map[rj] << 5)
@@ -2191,7 +2191,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op2_shift(struct sljit_compiler *c
 	shift_arg &= (sljit_sw)((sizeof(sljit_sw) * 8) - 1);
 
 	if (src2 == SLJIT_IMM) {
-		src2w = src2w << shift_arg;
+		src2w = (sljit_sw)((sljit_uw)src2w << shift_arg);
 		shift_arg = 0;
 	}
 

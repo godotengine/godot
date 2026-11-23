@@ -823,6 +823,11 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_graph_delete", inputs);
 
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::BACKSPACE));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
+	default_builtin_cache.insert("ui_graph_delete.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::LEFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_graph_follow_left", inputs);
 

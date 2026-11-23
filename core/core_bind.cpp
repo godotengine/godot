@@ -1733,17 +1733,35 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 Variant ClassDB::class_call_static(const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) {
 	if (p_argcount < 2) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-		return Variant::NIL;
+		r_call_error.expected = 2;
+		return Variant();
 	}
-	if (!p_arguments[0]->is_string() || !p_arguments[1]->is_string()) {
+
+	if (!p_arguments[0]->is_string()) {
 		r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		return Variant::NIL;
+		r_call_error.argument = 0;
+		r_call_error.expected = Variant::STRING_NAME;
+		return Variant();
 	}
+
+	if (!p_arguments[1]->is_string()) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_call_error.argument = 1;
+		r_call_error.expected = Variant::STRING_NAME;
+		return Variant();
+	}
+
 	StringName class_ = *p_arguments[0];
 	StringName method = *p_arguments[1];
 	const MethodBind *bind = ::ClassDB::get_method(class_, method);
-	ERR_FAIL_NULL_V_MSG(bind, Variant::NIL, "Cannot find static method.");
-	ERR_FAIL_COND_V_MSG(!bind->is_static(), Variant::NIL, "Method is not static.");
+	if (unlikely(!bind)) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		ERR_FAIL_V_MSG(Variant(), vformat("Nonexistent method '%s' in base '%s'.", method, class_));
+	}
+	if (unlikely(!bind->is_static())) {
+		r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		ERR_FAIL_V_MSG(Variant(), vformat("Method '%s' in base '%s' is not static.", method, class_));
+	}
 	return bind->call(nullptr, p_arguments + 2, p_argcount - 2, r_call_error);
 }
 
@@ -1818,6 +1836,10 @@ bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+bool ClassDB::is_class_exposed(const StringName &p_class) const {
+	return ::ClassDB::is_class_exposed(p_class);
+}
+
 #ifdef TOOLS_ENABLED
 void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -1830,7 +1852,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
+				pf == "is_class_enabled" || pf == "is_class_exposed" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
 		LocalVector<StringName> classes;
@@ -1890,6 +1912,7 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
+	::ClassDB::bind_method(D_METHOD("is_class_exposed", "class"), &ClassDB::is_class_exposed);
 
 	BIND_ENUM_CONSTANT(API_CORE);
 	BIND_ENUM_CONSTANT(API_EDITOR);

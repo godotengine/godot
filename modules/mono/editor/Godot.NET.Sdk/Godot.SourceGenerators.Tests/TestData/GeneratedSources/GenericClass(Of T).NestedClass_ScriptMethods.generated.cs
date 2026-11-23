@@ -11,6 +11,12 @@ partial class NestedClass
     /// </summary>
     public new class MethodName : global::Godot.GodotObject.MethodName {
     }
+    protected internal new static partial class GodotInternal
+    {
+        public static void GetGodotMethodTrampolines(global::Godot.Bridge.MethodTrampolineCollector collector)
+        {
+        }
+    }
 #pragma warning restore CS0109
 }
 }

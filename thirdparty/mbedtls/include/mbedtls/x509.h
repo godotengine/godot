@@ -119,7 +119,10 @@
  *      uniformResourceIdentifier       [6]     IA5String,
  *      iPAddress                       [7]     OCTET STRING,
  *      registeredID                    [8]     OBJECT IDENTIFIER
+ *
+ * Add NONE for the benefit of x509_crt_infer_name_type().
  */
+#define MBEDTLS_X509_SAN_NONE                           -1
 #define MBEDTLS_X509_SAN_OTHER_NAME                      0
 #define MBEDTLS_X509_SAN_RFC822_NAME                     1
 #define MBEDTLS_X509_SAN_DNS_NAME                        2
@@ -303,15 +306,18 @@ mbedtls_x509_san_list;
 /** \} addtogroup x509_module */
 
 /**
- * \brief          Store the certificate DN in printable form into buf;
- *                 no more than size characters will be written.
+ * \brief          Store the certificate DN in printable form into buf.
  *
- * \param buf      Buffer to write to
- * \param size     Maximum size of buffer
- * \param dn       The X509 name to represent
+ * \param buf      Buffer to write to.
+ *                 On success, it contains the printable form of the name
+ *                 plus a terminating null byte.
+ * \param size     Size of \p buf, in bytes.
+ *                 It should have enough room for the name plus a
+ *                 terminating null byte.
+ * \param dn       The X509 name to represent.
  *
  * \return         The length of the string written (not including the
- *                 terminated nul byte), or a negative error code.
+ *                 terminating null byte), or a negative error code.
  */
 int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn);
 
@@ -499,5 +505,28 @@ size_t mbedtls_x509_crt_parse_cn_inet_pton(const char *cn, void *dst);
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * \brief          Translate hash algorithm OID into md_type
+ *
+ * \param oid      OID to use
+ * \param md_alg   place to store message digest algorithm
+ *
+ * \return         0 if successful, or MBEDTLS_ERR_X509_UNKNOWN_OID
+ */
+int mbedtls_x509_oid_get_md_alg(const mbedtls_asn1_buf *oid, mbedtls_md_type_t *md_alg);
+
+/**
+ * \brief              Translate a signature algorithm OID and parameters into PK sigalg
+ *
+ * \param sig_oid      OID of the signature algorithm from the AlgorithmIdentifier type
+ * \param sig_params   Signature parameters from the AlgorithmIdentifier type
+ * \param[out] md_alg  The hash algorithm component of the signature algorithm (if any)
+ * \param[out] pk_alg  The PK algorithm that corresponds to the signature algorithm
+ *
+ * \return             0 if successful, or a negative error code on failure
+ */
+int mbedtls_x509_get_sig_alg(const mbedtls_x509_buf *sig_oid, const mbedtls_x509_buf *sig_params,
+                             mbedtls_md_type_t *md_alg, mbedtls_pk_sigalg_t *pk_alg);
 
 #endif /* MBEDTLS_X509_H */

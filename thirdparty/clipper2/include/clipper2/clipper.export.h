@@ -116,6 +116,7 @@ the four vertices that define the two segments that are intersecting.
 #include "clipper2/clipper.engine.h"
 #include "clipper2/clipper.offset.h"
 #include "clipper2/clipper.rectclip.h"
+#include "clipper2/clipper.triangulation.h"
 #include <cstdlib>
 
 namespace Clipper2Lib {
@@ -810,6 +811,24 @@ EXTERN_DLL_EXPORT CPaths64 MinkowskiDiff64(const CPath64& cpattern, const CPath6
   Path64 pattern = ConvertCPathToPathT(cpattern);
   Paths64 solution = MinkowskiDiff(pattern, path, is_closed);
   return CreateCPathsFromPathsT(solution);
+}
+
+EXTERN_DLL_EXPORT CPaths64 Triangulate64(const CPaths64 paths, bool use_delaunay)
+{
+  Paths64 pp = ConvertCPathsToPathsT(paths);
+  Paths64 sol;
+  if (Triangulate(pp, sol, use_delaunay) != TriangulateResult::success) return nullptr;
+  return CreateCPathsFromPathsT(sol);
+}
+
+EXTERN_DLL_EXPORT CPathsD TriangulateD(const CPathsD paths, int decimal_precison, bool use_delaunay)
+{
+  if (decimal_precison < -8 || decimal_precison > 8) return nullptr;
+  const double scale = std::pow(10, decimal_precison);
+  Paths64 pp = ConvertCPathsDToPaths64(paths, scale);
+  Paths64 sol;
+  if (Triangulate(pp, sol, use_delaunay) != TriangulateResult::success) return nullptr;
+  return CreateCPathsDFromPaths64(sol, 1 / scale);
 }
 
 #ifdef USINGZ

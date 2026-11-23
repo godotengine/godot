@@ -149,10 +149,9 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 		}
 	};
 
-	LocalVector<StringName> path_project_settings;
-
 	void _find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder);
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
+	void _find_setting_owners_of_removed_files(Vector<RemovedDependency> &p_removed);
 	void _find_localization_remaps_of_removed_files(Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 	void _show_files_to_delete_list();

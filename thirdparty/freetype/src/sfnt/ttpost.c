@@ -337,10 +337,10 @@
 
     /* UNDOCUMENTED!  The number of glyphs in this table can be smaller */
     /* than the value in the maxp table (cf. cyberbit.ttf).             */
-    if ( post_len < 34                            ||
-         FT_STREAM_SKIP( 32 )                     ||
-         FT_READ_USHORT( num_glyphs )             ||
-         num_glyphs > face->max_profile.numGlyphs ||
+    if ( post_len < 34                      ||
+         FT_STREAM_SKIP( 32 )               ||
+         FT_READ_USHORT( num_glyphs )       ||
+         num_glyphs > face->maxp_num_glyphs ||
          num_glyphs == 0 )
       goto Exit;
 
@@ -422,7 +422,7 @@
     if ( !face )
       return FT_THROW( Invalid_Face_Handle );
 
-    if ( idx >= (FT_UInt)face->max_profile.numGlyphs )
+    if ( idx >= face->maxp_num_glyphs )
       return FT_THROW( Invalid_Glyph_Index );
 
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
@@ -463,7 +463,7 @@
 
     /* version 1.0 is only valid with 258 glyphs */
     else if ( format == 0x00010000L              &&
-              face->max_profile.numGlyphs == 258 )
+              face->maxp_num_glyphs == 258 )
       *PSname = MAC_NAME( idx );
 
     /* nothing to do for format == 0x00030000L */
