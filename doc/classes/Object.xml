@@ -1023,8 +1023,9 @@
 			<param index="0" name="values" type="Dictionary" />
 			<param index="1" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" />
 			<param index="2" name="others" type="Callable" />
+			<param index="3" name="compared" type="Dictionary" default="{}" />
 			<description>
-				Sets the properties in [param values] ([code]{name: value}[/code]) in order. A plain value (neither an [Array], a [Dictionary] nor an [Object]) over a property that holds a plain value (nor an [RID]) is set when it differs. Any other is passed to [param others] as [code](name, listed)[/code] in its turn. Properties listed with a bit of [param usage] when the call starts are read, each just before it is set; one not listed then counts as [code]null[/code]. One call instead of [method get] and [method set] for each property, for restoring an object's state.
+				Sets the properties in [param values] ([code]{name: value}[/code]) in order. A plain value (neither an [Array], a [Dictionary] nor an [Object]) over a property that holds a plain value (nor an [RID]) is set when it differs. Any other is passed to [param others] as [code](name, listed)[/code] in its turn. Properties listed with a bit of [param usage] when the call starts are read, each just before it is set; one not listed then counts as [code]null[/code]. With [param usage] [code]0[/code], every property in [param values] counts as listed and no list is made. If [param others] is a null [Callable], every value that differs is set instead (an empty [Object] slot and [code]null[/code] count as the same). The plain values it compared go into [param compared] ([code]{name: value}[/code]) in their turn, so they can be set back later without the list or [param others]; [param others] may add its own to the same [Dictionary]. One call instead of [method get] and [method set] for each property, for restoring an object's state.
 			</description>
 		</method>
 		<method name="to_string">

@@ -680,31 +680,47 @@ Dictionary Object::snapshot_get_properties(BitField<PropertyUsageFlags> p_usage,
 // it is set, so it sees what earlier setters changed; one not listed then (a
 // shader parameter before its shader, an Animation track not made yet) counts
 // as null. One call for what StateShot's loads did property by property.
-void Object::snapshot_set_properties(const Dictionary &p_values, BitField<PropertyUsageFlags> p_usage, const Callable &p_others) {
+void Object::snapshot_set_properties(const Dictionary &p_values, BitField<PropertyUsageFlags> p_usage, const Callable &p_others, const Dictionary &p_compared) {
 	const auto holds = [](Variant::Type t) {
 		return t == Variant::ARRAY || t == Variant::DICTIONARY || t == Variant::OBJECT;
 	};
+	// usage 0: every property in p_values counts as listed, and no list is made.
+	const bool all_listed = p_usage.is_empty();
 	HashSet<StringName> listed;
-	List<PropertyInfo> plist;
-	get_property_list(&plist);
-	for (const PropertyInfo &pi : plist) {
-		if (pi.usage & p_usage) {
-			listed.insert(pi.name);
+	if (!all_listed) {
+		List<PropertyInfo> plist;
+		get_property_list(&plist);
+		for (const PropertyInfo &pi : plist) {
+			if (pi.usage & p_usage) {
+				listed.insert(pi.name);
+			}
 		}
 	}
+	Dictionary compared = p_compared; // shared: written for the caller
 	for (const KeyValue<Variant, Variant> &kv : p_values) {
 		const StringName name = kv.key;
-		const bool is_listed = listed.has(name);
+		const bool is_listed = all_listed || listed.has(name);
 		const Variant::Type t = kv.value.get_type();
 		Variant now;
-		if (!holds(t) && is_listed) {
+		if ((!holds(t) || p_others.is_null()) && is_listed) {
 			now = get(name);
 		}
 		const Variant::Type nt = now.get_type();
-		if (holds(t) || holds(nt) || nt == Variant::RID) {
+		if (p_others.is_null()) {
+			// No one to hand the rest to: set any value that differs, an
+			// empty Object slot and null counting as the same.
+			const bool both_null = (t == Variant::NIL || (t == Variant::OBJECT && kv.value.get_validated_object() == nullptr)) &&
+					(nt == Variant::NIL || (nt == Variant::OBJECT && now.get_validated_object() == nullptr));
+			if (!both_null && (nt != t || now != kv.value)) {
+				set(name, kv.value);
+			}
+		} else if (holds(t) || holds(nt) || nt == Variant::RID) {
 			p_others.call(kv.key, is_listed);
-		} else if (nt != t || now != kv.value) {
-			set(name, kv.value);
+		} else {
+			compared[kv.key] = kv.value;
+			if (nt != t || now != kv.value) {
+				set(name, kv.value);
+			}
 		}
 	}
 }
@@ -1983,7 +1999,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_pending_awaits"), &Object::snapshot_get_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_get_properties", "usage", "exclude_usage"), &Object::snapshot_get_properties, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("snapshot_set_properties", "values", "usage", "others"), &Object::snapshot_set_properties);
+	ClassDB::bind_method(D_METHOD("snapshot_set_properties", "values", "usage", "others", "compared"), &Object::snapshot_set_properties, DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("snapshot_get_connections"), &Object::snapshot_get_connections);
 	ClassDB::bind_method(D_METHOD("snapshot_get_user_signals"), &Object::snapshot_get_user_signals);
 
