@@ -939,13 +939,10 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			}
 		} break;
 		case GDScriptDataType::NATIVE: {
-			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_target.type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-			class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 			append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE);
 			append(p_target);
 			append(p_source);
-			append(class_idx);
+			append(p_target.type.native_type);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
@@ -1047,10 +1044,8 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 			index = p_type.builtin_type;
 		} break;
 		case GDScriptDataType::NATIVE: {
-			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
 			append_opcode(GDScriptFunction::OPCODE_CAST_TO_NATIVE);
-			index = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			index = get_name_map_pos(p_type.native_type);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
@@ -1888,13 +1883,9 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 			}
 		} break;
 		case GDScriptDataType::NATIVE: {
-			const int nc_idx = GDScriptLanguage::get_singleton()->get_global_map()[return_type.native_type];
-			const Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[nc_idx];
-			const int class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
-
 			append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_NATIVE);
 			append(p_return_value);
-			append(class_idx);
+			append(return_type.native_type);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
