@@ -1018,6 +1018,15 @@
 				Returns the properties whose usage has a bit of [param usage] and none of [param exclude_usage], as [code]{name: value}[/code] in [method get_property_list] order. One call instead of [method get_property_list] and [method get] for each property, for saving an object's state.
 			</description>
 		</method>
+		<method name="snapshot_set_properties">
+			<return type="void" />
+			<param index="0" name="values" type="Dictionary" />
+			<param index="1" name="usage" type="int" enum="PropertyUsageFlags" is_bitfield="true" />
+			<param index="2" name="others" type="Callable" />
+			<description>
+				Sets the properties in [param values] ([code]{name: value}[/code]) in order. A plain value (neither an [Array], a [Dictionary] nor an [Object]) over a property that holds a plain value (nor an [RID]) is set when it differs. Any other is passed to [param others] as [code](name, listed)[/code] in its turn. Properties listed with a bit of [param usage] when the call starts are read, each just before it is set; one not listed then counts as [code]null[/code]. One call instead of [method get] and [method set] for each property, for restoring an object's state.
+			</description>
+		</method>
 		<method name="to_string">
 			<return type="String" />
 			<description>

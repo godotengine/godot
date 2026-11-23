@@ -672,6 +672,43 @@ Dictionary Object::snapshot_get_properties(BitField<PropertyUsageFlags> p_usage,
 	return out;
 }
 
+// komm64: sets the properties in `values` ({name: value}) in order. A plain
+// value (not an Array, Dictionary or Object) over a property holding a plain
+// value (nor an RID) is set here when it differs; any other is handed to
+// `others` as (name, listed), in its turn, to decode or compare. Properties
+// listed with a bit of `usage` when the call starts are read, each just before
+// it is set, so it sees what earlier setters changed; one not listed then (a
+// shader parameter before its shader, an Animation track not made yet) counts
+// as null. One call for what StateShot's loads did property by property.
+void Object::snapshot_set_properties(const Dictionary &p_values, BitField<PropertyUsageFlags> p_usage, const Callable &p_others) {
+	const auto holds = [](Variant::Type t) {
+		return t == Variant::ARRAY || t == Variant::DICTIONARY || t == Variant::OBJECT;
+	};
+	HashSet<StringName> listed;
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+	for (const PropertyInfo &pi : plist) {
+		if (pi.usage & p_usage) {
+			listed.insert(pi.name);
+		}
+	}
+	for (const KeyValue<Variant, Variant> &kv : p_values) {
+		const StringName name = kv.key;
+		const bool is_listed = listed.has(name);
+		const Variant::Type t = kv.value.get_type();
+		Variant now;
+		if (!holds(t) && is_listed) {
+			now = get(name);
+		}
+		const Variant::Type nt = now.get_type();
+		if (holds(t) || holds(nt) || nt == Variant::RID) {
+			p_others.call(kv.key, is_listed);
+		} else if (nt != t || now != kv.value) {
+			set(name, kv.value);
+		}
+	}
+}
+
 // komm64: only the signals added with add_user_signal(), without walking the
 // class's and the script's signals as get_signal_list() does.
 TypedArray<Dictionary> Object::snapshot_get_user_signals() const {
@@ -1946,6 +1983,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_get_pending_awaits"), &Object::snapshot_get_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_cancel_pending_awaits"), &Object::snapshot_cancel_pending_awaits);
 	ClassDB::bind_method(D_METHOD("snapshot_get_properties", "usage", "exclude_usage"), &Object::snapshot_get_properties, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("snapshot_set_properties", "values", "usage", "others"), &Object::snapshot_set_properties);
 	ClassDB::bind_method(D_METHOD("snapshot_get_connections"), &Object::snapshot_get_connections);
 	ClassDB::bind_method(D_METHOD("snapshot_get_user_signals"), &Object::snapshot_get_user_signals);
 
