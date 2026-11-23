@@ -661,7 +661,7 @@ void Trail3D::_do_rebuild() {
 }
 
 void Trail3D::_process_trail() {
-	if (!is_inside_tree() || !is_ready()) {
+	if (!can_process() || !is_ready()) {
 		return;
 	}
 
