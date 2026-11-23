@@ -630,6 +630,8 @@ public:
 	void snapshot_set_random_state(int64_t p_state);
 	int64_t snapshot_get_seed_stream_state() const;
 	void snapshot_set_seed_stream_state(int64_t p_state);
+	void snapshot_set_clock_frozen(bool p_frozen);
+	bool snapshot_is_clock_frozen() const;
 
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;

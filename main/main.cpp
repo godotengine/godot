@@ -4984,6 +4984,7 @@ bool Main::iteration() {
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);
+	Engine::get_singleton()->snapshot_virtual_clock_fps = MAX(fixed_fps, 0);
 	// komm64: without a fixed tick, a dropped stall counts as one more frame
 	// of the last frame's length.
 	if (fixed_tick_rate <= 0.0 && Engine::get_singleton()->_drop_pending_ticks) {
@@ -5049,7 +5050,7 @@ bool Main::iteration() {
 			break;
 		}
 		if (tick_step > 0) {
-			Engine::get_singleton()->_process_frames++;
+			Engine::get_singleton()->count_process_frame();
 		}
 		Engine::get_singleton()->_drawing_step = tick_step == tick_steps - 1;
 
@@ -5062,7 +5063,7 @@ bool Main::iteration() {
 			}
 
 			Engine::get_singleton()->_in_physics = true;
-			Engine::get_singleton()->_physics_frames++;
+			Engine::get_singleton()->count_physics_frame();
 
 			uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -5205,7 +5206,7 @@ bool Main::iteration() {
 	}
 
 	frames++;
-	Engine::get_singleton()->_process_frames++;
+	Engine::get_singleton()->count_process_frame();
 
 	if (frame > 1000000) {
 		// Wait a few seconds before printing FPS, as FPS reporting just after the engine has started is inaccurate.

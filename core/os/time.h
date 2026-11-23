@@ -83,6 +83,9 @@ public:
 	uint64_t _script_get_ticks_msec() const;
 	uint64_t _script_get_ticks_usec() const;
 	uint64_t snapshot_get_real_ticks_usec() const;
+	// The ticks scripts see before the offset: real ticks, or under
+	// --fixed-fps the virtual clock (Engine::get_script_process_frames() / fps).
+	int64_t snapshot_script_ticks_base_usec() const;
 
 	Time();
 	virtual ~Time();

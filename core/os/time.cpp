@@ -30,6 +30,7 @@
 
 #include "time.h" // NOLINT(modernize-deprecated-headers) False positive with C-Header of the same name.
 
+#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 
@@ -389,8 +390,16 @@ uint64_t Time::get_ticks_usec() const {
 	return OS::get_singleton()->get_ticks_usec();
 }
 
+int64_t Time::snapshot_script_ticks_base_usec() const {
+	const Engine *engine = Engine::get_singleton();
+	if (engine->snapshot_virtual_clock_fps > 0) {
+		return int64_t(engine->get_script_process_frames() * 1000000 / uint64_t(engine->snapshot_virtual_clock_fps));
+	}
+	return int64_t(OS::get_singleton()->get_ticks_usec());
+}
+
 uint64_t Time::_script_get_ticks_usec() const {
-	return uint64_t(MAX(int64_t(0), int64_t(OS::get_singleton()->get_ticks_usec()) + snapshot_ticks_offset_usec));
+	return uint64_t(MAX(int64_t(0), snapshot_script_ticks_base_usec() + snapshot_ticks_offset_usec));
 }
 
 uint64_t Time::_script_get_ticks_msec() const {

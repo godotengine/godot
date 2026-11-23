@@ -102,6 +102,28 @@ public:
 	void (*snapshot_get_timer)(SnapshotTimer &r_timer) = nullptr;
 	void (*snapshot_set_timer)(const SnapshotTimer &p_timer) = nullptr;
 
+	// komm64: frames run while the script clock is frozen (k64_io holds the
+	// game paused between inputs) are hidden from scripts: their frame counts
+	// and, under --fixed-fps, their ticks (a virtual clock of the frames they
+	// see / fps) do not move. Main counts the frames and sets the fps.
+	// get_script_*_frames() are monotonic and never offset: a load moves the
+	// clocks scripts read only through the snapshot offsets (core_bind's
+	// Engine and Time::snapshot_ticks_offset_usec).
+	bool snapshot_clock_frozen = false;
+	uint64_t snapshot_frozen_process_frames = 0;
+	uint64_t snapshot_frozen_physics_frames = 0;
+	int snapshot_virtual_clock_fps = 0;
+	void count_process_frame() {
+		_process_frames++;
+		snapshot_frozen_process_frames += snapshot_clock_frozen ? 1 : 0;
+	}
+	void count_physics_frame() {
+		_physics_frames++;
+		snapshot_frozen_physics_frames += snapshot_clock_frozen ? 1 : 0;
+	}
+	uint64_t get_script_process_frames() const { return _process_frames - snapshot_frozen_process_frames; }
+	uint64_t get_script_physics_frames() const { return _physics_frames - snapshot_frozen_physics_frames; }
+
 private:
 
 	List<Singleton> singletons;

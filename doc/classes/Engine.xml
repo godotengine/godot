@@ -360,6 +360,12 @@
 				[b]Note:[/b] seeds are taken in call order, so [code]randomize()[/code] calls on other threads (for example a [RandomNumberGenerator] created during threaded loading) can take them in a different order between launches.
 			</description>
 		</method>
+		<method name="snapshot_is_clock_frozen" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] while [method snapshot_set_clock_frozen] holds the script clock frozen.
+			</description>
+		</method>
 		<method name="snapshot_is_plain_leaf" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
@@ -386,6 +392,13 @@
 			<param index="0" name="state" type="int" />
 			<description>
 				Sets the state of the global random number generator, as returned by [method snapshot_get_random_state].
+			</description>
+		</method>
+		<method name="snapshot_set_clock_frozen">
+			<return type="void" />
+			<param index="0" name="frozen" type="bool" />
+			<description>
+				While [param frozen] is [code]true[/code], the frames the engine runs are hidden from scripts: [method get_process_frames] and [method get_physics_frames] do not move, and with [code]--fixed-fps[/code] neither do [method Time.get_ticks_msec] and [method Time.get_ticks_usec], which then read a virtual clock of the frames scripts see divided by the fixed fps. A tool that holds the game paused between inputs (k64_io) freezes the clock so the pause is invisible to the game and a replay without pauses sees the same clocks.
 			</description>
 		</method>
 		<method name="snapshot_set_seed_stream_state">

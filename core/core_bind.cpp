@@ -1938,11 +1938,11 @@ double Engine::get_frames_per_second() const {
 }
 
 uint64_t Engine::get_physics_frames() const {
-	return uint64_t(MAX(int64_t(0), int64_t(::Engine::get_singleton()->get_physics_frames()) + snapshot_physics_offset));
+	return uint64_t(MAX(int64_t(0), int64_t(::Engine::get_singleton()->get_script_physics_frames()) + snapshot_physics_offset));
 }
 
 uint64_t Engine::get_process_frames() const {
-	return uint64_t(MAX(int64_t(0), int64_t(::Engine::get_singleton()->get_process_frames()) + snapshot_process_offset));
+	return uint64_t(MAX(int64_t(0), int64_t(::Engine::get_singleton()->get_script_process_frames()) + snapshot_process_offset));
 }
 
 void Engine::set_time_scale(double p_scale) {
@@ -2083,6 +2083,14 @@ int64_t Engine::snapshot_get_seed_stream_state() const {
 	return (int64_t)RandomPCG::get_fixed_seed_stream_state();
 }
 
+void Engine::snapshot_set_clock_frozen(bool p_frozen) {
+	::Engine::get_singleton()->snapshot_clock_frozen = p_frozen;
+}
+
+bool Engine::snapshot_is_clock_frozen() const {
+	return ::Engine::get_singleton()->snapshot_clock_frozen;
+}
+
 void Engine::snapshot_set_seed_stream_state(int64_t p_state) {
 	RandomPCG::set_fixed_seed_stream_state((uint64_t)p_state);
 }
@@ -2117,13 +2125,13 @@ Dictionary Engine::snapshot_get_clock() const {
 // returned it) and go on from there.
 void Engine::snapshot_set_clock(const Dictionary &p_clock) {
 	if (p_clock.has("ticks_usec")) {
-		::Time::get_singleton()->snapshot_ticks_offset_usec = int64_t(p_clock["ticks_usec"]) - int64_t(::OS::get_singleton()->get_ticks_usec());
+		::Time::get_singleton()->snapshot_ticks_offset_usec = int64_t(p_clock["ticks_usec"]) - ::Time::get_singleton()->snapshot_script_ticks_base_usec();
 	}
 	if (p_clock.has("process_frames")) {
-		snapshot_process_offset = int64_t(p_clock["process_frames"]) - int64_t(::Engine::get_singleton()->get_process_frames());
+		snapshot_process_offset = int64_t(p_clock["process_frames"]) - int64_t(::Engine::get_singleton()->get_script_process_frames());
 	}
 	if (p_clock.has("physics_frames")) {
-		snapshot_physics_offset = int64_t(p_clock["physics_frames"]) - int64_t(::Engine::get_singleton()->get_physics_frames());
+		snapshot_physics_offset = int64_t(p_clock["physics_frames"]) - int64_t(::Engine::get_singleton()->get_script_physics_frames());
 	}
 	if (p_clock.has("frames_drawn")) {
 		snapshot_drawn_offset = int64_t(p_clock["frames_drawn"]) - int64_t(::Engine::get_singleton()->get_frames_drawn());
@@ -2495,6 +2503,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("snapshot_set_random_state", "state"), &Engine::snapshot_set_random_state);
 	ClassDB::bind_method(D_METHOD("snapshot_get_seed_stream_state"), &Engine::snapshot_get_seed_stream_state);
 	ClassDB::bind_method(D_METHOD("snapshot_set_seed_stream_state", "state"), &Engine::snapshot_set_seed_stream_state);
+	ClassDB::bind_method(D_METHOD("snapshot_set_clock_frozen", "frozen"), &Engine::snapshot_set_clock_frozen);
+	ClassDB::bind_method(D_METHOD("snapshot_is_clock_frozen"), &Engine::snapshot_is_clock_frozen);
 
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &Engine::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &Engine::get_singleton_object);
