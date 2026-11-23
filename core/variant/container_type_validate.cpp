@@ -30,7 +30,9 @@
 
 #include "core/variant/container_type_validate.h"
 
-const Variant *ContainerTypeValidate::_internal_convert_variant(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation, bool p_output_errors) const {
+#include "core/variant/type_helpers.h"
+
+const Variant *ContainerTypeValidate::_internal_convert_variant(const Variant &p_variant, Variant &r_tmp_variant) const {
 	if (Variant::can_convert_strict(p_variant.get_type(), variant_type)) {
 		const Variant *converted_from = &p_variant;
 		Callable::CallError call_error;
@@ -41,14 +43,10 @@ const Variant *ContainerTypeValidate::_internal_convert_variant(const Variant &p
 		}
 	}
 
-	if (p_output_errors) {
-		ERR_FAIL_V_MSG(nullptr, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(p_variant.get_type()), where, Variant::get_type_name(variant_type)));
-	} else {
-		return nullptr;
-	}
+	return nullptr;
 }
 
-bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const {
+bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant) const {
 	ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 
 #ifdef DEBUG_ENABLED
@@ -58,11 +56,7 @@ bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, 
 	}
 	Object *object = ObjectDB::get_instance(object_id);
 	if (object == nullptr) {
-		if (p_output_errors) {
-			ERR_FAIL_V_MSG(false, vformat("Attempted to %s an invalid (previously freed?) object instance into a '%s'.", String(p_operation), String(where)));
-		} else {
-			return false;
-		}
+		return false;
 	}
 #else
 	Object *object = p_variant;
@@ -76,19 +70,7 @@ bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, 
 
 	const StringName &obj_class = object->get_class_name();
 	if (obj_class != class_name && !object->is_class(class_name)) {
-		if (p_output_errors) {
-			String object_class_name = object->get_class();
-			if (ScriptInstance *script_instance = object->get_script_instance(); script_instance != nullptr) {
-				if (Script *other_script = script_instance->get_script(); other_script != nullptr) {
-					if (const StringName &script_global_name = other_script->get_global_name(); !script_global_name.is_empty()) {
-						object_class_name = script_global_name;
-					}
-				}
-			}
-			ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object of type '%s' into a %s of incompatible type '%s'.", String(p_operation), object_class_name, where, String(class_name)));
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	if (script.is_null()) {
@@ -99,19 +81,15 @@ bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, 
 
 	// Check base script..
 	if (other_script == nullptr) {
-		if (p_output_errors) {
-			ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s of incompatible type '%s'.", String(p_operation), String(where), String(script->get_class_name())));
-		} else {
-			return false;
-		}
+		return false;
 	}
 	if (!other_script->inherits_script(script)) {
-		if (p_output_errors) {
-			ERR_FAIL_V_MSG(false, vformat("Attempted to %s an object into a %s of incompatible type '%s'.", String(p_operation), String(where), String(script->get_class_name())));
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	return true;
+}
+
+String ContainerTypeValidate::error_string(const Variant &p_variant, const char *p_slot) const {
+	return vformat("Cannot convert %s of type '%s' into '%s'.", p_slot, VariantTypeHelpers::get_type_display_name(p_variant), VariantTypeHelpers::get_display_name(*this));
 }

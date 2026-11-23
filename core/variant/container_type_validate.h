@@ -48,11 +48,9 @@ struct ContainerType {
 };
 
 struct ContainerTypeValidate : ContainerType {
-	const char *where = "container";
-
 private:
-	const Variant *_internal_convert_variant(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation, bool p_output_errors) const;
-	_FORCE_INLINE_ const Variant *_internal_validate(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation, bool p_output_errors) const {
+	const Variant *_internal_convert_variant(const Variant &p_variant, Variant &r_tmp_variant) const;
+	_FORCE_INLINE_ const Variant *_internal_validate(const Variant &p_variant, Variant &r_tmp_variant) const {
 		if (variant_type == Variant::NIL) {
 			return &p_variant;
 		}
@@ -60,29 +58,31 @@ private:
 			if (p_variant.get_type() == Variant::NIL && variant_type == Variant::OBJECT) {
 				return &p_variant;
 			}
-			return _internal_convert_variant(p_variant, r_tmp_variant, p_operation, p_output_errors);
+			return _internal_convert_variant(p_variant, r_tmp_variant);
 		}
 		if (variant_type != Variant::OBJECT) {
 			return &p_variant;
 		}
-		return _internal_validate_object(p_variant, p_operation, p_output_errors) ? &p_variant : nullptr;
+		return _internal_validate_object(p_variant) ? &p_variant : nullptr;
 	}
-	bool _internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const;
+	bool _internal_validate_object(const Variant &p_variant) const;
 
 public:
+	String error_string(const Variant &p_variant, const char *p_slot) const;
+
 	// Returns a pointer to a Variant holding a compatible value.
 	// Modifies and uses r_tmp_variant if conversions are needed.
-	_FORCE_INLINE_ const Variant *validate(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation = "use") const {
-		return _internal_validate(p_variant, r_tmp_variant, p_operation, true);
+	_FORCE_INLINE_ const Variant *validate(const Variant &p_variant, Variant &r_tmp_variant) const {
+		return _internal_validate(p_variant, r_tmp_variant);
 	}
 
-	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
-		return _internal_validate_object(p_variant, p_operation, true);
+	_FORCE_INLINE_ bool validate_object(const Variant &p_variant) const {
+		return _internal_validate_object(p_variant);
 	}
 
 	_FORCE_INLINE_ bool test_validate(const Variant &p_variant) const {
 		Variant tmp;
-		return _internal_validate(p_variant, tmp, "", false) != nullptr;
+		return _internal_validate(p_variant, tmp) != nullptr;
 	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {

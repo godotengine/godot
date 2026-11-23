@@ -1,3 +1,5 @@
+class_name TypedDictTests
+
 class Foo: pass
 class Bar extends Foo: pass
 class Baz extends Foo: pass

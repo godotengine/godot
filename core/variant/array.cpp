@@ -235,8 +235,8 @@ void Array::assign(const Array &p_array) {
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
-			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
-				ERR_FAIL_MSG(vformat("Unable to convert array index %d from '%s' to '%s'.", i, TypeHelpers::get_type_display_name(element), TypeHelpers::get_display_name(typed)));
+			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element))) {
+				ERR_FAIL_MSG(_p->typed.error_string(element, "element"));
 			}
 		}
 		_p->array = p_array._p->array;
@@ -283,8 +283,8 @@ void Array::assign(const Array &p_array) {
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "push_back");
-	ERR_FAIL_NULL(value);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_MSG(!value, _p->typed.error_string(p_value, "element"));
 	_p->array.push_back(*value);
 }
 
@@ -305,8 +305,8 @@ void Array::append_array(const Array &p_array) {
 	Variant *write = validated_array.ptrw();
 
 	for (int i = 0; i < validated_array.size(); ++i) {
-		const Variant *value = _p->typed.validate(read[i], write[i], "append_array");
-		ERR_FAIL_NULL(value);
+		const Variant *value = _p->typed.validate(read[i], write[i]);
+		ERR_FAIL_COND_MSG(!value, _p->typed.error_string(read[i], "element"));
 		if (value != &write[i]) {
 			write[i] = *value;
 		}
@@ -337,8 +337,8 @@ Error Array::reserve(int p_new_size) {
 Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "insert");
-	ERR_FAIL_NULL_V(value, ERR_INVALID_PARAMETER);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, ERR_INVALID_PARAMETER, _p->typed.error_string(p_value, "element"));
 
 	if (p_pos < 0) {
 		// Relative offset from the end.
@@ -353,16 +353,16 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "fill");
-	ERR_FAIL_NULL(value);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_MSG(!value, _p->typed.error_string(p_value, "element"));
 	_p->array.fill(*value);
 }
 
 void Array::erase(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "erase");
-	ERR_FAIL_NULL(value);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_MSG(!value, _p->typed.error_string(p_value, "element"));
 	_p->array.erase(*value);
 }
 
@@ -386,8 +386,8 @@ int Array::find(const Variant &p_value, int p_from) const {
 		return -1;
 	}
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "find");
-	ERR_FAIL_NULL_V(value, -1);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, -1, _p->typed.error_string(p_value, "element"));
 
 	int ret = -1;
 
@@ -438,8 +438,8 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 		return -1;
 	}
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "rfind");
-	ERR_FAIL_NULL_V(value, -1);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, -1, _p->typed.error_string(p_value, "element"));
 
 	if (p_from < 0) {
 		// Relative offset from the end
@@ -499,8 +499,8 @@ int Array::count(const Variant &p_value) const {
 		return 0;
 	}
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "count");
-	ERR_FAIL_NULL_V(value, 0);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, 0, _p->typed.error_string(p_value, "element"));
 
 	int amount = 0;
 	for (int i = 0; i < _p->array.size(); i++) {
@@ -514,8 +514,8 @@ int Array::count(const Variant &p_value) const {
 
 bool Array::has(const Variant &p_value) const {
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "use 'has' with");
-	ERR_FAIL_NULL_V(value, false);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, false, _p->typed.error_string(p_value, "element"));
 
 	return find(*value) != -1;
 }
@@ -536,8 +536,8 @@ void Array::remove_at(int p_pos) {
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "set");
-	ERR_FAIL_NULL(value);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_MSG(!value, _p->typed.error_string(p_value, "element"));
 
 	_p->array.write[p_idx] = *value;
 }
@@ -775,15 +775,15 @@ void Array::shuffle() {
 
 int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "binary search using");
-	ERR_FAIL_NULL_V(value, -1);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, -1, _p->typed.error_string(p_value, "element"));
 	return _p->array.span().bisect<_ArrayVariantSort>(*value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "binary search with a custom comparator using");
-	ERR_FAIL_NULL_V(value, -1);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_V_MSG(!value, -1, _p->typed.error_string(p_value, "element"));
 	return _p->array.bsearch_custom<CallableComparator>(*value, p_before, p_callable);
 }
 
@@ -795,8 +795,8 @@ void Array::reverse() {
 void Array::push_front(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	Variant tmp;
-	const Variant *value = _p->typed.validate(p_value, tmp, "push_front");
-	ERR_FAIL_NULL(value);
+	const Variant *value = _p->typed.validate(p_value, tmp);
+	ERR_FAIL_COND_MSG(!value, _p->typed.error_string(p_value, "element"));
 	_p->array.insert(0, *value);
 }
 
@@ -923,7 +923,6 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.variant_type = Variant::Type(p_type);
 	_p->typed.class_name = p_class_name;
 	_p->typed.script = script;
-	_p->typed.where = "TypedArray";
 }
 
 bool Array::is_typed() const {
