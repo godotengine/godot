@@ -1365,6 +1365,15 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	}
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT;
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	if (is_using_con_wrapper()) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V(da.is_null(), ret);
+		if (!da->is_equivalent(p_path, get_executable_path())) {
+			creation_flags |= CREATE_BREAKAWAY_FROM_JOB;
+		}
+	}
+#endif
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
@@ -1463,6 +1472,16 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		inherit_handles = true;
 	}
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	if (is_using_con_wrapper()) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V(da.is_null(), ERR_CANT_FORK);
+		if (!da->is_equivalent(p_path, get_executable_path())) {
+			creation_flags |= CREATE_BREAKAWAY_FROM_JOB;
+		}
+	}
+#endif
+
 	if (inherit_handles) {
 		creation_flags |= EXTENDED_STARTUPINFO_PRESENT;
 	}
@@ -1565,6 +1584,16 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si.StartupInfo;
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS;
+#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	if (is_using_con_wrapper()) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V(da.is_null(), ERR_CANT_FORK);
+		if (!da->is_equivalent(p_path, get_executable_path())) {
+			creation_flags |= CREATE_BREAKAWAY_FROM_JOB;
+		}
+	}
+#endif
+
 	if (p_open_console) {
 		creation_flags |= CREATE_NEW_CONSOLE;
 	} else {
