@@ -2154,7 +2154,10 @@ Array Engine::snapshot_split_plain(const Dictionary &p_values) const {
 		if (t == Variant::ARRAY || t == Variant::DICTIONARY || !_snapshot_is_plain(kv.value, 0)) {
 			others.push_back(kv.key);
 		}
-		values[kv.key] = kv.value;
+		// Packed arrays are shared by reference too: the save gets its own
+		// (copy on write, so nothing is copied unless the game writes to it),
+		// and what the game writes into one after the capture stays out.
+		values[kv.key] = (t >= Variant::PACKED_BYTE_ARRAY && t <= Variant::PACKED_VECTOR4_ARRAY) ? kv.value.duplicate() : kv.value;
 	}
 	Array out;
 	out.push_back(values);
