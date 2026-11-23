@@ -228,7 +228,7 @@ void RendererSceneCull::_instance_pair(Instance *p_A, Instance *p_B) {
 		geom->lights.insert(B);
 		light->geometries.insert(A);
 
-		if (geom->can_cast_shadows) {
+		if (geom->can_cast_shadows && (light->shadow_caster_mask & A->layer_mask)) {
 			light->make_shadow_dirty();
 		}
 
@@ -353,7 +353,7 @@ void RendererSceneCull::_instance_unpair(Instance *p_A, Instance *p_B) {
 		geom->lights.erase(B);
 		light->geometries.erase(A);
 
-		if (geom->can_cast_shadows) {
+		if (geom->can_cast_shadows && (light->shadow_caster_mask & A->layer_mask)) {
 			light->make_shadow_dirty();
 		}
 
@@ -1673,6 +1673,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 			light->max_sdfgi_cascade = max_sdfgi_cascade; //should most likely make sdfgi dirty in scenario
 		}
 		light->cull_mask = RSG::light_storage->light_get_cull_mask(p_instance->base);
+		light->shadow_caster_mask = RSG::light_storage->light_get_shadow_caster_mask(p_instance->base);
 	} else if (p_instance->base_type == RSE::INSTANCE_REFLECTION_PROBE) {
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(p_instance->base_data);
 
@@ -1743,7 +1744,9 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 		if (geom->can_cast_shadows) {
 			for (const Instance *E : geom->lights) {
 				InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
-				light->make_shadow_dirty();
+				if (light->shadow_caster_mask & p_instance->layer_mask) {
+					light->make_shadow_dirty();
+				}
 			}
 		}
 
