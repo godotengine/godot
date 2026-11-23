@@ -33,13 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
+#include "core/io/marshalls.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/string/print_string.h"
 #include "scene/resources/bit_map.h"
-#include "scene/resources/compressed_texture.h"
 #include "servers/rendering/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -188,24 +188,41 @@ Error StreamedTexture2D::_load_mips_from_file(Ref<FileAccess> p_file, const Stre
 
 	uint64_t data_start = p_file->get_position();
 
+	const bool zstd_compressed = p_header.flags & FORMAT_BIT_SUPERCOMPRESSED;
+
 	// Calculate total size needed for all requested mips.
 	uint32_t total_size = 0;
 	for (uint32_t i = 0; i < p_mip_count; i++) {
-		total_size += p_header.mipmap_offset_size[p_start_mip + i].second;
+		if (zstd_compressed) { // Cycle through mips and get their total uncompressed size.
+			p_file->seek(data_start + p_header.mipmap_offset_size[p_start_mip + i].first);
+			total_size += p_file->get_32();
+		} else {
+			total_size += p_header.mipmap_offset_size[p_start_mip + i].second;
+		}
 	}
 
 	// Load all mip data into a single buffer.
 	r_mip_data.resize(total_size);
+	LocalVector<uint8_t> zstd_data;
 	uint32_t write_offset = 0;
 	for (uint32_t i = 0; i < p_mip_count; i++) {
 		uint32_t mip_index = p_start_mip + i;
 		uint32_t mip_offset = p_header.mipmap_offset_size[mip_index].first;
 		uint32_t mip_size = p_header.mipmap_offset_size[mip_index].second;
 
+		uint64_t bytes_written;
 		p_file->seek(data_start + mip_offset);
-		uint64_t bytes_read = p_file->get_buffer(r_mip_data.ptrw() + write_offset, mip_size);
-		ERR_FAIL_COND_V_MSG(bytes_read != mip_size, ERR_FILE_CORRUPT, "Streamed texture file is truncated.");
-		write_offset += mip_size;
+		if (zstd_compressed) {
+			zstd_data.resize_uninitialized(mip_size);
+			const uint32_t decompressed_size = p_file->get_32();
+			p_file->get_buffer(zstd_data.ptr(), mip_size);
+			bytes_written = Compression::decompress(r_mip_data.ptrw() + write_offset, decompressed_size, zstd_data.ptr(), mip_size, Compression::MODE_ZSTD);
+			ERR_FAIL_COND_V_MSG(bytes_written != decompressed_size, ERR_FILE_CORRUPT, "Streamed texture file is truncated.");
+		} else {
+			bytes_written = p_file->get_buffer(r_mip_data.ptrw() + write_offset, mip_size);
+			ERR_FAIL_COND_V_MSG(bytes_written != mip_size, ERR_FILE_CORRUPT, "Streamed texture file is truncated.");
+		}
+		write_offset += bytes_written;
 	}
 
 	return OK;
@@ -283,8 +300,37 @@ Error StreamedTexture2D::_save_data(const String &p_path, const Ref<Image> &p_im
 	f->store_32(p_image->get_width());
 	f->store_32(p_image->get_height());
 
-	// Get image data.
-	Vector<uint8_t> data = p_image->get_data();
+	// Get image data and mipmap count. Compress if required.
+	const Vector<uint8_t> &src_data = p_image->get_data();
+	uint32_t num_mipmaps = p_image->get_mipmap_count();
+	Vector<uint8_t> data;
+	LocalVector<KeyValue<uint64_t, uint64_t>> mip_ofas;
+	mip_ofas.reserve(num_mipmaps);
+	int64_t mip_offset, mip_size;
+	if (p_flags & FORMAT_BIT_SUPERCOMPRESSED) {
+		const uint8_t *data_ptr = src_data.ptr();
+		LocalVector<uint8_t> mip_compressed;
+		for (uint32_t i = 0; i <= num_mipmaps; i++) { // Compress each mip individually.
+			p_image->get_mipmap_offset_and_size(i, mip_offset, mip_size);
+			uint32_t max_compressed_buffer_size = Compression::get_max_compressed_buffer_size(mip_size, Compression::MODE_ZSTD);
+			mip_compressed.resize_uninitialized(max_compressed_buffer_size);
+			const uint32_t compressed_size = Compression::compress(mip_compressed.ptr(), data_ptr + mip_offset, mip_size, Compression::MODE_ZSTD);
+			uint64_t compressed_offset = data.size();
+			data.resize_uninitialized(compressed_offset + compressed_size + sizeof(uint32_t));
+
+			// Each stored mip is their uncompressed size followed by the compressed data.
+			uint8_t *dst_ptr = data.ptrw() + compressed_offset;
+			dst_ptr += encode_uint32(mip_size, dst_ptr);
+			memcpy(dst_ptr, mip_compressed.ptr(), compressed_size);
+			mip_ofas.push_back(KeyValue<uint64_t, uint64_t>(compressed_offset, compressed_size));
+		}
+	} else {
+		for (uint32_t i = 0; i <= num_mipmaps; i++) {
+			p_image->get_mipmap_offset_and_size(i, mip_offset, mip_size);
+			mip_ofas.push_back(KeyValue<uint64_t, uint64_t>(mip_offset, mip_size));
+		}
+		data = src_data;
+	}
 
 	// Write data size.
 	f->store_32(data.size());
@@ -293,15 +339,12 @@ Error StreamedTexture2D::_save_data(const String &p_path, const Ref<Image> &p_im
 	f->store_32((uint32_t)p_image->get_format());
 
 	// Write mipmap count.
-	uint32_t num_mipmaps = p_image->get_mipmap_count();
 	f->store_32(num_mipmaps);
 
 	// Write the offset and size for each mip level.
 	for (uint32_t i = 0; i <= num_mipmaps; i++) {
-		int64_t mip_offset, mip_size;
-		p_image->get_mipmap_offset_and_size(i, mip_offset, mip_size);
-		f->store_32((uint32_t)mip_offset);
-		f->store_32((uint32_t)mip_size);
+		f->store_32((uint32_t)mip_ofas[i].key);
+		f->store_32((uint32_t)mip_ofas[i].value);
 	}
 
 	// Write flags (request_normal, request_roughness).
