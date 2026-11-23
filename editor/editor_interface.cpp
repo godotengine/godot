@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/thread.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
@@ -249,6 +250,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Scene previews can only be generated from the main thread.");
 	if (!Engine::get_singleton()->is_editor_hint() || !DisplayServer::get_singleton()->window_can_draw()) {
 		return;
 	}

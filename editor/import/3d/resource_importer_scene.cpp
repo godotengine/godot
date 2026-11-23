@@ -36,6 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/os/thread.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/import/3d/scene_import_settings.h"
@@ -3545,7 +3546,9 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
-		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+		if (Thread::is_main_thread()) {
+			EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+		}
 	} else if (_scene_import_type == "ArrayMesh") {
 		_save_scene_as_single_mesh(p_source_file, p_save_path, scene, p_options, flags);
 	} else if (_scene_import_type == "MeshLibrary") {
