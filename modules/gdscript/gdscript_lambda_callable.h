@@ -76,6 +76,9 @@ class GDScriptLambdaSelfCallable : public CallableCustom {
 	GDScript::UpdatableFuncPtr function;
 	Ref<RefCounted> reference; // For objects that are RefCounted, keep a reference.
 	Object *object = nullptr; // For non RefCounted objects, use a direct pointer.
+	// komm64: its id, kept when made: once a non-RefCounted self is freed,
+	// `object` dangles, and get_object() (so is_valid()) must not read it.
+	ObjectID object_id;
 	uint32_t h;
 
 	Vector<Variant> captures;

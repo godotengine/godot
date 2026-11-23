@@ -202,7 +202,7 @@ CallableCustom::CompareLessFunc GDScriptLambdaSelfCallable::get_compare_less_fun
 }
 
 ObjectID GDScriptLambdaSelfCallable::get_object() const {
-	return object->get_instance_id();
+	return object_id;
 }
 
 StringName GDScriptLambdaSelfCallable::get_method() const {
@@ -298,6 +298,7 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, G
 	ERR_FAIL_NULL(p_function);
 	reference = p_self;
 	object = p_self.ptr();
+	object_id = object->get_instance_id();
 	captures = p_captures;
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
@@ -308,6 +309,7 @@ GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptF
 	ERR_FAIL_NULL(p_self);
 	ERR_FAIL_NULL(p_function);
 	object = p_self;
+	object_id = object->get_instance_id();
 	captures = p_captures;
 
 	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
