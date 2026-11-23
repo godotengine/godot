@@ -45,7 +45,15 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 		if (err != UNZ_OK) {
 			return err;
 		}
-		r_filepath = String::utf8(long_file_path_buffer.ptr(), r_file_info.size_filename);
+		// The first unzGetCurrentFileInfo64() call may have failed (err != UNZ_OK),
+		// in which case minizip does not write size_filename and it still holds a
+		// stale value from a previous entry. The buffer above was sized with that
+		// stale value, but this successful retry overwrites size_filename with the
+		// real (potentially much larger, attacker-controlled) length. Clamp the read
+		// length to the buffer capacity to avoid reading past the allocation.
+		const uLong buf_size = long_file_path_buffer.size();
+		const uLong read_len = r_file_info.size_filename < buf_size ? r_file_info.size_filename : buf_size;
+		r_filepath = String::utf8(long_file_path_buffer.ptr(), static_cast<int>(read_len));
 	} else {
 		r_filepath = String::utf8(short_file_path_buffer, r_file_info.size_filename);
 	}
