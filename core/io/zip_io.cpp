@@ -37,17 +37,20 @@ int godot_unzip_get_current_file_info(unzFile p_zip_file, unz_file_info64 &r_fil
 	char short_file_path_buffer[short_file_path_buffer_size];
 
 	int err = unzGetCurrentFileInfo64(p_zip_file, &r_file_info, short_file_path_buffer, short_file_path_buffer_size, nullptr, 0, nullptr, 0);
-	if (unlikely((err != UNZ_OK) || (r_file_info.size_filename > short_file_path_buffer_size))) {
+	if (err != UNZ_OK) {
+		return err;
+	}
+	if (likely(r_file_info.size_filename < short_file_path_buffer_size)) {
+		r_filepath = String::utf8(short_file_path_buffer, r_file_info.size_filename);
+	} else {
 		LocalVector<char> long_file_path_buffer;
 		long_file_path_buffer.resize(r_file_info.size_filename);
 
-		err = unzGetCurrentFileInfo64(p_zip_file, &r_file_info, long_file_path_buffer.ptr(), long_file_path_buffer.size(), nullptr, 0, nullptr, 0);
+		err = unzGetCurrentFileInfo64(p_zip_file, nullptr, long_file_path_buffer.ptr(), long_file_path_buffer.size(), nullptr, 0, nullptr, 0);
 		if (err != UNZ_OK) {
 			return err;
 		}
 		r_filepath = String::utf8(long_file_path_buffer.ptr(), r_file_info.size_filename);
-	} else {
-		r_filepath = String::utf8(short_file_path_buffer, r_file_info.size_filename);
 	}
 
 	return err;
