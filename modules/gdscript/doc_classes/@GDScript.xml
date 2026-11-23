@@ -782,6 +782,7 @@
 				[codeblock]
 				@onready var character_name = $Label
 				[/codeblock]
+				[b]Note:[/b] Because the engine compiles member initializers into one function, adding [code]await[/code] to the initializer of an [annotation @onready] variable delays the initialization of the [annotation @onready] variables below it until the [code]await[/code] finishes. Prior to that, those variables have their default values, such as [code]null[/code], and it is possible for the method [method Node._ready] to run before they are assigned values.
 			</description>
 		</annotation>
 		<annotation name="@rpc">
