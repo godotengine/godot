@@ -3300,10 +3300,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			switch (dictionary->style) {
 				case DictionaryNode::LUA_TABLE:
 					if (key != nullptr && key->type != Node::IDENTIFIER && key->type != Node::LITERAL) {
-						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
+						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }"). Use ":" for expression keys.)");
 					}
 					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
-						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
+						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }"). Use ":" for expression keys.)");
 					}
 					if (!match(GDScriptTokenizer::Token::EQUAL)) {
 						if (match(GDScriptTokenizer::Token::COLON)) {
