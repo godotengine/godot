@@ -148,6 +148,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 
 		float volume_db = s.volume_db; // Copy because it can be overridden at any time.
 		float next_volume = Math::db_to_linear(volume_db);
+		float prev_volume = Math::db_to_linear(s.prev_volume_db);
 		s.prev_volume_db = volume_db;
 
 		if (s.finish_request.is_set()) {
@@ -163,7 +164,6 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			s.stream_playback->start(s.play_offset);
 			s.pending_play.clear();
 		}
-		float prev_volume = Math::db_to_linear(s.prev_volume_db);
 
 		float volume_inc = (next_volume - prev_volume) / float(p_frames);
 
