@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
+#include "../toolchain/gdscript_ast.h"
+
+class GDScript;
 
 class GDScriptDocGen {
 	using DataType = GDScriptAST::DataType;

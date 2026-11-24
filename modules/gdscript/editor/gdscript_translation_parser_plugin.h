@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../toolchain/gdscript_ast.h"
 

@@ -51,58 +51,6 @@
 
 class GDScriptParser {
 public:
-	using DataType = GDScriptAST::DataType;
-	using AnnotationInfo = GDScriptAST::AnnotationInfo;
-
-#ifdef TOOLS_ENABLED
-	using MemberDocData = GDScriptAST::MemberDocData;
-	using ClassDocData = GDScriptAST::ClassDocData;
-#endif // TOOLS_ENABLED
-
-	using AnnotationNode = GDScriptAST::AnnotationNode;
-	using ArrayNode = GDScriptAST::ArrayNode;
-	using AssertNode = GDScriptAST::AssertNode;
-	using AssignableNode = GDScriptAST::AssignableNode;
-	using AssignmentNode = GDScriptAST::AssignmentNode;
-	using AwaitNode = GDScriptAST::AwaitNode;
-	using BinaryOpNode = GDScriptAST::BinaryOpNode;
-	using BreakNode = GDScriptAST::BreakNode;
-	using BreakpointNode = GDScriptAST::BreakpointNode;
-	using CallNode = GDScriptAST::CallNode;
-	using CastNode = GDScriptAST::CastNode;
-	using ClassNode = GDScriptAST::ClassNode;
-	using ConstantNode = GDScriptAST::ConstantNode;
-	using ContinueNode = GDScriptAST::ContinueNode;
-	using DictionaryNode = GDScriptAST::DictionaryNode;
-	using EnumNode = GDScriptAST::EnumNode;
-	using ExpressionNode = GDScriptAST::ExpressionNode;
-	using ForNode = GDScriptAST::ForNode;
-	using FunctionNode = GDScriptAST::FunctionNode;
-	using GetNodeNode = GDScriptAST::GetNodeNode;
-	using IdentifierNode = GDScriptAST::IdentifierNode;
-	using IfNode = GDScriptAST::IfNode;
-	using LambdaNode = GDScriptAST::LambdaNode;
-	using LiteralNode = GDScriptAST::LiteralNode;
-	using MatchNode = GDScriptAST::MatchNode;
-	using MatchBranchNode = GDScriptAST::MatchBranchNode;
-	using Node = GDScriptAST::Node;
-	using ParameterNode = GDScriptAST::ParameterNode;
-	using PassNode = GDScriptAST::PassNode;
-	using PatternNode = GDScriptAST::PatternNode;
-	using PreloadNode = GDScriptAST::PreloadNode;
-	using ReturnNode = GDScriptAST::ReturnNode;
-	using SelfNode = GDScriptAST::SelfNode;
-	using SignalNode = GDScriptAST::SignalNode;
-	using SubscriptNode = GDScriptAST::SubscriptNode;
-	using SuiteNode = GDScriptAST::SuiteNode;
-	using TernaryOpNode = GDScriptAST::TernaryOpNode;
-	using TypeNode = GDScriptAST::TypeNode;
-	using TypeTestNode = GDScriptAST::TypeTestNode;
-	using UnaryOpNode = GDScriptAST::UnaryOpNode;
-	using VariableNode = GDScriptAST::VariableNode;
-	using WhileNode = GDScriptAST::WhileNode;
-	typedef bool (GDScriptParser::*AnnotationAction)(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-
 	struct ParserError {
 		// TODO: Do I really need a "type"?
 		// enum Type {

@@ -32,7 +32,12 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "gdscript_parser.h"
+#include "core/error/error_list.h"
+
+class GDScriptParser;
+namespace GDScriptAST {
+struct Node;
+}
 
 /**
  * The `GDScriptLinter` emits warnings based on a completely analyzed AST.
