@@ -1,0 +1,3 @@
+GDTEST_PARSER_ERROR
+Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }"). Use ":" for expression keys.
+Expected "=" after dictionary key. Mixing dictionary styles is not allowed.
