@@ -35,6 +35,8 @@
 #include "core/config/project_settings.h"
 #include "core/doc_data.h"
 
+namespace AST = GDScriptAST;
+
 HashMap<String, String> GDScriptDocGen::singletons;
 
 String GDScriptDocGen::_get_script_name(const String &p_path) {

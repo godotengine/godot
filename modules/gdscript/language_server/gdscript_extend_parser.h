@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../gdscript_parser.h"
+#include "../toolchain/gdscript_ast.h"
 #include "godot_lsp.h"
 
 #include "core/variant/variant.h"

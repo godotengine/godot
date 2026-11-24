@@ -40,9 +40,10 @@
 #include "scene/main/multiplayer_api.h"
 
 #ifdef DEBUG_ENABLED
-#include "core/string/string_builder.h"
 #include "servers/text/text_server.h"
 #endif
+
+namespace AST = GDScriptAST;
 
 // This function is used to determine that a type is "built-in" as opposed to native
 // and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
@@ -90,6 +91,14 @@ void GDScriptParser::get_annotation_list(List<MethodInfo> *r_annotations) const 
 
 bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 	return valid_annotations.has(p_annotation_name);
+}
+
+bool GDScriptParser::apply_annotation(GDScriptParser::AnnotationNode *p_annotation, GDScriptParser::Node *p_target, GDScriptParser::ClassNode *p_class) {
+	if (p_annotation->is_applied) {
+		return true;
+	}
+	p_annotation->is_applied = true;
+	return (this->*(valid_annotations[p_annotation->name].apply))(p_annotation, p_target, p_class);
 }
 
 #ifdef DEBUG_ENABLED
@@ -735,7 +744,7 @@ void GDScriptParser::parse_program() {
 					if (annotation->name == SNAME("@tool") || annotation->name == SNAME("@icon") || annotation->name == SNAME("@static_unload")) {
 						// Some annotations need to be resolved and applied in the parser.
 						// The root class is not in any class, so `head->outer == nullptr`.
-						annotation->apply(this, head, nullptr);
+						apply_annotation(annotation, head, nullptr);
 					}
 					head->annotations.push_back(annotation);
 				} else if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
@@ -750,7 +759,7 @@ void GDScriptParser::parse_program() {
 						break;
 					} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 						// Some annotations need to be resolved and applied in the parser.
-						annotation->apply(this, nullptr, nullptr);
+						apply_annotation(annotation, nullptr, nullptr);
 					} else {
 						push_error(R"(Unexpected standalone annotation.)");
 					}
@@ -822,7 +831,7 @@ void GDScriptParser::parse_program() {
 		if (annotation->name == SNAME("@abstract")) {
 			// Some annotations need to be resolved and applied in the parser.
 			// The root class is not in any class, so `head->outer == nullptr`.
-			annotation->apply(this, head, nullptr);
+			apply_annotation(annotation, head, nullptr);
 		}
 	}
 
@@ -1173,7 +1182,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 							current_class->add_member_group(annotation);
 						} else if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 							// Some annotations need to be resolved and applied in the parser.
-							annotation->apply(this, nullptr, nullptr);
+							apply_annotation(annotation, nullptr, nullptr);
 						} else {
 							push_error(R"(Unexpected standalone annotation.)");
 						}
@@ -2146,7 +2155,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					}
 					if (annotation->name == SNAME("@warning_ignore_start") || annotation->name == SNAME("@warning_ignore_restore")) {
 						// Some annotations need to be resolved and applied in the parser.
-						annotation->apply(this, nullptr, nullptr);
+						apply_annotation(annotation, nullptr, nullptr);
 					} else {
 						push_error(R"(Unexpected standalone annotation.)");
 					}
@@ -2732,14 +2741,6 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 	complete_extents(pattern);
 
 	return pattern;
-}
-
-bool GDScriptParser::PatternNode::has_bind(const StringName &p_name) {
-	return binds.has(p_name);
-}
-
-GDScriptParser::IdentifierNode *GDScriptParser::PatternNode::get_bind(const StringName &p_name) {
-	return binds[p_name];
 }
 
 GDScriptParser::WhileNode *GDScriptParser::parse_while() {
@@ -4375,38 +4376,6 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 	return &rules[p_token_type];
 }
 
-bool GDScriptParser::SuiteNode::has_local(const StringName &p_name) const {
-	if (locals_indices.has(p_name)) {
-		return true;
-	}
-	if (parent_block != nullptr) {
-		return parent_block->has_local(p_name);
-	}
-	return false;
-}
-
-const GDScriptParser::SuiteNode::Local &GDScriptParser::SuiteNode::get_local(const StringName &p_name) const {
-	if (locals_indices.has(p_name)) {
-		return locals[locals_indices[p_name]];
-	}
-	if (parent_block != nullptr) {
-		return parent_block->get_local(p_name);
-	}
-	return empty;
-}
-
-bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class) {
-	if (is_applied) {
-		return true;
-	}
-	is_applied = true;
-	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target, p_class);
-}
-
-bool GDScriptParser::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
-	return (info->target_kind & p_target_kinds) > 0;
-}
-
 bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation) {
 	ERR_FAIL_COND_V_MSG(!valid_annotations.has(p_annotation->name), false, vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
 
@@ -5306,281 +5275,6 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 		}
 	}
 	function->rpc_config = rpc_config;
-	return true;
-}
-
-GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const {
-	switch (type) {
-		case CONSTANT:
-			return constant->type_constraint;
-		case VARIABLE:
-			return variable->type_constraint;
-		case PARAMETER:
-			return parameter->type_constraint;
-		case FOR_VARIABLE:
-		case PATTERN_BIND:
-			return bind->type_constraint;
-		case UNDEFINED:
-			return DataType();
-	}
-	return DataType();
-}
-
-String GDScriptParser::SuiteNode::Local::get_name() const {
-	switch (type) {
-		case SuiteNode::Local::PARAMETER:
-			return "parameter";
-		case SuiteNode::Local::CONSTANT:
-			return "constant";
-		case SuiteNode::Local::VARIABLE:
-			return "variable";
-		case SuiteNode::Local::FOR_VARIABLE:
-			return "for loop iterator";
-		case SuiteNode::Local::PATTERN_BIND:
-			return "pattern bind";
-		case SuiteNode::Local::UNDEFINED:
-			return "<undefined>";
-		default:
-			return String();
-	}
-}
-
-String GDScriptParser::DataType::to_string() const {
-	switch (kind) {
-		case VARIANT:
-			return "Variant";
-		case BUILTIN:
-			if (builtin_type == Variant::NIL) {
-				return "null";
-			}
-			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-				return vformat("Array[%s]", get_container_element_type(0).to_string());
-			}
-			if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
-				return vformat("Dictionary[%s, %s]", get_container_element_type_or_variant(0).to_string(), get_container_element_type_or_variant(1).to_string());
-			}
-			return Variant::get_type_name(builtin_type);
-		case NATIVE:
-			if (is_meta_type) {
-				return GDScriptNativeClass::get_class_static();
-			}
-			return native_type.string();
-		case CLASS:
-			if (class_type->identifier != nullptr) {
-				return class_type->identifier->name.string();
-			}
-			return class_type->fqcn;
-		case SCRIPT: {
-			if (is_meta_type) {
-				return script_type.is_valid() ? script_type->get_class_name().string() : "";
-			}
-			String name = script_type.is_valid() ? script_type->get_name() : "";
-			if (!name.is_empty()) {
-				return name;
-			}
-			name = script_path;
-			if (!name.is_empty()) {
-				return name;
-			}
-			return native_type.string();
-		}
-		case ENUM: {
-			// native_type contains either the native class defining the enum
-			// or the fully qualified class name of the script defining the enum
-			return String(native_type).get_file(); // Remove path, keep filename
-		}
-		case RESOLVING:
-		case UNRESOLVED:
-			return "<unresolved type>";
-	}
-
-	ERR_FAIL_V_MSG("<unresolved type>", "Kind set outside the enum range.");
-}
-
-String GDScriptParser::DataType::to_property_info_hint_string() const {
-	switch (kind) {
-		case BUILTIN:
-			return Variant::get_type_name(builtin_type);
-		case NATIVE:
-			return native_type;
-		case SCRIPT:
-			if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
-				return script_type->get_global_name();
-			} else {
-				return native_type;
-			}
-		case CLASS:
-			if (class_type != nullptr && class_type->get_global_name() != StringName()) {
-				return class_type->get_global_name();
-			} else {
-				return native_type;
-			}
-		case ENUM:
-			return String(native_type).replace("::", ".");
-		case VARIANT:
-			return "Variant";
-		case RESOLVING:
-		case UNRESOLVED:
-			break;
-	}
-	ERR_FAIL_V_MSG("Variant", "GDScript bug: Unexpected type kind.");
-}
-
-PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) const {
-	PropertyInfo result;
-	result.name = p_name;
-	result.usage = PROPERTY_USAGE_NONE;
-
-	if (!is_hard_type()) {
-		result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-		return result;
-	}
-
-	switch (kind) {
-		case BUILTIN:
-			result.type = builtin_type;
-			if (builtin_type == Variant::ARRAY && has_container_element_type(0)) {
-				const DataType elem_type = get_container_element_type(0);
-				if (elem_type.is_variant()) {
-					break;
-				}
-
-				result.hint = PROPERTY_HINT_ARRAY_TYPE;
-				result.hint_string = elem_type.to_property_info_hint_string();
-			} else if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
-				const DataType key_type = get_container_element_type_or_variant(0);
-				const DataType value_type = get_container_element_type_or_variant(1);
-				if (key_type.is_variant() && value_type.is_variant()) {
-					break;
-				}
-
-				result.hint = PROPERTY_HINT_DICTIONARY_TYPE;
-				result.hint_string = key_type.to_property_info_hint_string() + ";" + value_type.to_property_info_hint_string();
-			}
-			break;
-		case NATIVE:
-			result.type = Variant::OBJECT;
-			if (is_meta_type) {
-				result.class_name = GDScriptNativeClass::get_class_static();
-			} else {
-				result.class_name = native_type;
-			}
-			break;
-		case SCRIPT:
-			result.type = Variant::OBJECT;
-			if (is_meta_type) {
-				result.class_name = script_type.is_valid() ? script_type->get_class_name() : Script::get_class_static();
-			} else if (script_type.is_valid() && script_type->get_global_name() != StringName()) {
-				result.class_name = script_type->get_global_name();
-			} else {
-				result.class_name = native_type;
-			}
-			break;
-		case CLASS:
-			result.type = Variant::OBJECT;
-			if (is_meta_type) {
-				result.class_name = GDScript::get_class_static();
-			} else if (class_type != nullptr && class_type->get_global_name() != StringName()) {
-				result.class_name = class_type->get_global_name();
-			} else {
-				result.class_name = native_type;
-			}
-			break;
-		case ENUM:
-			if (is_meta_type) {
-				result.type = Variant::DICTIONARY;
-			} else {
-				result.type = Variant::INT;
-				result.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-				result.class_name = String(native_type).replace("::", ".");
-			}
-			break;
-		case VARIANT:
-		case RESOLVING:
-		case UNRESOLVED:
-			result.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			break;
-	}
-
-	return result;
-}
-
-static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_type) {
-	switch (p_type) {
-		case Variant::PACKED_BYTE_ARRAY:
-		case Variant::PACKED_INT32_ARRAY:
-		case Variant::PACKED_INT64_ARRAY:
-			return Variant::INT;
-		case Variant::PACKED_FLOAT32_ARRAY:
-		case Variant::PACKED_FLOAT64_ARRAY:
-			return Variant::FLOAT;
-		case Variant::PACKED_STRING_ARRAY:
-			return Variant::STRING;
-		case Variant::PACKED_VECTOR2_ARRAY:
-			return Variant::VECTOR2;
-		case Variant::PACKED_VECTOR3_ARRAY:
-			return Variant::VECTOR3;
-		case Variant::PACKED_COLOR_ARRAY:
-			return Variant::COLOR;
-		case Variant::PACKED_VECTOR4_ARRAY:
-			return Variant::VECTOR4;
-		default:
-			return Variant::NIL;
-	}
-}
-
-bool GDScriptParser::DataType::is_typed_container_type() const {
-	return kind == GDScriptParser::DataType::BUILTIN && _variant_type_to_typed_array_element_type(builtin_type) != Variant::NIL;
-}
-
-GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() const {
-	GDScriptParser::DataType type;
-	type.kind = GDScriptParser::DataType::BUILTIN;
-	type.builtin_type = _variant_type_to_typed_array_element_type(builtin_type);
-	return type;
-}
-
-bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_other) const {
-	if (p_other.is_meta_type) {
-		return false;
-	} else if (builtin_type != p_other.builtin_type) {
-		return false;
-	} else if (builtin_type != Variant::OBJECT) {
-		return true;
-	}
-
-	if (native_type == StringName()) {
-		return true;
-	} else if (p_other.native_type == StringName()) {
-		return false;
-	} else if (native_type != p_other.native_type && !ClassDB::is_parent_class(p_other.native_type, native_type)) {
-		return false;
-	}
-
-	Ref<Script> script = script_type;
-	if (kind == GDScriptParser::DataType::CLASS && script.is_null()) {
-		Error err = OK;
-		Ref<GDScript> scr = GDScriptCache::get_shallow_script(script_path, err);
-		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", script_path));
-		script.reference_ptr(scr->find_class(class_type->fqcn));
-	}
-
-	Ref<Script> script_other = p_other.script_type;
-	if (p_other.kind == GDScriptParser::DataType::CLASS && script_other.is_null()) {
-		Error err = OK;
-		Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_other.script_path, err);
-		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", p_other.script_path));
-		script_other.reference_ptr(scr->find_class(p_other.class_type->fqcn));
-	}
-
-	if (script.is_null()) {
-		return true;
-	} else if (script_other.is_null()) {
-		return false;
-	} else if (script != script_other && !script_other->inherits_script(script)) {
-		return false;
-	}
-
 	return true;
 }
 

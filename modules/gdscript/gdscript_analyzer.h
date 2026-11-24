@@ -32,6 +32,7 @@
 
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
+#include "toolchain/gdscript_ast.h"
 
 #include "core/object/ref_counted.h"
 

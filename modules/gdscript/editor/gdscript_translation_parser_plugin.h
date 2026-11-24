@@ -32,9 +32,13 @@
 
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
+#include "../toolchain/gdscript_ast.h"
 
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
+#include "core/templates/vector.h"
 #include "editor/translations/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {

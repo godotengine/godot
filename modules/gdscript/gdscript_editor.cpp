@@ -34,6 +34,7 @@
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
 #include "gdscript_utility_functions.h"
+#include "toolchain/gdscript_ast.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -56,6 +57,8 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #endif
+
+namespace AST = GDScriptAST;
 
 #ifdef TOOLS_ENABLED
 GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;

@@ -38,6 +38,7 @@
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+#include "toolchain/gdscript_ast.h"
 
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
@@ -66,6 +67,8 @@
 #include "core/extension/gdextension_manager.h"
 #include "editor/file_system/editor_paths.h"
 #endif
+
+namespace AST = GDScriptAST;
 
 ///////////////////////////
 
