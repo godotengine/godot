@@ -1579,9 +1579,6 @@ msgstr "(väärtus)"
 msgid "Editor"
 msgstr "Redaktor"
 
-msgid "Open in File Manager"
-msgstr "Ava failihalduris"
-
 msgid "Class"
 msgstr "Klass"
 

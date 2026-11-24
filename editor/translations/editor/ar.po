@@ -3244,9 +3244,6 @@ msgstr "لا يوجد وصف متاح."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "هذه التأشيرة قد تتغير أو تُزال من الإصدارات المقبلة."
 
-msgid "Open in File Manager"
-msgstr "افتح في مدير الملفات"
-
 msgid "This property can only be set in the Inspector."
 msgstr "هذه الخاصية يمكن تعيينها بداخل الفاحص فقط."
 
@@ -4062,13 +4059,6 @@ msgstr ""
 "لا يمكن حفظ فرع يعد جزءًا من مشهد موروث.\n"
 "لحفظ هذا الفرع في المشهد الخاص به، افتح المشهد الأصلي، وانقر بزر الفارة "
 "الأيمن على هذا الفرع، ثم حدد \"حفظ الفرع مشهدًا\"."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"تمكين \"تحميله عنصرًا مناوبًا\" سوف يعطل \"فروع قابلة للتعديل\" ويُعيد كافة "
-"خصائص العقدة إلى وضعها الافتراضي."
 
 msgid "Make Local"
 msgstr "اجعله محلياً"

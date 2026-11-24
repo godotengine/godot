@@ -84,13 +84,14 @@
 # hw <hywoo325@gmail.com>, 2026.
 # Snow Furfox <furfoxsnow6@gmail.com>, 2026.
 # Myeongjin <ara@users.noreply.hosted.weblate.org>, 2026.
+# Baby Jung <salvation77990@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-11-12 15:46+0000\n"
-"Last-Translator: Myeongjin <ara@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-11-22 06:51+0000\n"
+"Last-Translator: Baby Jung <salvation77990@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -98,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.11.2.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "확인"
@@ -866,6 +867,9 @@ msgstr "블렌드"
 msgid "Open"
 msgstr "열기"
 
+msgid "Open in editor."
+msgstr "편집기에서 엽니다."
+
 msgid "Index"
 msgstr "인덱스"
 
@@ -881,6 +885,9 @@ msgstr ""
 
 msgid "Position"
 msgstr "위치"
+
+msgid "Blend Point Position"
+msgstr "블렌드 점 위치"
 
 msgid "Min"
 msgstr "최소"
@@ -938,6 +945,12 @@ msgstr "격자 X 단계"
 
 msgid "Grid Y Step"
 msgstr "격자 Y 단계"
+
+msgid "Blend Point X Position"
+msgstr "블렌드 점 X 위치"
+
+msgid "Blend Point Y Position"
+msgstr "블렌드 점 Y 위치"
 
 msgid "Max Y"
 msgstr "최대 Y"
@@ -1469,6 +1482,12 @@ msgstr "\"끝\"으로 전환할 수 없습니다!"
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "\"%s\"에서 \"%s\"(으)로 전환이 이미 존재합니다!"
 
+msgid "Play/Travel to %s."
+msgstr "%s(으)로 재생/이동합니다."
+
+msgid "Open %s in editor."
+msgstr "%s을(를) 편집기에서 엽니다."
+
 msgid "Add Node and Transition"
 msgstr "노드와 전환 추가"
 
@@ -1750,11 +1769,17 @@ msgstr "선형"
 msgid "Cubic"
 msgstr "입방형"
 
+msgid "Makima"
+msgstr "마키마"
+
 msgid "Linear Angle"
 msgstr "선형 각"
 
 msgid "Cubic Angle"
 msgstr "입방형 각"
+
+msgid "Makima Angle"
+msgstr "마키마 각"
 
 msgid "Clamp Loop Interp"
 msgstr "루프 보간 고정"
@@ -2040,6 +2065,19 @@ msgstr ""
 "선택하세요.\n"
 "반복을 포함한 일부 옵션은 여기서 사용 가능합니다. 커스텀 트랙을 추가하려면,\n"
 "\"파일으로 저장\"과 \"커스텀 지정 트랙 유지\"를 활성화하세요."
+
+msgid ""
+"Some AnimationPlayerEditor options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic, and doesn't have the "
+"root motion track. Furthermore, the original node is temporarily inactive."
+msgstr ""
+"일부 AnimationPlayerEditor 옵션은 미리보기용 더미 AnimationPlayer이기 때문에 "
+"비활성화되어 있습니다.\n"
+"\n"
+"더미 플레이어는 강제로 활성 상태이고, 비결정적이며, 루트 모션 트랙을 가지지 않"
+"습니다. 또한, 원본 노드는 일시적으로 비활성 상태가 됩니다."
 
 msgid "AnimationPlayer is inactive. The playback will not be processed."
 msgstr "AnimationPlayer가 비활성 상태입니다. 재생을 진행하지 않습니다."
@@ -2421,6 +2459,18 @@ msgstr "애셋 세부 사항 열기"
 msgid "No changelog provided for this version."
 msgstr "이 버전을 위해 제공된 변경이력이 없습니다."
 
+msgid "This release is only compatible with Godot versions between %s and %s."
+msgstr "이 릴리스는 Godot 버전 %s 및 %s 사이만 호환됩니다."
+
+msgid "This release is only compatible with Godot version %s and newer."
+msgstr "이 릴리스는 Godot 버전 %s 이상만 호환됩니다."
+
+msgid "This release is only compatible with Godot version %s and older."
+msgstr "이 릴리스는 Godot 버전 %s 이하만 호환됩니다."
+
+msgid "Using it may result in errors and crashes."
+msgstr "이를 사용하면 오류와 충돌이 발생할 수 있습니다."
+
 msgid "Loading..."
 msgstr "불러오는 중..."
 
@@ -2722,6 +2772,9 @@ msgstr "설치 전 애셋 구성"
 msgid "Install"
 msgstr "설치"
 
+msgid "Dynamic"
+msgstr "동적"
+
 msgid "Audio Preview Play/Pause"
 msgstr "오디오 미리보기 재생/일시 정지"
 
@@ -2844,6 +2897,12 @@ msgstr "오디오 독 토글"
 
 msgid "Layout:"
 msgstr "레이아웃:"
+
+msgid "New Layout..."
+msgstr "새 레이아웃..."
+
+msgid "Load Default Layout"
+msgstr "디폴트 레이아웃 불러오기"
 
 msgid "Save As..."
 msgstr "다른 이름으로 저장..."
@@ -3477,6 +3536,9 @@ msgstr "아이콘"
 msgid "Styles"
 msgstr "스타일"
 
+msgid "Sounds"
+msgstr "소리"
+
 msgid "This theme property may be changed or removed in future versions."
 msgstr "이 테마 속성은 향후 버전에서 변경되거나 제거될 수 있습니다."
 
@@ -3560,6 +3622,9 @@ msgstr "편집기"
 msgid "Click to copy."
 msgstr "클릭하여 복사합니다."
 
+msgid "Tip:"
+msgstr "팁:"
+
 msgid "Click to open in browser."
 msgstr "클릭하여 브라우저에서 엽니다."
 
@@ -3568,9 +3633,6 @@ msgstr "사용 가능한 설명이 없습니다."
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr "이 어노테이션은 향후 버전에서 변경되거나 제거될 수 있습니다."
-
-msgid "Open in File Manager"
-msgstr "파일 매니저에서 열기"
 
 msgid "This property can only be set in the Inspector."
 msgstr "이 속성은 인스펙터에서만 설정할 수 있습니다."
@@ -4465,20 +4527,6 @@ msgstr ""
 "이 가지를 자체 씬 안에 저장하려면 원본 씬을 열고 이 가지를 오른쪽 클릭한 다음 "
 "\"가지를 씬으로 저장\"을 선택하세요."
 
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"\"편집 가능한 자식\"이 비활성화되면 이 하위 씬의 자손 노드의 모든 속성이 디폴"
-"트로 복원됩니다."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"\"자리표시자로 불러오기\"를 활성화하면 \"편집할 수 있는 자식\"이 비활성화되"
-"고, 그러면 노드의 모든 속성이 디폴트로 복원됩니다."
-
 msgid "Make Local"
 msgstr "로컬로 만들기"
 
@@ -4864,6 +4912,15 @@ msgstr "편집기 메시지"
 
 msgid "Toggle visibility of editor messages."
 msgstr "편집기 메시지의 표시 여부를 토글합니다."
+
+msgid ""
+"Remove the \"%s\" directory manually, or enable automatic deletion in the "
+"Editor Settings (Export > Android > Build > Automatically Delete Build "
+"Directory) before attempting this operation again."
+msgstr ""
+"이 작업을 다시 시도하기 전에 \"%s\" 디렉토리를 수동으로 삭제하거나, 편집기 설"
+"정(Export > Android > Build > Automatically Delete Build Directory)에서 자동 "
+"삭제 기능을 활성화하십시오."
 
 msgid ""
 "This will set up your project for gradle Android builds by installing the "
@@ -5558,6 +5615,25 @@ msgstr "집중 모드를 토글합니다."
 msgid "Copy Text"
 msgstr "텍스트 복사"
 
+msgid ""
+"Clear all caches for the current project, including the cache for imported "
+"assets, exported assets, shaders, UIDs, scripts, and scene groups. New caches "
+"will be built upon restarting or exporting the project.\n"
+"\n"
+"Note that clearing the cache is almost always a workaround for a bug. If you "
+"can consistently reproduce the invalid cache or unexpected behavior that is "
+"solved by clearing the cache, please report this bug (\"Help > Report a "
+"Bug\") with reproduction steps."
+msgstr ""
+"현재 프로젝트의 모든 캐시를 비웁니다. 여기에는 가져온 에셋, 내보낸 에셋, 셰이"
+"더, UID, 스크립트, 씬 그룹과 관련된 캐시가 포함됩니다. 프로젝트를 다시 시작하"
+"거나 내보낼 때 새로운 캐시가 생성됩니다.\n"
+"\n"
+"캐시 비우기는 대부분의 경우 버그를 해결하기 위한 임시 방편이라는 점에 유의하십"
+"시오. 캐시를 비워 해결되는 잘못된 캐시 상태나 예기치 않은 동작을 일관되게 재현"
+"할 수 있다면, '도움말 > 버그 보고(Help > Report a Bug)'를 통해 재현 단계와 함"
+"께 해당 버그를 보고해 주시기 바랍니다."
+
 msgid "Command Palette"
 msgstr "명령 팔레트"
 
@@ -5800,6 +5876,9 @@ msgstr "프로젝트 설정 열기"
 
 msgid "Warning!"
 msgstr "경고!"
+
+msgid "Enable online mode for Android SDK setup?"
+msgstr "Android SDK 설정 시 온라인 모드를 활성화할까요?"
 
 msgid "Invalid Java SDK path in Editor Settings."
 msgstr "편집기 설정에서 잘못된 Jav SDK 경로입니다."
@@ -8634,9 +8713,6 @@ msgstr "오류: 프로젝트가 파일시스템에서 누락되었습니다."
 
 msgid "Toggle Favorite"
 msgstr "즐겨찾기 토글"
-
-msgid "Open in file manager"
-msgstr "파일 매니저에서 열기"
 
 msgid "Last edited timestamp"
 msgstr "마지막 편집 타임스탬프"

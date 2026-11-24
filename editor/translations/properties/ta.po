@@ -443,6 +443,9 @@ msgstr "தொகுதி பொத்தான்களை மீறவும�
 msgid "Disable Scroll Deadzone"
 msgstr "சுருள் டெட்சோனை முடக்கு"
 
+msgid "Windows"
+msgstr "சாளரங்கள்"
+
 msgid "Navigation"
 msgstr "வானோடல்"
 
@@ -1114,6 +1117,31 @@ msgstr "ச்லைடரை மறைக்கவும்"
 
 msgid "Editing Integer"
 msgstr "முழு எண்ணைத் திருத்துதல்"
+
+msgid "Font Uneditable Color"
+msgstr "எழுத்துரு படிக்காத நிறம்"
+
+msgid "Font"
+msgstr "எழுத்துரு"
+
+msgid "Font Size"
+msgstr "எழுத்துரு அளவு"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "சாதாரண"
+
+msgid "Focus"
+msgstr "குவி"
+
+msgid "Updown"
+msgstr "அப்டோடவுன்"
+
+msgid "Grabber Highlight"
+msgstr "கிராபர் சிறப்பம்சமாக"
+
+msgid "Grabber"
+msgstr "கிராப்"
 
 msgid "Zoom"
 msgstr "பெரிதாக்கு"
@@ -3041,9 +3069,6 @@ msgstr "நிறுத்தத்தில் நடவடிக்கை"
 
 msgid "Output"
 msgstr "வெளியீடு"
-
-msgid "Font Size"
-msgstr "எழுத்துரு அளவு"
 
 msgid "Always Clear Output on Play"
 msgstr "விளையாட்டில் எப்போதும் வெளியீட்டை அழிக்கவும்"
@@ -5757,9 +5782,6 @@ msgstr "Mescripten பூல் அளவு"
 msgid "Godot Pool Size"
 msgstr "கோடோட் பூல் அளவு"
 
-msgid "Windows"
-msgstr "சாளரங்கள்"
-
 msgid "signtool"
 msgstr "சிக்ன்டூல்"
 
@@ -6992,9 +7014,6 @@ msgstr "உரை"
 msgid "Outline Modulate"
 msgstr "அவுட்லைன் மாடுலேட்"
 
-msgid "Font"
-msgstr "எழுத்துரு"
-
 msgid "Horizontal Alignment"
 msgstr "கிடைமட்ட சீரமைப்பு"
 
@@ -7991,8 +8010,119 @@ msgstr "செங்குத்து படவுரு சீரமைப்�
 msgid "Expand Icon"
 msgstr "ஐகானை விரிவாக்குங்கள்"
 
+msgid "Normal Mirrored"
+msgstr "சாதாரண பிரதிபலித்தது"
+
+msgid "Pressed Mirrored"
+msgstr "அழுத்தப்பட்ட பிரதிபலித்தது"
+
+msgid "Hover"
+msgstr "வட்டமானது"
+
+msgid "Hover Mirrored"
+msgstr "ஓவர் பிரதிபலித்தது"
+
+msgid "Hover Pressed"
+msgstr "ஓவர் அழுத்தியது"
+
+msgid "Disabled Mirrored"
+msgstr "முடக்கப்பட்ட பிரதிபலித்தது"
+
+msgid "Font Focus Color"
+msgstr "எழுத்துரு கவனம் நிறம்"
+
+msgid "Font Pressed Color"
+msgstr "எழுத்துரு அழுத்தும் நிறம்"
+
+msgid "Font Hover Color"
+msgstr "எழுத்துரு வெப்ப வண்ணம்"
+
+msgid "Font Hover Pressed Color"
+msgstr "எழுத்துரு ஓவர் அழுத்தப்பட்ட வண்ணம்"
+
+msgid "Font Disabled Color"
+msgstr "எழுத்துரு முடக்கப்பட்ட நிறம்"
+
+msgid "Font Outline Color"
+msgstr "எழுத்துரு அவுட்லைன் நிறம்"
+
+msgid "Icon Normal Color"
+msgstr "படவுரு சாதாரண நிறம்"
+
+msgid "Icon Focus Color"
+msgstr "படவுரு கவனம் நிறம்"
+
+msgid "Icon Pressed Color"
+msgstr "படவுரு அழுத்தப்பட்ட வண்ணம்"
+
+msgid "Icon Hover Color"
+msgstr "படவுரு ஓவர் நிறம்"
+
+msgid "Icon Hover Pressed Color"
+msgstr "படவுரு ஓவர் அழுத்திய வண்ணம்"
+
+msgid "Icon Disabled Color"
+msgstr "படவுரு முடக்கப்பட்ட வண்ணம்"
+
+msgid "H Separation"
+msgstr "H பிரிப்பு"
+
+msgid "Icon Max Width"
+msgstr "படவுரு அதிகபட்ச அகலம்"
+
+msgid "Align to Largest Stylebox"
+msgstr "மிகப்பெரிய பாணி பாக்சுக்கு சீரமைக்கவும்"
+
 msgid "Use Top Left"
 msgstr "மேல் இடது பயன்படுத்தவும்"
+
+msgid "Check V Offset"
+msgstr "V ஆஃப்செட் சரிபார்க்கவும்"
+
+msgid "Unchecked"
+msgstr "தேர்வு செய்யப்படாதது"
+
+msgid "Radio Checked"
+msgstr "ரேடியோ சரிபார்க்கப்பட்டது"
+
+msgid "Radio Unchecked"
+msgstr "வானொலி தேர்வு செய்யப்படவில்லை"
+
+msgid "Checked Disabled"
+msgstr "சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
+
+msgid "Unchecked Disabled"
+msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர்"
+
+msgid "Radio Checked Disabled"
+msgstr "ரேடியோ சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
+
+msgid "Radio Unchecked Disabled"
+msgstr "ரேடியோ தேர்வு செய்யப்படாத முடக்கப்பட்டுள்ளது"
+
+msgid "Checkbox Checked Color"
+msgstr "தேர்வுப்பெட்டி சரிபார்க்கப்பட்ட வண்ணம்"
+
+msgid "Checkbox Unchecked Color"
+msgstr "தேர்வுப்பெட்டி சரிபார்க்கப்படாத வண்ணம்"
+
+msgid "Checked Mirrored"
+msgstr "சரிபார்க்கப்பட்டது பிரதிபலித்தது"
+
+msgid "Unchecked Mirrored"
+msgstr "தேர்வு செய்யப்படாத பிரதிபலித்தது"
+
+msgid "Checked Disabled Mirrored"
+msgstr "சரிபார்க்கப்பட்ட முடக்கப்பட்ட பிரதிபலித்தது"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர் பிரதிபலிக்கப்பட்டது"
+
+msgid "Button Checked Color"
+msgstr "பொத்தான் சரிபார்க்கப்பட்ட வண்ணம்"
+
+msgid "Button Unchecked Color"
+msgstr "பொத்தானை சரிபார்க்கப்படாத வண்ணம்"
 
 msgid "Symbol Lookup on Click"
 msgstr "கிளிக்கில் குறியீட்டு தேடல்"
@@ -8060,6 +8190,81 @@ msgstr "பொருத்தத்தை முன்னிலைப்பட�
 msgid "Pairs"
 msgstr "சோடிகள்"
 
+msgid "Code Folding Color"
+msgstr "குறியீடு மடிப்பு நிறம்"
+
+msgid "Folded Code Region Color"
+msgstr "மடிந்த குறியீடு பகுதி நிறம்"
+
+msgid "Can Fold"
+msgstr "மடிக்க முடியும்"
+
+msgid "Folded"
+msgstr "மடிந்தது"
+
+msgid "Can Fold Code Region"
+msgstr "குறியீடு பகுதியை மடிக்க முடியும்"
+
+msgid "Folded Code Region"
+msgstr "மடிந்த குறியீடு பகுதி"
+
+msgid "Folded EOL Icon"
+msgstr "மடிந்த EOL படவுரு"
+
+msgid "Completion Color BG"
+msgstr "நிறைவு வண்ணம் பின்னணி"
+
+msgid "Breakpoint Color"
+msgstr "பிரேக் பாயிண்ட் நிறம்"
+
+msgid "Breakpoint"
+msgstr "பிரேக் பாயிண்ட்"
+
+msgid "Bookmark Color"
+msgstr "புக்மார்க்கு நிறம்"
+
+msgid "Bookmark"
+msgstr "புத்தககுறி"
+
+msgid "Executing Line Color"
+msgstr "வரி வண்ணத்தை செயல்படுத்துகிறது"
+
+msgid "Executing Line"
+msgstr "வரி செயல்படுத்துகிறது"
+
+msgid "Line Number Color"
+msgstr "வரி எண் நிறம்"
+
+msgid "Completion Max Width"
+msgstr "நிறைவு அதிகபட்ச அகலம்"
+
+msgid "Completion Lines"
+msgstr "நிறைவு கோடுகள்"
+
+msgid "Completion Scroll Width"
+msgstr "நிறைவு உருள் அகலம்"
+
+msgid "Completion Scroll Color"
+msgstr "நிறைவு உருள் நிறம்"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "நிறைவு சுருள் வண்ணம்"
+
+msgid "Completion Background Color"
+msgstr "நிறைவு பின்னணி நிறம்"
+
+msgid "Completion Selected Color"
+msgstr "தேர்ந்தெடுக்கப்பட்ட வண்ணம் நிறைவு"
+
+msgid "Completion Existing Color"
+msgstr "இருக்கும் வண்ணம் நிறைவு"
+
+msgid "Line Length Guideline Color"
+msgstr "வரி நீள வழிகாட்டுதல் நிறம்"
+
+msgid "Brace Mismatch Color"
+msgstr "அடைப்புக்குறி பொருந்தாத நிறம்"
+
 msgid "Edit Alpha"
 msgstr "ஆல்பாவைத் திருத்து"
 
@@ -8095,6 +8300,99 @@ msgstr "ஃச் தெரியும்"
 
 msgid "Presets Visible"
 msgstr "முன்னமைவுகள் தெரியும்"
+
+msgid "Label Width"
+msgstr "சிட்டை அகலம்"
+
+msgid "SV Width"
+msgstr "எச்.வி அகலம்"
+
+msgid "SV Height"
+msgstr "எச்.வி உயரம்"
+
+msgid "H Width"
+msgstr "எச் அகலம்"
+
+msgid "Center Slider Grabbers"
+msgstr "சென்டர் ச்லைடர் கிராப்பர்கள்"
+
+msgid "Sample Focus"
+msgstr "மாதிரி கவனம்"
+
+msgid "Picker Focus Rectangle"
+msgstr "பிக்கர் கவனம் செவ்வகம்"
+
+msgid "Picker Focus Circle"
+msgstr "பிக்கர் கவனம் வட்டம்"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "கர்சர் நிறத்தைத் திருத்தவில்லை"
+
+msgid "Menu Option"
+msgstr "பட்டியல் விருப்பம்"
+
+msgid "Screen Picker"
+msgstr "திரை பிக்கர்"
+
+msgid "Expanded Arrow"
+msgstr "விரிவாக்கப்பட்ட அம்பு"
+
+msgid "Folded Arrow"
+msgstr "மடிந்த அம்பு"
+
+msgid "Add Preset"
+msgstr "முன்னமைவு சேர்க்கவும்"
+
+msgid "Shape Rect"
+msgstr "வடிவ ரெட்"
+
+msgid "Shape Rect Wheel"
+msgstr "வடிவ செவ்வக சக்கரம்"
+
+msgid "Shape Circle"
+msgstr "வடிவ வட்டம்"
+
+msgid "Bar Arrow"
+msgstr "பார் அம்பு"
+
+msgid "Sample BG"
+msgstr "மாதிரி பின்னணி"
+
+msgid "Sample Revert"
+msgstr "மாதிரி மாற்றியமைத்தல்"
+
+msgid "Overbright Indicator"
+msgstr "ஓவர் பிரைட் காட்டி"
+
+msgid "Picker Cursor"
+msgstr "பிக்கர் கர்சர்"
+
+msgid "Picker Cursor BG"
+msgstr "சுட்டி பின்னணி தேர்வி"
+
+msgid "Color Hue"
+msgstr "வண்ண சாயல்"
+
+msgid "Color Script"
+msgstr "வண்ண ச்கிரிப்ட்"
+
+msgid "Tab Unselected"
+msgstr "தாவல் தேர்வு செய்யப்படாதது"
+
+msgid "Tab Selected"
+msgstr "தாவல் தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "BG"
+msgstr "பி.சி."
+
+msgid "Preset FG"
+msgstr "முன்னமைக்கப்பட்ட FG"
+
+msgid "Preset Focus"
+msgstr "முன்னமைக்கப்பட்ட கவனம்"
+
+msgid "Preset BG"
+msgstr "முன்னமைக்கப்பட்ட பின்னணி"
 
 msgid "Theme Overrides"
 msgstr "கருப்பொருள் மேலெழுதும்"
@@ -8152,9 +8450,6 @@ msgstr "உதவிக்குறிப்பு"
 
 msgid "Auto Translate Mode"
 msgstr "ஆட்டோ மொழிபெயர்ப்பு பயன்முறை"
-
-msgid "Focus"
-msgstr "குவி"
 
 msgid "Neighbor Left"
 msgstr "அண்டை இடது"
@@ -8219,6 +8514,9 @@ msgstr "தப்பிக்க மூடு"
 msgid "Autowrap"
 msgstr "தன்னியக்கவாக்கம்"
 
+msgid "Buttons Separation"
+msgstr "பொத்தான்கள் பிரித்தல்"
+
 msgid "Cancel Button Text"
 msgstr "பொத்தான் உரையை ரத்துசெய்"
 
@@ -8273,14 +8571,74 @@ msgstr "மேலெழுத முன்னறிவிப்பு இயக�
 msgid "Deleting Enabled"
 msgstr "நீக்குதல் இயக்கப்பட்டது"
 
+msgid "Parent Folder"
+msgstr "பெற்றோர் கோப்புறை"
+
+msgid "Forward Folder"
+msgstr "முன்னோக்கி கோப்புறை"
+
+msgid "Back Folder"
+msgstr "பின் கோப்புறை"
+
+msgid "Reload"
+msgstr "ஏற்றவும்"
+
+msgid "Favorite"
+msgstr "பிடித்த"
+
+msgid "Toggle Hidden"
+msgstr "மறைத்து வைக்கவும்"
+
+msgid "Folder"
+msgstr "கோப்புறை"
+
+msgid "Toggle Filename Filter"
+msgstr "கோப்பு பெயர் வடிப்பானை மாற்றவும்"
+
+msgid "File"
+msgstr "கோப்பு"
+
+msgid "Create Folder"
+msgstr "கோப்புறையை உருவாக்கவும்"
+
+msgid "Sort"
+msgstr "வரிசைப்படுத்து"
+
+msgid "Favorite Up"
+msgstr "பிடித்த"
+
+msgid "Favorite Down"
+msgstr "பிடித்த கீழே"
+
+msgid "Thumbnail Mode"
+msgstr "சிறு பயன்முறை"
+
+msgid "List Mode"
+msgstr "பட்டியல் பயன்முறை"
+
+msgid "File Thumbnail"
+msgstr "சிறுபடம் கோப்பு"
+
+msgid "Folder Thumbnail"
+msgstr "கோப்புறை சிறுபடம்"
+
+msgid "Folder Icon Color"
+msgstr "கோப்புறை படவுரு நிறம்"
+
+msgid "File Icon Color"
+msgstr "கோப்பு படவுரு நிறம்"
+
+msgid "File Disabled Color"
+msgstr "கோப்பு முடக்கப்பட்ட வண்ணம்"
+
 msgid "Last Wrap Alignment"
 msgstr "கடைசி மடக்கு சீரமைப்பு"
 
 msgid "Reverse Fill"
 msgstr "தலைகீழ் நிரப்பு"
 
-msgid "Folded"
-msgstr "மடிந்தது"
+msgid "V Separation"
+msgstr "வி பிரிப்பு"
 
 msgid "Title Alignment"
 msgstr "தலைப்பு சீரமைப்பு"
@@ -8297,8 +8655,38 @@ msgstr "மடிக்கக்கூடிய குழு"
 msgid "Title Text Direction"
 msgstr "தலைப்பு உரை திசை"
 
+msgid "Title Panel"
+msgstr "தலைப்பு குழு"
+
+msgid "Title Hover Panel"
+msgstr "தலைப்பு ஓவர் பேனல்"
+
+msgid "Title Collapsed Panel"
+msgstr "தலைப்பு சரிந்த குழு"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "தலைப்பு சரிந்த ஓவர் பேனல்"
+
+msgid "Hover Font Color"
+msgstr "எழுத்துரு வண்ணத்தை உயர்த்தவும்"
+
+msgid "Collapsed Font Color"
+msgstr "சரிந்த எழுத்துரு நிறம்"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "விரிவாக்கப்பட்ட அம்பு பிரதிபலித்தது"
+
+msgid "Folded Arrow Mirrored"
+msgstr "மடிந்த அம்பு பிரதிபலித்தது"
+
 msgid "Allow Folding All"
 msgstr "அனைத்தையும் மடிப்பதை அனுமதிக்கவும்"
+
+msgid "Resizer"
+msgstr "மறுபரிசீலனை"
+
+msgid "Resizer Color"
+msgstr "மறுஅளவிடுதல் நிறம்"
 
 msgid "Show Grid"
 msgstr "கட்டத்தைக் காட்டு"
@@ -8357,6 +8745,63 @@ msgstr "மினிமாப் பொத்தானைக் காட்ட�
 msgid "Show Arrange Button"
 msgstr "ஏற்பாடு பொத்தானைக் காட்டு"
 
+msgid "Panel Focus"
+msgstr "குழு கவனம்"
+
+msgid "Grid Major"
+msgstr "கட்டம் மேசர்"
+
+msgid "Grid Minor"
+msgstr "கட்டம் மைனர்"
+
+msgid "Activity"
+msgstr "செய்கைப்பாடு"
+
+msgid "Connection Hover Tint Color"
+msgstr "இணைப்பு ஓவர் சாயல் நிறம்"
+
+msgid "Connection Hover Thickness"
+msgstr "இணைப்பு ஓவர் தடிமன்"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "இணைப்பு செல்லுபடியாகும் இலக்கு நிறம்"
+
+msgid "Connection Rim Color"
+msgstr "இணைப்பு விளிம்பு நிறம்"
+
+msgid "Selection Fill"
+msgstr "தேர்வு நிரப்பு"
+
+msgid "Selection Stroke"
+msgstr "தேர்வு பக்கவாதம்"
+
+msgid "Menu Panel"
+msgstr "பட்டி குழு"
+
+msgid "Zoom In"
+msgstr "பெரிதாக்கு"
+
+msgid "Zoom Out"
+msgstr "சிறிதாக்கு"
+
+msgid "Zoom Reset"
+msgstr "பெரிதாக்கு மீட்டமைப்பு"
+
+msgid "Snapping Toggle"
+msgstr "தடுமாறும்"
+
+msgid "Grid Toggle"
+msgstr "கட்டம் மாற்றவும்"
+
+msgid "Minimap Toggle"
+msgstr "மினிமாப் மாற்று"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "துறைமுகம் ஆட்சோன் உள் அளவு"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "துறைமுகம் ஆட்சோன் வெளிப்புற அளவு"
+
 msgid "Draggable"
 msgstr "இழுக்கக்கூடிய"
 
@@ -8375,11 +8820,29 @@ msgstr "ஆட்டோசிங்க் விளிம்பு"
 msgid "Drag Margin"
 msgstr "இழுவை விளிம்பு"
 
+msgid "Panel Selected"
+msgstr "குழு தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Titlebar"
+msgstr "தலைப்பு"
+
+msgid "Titlebar Selected"
+msgstr "Titlebar தேர்ந்தெடுக்கப்பட்டது"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "தவறான இணைப்பு வகையை புறக்கணிக்கவும்"
 
 msgid "Slots Focus Mode"
 msgstr "ச்லாட்டுகள் கவனம் பயன்முறை"
+
+msgid "Slot"
+msgstr "ச்லாட்"
+
+msgid "Slot Selected"
+msgstr "ச்லாட் தேர்ந்தெடுக்கப்பட்டது"
+
+msgid "Port H Offset"
+msgstr "துறைமுகம் எச் ஆஃப்செட்"
 
 msgid "Select Mode"
 msgstr "பயன்முறையைத் தேர்ந்தெடுக்கவும்"
@@ -8432,6 +8895,60 @@ msgstr "படவுரு அளவு"
 msgid "Fixed Icon Size"
 msgstr "நிலையான படவுரு அளவு"
 
+msgid "Scrollbar Margin Left"
+msgstr "சுருள் விளிம்பு இடது"
+
+msgid "Scrollbar Margin Top"
+msgstr "சுருள் விளிம்பு மேல்"
+
+msgid "Scrollbar Margin Right"
+msgstr "சுருள் விளிம்பு வலது"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "சுருள் விளிம்பு கீழே"
+
+msgid "Scrollbar H Separation"
+msgstr "சுருள் எச் பிரிப்பு"
+
+msgid "Font Hovered Color"
+msgstr "எழுத்துரு வண்ணம்"
+
+msgid "Font Hovered Selected Color"
+msgstr "எழுத்துரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
+
+msgid "Font Selected Color"
+msgstr "எழுத்துரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
+
+msgid "Scroll Hint"
+msgstr "ச்க்ரோல் குறிப்பு"
+
+msgid "Scroll Hint Color"
+msgstr "ச்க்ரோல் குறிப்பு நிறம்"
+
+msgid "Icon Margin"
+msgstr "படவுரு விளிம்பு"
+
+msgid "Hovered"
+msgstr "வட்டமிட்டது"
+
+msgid "Hovered Selected"
+msgstr "தேர்ந்தெடுக்கப்பட்ட"
+
+msgid "Hovered Selected Focus"
+msgstr "தேர்ந்தெடுக்கப்பட்ட கவனம்"
+
+msgid "Selected Focus"
+msgstr "தேர்ந்தெடுக்கப்பட்ட கவனம்"
+
+msgid "Cursor Unfocused"
+msgstr "கர்சர் கவனம் செலுத்தவில்லை"
+
+msgid "Cursor"
+msgstr "கர்சர்"
+
+msgid "Guide Color"
+msgstr "வழிகாட்டி நிறம்"
+
 msgid "Label Settings"
 msgstr "சிட்டை அமைப்புகள்"
 
@@ -8461,6 +8978,15 @@ msgstr "புலப்படும் எழுத்துக்கள் ந�
 
 msgid "Visible Ratio"
 msgstr "புலப்படும் விகிதம்"
+
+msgid "Paragraph Spacing"
+msgstr "பத்தி இடைவெளி"
+
+msgid "Font Shadow Color"
+msgstr "எழுத்துரு நிழல் நிறம்"
+
+msgid "Shadow Outline Size"
+msgstr "நிழல் அவுட்லைன் அளவு"
 
 msgid "Placeholder Text"
 msgstr "ஒதுக்கிட உரை"
@@ -8540,11 +9066,50 @@ msgstr "படவுரு விரிவாக்க பயன்முறை"
 msgid "Right Icon Scale"
 msgstr "வலது படவுரு அளவுகோல்"
 
+msgid "Font Placeholder Color"
+msgstr "எழுத்துரு பிளேச்ஓல்டர் நிறம்"
+
+msgid "Caret Width"
+msgstr "கேரட் அகலம்"
+
+msgid "Caret Color"
+msgstr "கேரட் நிறம்"
+
+msgid "Minimum Character Width"
+msgstr "குறைந்தபட்ச எழுத்து அகலம்"
+
+msgid "Selection Color"
+msgstr "தேர்வு நிறம்"
+
+msgid "Clear"
+msgstr "தெளிவான"
+
+msgid "Clear Button Color"
+msgstr "பொத்தானை அழிக்கவும்"
+
+msgid "Clear Button Color Pressed"
+msgstr "பொத்தான் வண்ணம் அழுத்தியது"
+
 msgid "Underline"
 msgstr "அடிக்கோடிட்டு"
 
 msgid "URI"
 msgstr "யூரி"
+
+msgid "Underline Spacing"
+msgstr "இடைவெளியை அடிக்கோடிட்டுக் காட்டுங்கள்"
+
+msgid "Margin Left"
+msgstr "விளிம்பு இடது"
+
+msgid "Margin Top"
+msgstr "விளிம்பு மேல்"
+
+msgid "Margin Right"
+msgstr "விளிம்பு வலது"
+
+msgid "Margin Bottom"
+msgstr "விளிம்பு கீழே"
 
 msgid "Start Index"
 msgstr "தொடக்க அட்டவணை"
@@ -8570,6 +9135,15 @@ msgstr "அச்சு நீட்சி"
 msgid "Fit to Longest Item"
 msgstr "நீண்ட உருப்படிக்கு பொருந்தும்"
 
+msgid "Arrow"
+msgstr "அம்பு"
+
+msgid "Arrow Margin"
+msgstr "அம்பு விளிம்பு"
+
+msgid "Modulate Arrow"
+msgstr "அம்புக்குறியை மாற்றியமைக்கவும்"
+
 msgid "Hide on Item Selection"
 msgstr "உருப்படி தேர்வில் மறைக்கவும்"
 
@@ -8594,17 +9168,65 @@ msgstr "சுருக்க உயரம்"
 msgid "Shrink Width"
 msgstr "அகலம் சுருக்கவும்"
 
+msgid "Separator"
+msgstr "பிரிப்பான்"
+
+msgid "Labeled Separator Left"
+msgstr "பெயரிடப்பட்ட பிரிப்பான் இடது"
+
+msgid "Labeled Separator Right"
+msgstr "பிரிப்பான் பெயரிடப்பட்டது"
+
+msgid "Item Start Padding"
+msgstr "பொருள் தொடக்க திணிப்பு"
+
+msgid "Item End Padding"
+msgstr "உருப்படி முடிவு திணிப்பு"
+
+msgid "Gutter Compact"
+msgstr "குட்டர் சிறிய"
+
+msgid "Indeterminate"
+msgstr "உறுதியற்ற"
+
+msgid "Indeterminate Disabled"
+msgstr "ஊனமுற்றோர் உறுதியற்றவர்கள்"
+
+msgid "Submenu"
+msgstr "துணைமெனு"
+
+msgid "Submenu Mirrored"
+msgstr "துணை பிரதிபலித்தது"
+
+msgid "Font Separator"
+msgstr "எழுத்துரு பிரிப்பான்"
+
+msgid "Font Separator Size"
+msgstr "எழுத்துரு பிரிப்பான் அளவு"
+
+msgid "Font Accelerator Color"
+msgstr "எழுத்துரு முடுக்கி நிறம்"
+
+msgid "Font Separator Color"
+msgstr "எழுத்துரு பிரிப்பான் நிறம்"
+
+msgid "Separator Outline Size"
+msgstr "பிரிப்பான் அவுட்லைன் அளவு"
+
+msgid "Font Separator Outline Color"
+msgstr "எழுத்துரு பிரிப்பான் அவுட்லைன் நிறம்"
+
 msgid "Fill Mode"
 msgstr "பயன்முறை நிரப்பு"
 
 msgid "Show Percentage"
 msgstr "சதவீதத்தைக் காட்டு"
 
-msgid "Indeterminate"
-msgstr "உறுதியற்ற"
-
 msgid "Preview Indeterminate"
 msgstr "முன்னோட்டம் உறுதியற்றது"
+
+msgid "Background"
+msgstr "பின்னணி"
 
 msgid "Min Value"
 msgstr "குறைந்தபட்ச மதிப்பு"
@@ -8690,8 +9312,98 @@ msgstr "முன்னேற்றப் பட்டை நேரந்தவ�
 msgid "Text Selection"
 msgstr "உரை தேர்வு"
 
+msgid "Horizontal Rule"
+msgstr "கிடைமட்ட விதி"
+
+msgid "Normal Font"
+msgstr "சாதாரண எழுத்துரு"
+
+msgid "Normal Font Size"
+msgstr "சாதாரண எழுத்துரு அளவு"
+
+msgid "Shadow Offset X"
+msgstr "நிழல் ஆஃப்செட் ஃச்"
+
+msgid "Shadow Offset Y"
+msgstr "நிழல் ஆஃப்செட் ஒய்"
+
+msgid "Bold Font"
+msgstr "தைரியமான எழுத்துரு"
+
+msgid "Bold Font Size"
+msgstr "தைரியமான எழுத்துரு அளவு"
+
+msgid "Bold Italics Font"
+msgstr "தைரியமான சாய்வு எழுத்துரு"
+
+msgid "Bold Italics Font Size"
+msgstr "தைரியமான சாய்வு எழுத்துரு அளவு"
+
+msgid "Italics Font"
+msgstr "சாய்வு எழுத்துரு"
+
+msgid "Italics Font Size"
+msgstr "சாய்வு எழுத்துரு அளவு"
+
+msgid "Mono Font"
+msgstr "மோனோ எழுத்துரு"
+
+msgid "Mono Font Size"
+msgstr "மோனோ எழுத்துரு அளவு"
+
+msgid "Text Highlight H Padding"
+msgstr "உரை சிறப்பம்சமாக எச் திணிப்பு"
+
+msgid "Text Highlight V Padding"
+msgstr "உரை சிறப்பம்சமாக வி திணிப்பு"
+
+msgid "Underline Alpha"
+msgstr "ஆல்பாவை அடிக்கோடிட்டுக் காட்டுங்கள்"
+
+msgid "Strikethrough Alpha"
+msgstr "ச்ட்ரைகெத்ரோ ஆல்பா"
+
+msgid "Table H Separation"
+msgstr "அட்டவணை H பிரிப்பு"
+
+msgid "Table V Separation"
+msgstr "அட்டவணை V பிரிப்பு"
+
+msgid "Table Odd Row BG"
+msgstr "அட்டவணை ஒற்றைப்படை வரிசை பின்னணி"
+
+msgid "Table Even Row BG"
+msgstr "அட்டவணை இரட்டை வரிசை பின்னணி"
+
+msgid "Table Border"
+msgstr "அட்டவணை எல்லை"
+
 msgid "Custom Step"
 msgstr "தனிப்பயன் படி"
+
+msgid "Scroll Focus"
+msgstr "உருள் கவனம்"
+
+msgid "Grabber Pressed"
+msgstr "கிராப்பர் அழுத்தினார்"
+
+msgid "Increment"
+msgstr "அதிகரிப்பு"
+
+msgid "Increment Highlight"
+msgstr "அதிகரிப்பு சிறப்பியல்பு"
+
+msgid "Increment Pressed"
+msgstr "அதிகரிப்பு அழுத்தியது"
+
+msgid "Decrement"
+msgstr "குறைவு"
+
+msgid "Decrement Highlight"
+msgstr "குறைவு சிறப்பியல்பு"
+
+msgid "Decrement Pressed"
+msgstr "குறைவு அழுத்தியது"
 
 msgid "Follow Focus"
 msgstr "கவனம் செலுத்துங்கள்"
@@ -8723,8 +9435,20 @@ msgstr "செங்குத்து உருள் பயன்முறை"
 msgid "Scroll Deadzone"
 msgstr "சுருள் டெட்சோன்"
 
-msgid "Scroll Hint"
-msgstr "ச்க்ரோல் குறிப்பு"
+msgid "Scrollbar V Separation"
+msgstr "சுருள் வி பிரிப்பு"
+
+msgid "Scroll Hint Vertical"
+msgstr "குறிப்பை செங்குத்தாக உருட்டவும்"
+
+msgid "Scroll Hint Horizontal"
+msgstr "குறிப்பை கிடைமட்டமாக உருட்டவும்"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "ச்க்ரோல் குறிப்பு செங்குத்து நிறம்"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "ச்க்ரோல் குறிப்பு கிடைமட்ட வண்ணம்"
 
 msgid "Default Scroll Deadzone"
 msgstr "இயல்புநிலை உருள் டெட்சோன்"
@@ -8741,6 +9465,30 @@ msgstr "எல்லைகளில் உண்ணி"
 msgid "Ticks Position"
 msgstr "உண்ணி நிலை"
 
+msgid "Slider"
+msgstr "ச்லைடர்"
+
+msgid "Grabber Area"
+msgstr "கிராபர் பகுதி"
+
+msgid "Grabber Area Highlight"
+msgstr "கிராபர் பகுதி சிறப்பம்சமாக"
+
+msgid "Grabber Disabled"
+msgstr "கிராப்பர் முடக்கப்பட்டது"
+
+msgid "Tick"
+msgstr "உண்ணி"
+
+msgid "Center Grabber"
+msgstr "மைய கிராப்பர்"
+
+msgid "Grabber Offset"
+msgstr "கிராபர் ஆஃப்செட்"
+
+msgid "Tick Offset"
+msgstr "ஆஃப்செட் டிக்"
+
 msgid "Update on Text Changed"
 msgstr "உரையில் புதுப்பிப்பு மாற்றப்பட்டது"
 
@@ -8752,6 +9500,96 @@ msgstr "தனிப்பயன் அம்பு சுற்று"
 
 msgid "Format"
 msgstr "வடிவம்"
+
+msgid "Buttons Vertical Separation"
+msgstr "பொத்தான்கள் செங்குத்து பிரிப்பு"
+
+msgid "Field and Buttons Separation"
+msgstr "புலம் மற்றும் பொத்தான்கள் பிரித்தல்"
+
+msgid "Buttons Width"
+msgstr "பொத்தான்கள் அகலம்"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "ஐகான்களிலிருந்து குறைந்தபட்ச பொத்தான்கள் அகலத்தை அமைக்கவும்"
+
+msgid "Up"
+msgstr "மேலே"
+
+msgid "Up Hover"
+msgstr "மேலே ஓவர்"
+
+msgid "Up Pressed"
+msgstr "மேலே அழுத்தும்"
+
+msgid "Up Disabled"
+msgstr "ஊனமுற்றது"
+
+msgid "Down"
+msgstr "கீழே"
+
+msgid "Down Hover"
+msgstr "கீழே ஓவர்"
+
+msgid "Down Pressed"
+msgstr "கீழே அழுத்தியது"
+
+msgid "Down Disabled"
+msgstr "கீழே முடக்கப்பட்டது"
+
+msgid "Up Background"
+msgstr "பின்னணி"
+
+msgid "Up Background Hovered"
+msgstr "பின்னணி வரை"
+
+msgid "Up Background Pressed"
+msgstr "பின்னணி அழுத்தியது"
+
+msgid "Up Background Disabled"
+msgstr "பின்னணி முடக்கப்பட்டுள்ளது"
+
+msgid "Down Background"
+msgstr "கீழ் பின்னணி"
+
+msgid "Down Background Hovered"
+msgstr "கீழ் பின்னணி சுற்றியது"
+
+msgid "Down Background Pressed"
+msgstr "கீழ் பின்னணி அழுத்தியது"
+
+msgid "Down Background Disabled"
+msgstr "பேரூர் பின்னணி முடக்கப்பட்டுள்ளது"
+
+msgid "Up Icon Modulate"
+msgstr "அப் படவுரு மாடுலேட்"
+
+msgid "Up Hover Icon Modulate"
+msgstr "மேலே ஓவர் படவுரு மாடுலேட்"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "மேலே அழுத்தப்பட்ட படவுரு மாடுலேட்"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "ஊனமுற்ற படவுரு மாடுலேட்"
+
+msgid "Down Icon Modulate"
+msgstr "பேரூர் படவுரு மாடுலேட்"
+
+msgid "Down Hover Icon Modulate"
+msgstr "பேரூர் ஓவர் படவுரு மாடுலேட்"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "கீழே அழுத்தப்பட்ட படவுரு மாடுலேட்"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "பேரூர் ஊனமுற்ற படவுரு மாடுலேட்"
+
+msgid "Field and Buttons Separator"
+msgstr "புலம் மற்றும் பொத்தான்கள் பிரிப்பான்"
+
+msgid "Up Down Buttons Separator"
+msgstr "கீழே பொத்தான்கள் பிரிப்பான்"
 
 msgid "Split Offsets"
 msgstr "பிரிப்பு ஆஃப்செட்டுகள்"
@@ -8779,6 +9617,39 @@ msgstr "விளிம்பு முடிவு"
 
 msgid "Highlight in Editor"
 msgstr "எடிட்டரில் சிறப்பம்சமாக"
+
+msgid "Touch Dragger Color"
+msgstr "இழுவை வண்ணத்தைத் தொடவும்"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "டச் டிராகர் அழுத்திய வண்ணம்"
+
+msgid "Touch Dragger Hover Color"
+msgstr "இழுவை வட்ட நிறத்தைத் தொடவும்"
+
+msgid "Minimum Grab Thickness"
+msgstr "குறைந்தபட்ச கிராப் தடிமன்"
+
+msgid "Autohide"
+msgstr "ஆட்டோஐட்"
+
+msgid "Touch Dragger"
+msgstr "இழுவை தொடு"
+
+msgid "H Touch Dragger"
+msgstr "H டச் டிராக்சர்"
+
+msgid "V Touch Dragger"
+msgstr "V டச் டிராக்சர்"
+
+msgid "H Grabber"
+msgstr "H கிராப்பர்"
+
+msgid "V Grabber"
+msgstr "வி கிராப்பர்"
+
+msgid "Split Bar Background"
+msgstr "பிளவு பார் பின்னணி"
 
 msgid "Split Offset"
 msgstr "பிளவு ஆஃப்செட்"
@@ -8831,6 +9702,42 @@ msgstr "இயக்கப்பட்ட டெலிக்"
 msgid "Tabs"
 msgstr "தாவல்கள்"
 
+msgid "Hover Switch Wait Msec"
+msgstr "ஓவர் ச்விட்ச் வெயிட் Msec"
+
+msgid "Tab Hovered"
+msgstr "தாவல் வட்டமிட்டது"
+
+msgid "Tab Disabled"
+msgstr "தாவல் முடக்கப்பட்டது"
+
+msgid "Tab Focus"
+msgstr "தாவல் கவனம்"
+
+msgid "Drop Mark"
+msgstr "துளி குறி"
+
+msgid "Drop Mark Color"
+msgstr "குறி நிறத்தை கைவிடுங்கள்"
+
+msgid "Font Unselected Color"
+msgstr "எழுத்துரு தேர்வு செய்யப்படாத வண்ணம்"
+
+msgid "Icon Selected Color"
+msgstr "படவுரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
+
+msgid "Icon Hovered Color"
+msgstr "படவுரு ஓவர் கலர்"
+
+msgid "Icon Unselected Color"
+msgstr "படவுரு தேர்ந்தெடுக்கப்படாத வண்ணம்"
+
+msgid "Close"
+msgstr "மூடு"
+
+msgid "Button Highlight"
+msgstr "பொத்தான் சிறப்பம்சமாக"
+
 msgid "Tabs Position"
 msgstr "தாவல்கள் நிலை"
 
@@ -8842,6 +9749,21 @@ msgstr "குறைந்தபட்ச அளவிற்கு மறைக�
 
 msgid "Tab Focus Mode"
 msgstr "தாவல் கவனம் முறை"
+
+msgid "Side Margin"
+msgstr "பக்க விளிம்பு"
+
+msgid "Tabbar Background"
+msgstr "தபார் பின்னணி"
+
+msgid "Menu"
+msgstr "பட்டியல்"
+
+msgid "Menu Highlight"
+msgstr "பட்டி சிறப்பம்சமாக"
+
+msgid "Icon Separation"
+msgstr "படவுரு பிரிப்பு"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "வெற்று தேர்வு இடைநிலைப்பலகை இயக்கப்பட்டது"
@@ -8888,18 +9810,38 @@ msgstr "கட்டுப்பாட்டு எழுத்துக்க�
 msgid "Spaces"
 msgstr "இடங்கள்"
 
+msgid "Search Result Color"
+msgstr "முடிவு வண்ணத்தைத் தேடுங்கள்"
+
+msgid "Search Result Border Color"
+msgstr "முடிவு எல்லை வண்ணத்தைத் தேடுங்கள்"
+
+msgid "Caret Background Color"
+msgstr "கவனிப்பு பின்னணி நிறம்"
+
+msgid "Tab"
+msgstr "தாவல்"
+
+msgid "Space"
+msgstr "இடைவெளி"
+
+msgid "Font Readonly Color"
+msgstr "எழுத்துரு வாசனி நிறம்"
+
+msgid "Wrap Offset"
+msgstr "மடக்கு ஆஃப்செட்"
+
+msgid "Current Line Color"
+msgstr "தற்போதைய வரி நிறம்"
+
+msgid "Word Highlighted Color"
+msgstr "சொல் சிறப்பம்சமாக வண்ணம்"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "உரை திருத்து செயலற்ற கண்டறிதல் (நொடி)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "உரை திருத்து செயல்தவிர் அதிகபட்ச அளவை செயல்தவிர்க்கவும்"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "சாதாரண"
-
-msgid "Hover"
-msgstr "வட்டமானது"
 
 msgid "Focused"
 msgstr "கவனம் செலுத்தியது"
@@ -8972,6 +9914,114 @@ msgstr "உருட்டல் கிடைமட்ட இயக்கப்�
 
 msgid "Scroll Vertical Enabled"
 msgstr "உருட்டல் செங்குத்து இயக்கப்பட்டது"
+
+msgid "Title Button Font"
+msgstr "தலைப்பு பொத்தான் எழுத்துரு"
+
+msgid "Title Button Font Size"
+msgstr "தலைப்பு பொத்தான் எழுத்துரு அளவு"
+
+msgid "Hovered Dimmed"
+msgstr "மங்கலான"
+
+msgid "Button Hover"
+msgstr "பொத்தான் ஓவர்"
+
+msgid "Arrow Collapsed"
+msgstr "அம்பு சரிந்தது"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "அம்பு சரிந்தது பிரதிபலித்தது"
+
+msgid "Select Arrow"
+msgstr "அம்புக்குறியைத் தேர்ந்தெடுக்கவும்"
+
+msgid "Custom Button"
+msgstr "தனிப்பயன் பொத்தான்"
+
+msgid "Custom Button Hover"
+msgstr "தனிப்பயன் பொத்தான் ஓவர்"
+
+msgid "Custom Button Pressed"
+msgstr "தனிப்பயன் பொத்தான் அழுத்தியது"
+
+msgid "Custom Button Font Highlight"
+msgstr "தனிப்பயன் பொத்தான் எழுத்துரு சிறப்பம்சமாக"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "எழுத்துரு மங்கலான வண்ணம்"
+
+msgid "Drop Position Color"
+msgstr "நிலை வண்ணத்தை கைவிடுங்கள்"
+
+msgid "Inner Item Margin Bottom"
+msgstr "உள் உருப்படி விளிம்பு கீழே"
+
+msgid "Inner Item Margin Left"
+msgstr "உள் உருப்படி விளிம்பு இடது"
+
+msgid "Inner Item Margin Right"
+msgstr "உள் உருப்படி விளிம்பு வலது"
+
+msgid "Inner Item Margin Top"
+msgstr "உள் உருப்படி விளிம்பு மேல்"
+
+msgid "Item Margin"
+msgstr "பொருள் விளிம்பு"
+
+msgid "Check H Separation"
+msgstr "எச் பிரிவை சரிபார்க்கவும்"
+
+msgid "Icon H Separation"
+msgstr "படவுரு எச் பிரிப்பு"
+
+msgid "Button Margin"
+msgstr "பொத்தான் விளிம்பு"
+
+msgid "Draw Guides"
+msgstr "வழிகாட்டிகளை வரையவும்"
+
+msgid "Relationship Line Width"
+msgstr "உறவு வரி அகலம்"
+
+msgid "Parent HL Line Width"
+msgstr "பெற்றோர் எச்.எல் வரி அகலம்"
+
+msgid "Children HL Line Width"
+msgstr "குழந்தைகள் எச்.எல் வரி அகலம்"
+
+msgid "Parent HL Line Margin"
+msgstr "பெற்றோர் எச்.எல் வரி விளிம்பு"
+
+msgid "Relationship Line Color"
+msgstr "உறவு வரி நிறம்"
+
+msgid "Parent HL Line Color"
+msgstr "பெற்றோர் எச்.எல் வரி நிறம்"
+
+msgid "Children HL Line Color"
+msgstr "குழந்தைகள் எச்.எல் வரி நிறம்"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "இழுத்தல் அன்ஃபோல்டு காத்திரு Msec"
+
+msgid "Scroll Border"
+msgstr "உருள் எல்லை"
+
+msgid "Scroll Speed"
+msgstr "உருள் விரைவு"
+
+msgid "Title Button Normal"
+msgstr "தலைப்பு பொத்தான் இயல்பானது"
+
+msgid "Title Button Pressed"
+msgstr "தலைப்பு பொத்தான் அழுத்தியது"
+
+msgid "Title Button Hover"
+msgstr "தலைப்பு பொத்தான் ஓவர்"
+
+msgid "Title Button Color"
+msgstr "தலைப்பு பொத்தான் நிறம்"
 
 msgid "Audio Track"
 msgstr "ஆடியோ டிராக்"
@@ -9180,9 +10230,6 @@ msgstr "பொருள் எடுப்பதை இயக்கவும்"
 msgid "Scene Traversal"
 msgstr "காட்சி பயண"
 
-msgid "Menu"
-msgstr "பட்டியல்"
-
 msgid "Wait Time"
 msgstr "நேரம் காத்திருங்கள்"
 
@@ -9362,6 +10409,39 @@ msgstr "தலைப்பு தெரியும்"
 
 msgid "Content Scale"
 msgstr "உள்ளடக்க அளவு"
+
+msgid "Embedded Border"
+msgstr "உட்பொதிக்கப்பட்ட எல்லை"
+
+msgid "Embedded Unfocused Border"
+msgstr "கவனம் செலுத்தப்படாத எல்லை"
+
+msgid "Title Font"
+msgstr "தலைப்பு எழுத்துரு"
+
+msgid "Title Font Size"
+msgstr "தலைப்பு எழுத்துரு அளவு"
+
+msgid "Title Height"
+msgstr "தலைப்பு உயரம்"
+
+msgid "Title Outline Modulate"
+msgstr "தலைப்பு அவுட்லைன் மாடுலேட்"
+
+msgid "Title Outline Size"
+msgstr "தலைப்பு அவுட்லைன் அளவு"
+
+msgid "Close Pressed"
+msgstr "மூடு அழுத்தியது"
+
+msgid "Close H Offset"
+msgstr "H ஆஃப்செட் மூடு"
+
+msgid "Close V Offset"
+msgstr "மூடு v ஆஃப்செட்"
+
+msgid "Resize Margin"
+msgstr "மறுஅளவிடுதல் விளிம்பு"
 
 msgid "Swap Cancel OK"
 msgstr "இடமாற்று சரி"
@@ -9795,9 +10875,6 @@ msgstr "வளைவு ஒய்"
 msgid "Curve Z"
 msgstr "வளைவு சட்"
 
-msgid "Background"
-msgstr "பின்னணி"
-
 msgid "Canvas Max Layer"
 msgstr "கேன்வாச் அதிகபட்ச அடுக்கு"
 
@@ -10008,9 +11085,6 @@ msgstr "கூடுதல் இடைவெளி"
 msgid "Glyph"
 msgstr "கிளிஃப்"
 
-msgid "Space"
-msgstr "இடைவெளி"
-
 msgid "Baseline"
 msgstr "அடிப்படை"
 
@@ -10043,9 +11117,6 @@ msgstr "HDR ஐப் பயன்படுத்தவும்"
 
 msgid "To"
 msgstr "பெறுநர்"
-
-msgid "Paragraph Spacing"
-msgstr "பத்தி இடைவெளி"
 
 msgid "Stacked Effects"
 msgstr "அடுக்கப்பட்ட விளைவுகள்"
@@ -10556,1083 +11627,6 @@ msgstr "இயல்புநிலை எழுத்துரு"
 
 msgid "Default Font Size"
 msgstr "இயல்புநிலை எழுத்துரு அளவு"
-
-msgid "File"
-msgstr "கோப்பு"
-
-msgid "Font Pressed Color"
-msgstr "எழுத்துரு அழுத்தும் நிறம்"
-
-msgid "Font Hover Color"
-msgstr "எழுத்துரு வெப்ப வண்ணம்"
-
-msgid "Font Focus Color"
-msgstr "எழுத்துரு கவனம் நிறம்"
-
-msgid "Font Hover Pressed Color"
-msgstr "எழுத்துரு ஓவர் அழுத்தப்பட்ட வண்ணம்"
-
-msgid "Font Disabled Color"
-msgstr "எழுத்துரு முடக்கப்பட்ட நிறம்"
-
-msgid "Font Outline Color"
-msgstr "எழுத்துரு அவுட்லைன் நிறம்"
-
-msgid "Icon Normal Color"
-msgstr "படவுரு சாதாரண நிறம்"
-
-msgid "Icon Pressed Color"
-msgstr "படவுரு அழுத்தப்பட்ட வண்ணம்"
-
-msgid "Icon Hover Color"
-msgstr "படவுரு ஓவர் நிறம்"
-
-msgid "Icon Hover Pressed Color"
-msgstr "படவுரு ஓவர் அழுத்திய வண்ணம்"
-
-msgid "Icon Focus Color"
-msgstr "படவுரு கவனம் நிறம்"
-
-msgid "Icon Disabled Color"
-msgstr "படவுரு முடக்கப்பட்ட வண்ணம்"
-
-msgid "H Separation"
-msgstr "H பிரிப்பு"
-
-msgid "Icon Max Width"
-msgstr "படவுரு அதிகபட்ச அகலம்"
-
-msgid "Align to Largest Stylebox"
-msgstr "மிகப்பெரிய பாணி பாக்சுக்கு சீரமைக்கவும்"
-
-msgid "Underline Spacing"
-msgstr "இடைவெளியை அடிக்கோடிட்டுக் காட்டுங்கள்"
-
-msgid "Normal Mirrored"
-msgstr "சாதாரண பிரதிபலித்தது"
-
-msgid "Hover Mirrored"
-msgstr "ஓவர் பிரதிபலித்தது"
-
-msgid "Pressed Mirrored"
-msgstr "அழுத்தப்பட்ட பிரதிபலித்தது"
-
-msgid "Disabled Mirrored"
-msgstr "முடக்கப்பட்ட பிரதிபலித்தது"
-
-msgid "Arrow"
-msgstr "அம்பு"
-
-msgid "Arrow Margin"
-msgstr "அம்பு விளிம்பு"
-
-msgid "Modulate Arrow"
-msgstr "அம்புக்குறியை மாற்றியமைக்கவும்"
-
-msgid "Hover Pressed"
-msgstr "ஓவர் அழுத்தியது"
-
-msgid "Checked Disabled"
-msgstr "சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
-
-msgid "Unchecked"
-msgstr "தேர்வு செய்யப்படாதது"
-
-msgid "Unchecked Disabled"
-msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர்"
-
-msgid "Radio Checked"
-msgstr "ரேடியோ சரிபார்க்கப்பட்டது"
-
-msgid "Radio Checked Disabled"
-msgstr "ரேடியோ சரிபார்க்கப்பட்டது முடக்கப்பட்டது"
-
-msgid "Radio Unchecked"
-msgstr "வானொலி தேர்வு செய்யப்படவில்லை"
-
-msgid "Radio Unchecked Disabled"
-msgstr "ரேடியோ தேர்வு செய்யப்படாத முடக்கப்பட்டுள்ளது"
-
-msgid "Check V Offset"
-msgstr "V ஆஃப்செட் சரிபார்க்கவும்"
-
-msgid "Checkbox Checked Color"
-msgstr "தேர்வுப்பெட்டி சரிபார்க்கப்பட்ட வண்ணம்"
-
-msgid "Checkbox Unchecked Color"
-msgstr "தேர்வுப்பெட்டி சரிபார்க்கப்படாத வண்ணம்"
-
-msgid "Checked Mirrored"
-msgstr "சரிபார்க்கப்பட்டது பிரதிபலித்தது"
-
-msgid "Checked Disabled Mirrored"
-msgstr "சரிபார்க்கப்பட்ட முடக்கப்பட்ட பிரதிபலித்தது"
-
-msgid "Unchecked Mirrored"
-msgstr "தேர்வு செய்யப்படாத பிரதிபலித்தது"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "தேர்வு செய்யப்படாத ஊனமுற்றோர் பிரதிபலிக்கப்பட்டது"
-
-msgid "Button Checked Color"
-msgstr "பொத்தான் சரிபார்க்கப்பட்ட வண்ணம்"
-
-msgid "Button Unchecked Color"
-msgstr "பொத்தானை சரிபார்க்கப்படாத வண்ணம்"
-
-msgid "Font Shadow Color"
-msgstr "எழுத்துரு நிழல் நிறம்"
-
-msgid "Shadow Offset X"
-msgstr "நிழல் ஆஃப்செட் ஃச்"
-
-msgid "Shadow Offset Y"
-msgstr "நிழல் ஆஃப்செட் ஒய்"
-
-msgid "Shadow Outline Size"
-msgstr "நிழல் அவுட்லைன் அளவு"
-
-msgid "Font Selected Color"
-msgstr "எழுத்துரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
-
-msgid "Font Uneditable Color"
-msgstr "எழுத்துரு படிக்காத நிறம்"
-
-msgid "Font Placeholder Color"
-msgstr "எழுத்துரு பிளேச்ஓல்டர் நிறம்"
-
-msgid "Caret Color"
-msgstr "கேரட் நிறம்"
-
-msgid "Selection Color"
-msgstr "தேர்வு நிறம்"
-
-msgid "Clear Button Color"
-msgstr "பொத்தானை அழிக்கவும்"
-
-msgid "Clear Button Color Pressed"
-msgstr "பொத்தான் வண்ணம் அழுத்தியது"
-
-msgid "Minimum Character Width"
-msgstr "குறைந்தபட்ச எழுத்து அகலம்"
-
-msgid "Caret Width"
-msgstr "கேரட் அகலம்"
-
-msgid "Clear"
-msgstr "தெளிவான"
-
-msgid "Tab"
-msgstr "தாவல்"
-
-msgid "Font Readonly Color"
-msgstr "எழுத்துரு வாசனி நிறம்"
-
-msgid "Current Line Color"
-msgstr "தற்போதைய வரி நிறம்"
-
-msgid "Caret Background Color"
-msgstr "கவனிப்பு பின்னணி நிறம்"
-
-msgid "Word Highlighted Color"
-msgstr "சொல் சிறப்பம்சமாக வண்ணம்"
-
-msgid "Search Result Color"
-msgstr "முடிவு வண்ணத்தைத் தேடுங்கள்"
-
-msgid "Search Result Border Color"
-msgstr "முடிவு எல்லை வண்ணத்தைத் தேடுங்கள்"
-
-msgid "Wrap Offset"
-msgstr "மடக்கு ஆஃப்செட்"
-
-msgid "Breakpoint"
-msgstr "பிரேக் பாயிண்ட்"
-
-msgid "Bookmark"
-msgstr "புத்தககுறி"
-
-msgid "Executing Line"
-msgstr "வரி செயல்படுத்துகிறது"
-
-msgid "Can Fold"
-msgstr "மடிக்க முடியும்"
-
-msgid "Can Fold Code Region"
-msgstr "குறியீடு பகுதியை மடிக்க முடியும்"
-
-msgid "Folded Code Region"
-msgstr "மடிந்த குறியீடு பகுதி"
-
-msgid "Folded EOL Icon"
-msgstr "மடிந்த EOL படவுரு"
-
-msgid "Completion Color BG"
-msgstr "நிறைவு வண்ணம் பின்னணி"
-
-msgid "Completion Background Color"
-msgstr "நிறைவு பின்னணி நிறம்"
-
-msgid "Completion Selected Color"
-msgstr "தேர்ந்தெடுக்கப்பட்ட வண்ணம் நிறைவு"
-
-msgid "Completion Existing Color"
-msgstr "இருக்கும் வண்ணம் நிறைவு"
-
-msgid "Completion Scroll Color"
-msgstr "நிறைவு உருள் நிறம்"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "நிறைவு சுருள் வண்ணம்"
-
-msgid "Bookmark Color"
-msgstr "புக்மார்க்கு நிறம்"
-
-msgid "Breakpoint Color"
-msgstr "பிரேக் பாயிண்ட் நிறம்"
-
-msgid "Executing Line Color"
-msgstr "வரி வண்ணத்தை செயல்படுத்துகிறது"
-
-msgid "Code Folding Color"
-msgstr "குறியீடு மடிப்பு நிறம்"
-
-msgid "Folded Code Region Color"
-msgstr "மடிந்த குறியீடு பகுதி நிறம்"
-
-msgid "Brace Mismatch Color"
-msgstr "அடைப்புக்குறி பொருந்தாத நிறம்"
-
-msgid "Line Number Color"
-msgstr "வரி எண் நிறம்"
-
-msgid "Line Length Guideline Color"
-msgstr "வரி நீள வழிகாட்டுதல் நிறம்"
-
-msgid "Completion Lines"
-msgstr "நிறைவு கோடுகள்"
-
-msgid "Completion Max Width"
-msgstr "நிறைவு அதிகபட்ச அகலம்"
-
-msgid "Completion Scroll Width"
-msgstr "நிறைவு உருள் அகலம்"
-
-msgid "Scroll Focus"
-msgstr "உருள் கவனம்"
-
-msgid "Grabber"
-msgstr "கிராப்"
-
-msgid "Grabber Highlight"
-msgstr "கிராபர் சிறப்பம்சமாக"
-
-msgid "Grabber Pressed"
-msgstr "கிராப்பர் அழுத்தினார்"
-
-msgid "Increment"
-msgstr "அதிகரிப்பு"
-
-msgid "Increment Highlight"
-msgstr "அதிகரிப்பு சிறப்பியல்பு"
-
-msgid "Increment Pressed"
-msgstr "அதிகரிப்பு அழுத்தியது"
-
-msgid "Decrement"
-msgstr "குறைவு"
-
-msgid "Decrement Highlight"
-msgstr "குறைவு சிறப்பியல்பு"
-
-msgid "Decrement Pressed"
-msgstr "குறைவு அழுத்தியது"
-
-msgid "Slider"
-msgstr "ச்லைடர்"
-
-msgid "Grabber Area"
-msgstr "கிராபர் பகுதி"
-
-msgid "Grabber Area Highlight"
-msgstr "கிராபர் பகுதி சிறப்பம்சமாக"
-
-msgid "Grabber Disabled"
-msgstr "கிராப்பர் முடக்கப்பட்டது"
-
-msgid "Tick"
-msgstr "உண்ணி"
-
-msgid "Center Grabber"
-msgstr "மைய கிராப்பர்"
-
-msgid "Grabber Offset"
-msgstr "கிராபர் ஆஃப்செட்"
-
-msgid "Tick Offset"
-msgstr "ஆஃப்செட் டிக்"
-
-msgid "Updown"
-msgstr "அப்டோடவுன்"
-
-msgid "Up"
-msgstr "மேலே"
-
-msgid "Up Hover"
-msgstr "மேலே ஓவர்"
-
-msgid "Up Pressed"
-msgstr "மேலே அழுத்தும்"
-
-msgid "Up Disabled"
-msgstr "ஊனமுற்றது"
-
-msgid "Down"
-msgstr "கீழே"
-
-msgid "Down Hover"
-msgstr "கீழே ஓவர்"
-
-msgid "Down Pressed"
-msgstr "கீழே அழுத்தியது"
-
-msgid "Down Disabled"
-msgstr "கீழே முடக்கப்பட்டது"
-
-msgid "Up Background"
-msgstr "பின்னணி"
-
-msgid "Up Background Hovered"
-msgstr "பின்னணி வரை"
-
-msgid "Up Background Pressed"
-msgstr "பின்னணி அழுத்தியது"
-
-msgid "Up Background Disabled"
-msgstr "பின்னணி முடக்கப்பட்டுள்ளது"
-
-msgid "Down Background"
-msgstr "கீழ் பின்னணி"
-
-msgid "Down Background Hovered"
-msgstr "கீழ் பின்னணி சுற்றியது"
-
-msgid "Down Background Pressed"
-msgstr "கீழ் பின்னணி அழுத்தியது"
-
-msgid "Down Background Disabled"
-msgstr "பேரூர் பின்னணி முடக்கப்பட்டுள்ளது"
-
-msgid "Up Icon Modulate"
-msgstr "அப் படவுரு மாடுலேட்"
-
-msgid "Up Hover Icon Modulate"
-msgstr "மேலே ஓவர் படவுரு மாடுலேட்"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "மேலே அழுத்தப்பட்ட படவுரு மாடுலேட்"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "ஊனமுற்ற படவுரு மாடுலேட்"
-
-msgid "Down Icon Modulate"
-msgstr "பேரூர் படவுரு மாடுலேட்"
-
-msgid "Down Hover Icon Modulate"
-msgstr "பேரூர் ஓவர் படவுரு மாடுலேட்"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "கீழே அழுத்தப்பட்ட படவுரு மாடுலேட்"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "பேரூர் ஊனமுற்ற படவுரு மாடுலேட்"
-
-msgid "Field and Buttons Separator"
-msgstr "புலம் மற்றும் பொத்தான்கள் பிரிப்பான்"
-
-msgid "Up Down Buttons Separator"
-msgstr "கீழே பொத்தான்கள் பிரிப்பான்"
-
-msgid "Buttons Vertical Separation"
-msgstr "பொத்தான்கள் செங்குத்து பிரிப்பு"
-
-msgid "Field and Buttons Separation"
-msgstr "புலம் மற்றும் பொத்தான்கள் பிரித்தல்"
-
-msgid "Buttons Width"
-msgstr "பொத்தான்கள் அகலம்"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "ஐகான்களிலிருந்து குறைந்தபட்ச பொத்தான்கள் அகலத்தை அமைக்கவும்"
-
-msgid "Scroll Hint Vertical"
-msgstr "குறிப்பை செங்குத்தாக உருட்டவும்"
-
-msgid "Scroll Hint Horizontal"
-msgstr "குறிப்பை கிடைமட்டமாக உருட்டவும்"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "ச்க்ரோல் குறிப்பு செங்குத்து நிறம்"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "ச்க்ரோல் குறிப்பு கிடைமட்ட வண்ணம்"
-
-msgid "Scrollbar Margin Left"
-msgstr "சுருள் விளிம்பு இடது"
-
-msgid "Scrollbar Margin Top"
-msgstr "சுருள் விளிம்பு மேல்"
-
-msgid "Scrollbar Margin Right"
-msgstr "சுருள் விளிம்பு வலது"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "சுருள் விளிம்பு கீழே"
-
-msgid "Embedded Border"
-msgstr "உட்பொதிக்கப்பட்ட எல்லை"
-
-msgid "Embedded Unfocused Border"
-msgstr "கவனம் செலுத்தப்படாத எல்லை"
-
-msgid "Title Font"
-msgstr "தலைப்பு எழுத்துரு"
-
-msgid "Title Font Size"
-msgstr "தலைப்பு எழுத்துரு அளவு"
-
-msgid "Title Outline Modulate"
-msgstr "தலைப்பு அவுட்லைன் மாடுலேட்"
-
-msgid "Title Outline Size"
-msgstr "தலைப்பு அவுட்லைன் அளவு"
-
-msgid "Title Height"
-msgstr "தலைப்பு உயரம்"
-
-msgid "Resize Margin"
-msgstr "மறுஅளவிடுதல் விளிம்பு"
-
-msgid "Close"
-msgstr "மூடு"
-
-msgid "Close Pressed"
-msgstr "மூடு அழுத்தியது"
-
-msgid "Close H Offset"
-msgstr "H ஆஃப்செட் மூடு"
-
-msgid "Close V Offset"
-msgstr "மூடு v ஆஃப்செட்"
-
-msgid "Buttons Separation"
-msgstr "பொத்தான்கள் பிரித்தல்"
-
-msgid "Load"
-msgstr "சுமை"
-
-msgid "Save"
-msgstr "சேமி"
-
-msgid "Parent Folder"
-msgstr "பெற்றோர் கோப்புறை"
-
-msgid "Back Folder"
-msgstr "பின் கோப்புறை"
-
-msgid "Forward Folder"
-msgstr "முன்னோக்கி கோப்புறை"
-
-msgid "Reload"
-msgstr "ஏற்றவும்"
-
-msgid "Favorite"
-msgstr "பிடித்த"
-
-msgid "Toggle Hidden"
-msgstr "மறைத்து வைக்கவும்"
-
-msgid "Toggle Filename Filter"
-msgstr "கோப்பு பெயர் வடிப்பானை மாற்றவும்"
-
-msgid "Folder"
-msgstr "கோப்புறை"
-
-msgid "Thumbnail Mode"
-msgstr "சிறு பயன்முறை"
-
-msgid "List Mode"
-msgstr "பட்டியல் பயன்முறை"
-
-msgid "Create Folder"
-msgstr "கோப்புறையை உருவாக்கவும்"
-
-msgid "Sort"
-msgstr "வரிசைப்படுத்து"
-
-msgid "Favorite Up"
-msgstr "பிடித்த"
-
-msgid "Favorite Down"
-msgstr "பிடித்த கீழே"
-
-msgid "File Thumbnail"
-msgstr "சிறுபடம் கோப்பு"
-
-msgid "Folder Thumbnail"
-msgstr "கோப்புறை சிறுபடம்"
-
-msgid "Folder Icon Color"
-msgstr "கோப்புறை படவுரு நிறம்"
-
-msgid "File Icon Color"
-msgstr "கோப்பு படவுரு நிறம்"
-
-msgid "File Disabled Color"
-msgstr "கோப்பு முடக்கப்பட்ட வண்ணம்"
-
-msgid "Separator"
-msgstr "பிரிப்பான்"
-
-msgid "Labeled Separator Left"
-msgstr "பெயரிடப்பட்ட பிரிப்பான் இடது"
-
-msgid "Labeled Separator Right"
-msgstr "பிரிப்பான் பெயரிடப்பட்டது"
-
-msgid "Indeterminate Disabled"
-msgstr "ஊனமுற்றோர் உறுதியற்றவர்கள்"
-
-msgid "Submenu"
-msgstr "துணைமெனு"
-
-msgid "Submenu Mirrored"
-msgstr "துணை பிரதிபலித்தது"
-
-msgid "Font Separator"
-msgstr "எழுத்துரு பிரிப்பான்"
-
-msgid "Font Separator Size"
-msgstr "எழுத்துரு பிரிப்பான் அளவு"
-
-msgid "Font Accelerator Color"
-msgstr "எழுத்துரு முடுக்கி நிறம்"
-
-msgid "Font Separator Color"
-msgstr "எழுத்துரு பிரிப்பான் நிறம்"
-
-msgid "Font Separator Outline Color"
-msgstr "எழுத்துரு பிரிப்பான் அவுட்லைன் நிறம்"
-
-msgid "V Separation"
-msgstr "வி பிரிப்பு"
-
-msgid "Separator Outline Size"
-msgstr "பிரிப்பான் அவுட்லைன் அளவு"
-
-msgid "Item Start Padding"
-msgstr "பொருள் தொடக்க திணிப்பு"
-
-msgid "Item End Padding"
-msgstr "உருப்படி முடிவு திணிப்பு"
-
-msgid "Gutter Compact"
-msgstr "குட்டர் சிறிய"
-
-msgid "Panel Selected"
-msgstr "குழு தேர்ந்தெடுக்கப்பட்டது"
-
-msgid "Panel Focus"
-msgstr "குழு கவனம்"
-
-msgid "Titlebar"
-msgstr "தலைப்பு"
-
-msgid "Titlebar Selected"
-msgstr "Titlebar தேர்ந்தெடுக்கப்பட்டது"
-
-msgid "Slot"
-msgstr "ச்லாட்"
-
-msgid "Slot Selected"
-msgstr "ச்லாட் தேர்ந்தெடுக்கப்பட்டது"
-
-msgid "Resizer"
-msgstr "மறுபரிசீலனை"
-
-msgid "Resizer Color"
-msgstr "மறுஅளவிடுதல் நிறம்"
-
-msgid "Port H Offset"
-msgstr "துறைமுகம் எச் ஆஃப்செட்"
-
-msgid "Hovered"
-msgstr "வட்டமிட்டது"
-
-msgid "Hovered Dimmed"
-msgstr "மங்கலான"
-
-msgid "Hovered Selected"
-msgstr "தேர்ந்தெடுக்கப்பட்ட"
-
-msgid "Hovered Selected Focus"
-msgstr "தேர்ந்தெடுக்கப்பட்ட கவனம்"
-
-msgid "Selected Focus"
-msgstr "தேர்ந்தெடுக்கப்பட்ட கவனம்"
-
-msgid "Cursor"
-msgstr "கர்சர்"
-
-msgid "Cursor Unfocused"
-msgstr "கர்சர் கவனம் செலுத்தவில்லை"
-
-msgid "Button Hover"
-msgstr "பொத்தான் ஓவர்"
-
-msgid "Title Button Normal"
-msgstr "தலைப்பு பொத்தான் இயல்பானது"
-
-msgid "Title Button Pressed"
-msgstr "தலைப்பு பொத்தான் அழுத்தியது"
-
-msgid "Title Button Hover"
-msgstr "தலைப்பு பொத்தான் ஓவர்"
-
-msgid "Custom Button"
-msgstr "தனிப்பயன் பொத்தான்"
-
-msgid "Custom Button Pressed"
-msgstr "தனிப்பயன் பொத்தான் அழுத்தியது"
-
-msgid "Custom Button Hover"
-msgstr "தனிப்பயன் பொத்தான் ஓவர்"
-
-msgid "Select Arrow"
-msgstr "அம்புக்குறியைத் தேர்ந்தெடுக்கவும்"
-
-msgid "Arrow Collapsed"
-msgstr "அம்பு சரிந்தது"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "அம்பு சரிந்தது பிரதிபலித்தது"
-
-msgid "Title Button Font"
-msgstr "தலைப்பு பொத்தான் எழுத்துரு"
-
-msgid "Title Button Font Size"
-msgstr "தலைப்பு பொத்தான் எழுத்துரு அளவு"
-
-msgid "Title Button Color"
-msgstr "தலைப்பு பொத்தான் நிறம்"
-
-msgid "Font Hovered Color"
-msgstr "எழுத்துரு வண்ணம்"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "எழுத்துரு மங்கலான வண்ணம்"
-
-msgid "Font Hovered Selected Color"
-msgstr "எழுத்துரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
-
-msgid "Guide Color"
-msgstr "வழிகாட்டி நிறம்"
-
-msgid "Drop Position Color"
-msgstr "நிலை வண்ணத்தை கைவிடுங்கள்"
-
-msgid "Relationship Line Color"
-msgstr "உறவு வரி நிறம்"
-
-msgid "Parent HL Line Color"
-msgstr "பெற்றோர் எச்.எல் வரி நிறம்"
-
-msgid "Children HL Line Color"
-msgstr "குழந்தைகள் எச்.எல் வரி நிறம்"
-
-msgid "Custom Button Font Highlight"
-msgstr "தனிப்பயன் பொத்தான் எழுத்துரு சிறப்பம்சமாக"
-
-msgid "Scroll Hint Color"
-msgstr "ச்க்ரோல் குறிப்பு நிறம்"
-
-msgid "Item Margin"
-msgstr "பொருள் விளிம்பு"
-
-msgid "Inner Item Margin Bottom"
-msgstr "உள் உருப்படி விளிம்பு கீழே"
-
-msgid "Inner Item Margin Left"
-msgstr "உள் உருப்படி விளிம்பு இடது"
-
-msgid "Inner Item Margin Right"
-msgstr "உள் உருப்படி விளிம்பு வலது"
-
-msgid "Inner Item Margin Top"
-msgstr "உள் உருப்படி விளிம்பு மேல்"
-
-msgid "Check H Separation"
-msgstr "எச் பிரிவை சரிபார்க்கவும்"
-
-msgid "Icon H Separation"
-msgstr "படவுரு எச் பிரிப்பு"
-
-msgid "Button Margin"
-msgstr "பொத்தான் விளிம்பு"
-
-msgid "Relationship Line Width"
-msgstr "உறவு வரி அகலம்"
-
-msgid "Parent HL Line Width"
-msgstr "பெற்றோர் எச்.எல் வரி அகலம்"
-
-msgid "Children HL Line Width"
-msgstr "குழந்தைகள் எச்.எல் வரி அகலம்"
-
-msgid "Parent HL Line Margin"
-msgstr "பெற்றோர் எச்.எல் வரி விளிம்பு"
-
-msgid "Draw Guides"
-msgstr "வழிகாட்டிகளை வரையவும்"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "இழுத்தல் அன்ஃபோல்டு காத்திரு Msec"
-
-msgid "Scroll Border"
-msgstr "உருள் எல்லை"
-
-msgid "Scroll Speed"
-msgstr "உருள் விரைவு"
-
-msgid "Scrollbar H Separation"
-msgstr "சுருள் எச் பிரிப்பு"
-
-msgid "Scrollbar V Separation"
-msgstr "சுருள் வி பிரிப்பு"
-
-msgid "Icon Margin"
-msgstr "படவுரு விளிம்பு"
-
-msgid "Tab Selected"
-msgstr "தாவல் தேர்ந்தெடுக்கப்பட்டது"
-
-msgid "Tab Hovered"
-msgstr "தாவல் வட்டமிட்டது"
-
-msgid "Tab Unselected"
-msgstr "தாவல் தேர்வு செய்யப்படாதது"
-
-msgid "Tab Disabled"
-msgstr "தாவல் முடக்கப்பட்டது"
-
-msgid "Tab Focus"
-msgstr "தாவல் கவனம்"
-
-msgid "Tabbar Background"
-msgstr "தபார் பின்னணி"
-
-msgid "Drop Mark"
-msgstr "துளி குறி"
-
-msgid "Menu Highlight"
-msgstr "பட்டி சிறப்பம்சமாக"
-
-msgid "Font Unselected Color"
-msgstr "எழுத்துரு தேர்வு செய்யப்படாத வண்ணம்"
-
-msgid "Drop Mark Color"
-msgstr "குறி நிறத்தை கைவிடுங்கள்"
-
-msgid "Icon Selected Color"
-msgstr "படவுரு தேர்ந்தெடுக்கப்பட்ட வண்ணம்"
-
-msgid "Icon Hovered Color"
-msgstr "படவுரு ஓவர் கலர்"
-
-msgid "Icon Unselected Color"
-msgstr "படவுரு தேர்ந்தெடுக்கப்படாத வண்ணம்"
-
-msgid "Side Margin"
-msgstr "பக்க விளிம்பு"
-
-msgid "Icon Separation"
-msgstr "படவுரு பிரிப்பு"
-
-msgid "Button Highlight"
-msgstr "பொத்தான் சிறப்பம்சமாக"
-
-msgid "Hover Switch Wait Msec"
-msgstr "ஓவர் ச்விட்ச் வெயிட் Msec"
-
-msgid "SV Width"
-msgstr "எச்.வி அகலம்"
-
-msgid "SV Height"
-msgstr "எச்.வி உயரம்"
-
-msgid "H Width"
-msgstr "எச் அகலம்"
-
-msgid "Label Width"
-msgstr "சிட்டை அகலம்"
-
-msgid "Center Slider Grabbers"
-msgstr "சென்டர் ச்லைடர் கிராப்பர்கள்"
-
-msgid "Sample Focus"
-msgstr "மாதிரி கவனம்"
-
-msgid "Picker Focus Rectangle"
-msgstr "பிக்கர் கவனம் செவ்வகம்"
-
-msgid "Picker Focus Circle"
-msgstr "பிக்கர் கவனம் வட்டம்"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "கர்சர் நிறத்தைத் திருத்தவில்லை"
-
-msgid "Menu Option"
-msgstr "பட்டியல் விருப்பம்"
-
-msgid "Folded Arrow"
-msgstr "மடிந்த அம்பு"
-
-msgid "Expanded Arrow"
-msgstr "விரிவாக்கப்பட்ட அம்பு"
-
-msgid "Screen Picker"
-msgstr "திரை பிக்கர்"
-
-msgid "Shape Circle"
-msgstr "வடிவ வட்டம்"
-
-msgid "Shape Rect"
-msgstr "வடிவ ரெட்"
-
-msgid "Shape Rect Wheel"
-msgstr "வடிவ செவ்வக சக்கரம்"
-
-msgid "Add Preset"
-msgstr "முன்னமைவு சேர்க்கவும்"
-
-msgid "Sample BG"
-msgstr "மாதிரி பின்னணி"
-
-msgid "Sample Revert"
-msgstr "மாதிரி மாற்றியமைத்தல்"
-
-msgid "Overbright Indicator"
-msgstr "ஓவர் பிரைட் காட்டி"
-
-msgid "Bar Arrow"
-msgstr "பார் அம்பு"
-
-msgid "Picker Cursor"
-msgstr "பிக்கர் கர்சர்"
-
-msgid "Picker Cursor BG"
-msgstr "சுட்டி பின்னணி தேர்வி"
-
-msgid "Color Script"
-msgstr "வண்ண ச்கிரிப்ட்"
-
-msgid "Color Hue"
-msgstr "வண்ண சாயல்"
-
-msgid "BG"
-msgstr "பி.சி."
-
-msgid "Preset FG"
-msgstr "முன்னமைக்கப்பட்ட FG"
-
-msgid "Preset Focus"
-msgstr "முன்னமைக்கப்பட்ட கவனம்"
-
-msgid "Preset BG"
-msgstr "முன்னமைக்கப்பட்ட பின்னணி"
-
-msgid "Horizontal Rule"
-msgstr "கிடைமட்ட விதி"
-
-msgid "Normal Font"
-msgstr "சாதாரண எழுத்துரு"
-
-msgid "Bold Font"
-msgstr "தைரியமான எழுத்துரு"
-
-msgid "Italics Font"
-msgstr "சாய்வு எழுத்துரு"
-
-msgid "Bold Italics Font"
-msgstr "தைரியமான சாய்வு எழுத்துரு"
-
-msgid "Mono Font"
-msgstr "மோனோ எழுத்துரு"
-
-msgid "Normal Font Size"
-msgstr "சாதாரண எழுத்துரு அளவு"
-
-msgid "Bold Font Size"
-msgstr "தைரியமான எழுத்துரு அளவு"
-
-msgid "Italics Font Size"
-msgstr "சாய்வு எழுத்துரு அளவு"
-
-msgid "Bold Italics Font Size"
-msgstr "தைரியமான சாய்வு எழுத்துரு அளவு"
-
-msgid "Mono Font Size"
-msgstr "மோனோ எழுத்துரு அளவு"
-
-msgid "Table H Separation"
-msgstr "அட்டவணை H பிரிப்பு"
-
-msgid "Table V Separation"
-msgstr "அட்டவணை V பிரிப்பு"
-
-msgid "Table Odd Row BG"
-msgstr "அட்டவணை ஒற்றைப்படை வரிசை பின்னணி"
-
-msgid "Table Even Row BG"
-msgstr "அட்டவணை இரட்டை வரிசை பின்னணி"
-
-msgid "Table Border"
-msgstr "அட்டவணை எல்லை"
-
-msgid "Text Highlight H Padding"
-msgstr "உரை சிறப்பம்சமாக எச் திணிப்பு"
-
-msgid "Text Highlight V Padding"
-msgstr "உரை சிறப்பம்சமாக வி திணிப்பு"
-
-msgid "Underline Alpha"
-msgstr "ஆல்பாவை அடிக்கோடிட்டுக் காட்டுங்கள்"
-
-msgid "Strikethrough Alpha"
-msgstr "ச்ட்ரைகெத்ரோ ஆல்பா"
-
-msgid "Touch Dragger Color"
-msgstr "இழுவை வண்ணத்தைத் தொடவும்"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "டச் டிராகர் அழுத்திய வண்ணம்"
-
-msgid "Touch Dragger Hover Color"
-msgstr "இழுவை வட்ட நிறத்தைத் தொடவும்"
-
-msgid "H Touch Dragger"
-msgstr "H டச் டிராக்சர்"
-
-msgid "V Touch Dragger"
-msgstr "V டச் டிராக்சர்"
-
-msgid "Touch Dragger"
-msgstr "இழுவை தொடு"
-
-msgid "H Grabber"
-msgstr "H கிராப்பர்"
-
-msgid "V Grabber"
-msgstr "வி கிராப்பர்"
-
-msgid "Margin Left"
-msgstr "விளிம்பு இடது"
-
-msgid "Margin Top"
-msgstr "விளிம்பு மேல்"
-
-msgid "Margin Right"
-msgstr "விளிம்பு வலது"
-
-msgid "Margin Bottom"
-msgstr "விளிம்பு கீழே"
-
-msgid "Minimum Grab Thickness"
-msgstr "குறைந்தபட்ச கிராப் தடிமன்"
-
-msgid "Autohide"
-msgstr "ஆட்டோஐட்"
-
-msgid "Split Bar Background"
-msgstr "பிளவு பார் பின்னணி"
-
-msgid "Zoom Out"
-msgstr "சிறிதாக்கு"
-
-msgid "Zoom In"
-msgstr "பெரிதாக்கு"
-
-msgid "Zoom Reset"
-msgstr "பெரிதாக்கு மீட்டமைப்பு"
-
-msgid "Grid Toggle"
-msgstr "கட்டம் மாற்றவும்"
-
-msgid "Minimap Toggle"
-msgstr "மினிமாப் மாற்று"
-
-msgid "Snapping Toggle"
-msgstr "தடுமாறும்"
-
-msgid "Menu Panel"
-msgstr "பட்டி குழு"
-
-msgid "Grid Minor"
-msgstr "கட்டம் மைனர்"
-
-msgid "Grid Major"
-msgstr "கட்டம் மேசர்"
-
-msgid "Selection Fill"
-msgstr "தேர்வு நிரப்பு"
-
-msgid "Selection Stroke"
-msgstr "தேர்வு பக்கவாதம்"
-
-msgid "Activity"
-msgstr "செய்கைப்பாடு"
-
-msgid "Connection Hover Tint Color"
-msgstr "இணைப்பு ஓவர் சாயல் நிறம்"
-
-msgid "Connection Hover Thickness"
-msgstr "இணைப்பு ஓவர் தடிமன்"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "இணைப்பு செல்லுபடியாகும் இலக்கு நிறம்"
-
-msgid "Connection Rim Color"
-msgstr "இணைப்பு விளிம்பு நிறம்"
-
-msgid "Title Panel"
-msgstr "தலைப்பு குழு"
-
-msgid "Title Hover Panel"
-msgstr "தலைப்பு ஓவர் பேனல்"
-
-msgid "Title Collapsed Panel"
-msgstr "தலைப்பு சரிந்த குழு"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "தலைப்பு சரிந்த ஓவர் பேனல்"
-
-msgid "Hover Font Color"
-msgstr "எழுத்துரு வண்ணத்தை உயர்த்தவும்"
-
-msgid "Collapsed Font Color"
-msgstr "சரிந்த எழுத்துரு நிறம்"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "விரிவாக்கப்பட்ட அம்பு பிரதிபலித்தது"
-
-msgid "Folded Arrow Mirrored"
-msgstr "மடிந்த அம்பு பிரதிபலித்தது"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "துறைமுகம் ஆட்சோன் உள் அளவு"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "துறைமுகம் ஆட்சோன் வெளிப்புற அளவு"
 
 msgid "Default Theme Scale"
 msgstr "இயல்புநிலை கருப்பொருள் அளவு"

@@ -556,6 +556,9 @@ msgstr "Sovrascrivi pulsanti del volume"
 msgid "Disable Scroll Deadzone"
 msgstr "Disabilita zona morta di scorrimento"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "Navigazione"
 
@@ -1242,6 +1245,31 @@ msgstr "Intero in modifica"
 
 msgid "Deferred Drag Mode"
 msgstr "Modalità differita di trascinamento"
+
+msgid "Font Uneditable Color"
+msgstr "Colore del font non modificabile"
+
+msgid "Font"
+msgstr "Font"
+
+msgid "Font Size"
+msgstr "Dimensione del font"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normale"
+
+msgid "Focus"
+msgstr "Focus"
+
+msgid "Updown"
+msgstr "Alto/Basso"
+
+msgid "Grabber Highlight"
+msgstr "Grabber evidenziato"
+
+msgid "Grabber"
+msgstr "Grabber"
 
 msgid "Zoom"
 msgstr "Zoom"
@@ -3251,9 +3279,6 @@ msgstr "Azione all'interruzione"
 
 msgid "Output"
 msgstr "Output"
-
-msgid "Font Size"
-msgstr "Dimensione del font"
 
 msgid "Always Clear Output on Play"
 msgstr "Svuota sempre l'output all'esecuzione"
@@ -6012,9 +6037,6 @@ msgstr "Dimensione di pool di Emscripten"
 msgid "Godot Pool Size"
 msgstr "Dimensione di pool di Godot"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -7253,9 +7275,6 @@ msgstr "Testo"
 msgid "Outline Modulate"
 msgstr "Modula contorno"
 
-msgid "Font"
-msgstr "Font"
-
 msgid "Horizontal Alignment"
 msgstr "Allineamento orizzontale"
 
@@ -8258,8 +8277,119 @@ msgstr "Allineamento verticale dell'icona"
 msgid "Expand Icon"
 msgstr "Espandi l'icona"
 
+msgid "Normal Mirrored"
+msgstr "Normale (riflesso)"
+
+msgid "Pressed Mirrored"
+msgstr "Premuto (riflesso)"
+
+msgid "Hover"
+msgstr "Passaggio"
+
+msgid "Hover Mirrored"
+msgstr "Al passaggio (riflesso)"
+
+msgid "Hover Pressed"
+msgstr "Al passaggio premuto"
+
+msgid "Disabled Mirrored"
+msgstr "Disabilitato (riflesso)"
+
+msgid "Font Focus Color"
+msgstr "Colore del font in focus"
+
+msgid "Font Pressed Color"
+msgstr "Colore del font premuto"
+
+msgid "Font Hover Color"
+msgstr "Colore del font al passaggio"
+
+msgid "Font Hover Pressed Color"
+msgstr "Colore del font premuto e al passaggio"
+
+msgid "Font Disabled Color"
+msgstr "Colore del font disabilitato"
+
+msgid "Font Outline Color"
+msgstr "Colore contorno del font"
+
+msgid "Icon Normal Color"
+msgstr "Colore dell'icona normale"
+
+msgid "Icon Focus Color"
+msgstr "Colore dell'icona in focus"
+
+msgid "Icon Pressed Color"
+msgstr "Colore dell'icona premuta"
+
+msgid "Icon Hover Color"
+msgstr "Colore dell'icona al passaggio"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Colore dell'icona premuta e al passaggio"
+
+msgid "Icon Disabled Color"
+msgstr "Colore dell'icona disabilitata"
+
+msgid "H Separation"
+msgstr "Separazione orizzontale"
+
+msgid "Icon Max Width"
+msgstr "Larghezza massima dell'icona"
+
+msgid "Align to Largest Stylebox"
+msgstr "Allinea alla Stylebox più larga"
+
 msgid "Use Top Left"
 msgstr "Usa in alto a sinistra"
+
+msgid "Check V Offset"
+msgstr "Scostamento V di spunta"
+
+msgid "Unchecked"
+msgstr "Non spuntato"
+
+msgid "Radio Checked"
+msgstr "Radio spuntato"
+
+msgid "Radio Unchecked"
+msgstr "Radio non spuntato"
+
+msgid "Checked Disabled"
+msgstr "Spuntato disabilitato"
+
+msgid "Unchecked Disabled"
+msgstr "Non spuntato disabilitato"
+
+msgid "Radio Checked Disabled"
+msgstr "Radio spuntato disabilitato"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radio non spuntato disattivato"
+
+msgid "Checkbox Checked Color"
+msgstr "Colore di casella spuntata"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Colore di casella non spuntata"
+
+msgid "Checked Mirrored"
+msgstr "Spuntato (riflesso)"
+
+msgid "Unchecked Mirrored"
+msgstr "Non spuntato (riflesso)"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Spuntato disabilitato (riflesso)"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Non spuntato disabilitato (riflesso)"
+
+msgid "Button Checked Color"
+msgstr "Colore di pulsante spuntato"
+
+msgid "Button Unchecked Color"
+msgstr "Colore di pulsante non spuntato"
 
 msgid "Symbol Lookup on Click"
 msgstr "Ricerca simboli al clic"
@@ -8327,6 +8457,82 @@ msgstr "Evidenzia le corrispondenze"
 msgid "Pairs"
 msgstr "Paia"
 
+msgid "Code Folding Color"
+msgstr "Colore per righe di codice ridotte"
+
+msgid "Folded Code Region Color"
+msgstr "Colore per una regione di codice chiusa"
+
+msgid "Can Fold"
+msgstr "Può comprimere"
+
+msgid "Folded"
+msgstr "Piegato"
+
+msgid "Can Fold Code Region"
+msgstr "Può ridurre regione di codice"
+
+msgid "Folded Code Region"
+msgstr "Regione di codice compressa"
+
+msgid "Folded EOL Icon"
+msgstr "Icona di fine riga compressa"
+
+msgid "Completion Color BG"
+msgstr "Colore di sfondo di completamento"
+
+msgid "Breakpoint Color"
+msgstr "Colore per punto di interruzione"
+
+msgid "Breakpoint"
+msgstr "Punto di interruzione"
+
+msgid "Bookmark Color"
+msgstr "Colore per segnalibro"
+
+msgid "Bookmark"
+msgstr "Segnalibro"
+
+msgid "Executing Line Color"
+msgstr "Colore per la riga in esecuzione"
+
+msgid "Executing Line"
+msgstr "Linea in esecuzione"
+
+msgid "Line Number Color"
+msgstr "Colore per numero di riga"
+
+msgid "Completion Max Width"
+msgstr "Larghezza massima di completamento"
+
+msgid "Completion Lines"
+msgstr "Righe di completamento"
+
+msgid "Completion Scroll Width"
+msgstr "Spessore della barra di scorrimento di completamento"
+
+msgid "Completion Scroll Color"
+msgstr "Colore per la barra di scorrimento del completamento"
+
+msgid "Completion Scroll Hovered Color"
+msgstr ""
+"Colore al passaggio del mouse per la barra di scorrimento del completamento"
+
+msgid "Completion Background Color"
+msgstr "Colore per lo sfondo del completamento"
+
+msgid "Completion Selected Color"
+msgstr "Colore per la selezione del completamento"
+
+msgid "Completion Existing Color"
+msgstr "Colore per la parte esistente del completamento"
+
+msgid "Line Length Guideline Color"
+msgstr "Colore per la linea guida della lunghezza della riga"
+
+msgid "Brace Mismatch Color"
+msgstr "Colore per mancata corrispondenza tra parentesi"
+
 msgid "Edit Alpha"
 msgstr "Modifica alfa"
 
@@ -8362,6 +8568,99 @@ msgstr "Esadecimale visibile"
 
 msgid "Presets Visible"
 msgstr "Preset visibili"
+
+msgid "Label Width"
+msgstr "Larghezza dell'etichetta"
+
+msgid "SV Width"
+msgstr "Larghezza SV"
+
+msgid "SV Height"
+msgstr "Altezza SV"
+
+msgid "H Width"
+msgstr "Larghezza O"
+
+msgid "Center Slider Grabbers"
+msgstr "Centra i grabber della barra"
+
+msgid "Sample Focus"
+msgstr "Campione focalizzato"
+
+msgid "Picker Focus Rectangle"
+msgstr "Rettangolo di selettore focalizzato"
+
+msgid "Picker Focus Circle"
+msgstr "Cerchio di selettore focalizzato"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Colore di cursore focalizzato non in modifica"
+
+msgid "Menu Option"
+msgstr "Opzione di menu"
+
+msgid "Screen Picker"
+msgstr "Selettore schermo"
+
+msgid "Expanded Arrow"
+msgstr "Freccia estesa"
+
+msgid "Folded Arrow"
+msgstr "Freccia compressa"
+
+msgid "Add Preset"
+msgstr "Aggiungi preimpostazione"
+
+msgid "Shape Rect"
+msgstr "Forma di rettangolo"
+
+msgid "Shape Rect Wheel"
+msgstr "Ruota per forma di rettangolo"
+
+msgid "Shape Circle"
+msgstr "Forma di cerchio"
+
+msgid "Bar Arrow"
+msgstr "Freccia di barra"
+
+msgid "Sample BG"
+msgstr "Sfondo del campionatore"
+
+msgid "Sample Revert"
+msgstr "Ripristino prelievo"
+
+msgid "Overbright Indicator"
+msgstr "Indicatore di sovra-luminosità"
+
+msgid "Picker Cursor"
+msgstr "Cursore del selettore"
+
+msgid "Picker Cursor BG"
+msgstr "Sfondo di cursore del selettore"
+
+msgid "Color Hue"
+msgstr "Tono del colore"
+
+msgid "Color Script"
+msgstr "Colore di script"
+
+msgid "Tab Unselected"
+msgstr "Scheda deselezionata"
+
+msgid "Tab Selected"
+msgstr "Scheda selezionata"
+
+msgid "BG"
+msgstr "Sfondo"
+
+msgid "Preset FG"
+msgstr "Primo piano di preset"
+
+msgid "Preset Focus"
+msgstr "Preset focalizzato"
+
+msgid "Preset BG"
+msgstr "Sfondo di preset"
 
 msgid "Accessibility Region"
 msgstr "Regione di accessibilità"
@@ -8447,9 +8746,6 @@ msgstr "Tooltip"
 msgid "Auto Translate Mode"
 msgstr "Modo di traduzione automatica"
 
-msgid "Focus"
-msgstr "Focus"
-
 msgid "Neighbor Left"
 msgstr "Vicino di sinistra"
 
@@ -8513,6 +8809,9 @@ msgstr "Chiudi premendo ESC"
 msgid "Autowrap"
 msgstr "Ritorno a capo automatico"
 
+msgid "Buttons Separation"
+msgstr "Separazione pulsanti"
+
 msgid "Cancel Button Text"
 msgstr "Testo del pulsante per annullare"
 
@@ -8567,14 +8866,74 @@ msgstr "Avviso di sovrascrittura abilitato"
 msgid "Deleting Enabled"
 msgstr "Eliminazione abilitata"
 
+msgid "Parent Folder"
+msgstr "Cartella superiore"
+
+msgid "Forward Folder"
+msgstr "Cartella avanti"
+
+msgid "Back Folder"
+msgstr "Cartella indietro"
+
+msgid "Reload"
+msgstr "Ricarica"
+
+msgid "Favorite"
+msgstr "Preferito"
+
+msgid "Toggle Hidden"
+msgstr "Interruttore file nascosti"
+
+msgid "Folder"
+msgstr "Cartella"
+
+msgid "Toggle Filename Filter"
+msgstr "Interruttore filtro nome di file"
+
+msgid "File"
+msgstr "File"
+
+msgid "Create Folder"
+msgstr "Crea cartella"
+
+msgid "Sort"
+msgstr "Ordina"
+
+msgid "Favorite Up"
+msgstr "Preferito su"
+
+msgid "Favorite Down"
+msgstr "Preferito giù"
+
+msgid "Thumbnail Mode"
+msgstr "Modalità miniatura"
+
+msgid "List Mode"
+msgstr "Modalità elenco"
+
+msgid "File Thumbnail"
+msgstr "Miniatura di file"
+
+msgid "Folder Thumbnail"
+msgstr "Miniatura di cartella"
+
+msgid "Folder Icon Color"
+msgstr "Colore dell'icona della cartella"
+
+msgid "File Icon Color"
+msgstr "Colore dell'icona del file"
+
+msgid "File Disabled Color"
+msgstr "Colore di file disattivato"
+
 msgid "Last Wrap Alignment"
 msgstr "Allineamento dell'ultimo avvolgimento"
 
 msgid "Reverse Fill"
 msgstr "Inverti riempimento"
 
-msgid "Folded"
-msgstr "Piegato"
+msgid "V Separation"
+msgstr "Separazione verticale"
 
 msgid "Title Alignment"
 msgstr "Allineamento del titolo"
@@ -8591,8 +8950,38 @@ msgstr "Gruppo riducibile"
 msgid "Title Text Direction"
 msgstr "Direzione di testo del titolo"
 
+msgid "Title Panel"
+msgstr "Pannello del titolo"
+
+msgid "Title Hover Panel"
+msgstr "Pannello del titolo passato"
+
+msgid "Title Collapsed Panel"
+msgstr "Pannello di titolo minimizzato"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Pannello di titolo minimizzato passato"
+
+msgid "Hover Font Color"
+msgstr "Colore di font al passaggio"
+
+msgid "Collapsed Font Color"
+msgstr "Colore di font minimizzato"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Freccia estesa specchiata"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Freccia ridotta specchiata"
+
 msgid "Allow Folding All"
 msgstr "Permetti di ridurre tutto"
+
+msgid "Resizer"
+msgstr "Ridimensionatore"
+
+msgid "Resizer Color"
+msgstr "Colore del ridimensionatore"
 
 msgid "Show Grid"
 msgstr "Mostra griglia"
@@ -8651,6 +9040,63 @@ msgstr "Mostra il pulsante per la minimappa"
 msgid "Show Arrange Button"
 msgstr "Mostra il pulsante per riordinare"
 
+msgid "Panel Focus"
+msgstr "Scheda focalizzata"
+
+msgid "Grid Major"
+msgstr "Griglia primaria"
+
+msgid "Grid Minor"
+msgstr "Griglia secondaria"
+
+msgid "Activity"
+msgstr "Attività"
+
+msgid "Connection Hover Tint Color"
+msgstr "Colore della tinta al passaggio di una connessione"
+
+msgid "Connection Hover Thickness"
+msgstr "Spessore al passaggio di una connessione"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Colore della tinta di una destinazione valida per una connessione"
+
+msgid "Connection Rim Color"
+msgstr "Colore del contorno di una connessione"
+
+msgid "Selection Fill"
+msgstr "Riempimento della selezione"
+
+msgid "Selection Stroke"
+msgstr "Tratto della selezione"
+
+msgid "Menu Panel"
+msgstr "Pannello del menù"
+
+msgid "Zoom In"
+msgstr "Ingrandisci zoom"
+
+msgid "Zoom Out"
+msgstr "Rimpicciolisci zoom"
+
+msgid "Zoom Reset"
+msgstr "Ripristina zoom"
+
+msgid "Snapping Toggle"
+msgstr "Interruttore per lo scatto"
+
+msgid "Grid Toggle"
+msgstr "Interruttore per la griglia"
+
+msgid "Minimap Toggle"
+msgstr "Interruttore per la minimappa"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Estensione interiore della zona calda della porta"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Estensione esteriore della zona calda della porta"
+
 msgid "Draggable"
 msgstr "Trascinabile"
 
@@ -8669,11 +9115,29 @@ msgstr "Margine di autoriduzione"
 msgid "Drag Margin"
 msgstr "Margine di trascinamento"
 
+msgid "Panel Selected"
+msgstr "Pannello seleziona"
+
+msgid "Titlebar"
+msgstr "Barra del titolo"
+
+msgid "Titlebar Selected"
+msgstr "Barra del titolo selezionata"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignora tipo di collegamento non valido"
 
 msgid "Slots Focus Mode"
 msgstr "Modalità di focus degli slot"
+
+msgid "Slot"
+msgstr "Casella"
+
+msgid "Slot Selected"
+msgstr "Slot selezionato"
+
+msgid "Port H Offset"
+msgstr "Offset orizzontale di porta"
 
 msgid "Select Mode"
 msgstr "Modo di selezione"
@@ -8726,6 +9190,60 @@ msgstr "Scala di icona"
 msgid "Fixed Icon Size"
 msgstr "Dimensioni fisse d'icona"
 
+msgid "Scrollbar Margin Left"
+msgstr "Margine sinistro della barra di scorrimento"
+
+msgid "Scrollbar Margin Top"
+msgstr "Margine in alto della barra di scorrimento"
+
+msgid "Scrollbar Margin Right"
+msgstr "Margine destro della barra di scorrimento"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Margine in basso della barra di scorrimento"
+
+msgid "Scrollbar H Separation"
+msgstr "Separazione orizzontale della barra di scorrimento"
+
+msgid "Font Hovered Color"
+msgstr "Colore del font al passaggio"
+
+msgid "Font Hovered Selected Color"
+msgstr "Colore del font selezionato al passaggio"
+
+msgid "Font Selected Color"
+msgstr "Colore del font selezionato"
+
+msgid "Scroll Hint"
+msgstr "Indicatore di scorrimento"
+
+msgid "Scroll Hint Color"
+msgstr "Colore di indicatore di scorrimento"
+
+msgid "Icon Margin"
+msgstr "Margine dell'icona"
+
+msgid "Hovered"
+msgstr "Passato"
+
+msgid "Hovered Selected"
+msgstr "Selezionato al passaggio"
+
+msgid "Hovered Selected Focus"
+msgstr "Selezionato focalizzato al passaggio"
+
+msgid "Selected Focus"
+msgstr "Selezionato in focus"
+
+msgid "Cursor Unfocused"
+msgstr "Cursore fuori fuoco"
+
+msgid "Cursor"
+msgstr "Cursore"
+
+msgid "Guide Color"
+msgstr "Colore delle guide"
+
 msgid "Label Settings"
 msgstr "Impostazioni di etichetta"
 
@@ -8755,6 +9273,15 @@ msgstr "Modo di ritaglio dei caratteri"
 
 msgid "Visible Ratio"
 msgstr "Rapporto di visibilità"
+
+msgid "Paragraph Spacing"
+msgstr "Spaziatura paragrafi"
+
+msgid "Font Shadow Color"
+msgstr "Colore dell'ombra del font"
+
+msgid "Shadow Outline Size"
+msgstr "Dimensione del contorno dell'ombra"
 
 msgid "Placeholder Text"
 msgstr "Testo segnaposto"
@@ -8834,11 +9361,50 @@ msgstr "Modalità di espansione d'icona"
 msgid "Right Icon Scale"
 msgstr "Scala di icona destra"
 
+msgid "Font Placeholder Color"
+msgstr "Colore del font segnaposto"
+
+msgid "Caret Width"
+msgstr "Larghezza del cursore"
+
+msgid "Caret Color"
+msgstr "Colore per il cursore"
+
+msgid "Minimum Character Width"
+msgstr "Larghezza minima del carattere"
+
+msgid "Selection Color"
+msgstr "Colore per la selezione"
+
+msgid "Clear"
+msgstr "Rimuovi tutto"
+
+msgid "Clear Button Color"
+msgstr "Colore del pulsante di cancellazione"
+
+msgid "Clear Button Color Pressed"
+msgstr "Colore del pulsante di cancellazione premuto"
+
 msgid "Underline"
 msgstr "Sottolinea"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Spaziatura sottolineatura"
+
+msgid "Margin Left"
+msgstr "Margine sinistro"
+
+msgid "Margin Top"
+msgstr "Margine in alto"
+
+msgid "Margin Right"
+msgstr "Margine destro"
+
+msgid "Margin Bottom"
+msgstr "Margine in basso"
 
 msgid "Start Index"
 msgstr "Indice d'inizio"
@@ -8876,6 +9442,15 @@ msgstr "Abilita ricerca approssimata"
 msgid "Fuzzy Search Max Misses"
 msgstr "Margine di errore per la ricerca approssimata"
 
+msgid "Arrow"
+msgstr "Freccia"
+
+msgid "Arrow Margin"
+msgstr "Margine della freccia"
+
+msgid "Modulate Arrow"
+msgstr "Modula della freccia"
+
 msgid "Hide on Item Selection"
 msgstr "Nascondi alla selezione di una voce"
 
@@ -8900,17 +9475,71 @@ msgstr "Riduci altezza"
 msgid "Shrink Width"
 msgstr "Riduci larghezza"
 
+msgid "Separator"
+msgstr "Separatore"
+
+msgid "Labeled Separator Left"
+msgstr "Separatore etichettato sinistro"
+
+msgid "Labeled Separator Right"
+msgstr "Separatore etichettato destro"
+
+msgid "Search Bar Separation"
+msgstr "Separazione barra di ricerca"
+
+msgid "Item Start Padding"
+msgstr "Padding iniziale di elemento"
+
+msgid "Item End Padding"
+msgstr "Padding finale di elemento"
+
+msgid "Gutter Compact"
+msgstr "Barra laterale compatta"
+
+msgid "Indeterminate"
+msgstr "Indeterminato"
+
+msgid "Indeterminate Disabled"
+msgstr "Indeterminato disabilitato"
+
+msgid "Search"
+msgstr "Ricerca"
+
+msgid "Submenu"
+msgstr "Sottomenù"
+
+msgid "Submenu Mirrored"
+msgstr "Sottomenù (riflesso)"
+
+msgid "Font Separator"
+msgstr "Separatore di font"
+
+msgid "Font Separator Size"
+msgstr "Dimensione di separatore font"
+
+msgid "Font Accelerator Color"
+msgstr "Colore del font dell'acceleratore"
+
+msgid "Font Separator Color"
+msgstr "Colore del separatore di font"
+
+msgid "Separator Outline Size"
+msgstr "Dimensione del contorno del separatore"
+
+msgid "Font Separator Outline Color"
+msgstr "Colore del contorno del separatore di font"
+
 msgid "Fill Mode"
 msgstr "Modalità di riempimento"
 
 msgid "Show Percentage"
 msgstr "Mostra percentuale"
 
-msgid "Indeterminate"
-msgstr "Indeterminato"
-
 msgid "Preview Indeterminate"
 msgstr "Anteprima indeterminato"
+
+msgid "Background"
+msgstr "Sfondo"
 
 msgid "Min Value"
 msgstr "Valore minimo"
@@ -8996,8 +9625,98 @@ msgstr "Ritardo della barra di progresso"
 msgid "Text Selection"
 msgstr "Selezione del testo"
 
+msgid "Horizontal Rule"
+msgstr "Linea orizzontale"
+
+msgid "Normal Font"
+msgstr "Font normale"
+
+msgid "Normal Font Size"
+msgstr "Dimensione font normale"
+
+msgid "Shadow Offset X"
+msgstr "Scostamento in X dell'ombra"
+
+msgid "Shadow Offset Y"
+msgstr "Scostamento in Y dell'ombra"
+
+msgid "Bold Font"
+msgstr "Font in grassetto"
+
+msgid "Bold Font Size"
+msgstr "Dimensione font in grassetto"
+
+msgid "Bold Italics Font"
+msgstr "Font in grassetto e corsivo"
+
+msgid "Bold Italics Font Size"
+msgstr "Dimensione font in grassetto e corsivo"
+
+msgid "Italics Font"
+msgstr "Font in corsivo"
+
+msgid "Italics Font Size"
+msgstr "Dimensione font in corsivo"
+
+msgid "Mono Font"
+msgstr "Font monospazio"
+
+msgid "Mono Font Size"
+msgstr "Dimensione font monospazio"
+
+msgid "Text Highlight H Padding"
+msgstr "Padding orizzontale di evidenziazione di testo"
+
+msgid "Text Highlight V Padding"
+msgstr "Padding verticale di evidenziazione di testo"
+
+msgid "Underline Alpha"
+msgstr "Alfa di sottolineatura"
+
+msgid "Strikethrough Alpha"
+msgstr "Alfa di barratura"
+
+msgid "Table H Separation"
+msgstr "Separazione orizzontale di tabella"
+
+msgid "Table V Separation"
+msgstr "Separazione verticale di tabella"
+
+msgid "Table Odd Row BG"
+msgstr "Colore sfondo di riga dispari di tabella"
+
+msgid "Table Even Row BG"
+msgstr "Colore sfondo di riga pari di tabella"
+
+msgid "Table Border"
+msgstr "Bordo di tabella"
+
 msgid "Custom Step"
 msgstr "Passo personalizzato"
+
+msgid "Scroll Focus"
+msgstr "Focus sulla barra quando attiva"
+
+msgid "Grabber Pressed"
+msgstr "Grabber premuto"
+
+msgid "Increment"
+msgstr "Incremento"
+
+msgid "Increment Highlight"
+msgstr "Incremento evidenziato"
+
+msgid "Increment Pressed"
+msgstr "Incremento premuto"
+
+msgid "Decrement"
+msgstr "Decremento"
+
+msgid "Decrement Highlight"
+msgstr "Decremento evidenziato"
+
+msgid "Decrement Pressed"
+msgstr "Decremento premuto"
 
 msgid "Follow Focus"
 msgstr "Segui il focus"
@@ -9032,8 +9751,20 @@ msgstr "Scorri orizzontalmente di norma"
 msgid "Scroll Deadzone"
 msgstr "Zona morta di scorrimento"
 
-msgid "Scroll Hint"
-msgstr "Indicatore di scorrimento"
+msgid "Scrollbar V Separation"
+msgstr "Separazione verticale della barra di scorrimento"
+
+msgid "Scroll Hint Vertical"
+msgstr "Indicatore di scorrimento verticale"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Indicatore di scorrimento orizzontale"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Colore di indicatore di scorrimento verticale"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Colore di indicatore di scorrimento orizzontale"
 
 msgid "Default Scroll Deadzone"
 msgstr "Zona morta di scorrimento preimpostata"
@@ -9050,6 +9781,30 @@ msgstr "Segni sui bordi"
 msgid "Ticks Position"
 msgstr "Posizione delle tacche"
 
+msgid "Slider"
+msgstr "Dietro la barra"
+
+msgid "Grabber Area"
+msgstr "Zona del grabber"
+
+msgid "Grabber Area Highlight"
+msgstr "Zona del grabber evidenziata"
+
+msgid "Grabber Disabled"
+msgstr "Grabber disabilitato"
+
+msgid "Tick"
+msgstr "Segno"
+
+msgid "Center Grabber"
+msgstr "Grabber centrale"
+
+msgid "Grabber Offset"
+msgstr "Offset del grabber"
+
+msgid "Tick Offset"
+msgstr "Deviazione delle tacche"
+
 msgid "Update on Text Changed"
 msgstr "Aggiorna al cambiamento del testo"
 
@@ -9058,6 +9813,96 @@ msgstr "Passo personalizzato della freccia"
 
 msgid "Format"
 msgstr "Formato"
+
+msgid "Buttons Vertical Separation"
+msgstr "Separazione verticale dei pulsanti"
+
+msgid "Field and Buttons Separation"
+msgstr "Separazione tra campo e pulsanti"
+
+msgid "Buttons Width"
+msgstr "Larghezza pulsanti"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Deriva larghezza minima dei pulsanti dalle icone"
+
+msgid "Up"
+msgstr "Su"
+
+msgid "Up Hover"
+msgstr "Su al passaggio"
+
+msgid "Up Pressed"
+msgstr "Su premuto"
+
+msgid "Up Disabled"
+msgstr "Su disabilitato"
+
+msgid "Down"
+msgstr "Giù"
+
+msgid "Down Hover"
+msgstr "Giù al passaggio"
+
+msgid "Down Pressed"
+msgstr "Giù premuto"
+
+msgid "Down Disabled"
+msgstr "Giù disabilitato"
+
+msgid "Up Background"
+msgstr "Sfondo su"
+
+msgid "Up Background Hovered"
+msgstr "Sfondo su al passaggio"
+
+msgid "Up Background Pressed"
+msgstr "Sfondo su premuto"
+
+msgid "Up Background Disabled"
+msgstr "Sfondo su disabilitato"
+
+msgid "Down Background"
+msgstr "Sfondo giù"
+
+msgid "Down Background Hovered"
+msgstr "Sfondo giù al passaggio"
+
+msgid "Down Background Pressed"
+msgstr "Sfondo giù premuto"
+
+msgid "Down Background Disabled"
+msgstr "Sfondo giù disabilitato"
+
+msgid "Up Icon Modulate"
+msgstr "Modulazione icona su"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Modulazione icona su al passaggio"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Modulazione icona su premuta"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Modulazione icona su disattivata"
+
+msgid "Down Icon Modulate"
+msgstr "Modulazione icona giù"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulazione icona giù al passaggio del mouse"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Modulazione icona giù premuta"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Modulazione icona giù disattivata"
+
+msgid "Field and Buttons Separator"
+msgstr "Separatore tra campo e pulsanti"
+
+msgid "Up Down Buttons Separator"
+msgstr "Separatore pulsanti su/giù"
 
 msgid "Collapsed"
 msgstr "Compresso"
@@ -9085,6 +9930,39 @@ msgstr "Margine finale"
 
 msgid "Highlight in Editor"
 msgstr "Evidenzia nell'editor"
+
+msgid "Touch Dragger Color"
+msgstr "Colore di dragger touch"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Colore di dragger touch premuto"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Colore di dragger touch passato"
+
+msgid "Minimum Grab Thickness"
+msgstr "Spessore minimo di presa"
+
+msgid "Autohide"
+msgstr "Nascondi automaticamente"
+
+msgid "Touch Dragger"
+msgstr "Dragger tattile"
+
+msgid "H Touch Dragger"
+msgstr "O. dragger touch"
+
+msgid "V Touch Dragger"
+msgstr "V. dragger touch"
+
+msgid "H Grabber"
+msgstr "Grabber O"
+
+msgid "V Grabber"
+msgstr "Grabber V"
+
+msgid "Split Bar Background"
+msgstr "Sfondo della barra di divisione"
 
 msgid "Split Offset"
 msgstr "Offset suddivisioni"
@@ -9137,6 +10015,42 @@ msgstr "Abilita deselezione"
 msgid "Tabs"
 msgstr "Schede"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Millisecondi prima di passare puntando il mouse"
+
+msgid "Tab Hovered"
+msgstr "Scheda passata"
+
+msgid "Tab Disabled"
+msgstr "Scheda disabilitata"
+
+msgid "Tab Focus"
+msgstr "Scheda focalizzata"
+
+msgid "Drop Mark"
+msgstr "Segno di rilascio"
+
+msgid "Drop Mark Color"
+msgstr "Colore del segno di rilascio"
+
+msgid "Font Unselected Color"
+msgstr "Colore del font deselezionato"
+
+msgid "Icon Selected Color"
+msgstr "Colore dell'icona selezionata"
+
+msgid "Icon Hovered Color"
+msgstr "Colore dell'icona al passaggio"
+
+msgid "Icon Unselected Color"
+msgstr "Colore dell'icona deselezionata"
+
+msgid "Close"
+msgstr "Chiudi"
+
+msgid "Button Highlight"
+msgstr "Evidenziazione di pulsante"
+
 msgid "Tabs Position"
 msgstr "Posizione schede"
 
@@ -9148,6 +10062,21 @@ msgstr "Usa schede nascoste per la dimensione minima"
 
 msgid "Tab Focus Mode"
 msgstr "Modalità focus della scheda"
+
+msgid "Side Margin"
+msgstr "Margine laterale"
+
+msgid "Tabbar Background"
+msgstr "Sfondo della barra di schede"
+
+msgid "Menu"
+msgstr "Menù"
+
+msgid "Menu Highlight"
+msgstr "Evidenziazione menù"
+
+msgid "Icon Separation"
+msgstr "Separazione d'icona"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Abilita appunti con selezione vuota"
@@ -9194,18 +10123,35 @@ msgstr "Caratteri di controllo"
 msgid "Spaces"
 msgstr "Spazi"
 
+msgid "Search Result Color"
+msgstr "Colore per i risultati di ricerca"
+
+msgid "Search Result Border Color"
+msgstr "Colore per il bordo dei risultati di ricerca"
+
+msgid "Caret Background Color"
+msgstr "Colore per lo sfondo del cursore"
+
+msgid "Tab"
+msgstr "Scheda"
+
+msgid "Space"
+msgstr "Spazio"
+
+msgid "Font Readonly Color"
+msgstr "Colore del font di sola lettura"
+
+msgid "Current Line Color"
+msgstr "Colore per la riga attuale"
+
+msgid "Word Highlighted Color"
+msgstr "Colore per parola evidenziata"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Rilevamento di inattività nell'editor di testo (secondi)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Quantità massima di annullamenti nell'editor di testo"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Normale"
-
-msgid "Hover"
-msgstr "Passaggio"
 
 msgid "Focused"
 msgstr "Focalizzato"
@@ -9279,6 +10225,114 @@ msgstr "Scorrimento orizzontale abilitato"
 msgid "Scroll Vertical Enabled"
 msgstr "Scorrimento verticale abilitato"
 
+msgid "Title Button Font"
+msgstr "Font del pulsante del titolo"
+
+msgid "Title Button Font Size"
+msgstr "Dimensione font del pulsante del titolo"
+
+msgid "Hovered Dimmed"
+msgstr "Attenuato al passaggio"
+
+msgid "Button Hover"
+msgstr "Pulsante al passaggio"
+
+msgid "Arrow Collapsed"
+msgstr "Freccia ridotta"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Freccia ridotta (riflessa)"
+
+msgid "Select Arrow"
+msgstr "Freccia di selezione"
+
+msgid "Custom Button"
+msgstr "Pulsante personalizzato"
+
+msgid "Custom Button Hover"
+msgstr "Pulsante personalizzato passato"
+
+msgid "Custom Button Pressed"
+msgstr "Pulsante personalizzato premuto"
+
+msgid "Custom Button Font Highlight"
+msgstr "Evidenziazione personalizzata del font di pulsante"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Colore del font attenuato al passaggio"
+
+msgid "Drop Position Color"
+msgstr "Colore della posizione di rilascio"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Margine in basso dell'elemento interiore"
+
+msgid "Inner Item Margin Left"
+msgstr "Margine sinistro dell'elemento interiore"
+
+msgid "Inner Item Margin Right"
+msgstr "Margine destro dell'elemento interiore"
+
+msgid "Inner Item Margin Top"
+msgstr "Margine in alto dell'elemento interiore"
+
+msgid "Item Margin"
+msgstr "Margine d'elemento"
+
+msgid "Check H Separation"
+msgstr "Separazione orizzontale di spunta"
+
+msgid "Icon H Separation"
+msgstr "Separazione orizzontale di icona"
+
+msgid "Button Margin"
+msgstr "Margine del pulsante"
+
+msgid "Draw Guides"
+msgstr "Disegna guide"
+
+msgid "Relationship Line Width"
+msgstr "Opacità linee di relazione"
+
+msgid "Parent HL Line Width"
+msgstr "Larghezza di riga del HL padre"
+
+msgid "Children HL Line Width"
+msgstr "Larghezza di riga dei HL figli"
+
+msgid "Parent HL Line Margin"
+msgstr "Margine di riga del HL padre"
+
+msgid "Relationship Line Color"
+msgstr "Colore della linea di relazione"
+
+msgid "Parent HL Line Color"
+msgstr "Colore della riga del HL padre"
+
+msgid "Children HL Line Color"
+msgstr "Colore della riga degli HL figli"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Millisecondi prima di espandere con trascinamento"
+
+msgid "Scroll Border"
+msgstr "Bordo della barra di scorrimento"
+
+msgid "Scroll Speed"
+msgstr "Velocità di scorrimento"
+
+msgid "Title Button Normal"
+msgstr "Pulsante del titolo normale"
+
+msgid "Title Button Pressed"
+msgstr "Pulsante del titolo premuto"
+
+msgid "Title Button Hover"
+msgstr "Pulsante del titolo passato"
+
+msgid "Title Button Color"
+msgstr "Colore del pulsante del titolo"
+
 msgid "Audio Track"
 msgstr "Traccia audio"
 
@@ -9320,6 +10374,18 @@ msgstr "Azione alto"
 
 msgid "Action Down"
 msgstr "Azione basso"
+
+msgid "Normal Joystick"
+msgstr "Joystick normale"
+
+msgid "Normal Tip"
+msgstr "Punta normale"
+
+msgid "Pressed Joystick"
+msgstr "Joystick premuto"
+
+msgid "Pressed Tip"
+msgstr "Punta premuta"
 
 msgid "Self Modulate"
 msgstr "Modula a se stesso"
@@ -9537,9 +10603,6 @@ msgstr "Abilita la selezione di oggetti"
 msgid "Scene Traversal"
 msgstr "Attraversamento di scena"
 
-msgid "Menu"
-msgstr "Menù"
-
 msgid "Wait Time"
 msgstr "Tempo di attesa"
 
@@ -9725,6 +10788,39 @@ msgstr "Output HDR"
 
 msgid "Requested"
 msgstr "Richiesto"
+
+msgid "Embedded Border"
+msgstr "Bordo incorporato"
+
+msgid "Embedded Unfocused Border"
+msgstr "Bordo incorporato senza focus"
+
+msgid "Title Font"
+msgstr "Font del titolo"
+
+msgid "Title Font Size"
+msgstr "Dimensione font del titolo"
+
+msgid "Title Height"
+msgstr "Altezza del titolo"
+
+msgid "Title Outline Modulate"
+msgstr "Modula contorno del titolo"
+
+msgid "Title Outline Size"
+msgstr "Dimensione contorno del titolo"
+
+msgid "Close Pressed"
+msgstr "Chiudo premuto"
+
+msgid "Close H Offset"
+msgstr "Chiudi scostamento O"
+
+msgid "Close V Offset"
+msgstr "Chiudi scostamento V"
+
+msgid "Resize Margin"
+msgstr "Margine di ridimensionamento"
 
 msgid "Swap Cancel OK"
 msgstr "Scambia cancella e accetta"
@@ -10161,9 +11257,6 @@ msgstr "Curva Y"
 msgid "Curve Z"
 msgstr "Curva Z"
 
-msgid "Background"
-msgstr "Sfondo"
-
 msgid "Canvas Max Layer"
 msgstr "Strato massimo del canvas"
 
@@ -10374,9 +11467,6 @@ msgstr "Spaziatura aggiuntiva"
 msgid "Glyph"
 msgstr "Glifo"
 
-msgid "Space"
-msgstr "Spazio"
-
 msgid "Baseline"
 msgstr "Linea di base"
 
@@ -10415,9 +11505,6 @@ msgstr "Usa HDR"
 
 msgid "To"
 msgstr "A"
-
-msgid "Paragraph Spacing"
-msgstr "Spaziatura paragrafi"
 
 msgid "Stacked Effects"
 msgstr "Effetti impilati"
@@ -10961,1099 +12048,6 @@ msgstr "Font predefinito"
 
 msgid "Default Font Size"
 msgstr "Dimensione font predefinito"
-
-msgid "File"
-msgstr "File"
-
-msgid "Font Pressed Color"
-msgstr "Colore del font premuto"
-
-msgid "Font Hover Color"
-msgstr "Colore del font al passaggio"
-
-msgid "Font Focus Color"
-msgstr "Colore del font in focus"
-
-msgid "Font Hover Pressed Color"
-msgstr "Colore del font premuto e al passaggio"
-
-msgid "Font Disabled Color"
-msgstr "Colore del font disabilitato"
-
-msgid "Font Outline Color"
-msgstr "Colore contorno del font"
-
-msgid "Icon Normal Color"
-msgstr "Colore dell'icona normale"
-
-msgid "Icon Pressed Color"
-msgstr "Colore dell'icona premuta"
-
-msgid "Icon Hover Color"
-msgstr "Colore dell'icona al passaggio"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Colore dell'icona premuta e al passaggio"
-
-msgid "Icon Focus Color"
-msgstr "Colore dell'icona in focus"
-
-msgid "Icon Disabled Color"
-msgstr "Colore dell'icona disabilitata"
-
-msgid "H Separation"
-msgstr "Separazione orizzontale"
-
-msgid "Icon Max Width"
-msgstr "Larghezza massima dell'icona"
-
-msgid "Align to Largest Stylebox"
-msgstr "Allinea alla Stylebox più larga"
-
-msgid "Underline Spacing"
-msgstr "Spaziatura sottolineatura"
-
-msgid "Normal Mirrored"
-msgstr "Normale (riflesso)"
-
-msgid "Hover Mirrored"
-msgstr "Al passaggio (riflesso)"
-
-msgid "Pressed Mirrored"
-msgstr "Premuto (riflesso)"
-
-msgid "Disabled Mirrored"
-msgstr "Disabilitato (riflesso)"
-
-msgid "Arrow"
-msgstr "Freccia"
-
-msgid "Arrow Margin"
-msgstr "Margine della freccia"
-
-msgid "Modulate Arrow"
-msgstr "Modula della freccia"
-
-msgid "Hover Pressed"
-msgstr "Al passaggio premuto"
-
-msgid "Checked Disabled"
-msgstr "Spuntato disabilitato"
-
-msgid "Unchecked"
-msgstr "Non spuntato"
-
-msgid "Unchecked Disabled"
-msgstr "Non spuntato disabilitato"
-
-msgid "Radio Checked"
-msgstr "Radio spuntato"
-
-msgid "Radio Checked Disabled"
-msgstr "Radio spuntato disabilitato"
-
-msgid "Radio Unchecked"
-msgstr "Radio non spuntato"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Radio non spuntato disattivato"
-
-msgid "Check V Offset"
-msgstr "Scostamento V di spunta"
-
-msgid "Checkbox Checked Color"
-msgstr "Colore di casella spuntata"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Colore di casella non spuntata"
-
-msgid "Checked Mirrored"
-msgstr "Spuntato (riflesso)"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Spuntato disabilitato (riflesso)"
-
-msgid "Unchecked Mirrored"
-msgstr "Non spuntato (riflesso)"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Non spuntato disabilitato (riflesso)"
-
-msgid "Button Checked Color"
-msgstr "Colore di pulsante spuntato"
-
-msgid "Button Unchecked Color"
-msgstr "Colore di pulsante non spuntato"
-
-msgid "Font Shadow Color"
-msgstr "Colore dell'ombra del font"
-
-msgid "Shadow Offset X"
-msgstr "Scostamento in X dell'ombra"
-
-msgid "Shadow Offset Y"
-msgstr "Scostamento in Y dell'ombra"
-
-msgid "Shadow Outline Size"
-msgstr "Dimensione del contorno dell'ombra"
-
-msgid "Font Selected Color"
-msgstr "Colore del font selezionato"
-
-msgid "Font Uneditable Color"
-msgstr "Colore del font non modificabile"
-
-msgid "Font Placeholder Color"
-msgstr "Colore del font segnaposto"
-
-msgid "Caret Color"
-msgstr "Colore per il cursore"
-
-msgid "Selection Color"
-msgstr "Colore per la selezione"
-
-msgid "Clear Button Color"
-msgstr "Colore del pulsante di cancellazione"
-
-msgid "Clear Button Color Pressed"
-msgstr "Colore del pulsante di cancellazione premuto"
-
-msgid "Minimum Character Width"
-msgstr "Larghezza minima del carattere"
-
-msgid "Caret Width"
-msgstr "Larghezza del cursore"
-
-msgid "Clear"
-msgstr "Rimuovi tutto"
-
-msgid "Tab"
-msgstr "Scheda"
-
-msgid "Font Readonly Color"
-msgstr "Colore del font di sola lettura"
-
-msgid "Current Line Color"
-msgstr "Colore per la riga attuale"
-
-msgid "Caret Background Color"
-msgstr "Colore per lo sfondo del cursore"
-
-msgid "Word Highlighted Color"
-msgstr "Colore per parola evidenziata"
-
-msgid "Search Result Color"
-msgstr "Colore per i risultati di ricerca"
-
-msgid "Search Result Border Color"
-msgstr "Colore per il bordo dei risultati di ricerca"
-
-msgid "Breakpoint"
-msgstr "Punto di interruzione"
-
-msgid "Bookmark"
-msgstr "Segnalibro"
-
-msgid "Executing Line"
-msgstr "Linea in esecuzione"
-
-msgid "Can Fold"
-msgstr "Può comprimere"
-
-msgid "Can Fold Code Region"
-msgstr "Può ridurre regione di codice"
-
-msgid "Folded Code Region"
-msgstr "Regione di codice compressa"
-
-msgid "Folded EOL Icon"
-msgstr "Icona di fine riga compressa"
-
-msgid "Completion Color BG"
-msgstr "Colore di sfondo di completamento"
-
-msgid "Completion Background Color"
-msgstr "Colore per lo sfondo del completamento"
-
-msgid "Completion Selected Color"
-msgstr "Colore per la selezione del completamento"
-
-msgid "Completion Existing Color"
-msgstr "Colore per la parte esistente del completamento"
-
-msgid "Completion Scroll Color"
-msgstr "Colore per la barra di scorrimento del completamento"
-
-msgid "Completion Scroll Hovered Color"
-msgstr ""
-"Colore al passaggio del mouse per la barra di scorrimento del completamento"
-
-msgid "Bookmark Color"
-msgstr "Colore per segnalibro"
-
-msgid "Breakpoint Color"
-msgstr "Colore per punto di interruzione"
-
-msgid "Executing Line Color"
-msgstr "Colore per la riga in esecuzione"
-
-msgid "Code Folding Color"
-msgstr "Colore per righe di codice ridotte"
-
-msgid "Folded Code Region Color"
-msgstr "Colore per una regione di codice chiusa"
-
-msgid "Brace Mismatch Color"
-msgstr "Colore per mancata corrispondenza tra parentesi"
-
-msgid "Line Number Color"
-msgstr "Colore per numero di riga"
-
-msgid "Line Length Guideline Color"
-msgstr "Colore per la linea guida della lunghezza della riga"
-
-msgid "Completion Lines"
-msgstr "Righe di completamento"
-
-msgid "Completion Max Width"
-msgstr "Larghezza massima di completamento"
-
-msgid "Completion Scroll Width"
-msgstr "Spessore della barra di scorrimento di completamento"
-
-msgid "Scroll Focus"
-msgstr "Focus sulla barra quando attiva"
-
-msgid "Grabber"
-msgstr "Grabber"
-
-msgid "Grabber Highlight"
-msgstr "Grabber evidenziato"
-
-msgid "Grabber Pressed"
-msgstr "Grabber premuto"
-
-msgid "Increment"
-msgstr "Incremento"
-
-msgid "Increment Highlight"
-msgstr "Incremento evidenziato"
-
-msgid "Increment Pressed"
-msgstr "Incremento premuto"
-
-msgid "Decrement"
-msgstr "Decremento"
-
-msgid "Decrement Highlight"
-msgstr "Decremento evidenziato"
-
-msgid "Decrement Pressed"
-msgstr "Decremento premuto"
-
-msgid "Slider"
-msgstr "Dietro la barra"
-
-msgid "Grabber Area"
-msgstr "Zona del grabber"
-
-msgid "Grabber Area Highlight"
-msgstr "Zona del grabber evidenziata"
-
-msgid "Grabber Disabled"
-msgstr "Grabber disabilitato"
-
-msgid "Tick"
-msgstr "Segno"
-
-msgid "Center Grabber"
-msgstr "Grabber centrale"
-
-msgid "Grabber Offset"
-msgstr "Offset del grabber"
-
-msgid "Tick Offset"
-msgstr "Deviazione delle tacche"
-
-msgid "Updown"
-msgstr "Alto/Basso"
-
-msgid "Up"
-msgstr "Su"
-
-msgid "Up Hover"
-msgstr "Su al passaggio"
-
-msgid "Up Pressed"
-msgstr "Su premuto"
-
-msgid "Up Disabled"
-msgstr "Su disabilitato"
-
-msgid "Down"
-msgstr "Giù"
-
-msgid "Down Hover"
-msgstr "Giù al passaggio"
-
-msgid "Down Pressed"
-msgstr "Giù premuto"
-
-msgid "Down Disabled"
-msgstr "Giù disabilitato"
-
-msgid "Up Background"
-msgstr "Sfondo su"
-
-msgid "Up Background Hovered"
-msgstr "Sfondo su al passaggio"
-
-msgid "Up Background Pressed"
-msgstr "Sfondo su premuto"
-
-msgid "Up Background Disabled"
-msgstr "Sfondo su disabilitato"
-
-msgid "Down Background"
-msgstr "Sfondo giù"
-
-msgid "Down Background Hovered"
-msgstr "Sfondo giù al passaggio"
-
-msgid "Down Background Pressed"
-msgstr "Sfondo giù premuto"
-
-msgid "Down Background Disabled"
-msgstr "Sfondo giù disabilitato"
-
-msgid "Up Icon Modulate"
-msgstr "Modulazione icona su"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Modulazione icona su al passaggio"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Modulazione icona su premuta"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Modulazione icona su disattivata"
-
-msgid "Down Icon Modulate"
-msgstr "Modulazione icona giù"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Modulazione icona giù al passaggio del mouse"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Modulazione icona giù premuta"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Modulazione icona giù disattivata"
-
-msgid "Field and Buttons Separator"
-msgstr "Separatore tra campo e pulsanti"
-
-msgid "Up Down Buttons Separator"
-msgstr "Separatore pulsanti su/giù"
-
-msgid "Buttons Vertical Separation"
-msgstr "Separazione verticale dei pulsanti"
-
-msgid "Field and Buttons Separation"
-msgstr "Separazione tra campo e pulsanti"
-
-msgid "Buttons Width"
-msgstr "Larghezza pulsanti"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Deriva larghezza minima dei pulsanti dalle icone"
-
-msgid "Scroll Hint Vertical"
-msgstr "Indicatore di scorrimento verticale"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Indicatore di scorrimento orizzontale"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Colore di indicatore di scorrimento verticale"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Colore di indicatore di scorrimento orizzontale"
-
-msgid "Scrollbar Margin Left"
-msgstr "Margine sinistro della barra di scorrimento"
-
-msgid "Scrollbar Margin Top"
-msgstr "Margine in alto della barra di scorrimento"
-
-msgid "Scrollbar Margin Right"
-msgstr "Margine destro della barra di scorrimento"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Margine in basso della barra di scorrimento"
-
-msgid "Normal Joystick"
-msgstr "Joystick normale"
-
-msgid "Normal Tip"
-msgstr "Punta normale"
-
-msgid "Pressed Joystick"
-msgstr "Joystick premuto"
-
-msgid "Pressed Tip"
-msgstr "Punta premuta"
-
-msgid "Embedded Border"
-msgstr "Bordo incorporato"
-
-msgid "Embedded Unfocused Border"
-msgstr "Bordo incorporato senza focus"
-
-msgid "Title Font"
-msgstr "Font del titolo"
-
-msgid "Title Font Size"
-msgstr "Dimensione font del titolo"
-
-msgid "Title Outline Modulate"
-msgstr "Modula contorno del titolo"
-
-msgid "Title Outline Size"
-msgstr "Dimensione contorno del titolo"
-
-msgid "Title Height"
-msgstr "Altezza del titolo"
-
-msgid "Resize Margin"
-msgstr "Margine di ridimensionamento"
-
-msgid "Close"
-msgstr "Chiudi"
-
-msgid "Close Pressed"
-msgstr "Chiudo premuto"
-
-msgid "Close H Offset"
-msgstr "Chiudi scostamento O"
-
-msgid "Close V Offset"
-msgstr "Chiudi scostamento V"
-
-msgid "Buttons Separation"
-msgstr "Separazione pulsanti"
-
-msgid "Load"
-msgstr "Carica"
-
-msgid "Save"
-msgstr "Salva"
-
-msgid "Parent Folder"
-msgstr "Cartella superiore"
-
-msgid "Back Folder"
-msgstr "Cartella indietro"
-
-msgid "Forward Folder"
-msgstr "Cartella avanti"
-
-msgid "Reload"
-msgstr "Ricarica"
-
-msgid "Favorite"
-msgstr "Preferito"
-
-msgid "Toggle Hidden"
-msgstr "Interruttore file nascosti"
-
-msgid "Toggle Filename Filter"
-msgstr "Interruttore filtro nome di file"
-
-msgid "Folder"
-msgstr "Cartella"
-
-msgid "Thumbnail Mode"
-msgstr "Modalità miniatura"
-
-msgid "List Mode"
-msgstr "Modalità elenco"
-
-msgid "Create Folder"
-msgstr "Crea cartella"
-
-msgid "Sort"
-msgstr "Ordina"
-
-msgid "Favorite Up"
-msgstr "Preferito su"
-
-msgid "Favorite Down"
-msgstr "Preferito giù"
-
-msgid "File Thumbnail"
-msgstr "Miniatura di file"
-
-msgid "Folder Thumbnail"
-msgstr "Miniatura di cartella"
-
-msgid "Folder Icon Color"
-msgstr "Colore dell'icona della cartella"
-
-msgid "File Icon Color"
-msgstr "Colore dell'icona del file"
-
-msgid "File Disabled Color"
-msgstr "Colore di file disattivato"
-
-msgid "Separator"
-msgstr "Separatore"
-
-msgid "Labeled Separator Left"
-msgstr "Separatore etichettato sinistro"
-
-msgid "Labeled Separator Right"
-msgstr "Separatore etichettato destro"
-
-msgid "Indeterminate Disabled"
-msgstr "Indeterminato disabilitato"
-
-msgid "Submenu"
-msgstr "Sottomenù"
-
-msgid "Submenu Mirrored"
-msgstr "Sottomenù (riflesso)"
-
-msgid "Search"
-msgstr "Ricerca"
-
-msgid "Font Separator"
-msgstr "Separatore di font"
-
-msgid "Font Separator Size"
-msgstr "Dimensione di separatore font"
-
-msgid "Font Accelerator Color"
-msgstr "Colore del font dell'acceleratore"
-
-msgid "Font Separator Color"
-msgstr "Colore del separatore di font"
-
-msgid "Font Separator Outline Color"
-msgstr "Colore del contorno del separatore di font"
-
-msgid "V Separation"
-msgstr "Separazione verticale"
-
-msgid "Search Bar Separation"
-msgstr "Separazione barra di ricerca"
-
-msgid "Separator Outline Size"
-msgstr "Dimensione del contorno del separatore"
-
-msgid "Item Start Padding"
-msgstr "Padding iniziale di elemento"
-
-msgid "Item End Padding"
-msgstr "Padding finale di elemento"
-
-msgid "Gutter Compact"
-msgstr "Barra laterale compatta"
-
-msgid "Panel Selected"
-msgstr "Pannello seleziona"
-
-msgid "Panel Focus"
-msgstr "Scheda focalizzata"
-
-msgid "Titlebar"
-msgstr "Barra del titolo"
-
-msgid "Titlebar Selected"
-msgstr "Barra del titolo selezionata"
-
-msgid "Slot"
-msgstr "Casella"
-
-msgid "Slot Selected"
-msgstr "Slot selezionato"
-
-msgid "Resizer"
-msgstr "Ridimensionatore"
-
-msgid "Resizer Color"
-msgstr "Colore del ridimensionatore"
-
-msgid "Port H Offset"
-msgstr "Offset orizzontale di porta"
-
-msgid "Hovered"
-msgstr "Passato"
-
-msgid "Hovered Dimmed"
-msgstr "Attenuato al passaggio"
-
-msgid "Hovered Selected"
-msgstr "Selezionato al passaggio"
-
-msgid "Hovered Selected Focus"
-msgstr "Selezionato focalizzato al passaggio"
-
-msgid "Selected Focus"
-msgstr "Selezionato in focus"
-
-msgid "Cursor"
-msgstr "Cursore"
-
-msgid "Cursor Unfocused"
-msgstr "Cursore fuori fuoco"
-
-msgid "Button Hover"
-msgstr "Pulsante al passaggio"
-
-msgid "Title Button Normal"
-msgstr "Pulsante del titolo normale"
-
-msgid "Title Button Pressed"
-msgstr "Pulsante del titolo premuto"
-
-msgid "Title Button Hover"
-msgstr "Pulsante del titolo passato"
-
-msgid "Custom Button"
-msgstr "Pulsante personalizzato"
-
-msgid "Custom Button Pressed"
-msgstr "Pulsante personalizzato premuto"
-
-msgid "Custom Button Hover"
-msgstr "Pulsante personalizzato passato"
-
-msgid "Select Arrow"
-msgstr "Freccia di selezione"
-
-msgid "Arrow Collapsed"
-msgstr "Freccia ridotta"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Freccia ridotta (riflessa)"
-
-msgid "Title Button Font"
-msgstr "Font del pulsante del titolo"
-
-msgid "Title Button Font Size"
-msgstr "Dimensione font del pulsante del titolo"
-
-msgid "Title Button Color"
-msgstr "Colore del pulsante del titolo"
-
-msgid "Font Hovered Color"
-msgstr "Colore del font al passaggio"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Colore del font attenuato al passaggio"
-
-msgid "Font Hovered Selected Color"
-msgstr "Colore del font selezionato al passaggio"
-
-msgid "Guide Color"
-msgstr "Colore delle guide"
-
-msgid "Drop Position Color"
-msgstr "Colore della posizione di rilascio"
-
-msgid "Relationship Line Color"
-msgstr "Colore della linea di relazione"
-
-msgid "Parent HL Line Color"
-msgstr "Colore della riga del HL padre"
-
-msgid "Children HL Line Color"
-msgstr "Colore della riga degli HL figli"
-
-msgid "Custom Button Font Highlight"
-msgstr "Evidenziazione personalizzata del font di pulsante"
-
-msgid "Scroll Hint Color"
-msgstr "Colore di indicatore di scorrimento"
-
-msgid "Item Margin"
-msgstr "Margine d'elemento"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Margine in basso dell'elemento interiore"
-
-msgid "Inner Item Margin Left"
-msgstr "Margine sinistro dell'elemento interiore"
-
-msgid "Inner Item Margin Right"
-msgstr "Margine destro dell'elemento interiore"
-
-msgid "Inner Item Margin Top"
-msgstr "Margine in alto dell'elemento interiore"
-
-msgid "Check H Separation"
-msgstr "Separazione orizzontale di spunta"
-
-msgid "Icon H Separation"
-msgstr "Separazione orizzontale di icona"
-
-msgid "Button Margin"
-msgstr "Margine del pulsante"
-
-msgid "Relationship Line Width"
-msgstr "Opacità linee di relazione"
-
-msgid "Parent HL Line Width"
-msgstr "Larghezza di riga del HL padre"
-
-msgid "Children HL Line Width"
-msgstr "Larghezza di riga dei HL figli"
-
-msgid "Parent HL Line Margin"
-msgstr "Margine di riga del HL padre"
-
-msgid "Draw Guides"
-msgstr "Disegna guide"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Millisecondi prima di espandere con trascinamento"
-
-msgid "Scroll Border"
-msgstr "Bordo della barra di scorrimento"
-
-msgid "Scroll Speed"
-msgstr "Velocità di scorrimento"
-
-msgid "Scrollbar H Separation"
-msgstr "Separazione orizzontale della barra di scorrimento"
-
-msgid "Scrollbar V Separation"
-msgstr "Separazione verticale della barra di scorrimento"
-
-msgid "Icon Margin"
-msgstr "Margine dell'icona"
-
-msgid "Tab Selected"
-msgstr "Scheda selezionata"
-
-msgid "Tab Hovered"
-msgstr "Scheda passata"
-
-msgid "Tab Unselected"
-msgstr "Scheda deselezionata"
-
-msgid "Tab Disabled"
-msgstr "Scheda disabilitata"
-
-msgid "Tab Focus"
-msgstr "Scheda focalizzata"
-
-msgid "Tabbar Background"
-msgstr "Sfondo della barra di schede"
-
-msgid "Drop Mark"
-msgstr "Segno di rilascio"
-
-msgid "Menu Highlight"
-msgstr "Evidenziazione menù"
-
-msgid "Font Unselected Color"
-msgstr "Colore del font deselezionato"
-
-msgid "Drop Mark Color"
-msgstr "Colore del segno di rilascio"
-
-msgid "Icon Selected Color"
-msgstr "Colore dell'icona selezionata"
-
-msgid "Icon Hovered Color"
-msgstr "Colore dell'icona al passaggio"
-
-msgid "Icon Unselected Color"
-msgstr "Colore dell'icona deselezionata"
-
-msgid "Side Margin"
-msgstr "Margine laterale"
-
-msgid "Icon Separation"
-msgstr "Separazione d'icona"
-
-msgid "Button Highlight"
-msgstr "Evidenziazione di pulsante"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Millisecondi prima di passare puntando il mouse"
-
-msgid "SV Width"
-msgstr "Larghezza SV"
-
-msgid "SV Height"
-msgstr "Altezza SV"
-
-msgid "H Width"
-msgstr "Larghezza O"
-
-msgid "Label Width"
-msgstr "Larghezza dell'etichetta"
-
-msgid "Center Slider Grabbers"
-msgstr "Centra i grabber della barra"
-
-msgid "Sample Focus"
-msgstr "Campione focalizzato"
-
-msgid "Picker Focus Rectangle"
-msgstr "Rettangolo di selettore focalizzato"
-
-msgid "Picker Focus Circle"
-msgstr "Cerchio di selettore focalizzato"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Colore di cursore focalizzato non in modifica"
-
-msgid "Menu Option"
-msgstr "Opzione di menu"
-
-msgid "Folded Arrow"
-msgstr "Freccia compressa"
-
-msgid "Expanded Arrow"
-msgstr "Freccia estesa"
-
-msgid "Screen Picker"
-msgstr "Selettore schermo"
-
-msgid "Shape Circle"
-msgstr "Forma di cerchio"
-
-msgid "Shape Rect"
-msgstr "Forma di rettangolo"
-
-msgid "Shape Rect Wheel"
-msgstr "Ruota per forma di rettangolo"
-
-msgid "Add Preset"
-msgstr "Aggiungi preimpostazione"
-
-msgid "Sample BG"
-msgstr "Sfondo del campionatore"
-
-msgid "Sample Revert"
-msgstr "Ripristino prelievo"
-
-msgid "Overbright Indicator"
-msgstr "Indicatore di sovra-luminosità"
-
-msgid "Bar Arrow"
-msgstr "Freccia di barra"
-
-msgid "Picker Cursor"
-msgstr "Cursore del selettore"
-
-msgid "Picker Cursor BG"
-msgstr "Sfondo di cursore del selettore"
-
-msgid "Color Script"
-msgstr "Colore di script"
-
-msgid "Color Hue"
-msgstr "Tono del colore"
-
-msgid "BG"
-msgstr "Sfondo"
-
-msgid "Preset FG"
-msgstr "Primo piano di preset"
-
-msgid "Preset Focus"
-msgstr "Preset focalizzato"
-
-msgid "Preset BG"
-msgstr "Sfondo di preset"
-
-msgid "Horizontal Rule"
-msgstr "Linea orizzontale"
-
-msgid "Normal Font"
-msgstr "Font normale"
-
-msgid "Bold Font"
-msgstr "Font in grassetto"
-
-msgid "Italics Font"
-msgstr "Font in corsivo"
-
-msgid "Bold Italics Font"
-msgstr "Font in grassetto e corsivo"
-
-msgid "Mono Font"
-msgstr "Font monospazio"
-
-msgid "Normal Font Size"
-msgstr "Dimensione font normale"
-
-msgid "Bold Font Size"
-msgstr "Dimensione font in grassetto"
-
-msgid "Italics Font Size"
-msgstr "Dimensione font in corsivo"
-
-msgid "Bold Italics Font Size"
-msgstr "Dimensione font in grassetto e corsivo"
-
-msgid "Mono Font Size"
-msgstr "Dimensione font monospazio"
-
-msgid "Table H Separation"
-msgstr "Separazione orizzontale di tabella"
-
-msgid "Table V Separation"
-msgstr "Separazione verticale di tabella"
-
-msgid "Table Odd Row BG"
-msgstr "Colore sfondo di riga dispari di tabella"
-
-msgid "Table Even Row BG"
-msgstr "Colore sfondo di riga pari di tabella"
-
-msgid "Table Border"
-msgstr "Bordo di tabella"
-
-msgid "Text Highlight H Padding"
-msgstr "Padding orizzontale di evidenziazione di testo"
-
-msgid "Text Highlight V Padding"
-msgstr "Padding verticale di evidenziazione di testo"
-
-msgid "Underline Alpha"
-msgstr "Alfa di sottolineatura"
-
-msgid "Strikethrough Alpha"
-msgstr "Alfa di barratura"
-
-msgid "Touch Dragger Color"
-msgstr "Colore di dragger touch"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Colore di dragger touch premuto"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Colore di dragger touch passato"
-
-msgid "H Touch Dragger"
-msgstr "O. dragger touch"
-
-msgid "V Touch Dragger"
-msgstr "V. dragger touch"
-
-msgid "Touch Dragger"
-msgstr "Dragger tattile"
-
-msgid "H Grabber"
-msgstr "Grabber O"
-
-msgid "V Grabber"
-msgstr "Grabber V"
-
-msgid "Margin Left"
-msgstr "Margine sinistro"
-
-msgid "Margin Top"
-msgstr "Margine in alto"
-
-msgid "Margin Right"
-msgstr "Margine destro"
-
-msgid "Margin Bottom"
-msgstr "Margine in basso"
-
-msgid "Minimum Grab Thickness"
-msgstr "Spessore minimo di presa"
-
-msgid "Autohide"
-msgstr "Nascondi automaticamente"
-
-msgid "Split Bar Background"
-msgstr "Sfondo della barra di divisione"
-
-msgid "Zoom Out"
-msgstr "Rimpicciolisci zoom"
-
-msgid "Zoom In"
-msgstr "Ingrandisci zoom"
-
-msgid "Zoom Reset"
-msgstr "Ripristina zoom"
-
-msgid "Grid Toggle"
-msgstr "Interruttore per la griglia"
-
-msgid "Minimap Toggle"
-msgstr "Interruttore per la minimappa"
-
-msgid "Snapping Toggle"
-msgstr "Interruttore per lo scatto"
-
-msgid "Menu Panel"
-msgstr "Pannello del menù"
-
-msgid "Grid Minor"
-msgstr "Griglia secondaria"
-
-msgid "Grid Major"
-msgstr "Griglia primaria"
-
-msgid "Selection Fill"
-msgstr "Riempimento della selezione"
-
-msgid "Selection Stroke"
-msgstr "Tratto della selezione"
-
-msgid "Activity"
-msgstr "Attività"
-
-msgid "Connection Hover Tint Color"
-msgstr "Colore della tinta al passaggio di una connessione"
-
-msgid "Connection Hover Thickness"
-msgstr "Spessore al passaggio di una connessione"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Colore della tinta di una destinazione valida per una connessione"
-
-msgid "Connection Rim Color"
-msgstr "Colore del contorno di una connessione"
-
-msgid "Title Panel"
-msgstr "Pannello del titolo"
-
-msgid "Title Hover Panel"
-msgstr "Pannello del titolo passato"
-
-msgid "Title Collapsed Panel"
-msgstr "Pannello di titolo minimizzato"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Pannello di titolo minimizzato passato"
-
-msgid "Hover Font Color"
-msgstr "Colore di font al passaggio"
-
-msgid "Collapsed Font Color"
-msgstr "Colore di font minimizzato"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Freccia estesa specchiata"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Freccia ridotta specchiata"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Estensione interiore della zona calda della porta"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Estensione esteriore della zona calda della porta"
 
 msgid "Default Theme Scale"
 msgstr "Scala di tema predefinita"

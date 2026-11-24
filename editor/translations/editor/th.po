@@ -2027,9 +2027,6 @@ msgstr "ตัวแก้ไข"
 msgid "Click to copy."
 msgstr "คลิกเพื่อคัดลอก"
 
-msgid "Open in File Manager"
-msgstr "เปิดโฟลเดอร์"
-
 msgid "Class"
 msgstr "คลาส"
 

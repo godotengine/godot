@@ -1135,6 +1135,12 @@ msgstr "Скрий Плъзгача"
 msgid "Editing Integer"
 msgstr "Редактиране на Цяло Число"
 
+msgid "Font Uneditable Color"
+msgstr "Цвят на непроменлив текст"
+
+msgid "Font Size"
+msgstr "Размер на Шрифта"
+
 msgid "Zoom"
 msgstr "Приближи"
 
@@ -3034,9 +3040,6 @@ msgstr "Действие при Спиране"
 
 msgid "Output"
 msgstr "Изход"
-
-msgid "Font Size"
-msgstr "Размер на Шрифта"
 
 msgid "Always Clear Output on Play"
 msgstr "Винаги Изчиствай Изход при Въпроизвеждане"
@@ -5564,11 +5567,119 @@ msgstr "Натиснат бутон"
 msgid "Button Group"
 msgstr "Група бутони"
 
+msgid "Font Focus Color"
+msgstr "Цвят на фокусиран текст"
+
+msgid "Font Pressed Color"
+msgstr "Цвят на натиснат текст"
+
+msgid "Font Hover Color"
+msgstr "Цвят на активен текст"
+
+msgid "Font Hover Pressed Color"
+msgstr "Цвят на активен и натиснат текст"
+
+msgid "Font Disabled Color"
+msgstr "Цвят на изключен текст"
+
+msgid "Font Outline Color"
+msgstr "Цвят на текстова рамка"
+
+msgid "Icon Normal Color"
+msgstr "Нормален цвят на иконка"
+
+msgid "Icon Focus Color"
+msgstr "Фокусиран цвят на иконка"
+
+msgid "Icon Pressed Color"
+msgstr "Натиснат цвят на иконка"
+
+msgid "Icon Hover Color"
+msgstr "Активен цвят на иконка"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Активен и натиснат цвят на иконка"
+
+msgid "Icon Disabled Color"
+msgstr "Изключен цвят на иконка"
+
+msgid "Check V Offset"
+msgstr "Check Вертикално Отместване"
+
+msgid "Checkbox Checked Color"
+msgstr "Цвят на отметнато тикче"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Цвят на неотметнато тикче"
+
+msgid "Button Checked Color"
+msgstr "Цвят на отметнат бутон"
+
+msgid "Button Unchecked Color"
+msgstr "Цвят на неотметнат бутон"
+
+msgid "Code Folding Color"
+msgstr "Цвят на сгъване на кода"
+
+msgid "Folded Code Region Color"
+msgstr "Цвят на регион от сгънат код"
+
+msgid "Completion Color BG"
+msgstr "Комплиментен фонов цвят"
+
+msgid "Breakpoint Color"
+msgstr "Цвят на прекъсвачна точка"
+
+msgid "Executing Line Color"
+msgstr "Цвят на изпълняваща линия"
+
+msgid "Line Number Color"
+msgstr "Цвят на редови номер"
+
+msgid "Completion Scroll Width"
+msgstr "Ширина на Довършващия Скролер"
+
+msgid "Completion Scroll Color"
+msgstr "Цвят на Привършващо Превъртане"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Цвят на Довършващия Скролер при Посочване"
+
+msgid "Completion Background Color"
+msgstr "Цвят на фона на подсказките"
+
+msgid "Completion Selected Color"
+msgstr "Цвят на избрани подсказки"
+
+msgid "Completion Existing Color"
+msgstr "Цвят на съществуващи подсказки"
+
+msgid "Line Length Guideline Color"
+msgstr "Цвят на подсказката за дължина на линия"
+
+msgid "Brace Mismatch Color"
+msgstr "Цвят на грешни скоби"
+
 msgid "Color Mode"
 msgstr "Цветови режим"
 
 msgid "Color Modes Visible"
 msgstr "Видими цветови режими"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Цвят на фокусиран, нередактиращ курсор"
+
+msgid "Screen Picker"
+msgstr "Избирател на Екран"
+
+msgid "Color Hue"
+msgstr "Цветова гама"
+
+msgid "Color Script"
+msgstr "Цвят на програма"
+
+msgid "Preset FG"
+msgstr "Предварителна настройка FG"
 
 msgid "Anchors Preset"
 msgstr "Шаблон за Котви"
@@ -5603,6 +5714,39 @@ msgstr "Филтри"
 msgid "Use Native Dialog"
 msgstr "Използвай Родни Диалогови Прозорци"
 
+msgid "Reload"
+msgstr "Презареждане"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Folder Icon Color"
+msgstr "Цвят на папкова иконка"
+
+msgid "File Icon Color"
+msgstr "Цвят на файлова иконка"
+
+msgid "File Disabled Color"
+msgstr "Цвят на изключен файл"
+
+msgid "Hover Font Color"
+msgstr "Цвят на избран текст"
+
+msgid "Collapsed Font Color"
+msgstr "Цвят на сгънат текст"
+
+msgid "Resizer Color"
+msgstr "Цвят на преоразмерител"
+
+msgid "Connection Hover Tint Color"
+msgstr "Изменен активен цвят на връзка"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Изменен валиден цвят на връзка"
+
+msgid "Port H Offset"
+msgstr "Хоризонтално Отместване на Порт"
+
 msgid "Select Mode"
 msgstr "Режим на избиране"
 
@@ -5615,8 +5759,62 @@ msgstr "Намек за Превъртане на Плочки"
 msgid "Icon Mode"
 msgstr "Режим на иконки"
 
+msgid "Scrollbar Margin Left"
+msgstr "Марж Отляво на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Top"
+msgstr "Марж Отгоре на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Right"
+msgstr "Марж Отдясно на Плъзгащата Лента"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Марж Отдолу на Плъзгащата Лента"
+
+msgid "Scrollbar H Separation"
+msgstr "Хоризонтално Разделение на Плъзгащата Лента"
+
+msgid "Font Hovered Color"
+msgstr "Цвят на активен текст"
+
+msgid "Font Hovered Selected Color"
+msgstr "Цвят на избран активен текст"
+
+msgid "Font Selected Color"
+msgstr "Цвят на избран текст"
+
+msgid "Scroll Hint"
+msgstr "Намек за Превъртане"
+
+msgid "Font Shadow Color"
+msgstr "Цвят на текстова сянка"
+
+msgid "Font Placeholder Color"
+msgstr "Цвят на заместителен текст"
+
+msgid "Selection Color"
+msgstr "Цвят на избор"
+
+msgid "Clear"
+msgstr "Изчистване"
+
+msgid "Clear Button Color"
+msgstr "Цвят на изчистващия бутон"
+
+msgid "Clear Button Color Pressed"
+msgstr "Натиснат цвят на изчистващия бутон"
+
 msgid "Prefer Native Menu"
 msgstr "Предпочитай Родното Меню"
+
+msgid "Submenu"
+msgstr "Подменю"
+
+msgid "Font Separator Color"
+msgstr "Цвят на текстов разделител"
+
+msgid "Font Separator Outline Color"
+msgstr "Рамков цвят на текстов разделител"
 
 msgid "Scroll Active"
 msgstr "Превъртане Активно"
@@ -5629,6 +5827,18 @@ msgstr "Превърти Следващите Видими Символи"
 
 msgid "Hint Underlined"
 msgstr "Намек за Подчертан"
+
+msgid "Normal Font"
+msgstr "Нормален шрифт"
+
+msgid "Shadow Offset X"
+msgstr "X Отместване на Сянка"
+
+msgid "Shadow Offset Y"
+msgstr "Y Отместване на Сянка"
+
+msgid "Scroll Focus"
+msgstr "Фокус на Превъртане"
 
 msgid "Scrollbar"
 msgstr "Плъзгаща Лента"
@@ -5654,14 +5864,26 @@ msgstr "Режим на Вертикално Превъртане"
 msgid "Scroll Deadzone"
 msgstr "Мъртва Зона на Превъртане"
 
-msgid "Scroll Hint"
-msgstr "Намек за Превъртане"
+msgid "Scrollbar V Separation"
+msgstr "Вертикално Разделение на Плъзгащата Лента"
+
+msgid "Scroll Hint Vertical"
+msgstr "Намек за Вертикално Превъртане"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Намек за Хоризонтално Превъртане"
 
 msgid "Default Scroll Deadzone"
 msgstr "Стандартна Мъртва Зона на Превъртане"
 
 msgid "Scrollable"
 msgstr "Превъртяем"
+
+msgid "Grabber Offset"
+msgstr "Отместване на Хващач"
+
+msgid "Tick Offset"
+msgstr "Отместване на Отметка"
 
 msgid "Split Offsets"
 msgstr "Раздели Отмествания"
@@ -5674,6 +5896,30 @@ msgstr "Превъртане Включено"
 
 msgid "Scroll to Selected"
 msgstr "Превърти към Избран"
+
+msgid "Font Unselected Color"
+msgstr "Цвят на неизбран текст"
+
+msgid "Close"
+msgstr "Затваряне"
+
+msgid "Search Result Color"
+msgstr "Цвят на резултати от търсене"
+
+msgid "Search Result Border Color"
+msgstr "Цвят на рамката на резултати от търсене"
+
+msgid "Caret Background Color"
+msgstr "Фонов цвят за каретката"
+
+msgid "Wrap Offset"
+msgstr "Отместване на Обвивка"
+
+msgid "Current Line Color"
+msgstr "Цвят на сегашната линия"
+
+msgid "Word Highlighted Color"
+msgstr "Цвят на избрана дума"
 
 msgid "Initial Angle"
 msgstr "Начален Ъгъл"
@@ -5689,6 +5935,21 @@ msgstr "Хоризонтално Превъртане Включено"
 
 msgid "Scroll Vertical Enabled"
 msgstr "Вертикално Превъртане Включено"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Цвят на затъмнен активен текст"
+
+msgid "Drop Position Color"
+msgstr "Цвят на позиция за пускане"
+
+msgid "Scroll Border"
+msgstr "Граница на Превъртане"
+
+msgid "Scroll Speed"
+msgstr "Скорот на Превъртане"
+
+msgid "Title Button Color"
+msgstr "Цвят на заглавен бутон"
 
 msgid "Timeout"
 msgstr "Таймаут"
@@ -5761,6 +6022,12 @@ msgstr "Намек за Изкачащ Прозорец Wm"
 
 msgid "Force Native"
 msgstr "Принуди Роден"
+
+msgid "Close H Offset"
+msgstr "Close Хоризонтално Отместване"
+
+msgid "Close V Offset"
+msgstr "Close Вертикално Отместване"
 
 msgid "Source Geometry Mode"
 msgstr "Режим на Геометричен Източник"
@@ -5911,273 +6178,6 @@ msgstr "Стандартен текст"
 
 msgid "Default Font Size"
 msgstr "Стандартен текстов размер"
-
-msgid "File"
-msgstr "Файл"
-
-msgid "Font Pressed Color"
-msgstr "Цвят на натиснат текст"
-
-msgid "Font Hover Color"
-msgstr "Цвят на активен текст"
-
-msgid "Font Focus Color"
-msgstr "Цвят на фокусиран текст"
-
-msgid "Font Hover Pressed Color"
-msgstr "Цвят на активен и натиснат текст"
-
-msgid "Font Disabled Color"
-msgstr "Цвят на изключен текст"
-
-msgid "Font Outline Color"
-msgstr "Цвят на текстова рамка"
-
-msgid "Icon Normal Color"
-msgstr "Нормален цвят на иконка"
-
-msgid "Icon Pressed Color"
-msgstr "Натиснат цвят на иконка"
-
-msgid "Icon Hover Color"
-msgstr "Активен цвят на иконка"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Активен и натиснат цвят на иконка"
-
-msgid "Icon Focus Color"
-msgstr "Фокусиран цвят на иконка"
-
-msgid "Icon Disabled Color"
-msgstr "Изключен цвят на иконка"
-
-msgid "Check V Offset"
-msgstr "Check Вертикално Отместване"
-
-msgid "Checkbox Checked Color"
-msgstr "Цвят на отметнато тикче"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Цвят на неотметнато тикче"
-
-msgid "Button Checked Color"
-msgstr "Цвят на отметнат бутон"
-
-msgid "Button Unchecked Color"
-msgstr "Цвят на неотметнат бутон"
-
-msgid "Font Shadow Color"
-msgstr "Цвят на текстова сянка"
-
-msgid "Shadow Offset X"
-msgstr "X Отместване на Сянка"
-
-msgid "Shadow Offset Y"
-msgstr "Y Отместване на Сянка"
-
-msgid "Font Selected Color"
-msgstr "Цвят на избран текст"
-
-msgid "Font Uneditable Color"
-msgstr "Цвят на непроменлив текст"
-
-msgid "Font Placeholder Color"
-msgstr "Цвят на заместителен текст"
-
-msgid "Selection Color"
-msgstr "Цвят на избор"
-
-msgid "Clear Button Color"
-msgstr "Цвят на изчистващия бутон"
-
-msgid "Clear Button Color Pressed"
-msgstr "Натиснат цвят на изчистващия бутон"
-
-msgid "Clear"
-msgstr "Изчистване"
-
-msgid "Current Line Color"
-msgstr "Цвят на сегашната линия"
-
-msgid "Caret Background Color"
-msgstr "Фонов цвят за каретката"
-
-msgid "Word Highlighted Color"
-msgstr "Цвят на избрана дума"
-
-msgid "Search Result Color"
-msgstr "Цвят на резултати от търсене"
-
-msgid "Search Result Border Color"
-msgstr "Цвят на рамката на резултати от търсене"
-
-msgid "Wrap Offset"
-msgstr "Отместване на Обвивка"
-
-msgid "Completion Color BG"
-msgstr "Комплиментен фонов цвят"
-
-msgid "Completion Background Color"
-msgstr "Цвят на фона на подсказките"
-
-msgid "Completion Selected Color"
-msgstr "Цвят на избрани подсказки"
-
-msgid "Completion Existing Color"
-msgstr "Цвят на съществуващи подсказки"
-
-msgid "Completion Scroll Color"
-msgstr "Цвят на Привършващо Превъртане"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Цвят на Довършващия Скролер при Посочване"
-
-msgid "Breakpoint Color"
-msgstr "Цвят на прекъсвачна точка"
-
-msgid "Executing Line Color"
-msgstr "Цвят на изпълняваща линия"
-
-msgid "Code Folding Color"
-msgstr "Цвят на сгъване на кода"
-
-msgid "Folded Code Region Color"
-msgstr "Цвят на регион от сгънат код"
-
-msgid "Brace Mismatch Color"
-msgstr "Цвят на грешни скоби"
-
-msgid "Line Number Color"
-msgstr "Цвят на редови номер"
-
-msgid "Line Length Guideline Color"
-msgstr "Цвят на подсказката за дължина на линия"
-
-msgid "Completion Scroll Width"
-msgstr "Ширина на Довършващия Скролер"
-
-msgid "Scroll Focus"
-msgstr "Фокус на Превъртане"
-
-msgid "Grabber Offset"
-msgstr "Отместване на Хващач"
-
-msgid "Tick Offset"
-msgstr "Отместване на Отметка"
-
-msgid "Scroll Hint Vertical"
-msgstr "Намек за Вертикално Превъртане"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Намек за Хоризонтално Превъртане"
-
-msgid "Scrollbar Margin Left"
-msgstr "Марж Отляво на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Top"
-msgstr "Марж Отгоре на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Right"
-msgstr "Марж Отдясно на Плъзгащата Лента"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Марж Отдолу на Плъзгащата Лента"
-
-msgid "Close"
-msgstr "Затваряне"
-
-msgid "Close H Offset"
-msgstr "Close Хоризонтално Отместване"
-
-msgid "Close V Offset"
-msgstr "Close Вертикално Отместване"
-
-msgid "Reload"
-msgstr "Презареждане"
-
-msgid "Folder Icon Color"
-msgstr "Цвят на папкова иконка"
-
-msgid "File Icon Color"
-msgstr "Цвят на файлова иконка"
-
-msgid "File Disabled Color"
-msgstr "Цвят на изключен файл"
-
-msgid "Submenu"
-msgstr "Подменю"
-
-msgid "Font Separator Color"
-msgstr "Цвят на текстов разделител"
-
-msgid "Font Separator Outline Color"
-msgstr "Рамков цвят на текстов разделител"
-
-msgid "Resizer Color"
-msgstr "Цвят на преоразмерител"
-
-msgid "Port H Offset"
-msgstr "Хоризонтално Отместване на Порт"
-
-msgid "Title Button Color"
-msgstr "Цвят на заглавен бутон"
-
-msgid "Font Hovered Color"
-msgstr "Цвят на активен текст"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Цвят на затъмнен активен текст"
-
-msgid "Font Hovered Selected Color"
-msgstr "Цвят на избран активен текст"
-
-msgid "Drop Position Color"
-msgstr "Цвят на позиция за пускане"
-
-msgid "Scroll Border"
-msgstr "Граница на Превъртане"
-
-msgid "Scroll Speed"
-msgstr "Скорот на Превъртане"
-
-msgid "Scrollbar H Separation"
-msgstr "Хоризонтално Разделение на Плъзгащата Лента"
-
-msgid "Scrollbar V Separation"
-msgstr "Вертикално Разделение на Плъзгащата Лента"
-
-msgid "Font Unselected Color"
-msgstr "Цвят на неизбран текст"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Цвят на фокусиран, нередактиращ курсор"
-
-msgid "Screen Picker"
-msgstr "Избирател на Екран"
-
-msgid "Color Script"
-msgstr "Цвят на програма"
-
-msgid "Color Hue"
-msgstr "Цветова гама"
-
-msgid "Preset FG"
-msgstr "Предварителна настройка FG"
-
-msgid "Normal Font"
-msgstr "Нормален шрифт"
-
-msgid "Connection Hover Tint Color"
-msgstr "Изменен активен цвят на връзка"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Изменен валиден цвят на връзка"
-
-msgid "Hover Font Color"
-msgstr "Цвят на избран текст"
-
-msgid "Collapsed Font Color"
-msgstr "Цвят на сгънат текст"
 
 msgid "Default Theme Scale"
 msgstr "Стандартна скала на тема"

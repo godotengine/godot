@@ -3397,9 +3397,6 @@ msgid "This annotation may be changed or removed in future versions."
 msgstr ""
 "このアノテーションは将来のバージョンで変更または削除される可能性があります。"
 
-msgid "Open in File Manager"
-msgstr "ファイルマネージャーで開く"
-
 msgid "This property can only be set in the Inspector."
 msgstr "このプロパティはインスペクターでのみ設定できます。"
 
@@ -4255,13 +4252,6 @@ msgstr ""
 "継承シーンの一部であるブランチは保存できません。\n"
 "このブランチを自身のシーンで保存するには、元のシーンを開き、ブランチを右クリッ"
 "クして、\"ブランチをシーンとして保存\"を選択してください。"
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"「プレースホルダーとしてロード」を有効にすると、「編集可能な子」が無効になり、"
-"ノードのすべてのプロパティがデフォルトに戻ります。"
 
 msgid "Make Local"
 msgstr "ローカルにする"
@@ -7891,9 +7881,6 @@ msgstr "エラー: ファイルシステム上にプロジェクトが見つか�
 
 msgid "Toggle Favorite"
 msgstr "お気に入りにする / しない"
-
-msgid "Open in file manager"
-msgstr "ファイルマネージャーで開く"
 
 msgid "Last edited timestamp"
 msgstr "最終更新日時"

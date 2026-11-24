@@ -2495,9 +2495,6 @@ msgstr ""
 msgid "Editor"
 msgstr "Editor"
 
-msgid "Open in File Manager"
-msgstr "Abrir no Explorador de Arquivos"
-
 msgid "Class"
 msgstr "Clase"
 

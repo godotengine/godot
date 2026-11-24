@@ -1690,9 +1690,6 @@ msgstr "დააწკაპუნეთ ბრაუზერში გას�
 msgid "No description available."
 msgstr "აღწერის ხელმისაწვდომი არაა."
 
-msgid "Open in File Manager"
-msgstr "ფაილთა მმართველში გახსნა"
-
 msgid "Class"
 msgstr "კლასი"
 

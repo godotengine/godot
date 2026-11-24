@@ -3673,9 +3673,6 @@ msgid "This annotation may be changed or removed in future versions."
 msgstr ""
 "Questa annotazione potrebbe cambiare o essere rimossa in versioni future."
 
-msgid "Open in File Manager"
-msgstr "Apri nel gestore dei file"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Questa proprietà può essere impostata solo nell'Ispettore."
 
@@ -4592,20 +4589,6 @@ msgstr ""
 "Per salvare questo ramo nella propria scena, aprire la scena originale, "
 "cliccare con il pulsante destro su questo ramo e selezionare \"Salva ramo "
 "come scena\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Disabilitando \"Figli modificabili\", tutte le proprietà dei nodi discendenti "
-"di questa sotto-scena saranno ripristinate al loro valore predefinito."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Abilitare \"Carica come segnaposto\" disabiliterà \"Figli modificabili\" e "
-"ripristinerà tutte le proprietà del nodo ai loro valori predefiniti."
 
 msgid "Make Local"
 msgstr "Rendi locale"
@@ -8914,9 +8897,6 @@ msgstr "Errore: Il progetto non è presente nel filesystem."
 
 msgid "Toggle Favorite"
 msgstr "Commuta lo stato di preferito"
-
-msgid "Open in file manager"
-msgstr "Apri nel gestore dei file"
 
 msgid "Last edited timestamp"
 msgstr "Data dell'ultima modifica"

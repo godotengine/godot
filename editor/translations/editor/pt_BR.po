@@ -219,14 +219,17 @@
 # Jonathan M <jonathan2007toledo@gmail.com>, 2026.
 # dev0id <viniciuspsalamaia@gmail.com>, 2026.
 # Joel Gomes da Silva <joelgomes1994@users.noreply.hosted.weblate.org>, 2026.
+# Joelson Andrade <joelson91@users.noreply.hosted.weblate.org>, 2026.
+# GuiSaiUwU <guisaiuwu@users.noreply.hosted.weblate.org>, 2026.
+# Arabella-dev1 <arabella-dev1@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-11-04 11:46+0000\n"
-"Last-Translator: Joel Gomes da Silva "
-"<joelgomes1994@users.noreply.hosted.weblate.org>\n"
+"PO-Revision-Date: 2026-11-23 04:12+0000\n"
+"Last-Translator: Arabella-dev1 <arabella-"
+"dev1@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -234,7 +237,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.11.1.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -1006,6 +1009,9 @@ msgstr "Mistura"
 msgid "Open"
 msgstr "Abrir"
 
+msgid "Open in editor."
+msgstr "Abrir no editor."
+
 msgid "Index"
 msgstr "Índice"
 
@@ -1021,6 +1027,9 @@ msgstr ""
 
 msgid "Position"
 msgstr "Posição"
+
+msgid "Blend Point Position"
+msgstr "Posição do Ponto de Mescla"
 
 msgid "Min"
 msgstr "Mín"
@@ -1078,6 +1087,12 @@ msgstr "Incremento de Grade X"
 
 msgid "Grid Y Step"
 msgstr "Incremento de Grade Y"
+
+msgid "Blend Point X Position"
+msgstr "Ponto da Curva Posição X"
+
+msgid "Blend Point Y Position"
+msgstr "Ponto da Curva Posição Y"
 
 msgid "Max Y"
 msgstr "Máx Y"
@@ -1614,6 +1629,12 @@ msgstr "Não é possível fazer transição partindo de \"Fim\"!"
 msgid "Transition from \"%s\" to \"%s\" already exists!"
 msgstr "Transição de \"%s\" para \"%s\" já existe!"
 
+msgid "Play/Travel to %s."
+msgstr "Reproduzir/Ir para %s."
+
+msgid "Open %s in editor."
+msgstr "Abrir %s no editor."
+
 msgid "Add Node and Transition"
 msgstr "Adicionar Nó e Transição"
 
@@ -1900,11 +1921,17 @@ msgstr "Linear"
 msgid "Cubic"
 msgstr "Cúbica"
 
+msgid "Makima"
+msgstr "Makima"
+
 msgid "Linear Angle"
 msgstr "Ângulo Linear"
 
 msgid "Cubic Angle"
 msgstr "Ângulo Cúbico"
+
+msgid "Makima Angle"
+msgstr "Ângulo Makima"
 
 msgid "Clamp Loop Interp"
 msgstr "Restringir Interpolação da Repetição"
@@ -2574,6 +2601,17 @@ msgstr "Abrir Detalhes do Recurso"
 msgid "No changelog provided for this version."
 msgstr "Sem notas de atualização fornecidas para essa versão."
 
+msgid "This release is only compatible with Godot versions between %s and %s."
+msgstr "Esse lançamento só é compatível com o Godot em versões entre %s e %s."
+
+msgid "This release is only compatible with Godot version %s and newer."
+msgstr ""
+"Esse lançamento só é compatível com Godot de versões %s ou mais recentes."
+
+msgid "This release is only compatible with Godot version %s and older."
+msgstr ""
+"Esse lançamento só é compatível com Godot de versões %s ou mais antigas."
+
 msgid "Loading..."
 msgstr "Carregando..."
 
@@ -2877,6 +2915,9 @@ msgstr "Configurar Recurso Antes de Instalar"
 
 msgid "Install"
 msgstr "Instalar"
+
+msgid "Dynamic"
+msgstr "Dinâmica"
 
 msgid "Audio Preview Play/Pause"
 msgstr "Tocar/Pausar Amostra de Áudio"
@@ -3636,6 +3677,9 @@ msgstr "Ícones"
 msgid "Styles"
 msgstr "Estilos"
 
+msgid "Sounds"
+msgstr "Sons"
+
 msgid "This theme property may be changed or removed in future versions."
 msgstr ""
 "Esta propriedade de tema poderá mudar ou ser removida em versões futuras."
@@ -3720,6 +3764,9 @@ msgstr "Editor"
 msgid "Click to copy."
 msgstr "Clique para copiar."
 
+msgid "Tip:"
+msgstr "Dica:"
+
 msgid "Click to open in browser."
 msgstr "Clique duplo para abrir no navegador."
 
@@ -3728,9 +3775,6 @@ msgstr "Nenhuma descrição disponível."
 
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Esta anotação poderá mudar ou ser removida em versões futuras."
-
-msgid "Open in File Manager"
-msgstr "Abrir no Gerenciador de Arquivos"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Esta propriedade só pode ser definida no Inspetor."
@@ -4444,6 +4488,9 @@ msgstr ""
 "Selecione um arquivo de recurso no sistema de arquivos ou no inspetor para "
 "ajustar as configurações de importação."
 
+msgid "Resource \"%s\" was made unique."
+msgstr "Este Recurso \"%s\" já é único."
+
 msgid "This object has no resources to duplicate."
 msgstr "Este objeto não tem recursos para duplicar."
 
@@ -4524,6 +4571,12 @@ msgstr "Gerenciar propriedades do objeto."
 
 msgid "Information"
 msgstr "Informações"
+
+msgid ""
+"The following resources will be duplicated and embedded within this resource/"
+"object:"
+msgstr ""
+"Os recursos a seguir serão duplicados e incorporados a este recurso/objeto:"
 
 msgid "No parent to instantiate a child at."
 msgstr "Nenhum pai para instanciar um filho."
@@ -4638,20 +4691,6 @@ msgstr ""
 "Não é possível salvar um ramo que faz parte de uma cena herdada.\n"
 "Para salvar este ramo como sua própria cena, abra a cena original, clique com "
 "o botão direito neste ramo e selecione \"Salvar Ramo como Cena\"."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"Desativar a opção \"Filhos Editáveis\" reverterá todas as propriedades dos "
-"nós descendentes desta subcena aos seus valores padrão."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Habilitar \"Carregar como Substituto\" desativará \"Filhos Editáveis\" e fará "
-"com que todas as propriedades do nó sejam revertidas ao padrão."
 
 msgid "Make Local"
 msgstr "Tornar Local"
@@ -5999,11 +6038,32 @@ msgstr "Abrir Configurações do Projeto"
 msgid "Warning!"
 msgstr "Aviso!"
 
+msgid "Setup Java SDK?"
+msgstr "Configurar Java SDK?"
+
+msgid "Installing Java SDK..."
+msgstr "Instalando Java SDK..."
+
+msgid "Installation of Android SDK packages failed. Check output for the error."
+msgstr ""
+"A instalação dos pacotes para o SDK Android falhou. Verifique a saída para o "
+"erro."
+
 msgid "Invalid Java SDK path in Editor Settings."
 msgstr "Caminho Inválido do Java SDK nas configurações do Editor."
 
+msgid ""
+"Unable to find 'java' command using the Java SDK path. Please check the Java "
+"SDK directory specified in Editor Settings."
+msgstr ""
+"Não foi possível encontrar comando \"java\" usando o caminho do Java SDK. "
+"Confira o diretório do Java SDK especificado nas Configurações do Editor."
+
 msgid "Invalid Android SDK path in Editor Settings."
 msgstr "Caminho do Android SDK inválido nas Configurações do Editor."
+
+msgid "Android SDK Manager"
+msgstr "Gerenciador do Android SDK"
 
 msgid "Can't get filesystem access."
 msgstr "Não foi possível obter acesso ao sistema de arquivos."
@@ -6347,6 +6407,12 @@ msgid ""
 msgstr ""
 "Um formato de textura deve ser selecionado para exportar o projeto. Selecione "
 "ao menos um formato de textura."
+
+msgid "Could not find debug symbols to export: \"%s\"."
+msgstr "Não foi possível encontrar símbolos de depuração para exportar: \"%s\"."
+
+msgid "Failed to copy file \"%s\"."
+msgstr "Falha em copiar o arquivo \"%s\"."
 
 msgid "Prepare Template"
 msgstr "Preparar Modelo"
@@ -6744,6 +6810,12 @@ msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
 "Todas as predefinições devem ter um caminho de exportação definido para que "
 "Exportar Tudo funcione."
+
+msgid "Setup Java SDK"
+msgstr "Configurar Java SDK"
+
+msgid "Setup Android SDK"
+msgstr "Configurar Android SDK"
 
 msgid "Advanced settings are always shown when searching."
 msgstr "Configurações avançadas sempre aparecem ao pesquisar."
@@ -7779,6 +7851,9 @@ msgstr "Número de Batidas:"
 
 msgid "Bar Beats:"
 msgstr "Batidas por Barra:"
+
+msgid "Music Information:"
+msgstr "Informações de Música:"
 
 msgid "Preview:"
 msgstr "Visualização:"
@@ -8903,9 +8978,6 @@ msgstr "Erro: Projeto não encontrado no sistema de arquivos."
 msgid "Toggle Favorite"
 msgstr "Alternar Favorito"
 
-msgid "Open in file manager"
-msgstr "Abrir no gerenciador de arquivos"
-
 msgid "Last edited timestamp"
 msgstr "Horário da Última Modificação"
 
@@ -9301,6 +9373,16 @@ msgstr "Editar normalmente"
 msgid "Edit in Recovery Mode"
 msgstr "Editar em Modo de Recuperação"
 
+msgid "Upgrade All Project Files"
+msgstr "Atualizar Todos os Arquivos do Projeto"
+
+msgid ""
+"Automatically runs the upgrade tool. This may take a while to finish. The "
+"editor may restart during the process."
+msgstr ""
+"Executa automaticamente a ferramenta de atualização. Isso pode levar um tempo "
+"para finalizar. O editor pode reiniciar durante o processo."
+
 msgid "Convert Full Project"
 msgstr "Converter Projeto Completo"
 
@@ -9637,6 +9719,15 @@ msgstr "Iniciando jogo..."
 msgid "Game running not embedded."
 msgstr "Jogo rodando em nova janela."
 
+msgid "The game will run in a floating window with an attached toolbar."
+msgstr ""
+"O jogo será executado em uma janela flutuante junto com uma barra de "
+"ferramentas."
+
+msgid "The game will run in a floating window without the toolbar."
+msgstr ""
+"O jogo será executado em uma janela flutuante sem uma barra de ferramentas."
+
 msgid "Game embedding not available on your OS."
 msgstr "Integração de jogo indisponível para o seu sistema operacional."
 
@@ -9693,6 +9784,9 @@ msgstr ""
 "\n"
 "Iluminação de referência: %.0f nits\n"
 "Iluminação máxima: %.0f nits"
+
+msgid "Hide selection indicators."
+msgstr "Esconder indicadores de seleção."
 
 msgid "Unmute game audio."
 msgstr "Desmutar som do jogo."
@@ -9800,11 +9894,17 @@ msgstr "Manipular na Janela do Jogo"
 msgid "Manipulate From Editors"
 msgstr "Manipular nos Editores"
 
+msgid "Selection options."
+msgstr "Opções de Seleção."
+
 msgid "Don't Select Locked Nodes"
 msgstr "Não Selecionar Nós Travados"
 
 msgid "Select Group Over Children"
 msgstr "Selecionar Grupo ao Invés dos Filhos"
+
+msgid "Game window options."
+msgstr "Opções de Janela do Jogo."
 
 msgid "Embedded Window Sizing"
 msgstr "Dimensionamento de Janela Integrada"
@@ -9823,6 +9923,9 @@ msgstr "Esticar para Preencher"
 
 msgid "Game Workspace"
 msgstr "Área de Trabalho de Jogo"
+
+msgid "Tap to show Game dock"
+msgstr "Clique para mostrar a aba de Jogo"
 
 msgid "Clear All"
 msgstr "Limpar Tudo"
@@ -10241,6 +10344,15 @@ msgstr "Incremento Y da Grade:"
 
 msgid "Sync Bones to Polygon"
 msgstr "Sincronizar Ossos ao Polígono"
+
+msgid "Select a Node2D to enable painting."
+msgstr "Selecione um Node2d para ativar pintura."
+
+msgid "The node will be used as a parent for the painted scenes."
+msgstr "O nó será usado como pai para cenas pintadas."
+
+msgid "Pick a scene for painting."
+msgstr "Escolha uma cena para pintura."
 
 msgid "Paint Node(s)"
 msgstr "Pintar Nó(s)"
@@ -13953,6 +14065,9 @@ msgstr ""
 "rotação/escala), já que as instâncias da cena geralmente irão sobrescrevê-"
 "las. Redefina sua transformação e recarregue a cena para remover este aviso."
 
+msgid "Toggle Visibility of %d Nodes"
+msgstr "Alternar Visibilidade de %d Nós"
+
 msgid "Toggle Visible"
 msgstr "Alternar Visibilidade"
 
@@ -14292,6 +14407,9 @@ msgstr "Memória: %s"
 msgid "No Mipmaps"
 msgstr "Sem Mipmaps"
 
+msgid "Toggle metadata overlay."
+msgstr "Alternar sobreposição de metadados."
+
 msgid "Mipmap level index selector."
 msgstr "Seletor de índice de nível de Mipmap."
 
@@ -14343,14 +14461,35 @@ msgstr "Editar Região"
 msgid "Write your logic in the _run() method."
 msgstr "Escreva sua lógica no método _run()."
 
+msgid ""
+"Include the files with the following extensions. Add or remove them in "
+"EditorSettings:\n"
+"\"text_editor/behavior/general/find_in_file_extensions\"."
+msgstr ""
+"Inclua os arquivos com as seguintes extensões. Adicione ou remova-os nas "
+"Configurações do Editor:\n"
+"\"text_editor/behavior/general/find_in_file_extensions\"."
+
 msgid "Find in Files"
 msgstr "Buscar nos Arquivos"
+
+msgid "\"Replace all\" can't be undone."
+msgstr "\"Substituir tudo\" é irreversível."
+
+msgid "Folder"
+msgstr "Pasta"
 
 msgid "Select Folder"
 msgstr "Selecionar Pasta"
 
+msgid "Excludes"
+msgstr "Ignora"
+
 msgid "Exclude the files with the following expressions. Use \",\" to separate."
 msgstr "Ignore os arquivos com as seguintes expressões. Use \",\" para separar."
+
+msgid "Includes"
+msgstr "Inclui"
 
 msgid "Include the files with the following expressions. Use \",\" to separate."
 msgstr "Inclua os arquivos com as seguintes expressões. Use \",\" para separar."
@@ -14375,6 +14514,9 @@ msgstr "%d correspondências em %d arquivos"
 
 msgid "Find:"
 msgstr "Buscar:"
+
+msgid "Find: %s"
+msgstr "Buscar: %s"
 
 msgid "Path is empty."
 msgstr "Caminho vazio."
@@ -14692,6 +14834,9 @@ msgstr "Ir para o próximo documento editado."
 
 msgid "Discard"
 msgstr "Descartar"
+
+msgid "There are unsaved changes in the following built-in resource(s)"
+msgstr "Há mudanças não salvas nos seguinte(s) script(s) integrado(s)"
 
 msgid "Reopen Closed Script"
 msgstr "Reabrir Script Fechado"
@@ -15269,6 +15414,9 @@ msgstr "Processando Classes Encontradas"
 
 msgid "Nodes and Classes:"
 msgstr "Nós e Classes:"
+
+msgid "[Unsaved Profile]"
+msgstr "[Perfil não salvo]"
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "O formato do arquivo '%s' é inválido, importação cancelada."
@@ -16422,6 +16570,9 @@ msgstr ""
 
 msgid "GridMap Rotate"
 msgstr "Rotacionar GridMap"
+
+msgid "Change Grid Plane"
+msgstr "Trocar Plano da Grade"
 
 msgid "GridMap Delete Selection"
 msgstr "Excluir Seleção do GridMap"

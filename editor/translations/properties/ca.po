@@ -474,6 +474,9 @@ msgstr "Anul·lar els botons de volum"
 msgid "Disable Scroll Deadzone"
 msgstr "Desactiva la zona morta de desplaçament"
 
+msgid "Windows"
+msgstr "Finestres"
+
 msgid "Navigation"
 msgstr "Navegació"
 
@@ -1160,6 +1163,31 @@ msgstr "Editant integre"
 
 msgid "Deferred Drag Mode"
 msgstr "Mode d'arrossegament diferit"
+
+msgid "Font Uneditable Color"
+msgstr "Color de la lletra no editable"
+
+msgid "Font"
+msgstr "Lletra"
+
+msgid "Font Size"
+msgstr "Tamany de font"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Focus"
+msgstr "Concentrar"
+
+msgid "Updown"
+msgstr "Amunt/avall"
+
+msgid "Grabber Highlight"
+msgstr "Ressaltat de la nansa"
+
+msgid "Grabber"
+msgstr "Nansa"
 
 msgid "Zoom"
 msgstr "Zoom"
@@ -3171,9 +3199,6 @@ msgstr "Acció en aturar"
 
 msgid "Output"
 msgstr "Sortida"
-
-msgid "Font Size"
-msgstr "Tamany de font"
 
 msgid "Always Clear Output on Play"
 msgstr "Esborra sempre la sortida en reproducció"
@@ -5935,9 +5960,6 @@ msgstr "Mida de la piscina d'Emscripten"
 msgid "Godot Pool Size"
 msgstr "Mida de la piscina Godot"
 
-msgid "Windows"
-msgstr "Finestres"
-
 msgid "signtool"
 msgstr "Eina de signatura"
 
@@ -7179,9 +7201,6 @@ msgstr "Text"
 msgid "Outline Modulate"
 msgstr "Modulació d'esquema"
 
-msgid "Font"
-msgstr "Lletra"
-
 msgid "Horizontal Alignment"
 msgstr "Alineació horitzontal"
 
@@ -8187,8 +8206,119 @@ msgstr "Alineament vertical d'icona"
 msgid "Expand Icon"
 msgstr "Expandir icona"
 
+msgid "Normal Mirrored"
+msgstr "Normal reflectit"
+
+msgid "Pressed Mirrored"
+msgstr "Premut reflectit"
+
+msgid "Hover"
+msgstr "Per sobre"
+
+msgid "Hover Mirrored"
+msgstr "En passar-hi el cursor reflectit"
+
+msgid "Hover Pressed"
+msgstr "Premut en passar-hi el cursor"
+
+msgid "Disabled Mirrored"
+msgstr "Desactivat reflectit"
+
+msgid "Font Focus Color"
+msgstr "Color del focus de font"
+
+msgid "Font Pressed Color"
+msgstr "Color de lletra premsat"
+
+msgid "Font Hover Color"
+msgstr "Color de la lletra"
+
+msgid "Font Hover Pressed Color"
+msgstr "Color premut amb el ratolí de lletra"
+
+msgid "Font Disabled Color"
+msgstr "Color de lletra desactivat"
+
+msgid "Font Outline Color"
+msgstr "Color del contorn del tipus de lletra"
+
+msgid "Icon Normal Color"
+msgstr "Icona Color normal"
+
+msgid "Icon Focus Color"
+msgstr "Icona de color de focus"
+
+msgid "Icon Pressed Color"
+msgstr "Icona Premuda Color"
+
+msgid "Icon Hover Color"
+msgstr "Color de la icona"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Icona de color premut"
+
+msgid "Icon Disabled Color"
+msgstr "Icona de color desactivat"
+
+msgid "H Separation"
+msgstr "H Separació"
+
+msgid "Icon Max Width"
+msgstr "Amplada màxima de la icona"
+
+msgid "Align to Largest Stylebox"
+msgstr "Alinea a la caixa d'estil més gran"
+
 msgid "Use Top Left"
 msgstr "Utilitzar superior esquerra"
+
+msgid "Check V Offset"
+msgstr "Desplaçament vertical de la marca"
+
+msgid "Unchecked"
+msgstr "Desmarcat"
+
+msgid "Radio Checked"
+msgstr "Botó d'opció marcat"
+
+msgid "Radio Unchecked"
+msgstr "Botó d'opció desmarcat"
+
+msgid "Checked Disabled"
+msgstr "Marcat desactivat"
+
+msgid "Unchecked Disabled"
+msgstr "Desmarcat desactivat"
+
+msgid "Radio Checked Disabled"
+msgstr "Botó d'opció marcat desactivat"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Botó d'opció desmarcat desactivat"
+
+msgid "Checkbox Checked Color"
+msgstr "Color de casella de selecció marcada"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Color de casella de selecció desmarcada"
+
+msgid "Checked Mirrored"
+msgstr "Marcat reflectit"
+
+msgid "Unchecked Mirrored"
+msgstr "Desmarcat reflectit"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Marcat desactivat reflectit"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Desmarcat desactivat reflectit"
+
+msgid "Button Checked Color"
+msgstr "Color de botó marcat"
+
+msgid "Button Unchecked Color"
+msgstr "Color de botó desmarcat"
 
 msgid "Symbol Lookup on Click"
 msgstr "Cerca de símbols en fer clic"
@@ -8256,6 +8386,81 @@ msgstr "Ressaltar la coincidència"
 msgid "Pairs"
 msgstr "Parelles"
 
+msgid "Code Folding Color"
+msgstr "Color del plegat de codi"
+
+msgid "Folded Code Region Color"
+msgstr "Color de la regió de codi plegada"
+
+msgid "Can Fold"
+msgstr "Es pot plegar"
+
+msgid "Folded"
+msgstr "Plegat"
+
+msgid "Can Fold Code Region"
+msgstr "Es pot plegar la regió de codi"
+
+msgid "Folded Code Region"
+msgstr "Regió de codi plegada"
+
+msgid "Folded EOL Icon"
+msgstr "Icona EOL plegada"
+
+msgid "Completion Color BG"
+msgstr "Color de fons de la compleció"
+
+msgid "Breakpoint Color"
+msgstr "Color del punt d'interrupció"
+
+msgid "Breakpoint"
+msgstr "Punt d'interrupció"
+
+msgid "Bookmark Color"
+msgstr "Color del marcador"
+
+msgid "Bookmark"
+msgstr "Marcador"
+
+msgid "Executing Line Color"
+msgstr "Color de la línia en execució"
+
+msgid "Executing Line"
+msgstr "Línia en execució"
+
+msgid "Line Number Color"
+msgstr "Color del número de línia"
+
+msgid "Completion Max Width"
+msgstr "Amplada màxima de la compleció"
+
+msgid "Completion Lines"
+msgstr "Línies de compleció"
+
+msgid "Completion Scroll Width"
+msgstr "Amplada de desplaçament de la compleció"
+
+msgid "Completion Scroll Color"
+msgstr "Color de desplaçament de la compleció"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Color de desplaçament de la compleció en passar-hi el cursor"
+
+msgid "Completion Background Color"
+msgstr "Color de fons de la compleció"
+
+msgid "Completion Selected Color"
+msgstr "Color de la compleció seleccionada"
+
+msgid "Completion Existing Color"
+msgstr "Color de la compleció existent"
+
+msgid "Line Length Guideline Color"
+msgstr "Color de la guia de longitud de línia"
+
+msgid "Brace Mismatch Color"
+msgstr "Color de claus no coincidents"
+
 msgid "Edit Alpha"
 msgstr "Editar alfa"
 
@@ -8291,6 +8496,102 @@ msgstr "Hex visible"
 
 msgid "Presets Visible"
 msgstr "Presets visibles"
+
+msgid "Label Width"
+msgstr "Amplada de l'etiqueta"
+
+msgid "SV Width"
+msgstr "Amplada SV"
+
+msgid "SV Height"
+msgstr "Alçada SV"
+
+msgid "H Width"
+msgstr "Amplada de H"
+
+msgid "Center Slider Grabbers"
+msgstr "Centra les nanses del control lliscant"
+
+msgid "Sample Focus"
+msgstr "Focus de mostra"
+
+msgid "Picker Focus Rectangle"
+msgstr "Rectangle de focus del selector"
+
+msgid "Picker Focus Circle"
+msgstr "Cercle de focus del selector"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Color del cursor amb focus sense edició"
+
+msgid "Menu Option"
+msgstr "Opció de menú"
+
+msgid "Screen Picker"
+msgstr "Selector de pantalla"
+
+msgid "Expanded Arrow"
+msgstr "Fletxa expandida"
+
+msgid "Folded Arrow"
+msgstr "Fletxa de plegat"
+
+msgid "Add Preset"
+msgstr "Afegeix un predefinit"
+
+msgid "Shape Rect"
+msgstr "Forma de rectangle"
+
+msgid "Shape Rect Wheel"
+msgstr "Roda de rectangle de forma"
+
+msgid "Shape Circle"
+msgstr "Forma de cercle"
+
+msgid "Bar Arrow"
+msgstr "Fletxa de la barra"
+
+msgid "Sample BG"
+msgstr "Fons de mostra"
+
+msgid "Sample Revert"
+msgstr "Reverteix la mostra"
+
+msgid "Overbright Indicator"
+msgstr "Indicador de sobrebrillantor"
+
+msgid "Picker Cursor"
+msgstr "Selector cursor"
+
+msgid "Picker Cursor BG"
+msgstr "Selector cursor fons"
+
+msgid "Color Hue"
+msgstr "To del color"
+
+msgid "Color Script"
+msgstr "Script de color"
+
+msgid "Color Copy"
+msgstr "Còpia de color"
+
+msgid "Tab Unselected"
+msgstr "Pestanya no seleccionada"
+
+msgid "Tab Selected"
+msgstr "Pestanya seleccionat"
+
+msgid "BG"
+msgstr "BG"
+
+msgid "Preset FG"
+msgstr "Primer pla del predefinit"
+
+msgid "Preset Focus"
+msgstr "Predefinit focus"
+
+msgid "Preset BG"
+msgstr "Predefinit fons"
 
 msgid "Accessibility Region"
 msgstr "Regió d'accessibilitat"
@@ -8376,9 +8677,6 @@ msgstr "Descripció emergent"
 msgid "Auto Translate Mode"
 msgstr "Mode de traducció automàtica"
 
-msgid "Focus"
-msgstr "Concentrar"
-
 msgid "Neighbor Left"
 msgstr "Veí esquerre"
 
@@ -8442,6 +8740,9 @@ msgstr "Tancar quan Escape"
 msgid "Autowrap"
 msgstr "Autoembolcallament"
 
+msgid "Buttons Separation"
+msgstr "Separació dels botons"
+
 msgid "Cancel Button Text"
 msgstr "Text de botó \"Cancel·lar\""
 
@@ -8496,14 +8797,92 @@ msgstr "Avís de sobreescriptura habilitat"
 msgid "Deleting Enabled"
 msgstr "Supressió activada"
 
+msgid "Parent Folder"
+msgstr "Carpeta pare"
+
+msgid "Forward Folder"
+msgstr "Carpeta endavant"
+
+msgid "Back Folder"
+msgstr "Carpeta enrere"
+
+msgid "Reload"
+msgstr "Recarrega"
+
+msgid "Favorite"
+msgstr "Preferit"
+
+msgid "Toggle Hidden"
+msgstr "Commuta ocult"
+
+msgid "Folder"
+msgstr "Carpeta"
+
+msgid "Toggle Filename Filter"
+msgstr "Commuta el filtre de nom de fitxer"
+
+msgid "File"
+msgstr "Fitxer"
+
+msgid "Create Folder"
+msgstr "Crea una carpeta"
+
+msgid "Sort"
+msgstr "Ordena"
+
+msgid "Favorite Up"
+msgstr "Preferit amunt"
+
+msgid "Favorite Down"
+msgstr "Preferit avall"
+
+msgid "Thumbnail Mode"
+msgstr "Mode de miniatura"
+
+msgid "List Mode"
+msgstr "Mode de llista"
+
+msgid "File Thumbnail"
+msgstr "Miniatura de fitxer"
+
+msgid "Folder Thumbnail"
+msgstr "Miniatura de carpeta"
+
+msgid "Menu Copy Path"
+msgstr "Menú Copia Ruta"
+
+msgid "Menu Delete"
+msgstr "Menú Suprimeix"
+
+msgid "Menu Refresh"
+msgstr "Menú Actualitza"
+
+msgid "Menu New Folder"
+msgstr "Menú Carpeta Nova"
+
+msgid "Menu Show in File Manager"
+msgstr "Menú Mostra a l'Explorador de fitxers"
+
+msgid "Menu Open Bundle"
+msgstr "Menú Obre un paquet"
+
+msgid "Folder Icon Color"
+msgstr "Color de carpeta icona"
+
+msgid "File Icon Color"
+msgstr "Color de fitxer icona"
+
+msgid "File Disabled Color"
+msgstr "Color de fitxer desactivat"
+
 msgid "Last Wrap Alignment"
 msgstr "Alineació de l'últim embolcall"
 
 msgid "Reverse Fill"
 msgstr "Revertir omplir"
 
-msgid "Folded"
-msgstr "Plegat"
+msgid "V Separation"
+msgstr "Separació de V"
 
 msgid "Title Alignment"
 msgstr "Alineació de títol"
@@ -8520,8 +8899,38 @@ msgstr "Grup plegable"
 msgid "Title Text Direction"
 msgstr "Direcció de títol de text"
 
+msgid "Title Panel"
+msgstr "Tauler de títol"
+
+msgid "Title Hover Panel"
+msgstr "Tauler de títol en passar-hi el cursor"
+
+msgid "Title Collapsed Panel"
+msgstr "Tauler de títol col·lapsat"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Tauler de títol col·lapsat en passar-hi el cursor"
+
+msgid "Hover Font Color"
+msgstr "Color de en passar-hi el cursor lletra"
+
+msgid "Collapsed Font Color"
+msgstr "Color de la lletra col·lapsada"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Fletxa expandida reflectida"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Fletxa plegada reflectida"
+
 msgid "Allow Folding All"
 msgstr "Permetre doblegar tot"
+
+msgid "Resizer"
+msgstr "Redimensionador"
+
+msgid "Resizer Color"
+msgstr "Color del redimensionador"
 
 msgid "Show Grid"
 msgstr "Mostra quadrícula"
@@ -8580,6 +8989,63 @@ msgstr "Mostra botó de minimapa"
 msgid "Show Arrange Button"
 msgstr "Mostrar boto de reordenació"
 
+msgid "Panel Focus"
+msgstr "Tauler focus"
+
+msgid "Grid Major"
+msgstr "Graella major"
+
+msgid "Grid Minor"
+msgstr "Graella menor"
+
+msgid "Activity"
+msgstr "Activitat"
+
+msgid "Connection Hover Tint Color"
+msgstr "Color de tint de la connexió en passar-hi el cursor"
+
+msgid "Connection Hover Thickness"
+msgstr "Gruix de la connexió en passar-hi el cursor"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Color de tint de destinació vàlida de connexió"
+
+msgid "Connection Rim Color"
+msgstr "Color de la vora de la connexió"
+
+msgid "Selection Fill"
+msgstr "Farciment de la selecció"
+
+msgid "Selection Stroke"
+msgstr "Traç de la selecció"
+
+msgid "Menu Panel"
+msgstr "Tauler de menú"
+
+msgid "Zoom In"
+msgstr "Apropa"
+
+msgid "Zoom Out"
+msgstr "Allunya"
+
+msgid "Zoom Reset"
+msgstr "Restableix el zoom"
+
+msgid "Snapping Toggle"
+msgstr "Commuta l'ajust"
+
+msgid "Grid Toggle"
+msgstr "Commuta la graella"
+
+msgid "Minimap Toggle"
+msgstr "Commuta el minimapa"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Extensió interior de la zona activa del port"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Extensió exterior de la zona activa del port"
+
 msgid "Draggable"
 msgstr "Arrossegable"
 
@@ -8598,11 +9064,29 @@ msgstr "Marge d'autoreducció"
 msgid "Drag Margin"
 msgstr "Arrossegar marge"
 
+msgid "Panel Selected"
+msgstr "Tauler seleccionat"
+
+msgid "Titlebar"
+msgstr "Barra de títol"
+
+msgid "Titlebar Selected"
+msgstr "Barra de títol seleccionada"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignora el tipus de connexió no vàlid"
 
 msgid "Slots Focus Mode"
 msgstr "Mode d'enfocament de les ranures"
+
+msgid "Slot"
+msgstr "Ranura"
+
+msgid "Slot Selected"
+msgstr "Ranura seleccionada"
+
+msgid "Port H Offset"
+msgstr "Desplaçament H del port"
 
 msgid "Select Mode"
 msgstr "Mode de selecció"
@@ -8655,6 +9139,60 @@ msgstr "Escalar icona"
 msgid "Fixed Icon Size"
 msgstr "Tamany d'icona fixa"
 
+msgid "Scrollbar Margin Left"
+msgstr "Barra de desplaçament marge esquerra"
+
+msgid "Scrollbar Margin Top"
+msgstr "Barra de desplaçament marge superior"
+
+msgid "Scrollbar Margin Right"
+msgstr "Barra de desplaçament marge dreta"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Barra de desplaçament marge inferior"
+
+msgid "Scrollbar H Separation"
+msgstr "Separació de barra de desplaçament H"
+
+msgid "Font Hovered Color"
+msgstr "Color de lletra en passar-hi el cursor"
+
+msgid "Font Hovered Selected Color"
+msgstr "Color de lletra en passar-hi el cursor seleccionat"
+
+msgid "Font Selected Color"
+msgstr "Color de la lletra seleccionada"
+
+msgid "Scroll Hint"
+msgstr "Consell de desplaçament"
+
+msgid "Scroll Hint Color"
+msgstr "Color de desplaçament indicador"
+
+msgid "Icon Margin"
+msgstr "Marge de icona"
+
+msgid "Hovered"
+msgstr "En passar-hi el cursor"
+
+msgid "Hovered Selected"
+msgstr "En passar-hi el cursor seleccionat"
+
+msgid "Hovered Selected Focus"
+msgstr "En passar-hi el cursor seleccionat focus"
+
+msgid "Selected Focus"
+msgstr "Seleccionat focus"
+
+msgid "Cursor Unfocused"
+msgstr "Cursor sense focus"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Guide Color"
+msgstr "Color de guia"
+
 msgid "Label Settings"
 msgstr "Configuracions d'etiqueta"
 
@@ -8684,6 +9222,15 @@ msgstr "Comportament de caràcters visibles"
 
 msgid "Visible Ratio"
 msgstr "Ràtio de visibilitat"
+
+msgid "Paragraph Spacing"
+msgstr "Espaiat de paràgrafs"
+
+msgid "Font Shadow Color"
+msgstr "Color de l'ombra de la lletra"
+
+msgid "Shadow Outline Size"
+msgstr "Mida del contorn de l'ombra"
 
 msgid "Placeholder Text"
 msgstr "Text de marcador de posició"
@@ -8763,11 +9310,50 @@ msgstr "Mode d'expansió d'icona"
 msgid "Right Icon Scale"
 msgstr "Escalar icona dreta"
 
+msgid "Font Placeholder Color"
+msgstr "Color del text de marcador de posició"
+
+msgid "Caret Width"
+msgstr "Amplada del cursor"
+
+msgid "Caret Color"
+msgstr "Color del cursor"
+
+msgid "Minimum Character Width"
+msgstr "Amplada mínima de caràcter"
+
+msgid "Selection Color"
+msgstr "Color de la selecció"
+
+msgid "Clear"
+msgstr "Neteja"
+
+msgid "Clear Button Color"
+msgstr "Color del botó de neteja"
+
+msgid "Clear Button Color Pressed"
+msgstr "Color del botó de neteja premut"
+
 msgid "Underline"
 msgstr "Subratllar"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Espaiat subratllat"
+
+msgid "Margin Left"
+msgstr "Marge esquerra"
+
+msgid "Margin Top"
+msgstr "Marge superior"
+
+msgid "Margin Right"
+msgstr "Marge dreta"
+
+msgid "Margin Bottom"
+msgstr "Marge inferior"
 
 msgid "Start Index"
 msgstr "Arrencar índex"
@@ -8805,6 +9391,15 @@ msgstr "Cerca aproximada activada"
 msgid "Fuzzy Search Max Misses"
 msgstr "Cerca difusa fallides màximes"
 
+msgid "Arrow"
+msgstr "Fletxa"
+
+msgid "Arrow Margin"
+msgstr "Marge de la fletxa"
+
+msgid "Modulate Arrow"
+msgstr "Modula la fletxa"
+
 msgid "Hide on Item Selection"
 msgstr "Amaga en selecció d'objectes"
 
@@ -8829,17 +9424,71 @@ msgstr "Reduïr alçada"
 msgid "Shrink Width"
 msgstr "Reduïr amplada"
 
+msgid "Separator"
+msgstr "Separador"
+
+msgid "Labeled Separator Left"
+msgstr "Separador etiquetat esquerre"
+
+msgid "Labeled Separator Right"
+msgstr "Separador etiquetat dret"
+
+msgid "Search Bar Separation"
+msgstr "Separació de la barra de cerca"
+
+msgid "Item Start Padding"
+msgstr "Farciment inicial de l'element"
+
+msgid "Item End Padding"
+msgstr "Farciment final de l'element"
+
+msgid "Gutter Compact"
+msgstr "Canal compacte"
+
+msgid "Indeterminate"
+msgstr "Indeterminat"
+
+msgid "Indeterminate Disabled"
+msgstr "Indeterminat desactivat"
+
+msgid "Search"
+msgstr "Cerca"
+
+msgid "Submenu"
+msgstr "Submenú"
+
+msgid "Submenu Mirrored"
+msgstr "Submenú reflectit"
+
+msgid "Font Separator"
+msgstr "Separador de lletra"
+
+msgid "Font Separator Size"
+msgstr "Mida de lletra separador"
+
+msgid "Font Accelerator Color"
+msgstr "Color de la lletra de l'accelerador"
+
+msgid "Font Separator Color"
+msgstr "Color de lletra separador"
+
+msgid "Separator Outline Size"
+msgstr "Mida de separador contorn"
+
+msgid "Font Separator Outline Color"
+msgstr "Color de lletra separador contorn"
+
 msgid "Fill Mode"
 msgstr "Mode omplir"
 
 msgid "Show Percentage"
 msgstr "Mostrar percentatge"
 
-msgid "Indeterminate"
-msgstr "Indeterminat"
-
 msgid "Preview Indeterminate"
 msgstr "Vista prèvia indeterminada"
+
+msgid "Background"
+msgstr "Fons"
 
 msgid "Min Value"
 msgstr "Valor mínim"
@@ -8925,8 +9574,98 @@ msgstr "Retard en la barra de progrés"
 msgid "Text Selection"
 msgstr "Selecció de text"
 
+msgid "Horizontal Rule"
+msgstr "Regla horitzontal"
+
+msgid "Normal Font"
+msgstr "Lletra de normal"
+
+msgid "Normal Font Size"
+msgstr "Mida de normal lletra"
+
+msgid "Shadow Offset X"
+msgstr "Desplaçament X de l'ombra"
+
+msgid "Shadow Offset Y"
+msgstr "Desplaçament Y de l'ombra"
+
+msgid "Bold Font"
+msgstr "Lletra de negreta"
+
+msgid "Bold Font Size"
+msgstr "Mida de negreta lletra"
+
+msgid "Bold Italics Font"
+msgstr "Lletra de negreta cursiva"
+
+msgid "Bold Italics Font Size"
+msgstr "Mida de negreta cursiva lletra"
+
+msgid "Italics Font"
+msgstr "Lletra de cursiva"
+
+msgid "Italics Font Size"
+msgstr "Mida de cursiva lletra"
+
+msgid "Mono Font"
+msgstr "Lletra monoespai"
+
+msgid "Mono Font Size"
+msgstr "Mida de la lletra monoespai"
+
+msgid "Text Highlight H Padding"
+msgstr "Farciment H del ressaltat de text"
+
+msgid "Text Highlight V Padding"
+msgstr "Farciment V del ressaltat de text"
+
+msgid "Underline Alpha"
+msgstr "Alfa del subratllat"
+
+msgid "Strikethrough Alpha"
+msgstr "Alfa del ratllat"
+
+msgid "Table H Separation"
+msgstr "Separació de taula H"
+
+msgid "Table V Separation"
+msgstr "Separació de taula V"
+
+msgid "Table Odd Row BG"
+msgstr "Fons de fila senar de taula"
+
+msgid "Table Even Row BG"
+msgstr "Fons de fila parell de taula"
+
+msgid "Table Border"
+msgstr "Vora de taula"
+
 msgid "Custom Step"
 msgstr "Passa personalitzada"
+
+msgid "Scroll Focus"
+msgstr "Desplaçament focus"
+
+msgid "Grabber Pressed"
+msgstr "Nansa premuda"
+
+msgid "Increment"
+msgstr "Increment"
+
+msgid "Increment Highlight"
+msgstr "Ressaltat de l'increment"
+
+msgid "Increment Pressed"
+msgstr "Increment premut"
+
+msgid "Decrement"
+msgstr "Decrement"
+
+msgid "Decrement Highlight"
+msgstr "Ressaltat del decrement"
+
+msgid "Decrement Pressed"
+msgstr "Decrement premut"
 
 msgid "Follow Focus"
 msgstr "Seguir focus"
@@ -8961,8 +9700,20 @@ msgstr "Desplaçament horitzontal per defecte"
 msgid "Scroll Deadzone"
 msgstr "Zona morta de desplaçament"
 
-msgid "Scroll Hint"
-msgstr "Consell de desplaçament"
+msgid "Scrollbar V Separation"
+msgstr "Separació de barra de desplaçament V"
+
+msgid "Scroll Hint Vertical"
+msgstr "Indicador de desplaçament vertical"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Indicador de desplaçament horitzontal"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Color de l'indicador de desplaçament vertical"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Color de l'indicador de desplaçament horitzontal"
 
 msgid "Default Scroll Deadzone"
 msgstr "Zona morta de desplaçament per defecte"
@@ -8979,6 +9730,30 @@ msgstr "Tics sobre les vores"
 msgid "Ticks Position"
 msgstr "Posició dels tics"
 
+msgid "Slider"
+msgstr "Control lliscant"
+
+msgid "Grabber Area"
+msgstr "Àrea de la nansa"
+
+msgid "Grabber Area Highlight"
+msgstr "Ressaltat de l'àrea de la nansa"
+
+msgid "Grabber Disabled"
+msgstr "Nansa desactivada"
+
+msgid "Tick"
+msgstr "Marca"
+
+msgid "Center Grabber"
+msgstr "Centra la nansa"
+
+msgid "Grabber Offset"
+msgstr "Desplaçament de la nansa"
+
+msgid "Tick Offset"
+msgstr "Desplaçament de la marca"
+
 msgid "Update on Text Changed"
 msgstr "Actualitzar en text canviat"
 
@@ -8990,6 +9765,96 @@ msgstr "Arrodoniment personalitzat de fletxa"
 
 msgid "Format"
 msgstr "Format"
+
+msgid "Buttons Vertical Separation"
+msgstr "Separació vertical dels botons"
+
+msgid "Field and Buttons Separation"
+msgstr "Separació del camp i els botons"
+
+msgid "Buttons Width"
+msgstr "Amplada dels botons"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Defineix l'amplada mínima dels botons a partir de les icones"
+
+msgid "Up"
+msgstr "Amunt"
+
+msgid "Up Hover"
+msgstr "Amunt en passar-hi el cursor"
+
+msgid "Up Pressed"
+msgstr "Amunt premut"
+
+msgid "Up Disabled"
+msgstr "Amunt desactivat"
+
+msgid "Down"
+msgstr "Avall"
+
+msgid "Down Hover"
+msgstr "Avall en passar-hi el cursor"
+
+msgid "Down Pressed"
+msgstr "Avall premut"
+
+msgid "Down Disabled"
+msgstr "Avall desactivat"
+
+msgid "Up Background"
+msgstr "Fons d'amunt"
+
+msgid "Up Background Hovered"
+msgstr "Fons d'amunt en passar-hi el cursor"
+
+msgid "Up Background Pressed"
+msgstr "Fons d'amunt premut"
+
+msgid "Up Background Disabled"
+msgstr "Fons d'amunt desactivat"
+
+msgid "Down Background"
+msgstr "Fons d'avall"
+
+msgid "Down Background Hovered"
+msgstr "Fons d'avall en passar-hi el cursor"
+
+msgid "Down Background Pressed"
+msgstr "Fons d'avall premut"
+
+msgid "Down Background Disabled"
+msgstr "Fons d'avall desactivat"
+
+msgid "Up Icon Modulate"
+msgstr "Modulació de la icona d'amunt"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Modulació de la icona d'amunt en passar-hi el cursor"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Modulació de la icona d'amunt premuda"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Modulació de la icona d'amunt desactivada"
+
+msgid "Down Icon Modulate"
+msgstr "Modulació de la icona d'avall"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulació de la icona d'avall en passar-hi el cursor"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Modulació de la icona d'avall premuda"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Modulació de la icona d'avall desactivada"
+
+msgid "Field and Buttons Separator"
+msgstr "Separador del camp i els botons"
+
+msgid "Up Down Buttons Separator"
+msgstr "Separador dels botons amunt/avall"
 
 msgid "Split Offsets"
 msgstr "Dividir offsets"
@@ -9020,6 +9885,39 @@ msgstr "Finalitzar marge"
 
 msgid "Highlight in Editor"
 msgstr "Ressaltar a l'editor"
+
+msgid "Touch Dragger Color"
+msgstr "Color de tàctil arrossegador"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Color de tàctil arrossegador premut"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Color de tàctil arrossegador en passar-hi el cursor"
+
+msgid "Minimum Grab Thickness"
+msgstr "Gruix mínim d'agafada"
+
+msgid "Autohide"
+msgstr "Ocultació automàtica"
+
+msgid "Touch Dragger"
+msgstr "Tàctil arrossegador"
+
+msgid "H Touch Dragger"
+msgstr "H tàctil arrossegador"
+
+msgid "V Touch Dragger"
+msgstr "V tàctil arrossegador"
+
+msgid "H Grabber"
+msgstr "H nansa"
+
+msgid "V Grabber"
+msgstr "V nansa"
+
+msgid "Split Bar Background"
+msgstr "Fons de la barra divisòria"
 
 msgid "Split Offset"
 msgstr "Dividir offset"
@@ -9072,6 +9970,42 @@ msgstr "Deselecció activada"
 msgid "Tabs"
 msgstr "Pestanyes"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Espera del canvi en passar-hi el cursor (ms)"
+
+msgid "Tab Hovered"
+msgstr "Pestanya en passar-hi el cursor"
+
+msgid "Tab Disabled"
+msgstr "Pestanya desactivat"
+
+msgid "Tab Focus"
+msgstr "Pestanya focus"
+
+msgid "Drop Mark"
+msgstr "Marca de deixar anar"
+
+msgid "Drop Mark Color"
+msgstr "Color de la marca de deixar anar"
+
+msgid "Font Unselected Color"
+msgstr "Color de la lletra no seleccionada"
+
+msgid "Icon Selected Color"
+msgstr "Color de icona seleccionat"
+
+msgid "Icon Hovered Color"
+msgstr "Color de icona en passar-hi el cursor"
+
+msgid "Icon Unselected Color"
+msgstr "Color de la icona no seleccionada"
+
+msgid "Close"
+msgstr "Tancament"
+
+msgid "Button Highlight"
+msgstr "Botó ressaltat"
+
 msgid "Tabs Position"
 msgstr "Posició de pestanyes"
 
@@ -9083,6 +10017,21 @@ msgstr "Utilitzar pestanyes ocultes per a la mida mínima"
 
 msgid "Tab Focus Mode"
 msgstr "Mode de focus de pestanya"
+
+msgid "Side Margin"
+msgstr "Marge lateral"
+
+msgid "Tabbar Background"
+msgstr "Fons de la barra de pestanyes"
+
+msgid "Menu"
+msgstr "Menú"
+
+msgid "Menu Highlight"
+msgstr "Ressaltat del menú"
+
+msgid "Icon Separation"
+msgstr "Separació de icona"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Porta-retalls de selecció buit habilitat"
@@ -9129,18 +10078,38 @@ msgstr "Control de caràcters"
 msgid "Spaces"
 msgstr "Espais"
 
+msgid "Search Result Color"
+msgstr "Color del resultat de cerca"
+
+msgid "Search Result Border Color"
+msgstr "Color de la vora del resultat de cerca"
+
+msgid "Caret Background Color"
+msgstr "Color de fons del cursor"
+
+msgid "Tab"
+msgstr "Pestanya"
+
+msgid "Space"
+msgstr "Espai"
+
+msgid "Font Readonly Color"
+msgstr "Color de la lletra de només lectura"
+
+msgid "Wrap Offset"
+msgstr "Desplaçament de l'ajust de línia"
+
+msgid "Current Line Color"
+msgstr "Color de la línia actual"
+
+msgid "Word Highlighted Color"
+msgstr "Color de la paraula ressaltada"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Detecció de text en repòs (segons)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Desfer Edició de text Pila Mida màxima"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Normal"
-
-msgid "Hover"
-msgstr "Per sobre"
 
 msgid "Focused"
 msgstr "Concentrat"
@@ -9214,6 +10183,117 @@ msgstr "Desplaçament horitzontal activat"
 msgid "Scroll Vertical Enabled"
 msgstr "Desplaçament vertical activat"
 
+msgid "Title Button Font"
+msgstr "Lletra de títol botó"
+
+msgid "Title Button Font Size"
+msgstr "Mida de títol botó lletra"
+
+msgid "Hovered Dimmed"
+msgstr "Atenuat en passar-hi el cursor"
+
+msgid "Button Hover"
+msgstr "Botó en passar-hi el cursor"
+
+msgid "Arrow Collapsed"
+msgstr "Fletxa col·lapsada"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Fletxa col·lapsada reflectida"
+
+msgid "Select Arrow"
+msgstr "Fletxa de selecció"
+
+msgid "Custom Button"
+msgstr "Botó de personalitzat"
+
+msgid "Custom Button Hover"
+msgstr "Personalitzat botó en passar-hi el cursor"
+
+msgid "Custom Button Pressed"
+msgstr "Personalitzat botó premut"
+
+msgid "Custom Button Font Highlight"
+msgstr "Personalitzat botó lletra ressaltat"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Color de lletra atenuada en passar-hi el cursor"
+
+msgid "Drop on Item Color"
+msgstr "Color de deixar anar sobre l'element"
+
+msgid "Drop Position Color"
+msgstr "Color de la posició de deixar anar"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Interior element marge inferior"
+
+msgid "Inner Item Margin Left"
+msgstr "Interior element marge esquerra"
+
+msgid "Inner Item Margin Right"
+msgstr "Interior element marge dreta"
+
+msgid "Inner Item Margin Top"
+msgstr "Interior element marge superior"
+
+msgid "Item Margin"
+msgstr "Marge de element"
+
+msgid "Check H Separation"
+msgstr "Separació H de la marca"
+
+msgid "Icon H Separation"
+msgstr "Separació de icona H"
+
+msgid "Button Margin"
+msgstr "Marge de botó"
+
+msgid "Draw Guides"
+msgstr "Dibuixa les guies"
+
+msgid "Relationship Line Width"
+msgstr "Amplada de la línia de relació"
+
+msgid "Parent HL Line Width"
+msgstr "Amplada de la línia ressaltada del pare"
+
+msgid "Children HL Line Width"
+msgstr "Amplada de la línia ressaltada dels fills"
+
+msgid "Parent HL Line Margin"
+msgstr "Marge de la línia ressaltada del pare"
+
+msgid "Relationship Line Color"
+msgstr "Color de la línia de relació"
+
+msgid "Parent HL Line Color"
+msgstr "Color de la línia ressaltada del pare"
+
+msgid "Children HL Line Color"
+msgstr "Color de la línia ressaltada dels fills"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Espera per desplegar arrossegant (ms)"
+
+msgid "Scroll Border"
+msgstr "Vora de desplaçament"
+
+msgid "Scroll Speed"
+msgstr "Velocitat de desplaçament"
+
+msgid "Title Button Normal"
+msgstr "Títol botó normal"
+
+msgid "Title Button Pressed"
+msgstr "Títol botó premut"
+
+msgid "Title Button Hover"
+msgstr "Títol botó en passar-hi el cursor"
+
+msgid "Title Button Color"
+msgstr "Color de títol botó"
+
 msgid "Audio Track"
 msgstr "Pista d'àudio"
 
@@ -9255,6 +10335,18 @@ msgstr "Acció amunt"
 
 msgid "Action Down"
 msgstr "Acció avall"
+
+msgid "Normal Joystick"
+msgstr "Joystick normal"
+
+msgid "Normal Tip"
+msgstr "Punta normal"
+
+msgid "Pressed Joystick"
+msgstr "Joystick premut"
+
+msgid "Pressed Tip"
+msgstr "Punta premuda"
 
 msgid "Self Modulate"
 msgstr "Automodular"
@@ -9472,9 +10564,6 @@ msgstr "Activa la selecció d'objectes"
 msgid "Scene Traversal"
 msgstr "Travessia d'escena"
 
-msgid "Menu"
-msgstr "Menú"
-
 msgid "Wait Time"
 msgstr "Temps d'espera"
 
@@ -9663,6 +10752,39 @@ msgstr "HDR Sortida"
 
 msgid "Requested"
 msgstr "Sol·licitat"
+
+msgid "Embedded Border"
+msgstr "Vora incrustada"
+
+msgid "Embedded Unfocused Border"
+msgstr "Vora incrustada sense focus"
+
+msgid "Title Font"
+msgstr "Lletra del títol"
+
+msgid "Title Font Size"
+msgstr "Mida de la lletra del títol"
+
+msgid "Title Height"
+msgstr "Alçada del títol"
+
+msgid "Title Outline Modulate"
+msgstr "Modulació del contorn del títol"
+
+msgid "Title Outline Size"
+msgstr "Mida del contorn del títol"
+
+msgid "Close Pressed"
+msgstr "Tancament premut"
+
+msgid "Close H Offset"
+msgstr "Desplaçament H de tancament"
+
+msgid "Close V Offset"
+msgstr "Desplaçament V de tancament"
+
+msgid "Resize Margin"
+msgstr "Marge de redimensionament"
 
 msgid "Swap Cancel OK"
 msgstr "Cancel·la d'intercanvi OK"
@@ -10099,9 +11221,6 @@ msgstr "Corba Y"
 msgid "Curve Z"
 msgstr "Corba Z"
 
-msgid "Background"
-msgstr "Fons"
-
 msgid "Canvas Max Layer"
 msgstr "Capa màxima de llenç"
 
@@ -10312,9 +11431,6 @@ msgstr "Espai extra"
 msgid "Glyph"
 msgstr "Glif"
 
-msgid "Space"
-msgstr "Espai"
-
 msgid "Baseline"
 msgstr "Línia de base"
 
@@ -10353,9 +11469,6 @@ msgstr "Utilitza HDR"
 
 msgid "To"
 msgstr "A"
-
-msgid "Paragraph Spacing"
-msgstr "Espaiat de paràgrafs"
 
 msgid "Stacked Effects"
 msgstr "Efectes apilats"
@@ -10899,1125 +12012,6 @@ msgstr "Tipus de lletra per defecte"
 
 msgid "Default Font Size"
 msgstr "Mida de lletra per defecte"
-
-msgid "File"
-msgstr "Fitxer"
-
-msgid "Font Pressed Color"
-msgstr "Color de lletra premsat"
-
-msgid "Font Hover Color"
-msgstr "Color de la lletra"
-
-msgid "Font Focus Color"
-msgstr "Color del focus de font"
-
-msgid "Font Hover Pressed Color"
-msgstr "Color premut amb el ratolí de lletra"
-
-msgid "Font Disabled Color"
-msgstr "Color de lletra desactivat"
-
-msgid "Font Outline Color"
-msgstr "Color del contorn del tipus de lletra"
-
-msgid "Icon Normal Color"
-msgstr "Icona Color normal"
-
-msgid "Icon Pressed Color"
-msgstr "Icona Premuda Color"
-
-msgid "Icon Hover Color"
-msgstr "Color de la icona"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Icona de color premut"
-
-msgid "Icon Focus Color"
-msgstr "Icona de color de focus"
-
-msgid "Icon Disabled Color"
-msgstr "Icona de color desactivat"
-
-msgid "H Separation"
-msgstr "H Separació"
-
-msgid "Icon Max Width"
-msgstr "Amplada màxima de la icona"
-
-msgid "Align to Largest Stylebox"
-msgstr "Alinea a la caixa d'estil més gran"
-
-msgid "Underline Spacing"
-msgstr "Espaiat subratllat"
-
-msgid "Normal Mirrored"
-msgstr "Normal reflectit"
-
-msgid "Hover Mirrored"
-msgstr "En passar-hi el cursor reflectit"
-
-msgid "Pressed Mirrored"
-msgstr "Premut reflectit"
-
-msgid "Disabled Mirrored"
-msgstr "Desactivat reflectit"
-
-msgid "Arrow"
-msgstr "Fletxa"
-
-msgid "Arrow Margin"
-msgstr "Marge de la fletxa"
-
-msgid "Modulate Arrow"
-msgstr "Modula la fletxa"
-
-msgid "Hover Pressed"
-msgstr "Premut en passar-hi el cursor"
-
-msgid "Checked Disabled"
-msgstr "Marcat desactivat"
-
-msgid "Unchecked"
-msgstr "Desmarcat"
-
-msgid "Unchecked Disabled"
-msgstr "Desmarcat desactivat"
-
-msgid "Radio Checked"
-msgstr "Botó d'opció marcat"
-
-msgid "Radio Checked Disabled"
-msgstr "Botó d'opció marcat desactivat"
-
-msgid "Radio Unchecked"
-msgstr "Botó d'opció desmarcat"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Botó d'opció desmarcat desactivat"
-
-msgid "Check V Offset"
-msgstr "Desplaçament vertical de la marca"
-
-msgid "Checkbox Checked Color"
-msgstr "Color de casella de selecció marcada"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Color de casella de selecció desmarcada"
-
-msgid "Checked Mirrored"
-msgstr "Marcat reflectit"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Marcat desactivat reflectit"
-
-msgid "Unchecked Mirrored"
-msgstr "Desmarcat reflectit"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Desmarcat desactivat reflectit"
-
-msgid "Button Checked Color"
-msgstr "Color de botó marcat"
-
-msgid "Button Unchecked Color"
-msgstr "Color de botó desmarcat"
-
-msgid "Font Shadow Color"
-msgstr "Color de l'ombra de la lletra"
-
-msgid "Shadow Offset X"
-msgstr "Desplaçament X de l'ombra"
-
-msgid "Shadow Offset Y"
-msgstr "Desplaçament Y de l'ombra"
-
-msgid "Shadow Outline Size"
-msgstr "Mida del contorn de l'ombra"
-
-msgid "Font Selected Color"
-msgstr "Color de la lletra seleccionada"
-
-msgid "Font Uneditable Color"
-msgstr "Color de la lletra no editable"
-
-msgid "Font Placeholder Color"
-msgstr "Color del text de marcador de posició"
-
-msgid "Caret Color"
-msgstr "Color del cursor"
-
-msgid "Selection Color"
-msgstr "Color de la selecció"
-
-msgid "Clear Button Color"
-msgstr "Color del botó de neteja"
-
-msgid "Clear Button Color Pressed"
-msgstr "Color del botó de neteja premut"
-
-msgid "Minimum Character Width"
-msgstr "Amplada mínima de caràcter"
-
-msgid "Caret Width"
-msgstr "Amplada del cursor"
-
-msgid "Clear"
-msgstr "Neteja"
-
-msgid "Tab"
-msgstr "Pestanya"
-
-msgid "Font Readonly Color"
-msgstr "Color de la lletra de només lectura"
-
-msgid "Current Line Color"
-msgstr "Color de la línia actual"
-
-msgid "Caret Background Color"
-msgstr "Color de fons del cursor"
-
-msgid "Word Highlighted Color"
-msgstr "Color de la paraula ressaltada"
-
-msgid "Search Result Color"
-msgstr "Color del resultat de cerca"
-
-msgid "Search Result Border Color"
-msgstr "Color de la vora del resultat de cerca"
-
-msgid "Wrap Offset"
-msgstr "Desplaçament de l'ajust de línia"
-
-msgid "Breakpoint"
-msgstr "Punt d'interrupció"
-
-msgid "Bookmark"
-msgstr "Marcador"
-
-msgid "Executing Line"
-msgstr "Línia en execució"
-
-msgid "Can Fold"
-msgstr "Es pot plegar"
-
-msgid "Can Fold Code Region"
-msgstr "Es pot plegar la regió de codi"
-
-msgid "Folded Code Region"
-msgstr "Regió de codi plegada"
-
-msgid "Folded EOL Icon"
-msgstr "Icona EOL plegada"
-
-msgid "Completion Color BG"
-msgstr "Color de fons de la compleció"
-
-msgid "Completion Background Color"
-msgstr "Color de fons de la compleció"
-
-msgid "Completion Selected Color"
-msgstr "Color de la compleció seleccionada"
-
-msgid "Completion Existing Color"
-msgstr "Color de la compleció existent"
-
-msgid "Completion Scroll Color"
-msgstr "Color de desplaçament de la compleció"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Color de desplaçament de la compleció en passar-hi el cursor"
-
-msgid "Bookmark Color"
-msgstr "Color del marcador"
-
-msgid "Breakpoint Color"
-msgstr "Color del punt d'interrupció"
-
-msgid "Executing Line Color"
-msgstr "Color de la línia en execució"
-
-msgid "Code Folding Color"
-msgstr "Color del plegat de codi"
-
-msgid "Folded Code Region Color"
-msgstr "Color de la regió de codi plegada"
-
-msgid "Brace Mismatch Color"
-msgstr "Color de claus no coincidents"
-
-msgid "Line Number Color"
-msgstr "Color del número de línia"
-
-msgid "Line Length Guideline Color"
-msgstr "Color de la guia de longitud de línia"
-
-msgid "Completion Lines"
-msgstr "Línies de compleció"
-
-msgid "Completion Max Width"
-msgstr "Amplada màxima de la compleció"
-
-msgid "Completion Scroll Width"
-msgstr "Amplada de desplaçament de la compleció"
-
-msgid "Scroll Focus"
-msgstr "Desplaçament focus"
-
-msgid "Grabber"
-msgstr "Nansa"
-
-msgid "Grabber Highlight"
-msgstr "Ressaltat de la nansa"
-
-msgid "Grabber Pressed"
-msgstr "Nansa premuda"
-
-msgid "Increment"
-msgstr "Increment"
-
-msgid "Increment Highlight"
-msgstr "Ressaltat de l'increment"
-
-msgid "Increment Pressed"
-msgstr "Increment premut"
-
-msgid "Decrement"
-msgstr "Decrement"
-
-msgid "Decrement Highlight"
-msgstr "Ressaltat del decrement"
-
-msgid "Decrement Pressed"
-msgstr "Decrement premut"
-
-msgid "Slider"
-msgstr "Control lliscant"
-
-msgid "Grabber Area"
-msgstr "Àrea de la nansa"
-
-msgid "Grabber Area Highlight"
-msgstr "Ressaltat de l'àrea de la nansa"
-
-msgid "Grabber Disabled"
-msgstr "Nansa desactivada"
-
-msgid "Tick"
-msgstr "Marca"
-
-msgid "Center Grabber"
-msgstr "Centra la nansa"
-
-msgid "Grabber Offset"
-msgstr "Desplaçament de la nansa"
-
-msgid "Tick Offset"
-msgstr "Desplaçament de la marca"
-
-msgid "Updown"
-msgstr "Amunt/avall"
-
-msgid "Up"
-msgstr "Amunt"
-
-msgid "Up Hover"
-msgstr "Amunt en passar-hi el cursor"
-
-msgid "Up Pressed"
-msgstr "Amunt premut"
-
-msgid "Up Disabled"
-msgstr "Amunt desactivat"
-
-msgid "Down"
-msgstr "Avall"
-
-msgid "Down Hover"
-msgstr "Avall en passar-hi el cursor"
-
-msgid "Down Pressed"
-msgstr "Avall premut"
-
-msgid "Down Disabled"
-msgstr "Avall desactivat"
-
-msgid "Up Background"
-msgstr "Fons d'amunt"
-
-msgid "Up Background Hovered"
-msgstr "Fons d'amunt en passar-hi el cursor"
-
-msgid "Up Background Pressed"
-msgstr "Fons d'amunt premut"
-
-msgid "Up Background Disabled"
-msgstr "Fons d'amunt desactivat"
-
-msgid "Down Background"
-msgstr "Fons d'avall"
-
-msgid "Down Background Hovered"
-msgstr "Fons d'avall en passar-hi el cursor"
-
-msgid "Down Background Pressed"
-msgstr "Fons d'avall premut"
-
-msgid "Down Background Disabled"
-msgstr "Fons d'avall desactivat"
-
-msgid "Up Icon Modulate"
-msgstr "Modulació de la icona d'amunt"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Modulació de la icona d'amunt en passar-hi el cursor"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Modulació de la icona d'amunt premuda"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Modulació de la icona d'amunt desactivada"
-
-msgid "Down Icon Modulate"
-msgstr "Modulació de la icona d'avall"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Modulació de la icona d'avall en passar-hi el cursor"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Modulació de la icona d'avall premuda"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Modulació de la icona d'avall desactivada"
-
-msgid "Field and Buttons Separator"
-msgstr "Separador del camp i els botons"
-
-msgid "Up Down Buttons Separator"
-msgstr "Separador dels botons amunt/avall"
-
-msgid "Buttons Vertical Separation"
-msgstr "Separació vertical dels botons"
-
-msgid "Field and Buttons Separation"
-msgstr "Separació del camp i els botons"
-
-msgid "Buttons Width"
-msgstr "Amplada dels botons"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Defineix l'amplada mínima dels botons a partir de les icones"
-
-msgid "Scroll Hint Vertical"
-msgstr "Indicador de desplaçament vertical"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Indicador de desplaçament horitzontal"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Color de l'indicador de desplaçament vertical"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Color de l'indicador de desplaçament horitzontal"
-
-msgid "Scrollbar Margin Left"
-msgstr "Barra de desplaçament marge esquerra"
-
-msgid "Scrollbar Margin Top"
-msgstr "Barra de desplaçament marge superior"
-
-msgid "Scrollbar Margin Right"
-msgstr "Barra de desplaçament marge dreta"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Barra de desplaçament marge inferior"
-
-msgid "Normal Joystick"
-msgstr "Joystick normal"
-
-msgid "Normal Tip"
-msgstr "Punta normal"
-
-msgid "Pressed Joystick"
-msgstr "Joystick premut"
-
-msgid "Pressed Tip"
-msgstr "Punta premuda"
-
-msgid "Embedded Border"
-msgstr "Vora incrustada"
-
-msgid "Embedded Unfocused Border"
-msgstr "Vora incrustada sense focus"
-
-msgid "Title Font"
-msgstr "Lletra del títol"
-
-msgid "Title Font Size"
-msgstr "Mida de la lletra del títol"
-
-msgid "Title Outline Modulate"
-msgstr "Modulació del contorn del títol"
-
-msgid "Title Outline Size"
-msgstr "Mida del contorn del títol"
-
-msgid "Title Height"
-msgstr "Alçada del títol"
-
-msgid "Resize Margin"
-msgstr "Marge de redimensionament"
-
-msgid "Close"
-msgstr "Tancament"
-
-msgid "Close Pressed"
-msgstr "Tancament premut"
-
-msgid "Close H Offset"
-msgstr "Desplaçament H de tancament"
-
-msgid "Close V Offset"
-msgstr "Desplaçament V de tancament"
-
-msgid "Buttons Separation"
-msgstr "Separació dels botons"
-
-msgid "Load"
-msgstr "Carrega"
-
-msgid "Save"
-msgstr "Desa"
-
-msgid "Parent Folder"
-msgstr "Carpeta pare"
-
-msgid "Back Folder"
-msgstr "Carpeta enrere"
-
-msgid "Forward Folder"
-msgstr "Carpeta endavant"
-
-msgid "Reload"
-msgstr "Recarrega"
-
-msgid "Favorite"
-msgstr "Preferit"
-
-msgid "Toggle Hidden"
-msgstr "Commuta ocult"
-
-msgid "Toggle Filename Filter"
-msgstr "Commuta el filtre de nom de fitxer"
-
-msgid "Folder"
-msgstr "Carpeta"
-
-msgid "Thumbnail Mode"
-msgstr "Mode de miniatura"
-
-msgid "List Mode"
-msgstr "Mode de llista"
-
-msgid "Create Folder"
-msgstr "Crea una carpeta"
-
-msgid "Sort"
-msgstr "Ordena"
-
-msgid "Favorite Up"
-msgstr "Preferit amunt"
-
-msgid "Favorite Down"
-msgstr "Preferit avall"
-
-msgid "File Thumbnail"
-msgstr "Miniatura de fitxer"
-
-msgid "Folder Thumbnail"
-msgstr "Miniatura de carpeta"
-
-msgid "Menu Copy Path"
-msgstr "Menú Copia Ruta"
-
-msgid "Menu Delete"
-msgstr "Menú Suprimeix"
-
-msgid "Menu New Folder"
-msgstr "Menú Carpeta Nova"
-
-msgid "Menu Refresh"
-msgstr "Menú Actualitza"
-
-msgid "Menu Show in File Manager"
-msgstr "Menú Mostra a l'Explorador de fitxers"
-
-msgid "Menu Open Bundle"
-msgstr "Menú Obre un paquet"
-
-msgid "Folder Icon Color"
-msgstr "Color de carpeta icona"
-
-msgid "File Icon Color"
-msgstr "Color de fitxer icona"
-
-msgid "File Disabled Color"
-msgstr "Color de fitxer desactivat"
-
-msgid "Separator"
-msgstr "Separador"
-
-msgid "Labeled Separator Left"
-msgstr "Separador etiquetat esquerre"
-
-msgid "Labeled Separator Right"
-msgstr "Separador etiquetat dret"
-
-msgid "Indeterminate Disabled"
-msgstr "Indeterminat desactivat"
-
-msgid "Submenu"
-msgstr "Submenú"
-
-msgid "Submenu Mirrored"
-msgstr "Submenú reflectit"
-
-msgid "Search"
-msgstr "Cerca"
-
-msgid "Font Separator"
-msgstr "Separador de lletra"
-
-msgid "Font Separator Size"
-msgstr "Mida de lletra separador"
-
-msgid "Font Accelerator Color"
-msgstr "Color de la lletra de l'accelerador"
-
-msgid "Font Separator Color"
-msgstr "Color de lletra separador"
-
-msgid "Font Separator Outline Color"
-msgstr "Color de lletra separador contorn"
-
-msgid "V Separation"
-msgstr "Separació de V"
-
-msgid "Search Bar Separation"
-msgstr "Separació de la barra de cerca"
-
-msgid "Separator Outline Size"
-msgstr "Mida de separador contorn"
-
-msgid "Item Start Padding"
-msgstr "Farciment inicial de l'element"
-
-msgid "Item End Padding"
-msgstr "Farciment final de l'element"
-
-msgid "Gutter Compact"
-msgstr "Canal compacte"
-
-msgid "Panel Selected"
-msgstr "Tauler seleccionat"
-
-msgid "Panel Focus"
-msgstr "Tauler focus"
-
-msgid "Titlebar"
-msgstr "Barra de títol"
-
-msgid "Titlebar Selected"
-msgstr "Barra de títol seleccionada"
-
-msgid "Slot"
-msgstr "Ranura"
-
-msgid "Slot Selected"
-msgstr "Ranura seleccionada"
-
-msgid "Resizer"
-msgstr "Redimensionador"
-
-msgid "Resizer Color"
-msgstr "Color del redimensionador"
-
-msgid "Port H Offset"
-msgstr "Desplaçament H del port"
-
-msgid "Hovered"
-msgstr "En passar-hi el cursor"
-
-msgid "Hovered Dimmed"
-msgstr "Atenuat en passar-hi el cursor"
-
-msgid "Hovered Selected"
-msgstr "En passar-hi el cursor seleccionat"
-
-msgid "Hovered Selected Focus"
-msgstr "En passar-hi el cursor seleccionat focus"
-
-msgid "Selected Focus"
-msgstr "Seleccionat focus"
-
-msgid "Cursor"
-msgstr "Cursor"
-
-msgid "Cursor Unfocused"
-msgstr "Cursor sense focus"
-
-msgid "Button Hover"
-msgstr "Botó en passar-hi el cursor"
-
-msgid "Title Button Normal"
-msgstr "Títol botó normal"
-
-msgid "Title Button Pressed"
-msgstr "Títol botó premut"
-
-msgid "Title Button Hover"
-msgstr "Títol botó en passar-hi el cursor"
-
-msgid "Custom Button"
-msgstr "Botó de personalitzat"
-
-msgid "Custom Button Pressed"
-msgstr "Personalitzat botó premut"
-
-msgid "Custom Button Hover"
-msgstr "Personalitzat botó en passar-hi el cursor"
-
-msgid "Select Arrow"
-msgstr "Fletxa de selecció"
-
-msgid "Arrow Collapsed"
-msgstr "Fletxa col·lapsada"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Fletxa col·lapsada reflectida"
-
-msgid "Title Button Font"
-msgstr "Lletra de títol botó"
-
-msgid "Title Button Font Size"
-msgstr "Mida de títol botó lletra"
-
-msgid "Title Button Color"
-msgstr "Color de títol botó"
-
-msgid "Font Hovered Color"
-msgstr "Color de lletra en passar-hi el cursor"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Color de lletra atenuada en passar-hi el cursor"
-
-msgid "Font Hovered Selected Color"
-msgstr "Color de lletra en passar-hi el cursor seleccionat"
-
-msgid "Guide Color"
-msgstr "Color de guia"
-
-msgid "Drop on Item Color"
-msgstr "Color de deixar anar sobre l'element"
-
-msgid "Drop Position Color"
-msgstr "Color de la posició de deixar anar"
-
-msgid "Relationship Line Color"
-msgstr "Color de la línia de relació"
-
-msgid "Parent HL Line Color"
-msgstr "Color de la línia ressaltada del pare"
-
-msgid "Children HL Line Color"
-msgstr "Color de la línia ressaltada dels fills"
-
-msgid "Custom Button Font Highlight"
-msgstr "Personalitzat botó lletra ressaltat"
-
-msgid "Scroll Hint Color"
-msgstr "Color de desplaçament indicador"
-
-msgid "Item Margin"
-msgstr "Marge de element"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Interior element marge inferior"
-
-msgid "Inner Item Margin Left"
-msgstr "Interior element marge esquerra"
-
-msgid "Inner Item Margin Right"
-msgstr "Interior element marge dreta"
-
-msgid "Inner Item Margin Top"
-msgstr "Interior element marge superior"
-
-msgid "Check H Separation"
-msgstr "Separació H de la marca"
-
-msgid "Icon H Separation"
-msgstr "Separació de icona H"
-
-msgid "Button Margin"
-msgstr "Marge de botó"
-
-msgid "Relationship Line Width"
-msgstr "Amplada de la línia de relació"
-
-msgid "Parent HL Line Width"
-msgstr "Amplada de la línia ressaltada del pare"
-
-msgid "Children HL Line Width"
-msgstr "Amplada de la línia ressaltada dels fills"
-
-msgid "Parent HL Line Margin"
-msgstr "Marge de la línia ressaltada del pare"
-
-msgid "Draw Guides"
-msgstr "Dibuixa les guies"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Espera per desplegar arrossegant (ms)"
-
-msgid "Scroll Border"
-msgstr "Vora de desplaçament"
-
-msgid "Scroll Speed"
-msgstr "Velocitat de desplaçament"
-
-msgid "Scrollbar H Separation"
-msgstr "Separació de barra de desplaçament H"
-
-msgid "Scrollbar V Separation"
-msgstr "Separació de barra de desplaçament V"
-
-msgid "Icon Margin"
-msgstr "Marge de icona"
-
-msgid "Tab Selected"
-msgstr "Pestanya seleccionat"
-
-msgid "Tab Hovered"
-msgstr "Pestanya en passar-hi el cursor"
-
-msgid "Tab Unselected"
-msgstr "Pestanya no seleccionada"
-
-msgid "Tab Disabled"
-msgstr "Pestanya desactivat"
-
-msgid "Tab Focus"
-msgstr "Pestanya focus"
-
-msgid "Tabbar Background"
-msgstr "Fons de la barra de pestanyes"
-
-msgid "Drop Mark"
-msgstr "Marca de deixar anar"
-
-msgid "Menu Highlight"
-msgstr "Ressaltat del menú"
-
-msgid "Font Unselected Color"
-msgstr "Color de la lletra no seleccionada"
-
-msgid "Drop Mark Color"
-msgstr "Color de la marca de deixar anar"
-
-msgid "Icon Selected Color"
-msgstr "Color de icona seleccionat"
-
-msgid "Icon Hovered Color"
-msgstr "Color de icona en passar-hi el cursor"
-
-msgid "Icon Unselected Color"
-msgstr "Color de la icona no seleccionada"
-
-msgid "Side Margin"
-msgstr "Marge lateral"
-
-msgid "Icon Separation"
-msgstr "Separació de icona"
-
-msgid "Button Highlight"
-msgstr "Botó ressaltat"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Espera del canvi en passar-hi el cursor (ms)"
-
-msgid "SV Width"
-msgstr "Amplada SV"
-
-msgid "SV Height"
-msgstr "Alçada SV"
-
-msgid "H Width"
-msgstr "Amplada de H"
-
-msgid "Label Width"
-msgstr "Amplada de l'etiqueta"
-
-msgid "Center Slider Grabbers"
-msgstr "Centra les nanses del control lliscant"
-
-msgid "Sample Focus"
-msgstr "Focus de mostra"
-
-msgid "Picker Focus Rectangle"
-msgstr "Rectangle de focus del selector"
-
-msgid "Picker Focus Circle"
-msgstr "Cercle de focus del selector"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Color del cursor amb focus sense edició"
-
-msgid "Menu Option"
-msgstr "Opció de menú"
-
-msgid "Folded Arrow"
-msgstr "Fletxa de plegat"
-
-msgid "Expanded Arrow"
-msgstr "Fletxa expandida"
-
-msgid "Screen Picker"
-msgstr "Selector de pantalla"
-
-msgid "Shape Circle"
-msgstr "Forma de cercle"
-
-msgid "Shape Rect"
-msgstr "Forma de rectangle"
-
-msgid "Shape Rect Wheel"
-msgstr "Roda de rectangle de forma"
-
-msgid "Add Preset"
-msgstr "Afegeix un predefinit"
-
-msgid "Sample BG"
-msgstr "Fons de mostra"
-
-msgid "Sample Revert"
-msgstr "Reverteix la mostra"
-
-msgid "Overbright Indicator"
-msgstr "Indicador de sobrebrillantor"
-
-msgid "Bar Arrow"
-msgstr "Fletxa de la barra"
-
-msgid "Picker Cursor"
-msgstr "Selector cursor"
-
-msgid "Picker Cursor BG"
-msgstr "Selector cursor fons"
-
-msgid "Color Script"
-msgstr "Script de color"
-
-msgid "Color Copy"
-msgstr "Còpia de color"
-
-msgid "Color Hue"
-msgstr "To del color"
-
-msgid "BG"
-msgstr "BG"
-
-msgid "Preset FG"
-msgstr "Primer pla del predefinit"
-
-msgid "Preset Focus"
-msgstr "Predefinit focus"
-
-msgid "Preset BG"
-msgstr "Predefinit fons"
-
-msgid "Horizontal Rule"
-msgstr "Regla horitzontal"
-
-msgid "Normal Font"
-msgstr "Lletra de normal"
-
-msgid "Bold Font"
-msgstr "Lletra de negreta"
-
-msgid "Italics Font"
-msgstr "Lletra de cursiva"
-
-msgid "Bold Italics Font"
-msgstr "Lletra de negreta cursiva"
-
-msgid "Mono Font"
-msgstr "Lletra monoespai"
-
-msgid "Normal Font Size"
-msgstr "Mida de normal lletra"
-
-msgid "Bold Font Size"
-msgstr "Mida de negreta lletra"
-
-msgid "Italics Font Size"
-msgstr "Mida de cursiva lletra"
-
-msgid "Bold Italics Font Size"
-msgstr "Mida de negreta cursiva lletra"
-
-msgid "Mono Font Size"
-msgstr "Mida de la lletra monoespai"
-
-msgid "Table H Separation"
-msgstr "Separació de taula H"
-
-msgid "Table V Separation"
-msgstr "Separació de taula V"
-
-msgid "Table Odd Row BG"
-msgstr "Fons de fila senar de taula"
-
-msgid "Table Even Row BG"
-msgstr "Fons de fila parell de taula"
-
-msgid "Table Border"
-msgstr "Vora de taula"
-
-msgid "Text Highlight H Padding"
-msgstr "Farciment H del ressaltat de text"
-
-msgid "Text Highlight V Padding"
-msgstr "Farciment V del ressaltat de text"
-
-msgid "Underline Alpha"
-msgstr "Alfa del subratllat"
-
-msgid "Strikethrough Alpha"
-msgstr "Alfa del ratllat"
-
-msgid "Touch Dragger Color"
-msgstr "Color de tàctil arrossegador"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Color de tàctil arrossegador premut"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Color de tàctil arrossegador en passar-hi el cursor"
-
-msgid "H Touch Dragger"
-msgstr "H tàctil arrossegador"
-
-msgid "V Touch Dragger"
-msgstr "V tàctil arrossegador"
-
-msgid "Touch Dragger"
-msgstr "Tàctil arrossegador"
-
-msgid "H Grabber"
-msgstr "H nansa"
-
-msgid "V Grabber"
-msgstr "V nansa"
-
-msgid "Margin Left"
-msgstr "Marge esquerra"
-
-msgid "Margin Top"
-msgstr "Marge superior"
-
-msgid "Margin Right"
-msgstr "Marge dreta"
-
-msgid "Margin Bottom"
-msgstr "Marge inferior"
-
-msgid "Minimum Grab Thickness"
-msgstr "Gruix mínim d'agafada"
-
-msgid "Autohide"
-msgstr "Ocultació automàtica"
-
-msgid "Split Bar Background"
-msgstr "Fons de la barra divisòria"
-
-msgid "Zoom Out"
-msgstr "Allunya"
-
-msgid "Zoom In"
-msgstr "Apropa"
-
-msgid "Zoom Reset"
-msgstr "Restableix el zoom"
-
-msgid "Grid Toggle"
-msgstr "Commuta la graella"
-
-msgid "Minimap Toggle"
-msgstr "Commuta el minimapa"
-
-msgid "Snapping Toggle"
-msgstr "Commuta l'ajust"
-
-msgid "Menu Panel"
-msgstr "Tauler de menú"
-
-msgid "Grid Minor"
-msgstr "Graella menor"
-
-msgid "Grid Major"
-msgstr "Graella major"
-
-msgid "Selection Fill"
-msgstr "Farciment de la selecció"
-
-msgid "Selection Stroke"
-msgstr "Traç de la selecció"
-
-msgid "Activity"
-msgstr "Activitat"
-
-msgid "Connection Hover Tint Color"
-msgstr "Color de tint de la connexió en passar-hi el cursor"
-
-msgid "Connection Hover Thickness"
-msgstr "Gruix de la connexió en passar-hi el cursor"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Color de tint de destinació vàlida de connexió"
-
-msgid "Connection Rim Color"
-msgstr "Color de la vora de la connexió"
-
-msgid "Title Panel"
-msgstr "Tauler de títol"
-
-msgid "Title Hover Panel"
-msgstr "Tauler de títol en passar-hi el cursor"
-
-msgid "Title Collapsed Panel"
-msgstr "Tauler de títol col·lapsat"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Tauler de títol col·lapsat en passar-hi el cursor"
-
-msgid "Hover Font Color"
-msgstr "Color de en passar-hi el cursor lletra"
-
-msgid "Collapsed Font Color"
-msgstr "Color de la lletra col·lapsada"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Fletxa expandida reflectida"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Fletxa plegada reflectida"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Extensió interior de la zona activa del port"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Extensió exterior de la zona activa del port"
 
 msgid "Default Theme Scale"
 msgstr "Escala del tema per defecte"

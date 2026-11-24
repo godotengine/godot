@@ -3276,9 +3276,6 @@ msgstr "Nincs elérhető leírás."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Ez az annotáció módosulhat vagy törölve is lehet a jövőbeli verziókban."
 
-msgid "Open in File Manager"
-msgstr "Megnyitás a Fájlkezelőben"
-
 msgid "This property can only be set in the Inspector."
 msgstr "Ez a tulajdonság csak a Elemzőben állítható be."
 
@@ -3944,21 +3941,6 @@ msgstr ""
 "Példányosított jelenet ágát nem lehet menteni.\n"
 "Saját jelenetként lehet menteni az ágat az eredeti jeleneten jobb klikk után "
 "az \"Ág Mentése Jelenetként\" opcióval."
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"A \"Módosítható Gyermekek\" kikapcsolása az aljelenet az összes leszármazott "
-"node-jának összes tulajdonságát alapértelmezettre állítja vissza."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"A \"Betöltés Placeholder-ként\" engedélyezése kikapcsolja a \"Módosítható "
-"Gyermekek\" opciót és a node összes tulajdonságát alapértelmezettre állítja "
-"vissza."
 
 msgid "Make Local"
 msgstr "Lokálissá tétel"

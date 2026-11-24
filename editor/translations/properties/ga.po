@@ -454,6 +454,9 @@ msgstr "Sáraigh Cnaipí Toirte"
 msgid "Disable Scroll Deadzone"
 msgstr "Díchumasaigh Crios Marbh Scrollaigh"
 
+msgid "Windows"
+msgstr "Windows"
+
 msgid "Navigation"
 msgstr "Nascleanúint"
 
@@ -1140,6 +1143,31 @@ msgstr "Slánuimhir á Eagarthóireacht"
 
 msgid "Deferred Drag Mode"
 msgstr "Mód Tarraingthe Iarchurtha"
+
+msgid "Font Uneditable Color"
+msgstr "Dath Do-aimsithe cló"
+
+msgid "Font"
+msgstr "Cló"
+
+msgid "Font Size"
+msgstr "Clómhéid"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Gnáth"
+
+msgid "Focus"
+msgstr "Fócas"
+
+msgid "Updown"
+msgstr "Suas an Dún"
+
+msgid "Grabber Highlight"
+msgstr "Aibhsiú Grabber"
+
+msgid "Grabber"
+msgstr "GrabberName"
 
 msgid "Zoom"
 msgstr "Súmáil"
@@ -3151,9 +3179,6 @@ msgstr "Gníomh ar Stop"
 
 msgid "Output"
 msgstr "Aschur"
-
-msgid "Font Size"
-msgstr "Clómhéid"
 
 msgid "Always Clear Output on Play"
 msgstr "Glan aschur i gcónaí ar an súgradh"
@@ -5915,9 +5940,6 @@ msgstr "Méid Linn Snámha Emscripten"
 msgid "Godot Pool Size"
 msgstr "Méid Linn Snámha Godot"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "uirlis chomharthaíochta"
 
@@ -7159,9 +7181,6 @@ msgstr "Téacs"
 msgid "Outline Modulate"
 msgstr "Mionathrú Imlíneach"
 
-msgid "Font"
-msgstr "Cló"
-
 msgid "Horizontal Alignment"
 msgstr "Ailíniú Cothrománach"
 
@@ -8167,8 +8186,119 @@ msgstr "Ailíniú Deilbhín Ingearach"
 msgid "Expand Icon"
 msgstr "Fairsingigh Deilbhín"
 
+msgid "Normal Mirrored"
+msgstr "Gnáth-Scáthánaithe"
+
+msgid "Pressed Mirrored"
+msgstr "Scáthánaithe Brúite"
+
+msgid "Hover"
+msgstr "HoverGenericName"
+
+msgid "Hover Mirrored"
+msgstr "Hover Scáthánaithe"
+
+msgid "Hover Pressed"
+msgstr "Hover Brúite"
+
+msgid "Disabled Mirrored"
+msgstr "Díchumasaithe Scáthánaithe"
+
+msgid "Font Focus Color"
+msgstr "Dath Fócas an Chló"
+
+msgid "Font Pressed Color"
+msgstr "Dath Brúite ar an gCló"
+
+msgid "Font Hover Color"
+msgstr "Dath ainlithe cló"
+
+msgid "Font Hover Pressed Color"
+msgstr "Dath Brúite Hover Cló"
+
+msgid "Font Disabled Color"
+msgstr "Dath Díchumasaithe an Chló"
+
+msgid "Font Outline Color"
+msgstr "Dath Imlíneach an Chló"
+
+msgid "Icon Normal Color"
+msgstr "Gnáthdhath deilbhíní"
+
+msgid "Icon Focus Color"
+msgstr "Dath Fócas Deilbhíní"
+
+msgid "Icon Pressed Color"
+msgstr "Dath Brúite Deilbhíní"
+
+msgid "Icon Hover Color"
+msgstr "Dath an Deilbhín Hover"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Dath Brúite Deilbhín Hover"
+
+msgid "Icon Disabled Color"
+msgstr "Dath Díchumasaithe Deilbhíní"
+
+msgid "H Separation"
+msgstr "H Scaradh"
+
+msgid "Icon Max Width"
+msgstr "Leithead Uasta Deilbhíní"
+
+msgid "Align to Largest Stylebox"
+msgstr "Ailínigh leis an mbosca stíle is mó"
+
 msgid "Use Top Left"
 msgstr "Úsáid Barr ar Chlé"
+
+msgid "Check V Offset"
+msgstr "Seiceáil Fritháireamh V"
+
+msgid "Unchecked"
+msgstr "Díthiceáilte"
+
+msgid "Radio Checked"
+msgstr "Raidió Seiceáilte"
+
+msgid "Radio Unchecked"
+msgstr "Raidió Gan Seiceáil"
+
+msgid "Checked Disabled"
+msgstr "Díchumasaithe Seiceáilte"
+
+msgid "Unchecked Disabled"
+msgstr "Díchumasaithe gan seiceáil"
+
+msgid "Radio Checked Disabled"
+msgstr "Raidió Seiceáilte Díchumasaithe"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Raidió Gan Seiceáil Díchumasaithe"
+
+msgid "Checkbox Checked Color"
+msgstr "Dath Seiceáilte an Bhosca Seiceála"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Dath an Bhosca Seiceála Gan Seiceáil"
+
+msgid "Checked Mirrored"
+msgstr "Seiceáil Scáthánaithe"
+
+msgid "Unchecked Mirrored"
+msgstr "Gan Seiceáil Scáthánaithe"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Seiceáil Díchumasaithe Scáthánaithe"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Díchumasaithe Gan Seiceáil Scáthánaithe"
+
+msgid "Button Checked Color"
+msgstr "Dath Seiceáilte Cnaipe"
+
+msgid "Button Unchecked Color"
+msgstr "Dath an Chnaipe Gan Seiceáil"
 
 msgid "Symbol Lookup on Click"
 msgstr "Siombail Lookup ar Cliceáil"
@@ -8236,6 +8366,81 @@ msgstr "Meaitseáil Aibhsithe"
 msgid "Pairs"
 msgstr "Péirí"
 
+msgid "Code Folding Color"
+msgstr "Dath Fillte an Chóid"
+
+msgid "Folded Code Region Color"
+msgstr "Dath Réigiún an Chóid Fillte"
+
+msgid "Can Fold"
+msgstr "An féidir Fill"
+
+msgid "Folded"
+msgstr "Fillte"
+
+msgid "Can Fold Code Region"
+msgstr "An féidir Fold Code Region"
+
+msgid "Folded Code Region"
+msgstr "Réigiún Cód Fillte"
+
+msgid "Folded EOL Icon"
+msgstr "Deilbhín EOL Fillte"
+
+msgid "Completion Color BG"
+msgstr "Dath Críochnaithe BG"
+
+msgid "Breakpoint Color"
+msgstr "Dath Brisphointe"
+
+msgid "Breakpoint"
+msgstr "Brisphointe"
+
+msgid "Bookmark Color"
+msgstr "Dath Leabharmharcanna"
+
+msgid "Bookmark"
+msgstr "Leabharmharc"
+
+msgid "Executing Line Color"
+msgstr "Dath na Líne á Rith"
+
+msgid "Executing Line"
+msgstr "Líne á Rith"
+
+msgid "Line Number Color"
+msgstr "Dath Uimhir Líne"
+
+msgid "Completion Max Width"
+msgstr "Uasleithead Críochnaithe"
+
+msgid "Completion Lines"
+msgstr "Línte Críochnaithe"
+
+msgid "Completion Scroll Width"
+msgstr "Comhlánaigh Leithead Scrolla"
+
+msgid "Completion Scroll Color"
+msgstr "Comhlánú Scrollaigh Dath"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Comhlánú Scrollaigh Dath Hovered"
+
+msgid "Completion Background Color"
+msgstr "Dath an Chúlra Críochnaithe"
+
+msgid "Completion Selected Color"
+msgstr "Comhlánú Dath Roghnaithe"
+
+msgid "Completion Existing Color"
+msgstr "Comhlánaigh an dath atá ann cheana"
+
+msgid "Line Length Guideline Color"
+msgstr "Fad Líne Treoirlíne Dath"
+
+msgid "Brace Mismatch Color"
+msgstr "Dath Neamhoiriúnach Brace"
+
 msgid "Edit Alpha"
 msgstr "Cuir Alfa in Eagar"
 
@@ -8271,6 +8476,102 @@ msgstr "Heics Infheicthe"
 
 msgid "Presets Visible"
 msgstr "Réamhshocruithe Infheicthe"
+
+msgid "Label Width"
+msgstr "Leithead an Lipéid"
+
+msgid "SV Width"
+msgstr "Leithead SV"
+
+msgid "SV Height"
+msgstr "Airde SV"
+
+msgid "H Width"
+msgstr "Leithead H"
+
+msgid "Center Slider Grabbers"
+msgstr "Grabbers Sleamhnán Ionad"
+
+msgid "Sample Focus"
+msgstr "Fócas Samplach"
+
+msgid "Picker Focus Rectangle"
+msgstr "Dronuilleog Fócais an Roghnóra"
+
+msgid "Picker Focus Circle"
+msgstr "Ciorcal Fócais Roghnóra"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Dírithe gan dath an chúrsóra a chur in eagar"
+
+msgid "Menu Option"
+msgstr "Rogha Roghchláir"
+
+msgid "Screen Picker"
+msgstr "Roghnóir Scáileáin"
+
+msgid "Expanded Arrow"
+msgstr "Saighead Leathnaithe"
+
+msgid "Folded Arrow"
+msgstr "Saighead Fillte"
+
+msgid "Add Preset"
+msgstr "Cuir Réamhshocrú Leis"
+
+msgid "Shape Rect"
+msgstr "Cruth Rect"
+
+msgid "Shape Rect Wheel"
+msgstr "Cruth Roth Rect"
+
+msgid "Shape Circle"
+msgstr "Ciorcal Crutha"
+
+msgid "Bar Arrow"
+msgstr "Saighead Bharra"
+
+msgid "Sample BG"
+msgstr "Sampla BG"
+
+msgid "Sample Revert"
+msgstr "Fill Samplach"
+
+msgid "Overbright Indicator"
+msgstr "Táscaire Overbright"
+
+msgid "Picker Cursor"
+msgstr "Cúrsóir an Roghnóra"
+
+msgid "Picker Cursor BG"
+msgstr "Cúrsóir Roghnaithe BG"
+
+msgid "Color Hue"
+msgstr "Lí Datha"
+
+msgid "Color Script"
+msgstr "Script Dath"
+
+msgid "Color Copy"
+msgstr "Cóip Dath"
+
+msgid "Tab Unselected"
+msgstr "Cluaisín Gan Roghnú"
+
+msgid "Tab Selected"
+msgstr "Táb roghnaithe"
+
+msgid "BG"
+msgstr "BGName"
+
+msgid "Preset FG"
+msgstr "Réamhshocraithe FG"
+
+msgid "Preset Focus"
+msgstr "Fócas Réamhshocraithe"
+
+msgid "Preset BG"
+msgstr "Réamhshocrú BG"
 
 msgid "Accessibility Region"
 msgstr "Réigiún Inrochtaineachta"
@@ -8356,9 +8657,6 @@ msgstr "Leid Uirlisí"
 msgid "Auto Translate Mode"
 msgstr "Mód Aistrithe Uathoibríoch"
 
-msgid "Focus"
-msgstr "Fócas"
-
 msgid "Neighbor Left"
 msgstr "Comharsa ar chlé"
 
@@ -8422,6 +8720,9 @@ msgstr "Dún ar Éalú"
 msgid "Autowrap"
 msgstr "Timfhilleadh gluaisteáin"
 
+msgid "Buttons Separation"
+msgstr "Scaradh Cnaipí"
+
 msgid "Cancel Button Text"
 msgstr "Cealaigh Téacs na gCnaipí"
 
@@ -8476,14 +8777,92 @@ msgstr "Rabhadh Forscríobh Cumasaithe"
 msgid "Deleting Enabled"
 msgstr "Scriosadh Cumasaithe"
 
+msgid "Parent Folder"
+msgstr "Máthairfhillteán"
+
+msgid "Forward Folder"
+msgstr "Cuir Fillteán Ar Aghaidh"
+
+msgid "Back Folder"
+msgstr "Fillteán Ar Ais"
+
+msgid "Reload"
+msgstr "Athluchtaigh"
+
+msgid "Favorite"
+msgstr "Is fearr leat"
+
+msgid "Toggle Hidden"
+msgstr "Scoránaigh i bhfolach"
+
+msgid "Folder"
+msgstr "Fillteán"
+
+msgid "Toggle Filename Filter"
+msgstr "Scoránaigh an Scagaire Ainm Comhaid"
+
+msgid "File"
+msgstr "Comhad"
+
+msgid "Create Folder"
+msgstr "Cruthaigh Fillteán"
+
+msgid "Sort"
+msgstr "Sórtáil"
+
+msgid "Favorite Up"
+msgstr "Is Fearr Leat Suas"
+
+msgid "Favorite Down"
+msgstr "An Síos is Fearr Leat"
+
+msgid "Thumbnail Mode"
+msgstr "Mód Mionsamhail"
+
+msgid "List Mode"
+msgstr "Mód Liosta"
+
+msgid "File Thumbnail"
+msgstr "Mionsamhail Chomhaid"
+
+msgid "Folder Thumbnail"
+msgstr "Mionsamhail Fillteáin"
+
+msgid "Menu Copy Path"
+msgstr "Cóipeáil an Roghchláir Cosán"
+
+msgid "Menu Delete"
+msgstr "Scrios an Roghchlár"
+
+msgid "Menu Refresh"
+msgstr "Athnuachan Roghchláir"
+
+msgid "Menu New Folder"
+msgstr "Roghchlár Fillteán Nua"
+
+msgid "Menu Show in File Manager"
+msgstr "Taispeáin an Roghchlár i mBainisteoir Comhad"
+
+msgid "Menu Open Bundle"
+msgstr "Oscail an Roghchlár Pacáiste"
+
+msgid "Folder Icon Color"
+msgstr "Dath Dheilbhín an Fhillteáin"
+
+msgid "File Icon Color"
+msgstr "Dath Dheilbhín an Chomhaid"
+
+msgid "File Disabled Color"
+msgstr "Dath Díchumasaithe an Chomhaid"
+
 msgid "Last Wrap Alignment"
 msgstr "Ailíniú Timfhilleadh Deiridh"
 
 msgid "Reverse Fill"
 msgstr "Fill droim ar ais"
 
-msgid "Folded"
-msgstr "Fillte"
+msgid "V Separation"
+msgstr "V Scaradh"
 
 msgid "Title Alignment"
 msgstr "Ailíniú Teidil"
@@ -8500,8 +8879,38 @@ msgstr "Grúpa Fillte"
 msgid "Title Text Direction"
 msgstr "Treo Téacs an Teidil"
 
+msgid "Title Panel"
+msgstr "Painéal Teidil"
+
+msgid "Title Hover Panel"
+msgstr "Painéal Luamhánach Teidil"
+
+msgid "Title Collapsed Panel"
+msgstr "Painéal Fillte Teidil"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Painéal Luasctha Fillte Teidil"
+
+msgid "Hover Font Color"
+msgstr "Dath Cló Luasctha"
+
+msgid "Collapsed Font Color"
+msgstr "Dath Cló Fillte"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Saighead Leathnaithe Scáthánaithe"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Saighead Fillte Scáthánach"
+
 msgid "Allow Folding All"
 msgstr "Ceadaigh Fillte Uile"
+
+msgid "Resizer"
+msgstr "ResizerName"
+
+msgid "Resizer Color"
+msgstr "Dath Resizer"
 
 msgid "Show Grid"
 msgstr "Taispeáin Greille"
@@ -8560,6 +8969,63 @@ msgstr "Taispeáin cnaipe Minimap"
 msgid "Show Arrange Button"
 msgstr "Taispeáin Socraigh an cnaipe"
 
+msgid "Panel Focus"
+msgstr "Fócas Painéil"
+
+msgid "Grid Major"
+msgstr "Greille Mór"
+
+msgid "Grid Minor"
+msgstr "Mionghreille"
+
+msgid "Activity"
+msgstr "Gníomhaíocht"
+
+msgid "Connection Hover Tint Color"
+msgstr "Ceangal Hover Tint Dath"
+
+msgid "Connection Hover Thickness"
+msgstr "Ceangal Hover Tiús"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Ceangal Bailí Sprioc Tint Dath"
+
+msgid "Connection Rim Color"
+msgstr "Dath Imeall an Cheangail"
+
+msgid "Selection Fill"
+msgstr "Líon Roghnúcháin"
+
+msgid "Selection Stroke"
+msgstr "Stróc Roghnaithe"
+
+msgid "Menu Panel"
+msgstr "Painéal Roghchláir"
+
+msgid "Zoom In"
+msgstr "Zúmáil Isteach"
+
+msgid "Zoom Out"
+msgstr "Zúmáil Amach"
+
+msgid "Zoom Reset"
+msgstr "Athshocraigh Zúmáil"
+
+msgid "Snapping Toggle"
+msgstr "Scoránaigh Snapping"
+
+msgid "Grid Toggle"
+msgstr "Scoránaigh Greille"
+
+msgid "Minimap Toggle"
+msgstr "Scoránaigh Minimap"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Port Hotzone Méid Istigh"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Port Hotzone Méid Seachtrach"
+
 msgid "Draggable"
 msgstr "In-íomhá"
 
@@ -8578,11 +9044,29 @@ msgstr "Imeall Autoshrink"
 msgid "Drag Margin"
 msgstr "Tarraing Imeall"
 
+msgid "Panel Selected"
+msgstr "Painéal roghnaithe"
+
+msgid "Titlebar"
+msgstr "Barra teidil"
+
+msgid "Titlebar Selected"
+msgstr "Barra teidil roghnaithe"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Déan neamhaird den chineál ceangail neamhbhailí"
 
 msgid "Slots Focus Mode"
 msgstr "Mód Fócais Sliotán"
+
+msgid "Slot"
+msgstr "Sliotán"
+
+msgid "Slot Selected"
+msgstr "Sliotán Roghnaithe"
+
+msgid "Port H Offset"
+msgstr "Fritháireamh Phort H"
 
 msgid "Select Mode"
 msgstr "Roghnaigh Mód"
@@ -8635,6 +9119,60 @@ msgstr "Scála Deilbhíní"
 msgid "Fixed Icon Size"
 msgstr "Méid na nDeilbhíní Seasta"
 
+msgid "Scrollbar Margin Left"
+msgstr "Imeall scrollbharra ar chlé"
+
+msgid "Scrollbar Margin Top"
+msgstr "Barr Imeall Scrollbharra"
+
+msgid "Scrollbar Margin Right"
+msgstr "Imeall scrollbharra ar dheis"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Bun Imeall Scrollbharra"
+
+msgid "Scrollbar H Separation"
+msgstr "Scrollbharra H Scaradh"
+
+msgid "Font Hovered Color"
+msgstr "Dath ainlithe cló"
+
+msgid "Font Hovered Selected Color"
+msgstr "Cló Ag faoileáil Dath Roghnaithe"
+
+msgid "Font Selected Color"
+msgstr "Dath roghnaithe an chló"
+
+msgid "Scroll Hint"
+msgstr "Leid Scrollaigh"
+
+msgid "Scroll Hint Color"
+msgstr "Dath Leid Scrollaigh"
+
+msgid "Icon Margin"
+msgstr "Imeall Deilbhíní"
+
+msgid "Hovered"
+msgstr "Ag Dul Ar"
+
+msgid "Hovered Selected"
+msgstr "Ag faoileáil Roghnaithe"
+
+msgid "Hovered Selected Focus"
+msgstr "Ag faoileáil Fócas Roghnaithe"
+
+msgid "Selected Focus"
+msgstr "Fócas Roghnaithe"
+
+msgid "Cursor Unfocused"
+msgstr "Cúrsóir Neamhdhírithe"
+
+msgid "Cursor"
+msgstr "Cúrsóir"
+
+msgid "Guide Color"
+msgstr "Dath treorach"
+
 msgid "Label Settings"
 msgstr "Socruithe Lipéid"
 
@@ -8664,6 +9202,15 @@ msgstr "Oibriú na gCarachtar Infheicthe"
 
 msgid "Visible Ratio"
 msgstr "Cóimheas Infheicthe"
+
+msgid "Paragraph Spacing"
+msgstr "Spásáil Alt"
+
+msgid "Font Shadow Color"
+msgstr "Dath Scáth cló"
+
+msgid "Shadow Outline Size"
+msgstr "Scáth-imlíne Méid"
 
 msgid "Placeholder Text"
 msgstr "Téacs an Ionadchoinneálaí"
@@ -8743,11 +9290,50 @@ msgstr "Mód Leathnaithe Deilbhín"
 msgid "Right Icon Scale"
 msgstr "Scála Deilbhín Ar Dheis"
 
+msgid "Font Placeholder Color"
+msgstr "Dath ionadchoinneálaí cló"
+
+msgid "Caret Width"
+msgstr "Leithead Caret"
+
+msgid "Caret Color"
+msgstr "Dath Caret"
+
+msgid "Minimum Character Width"
+msgstr "Leithead Íosta Carachtar"
+
+msgid "Selection Color"
+msgstr "Dath an Roghnaithe"
+
+msgid "Clear"
+msgstr "Glan"
+
+msgid "Clear Button Color"
+msgstr "Glan Dath an Chnaipe"
+
+msgid "Clear Button Color Pressed"
+msgstr "Glan Dath an Chnaipe Brúite"
+
 msgid "Underline"
 msgstr "Cuir líne faoi"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Cuir béim ar Spásáil"
+
+msgid "Margin Left"
+msgstr "Imeall Ar Chlé"
+
+msgid "Margin Top"
+msgstr "Imeall Barr"
+
+msgid "Margin Right"
+msgstr "Imeall ar dheis"
+
+msgid "Margin Bottom"
+msgstr "Imeall Bun"
 
 msgid "Start Index"
 msgstr "Tosaigh an tInnéacs"
@@ -8785,6 +9371,15 @@ msgstr "Cuardach Doiléir Cumasaithe"
 msgid "Fuzzy Search Max Misses"
 msgstr "Cuardach Doiléir Uasmhéid Caillteanais"
 
+msgid "Arrow"
+msgstr "Saighead"
+
+msgid "Arrow Margin"
+msgstr "Imeall Saighead"
+
+msgid "Modulate Arrow"
+msgstr "Saighead Mionathraithe"
+
 msgid "Hide on Item Selection"
 msgstr "Folaigh ar Roghnú Míre"
 
@@ -8809,17 +9404,71 @@ msgstr "Airde Laghdaigh"
 msgid "Shrink Width"
 msgstr "Leithead Laghdaigh"
 
+msgid "Separator"
+msgstr "Deighilteoir"
+
+msgid "Labeled Separator Left"
+msgstr "Deighilteoir Lipéadaithe Ar Chlé"
+
+msgid "Labeled Separator Right"
+msgstr "Ceart deighilteora lipéadaithe"
+
+msgid "Search Bar Separation"
+msgstr "Deighilt Barra Cuardaigh"
+
+msgid "Item Start Padding"
+msgstr "Mír Tosaigh Stuáil"
+
+msgid "Item End Padding"
+msgstr "Mír Deireadh Stuáil"
+
+msgid "Gutter Compact"
+msgstr "Gáitéar Dlúth"
+
+msgid "Indeterminate"
+msgstr "Neamhchinntithe"
+
+msgid "Indeterminate Disabled"
+msgstr "Díchumasaithe Neamhchinntithe"
+
+msgid "Search"
+msgstr "Cuardaigh"
+
+msgid "Submenu"
+msgstr "Fo-roghchlár"
+
+msgid "Submenu Mirrored"
+msgstr "Fo-roghchlár scáthánaithe"
+
+msgid "Font Separator"
+msgstr "Deighilteoir Clónna"
+
+msgid "Font Separator Size"
+msgstr "Méid an Deighilteora Clónna"
+
+msgid "Font Accelerator Color"
+msgstr "Dath an Luasaire Clónna"
+
+msgid "Font Separator Color"
+msgstr "Dath an Deighilteora Clónna"
+
+msgid "Separator Outline Size"
+msgstr "Méid imlíne deighilteora"
+
+msgid "Font Separator Outline Color"
+msgstr "Dath Imlíneach an Deighilteora Clónna"
+
 msgid "Fill Mode"
 msgstr "Mód Líonta"
 
 msgid "Show Percentage"
 msgstr "Taispeáin Céatadán"
 
-msgid "Indeterminate"
-msgstr "Neamhchinntithe"
-
 msgid "Preview Indeterminate"
 msgstr "Réamhamharc Neamhchinntithe"
+
+msgid "Background"
+msgstr "Cúlra"
 
 msgid "Min Value"
 msgstr "Luach Min"
@@ -8905,8 +9554,98 @@ msgstr "Moill ar Bharra Dul Chun Cinn"
 msgid "Text Selection"
 msgstr "Roghnú Téacs"
 
+msgid "Horizontal Rule"
+msgstr "Riail Chothrománach"
+
+msgid "Normal Font"
+msgstr "Gnáthchló"
+
+msgid "Normal Font Size"
+msgstr "Gnáthmhéid an Chló"
+
+msgid "Shadow Offset X"
+msgstr "Fritháireamh Scáth X"
+
+msgid "Shadow Offset Y"
+msgstr "Fritháireamh Scáth Y"
+
+msgid "Bold Font"
+msgstr "Cló trom"
+
+msgid "Bold Font Size"
+msgstr "Clómhéid Trom"
+
+msgid "Bold Italics Font"
+msgstr "Cló Iodálach Trom"
+
+msgid "Bold Italics Font Size"
+msgstr "clómhéid cló trom iodálach"
+
+msgid "Italics Font"
+msgstr "Cló Iodálach"
+
+msgid "Italics Font Size"
+msgstr "Clómhéid Iodálach"
+
+msgid "Mono Font"
+msgstr "Cló Mona"
+
+msgid "Mono Font Size"
+msgstr "Clómhéid Mona"
+
+msgid "Text Highlight H Padding"
+msgstr "Aibhsiú Téacs H Padding"
+
+msgid "Text Highlight V Padding"
+msgstr "Aibhsiú Téacs V stuáil"
+
+msgid "Underline Alpha"
+msgstr "Folínigh Alfa"
+
+msgid "Strikethrough Alpha"
+msgstr "Alfa Stróic Tríd"
+
+msgid "Table H Separation"
+msgstr "Tábla H Scaradh"
+
+msgid "Table V Separation"
+msgstr "Tábla V Scaradh"
+
+msgid "Table Odd Row BG"
+msgstr "Tábla Odd Row BG"
+
+msgid "Table Even Row BG"
+msgstr "Tábla Fiú Rae BG"
+
+msgid "Table Border"
+msgstr "Teorainn Tábla"
+
 msgid "Custom Step"
 msgstr "Céim Shaincheaptha"
+
+msgid "Scroll Focus"
+msgstr "Scrollaigh Fócas"
+
+msgid "Grabber Pressed"
+msgstr "Grabber Brúite"
+
+msgid "Increment"
+msgstr "Méadaigh"
+
+msgid "Increment Highlight"
+msgstr "Buaicphointe Incriminte"
+
+msgid "Increment Pressed"
+msgstr "Incrimint Brúite"
+
+msgid "Decrement"
+msgstr "Laghdu"
+
+msgid "Decrement Highlight"
+msgstr "Aibhsiú Decrement"
+
+msgid "Decrement Pressed"
+msgstr "Decrement brúite"
 
 msgid "Follow Focus"
 msgstr "Lean Fócas"
@@ -8941,8 +9680,20 @@ msgstr "Scrollaigh go Cothrománach de réir Réamhshocraithe"
 msgid "Scroll Deadzone"
 msgstr "Scrollaigh Deadzone"
 
-msgid "Scroll Hint"
-msgstr "Leid Scrollaigh"
+msgid "Scrollbar V Separation"
+msgstr "Scrollbharra V Scaradh"
+
+msgid "Scroll Hint Vertical"
+msgstr "Leid Scrollaigh Ingearach"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Leid Scrollaigh Cothrománach"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Dath Ingearach Leid Scrollaigh"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Leid Scrollaigh Dath Cothrománach"
 
 msgid "Default Scroll Deadzone"
 msgstr "Deadzone Scrollaigh Réamhshocraithe"
@@ -8959,6 +9710,30 @@ msgstr "Sceartáin ar Theorainneacha"
 msgid "Ticks Position"
 msgstr "Seasamh na dTicéad"
 
+msgid "Slider"
+msgstr "Barra Sleamhnáin"
+
+msgid "Grabber Area"
+msgstr "Limistéar Grabber"
+
+msgid "Grabber Area Highlight"
+msgstr "Buaicphointe Limistéar Grabber"
+
+msgid "Grabber Disabled"
+msgstr "Grabber Díchumasaithe"
+
+msgid "Tick"
+msgstr "Cuir tic"
+
+msgid "Center Grabber"
+msgstr "Ionad Grabber"
+
+msgid "Grabber Offset"
+msgstr "Fritháireamh Grabber"
+
+msgid "Tick Offset"
+msgstr "Fritháireamh Tic"
+
 msgid "Update on Text Changed"
 msgstr "Nuashonrú ar théacs athraithe"
 
@@ -8970,6 +9745,96 @@ msgstr "Babhta Saighead Saincheaptha"
 
 msgid "Format"
 msgstr "Formáid"
+
+msgid "Buttons Vertical Separation"
+msgstr "Cnaipí Scaradh Ingearach"
+
+msgid "Field and Buttons Separation"
+msgstr "Scaradh Réimse agus Cnaipí"
+
+msgid "Buttons Width"
+msgstr "Cnaipí Leithead"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Socraigh Leithead Mionchnaipí Ó Dheilbhíní"
+
+msgid "Up"
+msgstr "Suas"
+
+msgid "Up Hover"
+msgstr "Aoibhneas Suas"
+
+msgid "Up Pressed"
+msgstr "Suas Brúite"
+
+msgid "Up Disabled"
+msgstr "Suas faoi Mhíchumas"
+
+msgid "Down"
+msgstr "Síos"
+
+msgid "Down Hover"
+msgstr "Dún Hobhair"
+
+msgid "Down Pressed"
+msgstr "Síos Brúite"
+
+msgid "Down Disabled"
+msgstr "Síos Díchumasaithe"
+
+msgid "Up Background"
+msgstr "Cúlra Suas"
+
+msgid "Up Background Hovered"
+msgstr "Cúlra Suas Folaithe"
+
+msgid "Up Background Pressed"
+msgstr "Cúlra Suas Brúite"
+
+msgid "Up Background Disabled"
+msgstr "Cúlra Suas Díchumasaithe"
+
+msgid "Down Background"
+msgstr "Cúlra Síos"
+
+msgid "Down Background Hovered"
+msgstr "Cúlra Dúin Folaithe"
+
+msgid "Down Background Pressed"
+msgstr "Cúlra an Dúin Brúite"
+
+msgid "Down Background Disabled"
+msgstr "Cúlra an Dúin Díchumasaithe"
+
+msgid "Up Icon Modulate"
+msgstr "Modúl Icon Suas"
+
+msgid "Up Hover Icon Modulate"
+msgstr " "
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Modulate Icon Brúite Suas"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Suas Modulate Icon Díchumasaithe"
+
+msgid "Down Icon Modulate"
+msgstr "Dúin Icon Modulate"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulate Icon Down Hover"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Dúin Brúigh Icon Modulate"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Síos Díchumasaithe Deilbhín Modhnaigh"
+
+msgid "Field and Buttons Separator"
+msgstr "Réimse agus Deighilteoir Cnaipí"
+
+msgid "Up Down Buttons Separator"
+msgstr "Deighilteoir Cnaipí Suas Síos"
 
 msgid "Split Offsets"
 msgstr "Fritháireamh Scoilte"
@@ -9000,6 +9865,39 @@ msgstr "Deireadh Imeall"
 
 msgid "Highlight in Editor"
 msgstr "Buaicphointe san Eagarthóir"
+
+msgid "Touch Dragger Color"
+msgstr "Dath Tarraingthe Tadhaill"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Dath Brúite le Tarraingt Tadhaill"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Dath Luascáin Tadhaill Tarraingthe"
+
+msgid "Minimum Grab Thickness"
+msgstr "Tiús Grab Íosta"
+
+msgid "Autohide"
+msgstr "Uathíde"
+
+msgid "Touch Dragger"
+msgstr "Tarraingeoir Tadhaill"
+
+msgid "H Touch Dragger"
+msgstr "Dragaire H Touch"
+
+msgid "V Touch Dragger"
+msgstr "Dragaire V Touch"
+
+msgid "H Grabber"
+msgstr "Grábálaí H"
+
+msgid "V Grabber"
+msgstr "V GrabberName"
+
+msgid "Split Bar Background"
+msgstr "Cúlra an Bharra Scoilte"
 
 msgid "Split Offset"
 msgstr "Fritháireamh Scoilte"
@@ -9052,6 +9950,42 @@ msgstr "Díroghnaigh Cumasaithe"
 msgid "Tabs"
 msgstr "Cluaisíní"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Fanacht Lasc Aghaidh Msoic"
+
+msgid "Tab Hovered"
+msgstr "Cluaisín Hovered"
+
+msgid "Tab Disabled"
+msgstr "Díchumasaíodh cluaisíní"
+
+msgid "Tab Focus"
+msgstr "Fócas na gCluaisíní"
+
+msgid "Drop Mark"
+msgstr "Marc Buail"
+
+msgid "Drop Mark Color"
+msgstr "Buail Dath an Mharc"
+
+msgid "Font Unselected Color"
+msgstr "Dath Neamhroghnaithe an Chló"
+
+msgid "Icon Selected Color"
+msgstr "Deilbhín Dath Roghnaithe"
+
+msgid "Icon Hovered Color"
+msgstr "Dath Luascáin Deilbhín"
+
+msgid "Icon Unselected Color"
+msgstr "Deilbhín Dath Gan Roghnú"
+
+msgid "Close"
+msgstr "Dún"
+
+msgid "Button Highlight"
+msgstr "Aibhsiú na gCnaipí"
+
 msgid "Tabs Position"
 msgstr "Suíomh na dTáb"
 
@@ -9063,6 +9997,21 @@ msgstr "Bain úsáid as cluaisíní i bhfolach le haghaidh méid min"
 
 msgid "Tab Focus Mode"
 msgstr "Mód Fócas Cluaisíní"
+
+msgid "Side Margin"
+msgstr "Imeall Taobh"
+
+msgid "Tabbar Background"
+msgstr "Cúlra Tabbar"
+
+msgid "Menu"
+msgstr "Clár"
+
+msgid "Menu Highlight"
+msgstr "Aibhsiú roghchláir"
+
+msgid "Icon Separation"
+msgstr "Scaradh Deilbhíní"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Gearrthaisce Roghnúcháin Folamh Cumasaithe"
@@ -9109,18 +10058,38 @@ msgstr "Chars Rialaithe"
 msgid "Spaces"
 msgstr "Spásanna"
 
+msgid "Search Result Color"
+msgstr "Dath an Toraidh Chuardaigh"
+
+msgid "Search Result Border Color"
+msgstr "Dath Teorann Thoradh an Chuardaigh"
+
+msgid "Caret Background Color"
+msgstr "Cúlra Caret Dath"
+
+msgid "Tab"
+msgstr "Táb"
+
+msgid "Space"
+msgstr "Spás"
+
+msgid "Font Readonly Color"
+msgstr "Dath inléite cló"
+
+msgid "Wrap Offset"
+msgstr "Fritháireamh Fillte"
+
+msgid "Current Line Color"
+msgstr "Dath na Líne Reatha"
+
+msgid "Word Highlighted Color"
+msgstr "Dath aibhsithe focal"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Téacs Edit Idle Bhrath (soic)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Cuir Téacs in Eagar Cealaigh Méid Max Stack"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Gnáth"
-
-msgid "Hover"
-msgstr "HoverGenericName"
 
 msgid "Focused"
 msgstr "Dírithe"
@@ -9194,6 +10163,117 @@ msgstr "Scrollaigh Cothrománach Cumasaithe"
 msgid "Scroll Vertical Enabled"
 msgstr "Scrollaigh Ingearach Cumasaithe"
 
+msgid "Title Button Font"
+msgstr "Cló cnaipe teidil"
+
+msgid "Title Button Font Size"
+msgstr "Clómhéid an Chnaipe Teidil"
+
+msgid "Hovered Dimmed"
+msgstr "Ag faoileáil doiléir"
+
+msgid "Button Hover"
+msgstr "Cnaipe ag faoileáil"
+
+msgid "Arrow Collapsed"
+msgstr "Saighead tite as a chéile"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Saighead tite scáthánaithe"
+
+msgid "Select Arrow"
+msgstr "Roghnaigh Saighead"
+
+msgid "Custom Button"
+msgstr "Cnaipe Saincheaptha"
+
+msgid "Custom Button Hover"
+msgstr "Hover Cnaipe Saincheaptha"
+
+msgid "Custom Button Pressed"
+msgstr "Cnaipe Saincheaptha Brúite"
+
+msgid "Custom Button Font Highlight"
+msgstr "Aibhsiú Cló Cnaipe Saincheaptha"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Cló Ag faoileáil Dath Tosaithe"
+
+msgid "Drop on Item Color"
+msgstr "Buail ar Dhath na Míre"
+
+msgid "Drop Position Color"
+msgstr "Buail Dath an tSuímh"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Imeall Mír Istigh Bun"
+
+msgid "Inner Item Margin Left"
+msgstr "Imeall Míre Istigh Ar Chlé"
+
+msgid "Inner Item Margin Right"
+msgstr "Imeall Míre Istigh Ar Dheis"
+
+msgid "Inner Item Margin Top"
+msgstr "Barr Imeall Míre Istigh"
+
+msgid "Item Margin"
+msgstr "Imeall Míre"
+
+msgid "Check H Separation"
+msgstr "Seiceáil Deighilt H"
+
+msgid "Icon H Separation"
+msgstr "Deilbhín H Deighilt"
+
+msgid "Button Margin"
+msgstr "Imeall na gCnaipí"
+
+msgid "Draw Guides"
+msgstr "Treoracha Tarraingthe"
+
+msgid "Relationship Line Width"
+msgstr "Leithead Líne Caidrimh"
+
+msgid "Parent HL Line Width"
+msgstr "Leithead Líne Tuismitheora HL"
+
+msgid "Children HL Line Width"
+msgstr "Leanaí HL Líne Leithead"
+
+msgid "Parent HL Line Margin"
+msgstr "Corrlach Líne Tuismitheora HL"
+
+msgid "Relationship Line Color"
+msgstr "Dath Líne Caidrimh"
+
+msgid "Parent HL Line Color"
+msgstr "Dath Líne HL Tuismitheora"
+
+msgid "Children HL Line Color"
+msgstr "Dath Líne HL Leanaí"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Tarraingt Dífhillte Fan Msoic"
+
+msgid "Scroll Border"
+msgstr "Scrollaigh Teorainn"
+
+msgid "Scroll Speed"
+msgstr "Luas Scrollaigh"
+
+msgid "Title Button Normal"
+msgstr "Cnaipe Teidil Gnáth"
+
+msgid "Title Button Pressed"
+msgstr "Cnaipe Teidil Brúite"
+
+msgid "Title Button Hover"
+msgstr "Teideal Button Hover"
+
+msgid "Title Button Color"
+msgstr "Dath an Chnaipe Teidil"
+
 msgid "Audio Track"
 msgstr "Rian Fuaime"
 
@@ -9235,6 +10315,18 @@ msgstr "Gníomh Suas"
 
 msgid "Action Down"
 msgstr "Gníomh Síos"
+
+msgid "Normal Joystick"
+msgstr "Luamhán stiúrtha gnáth"
+
+msgid "Normal Tip"
+msgstr "Leid Ghnáth"
+
+msgid "Pressed Joystick"
+msgstr "Luamhán stiúrtha brúite"
+
+msgid "Pressed Tip"
+msgstr "Leid Brúite"
 
 msgid "Self Modulate"
 msgstr "Féin-Mhodhnú"
@@ -9452,9 +10544,6 @@ msgstr "Cumasaigh Piocadh Réada"
 msgid "Scene Traversal"
 msgstr "Trasnú Radharc"
 
-msgid "Menu"
-msgstr "Clár"
-
 msgid "Wait Time"
 msgstr "Am Feithimh"
 
@@ -9643,6 +10732,39 @@ msgstr "Aschur HDR"
 
 msgid "Requested"
 msgstr "Iarrtha"
+
+msgid "Embedded Border"
+msgstr "Teorainn Leabaithe"
+
+msgid "Embedded Unfocused Border"
+msgstr "Teorainn Neamhdhírithe Leabaithe"
+
+msgid "Title Font"
+msgstr "Cló teidil"
+
+msgid "Title Font Size"
+msgstr "Clómhéid an Teidil"
+
+msgid "Title Height"
+msgstr "Airde teidil"
+
+msgid "Title Outline Modulate"
+msgstr "Teideal Imlíne Modulate"
+
+msgid "Title Outline Size"
+msgstr "Teideal Breac-chuntas Méid"
+
+msgid "Close Pressed"
+msgstr "Dún Brúite"
+
+msgid "Close H Offset"
+msgstr "Dún Fritháireamh H"
+
+msgid "Close V Offset"
+msgstr "Dún Fritháireamh V"
+
+msgid "Resize Margin"
+msgstr "Athraigh Méid an Chorrlaigh"
 
 msgid "Swap Cancel OK"
 msgstr "Babhtáil Cealaigh OK"
@@ -10079,9 +11201,6 @@ msgstr "Cuar Y"
 msgid "Curve Z"
 msgstr "Cuar Z"
 
-msgid "Background"
-msgstr "Cúlra"
-
 msgid "Canvas Max Layer"
 msgstr "Canbhás Max Sraith"
 
@@ -10292,9 +11411,6 @@ msgstr "Spásáil Bhreise"
 msgid "Glyph"
 msgstr "GlyphName"
 
-msgid "Space"
-msgstr "Spás"
-
 msgid "Baseline"
 msgstr "Bonnlíne"
 
@@ -10333,9 +11449,6 @@ msgstr "Úsáid HDR"
 
 msgid "To"
 msgstr "Chun"
-
-msgid "Paragraph Spacing"
-msgstr "Spásáil Alt"
 
 msgid "Stacked Effects"
 msgstr "Éifeachtaí Cruachta"
@@ -10879,1125 +11992,6 @@ msgstr "Cló Réamhshocraithe"
 
 msgid "Default Font Size"
 msgstr "Clómhéid Réamhshocraithe"
-
-msgid "File"
-msgstr "Comhad"
-
-msgid "Font Pressed Color"
-msgstr "Dath Brúite ar an gCló"
-
-msgid "Font Hover Color"
-msgstr "Dath ainlithe cló"
-
-msgid "Font Focus Color"
-msgstr "Dath Fócas an Chló"
-
-msgid "Font Hover Pressed Color"
-msgstr "Dath Brúite Hover Cló"
-
-msgid "Font Disabled Color"
-msgstr "Dath Díchumasaithe an Chló"
-
-msgid "Font Outline Color"
-msgstr "Dath Imlíneach an Chló"
-
-msgid "Icon Normal Color"
-msgstr "Gnáthdhath deilbhíní"
-
-msgid "Icon Pressed Color"
-msgstr "Dath Brúite Deilbhíní"
-
-msgid "Icon Hover Color"
-msgstr "Dath an Deilbhín Hover"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Dath Brúite Deilbhín Hover"
-
-msgid "Icon Focus Color"
-msgstr "Dath Fócas Deilbhíní"
-
-msgid "Icon Disabled Color"
-msgstr "Dath Díchumasaithe Deilbhíní"
-
-msgid "H Separation"
-msgstr "H Scaradh"
-
-msgid "Icon Max Width"
-msgstr "Leithead Uasta Deilbhíní"
-
-msgid "Align to Largest Stylebox"
-msgstr "Ailínigh leis an mbosca stíle is mó"
-
-msgid "Underline Spacing"
-msgstr "Cuir béim ar Spásáil"
-
-msgid "Normal Mirrored"
-msgstr "Gnáth-Scáthánaithe"
-
-msgid "Hover Mirrored"
-msgstr "Hover Scáthánaithe"
-
-msgid "Pressed Mirrored"
-msgstr "Scáthánaithe Brúite"
-
-msgid "Disabled Mirrored"
-msgstr "Díchumasaithe Scáthánaithe"
-
-msgid "Arrow"
-msgstr "Saighead"
-
-msgid "Arrow Margin"
-msgstr "Imeall Saighead"
-
-msgid "Modulate Arrow"
-msgstr "Saighead Mionathraithe"
-
-msgid "Hover Pressed"
-msgstr "Hover Brúite"
-
-msgid "Checked Disabled"
-msgstr "Díchumasaithe Seiceáilte"
-
-msgid "Unchecked"
-msgstr "Díthiceáilte"
-
-msgid "Unchecked Disabled"
-msgstr "Díchumasaithe gan seiceáil"
-
-msgid "Radio Checked"
-msgstr "Raidió Seiceáilte"
-
-msgid "Radio Checked Disabled"
-msgstr "Raidió Seiceáilte Díchumasaithe"
-
-msgid "Radio Unchecked"
-msgstr "Raidió Gan Seiceáil"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Raidió Gan Seiceáil Díchumasaithe"
-
-msgid "Check V Offset"
-msgstr "Seiceáil Fritháireamh V"
-
-msgid "Checkbox Checked Color"
-msgstr "Dath Seiceáilte an Bhosca Seiceála"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Dath an Bhosca Seiceála Gan Seiceáil"
-
-msgid "Checked Mirrored"
-msgstr "Seiceáil Scáthánaithe"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Seiceáil Díchumasaithe Scáthánaithe"
-
-msgid "Unchecked Mirrored"
-msgstr "Gan Seiceáil Scáthánaithe"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Díchumasaithe Gan Seiceáil Scáthánaithe"
-
-msgid "Button Checked Color"
-msgstr "Dath Seiceáilte Cnaipe"
-
-msgid "Button Unchecked Color"
-msgstr "Dath an Chnaipe Gan Seiceáil"
-
-msgid "Font Shadow Color"
-msgstr "Dath Scáth cló"
-
-msgid "Shadow Offset X"
-msgstr "Fritháireamh Scáth X"
-
-msgid "Shadow Offset Y"
-msgstr "Fritháireamh Scáth Y"
-
-msgid "Shadow Outline Size"
-msgstr "Scáth-imlíne Méid"
-
-msgid "Font Selected Color"
-msgstr "Dath roghnaithe an chló"
-
-msgid "Font Uneditable Color"
-msgstr "Dath Do-aimsithe cló"
-
-msgid "Font Placeholder Color"
-msgstr "Dath ionadchoinneálaí cló"
-
-msgid "Caret Color"
-msgstr "Dath Caret"
-
-msgid "Selection Color"
-msgstr "Dath an Roghnaithe"
-
-msgid "Clear Button Color"
-msgstr "Glan Dath an Chnaipe"
-
-msgid "Clear Button Color Pressed"
-msgstr "Glan Dath an Chnaipe Brúite"
-
-msgid "Minimum Character Width"
-msgstr "Leithead Íosta Carachtar"
-
-msgid "Caret Width"
-msgstr "Leithead Caret"
-
-msgid "Clear"
-msgstr "Glan"
-
-msgid "Tab"
-msgstr "Táb"
-
-msgid "Font Readonly Color"
-msgstr "Dath inléite cló"
-
-msgid "Current Line Color"
-msgstr "Dath na Líne Reatha"
-
-msgid "Caret Background Color"
-msgstr "Cúlra Caret Dath"
-
-msgid "Word Highlighted Color"
-msgstr "Dath aibhsithe focal"
-
-msgid "Search Result Color"
-msgstr "Dath an Toraidh Chuardaigh"
-
-msgid "Search Result Border Color"
-msgstr "Dath Teorann Thoradh an Chuardaigh"
-
-msgid "Wrap Offset"
-msgstr "Fritháireamh Fillte"
-
-msgid "Breakpoint"
-msgstr "Brisphointe"
-
-msgid "Bookmark"
-msgstr "Leabharmharc"
-
-msgid "Executing Line"
-msgstr "Líne á Rith"
-
-msgid "Can Fold"
-msgstr "An féidir Fill"
-
-msgid "Can Fold Code Region"
-msgstr "An féidir Fold Code Region"
-
-msgid "Folded Code Region"
-msgstr "Réigiún Cód Fillte"
-
-msgid "Folded EOL Icon"
-msgstr "Deilbhín EOL Fillte"
-
-msgid "Completion Color BG"
-msgstr "Dath Críochnaithe BG"
-
-msgid "Completion Background Color"
-msgstr "Dath an Chúlra Críochnaithe"
-
-msgid "Completion Selected Color"
-msgstr "Comhlánú Dath Roghnaithe"
-
-msgid "Completion Existing Color"
-msgstr "Comhlánaigh an dath atá ann cheana"
-
-msgid "Completion Scroll Color"
-msgstr "Comhlánú Scrollaigh Dath"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Comhlánú Scrollaigh Dath Hovered"
-
-msgid "Bookmark Color"
-msgstr "Dath Leabharmharcanna"
-
-msgid "Breakpoint Color"
-msgstr "Dath Brisphointe"
-
-msgid "Executing Line Color"
-msgstr "Dath na Líne á Rith"
-
-msgid "Code Folding Color"
-msgstr "Dath Fillte an Chóid"
-
-msgid "Folded Code Region Color"
-msgstr "Dath Réigiún an Chóid Fillte"
-
-msgid "Brace Mismatch Color"
-msgstr "Dath Neamhoiriúnach Brace"
-
-msgid "Line Number Color"
-msgstr "Dath Uimhir Líne"
-
-msgid "Line Length Guideline Color"
-msgstr "Fad Líne Treoirlíne Dath"
-
-msgid "Completion Lines"
-msgstr "Línte Críochnaithe"
-
-msgid "Completion Max Width"
-msgstr "Uasleithead Críochnaithe"
-
-msgid "Completion Scroll Width"
-msgstr "Comhlánaigh Leithead Scrolla"
-
-msgid "Scroll Focus"
-msgstr "Scrollaigh Fócas"
-
-msgid "Grabber"
-msgstr "GrabberName"
-
-msgid "Grabber Highlight"
-msgstr "Aibhsiú Grabber"
-
-msgid "Grabber Pressed"
-msgstr "Grabber Brúite"
-
-msgid "Increment"
-msgstr "Méadaigh"
-
-msgid "Increment Highlight"
-msgstr "Buaicphointe Incriminte"
-
-msgid "Increment Pressed"
-msgstr "Incrimint Brúite"
-
-msgid "Decrement"
-msgstr "Laghdu"
-
-msgid "Decrement Highlight"
-msgstr "Aibhsiú Decrement"
-
-msgid "Decrement Pressed"
-msgstr "Decrement brúite"
-
-msgid "Slider"
-msgstr "Barra Sleamhnáin"
-
-msgid "Grabber Area"
-msgstr "Limistéar Grabber"
-
-msgid "Grabber Area Highlight"
-msgstr "Buaicphointe Limistéar Grabber"
-
-msgid "Grabber Disabled"
-msgstr "Grabber Díchumasaithe"
-
-msgid "Tick"
-msgstr "Cuir tic"
-
-msgid "Center Grabber"
-msgstr "Ionad Grabber"
-
-msgid "Grabber Offset"
-msgstr "Fritháireamh Grabber"
-
-msgid "Tick Offset"
-msgstr "Fritháireamh Tic"
-
-msgid "Updown"
-msgstr "Suas an Dún"
-
-msgid "Up"
-msgstr "Suas"
-
-msgid "Up Hover"
-msgstr "Aoibhneas Suas"
-
-msgid "Up Pressed"
-msgstr "Suas Brúite"
-
-msgid "Up Disabled"
-msgstr "Suas faoi Mhíchumas"
-
-msgid "Down"
-msgstr "Síos"
-
-msgid "Down Hover"
-msgstr "Dún Hobhair"
-
-msgid "Down Pressed"
-msgstr "Síos Brúite"
-
-msgid "Down Disabled"
-msgstr "Síos Díchumasaithe"
-
-msgid "Up Background"
-msgstr "Cúlra Suas"
-
-msgid "Up Background Hovered"
-msgstr "Cúlra Suas Folaithe"
-
-msgid "Up Background Pressed"
-msgstr "Cúlra Suas Brúite"
-
-msgid "Up Background Disabled"
-msgstr "Cúlra Suas Díchumasaithe"
-
-msgid "Down Background"
-msgstr "Cúlra Síos"
-
-msgid "Down Background Hovered"
-msgstr "Cúlra Dúin Folaithe"
-
-msgid "Down Background Pressed"
-msgstr "Cúlra an Dúin Brúite"
-
-msgid "Down Background Disabled"
-msgstr "Cúlra an Dúin Díchumasaithe"
-
-msgid "Up Icon Modulate"
-msgstr "Modúl Icon Suas"
-
-msgid "Up Hover Icon Modulate"
-msgstr " "
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Modulate Icon Brúite Suas"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Suas Modulate Icon Díchumasaithe"
-
-msgid "Down Icon Modulate"
-msgstr "Dúin Icon Modulate"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Modulate Icon Down Hover"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Dúin Brúigh Icon Modulate"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Síos Díchumasaithe Deilbhín Modhnaigh"
-
-msgid "Field and Buttons Separator"
-msgstr "Réimse agus Deighilteoir Cnaipí"
-
-msgid "Up Down Buttons Separator"
-msgstr "Deighilteoir Cnaipí Suas Síos"
-
-msgid "Buttons Vertical Separation"
-msgstr "Cnaipí Scaradh Ingearach"
-
-msgid "Field and Buttons Separation"
-msgstr "Scaradh Réimse agus Cnaipí"
-
-msgid "Buttons Width"
-msgstr "Cnaipí Leithead"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Socraigh Leithead Mionchnaipí Ó Dheilbhíní"
-
-msgid "Scroll Hint Vertical"
-msgstr "Leid Scrollaigh Ingearach"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Leid Scrollaigh Cothrománach"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Dath Ingearach Leid Scrollaigh"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Leid Scrollaigh Dath Cothrománach"
-
-msgid "Scrollbar Margin Left"
-msgstr "Imeall scrollbharra ar chlé"
-
-msgid "Scrollbar Margin Top"
-msgstr "Barr Imeall Scrollbharra"
-
-msgid "Scrollbar Margin Right"
-msgstr "Imeall scrollbharra ar dheis"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Bun Imeall Scrollbharra"
-
-msgid "Normal Joystick"
-msgstr "Luamhán stiúrtha gnáth"
-
-msgid "Normal Tip"
-msgstr "Leid Ghnáth"
-
-msgid "Pressed Joystick"
-msgstr "Luamhán stiúrtha brúite"
-
-msgid "Pressed Tip"
-msgstr "Leid Brúite"
-
-msgid "Embedded Border"
-msgstr "Teorainn Leabaithe"
-
-msgid "Embedded Unfocused Border"
-msgstr "Teorainn Neamhdhírithe Leabaithe"
-
-msgid "Title Font"
-msgstr "Cló teidil"
-
-msgid "Title Font Size"
-msgstr "Clómhéid an Teidil"
-
-msgid "Title Outline Modulate"
-msgstr "Teideal Imlíne Modulate"
-
-msgid "Title Outline Size"
-msgstr "Teideal Breac-chuntas Méid"
-
-msgid "Title Height"
-msgstr "Airde teidil"
-
-msgid "Resize Margin"
-msgstr "Athraigh Méid an Chorrlaigh"
-
-msgid "Close"
-msgstr "Dún"
-
-msgid "Close Pressed"
-msgstr "Dún Brúite"
-
-msgid "Close H Offset"
-msgstr "Dún Fritháireamh H"
-
-msgid "Close V Offset"
-msgstr "Dún Fritháireamh V"
-
-msgid "Buttons Separation"
-msgstr "Scaradh Cnaipí"
-
-msgid "Load"
-msgstr "Luchtaigh"
-
-msgid "Save"
-msgstr "Sábháil"
-
-msgid "Parent Folder"
-msgstr "Máthairfhillteán"
-
-msgid "Back Folder"
-msgstr "Fillteán Ar Ais"
-
-msgid "Forward Folder"
-msgstr "Cuir Fillteán Ar Aghaidh"
-
-msgid "Reload"
-msgstr "Athluchtaigh"
-
-msgid "Favorite"
-msgstr "Is fearr leat"
-
-msgid "Toggle Hidden"
-msgstr "Scoránaigh i bhfolach"
-
-msgid "Toggle Filename Filter"
-msgstr "Scoránaigh an Scagaire Ainm Comhaid"
-
-msgid "Folder"
-msgstr "Fillteán"
-
-msgid "Thumbnail Mode"
-msgstr "Mód Mionsamhail"
-
-msgid "List Mode"
-msgstr "Mód Liosta"
-
-msgid "Create Folder"
-msgstr "Cruthaigh Fillteán"
-
-msgid "Sort"
-msgstr "Sórtáil"
-
-msgid "Favorite Up"
-msgstr "Is Fearr Leat Suas"
-
-msgid "Favorite Down"
-msgstr "An Síos is Fearr Leat"
-
-msgid "File Thumbnail"
-msgstr "Mionsamhail Chomhaid"
-
-msgid "Folder Thumbnail"
-msgstr "Mionsamhail Fillteáin"
-
-msgid "Menu Copy Path"
-msgstr "Cóipeáil an Roghchláir Cosán"
-
-msgid "Menu Delete"
-msgstr "Scrios an Roghchlár"
-
-msgid "Menu New Folder"
-msgstr "Roghchlár Fillteán Nua"
-
-msgid "Menu Refresh"
-msgstr "Athnuachan Roghchláir"
-
-msgid "Menu Show in File Manager"
-msgstr "Taispeáin an Roghchlár i mBainisteoir Comhad"
-
-msgid "Menu Open Bundle"
-msgstr "Oscail an Roghchlár Pacáiste"
-
-msgid "Folder Icon Color"
-msgstr "Dath Dheilbhín an Fhillteáin"
-
-msgid "File Icon Color"
-msgstr "Dath Dheilbhín an Chomhaid"
-
-msgid "File Disabled Color"
-msgstr "Dath Díchumasaithe an Chomhaid"
-
-msgid "Separator"
-msgstr "Deighilteoir"
-
-msgid "Labeled Separator Left"
-msgstr "Deighilteoir Lipéadaithe Ar Chlé"
-
-msgid "Labeled Separator Right"
-msgstr "Ceart deighilteora lipéadaithe"
-
-msgid "Indeterminate Disabled"
-msgstr "Díchumasaithe Neamhchinntithe"
-
-msgid "Submenu"
-msgstr "Fo-roghchlár"
-
-msgid "Submenu Mirrored"
-msgstr "Fo-roghchlár scáthánaithe"
-
-msgid "Search"
-msgstr "Cuardaigh"
-
-msgid "Font Separator"
-msgstr "Deighilteoir Clónna"
-
-msgid "Font Separator Size"
-msgstr "Méid an Deighilteora Clónna"
-
-msgid "Font Accelerator Color"
-msgstr "Dath an Luasaire Clónna"
-
-msgid "Font Separator Color"
-msgstr "Dath an Deighilteora Clónna"
-
-msgid "Font Separator Outline Color"
-msgstr "Dath Imlíneach an Deighilteora Clónna"
-
-msgid "V Separation"
-msgstr "V Scaradh"
-
-msgid "Search Bar Separation"
-msgstr "Deighilt Barra Cuardaigh"
-
-msgid "Separator Outline Size"
-msgstr "Méid imlíne deighilteora"
-
-msgid "Item Start Padding"
-msgstr "Mír Tosaigh Stuáil"
-
-msgid "Item End Padding"
-msgstr "Mír Deireadh Stuáil"
-
-msgid "Gutter Compact"
-msgstr "Gáitéar Dlúth"
-
-msgid "Panel Selected"
-msgstr "Painéal roghnaithe"
-
-msgid "Panel Focus"
-msgstr "Fócas Painéil"
-
-msgid "Titlebar"
-msgstr "Barra teidil"
-
-msgid "Titlebar Selected"
-msgstr "Barra teidil roghnaithe"
-
-msgid "Slot"
-msgstr "Sliotán"
-
-msgid "Slot Selected"
-msgstr "Sliotán Roghnaithe"
-
-msgid "Resizer"
-msgstr "ResizerName"
-
-msgid "Resizer Color"
-msgstr "Dath Resizer"
-
-msgid "Port H Offset"
-msgstr "Fritháireamh Phort H"
-
-msgid "Hovered"
-msgstr "Ag Dul Ar"
-
-msgid "Hovered Dimmed"
-msgstr "Ag faoileáil doiléir"
-
-msgid "Hovered Selected"
-msgstr "Ag faoileáil Roghnaithe"
-
-msgid "Hovered Selected Focus"
-msgstr "Ag faoileáil Fócas Roghnaithe"
-
-msgid "Selected Focus"
-msgstr "Fócas Roghnaithe"
-
-msgid "Cursor"
-msgstr "Cúrsóir"
-
-msgid "Cursor Unfocused"
-msgstr "Cúrsóir Neamhdhírithe"
-
-msgid "Button Hover"
-msgstr "Cnaipe ag faoileáil"
-
-msgid "Title Button Normal"
-msgstr "Cnaipe Teidil Gnáth"
-
-msgid "Title Button Pressed"
-msgstr "Cnaipe Teidil Brúite"
-
-msgid "Title Button Hover"
-msgstr "Teideal Button Hover"
-
-msgid "Custom Button"
-msgstr "Cnaipe Saincheaptha"
-
-msgid "Custom Button Pressed"
-msgstr "Cnaipe Saincheaptha Brúite"
-
-msgid "Custom Button Hover"
-msgstr "Hover Cnaipe Saincheaptha"
-
-msgid "Select Arrow"
-msgstr "Roghnaigh Saighead"
-
-msgid "Arrow Collapsed"
-msgstr "Saighead tite as a chéile"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Saighead tite scáthánaithe"
-
-msgid "Title Button Font"
-msgstr "Cló cnaipe teidil"
-
-msgid "Title Button Font Size"
-msgstr "Clómhéid an Chnaipe Teidil"
-
-msgid "Title Button Color"
-msgstr "Dath an Chnaipe Teidil"
-
-msgid "Font Hovered Color"
-msgstr "Dath ainlithe cló"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Cló Ag faoileáil Dath Tosaithe"
-
-msgid "Font Hovered Selected Color"
-msgstr "Cló Ag faoileáil Dath Roghnaithe"
-
-msgid "Guide Color"
-msgstr "Dath treorach"
-
-msgid "Drop on Item Color"
-msgstr "Buail ar Dhath na Míre"
-
-msgid "Drop Position Color"
-msgstr "Buail Dath an tSuímh"
-
-msgid "Relationship Line Color"
-msgstr "Dath Líne Caidrimh"
-
-msgid "Parent HL Line Color"
-msgstr "Dath Líne HL Tuismitheora"
-
-msgid "Children HL Line Color"
-msgstr "Dath Líne HL Leanaí"
-
-msgid "Custom Button Font Highlight"
-msgstr "Aibhsiú Cló Cnaipe Saincheaptha"
-
-msgid "Scroll Hint Color"
-msgstr "Dath Leid Scrollaigh"
-
-msgid "Item Margin"
-msgstr "Imeall Míre"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Imeall Mír Istigh Bun"
-
-msgid "Inner Item Margin Left"
-msgstr "Imeall Míre Istigh Ar Chlé"
-
-msgid "Inner Item Margin Right"
-msgstr "Imeall Míre Istigh Ar Dheis"
-
-msgid "Inner Item Margin Top"
-msgstr "Barr Imeall Míre Istigh"
-
-msgid "Check H Separation"
-msgstr "Seiceáil Deighilt H"
-
-msgid "Icon H Separation"
-msgstr "Deilbhín H Deighilt"
-
-msgid "Button Margin"
-msgstr "Imeall na gCnaipí"
-
-msgid "Relationship Line Width"
-msgstr "Leithead Líne Caidrimh"
-
-msgid "Parent HL Line Width"
-msgstr "Leithead Líne Tuismitheora HL"
-
-msgid "Children HL Line Width"
-msgstr "Leanaí HL Líne Leithead"
-
-msgid "Parent HL Line Margin"
-msgstr "Corrlach Líne Tuismitheora HL"
-
-msgid "Draw Guides"
-msgstr "Treoracha Tarraingthe"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Tarraingt Dífhillte Fan Msoic"
-
-msgid "Scroll Border"
-msgstr "Scrollaigh Teorainn"
-
-msgid "Scroll Speed"
-msgstr "Luas Scrollaigh"
-
-msgid "Scrollbar H Separation"
-msgstr "Scrollbharra H Scaradh"
-
-msgid "Scrollbar V Separation"
-msgstr "Scrollbharra V Scaradh"
-
-msgid "Icon Margin"
-msgstr "Imeall Deilbhíní"
-
-msgid "Tab Selected"
-msgstr "Táb roghnaithe"
-
-msgid "Tab Hovered"
-msgstr "Cluaisín Hovered"
-
-msgid "Tab Unselected"
-msgstr "Cluaisín Gan Roghnú"
-
-msgid "Tab Disabled"
-msgstr "Díchumasaíodh cluaisíní"
-
-msgid "Tab Focus"
-msgstr "Fócas na gCluaisíní"
-
-msgid "Tabbar Background"
-msgstr "Cúlra Tabbar"
-
-msgid "Drop Mark"
-msgstr "Marc Buail"
-
-msgid "Menu Highlight"
-msgstr "Aibhsiú roghchláir"
-
-msgid "Font Unselected Color"
-msgstr "Dath Neamhroghnaithe an Chló"
-
-msgid "Drop Mark Color"
-msgstr "Buail Dath an Mharc"
-
-msgid "Icon Selected Color"
-msgstr "Deilbhín Dath Roghnaithe"
-
-msgid "Icon Hovered Color"
-msgstr "Dath Luascáin Deilbhín"
-
-msgid "Icon Unselected Color"
-msgstr "Deilbhín Dath Gan Roghnú"
-
-msgid "Side Margin"
-msgstr "Imeall Taobh"
-
-msgid "Icon Separation"
-msgstr "Scaradh Deilbhíní"
-
-msgid "Button Highlight"
-msgstr "Aibhsiú na gCnaipí"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Fanacht Lasc Aghaidh Msoic"
-
-msgid "SV Width"
-msgstr "Leithead SV"
-
-msgid "SV Height"
-msgstr "Airde SV"
-
-msgid "H Width"
-msgstr "Leithead H"
-
-msgid "Label Width"
-msgstr "Leithead an Lipéid"
-
-msgid "Center Slider Grabbers"
-msgstr "Grabbers Sleamhnán Ionad"
-
-msgid "Sample Focus"
-msgstr "Fócas Samplach"
-
-msgid "Picker Focus Rectangle"
-msgstr "Dronuilleog Fócais an Roghnóra"
-
-msgid "Picker Focus Circle"
-msgstr "Ciorcal Fócais Roghnóra"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Dírithe gan dath an chúrsóra a chur in eagar"
-
-msgid "Menu Option"
-msgstr "Rogha Roghchláir"
-
-msgid "Folded Arrow"
-msgstr "Saighead Fillte"
-
-msgid "Expanded Arrow"
-msgstr "Saighead Leathnaithe"
-
-msgid "Screen Picker"
-msgstr "Roghnóir Scáileáin"
-
-msgid "Shape Circle"
-msgstr "Ciorcal Crutha"
-
-msgid "Shape Rect"
-msgstr "Cruth Rect"
-
-msgid "Shape Rect Wheel"
-msgstr "Cruth Roth Rect"
-
-msgid "Add Preset"
-msgstr "Cuir Réamhshocrú Leis"
-
-msgid "Sample BG"
-msgstr "Sampla BG"
-
-msgid "Sample Revert"
-msgstr "Fill Samplach"
-
-msgid "Overbright Indicator"
-msgstr "Táscaire Overbright"
-
-msgid "Bar Arrow"
-msgstr "Saighead Bharra"
-
-msgid "Picker Cursor"
-msgstr "Cúrsóir an Roghnóra"
-
-msgid "Picker Cursor BG"
-msgstr "Cúrsóir Roghnaithe BG"
-
-msgid "Color Script"
-msgstr "Script Dath"
-
-msgid "Color Copy"
-msgstr "Cóip Dath"
-
-msgid "Color Hue"
-msgstr "Lí Datha"
-
-msgid "BG"
-msgstr "BGName"
-
-msgid "Preset FG"
-msgstr "Réamhshocraithe FG"
-
-msgid "Preset Focus"
-msgstr "Fócas Réamhshocraithe"
-
-msgid "Preset BG"
-msgstr "Réamhshocrú BG"
-
-msgid "Horizontal Rule"
-msgstr "Riail Chothrománach"
-
-msgid "Normal Font"
-msgstr "Gnáthchló"
-
-msgid "Bold Font"
-msgstr "Cló trom"
-
-msgid "Italics Font"
-msgstr "Cló Iodálach"
-
-msgid "Bold Italics Font"
-msgstr "Cló Iodálach Trom"
-
-msgid "Mono Font"
-msgstr "Cló Mona"
-
-msgid "Normal Font Size"
-msgstr "Gnáthmhéid an Chló"
-
-msgid "Bold Font Size"
-msgstr "Clómhéid Trom"
-
-msgid "Italics Font Size"
-msgstr "Clómhéid Iodálach"
-
-msgid "Bold Italics Font Size"
-msgstr "clómhéid cló trom iodálach"
-
-msgid "Mono Font Size"
-msgstr "Clómhéid Mona"
-
-msgid "Table H Separation"
-msgstr "Tábla H Scaradh"
-
-msgid "Table V Separation"
-msgstr "Tábla V Scaradh"
-
-msgid "Table Odd Row BG"
-msgstr "Tábla Odd Row BG"
-
-msgid "Table Even Row BG"
-msgstr "Tábla Fiú Rae BG"
-
-msgid "Table Border"
-msgstr "Teorainn Tábla"
-
-msgid "Text Highlight H Padding"
-msgstr "Aibhsiú Téacs H Padding"
-
-msgid "Text Highlight V Padding"
-msgstr "Aibhsiú Téacs V stuáil"
-
-msgid "Underline Alpha"
-msgstr "Folínigh Alfa"
-
-msgid "Strikethrough Alpha"
-msgstr "Alfa Stróic Tríd"
-
-msgid "Touch Dragger Color"
-msgstr "Dath Tarraingthe Tadhaill"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Dath Brúite le Tarraingt Tadhaill"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Dath Luascáin Tadhaill Tarraingthe"
-
-msgid "H Touch Dragger"
-msgstr "Dragaire H Touch"
-
-msgid "V Touch Dragger"
-msgstr "Dragaire V Touch"
-
-msgid "Touch Dragger"
-msgstr "Tarraingeoir Tadhaill"
-
-msgid "H Grabber"
-msgstr "Grábálaí H"
-
-msgid "V Grabber"
-msgstr "V GrabberName"
-
-msgid "Margin Left"
-msgstr "Imeall Ar Chlé"
-
-msgid "Margin Top"
-msgstr "Imeall Barr"
-
-msgid "Margin Right"
-msgstr "Imeall ar dheis"
-
-msgid "Margin Bottom"
-msgstr "Imeall Bun"
-
-msgid "Minimum Grab Thickness"
-msgstr "Tiús Grab Íosta"
-
-msgid "Autohide"
-msgstr "Uathíde"
-
-msgid "Split Bar Background"
-msgstr "Cúlra an Bharra Scoilte"
-
-msgid "Zoom Out"
-msgstr "Zúmáil Amach"
-
-msgid "Zoom In"
-msgstr "Zúmáil Isteach"
-
-msgid "Zoom Reset"
-msgstr "Athshocraigh Zúmáil"
-
-msgid "Grid Toggle"
-msgstr "Scoránaigh Greille"
-
-msgid "Minimap Toggle"
-msgstr "Scoránaigh Minimap"
-
-msgid "Snapping Toggle"
-msgstr "Scoránaigh Snapping"
-
-msgid "Menu Panel"
-msgstr "Painéal Roghchláir"
-
-msgid "Grid Minor"
-msgstr "Mionghreille"
-
-msgid "Grid Major"
-msgstr "Greille Mór"
-
-msgid "Selection Fill"
-msgstr "Líon Roghnúcháin"
-
-msgid "Selection Stroke"
-msgstr "Stróc Roghnaithe"
-
-msgid "Activity"
-msgstr "Gníomhaíocht"
-
-msgid "Connection Hover Tint Color"
-msgstr "Ceangal Hover Tint Dath"
-
-msgid "Connection Hover Thickness"
-msgstr "Ceangal Hover Tiús"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Ceangal Bailí Sprioc Tint Dath"
-
-msgid "Connection Rim Color"
-msgstr "Dath Imeall an Cheangail"
-
-msgid "Title Panel"
-msgstr "Painéal Teidil"
-
-msgid "Title Hover Panel"
-msgstr "Painéal Luamhánach Teidil"
-
-msgid "Title Collapsed Panel"
-msgstr "Painéal Fillte Teidil"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Painéal Luasctha Fillte Teidil"
-
-msgid "Hover Font Color"
-msgstr "Dath Cló Luasctha"
-
-msgid "Collapsed Font Color"
-msgstr "Dath Cló Fillte"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Saighead Leathnaithe Scáthánaithe"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Saighead Fillte Scáthánach"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Port Hotzone Méid Istigh"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Port Hotzone Méid Seachtrach"
 
 msgid "Default Theme Scale"
 msgstr "Scála Réamhshocraithe Téama"

@@ -3008,9 +3008,6 @@ msgstr "எந்த விளக்கமும் கிடைக்கவி�
 msgid "This annotation may be changed or removed in future versions."
 msgstr "இந்த சிறுகுறிப்பு எதிர்கால பதிப்புகளில் மாற்றப்படலாம் அல்லது அகற்றப்படலாம்."
 
-msgid "Open in File Manager"
-msgstr "கோப்பு மேலாளரில் திறக்கவும்"
-
 msgid "This property can only be set in the Inspector."
 msgstr "இந்த சொத்தை இன்ச்பெக்டரில் மட்டுமே அமைக்க முடியும்."
 
@@ -3859,13 +3856,6 @@ msgstr ""
 "பரம்பரை காட்சியின் ஒரு பகுதியாக இருக்கும் ஒரு கிளையை சேமிக்க முடியாது. \n"
 "இந்த கிளையை அதன் சொந்த காட்சியில் சேமிக்க, அசல் காட்சியைத் திறந்து, இந்த கிளையில் வலது "
 "சொடுக்கு செய்து, \"கிளையை காட்சியாக சேமிக்கவும்\" என்பதைத் தேர்ந்தெடுக்கவும்."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"\"பிளேச்ஓல்டராக சுமை\" செயல்படுத்துவது \"திருத்தக்கூடிய குழந்தைகளை\" முடக்கும் மற்றும் "
-"முனையின் அனைத்து பண்புகளையும் அவற்றின் இயல்புநிலைக்கு மாற்றும்."
 
 msgid "Make Local"
 msgstr "உள்ளக செய்யுங்கள்"
@@ -7313,9 +7303,6 @@ msgstr "பிழை: கோப்பு முறைமையில் தி�
 
 msgid "Toggle Favorite"
 msgstr "பிடித்ததை மாற்றவும்"
-
-msgid "Open in file manager"
-msgstr "கோப்பு மேலாளரில் திறக்கவும்"
 
 msgid "Last edited timestamp"
 msgstr "கடைசியாக திருத்தப்பட்ட நேர முத்திரை"

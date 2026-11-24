@@ -1070,6 +1070,12 @@ msgstr "スライダーを隠す"
 msgid "Editing Integer"
 msgstr "整数を編集中"
 
+msgid "Font Size"
+msgstr "フォントサイズ"
+
+msgid "Focus"
+msgstr "フォーカス"
+
 msgid "Zoom"
 msgstr "ズーム"
 
@@ -2681,9 +2687,6 @@ msgstr "実行前に保存"
 
 msgid "Output"
 msgstr "出力"
-
-msgid "Font Size"
-msgstr "フォントサイズ"
 
 msgid "Platforms"
 msgstr "プラットフォーム"
@@ -4672,17 +4675,80 @@ msgstr "ボタン押下"
 msgid "Button Group"
 msgstr "ボタングループ"
 
+msgid "Hover Pressed"
+msgstr "ホバー押下"
+
+msgid "Font Pressed Color"
+msgstr "フォントの押下色"
+
+msgid "Font Hover Color"
+msgstr "フォントのホバー色"
+
+msgid "Font Hover Pressed Color"
+msgstr "フォントのホバー押下色"
+
+msgid "Font Outline Color"
+msgstr "フォントのアウトラインの色"
+
+msgid "Icon Pressed Color"
+msgstr "アイコンの押下色"
+
+msgid "Icon Hover Color"
+msgstr "アイコンのホバー色"
+
+msgid "Icon Hover Pressed Color"
+msgstr "アイコンのホバー押下色"
+
 msgid "Indentation"
 msgstr "インデント"
+
+msgid "Code Folding Color"
+msgstr "折り畳まれたコードの色"
+
+msgid "Folded Code Region Color"
+msgstr "折り畳まれたコード領域の色"
+
+msgid "Breakpoint Color"
+msgstr "ブレークポイントの色"
+
+msgid "Bookmark Color"
+msgstr "ブックマークの色"
+
+msgid "Executing Line Color"
+msgstr "実行中の行の色"
+
+msgid "Line Number Color"
+msgstr "行番号の色"
+
+msgid "Completion Scroll Color"
+msgstr "補完ウインドウのスクロールの色"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "補完ウインドウのスクロールのホバー色"
+
+msgid "Completion Background Color"
+msgstr "補完の背景色"
+
+msgid "Completion Selected Color"
+msgstr "補完の選択中の色"
+
+msgid "Completion Existing Color"
+msgstr "既に補完されている箇所の色"
+
+msgid "Line Length Guideline Color"
+msgstr "行の長さのガイド線の色"
+
+msgid "Brace Mismatch Color"
+msgstr "波括弧ミスマッチの色"
+
+msgid "Screen Picker"
+msgstr "スクリーンピッカー"
 
 msgid "Theme Overrides"
 msgstr "テーマのオーバーライド"
 
 msgid "Tooltip"
 msgstr "ツールチップ"
-
-msgid "Focus"
-msgstr "フォーカス"
 
 msgid "Previous"
 msgstr "前"
@@ -4705,8 +4771,29 @@ msgstr "フィルター"
 msgid "Options"
 msgstr "オプション"
 
+msgid "Reload"
+msgstr "再読み込み"
+
+msgid "Favorite"
+msgstr "お気に入り"
+
+msgid "Toggle Hidden"
+msgstr "非表示の切り替え"
+
+msgid "Folder"
+msgstr "フォルダー"
+
+msgid "File"
+msgstr "ファイル"
+
+msgid "Thumbnail Mode"
+msgstr "サムネイルモード"
+
 msgid "Title Position"
 msgstr "タイトルの位置"
+
+msgid "Title Panel"
+msgstr "タイトルパネル"
 
 msgid "Zoom Min"
 msgstr "最小ズーム"
@@ -4723,11 +4810,17 @@ msgstr "ツールバーメニュー"
 msgid "Show Menu"
 msgstr "メニューを表示する"
 
+msgid "Menu Panel"
+msgstr "メニューパネル"
+
 msgid "Draggable"
 msgstr "ドラッグ可能"
 
 msgid "Selected"
 msgstr "選択中"
+
+msgid "Titlebar"
+msgstr "タイトルバー"
 
 msgid "Select Mode"
 msgstr "選択モード"
@@ -4741,11 +4834,35 @@ msgstr "アイコンモード"
 msgid "Icon Scale"
 msgstr "アイコンスケール"
 
+msgid "Cursor"
+msgstr "カーソル"
+
 msgid "Label Settings"
 msgstr "ラベル設定"
 
+msgid "Caret Color"
+msgstr "キャレットの色"
+
+msgid "Selection Color"
+msgstr "選択色"
+
+msgid "Clear"
+msgstr "クリア"
+
 msgid "URI"
 msgstr "URI"
+
+msgid "Separator"
+msgstr "セパレーター"
+
+msgid "Indeterminate"
+msgstr "不定表示"
+
+msgid "Submenu"
+msgstr "サブメニュー"
+
+msgid "Font Separator"
+msgstr "フォントセパレータ"
 
 msgid "Fill Mode"
 msgstr "充填方向"
@@ -4753,11 +4870,11 @@ msgstr "充填方向"
 msgid "Show Percentage"
 msgstr "割合を表示"
 
-msgid "Indeterminate"
-msgstr "不定表示"
-
 msgid "Preview Indeterminate"
 msgstr "不定表示をプレビュー"
+
+msgid "Background"
+msgstr "背景"
 
 msgid "Min Value"
 msgstr "最小値"
@@ -4789,6 +4906,12 @@ msgstr "タブサイズ"
 msgid "Progress Bar Delay"
 msgstr "プログレスバーのディレイ"
 
+msgid "Shadow Offset X"
+msgstr "シャドウのオフセットX"
+
+msgid "Shadow Offset Y"
+msgstr "シャドウのオフセットY"
+
 msgid "Scrollable"
 msgstr "スクロール可能"
 
@@ -4797,6 +4920,9 @@ msgstr "テキスト変更時の更新"
 
 msgid "Format"
 msgstr "フォーマット"
+
+msgid "Autohide"
+msgstr "自動非表示"
 
 msgid "Current Tab"
 msgstr "現在のタブ"
@@ -4810,11 +4936,35 @@ msgstr "ドラッグして再配置可能"
 msgid "Tabs"
 msgstr "タブ"
 
+msgid "Close"
+msgstr "閉じる"
+
 msgid "Tabs Position"
 msgstr "タブの位置"
 
+msgid "Menu"
+msgstr "メニュー"
+
 msgid "Syntax Highlighter"
 msgstr "シンタックスハイライト"
+
+msgid "Search Result Color"
+msgstr "検索結果の色"
+
+msgid "Search Result Border Color"
+msgstr "検索結果のボーダーの色"
+
+msgid "Caret Background Color"
+msgstr "キャレットの背景色"
+
+msgid "Tab"
+msgstr "タブ"
+
+msgid "Current Line Color"
+msgstr "現在の行の色"
+
+msgid "Word Highlighted Color"
+msgstr "ハイライトされた単語の色"
 
 msgid "Auto Tooltip"
 msgstr "自動ツールチップ"
@@ -4885,9 +5035,6 @@ msgstr "ライトとシャドウ"
 msgid "SDF"
 msgstr "SDF"
 
-msgid "Menu"
-msgstr "メニュー"
-
 msgid "Wait Time"
 msgstr "待機時間"
 
@@ -4944,6 +5091,24 @@ msgstr "最小サイズ"
 
 msgid "Max Size"
 msgstr "最大サイズ"
+
+msgid "Title Font"
+msgstr "タイトルのフォント"
+
+msgid "Title Font Size"
+msgstr "タイトルのフォントサイズ"
+
+msgid "Title Height"
+msgstr "タイトルの高さ"
+
+msgid "Title Outline Modulate"
+msgstr "タイトルのアウトライン変調"
+
+msgid "Title Outline Size"
+msgstr "タイトルのアウトラインサイズ"
+
+msgid "Close Pressed"
+msgstr "閉じる押下"
 
 msgid "Layer Names"
 msgstr "レイヤー名"
@@ -5109,9 +5274,6 @@ msgstr "F値"
 
 msgid "Light Mode"
 msgstr "ライトモード"
-
-msgid "Background"
-msgstr "背景"
 
 msgid "Ambient Light"
 msgstr "環境光"
@@ -5448,174 +5610,6 @@ msgstr "関数の色"
 
 msgid "Member Variable Color"
 msgstr "メンバー変数の色"
-
-msgid "File"
-msgstr "ファイル"
-
-msgid "Font Pressed Color"
-msgstr "フォントの押下色"
-
-msgid "Font Hover Color"
-msgstr "フォントのホバー色"
-
-msgid "Font Hover Pressed Color"
-msgstr "フォントのホバー押下色"
-
-msgid "Font Outline Color"
-msgstr "フォントのアウトラインの色"
-
-msgid "Icon Pressed Color"
-msgstr "アイコンの押下色"
-
-msgid "Icon Hover Color"
-msgstr "アイコンのホバー色"
-
-msgid "Icon Hover Pressed Color"
-msgstr "アイコンのホバー押下色"
-
-msgid "Hover Pressed"
-msgstr "ホバー押下"
-
-msgid "Shadow Offset X"
-msgstr "シャドウのオフセットX"
-
-msgid "Shadow Offset Y"
-msgstr "シャドウのオフセットY"
-
-msgid "Caret Color"
-msgstr "キャレットの色"
-
-msgid "Selection Color"
-msgstr "選択色"
-
-msgid "Clear"
-msgstr "クリア"
-
-msgid "Tab"
-msgstr "タブ"
-
-msgid "Current Line Color"
-msgstr "現在の行の色"
-
-msgid "Caret Background Color"
-msgstr "キャレットの背景色"
-
-msgid "Word Highlighted Color"
-msgstr "ハイライトされた単語の色"
-
-msgid "Search Result Color"
-msgstr "検索結果の色"
-
-msgid "Search Result Border Color"
-msgstr "検索結果のボーダーの色"
-
-msgid "Completion Background Color"
-msgstr "補完の背景色"
-
-msgid "Completion Selected Color"
-msgstr "補完の選択中の色"
-
-msgid "Completion Existing Color"
-msgstr "既に補完されている箇所の色"
-
-msgid "Completion Scroll Color"
-msgstr "補完ウインドウのスクロールの色"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "補完ウインドウのスクロールのホバー色"
-
-msgid "Bookmark Color"
-msgstr "ブックマークの色"
-
-msgid "Breakpoint Color"
-msgstr "ブレークポイントの色"
-
-msgid "Executing Line Color"
-msgstr "実行中の行の色"
-
-msgid "Code Folding Color"
-msgstr "折り畳まれたコードの色"
-
-msgid "Folded Code Region Color"
-msgstr "折り畳まれたコード領域の色"
-
-msgid "Brace Mismatch Color"
-msgstr "波括弧ミスマッチの色"
-
-msgid "Line Number Color"
-msgstr "行番号の色"
-
-msgid "Line Length Guideline Color"
-msgstr "行の長さのガイド線の色"
-
-msgid "Title Font"
-msgstr "タイトルのフォント"
-
-msgid "Title Font Size"
-msgstr "タイトルのフォントサイズ"
-
-msgid "Title Outline Modulate"
-msgstr "タイトルのアウトライン変調"
-
-msgid "Title Outline Size"
-msgstr "タイトルのアウトラインサイズ"
-
-msgid "Title Height"
-msgstr "タイトルの高さ"
-
-msgid "Close"
-msgstr "閉じる"
-
-msgid "Close Pressed"
-msgstr "閉じる押下"
-
-msgid "Load"
-msgstr "読み込む"
-
-msgid "Save"
-msgstr "保存"
-
-msgid "Reload"
-msgstr "再読み込み"
-
-msgid "Favorite"
-msgstr "お気に入り"
-
-msgid "Toggle Hidden"
-msgstr "非表示の切り替え"
-
-msgid "Folder"
-msgstr "フォルダー"
-
-msgid "Thumbnail Mode"
-msgstr "サムネイルモード"
-
-msgid "Separator"
-msgstr "セパレーター"
-
-msgid "Submenu"
-msgstr "サブメニュー"
-
-msgid "Font Separator"
-msgstr "フォントセパレータ"
-
-msgid "Titlebar"
-msgstr "タイトルバー"
-
-msgid "Cursor"
-msgstr "カーソル"
-
-msgid "Screen Picker"
-msgstr "スクリーンピッカー"
-
-msgid "Autohide"
-msgstr "自動非表示"
-
-msgid "Menu Panel"
-msgstr "メニューパネル"
-
-msgid "Title Panel"
-msgstr "タイトルパネル"
 
 msgid "Default Theme Scale"
 msgstr "デフォルトのテーマスケール"

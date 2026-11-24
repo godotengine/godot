@@ -42,13 +42,14 @@
 # Nikita <general.governator@gmail.com>, 2026.
 # Максим Горпиніч <gorpinicmaksim2005ukr@protonmail.com>, 2026.
 # User2068 <user603849745775@proton.me>, 2026.
+# User2068 <user2068@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-08 09:57+0000\n"
-"Last-Translator: User2068 <user603849745775@proton.me>\n"
+"PO-Revision-Date: 2026-11-17 16:51+0000\n"
+"Last-Translator: User2068 <user2068@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -57,7 +58,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -188,6 +189,9 @@ msgstr "Мінімізувати вимкнено"
 msgid "Maximize Disabled"
 msgstr "Максимізувати вимкнено"
 
+msgid "Enable Toggle Fullscreen Shortcut"
+msgstr "Увімкнути скорочення для перемикання повноекранного режиму"
+
 msgid "Window Width Override"
 msgstr "Перевизначення ширини вікна"
 
@@ -235,6 +239,9 @@ msgstr "Шини"
 
 msgid "Default Bus Layout"
 msgstr "Розташування шини за замовчуванням"
+
+msgid "GUI Theme Bus"
+msgstr "Шина теми GUI"
 
 msgid "Default Playback Type"
 msgstr "Тип відтворення за замовчуванням"
@@ -401,6 +408,9 @@ msgstr "Динамічні шрифти"
 msgid "Use Oversampling"
 msgstr "Передискретизація"
 
+msgid "Auto Focus Strategy"
+msgstr "Стратегія автоматичного фокусування"
+
 msgid "Rendering Device"
 msgstr "Пристрій рендерингу"
 
@@ -493,6 +503,9 @@ msgstr "Перевизначення кнопок гучності"
 
 msgid "Disable Scroll Deadzone"
 msgstr "Вимкнути мертву зону прокручування"
+
+msgid "Windows"
+msgstr "Windows"
 
 msgid "Navigation"
 msgstr "Навігація"
@@ -608,6 +621,9 @@ msgstr "Увімкнути гіроскоп"
 msgid "Enable Magnetometer"
 msgstr "Увімкнути магнітометр"
 
+msgid "Enable Device Orientation"
+msgstr "Орієнтація по інерції"
+
 msgid "Joypads"
 msgstr "Ігрові контролери"
 
@@ -706,6 +722,9 @@ msgstr "Індекс"
 
 msgid "Double Tap"
 msgstr "Двічі торкніться"
+
+msgid "Long Press"
+msgstr "Вниз натиснуто"
 
 msgid "Action"
 msgstr "Дія"
@@ -872,11 +891,35 @@ msgstr "Коефіцієнт низького пріоритету потоку"
 msgid "Target"
 msgstr "Призначення"
 
+msgid "Score"
+msgstr "Оцінка"
+
+msgid "Original Index"
+msgstr "Оригінальна назва"
+
 msgid "Start Offset"
 msgstr "Початковий відступ"
 
 msgid "Max Results"
 msgstr "Максимальний результат"
+
+msgid "Max Misses"
+msgstr "Макс Фазі промахується"
+
+msgid "Use Exact Tokens"
+msgstr "Використовувати зовнішні"
+
+msgid "Case Sensitive"
+msgstr "Максимальна чутливість"
+
+msgid "Filter Low Scores"
+msgstr "Згладжування фільтрування"
+
+msgid "Filter Factor"
+msgstr "Форм-фактор"
+
+msgid "Filter Cutoff"
+msgstr "Обрізання фільтра"
 
 msgid "Subject"
 msgstr "Призначення"
@@ -988,6 +1031,9 @@ msgstr "Перехідний"
 
 msgid "Closable"
 msgstr "Закривається"
+
+msgid "Allow Switch Screen"
+msgstr "Автоматичний перехід до трасування стека"
 
 msgid "Icon Name"
 msgstr "Назва значка"
@@ -1142,6 +1188,9 @@ msgstr "Значок 1024 X 1024 Тонований"
 msgid "Export Console Wrapper"
 msgstr "Експорт консольної оболонки"
 
+msgid "Export Debug Symbols"
+msgstr "Діагностика методу експортування"
+
 msgid "Binary Format"
 msgstr "Двійковий формат"
 
@@ -1181,6 +1230,31 @@ msgstr "Редагування цілого числа"
 msgid "Deferred Drag Mode"
 msgstr "Режим відкладеного перетягування"
 
+msgid "Font Uneditable Color"
+msgstr "Колір шрифту, який не можна редагувати"
+
+msgid "Font"
+msgstr "Шрифт"
+
+msgid "Font Size"
+msgstr "Розмір шрифту"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Нормальний"
+
+msgid "Focus"
+msgstr "Фокусування"
+
+msgid "Updown"
+msgstr "Вгору вниз"
+
+msgid "Grabber Highlight"
+msgstr "Підсвічування Grabber"
+
+msgid "Grabber"
+msgstr "Захоплення"
+
 msgid "Zoom"
 msgstr "Масштаб"
 
@@ -1219,6 +1293,9 @@ msgstr "Метод перенацілювання"
 
 msgid "Keep Global Rest on Leftovers"
 msgstr "Зберігайте Global Rest на залишках"
+
+msgid "Copy Bone Skin Scale"
+msgstr "Масштаб вмісту"
 
 msgid "Use Global Pose"
 msgstr "Використовувати Глобальну Позу"
@@ -1478,6 +1555,9 @@ msgstr "Бібліотека сітки"
 msgid "Use Node Names as Mesh Names"
 msgstr "Використовувати імена вузлів як імена сіток"
 
+msgid "Create Categories From Hierarchy"
+msgstr "Створювати категорії з ієрархії"
+
 msgid "Array Mesh"
 msgstr "Масив сітки"
 
@@ -1670,6 +1750,9 @@ msgstr "Спуск"
 msgid "High Quality"
 msgstr "Висока якість"
 
+msgid "High Quality Mode"
+msgstr "Висока якість"
+
 msgid "Lossy Quality"
 msgstr "Низька якість"
 
@@ -1712,6 +1795,15 @@ msgstr "Шорсткість"
 msgid "Src Normal"
 msgstr "Src Нормал"
 
+msgid "Streaming"
+msgstr "Потік"
+
+msgid "Min LOD Override"
+msgstr "Перевизначення розміру 2D"
+
+msgid "Max LOD Override"
+msgstr "Перевизначення поля зору"
+
 msgid "Base Scale"
 msgstr "Базовий масштаб"
 
@@ -1726,6 +1818,12 @@ msgstr "Виправити прозору рамку"
 
 msgid "Premult Alpha"
 msgstr "Попереднє множення альфи"
+
+msgid "Preserve Alpha Test Coverage"
+msgstr "Альфа до покриття"
+
+msgid "Alpha Test Threshold"
+msgstr "Поріг альфа-ножиці"
 
 msgid "Process"
 msgstr "Обробка"
@@ -1926,6 +2024,9 @@ msgstr "Кольори гізмо"
 msgid "Particles Emission Shape"
 msgstr "Форма випромінювання частинок"
 
+msgid "Category"
+msgstr "Категорія програм"
+
 msgid "Mesh"
 msgstr "Сітка"
 
@@ -1965,6 +2066,9 @@ msgstr "Магазин ресурсів"
 msgid "Use Threads"
 msgstr "Використовувати потоки обробки"
 
+msgid "Show Incompatible Assets"
+msgstr "Несумісний потрійний"
+
 msgid "Available URLs"
 msgstr "Доступні адреси"
 
@@ -1979,6 +2083,9 @@ msgstr "Стиль вкладки Dock"
 
 msgid "Bottom Dock Tab Style"
 msgstr "Стиль нижньої вкладки Dock"
+
+msgid "Main Screen Dock Tab Style"
+msgstr "Стиль вкладки Dock"
 
 msgid "UI Layout Direction"
 msgstr "Напрямок макета інтерфейсу користувача"
@@ -2015,6 +2122,9 @@ msgstr "Використовувати рідні діалоги файлів"
 
 msgid "Expand to Title"
 msgstr "Розгорнути до заголовка"
+
+msgid "Max Sticky Tree Items"
+msgstr "Максимальна кількість закріплених елементів дерева"
 
 msgid "Main Font Size"
 msgstr "Основний розмір шрифту"
@@ -2547,6 +2657,9 @@ msgstr "Інтервал між рядками"
 msgid "Empty Selection Clipboard"
 msgstr "Очистити буфер обміну"
 
+msgid "Find in File Extensions"
+msgstr "Пошук у розширеннях файлів"
+
 msgid "Move Caret on Right Click"
 msgstr "Переміщати карет кліком ПКМ"
 
@@ -2615,6 +2728,9 @@ msgstr "Відкрийте домінуючий скрипт під час зм�
 
 msgid "Drop Preload Resources as UID"
 msgstr "Видалити ресурси попереднього завантаження як UID"
+
+msgid "Diagnostics"
+msgstr "Діагностика"
 
 msgid "Enable Tooltips"
 msgstr "Увімкнути підказки"
@@ -2720,6 +2836,9 @@ msgstr "Приклади посилання на клас"
 
 msgid "Sort Functions Alphabetically"
 msgstr "Упорядкувати функції за абеткою"
+
+msgid "Show Property Setters and Getters"
+msgstr "Показувати сетери та гетери властивостей"
 
 msgid "Grid Map"
 msgstr "Карта сітки"
@@ -3192,9 +3311,6 @@ msgstr "Дія при зупинці"
 msgid "Output"
 msgstr "Вивід"
 
-msgid "Font Size"
-msgstr "Розмір шрифту"
-
 msgid "Always Clear Output on Play"
 msgstr "Завжди очищувати вивід при відтворенні"
 
@@ -3519,6 +3635,9 @@ msgstr "Фовеація з відстеженням руху очей"
 msgid "Foveation with Subsampled Images"
 msgstr "Фовеація із зображеннями з пониженою роздільною здатністю"
 
+msgid "Create Default Foveated Inset Viewport"
+msgstr "Створювати типовий вставлений Viewport із фовеацією"
+
 msgid "Submit Depth Buffer"
 msgstr "Надіслати буфер глибини"
 
@@ -3537,6 +3656,9 @@ msgstr "Типи повідомлень налагодження"
 msgid "Frame Synthesis"
 msgstr "Синтез фреймів"
 
+msgid "Flip Y"
+msgstr "Гор. віддзеркалення"
+
 msgid "Hand Tracking"
 msgstr "Відстеження рук"
 
@@ -3548,6 +3670,15 @@ msgstr "Джерело даних контролера відстеження р
 
 msgid "Hand Interaction Profile"
 msgstr "Профіль взаємодії рук"
+
+msgid "Spatial Container"
+msgstr "Просторова сутність"
+
+msgid "Bounds Mode"
+msgstr "Режим миші"
+
+msgid "Bounds"
+msgstr "Відскоки"
 
 msgid "Spatial Entity"
 msgstr "Просторова сутність"
@@ -3566,6 +3697,12 @@ msgstr "Увімкнути відстеження літака"
 
 msgid "Enable Builtin Plane Detection"
 msgstr "Увімкнути вбудоване виявлення площин"
+
+msgid "Marker Tracking"
+msgstr "Увімкнути відстеження маркерів"
+
+msgid "Enable Builtin for Types"
+msgstr "Увімкнути вбудоване виявлення якорів"
 
 msgid "Aruco Dict"
 msgstr "Аруко Дикт"
@@ -3590,6 +3727,27 @@ msgstr "Аналоговий поріг"
 
 msgid "Dpad Binding"
 msgstr "Dpad Біндінг"
+
+msgid "visionOS"
+msgstr "Випромінювання"
+
+msgid "Enable Hand Tracking"
+msgstr "Увімкнути відстеження літака"
+
+msgid "Enable Controller Tracking"
+msgstr "Увімкнути відстеження маркерів"
+
+msgid "Dynamic Render Quality"
+msgstr "Динамічний діапазон"
+
+msgid "Maximum Quality"
+msgstr "Максимальна ширина"
+
+msgid "Upper Limb Visibility"
+msgstr "Видимість очей"
+
+msgid "Persistent System Overlays"
+msgstr "Постійні системні накладки"
 
 msgid "Boot Splash"
 msgstr "Вітання системи"
@@ -3785,6 +3943,9 @@ msgstr "Навігація 2D"
 
 msgid "Navigation 3D"
 msgstr "Навігація 3D"
+
+msgid "Streaming Texture Mem Used"
+msgstr "Використано пам’яті для потокових текстур"
 
 msgid "Basis Universal"
 msgstr "Універсальна основа"
@@ -4063,6 +4224,9 @@ msgid "Get Node Default Without Onready"
 msgstr "Отримати значення вузла за замовчуванням без Onready"
 
 msgid "Onready With Export"
+msgstr "Готовий з експорту"
+
+msgid "Onready With Cast"
 msgstr "Готовий з експорту"
 
 msgid "Copyright"
@@ -4403,6 +4567,12 @@ msgstr "Пріоритетність"
 
 msgid "Bake Navigation"
 msgstr "Випічка Навігація"
+
+msgid "Debug Show Octants"
+msgstr "Налагодити розділення тіні"
+
+msgid "Debug Octant Color"
+msgstr "Колір налагодження"
 
 msgid "Clip Count"
 msgstr "Кількість кліпів"
@@ -4941,6 +5111,27 @@ msgstr "Трекер"
 msgid "Make Local to Pose"
 msgstr "Зробити локальним для пози"
 
+msgid "Memory Budget (MB) Override"
+msgstr "Перевизначення бюджету пам’яті (МБ)"
+
+msgid "Memory Budget Enabled"
+msgstr "Увімкнено кнопку очищення"
+
+msgid "Memory Budget (MB)"
+msgstr "Бюджет пам’яті (МБ)"
+
+msgid "Max Ops per Second"
+msgstr "Максимальна кількість символів за секунду"
+
+msgid "Min LOD"
+msgstr "Мін. SDK"
+
+msgid "Max LOD"
+msgstr "Сітка LOD"
+
+msgid "Inactivity Decay Rate (ms)"
+msgstr "Швидкість згасання бездіяльності (мс)"
+
 msgid "ID"
 msgstr "Ідентифікатор"
 
@@ -5220,6 +5411,15 @@ msgstr "Варіант імені"
 msgid "Varying Type"
 msgstr "Різний тип"
 
+msgid "Group Name"
+msgstr "Назва групи джерел"
+
+msgid "Input Port Count"
+msgstr "Підрахунок введення"
+
+msgid "Output Port Count"
+msgstr "Вихідний порт для попереднього перегляду"
+
 msgid "Group"
 msgstr "Група"
 
@@ -5337,6 +5537,9 @@ msgstr "Необов'язкові можливості"
 msgid "Requested Reference Space Types"
 msgstr "Запитані типи довідкового простору"
 
+msgid "Disable Webxr Layers"
+msgstr "Вимкнути для постачальників"
+
 msgid "Reference Space Type"
 msgstr "Тип опорного простору"
 
@@ -5354,6 +5557,12 @@ msgstr "Налагодити користувача сховища ключів"
 
 msgid "Debug Keystore Pass"
 msgstr "Налагодження Keystore Pass"
+
+msgid "Build"
+msgstr "Створення збірки"
+
+msgid "Automatically Delete Build Directory"
+msgstr "Каталог збірок Gradle"
 
 msgid "Install Exported APK"
 msgstr "Установіть експортований APK"
@@ -5435,6 +5644,9 @@ msgstr "Шаблон вихідного коду Android"
 
 msgid "Compress Native Libraries"
 msgstr "Стиснення рідних бібліотек"
+
+msgid "Minification"
+msgstr "Стек модифікації"
 
 msgid "Export Format"
 msgstr "Формат експортування"
@@ -5874,6 +6086,21 @@ msgstr "Використання знімних носіїв: опис (лока
 msgid "Min visionOS Version"
 msgstr "Мінімальна версія visionOS"
 
+msgid "App Role"
+msgstr "Роль застосунку"
+
+msgid "Immersion Style"
+msgstr "Режим занурення"
+
+msgid "Icon Front Layer 1024 X 1024"
+msgstr "Значок 1024 X 1024"
+
+msgid "Icon Middle Layer 1024 X 1024"
+msgstr "Значок 1024 X 1024"
+
+msgid "Icon Back Layer 1024 X 1024"
+msgstr "Значок 1024 X 1024"
+
 msgid "Web"
 msgstr "Інтернет"
 
@@ -5954,9 +6181,6 @@ msgstr "Розмір пулу Емскрипти"
 
 msgid "Godot Pool Size"
 msgstr "Розмір басейну Godot"
-
-msgid "Windows"
-msgstr "Windows"
 
 msgid "signtool"
 msgstr "інструмент підпису"
@@ -7000,6 +7224,12 @@ msgstr "Використовувати зовнішній скелет"
 msgid "External Skeleton"
 msgstr "Зовнішній скелет"
 
+msgid "Use Bone Skin Scale for All Bones"
+msgstr "Використовувати масштаб шкіри кістки для всіх кісток"
+
+msgid "Setting Size"
+msgstr "Параметри"
+
 msgid "Mutable Bone Axes"
 msgstr "Змінні кістяні сокири"
 
@@ -7199,9 +7429,6 @@ msgstr "Текст"
 msgid "Outline Modulate"
 msgstr "Контурний модуль"
 
-msgid "Font"
-msgstr "Шрифт"
-
 msgid "Horizontal Alignment"
 msgstr "Горизонтальне вирівнювання"
 
@@ -7277,6 +7504,9 @@ msgstr "Розмиття"
 msgid "Caster Mask"
 msgstr "Маска Кастер"
 
+msgid "Contact Shadows"
+msgstr "Накласти тінь"
+
 msgid "Sky Mode"
 msgstr "Режим неба"
 
@@ -7345,6 +7575,9 @@ msgstr "Непряма енергія відскоку"
 
 msgid "Directional"
 msgstr "Спрямований"
+
+msgid "Specular Intensity"
+msgstr "Інтенсивність"
 
 msgid "Shadowmask Mode"
 msgstr "Режим тіньової маски"
@@ -7431,6 +7664,9 @@ msgid "Angle Limitation"
 msgstr "Обмеження кута"
 
 msgid "Use Angle Limitation"
+msgstr "Використовувати обмеження кута"
+
+msgid "Use Rest for Limitation"
 msgstr "Використовувати обмеження кута"
 
 msgid "Symmetry Limitation"
@@ -7592,6 +7828,9 @@ msgstr "Лінійна весна"
 msgid "Equilibrium Point"
 msgstr "Точка рівноваги"
 
+msgid "Linear Drive"
+msgstr "Лінійна весна"
+
 msgid "Upper Angle"
 msgstr "Верхній кут"
 
@@ -7606,6 +7845,12 @@ msgstr "Кутовий двигун"
 
 msgid "Angular Spring"
 msgstr "Кутова пружина"
+
+msgid "Angular Drive"
+msgstr "Кутова відстань"
+
+msgid "Torque Limit"
+msgstr "Примусове обмеження"
 
 msgid "Params"
 msgstr "Параметри"
@@ -7910,8 +8155,32 @@ msgstr "Всередині"
 msgid "External Force"
 msgstr "Зовнішня сила"
 
+msgid "Limit Mode"
+msgstr "Режим списку"
+
 msgid "Max Length"
 msgstr "Максимальна довжина"
+
+msgid "Color Gradient"
+msgstr "Градієнт"
+
+msgid "Mesh Alignment"
+msgstr "Вирівнювання"
+
+msgid "Material Mode"
+msgstr "Матеріал"
+
+msgid "Tiling Mode"
+msgstr "Режим масштабування"
+
+msgid "Tiling Multiplier"
+msgstr "Множник енергії"
+
+msgid "Pin UV"
+msgstr "На UV2"
+
+msgid "Min Section Length"
+msgstr "Довжина розділу"
 
 msgid "Sorting"
 msgstr "Сортування"
@@ -8138,6 +8407,9 @@ msgstr "Типовий час змішування"
 msgid "Movie Quit on Finish"
 msgstr "Фільм Вийти після завершення"
 
+msgid "Clear Cache on Stop"
+msgstr "Очищати кеш після зупинки"
+
 msgid "Tree Root"
 msgstr "Корінь дерева"
 
@@ -8186,6 +8458,9 @@ msgstr "Кнопка Ярлик Відгук Час виділення"
 msgid "Allow Unpress"
 msgstr "Дозволити Unpress"
 
+msgid "Reverse Sort"
+msgstr "Зворотне заповнення"
+
 msgid "Text Behavior"
 msgstr "Поведінка тексту"
 
@@ -8207,8 +8482,119 @@ msgstr "Вертикальне вирівнювання піктограм"
 msgid "Expand Icon"
 msgstr "Піктограма розгортання"
 
+msgid "Normal Mirrored"
+msgstr "Звичайний дзеркальний"
+
+msgid "Pressed Mirrored"
+msgstr "Натиснуте дзеркальне"
+
+msgid "Hover"
+msgstr "Наведення"
+
+msgid "Hover Mirrored"
+msgstr "Дзеркальне відображення"
+
+msgid "Hover Pressed"
+msgstr "Наведення, натиснуто"
+
+msgid "Disabled Mirrored"
+msgstr "Вимкнено Дзеркало"
+
+msgid "Font Focus Color"
+msgstr "Колір фокусування шрифту"
+
+msgid "Font Pressed Color"
+msgstr "Колір натиснутого шрифту"
+
+msgid "Font Hover Color"
+msgstr "Колір наведення шрифту"
+
+msgid "Font Hover Pressed Color"
+msgstr "Шрифт натиснутий колір"
+
+msgid "Font Disabled Color"
+msgstr "Колір вимкненого шрифту"
+
+msgid "Font Outline Color"
+msgstr "Колір контуру шрифту"
+
+msgid "Icon Normal Color"
+msgstr "Звичайний колір значка"
+
+msgid "Icon Focus Color"
+msgstr "Колір фокусування значка"
+
+msgid "Icon Pressed Color"
+msgstr "Значок натиснутий колір"
+
+msgid "Icon Hover Color"
+msgstr "Колір наведення значка"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Кольоровий колір наведення курсора"
+
+msgid "Icon Disabled Color"
+msgstr "Колір значка вимкнено"
+
+msgid "H Separation"
+msgstr "Гор. відокремлення"
+
+msgid "Icon Max Width"
+msgstr "Максимальна ширина значка"
+
+msgid "Align to Largest Stylebox"
+msgstr "Вирівняти за найбільшим полем стилів"
+
 msgid "Use Top Left"
 msgstr "Згори ліворуч"
+
+msgid "Check V Offset"
+msgstr "Перевірте V Offset"
+
+msgid "Unchecked"
+msgstr "Не позначено"
+
+msgid "Radio Checked"
+msgstr "Варіант позначено"
+
+msgid "Radio Unchecked"
+msgstr "Радіо не перевірено"
+
+msgid "Checked Disabled"
+msgstr "Позначено, вимкнено"
+
+msgid "Unchecked Disabled"
+msgstr "Не позначено, вимкнено"
+
+msgid "Radio Checked Disabled"
+msgstr "Варіант позначено, вимкнено"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Радіо не позначено вимкнено"
+
+msgid "Checkbox Checked Color"
+msgstr "Колір позначеного прапорця"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Колір невизначеного прапорця"
+
+msgid "Checked Mirrored"
+msgstr "Перевірено Віддзеркалено"
+
+msgid "Unchecked Mirrored"
+msgstr "Знято віддзеркалення"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Позначено Disabled Mirrored"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Знято прапорець Вимкнено Дзеркало"
+
+msgid "Button Checked Color"
+msgstr "Колір кнопки"
+
+msgid "Button Unchecked Color"
+msgstr "Колір невизначеної кнопки"
 
 msgid "Symbol Lookup on Click"
 msgstr "Пошук символів при клацанні"
@@ -8276,6 +8662,81 @@ msgstr "Відповідність виділення"
 msgid "Pairs"
 msgstr "Пари"
 
+msgid "Code Folding Color"
+msgstr "Колір згортання коду"
+
+msgid "Folded Code Region Color"
+msgstr "Колір регіону складеного коду"
+
+msgid "Can Fold"
+msgstr "Можна скласти"
+
+msgid "Folded"
+msgstr "Згорнуто"
+
+msgid "Can Fold Code Region"
+msgstr "Регіон коду можна скласти"
+
+msgid "Folded Code Region"
+msgstr "Область зі згорнутим кодом"
+
+msgid "Folded EOL Icon"
+msgstr "Складений значок EOL"
+
+msgid "Completion Color BG"
+msgstr "Колір комплектації BG"
+
+msgid "Breakpoint Color"
+msgstr "Колір точок зупину"
+
+msgid "Breakpoint"
+msgstr "Точка зупинки"
+
+msgid "Bookmark Color"
+msgstr "Колір закладок"
+
+msgid "Bookmark"
+msgstr "Закладка"
+
+msgid "Executing Line Color"
+msgstr "Колір виконуваного рядка"
+
+msgid "Executing Line"
+msgstr "Рядок виконання"
+
+msgid "Line Number Color"
+msgstr "Колір номерів рядків"
+
+msgid "Completion Max Width"
+msgstr "Макс. ширина завершення"
+
+msgid "Completion Lines"
+msgstr "Лінії завершення"
+
+msgid "Completion Scroll Width"
+msgstr "Ширина прокручування завершення"
+
+msgid "Completion Scroll Color"
+msgstr "Колір гортання доповнення"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Колір прокрутки доповнення при наведенні"
+
+msgid "Completion Background Color"
+msgstr "Колір тла доповнення"
+
+msgid "Completion Selected Color"
+msgstr "Колір позначення доповнення"
+
+msgid "Completion Existing Color"
+msgstr "Наявний колір доповнення"
+
+msgid "Line Length Guideline Color"
+msgstr "Колір напрямної довжини рядка"
+
+msgid "Brace Mismatch Color"
+msgstr "Колір дужок без відповідників"
+
 msgid "Edit Alpha"
 msgstr "Редагувати прозорість"
 
@@ -8312,6 +8773,102 @@ msgstr "Шестигранник видно"
 msgid "Presets Visible"
 msgstr "Видимі набори"
 
+msgid "Label Width"
+msgstr "Ширина мітки"
+
+msgid "SV Width"
+msgstr "Ширина SV"
+
+msgid "SV Height"
+msgstr "SV Висота"
+
+msgid "H Width"
+msgstr "H Ширина"
+
+msgid "Center Slider Grabbers"
+msgstr "Захоплювачі центрального повзунка"
+
+msgid "Sample Focus"
+msgstr "Зразок фокусу"
+
+msgid "Picker Focus Rectangle"
+msgstr "Прямокутник фокусування вибору"
+
+msgid "Picker Focus Circle"
+msgstr "Коло фокусування вибору"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Фокус, а не редагування кольору курсора"
+
+msgid "Menu Option"
+msgstr "Опція меню"
+
+msgid "Screen Picker"
+msgstr "Вибір екрана"
+
+msgid "Expanded Arrow"
+msgstr "Розгорнута стрілка"
+
+msgid "Folded Arrow"
+msgstr "Складена стрілка"
+
+msgid "Add Preset"
+msgstr "Додати набір"
+
+msgid "Shape Rect"
+msgstr "Форма Rect"
+
+msgid "Shape Rect Wheel"
+msgstr "Форма Rect Wheel"
+
+msgid "Shape Circle"
+msgstr "Форма кола"
+
+msgid "Bar Arrow"
+msgstr "Бар Стрілка"
+
+msgid "Sample BG"
+msgstr "Зразок BG"
+
+msgid "Sample Revert"
+msgstr "Зразок повернення"
+
+msgid "Overbright Indicator"
+msgstr "Індикатор пересвічення"
+
+msgid "Picker Cursor"
+msgstr "Курсор вибору"
+
+msgid "Picker Cursor BG"
+msgstr "Курсор вибору BG"
+
+msgid "Color Hue"
+msgstr "Відтінок кольору"
+
+msgid "Color Script"
+msgstr "Кольоровий скрипт"
+
+msgid "Color Copy"
+msgstr "Кольорова копія"
+
+msgid "Tab Unselected"
+msgstr "Вкладка наведена"
+
+msgid "Tab Selected"
+msgstr "Вибрана вкладка"
+
+msgid "BG"
+msgstr "КТ"
+
+msgid "Preset FG"
+msgstr "Передній план набору"
+
+msgid "Preset Focus"
+msgstr "Попередньо встановлений фокус"
+
+msgid "Preset BG"
+msgstr "Тло набору"
+
 msgid "Accessibility Region"
 msgstr "Регіон доступності"
 
@@ -8326,6 +8883,9 @@ msgstr "Розміри шрифтів"
 
 msgid "Styles"
 msgstr "Стилі"
+
+msgid "Sounds"
+msgstr "Оточуючий звук"
 
 msgid "Custom Minimum Size"
 msgstr "Спеціальний мінімальний розмір"
@@ -8396,9 +8956,6 @@ msgstr "Підказка"
 msgid "Auto Translate Mode"
 msgstr "Режим автоматичного перекладу"
 
-msgid "Focus"
-msgstr "Фокусування"
-
 msgid "Neighbor Left"
 msgstr "Сусід зліва"
 
@@ -8462,6 +9019,9 @@ msgstr "Закрийте Escape"
 msgid "Autowrap"
 msgstr "Автозацикленість"
 
+msgid "Buttons Separation"
+msgstr "Розділення кнопок"
+
 msgid "Cancel Button Text"
 msgstr "Текст кнопки «Скасувати»"
 
@@ -8516,14 +9076,101 @@ msgstr "Попередження про перезапис увімкнено"
 msgid "Deleting Enabled"
 msgstr "Видалення ввімкнено"
 
+msgid "Navigation Buttons Enabled"
+msgstr "Увімкнено кнопку очищення"
+
+msgid "Drive Selector Enabled"
+msgstr "Зніміть позначку «Увімкнено»"
+
+msgid "Filters Enabled"
+msgstr "Фільтр увімкнено"
+
+msgid "Parent Folder"
+msgstr "Батьківська тека"
+
+msgid "Forward Folder"
+msgstr "Переслати папку"
+
+msgid "Back Folder"
+msgstr "Задня папка"
+
+msgid "Reload"
+msgstr "Перезавантажити"
+
+msgid "Favorite"
+msgstr "Улюблене"
+
+msgid "Toggle Hidden"
+msgstr "Переслати папку"
+
+msgid "Folder"
+msgstr "Тека"
+
+msgid "Toggle Filename Filter"
+msgstr "Увімкнути фільтр імен файлів"
+
+msgid "File"
+msgstr "Файл"
+
+msgid "Create Folder"
+msgstr "Створити папку"
+
+msgid "Sort"
+msgstr "Сортувати"
+
+msgid "Favorite Up"
+msgstr "Додати до обраного"
+
+msgid "Favorite Down"
+msgstr "Улюблене вниз"
+
+msgid "Thumbnail Mode"
+msgstr "Режим мініатюр"
+
+msgid "List Mode"
+msgstr "Режим списку"
+
+msgid "File Thumbnail"
+msgstr "Мініатюра файлу"
+
+msgid "Folder Thumbnail"
+msgstr "Мініатюра папки"
+
+msgid "Menu Copy Path"
+msgstr "Меню «Копіювати шлях»"
+
+msgid "Menu Delete"
+msgstr "Меню «Видалити»"
+
+msgid "Menu Refresh"
+msgstr "Оновити меню"
+
+msgid "Menu New Folder"
+msgstr "Меню «Нова папка»"
+
+msgid "Menu Show in File Manager"
+msgstr "Меню «Показати» у файловому менеджері"
+
+msgid "Menu Open Bundle"
+msgstr "Меню «Відкрити набір»"
+
+msgid "Folder Icon Color"
+msgstr "Колір значка папки"
+
+msgid "File Icon Color"
+msgstr "Колір значка файлу"
+
+msgid "File Disabled Color"
+msgstr "Колір вимкненого файлу"
+
 msgid "Last Wrap Alignment"
 msgstr "Останнє вирівнювання обтікання"
 
 msgid "Reverse Fill"
 msgstr "Зворотне заповнення"
 
-msgid "Folded"
-msgstr "Згорнуто"
+msgid "V Separation"
+msgstr "Верт. відокремлення"
 
 msgid "Title Alignment"
 msgstr "Вирівнювання заголовків"
@@ -8540,8 +9187,38 @@ msgstr "Складана група"
 msgid "Title Text Direction"
 msgstr "Напрямок тексту заголовка"
 
+msgid "Title Panel"
+msgstr "Титульна панель"
+
+msgid "Title Hover Panel"
+msgstr "Панель заголовка при наведенні курсора миші"
+
+msgid "Title Collapsed Panel"
+msgstr "Згорнута панель заголовка"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Згорнута панель заголовка при наведенні курсора"
+
+msgid "Hover Font Color"
+msgstr "Колір шрифту при наведенні курсора"
+
+msgid "Collapsed Font Color"
+msgstr "Колір згорнутого шрифту"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Розгорнута стрілка дзеркально відображена"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Складена стрілка дзеркально"
+
 msgid "Allow Folding All"
 msgstr "Дозволити згортання всіх"
+
+msgid "Resizer"
+msgstr "Засіб зміни розміру"
+
+msgid "Resizer Color"
+msgstr "Колір зміни розміру"
 
 msgid "Show Grid"
 msgstr "Показати сітку"
@@ -8600,6 +9277,63 @@ msgstr "Показати кнопку міні-карти"
 msgid "Show Arrange Button"
 msgstr "Показати кнопку «Упорядкувати»"
 
+msgid "Panel Focus"
+msgstr "Фокус панелі"
+
+msgid "Grid Major"
+msgstr "Основна ґратка"
+
+msgid "Grid Minor"
+msgstr "Проміжна ґратка"
+
+msgid "Activity"
+msgstr "Діяльність"
+
+msgid "Connection Hover Tint Color"
+msgstr "Колір відтінку підключення"
+
+msgid "Connection Hover Thickness"
+msgstr "Товщина підключення"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Дійсний колір цільового відтінку підключення"
+
+msgid "Connection Rim Color"
+msgstr "Колір обідка підключення"
+
+msgid "Selection Fill"
+msgstr "Заповнення позначеного"
+
+msgid "Selection Stroke"
+msgstr "Штрих позначеного"
+
+msgid "Menu Panel"
+msgstr "Панель меню"
+
+msgid "Zoom In"
+msgstr "Збільшити"
+
+msgid "Zoom Out"
+msgstr "Зменшити"
+
+msgid "Zoom Reset"
+msgstr "Скидання масштабу"
+
+msgid "Snapping Toggle"
+msgstr "Перемикач замикання"
+
+msgid "Grid Toggle"
+msgstr "Перемикач сітки"
+
+msgid "Minimap Toggle"
+msgstr "Перемикач мінікарти"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Внутрішній екстент гарячої зони порту"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Зовнішній екстент гарячої зони порту"
+
 msgid "Draggable"
 msgstr "Можливість перетягування"
 
@@ -8618,11 +9352,29 @@ msgstr "Автоматичне зменшення маржі"
 msgid "Drag Margin"
 msgstr "Перетягніть поле"
 
+msgid "Panel Selected"
+msgstr "Вибрана панель"
+
+msgid "Titlebar"
+msgstr "Рядок заголовка"
+
+msgid "Titlebar Selected"
+msgstr "Вибрано рядок заголовка"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Ігнорувати недійсний тип підключення"
 
 msgid "Slots Focus Mode"
 msgstr "Режим фокусування слотів"
+
+msgid "Slot"
+msgstr "Слот"
+
+msgid "Slot Selected"
+msgstr "Вибрано слот"
+
+msgid "Port H Offset"
+msgstr "Зсув порту H"
 
 msgid "Select Mode"
 msgstr "Режим виділення"
@@ -8675,6 +9427,66 @@ msgstr "Масштаб піктограм"
 msgid "Fixed Icon Size"
 msgstr "Фіксований розмір піктограм"
 
+msgid "Scrollbar Margin Left"
+msgstr "Поле смуги прокрутки зліва"
+
+msgid "Scrollbar Margin Top"
+msgstr "Верхнє поле смуги прокрутки"
+
+msgid "Scrollbar Margin Right"
+msgstr "Праве поле смуги прокрутки"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Поле смуги прокрутки знизу"
+
+msgid "Scrollbar H Separation"
+msgstr "Смуга прокрутки H Розділення"
+
+msgid "Font Hovered Color"
+msgstr "Колір наведеного шрифту"
+
+msgid "Font Hovered Selected Color"
+msgstr "Вибраний колір наведеного шрифту"
+
+msgid "Font Selected Color"
+msgstr "Вибраний колір шрифту"
+
+msgid "Font Disabled Hovered Color"
+msgstr "Колір вимкненого шрифту"
+
+msgid "Scroll Hint"
+msgstr "Підказка прокручування"
+
+msgid "Scroll Hint Color"
+msgstr "Колір підказки прокручування"
+
+msgid "Icon Margin"
+msgstr "Поле піктограми"
+
+msgid "Hovered"
+msgstr "Зависла"
+
+msgid "Hovered Selected"
+msgstr "Вибране при наведенні"
+
+msgid "Hovered Selected Focus"
+msgstr "Вибраний фокус наведено"
+
+msgid "Selected Focus"
+msgstr "Фокус позначення"
+
+msgid "Cursor Unfocused"
+msgstr "Курсор не сфокусований"
+
+msgid "Cursor"
+msgstr "Курсор"
+
+msgid "Disabled Hovered"
+msgstr "Вимкнено Дзеркало"
+
+msgid "Guide Color"
+msgstr "Керівний колір"
+
 msgid "Label Settings"
 msgstr "Налаштування мітки"
 
@@ -8686,6 +9498,15 @@ msgstr "Еліпсис симв"
 
 msgid "Tab Stops"
 msgstr "Стопи табуляції"
+
+msgid "Resize Font to Fit"
+msgstr "Змінювати розмір шрифту, щоб умістити текст"
+
+msgid "Minimum Font Size"
+msgstr "Основний розмір шрифту"
+
+msgid "Maximum Font Size"
+msgstr "Основний розмір шрифту"
 
 msgid "Displayed Text"
 msgstr "Відображений текст"
@@ -8704,6 +9525,15 @@ msgstr "Поведінка видимих персонажів"
 
 msgid "Visible Ratio"
 msgstr "Видиме співвідношення"
+
+msgid "Paragraph Spacing"
+msgstr "Інтервал між абзацами"
+
+msgid "Font Shadow Color"
+msgstr "Колір тіні шрифту"
+
+msgid "Shadow Outline Size"
+msgstr "Розмір контуру тіні"
 
 msgid "Placeholder Text"
 msgstr "Текст-заповнювач"
@@ -8783,11 +9613,50 @@ msgstr "Режим розгортання піктограм"
 msgid "Right Icon Scale"
 msgstr "Масштаб правої іконки"
 
+msgid "Font Placeholder Color"
+msgstr "Колір заповнювача шрифту"
+
+msgid "Caret Width"
+msgstr "Ширина вставки"
+
+msgid "Caret Color"
+msgstr "Колір каретки"
+
+msgid "Minimum Character Width"
+msgstr "Мінімальна ширина символу"
+
+msgid "Selection Color"
+msgstr "Колір позначення"
+
+msgid "Clear"
+msgstr "Очистити"
+
+msgid "Clear Button Color"
+msgstr "Колір кнопки очищення"
+
+msgid "Clear Button Color Pressed"
+msgstr "Очистити колір кнопки. Натиснуто"
+
 msgid "Underline"
 msgstr "Підкреслений"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Інтервал підкреслювання"
+
+msgid "Margin Left"
+msgstr "Ліва межа"
+
+msgid "Margin Top"
+msgstr "Верхня межа"
+
+msgid "Margin Right"
+msgstr "Права межа"
+
+msgid "Margin Bottom"
+msgstr "Нижня межа"
 
 msgid "Start Index"
 msgstr "Початковий індекс"
@@ -8825,6 +9694,15 @@ msgstr "Увімкнено розширений пошук"
 msgid "Fuzzy Search Max Misses"
 msgstr "Максимальна кількість пропущених результатів при неточному пошуку"
 
+msgid "Arrow"
+msgstr "Стрілка"
+
+msgid "Arrow Margin"
+msgstr "Поле стрілки"
+
+msgid "Modulate Arrow"
+msgstr "Модулювати стрілку"
+
 msgid "Hide on Item Selection"
 msgstr "Сховати при виборі елемента"
 
@@ -8849,17 +9727,71 @@ msgstr "Висота усадки"
 msgid "Shrink Width"
 msgstr "Ширина усадки"
 
+msgid "Separator"
+msgstr "Роздільник"
+
+msgid "Labeled Separator Left"
+msgstr "Позначений роздільником ліворуч"
+
+msgid "Labeled Separator Right"
+msgstr "Позначено роздільником справа"
+
+msgid "Search Bar Separation"
+msgstr "Розділення рядків у рядку пошуку"
+
+msgid "Item Start Padding"
+msgstr "Пункт Початок елемента"
+
+msgid "Item End Padding"
+msgstr "Заповнення кінця елемента"
+
+msgid "Gutter Compact"
+msgstr "Компактний жолоб"
+
+msgid "Indeterminate"
+msgstr "Невизначений"
+
+msgid "Indeterminate Disabled"
+msgstr "Невизначений вимкнено"
+
+msgid "Search"
+msgstr "Пошук"
+
+msgid "Submenu"
+msgstr "Підменю"
+
+msgid "Submenu Mirrored"
+msgstr "Підменю Дзеркальне відображення"
+
+msgid "Font Separator"
+msgstr "Роздільник шрифтів"
+
+msgid "Font Separator Size"
+msgstr "Розмір роздільника шрифту"
+
+msgid "Font Accelerator Color"
+msgstr "Колір прискорювача шрифту"
+
+msgid "Font Separator Color"
+msgstr "Колір роздільника шрифту"
+
+msgid "Separator Outline Size"
+msgstr "Розмір контуру роздільника"
+
+msgid "Font Separator Outline Color"
+msgstr "Колір контуру роздільника шрифту"
+
 msgid "Fill Mode"
 msgstr "Режим заповнення"
 
 msgid "Show Percentage"
 msgstr "Показати відсоток"
 
-msgid "Indeterminate"
-msgstr "Невизначений"
-
 msgid "Preview Indeterminate"
 msgstr "Попередній перегляд Невизначений"
+
+msgid "Background"
+msgstr "Тло"
 
 msgid "Min Value"
 msgstr "Мін. значення"
@@ -8906,6 +9838,9 @@ msgstr "Прапори гліфів"
 msgid "Relative Index"
 msgstr "Відносний індекс"
 
+msgid "Resource Access Flags"
+msgstr "Ресурси"
+
 msgid "BBCode Enabled"
 msgstr "Ввімкнення BBCode"
 
@@ -8945,8 +9880,98 @@ msgstr "Затримка індикатора прогресу"
 msgid "Text Selection"
 msgstr "Виділення тексту"
 
+msgid "Horizontal Rule"
+msgstr "Горизонтальне правило"
+
+msgid "Normal Font"
+msgstr "Звичайний шрифт"
+
+msgid "Normal Font Size"
+msgstr "Нормальний розмір шрифту"
+
+msgid "Shadow Offset X"
+msgstr "Зсув тіні за X"
+
+msgid "Shadow Offset Y"
+msgstr "Зсув тіні за Y"
+
+msgid "Bold Font"
+msgstr "Напівжирний шрифт"
+
+msgid "Bold Font Size"
+msgstr "Жирний шрифт"
+
+msgid "Bold Italics Font"
+msgstr "Напівжирний курсивний шрифт"
+
+msgid "Bold Italics Font Size"
+msgstr "Жирний курсив Розмір шрифту"
+
+msgid "Italics Font"
+msgstr "Курсивний шрифт"
+
+msgid "Italics Font Size"
+msgstr "Розмір шрифту курсив"
+
+msgid "Mono Font"
+msgstr "Моноширинний шрифт"
+
+msgid "Mono Font Size"
+msgstr "Монохромний розмір шрифту"
+
+msgid "Text Highlight H Padding"
+msgstr "Підсвічування тексту H Padding"
+
+msgid "Text Highlight V Padding"
+msgstr "Виділення тексту V-подібне відступ"
+
+msgid "Underline Alpha"
+msgstr "Підкреслення альфа"
+
+msgid "Strikethrough Alpha"
+msgstr "Закреслений альфа-файл"
+
+msgid "Table H Separation"
+msgstr "Гор. відокремлення у таблиці"
+
+msgid "Table V Separation"
+msgstr "Верт. відокремлення у таблиці"
+
+msgid "Table Odd Row BG"
+msgstr "Таблиця Odd Row BG"
+
+msgid "Table Even Row BG"
+msgstr "Таблиця парний рядок BG"
+
+msgid "Table Border"
+msgstr "Границя таблиці"
+
 msgid "Custom Step"
 msgstr "Нетиповий вузол"
+
+msgid "Scroll Focus"
+msgstr "Фокус гортання"
+
+msgid "Grabber Pressed"
+msgstr "Грабер натиснутий"
+
+msgid "Increment"
+msgstr "Крок збільшення"
+
+msgid "Increment Highlight"
+msgstr "Збільшити виділення"
+
+msgid "Increment Pressed"
+msgstr "Інкремент натиснуто"
+
+msgid "Decrement"
+msgstr "Зменшення"
+
+msgid "Decrement Highlight"
+msgstr "Зменшити виділення"
+
+msgid "Decrement Pressed"
+msgstr "Натиснуто зменшення"
 
 msgid "Follow Focus"
 msgstr "Слідувати за фокусом"
@@ -8981,8 +10006,20 @@ msgstr "За замовчуванням прокрутка відбуваєть�
 msgid "Scroll Deadzone"
 msgstr "Прокрутка мертвої зони"
 
-msgid "Scroll Hint"
-msgstr "Підказка прокручування"
+msgid "Scrollbar V Separation"
+msgstr "Смуга прокрутки V Розділення"
+
+msgid "Scroll Hint Vertical"
+msgstr "Підказка прокручування вертикально"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Підказка прокручування по горизонталі"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Колір вертикальної підказки прокручування"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Колір горизонтальної підказки прокручування"
 
 msgid "Default Scroll Deadzone"
 msgstr "Мертва зона прокручування за замовчуванням"
@@ -8999,6 +10036,30 @@ msgstr "Кліщі на кордонах"
 msgid "Ticks Position"
 msgstr "Положення кліщів"
 
+msgid "Slider"
+msgstr "Повзунок"
+
+msgid "Grabber Area"
+msgstr "Зона захоплення"
+
+msgid "Grabber Area Highlight"
+msgstr "Виділення області захоплення"
+
+msgid "Grabber Disabled"
+msgstr "Grabber вимкнено"
+
+msgid "Tick"
+msgstr "Галочка"
+
+msgid "Center Grabber"
+msgstr "Центр Грабер"
+
+msgid "Grabber Offset"
+msgstr "Зсув граббера"
+
+msgid "Tick Offset"
+msgstr "Зсув галочки"
+
 msgid "Update on Text Changed"
 msgstr "Оновлення тексту змінено"
 
@@ -9010,6 +10071,102 @@ msgstr "Користувацька кругла стрілка"
 
 msgid "Format"
 msgstr "Формат"
+
+msgid "Plural Format"
+msgstr "Формат текстури"
+
+msgid "Format Auto Translate Mode"
+msgstr "Режим автоматичного перекладу"
+
+msgid "Buttons Vertical Separation"
+msgstr "Вертикальне розділення кнопок"
+
+msgid "Field and Buttons Separation"
+msgstr "Розділення полів і кнопок"
+
+msgid "Buttons Width"
+msgstr "Ширина кнопок"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Установіть мінімальну ширину кнопок від значків"
+
+msgid "Up"
+msgstr "Вгору"
+
+msgid "Up Hover"
+msgstr "Наведення вгору"
+
+msgid "Up Pressed"
+msgstr "Вгору натиснуто"
+
+msgid "Up Disabled"
+msgstr "Вгору вимкнено"
+
+msgid "Down"
+msgstr "Вниз"
+
+msgid "Down Hover"
+msgstr "Наведення вниз"
+
+msgid "Down Pressed"
+msgstr "Вниз натиснуто"
+
+msgid "Down Disabled"
+msgstr "Вниз вимкнено"
+
+msgid "Up Background"
+msgstr "Вгору фону"
+
+msgid "Up Background Hovered"
+msgstr "Наведений фон вгору"
+
+msgid "Up Background Pressed"
+msgstr "Вгору фон натиснуто"
+
+msgid "Up Background Disabled"
+msgstr "Фон угору вимкнено"
+
+msgid "Down Background"
+msgstr "Вниз фону"
+
+msgid "Down Background Hovered"
+msgstr "Наведені фон вниз"
+
+msgid "Down Background Pressed"
+msgstr "Натиснутий фон внизу"
+
+msgid "Down Background Disabled"
+msgstr "Фон вниз вимкнено"
+
+msgid "Up Icon Modulate"
+msgstr "Модулювати піктограму вгору"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Модулювати піктограму вгору"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Натиснута піктограма Модуляція"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Включена ікона Модуляція"
+
+msgid "Down Icon Modulate"
+msgstr "Модулювати піктограму вниз"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Модулювати піктограму вниз"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Модуляція натиснутої піктограми"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Модуляція піктограми вниз"
+
+msgid "Field and Buttons Separator"
+msgstr "Роздільник полів і кнопок"
+
+msgid "Up Down Buttons Separator"
+msgstr "Роздільник кнопок вгору вниз"
 
 msgid "Split Offsets"
 msgstr "Розділені зміщення"
@@ -9041,6 +10198,39 @@ msgstr "Кінець поля"
 msgid "Highlight in Editor"
 msgstr "Виділіть у редакторі"
 
+msgid "Touch Dragger Color"
+msgstr "Колір сенсорного перетягувача"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Сенсорний перетягувач Натиснутий колір"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Колір при наведенні курсора на сенсорний перетягувач"
+
+msgid "Minimum Grab Thickness"
+msgstr "Мінімальна товщина захоплення"
+
+msgid "Autohide"
+msgstr "Автоприховування"
+
+msgid "Touch Dragger"
+msgstr "Сенсорний перетягувач"
+
+msgid "H Touch Dragger"
+msgstr "H Сенсорний перетягувач"
+
+msgid "V Touch Dragger"
+msgstr "V Сенсорний перетягувач"
+
+msgid "H Grabber"
+msgstr "H Грабер"
+
+msgid "V Grabber"
+msgstr "V Грабер"
+
+msgid "Split Bar Background"
+msgstr "Спліт бар фону"
+
 msgid "Split Offset"
 msgstr "Відступ поділу"
 
@@ -9055,6 +10245,9 @@ msgstr "Поточна вкладка"
 
 msgid "Tab Alignment"
 msgstr "Вирівнювання табуляції"
+
+msgid "Tab Sizing"
+msgstr "Розмір табуляції"
 
 msgid "Clip Tabs"
 msgstr "Вкладки кліпу"
@@ -9092,6 +10285,42 @@ msgstr "Зніміть позначку «Увімкнено»"
 msgid "Tabs"
 msgstr "Вкладки"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Зачекайте на перемикачі наведення миші, мс"
+
+msgid "Tab Hovered"
+msgstr "Вкладка наведена"
+
+msgid "Tab Disabled"
+msgstr "Вкладку вимкнено"
+
+msgid "Tab Focus"
+msgstr "Фокус вкладки"
+
+msgid "Drop Mark"
+msgstr "Відкинути позначку"
+
+msgid "Drop Mark Color"
+msgstr "Колір позначки"
+
+msgid "Font Unselected Color"
+msgstr "Невибраний колір шрифту"
+
+msgid "Icon Selected Color"
+msgstr "Вибраний колір піктограми"
+
+msgid "Icon Hovered Color"
+msgstr "Колір значка при наведенні курсора"
+
+msgid "Icon Unselected Color"
+msgstr "Колір невибраної піктограми"
+
+msgid "Close"
+msgstr "Закрити"
+
+msgid "Button Highlight"
+msgstr "Виділення кнопки"
+
 msgid "Tabs Position"
 msgstr "Розташування вкладок"
 
@@ -9104,6 +10333,21 @@ msgstr "Використовувати приховані вкладки для 
 msgid "Tab Focus Mode"
 msgstr "Режим фокусування вкладки"
 
+msgid "Side Margin"
+msgstr "Бічне поле"
+
+msgid "Tabbar Background"
+msgstr "Фон вкладок"
+
+msgid "Menu"
+msgstr "Меню"
+
+msgid "Menu Highlight"
+msgstr "Підсвічування меню"
+
+msgid "Icon Separation"
+msgstr "Розділення піктограм"
+
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Пустий буфер обміну виділених увімкнено"
 
@@ -9112,6 +10356,9 @@ msgstr "Режим обтікання"
 
 msgid "Tab Input Mode"
 msgstr "Режим введення табуляцією"
+
+msgid "Selection Handle Enabled"
+msgstr "Увімкнено позначення"
 
 msgid "Smooth"
 msgstr "Гладкий"
@@ -9149,18 +10396,38 @@ msgstr "Контрольні символи"
 msgid "Spaces"
 msgstr "Пробіли"
 
+msgid "Search Result Color"
+msgstr "Колір результатів пошуку"
+
+msgid "Search Result Border Color"
+msgstr "Колір рамки результатів пошуку"
+
+msgid "Caret Background Color"
+msgstr "Колір тла каретки"
+
+msgid "Tab"
+msgstr "Табуляція"
+
+msgid "Space"
+msgstr "Простір"
+
+msgid "Font Readonly Color"
+msgstr "Колір шрифту лише для читання"
+
+msgid "Wrap Offset"
+msgstr "Зсув обтікання"
+
+msgid "Current Line Color"
+msgstr "Колір поточного рядка"
+
+msgid "Word Highlighted Color"
+msgstr "Колір підсвічених слів"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "Редагування тексту Виявлення очікування (с)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Текст Редагувати Скасувати Максимальний розмір стосу"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Нормальний"
-
-msgid "Hover"
-msgstr "Наведення"
 
 msgid "Focused"
 msgstr "Фокусоване"
@@ -9234,6 +10501,117 @@ msgstr "Горизонтальне прокручування ввімкнено
 msgid "Scroll Vertical Enabled"
 msgstr "Вертикальна прокрутка ввімкнена"
 
+msgid "Title Button Font"
+msgstr "Шрифт кнопки заголовка"
+
+msgid "Title Button Font Size"
+msgstr "Розмір шрифту кнопки заголовка"
+
+msgid "Hovered Dimmed"
+msgstr "Зависли Потьмяніли"
+
+msgid "Button Hover"
+msgstr "Наведення курсора кнопки"
+
+msgid "Arrow Collapsed"
+msgstr "Стрілку згорнуто"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Стрілка згорнута дзеркальна"
+
+msgid "Select Arrow"
+msgstr "Стрілка позначення"
+
+msgid "Custom Button"
+msgstr "Нетипова кнопка"
+
+msgid "Custom Button Hover"
+msgstr "Наведення на нетипову кнопку"
+
+msgid "Custom Button Pressed"
+msgstr "Нетипову кнопку натиснуто"
+
+msgid "Custom Button Font Highlight"
+msgstr "Підсвічений шрифт нетипової кнопки"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Шрифт наведений затемнений колір"
+
+msgid "Drop on Item Color"
+msgstr "Змінити колір предмета"
+
+msgid "Drop Position Color"
+msgstr "Колір позиції падіння"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Нижнє поле внутрішнього елемента"
+
+msgid "Inner Item Margin Left"
+msgstr "Внутрішнє поле елемента зліва"
+
+msgid "Inner Item Margin Right"
+msgstr "Внутрішнє поле елемента справа"
+
+msgid "Inner Item Margin Top"
+msgstr "Верх внутрішнього поля елемента"
+
+msgid "Item Margin"
+msgstr "Поле пункту"
+
+msgid "Check H Separation"
+msgstr "Перевірте розділення H"
+
+msgid "Icon H Separation"
+msgstr "Розділення піктограми H"
+
+msgid "Button Margin"
+msgstr "Поле кнопки"
+
+msgid "Draw Guides"
+msgstr "Малювати напрямні"
+
+msgid "Relationship Line Width"
+msgstr "Відношення ширини лінії"
+
+msgid "Parent HL Line Width"
+msgstr "Ширина батьківської лінії HL"
+
+msgid "Children HL Line Width"
+msgstr "Діти HL Ширина лінії"
+
+msgid "Parent HL Line Margin"
+msgstr "Поле батьківського рядка HL"
+
+msgid "Relationship Line Color"
+msgstr "Колір лінії зв'язку"
+
+msgid "Parent HL Line Color"
+msgstr "Колір батьківської лінії HL"
+
+msgid "Children HL Line Color"
+msgstr "Діти HL Колір лінії"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Перетягування Розгорнути Зачекати, мс"
+
+msgid "Scroll Border"
+msgstr "Рамка гортання"
+
+msgid "Scroll Speed"
+msgstr "Швидкість прокрутки"
+
+msgid "Title Button Normal"
+msgstr "Звичайна кнопка заголовка"
+
+msgid "Title Button Pressed"
+msgstr "Кнопку заголовка натиснуто"
+
+msgid "Title Button Hover"
+msgstr "Наведення на кнопку заголовка"
+
+msgid "Title Button Color"
+msgstr "Колір кнопки заголовка"
+
 msgid "Audio Track"
 msgstr "Доріжка"
 
@@ -9275,6 +10653,18 @@ msgstr "Дія вгору"
 
 msgid "Action Down"
 msgstr "Дія вниз"
+
+msgid "Normal Joystick"
+msgstr "Звичайний джойстик"
+
+msgid "Normal Tip"
+msgstr "Звичайна порада"
+
+msgid "Pressed Joystick"
+msgstr "Натиснутий джойстик"
+
+msgid "Pressed Tip"
+msgstr "Натиснуиа підказка"
 
 msgid "Self Modulate"
 msgstr "Самомодуляція"
@@ -9320,6 +10710,12 @@ msgstr "Отримання файла"
 
 msgid "Download Chunk Size"
 msgstr "Завантаження"
+
+msgid "Keep Partial Download"
+msgstr "Глибокий паралакс"
+
+msgid "Append to Download File"
+msgstr "Отримання файла"
 
 msgid "Accept Gzip"
 msgstr "Прийняти Gzip"
@@ -9492,9 +10888,6 @@ msgstr "Увімкнути калькування"
 msgid "Scene Traversal"
 msgstr "Обхід сцени"
 
-msgid "Menu"
-msgstr "Меню"
-
 msgid "Wait Time"
 msgstr "Намалювати плитку"
 
@@ -9663,6 +11056,9 @@ msgstr "Виключити із захоплення"
 msgid "Popup Wm Hint"
 msgstr "Підказка спливаючого вікна Wm"
 
+msgid "Fullscreen Shortcut Enabled"
+msgstr "Увімкнено клавіатурні скорочення"
+
 msgid "Force Native"
 msgstr "Сила рідна"
 
@@ -9683,6 +11079,39 @@ msgstr "Вихід HDR"
 
 msgid "Requested"
 msgstr "Запитано"
+
+msgid "Embedded Border"
+msgstr "Вбудована рамка"
+
+msgid "Embedded Unfocused Border"
+msgstr "Вбудована несфокусована межа"
+
+msgid "Title Font"
+msgstr "Шрифт титрів"
+
+msgid "Title Font Size"
+msgstr "Розмір шрифту заголовка"
+
+msgid "Title Height"
+msgstr "Висота заголовка"
+
+msgid "Title Outline Modulate"
+msgstr "Модуляція плану заголовка"
+
+msgid "Title Outline Size"
+msgstr "Розмір контуру заголовка"
+
+msgid "Close Pressed"
+msgstr "Закрити Натиснуто"
+
+msgid "Close H Offset"
+msgstr "Закрити Н-знув"
+
+msgid "Close V Offset"
+msgstr "Закрити V-зсув"
+
+msgid "Resize Margin"
+msgstr "Змінити розмір поля"
 
 msgid "Swap Cancel OK"
 msgstr "Поміняти Скасувати OK"
@@ -10119,9 +11548,6 @@ msgstr "Крива Y"
 msgid "Curve Z"
 msgstr "Крива Z"
 
-msgid "Background"
-msgstr "Тло"
-
 msgid "Canvas Max Layer"
 msgstr "Максимальний шар полотна"
 
@@ -10332,9 +11758,6 @@ msgstr "Додатковий інтервал"
 msgid "Glyph"
 msgstr "Гліф"
 
-msgid "Space"
-msgstr "Простір"
-
 msgid "Baseline"
 msgstr "Базовий рівень"
 
@@ -10373,9 +11796,6 @@ msgstr "HDR"
 
 msgid "To"
 msgstr "До"
-
-msgid "Paragraph Spacing"
-msgstr "Інтервал між абзацами"
 
 msgid "Stacked Effects"
 msgstr "Складені ефекти"
@@ -10662,6 +12082,9 @@ msgstr "Демпфування як тертя"
 msgid "Inherit Emitter Scale"
 msgstr "Успадкувати масштаб випромінювача"
 
+msgid "Preserve Color"
+msgstr "Зберегти контроль"
+
 msgid "Spawn"
 msgstr "Спаун"
 
@@ -10920,1125 +12343,6 @@ msgstr "Типовий шрифт"
 msgid "Default Font Size"
 msgstr "Розмір шрифту за замовчуванням"
 
-msgid "File"
-msgstr "Файл"
-
-msgid "Font Pressed Color"
-msgstr "Колір натиснутого шрифту"
-
-msgid "Font Hover Color"
-msgstr "Колір наведення шрифту"
-
-msgid "Font Focus Color"
-msgstr "Колір фокусування шрифту"
-
-msgid "Font Hover Pressed Color"
-msgstr "Шрифт натиснутий колір"
-
-msgid "Font Disabled Color"
-msgstr "Колір вимкненого шрифту"
-
-msgid "Font Outline Color"
-msgstr "Колір контуру шрифту"
-
-msgid "Icon Normal Color"
-msgstr "Звичайний колір значка"
-
-msgid "Icon Pressed Color"
-msgstr "Значок натиснутий колір"
-
-msgid "Icon Hover Color"
-msgstr "Колір наведення значка"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Кольоровий колір наведення курсора"
-
-msgid "Icon Focus Color"
-msgstr "Колір фокусування значка"
-
-msgid "Icon Disabled Color"
-msgstr "Колір значка вимкнено"
-
-msgid "H Separation"
-msgstr "Гор. відокремлення"
-
-msgid "Icon Max Width"
-msgstr "Максимальна ширина значка"
-
-msgid "Align to Largest Stylebox"
-msgstr "Вирівняти за найбільшим полем стилів"
-
-msgid "Underline Spacing"
-msgstr "Інтервал підкреслювання"
-
-msgid "Normal Mirrored"
-msgstr "Звичайний дзеркальний"
-
-msgid "Hover Mirrored"
-msgstr "Дзеркальне відображення"
-
-msgid "Pressed Mirrored"
-msgstr "Натиснуте дзеркальне"
-
-msgid "Disabled Mirrored"
-msgstr "Вимкнено Дзеркало"
-
-msgid "Arrow"
-msgstr "Стрілка"
-
-msgid "Arrow Margin"
-msgstr "Поле стрілки"
-
-msgid "Modulate Arrow"
-msgstr "Модулювати стрілку"
-
-msgid "Hover Pressed"
-msgstr "Наведення, натиснуто"
-
-msgid "Checked Disabled"
-msgstr "Позначено, вимкнено"
-
-msgid "Unchecked"
-msgstr "Не позначено"
-
-msgid "Unchecked Disabled"
-msgstr "Не позначено, вимкнено"
-
-msgid "Radio Checked"
-msgstr "Варіант позначено"
-
-msgid "Radio Checked Disabled"
-msgstr "Варіант позначено, вимкнено"
-
-msgid "Radio Unchecked"
-msgstr "Радіо не перевірено"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Радіо не позначено вимкнено"
-
-msgid "Check V Offset"
-msgstr "Перевірте V Offset"
-
-msgid "Checkbox Checked Color"
-msgstr "Колір позначеного прапорця"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Колір невизначеного прапорця"
-
-msgid "Checked Mirrored"
-msgstr "Перевірено Віддзеркалено"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Позначено Disabled Mirrored"
-
-msgid "Unchecked Mirrored"
-msgstr "Знято віддзеркалення"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Знято прапорець Вимкнено Дзеркало"
-
-msgid "Button Checked Color"
-msgstr "Колір кнопки"
-
-msgid "Button Unchecked Color"
-msgstr "Колір невизначеної кнопки"
-
-msgid "Font Shadow Color"
-msgstr "Колір тіні шрифту"
-
-msgid "Shadow Offset X"
-msgstr "Зсув тіні за X"
-
-msgid "Shadow Offset Y"
-msgstr "Зсув тіні за Y"
-
-msgid "Shadow Outline Size"
-msgstr "Розмір контуру тіні"
-
-msgid "Font Selected Color"
-msgstr "Вибраний колір шрифту"
-
-msgid "Font Uneditable Color"
-msgstr "Колір шрифту, який не можна редагувати"
-
-msgid "Font Placeholder Color"
-msgstr "Колір заповнювача шрифту"
-
-msgid "Caret Color"
-msgstr "Колір каретки"
-
-msgid "Selection Color"
-msgstr "Колір позначення"
-
-msgid "Clear Button Color"
-msgstr "Колір кнопки очищення"
-
-msgid "Clear Button Color Pressed"
-msgstr "Очистити колір кнопки. Натиснуто"
-
-msgid "Minimum Character Width"
-msgstr "Мінімальна ширина символу"
-
-msgid "Caret Width"
-msgstr "Ширина вставки"
-
-msgid "Clear"
-msgstr "Очистити"
-
-msgid "Tab"
-msgstr "Табуляція"
-
-msgid "Font Readonly Color"
-msgstr "Колір шрифту лише для читання"
-
-msgid "Current Line Color"
-msgstr "Колір поточного рядка"
-
-msgid "Caret Background Color"
-msgstr "Колір тла каретки"
-
-msgid "Word Highlighted Color"
-msgstr "Колір підсвічених слів"
-
-msgid "Search Result Color"
-msgstr "Колір результатів пошуку"
-
-msgid "Search Result Border Color"
-msgstr "Колір рамки результатів пошуку"
-
-msgid "Wrap Offset"
-msgstr "Зсув обтікання"
-
-msgid "Breakpoint"
-msgstr "Точка зупинки"
-
-msgid "Bookmark"
-msgstr "Закладка"
-
-msgid "Executing Line"
-msgstr "Рядок виконання"
-
-msgid "Can Fold"
-msgstr "Можна скласти"
-
-msgid "Can Fold Code Region"
-msgstr "Регіон коду можна скласти"
-
-msgid "Folded Code Region"
-msgstr "Область зі згорнутим кодом"
-
-msgid "Folded EOL Icon"
-msgstr "Складений значок EOL"
-
-msgid "Completion Color BG"
-msgstr "Колір комплектації BG"
-
-msgid "Completion Background Color"
-msgstr "Колір тла доповнення"
-
-msgid "Completion Selected Color"
-msgstr "Колір позначення доповнення"
-
-msgid "Completion Existing Color"
-msgstr "Наявний колір доповнення"
-
-msgid "Completion Scroll Color"
-msgstr "Колір гортання доповнення"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Колір прокрутки доповнення при наведенні"
-
-msgid "Bookmark Color"
-msgstr "Колір закладок"
-
-msgid "Breakpoint Color"
-msgstr "Колір точок зупину"
-
-msgid "Executing Line Color"
-msgstr "Колір виконуваного рядка"
-
-msgid "Code Folding Color"
-msgstr "Колір згортання коду"
-
-msgid "Folded Code Region Color"
-msgstr "Колір регіону складеного коду"
-
-msgid "Brace Mismatch Color"
-msgstr "Колір дужок без відповідників"
-
-msgid "Line Number Color"
-msgstr "Колір номерів рядків"
-
-msgid "Line Length Guideline Color"
-msgstr "Колір напрямної довжини рядка"
-
-msgid "Completion Lines"
-msgstr "Лінії завершення"
-
-msgid "Completion Max Width"
-msgstr "Макс. ширина завершення"
-
-msgid "Completion Scroll Width"
-msgstr "Ширина прокручування завершення"
-
-msgid "Scroll Focus"
-msgstr "Фокус гортання"
-
-msgid "Grabber"
-msgstr "Захоплення"
-
-msgid "Grabber Highlight"
-msgstr "Підсвічування Grabber"
-
-msgid "Grabber Pressed"
-msgstr "Грабер натиснутий"
-
-msgid "Increment"
-msgstr "Крок збільшення"
-
-msgid "Increment Highlight"
-msgstr "Збільшити виділення"
-
-msgid "Increment Pressed"
-msgstr "Інкремент натиснуто"
-
-msgid "Decrement"
-msgstr "Зменшення"
-
-msgid "Decrement Highlight"
-msgstr "Зменшити виділення"
-
-msgid "Decrement Pressed"
-msgstr "Натиснуто зменшення"
-
-msgid "Slider"
-msgstr "Повзунок"
-
-msgid "Grabber Area"
-msgstr "Зона захоплення"
-
-msgid "Grabber Area Highlight"
-msgstr "Виділення області захоплення"
-
-msgid "Grabber Disabled"
-msgstr "Grabber вимкнено"
-
-msgid "Tick"
-msgstr "Галочка"
-
-msgid "Center Grabber"
-msgstr "Центр Грабер"
-
-msgid "Grabber Offset"
-msgstr "Зсув граббера"
-
-msgid "Tick Offset"
-msgstr "Зсув галочки"
-
-msgid "Updown"
-msgstr "Вгору вниз"
-
-msgid "Up"
-msgstr "Вгору"
-
-msgid "Up Hover"
-msgstr "Наведення вгору"
-
-msgid "Up Pressed"
-msgstr "Вгору натиснуто"
-
-msgid "Up Disabled"
-msgstr "Вгору вимкнено"
-
-msgid "Down"
-msgstr "Вниз"
-
-msgid "Down Hover"
-msgstr "Наведення вниз"
-
-msgid "Down Pressed"
-msgstr "Вниз натиснуто"
-
-msgid "Down Disabled"
-msgstr "Вниз вимкнено"
-
-msgid "Up Background"
-msgstr "Вгору фону"
-
-msgid "Up Background Hovered"
-msgstr "Наведений фон вгору"
-
-msgid "Up Background Pressed"
-msgstr "Вгору фон натиснуто"
-
-msgid "Up Background Disabled"
-msgstr "Фон угору вимкнено"
-
-msgid "Down Background"
-msgstr "Вниз фону"
-
-msgid "Down Background Hovered"
-msgstr "Наведені фон вниз"
-
-msgid "Down Background Pressed"
-msgstr "Натиснутий фон внизу"
-
-msgid "Down Background Disabled"
-msgstr "Фон вниз вимкнено"
-
-msgid "Up Icon Modulate"
-msgstr "Модулювати піктограму вгору"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Модулювати піктограму вгору"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Натиснута піктограма Модуляція"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Включена ікона Модуляція"
-
-msgid "Down Icon Modulate"
-msgstr "Модулювати піктограму вниз"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Модулювати піктограму вниз"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Модуляція натиснутої піктограми"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Модуляція піктограми вниз"
-
-msgid "Field and Buttons Separator"
-msgstr "Роздільник полів і кнопок"
-
-msgid "Up Down Buttons Separator"
-msgstr "Роздільник кнопок вгору вниз"
-
-msgid "Buttons Vertical Separation"
-msgstr "Вертикальне розділення кнопок"
-
-msgid "Field and Buttons Separation"
-msgstr "Розділення полів і кнопок"
-
-msgid "Buttons Width"
-msgstr "Ширина кнопок"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Установіть мінімальну ширину кнопок від значків"
-
-msgid "Scroll Hint Vertical"
-msgstr "Підказка прокручування вертикально"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Підказка прокручування по горизонталі"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Колір вертикальної підказки прокручування"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Колір горизонтальної підказки прокручування"
-
-msgid "Scrollbar Margin Left"
-msgstr "Поле смуги прокрутки зліва"
-
-msgid "Scrollbar Margin Top"
-msgstr "Верхнє поле смуги прокрутки"
-
-msgid "Scrollbar Margin Right"
-msgstr "Праве поле смуги прокрутки"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Поле смуги прокрутки знизу"
-
-msgid "Normal Joystick"
-msgstr "Звичайний джойстик"
-
-msgid "Normal Tip"
-msgstr "Звичайна порада"
-
-msgid "Pressed Joystick"
-msgstr "Натиснутий джойстик"
-
-msgid "Pressed Tip"
-msgstr "Натиснуиа підказка"
-
-msgid "Embedded Border"
-msgstr "Вбудована рамка"
-
-msgid "Embedded Unfocused Border"
-msgstr "Вбудована несфокусована межа"
-
-msgid "Title Font"
-msgstr "Шрифт титрів"
-
-msgid "Title Font Size"
-msgstr "Розмір шрифту заголовка"
-
-msgid "Title Outline Modulate"
-msgstr "Модуляція плану заголовка"
-
-msgid "Title Outline Size"
-msgstr "Розмір контуру заголовка"
-
-msgid "Title Height"
-msgstr "Висота заголовка"
-
-msgid "Resize Margin"
-msgstr "Змінити розмір поля"
-
-msgid "Close"
-msgstr "Закрити"
-
-msgid "Close Pressed"
-msgstr "Закрити Натиснуто"
-
-msgid "Close H Offset"
-msgstr "Закрити Н-знув"
-
-msgid "Close V Offset"
-msgstr "Закрити V-зсув"
-
-msgid "Buttons Separation"
-msgstr "Розділення кнопок"
-
-msgid "Load"
-msgstr "Завантаження"
-
-msgid "Save"
-msgstr "Зберегти"
-
-msgid "Parent Folder"
-msgstr "Батьківська тека"
-
-msgid "Back Folder"
-msgstr "Задня папка"
-
-msgid "Forward Folder"
-msgstr "Переслати папку"
-
-msgid "Reload"
-msgstr "Перезавантажити"
-
-msgid "Favorite"
-msgstr "Улюблене"
-
-msgid "Toggle Hidden"
-msgstr "Переслати папку"
-
-msgid "Toggle Filename Filter"
-msgstr "Увімкнути фільтр імен файлів"
-
-msgid "Folder"
-msgstr "Тека"
-
-msgid "Thumbnail Mode"
-msgstr "Режим мініатюр"
-
-msgid "List Mode"
-msgstr "Режим списку"
-
-msgid "Create Folder"
-msgstr "Створити папку"
-
-msgid "Sort"
-msgstr "Сортувати"
-
-msgid "Favorite Up"
-msgstr "Додати до обраного"
-
-msgid "Favorite Down"
-msgstr "Улюблене вниз"
-
-msgid "File Thumbnail"
-msgstr "Мініатюра файлу"
-
-msgid "Folder Thumbnail"
-msgstr "Мініатюра папки"
-
-msgid "Menu Copy Path"
-msgstr "Меню «Копіювати шлях»"
-
-msgid "Menu Delete"
-msgstr "Меню «Видалити»"
-
-msgid "Menu New Folder"
-msgstr "Меню «Нова папка»"
-
-msgid "Menu Refresh"
-msgstr "Оновити меню"
-
-msgid "Menu Show in File Manager"
-msgstr "Меню «Показати» у файловому менеджері"
-
-msgid "Menu Open Bundle"
-msgstr "Меню «Відкрити набір»"
-
-msgid "Folder Icon Color"
-msgstr "Колір значка папки"
-
-msgid "File Icon Color"
-msgstr "Колір значка файлу"
-
-msgid "File Disabled Color"
-msgstr "Колір вимкненого файлу"
-
-msgid "Separator"
-msgstr "Роздільник"
-
-msgid "Labeled Separator Left"
-msgstr "Позначений роздільником ліворуч"
-
-msgid "Labeled Separator Right"
-msgstr "Позначено роздільником справа"
-
-msgid "Indeterminate Disabled"
-msgstr "Невизначений вимкнено"
-
-msgid "Submenu"
-msgstr "Підменю"
-
-msgid "Submenu Mirrored"
-msgstr "Підменю Дзеркальне відображення"
-
-msgid "Search"
-msgstr "Пошук"
-
-msgid "Font Separator"
-msgstr "Роздільник шрифтів"
-
-msgid "Font Separator Size"
-msgstr "Розмір роздільника шрифту"
-
-msgid "Font Accelerator Color"
-msgstr "Колір прискорювача шрифту"
-
-msgid "Font Separator Color"
-msgstr "Колір роздільника шрифту"
-
-msgid "Font Separator Outline Color"
-msgstr "Колір контуру роздільника шрифту"
-
-msgid "V Separation"
-msgstr "Верт. відокремлення"
-
-msgid "Search Bar Separation"
-msgstr "Розділення рядків у рядку пошуку"
-
-msgid "Separator Outline Size"
-msgstr "Розмір контуру роздільника"
-
-msgid "Item Start Padding"
-msgstr "Пункт Початок елемента"
-
-msgid "Item End Padding"
-msgstr "Заповнення кінця елемента"
-
-msgid "Gutter Compact"
-msgstr "Компактний жолоб"
-
-msgid "Panel Selected"
-msgstr "Вибрана панель"
-
-msgid "Panel Focus"
-msgstr "Фокус панелі"
-
-msgid "Titlebar"
-msgstr "Рядок заголовка"
-
-msgid "Titlebar Selected"
-msgstr "Вибрано рядок заголовка"
-
-msgid "Slot"
-msgstr "Слот"
-
-msgid "Slot Selected"
-msgstr "Вибрано слот"
-
-msgid "Resizer"
-msgstr "Засіб зміни розміру"
-
-msgid "Resizer Color"
-msgstr "Колір зміни розміру"
-
-msgid "Port H Offset"
-msgstr "Зсув порту H"
-
-msgid "Hovered"
-msgstr "Зависла"
-
-msgid "Hovered Dimmed"
-msgstr "Зависли Потьмяніли"
-
-msgid "Hovered Selected"
-msgstr "Вибране при наведенні"
-
-msgid "Hovered Selected Focus"
-msgstr "Вибраний фокус наведено"
-
-msgid "Selected Focus"
-msgstr "Фокус позначення"
-
-msgid "Cursor"
-msgstr "Курсор"
-
-msgid "Cursor Unfocused"
-msgstr "Курсор не сфокусований"
-
-msgid "Button Hover"
-msgstr "Наведення курсора кнопки"
-
-msgid "Title Button Normal"
-msgstr "Звичайна кнопка заголовка"
-
-msgid "Title Button Pressed"
-msgstr "Кнопку заголовка натиснуто"
-
-msgid "Title Button Hover"
-msgstr "Наведення на кнопку заголовка"
-
-msgid "Custom Button"
-msgstr "Нетипова кнопка"
-
-msgid "Custom Button Pressed"
-msgstr "Нетипову кнопку натиснуто"
-
-msgid "Custom Button Hover"
-msgstr "Наведення на нетипову кнопку"
-
-msgid "Select Arrow"
-msgstr "Стрілка позначення"
-
-msgid "Arrow Collapsed"
-msgstr "Стрілку згорнуто"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Стрілка згорнута дзеркальна"
-
-msgid "Title Button Font"
-msgstr "Шрифт кнопки заголовка"
-
-msgid "Title Button Font Size"
-msgstr "Розмір шрифту кнопки заголовка"
-
-msgid "Title Button Color"
-msgstr "Колір кнопки заголовка"
-
-msgid "Font Hovered Color"
-msgstr "Колір наведеного шрифту"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Шрифт наведений затемнений колір"
-
-msgid "Font Hovered Selected Color"
-msgstr "Вибраний колір наведеного шрифту"
-
-msgid "Guide Color"
-msgstr "Керівний колір"
-
-msgid "Drop on Item Color"
-msgstr "Змінити колір предмета"
-
-msgid "Drop Position Color"
-msgstr "Колір позиції падіння"
-
-msgid "Relationship Line Color"
-msgstr "Колір лінії зв'язку"
-
-msgid "Parent HL Line Color"
-msgstr "Колір батьківської лінії HL"
-
-msgid "Children HL Line Color"
-msgstr "Діти HL Колір лінії"
-
-msgid "Custom Button Font Highlight"
-msgstr "Підсвічений шрифт нетипової кнопки"
-
-msgid "Scroll Hint Color"
-msgstr "Колір підказки прокручування"
-
-msgid "Item Margin"
-msgstr "Поле пункту"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Нижнє поле внутрішнього елемента"
-
-msgid "Inner Item Margin Left"
-msgstr "Внутрішнє поле елемента зліва"
-
-msgid "Inner Item Margin Right"
-msgstr "Внутрішнє поле елемента справа"
-
-msgid "Inner Item Margin Top"
-msgstr "Верх внутрішнього поля елемента"
-
-msgid "Check H Separation"
-msgstr "Перевірте розділення H"
-
-msgid "Icon H Separation"
-msgstr "Розділення піктограми H"
-
-msgid "Button Margin"
-msgstr "Поле кнопки"
-
-msgid "Relationship Line Width"
-msgstr "Відношення ширини лінії"
-
-msgid "Parent HL Line Width"
-msgstr "Ширина батьківської лінії HL"
-
-msgid "Children HL Line Width"
-msgstr "Діти HL Ширина лінії"
-
-msgid "Parent HL Line Margin"
-msgstr "Поле батьківського рядка HL"
-
-msgid "Draw Guides"
-msgstr "Малювати напрямні"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Перетягування Розгорнути Зачекати, мс"
-
-msgid "Scroll Border"
-msgstr "Рамка гортання"
-
-msgid "Scroll Speed"
-msgstr "Швидкість прокрутки"
-
-msgid "Scrollbar H Separation"
-msgstr "Смуга прокрутки H Розділення"
-
-msgid "Scrollbar V Separation"
-msgstr "Смуга прокрутки V Розділення"
-
-msgid "Icon Margin"
-msgstr "Поле піктограми"
-
-msgid "Tab Selected"
-msgstr "Вибрана вкладка"
-
-msgid "Tab Hovered"
-msgstr "Вкладка наведена"
-
-msgid "Tab Unselected"
-msgstr "Вкладка наведена"
-
-msgid "Tab Disabled"
-msgstr "Вкладку вимкнено"
-
-msgid "Tab Focus"
-msgstr "Фокус вкладки"
-
-msgid "Tabbar Background"
-msgstr "Фон вкладок"
-
-msgid "Drop Mark"
-msgstr "Відкинути позначку"
-
-msgid "Menu Highlight"
-msgstr "Підсвічування меню"
-
-msgid "Font Unselected Color"
-msgstr "Невибраний колір шрифту"
-
-msgid "Drop Mark Color"
-msgstr "Колір позначки"
-
-msgid "Icon Selected Color"
-msgstr "Вибраний колір піктограми"
-
-msgid "Icon Hovered Color"
-msgstr "Колір значка при наведенні курсора"
-
-msgid "Icon Unselected Color"
-msgstr "Колір невибраної піктограми"
-
-msgid "Side Margin"
-msgstr "Бічне поле"
-
-msgid "Icon Separation"
-msgstr "Розділення піктограм"
-
-msgid "Button Highlight"
-msgstr "Виділення кнопки"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Зачекайте на перемикачі наведення миші, мс"
-
-msgid "SV Width"
-msgstr "Ширина SV"
-
-msgid "SV Height"
-msgstr "SV Висота"
-
-msgid "H Width"
-msgstr "H Ширина"
-
-msgid "Label Width"
-msgstr "Ширина мітки"
-
-msgid "Center Slider Grabbers"
-msgstr "Захоплювачі центрального повзунка"
-
-msgid "Sample Focus"
-msgstr "Зразок фокусу"
-
-msgid "Picker Focus Rectangle"
-msgstr "Прямокутник фокусування вибору"
-
-msgid "Picker Focus Circle"
-msgstr "Коло фокусування вибору"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Фокус, а не редагування кольору курсора"
-
-msgid "Menu Option"
-msgstr "Опція меню"
-
-msgid "Folded Arrow"
-msgstr "Складена стрілка"
-
-msgid "Expanded Arrow"
-msgstr "Розгорнута стрілка"
-
-msgid "Screen Picker"
-msgstr "Вибір екрана"
-
-msgid "Shape Circle"
-msgstr "Форма кола"
-
-msgid "Shape Rect"
-msgstr "Форма Rect"
-
-msgid "Shape Rect Wheel"
-msgstr "Форма Rect Wheel"
-
-msgid "Add Preset"
-msgstr "Додати набір"
-
-msgid "Sample BG"
-msgstr "Зразок BG"
-
-msgid "Sample Revert"
-msgstr "Зразок повернення"
-
-msgid "Overbright Indicator"
-msgstr "Індикатор пересвічення"
-
-msgid "Bar Arrow"
-msgstr "Бар Стрілка"
-
-msgid "Picker Cursor"
-msgstr "Курсор вибору"
-
-msgid "Picker Cursor BG"
-msgstr "Курсор вибору BG"
-
-msgid "Color Script"
-msgstr "Кольоровий скрипт"
-
-msgid "Color Copy"
-msgstr "Кольорова копія"
-
-msgid "Color Hue"
-msgstr "Відтінок кольору"
-
-msgid "BG"
-msgstr "КТ"
-
-msgid "Preset FG"
-msgstr "Передній план набору"
-
-msgid "Preset Focus"
-msgstr "Попередньо встановлений фокус"
-
-msgid "Preset BG"
-msgstr "Тло набору"
-
-msgid "Horizontal Rule"
-msgstr "Горизонтальне правило"
-
-msgid "Normal Font"
-msgstr "Звичайний шрифт"
-
-msgid "Bold Font"
-msgstr "Напівжирний шрифт"
-
-msgid "Italics Font"
-msgstr "Курсивний шрифт"
-
-msgid "Bold Italics Font"
-msgstr "Напівжирний курсивний шрифт"
-
-msgid "Mono Font"
-msgstr "Моноширинний шрифт"
-
-msgid "Normal Font Size"
-msgstr "Нормальний розмір шрифту"
-
-msgid "Bold Font Size"
-msgstr "Жирний шрифт"
-
-msgid "Italics Font Size"
-msgstr "Розмір шрифту курсив"
-
-msgid "Bold Italics Font Size"
-msgstr "Жирний курсив Розмір шрифту"
-
-msgid "Mono Font Size"
-msgstr "Монохромний розмір шрифту"
-
-msgid "Table H Separation"
-msgstr "Гор. відокремлення у таблиці"
-
-msgid "Table V Separation"
-msgstr "Верт. відокремлення у таблиці"
-
-msgid "Table Odd Row BG"
-msgstr "Таблиця Odd Row BG"
-
-msgid "Table Even Row BG"
-msgstr "Таблиця парний рядок BG"
-
-msgid "Table Border"
-msgstr "Границя таблиці"
-
-msgid "Text Highlight H Padding"
-msgstr "Підсвічування тексту H Padding"
-
-msgid "Text Highlight V Padding"
-msgstr "Виділення тексту V-подібне відступ"
-
-msgid "Underline Alpha"
-msgstr "Підкреслення альфа"
-
-msgid "Strikethrough Alpha"
-msgstr "Закреслений альфа-файл"
-
-msgid "Touch Dragger Color"
-msgstr "Колір сенсорного перетягувача"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Сенсорний перетягувач Натиснутий колір"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Колір при наведенні курсора на сенсорний перетягувач"
-
-msgid "H Touch Dragger"
-msgstr "H Сенсорний перетягувач"
-
-msgid "V Touch Dragger"
-msgstr "V Сенсорний перетягувач"
-
-msgid "Touch Dragger"
-msgstr "Сенсорний перетягувач"
-
-msgid "H Grabber"
-msgstr "H Грабер"
-
-msgid "V Grabber"
-msgstr "V Грабер"
-
-msgid "Margin Left"
-msgstr "Ліва межа"
-
-msgid "Margin Top"
-msgstr "Верхня межа"
-
-msgid "Margin Right"
-msgstr "Права межа"
-
-msgid "Margin Bottom"
-msgstr "Нижня межа"
-
-msgid "Minimum Grab Thickness"
-msgstr "Мінімальна товщина захоплення"
-
-msgid "Autohide"
-msgstr "Автоприховування"
-
-msgid "Split Bar Background"
-msgstr "Спліт бар фону"
-
-msgid "Zoom Out"
-msgstr "Зменшити"
-
-msgid "Zoom In"
-msgstr "Збільшити"
-
-msgid "Zoom Reset"
-msgstr "Скидання масштабу"
-
-msgid "Grid Toggle"
-msgstr "Перемикач сітки"
-
-msgid "Minimap Toggle"
-msgstr "Перемикач мінікарти"
-
-msgid "Snapping Toggle"
-msgstr "Перемикач замикання"
-
-msgid "Menu Panel"
-msgstr "Панель меню"
-
-msgid "Grid Minor"
-msgstr "Проміжна ґратка"
-
-msgid "Grid Major"
-msgstr "Основна ґратка"
-
-msgid "Selection Fill"
-msgstr "Заповнення позначеного"
-
-msgid "Selection Stroke"
-msgstr "Штрих позначеного"
-
-msgid "Activity"
-msgstr "Діяльність"
-
-msgid "Connection Hover Tint Color"
-msgstr "Колір відтінку підключення"
-
-msgid "Connection Hover Thickness"
-msgstr "Товщина підключення"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Дійсний колір цільового відтінку підключення"
-
-msgid "Connection Rim Color"
-msgstr "Колір обідка підключення"
-
-msgid "Title Panel"
-msgstr "Титульна панель"
-
-msgid "Title Hover Panel"
-msgstr "Панель заголовка при наведенні курсора миші"
-
-msgid "Title Collapsed Panel"
-msgstr "Згорнута панель заголовка"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Згорнута панель заголовка при наведенні курсора"
-
-msgid "Hover Font Color"
-msgstr "Колір шрифту при наведенні курсора"
-
-msgid "Collapsed Font Color"
-msgstr "Колір згорнутого шрифту"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Розгорнута стрілка дзеркально відображена"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Складена стрілка дзеркально"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Внутрішній екстент гарячої зони порту"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Зовнішній екстент гарячої зони порту"
-
 msgid "Default Theme Scale"
 msgstr "Шкала теми за замовчуванням"
 
@@ -12053,6 +12357,9 @@ msgstr "Запасні значення"
 
 msgid "Stylebox"
 msgstr "Стильна коробка"
+
+msgid "Sound"
+msgstr "Оточуючий звук"
 
 msgid "Enable Input"
 msgstr "Увімкнути введення"
@@ -12408,8 +12715,32 @@ msgstr "Зміщення обмеження за замовчуванням"
 msgid "Physics Engine"
 msgstr "Фізичний двигун"
 
+msgid "Safe Fraction"
+msgstr "Заломлення"
+
+msgid "Unsafe Fraction"
+msgstr "Використовувати як тяги"
+
 msgid "Max Collisions"
 msgstr "Максимальні зіткнення"
+
+msgid "Collider RID"
+msgstr "Об'єкт зіткнення"
+
+msgid "Collider ID"
+msgstr "Об'єкт зіткнення"
+
+msgid "Collider Shape"
+msgstr "Форма клітини"
+
+msgid "Collider Velocity"
+msgstr "Лінійна швидкість"
+
+msgid "Max Intersections"
+msgstr "Макс к-ть ітерацій"
+
+msgid "Collider"
+msgstr "Повзунок"
 
 msgid "Canvas Instance ID"
 msgstr "Ідентифікатор екземпляра Canvas"
@@ -12440,6 +12771,9 @@ msgstr "Обернений тензор інерції"
 
 msgid "Principal Inertia Axes"
 msgstr "Головні вісі інерції"
+
+msgid "Collider Face Index"
+msgstr "Індекс обличчя"
 
 msgid "Debug Redraw Time"
 msgstr "Час перемальовування налагодження"
@@ -12543,8 +12877,20 @@ msgstr "Перехід часу в секундах"
 msgid "Use Physical Light Units"
 msgstr "Використовувати фізичні світлові одиниці"
 
+msgid "Contact Shadow"
+msgstr "Накласти тінь"
+
+msgid "Shadow Length"
+msgstr "Довжина знімка"
+
+msgid "Surface Thickness"
+msgstr "Товщина контуру"
+
 msgid "Soft Shadow Filter Quality"
 msgstr "Якість фільтра м'яких тіней"
+
+msgid "Multi Bounce Occlusion"
+msgstr "Використовувати оклюзію"
 
 msgid "Atlas 16 Bits"
 msgstr "Атлас 16 біт"
@@ -12756,6 +13102,9 @@ msgstr "OpenGL"
 msgid "Max Renderable Elements"
 msgstr "Максимальна кількість елементів, які можна відобразити"
 
+msgid "Max Decals"
+msgstr "Відмітні знаки"
+
 msgid "Max Renderable Lights"
 msgstr "Максимальне відтворення світла"
 
@@ -12908,6 +13257,9 @@ msgstr "Шрифт за замовчуванням Створення Mipmaps"
 
 msgid "LCD Subpixel Layout"
 msgstr "Субпіксельна компоновка РК-дисплея"
+
+msgid "MSDF Legacy Scaling"
+msgstr "Використовувати традиційне змішування"
 
 msgid "Include Text Server Data"
 msgstr "Включити дані текстового сервера"

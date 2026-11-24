@@ -70,7 +70,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-11-12 15:46+0000\n"
+"PO-Revision-Date: 2026-11-18 18:51+0000\n"
 "Last-Translator: theBSH <thebsh@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -79,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.11.2.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "OK"
 msgstr "باشه"
@@ -847,6 +847,9 @@ msgstr "درآمیختن"
 msgid "Open"
 msgstr "گشودن"
 
+msgid "Open in editor."
+msgstr "گشودن در ویراستار."
+
 msgid "Index"
 msgstr "ایندکس"
 
@@ -862,6 +865,9 @@ msgstr ""
 
 msgid "Position"
 msgstr "جایگاه"
+
+msgid "Blend Point Position"
+msgstr "جایگاه نقطه درآمیزی"
 
 msgid "Min"
 msgstr "کمینه"
@@ -919,6 +925,12 @@ msgstr "شبکه X گام"
 
 msgid "Grid Y Step"
 msgstr "گام Y شبکه‌ای"
+
+msgid "Blend Point X Position"
+msgstr "جایگاه X نقطه درآمیزی"
+
+msgid "Blend Point Y Position"
+msgstr "جایگاه Y نقطه درآمیزی"
 
 msgid "Max Y"
 msgstr "حداکثر Y"
@@ -2402,6 +2414,9 @@ msgstr "ناکامی در بررسی هَش SHA-256"
 msgid "Asset Download Error:"
 msgstr "خطا در بارگیری دارایی:"
 
+msgid "Ready to install."
+msgstr "آماده نصب."
+
 msgid "Downloading (%s / %s)..."
 msgstr "در حال بارگیری (%s / %s)..."
 
@@ -2426,17 +2441,26 @@ msgstr "تلاش دوباره"
 msgid "Download Error"
 msgstr "خطاهای بارگیری"
 
+msgid "Relevance"
+msgstr "مرتبط‌ترین"
+
+msgid "Updated (Newest First)"
+msgstr "به‌روزرسانی‌شده (جدیدترین)"
+
 msgid "Updated (Oldest First)"
-msgstr "به‌روزرسانی‌شده (قدیمی‌ترین ابتدا)"
+msgstr "به‌روزرسانی‌شده (قدیمی‌ترین)"
 
 msgid "Reviews (Highest Score First)"
-msgstr "نظرات (بالاترین امتیاز اول)"
+msgstr "نظرات (بالاترین امتیاز)"
 
 msgid "Reviews (Lowest Score First)"
-msgstr "نظرات (کمترین امتیاز اول)"
+msgstr "نظرات (کمترین امتیاز)"
 
 msgid "Created (Newest First)"
-msgstr "ساخته شد(اول جدید ترین)"
+msgstr "ساخته شده(جدیدترین)"
+
+msgid "Created (Oldest First)"
+msgstr "ساخته شده(اول قدیمی‌ترین)"
 
 msgctxt "Pagination"
 msgid "First"
@@ -2454,8 +2478,18 @@ msgctxt "Pagination"
 msgid "Last"
 msgstr "آخرین"
 
+msgid ""
+"The Asset Store requires an online connection and involves sending data over "
+"the internet."
+msgstr ""
+"کتابخانه دارایی نیاز به اتصال آنلاین دارد و وابسته به فرستادن داده با اینترنت "
+"است."
+
 msgid "Go Online"
 msgstr "آنلاین شو"
+
+msgid "Failed to verify repository."
+msgstr "ناکامی در تأیید مخزن."
 
 msgid "All"
 msgstr "همه"
@@ -2466,11 +2500,22 @@ msgstr "مخزن با داده‌های نامعتبر بازگردانده شد
 msgid "No results for \"%s\"."
 msgstr "هیچ نتیجه ای برای \"%s\" وجود ندارد."
 
+msgid "No results compatible with %s %s."
+msgstr "هیچ نتیجه ای با %s%s سازگار نیست."
+
+msgid "Unstable"
+msgstr "ناپایدار"
+
 msgid "Asset Store"
-msgstr "فروشگاه دارایی"
+msgstr "کتابخانه دارایی"
 
 msgid "Search templates. Use tags by including \"#tagname\"."
 msgstr "جستجو در الگوها. با استفاده از \"#tagname\" از برچسب‌ها استفاده کنید."
+
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr ""
+"جست‌وجوی دارایی‌ها (به استثنای قالب‌ها). با استفاده از \"#برچسب\" از برچسب ها "
+"استفاده کنید."
 
 msgid "Import..."
 msgstr "درون‌برد..."
@@ -2483,6 +2528,9 @@ msgstr "چینش:"
 
 msgid "Category:"
 msgstr "دسته‌بندی:"
+
+msgid "Source:"
+msgstr "منبع:"
 
 msgid "Licenses"
 msgstr "پروانه‌ها"
@@ -3394,9 +3442,6 @@ msgstr "هیچ شرحی در دسترس نیست."
 msgid "This annotation may be changed or removed in future versions."
 msgstr "این پانویس شاید در نسخه‌های آینده برچیده یا دگرگون شود."
 
-msgid "Open in File Manager"
-msgstr "گشودن در مدیر پرونده"
-
 msgid "This property can only be set in the Inspector."
 msgstr "این ویژگی را تنها در بازرس(inspector) می‌توان نشاند."
 
@@ -4262,13 +4307,6 @@ msgstr ""
 "نمی‌توان شاخه‌ای که بخشی از یک صحنه وراثتی است را ذخیره کرد.\n"
 "برای ذخیره این شاخه در صحنه‌ای جداگانه، صحنه اصلی را باز کنید، بر روی این شاخه "
 "کلیک راست کرده و گزینه «ذخیره شاخه به عنوان صحنه» را انتخاب کنید."
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"غیرفعال کردن «editable_instance» باعث می‌شود تمام ویژگی‌های گره به مقادیر "
-"پیش‌فرض خود بازگردند."
 
 msgid "Make Local"
 msgstr "بومی کردن"
@@ -7905,7 +7943,7 @@ msgid "Git"
 msgstr "گیت"
 
 msgid "Edit Now"
-msgstr "هم‌اکنون بویرایید"
+msgstr "هم‌اکنون ویرایش کنید"
 
 msgid "Project Name"
 msgstr "نام پروژه"
@@ -7924,9 +7962,6 @@ msgstr "خطا: پروژه در فایل‌های سیستمی وجود ندار
 
 msgid "Toggle Favorite"
 msgstr "تغییر موارد دلخواه"
-
-msgid "Open in file manager"
-msgstr "گشودن در مدیر پرونده"
 
 msgid "Last edited timestamp"
 msgstr "آخرین برچسب زمانی ویراسته"
@@ -8110,9 +8145,8 @@ msgid ""
 "the Mono module. If you proceed you will not be able to use any C# scripts.\n"
 "\n"
 msgstr ""
-"هشدار: این پروژه از سی‌شارپ بهره می‌برد، ولی این نسخهٔ گودوت پودمان مونو را "
-"ندارد.\n"
-"اگر ادامه دهید نمی‌توانید از هیچ اسکریپت سی‌شارپی بهره ببرید.\n"
+"هشدار: این پروژه از C# بهره می‌برد، ولی این نسخهٔ گودوت پودمان مونو را ندارد.\n"
+"اگر ادامه دهید نمی‌توانید از هیچ اسکریپت C# بهره ببرید.\n"
 "\n"
 
 msgid ""
@@ -8264,6 +8298,9 @@ msgstr "برچیدن پروژه"
 msgid "Remove Missing"
 msgstr "برچیدن ازدست‌رفته‌ها"
 
+msgid "Donate"
+msgstr "حمایت مالی"
+
 msgid "Select a Folder to Scan"
 msgstr "گزینش یک پوشه برای پویش"
 
@@ -8275,6 +8312,16 @@ msgstr "ویرایش به طور معمول"
 
 msgid "Edit in Recovery Mode"
 msgstr "ویرایش در حالت بازیابی"
+
+msgid "Upgrade All Project Files"
+msgstr "ارتقای پرونده‌های پروژه"
+
+msgid ""
+"Automatically runs the upgrade tool. This may take a while to finish. The "
+"editor may restart during the process."
+msgstr ""
+"ابزار ارتقا را خودکار اجرا می‌کند. این کار شاید کمی طول بکشد. در طول پردازش "
+"ویراستار ممکن است باز و بسته شود."
 
 msgid "Convert Full Project"
 msgstr "تبدیل کردن کل پروژه"
@@ -12897,8 +12944,8 @@ msgid ""
 "Warning: Class detection for C# scripts is not currently available, and such "
 "files will be ignored."
 msgstr ""
-"هشدار: ردیابی کلاس برای اسکریپت‌های سی‌شارپ هم‌اکنون دردسترس نیست. چنین "
-"پرونده‌هایی نادیده گرفته خواهند شد."
+"هشدار: ردیابی کلاس برای اسکریپت‌های C# هم‌اکنون دردسترس نیست. چنین پرونده‌هایی "
+"نادیده گرفته خواهند شد."
 
 msgid "Scanning Project for Used Classes"
 msgstr "در حال پویش پروژه برای کلاس‌های به‌کاررفته"
@@ -15958,19 +16005,19 @@ msgid ""
 "template only supports '%s'. Make sure the project targets '%s' or consider "
 "using gradle builds instead."
 msgstr ""
-"امکان تعیین تی‌اف‌ام پروژه سی‌شارپ وجود ندارد، ممکن است ناسازگار باشد. قالب "
-"برون‌برد تنها از «%s» پشتیبانی می‌کند. اطمینان حاصل کنید که پروژه هدف «%s» را "
-"دنبال می‌کند یا به استفاده از ساخت‌های گریدل فکر کنید."
+"امکان تعیین TFM پروژه C# وجود ندارد، ممکن است ناسازگار باشد. قالب برون‌برد "
+"تنها از «%s» پشتیبانی می‌کند. اطمینان حاصل کنید که پروژه هدف «%s» را دنبال "
+"می‌کند یا به استفاده از ساخت‌های گریدل فکر کنید."
 
 msgid ""
 "C# project targets '%s' but the export template only supports '%s'. Consider "
 "using gradle builds instead."
 msgstr ""
-"پروژهٔ سی.شارپ «%s» را هدف می‌گیرد ولی قالب برون‌برد تنها از «%s» پشتیبانی "
-"می‌کند. به‌جای آن به‌کارگیری ساخت‌های گِرِیدِل را در نظر بگیرید."
+"پروژه ‌C#‌ ‏«%s» را هدف می‌گیرد ولی قالب برون‌برد تنها از «%s» پشتیبانی می‌کند. "
+"به‌جای آن به‌کارگیری ساخت‌های گِرِیدِل را در نظر بگیرید."
 
 msgid "Exporting to Android when using C#/.NET is experimental."
-msgstr "برون‌برد به اندروید هنگام استفاده از سی‌شارپ/دات‌نت آزمایشی است."
+msgstr "برون‌برد به اندروید هنگام استفاده از# C/‏NET. آزمایشی است."
 
 msgid ""
 "Either Debug Keystore, Debug User AND Debug Password settings must be "
@@ -16453,8 +16500,8 @@ msgid ""
 "If this project does not use C#, use a non-C# editor build to export the "
 "project."
 msgstr ""
-"اگر این پروژه از سی‌شارپ استفاده نمی‌کند، از نسخهٔ ویراستار ناسی‌شارپ برای "
-"برون‌برد پروژه استفاده کنید."
+"اگر این پروژه از C# استفاده نمی‌کند، از نسخهٔ ویراستار بدون C# برای برون‌برد "
+"پروژه استفاده کنید."
 
 msgid "Run in Browser"
 msgstr "اجرا در مرورگر"

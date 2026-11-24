@@ -37,13 +37,14 @@
 # Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>, 2026.
+# Lasse Edsvik <lasse@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-08 09:57+0000\n"
-"Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
+"PO-Revision-Date: 2026-11-14 06:27+0000\n"
+"Last-Translator: Lasse Edsvik <lasse@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
 "Language: sv\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -182,6 +183,9 @@ msgstr "Minimering inaktiverad"
 msgid "Maximize Disabled"
 msgstr "Maximering inaktiverad"
 
+msgid "Enable Toggle Fullscreen Shortcut"
+msgstr "Aktivera genväg för växling av helskärmsläge"
+
 msgid "Window Width Override"
 msgstr "Fönsterbredds‑åsidosättning"
 
@@ -229,6 +233,9 @@ msgstr "Bussar"
 
 msgid "Default Bus Layout"
 msgstr "Standardbusslayout"
+
+msgid "GUI Theme Bus"
+msgstr "GUI-temabuss"
 
 msgid "Default Playback Type"
 msgstr "Standarduppspelningstyp"
@@ -395,6 +402,9 @@ msgstr "Dynamiska fonter"
 msgid "Use Oversampling"
 msgstr "Använd översampling"
 
+msgid "Auto Focus Strategy"
+msgstr "Automatisk fokusstrategi"
+
 msgid "Rendering Device"
 msgstr "Renderingsenhet"
 
@@ -487,6 +497,9 @@ msgstr "Åsidosätt volymknappar"
 
 msgid "Disable Scroll Deadzone"
 msgstr "Inaktivera rullningsdödzon"
+
+msgid "Windows"
+msgstr "Fönster"
 
 msgid "Navigation"
 msgstr "Navigering"
@@ -602,6 +615,9 @@ msgstr "Aktivera gyroskop"
 msgid "Enable Magnetometer"
 msgstr "Aktivera magnetometer"
 
+msgid "Enable Device Orientation"
+msgstr "Aktivera enhetsorientering"
+
 msgid "Joypads"
 msgstr "Handkontrollers"
 
@@ -700,6 +716,9 @@ msgstr "Index"
 
 msgid "Double Tap"
 msgstr "Dubbeltryck"
+
+msgid "Long Press"
+msgstr "Långt tryck"
 
 msgid "Action"
 msgstr "Åtgärd"
@@ -866,11 +885,35 @@ msgstr "Andel trådar med låg prioritet"
 msgid "Target"
 msgstr "Mål"
 
+msgid "Score"
+msgstr "Poäng"
+
+msgid "Original Index"
+msgstr "Ursprungligt index"
+
 msgid "Start Offset"
 msgstr "Startförskjutning"
 
 msgid "Max Results"
 msgstr "Maximalt antal resultat"
+
+msgid "Max Misses"
+msgstr "Maximalt antal missar"
+
+msgid "Use Exact Tokens"
+msgstr "Använd exakta token"
+
+msgid "Case Sensitive"
+msgstr "Skiftlägeskänslig"
+
+msgid "Filter Low Scores"
+msgstr "Filtrera bort låga poäng"
+
+msgid "Filter Factor"
+msgstr "Filterfaktor"
+
+msgid "Filter Cutoff"
+msgstr "Filtergräns"
 
 msgid "Subject"
 msgstr "Ämne"
@@ -982,6 +1025,9 @@ msgstr "Transient"
 
 msgid "Closable"
 msgstr "Stängbar"
+
+msgid "Allow Switch Screen"
+msgstr "Tillåt skärmväxling"
 
 msgid "Icon Name"
 msgstr "Ikonnamn"
@@ -1136,6 +1182,9 @@ msgstr "Icon 1024 X 1024 (Tonad)"
 msgid "Export Console Wrapper"
 msgstr "Exportera konsol‑wrapper"
 
+msgid "Export Debug Symbols"
+msgstr "Exportera felsökningssymboler"
+
 msgid "Binary Format"
 msgstr "Binärt format"
 
@@ -1175,6 +1224,31 @@ msgstr "Redigera heltal"
 msgid "Deferred Drag Mode"
 msgstr "Fördröjt dragningsläge"
 
+msgid "Font Uneditable Color"
+msgstr "Typsnitt oredigerbar färg"
+
+msgid "Font"
+msgstr "Font"
+
+msgid "Font Size"
+msgstr "Fontstorlek"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Focus"
+msgstr "Fokus"
+
+msgid "Updown"
+msgstr "Upp/Ner‑knappar"
+
+msgid "Grabber Highlight"
+msgstr "Draghandtag (markerat)"
+
+msgid "Grabber"
+msgstr "Draghandtag"
+
 msgid "Zoom"
 msgstr "Zooma"
 
@@ -1213,6 +1287,9 @@ msgstr "Omdirigeringsmetod"
 
 msgid "Keep Global Rest on Leftovers"
 msgstr "Behåll global vilopos på rester"
+
+msgid "Copy Bone Skin Scale"
+msgstr "Kopiera benets skin-skala"
 
 msgid "Use Global Pose"
 msgstr "Använd global pos"
@@ -1472,6 +1549,9 @@ msgstr "Mesh‑bibliotek"
 msgid "Use Node Names as Mesh Names"
 msgstr "Använd nodnamn som mesh‑namn"
 
+msgid "Create Categories From Hierarchy"
+msgstr "Skapa kategorier från hierarkin"
+
 msgid "Array Mesh"
 msgstr "Array-mesh"
 
@@ -1664,6 +1744,9 @@ msgstr "Descent"
 msgid "High Quality"
 msgstr "Hög kvalitet"
 
+msgid "High Quality Mode"
+msgstr "Högkvalitetsläge"
+
 msgid "Lossy Quality"
 msgstr "Förlustkvalitet"
 
@@ -1706,6 +1789,15 @@ msgstr "Råhet"
 msgid "Src Normal"
 msgstr "Normal (källa)"
 
+msgid "Streaming"
+msgstr "Strömning"
+
+msgid "Min LOD Override"
+msgstr "Minsta LOD-åsidosättning"
+
+msgid "Max LOD Override"
+msgstr "Största LOD-åsidosättning"
+
 msgid "Base Scale"
 msgstr "Basskala"
 
@@ -1720,6 +1812,12 @@ msgstr "Åtgärda alpha-kant"
 
 msgid "Premult Alpha"
 msgstr "Premultiplicerad alfa"
+
+msgid "Preserve Alpha Test Coverage"
+msgstr "Bevara alfa-testtäckning"
+
+msgid "Alpha Test Threshold"
+msgstr "Tröskelvärde för alfa-test"
 
 msgid "Process"
 msgstr "Process"
@@ -1920,6 +2018,9 @@ msgstr "Gizmo‑färger"
 msgid "Particles Emission Shape"
 msgstr "Partiklars emissionsform"
 
+msgid "Category"
+msgstr "Kategori"
+
 msgid "Mesh"
 msgstr "Mesh"
 
@@ -1959,6 +2060,9 @@ msgstr "Resursbutik"
 msgid "Use Threads"
 msgstr "Använd trådar"
 
+msgid "Show Incompatible Assets"
+msgstr "Visa inkompatibla tillgångar"
+
 msgid "Available URLs"
 msgstr "Tillgängliga URL:er"
 
@@ -1973,6 +2077,9 @@ msgstr "Dockflikstil"
 
 msgid "Bottom Dock Tab Style"
 msgstr "Stil för nederdockans flik"
+
+msgid "Main Screen Dock Tab Style"
+msgstr "Flikstil för huvuddockans flikar"
 
 msgid "UI Layout Direction"
 msgstr "UI‑layoutens riktning"
@@ -2009,6 +2116,9 @@ msgstr "Använd inbyggda fildialoger"
 
 msgid "Expand to Title"
 msgstr "Expandera till titel"
+
+msgid "Max Sticky Tree Items"
+msgstr "Maximalt antal fästa trädobjekt"
 
 msgid "Main Font Size"
 msgstr "Huvudteckenstorlek"
@@ -2541,6 +2651,9 @@ msgstr "Radavstånd"
 msgid "Empty Selection Clipboard"
 msgstr "Urklipp vid tom markering"
 
+msgid "Find in File Extensions"
+msgstr "Sök i filändelser"
+
 msgid "Move Caret on Right Click"
 msgstr "Flytta markören vid högerklick"
 
@@ -2609,6 +2722,9 @@ msgstr "Öppna dominerande skript vid scenbyte"
 
 msgid "Drop Preload Resources as UID"
 msgstr "Släpp förinlästa resurser som UID"
+
+msgid "Diagnostics"
+msgstr "Diagnostik"
 
 msgid "Enable Tooltips"
 msgstr "Slå på tooltips"
@@ -2714,6 +2830,9 @@ msgstr "Exempel i klassreferensen"
 
 msgid "Sort Functions Alphabetically"
 msgstr "Sortera funktioner alfabetiskt"
+
+msgid "Show Property Setters and Getters"
+msgstr "Visa egenskaps‑setters och ‑getters"
 
 msgid "Grid Map"
 msgstr "Rutnätskarta"
@@ -3186,9 +3305,6 @@ msgstr "Åtgärd vid stopp"
 msgid "Output"
 msgstr "Utdata"
 
-msgid "Font Size"
-msgstr "Fontstorlek"
-
 msgid "Always Clear Output on Play"
 msgstr "Rensa alltid utdata vid uppspelning"
 
@@ -3513,6 +3629,9 @@ msgstr "Foveation med ögonspårning"
 msgid "Foveation with Subsampled Images"
 msgstr "Foveation med undersamplade bilder"
 
+msgid "Create Default Foveated Inset Viewport"
+msgstr "Skapa standardvyport för foveaterad inre vy"
+
 msgid "Submit Depth Buffer"
 msgstr "Skicka djupbuffert"
 
@@ -3531,6 +3650,9 @@ msgstr "Felsökningsmeddelandetyper"
 msgid "Frame Synthesis"
 msgstr "Ramsyntes"
 
+msgid "Flip Y"
+msgstr "Vänd Y"
+
 msgid "Hand Tracking"
 msgstr "Handspårning"
 
@@ -3542,6 +3664,15 @@ msgstr "Handspårning – kontrollerdatakälla"
 
 msgid "Hand Interaction Profile"
 msgstr "Handinteraktionsprofil"
+
+msgid "Spatial Container"
+msgstr "Rumslig behållare"
+
+msgid "Bounds Mode"
+msgstr "Begränsningsläge"
+
+msgid "Bounds"
+msgstr "Begränsning"
 
 msgid "Spatial Entity"
 msgstr "Spatial entitet"
@@ -3560,6 +3691,12 @@ msgstr "Aktivera plan‑spårning"
 
 msgid "Enable Builtin Plane Detection"
 msgstr "Aktivera inbyggd plandetektering"
+
+msgid "Marker Tracking"
+msgstr "Markörspårning"
+
+msgid "Enable Builtin for Types"
+msgstr "Aktivera inbyggda typer"
 
 msgid "Aruco Dict"
 msgstr "ArUco‑ordlista"
@@ -3584,6 +3721,27 @@ msgstr "Analog tröskel"
 
 msgid "Dpad Binding"
 msgstr "D‑pad‑bindning"
+
+msgid "visionOS"
+msgstr "visionOS"
+
+msgid "Enable Hand Tracking"
+msgstr "Aktivera handspårning"
+
+msgid "Enable Controller Tracking"
+msgstr "Aktivera handkontrollsspårning"
+
+msgid "Dynamic Render Quality"
+msgstr "Dynamisk renderingskvalitet"
+
+msgid "Maximum Quality"
+msgstr "Maximal kvalitet"
+
+msgid "Upper Limb Visibility"
+msgstr "Synlighet för övre extremiteter"
+
+msgid "Persistent System Overlays"
+msgstr "Permanenta systemöverlägg"
 
 msgid "Boot Splash"
 msgstr "Uppstartsskärm"
@@ -3779,6 +3937,9 @@ msgstr "Navigation 2D"
 
 msgid "Navigation 3D"
 msgstr "Navigation 3D"
+
+msgid "Streaming Texture Mem Used"
+msgstr "Använt minne för strömmande texturer"
 
 msgid "Basis Universal"
 msgstr "Basis Universal"
@@ -4058,6 +4219,9 @@ msgstr "Hämtar nod som standard utan onready"
 
 msgid "Onready With Export"
 msgstr "Onready med export"
+
+msgid "Onready With Cast"
+msgstr "Onready med typkonvertering"
 
 msgid "Copyright"
 msgstr "Upphovsrätt"
@@ -4397,6 +4561,12 @@ msgstr "Prioritet"
 
 msgid "Bake Navigation"
 msgstr "Baka navigation"
+
+msgid "Debug Show Octants"
+msgstr "Felsökning: Visa oktanter"
+
+msgid "Debug Octant Color"
+msgstr "Felsökningsfärg för oktanter"
 
 msgid "Clip Count"
 msgstr "Klippantal"
@@ -4935,6 +5105,27 @@ msgstr "Spårare"
 msgid "Make Local to Pose"
 msgstr "Gör lokal till posen"
 
+msgid "Memory Budget (MB) Override"
+msgstr "Åsidosättning av minnesbudget (MB)"
+
+msgid "Memory Budget Enabled"
+msgstr "Minnesbudget aktiverad"
+
+msgid "Memory Budget (MB)"
+msgstr "Minnesbudget (MB)"
+
+msgid "Max Ops per Second"
+msgstr "Maximalt antal operationer per sekund"
+
+msgid "Min LOD"
+msgstr "Minsta LOD"
+
+msgid "Max LOD"
+msgstr "Högsta LOD"
+
+msgid "Inactivity Decay Rate (ms)"
+msgstr "Inaktivitetsavklingningshastighet (ms)"
+
 msgid "ID"
 msgstr "ID"
 
@@ -5214,6 +5405,15 @@ msgstr "Varying-namn"
 msgid "Varying Type"
 msgstr "Varying-typ"
 
+msgid "Group Name"
+msgstr "Gruppnamn"
+
+msgid "Input Port Count"
+msgstr "Antal ingångsportar"
+
+msgid "Output Port Count"
+msgstr "Antal utgångsportar"
+
 msgid "Group"
 msgstr "Grupp"
 
@@ -5331,6 +5531,9 @@ msgstr "Valfria funktioner"
 msgid "Requested Reference Space Types"
 msgstr "Begärda referensrymdstyper"
 
+msgid "Disable Webxr Layers"
+msgstr "Inaktivera Webxr-lager"
+
 msgid "Reference Space Type"
 msgstr "Referensrymdstyp"
 
@@ -5348,6 +5551,12 @@ msgstr "Debug‑nyckellageranvändare"
 
 msgid "Debug Keystore Pass"
 msgstr "Lösenord för debug‑nyckellager"
+
+msgid "Build"
+msgstr "Bygg"
+
+msgid "Automatically Delete Build Directory"
+msgstr "Ta bort byggkatalogen automatiskt"
 
 msgid "Install Exported APK"
 msgstr "Installera exporterad APK"
@@ -5429,6 +5638,9 @@ msgstr "Android‑källmall"
 
 msgid "Compress Native Libraries"
 msgstr "Komprimera inbyggda bibliotek"
+
+msgid "Minification"
+msgstr "Minifiering"
 
 msgid "Export Format"
 msgstr "Exportformat"
@@ -5868,6 +6080,21 @@ msgstr "Flyttbarvolymsanvändningsbeskrivning (lokaliserad)"
 msgid "Min visionOS Version"
 msgstr "Min visionOS‑version"
 
+msgid "App Role"
+msgstr "Approll"
+
+msgid "Immersion Style"
+msgstr "Immersionsläge"
+
+msgid "Icon Front Layer 1024 X 1024"
+msgstr "Ikonens främre lager 1024 × 1024"
+
+msgid "Icon Middle Layer 1024 X 1024"
+msgstr "Ikon - mellanlager 1024 × 1024"
+
+msgid "Icon Back Layer 1024 X 1024"
+msgstr "Ikon - bakre lager 1024 × 1024"
+
 msgid "Web"
 msgstr "Webb"
 
@@ -5948,9 +6175,6 @@ msgstr "Emscripten‑poolstorlek"
 
 msgid "Godot Pool Size"
 msgstr "Godot‑poolstorlek"
-
-msgid "Windows"
-msgstr "Fönster"
 
 msgid "signtool"
 msgstr "signtool"
@@ -6994,6 +7218,12 @@ msgstr "Använd externt skelett"
 msgid "External Skeleton"
 msgstr "Externt skelett"
 
+msgid "Use Bone Skin Scale for All Bones"
+msgstr "Använd skin-skala för alla ben"
+
+msgid "Setting Size"
+msgstr "Inställningsstorlek"
+
 msgid "Mutable Bone Axes"
 msgstr "Ändringsbara benaxlar"
 
@@ -7193,9 +7423,6 @@ msgstr "Text"
 msgid "Outline Modulate"
 msgstr "Konturfärg (modulering)"
 
-msgid "Font"
-msgstr "Font"
-
 msgid "Horizontal Alignment"
 msgstr "Horisontell justering"
 
@@ -7271,6 +7498,9 @@ msgstr "Oskärpa"
 msgid "Caster Mask"
 msgstr "Skuggkastarmask"
 
+msgid "Contact Shadows"
+msgstr "Kontaktskuggor"
+
 msgid "Sky Mode"
 msgstr "Himläläge"
 
@@ -7339,6 +7569,9 @@ msgstr "Studs – indirekt energi"
 
 msgid "Directional"
 msgstr "Riktat ljus"
+
+msgid "Specular Intensity"
+msgstr "Spekulär intensitet"
 
 msgid "Shadowmask Mode"
 msgstr "Skuggmask‑läge"
@@ -7426,6 +7659,9 @@ msgstr "Vinkelbegränsning"
 
 msgid "Use Angle Limitation"
 msgstr "Använd vinkelbegränsning"
+
+msgid "Use Rest for Limitation"
+msgstr "Använd viloposition för begränsning"
 
 msgid "Symmetry Limitation"
 msgstr "Symmetribegränsning"
@@ -7586,6 +7822,9 @@ msgstr "Linjär fjäder"
 msgid "Equilibrium Point"
 msgstr "Jämviktspunkt"
 
+msgid "Linear Drive"
+msgstr "Linjär drivning"
+
 msgid "Upper Angle"
 msgstr "Övre vinkel"
 
@@ -7600,6 +7839,12 @@ msgstr "Vridmotor"
 
 msgid "Angular Spring"
 msgstr "Vridfjäder"
+
+msgid "Angular Drive"
+msgstr "Vinkeldrivning"
+
+msgid "Torque Limit"
+msgstr "Momentgräns"
 
 msgid "Params"
 msgstr "Parametrar"
@@ -7904,8 +8149,32 @@ msgstr "Inuti"
 msgid "External Force"
 msgstr "Extern kraft"
 
+msgid "Limit Mode"
+msgstr "Begränsningsläge"
+
 msgid "Max Length"
 msgstr "Maximal längd"
+
+msgid "Color Gradient"
+msgstr "Färgövertoning"
+
+msgid "Mesh Alignment"
+msgstr "Meshjustering"
+
+msgid "Material Mode"
+msgstr "Materialläge"
+
+msgid "Tiling Mode"
+msgstr "Plattsättningsläge"
+
+msgid "Tiling Multiplier"
+msgstr "Plattsättningsmultiplikator"
+
+msgid "Pin UV"
+msgstr "Fäst UV"
+
+msgid "Min Section Length"
+msgstr "Minsta sektionslängd"
 
 msgid "Sorting"
 msgstr "Sortering"
@@ -8132,6 +8401,9 @@ msgstr "Standardblandningstid"
 msgid "Movie Quit on Finish"
 msgstr "Avsluta film vid slut"
 
+msgid "Clear Cache on Stop"
+msgstr "Rensa cache vid stopp"
+
 msgid "Tree Root"
 msgstr "Trädrot"
 
@@ -8180,6 +8452,9 @@ msgstr "Genvägsåterkoppling – markeringslängd"
 msgid "Allow Unpress"
 msgstr "Tillåt avtryckning"
 
+msgid "Reverse Sort"
+msgstr "Omvänd sortering"
+
 msgid "Text Behavior"
 msgstr "Textbeteende"
 
@@ -8201,8 +8476,119 @@ msgstr "Vertikal ikonjustering"
 msgid "Expand Icon"
 msgstr "Expandera ikon"
 
+msgid "Normal Mirrored"
+msgstr "Normal speglad"
+
+msgid "Pressed Mirrored"
+msgstr "Nedtryckt speglad"
+
+msgid "Hover"
+msgstr "Hovra"
+
+msgid "Hover Mirrored"
+msgstr "Hover speglad"
+
+msgid "Hover Pressed"
+msgstr "Hover + nedtryckt"
+
+msgid "Disabled Mirrored"
+msgstr "Inaktiv speglad"
+
+msgid "Font Focus Color"
+msgstr "Fontfärg (fokus)"
+
+msgid "Font Pressed Color"
+msgstr "Fontfärg (nedtryckt)"
+
+msgid "Font Hover Color"
+msgstr "Fontfärg (hover)"
+
+msgid "Font Hover Pressed Color"
+msgstr "Fontfärg (hover + nedtryckt)"
+
+msgid "Font Disabled Color"
+msgstr "Fontfärg (inaktiv)"
+
+msgid "Font Outline Color"
+msgstr "Fontkonturfärg"
+
+msgid "Icon Normal Color"
+msgstr "Ikonfärg (normal)"
+
+msgid "Icon Focus Color"
+msgstr "Ikonfärg (fokus)"
+
+msgid "Icon Pressed Color"
+msgstr "Ikonfärg (nedtryckt)"
+
+msgid "Icon Hover Color"
+msgstr "Ikonfärg (hover)"
+
+msgid "Icon Hover Pressed Color"
+msgstr "Ikonfärg (hover + nedtryckt)"
+
+msgid "Icon Disabled Color"
+msgstr "Ikonfärg (inaktiv)"
+
+msgid "H Separation"
+msgstr "Horisontell separation"
+
+msgid "Icon Max Width"
+msgstr "Ikon maxbredd"
+
+msgid "Align to Largest Stylebox"
+msgstr "Justera till största stylebox"
+
 msgid "Use Top Left"
 msgstr "Använd övre vänstra hörnet"
+
+msgid "Check V Offset"
+msgstr "Kryss V‑förskjutning"
+
+msgid "Unchecked"
+msgstr "Omarkerad"
+
+msgid "Radio Checked"
+msgstr "Radio ikryssad"
+
+msgid "Radio Unchecked"
+msgstr "Radio omarkerad"
+
+msgid "Checked Disabled"
+msgstr "Ikryssad inaktiv"
+
+msgid "Unchecked Disabled"
+msgstr "Omarkerad inaktiv"
+
+msgid "Radio Checked Disabled"
+msgstr "Radio ikryssad inaktiv"
+
+msgid "Radio Unchecked Disabled"
+msgstr "Radio omarkerad inaktiv"
+
+msgid "Checkbox Checked Color"
+msgstr "Kryssruta ikryssad färg"
+
+msgid "Checkbox Unchecked Color"
+msgstr "Kryssruta omarkerad färg"
+
+msgid "Checked Mirrored"
+msgstr "Ikryssad speglad"
+
+msgid "Unchecked Mirrored"
+msgstr "Omarkerad speglad"
+
+msgid "Checked Disabled Mirrored"
+msgstr "Ikryssad inaktiv speglad"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "Omarkerad inaktiv speglad"
+
+msgid "Button Checked Color"
+msgstr "Knapp ikryssad färg"
+
+msgid "Button Unchecked Color"
+msgstr "Knapp omarkerad färg"
 
 msgid "Symbol Lookup on Click"
 msgstr "Symboluppslag vid klick"
@@ -8270,6 +8656,81 @@ msgstr "Markera matchande"
 msgid "Pairs"
 msgstr "Par"
 
+msgid "Code Folding Color"
+msgstr "Kodfällningsfärg"
+
+msgid "Folded Code Region Color"
+msgstr "Hopfälld kodregionsfärg"
+
+msgid "Can Fold"
+msgstr "Kan fällas"
+
+msgid "Folded"
+msgstr "Vikt"
+
+msgid "Can Fold Code Region"
+msgstr "Kan fälla kodregion"
+
+msgid "Folded Code Region"
+msgstr "Hopfälld kodregion"
+
+msgid "Folded EOL Icon"
+msgstr "Hopfälld radslutsikon"
+
+msgid "Completion Color BG"
+msgstr "Kompletteringsbakgrundsfärg"
+
+msgid "Breakpoint Color"
+msgstr "Brytpunktsfärg"
+
+msgid "Breakpoint"
+msgstr "Brytpunkt"
+
+msgid "Bookmark Color"
+msgstr "Bokmärkesfärg"
+
+msgid "Bookmark"
+msgstr "Bokmärke"
+
+msgid "Executing Line Color"
+msgstr "Exekveringsradfärg"
+
+msgid "Executing Line"
+msgstr "Exekveringsrad"
+
+msgid "Line Number Color"
+msgstr "Radnummersfärg"
+
+msgid "Completion Max Width"
+msgstr "Kompletterings maxbredd"
+
+msgid "Completion Lines"
+msgstr "Kompletteringsrader"
+
+msgid "Completion Scroll Width"
+msgstr "Kompletteringsrullbredd"
+
+msgid "Completion Scroll Color"
+msgstr "Kompletteringsrullfärg"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Kompletteringsrull hovrad färg"
+
+msgid "Completion Background Color"
+msgstr "Kompletteringsbakgrundsfärg"
+
+msgid "Completion Selected Color"
+msgstr "Kompletteringsmarkeringsfärg"
+
+msgid "Completion Existing Color"
+msgstr "Kompletteringsbefintlig färg"
+
+msgid "Line Length Guideline Color"
+msgstr "Radlängdsriktlinjefärg"
+
+msgid "Brace Mismatch Color"
+msgstr "Klammermissmatchfärg"
+
 msgid "Edit Alpha"
 msgstr "Redigera alfa"
 
@@ -8306,6 +8767,102 @@ msgstr "Synlig hex‑kod"
 msgid "Presets Visible"
 msgstr "Synliga förinställningar"
 
+msgid "Label Width"
+msgstr "Etikettbredd"
+
+msgid "SV Width"
+msgstr "SV‑bredd"
+
+msgid "SV Height"
+msgstr "SV‑höjd"
+
+msgid "H Width"
+msgstr "H‑bredd"
+
+msgid "Center Slider Grabbers"
+msgstr "Centrera reglagets grepp"
+
+msgid "Sample Focus"
+msgstr "Samplingsfokus"
+
+msgid "Picker Focus Rectangle"
+msgstr "Väljarens fokusrektangel"
+
+msgid "Picker Focus Circle"
+msgstr "Väljarens fokuscirkel"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "Markörfärg (fokus, ej redigering)"
+
+msgid "Menu Option"
+msgstr "Menyalternativ"
+
+msgid "Screen Picker"
+msgstr "Skärmväljare"
+
+msgid "Expanded Arrow"
+msgstr "Utfälld pil"
+
+msgid "Folded Arrow"
+msgstr "Hopfälld pil"
+
+msgid "Add Preset"
+msgstr "Lägg till förinställning"
+
+msgid "Shape Rect"
+msgstr "Rektangel‑form"
+
+msgid "Shape Rect Wheel"
+msgstr "Rektangel‑hjulsform"
+
+msgid "Shape Circle"
+msgstr "Cirkel‑form"
+
+msgid "Bar Arrow"
+msgstr "Stapelpil"
+
+msgid "Sample BG"
+msgstr "Samplingsbakgrund"
+
+msgid "Sample Revert"
+msgstr "Återställ samplingsruta"
+
+msgid "Overbright Indicator"
+msgstr "Överljusindikator"
+
+msgid "Picker Cursor"
+msgstr "Väljarens markör"
+
+msgid "Picker Cursor BG"
+msgstr "Väljarens markörbakgrund"
+
+msgid "Color Hue"
+msgstr "Färgton"
+
+msgid "Color Script"
+msgstr "Färgskript"
+
+msgid "Color Copy"
+msgstr "Färgkopiering"
+
+msgid "Tab Unselected"
+msgstr "Flik (ej vald)"
+
+msgid "Tab Selected"
+msgstr "Flik (vald)"
+
+msgid "BG"
+msgstr "Bakgrund"
+
+msgid "Preset FG"
+msgstr "Förinställning (förgrund)"
+
+msgid "Preset Focus"
+msgstr "Förinställning (fokus)"
+
+msgid "Preset BG"
+msgstr "Förinställning (bakgrund)"
+
 msgid "Accessibility Region"
 msgstr "Tillgänglighetsregion"
 
@@ -8320,6 +8877,9 @@ msgstr "Typsnittsstorlekar"
 
 msgid "Styles"
 msgstr "Stilar"
+
+msgid "Sounds"
+msgstr "Ljud"
 
 msgid "Custom Minimum Size"
 msgstr "Anpassad minimistorlek"
@@ -8390,9 +8950,6 @@ msgstr "Verktygstips"
 msgid "Auto Translate Mode"
 msgstr "Automatiskt översättningsläge"
 
-msgid "Focus"
-msgstr "Fokus"
-
 msgid "Neighbor Left"
 msgstr "Granne vänster"
 
@@ -8456,6 +9013,9 @@ msgstr "Stäng med Escape"
 msgid "Autowrap"
 msgstr "Radbrytning (Autowrap)"
 
+msgid "Buttons Separation"
+msgstr "Knappavstånd"
+
 msgid "Cancel Button Text"
 msgstr "Avbryt‑knappens text"
 
@@ -8510,14 +9070,101 @@ msgstr "Varning för överskrivning aktiverad"
 msgid "Deleting Enabled"
 msgstr "Radering aktiverad"
 
+msgid "Navigation Buttons Enabled"
+msgstr "Navigeringsknappar aktiverade"
+
+msgid "Drive Selector Enabled"
+msgstr "Aktivera enhetsväljare"
+
+msgid "Filters Enabled"
+msgstr "Aktivera filter"
+
+msgid "Parent Folder"
+msgstr "Överordnad mapp"
+
+msgid "Forward Folder"
+msgstr "Nästa mapp"
+
+msgid "Back Folder"
+msgstr "Föregående mapp"
+
+msgid "Reload"
+msgstr "Ladda om"
+
+msgid "Favorite"
+msgstr "Favorit"
+
+msgid "Toggle Hidden"
+msgstr "Växla dolda filer"
+
+msgid "Folder"
+msgstr "Mapp"
+
+msgid "Toggle Filename Filter"
+msgstr "Växla filnamnsfilter"
+
+msgid "File"
+msgstr "Fil"
+
+msgid "Create Folder"
+msgstr "Skapa mapp"
+
+msgid "Sort"
+msgstr "Sortera"
+
+msgid "Favorite Up"
+msgstr "Flytta favorit uppåt"
+
+msgid "Favorite Down"
+msgstr "Flytta favorit neråt"
+
+msgid "Thumbnail Mode"
+msgstr "Miniatyrvy"
+
+msgid "List Mode"
+msgstr "Listvy"
+
+msgid "File Thumbnail"
+msgstr "Filminiatyr"
+
+msgid "Folder Thumbnail"
+msgstr "Mappminiatyr"
+
+msgid "Menu Copy Path"
+msgstr "Meny: Kopiera sökväg"
+
+msgid "Menu Delete"
+msgstr "Meny: Ta bort"
+
+msgid "Menu Refresh"
+msgstr "Meny: Uppdatera"
+
+msgid "Menu New Folder"
+msgstr "Meny: Ny mapp"
+
+msgid "Menu Show in File Manager"
+msgstr "Meny: Visa i filhanteraren"
+
+msgid "Menu Open Bundle"
+msgstr "Meny: Öppna paket"
+
+msgid "Folder Icon Color"
+msgstr "Mappikonfärg"
+
+msgid "File Icon Color"
+msgstr "Filikonfärg"
+
+msgid "File Disabled Color"
+msgstr "Inaktiverad filfärg"
+
 msgid "Last Wrap Alignment"
 msgstr "Sista radens justering"
 
 msgid "Reverse Fill"
 msgstr "Omvänd fyllning"
 
-msgid "Folded"
-msgstr "Vikt"
+msgid "V Separation"
+msgstr "Vertikal separation"
 
 msgid "Title Alignment"
 msgstr "Titeljustering"
@@ -8534,8 +9181,38 @@ msgstr "Fällbar grupp"
 msgid "Title Text Direction"
 msgstr "Titelns textriktning"
 
+msgid "Title Panel"
+msgstr "Titelpanel"
+
+msgid "Title Hover Panel"
+msgstr "Titelpanel (hovring)"
+
+msgid "Title Collapsed Panel"
+msgstr "Titelpanel (ihopfälld)"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "Titelpanel (ihopfälld, hovring)"
+
+msgid "Hover Font Color"
+msgstr "Typsnittsfärg (hovring)"
+
+msgid "Collapsed Font Color"
+msgstr "Typsnittsfärg (ihopfälld)"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "Expanderingspil (spegelvänd)"
+
+msgid "Folded Arrow Mirrored"
+msgstr "Hopfällningspil (spegelvänd)"
+
 msgid "Allow Folding All"
 msgstr "Tillåt fällning av alla"
+
+msgid "Resizer"
+msgstr "Storleksändrare"
+
+msgid "Resizer Color"
+msgstr "Storleksändrarens färg"
 
 msgid "Show Grid"
 msgstr "Visa rutnät"
@@ -8594,6 +9271,63 @@ msgstr "Visa minikartknapp"
 msgid "Show Arrange Button"
 msgstr "Visa ordna‑knapp"
 
+msgid "Panel Focus"
+msgstr "Panel (fokus)"
+
+msgid "Grid Major"
+msgstr "Rutnät (primära linjer)"
+
+msgid "Grid Minor"
+msgstr "Rutnät (sekundära linjer)"
+
+msgid "Activity"
+msgstr "Aktivitet"
+
+msgid "Connection Hover Tint Color"
+msgstr "Färgton för anslutning (hovring)"
+
+msgid "Connection Hover Thickness"
+msgstr "Anslutningstjocklek (hovring)"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "Färgton för giltigt mål (anslutning)"
+
+msgid "Connection Rim Color"
+msgstr "Anslutningskantfärg"
+
+msgid "Selection Fill"
+msgstr "Markeringsfyllning"
+
+msgid "Selection Stroke"
+msgstr "Markeringskontur"
+
+msgid "Menu Panel"
+msgstr "Menypanel"
+
+msgid "Zoom In"
+msgstr "Zooma in"
+
+msgid "Zoom Out"
+msgstr "Zooma ut"
+
+msgid "Zoom Reset"
+msgstr "Återställ zoom"
+
+msgid "Snapping Toggle"
+msgstr "Snäppväxling"
+
+msgid "Grid Toggle"
+msgstr "Rutnätsväxling"
+
+msgid "Minimap Toggle"
+msgstr "Minikartväxling"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "Port‑hotzon (inre utsträckning)"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "Port‑hotzon (yttre utsträckning)"
+
 msgid "Draggable"
 msgstr "Dragbar"
 
@@ -8612,11 +9346,29 @@ msgstr "Autoshrink‑marginal"
 msgid "Drag Margin"
 msgstr "Dragmarginal"
 
+msgid "Panel Selected"
+msgstr "Markerad panel"
+
+msgid "Titlebar"
+msgstr "Titelrad"
+
+msgid "Titlebar Selected"
+msgstr "Markerad titelrad"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "Ignorera ogiltig kopplingstyp"
 
 msgid "Slots Focus Mode"
 msgstr "Slotarnas fokusläge"
+
+msgid "Slot"
+msgstr "Plats"
+
+msgid "Slot Selected"
+msgstr "Vald plats"
+
+msgid "Port H Offset"
+msgstr "Portens horisontella förskjutning"
 
 msgid "Select Mode"
 msgstr "Markeringsläge"
@@ -8669,6 +9421,66 @@ msgstr "Ikonskala"
 msgid "Fixed Icon Size"
 msgstr "Fast ikonstorlek"
 
+msgid "Scrollbar Margin Left"
+msgstr "Rullningslistmarginal (vänster)"
+
+msgid "Scrollbar Margin Top"
+msgstr "Rullningslistmarginal (övre)"
+
+msgid "Scrollbar Margin Right"
+msgstr "Rullningslistmarginal (höger)"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "Rullningslistmarginal (nedre)"
+
+msgid "Scrollbar H Separation"
+msgstr "Rullningslist H‑separation"
+
+msgid "Font Hovered Color"
+msgstr "Typsnittsfärg (markerad)"
+
+msgid "Font Hovered Selected Color"
+msgstr "Typsnittsfärg (markerad, vald)"
+
+msgid "Font Selected Color"
+msgstr "Typsnitt markerad färg"
+
+msgid "Font Disabled Hovered Color"
+msgstr "Teckenfärg för inaktiverad hovrad kontroll"
+
+msgid "Scroll Hint"
+msgstr "Rullningshint"
+
+msgid "Scroll Hint Color"
+msgstr "Färg för rullningshint"
+
+msgid "Icon Margin"
+msgstr "Ikonmarginal"
+
+msgid "Hovered"
+msgstr "Markerad"
+
+msgid "Hovered Selected"
+msgstr "Markerad (vald)"
+
+msgid "Hovered Selected Focus"
+msgstr "Markerad (vald, fokus)"
+
+msgid "Selected Focus"
+msgstr "Vald (fokus)"
+
+msgid "Cursor Unfocused"
+msgstr "Markör (ofokuserad)"
+
+msgid "Cursor"
+msgstr "Markör"
+
+msgid "Disabled Hovered"
+msgstr "Inaktiverad hovrad"
+
+msgid "Guide Color"
+msgstr "Hjälplinjesfärg"
+
 msgid "Label Settings"
 msgstr "Etikettinställningar"
 
@@ -8680,6 +9492,15 @@ msgstr "Ellips‑tecken"
 
 msgid "Tab Stops"
 msgstr "Tabbstopp"
+
+msgid "Resize Font to Fit"
+msgstr "Anpassa teckenstorleken efter utrymmet"
+
+msgid "Minimum Font Size"
+msgstr "Minsta teckenstorlek"
+
+msgid "Maximum Font Size"
+msgstr "Största teckenstorlek"
 
 msgid "Displayed Text"
 msgstr "Visad text"
@@ -8698,6 +9519,15 @@ msgstr "Beteende för synliga tecken"
 
 msgid "Visible Ratio"
 msgstr "Synlighetsförhållande"
+
+msgid "Paragraph Spacing"
+msgstr "Styckeavstånd"
+
+msgid "Font Shadow Color"
+msgstr "Typsnitt skuggfärg"
+
+msgid "Shadow Outline Size"
+msgstr "Skuggkonturstorlek"
 
 msgid "Placeholder Text"
 msgstr "Platshållartext"
@@ -8777,11 +9607,50 @@ msgstr "Ikonexpansionsläge"
 msgid "Right Icon Scale"
 msgstr "Högerikonens skala"
 
+msgid "Font Placeholder Color"
+msgstr "Typsnitt platshållarfärg"
+
+msgid "Caret Width"
+msgstr "Markörbredd"
+
+msgid "Caret Color"
+msgstr "Markörfärg"
+
+msgid "Minimum Character Width"
+msgstr "Minsta teckenbredd"
+
+msgid "Selection Color"
+msgstr "Markeringsfärg"
+
+msgid "Clear"
+msgstr "Rensa"
+
+msgid "Clear Button Color"
+msgstr "Rensa‑knapp färg"
+
+msgid "Clear Button Color Pressed"
+msgstr "Rensa‑knapp nedtryckt färg"
+
 msgid "Underline"
 msgstr "Understrykning"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "Understreck‑avstånd"
+
+msgid "Margin Left"
+msgstr "Vänstermarginal"
+
+msgid "Margin Top"
+msgstr "Övermarginal"
+
+msgid "Margin Right"
+msgstr "Högermarginal"
+
+msgid "Margin Bottom"
+msgstr "Undermarginal"
 
 msgid "Start Index"
 msgstr "Startindex"
@@ -8819,6 +9688,15 @@ msgstr "Fuzzy‑sökning aktiverad"
 msgid "Fuzzy Search Max Misses"
 msgstr "Maximalt antal felträffar för fuzzy‑sökning"
 
+msgid "Arrow"
+msgstr "Pil"
+
+msgid "Arrow Margin"
+msgstr "Pilmarginal"
+
+msgid "Modulate Arrow"
+msgstr "Modulera pil"
+
 msgid "Hide on Item Selection"
 msgstr "Dölj vid objektval"
 
@@ -8843,17 +9721,71 @@ msgstr "Minska höjd"
 msgid "Shrink Width"
 msgstr "Minska bredd"
 
+msgid "Separator"
+msgstr "Avskiljare"
+
+msgid "Labeled Separator Left"
+msgstr "Märkt avskiljare (vänster)"
+
+msgid "Labeled Separator Right"
+msgstr "Märkt avskiljare (höger)"
+
+msgid "Search Bar Separation"
+msgstr "Separation för sökfält"
+
+msgid "Item Start Padding"
+msgstr "Objektets startutfyllnad"
+
+msgid "Item End Padding"
+msgstr "Objektets slututfyllnad"
+
+msgid "Gutter Compact"
+msgstr "Kompakt marginal"
+
+msgid "Indeterminate"
+msgstr "Obestämt läge"
+
+msgid "Indeterminate Disabled"
+msgstr "Obestämt (inaktiverad)"
+
+msgid "Search"
+msgstr "Sök"
+
+msgid "Submenu"
+msgstr "Undermeny"
+
+msgid "Submenu Mirrored"
+msgstr "Spegelvänd undermeny"
+
+msgid "Font Separator"
+msgstr "Typsnittsavskiljare"
+
+msgid "Font Separator Size"
+msgstr "Typsnittsavskiljarens storlek"
+
+msgid "Font Accelerator Color"
+msgstr "Typsnittsfärg för snabbtangent"
+
+msgid "Font Separator Color"
+msgstr "Typsnittsavskiljarens färg"
+
+msgid "Separator Outline Size"
+msgstr "Avskiljarens konturstorlek"
+
+msgid "Font Separator Outline Color"
+msgstr "Typsnittsavskiljarens konturfärg"
+
 msgid "Fill Mode"
 msgstr "Fyllnadsläge"
 
 msgid "Show Percentage"
 msgstr "Visa procent"
 
-msgid "Indeterminate"
-msgstr "Obestämt läge"
-
 msgid "Preview Indeterminate"
 msgstr "Förhandsvisa obestämt läge"
+
+msgid "Background"
+msgstr "Bakgrund"
 
 msgid "Min Value"
 msgstr "Minimivärde"
@@ -8900,6 +9832,9 @@ msgstr "Glyfflaggor"
 msgid "Relative Index"
 msgstr "Relativt index"
 
+msgid "Resource Access Flags"
+msgstr "Resursåtkomstflaggor"
+
 msgid "BBCode Enabled"
 msgstr "BBCode aktiverad"
 
@@ -8939,8 +9874,98 @@ msgstr "Progressbar‑fördröjning"
 msgid "Text Selection"
 msgstr "Textmarkering"
 
+msgid "Horizontal Rule"
+msgstr "Horisontell linje"
+
+msgid "Normal Font"
+msgstr "Normal typsnitt"
+
+msgid "Normal Font Size"
+msgstr "Normal textstorlek"
+
+msgid "Shadow Offset X"
+msgstr "Skuggförskjutning X"
+
+msgid "Shadow Offset Y"
+msgstr "Skuggförskjutning Y"
+
+msgid "Bold Font"
+msgstr "Fet typsnitt"
+
+msgid "Bold Font Size"
+msgstr "Fet textstorlek"
+
+msgid "Bold Italics Font"
+msgstr "Fet‑kursivt typsnitt"
+
+msgid "Bold Italics Font Size"
+msgstr "Fet‑kursiv textstorlek"
+
+msgid "Italics Font"
+msgstr "Kursivt typsnitt"
+
+msgid "Italics Font Size"
+msgstr "Kursiv textstorlek"
+
+msgid "Mono Font"
+msgstr "Monospace‑typsnitt"
+
+msgid "Mono Font Size"
+msgstr "Monospace‑textstorlek"
+
+msgid "Text Highlight H Padding"
+msgstr "Textmarkering horisontell utfyllnad"
+
+msgid "Text Highlight V Padding"
+msgstr "Textmarkering vertikal utfyllnad"
+
+msgid "Underline Alpha"
+msgstr "Understrykningens transparens"
+
+msgid "Strikethrough Alpha"
+msgstr "Genomstrykningens transparens"
+
+msgid "Table H Separation"
+msgstr "Tabell horisontell separation"
+
+msgid "Table V Separation"
+msgstr "Tabell vertikal separation"
+
+msgid "Table Odd Row BG"
+msgstr "Tabell udda rad bakgrund"
+
+msgid "Table Even Row BG"
+msgstr "Tabell jämn rad bakgrund"
+
+msgid "Table Border"
+msgstr "Tabellkant"
+
 msgid "Custom Step"
 msgstr "Anpassat steg"
+
+msgid "Scroll Focus"
+msgstr "Rullfokus"
+
+msgid "Grabber Pressed"
+msgstr "Draghandtag (nedtryckt)"
+
+msgid "Increment"
+msgstr "Ökningsknapp"
+
+msgid "Increment Highlight"
+msgstr "Ökningsknapp (markerad)"
+
+msgid "Increment Pressed"
+msgstr "Ökningsknapp (nedtryckt)"
+
+msgid "Decrement"
+msgstr "Minskningsknapp"
+
+msgid "Decrement Highlight"
+msgstr "Minskningsknapp (markerad)"
+
+msgid "Decrement Pressed"
+msgstr "Minskningsknapp (nedtryckt)"
 
 msgid "Follow Focus"
 msgstr "Följ fokus"
@@ -8975,8 +10000,20 @@ msgstr "Scrolla horisontellt som standard"
 msgid "Scroll Deadzone"
 msgstr "Rullningsdödzon"
 
-msgid "Scroll Hint"
-msgstr "Rullningshint"
+msgid "Scrollbar V Separation"
+msgstr "Rullningslist V‑separation"
+
+msgid "Scroll Hint Vertical"
+msgstr "Rullningshint vertikal"
+
+msgid "Scroll Hint Horizontal"
+msgstr "Horisontell rullningshint"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "Färg för vertikal rullningshint"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "Färg för horisontell rullningshint"
 
 msgid "Default Scroll Deadzone"
 msgstr "Standard rullningsdödzon"
@@ -8993,6 +10030,30 @@ msgstr "Markeringar vid kanter"
 msgid "Ticks Position"
 msgstr "Markeringarnas position"
 
+msgid "Slider"
+msgstr "Skjutreglage"
+
+msgid "Grabber Area"
+msgstr "Draghandtagsyta"
+
+msgid "Grabber Area Highlight"
+msgstr "Draghandtagsyta (markerad)"
+
+msgid "Grabber Disabled"
+msgstr "Draghandtag (inaktiverat)"
+
+msgid "Tick"
+msgstr "Markering"
+
+msgid "Center Grabber"
+msgstr "Centrera draghandtag"
+
+msgid "Grabber Offset"
+msgstr "Draghandtagsförskjutning"
+
+msgid "Tick Offset"
+msgstr "Markeringsförskjutning"
+
 msgid "Update on Text Changed"
 msgstr "Uppdatera vid textändring"
 
@@ -9004,6 +10065,102 @@ msgstr "Anpassad pilrundning"
 
 msgid "Format"
 msgstr "Format"
+
+msgid "Plural Format"
+msgstr "Pluralformat"
+
+msgid "Format Auto Translate Mode"
+msgstr "Format för automatisk översättning"
+
+msgid "Buttons Vertical Separation"
+msgstr "Knappar (vertikal separation)"
+
+msgid "Field and Buttons Separation"
+msgstr "Fält‑ och knappseparation"
+
+msgid "Buttons Width"
+msgstr "Knappbredd"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Sätt minsta knappbredd från ikoner"
+
+msgid "Up"
+msgstr "Upp-knapp"
+
+msgid "Up Hover"
+msgstr "Upp‑knapp (markerad)"
+
+msgid "Up Pressed"
+msgstr "Upp‑knapp (nedtryckt)"
+
+msgid "Up Disabled"
+msgstr "Upp‑knapp (inaktiverad)"
+
+msgid "Down"
+msgstr "Ner‑knapp"
+
+msgid "Down Hover"
+msgstr "Ner‑knapp (markerad)"
+
+msgid "Down Pressed"
+msgstr "Ner‑knapp (nedtryckt)"
+
+msgid "Down Disabled"
+msgstr "Ner‑knapp (inaktiverad)"
+
+msgid "Up Background"
+msgstr "Upp‑knapp (bakgrund)"
+
+msgid "Up Background Hovered"
+msgstr "Upp‑knapp (bakgrund, markerad)"
+
+msgid "Up Background Pressed"
+msgstr "Upp‑knapp (bakgrund, nedtryckt)"
+
+msgid "Up Background Disabled"
+msgstr "Upp‑knapp (bakgrund, inaktiverad)"
+
+msgid "Down Background"
+msgstr "Ner‑knapp (bakgrund)"
+
+msgid "Down Background Hovered"
+msgstr "Ner‑knapp (bakgrund, markerad)"
+
+msgid "Down Background Pressed"
+msgstr "Ner‑knapp (bakgrund, nedtryckt)"
+
+msgid "Down Background Disabled"
+msgstr "Ner‑knapp (bakgrund, inaktiverad)"
+
+msgid "Up Icon Modulate"
+msgstr "Upp‑ikon (färgmodulering)"
+
+msgid "Up Hover Icon Modulate"
+msgstr "Upp‑ikon (färgmodulering, markerad)"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Upp‑ikon (färgmodulering, nedtryckt)"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Upp‑ikon (färgmodulering, inaktiverad)"
+
+msgid "Down Icon Modulate"
+msgstr "Ner‑ikon (färgmodulering)"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Ner‑ikon (färgmodulering, markerad)"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Ner‑ikon (färgmodulering, nedtryckt)"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Ner‑ikon (färgmodulering, inaktiverad)"
+
+msgid "Field and Buttons Separator"
+msgstr "Fält‑ och knappseparator"
+
+msgid "Up Down Buttons Separator"
+msgstr "Upp‑/ner‑knappsseparator"
 
 msgid "Split Offsets"
 msgstr "Delade offsetar"
@@ -9035,6 +10192,39 @@ msgstr "Marginal slut"
 msgid "Highlight in Editor"
 msgstr "Markera i editorn"
 
+msgid "Touch Dragger Color"
+msgstr "Färg för draghandtag (touch)"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "Färg för nedtryckt draghandtag (touch)"
+
+msgid "Touch Dragger Hover Color"
+msgstr "Färg för draghandtag vid hovring (touch)"
+
+msgid "Minimum Grab Thickness"
+msgstr "Minsta grepp‑tjocklek"
+
+msgid "Autohide"
+msgstr "Automatisk döljning"
+
+msgid "Touch Dragger"
+msgstr "Draghandtag (touch)"
+
+msgid "H Touch Dragger"
+msgstr "Horisontellt draghandtag (touch)"
+
+msgid "V Touch Dragger"
+msgstr "Vertikalt draghandtag (touch)"
+
+msgid "H Grabber"
+msgstr "Horisontellt grepphandtag"
+
+msgid "V Grabber"
+msgstr "Vertikalt grepphandtag"
+
+msgid "Split Bar Background"
+msgstr "Delningslistans bakgrund"
+
 msgid "Split Offset"
 msgstr "Delningsförskjutning"
 
@@ -9049,6 +10239,9 @@ msgstr "Aktuell flik"
 
 msgid "Tab Alignment"
 msgstr "Flikjustering"
+
+msgid "Tab Sizing"
+msgstr "Tabulatorstorlek"
 
 msgid "Clip Tabs"
 msgstr "Klipp flikar"
@@ -9086,6 +10279,42 @@ msgstr "Avmarkering aktiverad"
 msgid "Tabs"
 msgstr "Flikar"
 
+msgid "Hover Switch Wait Msec"
+msgstr "Väntetid för hovringsväxling (ms)"
+
+msgid "Tab Hovered"
+msgstr "Flik (hover)"
+
+msgid "Tab Disabled"
+msgstr "Flik (inaktiverad)"
+
+msgid "Tab Focus"
+msgstr "Flik (fokus)"
+
+msgid "Drop Mark"
+msgstr "Släppmarkering"
+
+msgid "Drop Mark Color"
+msgstr "Släppmarkeringsfärg"
+
+msgid "Font Unselected Color"
+msgstr "Teckensnittsfärg (ej vald)"
+
+msgid "Icon Selected Color"
+msgstr "Markerad ikonfärg"
+
+msgid "Icon Hovered Color"
+msgstr "Ikonfärg vid hovring"
+
+msgid "Icon Unselected Color"
+msgstr "Omarkerad ikonfärg"
+
+msgid "Close"
+msgstr "Stäng"
+
+msgid "Button Highlight"
+msgstr "Knappmarkering"
+
 msgid "Tabs Position"
 msgstr "Flikarnas position"
 
@@ -9098,6 +10327,21 @@ msgstr "Använd dolda flikar för minsta storlek"
 msgid "Tab Focus Mode"
 msgstr "Flikfokusläge"
 
+msgid "Side Margin"
+msgstr "Sidomarginal"
+
+msgid "Tabbar Background"
+msgstr "Flikradens bakgrund"
+
+msgid "Menu"
+msgstr "Meny"
+
+msgid "Menu Highlight"
+msgstr "Meny‑markering"
+
+msgid "Icon Separation"
+msgstr "Ikonseparation"
+
 msgid "Empty Selection Clipboard Enabled"
 msgstr "Urklipp för tom markering aktiverat"
 
@@ -9106,6 +10350,9 @@ msgstr "Radbrytningsläge"
 
 msgid "Tab Input Mode"
 msgstr "Flikinmatningsläge"
+
+msgid "Selection Handle Enabled"
+msgstr "Aktivera markeringshandtag"
 
 msgid "Smooth"
 msgstr "Jämn"
@@ -9143,18 +10390,38 @@ msgstr "Kontrolltecken"
 msgid "Spaces"
 msgstr "Mellanrum"
 
+msgid "Search Result Color"
+msgstr "Sökresultatfärg"
+
+msgid "Search Result Border Color"
+msgstr "Sökresultat kantfärg"
+
+msgid "Caret Background Color"
+msgstr "Markörbakgrundsfärg"
+
+msgid "Tab"
+msgstr "Flik"
+
+msgid "Space"
+msgstr "Rymd"
+
+msgid "Font Readonly Color"
+msgstr "Typsnitt skrivskyddad färg"
+
+msgid "Wrap Offset"
+msgstr "Omslags‑offset"
+
+msgid "Current Line Color"
+msgstr "Aktuell radfärg"
+
+msgid "Word Highlighted Color"
+msgstr "Ord markerad färg"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "TextEdit inaktivitetdetektering (sek)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "Ångra‑stackens maxstorlek"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "Normal"
-
-msgid "Hover"
-msgstr "Hovra"
 
 msgid "Focused"
 msgstr "Fokuserad"
@@ -9228,6 +10495,117 @@ msgstr "Horisontell rullning aktiverad"
 msgid "Scroll Vertical Enabled"
 msgstr "Vertikal rullning aktiverad"
 
+msgid "Title Button Font"
+msgstr "Titelknapp (typsnitt)"
+
+msgid "Title Button Font Size"
+msgstr "Titelknapp (typsnittsstorlek)"
+
+msgid "Hovered Dimmed"
+msgstr "Markerad (nedtonad)"
+
+msgid "Button Hover"
+msgstr "Knapp (markerad)"
+
+msgid "Arrow Collapsed"
+msgstr "Pil (ihopfälld)"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "Pil (ihopfälld, spegelvänd)"
+
+msgid "Select Arrow"
+msgstr "Väljpil"
+
+msgid "Custom Button"
+msgstr "Anpassad knapp"
+
+msgid "Custom Button Hover"
+msgstr "Anpassad knapp (markerad)"
+
+msgid "Custom Button Pressed"
+msgstr "Anpassad knapp (nedtryckt)"
+
+msgid "Custom Button Font Highlight"
+msgstr "Anpassad knapp (typsnitt, markerat)"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Typsnittsfärg (markerad, nedtonad)"
+
+msgid "Drop on Item Color"
+msgstr "Färg vid släpp på objekt"
+
+msgid "Drop Position Color"
+msgstr "Släppositionfärg"
+
+msgid "Inner Item Margin Bottom"
+msgstr "Inre objektmarginal (nedre)"
+
+msgid "Inner Item Margin Left"
+msgstr "Inre objektmarginal (vänster)"
+
+msgid "Inner Item Margin Right"
+msgstr "Inre objektmarginal (höger)"
+
+msgid "Inner Item Margin Top"
+msgstr "Inre objektmarginal (övre)"
+
+msgid "Item Margin"
+msgstr "Objektmarginal"
+
+msgid "Check H Separation"
+msgstr "Kontrollera horisontell separation"
+
+msgid "Icon H Separation"
+msgstr "Ikonens horisontella separation"
+
+msgid "Button Margin"
+msgstr "Knappmarginal"
+
+msgid "Draw Guides"
+msgstr "Rita hjälplinjer"
+
+msgid "Relationship Line Width"
+msgstr "Relationslinjebredd"
+
+msgid "Parent HL Line Width"
+msgstr "Föräldra‑HL‑linjebredd"
+
+msgid "Children HL Line Width"
+msgstr "Barn‑HL‑linjebredd"
+
+msgid "Parent HL Line Margin"
+msgstr "Föräldra‑HL‑linjemarginal"
+
+msgid "Relationship Line Color"
+msgstr "Relationslinjefärg"
+
+msgid "Parent HL Line Color"
+msgstr "Föräldra‑HL‑linjefärg"
+
+msgid "Children HL Line Color"
+msgstr "Barn‑HL‑linjefärg"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "Väntetid för drag‑utfällning (ms)"
+
+msgid "Scroll Border"
+msgstr "Rullningskant"
+
+msgid "Scroll Speed"
+msgstr "Rullningshastighet"
+
+msgid "Title Button Normal"
+msgstr "Titelknapp (normal)"
+
+msgid "Title Button Pressed"
+msgstr "Titelknapp (nedtryckt)"
+
+msgid "Title Button Hover"
+msgstr "Titelknapp (markerad)"
+
+msgid "Title Button Color"
+msgstr "Titelknapp (färg)"
+
 msgid "Audio Track"
 msgstr "Ljudspår"
 
@@ -9269,6 +10647,18 @@ msgstr "Åtgärd upp"
 
 msgid "Action Down"
 msgstr "Åtgärd ner"
+
+msgid "Normal Joystick"
+msgstr "Normal joystick"
+
+msgid "Normal Tip"
+msgstr "Normal spets"
+
+msgid "Pressed Joystick"
+msgstr "Nedtryckt joystick"
+
+msgid "Pressed Tip"
+msgstr "Nedtryckt spets"
 
 msgid "Self Modulate"
 msgstr "Självmodulering"
@@ -9314,6 +10704,12 @@ msgstr "Ladda ner fil"
 
 msgid "Download Chunk Size"
 msgstr "Nedladdningsblockstorlek"
+
+msgid "Keep Partial Download"
+msgstr "Behåll ofullständig nedladdning"
+
+msgid "Append to Download File"
+msgstr "Lägg till i nedladdningsfil"
 
 msgid "Accept Gzip"
 msgstr "Acceptera Gzip"
@@ -9486,9 +10882,6 @@ msgstr "Aktivera objektplockning"
 msgid "Scene Traversal"
 msgstr "Scenetraversering"
 
-msgid "Menu"
-msgstr "Meny"
-
 msgid "Wait Time"
 msgstr "Väntetid"
 
@@ -9657,6 +11050,9 @@ msgstr "Uteslut från skärminspelning"
 msgid "Popup Wm Hint"
 msgstr "Popup WM‑hint"
 
+msgid "Fullscreen Shortcut Enabled"
+msgstr "Aktivera helskärmsgenväg"
+
 msgid "Force Native"
 msgstr "Tvinga inbyggt"
 
@@ -9677,6 +11073,39 @@ msgstr "HDR-utdata"
 
 msgid "Requested"
 msgstr "Begärt"
+
+msgid "Embedded Border"
+msgstr "Inbäddad ram"
+
+msgid "Embedded Unfocused Border"
+msgstr "Inbäddad ram (ofokuserad)"
+
+msgid "Title Font"
+msgstr "Titeltypsnitt"
+
+msgid "Title Font Size"
+msgstr "Titeltypsnittsstorlek"
+
+msgid "Title Height"
+msgstr "Titelhöjd"
+
+msgid "Title Outline Modulate"
+msgstr "Titelkontur (färgmodulering)"
+
+msgid "Title Outline Size"
+msgstr "Titelkonturstorlek"
+
+msgid "Close Pressed"
+msgstr "Stängknapp nedtryckt"
+
+msgid "Close H Offset"
+msgstr "Stängknappens horisontella förskjutning"
+
+msgid "Close V Offset"
+msgstr "Stängknappens vertikala förskjutning"
+
+msgid "Resize Margin"
+msgstr "Storleksändringsmarginal"
 
 msgid "Swap Cancel OK"
 msgstr "Byt plats på Avbryt/OK"
@@ -10113,9 +11542,6 @@ msgstr "Kurva Y"
 msgid "Curve Z"
 msgstr "Kurva Z"
 
-msgid "Background"
-msgstr "Bakgrund"
-
 msgid "Canvas Max Layer"
 msgstr "Maximalt canvas‑lager"
 
@@ -10326,9 +11752,6 @@ msgstr "Extraavstånd"
 msgid "Glyph"
 msgstr "Glyf"
 
-msgid "Space"
-msgstr "Rymd"
-
 msgid "Baseline"
 msgstr "Baslinje"
 
@@ -10367,9 +11790,6 @@ msgstr "Använd HDR"
 
 msgid "To"
 msgstr "Till"
-
-msgid "Paragraph Spacing"
-msgstr "Styckeavstånd"
 
 msgid "Stacked Effects"
 msgstr "Staplade effekter"
@@ -10656,6 +12076,9 @@ msgstr "Dämpning som friktion"
 msgid "Inherit Emitter Scale"
 msgstr "Ärv emitter‑skala"
 
+msgid "Preserve Color"
+msgstr "Bevara färg"
+
 msgid "Spawn"
 msgstr "Spawna"
 
@@ -10914,1125 +12337,6 @@ msgstr "Standardfont"
 msgid "Default Font Size"
 msgstr "Standard fontstorlek"
 
-msgid "File"
-msgstr "Fil"
-
-msgid "Font Pressed Color"
-msgstr "Fontfärg (nedtryckt)"
-
-msgid "Font Hover Color"
-msgstr "Fontfärg (hover)"
-
-msgid "Font Focus Color"
-msgstr "Fontfärg (fokus)"
-
-msgid "Font Hover Pressed Color"
-msgstr "Fontfärg (hover + nedtryckt)"
-
-msgid "Font Disabled Color"
-msgstr "Fontfärg (inaktiv)"
-
-msgid "Font Outline Color"
-msgstr "Fontkonturfärg"
-
-msgid "Icon Normal Color"
-msgstr "Ikonfärg (normal)"
-
-msgid "Icon Pressed Color"
-msgstr "Ikonfärg (nedtryckt)"
-
-msgid "Icon Hover Color"
-msgstr "Ikonfärg (hover)"
-
-msgid "Icon Hover Pressed Color"
-msgstr "Ikonfärg (hover + nedtryckt)"
-
-msgid "Icon Focus Color"
-msgstr "Ikonfärg (fokus)"
-
-msgid "Icon Disabled Color"
-msgstr "Ikonfärg (inaktiv)"
-
-msgid "H Separation"
-msgstr "Horisontell separation"
-
-msgid "Icon Max Width"
-msgstr "Ikon maxbredd"
-
-msgid "Align to Largest Stylebox"
-msgstr "Justera till största stylebox"
-
-msgid "Underline Spacing"
-msgstr "Understreck‑avstånd"
-
-msgid "Normal Mirrored"
-msgstr "Normal speglad"
-
-msgid "Hover Mirrored"
-msgstr "Hover speglad"
-
-msgid "Pressed Mirrored"
-msgstr "Nedtryckt speglad"
-
-msgid "Disabled Mirrored"
-msgstr "Inaktiv speglad"
-
-msgid "Arrow"
-msgstr "Pil"
-
-msgid "Arrow Margin"
-msgstr "Pilmarginal"
-
-msgid "Modulate Arrow"
-msgstr "Modulera pil"
-
-msgid "Hover Pressed"
-msgstr "Hover + nedtryckt"
-
-msgid "Checked Disabled"
-msgstr "Ikryssad inaktiv"
-
-msgid "Unchecked"
-msgstr "Omarkerad"
-
-msgid "Unchecked Disabled"
-msgstr "Omarkerad inaktiv"
-
-msgid "Radio Checked"
-msgstr "Radio ikryssad"
-
-msgid "Radio Checked Disabled"
-msgstr "Radio ikryssad inaktiv"
-
-msgid "Radio Unchecked"
-msgstr "Radio omarkerad"
-
-msgid "Radio Unchecked Disabled"
-msgstr "Radio omarkerad inaktiv"
-
-msgid "Check V Offset"
-msgstr "Kryss V‑förskjutning"
-
-msgid "Checkbox Checked Color"
-msgstr "Kryssruta ikryssad färg"
-
-msgid "Checkbox Unchecked Color"
-msgstr "Kryssruta omarkerad färg"
-
-msgid "Checked Mirrored"
-msgstr "Ikryssad speglad"
-
-msgid "Checked Disabled Mirrored"
-msgstr "Ikryssad inaktiv speglad"
-
-msgid "Unchecked Mirrored"
-msgstr "Omarkerad speglad"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "Omarkerad inaktiv speglad"
-
-msgid "Button Checked Color"
-msgstr "Knapp ikryssad färg"
-
-msgid "Button Unchecked Color"
-msgstr "Knapp omarkerad färg"
-
-msgid "Font Shadow Color"
-msgstr "Typsnitt skuggfärg"
-
-msgid "Shadow Offset X"
-msgstr "Skuggförskjutning X"
-
-msgid "Shadow Offset Y"
-msgstr "Skuggförskjutning Y"
-
-msgid "Shadow Outline Size"
-msgstr "Skuggkonturstorlek"
-
-msgid "Font Selected Color"
-msgstr "Typsnitt markerad färg"
-
-msgid "Font Uneditable Color"
-msgstr "Typsnitt oredigerbar färg"
-
-msgid "Font Placeholder Color"
-msgstr "Typsnitt platshållarfärg"
-
-msgid "Caret Color"
-msgstr "Markörfärg"
-
-msgid "Selection Color"
-msgstr "Markeringsfärg"
-
-msgid "Clear Button Color"
-msgstr "Rensa‑knapp färg"
-
-msgid "Clear Button Color Pressed"
-msgstr "Rensa‑knapp nedtryckt färg"
-
-msgid "Minimum Character Width"
-msgstr "Minsta teckenbredd"
-
-msgid "Caret Width"
-msgstr "Markörbredd"
-
-msgid "Clear"
-msgstr "Rensa"
-
-msgid "Tab"
-msgstr "Flik"
-
-msgid "Font Readonly Color"
-msgstr "Typsnitt skrivskyddad färg"
-
-msgid "Current Line Color"
-msgstr "Aktuell radfärg"
-
-msgid "Caret Background Color"
-msgstr "Markörbakgrundsfärg"
-
-msgid "Word Highlighted Color"
-msgstr "Ord markerad färg"
-
-msgid "Search Result Color"
-msgstr "Sökresultatfärg"
-
-msgid "Search Result Border Color"
-msgstr "Sökresultat kantfärg"
-
-msgid "Wrap Offset"
-msgstr "Omslags‑offset"
-
-msgid "Breakpoint"
-msgstr "Brytpunkt"
-
-msgid "Bookmark"
-msgstr "Bokmärke"
-
-msgid "Executing Line"
-msgstr "Exekveringsrad"
-
-msgid "Can Fold"
-msgstr "Kan fällas"
-
-msgid "Can Fold Code Region"
-msgstr "Kan fälla kodregion"
-
-msgid "Folded Code Region"
-msgstr "Hopfälld kodregion"
-
-msgid "Folded EOL Icon"
-msgstr "Hopfälld radslutsikon"
-
-msgid "Completion Color BG"
-msgstr "Kompletteringsbakgrundsfärg"
-
-msgid "Completion Background Color"
-msgstr "Kompletteringsbakgrundsfärg"
-
-msgid "Completion Selected Color"
-msgstr "Kompletteringsmarkeringsfärg"
-
-msgid "Completion Existing Color"
-msgstr "Kompletteringsbefintlig färg"
-
-msgid "Completion Scroll Color"
-msgstr "Kompletteringsrullfärg"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "Kompletteringsrull hovrad färg"
-
-msgid "Bookmark Color"
-msgstr "Bokmärkesfärg"
-
-msgid "Breakpoint Color"
-msgstr "Brytpunktsfärg"
-
-msgid "Executing Line Color"
-msgstr "Exekveringsradfärg"
-
-msgid "Code Folding Color"
-msgstr "Kodfällningsfärg"
-
-msgid "Folded Code Region Color"
-msgstr "Hopfälld kodregionsfärg"
-
-msgid "Brace Mismatch Color"
-msgstr "Klammermissmatchfärg"
-
-msgid "Line Number Color"
-msgstr "Radnummersfärg"
-
-msgid "Line Length Guideline Color"
-msgstr "Radlängdsriktlinjefärg"
-
-msgid "Completion Lines"
-msgstr "Kompletteringsrader"
-
-msgid "Completion Max Width"
-msgstr "Kompletterings maxbredd"
-
-msgid "Completion Scroll Width"
-msgstr "Kompletteringsrullbredd"
-
-msgid "Scroll Focus"
-msgstr "Rullfokus"
-
-msgid "Grabber"
-msgstr "Draghandtag"
-
-msgid "Grabber Highlight"
-msgstr "Draghandtag (markerat)"
-
-msgid "Grabber Pressed"
-msgstr "Draghandtag (nedtryckt)"
-
-msgid "Increment"
-msgstr "Ökningsknapp"
-
-msgid "Increment Highlight"
-msgstr "Ökningsknapp (markerad)"
-
-msgid "Increment Pressed"
-msgstr "Ökningsknapp (nedtryckt)"
-
-msgid "Decrement"
-msgstr "Minskningsknapp"
-
-msgid "Decrement Highlight"
-msgstr "Minskningsknapp (markerad)"
-
-msgid "Decrement Pressed"
-msgstr "Minskningsknapp (nedtryckt)"
-
-msgid "Slider"
-msgstr "Skjutreglage"
-
-msgid "Grabber Area"
-msgstr "Draghandtagsyta"
-
-msgid "Grabber Area Highlight"
-msgstr "Draghandtagsyta (markerad)"
-
-msgid "Grabber Disabled"
-msgstr "Draghandtag (inaktiverat)"
-
-msgid "Tick"
-msgstr "Markering"
-
-msgid "Center Grabber"
-msgstr "Centrera draghandtag"
-
-msgid "Grabber Offset"
-msgstr "Draghandtagsförskjutning"
-
-msgid "Tick Offset"
-msgstr "Markeringsförskjutning"
-
-msgid "Updown"
-msgstr "Upp/Ner‑knappar"
-
-msgid "Up"
-msgstr "Upp-knapp"
-
-msgid "Up Hover"
-msgstr "Upp‑knapp (markerad)"
-
-msgid "Up Pressed"
-msgstr "Upp‑knapp (nedtryckt)"
-
-msgid "Up Disabled"
-msgstr "Upp‑knapp (inaktiverad)"
-
-msgid "Down"
-msgstr "Ner‑knapp"
-
-msgid "Down Hover"
-msgstr "Ner‑knapp (markerad)"
-
-msgid "Down Pressed"
-msgstr "Ner‑knapp (nedtryckt)"
-
-msgid "Down Disabled"
-msgstr "Ner‑knapp (inaktiverad)"
-
-msgid "Up Background"
-msgstr "Upp‑knapp (bakgrund)"
-
-msgid "Up Background Hovered"
-msgstr "Upp‑knapp (bakgrund, markerad)"
-
-msgid "Up Background Pressed"
-msgstr "Upp‑knapp (bakgrund, nedtryckt)"
-
-msgid "Up Background Disabled"
-msgstr "Upp‑knapp (bakgrund, inaktiverad)"
-
-msgid "Down Background"
-msgstr "Ner‑knapp (bakgrund)"
-
-msgid "Down Background Hovered"
-msgstr "Ner‑knapp (bakgrund, markerad)"
-
-msgid "Down Background Pressed"
-msgstr "Ner‑knapp (bakgrund, nedtryckt)"
-
-msgid "Down Background Disabled"
-msgstr "Ner‑knapp (bakgrund, inaktiverad)"
-
-msgid "Up Icon Modulate"
-msgstr "Upp‑ikon (färgmodulering)"
-
-msgid "Up Hover Icon Modulate"
-msgstr "Upp‑ikon (färgmodulering, markerad)"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "Upp‑ikon (färgmodulering, nedtryckt)"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "Upp‑ikon (färgmodulering, inaktiverad)"
-
-msgid "Down Icon Modulate"
-msgstr "Ner‑ikon (färgmodulering)"
-
-msgid "Down Hover Icon Modulate"
-msgstr "Ner‑ikon (färgmodulering, markerad)"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "Ner‑ikon (färgmodulering, nedtryckt)"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "Ner‑ikon (färgmodulering, inaktiverad)"
-
-msgid "Field and Buttons Separator"
-msgstr "Fält‑ och knappseparator"
-
-msgid "Up Down Buttons Separator"
-msgstr "Upp‑/ner‑knappsseparator"
-
-msgid "Buttons Vertical Separation"
-msgstr "Knappar (vertikal separation)"
-
-msgid "Field and Buttons Separation"
-msgstr "Fält‑ och knappseparation"
-
-msgid "Buttons Width"
-msgstr "Knappbredd"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "Sätt minsta knappbredd från ikoner"
-
-msgid "Scroll Hint Vertical"
-msgstr "Rullningshint vertikal"
-
-msgid "Scroll Hint Horizontal"
-msgstr "Horisontell rullningshint"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "Färg för vertikal rullningshint"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "Färg för horisontell rullningshint"
-
-msgid "Scrollbar Margin Left"
-msgstr "Rullningslistmarginal (vänster)"
-
-msgid "Scrollbar Margin Top"
-msgstr "Rullningslistmarginal (övre)"
-
-msgid "Scrollbar Margin Right"
-msgstr "Rullningslistmarginal (höger)"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "Rullningslistmarginal (nedre)"
-
-msgid "Normal Joystick"
-msgstr "Normal joystick"
-
-msgid "Normal Tip"
-msgstr "Normal spets"
-
-msgid "Pressed Joystick"
-msgstr "Nedtryckt joystick"
-
-msgid "Pressed Tip"
-msgstr "Nedtryckt spets"
-
-msgid "Embedded Border"
-msgstr "Inbäddad ram"
-
-msgid "Embedded Unfocused Border"
-msgstr "Inbäddad ram (ofokuserad)"
-
-msgid "Title Font"
-msgstr "Titeltypsnitt"
-
-msgid "Title Font Size"
-msgstr "Titeltypsnittsstorlek"
-
-msgid "Title Outline Modulate"
-msgstr "Titelkontur (färgmodulering)"
-
-msgid "Title Outline Size"
-msgstr "Titelkonturstorlek"
-
-msgid "Title Height"
-msgstr "Titelhöjd"
-
-msgid "Resize Margin"
-msgstr "Storleksändringsmarginal"
-
-msgid "Close"
-msgstr "Stäng"
-
-msgid "Close Pressed"
-msgstr "Stängknapp nedtryckt"
-
-msgid "Close H Offset"
-msgstr "Stängknappens horisontella förskjutning"
-
-msgid "Close V Offset"
-msgstr "Stängknappens vertikala förskjutning"
-
-msgid "Buttons Separation"
-msgstr "Knappavstånd"
-
-msgid "Load"
-msgstr "Ladda"
-
-msgid "Save"
-msgstr "Spara"
-
-msgid "Parent Folder"
-msgstr "Överordnad mapp"
-
-msgid "Back Folder"
-msgstr "Föregående mapp"
-
-msgid "Forward Folder"
-msgstr "Nästa mapp"
-
-msgid "Reload"
-msgstr "Ladda om"
-
-msgid "Favorite"
-msgstr "Favorit"
-
-msgid "Toggle Hidden"
-msgstr "Växla dolda filer"
-
-msgid "Toggle Filename Filter"
-msgstr "Växla filnamnsfilter"
-
-msgid "Folder"
-msgstr "Mapp"
-
-msgid "Thumbnail Mode"
-msgstr "Miniatyrvy"
-
-msgid "List Mode"
-msgstr "Listvy"
-
-msgid "Create Folder"
-msgstr "Skapa mapp"
-
-msgid "Sort"
-msgstr "Sortera"
-
-msgid "Favorite Up"
-msgstr "Flytta favorit uppåt"
-
-msgid "Favorite Down"
-msgstr "Flytta favorit neråt"
-
-msgid "File Thumbnail"
-msgstr "Filminiatyr"
-
-msgid "Folder Thumbnail"
-msgstr "Mappminiatyr"
-
-msgid "Menu Copy Path"
-msgstr "Meny: Kopiera sökväg"
-
-msgid "Menu Delete"
-msgstr "Meny: Ta bort"
-
-msgid "Menu New Folder"
-msgstr "Meny: Ny mapp"
-
-msgid "Menu Refresh"
-msgstr "Meny: Uppdatera"
-
-msgid "Menu Show in File Manager"
-msgstr "Meny: Visa i filhanteraren"
-
-msgid "Menu Open Bundle"
-msgstr "Meny: Öppna paket"
-
-msgid "Folder Icon Color"
-msgstr "Mappikonfärg"
-
-msgid "File Icon Color"
-msgstr "Filikonfärg"
-
-msgid "File Disabled Color"
-msgstr "Inaktiverad filfärg"
-
-msgid "Separator"
-msgstr "Avskiljare"
-
-msgid "Labeled Separator Left"
-msgstr "Märkt avskiljare (vänster)"
-
-msgid "Labeled Separator Right"
-msgstr "Märkt avskiljare (höger)"
-
-msgid "Indeterminate Disabled"
-msgstr "Obestämt (inaktiverad)"
-
-msgid "Submenu"
-msgstr "Undermeny"
-
-msgid "Submenu Mirrored"
-msgstr "Spegelvänd undermeny"
-
-msgid "Search"
-msgstr "Sök"
-
-msgid "Font Separator"
-msgstr "Typsnittsavskiljare"
-
-msgid "Font Separator Size"
-msgstr "Typsnittsavskiljarens storlek"
-
-msgid "Font Accelerator Color"
-msgstr "Typsnittsfärg för snabbtangent"
-
-msgid "Font Separator Color"
-msgstr "Typsnittsavskiljarens färg"
-
-msgid "Font Separator Outline Color"
-msgstr "Typsnittsavskiljarens konturfärg"
-
-msgid "V Separation"
-msgstr "Vertikal separation"
-
-msgid "Search Bar Separation"
-msgstr "Separation för sökfält"
-
-msgid "Separator Outline Size"
-msgstr "Avskiljarens konturstorlek"
-
-msgid "Item Start Padding"
-msgstr "Objektets startutfyllnad"
-
-msgid "Item End Padding"
-msgstr "Objektets slututfyllnad"
-
-msgid "Gutter Compact"
-msgstr "Kompakt marginal"
-
-msgid "Panel Selected"
-msgstr "Markerad panel"
-
-msgid "Panel Focus"
-msgstr "Panel (fokus)"
-
-msgid "Titlebar"
-msgstr "Titelrad"
-
-msgid "Titlebar Selected"
-msgstr "Markerad titelrad"
-
-msgid "Slot"
-msgstr "Plats"
-
-msgid "Slot Selected"
-msgstr "Vald plats"
-
-msgid "Resizer"
-msgstr "Storleksändrare"
-
-msgid "Resizer Color"
-msgstr "Storleksändrarens färg"
-
-msgid "Port H Offset"
-msgstr "Portens horisontella förskjutning"
-
-msgid "Hovered"
-msgstr "Markerad"
-
-msgid "Hovered Dimmed"
-msgstr "Markerad (nedtonad)"
-
-msgid "Hovered Selected"
-msgstr "Markerad (vald)"
-
-msgid "Hovered Selected Focus"
-msgstr "Markerad (vald, fokus)"
-
-msgid "Selected Focus"
-msgstr "Vald (fokus)"
-
-msgid "Cursor"
-msgstr "Markör"
-
-msgid "Cursor Unfocused"
-msgstr "Markör (ofokuserad)"
-
-msgid "Button Hover"
-msgstr "Knapp (markerad)"
-
-msgid "Title Button Normal"
-msgstr "Titelknapp (normal)"
-
-msgid "Title Button Pressed"
-msgstr "Titelknapp (nedtryckt)"
-
-msgid "Title Button Hover"
-msgstr "Titelknapp (markerad)"
-
-msgid "Custom Button"
-msgstr "Anpassad knapp"
-
-msgid "Custom Button Pressed"
-msgstr "Anpassad knapp (nedtryckt)"
-
-msgid "Custom Button Hover"
-msgstr "Anpassad knapp (markerad)"
-
-msgid "Select Arrow"
-msgstr "Väljpil"
-
-msgid "Arrow Collapsed"
-msgstr "Pil (ihopfälld)"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "Pil (ihopfälld, spegelvänd)"
-
-msgid "Title Button Font"
-msgstr "Titelknapp (typsnitt)"
-
-msgid "Title Button Font Size"
-msgstr "Titelknapp (typsnittsstorlek)"
-
-msgid "Title Button Color"
-msgstr "Titelknapp (färg)"
-
-msgid "Font Hovered Color"
-msgstr "Typsnittsfärg (markerad)"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "Typsnittsfärg (markerad, nedtonad)"
-
-msgid "Font Hovered Selected Color"
-msgstr "Typsnittsfärg (markerad, vald)"
-
-msgid "Guide Color"
-msgstr "Hjälplinjesfärg"
-
-msgid "Drop on Item Color"
-msgstr "Färg vid släpp på objekt"
-
-msgid "Drop Position Color"
-msgstr "Släppositionfärg"
-
-msgid "Relationship Line Color"
-msgstr "Relationslinjefärg"
-
-msgid "Parent HL Line Color"
-msgstr "Föräldra‑HL‑linjefärg"
-
-msgid "Children HL Line Color"
-msgstr "Barn‑HL‑linjefärg"
-
-msgid "Custom Button Font Highlight"
-msgstr "Anpassad knapp (typsnitt, markerat)"
-
-msgid "Scroll Hint Color"
-msgstr "Färg för rullningshint"
-
-msgid "Item Margin"
-msgstr "Objektmarginal"
-
-msgid "Inner Item Margin Bottom"
-msgstr "Inre objektmarginal (nedre)"
-
-msgid "Inner Item Margin Left"
-msgstr "Inre objektmarginal (vänster)"
-
-msgid "Inner Item Margin Right"
-msgstr "Inre objektmarginal (höger)"
-
-msgid "Inner Item Margin Top"
-msgstr "Inre objektmarginal (övre)"
-
-msgid "Check H Separation"
-msgstr "Kontrollera horisontell separation"
-
-msgid "Icon H Separation"
-msgstr "Ikonens horisontella separation"
-
-msgid "Button Margin"
-msgstr "Knappmarginal"
-
-msgid "Relationship Line Width"
-msgstr "Relationslinjebredd"
-
-msgid "Parent HL Line Width"
-msgstr "Föräldra‑HL‑linjebredd"
-
-msgid "Children HL Line Width"
-msgstr "Barn‑HL‑linjebredd"
-
-msgid "Parent HL Line Margin"
-msgstr "Föräldra‑HL‑linjemarginal"
-
-msgid "Draw Guides"
-msgstr "Rita hjälplinjer"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "Väntetid för drag‑utfällning (ms)"
-
-msgid "Scroll Border"
-msgstr "Rullningskant"
-
-msgid "Scroll Speed"
-msgstr "Rullningshastighet"
-
-msgid "Scrollbar H Separation"
-msgstr "Rullningslist H‑separation"
-
-msgid "Scrollbar V Separation"
-msgstr "Rullningslist V‑separation"
-
-msgid "Icon Margin"
-msgstr "Ikonmarginal"
-
-msgid "Tab Selected"
-msgstr "Flik (vald)"
-
-msgid "Tab Hovered"
-msgstr "Flik (hover)"
-
-msgid "Tab Unselected"
-msgstr "Flik (ej vald)"
-
-msgid "Tab Disabled"
-msgstr "Flik (inaktiverad)"
-
-msgid "Tab Focus"
-msgstr "Flik (fokus)"
-
-msgid "Tabbar Background"
-msgstr "Flikradens bakgrund"
-
-msgid "Drop Mark"
-msgstr "Släppmarkering"
-
-msgid "Menu Highlight"
-msgstr "Meny‑markering"
-
-msgid "Font Unselected Color"
-msgstr "Teckensnittsfärg (ej vald)"
-
-msgid "Drop Mark Color"
-msgstr "Släppmarkeringsfärg"
-
-msgid "Icon Selected Color"
-msgstr "Markerad ikonfärg"
-
-msgid "Icon Hovered Color"
-msgstr "Ikonfärg vid hovring"
-
-msgid "Icon Unselected Color"
-msgstr "Omarkerad ikonfärg"
-
-msgid "Side Margin"
-msgstr "Sidomarginal"
-
-msgid "Icon Separation"
-msgstr "Ikonseparation"
-
-msgid "Button Highlight"
-msgstr "Knappmarkering"
-
-msgid "Hover Switch Wait Msec"
-msgstr "Väntetid för hovringsväxling (ms)"
-
-msgid "SV Width"
-msgstr "SV‑bredd"
-
-msgid "SV Height"
-msgstr "SV‑höjd"
-
-msgid "H Width"
-msgstr "H‑bredd"
-
-msgid "Label Width"
-msgstr "Etikettbredd"
-
-msgid "Center Slider Grabbers"
-msgstr "Centrera reglagets grepp"
-
-msgid "Sample Focus"
-msgstr "Samplingsfokus"
-
-msgid "Picker Focus Rectangle"
-msgstr "Väljarens fokusrektangel"
-
-msgid "Picker Focus Circle"
-msgstr "Väljarens fokuscirkel"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "Markörfärg (fokus, ej redigering)"
-
-msgid "Menu Option"
-msgstr "Menyalternativ"
-
-msgid "Folded Arrow"
-msgstr "Hopfälld pil"
-
-msgid "Expanded Arrow"
-msgstr "Utfälld pil"
-
-msgid "Screen Picker"
-msgstr "Skärmväljare"
-
-msgid "Shape Circle"
-msgstr "Cirkel‑form"
-
-msgid "Shape Rect"
-msgstr "Rektangel‑form"
-
-msgid "Shape Rect Wheel"
-msgstr "Rektangel‑hjulsform"
-
-msgid "Add Preset"
-msgstr "Lägg till förinställning"
-
-msgid "Sample BG"
-msgstr "Samplingsbakgrund"
-
-msgid "Sample Revert"
-msgstr "Återställ samplingsruta"
-
-msgid "Overbright Indicator"
-msgstr "Överljusindikator"
-
-msgid "Bar Arrow"
-msgstr "Stapelpil"
-
-msgid "Picker Cursor"
-msgstr "Väljarens markör"
-
-msgid "Picker Cursor BG"
-msgstr "Väljarens markörbakgrund"
-
-msgid "Color Script"
-msgstr "Färgskript"
-
-msgid "Color Copy"
-msgstr "Färgkopiering"
-
-msgid "Color Hue"
-msgstr "Färgton"
-
-msgid "BG"
-msgstr "Bakgrund"
-
-msgid "Preset FG"
-msgstr "Förinställning (förgrund)"
-
-msgid "Preset Focus"
-msgstr "Förinställning (fokus)"
-
-msgid "Preset BG"
-msgstr "Förinställning (bakgrund)"
-
-msgid "Horizontal Rule"
-msgstr "Horisontell linje"
-
-msgid "Normal Font"
-msgstr "Normal typsnitt"
-
-msgid "Bold Font"
-msgstr "Fet typsnitt"
-
-msgid "Italics Font"
-msgstr "Kursivt typsnitt"
-
-msgid "Bold Italics Font"
-msgstr "Fet‑kursivt typsnitt"
-
-msgid "Mono Font"
-msgstr "Monospace‑typsnitt"
-
-msgid "Normal Font Size"
-msgstr "Normal textstorlek"
-
-msgid "Bold Font Size"
-msgstr "Fet textstorlek"
-
-msgid "Italics Font Size"
-msgstr "Kursiv textstorlek"
-
-msgid "Bold Italics Font Size"
-msgstr "Fet‑kursiv textstorlek"
-
-msgid "Mono Font Size"
-msgstr "Monospace‑textstorlek"
-
-msgid "Table H Separation"
-msgstr "Tabell horisontell separation"
-
-msgid "Table V Separation"
-msgstr "Tabell vertikal separation"
-
-msgid "Table Odd Row BG"
-msgstr "Tabell udda rad bakgrund"
-
-msgid "Table Even Row BG"
-msgstr "Tabell jämn rad bakgrund"
-
-msgid "Table Border"
-msgstr "Tabellkant"
-
-msgid "Text Highlight H Padding"
-msgstr "Textmarkering horisontell utfyllnad"
-
-msgid "Text Highlight V Padding"
-msgstr "Textmarkering vertikal utfyllnad"
-
-msgid "Underline Alpha"
-msgstr "Understrykningens transparens"
-
-msgid "Strikethrough Alpha"
-msgstr "Genomstrykningens transparens"
-
-msgid "Touch Dragger Color"
-msgstr "Färg för draghandtag (touch)"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "Färg för nedtryckt draghandtag (touch)"
-
-msgid "Touch Dragger Hover Color"
-msgstr "Färg för draghandtag vid hovring (touch)"
-
-msgid "H Touch Dragger"
-msgstr "Horisontellt draghandtag (touch)"
-
-msgid "V Touch Dragger"
-msgstr "Vertikalt draghandtag (touch)"
-
-msgid "Touch Dragger"
-msgstr "Draghandtag (touch)"
-
-msgid "H Grabber"
-msgstr "Horisontellt grepphandtag"
-
-msgid "V Grabber"
-msgstr "Vertikalt grepphandtag"
-
-msgid "Margin Left"
-msgstr "Vänstermarginal"
-
-msgid "Margin Top"
-msgstr "Övermarginal"
-
-msgid "Margin Right"
-msgstr "Högermarginal"
-
-msgid "Margin Bottom"
-msgstr "Undermarginal"
-
-msgid "Minimum Grab Thickness"
-msgstr "Minsta grepp‑tjocklek"
-
-msgid "Autohide"
-msgstr "Automatisk döljning"
-
-msgid "Split Bar Background"
-msgstr "Delningslistans bakgrund"
-
-msgid "Zoom Out"
-msgstr "Zooma ut"
-
-msgid "Zoom In"
-msgstr "Zooma in"
-
-msgid "Zoom Reset"
-msgstr "Återställ zoom"
-
-msgid "Grid Toggle"
-msgstr "Rutnätsväxling"
-
-msgid "Minimap Toggle"
-msgstr "Minikartväxling"
-
-msgid "Snapping Toggle"
-msgstr "Snäppväxling"
-
-msgid "Menu Panel"
-msgstr "Menypanel"
-
-msgid "Grid Minor"
-msgstr "Rutnät (sekundära linjer)"
-
-msgid "Grid Major"
-msgstr "Rutnät (primära linjer)"
-
-msgid "Selection Fill"
-msgstr "Markeringsfyllning"
-
-msgid "Selection Stroke"
-msgstr "Markeringskontur"
-
-msgid "Activity"
-msgstr "Aktivitet"
-
-msgid "Connection Hover Tint Color"
-msgstr "Färgton för anslutning (hovring)"
-
-msgid "Connection Hover Thickness"
-msgstr "Anslutningstjocklek (hovring)"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "Färgton för giltigt mål (anslutning)"
-
-msgid "Connection Rim Color"
-msgstr "Anslutningskantfärg"
-
-msgid "Title Panel"
-msgstr "Titelpanel"
-
-msgid "Title Hover Panel"
-msgstr "Titelpanel (hovring)"
-
-msgid "Title Collapsed Panel"
-msgstr "Titelpanel (ihopfälld)"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "Titelpanel (ihopfälld, hovring)"
-
-msgid "Hover Font Color"
-msgstr "Typsnittsfärg (hovring)"
-
-msgid "Collapsed Font Color"
-msgstr "Typsnittsfärg (ihopfälld)"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "Expanderingspil (spegelvänd)"
-
-msgid "Folded Arrow Mirrored"
-msgstr "Hopfällningspil (spegelvänd)"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "Port‑hotzon (inre utsträckning)"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "Port‑hotzon (yttre utsträckning)"
-
 msgid "Default Theme Scale"
 msgstr "Standardskala för tema"
 
@@ -12047,6 +12351,9 @@ msgstr "Reservvärden"
 
 msgid "Stylebox"
 msgstr "Stylebox"
+
+msgid "Sound"
+msgstr "Ljud"
 
 msgid "Enable Input"
 msgstr "Aktivera inmatning"
@@ -12402,8 +12709,32 @@ msgstr "Standardbegränsningsbias"
 msgid "Physics Engine"
 msgstr "Fysikmotor"
 
+msgid "Safe Fraction"
+msgstr "Säker andel"
+
+msgid "Unsafe Fraction"
+msgstr "Osäker andel"
+
 msgid "Max Collisions"
 msgstr "Maximalt antal kollisioner"
+
+msgid "Collider RID"
+msgstr "Kolliderarens RID"
+
+msgid "Collider ID"
+msgstr "Kolliderarens ID"
+
+msgid "Collider Shape"
+msgstr "Kolliderarform"
+
+msgid "Collider Velocity"
+msgstr "Kolliderarens hastighet"
+
+msgid "Max Intersections"
+msgstr "Maximalt antal skärningar"
+
+msgid "Collider"
+msgstr "Kolliderare"
 
 msgid "Canvas Instance ID"
 msgstr "Canvasinstans‑ID"
@@ -12434,6 +12765,9 @@ msgstr "Invers tröghetstensor"
 
 msgid "Principal Inertia Axes"
 msgstr "Huvudsakliga tröghetsaxlar"
+
+msgid "Collider Face Index"
+msgstr "Kolliderarens ytindex"
 
 msgid "Debug Redraw Time"
 msgstr "Felsökningsomritningstid"
@@ -12537,8 +12871,20 @@ msgstr "Tidsomslag (sekunder)"
 msgid "Use Physical Light Units"
 msgstr "Använd fysiska ljusenheter"
 
+msgid "Contact Shadow"
+msgstr "Kontaktskugga"
+
+msgid "Shadow Length"
+msgstr "Skugglängd"
+
+msgid "Surface Thickness"
+msgstr "Yttjocklek"
+
 msgid "Soft Shadow Filter Quality"
 msgstr "Mjukskuggfilterkvalitet"
+
+msgid "Multi Bounce Occlusion"
+msgstr "Flerstudsig ocklusion"
 
 msgid "Atlas 16 Bits"
 msgstr "Atlas 16‑bitar"
@@ -12750,6 +13096,9 @@ msgstr "OpenGL"
 msgid "Max Renderable Elements"
 msgstr "Maximalt antal renderbara element"
 
+msgid "Max Decals"
+msgstr "Maximalt antal dekaler"
+
 msgid "Max Renderable Lights"
 msgstr "Maximalt antal renderbara ljus"
 
@@ -12902,6 +13251,9 @@ msgstr "Generera mipmaps för standardtypsnitt"
 
 msgid "LCD Subpixel Layout"
 msgstr "LCD‑subpixel‑layout"
+
+msgid "MSDF Legacy Scaling"
+msgstr "Äldre MSDF-skalning"
 
 msgid "Include Text Server Data"
 msgstr "Inkludera textserver‑data"

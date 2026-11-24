@@ -58,13 +58,14 @@
 # HaeBunYeok <bestfreendover@gmail.com>, 2025.
 # Clover <bestfreendover@gmail.com>, 2025.
 # hw <hywoo325@gmail.com>, 2026.
+# Myeongjin <ara@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-08-15 09:57+0000\n"
-"Last-Translator: Myeongjin <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2026-11-20 13:35+0000\n"
+"Last-Translator: Myeongjin <ara@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -72,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 msgid "Application"
 msgstr "애플리케이션"
@@ -203,6 +204,9 @@ msgstr "최소화 비활성화됨"
 msgid "Maximize Disabled"
 msgstr "최대화 비활성화됨"
 
+msgid "Enable Toggle Fullscreen Shortcut"
+msgstr "전체 화면 전환 단축키 활성화"
+
 msgid "Window Width Override"
 msgstr "창 너비 오버라이드"
 
@@ -250,6 +254,9 @@ msgstr "버스"
 
 msgid "Default Bus Layout"
 msgstr "디폴트 버스 레이아웃"
+
+msgid "GUI Theme Bus"
+msgstr "GUI 테마 버스"
 
 msgid "Default Playback Type"
 msgstr "디폴트 재생 유형"
@@ -416,6 +423,9 @@ msgstr "동적 글꼴"
 msgid "Use Oversampling"
 msgstr "오버샘플링 사용"
 
+msgid "Auto Focus Strategy"
+msgstr "자동 포커스 전략"
+
 msgid "Rendering Device"
 msgstr "렌더링 기기"
 
@@ -508,6 +518,9 @@ msgstr "음량 버튼 오버라이드"
 
 msgid "Disable Scroll Deadzone"
 msgstr "스크롤 데드존 비활성화"
+
+msgid "Windows"
+msgstr "Windows"
 
 msgid "Navigation"
 msgstr "내비게이션"
@@ -1195,6 +1208,31 @@ msgstr "편집 정수"
 
 msgid "Deferred Drag Mode"
 msgstr "지연 드래그 모드"
+
+msgid "Font Uneditable Color"
+msgstr "글꼴 편집 불가 색상"
+
+msgid "Font"
+msgstr "글꼴"
+
+msgid "Font Size"
+msgstr "글꼴 크기"
+
+msgctxt "Ordinary"
+msgid "Normal"
+msgstr "보통"
+
+msgid "Focus"
+msgstr "포커스"
+
+msgid "Updown"
+msgstr "위아래"
+
+msgid "Grabber Highlight"
+msgstr "그래버 강조"
+
+msgid "Grabber"
+msgstr "그래버"
 
 msgid "Zoom"
 msgstr "줌"
@@ -3206,9 +3244,6 @@ msgstr "정지 시 동작"
 
 msgid "Output"
 msgstr "출력"
-
-msgid "Font Size"
-msgstr "글꼴 크기"
 
 msgid "Always Clear Output on Play"
 msgstr "플레이 시 항상 출력 비우기"
@@ -5970,9 +6005,6 @@ msgstr "Emscripten 풀 크기"
 msgid "Godot Pool Size"
 msgstr "Godot 풀 크기"
 
-msgid "Windows"
-msgstr "Windows"
-
 msgid "signtool"
 msgstr "signtool"
 
@@ -7214,9 +7246,6 @@ msgstr "텍스트"
 msgid "Outline Modulate"
 msgstr "윤곽선 조절"
 
-msgid "Font"
-msgstr "글꼴"
-
 msgid "Horizontal Alignment"
 msgstr "가로 정렬"
 
@@ -8222,8 +8251,119 @@ msgstr "아이콘 세로 정렬"
 msgid "Expand Icon"
 msgstr "아이콘 확장"
 
+msgid "Normal Mirrored"
+msgstr "보통 미러링"
+
+msgid "Pressed Mirrored"
+msgstr "눌림 미러링"
+
+msgid "Hover"
+msgstr "호버"
+
+msgid "Hover Mirrored"
+msgstr "호버 미러링"
+
+msgid "Hover Pressed"
+msgstr "호버 눌림"
+
+msgid "Disabled Mirrored"
+msgstr "비활성화됨 미러링"
+
+msgid "Font Focus Color"
+msgstr "글꼴 포커스 색상"
+
+msgid "Font Pressed Color"
+msgstr "글꼴 눌림 색상"
+
+msgid "Font Hover Color"
+msgstr "글꼴 호버 색상"
+
+msgid "Font Hover Pressed Color"
+msgstr "글꼴 호버 눌림 색상"
+
+msgid "Font Disabled Color"
+msgstr "글꼴 비활성화됨 색상"
+
+msgid "Font Outline Color"
+msgstr "글꼴 윤곽선 색상"
+
+msgid "Icon Normal Color"
+msgstr "아이콘 보통 색상"
+
+msgid "Icon Focus Color"
+msgstr "아이콘 포커스 색상"
+
+msgid "Icon Pressed Color"
+msgstr "아이콘 눌림 색상"
+
+msgid "Icon Hover Color"
+msgstr "아이콘 호버 색상"
+
+msgid "Icon Hover Pressed Color"
+msgstr "아이콘 호버 눌림 색상"
+
+msgid "Icon Disabled Color"
+msgstr "아이콘 비활성화됨 색상"
+
+msgid "H Separation"
+msgstr "가로 간격"
+
+msgid "Icon Max Width"
+msgstr "아이콘 최대 너비"
+
+msgid "Align to Largest Stylebox"
+msgstr "가장 큰 스타일박스에 정렬"
+
 msgid "Use Top Left"
 msgstr "왼쪽 위를 사용"
+
+msgid "Check V Offset"
+msgstr "세로 오프셋 체크"
+
+msgid "Unchecked"
+msgstr "체크 해제됨"
+
+msgid "Radio Checked"
+msgstr "라디오 체크됨"
+
+msgid "Radio Unchecked"
+msgstr "라디오 체크 해제됨"
+
+msgid "Checked Disabled"
+msgstr "체크됨 비활성화됨"
+
+msgid "Unchecked Disabled"
+msgstr "체크 해제됨 비활성화됨"
+
+msgid "Radio Checked Disabled"
+msgstr "라디오 체크됨 비활성화됨"
+
+msgid "Radio Unchecked Disabled"
+msgstr "라디오 체크 해제됨 비활성화됨"
+
+msgid "Checkbox Checked Color"
+msgstr "체크박스 체크됨 색상"
+
+msgid "Checkbox Unchecked Color"
+msgstr "체크박스 체크 해제됨 색상"
+
+msgid "Checked Mirrored"
+msgstr "체크됨 미러링"
+
+msgid "Unchecked Mirrored"
+msgstr "체크 해제됨 미러링"
+
+msgid "Checked Disabled Mirrored"
+msgstr "체크됨 비활성화됨 미러링"
+
+msgid "Unchecked Disabled Mirrored"
+msgstr "체크 해제됨 비활성화됨 미러링"
+
+msgid "Button Checked Color"
+msgstr "버튼 체크됨 색상"
+
+msgid "Button Unchecked Color"
+msgstr "버튼 체크 해제됨 색상"
 
 msgid "Symbol Lookup on Click"
 msgstr "클릭 시 심볼 탐색"
@@ -8291,6 +8431,81 @@ msgstr "맞춰지는 것 하이라이트"
 msgid "Pairs"
 msgstr "쌍"
 
+msgid "Code Folding Color"
+msgstr "코드 접기 색상"
+
+msgid "Folded Code Region Color"
+msgstr "접힌 코드 영역 색상"
+
+msgid "Can Fold"
+msgstr "접을 수 있음"
+
+msgid "Folded"
+msgstr "접힘"
+
+msgid "Can Fold Code Region"
+msgstr "접을 수 있는 코드 영역"
+
+msgid "Folded Code Region"
+msgstr "접힌 코드 영역"
+
+msgid "Folded EOL Icon"
+msgstr "접힌 EOL 아이콘"
+
+msgid "Completion Color BG"
+msgstr "자동완성 색상 배경"
+
+msgid "Breakpoint Color"
+msgstr "중단점 색상"
+
+msgid "Breakpoint"
+msgstr "중단점"
+
+msgid "Bookmark Color"
+msgstr "북마크 색상"
+
+msgid "Bookmark"
+msgstr "북마크"
+
+msgid "Executing Line Color"
+msgstr "실행 중인 줄 색상"
+
+msgid "Executing Line"
+msgstr "실행 행"
+
+msgid "Line Number Color"
+msgstr "행 번호 색상"
+
+msgid "Completion Max Width"
+msgstr "자동완성 최대 너비"
+
+msgid "Completion Lines"
+msgstr "자동완성 줄"
+
+msgid "Completion Scroll Width"
+msgstr "자동완성 스크롤 너비"
+
+msgid "Completion Scroll Color"
+msgstr "자동완성 스크롤 색상"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "자동완성 스크롤 호버 시 색상"
+
+msgid "Completion Background Color"
+msgstr "자동완성 배경 색상"
+
+msgid "Completion Selected Color"
+msgstr "선택된 자동완성 색상"
+
+msgid "Completion Existing Color"
+msgstr "자동완성 존재 색상"
+
+msgid "Line Length Guideline Color"
+msgstr "라인 길이 가이드라인 색상"
+
+msgid "Brace Mismatch Color"
+msgstr "중괄호 불일치 색상"
+
 msgid "Edit Alpha"
 msgstr "투명도 편집"
 
@@ -8326,6 +8541,102 @@ msgstr "헥스 보이기"
 
 msgid "Presets Visible"
 msgstr "프리셋 보이기"
+
+msgid "Label Width"
+msgstr "레이블 너비"
+
+msgid "SV Width"
+msgstr "SV 너비"
+
+msgid "SV Height"
+msgstr "SV 높이"
+
+msgid "H Width"
+msgstr "H 너비"
+
+msgid "Center Slider Grabbers"
+msgstr "가운데 슬라이더 그래버"
+
+msgid "Sample Focus"
+msgstr "샘플 초점"
+
+msgid "Picker Focus Rectangle"
+msgstr "선택기 포커스 직사각형"
+
+msgid "Picker Focus Circle"
+msgstr "선택기 포커스 원"
+
+msgid "Focused not Editing Cursor Color"
+msgstr "포커스되지 않은 편집 커서 색상"
+
+msgid "Menu Option"
+msgstr "메뉴 옵션"
+
+msgid "Screen Picker"
+msgstr "화면 선택기"
+
+msgid "Expanded Arrow"
+msgstr "펼친 화살표"
+
+msgid "Folded Arrow"
+msgstr "접힌 화살표"
+
+msgid "Add Preset"
+msgstr "프리셋 추가"
+
+msgid "Shape Rect"
+msgstr "모양 직사각형"
+
+msgid "Shape Rect Wheel"
+msgstr "모양 직사각형 휠"
+
+msgid "Shape Circle"
+msgstr "모양 원"
+
+msgid "Bar Arrow"
+msgstr "막대 화살"
+
+msgid "Sample BG"
+msgstr "샘플 배경"
+
+msgid "Sample Revert"
+msgstr "샘플 되돌리기"
+
+msgid "Overbright Indicator"
+msgstr "과도한 밝기 표시기"
+
+msgid "Picker Cursor"
+msgstr "선택기 커서"
+
+msgid "Picker Cursor BG"
+msgstr "선택기 커서 배경"
+
+msgid "Color Hue"
+msgstr "색상 색조"
+
+msgid "Color Script"
+msgstr "색상 스크립트"
+
+msgid "Color Copy"
+msgstr "색상 복사"
+
+msgid "Tab Unselected"
+msgstr "탭 선택 해제됨"
+
+msgid "Tab Selected"
+msgstr "탭 선택됨"
+
+msgid "BG"
+msgstr "배경"
+
+msgid "Preset FG"
+msgstr "프리셋 전경"
+
+msgid "Preset Focus"
+msgstr "프리셋 포커스"
+
+msgid "Preset BG"
+msgstr "프리셋 배경"
 
 msgid "Accessibility Region"
 msgstr "접근성 지역"
@@ -8411,9 +8722,6 @@ msgstr "툴팁"
 msgid "Auto Translate Mode"
 msgstr "자동 번역 모드"
 
-msgid "Focus"
-msgstr "포커스"
-
 msgid "Neighbor Left"
 msgstr "왼쪽 이웃"
 
@@ -8477,6 +8785,9 @@ msgstr "Escape 시 닫기"
 msgid "Autowrap"
 msgstr "자동 줄바꿈"
 
+msgid "Buttons Separation"
+msgstr "버튼 간격"
+
 msgid "Cancel Button Text"
 msgstr "취소 버튼 텍스트"
 
@@ -8531,14 +8842,92 @@ msgstr "덮어쓰기 경고 활성화됨"
 msgid "Deleting Enabled"
 msgstr "삭제 활성화됨"
 
+msgid "Parent Folder"
+msgstr "상위 폴더"
+
+msgid "Forward Folder"
+msgstr "다음 폴더"
+
+msgid "Back Folder"
+msgstr "이전 폴더"
+
+msgid "Reload"
+msgstr "다시 불러오기"
+
+msgid "Favorite"
+msgstr "즐겨찾기"
+
+msgid "Toggle Hidden"
+msgstr "숨김 토글"
+
+msgid "Folder"
+msgstr "폴더"
+
+msgid "Toggle Filename Filter"
+msgstr "파일 이름 필터 토글"
+
+msgid "File"
+msgstr "파일"
+
+msgid "Create Folder"
+msgstr "폴더 만들기"
+
+msgid "Sort"
+msgstr "정렬"
+
+msgid "Favorite Up"
+msgstr "즐겨찾기 위로"
+
+msgid "Favorite Down"
+msgstr "즐겨찾기 아래로"
+
+msgid "Thumbnail Mode"
+msgstr "썸네일 모드"
+
+msgid "List Mode"
+msgstr "목록 모드"
+
+msgid "File Thumbnail"
+msgstr "파일 썸네일"
+
+msgid "Folder Thumbnail"
+msgstr "폴더 썸네일"
+
+msgid "Menu Copy Path"
+msgstr "메뉴 경로 복사"
+
+msgid "Menu Delete"
+msgstr "메뉴 삭제"
+
+msgid "Menu Refresh"
+msgstr "메뉴 새로 고침"
+
+msgid "Menu New Folder"
+msgstr "메뉴 새 폴더"
+
+msgid "Menu Show in File Manager"
+msgstr "메뉴 파일 매니저에서 보이기"
+
+msgid "Menu Open Bundle"
+msgstr "메뉴 번들 열기"
+
+msgid "Folder Icon Color"
+msgstr "폴더 아이콘 색상"
+
+msgid "File Icon Color"
+msgstr "파일 아이콘 색상"
+
+msgid "File Disabled Color"
+msgstr "파일 비활성화됨 색상"
+
 msgid "Last Wrap Alignment"
 msgstr "마지막 래핑 정렬"
 
 msgid "Reverse Fill"
 msgstr "거꾸로 채우기"
 
-msgid "Folded"
-msgstr "접힘"
+msgid "V Separation"
+msgstr "세로 간격"
 
 msgid "Title Alignment"
 msgstr "제목 정렬"
@@ -8555,8 +8944,38 @@ msgstr "접기 가능 그룹"
 msgid "Title Text Direction"
 msgstr "제목 텍스트 방향"
 
+msgid "Title Panel"
+msgstr "제목 패널"
+
+msgid "Title Hover Panel"
+msgstr "제복 호버 패널"
+
+msgid "Title Collapsed Panel"
+msgstr "제목 접힘 패널"
+
+msgid "Title Collapsed Hover Panel"
+msgstr "제목 접힘 호버 패널"
+
+msgid "Hover Font Color"
+msgstr "호버 글꼴 색상"
+
+msgid "Collapsed Font Color"
+msgstr "접힌 글꼴 색상"
+
+msgid "Expanded Arrow Mirrored"
+msgstr "펼친 화살표 미러링"
+
+msgid "Folded Arrow Mirrored"
+msgstr "접힌 화살표 미러링"
+
 msgid "Allow Folding All"
 msgstr "모두 접기 허용"
+
+msgid "Resizer"
+msgstr "리사이저"
+
+msgid "Resizer Color"
+msgstr "리사이저 색상"
 
 msgid "Show Grid"
 msgstr "격자 보이기"
@@ -8615,6 +9034,63 @@ msgstr "밉맵 버튼 보이기"
 msgid "Show Arrange Button"
 msgstr "정렬 버튼 보이기"
 
+msgid "Panel Focus"
+msgstr "패널 포커스"
+
+msgid "Grid Major"
+msgstr "격자 메이저"
+
+msgid "Grid Minor"
+msgstr "격자 마이너"
+
+msgid "Activity"
+msgstr "활동"
+
+msgid "Connection Hover Tint Color"
+msgstr "연결 호버 틴트 색상"
+
+msgid "Connection Hover Thickness"
+msgstr "연결 호버 두께"
+
+msgid "Connection Valid Target Tint Color"
+msgstr "연결 유효 대상 틴트 색상"
+
+msgid "Connection Rim Color"
+msgstr "연결 림 색상"
+
+msgid "Selection Fill"
+msgstr "선택 항목 채우기"
+
+msgid "Selection Stroke"
+msgstr "선택 항목 획"
+
+msgid "Menu Panel"
+msgstr "메뉴 패널"
+
+msgid "Zoom In"
+msgstr "확대"
+
+msgid "Zoom Out"
+msgstr "축소"
+
+msgid "Zoom Reset"
+msgstr "확대/축소 재설정"
+
+msgid "Snapping Toggle"
+msgstr "스냅 토글"
+
+msgid "Grid Toggle"
+msgstr "격자 토글"
+
+msgid "Minimap Toggle"
+msgstr "미니맵 토글"
+
+msgid "Port Hotzone Inner Extent"
+msgstr "포트 핫존 안 범위"
+
+msgid "Port Hotzone Outer Extent"
+msgstr "포트 핫존 바깥 범위"
+
 msgid "Draggable"
 msgstr "드래그 가능"
 
@@ -8633,11 +9109,29 @@ msgstr "자동수축 여백"
 msgid "Drag Margin"
 msgstr "드래그 여백"
 
+msgid "Panel Selected"
+msgstr "패널 선택됨"
+
+msgid "Titlebar"
+msgstr "제목 표시줄"
+
+msgid "Titlebar Selected"
+msgstr "제목 표시줄 선택됨"
+
 msgid "Ignore Invalid Connection Type"
 msgstr "잘못된 연결 유형 무시"
 
 msgid "Slots Focus Mode"
 msgstr "슬롯 포커스 모드"
+
+msgid "Slot"
+msgstr "슬롯"
+
+msgid "Slot Selected"
+msgstr "슬롯 선택됨"
+
+msgid "Port H Offset"
+msgstr "포트 가로 오프셋"
 
 msgid "Select Mode"
 msgstr "선택 모드"
@@ -8690,6 +9184,60 @@ msgstr "아이콘 스케일"
 msgid "Fixed Icon Size"
 msgstr "고정 아이콘 크기"
 
+msgid "Scrollbar Margin Left"
+msgstr "스크롤바 여백 왼쪽"
+
+msgid "Scrollbar Margin Top"
+msgstr "스크롤바 여백 위"
+
+msgid "Scrollbar Margin Right"
+msgstr "스크롤바 여백 오른쪽"
+
+msgid "Scrollbar Margin Bottom"
+msgstr "스크롤바 여백 아래"
+
+msgid "Scrollbar H Separation"
+msgstr "스크롤바 가로 간격"
+
+msgid "Font Hovered Color"
+msgstr "글꼴 호버 시 색상"
+
+msgid "Font Hovered Selected Color"
+msgstr "선택된 글꼴 호버 시 색상"
+
+msgid "Font Selected Color"
+msgstr "선택된 글꼴 색상"
+
+msgid "Scroll Hint"
+msgstr "스크롤 힌트"
+
+msgid "Scroll Hint Color"
+msgstr "스크롤 힌트 색상"
+
+msgid "Icon Margin"
+msgstr "아이콘 여백"
+
+msgid "Hovered"
+msgstr "호버 시"
+
+msgid "Hovered Selected"
+msgstr "선택된 항목 호버 시"
+
+msgid "Hovered Selected Focus"
+msgstr "선택된 항목 호버 시 강조"
+
+msgid "Selected Focus"
+msgstr "선택된 항목 강조"
+
+msgid "Cursor Unfocused"
+msgstr "커서 포커스 잃음"
+
+msgid "Cursor"
+msgstr "커서"
+
+msgid "Guide Color"
+msgstr "가이드 색상"
+
 msgid "Label Settings"
 msgstr "레이블 설정"
 
@@ -8719,6 +9267,15 @@ msgstr "보여줄 글자 행동"
 
 msgid "Visible Ratio"
 msgstr "보여줄 비율"
+
+msgid "Paragraph Spacing"
+msgstr "문단 간격"
+
+msgid "Font Shadow Color"
+msgstr "글꼴 그림자 색상"
+
+msgid "Shadow Outline Size"
+msgstr "그림자 윤곽선 크기"
 
 msgid "Placeholder Text"
 msgstr "자리표시자 텍스트"
@@ -8798,11 +9355,50 @@ msgstr "아이콘 확장 모드"
 msgid "Right Icon Scale"
 msgstr "오른쪽 아이콘 스케일"
 
+msgid "Font Placeholder Color"
+msgstr "글꼴 자리표시자 색상"
+
+msgid "Caret Width"
+msgstr "캐럿 너비"
+
+msgid "Caret Color"
+msgstr "캐럿 색상"
+
+msgid "Minimum Character Width"
+msgstr "최소 문자 너비"
+
+msgid "Selection Color"
+msgstr "선택 색상"
+
+msgid "Clear"
+msgstr "비우기"
+
+msgid "Clear Button Color"
+msgstr "비우기 버튼 색상"
+
+msgid "Clear Button Color Pressed"
+msgstr "비우기 버튼 색상 눌림"
+
 msgid "Underline"
 msgstr "밑줄"
 
 msgid "URI"
 msgstr "URI"
+
+msgid "Underline Spacing"
+msgstr "밑줄 간격"
+
+msgid "Margin Left"
+msgstr "여백 왼쪽"
+
+msgid "Margin Top"
+msgstr "여백 위"
+
+msgid "Margin Right"
+msgstr "여백 오른쪽"
+
+msgid "Margin Bottom"
+msgstr "여백 아래"
 
 msgid "Start Index"
 msgstr "시작 인덱스"
@@ -8840,6 +9436,15 @@ msgstr "퍼지 검색 활성화됨"
 msgid "Fuzzy Search Max Misses"
 msgstr "퍼지 검색 최대 누락"
 
+msgid "Arrow"
+msgstr "화살"
+
+msgid "Arrow Margin"
+msgstr "화살 여백"
+
+msgid "Modulate Arrow"
+msgstr "화살 변조"
+
 msgid "Hide on Item Selection"
 msgstr "항목 선택 시 숨기기"
 
@@ -8864,17 +9469,71 @@ msgstr "수축 높이"
 msgid "Shrink Width"
 msgstr "수축 너비"
 
+msgid "Separator"
+msgstr "분리자"
+
+msgid "Labeled Separator Left"
+msgstr "레이블 있는 분리자 왼쪽"
+
+msgid "Labeled Separator Right"
+msgstr "레이블 있는 분리자 오른쪽"
+
+msgid "Search Bar Separation"
+msgstr "검색창 간격"
+
+msgid "Item Start Padding"
+msgstr "항목 시작 패딩"
+
+msgid "Item End Padding"
+msgstr "항목 끝 패딩"
+
+msgid "Gutter Compact"
+msgstr "컴팩트한 거터"
+
+msgid "Indeterminate"
+msgstr "불확정"
+
+msgid "Indeterminate Disabled"
+msgstr "불확정 비활성화됨"
+
+msgid "Search"
+msgstr "검색"
+
+msgid "Submenu"
+msgstr "하위 메뉴"
+
+msgid "Submenu Mirrored"
+msgstr "하위 메뉴 미러링"
+
+msgid "Font Separator"
+msgstr "글꼴 분리자"
+
+msgid "Font Separator Size"
+msgstr "글꼴 분리자 크기"
+
+msgid "Font Accelerator Color"
+msgstr "글꼴 가속기 색상"
+
+msgid "Font Separator Color"
+msgstr "글꼴 분리자 색상"
+
+msgid "Separator Outline Size"
+msgstr "분리자 윤곽선 크기"
+
+msgid "Font Separator Outline Color"
+msgstr "글꼴 분리자 윤곽선 색상"
+
 msgid "Fill Mode"
 msgstr "채우기 모드"
 
 msgid "Show Percentage"
 msgstr "백분율 보이기"
 
-msgid "Indeterminate"
-msgstr "불확정"
-
 msgid "Preview Indeterminate"
 msgstr "불확정 미리보기"
+
+msgid "Background"
+msgstr "배경"
 
 msgid "Min Value"
 msgstr "최솟값"
@@ -8960,8 +9619,98 @@ msgstr "진행 표시줄 지연"
 msgid "Text Selection"
 msgstr "텍스트 선택 항목"
 
+msgid "Horizontal Rule"
+msgstr "수평선"
+
+msgid "Normal Font"
+msgstr "보통 글꼴"
+
+msgid "Normal Font Size"
+msgstr "보통 글꼴 크기"
+
+msgid "Shadow Offset X"
+msgstr "그림자 오프셋 X"
+
+msgid "Shadow Offset Y"
+msgstr "그림자 오프셋 Y"
+
+msgid "Bold Font"
+msgstr "굵은 글꼴"
+
+msgid "Bold Font Size"
+msgstr "굵은 글꼴 크기"
+
+msgid "Bold Italics Font"
+msgstr "굵은 기울인 글꼴"
+
+msgid "Bold Italics Font Size"
+msgstr "굵은 기울인 글꼴 크기"
+
+msgid "Italics Font"
+msgstr "기울인 글꼴"
+
+msgid "Italics Font Size"
+msgstr "기울인 글꼴 크기"
+
+msgid "Mono Font"
+msgstr "모노 글꼴"
+
+msgid "Mono Font Size"
+msgstr "모노 글꼴 크기"
+
+msgid "Text Highlight H Padding"
+msgstr "텍스트 강조 가로 패딩"
+
+msgid "Text Highlight V Padding"
+msgstr "텍스트 강조 세로 패딩"
+
+msgid "Underline Alpha"
+msgstr "밑줄 알파"
+
+msgid "Strikethrough Alpha"
+msgstr "취소선 알파"
+
+msgid "Table H Separation"
+msgstr "표 가로 간격"
+
+msgid "Table V Separation"
+msgstr "표 세로 간격"
+
+msgid "Table Odd Row BG"
+msgstr "표 홀수 행 배경"
+
+msgid "Table Even Row BG"
+msgstr "표 짝수 행 배경"
+
+msgid "Table Border"
+msgstr "표 테두리"
+
 msgid "Custom Step"
 msgstr "커스텀 단계"
+
+msgid "Scroll Focus"
+msgstr "스크롤 포커스"
+
+msgid "Grabber Pressed"
+msgstr "그래버 눌림"
+
+msgid "Increment"
+msgstr "증가"
+
+msgid "Increment Highlight"
+msgstr "증가 강조"
+
+msgid "Increment Pressed"
+msgstr "증가 눌림"
+
+msgid "Decrement"
+msgstr "감소"
+
+msgid "Decrement Highlight"
+msgstr "감소 강조"
+
+msgid "Decrement Pressed"
+msgstr "감소 눌림"
 
 msgid "Follow Focus"
 msgstr "포커스 따라가기"
@@ -8996,8 +9745,20 @@ msgstr "스크롤 가로를 디폴트로"
 msgid "Scroll Deadzone"
 msgstr "스크롤 데드존"
 
-msgid "Scroll Hint"
-msgstr "스크롤 힌트"
+msgid "Scrollbar V Separation"
+msgstr "스크롤바 세로 간격"
+
+msgid "Scroll Hint Vertical"
+msgstr "스크롤 힌트 세로"
+
+msgid "Scroll Hint Horizontal"
+msgstr "스크롤 힌트 가로"
+
+msgid "Scroll Hint Vertical Color"
+msgstr "스크롤 힌트 세로 색상"
+
+msgid "Scroll Hint Horizontal Color"
+msgstr "스크롤 힌트 가로 색상"
 
 msgid "Default Scroll Deadzone"
 msgstr "디폴트 스크롤 데드존"
@@ -9014,6 +9775,30 @@ msgstr "테두리에서 틱"
 msgid "Ticks Position"
 msgstr "틱 위치"
 
+msgid "Slider"
+msgstr "슬라이더"
+
+msgid "Grabber Area"
+msgstr "그래버 영역"
+
+msgid "Grabber Area Highlight"
+msgstr "그래버 영역 강조"
+
+msgid "Grabber Disabled"
+msgstr "그래버 비활성화됨"
+
+msgid "Tick"
+msgstr "틱"
+
+msgid "Center Grabber"
+msgstr "가운데 그래버"
+
+msgid "Grabber Offset"
+msgstr "그래버 오프셋"
+
+msgid "Tick Offset"
+msgstr "틱 오프셋"
+
 msgid "Update on Text Changed"
 msgstr "텍스트 변경에 업데이트"
 
@@ -9025,6 +9810,96 @@ msgstr "커스텀 화살표 둥글기"
 
 msgid "Format"
 msgstr "형식"
+
+msgid "Buttons Vertical Separation"
+msgstr "버튼 세로 간격"
+
+msgid "Field and Buttons Separation"
+msgstr "필드와 버튼 간격"
+
+msgid "Buttons Width"
+msgstr "버튼 너비"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "아이콘에서 최소 버튼 너비 설정"
+
+msgid "Up"
+msgstr "위"
+
+msgid "Up Hover"
+msgstr "위 호버"
+
+msgid "Up Pressed"
+msgstr "위 눌림"
+
+msgid "Up Disabled"
+msgstr "위 비활성화됨"
+
+msgid "Down"
+msgstr "아래"
+
+msgid "Down Hover"
+msgstr "아래 호버"
+
+msgid "Down Pressed"
+msgstr "아래 눌림"
+
+msgid "Down Disabled"
+msgstr "아래 비활성화됨"
+
+msgid "Up Background"
+msgstr "위 배경"
+
+msgid "Up Background Hovered"
+msgstr "위 배경 호버 시"
+
+msgid "Up Background Pressed"
+msgstr "위 배경 눌림"
+
+msgid "Up Background Disabled"
+msgstr "위 배경 비활성화됨"
+
+msgid "Down Background"
+msgstr "아래 배경"
+
+msgid "Down Background Hovered"
+msgstr "아래 배경 호버 시"
+
+msgid "Down Background Pressed"
+msgstr "아래 배경 눌림"
+
+msgid "Down Background Disabled"
+msgstr "아래 배경 비활성화됨"
+
+msgid "Up Icon Modulate"
+msgstr "위 아이콘 변조"
+
+msgid "Up Hover Icon Modulate"
+msgstr "위 호버 아이콘 변조"
+
+msgid "Up Pressed Icon Modulate"
+msgstr "위 눌린 아이콘 변조"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "위 비활성화된 아이콘 변조"
+
+msgid "Down Icon Modulate"
+msgstr "아래 아이콘 변조"
+
+msgid "Down Hover Icon Modulate"
+msgstr "아래 호버 아이콘 변조"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "아래 눌린 아이콘 변조"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "아래 비활성화된 아이콘 변조"
+
+msgid "Field and Buttons Separator"
+msgstr "필드와 버튼 분리자"
+
+msgid "Up Down Buttons Separator"
+msgstr "위 아래 버튼 분리자"
 
 msgid "Split Offsets"
 msgstr "오프셋 분할"
@@ -9055,6 +9930,39 @@ msgstr "여백 끝"
 
 msgid "Highlight in Editor"
 msgstr "편집기에서 강조"
+
+msgid "Touch Dragger Color"
+msgstr "터치 드래거 색상"
+
+msgid "Touch Dragger Pressed Color"
+msgstr "터치 드래거 눌림 색상"
+
+msgid "Touch Dragger Hover Color"
+msgstr "터치 드래거 호버 색상"
+
+msgid "Minimum Grab Thickness"
+msgstr "최소 잡기 두께"
+
+msgid "Autohide"
+msgstr "자동숨기기"
+
+msgid "Touch Dragger"
+msgstr "터치 드래거"
+
+msgid "H Touch Dragger"
+msgstr "가로 터치 드래거"
+
+msgid "V Touch Dragger"
+msgstr "세로 터치 드래거"
+
+msgid "H Grabber"
+msgstr "가로 그래버"
+
+msgid "V Grabber"
+msgstr "세로 그래버"
+
+msgid "Split Bar Background"
+msgstr "바 배경 분할"
 
 msgid "Split Offset"
 msgstr "오프셋 분할"
@@ -9107,6 +10015,42 @@ msgstr "선택 해제 활성화됨"
 msgid "Tabs"
 msgstr "탭"
 
+msgid "Hover Switch Wait Msec"
+msgstr "호버 전환 대기 밀리초"
+
+msgid "Tab Hovered"
+msgstr "탭 호버 시"
+
+msgid "Tab Disabled"
+msgstr "탭 비활성화됨"
+
+msgid "Tab Focus"
+msgstr "탭 포커스"
+
+msgid "Drop Mark"
+msgstr "마크 놓기"
+
+msgid "Drop Mark Color"
+msgstr "놓기 마크 색상"
+
+msgid "Font Unselected Color"
+msgstr "선택되지 않은 글꼴 색상"
+
+msgid "Icon Selected Color"
+msgstr "선택된 아이콘 색상"
+
+msgid "Icon Hovered Color"
+msgstr "아이콘 호버 시 색상"
+
+msgid "Icon Unselected Color"
+msgstr "선택되지 않은 아이콘 색상"
+
+msgid "Close"
+msgstr "닫기"
+
+msgid "Button Highlight"
+msgstr "버튼 강조"
+
 msgid "Tabs Position"
 msgstr "탭 위치"
 
@@ -9118,6 +10062,21 @@ msgstr "최소 크기를 위한 숨겨진 탭 사용"
 
 msgid "Tab Focus Mode"
 msgstr "탭 포커스 모드"
+
+msgid "Side Margin"
+msgstr "가장자리 여백"
+
+msgid "Tabbar Background"
+msgstr "탭바 배경"
+
+msgid "Menu"
+msgstr "메뉴"
+
+msgid "Menu Highlight"
+msgstr "메뉴 강조"
+
+msgid "Icon Separation"
+msgstr "아이콘 간격"
 
 msgid "Empty Selection Clipboard Enabled"
 msgstr "빈 선택 영역 클립보드 활성화됨"
@@ -9164,18 +10123,38 @@ msgstr "제어 문자"
 msgid "Spaces"
 msgstr "공간"
 
+msgid "Search Result Color"
+msgstr "검색 결과 색상"
+
+msgid "Search Result Border Color"
+msgstr "검색 결과 테두리 색상"
+
+msgid "Caret Background Color"
+msgstr "캐럿 배경 색상"
+
+msgid "Tab"
+msgstr "탭"
+
+msgid "Space"
+msgstr "공간"
+
+msgid "Font Readonly Color"
+msgstr "글꼴 읽기전용 색상"
+
+msgid "Wrap Offset"
+msgstr "래핑 오프셋"
+
+msgid "Current Line Color"
+msgstr "현재 줄 색상"
+
+msgid "Word Highlighted Color"
+msgstr "단어 강조 색상"
+
 msgid "Text Edit Idle Detect (sec)"
 msgstr "텍스트 편집 유휴 감지 (초)"
 
 msgid "Text Edit Undo Stack Max Size"
 msgstr "텍스트 편집 실행 취소 스택 최대 크기"
-
-msgctxt "Ordinary"
-msgid "Normal"
-msgstr "보통"
-
-msgid "Hover"
-msgstr "호버"
 
 msgid "Focused"
 msgstr "포커스"
@@ -9249,6 +10228,117 @@ msgstr "스크롤 가로 활성화됨"
 msgid "Scroll Vertical Enabled"
 msgstr "스크롤 세로 활성화됨"
 
+msgid "Title Button Font"
+msgstr "제목 버튼 글꼴"
+
+msgid "Title Button Font Size"
+msgstr "제목 버튼 글꼴 크기"
+
+msgid "Hovered Dimmed"
+msgstr "호버 시 짙게"
+
+msgid "Button Hover"
+msgstr "버튼 호버"
+
+msgid "Arrow Collapsed"
+msgstr "화살표 접힘"
+
+msgid "Arrow Collapsed Mirrored"
+msgstr "화살표 접힘 미러링"
+
+msgid "Select Arrow"
+msgstr "선택 화살표"
+
+msgid "Custom Button"
+msgstr "커스텀 버튼"
+
+msgid "Custom Button Hover"
+msgstr "커스텀 버튼 호버"
+
+msgid "Custom Button Pressed"
+msgstr "커스텀 버튼 눌림"
+
+msgid "Custom Button Font Highlight"
+msgstr "커스텀 버튼 글꼴 강조"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "글꼴 호버 시 짙게 색상"
+
+msgid "Drop on Item Color"
+msgstr "항목에 놓기 색상"
+
+msgid "Drop Position Color"
+msgstr "놓기 위치 색상"
+
+msgid "Inner Item Margin Bottom"
+msgstr "안 항목 여백 아래"
+
+msgid "Inner Item Margin Left"
+msgstr "안 항목 여백 왼쪽"
+
+msgid "Inner Item Margin Right"
+msgstr "안 항목 여백 오른쪽"
+
+msgid "Inner Item Margin Top"
+msgstr "안 항목 여백 위"
+
+msgid "Item Margin"
+msgstr "항목 여백"
+
+msgid "Check H Separation"
+msgstr "확인 가로 간격"
+
+msgid "Icon H Separation"
+msgstr "아이콘 가로 간격"
+
+msgid "Button Margin"
+msgstr "버튼 여백"
+
+msgid "Draw Guides"
+msgstr "가이드 그리기"
+
+msgid "Relationship Line Width"
+msgstr "관계선 너비"
+
+msgid "Parent HL Line Width"
+msgstr "부모 HL 줄 너비"
+
+msgid "Children HL Line Width"
+msgstr "자식 HL 줄 너비"
+
+msgid "Parent HL Line Margin"
+msgstr "부모 HL 줄 여백"
+
+msgid "Relationship Line Color"
+msgstr "관계선 색상"
+
+msgid "Parent HL Line Color"
+msgstr "부모 HL 줄 색상"
+
+msgid "Children HL Line Color"
+msgstr "자식 HL 줄 색상"
+
+msgid "Dragging Unfold Wait Msec"
+msgstr "드래그 중 펼치기 대기 밀리초"
+
+msgid "Scroll Border"
+msgstr "스크롤 테두리"
+
+msgid "Scroll Speed"
+msgstr "스크롤 속도"
+
+msgid "Title Button Normal"
+msgstr "제목 버튼 보통"
+
+msgid "Title Button Pressed"
+msgstr "제목 버튼 눌림"
+
+msgid "Title Button Hover"
+msgstr "제목 버튼 호버"
+
+msgid "Title Button Color"
+msgstr "제목 버튼 색상"
+
 msgid "Audio Track"
 msgstr "오디오 트랙"
 
@@ -9290,6 +10380,18 @@ msgstr "액션 위"
 
 msgid "Action Down"
 msgstr "액션 아래"
+
+msgid "Normal Joystick"
+msgstr "조이스틱 보통"
+
+msgid "Normal Tip"
+msgstr "팁 보통"
+
+msgid "Pressed Joystick"
+msgstr "조이스틱 눌림"
+
+msgid "Pressed Tip"
+msgstr "팁 눌림"
 
 msgid "Self Modulate"
 msgstr "자신 변조"
@@ -9507,9 +10609,6 @@ msgstr "오브젝트 선택 활성화"
 msgid "Scene Traversal"
 msgstr "씬 횡단"
 
-msgid "Menu"
-msgstr "메뉴"
-
 msgid "Wait Time"
 msgstr "대기 시간"
 
@@ -9698,6 +10797,39 @@ msgstr "HDR 출력"
 
 msgid "Requested"
 msgstr "요청됨"
+
+msgid "Embedded Border"
+msgstr "임베딩된 테두리"
+
+msgid "Embedded Unfocused Border"
+msgstr "임베딩된 포커스 잃은 테두리"
+
+msgid "Title Font"
+msgstr "제목 글꼴"
+
+msgid "Title Font Size"
+msgstr "제목 글꼴 크기"
+
+msgid "Title Height"
+msgstr "제목 높이"
+
+msgid "Title Outline Modulate"
+msgstr "제목 윤곽선 변조"
+
+msgid "Title Outline Size"
+msgstr "제목 윤곽선 크기"
+
+msgid "Close Pressed"
+msgstr "닫기 눌림"
+
+msgid "Close H Offset"
+msgstr "닫기 가로 오프셋"
+
+msgid "Close V Offset"
+msgstr "닫기 세로 오프셋"
+
+msgid "Resize Margin"
+msgstr "여백 크기 조절"
 
 msgid "Swap Cancel OK"
 msgstr "취소 확인 교환"
@@ -10134,9 +11266,6 @@ msgstr "곡선 Y"
 msgid "Curve Z"
 msgstr "곡선 Z"
 
-msgid "Background"
-msgstr "배경"
-
 msgid "Canvas Max Layer"
 msgstr "캔버스 최대 레이어"
 
@@ -10347,9 +11476,6 @@ msgstr "부가 자간"
 msgid "Glyph"
 msgstr "글리프"
 
-msgid "Space"
-msgstr "공간"
-
 msgid "Baseline"
 msgstr "기준선"
 
@@ -10388,9 +11514,6 @@ msgstr "HDR 사용"
 
 msgid "To"
 msgstr "까지"
-
-msgid "Paragraph Spacing"
-msgstr "문단 간격"
 
 msgid "Stacked Effects"
 msgstr "쌓인 효과"
@@ -10934,1125 +12057,6 @@ msgstr "디폴트 글꼴"
 
 msgid "Default Font Size"
 msgstr "디폴트 글꼴 크기"
-
-msgid "File"
-msgstr "파일"
-
-msgid "Font Pressed Color"
-msgstr "글꼴 눌림 색상"
-
-msgid "Font Hover Color"
-msgstr "글꼴 호버 색상"
-
-msgid "Font Focus Color"
-msgstr "글꼴 포커스 색상"
-
-msgid "Font Hover Pressed Color"
-msgstr "글꼴 호버 눌림 색상"
-
-msgid "Font Disabled Color"
-msgstr "글꼴 비활성화됨 색상"
-
-msgid "Font Outline Color"
-msgstr "글꼴 윤곽선 색상"
-
-msgid "Icon Normal Color"
-msgstr "아이콘 보통 색상"
-
-msgid "Icon Pressed Color"
-msgstr "아이콘 눌림 색상"
-
-msgid "Icon Hover Color"
-msgstr "아이콘 호버 색상"
-
-msgid "Icon Hover Pressed Color"
-msgstr "아이콘 호버 눌림 색상"
-
-msgid "Icon Focus Color"
-msgstr "아이콘 포커스 색상"
-
-msgid "Icon Disabled Color"
-msgstr "아이콘 비활성화됨 색상"
-
-msgid "H Separation"
-msgstr "가로 간격"
-
-msgid "Icon Max Width"
-msgstr "아이콘 최대 너비"
-
-msgid "Align to Largest Stylebox"
-msgstr "가장 큰 스타일박스에 정렬"
-
-msgid "Underline Spacing"
-msgstr "밑줄 간격"
-
-msgid "Normal Mirrored"
-msgstr "보통 미러링"
-
-msgid "Hover Mirrored"
-msgstr "호버 미러링"
-
-msgid "Pressed Mirrored"
-msgstr "눌림 미러링"
-
-msgid "Disabled Mirrored"
-msgstr "비활성화됨 미러링"
-
-msgid "Arrow"
-msgstr "화살"
-
-msgid "Arrow Margin"
-msgstr "화살 여백"
-
-msgid "Modulate Arrow"
-msgstr "화살 변조"
-
-msgid "Hover Pressed"
-msgstr "호버 눌림"
-
-msgid "Checked Disabled"
-msgstr "체크됨 비활성화됨"
-
-msgid "Unchecked"
-msgstr "체크 해제됨"
-
-msgid "Unchecked Disabled"
-msgstr "체크 해제됨 비활성화됨"
-
-msgid "Radio Checked"
-msgstr "라디오 체크됨"
-
-msgid "Radio Checked Disabled"
-msgstr "라디오 체크됨 비활성화됨"
-
-msgid "Radio Unchecked"
-msgstr "라디오 체크 해제됨"
-
-msgid "Radio Unchecked Disabled"
-msgstr "라디오 체크 해제됨 비활성화됨"
-
-msgid "Check V Offset"
-msgstr "세로 오프셋 체크"
-
-msgid "Checkbox Checked Color"
-msgstr "체크박스 체크됨 색상"
-
-msgid "Checkbox Unchecked Color"
-msgstr "체크박스 체크 해제됨 색상"
-
-msgid "Checked Mirrored"
-msgstr "체크됨 미러링"
-
-msgid "Checked Disabled Mirrored"
-msgstr "체크됨 비활성화됨 미러링"
-
-msgid "Unchecked Mirrored"
-msgstr "체크 해제됨 미러링"
-
-msgid "Unchecked Disabled Mirrored"
-msgstr "체크 해제됨 비활성화됨 미러링"
-
-msgid "Button Checked Color"
-msgstr "버튼 체크됨 색상"
-
-msgid "Button Unchecked Color"
-msgstr "버튼 체크 해제됨 색상"
-
-msgid "Font Shadow Color"
-msgstr "글꼴 그림자 색상"
-
-msgid "Shadow Offset X"
-msgstr "그림자 오프셋 X"
-
-msgid "Shadow Offset Y"
-msgstr "그림자 오프셋 Y"
-
-msgid "Shadow Outline Size"
-msgstr "그림자 윤곽선 크기"
-
-msgid "Font Selected Color"
-msgstr "선택된 글꼴 색상"
-
-msgid "Font Uneditable Color"
-msgstr "글꼴 편집 불가 색상"
-
-msgid "Font Placeholder Color"
-msgstr "글꼴 자리표시자 색상"
-
-msgid "Caret Color"
-msgstr "캐럿 색상"
-
-msgid "Selection Color"
-msgstr "선택 색상"
-
-msgid "Clear Button Color"
-msgstr "비우기 버튼 색상"
-
-msgid "Clear Button Color Pressed"
-msgstr "비우기 버튼 색상 눌림"
-
-msgid "Minimum Character Width"
-msgstr "최소 문자 너비"
-
-msgid "Caret Width"
-msgstr "캐럿 너비"
-
-msgid "Clear"
-msgstr "비우기"
-
-msgid "Tab"
-msgstr "탭"
-
-msgid "Font Readonly Color"
-msgstr "글꼴 읽기전용 색상"
-
-msgid "Current Line Color"
-msgstr "현재 줄 색상"
-
-msgid "Caret Background Color"
-msgstr "캐럿 배경 색상"
-
-msgid "Word Highlighted Color"
-msgstr "단어 강조 색상"
-
-msgid "Search Result Color"
-msgstr "검색 결과 색상"
-
-msgid "Search Result Border Color"
-msgstr "검색 결과 테두리 색상"
-
-msgid "Wrap Offset"
-msgstr "래핑 오프셋"
-
-msgid "Breakpoint"
-msgstr "중단점"
-
-msgid "Bookmark"
-msgstr "북마크"
-
-msgid "Executing Line"
-msgstr "실행 행"
-
-msgid "Can Fold"
-msgstr "접을 수 있음"
-
-msgid "Can Fold Code Region"
-msgstr "접을 수 있는 코드 영역"
-
-msgid "Folded Code Region"
-msgstr "접힌 코드 영역"
-
-msgid "Folded EOL Icon"
-msgstr "접힌 EOL 아이콘"
-
-msgid "Completion Color BG"
-msgstr "자동완성 색상 배경"
-
-msgid "Completion Background Color"
-msgstr "자동완성 배경 색상"
-
-msgid "Completion Selected Color"
-msgstr "선택된 자동완성 색상"
-
-msgid "Completion Existing Color"
-msgstr "자동완성 존재 색상"
-
-msgid "Completion Scroll Color"
-msgstr "자동완성 스크롤 색상"
-
-msgid "Completion Scroll Hovered Color"
-msgstr "자동완성 스크롤 호버 시 색상"
-
-msgid "Bookmark Color"
-msgstr "북마크 색상"
-
-msgid "Breakpoint Color"
-msgstr "중단점 색상"
-
-msgid "Executing Line Color"
-msgstr "실행 중인 줄 색상"
-
-msgid "Code Folding Color"
-msgstr "코드 접기 색상"
-
-msgid "Folded Code Region Color"
-msgstr "접힌 코드 영역 색상"
-
-msgid "Brace Mismatch Color"
-msgstr "중괄호 불일치 색상"
-
-msgid "Line Number Color"
-msgstr "행 번호 색상"
-
-msgid "Line Length Guideline Color"
-msgstr "라인 길이 가이드라인 색상"
-
-msgid "Completion Lines"
-msgstr "자동완성 줄"
-
-msgid "Completion Max Width"
-msgstr "자동완성 최대 너비"
-
-msgid "Completion Scroll Width"
-msgstr "자동완성 스크롤 너비"
-
-msgid "Scroll Focus"
-msgstr "스크롤 포커스"
-
-msgid "Grabber"
-msgstr "그래버"
-
-msgid "Grabber Highlight"
-msgstr "그래버 강조"
-
-msgid "Grabber Pressed"
-msgstr "그래버 눌림"
-
-msgid "Increment"
-msgstr "증가"
-
-msgid "Increment Highlight"
-msgstr "증가 강조"
-
-msgid "Increment Pressed"
-msgstr "증가 눌림"
-
-msgid "Decrement"
-msgstr "감소"
-
-msgid "Decrement Highlight"
-msgstr "감소 강조"
-
-msgid "Decrement Pressed"
-msgstr "감소 눌림"
-
-msgid "Slider"
-msgstr "슬라이더"
-
-msgid "Grabber Area"
-msgstr "그래버 영역"
-
-msgid "Grabber Area Highlight"
-msgstr "그래버 영역 강조"
-
-msgid "Grabber Disabled"
-msgstr "그래버 비활성화됨"
-
-msgid "Tick"
-msgstr "틱"
-
-msgid "Center Grabber"
-msgstr "가운데 그래버"
-
-msgid "Grabber Offset"
-msgstr "그래버 오프셋"
-
-msgid "Tick Offset"
-msgstr "틱 오프셋"
-
-msgid "Updown"
-msgstr "위아래"
-
-msgid "Up"
-msgstr "위"
-
-msgid "Up Hover"
-msgstr "위 호버"
-
-msgid "Up Pressed"
-msgstr "위 눌림"
-
-msgid "Up Disabled"
-msgstr "위 비활성화됨"
-
-msgid "Down"
-msgstr "아래"
-
-msgid "Down Hover"
-msgstr "아래 호버"
-
-msgid "Down Pressed"
-msgstr "아래 눌림"
-
-msgid "Down Disabled"
-msgstr "아래 비활성화됨"
-
-msgid "Up Background"
-msgstr "위 배경"
-
-msgid "Up Background Hovered"
-msgstr "위 배경 호버 시"
-
-msgid "Up Background Pressed"
-msgstr "위 배경 눌림"
-
-msgid "Up Background Disabled"
-msgstr "위 배경 비활성화됨"
-
-msgid "Down Background"
-msgstr "아래 배경"
-
-msgid "Down Background Hovered"
-msgstr "아래 배경 호버 시"
-
-msgid "Down Background Pressed"
-msgstr "아래 배경 눌림"
-
-msgid "Down Background Disabled"
-msgstr "아래 배경 비활성화됨"
-
-msgid "Up Icon Modulate"
-msgstr "위 아이콘 변조"
-
-msgid "Up Hover Icon Modulate"
-msgstr "위 호버 아이콘 변조"
-
-msgid "Up Pressed Icon Modulate"
-msgstr "위 눌린 아이콘 변조"
-
-msgid "Up Disabled Icon Modulate"
-msgstr "위 비활성화된 아이콘 변조"
-
-msgid "Down Icon Modulate"
-msgstr "아래 아이콘 변조"
-
-msgid "Down Hover Icon Modulate"
-msgstr "아래 호버 아이콘 변조"
-
-msgid "Down Pressed Icon Modulate"
-msgstr "아래 눌린 아이콘 변조"
-
-msgid "Down Disabled Icon Modulate"
-msgstr "아래 비활성화된 아이콘 변조"
-
-msgid "Field and Buttons Separator"
-msgstr "필드와 버튼 분리자"
-
-msgid "Up Down Buttons Separator"
-msgstr "위 아래 버튼 분리자"
-
-msgid "Buttons Vertical Separation"
-msgstr "버튼 세로 간격"
-
-msgid "Field and Buttons Separation"
-msgstr "필드와 버튼 간격"
-
-msgid "Buttons Width"
-msgstr "버튼 너비"
-
-msgid "Set Min Buttons Width From Icons"
-msgstr "아이콘에서 최소 버튼 너비 설정"
-
-msgid "Scroll Hint Vertical"
-msgstr "스크롤 힌트 세로"
-
-msgid "Scroll Hint Horizontal"
-msgstr "스크롤 힌트 가로"
-
-msgid "Scroll Hint Vertical Color"
-msgstr "스크롤 힌트 세로 색상"
-
-msgid "Scroll Hint Horizontal Color"
-msgstr "스크롤 힌트 가로 색상"
-
-msgid "Scrollbar Margin Left"
-msgstr "스크롤바 여백 왼쪽"
-
-msgid "Scrollbar Margin Top"
-msgstr "스크롤바 여백 위"
-
-msgid "Scrollbar Margin Right"
-msgstr "스크롤바 여백 오른쪽"
-
-msgid "Scrollbar Margin Bottom"
-msgstr "스크롤바 여백 아래"
-
-msgid "Normal Joystick"
-msgstr "조이스틱 보통"
-
-msgid "Normal Tip"
-msgstr "팁 보통"
-
-msgid "Pressed Joystick"
-msgstr "조이스틱 눌림"
-
-msgid "Pressed Tip"
-msgstr "팁 눌림"
-
-msgid "Embedded Border"
-msgstr "임베딩된 테두리"
-
-msgid "Embedded Unfocused Border"
-msgstr "임베딩된 포커스 잃은 테두리"
-
-msgid "Title Font"
-msgstr "제목 글꼴"
-
-msgid "Title Font Size"
-msgstr "제목 글꼴 크기"
-
-msgid "Title Outline Modulate"
-msgstr "제목 윤곽선 변조"
-
-msgid "Title Outline Size"
-msgstr "제목 윤곽선 크기"
-
-msgid "Title Height"
-msgstr "제목 높이"
-
-msgid "Resize Margin"
-msgstr "여백 크기 조절"
-
-msgid "Close"
-msgstr "닫기"
-
-msgid "Close Pressed"
-msgstr "닫기 눌림"
-
-msgid "Close H Offset"
-msgstr "닫기 가로 오프셋"
-
-msgid "Close V Offset"
-msgstr "닫기 세로 오프셋"
-
-msgid "Buttons Separation"
-msgstr "버튼 간격"
-
-msgid "Load"
-msgstr "불러오기"
-
-msgid "Save"
-msgstr "저장"
-
-msgid "Parent Folder"
-msgstr "상위 폴더"
-
-msgid "Back Folder"
-msgstr "이전 폴더"
-
-msgid "Forward Folder"
-msgstr "다음 폴더"
-
-msgid "Reload"
-msgstr "다시 불러오기"
-
-msgid "Favorite"
-msgstr "즐겨찾기"
-
-msgid "Toggle Hidden"
-msgstr "숨김 토글"
-
-msgid "Toggle Filename Filter"
-msgstr "파일 이름 필터 토글"
-
-msgid "Folder"
-msgstr "폴더"
-
-msgid "Thumbnail Mode"
-msgstr "썸네일 모드"
-
-msgid "List Mode"
-msgstr "목록 모드"
-
-msgid "Create Folder"
-msgstr "폴더 만들기"
-
-msgid "Sort"
-msgstr "정렬"
-
-msgid "Favorite Up"
-msgstr "즐겨찾기 위로"
-
-msgid "Favorite Down"
-msgstr "즐겨찾기 아래로"
-
-msgid "File Thumbnail"
-msgstr "파일 썸네일"
-
-msgid "Folder Thumbnail"
-msgstr "폴더 썸네일"
-
-msgid "Menu Copy Path"
-msgstr "메뉴 경로 복사"
-
-msgid "Menu Delete"
-msgstr "메뉴 삭제"
-
-msgid "Menu New Folder"
-msgstr "메뉴 새 폴더"
-
-msgid "Menu Refresh"
-msgstr "메뉴 새로 고침"
-
-msgid "Menu Show in File Manager"
-msgstr "메뉴 파일 매니저에서 보이기"
-
-msgid "Menu Open Bundle"
-msgstr "메뉴 번들 열기"
-
-msgid "Folder Icon Color"
-msgstr "폴더 아이콘 색상"
-
-msgid "File Icon Color"
-msgstr "파일 아이콘 색상"
-
-msgid "File Disabled Color"
-msgstr "파일 비활성화됨 색상"
-
-msgid "Separator"
-msgstr "분리자"
-
-msgid "Labeled Separator Left"
-msgstr "레이블 있는 분리자 왼쪽"
-
-msgid "Labeled Separator Right"
-msgstr "레이블 있는 분리자 오른쪽"
-
-msgid "Indeterminate Disabled"
-msgstr "불확정 비활성화됨"
-
-msgid "Submenu"
-msgstr "하위 메뉴"
-
-msgid "Submenu Mirrored"
-msgstr "하위 메뉴 미러링"
-
-msgid "Search"
-msgstr "검색"
-
-msgid "Font Separator"
-msgstr "글꼴 분리자"
-
-msgid "Font Separator Size"
-msgstr "글꼴 분리자 크기"
-
-msgid "Font Accelerator Color"
-msgstr "글꼴 가속기 색상"
-
-msgid "Font Separator Color"
-msgstr "글꼴 분리자 색상"
-
-msgid "Font Separator Outline Color"
-msgstr "글꼴 분리자 윤곽선 색상"
-
-msgid "V Separation"
-msgstr "세로 간격"
-
-msgid "Search Bar Separation"
-msgstr "검색창 간격"
-
-msgid "Separator Outline Size"
-msgstr "분리자 윤곽선 크기"
-
-msgid "Item Start Padding"
-msgstr "항목 시작 패딩"
-
-msgid "Item End Padding"
-msgstr "항목 끝 패딩"
-
-msgid "Gutter Compact"
-msgstr "컴팩트한 거터"
-
-msgid "Panel Selected"
-msgstr "패널 선택됨"
-
-msgid "Panel Focus"
-msgstr "패널 포커스"
-
-msgid "Titlebar"
-msgstr "제목 표시줄"
-
-msgid "Titlebar Selected"
-msgstr "제목 표시줄 선택됨"
-
-msgid "Slot"
-msgstr "슬롯"
-
-msgid "Slot Selected"
-msgstr "슬롯 선택됨"
-
-msgid "Resizer"
-msgstr "리사이저"
-
-msgid "Resizer Color"
-msgstr "리사이저 색상"
-
-msgid "Port H Offset"
-msgstr "포트 가로 오프셋"
-
-msgid "Hovered"
-msgstr "호버 시"
-
-msgid "Hovered Dimmed"
-msgstr "호버 시 짙게"
-
-msgid "Hovered Selected"
-msgstr "선택된 항목 호버 시"
-
-msgid "Hovered Selected Focus"
-msgstr "선택된 항목 호버 시 강조"
-
-msgid "Selected Focus"
-msgstr "선택된 항목 강조"
-
-msgid "Cursor"
-msgstr "커서"
-
-msgid "Cursor Unfocused"
-msgstr "커서 포커스 잃음"
-
-msgid "Button Hover"
-msgstr "버튼 호버"
-
-msgid "Title Button Normal"
-msgstr "제목 버튼 보통"
-
-msgid "Title Button Pressed"
-msgstr "제목 버튼 눌림"
-
-msgid "Title Button Hover"
-msgstr "제목 버튼 호버"
-
-msgid "Custom Button"
-msgstr "커스텀 버튼"
-
-msgid "Custom Button Pressed"
-msgstr "커스텀 버튼 눌림"
-
-msgid "Custom Button Hover"
-msgstr "커스텀 버튼 호버"
-
-msgid "Select Arrow"
-msgstr "선택 화살표"
-
-msgid "Arrow Collapsed"
-msgstr "화살표 접힘"
-
-msgid "Arrow Collapsed Mirrored"
-msgstr "화살표 접힘 미러링"
-
-msgid "Title Button Font"
-msgstr "제목 버튼 글꼴"
-
-msgid "Title Button Font Size"
-msgstr "제목 버튼 글꼴 크기"
-
-msgid "Title Button Color"
-msgstr "제목 버튼 색상"
-
-msgid "Font Hovered Color"
-msgstr "글꼴 호버 시 색상"
-
-msgid "Font Hovered Dimmed Color"
-msgstr "글꼴 호버 시 짙게 색상"
-
-msgid "Font Hovered Selected Color"
-msgstr "선택된 글꼴 호버 시 색상"
-
-msgid "Guide Color"
-msgstr "가이드 색상"
-
-msgid "Drop on Item Color"
-msgstr "항목에 놓기 색상"
-
-msgid "Drop Position Color"
-msgstr "놓기 위치 색상"
-
-msgid "Relationship Line Color"
-msgstr "관계선 색상"
-
-msgid "Parent HL Line Color"
-msgstr "부모 HL 줄 색상"
-
-msgid "Children HL Line Color"
-msgstr "자식 HL 줄 색상"
-
-msgid "Custom Button Font Highlight"
-msgstr "커스텀 버튼 글꼴 강조"
-
-msgid "Scroll Hint Color"
-msgstr "스크롤 힌트 색상"
-
-msgid "Item Margin"
-msgstr "항목 여백"
-
-msgid "Inner Item Margin Bottom"
-msgstr "안 항목 여백 아래"
-
-msgid "Inner Item Margin Left"
-msgstr "안 항목 여백 왼쪽"
-
-msgid "Inner Item Margin Right"
-msgstr "안 항목 여백 오른쪽"
-
-msgid "Inner Item Margin Top"
-msgstr "안 항목 여백 위"
-
-msgid "Check H Separation"
-msgstr "확인 가로 간격"
-
-msgid "Icon H Separation"
-msgstr "아이콘 가로 간격"
-
-msgid "Button Margin"
-msgstr "버튼 여백"
-
-msgid "Relationship Line Width"
-msgstr "관계선 너비"
-
-msgid "Parent HL Line Width"
-msgstr "부모 HL 줄 너비"
-
-msgid "Children HL Line Width"
-msgstr "자식 HL 줄 너비"
-
-msgid "Parent HL Line Margin"
-msgstr "부모 HL 줄 여백"
-
-msgid "Draw Guides"
-msgstr "가이드 그리기"
-
-msgid "Dragging Unfold Wait Msec"
-msgstr "드래그 중 펼치기 대기 밀리초"
-
-msgid "Scroll Border"
-msgstr "스크롤 테두리"
-
-msgid "Scroll Speed"
-msgstr "스크롤 속도"
-
-msgid "Scrollbar H Separation"
-msgstr "스크롤바 가로 간격"
-
-msgid "Scrollbar V Separation"
-msgstr "스크롤바 세로 간격"
-
-msgid "Icon Margin"
-msgstr "아이콘 여백"
-
-msgid "Tab Selected"
-msgstr "탭 선택됨"
-
-msgid "Tab Hovered"
-msgstr "탭 호버 시"
-
-msgid "Tab Unselected"
-msgstr "탭 선택 해제됨"
-
-msgid "Tab Disabled"
-msgstr "탭 비활성화됨"
-
-msgid "Tab Focus"
-msgstr "탭 포커스"
-
-msgid "Tabbar Background"
-msgstr "탭바 배경"
-
-msgid "Drop Mark"
-msgstr "마크 놓기"
-
-msgid "Menu Highlight"
-msgstr "메뉴 강조"
-
-msgid "Font Unselected Color"
-msgstr "선택되지 않은 글꼴 색상"
-
-msgid "Drop Mark Color"
-msgstr "놓기 마크 색상"
-
-msgid "Icon Selected Color"
-msgstr "선택된 아이콘 색상"
-
-msgid "Icon Hovered Color"
-msgstr "아이콘 호버 시 색상"
-
-msgid "Icon Unselected Color"
-msgstr "선택되지 않은 아이콘 색상"
-
-msgid "Side Margin"
-msgstr "가장자리 여백"
-
-msgid "Icon Separation"
-msgstr "아이콘 간격"
-
-msgid "Button Highlight"
-msgstr "버튼 강조"
-
-msgid "Hover Switch Wait Msec"
-msgstr "호버 전환 대기 밀리초"
-
-msgid "SV Width"
-msgstr "SV 너비"
-
-msgid "SV Height"
-msgstr "SV 높이"
-
-msgid "H Width"
-msgstr "H 너비"
-
-msgid "Label Width"
-msgstr "레이블 너비"
-
-msgid "Center Slider Grabbers"
-msgstr "가운데 슬라이더 그래버"
-
-msgid "Sample Focus"
-msgstr "샘플 초점"
-
-msgid "Picker Focus Rectangle"
-msgstr "선택기 포커스 직사각형"
-
-msgid "Picker Focus Circle"
-msgstr "선택기 포커스 원"
-
-msgid "Focused not Editing Cursor Color"
-msgstr "포커스되지 않은 편집 커서 색상"
-
-msgid "Menu Option"
-msgstr "메뉴 옵션"
-
-msgid "Folded Arrow"
-msgstr "접힌 화살표"
-
-msgid "Expanded Arrow"
-msgstr "펼친 화살표"
-
-msgid "Screen Picker"
-msgstr "화면 선택기"
-
-msgid "Shape Circle"
-msgstr "모양 원"
-
-msgid "Shape Rect"
-msgstr "모양 직사각형"
-
-msgid "Shape Rect Wheel"
-msgstr "모양 직사각형 휠"
-
-msgid "Add Preset"
-msgstr "프리셋 추가"
-
-msgid "Sample BG"
-msgstr "샘플 배경"
-
-msgid "Sample Revert"
-msgstr "샘플 되돌리기"
-
-msgid "Overbright Indicator"
-msgstr "과도한 밝기 표시기"
-
-msgid "Bar Arrow"
-msgstr "막대 화살"
-
-msgid "Picker Cursor"
-msgstr "선택기 커서"
-
-msgid "Picker Cursor BG"
-msgstr "선택기 커서 배경"
-
-msgid "Color Script"
-msgstr "색상 스크립트"
-
-msgid "Color Copy"
-msgstr "색상 복사"
-
-msgid "Color Hue"
-msgstr "색상 색조"
-
-msgid "BG"
-msgstr "배경"
-
-msgid "Preset FG"
-msgstr "프리셋 전경"
-
-msgid "Preset Focus"
-msgstr "프리셋 포커스"
-
-msgid "Preset BG"
-msgstr "프리셋 배경"
-
-msgid "Horizontal Rule"
-msgstr "수평선"
-
-msgid "Normal Font"
-msgstr "보통 글꼴"
-
-msgid "Bold Font"
-msgstr "굵은 글꼴"
-
-msgid "Italics Font"
-msgstr "기울인 글꼴"
-
-msgid "Bold Italics Font"
-msgstr "굵은 기울인 글꼴"
-
-msgid "Mono Font"
-msgstr "모노 글꼴"
-
-msgid "Normal Font Size"
-msgstr "보통 글꼴 크기"
-
-msgid "Bold Font Size"
-msgstr "굵은 글꼴 크기"
-
-msgid "Italics Font Size"
-msgstr "기울인 글꼴 크기"
-
-msgid "Bold Italics Font Size"
-msgstr "굵은 기울인 글꼴 크기"
-
-msgid "Mono Font Size"
-msgstr "모노 글꼴 크기"
-
-msgid "Table H Separation"
-msgstr "표 가로 간격"
-
-msgid "Table V Separation"
-msgstr "표 세로 간격"
-
-msgid "Table Odd Row BG"
-msgstr "표 홀수 행 배경"
-
-msgid "Table Even Row BG"
-msgstr "표 짝수 행 배경"
-
-msgid "Table Border"
-msgstr "표 테두리"
-
-msgid "Text Highlight H Padding"
-msgstr "텍스트 강조 가로 패딩"
-
-msgid "Text Highlight V Padding"
-msgstr "텍스트 강조 세로 패딩"
-
-msgid "Underline Alpha"
-msgstr "밑줄 알파"
-
-msgid "Strikethrough Alpha"
-msgstr "취소선 알파"
-
-msgid "Touch Dragger Color"
-msgstr "터치 드래거 색상"
-
-msgid "Touch Dragger Pressed Color"
-msgstr "터치 드래거 눌림 색상"
-
-msgid "Touch Dragger Hover Color"
-msgstr "터치 드래거 호버 색상"
-
-msgid "H Touch Dragger"
-msgstr "가로 터치 드래거"
-
-msgid "V Touch Dragger"
-msgstr "세로 터치 드래거"
-
-msgid "Touch Dragger"
-msgstr "터치 드래거"
-
-msgid "H Grabber"
-msgstr "가로 그래버"
-
-msgid "V Grabber"
-msgstr "세로 그래버"
-
-msgid "Margin Left"
-msgstr "여백 왼쪽"
-
-msgid "Margin Top"
-msgstr "여백 위"
-
-msgid "Margin Right"
-msgstr "여백 오른쪽"
-
-msgid "Margin Bottom"
-msgstr "여백 아래"
-
-msgid "Minimum Grab Thickness"
-msgstr "최소 잡기 두께"
-
-msgid "Autohide"
-msgstr "자동숨기기"
-
-msgid "Split Bar Background"
-msgstr "바 배경 분할"
-
-msgid "Zoom Out"
-msgstr "축소"
-
-msgid "Zoom In"
-msgstr "확대"
-
-msgid "Zoom Reset"
-msgstr "확대/축소 재설정"
-
-msgid "Grid Toggle"
-msgstr "격자 토글"
-
-msgid "Minimap Toggle"
-msgstr "미니맵 토글"
-
-msgid "Snapping Toggle"
-msgstr "스냅 토글"
-
-msgid "Menu Panel"
-msgstr "메뉴 패널"
-
-msgid "Grid Minor"
-msgstr "격자 마이너"
-
-msgid "Grid Major"
-msgstr "격자 메이저"
-
-msgid "Selection Fill"
-msgstr "선택 항목 채우기"
-
-msgid "Selection Stroke"
-msgstr "선택 항목 획"
-
-msgid "Activity"
-msgstr "활동"
-
-msgid "Connection Hover Tint Color"
-msgstr "연결 호버 틴트 색상"
-
-msgid "Connection Hover Thickness"
-msgstr "연결 호버 두께"
-
-msgid "Connection Valid Target Tint Color"
-msgstr "연결 유효 대상 틴트 색상"
-
-msgid "Connection Rim Color"
-msgstr "연결 림 색상"
-
-msgid "Title Panel"
-msgstr "제목 패널"
-
-msgid "Title Hover Panel"
-msgstr "제복 호버 패널"
-
-msgid "Title Collapsed Panel"
-msgstr "제목 접힘 패널"
-
-msgid "Title Collapsed Hover Panel"
-msgstr "제목 접힘 호버 패널"
-
-msgid "Hover Font Color"
-msgstr "호버 글꼴 색상"
-
-msgid "Collapsed Font Color"
-msgstr "접힌 글꼴 색상"
-
-msgid "Expanded Arrow Mirrored"
-msgstr "펼친 화살표 미러링"
-
-msgid "Folded Arrow Mirrored"
-msgstr "접힌 화살표 미러링"
-
-msgid "Port Hotzone Inner Extent"
-msgstr "포트 핫존 안 범위"
-
-msgid "Port Hotzone Outer Extent"
-msgstr "포트 핫존 바깥 범위"
 
 msgid "Default Theme Scale"
 msgstr "디폴트 테마 스케일"

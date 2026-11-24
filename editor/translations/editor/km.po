@@ -3485,9 +3485,6 @@ msgstr "គ្មានការពិពណ៌នាអាចប្រើបា
 msgid "This annotation may be changed or removed in future versions."
 msgstr "Annotation នេះអាចត្រូវបានផ្លាស់ប្ដូរ ឬដកចេញនៅ Version អនាគត។"
 
-msgid "Open in File Manager"
-msgstr "បើកក្នុង File Manager"
-
 msgid "This property can only be set in the Inspector."
 msgstr "លក្ខណៈនេះអាចកំណត់បានតែក្នុង Inspector ប៉ុណ្ណោះ។"
 
@@ -4371,20 +4368,6 @@ msgstr ""
 "មិនអាចរក្សាទុក Branch ដែលជាផ្នែកនៃឈុតឆាកទទួលមរតកបានទេ។\n"
 "ដើម្បីរក្សាទុក Branch នេះជាឈុតឆាកផ្ទាល់ខ្លួន សូមបើកឈុតឆាកដើម ចុច Right Click លើ Branch "
 "នេះ ហើយជ្រើស \"Save Branch as Scene\"។"
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr ""
-"ការបិទ \"Editable Children\" នឹងធ្វើឱ្យលក្ខណៈទាំងអស់នៃណូតកូនចៅរបស់ Subscene នេះ "
-"ត្រឡប់ទៅជាលំនាំដើមវិញ។"
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"ការបើក \"Load as Placeholder\" នឹងបិទ \"Editable Children\" "
-"ហើយធ្វើឱ្យលក្ខណៈទាំងអស់នៃណូតត្រឡប់ទៅជាលំនាំដើមវិញ។"
 
 msgid "Make Local"
 msgstr "ធ្វើជា Local (Make Local)"
@@ -8499,9 +8482,6 @@ msgstr "កំហុស: គម្រោងបាត់នៅក្នុងប�
 
 msgid "Toggle Favorite"
 msgstr "បិទ/បើក ការចូលចិត្ត"
-
-msgid "Open in file manager"
-msgstr "បើកនៅក្នុងកម្មវិធីគ្រប់គ្រងឯកសារ"
 
 msgid "Last edited timestamp"
 msgstr "ពេលវេលាកែសម្រួលចុងក្រោយ"

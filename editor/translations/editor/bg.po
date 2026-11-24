@@ -2552,9 +2552,6 @@ msgstr ""
 msgid "Editor"
 msgstr "Редактор"
 
-msgid "Open in File Manager"
-msgstr "Отваряне във файловия мениджър"
-
 msgid "Class"
 msgstr "Клас"
 
@@ -2822,13 +2819,6 @@ msgstr "Изтриване на %d обекта?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Изтриване на обекта „%s“?"
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"Включването на „Зареди като заместител“ ще изключи „Променливи деца“ и ще "
-"накара всички променливи да се върнат към своя стандарт."
 
 msgid "New Scene Root"
 msgstr "Нов корен на сцената"

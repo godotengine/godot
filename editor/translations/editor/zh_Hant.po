@@ -3516,9 +3516,6 @@ msgstr "沒有說明。"
 msgid "This annotation may be changed or removed in future versions."
 msgstr "此註解可能於未來版本變更或移除。"
 
-msgid "Open in File Manager"
-msgstr "在檔案管理員中開啟"
-
 msgid "This property can only be set in the Inspector."
 msgstr "此屬性只能在檢視器中設定。"
 
@@ -4393,18 +4390,6 @@ msgstr ""
 "無法儲存繼承場景中的分支。\n"
 "若要將此分支另存為新場景，請開啟原始場景、右鍵此分支並選擇「將分支儲存為場"
 "景」。"
-
-msgid ""
-"Disabling \"Editable Children\" will cause all properties of this subscene's "
-"descendant nodes to be reverted to their default."
-msgstr "停用「可編輯子節點」後，此子場景所有後代節點的屬性都會還原為預設值。"
-
-msgid ""
-"Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause "
-"all properties of the node to be reverted to their default."
-msgstr ""
-"啟用「Load as Placeholder」會停用「Editable Children」，並使所有屬性恢復預設"
-"值。"
 
 msgid "Make Local"
 msgstr "轉為本地"
@@ -8432,9 +8417,6 @@ msgstr "錯誤：檔案系統中找不到專案。"
 
 msgid "Toggle Favorite"
 msgstr "新增／取消我的最愛"
-
-msgid "Open in file manager"
-msgstr "在檔案管理員中開啟"
 
 msgid "Last edited timestamp"
 msgstr "最後編輯時間"
