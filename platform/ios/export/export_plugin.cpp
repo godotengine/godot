@@ -56,7 +56,7 @@ EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformAppleEmbedded::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), get_minimum_deployment_target()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
@@ -91,6 +91,16 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
+}
+
+String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_preset && p_name == "application/targeted_device_family") {
+		int family = p_preset->get("application/targeted_device_family");
+		if (family < 0 || family > 2) {
+			return vformat(TTR("Invalid targeted device family: %d. Valid values are 0 (iPhone), 1 (iPad) and 2 (iPhone & iPad)."), family);
+		}
+	}
+	return EditorExportPlatformAppleEmbedded::get_export_option_warning(p_preset, p_name);
 }
 
 bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
