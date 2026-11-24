@@ -5,6 +5,9 @@ class RidClearer extends RefCounted:
 		if source != null:
 			source.clear()
 			source = []
+			var junk := []
+			for i in 2048:
+				junk.append(PackedByteArray([0xAA, 0xBB, 0xCC, 0xDD]))
 		return RID()
 
 func test():
@@ -13,6 +16,7 @@ func test():
 	var clearer := RidClearer.new()
 	clearer.source = source
 	source.append(clearer)
+	source.append(RefCounted.new())
 	source.append(RefCounted.new())
 
 	var typed: Array[RID] = []
