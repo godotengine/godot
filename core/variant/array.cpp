@@ -224,10 +224,9 @@ void Array::assign(const Array &p_array) {
 		return;
 	}
 
-	const Variant *source = p_array._p->array.ptr();
-	int size = p_array._p->array.size();
-
 	if ((source_typed.variant_type == Variant::NIL && typed.variant_type == Variant::OBJECT) || (source_typed.variant_type == Variant::OBJECT && source_typed.can_reference(typed))) {
+		const Variant *source = p_array._p->array.ptr();
+		int size = p_array._p->array.size();
 		// from variants to objects or
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
@@ -242,6 +241,11 @@ void Array::assign(const Array &p_array) {
 	if (typed.variant_type == Variant::OBJECT || source_typed.variant_type == Variant::OBJECT) {
 		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.variant_type), Variant::get_type_name(typed.variant_type)));
 	}
+
+	// Pin the source against reentrant mutation during conversion.
+	const Vector<Variant> source_array = p_array._p->array;
+	const Variant *source = source_array.ptr();
+	int size = source_array.size();
 
 	Vector<Variant> array;
 	array.resize(size);
